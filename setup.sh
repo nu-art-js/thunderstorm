@@ -17,10 +17,6 @@ for module in "${modules[@]}"; do
 done
 
 cd ${projectModule}
-    for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
-        npm link ${modulePackageName[${arg}]}
-    done
-
     cp package.json _package.json
     for moduleName in "${modulePackageName[@]}"; do
         sed -i '' "/${moduleName/\//\\/}/d" package.json
@@ -29,4 +25,9 @@ cd ${projectModule}
     npm install
     rm package.json
     mv _package.json package.json
+
+    for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
+        echo npm link ${modulePackageName[${arg}]}
+        npm link ${modulePackageName[${arg}]}
+    done
 cd ..
