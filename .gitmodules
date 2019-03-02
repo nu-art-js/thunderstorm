@@ -1,0 +1,6 @@
+[submodule "nu-art-core"]
+	path = nu-art-core
+	url = git@github.com:nu-art-js/nu-art-core.git
+[submodule "app-backend"]
+	path = app-backend
+	url = git@github.com:nu-art-js/app-backend.git
