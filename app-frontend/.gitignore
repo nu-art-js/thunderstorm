@@ -1,0 +1,9 @@
+.idea/
+node_modules/
+*.iml
+build
+output
+elliq-plans
+.DS_Store
+_temp
+.trash

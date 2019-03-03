@@ -1,0 +1,3 @@
+[submodule "react-core"]
+	path = react-core
+	url = git@github.com:nu-art/react-core.git

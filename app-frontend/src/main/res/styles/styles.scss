@@ -1,0 +1,85 @@
+@import "fonts";
+
+div {
+  display: inline-block;
+  font-family: 'font-light', sans-serif
+}
+
+img {
+  display: inline-block;
+}
+
+input {
+  border: none;
+  font-size: 16px;
+  border-radius: 40px !important;
+}
+
+/**
+ * Flex shit
+ */
+.ll_v_l {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-start;
+}
+
+.ll_v_c {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
+
+.ll_v_r {
+  display: flex;
+  flex-flow: column;
+  align-items: flex-end;
+}
+
+.ll_h_t {
+  display: flex;
+  flex-flow: row;
+  align-items: flex-start;
+}
+
+.ll_h_c {
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+}
+
+.ll_h_r {
+  display: flex;
+  flex-flow: row;
+  align-items: flex-end;
+}
+
+/**
+ * Dimension shit
+ */
+.match_height {
+  height: 100%
+}
+
+.match_width {
+  width: 100%
+}
+
+.center_h {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.center_v {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.center {
+  margin: 0 auto;
+}
+
+.clickable {
+  cursor: pointer
+}
+
