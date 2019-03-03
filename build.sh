@@ -10,7 +10,3 @@ for module in "${modules[@]}"; do
         npm run build
     cd ..
 done
-
-cd ${projectModule}
-    npm run build
-cd ..
