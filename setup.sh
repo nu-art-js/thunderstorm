@@ -19,7 +19,11 @@ done
 cd ${projectModule}
     cp package.json _package.json
     for moduleName in "${modulePackageName[@]}"; do
-        sed -i '' "/${moduleName/\//\\/}/d" package.json
+        if [[ "$(uname -v)" =~ "Darwin" ]]; then
+            sed -i '' "/${moduleName/\//\\/}/d" package.json
+        else
+            sed -i "/${moduleName/\//\\/}/d" package.json
+        fi
     done
 
     npm install
