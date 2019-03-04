@@ -16,7 +16,7 @@ deploy=
 publish=
 version=
 build=true
-linkDependencies=true
+linkDependencies=
 
 function printHelp() {
     local pc="${BBlue}"
@@ -68,24 +68,21 @@ function extractParams() {
 
            "--purge")
                 purge=true
+                clean=true
             ;;
 
            "--unlink")
-                unlink=true
                 setup=true
-                linkDependencies=
+                unlinkDependencies=true
             ;;
 
-           "--dont-link")
-                linkDependencies=
+           "--setup")
+                setup=true
+                linkDependencies=true
             ;;
 
             "--clean")
                 clean=true
-            ;;
-
-            "--setup")
-                setup=true
             ;;
 
             "--deploy")
