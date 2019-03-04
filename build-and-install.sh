@@ -184,6 +184,7 @@ function setupModule() {
 
 
     if [[ "${linkDependencies}" ]]; then
+        backupPackageJson $@
         cleanPackageJson $@
         npmLinkModule $@
     fi
