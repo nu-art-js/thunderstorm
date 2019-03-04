@@ -11,6 +11,8 @@ clean=
 debug=
 launch=
 test=
+deploy=
+publish=
 build=true
 linkDependencies=true
 
@@ -68,6 +70,10 @@ function extractParams() {
                 setup=true
             ;;
 
+            "--deploy")
+                deploy=true
+            ;;
+
             "--no-build")
                 build=
             ;;
@@ -78,6 +84,10 @@ function extractParams() {
 
             "--no-launch")
                 launch=
+            ;;
+
+            "--publish")
+                publish=true
             ;;
 
             "--help")
@@ -98,7 +108,7 @@ extractParams "$@"
 modulePackageName=()
 moduleVersion=()
 
-params=(setup clean launch test build)
+params=(setup purge clean debug launch test deploy build linkDependencies)
 printDebugParams ${debug} "${params[@]}"
 
 function purgeModule() {
@@ -241,3 +251,25 @@ fi
 if [[ "${test}" ]]; then
     executeOnModules testModule
 fi
+
+if [[ "${launch}" ]]; then
+    cd app-backend
+        node ./dist/index.js
+    cd ..
+fi
+
+if [[ "${deploy}" ]]; then
+    cd app-backend
+        firebase deploy --only functions
+    cd ..
+fi
+
+if [[ "${publish}" ]]; then
+    for module in "${modulesToPublish[@]}"; do
+        cd ${module}
+            npm version patch
+            npm publish
+        cd ..
+    done
+fi
+
