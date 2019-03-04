@@ -134,6 +134,18 @@ moduleVersion=()
 params=(setup purge clean launch test deploy build version linkDependencies)
 printDebugParams ${debug} "${params[@]}"
 
+function mapExistingLibraries() {
+    _modules=()
+    local module
+    for module in "${modules[@]}"; do
+        if [[ ! -e "${module}" ]]; then continue; fi
+        _modules+=(${module})
+    done
+    modules=("${_modules[@]}")
+}
+
+mapExistingLibraries
+
 function purgeModule() {
     rm -rf node_modules
 }
@@ -155,6 +167,8 @@ function testModule() {
 
 function npmLinkModule() {
     logVerbose
+    if [[ "${1}" == "${projectModule}" ]]; then return; fi
+
     logInfo "Linking module sources: ${2} -> ${1}"
     logVerbose "`npm link`"
 }
@@ -190,9 +204,6 @@ function setupModule() {
     function cleanPackageJson() {
         local i
         for (( i=0; i<${#modules[@]}; i+=1 )); do
-            local module="${modules[${i}]}"
-            if [[ ! -e "${module}" ]]; then continue; fi
-
             local moduleName="${modulePackageName[${i}]}"
             local escapedModuleName=${moduleName/\//\\/}
 
@@ -228,8 +239,6 @@ function executeOnModules() {
         local module="${modules[${i}]}"
         local packageName="${modulePackageName[${i}]}"
         local version="${moduleVersion[${i}]}"
-
-        if [[ ! -e "${module}" ]]; then continue; fi
 
         cd ${module}
             ${toExecute} ${module} ${packageName} ${version}
@@ -295,8 +304,6 @@ fi
 
 if [[ "${publish}" ]]; then
     for module in "${modulesToPublish[@]}"; do
-        if [[ ! -e "${module}" ]]; then continue; fi
-
         cd ${module}
             case "${version}" in
                 "patch")
