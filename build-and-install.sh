@@ -72,6 +72,8 @@ function extractParams() {
 
            "--unlink")
                 unlink=true
+                setup=true
+                linkDependencies=
             ;;
 
            "--dont-link")
@@ -174,7 +176,7 @@ function unlinkDependenciesImpl() {
         if [[ "${module}" == "${modules[${arg}]}" ]];then break; fi
         local moduleName="${modulePackageName[${arg}]}"
 
-        logDebug "Linking library ${module} => ${moduleName}"
+        logDebug "Un-linking library ${module} => ${moduleName}"
         npm unlink ${moduleName}
     done
 
@@ -252,8 +254,11 @@ executeOnModules mapModules
 executeOnModules printModules
 
 if [[ "${purge}" ]]; then
-    executeOnModules unlinkDependenciesImpl
     executeOnModules purgeModule
+fi
+
+if [[ "${unlink}" ]]; then
+    executeOnModules unlinkDependenciesImpl
 fi
 
 if [[ "${clean}" ]]; then
