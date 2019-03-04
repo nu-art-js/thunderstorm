@@ -131,7 +131,7 @@ extractParams "$@"
 modulePackageName=()
 moduleVersion=()
 
-params=(setup purge clean launch test deploy build version linkDependencies)
+params=(setup purge clean launch test deploy publish version build linkDependencies cloneNuArt)
 printDebugParams ${debug} "${params[@]}"
 
 function mapExistingLibraries() {
@@ -143,8 +143,6 @@ function mapExistingLibraries() {
     done
     modules=("${_modules[@]}")
 }
-
-mapExistingLibraries
 
 function purgeModule() {
     rm -rf node_modules
@@ -197,13 +195,14 @@ function restorePackageJson() {
     mv _package.json package.json
 }
 
-
 function setupModule() {
     local module=${1}
 
     function cleanPackageJson() {
         local i
         for (( i=0; i<${#modules[@]}; i+=1 )); do
+            if [[ "${module}" == "${modules[${i}]}" ]]; then break; fi
+
             local moduleName="${modulePackageName[${i}]}"
             local escapedModuleName=${moduleName/\//\\/}
 
@@ -258,14 +257,20 @@ function printModules() {
     logDebug "${output}"
 }
 
+function cloneNuArtModules() {
+    local module
+    for module in "${nuArtModules[@]}"; do
+        if [[ ! -e "${module}" ]]; then
+            git clone git@github.com:nu-art-js/${module}.git
+        fi
+    done
+}
 
 if [[ "${cloneNuArt}" ]]; then
-    git clone git@github.com:nu-art-js/nu-art-core.git
-    cd nu-art-core && npm i && cd ..
-
-    git clone git@github.com:nu-art-js/nu-art-server.git
-    cd nu-art-server && npm i && cd ..
+    cloneNuArtModules
 fi
+
+mapExistingLibraries
 
 executeOnModules mapModules
 executeOnModules printModules
