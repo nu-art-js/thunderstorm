@@ -12,6 +12,7 @@ debug=
 launch=
 test=
 build=true
+linkDependencies=true
 
 function printHelp() {
     local pc="${BBlue}"
@@ -50,6 +51,10 @@ function extractParams() {
 
            "--purge")
                 purge=true
+            ;;
+
+           "--dont-link")
+                linkDependencies=
             ;;
 
             "--clean")
@@ -114,10 +119,10 @@ function npmLinkModule() {
     npm link
 }
 
-function linkLibraries() {
+function linkDependenciesImpl() {
     local module=${1}
 
-    logInfo "Link libraries"
+    logInfo "Linking dependencies"
     for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
         if [[ "${module}" == "${modules[${arg}]}" ]];then break; fi
         local moduleName="${modulePackageName[${arg}]}"
@@ -127,12 +132,39 @@ function linkLibraries() {
     done
 }
 
+function unlinkDependenciesImpl() {
+    local module=${1}
+    backupPackageJson
+
+    logInfo "Un-linking dependencies  "
+    for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
+        if [[ "${module}" == "${modules[${arg}]}" ]];then break; fi
+        local moduleName="${modulePackageName[${arg}]}"
+
+        logDebug "Linking library ${module} => ${moduleName}"
+        npm unlink ${moduleName}
+    done
+
+    restorePackageJson
+}
+
+function backupPackageJson() {
+    logInfo "Backup package.json"
+    cp package.json _package.json
+}
+
+function restorePackageJson() {
+    logInfo "Restore package.json"
+    rm package.json
+    mv _package.json package.json
+}
+
+
 function setupModule() {
     local module=${1}
 
     function cleanPackageJson() {
-        logInfo "Backup & Cleaning up package.json"
-        cp package.json _package.json
+        logInfo "Cleaning up package.json"
         for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
             if [[ "${module}" == "${modules[${arg}]}" ]]; then break; fi
 
@@ -147,20 +179,18 @@ function setupModule() {
         done
     }
 
-    function restorePackageJson() {
-        logInfo "Restore package.json"
-        rm package.json
-        mv _package.json package.json
-    }
 
-
-    cleanPackageJson $@
-    npmLinkModule $@
+    if [[ "${linkDependencies}" ]]; then
+        cleanPackageJson $@
+        npmLinkModule $@
+    fi
 
     npm install
 
-    restorePackageJson $@
-    linkLibraries $@
+    if [[ "${linkDependencies}" ]]; then
+        restorePackageJson $@
+        linkDependenciesImpl $@
+    fi
 }
 
 function executeOnModules() {
@@ -180,7 +210,7 @@ function mapModules() {
 }
 
 function printModules() {
-    local output=`printf "Found: %15s %20s  %s\n" ${1} ${2} v${3}`
+    local output=`printf "Found: %-15s %-20s  %s\n" ${1} ${2} v${3}`
     logDebug "${output}"
 }
 
@@ -188,6 +218,7 @@ executeOnModules mapModules
 executeOnModules printModules
 
 if [[ "${purge}" ]]; then
+    executeOnModules unlinkDependenciesImpl
     executeOnModules purgeModule
 fi
 
