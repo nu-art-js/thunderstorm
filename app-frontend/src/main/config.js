@@ -1,6 +1,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
+require('./js/utils');
 
 module.exports = {
   backend: {
