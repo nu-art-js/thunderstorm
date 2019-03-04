@@ -39,6 +39,9 @@ function printHelp() {
     logVerbose "   ${pc}--no-launch${noColor}"
     logVerbose "        ${dc}Will not launch${noColor}"
     logVerbose
+    logVerbose "   ${pc}--dont-link${noColor}"
+    logVerbose "        ${dc}Do not link dependencies, use artifacts from npm${noColor}"
+    logVerbose
     exit 0
 }
 
