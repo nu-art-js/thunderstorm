@@ -120,7 +120,7 @@ function linkLibraries() {
     logInfo "Link libraries"
     for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
         if [[ "${module}" == "${modules[${arg}]}" ]];then break; fi
-        local moduleName="${modulePackageName[${arg}]]}"
+        local moduleName="${modulePackageName[${arg}]}"
 
         logDebug "Linking library ${module} => ${moduleName}"
         npm link ${moduleName}
