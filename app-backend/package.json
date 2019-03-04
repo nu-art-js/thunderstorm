@@ -1,0 +1,36 @@
+{
+  "name": "app-backend",
+  "version": "0.1.0",
+  "main": "./dist/index.js",
+  "scripts": {
+    "serve": "npm run build && firebase serve --only functions",
+    "build": "rm -rf dist && tsc && node deploy.js",
+    "launch": "node dist",
+    "prod": "tsc & node dist",
+    "dev": "tsc --watch & nodemon dist",
+    "lint": "tslint --project tsconfig.json",
+    "tsc": "tsc"
+  },
+  "engines": {
+    "node": "8"
+  },
+  "dependencies": {
+    "firebase-admin": "~7.0.0",
+    "firebase-functions": "^2.2.0",
+    "@nu-art/core": "0.1.0",
+    "@nu-art/server": "0.1.0",
+    "body-parser": "^1.18.3",
+    "debug": "^3.1.0",
+    "express": "^4.16.3",
+    "fs": "0.0.1-security",
+    "use-strict": "^1.0.1"
+  },
+  "devDependencies": {
+    "tslint": "^5.12.0",
+    "@types/body-parser": "^1.17.0",
+    "@types/debug": "^4.1.2",
+    "@types/express": "^4.16.1",
+    "@types/node": "^11.9.5",
+    "typescript": "^3.3.3333"
+  }
+}

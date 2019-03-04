@@ -1,0 +1,43 @@
+{
+  "isDebug": true,
+  "name": "dev-station",
+  "serverUrl": "https://localhost:3000/",
+  "resourcesBucketUrl": "http://localhost:2999/",
+  "server": {
+    "host": "localhost",
+    "ssl": {
+      "key": "../_config/dev-cert/server-key.pem",
+      "cert": "../_config/dev-cert/server-cert.pem"
+    },
+    "port": "3000",
+    "crossDomainHeader": "http://localhost:3010/*"
+  },
+  "mongo": {
+    "host": "localhost",
+    "port": "27017",
+    "name": "db_debug"
+  },
+  "firebase": {
+    "admin": {
+      "pathToCredsFile": "../_config/dev-server-key.json",
+      "databaseURL": "https://test-fcm-fdcdc.firebaseio.com"
+    }
+  },
+  "redis": {
+    "host": "localhost",
+    "port": "6379"
+  },
+  "googleStorage": {
+    "projectId": "test-fcm-fdcdc.appspot.com",
+    "pathToCredsFile": "./dev-cert/google-storage-key.json"
+  },
+  "emailSender": {
+    "from": "no-reply-debug<weightless-translation@nu-art-software.com>",
+    "transport": "SMTP",
+    "service": "gmail",
+    "auth": {
+      "user": "weightless-translation@nu-art-software.com",
+      "pass": "azxsdcvf"
+    }
+  }
+}

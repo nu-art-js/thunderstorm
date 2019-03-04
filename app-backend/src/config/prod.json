@@ -1,0 +1,26 @@
+{
+  "name": "prod-server",
+  "serverUrl": "",
+  "server": {
+    "host": "localhost",
+    "port": "3000"
+  },
+  "mongo": {
+    "host": "localhost",
+    "port": "27017",
+    "name": "db_debug"
+  },
+  "redis": {
+    "host": "localhost",
+    "port": "6379"
+  },
+  "emailSender": {
+    "from": "no-reply-debug<weightless-translation@nu-art-software.com>",
+    "transport": "SMTP",
+    "service": "gmail",
+    "auth": {
+      "user": "weightless-translation@nu-art-software.com",
+      "pass": "azxsdcvf"
+    }
+  }
+}
