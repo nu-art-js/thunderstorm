@@ -7,17 +7,20 @@ enforceBashVersion 4.4
 
 setup=
 purge=
+unlink=
 clean=
 debug=
 launch=
 test=
 deploy=
 publish=
+version=
 build=true
 linkDependencies=true
 
 function printHelp() {
     local pc="${BBlue}"
+    local param="${BPurple}"
     local err="${BRed}"
     local dc="${Green}"
     local dcb="${BGreen}"
@@ -25,6 +28,9 @@ function printHelp() {
 
     logVerbose "   ${pc}--purge${noColor}"
     logVerbose "        ${dc}Will delete the node_modules folder in all modules${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--unlink${noColor}"
+    logVerbose "        ${dc}Unlink the dependencies sources${noColor}"
     logVerbose
     logVerbose "   ${pc}--clean${noColor}"
     logVerbose "        ${dc}Will delete the dist folder in all modules${noColor}"
@@ -41,8 +47,14 @@ function printHelp() {
     logVerbose "   ${pc}--no-launch${noColor}"
     logVerbose "        ${dc}Will not launch${noColor}"
     logVerbose
+    logVerbose "   ${pc}--publish${noColor}"
+    logVerbose "        ${dc}Publish artifacts to npm${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--version=< ${param}major${noColor} | ${param}minor${noColor} | ${param}patch${noColor} >${noColor}"
+    logVerbose "        ${dc}Publish artifacts to npm${noColor}"
+    logVerbose
     logVerbose "   ${pc}--dont-link${noColor}"
-    logVerbose "        ${dc}Do not link dependencies, use artifacts from npm${noColor}"
+    logVerbose "        ${dc}Do not link dependencies from sources, use artifacts from npm${noColor}"
     logVerbose
     exit 0
 }
@@ -56,6 +68,10 @@ function extractParams() {
 
            "--purge")
                 purge=true
+            ;;
+
+           "--unlink")
+                unlink=true
             ;;
 
            "--dont-link")
@@ -90,6 +106,10 @@ function extractParams() {
                 publish=true
             ;;
 
+            "--version="*)
+                version=`echo "${paramValue}" | sed -E "s/--version=(.*)/\1/"`
+            ;;
+
             "--help")
                 printHelp
             ;;
@@ -108,7 +128,7 @@ extractParams "$@"
 modulePackageName=()
 moduleVersion=()
 
-params=(setup purge clean debug launch test deploy build linkDependencies)
+params=(setup purge clean debug launch test deploy build version linkDependencies)
 printDebugParams ${debug} "${params[@]}"
 
 function purgeModule() {
@@ -267,7 +287,20 @@ fi
 if [[ "${publish}" ]]; then
     for module in "${modulesToPublish[@]}"; do
         cd ${module}
-            npm version patch
+            case "${version}" in
+                "patch")
+                    npm version patch
+                ;;
+
+                "minor")
+                    npm version minor
+                ;;
+
+                "major")
+                    npm version major
+                ;;
+            esac
+
             npm publish
         cd ..
     done
