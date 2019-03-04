@@ -41,10 +41,10 @@ const folderExists = (dest) => {
 makeDir("./dist/config")
 	.then(copyFiles("./src/config/dev.json", "./dist/config/dev.json"))
 	.then(() => {
-		console.log("PAH");
+		console.log("Copied config successfully");
 	})
 	.catch((err) => {
-		console.error("ZEVEL");
+		console.error("Error copying config...");
 		console.error(err)
 	});
 ;

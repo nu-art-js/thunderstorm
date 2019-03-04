@@ -7,7 +7,6 @@ enforceBashVersion 4.4
 
 setup=
 purge=
-unlink=
 clean=
 debug=
 launch=
@@ -31,7 +30,7 @@ function printHelp() {
     logVerbose "        ${dc}Will delete the node_modules folder in all modules${noColor}"
     logVerbose
     logVerbose "   ${pc}--unlink${noColor}"
-    logVerbose "        ${dc}Unlink the dependencies sources${noColor}"
+    logVerbose "        ${dc}Will purge & setup without dependencies${noColor}"
     logVerbose
     logVerbose "   ${pc}--clean${noColor}"
     logVerbose "        ${dc}Will delete the dist folder in all modules${noColor}"
@@ -77,8 +76,8 @@ function extractParams() {
             ;;
 
            "--unlink")
+                purge=true
                 setup=true
-                unlinkDependencies=true
             ;;
 
            "--setup")
@@ -132,7 +131,7 @@ extractParams "$@"
 modulePackageName=()
 moduleVersion=()
 
-params=(setup purge clean debug launch test deploy build version linkDependencies)
+params=(setup purge clean launch test deploy build version linkDependencies)
 printDebugParams ${debug} "${params[@]}"
 
 function purgeModule() {
@@ -144,6 +143,9 @@ function cleanModule() {
 }
 
 function buildModule() {
+    logVerbose
+    logInfo "Building module: ${1}"
+    logVerbose
     npm run build
 }
 
@@ -152,51 +154,31 @@ function testModule() {
 }
 
 function npmLinkModule() {
-    logInfo "Linking package: ${2} -> ${1}"
-    npm link
+    logVerbose
+    logInfo "Linking module sources: ${2} -> ${1}"
+    logVerbose "`npm link`"
 }
 
 function linkDependenciesImpl() {
     local module=${1}
 
-    logInfo "Linking dependencies"
-    for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
-        if [[ ! -e "${module}" ]]; then continue; fi
-        if [[ "${module}" == "${modules[${arg}]}" ]];then break; fi
-        local moduleName="${modulePackageName[${arg}]}"
+    logVerbose
+    logInfo "Linking dependencies sources to: ${module}"
+    local i
+    for (( i=0; i<${#modules[@]}; i+=1 )); do
+        if [[ "${module}" == "${modules[${i}]}" ]];then break; fi
 
-        logDebug "Linking library ${module} => ${moduleName}"
-        npm link ${moduleName}
+        local moduleName="${modulePackageName[${i}]}"
+        logDebug "Linking dependency sources ${module} => ${moduleName}"
+        logVerbose "`npm link ${moduleName}`"
     done
-}
-
-function unlinkDependenciesImpl() {
-    local module=${1}
-    backupPackageJson
-
-    logInfo "Un-linking dependencies  "
-    for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
-        if [[ "${module}" == "${modules[${arg}]}" ]];then break; fi
-
-        local moduleName="${modulePackageName[${arg}]}"
-        rm -rf node_modules ${moduleName}
-
-        if [[ ! -e "${module}" ]]; then continue; fi
-
-        logDebug "Un-linking library ${module} => ${moduleName}"
-        npm unlink ${moduleName}
-    done
-
-    restorePackageJson
 }
 
 function backupPackageJson() {
-    logInfo "Backup package.json"
     cp package.json _package.json
 }
 
 function restorePackageJson() {
-    logInfo "Restore package.json"
     rm package.json
     mv _package.json package.json
 }
@@ -206,13 +188,12 @@ function setupModule() {
     local module=${1}
 
     function cleanPackageJson() {
-        logInfo "Cleaning up package.json"
-        for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
+        local i
+        for (( i=0; i<${#modules[@]}; i+=1 )); do
+            local module="${modules[${i}]}"
             if [[ ! -e "${module}" ]]; then continue; fi
 
-            if [[ "${module}" == "${modules[${arg}]}" ]]; then break; fi
-
-            local moduleName="${modulePackageName[${arg}]}"
+            local moduleName="${modulePackageName[${i}]}"
             local escapedModuleName=${moduleName/\//\\/}
 
             if [[ "$(uname -v)" =~ "Darwin" ]]; then
@@ -223,28 +204,35 @@ function setupModule() {
         done
     }
 
-
     if [[ "${linkDependencies}" ]]; then
-        backupPackageJson $@
-        cleanPackageJson $@
+        backupPackageJson
+        cleanPackageJson
         npmLinkModule $@
     fi
 
+    logVerbose
+    logInfo "Installing ${module}"
+    logVerbose
     npm install
 
     if [[ "${linkDependencies}" ]]; then
-        restorePackageJson $@
+        restorePackageJson
         linkDependenciesImpl $@
     fi
 }
 
 function executeOnModules() {
     local toExecute=${1}
-    for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
-        if [[ ! -e "${modules[${arg}]}" ]]; then continue; fi
+    local i
+    for (( i=0; i<${#modules[@]}; i+=1 )); do
+        local module="${modules[${i}]}"
+        local packageName="${modulePackageName[${i}]}"
+        local version="${moduleVersion[${i}]}"
 
-        cd ${modules[${arg}]}
-            ${toExecute} ${modules[${arg}]} ${modulePackageName[${arg}]} ${moduleVersion[${arg}]}
+        if [[ ! -e "${module}" ]]; then continue; fi
+
+        cd ${module}
+            ${toExecute} ${module} ${packageName} ${version}
         cd ..
     done
 }
@@ -265,6 +253,7 @@ function printModules() {
 if [[ "${cloneNuArt}" ]]; then
     git clone git@github.com:nu-art-js/nu-art-core.git
     cd nu-art-core && npm i && cd ..
+
     git clone git@github.com:nu-art-js/nu-art-server.git
     cd nu-art-server && npm i && cd ..
 fi
@@ -274,10 +263,6 @@ executeOnModules printModules
 
 if [[ "${purge}" ]]; then
     executeOnModules purgeModule
-fi
-
-if [[ "${unlink}" ]]; then
-    executeOnModules unlinkDependenciesImpl
 fi
 
 if [[ "${clean}" ]]; then
