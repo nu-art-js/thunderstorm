@@ -6,7 +6,7 @@ source ./dev-tools/scripts/_core-tools/_source.sh
 modulePackageName=()
 moduleVersion=()
 
-function processModule() {
+function setupModule() {
     function npmLinkModule() {
         packageName=`cat package.json | grep '"name":' | sed -E "s/.*\"name\".*\"(.*)\",?/\1/"`
         version=`cat package.json | grep '"version":' | sed -E "s/.*\"version\".*\"(.*)\",?/\1/"`
@@ -61,5 +61,5 @@ function processModule() {
 }
 
 for module in "${modules[@]}"; do
-    processModule ${module}
+    setupModule ${module}
 done
