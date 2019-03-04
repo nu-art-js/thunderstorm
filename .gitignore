@@ -4,3 +4,5 @@ dist
 env
 .idea
 *.iml
+nu-art-core*
+nu-art-server*
