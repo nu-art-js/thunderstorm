@@ -17,6 +17,7 @@ publish=
 version=
 build=true
 linkDependencies=
+cloneNuArt=
 
 function printHelp() {
     local pc="${BBlue}"
@@ -69,6 +70,10 @@ function extractParams() {
            "--purge")
                 purge=true
                 clean=true
+            ;;
+
+           "--nu-art")
+                cloneNuArt=true
             ;;
 
            "--unlink")
@@ -156,6 +161,7 @@ function linkDependenciesImpl() {
 
     logInfo "Linking dependencies"
     for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
+        if [[ ! -e "${module}" ]]; then continue; fi
         if [[ "${module}" == "${modules[${arg}]}" ]];then break; fi
         local moduleName="${modulePackageName[${arg}]}"
 
@@ -171,7 +177,11 @@ function unlinkDependenciesImpl() {
     logInfo "Un-linking dependencies  "
     for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
         if [[ "${module}" == "${modules[${arg}]}" ]];then break; fi
+
         local moduleName="${modulePackageName[${arg}]}"
+        rm -rf node_modules ${moduleName}
+
+        if [[ ! -e "${module}" ]]; then continue; fi
 
         logDebug "Un-linking library ${module} => ${moduleName}"
         npm unlink ${moduleName}
@@ -198,6 +208,8 @@ function setupModule() {
     function cleanPackageJson() {
         logInfo "Cleaning up package.json"
         for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
+            if [[ ! -e "${module}" ]]; then continue; fi
+
             if [[ "${module}" == "${modules[${arg}]}" ]]; then break; fi
 
             local moduleName="${modulePackageName[${arg}]}"
@@ -229,6 +241,8 @@ function setupModule() {
 function executeOnModules() {
     local toExecute=${1}
     for (( arg=0; arg<${#modules[@]}; arg+=1 )); do
+        if [[ ! -e "${modules[${arg}]}" ]]; then continue; fi
+
         cd ${modules[${arg}]}
             ${toExecute} ${modules[${arg}]} ${modulePackageName[${arg}]} ${moduleVersion[${arg}]}
         cd ..
@@ -246,6 +260,14 @@ function printModules() {
     local output=`printf "Found: %-15s %-20s  %s\n" ${1} ${2} v${3}`
     logDebug "${output}"
 }
+
+
+if [[ "${cloneNuArt}" ]]; then
+    git clone git@github.com:nu-art-js/nu-art-core.git
+    cd nu-art-core && npm i && cd ..
+    git clone git@github.com:nu-art-js/nu-art-server.git
+    cd nu-art-server && npm i && cd ..
+fi
 
 executeOnModules mapModules
 executeOnModules printModules
@@ -288,6 +310,8 @@ fi
 
 if [[ "${publish}" ]]; then
     for module in "${modulesToPublish[@]}"; do
+        if [[ ! -e "${module}" ]]; then continue; fi
+
         cd ${module}
             case "${version}" in
                 "patch")
