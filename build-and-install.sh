@@ -309,21 +309,24 @@ fi
 
 if [[ "${publish}" ]]; then
     for module in "${modulesToPublish[@]}"; do
+        case "${version}" in
+            "patch" | "minor" | "major")
+                version=${version}
+            ;;
+
+            *)
+                version=
+            ;;
+        esac
+
         cd ${module}
-            case "${version}" in
-                "patch")
-                    npm version patch
-                ;;
+            if [[ "${version}" ]]; then
+                logInfo "updating module: ${module} version: ${version}"
+                npm version ${version}
+                # throw an error if fails
+            fi
 
-                "minor")
-                    npm version minor
-                ;;
-
-                "major")
-                    npm version major
-                ;;
-            esac
-
+            logInfo "publishing module: ${module} version: ${version}"
             npm publish
         cd ..
     done
