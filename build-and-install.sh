@@ -254,7 +254,8 @@ function npmLinkModule() {
     if [[ "${1}" == "${projectModule}" ]]; then return; fi
 
     logInfo "Linking module sources: ${2} -> ${1}"
-    logVerbose "`npm link`"
+    npm link
+    throwError "Error linking module: ${1}" $?
 }
 
 function linkDependenciesImpl() {
@@ -268,17 +269,22 @@ function linkDependenciesImpl() {
 
         local moduleName="${modulePackageName[${i}]}"
         logDebug "Linking dependency sources ${module} => ${moduleName}"
-        logVerbose "`npm link ${moduleName}`"
+        npm link ${moduleName}
+        throwError "Error linking dependency sources ${module} => ${moduleName}: " $?
     done
 }
 
 function backupPackageJson() {
     cp package.json _package.json
+    throwError "Error backing up package.json in module: ${1}" $?
 }
 
 function restorePackageJson() {
     rm package.json
+    throwError "Error restoring package.json in module: ${1}" $?
+
     mv _package.json package.json
+    throwError "Error restoring package.json in module: ${1}" $?
 }
 
 function setupModule() {
@@ -310,6 +316,7 @@ function setupModule() {
     logInfo "Installing ${module}"
     logVerbose
     npm install
+    throwError "Error installing module" $?
 
     if [[ "${linkDependencies}" ]]; then
         restorePackageJson
@@ -363,6 +370,8 @@ function mergeFromFork() {
     git fetch public
     git merge public/master
     git stash pop
+    throwError "Need to resolve conflicts...." $?
+
     git submodule update dev-tools
 }
 
@@ -399,18 +408,26 @@ if [[ "${test}" ]]; then
     executeOnModules testModule
 fi
 
-if [[ "${launch}" ]]; then
+if [[ "${launchFunctions}" ]]; then
     cd app-backend
-        node ./dist/index.js
+        node ./dist/index.js &
+    cd ..
+fi
+
+if [[ "${launchHosting}" ]]; then
+    cd app-frontend
+        npm run dev-server &
     cd ..
 fi
 
 if [[ "${deployFunctions}" ]]; then
     firebase deploy --only functions
+    throwError "Error while deploying functions" $?
 fi
 
 if [[ "${deployHosting}" ]]; then
     firebase deploy --only hosting
+    throwError "Error while deploying hosting" $?
 fi
 
 if [[ "${publish}" ]]; then
@@ -429,11 +446,12 @@ if [[ "${publish}" ]]; then
             if [[ "${version}" ]]; then
                 logInfo "updating module: ${module} version: ${version}"
                 npm version ${version}
-                # throw an error if fails
+                throwError "Error promoting version" $?
             fi
 
             logInfo "publishing module: ${module} version: ${version}"
             npm publish
+            throwError "Error publishing module: ${module}" $?
         cd ..
     done
 fi
