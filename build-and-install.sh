@@ -1,76 +1,109 @@
 #!/bin/bash
 
-source ./dev-tools/scripts/_core-tools/_source.sh
+source ./dev-tools/scripts/git/_core.sh
 source ./_modules.sh
 
 enforceBashVersion 4.4
 
-setup=
+debug=
+mergeOriginRepo=
+cloneNuArt=
+
 purge=
 clean=
-debug=
-launch=
+
+setup=
+linkDependencies=
 test=
+build=true
+
+launchFunctions=
+launchHosting=
+
 deployFunctions=
 deployHosting=
-publish=
-version=
-build=true
-linkDependencies=
-cloneNuArt=
-mergeOriginRepo=
 
+version=
+publish=
 
 function printHelp() {
     local pc="${BBlue}"
+    local group="${BCyan}"
     local param="${BPurple}"
     local err="${BRed}"
     local dc="${Green}"
     local dcb="${BGreen}"
     local noColor="${NoColor}"
 
+    logVerbose " ==== ${group}CLEAN:${noColor} ===="
+    logVerbose
     logVerbose "   ${pc}--purge${noColor}"
     logVerbose "        ${dc}Will delete the node_modules folder in all modules${noColor}"
+    logVerbose "        ${dc}Will perform --clean{noColor}"
     logVerbose
-
-    logVerbose "   ${pc}--purge${noColor}"
-    logVerbose "        ${dc}Will delete the node_modules folder in all modules${noColor}"
-    logVerbose
-
-    logVerbose "   ${pc}--unlink${noColor}"
-    logVerbose "        ${dc}Will purge & setup without dependencies${noColor}"
-    logVerbose
-
     logVerbose "   ${pc}--clean${noColor}"
     logVerbose "        ${dc}Will delete the dist folder in all modules${noColor}"
     logVerbose
+    logVerbose
 
+    logVerbose " ==== ${group}BUILD:${noColor} ===="
+    logVerbose
+    logVerbose "   ${pc}--unlink${noColor}"
+    logVerbose "        ${dc}Will purge & setup without dependencies${noColor}"
+    logVerbose
     logVerbose "   ${pc}--setup${noColor}"
     logVerbose "        ${dc}Will link all modules and create link dependencies${noColor}"
     logVerbose
-
     logVerbose "   ${pc}--no-build${noColor}"
     logVerbose "        ${dc}Skip the build${noColor}"
     logVerbose
-
     logVerbose "   ${pc}--test${noColor}"
     logVerbose "        ${dc}Run tests in all modules${noColor}"
     logVerbose
-
-    logVerbose "   ${pc}--no-launch${noColor}"
-    logVerbose "        ${dc}Will not launch${noColor}"
     logVerbose
 
+    logVerbose " ==== ${group}Running:${noColor} ===="
+    logVerbose
+    logVerbose "   ${pc}--launch${noColor}"
+    logVerbose "        ${dc}Will launch both frontend & backend${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--frontend${noColor}"
+    logVerbose "        ${dc}Will launch ONLY frontend${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--backend${noColor}"
+    logVerbose "        ${dc}Will launch ONLY backend${noColor}"
+    logVerbose
+    logVerbose
+
+    logVerbose " ==== ${group}DEPLOY:${noColor} ===="
+    logVerbose
+    logVerbose "   ${pc}--deploy${noColor}"
+    logVerbose "        ${dc}Will deploy both frontend & backend${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--hosting${noColor}"
+    logVerbose "        ${dc}Will launch ONLY frontend${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--server${noColor}"
+    logVerbose "        ${dc}Will launch ONLY backend${noColor}"
+    logVerbose
+    logVerbose
+
+    logVerbose " ==== ${group}PUBLISH:${noColor} ===="
+    logVerbose
+    logVerbose "   ${pc}--version=< ${param}major${noColor} | ${param}minor${noColor} | ${param}patch${noColor} >${noColor}"
+    logVerbose "        ${dc}Promote dependencies version${noColor}"
+    logVerbose
     logVerbose "   ${pc}--publish${noColor}"
     logVerbose "        ${dc}Publish artifacts to npm${noColor}"
     logVerbose
 
-    logVerbose "   ${pc}--version=< ${param}major${noColor} | ${param}minor${noColor} | ${param}patch${noColor} >${noColor}"
-    logVerbose "        ${dc}Publish artifacts to npm${noColor}"
+    logVerbose " ==== ${group}SUPER:${noColor} ===="
     logVerbose
-
-    logVerbose "   ${pc}--dont-link${noColor}"
-    logVerbose "        ${dc}Do not link dependencies from sources, use artifacts from npm${noColor}"
+    logVerbose "   ${pc}--merge-origin"
+    logVerbose "        ${dc}Pull and merge from the forked repo${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--nu-art${noColor}"
+    logVerbose "        ${dc}Add dependencies sources${noColor}"
     logVerbose
 
     exit 0
@@ -79,6 +112,10 @@ function printHelp() {
 function extractParams() {
     for paramValue in "${@}"; do
         case "${paramValue}" in
+            "--help")
+                printHelp
+            ;;
+
             "--debug")
                 debug=true
             ;;
@@ -87,13 +124,26 @@ function extractParams() {
                 mergeOriginRepo=true
             ;;
 
+            "--nu-art")
+                cloneNuArt=true
+            ;;
+
+
+#        ==== CLEAN =====
            "--purge")
                 purge=true
                 clean=true
             ;;
 
-           "--nu-art")
-                cloneNuArt=true
+            "--clean")
+                clean=true
+            ;;
+
+
+#        ==== BUILD =====
+           "--setup")
+                setup=true
+                linkDependencies=true
             ;;
 
            "--unlink")
@@ -101,15 +151,16 @@ function extractParams() {
                 setup=true
             ;;
 
-           "--setup")
-                setup=true
-                linkDependencies=true
+            "--no-build")
+                build=
             ;;
 
-            "--clean")
-                clean=true
+            "--test")
+                test=true
             ;;
 
+
+#        ==== DEPLOY =====
             "--deploy")
                 deployFunctions=true
                 deployHosting=true
@@ -123,19 +174,21 @@ function extractParams() {
                 deployHosting=true
             ;;
 
-            "--deploy")
-                deployFunctions=true
-                deployHosting=true
+#        ==== DEPLOY =====
+            "--launch")
+                launchFunctions=true
+                launchHosting=true
             ;;
 
-            "--no-build")
-                build=
+            "--functions")
+                launchFunctions=true
             ;;
 
-            "--test")
-                test=true
+            "--hosting")
+                launchHosting=true
             ;;
 
+#        ==== PUBLISH =====
             "--no-launch")
                 launch=
             ;;
@@ -148,11 +201,9 @@ function extractParams() {
                 version=`echo "${paramValue}" | sed -E "s/--version=(.*)/\1/"`
             ;;
 
-            "--help")
-                printHelp
-            ;;
+#        ==== LAUNCH =====
 
-            "*")
+            *)
                 logWarning "UNKNOWN PARAM: ${paramValue}";
             ;;
         esac
@@ -301,13 +352,22 @@ function cloneNuArtModules() {
     done
 }
 
-if [[ "${mergeOriginRepo}" ]]; then
+function mergeFromFork() {
+    local repoUrl=`gitGetRepoUrl`
+    logInfo "repoUrl: ${repoUrl}"
+    if [[ "${repoUrl}" == "git@github.com:nu-art-js/typescript-boilerplate.git" ]]; then
+        throwError "HAHAHAHA.... You need to be careful... this is not a fork..."
+    fi
     git stash
     git remote add public git@github.com:nu-art-js/typescript-boilerplate.git
     git fetch public
     git merge public/master
     git stash pop
     git submodule update dev-tools
+}
+
+if [[ "${mergeOriginRepo}" ]]; then
+    mergeFromFork
 fi
 
 if [[ "${cloneNuArt}" ]]; then
