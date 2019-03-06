@@ -9,7 +9,7 @@ class ServerApi_EndpointExample
 		super(HttpMethod.GET, "endpoint-example");
 	}
 
-	protected process(req: express.Request, res: ApiResponse, response: any, body: string): void {
+	protected async process(req: express.Request, res: ApiResponse, response: any, body: string) {
 		res.text(200, "response data");
 	}
 }

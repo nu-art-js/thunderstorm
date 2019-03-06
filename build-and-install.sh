@@ -11,12 +11,15 @@ clean=
 debug=
 launch=
 test=
-deploy=
+deployFunctions=
+deployHosting=
 publish=
 version=
 build=true
 linkDependencies=
 cloneNuArt=
+mergeOriginRepo=
+
 
 function printHelp() {
     local pc="${BBlue}"
@@ -29,33 +32,47 @@ function printHelp() {
     logVerbose "   ${pc}--purge${noColor}"
     logVerbose "        ${dc}Will delete the node_modules folder in all modules${noColor}"
     logVerbose
+
+    logVerbose "   ${pc}--purge${noColor}"
+    logVerbose "        ${dc}Will delete the node_modules folder in all modules${noColor}"
+    logVerbose
+
     logVerbose "   ${pc}--unlink${noColor}"
     logVerbose "        ${dc}Will purge & setup without dependencies${noColor}"
     logVerbose
+
     logVerbose "   ${pc}--clean${noColor}"
     logVerbose "        ${dc}Will delete the dist folder in all modules${noColor}"
     logVerbose
+
     logVerbose "   ${pc}--setup${noColor}"
     logVerbose "        ${dc}Will link all modules and create link dependencies${noColor}"
     logVerbose
+
     logVerbose "   ${pc}--no-build${noColor}"
     logVerbose "        ${dc}Skip the build${noColor}"
     logVerbose
+
     logVerbose "   ${pc}--test${noColor}"
     logVerbose "        ${dc}Run tests in all modules${noColor}"
     logVerbose
+
     logVerbose "   ${pc}--no-launch${noColor}"
     logVerbose "        ${dc}Will not launch${noColor}"
     logVerbose
+
     logVerbose "   ${pc}--publish${noColor}"
     logVerbose "        ${dc}Publish artifacts to npm${noColor}"
     logVerbose
+
     logVerbose "   ${pc}--version=< ${param}major${noColor} | ${param}minor${noColor} | ${param}patch${noColor} >${noColor}"
     logVerbose "        ${dc}Publish artifacts to npm${noColor}"
     logVerbose
+
     logVerbose "   ${pc}--dont-link${noColor}"
     logVerbose "        ${dc}Do not link dependencies from sources, use artifacts from npm${noColor}"
     logVerbose
+
     exit 0
 }
 
@@ -64,6 +81,10 @@ function extractParams() {
         case "${paramValue}" in
             "--debug")
                 debug=true
+            ;;
+
+            "--merge-origin")
+                mergeOriginRepo=true
             ;;
 
            "--purge")
@@ -90,7 +111,21 @@ function extractParams() {
             ;;
 
             "--deploy")
-                deploy=true
+                deployFunctions=true
+                deployHosting=true
+            ;;
+
+            "--functions")
+                deployFunctions=true
+            ;;
+
+            "--hosting")
+                deployHosting=true
+            ;;
+
+            "--deploy")
+                deployFunctions=true
+                deployHosting=true
             ;;
 
             "--no-build")
@@ -131,7 +166,7 @@ extractParams "$@"
 modulePackageName=()
 moduleVersion=()
 
-params=(setup purge clean launch test deploy publish version build linkDependencies cloneNuArt)
+params=(setup purge clean launch test deployFunctions deployHosting publish version build linkDependencies cloneNuArt mergeOriginRepo)
 printDebugParams ${debug} "${params[@]}"
 
 function mapExistingLibraries() {
@@ -266,6 +301,15 @@ function cloneNuArtModules() {
     done
 }
 
+if [[ "${mergeOriginRepo}" ]]; then
+    git stash
+    git remote add public git@github.com:nu-art-js/typescript-boilerplate.git
+    git fetch public
+    git merge public/master
+    git stash pop
+    git submodule update dev-tools
+fi
+
 if [[ "${cloneNuArt}" ]]; then
     cloneNuArtModules
 fi
@@ -301,10 +345,12 @@ if [[ "${launch}" ]]; then
     cd ..
 fi
 
-if [[ "${deploy}" ]]; then
-    cd app-backend
-        firebase deploy --only functions
-    cd ..
+if [[ "${deployFunctions}" ]]; then
+    firebase deploy --only functions
+fi
+
+if [[ "${deployHosting}" ]]; then
+    firebase deploy --only hosting
 fi
 
 if [[ "${publish}" ]]; then
