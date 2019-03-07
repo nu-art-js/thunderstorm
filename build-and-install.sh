@@ -62,7 +62,7 @@ function printHelp() {
     logVerbose
     logVerbose
 
-    logVerbose " ==== ${group}Running:${noColor} ===="
+    logVerbose " ==== ${group}LAUNCH:${noColor} ===="
     logVerbose
     logVerbose "   ${pc}--launch${noColor}"
     logVerbose "        ${dc}Will launch both frontend & backend${noColor}"
@@ -166,7 +166,7 @@ function extractParams() {
                 deployHosting=true
             ;;
 
-            "--functions")
+            "--server")
                 deployFunctions=true
             ;;
 
@@ -174,17 +174,17 @@ function extractParams() {
                 deployHosting=true
             ;;
 
-#        ==== DEPLOY =====
+#        ==== LAUNCH =====
             "--launch")
                 launchFunctions=true
                 launchHosting=true
             ;;
 
-            "--functions")
+            "--backend")
                 launchFunctions=true
             ;;
 
-            "--hosting")
+            "--frontend")
                 launchHosting=true
             ;;
 
@@ -416,7 +416,7 @@ fi
 
 if [[ "${launchHosting}" ]]; then
     cd app-frontend
-        npm run dev-server &
+        npm run dev-test &
     cd ..
 fi
 
