@@ -251,7 +251,9 @@ function testModule() {
 
 function npmLinkModule() {
     logVerbose
-    if [[ "${1}" == "${projectModule}" ]]; then return; fi
+    if [[ `contains ${1} "${projectModules[@]}"` ]]; then
+        return
+    fi
 
     logInfo "Linking module sources: ${2} -> ${1}"
     npm link
@@ -266,6 +268,11 @@ function linkDependenciesImpl() {
     local i
     for (( i=0; i<${#modules[@]}; i+=1 )); do
         if [[ "${module}" == "${modules[${i}]}" ]];then break; fi
+
+        if [[ `contains "${modules[${i}]}" "${projectModules[@]}"` ]]; then
+            return
+        fi
+
 
         local moduleName="${modulePackageName[${i}]}"
         logDebug "Linking dependency sources ${module} => ${moduleName}"
