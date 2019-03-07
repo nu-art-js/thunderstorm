@@ -385,15 +385,15 @@ function cloneNuArtModules() {
 
 function mergeFromFork() {
     local repoUrl=`gitGetRepoUrl`
-    logInfo "repoUrl: ${repoUrl}"
     if [[ "${repoUrl}" == "git@github.com:nu-art-js/typescript-boilerplate.git" ]]; then
         throwError "HAHAHAHA.... You need to be careful... this is not a fork..."
     fi
-    git stash
+
+    logInfo "Making sure repo is clean..."
+    gitAssertRepoClean
     git remote add public git@github.com:nu-art-js/typescript-boilerplate.git
     git fetch public
     git merge public/master
-    git stash pop
     throwError "Need to resolve conflicts...." $?
 
     git submodule update dev-tools
