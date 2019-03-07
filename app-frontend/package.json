@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev-test": "webpack-dev-server --open --mode development --env dev",
     "dev-ssl": "webpack-dev-server --open --mode development --env dev --ssl true",
-    "dev": "webpack --mode development --env dev",
+    "dev": "webpack-dev-server --open --mode development --env dev",
+    "build": "webpack --mode development --env dev",
     "prod": "webpack --mode production --env prod"
   },
   "keywords": [],

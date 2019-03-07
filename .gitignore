@@ -1,8 +1,6 @@
-build
-/node_modules
-dist
 env
 .idea
 *.iml
-nu-art-core*
-nu-art-server*
+nu-art-core
+nu-art-server
+firebase-debug.log

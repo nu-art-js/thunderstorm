@@ -9,7 +9,7 @@
   },
   "firebase": {
     "admin": {
-      "pathToCredsFile": "../_config/dev-server-key.json",
+      "pathToKeyFile": "../_config/dev-server-key.json",
       "databaseURL": "https://test-fcm-fdcdc.firebaseio.com"
     }
   }

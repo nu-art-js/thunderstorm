@@ -17,11 +17,11 @@ linkDependencies=
 test=
 build=true
 
-launchFunctions=
-launchHosting=
+launchBackend=
+launchFrontend=
 
-deployFunctions=
-deployHosting=
+deployBackend=
+deployFrontend=
 
 version=
 publish=
@@ -67,10 +67,10 @@ function printHelp() {
     logVerbose "   ${pc}--launch${noColor}"
     logVerbose "        ${dc}Will launch both frontend & backend${noColor}"
     logVerbose
-    logVerbose "   ${pc}--frontend${noColor}"
+    logVerbose "   ${pc}--launch-frontend${noColor}"
     logVerbose "        ${dc}Will launch ONLY frontend${noColor}"
     logVerbose
-    logVerbose "   ${pc}--backend${noColor}"
+    logVerbose "   ${pc}--launch-backend${noColor}"
     logVerbose "        ${dc}Will launch ONLY backend${noColor}"
     logVerbose
     logVerbose
@@ -80,11 +80,11 @@ function printHelp() {
     logVerbose "   ${pc}--deploy${noColor}"
     logVerbose "        ${dc}Will deploy both frontend & backend${noColor}"
     logVerbose
-    logVerbose "   ${pc}--hosting${noColor}"
-    logVerbose "        ${dc}Will launch ONLY frontend${noColor}"
+    logVerbose "   ${pc}--deploy-frontend${noColor}"
+    logVerbose "        ${dc}Will deploy ONLY frontend${noColor}"
     logVerbose
-    logVerbose "   ${pc}--server${noColor}"
-    logVerbose "        ${dc}Will launch ONLY backend${noColor}"
+    logVerbose "   ${pc}--deploy-backend${noColor}"
+    logVerbose "        ${dc}Will deploy ONLY backend${noColor}"
     logVerbose
     logVerbose
 
@@ -141,64 +141,64 @@ function extractParams() {
 
 
 #        ==== BUILD =====
-           "--setup")
+           "--setup" | "-s")
                 setup=true
                 linkDependencies=true
             ;;
 
-           "--unlink")
+           "--unlink" | "-u")
                 purge=true
                 setup=true
             ;;
 
-            "--no-build")
+            "--no-build" | "-nb")
                 build=
             ;;
 
-            "--test")
+            "--test" | "-t")
                 test=true
             ;;
 
 
 #        ==== DEPLOY =====
-            "--deploy")
-                deployFunctions=true
-                deployHosting=true
+            "--deploy" | "-d")
+                deployBackend=true
+                deployFrontend=true
             ;;
 
-            "--server")
-                deployFunctions=true
+            "--deploy-backend" | "-db")
+                deployBackend=true
             ;;
 
-            "--hosting")
-                deployHosting=true
+            "--deploy-frontend" | "-df")
+                deployFrontend=true
             ;;
 
 #        ==== LAUNCH =====
-            "--launch")
-                launchFunctions=true
-                launchHosting=true
+            "--launch" | "-l")
+                launchBackend=true
+                launchFrontend=true
             ;;
 
-            "--backend")
-                launchFunctions=true
+            "--launch-backend" | "-lb")
+                launchBackend=true
             ;;
 
-            "--frontend")
-                launchHosting=true
+            "--launch-frontend" | "-lf")
+                launchFrontend=true
             ;;
 
 #        ==== PUBLISH =====
-            "--no-launch")
-                launch=
-            ;;
-
-            "--publish")
+            "--publish" | "-p")
                 publish=true
             ;;
 
             "--version="*)
                 version=`echo "${paramValue}" | sed -E "s/--version=(.*)/\1/"`
+            ;;
+
+            "-v="*)
+                version=`echo "${paramValue}" | sed -E "s/-v=(.*)/\1/"`
             ;;
 
 #        ==== LAUNCH =====
@@ -239,6 +239,14 @@ function cleanModule() {
 }
 
 function buildModule() {
+    if [[ ! "${deployBackend}" ]] && [[ ! "${launchBackend}" ]] && [[ "${1}" == "${backendModule}" ]]; then
+        return
+    fi
+
+    if [[ ! "${deployFrontend}" ]] && [[ ! "${launchFrontend}" ]] && [[ "${1}" == "${frontendModule}" ]]; then
+        return
+    fi
+
     logVerbose
     logInfo "Building module: ${1}"
     logVerbose
@@ -415,30 +423,38 @@ if [[ "${test}" ]]; then
     executeOnModules testModule
 fi
 
-if [[ "${launchFunctions}" ]]; then
+if [[ "${launchBackend}" ]]; then
     cd app-backend
-        node ./dist/index.js &
+        if [[ "${launchFrontend}" ]]; then
+            node ./dist/index.js &
+        else
+            node ./dist/index.js
+        fi
     cd ..
 fi
 
-if [[ "${launchHosting}" ]]; then
+if [[ "${launchFrontend}" ]]; then
     cd app-frontend
-        npm run dev-test &
+        if [[ "${launchBackend}" ]]; then
+            npm run dev &
+        else
+            npm run dev
+        fi
     cd ..
 fi
 
-if [[ "${deployFunctions}" ]]; then
+if [[ "${deployBackend}" ]]; then
     firebase deploy --only functions
     throwError "Error while deploying functions" $?
 fi
 
-if [[ "${deployHosting}" ]]; then
+if [[ "${deployFrontend}" ]]; then
     firebase deploy --only hosting
     throwError "Error while deploying hosting" $?
 fi
 
 if [[ "${publish}" ]]; then
-    for module in "${modulesToPublish[@]}"; do
+    for module in "${nuArtModules[@]}"; do
         case "${version}" in
             "patch" | "minor" | "major")
                 version=${version}
