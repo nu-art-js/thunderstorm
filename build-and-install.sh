@@ -17,6 +17,7 @@ linkDependencies=
 test=
 build=true
 
+serveBackend=
 launchBackend=
 launchFrontend=
 
@@ -25,6 +26,11 @@ deployFrontend=
 
 version=
 publish=
+
+modulePackageName=()
+moduleVersion=()
+
+params=(mergeOriginRepo cloneNuArt purge clean setup linkDependencies test build serveBackend launchBackend launchFrontend deployBackend deployFrontend version publish)
 
 function printHelp() {
     local pc="${BBlue}"
@@ -72,6 +78,9 @@ function printHelp() {
     logVerbose
     logVerbose "   ${pc}--launch-backend${noColor}"
     logVerbose "        ${dc}Will launch ONLY backend${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--serve-backend${noColor}"
+    logVerbose "        ${dc}Will serve ONLY backend${noColor}"
     logVerbose
     logVerbose
 
@@ -180,6 +189,10 @@ function extractParams() {
                 launchFrontend=true
             ;;
 
+            "--serve-backend" | "-sb")
+                serveBackend=true
+            ;;
+
             "--launch-backend" | "-lb")
                 launchBackend=true
             ;;
@@ -210,15 +223,11 @@ function extractParams() {
     done
 }
 
-signature
-printCommand "$@"
-extractParams "$@"
-
-modulePackageName=()
-moduleVersion=()
-
-params=(setup purge clean launch test deployFunctions deployHosting publish version build linkDependencies cloneNuArt mergeOriginRepo)
-printDebugParams ${debug} "${params[@]}"
+#################
+#               #
+#  DECLARATION  #
+#               #
+#################
 
 function mapExistingLibraries() {
     _modules=()
@@ -239,7 +248,7 @@ function cleanModule() {
 }
 
 function buildModule() {
-    if [[ ! "${deployBackend}" ]] && [[ ! "${launchBackend}" ]] && [[ "${1}" == "${backendModule}" ]]; then
+    if [[ ! "${deployBackend}" ]] && [[ ! "${launchBackend}" ]] && [[ ! "${serveBackend}" ]] && [[ "${1}" == "${backendModule}" ]]; then
         return
     fi
 
@@ -390,6 +399,51 @@ function mergeFromFork() {
     git submodule update dev-tools
 }
 
+function publishNuArt() {
+    for module in "${nuArtModules[@]}"; do
+        logInfo "publishing module: ${module} version: ${version}"
+        npm publish
+        throwError "Error publishing module: ${module}" $?
+    done
+}
+
+function promoteNuArt() {
+    for module in "${nuArtModules[@]}"; do
+        case "${version}" in
+            "patch" | "minor" | "major")
+                version=${version}
+            ;;
+
+            *)
+                version=
+            ;;
+        esac
+
+        cd ${module}
+            if [[ "${version}" ]]; then
+                logInfo "updating module: ${module} version: ${version}"
+                npm version ${version}
+                throwError "Error promoting version" $?
+            fi
+
+        cd ..
+    done
+
+    executeOnModules mapModules
+    executeOnModules printModules
+}
+
+#################
+#               #
+#   EXECUTION   #
+#               #
+#################
+
+signature
+printCommand "$@"
+extractParams "$@"
+printDebugParams ${debug} "${params[@]}"
+
 if [[ "${mergeOriginRepo}" ]]; then
     mergeFromFork
 fi
@@ -433,6 +487,12 @@ if [[ "${launchBackend}" ]]; then
     cd ..
 fi
 
+if [[ "${serveBackend}" ]]; then
+    cd app-backend
+        npm run serve
+    cd ..
+fi
+
 if [[ "${launchFrontend}" ]]; then
     cd app-frontend
         if [[ "${launchBackend}" ]]; then
@@ -453,29 +513,12 @@ if [[ "${deployFrontend}" ]]; then
     throwError "Error while deploying hosting" $?
 fi
 
+
+if [[ "${version}" ]]; then
+    promoteNuArt
+fi
+
 if [[ "${publish}" ]]; then
-    for module in "${nuArtModules[@]}"; do
-        case "${version}" in
-            "patch" | "minor" | "major")
-                version=${version}
-            ;;
-
-            *)
-                version=
-            ;;
-        esac
-
-        cd ${module}
-            if [[ "${version}" ]]; then
-                logInfo "updating module: ${module} version: ${version}"
-                npm version ${version}
-                throwError "Error promoting version" $?
-            fi
-
-            logInfo "publishing module: ${module} version: ${version}"
-            npm publish
-            throwError "Error publishing module: ${module}" $?
-        cd ..
-    done
+    publishNuArt
 fi
 
