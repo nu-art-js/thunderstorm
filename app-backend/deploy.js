@@ -39,7 +39,7 @@ const folderExists = (dest) => {
 };
 
 makeDir("./dist/config")
-	.then(copyFiles("./src/config/dev.json", "./dist/config/dev.json"))
+	.then(copyFiles("./src/config/config-dev.ts", "./dist/config/config-dev.ts"))
 	.then(() => {
 		console.log("Copied config successfully");
 	})

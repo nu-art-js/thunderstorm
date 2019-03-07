@@ -4,7 +4,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "serve": "npm run build && firebase serve --only functions",
-    "build": "rm -rf dist && tsc && node deploy.js",
+    "build": "rm -rf dist && tsc",
     "launch": "node dist",
     "prod": "tsc & node dist",
     "dev": "tsc --watch & nodemon dist",
