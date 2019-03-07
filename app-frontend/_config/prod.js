@@ -20,7 +20,7 @@ class ProdConfig
 	}
 
 	resolveGtmScript() {
-		return WebpackEnvConfig._resolveGtmScript("GTM-NXVHQ9H")
+		return WebpackEnvConfig._resolveGtmScript("GTM-PROD")
 	}
 
 	htmlMinificationOptions() {

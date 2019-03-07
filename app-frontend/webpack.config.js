@@ -13,7 +13,7 @@ module.exports = (env, argv) => {
 	console.log("env: " + env);
 	console.log("argv: " + JSON.stringify(argv));
 	console.log("argv.mode: " + argv.mode);
-	const outputFolder = path.resolve(__dirname, `build/${envConfig.outputFolder()}`);
+	const outputFolder = path.resolve(__dirname, `dist/${envConfig.outputFolder()}`);
 
 	return {
 		entry: {

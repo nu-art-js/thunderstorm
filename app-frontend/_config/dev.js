@@ -21,7 +21,7 @@ class DevConfig
 	}
 
 	resolveGtmScript() {
-		return WebpackEnvConfig._resolveGtmScript("GTM-PVDSB78")
+		return WebpackEnvConfig._resolveGtmScript("GTM-DEV")
 	}
 
 	htmlMinificationOptions() {
