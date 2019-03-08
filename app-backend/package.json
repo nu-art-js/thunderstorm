@@ -15,10 +15,10 @@
     "node": "8"
   },
   "dependencies": {
-    "firebase-admin": "~7.0.0",
-    "firebase-functions": "^2.2.0",
     "@nu-art/core": "^0.1.8",
     "@nu-art/server": "^0.1.8",
+    "firebase-admin": "~7.0.0",
+    "firebase-functions": "^2.2.0",
     "body-parser": "^1.18.3",
     "debug": "^3.1.0",
     "express": "^4.16.3",
