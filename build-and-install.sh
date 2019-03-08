@@ -247,12 +247,30 @@ function cleanModule() {
     rm -rf dist
 }
 
-function buildModule() {
-    if [[ ! "${deployBackend}" ]] && [[ ! "${launchBackend}" ]] && [[ ! "${serveBackend}" ]] && [[ "${1}" == "${backendModule}" ]]; then
+function usingBackend() {
+    if [[ ! "${deployBackend}" ]] && [[ ! "${launchBackend}" ]] && [[ ! "${serveBackend}" ]]; then
+        echo
         return
     fi
 
-    if [[ ! "${deployFrontend}" ]] && [[ ! "${launchFrontend}" ]] && [[ "${1}" == "${frontendModule}" ]]; then
+    echo true
+}
+
+function usingFrontend() {
+    if [[ ! "${deployFrontend}" ]] && [[ ! "${launchFrontend}" ]]; then
+        echo
+        return
+    fi
+
+    echo true
+}
+
+function buildModule() {
+    if [[ `usingFrontend` ]] && [[ ! `usingBackend` ]] && [[ "${1}" == "${backendModule}" ]]; then
+        return
+    fi
+
+    if [[ `usingBackend` ]] && [[ ! `usingFrontend` ]] && [[ "${1}" == "${frontendModule}" ]]; then
         return
     fi
 
@@ -401,9 +419,11 @@ function mergeFromFork() {
 
 function publishNuArt() {
     for module in "${nuArtModules[@]}"; do
-        logInfo "publishing module: ${module} version: ${version}"
-        npm publish
-        throwError "Error publishing module: ${module}" $?
+        cd ${module}
+            logInfo "publishing module: ${module}"
+            npm publish
+            throwError "Error publishing module: ${module}" $?
+        cd ..
     done
 }
 
@@ -425,7 +445,6 @@ function promoteNuArt() {
                 npm version ${version}
                 throwError "Error promoting version" $?
             fi
-
         cd ..
     done
 
@@ -521,4 +540,3 @@ fi
 if [[ "${publish}" ]]; then
     publishNuArt
 fi
-
