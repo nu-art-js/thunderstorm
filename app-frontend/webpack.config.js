@@ -17,7 +17,7 @@ module.exports = (env, argv) => {
 
 	return {
 		entry: {
-			main: './src/main/index.js',
+			main: './src/main/index.tsx',
 		},
 		output: {
 			path: outputFolder,
@@ -30,9 +30,17 @@ module.exports = (env, argv) => {
 			https: !argv.ssl ? undefined : envConfig.getDevServerSSL(),
 			port: envConfig.getServerPort(),
 		},
+
+		resolve: {
+			extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
+		},
+
 		module: {
 			rules: [
-				{test: /\.tsx?$/, loader: "awesome-typescript-loader"},
+				{
+					test: /\.tsx?$/,
+					loader: 'awesome-typescript-loader'
+				},
 				{enforce: "pre", test: /\.js$/, loader: "source-map-loader"},
 				{
 					test: /\.jsx?$/,

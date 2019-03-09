@@ -1,3 +1,5 @@
 node_modules
 dist
 _package.json
+package-lock.json
+.runtimeconfig.json

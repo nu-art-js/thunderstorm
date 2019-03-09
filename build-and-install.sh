@@ -308,8 +308,12 @@ function linkDependenciesImpl() {
             return
         fi
 
-
         local moduleName="${modulePackageName[${i}]}"
+
+        if [[ ! "`cat package.json | grep ${moduleName}`" ]]; then
+            continue;
+        fi
+
         logDebug "Linking dependency sources ${module} => ${moduleName}"
         npm link ${moduleName}
         throwError "Error linking dependency sources ${module} => ${moduleName}: " $?
