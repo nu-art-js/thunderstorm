@@ -3,14 +3,14 @@
  */
 import {Logger, LogLevel, ModuleManager} from "@nu-art/core";
 import * as React from "react";
-import {LocalizationModule} from './modules/LocalizationModule';
-import {ResourcesModule} from "./modules/ResourcesModule";
-import {StorageModule} from './modules/StorageModule';
-import {BrowserHistoryModule} from "./modules/BrowserHistoryModule";
+import {LocalizationModule} from './modules/Localization/localization-module';
+import {ResourcesModule} from "./modules/resources-module";
+import {StorageModule} from "./modules/storage-module";
+import {BrowserHistoryModule} from "./modules/history-module";
 
 // import EventDispatcher from './EventDispatcher';
 
-class BaseComponent<P, S>
+export class BaseComponent<P, S>
 	extends React.Component<P, S> {
 
 	private static readonly resources: ResourcesModule = ModuleManager.getModule(ResourcesModule);
@@ -79,27 +79,28 @@ class BaseComponent<P, S>
 		return this.localization.getString(key, params);
 	}
 
-	componentWillUnmount() {
-		EventDispatcher.unregister(this);
-	}
-
-
-	static dispatchEvent(_interface, method, ...args) {
-		EventDispatcher.dispatchEvent(_interface, method, ...args);
-	}
-
-	_implements(_interface) {
-		return this.interfaces.indexOf(_interface) !== -1;
-	}
-
-	setInterfaces(...interfaces) {
-		this.interfaces = interfaces;
-		interfaces.forEach((_interface) => {
-			_interface.validate(this);
-		});
-
-		EventDispatcher.register(this);
-	}
+	//
+	// componentWillUnmount() {
+	// 	EventDispatcher.unregister(this);
+	// }
+	//
+	//
+	// static dispatchEvent(_interface, method, ...args) {
+	// 	EventDispatcher.dispatchEvent(_interface, method, ...args);
+	// }
+	//
+	// _implements(_interface) {
+	// 	return this.interfaces.indexOf(_interface) !== -1;
+	// }
+	//
+	// setInterfaces(...interfaces) {
+	// 	this.interfaces = interfaces;
+	// 	interfaces.forEach((_interface) => {
+	// 		_interface.validate(this);
+	// 	});
+	//
+	// 	EventDispatcher.register(this);
+	// }
 
 
 	toString() {
@@ -107,4 +108,3 @@ class BaseComponent<P, S>
 	}
 }
 
-export default BaseComponent;

@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const WriteFilePlugin = require('write-file-webpack-plugin');
+const sourcePath = path.join(__dirname, './src');
 
 module.exports = (env, argv) => {
 
@@ -16,14 +17,17 @@ module.exports = (env, argv) => {
 	const outputFolder = path.resolve(__dirname, `dist/${envConfig.outputFolder()}`);
 
 	return {
+		context: sourcePath,
 		entry: {
-			main: './src/main/index.tsx',
+			main: './main/index.tsx',
 		},
 		output: {
 			path: outputFolder,
 			filename: '[name].[chunkhash].js',
 			publicPath: '/',
 		},
+		devtool: "source-map",
+
 		devServer: {
 			historyApiFallback: true,
 			compress: true,
@@ -38,8 +42,13 @@ module.exports = (env, argv) => {
 		module: {
 			rules: [
 				{
-					test: /\.tsx?$/,
-					loader: 'awesome-typescript-loader'
+					test: /\.tsx?$/, use: [
+						{
+							loader: 'babel-loader',
+							options: {plugins: ['react-hot-loader/babel']}
+						},
+						'ts-loader'
+					]
 				},
 				{enforce: "pre", test: /\.js$/, loader: "source-map-loader"},
 				{
@@ -117,8 +126,8 @@ module.exports = (env, argv) => {
 			}),
 			new HtmlWebPackPlugin({
 				inject: true,
-				favicon: 'src/main/res/favicon.ico',
-				template: "./src/main/index.ejs",
+				favicon: './main/res/favicon.ico',
+				template: "./main/index.ejs",
 				filename: "./index.html",
 				minify: envConfig.htmlMinificationOptions(),
 				myfiles: {
@@ -127,18 +136,18 @@ module.exports = (env, argv) => {
 				}
 			}),
 			new WebpackMd5Hash(),
-			new CopyWebpackPlugin([
-				{
-					from: "./src/main/scripts/firebase-messaging-sw.js",
-					to: "firebase-messaging-sw.js",
-					toType: 'file'
-				},
-				{
-					from: "./src/main/scripts/manifest.json",
-					to: "scripts/manifest.json",
-					toType: 'file'
-				},
-			], {}),
+			// new CopyWebpackPlugin([
+			// 	{
+			// 		from: "./src/main/scripts/firebase-messaging-sw.js",
+			// 		to: "firebase-messaging-sw.js",
+			// 		toType: 'file'
+			// 	},
+			// 	{
+			// 		from: "./src/main/scripts/manifest.json",
+			// 		to: "scripts/manifest.json",
+			// 		toType: 'file'
+			// 	},
+			// ], {}),
 			envConfig.getPrettifierPlugin(),
 			new WriteFilePlugin(),
 		].filter(plugin => plugin),

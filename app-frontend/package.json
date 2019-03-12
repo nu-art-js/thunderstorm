@@ -13,7 +13,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "qs": "^6.6.0"
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1",
+    "react-router": "^4.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.1.0",
@@ -24,6 +26,8 @@
     "@types/qs": "^6.5.2",
     "@types/react": "^16.8.7",
     "@types/react-dom": "^16.8.2",
+    "@types/node": "^11.11.1",
+    "@types/react-router": "^4.4.5",
     "autoprefixer": "^9.1.5",
     "awesome-typescript-loader": "^5.2.1",
     "babel-loader": "^8.0.3",
@@ -38,15 +42,13 @@
     "img-loader": "^3.0.0",
     "mini-css-extract-plugin": "^0.4.3",
     "node-sass": "^4.9.3",
-    "nu-art--react-core": "file:./react-core",
     "postcss-loader": "^3.0.0",
     "prop-types": "^15.6.2",
+    "qs": "^6.6.0",
     "react": "^16.5.2",
     "react-color": "^2.14.1",
     "react-dom": "^16.5.2",
     "react-hot-loader": "^4.3.11",
-    "react-router": "^4.3.1",
-    "react-router-dom": "^4.3.1",
     "sass-loader": "^7.1.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.0",

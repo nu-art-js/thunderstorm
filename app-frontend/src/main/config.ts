@@ -12,9 +12,8 @@ export const config = {
 	},
 	localization: {
 		defaultLanguage: "en",
-		data: require(`./res/localization/en`),
 
-		languages: {
+		locales: {
 			"en": {
 				label: "Language_English",
 				icon: "languages/en"
@@ -23,6 +22,10 @@ export const config = {
 				label: "Language_Dutch",
 				icon: "languages/nl"
 			}
+		},
+		languages:{
+			"en": require(`./res/localization/en`),
+			"nl": require(`./res/localization/nl`),
 		}
 	},
 	fonts: {

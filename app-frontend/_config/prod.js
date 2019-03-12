@@ -8,6 +8,7 @@ class ProdConfig
 	extends WebpackEnvConfig {
 
 	jsxMinify() {
+		"".format(443,"sfs")
 		return true;
 	}
 
