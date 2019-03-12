@@ -401,6 +401,10 @@ function cloneNuArtModules() {
     for module in "${nuArtModules[@]}"; do
         if [[ ! -e "${module}" ]]; then
             git clone git@github.com:nu-art-js/${module}.git
+        else
+            cd ${module}
+                git pull
+            cd ..
         fi
     done
 }
