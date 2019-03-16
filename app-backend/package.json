@@ -15,8 +15,9 @@
     "node": "8"
   },
   "dependencies": {
-    "@nu-art/core": "^0.1.9",
-    "@nu-art/server": "^0.1.9",
+    "@nu-art/core": "^0.1.16",
+    "@nu-art/server": "^0.1.16",
+    "js-base64": "^2.5.1",
     "firebase-admin": "~7.0.0",
     "firebase-functions": "^2.2.0",
     "body-parser": "^1.18.3",
@@ -31,6 +32,7 @@
     "@types/debug": "^4.1.2",
     "@types/express": "^4.16.1",
     "@types/node": "^11.9.5",
+    "@types/js-base64": "^2.3.1",
     "typescript": "^3.3.3333"
   }
 }

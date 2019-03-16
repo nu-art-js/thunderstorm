@@ -18,7 +18,7 @@
     "react-router": "^4.3.1"
   },
   "devDependencies": {
-    "@nu-art/core": "^0.1.9",
+    "@nu-art/core": "^0.1.16",
     "@babel/core": "^7.1.0",
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-react": "^7.0.0",

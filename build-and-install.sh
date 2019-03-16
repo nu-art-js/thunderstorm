@@ -483,6 +483,10 @@ function promoteNuArt() {
     fi
 
     for module in "${nuArtModules[@]}"; do
+        if [[ ! -e "${module}" ]]; then
+            throwError "In order to promote a version ALL nu-art dependencies MUST be present!!!"
+        fi
+
         cd ${module}
             gitAssertRepoClean
         cd ..
