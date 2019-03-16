@@ -21,16 +21,18 @@ serveBackend=
 launchBackend=
 launchFrontend=
 
+setBackendConfig=
+getBackendConfig=
 deployBackend=
 deployFrontend=
 
 version=
 publish=
 
-modulePackageName=()
-moduleVersion=()
+modulesPackageName=()
+modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt purge clean setup linkDependencies test build serveBackend launchBackend launchFrontend deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt purge clean setup linkDependencies test build serveBackend launchBackend launchFrontend getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
 
 function printHelp() {
     local pc="${BBlue}"
@@ -94,6 +96,12 @@ function printHelp() {
     logVerbose
     logVerbose "   ${pc}--deploy-backend${noColor}"
     logVerbose "        ${dc}Will deploy ONLY backend${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--set-config-backend${noColor}"
+    logVerbose "        ${dc}Will set function backend config${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--get-config-backend${noColor}"
+    logVerbose "        ${dc}Will get function backend config${noColor}"
     logVerbose
     logVerbose
 
@@ -183,6 +191,16 @@ function extractParams() {
                 deployFrontend=true
             ;;
 
+            "--set-config-backend" | "-scb")
+                setBackendConfig=true
+                build=
+            ;;
+
+            "--get-config-backend" | "-gcb")
+                getBackendConfig=true
+                build=
+            ;;
+
 #        ==== LAUNCH =====
             "--launch" | "-l")
                 launchBackend=true
@@ -208,10 +226,15 @@ function extractParams() {
 
             "--version="*)
                 version=`echo "${paramValue}" | sed -E "s/--version=(.*)/\1/"`
+                setup=true
+                linkDependencies=true
             ;;
 
             "-v="*)
                 version=`echo "${paramValue}" | sed -E "s/-v=(.*)/\1/"`
+                setup=true
+                linkDependencies=true
+
             ;;
 
 #        ==== LAUNCH =====
@@ -228,6 +251,12 @@ function extractParams() {
 #  DECLARATION  #
 #               #
 #################
+
+function mapModulesVersions() {
+    modulesPackageName=()
+    modulesVersion=()
+    executeOnModules mapModule
+}
 
 function mapExistingLibraries() {
     _modules=()
@@ -308,15 +337,23 @@ function linkDependenciesImpl() {
             return
         fi
 
-        local moduleName="${modulePackageName[${i}]}"
-
+        local moduleName="${modulesPackageName[${i}]}"
         if [[ ! "`cat package.json | grep ${moduleName}`" ]]; then
             continue;
         fi
 
+        local escapedModuleName=${moduleName/\//\\/}
+        local moduleVersion="${modulesVersion[${i}]}"
+
         logDebug "Linking dependency sources ${module} => ${moduleName}"
         npm link ${moduleName}
-        throwError "Error linking dependency sources ${module} => ${moduleName}: " $?
+        throwError "Error linking dependency" $?
+
+        if [[ ! "${moduleVersion}" ]]; then continue; fi
+
+        logDebug "Updating dependency version to ${moduleName} => ${moduleVersion}"
+        sed -i '' "s/\"${escapedModuleName}\": \".*\"/\"${escapedModuleName}\": \"^${moduleVersion}\"/g" package.json
+        throwError "Error updating version" $?
     done
 }
 
@@ -341,10 +378,10 @@ function setupModule() {
         for (( i=0; i<${#modules[@]}; i+=1 )); do
             if [[ "${module}" == "${modules[${i}]}" ]]; then break; fi
 
-            local moduleName="${modulePackageName[${i}]}"
+            local moduleName="${modulesPackageName[${i}]}"
             local escapedModuleName=${moduleName/\//\\/}
 
-            if [[ "$(uname -v)" =~ "Darwin" ]]; then
+            if [[ `isMacOS` ]]; then
                 sed -i '' "/${escapedModuleName}/d" package.json
             else
                 sed -i "/${escapedModuleName}/d" package.json
@@ -375,8 +412,8 @@ function executeOnModules() {
     local i
     for (( i=0; i<${#modules[@]}; i+=1 )); do
         local module="${modules[${i}]}"
-        local packageName="${modulePackageName[${i}]}"
-        local version="${moduleVersion[${i}]}"
+        local packageName="${modulesPackageName[${i}]}"
+        local version="${modulesVersion[${i}]}"
 
         cd ${module}
             ${toExecute} ${module} ${packageName} ${version}
@@ -384,14 +421,14 @@ function executeOnModules() {
     done
 }
 
-function mapModules() {
+function mapModule() {
     local packageName=`cat package.json | grep '"name":' | head -1 | sed -E "s/.*\"name\".*\"(.*)\",?/\1/"`
     local version=`cat package.json | grep '"version":' | head -1 | sed -E "s/.*\"version\".*\"(.*)\",?/\1/"`
-    modulePackageName+=(${packageName})
-    moduleVersion+=(${version})
+    modulesPackageName+=(${packageName})
+    modulesVersion+=(${version})
 }
 
-function printModules() {
+function printModule() {
     local output=`printf "Found: %-15s %-20s  %s\n" ${1} ${2} v${3}`
     logDebug "${output}"
 }
@@ -425,6 +462,45 @@ function mergeFromFork() {
     git submodule update dev-tools
 }
 
+function promoteNuArt() {
+    local _version=${version}
+    case "${_version}" in
+        "patch" | "minor" | "major")
+            _version=${_version}
+        ;;
+
+        "p")
+            _version="patch"
+        ;;
+
+        *)
+            _version=
+        ;;
+    esac
+
+    if [[ ! "${_version}" ]]; then
+        throwError "Bad version type: ${version}"
+    fi
+
+    for module in "${nuArtModules[@]}"; do
+        cd ${module}
+            gitAssertRepoClean
+        cd ..
+    done
+
+    for module in "${nuArtModules[@]}"; do
+        cd ${module}
+            logInfo "updating module: ${module} version: ${_version}"
+            setupModule ${module}
+            gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "updated dependencies version"
+            npm version ${_version}
+            throwError "Error promoting version" $?
+        cd ..
+
+        mapModulesVersions
+    done
+}
+
 function publishNuArt() {
     for module in "${nuArtModules[@]}"; do
         cd ${module}
@@ -435,30 +511,47 @@ function publishNuArt() {
     done
 }
 
-function promoteNuArt() {
-    for module in "${nuArtModules[@]}"; do
-        case "${version}" in
-            "patch" | "minor" | "major")
-                version=${version}
-            ;;
-
-            *)
-                version=
-            ;;
-        esac
-
-        cd ${module}
-            if [[ "${version}" ]]; then
-                logInfo "updating module: ${module} version: ${version}"
-                npm version ${version}
-                throwError "Error promoting version" $?
-            fi
-        cd ..
-    done
-
-    executeOnModules mapModules
-    executeOnModules printModules
+function getFirebaseConfig() {
+    logInfo "Fetching config for serving function locally..."
+    firebase functions:config:get > .runtimeconfig.json
 }
+
+function updateBackendConfig() {
+    cd ${backendModule}
+        local configAsJson=`cat .config.json`
+        local configAsBase64=
+
+        if [[ `isMacOS` ]]; then
+            configAsBase64=`echo "${configAsJson}" | base64 --break 0`
+            throwError "Error base64 config" $?
+        else
+            configAsBase64=`echo "${configAsJson}" | base64 --wrap=0`
+            throwError "Error base64 config" $?
+        fi
+
+        logInfo "Updating config in firebase..."
+        firebase functions:config:set ${configEntryName}="${configAsBase64}"
+        throwError "Error Updating config as base 64 in firebase..." $?
+
+        getFirebaseConfig
+    cd ..
+    throwError "Error while deploying functions" $?
+}
+
+function fetchBackendConfig() {
+    cd ${backendModule}
+        getFirebaseConfig
+
+        logInfo "Updating config locally..."
+        local configAsBase64=`firebase functions:config:get ${configEntryName}`
+        configAsBase64=${configAsBase64:1:-1}
+        echo ${configAsBase64} > .config64.txt
+        local configEntry=`echo ${configAsBase64} | base64 --decode`
+        echo "${configEntry}" > .config.json
+    cd ..
+    throwError "Error while deploying functions" $?
+}
+
 
 #################
 #               #
@@ -481,8 +574,8 @@ fi
 
 mapExistingLibraries
 
-executeOnModules mapModules
-executeOnModules printModules
+mapModulesVersions
+executeOnModules printModule
 
 if [[ "${purge}" ]]; then
     executeOnModules purgeModule
@@ -505,7 +598,7 @@ if [[ "${test}" ]]; then
 fi
 
 if [[ "${launchBackend}" ]]; then
-    cd app-backend
+    cd ${backendModule}
         if [[ "${launchFrontend}" ]]; then
             node ./dist/index.js &
         else
@@ -515,19 +608,28 @@ if [[ "${launchBackend}" ]]; then
 fi
 
 if [[ "${serveBackend}" ]]; then
-    cd app-backend
+    cd ${backendModule}
+
         npm run serve
     cd ..
 fi
 
 if [[ "${launchFrontend}" ]]; then
-    cd app-frontend
+    cd ${frontendModule}
         if [[ "${launchBackend}" ]]; then
             npm run dev &
         else
             npm run dev
         fi
     cd ..
+fi
+
+if [[ "${setBackendConfig}" ]]; then
+    updateBackendConfig
+fi
+
+if [[ "${getBackendConfig}" ]]; then
+    fetchBackendConfig
 fi
 
 if [[ "${deployBackend}" ]]; then
@@ -547,4 +649,5 @@ fi
 
 if [[ "${publish}" ]]; then
     publishNuArt
+    executeOnModules setupModule
 fi
