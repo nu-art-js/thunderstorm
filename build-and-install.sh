@@ -8,6 +8,7 @@ enforceBashVersion 4.4
 debug=
 mergeOriginRepo=
 cloneNuArt=
+pushNuArtMessage=
 
 purge=
 clean=
@@ -32,7 +33,7 @@ publish=
 modulesPackageName=()
 modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt purge clean setup linkDependencies test build serveBackend launchBackend launchFrontend getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies test build serveBackend launchBackend launchFrontend getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
 
 function printHelp() {
     local pc="${BBlue}"
@@ -126,6 +127,19 @@ function printHelp() {
     exit 0
 }
 
+function signature() {
+    clear
+    logVerbose
+    logVerbose "${Gray} -------        _   __                      ___         __ ${Purple}            ${Gray}   ------- ${NoColor}"
+    logVerbose "${Gray} -------       / | / /_  __                /   |  _____/ /_${Purple}            ${Gray}   ------- ${NoColor}"
+    logVerbose "${Gray} -------      /  |/ / / / /    ______     / /| | / ___/ __/${Purple}    .   __  ${Gray}   ------- ${NoColor}"
+    logVerbose "${Gray} -------     / /|  / /_/ /    /_____/    / ___ |/ /  / /_ ${Purple}    /|  /  \ ${Gray}   ------- ${NoColor}"
+    logVerbose "${Gray} -------    /_/ |_/\__,_/               /_/  |_/_/   \__/ ${Purple} \/  |. \__/ ${Gray}   ------- ${NoColor}"
+    logVerbose "${Gray} -------                                                  ${Purple}             ${Gray}   ------- ${NoColor}"
+    logVerbose
+    sleep 1s
+}
+
 function extractParams() {
     for paramValue in "${@}"; do
         case "${paramValue}" in
@@ -143,6 +157,10 @@ function extractParams() {
 
             "--nu-art")
                 cloneNuArt=true
+            ;;
+
+            "--push="*)
+                pushNuArtMessage=`echo "${paramValue}" | sed -E "s/--push=(.*)/\1/"`
             ;;
 
 
@@ -462,6 +480,20 @@ function mergeFromFork() {
     git submodule update dev-tools
 }
 
+function pushNuArt() {
+    for module in "${nuArtModules[@]}"; do
+        if [[ ! -e "${module}" ]]; then
+            throwError "In order to promote a version ALL nu-art dependencies MUST be present!!!"
+        fi
+    done
+
+    for module in "${nuArtModules[@]}"; do
+        cd ${module}
+            gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "${pushNuArtMessage}"
+        cd ..
+    done
+}
+
 function promoteNuArt() {
     local _version=${version}
     case "${_version}" in
@@ -646,6 +678,9 @@ if [[ "${deployFrontend}" ]]; then
     throwError "Error while deploying hosting" $?
 fi
 
+if [[ "${pushNuArtMessage}" ]]; then
+    pushNuArt
+fi
 
 if [[ "${version}" ]]; then
     promoteNuArt
