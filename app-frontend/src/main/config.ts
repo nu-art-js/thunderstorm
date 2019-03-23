@@ -1,51 +1,31 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-export const config = {
-	backend: {
+module.exports = {
+	HttpModule: {
 		// origin: "http://192.168.1.5:3000",
-		origin: "https://localhost:3000",
+		origin: "http://localhost:3333",
+		timeout: 10000
 	},
 	frontend: {
 		// origin: "http://192.168.1.5:3010",
-		origin: "https://localhost:3010",
+		origin: "http://localhost:5010",
 	},
-	localization: {
-		defaultLanguage: "en",
-
+	LocalizationModule: {
+		defaultLocale: "en",
 		locales: {
 			"en": {
 				label: "Language_English",
-				icon: "languages/en"
+				icon: "languages/en",
 			},
 			"nl": {
 				label: "Language_Dutch",
 				icon: "languages/nl"
 			}
 		},
-		languages:{
+		languages: {
 			"en": require(`./res/localization/en`),
 			"nl": require(`./res/localization/nl`),
 		}
-	},
-	fonts: {
-		defaultFont: "sans-serif",
-		fonts: [
-			{
-				name: "sans-serif",
-			},
-			{
-				name: "serif",
-			},
-			{
-				name: "fantasy",
-			},
-			{
-				name: "cursive",
-			},
-			{
-				name: "monospace",
-			}
-		]
 	}
 };

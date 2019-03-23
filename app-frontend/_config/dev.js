@@ -55,8 +55,8 @@ class DevConfig
 		}
 	}
 
-	getServerPort() {
-		return 4001;
+	getHostingPort() {
+		return 3334;
 	}
 }
 

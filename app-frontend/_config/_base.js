@@ -41,7 +41,7 @@ class WebpackEnvConfig {
 		throw new Error("Abstract method");
 	}
 
-	getServerPort() {
+	getHostingPort() {
 		throw new Error("Abstract method");
 	}
 }

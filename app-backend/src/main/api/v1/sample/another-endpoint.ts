@@ -7,11 +7,11 @@ class ServerApi_EndpointExample
 	extends ServerApi<void> {
 
 	constructor() {
-		super(HttpMethod.GET, "endpoint-example2");
+		super(HttpMethod.GET, "another-endpoint");
 	}
 
 	protected async process(request: express.Request, response: ApiResponse, queryParams: ParsedUrlQuery, body: void) {
-		response.text(200, "response data2");
+		response.text(200, "another endpoint");
 	}
 }
 

@@ -22,6 +22,7 @@ serveBackend=
 launchBackend=
 launchFrontend=
 
+prepareBackendConfig=
 setBackendConfig=
 getBackendConfig=
 deployBackend=
@@ -33,7 +34,7 @@ publish=
 modulesPackageName=()
 modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies test build serveBackend launchBackend launchFrontend getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies test build serveBackend launchBackend launchFrontend prepareBackendConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
 
 function printHelp() {
     local pc="${BBlue}"
@@ -209,7 +210,13 @@ function extractParams() {
                 deployFrontend=true
             ;;
 
+            "--prepare-config-backend" | "-pcb")
+                prepareBackendConfig=true
+                build=
+            ;;
+
             "--set-config-backend" | "-scb")
+                prepareBackendConfig=true
                 setBackendConfig=true
                 build=
             ;;
@@ -552,10 +559,11 @@ function getFirebaseConfig() {
     firebase functions:config:get > .runtimeconfig.json
 }
 
-function updateBackendConfig() {
+function prepareBackendConfig() {
+    logInfo "Preparing config as base64..."
     cd ${backendModule}
         local configAsJson=`cat .config.json`
-        local configAsBase64=
+        configAsBase64=
 
         if [[ `isMacOS` ]]; then
             configAsBase64=`echo "${configAsJson}" | base64 --break 0`
@@ -565,6 +573,17 @@ function updateBackendConfig() {
             throwError "Error base64 config" $?
         fi
 
+        echo "{\"app\": {\"config\":\"${configAsBase64}\"}}" > .runtimeconfig.json
+    cd ..
+    logInfo "Config as base64 ready!"
+}
+
+function updateBackendConfig() {
+    if [[ ! "${configAsBase64}" ]]; then
+        throwError "config was not prepared!!"
+    fi
+
+    cd ${backendModule}
         logInfo "Updating config in firebase..."
         firebase functions:config:set ${configEntryName}="${configAsBase64}"
         throwError "Error Updating config as base 64 in firebase..." $?
@@ -658,6 +677,10 @@ if [[ "${launchFrontend}" ]]; then
             npm run dev
         fi
     cd ..
+fi
+
+if [[ "${prepareBackendConfig}" ]]; then
+    prepareBackendConfig
 fi
 
 if [[ "${setBackendConfig}" ]]; then

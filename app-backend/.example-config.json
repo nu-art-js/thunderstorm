@@ -1,0 +1,11 @@
+{
+  "comment": "while this file may hold sensitive data it is wise not to store it in git!! You can rename this file to .config.json to enable default example behavior",
+  "isDebug": true,
+  "name": "dev",
+  "serverUrl": "https://localhost:3333/",
+  "HttpServer": {
+    "host": "localhost",
+    "port": "3333",
+    "crossDomainHeader": "http://localhost:3334/*"
+  }
+}
