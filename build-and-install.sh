@@ -562,6 +562,12 @@ function getFirebaseConfig() {
 function prepareBackendConfig() {
     logInfo "Preparing config as base64..."
     cd ${backendModule}
+        if [[ -e ".example-config.json" ]] && [[ ! -e ".config.json" ]]; then
+            logInfo "Setting first time .config.json"
+            mv .example-config.json .config.json
+        fi
+
+        logInfo "Preparing config as base64..."
         local configAsJson=`cat .config.json`
         configAsBase64=
 
