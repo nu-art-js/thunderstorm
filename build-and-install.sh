@@ -10,10 +10,14 @@ mergeOriginRepo=
 cloneNuArt=
 pushNuArtMessage=
 
+syncLib=
+syncApp=
+
 purge=
 clean=
 
 setup=
+useFrontendHack=true
 linkDependencies=
 test=
 build=true
@@ -34,7 +38,7 @@ publish=
 modulesPackageName=()
 modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies test build serveBackend launchBackend launchFrontend prepareBackendConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup syncLib syncApp useFrontendHack linkDependencies test build serveBackend launchBackend launchFrontend prepareBackendConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
 
 function printHelp() {
     local pc="${BBlue}"
@@ -66,6 +70,9 @@ function printHelp() {
     logVerbose
     logVerbose "   ${pc}--no-build${noColor}"
     logVerbose "        ${dc}Skip the build${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--no-frontend-hack${noColor}"
+    logVerbose "        ${dc}Do not apply the frontend development hack${noColor}"
     logVerbose
     logVerbose "   ${pc}--test${noColor}"
     logVerbose "        ${dc}Run tests in all modules${noColor}"
@@ -167,6 +174,15 @@ function extractParams() {
                 pushNuArtMessage=`echo "${paramValue}" | sed -E "s/--push=(.*)/\1/"`
             ;;
 
+#        ==== Frontend Hack =====
+            "--sync-lib="*)
+                syncLib=`echo "${paramValue}" | sed -E "s/--sync-lib=(.*)/\1/"`
+            ;;
+
+            "--sync-app="*)
+                syncApp=`echo "${paramValue}" | sed -E "s/--sync-app=(.*)/\1/"`
+            ;;
+
 
 #        ==== CLEAN =====
             "--purge")
@@ -196,6 +212,10 @@ function extractParams() {
 
             "--test" | "-t")
                 test=true
+            ;;
+
+            "--no-frontend-hack" | "-nfh")
+                useFrontendHack=
             ;;
 
 
@@ -351,11 +371,29 @@ function npmLinkModule() {
     throwError "Error linking module: ${1}" $?
 }
 
+function watchForSourcesChanges() {
+    local syncApp=${1}
+    local syncLib=${2}
+
+    logInfo "First Sync..."
+    bash build-and-install.sh --sync-lib=${syncLib} --sync-app=${syncApp}
+
+    logInfo "Watching on: ${syncLib}/src => bash build-and-install.sh --sync-lib=${syncLib} --sync-app=${syncApp}"
+    fswatch -o -0 ${syncLib}/src | xargs -0 -n1 -I{} bash build-and-install.sh --sync-lib=${syncLib} --sync-app=${syncApp}
+}
+
 function linkDependenciesImpl() {
     local module=${1}
+    local pids=()
 
     logVerbose
     logInfo "Linking dependencies sources to: ${module}"
+
+    if [[ "${module}" == "${frontendModule}" ]] && [[ "${useFrontendHack}" ]]; then
+        logDebug "cleaning up a rsync hack for ${module}"
+        killall 9 fswatch
+    fi
+
     local i
     for (( i=0; i<${#modules[@]}; i+=1 )); do
         if [[ "${module}" == "${modules[${i}]}" ]];then break; fi
@@ -364,24 +402,36 @@ function linkDependenciesImpl() {
             return
         fi
 
-        local moduleName="${modulesPackageName[${i}]}"
-        if [[ ! "`cat package.json | grep ${moduleName}`" ]]; then
+        local modulePackageName="${modulesPackageName[${i}]}"
+        if [[ ! "`cat package.json | grep ${modulePackageName}`" ]]; then
             continue;
         fi
 
-        local escapedModuleName=${moduleName/\//\\/}
+        logDebug "Linking dependency sources ${module} => ${modulePackageName}"
+        if [[ "${module}" == "${frontendModule}" ]] && [[ "${useFrontendHack}" ]]; then
+            logDebug "setting up a rsync hack for ${module} => ${modules[${i}]}"
+            cd ..
+                watchForSourcesChanges ${module} ${modules[${i}]} &
+            cd -
+            pid=$!
+            pids+=(${pid})
+        else
+            npm link ${modulePackageName}
+            throwError "Error linking dependency" $?
+        fi
+
         local moduleVersion="${modulesVersion[${i}]}"
-
-        logDebug "Linking dependency sources ${module} => ${moduleName}"
-        npm link ${moduleName}
-        throwError "Error linking dependency" $?
-
         if [[ ! "${moduleVersion}" ]]; then continue; fi
 
-        logDebug "Updating dependency version to ${moduleName} => ${moduleVersion}"
+        logDebug "Updating dependency version to ${modulePackageName} => ${moduleVersion}"
+        local escapedModuleName=${modulePackageName/\//\\/}
         sed -i '' "s/\"${escapedModuleName}\": \".*\"/\"${escapedModuleName}\": \"^${moduleVersion}\"/g" package.json
-        throwError "Error updating version" $?
+        throwError "Error updating version of dependency in package.json" $?
     done
+
+    if [[ "${pids[@]}" ]]; then
+        logInfo "fswatch pids: ${pids[@]}"
+    fi
 }
 
 function backupPackageJson() {
@@ -448,9 +498,18 @@ function executeOnModules() {
     done
 }
 
-function mapModule() {
+function getModulePackageName() {
     local packageName=`cat package.json | grep '"name":' | head -1 | sed -E "s/.*\"name\".*\"(.*)\",?/\1/"`
+    echo "${packageName}"
+}
+
+function getModuleVersion() {
     local version=`cat package.json | grep '"version":' | head -1 | sed -E "s/.*\"version\".*\"(.*)\",?/\1/"`
+    echo "${version}"
+}
+function mapModule() {
+    local packageName=`getModulePackageName`
+    local version=`getModuleVersion`
     modulesPackageName+=(${packageName})
     modulesVersion+=(${version})
 }
@@ -614,17 +673,50 @@ function fetchBackendConfig() {
     throwError "Error while deploying functions" $?
 }
 
+function sync() {
+    local syncLib=${1}
+    local syncApp=${2}
+    logInfo "Syncing lib: ${syncLib} into app: ${syncApp}"
+    cd ${syncLib}
+        local packageName=`getModulePackageName`
+        logInfo "Compiling ${syncLib}..."
+        tsc
+    cd ..
+
+    local targetFolder="./${syncApp}/node_modules/${packageName}"
+    logInfo "Syncing ${syncLib}..."
+    createDir ${targetFolder}
+    rsync -a --exclude 'node_modules' ./${syncLib}/ ${targetFolder}
+    logInfo "${syncLib} is Ready!!"
+}
+
+#################
+#               #
+#    PREPARE    #
+#               #
+#################
+
+# Handle recursive sync execution
+if [[ ! "${1}" =~ "--sync-" ]]; then
+    signature
+    printCommand "$@"
+fi
+
+extractParams "$@"
+
+if [[ "${syncApp}" ]] && [[ "${syncLib}" ]]; then
+    sync ${syncLib} ${syncApp}
+    exit $?
+fi
+
+printDebugParams ${debug} "${params[@]}"
+
 
 #################
 #               #
 #   EXECUTION   #
 #               #
 #################
-
-signature
-printCommand "$@"
-extractParams "$@"
-printDebugParams ${debug} "${params[@]}"
 
 if [[ "${mergeOriginRepo}" ]]; then
     mergeFromFork
@@ -635,7 +727,6 @@ if [[ "${cloneNuArt}" ]]; then
 fi
 
 mapExistingLibraries
-
 mapModulesVersions
 executeOnModules printModule
 
