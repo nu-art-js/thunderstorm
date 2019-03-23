@@ -169,7 +169,7 @@ function extractParams() {
 
 
 #        ==== CLEAN =====
-           "--purge")
+            "--purge")
                 purge=true
                 clean=true
             ;;
@@ -180,12 +180,12 @@ function extractParams() {
 
 
 #        ==== BUILD =====
-           "--setup" | "-s")
+            "--setup" | "-s")
                 setup=true
                 linkDependencies=true
             ;;
 
-           "--unlink" | "-u")
+            "--unlink" | "-u")
                 purge=true
                 setup=true
             ;;
