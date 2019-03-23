@@ -212,7 +212,6 @@ function extractParams() {
 
             "--prepare-config-backend" | "-pcb")
                 prepareBackendConfig=true
-                build=
             ;;
 
             "--set-config-backend" | "-scb")
@@ -560,7 +559,6 @@ function getFirebaseConfig() {
 }
 
 function prepareBackendConfig() {
-    logInfo "Preparing config as base64..."
     cd ${backendModule}
         if [[ -e ".example-config.json" ]] && [[ ! -e ".config.json" ]]; then
             logInfo "Setting first time .config.json"
