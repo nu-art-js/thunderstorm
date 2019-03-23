@@ -20,9 +20,6 @@
     "react": "^16.8.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.0",
-    "@babel/preset-env": "^7.1.0",
-    "@babel/preset-react": "^7.0.0",
     "@nu-art/core": "^0.1.27",
     "@nu-art/fronzy": "^0.1.27",
     "@types/history": "^4.7.2",
@@ -34,7 +31,6 @@
     "@types/react-router-dom": "^4.3.1",
     "autoprefixer": "^9.1.5",
     "awesome-typescript-loader": "^5.2.1",
-    "babel-loader": "^8.0.3",
     "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.2",
     "css-loader": "^1.0.0",
