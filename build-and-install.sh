@@ -99,6 +99,9 @@ function printHelp() {
     logVerbose "   ${pc}--deploy-backend${noColor}"
     logVerbose "        ${dc}Will deploy ONLY backend${noColor}"
     logVerbose
+    logVerbose "   ${pc}--prepare-config-backend${noColor}"
+    logVerbose "        ${dc}Will prepare the .config.json as base64 for local testing${noColor}"
+    logVerbose
     logVerbose "   ${pc}--set-config-backend${noColor}"
     logVerbose "        ${dc}Will set function backend config${noColor}"
     logVerbose
