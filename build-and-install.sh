@@ -603,8 +603,14 @@ function getFirebaseConfig() {
 function prepareBackendConfig() {
     cd ${backendModule}
         if [[ -e ".example-config.json" ]] && [[ ! -e ".config.json" ]]; then
-            logInfo "Setting first time .config.json"
+            logInfo "Setting configuration for the first time... (.config.json)"
             mv .example-config.json .config.json
+            if [[ ! -e ".config-dev.json" ]]; then
+                cp .config.json .config-dev.json
+            fi
+            if [[ ! -e ".config-prod.json" ]]; then
+                cp .config.json .config-prod.json
+            fi
         fi
 
         logInfo "Preparing config as base64..."
@@ -748,8 +754,8 @@ if [[ "${setup}" ]]; then
 
     if [[ "${useFrontendHack}" ]]; then
         logDebug "Applying frontend rsync HACK"
-        syncLibChangesToApp nu-art-core app-frontend
-        syncLibChangesToApp nu-art-fronzy app-frontend
+        syncLibChangesToApp nu-art-core ${frontendModule}
+        syncLibChangesToApp nu-art-fronzy ${frontendModule}
     fi
 fi
 
