@@ -16,14 +16,15 @@
  * limitations under the License.
  */
 
-
-export const config = {
+module.exports = {
 	HttpModule: {
-		origin: "https://my-server-prod-domain.ko",
+		// origin: "http://192.168.1.5:3000",
+		origin: "http://localhost:3333",
 		timeout: 10000
 	},
 	frontend: {
-		origin: "https://my-hosting-prod-domain.ko",
+		// origin: "http://192.168.1.5:3010",
+		origin: "http://localhost:5010",
 	},
 	LocalizationModule: {
 		defaultLocale: "en",

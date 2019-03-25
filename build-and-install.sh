@@ -26,7 +26,8 @@ serveBackend=
 launchBackend=
 launchFrontend=
 
-prepareBackendConfig=
+configType=
+prepareConfig=
 setBackendConfig=
 getBackendConfig=
 deployBackend=
@@ -38,7 +39,7 @@ publish=
 modulesPackageName=()
 modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup lib syncApp useFrontendHack linkDependencies test build serveBackend launchBackend launchFrontend prepareBackendConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup lib syncApp useFrontendHack linkDependencies test build serveBackend launchBackend launchFrontend configType prepareConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
 
 function printHelp() {
     local pc="${BBlue}"
@@ -106,8 +107,11 @@ function printHelp() {
     logVerbose "   ${pc}--deploy-backend${noColor}"
     logVerbose "        ${dc}Will deploy ONLY backend${noColor}"
     logVerbose
-    logVerbose "   ${pc}--prepare-config-backend${noColor}"
-    logVerbose "        ${dc}Will prepare the .config.json as base64 for local testing${noColor}"
+    logVerbose "   ${pc}--prepare-config${noColor}"
+    logVerbose "        ${dc}Will prepare the .config.json as base64 for local usage${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--prepare-config=<${param}configType${pc}>${noColor}"
+    logVerbose "        ${dc}Will set the .config-\${configType}.json as the current .config.json and prepare it as base 64 for local usage${noColor}"
     logVerbose
     logVerbose "   ${pc}--set-config-backend${noColor}"
     logVerbose "        ${dc}Will set function backend config${noColor}"
@@ -233,12 +237,14 @@ function extractParams() {
                 deployFrontend=true
             ;;
 
-            "--prepare-config-backend" | "-pcb")
-                prepareBackendConfig=true
+            "--prepare-config"* | "-pc"*)
+                configType=`echo "${paramValue}" | sed -E "s/(--prepare-config=|-pc=)(.*)/\2/"`
+                prepareConfig=true
             ;;
 
-            "--set-config-backend" | "-scb")
-                prepareBackendConfig=true
+            "--set-config-backend"* | "-scb"*)
+                configType=`echo "${paramValue}" | sed -E "s/(--set-config-backend=|-scb=)(.*)/\2/"`
+                prepareConfig=true
                 setBackendConfig=true
                 build=
             ;;
@@ -600,17 +606,16 @@ function getFirebaseConfig() {
     firebase functions:config:get > .runtimeconfig.json
 }
 
-function prepareBackendConfig() {
+function prepareConfigImpl() {
     cd ${backendModule}
         if [[ -e ".example-config.json" ]] && [[ ! -e ".config.json" ]]; then
-            logInfo "Setting configuration for the first time... (.config.json)"
+            logInfo "Setting first time .config.json"
             mv .example-config.json .config.json
-            if [[ ! -e ".config-dev.json" ]]; then
-                cp .config.json .config-dev.json
-            fi
-            if [[ ! -e ".config-prod.json" ]]; then
-                cp .config.json .config-prod.json
-            fi
+        fi
+
+        if [[ "${configType}" ]] && [[ -e ".config-${configType}.json" ]]; then
+            logInfo "Setting to backend configType: ${configType}"
+            cp -f ".config-${configType}.json" .config.json
         fi
 
         logInfo "Preparing config as base64..."
@@ -626,8 +631,16 @@ function prepareBackendConfig() {
         fi
 
         echo "{\"app\": {\"config\":\"${configAsBase64}\"}}" > .runtimeconfig.json
-    cd ..
-    logInfo "Config as base64 ready!"
+        logInfo "Backend Config is ready as base64!"
+    cd -
+
+    cd ${frontendModule}/src/main
+        if [[ "${configType}" ]] && [[ -e "config-${configType}.ts" ]]; then
+            logInfo "Setting to frontend configType: ${configType}"
+            cp -f "config-${configType}.ts" config.ts
+        fi
+        logInfo "Frontend config is set!"
+    cd -
 }
 
 function updateBackendConfig() {
@@ -753,9 +766,15 @@ if [[ "${setup}" ]]; then
     executeOnModules compileModuleOnChanges
 
     if [[ "${useFrontendHack}" ]]; then
-        logDebug "Applying frontend rsync HACK"
-        syncLibChangesToApp nu-art-core ${frontendModule}
-        syncLibChangesToApp nu-art-fronzy ${frontendModule}
+        if [[ -e "./nu-art-core" ]]; then
+            logDebug "Applying frontend rsync HACK nu-art-core => ${frontendModule}"
+            syncLibChangesToApp nu-art-core ${frontendModule}
+        fi
+
+        if [[ -e "./nu-art-fronzy" ]]; then
+            logDebug "Applying frontend rsync HACK nu-art-fronzy => ${frontendModule}"
+            syncLibChangesToApp nu-art-fronzy ${frontendModule}
+        fi
     fi
 fi
 
@@ -794,8 +813,8 @@ if [[ "${launchFrontend}" ]]; then
     cd ..
 fi
 
-if [[ "${prepareBackendConfig}" ]]; then
-    prepareBackendConfig
+if [[ "${prepareConfig}" ]]; then
+    prepareConfigImpl
 fi
 
 if [[ "${setBackendConfig}" ]]; then
