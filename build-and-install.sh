@@ -26,7 +26,7 @@ serveBackend=
 launchBackend=
 launchFrontend=
 
-configType=
+envType=
 prepareConfig=
 setBackendConfig=
 getBackendConfig=
@@ -39,7 +39,7 @@ publish=
 modulesPackageName=()
 modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup lib syncApp useFrontendHack linkDependencies test build serveBackend launchBackend launchFrontend configType prepareConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup lib syncApp useFrontendHack linkDependencies test build serveBackend launchBackend launchFrontend envType prepareConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
 
 function printHelp() {
     local pc="${BBlue}"
@@ -110,8 +110,8 @@ function printHelp() {
     logVerbose "   ${pc}--prepare-config${noColor}"
     logVerbose "        ${dc}Will prepare the .config.json as base64 for local usage${noColor}"
     logVerbose
-    logVerbose "   ${pc}--prepare-config=<${param}configType${pc}>${noColor}"
-    logVerbose "        ${dc}Will set the .config-\${configType}.json as the current .config.json and prepare it as base 64 for local usage${noColor}"
+    logVerbose "   ${pc}--set-env=<${param}envType${pc}>${noColor}"
+    logVerbose "        ${dc}Will set the .config-\${envType}.json as the current .config.json and prepare it as base 64 for local usage${noColor}"
     logVerbose
     logVerbose "   ${pc}--set-config-backend${noColor}"
     logVerbose "        ${dc}Will set function backend config${noColor}"
@@ -237,13 +237,13 @@ function extractParams() {
                 deployFrontend=true
             ;;
 
-            "--prepare-config"* | "-pc"*)
-                configType=`echo "${paramValue}" | sed -E "s/(--prepare-config=|-pc=)(.*)/\2/"`
+            "--set-env="* | "-se="*)
+                envType=`echo "${paramValue}" | sed -E "s/(--set-env=|-se=)(.*)/\2/"`
                 prepareConfig=true
             ;;
 
             "--set-config-backend"* | "-scb"*)
-                configType=`echo "${paramValue}" | sed -E "s/(--set-config-backend=|-scb=)(.*)/\2/"`
+                envType=`echo "${paramValue}" | sed -E "s/(--set-config-backend=|-scb=)(.*)/\2/"`
                 prepareConfig=true
                 setBackendConfig=true
                 build=
@@ -613,9 +613,9 @@ function prepareConfigImpl() {
             mv .example-config.json .config.json
         fi
 
-        if [[ "${configType}" ]] && [[ -e ".config-${configType}.json" ]]; then
-            logInfo "Setting to backend configType: ${configType}"
-            cp -f ".config-${configType}.json" .config.json
+        if [[ "${envType}" ]] && [[ -e ".config-${envType}.json" ]]; then
+            logInfo "Setting to backend envType: ${envType}"
+            cp -f ".config-${envType}.json" .config.json
         fi
 
         logInfo "Preparing config as base64..."
@@ -635,9 +635,9 @@ function prepareConfigImpl() {
     cd -
 
     cd ${frontendModule}/src/main
-        if [[ "${configType}" ]] && [[ -e "config-${configType}.ts" ]]; then
-            logInfo "Setting to frontend configType: ${configType}"
-            cp -f "config-${configType}.ts" config.ts
+        if [[ "${envType}" ]] && [[ -e "config-${envType}.ts" ]]; then
+            logInfo "Setting to frontend envType: ${envType}"
+            cp -f "config-${envType}.ts" config.ts
         fi
         logInfo "Frontend config is set!"
     cd -
