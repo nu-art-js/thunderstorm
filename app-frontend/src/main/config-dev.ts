@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-module.exports = {
+export const config = {
 	HttpModule: {
 		// origin: "http://192.168.1.5:3000",
 		origin: "http://localhost:3333",
