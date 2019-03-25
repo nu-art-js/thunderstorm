@@ -758,8 +758,20 @@ if [[ "${clean}" ]]; then
     executeOnModules cleanModule
 fi
 
+if [[ "${prepareConfig}" ]]; then
+    prepareConfigImpl
+fi
+
+if [[ "${setBackendConfig}" ]]; then
+    updateBackendConfig
+fi
+
+if [[ "${getBackendConfig}" ]]; then
+    fetchBackendConfig
+fi
+
 if [[ "${setup}" ]]; then
-    logDebug "cleaning up a rsync hack for ${module}"
+    logDebug "Stop all fswatch listeners..."
     killall 9 fswatch
 
     executeOnModules setupModule
@@ -811,18 +823,6 @@ if [[ "${launchFrontend}" ]]; then
             npm run dev
         fi
     cd ..
-fi
-
-if [[ "${prepareConfig}" ]]; then
-    prepareConfigImpl
-fi
-
-if [[ "${setBackendConfig}" ]]; then
-    updateBackendConfig
-fi
-
-if [[ "${getBackendConfig}" ]]; then
-    fetchBackendConfig
 fi
 
 if [[ "${deployBackend}" ]]; then
