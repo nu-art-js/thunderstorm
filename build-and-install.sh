@@ -282,6 +282,7 @@ function extractParams() {
 
 #        ==== PUBLISH =====
             "--publish" | "-p")
+                clean=true
                 publish=true
             ;;
 
