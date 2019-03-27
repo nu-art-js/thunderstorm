@@ -17,6 +17,7 @@ purge=
 clean=
 
 setup=
+listen=
 useFrontendHack=true
 linkDependencies=
 test=
@@ -74,6 +75,9 @@ function printHelp() {
     logVerbose
     logVerbose "   ${pc}--no-frontend-hack${noColor}"
     logVerbose "        ${dc}Do not apply the frontend development hack${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--listen${noColor}"
+    logVerbose "        ${dc}listen and rebuild on changes in modules${noColor}"
     logVerbose
     logVerbose "   ${pc}--test${noColor}"
     logVerbose "        ${dc}Run tests in all modules${noColor}"
@@ -216,6 +220,10 @@ function extractParams() {
 
             "--test" | "-t")
                 test=true
+            ;;
+
+            "--listen" | "-l")
+                listen=true
             ;;
 
             "--no-frontend-hack" | "-nfh")
@@ -395,9 +403,12 @@ function linkDependenciesImpl() {
             continue;
         fi
 
-        logDebug "Linking dependency sources ${module} => ${modulePackageName}"
+        logDebug "Linking dependency sources ${modulePackageName} => ${module}"
         if [[ "${module}" == "${frontendModule}" ]] && [[ "${useFrontendHack}" ]]; then
-            logWarning "cannot link module... need to rsync it"
+            logInfo "Sync ${modules[${i}]} => ${module}"
+            cd ..
+                bash build-and-install.sh --lib=${modules[${i}]} --sync-app=${module}
+            cd -
         else
             npm link ${modulePackageName}
             throwError "Error linking dependency" $?
@@ -672,7 +683,15 @@ function fetchBackendConfig() {
     throwError "Error while deploying functions" $?
 }
 
-function sync() {
+function compileModule() {
+    local compileLib=${1}
+    logInfo "Compiling module: ${compileLib}"
+    cd ${compileLib}
+        tsc
+    cd ..
+}
+
+function syncModule() {
     local compileLib=${1}
     local syncApp=${2}
     cd ${compileLib}
@@ -692,11 +711,6 @@ function sync() {
 function syncLibChangesToApp() {
     local compileLib=${1}
     local syncApp=${2}
-
-    if [[ "${syncApp}" ]]; then
-        logInfo "First Sync..."
-        bash build-and-install.sh --lib=${compileLib} --sync-app=${syncApp}
-    fi
 
     logInfo "Watching on: ${compileLib}/dist => bash build-and-install.sh --lib=${compileLib} --sync-app=${syncApp}"
     fswatch -o -0 ${compileLib}/dist | xargs -0 -n1 -I{} bash build-and-install.sh --lib=${compileLib} --sync-app=${syncApp} &
@@ -725,7 +739,11 @@ fi
 extractParams "$@"
 
 if [[ "${compileLib}" ]]; then
-    sync ${compileLib} ${syncApp}
+    if [[ "${syncApp}" ]]; then
+        syncModule ${compileLib} ${syncApp}
+    else
+        compileModule ${compileLib}
+    fi
     exit $?
 fi
 
@@ -771,23 +789,7 @@ if [[ "${getBackendConfig}" ]]; then
 fi
 
 if [[ "${setup}" ]]; then
-    logDebug "Stop all fswatch listeners..."
-    killall 9 fswatch
-
     executeOnModules setupModule
-    executeOnModules compileModuleOnChanges
-
-    if [[ "${useFrontendHack}" ]]; then
-        if [[ -e "./nu-art-core" ]]; then
-            logDebug "Applying frontend rsync HACK nu-art-core => ${frontendModule}"
-            syncLibChangesToApp nu-art-core ${frontendModule}
-        fi
-
-        if [[ -e "./nu-art-fronzy" ]]; then
-            logDebug "Applying frontend rsync HACK nu-art-fronzy => ${frontendModule}"
-            syncLibChangesToApp nu-art-fronzy ${frontendModule}
-        fi
-    fi
 fi
 
 if [[ "${build}" ]]; then
@@ -847,3 +849,35 @@ if [[ "${publish}" ]]; then
     publishNuArt
     executeOnModules setupModule
 fi
+
+if [[ "${listen}" ]]; then
+    logDebug "Stop all fswatch listeners..."
+    killall 9 fswatch
+    pids=()
+    for module in ${modules[@]}; do
+        if [[ ! -e "./${module}" ]]; then continue; fi
+
+        fswatch -o -0 ${module}/src | xargs -0 -n1 -I{} bash build-and-install.sh --lib=${module} &
+        pids+=($!)
+    done
+
+    executeOnModules compileModuleOnChanges
+    if [[ "${useFrontendHack}" ]]; then
+        if [[ -e "./nu-art-core" ]]; then
+            logDebug "Applying frontend rsync HACK nu-art-core => ${frontendModule}"
+            fswatch -o -0 nu-art-core/dist | xargs -0 -n1 -I{} bash build-and-install.sh --lib=nu-art-core --sync-app=${frontendModule} &
+            pids+=($!)
+        fi
+
+        if [[ -e "./nu-art-fronzy" ]]; then
+            logDebug "Applying frontend rsync HACK nu-art-fronzy => ${frontendModule}"
+            fswatch -o -0 nu-art-fronzy/dist | xargs -0 -n1 -I{} bash build-and-install.sh --lib=nu-art-fronzy --sync-app=${frontendModule} &
+            pids+=($!)
+        fi
+    fi
+
+    for pid in "${pids[@]}"; do
+        wait ${pid}
+    done
+fi
+

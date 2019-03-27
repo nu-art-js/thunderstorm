@@ -18,19 +18,17 @@
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import {ModuleManager, ModuleType} from "@nu-art/core";
+import {Module} from "@nu-art/core";
 import './res/styles/styles.scss';
 import {App} from "./app/App";
 import {AppWrapper, BrowserHistoryModule, Fronzy, HttpModule, LocalizationModule, ResourcesModule, StorageModule} from "@nu-art/fronzy";
 import {config} from "./config";
 
-const modules: ModuleType[] = [HttpModule, LocalizationModule, StorageModule, BrowserHistoryModule, ResourcesModule];
-ModuleManager.getInstance().setConfig(config).setModuleTypes(...modules).init();
-
-const fronzy = new Fronzy();
-fronzy.setMainApp(App);
+const modules: Module<any>[] = [HttpModule, LocalizationModule, StorageModule, BrowserHistoryModule, ResourcesModule];
+Fronzy.setConfig(config).setModules(...modules).init();
+Fronzy.setMainApp(App);
 
 ReactDOM.render(
-	<AppWrapper fronzy={fronzy}/>,
+	<AppWrapper fronzy={Fronzy}/>,
 	document.getElementById('app')
 );

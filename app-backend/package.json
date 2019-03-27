@@ -15,8 +15,8 @@
     "node": "8"
   },
   "dependencies": {
-    "@nu-art/core": "^0.1.27",
-    "@nu-art/server": "^0.1.27",
+    "@nu-art/core": "^0.1.29",
+    "@nu-art/server": "^0.1.29",
     "js-base64": "^2.5.1",
     "firebase-admin": "~7.0.0",
     "firebase-functions": "^2.2.0",

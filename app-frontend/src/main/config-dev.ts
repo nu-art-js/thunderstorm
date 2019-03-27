@@ -26,6 +26,9 @@ export const config = {
 		// origin: "http://192.168.1.5:3010",
 		origin: "http://localhost:5010",
 	},
+	Module_Example: {
+		remoteUrl: "/api/v1/sample/endpoint-example"
+	},
 	LocalizationModule: {
 		defaultLocale: "en",
 		locales: {
