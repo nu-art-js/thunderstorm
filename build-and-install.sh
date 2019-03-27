@@ -678,7 +678,6 @@ function fetchBackendConfig() {
         logInfo "Updating config locally..."
         local configAsBase64=`firebase functions:config:get ${configEntryName}`
         configAsBase64=${configAsBase64:1:-1}
-        echo ${configAsBase64} > .config64.txt
         local configEntry=`echo ${configAsBase64} | base64 --decode`
         echo "${configEntry}" > .config.json
     cd ..
