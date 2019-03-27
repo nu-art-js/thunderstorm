@@ -2,7 +2,8 @@
   "name": "app-fronted",
   "version": "1.0.0",
   "description": "Frontend hello world with Fronzy",
-  "main": "index.tsx",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "dev-ssl": "webpack-dev-server --open --mode development --env dev --ssl true",
     "dev": "webpack-dev-server --open --mode development --env dev",
@@ -29,6 +30,8 @@
     "@types/react-dom": "^16.8.2",
     "@types/react-router": "^4.4.5",
     "@types/react-router-dom": "^4.3.1",
+    "history": "^4.9.0",
+    "tslint": "^5.12.0",
     "autoprefixer": "^9.1.5",
     "awesome-typescript-loader": "^5.2.1",
     "clean-webpack-plugin": "^0.1.19",

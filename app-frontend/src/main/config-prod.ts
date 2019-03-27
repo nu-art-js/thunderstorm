@@ -25,6 +25,9 @@ export const config = {
 	frontend: {
 		origin: "https://my-hosting-prod-domain.ko",
 	},
+	Module_Example: {
+		remoteUrl: "/api/v1/sample/endpoint-example"
+	},
 	LocalizationModule: {
 		defaultLocale: "en",
 		locales: {
