@@ -557,6 +557,8 @@ function pushNuArt() {
             gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "${pushNuArtMessage}"
         cd ..
     done
+
+    gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "built with new dependencies, ${pushNuArtMessage}"
 }
 
 function promoteNuArt() {

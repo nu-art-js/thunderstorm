@@ -27,7 +27,7 @@ export interface OnLabelReceived {
 	onLabelReceived: () => void
 }
 
-class _ExampleModule
+export class ExampleModule_Class
 	extends Module<Config> {
 	private message!: string;
 
@@ -55,4 +55,4 @@ class _ExampleModule
 	}
 }
 
-export const ExampleModule = new _ExampleModule();
+export const ExampleModule = new ExampleModule_Class();
