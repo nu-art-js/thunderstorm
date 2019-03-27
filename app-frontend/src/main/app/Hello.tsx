@@ -18,9 +18,10 @@
 
 import * as React from "react";
 import {ExampleModule, OnLabelReceived} from "./modules/ExampleModule";
+import {BaseComponent} from "@nu-art/fronzy";
 
 export class Hello
-	extends React.Component<{}, { label: string }>
+	extends BaseComponent<{}, { label: string }>
 	implements OnLabelReceived {
 
 	constructor(props: any) {
@@ -30,11 +31,16 @@ export class Hello
 		};
 	}
 
+	static getMessageFromServer() {
+		ExampleModule.getMessageFromServer();
+	}
+
 	render() {
-		return <h1 onClick={ExampleModule.getMessageFromServer}>{this.state.label}</h1>;
+		let onClick = Hello.getMessageFromServer.bind(this);
+		return <h1 onClick={onClick}>{this.state.label}</h1>;
 	}
 
 	onLabelReceived() {
-		this.forceUpdate();
+		this.setState({label: ExampleModule.getMessage()});
 	}
 }
