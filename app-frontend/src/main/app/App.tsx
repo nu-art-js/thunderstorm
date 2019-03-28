@@ -17,7 +17,10 @@
  */
 
 import * as React from 'react';
-import {Route, Switch} from 'react-router';
+import {
+	Route,
+	Switch
+} from 'react-router';
 import {DragEvent} from "react";
 import {Page_Home} from "./pages/Page_Home";
 import {WrapperProps} from "@nu-art/fronzy";

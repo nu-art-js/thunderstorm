@@ -40,7 +40,7 @@ const _urlPrefix: string = !process.env.GCLOUD_PROJECT ? "/api" : "";
 HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/main/api", __dirname + "/main/api");
 HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? "/api" : "");
 HttpServer.startServer()
-	.then(() => {
-		console.log("Started");
-	})
-	.catch(reason => console.error("Error: ", reason));
+          .then(() => {
+	          console.log("Started");
+          })
+          .catch(reason => console.error("Error: ", reason));

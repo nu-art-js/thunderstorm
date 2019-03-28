@@ -16,12 +16,19 @@
  * limitations under the License.
  */
 
-import {ApiResponse, HttpMethod, ServerApi} from "@nu-art/server";
+import {
+	ApiResponse,
+	HttpMethod,
+	ServerApi
+} from "@nu-art/server";
 
 import * as express from "express";
 import {ParsedUrlQuery} from "querystring";
 
-const randomStrings: string[] = ["Hi", "How are you", "Hello World", "Backend example"];
+const randomStrings: string[] = ["Hi",
+                                 "How are you",
+                                 "Hello World",
+                                 "Backend example"];
 
 class ServerApi_EndpointExample
 	extends ServerApi<void> {

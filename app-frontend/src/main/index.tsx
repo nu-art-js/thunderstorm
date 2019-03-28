@@ -22,10 +22,22 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {Module} from "@nu-art/core";
 import {App} from "./app/App";
-import {AppWrapper, BrowserHistoryModule, Fronzy, HttpModule, LocalizationModule, ResourcesModule, StorageModule} from "@nu-art/fronzy";
+import {
+	AppWrapper,
+	BrowserHistoryModule,
+	Fronzy,
+	HttpModule,
+	LocalizationModule,
+	ResourcesModule,
+	StorageModule
+} from "@nu-art/fronzy";
 import {config} from "./config";
 
-const modules: Module<any>[] = [HttpModule, LocalizationModule, StorageModule, BrowserHistoryModule, ResourcesModule];
+const modules: Module<any>[] = [HttpModule,
+                                LocalizationModule,
+                                StorageModule,
+                                BrowserHistoryModule,
+                                ResourcesModule];
 Fronzy.setConfig(config).setModules(...modules).init();
 Fronzy.setMainApp(App);
 

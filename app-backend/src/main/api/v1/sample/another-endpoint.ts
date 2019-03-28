@@ -16,7 +16,11 @@
  * limitations under the License.
  */
 
-import {ApiResponse, HttpMethod, ServerApi} from "@nu-art/server";
+import {
+	ApiResponse,
+	HttpMethod,
+	ServerApi
+} from "@nu-art/server";
 
 import * as express from "express";
 import {ParsedUrlQuery} from "querystring";

@@ -18,7 +18,7 @@
     "@nu-art/core": "^0.1.33",
     "@nu-art/server": "^0.1.33",
     "js-base64": "^2.5.1",
-    "firebase-admin": "~7.0.0",
+    "firebase-admin": "7.1.1",
     "firebase-functions": "^2.2.0",
     "body-parser": "^1.18.3",
     "debug": "^3.1.0",

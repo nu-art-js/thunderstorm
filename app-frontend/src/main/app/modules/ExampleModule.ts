@@ -17,7 +17,11 @@
  */
 
 import {Module} from "@nu-art/core";
-import {Fronzy, HttpMethod, HttpModule} from "@nu-art/fronzy";
+import {
+	Fronzy,
+	HttpMethod,
+	HttpModule
+} from "@nu-art/fronzy";
 
 type Config = {
 	remoteUrl: string

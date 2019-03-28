@@ -21,7 +21,10 @@
  */
 
 import * as functions from 'firebase-functions';
-import {HttpServer, FirebaseModule} from "@nu-art/server";
+import {
+	HttpServer,
+	FirebaseModule
+} from "@nu-art/server";
 import {ModuleManager} from "@nu-art/core";
 import {Base64} from "js-base64";
 import decode = Base64.decode;
@@ -45,10 +48,10 @@ const _urlPrefix: string = !process.env.GCLOUD_PROJECT ? "/api" : "";
 HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/main/api", __dirname + "/main/api");
 HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? "/api" : "");
 HttpServer.startServer()
-	.then(() => {
-		console.log("Started");
-	})
-	.catch((reason: Error) => console.error("Error: ", reason));
+          .then(() => {
+	          console.log("Started");
+          })
+          .catch((reason: Error) => console.error("Error: ", reason));
 
 
 export const api = functions.https.onRequest(HttpServer.express);
