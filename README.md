@@ -126,7 +126,7 @@ capabilities of the script!
 The script was designed and tested MOSTLY on MacOS, so guys with Linux forgive me.. and please ping me with issues so I may fix them!!
 
 If you have found a bug or think there is a feature missing, don't be a stranger.. open a ticket.. 
-I promise I will take it seriously and try to assist in as soon as possible...
+I promise I will take it seriously and try to assist as soon as possible...
 
 Have a good one... :)
 
