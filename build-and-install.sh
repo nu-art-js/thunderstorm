@@ -787,6 +787,7 @@ fi
 
 if [[ "${cloneNuArt}" ]]; then
     cloneNuArtModules
+    bash $0 --setup
 fi
 
 mapExistingLibraries
