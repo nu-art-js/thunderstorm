@@ -574,8 +574,6 @@ function pushNuArt() {
             gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "${pushNuArtMessage}"
         cd ..
     done
-
-    gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "built with new dependencies, ${pushNuArtMessage}"
 }
 
 function promoteNuArt() {
@@ -874,6 +872,10 @@ fi
 if [[ "${publish}" ]]; then
     publishNuArt
     executeOnModules setupModule
+    if [[ "${pushNuArtMessage}" ]]; then
+        gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "built with new dependencies, ${pushNuArtMessage}"
+    fi
+
 fi
 
 if [[ "${listen}" ]]; then
