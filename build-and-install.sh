@@ -117,10 +117,10 @@ function printHelp() {
     logVerbose "   ${pc}--set-env=<${param}envType${pc}>${noColor}"
     logVerbose "        ${dc}Will set the .config-\${envType}.json as the current .config.json and prepare it as base 64 for local usage${noColor}"
     logVerbose
-    logVerbose "   ${pc}--set-config-backend${noColor}"
+    logVerbose "   ${pc}--set-backend-config${noColor}"
     logVerbose "        ${dc}Will set function backend config${noColor}"
     logVerbose
-    logVerbose "   ${pc}--get-config-backend${noColor}"
+    logVerbose "   ${pc}--get-backend-config${noColor}"
     logVerbose "        ${dc}Will get function backend config${noColor}"
     logVerbose
     logVerbose
@@ -250,14 +250,14 @@ function extractParams() {
                 prepareConfig=true
             ;;
 
-            "--set-config-backend"* | "-scb"*)
-                envType=`echo "${paramValue}" | sed -E "s/(--set-config-backend=|-scb=)(.*)/\2/"`
+            "--set-backend-config"* | "-sbc"*)
+                envType=`echo "${paramValue}" | sed -E "s/(--set-backend-config=|-scb=)(.*)/\2/"`
                 prepareConfig=true
                 setBackendConfig=true
                 build=
             ;;
 
-            "--get-config-backend" | "-gcb")
+            "--get-backend-config" | "-gbc")
                 getBackendConfig=true
                 build=
             ;;
@@ -299,7 +299,22 @@ function extractParams() {
 
             ;;
 
-#        ==== LAUNCH =====
+#        ==== ERRORS & DEPRECATION =====
+            "--get-config-backend"*)
+                logWarning "COMMAND IS DEPRECATED... USE --get-backend-config"
+            ;;
+
+            "-gcb")
+                logWarning "COMMAND IS DEPRECATED... USE -gbc"
+            ;;
+
+            "--set-config-backend"*)
+                logWarning "COMMAND IS DEPRECATED... USE --set-backend-config"
+            ;;
+
+            "-scb"*)
+                logWarning "COMMAND IS DEPRECATED... USE -sbc"
+            ;;
 
             *)
                 logWarning "UNKNOWN PARAM: ${paramValue}";
