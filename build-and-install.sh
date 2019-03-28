@@ -332,6 +332,7 @@ function mapExistingLibraries() {
 
 function purgeModule() {
     rm -rf node_modules
+    rm package-lock.json
 }
 
 function cleanModule() {
@@ -624,7 +625,14 @@ function prepareConfigImpl() {
     cd ${backendModule}
         if [[ -e ".example-config.json" ]] && [[ ! -e ".config.json" ]]; then
             logInfo "Setting first time .config.json"
+            if [[ ! -e ".config-dev.json" ]]; then
+                cp .config.json .config-dev.json
+            fi
+            if [[ ! -e ".config-prod.json" ]]; then
+                cp .config.json .config-prod.json
+            fi
             mv .example-config.json .config.json
+
         fi
 
         if [[ "${envType}" ]] && [[ -e ".config-${envType}.json" ]]; then

@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
+import './res/styles/styles.scss';
+
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {Module} from "@nu-art/core";
-import './res/styles/styles.scss';
 import {App} from "./app/App";
 import {AppWrapper, BrowserHistoryModule, Fronzy, HttpModule, LocalizationModule, ResourcesModule, StorageModule} from "@nu-art/fronzy";
 import {config} from "./config";
