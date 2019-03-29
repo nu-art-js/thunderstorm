@@ -4,8 +4,20 @@
   "name": "dev",
   "serverUrl": "https://localhost:3333/",
   "HttpServer": {
+    "cors": {
+      "origins": [
+        "http://localhost:3334"
+      ],
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "headers": [
+        "content-type",
+        "token"
+      ]
+    },
     "host": "localhost",
-    "port": "3333",
-    "crossDomainHeader": "http://localhost:3334/*"
+    "port": "3333"
   }
 }

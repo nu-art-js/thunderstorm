@@ -50,7 +50,7 @@ bash build-and-install.sh --nu-art --set-env=dev --setup --launch-frontend --lau
 ### To fork this repo to your private (or public) repo: 
  * Prepare an empty repo and acquire the repo remote tracking url `(e.g. git@github.com:${username}/${my-project}.git)`
  * Clone this repo locally `git clone --recursive git@github.com:nu-art-js/typescript-boilerplate.git my-project && cd my-project`
- * Then run from within this cloned repo: `bash ./dev-tools/git/git-fork.sh --to=git@github.com:${username}/${my-project}.git --output=../my-project`
+ * Then run from within this cloned repo: `bash ./dev-tools/scripts/git/git-fork.sh --to=git@github.com:${username}/${my-project}.git --output=../my-project`
  * and you are ready to go...
 
 
