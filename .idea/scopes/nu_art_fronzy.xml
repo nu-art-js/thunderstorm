@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="nu-art-fronzy" pattern="file[typescript-boilerplate]:nu-art-fronzy/src//*" />
+</component>

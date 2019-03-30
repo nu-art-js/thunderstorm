@@ -1,0 +1,11 @@
+<component name="CopyrightManager">
+  <settings>
+    <module2copyright>
+      <element module="nu-art-core" copyright="nu-art-core" />
+      <element module="nu-art-server" copyright="nu-art-server" />
+      <element module="nu-art-fronzy" copyright="nu-art-fronzy" />
+      <element module="app-backend" copyright="app-backend" />
+      <element module="app-frontend" copyright="app-frontend" />
+    </module2copyright>
+  </settings>
+</component>

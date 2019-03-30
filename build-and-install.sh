@@ -708,10 +708,11 @@ function fetchBackendConfig() {
 
 function compileModule() {
     local compileLib=${1}
-    logInfo "Compiling module: ${compileLib}"
+    logInfo "${compileLib} - Compiling..."
     cd ${compileLib}
         tsc
     cd ..
+    logInfo "${compileLib} - Compiled!"
 }
 
 function syncModule() {
@@ -724,10 +725,10 @@ function syncModule() {
     logInfo "Syncing lib: ${compileLib} into app: ${syncApp}"
     if [[ "${syncApp}" ]]; then
         local targetFolder="./${syncApp}/node_modules/${packageName}"
-        logInfo "Syncing ${compileLib}..."
+        logInfo "${compileLib} - Syncing..."
         createDir ${targetFolder}
         rsync -a --exclude 'node_modules' ./${compileLib}/ ${targetFolder}
-        logInfo "${compileLib} is Ready!!"
+        logInfo "${compileLib} - Synced!"
     fi
 }
 
@@ -781,6 +782,8 @@ printDebugParams ${debug} "${params[@]}"
 
 if [[ "${mergeOriginRepo}" ]]; then
     mergeFromFork
+    logInfo "Merged from origin boilerplate... DONE"
+    exit 0
 fi
 
 if [[ "${cloneNuArt}" ]]; then

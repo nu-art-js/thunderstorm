@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="app-backend" pattern="file[typescript-boilerplate]:app-backend/src//*" />
+</component>
