@@ -250,7 +250,7 @@ function extractParams() {
                 prepareConfig=true
             ;;
 
-            "--set-backend-config"* | "-sbc"*)
+            "--set-backend-config" | "-sbc")
                 envType=`echo "${paramValue}" | sed -E "s/(--set-backend-config=|-scb=)(.*)/\2/"`
                 prepareConfig=true
                 setBackendConfig=true
