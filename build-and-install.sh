@@ -214,7 +214,6 @@ function extractParams() {
             ;;
 
             "--unlink" | "-u")
-                purge=true
                 setup=true
             ;;
 
@@ -751,9 +750,14 @@ function syncModule() {
     logInfo "Syncing lib: ${compileLib} into app: ${syncApp}"
     if [[ "${syncApp}" ]]; then
         local targetFolder="./${syncApp}/node_modules/${packageName}"
+
+        if [[ -e "${targetFolder}" ]]; then
+            rm -rf "${targetFolder}"
+        fi
+
         logInfo "${compileLib} - Syncing..."
         createDir ${targetFolder}
-        rsync -a --exclude 'node_modules' ./${compileLib}/ ${targetFolder}
+        rsync -a --exclude 'node_modules' --exclude '.git' ./${compileLib}/ ${targetFolder}
         logInfo "${compileLib} - Synced!"
     fi
 }
