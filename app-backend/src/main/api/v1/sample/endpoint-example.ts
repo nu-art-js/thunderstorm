@@ -18,11 +18,11 @@
 
 import {
 	ApiResponse,
+	ServerApi_Get,
 } from "@nu-art/server";
 
 import * as express from "express";
 import {ParsedUrlQuery} from "querystring";
-import {ServerApi_Get} from "@nu-art/server";
 
 const randomStrings: string[] = ["Hi",
                                  "How are you",
