@@ -551,13 +551,13 @@ function cloneNuArtModules() {
 
 function mergeFromFork() {
     local repoUrl=`gitGetRepoUrl`
-    if [[ "${repoUrl}" == "git@github.com:nu-art-js/typescript-boilerplate.git" ]]; then
+    if [[ "${repoUrl}" == "${boilerplateRepo}" ]]; then
         throwError "HAHAHAHA.... You need to be careful... this is not a fork..."
     fi
 
     logInfo "Making sure repo is clean..."
     gitAssertRepoClean
-    git remote add public git@github.com:nu-art-js/typescript-boilerplate.git
+    git remote add public ${boilerplateRepo}
     git fetch public
     git merge public/master
     throwError "Need to resolve conflicts...." $?
@@ -904,6 +904,7 @@ if [[ "${pushNuArtMessage}" ]]; then
 fi
 
 if [[ "${promoteNuArtVersion}" ]]; then
+    gitAssertOrigin "${boilerplateRepo}"
     promoteNuArt
 fi
 
@@ -912,6 +913,7 @@ if [[ "${promoteAppVersion}" ]]; then
 fi
 
 if [[ "${publish}" ]]; then
+    gitAssertOrigin "${boilerplateRepo}"
     publishNuArt
     executeOnModules setupModule
     if [[ "${pushNuArtMessage}" ]]; then
