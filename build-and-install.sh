@@ -224,6 +224,7 @@ function extractParams() {
 
             "--listen" | "-l")
                 listen=true
+                build=
             ;;
 
             "--no-frontend-hack" | "-nfh")

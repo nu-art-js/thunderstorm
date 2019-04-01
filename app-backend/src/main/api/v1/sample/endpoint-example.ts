@@ -18,12 +18,11 @@
 
 import {
 	ApiResponse,
-	HttpMethod,
-	ServerApi
 } from "@nu-art/server";
 
 import * as express from "express";
 import {ParsedUrlQuery} from "querystring";
+import {ServerApi_Get} from "@nu-art/server";
 
 const randomStrings: string[] = ["Hi",
                                  "How are you",
@@ -31,10 +30,10 @@ const randomStrings: string[] = ["Hi",
                                  "Backend example"];
 
 class ServerApi_EndpointExample
-	extends ServerApi<void> {
+	extends ServerApi_Get {
 
 	constructor() {
-		super(HttpMethod.GET, "endpoint-example");
+		super("endpoint-example");
 	}
 
 	protected async process(request: express.Request, response: ApiResponse, queryParams: ParsedUrlQuery, body: void) {

@@ -18,18 +18,17 @@
 
 import {
 	ApiResponse,
-	HttpMethod,
-	ServerApi
 } from "@nu-art/server";
 
 import * as express from "express";
 import {ParsedUrlQuery} from "querystring";
+import {ServerApi_Get} from "@nu-art/server";
 
 class ServerApi_EndpointExample
-	extends ServerApi<void> {
+	extends ServerApi_Get {
 
 	constructor() {
-		super(HttpMethod.GET, "another-endpoint");
+		super("another-endpoint");
 	}
 
 	protected async process(request: express.Request, response: ApiResponse, queryParams: ParsedUrlQuery, body: void) {

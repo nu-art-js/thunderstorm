@@ -1,6 +1,6 @@
 {
   "name": "app-backend",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "main": "./dist/index.js",
   "scripts": {
     "serve": "npm run build && firebase serve --only functions",
@@ -15,8 +15,8 @@
     "node": "8"
   },
   "dependencies": {
-    "@nu-art/core": "^0.1.34",
-    "@nu-art/server": "^0.1.34",
+    "@nu-art/core": "^0.1.37",
+    "@nu-art/server": "^0.1.37",
     "js-base64": "^2.5.1",
     "firebase-admin": "7.1.1",
     "firebase-functions": "^2.2.0",
