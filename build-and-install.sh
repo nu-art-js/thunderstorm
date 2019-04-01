@@ -34,7 +34,8 @@ getBackendConfig=
 deployBackend=
 deployFrontend=
 
-version=
+promoteNuArtVersion=
+promoteAppVersion=
 publish=
 
 modulesPackageName=()
@@ -127,8 +128,11 @@ function printHelp() {
 
     logVerbose " ==== ${group}PUBLISH:${noColor} ===="
     logVerbose
-    logVerbose "   ${pc}--version=< ${param}major${noColor} | ${param}minor${noColor} | ${param}patch${noColor} >${noColor}"
-    logVerbose "        ${dc}Promote dependencies version${noColor}"
+    logVerbose "   ${pc}--version-nu-art=< ${param}major${noColor} | ${param}minor${noColor} | ${param}patch${noColor} >${noColor}"
+    logVerbose "        ${dc}Promote nu-art dependencies version${noColor}"
+    logVerbose
+    logVerbose "   ${pc}--version-app=< ${param}major${noColor} | ${param}minor${noColor} | ${param}patch${noColor} >${noColor}"
+    logVerbose "        ${dc}Promote app dependencies version${noColor}"
     logVerbose
     logVerbose "   ${pc}--publish${noColor}"
     logVerbose "        ${dc}Publish artifacts to npm${noColor}"
@@ -287,17 +291,16 @@ function extractParams() {
                 publish=true
             ;;
 
-            "--version="*)
-                version=`echo "${paramValue}" | sed -E "s/--version=(.*)/\1/"`
+            "--version-nu-art="* | "-vn="*)
+                promoteNuArtVersion=`echo "${paramValue}" | sed -E "s/(--version-nu-art=|-vn=)(.*)/\2/"`
                 setup=true
                 linkDependencies=true
             ;;
 
-            "-v="*)
-                version=`echo "${paramValue}" | sed -E "s/-v=(.*)/\1/"`
+            "--version-app="* | "-va="*)
+                promoteAppVersion=`echo "${paramValue}" | sed -E "s/(--version-app=|-va=)(.*)/\2/"`
                 setup=true
                 linkDependencies=true
-
             ;;
 
 #        ==== ERRORS & DEPRECATION =====
@@ -576,9 +579,8 @@ function pushNuArt() {
         cd ..
     done
 }
-
-function promoteNuArt() {
-    local _version=${version}
+function deriveVersion() {
+    local _version=${1}
     case "${_version}" in
         "patch" | "minor" | "major")
             _version=${_version}
@@ -594,15 +596,20 @@ function promoteNuArt() {
     esac
 
     if [[ ! "${_version}" ]]; then
-        throwError "Bad version type: ${version}"
+        throwError "Bad version type: ${promoteNuArtVersion}"
     fi
 
+}
+
+function promoteNuArt() {
+    local _version=`deriveVersion ${promoteNuArtVersion}`
     for module in "${nuArtModules[@]}"; do
         if [[ ! -e "${module}" ]]; then
             throwError "In order to promote a version ALL nu-art dependencies MUST be present!!!"
         fi
 
         cd ${module}
+            gitAssertBranch master
             gitAssertRepoClean
         cd ..
     done
@@ -620,11 +627,29 @@ function promoteNuArt() {
     done
 }
 
+function promoteApps() {
+    throwError "Promote app version - WIP"
+
+    local _version=`deriveVersion ${promoteAppVersion}`
+    gitAssertRepoClean
+    gitAssertBranch master
+
+    for module in "${projectModules[@]}"; do
+        cd ${module}
+            logInfo "updating module: ${module} version: ${_version}"
+            gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "updated dependencies version"
+            npm version ${_version}
+        cd ..
+
+        mapModulesVersions
+    done
+}
+
 function publishNuArt() {
     for module in "${nuArtModules[@]}"; do
         cd ${module}
             logInfo "publishing module: ${module}"
-            npm publish
+            npm publish --access public
             throwError "Error publishing module: ${module}" $?
         cd ..
     done
@@ -781,6 +806,11 @@ printDebugParams ${debug} "${params[@]}"
 #               #
 #################
 
+if [[ "${#modules[@]}" == 0 ]]; then
+    modules+=(${nuArtModules[@]})
+    modules+=(${projectModules[@]})
+fi
+
 if [[ "${mergeOriginRepo}" ]]; then
     mergeFromFork
     logInfo "Merged from origin boilerplate... DONE"
@@ -869,8 +899,12 @@ if [[ "${pushNuArtMessage}" ]]; then
     pushNuArt
 fi
 
-if [[ "${version}" ]]; then
+if [[ "${promoteNuArtVersion}" ]]; then
     promoteNuArt
+fi
+
+if [[ "${promoteAppVersion}" ]]; then
+    promoteApps
 fi
 
 if [[ "${publish}" ]]; then
