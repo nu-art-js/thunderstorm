@@ -21,10 +21,10 @@
  */
 
 import * as functions from 'firebase-functions';
-import {HttpServer} from "@nu-art/server";
 import {createModuleManager} from "@nu-art/core";
 import {Base64} from "js-base64";
 import decode = Base64.decode;
+import {HttpServer} from "@nu-art/server/HttpServer";
 
 /*
  *  SETUP, CONFIG & INIT
@@ -37,10 +37,11 @@ createModuleManager().setConfig(configAsObject).setModules(HttpServer).init();
  *  SETUP HttpServer
  */
 const _urlPrefix: string = !process.env.GCLOUD_PROJECT ? "/api" : "";
-HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/main/api", __dirname + "/main/api");
+HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/api", __dirname + "/api");
 HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? "/api" : "");
 HttpServer.startServer()
           .then(() => {
 	          console.log("Started");
           })
           .catch(reason => console.error("Error: ", reason));
+

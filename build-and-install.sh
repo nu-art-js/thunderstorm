@@ -287,6 +287,7 @@ function extractParams() {
 #        ==== PUBLISH =====
             "--publish" | "-p")
                 clean=true
+                build=true
                 publish=true
             ;;
 
@@ -401,7 +402,10 @@ function npmLinkModule() {
     fi
 
     logInfo "Linking module sources: ${2} -> ${1}"
-    npm link
+    cp package.json dist/
+    cd dist
+        npm link
+    cd ..
     throwError "Error linking module: ${1}" $?
 }
 
@@ -479,6 +483,7 @@ function setupModule() {
     if [[ "${linkDependencies}" ]]; then
         backupPackageJson
         cleanPackageJson
+        buildModule $@
         npmLinkModule $@
     fi
 
@@ -651,7 +656,10 @@ function publishNuArt() {
     for module in "${nuArtModules[@]}"; do
         cd ${module}
             logInfo "publishing module: ${module}"
-            npm publish --access public
+            cp package.json dist/
+            cd dist
+                npm publish --access public
+            cd ..
             throwError "Error publishing module: ${module}" $?
         cd ..
     done
@@ -738,6 +746,9 @@ function compileModule() {
     local compileLib=${1}
     logInfo "${compileLib} - Compiling..."
     cd ${compileLib}
+        cd dist
+            rm -rf *
+        cd ..
         tsc
     cd ..
     logInfo "${compileLib} - Compiled!"
@@ -760,7 +771,7 @@ function syncModule() {
 
         logInfo "${compileLib} - Syncing..."
         createDir ${targetFolder}
-        rsync -a --exclude 'node_modules' --exclude '.git' ./${compileLib}/ ${targetFolder}
+        rsync -a --exclude 'node_modules' --exclude '.git' ./${compileLib}/dist ${targetFolder}
         logInfo "${compileLib} - Synced!"
     fi
 }

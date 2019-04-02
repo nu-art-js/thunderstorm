@@ -15,15 +15,16 @@
     "node": "8"
   },
   "dependencies": {
-    "@nu-art/core": "^0.1.40",
-    "@nu-art/server": "^0.1.40",
-    "js-base64": "^2.5.1",
-    "firebase-admin": "7.1.1",
-    "firebase-functions": "^2.2.0",
+    "@nu-art/core": "^0.1.47",
+    "@nu-art/server": "^0.1.47",
+    "@types/mongodb": "^3.1.22",
     "body-parser": "^1.18.3",
     "debug": "^3.1.0",
     "express": "^4.16.3",
+    "firebase-admin": "7.1.1",
+    "firebase-functions": "^2.2.0",
     "fs": "0.0.1-security",
+    "js-base64": "^2.5.1",
     "use-strict": "^1.0.1"
   },
   "devDependencies": {
@@ -34,7 +35,6 @@
     "@types/node": "^11.9.5",
     "@types/js-base64": "^2.3.1",
     "@types/firebase": "^3.2.1",
-    "@types/mongodb": "3.1.22",
     "typescript": "^3.3.3333"
   }
 }
