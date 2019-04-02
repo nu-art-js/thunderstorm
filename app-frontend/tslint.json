@@ -72,7 +72,7 @@
     "no-void-expression": [true, "ignore-arrow-function-shorthand"],
 
     // Disallow duplicate imports in the same file.
-    "no-duplicate-imports": true,
+    "no-duplicate-imports": false,
 
 
     // -- Strong Warnings --

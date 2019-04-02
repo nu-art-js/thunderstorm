@@ -465,6 +465,9 @@ function restorePackageJson() {
 function setupModule() {
     local module=${1}
 
+    sort-package-json
+    throwError "Please install sort-package-json:\n   npm i -g sort-package-json" $?
+
     function cleanPackageJson() {
         local i
         for (( i=0; i<${#modules[@]}; i+=1 )); do
