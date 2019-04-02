@@ -584,6 +584,7 @@ function pushNuArt() {
 
     for module in "${nuArtModules[@]}"; do
         cd ${module}
+            gitPullRepo
             gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "${pushNuArtMessage}"
         cd ..
     done
