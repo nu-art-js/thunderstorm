@@ -15,8 +15,8 @@
     "node": "8"
   },
   "dependencies": {
-    "@nu-art/core": "^0.1.49",
-    "@nu-art/server": "^0.1.49",
+    "@nu-art/core": "^0.1.50",
+    "@nu-art/server": "^0.1.50",
     "@types/mongodb": "^3.1.22",
     "body-parser": "^1.18.3",
     "debug": "^3.1.0",
