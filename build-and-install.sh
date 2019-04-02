@@ -891,10 +891,7 @@ if [[ "${publish}" ]]; then
     gitAssertOrigin "${boilerplateRepo}"
     publishNuArt
     executeOnModules setupModule
-    if [[ "${pushNuArtMessage}" ]]; then
-        gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "built with new dependencies, ${pushNuArtMessage}"
-    fi
-
+    gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "built with new dependencies version"
 fi
 
 if [[ "${listen}" ]]; then
