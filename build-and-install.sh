@@ -747,7 +747,7 @@ function compileModule() {
     logVerbose
     logInfo "${compileLib} - Compiling..."
     npm run build
-    throwError "Error compiling:  ${compileLib}"
+    throwError "Error compiling:  ${compileLib}" $?
 
     cp package.json dist/
     logInfo "${compileLib} - Compiled!"
