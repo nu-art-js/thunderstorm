@@ -582,15 +582,18 @@ function deriveVersion() {
     local _version=${1}
     case "${_version}" in
         "patch" | "minor" | "major")
-            _version=${_version}
+            echo ${_version}
+            return
         ;;
 
         "p")
-            _version="patch"
+            echo "patch"
+            return
         ;;
 
         *)
-            _version=
+            echo
+            return
         ;;
     esac
 
