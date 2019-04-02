@@ -1,5 +1,5 @@
 {
-  "name": "app-fronted",
+  "name": "app-frontend",
   "version": "1.0.0",
   "description": "Frontend hello world with Fronzy",
   "main": "dist/index.js",

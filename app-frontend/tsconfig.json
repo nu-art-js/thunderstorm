@@ -12,11 +12,24 @@
     "noUnusedLocals": true,
     "strict": true,
     "outDir": "build",
-    "lib": ["es6", "es7", "dom"],
+    "lib": [
+      "es6",
+      "es7",
+      "dom"
+    ],
     "baseUrl": "src",
     "paths": {
-      "app/*": ["./app/*"]
+      "app/*": [
+        "./app/*"
+      ]
     }
   },
-  "exclude": ["build", "node_modules"]
+  "include": [
+    "src/main/**/*.ts"
+  ],
+  "exclude": [
+    "build",
+    "dist",
+    "node_modules"
+  ]
 }
