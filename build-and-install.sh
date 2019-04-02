@@ -350,12 +350,16 @@ function mapExistingLibraries() {
 }
 
 function purgeModule() {
+
+    logInfo "Purge module: ${1}"
     rm -rf node_modules
     rm package-lock.json
 }
 
 function cleanModule() {
-    rm -rf dist
+    cd dist
+        rm -rf *
+    cd ..
 }
 
 function usingBackend() {
@@ -377,36 +381,21 @@ function usingFrontend() {
 }
 
 function buildModule() {
-    if [[ `usingFrontend` ]] && [[ ! `usingBackend` ]] && [[ "${1}" == "${backendModule}" ]]; then
+    local module=${1}
+
+    if [[ `usingFrontend` ]] && [[ ! `usingBackend` ]] && [[ "${module}" == "${backendModule}" ]]; then
         return
     fi
 
-    if [[ `usingBackend` ]] && [[ ! `usingFrontend` ]] && [[ "${1}" == "${frontendModule}" ]]; then
+    if [[ `usingBackend` ]] && [[ ! `usingFrontend` ]] && [[ "${module}" == "${frontendModule}" ]]; then
         return
     fi
 
-    logVerbose
-    logInfo "Building module: ${1}"
-    logVerbose
-    npm run build
+    compileModule ${module}
 }
 
 function testModule() {
     npm run test
-}
-
-function npmLinkModule() {
-    logVerbose
-    if [[ `contains ${1} "${projectModules[@]}"` ]]; then
-        return
-    fi
-
-    logInfo "Linking module sources: ${2} -> ${1}"
-    cp package.json dist/
-    cd dist
-        npm link
-    cd ..
-    throwError "Error linking module: ${1}" $?
 }
 
 function linkDependenciesImpl() {
@@ -427,16 +416,28 @@ function linkDependenciesImpl() {
             continue;
         fi
 
-        logDebug "Linking dependency sources ${modulePackageName} => ${module}"
-        if [[ "${module}" == "${frontendModule}" ]] && [[ "${useFrontendHack}" ]]; then
-            logInfo "Sync ${modules[${i}]} => ${module}"
-            cd ..
-                bash build-and-install.sh --lib=${modules[${i}]} --sync-app=${module}
-            cd -
-        else
-            npm link ${modulePackageName}
-            throwError "Error linking dependency" $?
+#        if [[ "${module}" == "${frontendModule}" ]] && [[ "${useFrontendHack}" ]]; then
+#            logInfo "Sync ${modules[${i}]} => ${module}"
+#            cd ..
+#                bash build-and-install.sh --lib=${modules[${i}]} --sync-app=${module}
+#            cd -
+#        else
+
+        logInfo "Linking ${modules[${i}]} (${modulePackageName}) => ${module}"
+        local target="`pwd`/node_modules/${modulePackageName}"
+        local origin="`pwd`/../${modules[${i}]}/dist"
+
+        createDir ${target}
+        if [[ -e "${target}" ]]; then
+            rm -rf ${target}
+            throwError "Error deleting older dependency symlink: ${modulePackageName}" $?
         fi
+
+        logDebug "ln -s ${origin} ${target}"
+        ln -s ${origin} ${target}
+        throwError "Error symlink dependency: ${modulePackageName}" $?
+
+#        fi
 
         local moduleVersion="${modulesVersion[${i}]}"
         if [[ ! "${moduleVersion}" ]]; then continue; fi
@@ -483,8 +484,6 @@ function setupModule() {
     if [[ "${linkDependencies}" ]]; then
         backupPackageJson
         cleanPackageJson
-        buildModule $@
-        npmLinkModule $@
     fi
 
     logVerbose
@@ -508,6 +507,7 @@ function executeOnModules() {
         local module="${modules[${i}]}"
         local packageName="${modulesPackageName[${i}]}"
         local version="${modulesVersion[${i}]}"
+        if [[ ! -e "./${module}" ]]; then continue; fi
 
         cd ${module}
             if [[ "${async}" == "true" ]]; then
@@ -744,53 +744,15 @@ function fetchBackendConfig() {
 
 function compileModule() {
     local compileLib=${1}
+    logVerbose
     logInfo "${compileLib} - Compiling..."
-    cd ${compileLib}
-        cd dist
-            rm -rf *
-        cd ..
-        tsc
-    cd ..
+    npm run build
+    throwError "Error compiling:  ${compileLib}"
+
+    cp package.json dist/
     logInfo "${compileLib} - Compiled!"
 }
 
-function syncModule() {
-    local compileLib=${1}
-    local syncApp=${2}
-    cd ${compileLib}
-        local packageName=`getModulePackageName`
-    cd ..
-
-    logInfo "Syncing lib: ${compileLib} into app: ${syncApp}"
-    if [[ "${syncApp}" ]]; then
-        local targetFolder="./${syncApp}/node_modules/${packageName}"
-
-        if [[ -e "${targetFolder}" ]]; then
-            rm -rf "${targetFolder}"
-        fi
-
-        logInfo "${compileLib} - Syncing..."
-        createDir ${targetFolder}
-        rsync -a --exclude 'node_modules' --exclude '.git' ./${compileLib}/dist ${targetFolder}
-        logInfo "${compileLib} - Synced!"
-    fi
-}
-
-function syncLibChangesToApp() {
-    local compileLib=${1}
-    local syncApp=${2}
-
-    logInfo "Watching on: ${compileLib}/dist => bash build-and-install.sh --lib=${compileLib} --sync-app=${syncApp}"
-    fswatch -o -0 ${compileLib}/dist | xargs -0 -n1 -I{} bash build-and-install.sh --lib=${compileLib} --sync-app=${syncApp} &
-}
-
-
-function compileModuleOnChanges() {
-    local module=${1}
-
-    logInfo "Watching on: ${module}/src => bash build-and-install.sh --lib=${module}"
-    fswatch -o -0 ${module}/src | xargs -0 -n1 -I{} bash build-and-install.sh --lib=${module} &
-}
 
 #################
 #               #
@@ -807,11 +769,10 @@ fi
 extractParams "$@"
 
 if [[ "${compileLib}" ]]; then
-    if [[ "${syncApp}" ]]; then
-        syncModule ${compileLib} ${syncApp}
-    else
+    cd ${compileLib}
         compileModule ${compileLib}
-    fi
+    cd ..
+
     exit $?
 fi
 
@@ -940,27 +901,14 @@ if [[ "${listen}" ]]; then
     logDebug "Stop all fswatch listeners..."
     killall 9 fswatch
     pids=()
+
     for module in ${modules[@]}; do
         if [[ ! -e "./${module}" ]]; then continue; fi
 
+        logInfo "Watching on: ${module}/src => bash build-and-install.sh --lib=${module}"
         fswatch -o -0 ${module}/src | xargs -0 -n1 -I{} bash build-and-install.sh --lib=${module} &
         pids+=($!)
     done
-
-    executeOnModules compileModuleOnChanges
-    if [[ "${useFrontendHack}" ]]; then
-        if [[ -e "./nu-art-core" ]]; then
-            logDebug "Applying frontend rsync HACK nu-art-core => ${frontendModule}"
-            fswatch -o -0 nu-art-core/dist | xargs -0 -n1 -I{} bash build-and-install.sh --lib=nu-art-core --sync-app=${frontendModule} &
-            pids+=($!)
-        fi
-
-        if [[ -e "./nu-art-fronzy" ]]; then
-            logDebug "Applying frontend rsync HACK nu-art-fronzy => ${frontendModule}"
-            fswatch -o -0 nu-art-fronzy/dist | xargs -0 -n1 -I{} bash build-and-install.sh --lib=nu-art-fronzy --sync-app=${frontendModule} &
-            pids+=($!)
-        fi
-    fi
 
     for pid in "${pids[@]}"; do
         wait ${pid}

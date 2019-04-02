@@ -7,6 +7,8 @@ backendModule=app-backend
 configEntryName="app.config"
 
 projectModules=(app-backend app-frontend)
+#projectModules=()
 
 nuArtModules=(nu-art-core nu-art-server nu-art-fronzy nu-art-test)
+#nuArtModules=(nu-art-core nu-art-server nu-art-fronzy)
 modules=()
