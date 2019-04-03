@@ -2,20 +2,29 @@
   "name": "app-frontend",
   "version": "1.0.0",
   "description": "Frontend hello world with Fronzy",
-  "keywords": [],
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "typescript",
+    "boilerplate",
+    "frontend",
+    "react"
+  ],
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com:nu-art-js/typescript-boilerplate.git"
   },
-  "license": "ISC",
-  "author": "",
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "webpack --mode development --env dev",
     "dev": "webpack-dev-server --open --mode development --env dev",
     "dev-ssl": "webpack-dev-server --open --mode development --env dev --ssl true",
-    "prod": "webpack --mode production --env prod"
+    "prod": "webpack --mode production --env prod",
+    "lint": "tslint --project tsconfig.json"
   },
   "dependencies": {
     "react": "^16.8.1"

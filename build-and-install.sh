@@ -536,18 +536,20 @@ if [[ "${test}" ]]; then
 fi
 
 if [[ "${launchBackend}" ]]; then
+    npm list -g nodemon > /dev/null
+    throwError "nodemon package is missing... Please install nodemon:\n npm i -g nodemon"
+
     cd ${backendModule}
         if [[ "${launchFrontend}" ]]; then
-            node ./dist/index.js &
+            nodemon &
         else
-            node ./dist/index.js
+            nodemon
         fi
     cd ..
 fi
 
 if [[ "${serveBackend}" ]]; then
     cd ${backendModule}
-
         npm run serve
     cd ..
 fi

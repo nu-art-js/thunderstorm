@@ -1,11 +1,28 @@
 {
   "name": "app-backend",
   "version": "1.0.0",
+  "description": "Backend hello world",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "typescript",
+    "boilerplate",
+    "backend",
+    "express"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/typescript-boilerplate.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
   "main": "./dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch & nodemon dist",
-    "launch": "node dist",
+    "launch": "tsc --watch & nodemon dist",
     "lint": "tslint --project tsconfig.json",
     "prod": "tsc & node dist",
     "serve": "npm run build && firebase serve --only functions",
