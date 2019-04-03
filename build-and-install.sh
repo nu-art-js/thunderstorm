@@ -350,13 +350,18 @@ function mapExistingLibraries() {
 }
 
 function purgeModule() {
-
     logInfo "Purge module: ${1}"
     rm -rf node_modules
-    rm package-lock.json
+    if [[ -e "package-lock.json" ]]; then
+        rm package-lock.json
+    fi
 }
 
 function cleanModule() {
+    if [[ ! -e "dist" ]]; then
+        return
+    fi
+
     cd dist
         rm -rf *
     cd ..

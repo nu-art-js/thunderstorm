@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "./dist/index.js",
   "scripts": {
-    "build": "rm -rf dist && tsc",
+    "build": "tsc",
     "dev": "tsc --watch & nodemon dist",
     "launch": "node dist",
     "lint": "tslint --project tsconfig.json",
