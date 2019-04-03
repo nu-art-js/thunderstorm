@@ -4,12 +4,12 @@
   "description": "Backend hello world",
   "keywords": [
     "TacB0sS",
+    "backend",
+    "boilerplate",
+    "express",
     "infra",
     "nu-art",
-    "typescript",
-    "boilerplate",
-    "backend",
-    "express"
+    "typescript"
   ],
   "repository": {
     "type": "git",

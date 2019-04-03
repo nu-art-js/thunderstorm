@@ -4,12 +4,12 @@
   "description": "Frontend hello world with Fronzy",
   "keywords": [
     "TacB0sS",
-    "infra",
-    "nu-art",
-    "typescript",
     "boilerplate",
     "frontend",
-    "react"
+    "infra",
+    "nu-art",
+    "react",
+    "typescript"
   ],
   "repository": {
     "type": "git",
@@ -23,8 +23,8 @@
     "build": "webpack --mode development --env dev",
     "dev": "webpack-dev-server --open --mode development --env dev",
     "dev-ssl": "webpack-dev-server --open --mode development --env dev --ssl true",
-    "prod": "webpack --mode production --env prod",
-    "lint": "tslint --project tsconfig.json"
+    "lint": "tslint --project tsconfig.json",
+    "prod": "webpack --mode production --env prod"
   },
   "dependencies": {
     "react": "^16.8.1"

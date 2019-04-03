@@ -11,6 +11,7 @@ purge=
 clean=
 
 setup=
+install=true
 listen=
 useFrontendHack=true
 linkDependencies=
@@ -35,7 +36,7 @@ publish=
 modulesPackageName=()
 modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup compileLib useFrontendHack linkDependencies test build serveBackend launchBackend launchFrontend envType prepareConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies install build test compileLib useFrontendHack serveBackend launchBackend launchFrontend envType prepareConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
 
 function extractParams() {
     for paramValue in "${@}"; do
@@ -85,6 +86,13 @@ function extractParams() {
 
             "--unlink" | "-u")
                 setup=true
+            ;;
+
+            "--link-only" | "-lo")
+                setup=true
+                linkDependencies=true
+                install=
+                build=
             ;;
 
             "--no-build" | "-nb")

@@ -163,13 +163,15 @@ function setupModule() {
         cleanPackageJson
     fi
 
-    trap 'restorePackageJson' SIGINT
-        logVerbose
-        logInfo "Installing ${module}"
-        logVerbose
-        npm install
-        throwError "Error installing module"
-    trap - SIGINT
+    if [[ "${install}" ]]; then
+        trap 'restorePackageJson' SIGINT
+            logVerbose
+            logInfo "Installing ${module}"
+            logVerbose
+            npm install
+            throwError "Error installing module"
+        trap - SIGINT
+    fi
 
     if [[ "${linkDependencies}" ]]; then
         restorePackageJson

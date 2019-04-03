@@ -37,6 +37,9 @@ function printHelp() {
     logVerbose "   ${pc}--listen${noColor}"
     logVerbose "        ${dc}listen and rebuild on changes in modules${noColor}"
     logVerbose
+    logVerbose "   ${pc}--link-only${noColor}"
+    logVerbose "        ${dc}Would only link dependencies between projects${noColor}"
+    logVerbose
     logVerbose "   ${pc}--test${noColor}"
     logVerbose "        ${dc}Run tests in all modules${noColor}"
     logVerbose
