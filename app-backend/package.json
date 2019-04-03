@@ -22,7 +22,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch & nodemon dist",
-    "launch": "tsc --watch & nodemon dist",
+    "launch": "node dist",
     "lint": "tslint --project tsconfig.json",
     "prod": "tsc & node dist",
     "serve": "npm run build && firebase serve --only functions",
