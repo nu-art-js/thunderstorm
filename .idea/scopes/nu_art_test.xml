@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="nu-art-test" pattern="file[typescript-boilerplate]:nu-art-test/src//*" />
+</component>

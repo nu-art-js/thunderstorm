@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "dist-test",
+    "declaration": true,
+    "strict": true,
+    "sourceMap": true
+  },
+  "include": [
+    "src/test/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

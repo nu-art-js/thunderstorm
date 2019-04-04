@@ -1,5 +1,9 @@
+.idea/*
+!.idea/copyright/
+!.idea/dictionaries/
+!.idea/scopes/
+
 env
-.idea
 .firebase
 .trash
 *.iml

@@ -6,6 +6,7 @@
       <element module="nu-art-fronzy" copyright="nu-art-fronzy" />
       <element module="app-backend" copyright="app-backend" />
       <element module="app-frontend" copyright="app-frontend" />
+      <element module="nu-art-test" copyright="nu-art-test" />
     </module2copyright>
   </settings>
 </component>
