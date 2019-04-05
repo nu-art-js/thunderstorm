@@ -92,6 +92,7 @@ function extractParams() {
 
             "--clean-dirt")
                 cleanDirt=true
+                clean=true
             ;;
 
             "--flag-dirty="*)

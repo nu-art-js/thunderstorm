@@ -8,7 +8,7 @@
     "sourceMap": true
   },
   "include": [
-    "src/test/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules"

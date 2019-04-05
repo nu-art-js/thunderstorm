@@ -39,10 +39,6 @@ function purgeModule() {
     fi
 }
 
-function cleanModule() {
-    clearFolder dist
-}
-
 function usingBackend() {
     if [[ ! "${deployBackend}" ]] && [[ ! "${launchBackend}" ]] && [[ ! "${serveBackend}" ]]; then
         echo
@@ -428,14 +424,19 @@ function compileOnCodeChanges() {
     logDebug "Stop all fswatch listeners..."
     killall 9 fswatch
     pids=()
-
+    local sourceDirs=()
     for module in ${modules[@]}; do
         if [[ ! -e "./${module}" ]]; then continue; fi
+        sourceDirs+=(${module}/src)
 
-        logInfo "Watching on: ${module}/src => bash build-and-install.sh --lib=${module}"
-        fswatch -o -0 ${module}/src | xargs -0 -n1 -I{} bash build-and-install.sh --lib=${module} &
+        logInfo "Dirt watcher on: ${module}/src => bash build-and-install.sh --flag-dirty=${module}"
+        fswatch -o -0 ${module}/src | xargs -0 -n1 -I{} bash build-and-install.sh --flag-dirty=${module} &
         pids+=($!)
     done
+
+    logInfo "Cleaning team on: ${sourceDirs[@]} => bash build-and-install.sh --clean-dirt"
+    fswatch -o -0 ${sourceDirs[@]} | xargs -0 -n1 -I{} bash build-and-install.sh --clean-dirt &
+    pids+=($!)
 
     for pid in "${pids[@]}"; do
         wait ${pid}
@@ -444,12 +445,22 @@ function compileOnCodeChanges() {
 
 function compileModule() {
     local compileLib=${1}
-    logVerbose
+
+    if [[ "${cleanDirt}" ]] && [[ ! -e ".dirty" ]]; then
+        return
+    fi
+
+    if [[ "${clean}" ]]; then
+        logVerbose
+        clearFolder dist
+    fi
+
     logInfo "${compileLib} - Compiling..."
     npm run build
     throwError "Error compiling:  ${compileLib}"
 
     cp package.json dist/
+    deleteFile .dirty
     logInfo "${compileLib} - Compiled!"
 }
 
@@ -461,22 +472,25 @@ function compileModule() {
 #################
 
 # Handle recursive sync execution
-if [[ ! "${1}" =~ "--lib" ]]; then
+if [[ ! "${1}" =~ "dirt" ]]; then
     signature
     printCommand "$@"
 fi
 
 extractParams "$@"
 
-if [[ "${compileLib}" ]]; then
-    cd ${compileLib}
-        compileModule ${compileLib}
-    cd ..
-
-    exit $?
+if [[ "${dirtyLib}" ]]; then
+    touch ${dirtyLib}/.dirty
+    logInfo "flagged ${dirtyLib} as dirty... waiting for cleaning team"
+    exit 0
 fi
 
-printDebugParams ${debug} "${params[@]}"
+if [[ "${cleanDirt}" ]]; then
+    logDebug "Cleaning team is ready, stalling 3 sec for dirt to pile up..."
+    sleep 3s
+else
+    printDebugParams ${debug} "${params[@]}"
+fi
 
 
 #################
@@ -509,10 +523,6 @@ if [[ "${purge}" ]]; then
     executeOnModules purgeModule
 fi
 
-if [[ "${clean}" ]]; then
-    executeOnModules cleanModule
-fi
-
 if [[ "${prepareConfig}" ]]; then
     prepareConfigImpl
 fi
@@ -542,6 +552,10 @@ if [[ "${launchBackend}" ]]; then
     throwError "nodemon package is missing... Please install nodemon:\n npm i -g nodemon"
 
     cd ${backendModule}
+        if [[ -e "_launch.sh" ]]; then
+            _launch.sh
+        fi
+
         if [[ "${launchFrontend}" ]]; then
             nodemon &
         else
