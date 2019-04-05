@@ -5,7 +5,8 @@ mergeOriginRepo=
 cloneNuArt=
 pushNuArtMessage=
 
-compileLib=
+dirtyLib=
+cleanDirt=
 
 purge=
 clean=
@@ -36,7 +37,7 @@ publish=
 modulesPackageName=()
 modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies install build test compileLib useFrontendHack serveBackend launchBackend launchFrontend envType prepareConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies install build cleanDirt test useFrontendHack serveBackend launchBackend launchFrontend envType prepareConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
 
 function extractParams() {
     for paramValue in "${@}"; do
@@ -60,12 +61,6 @@ function extractParams() {
             "--push="*)
                 pushNuArtMessage=`echo "${paramValue}" | sed -E "s/--push=(.*)/\1/"`
             ;;
-
-#        ==== Frontend Hack =====
-            "--lib="*)
-                compileLib=`echo "${paramValue}" | sed -E "s/--lib=(.*)/\1/"`
-            ;;
-
 
 #        ==== CLEAN =====
             "--purge")
@@ -93,6 +88,14 @@ function extractParams() {
                 linkDependencies=true
                 install=
                 build=
+            ;;
+
+            "--clean-dirt")
+                cleanDirt=true
+            ;;
+
+            "--flag-dirty="*)
+                dirtyLib=`echo "${paramValue}" | sed -E "s/--flag-dirty=(.*)/\1/"`
             ;;
 
             "--no-build" | "-nb")

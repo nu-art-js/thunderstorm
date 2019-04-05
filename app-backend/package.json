@@ -22,12 +22,12 @@
   "scripts": {
     "build": "tsc",
     "build-test": "tsc -p tsconfig-test.json",
-    "test": "node dist-test",
     "dev": "tsc --watch & nodemon dist",
     "launch": "node dist",
     "lint": "tslint --project tsconfig.json",
     "prod": "tsc & node dist",
     "serve": "npm run build && firebase serve --only functions",
+    "test": "node dist-test",
     "tsc": "tsc"
   },
   "dependencies": {

@@ -16,32 +16,11 @@
  * limitations under the License.
  */
 
-/**
- * Created by tacb0ss on 10/07/2018.
- */
+import {main} from "./main";
 
-import * as functions from 'firebase-functions';
-import {createModuleManager} from "@nu-art/core";
-import {Base64} from "js-base64";
-import decode = Base64.decode;
-import {HttpServer} from "@nu-art/server/HttpServer";
-
-/*
- *  SETUP, CONFIG & INIT
- */
-const configAsBase64: string = functions.config().app.config;
-const configAsObject = JSON.parse(decode(configAsBase64));
-createModuleManager().setConfig(configAsObject).setModules(HttpServer).init();
-
-/*
- *  SETUP HttpServer
- */
-const _urlPrefix: string = !process.env.GCLOUD_PROJECT ? "/api" : "";
-HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/api", __dirname + "/api");
-HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? "/api" : "");
-HttpServer.startServer()
-          .then(() => {
-	          console.log("Started");
-          })
-          .catch(reason => console.error("Error: ", reason));
+main()
+	.then(() => {
+		console.log("Started");
+	})
+	.catch(reason => console.error("Error: ", reason));
 
