@@ -296,6 +296,8 @@ function promoteNuArt() {
         cd ${module}
             gitAssertBranch master
             gitAssertRepoClean
+            gitFetchRepo
+            gitAssertNoCommitsToPull
         cd ..
     done
 
