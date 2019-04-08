@@ -32,8 +32,8 @@
     "tsc": "tsc"
   },
   "dependencies": {
-    "@nu-art/core": "^0.1.53",
-    "@nu-art/server": "^0.1.53",
+    "@nu-art/core": "^0.1.54",
+    "@nu-art/server": "^0.1.54",
     "body-parser": "^1.18.3",
     "debug": "^3.1.0",
     "express": "^4.16.3",
