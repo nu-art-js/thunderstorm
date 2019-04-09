@@ -21,18 +21,36 @@
  */
 
 import * as functions from 'firebase-functions';
-import {createModuleManager} from "@nu-art/core";
+import {
+	createModuleManager,
+	Module,
+	TerminalLogClient,
+	BeLogged
+} from "@nu-art/core";
 import {Base64} from "js-base64";
 import decode = Base64.decode;
 import {HttpServer} from "@nu-art/server/HttpServer";
 
-export async function main() {
+export async function main(config?: object) {
+	BeLogged.addClient(TerminalLogClient);
 
 	/*
 	 *  SETUP, CONFIG & INIT
 	 */
-	const configAsBase64: string = functions.config().app.config;
-	const configAsObject = JSON.parse(decode(configAsBase64));
+	let configAsObject;
+	if (config)
+		configAsObject = config;
+	else {
+		configAsObject = JSON.parse(decode(functions.config().app.config));
+	}
+
+
+	const modules: Module<any>[] =
+		      [
+			      HttpServer,
+		      ];
+
+
 	createModuleManager().setConfig(configAsObject).setModules(HttpServer).init();
 
 	/*

@@ -161,6 +161,7 @@ function setupModule() {
 
     if [[ "${install}" ]]; then
         trap 'restorePackageJson' SIGINT
+            deleteFile package-lock.json
             logVerbose
             logInfo "Installing ${module}"
             logVerbose
