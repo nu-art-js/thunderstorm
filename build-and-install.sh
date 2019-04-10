@@ -425,7 +425,8 @@ function fetchBackendConfig() {
 
 function compileOnCodeChanges() {
     logDebug "Stop all fswatch listeners..."
-    killall 9 fswatch
+    killAllProcess fswatch
+
     pids=()
     local sourceDirs=()
     for module in ${modules[@]}; do
