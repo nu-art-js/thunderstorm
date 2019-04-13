@@ -1,0 +1,26 @@
+{
+  "name": "app-common",
+  "version": "1.0.0",
+  "description": "app-common",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "tests",
+    "typescript"
+  ],
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "files": [
+    "**/*"
+  ],
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "typescript": "^3.3.3333"
+  }
+}

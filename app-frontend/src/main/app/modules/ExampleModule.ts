@@ -25,6 +25,7 @@ import {
 	Fronzy,
 	HttpModule
 } from "@nu-art/fronzy";
+import {CommonBodyReq} from "app-common";
 
 type Config = {
 	remoteUrl: string
@@ -44,6 +45,13 @@ export class ExampleModule_Class
 
 	public getMessageFromServer() {
 		this.logInfo("getting label from server");
+
+		(async () => {
+			let bodyObject: CommonBodyReq = {message: this.message};
+			const httpRequest = await HttpModule.createRequest(HttpMethod.POST).setJsonBody(bodyObject).setRelativeUrl(
+				"/api/v1/sample/another-endpoint").execute();
+			this.message = httpRequest.xhr.status != 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.xhr.response;
+		})();
 
 		(async () => {
 			const httpRequest = await HttpModule.createRequest(HttpMethod.GET).setRelativeUrl("/api/v1/sample/endpoint-example").execute()

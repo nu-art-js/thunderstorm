@@ -505,6 +505,7 @@ fi
 
 if [[ "${#modules[@]}" == 0 ]]; then
     modules+=(${nuArtModules[@]})
+    modules+=(${otherModules[@]})
     modules+=(${projectModules[@]})
 fi
 
