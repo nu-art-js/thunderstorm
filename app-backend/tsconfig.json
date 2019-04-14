@@ -1,11 +1,15 @@
 {
   "compilerOptions": {
+    "strict": true,
+    "sourceMap": true,
+    "declaration": true,
     "target": "es6",
     "module": "commonjs",
     "outDir": "dist",
-    "declaration": true,
-    "strict": true,
-    "sourceMap": true,
+    "noUnusedLocals": true,
+    "removeComments": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {
       "app-common": [

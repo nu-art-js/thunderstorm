@@ -51,7 +51,7 @@ export async function main(config?: object) {
 		      ];
 
 
-	createModuleManager().setConfig(configAsObject).setModules(HttpServer).init();
+	createModuleManager().setConfig(configAsObject).setModules(modules).init();
 
 	/*
 	 *  SETUP HttpServer

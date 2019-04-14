@@ -19,7 +19,6 @@
 import {
 	ApiResponse,
 	ServerApi,
-	ServerApi_Get,
 } from "@nu-art/server/HttpServer";
 
 import * as express from "express";
