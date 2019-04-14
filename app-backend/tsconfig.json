@@ -5,7 +5,13 @@
     "outDir": "dist",
     "declaration": true,
     "strict": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "app-common": [
+        "../app-common/src/main/ts"
+      ]
+    }
   },
   "include": [
     "src/main/**/*.ts"

@@ -17,10 +17,10 @@
       "es7",
       "dom"
     ],
-    "baseUrl": "src",
+    "baseUrl": ".",
     "paths": {
-      "app/*": [
-        "./app/*"
+      "app-common": [
+        "../app-common/src/main/ts"
       ]
     }
   },
