@@ -8,8 +8,4 @@ env
 .trash
 *.iml
 **/.DS_Store
-nu-art-core
-nu-art-server
-nu-art-fronzy
-nu-art-test
 firebase-debug.log

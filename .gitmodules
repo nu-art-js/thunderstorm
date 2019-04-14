@@ -1,3 +1,15 @@
 [submodule "dev-tools"]
 	path = dev-tools
 	url = git@github.com:nu-art/dev-tools.git
+[submodule "nu-art-core"]
+	path = nu-art-core
+	url = git@github.com:nu-art-js/nu-art-core.git
+[submodule "nu-art-server"]
+	path = nu-art-server
+	url = git@github.com:nu-art-js/nu-art-server.git
+[submodule "nu-art-test"]
+	path = nu-art-test
+	url = git@github.com:nu-art-js/nu-art-test.git
+[submodule "nu-art-fronzy"]
+	path = nu-art-fronzy
+	url = git@github.com:nu-art-js/nu-art-fronzy.git
