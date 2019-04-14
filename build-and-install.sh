@@ -80,6 +80,20 @@ function linkDependenciesImpl() {
     logVerbose
     logInfo "Linking dependencies sources to: ${module}"
 
+    if [[ `contains "${module}" "${projectModules[@]}"` ]]; then
+        for otherModule in "${otherModules[@]}"; do
+            local target="`pwd`/src/main/${otherModule}"
+            local origin="`pwd`/../${otherModule}/src/main/ts"
+
+            createDir ${target}
+            deleteDir ${target}
+
+            logDebug "ln -s ${origin} ${target}"
+            ln -s ${origin} ${target}
+            throwError "Error symlink dependency: ${otherModule}"
+        done
+    fi
+
     local i
     for (( i=0; i<${#modules[@]}; i+=1 )); do
         if [[ "${module}" == "${modules[${i}]}" ]];then break; fi
@@ -505,7 +519,6 @@ fi
 
 if [[ "${#modules[@]}" == 0 ]]; then
     modules+=(${nuArtModules[@]})
-    modules+=(${otherModules[@]})
     modules+=(${projectModules[@]})
 fi
 

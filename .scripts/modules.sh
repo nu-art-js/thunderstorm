@@ -9,8 +9,8 @@ configEntryName="app.config"
 projectModules=(app-backend app-frontend)
 #projectModules=()
 
-#otherModules=(app-common)
-otherModules=()
+otherModules=(app-common)
+#otherModules=()
 
 nuArtModules=(nu-art-core nu-art-server nu-art-fronzy nu-art-test)
 #nuArtModules=(nu-art-core nu-art-server nu-art-fronzy)

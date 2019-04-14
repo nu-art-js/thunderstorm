@@ -9,13 +9,7 @@
     "noUnusedLocals": true,
     "removeComments": true,
     "moduleResolution": "node",
-    "experimentalDecorators": true,
-    "baseUrl": ".",
-    "paths": {
-      "app-common": [
-        "../app-common/src/main/ts"
-      ]
-    }
+    "experimentalDecorators": true
   },
   "include": [
     "src/main/**/*.ts"

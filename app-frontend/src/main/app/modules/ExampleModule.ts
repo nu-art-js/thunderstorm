@@ -25,7 +25,7 @@ import {
 	Fronzy,
 	HttpModule
 } from "@nu-art/fronzy";
-import {CommonBodyReq} from "app-common";
+import {CommonBodyReq} from "../../app-common/example";
 
 type Config = {
 	remoteUrl: string

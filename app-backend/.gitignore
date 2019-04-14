@@ -6,4 +6,5 @@ package-lock.json
 .runtimeconfig.json
 .config.json
 .config-*.json
+src/main/app-common
 .dirty
