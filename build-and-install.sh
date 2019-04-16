@@ -250,7 +250,7 @@ function cloneNuArtModules() {
 function mergeFromFork() {
     local repoUrl=`gitGetRepoUrl`
     if [[ "${repoUrl}" == "${boilerplateRepo}" ]]; then
-        throwError "HAHAHAHA.... You need to be careful... this is not a fork..."
+        throwError "HAHAHAHA.... You need to be careful... this is not a fork..." 2
     fi
 
     logInfo "Making sure repo is clean..."
@@ -266,7 +266,7 @@ function mergeFromFork() {
 function pushNuArt() {
     for module in "${nuArtModules[@]}"; do
         if [[ ! -e "${module}" ]]; then
-            throwError "In order to promote a version ALL nu-art dependencies MUST be present!!!"
+            throwError "In order to promote a version ALL nu-art dependencies MUST be present!!!" 2
         fi
     done
 
@@ -298,7 +298,7 @@ function deriveVersion() {
     esac
 
     if [[ ! "${_version}" ]]; then
-        throwError "Bad version type: ${promoteNuArtVersion}"
+        throwError "Bad version type: ${promoteNuArtVersion}" 2
     fi
 
 }
@@ -319,7 +319,7 @@ function promoteNuArt() {
 
     for module in "${nuArtModules[@]}"; do
         if [[ ! -e "${module}" ]]; then
-            throwError "In order to promote a version ALL nu-art dependencies MUST be present!!!"
+            throwError "In order to promote a version ALL nu-art dependencies MUST be present!!!" 2
         fi
 
         cd ${module}
@@ -406,8 +406,8 @@ function publishNuArt() {
             cp package.json dist/
             cd dist
                 npm publish --access public
+                throwError "Error publishing module: ${module}"
             cd ..
-            throwError "Error publishing module: ${module}"
         cd ..
     done
 }
@@ -415,6 +415,7 @@ function publishNuArt() {
 function getFirebaseConfig() {
     logInfo "Fetching config for serving function locally..."
     firebase functions:config:get > .runtimeconfig.json
+    throwError "Error while getting functions config"
 }
 
 function prepareConfigImpl() {
@@ -463,7 +464,7 @@ function prepareConfigImpl() {
 
 function updateBackendConfig() {
     if [[ ! "${configAsBase64}" ]]; then
-        throwError "config was not prepared!!"
+        throwError "config was not prepared!!" 2
     fi
 
     cd ${backendModule}
@@ -473,7 +474,6 @@ function updateBackendConfig() {
 
         getFirebaseConfig
     cd ..
-    throwError "Error while deploying functions"
 }
 
 function fetchBackendConfig() {
@@ -486,7 +486,6 @@ function fetchBackendConfig() {
         local configEntry=`echo ${configAsBase64} | base64 --decode`
         echo "${configEntry}" > .config.json
     cd ..
-    throwError "Error while deploying functions"
 }
 
 function compileOnCodeChanges() {
