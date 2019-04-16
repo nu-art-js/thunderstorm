@@ -372,7 +372,7 @@ function promoteApps() {
     gitFetchRepo
     gitAssertNoCommitsToPull
 
-    logInfo "Repo is ready for version promotion"
+    logInfo "Repo is ready for version promotion: ${_version}"
 
     local versionPromotion=`deriveVersion ${promoteNuArtVersion}`
     local versionName=`getVersionName version-app.json`
