@@ -353,7 +353,7 @@ function promoteNuArt() {
     done
 
     setVersionName ${promotedVersion} version-nu-art.json
-    gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted to: v${promotedVersion}"
+    gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted infra version to: v${promotedVersion}"
 }
 
 function promoteApps() {
@@ -386,7 +386,7 @@ function promoteApps() {
     done
 
     setVersionName ${promotedVersion} package.json
-    gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted to: v${promotedVersion}"
+    gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted apps version to: v${promotedVersion}"
     gitTag "v${promotedVersion}" "Promoted to: v${promotedVersion}"
     gitPushTags
     throwError "Error pushing promotion tag"
