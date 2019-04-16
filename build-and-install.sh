@@ -329,7 +329,7 @@ function promoteNuArt() {
             gitAssertNoCommitsToPull
 
             if [[ `git tag -l | grep ${promotedVersion}` ]]; then
-                throwError "Tag already exists: v${promotedVersion}"
+                throwError "Tag already exists: v${promotedVersion}" 2
             fi
         cd ..
     done
@@ -373,7 +373,7 @@ function promoteApps() {
 
     logInfo "Promoting Apps: ${versionName} => ${promotedVersion}"
     if [[ `git tag -l | grep ${promotedVersion}` ]]; then
-        throwError "Tag already exists: v${promotedVersion}"
+        throwError "Tag already exists: v${promotedVersion}" 2
     fi
 
 
