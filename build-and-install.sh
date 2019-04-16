@@ -304,6 +304,12 @@ function deriveVersion() {
 }
 
 function promoteNuArt() {
+    local versionPromotion=`deriveVersion ${promoteNuArtVersion}`
+    local versionName=`getVersionName version-nu-art.json`
+    local promotedVersion=`promoteVersion ${versionName} ${versionPromotion}`
+
+    logInfo "Promoting Nu-Art: ${versionName} => ${promotedVersion}"
+
     logInfo "Asserting repo readiness to promote a version..."
 
     gitAssertBranch master
@@ -321,19 +327,14 @@ function promoteNuArt() {
             gitAssertRepoClean
             gitFetchRepo
             gitAssertNoCommitsToPull
+
+            if [[ `git tag -l | grep ${promotedVersion}` ]]; then
+                throwError "Tag already exists: v${promotedVersion}"
+            fi
         cd ..
     done
 
     logInfo "Repo is ready for version promotion"
-
-    local versionPromotion=`deriveVersion ${promoteNuArtVersion}`
-    local versionName=`getVersionName version-nu-art.json`
-    local promotedVersion=`promoteVersion ${versionName} ${versionPromotion}`
-
-    logInfo "Promoting Nu-Art: ${versionName} => ${promotedVersion}"
-    if [[ `git tag -l | grep ${promotedVersion}` ]]; then
-        throwError "Tag already exists: v${promotedVersion}"
-    fi
 
     for module in "${nuArtModules[@]}"; do
         cd ${module}
