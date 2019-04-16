@@ -175,7 +175,7 @@ function extractParams() {
 
             "--version-nu-art="* | "-vn="*)
                 promoteNuArtVersion=`echo "${paramValue}" | sed -E "s/(--version-nu-art=|-vn=)(.*)/\2/"`
-                setup=true
+#                setup=true
                 linkDependencies=true
             ;;
 

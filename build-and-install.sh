@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source ./dev-tools/scripts/git/_core.sh
+source ./dev-tools/scripts/ci/typescript/_source.sh
 source .scripts/modules.sh
 source .scripts/params.sh
 source .scripts/signature.sh
@@ -276,6 +277,7 @@ function pushNuArt() {
         cd ..
     done
 }
+
 function deriveVersion() {
     local _version=${1}
     case "${_version}" in
@@ -302,7 +304,13 @@ function deriveVersion() {
 }
 
 function promoteNuArt() {
-    local _version=`deriveVersion ${promoteNuArtVersion}`
+    logInfo "Asserting repo readiness to promote a version..."
+
+    gitAssertBranch master
+    gitAssertRepoClean
+    gitFetchRepo
+    gitAssertNoCommitsToPull
+
     for module in "${nuArtModules[@]}"; do
         if [[ ! -e "${module}" ]]; then
             throwError "In order to promote a version ALL nu-art dependencies MUST be present!!!"
@@ -316,35 +324,71 @@ function promoteNuArt() {
         cd ..
     done
 
+    logInfo "Repo is ready for version promotion"
+
+    local versionPromotion=`deriveVersion ${promoteNuArtVersion}`
+    local versionName=`getVersionName version-nu-art.json`
+    local promotedVersion=`promoteVersion ${versionName} ${versionPromotion}`
+
+    logInfo "Promoting Nu-Art: ${versionName} => ${promotedVersion}"
+    if [[ `git tag -l | grep ${promotedVersion}` ]]; then
+        throwError "Tag already exists: v${promotedVersion}"
+    fi
+
     for module in "${nuArtModules[@]}"; do
         cd ${module}
-            logInfo "updating module: ${module} version: ${_version}"
+            logInfo "Promoting module: ${module} to version: ${promotedVersion}"
             setupModule ${module}
-            gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "updated dependencies version"
-            npm version ${_version}
-            throwError "Error promoting version"
+
+            setVersionName ${promotedVersion} package.json
+            gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted to: v${promotedVersion}"
+
+            gitTag "v${promotedVersion}" "Promoted to: v${promotedVersion}"
+            gitPushTags
+            throwError "Error pushing promotion tag"
         cd ..
 
         mapModulesVersions
     done
+
+    setVersionName ${promotedVersion} version-nu-art.json
+    gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted to: v${promotedVersion}"
 }
 
 function promoteApps() {
-    throwError "Promote app version - WIP"
+    logInfo "Asserting repo readiness to promote a version..."
 
     local _version=`deriveVersion ${promoteAppVersion}`
-    gitAssertRepoClean
     gitAssertBranch master
+    gitAssertRepoClean
+    gitFetchRepo
+    gitAssertNoCommitsToPull
+
+    logInfo "Repo is ready for version promotion"
+
+    local versionPromotion=`deriveVersion ${promoteNuArtVersion}`
+    local versionName=`getVersionName version-app.json`
+    local promotedVersion=`promoteVersion ${versionName} ${versionPromotion}`
+
+    logInfo "Promoting Apps: ${versionName} => ${promotedVersion}"
+    if [[ `git tag -l | grep ${promotedVersion}` ]]; then
+        throwError "Tag already exists: v${promotedVersion}"
+    fi
+
 
     for module in "${projectModules[@]}"; do
         cd ${module}
-            logInfo "updating module: ${module} version: ${_version}"
-            gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "updated dependencies version"
-            npm version ${_version}
+            logInfo "Promoting module: ${module} to version: ${promotedVersion}"
+            setupModule ${module}
+            setVersionName ${promotedVersion} package.json
         cd ..
-
-        mapModulesVersions
     done
+
+    setVersionName ${promotedVersion} package.json
+    gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted to: v${promotedVersion}"
+    gitTag "v${promotedVersion}" "Promoted to: v${promotedVersion}"
+    gitPushTags
+    throwError "Error pushing promotion tag"
 }
 
 function publishNuArt() {
