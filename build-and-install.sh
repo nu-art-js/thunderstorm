@@ -310,7 +310,7 @@ function promoteNuArt() {
 
     logInfo "Promoting Nu-Art: ${versionName} => ${promotedVersion}"
 
-    logInfo "Asserting repo readiness to promote a version..."
+    logInfo "Asserting main repo readiness to promote a version..."
 
     gitAssertBranch master
     gitAssertRepoClean
@@ -422,7 +422,7 @@ function prepareConfigImpl() {
     cd ${backendModule}
         if [[ -e ".example-config.json" ]] && [[ ! -e ".config.json" ]]; then
             logInfo "Setting first time .config.json"
-            mv .example-config.json .config.json
+            cp .example-config.json .config.json
 
             if [[ ! -e ".config-dev.json" ]]; then
                 cp .config.json .config-dev.json
