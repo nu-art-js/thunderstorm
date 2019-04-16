@@ -354,6 +354,13 @@ function promoteNuArt() {
 
     setVersionName ${promotedVersion} version-nu-art.json
     gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted infra version to: v${promotedVersion}"
+
+    for module in "${projectModules[@]}"; do
+        cd ${module}
+            logInfo "Promoting dependencies module: ${module} to version: ${promotedVersion}"
+            setupModule ${module}
+        cd ..
+    done
 }
 
 function promoteApps() {
