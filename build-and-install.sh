@@ -311,11 +311,11 @@ function promoteNuArt() {
     logInfo "Promoting Nu-Art: ${versionName} => ${promotedVersion}"
 
     logInfo "Asserting main repo readiness to promote a version..."
-
     gitAssertBranch master
     gitAssertRepoClean
     gitFetchRepo
     gitAssertNoCommitsToPull
+    logInfo "Main Repo is ready for version promotion"
 
     for module in "${nuArtModules[@]}"; do
         if [[ ! -e "${module}" ]]; then
