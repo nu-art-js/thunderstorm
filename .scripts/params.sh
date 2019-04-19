@@ -19,7 +19,6 @@ linkDependencies=
 test=
 build=true
 
-serveBackend=
 launchBackend=
 launchFrontend=
 
@@ -34,7 +33,7 @@ publish=
 modulesPackageName=()
 modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies install build cleanDirt test useFrontendHack serveBackend launchBackend launchFrontend envType deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies install build cleanDirt test useFrontendHack launchBackend launchFrontend envType deployBackend deployFrontend version publish)
 
 function extractParams() {
     for paramValue in "${@}"; do
@@ -136,10 +135,6 @@ function extractParams() {
             "--launch" | "-l")
                 launchBackend=true
                 launchFrontend=true
-            ;;
-
-            "--serve-backend" | "-sb")
-                serveBackend=true
             ;;
 
             "--launch-backend" | "-lb")

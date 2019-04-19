@@ -56,9 +56,6 @@ function printHelp() {
     logVerbose "   ${pc}--launch-backend${noColor}"
     logVerbose "        ${dc}Will launch ONLY backend${noColor}"
     logVerbose
-    logVerbose "   ${pc}--serve-backend${noColor}"
-    logVerbose "        ${dc}Will serve ONLY backend${noColor}"
-    logVerbose
     logVerbose
 
     logVerbose " ==== ${group}DEPLOY:${noColor} ===="

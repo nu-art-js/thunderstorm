@@ -41,7 +41,7 @@ function purgeModule() {
 }
 
 function usingBackend() {
-    if [[ ! "${deployBackend}" ]] && [[ ! "${launchBackend}" ]] && [[ ! "${serveBackend}" ]]; then
+    if [[ ! "${deployBackend}" ]] && [[ ! "${launchBackend}" ]]; then
         echo
         return
     fi
@@ -573,8 +573,8 @@ if [[ "${launchBackend}" ]]; then
     throwError "nodemon package is missing... Please install nodemon:\n npm i -g nodemon"
 
     cd ${backendModule}
-        if [[ -e "_launch.sh" ]]; then
-            _launch.sh
+        if [[ -e "_setup.sh" ]]; then
+           bash _setup.sh
         fi
 
         if [[ "${launchFrontend}" ]]; then
@@ -582,12 +582,6 @@ if [[ "${launchBackend}" ]]; then
         else
             npm run serve
         fi
-    cd ..
-fi
-
-if [[ "${serveBackend}" ]]; then
-    cd ${backendModule}
-        npm run serve
     cd ..
 fi
 
@@ -602,6 +596,10 @@ if [[ "${launchFrontend}" ]]; then
 fi
 
 if [[ "${deployBackend}" ]] || [[ "${deployFrontend}" ]]; then
+    if [[ ! "${envType}" ]]; then
+        throwError "MUST set env while deploying!!" 2
+    fi
+
     firebaseProject=`getJsonValueForKey .firebaserc "default"`
 
     if [[ "${deployBackend}" ]]; then
