@@ -4,7 +4,11 @@
 !.idea/scopes/
 
 env
+
+.firebaserc
 .firebase
+firebase.json
+
 .trash
 *.iml
 **/.DS_Store

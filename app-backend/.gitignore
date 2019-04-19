@@ -3,7 +3,7 @@ dist
 dist-test
 _package.json
 package-lock.json
-.runtimeconfig.json
-.config.ts
+
+src/main/config.ts
 src/main/app-common
 .dirty
