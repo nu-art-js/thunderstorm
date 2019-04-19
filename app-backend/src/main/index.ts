@@ -17,10 +17,11 @@
  */
 
 import {main} from "./main";
+import {Environment} from "./config";
 
-main()
-	.then(() => {
-		console.log("Started");
-	})
+main(Environment)
+	.then(() => console.log("Started"))
 	.catch(reason => console.error("Error: ", reason));
+
+
 

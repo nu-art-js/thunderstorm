@@ -1,0 +1,25 @@
+‰{
+  "functions": {
+    "source": "app-backend",
+    "predeploy": [
+      "npm --prefix ./app-backend run lint",
+      "npm --prefix ./app-backend run build"
+    ]
+  },
+  "hosting": {
+    "public": "app-frontend/dist/dev",
+    "redirects": [
+      {
+        "source": "/backend/api/:rPath*",
+        "destination": "https://localhost:3333/api/:rPath",
+        "type": 307
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

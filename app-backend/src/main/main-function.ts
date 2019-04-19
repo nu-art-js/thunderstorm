@@ -20,38 +20,56 @@
  * Created by tacb0ss on 10/07/2018.
  */
 
+/*/**
+ * Created by tacb0ss on 10/07/2018.
+ */
+
+import {
+	HttpServer,
+	HttpServer_Class,
+	ServerApi
+} from "@nu-art/server/HttpServer";
 import {
 	BeLogged,
 	createModuleManager,
 	Module,
-	TerminalLogClient
+	TerminalLogClient,
 } from "@nu-art/core";
-import {HttpServer} from "@nu-art/server/HttpServer";
+import * as bodyParser from "body-parser";
 
-export async function main(environment: {}) {
+import {FirebaseModule} from "@nu-art/server/FirebaseModule";
+import * as firebase from "firebase-admin";
+
+export async function main(environment: { name: string }) {
 	BeLogged.addClient(TerminalLogClient);
 
 	/*
 	 *  SETUP, CONFIG & INIT
 	 */
-	const configAsObject = environment;
+	const dataSnapshot = await firebase.initializeApp().database().ref(`/_config/${environment.name}`).once("value");
+	const configAsObject = dataSnapshot.val();
 
 
 	const modules: Module<any>[] =
 		      [
 			      HttpServer,
+			      FirebaseModule,
 		      ];
 
+	HttpServer_Class.addMiddleware(bodyParser.urlencoded({extended: false}));
 
 	createModuleManager().setConfig(configAsObject).setModules(...modules).init();
 
 	/*
 	 *  SETUP HttpServer
 	 */
+	ServerApi.isDebug = configAsObject.isDebug;
 	const _urlPrefix: string = !process.env.GCLOUD_PROJECT ? "/api" : "";
 	HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/api", __dirname + "/api");
 	HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? "/api" : "");
-	return HttpServer.startServer();
+	const httpPromise = HttpServer.startServer();
+
+	return Promise.all([httpPromise]);
 }
 
 export async function mainTerminate() {

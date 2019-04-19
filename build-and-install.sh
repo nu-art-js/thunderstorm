@@ -418,74 +418,34 @@ function getFirebaseConfig() {
     throwError "Error while getting functions config"
 }
 
-function prepareConfigImpl() {
-    cd ${backendModule}
-        if [[ -e ".example-config.json" ]] && [[ ! -e ".config.json" ]]; then
-            logInfo "Setting first time .config.json"
-            cp .example-config.json .config.json
+function copyConfigFile() {
+    local message=${1}
+    local pathTo=${2}
+    local envFile=${3}
+    local targetFile=${4}
+    local envConfigFile="${pathTo}/${envFile}"
+    logInfo "${message}"
 
-            if [[ ! -e ".config-dev.json" ]]; then
-                cp .config.json .config-dev.json
-            fi
-            if [[ ! -e ".config-prod.json" ]]; then
-                cp .config.json .config-prod.json
-            fi
-        fi
-
-        if [[ "${envType}" ]] && [[ -e ".config-${envType}.json" ]]; then
-            logInfo "Setting to backend envType: ${envType}"
-            cp -f ".config-${envType}.json" .config.json
-        fi
-
-        logInfo "Preparing config as base64..."
-        local configAsJson=`cat .config.json`
-        configAsBase64=
-
-        if [[ `isMacOS` ]]; then
-            configAsBase64=`echo "${configAsJson}" | base64 --break 0`
-            throwError "Error base64 config"
-        else
-            configAsBase64=`echo "${configAsJson}" | base64 --wrap=0`
-            throwError "Error base64 config"
-        fi
-
-        echo "{\"app\": {\"config\":\"${configAsBase64}\"}}" > .runtimeconfig.json
-        logInfo "Backend Config is ready as base64!"
-    cd -
-
-    cd ${frontendModule}/src/main
-        if [[ "${envType}" ]] && [[ -e "config-${envType}.ts" ]]; then
-            logInfo "Setting to frontend envType: ${envType}"
-            cp -f "config-${envType}.ts" config.ts
-        fi
-        logInfo "Frontend config is set!"
-    cd -
-}
-
-function updateBackendConfig() {
-    if [[ ! "${configAsBase64}" ]]; then
-        throwError "config was not prepared!!" 2
+    if [[ ! -e "${envConfigFile}" ]]; then
+        throwError "File not found: ${envConfigFile}" 2
     fi
+    cp "${envConfigFile}" ${targetFile}
 
-    cd ${backendModule}
-        logInfo "Updating config in firebase..."
-        firebase functions:config:set ${configEntryName}="${configAsBase64}"
-        throwError "Error Updating config as base 64 in firebase..."
 
-        getFirebaseConfig
-    cd ..
 }
 
-function fetchBackendConfig() {
-    cd ${backendModule}
-        getFirebaseConfig
+function setEnvironment() {
+    logInfo "Setting envType: ${envType}"
+    copyConfigFile "Setting firebase.json for env: ${envType}" "./.config" "firebase-${envType}.json" "firebase.json"
+    copyConfigFile "Setting .firebaserc for env: ${envType}" "./.config" ".firebaserc-${envType}" ".firebaserc"
 
-        logInfo "Updating config locally..."
-        local configAsBase64=`firebase functions:config:get ${configEntryName}`
-        configAsBase64=${configAsBase64:1:-1}
-        local configEntry=`echo ${configAsBase64} | base64 --decode`
-        echo "${configEntry}" > .config.json
-    cd ..
+    cd ${backendModule}
+        copyConfigFile "Setting frontend config.ts for env: ${envType}" "./.config" "config-${envType}.ts" "./src/main/config.ts"
+    cd - > /dev/null
+
+    cd ${frontendModule}
+        copyConfigFile "Setting frontend config.ts for env: ${envType}" "./.config" "config-${envType}.ts" "./src/main/config.ts"
+    cd - > /dev/null
 }
 
 function compileOnCodeChanges() {
@@ -592,16 +552,8 @@ if [[ "${purge}" ]]; then
     executeOnModules purgeModule
 fi
 
-if [[ "${prepareConfig}" ]]; then
-    prepareConfigImpl
-fi
-
-if [[ "${setBackendConfig}" ]]; then
-    updateBackendConfig
-fi
-
-if [[ "${getBackendConfig}" ]]; then
-    fetchBackendConfig
+if [[ "${envType}" ]]; then
+    setEnvironment
 fi
 
 if [[ "${setup}" ]]; then
@@ -626,9 +578,9 @@ if [[ "${launchBackend}" ]]; then
         fi
 
         if [[ "${launchFrontend}" ]]; then
-            nodemon &
+            npm run serve &
         else
-            nodemon
+            npm run serve
         fi
     cd ..
 fi
@@ -649,14 +601,22 @@ if [[ "${launchFrontend}" ]]; then
     cd ..
 fi
 
-if [[ "${deployBackend}" ]]; then
-    firebase deploy --only functions
-    throwError "Error while deploying functions"
-fi
+if [[ "${deployBackend}" ]] || [[ "${deployFrontend}" ]]; then
+    firebaseProject=`getJsonValueForKey .firebaserc "default"`
 
-if [[ "${deployFrontend}" ]]; then
-    firebase deploy --only hosting
-    throwError "Error while deploying hosting"
+    if [[ "${deployBackend}" ]]; then
+        logInfo "Using firebase project: ${firebaseProject}"
+        firebase use ${firebaseProject}
+        firebase deploy --only functions
+        throwError "Error while deploying functions"
+    fi
+
+    if [[ "${deployFrontend}" ]]; then
+        logInfo "Using firebase project: ${firebaseProject}"
+        firebase use ${firebaseProject}
+        firebase deploy --only hosting
+        throwError "Error while deploying hosting"
+    fi
 fi
 
 if [[ "${pushNuArtMessage}" ]]; then

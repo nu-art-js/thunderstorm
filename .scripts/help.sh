@@ -72,17 +72,8 @@ function printHelp() {
     logVerbose "   ${pc}--deploy-backend${noColor}"
     logVerbose "        ${dc}Will deploy ONLY backend${noColor}"
     logVerbose
-    logVerbose "   ${pc}--prepare-config${noColor}"
-    logVerbose "        ${dc}Will prepare the .config.json as base64 for local usage${noColor}"
-    logVerbose
     logVerbose "   ${pc}--set-env=<${param}envType${pc}>${noColor}"
     logVerbose "        ${dc}Will set the .config-\${envType}.json as the current .config.json and prepare it as base 64 for local usage${noColor}"
-    logVerbose
-    logVerbose "   ${pc}--set-backend-config${noColor}"
-    logVerbose "        ${dc}Will set function backend config${noColor}"
-    logVerbose
-    logVerbose "   ${pc}--get-backend-config${noColor}"
-    logVerbose "        ${dc}Will get function backend config${noColor}"
     logVerbose
     logVerbose
 

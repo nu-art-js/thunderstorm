@@ -16,44 +16,41 @@
  * limitations under the License.
  */
 
-/**
- * Created by tacb0ss on 10/07/2018.
- */
-
+import {main} from "./main";
+import {HttpServer} from "@nu-art/server/http-server/HttpServer";
 import * as functions from 'firebase-functions';
+import {Environment} from "./config";
 import {
-	HttpServer,
-} from "@nu-art/server/HttpServer";
+	Request,
+	Response
+} from "express";
 
-import {FirebaseModule} from "@nu-art/server/FirebaseModule";
+const _api = functions.https.onRequest(HttpServer.express);
+const toBeExecuted: (() => void)[] = [];
+let isReady: boolean = false;
 
-import {ModuleManager} from "@nu-art/core";
-import {Base64} from "js-base64";
-import decode = Base64.decode;
+export const api = functions.https.onRequest((req: Request, res: Response) => {
+	if (!isReady) {
+		toBeExecuted.push(() => {
+			_api(req, res)
+		});
 
-/*
- *  SETUP, CONFIG & INIT
- */
-const configAsBase64: string = functions.config().app.config;
-const configAsObject = JSON.parse(decode(configAsBase64));
-ModuleManager.getInstance().setConfig(configAsObject).setModules(HttpServer, FirebaseModule).init();
+		return;
+	}
 
-/*
- *  SETUP Firebase
- */
-FirebaseModule.createAdminSession("adam_gcm");
+	_api(req, res)
+});
 
-/*
- *  SETUP HttpServer
- */
-const _urlPrefix: string = !process.env.GCLOUD_PROJECT ? "/api" : "";
-HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/api", __dirname + "/api");
-HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? "/api" : "");
-HttpServer.startServer()
-          .then(() => {
-	          console.log("Started");
-          })
-          .catch((reason: Error) => console.error("Error: ", reason));
+main(Environment)
+	.then(() => {
+		for (const toExecute of toBeExecuted) {
+			toExecute();
+		}
+
+		console.log("Started");
+		isReady = true;
+	})
+	.catch(reason => console.error("Error: ", reason));
 
 
-export const api = functions.https.onRequest(HttpServer.express);
+

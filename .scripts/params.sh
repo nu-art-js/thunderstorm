@@ -24,9 +24,6 @@ launchBackend=
 launchFrontend=
 
 envType=
-prepareConfig=
-setBackendConfig=
-getBackendConfig=
 deployBackend=
 deployFrontend=
 
@@ -37,7 +34,7 @@ publish=
 modulesPackageName=()
 modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies install build cleanDirt test useFrontendHack serveBackend launchBackend launchFrontend envType prepareConfig getBackendConfig setBackendConfig deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies install build cleanDirt test useFrontendHack serveBackend launchBackend launchFrontend envType deployBackend deployFrontend version publish)
 
 function extractParams() {
     for paramValue in "${@}"; do
@@ -133,19 +130,6 @@ function extractParams() {
 
             "--set-env="* | "-se="*)
                 envType=`echo "${paramValue}" | sed -E "s/(--set-env=|-se=)(.*)/\2/"`
-                prepareConfig=true
-            ;;
-
-            "--set-backend-config" | "-sbc")
-                envType=`echo "${paramValue}" | sed -E "s/(--set-backend-config=|-scb=)(.*)/\2/"`
-                prepareConfig=true
-                setBackendConfig=true
-                build=
-            ;;
-
-            "--get-backend-config" | "-gbc")
-                getBackendConfig=true
-                build=
             ;;
 
 #        ==== LAUNCH =====
