@@ -2,6 +2,8 @@
 
 source ./dev-tools/scripts/git/_core.sh
 source ./dev-tools/scripts/ci/typescript/_source.sh
+
+source .scripts/setup.sh
 source .scripts/modules.sh
 source .scripts/params.sh
 source .scripts/signature.sh
@@ -292,21 +294,16 @@ function deriveVersion() {
         ;;
 
         *)
-            echo
-            return
+            throwError "Bad version type: ${_version}" 2
         ;;
     esac
-
-    if [[ ! "${_version}" ]]; then
-        throwError "Bad version type: ${promoteNuArtVersion}" 2
-    fi
-
 }
 
 function promoteNuArt() {
-    local versionPromotion=`deriveVersion ${promoteNuArtVersion}`
-    local versionName=`getVersionName version-nu-art.json`
-    local promotedVersion=`promoteVersion ${versionName} ${versionPromotion}`
+    local versionFile="version-nu-art.json"
+    local promotionType=`deriveVersion ${promoteNuArtVersion}`
+    local versionName=`getVersionName ${versionFile}`
+    local promotedVersion=`promoteVersion ${versionName} ${promotionType}`
 
     logInfo "Promoting Nu-Art: ${versionName} => ${promotedVersion}"
 
@@ -359,24 +356,25 @@ function promoteNuArt() {
         cd ..
     done
 
-    setVersionName ${promotedVersion} version-nu-art.json
+    setVersionName ${promotedVersion} ${versionFile}
     gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted infra version to: v${promotedVersion}"
 }
 
 function promoteApps() {
     logInfo "Asserting repo readiness to promote a version..."
 
-    local _version=`deriveVersion ${promoteAppVersion}`
-    gitAssertBranch master
+    local versionFile="version-app.json"
+    local promotionType=`deriveVersion ${promoteAppVersion}`
+    local versionName=`getVersionName ${versionFile}`
+    local promotedVersion=`promoteVersion ${versionName} ${promotionType}`
+
+    gitAssertBranch "${allowedBranchesForPromotion[@]}"
     gitAssertRepoClean
     gitFetchRepo
     gitAssertNoCommitsToPull
 
-    logInfo "Repo is ready for version promotion: ${_version}"
+    logInfo "Repo is ready for version promotion: ${promotionType}"
 
-    local versionPromotion=`deriveVersion ${promoteNuArtVersion}`
-    local versionName=`getVersionName version-app.json`
-    local promotedVersion=`promoteVersion ${versionName} ${versionPromotion}`
 
     logInfo "Promoting Apps: ${versionName} => ${promotedVersion}"
     if [[ `git tag -l | grep ${promotedVersion}` ]]; then
@@ -392,7 +390,7 @@ function promoteApps() {
         cd ..
     done
 
-    setVersionName ${promotedVersion} package.json
+    setVersionName ${promotedVersion} ${versionFile}
     gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted apps version to: v${promotedVersion}"
     gitTag "v${promotedVersion}" "Promoted to: v${promotedVersion}"
     gitPushTags
@@ -548,6 +546,8 @@ mapExistingLibraries
 mapModulesVersions
 executeOnModules printModule
 
+# BUILD
+
 if [[ "${purge}" ]]; then
     executeOnModules purgeModule
 fi
@@ -568,15 +568,20 @@ if [[ "${test}" ]]; then
     executeOnModules testModule
 fi
 
+# PRE-Launch and deploy
+
+if [[ "${promoteAppVersion}" ]]; then
+    promoteApps
+fi
+
+# LAUNCH
+
 if [[ "${launchBackend}" ]]; then
     npm list -g nodemon > /dev/null
     throwError "nodemon package is missing... Please install nodemon:\n npm i -g nodemon"
 
+    setupBackend
     cd ${backendModule}
-        if [[ -e "_setup.sh" ]]; then
-           bash _setup.sh
-        fi
-
         if [[ "${launchFrontend}" ]]; then
             npm run serve &
         else
@@ -594,6 +599,8 @@ if [[ "${launchFrontend}" ]]; then
         fi
     cd ..
 fi
+
+# Deploy
 
 if [[ "${deployBackend}" ]] || [[ "${deployFrontend}" ]]; then
     if [[ ! "${envType}" ]]; then
@@ -617,6 +624,9 @@ if [[ "${deployBackend}" ]] || [[ "${deployFrontend}" ]]; then
     fi
 fi
 
+
+# OTHER
+
 if [[ "${pushNuArtMessage}" ]]; then
     pushNuArt
 fi
@@ -624,10 +634,6 @@ fi
 if [[ "${promoteNuArtVersion}" ]]; then
     gitAssertOrigin "${boilerplateRepo}"
     promoteNuArt
-fi
-
-if [[ "${promoteAppVersion}" ]]; then
-    promoteApps
 fi
 
 if [[ "${publish}" ]]; then
