@@ -19,5 +19,11 @@ export const Environment = {
 		},
 		host: "localhost",
 		port: "3333"
+	},
+	ExampleModule: {
+		options: ["Hi",
+		          "How are you",
+		          "Hello World",
+		          "Backend example"]
 	}
 };

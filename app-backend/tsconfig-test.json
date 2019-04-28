@@ -5,7 +5,19 @@
     "outDir": "dist-test",
     "declaration": true,
     "strict": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@common/*": [
+        "main/app-common/*"
+      ],
+      "@modules/*": [
+        "main/modules/*"
+      ],
+      "@consts/*": [
+        "main/consts/*"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts"

@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+import 'module-alias/register'
 import {main} from "./main";
 import {HttpServer} from "@nu-art/server/http-server/HttpServer";
 import * as functions from 'firebase-functions';

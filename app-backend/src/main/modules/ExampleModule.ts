@@ -15,14 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {Module} from "@nu-art/core";
 
-import 'module-alias/register'
-import {main} from "./main";
-import {Environment} from "./config";
+type Config = {
+	options: string[]
+}
 
-main(Environment)
-	.then(() => console.log("Started"))
-	.catch(reason => console.error("Error: ", reason));
+export class ExampleModule_Class
+	extends Module<Config> {
 
+	getRandomString() {
+		return this.config.options[Math.floor(Math.random() * (this.config.options.length))];
+	}
+}
 
-
+export const ExampleModule = new ExampleModule_Class();

@@ -20,7 +20,7 @@ import * as React from "react";
 import {
 	ExampleModule,
 	OnLabelReceived
-} from "./modules/ExampleModule";
+} from "../modules/ExampleModule";
 import {BaseComponent} from "@nu-art/fronzy";
 
 export class Hello

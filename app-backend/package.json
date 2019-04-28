@@ -52,9 +52,15 @@
     "@types/firebase": "^3.2.1",
     "@types/js-base64": "^2.3.1",
     "@types/node": "^11.9.5",
+    "module-alias": "^2.2.0",
     "typescript": "^3.3.3333"
   },
   "engines": {
     "node": "8"
+  },
+  "_moduleAliases": {
+    "@modules": "dist/modules",
+    "@common": "dist/app-common",
+    "@utils": "dist/consts"
   }
 }

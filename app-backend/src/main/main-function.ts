@@ -39,6 +39,7 @@ import * as bodyParser from "body-parser";
 
 import {FirebaseModule} from "@nu-art/server/FirebaseModule";
 import * as firebase from "firebase-admin";
+import {ExampleModule} from "@modules/ExampleModule";
 
 export async function main(environment: { name: string }) {
 	BeLogged.addClient(TerminalLogClient);
@@ -54,6 +55,7 @@ export async function main(environment: { name: string }) {
 		      [
 			      HttpServer,
 			      FirebaseModule,
+			      ExampleModule,
 		      ];
 
 	HttpServer_Class.addMiddleware(bodyParser.urlencoded({extended: false}));

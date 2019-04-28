@@ -53,6 +53,14 @@ module.exports = (env, argv) => {
 		},
 
 		resolve: {
+			alias: {
+				"@modules": path.resolve(__dirname, "src/main/modules"),
+				"@consts": path.resolve(__dirname, "src/main/consts"),
+				"@components": path.resolve(__dirname, "src/main/components"),
+				"@renderers": path.resolve(__dirname, "src/main/renderers"),
+				"@common": path.resolve(__dirname, "src/main/app-common"),
+				// "@utils": path.resolve(__dirname, "src/main/utils")
+			},
 			extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
 		},
 

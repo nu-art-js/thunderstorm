@@ -27,6 +27,7 @@ import {
 	TerminalLogClient
 } from "@nu-art/core";
 import {HttpServer} from "@nu-art/server/HttpServer";
+import {ExampleModule} from "@modules/ExampleModule";
 
 export async function main(environment: {}) {
 	BeLogged.addClient(TerminalLogClient);
@@ -40,6 +41,7 @@ export async function main(environment: {}) {
 	const modules: Module<any>[] =
 		      [
 			      HttpServer,
+			      ExampleModule,
 		      ];
 
 

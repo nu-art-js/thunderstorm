@@ -17,7 +17,25 @@
       "es6",
       "es7",
       "dom"
-    ]
+    ],
+    "baseUrl": "./src/main",
+    "paths": {
+      "@common/*": [
+        "app-common/*"
+      ],
+      "@modules/*": [
+        "modules/*"
+      ],
+      "@consts/*": [
+        "consts/*"
+      ],
+      "@renderers/*": [
+        "renderers/*"
+      ],
+      "@components/*": [
+        "components/*"
+      ]
+    }
   },
   "include": [
     "src/**/*.ts",
