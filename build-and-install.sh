@@ -339,14 +339,19 @@ function promoteNuArt() {
             setupModule ${module}
 
             setVersionName ${promotedVersion} package.json
+        cd ..
+
+        mapModulesVersions
+    done
+
+    for module in "${nuArtModules[@]}"; do
+        cd ${module}
             gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted to: v${promotedVersion}"
 
             gitTag "v${promotedVersion}" "Promoted to: v${promotedVersion}"
             gitPushTags
             throwError "Error pushing promotion tag"
         cd ..
-
-        mapModulesVersions
     done
 
     for module in "${projectModules[@]}"; do
