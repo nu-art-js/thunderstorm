@@ -183,6 +183,9 @@ function setupModule() {
             logVerbose
             npm install
             throwError "Error installing module"
+
+            npm audit fix
+            throwError "Error fixing vulnerabilities"
         trap - SIGINT
     fi
 
@@ -332,6 +335,7 @@ function promoteNuArt() {
     for module in "${nuArtModules[@]}"; do
         cd ${module}
             logInfo "Promoting module: ${module} to version: ${promotedVersion}"
+            linkDependenciesImpl ${module}
             setupModule ${module}
 
             setVersionName ${promotedVersion} package.json
