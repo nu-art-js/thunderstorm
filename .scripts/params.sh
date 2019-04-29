@@ -15,7 +15,7 @@ setup=
 install=true
 listen=
 useFrontendHack=true
-linkDependencies=
+linkDependencies=true
 test=
 build=true
 
