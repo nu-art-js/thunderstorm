@@ -4,5 +4,5 @@ build
 _package.json
 package-lock.json
 config.ts
-src/main/app-common
+src/main/app-shared
 .dirty

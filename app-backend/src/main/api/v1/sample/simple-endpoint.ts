@@ -24,7 +24,7 @@ import {
 import * as express from "express";
 import {ParsedUrlQuery} from "querystring";
 import {HttpMethod} from "@nu-art/core";
-import {CommonBodyReq} from "@common/shared";
+import {CommonBodyReq} from "@shared/shared";
 
 class ServerApi_EndpointExample
 	extends ServerApi<CommonBodyReq> {

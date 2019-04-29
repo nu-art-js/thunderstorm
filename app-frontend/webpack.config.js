@@ -58,7 +58,7 @@ module.exports = (env, argv) => {
 				"@consts": path.resolve(__dirname, "src/main/consts"),
 				"@components": path.resolve(__dirname, "src/main/components"),
 				"@renderers": path.resolve(__dirname, "src/main/renderers"),
-				"@common": path.resolve(__dirname, "src/main/app-common"),
+				"@shared": path.resolve(__dirname, "src/main/app-shared"),
 				// "@utils": path.resolve(__dirname, "src/main/utils")
 			},
 			extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']

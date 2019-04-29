@@ -80,9 +80,7 @@ function extractParams() {
             ;;
 
             "--link-only" | "-lo")
-                setup=true
                 linkDependencies=true
-                install=
                 build=
             ;;
 

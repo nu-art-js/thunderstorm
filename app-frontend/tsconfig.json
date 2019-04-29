@@ -20,8 +20,8 @@
     ],
     "baseUrl": "./src/main",
     "paths": {
-      "@common/*": [
-        "app-common/*"
+      "@shared/*": [
+        "app-shared/*"
       ],
       "@modules/*": [
         "modules/*"

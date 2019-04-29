@@ -159,6 +159,7 @@ function setupModule() {
         local i
         for (( i=0; i<${#modules[@]}; i+=1 )); do
             if [[ "${module}" == "${modules[${i}]}" ]]; then break; fi
+            if [[ ! -e "${module}" ]]; then continue; fi
 
             local moduleName="${modulesPackageName[${i}]}"
             local escapedModuleName=${moduleName/\//\\/}
@@ -171,10 +172,8 @@ function setupModule() {
         done
     }
 
-    if [[ "${linkDependencies}" ]]; then
-        backupPackageJson
-        cleanPackageJson
-    fi
+    backupPackageJson
+    cleanPackageJson
 
     if [[ "${install}" ]]; then
         trap 'restorePackageJson' SIGINT
@@ -187,10 +186,7 @@ function setupModule() {
         trap - SIGINT
     fi
 
-    if [[ "${linkDependencies}" ]]; then
-        restorePackageJson
-        linkDependenciesImpl $@
-    fi
+    restorePackageJson
 }
 
 function executeOnModules() {
@@ -563,18 +559,16 @@ if [[ "${setup}" ]]; then
     executeOnModules setupModule
 fi
 
+if [[ "${linkDependencies}" ]]; then
+    executeOnModules linkDependenciesImpl
+fi
+
 if [[ "${build}" ]]; then
     executeOnModules buildModule
 fi
 
 if [[ "${test}" ]]; then
     executeOnModules testModule
-fi
-
-# PRE-Launch and deploy
-
-if [[ "${promoteAppVersion}" ]]; then
-    promoteApps
 fi
 
 # LAUNCH
@@ -627,6 +621,11 @@ if [[ "${deployBackend}" ]] || [[ "${deployFrontend}" ]]; then
     fi
 fi
 
+# PRE-Launch and deploy
+
+if [[ "${promoteAppVersion}" ]]; then
+    promoteApps
+fi
 
 # OTHER
 

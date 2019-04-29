@@ -60,7 +60,7 @@
   },
   "_moduleAliases": {
     "@modules": "dist/modules",
-    "@common": "dist/app-common",
+    "@shared": "dist/app-shared",
     "@utils": "dist/consts"
   }
 }
