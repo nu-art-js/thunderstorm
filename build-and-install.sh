@@ -358,7 +358,7 @@ function promoteNuArt() {
     for module in "${projectModules[@]}"; do
         cd ${module}
             logInfo "Promoting dependencies module: ${module} to version: ${promotedVersion}"
-            setupModule ${module}
+            linkDependenciesImpl ${module}
         cd ..
     done
 
