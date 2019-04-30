@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@nu-art/core": "^0.2.12",
-    "@nu-art/fronzy": "^0.2.11",
+    "@nu-art/fronzy": "^0.2.12",
     "@types/history": "^4.7.2",
     "@types/node": "^11.11.1",
     "@types/qs": "^6.5.2",
