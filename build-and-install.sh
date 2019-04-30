@@ -158,11 +158,13 @@ function setupModule() {
     function cleanPackageJson() {
         local i
         for (( i=0; i<${#modules[@]}; i+=1 )); do
-            if [[ "${module}" == "${modules[${i}]}" ]]; then break; fi
-            if [[ ! -e "${module}" ]]; then continue; fi
+            local dependencyModule=${modules[${i}]}
+            local dependencyPackageName="${modulesPackageName[${i}]}"
 
-            local moduleName="${modulesPackageName[${i}]}"
-            local escapedModuleName=${moduleName/\//\\/}
+            if [[ "${module}" == "${dependencyModule}" ]]; then break; fi
+            if [[ ! -e "../${dependencyModule}" ]]; then logWarning "BAH `pwd`/${dependencyModule}"; continue; fi
+
+            local escapedModuleName=${dependencyPackageName/\//\\/}
 
             if [[ `isMacOS` ]]; then
                 sed -i '' "/${escapedModuleName}/d" package.json
