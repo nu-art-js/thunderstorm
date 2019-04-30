@@ -333,13 +333,11 @@ function promoteNuArt() {
     done
 
     logInfo "Repo is ready for version promotion"
-
+    logInfo "Starting Nu-Art Promotion..."
     for module in "${nuArtModules[@]}"; do
         cd ${module}
             logInfo "Promoting module: ${module} to version: ${promotedVersion}"
             linkDependenciesImpl ${module}
-            setupModule ${module}
-
             setVersionName ${promotedVersion} package.json
         cd ..
 
@@ -356,6 +354,7 @@ function promoteNuArt() {
         cd ..
     done
 
+    logInfo "Starting Apps Promotion..."
     for module in "${projectModules[@]}"; do
         cd ${module}
             logInfo "Promoting dependencies module: ${module} to version: ${promotedVersion}"
