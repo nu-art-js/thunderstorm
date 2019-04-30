@@ -14,7 +14,6 @@ clean=
 setup=
 install=true
 listen=
-useFrontendHack=true
 linkDependencies=true
 test=
 build=true
@@ -33,7 +32,7 @@ publish=
 modulesPackageName=()
 modulesVersion=()
 
-params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies install build cleanDirt test useFrontendHack launchBackend launchFrontend envType promoteNuArtVersion promoteAppVersion deployBackend deployFrontend version publish)
+params=(mergeOriginRepo cloneNuArt pushNuArtMessage purge clean setup linkDependencies install build cleanDirt test launchBackend launchFrontend envType promoteNuArtVersion promoteAppVersion deployBackend deployFrontend version publish)
 
 function extractParams() {
     for paramValue in "${@}"; do
@@ -104,10 +103,6 @@ function extractParams() {
             "--listen" | "-l")
                 listen=true
                 build=
-            ;;
-
-            "--no-frontend-hack" | "-nfh")
-                useFrontendHack=
             ;;
 
 
