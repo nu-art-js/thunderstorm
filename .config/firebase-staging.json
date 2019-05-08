@@ -1,6 +1,13 @@
 {
   "functions": {
     "source": "app-backend",
+    "ignore": [
+      "src",
+      ".config",
+      "dist-test",
+      "deploy.js",
+      "node_modules"
+    ],
     "predeploy": [
       "npm --prefix ./app-backend run lint",
       "npm --prefix ./app-backend run build"
