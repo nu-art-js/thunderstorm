@@ -186,8 +186,8 @@ function setupModule() {
             npm install
             throwError "Error installing module"
 
-            npm audit fix
-            throwError "Error fixing vulnerabilities"
+#            npm audit fix
+#            throwError "Error fixing vulnerabilities"
         trap - SIGINT
     fi
 
