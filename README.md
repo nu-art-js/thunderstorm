@@ -36,15 +36,6 @@ cd my-project
 bash build-and-install.sh --set-env=dev --setup --launch-frontend --launch-backend
 ```
 
-
-### If you want to work like a pro (use libraries sources):
-
-```bash
-git clone --recursive git@github.com:nu-art-js/typescript-boilerplate.git my-project
-cd my-project
-bash build-and-install.sh --nu-art --set-env=dev --setup --launch-frontend --launch-backend
-```
-
 (unless I have made a stupid mistake.. these should always be aligned and compiling together with this repo!!)
  
 ### To fork this repo to your private (or public) repo: 
