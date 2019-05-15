@@ -19,11 +19,6 @@
 /**
  * Created by tacb0ss on 10/07/2018.
  */
-
-/*/**
- * Created by tacb0ss on 10/07/2018.
- */
-
 import {
 	HttpServer,
 	HttpServer_Class,

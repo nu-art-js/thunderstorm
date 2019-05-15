@@ -42,6 +42,8 @@ export const api = functions.https.onRequest((req: Request, res: Response) => {
 	_api(req, res)
 });
 
+const packageJson = require("./package.json");
+console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 main(Environment)
 	.then(() => {
 		for (const toExecute of toBeExecuted) {

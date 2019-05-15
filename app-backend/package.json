@@ -61,6 +61,6 @@
   "_moduleAliases": {
     "@modules": "dist/modules",
     "@shared": "dist/app-shared",
-    "@utils": "dist/consts"
+    "@consts": "dist/consts"
   }
 }
