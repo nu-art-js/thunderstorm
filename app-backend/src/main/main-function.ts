@@ -29,6 +29,7 @@ import {
 	createModuleManager,
 	Module,
 	TerminalLogClient,
+	merge
 } from "@nu-art/core";
 import * as bodyParser from "body-parser";
 
@@ -38,7 +39,6 @@ import {
 } from "@nu-art/server/FirebaseModule";
 import * as firebase from "firebase-admin";
 import {ExampleModule} from "@modules/ExampleModule";
-import {merge} from "../../../nu-art-core/src/main/ts";
 
 export async function main(environment: { name: string }) {
 	BeLogged.addClient(TerminalLogClient);
