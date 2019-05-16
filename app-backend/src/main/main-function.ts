@@ -32,7 +32,10 @@ import {
 } from "@nu-art/core";
 import * as bodyParser from "body-parser";
 
-import {FirebaseModule} from "@nu-art/server/FirebaseModule";
+import {
+	FirebaseModule,
+	Firebase_EventType
+} from "@nu-art/server/FirebaseModule";
 import * as firebase from "firebase-admin";
 import {ExampleModule} from "@modules/ExampleModule";
 
@@ -42,9 +45,19 @@ export async function main(environment: { name: string }) {
 	/*
 	 *  SETUP, CONFIG & INIT
 	 */
-	const dataSnapshot = await firebase.initializeApp().database().ref(`/_config/${environment.name}`).once("value");
+	const configNode = firebase.initializeApp().database().ref(`/_config/${environment.name}`);
+	const dataSnapshot = await configNode.once(Firebase_EventType.Value);
 	const configAsObject = dataSnapshot.val();
 
+	let initialized = false;
+	configNode.on(Firebase_EventType.Value, (snapshot) => {
+		if (initialized) {
+			console.log("CONFIGURATION HAS CHANGED... KILLING PROCESS!!!");
+			process.exit(2);
+		}
+
+		initialized = true;
+	});
 
 	const modules: Module<any>[] =
 		      [
