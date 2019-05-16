@@ -40,31 +40,40 @@ import {
 import * as firebase from "firebase-admin";
 import {ExampleModule} from "@modules/ExampleModule";
 
-export async function main(environment: { name: string }) {
-	BeLogged.addClient(TerminalLogClient);
-
+async function resolveConfig(environment: { name: string }) {
 	/*
 	 *  SETUP, CONFIG & INIT
 	 */
-	const defaultConfigNode = firebase.initializeApp().database().ref(`/_config/default`);
-	const configNode = firebase.initializeApp().database().ref(`/_config/${environment.name}`);
+	const app = firebase.initializeApp();
+	const defaultConfigNode = app.database().ref(`/_config/default`);
+	const configNode = app.database().ref(`/_config/${environment.name}`);
 
 	const async = [];
 	async.push(defaultConfigNode.once(Firebase_EventType.Value));
 	async.push(configNode.once(Firebase_EventType.Value));
 	const config = await Promise.all(async);
 
-	const configAsObject = merge(config[0] || {}, config[1] || {});
 
-	let initialized = false;
-	configNode.on(Firebase_EventType.Value, () => {
-		if (initialized) {
+	let initialized = 0;
+	const terminationListener = (snapshot: any) => {
+		if (initialized >= 2) {
 			console.log("CONFIGURATION HAS CHANGED... KILLING PROCESS!!!");
 			process.exit(2);
 		}
 
-		initialized = true;
-	});
+		initialized++;
+	};
+
+	defaultConfigNode.on("value", terminationListener);
+	configNode.on("value", terminationListener);
+
+	return merge(config[0] || {}, config[1] || {});
+}
+
+export async function main(environment: { name: string }) {
+	BeLogged.addClient(TerminalLogClient);
+
+	const configAsObject = await resolveConfig(environment);
 
 	const modules: Module<any>[] =
 		      [
