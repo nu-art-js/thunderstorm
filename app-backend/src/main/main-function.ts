@@ -38,6 +38,7 @@ import {
 } from "@nu-art/server/FirebaseModule";
 import * as firebase from "firebase-admin";
 import {ExampleModule} from "@modules/ExampleModule";
+import {merge} from "../../../nu-art-core/src/main/ts";
 
 export async function main(environment: { name: string }) {
 	BeLogged.addClient(TerminalLogClient);
@@ -45,12 +46,18 @@ export async function main(environment: { name: string }) {
 	/*
 	 *  SETUP, CONFIG & INIT
 	 */
+	const defaultConfigNode = firebase.initializeApp().database().ref(`/_config/default`);
 	const configNode = firebase.initializeApp().database().ref(`/_config/${environment.name}`);
-	const dataSnapshot = await configNode.once(Firebase_EventType.Value);
-	const configAsObject = dataSnapshot.val();
+
+	const async = [];
+	async.push(defaultConfigNode.once(Firebase_EventType.Value));
+	async.push(configNode.once(Firebase_EventType.Value));
+	const config = await Promise.all(async);
+
+	const configAsObject = merge(config[0] || {}, config[1] || {});
 
 	let initialized = false;
-	configNode.on(Firebase_EventType.Value, (snapshot) => {
+	configNode.on(Firebase_EventType.Value, () => {
 		if (initialized) {
 			console.log("CONFIGURATION HAS CHANGED... KILLING PROCESS!!!");
 			process.exit(2);
