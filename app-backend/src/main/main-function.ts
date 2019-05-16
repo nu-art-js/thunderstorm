@@ -67,7 +67,9 @@ async function resolveConfig(environment: { name: string }) {
 	defaultConfigNode.on("value", terminationListener);
 	configNode.on("value", terminationListener);
 
-	return merge(config[0] || {}, config[1] || {});
+	const defaultConfig = (config[0] && config[0].val()) || {};
+	const overrideConfig = (config[1] && config[1].val()) || {};
+	return merge(defaultConfig, overrideConfig);
 }
 
 export async function main(environment: { name: string }) {
