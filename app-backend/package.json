@@ -38,10 +38,13 @@
     "body-parser": "^1.18.3",
     "debug": "^3.1.0",
     "express": "^4.16.3",
+    "firebase": "^5.8.5",
     "firebase-admin": "7.1.1",
     "firebase-functions": "^2.2.0",
     "fs": "0.0.1-security",
     "js-base64": "^2.5.1",
+    "module-alias": "^2.2.0",
+    "moment": "^2.24.0",
     "use-strict": "^1.0.1"
   },
   "devDependencies": {
@@ -52,7 +55,6 @@
     "@types/firebase": "^3.2.1",
     "@types/js-base64": "^2.3.1",
     "@types/node": "^11.9.5",
-    "module-alias": "^2.2.0",
     "typescript": "^3.3.3333"
   },
   "engines": {
