@@ -1,20 +1,33 @@
-‰{
-  "_config" : {
-    "default" : {
-      "ExampleModule" : {
-        "options" : [ "Hi", "How are you", "Hello World", "Backend example" ]
+{
+  "_config": {
+    "default": {
+      "ExampleModule": {
+        "options": [
+          "Hi",
+          "How are you",
+          "Hello World",
+          "Backend example"
+        ]
       },
-      "HttpServer" : {
-        "cors" : {
-          "headers" : [ "content-type", "token" ],
-          "methods" : [ "GET", "POST" ],
-          "origins" : [ "http://localhost:3334" ]
+      "HttpServer": {
+        "cors": {
+          "headers": [
+            "content-type",
+            "token"
+          ],
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "origins": [
+            "http://localhost:3334"
+          ]
         },
-        "host" : "localhost",
-        "port" : "3333"
+        "host": "localhost",
+        "port": "3333"
       },
-      "isDebug" : true,
-      "name" : "default"
+      "isDebug": true,
+      "name": "default"
     }
   }
 }
