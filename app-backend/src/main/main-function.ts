@@ -19,33 +19,11 @@
 /**
  * Created by tacb0ss on 10/07/2018.
  */
-import {HttpServer} from "@nu-art/server/HttpServer";
 import {merge} from "@nu-art/core";
 
 import {Firebase_EventType} from "@nu-art/server/FirebaseModule";
-
-import * as functions from 'firebase-functions';
 import * as firebase from "firebase-admin";
-import {
-	Request,
-	Response
-} from "express";
 import {start} from "./main";
-
-const _api = functions.https.onRequest(HttpServer.express);
-const toBeExecuted: (() => void)[] = [];
-let isReady: boolean = false;
-export const api = functions.https.onRequest((req: Request, res: Response) => {
-	if (!isReady) {
-		toBeExecuted.push(() => {
-			_api(req, res)
-		});
-
-		return;
-	}
-
-	_api(req, res)
-});
 
 export async function loadFromFunction(environment: { name: string }) {
 	const configAsObject = await resolveConfigFromFirebase(environment);
