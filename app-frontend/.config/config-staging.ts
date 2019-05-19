@@ -6,8 +6,8 @@ export const config = {
 	frontend: {
 		origin: "https://typescript-boilerplate.firebaseapp.com",
 	},
-	Module_Example: {
-		remoteUrl: "/api/v1/sample/endpoint-example"
+	ExampleModule: {
+		remoteUrl: "/v1/sample/endpoint-example"
 	},
 	LocalizationModule: {
 		defaultLocale: "en",

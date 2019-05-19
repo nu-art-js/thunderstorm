@@ -8,8 +8,8 @@ export const config = {
 		// origin: "http://192.168.1.5:3010",
 		origin: "http://typescript-boilerplate.firebaseapp.com",
 	},
-	Module_Example: {
-		remoteUrl: "/api/v1/sample/endpoint-example"
+	ExampleModule: {
+		remoteUrl: "/v1/sample/endpoint-example"
 	},
 	LocalizationModule: {
 		defaultLocale: "en",
