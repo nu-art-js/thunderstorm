@@ -44,12 +44,12 @@ export const api = functions.https.onRequest((req: Request, res: Response) => {
 
 (async () => {
 	try {
-
 		await loadFromFunction(Environment);
 		for (const toExecute of toBeExecuted) {
 			toExecute();
 		}
-		console.log("Backend started!!!");
+
+		console.log("Backend started!!");
 		isReady = true;
 	} catch (e) {
 		console.error("Failed to start backend: ", e);
