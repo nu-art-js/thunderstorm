@@ -27,8 +27,8 @@
     "lint": "tslint --project tsconfig.json",
     "prepare-test": "cd .. && bash build-and-install.sh --set-env=test -nb && cd -",
     "prod": "tsc & node dist",
-    "serve": "nodemon",
-    "serve-function": "npm run build && firebase serve --only functions",
+    "serve": "npm run build && firebase serve --only functions",
+    "serve-local": "nodemon",
     "test": "rm -rf dist-test && npm run build-test && node dist-test/test",
     "tsc": "tsc"
   },

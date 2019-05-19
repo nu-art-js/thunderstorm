@@ -26,30 +26,31 @@ import {
 	Module,
 	TerminalLogClient
 } from "@nu-art/core";
-import {HttpServer} from "@nu-art/server/HttpServer";
+import {
+	HttpServer,
+	ServerApi
+} from "@nu-art/server/HttpServer";
 import {ExampleModule} from "@modules/ExampleModule";
+import {Environment} from "./config";
 
-export async function main(environment: {}) {
+
+export async function start(configAsObject: any) {
+	const packageJson = require("./package.json");
+	console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
+
 	BeLogged.addClient(TerminalLogClient);
-
-	/*
-	 *  SETUP, CONFIG & INIT
-	 */
-	const configAsObject = environment;
-
-
 	const modules: Module<any>[] =
 		      [
 			      HttpServer,
 			      ExampleModule,
 		      ];
 
-
 	createModuleManager().setConfig(configAsObject).setModules(...modules).init();
 
 	/*
 	 *  SETUP HttpServer
 	 */
+	ServerApi.isDebug = configAsObject.isDebug;
 	const _urlPrefix: string = !process.env.GCLOUD_PROJECT ? "/api" : "";
 	HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/api", __dirname + "/api");
 	HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? "/api" : "");

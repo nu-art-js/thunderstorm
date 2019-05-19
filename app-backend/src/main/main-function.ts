@@ -19,31 +19,40 @@
 /**
  * Created by tacb0ss on 10/07/2018.
  */
-import {
-	HttpServer,
-	HttpServer_Class,
-	ServerApi
-} from "@nu-art/server/HttpServer";
-import {
-	BeLogged,
-	createModuleManager,
-	Module,
-	TerminalLogClient,
-	merge
-} from "@nu-art/core";
-import * as bodyParser from "body-parser";
+import {HttpServer} from "@nu-art/server/HttpServer";
+import {merge} from "@nu-art/core";
 
-import {
-	FirebaseModule,
-	Firebase_EventType
-} from "@nu-art/server/FirebaseModule";
+import {Firebase_EventType} from "@nu-art/server/FirebaseModule";
+
+import * as functions from 'firebase-functions';
 import * as firebase from "firebase-admin";
-import {ExampleModule} from "@modules/ExampleModule";
+import {
+	Request,
+	Response
+} from "express";
+import {start} from "./main";
 
-async function resolveConfig(environment: { name: string }) {
-	/*
-	 *  SETUP, CONFIG & INIT
-	 */
+const _api = functions.https.onRequest(HttpServer.express);
+const toBeExecuted: (() => void)[] = [];
+let isReady: boolean = false;
+export const api = functions.https.onRequest((req: Request, res: Response) => {
+	if (!isReady) {
+		toBeExecuted.push(() => {
+			_api(req, res)
+		});
+
+		return;
+	}
+
+	_api(req, res)
+});
+
+export async function loadFromFunction(environment: { name: string }) {
+	const configAsObject = await resolveConfigFromFirebase(environment);
+	return start(configAsObject);
+}
+
+async function resolveConfigFromFirebase(environment: { name: string }) {
 	const app = firebase.initializeApp();
 	const defaultConfigNode = app.database().ref(`/_config/default`);
 	const configNode = app.database().ref(`/_config/${environment.name}`);
@@ -70,36 +79,4 @@ async function resolveConfig(environment: { name: string }) {
 	const defaultConfig = (config[0] && config[0].val()) || {};
 	const overrideConfig = (config[1] && config[1].val()) || {};
 	return merge(defaultConfig, overrideConfig);
-}
-
-export async function main(environment: { name: string }) {
-	BeLogged.addClient(TerminalLogClient);
-
-	const configAsObject = await resolveConfig(environment);
-
-	const modules: Module<any>[] =
-		      [
-			      HttpServer,
-			      FirebaseModule,
-			      ExampleModule,
-		      ];
-
-	HttpServer_Class.addMiddleware(bodyParser.urlencoded({extended: false}));
-
-	createModuleManager().setConfig(configAsObject).setModules(...modules).init();
-
-	/*
-	 *  SETUP HttpServer
-	 */
-	ServerApi.isDebug = configAsObject.isDebug;
-	const _urlPrefix: string = !process.env.GCLOUD_PROJECT ? "/api" : "";
-	HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/api", __dirname + "/api");
-	HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? "/api" : "");
-	const httpPromise = HttpServer.startServer();
-
-	return Promise.all([httpPromise]);
-}
-
-export async function mainTerminate() {
-	return HttpServer.terminate();
 }

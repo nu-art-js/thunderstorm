@@ -17,42 +17,16 @@
  */
 
 import 'module-alias/register'
-import {HttpServer} from "@nu-art/server/http-server/HttpServer";
-import * as functions from 'firebase-functions';
 import {Environment} from "./config";
-import {
-	Request,
-	Response
-} from "express";
-import {loadFromFunction} from "./main-function";
-
-const _api = functions.https.onRequest(HttpServer.express);
-const toBeExecuted: (() => void)[] = [];
-let isReady: boolean = false;
-
-export const api = functions.https.onRequest((req: Request, res: Response) => {
-	if (!isReady) {
-		toBeExecuted.push(() => {
-			_api(req, res)
-		});
-
-		return;
-	}
-
-	_api(req, res)
-});
-
+import {start} from "./main";
 
 (async () => {
 	try {
-		await loadFromFunction(Environment);
-		for (const toExecute of toBeExecuted) {
-			toExecute();
-		}
+		await start(Environment);
 		console.log("Backend started!!");
-		isReady = true;
 	} catch (e) {
-		console.error("Failed to start backend: ", e);
+		console.error("Failed to start backend: ");
+		console.error(e);
 	}
 })();
 

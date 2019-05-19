@@ -1,5 +1,5 @@
 {
   "projects": {
-    "default": "my-staging-project"
+    "default": "typescript-boilerplate"
   }
 }
