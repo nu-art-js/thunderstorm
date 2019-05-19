@@ -31,13 +31,18 @@ import {
 	ResourcesModule,
 	StorageModule
 } from "@nu-art/fronzy";
-import {config} from "./config";
+import {ExampleModule} from "@modules/ExampleModule";
+
 
 const modules: Module<any>[] = [HttpModule,
                                 LocalizationModule,
                                 StorageModule,
                                 BrowserHistoryModule,
-                                ResourcesModule];
+                                ResourcesModule,
+                                ExampleModule];
+
+const config = require("./config").config;
+
 Fronzy.setConfig(config).setModules(...modules).init();
 Fronzy.setMainApp(App);
 
