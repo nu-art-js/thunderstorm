@@ -49,12 +49,12 @@ export class ExampleModule_Class
 		(async () => {
 			let bodyObject: CommonBodyReq = {message: this.message};
 			const httpRequest = await HttpModule.createRequest(HttpMethod.POST).setJsonBody(bodyObject).setRelativeUrl(
-				"/api/v1/sample/another-endpoint").execute();
+				"/v1/sample/another-endpoint").execute();
 			this.message = httpRequest.xhr.status != 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.xhr.response;
 		})();
 
 		(async () => {
-			const httpRequest = await HttpModule.createRequest(HttpMethod.GET).setRelativeUrl("/api/v1/sample/endpoint-example").execute()
+			const httpRequest = await HttpModule.createRequest(HttpMethod.GET).setRelativeUrl(this.config.remoteUrl).execute();
 			this.message = httpRequest.xhr.status != 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.xhr.response;
 
 			Fronzy.dispatchUIEvent((item: any) => item.onLabelReceived, (l: OnLabelReceived) => {

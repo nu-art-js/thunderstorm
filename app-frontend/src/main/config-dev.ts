@@ -27,7 +27,7 @@ export const config = {
 		origin: "http://localhost:5010",
 	},
 	Module_Example: {
-		remoteUrl: "/api/v1/sample/endpoint-example"
+		remoteUrl: "/v1/sample/endpoint-example"
 	},
 	LocalizationModule: {
 		defaultLocale: "en",
