@@ -20,15 +20,11 @@ import 'module-alias/register'
 import {Environment} from "./config";
 import {start} from "./main";
 
-(async () => {
-	try {
-		await start(Environment);
-		console.log("Backend started!!!");
-	} catch (e) {
-		console.error("Failed to start backend: ");
-		console.error(e);
-	}
-})();
+start(Environment)
+	.then(() => {
+		console.log("Backend started!!");
+	})
+	.catch(reason => console.error("Failed to start backend: ", reason));
 
 
 
