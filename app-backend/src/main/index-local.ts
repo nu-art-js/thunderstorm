@@ -23,7 +23,7 @@ import {start} from "./main";
 (async () => {
 	try {
 		await start(Environment);
-		console.log("Backend started!!");
+		console.log("Backend started!!!");
 	} catch (e) {
 		console.error("Failed to start backend: ");
 		console.error(e);

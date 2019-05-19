@@ -1,11 +1,10 @@
 export const config = {
 	HttpModule: {
-		origin: "https://my-prod-project/backend",
-		// origin: "https://us-central1-adam-testing-1b8aa.cloudfunctions.net",
+		origin: "http://typescript-boilerplate.firebaseapp.com/backend/api",
 		timeout: 10000
 	},
 	frontend: {
-		origin: "https://my-prod-project",
+		origin: "http://typescript-boilerplate.firebaseapp.com",
 	},
 	Module_Example: {
 		remoteUrl: "/api/v1/sample/endpoint-example"

@@ -33,9 +33,9 @@ reporter.init();
 
 (async () => {
 	const root = __scenario("root", reporter);
-	root.addSteps(startServer(require("../../.config-test.json")).setErrorPolicy(ErrorPolicy.HaltOnError));
+	// root.addSteps(startServer(require("../../.config-test.json")).setErrorPolicy(ErrorPolicy.HaltOnError));
 	root.addSteps(TestApi);
-	root.addSteps(endServer().setLabel("terminating server"));
+	root.addSteps(endServer().setLabel("terminatssing server"));
 
 // @ts-ignore
 	await root.run();

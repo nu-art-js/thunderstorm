@@ -17,13 +17,13 @@
  */
 
 import {__custom} from "@nu-art/test/Testelot";
-import {main} from "../../main/main";
-import {HttpServer} from "@nu-art/server/http-server/HttpServer";
+// import {start} from "../../main/main";
+import {HttpServer} from "@nu-art/server/HttpServer";
 
 
 export function startServer(config: object) {
 	return __custom(async () => {
-		return await main(config);
+		// return await start(config);
 	}).setLabel("starting server");
 }
 
@@ -32,7 +32,7 @@ export function endServer() {
 		return await Promise.all(
 			[
 				HttpServer.terminate(),
-			])
+			]);
 	}).setLabel("starting server");
 
 }

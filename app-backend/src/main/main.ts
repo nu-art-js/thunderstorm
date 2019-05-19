@@ -36,7 +36,7 @@ import {Environment} from "./config";
 
 export async function start(configAsObject: any) {
 	const packageJson = require("./package.json");
-	console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
+	console.log(`Starting sdasdasserver v${packageJson.version} with env: ${Environment.name}`);
 
 	BeLogged.addClient(TerminalLogClient);
 	const modules: Module<any>[] =
