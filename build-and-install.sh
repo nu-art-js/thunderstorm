@@ -348,7 +348,7 @@ function promoteNuArt() {
         cd ${module}
             gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted to: v${promotedVersion}"
 
-            gitTag "v${promotedVersion}" "Promoted to: v${promotedVersion}"
+            gitTag "libs-v${promotedVersion}" "Promoted to: v${promotedVersion}"
             gitPushTags
             throwError "Error pushing promotion tag"
         cd ..
@@ -401,7 +401,7 @@ function promoteApps() {
 
     setVersionName ${promotedVersion} ${versionFile}
     gitNoConflictsAddCommitPush ${module} `gitGetCurrentBranch` "Promoted apps version to: v${promotedVersion}"
-    gitTag "v${promotedVersion}" "Promoted to: v${promotedVersion}"
+    gitTag "apps-v${promotedVersion}" "Promoted to: v${promotedVersion}"
     gitPushTags
     throwError "Error pushing promotion tag"
 }
