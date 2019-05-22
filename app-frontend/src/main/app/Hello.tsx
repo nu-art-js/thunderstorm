@@ -39,7 +39,7 @@ export class Hello
 	}
 
 	render() {
-		let onClick = Hello.getMessageFromServer;
+		const onClick = Hello.getMessageFromServer;
 		return <h1 onClick={onClick}>{this.state.label}</h1>;
 	}
 

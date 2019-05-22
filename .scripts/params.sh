@@ -17,6 +17,7 @@ listen=
 linkDependencies=true
 test=
 build=true
+lint=
 
 launchBackend=
 launchFrontend=
@@ -110,14 +111,17 @@ function extractParams() {
             "--deploy" | "-d")
                 deployBackend=true
                 deployFrontend=true
+                lint=true
             ;;
 
             "--deploy-backend" | "-db")
                 deployBackend=true
+                lint=true
             ;;
 
             "--deploy-frontend" | "-df")
                 deployFrontend=true
+                lint=true
             ;;
 
             "--set-env="* | "-se="*)
@@ -145,16 +149,21 @@ function extractParams() {
                 clean=true
                 build=true
                 publish=true
+                lint=true
             ;;
 
             "--version-nu-art="* | "-vn="*)
                 promoteNuArtVersion=`echo "${paramValue}" | sed -E "s/(--version-nu-art=|-vn=)(.*)/\2/"`
                 linkDependencies=true
+                build=true
+                lint=true
             ;;
 
             "--version-app="* | "-va="*)
                 promoteAppVersion=`echo "${paramValue}" | sed -E "s/(--version-app=|-va=)(.*)/\2/"`
                 linkDependencies=true
+                build=true
+                lint=true
             ;;
 
 #        ==== ERRORS & DEPRECATION =====

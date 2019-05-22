@@ -46,21 +46,21 @@ export class ExampleModule_Class
 	public getMessageFromServer() {
 		this.logInfo("getting label from server");
 
-		(async () => {
-			let bodyObject: CommonBodyReq = {message: this.message};
+		this.runAsync("/v1/sample/another-endpoint", async () => {
+			const bodyObject: CommonBodyReq = {message: this.message};
 			const httpRequest = await HttpModule.createRequest(HttpMethod.POST).setJsonBody(bodyObject).setRelativeUrl(
 				"/v1/sample/another-endpoint").execute();
 			this.message = httpRequest.xhr.status !== 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.xhr.response;
-		})();
+		});
 
-		(async () => {
+		this.runAsync(this.config.remoteUrl, async () => {
 			const httpRequest = await HttpModule.createRequest(HttpMethod.GET).setRelativeUrl(this.config.remoteUrl).execute();
 			this.message = httpRequest.xhr.status !== 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.xhr.response;
 
 			Fronzy.dispatchUIEvent((item: any) => item.onLabelReceived, (l: OnLabelReceived) => {
 				l.onLabelReceived();
 			});
-		})();
+		});
 
 		this.logInfo("continue... will receive label on callback..");
 	}

@@ -500,6 +500,15 @@ function compileModule() {
     logInfo "${compileLib} - Compiled!"
 }
 
+function lintModule() {
+    local module=${1}
+
+    logInfo "${module} - linting..."
+    tslint --project tsconfig.json
+    throwError "Error while linting:  ${module}"
+
+    logInfo "${module} - linted!"
+}
 
 #################
 #               #
@@ -575,6 +584,10 @@ fi
 
 if [[ "${build}" ]]; then
     executeOnModules buildModule
+fi
+
+if [[ "${lint}" ]]; then
+    executeOnModules lintModule
 fi
 
 if [[ "${test}" ]]; then
