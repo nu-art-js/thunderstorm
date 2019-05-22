@@ -30,8 +30,8 @@
     "react": "^16.8.1"
   },
   "devDependencies": {
-    "@nu-art/core": "^0.2.28",
-    "@nu-art/fronzy": "^0.2.28",
+    "@nu-art/core": "^0.2.29",
+    "@nu-art/fronzy": "^0.2.29",
     "@types/history": "^4.7.2",
     "@types/node": "^11.11.1",
     "@types/qs": "^6.5.2",
