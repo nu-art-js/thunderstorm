@@ -453,6 +453,8 @@ function setEnvironment() {
     cd ${frontendModule}
         copyConfigFile "Setting frontend config.ts for env: ${envType}" "./.config" "config-${envType}.ts" "./src/main/config.ts"
     cd - > /dev/null
+
+    firebase use `getJsonValueForKey .firebaserc "default"`
 }
 
 function compileOnCodeChanges() {
