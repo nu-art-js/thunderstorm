@@ -97,6 +97,10 @@ function extractParams() {
                 build=
             ;;
 
+            "--lint")
+                lint=true
+            ;;
+
             "--test" | "-t")
                 test=true
             ;;
