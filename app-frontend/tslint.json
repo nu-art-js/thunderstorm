@@ -36,10 +36,7 @@
     // instead use a separate variable name.
     "no-shadowed-variable": true,
     // Empty blocks are almost never needed. Allow the one general exception: empty catch blocks.
-    "no-empty": [
-      true,
-      "allow-empty-catch"
-    ],
+    "no-empty": false,
     // Functions must either be handled directly (e.g. with a catch() handler) or returned to another function.
     // This is a major source of errors in Cloud Functions and the team strongly recommends leaving this rule on.
     "no-floating-promises": true,
@@ -64,7 +61,7 @@
     // Disallow control flow statements, such as return, continue, break, and throw in finally blocks.
     "no-unsafe-finally": true,
     // Do not allow variables to be used before they are declared.
-    "no-use-before-declare": true,
+    "no-use-before-declare": false,
     // Disallow duplicate imports in the same file.
     "no-duplicate-imports": false,
     // -- Strong Warnings --
