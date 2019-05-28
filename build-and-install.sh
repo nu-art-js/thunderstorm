@@ -80,7 +80,13 @@ function testModule() {
 
 function linkDependenciesImpl() {
     local module=${1}
+
     logVerbose
+    logInfo "Sorting package json file: ${module}"
+    sort-package-json
+    throwError "Please install sort-package-json:\n   npm i -g sort-package-json"
+
+    copyFileTo package.json dist/
     logInfo "Linking dependencies sources to: ${module}"
 
     if [[ `contains "${module}" "${projectModules[@]}"` ]]; then
@@ -151,9 +157,6 @@ function restorePackageJson() {
 
 function setupModule() {
     local module=${1}
-
-    sort-package-json
-    throwError "Please install sort-package-json:\n   npm i -g sort-package-json"
 
     function cleanPackageJson() {
         local i
