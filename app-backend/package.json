@@ -55,6 +55,7 @@
     "@types/firebase": "^3.2.1",
     "@types/js-base64": "^2.3.1",
     "@types/node": "^11.9.5",
+    "firebase-functions-test": "^0.1.6",
     "typescript": "^3.3.3333"
   },
   "engines": {

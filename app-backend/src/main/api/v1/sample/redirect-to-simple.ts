@@ -16,20 +16,9 @@
  * limitations under the License.
  */
 
-import 'module-alias/register'
-import {HttpServer} from "@nu-art/server/http-server/HttpServer";
-import {Environment} from "./config";
-import {loadFromFunction} from "./main-function";
-import {Firebase_ExpressFunction} from "@nu-art/server/FirebaseFunctions";
-
-const _api = new Firebase_ExpressFunction(HttpServer.express);
-export const api = _api.getFunction();
+import {
+	ServerApi_Redirect
+} from "@nu-art/server/HttpServer";
 
 
-loadFromFunction(Environment)
-	.then(() => {
-		return _api.onFunctionReady();
-	})
-	.catch(reason => console.error("Failed to start backend: ", reason));
-
-
+module.exports = new ServerApi_Redirect("redirect", 301, "/api/v1/sample/endpoint-example" );

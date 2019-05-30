@@ -33,6 +33,7 @@ import {
 import {ExampleModule} from "@modules/ExampleModule";
 import {Environment} from "./config";
 
+// console.log(`ENV: ${JSON.stringify(process.env, null, 2)}`)
 
 export async function start(configAsObject: any) {
 	const packageJson = require("./package.json");
