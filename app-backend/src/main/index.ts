@@ -19,12 +19,19 @@
 import 'module-alias/register'
 import {HttpServer} from "@nu-art/server/http-server/HttpServer";
 import {Environment} from "./config";
-import {loadFromFunction} from "./main-function";
-import {Firebase_ExpressFunction} from "@nu-art/server/FirebaseFunctions";
+import {
+	Firebase_ExpressFunction,
+	fireStarter
+} from "@nu-art/server/FirebaseFunctions";
+import {start} from "./main";
 
 const _api = new Firebase_ExpressFunction(HttpServer.express);
 export const api = _api.getFunction();
 
+export async function loadFromFunction(environment: { name: string }) {
+	const configAsObject = await fireStarter(environment);
+	return start(configAsObject);
+}
 
 loadFromFunction(Environment)
 	.then(() => {
