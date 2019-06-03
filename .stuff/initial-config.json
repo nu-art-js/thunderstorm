@@ -1,20 +1,47 @@
 {
-  "_config" : {
-    "default" : {
-      "ExampleModule" : {
-        "options" : [ "Hi", "How are you", "Hello World", "Backend example" ]
+  "_config": {
+    "default": {
+      "ExampleModule": {
+        "options": [
+          "Hi",
+          "How are you",
+          "Hello World",
+          "Backend example"
+        ]
       },
-      "HttpServer" : {
-        "cors" : {
-          "headers" : [ "content-type", "token" ],
-          "methods" : [ "GET", "POST" ],
-          "origins" : [ "https://typescript-boilerplate.firebaseapp.com" ]
+      "HttpServer": {
+        "cors": {
+          "headers": [
+            "content-type"
+          ],
+          "methods": [
+            "GET",
+            "POST"
+          ],
+          "origins": [
+            "http://localhost:5010",
+            "https://localhost:5010"
+          ]
         },
-        "host" : "localhost",
-        "port" : "3333"
+        "host": "localhost",
+        "port": "3333"
       },
-      "isDebug" : true,
-      "name" : "default"
+      "isDebug": true,
+      "name": "default"
+    },
+    "dev": {
+      "HttpServer": {
+        "baseUrl": "http:////localhost:5000/typescript-boilerplate/us-central1"
+      },
+      "isDebug": true,
+      "name": "dev"
+    },
+    "prod": {
+      "HttpServer": {
+        "baseUrl": "https:////us-central1-typescript-boilerplate.cloudfunctions.net"
+      },
+      "isDebug": false,
+      "name": "prod"
     }
   }
 }
