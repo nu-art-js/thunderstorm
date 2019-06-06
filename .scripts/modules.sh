@@ -4,7 +4,6 @@ boilerplateRepo="git@github.com:nu-art-js/typescript-boilerplate.git"
 
 frontendModule=app-frontend
 backendModule=app-backend
-configEntryName="app.config"
 allowedBranchesForPromotion=(master staging dev)
 
 projectModules=(app-backend app-frontend)
