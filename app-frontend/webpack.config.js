@@ -22,6 +22,8 @@ const WebpackMd5Hash = require('webpack-md5-hash');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const WriteFilePlugin = require('write-file-webpack-plugin');
+const packageJson = require('./package.json');
+const webpack = require("webpack");
 const sourcePath = path.join(__dirname, './src');
 
 module.exports = (env, argv) => {
@@ -59,6 +61,8 @@ module.exports = (env, argv) => {
 				"@components": path.resolve(__dirname, "src/main/components"),
 				"@renderers": path.resolve(__dirname, "src/main/renderers"),
 				"@shared": path.resolve(__dirname, "src/main/app-shared"),
+				"@styles": path.resolve(__dirname, "src/main/res/styles"),
+				"@res": path.resolve(__dirname, "src/main/res"),
 				// "@utils": path.resolve(__dirname, "src/main/utils")
 			},
 			extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
@@ -123,6 +127,12 @@ module.exports = (env, argv) => {
 			]
 		},
 		plugins: [
+			new webpack.DefinePlugin({
+				'process.env': {
+					'appEnv': `"${env}"`,
+					'appVersion': `"${packageJson.version}"`
+				}
+			}),
 			new CleanWebpackPlugin(outputFolder),
 			new MiniCssExtractPlugin({
 				filename: 'main/res/styles.[contenthash].css',
