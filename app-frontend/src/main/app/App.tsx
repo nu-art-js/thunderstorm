@@ -25,9 +25,9 @@ import {
 import {Page_Home} from "./pages/Page_Home";
 import {WrapperProps} from "@nu-art/fronzy";
 import {
-	marginBottom,
-	marginRight
-} from '@styles/dynamic-styles';
+	_marginBottom,
+	_marginRight
+} from '@styles/styles';
 
 export class App
 	extends React.Component<WrapperProps> {
@@ -47,7 +47,7 @@ export class App
 				</Switch>
 
 				<div className="full_screen">
-					<div className={`bottom right absolute ${marginRight(10)} ${marginBottom(10)}`}>{`${process.env.appEnv}-${process.env.appVersion}`}</div>
+					<div className={`bottom right absolute ${_marginRight(10)} ${_marginBottom(10)}`}>{`${process.env.appEnv}-${process.env.appVersion}`}</div>
 				</div>
 			</div>);
 	}
