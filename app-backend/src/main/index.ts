@@ -24,6 +24,7 @@ import {
 	fireStarter
 } from "@nu-art/server/FirebaseFunctions";
 import {start} from "./main";
+import {ValueChangedModule} from "@modules/ValueChangedModule";
 
 const _api = new Firebase_ExpressFunction(HttpServer.express);
 export const api = _api.getFunction();
@@ -33,9 +34,14 @@ export async function loadFromFunction(environment: { name: string }) {
 	return start(configAsObject);
 }
 
+export const valueMonitor = ValueChangedModule.getFirebaseFunction();
+
 loadFromFunction(Environment)
 	.then(() => {
-		return _api.onFunctionReady();
+		return Promise.all([
+			                   _api.onFunctionReady(),
+			                   ValueChangedModule.onFunctionReady()
+		                   ]);
 	})
 	.catch(reason => console.error("Failed to start backend: ", reason));
 
