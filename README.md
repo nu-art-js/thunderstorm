@@ -32,7 +32,8 @@ Now you have forked the boilerplate...
 
 **NOTE:** To get latest boilerplate changes run in your cloned repo folder `(e.g. my-project)`: `bash build-and-install.sh --merge-origin`
 
-**ATTENTION:** You should pay attention to the `./.config`, `./app-frontend/.config` and `./app-backend/.config` folders, these hold your environment configuration.
+**ATTENTION:** You should pay attention to the `./.config` folder it contains all the project configurations it is version controlled and MUST not contain sensitive data such as passwords or private keys. 
+You should also note the `./app-frontend/.config` and `./app-backend/.config` files, these hold the projects environment configuration, and are NOT version controlled!
 
 ### Prepare your forked repo: 
 After forking this repo.. there are a steps you MUST undergo in order to run it:
@@ -55,9 +56,7 @@ After forking this repo.. there are a steps you MUST undergo in order to run it:
   * Finally (if you have configured everything correctly) you can launch the "Hello World" sample from your own firebase project by executing: `bash build-and-install.sh --launch-frontend --launch-backend`
 
 
-### Run your app locally
- Finally......
-  
+### Run your app locally  
  Once you have configured everything correctly, you can launch the "Hello World" sample from your own firebase project by executing: 
  
  `bash build-and-install.sh --launch-frontend --launch-backend`
