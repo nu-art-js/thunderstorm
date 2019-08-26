@@ -20,7 +20,11 @@ import './res/styles/styles.scss';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import {Module} from "@nu-art/core";
+import {
+	BeLogged,
+	LogClient_Browser,
+	Module
+} from "@nu-art/core";
 import {App} from "./app/App";
 import {
 	AppWrapper,
@@ -33,13 +37,16 @@ import {
 } from "@nu-art/fronzy";
 import {ExampleModule} from "@modules/ExampleModule";
 
+BeLogged.addClient(LogClient_Browser);
 
-const modules: Module<any>[] = [HttpModule,
-                                LocalizationModule,
-                                StorageModule,
-                                BrowserHistoryModule,
-                                ResourcesModule,
-                                ExampleModule];
+const modules: Module<any>[] = [
+	HttpModule,
+	LocalizationModule,
+	StorageModule,
+	BrowserHistoryModule,
+	ResourcesModule,
+	ExampleModule,
+];
 
 const config = require("./config").config;
 

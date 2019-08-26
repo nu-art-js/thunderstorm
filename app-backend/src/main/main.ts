@@ -24,7 +24,7 @@ import {
 	BeLogged,
 	createModuleManager,
 	Module,
-	TerminalLogClient
+	LogClient_Terminal
 } from "@nu-art/core";
 import {
 	HttpServer,
@@ -39,7 +39,7 @@ export async function start(configAsObject: any) {
 	const packageJson = require("./package.json");
 	console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 
-	BeLogged.addClient(TerminalLogClient);
+	BeLogged.addClient(LogClient_Terminal);
 	const modules: Module<any>[] =
 		      [
 			      HttpServer,
