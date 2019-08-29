@@ -29,7 +29,7 @@ import {
 import {
 	HttpServer,
 	ServerApi
-} from "@nu-art/server/HttpServer";
+} from "@nu-art/server/server";
 import {ExampleModule} from "@modules/ExampleModule";
 import {Environment} from "./config";
 
