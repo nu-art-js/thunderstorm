@@ -17,12 +17,12 @@
  */
 
 import 'module-alias/register'
-import {HttpServer} from "@nu-art/server/server";
+import {HttpServer} from "@nu-art/storm/server";
 import {Environment} from "./config";
 import {
 	Firebase_ExpressFunction,
 	fireStarter
-} from "@nu-art/server/firebase-functions";
+} from "@nu-art/storm/firebase-functions";
 import {start} from "./main";
 import {ValueChangedModule} from "@modules/ValueChangedModule";
 

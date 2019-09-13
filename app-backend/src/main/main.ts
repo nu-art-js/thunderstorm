@@ -25,11 +25,11 @@ import {
 	createModuleManager,
 	Module,
 	LogClient_Terminal
-} from "@nu-art/core";
+} from "@nu-art/ts-common";
 import {
 	HttpServer,
 	ServerApi
-} from "@nu-art/server/server";
+} from "@nu-art/storm/server";
 import {ExampleModule} from "@modules/ExampleModule";
 import {Environment} from "./config";
 

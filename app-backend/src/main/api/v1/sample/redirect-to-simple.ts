@@ -18,7 +18,7 @@
 
 import {
 	ServerApi_Redirect
-} from "@nu-art/server/server";
+} from "@nu-art/storm/server";
 
 
 module.exports = new ServerApi_Redirect("redirect", 301, "/api/v1/sample/endpoint-example" );
