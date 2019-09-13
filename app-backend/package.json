@@ -33,8 +33,6 @@
     "tsc": "tsc"
   },
   "dependencies": {
-    "@nu-art/storm": "^0.2.64",
-    "@nu-art/ts-common": "^0.2.64",
     "body-parser": "^1.18.3",
     "debug": "^3.1.0",
     "express": "^4.16.3",
@@ -49,11 +47,9 @@
     "use-strict": "^1.0.1"
   },
   "devDependencies": {
-    "@nu-art/testelot": "^0.2.64",
     "@types/body-parser": "^1.17.0",
     "@types/debug": "^4.1.2",
     "@types/express": "^4.16.1",
-    "@types/firebase": "^3.2.1",
     "@types/js-base64": "^2.3.1",
     "@types/node": "^11.9.5",
     "firebase-functions-test": "^0.1.6",

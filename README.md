@@ -25,7 +25,7 @@ blah blah blah...
  
 # Fork this repo: 
  * Prepare an empty repo and acquire the repo remote tracking url `(e.g. git@github.com:${username}/${my-project}.git)`
- * Clone this repo locally `git clone --recursive git@github.com:nu-art-js/typescript-boilerplate.git && cd typescript-boilerplate`
+ * Clone this repo locally `git clone --recursive git@github.com:nu-art-js/thunderstorm-boilerplate.git && cd thunderstorm-boilerplate`
  * Then run from within this cloned repo: `bash ./dev-tools/scripts/git/git-fork.sh --to=git@github.com:${username}/${my-project}.git --output=../${my-project}`
  
 Now you have forked the boilerplate...
