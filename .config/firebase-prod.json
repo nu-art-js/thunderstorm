@@ -18,7 +18,7 @@
     "redirects": [
       {
         "source": "/backend/api/:rPath*",
-        "destination": "https://us-central1-typescript-boilerplate.cloudfunctions.net/api/:rPath",
+        "destination": "https://us-central1-nu-art-thunderstorm.cloudfunctions.net/api/:rPath",
         "type": 307
       }
     ],

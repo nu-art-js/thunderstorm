@@ -1,12 +1,12 @@
 export const config = {
 	HttpModule: {
 		// origin: "http://192.168.1.5:3000",
-		origin: "http://localhost:5000/typescript-boilerplate/us-central1/api",
+		origin: "http://localhost:5000/nu-art-thunderstorm/us-central1/api",
 		timeout: 10000
 	},
 	frontend: {
 		// origin: "http://192.168.1.5:3010",
-		origin: "http://typescript-boilerplate.firebaseapp.com",
+		origin: "http://nu-art-thunderstorm.firebaseapp.com",
 	},
 	ExampleModule: {
 		remoteUrl: "/v1/sample/endpoint-example"
