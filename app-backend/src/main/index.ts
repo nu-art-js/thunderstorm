@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+// tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register'
 import {HttpServer} from "@nu-art/storm/server";
 import {Environment} from "./config";
