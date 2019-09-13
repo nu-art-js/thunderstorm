@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+// tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register'
 import {Environment} from "./config";
 import {start} from "./main";
