@@ -23,7 +23,7 @@ import {
 } from 'react-router';
 
 import {Page_Home} from "./pages/Page_Home";
-import {WrapperProps} from "@nu-art/fronzy";
+import {WrapperProps} from "@nu-art/thunder";
 import {
 	_marginBottom,
 	_marginRight

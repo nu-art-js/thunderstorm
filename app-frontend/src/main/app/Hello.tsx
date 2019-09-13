@@ -21,7 +21,7 @@ import {
 	ExampleModule,
 	OnLabelReceived
 } from "../modules/ExampleModule";
-import {BaseComponent} from "@nu-art/fronzy";
+import {BaseComponent} from "@nu-art/thunder";
 
 export class Hello
 	extends BaseComponent<{}, { label: string }>

@@ -24,7 +24,7 @@ import {
 	BeLogged,
 	LogClient_Browser,
 	Module
-} from "@nu-art/core";
+} from "@nu-art/ts-common";
 import {App} from "./app/App";
 import {
 	AppWrapper,
@@ -34,7 +34,7 @@ import {
 	LocalizationModule,
 	ResourcesModule,
 	StorageModule
-} from "@nu-art/fronzy";
+} from "@nu-art/thunder";
 import {ExampleModule} from "@modules/ExampleModule";
 
 BeLogged.addClient(LogClient_Browser);

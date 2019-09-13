@@ -19,12 +19,12 @@
 import {
 	Module,
 	HttpMethod
-} from "@nu-art/core";
+} from "@nu-art/ts-common";
 
 import {
 	Fronzy,
 	HttpModule
-} from "@nu-art/fronzy";
+} from "@nu-art/thunder";
 import {CommonBodyReq} from "@shared/shared";
 
 type Config = {

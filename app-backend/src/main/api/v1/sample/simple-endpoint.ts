@@ -19,11 +19,11 @@
 import {
 	ApiResponse,
 	ServerApi,
-} from "@nu-art/server/server";
+} from "@nu-art/storm/server";
 
 import * as express from "express";
 import {ParsedUrlQuery} from "querystring";
-import {HttpMethod} from "@nu-art/core";
+import {HttpMethod} from "@nu-art/ts-common";
 import {CommonBodyReq} from "@shared/shared";
 
 class ServerApi_EndpointExample

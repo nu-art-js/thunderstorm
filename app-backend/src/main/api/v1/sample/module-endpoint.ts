@@ -19,7 +19,7 @@
 import {
 	ApiResponse,
 	ServerApi_Get,
-} from "@nu-art/server/server";
+} from "@nu-art/storm/server";
 
 import * as express from "express";
 import {ParsedUrlQuery} from "querystring";
