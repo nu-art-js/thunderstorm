@@ -49,6 +49,7 @@
     "use-strict": "^1.0.1"
   },
   "devDependencies": {
+    "@nu-art/testelot": "^0.2.65",
     "@types/body-parser": "^1.17.0",
     "@types/debug": "^4.1.2",
     "@types/express": "^4.16.1",
