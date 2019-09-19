@@ -1,3 +1,3 @@
 <component name="DependencyValidationManager">
-  <scope name="nu-art-server" pattern="file[typescript-boilerplate]:nu-art-server/src//*" />
+  <scope name="nu-art-server" pattern="file[thunderstorm-boilerplate]:nu-art-server/src//*" />
 </component>
