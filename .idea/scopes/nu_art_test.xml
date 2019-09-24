@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="nu-art-test" pattern="file[thunderstorm-boilerplate]:nu-art-test/src//*" />
-</component>
