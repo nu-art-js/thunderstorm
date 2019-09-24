@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="ts-common" pattern="file[thunderstorm-boilerplate]:ts-common/src//*" />
+</component>

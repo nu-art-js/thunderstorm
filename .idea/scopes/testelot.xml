@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="testelot" pattern="file[thunderstorm-boilerplate]:testelot/src//*" />
+</component>
