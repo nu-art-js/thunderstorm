@@ -74,7 +74,7 @@ class DevConfig
 	}
 
 	getHostingPort() {
-		return 3334;
+		return 5010;
 	}
 }
 

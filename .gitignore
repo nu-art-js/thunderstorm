@@ -8,7 +8,7 @@ env
 .firebaserc
 .firebase
 firebase.json
-
+.fork
 .trash
 *.iml
 **/.DS_Store
