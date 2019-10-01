@@ -30,14 +30,14 @@
     },
     "dev": {
       "HttpServer": {
-        "baseUrl": "http:////localhost:5000/thunderstorm-boilerplate/us-central1"
+        "baseUrl": "http:////localhost:5000/nu-art-thunderstorm/us-central1"
       },
       "isDebug": true,
       "name": "dev"
     },
     "prod": {
       "HttpServer": {
-        "baseUrl": "https:////us-central1-thunderstorm-boilerplate.cloudfunctions.net"
+        "baseUrl": "https:////us-central1-nu-art-thunderstorm.cloudfunctions.net"
       },
       "isDebug": false,
       "name": "prod"
