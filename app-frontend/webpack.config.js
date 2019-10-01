@@ -93,13 +93,12 @@ module.exports = (env, argv) => {
 					}
 				},
 				{
-					test: /\.(jpe?g|png|gif|ico)$/i,
+					test: /\.(jpe?g|png|gif|ico|svg)$/i,
 					use: [
 						{
 							loader: 'file-loader',
 							options: {
-								regExp: /\/src\/main\/res\/images\/(.*\.png)$/,
-								name: 'images/[1]',
+								name: '[name].[ext]'
 							}
 						},
 					]

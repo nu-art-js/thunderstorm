@@ -14,14 +14,17 @@ blah blah blah...
 ### What is in the repo:
  
  Right after you've cloned the repo you will see:
-  * Nu-Art libs - these are the infra the project is based on.
-  * app-frontend - contains all the frontend files.
-  * app-backend - contains all the backend files.
-  * app-shared - where all the shared types between the frontend and backend are stored.
+  * **ts-common** - Typescript infra that should have been a part of Typescript release but isn't.
+  * **testelot** - A scenario building infra for testing.
+  * **thunder** - The Typescript & React Frontend framework with core components you can use.
+  * **storm** - The Typescript & Express Backend framework you can extend to build any api based backend app.
+  * **app-frontend** - Contains all the frontend files.
+  * **app-backend** - Contains all the backend files.
+  * **app-shared** - where all the shared types between the frontend and backend are stored.
   
  **NOTE:** Unless I have made a stupid mistake.. these should always be aligned and compiling together with this repo!!
  
- **NOTE:** You can delete the Nu-Art libs, and the project should compile just the same.
+ **NOTE:** You can delete the infra and framework libs, and the project will compile just the same.
  
 # Fork this repo: 
  * Prepare an empty repo and acquire the repo remote tracking url `(e.g. git@github.com:${username}/${my-project}.git)`

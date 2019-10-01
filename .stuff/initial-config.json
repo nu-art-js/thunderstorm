@@ -23,22 +23,21 @@
             "https://localhost:5010"
           ]
         },
-        "host": "localhost",
-        "port": "3333"
+        "host": "localhost"
       },
       "isDebug": true,
       "name": "default"
     },
     "dev": {
       "HttpServer": {
-        "baseUrl": "http:////localhost:5000/typescript-boilerplate/us-central1"
+        "baseUrl": "http:////localhost:5000/thunderstorm-boilerplate/us-central1"
       },
       "isDebug": true,
       "name": "dev"
     },
     "prod": {
       "HttpServer": {
-        "baseUrl": "https:////us-central1-typescript-boilerplate.cloudfunctions.net"
+        "baseUrl": "https:////us-central1-thunderstorm-boilerplate.cloudfunctions.net"
       },
       "isDebug": false,
       "name": "prod"
