@@ -23,7 +23,8 @@ import {
 
 import {
 	HttpModule,
-	Thunder
+	Thunder,
+	UIDispatcher
 } from "@nu-art/thunder";
 import {CommonBodyReq} from "@shared/shared";
 
