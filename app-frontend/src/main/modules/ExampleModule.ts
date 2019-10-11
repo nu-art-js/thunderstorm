@@ -17,13 +17,13 @@
  */
 
 import {
-	Module,
-	HttpMethod
+	HttpMethod,
+	Module
 } from "@nu-art/ts-common";
 
 import {
-	Fronzy,
-	HttpModule
+	HttpModule,
+	Thunder
 } from "@nu-art/thunder";
 import {CommonBodyReq} from "@shared/shared";
 
@@ -38,9 +38,13 @@ export interface OnLabelReceived {
 export class ExampleModule_Class
 	extends Module<Config> {
 	private message!: string;
+	private dispatcher_onLabelReceived: UIDispatcher<OnLabelReceived>;
+
 
 	constructor() {
 		super();
+		this.dispatcher_onLabelReceived = Thunder.createDispatcher<OnLabelReceived>("onLabelReceived");
+
 	}
 
 	public getMessageFromServer() {
@@ -56,10 +60,7 @@ export class ExampleModule_Class
 		this.runAsync(this.config.remoteUrl, async () => {
 			const httpRequest = await HttpModule.createRequest(HttpMethod.GET).setRelativeUrl(this.config.remoteUrl).execute();
 			this.message = httpRequest.xhr.status !== 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.xhr.response;
-
-			Fronzy.dispatchUIEvent((item: any) => item.onLabelReceived, (l: OnLabelReceived) => {
-				l.onLabelReceived();
-			});
+			this.dispatcher_onLabelReceived.dispatch();
 		});
 
 		this.logInfo("continue... will receive label on callback..");
