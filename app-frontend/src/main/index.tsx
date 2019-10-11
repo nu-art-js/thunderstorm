@@ -30,7 +30,7 @@ import {App} from "./app/App";
 import {
 	AppWrapper,
 	BrowserHistoryModule,
-	Fronzy,
+	Thunder,
 	HttpModule,
 	LocalizationModule,
 	ResourcesModule,
@@ -51,10 +51,10 @@ const modules: Module<any>[] = [
 
 const config = require("./config").config;
 
-Fronzy.setConfig(config).setModules(...modules).init();
-Fronzy.setMainApp(App);
+Thunder.setConfig(config).setModules(...modules).init();
+Thunder.setMainApp(App);
 
 ReactDOM.render(
-	<AppWrapper fronzy={Fronzy}/>,
+	<AppWrapper Thunder={Thunder}/>,
 	document.getElementById('app')
 );
