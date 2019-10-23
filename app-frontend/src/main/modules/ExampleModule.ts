@@ -44,7 +44,7 @@ export class ExampleModule_Class
 
 	constructor() {
 		super();
-		this.dispatcher_onLabelReceived = Thunder.createDispatcher<OnLabelReceived>("onLabelReceived");
+		this.dispatcher_onLabelReceived = Thunder.createUIDispatcher<OnLabelReceived>("onLabelReceived");
 
 	}
 
