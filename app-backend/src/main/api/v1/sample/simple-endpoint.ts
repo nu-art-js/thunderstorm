@@ -18,24 +18,23 @@
 
 import {
 	ApiResponse,
-	ServerApi,
+	ServerApi_Post,
 } from "@nu-art/storm/server";
 
 import * as express from "express";
 import {ParsedUrlQuery} from "querystring";
-import {HttpMethod} from "@nu-art/ts-common";
 import {CommonBodyReq} from "@shared/shared";
 
 class ServerApi_EndpointExample
-	extends ServerApi<CommonBodyReq> {
+	extends ServerApi_Post<string, CommonBodyReq> {
 
 	constructor() {
-		super(HttpMethod.POST, "another-endpoint");
+		super("another-endpoint");
 	}
 
 	protected async process(request: express.Request, response: ApiResponse, queryParams: ParsedUrlQuery, body: CommonBodyReq) {
 		this.logInfoBold(`got id: ${body.message}`);
-		response.text(200, "another endpoint");
+		return "another endpoint response"
 	}
 }
 

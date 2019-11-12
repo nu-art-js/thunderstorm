@@ -26,14 +26,14 @@ import {ParsedUrlQuery} from "querystring";
 import {ExampleModule} from "@modules/ExampleModule";
 
 class ServerApi_EndpointExample
-	extends ServerApi_Get {
+	extends ServerApi_Get<string> {
 
 	constructor() {
 		super("endpoint-example");
 	}
 
 	protected async process(request: express.Request, response: ApiResponse, queryParams: ParsedUrlQuery, body: void) {
-		response.text(200, ExampleModule.getRandomString());
+		return ExampleModule.getRandomString();
 	}
 }
 
