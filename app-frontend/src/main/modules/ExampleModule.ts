@@ -26,7 +26,11 @@ import {
 	Thunder,
 	UIDispatcher
 } from "@nu-art/thunder";
-import {CommonBodyReq} from "@shared/shared";
+import {
+	CommonBodyReq,
+	ExampleApiGetType,
+	ExampleApiPostType
+} from "@shared/shared";
 
 type Config = {
 	remoteUrl: string
@@ -53,13 +57,13 @@ export class ExampleModule_Class
 
 		this.runAsync("/v1/sample/another-endpoint", async () => {
 			const bodyObject: CommonBodyReq = {message: this.message};
-			const httpRequest = await HttpModule.createRequest(HttpMethod.POST).setJsonBody(bodyObject).setRelativeUrl(
+			const httpRequest = await HttpModule.createRequest<ExampleApiPostType>(HttpMethod.POST).setJsonBody(bodyObject).setRelativeUrl(
 				"/v1/sample/another-endpoint").execute();
 			this.message = httpRequest.xhr.status !== 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.xhr.response;
 		});
 
 		this.runAsync(this.config.remoteUrl, async () => {
-			const httpRequest = await HttpModule.createRequest(HttpMethod.GET).setRelativeUrl(this.config.remoteUrl).execute();
+			const httpRequest = await HttpModule.createRequest<ExampleApiGetType>(HttpMethod.GET).setRelativeUrl(this.config.remoteUrl).execute();
 			this.message = httpRequest.xhr.status !== 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.xhr.response;
 			this.dispatcher_onLabelReceived.dispatch();
 		});
