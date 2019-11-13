@@ -15,7 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {
+	ApiWithBody,
+	ApiWithQuery
+} from "@nu-art/ts-common";
 
 export type CommonBodyReq = {
 	message: string
 }
+
+export type  ExampleApiPostType = ApiWithBody<string, CommonBodyReq>
+export type ExampleApiGetType = ApiWithQuery<string>

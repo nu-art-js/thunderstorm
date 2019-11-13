@@ -22,17 +22,18 @@ import {
 } from "@nu-art/storm/server";
 
 import * as express from "express";
-import {ParsedUrlQuery} from "querystring";
 import {ExampleModule} from "@modules/ExampleModule";
+import {ExampleApiGetType} from "@shared/shared";
+import {QueryParams} from "@nu-art/ts-common";
 
 class ServerApi_EndpointExample
-	extends ServerApi_Get<string> {
+	extends ServerApi_Get<ExampleApiGetType> {
 
 	constructor() {
 		super("endpoint-example");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: ParsedUrlQuery, body: void) {
+	protected async process(request: express.Request, response: ApiResponse, queryParams: QueryParams, body: void) {
 		return ExampleModule.getRandomString();
 	}
 }
