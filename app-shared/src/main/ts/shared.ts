@@ -24,5 +24,5 @@ export type CommonBodyReq = {
 	message: string
 }
 
-export type  ExampleApiPostType = ApiWithBody<string, CommonBodyReq>
-export type ExampleApiGetType = ApiWithQuery<string>
+export type  ExampleApiPostType = ApiWithBody<"/v1/sample/another-endpoint", string, CommonBodyReq>
+export type ExampleApiGetType = ApiWithQuery<string, string>
