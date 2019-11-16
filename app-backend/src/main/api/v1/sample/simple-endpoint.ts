@@ -15,7 +15,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import {
 	ApiResponse,
 	ServerApi_Post,
@@ -36,6 +35,7 @@ class ServerApi_EndpointExample
 	}
 
 	protected async process(request: express.Request, response: ApiResponse, queryParams: QueryParams, body: CommonBodyReq) {
+		this.assertProperty(body, "message");
 		this.logInfoBold(`got id: ${body.message}`);
 		return "another endpoint response"
 	}
