@@ -17,25 +17,23 @@
  */
 import {
 	ApiResponse,
-	ServerApi_Post,
+	ServerApi_Get,
 } from "@nu-art/storm/server";
 
 import * as express from "express";
 import {
-	CommonBodyReq,
-	ExampleApiPostType
+	ApiType_ApiGetWithParams,
+	ParamsToGet
 } from "@shared/shared";
 
 class ServerApi_EndpointExample
-	extends ServerApi_Post<ExampleApiPostType> {
+	extends ServerApi_Get<ApiType_ApiGetWithParams> {
 
 	constructor() {
-		super("another-endpoint");
+		super("get-with-params-endpoint");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: void, body: CommonBodyReq) {
-		this.assertProperty(body, "message");
-		this.logInfoBold(`got id: ${body.message}`);
+	protected async process(request: express.Request, response: ApiResponse, queryParams: ParamsToGet, body: void) {
 		return "another endpoint response"
 	}
 }
