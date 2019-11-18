@@ -22,21 +22,24 @@ import {
 
 import * as express from "express";
 import {
-	CommonBodyReq,
-	ExampleApiPostType
+	ApiType_ApiPostWithoutResponse,
+	CommonBodyReq
 } from "@shared/shared";
 
 class ServerApi_EndpointExample
-	extends ServerApi_Post<ExampleApiPostType> {
+	extends ServerApi_Post<ApiType_ApiPostWithoutResponse> {
 
 	constructor() {
-		super("another-endpoint");
+		super("post-without-response-endpoint");
 	}
 
 	protected async process(request: express.Request, response: ApiResponse, queryParams: void, body: CommonBodyReq) {
 		this.assertProperty(body, "message");
+
+		if (!body.message)
+			return;
+
 		this.logInfoBold(`got id: ${body.message}`);
-		return "another endpoint response"
 	}
 }
 

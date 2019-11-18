@@ -24,5 +24,14 @@ export type CommonBodyReq = {
 	message: string
 }
 
-export type  ExampleApiPostType = ApiWithBody<"/v1/sample/another-endpoint", string, CommonBodyReq>
+export type ParamsToGet = {
+	param1: string
+}
+
+export type ExampleApiPostType = ApiWithBody<"/v1/sample/another-endpoint", CommonBodyReq, string>
 export type ExampleApiGetType = ApiWithQuery<string, string>
+
+export type ApiType_GetWithoutParams = ApiWithQuery<"/v1/sample/get-without-params-endpoint", string>
+export type ApiType_ApiGetWithParams = ApiWithQuery<"/v1/sample/get-with-params-endpoint", string, ParamsToGet>
+export type ApiType_ApiPostWithoutResponse = ApiWithBody<"/v1/sample/post-without-body-endpoint", CommonBodyReq, void>
+export type ApiType_ApiPostWithResponse = ApiWithBody<"/v1/sample/post-with-body-endpoint", CommonBodyReq, string>

@@ -24,7 +24,6 @@ import {
 import * as express from "express";
 import {ExampleModule} from "@modules/ExampleModule";
 import {ExampleApiGetType} from "@shared/shared";
-import {QueryParams} from "@nu-art/ts-common";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Get<ExampleApiGetType> {
@@ -33,7 +32,7 @@ class ServerApi_EndpointExample
 		super("endpoint-example");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: QueryParams, body: void) {
+	protected async process(request: express.Request, response: ApiResponse, queryParams: void, body: void) {
 		return ExampleModule.getRandomString();
 	}
 }
