@@ -30,8 +30,8 @@
     "react": "^16.8.1"
   },
   "devDependencies": {
-    "@nu-art/thunder": "^0.9.10",
-    "@nu-art/ts-common": "^0.9.10",
+    "@nu-art/thunder": "^0.9.11",
+    "@nu-art/ts-common": "^0.9.11",
     "@types/history": "^4.7.2",
     "@types/node": "^11.11.1",
     "@types/qs": "^6.5.2",
