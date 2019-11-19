@@ -27,30 +27,26 @@ blah blah blah...
  **NOTE:** You can delete the infra and framework libs, and the project will compile just the same.
  
 # Fork this repo: 
+ * First you will need to install [firebase tools](https://firebase.google.com/docs/cli) `npm i -g firebase-tools`.
+ * You will then have to **Login** using the firebase tools cli `firebase login`.
+ * [create an empty Firebase project](https://console.firebase.google.com/). and acquire the project id (NOT project name)
+ * Create a realtime **Database and Firestore**. (and acquire the location e.g. us-cenrtal1...) 
  * Prepare an empty repo and acquire the repo remote tracking url `(e.g. git@github.com:${username}/${my-project}.git)`
  * Clone this repo locally `git clone --recursive git@github.com:nu-art-js/thunderstorm-boilerplate.git && cd thunderstorm-boilerplate`
- * Then run from within this cloned repo: `bash ./dev-tools/scripts/git/git-fork.sh --to=git@github.com:${username}/${my-project}.git --output=../${my-project}`
+ * Then run from within this cloned repo: `bash ./dev-tools/scripts/dev/typescript/fork-thunderstorm.sh`
+ * From this point on Follow the script and provide the required input.
+ * Once the fork is completed you can follow the steps bellow to setup, launch or deploy your function.
  
 Now you have forked the boilerplate...
 
 **NOTE:** To get latest boilerplate changes run in your cloned repo folder `(e.g. my-project)`: `bash build-and-install.sh --merge-origin`
 
-**ATTENTION:** You should pay attention to the `./.config` folder it contains all the project configurations it is version controlled and MUST not contain sensitive data such as passwords or private keys. 
-You should also note the `./app-frontend/.config` and `./app-backend/.config` files, these hold the projects environment configuration, and are NOT version controlled!
-
-### Prepare your forked repo: 
-After forking this repo.. there are a steps you MUST undergo in order to run it:
-
-  * You would need to [create an empty Firebase project](https://console.firebase.google.com/).
-  * Create a realtime Database (**NOT firestore**).
-  * Edit the content of `.stuff/initial-config.json` and replace **ALL** of the boilerplate urls with your firebase project respectively.
-  * Paste the edited content of the `.stuff/initial-config.json` file to the root of the database.
-  * Update the ALL the config files with your function project name and urls.
-  * You will need to install [firebase tools](https://firebase.google.com/docs/cli) `npm i -g firebase-tools`.
-  * You will then have to **Login** using the firebase tools cli.
+**ATTENTION:** You should pay attention to the `./.config`, `./app-frontend/.config` and `./app-backend/.config` folders as they contain all of the project configurations 
+and are version controlled, thus MUST not contain any sensitive data such as passwords or private keys. 
+You should also note the `./app-frontend/src/main/.config` and `./app-backend/src/main/.config` files, these hold the projects selected environment configuration, and are NOT version controlled!
   
 ### Set Environment
- Before you can run the project you need to set the environment....
+ Before you can run the project you need to set it up...
  
  You can setup **dev** environment using this command: `bash build-and-install.sh --setup --set-env=dev` 
  
