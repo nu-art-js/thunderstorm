@@ -48,11 +48,6 @@ export class ExampleModule_Class
 	private message!: string;
 	private dispatcher_onLabelReceived = new UIDispatcher<OnLabelReceived, "onLabelReceived">("onLabelReceived");
 
-
-	constructor() {
-		super();
-	}
-
 	public getMessageFromServer() {
 		this.logInfo("getting label from server");
 		this.runAsync("/v1/sample/another-endpoint", async () => {
