@@ -30,11 +30,11 @@ import {App} from "./app/App";
 import {
 	AppWrapper,
 	BrowserHistoryModule,
-	Thunder,
 	HttpModule,
 	LocalizationModule,
 	ResourcesModule,
-	StorageModule
+	StorageModule,
+	Thunder
 } from "@nu-art/thunder";
 import {ExampleModule} from "@modules/ExampleModule";
 
