@@ -23,7 +23,6 @@ import {
 
 import {
 	HttpModule,
-	Thunder,
 	UIDispatcher
 } from "@nu-art/thunder";
 import {
@@ -40,21 +39,22 @@ export interface OnLabelReceived {
 	onLabelReceived: () => void
 }
 
+export interface TestListenerTypeRistriction {
+	testOneParam: (label: string) => void
+}
+
 export class ExampleModule_Class
 	extends Module<Config> {
 	private message!: string;
-	private dispatcher_onLabelReceived: UIDispatcher<OnLabelReceived>;
+	private dispatcher_onLabelReceived = new UIDispatcher<OnLabelReceived, "onLabelReceived">("onLabelReceived");
 
 
 	constructor() {
 		super();
-		this.dispatcher_onLabelReceived = Thunder.createUIDispatcher<OnLabelReceived>("onLabelReceived");
-
 	}
 
 	public getMessageFromServer() {
 		this.logInfo("getting label from server");
-
 		this.runAsync("/v1/sample/another-endpoint", async () => {
 			const bodyObject: CommonBodyReq = {message: this.message};
 			const httpRequest = await HttpModule.createRequest<ExampleApiPostType>(HttpMethod.POST).setJsonBody(bodyObject).setRelativeUrl(
