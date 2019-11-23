@@ -60,7 +60,7 @@ export class ExampleModule_Class
 		this.runAsync(this.config.remoteUrl, async () => {
 			const httpRequest = await HttpModule.createRequest<ExampleApiGetType>(HttpMethod.GET).setRelativeUrl(this.config.remoteUrl).execute();
 			this.message = httpRequest.xhr.status !== 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.asText();
-			this.dispatcher_onLabelReceived.dispatch();
+			this.dispatcher_onLabelReceived.dispatch([]);
 		});
 
 		this.logInfo("continue... will receive label on callback..");
