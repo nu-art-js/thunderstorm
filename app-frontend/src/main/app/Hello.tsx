@@ -19,13 +19,16 @@
 import * as React from "react";
 import {
 	ExampleModule,
-	OnLabelReceived
-} from "../modules/ExampleModule";
-import {BaseComponent} from "@nu-art/thunder";
+	RequestKey_PostApi,
+} from "@modules/ExampleModule";
+import {
+	BaseComponent,
+	OnRequestListener
+} from "@nu-art/thunder";
 
 export class Hello
 	extends BaseComponent<{}, { label: string }>
-	implements OnLabelReceived {
+	implements OnRequestListener {
 
 	constructor(props: any) {
 		super(props);
@@ -43,7 +46,16 @@ export class Hello
 		return <h1 onClick={onClick}>{this.state.label}</h1>;
 	}
 
-	onLabelReceived() {
-		this.setState({label: ExampleModule.getMessage()});
-	}
+	onRequestCompleted = (key: string, success: boolean) => {
+		if (!success)
+			return;
+
+		switch (key) {
+			default:
+				return;
+
+			case RequestKey_PostApi:
+				this.setState({label: ExampleModule.getMessage()});
+		}
+	};
 }

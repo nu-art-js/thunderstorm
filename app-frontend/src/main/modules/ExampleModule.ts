@@ -21,10 +21,7 @@ import {
 	Module
 } from "@nu-art/ts-common";
 
-import {
-	HttpModule,
-	UIDispatcher
-} from "@nu-art/thunder";
+import {HttpModule} from "@nu-art/thunder";
 import {
 	CommonBodyReq,
 	ExampleApiGetType,
@@ -35,40 +32,38 @@ type Config = {
 	remoteUrl: string
 }
 
-export interface OnLabelReceived {
-	onLabelReceived: () => void
-}
-
-export interface TestListenerTypeRistriction {
-	testOneParam: (label: string) => void
-}
+export const RequestKey_PostApi = "PostApi";
+export const RequestKey_GetApi = "GetApi";
 
 export class ExampleModule_Class
 	extends Module<Config> {
 	private message!: string;
-	private dispatcher_onLabelReceived = new UIDispatcher<OnLabelReceived, "onLabelReceived">("onLabelReceived");
 
 	public getMessageFromServer() {
 		this.logInfo("getting label from server");
-		this.runAsync("/v1/sample/another-endpoint", async () => {
-			const bodyObject: CommonBodyReq = {message: this.message};
-			const httpRequest = await HttpModule.createRequest<ExampleApiPostType>(HttpMethod.POST).setJsonBody(bodyObject).setRelativeUrl(
-				"/v1/sample/another-endpoint").execute();
-			this.message = httpRequest.xhr.status !== 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.xhr.response;
-		});
+		const bodyObject: CommonBodyReq = {message: this.message || "No message"};
 
-		this.runAsync(this.config.remoteUrl, async () => {
-			const httpRequest = await HttpModule.createRequest<ExampleApiGetType>(HttpMethod.GET).setRelativeUrl(this.config.remoteUrl).execute();
-			this.message = httpRequest.xhr.status !== 200 ? `got error: ${httpRequest.xhr.status}` : httpRequest.asText();
-			this.dispatcher_onLabelReceived.dispatch([]);
-		});
+		HttpModule.createRequest<ExampleApiPostType>(HttpMethod.POST, RequestKey_PostApi)
+		          .setJsonBody(bodyObject)
+		          .setRelativeUrl("/v1/sample/another-endpoint")
+		          .setErrorMessage(`Error getting new message from backend`)
+		          .setSuccessMessage(`Success`)
+		          .execute(this.setMessage);
 
-		this.logInfo("continue... will receive label on callback..");
+		HttpModule.createRequest<ExampleApiGetType>(HttpMethod.GET, RequestKey_GetApi)
+		          .setRelativeUrl(this.config.remoteUrl)
+		          .setErrorMessage(`Error getting new message from backend`)
+		          .execute(response => this.message = response);
+
+		this.logInfo("continue... will receive an event once request is completed..");
 	}
 
-	getMessage() {
-		return this.message;
-	}
+	setMessage = (message: string) => {
+		this.logInfo(`got message: ${message}`);
+		this.message = message;
+	};
+
+	getMessage = () => this.message;
 }
 
 export const ExampleModule = new ExampleModule_Class();
