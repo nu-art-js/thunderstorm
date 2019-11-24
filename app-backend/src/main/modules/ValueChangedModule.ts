@@ -22,7 +22,10 @@ export class NodeChangedModule_Class
 
 	constructor() {
 		super(`test/{param}/changes/value`);
-		this.onFunctionReady = this.onFunctionReady.bind(this);
+	}
+
+	protected async onFunctionReadyImpl() {
+		this.logInfo(`Function is ready!!`);
 	}
 
 	processChanges = async (previousValue: any, newValue: any, params: { [p: string]: any }): Promise<any> => {
