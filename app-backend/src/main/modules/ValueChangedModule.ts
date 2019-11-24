@@ -24,10 +24,6 @@ export class NodeChangedModule_Class
 		super(`test/{param}/changes/value`);
 	}
 
-	protected async onFunctionReadyImpl() {
-		this.logInfo(`Function is ready!!`);
-	}
-
 	processChanges = async (previousValue: any, newValue: any, params: { [p: string]: any }): Promise<any> => {
 		this.logInfo(`Doing nothing...`);
 	};
