@@ -25,9 +25,9 @@ export class NodeChangedModule_Class
 		this.onFunctionReady = this.onFunctionReady.bind(this);
 	}
 
-	async processChanges(previousValue: any, newValue: any, params: { [p: string]: any }): Promise<any> {
+	processChanges = async (previousValue: any, newValue: any, params: { [p: string]: any }): Promise<any> => {
 		this.logInfo(`Doing nothing...`);
-	}
+	};
 }
 
 export const ValueChangedModule = new NodeChangedModule_Class();
