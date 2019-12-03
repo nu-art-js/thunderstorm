@@ -18,6 +18,7 @@
 
 import * as React from "react";
 import {Hello} from "../Hello";
+import {ExampleAppToaster} from "../ui/ExampleAppToaster";
 
 
 export class Page_Home
@@ -31,6 +32,9 @@ export class Page_Home
 	}
 
 	render() {
-		return <Hello/>;
+		return <>
+			<Hello/>
+			<ExampleAppToaster/>
+		</>;
 	}
 }
