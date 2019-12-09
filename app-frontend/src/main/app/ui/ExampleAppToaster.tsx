@@ -1,12 +1,12 @@
 import * as React from "react";
 import * as emotion from "emotion";
-import {_marginRight} from "@styles/styles";
 import {BaseComponent,
 	Toast,
 	ToastListener,
 	ToastType,
 	Toaster
 } from "@nu-art/thunder";
+
 export class ExampleAppToaster
 	extends BaseComponent<{}, { toast?: Toast }>
 	implements ToastListener {
@@ -15,7 +15,7 @@ export class ExampleAppToaster
 		this.state = {toast: undefined};
 	}
 	showToast = (toast: Toast): void => {
-		this.setState({toast: toast});
+		this.setState({toast});
 	};
 	private hideToast = () => {
 		this.setState({toast: undefined});
@@ -46,7 +46,7 @@ export class ExampleAppToaster
 			message = message.replace(/\\\*/g, "*");
 			toast.message = <div dangerouslySetInnerHTML={{__html: message}}/>;
 		}
-		const getColors = () => {
+		const getColors = () => { 
 			if (toast.bgColor)
 				return toast.bgColor;
 			switch (toast.type) {
@@ -72,6 +72,7 @@ export class ExampleAppToaster
           letter-spacing: -0.18px;
           padding: 8px 15px 10px 19px;
         }`;
+		toast.duration = -1;
 		return <Toaster
 			id="app-toaster"
 			toast={toast}

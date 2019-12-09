@@ -19,6 +19,7 @@
 import * as React from "react";
 import {Hello} from "../Hello";
 import {ExampleAppToaster} from "../ui/ExampleAppToaster";
+import {ExampleAppDialogs} from "../ui/ExampleAppDialogs";
 
 
 export class Page_Home
@@ -34,6 +35,7 @@ export class Page_Home
 	render() {
 		return <>
 			<Hello/>
+			<ExampleAppDialogs />
 			<ExampleAppToaster/>
 		</>;
 	}
