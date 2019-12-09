@@ -45,6 +45,7 @@
     "clean-webpack-plugin": "^0.1.19",
     "copy-webpack-plugin": "^4.5.2",
     "css-loader": "^1.0.0",
+    "csstype": "^2.6.7",
     "emotion": "^9.2.12",
     "file-loader": "^2.0.0",
     "history": "^4.9.0",

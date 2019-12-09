@@ -36,7 +36,7 @@ export const RequestKey_PostApi = "PostApi";
 export const RequestKey_GetApi = "GetApi";
 
 export class ExampleModule_Class
-	extends Module<Config> {
+	extends Module<Config> { 
 	private message!: string;
 
 	public getMessageFromServer() {
