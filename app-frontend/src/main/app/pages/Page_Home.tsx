@@ -19,7 +19,12 @@
 import * as React from "react";
 import {Hello} from "../Hello";
 import {ExampleAppToaster} from "../ui/ExampleAppToaster";
-import {ExampleAppDialogs} from "../ui/ExampleAppDialogs";
+import {
+	showAppConfirmationDialogExample,
+	showDefaultInfoModalExample,
+} from "../ui/ExampleAppDialogs";
+import {ToastModule} from "@nu-art/thunder";
+import {ExampleModule} from "@modules/ExampleModule";
 
 
 export class Page_Home
@@ -32,10 +37,41 @@ export class Page_Home
 		};
 	}
 
+	showDefaultInfoModalExample = () => {
+		showDefaultInfoModalExample()
+	};
+
+	showAppConfirmationDialogExample = () => {
+		showAppConfirmationDialogExample()
+	};
+
+	showAppToasterSuccessExample = () => {
+		ToastModule.toastSuccess("Simple success message");
+	};
+
+	showAppToasterErrorExample = () => {
+		ToastModule.toastError("Simple error message");
+	};
+
+	showAppToasterInfoExample = () => {
+		ToastModule.toastInfo("Simple info message");
+	};
+
+	callServerApi_CustomError = () => {
+		ExampleModule.callCustomErrorApi();
+	};
+
 	render() {
 		return <>
 			<Hello/>
-			<ExampleAppDialogs />
+
+			<button style={{marginRight: 8}} onClick={this.showDefaultInfoModalExample}>Default Dialog Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppConfirmationDialogExample}>Custom Dialog Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Success Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Failure Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Info Example</button>
+			<button style={{marginRight: 8}} onClick={this.callServerApi_CustomError}>Server API - Custom Error</button>
+
 			<ExampleAppToaster/>
 		</>;
 	}

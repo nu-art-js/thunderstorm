@@ -17,13 +17,20 @@
  */
 
 import {
+	ErrorResponse,
 	HttpMethod,
 	Module
 } from "@nu-art/ts-common";
 
-import {HttpModule} from "@nu-art/thunder";
+import {
+	HttpModule,
+	ToastModule
+} from "@nu-art/thunder";
 import {
 	CommonBodyReq,
+	CustomError1,
+	CustomError2,
+	ExampleApiCustomError,
 	ExampleApiGetType,
 	ExampleApiPostType
 } from "@shared/shared";
@@ -32,12 +39,44 @@ type Config = {
 	remoteUrl: string
 }
 
+export const RequestKey_CustomError = "CustomError";
 export const RequestKey_PostApi = "PostApi";
 export const RequestKey_GetApi = "GetApi";
 
 export class ExampleModule_Class
-	extends Module<Config> { 
+	extends Module<Config> {
+
+
 	private message!: string;
+
+	callCustomErrorApi() {
+		HttpModule.createRequest<ExampleApiCustomError>(HttpMethod.POST, RequestKey_CustomError)
+		          .setRelativeUrl("/v1/sample/custom-error")
+		          .setOnError((resError: ErrorResponse<CustomError1 | CustomError2>) => {
+			          const error = resError?.error;
+			          if (!error)
+				          return;
+
+			          const errorType = error.type;
+			          if (!errorType)
+				          return;
+
+			          let errorBody: CustomError1 | CustomError2 | undefined;
+			          switch (errorType) {
+				          case "CustomError1":
+					          errorBody = error.body as CustomError1;
+					          ToastModule.toastError(`${errorBody.prop1}\n${errorBody.prop2}`);
+
+				          case "CustomError2":
+					          errorBody = error.body as CustomError2;
+					          ToastModule.toastError(`${errorBody.prop3}\n${errorBody.prop4}`);
+			          }
+		          })
+		          .setOnSuccessMessage(`Success`)
+		          .execute();
+
+
+	}
 
 	public getMessageFromServer() {
 		this.logInfo("getting label from server");
@@ -57,6 +96,7 @@ export class ExampleModule_Class
 
 		this.logInfo("continue... will receive an event once request is completed..");
 	}
+
 
 	setMessage = (message: string) => {
 		this.logInfo(`got message: ${message}`);

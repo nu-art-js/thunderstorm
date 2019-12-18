@@ -28,6 +28,17 @@ export type ParamsToGet = {
 	param1: string
 }
 
+export type CustomError1 = {
+	prop1: string
+	prop2: string
+}
+
+export type CustomError2 = {
+	prop3: string
+	prop4: string
+}
+
+export type ExampleApiCustomError = ApiWithBody<"/v1/sample/custom-error", void, void, CustomError1 | CustomError2>
 export type ExampleApiPostType = ApiWithBody<"/v1/sample/another-endpoint", CommonBodyReq, string>
 export type ExampleApiGetType = ApiWithQuery<string, string>
 
