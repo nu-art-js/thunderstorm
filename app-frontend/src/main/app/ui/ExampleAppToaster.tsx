@@ -14,12 +14,15 @@ export class ExampleAppToaster
 		super(props);
 		this.state = {toast: undefined};
 	}
+
 	showToast = (toast: Toast): void => {
 		this.setState({toast});
 	};
+
 	private hideToast = () => {
 		this.setState({toast: undefined});
 	};
+
 	render() {
 		const {toast} = this.state;
 		if (!toast || !toast.message)
@@ -46,6 +49,7 @@ export class ExampleAppToaster
 			message = message.replace(/\\\*/g, "*");
 			toast.message = <div dangerouslySetInnerHTML={{__html: message}}/>;
 		}
+
 		const getColors = () => { 
 			if (toast.bgColor)
 				return toast.bgColor;
@@ -63,6 +67,7 @@ export class ExampleAppToaster
 			return (`background-color: #e8e8e8;
                         color: black;`);
 		};
+
 		const cssClass = emotion.css`{
             ${getColors()}
             min-width: 384px;
@@ -72,6 +77,7 @@ export class ExampleAppToaster
           letter-spacing: -0.18px;
           padding: 8px 15px 10px 19px;
         }`;
+
 		toast.duration = -1;
 		return <Toaster
 			id="app-toaster"
