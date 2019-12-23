@@ -15,34 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import * as React from 'react';
+import * as React from "react";
 import {
-	Dialog,
-	WrapperProps
-} from "@nu-art/thunder";
-import {AppToaster} from "./ui/AppToaster";
-import {NavigationBar} from './components/navigation-bar';
-import {VersionOnScreen} from './components/version-on-screen';
+	_marginBottom,
+	_marginRight
+} from "@styles/styles";
 
-export class App
-	extends React.Component<WrapperProps> {
 
-	public static dropBlocker<T>(ev: React.DragEvent<T>) {
-		ev.preventDefault();
-		ev.stopPropagation();
-	};
-
-	render() {
-
-		return (
-			<div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
-				<NavigationBar/>
-				<VersionOnScreen/>
-
-				<Dialog/>
-				<AppToaster/>
-			</div>);
-	}
-}
-
+export const VersionOnScreen = () => {
+	return <div className="full_screen">
+		<div className={`bottom right absolute ${_marginRight(10)} ${_marginBottom(10)}`}>{`${process.env.appEnv}-${process.env.appVersion}`}</div>
+	</div>;
+};

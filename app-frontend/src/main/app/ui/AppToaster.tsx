@@ -1,13 +1,14 @@
 import * as React from "react";
 import * as emotion from "emotion";
-import {BaseComponent,
+import {
+	BaseComponent,
 	Toast,
+	Toaster,
 	ToastListener,
-	ToastType,
-	Toaster
+	ToastType
 } from "@nu-art/thunder";
 
-export class ExampleAppToaster
+export class AppToaster
 	extends BaseComponent<{}, { toast?: Toast }>
 	implements ToastListener {
 	constructor(props: any) {
@@ -27,6 +28,7 @@ export class ExampleAppToaster
 		const {toast} = this.state;
 		if (!toast || !toast.message)
 			return null;
+
 		if (typeof toast.message === "string") {
 			let message = toast.message;
 			message = message.replace(/\n#### (.*?)\n/g, "\n<h4>$1</h4>\n");
@@ -43,6 +45,7 @@ export class ExampleAppToaster
 					                             .replace(/([^\\]?)\*/g, "$1\\*");
 					return input.replace(toEscape, replaceValue);
 				}, message);
+
 			message = message.replace(/([^\\]?)_(.*?)([^\\])_/g, "$1<i>$2$3</i>");
 			message = message.replace(/([^\\]?)\*(.*?)([^\\])\*/g, "$1<b>$2$3</b>");
 			message = message.replace(/\\_/g, "_");
@@ -50,9 +53,10 @@ export class ExampleAppToaster
 			toast.message = <div dangerouslySetInnerHTML={{__html: message}}/>;
 		}
 
-		const getColors = () => { 
+		const getColors = () => {
 			if (toast.bgColor)
 				return toast.bgColor;
+
 			switch (toast.type) {
 				case ToastType.success:
 					return (`background-color: #2ee06f;
@@ -89,4 +93,5 @@ export class ExampleAppToaster
 		/>
 	}
 }
+
 export const ExampleNode = <div>example toast</div>;
