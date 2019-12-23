@@ -17,16 +17,11 @@
  */
 
 import * as React from "react";
-import {Hello} from "../Hello";
-import {
-	showAppConfirmationDialogExample,
-	showDefaultInfoModalExample,
-} from "../ui/ExampleAppDialogs";
 import {ToastModule} from "@nu-art/thunder";
-import {ExampleModule} from "@modules/ExampleModule";
+import * as ReactDOM from "react-dom";
 
 
-export class Page_Home
+export class Page_ToasterExample
 	extends React.Component {
 	constructor(props: {}) {
 		super(props);
@@ -35,14 +30,6 @@ export class Page_Home
 			formFields: {},
 		};
 	}
-
-	showDefaultInfoModalExample = () => {
-		showDefaultInfoModalExample()
-	};
-
-	showAppConfirmationDialogExample = () => {
-		showAppConfirmationDialogExample()
-	};
 
 	showAppToasterSuccessExample = () => {
 		ToastModule.toastSuccess("Simple success message");
@@ -56,14 +43,18 @@ export class Page_Home
 		ToastModule.toastInfo("Simple info message");
 	};
 
-	callServerApi_CustomError = () => {
-		ExampleModule.callCustomErrorApi();
-	};
-
 	render() {
 		return <>
-			<Hello/>
-			<button style={{marginRight: 8}} onClick={this.callServerApi_CustomError}>Server API - Custom Error</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Success Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Failure Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Info Example</button>
 		</>;
 	}
 }
+
+let elementById = document.getElementById("toasters.js");
+if (elementById)
+	ReactDOM.render(
+		<Page_ToasterExample/>,
+		elementById
+	);

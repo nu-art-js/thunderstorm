@@ -39,10 +39,11 @@ module.exports = (env, argv) => {
 		context: sourcePath,
 		entry: {
 			main: './main/index.tsx',
+			toasters: './main/app/pages/Page_ToasterExample.tsx',
 		},
 		output: {
 			path: outputFolder,
-			filename: '[name].[chunkhash].js',
+			filename: '[name].js',
 			publicPath: '/',
 		},
 		devtool: "source-map",
@@ -143,7 +144,7 @@ module.exports = (env, argv) => {
 				filename: "./index.html",
 				minify: envConfig.htmlMinificationOptions(),
 			}),
-			new WebpackMd5Hash(),
+			// new WebpackMd5Hash(),
 			envConfig.getPrettifierPlugin(),
 			new WriteFilePlugin(),
 		].filter(plugin => plugin),

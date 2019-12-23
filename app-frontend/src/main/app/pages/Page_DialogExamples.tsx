@@ -17,16 +17,14 @@
  */
 
 import * as React from "react";
-import {Hello} from "../Hello";
 import {
 	showAppConfirmationDialogExample,
 	showDefaultInfoModalExample,
 } from "../ui/ExampleAppDialogs";
-import {ToastModule} from "@nu-art/thunder";
-import {ExampleModule} from "@modules/ExampleModule";
+import {ToastModule} from "../../../../../thunder/src/main/ts";
 
 
-export class Page_Home
+export class Page_DialogExamples
 	extends React.Component {
 	constructor(props: {}) {
 		super(props);
@@ -56,14 +54,14 @@ export class Page_Home
 		ToastModule.toastInfo("Simple info message");
 	};
 
-	callServerApi_CustomError = () => {
-		ExampleModule.callCustomErrorApi();
-	};
-
 	render() {
 		return <>
-			<Hello/>
-			<button style={{marginRight: 8}} onClick={this.callServerApi_CustomError}>Server API - Custom Error</button>
+			<button style={{marginRight: 8}} onClick={this.showDefaultInfoModalExample}>Default Dialog Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppConfirmationDialogExample}>Custom Dialog Example</button>
+
+			<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Success Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Failure Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Info Example</button>
 		</>;
 	}
 }
