@@ -52,7 +52,7 @@ export class Page_ToasterExample
 	}
 }
 
-let elementById = document.getElementById("toasters.js");
+const elementById = document.getElementById("toasters.js");
 if (elementById)
 	ReactDOM.render(
 		<Page_ToasterExample/>,
