@@ -28,8 +28,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@nu-art/thunder": "^0.11.6",
-    "@nu-art/ts-common": "^0.11.6",
+    "@nu-art/thunder": "^0.11.7",
+    "@nu-art/ts-common": "^0.11.7",
     "@types/history": "^4.7.2",
     "@types/node": "^11.11.1",
     "@types/qs": "^6.5.2",
