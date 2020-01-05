@@ -19,7 +19,7 @@ modules=(ts-common testelot thunder storm)
 log=""
 for module in ${modules[@]}; do
     cd ${module}
-        moduleLog=`git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="shit" --no-merges v${version}... | sed -E "s/[0-9a-f]*( .*)/\1/g"`
+        moduleLog=`git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="shit" --no-merges v${version}... | sed -E "s/[0-9a-f]*( .*)/  * \1\n/g"`
         gitAssertRepoClean
         if [[ "${moduleLog}" ]]; then
             log="${log}${module}:\n${moduleLog}\n\n"
@@ -27,6 +27,7 @@ for module in ${modules[@]}; do
     cd ..
 done
 
+echo -e "${log}"
 bash ./dev-tools/scripts/git/git-push.sh --this -m="${log}"
 throwError "Error pushing Thunderstorm" $?
 
