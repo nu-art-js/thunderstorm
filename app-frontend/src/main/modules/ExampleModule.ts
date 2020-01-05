@@ -92,13 +92,15 @@ export class ExampleModule_Class
 		HttpModule.createRequest<ExampleApiGetType>(HttpMethod.GET, RequestKey_GetApi)
 		          .setRelativeUrl(this.config.remoteUrl)
 		          .setOnError(`Error getting new message from backend`)
-		          .execute(response => this.message = response);
+		          .execute(async response => {
+			          this.message = response;
+		          });
 
 		this.logInfo("continue... will receive an event once request is completed..");
 	}
 
 
-	setMessage = (message: string) => {
+	setMessage = async (message: string) => {
 		this.logInfo(`got message: ${message}`);
 		this.message = message;
 	};
