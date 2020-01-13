@@ -8,10 +8,10 @@ if [[ ! "${version}" ]]; then
     throwError "Could not resolve version!" 2
 fi
 
-#bash ./dev-tools/scripts/git/gist-pull.sh -a -f
-#
-#bash ./build-and-install.sh --lint
-#throwError "Error linting and building Thunderstorm" $?
+bash ./dev-tools/scripts/git/gist-pull.sh -a -f
+
+bash ./build-and-install.sh --lint
+throwError "Error linting and building Thunderstorm" $?
 
 
 modules=(ts-common testelot thunder storm)
