@@ -23,8 +23,8 @@
 import {
 	BeLogged,
 	createModuleManager,
-	Module,
-	LogClient_Terminal
+	LogClient_Terminal,
+	Module
 } from "@nu-art/ts-common";
 import {
 	HttpServer,
