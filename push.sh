@@ -27,6 +27,6 @@ for module in ${modules[@]}; do
 done
 
 echo -e "${submodulesLog}"
-bash ./dev-tools/scripts/git/git-push.sh --this -m="${submodulesLog}" -np
+bash ./dev-tools/scripts/git/git-push.sh --this -m="${submodulesLog}"
 throwError "Error pushing Thunderstorm" $?
 
