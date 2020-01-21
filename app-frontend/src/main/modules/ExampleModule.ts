@@ -78,7 +78,7 @@ export class ExampleModule_Class
 
 	}
 
-	public getMessageFromServer() {
+	public getMessageFromServer1 = () => {
 		this.logInfo("getting label from server");
 		const bodyObject: CommonBodyReq = {message: this.message || "No message"};
 
@@ -89,6 +89,12 @@ export class ExampleModule_Class
 		          .setOnSuccessMessage(`Success`)
 		          .execute(this.setMessage);
 
+		this.logInfo("continue... will receive an event once request is completed..");
+	};
+
+	public getMessageFromServer2 = () => {
+		this.logInfo("getting label from server");
+
 		HttpModule.createRequest<ExampleApiGetType>(HttpMethod.GET, RequestKey_GetApi)
 		          .setRelativeUrl(this.config.remoteUrl)
 		          .setOnError(`Error getting new message from backend`)
@@ -97,7 +103,7 @@ export class ExampleModule_Class
 		          });
 
 		this.logInfo("continue... will receive an event once request is completed..");
-	}
+	};
 
 
 	setMessage = async (message: string) => {

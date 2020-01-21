@@ -20,6 +20,7 @@ import {RoutingModule} from "@nu-art/thunder";
 import {Page_DialogExamples} from "../pages/Page_DialogExamples";
 import {Page_Home} from "../pages/Page_Home";
 import {css} from "emotion";
+import {Page_ToasterExample} from "../pages/Page_ToasterExample";
 
 const fixedMenu = css`
   position: fixed;
@@ -54,7 +55,7 @@ const PageLinkKeys = [Route_Dialog,
 export const registerRoutes = () => {
 	RoutingModule.clearRoutes();
 	RoutingModule.addRoute(Route_Dialog, "/dialog", Page_DialogExamples).setLabel("Dialog Examples");
-	RoutingModule.addRoute(Route_Toaster, "/toaster", "toasters.js").setLabel("Toaster Examples");
+	RoutingModule.addRoute(Route_Toaster, "/toaster", Page_ToasterExample).setLabel("Toaster Examples");
 	RoutingModule.addRoute(Route_Home, "/", Page_Home).setLabel("Home").setExact(false);
 };
 

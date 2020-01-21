@@ -19,9 +19,9 @@
 import * as React from 'react';
 import {
 	Dialog,
+	Toaster,
 	WrapperProps
 } from "@nu-art/thunder";
-import {AppToaster} from "./ui/AppToaster";
 import {NavigationBar} from './components/navigation-bar';
 import {VersionOnScreen} from './components/version-on-screen';
 
@@ -41,7 +41,7 @@ export class App
 				<VersionOnScreen/>
 
 				<Dialog/>
-				<AppToaster/>
+				<Toaster/>
 			</div>);
 	}
 }
