@@ -19,6 +19,7 @@
 import * as React from "react";
 import {
 	ExampleModule,
+	RequestKey_GetApi,
 	RequestKey_PostApi,
 } from "@modules/ExampleModule";
 import {
@@ -37,13 +38,11 @@ export class Hello
 		};
 	}
 
-	static getMessageFromServer() {
-		ExampleModule.getMessageFromServer();
-	}
-
 	render() {
-		const onClick = Hello.getMessageFromServer;
-		return <h1 onClick={onClick}>{this.state.label}</h1>;
+		return <>
+			<h1 onClick={ExampleModule.getMessageFromServer1} >{this.state.label}</h1>
+			<h1 onDoubleClick={ExampleModule.getMessageFromServer2}>Double click me</h1>
+		</>;
 	}
 
 	onRequestCompleted = (key: string, success: boolean) => {
@@ -54,6 +53,7 @@ export class Hello
 			default:
 				return;
 
+			case RequestKey_GetApi:
 			case RequestKey_PostApi:
 				this.setState({label: ExampleModule.getMessage()});
 		}
