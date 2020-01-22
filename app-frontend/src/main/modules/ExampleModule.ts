@@ -66,10 +66,12 @@ export class ExampleModule_Class
 				          case "CustomError1":
 					          errorBody = error.body as CustomError1;
 					          ToastModule.toastError(`${errorBody.prop1}\n${errorBody.prop2}`);
+										break;
 
 				          case "CustomError2":
 					          errorBody = error.body as CustomError2;
 					          ToastModule.toastError(`${errorBody.prop3}\n${errorBody.prop4}`);
+										break;
 			          }
 		          })
 		          .setOnSuccessMessage(`Success`)
