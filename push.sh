@@ -4,6 +4,11 @@ source ./dev-tools/scripts/git/_core.sh
 source ./dev-tools/scripts/_core-tools/_source.sh
 
 version=`getVersionName version-nu-art.json`
+
+if [[ "${1}" ]]; then
+    version=${1}
+fi
+
 if [[ ! "${version}" ]]; then
     throwError "Could not resolve version!" 2
 fi
