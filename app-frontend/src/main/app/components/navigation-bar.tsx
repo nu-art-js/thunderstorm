@@ -59,18 +59,38 @@ export const registerRoutes = () => {
 	RoutingModule.addRoute(Route_Home, "/", Page_Home).setLabel("Home").setExact(false);
 };
 
-export const NavigationBar = () => {
-	registerRoutes();
+let menuRef: HTMLDivElement;
 
-	return <div>
-		<div style={{paddingTop: "65px"}}>
-			{RoutingModule.getRoutesMap()}
-		</div>
+export class NavigationBar
+	extends React.Component {
 
-		<div className={fixedMenu}>
-			<div className="menu">
-				{RoutingModule.getNavLinks(PageLinkKeys)}
+	render() {
+		registerRoutes();
+
+		return <div className="ll_v_l">
+			<div className={fixedMenu} ref={(instance: HTMLDivElement) => {
+				if (menuRef)
+					return;
+
+				menuRef = instance;
+				this.forceUpdate();
+			}}>
+				<div className="menu">
+					{RoutingModule.getNavLinks(PageLinkKeys)}
+				</div>
 			</div>
+
+
+			{this.renderRoutes()}
+
 		</div>
-	</div>
+	}
+
+	renderRoutes = () => {
+		if (!menuRef)
+			return "";
+
+		return <div style={{padding: menuRef.clientHeight}}>{RoutingModule.getRoutesMap()}</div>;
+	};
 }
+
