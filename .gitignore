@@ -13,5 +13,3 @@ firebase.json
 *.iml
 **/.DS_Store
 firebase-debug.log
-
-live-docs

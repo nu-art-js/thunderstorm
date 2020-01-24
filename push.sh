@@ -23,7 +23,7 @@ modules=(ts-common testelot thunder storm)
 submodulesLog=""
 for module in ${modules[@]}; do
     cd ${module}
-        moduleLog=`git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="shit" --no-merges v${version}... | sed -E "s/[0-9a-f]*( .*)/  * \1\n/g"`
+        moduleLog=`git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="version bumped" --grep="shit" --no-merges v${version}... | sed -E "s/[0-9a-f]*( .*)/  * \1\n/g"`
         gitAssertRepoClean
         if [[ "${moduleLog}" ]]; then
             submodulesLog="${submodulesLog}${module}:\n${moduleLog}\n\n"
