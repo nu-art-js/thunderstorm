@@ -9,6 +9,7 @@ allowedBranchesForPromotion=(master staging dev)
 
 projectModules=(app-backend app-frontend)
 nuArtModules=(ts-common testelot thunder storm live-docs)
+#nuArtModules=(ts-common testelot thunder storm live-docs user-login)
 linkedSourceModules=(app-shared)
 
 
