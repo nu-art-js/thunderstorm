@@ -28,6 +28,7 @@ import {
 } from "@nu-art/ts-common";
 import {
 	HttpServer,
+	RouteResolver,
 	ServerApi
 } from "@nu-art/storm/server";
 import {ExampleModule} from "@modules/ExampleModule";
@@ -52,8 +53,8 @@ export async function start(configAsObject: any) {
 	 *  SETUP HttpServer
 	 */
 	ServerApi.isDebug = configAsObject.isDebug;
-	const _urlPrefix: string = !process.env.GCLOUD_PROJECT ? "/api" : "";
-	HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/api", __dirname + "/api");
+	// HttpServer.resolveApi(require, __dirname, _urlPrefix, __dirname + "/api", __dirname + "/api");
+	HttpServer.resolveApi(new RouteResolver(require, __dirname, "api"), !process.env.GCLOUD_PROJECT ? "/api" : "");
 	HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? "/api" : "");
 	return HttpServer.startServer();
 }
