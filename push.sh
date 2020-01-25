@@ -23,8 +23,9 @@ modules=(ts-common testelot thunder storm)
 submodulesLog=""
 for module in ${modules[@]}; do
     cd ${module}
-        moduleLog=`git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="version bumped" --grep="shit" --no-merges v${version}... | sed -E "s/[0-9a-f]*( .*)/  * \1\n/g"`
         gitAssertRepoClean
+        [[ ! $(gitAssertTagExists v${version})  ]] && logWarning "Could not find version tag for v${version}" && continue
+        moduleLog=`git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="version bumped" --grep="shit" --no-merges v${version}... | sed -E "s/[0-9a-f]*( .*)/  * \1\n/g"`
         if [[ "${moduleLog}" ]]; then
             submodulesLog="${submodulesLog}${module}:\n${moduleLog}\n\n"
         fi
