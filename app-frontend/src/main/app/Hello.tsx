@@ -26,6 +26,7 @@ import {
 	BaseComponent,
 	OnRequestListener
 } from "@nu-art/thunder";
+import {LiveDoc} from "@nu-art/live-docs/frontend";
 
 export class Hello
 	extends BaseComponent<{}, { label: string }>
@@ -40,8 +41,8 @@ export class Hello
 
 	render() {
 		return <>
-			<h1 onClick={ExampleModule.getMessageFromServer1} >{this.state.label}</h1>
-			<h1 onDoubleClick={ExampleModule.getMessageFromServer2}>Double click me</h1>
+			<div className="ll_h_c"><h1 onClick={ExampleModule.getMessageFromServer1}>{this.state.label}</h1><LiveDoc docKey="one-mouse-click"/></div>
+			<div className="ll_h_c"><h1 onDoubleClick={ExampleModule.getMessageFromServer2}>Double click me</h1><LiveDoc docKey="double-mouse-click"/></div>
 		</>;
 	}
 
