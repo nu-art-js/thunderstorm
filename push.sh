@@ -24,11 +24,12 @@ submodulesLog=""
 for module in ${modules[@]}; do
     cd ${module}
         gitAssertRepoClean
-        [[ ! $(gitAssertTagExists v${version})  ]] && logWarning "Could not find version tag for v${version}" && continue
+
+        [[ ! $(gitAssertTagExists v${version})  ]] && logWarning "Could not find version tag v${version} in package: ${module}" && continue
         moduleLog=`git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="version bumped" --grep="shit" --no-merges v${version}... | sed -E "s/[0-9a-f]*( .*)/  * \1\n/g"`
-        if [[ "${moduleLog}" ]]; then
-            submodulesLog="${submodulesLog}${module}:\n${moduleLog}\n\n"
-        fi
+
+        [[ ! "${moduleLog}" ]] && logInfo "No changes found in package: ${module}" && continue
+        submodulesLog="${submodulesLog}${module}:\n${moduleLog}\n\n"
     cd ..
 done
 

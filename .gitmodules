@@ -22,3 +22,6 @@
 [submodule "live-docs"]
 	path = live-docs
 	url = git@github.com:nu-art-js/live-docs.git
+[submodule "user-account"]
+	path = user-account
+	url = git@github.com:nu-art-js/user-account.git
