@@ -8,8 +8,8 @@ backendModule=app-backend
 allowedBranchesForPromotion=(master staging dev)
 
 projectModules=(app-backend app-frontend)
-nuArtModules=(ts-common testelot thunder storm live-docs)
-#nuArtModules=(ts-common testelot thunder storm live-docs user-account)
+#nuArtModules=(ts-common testelot thunder storm live-docs)
+nuArtModules=(ts-common testelot thunder storm live-docs user-account)
 linkedSourceModules=(app-shared)
 
 
