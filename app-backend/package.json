@@ -36,6 +36,7 @@
     "@nu-art/live-docs": "^0.14.4",
     "@nu-art/storm": "^0.14.4",
     "@nu-art/ts-common": "^0.14.4",
+    "@nu-art/user-account": "^0.14.4",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",
     "debug": "^3.1.0",

@@ -20,17 +20,28 @@ import * as React from 'react';
 import {
 	Dialog,
 	Toaster,
-	WrapperProps
+	WrapperProps,
+	BaseComponent
 } from "@nu-art/thunder";
 import {NavigationBar} from './components/navigation-bar';
 import {VersionOnScreen} from './components/version-on-screen';
+import {
+	AccountModule,
+	OnLoginStatusUpdated
+} from "@nu-art/user-account/frontend";
 
 export class App
-	extends React.Component<WrapperProps> {
+	extends BaseComponent<WrapperProps>
+implements OnLoginStatusUpdated{
 
 	public static dropBlocker<T>(ev: React.DragEvent<T>) {
 		ev.preventDefault();
 		ev.stopPropagation();
+	};
+
+	onLoginStatusUpdated = () => {
+		const status = AccountModule.getLoggedStatus();
+		console.log('status update',status);
 	};
 
 	render() {

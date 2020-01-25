@@ -21,6 +21,7 @@ import {Page_DialogExamples} from "../pages/Page_DialogExamples";
 import {Page_Home} from "../pages/Page_Home";
 import {css} from "emotion";
 import {Page_ToasterExample} from "../pages/Page_ToasterExample";
+import {Component_Login} from "@nu-art/user-account/frontend";
 
 const fixedMenu = css`
   position: fixed;
@@ -46,16 +47,21 @@ const fixedMenu = css`
 `;
 export const Route_Dialog = "dialog";
 export const Route_Toaster = "toaster";
+export const Route_Login = "login";
 export const Route_Home = "home";
 
-const PageLinkKeys = [Route_Dialog,
-                      Route_Toaster,
-                      Route_Home];
+const PageLinkKeys = [
+	Route_Login,
+	Route_Dialog,
+	Route_Toaster,
+	Route_Home
+];
 
 export const registerRoutes = () => {
 	RoutingModule.clearRoutes();
 	RoutingModule.addRoute(Route_Dialog, "/dialog", Page_DialogExamples).setLabel("Dialog Examples");
 	RoutingModule.addRoute(Route_Toaster, "/toaster", Page_ToasterExample).setLabel("Toaster Examples");
+	RoutingModule.addRoute(Route_Login, "/login", Component_Login).setLabel("Login");
 	RoutingModule.addRoute(Route_Home, "/", Page_Home).setLabel("Home").setExact(false);
 };
 

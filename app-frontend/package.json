@@ -31,6 +31,7 @@
     "@nu-art/live-docs": "^0.14.4",
     "@nu-art/thunder": "^0.14.4",
     "@nu-art/ts-common": "^0.14.4",
+    "@nu-art/user-account": "^0.14.4",
     "@types/history": "^4.7.2",
     "@types/node": "^11.11.1",
     "@types/qs": "^6.5.2",
