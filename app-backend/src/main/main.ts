@@ -33,6 +33,8 @@ import {
 } from "@nu-art/storm/server";
 import {ExampleModule} from "@modules/ExampleModule";
 import {Environment} from "./config";
+import {LiveDocsModule} from "@nu-art/live-docs/backend";
+import {FirebaseModule} from "@nu-art/storm/firebase";
 
 export async function start(configAsObject: any) {
 	const packageJson = require("./package.json");
@@ -42,6 +44,8 @@ export async function start(configAsObject: any) {
 	const modules: Module<any>[] =
 		      [
 			      HttpServer,
+			      FirebaseModule,
+			      LiveDocsModule,
 			      ExampleModule,
 		      ];
 
