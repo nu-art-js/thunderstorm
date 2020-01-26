@@ -22,7 +22,7 @@ function appendLog() {
     gitAssertRepoClean
 
     [[ ! $(gitAssertTagExists v${version})  ]] && logWarning "Could not find version tag v${version} in package: ${module}" && return 0
-    moduleLog=`git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="version bumped" --grep="shit" --no-merges v${version}... | sed -E "s/[0-9a-f]*( .*)/  * \1\n/g"`
+    moduleLog=`git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="version bumped" --grep="shit" --grep="formatting" --grep="format code" --no-merges v${version}... | sed -E "s/[0-9a-f]*( .*)/  * \1\n/g"`
 
     [[ ! "${moduleLog}" ]] && logInfo "No changes found in package: ${module}" && return 0
     submodulesLog="${submodulesLog}${module}:\n ${moduleLog}\n\n"
