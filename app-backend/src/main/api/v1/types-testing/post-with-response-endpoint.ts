@@ -33,7 +33,7 @@ class ServerApi_EndpointExample
 		super("post-with-response-endpoint");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: void, body: CommonBodyReq) {
+	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: CommonBodyReq) {
 		this.logInfoBold(`got id: ${body.message}`);
 		return "needs to return a string";
 	}

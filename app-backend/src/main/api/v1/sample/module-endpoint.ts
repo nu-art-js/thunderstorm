@@ -32,7 +32,7 @@ class ServerApi_EndpointExample
 		super("endpoint-example");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: void, body: void) {
+	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: void) {
 		return ExampleModule.getRandomString();
 	}
 }
