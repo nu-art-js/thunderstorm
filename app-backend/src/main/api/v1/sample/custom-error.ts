@@ -36,7 +36,7 @@ class ServerApi_CustomError
 		super("custom-error");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: void, body: void) {
+	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: void) {
 
 		const debugMessage = "The debug message, you will only see this while your backend configuration is set to debug true";
 		const error1: CustomError1 = {prop1: "value for prop1", prop2: "value for prop2"};

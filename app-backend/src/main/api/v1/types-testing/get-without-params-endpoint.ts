@@ -30,7 +30,7 @@ class ServerApi_EndpointExample
 		super("get-without-params-endpoint");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: void, body: void) {
+	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: void) {
 		return "another endpoint response"
 	}
 }

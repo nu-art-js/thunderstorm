@@ -33,7 +33,7 @@ class ServerApi_EndpointExample
 		super("post-without-response-endpoint");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: void, body: CommonBodyReq) {
+	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: CommonBodyReq) {
 		this.assertProperty(body, "message");
 
 		if (!body.message)

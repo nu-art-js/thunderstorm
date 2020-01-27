@@ -33,7 +33,7 @@ class ServerApi_EndpointExample
 		super("another-endpoint");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: void, body: CommonBodyReq) {
+	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: CommonBodyReq) {
 		this.assertProperty(body, "message");
 		this.logInfoBold(`got id: ${body.message}`);
 		return "another endpoint response"
