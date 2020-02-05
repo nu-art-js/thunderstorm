@@ -37,11 +37,13 @@ import {
 	Thunder
 } from "@nu-art/thunder";
 import {ExampleModule} from "@modules/ExampleModule";
+import {LiveDocsModule} from '@nu-art/live-docs/frontend';
 
 BeLogged.addClient(LogClient_Browser);
 
 const modules: Module<any>[] = [
 	HttpModule,
+	LiveDocsModule,
 	LocalizationModule,
 	StorageModule,
 	BrowserHistoryModule,
