@@ -34,11 +34,15 @@ import {
 	LocalizationModule,
 	ResourcesModule,
 	StorageModule,
-	Thunder
+	Thunder,
+	ToastBuilder
 } from "@nu-art/thunder";
 import {ExampleModule} from "@modules/ExampleModule";
-import {LiveDocsModule} from "@nu-art/live-docs/frontend";
-import {showEditModalExample} from "./app/ui/ExampleAppDialogs";
+import {
+	LiveDocActionResolver,
+	LiveDocsModule,
+	showEditModalExample
+} from "@nu-art/live-docs/frontend";
 
 BeLogged.addClient(LogClient_Browser);
 
@@ -53,10 +57,16 @@ const modules: Module<any>[] = [
 ];
 
 const config = require("./config").config;
-
 Thunder.setConfig(config).setModules(...modules).init();
 Thunder.setMainApp(App);
 
+const resolver: LiveDocActionResolver = (docKey: string) => {
+	let doc = LiveDocsModule.get(docKey);
+
+	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${docKey}` : doc.document).setActions(
+		[<button style={{marginRight: 8}} onClick={() => showEditModalExample(docKey)}>MOSHE</button>]);
+}
+LiveDocsModule.setActionsResolver(resolver);
 
 ReactDOM.render(
 	<AppWrapper Thunder={Thunder}/>,
