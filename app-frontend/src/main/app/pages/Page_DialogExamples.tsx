@@ -20,6 +20,7 @@ import * as React from "react";
 import {
 	showAppConfirmationDialogExample,
 	showDefaultInfoModalExample,
+	showEditModalExample
 } from "../ui/ExampleAppDialogs";
 import {ToastModule} from "@nu-art/thunder";
 
@@ -42,6 +43,10 @@ export class Page_DialogExamples
 		showAppConfirmationDialogExample()
 	};
 
+	showEditModalExample = () => {
+		showEditModalExample();
+	};
+
 	showAppToasterSuccessExample = () => {
 		ToastModule.toastSuccess("Simple success message");
 	};
@@ -58,6 +63,8 @@ export class Page_DialogExamples
 		return <>
 			<button style={{marginRight: 8}} onClick={this.showDefaultInfoModalExample}>Default Dialog Example</button>
 			<button style={{marginRight: 8}} onClick={this.showAppConfirmationDialogExample}>Custom Dialog Example</button>
+
+			<button style={{marginRight: 8}} onClick={this.showEditModalExample}>Custom Edit Example</button>
 
 			<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Success Example</button>
 			<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Failure Example</button>

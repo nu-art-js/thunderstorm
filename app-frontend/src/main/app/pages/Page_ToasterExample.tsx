@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import {ToastModule} from "@nu-art/thunder";
+import {ToastBuilder, ToastModule} from "@nu-art/thunder";
 import * as ReactDOM from "react-dom";
 
 
@@ -43,11 +43,16 @@ export class Page_ToasterExample
 		ToastModule.toastInfo("Simple info message");
 	};
 
+	showAppToasterLiveDocsExample = () => {
+		new ToastBuilder().setContent("kaki").setActions([<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>edit</button>]).show();
+	};
+
 	render() {
 		return <>
 			<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Success Example</button>
 			<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Failure Example</button>
 			<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Info Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterLiveDocsExample}>Toaster Live Docs Example</button>
 		</>;
 	}
 }

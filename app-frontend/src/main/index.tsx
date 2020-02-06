@@ -37,11 +37,14 @@ import {
 	Thunder
 } from "@nu-art/thunder";
 import {ExampleModule} from "@modules/ExampleModule";
+import {LiveDocsModule} from "@nu-art/live-docs/frontend";
+import {showEditModalExample} from "./app/ui/ExampleAppDialogs";
 
 BeLogged.addClient(LogClient_Browser);
 
 const modules: Module<any>[] = [
 	HttpModule,
+	LiveDocsModule,
 	LocalizationModule,
 	StorageModule,
 	BrowserHistoryModule,
@@ -53,6 +56,10 @@ const config = require("./config").config;
 
 Thunder.setConfig(config).setModules(...modules).init();
 Thunder.setMainApp(App);
+
+// LiveDocsModule.setActionsResolver(()=>[<button style={{marginRight: 8}} onClick={()=>showDefaultInfoModalExample()}>edit</button>])
+
+LiveDocsModule.setActionsResolver(()=>[<button style={{marginRight: 8}} onClick={()=>showEditModalExample()}>edit</button>]);
 
 ReactDOM.render(
 	<AppWrapper Thunder={Thunder}/>,
