@@ -57,9 +57,6 @@ const config = require("./config").config;
 Thunder.setConfig(config).setModules(...modules).init();
 Thunder.setMainApp(App);
 
-// LiveDocsModule.setActionsResolver(()=>[<button style={{marginRight: 8}} onClick={()=>showDefaultInfoModalExample()}>edit</button>])
-
-LiveDocsModule.setActionsResolver(()=>[<button style={{marginRight: 8}} onClick={()=>showEditModalExample()}>edit</button>]);
 
 ReactDOM.render(
 	<AppWrapper Thunder={Thunder}/>,

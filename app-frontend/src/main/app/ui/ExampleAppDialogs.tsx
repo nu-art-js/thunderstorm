@@ -21,62 +21,8 @@ import {
 	Dialog_Builder,
 	DialogButton_Cancel,
 	DialogButton_Submit,
-	DialogButton_Undo,
 	DialogModule,
-	DialogButton_Save
 } from "@nu-art/thunder";
-import {StyledInput} from "@nu-art/user-account/frontend";
-import {LiveDocsModule} from "../../../../../live-docs/src/main/app-frontend/modules/LiveDocsModule";
-
-// const dialogStyle: CSS.Properties = {
-// 	color: "white",
-// 	background: "black"
-// };
-//
-// const actionsStyle: CSS.Properties = {
-// 	background: "gray",
-// 	width: "100%",
-// 	height: "55px",
-// 	padding: "0px 18px",
-// };
-//
-// const buttonStyle = emotion.css`{
-// 	border-radius: 7px;
-// 	color: yellow;
-// 	font-size: 11px;
-// 	height: 30px;
-// 	width: 75px;
-// }`;
-//
-// const submitStyle = emotion.css`{
-// 	color: blue;
-// 	:hover{
-// 		background-color: green;
-// 	}
-// }`;
-export const showEditModalExample = () => {
-	const title = "Default Edit modal";
-
-	let text = "I am text";
-	const content = <div>
-		<StyledInput value={text} onChange={(value, id) => {
-			return text = value;
-		}}/>
-	</div>
-
-	new Dialog_Builder(content)
-		.setTitle(title)
-		.setStyle({maxWidth: "400px"})
-		.addButton(DialogButton_Cancel(DialogModule.close))
-		.addButton(DialogButton_Save(() => {
-			// LiveDocsModule.update({});
-			console.log(text);
-			DialogModule.close();
-		})) // undo
-		.addButton(DialogButton_Undo(DialogModule.close)) // redo
-		.setOverlayColor("rgba(102, 255, 255, 0.4)")
-		.show();
-};
 
 export const showDefaultInfoModalExample = () => {
 	const title = "Default info modal";
