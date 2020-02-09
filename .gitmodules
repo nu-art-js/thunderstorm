@@ -25,3 +25,6 @@
 [submodule "user-account"]
 	path = user-account
 	url = git@github.com:nu-art-js/user-account.git
+[submodule "permissions"]
+	path = permissions
+	url = git@github.com:nu-art-js/permissions.git

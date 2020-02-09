@@ -27,10 +27,6 @@ type Type = {
 	other?: string
 }
 
-type UniqueType = {
-	id: number
-}
-
 type Config = {}
 const testCollection = 'test-unique-type';
 
@@ -43,8 +39,8 @@ export class TestModule_Class
 
 	private startTest() {
 		this.runAsync('Running test', async () => {
-			const fs = FirebaseModule.createLocalAdminSession().getFirestore();
-			const col = fs.getCollection<Type, UniqueType>(testCollection, ({id}) => ({id}));
+			const fs = FirebaseModule.createAdminSession().getFirestore();
+			const col = fs.getCollection<Type>(testCollection, ({id}) => ({id}));
 			await fs.deleteCollection(testCollection);
 
 			await col.insertAll([1, 2, 3, 4, 5].map(id => ({
