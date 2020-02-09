@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {__http} from "@nu-art/test/Testelot";
-import {HttpMethod} from "@nu-art/core";
+import {__http} from "@nu-art/testelot";
+import {HttpMethod} from "@nu-art/ts-common";
 import {serverUrl} from "../config";
 
 

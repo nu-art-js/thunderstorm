@@ -14,3 +14,5 @@ firebase.json
 **/.DS_Store
 firebase-debug.log
 .thunderstorm-core/
+
+nu-art-thunderstorm--service-account.json
