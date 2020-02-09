@@ -4,6 +4,7 @@
 !.idea/scopes/
 
 env
+error
 
 .firebaserc
 .firebase
