@@ -64,7 +64,7 @@ const resolver: LiveDocActionResolver = (docKey: string) => {
 	let doc = LiveDocsModule.get(docKey);
 
 	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${docKey}` : doc.document).setActions(
-		[<button style={{marginRight: 8}} onClick={() => showEditModalExample(docKey)}>MOSHE</button>]);
+		[<button style={{marginRight: 8}} onClick={() => showEditModalExample(docKey)}>Edit for me</button>]);
 }
 LiveDocsModule.setActionsResolver(resolver);
 
