@@ -19,7 +19,7 @@
 import {
 	testExampleApi
 } from "../blocks/api";
-import {__scenario} from "@nu-art/test/Testelot";
+import {__scenario} from "@nu-art/testelot";
 
 let S;
 export const TestApi = S = __scenario("Test Example Api");
