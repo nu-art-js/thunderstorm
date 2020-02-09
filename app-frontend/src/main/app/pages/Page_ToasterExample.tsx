@@ -17,8 +17,16 @@
  */
 
 import * as React from "react";
-import {ToastBuilder, ToastModule} from "@nu-art/thunder";
+import {
+	ToastBuilder,
+	ToastModule
+} from "@nu-art/thunder";
 import * as ReactDOM from "react-dom";
+import {
+	ErrorToast,
+	InfoToast,
+	SuccessToast
+} from "../AppToasters";
 
 
 export class Page_ToasterExample
@@ -43,16 +51,34 @@ export class Page_ToasterExample
 		ToastModule.toastInfo("Simple info message");
 	};
 
+	showAppToasterCustomInfoExample = () => {
+		InfoToast("Custom info message closes in 3 sec", 3000)
+	};
+	showAppToasterCustomErrorExample = () => {
+		ErrorToast("Custom Error message closes in 8 sec", 8000)
+	};
+	showAppToasterCustomSuccessExample = () => {
+		SuccessToast("Custom Success message closes time by thunde default")
+	};
+
 	showAppToasterLiveDocsExample = () => {
 		new ToastBuilder().setContent("kaki").setActions([<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>edit</button>]).show();
 	};
 
 	render() {
 		return <>
-			<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Success Example</button>
-			<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Failure Example</button>
-			<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Info Example</button>
-			<button style={{marginRight: 8}} onClick={this.showAppToasterLiveDocsExample}>Toaster Live Docs Example</button>
+			<div>
+				<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Default Success Example</button>
+				<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Default Failure Example</button>
+				<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Default Info Example</button>
+				<button style={{marginRight: 8}} onClick={this.showAppToasterLiveDocsExample}>Toaster Default Live Docs Example</button>
+			</div>
+			<hr />
+			<div>
+				<button style={{marginRight: 8}} onClick={this.showAppToasterCustomSuccessExample}>Toaster Custom Success Example</button>
+				<button style={{marginRight: 8}} onClick={this.showAppToasterCustomErrorExample}>Toaster Custom Failure Example</button>
+				<button style={{marginRight: 8}} onClick={this.showAppToasterCustomInfoExample}>Toaster Custom Info Example</button>
+			</div>
 		</>;
 	}
 }

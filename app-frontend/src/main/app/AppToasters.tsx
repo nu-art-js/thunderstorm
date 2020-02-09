@@ -1,0 +1,93 @@
+/*
+ * A typescript & react boilerplate with api call example
+ *
+ * Copyright (C) 2018  Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import * as React from 'react';
+import {
+	ToastBuilder,
+	ToastModule,
+	ToastType
+} from '@nu-art/thunder';
+import * as emotion from 'emotion';
+import {
+	_marginRight,
+	_paddingTop
+} from "@styles/styles";
+
+const icon__infoToast = require('@res/images/icon__infoToast.svg');
+const icon__errorToast = require('@res/images/icon__errorToast.svg');
+const icon__successToast = require('@res/images/icon__successToast.svg');
+const close = require('@res/images/icon__close.svg');
+
+const toasterStyle = emotion.css`
+	width: 384px;
+	padding: 12px 15px 11px 14px;
+`;
+
+const textStyle = emotion.css`
+	color: #fff; 
+	font-size: 13px;
+  letter-spacing: -0.18px;
+  margin-right: 12px;
+`;
+
+export const InfoToast = (message: string, duration?: number) => createToast(ToastType.info, message, duration);
+export const ErrorToast = (message: string, duration?: number) => createToast(ToastType.error, message, duration);
+export const SuccessToast = (message: string, duration?: number) => createToast(ToastType.success, message, duration);
+
+const createToast = (type: ToastType, message: string, duration?: number) => {
+	const iconPicker = () => {
+		switch (type) {
+			case ToastType.info:
+				return icon__infoToast;
+			case ToastType.error:
+				return icon__errorToast;
+			case ToastType.success:
+				return icon__successToast;
+		}
+	};
+
+	const BgPicker = () => {
+		switch (type) {
+			case ToastType.info:
+				return "#49addb";
+			case ToastType.error:
+				return "#ff4436";
+			case ToastType.success:
+				return "#1cc65a";
+		}
+	};
+
+	const _message = ToastModule.adjustStringMessage(message);
+
+	const content = (
+		<div className={`ll_h_c ${_paddingTop(5)}`}>
+			<img src={iconPicker()} className={_marginRight(11)}/>
+			<div className={textStyle}>{_message}</div>
+		</div>
+	);
+
+	const closeButton = <img src={close} onClick={() => ToastModule.hideToast()}/>;
+
+	const toast = new ToastBuilder()
+		.setContent(content)
+		.setBackground(BgPicker())
+		.setClassName(toasterStyle)
+		.setActions([closeButton]);
+	duration && toast.setDuration(duration);
+	toast.show();
+};
