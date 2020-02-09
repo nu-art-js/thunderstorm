@@ -4,6 +4,7 @@
 !.idea/scopes/
 
 env
+error
 
 .firebaserc
 .firebase
@@ -13,6 +14,6 @@ firebase.json
 *.iml
 **/.DS_Store
 firebase-debug.log
+.thunderstorm-core/
 
-.thunderstorm-core
-permissions
+nu-art-thunderstorm--service-account.json

@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {__custom} from "@nu-art/test/Testelot";
+import {__custom} from "@nu-art/testelot";
 // import {start} from "../../main/main";
-import {HttpServer} from "@nu-art/server/HttpServer";
+import {HttpServer} from "@nu-art/storm/server";
 
 
 export function startServer(config: object) {
