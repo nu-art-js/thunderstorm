@@ -59,9 +59,9 @@ export class Page_DialogExamples
 			<button style={{marginRight: 8}} onClick={this.showDefaultInfoModalExample}>Default Dialog Example</button>
 			<button style={{marginRight: 8}} onClick={this.showAppConfirmationDialogExample}>Custom Dialog Example</button>
 
-			<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Success Example</button>
-			<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Failure Example</button>
-			<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Info Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Default Success Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Default Failure Example</button>
+			<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Default Info Example</button>
 		</>;
 	}
 }
