@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/test/Testelot";
+import {__scenario} from "@nu-art/testelot";
 import {
 	endServer,
 	startServer
@@ -24,8 +24,8 @@ import {
 import {
 	ErrorPolicy,
 	Reporter
-} from "@nu-art/test";
-import {BeLogged} from "@nu-art/core";
+} from "@nu-art/testelot";
+import {BeLogged} from "@nu-art/ts-common";
 import {TestApi} from "./tests/example-api";
 
 const reporter = new Reporter();
@@ -34,8 +34,8 @@ reporter.init();
 (async () => {
 	const root = __scenario("root", reporter);
 	// root.addSteps(startServer(require("../../.config-test.json")).setErrorPolicy(ErrorPolicy.HaltOnError));
-	root.addSteps(TestApi);
-	root.addSteps(endServer().setLabel("terminatssing server"));
+	root.add(TestApi);
+	root.add(endServer().setLabel("terminatssing server"));
 
 // @ts-ignore
 	await root.run();
