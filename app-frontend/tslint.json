@@ -46,6 +46,7 @@
       true,
       "dev",
       [
+        "@res",
         "@modules",
         "@shared",
         "@consts",
