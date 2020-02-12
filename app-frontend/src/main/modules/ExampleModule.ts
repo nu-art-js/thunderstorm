@@ -16,16 +16,12 @@
  * limitations under the License.
  */
 
-import {
-	ErrorResponse,
-	HttpMethod,
-	Module
-} from "@nu-art/ts-common";
+import {Module} from "@nu-art/ts-common";
 
 import {
 	HttpModule,
 	ToastModule
-} from "@nu-art/thunder";
+} from "@nu-art/thunderstorm/frontend";
 import {
 	CommonBodyReq,
 	CustomError1,
@@ -34,6 +30,10 @@ import {
 	ExampleApiGetType,
 	ExampleApiPostType
 } from "@shared/shared";
+import {
+	ErrorResponse,
+	HttpMethod
+} from "@nu-art/thunderstorm";
 
 type Config = {
 	remoteUrl: string
@@ -52,7 +52,7 @@ export class ExampleModule_Class
 	callCustomErrorApi() {
 		HttpModule.createRequest<ExampleApiCustomError>(HttpMethod.POST, RequestKey_CustomError)
 		          .setRelativeUrl("/v1/sample/custom-error")
-		          .setOnError((resError: ErrorResponse<CustomError1 | CustomError2>) => {
+		          .setOnError((request, resError?: ErrorResponse<CustomError1 | CustomError2>) => {
 			          const error = resError?.error;
 			          if (!error)
 				          return;
@@ -66,12 +66,12 @@ export class ExampleModule_Class
 				          case "CustomError1":
 					          errorBody = error.body as CustomError1;
 					          ToastModule.toastError(`${errorBody.prop1}\n${errorBody.prop2}`);
-										break;
+					          break;
 
 				          case "CustomError2":
 					          errorBody = error.body as CustomError2;
 					          ToastModule.toastError(`${errorBody.prop3}\n${errorBody.prop4}`);
-										break;
+					          break;
 			          }
 		          })
 		          .setOnSuccessMessage(`Success`)

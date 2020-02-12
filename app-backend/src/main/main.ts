@@ -30,11 +30,11 @@ import {
 	HttpServer,
 	RouteResolver,
 	ServerApi
-} from "@nu-art/storm/server";
+} from "@nu-art/thunderstorm/backend";
 import {ExampleModule} from "@modules/ExampleModule";
 import {Environment} from "./config";
 import {LiveDocsModule} from "@nu-art/live-docs/backend";
-import {FirebaseModule} from "@nu-art/storm/firebase";
+import {FirebaseModule} from "@nu-art/firebase";
 
 export async function start(configAsObject: any) {
 	const packageJson = require("./package.json");

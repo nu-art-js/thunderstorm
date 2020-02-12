@@ -21,7 +21,7 @@ import {
 	ToastBuilder,
 	ToastModule,
 	ToastType
-} from '@nu-art/thunder';
+} from "@nu-art/thunderstorm/frontend";
 import * as emotion from 'emotion';
 import {
 	_marginRight,

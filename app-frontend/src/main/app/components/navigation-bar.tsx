@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import * as React from "react";
-import {RoutingModule} from "@nu-art/thunder";
+import {RoutingModule} from "@nu-art/thunderstorm/frontend";
 import {Page_DialogExamples} from "../pages/Page_DialogExamples";
 import {Page_Home} from "../pages/Page_Home";
 import {css} from "emotion";

@@ -22,7 +22,7 @@ import {
 	DialogButton_Cancel,
 	DialogButton_Submit,
 	DialogModule,
-} from "@nu-art/thunder";
+} from "@nu-art/thunderstorm/frontend";
 
 export const showDefaultInfoModalExample = () => {
 	const title = "Default info modal";

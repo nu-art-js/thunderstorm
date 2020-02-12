@@ -21,7 +21,7 @@ import {
 	showAppConfirmationDialogExample,
 	showDefaultInfoModalExample
 } from "../ui/ExampleAppDialogs";
-import {ToastModule} from "@nu-art/thunder";
+import {ToastModule} from "@nu-art/thunderstorm/frontend";
 
 
 export class Page_DialogExamples
