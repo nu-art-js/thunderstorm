@@ -18,7 +18,7 @@
 import {
 	ApiResponse,
 	ServerApi_Post,
-} from "@nu-art/storm/server";
+} from "@nu-art/thunderstorm/backend";
 
 import * as express from "express";
 import {

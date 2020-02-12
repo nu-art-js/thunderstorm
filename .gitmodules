@@ -1,6 +1,22 @@
+[submodule "db-api-generator"]
+	path = db-api-generator 
+	url = git@github.com:nu-art-js/db-api-generator.git 
+	branch = master 
 [submodule "dev-tools"]
 	path = dev-tools 
 	url = git@github.com:nu-art/dev-tools.git 
+	branch = master 
+[submodule "firebase"]
+	path = firebase 
+	url = git@github.com:nu-art-js/firebase.git 
+	branch = master 
+[submodule "live-docs"]
+	path = live-docs 
+	url = git@github.com:nu-art-js/live-docs.git 
+	branch = master 
+[submodule "permissions"]
+	path = permissions 
+	url = git@github.com:nu-art-js/permissions.git 
 	branch = master 
 [submodule "storm"]
 	path = storm 
@@ -10,21 +26,16 @@
 	path = testelot 
 	url = git@github.com:nu-art-js/testelot.git 
 	branch = master 
-[submodule "thunder"]
-	path = thunder 
-	url = git@github.com:nu-art-js/thunder.git 
+[submodule "thunderstorm"]
+	path = thunderstorm 
+	url = git@github.com:nu-art-js/thunderstorm.git 
 	branch = master 
 [submodule "ts-common"]
 	path = ts-common 
 	url = git@github.com:nu-art-js/ts-common.git 
 	branch = master 
-
-[submodule "live-docs"]
-	path = live-docs
-	url = git@github.com:nu-art-js/live-docs.git
 [submodule "user-account"]
-	path = user-account
-	url = git@github.com:nu-art-js/user-account.git
-[submodule "permissions"]
-	path = permissions
-	url = git@github.com:nu-art-js/permissions.git
+	path = user-account 
+	url = git@github.com:nu-art-js/user-account.git 
+	branch = master 
+

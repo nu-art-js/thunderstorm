@@ -36,7 +36,7 @@ import {
 	StorageModule,
 	Thunder,
 	ToastBuilder
-} from "@nu-art/thunder";
+} from "@nu-art/thunderstorm/frontend";
 import {ExampleModule} from "@modules/ExampleModule";
 import {
 	LiveDocActionResolver,

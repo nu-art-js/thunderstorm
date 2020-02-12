@@ -25,7 +25,7 @@ import {
 import {
 	BaseComponent,
 	OnRequestListener
-} from "@nu-art/thunder";
+} from "@nu-art/thunderstorm/frontend";
 import {LiveDoc} from "@nu-art/live-docs/frontend";
 
 export class Hello

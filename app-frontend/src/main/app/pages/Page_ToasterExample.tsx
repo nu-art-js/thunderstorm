@@ -20,7 +20,7 @@ import * as React from "react";
 import {
 	ToastBuilder,
 	ToastModule
-} from "@nu-art/thunder";
+} from "@nu-art/thunderstorm/frontend";
 import * as ReactDOM from "react-dom";
 import {
 	ErrorToast,

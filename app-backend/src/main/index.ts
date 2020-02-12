@@ -18,12 +18,12 @@
 
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register'
-import {HttpServer} from "@nu-art/storm/server";
+import {HttpServer} from "@nu-art/thunderstorm/backend";
 import {Environment} from "./config";
 import {
 	Firebase_ExpressFunction,
 	fireStarter
-} from "@nu-art/storm/firebase-functions";
+} from "@nu-art/firebase/functions";
 import {start} from "./main";
 import {ValueChangedModule} from "@modules/ValueChangedModule";
 

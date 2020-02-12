@@ -15,10 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {
 	ApiWithBody,
 	ApiWithQuery
-} from "@nu-art/ts-common";
+} from "@nu-art/thunderstorm";
 
 export type CommonBodyReq = {
 	message: string

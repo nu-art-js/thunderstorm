@@ -19,7 +19,7 @@
 import {
 	ApiResponse,
 	ServerApi_Get,
-} from "@nu-art/storm/server";
+} from "@nu-art/thunderstorm/backend";
 
 import * as express from "express";
 import {ExampleModule} from "@modules/ExampleModule";

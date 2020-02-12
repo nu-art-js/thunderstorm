@@ -22,7 +22,7 @@ import {
 	Toaster,
 	WrapperProps,
 	BaseComponent
-} from "@nu-art/thunder";
+} from "@nu-art/thunderstorm/frontend";
 import {NavigationBar} from './components/navigation-bar';
 import {VersionOnScreen} from './components/version-on-screen';
 import {
