@@ -23,7 +23,7 @@ import {Environment} from "./config";
 import {
 	Firebase_ExpressFunction,
 	fireStarter
-} from "@nu-art/firebase/functions";
+} from "@nu-art/firebase/backend-functions";
 import {start} from "./main";
 import {ValueChangedModule} from "@modules/ValueChangedModule";
 

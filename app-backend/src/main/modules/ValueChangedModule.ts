@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {FirebaseFunctionModule,} from "@nu-art/firebase/functions";
+import {FirebaseFunctionModule,} from "@nu-art/firebase/backend-functions";
 
 export class NodeChangedModule_Class
 	extends FirebaseFunctionModule<any> {
