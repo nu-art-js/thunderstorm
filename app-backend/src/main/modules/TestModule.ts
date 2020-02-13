@@ -19,7 +19,7 @@ import {
 	generateHex,
 	Module
 } from "@nu-art/ts-common";
-import {FirebaseModule} from "@nu-art/firebase";
+import {FirebaseModule} from "@nu-art/firebase/backend";
 
 type Type = {
 	id: number
