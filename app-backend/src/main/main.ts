@@ -34,7 +34,7 @@ import {
 import {ExampleModule} from "@modules/ExampleModule";
 import {Environment} from "./config";
 import {LiveDocsModule} from "@nu-art/live-docs/backend";
-import {FirebaseModule} from "@nu-art/firebase";
+import {FirebaseModule} from "@nu-art/firebase/backend";
 
 export async function start(configAsObject: any) {
 	const packageJson = require("./package.json");
