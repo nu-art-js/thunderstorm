@@ -35,6 +35,12 @@ import {ExampleModule} from "@modules/ExampleModule";
 import {Environment} from "./config";
 import {LiveDocsModule} from "@nu-art/live-docs/backend";
 import {FirebaseModule} from "@nu-art/firebase/backend";
+import {
+	AccessLevelPermissionsDB,
+	ApiPermissionsDB,
+	DomainPermissionsDB,
+	ProjectPermissionsDB
+} from "@nu-art/permissions/backend";
 
 export async function start(configAsObject: any) {
 	const packageJson = require("./package.json");
@@ -46,6 +52,10 @@ export async function start(configAsObject: any) {
 			      HttpServer,
 			      FirebaseModule,
 			      LiveDocsModule,
+			      ProjectPermissionsDB,
+			      DomainPermissionsDB,
+			      AccessLevelPermissionsDB,
+			      ApiPermissionsDB,
 			      ExampleModule,
 		      ];
 
