@@ -33,8 +33,10 @@
     "tsc": "tsc"
   },
   "dependencies": {
+    "@nu-art/db-api-generator": "~0.16.0",
     "@nu-art/firebase": "~0.16.0",
     "@nu-art/live-docs": "~0.16.0",
+    "@nu-art/permissions": "~0.16.0",
     "@nu-art/storm": "~0.16.0",
     "@nu-art/thunderstorm": "~0.16.0",
     "@nu-art/ts-common": "~0.16.0",
