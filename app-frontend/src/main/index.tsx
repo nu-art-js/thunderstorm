@@ -20,55 +20,25 @@
 import './res/styles/styles.scss';
 
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import {
-	BeLogged,
-	LogClient_Browser,
-	Module
-} from "@nu-art/ts-common";
 import {App} from "./app/App";
 import {
-	AppWrapper,
-	BrowserHistoryModule,
-	HttpModule,
-	LocalizationModule,
-	ResourcesModule,
-	StorageModule,
 	Thunder,
 	ToastBuilder
 } from "@nu-art/thunderstorm/frontend";
-import {ExampleModule} from "@modules/ExampleModule";
 import {
-	LiveDocActionResolver,
 	LiveDocsModule,
 	showEditModalExample
 } from "@nu-art/live-docs/frontend";
 
-BeLogged.addClient(LogClient_Browser);
+Thunder
+	.setConfig(require("./config").config)
+	.addModules(LiveDocsModule)
+	.setMainApp(App)
+	.build();
 
-const modules: Module<any>[] = [
-	HttpModule,
-	LiveDocsModule,
-	LocalizationModule,
-	StorageModule,
-	BrowserHistoryModule,
-	ResourcesModule,
-	ExampleModule,
-];
-
-const config = require("./config").config;
-Thunder.setConfig(config).setModules(...modules).init();
-Thunder.setMainApp(App);
-
-const resolver: LiveDocActionResolver = (docKey: string) => {
+LiveDocsModule.setActionsResolver((docKey: string) => {
 	const doc = LiveDocsModule.get(docKey);
 
 	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${docKey}` : doc.document).setActions(
 		[<button style={{marginRight: 8}} onClick={() => showEditModalExample(docKey)}>Edit for me</button>]);
-}
-LiveDocsModule.setActionsResolver(resolver);
-
-ReactDOM.render(
-	<AppWrapper Thunder={Thunder}/>,
-	document.getElementById('app')
-);
+});

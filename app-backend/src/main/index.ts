@@ -18,32 +18,35 @@
 
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register'
-import {HttpServer} from "@nu-art/thunderstorm/backend";
-import {Environment} from "./config";
 import {
-	Firebase_ExpressFunction,
-	fireStarter
-} from "@nu-art/firebase/backend-functions";
-import {start} from "./main";
-import {ValueChangedModule} from "@modules/ValueChangedModule";
+	RouteResolver,
+	Storm
+} from "@nu-art/thunderstorm/backend";
+import {Environment} from "./config";
+import {ValueChangedListener} from "@modules/ValueChangedListener";
+import {ExampleModule} from "@modules/ExampleModule";
+import {
+	Backend_ModulePack_LiveDocs,
+	LiveDocsModule
+} from "@nu-art/live-docs/backend";
+import {Module} from "@nu-art/ts-common";
+import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
 
-const _api = new Firebase_ExpressFunction(HttpServer.express);
-export const api = _api.getFunction();
+const packageJson = require("./package.json");
+console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 
-export async function loadFromFunction(environment: { name: string }) {
-	const configAsObject = await fireStarter(environment);
-	return start(configAsObject);
-}
+const modules: Module<any>[] = [
+	LiveDocsModule,
+	ValueChangedListener,
+	ExampleModule,
+];
 
-export const valueMonitor = ValueChangedModule.getFirebaseFunction();
-
-loadFromFunction(Environment)
-	.then(() => {
-		return Promise.all([
-			                   _api.onFunctionReady(),
-			                   ValueChangedModule.onFunctionReady()
-		                   ]);
-	})
-	.catch(reason => console.error("Failed to start backend: ", reason));
-
+module.exports = new Storm()
+	.addModules(...Backend_ModulePack_LiveDocs)
+	.addModules(...Backend_ModulePack_Permissions)
+	.addModules(...modules)
+	.setInitialRouteResolver(new RouteResolver(require, __dirname, "api"))
+	.setInitialRoutePath("/api")
+	.setEnvironment(Environment.name)
+	.build();
 

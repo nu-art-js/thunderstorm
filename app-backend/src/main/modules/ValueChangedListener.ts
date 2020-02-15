@@ -17,7 +17,7 @@
  */
 import {FirebaseFunctionModule,} from "@nu-art/firebase/backend-functions";
 
-export class NodeChangedModule_Class
+export class ValueChangedListener_Class
 	extends FirebaseFunctionModule<any> {
 
 	constructor() {
@@ -29,5 +29,5 @@ export class NodeChangedModule_Class
 	};
 }
 
-export const ValueChangedModule = new NodeChangedModule_Class();
+export const ValueChangedListener = new ValueChangedListener_Class();
 
