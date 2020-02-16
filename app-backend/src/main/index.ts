@@ -25,10 +25,7 @@ import {
 import {Environment} from "./config";
 import {ValueChangedListener} from "@modules/ValueChangedListener";
 import {ExampleModule} from "@modules/ExampleModule";
-import {
-	Backend_ModulePack_LiveDocs,
-	LiveDocsModule
-} from "@nu-art/live-docs/backend";
+import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
 import {Module} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
 
@@ -36,12 +33,11 @@ const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 
 const modules: Module<any>[] = [
-	LiveDocsModule,
 	ValueChangedListener,
 	ExampleModule,
 ];
 
-module.exports = new Storm()
+module.exports = Storm
 	.addModules(...Backend_ModulePack_LiveDocs)
 	.addModules(...Backend_ModulePack_Permissions)
 	.addModules(...modules)

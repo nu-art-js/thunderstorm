@@ -26,13 +26,14 @@ import {
 	ToastBuilder
 } from "@nu-art/thunderstorm/frontend";
 import {
-	LiveDocsModule,
-	showEditModalExample
+	Frontend_ModulePack_LiveDocs,
+	showEditModalExample,
+	LiveDocsModule
 } from "@nu-art/live-docs/frontend";
 
 Thunder
 	.setConfig(require("./config").config)
-	.addModules(LiveDocsModule)
+	.addModules(...Frontend_ModulePack_LiveDocs)
 	.setMainApp(App)
 	.build();
 
