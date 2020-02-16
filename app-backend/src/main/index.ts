@@ -37,7 +37,7 @@ const modules: Module<any>[] = [
 	ExampleModule,
 ];
 
-module.exports = Storm
+module.exports = new Storm()
 	.addModules(...Backend_ModulePack_LiveDocs)
 	.addModules(...Backend_ModulePack_Permissions)
 	.addModules(...modules)
