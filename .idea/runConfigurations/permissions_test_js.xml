@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="permissions-test.js" type="NodeJSConfigurationType" application-parameters="--service-account=../.trash/nu-art-thunderstorm--service-account.json" path-to-js-file="dist-test/test/test.js" working-dir="$PROJECT_DIR$/permissions">
+    <method v="2" />
+  </configuration>
+</component>
