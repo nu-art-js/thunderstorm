@@ -39,3 +39,6 @@
 	url = git@github.com:nu-art-js/user-account.git 
 	branch = master 
 
+[submodule "push-pub-sub"]
+	path = push-pub-sub
+	url = git@github.com:nu-art-js/push-pub-sub.git
