@@ -27,11 +27,11 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {
 	Frontend_ModulePack_LiveDocs,
-	showEditModalExample,
-	LiveDocsModule
+	LiveDocsModule,
+	showEditModalExample
 } from "@nu-art/live-docs/frontend";
 
-Thunder
+new Thunder()
 	.setConfig(require("./config").config)
 	.addModules(...Frontend_ModulePack_LiveDocs)
 	.setMainApp(App)

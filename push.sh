@@ -2,6 +2,7 @@
 
 source ./dev-tools/scripts/git/_core.sh
 source ./dev-tools/scripts/_core-tools/_source.sh
+source ./.scripts/modules.sh
 
 version=`getVersionName version-nu-art.json`
 dryRun=
@@ -16,7 +17,6 @@ dryRun=
 throwError "Error linting and building Thunderstorm" $?
 
 
-modules=(ts-common testelot thunder storm live-docs user-account)
 function appendLog() {
     local module=${1}
     gitAssertRepoClean
@@ -29,7 +29,7 @@ function appendLog() {
 }
 
 submodulesLog=""
-for module in ${modules[@]}; do
+for module in ${thunderstormLibraries[@]}; do
     pushd ${module} > /dev/null
         appendLog ${module}
     popd > /dev/null

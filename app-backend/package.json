@@ -36,7 +36,7 @@
     "@nu-art/db-api-generator": "~0.17.0",
     "@nu-art/firebase": "~0.17.0",
     "@nu-art/live-docs": "~0.17.0",
-    "@nu-art/permissions": "~0.15.0",
+    "@nu-art/permissions": "~0.17.0",
     "@nu-art/storm": "~0.17.0",
     "@nu-art/thunderstorm": "~0.17.0",
     "@nu-art/ts-common": "~0.17.0",
