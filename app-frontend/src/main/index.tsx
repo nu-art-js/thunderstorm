@@ -30,10 +30,12 @@ import {
 	LiveDocsModule,
 	showEditModalExample
 } from "@nu-art/live-docs/frontend";
+import {ExampleModule} from "@modules/ExampleModule";
 
 new Thunder()
 	.setConfig(require("./config").config)
 	.addModules(...Frontend_ModulePack_LiveDocs)
+	.addModules(ExampleModule)
 	.setMainApp(App)
 	.build();
 

@@ -46,7 +46,7 @@ export class Hello
 		</>;
 	}
 
-	onRequestCompleted = (key: string, success: boolean) => {
+	__onRequestCompleted = (key: string, success: boolean) => {
 		if (!success)
 			return;
 

@@ -21,8 +21,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "webpack --mode development --env dev",
-    "dev": "webpack-dev-server --open --mode development --env dev",
-    "dev-ssl": "webpack-dev-server --open --mode development --env dev --ssl true",
+    "dev": "webpack-dev-server --open --mode development --env dev --ssl true",
+    "dev-no-ssl": "webpack-dev-server --open --mode development --env dev",
     "lint": "tslint --project tsconfig.json",
     "prod": "webpack --mode production --env prod"
   },
