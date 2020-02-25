@@ -36,7 +36,6 @@
     "@nu-art/ts-common": "~0.17.0",
     "@nu-art/user-account": "~0.17.0",
     "@types/history": "^4.7.2",
-    "@types/node": "^11.11.1",
     "@types/qs": "^6.5.2",
     "@types/react": "^16.8.7",
     "@types/react-dom": "^16.8.2",
