@@ -15,5 +15,4 @@ firebase.json
 *.iml
 **/.DS_Store
 firebase-debug.log
-app-frontend/.config/dev-ssl
-nu-art-thunderstorm--service-account.json
+app-frontend/_config/dev-cert
