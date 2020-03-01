@@ -2,8 +2,6 @@
 
 This boilerplate is a unification of both frontend and backend in one repo.. 
 
-blah blah blah...
-
 ---
 
 ## First things first...
@@ -16,16 +14,13 @@ blah blah blah...
  Right after you've cloned the repo you will see:
   * **ts-common** - Typescript infra that should have been a part of Typescript release but isn't.
   * **testelot** - A scenario building infra for testing.
-  * **thunder** - The Typescript & React Frontend framework with core components you can use.
-  * **storm** - The Typescript & Express Backend framework you can extend to build any api based backend app.
+  * **thunderstorm** - The Typescript & React Frontend along side a Typescript & Express Backend framework with core components you can use.
   * **app-frontend** - Contains all the frontend files.
   * **app-backend** - Contains all the backend files.
   * **app-shared** - where all the shared types between the frontend and backend are stored.
   
- **NOTE:** Unless I have made a stupid mistake.. these should always be aligned and compiling together with this repo!!
- 
- **NOTE:** You can delete the infra and framework libs, and the project will compile just the same.
- 
+ **NOTE:** These should always be aligned and compiling together with this repo!!
+  
 # Fork this repo: 
  * First you will need to install [firebase tools](https://firebase.google.com/docs/cli) `npm i -g firebase-tools`.
  * You will then have to **Login** using the firebase tools cli `firebase login`.
