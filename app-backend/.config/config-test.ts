@@ -1,3 +1,3 @@
 export const Environment = {
-	name: "test"
+	name: "test-firestore.ts"
 };

@@ -21,7 +21,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "build-test": "tsc -p tsconfig-test.json",
+    "build-test": "tsc -p tsconfig-test-old.json",
     "dev": "tsc --watch & nodemon dist",
     "launch": "node dist",
     "lint": "tslint --project tsconfig.json",
