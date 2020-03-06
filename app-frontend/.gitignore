@@ -1,5 +1,6 @@
 node_modules
 dist
+dist-test
 build
 _package.json
 package-lock.json
