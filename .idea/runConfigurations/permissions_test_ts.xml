@@ -1,16 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="permissions-test.ts" type="TypeScriptProgramRunner" factoryName="TypeScript">
-    <module name="thunderstorm-boilerplate" />
-    <option name="interpreterRef" value="project" />
-    <option name="interpreterOptions" value="" />
-    <option name="workingDirectory" value="$PROJECT_DIR$/permissions" />
-    <option name="tsconfigFile" value="$PROJECT_DIR$/permissions/tsconfig-test.json" />
-    <option name="extraTypeScriptOptions" value="" />
-    <option name="scriptName" value="$PROJECT_DIR$/permissions/src/test/test.ts" />
-    <option name="programParameters" value="--service-account=../.trash/nu-art-thunderstorm--service-account.json" />
-    <option name="tsnodePackage" value="/usr/local/lib/node_modules/ts-node" />
-    <method v="2">
-      <option name="Make" enabled="true" />
-    </method>
+  <configuration default="false" name="permissions-test.ts" type="NodeJSConfigurationType" application-parameters="--service-account=../.trash/test-account.json" node-parameters="--require ts-node/register " path-to-js-file="src/test/test.ts" working-dir="$PROJECT_DIR$/permissions">
+    <method v="2" />
   </configuration>
 </component>
