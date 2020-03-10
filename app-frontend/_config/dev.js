@@ -67,8 +67,8 @@ class DevConfig
 
 	getDevServerSSL() {
 		return {
-			key: fs.readFileSync('./_config/dev-cert/server-key.pem'),
-			cert: fs.readFileSync('./_config/dev-cert/server-cert.pem'),
+			key: fs.readFileSync('./.config/ssl/server-key.pem'),
+			cert: fs.readFileSync('./.config/ssl/server-cert.pem'),
 			// ca: fs.readFileSync('/path/to/ca.pem')
 		}
 	}
