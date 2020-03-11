@@ -64,8 +64,8 @@
     "node": "10"
   },
   "_moduleAliases": {
+    "@consts": "dist/consts",
     "@modules": "dist/modules",
-    "@shared": "dist/app-shared",
-    "@consts": "dist/consts"
+    "@shared": "dist/app-shared"
   }
 }
