@@ -1,55 +1,55 @@
 {
   "compilerOptions": {
-    "strict": true,
-    "sourceMap": true,
-    "target": "es5",
-    "jsx": "react",
-    "outDir": "build",
-    "moduleResolution": "node",
-    "module": "es6",
-    "noUnusedLocals": true,
-    "removeComments": true,
-    "experimentalDecorators": true,
+    "baseUrl": "./src/main",
     "declaration": false,
-    "noImplicitReturns": true,
+    "experimentalDecorators": true,
+    "jsx": "react",
     "lib": [
       "es5",
       "es6",
       "es7",
       "dom"
     ],
-    "baseUrl": "./src/main",
+    "module": "es6",
+    "moduleResolution": "node",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "outDir": "build",
     "paths": {
-      "@shared/*": [
-        "app-shared/*"
-      ],
-      "@modules/*": [
-        "modules/*"
+      "@components/*": [
+        "components/*"
       ],
       "@consts/*": [
         "consts/*"
       ],
+      "@modules/*": [
+        "modules/*"
+      ],
       "@renderers/*": [
         "renderers/*"
       ],
-      "@components/*": [
-        "components/*"
+      "@res/*": [
+        "res/*"
+      ],
+      "@shared/*": [
+        "app-shared/*"
       ],
       "@styles/*": [
         "res/styles/*"
-      ],
-      "@res/*": [
-        "res/*"
       ]
-    }
+    },
+    "removeComments": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "es5"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
-  ],
   "exclude": [
     "build",
     "dist",
     "node_modules"
+  ],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx"
   ]
 }

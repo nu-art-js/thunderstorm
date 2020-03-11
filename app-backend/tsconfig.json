@@ -1,33 +1,33 @@
 {
   "compilerOptions": {
-    "strict": true,
-    "sourceMap": true,
-    "declaration": true,
-    "target": "es6",
-    "module": "commonjs",
-    "outDir": "dist",
-    "noUnusedLocals": true,
-    "removeComments": true,
-    "moduleResolution": "node",
-    "experimentalDecorators": true,
     "baseUrl": "./src/main",
+    "declaration": true,
+    "experimentalDecorators": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "outDir": "dist",
     "paths": {
-      "@shared/*": [
-        "app-shared/*"
+      "@consts/*": [
+        "consts/*"
       ],
       "@modules/*": [
         "modules/*"
       ],
-      "@consts/*": [
-        "consts/*"
+      "@shared/*": [
+        "app-shared/*"
       ]
-    }
+    },
+    "removeComments": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "es6"
   },
-  "include": [
-    "src/main/**/*.ts"
-  ],
   "exclude": [
     "src/test/**/*.ts",
     "node_modules"
+  ],
+  "include": [
+    "src/main/**/*.ts"
   ]
 }
