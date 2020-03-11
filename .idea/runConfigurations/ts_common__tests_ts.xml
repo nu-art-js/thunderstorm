@@ -1,5 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="ts-common--tests.ts" type="NodeJSConfigurationType" node-parameters="--require ts-node/register " path-to-js-file="src/test/test.ts" working-dir="$PROJECT_DIR$/ts-common">
-    <method v="2" />
-  </configuration>
-</component>
