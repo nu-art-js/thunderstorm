@@ -26,7 +26,7 @@ import {
 	CustomError1,
 	CustomError2,
 	ExampleApiCustomError
-} from "@shared/shared";
+} from "@app/sample-app-shared";
 import {randomObject} from "@nu-art/ts-common";
 
 class ServerApi_CustomError

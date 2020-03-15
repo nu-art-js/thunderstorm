@@ -29,7 +29,7 @@ import {
 	ExampleApiCustomError,
 	ExampleApiGetType,
 	ExampleApiPostType
-} from "@shared/shared";
+} from "@app/sample-app-shared";
 import {
 	ErrorResponse,
 	HttpMethod

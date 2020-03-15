@@ -1,7 +1,7 @@
 {
-  "name": "app-common",
-  "version": "1.0.0",
-  "description": "app-common",
+  "name": "@app/sample-app-shared",
+  "version": "1.1.0",
+  "description": "app-shared",
   "keywords": [
     "TacB0sS",
     "infra",
@@ -11,16 +11,18 @@
   ],
   "license": "Apache-2.0",
   "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
   "files": [
     "**/*"
   ],
-  "main": "index.js",
-  "types": "index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "typescript": "^3.3.3333"
+    "@nu-art/thunderstorm": "~0.20.0",
+    "@nu-art/ts-common": "~0.20.0",
+    "typescript": "^3.8.3"
   }
 }

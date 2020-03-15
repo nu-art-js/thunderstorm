@@ -24,7 +24,7 @@ import * as express from "express";
 import {
 	ApiType_ApiGetWithParams,
 	ParamsToGet
-} from "@shared/shared";
+} from "@app/sample-app-shared";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Get<ApiType_ApiGetWithParams> {
