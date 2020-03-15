@@ -21,7 +21,7 @@ import {
 } from "@nu-art/thunderstorm/backend";
 
 import * as express from "express";
-import {ApiType_GetWithoutParams} from "@shared/shared";
+import {ApiType_GetWithoutParams} from "@app/sample-app-shared";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Get<ApiType_GetWithoutParams> {

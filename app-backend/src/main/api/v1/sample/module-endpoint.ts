@@ -23,7 +23,7 @@ import {
 
 import * as express from "express";
 import {ExampleModule} from "@modules/ExampleModule";
-import {ExampleApiGetType} from "@shared/shared";
+import {ExampleApiGetType} from "@app/sample-app-shared";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Get<ExampleApiGetType> {
