@@ -13,9 +13,6 @@
       ],
       "@modules/*": [
         "modules/*"
-      ],
-      "@shared/*": [
-        "app-shared/*"
       ]
     },
     "removeComments": true,
