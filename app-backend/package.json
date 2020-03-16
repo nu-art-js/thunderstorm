@@ -61,9 +61,6 @@
     "firebase-functions-test": "^0.1.6",
     "typescript": "^3.3.3333"
   },
-  "engines": {
-    "node": "10"
-  },
   "_moduleAliases": {
     "@consts": "dist/consts",
     "@modules": "dist/modules",
