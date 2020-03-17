@@ -21,8 +21,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "serve": "cd .. && bash ./build-and-install.sh -lb -nb",
-    "launch": "tsc --watch & firebase serve --only functions"
+    "launch": "tsc --watch & firebase serve --only functions",
+    "serve": "cd .. && bash ./build-and-install.sh -lb -nb"
   },
   "dependencies": {
     "@app/sample-app-shared": "~1.1.0",
