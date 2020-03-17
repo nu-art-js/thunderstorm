@@ -32,7 +32,7 @@ import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 
-const modules: Module<any>[] = [
+const modules: Module[] = [
 	ValueChangedListener,
 	ExampleModule,
 ];
