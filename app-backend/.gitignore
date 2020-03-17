@@ -3,6 +3,7 @@ dist
 dist-test
 _package.json
 package-lock.json
-src/main/config.ts
-src/main/app-shared
+.dependencies
 .dirty
+
+src/main/config.ts
