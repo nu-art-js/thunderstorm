@@ -26,7 +26,7 @@
     "serve": "cd .. && bash ./build-and-install.sh -lb -nb"
   },
   "dependencies": {
-    "@app/sample-app-shared": "~1.1.0",
+    "@app/sample-app-shared": "file:.dependencies/app-shared",
     "@nu-art/db-api-generator": "~0.20.0",
     "@nu-art/firebase": "~0.20.0",
     "@nu-art/live-docs": "~0.20.0",
