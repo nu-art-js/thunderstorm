@@ -22,8 +22,8 @@
   "scripts": {
     "build": "webpack --mode development --env dev",
     "build-prod": "webpack --mode production --env prod",
-    "launch": "webpack-dev-server --open --mode development --env dev --ssl true",
-    "dev": "cd .. && bash ./build-and-install.sh -lf -nb"
+    "dev": "cd .. && bash ./build-and-install.sh -lf -nb",
+    "launch": "webpack-dev-server --open --mode development --env dev --ssl true"
   },
   "dependencies": {},
   "devDependencies": {
