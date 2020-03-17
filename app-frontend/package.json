@@ -21,10 +21,9 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "webpack --mode development --env dev",
-    "dev": "webpack-dev-server --open --mode development --env dev --ssl true",
-    "dev-no-ssl": "webpack-dev-server --open --mode development --env dev",
-    "lint": "tslint --project tsconfig.json",
-    "prod": "webpack --mode production --env prod"
+    "build-prod": "webpack --mode production --env prod",
+    "launch": "webpack-dev-server --open --mode development --env dev --ssl true",
+    "dev": "cd .. && bash ./build-and-install.sh -lf -nb"
   },
   "dependencies": {},
   "devDependencies": {

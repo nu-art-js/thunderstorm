@@ -21,10 +21,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "launch": "tsc --watch & nodemon dist",
-    "lint": "tslint --project tsconfig.json",
-    "serve": "npm run build && firebase serve --only functions",
-    "test": "rm -rf dist-test && npm run build-test && node dist-test/test"
+    "serve": "cd .. && bash ./build-and-install.sh -lb -nb",
+    "launch": "tsc --watch & firebase serve --only functions"
   },
   "dependencies": {
     "@app/sample-app-shared": "~1.1.0",
