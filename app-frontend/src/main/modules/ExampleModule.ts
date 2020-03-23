@@ -20,7 +20,8 @@ import {Module} from "@nu-art/ts-common";
 
 import {
 	HttpModule,
-	ToastModule
+	ToastModule,
+	HttpRequest
 } from "@nu-art/thunderstorm/frontend";
 import {
 	CommonBodyReq,
@@ -48,6 +49,7 @@ export class ExampleModule_Class
 
 
 	private message!: string;
+	private request?: HttpRequest<any>;
 
 	callCustomErrorApi() {
 		HttpModule.createRequest<ExampleApiCustomError>(HttpMethod.POST, RequestKey_CustomError)
@@ -84,12 +86,15 @@ export class ExampleModule_Class
 		this.logInfo("getting label from server");
 		const bodyObject: CommonBodyReq = {message: this.message || "No message"};
 
-		HttpModule.createRequest<ExampleApiPostType>(HttpMethod.POST, RequestKey_PostApi)
-		          .setJsonBody(bodyObject)
-		          .setRelativeUrl("/v1/sample/another-endpoint")
-		          .setOnError(`Error getting new message from backend`)
-		          .setOnSuccessMessage(`Success`)
-		          .execute(this.setMessage);
+		if (this.request)
+			this.request.abort();
+
+		this.request = HttpModule.createRequest<ExampleApiPostType>(HttpMethod.POST, RequestKey_PostApi)
+		                         .setJsonBody(bodyObject)
+		                         .setRelativeUrl("/v1/sample/another-endpoint")
+		                         .setOnError(`Error getting new message from backend`)
+		                         .setOnSuccessMessage(`Success`)
+		                         .execute(this.setMessage);
 
 		this.logInfo("continue... will receive an event once request is completed..");
 	};

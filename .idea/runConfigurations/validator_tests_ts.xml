@@ -8,7 +8,7 @@
     <option name="extraTypeScriptOptions" value="" />
     <option name="scriptName" value="$PROJECT_DIR$/ts-common/src/test/ts/tests/validators/tests.ts" />
     <option name="programParameters" value="" />
-    <option name="tsnodePackage" value="/usr/local/lib/node_modules/ts-node" />
+    <option name="tsnodePackage" value="~/dev/nu-art/thunderstorm-boilerplate/user-account/node_modules/ts-node" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
