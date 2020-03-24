@@ -2,7 +2,16 @@ import {FirebaseScheduledFunction} from "@nu-art/firebase/app-backend/functions/
 
 
 export class StopLongRecordings_Class
-	extends FirebaseScheduledFunction<{}> {
+	extends FirebaseScheduledFunction<any> {
+
+	constructor() {
+		super();
+		console.log("StopLongRecordings ctor")
+	}
+
+	async processChanges(): Promise<any> {
+		console.log("processChanges");
+	}
 
 }
 
