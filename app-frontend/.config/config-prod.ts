@@ -1,6 +1,6 @@
 export const config = {
 	HttpModule: {
-		origin: "https://nu-art-thunderstorm.firebaseapp.com/backend/api",
+		origin: "https://us-central1-nu-art-thunderstorm.cloudfunctions.net/api",
 		timeout: 10000
 	},
 	frontend: {
