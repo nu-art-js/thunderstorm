@@ -28,7 +28,7 @@ import {ExampleModule} from "@modules/ExampleModule";
 import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
 import {Module} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
-import {StopLongRecordings} from "@modules/StopLongRecordings";
+import {StopLongRecordings} from "@modules/SchedulerExample";
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
