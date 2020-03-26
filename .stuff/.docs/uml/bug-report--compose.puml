@@ -1,0 +1,31 @@
+@startuml
+participant Admins as admins
+participant App_FE as fe
+participant App_BE as be
+participant Storage as storage
+participant Database as database
+
+fe -> fe: Collects logs while app\nis running into a "log file"
+note left
+    http request logs would be
+    added to the "log file" while not
+    logged to the console
+end note
+fe -> fe: User presses the bug report button
+fe -> fe: Show input dialog for title and\ndescription for the bug report
+fe -> be: Zip bug report and send to server
+note left
+    only logged in users can send a bug report
+
+    Report will contain:
+    * Status from modules
+    * Logs
+    * Stacktrace if there is
+end note
+be -> storage: Save the report zip\non the storage bucket
+be -> database: Create an entry with the\ndetails with ref to files
+be --> admins: Send a push message about the new bug report
+
+admins->admins: Admins can view the reports and\ncreate a Jira ticket from the report
+
+@enduml
