@@ -88,7 +88,7 @@ export class ExampleModule_Class
 
 		if (this.request)
 			this.request.abort();
-
+		this.logDebug("Body:", bodyObject);
 		this.request = HttpModule.createRequest<ExampleApiPostType>(HttpMethod.POST, RequestKey_PostApi)
 		                         .setJsonBody(bodyObject)
 		                         .setRelativeUrl("/v1/sample/another-endpoint")
