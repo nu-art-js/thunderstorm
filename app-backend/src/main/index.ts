@@ -53,7 +53,7 @@ const _exports = new Storm()
 	.setEnvironment(Environment.name)
 	.build();
 
-_exports.logTest = functions.https.onRequest((req: Request, res: Response) => {
+_exports.logTest = functions.database.ref('triggerLogs').onWrite(() => {
 	console.log('LOG_TEST FUNCTION! -- Logging string');
 	console.log({
 		            firstProps: 'String prop',
@@ -62,6 +62,6 @@ _exports.logTest = functions.https.onRequest((req: Request, res: Response) => {
 			            b: 10000
 		            }
 	            });
-});
+})
 
 module.exports = _exports;
