@@ -70,6 +70,7 @@
     "react-hot-loader": "^4.3.11",
     "react-router": "^4.3.1",
     "react-router-dom": "^4.3.1",
+    "react-select": "^3.0.8",
     "sass-loader": "^7.1.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.0",
@@ -80,7 +81,6 @@
     "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.9",
     "webpack-md5-hash": "0.0.6",
-    "write-file-webpack-plugin": "^4.4.1",
-    "react-select": "^3.0.8"
+    "write-file-webpack-plugin": "^4.4.1"
   }
 }
