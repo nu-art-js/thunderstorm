@@ -42,6 +42,7 @@
     "@types/react-dom": "^16.8.2",
     "@types/react-router": "^4.4.5",
     "@types/react-router-dom": "^4.3.1",
+    "@types/react-select": "^3.0.8",
     "autoprefixer": "^9.1.5",
     "awesome-typescript-loader": "^5.2.1",
     "child_process": "^1.0.2",
@@ -79,6 +80,7 @@
     "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.9",
     "webpack-md5-hash": "0.0.6",
-    "write-file-webpack-plugin": "^4.4.1"
+    "write-file-webpack-plugin": "^4.4.1",
+    "react-select": "^3.0.8"
   }
 }
