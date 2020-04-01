@@ -30,6 +30,12 @@ export class SamplePlayground extends React.Component<{}> {
 	getScreens(): PlaygroundScreen[] {
 		return [
 			{
+				name: "Hello",
+				getNode: () => {
+					return <Hello/>;
+				}
+			},
+			{
 				name: "Dialog Examples",
 				getNode: () => {
 					return <Page_DialogExamples/>;
