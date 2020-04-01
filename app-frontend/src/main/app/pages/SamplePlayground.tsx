@@ -18,7 +18,7 @@ type PlaygroundScreen = {
 
 }
 
-export class Playground extends React.Component<{}, State> {
+export class SamplePlayground extends React.Component<{}, State> {
 
 	constructor(props: {}) {
 		super(props);
