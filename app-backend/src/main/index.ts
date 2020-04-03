@@ -20,7 +20,8 @@
 import 'module-alias/register'
 import {
 	RouteResolver,
-	Storm
+	Storm,
+	ForceUpgrade
 } from "@nu-art/thunderstorm/backend";
 import {Environment} from "./config";
 import {ValueChangedListener} from "@modules/ValueChangedListener";
@@ -40,7 +41,8 @@ console.log(`Starting server v${packageJson.version} with env: ${Environment.nam
 const modules: Module[] = [
 	ValueChangedListener,
 	ExampleModule,
-	// SchedulerExample,
+	ForceUpgrade,
+
 	DispatchModule
 ];
 
