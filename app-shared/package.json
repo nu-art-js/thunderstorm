@@ -21,8 +21,8 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "@nu-art/thunderstorm": "~0.20.0",
-    "@nu-art/ts-common": "~0.20.0",
+    "@nu-art/thunderstorm": "~0.21.0",
+    "@nu-art/ts-common": "~0.21.0",
     "typescript": "^3.8.3"
   }
 }
