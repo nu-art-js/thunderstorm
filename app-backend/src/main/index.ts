@@ -1,7 +1,7 @@
 /*
  * A backend boilerplate with example apis
  *
- * Copyright (C) 2018  Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,10 @@ import {
 import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
 import {Module} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
+import {
+	ProjectBackupScheduler,
+	ProjectFirestoreBackup
+} from "@nu-art/firebase/backend-firestore-backup";
 
 const functions = require('firebase-functions');
 
@@ -42,7 +46,9 @@ const modules: Module[] = [
 	ValueChangedListener,
 	ExampleModule,
 	ForceUpgrade,
-
+	ProjectFirestoreBackup,
+	// SchedulerExample,
+	ProjectBackupScheduler.setSchedule("every 10 min"),
 	DispatchModule
 ];
 

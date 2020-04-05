@@ -3,10 +3,16 @@
     <module2copyright>
       <element module="app-backend" copyright="app-backend" />
       <element module="app-frontend" copyright="app-frontend" />
-      <element module="storm" copyright="storm" />
-      <element module="thunder" copyright="thunder" />
-      <element module="testelot" copyright="testelot" />
       <element module="ts-common" copyright="ts-common" />
+      <element module="testelot" copyright="testelot" />
+      <element module="firebase" copyright="firebase" />
+      <element module="storm" copyright="storm" />
+      <element module="thunderstorm" copyright="thunderstorm" />
+      <element module="permissions" copyright="permissions" />
+      <element module="live-docs" copyright="live-docs" />
+      <element module="user-account" copyright="live-docs" />
+      <element module="db-api-generator" copyright="db-api-generator" />
+      <element module="All" copyright="ts-common" />
     </module2copyright>
   </settings>
 </component>
