@@ -17,24 +17,35 @@
  */
 
 import {
-	ApiResponse,
-	ServerApi_Get,
+	ServerApi,
+	ApiResponse
 } from "@nu-art/thunderstorm/backend";
 
+import {
+	HttpMethod,
+	ApiWithQuery
+} from "@nu-art/thunderstorm";
 import * as express from "express";
-import {ExampleModule} from "@modules/ExampleModule";
-import {ExampleApiGetType} from "@app/sample-app-shared";
+import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
 
-class ServerApi_EndpointExample
-	extends ServerApi_Get<ExampleApiGetType> {
+
+class ServerApi_RegisterExternalProject
+	extends ServerApi<ApiWithQuery<string, void>> {
 
 	constructor() {
-		super("endpoint-example");
+		super(HttpMethod.GET, "backup-project");
 	}
 
 	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: void) {
-		return ExampleModule.getRandomString();
+		this.logInfo("backup started");
+		try {
+			await ProjectFirestoreBackup.backupProject();
+		} catch (e) {
+			this.logError("backup error", e);
+			console.log(e);
+		}
+		this.logInfo("backup ended");
 	}
 }
 
-module.exports = new ServerApi_EndpointExample();
+module.exports = new ServerApi_RegisterExternalProject();
