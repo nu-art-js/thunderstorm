@@ -4,15 +4,14 @@
 !.idea/runConfigurations/
 !.idea/scopes/
 
-env
 error
+error_message.txt
+.trash
 
 .firebaserc
 .firebase
 firebase.json
-.fork
-.trash
+firebase-debug.log
+
 *.iml
 **/.DS_Store
-firebase-debug.log
-app-frontend/_config/dev-cert
