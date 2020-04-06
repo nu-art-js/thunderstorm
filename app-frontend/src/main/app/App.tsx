@@ -1,7 +1,7 @@
 /*
  * A typescript & react boilerplate with api call example
  *
- * Copyright (C) 2018  Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,16 @@ import {
 	Dialog,
 	Toaster,
 	WrapperProps,
-	BaseComponent
+	BaseComponent,
+	RoutingModule
 } from "@nu-art/thunderstorm/frontend";
-import {NavigationBar} from './components/navigation-bar';
+
 import {VersionOnScreen} from './components/version-on-screen';
 import {
 	AccountModule,
 	OnLoginStatusUpdated
 } from "@nu-art/user-account/frontend";
+import {registerRoutes} from "./Routes";
 
 export class App
 	extends BaseComponent<WrapperProps>
@@ -45,10 +47,10 @@ implements OnLoginStatusUpdated{
 	};
 
 	render() {
-
+		registerRoutes();
 		return (
 			<div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
-				<NavigationBar/>
+				{RoutingModule.getRoutesMap()}
 				<VersionOnScreen/>
 
 				<Dialog/>

@@ -1,7 +1,8 @@
 /*
- * A backend boilerplate with example apis
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
- * Copyright (C) 2018  Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,11 +39,15 @@ export type CustomError2 = {
 	prop3: string
 	prop4: string
 }
+export interface TestDispatch {
+	testDispatch:() => void;
+}
 
 export type ExampleApiCustomError = ApiWithBody<"/v1/sample/custom-error", void, void, CustomError1 | CustomError2>
 export type ExampleApiPostType = ApiWithBody<"/v1/sample/another-endpoint", CommonBodyReq, string>
 export type ExampleApiGetType = ApiWithQuery<string, string>
-
+export type ExampleApiTest = ApiWithQuery<string, string>
+export type ExampleGetMax = ApiWithQuery<"/v1/sample/get-max", {n:number}>
 export type ApiType_GetWithoutParams = ApiWithQuery<"/v1/sample/get-without-params-endpoint", string>
 export type ApiType_ApiGetWithParams = ApiWithQuery<"/v1/sample/get-with-params-endpoint", string, ParamsToGet>
 export type ApiType_ApiPostWithoutResponse = ApiWithBody<"/v1/sample/post-without-body-endpoint", CommonBodyReq, void>
