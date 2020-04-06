@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="live-docs" pattern="file[thunderstorm-boilerplate]:live-docs/src//*" />
+</component>

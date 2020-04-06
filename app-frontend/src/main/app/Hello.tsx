@@ -1,7 +1,7 @@
 /*
  * A typescript & react boilerplate with api call example
  *
- * Copyright (C) 2018  Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@ import {
 } from "@modules/ExampleModule";
 import {
 	BaseComponent,
-	OnRequestListener
+	OnRequestListener,
+    ForceUpgrade
 } from "@nu-art/thunderstorm/frontend";
 import {LiveDoc} from "@nu-art/live-docs/frontend";
 
@@ -46,6 +47,7 @@ export class Hello
 				ExampleModule.getMessageFromServer1()
 			}}>{this.state.label}</h1><LiveDoc docKey="one-mouse-click"/></div>
 			<div className="ll_h_c"><h1 onDoubleClick={ExampleModule.getMessageFromServer2}>Double click me</h1><LiveDoc docKey="double-mouse-click"/></div>
+			<div className="ll_h_c"><h1 onClick={ForceUpgrade.compareVersion}>Assert version</h1><LiveDoc docKey="assert-version"/></div>
 		</>;
 	}
 
