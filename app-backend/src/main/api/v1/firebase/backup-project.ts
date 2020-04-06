@@ -39,7 +39,7 @@ class ServerApi_RegisterExternalProject
 	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: void) {
 		this.logInfo("backup started");
 		try {
-			await ProjectFirestoreBackup.backupProject();
+			await ProjectFirestoreBackup.backupProject("backend");
 		} catch (e) {
 			this.logError("backup error", e);
 			console.log(e);
