@@ -24,7 +24,6 @@ import {
 	ForceUpgrade
 } from "@nu-art/thunderstorm/backend";
 import {Environment} from "./config";
-import {ValueChangedListener} from "@modules/ValueChangedListener";
 import {
 	DispatchModule,
 	ExampleModule
@@ -36,6 +35,7 @@ import {
 	ProjectBackupScheduler,
 	ProjectFirestoreBackup
 } from "@nu-art/firebase/backend-firestore-backup";
+import {Backend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/backend";
 
 const functions = require('firebase-functions');
 
@@ -43,7 +43,7 @@ const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 
 const modules: Module[] = [
-	ValueChangedListener,
+	// ValueChangedListener,
 	ExampleModule,
 	ForceUpgrade,
 	ProjectFirestoreBackup,
@@ -55,6 +55,7 @@ const modules: Module[] = [
 const _exports = new Storm()
 	.addModules(...Backend_ModulePack_LiveDocs)
 	.addModules(...Backend_ModulePack_Permissions)
+	.addModules(...Backend_ModulePack_PushPubSub)
 	.addModules(...modules)
 	.setInitialRouteResolver(new RouteResolver(require, __dirname, "api"))
 	.setInitialRoutePath("/api")
