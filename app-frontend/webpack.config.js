@@ -39,7 +39,7 @@ module.exports = (env, argv) => {
 		context: sourcePath,
 		entry: {
 			main: './main/index.tsx',
-			toasters: './main/app/pages/Page_ToasterExample.tsx',
+			service_worker: './sw/sw-index.ts',
 		},
 		output: {
 			path: outputFolder,
@@ -71,6 +71,10 @@ module.exports = (env, argv) => {
 
 		module: {
 			rules: [
+				{
+					test: /^(sw\/)(.ts)$/,
+					use: { loader: 'worker-loader' }
+				},
 				{test: /\.tsx?$/, loader: "awesome-typescript-loader", exclude: [/node_modules/, /dist/]},
 				{enforce: "pre", test: /\.js$/, loader: "source-map-loader", exclude: [/node_modules/, /dist/, /build/, /__test__/]},
 				{
@@ -89,9 +93,6 @@ module.exports = (env, argv) => {
 				{
 					test: /\.json$/,
 					exclude: /node_modules/,
-					use: {
-						loader: "file-loader",
-					}
 				},
 				{
 					test: /\.(jpe?g|png|gif|ico|svg)$/i,

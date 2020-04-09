@@ -25,6 +25,7 @@ import {
 	CommonBodyReq,
 	ExampleApiPostType
 } from "@app/sample-app-shared";
+import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Post<ExampleApiPostType> {
@@ -36,6 +37,7 @@ class ServerApi_EndpointExample
 	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: CommonBodyReq) {
 		this.assertProperty(body, "message");
 		this.logInfoBold(`got id: ${body.message}`);
+		await PushPubSubModule.pushToKey('example', {prop1:3})
 		return "another endpoint response"
 	}
 }

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-// tslint:disable-next-line:no-import-side-effect
+// tslint:disable:no-import-side-effect
 import './res/styles/styles.scss';
 
 import * as React from 'react';
@@ -33,10 +33,20 @@ import {
 } from "@nu-art/live-docs/frontend";
 import {ExampleModule} from "@modules/ExampleModule";
 
+// import './manifest';
+import "@modules/firebase-messaging-sw";
+import {PushPubSubModule} from "@modules/PushPubSubModule";
+
+const modules = [
+	ForceUpgrade,
+	PushPubSubModule,
+	ExampleModule
+];
+
 new Thunder()
 	.setConfig(require("./config").config)
 	.addModules(...Frontend_ModulePack_LiveDocs)
-	.addModules(ForceUpgrade, ExampleModule)
+	.addModules(...modules)
 	.setMainApp(App)
 	.build();
 
