@@ -27,6 +27,7 @@ import {
 	Playground,
 	PlaygroundScreen
 } from "@nu-art/thunderstorm/app-frontend/components/Playground";
+import {TabsPlayground} from "./TabsPlayground";
 
 const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
 const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
@@ -83,6 +84,12 @@ export class SamplePlayground extends React.Component<{}> {
 					return <CustomErrorExample/>;
 				}
 			},
+			{
+				name: "Tabs",
+				getNode: () => {
+					return <TabsPlayground/>;
+				}
+			}
 		];
 	}
 
