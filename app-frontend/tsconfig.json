@@ -8,8 +8,7 @@
       "es5",
       "es6",
       "es7",
-      "dom",
-      "webworker"
+      "dom"
     ],
     "module": "es6",
     "moduleResolution": "node",
@@ -47,10 +46,16 @@
   "exclude": [
     "build",
     "dist",
-    "node_modules"
+    "node_modules",
+    "src/sw"
   ],
   "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
+    "src/main/**/*.ts",
+    "src/main/**/*.tsx"
+  ],
+  "references": [
+    {
+      "path": "src/sw"
+    }
   ]
 }

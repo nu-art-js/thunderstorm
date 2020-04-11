@@ -16,15 +16,10 @@
  * limitations under the License.
  */
 
-import {ServiceWorker} from '@nu-art/thunderstorm/service-worker';
-import {Module} from '@nu-art/ts-common';
-import {PushPubSubModule} from "./modules/myServiceWorker-sw";
-
-const modules: Module<any>[] = [
-	PushPubSubModule
-];
+import {ServiceWorker} from '@nu-art/thunderstorm/sw';
+import {PushPubSubModule} from "@nu-art/push-pub-sub/sw";
 
 new ServiceWorker()
 	.setConfig(require("../main/config").config)
-	.addModules(...modules)
+	.addModules(PushPubSubModule)
 	.build();

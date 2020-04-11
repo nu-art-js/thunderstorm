@@ -35,11 +35,13 @@ module.exports = (env, argv) => {
 	console.log("argv.mode: " + argv.mode);
 	const outputFolder = path.resolve(__dirname, `dist/${envConfig.outputFolder()}`);
 
+	const swText = /sw\/.+\.ts$/;
+
 	return {
 		context: sourcePath,
 		entry: {
 			main: './main/index.tsx',
-			service_worker: './sw/sw-index.ts',
+			service_worker: './sw/index.ts',
 		},
 		output: {
 			path: outputFolder,
@@ -72,10 +74,21 @@ module.exports = (env, argv) => {
 		module: {
 			rules: [
 				{
-					test: /^(sw\/)(.ts)$/,
-					use: { loader: 'worker-loader' }
+					test: swText,
+					use: [
+						{
+							loader: 'worker-loader'
+						}
+					],
+					exclude: [/node_modules/, /dist/]
 				},
-				{test: /\.tsx?$/, loader: "awesome-typescript-loader", exclude: [/node_modules/, /dist/]},
+				{
+					test: /\.tsx?$/,
+					use: {
+						loader: "awesome-typescript-loader"
+					},
+					exclude: [/node_modules/, /dist/, swText, /\.\/sw\/index\.ts/]
+				},
 				{enforce: "pre", test: /\.js$/, loader: "source-map-loader", exclude: [/node_modules/, /dist/, /build/, /__test__/]},
 				{
 					test: /\.[ot]tf$/,

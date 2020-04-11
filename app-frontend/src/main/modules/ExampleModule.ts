@@ -46,7 +46,7 @@ import {Test} from "@modules/TestModule";
 import {
 	OnFirebaseMessageReceived,
 	PushPubSubModule
-} from "@modules/PushPubSubModule";
+} from "@nu-art/push-pub-sub/frontend";
 
 type Config = {
 	remoteUrl: string
@@ -73,9 +73,7 @@ export class ExampleModule_Class
 	private max: number = 0;
 
 	protected init(): void {
-		console.log('initing?');
-		PushPubSubModule.getToken();
-		PushPubSubModule.subscribe({props: {prop1: 3}, pushKey: 'example'})
+		PushPubSubModule.subscribe({props: {a: 'prop'}, pushKey: 'key'})
 	}
 
 	onMessageReceived(payload: StringMap) {

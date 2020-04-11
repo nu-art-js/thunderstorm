@@ -32,10 +32,7 @@ import {
 	showEditModalExample
 } from "@nu-art/live-docs/frontend";
 import {ExampleModule} from "@modules/ExampleModule";
-
-// import './manifest';
-import "@modules/firebase-messaging-sw";
-import {PushPubSubModule} from "@modules/PushPubSubModule";
+import {PushPubSubModule} from "@nu-art/push-pub-sub/frontend";
 
 const modules = [
 	ForceUpgrade,
