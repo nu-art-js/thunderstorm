@@ -40,6 +40,7 @@ export class GenericSelectPlayground extends React.Component<{}, State> {
 			<button onClick={() => {
 				this.setState({selectedOption: undefined})
 			}}>Clear</button>
+			<div style={{height: 20}}/>
 			<GenericSelect<Option>
 				iconClose={iconClose}
 				iconOpen={iconOpen}
@@ -52,7 +53,7 @@ export class GenericSelectPlayground extends React.Component<{}, State> {
 				styles={unitStyle}
 				presentation={(o) => o.title}
 			/>
-
+			<div style={{height: 20}}/>
 			<span>{selectedOption ? selectedOption.title : "none"}</span>
 		</div>
 	}
