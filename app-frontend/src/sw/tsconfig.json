@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "composite": true,
     "experimentalDecorators": true,
     "module": "es6",
     "moduleResolution": "node",
