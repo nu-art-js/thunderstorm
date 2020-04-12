@@ -35,18 +35,26 @@ export class GenericSelectPlayground extends React.Component<{}, State> {
 	}
 
 	render(){
-		return <GenericSelect<Option>
-			iconClose={iconClose}
-			iconOpen={iconOpen}
-			selectedOption={this.state.selectedOption}
-			options={options}
-			onChange={(o: Option) => {
-				console.log(`selected ${o.title}`);
-				this.setState({selectedOption: o});
-			}}
-			styles={unitStyle}
-			presentation={(o) => o.title}
-		/>
+		const selectedOption = this.state.selectedOption;
+		return <div>
+			<button onClick={() => {
+				this.setState({selectedOption: undefined})
+			}}>Clear</button>
+			<GenericSelect<Option>
+				iconClose={iconClose}
+				iconOpen={iconOpen}
+				selectedOption={selectedOption}
+				options={options}
+				onChange={(o: Option) => {
+					console.log(`selected ${o.title}`);
+					this.setState({selectedOption: o});
+				}}
+				styles={unitStyle}
+				presentation={(o) => o.title}
+			/>
+
+			<span>{selectedOption ? selectedOption.title : "none"}</span>
+		</div>
 	}
 }
 
