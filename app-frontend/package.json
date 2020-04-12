@@ -24,7 +24,7 @@
     "build-prod": "webpack --mode production --env prod",
     "dev": "cd .. && bash ./build-and-install.sh -lf -nb",
     "launch": "webpack-dev-server --open --mode development --env dev --ssl true",
-    "lint": "tslint --project tsconfig.json"
+    "lint": "tslint --project src/main/tsconfig.json"
   },
   "dependencies": {
     "firebase": "^7.0.0"
@@ -78,7 +78,6 @@
     "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.0",
     "ts-loader": "^5.3.3",
-    "types-serviceworker": "0.0.1",
     "typescript": "^3.8.3",
     "url-loader": "^1.1.1",
     "webpack": "^4.20.2",

@@ -25,6 +25,10 @@ const WriteFilePlugin = require('write-file-webpack-plugin');
 const packageJson = require('./package.json');
 const webpack = require("webpack");
 const sourcePath = path.join(__dirname, './src');
+const swFolder = path.join(__dirname,'./src/sw/');
+const swConfig = path.join(__dirname,'./src/sw/tsconfig.json');
+const mainFolder = path.join(__dirname,'./src/main/');
+const mainConfig = path.join(__dirname,'./src/main/tsconfig.json');
 
 module.exports = (env, argv) => {
 
@@ -75,17 +79,25 @@ module.exports = (env, argv) => {
 			rules: [
 				{
 					test: swText,
+					include: [swFolder],
 					use: [
 						{
-							loader: 'worker-loader'
+							loader: "awesome-typescript-loader",
+							options: {
+								configFileName: swConfig
+							}
 						}
 					],
-					exclude: [/node_modules/, /dist/]
+					exclude: [/node_modules/, /dist/, /main\/.+\.ts$/]
 				},
 				{
 					test: /\.tsx?$/,
+					include: [mainFolder],
 					use: {
-						loader: "awesome-typescript-loader"
+						loader: "awesome-typescript-loader",
+						options: {
+							configFileName: mainConfig
+						}
 					},
 					exclude: [/node_modules/, /dist/, swText, /\.\/sw\/index\.ts/]
 				},

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "./src/main",
+    "baseUrl": "./",
     "declaration": false,
     "experimentalDecorators": true,
     "jsx": "react",
@@ -14,7 +14,7 @@
     "moduleResolution": "node",
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "outDir": "build",
+    "outDir": "../../build",
     "paths": {
       "@components/*": [
         "components/*"
@@ -42,20 +42,5 @@
     "sourceMap": true,
     "strict": true,
     "target": "es5"
-  },
-  "exclude": [
-    "build",
-    "dist",
-    "node_modules",
-    "src/sw"
-  ],
-  "include": [
-    "src/main/**/*.ts",
-    "src/main/**/*.tsx"
-  ],
-  "references": [
-    {
-      "path": "src/sw"
-    }
-  ]
+  }
 }
