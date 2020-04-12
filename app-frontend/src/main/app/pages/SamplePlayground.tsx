@@ -28,6 +28,7 @@ import {
 	PlaygroundScreen
 } from "@nu-art/thunderstorm/app-frontend/components/Playground";
 import {TabsPlayground} from "./TabsPlayground";
+import {GenericSelectPlayground} from "./GenericSelectPlayground";
 
 const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
 const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
@@ -88,6 +89,12 @@ export class SamplePlayground extends React.Component<{}> {
 				name: "Tabs",
 				getNode: () => {
 					return <TabsPlayground/>;
+				}
+			},
+			{
+				name: "GenericSelect",
+				getNode: () => {
+					return <GenericSelectPlayground/>;
 				}
 			}
 		];
