@@ -64,7 +64,7 @@ class DispatchModule_Class
 	};
 
 	private async getMaxImpl() {
-		const data = await this.numbers.getAllDocuments();
+		const data = await this.numbers.getAll();
 		console.log(data);
 		return data.length > 0 ? Math.max(...data.map(d => d.n)) : 0;
 	}
