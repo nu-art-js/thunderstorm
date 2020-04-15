@@ -20,8 +20,8 @@
     "build": "tsc"
   },
   "devDependencies": {
-    "@nu-art/thunderstorm": "~0.22.0",
-    "@nu-art/ts-common": "~0.22.0",
+    "@nu-art/thunderstorm": "~0.23.0",
+    "@nu-art/ts-common": "~0.23.0",
     "typescript": "^3.8.3"
   }
 }

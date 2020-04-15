@@ -20,7 +20,10 @@ import {
 	Module
 } from "@nu-art/ts-common";
 import {TestDispatch} from "@app/sample-app-shared";
-import {FirestoreCollection, FirebaseModule} from "@nu-art/firebase/backend";
+import {
+	FirestoreCollection,
+	FirebaseModule
+} from "@nu-art/firebase/backend";
 
 
 type Config = {
@@ -50,7 +53,7 @@ class DispatchModule_Class
 
 	protected init(): void {
 		const firestore = FirebaseModule.createAdminSession().getFirestore();
-		this.numbers = firestore.getCollection<{ n: number }>('test-dispatcher', ({n}) => ({n}));
+		this.numbers = firestore.getCollection<{ n: number }>('test-dispatcher', ["n"]);
 	}
 
 	testDispatch = async () => {
@@ -69,5 +72,6 @@ class DispatchModule_Class
 		return data.length > 0 ? Math.max(...data.map(d => d.n)) : 0;
 	}
 }
+
 export const DispatchModule = new DispatchModule_Class();
 export const ExampleModule = new ExampleModule_Class();
