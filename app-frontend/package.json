@@ -37,7 +37,7 @@
     "@nu-art/firebase": "~0.23.0",
     "@nu-art/live-docs": "~0.23.0",
     "@nu-art/permissions": "~0.23.0",
-    "@nu-art/push-pub-sub": "~0.20.0",
+    "@nu-art/push-pub-sub": "~0.23.0",
     "@nu-art/thunderstorm": "~0.23.0",
     "@nu-art/ts-common": "~0.23.0",
     "@nu-art/user-account": "~0.23.0",
