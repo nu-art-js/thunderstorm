@@ -39,8 +39,6 @@ module.exports = (env, argv) => {
 	console.log("argv.mode: " + argv.mode);
 	const outputFolder = path.resolve(__dirname, `dist/${envConfig.outputFolder()}`);
 
-	const swText = /\/sw\/.+\.ts$/;
-
 	return {
 		context: sourcePath,
 		entry: {
@@ -78,7 +76,7 @@ module.exports = (env, argv) => {
 		module: {
 			rules: [
 				{
-					test: swText,
+					test: /sw\/.+\.ts$/,
 					include: [swFolder],
 					use: {
 						loader: "ts-loader",
@@ -88,7 +86,7 @@ module.exports = (env, argv) => {
 					}
 				},
 				{
-					test: /\/main\/.+\.tsx?$/,
+					test: /main\/.+\.tsx?$/,
 					include: [mainFolder],
 					use: {
 						loader: "awesome-typescript-loader",
