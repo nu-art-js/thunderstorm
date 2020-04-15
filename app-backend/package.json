@@ -30,6 +30,7 @@
     "@nu-art/firebase": "file:.dependencies/firebase",
     "@nu-art/live-docs": "file:.dependencies/live-docs",
     "@nu-art/permissions": "file:.dependencies/permissions",
+    "@nu-art/push-pub-sub": "file:.dependencies/push-pub-sub",
     "@nu-art/storm": "file:.dependencies/storm",
     "@nu-art/thunderstorm": "file:.dependencies/thunderstorm",
     "@nu-art/ts-common": "file:.dependencies/ts-common",

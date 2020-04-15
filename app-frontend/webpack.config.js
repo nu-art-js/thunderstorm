@@ -25,6 +25,10 @@ const WriteFilePlugin = require('write-file-webpack-plugin');
 const packageJson = require('./package.json');
 const webpack = require("webpack");
 const sourcePath = path.join(__dirname, './src');
+const swFolder = path.join(__dirname, './src/sw/');
+const swConfig = path.join(__dirname, './src/sw/tsconfig.json');
+const mainFolder = path.join(__dirname, './src/main/');
+const mainConfig = path.join(__dirname, './src/main/tsconfig.json');
 
 module.exports = (env, argv) => {
 
@@ -35,11 +39,13 @@ module.exports = (env, argv) => {
 	console.log("argv.mode: " + argv.mode);
 	const outputFolder = path.resolve(__dirname, `dist/${envConfig.outputFolder()}`);
 
+	const swText = /\/sw\/.+\.ts$/;
+
 	return {
 		context: sourcePath,
 		entry: {
 			main: './main/index.tsx',
-			toasters: './main/app/pages/Page_ToasterExample.tsx',
+			service_worker: './sw/index.ts',
 		},
 		output: {
 			path: outputFolder,
@@ -71,7 +77,26 @@ module.exports = (env, argv) => {
 
 		module: {
 			rules: [
-				{test: /\.tsx?$/, loader: "awesome-typescript-loader", exclude: [/node_modules/, /dist/]},
+				{
+					test: swText,
+					include: [swFolder],
+					use: {
+						loader: "ts-loader",
+						options: {
+							configFile: swConfig
+						}
+					}
+				},
+				{
+					test: /\/main\/.+\.tsx?$/,
+					include: [mainFolder],
+					use: {
+						loader: "awesome-typescript-loader",
+						options: {
+							configFileName: mainConfig
+						}
+					}
+				},
 				{enforce: "pre", test: /\.js$/, loader: "source-map-loader", exclude: [/node_modules/, /dist/, /build/, /__test__/]},
 				{
 					test: /\.[ot]tf$/,
@@ -89,9 +114,6 @@ module.exports = (env, argv) => {
 				{
 					test: /\.json$/,
 					exclude: /node_modules/,
-					use: {
-						loader: "file-loader",
-					}
 				},
 				{
 					test: /\.(jpe?g|png|gif|ico|svg)$/i,
