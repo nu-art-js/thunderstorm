@@ -24,7 +24,9 @@
     "build-prod": "webpack --mode production --env prod",
     "dev": "cd .. && bash ./build-and-install.sh -lf -nb",
     "launch": "webpack-dev-server --open --mode development --env dev --ssl true",
-    "lint": "tslint --project src/main/tsconfig.json"
+    "lint": "npm run lint-main && npm run lint-sw",
+    "lint-main": "tslint --project ./src/main",
+    "lint-sw": "tslint --project ./src/sw"
   },
   "dependencies": {
     "firebase": "^7.0.0"
@@ -35,7 +37,7 @@
     "@nu-art/firebase": "~0.22.0",
     "@nu-art/live-docs": "~0.22.0",
     "@nu-art/permissions": "~0.22.0",
-    "@nu-art/push-pub-sub": "~0.22.0",
+    "@nu-art/push-pub-sub": "~0.20.0",
     "@nu-art/thunderstorm": "~0.22.0",
     "@nu-art/ts-common": "~0.22.0",
     "@nu-art/user-account": "~0.22.0",

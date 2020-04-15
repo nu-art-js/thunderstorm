@@ -25,7 +25,7 @@ const config = {
 			appId: "1:992823653177:web:e289e37f159c1b56de6ee8"
 		}
 	}
-}
+};
 import {ServiceWorker} from '@nu-art/thunderstorm/sw';
 import {PushPubSubModule} from "@nu-art/push-pub-sub/sw";
 
