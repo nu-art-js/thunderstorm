@@ -9,7 +9,6 @@
       "node_modules"
     ],
     "predeploy": [
-      "npm --prefix ./app-backend run lint",
       "npm --prefix ./app-backend run build"
     ]
   },
