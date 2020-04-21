@@ -31,6 +31,7 @@ import {TabsPlayground} from "./TabsPlayground";
 import {GenericSelectPlayground} from "./GenericSelectPlayground";
 import {GenericTabsPlayground} from "./GenericTabsPlayground";
 import { Page_DropDownExamples } from './Page_DropDownExamples';
+import {MenuPlayground} from "./MenuPlayground";
 
 const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
 const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
@@ -109,6 +110,12 @@ export class SamplePlayground extends React.Component<{}> {
 				name: "DropDown Examples",
 				getNode: () => {
 					return <Page_DropDownExamples/>;
+				}
+			},
+			{
+				name: "Menu",
+				getNode: () => {
+					return <MenuPlayground/>;
 				}
 			},
 		];
