@@ -17,20 +17,21 @@
  */
 
 import * as React from 'react';
+import {
+	Playground,
+	PlaygroundScreen
+} from "@nu-art/thunderstorm/app-frontend/components/Playground";
 import {Page_DialogExamples} from "./Page_DialogExamples";
 import {Page_ToasterExample} from "./Page_ToasterExample";
 import {Page_ApiGen} from "./Page_ApiGen";
 import {Hello} from "../Hello";
 import {CustomErrorExample} from './CustomErrorExample';
-import {unitStyle} from "../ui/SelectStyle";
-import {
-	Playground,
-	PlaygroundScreen
-} from "@nu-art/thunderstorm/app-frontend/components/Playground";
 import {TabsPlayground} from "./TabsPlayground";
 import {GenericSelectPlayground} from "./GenericSelectPlayground";
 import {GenericTabsPlayground} from "./GenericTabsPlayground";
 import { Page_DropDownExamples } from './Page_DropDownExamples';
+import { Page_SpecialKeyboardListener } from './Page_SpecialKeyboardListener';
+import {unitStyle} from "../ui/SelectStyle";
 
 const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
 const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
@@ -109,6 +110,12 @@ export class SamplePlayground extends React.Component<{}> {
 				name: "DropDown Examples",
 				getNode: () => {
 					return <Page_DropDownExamples/>;
+				}
+			},
+			{
+				name: "Special keyboard listener",
+				getNode: () => {
+					return <Page_SpecialKeyboardListener/>;
 				}
 			},
 		];
