@@ -26,8 +26,8 @@ const config = {
 		}
 	}
 };
-import {ServiceWorker} from '@nu-art/thunderstorm/sw';
-import {PushPubSubModule} from "@nu-art/push-pub-sub/sw";
+import {ServiceWorker} from '@nu-art/thunderstorm/index-sw';
+import {PushPubSubModule} from "@nu-art/push-pub-sub/index-sw";
 
 new ServiceWorker()
 	.setConfig(config)

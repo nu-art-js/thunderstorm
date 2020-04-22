@@ -1,19 +1,7 @@
 {
+  "extends": "../../../dev-tools/typescript/tsconfig-lib-tsx.json",
   "compilerOptions": {
     "baseUrl": "./",
-    "declaration": false,
-    "experimentalDecorators": true,
-    "jsx": "react",
-    "lib": [
-      "es5",
-      "es6",
-      "es7",
-      "dom"
-    ],
-    "module": "es6",
-    "moduleResolution": "node",
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
     "outDir": "../../build",
     "paths": {
       "@components/*": [
