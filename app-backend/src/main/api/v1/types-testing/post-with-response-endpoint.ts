@@ -20,11 +20,12 @@ import {
 	ServerApi_Post,
 } from "@nu-art/thunderstorm/backend";
 
-import * as express from "express";
+
 import {
 	ApiType_ApiPostWithResponse,
 	CommonBodyReq
 } from "@app/sample-app-shared";
+import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Post<ApiType_ApiPostWithResponse> {
@@ -33,7 +34,7 @@ class ServerApi_EndpointExample
 		super("post-with-response-endpoint");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: CommonBodyReq) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: CommonBodyReq) {
 		this.logInfoBold(`got id: ${body.message}`);
 		return "needs to return a string";
 	}
