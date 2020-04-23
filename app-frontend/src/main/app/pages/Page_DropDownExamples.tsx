@@ -22,9 +22,9 @@ import {
 	DropDown,
 	NodeProps,
 	TitleProps,
-	InputProps
+	InputProps,
+	FilterInput
 } from "@nu-art/thunderstorm/frontend";
-import {FilterInput} from "../../../../../thunderstorm/src/main/app-frontend/components/FilterInput";
 
 const optionRendererWrapperStyle = css({":hover": {backgroundColor: "rgba(156, 156, 205, 0.3)"}});
 

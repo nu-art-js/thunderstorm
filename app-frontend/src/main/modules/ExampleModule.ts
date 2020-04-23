@@ -18,7 +18,8 @@
 
 import {
 	Module,
-	Second
+	Second,
+	StringMap
 } from "@nu-art/ts-common";
 
 import {
@@ -42,6 +43,10 @@ import {
 	HttpMethod
 } from "@nu-art/thunderstorm";
 import {Test} from "@modules/TestModule";
+import {
+	OnFirebaseMessageReceived,
+	PushPubSubModule
+} from "@nu-art/push-pub-sub/frontend";
 
 type Config = {
 	remoteUrl: string
@@ -58,13 +63,22 @@ export const dispatchAll = () => {
 }
 
 export class ExampleModule_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements OnFirebaseMessageReceived {
 
 	private message!: string;
 
 	data: string[] = [];
 	api_data: string = 'hi my name is';
 	private max: number = 0;
+
+	protected init(): void {
+		PushPubSubModule.subscribe({props: {a: 'prop'}, pushKey: 'key'})
+	}
+
+	onMessageReceived(payload: StringMap) {
+		console.log('payload received in module');
+	}
 
 	callCustomErrorApi() {
 		HttpModule

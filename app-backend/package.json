@@ -30,6 +30,7 @@
     "@nu-art/firebase": "file:.dependencies/firebase",
     "@nu-art/live-docs": "file:.dependencies/live-docs",
     "@nu-art/permissions": "file:.dependencies/permissions",
+    "@nu-art/push-pub-sub": "file:.dependencies/push-pub-sub",
     "@nu-art/storm": "file:.dependencies/storm",
     "@nu-art/thunderstorm": "file:.dependencies/thunderstorm",
     "@nu-art/ts-common": "file:.dependencies/ts-common",
@@ -49,7 +50,7 @@
     "use-strict": "^1.0.1"
   },
   "devDependencies": {
-    "@nu-art/testelot": "~0.22.0",
+    "@nu-art/testelot": "~0.23.0",
     "@types/body-parser": "^1.17.0",
     "@types/debug": "^4.1.2",
     "@types/express": "^4.16.1",
