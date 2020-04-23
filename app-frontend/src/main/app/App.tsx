@@ -31,6 +31,7 @@ import {
 	OnLoginStatusUpdated
 } from "@nu-art/user-account/frontend";
 import {registerRoutes} from "./Routes";
+import {BodyMenu} from "@nu-art/thunderstorm/app-frontend/modules/menu/BodyMenu";
 
 export class App
 	extends BaseComponent<WrapperProps>
@@ -55,6 +56,7 @@ export class App
 
 				<Dialog/>
 				<Toaster/>
+				<BodyMenu/>
 			</div>);
 	}
 }
