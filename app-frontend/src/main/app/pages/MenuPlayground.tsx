@@ -1,11 +1,11 @@
-import {Component} from "react";
 import * as React from "react";
+import {Component} from "react";
 import {MenuAndButton} from "@nu-art/thunderstorm/app-frontend/modules/menu/MenuAndButton";
 import {
 	Menu,
 	MenuItemWrapper,
 	Renderer
-} from "@nu-art/thunderstorm/app-frontend/modules/menu/BodyMenu";
+} from "@nu-art/thunderstorm/frontend";
 
 const iconClose = require('@res/images/icon__arrowClose.svg');
 const iconOpen = require('@res/images/icon__arrowOpen.svg');
@@ -32,9 +32,10 @@ const createMenu = (): Menu<Rm> => {
 	return {_children, rendererMap};
 };
 
-export class MenuPlayground extends Component<{}> {
+export class MenuPlayground
+	extends Component<{}> {
 
-	render(){
+	render() {
 		return <div>
 			<MenuAndButton
 				id={'menu'}
