@@ -16,7 +16,7 @@ dryRun=
 [[ ! ${dryRun} ]] && bash ./build-and-install.sh --lint
 throwError "Error linting and building Thunderstorm" $?
 
-function appendLog() {
+appendLog() {
   local module=${1}
   gitAssertRepoClean
 

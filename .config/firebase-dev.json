@@ -9,8 +9,7 @@
       "node_modules"
     ],
     "predeploy": [
-      "npm --prefix ./app-backend run lint",
-      "npm --prefix ./app-backend run build"
+      "echo \"Trying to deploy DEV env... Failing\" && exit 2"
     ]
   },
   "hosting": {

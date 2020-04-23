@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function signature() {
+signature() {
   clear
   logVerbose "${Gray} -------     _____ _                     _              _                            ------- ${NoColor}"
   logVerbose "${Gray} -------    |_   _| |__  _   _ _ __   __| | ___ _ _____| |_ ___  _ __ _ __ ___    ${Gray}   ------- ${NoColor}"

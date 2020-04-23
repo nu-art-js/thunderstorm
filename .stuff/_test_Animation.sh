@@ -3,7 +3,7 @@
 source ../core/transpiler.sh
 addTranspilerPath `pwd`/../graphics
 
-function _cloud2() {
+_cloud2() {
     echo -e "    .--
    (   )
   (   .  )
@@ -11,7 +11,7 @@ function _cloud2() {
 \`- __.'"
 }
 
-#function execute() {
+#execute() {
 #    delimiter=K
 #    animObj="`_cloud2`"
 #    temp=(`echo -e "${animObj}" | sed -E "s/ /${delimiter}/g" | sed -E "s/ *(.*) *$/\1/g"`)
@@ -39,7 +39,7 @@ animObj="`_cloud2`"
 lines=
 offset=
 
-function execute() {
+execute() {
     local temp=(`echo -e "${animObj}" | sed -E "s/ /${delimiter}/g" | sed -E "s/(.*)$/\1/g"`)
     local linesTemp=()
     local spacesTemp=()
