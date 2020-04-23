@@ -21,13 +21,14 @@ import {
 	ServerApi_Post,
 } from "@nu-art/thunderstorm/backend";
 
-import * as express from "express";
+
 import {
 	CustomError1,
 	CustomError2,
 	ExampleApiCustomError
 } from "@app/sample-app-shared";
 import {randomObject} from "@nu-art/ts-common";
+import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_CustomError
 	extends ServerApi_Post<ExampleApiCustomError> {
@@ -36,7 +37,7 @@ class ServerApi_CustomError
 		super("custom-error");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: void) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
 
 		const debugMessage = "The debug message, you will only see this while your backend configuration is set to debug true";
 		const error1: CustomError1 = {prop1: "value for prop1", prop2: "value for prop2"};
