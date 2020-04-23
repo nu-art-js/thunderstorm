@@ -18,9 +18,9 @@
 
 import * as React from "react";
 import {
-	SpecialKeyboardListener,
-	SpecialKeyboardListenerModule
-} from "@nu-art/thunderstorm/app-frontend/modules/SpecialKeyboardListenerModule";
+	KeyboardListener,
+	KeyboardListenerModule
+} from "@nu-art/thunderstorm/frontend";
 import {BaseComponent} from "@nu-art/thunderstorm/frontend";
 import {_keys} from "@nu-art/ts-common";
 
@@ -29,10 +29,10 @@ type Element = {label: string, action: ()=>void}
 
 export class Page_SpecialKeyboardListener
 	extends BaseComponent<{}, State>
-	implements SpecialKeyboardListener {
+	implements KeyboardListener {
 
 	private myListenerKey = "myDiv";
-	private myListener = SpecialKeyboardListenerModule(this.myListenerKey);
+	private myListener = KeyboardListenerModule(this.myListenerKey);
 	private node: any = null;
 	private elements:{[key:string]: Element} = {
 		First: {
