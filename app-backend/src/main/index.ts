@@ -19,9 +19,9 @@
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register'
 import {
+	ForceUpgrade,
 	RouteResolver,
-	Storm,
-	ForceUpgrade
+	Storm
 } from "@nu-art/thunderstorm/backend";
 import {Environment} from "./config";
 import {
@@ -31,11 +31,9 @@ import {
 import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
 import {Module} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
-import {
-	ProjectBackupScheduler,
-	ProjectFirestoreBackup
-} from "@nu-art/firebase/backend-firestore-backup";
+import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
 import {Backend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/backend";
+import {ValueChangedListener} from "@modules/ValueChangedListener";
 
 const functions = require('firebase-functions');
 
@@ -43,12 +41,12 @@ const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 
 const modules: Module[] = [
-	// ValueChangedListener,
+	ValueChangedListener,
 	ExampleModule,
 	ForceUpgrade,
 	ProjectFirestoreBackup,
 	// SchedulerExample,
-	ProjectBackupScheduler.setSchedule("every 10 min"),
+	// ProjectBackupScheduler.setSchedule("every 10 min"),
 	DispatchModule
 ];
 
