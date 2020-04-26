@@ -22,15 +22,16 @@
   "scripts": {
     "build": "tsc",
     "launch": "tsc --watch & firebase serve --only functions",
-    "lint": "tslint --project tsconfig.json",
     "serve": "cd .. && bash ./build-and-install.sh -lb -nb"
   },
   "dependencies": {
     "@app/sample-app-shared": "file:.dependencies/app-shared",
+    "@nu-art/bug-report": "file:.dependencies/push-pub-sub",
     "@nu-art/db-api-generator": "file:.dependencies/db-api-generator",
     "@nu-art/firebase": "file:.dependencies/firebase",
     "@nu-art/live-docs": "file:.dependencies/live-docs",
     "@nu-art/permissions": "file:.dependencies/permissions",
+    "@nu-art/push-pub-sub": "file:.dependencies/push-pub-sub",
     "@nu-art/storm": "file:.dependencies/storm",
     "@nu-art/thunderstorm": "file:.dependencies/thunderstorm",
     "@nu-art/ts-common": "file:.dependencies/ts-common",
@@ -50,7 +51,7 @@
     "use-strict": "^1.0.1"
   },
   "devDependencies": {
-    "@nu-art/testelot": "~0.21.0",
+    "@nu-art/testelot": "~0.23.0",
     "@types/body-parser": "^1.17.0",
     "@types/debug": "^4.1.2",
     "@types/express": "^4.16.1",

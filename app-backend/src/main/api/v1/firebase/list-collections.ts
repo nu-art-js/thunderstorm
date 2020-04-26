@@ -25,9 +25,10 @@ import {
 	HttpMethod,
 	ApiWithQuery
 } from "@nu-art/thunderstorm";
-import * as express from "express";
+
 import {FirebaseProjectCollections} from "@nu-art/firebase";
 import {FirebaseModule} from "@nu-art/firebase/backend";
+import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 
 class ServerApi_RegisterExternalProject
@@ -37,7 +38,7 @@ class ServerApi_RegisterExternalProject
 		super(HttpMethod.GET, "list-firebase-collections");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: void) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
 		return {list: FirebaseModule.listCollectionsInModules()};
 	}
 }

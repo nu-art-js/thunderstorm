@@ -1,7 +1,7 @@
 /*
  * A backend boilerplate with example apis
  *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2018  Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	ApiResponse,
-	ServerApi_Get,
-} from "@nu-art/thunderstorm/backend";
 
-
-import {DispatchModule} from "@modules/ExampleModule";
-import {ExampleGetMax} from "@app/sample-app-shared";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
-
-class ServerApi_EndpointExample
-	extends ServerApi_Get<ExampleGetMax> {
-
-	constructor() {
-		super("get-max");
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		return DispatchModule.getMax()
-	}
-}
-
-module.exports = new ServerApi_EndpointExample();
-
-
+module.exports = require("@nu-art/push-pub-sub/app-backend/api/_push");

@@ -4,7 +4,7 @@ source ./dev-tools/scripts/git/_core.sh
 source ./dev-tools/scripts/_core-tools/_source.sh
 source ./.scripts/modules.sh
 
-version=`getVersionName version-nu-art.json`
+version=$(getVersionName version-thunderstorm.json)
 dryRun=
 
 [[ "${1}" == "-dr" ]] && dryRun=true && shift
@@ -16,23 +16,22 @@ dryRun=
 [[ ! ${dryRun} ]] && bash ./build-and-install.sh --lint
 throwError "Error linting and building Thunderstorm" $?
 
+appendLog() {
+  local module=${1}
+  gitAssertRepoClean
 
-function appendLog() {
-    local module=${1}
-    gitAssertRepoClean
+  [[ ! $(gitAssertTagExists v"${version}") ]] && logWarning "Could not find version tag v${version} in package: ${module}" && return 0
+  moduleLog=$(git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="version bumped" --grep="shit" --grep="formatting" --grep="format code" --no-merges v"${version}"... | sed -E "s/[0-9a-f]*( .*)/  * \1\n/g")
 
-    [[ ! $(gitAssertTagExists v${version})  ]] && logWarning "Could not find version tag v${version} in package: ${module}" && return 0
-    moduleLog=`git log --pretty=oneline --decorate=no --invert-grep --grep="lint" --grep="version bumped" --grep="shit" --grep="formatting" --grep="format code" --no-merges v${version}... | sed -E "s/[0-9a-f]*( .*)/  * \1\n/g"`
-
-    [[ ! "${moduleLog}" ]] && logInfo "No changes found in package: ${module}" && return 0
-    submodulesLog="${submodulesLog}${module}:\n ${moduleLog}\n\n"
+  [[ ! "${moduleLog}" ]] && logInfo "No changes found in package: ${module}" && return 0
+  submodulesLog="${submodulesLog}${module}:\n ${moduleLog}\n\n"
 }
 
 submodulesLog=""
 for module in ${thunderstormLibraries[@]}; do
-    pushd ${module} > /dev/null
-        appendLog ${module}
-    popd > /dev/null
+  _pushd "${module}"
+  appendLog "${module}"
+  _popd
 done
 
 [[ ! ${dryRun} ]] && bash ./dev-tools/scripts/git/git-push.sh --this -m="${submodulesLog}"

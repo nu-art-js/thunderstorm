@@ -18,11 +18,11 @@
 
 import * as React from 'react';
 import {
-	Dialog,
-	Toaster,
-	WrapperProps,
 	BaseComponent,
-	RoutingModule
+	Dialog,
+	RoutingModule,
+	Toaster,
+	WrapperProps
 } from "@nu-art/thunderstorm/frontend";
 
 import {VersionOnScreen} from './components/version-on-screen';
@@ -31,10 +31,12 @@ import {
 	OnLoginStatusUpdated
 } from "@nu-art/user-account/frontend";
 import {registerRoutes} from "./Routes";
+import {PopupMenu} from "@nu-art/thunderstorm/app-frontend/modules/menu/PopupMenu";
+import {BugReport} from "@nu-art/bug-report/app-frontend/ui/BugReport";
 
 export class App
 	extends BaseComponent<WrapperProps>
-implements OnLoginStatusUpdated{
+	implements OnLoginStatusUpdated {
 
 	public static dropBlocker<T>(ev: React.DragEvent<T>) {
 		ev.preventDefault();
@@ -43,7 +45,7 @@ implements OnLoginStatusUpdated{
 
 	onLoginStatusUpdated = () => {
 		const status = AccountModule.getLoggedStatus();
-		console.log('status update',status);
+		console.log('status update', status);
 	};
 
 	render() {
@@ -55,6 +57,8 @@ implements OnLoginStatusUpdated{
 
 				<Dialog/>
 				<Toaster/>
+				<PopupMenu/>
+				<BugReport/>
 			</div>);
 	}
 }
