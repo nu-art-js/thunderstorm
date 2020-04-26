@@ -31,9 +31,7 @@ export const config = {
 		config: {
 			apiKey: "AIzaSyCoQjoQibuydMi1ejlpobfgHOI7WMf11P8",
 			authDomain: "nu-art-thunderstorm.firebaseapp.com",
-			// databaseURL: "https://nu-art-thunderstorm.firebaseio.com",
 			projectId: "nu-art-thunderstorm",
-			// storageBucket: "nu-art-thunderstorm.appspot.com",
 			messagingSenderId: "992823653177",
 			appId: "1:992823653177:web:e289e37f159c1b56de6ee8"
 		},
