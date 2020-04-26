@@ -1,5 +1,5 @@
 /*
- * A backend boilerplate with example apis
+ * A typescript & react boilerplate with api call example
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -15,28 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	ApiResponse,
-	ServerApi_Get,
-} from "@nu-art/thunderstorm/backend";
-
-
-import {DispatchModule} from "@modules/ExampleModule";
-import {ExampleGetMax} from "@app/sample-app-shared";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
-
-class ServerApi_EndpointExample
-	extends ServerApi_Get<ExampleGetMax> {
-
-	constructor() {
-		super("get-max");
+const config = {
+	PushPubSubModule: {
+		config: {
+			apiKey: "AIzaSyCoQjoQibuydMi1ejlpobfgHOI7WMf11P8",
+			authDomain: "nu-art-thunderstorm.firebaseapp.com",
+			projectId: "nu-art-thunderstorm",
+			messagingSenderId: "992823653177",
+			appId: "1:992823653177:web:e289e37f159c1b56de6ee8"
+		}
 	}
+};
+import {ServiceWorker} from '@nu-art/thunderstorm/index-sw';
+import {PushPubSubModule} from "@nu-art/push-pub-sub/index-sw";
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		return DispatchModule.getMax()
-	}
-}
+new ServiceWorker()
+	.setConfig(config)
+	.addModules(PushPubSubModule)
+	.build();
 
-module.exports = new ServerApi_EndpointExample();
-
-
+export default null;

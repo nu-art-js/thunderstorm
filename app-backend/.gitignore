@@ -7,3 +7,4 @@ package-lock.json
 .dirty
 
 src/main/config.ts
+src/main/dummy
