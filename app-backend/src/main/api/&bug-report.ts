@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@nu-art/bg-report/app-backend/api/_bug-report");
+module.exports = require("@nu-art/bug-report/app-backend/api/_bug-report");
