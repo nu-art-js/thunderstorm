@@ -32,6 +32,7 @@ import {
 } from "@nu-art/user-account/frontend";
 import {registerRoutes} from "./Routes";
 import {PopupMenu} from "@nu-art/thunderstorm/app-frontend/modules/menu/PopupMenu";
+import {BugReport} from "@nu-art/bug-report/app-frontend/ui/BugReport";
 
 export class App
 	extends BaseComponent<WrapperProps>
@@ -57,6 +58,7 @@ export class App
 				<Dialog/>
 				<Toaster/>
 				<PopupMenu/>
+				<BugReport/>
 			</div>);
 	}
 }

@@ -33,7 +33,11 @@ import {Module} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
 import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
 import {Backend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/backend";
+<<<<<<< Updated upstream
 import {ValueChangedListener} from "@modules/ValueChangedListener";
+=======
+import {Backend_ModulePack_BugReport, JiraModule} from "@nu-art/bug-report/app-backend/core/module-pack";
+>>>>>>> Stashed changes
 
 const functions = require('firebase-functions');
 
@@ -50,10 +54,13 @@ const modules: Module[] = [
 	DispatchModule
 ];
 
+JiraModule.setDefaultConfig({auth:{email:'',apiKey:''}})
+
 const _exports = new Storm()
 	.addModules(...Backend_ModulePack_LiveDocs)
 	.addModules(...Backend_ModulePack_Permissions)
 	.addModules(...Backend_ModulePack_PushPubSub)
+	.addModules(...Backend_ModulePack_BugReport)
 	.addModules(...modules)
 	.setInitialRouteResolver(new RouteResolver(require, __dirname, "api"))
 	.setInitialRoutePath("/api")
