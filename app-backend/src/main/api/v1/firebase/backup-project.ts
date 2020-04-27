@@ -25,8 +25,9 @@ import {
 	HttpMethod,
 	ApiWithQuery
 } from "@nu-art/thunderstorm";
-import * as express from "express";
+
 import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
+import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 
 class ServerApi_RegisterExternalProject
@@ -36,7 +37,7 @@ class ServerApi_RegisterExternalProject
 		super(HttpMethod.GET, "backup-project");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: void) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
 		this.logInfo("backup started");
 		try {
 			await ProjectFirestoreBackup.backupProject("backend");
