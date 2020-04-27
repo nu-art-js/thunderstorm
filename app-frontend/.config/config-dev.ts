@@ -21,11 +21,21 @@ export const config = {
 	HttpModule: {
 		// origin: "http://192.168.1.5:3000",
 		origin: "http://localhost:5000/nu-art-thunderstorm/us-central1/api",
-		timeout: 10000
+		timeout: 30000
 	},
 	frontend: {
 		// origin: "http://192.168.1.5:3010",
 		origin: "http://nu-art-thunderstorm.firebaseapp.com",
+	},
+	PushPubSubModule: {
+		config: {
+			apiKey: "AIzaSyCoQjoQibuydMi1ejlpobfgHOI7WMf11P8",
+			authDomain: "nu-art-thunderstorm.firebaseapp.com",
+			projectId: "nu-art-thunderstorm",
+			messagingSenderId: "992823653177",
+			appId: "1:992823653177:web:e289e37f159c1b56de6ee8"
+		},
+		publicKeyBase64: 'BF0GqqEoe1UmqcU-dg3Dse_2ctkaq5uFpFuR6il1U9A3HkvYcL83I8yC_rX-G8mM8M0hnH5TqcSIsHScd4LTS28'
 	},
 	ExampleModule: {
 		remoteUrl: "/v1/sample/endpoint-example"

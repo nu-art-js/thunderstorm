@@ -40,7 +40,7 @@ export class TestModule_Class
 	private startTest() {
 		this.runAsync('Running test', async () => {
 			const fs = FirebaseModule.createAdminSession().getFirestore();
-			const col = fs.getCollection<Type>(testCollection, ({id}) => ({id}));
+			const col = fs.getCollection<Type>(testCollection, ["id"]);
 			await fs.deleteCollection(testCollection);
 
 			await col.insertAll([1, 2, 3, 4, 5].map(id => ({
