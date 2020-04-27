@@ -20,9 +20,10 @@ import {
 	ServerApi_Get,
 } from "@nu-art/thunderstorm/backend";
 
-import * as express from "express";
+
 import {DispatchModule} from "@modules/ExampleModule";
 import {ExampleGetMax} from "@app/sample-app-shared";
+import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Get<ExampleGetMax> {
@@ -31,7 +32,7 @@ class ServerApi_EndpointExample
 		super("get-max");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: void) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
 		return DispatchModule.getMax()
 	}
 }

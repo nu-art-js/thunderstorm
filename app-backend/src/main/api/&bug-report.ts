@@ -15,28 +15,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-    ApiResponse,
-    ServerApi_Get,
-} from "@nu-art/thunderstorm/backend";
 
-
-import {ExampleModule} from "@modules/ExampleModule";
-import {ExampleApiTest} from "@app/sample-app-shared";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
-
-class ServerApi_EndpointExample
-    extends ServerApi_Get<ExampleApiTest> {
-
-    constructor() {
-        super("dispatch-endpoint");
-    }
-
-    protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-        return ExampleModule.getDispatchNumber();
-    }
-}
-
-module.exports = new ServerApi_EndpointExample();
-
-
+module.exports = require("@nu-art/bug-report/app-backend/api/_bug-report");

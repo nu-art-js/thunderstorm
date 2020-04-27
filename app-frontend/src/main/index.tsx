@@ -33,6 +33,7 @@ import {
 } from "@nu-art/live-docs/frontend";
 import {ExampleModule} from "@modules/ExampleModule";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/frontend";
+import {BugReportModule} from "@nu-art/bug-report/frontend";
 
 const modules = [
 	ForceUpgrade,
@@ -43,7 +44,7 @@ const modules = [
 new Thunder()
 	.setConfig(require("./config").config)
 	.addModules(...Frontend_ModulePack_LiveDocs)
-	.addModules(...modules)
+	.addModules(...modules,BugReportModule)
 	.setMainApp(App)
 	.build();
 
