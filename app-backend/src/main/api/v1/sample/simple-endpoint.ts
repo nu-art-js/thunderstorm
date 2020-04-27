@@ -20,12 +20,13 @@ import {
 	ServerApi_Post,
 } from "@nu-art/thunderstorm/backend";
 
-import * as express from "express";
+
 import {
 	CommonBodyReq,
 	ExampleApiPostType
 } from "@app/sample-app-shared";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
+import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Post<ExampleApiPostType> {
@@ -34,7 +35,7 @@ class ServerApi_EndpointExample
 		super("another-endpoint");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: CommonBodyReq) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: CommonBodyReq) {
 		this.assertProperty(body, "message");
 		this.logInfoBold(`got id: ${body.message}`);
 		await PushPubSubModule.pushToKey('key', {a:'prop'});

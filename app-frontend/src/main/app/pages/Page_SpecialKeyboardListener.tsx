@@ -23,9 +23,14 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {BaseComponent} from "@nu-art/thunderstorm/frontend";
 import {_keys} from "@nu-art/ts-common";
+import {
+	KeyboardListenerComponent,
+	KeyboardListenerComponentProps
+} from "./keyboardListener_Temp/KeyboardListenerComponent";
+import {KeyboardListenerTreeExample} from "./keyboardListener_Temp/KeyboardListenerTreeExample";
 
 type State = { focused?: string, actionMessage: string };
-type Element = {label: string, action: ()=>void}
+export type Element = {label: string, action?: ()=>void}
 
 export class Page_SpecialKeyboardListener
 	extends BaseComponent<{}, State>
@@ -89,7 +94,8 @@ export class Page_SpecialKeyboardListener
 		}
 
 		if (e.code === "Enter" && this.state.focused) {
-			return this.elements[this.state.focused].action();
+			const action = this.elements[this.state.focused].action;
+			return action? action() : null;
 		}
 
 	};
@@ -118,6 +124,89 @@ export class Page_SpecialKeyboardListener
 				                                    onClick={this.elements[el].action}>{this.elements[el].label}</h2>)}
 			</div>
 			<h4>{this.state.actionMessage}</h4>
+			<div style={{width: "100%"}}><hr/><hr/></div>
+			<InheritingElement enableKeyboardControl={true} myListenerKey={"key2"}/>
+			<div style={{width: "100%"}}><hr/><hr/></div>
+			<KeyboardListenerTreeExample/>
 		</>
 	}
+}
+
+class InheritingElement
+	extends KeyboardListenerComponent<KeyboardListenerComponentProps, State> {
+
+	state: State = {
+		actionMessage: 'No action yet'
+	};
+
+	private elements:{[key:string]: Element} = {
+		First: {
+			label: 'First element',
+			action: () => {
+				this.setState({focused: 'First', actionMessage: "You just performed the first element action!!"})
+			}
+		},
+		Second: {
+			label: 'Second element',
+			action: () => {
+				this.setState({focused: 'Second', actionMessage: "Yey! You executed 2nd element action!!"})
+			}
+		},
+		Third: {
+			label: 'Third element',
+			action: () => {
+				this.setState({focused: 'Third', actionMessage: "And now - number 3!!"})
+			}
+		},
+	};
+
+	protected keyEventHandler(e: KeyboardEvent) {
+		if (e.code === "Escape")
+			return this.node.blur();
+
+		const elementsArr: string[] = _keys(this.elements);
+		const idx = elementsArr.findIndex(el => el === this.state.focused);
+		if (idx >= elementsArr.length)
+			return;
+
+		if (e.code === "ArrowDown" || e.code === "ArrowRight") {
+			if (idx === -1 || idx + 1 === elementsArr.length)
+				return this.setState({focused: "First"});
+
+			return this.setState({focused: elementsArr[idx + 1]})
+		}
+
+		if (e.code === "ArrowUp" || e.code === "ArrowLeft") {
+			if (idx === -1)
+				return this.setState({focused: elementsArr[0]});
+
+			if (idx === 0)
+				return this.setState({focused: elementsArr[elementsArr.length-1]});
+
+			return this.setState({focused: elementsArr[idx - 1]})
+		}
+
+		if (e.code === "Enter" && this.state.focused) {
+			const action = this.elements[this.state.focused].action;
+			return action? action() : null;
+		}
+	}
+
+	protected onBlurHandler(): void {
+		this.setState({focused: '', actionMessage: 'No action yet'})
+	}
+
+	protected onFocusHandler(): void {
+		this.setState({actionMessage:"You're focused on the component"})
+	}
+
+	protected renderContent = () => <div className={'ll_v_c'}>
+		<div className={'ll_h_c'} style={{border: "3px solid lime", width: "100%", justifyContent: "space-around", marginTop: 8}}>
+		{_keys(this.elements).map(el => <h2 key={el}
+		                                    id={(el as string)}
+		                                    style={{backgroundColor: this.state.focused === el ? "lime" : "unset"}}
+		                                    onClick={this.elements[el].action}>{this.elements[el].label}</h2>)}
+		</div>
+		<h4>{this.state.actionMessage}</h4>
+		</div>;
 }

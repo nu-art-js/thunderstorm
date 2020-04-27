@@ -45,3 +45,6 @@
 [submodule "_wiki"]
 	path = _wiki
 	url = git@github.com:nu-art-js/thunderstorm-boilerplate.wiki.git
+[submodule "bug-report"]
+	path = bug-report
+	url = git@github.com:nu-art-js/bug-report.git

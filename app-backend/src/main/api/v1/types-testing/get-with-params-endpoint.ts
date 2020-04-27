@@ -20,11 +20,12 @@ import {
 	ServerApi_Get,
 } from "@nu-art/thunderstorm/backend";
 
-import * as express from "express";
+
 import {
 	ApiType_ApiGetWithParams,
 	ParamsToGet
 } from "@app/sample-app-shared";
+import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Get<ApiType_ApiGetWithParams> {
@@ -33,7 +34,7 @@ class ServerApi_EndpointExample
 		super("get-with-params-endpoint");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: ParamsToGet, body: void) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: ParamsToGet, body: void) {
 		return "another endpoint response"
 	}
 }

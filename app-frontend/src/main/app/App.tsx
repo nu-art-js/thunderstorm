@@ -20,10 +20,10 @@ import * as React from 'react';
 import {
 	BaseComponent,
 	Dialog,
+	PopupMenu,
 	RoutingModule,
 	Toaster,
-	WrapperProps,
-    PopupMenu
+	WrapperProps
 } from "@nu-art/thunderstorm/frontend";
 
 import {VersionOnScreen} from './components/version-on-screen';
@@ -32,6 +32,7 @@ import {
 	OnLoginStatusUpdated
 } from "@nu-art/user-account/frontend";
 import {registerRoutes} from "./Routes";
+import {BugReport} from '@nu-art/bug-report/frontend';
 
 export class App
 	extends BaseComponent<WrapperProps>
@@ -57,6 +58,7 @@ export class App
 				<Dialog/>
 				<Toaster/>
 				<PopupMenu/>
+				<BugReport/>
 			</div>);
 	}
 }
