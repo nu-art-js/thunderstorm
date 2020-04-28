@@ -1,5 +1,5 @@
 /*
- * A typescript & react boilerplate with api call example
+ * A backend boilerplate with example apis
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,16 +16,27 @@
  * limitations under the License.
  */
 
-import {RoutingModule} from "@nu-art/thunderstorm/frontend";
-import {Page_Playground} from "./pages/Page_Playground";
+import {
+	TypedMap,
+	StringMap
+} from "@nu-art/ts-common";
+import {
+	ServerApi_Middleware,
+	ExpressRequest
+} from "@nu-art/thunderstorm/backend";
 
-export const Route_Home = "home";
-export const Route_Login = "login";
-export const Route_Playground = "playground";
-
-export const registerRoutes = () => {
-	RoutingModule.clearRoutes();
-
-	//home route should be declared last
-	RoutingModule.addRoute(Route_Home, "/", Page_Playground).setLabel("Home").setExact(false);
+export const MiddleWareAssertionMock: ServerApi_Middleware<StringMap> = {
+	getName: () => {
+		return "middleware-test"
+	},
+	processApi: async (request: ExpressRequest, customInput: StringMap) => {
+		console.log("Middleware got: ", customInput);
+	}
 };
+
+
+export const Server_ApiMiddleware: TypedMap<ServerApi_Middleware<any>[]> = {
+	"/v1/middleware/assert1": [MiddleWareAssertionMock]
+};
+
+

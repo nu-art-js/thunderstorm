@@ -24,7 +24,7 @@ import {
 import {ToastModule} from "@nu-art/thunderstorm/frontend";
 
 
-export class Page_DialogExamples
+export class Example_Dialogs
 	extends React.Component {
 	constructor(props: {}) {
 		super(props);

@@ -26,7 +26,7 @@ import {ExampleModule} from "@modules/ExampleModule";
 import {Test} from "@modules/TestModule";
 import {TestDispatch} from "@app/sample-app-shared";
 
-export class Page_Dispatch
+export class Example_Dispatch
 	extends BaseComponent
 	implements TestDispatch {
 	uiDispatcher = new ThunderDispatcher<TestDispatch, 'testDispatch'>('testDispatch');

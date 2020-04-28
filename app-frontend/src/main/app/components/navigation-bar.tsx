@@ -17,13 +17,13 @@
  */
 import * as React from "react";
 import {RoutingModule} from "@nu-art/thunderstorm/frontend";
-import {Page_DialogExamples} from "../pages/Page_DialogExamples";
 import {Page_Home} from "../pages/Page_Home";
 import {css} from "emotion";
-import {Page_ToasterExample} from "../pages/Page_ToasterExample";
 import {Component_Login} from "@nu-art/user-account/frontend";
 import {Page_ApiGen} from "../pages/Page_ApiGen";
-import {Page_Dispatch} from "../pages/Page_Dispatch";
+import { Example_Dialogs } from "app/playground/Example_Dialogs";
+import { Example_Toaster } from "app/playground/Example_Toaster";
+import { Example_Dispatch } from "app/playground/Example_Dispatch";
 
 const fixedMenu = css`
   position: fixed;
@@ -66,10 +66,10 @@ const PageLinkKeys = [
 export const registerRoutes = () => {
 	RoutingModule.clearRoutes();
 	RoutingModule.addRoute(Route_ApiGen, "/api-gen", Page_ApiGen).setLabel("Api Generator");
-	RoutingModule.addRoute(Route_Dialog, "/dialog", Page_DialogExamples).setLabel("Dialog Examples");
-	RoutingModule.addRoute(Route_Toaster, "/toaster", Page_ToasterExample).setLabel("Toaster Examples");
+	RoutingModule.addRoute(Route_Dialog, "/dialog", Example_Dialogs).setLabel("Dialog Examples");
+	RoutingModule.addRoute(Route_Toaster, "/toaster", Example_Toaster).setLabel("Toaster Examples");
 	RoutingModule.addRoute(Route_Login, "/login", Component_Login).setLabel("Login");
-	RoutingModule.addRoute(Route_Dispatch, "/dispatch", Page_Dispatch).setLabel("dispatch");
+	RoutingModule.addRoute(Route_Dispatch, "/dispatch", Example_Dispatch).setLabel("dispatch");
 	RoutingModule.addRoute(Route_Home, "/", Page_Home).setLabel("Home").setExact(false);
 };
 

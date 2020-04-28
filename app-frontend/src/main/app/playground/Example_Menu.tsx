@@ -32,7 +32,7 @@ const createMenu = (): Menu<Rm> => {
 	return {_children, rendererMap};
 };
 
-export class MenuPlayground
+export class Example_Menu
 	extends Component<{}> {
 
 	render() {

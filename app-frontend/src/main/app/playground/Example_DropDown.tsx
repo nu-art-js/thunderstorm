@@ -1,7 +1,7 @@
 /*
  * A typescript & react boilerplate with api call example
  *
- * Copyright (C) 2018  Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,11 @@ import * as React from "react";
 import {css} from "emotion";
 import {
 	DropDown,
-	NodeProps,
 	TitleProps,
 	InputProps,
 	FilterInput
 } from "@nu-art/thunderstorm/frontend";
+import {DropDown_Node} from "../../../../../thunderstorm/src/main/app-frontend/components/DropDown";
 
 const optionRendererWrapperStyle = css({":hover": {backgroundColor: "rgba(156, 156, 205, 0.3)"}});
 
@@ -61,7 +61,7 @@ const plagues: Plague[] = [
 	{label: 'Internet', value: 'internet'},
 ];
 
-export class Page_DropDownExamples
+export class Example_DropDown
 	extends React.Component<{}, { _selected: string }> {
 	constructor(props: {}) {
 		super(props);
@@ -75,7 +75,7 @@ export class Page_DropDownExamples
 
 
 	render() {
-		const itemRenderer = (props: NodeProps<Plague>) => <div className={optionRendererWrapperStyle}>
+		const itemRenderer = (props: DropDown_Node<Plague>) => <div className={optionRendererWrapperStyle}>
 			<div className={optionRendererStyle(props.selected)}>
 				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
 					<div>{props.item.label}</div>

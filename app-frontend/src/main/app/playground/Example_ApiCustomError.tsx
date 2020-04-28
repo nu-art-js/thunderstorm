@@ -20,7 +20,7 @@
 import * as React from "react";
 import {ExampleModule} from "@modules/ExampleModule";
 
-export class CustomErrorExample
+export class Example_ApiCustomError
 	extends React.Component {
 
 	constructor(props: {}) {
