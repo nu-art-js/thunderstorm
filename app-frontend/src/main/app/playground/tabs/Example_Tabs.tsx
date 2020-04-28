@@ -3,7 +3,7 @@ import {
 	GenericTabs
 } from "@nu-art/thunderstorm/app-frontend/components/GenericTabs";
 
-export class GenericTabsPlayground extends React.Component<{}> {
+export class Example_Tabs extends React.Component<{}> {
 
 	render(){
 		return <GenericTabs/>

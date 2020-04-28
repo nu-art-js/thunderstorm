@@ -21,23 +21,23 @@ import {
 	Playground,
 	PlaygroundScreen
 } from "@nu-art/thunderstorm/app-frontend/components/Playground";
-import {Page_DialogExamples} from "./Page_DialogExamples";
-import {Page_ToasterExample} from "./Page_ToasterExample";
 import {Page_ApiGen} from "./Page_ApiGen";
 import {Hello} from "../Hello";
-import {CustomErrorExample} from './CustomErrorExample';
-import {TabsPlayground} from "./TabsPlayground";
-import {GenericSelectPlayground} from "./GenericSelectPlayground";
-import {GenericTabsPlayground} from "./GenericTabsPlayground";
-import { Page_DropDownExamples } from './Page_DropDownExamples';
-import { Page_SpecialKeyboardListener } from './Page_SpecialKeyboardListener';
+import {Example_ApiCustomError} from '../playground/Example_ApiCustomError';
+import {Example_Tabs2} from "../playground/tabs/Example_Tabs2";
+import {Example_GenericSelect} from "../playground/_to-be-removed/Example_GenericSelect";
+import {Example_Tabs} from "../playground/tabs/Example_Tabs";
+import { Example_KeyboardOnTree } from '../playground/keyboard-listener/Example_KeyboardOnTree';
 import {unitStyle} from "../ui/SelectStyle";
-import {MenuPlayground} from "./MenuPlayground";
+import { Example_Dialogs } from '../playground/Example_Dialogs';
+import { Example_Toaster } from '../playground/Example_Toaster';
+import { Example_DropDown } from '../playground/Example_DropDown';
+import { Example_Menu } from '../playground/Example_Menu';
 
 const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
 const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
 
-export class SamplePlayground extends React.Component<{}> {
+export class Page_Playground extends React.Component<{}> {
 
 	constructor(props: {}) {
 		super(props);
@@ -62,13 +62,13 @@ export class SamplePlayground extends React.Component<{}> {
 			{
 				name: "Dialog Examples",
 				getNode: () => {
-					return <Page_DialogExamples/>;
+					return <Example_Dialogs/>;
 				}
 			},
 			{
 				name: "Toaster Examples",
 				getNode: () => {
-					return <Page_ToasterExample/>;
+					return <Example_Toaster/>;
 				}
 			},
 			{
@@ -86,43 +86,43 @@ export class SamplePlayground extends React.Component<{}> {
 			{
 				name: "Custom error",
 				getNode: () => {
-					return <CustomErrorExample/>;
+					return <Example_ApiCustomError/>;
 				}
 			},
 			{
 				name: "Tabs",
 				getNode: () => {
-					return <TabsPlayground/>;
+					return <Example_Tabs2/>;
 				}
 			},
 			{
 				name: "GenericTabs",
 				getNode: () => {
-					return <GenericTabsPlayground/>;
+					return <Example_Tabs/>;
 				}
 			},
 			{
 				name: "GenericSelect",
 				getNode: () => {
-					return <GenericSelectPlayground/>;
+					return <Example_GenericSelect/>;
 				}
 			},
 			{
 				name: "DropDown Examples",
 				getNode: () => {
-					return <Page_DropDownExamples/>;
+					return <Example_DropDown/>;
 				}
 			},
 			{
 				name: "Menu",
 				getNode: () => {
-					return <MenuPlayground/>;
+					return <Example_Menu/>;
 				}
 			},
 			{
 				name: "Special keyboard listener",
 				getNode: () => {
-					return <Page_SpecialKeyboardListener/>;
+					return <Example_KeyboardOnTree/>;
 				}
 			},
 		];

@@ -29,7 +29,7 @@ import {
 } from "../AppToasters";
 
 
-export class Page_ToasterExample
+export class Example_Toaster
 	extends React.Component {
 	constructor(props: {}) {
 		super(props);
@@ -86,6 +86,6 @@ export class Page_ToasterExample
 const elementById = document.getElementById("toasters.js");
 if (elementById)
 	ReactDOM.render(
-		<Page_ToasterExample/>,
+		<Example_Toaster/>,
 		elementById
 	);

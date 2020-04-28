@@ -28,7 +28,7 @@ const nonSelectedStyle: CSSProperties = {
 	fontWeight: 200
 };
 
-export class TabsPlayground extends React.Component<{}> {
+export class Example_Tabs2 extends React.Component<{}> {
 
 	render(){
 		return <Tabs
