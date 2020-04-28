@@ -1,0 +1,10 @@
+node_modules
+dist
+dist-test
+_package.json
+package-lock.json
+.dependencies
+.dirty
+
+src/main/config.ts
+src/main/dummy
