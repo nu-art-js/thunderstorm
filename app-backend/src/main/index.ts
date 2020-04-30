@@ -21,8 +21,7 @@ import 'module-alias/register'
 import {
 	ForceUpgrade,
 	RouteResolver,
-	Storm,
-    HttpServer
+	Storm
 } from "@nu-art/thunderstorm/backend";
 import {Environment} from "./config";
 import {
@@ -36,7 +35,6 @@ import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup"
 import {Backend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/backend";
 import {ValueChangedListener} from "@modules/ValueChangedListener";
 import {Backend_ModulePack_BugReport} from "@nu-art/bug-report/app-backend/core/module-pack";
-import {Server_ApiMiddleware} from "./api-middleware";
 
 const functions = require('firebase-functions');
 
@@ -52,8 +50,6 @@ const modules: Module[] = [
 	// ProjectBackupScheduler.setSchedule("every 10 min"),
 	DispatchModule
 ];
-console.log(Server_ApiMiddleware)
-HttpServer.setApiMiddleware(Server_ApiMiddleware);
 
 const _exports = new Storm()
 	.addModules(...Backend_ModulePack_LiveDocs)

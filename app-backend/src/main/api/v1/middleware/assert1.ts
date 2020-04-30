@@ -18,21 +18,15 @@
 
 import {
 	ApiWithBody,
-	ApiWithQuery,
-	HttpMethod
+	ApiWithQuery
 } from "@nu-art/thunderstorm";
 import {
 	ApiResponse,
 	ExpressRequest,
-	ServerApi_Get,
-	HttpRequestData
+	RemoteProxy,
+	ServerApi_Get
 } from "@nu-art/thunderstorm/backend";
-import {
-	_keys,
-	StringMap
-} from "@nu-art/ts-common";
-import { MiddleWareAssertionMock } from "../../../api-middleware";
-// import {PermissionsAssert} from "@nu-art/permissions/backend";
+import {PermissionsAssert} from "@nu-art/permissions/backend";
 
 const PROP_A = "a";
 const PROP_E = "e";
@@ -41,32 +35,15 @@ type Assert1_Params = { a: string, c: string, e: string };
 type AssertTest1 = ApiWithQuery<string, string, Assert1_Params>
 
 
-const subObject = <B, P>(keys: string[]) => (input: HttpRequestData<B, P>) => {
-	const map: StringMap = {};
-	const object = (input.method === HttpMethod.POST ? input.body : input.query) as { [k: string]: any };
-	_keys(object).filter(key => keys.includes(key as string)).forEach(key => {
-		const oElement = object[key];
-		if (oElement === undefined || oElement === null)
-			return;
+export const Middleware__Assert_AE = PermissionsAssert.Middleware([PROP_A, PROP_E]);
+export const Middleware__Assert_A = PermissionsAssert.Middleware([PROP_A, PROP_E]);
 
-		if (typeof oElement !== "string")
-			return;
-
-		map[key] = oElement;
-	});
-	return map;
-};
-// function k(input: Assert1_Params) {
-// 	return {
-// 		[PROP_A]: input[PROP_A],
-// 		[PROP_E]: input[PROP_E]
-// 	};
-// }
 class ServerApi_TestMiddleware1
 	extends ServerApi_Get<AssertTest1> {
 
 	constructor() {
 		super("test1");
+		this.setMiddlewares(RemoteProxy.Middleware, Middleware__Assert_AE)
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: Assert1_Params, body: void) {
@@ -84,7 +61,7 @@ class ServerApi_TestMiddleware2
 
 	constructor() {
 		super("test2");
-		this.setMDR(MiddleWareAssertionMock, subObject<Assert2_Body, {}>([PROP_A, PROP_E]));
+		this.setMiddlewares(Middleware__Assert_A)
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Assert2_Body) {
