@@ -1,10 +1,20 @@
+# Global
+**/.DS_Store
+
+# Node
 node_modules
+
+# Thunderstorm
 dist
 dist-test
+build
 _package.json
 package-lock.json
-.dependencies
-.dirty
+config.ts
 
+# Backend
+.dependencies
 src/main/config.ts
+
+# Temp?
 src/main/dummy
