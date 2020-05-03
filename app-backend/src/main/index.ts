@@ -35,6 +35,10 @@ import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup"
 import {Backend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/backend";
 import {ValueChangedListener} from "@modules/ValueChangedListener";
 import {Backend_ModulePack_BugReport} from "@nu-art/bug-report/app-backend/core/module-pack";
+import {
+	SlackModule,
+	Slack_ServerApiError
+} from "@nu-art/storm/slack";
 
 const functions = require('firebase-functions');
 
@@ -46,6 +50,8 @@ const modules: Module[] = [
 	ExampleModule,
 	ForceUpgrade,
 	ProjectFirestoreBackup,
+	SlackModule,
+	Slack_ServerApiError,
 	// SchedulerExample,
 	// ProjectBackupScheduler.setSchedule("every 10 min"),
 	DispatchModule
