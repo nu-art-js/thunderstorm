@@ -20,12 +20,12 @@
 export const config = {
 	HttpModule: {
 		// origin: "http://192.168.1.5:3000",
-		origin: "http://localhost:5000/nu-art-thunderstorm/us-central1/api",
+		origin: "http://localhost:5000/thunderstorm-staging/us-central1/api",
 		timeout: 30000
 	},
 	frontend: {
 		// origin: "http://192.168.1.5:3010",
-		origin: "http://nu-art-thunderstorm.firebaseapp.com",
+		origin: "http://localhost:5001",
 	},
 	PushPubSubModule: {
 		config: {
