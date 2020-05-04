@@ -24,7 +24,7 @@ import {
 import {
 	CommonBodyReq,
 	ExampleApiPostType
-} from "@app/sample-app-shared";
+} from "@app/app-shared";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 

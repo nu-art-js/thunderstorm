@@ -23,7 +23,7 @@ import {
 
 
 import {ExampleModule} from "@modules/ExampleModule";
-import {ExampleApiGetType} from "@app/sample-app-shared";
+import {ExampleApiGetType} from "@app/app-shared";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_EndpointExample

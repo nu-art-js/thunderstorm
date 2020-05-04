@@ -26,7 +26,7 @@ import {
 	CustomError1,
 	CustomError2,
 	ExampleApiCustomError
-} from "@app/sample-app-shared";
+} from "@app/app-shared";
 import {randomObject} from "@nu-art/ts-common";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
