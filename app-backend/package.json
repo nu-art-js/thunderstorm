@@ -1,6 +1,6 @@
 {
   "name": "app-backend",
-  "version": "1.1.0",
+  "version": "0.0.0",
   "description": "Backend hello world",
   "keywords": [
     "TacB0sS",
@@ -25,7 +25,7 @@
     "serve": "cd .. && bash ./build-and-install.sh -lb -nb"
   },
   "dependencies": {
-    "@app/sample-app-shared": "file:.dependencies/app-shared",
+    "@app/app-shared": "file:.dependencies/app-shared",
     "@nu-art/bug-report": "file:.dependencies/push-pub-sub",
     "@nu-art/db-api-generator": "file:.dependencies/db-api-generator",
     "@nu-art/firebase": "file:.dependencies/firebase",
@@ -51,7 +51,7 @@
     "use-strict": "^1.0.1"
   },
   "devDependencies": {
-    "@nu-art/testelot": "~0.24.0",
+    "@nu-art/testelot": "~0.0.0",
     "@types/body-parser": "^1.17.0",
     "@types/debug": "^4.1.2",
     "@types/express": "^4.16.1",
