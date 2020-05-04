@@ -1,7 +1,12 @@
 #!/bin/bash
 
-projectModules=(app-backend app-frontend)
-projectLibraries=(ts-common
+projectModules=(
+  app-backend
+  app-frontend
+)
+
+thunderstormLibraries=(
+  ts-common
   testelot
   firebase
   thunderstorm
@@ -12,9 +17,12 @@ projectLibraries=(ts-common
   permissions
   push-pub-sub
   bug-report
+)
+
+projectLibraries=(
+  ${thunderstormLibraries[@]}
   app-shared
   test-backend
 )
-thunderstormLibraries=(ts-common testelot firebase thunderstorm db-api-generator storm live-docs user-account permissions push-pub-sub bug-report)
 
 testServiceAccount=../.trash/test-account.json
