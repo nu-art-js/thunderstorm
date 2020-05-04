@@ -22,7 +22,7 @@ import {
 
 
 import {DispatchModule} from "@modules/ExampleModule";
-import {ExampleGetMax} from "@app/sample-app-shared";
+import {ExampleGetMax} from "@app/app-shared";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_EndpointExample

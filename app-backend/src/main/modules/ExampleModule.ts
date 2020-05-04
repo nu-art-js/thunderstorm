@@ -19,7 +19,7 @@ import {
 	Dispatcher,
 	Module
 } from "@nu-art/ts-common";
-import {TestDispatch} from "@app/sample-app-shared";
+import {TestDispatch} from "@app/app-shared";
 import {
 	FirestoreCollection,
 	FirebaseModule

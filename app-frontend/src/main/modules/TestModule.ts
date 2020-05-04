@@ -18,7 +18,7 @@
 
 import {Module} from "@nu-art/ts-common";
 import {dispatchAll} from "@modules/ExampleModule";
-import {TestDispatch} from "@app/sample-app-shared";
+import {TestDispatch} from "@app/app-shared";
 
 
 export class Test_Class

@@ -22,7 +22,7 @@ import {
 
 
 import {ExampleModule} from "@modules/ExampleModule";
-import {ExampleApiTest} from "@app/sample-app-shared";
+import {ExampleApiTest} from "@app/app-shared";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_EndpointExample

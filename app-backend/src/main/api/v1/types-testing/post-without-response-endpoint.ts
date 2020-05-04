@@ -24,7 +24,7 @@ import {
 import {
 	ApiType_ApiPostWithoutResponse,
 	CommonBodyReq
-} from "@app/sample-app-shared";
+} from "@app/app-shared";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_EndpointExample

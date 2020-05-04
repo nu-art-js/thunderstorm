@@ -37,7 +37,7 @@ import {
 	ExampleApiTest,
 	ExampleGetMax,
 	TestDispatch
-} from "@app/sample-app-shared";
+} from "@app/app-shared";
 import {
 	ErrorResponse,
 	HttpMethod
