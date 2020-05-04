@@ -14,13 +14,6 @@
   },
   "hosting": {
     "public": "app-frontend/dist/dev",
-    "redirects": [
-      {
-        "source": "/backend/api/:rPath*",
-        "destination": "https://localhost:3333/api/:rPath",
-        "type": 307
-      }
-    ],
     "rewrites": [
       {
         "source": "**",

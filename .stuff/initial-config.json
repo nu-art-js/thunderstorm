@@ -19,8 +19,8 @@
             "POST"
           ],
           "origins": [
-            "http://localhost:5010",
-            "https://localhost:5010"
+            "http://localhost:5001",
+            "https://localhost:5001"
           ]
         },
         "host": "localhost"
