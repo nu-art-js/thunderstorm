@@ -22,6 +22,7 @@ import {
 	Tree,
 	// TreeNode
 } from "@nu-art/thunderstorm/frontend";
+import {_keys} from "@nu-art/ts-common";
 
 type State = { focused?: string, actionMessage: string };
 export type Element = { label: string, action?: () => void }
@@ -30,7 +31,7 @@ export class Example_KeyboardOnTree
 	extends BaseComponent<{}, State> {
 
 	state = {actionMessage: "No action yet"};
-	private elements: { [key: string]: Element } = {
+	private elements: { [key: string]: Element | object } = {
 		First: {
 			label: 'First element',
 			action: () => {
@@ -38,9 +39,11 @@ export class Example_KeyboardOnTree
 			}
 		},
 		Second: {
-			label: 'Second element',
-			action: () => {
-				this.setState({actionMessage: "Yey! You executed 2nd element action!!"})
+			data: {
+				label: 'Second element',
+				action: () => {
+					this.setState({actionMessage: "Yey! You executed 2nd element action!!"})
+				}
 			}
 		},
 		Third: {
@@ -65,7 +68,17 @@ export class Example_KeyboardOnTree
 				id={"KeyboardListenerTreeExample"}
 				root={this.elements}
 				// renderer={MyTreeRenderer}
+				nodeAdjuster={(data: object) => {
+					if (Object.keys(data).find(key => key === "data")) {
+						// @ts-ignore
+						return {data: data['data'], deltaPath: "data"}
+					}
+
+					return {data};
+				}}
 				onNodeDoubleClicked={() => this.setState({actionMessage: "This element doesn't have it's own action so I used onDoubleClick method"})}
+				onFocus={()=>console.log("Focused")}
+				onBlur={()=>console.log("Blurred")}
 			/>
 			<h4>{this.state.actionMessage}</h4>
 		</>
