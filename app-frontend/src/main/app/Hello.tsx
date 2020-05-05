@@ -28,6 +28,7 @@ import {
     ForceUpgrade
 } from "@nu-art/thunderstorm/frontend";
 import {LiveDoc} from "@nu-art/live-docs/frontend";
+import {AdminBR} from "@nu-art/bug-report/frontend"
 
 export class Hello
 	extends BaseComponent<{}, { label: string }>
@@ -45,6 +46,9 @@ export class Hello
 			<div className="ll_h_c"><h1 onClick={ExampleModule.getMessageFromServer1}>{this.state.label}</h1><LiveDoc docKey="one-mouse-click"/></div>
 			<div className="ll_h_c"><h1 onDoubleClick={ExampleModule.getMessageFromServer2}>Double click me</h1><LiveDoc docKey="double-mouse-click"/></div>
 			<div className="ll_h_c"><h1 onClick={ForceUpgrade.compareVersion}>Assert version</h1><LiveDoc docKey="assert-version"/></div>
+			<div>
+				<AdminBR/>
+			</div>
 		</>;
 	}
 
