@@ -22,6 +22,7 @@
   "scripts": {
     "build": "tsc",
     "launch": "tsc --watch & firebase serve --only functions",
+    "lint": "tslint --project './tsconfig.json'",
     "serve": "cd .. && bash ./build-and-install.sh -lb -nb"
   },
   "dependencies": {
