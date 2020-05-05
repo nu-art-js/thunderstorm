@@ -27,12 +27,11 @@ import {Example_ApiCustomError} from '../playground/Example_ApiCustomError';
 import {Example_Tabs2} from "../playground/tabs/Example_Tabs2";
 import {Example_GenericSelect} from "../playground/_to-be-removed/Example_GenericSelect";
 import {Example_Tabs} from "../playground/tabs/Example_Tabs";
-import { Example_KeyboardOnTree } from '../playground/keyboard-listener/Example_KeyboardOnTree';
+import {Example_KeyboardOnTree} from '../playground/keyboard-listener/Example_KeyboardOnTree';
 import {unitStyle} from "../ui/SelectStyle";
-import { Example_Dialogs } from '../playground/Example_Dialogs';
-import { Example_Toaster } from '../playground/Example_Toaster';
-import { Example_DropDown } from '../playground/Example_DropDown';
-import { Example_Menu } from '../playground/Example_Menu';
+import {Example_Dialogs} from '../playground/Example_Dialogs';
+import {Example_Toaster} from '../playground/Example_Toaster';
+import {Example_Menu} from '../playground/Example_Menu';
 
 const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
 const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
@@ -107,12 +106,12 @@ export class Page_Playground extends React.Component<{}> {
 					return <Example_GenericSelect/>;
 				}
 			},
-			{
-				name: "DropDown Examples",
-				getNode: () => {
-					return <Example_DropDown/>;
-				}
-			},
+			// {
+			// 	name: "DropDown Examples",
+			// 	getNode: () => {
+			// 		return <Example_DropDown/>;
+			// 	}
+			// },
 			{
 				name: "Menu",
 				getNode: () => {
