@@ -1,0 +1,19 @@
+{
+  "plugins": [
+    {
+      "name": "@zeplin/cli-connect-react-plugin"
+    }
+  ],
+  "projects": [
+    "5e9ecce53b169955239a6003"
+  ],
+  "styleguides": [],
+  "components": [
+    {
+      "path": "src/main/app/components/zeplin-test.tsx",
+      "zeplinNames": [
+        "btn/M/main-blue"
+      ]
+    }
+  ]
+}
