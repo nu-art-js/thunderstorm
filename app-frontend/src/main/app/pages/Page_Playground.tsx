@@ -32,6 +32,7 @@ import {unitStyle} from "../ui/SelectStyle";
 import {Example_Dialogs} from '../playground/Example_Dialogs';
 import {Example_Toaster} from '../playground/Example_Toaster';
 import {Example_Menu} from '../playground/Example_Menu';
+import {Example_DropDown} from "../playground/Example_DropDown";
 
 const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
 const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
@@ -106,12 +107,12 @@ export class Page_Playground extends React.Component<{}> {
 					return <Example_GenericSelect/>;
 				}
 			},
-			// {
-			// 	name: "DropDown Examples",
-			// 	getNode: () => {
-			// 		return <Example_DropDown/>;
-			// 	}
-			// },
+			{
+				name: "DropDown Examples",
+				getNode: () => {
+					return <Example_DropDown/>;
+				}
+			},
 			{
 				name: "Menu",
 				getNode: () => {
