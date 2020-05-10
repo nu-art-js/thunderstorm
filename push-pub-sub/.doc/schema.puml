@@ -1,0 +1,21 @@
+@startuml
+participant App_FE
+participant PubSubFe
+participant PubSubBe
+participant App_BE
+
+== Assuming Service Worker infra in place in app-frontend ==
+
+App_FE -> PubSubFe: Module <b>M1</b> subscribes for pushKey <b>K1</b>\nwith params <b>P1</b>
+App_FE -> PubSubFe: Module <b>M2</b> subscribes for pushKey <b>K2</b>\nwith params <b>P2</b>
+PubSubFe -> PubSubBe: api call to register subscriptions to BE \n{tabId:..,data:{Y1: P1, Y2: P2}}\n// Do I allow same pushKey with multiple sets\nof data or FE overwrites?
+PubSubBe -> PubSubBe: Save to firestore to collection with uniqueness\nas firebaseToken + add timestamp
+...
+PubSubBe -> PubSubBe: SchedulerFunction cleanup timestamp older than 1 h
+...
+App_BE -> PubSubBe: Change happened in pushKey for properties P1..Pn
+PubSubBe -> PubSubFe: push message to the relevant tabIds (if fails remove from db)
+PubSubFe -> App_FE: dispatches event with Ks and Ps
+...
+
+@enduml

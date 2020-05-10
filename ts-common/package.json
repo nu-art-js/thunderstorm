@@ -1,0 +1,48 @@
+{
+  "name": "@nu-art/ts-common",
+  "version": "0.0.0",
+  "description": "js and ts infra",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "ts-common",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/ts-common",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/ts-common/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/ts-common.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "___lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
+    "__lint": "eslint '*/**/*.ts' --fix",
+    "build": "tsc",
+    "eslint": "eslint '*/**/*.ts'"
+  },
+  "dependencies": {
+    "moment": "^2.24.0",
+    "node-forge": "^0.9.0"
+  },
+  "devDependencies": {
+    "@types/node-forge": "^0.8.6",
+    "@typescript-eslint/eslint-plugin": "^2.31.0",
+    "@typescript-eslint/parser": "^2.31.0",
+    "eslint": "^6.8.0",
+    "eslint-plugin-react": "^7.19.0",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.3.3333"
+  },
+  "_moduleAliases": {
+    "@main": "dist/main/ts",
+    "@test": "dist/test/ts"
+  }
+}

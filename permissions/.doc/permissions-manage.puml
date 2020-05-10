@@ -1,0 +1,11 @@
+@startuml
+App_FE -> App_BE: Register project (see register-project sequence)
+App_FE -> App_BE: Add/update project Domain
+App_FE -> App_BE: Add/update Access Level
+App_FE -> App_BE: Add/update Api Access Level
+
+
+App_FE -> App_BE: Add/update permission Group
+App_FE -> App_BE: Bind user to permission Group
+
+@enduml
