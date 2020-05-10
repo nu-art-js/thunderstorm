@@ -1,5 +1,5 @@
 /*
- * A backend boilerplate with example apis
+ * A typescript & react boilerplate with api call example
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -15,19 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {FirebaseFunctionModule,} from "@nu-art/firebase/backend-functions";
 
-export class ValueChangedListener_Class
-	extends FirebaseFunctionModule {
+import * as React from "react";
 
-	constructor() {
-		super(`test/{param}/changes/value`);
-	}
+ export class zeplinTest
+    extends React.Component<Props> {
 
-	processChanges = async (previousValue: any, newValue: any, params: { [p: string]: any }): Promise<any> => {
-		this.logInfo(`Doing nothing...`);
-	};
+     clickable = () => {
+         console.log("click me")
+     };
+    render() {
+        return (<button className={this.props.className} disabled={this.props.disabled}>
+            verify
+        </button>);
+        // (<button onClick={this.clickable}>
+        //
+        // </button>)
+    }
+}
+type Props = {
+    disabled:boolean
+    className:"hi"
 }
 
-export const ValueChangedListener = new ValueChangedListener_Class();
 
