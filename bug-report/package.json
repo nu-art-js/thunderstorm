@@ -1,0 +1,60 @@
+{
+  "name": "@nu-art/bug-report",
+  "version": "0.0.0",
+  "description": "Bug Report",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "bug-report",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/bug-report",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/bug-report/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/bug-report.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "./dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "~0.0.1",
+    "jszip": "^3.3.0",
+    "moment": "^2.24.0",
+    "use-strict": "^1.0.1"
+  },
+  "devDependencies": {
+    "@nu-art/firebase": "~0.0.1",
+    "@nu-art/testelot": "~0.0.1",
+    "@nu-art/thunderstorm": "~0.0.1",
+    "@nu-art/user-account": "~0.0.1",
+    "@types/express": "^4.16.1",
+    "@types/file-saver": "^2.0.1",
+    "@types/history": "^4.7.2",
+    "@types/jszip": "^3.1.7",
+    "@types/node": "^13.13.2",
+    "@types/react": "^16.8.7",
+    "@types/request": "^2.48.1",
+    "express": "^4.16.4",
+    "file-saver": "^2.0.2",
+    "firebase": "^7.2.3",
+    "firebase-admin": "8.9.0",
+    "firebase-functions": "^3.3.0",
+    "fs": "0.0.1-security",
+    "module-alias": "^2.2.0",
+    "react": "^16.8.1",
+    "request": "^2.88.0",
+    "ts-node": "^8.6.2",
+    "tslint": "^5.16.0",
+    "typescript": "^3.7.2"
+  }
+}

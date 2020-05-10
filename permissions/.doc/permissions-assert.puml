@@ -1,0 +1,11 @@
+@startuml
+App_FE -> App_BE: Call Action
+App_BE -> PermissionsMiddleware: Check user permissions
+note right
+check if user has permissions of this api
+if yes return 200
+otherwise return 403
+end note
+PermissionsMiddleware --> App_BE: Permission response
+App_BE --> App_FE: Action response
+@enduml

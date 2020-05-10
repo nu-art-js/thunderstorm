@@ -1,0 +1,9 @@
+@startuml
+participant App_FE
+participant App_BE
+
+App_FE -> App_FE: User clicked on ? icon
+App_FE -> App_BE: Requesting doc with key
+App_BE -> App_FE: Return doc
+App_FE -> App_FE: Display doc in Toast
+@enduml
