@@ -1,0 +1,6 @@
+@startuml
+Jenkins -> App_BE: Call register project api
+
+App_BE -> Database: Register permission project (name & id)
+App_BE -> Database: Register all permission apis of this project
+@enduml
