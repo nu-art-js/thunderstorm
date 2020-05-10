@@ -55,6 +55,14 @@ export class PermissionsAssert_Class
 	extends Module {
 
 	readonly Middleware = (keys: string[]): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
+		this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
+
+			const userId = await AccountModule.validateSession(req);
+			return this.assertUserPermissions(projectId, data.url, userId, customFields);
+		})
+	};
+
+	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
 		const customFields: StringMap = {};
 		let object: { [k: string]: any };
 		switch (data.method) {
@@ -84,9 +92,8 @@ export class PermissionsAssert_Class
 			customFields[key] = oElement;
 		});
 
-		const userId = await AccountModule.validateSession(req);
 		const projectId = PermissionsModule.getProjectIdentity()._id;
-		return this.assertUserPermissions(projectId, data.url, userId, customFields);
+		await action(projectId, customFields);
 	};
 
 	async assertUserPermissions(projectId: string, path: string, userId: string, requestCustomField: StringMap) {
