@@ -1,0 +1,19 @@
+@startuml
+participant Alice
+participant App_BE
+participant Bob
+
+==  Assuming there is a resource <b>X</b>\nthat we want to share between Alice and Bob ==
+
+Alice -> App_BE: Alice creates <b>Xa</b>
+Bob -> App_BE: Bob tries to access <b>Xa</b>
+App_BE --> Bob: 403 (Bob doesn't have permission\nto access the resource)
+...
+Alice -> App_BE: Get permissions details associated with api <b>X</b>
+Alice -> Alice: Chooses users and the access levels for the resource
+Alice -> App_BE: Grant access to the resource <b>Xa</b>
+...
+App_BE -->> Bob: Push message informing\nabout the permissions changes
+App_BE --> Bob: 200 (Bob can access the resource)
+
+@enduml

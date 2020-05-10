@@ -1,0 +1,9 @@
+@startuml
+== Begin with reading doc flow \ndescribed in <./live-doc--read.puml>==
+participant App_FE
+participant App_BE
+App_FE -> App_FE: User editing the livedoc & press <Enter>
+App_FE -> App_BE: "Save doc" request sent with key
+App_BE -> App_FE: Success message
+App_FE -> App_FE: Display success toast
+@enduml
