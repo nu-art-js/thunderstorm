@@ -1,9 +1,6 @@
-"use strict";
 /*
- * Thunderstorm is a full web app framework!
- *
- * Typescript & Express backend infrastructure that natively runs on firebase function
- * Typescript & React frontend infrastructure
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,14 +16,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+
+import {FirebaseScheduledFunction} from "@nu-art/firebase/backend-functions";
+import {PushPubSubModule} from "./PushPubSubModule";
+
+export class ScheduledCleanup_Class
+	extends FirebaseScheduledFunction {
+
+	constructor() {
+		super();
+		this.setSchedule('every 1 hour');
+	}
+
+	onScheduledEvent = async (): Promise<any> => {
+		return PushPubSubModule.scheduledCleanup()
+	};
 }
-exports.__esModule = true;
-__export(require("./server-api"));
-__export(require("./HttpServer"));
-__export(require("./proxy/RemoteProxyCaller"));
-__export(require("./proxy/RemoteProxy"));
-__export(require("../exceptions"));
-__export(require("../utils/promisify-request"));
-__export(require("../utils/to-be-removed"));
+
+export const ScheduledCleanup = new ScheduledCleanup_Class();

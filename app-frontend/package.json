@@ -29,7 +29,8 @@
     "lint-sw": "tslint --project ./src/sw"
   },
   "dependencies": {
-    "firebase": "^7.0.0"
+    "firebase": "^7.0.0",
+    "moment": "2.24.0"
   },
   "devDependencies": {
     "@app/app-shared": "~0.0.1",

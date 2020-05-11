@@ -15,23 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-const config = {
-	PushPubSubModule: {
-		config: {
-			apiKey: "AIzaSyCoQjoQibuydMi1ejlpobfgHOI7WMf11P8",
-			authDomain: "nu-art-thunderstorm.firebaseapp.com",
-			projectId: "nu-art-thunderstorm",
-			messagingSenderId: "992823653177",
-			appId: "1:992823653177:web:e289e37f159c1b56de6ee8"
-		}
-	}
-};
+import {FirebaseModule} from "@nu-art/firebase/frontend";
 import {ServiceWorker} from '@nu-art/thunderstorm/index-sw';
 import {PushPubSubModule} from "@nu-art/push-pub-sub/index-sw";
 
 new ServiceWorker()
-	.setConfig(config)
-	.addModules(PushPubSubModule)
+	.setConfig(require('../main/config').config)
+	.addModules(FirebaseModule, PushPubSubModule)
 	.build();
 
 export default null;

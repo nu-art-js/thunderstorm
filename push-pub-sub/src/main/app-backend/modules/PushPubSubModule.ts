@@ -2,7 +2,8 @@ import {
 	__stringify,
 	compare,
 	currentTimeMillies,
-	Module
+	Module,
+    Hour
 } from "@nu-art/ts-common";
 
 import {
@@ -16,10 +17,17 @@ import {
 	DB_PushKeys,
 	DB_PushSession,
 	Request_PushRegister,
-	SubscribeProps
+	SubscribeProps,
+	SubscriptionData
 } from "../..";
 
-type Config = {};
+type Config = {
+	delta_time?: number
+};
+
+type TempMessages = {
+	[token: string]: SubscriptionData[]
+};
 
 export class PushPubSubModule_Class
 	extends Module<Config> {
@@ -31,6 +39,7 @@ export class PushPubSubModule_Class
 	protected init(): void {
 		const session = FirebaseModule.createAdminSession();
 		const firestore = session.getFirestore();
+
 		this.pushSessions = firestore.getCollection<DB_PushSession>('push-sessions', ["firebaseToken"]);
 		this.pushKeys = firestore.getCollection<DB_PushKeys>('push-keys');
 
@@ -43,42 +52,59 @@ export class PushPubSubModule_Class
 			timestamp: currentTimeMillies()
 		};
 		await this.pushSessions.upsert(session);
-		// theoretically I should also check if the firebaseToken is already present
-		// and delete prev sessions with relative pushKeys...later
+
 		const subscriptions = request.subscriptions.map((s): DB_PushKeys => ({
 			firebaseToken: request.firebaseToken,
-			key: s.pushKey,
+			pushKey: s.pushKey,
 			props: s.props
 		}));
 
-		await this.pushKeys.runInTransaction(async transaction => {
+		return this.pushKeys.runInTransaction(async transaction => {
 			const data = await transaction.query(this.pushKeys, {where: {firebaseToken: request.firebaseToken}});
-			const toInsert = subscriptions.filter(s => !data.find(d => d.key === s.key && compare(s.props, d.props)))
+			const toInsert = subscriptions.filter(s => !data.find(d => compare(d,s)));
 			return Promise.all(toInsert.map(instance => transaction.insert(this.pushKeys, instance)));
 		})
 	}
 
-	async pushToKey(key: string, props: SubscribeProps) {
-		const docs = await this.pushKeys.query({where: {key}});
+	async pushToKey(key: string, props?: SubscribeProps, data?: any) {
+		let docs = await this.pushKeys.query({where: {pushKey: key}});
+		if (props)
+			docs = docs.filter(doc => compare(doc.props, props));
 
-		const messages = docs.reduce((carry: FirebaseType_Message[], pushKey: DB_PushKeys) => {
-			const message = carry.find(m => m.token === pushKey.firebaseToken);
-			if (!message) {
-				carry.push({data: {[pushKey.key]: __stringify(pushKey.props)}, token: pushKey.firebaseToken})
-				return carry;
-			}
-
-			message.data = message.data || {};
-			message.data[pushKey.key] = __stringify(pushKey.props);
-			return carry;
-		}, [] as FirebaseType_Message[])
-
-		if(messages.length === 0)
+		if (docs.length === 0)
 			return;
 
-		const res: FirebaseType_BatchResponse = await this.messaging.sendAll(messages)
+		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
+			carry[db_pushKey.firebaseToken] = carry[db_pushKey.firebaseToken] || [];
+
+			const item = {
+				pushKey: db_pushKey.pushKey,
+				props: db_pushKey.props,
+				data
+			};
+			carry[db_pushKey.firebaseToken].push(item)
+
+			return carry
+		}, {} as TempMessages);
+
+		const messages = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}))
+		const res: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
+
 		return this.cleanUp(res, messages)
 	}
+
+	scheduledCleanup = async () => {
+		const delta_time = this.config?.delta_time || Hour;
+		// @ts-ignore
+		const docRefs = await this.pushSessions._query({where: {timestamp: {$lt: currentTimeMillies() - delta_time}}});
+		// @ts-ignore
+		const vals: DB_PushSession[] = docRefs.map(d => d.data());
+		// @ts-ignore
+		const asyncs: Promise<any>[] = [this.pushSessions.deleteBatch(docRefs)]
+
+		vals.forEach(v => asyncs.push(this.pushKeys.delete({where: {firebaseToken: v.firebaseToken}})));
+		await Promise.all(asyncs)
+	};
 
 	private cleanUp = async (response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]) => {
 		const toDelete = response.responses.reduce((carry, resp, i) => {
@@ -91,7 +117,7 @@ export class PushPubSubModule_Class
 		}, [] as string[]);
 
 		if (toDelete.length === 0)
-			return
+			return;
 
 		const async = [
 			this.pushSessions.delete({where: {firebaseToken: {$in: toDelete}}}),

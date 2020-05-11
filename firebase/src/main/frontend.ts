@@ -1,9 +1,6 @@
-"use strict";
 /*
- * Thunderstorm is a full web app framework!
- *
- * Typescript & Express backend infrastructure that natively runs on firebase function
- * Typescript & React frontend infrastructure
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,6 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-exports.__esModule = true;
-var HttpServer_1 = require("../../../../modules/HttpServer");
-module.exports = new HttpServer_1.RouteResolver(require, __dirname);
+
+export * from "./app-frontend/auth/firebase-session";
+export * from "./app-frontend/auth/LocalSession";
+
+export * from "./app-frontend/FirebaseModule";
+
+export * from "./app-frontend/messaging/MessagingWrapper";

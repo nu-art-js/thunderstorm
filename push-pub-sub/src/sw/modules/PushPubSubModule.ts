@@ -20,13 +20,21 @@
 // Give the service worker access to Firebase Messaging.
 // Note that you can only use Firebase Messaging here, other Firebase libraries
 // are not available in the service worker.
-import * as firebase from 'firebase/app';
-import {Module} from '@nu-art/ts-common/core/module';
-import {FirebaseConfig} from "@nu-art/firebase/backend";
-import {swSelf} from '@nu-art/thunderstorm/index-sw'
+// import * as firebase from 'firebase/app';
+import {
+	__stringify,
+	Module,
+	StringMap
+} from '@nu-art/ts-common';
+import {FirebaseModule} from "@nu-art/firebase/frontend";
+import {
+	isServiceWorkerScope,
+	swSelf
+} from "@nu-art/thunderstorm/core/self";
+
+export const Command_SwToApp = 'SwToApp';
 
 type PushPubSubConfig = {
-	config: FirebaseConfig
 	publicKeyBase64: string
 }
 
@@ -34,34 +42,35 @@ class PushPubSubModule_Class
 	extends Module<PushPubSubConfig> {
 
 	protected init(): void {
-		const app = firebase.initializeApp(this.config.config);
+		this.runAsync('Init App', this.initApp);
 
-		import('firebase/messaging').then(() => {
-			const messaging = app.messaging();
-			this.logVerbose(messaging);
-
-			const mySelf = this;
-			messaging.setBackgroundMessageHandler(function (payload: any) {
-				console.log('[service worker] Received background message ', payload);
-
-				mySelf.handlePushMessage(payload.data);
-				//return swSelf.registration.showNotification()
-			});
-		}).catch(err => console.log(err))
-
-		addEventListener('message', (event) => {
-			this.logInfo(`The client sent me a message:`, event);
-			this.handleMessageFromClient(event)
-		});
+		// swSelf.addEventListener('message', (event) => {
+		// 	this.logInfo(`The client sent me a message:`, event);
+		// 	this.handleMessageFromClient(event)
+		// });
 	}
+
+	private initApp = async () => {
+		const app = await FirebaseModule.createLocalSession();
+		// This means that the bundle is being evaluated in the main thread to register the service worker so there is no need to run the rest
+		// Also because it would fail since firebase would initialize the messaging controller as the main thread one instead of the sw one...
+		if (!isServiceWorkerScope())
+			return;
+
+		const messaging = app.getMessaging();
+
+		messaging.setBackgroundMessageHandler((payload: any) => {
+			this.runAsync(`Sending message to window ${__stringify(payload.data, true)}`, () => this.sendMessage(payload.data))
+		});
+	};
 
 	getClients = async () => swSelf.clients.matchAll({type: "window"});
 
-	sendMessage = async (data: object) => {
+	sendMessage = async (data: StringMap) => {
 		const clients = await this.getClients();
 
 		const message = {
-			command: 'SwToApp',
+			command: Command_SwToApp,
 			message: data
 		};
 
@@ -70,11 +79,7 @@ class PushPubSubModule_Class
 		})
 	};
 
-	handlePushMessage = (payload: any) => {
-		this.runAsync('Sending message to app', async () => this.sendMessage(payload))
-	};
-
-	private handleMessageFromClient(event: MessageEvent) {
+	handleMessageFromClient(event: ExtendableMessageEvent) {
 		// @ts-ignore
 		const respondToEvent = (e: MessageEvent, message: any) => {
 			e.ports[0].postMessage(message);

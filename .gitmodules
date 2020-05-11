@@ -1,50 +1,8 @@
-[submodule "db-api-generator"]
-	path = db-api-generator 
-	url = git@github.com:nu-art-js/db-api-generator.git 
-	branch = master 
 [submodule "dev-tools"]
 	path = dev-tools 
 	url = git@github.com:nu-art/dev-tools.git 
-	branch = master 
-[submodule "firebase"]
-	path = firebase 
-	url = git@github.com:nu-art-js/firebase.git 
-	branch = master 
-[submodule "live-docs"]
-	path = live-docs 
-	url = git@github.com:nu-art-js/live-docs.git 
-	branch = master 
-[submodule "permissions"]
-	path = permissions 
-	url = git@github.com:nu-art-js/permissions.git 
-	branch = master 
-[submodule "storm"]
-	path = storm 
-	url = git@github.com:nu-art-js/storm.git 
-	branch = master 
-[submodule "testelot"]
-	path = testelot 
-	url = git@github.com:nu-art-js/testelot.git 
-	branch = master 
-[submodule "thunderstorm"]
-	path = thunderstorm 
-	url = git@github.com:nu-art-js/thunderstorm.git 
-	branch = master 
-[submodule "ts-common"]
-	path = ts-common 
-	url = git@github.com:nu-art-js/ts-common.git 
-	branch = master 
-[submodule "user-account"]
-	path = user-account 
-	url = git@github.com:nu-art-js/user-account.git 
-	branch = master 
+	branch = master
 
-[submodule "push-pub-sub"]
-	path = push-pub-sub
-	url = git@github.com:nu-art-js/push-pub-sub.git
 [submodule "_wiki"]
 	path = _wiki
 	url = git@github.com:nu-art-js/thunderstorm-boilerplate.wiki.git
-[submodule "bug-report"]
-	path = bug-report
-	url = git@github.com:nu-art-js/bug-report.git
