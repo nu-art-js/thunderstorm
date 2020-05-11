@@ -57,7 +57,6 @@ export class GenericSelect<T extends object>
 		let value: SelectItem | null = null;
 		if (options) {
 			const selectedOption = props.selectedOption;
-			console.log(`selectedOption: ${selectedOption ? selectedOption : "None"}`);
 			options.forEach((option, idx) => {
 				const item: SelectItem = {label: props.presentation(option), value: "" + idx};
 				if (selectedOption) {
@@ -67,7 +66,6 @@ export class GenericSelect<T extends object>
 				}
 				items.push(item);
 			});
-			console.log(`value: ${value}`);
 		}
 
 		return <Select
