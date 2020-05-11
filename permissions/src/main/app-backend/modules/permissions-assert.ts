@@ -213,7 +213,7 @@ export class PermissionsAssert_Class
 
 	private doesCustomFieldSatisfies(groupCustomField: StringMap, requestCustomField: StringMap) {
 		return Object.keys(requestCustomField).reduce((doesSatisfies, requestCustomFieldKey) => {
-			const customFieldRegEx = new RegExp(`^${groupCustomField[requestCustomFieldKey]}+$`, "g");
+			const customFieldRegEx = new RegExp(`^${groupCustomField[requestCustomFieldKey]}$`, "g");
 			return doesSatisfies && customFieldRegEx.test(requestCustomField[requestCustomFieldKey]);
 		}, true as boolean);
 	}
