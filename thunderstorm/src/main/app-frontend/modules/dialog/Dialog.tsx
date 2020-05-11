@@ -36,7 +36,10 @@ const modalOverlay: Properties = {
 	top: 0,
 	left: 0,
 	width: "100%",
-	height: "100%"
+	height: "100%",
+	display: "flex",
+	alignItems: "center",
+	justifyContent: "center"
 };
 
 const defaultDialogStyle: Properties = {
@@ -163,15 +166,12 @@ export class Dialog
 			return null;
 
 		return (
-			<div style={{...modalOverlay, background: dialogModel.overlayColor, zIndex: dialogModel.zIndex}} onClick={this.onOverlayClicked}>
-				<div className={`${dialogModel.className} ll_h_c match_height match_width`} onClick={(e: React.MouseEvent) => this.stopPropagation(e)}>
-					<div className="ll_v_c match_width">
-						<div className={"ll_v_l"} style={{...defaultDialogStyle, ...(dialogModel.style || {})}}>
-							{dialogModel.title && this.renderTitle(dialogModel.title)}
-							{this.renderContent(dialogModel.content)}
-							{this.renderButtons(dialogModel)}
-						</div>
-					</div>
+			<div title="overlay" style={{...modalOverlay, background: dialogModel.overlayColor, zIndex: dialogModel.zIndex}} onClick={this.onOverlayClicked}>
+				<div className={"ll_v_l"} style={{...defaultDialogStyle, ...(dialogModel.style || {})}}
+				     onClick={(e: React.MouseEvent) => this.stopPropagation(e)}>
+					{dialogModel.title && this.renderTitle(dialogModel.title)}
+					{this.renderContent(dialogModel.content)}
+					{this.renderButtons(dialogModel)}
 				</div>
 			</div>
 		);
