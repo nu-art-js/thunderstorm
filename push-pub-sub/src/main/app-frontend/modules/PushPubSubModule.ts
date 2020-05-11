@@ -17,14 +17,10 @@
  */
 
 import {
-	__stringify,
-	_clearTimeout,
-	_setTimeout,
 	addItemToArray,
 	compare,
 	ImplementationMissingException,
 	Module,
-	Second,
 	StringMap
 } from "@nu-art/ts-common";
 
@@ -36,17 +32,22 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 
 import {
+	BaseSubscriptionData,
 	PubSubRegisterClient,
-	PubSubSubscription,
-	Request_PushRegister
+	Request_PushRegister,
+	SubscriptionData
 } from "../..";
+import {HttpMethod} from "@nu-art/thunderstorm";
 import {
-	ApiWithQuery,
-	HttpMethod
-} from "@nu-art/thunderstorm";
+	FirebaseModule,
+	LocalSession,
+	MessagingWrapper
+} from "@nu-art/firebase/frontend";
+
+export const Command_SwToApp = 'SwToApp';
 
 export interface OnFirebaseMessageReceived {
-	onMessageReceived(payload: StringMap): void
+	onMessageReceived(payload: SubscriptionData[]): void
 }
 
 type FirebaseConfig = {
@@ -66,12 +67,10 @@ export type PushPubSubConfig = {
 export class PushPubSubModule_Class
 	extends Module<PushPubSubConfig> {
 
-	private subscriptions: PubSubSubscription[] = []
+	private subscriptions: BaseSubscriptionData[] = [];
 	private registerRequest?: HttpRequest<any>;
 	private firebaseToken?: string;
-	private timeout?: number;
-	private messaging!: firebase.messaging.Messaging;
-	// private appInitialized: boolean = false;
+	private messaging?: MessagingWrapper;
 
 	private dispatch_pushMessage = new ThunderDispatcher<OnFirebaseMessageReceived, "onMessageReceived">("onMessageReceived");
 
@@ -79,123 +78,102 @@ export class PushPubSubModule_Class
 		if (!this.config?.publicKeyBase64)
 			throw new ImplementationMissingException(`Please specify the right config for the 'PushPubSubModule'`);
 
-		this.runAsync('Initializing app with default configs', this.initApp)
+		this.runAsync('Initializing Firebase SDK and registering SW', this.initApp)
 	}
 
-	private getApp = async () => {
-		const firebase = await import('firebase/app');
-
-		const config = await this.getConfig()
-		return firebase.initializeApp(config);
-	};
-
-	private getConfig = async () => {
-		if (this.config.config)
-			return this.config.config;
-
-		try {
-			return await HttpModule
-				.createRequest<ApiWithQuery<string, FirebaseConfig>>(HttpMethod.GET, 'get-firebase-config')
-				.setUrl('/__/firebase/init.json')
-				.executeSync();
-		} catch (e) {
-			throw new ImplementationMissingException(`Either specify configs for the 'PushPubSubModule' or use SDK auto-configuration with firebase hosting`)
-		}
-	};
-
-	private registerServiceWorker = async () => {
-		const registration = await navigator.serviceWorker.register('/service_worker.js');
-		console.log('Service worker registered', registration);
-		return registration;
-	};
+	private registerServiceWorker = async () => navigator.serviceWorker.register('/service_worker.js');
 
 	private initApp = async () => {
 		if ('serviceWorker' in navigator) {
-			const asyncs: Promise<any>[] = [
+			const asyncs: [Promise<ServiceWorkerRegistration>, Promise<LocalSession>] = [
 				this.registerServiceWorker(),
-				this.getApp()
+				FirebaseModule.createLocalSession()
 			];
 
 			const {0: registration, 1: app} = await Promise.all(asyncs);
 
-			await import('firebase/messaging');
-
-			this.messaging = app.messaging();
+			this.messaging = app.getMessaging();
 			this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
 			this.messaging.useServiceWorker(registration);
 
-			this.getToken();
+			await this.getToken();
 
 			navigator.serviceWorker.onmessage = (event: MessageEvent) => {
-				console.log('message received from service worker', event);
+				this.processMessageFromSw(event.data)
 			};
 		}
 	};
 
 	// / need to call this from the login verified
-	public getToken = () => {
-		this.runAsync("Getting firebase token", async () => {
-			try {
-				this.logInfo('Checking/Requesting permission...');
-				const permission = await Notification.requestPermission();
-				this.logInfo(`Notification permission: ${permission}`);
-				if (permission !== 'granted')
-					return;
+	public getToken = async () => {
+		try {
+			this.logVerbose('Checking/Requesting permission...');
+			const permission = await Notification.requestPermission();
+			this.logVerbose(`Notification permission: ${permission}`);
+			if (permission !== 'granted')
+				return;
 
-				if (!this.messaging)
-					return;
+			if (!this.messaging)
+				return;
 
-				this.firebaseToken = await this.messaging.getToken();
-				if (!this.firebaseToken)
-					return;
+			this.firebaseToken = await this.messaging.getToken();
+			if (!this.firebaseToken)
+				return;
 
-				this.register();
-				this.logInfo('new token received: ' + this.firebaseToken);
-				this.messaging.onTokenRefresh(this.getToken);
+			this.register();
+			this.logVerbose('new token received: ' + this.firebaseToken);
+			this.messaging.onTokenRefresh(() => this.runAsync('Token refresh', this.getToken));
 
-				this.messaging.onMessage((payload) => {
-					this.logInfo(`Message received. ${__stringify(payload, true)}`);
-					this.dispatch_pushMessage.dispatchModule([payload]);
-				});
+			this.messaging.onMessage((payload) => {
+				this.processMessage(payload.data)
+			});
 
-			} catch (err) {
-				this.logError("Unable to get token", err);
-			}
-		});
+		} catch (err) {
+			this.logError("Unable to get token", err);
+		}
+
 	};
 
-	subscribe = (subscription: PubSubSubscription) => {
+	private processMessageFromSw = (data: any) => {
+		if (!data.command || !data.message || data.command !== Command_SwToApp)
+			return;
+
+		this.logVerbose('message received from service worker', data);
+		this.processMessage(data.message)
+	};
+
+	private processMessage = (data: StringMap) => {
+		const arr: SubscriptionData[] = JSON.parse(data.messages);
+		const mySubscriptions = arr.filter(s => this.subscriptions.find(_s => _s.pushKey === s.pushKey && (s.props ? compare(_s.props, s.props) : true)));
+		this.dispatch_pushMessage.dispatchModule([mySubscriptions]);
+	};
+
+	subscribe = (subscription: BaseSubscriptionData) => {
 		if (this.subscriptions.find(d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props)))
 			return;
 
-		addItemToArray(this.subscriptions, subscription)
+		addItemToArray(this.subscriptions, subscription);
 		this.register();
 	};
 
 	private register = () => {
-		if (this.timeout)
-			_clearTimeout(this.timeout)
+		if (!this.firebaseToken || this.subscriptions.length === 0)
+			return;
 
-		this.timeout = _setTimeout(() => {
-			if (!this.firebaseToken || this.subscriptions.length === 0)
-				return;
+		if (this.registerRequest)
+			this.registerRequest.abort();
 
-			if (this.registerRequest)
-				this.registerRequest.abort();
+		const body: Request_PushRegister = {
+			firebaseToken: this.firebaseToken,
+			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
+		};
 
-			const body: Request_PushRegister = {
-				firebaseToken: this.firebaseToken,
-				subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
-			}
-
-			this.registerRequest = HttpModule
-				.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
-				.setRelativeUrl("/v1/push/register")
-				.setJsonBody(body)
-				.setOnError(() => ToastModule.toastError("Failed to register for push"))
-				.execute()
-		}, Second)
-
+		this.registerRequest = HttpModule
+			.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
+			.setRelativeUrl("/v1/push/register")
+			.setJsonBody(body)
+			.setOnError(() => ToastModule.toastError("Failed to register for push"))
+			.execute()
 	};
 }
 

@@ -19,45 +19,40 @@
  * limitations under the License.
  */
 
-import {
-	BeLogged,
-	LogClient_Browser,
-	ModuleManager
-} from "@nu-art/ts-common";
 import {swSelf} from "./self";
+import {ModuleManager} from "@nu-art/ts-common/core/module-manager";
+import {BeLogged} from "@nu-art/ts-common/core/logger/BeLogged";
+import {LogClient_Browser} from "@nu-art/ts-common/core/logger/LogClient_Browser";
+import {LogLevel} from "@nu-art/ts-common";
 
 export class ServiceWorker
 	extends ModuleManager {
 
 	constructor() {
 		super();
-		this._DEBUG_FLAG.enable(true);
-	}
-
-	static getInstance(): ServiceWorker {
-		return ServiceWorker.instance as ServiceWorker;
-	}
-
-	init() {
-		BeLogged.addClient(LogClient_Browser);
-
-		return super.init();
+		this._DEBUG_FLAG.enable(false);
+		this.setMinLevel(LogLevel.Debug)
 	}
 
 	build(): void {
-		// Substitute previous service workers with the new
+		BeLogged.addClient(LogClient_Browser);
+
+		// Substitute previous service workers with the new one
 		swSelf.addEventListener('install', () => {
 			swSelf
 				.skipWaiting()
 				.then(() => this.logVerbose('Skipped waiting, now using the new SW'))
-				.catch(e => this.logVerbose('Something wrong while skipping waiting. Service worker not queued', e));
+				.catch(e => this.logError('Something wrong while skipping waiting. Service worker not queued', e));
 		});
 
-		// This means the service worker hasn't been registered yet so it's just running
-		// to check the existence of the bundle in order to register it ==> no need to run the rest
-		if (!(self && 'ServiceWorkerGlobalScope' in self))
-			return;
+		swSelf.addEventListener("notificationclick", this.defaultHandler);
+		swSelf.addEventListener("pushsubscriptionchange", this.defaultHandler);
+		swSelf.addEventListener("push", this.defaultHandler);
 
 		super.build()
 	}
+
+	private defaultHandler = (event: Event) => {
+		this.logVerbose(`Event listened in sw of type ${event.type}`, event)
+	};
 }

@@ -1,38 +1,27 @@
-import {DB_Object} from "@nu-art/firebase";
-
 export type SubscribeProps = { [prop: string]: string | number };
 
-export type SubscriptionData = Partial<DB_Object> & {
+export type BaseSubscriptionData = {
 	props: SubscribeProps
 	pushKey: string
 }
 
-export type PubSubSubscription = SubscriptionData
-
-export type Request_PubSubSubscribsion = {
-	subscriptions: PubSubSubscription[]
-};
-
-export type Response_PubSubSubscribsion = {
-	subscriptions: PubSubSubscription[]
-};
-
-export type Request_PubSubUnsubscribe = {
-	subscriptions: string[]
-};
-
-export type Request_PushRegister = {
-	firebaseToken: string
-	subscriptions: SubscriptionData[]
+export type SubscriptionData = BaseSubscriptionData & {
+	data?: any
 }
 
-export type DB_PushSession = {
-	firebaseToken: string
+export type Request_PushRegister = FirebaseToken & {
+	subscriptions: BaseSubscriptionData[]
+}
+
+export type DB_PushSession = FirebaseToken & {
 	timestamp: number
 }
 
-export type DB_PushKeys = {
-	key: string
+export type DB_PushKeys = FirebaseToken & {
+	pushKey: string
 	props: SubscribeProps
+}
+
+export type FirebaseToken = {
 	firebaseToken: string
 }

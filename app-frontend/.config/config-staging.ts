@@ -29,14 +29,7 @@ export const config = {
 		remoteUrl: "/v1/sample/endpoint-example"
 	},
 	PushPubSubModule: {
-		config: {
-			apiKey: "AIzaSyCoQjoQibuydMi1ejlpobfgHOI7WMf11P8",
-			authDomain: "nu-art-thunderstorm.firebaseapp.com",
-			projectId: "nu-art-thunderstorm",
-			messagingSenderId: "992823653177",
-			appId: "1:992823653177:web:e289e37f159c1b56de6ee8"
-		},
-		publicKeyBase64: 'BF0GqqEoe1UmqcU-dg3Dse_2ctkaq5uFpFuR6il1U9A3HkvYcL83I8yC_rX-G8mM8M0hnH5TqcSIsHScd4LTS28'
+		publicKeyBase64: 'BH_Awj-nfzwZBMnzRgyfQN2mIZPbxV9JqLWljlQcJbHtz-2IxKPvon78Wt_NLF0yn4QkMIErSlqkAm8T75ySM84'
 	},
 	ForceUpgrade:{
 		assertVersionUrl: "/v1/version/assert"

@@ -38,7 +38,7 @@ class ServerApi_EndpointExample
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: CommonBodyReq) {
 		this.assertProperty(body, "message");
 		this.logInfoBold(`got id: ${body.message}`);
-		await PushPubSubModule.pushToKey('key', {a:'prop'});
+		await PushPubSubModule.pushToKey('key', {a:'prop'},{some: 'more', data: 'here'});
 		return "another endpoint response"
 	}
 }

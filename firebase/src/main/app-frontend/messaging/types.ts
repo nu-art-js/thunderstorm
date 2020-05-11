@@ -1,9 +1,5 @@
-"use strict";
 /*
- * Thunderstorm is a full web app framework!
- *
- * Typescript & Express backend infrastructure that natively runs on firebase function
- * Typescript & React frontend infrastructure
+ * Firebase is a simpler Typescript wrapper to all of firebase services.
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,8 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-function __export(m) {
-    for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-}
-exports.__esModule = true;
-__export(require("./test-backend/StormTester"));
+
+import * as firebase from 'firebase/app';
+
+export type FirebaseType_Messaging = firebase.messaging.Messaging

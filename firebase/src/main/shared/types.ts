@@ -31,6 +31,15 @@ export interface Firebase_Messaging {
 	send(message: Firebase_Message, dryRun?: boolean): Promise<string>;
 }
 
+export type FirebaseConfig = {
+	id: string,
+	projectId: string;
+	apiKey: string,
+	authDomain: string,
+	databaseURL?: string,
+	storageBucket?: string,
+	messagingSenderId: string
+}
 
 export type DB_Object = {
 	_id: string

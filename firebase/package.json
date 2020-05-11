@@ -33,7 +33,7 @@
   },
   "devDependencies": {
     "@google-cloud/common": "^3.0.0",
-    "@google-cloud/firestore": "^3.7.3",
+    "@google-cloud/firestore": "^3.7.5",
     "@google-cloud/storage": "^2.5.0",
     "@nu-art/testelot": "~0.0.1",
     "@types/compression": "^1.0.1",

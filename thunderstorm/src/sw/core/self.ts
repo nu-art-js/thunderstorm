@@ -24,3 +24,5 @@
 
 // @ts-ignore
 export const swSelf = self as ServiceWorkerGlobalScope;
+
+export const isServiceWorkerScope = () => self && 'ServiceWorkerGlobalScope' in self

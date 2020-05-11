@@ -16,71 +16,83 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ImplementationMissingException, Module, StringMap} from "@nu-art/ts-common";
-import {ApiException, promisifyRequest} from "@nu-art/thunderstorm/backend"
+import {
+	ImplementationMissingException,
+	Module,
+	StringMap
+} from "@nu-art/ts-common";
+import {
+	ApiException,
+	promisifyRequest
+} from "@nu-art/thunderstorm/backend"
 import {HttpMethod} from "@nu-art/thunderstorm"
-import {CoreOptions, Headers, Response, UriOptions} from 'request'
+import {
+	CoreOptions,
+	Headers,
+	Response,
+	UriOptions
+} from 'request'
 
 type Config = {
-    auth: JiraAuth
-    baseUrl?: string
+	auth: JiraAuth
+	baseUrl?: string
 }
 
 type JiraAuth = {
-    email: string
-    apiKey: string
+	email: string
+	apiKey: string
 };
 
 export type JiraIssueType = {
-    fields: JiraFields
+	fields: JiraFields
 }
 
 type JiraContent = {
-    type: "paragraph" | string
-    text?: string
-    content?: JiraContent[]
+	type: "paragraph" | string
+	text?: string
+	content?: JiraContent[]
 }
 
 type JiraDescription = string | {
-    type: "doc" | string
-    version: number
-    content: JiraContent[]
+	type: "doc" | string
+	version: number
+	content: JiraContent[]
 }
 
 type JiraFields = {
-    project: JiraProjectInfo
-    issuetype: IssueType
-    description: JiraDescription
-    summary: string
+	project: JiraProjectInfo
+	issuetype: IssueType
+	description: JiraDescription
+	summary: string
 }
 
 export type IssueType = {
-    id: string
+	id: string
 } | {
-    name: string
+	name: string
 }
 
 export type JiraProjectInfo = {
-    id: string
+	id: string
 } | {
-    name: string
+	name: string
 } | {
-    key: string
+	key: string
 }
 
 export type ResponseGetIssue = BaseIssue & {
-    expand: string
-    fields: StringMap
+	expand: string
+	fields: StringMap
 };
 
 export type BaseIssue = {
-    id: string
-    key: string
-    self: string
+	id: string
+	key: string
+	self: string
 };
 
 export type FixVersionType = {
-    fixVersions: { name: string }[]
+	fixVersions: { name: string }[]
 };
 
 export type ResponsePostIssue = BaseIssue;
@@ -88,192 +100,192 @@ export type ResponsePostIssue = BaseIssue;
 const createFormData = (filename: string, buffer: Buffer) => ({file: {value: buffer, options: {filename}}});
 
 export class JiraModule_Class
-    extends Module<Config> {
-    private headersJson!: Headers;
-    private headersForm!: Headers;
-    private baseUrl = "https://introb.atlassian.net/rest/api/3";
+	extends Module<Config> {
+	private headersJson!: Headers;
+	private headersForm!: Headers;
+	private baseUrl = "https://introb.atlassian.net/rest/api/3";
 
-    protected init(): void {
-        if (this.config?.baseUrl)
-            this.baseUrl = this.config?.baseUrl;
+	protected init(): void {
+		if (this.config?.baseUrl)
+			this.baseUrl = this.config?.baseUrl;
 
-        if (!this.config?.auth?.email || !this.config.auth.apiKey)
-            throw new ImplementationMissingException('Missing right config variables for JiraModule');
+		if (!this.config?.auth?.email || !this.config.auth.apiKey)
+			throw new ImplementationMissingException('Missing right config variables for JiraModule');
 
-        this.headersJson = this.buildHeaders(this.config.auth, true);
-        this.headersForm = this.buildHeaders(this.config.auth, false);
-    }
+		this.headersJson = this.buildHeaders(this.config.auth, true);
+		this.headersForm = this.buildHeaders(this.config.auth, false);
+	}
 
-    buildHeaders = ({apiKey, email}: JiraAuth, check: boolean) => {
-        const headers: Headers = {
-            Authorization: `Basic ${Buffer.from(email + ':' + apiKey).toString('base64')}`
-        };
+	buildHeaders = ({apiKey, email}: JiraAuth, check: boolean) => {
+		const headers: Headers = {
+			Authorization: `Basic ${Buffer.from(email + ':' + apiKey).toString('base64')}`
+		};
 
-        if (!check) {
-            headers['X-Atlassian-Token'] = 'no-check';
-            headers['Content-Type'] = 'multipart/form-data';
-        } else {
-            headers.Accept = 'application/json';
-            headers['Content-Type'] = 'application/json';
-        }
+		if (!check) {
+			headers['X-Atlassian-Token'] = 'no-check';
+			headers['Content-Type'] = 'multipart/form-data';
+		} else {
+			headers.Accept = 'application/json';
+			headers['Content-Type'] = 'application/json';
+		}
 
-        return headers;
-    };
+		return headers;
+	};
 
-    createTextBody = (description: string) => {
-        return {
-            type: "doc",
-            version: 1,
-            content: [
-                {
-                    type: "paragraph",
-                    content: [
-                        {
-                            type: "text",
-                            text: description
-                        }
-                    ]
-                }
-            ]
-        };
-    };
+	createTextBody = (description: string) => {
+		return {
+			type: "doc",
+			version: 1,
+			content: [
+				{
+					type: "paragraph",
+					content: [
+						{
+							type: "text",
+							text: description
+						}
+					]
+				}
+			]
+		};
+	};
 
-    createBody = (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string): JiraIssueType => {
-        return {
-            fields: {
-                project,
-                issuetype: issueType,
-                description: this.createTextBody(description),
-                summary
-            }
-        }
-    };
+	createBody = (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string): JiraIssueType => {
+		return {
+			fields: {
+				project,
+				issuetype: issueType,
+				description: this.createTextBody(description),
+				summary
+			}
+		}
+	};
 
-    createVersionBody = (data: any) => {
-        return {
-            fields: data
-        }
-    };
+	createVersionBody = (data: any) => {
+		return {
+			fields: data
+		}
+	};
 
-    getIssueTypes = async (id: string) => {
-        console.log("here");
-        return this.executeGetRequest('/issue/createmetadata', {projectKeys: id});
-    };
+	getIssueTypes = async (id: string) => {
+		console.log("here");
+		return this.executeGetRequest('/issue/createmetadata', {projectKeys: id});
+	};
 
-    editIssue = (issueKey: string, data: FixVersionType | any) => {
-        return this.executePutRequest(`/issue/${issueKey}`, this.createVersionBody(data));
-    };
+	editIssue = (issueKey: string, data: FixVersionType | any) => {
+		return this.executePutRequest(`/issue/${issueKey}`, this.createVersionBody(data));
+	};
 
-    private buildSearch = (params: StringMap) => {
-        const search = Object.keys(params).reduce((carry, key) => {
-            return `${carry}${carry.length !== 0 ? '%20and%20' : ''}${key}${key === 'project' ? '=' : '~'}${encodeURIComponent(params[key])}`
-        }, '');
-        return 'jql=' + (search);
-    };
+	private buildSearch = (params: StringMap) => {
+		const search = Object.keys(params).reduce((carry, key) => {
+			return `${carry}${carry.length !== 0 ? '%20and%20' : ''}${key}${key === 'project' ? '=' : '~'}${encodeURIComponent(params[key])}`
+		}, '');
+		return 'jql=' + (search);
+	};
 
-    getIssueByCustomField = async (project: string, query: StringMap) => {
-        // return this.executeGetRequest('/search?jql=summary~'+summary+'&project='+project)
-        const search = this.buildSearch({project, ...query});
-        return this.executeGetRequest(`/search?${search}`)
-    };
-
-
-    postIssueRequest = async (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string): Promise<ResponsePostIssue> => {
-        return this.executePostRequest('/issue', this.createBody(project, issueType, summary, description));
-    };
-
-    getIssueRequest = async (issue: string): Promise<ResponseGetIssue> => {
-        return this.executeGetRequest(`/issue/${issue}`)
-    };
-
-    addIssueAttachment = async (issue: string, file: Buffer) => {
-        // formData.append("file", file);
-        return this.executeFormRequest(`/issue/${issue}/attachments`, file)
-    };
-
-    addCommentRequest = (issue: string, comment: string) => {
-        // create comment
-        const obj = {
-            body: this.createTextBody(comment)
-        };
-        return this.executePostRequest(`/issue/${issue}/comment`, obj)
-    };
+	getIssueByCustomField = async (project: string, query: StringMap) => {
+		// return this.executeGetRequest('/search?jql=summary~'+summary+'&project='+project)
+		const search = this.buildSearch({project, ...query});
+		return this.executeGetRequest(`/search?${search}`)
+	};
 
 
-    // editDescriptionRequest = (issue: string, description: string) => {
-    // 	// No idea
-    // 	const request: UriOptions & CoreOptions = {
-    // 		headers: this.headersJson,
-    // 		uri: '/issue/' + issue,
-    // 		method: 'PUT',
-    // 		body: description,
-    // 		json: true
-    // 	};
-    // 	return this.executeRequest(request)
-    // };
+	postIssueRequest = async (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string): Promise<ResponsePostIssue> => {
+		return this.executePostRequest('/issue', this.createBody(project, issueType, summary, description));
+	};
 
-    private executeFormRequest = async (url: string, buffer: Buffer) => {
-        const request: UriOptions & CoreOptions = {
-            headers: this.headersForm,
-            uri: `${this.baseUrl}${url}`,
-            formData: createFormData('logs.zip', buffer),
-            method: HttpMethod.POST,
-        };
-        return this.executeRequest(request);
-    };
+	getIssueRequest = async (issue: string): Promise<ResponseGetIssue> => {
+		return this.executeGetRequest(`/issue/${issue}`)
+	};
 
-    private async executePostRequest(url: string, body: any) {
-        const request: UriOptions & CoreOptions = {
-            headers: this.headersJson,
-            uri: `${this.baseUrl}${url}`,
-            body,
-            method: HttpMethod.POST,
-            json: true
-        };
-        return this.executeRequest(request);
-    }
+	addIssueAttachment = async (issue: string, file: Buffer) => {
+		// formData.append("file", file);
+		return this.executeFormRequest(`/issue/${issue}/attachments`, file)
+	};
 
-    private async executePutRequest(url: string, body: any) {
-        const request: UriOptions & CoreOptions = {
-            headers: this.headersJson,
-            uri: `${this.baseUrl}${url}`,
-            body,
-            method: HttpMethod.PUT,
-            json: true
-        };
-        return this.executeRequest(request);
-    }
+	addCommentRequest = (issue: string, comment: string) => {
+		// create comment
+		const obj = {
+			body: this.createTextBody(comment)
+		};
+		return this.executePostRequest(`/issue/${issue}/comment`, obj)
+	};
 
 
-    private async executeGetRequest(url: string, _params?: { [k: string]: string }) {
-        const params = _params && Object.keys(_params).map((key) => {
-            return `${key}=${_params[key]}`;
-        });
+	// editDescriptionRequest = (issue: string, description: string) => {
+	// 	// No idea
+	// 	const request: UriOptions & CoreOptions = {
+	// 		headers: this.headersJson,
+	// 		uri: '/issue/' + issue,
+	// 		method: 'PUT',
+	// 		body: description,
+	// 		json: true
+	// 	};
+	// 	return this.executeRequest(request)
+	// };
 
-        let urlParams = "";
-        if (params && params.length > 0)
-            urlParams = `?${params.join("&")}`;
+	private executeFormRequest = async (url: string, buffer: Buffer) => {
+		const request: UriOptions & CoreOptions = {
+			headers: this.headersForm,
+			uri: `${this.baseUrl}${url}`,
+			formData: createFormData('logs.zip', buffer),
+			method: HttpMethod.POST,
+		};
+		return this.executeRequest(request);
+	};
 
-        const request: UriOptions & CoreOptions = {
-            headers: this.headersJson,
-            uri: `${this.baseUrl}${url}${urlParams}`,
-            method: HttpMethod.GET,
-            json: true
-        };
-        return this.executeRequest(request);
-    }
+	private async executePostRequest(url: string, body: any) {
+		const request: UriOptions & CoreOptions = {
+			headers: this.headersJson,
+			uri: `${this.baseUrl}${url}`,
+			body,
+			method: HttpMethod.POST,
+			json: true
+		};
+		return this.executeRequest(request);
+	}
 
-    private handleResponse(response: Response) {
-        if (`${response.statusCode}`[0] !== '2')
-            throw new ApiException(response.statusCode, response.body)
+	private async executePutRequest(url: string, body: any) {
+		const request: UriOptions & CoreOptions = {
+			headers: this.headersJson,
+			uri: `${this.baseUrl}${url}`,
+			body,
+			method: HttpMethod.PUT,
+			json: true
+		};
+		return this.executeRequest(request);
+	}
 
-        return response.toJSON().body;
-    }
 
-    private async executeRequest(body: UriOptions & CoreOptions) {
-        const response = await promisifyRequest(body, false);
-        return this.handleResponse(response);
-    }
+	private async executeGetRequest(url: string, _params?: { [k: string]: string }) {
+		const params = _params && Object.keys(_params).map((key) => {
+			return `${key}=${_params[key]}`;
+		});
+
+		let urlParams = "";
+		if (params && params.length > 0)
+			urlParams = `?${params.join("&")}`;
+
+		const request: UriOptions & CoreOptions = {
+			headers: this.headersJson,
+			uri: `${this.baseUrl}${url}${urlParams}`,
+			method: HttpMethod.GET,
+			json: true
+		};
+		return this.executeRequest(request);
+	}
+
+	private handleResponse(response: Response) {
+		if (`${response.statusCode}`[0] !== '2')
+			throw new ApiException(response.statusCode, response.body)
+
+		return response.toJSON().body;
+	}
+
+	private async executeRequest(body: UriOptions & CoreOptions) {
+		const response = await promisifyRequest(body, false);
+		return this.handleResponse(response);
+	}
 }
 
 export const JiraModule = new JiraModule_Class();

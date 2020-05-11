@@ -64,7 +64,7 @@ export class FirebaseModule_Class
 	private deriveLocalProjectId(): string {
 		let projectId;
 		if (FirebaseModule_Class.localAdminConfigId)
-			if (!this.config[FirebaseModule_Class.localAdminConfigId] as JWTInput)
+			if (!this.config[FirebaseModule_Class.localAdminConfigId])
 				throw new ImplementationMissingException(`Forgot to define a service account for project Id: ${FirebaseModule_Class.localAdminConfigId}`);
 			else
 				projectId = FirebaseModule_Class.localAdminConfigId;
@@ -137,7 +137,7 @@ export class FirebaseModule_Class
 		if (typeof config === "string")
 			config = JSON.parse(readFileSync(config, "utf8")) as JWTInput;
 
-		if (!config || !config.client_email || !config.private_key || !config.client_email)
+		if (!config || !config.client_email || !config.private_key)
 			throw new BadImplementationException(`Config for key ${projectId} is not an Admin credentials pattern`);
 
 		session = new FirebaseSession_Admin(projectId, config);

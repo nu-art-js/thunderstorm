@@ -25,6 +25,8 @@ import {DatabaseWrapper} from "../database/DatabaseWrapper";
 import {StorageWrapper} from "../storage/StorageWrapper";
 import {PushMessagesWrapper} from "../push/PushMessagesWrapper";
 import * as admin from "firebase-admin";
+import {FirebaseConfig} from "../..";
+
 
 export type Firebase_UserCredential = {
 	config: FirebaseConfig
@@ -33,16 +35,6 @@ export type Firebase_UserCredential = {
 		password: string;
 	}
 };
-
-export type FirebaseConfig = {
-	id: string,
-	projectId: string;
-	apiKey: string,
-	authDomain: string,
-	databaseURL?: string,
-	storageBucket?: string,
-	messagingSenderId: string
-}
 
 export type FirebaseApp = admin.app.App | firebase.app.App
 

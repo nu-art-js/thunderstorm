@@ -17,9 +17,9 @@
  */
 
 import {
+	compare,
 	Module,
-	Second,
-	StringMap
+	Second
 } from "@nu-art/ts-common";
 
 import {
@@ -47,6 +47,7 @@ import {
 	OnFirebaseMessageReceived,
 	PushPubSubModule
 } from "@nu-art/push-pub-sub/frontend";
+import {SubscriptionData} from "@nu-art/push-pub-sub";
 
 type Config = {
 	remoteUrl: string
@@ -76,8 +77,12 @@ export class ExampleModule_Class
 		PushPubSubModule.subscribe({props: {a: 'prop'}, pushKey: 'key'})
 	}
 
-	onMessageReceived(payload: StringMap) {
-		console.log('payload received in module');
+	onMessageReceived(payload: SubscriptionData[]) {
+		const myPayload = payload.find(subscription => compare(subscription, {pushKey: 'key', props: {a: 'prop'}}));
+		if (!myPayload)
+			return;
+
+		console.log('payload received in module', myPayload);
 	}
 
 	callCustomErrorApi() {
