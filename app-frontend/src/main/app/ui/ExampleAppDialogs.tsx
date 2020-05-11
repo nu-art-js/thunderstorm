@@ -29,8 +29,9 @@ export const showDefaultInfoModalExample = () => {
 	const content = "This is an example of the use of info modal with the default styling. If you use the default builders you don't need an AppDialog component";
 	new Dialog_Builder(content)
 		.setTitle(title)
+		.setStyle({width: "300px"})
+		.setAllowIndirectClosing(true)
 		.addButton(DialogButton_Cancel(DialogModule.close))
-		.setOverlayColor("rgba(102, 255, 255, 0.4)")
 		.show();
 };
 
