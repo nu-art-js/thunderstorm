@@ -32,7 +32,7 @@ import {
 	_logger_logException,
 	dispatch_onServerError,
 	ServerErrorSeverity,
-    Timestamp
+	Timestamp
 } from "@nu-art/ts-common";
 import {BucketWrapper} from "../storage/StorageWrapper";
 
@@ -56,6 +56,9 @@ export class ProjectFirestoreBackup_Class
 
 	private async backupFirebaseProject(initiator: string, timestamp: Timestamp, projectToBackup: FirebaseProjectCollections) {
 		const projectId = FirebaseModule.getLocalProjectId();
+		if (projectToBackup.projectId !== projectId)
+			return this.logVerbose(`Will not backup a firestore from another project: ${projectToBackup.projectId}`);
+
 		const bucketName = `gs://${this.config.bucket || `${projectId}.appspot.com`}`;
 
 		const backupRootFolder = `${this.config.path || "firestore-backup"}`;
@@ -75,9 +78,11 @@ export class ProjectFirestoreBackup_Class
 		};
 
 		this.logVerbose("projectAuth:", projectAuth);
-		this.logVerbose("exportConfig:", exportConfig);
 		try {
+			this.logVerbose("exportConfig:", exportConfig);
 			await client.exportDocuments(exportConfig);
+
+			this.logVerbose("Create a .creator file");
 			const file = await bucket.getFile(`${currentBackupFolder}/.creator`);
 			await file.write({creator: initiator});
 		} catch (e) {
