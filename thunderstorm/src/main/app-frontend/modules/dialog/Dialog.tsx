@@ -48,7 +48,6 @@ const defaultDialogStyle: Properties = {
 	backgroundColor: "#ffffff",
 	margin: 0,
 	minWidth: "200px",
-	minHeight: "200px",
 	alignItems: "unset"
 	// position: "absolute",
 	// top: "50%",
@@ -166,7 +165,7 @@ export class Dialog
 			return null;
 
 		return (
-			<div title="overlay" style={{...modalOverlay, background: dialogModel.overlayColor, zIndex: dialogModel.zIndex}} onClick={this.onOverlayClicked}>
+			<div id="overlay" style={{...modalOverlay, background: dialogModel.overlayColor, zIndex: dialogModel.zIndex}} onClick={this.onOverlayClicked}>
 				<div className={"ll_v_l"} style={{...defaultDialogStyle, ...(dialogModel.style || {})}}
 				     onClick={(e: React.MouseEvent) => this.stopPropagation(e)}>
 					{dialogModel.title && this.renderTitle(dialogModel.title)}
@@ -201,6 +200,8 @@ export class Dialog
 	renderButtons = (model: Dialog_Model) => {
 		if (!model)
 			return null;
+		if(model.buttons.length === 0)
+			return "";
 
 		return <div className={`ll_h_c`} style={{
 			marginTop: "auto",
