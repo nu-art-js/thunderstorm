@@ -24,6 +24,14 @@ import {
 	DialogModule,
 } from "@nu-art/thunderstorm/frontend";
 
+export const noButton = () => {
+	new Dialog_Builder("No Buttons!")
+		.setTitle("Look Mom")
+		.setStyle({width: "300px"})
+		.setAllowIndirectClosing(true)
+		.show();
+};
+
 export const showDefaultInfoModalExample = () => {
 	const title = "Default info modal";
 	const content = "This is an example of the use of info modal with the default styling. If you use the default builders you don't need an AppDialog component";

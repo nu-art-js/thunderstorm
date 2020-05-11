@@ -18,6 +18,7 @@
 
 import * as React from "react";
 import {
+	noButton,
 	showAppConfirmationDialogExample,
 	showDefaultInfoModalExample
 } from "../ui/ExampleAppDialogs";
@@ -56,6 +57,7 @@ export class Example_Dialogs
 
 	render() {
 		return <>
+			<button style={{marginRight: 8}} onClick={noButton}>No Button</button>
 			<button style={{marginRight: 8}} onClick={this.showDefaultInfoModalExample}>Default Dialog Example</button>
 			<button style={{marginRight: 8}} onClick={this.showAppConfirmationDialogExample}>Custom Dialog Example</button>
 
