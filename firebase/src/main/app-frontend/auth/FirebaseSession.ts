@@ -81,7 +81,7 @@ export class FirebaseSession
 	};
 
 	async signOut() {
-		this.app.auth().signOut()
+		return this.app.auth().signOut()
 	}
 
 	getProjectId(): string {
