@@ -21,6 +21,7 @@
  * Created by tacb0ss on 19/09/2018.
  */
 import * as firebase from 'firebase/app'
+// tslint:disable:no-import-side-effect
 import 'firebase/messaging';
 import 'firebase/analytics';
 import 'firebase/database';
