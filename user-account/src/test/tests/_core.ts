@@ -1,5 +1,5 @@
 /*
- * Permissions management system, define access level for each of
+ * Permissions management system, define access level for each of 
  * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
