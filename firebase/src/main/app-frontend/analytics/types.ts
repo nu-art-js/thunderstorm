@@ -17,28 +17,6 @@
  * limitations under the License.
  */
 
-/**
- * Created by tacb0ss on 19/09/2018.
- */
-import * as firebase from 'firebase/app'
-import {Logger} from "@nu-art/ts-common";
-import {FirebaseConfig} from "../..";
+import * as firebase from 'firebase/app';
 
-export abstract class FirebaseSession
-	extends Logger {
-	app!: firebase.app.App;
-
-	protected config: FirebaseConfig;
-	protected sessionName: string;
-
-	constructor(sessionName: string, config: FirebaseConfig) {
-		super(`firebase: ${sessionName}`);
-		this.sessionName = sessionName;
-		this.config = config;
-	}
-
-	abstract connect(): void ;
-
-	abstract getProjectId(): string;
-}
-
+export type FirebaseType_Analytics = firebase.analytics.Analytics

@@ -35,7 +35,8 @@ export const config = {
 			projectId: "thunderstorm-staging",
 			storageBucket: "thunderstorm-staging.appspot.com",
 			messagingSenderId: "387990980732",
-			appId: "1:387990980732:web:62ce3fe05f0fc852faa1f9"
+			appId: "1:387990980732:web:62ce3fe05f0fc852faa1f9",
+			measurementId: "G-PSCS2QH5YV"
 		}
 	},
 	PushPubSubModule: {

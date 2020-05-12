@@ -48,6 +48,7 @@ import {
 	PushPubSubModule
 } from "@nu-art/push-pub-sub/frontend";
 import {SubscriptionData} from "@nu-art/push-pub-sub";
+import {FirebaseModule} from "@nu-art/firebase/frontend";
 
 type Config = {
 	remoteUrl: string
@@ -75,7 +76,14 @@ export class ExampleModule_Class
 
 	protected init(): void {
 		PushPubSubModule.subscribe({props: {a: 'prop'}, pushKey: 'key'})
+		this.runAsync('Initializing Analytics', this.initAnalytics)
 	}
+
+	initAnalytics = async () => {
+		const localSession = await FirebaseModule.createSession();
+		const analytics = localSession.getAnalytics();
+		analytics.setCurrentScreen('Example Screen')
+	};
 
 	onMessageReceived(payload: SubscriptionData[]) {
 		const myPayload = payload.find(subscription => compare(subscription, {pushKey: 'key', props: {a: 'prop'}}));
