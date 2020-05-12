@@ -44,5 +44,3 @@ export type Permissions_ApiRegisterExternalProject = ApiWithBody<"/v1/register/r
 export type Permissions_ApiRegisterProject = ApiWithQuery<"/v1/register/register-project", void>;
 export declare type Permissions_ApiTestPermissions = ApiWithQuery<"/test/test-permissions", void>;
 
-export type ApiBinder_GetCustomFields = ApiWithQuery<'/v1/permissions/assign/get-custom-fields', string[]>;
-

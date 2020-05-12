@@ -16,17 +16,13 @@
  * limitations under the License.
  */
 import {
-	ApiBinder_GetCustomFields,
 	DB_PermissionsGroup
 } from "../../../index";
 import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
 import {
-	HttpModule,
 	ThunderDispatcher
 } from "@nu-art/thunderstorm/frontend";
-import {HttpMethod} from "@nu-art/thunderstorm";
 
-export const Key_FetchCustomFields = 'get-custom-fields';
 
 export interface OnPermissionsGroupsLoaded {
 	__onPermissionsGroupsLoaded: () => void;
@@ -37,7 +33,6 @@ const dispatch_onPermissionsGroupsLoaded = new ThunderDispatcher<OnPermissionsGr
 export class PermissionsGroupModule_Class
 	extends BaseDB_ApiGeneratorCaller<DB_PermissionsGroup> {
 	private groups: DB_PermissionsGroup[] = [];
-	private customFields: string[] = [];
 
 	constructor() {
 		super({key: "group", relativeUrl: "/v1/permissions/assign/group"});
@@ -45,7 +40,6 @@ export class PermissionsGroupModule_Class
 
 	protected init(): void {
 		super.init();
-		this.fetchCustomFieldsKeys()
 	}
 
 	protected async onEntryCreated(response: DB_PermissionsGroup): Promise<void> {
@@ -71,19 +65,6 @@ export class PermissionsGroupModule_Class
 	getGroups() {
 		return this.groups;
 	}
-
-	fetchCustomFieldsKeys() {
-		HttpModule
-			.createRequest<ApiBinder_GetCustomFields>(HttpMethod.GET, Key_FetchCustomFields)
-			.setRelativeUrl(`/v1/permissions/assign/get-custom-fields`)
-			.setOnError(`Failed to get permissions custom fields - by firebase config`)
-			.setLabel(`Getting permissions custom fields - by firebase config`)
-			.execute(async (customFields: string[]) => {
-				this.customFields = customFields;
-			});
-	}
-
-	getCustomFields = () => this.customFields
 
 }
 
