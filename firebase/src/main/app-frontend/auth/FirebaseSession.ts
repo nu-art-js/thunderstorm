@@ -77,7 +77,7 @@ export class FirebaseSession
 	}
 
 	async signInWithToken(token: string) {
-		this.app.auth().signInWithCustomToken(token)
+		return this.app.auth().signInWithCustomToken(token)
 	};
 
 	async signOut() {
