@@ -55,11 +55,11 @@ export class PermissionsAssert_Class
 	extends Module {
 
 	readonly Middleware = (keys: string[]): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
-		this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
+		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
 
 			const userId = await AccountModule.validateSession(req);
 			return this.assertUserPermissions(projectId, data.url, userId, customFields);
-		})
+		})(req, data);
 	};
 
 	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
@@ -96,7 +96,8 @@ export class PermissionsAssert_Class
 		await action(projectId, customFields);
 	};
 
-	async assertUserPermissions(projectId: string, path: string, userId: string, requestCustomField: StringMap) {
+	async assertUserPermissions(projectId: string, _path: string, userId: string, requestCustomField: StringMap) {
+		const path = _path.substring(0, (_path + '?').indexOf('?'));
 		const [apiDetails, userDetails] = await Promise.all([this.getApiDetails(path, projectId), this.getUserDetails(userId)]);
 
 		if (!apiDetails.apiDb.accessLevelIds) {
@@ -212,9 +213,25 @@ export class PermissionsAssert_Class
 
 	private doesCustomFieldSatisfies(groupCustomField: StringMap, requestCustomField: StringMap) {
 		return Object.keys(requestCustomField).reduce((doesSatisfies, requestCustomFieldKey) => {
-			const customFieldRegEx = new RegExp(`^${groupCustomField[requestCustomFieldKey]}+$`, "g");
+			const customFieldRegEx = this.getRegEx(groupCustomField[requestCustomFieldKey]);
 			return doesSatisfies && customFieldRegEx.test(requestCustomField[requestCustomFieldKey]);
 		}, true as boolean);
+	}
+
+	private getRegEx(value: string) {
+		if (!value)
+			return new RegExp(`^${value}$`, "g");
+
+		let regExValue = value;
+		const startRegEx = '^';
+		const endRegEx = '$';
+		if (value[0] !== startRegEx)
+			regExValue = startRegEx + regExValue;
+
+		if (value[value.length - 1] !== endRegEx)
+			regExValue = regExValue + endRegEx;
+
+		return new RegExp(regExValue, "g");
 	}
 }
 
