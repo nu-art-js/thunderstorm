@@ -1,0 +1,14 @@
+@startuml
+participant App
+participant PermissionsComponent
+participant PermissionsModuleFE
+participant backend
+
+App -> PermissionsModuleFE: setCustomField(key, value)
+PermissionsComponent -> PermissionsComponent: Mounted
+PermissionsComponent -> PermissionsModuleFE: register with component url
+PermissionsModuleFE -> backend: check permissions in\nbackend for the registered urls
+backend -> PermissionsModuleFE: boolean allowed or not
+PermissionsModuleFE -> PermissionsModuleFE: cache the result {[url:string]:boolean}
+PermissionsModuleFE -> PermissionsComponent: dispatch an event that\npermissions has changed
+@enduml
