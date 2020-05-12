@@ -31,6 +31,7 @@ const dispatch_onPermissionsProjectsLoaded = new ThunderDispatcher<OnPermissions
 export class PermissionsProjectModule_Class
 	extends BaseDB_ApiGeneratorCaller<DB_PermissionProject> {
 	private projects: DB_PermissionProject[] = [];
+	private projectsCustomKeys: string[] = [];
 
 
 	constructor() {
@@ -57,12 +58,20 @@ export class PermissionsProjectModule_Class
 
 	protected async onQueryReturned(response: DB_PermissionProject[]): Promise<void> {
 		this.projects = response;
+		this.projectsCustomKeys = response.reduce((toRet, project) => {
+			return toRet.concat(project.customKeys || []);
+		}, [] as string[]);
+
 		dispatch_onPermissionsProjectsLoaded.dispatchUI([]);
 	}
 
 	fetchProjects() {
 		this.query();
 		return this.projects;
+	}
+
+	getProjectsCustomKeys() {
+		return this.projectsCustomKeys || [];
 	}
 
 	getProjects(): DB_PermissionProject[] {

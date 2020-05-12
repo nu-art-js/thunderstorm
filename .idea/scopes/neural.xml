@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="neural" pattern="file[thunderstorm-boilerplate]:neural/src//*" />
+</component>

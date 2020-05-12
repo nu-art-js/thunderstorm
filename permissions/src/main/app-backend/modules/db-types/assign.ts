@@ -17,7 +17,6 @@
  */
 
 import {
-	ApiBinder_GetCustomFields,
 	CollectionName_Groups,
 	CollectionName_Users,
 	DB_PermissionAccessLevel,
@@ -26,7 +25,6 @@ import {
 } from "../_imports";
 import {
 	BaseDB_ApiGenerator,
-	Config,
 	validateOptionalId,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
@@ -35,15 +33,10 @@ import {
 	OnUserLogin
 } from "@nu-art/user-account/backend";
 import {
-	Clause_Where,
-	DB_Object
+	Clause_Where
 } from "@nu-art/firebase";
 import {
-	ApiException,
-	ApiResponse,
-	ServerApi,
-	ServerApi_Get,
-    ExpressRequest
+	ApiException
 } from "@nu-art/thunderstorm/backend";
 
 import {
@@ -60,9 +53,6 @@ import {FirestoreTransaction} from "@nu-art/firebase/backend";
 const validateUserUuid = validateRegexp(/^.{0,50}$/);
 const validateGroupLabel = validateRegexp(/^[a-z-\._ ]+$/);
 const validateCustomFieldValues = validateRegexp(/^.{0,500}$/);
-declare type GroupsConfig = Config<DB_Object> & {
-	customKeys: string[]
-}
 
 function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 	const domainIds = levels.map(level => level.domainId);
@@ -71,20 +61,8 @@ function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 		throw new ApiException(422, 'You trying insert duplicate accessLevel with the same domain');
 }
 
-export class ServerApi_GetCustomFields
-	extends ServerApi_Get<ApiBinder_GetCustomFields> {
-
-	constructor() {
-		super("get-custom-fields");
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		return GroupPermissionsDB.getConfig().customKeys;
-	}
-}
-
 export class GroupsDB_Class
-	extends BaseDB_ApiGenerator<DB_PermissionsGroup, GroupsConfig> {
+	extends BaseDB_ApiGenerator<DB_PermissionsGroup> {
 	static _validator: TypeValidator<DB_PermissionsGroup> = {
 		_id: validateOptionalId,
 		label: validateGroupLabel,
@@ -137,11 +115,6 @@ export class GroupsDB_Class
 
 	getConfig() {
 		return this.config;
-	}
-
-	apis(pathPart?: string): ServerApi<any>[] {
-		const apis = [...super.apis(pathPart), new ServerApi_GetCustomFields()];
-		return apis;
 	}
 }
 

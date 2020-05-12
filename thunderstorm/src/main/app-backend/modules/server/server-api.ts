@@ -24,13 +24,13 @@
  */
 import {
 	BadImplementationException,
-	Logger,
-	validate,
-	ValidatorTypeResolver,
-	isErrorOfType,
-	MUSTNeverHappenException,
 	dispatch_onServerError,
-    ServerErrorSeverity
+	isErrorOfType,
+	Logger,
+	MUSTNeverHappenException,
+	ServerErrorSeverity,
+	validate,
+	ValidatorTypeResolver
 } from "@nu-art/ts-common";
 
 import {Stream} from "stream";
@@ -239,7 +239,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 				this.logError("Error while handing server error", e);
 			}
 			if (apiException.responseCode === 500)
-				return response.serverError(e);
+				return response.serverError(apiException);
 
 			return response.exception(apiException);
 		}
@@ -389,7 +389,9 @@ export class ApiResponse {
 		this._json(exception.responseCode, responseBody, headers);
 	}
 
-	serverError(error: Error, headers?: any) {
-		this.text(500, ServerApi.isDebug && error.stack ? error.stack : "", headers);
+	serverError(error: Error & { cause?: Error }, headers?: any) {
+		const stack = error.cause ? error.cause.stack : error.stack;
+		const message = (error.cause ? error.cause.message : error.message) || "";
+		this.text(500, ServerApi.isDebug && stack ? stack : message, headers);
 	}
 }
