@@ -92,6 +92,16 @@ const customFieldsModels: CustomFieldModel[] = [
 		group: [{unit: 'eq1'}],
 		request: {unit: 'eq1'},
 		expected: true
+	},{
+		label: "Check if group customFields satisfies the request custom field in case group customField property is substring of request customField property",
+		group: [{unit: 'eq1'}],
+		request: {unit: 'eq11'},
+		expected: false
+	},{
+		label: "Check if group customFields satisfies the request custom field in case request customField property is substring of group customField property",
+		group: [{unit: 'eq11'}],
+		request: {unit: 'eq1'},
+		expected: false
 	}, {
 		label: "Check if group customFields with match RegEx satisfies the request custom field",
 		group: [{unit: 'eq[1-2]'}],
@@ -100,6 +110,16 @@ const customFieldsModels: CustomFieldModel[] = [
 	}, {
 		label: "Check if group customFields with many RegEx satisfies the request custom field",
 		group: [{unit: 'eq[2-3]'}, {unit: 'eq[4-5]'}],
+		request: {unit: 'eq1'},
+		expected: false
+	},{
+		label: "Check if group customFields with match RegEx satisfies the request custom field - pass with regEx sign",
+		group: [{unit: '^eq[1-2]$'}],
+		request: {unit: 'eq1'},
+		expected: true
+	}, {
+		label: "Check if group customFields with many RegEx satisfies the request custom field - pass with regEx sign",
+		group: [{unit: '^eq[2-3]$'}, {unit: '^eq[4-5]$'}],
 		request: {unit: 'eq1'},
 		expected: false
 	}, {
