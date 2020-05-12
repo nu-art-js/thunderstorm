@@ -40,7 +40,7 @@ import {
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	FirebaseModule,
-	LocalSession,
+	FirebaseSession,
 	MessagingWrapper
 } from "@nu-art/firebase/frontend";
 
@@ -85,9 +85,9 @@ export class PushPubSubModule_Class
 
 	private initApp = async () => {
 		if ('serviceWorker' in navigator) {
-			const asyncs: [Promise<ServiceWorkerRegistration>, Promise<LocalSession>] = [
+			const asyncs: [Promise<ServiceWorkerRegistration>, Promise<FirebaseSession>] = [
 				this.registerServiceWorker(),
-				FirebaseModule.createLocalSession()
+				FirebaseModule.createSession()
 			];
 
 			const {0: registration, 1: app} = await Promise.all(asyncs);
