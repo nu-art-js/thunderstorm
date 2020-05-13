@@ -59,7 +59,7 @@ type FirebaseConfig = {
 }
 
 export type PushPubSubConfig = {
-	config: FirebaseConfig
+	config?: FirebaseConfig
 	publicKeyBase64: string
 }
 
