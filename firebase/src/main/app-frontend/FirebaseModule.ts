@@ -21,13 +21,15 @@
  */
 
 import {
+	__stringify,
 	BadImplementationException,
 	ImplementationMissingException,
 	Module
 } from "@nu-art/ts-common";
 import {FirebaseConfig} from "..";
-import {LocalSession} from "./auth/LocalSession";
-import {TokenSession} from "./auth/TokenSession";
+import {FirebaseSession} from "./auth/FirebaseSession";
+
+const localSessionId = 'local';
 
 type ConfigType = {
 	[s: string]: FirebaseConfig;
@@ -36,40 +38,42 @@ type ConfigType = {
 export class FirebaseModule_Class
 	extends Module<ConfigType> {
 
-	// private readonly sessions: { [s: string]: FirebaseSession; } = {};
-	private sessions: { [projectId: string]: TokenSession } = {};
-	private local!: LocalSession;
+	private sessions: { [projectId: string]: FirebaseSession } = {};
 
 	constructor() {
 		super("firebase");
 	}
 
-	async createLocalSession(): Promise<LocalSession> {
-		if (this.local)
-			return this.local;
+	private async createLocalSession(): Promise<FirebaseSession> {
+		let session = this.sessions[localSessionId];
+		if (session)
+			return session;
 
-		const config = await this.getLocalConfig();
+		const localConfig = this.getProjectAuth('local');
+		if (!localConfig)
+			await this.fetchLocalConfig();
 
-		this.local = new LocalSession("local-session", config);
-		this.local.connect();
-
-		return this.local;
+		return this.createSession(localSessionId);
 	}
 
-	private getLocalConfig = async (): Promise<FirebaseConfig> => {
-		const localConfig = this.getProjectAuth('local');
-		if (localConfig)
-			return localConfig;
-
+	private fetchLocalConfig = async () => {
 		try {
 			const resp = await fetch('/__/firebase/init.json');
-			return await resp.json() as Promise<FirebaseConfig>;
+			const config = await resp.json() as Promise<FirebaseConfig>;
+			// @ts-ignore
+			this.setConfig({[localSessionId]: config});
 		} catch (e) {
-			throw new ImplementationMissingException(`Either specify configs for the 'PushPubSubModule' or use SDK auto-configuration with firebase hosting`)
+			throw new ImplementationMissingException(`Either specify configs for the 'FirebaseModule' or use SDK auto-configuration with firebase hosting`)
 		}
 	};
 
-	public async createSession(projectId: string) {
+	public async createSession(projectId?: string | FirebaseConfig, token?: string) {
+		if (!projectId)
+			return this.createLocalSession();
+
+		if (typeof projectId === "object")
+			return this.createSessionWithConfigs(projectId);
+
 		let session = this.sessions[projectId];
 		if (session)
 			return session;
@@ -82,17 +86,34 @@ export class FirebaseModule_Class
 		if (!config || !config.projectId || !config.apiKey || !config.authDomain)
 			throw new BadImplementationException(`Config for key ${projectId} is not an Admin credentials pattern`);
 
-		session = new TokenSession(projectId, config);
-		this.sessions[projectId] = session;
+		return this.initiateSession(projectId,config,token);
+	}
 
-		session.connect();
-		return session;
+	private async createSessionWithConfigs(config: FirebaseConfig): Promise<FirebaseSession> {
+		if (!config || !config.projectId || !config.databaseURL || !config.authDomain || !config.apiKey)
+			throw new BadImplementationException(`Config: ${__stringify(config)} is not a credentials pattern`);
+
+		// @ts-ignore
+		this.setConfig({[config.projectId]: config});
+
+		return this.createSession(config.projectId);
 	}
 
 	private getProjectAuth(projectId: string) {
 		return this.config?.[projectId];
 	}
 
+	private async initiateSession(projectId: string, config: FirebaseConfig, token?: string) {
+		const session = new FirebaseSession(projectId, config);
+		this.sessions[projectId] = session;
+
+		session.connect();
+
+		if (token)
+			await session.signInWithToken(token);
+
+		return session;
+	}
 }
 
 export const FirebaseModule = new FirebaseModule_Class();

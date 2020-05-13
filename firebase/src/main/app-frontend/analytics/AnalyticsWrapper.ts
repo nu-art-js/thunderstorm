@@ -16,7 +16,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from "./app-frontend/auth/FirebaseSession";
 
-export * from "./app-frontend/FirebaseModule";
-export * from "./app-frontend/messaging/MessagingWrapper";
+import {Logger} from "@nu-art/ts-common";
+import {FirebaseType_Analytics} from "./types";
+
+
+export class AnalyticsWrapper
+	extends Logger {
+
+	private readonly analytics: FirebaseType_Analytics;
+
+	constructor(analytics: FirebaseType_Analytics) {
+		super();
+		this.analytics = analytics;
+	}
+
+	setUserId(userId: string){
+		this.analytics.setUserId(userId)
+	}
+
+	setCurrentScreen(screenName: string){
+		this.analytics.setCurrentScreen(screenName)
+	}
+
+	setAnalyticsCollectionEnabled(bool: boolean){
+		this.analytics.setAnalyticsCollectionEnabled(bool)
+	}
+
+	setUserProperties(customPros: object){
+		this.analytics.setUserProperties(customPros)
+	}
+
+}
