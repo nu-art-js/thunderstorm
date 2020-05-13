@@ -17,3 +17,5 @@
  */
 
 export * from "./app-frontend/core/module-pack"
+export * from "./app-frontend/modules/PermissionsComponent"
+export * from "./app-frontend/modules/PermissionsModuleFE"

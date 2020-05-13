@@ -23,9 +23,20 @@ import {
 import {StringMap} from "@nu-art/ts-common";
 import {DB_PermissionProject} from "./manager-types";
 
+
+export type UserUrlsPermissions = {
+	[url: string]: boolean
+}
+
 export type Request_AssertApiForUser = {
 	projectId: string
 	path: string
+	requestCustomField: StringMap
+}
+
+export type Request_UserUrlsPermissions = {
+	projectId: string
+	urls: UserUrlsPermissions
 	requestCustomField: StringMap
 }
 
@@ -39,6 +50,7 @@ export type Response_User = {
 };
 
 export type Permissions_ApiAssertUserAccess = ApiWithBody<"/v1/permissions/assert-user-access", Request_AssertApiForUser, Response_User>;
+export type Permissions_ApiUserUrlsPermissions = ApiWithBody<"/v1/permissions/user-urls-permissions", Request_UserUrlsPermissions, UserUrlsPermissions>;
 
 export type Permissions_ApiRegisterExternalProject = ApiWithBody<"/v1/register/register-external-project", Request_RegisterProject, void>;
 export type Permissions_ApiRegisterProject = ApiWithQuery<"/v1/register/register-project", void>;
