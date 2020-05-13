@@ -32,7 +32,10 @@ import {FirestoreWrapper} from "../firestore/FirestoreWrapper";
 import {DatabaseWrapper} from "../database/DatabaseWrapper";
 import {StorageWrapper} from "../storage/StorageWrapper";
 import {PushMessagesWrapper} from "../push/PushMessagesWrapper";
-import {ThisShouldNotHappenException} from "@nu-art/ts-common";
+import {
+	ThisShouldNotHappenException,
+	StringMap
+} from "@nu-art/ts-common";
 
 export class FirebaseSession_Admin
 	extends FirebaseSession<JWTInput | undefined> {
@@ -78,7 +81,7 @@ export class FirebaseSession_Admin
 		return (this.app as admin.app.App).auth();
 	}
 
-	public async sendMessage<T>(token: string, message: T) {
+	public async sendMessage<T extends StringMap>(token: string, message: T) {
 		if (!this.app)
 			this.connect();
 

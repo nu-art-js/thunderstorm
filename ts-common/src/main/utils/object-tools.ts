@@ -87,9 +87,10 @@ export function compare<T extends any>(one: T, two: T): boolean {
 
 		return true;
 	}
-
-	const oneKeys = Object.keys(one);
-	const twoKeys = Object.keys(two);
+	const _one = one as { [k: string]: any };
+	const _two = two as { [k: string]: any };
+	const oneKeys = Object.keys(_one);
+	const twoKeys = Object.keys(_two);
 	if (oneKeys.length !== twoKeys.length)
 		return false;
 
@@ -99,7 +100,7 @@ export function compare<T extends any>(one: T, two: T): boolean {
 	}
 
 	for (const oneKey of oneKeys) {
-		if (compare(one[oneKey], two[oneKey]))
+		if (compare(_one[oneKey], _two[oneKey]))
 			continue;
 
 		return false;
