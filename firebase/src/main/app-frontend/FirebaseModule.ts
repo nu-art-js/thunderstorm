@@ -45,7 +45,7 @@ export class FirebaseModule_Class
 	}
 
 	private async createLocalSession(): Promise<FirebaseSession> {
-		let session = this.sessions[localSessionId];
+		const session = this.sessions[localSessionId];
 		if (session)
 			return session;
 
@@ -74,19 +74,19 @@ export class FirebaseModule_Class
 		if (typeof projectId === "object")
 			return this.createSessionWithConfigs(projectId);
 
-		let session = this.sessions[projectId];
+		const session = this.sessions[projectId];
 		if (session)
 			return session;
 
 		this.logInfo(`Creating session for config: ${projectId}`);
-		let config = this.getProjectAuth(projectId);
+		const config = this.getProjectAuth(projectId);
 		if (!config)
 			throw new BadImplementationException('Did you forget to add FirebaseModule to the main.ts in the modules array?');
 
 		if (!config || !config.projectId || !config.apiKey || !config.authDomain)
 			throw new BadImplementationException(`Config for key ${projectId} is not an Admin credentials pattern`);
 
-		return this.initiateSession(projectId,config,token);
+		return this.initiateSession(projectId, config, token);
 	}
 
 	private async createSessionWithConfigs(config: FirebaseConfig): Promise<FirebaseSession> {
