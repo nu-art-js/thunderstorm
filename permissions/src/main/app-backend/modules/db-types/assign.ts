@@ -104,6 +104,11 @@ export class GroupsDB_Class
 		return super.upsertImpl(transaction, dbInstance);
 	}
 
+	patch(instance: DB_PermissionsGroup, _props?: (keyof DB_PermissionsGroup)[]): Promise<DB_PermissionsGroup> {
+		instance.__accessLevels = [];
+		return super.patch(instance, _props);
+	}
+
 	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup) {
 		if (!dbInstance.accessLevelIds)
 			return;
@@ -157,6 +162,11 @@ export class UsersDB_Class
 		}
 
 		return super.upsertImpl(transaction, dbInstance);
+	}
+
+	patch(instance: DB_PermissionsUser, _props?: (keyof DB_PermissionsUser)[]): Promise<DB_PermissionsUser> {
+		instance.__accessLevels = [];
+		return super.patch(instance, _props);
 	}
 
 	async __onUserLogin(email: string) {
