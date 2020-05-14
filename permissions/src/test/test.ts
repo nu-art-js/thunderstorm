@@ -23,13 +23,19 @@ import {createTwoAccessLevels} from "./tests/create-project";
 import {
 	checkAccessLevelsPropertyOfGroup,
 	checkAccessLevelsPropertyOfUser,
+	checkGroupAccessLevelsAfterPatchingLevelDocument,
 	checkGroupAccessLevelsAfterUpdatingLevelDocument,
 	checkInsertUserIfNotExist,
 	checkInsertUserIfNotExistByExistUser,
+	checkPatchOfGroupAccessLevelsProperty,
+	checkPatchOfGroupAccessLevelsPropertyToHigherValue,
+	checkPatchOfUserAccessLevelsProperty,
+	checkPatchOfUserAccessLevelsPropertyToHigherValue,
 	checkUpdateOfGroupAccessLevelsProperty,
 	checkUpdateOfGroupAccessLevelsPropertyToHigherValue,
 	checkUpdateOfUserAccessLevelsProperty,
 	checkUpdateOfUserAccessLevelsPropertyToHigherValue,
+	checkUserAccessLevelsAfterPatchingLevelDocument,
 	checkUserAccessLevelsAfterUpdatingLevelDocument,
 	createApi,
 	createApiWithAccessLevel,
@@ -60,9 +66,15 @@ mainScenario.add(checkUpdateOfGroupAccessLevelsProperty());
 mainScenario.add(checkAccessLevelsPropertyOfUser());
 mainScenario.add(checkUpdateOfUserAccessLevelsProperty());
 mainScenario.add(checkUpdateOfGroupAccessLevelsPropertyToHigherValue());
+mainScenario.add(checkPatchOfGroupAccessLevelsProperty());
+mainScenario.add(checkGroupAccessLevelsAfterPatchingLevelDocument());
+mainScenario.add(checkPatchOfGroupAccessLevelsPropertyToHigherValue());
 mainScenario.add(checkUpdateOfUserAccessLevelsPropertyToHigherValue());
 mainScenario.add(checkGroupAccessLevelsAfterUpdatingLevelDocument());
 mainScenario.add(checkUserAccessLevelsAfterUpdatingLevelDocument());
+mainScenario.add(checkPatchOfUserAccessLevelsProperty());
+mainScenario.add(checkUserAccessLevelsAfterPatchingLevelDocument());
+mainScenario.add(checkPatchOfUserAccessLevelsPropertyToHigherValue());
 mainScenario.add(createTowGroups());
 mainScenario.add(createGroupWithLegalCustomField());
 mainScenario.add(failToCreateGroupWithIllegalCustomField());
