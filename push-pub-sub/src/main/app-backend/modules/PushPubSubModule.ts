@@ -32,13 +32,14 @@ import {
 	FirestoreCollection,
 	PushMessagesWrapper
 } from '@nu-art/firebase/backend';
+// noinspection TypeScriptPreferShortImport
 import {
 	DB_PushKeys,
 	DB_PushSession,
 	Request_PushRegister,
 	SubscribeProps,
 	SubscriptionData
-} from "../..";
+} from "../../index";
 
 type Config = {
 	delta_time?: number

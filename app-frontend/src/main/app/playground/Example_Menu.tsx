@@ -2,9 +2,9 @@ import * as React from "react";
 import {Component} from "react";
 import {MenuAndButton} from "@nu-art/thunderstorm/app-frontend/modules/menu/MenuAndButton";
 import {
-	Renderer,
 	Menu,
-	MenuItemWrapper
+	MenuItemWrapper,
+	Renderer
 } from "@nu-art/thunderstorm/frontend";
 
 const iconClose = require('@res/images/icon__arrowClose.svg');
@@ -16,10 +16,11 @@ type Rm = {
 	normal: Renderer<RendererString>
 };
 
+const rendererMap: Rm = {
+	normal: ({item: {toDisplay}}) => <div>{toDisplay}</div>
+};
+
 const createMenu = (): Menu<Rm> => {
-	const rendererMap: Rm = {
-		normal: ({item: {toDisplay}}) => <div>{toDisplay}</div>
-	};
 	const _children = ["hi", "bye"].map((panelId: string) => {
 		const menuItem: MenuItemWrapper<Rm, 'normal'> = {
 			item: {
