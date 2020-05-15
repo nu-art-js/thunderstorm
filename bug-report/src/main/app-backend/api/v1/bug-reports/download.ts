@@ -20,9 +20,8 @@
 import {
 	ApiResponse,
 	ExpressRequest,
-	ServerApi_Post,
+	ServerApi_Post
 } from "@nu-art/thunderstorm/backend";
-
 import {
 	AdminBRModule,
 	ApiPostPath,
