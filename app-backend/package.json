@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@app/app-shared": "file:.dependencies/app-shared",
-    "@nu-art/bug-report": "file:.dependencies/push-pub-sub",
+    "@nu-art/bug-report": "file:.dependencies/bug-report",
     "@nu-art/db-api-generator": "file:.dependencies/db-api-generator",
     "@nu-art/firebase": "file:.dependencies/firebase",
     "@nu-art/live-docs": "file:.dependencies/live-docs",

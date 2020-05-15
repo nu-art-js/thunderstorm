@@ -30,13 +30,13 @@ import {
 	ThunderDispatcher,
 	ToastModule
 } from "@nu-art/thunderstorm/frontend";
-
+// noinspection TypeScriptPreferShortImport
 import {
 	BaseSubscriptionData,
 	PubSubRegisterClient,
 	Request_PushRegister,
 	SubscriptionData
-} from "../..";
+} from "../../index";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	FirebaseModule,

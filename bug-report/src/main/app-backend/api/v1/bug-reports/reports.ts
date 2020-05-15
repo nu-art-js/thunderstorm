@@ -19,17 +19,15 @@
 
 import {
 	ApiResponse,
+	ExpressRequest,
 	ServerApi_Post,
 } from "@nu-art/thunderstorm/backend";
-import * as express from "express";
 import {
 	ApiBugReport,
+	BugReportModule,
 	Request_BugReport
 } from "./_imports";
 
-import {
-	BugReportModule
-} from "./_imports";
 // import {AccountModule} from "@nu-art/user-account/backend";
 
 class ServerApi_SendReport
@@ -39,7 +37,7 @@ class ServerApi_SendReport
 		super("report");
 	}
 
-	protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: Request_BugReport) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_BugReport) {
 		// const email = await AccountModule.validateSession(request);
 		await BugReportModule.saveFile(body);
 	}
