@@ -75,8 +75,8 @@ export function checkUpdateOfGroupAccessLevelsProperty() {
 	scenario.add(__custom(async (action, data) => {
 		const group = await GroupPermissionsDB.upsert({label: 'test group one', accessLevelIds: [data.level._id], _id: uniqId1});
 		group.accessLevelIds = [];
-		await GroupPermissionsDB.upsert(group);
-		if (group.__accessLevels && group.__accessLevels.length) {
+		const updatedGroup = await GroupPermissionsDB.upsert(group);
+		if (updatedGroup.__accessLevels && updatedGroup.__accessLevels.length) {
 			throw new TestException("Didn't update group __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully'));
@@ -95,8 +95,8 @@ export function checkUpdateOfGroupAccessLevelsPropertyToHigherValue() {
 		}
 
 		group.accessLevelIds.push(higherValueLevel._id);
-		await GroupPermissionsDB.upsert(group);
-		if (!group.__accessLevels || group.__accessLevels.length !== 1 || group.__accessLevels[0].value !== testLevel2.value) {
+		const updatedGroup = await GroupPermissionsDB.upsert(group);
+		if (!updatedGroup.__accessLevels || updatedGroup.__accessLevels.length !== 1 || updatedGroup.__accessLevels[0].value !== testLevel2.value) {
 			throw new TestException("Didn't update group __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
@@ -110,8 +110,8 @@ export function checkPatchOfGroupAccessLevelsProperty() {
 	scenario.add(__custom(async (action, data) => {
 		const group = await GroupPermissionsDB.upsert({label: 'test group one', accessLevelIds: [data.level._id], _id: uniqId1, customFields: []});
 		group.accessLevelIds = [];
-		await GroupPermissionsDB.patch(group);
-		if (group.__accessLevels && group.__accessLevels.length) {
+		const updatedGroup = await GroupPermissionsDB.patch(group);
+		if (updatedGroup.__accessLevels && updatedGroup.__accessLevels.length) {
 			throw new TestException("Didn't update group __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully'));
@@ -130,9 +130,8 @@ export function checkPatchOfGroupAccessLevelsPropertyToHigherValue() {
 		}
 
 		group.accessLevelIds.push(higherValueLevel._id);
-		await GroupPermissionsDB.patch(group);
-		console.log("got here");
-		if (!group.__accessLevels || group.__accessLevels.length !== 1 || group.__accessLevels[0].value !== testLevel2.value) {
+		const updatedGroup = await GroupPermissionsDB.patch(group);
+		if (!updatedGroup.__accessLevels || updatedGroup.__accessLevels.length !== 1 || updatedGroup.__accessLevels[0].value !== testLevel2.value) {
 			throw new TestException("Didn't update group __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
@@ -151,8 +150,8 @@ export function checkUpdateOfUserAccessLevelsPropertyToHigherValue() {
 		}
 
 		user.accessLevelIds.push(higherValueLevel._id);
-		await UserPermissionsDB.upsert(user);
-		if (!user.__accessLevels || user.__accessLevels.length !== 1 || user.__accessLevels[0].value !== testLevel2.value) {
+		const updatedUser = await UserPermissionsDB.upsert(user);
+		if (!updatedUser.__accessLevels || updatedUser.__accessLevels.length !== 1 || updatedUser.__accessLevels[0].value !== testLevel2.value) {
 			throw new TestException("Didn't update user __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
@@ -207,8 +206,8 @@ export function checkPatchOfUserAccessLevelsPropertyToHigherValue() {
 		}
 
 		user.accessLevelIds.push(higherValueLevel._id);
-		await UserPermissionsDB.patch(user);
-		if (!user.__accessLevels || user.__accessLevels.length !== 1 || user.__accessLevels[0].value !== testLevel2.value) {
+		const updatedUser = await UserPermissionsDB.patch(user);
+		if (!updatedUser.__accessLevels || updatedUser.__accessLevels.length !== 1 || updatedUser.__accessLevels[0].value !== testLevel2.value) {
 			throw new TestException("Didn't update user __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
@@ -271,8 +270,8 @@ export function checkUpdateOfUserAccessLevelsProperty() {
 	scenario.add(__custom(async (action, data) => {
 		const user = await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1});
 		user.accessLevelIds = [];
-		await UserPermissionsDB.upsert(user);
-		if (user.__accessLevels && user.__accessLevels.length) {
+		const updatedUser = await UserPermissionsDB.upsert(user);
+		if (updatedUser.__accessLevels && updatedUser.__accessLevels.length) {
 			throw new TestException("Didn't update user __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully'));
@@ -286,8 +285,8 @@ export function checkPatchOfUserAccessLevelsProperty() {
 	scenario.add(__custom(async (action, data) => {
 		const user = await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1, customFields: [], groupIds: []});
 		user.accessLevelIds = [];
-		await UserPermissionsDB.patch(user);
-		if (user.__accessLevels && user.__accessLevels.length) {
+		const updatedUser = await UserPermissionsDB.patch(user);
+		if (updatedUser.__accessLevels && updatedUser.__accessLevels.length) {
 			throw new TestException("Didn't update user __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully'));
