@@ -220,7 +220,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	private async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }) {
+	protected async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }) {
 		await transaction.deleteUnique(this.collection, ourQuery);
 	}
 

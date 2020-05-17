@@ -176,6 +176,23 @@ export function checkGroupAccessLevelsAfterUpdatingLevelDocument() {
 	return scenario;
 }
 
+export function checkApiAccessLevelsAfterUpdatingLevelDocument() {
+	const scenario = __scenario("Check api accessLevelIds after deleting level");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		const levelId = data.level._id;
+		const api = await ApiPermissionsDB.upsert({path: apiPath, accessLevelIds: [levelId], projectId: data.project._id, _id: uniqId1});
+		await AccessLevelPermissionsDB.deleteUnique(levelId);
+		const updatedApi = await ApiPermissionsDB.queryUnique({_id: api._id});
+
+		if (updatedApi.accessLevelIds && updatedApi.accessLevelIds.length) {
+			throw new TestException("Didn't update api accessLevelsIds");
+		}
+	}).setReadKey(contextKey1).setLabel('Api accessLevelsIds has updated successfully by deleting level document'));
+	return scenario;
+}
+
 export function checkUserAccessLevelsAfterUpdatingLevelDocument() {
 	const scenario = __scenario("Check user access level after updating level");
 	scenario.add(cleanup());
