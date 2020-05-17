@@ -15,6 +15,7 @@ import {
 import {
 	AccessLevelPermissionsDB,
 	ApiPermissionsDB,
+	DomainPermissionsDB,
 	GroupPermissionsDB,
 	UserPermissionsDB
 } from "../_main";
@@ -401,6 +402,40 @@ export function createApiWithAccessLevel() {
 	scenario.add(__custom(async (action, data) => {
 		await ApiPermissionsDB.upsert({path: apiPath, accessLevelIds: [data.level._id], projectId: data.project._id});
 	}).setReadKey(contextKey).setLabel('Created api with access levels'));
+	return scenario;
+}
+
+export function tryDeleteDomainAssociatedWithAccessLevel() {
+	const scenario = __scenario("Try delete domain associated with level");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		await DomainPermissionsDB.deleteUnique(data.domain._id);
+	}).setReadKey(contextKey1).setLabel('Expect to fail deleting domain associated with level').expectToFail(ApiException));
+	return scenario;
+}
+
+export function tryDeleteAccessLevelAssociatedWithGroup() {
+	const scenario = __scenario("Try delete access level associated with group");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		const levelId = data.level._id;
+		await GroupPermissionsDB.upsert({_id: uniqId1, accessLevelIds: [levelId], label: "group-test"});
+		await AccessLevelPermissionsDB.deleteUnique(levelId);
+	}).setReadKey(contextKey1).setLabel('Expect to fail deleting access level associated with group').expectToFail(ApiException));
+	return scenario;
+}
+
+export function tryDeleteAccessLevelAssociatedWithApi() {
+	const scenario = __scenario("Try delete access level associated with api");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		const levelId = data.level._id;
+		await ApiPermissionsDB.upsert({_id: uniqId1, accessLevelIds: [levelId], projectId: data.project._id, path: apiPath});
+		await AccessLevelPermissionsDB.deleteUnique(levelId);
+	}).setReadKey(contextKey1).setLabel('Expect to fail deleting access level associated with api').expectToFail(ApiException));
 	return scenario;
 }
 

@@ -48,6 +48,9 @@ import {
 	failedCreateUserWithDuplicateAccessLevel,
 	failedCreateUserWithDuplicateGroups,
 	failToCreateGroupWithIllegalCustomField,
+	tryDeleteAccessLevelAssociatedWithApi,
+	tryDeleteAccessLevelAssociatedWithGroup,
+	tryDeleteDomainAssociatedWithAccessLevel
 } from "./tests/permissions-manage";
 import {
 	permissionsAssertDoesCustomFieldsSatisfiesTests,
@@ -89,6 +92,10 @@ mainScenario.add(checkInsertUserIfNotExistByExistUser());
 
 mainScenario.add(permissionsAssertIsLevelsMatchTests());
 mainScenario.add(permissionsAssertDoesCustomFieldsSatisfiesTests());
+
+mainScenario.add(tryDeleteDomainAssociatedWithAccessLevel());
+mainScenario.add(tryDeleteAccessLevelAssociatedWithGroup());
+mainScenario.add(tryDeleteAccessLevelAssociatedWithApi());
 
 module.exports = new StormTester()
 	.addModules(FirebaseModule)
