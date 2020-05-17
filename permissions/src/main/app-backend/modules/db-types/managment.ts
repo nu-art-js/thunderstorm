@@ -115,10 +115,67 @@ export class LevelDB_Class
 		await DomainPermissionsDB.queryUnique({_id: dbInstance.domainId});
 	}
 
+	protected async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DB_PermissionAccessLevel> }) {
+		const deleteLevelId = ourQuery.where._id as string;
+		const existDbLevel = await transaction.queryUnique(this.collection, {where: {_id: deleteLevelId}});
+
+		const deleteRead = await transaction.deleteUnique_Read(this.collection, ourQuery);
+		if (existDbLevel) {
+			const callbackfn = (item: Request_PermissionsBase) => {
+				const index = item.accessLevelIds?.indexOf(deleteLevelId);
+				if (index === undefined)
+					throw new MUSTNeverHappenException("Query said it does exists!!");
+
+				item.accessLevelIds?.splice(index, 1);
+				item.__accessLevels?.splice(index, 1);
+			}
+
+			await this.updateAccessLevelDependencies(transaction, deleteLevelId, callbackfn);
+
+		}
+
+		await deleteRead();
+	}
+
+	async updateAccessLevelDependencies(transaction: FirestoreTransaction, accessLevelId: string, callbackfn: (item: Request_PermissionsBase) => void) {
+		const users = await UserPermissionsDB.query({where: {accessLevelIds: {$ac: accessLevelId}}});
+		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: accessLevelId}}});
+		const apis = await ApiPermissionsDB.query({where: {accessLevelIds: {$ac: accessLevelId}}});
+
+		const asyncs = [];
+		asyncs.push(...users.map(async user => {
+			callbackfn(user);
+			await UserPermissionsDB.validateImpl(user);
+			await UserPermissionsDB.assertUniqueness(transaction, user);
+		}));
+
+		asyncs.push(...groups.map(async group => {
+			callbackfn(group);
+			await GroupPermissionsDB.validateImpl(group);
+			await GroupPermissionsDB.assertUniqueness(transaction, group);
+		}));
+
+		asyncs.push(...apis.map(async api => {
+			callbackfn(api);
+			await ApiPermissionsDB.validateImpl(api);
+			await ApiPermissionsDB.assertUniqueness(transaction, api);
+		}));
+
+		const upsertGroups = await transaction.upsertAll_Read(GroupPermissionsDB.collection, groups);
+		const upsertUsers = await transaction.upsertAll_Read(UserPermissionsDB.collection, users);
+		const upsertApis = await transaction.upsertAll_Read(ApiPermissionsDB.collection, apis);
+		await Promise.all(asyncs);
+
+		// --- writes part
+		await upsertUsers();
+		await upsertGroups();
+		await upsertApis();
+	}
+
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel): Promise<DB_PermissionAccessLevel> {
-		const existDbLevel = await transaction.queryUnique(this.collection, {where: {_id: dbInstance._id}});
-		const users = await UserPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
-		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
+		const accessLevelId = dbInstance._id;
+		const existDbLevel = await transaction.queryUnique(this.collection, {where: {_id: accessLevelId}});
+
 		const upsertRead = await transaction.upsert_Read(this.collection, dbInstance);
 		if (existDbLevel) {
 			const callbackfn = (user: Request_PermissionsBase) => {
@@ -127,32 +184,12 @@ export class LevelDB_Class
 					throw new MUSTNeverHappenException("Query said it does exists!!");
 
 				const accessLevel = user.__accessLevels?.[index];
-				if (accessLevel === undefined)
-					throw new MUSTNeverHappenException("Query said it does exists!!");
-
-				accessLevel.value = dbInstance.value
+				if (accessLevel !== undefined)
+					accessLevel.value = dbInstance.value
 			};
 
-			const asyncs = [];
-			asyncs.push(...users.map(async user => {
-				callbackfn(user);
-				await UserPermissionsDB.validateImpl(user);
-				await UserPermissionsDB.assertUniqueness(transaction, user);
-			}));
+			await this.updateAccessLevelDependencies(transaction, accessLevelId, callbackfn);
 
-			asyncs.push(...groups.map(async group => {
-				callbackfn(group);
-				await GroupPermissionsDB.validateImpl(group);
-				await GroupPermissionsDB.assertUniqueness(transaction, group);
-			}));
-
-			const upsertGroups = await transaction.upsertAll_Read(GroupPermissionsDB.collection, groups);
-			const upsertUsers = await transaction.upsertAll_Read(UserPermissionsDB.collection, users);
-			await Promise.all(asyncs);
-
-			// --- writes part
-			await upsertUsers();
-			await upsertGroups();
 		}
 
 		return upsertRead();

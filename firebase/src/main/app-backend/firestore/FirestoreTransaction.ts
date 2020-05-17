@@ -91,6 +91,19 @@ export class FirestoreTransaction {
 		}
 	}
 
+	async deleteUnique_Read<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
+		const doc = await this._queryUnique(collection, ourQuery);
+
+		return async () => {
+			if (!doc)
+				return;
+
+			const result = doc.data() as Type;
+			await this.transaction.delete(doc.ref as admin.firestore.DocumentReference);
+			return result;
+		}
+	}
+
 	private async getOrCreateDocument<Type extends object>(collection: FirestoreCollection<Type>, instance: Type) {
 		let ref = (await this._queryItem(collection, instance))?.ref;
 		if (!ref)
