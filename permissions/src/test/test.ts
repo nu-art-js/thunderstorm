@@ -23,7 +23,6 @@ import {createTwoAccessLevels} from "./tests/create-project";
 import {
 	checkAccessLevelsPropertyOfGroup,
 	checkAccessLevelsPropertyOfUser,
-	checkApiAccessLevelsAfterUpdatingLevelDocument,
 	checkGroupAccessLevelsAfterPatchingLevelDocument,
 	checkGroupAccessLevelsAfterUpdatingLevelDocument,
 	checkInsertUserIfNotExist,
@@ -90,8 +89,6 @@ mainScenario.add(checkInsertUserIfNotExistByExistUser());
 
 mainScenario.add(permissionsAssertIsLevelsMatchTests());
 mainScenario.add(permissionsAssertDoesCustomFieldsSatisfiesTests());
-
-mainScenario.add(checkApiAccessLevelsAfterUpdatingLevelDocument());
 
 module.exports = new StormTester()
 	.addModules(FirebaseModule)
