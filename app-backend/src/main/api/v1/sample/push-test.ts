@@ -16,36 +16,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {
+	ApiResponse,
+	ExpressRequest,
+	ServerApi_Get,
+} from "@nu-art/thunderstorm/backend";
 
-import {Logger} from "@nu-art/ts-common";
-import {FirebaseType_Analytics} from "./types";
-// tslint:disable:no-import-side-effect
-import 'firebase/analytics';
+import {ExampleTestPush} from "@app/app-shared";
+import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
 
-export class AnalyticsWrapper
-	extends Logger {
+class ServerApi_PushTest
+	extends ServerApi_Get<ExampleTestPush> {
 
-	private readonly analytics: FirebaseType_Analytics;
-
-	constructor(analytics: FirebaseType_Analytics) {
-		super();
-		this.analytics = analytics;
+	constructor() {
+		super("push-test");
 	}
 
-	setUserId(userId: string){
-		this.analytics.setUserId(userId)
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
+		await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'});
+		return "push succeeded!"
 	}
-
-	setCurrentScreen(screenName: string){
-		this.analytics.setCurrentScreen(screenName)
-	}
-
-	setAnalyticsCollectionEnabled(bool: boolean){
-		this.analytics.setAnalyticsCollectionEnabled(bool)
-	}
-
-	setUserProperties(customPros: object){
-		this.analytics.setUserProperties(customPros)
-	}
-
 }
+
+module.exports = new ServerApi_PushTest();

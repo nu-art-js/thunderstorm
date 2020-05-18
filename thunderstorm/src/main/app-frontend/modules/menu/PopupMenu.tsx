@@ -78,7 +78,15 @@ export class PopupMenu
 
 	overlayRef = React.createRef<HTMLDivElement>();
 
-	__onMenuDisplay = (element?: Menu_Model) => this.setState({element});
+	__onMenuDisplay = (element: Menu_Model) => this.setState({element});
+
+	__onMenuHide = (id: string) => {
+		const element = this.state.element;
+		if(!element || element.id !== id)
+			return
+
+		this.setState({element: undefined});
+	};
 
 	componentDidMount(): void {
 		this.eventListenersEffect();

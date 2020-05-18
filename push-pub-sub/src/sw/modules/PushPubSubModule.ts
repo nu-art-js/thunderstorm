@@ -27,10 +27,7 @@ import {
 	StringMap
 } from '@nu-art/ts-common';
 import {FirebaseModule} from "@nu-art/firebase/frontend";
-import {
-	isServiceWorkerScope,
-	swSelf
-} from "@nu-art/thunderstorm/core/self";
+import {swSelf} from "@nu-art/thunderstorm/core/self";
 
 export const Command_SwToApp = 'SwToApp';
 
@@ -40,6 +37,10 @@ type PushPubSubConfig = {
 
 class PushPubSubModule_Class
 	extends Module<PushPubSubConfig> {
+
+	constructor(){
+		super('Service Worker PushPubSubModule')
+	}
 
 	protected init(): void {
 		this.runAsync('Init App', this.initApp);
@@ -51,11 +52,7 @@ class PushPubSubModule_Class
 	}
 
 	private initApp = async () => {
-		const app = await FirebaseModule.createSession();
-		// This means that the bundle is being evaluated in the main thread to register the service worker so there is no need to run the rest
-		// Also because it would fail since firebase would initialize the messaging controller as the main thread one instead of the sw one...
-		if (!isServiceWorkerScope())
-			return;
+		const app = await FirebaseModule.createSwSession();
 
 		const messaging = app.getMessaging();
 

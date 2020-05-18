@@ -20,13 +20,14 @@
  */
 
 import * as React from 'react';
-import {ReactNode} from "react";
+import {ReactNode} from 'react';
 import {GenericSelect} from "./GenericSelect";
 
 export type PlaygroundProps = {
-	selectStyle: any,
-	iconClose: string,
-	iconOpen: string,
+	selectedScreen?: PlaygroundScreen
+	selectStyle: any
+	iconClose: string
+	iconOpen: string
 	screens: PlaygroundScreen[]
 }
 
@@ -39,11 +40,14 @@ export type PlaygroundScreen = {
 	getNode: () => ReactNode
 }
 
-export class Playground extends React.Component<PlaygroundProps, State> {
+export class Playground
+	extends React.Component<PlaygroundProps, State> {
 
 	constructor(props: PlaygroundProps) {
 		super(props);
-		this.state = {};
+		this.state = {
+			selectedScreen: this.props.selectedScreen
+		};
 	}
 
 	render() {
@@ -54,9 +58,7 @@ export class Playground extends React.Component<PlaygroundProps, State> {
 					iconOpen={this.props.iconOpen}
 					selectedOption={this.state.selectedScreen}
 					options={this.props.screens}
-					onChange={(screen: PlaygroundScreen) => {
-						this.setState({selectedScreen: screen});
-					}}
+					onChange={(screen: PlaygroundScreen) => this.setState({selectedScreen: screen})}
 					styles={this.props.selectStyle}
 					presentation={(screen) => screen.name}
 				/>

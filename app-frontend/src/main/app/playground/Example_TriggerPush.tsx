@@ -16,36 +16,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import * as React from 'react';
+import {BaseComponent} from "@nu-art/thunderstorm/frontend";
+import {
+	_setTimeout,
+	Second
+} from '@nu-art/ts-common';
+import {ExampleModule} from "@modules/ExampleModule";
 
-import {Logger} from "@nu-art/ts-common";
-import {FirebaseType_Analytics} from "./types";
-// tslint:disable:no-import-side-effect
-import 'firebase/analytics';
+export class Example_TriggerPush
+	extends BaseComponent {
 
-export class AnalyticsWrapper
-	extends Logger {
 
-	private readonly analytics: FirebaseType_Analytics;
-
-	constructor(analytics: FirebaseType_Analytics) {
-		super();
-		this.analytics = analytics;
+	render() {
+		return <div className={'ll_h_v'}>
+			<button onClick={() => this.triggerPush()}>Trigger Push</button>
+			<button onClick={() => this.triggerPush(Second)}>Trigger Delayed Push</button>
+		</div>;
 	}
 
-	setUserId(userId: string){
-		this.analytics.setUserId(userId)
+	private triggerPush(timeout?: number) {
+		return _setTimeout(() => {
+			ExampleModule.testPush()
+		}, timeout);
 	}
-
-	setCurrentScreen(screenName: string){
-		this.analytics.setCurrentScreen(screenName)
-	}
-
-	setAnalyticsCollectionEnabled(bool: boolean){
-		this.analytics.setAnalyticsCollectionEnabled(bool)
-	}
-
-	setUserProperties(customPros: object){
-		this.analytics.setUserProperties(customPros)
-	}
-
 }
