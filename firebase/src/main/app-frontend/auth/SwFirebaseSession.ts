@@ -25,25 +25,19 @@ import * as firebase from 'firebase/app'
 import 'firebase/auth';
 import {Logger} from "@nu-art/ts-common";
 // noinspection TypeScriptPreferShortImport
-import {FirebaseConfig} from "../../index";
 import {SwMessagingWrapper} from "../messaging/SwMessagingWrapper";
 
 export class SwFirebaseSession
 	extends Logger {
 	app!: firebase.app.App;
 
-	protected config: FirebaseConfig;
 	protected sessionName: string;
 	protected messaging?: SwMessagingWrapper;
 
-	constructor(sessionName: string, config: FirebaseConfig) {
+	constructor(sessionName: string, app: firebase.app.App) {
 		super(`service worker firebase: ${sessionName}`);
 		this.sessionName = sessionName;
-		this.config = config;
-	}
-
-	public connect(): void {
-		this.app = firebase.initializeApp(this.config);
+		this.app = app;
 	}
 
 	getMessaging() {
