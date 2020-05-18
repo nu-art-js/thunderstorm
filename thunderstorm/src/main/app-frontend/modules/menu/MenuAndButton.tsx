@@ -2,7 +2,6 @@ import * as React from "react";
 import {BaseComponent} from "../../core/BaseComponent";
 import {
 	Menu,
-	Menu_Model,
 	MenuBuilder,
 	MenuListener,
 	resolveRealPosition
@@ -21,17 +20,14 @@ export class MenuAndButton
 
 
 	__onMenuHide = (id: string) => {
-		if(this.props.id !== id)
+		if (this.props.id !== id)
 			return
 
 		this.close()
 	};
 
-	__onMenuDisplay = (menu: Menu_Model) => {
-		if(this.props.id !== menu.id)
-			return
-
-		this.open()
+	__onMenuDisplay = () => {
+		// this is triggered by this.open so dont want to make it recursive
 	};
 
 	ref = React.createRef<HTMLImageElement>();

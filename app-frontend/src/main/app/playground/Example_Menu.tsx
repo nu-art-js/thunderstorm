@@ -52,5 +52,4 @@ export class Example_Menu
 			/>
 		</div>
 	}
-
 }

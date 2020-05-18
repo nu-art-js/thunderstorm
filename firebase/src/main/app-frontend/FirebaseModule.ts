@@ -51,16 +51,10 @@ export class FirebaseModule_Class
 		if (swSession)
 			return swSession;
 
-		let localConfig = this.getProjectAuth(localSessionId);
-		if (!localConfig)
-			localConfig = await this.fetchLocalConfig();
+		const localSession = await this.createLocalSession();
 
-		this.checkConfig(localConfig, localSessionId);
-
-		const session = new SwFirebaseSession(localSessionId, localConfig);
+		const session = new SwFirebaseSession(localSessionId, localSession.app);
 		this.swSession = session;
-
-		session.connect();
 
 		return session;
 	}
