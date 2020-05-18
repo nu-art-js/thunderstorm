@@ -17,7 +17,7 @@
  */
 
 import {
-	compare,
+	__stringify,
 	Module,
 	Second
 } from "@nu-art/ts-common";
@@ -36,6 +36,7 @@ import {
 	ExampleApiPostType,
 	ExampleApiTest,
 	ExampleGetMax,
+	ExampleTestPush,
 	TestDispatch
 } from "@app/app-shared";
 import {
@@ -57,12 +58,19 @@ type Config = {
 export const RequestKey_CustomError = "CustomError";
 export const RequestKey_PostApi = "PostApi";
 export const RequestKey_GetApi = "GetApi";
+export const RequestKey_TestPush = "TestPush";
 export const RequestKey_TestApi = "TestApi";
 export const exampleDispatcher = new ThunderDispatcher<TestDispatch, 'testDispatch'>('testDispatch');
+
 export const dispatchAll = () => {
 	exampleDispatcher.dispatchUI([]);
 	exampleDispatcher.dispatchModule([])
-}
+};
+
+const mySubscription = {
+	pushKey: 'key',
+	props: {a: 'prop'}
+};
 
 export class ExampleModule_Class
 	extends Module<Config>
@@ -75,7 +83,7 @@ export class ExampleModule_Class
 	private max: number = 0;
 
 	protected init(): void {
-		PushPubSubModule.subscribe({props: {a: 'prop'}, pushKey: 'key'})
+		PushPubSubModule.subscribe(mySubscription)
 		this.runAsync('Initializing Analytics', this.initAnalytics)
 	}
 
@@ -86,10 +94,11 @@ export class ExampleModule_Class
 	};
 
 	onMessageReceived(payload: SubscriptionData[]) {
-		const myPayload = payload.find(subscription => compare(subscription, {pushKey: 'key', props: {a: 'prop'}}));
-		if (!myPayload)
+		const myPayload = PushPubSubModule.filterSubscriptions(payload, mySubscription);
+		if (myPayload.length === 0)
 			return;
 
+		ToastModule.toastSuccess(`You got data! ${__stringify(myPayload)}`);
 		console.log('payload received in module', myPayload);
 	}
 
@@ -134,7 +143,6 @@ export class ExampleModule_Class
 			.setJsonBody(bodyObject)
 			.setRelativeUrl("/v1/sample/another-endpoint")
 			.setOnError(`Error getting new message from backend`)
-			.setOnSuccessMessage(`Success`)
 			.execute(this.setMessage);
 
 		this.logInfo("continue... will receive an event once request is completed..");
@@ -147,11 +155,19 @@ export class ExampleModule_Class
 			.createRequest<ExampleApiGetType>(HttpMethod.GET, RequestKey_GetApi)
 			.setRelativeUrl(this.config.remoteUrl)
 			.setOnError(`Error getting new message from backend`)
-			.execute(async response => {
-				this.message = response;
-			});
+			.execute(this.setMessage);
 
 		this.logInfo("continue... will receive an event once request is completed..");
+	};
+
+	testPush = () => {
+		this.logInfo("getting label from server");
+
+		HttpModule
+			.createRequest<ExampleTestPush>(HttpMethod.GET, RequestKey_TestPush)
+			.setRelativeUrl('/v1/sample/push-test')
+			.setOnError(`Error testing push message pub sub`)
+			.execute();
 	};
 
 	setMessage = async (message: string) => {

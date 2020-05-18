@@ -23,28 +23,21 @@
 import * as firebase from 'firebase/app'
 // tslint:disable:no-import-side-effect
 import 'firebase/auth';
-import {
-	Logger,
-	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
+import {Logger} from "@nu-art/ts-common";
 // noinspection TypeScriptPreferShortImport
 import {FirebaseConfig} from "../../index";
-import {MessagingWrapper} from "../messaging/MessagingWrapper";
-import {AnalyticsWrapper} from "../analytics/AnalyticsWrapper";
-import {DatabaseWrapper} from "../database/DatabaseWrapper";
+import {SwMessagingWrapper} from "../messaging/SwMessagingWrapper";
 
-export class FirebaseSession
+export class SwFirebaseSession
 	extends Logger {
 	app!: firebase.app.App;
 
 	protected config: FirebaseConfig;
 	protected sessionName: string;
-	protected messaging?: MessagingWrapper;
-	protected analytics?: AnalyticsWrapper;
-	protected database?: DatabaseWrapper;
+	protected messaging?: SwMessagingWrapper;
 
 	constructor(sessionName: string, config: FirebaseConfig) {
-		super(`firebase: ${sessionName}`);
+		super(`service worker firebase: ${sessionName}`);
 		this.sessionName = sessionName;
 		this.config = config;
 	}
@@ -57,39 +50,7 @@ export class FirebaseSession
 		if (this.messaging)
 			return this.messaging;
 
-		return this.messaging = new MessagingWrapper(this.app.messaging());
-	}
-
-	getAnalytics() {
-		if (this.analytics)
-			return this.analytics;
-
-		return this.analytics = new AnalyticsWrapper(this.app.analytics());
-	}
-
-	getDatabase() {
-		if (this.database)
-			return this.database;
-
-		return this.database = new DatabaseWrapper(this.app.database());
-	}
-
-	async signInWithToken(token: string) {
-		return this.app.auth().signInWithCustomToken(token)
-	};
-
-	async signOut() {
-		return this.app.auth().signOut()
-	}
-
-	getProjectId(): string {
-		if (!this.config)
-			throw new ThisShouldNotHappenException("Missing config. Probably init not resolved yet!")
-
-		if (!this.config.projectId)
-			throw new ThisShouldNotHappenException("Could not deduce project id from session config.. if you need the functionality.. add it to the config!!")
-
-		return this.config.projectId;
+		return this.messaging = new SwMessagingWrapper(this.app.messaging());
 	}
 }
 
