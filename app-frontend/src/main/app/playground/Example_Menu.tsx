@@ -1,10 +1,11 @@
 import * as React from "react";
 import {Component} from "react";
-import {MenuAndButton} from "@nu-art/thunderstorm/frontend";
 import {
 	Menu,
+	MenuAndButton,
 	MenuItemWrapper,
-	Renderer
+	Renderer,
+	FixedMenu
 } from "@nu-art/thunderstorm/frontend";
 import {
 	_keys,
@@ -43,13 +44,22 @@ export class Example_Menu
 	extends Component<{}> {
 
 	render() {
+		const menu = createMenu() as Menu<any>;
 		return <div>
+			<div>
+				Here is a Menu Button
 			<MenuAndButton
 				id={'menu'}
 				iconClosed={iconClose}
 				iconOpen={iconOpen}
-				menu={createMenu() as Menu<any>}
+				menu={menu}
 			/>
+			</div>
+
+			<div>
+				Here is the same menu but as a component
+				<FixedMenu menu={menu}/>
+			</div>
 		</div>
 	}
 }
