@@ -58,9 +58,10 @@ export class GenericSelect<T extends object>
 		if (options) {
 			const selectedOption = props.selectedOption;
 			options.forEach((option, idx) => {
-				const item: SelectItem = {label: props.presentation(option), value: "" + idx};
+				const optionPresentation = props.presentation(option)
+				const item: SelectItem = {label: optionPresentation, value: "" + idx};
 				if (selectedOption) {
-					if (option === selectedOption) {
+					if (optionPresentation === props.presentation(selectedOption)) {
 						value = item;
 					}
 				}

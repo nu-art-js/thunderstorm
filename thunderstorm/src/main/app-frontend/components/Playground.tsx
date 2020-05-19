@@ -22,9 +22,11 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
 import {GenericSelect} from "./GenericSelect";
+import {BrowserHistoryModule} from "../modules/HistoryModule";
+
+const PLAYGROUND = "playground"
 
 export type PlaygroundProps = {
-	selectedScreen?: PlaygroundScreen
 	selectStyle: any
 	iconClose: string
 	iconOpen: string
@@ -45,9 +47,15 @@ export class Playground
 
 	constructor(props: PlaygroundProps) {
 		super(props);
-		this.state = {
-			selectedScreen: this.props.selectedScreen
-		};
+		const queryParam = BrowserHistoryModule.getQueryParams()[PLAYGROUND]
+		if (queryParam) {
+			const screen = this.props.screens.find(s => s.name === queryParam)
+			this.state = {
+				selectedScreen: screen
+			}
+		}
+		else
+			this.state = {}
 	}
 
 	render() {
@@ -58,7 +66,10 @@ export class Playground
 					iconOpen={this.props.iconOpen}
 					selectedOption={this.state.selectedScreen}
 					options={this.props.screens}
-					onChange={(screen: PlaygroundScreen) => this.setState({selectedScreen: screen})}
+					onChange={(screen: PlaygroundScreen) => {
+						this.setState({selectedScreen: screen})
+						BrowserHistoryModule.addQueryParam(PLAYGROUND, screen.name)
+					}}
 					styles={this.props.selectStyle}
 					presentation={(screen) => screen.name}
 				/>
