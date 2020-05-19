@@ -57,6 +57,7 @@ export * from "./app-frontend/modules/component-loader/entry-component-loading-m
 export * from "./app-frontend/modules/tooltip/Tooltip";
 export * from "./app-frontend/modules/menu/MenuAndButton";
 export * from "./app-frontend/modules/menu/PopupMenu";
+export * from "./app-frontend/modules/menu/FixedMenu";
 export * from "./app-frontend/modules/toaster/Toaster";
 export * from "./app-frontend/modules/dialog/Dialog";
 export * from "./app-frontend/utils/tools";
