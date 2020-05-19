@@ -1,25 +1,12 @@
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {_keys} from "@nu-art/ts-common";
-
 import {
-	Tree,
-	TreeNode
-} from "../../components/Tree";
-import {
-	Collapsed,
-	Expanded
-} from "../../components/treeicons";
-import {
-	Menu,
 	Menu_Model,
-	MenuItemWrapper,
 	MenuListener,
 	MenuModule
 } from "./MenuModule";
 import {BaseComponent} from "../../core/BaseComponent";
-import {RendererMap} from '../../types/renderer-map';
-
+import {FixedMenu} from "./FixedMenu";
 
 export type MenuPosition = { left: number, top: number };
 
@@ -127,78 +114,9 @@ export class PopupMenu
 		return <div style={{position: "absolute"}}>
 			<div id="overlay" ref={this.overlayRef} style={overlayStyle}>
 				<div style={this.style(element.pos)}>
-					<HackMenu menu={element.menu}/>
+					<FixedMenu menu={element.menu}/>
 				</div>
 			</div>
 		</div>;
 	}
-};
-
-type HMProps = {
-	menu: Menu<any>
-}
-
-class HackMenu
-	extends BaseComponent<HMProps> {
-
-	render() {
-		return <Tree
-			root={this.props.menu}
-			hideRootElement={true}
-			nodeAdjuster={(obj: object) => {
-				if (!_keys(obj).find(key => key === "_children"))
-					return {data: obj};
-
-				// @ts-ignore
-				const objElement = obj['_children'];
-				// @ts-ignore
-				objElement.type = obj.type;
-				// @ts-ignore
-				objElement.item = obj.item;
-
-				// @ts-ignore
-				return {data: objElement, deltaPath: '_children'};
-			}}
-			propertyFilter={<T extends object>(obj: T, key: keyof T) => key !== "item" && key !== 'type'}
-			indentPx={0}
-			childrenContainerStyle={(level: number) => ({
-				backgroundColor: "#fff",
-				boxSizing: "border-box",
-				display: "inline-block",
-				paddingLeft: 20,
-				width: "-webkit-fill-available"
-			})}
-			callBackState={(key: string, value: any, level: number) => true}
-			renderer={GenericRenderer(this.props.menu.rendererMap)}
-		/>
-	}
-}
-
-const renderCollapse = (expanded: boolean) => {
-	const Comp = expanded ? Expanded : Collapsed;
-	return <Comp style={{color: "#00000050", verticalAlign: "text-top"}}/>
-};
-
-const GenericRenderer = (rendererMap: RendererMap) => {
-	return (props: TreeNode) => {
-		const itemWrapper = props.item as MenuItemWrapper<any, any>;
-		const item = itemWrapper.item;
-		const type = itemWrapper.type;
-
-		const MyRenderer = rendererMap[type as string];
-		// @ts-ignore
-		const hasChildren = itemWrapper.length;
-
-		return (
-			<div style={hasChildren && {display: 'flex', justifyContent: 'space-between'}}>
-				<MyRenderer item={item}/>
-				{hasChildren && <div
-					id={props.path}
-					onMouseDown={(e) => stopPropagation(e)}
-					onMouseUp={(e) => props.expandToggler(e, !props.expanded)}
-					style={{cursor: "pointer", marginRight: 10}}
-				>{renderCollapse(props.expanded)}</div>}
-			</div>
-		)
-	};
 };
