@@ -28,16 +28,14 @@ import {Example_Tabs2} from "../playground/tabs/Example_Tabs2";
 import {Example_GenericSelect} from "../playground/_to-be-removed/Example_GenericSelect";
 import {Example_Tabs} from "../playground/tabs/Example_Tabs";
 import {Example_KeyboardOnTree} from '../playground/keyboard-listener/Example_KeyboardOnTree';
-import {unitStyle} from "../ui/SelectStyle";
 import {Example_Dialogs} from '../playground/Example_Dialogs';
 import {Example_Toaster} from '../playground/Example_Toaster';
 import {Example_Menu} from '../playground/Example_Menu';
 import {Example_DropDown} from "../playground/Example_DropDown";
+import {selectStyles} from "../ui/SelectStyle";
 
 const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
 const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
-
-const screenName = 'Menu';
 
 export class Page_Playground
 	extends React.Component<{}> {
@@ -50,8 +48,7 @@ export class Page_Playground
 	render() {
 		const screens = this.getScreens();
 		return <Playground
-			selectedScreen={screens.find(s => s.name === screenName)}
-			selectStyle={unitStyle}
+			selectStyle={selectStyles}
 			iconClose={icon__arrowClose}
 			iconOpen={icon__arrowOpen}
 			screens={screens}

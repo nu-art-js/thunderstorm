@@ -18,7 +18,7 @@
 
 import * as React from "react";
 import {GenericSelect} from "@nu-art/thunderstorm/app-frontend/components/GenericSelect";
-import {unitStyle} from "../../ui/SelectStyle";
+import {selectStyles} from "../../ui/SelectStyle";
 
 const iconClose = require('@res/images/icon__arrowClose.svg');
 const iconOpen = require('@res/images/icon__arrowOpen.svg');
@@ -68,7 +68,7 @@ export class Example_GenericSelect extends React.Component<{}, State> {
 					console.log(`selected ${o.title}`);
 					this.setState({selectedOption: o});
 				}}
-				styles={unitStyle}
+				styles={selectStyles}
 				presentation={(o) => o.title}
 			/>
 			<div style={{height: 20}}/>
