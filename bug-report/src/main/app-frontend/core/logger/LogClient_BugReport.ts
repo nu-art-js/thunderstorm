@@ -18,10 +18,10 @@
  */
 
 import {
+	_logger_convertLogParamsToStrings,
 	LogClient,
 	LogLevel,
-	LogParam,
-	_logger_convertLogParamsToStrings
+	LogParam
 } from "@nu-art/ts-common";
 
 export type LogFilter = (level: LogLevel, tag: string) => boolean;

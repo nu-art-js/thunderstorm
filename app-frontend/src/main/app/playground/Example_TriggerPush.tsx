@@ -16,35 +16,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+import * as React from 'react';
+import {BaseComponent} from "@nu-art/thunderstorm/frontend";
 import {
-    ApiResponse,
-    ServerApi_Post,
-} from "@nu-art/thunderstorm/backend";
-import * as express from "express";
-import {
-    ApiPostPath,
-    Paths
-} from "./_imports";
+	_setTimeout,
+	Second
+} from '@nu-art/ts-common';
+import {ExampleModule} from "@modules/ExampleModule";
 
-import {
-    AdminBRModule
-} from "./_imports";
-// import {AccountModule} from "@nu-art/user-account/backend";
+export class Example_TriggerPush
+	extends BaseComponent {
 
-class ServerApi_DownloadLogs
-    extends ServerApi_Post<ApiPostPath> {
 
-    constructor() {
-        super("download-logs");
+	render() {
+		return <div className={'ll_h_v'}>
+			<button onClick={() => this.triggerPush()}>Trigger Push</button>
+			<button onClick={() => this.triggerPush(Second)}>Trigger Delayed Push</button>
+		</div>;
+	}
 
-    }
-
-    protected async process(request: express.Request, response: ApiResponse, queryParams: {}, body: Paths) {
-        // const email = await AccountModule.validateSession(request);
-        console.log("arrived to these parts");
-        return AdminBRModule.downloadFiles(body);
-    }
+	private triggerPush(timeout?: number) {
+		return _setTimeout(() => {
+			ExampleModule.testPush()
+		}, timeout);
+	}
 }
-
-module.exports = new ServerApi_DownloadLogs();

@@ -9,7 +9,7 @@ import {PushPubSubModule} from "../../../modules/PushPubSubModule";
 import {
 	PubSubRegisterClient,
 	Request_PushRegister
-} from "../../../..";
+} from "../../../../index";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_PushRegister

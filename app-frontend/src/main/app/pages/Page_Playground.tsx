@@ -20,7 +20,7 @@ import * as React from 'react';
 import {
 	Playground,
 	PlaygroundScreen
-} from "@nu-art/thunderstorm/app-frontend/components/Playground";
+} from "@nu-art/thunderstorm/frontend";
 import {Page_ApiGen} from "./Page_ApiGen";
 import {Hello} from "../Hello";
 import {Example_ApiCustomError} from '../playground/Example_ApiCustomError';
@@ -28,16 +28,17 @@ import {Example_Tabs2} from "../playground/tabs/Example_Tabs2";
 import {Example_GenericSelect} from "../playground/_to-be-removed/Example_GenericSelect";
 import {Example_Tabs} from "../playground/tabs/Example_Tabs";
 import {Example_KeyboardOnTree} from '../playground/keyboard-listener/Example_KeyboardOnTree';
-import {unitStyle} from "../ui/SelectStyle";
 import {Example_Dialogs} from '../playground/Example_Dialogs';
 import {Example_Toaster} from '../playground/Example_Toaster';
 import {Example_Menu} from '../playground/Example_Menu';
 import {Example_DropDown} from "../playground/Example_DropDown";
+import {selectStyles} from "../ui/SelectStyle";
 
 const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
 const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
 
-export class Page_Playground extends React.Component<{}> {
+export class Page_Playground
+	extends React.Component<{}> {
 
 	constructor(props: {}) {
 		super(props);
@@ -45,85 +46,64 @@ export class Page_Playground extends React.Component<{}> {
 	}
 
 	render() {
-		return <Playground selectStyle={unitStyle}
-			            iconClose={icon__arrowClose}
-			            iconOpen={icon__arrowOpen}
-			            screens={this.getScreens()}/>
+		const screens = this.getScreens();
+		return <Playground
+			selectStyle={selectStyles}
+			iconClose={icon__arrowClose}
+			iconOpen={icon__arrowOpen}
+			screens={screens}
+		/>
 	}
 
 	getScreens(): PlaygroundScreen[] {
 		return [
 			{
 				name: "Hello",
-				getNode: () => {
-					return <Hello/>;
-				}
+				getNode: () => <Hello/>
 			},
 			{
 				name: "Dialog Examples",
-				getNode: () => {
-					return <Example_Dialogs/>;
-				}
+				getNode: () => <Example_Dialogs/>
 			},
 			{
 				name: "Toaster Examples",
-				getNode: () => {
-					return <Example_Toaster/>;
-				}
+				getNode: () => <Example_Toaster/>
 			},
 			{
 				name: "Api Generator",
-				getNode: () => {
-					return <Page_ApiGen/>;
-				}
+				getNode: () => <Page_ApiGen/>
 			},
 			{
 				name: "Live docs",
-				getNode: () => {
-					return <Hello/>;
-				}
+				getNode: () => <Hello/>
 			},
 			{
 				name: "Custom error",
-				getNode: () => {
-					return <Example_ApiCustomError/>;
-				}
+				getNode: () => <Example_ApiCustomError/>
 			},
 			{
 				name: "Tabs",
-				getNode: () => {
-					return <Example_Tabs2/>;
-				}
+				getNode: () => <Example_Tabs2/>
 			},
 			{
 				name: "GenericTabs",
-				getNode: () => {
-					return <Example_Tabs/>;
-				}
+				getNode: () => <Example_Tabs/>
 			},
 			{
 				name: "GenericSelect",
-				getNode: () => {
-					return <Example_GenericSelect/>;
-				}
+				getNode: () => <Example_GenericSelect/>
 			},
 			{
 				name: "DropDown Examples",
-				getNode: () => {
-					return <Example_DropDown/>;
-				}
+				getNode: () => <Example_DropDown/>
 			},
 			{
 				name: "Menu",
-				getNode: () => {
-					return <Example_Menu/>;
-				}
+				getNode: () => <Example_Menu/>
 			},
 			{
 				name: "Special keyboard listener",
-				getNode: () => {
-					return <Example_KeyboardOnTree/>;
-				}
+				getNode: () => <Example_KeyboardOnTree/>
 			},
 		];
 	}

@@ -100,7 +100,7 @@ class RoutingModule_Class
 
 	getRoutesMap() {
 		return <Switch>
-			{this.ordinalRoutes.map(key => this.getRoute(key)).map(route => this.createRouteNode(route))}
+			{this.ordinalRoutes.map(key => this.createRouteNode(this.getRoute(key)))}
 		</Switch>
 	}
 }

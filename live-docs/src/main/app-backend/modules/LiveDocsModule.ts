@@ -20,7 +20,8 @@ import {
 	addItemToArrayAtIndex,
 	AuditBy,
 	Module,
-	removeItemFromArray
+	removeItemFromArray,
+    BadImplementationException
 } from "@nu-art/ts-common";
 
 import {
@@ -58,25 +59,31 @@ export class LiveDocsModule_Class
 	}
 
 	async changeHistory(audit: AuditBy, key: string, change: "redo" | "undo") {
-		const docsHistory: DB_DocumentHistory = await this.getLiveDocHistory(key);
-		switch (change) {
-			case "redo":
-				if (docsHistory.index === 0)
-					throw new ApiException(402, "Nothing to redo anymore");
+		await this.livedocs.runInTransaction(async (transaction) => {
+			const docsHistory = await transaction.queryUnique(this.livedocs, {where: {key}});
+			if(!docsHistory)
+				throw new BadImplementationException(`Cannot change history of an non-existing doc with key: ${key}`);
 
-				docsHistory.index--;
-				break;
+			switch (change) {
+				case "redo":
+					if (docsHistory.index === 0)
+						throw new ApiException(402, "Nothing to redo anymore");
 
-			case "undo":
-				if (docsHistory.index === docsHistory.docs.length - 1)
-					throw new ApiException(402, "Nothing to undo anymore");
+					docsHistory.index--;
+					break;
 
-				docsHistory.index++;
-				break;
-		}
+				case "undo":
+					if (docsHistory.index === docsHistory.docs.length - 1)
+						throw new ApiException(402, "Nothing to undo anymore");
 
-		docsHistory._audit = audit;
-		await this.livedocs.upsert(docsHistory);
+					docsHistory.index++;
+					break;
+			}
+
+			docsHistory._audit = audit;
+			await transaction.upsert(this.livedocs,docsHistory);
+		})
+
 	}
 
 	async updateLiveDoc(audit: AuditBy, document: Request_UpdateDocument) {

@@ -40,13 +40,14 @@ const modules = [
 	FirebaseModule,
 	ForceUpgrade,
 	PushPubSubModule,
-	ExampleModule
+	ExampleModule,
+	BugReportModule
 ];
 
 new Thunder()
 	.setConfig(require("./config").config)
 	.addModules(...Frontend_ModulePack_LiveDocs)
-	.addModules(...modules,BugReportModule)
+	.addModules(...modules)
 	.setMainApp(App)
 	.build();
 

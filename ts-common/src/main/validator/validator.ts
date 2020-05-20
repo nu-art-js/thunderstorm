@@ -159,7 +159,7 @@ export const validate = <T extends any>(instance: T, _validator: ValidatorTypeRe
 
 		const __validator = _validator as TypeValidator<object>;
 		const validatorKeys = _keys(__validator);
-		const instanceKeys = Object.keys(instance as object);
+		const instanceKeys = Object.keys(instance as unknown as object);
 
 		for (const key of instanceKeys) {
 			// @ts-ignore

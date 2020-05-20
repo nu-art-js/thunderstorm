@@ -43,7 +43,7 @@ import {
 	JiraProjectInfo
 } from "./JiraModule"
 
-const JSZip = require('jszip');
+import * as JSZip from "jszip";
 
 type Config = {
 	projectId?: string,

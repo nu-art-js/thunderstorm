@@ -31,16 +31,16 @@ import {
 import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
 import {Module} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
+import {Backend_ModulePack_BugReport} from "@nu-art/bug-report/backend";
 import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
-import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
+import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
 import {ValueChangedListener} from "@modules/ValueChangedListener";
-import {Backend_ModulePack_BugReport} from "@nu-art/bug-report/app-backend/core/module-pack";
 import {
 	Slack_ServerApiError,
 	SlackModule
 } from "@nu-art/storm/slack";
 
-const functions = require('firebase-functions');
+import * as functions from "firebase-functions";
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -52,17 +52,14 @@ const modules: Module[] = [
 	ProjectFirestoreBackup,
 	SlackModule,
 	Slack_ServerApiError,
-	// SchedulerExample,
-	// ProjectBackupScheduler.setSchedule("every 10 min"),
 	DispatchModule,
 	PushPubSubModule
 ];
 
 const _exports = new Storm()
+	.addModules(...Backend_ModulePack_BugReport)
 	.addModules(...Backend_ModulePack_LiveDocs)
 	.addModules(...Backend_ModulePack_Permissions)
-	// .addModules(...Backend_ModulePack_PushPubSub)
-	.addModules(...Backend_ModulePack_BugReport)
 	.addModules(...modules)
 	.setInitialRouteResolver(new RouteResolver(require, __dirname, "api"))
 	.setInitialRoutePath("/api")

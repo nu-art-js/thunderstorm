@@ -1,5 +1,6 @@
 /*
- * Firebase is a simpler Typescript wrapper to all of firebase services.
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -21,7 +22,8 @@ import {FirebaseType_Messaging} from "./types";
 // tslint:disable:no-import-side-effect
 import 'firebase/messaging';
 
-export class MessagingWrapper
+
+export class SwMessagingWrapper
 	extends Logger {
 
 	private readonly messaging: FirebaseType_Messaging;
@@ -31,23 +33,13 @@ export class MessagingWrapper
 		this.messaging = messaging;
 	}
 
-	usePublicVapidKey(vapidKey: string) {
-		this.messaging.usePublicVapidKey(vapidKey);
+	setBackgroundMessageHandler(callback: (payload: any) => void){
+		// This means that the bundle is being evaluated in the main thread to register the service worker so there is no need to run the rest
+		// Also because it would fail since firebase would initialize the messaging controller as the main thread one instead of the sw one...
+		if(!(self && 'ServiceWorkerGlobalScope' in self))
+			return this.logInfo('Not a service worker context');
+
+		this.messaging.setBackgroundMessageHandler(callback);
 	}
 
-	async getToken() {
-		return this.messaging.getToken();
-	}
-
-	useServiceWorker(registration: ServiceWorkerRegistration) {
-		this.messaging.useServiceWorker(registration);
-	}
-
-	onTokenRefresh(callback: () => void) {
-		return this.messaging.onTokenRefresh(callback)
-	}
-
-	onMessage(callback: (payload: any) => void) {
-		return this.messaging.onMessage(callback)
-	}
 }

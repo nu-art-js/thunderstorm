@@ -1,11 +1,16 @@
 import * as React from "react";
 import {Component} from "react";
-import {MenuAndButton} from "@nu-art/thunderstorm/app-frontend/modules/menu/MenuAndButton";
 import {
-	Renderer,
 	Menu,
-	MenuItemWrapper
+	MenuAndButton,
+	MenuItemWrapper,
+	Renderer,
+	FixedMenu
 } from "@nu-art/thunderstorm/frontend";
+import {
+	_keys,
+	randomObject
+} from "@nu-art/ts-common";
 
 const iconClose = require('@res/images/icon__arrowClose.svg');
 const iconOpen = require('@res/images/icon__arrowOpen.svg');
@@ -14,18 +19,21 @@ type RendererString = { action?: (item: { toDisplay: string }) => void, toDispla
 
 type Rm = {
 	normal: Renderer<RendererString>
+	bold: Renderer<RendererString>
 };
 
+const rendererMap: Rm = {
+	normal: ({item: {toDisplay}}) => <div>{toDisplay}</div>,
+	bold: ({item: {toDisplay}}) => <strong>{toDisplay}</strong>,
+};
+
+const menuItems = ['hi', 'bye', 'ciao', 'nice to meet', 'you'];
+
 const createMenu = (): Menu<Rm> => {
-	const rendererMap: Rm = {
-		normal: ({item: {toDisplay}}) => <div>{toDisplay}</div>
-	};
-	const _children = ["hi", "bye"].map((panelId: string) => {
-		const menuItem: MenuItemWrapper<Rm, 'normal'> = {
-			item: {
-				toDisplay: panelId,
-			},
-			type: "normal"
+	const _children = menuItems.map(item => {
+		const menuItem: MenuItemWrapper<Rm, keyof Rm> = {
+			item: {toDisplay: item},
+			type: randomObject(_keys(rendererMap))
 		};
 		return menuItem;
 	});
@@ -36,14 +44,22 @@ export class Example_Menu
 	extends Component<{}> {
 
 	render() {
+		const menu = createMenu() as Menu<any>;
 		return <div>
+			<div>
+				Here is a Menu Button
 			<MenuAndButton
 				id={'menu'}
-				iconClosed={() => iconClose}
-				iconOpen={() => iconOpen}
-				menu={createMenu() as Menu<any>}
+				iconClosed={iconClose}
+				iconOpen={iconOpen}
+				menu={menu}
 			/>
+			</div>
+
+			<div>
+				Here is the same menu but as a component
+				<FixedMenu menu={menu}/>
+			</div>
 		</div>
 	}
-
 }
