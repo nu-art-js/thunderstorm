@@ -53,15 +53,15 @@ export class Example_Dispatch
 		const apiData = ExampleModule.getApiData();
 		const max = ExampleModule.getMax();
 		return <>
-			<h1>mod -- UI dispatch data: {data}.</h1>
-			<button onClick={() => ExampleModule.testClickHandler()}>click me to test mod -- UI dispatch</button>
-			<h1>mod -- mod dispatch data: {modData}</h1>
-			<button onClick={() => ExampleModule.testModDispatcher()}>click me to test mod -- mod dispatch</button>
+			<h1>mod TO UI dispatch data: {data}.</h1>
+			<button onClick={() => ExampleModule.testClickHandler()}>click me to test mod TO UI dispatch</button>
+			<h1>mod TO mod dispatch data: {modData}</h1>
+			<button onClick={() => ExampleModule.testModDispatcher()}>click me to test mod TO mod dispatch</button>
 			<div>
 				<button style={{background: '#4e69ab'}} onClick={() => this.uiClickHandler()}>click me to change another component's color</button>
 			</div>
 			<SecondComponent/>
-			<h1>backend -- ui dispatch data: {apiData}</h1>
+			<h1>backend TO ui dispatch data: {apiData}</h1>
 			<button onClick={() => ExampleModule.testBackendDispatcher()}>click me to test api dispatch</button>
 			<div>Max in firestore collection is: {max}</div>
 		</>;

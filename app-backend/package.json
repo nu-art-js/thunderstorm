@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@app/app-shared": "file:.dependencies/app-shared",
-    "@nu-art/bug-report": "file:.dependencies/push-pub-sub",
+    "@nu-art/bug-report": "file:.dependencies/bug-report",
     "@nu-art/db-api-generator": "file:.dependencies/db-api-generator",
     "@nu-art/firebase": "file:.dependencies/firebase",
     "@nu-art/live-docs": "file:.dependencies/live-docs",
@@ -37,6 +37,7 @@
     "@nu-art/thunderstorm": "file:.dependencies/thunderstorm",
     "@nu-art/ts-common": "file:.dependencies/ts-common",
     "@nu-art/user-account": "file:.dependencies/user-account",
+    "@slack/web-api": "^5.8.1",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",
     "debug": "^3.1.0",

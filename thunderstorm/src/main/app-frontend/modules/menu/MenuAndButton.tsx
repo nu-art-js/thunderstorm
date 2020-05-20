@@ -1,16 +1,34 @@
 import * as React from "react";
 import {BaseComponent} from "../../core/BaseComponent";
-import {MenuBuilder, Menu} from "./MenuModule";
+import {
+	Menu,
+	MenuBuilder,
+	MenuListener,
+	resolveRealPosition
+} from "./MenuModule";
 
 type Props = {
 	id: string
-	iconOpen: () => string
-	iconClosed: () => string
+	iconOpen: string
+	iconClosed: string
 	menu: Menu<any>
 }
 
 export class MenuAndButton
-	extends BaseComponent<Props, {}> {
+	extends BaseComponent<Props, {}>
+	implements MenuListener {
+
+
+	__onMenuHide = (id: string) => {
+		if (this.props.id !== id)
+			return
+
+		this.close()
+	};
+
+	__onMenuDisplay = () => {
+		// this is triggered by this.open so dont want to make it recursive
+	};
 
 	ref = React.createRef<HTMLImageElement>();
 
@@ -18,23 +36,33 @@ export class MenuAndButton
 		return <div className={'clickable'} onClick={this.open} style={{position: "relative", padding: 10}}>
 			<img
 				ref={this.ref}
-				src={this.props.iconClosed()}
-				onMouseOver={e => e.currentTarget.src = this.props.iconOpen()}
-				onMouseOut={e => e.currentTarget.src = this.props.iconClosed()}
+				src={this.props.iconClosed}
+				onMouseOver={e => e.currentTarget.src = this.props.iconOpen}
+				onMouseOut={e => e.currentTarget.src = this.props.iconClosed}
 				alt={"openMenu"}/>
 		</div>
 	}
 
-	open = () => {
+	setImage = (image: string) => {
 		const img = this.ref.current;
 		if (!img)
 			return
 
-		img.src = this.props.iconOpen();
+		img.src = image;
+		return img
+	}
 
-		new MenuBuilder(this.props.menu, img)
+	close = () => {
+		this.setImage(this.props.iconClosed)
+	}
+
+	open = () => {
+		const img = this.setImage(this.props.iconOpen)
+		if (!img)
+			return
+
+		new MenuBuilder(this.props.menu, resolveRealPosition(img))
 			.setId(this.props.id)
-			.setIconClose(this.props.iconClosed)
 			.show()
 	}
 }

@@ -30,13 +30,13 @@ import {
 	ThunderDispatcher,
 	ToastModule
 } from "@nu-art/thunderstorm/frontend";
-
+// noinspection TypeScriptPreferShortImport
 import {
 	BaseSubscriptionData,
 	PubSubRegisterClient,
 	Request_PushRegister,
 	SubscriptionData
-} from "../..";
+} from "../../index";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	FirebaseModule,
@@ -59,7 +59,7 @@ type FirebaseConfig = {
 }
 
 export type PushPubSubConfig = {
-	config: FirebaseConfig
+	config?: FirebaseConfig
 	publicKeyBase64: string
 }
 
@@ -138,7 +138,6 @@ export class PushPubSubModule_Class
 		if (!data.command || !data.message || data.command !== Command_SwToApp)
 			return;
 
-		this.logVerbose('message received from service worker', data);
 		this.processMessage(data.message)
 	};
 
@@ -175,6 +174,10 @@ export class PushPubSubModule_Class
 			.setOnError(() => ToastModule.toastError("Failed to register for push"))
 			.execute()
 	};
+
+	filterSubscriptions(payload: SubscriptionData[], mySubscription: BaseSubscriptionData) {
+		return payload.filter(subscription => compare({pushKey: subscription.pushKey, props: subscription.props}, mySubscription));
+	}
 }
 
 export const PushPubSubModule = new PushPubSubModule_Class();

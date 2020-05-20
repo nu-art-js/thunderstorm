@@ -16,4 +16,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {
+	ApiResponse,
+	ExpressRequest,
+	ServerApi_Get,
+} from "@nu-art/thunderstorm/backend";
 
+import {ExampleTestPush} from "@app/app-shared";
+import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
+
+class ServerApi_PushTest
+	extends ServerApi_Get<ExampleTestPush> {
+
+	constructor() {
+		super("push-test");
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
+		await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'});
+		return "push succeeded!"
+	}
+}
+
+module.exports = new ServerApi_PushTest();
