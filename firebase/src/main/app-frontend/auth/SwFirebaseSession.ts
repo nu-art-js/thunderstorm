@@ -17,30 +17,34 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi_Post,
-} from "@nu-art/thunderstorm/backend";
-import {
-	ApiBugReport,
-	BugReportModule,
-	Request_BugReport
-} from "./_imports";
+/**
+ * Created by tacb0ss on 19/09/2018.
+ */
+import * as firebase from 'firebase/app'
+// tslint:disable:no-import-side-effect
+import 'firebase/auth';
+import {Logger} from "@nu-art/ts-common";
+// noinspection TypeScriptPreferShortImport
+import {SwMessagingWrapper} from "../messaging/SwMessagingWrapper";
 
-// import {AccountModule} from "@nu-art/user-account/backend";
+export class SwFirebaseSession
+	extends Logger {
+	app!: firebase.app.App;
 
-class ServerApi_SendReport
-	extends ServerApi_Post<ApiBugReport> {
+	protected sessionName: string;
+	protected messaging?: SwMessagingWrapper;
 
-	constructor() {
-		super("report");
+	constructor(sessionName: string, app: firebase.app.App) {
+		super(`service worker firebase: ${sessionName}`);
+		this.sessionName = sessionName;
+		this.app = app;
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_BugReport) {
-		// const email = await AccountModule.validateSession(request);
-		await BugReportModule.saveFile(body);
+	getMessaging() {
+		if (this.messaging)
+			return this.messaging;
+
+		return this.messaging = new SwMessagingWrapper(this.app.messaging());
 	}
 }
 
-module.exports = new ServerApi_SendReport();

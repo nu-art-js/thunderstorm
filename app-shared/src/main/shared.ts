@@ -48,6 +48,8 @@ export type ExampleApiCustomError = ApiWithBody<"/v1/sample/custom-error", void,
 export type ExampleApiPostType = ApiWithBody<"/v1/sample/another-endpoint", CommonBodyReq, string>
 export type ExampleApiGetType = ApiWithQuery<string, string>
 export type ExampleApiTest = ApiWithQuery<string, string>
+export type ExampleTestPush = ApiWithQuery<"/v1/sample/push-test", string>
+
 export type ExampleGetMax = ApiWithQuery<"/v1/sample/get-max", { n: number }>
 export type ApiType_GetWithoutParams = ApiWithQuery<"/v1/sample/get-without-params-endpoint", string>
 export type ApiType_ApiGetWithParams = ApiWithQuery<"/v1/sample/get-with-params-endpoint", string, ParamsToGet>

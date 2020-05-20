@@ -51,6 +51,7 @@ import {
 	UserPermissionsDB
 } from "./assign";
 import {Clause_Where} from "@nu-art/firebase";
+import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
 
 const validateProjectId = validateRegexp(/^[a-z-]{3,20}$/);
 const validateProjectName = validateRegexp(/^[A-Za-z- ]{3,20}$/);
@@ -85,6 +86,17 @@ export class DomainDB_Class
 		this.setPatchKeys(["namespace"])
 	}
 
+	protected async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DB_PermissionAccessLevel> }) {
+		const deleteDomainId = ourQuery.where._id as string;
+
+		const accessLevels = await AccessLevelPermissionsDB.query({where: {domainId: deleteDomainId}});
+		if (accessLevels.length) {
+			throw new ApiException(403, 'You trying delete domain that associated with accessLevels, you need delete the accessLevels first');
+		}
+
+		await super.deleteImpl(transaction, ourQuery);
+	}
+
 	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {
 		await ProjectPermissionsDB.queryUnique({_id: dbInstance.projectId});
 	}
@@ -113,6 +125,21 @@ export class LevelDB_Class
 
 	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
 		await DomainPermissionsDB.queryUnique({_id: dbInstance.domainId});
+	}
+
+	protected async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DB_PermissionAccessLevel> }) {
+		const deleteLevelId = ourQuery.where._id as string;
+
+		const users = await UserPermissionsDB.query({where: {accessLevelIds: {$ac: deleteLevelId}}});
+		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: deleteLevelId}}});
+		const apis = await ApiPermissionsDB.query({where: {accessLevelIds: {$ac: deleteLevelId}}});
+
+		const accessLevelDependencies = [...users, ...groups, ...apis];
+		if (accessLevelDependencies.length) {
+			throw new ApiException(403, 'You trying delete access level that associated with users/groups/apis, you need delete the associations first');
+		}
+
+		await super.deleteImpl(transaction, ourQuery);
 	}
 
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel): Promise<DB_PermissionAccessLevel> {

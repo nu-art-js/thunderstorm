@@ -8,6 +8,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "noUnusedLocals": true,
+    "rootDir": "./src/main",
     "outDir": "dist",
     "paths": {
       "@consts/*": [

@@ -19,7 +19,8 @@
 
 import {Logger} from "@nu-art/ts-common";
 import {FirebaseType_Analytics} from "./types";
-
+// tslint:disable:no-import-side-effect
+import 'firebase/analytics';
 
 export class AnalyticsWrapper
 	extends Logger {

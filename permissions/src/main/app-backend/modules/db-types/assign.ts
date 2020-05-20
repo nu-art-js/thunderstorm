@@ -41,7 +41,6 @@ import {
 
 import {
 	filterDuplicates,
-	PartialProperties,
 	TypeValidator,
 	validateArray,
 	validateObjectValues,
@@ -86,12 +85,8 @@ export class GroupsDB_Class
 		return [{label}];
 	}
 
-	upsert(instance: DB_PermissionsGroup): Promise<DB_PermissionsGroup> {
-		instance.__accessLevels = [];
-		return super.upsert(instance);
-	}
-
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup): Promise<DB_PermissionsGroup> {
+		dbInstance.__accessLevels = [];
 		const accessLevelIds = dbInstance.accessLevelIds || [];
 		if (accessLevelIds.length) {
 			const groupLevels = await AccessLevelPermissionsDB.query({where: {_id: {$in: accessLevelIds}}});
@@ -102,11 +97,6 @@ export class GroupsDB_Class
 		}
 
 		return super.upsertImpl(transaction, dbInstance);
-	}
-
-	patch(instance: DB_PermissionsGroup, _props?: (keyof DB_PermissionsGroup)[]): Promise<DB_PermissionsGroup> {
-		instance.__accessLevels = [];
-		return super.patch(instance, _props);
 	}
 
 	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup) {
@@ -146,12 +136,8 @@ export class UsersDB_Class
 		return [{uuid}];
 	}
 
-	upsert(instance: PartialProperties<DB_PermissionsUser, "_id">): Promise<DB_PermissionsUser> {
-		instance.__accessLevels = [];
-		return super.upsert(instance);
-	}
-
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser): Promise<DB_PermissionsUser> {
+		dbInstance.__accessLevels = [];
 		const accessLevelIds = dbInstance.accessLevelIds || [];
 		if (accessLevelIds.length) {
 			const userLevels = await AccessLevelPermissionsDB.query({where: {_id: {$in: accessLevelIds}}});
@@ -162,11 +148,6 @@ export class UsersDB_Class
 		}
 
 		return super.upsertImpl(transaction, dbInstance);
-	}
-
-	patch(instance: DB_PermissionsUser, _props?: (keyof DB_PermissionsUser)[]): Promise<DB_PermissionsUser> {
-		instance.__accessLevels = [];
-		return super.patch(instance, _props);
 	}
 
 	async __onUserLogin(email: string) {
