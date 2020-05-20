@@ -21,8 +21,8 @@ import {
 	__stringify,
 	compare,
 	currentTimeMillies,
-	Module,
-    Hour
+	Hour,
+	Module
 } from "@nu-art/ts-common";
 
 import {
@@ -32,13 +32,14 @@ import {
 	FirestoreCollection,
 	PushMessagesWrapper
 } from '@nu-art/firebase/backend';
+// noinspection TypeScriptPreferShortImport
 import {
 	DB_PushKeys,
 	DB_PushSession,
 	Request_PushRegister,
 	SubscribeProps,
 	SubscriptionData
-} from "../..";
+} from "../../index";
 
 type Config = {
 	delta_time?: number
@@ -80,7 +81,7 @@ export class PushPubSubModule_Class
 
 		return this.pushKeys.runInTransaction(async transaction => {
 			const data = await transaction.query(this.pushKeys, {where: {firebaseToken: request.firebaseToken}});
-			const toInsert = subscriptions.filter(s => !data.find(d => compare(d,s)));
+			const toInsert = subscriptions.filter(s => !data.find(d => compare(d, s)));
 			return Promise.all(toInsert.map(instance => transaction.insert(this.pushKeys, instance)));
 		})
 	}
@@ -108,21 +109,20 @@ export class PushPubSubModule_Class
 
 		const messages = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}))
 		const res: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
+		this.logInfo(`${res.successCount} sent, ${res.failureCount} failed`);
+
+		if (res.failureCount > 0)
+			this.logWarning(res.responses.filter(r => r.error));
 
 		return this.cleanUp(res, messages)
 	}
 
 	scheduledCleanup = async () => {
 		const delta_time = this.config?.delta_time || Hour;
-		// @ts-ignore
-		const docRefs = await this.pushSessions._query({where: {timestamp: {$lt: currentTimeMillies() - delta_time}}});
-		// @ts-ignore
-		const vals: DB_PushSession[] = docRefs.map(d => d.data());
-		// @ts-ignore
-		const asyncs: Promise<any>[] = [this.pushSessions.deleteBatch(docRefs)]
 
-		vals.forEach(v => asyncs.push(this.pushKeys.delete({where: {firebaseToken: v.firebaseToken}})));
-		await Promise.all(asyncs)
+		const docs = await this.pushSessions.query({where: {timestamp: {$lt: currentTimeMillies() - delta_time}}});
+
+		return this.cleanUpImpl(docs.map(d => d.firebaseToken))
 	};
 
 	private cleanUp = async (response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]) => {
@@ -135,6 +135,10 @@ export class PushPubSubModule_Class
 			return carry
 		}, [] as string[]);
 
+		return this.cleanUpImpl(toDelete)
+	};
+
+	private async cleanUpImpl(toDelete: string[]) {
 		if (toDelete.length === 0)
 			return;
 
@@ -144,7 +148,7 @@ export class PushPubSubModule_Class
 		];
 
 		await Promise.all(async)
-	};
+	}
 }
 
 export const PushPubSubModule = new PushPubSubModule_Class();

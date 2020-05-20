@@ -22,15 +22,13 @@
  */
 import * as firebase from 'firebase/app'
 // tslint:disable:no-import-side-effect
-import 'firebase/messaging';
-import 'firebase/analytics';
-import 'firebase/database';
 import 'firebase/auth';
 import {
 	Logger,
 	ThisShouldNotHappenException
 } from "@nu-art/ts-common";
-import {FirebaseConfig} from "../..";
+// noinspection TypeScriptPreferShortImport
+import {FirebaseConfig} from "../../index";
 import {MessagingWrapper} from "../messaging/MessagingWrapper";
 import {AnalyticsWrapper} from "../analytics/AnalyticsWrapper";
 import {DatabaseWrapper} from "../database/DatabaseWrapper";

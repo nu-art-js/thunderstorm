@@ -17,4 +17,31 @@
  * limitations under the License.
  */
 
-export * from "./shared/api";
+import {
+	ApiResponse,
+	ExpressRequest,
+	ServerApi_Post
+} from "@nu-art/thunderstorm/backend";
+import {
+	AdminBRModule,
+	ApiPostPath,
+	Paths
+} from "./_imports";
+
+// import {AccountModule} from "@nu-art/user-account/backend";
+
+class ServerApi_DownloadLogs
+	extends ServerApi_Post<ApiPostPath> {
+
+	constructor() {
+		super("download-logs");
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Paths) {
+		// const email = await AccountModule.validateSession(request);
+		console.log("arrived to these parts");
+		return AdminBRModule.downloadFiles(body);
+	}
+}
+
+module.exports = new ServerApi_DownloadLogs();

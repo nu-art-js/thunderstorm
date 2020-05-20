@@ -25,12 +25,17 @@ export type Menu_Model = {
 };
 
 export interface MenuListener {
+<<<<<<< HEAD
 	__onMenuDisplay: (menu?: Menu_Model) => void
 }
 
 type RefAndIcon = {
 	ref?: HTMLImageElement
 	icon?: () => string
+=======
+	__onMenuDisplay: (menu: Menu_Model) => void
+	__onMenuHide: (id: string) => void
+>>>>>>> dcbe2d749eaa51092b6ea91b1a42ecb028ed8e9f
 }
 
 export type MenuItemWrapper<Rm extends RendererMap, K extends keyof Rm, Item = InferItemType<Rm[K]>> = ItemWrapper<Rm, K> & {
@@ -47,15 +52,13 @@ export class MenuModule_Class
 	extends Module<{}> {
 
 	private showMenu = new ThunderDispatcher<MenuListener, "__onMenuDisplay">("__onMenuDisplay");
+	private hideMenu = new ThunderDispatcher<MenuListener, "__onMenuHide">("__onMenuHide");
 
-	cache: { [id: string]: RefAndIcon } = {};
-
-	show = (model: Menu_Model, obj: RefAndIcon) => {
-		this.cache[model.id] = obj;
-
+	show = (model: Menu_Model) => {
 		this.showMenu.dispatchUI([model])
 	};
 
+<<<<<<< HEAD
 	hide = (id?: string) => {
 		const obj = id && this.cache[id];
 		if (id && obj && obj.ref && obj.icon) {
@@ -65,6 +68,9 @@ export class MenuModule_Class
 
 		return this.showMenu.dispatchUI([]);
 	};
+=======
+	hide = (id: string) => this.hideMenu.dispatchUI([id]);
+>>>>>>> dcbe2d749eaa51092b6ea91b1a42ecb028ed8e9f
 }
 
 export const MenuModule = new MenuModule_Class();
@@ -72,6 +78,7 @@ export const MenuModule = new MenuModule_Class();
 export class MenuBuilder {
 	private readonly menu: Menu<any>;
 	private readonly position: MenuPosition;
+<<<<<<< HEAD
 	private readonly imageRef?: HTMLImageElement;
 	private iconClose?: () => string;
 	private id: string = generateHex(8);
@@ -80,6 +87,13 @@ export class MenuBuilder {
 		this.menu = menu;
 		this.imageRef = imageRef;
 		this.position = this.imageRef ? resolveRealPosition(this.imageRef) : {left: 225, top: 0};
+=======
+	private id: string = generateHex(8);
+
+	constructor(menu: Menu<any>, position: MenuPosition) {
+		this.menu = menu;
+		this.position = position;
+>>>>>>> dcbe2d749eaa51092b6ea91b1a42ecb028ed8e9f
 	}
 
 	show() {
@@ -89,18 +103,12 @@ export class MenuBuilder {
 			pos: this.position
 		};
 
-		MenuModule.show(model, {ref: this.imageRef, icon: this.iconClose});
+		MenuModule.show(model);
 	};
 
 	setId(id: string) {
 		this.id = id;
 		return this;
 	}
-
-	setIconClose(iconClose: () => string) {
-		this.iconClose = iconClose;
-		return this;
-	}
-
 }
 

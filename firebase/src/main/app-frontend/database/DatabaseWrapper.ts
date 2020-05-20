@@ -21,6 +21,8 @@ import {
 	Logger
 } from "@nu-art/ts-common";
 import {FirebaseType_DB} from "./types";
+// tslint:disable:no-import-side-effect
+import 'firebase/database';
 
 export class DatabaseWrapper
 	extends Logger {
