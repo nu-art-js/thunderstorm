@@ -29,7 +29,7 @@ export interface MenuListener {
 }
 
 type RefAndIcon = {
-	ref: HTMLImageElement
+	ref?: HTMLImageElement
 	icon?: () => string
 }
 
@@ -40,6 +40,7 @@ export type MenuItemWrapper<Rm extends RendererMap, K extends keyof Rm, Item = I
 export type Menu<Rm extends RendererMap> = {
 	rendererMap: Rm
 	_children: MenuItemWrapper<Rm, keyof Rm>[]
+	onClick?: ()=>void
 }
 
 export class MenuModule_Class
@@ -57,7 +58,7 @@ export class MenuModule_Class
 
 	hide = (id?: string) => {
 		const obj = id && this.cache[id];
-		if (id && obj && obj.icon) {
+		if (id && obj && obj.ref && obj.icon) {
 			console.log(id, obj.icon());
 			obj.ref.src = obj.icon();
 		}
@@ -71,14 +72,14 @@ export const MenuModule = new MenuModule_Class();
 export class MenuBuilder {
 	private readonly menu: Menu<any>;
 	private readonly position: MenuPosition;
-	private readonly imageRef: HTMLImageElement;
+	private readonly imageRef?: HTMLImageElement;
 	private iconClose?: () => string;
 	private id: string = generateHex(8);
 
-	constructor(menu: Menu<any>, imageRef: HTMLImageElement) {
+	constructor(menu: Menu<any>, imageRef?: HTMLImageElement) {
 		this.menu = menu;
 		this.imageRef = imageRef;
-		this.position = resolveRealPosition(this.imageRef);
+		this.position = this.imageRef ? resolveRealPosition(this.imageRef) : {left: 225, top: 0};
 	}
 
 	show() {

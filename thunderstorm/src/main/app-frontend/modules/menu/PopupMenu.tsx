@@ -88,15 +88,6 @@ export class PopupMenu
 		this.eventListenersEffect();
 	}
 
-	private eventListenersEffect = () => {
-		const _current = this.overlayRef.current;
-		if (!_current)
-			return;
-
-		_current.addEventListener("mousedown", this.stopClickCascading, false);
-		_current.addEventListener("mouseup", this.closeMenu, false);
-	};
-
 	componentWillUnmount(): void {
 		const current = this.overlayRef.current;
 		if (current) {
@@ -111,7 +102,7 @@ export class PopupMenu
 	};
 
 	closeMenu = (e: MouseEvent) => {
-		if(e.which === 3)
+		if (e.which === 3)
 			return
 
 		if (this.overlayRef.current !== e.target)
@@ -181,4 +172,13 @@ export class PopupMenu
 			</div>
 		</div>;
 	}
+
+	private eventListenersEffect = () => {
+		const _current = this.overlayRef.current;
+		if (!_current)
+			return;
+
+		_current.addEventListener("mousedown", this.stopClickCascading, false);
+		_current.addEventListener("mouseup", this.closeMenu, false);
+	};
 };

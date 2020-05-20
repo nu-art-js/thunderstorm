@@ -21,6 +21,8 @@
 
 import * as React from 'react';
 import {FilterInput} from "./FilterInput";
+import {_keys} from "@nu-art/ts-common";
+import {MenuBuilder} from "../modules/menu/MenuModule";
 
 const defaultWidth = "222px";
 const defaultTitleHeight = "28px";
@@ -99,6 +101,8 @@ export type DropDown_Node<ItemType> = {
 	hover: boolean
 }
 
+export type DropDownRendererMap<ItemType> = { [key: string]: (props: DropDown_Node<ItemType>) => React.ReactNode }
+
 type Props<ItemType> = {
 	id?: string
 	options: ItemType[] | (() => ItemType[])
@@ -121,6 +125,7 @@ export class DropDown<ItemType>
 	extends React.Component<Props<ItemType>, State<ItemType>> {
 
 	private node: any = null;
+	private headerStyleResolver: HeaderStyleProps = {headerStyle};
 
 	constructor(props: Props<ItemType>) {
 		super(props);
@@ -144,7 +149,9 @@ export class DropDown<ItemType>
 		e.stopPropagation();
 		e.preventDefault();
 
-		this.setState(prevState => ({open: !prevState.open}));
+
+		this.renderMenu();
+		// this.setState(prevState => ({open: !prevState.open}));
 	};
 
 	onSelected = (e: React.MouseEvent, item: ItemType) => {
@@ -199,8 +206,6 @@ export class DropDown<ItemType>
 
 	private inputResolver = (selected?: ItemType): InputProps => ({inputStyle, placeholder: this.props.placeholder});
 
-	private headerStyleResolver: HeaderStyleProps = {headerStyle};
-
 	private handleMouseClick = (e: MouseEvent) => {
 		if (this.node && this.node.contains(e.target)) {
 			return;
@@ -239,7 +244,7 @@ export class DropDown<ItemType>
 		return <div style={listContainerStyle}>
 			<div style={listStyle}>
 				{items.length === 0 ?
-					<div style={{opacity: 0.5}}>No options</div>
+					<div style={{opacity: 0.5, margin: "auto"}}>No options</div>
 					:
 					<>{items.map((item, index) => (
 						<div key={index}
@@ -263,5 +268,24 @@ export class DropDown<ItemType>
 			</div>
 		</div>
 	};
+
+	private renderMenu = () => {
+
+		const Renderer = this.props.itemRenderer;
+		const items = this.state.filteredOptions;
+
+		const rendererMap: DropDownRendererMap<ItemType> = {
+			normal: (el: DropDown_Node<ItemType>) => Renderer(el)
+		};
+		const _children = _keys(items).map(item => ({
+				item: items[item],
+				type: 'normal'
+			}));
+
+		new MenuBuilder({rendererMap, _children})
+		.setId(this.props.id || '')
+		.show()
+	}
+
 
 }
