@@ -7,7 +7,7 @@ import {
 	MenuListener,
 	resolveRealPosition
 } from "./MenuModule";
-import {BadImplementationException} from "../../../../../../ts-common/src/main";
+import { BadImplementationException } from "@nu-art/ts-common";
 
 type Props = {
 	id: string
