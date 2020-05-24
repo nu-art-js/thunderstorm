@@ -32,7 +32,8 @@
   "dependencies": {
     "@nu-art/ts-common": "~0.0.1",
     "moment": "^2.24.0",
-    "saml2-js": "^2.0.5"
+    "saml2-js": "^2.0.5",
+    "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
     "@nu-art/firebase": "~0.0.1",
