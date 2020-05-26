@@ -28,13 +28,9 @@ import {
 } from "firebase-admin";
 import {JWTInput} from "google-auth-library";
 import {FirebaseSession} from "./firebase-session";
-import {FirestoreWrapper} from "../firestore/FirestoreWrapper";
-import {DatabaseWrapper} from "../database/DatabaseWrapper";
-import {StorageWrapper} from "../storage/StorageWrapper";
-import {PushMessagesWrapper} from "../push/PushMessagesWrapper";
 import {
-	ThisShouldNotHappenException,
-	StringMap
+	StringMap,
+	ThisShouldNotHappenException
 } from "@nu-art/ts-common";
 
 export class FirebaseSession_Admin
@@ -46,11 +42,6 @@ export class FirebaseSession_Admin
 
 	public connect(): void {
 		this.app = this.createApp();
-
-		this.storage = new StorageWrapper(this);
-		this.database = new DatabaseWrapper(this);
-		this.firestore = new FirestoreWrapper(this);
-		this.messaging = new PushMessagesWrapper(this);
 	}
 
 	getProjectId(): string {
