@@ -41,10 +41,10 @@ export type FirebaseApp = admin.app.App | firebase.app.App
 export abstract class FirebaseSession<Config>
 	extends Logger {
 	app!: FirebaseApp;
-	protected database!: DatabaseWrapper;
-	protected storage!: StorageWrapper;
-	protected firestore!: FirestoreWrapper;
-	protected messaging!: PushMessagesWrapper;
+	protected database?: DatabaseWrapper;
+	protected storage?: StorageWrapper;
+	protected firestore?: FirestoreWrapper;
+	protected messaging?: PushMessagesWrapper;
 
 	protected config: Config;
 	protected sessionName: string;
@@ -65,19 +65,31 @@ export abstract class FirebaseSession<Config>
 
 	public abstract connect(): void ;
 
-	public getDatabase() {
-		return this.database;
+	public getDatabase(): DatabaseWrapper {
+		if (this.database)
+			return this.database;
+
+		return this.database = new DatabaseWrapper(this);
 	}
 
-	public getStorage() {
-		return this.storage;
+	public getStorage(): StorageWrapper {
+		if (this.storage)
+			return this.storage;
+
+		return this.storage = new StorageWrapper(this);
 	}
 
-	public getFirestore() {
-		return this.firestore;
+	public getFirestore(): FirestoreWrapper {
+		if (this.firestore)
+			return this.firestore;
+
+		return this.firestore = new FirestoreWrapper(this);
 	}
 
-	public getMessaging() {
-		return this.messaging;
+	public getMessaging(): PushMessagesWrapper {
+		if (this.messaging)
+			return this.messaging;
+
+		return this.messaging = new PushMessagesWrapper(this);
 	}
 }

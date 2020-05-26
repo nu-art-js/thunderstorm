@@ -135,8 +135,8 @@ export class FileWrapper {
 	}
 
 
-	async exists() {
-		return this.file.exists();
+	async exists(): Promise<boolean> {
+		return (await this.file.exists())[0];
 	}
 
 	async setMetadata(metaData: Metadata): Promise<Metadata> {
@@ -144,7 +144,7 @@ export class FileWrapper {
 	}
 
 	async write(data: string | number | object | boolean) {
-		if(Buffer.isBuffer(data))
+		if (Buffer.isBuffer(data))
 			return this.file.save(data);
 
 		switch (typeof data) {
@@ -162,6 +162,11 @@ export class FileWrapper {
 			case "string":
 				return this.file.save(`${data}`);
 		}
+	}
+
+	async read(): Promise<Buffer> {
+		const downloadResponse = await this.file.download();
+		return downloadResponse[0]
 	}
 
 	async delete() {
