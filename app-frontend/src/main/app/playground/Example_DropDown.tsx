@@ -179,7 +179,7 @@ export class Example_DropDown
 				<div>
 					<h4>Only defaults</h4>
 					<DropDown
-						renderersAndOptions={{options: plaguesWithTitles, rendererMap, avoidActionOnTypes: ['title']}}
+						renderersAndOptions={{options: plagues, itemRenderer}}
 						onSelected={this.onSelected}
 					/>
 				</div>
