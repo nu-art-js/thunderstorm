@@ -47,7 +47,7 @@ export class Example_Menu
 		const menu = createMenu() as Menu<any>;
 		return <div>
 			<div>
-				Here is a Menu Button
+				<h2>Here is a Menu Button</h2>
 			<MenuAndButton
 				id={'menu'}
 				iconClosed={iconClose}
@@ -57,7 +57,7 @@ export class Example_Menu
 			</div>
 
 			<div>
-				Here is the same menu but as a component
+				<h2>Here is the same menu but as a component</h2>
 				<FixedMenu menu={menu}/>
 			</div>
 		</div>
