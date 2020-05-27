@@ -30,10 +30,11 @@ import {
 } from "../../components/treeicons";
 import {
 	Menu,
-	MenuItemWrapper
+	MenuItemWrapper,
 } from "./MenuModule";
 import {BaseComponent} from "../../core/BaseComponent";
 import {RendererMap} from '../../types/renderer-map';
+import {CSSProperties} from "react";
 
 const stopPropagation = (e: MouseEvent | React.MouseEvent) => {
 	e.preventDefault();
@@ -41,7 +42,11 @@ const stopPropagation = (e: MouseEvent | React.MouseEvent) => {
 };
 
 type HMProps = {
-	menu: Menu<any>
+	menu: Menu<any>,
+	onNodeClicked?: Function,
+	onNodeDoubleClicked?: Function,
+	childrenContainerStyle?: CSSProperties
+	id?: string
 }
 
 export class FixedMenu
@@ -49,6 +54,7 @@ export class FixedMenu
 
 	render() {
 		return <Tree
+			id={this.props.id}
 			root={this.props.menu}
 			hideRootElement={true}
 			nodeAdjuster={(obj: object) => {
@@ -65,15 +71,24 @@ export class FixedMenu
 				// @ts-ignore
 				return {data: objElement, deltaPath: '_children'};
 			}}
+			onNodeClicked={this.props.onNodeClicked}
+			onNodeDoubleClicked={this.props.onNodeDoubleClicked}
 			propertyFilter={<T extends object>(obj: T, key: keyof T) => key !== "item" && key !== 'type'}
 			indentPx={0}
-			childrenContainerStyle={(level: number) => ({
+			childrenContainerStyle={(level: number) => this.props.childrenContainerStyle || {
 				backgroundColor: "#fff",
 				boxSizing: "border-box",
 				display: "inline-block",
 				paddingLeft: 20,
 				width: "-webkit-fill-available"
-			})}
+			}}
+			// childrenContainerStyle={(level: number) => ({
+			// 	backgroundColor: "#fff",
+			// 	boxSizing: "border-box",
+			// 	display: "inline-block",
+			// 	paddingLeft: 20,
+			// 	width: "-webkit-fill-available"
+			// })}
 			callBackState={(key: string, value: any, level: number) => true}
 			renderer={GenericRenderer(this.props.menu.rendererMap)}
 		/>

@@ -23,6 +23,7 @@ export type KeyboardListenerProps = {
 	className?: string
 	onFocus?: () => void
 	onBlur?: () => void
+	id?: string
 }
 
 export class KeyboardListener<P extends KeyboardListenerProps>
@@ -60,6 +61,7 @@ export class KeyboardListener<P extends KeyboardListenerProps>
 
 	render() {
 		return <div
+			id={this.props.id ? `${this.props.id}-listener` : ''}
 			ref={(node: HTMLDivElement) => {
 				if (this.node)
 					return;
@@ -67,6 +69,8 @@ export class KeyboardListener<P extends KeyboardListenerProps>
 				this.node = node;
 				this.forceUpdate();
 			}}
+			className={'match_width'}
+			style={{outline: "none"}}
 			tabIndex={1}
 			onFocus={this.onFocus}
 			onBlur={this.onBlur}>

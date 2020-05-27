@@ -105,7 +105,11 @@ export class PopupMenu
 		return <div style={{position: "absolute"}}>
 			<div id="overlay" ref={this.overlayRef} style={overlayStyle}>
 				<div style={this.style(element.pos)}>
-					<FixedMenu menu={element.menu}/>
+					<FixedMenu
+						menu={element.menu}
+						onNodeDoubleClicked={element.onNodeDoubleClicked}
+						onNodeClicked={element.onNodeClicked}
+					/>
 				</div>
 			</div>
 		</div>;
@@ -116,7 +120,7 @@ export class PopupMenu
 		if (!_current)
 			return;
 
-		_current.addEventListener("mousedown", this.stopClickCascading, false);
+		// _current.addEventListener("mousedown", this.stopClickCascading, false);
 		_current.addEventListener("mouseup", this.closeMenu, false);
 	};
 };

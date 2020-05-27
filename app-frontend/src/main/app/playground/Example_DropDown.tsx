@@ -25,10 +25,15 @@ import {
 	HeaderStyleProps,
 	ValueProps,
 	inputStyle,
-	headerStyle
+	headerStyle,
+	ListStyleProps,
+	listStyle,
+	DropDownItemRenderer,
+	MenuItemWrapper,
+	RendererMap
 } from "@nu-art/thunderstorm/frontend";
 
-const optionRendererWrapperStyle = css({":hover": {backgroundColor: "rgba(156, 156, 205, 0.3)"}});
+// const optionRendererWrapperStyle = css({":hover": {backgroundColor: "lime"}});
 
 const optionRendererStyle = (selected: boolean) => css(
 	{
@@ -63,6 +68,41 @@ const plagues: Plague[] = [
 	{label: 'Internet', value: 'internet'},
 ];
 
+const plaguesWithTitles: MenuItemWrapper<RendererMap, string>[] = [
+	{
+		item: {label: 'Phisical', value: 'title'},
+		type: "title"
+	},
+	{
+		item: {label: 'Spanish Flu', value: 'spanishFlu'},
+		type: "normal"
+	},
+	{
+		item: {label: 'Smallpox', value: 'smallpox'},
+		type: "normal"
+	},
+	{
+		item: {label: 'Black Plague', value: 'blackPlague'},
+		type: "normal"
+	},
+	{
+		item: {label: 'Coronavirus', value: 'COVID-19'},
+		type: "normal"
+	},
+	{
+		item: {label: 'Virtual', value: 'title'},
+		type: "title"
+	},
+	{
+		item: {label: 'Facebook', value: 'facebook'},
+		type: "normal"
+	},
+	{
+		item: {label: 'Tik tok', value: 'tiktok'},
+		type: "normal"
+	},
+];
+
 export class Example_DropDown
 	extends React.Component<{}, { _selected: string }> {
 	constructor(props: {}) {
@@ -77,7 +117,7 @@ export class Example_DropDown
 
 
 	render() {
-		const itemRenderer = (props: DropDown_Node<Plague>) => <div className={optionRendererWrapperStyle}>
+		const itemRenderer = (props: DropDown_Node<Plague>) => <div style={props.hover ? {backgroundColor: "lime"} : {}}>
 			<div className={optionRendererStyle(props.selected)}>
 				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
 					<div>{props.item.label}</div>
@@ -85,6 +125,17 @@ export class Example_DropDown
 				</div>
 			</div>
 		</div>;
+		const titleRender = (props: DropDown_Node<Plague>) => <div style={{backgroundColor: "lightgray"}} onClick={()=>{return}}>
+			<div className={optionRendererStyle(props.selected)} style={{color: "yellow"}}>
+				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
+					<div>{props.item.label}</div>
+				</div>
+			</div>
+		</div>;
+		const rendererMap: { [key: string]: DropDownItemRenderer<Plague> } = {
+			normal: itemRenderer,
+			title: titleRender
+		};
 
 		const valueRenderer = (props: ValueProps<Plague>) => {
 			const style: React.CSSProperties = {backgroundColor: "lime", boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
@@ -109,8 +160,18 @@ export class Example_DropDown
 			}
 		);
 
-		const headerResolverClass: HeaderStyleProps = {headerStyle, headerClassName: css({boxShadow:"5px 10px #888888"})};
-		const headerResolverStyle: HeaderStyleProps = {headerStyle: {...headerStyle, border:"solid 2px red", borderRadius: 5}};
+		const headerResolverClass: HeaderStyleProps = {headerStyle, headerClassName: css({boxShadow: "5px 10px #888888"})};
+		const headerResolverStyle: HeaderStyleProps = {headerStyle: {...headerStyle, border: "solid 2px red", borderRadius: "5px 5px 0px 0px"}};
+		const listResolverStyle: ListStyleProps = {
+			listStyle: {
+				...listStyle,
+				border: "solid 2px red",
+				borderRadius: "0px 0px 5px 5px",
+				borderTop: "none",
+				top: 0,
+				maxHeight: 90
+			}
+		};
 
 		return <>
 			<h1>dropdowns</h1>
@@ -118,20 +179,18 @@ export class Example_DropDown
 				<div>
 					<h4>Only defaults</h4>
 					<DropDown
-						options={plagues}
-						itemRenderer={itemRenderer}
+						renderersAndOptions={{options: plaguesWithTitles, rendererMap, avoidActionOnTypes: ['title']}}
 						onSelected={this.onSelected}
 					/>
 				</div>
 				<div>
 					<h4>Filter, 2 carets, placeholder & all renderers</h4>
 					<DropDown
-						options={plagues}
-						itemRenderer={itemRenderer}
+						renderersAndOptions={{options: plagues, itemRenderer}}
 						onSelected={this.onSelected}
 						valueRenderer={valueRenderer}
 						inputResolver={inputResolver}
-						filter={(item) => [item.label.toLowerCase()]}
+						filter={(item) => [(item as Plague).label.toLowerCase()]}
 						mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><img src={require('@res/images/icon__arrowOpen.svg')}/></div>}
 						closeCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><img src={require('@res/images/icon__arrowClose.svg')}/></div>}
 						placeholder={"Choose a plague"}
@@ -141,15 +200,15 @@ export class Example_DropDown
 				<div>
 					<h4>Filter, 1 caret, default value, all renderers & custom inline style</h4>
 					<DropDown
-						options={plagues}
-						itemRenderer={itemRenderer}
+						renderersAndOptions={{options: plaguesWithTitles, rendererMap, avoidActionOnTypes: ['title']}}
 						onSelected={this.onSelected}
 						valueRenderer={valueRenderer}
 						inputResolver={inputResolverWithCustomInlineStyle}
-						filter={(item) => [item.label.toLowerCase()]}
-						selected={{label: 'Black Plague', value: 'blackPlague'}}
+						filter={(item) => [(item as MenuItemWrapper<RendererMap, string>).item.label.toLowerCase()]}
+						selected={plagues[2]}
 						mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><img src={require('@res/images/icon__arrowOpen.svg')}/></div>}
 						headerStyleResolver={headerResolverStyle}
+						listStyleResolver={listResolverStyle}
 					/>
 				</div>
 			</div>
