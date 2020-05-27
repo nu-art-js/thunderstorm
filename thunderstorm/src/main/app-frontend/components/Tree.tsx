@@ -53,8 +53,8 @@ type Props = {
 	id: string
 	root: object
 	hideRootElement?: boolean
-	onNodeClicked?: (path: string, id: string) => void;
-	onNodeDoubleClicked?: (path: string, id: string) => void;
+	onNodeClicked?: Function;
+	onNodeDoubleClicked?: Function;
 	renderer?: (props: TreeNode) => any;
 	indentPx?: number;
 	callBackState?: (key: string, value: any, level: number) => boolean
@@ -172,6 +172,7 @@ export class Tree
 
 	render() {
 		return <KeyboardListener
+			id={this.props.id}
 			onKeyboardEventListener={this.keyEventHandler}
 			onFocus={this.props.onFocus}
 			onBlur={this.blur}>
@@ -183,6 +184,7 @@ export class Tree
 		if (this.props.keyEventHandler)
 			return this.props.keyEventHandler(node, e);
 
+		console.log('focused on tree');
 		e.preventDefault();
 		e.stopPropagation();
 		if (e.code === "Escape")
@@ -227,6 +229,7 @@ export class Tree
 			return this.expandOrCollapse(this.state.focused, false);
 
 		if (this.state.focused && e.code === "Enter") {
+			console.log('pressed enter')
 			let element: any = this.props.root;
 			const hierarchy: string[] = this.state.focused.split('/');
 			hierarchy.shift();
@@ -333,7 +336,8 @@ export class Tree
 		if (this.props.childrenContainerStyle)
 			return this.props.childrenContainerStyle(level, parentNodeRef, containerRef, parentContainerRef);
 
-		return {marginLeft: this.props.indentPx || 10};
+		console.log(this.props.indentPx, typeof this.props.indentPx)
+		return {marginLeft: (this.props.indentPx || this.props.indentPx === 0) ? this.props.indentPx : 10};
 	};
 
 }

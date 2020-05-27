@@ -2,9 +2,7 @@ import {
 	generateHex,
 	Module
 } from "@nu-art/ts-common";
-import {
-	MenuPosition
-} from "./PopupMenu";
+import {MenuPosition} from "./PopupMenu";
 
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import {
@@ -18,10 +16,14 @@ export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 	return {top: pos.top + button.offsetHeight, left: pos.left};
 };
 
+// export type TreeAction = (path: string, id: string) => void;
+
 export type Menu_Model = {
 	id: string
 	menu: Menu<any>,
-	pos: MenuPosition
+	pos: MenuPosition,
+	onNodeClicked?: Function,
+	onNodeDoubleClicked?: Function,
 };
 
 export interface MenuListener {
@@ -58,6 +60,8 @@ export class MenuBuilder {
 	private readonly menu: Menu<any>;
 	private readonly position: MenuPosition;
 	private id: string = generateHex(8);
+	private onNodeClicked?: Function;
+	private onNodeDoubleClicked?: Function;
 
 	constructor(menu: Menu<any>, position: MenuPosition) {
 		this.menu = menu;
@@ -68,7 +72,9 @@ export class MenuBuilder {
 		const model: Menu_Model = {
 			id: this.id,
 			menu: this.menu,
-			pos: this.position
+			pos: this.position,
+			onNodeClicked: this.onNodeClicked,
+			onNodeDoubleClicked: this.onNodeDoubleClicked
 		};
 
 		MenuModule.show(model);
@@ -76,6 +82,16 @@ export class MenuBuilder {
 
 	setId(id: string) {
 		this.id = id;
+		return this;
+	}
+
+	setOnClick(func: Function) {
+		this.onNodeClicked = func;
+		return this;
+	}
+
+	setOnDoubleClick(func: Function) {
+		this.onNodeDoubleClicked = func;
 		return this;
 	}
 }
