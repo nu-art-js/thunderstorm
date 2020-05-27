@@ -97,7 +97,7 @@ export class FirestoreCollection<Type extends object> {
 	}
 
 	async upsertAll(instances: Type[]) {
-		return Promise.all(instances.map(instance => this.upsert(instance)));
+		return this.runInTransaction(transaction => transaction.upsertAll(this, instances));
 	}
 
 	async patch(instance: Subset<Type>): Promise<Type> {
