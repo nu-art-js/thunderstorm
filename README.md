@@ -46,7 +46,7 @@ This boilerplate is a unification of both frontend and backend in one repo..
 ### Run your app locally  
  Once you have configured everything correctly, you can launch the "Hello World" sample from your own firebase project by executing: 
  
- `bash build-and-install.sh --launch-frontend --launch-backend`
+ `bash build-and-install.sh --launch=app-frontend --launch=app-backend`
 
 **NOTE:** you can run each individually
 
@@ -55,7 +55,7 @@ This boilerplate is a unification of both frontend and backend in one repo..
 
  Once you have configured everything correctly, executing the following command would deploy the frontend and backend to the firebase function: 
 
-`bash build-and-install.sh  --set-env=${env} --deploy-frontend --deploy-backend`
+`bash build-and-install.sh  --set-env=${env} --deploy=app-frontend --deploy=app-backend`
 
 **NOTE:** you can deploy each individually
 
