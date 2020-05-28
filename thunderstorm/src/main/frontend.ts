@@ -47,7 +47,8 @@ export * from "./app-frontend/components/TS_TextArea";
 export * from "./app-frontend/components/TS_Input";
 export * from "./app-frontend/components/FilterInput";
 export * from "./app-frontend/components/DropDown";
-export * from "./app-frontend/components/Tree";
+export * from "./app-frontend/components/tree/Tree";
+export * from "./app-frontend/components/tree/TreeRenderer";
 export * from "./app-frontend/components/GenericSelect";
 export * from "./app-frontend/components/Playground";
 
