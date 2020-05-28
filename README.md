@@ -12,38 +12,31 @@ This boilerplate is a unification of both frontend and backend in one repo..
 ### What is in the repo:
  
  Right after you've cloned the repo you will see:
+  * **app-backend** - Contains all the backend files.
+  * **app-frontend** - Contains all the frontend files.
+  * **app-shared** - where all the shared types between the frontend and backend are stored.
   * **ts-common** - Typescript infra that should have been a part of Typescript release but isn't.
   * **testelot** - A scenario building infra for testing.
   * **thunderstorm** - The Typescript & React Frontend along side a Typescript & Express Backend framework with core components you can use.
-  * **app-frontend** - Contains all the frontend files.
-  * **app-backend** - Contains all the backend files.
-  * **app-shared** - where all the shared types between the frontend and backend are stored.
+  * **bug-report** - A bug report infra that you can attach to your web app
+  * **db-api-generator** - A generic db to api middleware
+  * **firebase** - A full blown api to most of Firebase tools
+  * **live-docs** - A neat tool to manage application tooltips
+  * **permissions** - A permissions management system for restricting users
+  * **push-pub-sub** - A generic push pub sub for your web app
+  * **storm** - A bunch of tools.. 
+  * **user-account** - A user password or SAML auth infra
   
  **NOTE:** These should always be aligned and compiling together with this repo!!
   
-# Fork this repo: 
- * First you will need to install [firebase tools](https://firebase.google.com/docs/cli) `npm i -g firebase-tools`.
- * You will then have to **Login** using the firebase tools cli `firebase login`.
- * [create an empty Firebase project](https://console.firebase.google.com/). and acquire the project id (NOT project name)
- * Create a realtime **Database and Firestore**. (and acquire the location e.g. us-cenrtal1...) 
- * Prepare an empty repo and acquire the repo remote tracking url `(e.g. git@github.com:${username}/${my-project}.git)`
- * Clone this repo locally `git clone --recursive git@github.com:nu-art-js/thunderstorm.git && cd thunderstorm`
- * Then run from within this cloned repo: `bash ./dev-tools/scripts/dev/typescript/fork-thunderstorm.sh`
- * From this point on Follow the script and provide the required input.
- * Once the fork is completed you can follow the steps bellow to setup, launch or deploy your function.
+# Start Using Thunderstorm: 
+  To start using Thunderstorm go to the [boilerplate app](https://github.com/nu-art-js/thunderstorm-app) and follow up on the how to fork Thunderstorm section
+
  
-Now you have forked the boilerplate...
-
-**NOTE:** To get latest boilerplate changes run in your cloned repo folder `(e.g. my-project)`: `bash build-and-install.sh --merge-origin`
-
-**ATTENTION:** You should pay attention to the `./.config`, `./app-frontend/.config` and `./app-backend/.config` folders as they contain all of the project configurations 
-and are version controlled, thus MUST not contain any sensitive data such as passwords or private keys. 
-You should also note the `./app-frontend/src/main/.config` and `./app-backend/src/main/.config` files, these hold the projects selected environment configuration, and are NOT version controlled!
-  
 ### Set Environment
  Before you can run the project you need to set it up...
  
- You can setup **dev** environment using this command: `bash build-and-install.sh --setup --set-env=dev` 
+ You can setup **dev** environment using this command: `bash build-and-install.sh --install --set-env=dev` 
  
 **NOTE:** Install whatever other node packages the script asks and re-run the script
  
