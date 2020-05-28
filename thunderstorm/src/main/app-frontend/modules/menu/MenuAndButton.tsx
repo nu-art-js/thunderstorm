@@ -17,10 +17,12 @@ type Props = {
 }
 
 export class MenuAndButton
-	extends BaseComponent<Props, { isOpen: boolean }>
+	extends BaseComponent<Props, { isOpen: boolean}>
 	implements MenuListener {
 
 	ref = React.createRef<HTMLImageElement>();
+
+	state = {isOpen: false};
 
 	__onMenuHide = (id: string) => {
 		if (this.props.id !== id)
