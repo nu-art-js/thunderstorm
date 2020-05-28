@@ -22,7 +22,6 @@ import {_keys} from "@nu-art/ts-common";
 
 import {
 	Tree,
-	TreeNode
 } from "../../components/tree/Tree";
 import {
 	Collapsed,
@@ -35,6 +34,7 @@ import {
 import {BaseComponent} from "../../core/BaseComponent";
 import {RendererMap} from '../../types/renderer-map';
 import {CSSProperties} from "react";
+import { TreeNode } from '../../components/tree/types';
 
 const stopPropagation = (e: MouseEvent | React.MouseEvent) => {
 	e.preventDefault();
