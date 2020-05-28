@@ -1,6 +1,7 @@
 import {
 	_clearTimeout,
 	_setTimeout,
+	ImplementationMissingException,
 	Module,
 	StringMap
 } from "@nu-art/ts-common";
@@ -49,6 +50,10 @@ export class PermissionsModuleFE_Class
 	}
 
 	setPermissions() {
+		if (!this.config || !this.config.projectId) {
+			throw new ImplementationMissingException("need to set up a project id config");
+		}
+
 		this.timeOutHandle = _setTimeout(() => {
 			HttpModule
 				.createRequest<Permissions_ApiUserUrlsPermissions>(HttpMethod.POST, 'user-urls-permissions')

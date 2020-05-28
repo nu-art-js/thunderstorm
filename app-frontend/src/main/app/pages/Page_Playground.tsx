@@ -33,6 +33,7 @@ import {Example_Toaster} from '../playground/Example_Toaster';
 import {Example_Menu} from '../playground/Example_Menu';
 import {Example_DropDown} from "../playground/Example_DropDown";
 import {selectStyles} from "../ui/SelectStyle";
+import {TreeRefactorPage} from "./TreeRefactorPage";
 
 const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
 const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
@@ -105,6 +106,10 @@ export class Page_Playground
 				name: "Special keyboard listener",
 				getNode: () => <Example_KeyboardOnTree/>
 			},
+			{
+				name: "Page for Tree refactoring",
+				getNode: () => <TreeRefactorPage/>
+			}
 		];
 	}
 
