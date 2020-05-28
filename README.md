@@ -27,7 +27,7 @@ This boilerplate is a unification of both frontend and backend in one repo..
  * [create an empty Firebase project](https://console.firebase.google.com/). and acquire the project id (NOT project name)
  * Create a realtime **Database and Firestore**. (and acquire the location e.g. us-cenrtal1...) 
  * Prepare an empty repo and acquire the repo remote tracking url `(e.g. git@github.com:${username}/${my-project}.git)`
- * Clone this repo locally `git clone --recursive git@github.com:nu-art-js/thunderstorm-boilerplate.git && cd thunderstorm-boilerplate`
+ * Clone this repo locally `git clone --recursive git@github.com:nu-art-js/thunderstorm.git && cd thunderstorm`
  * Then run from within this cloned repo: `bash ./dev-tools/scripts/dev/typescript/fork-thunderstorm.sh`
  * From this point on Follow the script and provide the required input.
  * Once the fork is completed you can follow the steps bellow to setup, launch or deploy your function.
