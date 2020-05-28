@@ -33,6 +33,7 @@ type Props<Key> = {
 	placeholder?: string
 	id?: Key
 	focus?: boolean
+	spellCheck?: boolean
 }
 
 type State = { value: string }
@@ -60,7 +61,7 @@ export class TS_Input<Key extends string>
 	};
 
 	render() {
-		const {id, type, placeholder, style, inputClassName} = this.props;
+		const {id, type, placeholder, style, inputClassName, spellCheck} = this.props;
 		return (<input
 			className={inputClassName}
 			style={{...style}}
@@ -72,6 +73,7 @@ export class TS_Input<Key extends string>
 			onChange={this.changeValue}
 			onKeyPress={this.handleKeyPress}
 			ref={input => this.props.focus && input && input.focus()}
+			spellCheck={spellCheck}
 		/>);
 	}
 

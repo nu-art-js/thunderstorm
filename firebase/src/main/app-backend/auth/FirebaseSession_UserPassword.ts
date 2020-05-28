@@ -29,8 +29,6 @@ import {
 	Firebase_UserCredential,
 	FirebaseSession
 } from "./firebase-session";
-import {FirestoreWrapper} from "../firestore/FirestoreWrapper";
-import {DatabaseWrapper} from "../database/DatabaseWrapper";
 
 
 export class FirebaseSession_UserPassword
@@ -52,8 +50,5 @@ export class FirebaseSession_UserPassword
 		this.userCredential = await auth(this.app).signInWithEmailAndPassword(this.config.credentials.user, this.config.credentials.password);
 		const user = this.userCredential.user && this.userCredential.user;
 		this.logDebug(`User: ${JSON.stringify(user)}`);
-
-		this.database = new DatabaseWrapper(this);
-		this.firestore = new FirestoreWrapper(this);
 	}
 }

@@ -23,7 +23,7 @@ import {_keys} from "@nu-art/ts-common";
 import {
 	Tree,
 	TreeNode
-} from "../../components/Tree";
+} from "../../components/tree/Tree";
 import {
 	Collapsed,
 	Expanded
