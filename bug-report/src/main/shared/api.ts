@@ -23,6 +23,7 @@ import {
 } from "@nu-art/thunderstorm";
 import {DB_Object} from "@nu-art/firebase";
 import {Auditable} from "@nu-art/ts-common";
+import {TicketDetails} from "../app-backend/modules/BugReportModule";
 
 export type BugReport = {
 	name: string
@@ -33,7 +34,7 @@ export type Request_BugReport = {
 	subject: string;
 	description: string;
 	reports: BugReport[]
-	createJiraIssue: boolean,
+	createIssue: boolean,
 };
 
 export declare type ReportMetaData = {
@@ -46,7 +47,7 @@ export type DB_BugReport = DB_Object & Auditable & {
 	description: string
 	reports: ReportLogFile[]
 	bucket?: string
-	jiraKey?: string
+	tickets?: TicketDetails[]
 };
 
 export type ReportLogFile = {

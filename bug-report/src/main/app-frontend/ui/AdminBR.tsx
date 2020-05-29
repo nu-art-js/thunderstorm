@@ -30,6 +30,7 @@ import {
 	DB_BugReport,
 	ReportLogFile
 } from "../../shared/api";
+import {__stringify} from "../../../../../ts-common/src/main";
 
 export class AdminBR
 	extends BaseComponent
@@ -44,7 +45,7 @@ export class AdminBR
 	private createRow = (report: DB_BugReport) => <tr>
 		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>{report.description}</td>
 		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>{report.reports[0].path}</td>
-		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>{report.jiraKey}</td>
+		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>{__stringify(report.tickets)}</td>
 		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>
 			<button onClick={() => this.download(report.reports)}>download</button>
 		</td>
