@@ -30,7 +30,7 @@ import {
 	DB_BugReport,
 	ReportLogFile
 } from "../../shared/api";
-import {__stringify} from "../../../../../ts-common/src/main";
+import { __stringify } from "@nu-art/ts-common";
 
 export class AdminBR
 	extends BaseComponent
