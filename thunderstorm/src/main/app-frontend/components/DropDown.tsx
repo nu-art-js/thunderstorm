@@ -365,7 +365,7 @@ export class DropDown<ItemType>
 		} else {
 			rendererMap = this.props.renderersAndOptions.rendererMap;
 			const allowAction = (el: string, avoidAction: string[] = []): boolean => !avoidAction.includes(el);
-			const _avoidAction = (this.props.renderersAndOptions as MultipleRenderersAndOptions<ItemType>).avoidActionOnTypes;
+			const _avoidAction = this.props.renderersAndOptions.avoidActionOnTypes;
 			Object.keys(rendererMap).forEach(
 				(el) => rendererMap[el] = this.funcCreator(rendererMap[el] as DropDownItemRenderer<ItemType>, allowAction(el, _avoidAction)));
 
