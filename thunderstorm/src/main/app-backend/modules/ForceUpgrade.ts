@@ -23,7 +23,8 @@ import {
 	__stringify,
 	BadImplementationException,
 	compareVersions,
-	Module
+	Module,
+	ImplementationMissingException
 } from "@nu-art/ts-common";
 import {
 	HeaderKey,
@@ -68,7 +69,7 @@ class ForceUpgrade_Class
 		const userAgentString = Header_UserAgent.get(request);
 		const browserType: Browser = Header_BrowserType.get(request) as Browser;
 		if (!browserType)
-			throw new BadImplementationException(`Unsupported browser type: ${browserType}`);
+			throw new ImplementationMissingException(`Browser type not specified`);
 
 		const chromeRegexp = this.config.regexp?.[browserType] || DefaultRegexps[browserType];
 		const version = userAgentString.match(new RegExp(chromeRegexp))?.[1];
@@ -77,7 +78,7 @@ class ForceUpgrade_Class
 
 		const requiredBrowserVersion = this.config.browser?.[browserType];
 		if (!requiredBrowserVersion)
-			throw new ApiException(400, `Unsupported browser type: ${browserType}`);
+			throw new ImplementationMissingException(`Unsupported browser type: ${browserType}`);
 
 		let app = false;
 		let browser = false;

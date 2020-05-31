@@ -31,24 +31,24 @@ export const config = {
 	PushPubSubModule: {
 		publicKeyBase64: 'BH_Awj-nfzwZBMnzRgyfQN2mIZPbxV9JqLWljlQcJbHtz-2IxKPvon78Wt_NLF0yn4QkMIErSlqkAm8T75ySM84'
 	},
-	ForceUpgrade:{
+	ForceUpgrade: {
 		assertVersionUrl: "/v1/version/assert"
 	},
-	LocalizationModule: {
+	LocaleModule: {
 		defaultLocale: "en",
-		locales: {
-			"en": {
+		locales: [
+			{
+				locale: "en",
 				label: "Language_English",
 				icon: "languages/en",
+				texts: require(`./res/localization/en`)
 			},
-			"nl": {
+			{
+				locale: "nl",
 				label: "Language_Dutch",
-				icon: "languages/nl"
+				icon: "languages/nl",
+				texts: require(`./res/localization/nl`)
 			}
-		},
-		languages: {
-			"en": require(`./res/localization/en`),
-			"nl": require(`./res/localization/nl`),
-		}
+		]
 	}
 };

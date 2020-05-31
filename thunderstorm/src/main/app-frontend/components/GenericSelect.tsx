@@ -21,10 +21,11 @@
 
 import * as React from "react";
 import Select, {components} from "react-select";
+import {ReactNode} from "react";
 
 type Props<T> = {
-	iconClose: string,
-	iconOpen: string,
+	iconClose: ReactNode,
+	iconOpen: ReactNode,
 	options?: T[]
 	selectedOption?: T
 	onChange: (t: T) => void
@@ -77,11 +78,11 @@ export class GenericSelect<T extends object>
 			onMenuOpen={() => this.setState({menuIsOpen: true})}
 			styles={this.props.styles}
 			placeholder={props.placeholder}
-			components={props.components? props.components : {
+			components={props.components ? props.components : {
 				IndicatorSeparator: () => null,
 				DropdownIndicator: (_props: any) => (
 					<components.DropdownIndicator {..._props}>
-						<img src={this.state.menuIsOpen ? props.iconClose : props.iconOpen} alt="arrow"/>
+						{this.state.menuIsOpen ? props.iconClose : props.iconOpen}
 					</components.DropdownIndicator>
 				)
 			}}
