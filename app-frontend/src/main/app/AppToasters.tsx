@@ -27,11 +27,12 @@ import {
 	_marginRight,
 	_paddingTop
 } from "@styles/styles";
+import {ICONS} from '@res/icons';
 
-const icon__infoToast = require('@res/images/icon__infoToast.svg');
-const icon__errorToast = require('@res/images/icon__errorToast.svg');
-const icon__successToast = require('@res/images/icon__successToast.svg');
-const close = require('@res/images/icon__close.svg');
+// const icon__infoToast = require('@res/images/icon__infoToast.svg');
+// const icon__errorToast = require('@res/images/icon__errorToast.svg');
+// const icon__successToast = require('@res/images/icon__successToast.svg');
+// const close = require('@res/images/icon__close.svg');
 
 const toasterStyle = emotion.css`
 	width: 384px;
@@ -53,11 +54,11 @@ const createToast = (type: ToastType, message: string, duration?: number) => {
 	const iconPicker = () => {
 		switch (type) {
 			case ToastType.info:
-				return icon__infoToast;
+				return ICONS.infoToast;
 			case ToastType.error:
-				return icon__errorToast;
+				return ICONS.errorToast;
 			case ToastType.success:
-				return icon__successToast;
+				return ICONS.successToast;
 		}
 	};
 
@@ -76,12 +77,12 @@ const createToast = (type: ToastType, message: string, duration?: number) => {
 
 	const content = (
 		<div className={`ll_h_c ${_paddingTop(5)}`}>
-			<img src={iconPicker()} className={_marginRight(11)}/>
+			{iconPicker()(undefined, 14)}
 			<div className={textStyle}>{_message}</div>
 		</div>
 	);
 
-	const closeButton = <img src={close} onClick={() => ToastModule.hideToast()}/>;
+	const closeButton = <div onClick={() => ToastModule.hideToast()}>{ICONS.close(undefined, 14)}</div>;
 
 	const toast = new ToastBuilder()
 		.setContent(content)
