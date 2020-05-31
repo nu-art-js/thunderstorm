@@ -32,6 +32,7 @@ import {
 	MenuItemWrapper,
 	RendererMap
 } from "@nu-art/thunderstorm/frontend";
+import {ICONS} from "@res/icons";
 
 // const optionRendererWrapperStyle = css({":hover": {backgroundColor: "lime"}});
 
@@ -121,7 +122,7 @@ export class Example_DropDown
 			<div className={optionRendererStyle(props.selected)}>
 				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
 					<div>{props.item.label}</div>
-					{props.selected && <div><img src={require('@res/images/icon__check.svg')}/></div>}
+					{props.selected && <div>{ICONS.check(undefined, 14)}</div>}
 				</div>
 			</div>
 		</div>;
@@ -191,8 +192,8 @@ export class Example_DropDown
 						valueRenderer={valueRenderer}
 						inputResolver={inputResolver}
 						filter={(item) => [(item as Plague).label.toLowerCase()]}
-						mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><img src={require('@res/images/icon__arrowOpen.svg')}/></div>}
-						closeCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><img src={require('@res/images/icon__arrowClose.svg')}/></div>}
+						mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowOpen(undefined, 14)}</div>}
+						closeCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowClose(undefined, 14)}</div>}
 						placeholder={"Choose a plague"}
 						headerStyleResolver={headerResolverClass}
 					/>
@@ -206,7 +207,7 @@ export class Example_DropDown
 						inputResolver={inputResolverWithCustomInlineStyle}
 						filter={(item) => [(item as MenuItemWrapper<RendererMap, string>).item.label.toLowerCase()]}
 						selected={plagues[2]}
-						mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><img src={require('@res/images/icon__arrowOpen.svg')}/></div>}
+						mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowOpen(undefined, 14)}</div>}
 						headerStyleResolver={headerResolverStyle}
 						listStyleResolver={listResolverStyle}
 					/>

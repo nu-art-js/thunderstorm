@@ -19,9 +19,7 @@
 import * as React from "react";
 import {GenericSelect} from "@nu-art/thunderstorm/app-frontend/components/GenericSelect";
 import {selectStyles} from "../../ui/SelectStyle";
-
-const iconClose = require('@res/images/icon__arrowClose.svg');
-const iconOpen = require('@res/images/icon__arrowOpen.svg');
+import {ICONS} from "@res/icons";
 
 type State = {
 	selectedOption?: Option
@@ -60,8 +58,8 @@ export class Example_GenericSelect extends React.Component<{}, State> {
 			}}>Clear</button>
 			<div style={{height: 20}}/>
 			<GenericSelect<Option>
-				iconClose={iconClose}
-				iconOpen={iconOpen}
+				iconClose={ICONS.arrowClose(undefined, 14)}
+				iconOpen={ICONS.arrowOpen(undefined, 14)}
 				selectedOption={selectedOption}
 				options={options}
 				onChange={(o: Option) => {
