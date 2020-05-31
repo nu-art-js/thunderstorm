@@ -121,7 +121,7 @@ export class Example_DropDown
 			<div className={optionRendererStyle(props.selected)}>
 				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
 					<div>{props.item.label}</div>
-					{props.selected && <div><img src={require('@res/images/icn-check.svg')}/></div>}
+					{props.selected && <div><img src={require('@res/images/icon__check.svg')}/></div>}
 				</div>
 			</div>
 		</div>;

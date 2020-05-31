@@ -63,22 +63,31 @@ export class Tree
 			filteredKeys = _keys(data).filter((__key) => this.props.propertyFilter(data, __key));
 
 
-		return <div key={nodePath}
-		            ref={(_ref: HTMLDivElement) => {
-			            if (this.rendererRefs[nodePath])
-				            return;
+		const nodeRefResolver = (_ref: HTMLDivElement) => {
+			if (this.rendererRefs[nodePath])
+				return;
 
-			            this.rendererRefs[nodePath] = _ref;
-			            if (this.containerRefs[nodePath] && renderChildren && filteredKeys.length > 0)
-				            this.forceUpdate();
-		            }}>
+			this.rendererRefs[nodePath] = _ref;
+			if (this.containerRefs[nodePath] && renderChildren && filteredKeys.length > 0)
+				this.forceUpdate();
+		};
 
+		const containerRefResolver = (_ref: HTMLDivElement) => {
+			if (this.containerRefs[nodePath])
+				return;
+
+			this.containerRefs[nodePath] = _ref;
+			if (renderChildren && filteredKeys.length > 0)
+				this.forceUpdate();
+		};
+
+		return <div key={nodePath} ref={nodeRefResolver}>
 			{this.renderItem(data, nodePath, key, expanded)}
-			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode)}
+			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
 		</div>
 	};
 
-	private renderChildren(data: any, nodePath: string, _path: string, level: number, filteredKeys: any[], renderChildren: boolean, adjustedNode: { data: object; deltaPath?: string }) {
+	private renderChildren(data: any, nodePath: string, _path: string, level: number, filteredKeys: any[], renderChildren: boolean, adjustedNode: { data: object; deltaPath?: string }, containerRefResolver: (_ref: HTMLDivElement) => void) {
 		if (!(filteredKeys.length > 0 && renderChildren))
 			return;
 
@@ -87,14 +96,7 @@ export class Tree
 		return (
 			<div
 				style={this.getChildrenContainerStyle(level, this.rendererRefs[nodePath], containerRef, this.containerRefs[_path])}
-				ref={(_ref: HTMLDivElement) => {
-					if (this.containerRefs[nodePath])
-						return;
-
-					this.containerRefs[nodePath] = _ref;
-					if (this.rendererRefs[nodePath] && renderChildren && filteredKeys.length > 0)
-						this.forceUpdate();
-				}}>
+				ref={containerRefResolver}>
 				{containerRef && filteredKeys.map(
 					(childKey) => this.renderNode(data[childKey], childKey, nodePath + (adjustedNode.deltaPath ? adjustedNode.deltaPath + "/" : ""), level + 1))}
 			</div>);

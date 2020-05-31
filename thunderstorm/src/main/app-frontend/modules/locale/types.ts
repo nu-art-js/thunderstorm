@@ -29,14 +29,6 @@ export type LocaleDef = {
 	locale: Locale,
 	label: StringKey,
 	icon: string,
+	texts: { [k: string]: string }
 };
 
-interface Locales {
-	[key: string]: LocaleDef
-}
-
-export type LocalizationConfig = {
-	defaultLocale: Locale,
-	locales: Locales,
-	languages: Map<Locale, Map<StringKey, string>>
-};

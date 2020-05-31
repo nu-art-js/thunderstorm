@@ -34,9 +34,9 @@ import {Example_Menu} from '../playground/Example_Menu';
 import {Example_DropDown} from "../playground/Example_DropDown";
 import {selectStyles} from "../ui/SelectStyle";
 import {TreeRefactorPage} from "./TreeRefactorPage";
+import {ICONS} from "@res/icons";
+import {COLORS} from "@res/colors";
 
-const icon__arrowClose = require('@res/images/icon__arrowClose.svg');
-const icon__arrowOpen = require('@res/images/icon__arrowOpen.svg');
 
 export class Page_Playground
 	extends React.Component<{}> {
@@ -50,8 +50,8 @@ export class Page_Playground
 		const screens = this.getScreens();
 		return <Playground
 			selectStyle={selectStyles}
-			iconClose={icon__arrowClose}
-			iconOpen={icon__arrowOpen}
+			iconClose={ICONS.arrowClose(COLORS.veryLightPink)}
+			iconOpen={ICONS.arrowOpen(COLORS.veryLightPink)}
 			screens={screens}
 		/>
 	}

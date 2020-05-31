@@ -25,69 +25,56 @@
 import {
 	Locale,
 	LocaleDef,
-	LocalizationConfig,
 	StringKey
-} from "./localization-types";
-import {Module} from "@nu-art/ts-common";
+} from "./types";
+import {
+	Module,
+	ImplementationMissingException
+} from "@nu-art/ts-common";
 import {format} from "util";
 
+type Config = {
+	defaultLocale: Locale,
+	locales: LocaleDef[],
+};
 
-export class LocalizationModule_Class
-	extends Module<LocalizationConfig> {
+export class LocaleModule_Class
+	extends Module<Config> {
 
-	private activeLocale!: Locale;
+	private activeLocale!: LocaleDef;
+	private defaultLocale!: LocaleDef;
 
 	protected init() {
 		const defaultLocale = this.config.defaultLocale;
 		if (!defaultLocale)
-			throw Error("MUST set defaultLocale in the config data");
+			throw new ImplementationMissingException("MUST set defaultLocale in the config data");
 
-		for (const key in this.config.locales) {
-			this.config.locales[key].locale = key;
-		}
-
-		this.setLanguage(defaultLocale);
+		this.activeLocale = this.setLanguage(defaultLocale);
 	}
 
 	public setLanguage(locale: Locale) {
-		const localeDef = this.config.locales[locale];
+		const localeDef = this.config.locales.find(_locale => _locale.locale === locale);
 		if (!localeDef)
-			throw new Error(`Unsupported language: ${locale}`);
+			throw new ImplementationMissingException(`Unsupported language: ${locale}`);
 
-		this.activeLocale = locale;
+		return this.activeLocale = localeDef;
 	}
 
 	public getAvailableLanguages(): LocaleDef[] {
-		const ret = [];
-		for (const key in this.config.locales) {
-			ret.push(this.config.locales[key]);
-		}
-		return ret;
+		return this.config.locales;
 	}
 
-	public getActiveLocale(): Locale {
-		return this.activeLocale;
-	}
-
-	public getString(key: StringKey, ...params: any[]) {
-		let text = this.getStringFromLocale(this.activeLocale, key);
+	public get(key: StringKey, ...params: any[]) {
+		let text = this.activeLocale.texts[key];
 
 		if (!text)
-			text = this.getStringFromLocale(this.config.defaultLocale, key);
+			text = this.defaultLocale.texts[key];
 
 		if (!text)
 			return key;
 
 		return format(text, params);
 	}
-
-	public getStringFromLocale(locale: Locale, key: StringKey): string | undefined {
-		const languageData = this.config.languages.get(this.activeLocale);
-		if (!languageData)
-			return;
-
-		return languageData.get(key);
-	}
 }
 
-export const LocalizationModule = new LocalizationModule_Class();
+export const LocaleModule = new LocaleModule_Class();

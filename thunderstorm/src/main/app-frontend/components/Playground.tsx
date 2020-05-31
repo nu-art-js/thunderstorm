@@ -28,8 +28,8 @@ const PLAYGROUND = "playground"
 
 export type PlaygroundProps = {
 	selectStyle: any
-	iconClose: string
-	iconOpen: string
+	iconClose: ReactNode
+	iconOpen: ReactNode
 	screens: PlaygroundScreen[]
 }
 
