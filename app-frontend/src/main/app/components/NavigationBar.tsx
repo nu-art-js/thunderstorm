@@ -21,9 +21,9 @@ import {Page_Home} from "../pages/Page_Home";
 import {css} from "emotion";
 import {Component_Login} from "@nu-art/user-account/frontend";
 import {Page_ApiGen} from "../pages/Page_ApiGen";
-import { Example_Dialogs } from "./../../app/playground/Example_Dialogs";
-import { Example_Toaster } from "./../../app/playground/Example_Toaster";
-import { Example_Dispatch } from "./../../app/playground/Example_Dispatch";
+import { Example_Dialogs } from "../playground/examples/Example_Dialogs";
+import { Example_Toaster } from "../playground/examples/Example_Toaster";
+import { Example_Dispatch } from "../playground/examples/Example_Dispatch";
 
 const fixedMenu = css`
   position: fixed;

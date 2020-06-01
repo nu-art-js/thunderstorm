@@ -26,7 +26,7 @@ import {
 	WrapperProps
 } from "@nu-art/thunderstorm/frontend";
 
-import {VersionOnScreen} from './components/version-on-screen';
+import {VersionOnScreen} from './components/VersionOnScreen';
 import {
 	AccountModule,
 	OnLoginStatusUpdated

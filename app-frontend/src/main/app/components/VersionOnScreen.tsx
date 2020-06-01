@@ -15,27 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from "react";
-
- export class zeplinTest
-    extends React.Component<Props> {
-
-     clickable = () => {
-         console.log("click me")
-     };
-    render() {
-        return (<button className={this.props.className} disabled={this.props.disabled}>
-            verify
-        </button>);
-        // (<button onClick={this.clickable}>
-        //
-        // </button>)
-    }
-}
-type Props = {
-    disabled:boolean
-    className:"hi"
-}
+import { _marginBottom, _marginRight } from "@res/styles";
 
 
+export const VersionOnScreen = () => {
+	return <div className="full_screen">
+		<div className={`bottom right absolute ${_marginRight(10)} ${_marginBottom(10)}`}>{`${process.env.appEnv}-${process.env.appVersion}`}</div>
+	</div>;
+};

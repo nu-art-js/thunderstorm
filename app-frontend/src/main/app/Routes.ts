@@ -17,7 +17,7 @@
  */
 
 import {RoutingModule} from "@nu-art/thunderstorm/frontend";
-import {Page_Playground} from "./pages/Page_Playground";
+import {Page_Playground} from "./playground/Page_Playground";
 
 export const Route_Home = "home";
 export const Route_Login = "login";

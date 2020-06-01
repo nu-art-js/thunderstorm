@@ -18,8 +18,8 @@
 
 import * as React from "react";
 import {GenericSelect} from "@nu-art/thunderstorm/app-frontend/components/GenericSelect";
-import {selectStyles} from "../../ui/SelectStyle";
 import {ICONS} from "@res/icons";
+import {selectStyles} from "../../Page_Playground";
 
 type State = {
 	selectedOption?: Option

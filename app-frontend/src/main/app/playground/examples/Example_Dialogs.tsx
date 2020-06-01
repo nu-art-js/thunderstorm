@@ -21,7 +21,7 @@ import {
 	noButton,
 	showAppConfirmationDialogExample,
 	showDefaultInfoModalExample
-} from "../ui/ExampleAppDialogs";
+} from "../../themes/dialog";
 import {ToastModule} from "@nu-art/thunderstorm/frontend";
 
 

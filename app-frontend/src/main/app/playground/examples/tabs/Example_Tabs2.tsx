@@ -4,15 +4,12 @@ import {
 } from "@nu-art/thunderstorm/app-frontend/components/Tabs";
 import * as React from "react";
 import {CSSProperties} from "react";
-import {
-	brightSkyBlue,
-	darkTwo
-} from "@styles/colors";
+import {COLORS} from "@res/colors";
 
 const selectedStyle: CSSProperties = {
-	color: brightSkyBlue,
+	color: COLORS.brightSkyBlue,
 	borderBottomStyle: "solid",
-	borderBottomColor: brightSkyBlue,
+	borderBottomColor: COLORS.brightSkyBlue,
 	borderBottomWidth: 2,
 	paddingBottom: 2,
 	paddingLeft: 2,
@@ -22,7 +19,7 @@ const selectedStyle: CSSProperties = {
 };
 
 const nonSelectedStyle: CSSProperties = {
-	color: darkTwo,
+	color: COLORS.darkTwo,
 	fontSize: 18,
 	paddingBottom: 4,
 	fontWeight: 200
