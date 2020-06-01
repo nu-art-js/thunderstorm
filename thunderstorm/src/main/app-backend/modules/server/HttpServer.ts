@@ -23,7 +23,6 @@
  * Module dependencies.
  */
 
-import * as bodyParser from "body-parser";
 import * as compression from 'compression';
 
 import {Server} from "http";
@@ -133,7 +132,7 @@ export class HttpServer_Class
 
 		const parserLimit = this.config.bodyParserLimit;
 		if (parserLimit)
-			this.express.use(bodyParser.json({limit: parserLimit}));
+			this.express.use(express.json({limit: parserLimit}));
 		this.express.use(compression());
 		for (const middleware of HttpServer_Class.expressMiddleware) {
 			this.express.use(middleware);
