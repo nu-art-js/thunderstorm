@@ -20,12 +20,12 @@
  */
 
 import * as React from 'react';
-import {KeyboardEvent} from 'react';
 
 type Props<Key> = {
 	onChange: (value: string, id: Key) => void
 	onAccept?: () => void
-	inputClassName?: string,
+	onCancel?: () => void
+	inputClassName?: string
 	style?: React.CSSProperties
 	value?: string
 	error?: string
@@ -52,12 +52,12 @@ export class TS_Input<Key extends string>
 		this.props.onChange(value, event.target.id as Key)
 	};
 
-	handleKeyPress = (event: KeyboardEvent) => {
-		if (!this.props.onAccept)
-			return;
-
-		if (event.which === 13)
+	handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+		if (this.props.onAccept && event.which === 13)
 			this.props.onAccept();
+
+		if (this.props.onCancel && event.which === 27)
+			this.props.onCancel();
 	};
 
 	render() {
@@ -71,7 +71,7 @@ export class TS_Input<Key extends string>
 			value={this.state.value}
 			placeholder={placeholder}
 			onChange={this.changeValue}
-			onKeyPress={this.handleKeyPress}
+			onKeyDown={this.handleKeyDown}
 			ref={input => this.props.focus && input && input.focus()}
 			spellCheck={spellCheck}
 		/>);
