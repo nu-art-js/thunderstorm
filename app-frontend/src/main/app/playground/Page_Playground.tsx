@@ -21,22 +21,54 @@ import {
 	Playground,
 	PlaygroundScreen
 } from "@nu-art/thunderstorm/frontend";
-import {Page_ApiGen} from "./Page_ApiGen";
+import {Page_ApiGen} from "../pages/Page_ApiGen";
 import {Hello} from "../Hello";
-import {Example_ApiCustomError} from '../playground/Example_ApiCustomError';
-import {Example_Tabs2} from "../playground/tabs/Example_Tabs2";
-import {Example_GenericSelect} from "../playground/_to-be-removed/Example_GenericSelect";
-import {Example_Tabs} from "../playground/tabs/Example_Tabs";
-import {Example_KeyboardOnTree} from '../playground/keyboard-listener/Example_KeyboardOnTree';
-import {Example_Dialogs} from '../playground/Example_Dialogs';
-import {Example_Toaster} from '../playground/Example_Toaster';
-import {Example_Menu} from '../playground/Example_Menu';
-import {Example_DropDown} from "../playground/Example_DropDown";
-import {selectStyles} from "../ui/SelectStyle";
-import {TreeRefactorPage} from "./TreeRefactorPage";
+import {Example_ApiCustomError} from './examples/Example_ApiCustomError';
+import {Example_Tabs2} from "./examples/tabs/Example_Tabs2";
+import {Example_GenericSelect} from "./examples/_to-be-removed/Example_GenericSelect";
+import {Example_Tabs} from "./examples/tabs/Example_Tabs";
+import {Example_KeyboardOnTree} from './examples/keyboard-listener/Example_KeyboardOnTree';
+import {Example_Dialogs} from './examples/Example_Dialogs';
+import {Example_Toaster} from './examples/Example_Toaster';
+import {Example_Menu} from './examples/Example_Menu';
+import {Example_DropDown} from "./examples/Example_DropDown";
+import {TreeRefactorPage} from "./examples/_to-be-removed/TreeRefactorPage";
 import {ICONS} from "@res/icons";
 import {COLORS} from "@res/colors";
 
+export const selectStyles = {
+	container: (provided: any) => ({
+		...provided,
+		width: 240,
+		fontSize: 13,
+		outline: "none"
+	}),
+	control: () => ({
+		border: "1px solid",
+		color: COLORS.blueGrey,
+		display: "flex",
+		height: 32,
+		fontSize: 13,
+		outline: "none"
+	}),
+	singleValue: (provided: any) => ({
+		...provided,
+		color: COLORS.blueGrey,
+		fontWeight: 500
+	}),
+	input: (provided: any) => ({
+		...provided,
+		color: "#fff"
+	}),
+	option: (provided: any, state: any) => ({
+		...provided,
+		backgroundColor: "unset",
+		color: COLORS.blueGrey,
+		':hover': {
+			backgroundColor: COLORS.veryLightPink
+		}
+	}),
+};
 
 export class Page_Playground
 	extends React.Component<{}> {

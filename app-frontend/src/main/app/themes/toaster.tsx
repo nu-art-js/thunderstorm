@@ -24,15 +24,9 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import * as emotion from 'emotion';
 import {
-	_marginRight,
 	_paddingTop
-} from "@styles/styles";
+} from "@res/styles";
 import {ICONS} from '@res/icons';
-
-// const icon__infoToast = require('@res/images/icon__infoToast.svg');
-// const icon__errorToast = require('@res/images/icon__errorToast.svg');
-// const icon__successToast = require('@res/images/icon__successToast.svg');
-// const close = require('@res/images/icon__close.svg');
 
 const toasterStyle = emotion.css`
 	width: 384px;

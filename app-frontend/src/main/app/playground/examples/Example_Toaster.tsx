@@ -26,7 +26,7 @@ import {
 	ErrorToast,
 	InfoToast,
 	SuccessToast
-} from "../AppToasters";
+} from "../../themes/toaster";
 
 
 export class Example_Toaster
@@ -73,7 +73,7 @@ export class Example_Toaster
 				<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Default Info Example</button>
 				<button style={{marginRight: 8}} onClick={this.showAppToasterLiveDocsExample}>Toaster Default Live Docs Example</button>
 			</div>
-			<hr />
+			<hr/>
 			<div>
 				<button style={{marginRight: 8}} onClick={this.showAppToasterCustomSuccessExample}>Toaster Custom Success Example</button>
 				<button style={{marginRight: 8}} onClick={this.showAppToasterCustomErrorExample}>Toaster Custom Failure Example</button>
