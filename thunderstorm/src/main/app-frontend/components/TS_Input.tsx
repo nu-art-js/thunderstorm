@@ -25,6 +25,7 @@ type Props<Key> = {
 	onChange: (value: string, id: Key) => void
 	onAccept?: () => void
 	onCancel?: () => void
+	onBlur?: () => void
 	inputClassName?: string
 	style?: React.CSSProperties
 	value?: string
@@ -72,6 +73,7 @@ export class TS_Input<Key extends string>
 			placeholder={placeholder}
 			onChange={this.changeValue}
 			onKeyDown={this.handleKeyDown}
+			onBlur={this.props.onBlur}
 			ref={input => this.props.focus && input && input.focus()}
 			spellCheck={spellCheck}
 		/>);
