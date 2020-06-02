@@ -28,15 +28,22 @@ import {
 	StringKey
 } from "./types";
 import {
-	Module,
-	ImplementationMissingException
+	ImplementationMissingException,
+	Module
 } from "@nu-art/ts-common";
 import {format} from "util";
+import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 
 type Config = {
 	defaultLocale: Locale,
 	locales: LocaleDef[],
 };
+
+export interface LanguageChangeListener {
+	__onLanguageChanged(): void;
+}
+
+const dispatch_onLanguageChanged = new ThunderDispatcher<LanguageChangeListener, "__onLanguageChanged">("__onLanguageChanged");
 
 export class LocaleModule_Class
 	extends Module<Config> {
@@ -49,7 +56,7 @@ export class LocaleModule_Class
 		if (!defaultLocale)
 			throw new ImplementationMissingException("MUST set defaultLocale in the config data");
 
-		this.activeLocale = this.setLanguage(defaultLocale);
+		this.defaultLocale = this.setLanguage(defaultLocale);
 	}
 
 	public setLanguage(locale: Locale) {
@@ -57,7 +64,10 @@ export class LocaleModule_Class
 		if (!localeDef)
 			throw new ImplementationMissingException(`Unsupported language: ${locale}`);
 
-		return this.activeLocale = localeDef;
+		this.activeLocale = localeDef;
+		if (this.defaultLocale)
+			dispatch_onLanguageChanged.dispatchUI([]);
+		return localeDef
 	}
 
 	public getAvailableLanguages(): LocaleDef[] {
@@ -73,7 +83,7 @@ export class LocaleModule_Class
 		if (!text)
 			return key;
 
-		return format(text, params);
+		return format(text, ...params);
 	}
 }
 
