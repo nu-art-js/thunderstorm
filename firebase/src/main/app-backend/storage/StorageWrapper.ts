@@ -26,8 +26,7 @@ import {
 	GetSignedUrlConfig,
 	MakeFilePublicResponse,
 } from "@google-cloud/storage";
-import {Metadata,} from "@google-cloud/common";
-import {FirebaseType_Storage} from "./types";
+import {FirebaseType_Storage, FirebaseType_Metadata} from "./types";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
 
@@ -139,7 +138,7 @@ export class FileWrapper {
 		return (await this.file.exists())[0];
 	}
 
-	async setMetadata(metaData: Metadata): Promise<Metadata> {
+	async setMetadata(metaData: FirebaseType_Metadata): Promise<FirebaseType_Metadata> {
 		return (await this.file.setMetadata(metaData))[0];
 	}
 
