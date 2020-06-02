@@ -17,5 +17,7 @@
  */
 
 import * as admin from "firebase-admin";
+import {Metadata} from "@google-cloud/common";
 
-export type FirebaseType_Storage = admin.storage.Storage
+export type FirebaseType_Storage = admin.storage.Storage;
+export type FirebaseType_Metadata = Metadata;
