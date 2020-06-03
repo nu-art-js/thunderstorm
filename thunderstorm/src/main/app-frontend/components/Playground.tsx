@@ -20,7 +20,6 @@
  */
 
 import * as React from 'react';
-import {ReactNode} from 'react';
 import {GenericSelect} from "./GenericSelect";
 import {BrowserHistoryModule} from "../modules/HistoryModule";
 
@@ -28,8 +27,8 @@ const PLAYGROUND = "playground"
 
 export type PlaygroundProps = {
 	selectStyle: any
-	iconClose: ReactNode
-	iconOpen: ReactNode
+	iconClose: React.ReactNode
+	iconOpen: React.ReactNode
 	screens: PlaygroundScreen[]
 }
 
@@ -39,7 +38,7 @@ type State = {
 
 export type PlaygroundScreen = {
 	name: string
-	getNode: () => ReactNode
+	renderer: React.ElementType
 }
 
 export class Playground
@@ -53,8 +52,7 @@ export class Playground
 			this.state = {
 				selectedScreen: screen
 			}
-		}
-		else
+		} else
 			this.state = {}
 	}
 
@@ -74,8 +72,15 @@ export class Playground
 					presentation={(screen) => screen.name}
 				/>
 			</div>
-			{this.state.selectedScreen && this.state.selectedScreen.getNode()}
+			{this.renderPlayground()}
 		</div>
 	}
 
+	private renderPlayground() {
+		if (!this.state.selectedScreen)
+			return <div>Select a playground</div>
+
+		const Renderer: React.ElementType = this.state.selectedScreen.renderer;
+		return <Renderer/>
+	}
 }

@@ -92,55 +92,55 @@ export class Page_Playground
 		return [
 			{
 				name: "Hello",
-				getNode: () => <Hello/>
+				renderer: Hello
 			},
 			{
 				name: "Dialog Examples",
-				getNode: () => <Example_Dialogs/>
+				renderer: Example_Dialogs
 			},
 			{
 				name: "Toaster Examples",
-				getNode: () => <Example_Toaster/>
+				renderer: Example_Toaster
 			},
 			{
 				name: "Api Generator",
-				getNode: () => <Page_ApiGen/>
+				renderer: Page_ApiGen
 			},
 			{
 				name: "Live docs",
-				getNode: () => <Hello/>
+				renderer: Hello
 			},
 			{
 				name: "Custom error",
-				getNode: () => <Example_ApiCustomError/>
+				renderer: Example_ApiCustomError
 			},
 			{
 				name: "Tabs",
-				getNode: () => <Example_Tabs2/>
+				renderer: Example_Tabs2
 			},
 			{
 				name: "GenericTabs",
-				getNode: () => <Example_Tabs/>
+				renderer: Example_Tabs
 			},
 			{
 				name: "GenericSelect",
-				getNode: () => <Example_GenericSelect/>
+				renderer: Example_GenericSelect
 			},
 			{
 				name: "DropDown Examples",
-				getNode: () => <Example_DropDown/>
+				renderer: Example_DropDown
 			},
 			{
 				name: "Menu",
-				getNode: () => <Example_Menu/>
+				renderer: Example_Menu
 			},
 			{
 				name: "Special keyboard listener",
-				getNode: () => <Example_KeyboardOnTree/>
+				renderer: Example_KeyboardOnTree
 			},
 			{
 				name: "Page for Tree refactoring",
-				getNode: () => <TreeRefactorPage/>
+				renderer: TreeRefactorPage
 			}
 		];
 	}
