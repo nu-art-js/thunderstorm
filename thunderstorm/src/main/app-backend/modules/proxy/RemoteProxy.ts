@@ -31,15 +31,17 @@ import {ApiException} from "../../exceptions";
 import {HttpRequestData} from "../server/server-api";
 import {ExpressRequest} from "../../utils/types";
 
+type ProxyConfig = {
+	extras?: { [k: string]: any }
+	urls: string[],
+	secret: string
+};
 export type RemoteProxyConfig = {
 	remotes: {
-		[proxyId: string]: {
-			urls: string[],
-			secret: string
-		}
+		[proxyId: string]: ProxyConfig
 	}
-	secretHeaderName: string
-	proxyHeaderName: string
+	secretHeaderName?: string
+	proxyHeaderName?: string
 }
 
 export class RemoteProxy_Class<Config extends RemoteProxyConfig>
