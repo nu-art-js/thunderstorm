@@ -26,6 +26,7 @@ export * from "./app-backend/firestore/FirestoreTransaction";
 export * from "./app-backend/firestore/FirestoreWrapper";
 export * from "./app-backend/firestore/types";
 export * from "./app-backend/database/DatabaseWrapper";
+export * from "./app-backend/storage/types";
 export * from "./app-backend/storage/StorageWrapper";
 export * from "./app-backend/push/PushMessagesWrapper";
 export * from "./app-backend/push/types";
