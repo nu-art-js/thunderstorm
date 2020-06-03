@@ -47,7 +47,7 @@ export type RemoteProxyConfig = {
 export class RemoteProxy_Class<Config extends RemoteProxyConfig>
 	extends Module<Config> {
 
-	readonly Middleware: ServerApi_Middleware = async (request: ExpressRequest) => RemoteProxy.assertSecret(request);
+	readonly Middleware: ServerApi_Middleware = async (request: ExpressRequest) => {RemoteProxy.assertSecret(request)};
 	private secretHeader!: HeaderKey;
 	private proxyHeader!: HeaderKey;
 
@@ -89,6 +89,8 @@ export class RemoteProxy_Class<Config extends RemoteProxyConfig>
 		const requestUrl = request.path;
 		if (!expectedSecret.urls || !expectedSecret.urls.includes(requestUrl))
 			throw new ApiException(403, `Requested url '${requestUrl}' is not allowed from proxyId: ${proxyId}`);
+
+		return expectedSecret.extras
 	}
 
 	async processApi(request: ExpressRequest, requestData: HttpRequestData) {
