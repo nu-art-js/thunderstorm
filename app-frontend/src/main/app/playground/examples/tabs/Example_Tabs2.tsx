@@ -7,9 +7,9 @@ import {CSSProperties} from "react";
 import {COLORS} from "@res/colors";
 
 const selectedStyle: CSSProperties = {
-	color: COLORS.brightSkyBlue,
+	color: COLORS.brightSkyBlue(),
 	borderBottomStyle: "solid",
-	borderBottomColor: COLORS.brightSkyBlue,
+	borderBottomColor: COLORS.brightSkyBlue(),
 	borderBottomWidth: 2,
 	paddingBottom: 2,
 	paddingLeft: 2,
@@ -19,7 +19,7 @@ const selectedStyle: CSSProperties = {
 };
 
 const nonSelectedStyle: CSSProperties = {
-	color: COLORS.darkTwo,
+	color: COLORS.darkTwo(),
 	fontSize: 18,
 	paddingBottom: 4,
 	fontWeight: 200

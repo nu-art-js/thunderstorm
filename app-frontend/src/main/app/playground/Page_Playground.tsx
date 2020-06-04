@@ -82,8 +82,8 @@ export class Page_Playground
 		const screens = this.getScreens();
 		return <Playground
 			selectStyle={selectStyles}
-			iconClose={ICONS.arrowClose(COLORS.veryLightPink)}
-			iconOpen={ICONS.arrowOpen(COLORS.veryLightPink)}
+			iconClose={ICONS.arrowClose(COLORS.veryLightPink())}
+			iconOpen={ICONS.arrowOpen(COLORS.veryLightPink())}
 			screens={screens}
 		/>
 	}
