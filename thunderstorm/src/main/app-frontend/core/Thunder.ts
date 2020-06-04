@@ -39,7 +39,7 @@ import {
 } from "../modules/http/HttpModule";
 import {ToastModule} from "../modules/toaster/ToasterModule";
 import {DialogModule} from "../modules/dialog/DialogModule";
-import {RoutingModule} from "../modules/routing/routing-module";
+import {RoutingModule} from "../modules/routing/RoutingModule";
 import {BrowserHistoryModule} from "../modules/HistoryModule";
 import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";

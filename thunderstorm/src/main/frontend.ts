@@ -36,7 +36,10 @@ export * from "./app-frontend/modules/locale/LocaleModule";
 
 export * from "./app-frontend/modules/ForceUpgrade";
 export * from "./app-frontend/modules/StorageModule";
-export * from "./app-frontend/modules/routing/routing-module";
+
+export * from "./app-frontend/modules/routing/route";
+export * from "./app-frontend/modules/routing/RoutingModule";
+
 export * from "./app-frontend/modules/ResourcesModule";
 export * from "./app-frontend/modules/HistoryModule";
 
