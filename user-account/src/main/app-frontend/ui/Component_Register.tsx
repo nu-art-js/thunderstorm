@@ -25,8 +25,10 @@ import {
 } from "@nu-art/ts-common";
 import {AccountModule} from "../modules/AccountModule";
 import {Request_CreateAccount} from "../../shared/api";
-import {ToastModule,
-	TS_Input} from "@nu-art/thunderstorm/frontend";
+import {
+	ToastModule,
+	TS_Input
+} from "@nu-art/thunderstorm/frontend";
 
 type State<T> = {
 	data: Partial<T>
@@ -46,15 +48,17 @@ const style: CSSProperties = {
 };
 
 type InputField = {
-	label: string
-	hint: string
 	type: 'text' | 'number' | 'password'
+	label: string
+	className?: string
+	hint?: string
 }
 
 type Form<T> = { [K in keyof T]: InputField }
 
 const form: Form<Request_CreateAccount> = {
 	email: {
+		className: "",
 		type: "text",
 		hint: "email",
 		label: "Email",
@@ -81,7 +85,7 @@ export class Component_Register
 	render() {
 		const data = this.state.data;
 		return <>
-			<div className={'ll_h_c'} style={{justifyContent: 'space-evenly'}}>
+			<div className={'ll_v_c'} style={{justifyContent: 'space-evenly'}}>
 				{_keys(form).map(key => {
 					                 const field = form[key];
 					                 return <TS_Input

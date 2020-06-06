@@ -147,7 +147,7 @@ export class Example_DropDown
 
 		const inputResolver = (selected?: Plague): InputProps => (
 			{
-				inputClassName: customInputStyle(!!selected),
+				className: customInputStyle(!!selected),
 				inputStyle,
 				placeholder: this.state._selected
 			}
@@ -155,7 +155,7 @@ export class Example_DropDown
 
 		const inputResolverWithCustomInlineStyle = (selected?: Plague): InputProps => (
 			{
-				inputClassName: customInputStyle(!!selected),
+				className: customInputStyle(!!selected),
 				inputStyle: {...inputStyle, padding: "0 20px"},
 				placeholder: this.state._selected
 			}

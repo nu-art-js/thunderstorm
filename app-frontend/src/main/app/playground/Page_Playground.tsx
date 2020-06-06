@@ -35,6 +35,7 @@ import {Example_DropDown} from "./examples/Example_DropDown";
 import {TreeRefactorPage} from "./examples/_to-be-removed/TreeRefactorPage";
 import {ICONS} from "@res/icons";
 import {COLORS} from "@res/colors";
+import {Example_FormRegister} from "./examples/Example_FormRegister";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -90,58 +91,20 @@ export class Page_Playground
 
 	getScreens(): PlaygroundScreen[] {
 		return [
-			{
-				name: "Hello",
-				renderer: Hello
-			},
-			{
-				name: "Dialog Examples",
-				renderer: Example_Dialogs
-			},
-			{
-				name: "Toaster Examples",
-				renderer: Example_Toaster
-			},
-			{
-				name: "Api Generator",
-				renderer: Page_ApiGen
-			},
-			{
-				name: "Live docs",
-				renderer: Hello
-			},
-			{
-				name: "Custom error",
-				renderer: Example_ApiCustomError
-			},
-			{
-				name: "Tabs",
-				renderer: Example_Tabs2
-			},
-			{
-				name: "GenericTabs",
-				renderer: Example_Tabs
-			},
-			{
-				name: "GenericSelect",
-				renderer: Example_GenericSelect
-			},
-			{
-				name: "DropDown Examples",
-				renderer: Example_DropDown
-			},
-			{
-				name: "Menu",
-				renderer: Example_Menu
-			},
-			{
-				name: "Special keyboard listener",
-				renderer: Example_KeyboardOnTree
-			},
-			{
-				name: "Page for Tree refactoring",
-				renderer: TreeRefactorPage
-			}
+			{renderer: Example_FormRegister, name: "Form - Register",},
+			{renderer: Hello, name: "Hello",},
+			{renderer: Example_Dialogs, name: "Dialog Examples",},
+			{renderer: Example_Toaster, name: "Toaster Examples",},
+			{renderer: Page_ApiGen, name: "Api Generator",},
+			{renderer: Hello, name: "Live docs",},
+			{renderer: Example_ApiCustomError, name: "Custom error",},
+			{renderer: Example_Tabs2, name: "Tabs",},
+			{renderer: Example_Tabs, name: "GenericTabs",},
+			{renderer: Example_GenericSelect, name: "GenericSelect",},
+			{renderer: Example_DropDown, name: "DropDown Examples",},
+			{renderer: Example_Menu, name: "Menu",},
+			{renderer: Example_KeyboardOnTree, name: "Special keyboard listener",},
+			{renderer: TreeRefactorPage, name: "Page for Tree refactoring",}
 		];
 	}
 

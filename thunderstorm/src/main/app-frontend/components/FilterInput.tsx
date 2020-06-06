@@ -31,7 +31,7 @@ type Props<T> = {
 	initialFilterText?: string,
 	focus?: boolean,
 	inputStyle?: React.CSSProperties,
-	inputClassName?: string,
+	className?: string,
 	placeholder?: string
 }
 
@@ -64,7 +64,7 @@ export class FilterInput<T>
 	};
 
 	render() {
-		const {id, placeholder, inputStyle, inputClassName, focus} = this.props;
+		const {id, placeholder, inputStyle, className, focus} = this.props;
 		return (
 			<TS_Input
 				type='text'
@@ -75,7 +75,7 @@ export class FilterInput<T>
 				}}
 				focus={focus}
 				placeholder={placeholder}
-				inputClassName={inputClassName}
+				className={className}
 				style={inputStyle}
 			/>
 		);
