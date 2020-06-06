@@ -87,7 +87,7 @@ export type HeaderStyleProps = {
 }
 
 export type InputProps = {
-	inputClassName?: string
+	className?: string
 	inputStyle?: React.CSSProperties
 	placeholder?: string
 }
@@ -248,8 +248,8 @@ export class DropDown<ItemType>
 			list={Array.isArray(options) ? () => options : options}
 			onChange={(filtered: (ItemType | MenuItemWrapper<RendererMap, string>)[]) => this.setState(() => ({filteredOptions: filtered}))}
 			focus={true}
-			inputClassName={inputComplementary.inputClassName}
-			inputStyle={inputComplementary.inputStyle || (!inputComplementary.inputClassName ? inputStyle : {})}
+			className={inputComplementary.className}
+			inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
 			placeholder={inputComplementary.placeholder || this.props.placeholder}
 		/>);
 	};

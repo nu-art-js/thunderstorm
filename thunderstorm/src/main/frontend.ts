@@ -51,6 +51,9 @@ export * from "./app-frontend/components/TS_Input";
 export * from "./app-frontend/components/FilterInput";
 export * from "./app-frontend/components/DropDown";
 
+export * from "./app-frontend/components/form/types";
+export * from "./app-frontend/components/form/Form";
+
 export * from "./app-frontend/components/tree/Tree";
 export * from "./app-frontend/components/tree/types";
 export * from "./app-frontend/components/tree/DefaultTreeRenderer";
