@@ -20,10 +20,12 @@
  */
 
 import * as React from "react";
-import {ObjectTS} from "@nu-art/ts-common";
+import {
+	ObjectTS,
+	ValidatorTypeResolver
+} from "@nu-art/ts-common";
 
 export type InputField<T, K extends keyof T = keyof T> = {
-	renderer: (value: Form_FieldProps<T, K>) => React.ReactNode
 	type: 'text' | 'number' | 'password'
 	label: string
 	className?: string
@@ -31,11 +33,14 @@ export type InputField<T, K extends keyof T = keyof T> = {
 }
 
 export type Form<T extends ObjectTS> = { [K in keyof T]: InputField<T, K> }
+export type FormRenderer<T extends ObjectTS> = { [K in keyof T]: (value: Form_FieldProps<T, K>) => React.ReactNode }
 
 export type Form_FieldProps<T extends ObjectTS = ObjectTS, K extends keyof T = keyof T> = {
 	key: K
+	showErrors: boolean
 	field: InputField<T, K>
-	value: T[K]
+	value?: T[K]
+	validator?: ValidatorTypeResolver<T[K]>
 	onChange: (value: any, id: K) => void;
 	onAccept: () => void;
 };

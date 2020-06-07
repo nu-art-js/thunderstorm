@@ -35,7 +35,7 @@ import {Example_DropDown} from "./examples/Example_DropDown";
 import {TreeRefactorPage} from "./examples/_to-be-removed/TreeRefactorPage";
 import {ICONS} from "@res/icons";
 import {COLORS} from "@res/colors";
-import {Example_FormRegister} from "./examples/Example_FormRegister";
+import {Example_Form} from "./examples/Example_Form";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -91,7 +91,7 @@ export class Page_Playground
 
 	getScreens(): PlaygroundScreen[] {
 		return [
-			{renderer: Example_FormRegister, name: "Form - Register",},
+			{renderer: Example_Form, name: "Form - Register",},
 			{renderer: Hello, name: "Hello",},
 			{renderer: Example_Dialogs, name: "Dialog Examples",},
 			{renderer: Example_Toaster, name: "Toaster Examples",},
