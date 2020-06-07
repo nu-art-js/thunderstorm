@@ -17,23 +17,19 @@
  */
 
 import {
-	BaseComponent,
 	Form,
-	Component_Form,
-	ToastModule,
 	Form_FieldProps,
-	TS_Input
+	TS_Input,
+	FormRenderer,
+	ToastModule
 } from "@nu-art/thunderstorm/frontend";
 import * as React from "react";
 import {Request_CreateAccount} from "@nu-art/user-account/shared/api";
-import {
-	ObjectTS,
-	__stringify,
-	deepClone
-} from "@nu-art/ts-common";
 import {css} from "emotion";
 import {COLORS} from "@res/colors";
 import {ICONS} from "@res/icons";
+import {renderForm} from "../../themes/forms";
+import {__stringify} from "@nu-art/ts-common";
 
 const fieldStyle = css({
 	                       borderBottom: `1px solid ${COLORS.gold()}`,
@@ -67,29 +63,32 @@ let renderer = (icon: React.ReactNode, props: Form_FieldProps<Request_CreateAcco
 	</div>
 };
 
+const formRenderer: FormRenderer<Request_CreateAccount> = {
+	email: (props: Form_FieldProps<Request_CreateAccount, "email">) => {
+		return renderer(ICONS.avatar(COLORS.gold(), 18), props);
+	},
+	password: (props: Form_FieldProps<Request_CreateAccount, "password">) => {
+		return renderer(ICONS.lock(COLORS.gold(), 18), props);
+	},
+	password_check: (props: Form_FieldProps<Request_CreateAccount, "password_check">) => {
+		return renderer(ICONS.lock(COLORS.gold(), 18), props);
+	},
+}
+
 const form: Form<Request_CreateAccount> = {
 	email: {
-		renderer: (props: Form_FieldProps<Request_CreateAccount, "email">) => {
-			return renderer(ICONS.avatar(COLORS.gold(), 18), props);
-		},
 		className: fieldStyle,
 		type: "text",
 		hint: "email",
 		label: "Email",
 	},
 	password: {
-		renderer: (props: Form_FieldProps<Request_CreateAccount, "password">) => {
-			return renderer(ICONS.lock(COLORS.gold(), 18), props);
-		},
 		className: fieldStyle,
 		type: "password",
 		hint: "****",
 		label: "Password",
 	},
 	password_check: {
-		renderer: (props: Form_FieldProps<Request_CreateAccount, "password_check">) => {
-			return renderer(ICONS.lock(COLORS.gold(), 18), props);
-		},
 		className: fieldStyle,
 		type: "password",
 		hint: "****",
@@ -97,25 +96,10 @@ const form: Form<Request_CreateAccount> = {
 	},
 };
 
-type Props<T extends ObjectTS> = { value: T, onAccept: (value: T) => void };
-type State<T extends ObjectTS> = { value: T };
+const initialValue: Partial<Request_CreateAccount> = {email: "zevel@ashpa.pah"}
+const onAccept = (value: Request_CreateAccount) => ToastModule.toastInfo(__stringify(value));
+const onCancel = () => ToastModule.toastInfo("CANCELED");
 
-export class Example_FormRegister
-	extends BaseComponent<Props<Request_CreateAccount>, State<Request_CreateAccount>> {
-
-	constructor(p: Props<Request_CreateAccount>) {
-		super(p);
-		this.state = {value: deepClone(this.props.value || {})}
-	}
-
-	private onAccept = () => ToastModule.toastInfo(__stringify(this.state.value));
-	private onCancel = () => ToastModule.toastInfo(__stringify(this.props.value));
-
-	render() {
-		return <div>
-			<Component_Form form={form} value={this.state.value} onAccept={this.onAccept}/>
-			<div onClick={this.onAccept}>Accept</div>
-			<div onClick={this.onCancel}>Cancel</div>
-		</div>
-	}
-}
+export const Example_Form = () => {
+	return renderForm<Request_CreateAccount>({value: initialValue, renderer: formRenderer, form: form, onAccept, onCancel})
+};

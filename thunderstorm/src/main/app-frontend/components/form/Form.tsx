@@ -21,27 +21,36 @@
 
 import {
 	Form,
-	Form_FieldProps
+	Form_FieldProps,
+	FormRenderer
 } from "./types";
 import * as React from "react";
 import {
 	_keys,
-	ObjectTS
+	ObjectTS,
+	TypeValidator,
+	validateObject
 } from "@nu-art/ts-common";
+import {ToastModule} from "../../modules/toaster/ToasterModule";
 
-type Props<T extends object = object> = {
+export type FormProps<T extends object = object> = {
 	form: Form<T>,
-	value: T,
-	onAccept: () => void;
+	renderer: FormRenderer<T>,
+	value: Partial<T>,
+	validator?: TypeValidator<T>,
 	className?: string,
+	onAccept: (value: T) => void;
 }
 
-type State<T extends object = object> = { value: T };
+type Props<T extends object = object> = FormProps<T> & {
+	showErrors: boolean
+}
+
+type State<T extends object = object> = { value: Partial<T> };
 
 export class Component_Form<T extends ObjectTS = ObjectTS>
 	extends React.Component<Props<T>, State<T>> {
 
-	state = {value: {} as T};
 
 	constructor(p: Props<T>) {
 		super(p);
@@ -57,16 +66,26 @@ export class Component_Form<T extends ObjectTS = ObjectTS>
 		)
 	}
 
-	private renderField(data: T, key: keyof T) {
+	private renderField(data: Partial<T>, key: keyof T) {
 		const field = this.props.form[key];
 		const fieldProps: Form_FieldProps<T> = {
 			key,
 			field,
 			value: data[key],
 			onChange: this.onValueChanged,
-			onAccept: this.props.onAccept
+			showErrors: this.props.showErrors,
+			validator: this.props.validator?.[key],
+			onAccept: () => {
+				try {
+					const value = this.state.value as T;
+					this.props.validator && validateObject(value, this.props.validator);
+					this.props.onAccept(value)
+				} catch (e) {
+					ToastModule.toastError(e.message);
+				}
+			}
 		};
-		return field.renderer(fieldProps)
+		return this.props.renderer[key](fieldProps);
 	}
 
 	private onValueChanged = (value: any, id: keyof T) => {
