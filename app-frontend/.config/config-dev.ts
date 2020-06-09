@@ -40,7 +40,7 @@ export const config = {
 		}
 	},
 	PushPubSubModule: {
-		publicKeyBase64: 'BH_Awj-nfzwZBMnzRgyfQN2mIZPbxV9JqLWljlQcJbHtz-2IxKPvon78Wt_NLF0yn4QkMIErSlqkAm8T75ySM84'
+		publicKeyBase64: 'BBsKBw0R-mITlCSAOtCiHCLvKl-EetCmt5JKMg8L8ev1GqBEpDryum8ve3htIlbN3cjV1MLDFQnk0a8Wfks7cFk'
 	},
 	ExampleModule: {
 		remoteUrl: "/v1/sample/endpoint-example"
