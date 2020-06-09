@@ -5,7 +5,7 @@ import {
 	MenuAndButton,
 	MenuItemWrapper,
 	Renderer,
-	FixedMenu
+	MultiTypeTree
 } from "@nu-art/thunderstorm/frontend";
 import {
 	_keys,
@@ -27,6 +27,7 @@ const rendererMap: Rm = {
 };
 
 const menuItems = ['hi', 'bye', 'ciao', 'nice to meet', 'you'];
+const menuItems1 = ["pah", "zevel", "ashpa"];
 
 const createMenu = (): Menu<Rm> => {
 	const _children = menuItems.map(item => {
@@ -36,6 +37,14 @@ const createMenu = (): Menu<Rm> => {
 		};
 		return menuItem;
 	});
+	const _children1 = menuItems1.map(item => {
+		const menuItem: MenuItemWrapper<Rm, keyof Rm> = {
+			item: {toDisplay: item},
+			type: randomObject(_keys(rendererMap))
+		};
+		return menuItem;
+	});
+	_children[2]._children = _children1;
 	return {_children, rendererMap};
 };
 
@@ -57,7 +66,7 @@ export class Example_Menu
 
 			<div>
 				<h2>Here is the same menu but as a component</h2>
-				<FixedMenu menu={menu}/>
+				<MultiTypeTree menu={menu} root={menu}/>
 			</div>
 		</div>
 	}

@@ -28,10 +28,8 @@ import * as React from "react";
 import {
 	_keys,
 	ObjectTS,
-	TypeValidator,
-	validateObject
+	TypeValidator
 } from "@nu-art/ts-common";
-import {ToastModule} from "../../modules/toaster/ToasterModule";
 
 export type FormProps<T extends object = object> = {
 	form: Form<T>,
@@ -50,7 +48,6 @@ type State<T extends object = object> = { value: Partial<T> };
 
 export class Component_Form<T extends ObjectTS = ObjectTS>
 	extends React.Component<Props<T>, State<T>> {
-
 
 	constructor(p: Props<T>) {
 		super(p);
@@ -76,13 +73,7 @@ export class Component_Form<T extends ObjectTS = ObjectTS>
 			showErrors: this.props.showErrors,
 			validator: this.props.validator?.[key],
 			onAccept: () => {
-				try {
-					const value = this.state.value as T;
-					this.props.validator && validateObject(value, this.props.validator);
-					this.props.onAccept(value)
-				} catch (e) {
-					ToastModule.toastError(e.message);
-				}
+				this.props.onAccept(this.state.value as T);
 			}
 		};
 		return this.props.renderer[key](fieldProps);

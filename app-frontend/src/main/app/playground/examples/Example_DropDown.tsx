@@ -53,8 +53,7 @@ const customInputStyle = (selected: boolean) => css(
 		"::placeholder": {
 			color: selected ? "red" : "black",
 		}
-	}
-);
+	});
 
 type Plague = {
 	label: string,
@@ -72,6 +71,16 @@ const plagues: Plague[] = [
 const plaguesWithTitles: MenuItemWrapper<RendererMap, string>[] = [
 	{
 		item: {label: 'Phisical', value: 'title'},
+		_children: [
+			{
+				item: {label: 'kaki', value: 'kaka'},
+				type: "title"
+			},
+			{
+				item: {label: 'zevel', value: 'pah'},
+				type: "normal"
+			},
+		],
 		type: "title"
 	},
 	{
@@ -126,7 +135,9 @@ export class Example_DropDown
 				</div>
 			</div>
 		</div>;
-		const titleRender = (props: DropDown_Node<Plague>) => <div style={{backgroundColor: "lightgray"}} onClick={()=>{return}}>
+		const titleRender = (props: DropDown_Node<Plague>) => <div style={{backgroundColor: "lightgray"}} onClick={() => {
+			return
+		}}>
 			<div className={optionRendererStyle(props.selected)} style={{color: "yellow"}}>
 				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
 					<div>{props.item.label}</div>
