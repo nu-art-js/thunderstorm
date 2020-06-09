@@ -60,7 +60,7 @@ export class FirebaseModule_Class
 	}
 
 	private async createLocalSession(token?: string): Promise<FirebaseSession> {
-		const session = this.sessions[localSessionId];
+		let session = this.sessions[localSessionId];
 		if (session)
 			return session;
 
@@ -69,6 +69,11 @@ export class FirebaseModule_Class
 			localConfig = await this.fetchLocalConfig();
 
 		this.checkConfig(localConfig, localSessionId);
+
+		// I need to recheck because since it is an async op there might be race conditions
+		session = this.sessions[localSessionId];
+		if (session)
+			return session;
 
 		return this.initiateSession(localSessionId, localConfig, token);
 	}
