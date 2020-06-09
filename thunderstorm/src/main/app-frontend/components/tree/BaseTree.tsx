@@ -50,7 +50,7 @@ export type BaseTreeProps = {
 	nodeAdjuster: TreeNodeAdjuster
 	checkExpanded: (expanded: TreeNodeState, path: string) => boolean
 
-	keyEventHandler?: (node: HTMLDivElement, e: KeyboardEvent) => void;
+	keyEventHandler?: (node: HTMLDivElement, e: KeyboardEvent) => boolean;
 	onFocus?: () => void
 	onBlur?: () => void
 }
@@ -180,16 +180,15 @@ export abstract class BaseTree<P extends BaseTreeProps = BaseTreeProps, S extend
 
 	setState<K extends keyof TreeState>(state: ((prevState: Readonly<TreeState>, props: Readonly<P>) => (Pick<TreeState, K> | TreeState | null)) | Pick<TreeState, K> | TreeState | null, callback?: () => void) {
 		// @ts-ignore
-		if (state && typeof state === "object" && state.focused)
-			{ // @ts-ignore
-				console.log("focused: " + state.focused)
-			}
+		if (state && typeof state === "object" && state.focused) { // @ts-ignore
+			console.log("focused: " + state.focused)
+		}
 		super.setState(state, callback);
 	}
 
 	protected keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent): void => {
-		if (this.props.keyEventHandler)
-			return this.props.keyEventHandler(node, e);
+		if (this.props.keyEventHandler && this.props.keyEventHandler(node, e))
+			return;
 
 		console.log(`focused on tree: ${this.props.id}`);
 		e.preventDefault();
