@@ -26,9 +26,10 @@ import {
 	generateHex
 } from "@nu-art/ts-common";
 import {RendererMap} from "../types/renderer-map";
-import {FixedMenu} from "../modules/menu/FixedMenu";
 import {MenuItemWrapper} from "../modules/menu/MenuModule";
 import {KeyboardListener} from '../tools/KeyboardListener';
+import {stopPropagation} from "../utils/tools";
+import {MultiTypeTree} from "./tree/MultiTypeTree";
 
 const defaultWidth = "222px";
 const defaultTitleHeight = "28px";
@@ -183,8 +184,7 @@ export class DropDown<ItemType>
 	isSingleRendererAndOptions = (checkedItem: RenderersAndOptions<ItemType>): checkedItem is SingleRendererAndOptions<ItemType> => !!(checkedItem as SingleRendererAndOptions<ItemType>).itemRenderer;
 
 	toggleList = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		e.preventDefault();
+		stopPropagation(e);
 
 		this.setState(prevState => ({open: !prevState.open}));
 		// this.renderMenu();
@@ -380,9 +380,10 @@ export class DropDown<ItemType>
 					<div style={{...listComplementary.listStyle || (!listComplementary.listClassName ? listStyle : {}), alignItems: "center", opacity: 0.5}}>No
 						options</div>
 					:
-					<FixedMenu id={this.props.id}
-					           menu={{rendererMap, _children}}
-					           childrenContainerStyle={listComplementary.listStyle || (!listComplementary.listClassName ? listStyle : {})}/>
+					<MultiTypeTree id={this.props.id}
+					               menu={{rendererMap, _children}}
+					               root={{rendererMap, _children}}
+					               childrenContainerStyle={() => listComplementary.listStyle || (!listComplementary.listClassName ? listStyle : {})}/>
 				}
 			</div>
 		</div>

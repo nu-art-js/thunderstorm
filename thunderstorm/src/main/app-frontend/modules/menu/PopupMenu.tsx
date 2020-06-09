@@ -6,18 +6,14 @@ import {
 	MenuModule
 } from "./MenuModule";
 import {BaseComponent} from "../../core/BaseComponent";
-import {FixedMenu} from "./FixedMenu";
+import {stopPropagation} from '../../utils/tools';
+import {MultiTypeTree} from "../../components/tree/MultiTypeTree";
 
 export type MenuPosition = { left: number, top: number };
 
 type State = {
 	element?: Menu_Model
 }
-
-const stopPropagation = (e: MouseEvent | React.MouseEvent) => {
-	e.preventDefault();
-	e.stopPropagation();
-};
 
 const overlayStyle: CSSProperties = {
 	cursor: "default",
@@ -105,8 +101,9 @@ export class PopupMenu
 		return <div style={{position: "absolute"}}>
 			<div id="overlay" ref={this.overlayRef} style={overlayStyle}>
 				<div style={this.style(element.pos)}>
-					<FixedMenu
+					<MultiTypeTree
 						menu={element.menu}
+						root={element.menu}
 						onNodeDoubleClicked={element.onNodeDoubleClicked}
 						onNodeClicked={element.onNodeClicked}
 					/>

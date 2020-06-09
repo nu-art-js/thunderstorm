@@ -30,16 +30,17 @@ import {
 	TreeNodeAdjuster,
 	TreeRenderer
 } from "./types";
+import {KeyboardListener} from "../../tools/KeyboardListener";
 
 
-type Props = {
+export type BaseTreeProps = {
 	id: string
 	root: object
 	hideRootElement?: boolean
 	onNodeClicked?: Function;
 	onNodeDoubleClicked?: Function;
-	renderer?: TreeRenderer;
-	callBackState?: (key: string, value: any, level: number) => boolean
+	renderer: (tree: BaseTree) => TreeRenderer;
+	callBackState: (key: string, value: any, level: number) => boolean
 
 	childrenContainerStyle?: (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentRef?: HTMLDivElement) => CSSProperties
 	nodesState?: TreeNodeState;
@@ -61,29 +62,136 @@ type TreeState = {
 }
 
 
-export abstract class BaseTree
-	extends React.Component<Props, TreeState> {
+export abstract class BaseTree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState = TreeState>
+	extends React.Component<P, TreeState> {
 
-	static defaultProps: Partial<Props> = {
+	static _defaultProps: Partial<BaseTreeProps> = {
 		indentPx: 20,
-		propertyFilter: () => true,
 		checkExpanded: (expanded: TreeNodeState, path: string) => expanded[path],
-		nodeAdjuster: (obj: object) => ({data: obj, deltaPath: ""})
 	};
 
 	protected containerRefs: { [k: string]: HTMLDivElement } = {};
 	protected rendererRefs: { [k: string]: HTMLDivElement } = {};
 
-	constructor(props: Props) {
+	private Renderer: TreeRenderer;
+
+	constructor(props: P) {
 		super(props);
-		this.state = {expanded: this.recursivelyExpand(this.props.root, this.props.callBackState || (() => true))};
+
+		this.Renderer = this.props.renderer(this);
+		this.state = {expanded: this.recursivelyExpand(this.props.root, this.props.callBackState || (() => true))} as S;
+	}
+
+	render() {
+		return <KeyboardListener
+			id={this.props.id}
+			onKeyboardEventListener={this.keyEventHandler}
+			onFocus={this.props.onFocus}
+			onBlur={this.blur}>
+			{this.renderNode(this.props.root, "", "", 1)}
+		</KeyboardListener>;
+	}
+
+	private renderNode = (_data: any, key: string, _path: string, level: number) => {
+		let data = _data;
+		const nodePath = `${_path}${key}/`;
+		const adjustedNode = this.props.nodeAdjuster(data);
+		data = adjustedNode.data;
+
+		let renderChildren = true;
+		let filteredKeys: any[] = [];
+
+		const expanded = this.props.checkExpanded(this.state.expanded, nodePath);
+		if (!expanded)
+			renderChildren = false;
+
+		if (typeof data !== "object")
+			renderChildren = false;
+
+		if (renderChildren)
+			filteredKeys = _keys(data).filter((__key) => this.props.propertyFilter(data, __key));
+
+
+		const nodeRefResolver = (_ref: HTMLDivElement) => {
+			if (this.rendererRefs[nodePath])
+				return;
+
+			this.rendererRefs[nodePath] = _ref;
+			if (this.containerRefs[nodePath] && renderChildren && filteredKeys.length > 0)
+				this.forceUpdate();
+		};
+
+		const containerRefResolver = (_ref: HTMLDivElement) => {
+			if (this.containerRefs[nodePath])
+				return;
+
+			this.containerRefs[nodePath] = _ref;
+			if (renderChildren && filteredKeys.length > 0)
+				this.forceUpdate();
+		};
+
+		return <div key={nodePath} ref={nodeRefResolver}>
+			{this.renderItem(data, nodePath, key, expanded)}
+			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
+		</div>
+	};
+
+	private renderChildren(data: any, nodePath: string, _path: string, level: number, filteredKeys: any[], renderChildren: boolean, adjustedNode: { data: object; deltaPath?: string }, containerRefResolver: (_ref: HTMLDivElement) => void) {
+		if (!(filteredKeys.length > 0 && renderChildren))
+			return;
+
+		const containerRef: HTMLDivElement = this.containerRefs[nodePath];
+
+		return (
+			<div
+				style={this.getChildrenContainerStyle(level, this.rendererRefs[nodePath], containerRef, this.containerRefs[_path])}
+				ref={containerRefResolver}>
+				{containerRef && filteredKeys.map(
+					(childKey) => this.renderNode(data[childKey], childKey, nodePath + (adjustedNode.deltaPath ? adjustedNode.deltaPath + "/" : ""), level + 1))}
+			</div>);
+	}
+
+	private renderItem(item: any, nodePath: string, key: string, expanded: boolean) {
+		if (this.props.hideRootElement && nodePath.length === 1)
+			return null;
+
+		return (
+			<this.Renderer
+				name={key}
+				item={item}
+				path={nodePath}
+				expandToggler={this.toggleExpanded}
+				onClick={this.onNodeClicked}
+				onDoubleClick={this.onNodeDoubleClicked}
+				expanded={expanded}
+				focused={nodePath === this.state.focused}/>
+		);
+	}
+
+	private getChildrenContainerStyle = (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentContainerRef?: HTMLDivElement): CSSProperties => {
+		if (!containerRef)
+			return {};
+
+		if (this.props.childrenContainerStyle)
+			return this.props.childrenContainerStyle(level, parentNodeRef, containerRef, parentContainerRef);
+
+		return {marginLeft: this.props.indentPx};
+	};
+
+	setState<K extends keyof TreeState>(state: ((prevState: Readonly<TreeState>, props: Readonly<P>) => (Pick<TreeState, K> | TreeState | null)) | Pick<TreeState, K> | TreeState | null, callback?: () => void) {
+		// @ts-ignore
+		if (state && typeof state === "object" && state.focused)
+			{ // @ts-ignore
+				console.log("focused: " + state.focused)
+			}
+		super.setState(state, callback);
 	}
 
 	protected keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent): void => {
 		if (this.props.keyEventHandler)
 			return this.props.keyEventHandler(node, e);
 
-		console.log('focused on tree');
+		console.log(`focused on tree: ${this.props.id}`);
 		e.preventDefault();
 		e.stopPropagation();
 		if (e.code === "Escape")
