@@ -54,6 +54,9 @@ export * from "./app-frontend/components/DropDown";
 export * from "./app-frontend/components/form/types";
 export * from "./app-frontend/components/form/Form";
 
+
+export * from "./app-frontend/components/tree/MultiTypeTreeRenderer";
+export * from "./app-frontend/components/tree/MultiTypeTree";
 export * from "./app-frontend/components/tree/Tree";
 export * from "./app-frontend/components/tree/types";
 export * from "./app-frontend/components/tree/DefaultTreeRenderer";
@@ -67,7 +70,6 @@ export * from "./app-frontend/modules/component-loader/entry-component-loading-m
 export * from "./app-frontend/modules/tooltip/Tooltip";
 export * from "./app-frontend/modules/menu/MenuAndButton";
 export * from "./app-frontend/modules/menu/PopupMenu";
-export * from "./app-frontend/modules/menu/FixedMenu";
 export * from "./app-frontend/modules/toaster/Toaster";
 export * from "./app-frontend/modules/dialog/Dialog";
 export * from "./app-frontend/utils/tools";
