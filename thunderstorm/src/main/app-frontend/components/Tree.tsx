@@ -179,14 +179,19 @@ export class Tree
 		</KeyboardListener>;
 	}
 
+	private stopPropagation(e: KeyboardEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+	}
+
 	protected keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent): void => {
 		if (this.props.keyEventHandler)
 			return this.props.keyEventHandler(node, e);
 
-		e.preventDefault();
-		e.stopPropagation();
-		if (e.code === "Escape")
+		if (e.code === "Escape") {
+			this.stopPropagation(e);
 			return node.blur();
+		}
 
 		const renderedElements: string[] = Object.keys(this.state.expanded).reduce((carry, key) => {
 			if (this.state.expanded[key])
@@ -204,6 +209,7 @@ export class Tree
 			return;
 
 		if (e.code === "ArrowDown") {
+			this.stopPropagation(e);
 			if (idx === -1 || idx + 1 === renderedElements.length)
 				return this.setState({focused: renderedElements[0]});
 
@@ -211,6 +217,7 @@ export class Tree
 		}
 
 		if (e.code === "ArrowUp") {
+			this.stopPropagation(e);
 			if (idx === -1)
 				return this.setState({focused: renderedElements[0]});
 
@@ -220,13 +227,18 @@ export class Tree
 			return this.setState({focused: renderedElements[idx - 1]})
 		}
 
-		if (this.state.focused && e.code === "ArrowRight")
+		if (this.state.focused && e.code === "ArrowRight") {
+			this.stopPropagation(e);
 			return this.expandOrCollapse(this.state.focused, true);
+		}
 
-		if (this.state.focused && e.code === "ArrowLeft")
+		if (this.state.focused && e.code === "ArrowLeft") {
+			this.stopPropagation(e);
 			return this.expandOrCollapse(this.state.focused, false);
+		}
 
 		if (this.state.focused && e.code === "Enter") {
+			this.stopPropagation(e);
 			let element: any = this.props.root;
 			const hierarchy: string[] = this.state.focused.split('/');
 			hierarchy.shift();
