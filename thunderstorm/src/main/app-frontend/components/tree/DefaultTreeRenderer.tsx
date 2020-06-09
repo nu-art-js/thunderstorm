@@ -25,36 +25,38 @@ import {
 	TreeNodeItem
 } from "./types";
 
-export const DefaultTreeRenderer = (props: TreeNode) => {
-	function renderCollapse() {
-		let toDisplay;
+export const DefaultTreeRenderer = () => {
+	return (props: TreeNode) => {
+		function renderCollapse() {
+			let toDisplay;
+			if (typeof props.item !== "object")
+				toDisplay = "";
+			else if (Object.keys(props.item).length === 0)
+				toDisplay = "";
+			else if (props.expanded)
+				toDisplay = "-";
+			else
+				toDisplay = "+";
+
+			return <div className={`clickable`} id={props.path} onClick={props.expandToggler} style={{width: "15px"}}>{toDisplay}</div>
+		}
+
+		let label;
 		if (typeof props.item !== "object")
-			toDisplay = "";
+			label = ` : ${props.item}`;
 		else if (Object.keys(props.item).length === 0)
-			toDisplay = "";
-		else if (props.expanded)
-			toDisplay = "-";
+			label = " : {}";
 		else
-			toDisplay = "+";
+			label = "";
 
-		return <div className={`clickable`} id={props.path} onClick={props.expandToggler} style={{width: "15px"}}>{toDisplay}</div>
-	}
-
-	let label;
-	if (typeof props.item !== "object")
-		label = ` : ${props.item}`;
-	else if (Object.keys(props.item).length === 0)
-		label = " : {}";
-	else
-		label = "";
-
-	return (<div className="ll_h_c">
-		{renderCollapse()}
-		<div
-			id={props.path}
-			className={`${(props.item as TreeNodeItem).action || props.onClick || props.onDoubleClick ? 'clickable' : ''}`}
-			onClick={props.onClick}
-			style={{backgroundColor: props.focused ? "lime" : "unset", userSelect: "none"}}
-			onDoubleClick={(props.item as TreeNodeItem).action || props.onDoubleClick}>{props.name || "root"} {label} </div>
-	</div>);
-};
+		return (<div className="ll_h_c">
+			{renderCollapse()}
+			<div
+				id={props.path}
+				className={`${(props.item as TreeNodeItem).action || props.onClick || props.onDoubleClick ? 'clickable' : ''}`}
+				onClick={props.onClick}
+				style={{backgroundColor: props.focused ? "lime" : "unset", userSelect: "none"}}
+				onDoubleClick={(props.item as TreeNodeItem).action || props.onDoubleClick}>{props.name || "root"} {label} </div>
+		</div>);
+	};
+}

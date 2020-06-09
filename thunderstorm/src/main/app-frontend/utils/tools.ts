@@ -20,7 +20,11 @@
  */
 
 import {Browser} from "../../shared/consts";
-import {BadImplementationException, ImplementationMissingException} from "@nu-art/ts-common";
+import {
+	BadImplementationException,
+	ImplementationMissingException
+} from "@nu-art/ts-common";
+import * as React from "react";
 
 export function browserType(): Browser {
 	if (navigator?.vendor.includes("Google")) {
@@ -47,3 +51,9 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 
 	return new File([u8arr], fileName, {type: mimeType});
 }
+
+
+export const stopPropagation = (e: MouseEvent | React.MouseEvent) => {
+	e.preventDefault();
+	e.stopPropagation();
+};

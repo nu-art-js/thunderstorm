@@ -20,11 +20,13 @@ import * as React from "react";
 import {
 	BaseComponent,
 	Component_Form,
-	FormProps
+	FormProps,
+	ToastModule
 } from "@nu-art/thunderstorm/frontend";
 import {
 	deepClone,
-	ObjectTS
+	ObjectTS,
+	validateObject
 } from "@nu-art/ts-common";
 
 type State<T extends ObjectTS> = {
@@ -56,6 +58,15 @@ class ConfirmationFormWrapper<T extends ObjectTS>
 	}
 
 	onAccept = () => {
+		try {
+			const value = this.state.value as T;
+			this.props.validator && validateObject(value, this.props.validator);
+			this.props.onAccept(value)
+		} catch (e) {
+			this.setState({showErrors: true})
+			ToastModule.toastError(e.message);
+		}
+
 		this.props.onAccept(this.state.value as T);
 	};
 }

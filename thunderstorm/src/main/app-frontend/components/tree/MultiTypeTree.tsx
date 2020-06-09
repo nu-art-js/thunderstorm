@@ -19,26 +19,46 @@
  * limitations under the License.
  */
 
+import {_keys,} from "@nu-art/ts-common";
 import {
 	BaseTree,
 	BaseTreeProps
 } from "./BaseTree";
-import {DefaultTreeRenderer} from "./DefaultTreeRenderer";
+import {Menu} from "../../modules/menu/MenuModule";
+import {DefaultGenericRenderer} from './MultiTypeTreeRenderer';
 
-const nodeAdjuster = (obj: object) => ({data: obj, deltaPath: ""})
+type MTT_Props = BaseTreeProps & {
+	menu: Menu<any>,
+}
 
-export class Tree
-	extends BaseTree {
+const nodeAdjuster = (obj: object) => {
+	if (!_keys(obj).find(key => key === "_children"))
+		return {data: obj};
+
+	// @ts-ignore
+	const objElement = obj['_children'];
+	// @ts-ignore
+	objElement.type = obj.type;
+	// @ts-ignore
+	objElement.item = obj.item;
+
+	// @ts-ignore
+	return {data: objElement, deltaPath: '_children'};
+}
+
+export class MultiTypeTree
+	extends BaseTree<MTT_Props> {
 
 	static defaultProps: Partial<BaseTreeProps> = {
 		...BaseTree._defaultProps,
-		propertyFilter: () => true,
-		renderer: DefaultTreeRenderer,
+		propertyFilter: <T extends object>(obj: T, key: keyof T) => key !== "item" && key !== 'type',
+		renderer: DefaultGenericRenderer,
 		// @ts-ignore
 		nodeAdjuster: nodeAdjuster,
+		hideRootElement: true,
 	};
 
-	constructor(p: BaseTreeProps) {
+	constructor(p: MTT_Props) {
 		super(p);
 	}
 }
