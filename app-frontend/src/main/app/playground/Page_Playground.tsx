@@ -36,6 +36,7 @@ import {TreeRefactorPage} from "./examples/_to-be-removed/TreeRefactorPage";
 import {ICONS} from "@res/icons";
 import {COLORS} from "@res/colors";
 import {Example_Form} from "./examples/Example_Form";
+import {Example_TriggerPush} from "./examples/Example_TriggerPush";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -97,7 +98,8 @@ export class Page_Playground
 			{renderer: Example_Toaster, name: "Toaster Examples",},
 			{renderer: Page_ApiGen, name: "Api Generator",},
 			{renderer: Hello, name: "Live docs",},
-			{renderer: Example_ApiCustomError, name: "Custom error",},
+			{renderer: Example_TriggerPush, name: "Trigger Push"},
+			{renderer: Example_ApiCustomError, name: "Custom error"},
 			{renderer: Example_Tabs2, name: "Tabs",},
 			{renderer: Example_Tabs, name: "GenericTabs",},
 			{renderer: Example_GenericSelect, name: "GenericSelect",},

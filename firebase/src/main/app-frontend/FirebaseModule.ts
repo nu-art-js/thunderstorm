@@ -53,10 +53,7 @@ export class FirebaseModule_Class
 
 		const localSession = await this.createLocalSession();
 
-		const session = new SwFirebaseSession(localSessionId, localSession.app);
-		this.swSession = session;
-
-		return session;
+		return this.swSession = new SwFirebaseSession(localSessionId, localSession.app);
 	}
 
 	private async createLocalSession(token?: string): Promise<FirebaseSession> {
