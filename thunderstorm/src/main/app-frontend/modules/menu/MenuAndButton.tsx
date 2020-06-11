@@ -2,66 +2,61 @@ import * as React from "react";
 import {BaseComponent} from "../../core/BaseComponent";
 import {
 	Menu,
+	Menu_Model,
 	MenuBuilder,
 	MenuListener,
 	resolveRealPosition
 } from "./MenuModule";
+import {BadImplementationException} from "@nu-art/ts-common";
+import {ReactNode} from "react";
 
 type Props = {
 	id: string
-	iconOpen: string
-	iconClosed: string
+	iconOpen: ReactNode
+	iconClosed: ReactNode
 	menu: Menu<any>
 }
 
 export class MenuAndButton
-	extends BaseComponent<Props, {}>
+	extends BaseComponent<Props, { isOpen: boolean, over: boolean }>
 	implements MenuListener {
-
-
-	__onMenuHide = (id: string) => {
-		if (this.props.id !== id)
-			return
-
-		this.close()
-	};
-
-	__onMenuDisplay = () => {
-		// this is triggered by this.open so dont want to make it recursive
-	};
 
 	ref = React.createRef<HTMLImageElement>();
 
+	state = {
+		isOpen: false,
+		over: false
+	};
+
+	__onMenuHide = (id: string) => {
+		if (this.props.id !== id)
+			return;
+
+		this.setState({isOpen: false});
+	};
+
+	__onMenuDisplay = (menu: Menu_Model) => {
+		if (this.props.id !== menu.id)
+			return;
+
+		this.setState({isOpen: true});
+	};
+
 	render() {
 		return <div className={'clickable'} onClick={this.open} style={{position: "relative", padding: 10}}>
-			<img
-				ref={this.ref}
-				src={this.props.iconClosed}
-				onMouseOver={e => e.currentTarget.src = this.props.iconOpen}
-				onMouseOut={e => e.currentTarget.src = this.props.iconClosed}
-				alt={"openMenu"}/>
+			<div ref={this.ref}
+			     onMouseOver={e => this.setState({over: true})}
+			     onMouseOut={e => this.setState({over: false})}>
+				{this.state.isOpen || this.state.over ? this.props.iconClosed : this.props.iconOpen}
+			</div>
 		</div>
 	}
 
-	setImage = (image: string) => {
-		const img = this.ref.current;
-		if (!img)
-			return
-
-		img.src = image;
-		return img
-	}
-
-	close = () => {
-		this.setImage(this.props.iconClosed)
-	}
-
 	open = () => {
-		const img = this.setImage(this.props.iconOpen)
-		if (!img)
-			return
+		if (!this.ref.current)
+			throw new BadImplementationException("Could not find image reference");
 
-		new MenuBuilder(this.props.menu, resolveRealPosition(img))
+		new MenuBuilder(this.props.menu, resolveRealPosition(this.ref.current))
 			.setId(this.props.id)
 			.show()
 	}

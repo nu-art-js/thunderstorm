@@ -30,6 +30,7 @@ import {
 } from "./DialogModule";
 // noinspection TypeScriptPreferShortImport
 import {BaseComponent} from "../../core/BaseComponent";
+import { stopPropagation } from "../../utils/tools";
 
 const modalOverlay: Properties = {
 	position: "fixed",
@@ -154,11 +155,6 @@ export class Dialog
 		this.setState({model});
 	};
 
-	stopPropagation = (e: React.MouseEvent) => {
-		e.preventDefault();
-		e.stopPropagation();
-	};
-
 	render() {
 		const dialogModel = this.state.model;
 		if (!dialogModel)
@@ -167,7 +163,7 @@ export class Dialog
 		return (
 			<div id="overlay" style={{...modalOverlay, background: dialogModel.overlayColor, zIndex: dialogModel.zIndex}} onClick={this.onOverlayClicked}>
 				<div className={"ll_v_l"} style={{...defaultDialogStyle, ...(dialogModel.style || {})}}
-				     onClick={(e: React.MouseEvent) => this.stopPropagation(e)}>
+				     onClick={stopPropagation}>
 					{dialogModel.title && this.renderTitle(dialogModel.title)}
 					{this.renderContent(dialogModel.content)}
 					{this.renderButtons(dialogModel)}
@@ -200,7 +196,7 @@ export class Dialog
 	renderButtons = (model: Dialog_Model) => {
 		if (!model)
 			return null;
-		if(model.buttons.length === 0)
+		if (model.buttons.length === 0)
 			return "";
 
 		return <div className={`ll_h_c`} style={{
@@ -215,7 +211,7 @@ export class Dialog
 	};
 
 	private onOverlayClicked = (e: React.MouseEvent) => {
-		this.stopPropagation(e);
+		stopPropagation(e);
 		if (this.state.model && !this.state.model.allowIndirectClosing)
 			return;
 

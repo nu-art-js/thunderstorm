@@ -26,7 +26,7 @@ type Props<Key> = {
 	onAccept?: () => void
 	onCancel?: () => void
 	onBlur?: () => void
-	inputClassName?: string
+	className?: string
 	style?: React.CSSProperties
 	value?: string
 	error?: string
@@ -62,9 +62,9 @@ export class TS_Input<Key extends string>
 	};
 
 	render() {
-		const {id, type, placeholder, style, inputClassName, spellCheck} = this.props;
+		const {id, type, placeholder, style, className, spellCheck} = this.props;
 		return (<input
-			className={inputClassName}
+			className={className}
 			style={{...style}}
 			key={id}
 			id={id}

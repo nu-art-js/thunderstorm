@@ -1,6 +1,6 @@
 {
   "name": "app-backend",
-  "version": "0.0.0",
+  "version": "1.1.0",
   "description": "Backend hello world",
   "keywords": [
     "TacB0sS",
@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm-boilerplate.git"
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
@@ -44,7 +44,7 @@
     "express": "^4.16.3",
     "firebase": "^7.2.3",
     "firebase-admin": "8.9.0",
-    "firebase-functions": "^3.3.0",
+    "firebase-functions": "^3.6.2",
     "fs": "0.0.1-security",
     "js-base64": "^2.5.1",
     "module-alias": "^2.2.0",

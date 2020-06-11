@@ -32,7 +32,6 @@ import {
 import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
 import {BrowserHistoryModule} from "../modules/HistoryModule";
-import {LocalizationModule} from "../modules/localization/localization-module";
 import {Thunder} from "./Thunder";
 
 // @ts-ignore
@@ -136,11 +135,6 @@ export class BaseComponent<P = any, S = any>
 	static getUrl() {
 		return BrowserHistoryModule.getCurrent().pathname;
 	}
-
-	static getLocalizedString(key: string, ...params: any[]) {
-		return LocalizationModule.getString(key, params);
-	}
-
 
 	toString() {
 		return this.constructor.name;

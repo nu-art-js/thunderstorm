@@ -31,12 +31,15 @@ export * from "./app-frontend/modules/dialog/DialogModule";
 export * from "./app-frontend/modules/toaster/ToasterModule";
 export * from "./app-frontend/modules/tooltip/TooltipModule";
 
-export * from "./app-frontend/modules/localization/localization-types";
-export * from "./app-frontend/modules/localization/localization-module";
+export * from "./app-frontend/modules/locale/types";
+export * from "./app-frontend/modules/locale/LocaleModule";
 
 export * from "./app-frontend/modules/ForceUpgrade";
 export * from "./app-frontend/modules/StorageModule";
-export * from "./app-frontend/modules/routing/routing-module";
+
+export * from "./app-frontend/modules/routing/route";
+export * from "./app-frontend/modules/routing/RoutingModule";
+
 export * from "./app-frontend/modules/ResourcesModule";
 export * from "./app-frontend/modules/HistoryModule";
 
@@ -47,7 +50,17 @@ export * from "./app-frontend/components/TS_TextArea";
 export * from "./app-frontend/components/TS_Input";
 export * from "./app-frontend/components/FilterInput";
 export * from "./app-frontend/components/DropDown";
-export * from "./app-frontend/components/Tree";
+
+export * from "./app-frontend/components/form/types";
+export * from "./app-frontend/components/form/Form";
+
+
+export * from "./app-frontend/components/tree/MultiTypeTreeRenderer";
+export * from "./app-frontend/components/tree/MultiTypeTree";
+export * from "./app-frontend/components/tree/Tree";
+export * from "./app-frontend/components/tree/types";
+export * from "./app-frontend/components/tree/DefaultTreeRenderer";
+
 export * from "./app-frontend/components/GenericSelect";
 export * from "./app-frontend/components/Playground";
 
@@ -57,7 +70,6 @@ export * from "./app-frontend/modules/component-loader/entry-component-loading-m
 export * from "./app-frontend/modules/tooltip/Tooltip";
 export * from "./app-frontend/modules/menu/MenuAndButton";
 export * from "./app-frontend/modules/menu/PopupMenu";
-export * from "./app-frontend/modules/menu/FixedMenu";
 export * from "./app-frontend/modules/toaster/Toaster";
 export * from "./app-frontend/modules/dialog/Dialog";
 export * from "./app-frontend/utils/tools";

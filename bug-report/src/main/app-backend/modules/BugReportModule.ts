@@ -18,10 +18,9 @@
  */
 
 import {
+	addItemToArray,
 	auditBy,
-	createReadableTimestampObject,
 	generateHex,
-	ImplementationMissingException,
 	Module,
 	padNumber
 } from "@nu-art/ts-common";
@@ -38,30 +37,35 @@ import {
 	ReportLogFile,
 	Request_BugReport
 } from "../../shared/api";
-import {
-	JiraModule,
-	JiraProjectInfo
-} from "./JiraModule"
 
 import * as JSZip from "jszip";
 
+export type TicketDetails = {
+	platform: string
+	issueId: string
+}
 type Config = {
 	projectId?: string,
 	bucket?: string,
-	jiraProject: JiraProjectInfo
 }
+type TicketCreatorApi = (bugReport: Request_BugReport, logs: ReportLogFile[]) => Promise<TicketDetails>;
 
 export class BugReportModule_Class
 	extends Module<Config> {
 
 	private bugReport!: FirestoreCollection<DB_BugReport>;
 	private storage!: StorageWrapper;
+	private ticketCreatorApis: TicketCreatorApi[] = [];
 
 	protected init(): void {
 		const sessionAdmin = FirebaseModule.createAdminSession();
 		const firestore = sessionAdmin.getFirestore();
 		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ["_id"]);
 		this.storage = sessionAdmin.getStorage();
+	}
+
+	addTicketCreator(ticketCreator: TicketCreatorApi) {
+		addItemToArray(this.ticketCreatorApis, ticketCreator);
 	}
 
 	saveLog = async (report: BugReport, id: string): Promise<ReportLogFile> => {
@@ -81,16 +85,9 @@ export class BugReportModule_Class
 	};
 
 	saveFile = async (bugReport: Request_BugReport, email: string = "bug-report") => {
-		let jiraKey: string | undefined;
 
 		const _id = generateHex(16);
 		const logs: ReportLogFile[] = await Promise.all(bugReport.reports.map(report => this.saveLog(report, _id)));
-
-		try {
-			jiraKey = await this.createJiraIssue(bugReport, logs);
-		} catch (e) {
-			jiraKey = JSON.stringify(e)
-		}
 
 		const instance: DB_BugReport = {
 			_id,
@@ -99,16 +96,14 @@ export class BugReportModule_Class
 			reports: logs,
 			_audit: auditBy(email),
 		};
+
 		if (this.config?.bucket)
 			instance.bucket = this.config.bucket;
-		if (jiraKey)
-			instance.jiraKey = jiraKey;
-		await this.bugReport.upsert(instance)
-	};
 
-	private async createJiraIssue(bugReport: Request_BugReport, logs: ReportLogFile[]) {
-		if (!bugReport.createJiraIssue)
+		if (!bugReport.createIssue) {
+			await this.bugReport.insert(instance);
 			return;
+<<<<<<< HEAD
 		const description = logs.reduce((carry, el) => `${carry}${el.path}, `, `${bugReport.description}, `);
 		if (!this.config.jiraProject)
 			throw new ImplementationMissingException("missing Jira project in bug report configurations")
@@ -117,6 +112,13 @@ export class BugReportModule_Class
 		return message.key;
 		// await Promise.all(buffers.map(buffer => JiraModule.addIssueAttachment(key, buffer)))
 	}
+=======
+		}
+
+		instance.tickets = await Promise.all(this.ticketCreatorApis.map(api => api(bugReport, logs)));
+		await this.bugReport.insert(instance);
+	};
+>>>>>>> staging
 }
 
 export const BugReportModule = new BugReportModule_Class();

@@ -15,6 +15,7 @@ import {
 import {
 	AccessLevelPermissionsDB,
 	ApiPermissionsDB,
+	DomainPermissionsDB,
 	GroupPermissionsDB,
 	UserPermissionsDB
 } from "../_main";
@@ -75,8 +76,8 @@ export function checkUpdateOfGroupAccessLevelsProperty() {
 	scenario.add(__custom(async (action, data) => {
 		const group = await GroupPermissionsDB.upsert({label: 'test group one', accessLevelIds: [data.level._id], _id: uniqId1});
 		group.accessLevelIds = [];
-		await GroupPermissionsDB.upsert(group);
-		if (group.__accessLevels && group.__accessLevels.length) {
+		const updatedGroup = await GroupPermissionsDB.upsert(group);
+		if (updatedGroup.__accessLevels && updatedGroup.__accessLevels.length) {
 			throw new TestException("Didn't update group __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully'));
@@ -84,19 +85,54 @@ export function checkUpdateOfGroupAccessLevelsProperty() {
 }
 
 export function checkUpdateOfGroupAccessLevelsPropertyToHigherValue() {
-	const scenario = __scenario("Update group with higher accessLevel");
+	const scenario = __scenario("Update group with adding higher accessLevel - same domain, expect to fail");
 	scenario.add(cleanup());
 	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
 	scenario.add(__custom(async (action, data) => {
 		const group = await GroupPermissionsDB.upsert({label: 'test group one', accessLevelIds: [data.level._id], _id: uniqId1});
 		const higherValueLevel = await AccessLevelPermissionsDB.upsert({...testLevel2, domainId: data.level.domainId});
-		if (!group.accessLevelIds) {
+		if (!group.accessLevelIds || !group.accessLevelIds.length) {
 			throw new TestException("Didn't insert the group properly");
 		}
 
 		group.accessLevelIds.push(higherValueLevel._id);
-		await GroupPermissionsDB.upsert(group);
-		if (!group.__accessLevels || group.__accessLevels.length !== 1 || group.__accessLevels[0].value !== testLevel2.value) {
+		const updatedGroup = await GroupPermissionsDB.upsert(group);
+		if (!updatedGroup.__accessLevels || updatedGroup.__accessLevels.length !== 1 || updatedGroup.__accessLevels[0].value !== testLevel2.value) {
+			throw new TestException("Didn't update group __accessLevels");
+		}
+	}).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
+	return scenario;
+}
+
+export function checkPatchOfGroupAccessLevelsProperty() {
+	const scenario = __scenario("Patch group accessLevelIds");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		const group = await GroupPermissionsDB.upsert({label: 'test group one', accessLevelIds: [data.level._id], _id: uniqId1, customFields: []});
+		group.accessLevelIds = [];
+		const updatedGroup = await GroupPermissionsDB.patch(group);
+		if (updatedGroup.__accessLevels && updatedGroup.__accessLevels.length) {
+			throw new TestException("Didn't update group __accessLevels");
+		}
+	}).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully'));
+	return scenario;
+}
+
+export function checkPatchOfGroupAccessLevelsPropertyToHigherValue() {
+	const scenario = __scenario("Patch group with adding higher accessLevel - same domain, expect to fail");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		const group = await GroupPermissionsDB.upsert({label: 'test group one', accessLevelIds: [data.level._id], _id: uniqId1, customFields: []});
+		const higherValueLevel = await AccessLevelPermissionsDB.upsert({...testLevel2, domainId: data.level.domainId});
+		if (!group.accessLevelIds || !group.accessLevelIds.length) {
+			throw new TestException("Didn't insert the group properly");
+		}
+
+		group.accessLevelIds.push(higherValueLevel._id);
+		const updatedGroup = await GroupPermissionsDB.patch(group);
+		if (!updatedGroup.__accessLevels || updatedGroup.__accessLevels.length !== 1 || updatedGroup.__accessLevels[0].value !== testLevel2.value) {
 			throw new TestException("Didn't update group __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
@@ -104,7 +140,7 @@ export function checkUpdateOfGroupAccessLevelsPropertyToHigherValue() {
 }
 
 export function checkUpdateOfUserAccessLevelsPropertyToHigherValue() {
-	const scenario = __scenario("Update user with higher accessLevel");
+	const scenario = __scenario("Update user with higher accessLevel - same domain, expect to fail");
 	scenario.add(cleanup());
 	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
 	scenario.add(__custom(async (action, data) => {
@@ -115,8 +151,8 @@ export function checkUpdateOfUserAccessLevelsPropertyToHigherValue() {
 		}
 
 		user.accessLevelIds.push(higherValueLevel._id);
-		await UserPermissionsDB.upsert(user);
-		if (!user.__accessLevels || user.__accessLevels.length !== 1 || user.__accessLevels[0].value !== testLevel2.value) {
+		const updatedUser = await UserPermissionsDB.upsert(user);
+		if (!updatedUser.__accessLevels || updatedUser.__accessLevels.length !== 1 || updatedUser.__accessLevels[0].value !== testLevel2.value) {
 			throw new TestException("Didn't update user __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
@@ -159,6 +195,62 @@ export function checkUserAccessLevelsAfterUpdatingLevelDocument() {
 	return scenario;
 }
 
+export function checkPatchOfUserAccessLevelsPropertyToHigherValue() {
+	const scenario = __scenario("Patch user with higher accessLevel - same domain, expect to fail");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		const user = await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1, customFields: [], groupIds: []});
+		const higherValueLevel = await AccessLevelPermissionsDB.upsert({...testLevel2, domainId: data.level.domainId});
+		if (!user.accessLevelIds) {
+			throw new TestException("Didn't insert the user properly");
+		}
+
+		user.accessLevelIds.push(higherValueLevel._id);
+		const updatedUser = await UserPermissionsDB.patch(user);
+		if (!updatedUser.__accessLevels || updatedUser.__accessLevels.length !== 1 || updatedUser.__accessLevels[0].value !== testLevel2.value) {
+			throw new TestException("Didn't update user __accessLevels");
+		}
+	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
+	return scenario;
+}
+
+export function checkGroupAccessLevelsAfterPatchingLevelDocument() {
+	const scenario = __scenario("Check group access level after patching level");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		await GroupPermissionsDB.upsert({label: 'test group one', accessLevelIds: [data.level._id], _id: uniqId1, customFields: []});
+		const newLevelValue = 353;
+		data.level.value = newLevelValue;
+		await AccessLevelPermissionsDB.patch(data.level);
+		const group = await GroupPermissionsDB.queryUnique({_id: uniqId1});
+
+		if (!group.__accessLevels || group.__accessLevels.length !== 1 || group.__accessLevels[0].value !== newLevelValue) {
+			throw new TestException("Didn't update group __accessLevels");
+		}
+	}).setReadKey(contextKey1).setLabel('Group __accessLevels has updated successfully by updating level document'));
+	return scenario;
+}
+
+export function checkUserAccessLevelsAfterPatchingLevelDocument() {
+	const scenario = __scenario("Check user access level after patching level");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1, customFields: []});
+		const newLevelValue = 353;
+		data.level.value = newLevelValue;
+		await AccessLevelPermissionsDB.patch(data.level);
+		const user = await UserPermissionsDB.queryUnique({uuid: userUuid1});
+
+		if (!user.__accessLevels || user.__accessLevels.length !== 1 || user.__accessLevels[0].value !== newLevelValue) {
+			throw new TestException("Didn't update user __accessLevels");
+		}
+	}).setReadKey(contextKey1).setLabel('User __accessLevels has updated successfully by updating level document'));
+	return scenario;
+}
+
 export function checkAccessLevelsPropertyOfUser() {
 	const scenario = __scenario("Create user with accessLevelIds");
 	scenario.add(cleanup());
@@ -179,8 +271,23 @@ export function checkUpdateOfUserAccessLevelsProperty() {
 	scenario.add(__custom(async (action, data) => {
 		const user = await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1});
 		user.accessLevelIds = [];
-		await UserPermissionsDB.upsert(user);
-		if (user.__accessLevels && user.__accessLevels.length) {
+		const updatedUser = await UserPermissionsDB.upsert(user);
+		if (updatedUser.__accessLevels && updatedUser.__accessLevels.length) {
+			throw new TestException("Didn't update user __accessLevels");
+		}
+	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully'));
+	return scenario;
+}
+
+export function checkPatchOfUserAccessLevelsProperty() {
+	const scenario = __scenario("Patch user accessLevelIds");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		const user = await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1, customFields: [], groupIds: []});
+		user.accessLevelIds = [];
+		const updatedUser = await UserPermissionsDB.patch(user);
+		if (updatedUser.__accessLevels && updatedUser.__accessLevels.length) {
 			throw new TestException("Didn't update user __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully'));
@@ -298,3 +405,46 @@ export function createApiWithAccessLevel() {
 	return scenario;
 }
 
+export function tryDeleteDomainAssociatedWithAccessLevel() {
+	const scenario = __scenario("Try delete domain associated with level");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		await DomainPermissionsDB.deleteUnique(data.domain._id);
+	}).setReadKey(contextKey1).setLabel('Expect to fail deleting domain associated with level').expectToFail(ApiException));
+	return scenario;
+}
+
+export function tryDeleteAccessLevelAssociatedWithGroup() {
+	const scenario = __scenario("Try delete access level associated with group");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		const levelId = data.level._id;
+		await GroupPermissionsDB.upsert({_id: uniqId1, accessLevelIds: [levelId], label: "group-test"});
+		await AccessLevelPermissionsDB.deleteUnique(levelId);
+	}).setReadKey(contextKey1).setLabel('Expect to fail deleting access level associated with group').expectToFail(ApiException));
+	return scenario;
+}
+
+export function tryDeleteAccessLevelAssociatedWithApi() {
+	const scenario = __scenario("Try delete access level associated with api");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		const levelId = data.level._id;
+		await ApiPermissionsDB.upsert({_id: uniqId1, accessLevelIds: [levelId], projectId: data.project._id, path: apiPath});
+		await AccessLevelPermissionsDB.deleteUnique(levelId);
+	}).setReadKey(contextKey1).setLabel('Expect to fail deleting access level associated with api').expectToFail(ApiException));
+	return scenario;
+}
+
+export function checkDeleteAccessLevelsDocument() {
+	const scenario = __scenario("Check delete access level");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		await AccessLevelPermissionsDB.deleteUnique(data.level._id);
+	}).setReadKey(contextKey1).setLabel('Access level deleted successfully'));
+	return scenario;
+}

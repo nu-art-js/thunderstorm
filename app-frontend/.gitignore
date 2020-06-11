@@ -6,6 +6,7 @@ node_modules
 
 # Thunderstorm
 dist
+.dependencies
 dist-test
 build
 _package.json

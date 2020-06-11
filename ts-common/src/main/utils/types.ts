@@ -42,6 +42,8 @@ export type Identity = { id: string };
 
 export type StringMap = { [s: string]: string };
 
+export type ObjectTS = { [s: string]: any };
+
 export type TypedMap<ValueType> = { [s: string]: ValueType };
 
 export type Auditable = {

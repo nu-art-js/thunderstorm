@@ -26,7 +26,7 @@ import {
 	ApiWithQuery
 } from "@nu-art/thunderstorm";
 
-import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
+// import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 
@@ -39,12 +39,12 @@ class ServerApi_RegisterExternalProject
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
 		this.logInfo("backup started");
-		try {
-			await ProjectFirestoreBackup.backupProject("backend");
-		} catch (e) {
-			this.logError("backup error", e);
-			console.log(e);
-		}
+		// try {
+		// 	await ProjectFirestoreBackup.backupProject("backend");
+		// } catch (e) {
+		// 	this.logError("backup error", e);
+		// 	console.log(e);
+		// }
 		this.logInfo("backup ended");
 	}
 }
