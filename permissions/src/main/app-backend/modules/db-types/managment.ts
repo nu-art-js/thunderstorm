@@ -86,15 +86,11 @@ export class DomainDB_Class
 		this.setPatchKeys(["namespace"])
 	}
 
-	protected async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DB_PermissionAccessLevel> }) {
-		const deleteDomainId = ourQuery.where._id as string;
-
-		const accessLevels = await AccessLevelPermissionsDB.query({where: {domainId: deleteDomainId}});
+	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {
+		const accessLevels = await AccessLevelPermissionsDB.query({where: {domainId: dbInstance._id}});
 		if (accessLevels.length) {
 			throw new ApiException(403, 'You trying delete domain that associated with accessLevels, you need delete the accessLevels first');
 		}
-
-		await super.deleteImpl(transaction, ourQuery);
 	}
 
 	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {
@@ -125,21 +121,6 @@ export class LevelDB_Class
 
 	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
 		await DomainPermissionsDB.queryUnique({_id: dbInstance.domainId});
-	}
-
-	protected async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DB_PermissionAccessLevel> }) {
-		const deleteLevelId = ourQuery.where._id as string;
-
-		const users = await UserPermissionsDB.query({where: {accessLevelIds: {$ac: deleteLevelId}}});
-		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: deleteLevelId}}});
-		const apis = await ApiPermissionsDB.query({where: {accessLevelIds: {$ac: deleteLevelId}}});
-
-		const accessLevelDependencies = [...users, ...groups, ...apis];
-		if (accessLevelDependencies.length) {
-			throw new ApiException(403, 'You trying delete access level that associated with users/groups/apis, you need delete the associations first');
-		}
-
-		await super.deleteImpl(transaction, ourQuery);
 	}
 
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel): Promise<DB_PermissionAccessLevel> {
@@ -183,6 +164,15 @@ export class LevelDB_Class
 		}
 
 		return upsertRead();
+	}
+
+	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
+		const users = await UserPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
+		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
+		const apis = await ApiPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
+
+		if (users.length || groups.length || apis.length)
+			throw new ApiException(403, 'You trying delete access level that associated with users/groups/apis, you need delete the associations first');
 	}
 
 	setUpdatedLevel(dbLevel: DB_PermissionAccessLevel, units: Request_PermissionsBase[]) {
