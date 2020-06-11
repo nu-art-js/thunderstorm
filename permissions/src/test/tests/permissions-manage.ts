@@ -439,3 +439,12 @@ export function tryDeleteAccessLevelAssociatedWithApi() {
 	return scenario;
 }
 
+export function checkDeleteAccessLevelsDocument() {
+	const scenario = __scenario("Check delete access level");
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
+	scenario.add(__custom(async (action, data) => {
+		await AccessLevelPermissionsDB.deleteUnique(data.level._id);
+	}).setReadKey(contextKey1).setLabel('Access level deleted successfully'));
+	return scenario;
+}
