@@ -21,11 +21,8 @@
 
 import * as React from "react";
 
-export type Action = { action?: (p?: any) => any }
-export type TreeNodeItem = (Action & { [key: string]: any });
-
 export type TreeNode = {
-	item: TreeNodeItem | string | number | object
+	item: any
 	path: string
 	name: string
 	onClick: (e: React.MouseEvent) => void

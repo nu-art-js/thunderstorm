@@ -42,7 +42,7 @@ export const DefaultGenericRenderer = (tree: BaseTree) => {
 		const itemWrapper = props.item as MenuItemWrapper<any, any>;
 		const item = itemWrapper.item;
 		const type = itemWrapper.type;
-
+		// props.item=item;
 		const MyRenderer = (tree as MultiTypeTree).props.menu.rendererMap[type as string];
 		// @ts-ignore
 		const hasChildren = itemWrapper.length;

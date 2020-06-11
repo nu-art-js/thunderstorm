@@ -53,7 +53,7 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 }
 
 
-export const stopPropagation = (e: MouseEvent | React.MouseEvent) => {
+export const stopPropagation = (e: MouseEvent | React.MouseEvent | KeyboardEvent | React.KeyboardEvent) => {
 	e.preventDefault();
 	e.stopPropagation();
 };

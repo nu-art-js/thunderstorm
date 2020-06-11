@@ -22,7 +22,6 @@
 import * as React from "react";
 import {
 	TreeNode,
-	TreeNodeItem
 } from "./types";
 
 export const DefaultTreeRenderer = () => {
@@ -53,10 +52,10 @@ export const DefaultTreeRenderer = () => {
 			{renderCollapse()}
 			<div
 				id={props.path}
-				className={`${(props.item as TreeNodeItem).action || props.onClick || props.onDoubleClick ? 'clickable' : ''}`}
+				className={`${(props.onClick || props.onDoubleClick) ? 'clickable' : ''}`}
 				onClick={props.onClick}
 				style={{backgroundColor: props.focused ? "lime" : "unset", userSelect: "none"}}
-				onDoubleClick={(props.item as TreeNodeItem).action || props.onDoubleClick}>{props.name || "root"} {label} </div>
+				onDoubleClick={props.onDoubleClick}>{props.name || "root"} {label}</div>
 		</div>);
 	};
 }
