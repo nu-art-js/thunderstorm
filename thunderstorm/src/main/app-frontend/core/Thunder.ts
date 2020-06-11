@@ -39,12 +39,12 @@ import {
 } from "../modules/http/HttpModule";
 import {ToastModule} from "../modules/toaster/ToasterModule";
 import {DialogModule} from "../modules/dialog/DialogModule";
-import {RoutingModule} from "../modules/routing/routing-module";
+import {RoutingModule} from "../modules/routing/RoutingModule";
 import {BrowserHistoryModule} from "../modules/HistoryModule";
 import {StorageModule} from "../modules/StorageModule";
-import {LocalizationModule} from "../modules/localization/localization-module";
 import {ResourcesModule} from "../modules/ResourcesModule";
 import {ThunderDispatcher} from "./thunder-dispatcher";
+import { LocaleModule } from "../modules/locale/LocaleModule";
 
 export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?) => {
 	const errorMessage = request.errorMessage || resError?.debugMessage;
@@ -66,7 +66,7 @@ const modules: Module[] = [
 	BrowserHistoryModule,
 
 	StorageModule,
-	LocalizationModule,
+	LocaleModule,
 	ResourcesModule,
 ];
 

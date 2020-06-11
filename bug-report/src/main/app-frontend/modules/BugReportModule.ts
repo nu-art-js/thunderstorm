@@ -58,7 +58,7 @@ export class BugReportModule_Class
 			subject,
 			description,
 			reports: this.reports.map(report => ({log: report.buffers, name: report.name})),
-			createJiraIssue: withJira
+			createIssue: withJira
 		};
 
 		HttpModule

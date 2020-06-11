@@ -21,6 +21,15 @@
 
 import * as React from 'react';
 import {FilterInput} from "./FilterInput";
+import {
+	_keys,
+	generateHex
+} from "@nu-art/ts-common";
+import {RendererMap} from "../types/renderer-map";
+import {MenuItemWrapper} from "../modules/menu/MenuModule";
+import {KeyboardListener} from '../tools/KeyboardListener';
+import {stopPropagation} from "../utils/tools";
+import {MultiTypeTree} from "./tree/MultiTypeTree";
 
 const defaultWidth = "222px";
 const defaultTitleHeight = "28px";
@@ -56,18 +65,21 @@ const listContainerStyle: React.CSSProperties = {
 	zIndex: 10,
 };
 
-const listStyle: React.CSSProperties = {
+export const listStyle: React.CSSProperties = {
 	boxSizing: "border-box",
 	backgroundColor: "whitesmoke",
 	border: "solid 1px",
 	borderRadius: 5,
 	display: "flex",
 	flexFlow: "column",
-	alignItems: "flex-start",
+	alignItems: "stretch",
 	maxHeight: defaultListHeight,
+	overflowX: "hidden",
+	overflowY: "auto",
 	position: "relative",
 	top: 5,
 	width: defaultWidth,
+
 };
 
 export type HeaderStyleProps = {
@@ -76,9 +88,14 @@ export type HeaderStyleProps = {
 }
 
 export type InputProps = {
-	inputClassName?: string
+	className?: string
 	inputStyle?: React.CSSProperties
 	placeholder?: string
+}
+
+export type ListStyleProps = {
+	listClassName?: string
+	listStyle?: React.CSSProperties
 }
 
 export type ValueProps<ItemType> = {
@@ -86,8 +103,10 @@ export type ValueProps<ItemType> = {
 	placeholder?: string
 }
 
+export type Refs = { [k: string]: React.RefObject<HTMLDivElement> };
+
 type State<ItemType> = {
-	filteredOptions: ItemType[]
+	filteredOptions: (ItemType | MenuItemWrapper<RendererMap, string>)[]
 	open: boolean
 	selected?: ItemType
 	hover?: ItemType
@@ -99,14 +118,29 @@ export type DropDown_Node<ItemType> = {
 	hover: boolean
 }
 
-type Props<ItemType> = {
-	id?: string
-	options: ItemType[] | (() => ItemType[])
+export type DropDownItemRenderer<ItemType> = (props: DropDown_Node<ItemType>) => React.ReactNode
+export type DropDownRendererMap<ItemType> = RendererMap | { [k: string]: DropDownItemRenderer<ItemType> }
+
+export type SingleRendererAndOptions<ItemType> = {
+	options: ItemType[] | (() => ItemType[]),
+	itemRenderer: DropDownItemRenderer<ItemType>
+}
+
+export type MultipleRenderersAndOptions<ItemType> = {
+	options: MenuItemWrapper<RendererMap, string>[] | (() => MenuItemWrapper<RendererMap, string>[]),
+	rendererMap: { [key: string]: DropDownItemRenderer<ItemType> },
+	avoidActionOnTypes?: string[]
+}
+
+export type RenderersAndOptions<ItemType> = SingleRendererAndOptions<ItemType> | MultipleRenderersAndOptions<ItemType>
+
+type StaticProps = { id: string }
+
+type Props<ItemType> = StaticProps & {
+	renderersAndOptions: RenderersAndOptions<ItemType>
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
-	itemRenderer: (props: DropDown_Node<ItemType>) => React.ReactNode
-
-	filter?: (item: ItemType) => string[]
+	filter?: (item: ItemType | MenuItemWrapper<RendererMap, string>) => string[]
 	inputResolver?: (selected?: ItemType) => InputProps
 	placeholder?: string
 
@@ -115,20 +149,27 @@ type Props<ItemType> = {
 	mainCaret?: React.ReactNode
 	closeCaret?: React.ReactNode
 
+	listStyleResolver?: ListStyleProps
+
 }
 
 export class DropDown<ItemType>
 	extends React.Component<Props<ItemType>, State<ItemType>> {
 
+	static defaultProps: Partial<StaticProps> = {
+		id: generateHex(8),
+	};
 	private node: any = null;
+	private headerStyleResolver: HeaderStyleProps = {headerStyle};
+	private listStyleResolver: ListStyleProps = {listStyle};
 
 	constructor(props: Props<ItemType>) {
 		super(props);
-		const options = this.props.options;
+		const options = this.props.renderersAndOptions.options;
 		this.state = {
 			filteredOptions: Array.isArray(options) ? options : options(),
 			open: false,
-			selected: props.selected,
+			selected: this.props.selected,
 		};
 	}
 
@@ -140,17 +181,18 @@ export class DropDown<ItemType>
 		document.removeEventListener('mousedown', this.handleMouseClick);
 	}
 
+	isSingleRendererAndOptions = (checkedItem: RenderersAndOptions<ItemType>): checkedItem is SingleRendererAndOptions<ItemType> => !!(checkedItem as SingleRendererAndOptions<ItemType>).itemRenderer;
+
 	toggleList = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		e.preventDefault();
+		stopPropagation(e);
 
 		this.setState(prevState => ({open: !prevState.open}));
+		// this.renderMenu();
 	};
 
-	onSelected = (e: React.MouseEvent, item: ItemType) => {
+	onSelected = (e: MouseEvent | React.MouseEvent, item: ItemType) => {
 		e.stopPropagation();
 		e.preventDefault();
-
 		this.setState(prevState => ({
 			open: !prevState.open,
 			selected: item
@@ -161,11 +203,25 @@ export class DropDown<ItemType>
 
 	render() {
 		return (
-			<div ref={node => this.node = node} id={this.props.id} style={wrapperStyle}>
-				{this.renderHeader()}
-				{this.renderOptions()}
-			</div>)
+			<KeyboardListener onKeyboardEventListener={this.keyEventHandler}>
+				<div ref={node => this.node = node} id={this.props.id} style={wrapperStyle}>
+					{this.renderHeader()}
+					{this.renderTree()}
+				</div>
+			</KeyboardListener>)
 	}
+
+	private keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent) => {
+		console.log('lala                 ')
+		if (e.code === "Escape")
+			return this.setState({open: false});
+
+		if (e.code === "ArrowDown") {
+			node.blur();
+			return document.getElementById(`${this.props.id}-listener`)?.focus()
+		}
+
+	};
 
 	private renderHeader = () => {
 		const headerComplementary = (this.props.headerStyleResolver || this.headerStyleResolver);
@@ -183,23 +239,22 @@ export class DropDown<ItemType>
 		if (!this.state.open || !this.props.filter)
 			return this.renderValue();
 
+
 		const inputComplementary = (this.props.inputResolver || this.inputResolver)(this.state.selected);
-		const options = this.props.options;
-		return (<FilterInput
+		const options = this.props.renderersAndOptions.options;
+		return (<FilterInput<ItemType | MenuItemWrapper<RendererMap, string>>
 			id={this.props.id}
 			filter={this.props.filter}
 			list={Array.isArray(options) ? () => options : options}
-			onChange={(filtered: ItemType[]) => this.setState(() => ({filteredOptions: filtered}))}
+			onChange={(filtered: (ItemType | MenuItemWrapper<RendererMap, string>)[]) => this.setState(() => ({filteredOptions: filtered}))}
 			focus={true}
-			inputClassName={inputComplementary.inputClassName}
-			inputStyle={inputComplementary.inputStyle || (!inputComplementary.inputClassName ? inputStyle : {})}
+			className={inputComplementary.className}
+			inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
 			placeholder={inputComplementary.placeholder || this.props.placeholder}
 		/>);
 	};
 
 	private inputResolver = (selected?: ItemType): InputProps => ({inputStyle, placeholder: this.props.placeholder});
-
-	private headerStyleResolver: HeaderStyleProps = {headerStyle};
 
 	private handleMouseClick = (e: MouseEvent) => {
 		if (this.node && this.node.contains(e.target)) {
@@ -212,11 +267,22 @@ export class DropDown<ItemType>
 		if (!props.selected)
 			return <div>{this.props.placeholder}</div>
 
-		return this.props.itemRenderer({item: props.selected, selected: true, hover: false})
+		if (!this.isSingleRendererAndOptions(this.props.renderersAndOptions)) {
+			const options = typeof this.props.renderersAndOptions.options === 'function' ? this.props.renderersAndOptions.options() : this.props.renderersAndOptions.options;
+			// @ts-ignore
+			const type = options.find(item => item.item === props.selected).type;
+
+			const rm = this.props.renderersAndOptions.rendererMap;
+			// @ts-ignore
+			const Renderer = rm[Object.keys(rm).find((key: string) => key === type)];
+
+			return Renderer({item: props.selected, selected: true, hover: false});
+		}
+		return (this.props.renderersAndOptions.itemRenderer)({item: props.selected, selected: true, hover: false})
 	};
 
 	private renderValue = () => (
-		<div style={{width: "100%"}}>
+		<div className={'match_width'}>
 			{(this.props.valueRenderer || this.valueRenderer)({selected: this.state.selected, placeholder: this.props.placeholder})}
 		</div>);
 
@@ -229,39 +295,97 @@ export class DropDown<ItemType>
 		return this.state.open ? closeCaret : this.props.mainCaret;
 	};
 
-	private renderOptions = () => {
+	// private renderOptions = () => {
+	// 	if (!this.state.open)
+	// 		return "";
+	//
+	// 	const Renderer = this.props.itemRenderer;
+	// 	const items = this.state.filteredOptions;
+	//
+	// 	return <div style={listContainerStyle}>
+	// 		<div style={listStyle}>
+	// 			{items.length === 0 ?
+	// 				<div style={{opacity: 0.5, margin: "auto"}}>No options</div>
+	// 				:
+	// 				<>{items.map((item, index) => (
+	// 					<div key={index}
+	// 					     tabIndex={0}
+	// 					     onMouseEnter={() => this.setState({hover: item})}
+	// 					     onMouseLeave={() => this.setState({hover: undefined})}
+	// 					     onMouseDown={(e: React.MouseEvent) => {
+	// 						     e.stopPropagation();
+	// 						     e.preventDefault();
+	// 					     }}
+	// 					     onMouseUp={(e: React.MouseEvent) => {
+	// 						     e.stopPropagation();
+	// 						     e.preventDefault();
+	// 						     this.onSelected(e, item);
+	// 					     }}
+	// 					     className={'clickable match_width'}>
+	// 						{Renderer({item: item, selected: item === this.state.selected, hover: this.state.hover === item})}
+	// 					</div>
+	// 				))}</>
+	// 			}
+	// 		</div>
+	// 	</div>
+	// };
+
+	private listElementWrapper = (renderer: React.ReactNode, item: ItemType, allowAction: boolean = true) => <div
+		onMouseEnter={() => this.setState({hover: item})}
+		onMouseLeave={() => this.setState({hover: undefined})}
+		onMouseUp={(e: React.MouseEvent) => allowAction && this.onSelected(e, item)}
+		className={`${allowAction ? `clickable` : ''} match_width`}>
+		{renderer}</div>;
+
+	private funcCreator = (renderer: DropDownItemRenderer<ItemType>, allowAction: boolean) =>
+		(item: DropDown_Node<ItemType>) => this.listElementWrapper(
+			renderer({item: item.item, selected: allowAction && item.item === this.state.selected, hover: allowAction && item.item === this.state.hover}),
+			item.item,
+			allowAction);
+
+	private renderTree = () => {
 		if (!this.state.open)
 			return "";
 
-		const Renderer = this.props.itemRenderer;
 		const items = this.state.filteredOptions;
+		let rendererMap: DropDownRendererMap<ItemType> | { [key: string]: React.ReactNode };
+		let _children: MenuItemWrapper<RendererMap, string>[];
+
+		if (this.isSingleRendererAndOptions(this.props.renderersAndOptions)) {
+			rendererMap = {
+				normal: (item: DropDown_Node<ItemType>) => this.listElementWrapper(
+					((this.props.renderersAndOptions as SingleRendererAndOptions<ItemType>).itemRenderer)(
+						{item: item.item, selected: (item.item === this.state.selected), hover: item.item === this.state.hover}), item.item)
+			};
+
+			_children = _keys(items).map(item => ({
+				item: items[item],
+				type: 'normal'
+			}));
+		} else {
+			rendererMap = this.props.renderersAndOptions.rendererMap;
+			const allowAction = (el: string, avoidAction: string[] = []): boolean => !avoidAction.includes(el);
+			const _avoidAction = this.props.renderersAndOptions.avoidActionOnTypes;
+			Object.keys(rendererMap).forEach(
+				(el) => rendererMap[el] = this.funcCreator(rendererMap[el] as DropDownItemRenderer<ItemType>, allowAction(el, _avoidAction)));
+
+			_children = items as MenuItemWrapper<RendererMap, string>[];
+		}
+
+		const listComplementary = (this.props.listStyleResolver || this.listStyleResolver);
 
 		return <div style={listContainerStyle}>
-			<div style={listStyle}>
+			<div className={listComplementary.listClassName}>
 				{items.length === 0 ?
-					<div style={{opacity: 0.5}}>No options</div>
+					<div style={{...listComplementary.listStyle || (!listComplementary.listClassName ? listStyle : {}), alignItems: "center", opacity: 0.5}}>No
+						options</div>
 					:
-					<>{items.map((item, index) => (
-						<div key={index}
-						     tabIndex={0}
-						     onMouseEnter={() => this.setState({hover: item})}
-						     onMouseLeave={() => this.setState({hover: undefined})}
-						     onMouseDown={(e: React.MouseEvent) => {
-							     e.stopPropagation();
-							     e.preventDefault();
-						     }}
-						     onMouseUp={(e: React.MouseEvent) => {
-							     e.stopPropagation();
-							     e.preventDefault();
-							     this.onSelected(e, item);
-						     }}
-						     className={'clickable match_width'}>
-							{Renderer({item: item, selected: item === this.state.selected, hover: this.state.hover === item})}
-						</div>
-					))}</>
+					<MultiTypeTree id={this.props.id}
+					               menu={{rendererMap, _children}}
+					               root={{rendererMap, _children}}
+					               childrenContainerStyle={() => listComplementary.listStyle || (!listComplementary.listClassName ? listStyle : {})}/>
 				}
 			</div>
 		</div>
-	};
-
+	}
 }

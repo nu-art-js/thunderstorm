@@ -22,7 +22,10 @@ import {
 } from "../core/exceptions";
 import {__stringify,} from "../utils/tools";
 import {_keys} from "../utils/object-tools";
-import {ArrayType} from "../utils/types";
+import {
+	ArrayType,
+	ObjectTS
+} from "../utils/types";
 
 /*
  * ts-common is the basic building blocks of
@@ -48,7 +51,7 @@ export type ValidatorTypeResolver<K> =
 			Validator<K> | undefined;
 
 export type Validator<P> = (path: string, p?: P) => void;
-export type TypeValidator<T extends object> = { [P in keyof T]: ValidatorTypeResolver<T[P]> };
+export type TypeValidator<T extends ObjectTS> = { [P in keyof T]: ValidatorTypeResolver<T[P]> };
 
 export class ValidationException
 	extends CustomException {
@@ -145,6 +148,7 @@ export const validateRange = (ranges: [number, number][], mandatory = true): Val
 	}
 };
 
+
 export const validate = <T extends any>(instance: T, _validator: ValidatorTypeResolver<T>, path = "") => {
 	if (!_validator)
 		return;
@@ -158,20 +162,24 @@ export const validate = <T extends any>(instance: T, _validator: ValidatorTypeRe
 				`Unexpect object at '${path}'\nif you want to ignore the validation of this object,\n add the following to your validator:\n {\n  ...\n  ${path}: undefined\n  ...\n}\n`);
 
 		const __validator = _validator as TypeValidator<object>;
-		const validatorKeys = _keys(__validator);
-		const instanceKeys = Object.keys(instance as unknown as object);
+		validateObject(__validator, instance, path);
+	}
+};
 
-		for (const key of instanceKeys) {
-			// @ts-ignore
-			if (!validatorKeys.includes(key))
-				throw new BadImplementationException(
-					`Unexpect key '${path}${key}'\nif you want to ignore the validation of this property,\n add the following to your validator:\n {\n  ...\n  ${key}: undefined\n  ...\n}\n`);
-		}
+export const validateObject = <T>(__validator: TypeValidator<object>, instance: T, path: string="") => {
+	const validatorKeys = _keys(__validator);
+	const instanceKeys = Object.keys(instance as unknown as object);
 
-		for (const key of validatorKeys) {
-			const value: T[keyof T] = instance[key];
-			const validator = __validator[key];
-			validate(value, validator, `${path}/${key}`);
-		}
+	for (const key of instanceKeys) {
+		// @ts-ignore
+		if (!validatorKeys.includes(key))
+			throw new BadImplementationException(
+				`Unexpect key '${path}${key}'\nif you want to ignore the validation of this property,\n add the following to your validator:\n {\n  ...\n  ${key}: undefined\n  ...\n}\n`);
+	}
+
+	for (const key of validatorKeys) {
+		const value: T[keyof T] = instance[key];
+		const validator = __validator[key];
+		validate(value, validator, `${path}/${key}`);
 	}
 };

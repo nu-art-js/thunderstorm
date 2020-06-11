@@ -23,13 +23,20 @@ import {createTwoAccessLevels} from "./tests/create-project";
 import {
 	checkAccessLevelsPropertyOfGroup,
 	checkAccessLevelsPropertyOfUser,
+	checkDeleteAccessLevelsDocument,
+	checkGroupAccessLevelsAfterPatchingLevelDocument,
 	checkGroupAccessLevelsAfterUpdatingLevelDocument,
 	checkInsertUserIfNotExist,
 	checkInsertUserIfNotExistByExistUser,
+	checkPatchOfGroupAccessLevelsProperty,
+	checkPatchOfGroupAccessLevelsPropertyToHigherValue,
+	checkPatchOfUserAccessLevelsProperty,
+	checkPatchOfUserAccessLevelsPropertyToHigherValue,
 	checkUpdateOfGroupAccessLevelsProperty,
 	checkUpdateOfGroupAccessLevelsPropertyToHigherValue,
 	checkUpdateOfUserAccessLevelsProperty,
 	checkUpdateOfUserAccessLevelsPropertyToHigherValue,
+	checkUserAccessLevelsAfterPatchingLevelDocument,
 	checkUserAccessLevelsAfterUpdatingLevelDocument,
 	createApi,
 	createApiWithAccessLevel,
@@ -42,6 +49,9 @@ import {
 	failedCreateUserWithDuplicateAccessLevel,
 	failedCreateUserWithDuplicateGroups,
 	failToCreateGroupWithIllegalCustomField,
+	tryDeleteAccessLevelAssociatedWithApi,
+	tryDeleteAccessLevelAssociatedWithGroup,
+	tryDeleteDomainAssociatedWithAccessLevel
 } from "./tests/permissions-manage";
 import {
 	permissionsAssertDoesCustomFieldsSatisfiesTests,
@@ -60,9 +70,15 @@ mainScenario.add(checkUpdateOfGroupAccessLevelsProperty());
 mainScenario.add(checkAccessLevelsPropertyOfUser());
 mainScenario.add(checkUpdateOfUserAccessLevelsProperty());
 mainScenario.add(checkUpdateOfGroupAccessLevelsPropertyToHigherValue());
+mainScenario.add(checkPatchOfGroupAccessLevelsProperty());
+mainScenario.add(checkGroupAccessLevelsAfterPatchingLevelDocument());
+mainScenario.add(checkPatchOfGroupAccessLevelsPropertyToHigherValue());
 mainScenario.add(checkUpdateOfUserAccessLevelsPropertyToHigherValue());
 mainScenario.add(checkGroupAccessLevelsAfterUpdatingLevelDocument());
 mainScenario.add(checkUserAccessLevelsAfterUpdatingLevelDocument());
+mainScenario.add(checkPatchOfUserAccessLevelsProperty());
+mainScenario.add(checkUserAccessLevelsAfterPatchingLevelDocument());
+mainScenario.add(checkPatchOfUserAccessLevelsPropertyToHigherValue());
 mainScenario.add(createTowGroups());
 mainScenario.add(createGroupWithLegalCustomField());
 mainScenario.add(failToCreateGroupWithIllegalCustomField());
@@ -77,6 +93,12 @@ mainScenario.add(checkInsertUserIfNotExistByExistUser());
 
 mainScenario.add(permissionsAssertIsLevelsMatchTests());
 mainScenario.add(permissionsAssertDoesCustomFieldsSatisfiesTests());
+
+mainScenario.add(tryDeleteDomainAssociatedWithAccessLevel());
+mainScenario.add(tryDeleteAccessLevelAssociatedWithGroup());
+mainScenario.add(tryDeleteAccessLevelAssociatedWithApi());
+mainScenario.add(checkDeleteAccessLevelsDocument());
+
 
 module.exports = new StormTester()
 	.addModules(FirebaseModule)

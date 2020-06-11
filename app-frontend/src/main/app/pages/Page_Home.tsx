@@ -21,7 +21,7 @@ import {Hello} from "../Hello";
 import {
 	showAppConfirmationDialogExample,
 	showDefaultInfoModalExample,
-} from "../ui/ExampleAppDialogs";
+} from "../themes/dialog";
 import {ToastModule} from "@nu-art/thunderstorm/frontend";
 import {ExampleModule} from "@modules/ExampleModule";
 

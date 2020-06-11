@@ -6,25 +6,22 @@
     "rootDir": ".",
     "paths": {
       "@components/*": [
-        "components/*"
+        "app/components/*"
       ],
-      "@consts/*": [
-        "consts/*"
+      "@pages/*": [
+        "app/pages/*"
       ],
       "@modules/*": [
         "modules/*"
       ],
       "@renderers/*": [
-        "renderers/*"
+        "app/renderers/*"
       ],
       "@res/*": [
         "res/*"
       ],
-      "@shared/*": [
-        "app-shared/*"
-      ],
-      "@styles/*": [
-        "res/styles/*"
+      "@themes/*": [
+        "themes/*"
       ]
     },
     "removeComments": true,

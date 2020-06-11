@@ -51,6 +51,7 @@ import {
 	UserPermissionsDB
 } from "./assign";
 import {Clause_Where} from "@nu-art/firebase";
+import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
 
 const validateProjectId = validateRegexp(/^[a-z-]{3,20}$/);
 const validateProjectName = validateRegexp(/^[A-Za-z- ]{3,20}$/);
@@ -83,6 +84,13 @@ export class DomainDB_Class
 	constructor() {
 		super(CollectionName_Domain, DomainDB_Class._validator, "domain");
 		this.setPatchKeys(["namespace"])
+	}
+
+	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {
+		const accessLevels = await AccessLevelPermissionsDB.query({where: {domainId: dbInstance._id}});
+		if (accessLevels.length) {
+			throw new ApiException(403, 'You trying delete domain that associated with accessLevels, you need delete the accessLevels first');
+		}
 	}
 
 	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {
@@ -156,6 +164,15 @@ export class LevelDB_Class
 		}
 
 		return upsertRead();
+	}
+
+	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
+		const users = await UserPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
+		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
+		const apis = await ApiPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
+
+		if (users.length || groups.length || apis.length)
+			throw new ApiException(403, 'You trying delete access level that associated with users/groups/apis, you need delete the associations first');
 	}
 
 	setUpdatedLevel(dbLevel: DB_PermissionAccessLevel, units: Request_PermissionsBase[]) {
