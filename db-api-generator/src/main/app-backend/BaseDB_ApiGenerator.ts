@@ -203,8 +203,23 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
+	async upsertAll(instances: UType[]) {
+		return await this.collection.runInTransaction(async (transaction) => {
+
+			const dbInstances: DBType[] = instances.map(instance => ({...instance, _id: instance._id || generateHex(idLength)} as unknown as DBType));
+			await Promise.all(dbInstances.map(async dbInstance => this.validateImpl(dbInstance)));
+			await Promise.all(dbInstances.map(async dbInstance => this.assertUniqueness(transaction,dbInstance)));
+
+			return this.upsertAllImpl(transaction, dbInstances);
+		});
+	}
+
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType): Promise<DBType> {
 		return transaction.upsert(this.collection, dbInstance);
+	}
+
+	protected async upsertAllImpl(transaction: FirestoreTransaction, dbInstances: DBType[]): Promise<DBType[]> {
+		return transaction.upsertAll(this.collection, dbInstances);
 	}
 
 	async deleteUnique(_id: string) {
