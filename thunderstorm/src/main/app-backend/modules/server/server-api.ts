@@ -91,6 +91,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 
 	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
 		this.middlewares = middlewares;
+		return this;
 	}
 
 	addHeaderToLog(...headersToLog: string[]) {

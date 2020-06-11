@@ -103,22 +103,11 @@ export class BugReportModule_Class
 		if (!bugReport.createIssue) {
 			await this.bugReport.insert(instance);
 			return;
-<<<<<<< HEAD
-		const description = logs.reduce((carry, el) => `${carry}${el.path}, `, `${bugReport.description}, `);
-		if (!this.config.jiraProject)
-			throw new ImplementationMissingException("missing Jira project in bug report configurations")
-
-		const message = await JiraModule.postIssueRequest(this.config.jiraProject, {name: "Task"}, `Bug Report: '${bugReport.subject}' at ${createReadableTimestampObject().pretty}`, description);
-		return message.key;
-		// await Promise.all(buffers.map(buffer => JiraModule.addIssueAttachment(key, buffer)))
-	}
-=======
 		}
 
 		instance.tickets = await Promise.all(this.ticketCreatorApis.map(api => api(bugReport, logs)));
 		await this.bugReport.insert(instance);
 	};
->>>>>>> staging
 }
 
 export const BugReportModule = new BugReportModule_Class();

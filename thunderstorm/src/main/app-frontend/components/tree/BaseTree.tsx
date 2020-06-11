@@ -31,6 +31,7 @@ import {
 	TreeRenderer
 } from "./types";
 import {KeyboardListener} from "../../tools/KeyboardListener";
+import {stopPropagation} from '../../utils/tools';
 
 
 export type BaseTreeProps = {
@@ -194,7 +195,7 @@ export abstract class BaseTree<P extends BaseTreeProps = BaseTreeProps, S extend
 		e.preventDefault();
 		e.stopPropagation();
 		if (e.code === "Escape") {
-			this.stopPropagation(e);
+			stopPropagation(e);
 			return node.blur();
 		}
 
@@ -214,7 +215,7 @@ export abstract class BaseTree<P extends BaseTreeProps = BaseTreeProps, S extend
 			return;
 
 		if (e.code === "ArrowDown") {
-			this.stopPropagation(e);
+			stopPropagation(e);
 			if (idx === -1 || idx + 1 === renderedElements.length)
 				return this.setState({focused: renderedElements[0]});
 
@@ -222,7 +223,7 @@ export abstract class BaseTree<P extends BaseTreeProps = BaseTreeProps, S extend
 		}
 
 		if (e.code === "ArrowUp") {
-			this.stopPropagation(e);
+			stopPropagation(e);
 			if (idx === -1)
 				return this.setState({focused: renderedElements[0]});
 
@@ -233,17 +234,17 @@ export abstract class BaseTree<P extends BaseTreeProps = BaseTreeProps, S extend
 		}
 
 		if (this.state.focused && e.code === "ArrowRight") {
-			this.stopPropagation(e);
+			stopPropagation(e);
 			return this.expandOrCollapse(this.state.focused, true);
 		}
 
 		if (this.state.focused && e.code === "ArrowLeft") {
-			this.stopPropagation(e);
+			stopPropagation(e);
 			return this.expandOrCollapse(this.state.focused, false);
 		}
 
 		if (this.state.focused && e.code === "Enter") {
-			this.stopPropagation(e);
+			stopPropagation(e);
 			let element: any = this.props.root;
 			const hierarchy: string[] = this.state.focused.split('/');
 			hierarchy.shift();
