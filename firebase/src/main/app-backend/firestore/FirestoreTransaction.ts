@@ -20,12 +20,9 @@ import * as admin from "firebase-admin";
 import {FirestoreType_DocumentSnapshot} from "./types";
 import {FirestoreCollection,} from "./FirestoreCollection";
 import {
-	addItemToArray,
 	BadImplementationException,
 	merge,
-	Subset,
-    addAllItemToArray,
-    batchAction
+	Subset
 } from "@nu-art/ts-common";
 import {FirestoreQuery} from "../../shared/types";
 import {FirestoreInterface} from "./FirestoreInterface";
@@ -102,17 +99,10 @@ export class FirestoreTransaction {
 	}
 
 	async upsertAll<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<Type[]> {
-		const writes: (() => Promise<Type[]>)[] = [];
-		await batchAction(instances, 500, async chunked => {
-			addItemToArray(writes, await this.upsertAll_Read(collection, chunked))
-		});
+		if (instances.length > 500)
+			throw new BadImplementationException('Firestore transaction supports maximum 500 at a time');
 
-		const res: Type[] = [];
-		await batchAction(writes, 1, async chunked => {
-			addAllItemToArray(res, await chunked[0]());
-		});
-
-		return res;
+		return (await this.upsertAll_Read(collection, instances))();
 	}
 
 	async upsertAll_Read<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<() => Promise<Type[]>> {
@@ -135,10 +125,17 @@ export class FirestoreTransaction {
 	}
 
 	async delete<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
+		await (await this.delete_Read(collection, ourQuery))()
+	}
+
+	async delete_Read<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
 		const docs = await this._query(collection, ourQuery);
-		const toReturn = docs.map(doc => doc.data() as Type);
-		await Promise.all(docs.map(async (doc) => this.transaction.delete(doc.ref as admin.firestore.DocumentReference)));
-		return toReturn;
+
+		return async () => {
+			const toReturn = docs.map(doc => doc.data() as Type);
+			await Promise.all(docs.map(async (doc) => this.transaction.delete(doc.ref as admin.firestore.DocumentReference)));
+			return toReturn;
+		}
 	}
 
 	async deleteItem<Type extends object>(collection: FirestoreCollection<Type>, instance: Type) {
