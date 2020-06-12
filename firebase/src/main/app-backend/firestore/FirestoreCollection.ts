@@ -35,6 +35,7 @@ import {
 import {FirestoreWrapper} from "./FirestoreWrapper";
 import {FirestoreInterface} from "./FirestoreInterface";
 import {FirestoreTransaction} from "./FirestoreTransaction";
+import {addAllItemToArray} from "../../../../../ts-common/src/main";
 import admin = require("firebase-admin");
 
 export class FirestoreCollection<Type extends object> {
@@ -98,7 +99,11 @@ export class FirestoreCollection<Type extends object> {
 	}
 
 	async upsertAll(instances: Type[]) {
-		return this.runInTransaction(transaction => transaction.upsertAll(this, instances));
+		const writes: Type[] = [];
+		await batchAction(instances, 500, async chunked => {
+			addAllItemToArray(writes, await this.runInTransaction(transaction => transaction.upsertAll(this, chunked)));
+		});
+		return writes;
 	}
 
 	async patch(instance: Subset<Type>): Promise<Type> {
