@@ -24,11 +24,11 @@ import {
 	BadImplementationException,
 	merge,
 	Subset,
-    addAllItemToArray
+    addAllItemToArray,
+    batchAction
 } from "@nu-art/ts-common";
 import {FirestoreQuery} from "../../shared/types";
 import {FirestoreInterface} from "./FirestoreInterface";
-import {batchAction} from "../../../../../ts-common/src/main";
 
 export class FirestoreTransaction {
 	private transaction: admin.firestore.Transaction;
