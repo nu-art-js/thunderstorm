@@ -20,12 +20,15 @@ import * as admin from "firebase-admin";
 import {FirestoreType_DocumentSnapshot} from "./types";
 import {FirestoreCollection,} from "./FirestoreCollection";
 import {
+	addItemToArray,
 	BadImplementationException,
 	merge,
-	Subset
+	Subset,
+    addAllItemToArray
 } from "@nu-art/ts-common";
 import {FirestoreQuery} from "../../shared/types";
 import {FirestoreInterface} from "./FirestoreInterface";
+import {batchAction} from "../../../../../ts-common/src/main";
 
 export class FirestoreTransaction {
 	private transaction: admin.firestore.Transaction;
@@ -98,8 +101,18 @@ export class FirestoreTransaction {
 		return ref;
 	}
 
-	async upsertAll<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]) {
-		return (await this.upsertAll_Read(collection, instances))();
+	async upsertAll<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<Type[]> {
+		const writes: (() => Promise<Type[]>)[] = [];
+		await batchAction(instances, 500, async chunked => {
+			addItemToArray(writes, await this.upsertAll_Read(collection, chunked))
+		});
+
+		const res: Type[] = [];
+		await batchAction(writes, 1, async chunked => {
+			addAllItemToArray(res, await chunked[0]());
+		});
+
+		return res;
 	}
 
 	async upsertAll_Read<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<() => Promise<Type[]>> {

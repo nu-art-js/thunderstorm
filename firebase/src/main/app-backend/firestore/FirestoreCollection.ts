@@ -35,6 +35,7 @@ import {FirestoreWrapper} from "./FirestoreWrapper";
 import {FirestoreInterface} from "./FirestoreInterface";
 import {FirestoreTransaction} from "./FirestoreTransaction";
 import admin = require("firebase-admin");
+import {batchAction} from "../../../../../ts-common/src/main";
 
 export class FirestoreCollection<Type extends object> {
 	readonly name: string;
@@ -118,14 +119,11 @@ export class FirestoreCollection<Type extends object> {
 	}
 
 	private async deleteBatch(docRefs: FirestoreType_DocumentSnapshot[]) {
-		const chunk = 200;
-		for (let i = 0, j = docRefs.length; i < j; i += chunk) {
-			const temp = docRefs.slice(i, i + chunk);
-
+		await batchAction(docRefs,200,async (temp) => {
 			const initialValue = this.wrapper.firestore.batch();
 			// @ts-ignore
 			await temp.reduce((batch, val) => batch.delete(val.ref), initialValue).commit();
-		}
+		})
 	}
 
 	async deleteAll() {
