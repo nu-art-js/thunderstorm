@@ -17,6 +17,7 @@
  */
 
 import {
+	addAllItemToArray,
 	BadImplementationException,
 	batchAction,
 	generateHex,
@@ -35,7 +36,6 @@ import {
 import {FirestoreWrapper} from "./FirestoreWrapper";
 import {FirestoreInterface} from "./FirestoreInterface";
 import {FirestoreTransaction} from "./FirestoreTransaction";
-import {addAllItemToArray} from "../../../../../ts-common/src/main";
 import admin = require("firebase-admin");
 
 export class FirestoreCollection<Type extends object> {
