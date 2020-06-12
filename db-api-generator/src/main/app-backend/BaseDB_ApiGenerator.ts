@@ -20,11 +20,14 @@
 import {
 	Clause_Where,
 	DB_Object,
-	FirestoreQuery,
 	FilterKeys,
+	FirestoreQuery,
 } from "@nu-art/firebase";
 import {
+	__stringify,
+	addAllItemToArray,
 	BadImplementationException,
+	batchAction,
 	generateHex,
 	isErrorOfType,
 	merge,
@@ -33,9 +36,7 @@ import {
 	validate,
 	validateRegexp,
 	ValidationException,
-	ValidatorTypeResolver,
-	__stringify,
-    batchAction
+	ValidatorTypeResolver
 } from "@nu-art/ts-common";
 import {
 	ServerApi_Create,
@@ -51,14 +52,13 @@ import {
 import {
 	FirebaseModule,
 	FirestoreCollection,
-	FirestoreTransaction,
 	FirestoreInterface,
+	FirestoreTransaction,
 } from "@nu-art/firebase/backend";
 import {
 	BadInputErrorBody,
 	ErrorKey_BadInput
 } from "../index";
-import {addAllItemToArray} from "../../../../ts-common/src/main";
 
 const idLength = 32;
 export const validateId = (length: number, mandatory: boolean = true) => validateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
@@ -217,7 +217,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.collection.runInTransaction(async (transaction) => {
 			const dbInstances: DBType[] = instances.map(instance => ({...instance, _id: instance._id || generateHex(idLength)} as unknown as DBType));
 			await Promise.all(dbInstances.map(async dbInstance => this.validateImpl(dbInstance)));
-			await Promise.all(dbInstances.map(async dbInstance => this.assertUniqueness(transaction,dbInstance)));
+			await Promise.all(dbInstances.map(async dbInstance => this.assertUniqueness(transaction, dbInstance)));
 
 			return this.upsertAllImpl(transaction, dbInstances);
 		});
