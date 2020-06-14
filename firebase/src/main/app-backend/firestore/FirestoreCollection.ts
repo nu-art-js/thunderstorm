@@ -17,7 +17,9 @@
  */
 
 import {
+	addAllItemToArray,
 	BadImplementationException,
+	batchAction,
 	generateHex,
 	Subset
 } from "@nu-art/ts-common";
@@ -97,7 +99,11 @@ export class FirestoreCollection<Type extends object> {
 	}
 
 	async upsertAll(instances: Type[]) {
-		return this.runInTransaction(transaction => transaction.upsertAll(this, instances));
+		const writes: Type[] = [];
+		await batchAction(instances, 500, async chunked => {
+			addAllItemToArray(writes, await this.runInTransaction(transaction => transaction.upsertAll(this, chunked)));
+		});
+		return writes;
 	}
 
 	async patch(instance: Subset<Type>): Promise<Type> {
@@ -118,14 +124,11 @@ export class FirestoreCollection<Type extends object> {
 	}
 
 	private async deleteBatch(docRefs: FirestoreType_DocumentSnapshot[]) {
-		const chunk = 200;
-		for (let i = 0, j = docRefs.length; i < j; i += chunk) {
-			const temp = docRefs.slice(i, i + chunk);
-
+		await batchAction(docRefs, 200, async (temp) => {
 			const initialValue = this.wrapper.firestore.batch();
 			// @ts-ignore
 			await temp.reduce((batch, val) => batch.delete(val.ref), initialValue).commit();
-		}
+		})
 	}
 
 	async deleteAll() {
