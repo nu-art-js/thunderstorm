@@ -40,14 +40,8 @@ const stopPropagation = (e: MouseEvent | React.MouseEvent) => {
 	e.stopPropagation();
 };
 
-type menuStyle = {
-	firstToggle:boolean,
-	color:string
-}
-
 type HMProps = {
-	menu: Menu<any>,
-	style?: menuStyle
+	menu: Menu<any>
 }
 
 export class FixedMenu
@@ -74,14 +68,14 @@ export class FixedMenu
 			propertyFilter={<T extends object>(obj: T, key: keyof T) => key !== "item" && key !== 'type'}
 			indentPx={0}
 			childrenContainerStyle={(level: number) => ({
-				backgroundColor: this.props.style?.color || "#fff",
+				backgroundColor: "#fff",
 				boxSizing: "border-box",
 				display: "inline-block",
 				paddingLeft: 20,
 				width: "-webkit-fill-available"
 			})}
 			callBackState={(key: string, value: any, level: number) => true}
-			renderer={GenericRenderer(this.props.menu.rendererMap, this.props.style?.firstToggle)}
+			renderer={GenericRenderer(this.props.menu.rendererMap)}
 		/>
 	}
 }
@@ -91,7 +85,7 @@ const renderCollapse = (expanded: boolean) => {
 	return <Comp style={{color: "#00000050", verticalAlign: "text-top"}}/>
 };
 
-const GenericRenderer = (rendererMap: RendererMap, toggleFirst?: boolean) => {
+const GenericRenderer = (rendererMap: RendererMap) => {
 	return (props: TreeNode) => {
 		const itemWrapper = props.item as MenuItemWrapper<any, any>;
 		const item = itemWrapper.item;
@@ -100,18 +94,16 @@ const GenericRenderer = (rendererMap: RendererMap, toggleFirst?: boolean) => {
 		const MyRenderer = rendererMap[type as string];
 		// @ts-ignore
 		const hasChildren = itemWrapper.length;
-		const defaultRender: boolean = (toggleFirst && !toggleFirst) || true;
 
 		return (
 			<div style={hasChildren && {display: 'flex', justifyContent: 'space-between'}}>
-				{defaultRender ? '' : renderCollapse(props.expanded)}
 				<MyRenderer item={item}/>
 				{hasChildren && <div
 					id={props.path}
 					onMouseDown={(e) => stopPropagation(e)}
 					onMouseUp={(e) => props.expandToggler(e, !props.expanded)}
 					style={{cursor: "pointer", marginRight: 10}}
-				>{defaultRender ? renderCollapse(props.expanded) : ''}</div>}
+				>{renderCollapse(props.expanded)}</div>}
 			</div>
 		)
 	};
