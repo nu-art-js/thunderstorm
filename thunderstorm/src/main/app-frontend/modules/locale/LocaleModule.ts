@@ -33,6 +33,7 @@ import {
 } from "@nu-art/ts-common";
 import {format} from "util";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
+import {StorageKey} from "../StorageModule";
 
 type Config = {
 	defaultLocale: Locale,
@@ -50,9 +51,10 @@ export class LocaleModule_Class
 
 	private activeLocale!: LocaleDef;
 	private defaultLocale!: LocaleDef;
+	private selectedLanguage: StorageKey<string> = new StorageKey<string>("locale--selected-language");
 
 	protected init() {
-		const defaultLocale = this.config.defaultLocale;
+		const defaultLocale = this.selectedLanguage.get() || this.config.defaultLocale;
 		if (!defaultLocale)
 			throw new ImplementationMissingException("MUST set defaultLocale in the config data");
 
@@ -65,8 +67,8 @@ export class LocaleModule_Class
 			throw new ImplementationMissingException(`Unsupported language: ${locale}`);
 
 		this.activeLocale = localeDef;
-		if (this.defaultLocale)
-			dispatch_onLanguageChanged.dispatchUI([]);
+		dispatch_onLanguageChanged.dispatchUI([]);
+		this.selectedLanguage.set(localeDef.locale);
 		return localeDef
 	}
 

@@ -20,24 +20,15 @@
  */
 
 import * as React from "react";
+import {Adapter} from "./Adapter";
 
 export type TreeNode = {
-	item: any
+	propKey: string
 	path: string
-	name: string
-	onClick: (e: React.MouseEvent) => void
-	onDoubleClick: (e: React.MouseEvent) => void
-
+	item: any
+	adapter: Adapter
 	expandToggler: (e: React.MouseEvent, expand?: boolean) => void
+	onClick: (e: React.MouseEvent) => void
 	expanded: boolean
 	focused: boolean
 };
-
-export type TreeNodeAdjuster = (obj: object) => {
-	data: object
-	deltaPath?: string
-};
-
-export type PropertyFilter = <T extends object>(obj: T, key: keyof T) => any;
-
-export type TreeRenderer = (props: TreeNode) => React.ReactElement

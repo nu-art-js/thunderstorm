@@ -19,27 +19,321 @@
  * limitations under the License.
  */
 
+import * as React from 'react';
+import {CSSProperties} from 'react';
 import {
-	BaseTree,
-	BaseTreeProps
-} from "./BaseTree";
-import {DefaultTreeRenderer} from "./DefaultTreeRenderer";
+	_keys,
+	removeItemFromArray
+} from "@nu-art/ts-common";
+import {
+	TreeNode,
+} from "./types";
+import {KeyboardListener} from "../../tools/KeyboardListener";
+import {stopPropagation} from '../../utils/tools';
+import {
+	_Renderer,
+	Adapter
+} from "./Adapter";
 
-const nodeAdjuster = (obj: object) => ({data: obj, deltaPath: ""})
 
-export class Tree
-	extends BaseTree {
+export type BaseTreeProps = {
+	id: string
+	onNodeFocused?: Function;
+	onNodeClicked?: Function;
+	callBackState: (key: string, value: any, level: number) => boolean
+	childrenContainerStyle?: (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentRef?: HTMLDivElement) => CSSProperties
+	nodesState?: TreeNodeState;
+	indentPx: number;
+	checkExpanded: (expanded: TreeNodeState, path: string) => boolean
+	keyEventHandler?: (node: HTMLDivElement, e: KeyboardEvent) => boolean;
+	onFocus?: () => void
+	onBlur?: () => void
+
+	adapter: Adapter
+}
+
+export type TreeNodeState = { [path: string]: boolean };
+type TreeState = {
+	expanded: TreeNodeState,
+	focused?: string
+	lastFocused?: string
+}
+
+
+export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState = TreeState>
+	extends React.Component<P, TreeState> {
 
 	static defaultProps: Partial<BaseTreeProps> = {
-		...BaseTree._defaultProps,
-		propertyFilter: () => true,
-		renderer: DefaultTreeRenderer,
-		// @ts-ignore
-		nodeAdjuster: nodeAdjuster,
+		indentPx: 20,
+		checkExpanded: (expanded: TreeNodeState, path: string) => expanded[path],
 	};
 
-	constructor(p: BaseTreeProps) {
-		super(p);
+	protected containerRefs: { [k: string]: HTMLDivElement } = {};
+	protected rendererRefs: { [k: string]: HTMLDivElement } = {};
+
+	constructor(props: P) {
+		super(props);
+
+		this.state = {expanded: this.recursivelyExpand(this.props.adapter.data, this.props.callBackState || (() => true))} as S;
 	}
+
+	render() {
+		return <KeyboardListener
+			id={this.props.id}
+			onKeyboardEventListener={this.keyEventHandler}
+			onFocus={this.onFocus}
+			onBlur={this.onBlur}>
+			{this.renderNode(this.props.adapter.data, "", "", 1)}
+		</KeyboardListener>;
+	}
+
+	private renderNode = (_data: any, key: string, _path: string, level: number) => {
+		let data = _data;
+		const nodePath = `${_path}${key}/`;
+		const adjustedNode = this.props.adapter.adjust(data);
+		data = adjustedNode.data;
+
+		let renderChildren = true;
+		let filteredKeys: any[] = [];
+
+		const expanded = this.props.checkExpanded(this.state.expanded, nodePath);
+		if (!expanded)
+			renderChildren = false;
+
+		if (typeof data !== "object")
+			renderChildren = false;
+
+		if (renderChildren)
+			filteredKeys = this.props.adapter.getFilteredChildren(data);
+
+
+		const nodeRefResolver = (_ref: HTMLDivElement) => {
+			if (this.rendererRefs[nodePath])
+				return;
+
+			this.rendererRefs[nodePath] = _ref;
+			if (this.containerRefs[nodePath] && renderChildren && filteredKeys.length > 0)
+				this.forceUpdate();
+		};
+
+		const containerRefResolver = (_ref: HTMLDivElement) => {
+			if (this.containerRefs[nodePath])
+				return;
+
+			this.containerRefs[nodePath] = _ref;
+			if (renderChildren && filteredKeys.length > 0)
+				this.forceUpdate();
+		};
+
+		return <div key={nodePath} ref={nodeRefResolver}>
+			{this.renderItem(data, nodePath, key, expanded)}
+			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
+		</div>
+	};
+
+	private renderChildren(data: any, nodePath: string, _path: string, level: number, filteredKeys: any[], renderChildren: boolean, adjustedNode: { data: object; deltaPath?: string }, containerRefResolver: (_ref: HTMLDivElement) => void) {
+		if (!(filteredKeys.length > 0 && renderChildren))
+			return;
+
+		const containerRef: HTMLDivElement = this.containerRefs[nodePath];
+
+		return (
+			<div
+				style={this.getChildrenContainerStyle(level, this.rendererRefs[nodePath], containerRef, this.containerRefs[_path])}
+				ref={containerRefResolver}>
+				{containerRef && filteredKeys.map(
+					(childKey) => this.renderNode(data[childKey], childKey, nodePath + (adjustedNode.deltaPath ? adjustedNode.deltaPath + "/" : ""), level + 1))}
+			</div>);
+	}
+
+	private renderItem<T extends object = object>(item: T, path: string, key: string, expanded: boolean) {
+		if (this.props.adapter.hideRoot && path.length === 1)
+			return null;
+
+		const TreeNodeRenderer: _Renderer<TreeNode> = this.props.adapter.getTreeNodeRenderer();
+		const node: TreeNode = {
+			adapter: this.props.adapter,
+			propKey: key,
+			path,
+			item,
+			expandToggler: this.toggleExpandState,
+			onClick: this.onNodeFocused,
+			expanded: expanded,
+			focused: path === this.state.focused,
+		}
+		return (
+			<TreeNodeRenderer {...node}/>
+		);
+	}
+
+	private getChildrenContainerStyle = (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentContainerRef?: HTMLDivElement): CSSProperties => {
+		if (!containerRef)
+			return {};
+
+		if (this.props.childrenContainerStyle)
+			return this.props.childrenContainerStyle(level, parentNodeRef, containerRef, parentContainerRef);
+
+		return {marginLeft: this.props.indentPx};
+	};
+
+	private setFocusedNode(path: string) {
+		console.log(`focused: ${path}`);
+		this.setState({focused: path});
+	}
+
+	protected keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent): void => {
+		if (this.props.keyEventHandler && this.props.keyEventHandler(node, e))
+			return;
+
+		console.log(`focused on tree: ${this.props.id}`);
+
+		let keyCode = e.code;
+		if (keyCode === "Escape") {
+			stopPropagation(e);
+			return node.blur();
+		}
+
+		const keys = Object.keys(this.state.expanded);
+		const renderedElements: string[] = keys.reduce((carry, key) => {
+			if (this.state.expanded[key])
+				return carry;
+
+			keys.forEach(el => {
+				if (el.startsWith(key) && el !== key)
+					removeItemFromArray(carry, el);
+			});
+			return carry;
+		}, keys);
+
+		let focused = this.state.focused;
+		const idx = renderedElements.findIndex(el => el === focused);
+		if (idx >= renderedElements.length)
+			return;
+
+
+		if (focused && keyCode === "ArrowRight") {
+			stopPropagation(e);
+			if (!this.props.checkExpanded(this.state.expanded, focused))
+				return this.expandOrCollapse(focused, true);
+			else
+				keyCode = "ArrowDown";
+		}
+
+		if (focused && keyCode === "ArrowLeft") {
+			stopPropagation(e);
+			if (this.props.checkExpanded(this.state.expanded, focused))
+				return this.expandOrCollapse(focused, false);
+			else {
+				const temp = focused.substr(0, focused.length - 1);
+				if (temp.length === 0)
+					return;
+
+				const parentFocused = temp.substring(0, temp.lastIndexOf("/") + 1);
+
+				return this.setFocusedNode(parentFocused);
+			}
+		}
+
+		if (keyCode === "ArrowDown") {
+			stopPropagation(e);
+			if (idx === -1 || idx + 1 === renderedElements.length)
+				return this.setFocusedNode(renderedElements[0]);
+
+			return this.setFocusedNode(renderedElements[idx + 1])
+		}
+
+		if (keyCode === "ArrowUp") {
+			stopPropagation(e);
+			if (idx === -1)
+				return this.setFocusedNode(renderedElements[0]);
+
+			if (idx === 0)
+				return this.setFocusedNode(renderedElements[renderedElements.length - 1]);
+
+			return this.setFocusedNode(renderedElements[idx - 1])
+		}
+
+		if (focused && keyCode === "Enter") {
+			stopPropagation(e);
+			let element: any = this.props.adapter.data;
+			const hierarchy: string[] = focused.split('/');
+			hierarchy.shift();
+
+			for (const el of hierarchy) {
+				if (el) {
+					element = element[el];
+					if (!element)
+						return;
+				}
+			}
+			const deltaPath = this.props.adapter.adjust(element).deltaPath;
+			if (deltaPath)
+				element = element[deltaPath];
+
+			const action = element.action || this.props.onNodeClicked;
+			return action ? action() : null;
+		}
+	};
+
+	recursivelyExpand = (obj: object, condition: (key: string, value: any, level: number) => boolean) => {
+		const state = {'/': condition ? condition('/', obj, 0) : false};
+		return this.recursivelyExpandImpl(obj, state, condition)
+	};
+
+	private recursivelyExpandImpl = (obj: object, state: TreeNodeState, condition: (key: string, value: any, level: number) => boolean, path: string = "/", level: number = 1) => {
+		if (obj === null)
+			return state;
+
+		const _obj = this.props.adapter.adjust(obj);
+		return _keys(obj).reduce((_state, key) => {
+			const value = obj[key];
+			if (!_obj.deltaPath)
+				_state[`${path}${key}/`] = condition(key, value, level);
+			if (condition(key, value, level) && typeof value === "object")
+				this.recursivelyExpandImpl(value, _state, condition, `${path}${key}/`, level + 1);
+
+			return _state;
+		}, state);
+	};
+
+	private toggleExpandState = (e: React.MouseEvent, _expanded?: boolean): void => {
+		const path = e.currentTarget.id;
+		this.expandOrCollapse(path, _expanded);
+	};
+
+	private expandOrCollapse = (path: string, _expanded?: boolean): void => {
+		this.setState((prevState: TreeState) => {
+			const expanded = prevState.expanded[path];
+			prevState.expanded[path] = _expanded !== undefined ? _expanded : !expanded;
+			prevState.focused = path;
+			return prevState;
+		})
+	};
+
+	private onNodeFocused = (e: React.MouseEvent): void => {
+		const path = e.currentTarget.id;
+		if (this.state.focused !== path) {
+			this.props.onNodeFocused && this.props.onNodeFocused(path, this.props.id)
+			return this.setFocusedNode(path);
+		}
+
+		this.props.onNodeClicked && this.props.onNodeClicked(path, this.props.id)
+	};
+
+	private onBlur = () => {
+		this.setState({
+			              focused: '',
+			              lastFocused: this.state.focused || ''
+		              });
+		this.props.onBlur && this.props.onBlur();
+	};
+
+	private onFocus = () => {
+		this.setState({
+			              focused: this.state.lastFocused || '',
+			              lastFocused: ''
+		              });
+		this.props.onFocus && this.props.onFocus();
+	};
 }
 
