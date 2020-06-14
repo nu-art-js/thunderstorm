@@ -27,7 +27,7 @@ import {Example_ApiCustomError} from './examples/Example_ApiCustomError';
 import {Example_Tabs2} from "./examples/tabs/Example_Tabs2";
 import {Example_GenericSelect} from "./examples/_to-be-removed/Example_GenericSelect";
 import {Example_Tabs} from "./examples/tabs/Example_Tabs";
-import {Example_KeyboardOnTree} from './examples/keyboard-listener/Example_KeyboardOnTree';
+import {Example_VerySimpleTree} from './examples/keyboard-listener/Example_VerySimpleTree';
 import {Example_Dialogs} from './examples/Example_Dialogs';
 import {Example_Toaster} from './examples/Example_Toaster';
 import {Example_Menu} from './examples/Example_Menu';
@@ -105,7 +105,7 @@ export class Page_Playground
 			{renderer: Example_GenericSelect, name: "GenericSelect",},
 			{renderer: Example_DropDown, name: "DropDown Examples",},
 			{renderer: Example_Menu, name: "Menu",},
-			{renderer: Example_KeyboardOnTree, name: "Special keyboard listener",},
+			{renderer: Example_VerySimpleTree, name: "Special keyboard listener",},
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring",}
 		];
 	}

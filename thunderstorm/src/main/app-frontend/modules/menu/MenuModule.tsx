@@ -38,7 +38,6 @@ export type MenuItemWrapper<Rm extends RendererMap, K extends keyof Rm, Item = I
 export type Menu<Rm extends RendererMap> = {
 	rendererMap: Rm
 	_children: MenuItemWrapper<Rm, keyof Rm>[]
-	onClick?: ()=>void
 }
 
 export class MenuModule_Class

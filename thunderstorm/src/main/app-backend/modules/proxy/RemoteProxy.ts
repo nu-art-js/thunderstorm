@@ -20,7 +20,8 @@
  */
 import {
 	ImplementationMissingException,
-	Module
+	Module,
+    ObjectTS
 } from "@nu-art/ts-common";
 
 import {
@@ -32,7 +33,7 @@ import {HttpRequestData} from "../server/server-api";
 import {ExpressRequest} from "../../utils/types";
 
 type ProxyConfig = {
-	extras?: { [k: string]: any }
+	extras?: ObjectTS
 	urls: string[],
 	secret: string
 };

@@ -24,38 +24,56 @@ import {
 	TreeNode,
 } from "./types";
 
-export const DefaultTreeRenderer = () => {
-	return (props: TreeNode) => {
-		function renderCollapse() {
-			let toDisplay;
-			if (typeof props.item !== "object")
-				toDisplay = "";
-			else if (Object.keys(props.item).length === 0)
-				toDisplay = "";
-			else if (props.expanded)
-				toDisplay = "-";
-			else
-				toDisplay = "+";
+export class SimpleTreeNodeRenderer
+	extends React.Component<TreeNode> {
 
-			return <div className={`clickable`} id={props.path} onClick={props.expandToggler} style={{width: "15px"}}>{toDisplay}</div>
-		}
 
+	constructor(props: TreeNode) {
+		super(props);
+	}
+
+	renderCollapse() {
+		let toDisplay;
+		if (typeof this.props.item !== "object")
+			toDisplay = "";
+		else if (Object.keys(this.props.item).length === 0)
+			toDisplay = "";
+		else if (this.props.expanded)
+			toDisplay = "-";
+		else
+			toDisplay = "+";
+
+		return <div className={`clickable`} id={this.props.path} onClick={this.props.expandToggler} style={{width: "15px"}}>{toDisplay}</div>
+	}
+
+	render() {
+		return (<div className="ll_h_c">
+			{this.renderCollapse()}
+			<div
+				id={this.props.path}
+				className='clickable'
+				onClick={this.props.onClick}
+				style={{backgroundColor: this.props.focused ? "red" : "salmon", userSelect: "none"}}>
+
+				<SimpleNodeRenderer {...this.props}/>
+			</div>
+		</div>);
+	};
+}
+
+export class SimpleNodeRenderer
+	extends React.Component<TreeNode> {
+
+	render() {
 		let label;
-		if (typeof props.item !== "object")
-			label = ` : ${props.item}`;
-		else if (Object.keys(props.item).length === 0)
+		let item = this.props.item;
+		if (typeof item !== "object")
+			label = ` : ${item}`;
+		else if (Object.keys(item).length === 0)
 			label = " : {}";
 		else
 			label = "";
 
-		return (<div className="ll_h_c">
-			{renderCollapse()}
-			<div
-				id={props.path}
-				className={`${(props.onClick || props.onDoubleClick) ? 'clickable' : ''}`}
-				onClick={props.onClick}
-				style={{backgroundColor: props.focused ? "lime" : "unset", userSelect: "none"}}
-				onDoubleClick={props.onDoubleClick}>{props.name || "root"} {label}</div>
-		</div>);
-	};
+		return (this.props.propKey || "root") + label
+	}
 }

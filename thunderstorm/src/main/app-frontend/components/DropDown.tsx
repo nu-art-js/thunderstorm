@@ -29,7 +29,6 @@ import {RendererMap} from "../types/renderer-map";
 import {MenuItemWrapper} from "../modules/menu/MenuModule";
 import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
-import {MultiTypeTree} from "./tree/MultiTypeTree";
 
 const defaultWidth = "222px";
 const defaultTitleHeight = "28px";
@@ -349,6 +348,7 @@ export class DropDown<ItemType>
 
 		const items = this.state.filteredOptions;
 		let rendererMap: DropDownRendererMap<ItemType> | { [key: string]: React.ReactNode };
+		// @ts-ignore
 		let _children: MenuItemWrapper<RendererMap, string>[];
 
 		if (this.isSingleRendererAndOptions(this.props.renderersAndOptions)) {
@@ -376,15 +376,16 @@ export class DropDown<ItemType>
 
 		return <div style={listContainerStyle}>
 			<div className={listComplementary.listClassName}>
-				{items.length === 0 ?
-					<div style={{...listComplementary.listStyle || (!listComplementary.listClassName ? listStyle : {}), alignItems: "center", opacity: 0.5}}>No
-						options</div>
-					:
-					<MultiTypeTree id={this.props.id}
-					               menu={{rendererMap, _children}}
-					               root={{rendererMap, _children}}
-					               childrenContainerStyle={() => listComplementary.listStyle || (!listComplementary.listClassName ? listStyle : {})}/>
-				}
+				TEMPORARILY DISABLED
+				{/*{items.length === 0 ?*/}
+				{/*	<div style={{...listComplementary.listStyle || (!listComplementary.listClassName ? listStyle : {}), alignItems: "center", opacity: 0.5}}>No*/}
+				{/*		options</div>*/}
+				{/*	:*/}
+				{/*	<MultiTypeTree id={this.props.id}*/}
+				{/*	               menu={{rendererMap, _children}}*/}
+				{/*	               root={{rendererMap, _children}}*/}
+				{/*	               childrenContainerStyle={() => listComplementary.listStyle || (!listComplementary.listClassName ? listStyle : {})}/>*/}
+				{/*}*/}
 			</div>
 		</div>
 	}

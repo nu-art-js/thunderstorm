@@ -17,14 +17,20 @@
  */
 
 import * as React from "react";
-import {Example_KeyboardOnTree} from "../keyboard-listener/Example_KeyboardOnTree";
+import {Example_VerySimpleTree} from "../keyboard-listener/Example_VerySimpleTree";
 import {Example_Menu} from "../Example_Menu";
 import {Example_DropDown} from "../Example_DropDown";
+import {Example_DataTree} from "../keyboard-listener/Example_DataTree";
+import {Example_FakeMenu} from "../keyboard-listener/Example_FakeMenu";
 
-export const TreeRefactorPage = ()=> (<>
-	<Example_KeyboardOnTree/>
-	<hr style={{width:"100%"}}/>
+export const TreeRefactorPage = () => (<>
+	<Example_DataTree/>
+	<hr style={{width: "100%"}}/>
+	<Example_FakeMenu/>
+	<hr style={{width: "100%"}}/>
+	<Example_VerySimpleTree/>
+	<hr style={{width: "100%"}}/>
 	<Example_Menu/>
-	<hr style={{width:"100%"}}/>
+	<hr style={{width: "100%"}}/>
 	<Example_DropDown/>
 </>);

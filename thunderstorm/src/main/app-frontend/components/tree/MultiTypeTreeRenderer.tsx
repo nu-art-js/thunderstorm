@@ -26,12 +26,11 @@ import {
 	Expanded
 } from "../treeicons";
 import {MenuItemWrapper} from "../../modules/menu/MenuModule";
-import {MultiTypeTree} from "./MultiTypeTree";
-import {BaseTree} from "./BaseTree";
 import {stopPropagation} from "../../utils/tools";
+import {RendererMap} from "../../types/renderer-map";
 
 
-export const DefaultGenericRenderer = (tree: BaseTree) => {
+export const GenericRenderer_Default = (rendererMap: RendererMap) => {
 
 	const renderCollapse = (expanded: boolean) => {
 		const Comp = expanded ? Expanded : Collapsed;
@@ -43,7 +42,7 @@ export const DefaultGenericRenderer = (tree: BaseTree) => {
 		const item = itemWrapper.item;
 		const type = itemWrapper.type;
 		// props.item=item;
-		const MyRenderer = (tree as MultiTypeTree).props.menu.rendererMap[type as string];
+		const MyRenderer = rendererMap[type as string];
 		// @ts-ignore
 		const hasChildren = itemWrapper.length;
 

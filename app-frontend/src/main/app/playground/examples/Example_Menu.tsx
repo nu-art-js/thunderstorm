@@ -5,7 +5,6 @@ import {
 	MenuAndButton,
 	MenuItemWrapper,
 	Renderer,
-	MultiTypeTree
 } from "@nu-art/thunderstorm/frontend";
 import {
 	_keys,
@@ -66,7 +65,8 @@ export class Example_Menu
 
 			<div>
 				<h2>Here is the same menu but as a component</h2>
-				<MultiTypeTree menu={menu} root={menu}/>
+				TEMPORARILY DISABLED
+				{/*<MultiTypeTree menu={menu} root={menu}/>*/}
 			</div>
 		</div>
 	}
