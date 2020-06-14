@@ -33,7 +33,6 @@ import {
 } from "@nu-art/user-account/frontend";
 import {registerRoutes} from "./Routes";
 import {BugReport} from '@nu-art/bug-report/frontend';
-import {BoundaryError} from "./components/ErrorBoundary";
 
 export class App
 	extends BaseComponent<WrapperProps>
@@ -50,19 +49,17 @@ export class App
 	};
 
 
-
 	render() {
 		registerRoutes();
 		return (
 			<div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
-				<BoundaryError>
-				{RoutingModule.getRoutesMap()}
+				<BugReport>
+					{RoutingModule.getRoutesMap()}
+				</BugReport>
 				<VersionOnScreen/>
 				<Dialog/>
 				<Toaster/>
 				<PopupMenu/>
-				</BoundaryError>
-				<BugReport/>
 			</div>);
 	}
 }
