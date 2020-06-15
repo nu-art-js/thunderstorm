@@ -67,7 +67,7 @@ export class Example_VerySimpleTree
 		adapter.getTreeNodeRenderer = () => Example_NodeRenderer
 
 		adapter.data = this.elements;
-		return <>
+		return <div>
 			<h1>Very Simple Tree</h1>
 			<Tree
 				id={"VerySimpleTree"}
@@ -78,7 +78,7 @@ export class Example_VerySimpleTree
 				onBlur={() => console.log("Blurred")}
 			/>
 			<h4>{this.state.actionMessage}</h4>
-		</>
+		</div>
 	}
 }
 

@@ -161,9 +161,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			expanded: expanded,
 			focused: path === this.state.focused,
 		}
-		return (
-			<TreeNodeRenderer {...node}/>
-		);
+		return (<TreeNodeRenderer {...node}/>);
 	}
 
 	private getChildrenContainerStyle = (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentContainerRef?: HTMLDivElement): CSSProperties => {

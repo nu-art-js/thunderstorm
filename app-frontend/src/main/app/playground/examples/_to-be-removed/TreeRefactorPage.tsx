@@ -22,13 +22,16 @@ import {Example_Menu} from "../Example_Menu";
 import {Example_DropDown} from "../Example_DropDown";
 import {Example_DataTree} from "../keyboard-listener/Example_DataTree";
 import {Example_FakeMenu} from "../keyboard-listener/Example_FakeMenu";
+import {COLORS} from "@res/colors";
 
 export const TreeRefactorPage = () => (<>
-	<Example_DataTree/>
-	<hr style={{width: "100%"}}/>
-	<Example_FakeMenu/>
-	<hr style={{width: "100%"}}/>
-	<Example_VerySimpleTree/>
+	<div className="ll_h_c match_width" style={{justifyContent:"space-between"}}>
+		<Example_DataTree/>
+		<div style={{height: "100%", width: "1px", background: COLORS.amber()}}/>
+		<Example_FakeMenu/>
+		<div style={{height: "100%", width: "1px", background: COLORS.amber()}}/>
+		<Example_VerySimpleTree/>
+	</div>
 	<hr style={{width: "100%"}}/>
 	<Example_Menu/>
 	<hr style={{width: "100%"}}/>

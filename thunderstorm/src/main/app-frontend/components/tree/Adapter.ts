@@ -21,14 +21,30 @@
 
 import * as React from "react";
 import {_keys,} from "@nu-art/ts-common";
-import {MenuItemWrapper} from "../../modules/menu/MenuModule";
 import {TreeNode} from "./types";
-import {SimpleTreeNodeRenderer} from "./DefaultTreeRenderer";
+import {
+	SimpleNodeRenderer,
+	SimpleTreeNodeRenderer
+} from "./DefaultTreeRenderer";
+import {
+	InferItemType,
+	RendererMap
+} from "../../types/renderer-map";
 
 export type _Renderer<Item> = React.ComponentType<Item>
 
 export type _RendererMap<T extends any = any> = {
 	[k: string]: _Renderer<T>
+}
+
+export type ItemToRender<Rm extends RendererMap, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
+	item: Item
+	type: K
+}
+
+export type _GenericRenderer<Rm extends RendererMap, ItemType extends ItemToRender<Rm> = ItemToRender<Rm>> = {
+	rendererMap: Rm
+	items: ItemType[]
 }
 
 export class Adapter<T extends any = any> {
@@ -44,12 +60,12 @@ export class Adapter<T extends any = any> {
 		return true;
 	}
 
-	resolveItemType(obj: T, key: string): number | string {
-		return 0;
-	}
-
 	getTreeNodeRenderer(): _Renderer<TreeNode> {
 		return SimpleTreeNodeRenderer;
+	}
+
+	resolveRenderer(obj: T, propKey: string): _Renderer<any> {
+		return SimpleNodeRenderer;
 	}
 
 	getChildren(obj: any) {
@@ -57,7 +73,7 @@ export class Adapter<T extends any = any> {
 	}
 
 	getFilteredChildren(obj: any) {
-		if (obj === undefined || obj == null)
+		if (obj === undefined || obj === null)
 			return [];
 
 		if (typeof obj !== "object" && !Array.isArray(obj))
@@ -68,40 +84,5 @@ export class Adapter<T extends any = any> {
 
 	adjust(obj: T) {
 		return {data: obj, deltaPath: ""};
-	}
-}
-
-export class MultiTypeAdapter
-	extends Adapter {
-
-
-	constructor() {
-		super();
-		this.hideRoot = true;
-	}
-
-	filter(obj: any, key: keyof any): boolean {
-		return key !== "item" && key !== 'type';
-	}
-
-	adjust(obj: any): { data: any; deltaPath: string } {
-		if (!_keys(obj).find(key => key === "_children"))
-			return {data: obj, deltaPath: ""};
-
-		// @ts-ignore
-		const objElement = obj['_children'];
-		// @ts-ignore
-		objElement.type = obj.type;
-		// @ts-ignore
-		objElement.item = obj.item;
-
-		// @ts-ignore
-		return {data: objElement, deltaPath: '_children'};
-
-	}
-
-	resolveItemType(obj: any): number | string {
-		const itemWrapper = obj as MenuItemWrapper<any, any>;
-		return itemWrapper.type;
 	}
 }

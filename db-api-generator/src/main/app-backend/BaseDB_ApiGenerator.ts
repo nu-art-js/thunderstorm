@@ -207,7 +207,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	async upsertAll(instances: UType[]): Promise<DBType[]> {
 		const writes: DBType[] = [];
-		await batchAction(instances, 500, async chunked => {
+		await batchAction(instances, 500, async (chunked: UType[]) => {
 			addAllItemToArray(writes, await this.upsertAllBatched(chunked));
 		});
 		return writes;

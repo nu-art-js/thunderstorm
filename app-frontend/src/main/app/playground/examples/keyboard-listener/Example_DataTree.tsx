@@ -67,7 +67,7 @@ export class Example_DataTree
 		adapter.getTreeNodeRenderer = () => Example_ColorfulNodeRenderer
 
 		adapter.data = this.elements;
-		return <>
+		return <div>
 			<h1>Data Tree</h1>
 			<Tree
 
@@ -79,7 +79,7 @@ export class Example_DataTree
 				onBlur={() => console.log("Blurred")}
 			/>
 			<h4>{this.state.actionMessage}</h4>
-		</>
+		</div>
 	}
 }
 
