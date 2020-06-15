@@ -98,7 +98,10 @@ export class FirestoreTransaction {
 		return ref;
 	}
 
-	async upsertAll<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]) {
+	async upsertAll<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<Type[]> {
+		if (instances.length > 500)
+			throw new BadImplementationException('Firestore transaction supports maximum 500 at a time');
+
 		return (await this.upsertAll_Read(collection, instances))();
 	}
 
@@ -122,10 +125,17 @@ export class FirestoreTransaction {
 	}
 
 	async delete<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
+		await (await this.delete_Read(collection, ourQuery))()
+	}
+
+	async delete_Read<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
 		const docs = await this._query(collection, ourQuery);
-		const toReturn = docs.map(doc => doc.data() as Type);
-		await Promise.all(docs.map(async (doc) => this.transaction.delete(doc.ref as admin.firestore.DocumentReference)));
-		return toReturn;
+
+		return async () => {
+			const toReturn = docs.map(doc => doc.data() as Type);
+			await Promise.all(docs.map(async (doc) => this.transaction.delete(doc.ref as admin.firestore.DocumentReference)));
+			return toReturn;
+		}
 	}
 
 	async deleteItem<Type extends object>(collection: FirestoreCollection<Type>, instance: Type) {
