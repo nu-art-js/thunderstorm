@@ -25,9 +25,12 @@ import {
 	TreeNode,
 	ItemToRender,
 	_Renderer,
-    stopPropagation,
+	stopPropagation,
 } from "@nu-art/thunderstorm/frontend";
-import {_keys} from "@nu-art/ts-common";
+import {
+	_keys,
+	__stringify
+} from "@nu-art/ts-common";
 
 const menu = {
 	_children: [
@@ -84,6 +87,7 @@ class MultiTypeAdapter<Rm extends _RendererMap, T = InferRenderingType<Rm>>
 	}
 
 	adjust(obj: any): { data: any; deltaPath: string } {
+		console.log(`adjust: ${JSON.stringify(obj)}`)
 		if (!_keys(obj).find(key => key === "_children"))
 			return {data: obj, deltaPath: ""};
 
@@ -161,21 +165,15 @@ class ItemRenderer
 	}
 
 	render() {
-		let label;
-		let item = this.props.item;
-		if (typeof item !== "object")
-			label = `${item}`;
-		else if (Object.keys(item).length === 0)
-			label = "{}";
-		else
-			label = "";
-
+		let value = this.props.item;
+		if (typeof value === "object")
+			value = __stringify(value);
 
 		return <div
 			id={this.props.path}
 			className='clickable'
 			onClick={this.props.onClick}
-			style={{backgroundColor: this.props.focusedColor(this.props), userSelect: "none"}}>{label}</div>
+			style={{backgroundColor: this.props.focusedColor(this.props), userSelect: "none"}}>{`${value}`}</div>
 	}
 }
 
@@ -220,15 +218,16 @@ class Example_NodeRenderer
 	}
 
 	render() {
-		const Renderer = this.props.adapter.resolveRenderer(this.props.item.item, this.props.item.type);
+		let item = this.props.item.item;
+		const Renderer = this.props.adapter.resolveRenderer(item, this.props.item.type);
 		if (!Renderer)
 			return "";
 
-		const hasChildren = this.props.item.item.length;
+		const hasChildren = Array.isArray(this.props.item) && this.props.item.length > 0;
 
 		return (
 			<div className="ll_h_c">
-				<Renderer {...this.props} item={this.props.item.item}/>
+				<Renderer {...this.props} item={item}/>
 				{hasChildren && <div
 					id={this.props.path}
 					onMouseDown={stopPropagation}

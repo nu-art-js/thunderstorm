@@ -23,7 +23,8 @@ import * as React from 'react';
 import {CSSProperties} from 'react';
 import {
 	_keys,
-	removeItemFromArray
+	removeItemFromArray,
+    __stringify
 } from "@nu-art/ts-common";
 import {
 	TreeNode,
@@ -105,7 +106,6 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 		if (renderChildren)
 			filteredKeys = this.props.adapter.getFilteredChildren(data);
-
 
 		const nodeRefResolver = (_ref: HTMLDivElement) => {
 			if (this.rendererRefs[nodePath])
