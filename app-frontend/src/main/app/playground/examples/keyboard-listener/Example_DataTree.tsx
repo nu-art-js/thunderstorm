@@ -136,9 +136,10 @@ class Example_ColorfulNodeRenderer
 		}
 
 		let value: any;
-		if (typeof this.props.item !== "object") {
-			value = this.props.item;
-		} else if (Object.keys(this.props.item).length === 0)
+		let item = this.props.item;
+		if (typeof item !== "object")
+			value = item;
+		else if (Object.keys(item).length === 0)
 			value = "{}";
 		else
 			value = "";
