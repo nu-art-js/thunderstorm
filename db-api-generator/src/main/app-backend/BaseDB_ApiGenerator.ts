@@ -20,11 +20,14 @@
 import {
 	Clause_Where,
 	DB_Object,
-	FirestoreQuery,
 	FilterKeys,
+	FirestoreQuery,
 } from "@nu-art/firebase";
 import {
+	__stringify,
+	addAllItemToArray,
 	BadImplementationException,
+	batchAction,
 	generateHex,
 	isErrorOfType,
 	merge,
@@ -33,8 +36,7 @@ import {
 	validate,
 	validateRegexp,
 	ValidationException,
-	ValidatorTypeResolver,
-	__stringify
+	ValidatorTypeResolver
 } from "@nu-art/ts-common";
 import {
 	ServerApi_Create,
@@ -50,8 +52,8 @@ import {
 import {
 	FirebaseModule,
 	FirestoreCollection,
-	FirestoreTransaction,
 	FirestoreInterface,
+	FirestoreTransaction,
 } from "@nu-art/firebase/backend";
 import {
 	BadInputErrorBody,
@@ -195,7 +197,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	}
 
 	async upsert(instance: UType) {
-		return await this.collection.runInTransaction(async (transaction) => {
+		return this.collection.runInTransaction(async (transaction) => {
 			const dbInstance: DBType = {...instance, _id: instance._id || generateHex(idLength)} as unknown as DBType;
 			await this.validateImpl(dbInstance);
 			await this.assertUniqueness(transaction, dbInstance);
@@ -203,8 +205,30 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
+	async upsertAll(instances: UType[]): Promise<DBType[]> {
+		const writes: DBType[] = [];
+		await batchAction(instances, 500, async chunked => {
+			addAllItemToArray(writes, await this.upsertAllBatched(chunked));
+		});
+		return writes;
+	}
+
+	async upsertAllBatched(instances: UType[]): Promise<DBType[]> {
+		return this.collection.runInTransaction(async (transaction) => {
+			const dbInstances: DBType[] = instances.map(instance => ({...instance, _id: instance._id || generateHex(idLength)} as unknown as DBType));
+			await Promise.all(dbInstances.map(async dbInstance => this.validateImpl(dbInstance)));
+			await Promise.all(dbInstances.map(async dbInstance => this.assertUniqueness(transaction, dbInstance)));
+
+			return this.upsertAllImpl(transaction, dbInstances);
+		});
+	}
+
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType): Promise<DBType> {
 		return transaction.upsert(this.collection, dbInstance);
+	}
+
+	protected async upsertAllImpl(transaction: FirestoreTransaction, dbInstances: DBType[]): Promise<DBType[]> {
+		return transaction.upsertAll(this.collection, dbInstances);
 	}
 
 	async deleteUnique(_id: string) {
