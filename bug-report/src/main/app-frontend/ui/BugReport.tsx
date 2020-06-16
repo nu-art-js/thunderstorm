@@ -20,12 +20,12 @@
 import * as React from "react";
 import {BugReportModule} from "../modules/BugReportModule";
 import {
-    Dialog_Builder,
-    DialogButton_Cancel,
-    DialogButton_Submit,
-    DialogModule,
-    TS_Input,
-    TS_TextArea
+	Dialog_Builder,
+	DialogButton_Cancel,
+	DialogButton_Submit,
+	DialogModule,
+	TS_Input,
+	TS_TextArea
 } from "@nu-art/thunderstorm/frontend";
 
 type Props = {
@@ -45,9 +45,30 @@ const style: React.CSSProperties = {
 	color: "white",
 	borderRadius: "50%"
 };
+type State = {
+	error: Error | null,
+	errorInfo: React.ErrorInfo | null
+}
 
 export class BugReport
-	extends React.Component<Props> {
+	extends React.Component<Props, State> {
+
+	constructor(props: {}) {
+		super(props);
+		this.state = {error: null, errorInfo: null};
+	}
+
+	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+		this.setState({
+			              error: error,
+			              errorInfo: errorInfo
+		              })
+	}
+
+	onSubmitAutomatic = (withJira: boolean = false) => {
+		BugReportModule.sendBugReport("Automatic submission", "these logs were triggered by a UI failure", withJira);
+		DialogModule.close();
+	};
 
 	showAppConfirmationDialogExample = () => {
 		const title = "Submit bug report";
@@ -89,11 +110,29 @@ export class BugReport
 	};
 
 	render() {
+		if (this.state.errorInfo) {
+			this.onSubmitAutomatic()
+			return (
+				<div>
+					<h2>Something went wrong.</h2>
+					<details style={{whiteSpace: 'pre-wrap'}}>
+						{this.state.error && this.state.error.toString()}
+						<br/>
+						{this.state.errorInfo.componentStack}
+					</details>
+					<button style={style} onClick={() => window.location.reload()}>reload!</button>
+				</div>
+			);
+		}
 		return (
-			<div onClick={this.showAppConfirmationDialogExample}>
-				{this.props.component ||
-				<button style={style}>+</button>}
-			</div>
+			<>
+				{this.props.children}
+				<div
+					onClick={this.showAppConfirmationDialogExample}>
+					{this.props.component ||
+					<button style={style}>+</button>}
+				</div>
+			</>
 		);
 	}
 }
