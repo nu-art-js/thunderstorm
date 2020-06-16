@@ -85,10 +85,10 @@ class RoutingModule_Class
 	}
 
 	goToRoute(key: string, params?: RouteParams) {
-		const route = RoutingModule.getRoute(key);
-		const pathname = params ? route.compose(params) : route.path;
+		const pathname = RoutingModule.getPath(key);
+		const search = RoutePath.composeStringQuery(params);
 
-		BrowserHistoryModule.push({pathname});
+		BrowserHistoryModule.push({pathname, search});
 	}
 
 	redirect(key: string) {
