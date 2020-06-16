@@ -45,6 +45,7 @@ export const testNumber9 = 99;
 
 export const testCollection = new FirestoreCollection_Tester<FB_Type>("test-collection");
 export const testCollectionWithUnique = new FirestoreCollection_Tester<FB_Type>("test-collection-unique", ["numeric"]);
+export const simpleTypeCollection = new FirestoreCollection_Tester<{label: string, deleteId: string}>("test-collection-label");
 
 export const testItem1: FB_ArrayType = {key: testString1, value: testNumber1};
 export const testItem2: FB_ArrayType = {key: testString2, value: testNumber2};
