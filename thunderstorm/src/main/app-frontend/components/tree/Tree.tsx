@@ -33,7 +33,8 @@ import {KeyboardListener} from "../../tools/KeyboardListener";
 import {stopPropagation} from '../../utils/tools';
 import {
 	_Renderer,
-	Adapter
+	Adapter,
+	TreeRendererProps
 } from "./Adapter";
 
 
@@ -146,11 +147,11 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			</div>);
 	}
 
-	private renderItem<T extends object = object>(item: T, path: string, key: string, expanded: boolean) {
+	private renderItem(item: any, path: string, key: string, expanded: boolean) {
 		if (this.props.adapter.hideRoot && path.length === 1)
 			return null;
 
-		const TreeNodeRenderer: _Renderer<TreeNode> = this.props.adapter.getTreeNodeRenderer();
+		const TreeNodeRenderer: _Renderer<TreeRendererProps> = this.props.adapter.getTreeNodeRenderer();
 		const node: TreeNode = {
 			adapter: this.props.adapter,
 			propKey: key,
@@ -161,7 +162,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			expanded: expanded,
 			focused: path === this.state.focused,
 		}
-		return (<TreeNodeRenderer {...node}/>);
+		return (<TreeNodeRenderer item={item} node={node}/>);
 	}
 
 	private getChildrenContainerStyle = (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentContainerRef?: HTMLDivElement): CSSProperties => {

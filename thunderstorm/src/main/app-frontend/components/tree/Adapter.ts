@@ -26,23 +26,22 @@ import {
 	SimpleNodeRenderer,
 	SimpleTreeNodeRenderer
 } from "./DefaultTreeRenderer";
-import {
-	InferItemType,
-	RendererMap
-} from "../../types/renderer-map";
+import {InferItemType} from "../../types/renderer-map";
 
-export type _Renderer<Item> = React.ComponentType<Item>
+export type TreeRendererProps<Item extends any = any, MoreProps extends object = {}> = { item: Item, node: TreeNode } & MoreProps
+export type _Renderer<Item, MoreProps extends object = {}> = React.ComponentType<TreeRendererProps<Item, MoreProps>>
 
 export type _RendererMap<T extends any = any> = {
 	[k: string]: _Renderer<T>
 }
 
-export type ItemToRender<Rm extends RendererMap, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
+export type ItemToRender<Rm extends _RendererMap, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
+	_children?: ItemToRender<Rm>[]
 	item: Item
 	type: K
 }
 
-export type _GenericRenderer<Rm extends RendererMap, ItemType extends ItemToRender<Rm> = ItemToRender<Rm>> = {
+export type _GenericRenderer<Rm extends _RendererMap, ItemType extends ItemToRender<Rm> = ItemToRender<Rm>> = {
 	rendererMap: Rm
 	items: ItemType[]
 }
@@ -60,7 +59,7 @@ export class Adapter<T extends any = any> {
 		return true;
 	}
 
-	getTreeNodeRenderer(): _Renderer<TreeNode> {
+	getTreeNodeRenderer(): _Renderer<TreeRendererProps> {
 		return SimpleTreeNodeRenderer;
 	}
 

@@ -18,50 +18,20 @@
 
 import * as React from "react";
 import {
+	_Renderer,
 	_RendererMap,
 	Adapter,
 	BaseComponent,
-	Tree,
-	TreeNode,
 	ItemToRender,
-	_Renderer,
 	stopPropagation,
+	Tree,
+    TreeRendererProps,
 } from "@nu-art/thunderstorm/frontend";
 import {
-	_keys,
-	__stringify
+	__stringify,
+	_keys
 } from "@nu-art/ts-common";
 
-const menu = {
-	_children: [
-		{
-			item: 42,
-			type: "number"
-		},
-		{
-			item: "a string",
-			type: "string"
-		},
-		{
-			item: true,
-			type: "boolean"
-		},
-		{
-			item: "Sub Menu",
-			type: "submenu",
-			_children: [
-				{
-					item: [10, 20, 30, 40, 100],
-					type: "array"
-				},
-				{
-					item: {key: "value"},
-					type: "object"
-				},
-			],
-		},
-	]
-}
 
 type InferRenderingType<Rm> = Rm extends _RendererMap<infer I> ? I : never;
 
@@ -117,7 +87,7 @@ class MultiTypeAdapter<Rm extends _RendererMap, T = InferRenderingType<Rm>>
 	// 	return this.getChildren(obj);//.filter((__key: any) => this.filter(obj, __key as keyof T))
 	// }
 
-	resolveRenderer(obj: T, propKey: string): _Renderer<any> {
+	resolveRenderer(obj: T, propKey: string): _Renderer<TreeRendererProps> {
 		return this.rendererMap[propKey];
 	}
 }
@@ -128,7 +98,8 @@ export class Example_FakeMenu
 	state = {actionMessage: "No action yet"};
 
 	render() {
-		const renderMap: _RendererMap<Created> = {
+
+		const renderMap: _RendererMap<any> = {
 			"number": ItemRenderer_Number,
 			"string": ItemRenderer_String,
 			"boolean": ItemRenderer_Boolean,
@@ -136,6 +107,38 @@ export class Example_FakeMenu
 			"object": ItemRenderer_Fallback,
 			"submenu": ItemRenderer_Fallback,
 		}
+
+		const menu: ItemToRender<_RendererMap<any>> = {
+			_children: [
+				{
+					item: 42,
+					type: "number"
+				},
+				{
+					item: "a string",
+					type: "string"
+				},
+				{
+					item: true,
+					type: "boolean"
+				},
+				{
+					item: "Sub Menu",
+					type: "submenu",
+					_children: [
+						{
+							item: [10, 20, 30, 40, 100],
+							type: "array"
+						},
+						{
+							item: {key: "value"},
+							type: "object"
+						},
+					],
+				},
+			]
+		}
+
 		const adapter = new MultiTypeAdapter(renderMap);
 
 		adapter.getTreeNodeRenderer = () => Example_NodeRenderer
@@ -156,70 +159,67 @@ export class Example_FakeMenu
 	}
 }
 
-type Created = TreeNode & { focusedColor: (props: TreeNode) => string };
-
-class ItemRenderer
-	extends React.Component<Created> {
-	constructor(props: Created) {
+class ItemRenderer<Type>
+	extends React.Component<TreeRendererProps<Type>> {
+	constructor(props: TreeRendererProps<Type>) {
 		super(props);
 	}
 
-	render() {
-		let value = this.props.item;
-		if (typeof value === "object")
-			value = __stringify(value);
+	renderItem(moreProps: { focusedColor: string }) {
+		let value = __stringify(this.props.item);
 
 		return <div
-			id={this.props.path}
+			id={this.props.node.path}
 			className='clickable'
-			onClick={this.props.onClick}
-			style={{backgroundColor: this.props.focusedColor(this.props), userSelect: "none"}}>{`${value}`}</div>
+			onClick={this.props.node.onClick}
+			style={{backgroundColor: moreProps.focusedColor, userSelect: "none"}}>{`${value}`}</div>
 	}
 }
 
 class ItemRenderer_Boolean
-	extends ItemRenderer {
+	extends ItemRenderer<boolean> {
 
-	static defaultProps = {
-		focusedColor: (props: TreeNode) => props.focused ? "red" : "salmon"
+	render() {
+		return this.renderItem({focusedColor: this.props.node.focused ? "red" : "salmon"})
 	}
 }
 
 class ItemRenderer_Fallback
-	extends ItemRenderer {
+	extends ItemRenderer<any> {
 
-	static defaultProps = {
-		focusedColor: (props: TreeNode) => props.focused ? "lightgray" : "unset"
+	render() {
+		return this.renderItem({focusedColor: this.props.node.focused ? "lightgray" : "unset"})
 	}
 }
 
 class ItemRenderer_String
-	extends ItemRenderer {
+	extends ItemRenderer<string> {
 
-	static defaultProps = {
-		focusedColor: (props: TreeNode) => props.focused ? "lime" : "cyan"
+	render() {
+		return this.renderItem({focusedColor: this.props.node.focused ? "lime" : "cyan"})
 	}
 }
 
 class ItemRenderer_Number
-	extends ItemRenderer {
-	static defaultProps = {
-		focusedColor: (props: TreeNode) => props.focused ? "lightblue" : "magenta"
+	extends ItemRenderer<number> {
+
+	render() {
+		return this.renderItem({focusedColor: this.props.node.focused ? "lightblue" : "magenta"})
 	}
 
 }
 
 
 class Example_NodeRenderer
-	extends React.Component<TreeNode> {
+	extends React.Component<TreeRendererProps> {
 
-	constructor(props: TreeNode) {
+	constructor(props: TreeRendererProps) {
 		super(props);
 	}
 
 	render() {
 		let item = this.props.item.item;
-		const Renderer = this.props.adapter.resolveRenderer(item, this.props.item.type);
+		const Renderer = this.props.node.adapter.resolveRenderer(item, this.props.item.type);
 		if (!Renderer)
 			return "";
 
@@ -227,13 +227,13 @@ class Example_NodeRenderer
 
 		return (
 			<div className="ll_h_c">
-				<Renderer {...this.props} item={item}/>
+				<Renderer node={this.props.node} item={item}/>
 				{hasChildren && <div
-					id={this.props.path}
+					id={this.props.node.path}
 					onMouseDown={stopPropagation}
-					onMouseUp={(e) => this.props.expandToggler(e, !this.props.expanded)}
+					onMouseUp={(e) => this.props.node.expandToggler(e, !this.props.node.expanded)}
 					style={{cursor: "pointer", marginRight: 10}}
-				>{this.props.expanded ? "+" : "-"}</div>}
+				>{this.props.node.expanded ? "+" : "-"}</div>}
 			</div>
 		);
 	};
