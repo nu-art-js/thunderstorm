@@ -29,6 +29,7 @@ import {ReactElement} from "react";
 import {
 	defaultNavLinkNode,
 	defaultRouteNode,
+	RouteParams,
 	RoutePath
 } from "./route";
 import {
@@ -79,12 +80,15 @@ class RoutingModule_Class
 		return this.routes[key];
 	}
 
-	getPath(key:string) {
+	getPath(key: string) {
 		return RoutingModule.getRoute(key).path
 	}
 
-	goToRoute(key: string) {
-		BrowserHistoryModule.push({pathname: RoutingModule.getPath(key)})
+	goToRoute(key: string, params?: RouteParams) {
+		const route = RoutingModule.getRoute(key);
+		const pathname = params ? route.compose(params) : route.path;
+
+		BrowserHistoryModule.push({pathname});
 	}
 
 	redirect(key: string) {

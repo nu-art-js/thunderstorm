@@ -26,9 +26,9 @@ import {__scenario} from "@nu-art/testelot";
 import {testDatabase} from "./database/test-database";
 
 const mainScenario = __scenario("Firebase testing");
-mainScenario.add(testDatabase)
+// mainScenario.add(testDatabase)
 mainScenario.add(testCollections);
-mainScenario.add(testStorage);
+// mainScenario.add(testStorage);
 // mainScenario.add(testFirestoreBackup);
 module.exports = new FirebaseTester()
 	.addModules(FirebaseModule, TestModuleThatUsesCollection, ProjectFirestoreBackup)
