@@ -20,15 +20,13 @@
  */
 
 import * as React from "react";
-import {
-	TreeNode,
-} from "./types";
+import {TreeRendererProps} from "./Adapter";
 
 export class SimpleTreeNodeRenderer
-	extends React.Component<TreeNode> {
+	extends React.Component<TreeRendererProps> {
 
 
-	constructor(props: TreeNode) {
+	constructor(props: TreeRendererProps) {
 		super(props);
 	}
 
@@ -38,22 +36,22 @@ export class SimpleTreeNodeRenderer
 			toDisplay = "";
 		else if (Object.keys(this.props.item).length === 0)
 			toDisplay = "";
-		else if (this.props.expanded)
+		else if (this.props.node.expanded)
 			toDisplay = "-";
 		else
 			toDisplay = "+";
 
-		return <div className={`clickable`} id={this.props.path} onClick={this.props.expandToggler} style={{width: "15px"}}>{toDisplay}</div>
+		return <div className={`clickable`} id={this.props.node.path} onClick={this.props.node.expandToggler} style={{width: "15px"}}>{toDisplay}</div>
 	}
 
 	render() {
 		return (<div className="ll_h_c">
 			{this.renderCollapse()}
 			<div
-				id={this.props.path}
+				id={this.props.node.path}
 				className='clickable'
-				onClick={this.props.onClick}
-				style={{backgroundColor: this.props.focused ? "red" : "salmon", userSelect: "none"}}>
+				onClick={this.props.node.onClick}
+				style={{backgroundColor: this.props.node.focused ? "red" : "salmon", userSelect: "none"}}>
 
 				<SimpleNodeRenderer {...this.props}/>
 			</div>
@@ -62,11 +60,11 @@ export class SimpleTreeNodeRenderer
 }
 
 export class SimpleNodeRenderer
-	extends React.Component<TreeNode> {
+	extends React.Component<TreeRendererProps> {
 
 	render() {
 		let label;
-		let item = this.props.item;
+		const item = this.props.item;
 		if (typeof item !== "object")
 			label = ` : ${item}`;
 		else if (Object.keys(item).length === 0)
@@ -74,6 +72,6 @@ export class SimpleNodeRenderer
 		else
 			label = "";
 
-		return (this.props.propKey || "root") + label
+		return (this.props.node.propKey || "root") + label
 	}
 }
