@@ -28,10 +28,10 @@ import {scenarioCollectionDelete} from "./test/delete";
 import {scenarioCollectionDeleteInTransaction} from "./test/delete-in-transaction";
 
 export const testCollections = __scenario("test-collections");
-// testCollections.add(scenarioCollectionPatch);
-// testCollections.add(scenarioCollectionDelete);
+testCollections.add(scenarioCollectionPatch);
+testCollections.add(scenarioCollectionDelete);
 testCollections.add(scenarioCollectionDeleteInTransaction);
-// testCollections.add(scenarioInsert);
-// testCollections.add(scenarioInsertAll);
-// testCollections.add(scenarioQueryUnique);
-// testCollections.add(scenarioQuery);
+testCollections.add(scenarioInsert);
+testCollections.add(scenarioInsertAll);
+testCollections.add(scenarioQueryUnique);
+testCollections.add(scenarioQuery);

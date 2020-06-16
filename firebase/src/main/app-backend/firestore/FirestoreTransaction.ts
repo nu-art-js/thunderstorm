@@ -131,6 +131,9 @@ export class FirestoreTransaction {
 	async delete_Read<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
 		const docs = await this._query(collection, ourQuery);
 
+		if(docs.length > 500)
+			throw new BadImplementationException(`Trying to delete ${docs.length} documents. Not allowed more then 5oo in a single transaction`);
+
 		return async () => {
 			const toReturn = docs.map(doc => doc.data() as Type);
 			await Promise.all(docs.map(async (doc) => this.transaction.delete(doc.ref as admin.firestore.DocumentReference)));
