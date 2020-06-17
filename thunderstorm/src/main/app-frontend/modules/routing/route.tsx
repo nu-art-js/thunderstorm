@@ -76,6 +76,12 @@ export class RoutePath {
 	}
 
 	compose(params?: RouteParams) {
+		const paramsAsString = RoutePath.composeStringQuery(params);
+
+		return this.path + paramsAsString;
+	}
+
+	static composeStringQuery(params?: RouteParams) {
 		let paramsAsString = "";
 
 		if (params)
@@ -90,7 +96,7 @@ export class RoutePath {
 		if (paramsAsString.length > 0)
 			paramsAsString = `?${paramsAsString.substring(1)}`;
 
-		return this.path + paramsAsString;
+		return paramsAsString;
 	}
 }
 

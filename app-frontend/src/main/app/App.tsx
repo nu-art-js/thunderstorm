@@ -48,17 +48,18 @@ export class App
 		console.log('status update', status);
 	};
 
+
 	render() {
 		registerRoutes();
 		return (
 			<div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
-				{RoutingModule.getRoutesMap()}
+				<BugReport>
+					{RoutingModule.getRoutesMap()}
+				</BugReport>
 				<VersionOnScreen/>
-
 				<Dialog/>
 				<Toaster/>
 				<PopupMenu/>
-				<BugReport/>
 			</div>);
 	}
 }

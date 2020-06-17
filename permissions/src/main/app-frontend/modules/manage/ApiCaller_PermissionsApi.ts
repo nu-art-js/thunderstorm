@@ -19,6 +19,7 @@
 import {DB_PermissionApi} from "../../../index";
 import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
 import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
+import {TypedMap} from "@nu-art/ts-common";
 
 
 export interface OnPermissionsApisLoaded {
@@ -29,7 +30,7 @@ const dispatch_onPermissionsApisLoaded = new ThunderDispatcher<OnPermissionsApis
 
 export class PermissionsApiModule_Class
 	extends BaseDB_ApiGeneratorCaller<DB_PermissionApi> {
-	private apis: { [k: string]: DB_PermissionApi[] } = {};
+	private apis: TypedMap<DB_PermissionApi[]> = {};
 
 	constructor() {
 		super({key: "level", relativeUrl: "/v1/permissions/manage/api"});
@@ -54,13 +55,12 @@ export class PermissionsApiModule_Class
 	}
 
 	protected async onQueryReturned(response: DB_PermissionApi[]): Promise<void> {
-		this.apis = {};
+		const newApis: TypedMap<DB_PermissionApi[]> = {};
 		response.forEach(api => {
-			const apiArray = this.apis[api.projectId] || [];
+			const apiArray = newApis[api.projectId] || (newApis[api.projectId] = []);
 			apiArray.push(api);
-			this.apis[api.projectId] = apiArray
 		});
-
+		this.apis = newApis;
 		dispatch_onPermissionsApisLoaded.dispatchUI([]);
 	}
 
