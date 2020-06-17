@@ -46,14 +46,9 @@ export class Playground
 
 	constructor(props: PlaygroundProps) {
 		super(props);
-		const queryParam = BrowserHistoryModule.getQueryParams()[PLAYGROUND]
-		if (queryParam) {
-			const screen = this.props.screens.find(s => s.name === queryParam)
-			this.state = {
-				selectedScreen: screen
-			}
-		} else
-			this.state = {}
+		const queryParam = BrowserHistoryModule.getQueryParams()[PLAYGROUND];
+		const screen = this.props.screens.find(s => s.name === queryParam);
+		this.state = {selectedScreen: screen}
 	}
 
 	render() {
@@ -80,7 +75,6 @@ export class Playground
 		if (!this.state.selectedScreen)
 			return <div>Select a playground</div>
 
-		const Renderer: React.ElementType = this.state.selectedScreen.renderer;
-		return <Renderer/>
+		return <this.state.selectedScreen.renderer />
 	}
 }

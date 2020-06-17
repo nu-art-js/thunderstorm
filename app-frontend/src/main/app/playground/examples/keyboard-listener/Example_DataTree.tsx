@@ -155,7 +155,7 @@ class Example_ColorfulNodeRenderer
 					className='clickable'
 					onClick={this.props.node.onClick}
 					style={{backgroundColor: this.props.node.focused ? "#87878770" : "transparent", userSelect: "none"}}
-				>{`${value}`}
+				>
 					<span style={nameStyle}>{this.props.node.propKey}</span>
 					{value !== "" ? ": " : ""}
 					<span style={valueStyle(this.props.node.propKey, value)}>{`${value}`}</span>
