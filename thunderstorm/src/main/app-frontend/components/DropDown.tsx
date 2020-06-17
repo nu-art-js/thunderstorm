@@ -244,7 +244,7 @@ export class DropDown<ItemType>
 		return (<FilterInput<ItemType | MenuItemWrapper<RendererMap, string>>
 			id={this.props.id}
 			filter={this.props.filter}
-			list={Array.isArray(options) ? () => options : options}
+			list={Array.isArray(options) ? options : options()}
 			onChange={(filtered: (ItemType | MenuItemWrapper<RendererMap, string>)[]) => this.setState(() => ({filteredOptions: filtered}))}
 			focus={true}
 			className={inputComplementary.className}

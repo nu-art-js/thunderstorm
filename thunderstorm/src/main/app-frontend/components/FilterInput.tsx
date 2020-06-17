@@ -25,7 +25,7 @@ import {TS_Input} from "./TS_Input";
 
 type Props<T> = {
 	filter: (item: T) => string[],
-	list: () => T[],
+	list: T[],
 	onChange: (items: T[]) => void,
 	id?: string,
 	initialFilterText?: string,
@@ -50,17 +50,25 @@ export class FilterInput<T>
 	}
 
 	componentDidMount() {
-		this.callOnChange();
+		this.callOnChange(this.props.list);
 	}
 
-	callOnChange = () => {
-		const {filter, list, onChange} = this.props;
-		onChange(this.filterInstance.filter(list(), filter));
+	shouldComponentUpdate(nextProps: Readonly<Props<T>>, nextState: Readonly<State>, nextContext: any): boolean {
+		let b = this.props.list !== nextProps.list;
+		if (b)
+			this.callOnChange(nextProps.list);
+
+		return b;
+	}
+
+	callOnChange = (list: T[]) => {
+		const {filter, onChange} = this.props;
+		onChange(this.filterInstance.filter(list, filter));
 	};
 
 	filter = (text: string) => {
 		this.filterInstance.setFilter(text);
-		this.callOnChange();
+		this.callOnChange(this.props.list);
 	};
 
 	render() {
