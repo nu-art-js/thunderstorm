@@ -458,13 +458,13 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 				}
 			});
 
-			merge(dbInstance, instance);
+			const mergedObject = merge(dbInstance, instance);
 
-			await validate(instance, this.validator);
+			await validate(mergedObject, this.validator);
 
-			await this.assertUniqueness(transaction, instance);
+			await this.assertUniqueness(transaction, mergedObject);
 
-			return this.upsertImpl(transaction, dbInstance);
+			return this.upsertImpl(transaction, mergedObject);
 		});
 	}
 
