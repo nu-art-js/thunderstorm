@@ -44,8 +44,7 @@ import {
 
 import {
 	Module,
-	PartialProperties,
-	Subset
+	PartialProperties
 } from "@nu-art/ts-common";
 
 export type BaseApiConfig = {
@@ -74,47 +73,52 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	}
 
 	create = (toCreate: UType) => {
-		return this.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Create)
-		    .setJsonBody(toCreate)
-		    .execute(async (response: DBType) => {
-			    return this.onEntryCreated(response);
-		    });
+		return this
+			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Create)
+			.setJsonBody(toCreate)
+			.execute(async (response: DBType) => {
+				return this.onEntryCreated(response);
+			});
 	};
 
 	update = (toUpdate: DBType) => {
-		return this.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Update)
-		    .setJsonBody(toUpdate)
-		    .execute(async response => {
-			    return this.onEntryUpdated(response);
-		    });
+		return this
+			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Update)
+			.setJsonBody(toUpdate)
+			.execute(async response => {
+				return this.onEntryUpdated(response);
+			});
 	};
 
-	query = (query?: Subset<DBType>) => {
+	query = (query?: Partial<DBType>) => {
 		let _query = query;
 		if (!_query)
-			_query = {} as Subset<DBType>;
+			_query = {} as Partial<DBType>;
 
-		return this.createRequest<ApiBinder_DBQuery<DBType>>(DefaultApiDefs.Query)
-		    .setJsonBody(_query)
-		    .execute(async response => {
-			    return this.onQueryReturned(response);
-		    });
+		return this
+			.createRequest<ApiBinder_DBQuery<DBType>>(DefaultApiDefs.Query)
+			.setJsonBody(_query)
+			.execute(async response => {
+				return this.onQueryReturned(response);
+			});
 	};
 
 	unique = (_id: string) => {
-		return this.createRequest<ApiBinder_DBUniuqe<DBType>>(DefaultApiDefs.Unique)
-		    .setUrlParams({_id})
-		    .execute(async response => {
-			    return this.onGotUnique(response);
-		    });
+		return this
+			.createRequest<ApiBinder_DBUniuqe<DBType>>(DefaultApiDefs.Unique)
+			.setUrlParams({_id})
+			.execute(async response => {
+				return this.onGotUnique(response);
+			});
 	};
 
 	delete = (_id: string) => {
-		return this.createRequest<ApiBinder_DBDelete<DBType>>(DefaultApiDefs.Delete)
-		    .setUrlParams({_id})
-		    .execute(async response => {
-			    return this.onEntryDeleted(response);
-		    });
+		return this
+			.createRequest<ApiBinder_DBDelete<DBType>>(DefaultApiDefs.Delete)
+			.setUrlParams({_id})
+			.execute(async response => {
+				return this.onEntryDeleted(response);
+			});
 	};
 
 	protected abstract onEntryCreated(response: DBType): Promise<void>;

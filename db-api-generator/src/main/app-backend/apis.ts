@@ -17,8 +17,6 @@
  * limitations under the License.
  */
 
-import {Subset,} from "@nu-art/ts-common";
-
 import {BaseDB_ApiGenerator} from "./BaseDB_ApiGenerator";
 import {
 	ApiTypeBinder,
@@ -43,9 +41,9 @@ import {
 } from "@nu-art/firebase";
 import {
 	ApiResponse,
+	ExpressRequest,
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
 	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? "/" + pathSuffix : ""}`;
@@ -71,7 +69,7 @@ export class GenericServerApi_Query<DBType extends DB_Object>
 		this.query = query;
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Subset<DBType>): Promise<DBType[]> {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Partial<DBType>): Promise<DBType[]> {
 		let query: FirestoreQuery<DBType>;
 		if (this.query)
 			query = {...this.query, where: body};
@@ -125,7 +123,7 @@ export class ServerApi_Query<DBType extends DB_Object>
 		super(dbModule, DefaultApiDefs.Query, pathPart);
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Subset<DBType>): Promise<DBType[]> {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Partial<DBType>): Promise<DBType[]> {
 		return this.dbModule.query({where: body});
 	}
 }
@@ -141,4 +139,3 @@ export class ServerApi_Delete<DBType extends DB_Object>
 		return this.dbModule.deleteUnique(queryParams._id);
 	}
 }
-
