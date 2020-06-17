@@ -123,6 +123,18 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.config.externalFilterKeys = keys;
 	}
 
+	/**
+	 * Sets the lock keys. Lock keys are the attributes of a document that must not be changed during a patch.
+	 * Thr property `_id` is always part of the lock keys.
+	 *
+	 * @remarks
+	 * You can only update the lock keys before the module is initialized, preferably from its constructor.
+	 *
+	 * @param keys - The lock keys.
+	 *
+	 * @returns
+	 * The lock keys.
+	 */
 	protected setLockKeys(keys: (keyof DBType)[]) {
 		if (this.initiated)
 			throw new BadImplementationException("You can only update the 'lockKeys' before the module was initialized.. preferably from its constructor");
@@ -417,6 +429,18 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return await this.collection.query(query);
 	}
 
+	/**
+	 * If propsToPatch is not set, we remove the lock keys from the caller's instance
+	 * before merging with the original dbInstance.
+	 * If propsToPatch is set, we also remove all of the instance's keys that
+	 * are not specified in propsToPatch.
+	 *
+	 * @param instance - The instance to be upserted.
+	 * @param propsToPatch - Properties to patch.
+	 *
+	 * @returns
+	 * A promise of the patched document.
+	 */
 	async patch(instance: DBType, propsToPatch?: (keyof DBType)[]): Promise<DBType> {
 		return this.collection.runInTransaction(async (transaction) => {
 			const dbInstance: DBType = await this.assertExternalQueryUnique(instance, transaction);
