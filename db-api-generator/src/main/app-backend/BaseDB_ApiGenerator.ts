@@ -25,9 +25,11 @@ import {
 } from "@nu-art/firebase";
 import {
 	__stringify,
+	_keys,
 	addAllItemToArray,
 	BadImplementationException,
 	batchAction,
+	filterDuplicates,
 	generateHex,
 	isErrorOfType,
 	merge,
@@ -72,7 +74,7 @@ export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: Fi
 
 export type Config<Type extends object> = {
 	projectId?: string,
-	patchKeys?: (keyof Type)[]
+	lockKeys: (keyof Type)[]
 	collectionName: string
 	itemName: string
 	externalFilterKeys: FilterKeys<Type>
@@ -92,7 +94,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	protected constructor(collectionName: string, validator: ValidatorTypeResolver<DBType>, itemName: string) {
 		super();
 		// @ts-ignore
-		this.setDefaultConfig({itemName, collectionName, externalFilterKeys: ["_id"]});
+		this.setDefaultConfig({itemName, collectionName, externalFilterKeys: ["_id"], lockKeys: ["_id"]});
 		this.validator = validator;
 	}
 
@@ -121,22 +123,12 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.config.externalFilterKeys = keys;
 	}
 
-	/**
-	 * Sets the patch keys. Patch keys are the attributes that are allowed to be changed in a document.
-	 *
-	 * @remarks
-	 * You can only update the patch keys before the module is initialized, preferably from its constructor.
-	 *
-	 * @param keys - The patch keys.
-	 *
-	 * @returns
-	 * The patch keys.
-	 */
-	protected setPatchKeys(keys: (keyof DBType)[]) {
+	protected setLockKeys(keys: (keyof DBType)[]) {
 		if (this.initiated)
-			throw new BadImplementationException("You can only update the 'patchKeys' before the module was initialized.. preferably from its constructor");
+			throw new BadImplementationException("You can only update the 'lockKeys' before the module was initialized.. preferably from its constructor");
 
-		return this.config.patchKeys = keys;
+		return this.config.lockKeys = filterDuplicates([...keys,
+		                                                "_id"]);
 	}
 
 	getCollectionName() {
@@ -425,27 +417,24 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return await this.collection.query(query);
 	}
 
-	/**
-	 * Executes `this.upsertImpl` using an instance that is formed by the `_props` and the defined patch keys.
-	 * Uses a transaction to execute the patch.
-	 *
-	 * @param instance - The initial instance to be upserted.
-	 * @param _props - The attributes to be changed.
-	 *
-	 * @returns
-	 * A promise of the document that was patched.
-	 */
-	async patch(instance: DBType, _props?: (keyof DBType)[]): Promise<DBType> {
+	async patch(instance: DBType, propsToPatch?: (keyof DBType)[]): Promise<DBType> {
 		return this.collection.runInTransaction(async (transaction) => {
 			const dbInstance: DBType = await this.assertExternalQueryUnique(instance, transaction);
-			let props = _props;
-			if (!props)
-				props = this.config.patchKeys;
+			// If the caller has specified props to be changed, make sure the don't conflict with the lockKeys.
+			const wrongKey = propsToPatch?.find(prop => this.config.lockKeys.includes(prop));
+			if (wrongKey) {
+				throw new BadImplementationException(`Key ${wrongKey} is part of the 'lockKeys' and cannot be updated.`);
+			}
 
-			if (props)
-				props.forEach(key => dbInstance[key] = instance[key]);
-			else
-				merge(dbInstance, instance);
+			// If the caller has not specified props, we remove the keys from the caller's instance
+			// before merging with the original dbInstance.
+			_keys(instance).forEach(key => {
+				if (this.config.lockKeys.includes(key) || (propsToPatch && !propsToPatch.includes(key))) {
+					delete instance[key];
+				}
+			});
+
+			merge(dbInstance, instance);
 
 			await validate(instance, this.validator);
 
