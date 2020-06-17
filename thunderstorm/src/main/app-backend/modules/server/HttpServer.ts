@@ -320,11 +320,17 @@ export class RouteResolver {
 	readonly require: NodeRequire;
 	readonly rootDir: string;
 	readonly apiFolder: string;
+	private middlewares: ServerApi_Middleware[] = [];
 
 	constructor(require: NodeRequire, rootDir: string, apiFolder?: string) {
 		this.require = require;
 		this.rootDir = rootDir;
 		this.apiFolder = apiFolder || "";
+	}
+
+	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
+		this.middlewares = middlewares;
+		return this;
 	}
 
 	private resolveApi(urlPrefix: string) {
@@ -374,7 +380,10 @@ export class RouteResolver {
 			if (!Array.isArray(content))
 				content = [content];
 
-			content.forEach(api => api.route(this.express, urlPrefix));
+			content.forEach(api => {
+				api.setMiddlewares(...this.middlewares);
+				api.route(this.express, urlPrefix);
+			});
 		});
 	}
 }
