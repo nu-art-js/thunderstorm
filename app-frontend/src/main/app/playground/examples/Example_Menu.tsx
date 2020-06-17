@@ -50,6 +50,7 @@ const createMenu = (): Menu<Rm> => {
 export class Example_Menu
 	extends Component<{}> {
 
+
 	render() {
 		const menu = createMenu() as Menu<any>;
 		return <div>
