@@ -67,8 +67,7 @@ export class ProjectDB_Class
 
 	constructor() {
 		super(CollectionName_Projects, ProjectDB_Class._validator, "project");
-		this.setExternalUniqueKeys(["_id"]);
-		this.setPatchKeys(["name"]);
+		this.setLockKeys(['customKeys']);
 	}
 }
 
@@ -83,7 +82,7 @@ export class DomainDB_Class
 
 	constructor() {
 		super(CollectionName_Domain, DomainDB_Class._validator, "domain");
-		this.setPatchKeys(["namespace"])
+		this.setLockKeys(['projectId']);
 	}
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {
@@ -111,7 +110,7 @@ export class LevelDB_Class
 
 	constructor() {
 		super(CollectionName_Level, LevelDB_Class._validator, "level");
-		this.setPatchKeys(["name", "value"]);
+		this.setLockKeys(['domainId', "isDefault"]);
 	}
 
 	protected internalFilter(item: DB_PermissionAccessLevel): Clause_Where<DB_PermissionAccessLevel>[] {
@@ -206,7 +205,7 @@ export class ApiDB_Class
 
 	constructor() {
 		super(CollectionName_Api, ApiDB_Class._validator, "api");
-		this.setPatchKeys(["accessLevelIds"]);
+		this.setLockKeys(['projectId', "path"]);
 	}
 
 	protected externalFilter(item: DB_PermissionApi): Clause_Where<DB_PermissionApi> {
@@ -237,7 +236,7 @@ export class ApiDB_Class
 			const existingProjectApis = await ApiPermissionsDB.query({where: {projectId: projectId}});
 			const apisToAdd: Request_UpdateApiPermissions[] = routes
 				.filter(path => !existingProjectApis.find(api => api.path === path))
-				.map(path => ({path, projectId: projectId}))
+				.map(path => ({path, projectId: projectId}));
 
 			return Promise.all(apisToAdd.map((api) => this.insertImpl(transaction, api)));
 		});

@@ -32,12 +32,8 @@ import {
 	OnNewUserRegistered,
 	OnUserLogin
 } from "@nu-art/user-account/backend";
-import {
-	Clause_Where
-} from "@nu-art/firebase";
-import {
-	ApiException
-} from "@nu-art/thunderstorm/backend";
+import {Clause_Where} from "@nu-art/firebase";
+import {ApiException} from "@nu-art/thunderstorm/backend";
 
 import {
 	filterDuplicates,
@@ -72,7 +68,7 @@ export class GroupsDB_Class
 
 	constructor() {
 		super(CollectionName_Groups, GroupsDB_Class._validator, "group");
-		this.setPatchKeys(["label", "accessLevelIds", "customFields"]);
+		this.setLockKeys(['__accessLevels']);
 	}
 
 	protected externalFilter(item: DB_PermissionsGroup): Clause_Where<DB_PermissionsGroup> {
@@ -128,7 +124,7 @@ export class UsersDB_Class
 
 	constructor() {
 		super(CollectionName_Users, UsersDB_Class._validator, "user");
-		this.setPatchKeys(["groupIds", "accessLevelIds", "customFields"]);
+		this.setLockKeys(['__accessLevels', "uuid"]);
 	}
 
 	protected internalFilter(item: DB_PermissionsUser): Clause_Where<DB_PermissionsUser>[] {
