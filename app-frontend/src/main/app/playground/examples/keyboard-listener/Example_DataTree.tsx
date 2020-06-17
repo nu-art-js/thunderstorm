@@ -18,10 +18,11 @@
 
 import * as React from "react";
 import {
+	Adapter,
 	BaseComponent,
 	Tree,
-	Adapter,
 	TreeNode,
+	TreeRendererProps,
 } from "@nu-art/thunderstorm/frontend";
 
 type State = { focused?: string, actionMessage: string };
@@ -54,7 +55,7 @@ export class Example_DataTree
 		adapter.hideRoot = true;
 		adapter.adjust = (data: object) => {
 			if (data === undefined || data === null)
-				return {data:"", deltaPath: ""};
+				return {data: "", deltaPath: ""};
 
 			if (Object.keys(data).find(key => key === "data")) {
 				// @ts-ignore
@@ -64,7 +65,7 @@ export class Example_DataTree
 			return {data, deltaPath: ""};
 		}
 
-		adapter.getTreeNodeRenderer = () => Example_ColorfulNodeRenderer
+		adapter.getTreeNodeRenderer = () => Example_ColorfulNodeRenderer;
 
 		adapter.data = this.elements;
 		return <div>
@@ -102,9 +103,9 @@ const ExpandCollapseComponentSVG = (props: TreeNode) => {
 }
 
 class Example_ColorfulNodeRenderer
-	extends React.Component<TreeNode> {
+	extends React.Component<TreeRendererProps> {
 
-	constructor(props: TreeNode) {
+	constructor(props: TreeRendererProps) {
 		super(props);
 	}
 
@@ -148,11 +149,16 @@ class Example_ColorfulNodeRenderer
 
 		return (
 			<div className="ll_h_c" style={{fontSize: "0.9em", lineHeight: 1.25}}>
-				<ExpandCollapseComponentSVG {...this.props}/>
-				<div id={this.props.path}>
-					<span style={nameStyle}>{this.props.propKey}</span>
+				<ExpandCollapseComponentSVG {...this.props.node}/>
+				<div
+					id={this.props.node.path}
+					className='clickable'
+					onClick={this.props.node.onClick}
+					style={{backgroundColor: this.props.node.focused ? "#87878770" : "transparent", userSelect: "none"}}
+				>{`${value}`}
+					<span style={nameStyle}>{this.props.node.propKey}</span>
 					{value !== "" ? ": " : ""}
-					<span style={valueStyle(this.props.propKey, value)}>{`${value}`}</span>
+					<span style={valueStyle(this.props.node.propKey, value)}>{`${value}`}</span>
 				</div>
 			</div>
 		);

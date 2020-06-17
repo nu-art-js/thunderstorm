@@ -18,11 +18,13 @@
 
 import * as React from "react";
 import {
+	Adapter,
 	BaseComponent,
 	Tree,
-	Adapter,
 	TreeNode,
+	TreeRendererProps,
 } from "@nu-art/thunderstorm/frontend";
+import {__stringify} from "@nu-art/ts-common";
 
 type State = { focused?: string, actionMessage: string };
 export type Element = { label: string, action?: () => void }
@@ -62,9 +64,9 @@ export class Example_VerySimpleTree
 			}
 
 			return {data, deltaPath: ""};
-		}
+		};
 
-		adapter.getTreeNodeRenderer = () => Example_NodeRenderer
+		adapter.getTreeNodeRenderer = () => Example_NodeRenderer;
 
 		adapter.data = this.elements;
 		return <div>
@@ -82,55 +84,46 @@ export class Example_VerySimpleTree
 	}
 }
 
-type Created = TreeNode & { focusedColor: (props: TreeNode) => string };
-
 class ItemRenderer
-	extends React.Component<Created> {
-	constructor(props: Created) {
+	extends React.Component<TreeRendererProps> {
+	constructor(props: TreeRendererProps) {
 		super(props);
 	}
 
-	render() {
-		let label;
-		let item = this.props.item;
-		if (typeof item !== "object")
-			label = ` : ${item}`;
-		else if (Object.keys(item).length === 0)
-			label = " : {}";
-		else
-			label = "";
-
+	renderItem(moreProps: { focusedColor: string }) {
+		let value = __stringify(this.props.item);
 
 		return <div
-			id={this.props.path}
+			id={this.props.node.path}
 			className='clickable'
-			onClick={this.props.onClick}
-			style={{backgroundColor: this.props.focusedColor(this.props), userSelect: "none"}}>{this.props.propKey || "root"} {label}</div>
+			onClick={this.props.node.onClick}
+			style={{backgroundColor: moreProps.focusedColor, userSelect: "none"}}>{`${value}`}</div>
+
 	}
 }
 
 class ItemRenderer0
 	extends ItemRenderer {
 
-	static defaultProps = {
-		focusedColor: (props: TreeNode) => props.focused ? "red" : "salmon"
+	render() {
+		return this.renderItem({focusedColor: this.props.node.focused ? "red" : "salmon"});
 	}
 }
 
 class ItemRenderer1
 	extends ItemRenderer {
 
-	static defaultProps = {
-		focusedColor: (props: TreeNode) => props.focused ? "lime" : "cyan"
+	render() {
+		return this.renderItem({focusedColor: this.props.node.focused ? "lime" : "cyan"});
 	}
 }
 
 class ItemRenderer2
 	extends ItemRenderer {
-	static defaultProps = {
-		focusedColor: (props: TreeNode) => props.focused ? "lightblue" : "magenta"
-	}
 
+	render() {
+		return this.renderItem({focusedColor: this.props.node.focused ? "lightblue" : "magenta"});
+	}
 }
 
 const ExpandCollapseComponent = (props: TreeNode) => {
@@ -149,15 +142,15 @@ const ExpandCollapseComponent = (props: TreeNode) => {
 }
 
 class Example_NodeRenderer
-	extends React.Component<TreeNode> {
+	extends React.Component<TreeRendererProps> {
 
-	constructor(props: TreeNode) {
+	constructor(props: TreeRendererProps) {
 		super(props);
 	}
 
 	render() {
 		return (<div className="ll_h_c">
-			<ExpandCollapseComponent {...this.props}/>
+			<ExpandCollapseComponent {...this.props.node}/>
 			{this.renderItems()}
 		</div>);
 	};
@@ -165,13 +158,13 @@ class Example_NodeRenderer
 	private renderItems() {
 		const Renderer = this.getRendererType();
 
-		return <Renderer {...this.props}/>
+		return <Renderer item={this.props.item} node={this.props.node}/>
 	}
 
 	private getRendererType() {
 		if (typeof this.props.item === "number")
 			return ItemRenderer2;
 
-		return this.props.propKey === "other" ? ItemRenderer1 : ItemRenderer0;
+		return this.props.node.propKey === "other" ? ItemRenderer1 : ItemRenderer0;
 	}
 }
