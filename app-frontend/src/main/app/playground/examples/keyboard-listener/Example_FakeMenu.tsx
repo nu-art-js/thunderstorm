@@ -25,7 +25,7 @@ import {
 	ItemToRender,
 	stopPropagation,
 	Tree,
-    TreeRendererProps,
+	TreeRendererProps,
 } from "@nu-art/thunderstorm/frontend";
 import {
 	__stringify,
@@ -33,14 +33,14 @@ import {
 } from "@nu-art/ts-common";
 
 
-type InferRenderingType<Rm> = Rm extends _RendererMap<infer I> ? I : never;
+// type _InferRenderingType<Rm> = Rm extends _RendererMap<infer I> ? I : never;
 
-export type _GenericRenderer<Rm extends _RendererMap, ItemType extends ItemToRender<Rm> = ItemToRender<Rm>> = {
-	rendererMap: Rm
-	items: ItemType[]
-}
+// export type _GenericRenderer<Rm extends _RendererMap, ItemType extends ItemToRender<Rm> = ItemToRender<Rm>> = {
+// 	rendererMap: Rm
+// 	items: ItemType[]
+// }
 
-class MultiTypeAdapter<Rm extends _RendererMap, T = InferRenderingType<Rm>>
+class MultiTypeAdapter<Rm extends _RendererMap>
 	extends Adapter {
 
 	private readonly rendererMap: Rm;
@@ -87,7 +87,7 @@ class MultiTypeAdapter<Rm extends _RendererMap, T = InferRenderingType<Rm>>
 	// 	return this.getChildren(obj);//.filter((__key: any) => this.filter(obj, __key as keyof T))
 	// }
 
-	resolveRenderer(obj: T, propKey: string): _Renderer<TreeRendererProps> {
+	resolveRenderer(propKey: string): _Renderer<TreeRendererProps> {
 		return this.rendererMap[propKey];
 	}
 }
@@ -99,49 +99,47 @@ export class Example_FakeMenu
 
 	render() {
 
-		const renderMap: _RendererMap<any> = {
+		const renderMap: _RendererMap = {
 			"number": ItemRenderer_Number,
 			"string": ItemRenderer_String,
 			"boolean": ItemRenderer_Boolean,
 			"array": ItemRenderer_Fallback,
 			"object": ItemRenderer_Fallback,
-			"submenu": ItemRenderer_Fallback,
-		}
+			"submenu": ItemRenderer_Fallback
+		};
 
-		const menu: ItemToRender<_RendererMap<any>> = {
-			_children: [
-				{
-					item: 42,
-					type: "number"
-				},
-				{
-					item: "a string",
-					type: "string"
-				},
-				{
-					item: true,
-					type: "boolean"
-				},
-				{
-					item: "Sub Menu",
-					type: "submenu",
-					_children: [
-						{
-							item: [10, 20, 30, 40, 100],
-							type: "array"
-						},
-						{
-							item: {key: "value"},
-							type: "object"
-						},
-					],
-				},
-			]
-		}
+		const menu: ItemToRender<_RendererMap>[] = [
+			      {
+				      item: 42,
+				      type: "number"
+			      },
+			      {
+				      item: "a string",
+				      type: "string"
+			      },
+			      {
+				      item: true,
+				      type: "boolean"
+			      },
+			      {
+				      item: "Sub Menu",
+				      type: "submenu",
+				      _children: [
+					      {
+						      item: [10, 20, 30, 40, 100],
+						      type: "array"
+					      },
+					      {
+						      item: {key: "value"},
+						      type: "object"
+					      },
+				      ],
+			      },
+		      ];
 
 		const adapter = new MultiTypeAdapter(renderMap);
 
-		adapter.getTreeNodeRenderer = () => Example_NodeRenderer
+		adapter.getTreeNodeRenderer = () => Example_NodeRenderer;
 
 		adapter.data = menu;
 		return <div>
@@ -166,7 +164,7 @@ class ItemRenderer<Type>
 	}
 
 	renderItem(moreProps: { focusedColor: string }) {
-		let value = __stringify(this.props.item);
+		const value = __stringify(this.props.item);
 
 		return <div
 			id={this.props.node.path}
@@ -219,7 +217,7 @@ class Example_NodeRenderer
 
 	render() {
 		let item = this.props.item.item;
-		const Renderer = this.props.node.adapter.resolveRenderer(item, this.props.item.type);
+		const Renderer = this.props.node.adapter.resolveRenderer(this.props.item.type);
 		if (!Renderer)
 			return "";
 

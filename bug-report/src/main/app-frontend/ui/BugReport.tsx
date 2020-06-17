@@ -43,7 +43,8 @@ const style: React.CSSProperties = {
 	right: "10px",
 	backgroundColor: "#5b7bd6",
 	color: "white",
-	borderRadius: "50%"
+	borderRadius: "50%",
+	borderColor: 'transparent'
 };
 
 export class BugReport
