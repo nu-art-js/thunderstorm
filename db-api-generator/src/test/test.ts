@@ -21,6 +21,7 @@ import {StormTester} from "@nu-art/thunderstorm/backend-test";
 import {__scenario} from "@nu-art/testelot";
 import { FirebaseModule } from "@nu-art/firebase/backend";
 import {
+	deleteTest,
 	ExampleModule,
 	patchTest
 } from "./tests/db-api-generator";
@@ -28,6 +29,7 @@ import {
 export const mainScenario = __scenario("Tests for base-db-api-generator.");
 
 mainScenario.add(patchTest());
+mainScenario.add(deleteTest());
 
 module.exports = new StormTester()
 	.addModules(FirebaseModule)

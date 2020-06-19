@@ -126,3 +126,25 @@ export function patchTest() {
 
 	return scenario;
 }
+
+export function deleteTest() {
+	const scenario = __scenario("BaseDB_ApiGenerator delete tests.");
+	scenario.add(cleanup());
+	scenario.add(__custom(async () => {
+		const exampleDocument = await ExampleModule.upsert(exampleDocument1);
+		const deletedDocument = await ExampleModule.deleteUnique(exampleDocument._id);
+		assert("Expecting the inserted document to be deleted.", deletedDocument._id, exampleDocument._id);
+	}).setLabel("Deleting a newly added document."));
+	scenario.add(__custom(async () => {
+		await ExampleModule.upsert(exampleDocument1);
+		// @ts-ignore
+		await ExampleModule.deleteUnique(undefined);
+	}).expectToFail(
+		BadImplementationException,(e: BadImplementationException) => e.message.startsWith(
+			"No _id for deletion provided."
+		)
+	).setLabel("Calling deleteUnique() with undefined parameter."));
+	scenario.add(cleanup());
+
+	return scenario;
+}
