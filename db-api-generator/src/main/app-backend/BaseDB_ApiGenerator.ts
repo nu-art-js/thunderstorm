@@ -365,6 +365,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of the document that was deleted.
 	 */
 	async deleteUnique(_id: string) {
+		if (!_id)
+			throw new BadImplementationException(`No _id for deletion provided.`);
 		return this.collection.runInTransaction(async (transaction: FirestoreTransaction) => {
 			const ourQuery = {where: {_id} as Clause_Where<DBType>};
 			const dbInstance = await transaction.queryUnique(this.collection, ourQuery);
