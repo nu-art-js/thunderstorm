@@ -19,7 +19,8 @@
 import {
 	ApiResponse,
 	ExpressRequest,
-	ServerApi
+	ServerApi,
+	ApiException
 } from "@nu-art/thunderstorm/backend";
 import {
 	GroupPermissionsDB,
@@ -32,6 +33,8 @@ import {
 	QueryParams
 } from "@nu-art/thunderstorm";
 
+import {_keys} from "@nu-art/ts-common";
+
 class ServerApi_UserUrlsPermissions
 	extends ServerApi<Permissions_AssignAppPermissions> {
 
@@ -41,14 +44,8 @@ class ServerApi_UserUrlsPermissions
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: Request_AssignAppPermissions) {
-		const user = await UserPermissionsDB.queryUnique({_id: body.userId});
-		const group = await GroupPermissionsDB.queryUnique({_id: `${body.projectId}--${body.groupId}`});
-
-		// user.
-		// const api = await ApiPermissionsDB.queryUnique({path: queryParams.apiPath, projectId: queryParams.projectId});
-		// AccessLevelPermissionsDB.query({where: {_id: {$in: api.accessLevelIds || []}}})
+		await UserPermissionsDB.assignAppPermissions(body);
 	}
-
 }
 
 module.exports = new ServerApi_UserUrlsPermissions();

@@ -42,6 +42,7 @@ export type Request_UserUrlsPermissions = {
 
 export type Request_AssignAppPermissions = {
 	projectId: string,
+	groupIdsToRemove: string[],
 	groupId: string,
 	userId: string
 	customFields: StringMap
