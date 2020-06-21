@@ -33,16 +33,17 @@ import {
 
 import {
 	_keys,
+	addItemToArray,
 	BadImplementationException,
 	Module,
 	removeItemFromArray,
-	addItemToArray,
 } from "@nu-art/ts-common";
 import {gzip} from "zlib";
 
 type HttpConfig = {
 	origin: string
 	timeout: number
+	compress: boolean
 }
 
 export interface OnRequestListener {
@@ -66,6 +67,11 @@ export class HttpModule_Class
 
 	constructor() {
 		super();
+		this.setDefaultConfig({compress: true});
+	}
+
+	shouldCompress() {
+		return this.config.compress
 	}
 
 	addDefaultHeader(key: string, header: (() => string | string[]) | string | string[]) {
@@ -211,11 +217,12 @@ export class HttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 	private handleRequestSuccess: RequestSuccessHandler = HttpModule.handleRequestSuccess;
 	private handleRequestFailure: RequestErrorHandler<E> = HttpModule.handleRequestFailure;
 	private aborted: boolean = false;
-	private compress: boolean = false;
+	private compress: boolean;
 
 	constructor(requestKey: string, requestData?: string) {
 		this.key = requestKey;
 		this.requestData = requestData;
+		this.compress = HttpModule.shouldCompress();
 	}
 
 	getErrorMessage() {
@@ -346,16 +353,16 @@ export class HttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 		return this;
 	}
 
-	setJsonBody(bodyObject: B, compress: boolean = true) {
+	setJsonBody(bodyObject: B, compress?: boolean) {
 		this.setHeaders({"content-type": "application/json"});
 		this.setBody(JSON.stringify(bodyObject), compress);
 		return this;
 	}
 
-	setBody(bodyAsString: BodyInit, compress: boolean = true) {
+	setBody(bodyAsString: BodyInit, _compress?: boolean) {
 		this.body = bodyAsString;
-		this.compress = compress;
-		if (typeof bodyAsString === "string" && compress)
+		this.compress = _compress === undefined ? HttpModule.shouldCompress() : _compress;
+		if (typeof bodyAsString === "string" && this.compress)
 			this.setHeader("Content-encoding", "gzip");
 
 		return this;

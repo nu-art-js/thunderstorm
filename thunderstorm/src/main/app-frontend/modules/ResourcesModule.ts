@@ -27,7 +27,7 @@ import {Module} from "@nu-art/ts-common";
 export type ResourceId = string;
 
 export class ResourcesModule_Class
-	extends Module<void> {
+	extends Module {
 
 	private readonly relativePath: string;
 	private readonly relativePathImages: string;

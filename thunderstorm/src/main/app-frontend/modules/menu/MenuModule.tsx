@@ -3,13 +3,11 @@ import {
 	Module
 } from "@nu-art/ts-common";
 import {MenuPosition} from "./PopupMenu";
-
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import {
-	InferItemType,
-	ItemWrapper,
-	RendererMap
-} from "../../types/renderer-map";
+	_GenericRenderer,
+	_RendererMap
+} from "../../components/tree/Adapter";
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 	const pos = button.getBoundingClientRect();
@@ -17,10 +15,11 @@ export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 };
 
 // export type TreeAction = (path: string, id: string) => void;
+export type _Menu<Rm extends _RendererMap> = _GenericRenderer<Rm>
 
 export type Menu_Model = {
 	id: string
-	menu: Menu<any>,
+	menu: _Menu<any>,
 	pos: MenuPosition,
 	onNodeClicked?: Function,
 	onNodeDoubleClicked?: Function,
@@ -31,14 +30,14 @@ export interface MenuListener {
 	__onMenuHide: (id: string) => void
 }
 
-export type MenuItemWrapper<Rm extends RendererMap, K extends keyof Rm, Item = InferItemType<Rm[K]>> = ItemWrapper<Rm, K> & {
-	_children?: MenuItemWrapper<Rm, keyof Rm>[]
-}
-
-export type Menu<Rm extends RendererMap> = {
-	rendererMap: Rm
-	_children: MenuItemWrapper<Rm, keyof Rm>[]
-}
+// export type MenuItemWrapper<Rm extends RendererMap, K extends keyof Rm, Item = InferItemType<Rm[K]>> = ItemWrapper<Rm, K> & {
+// 	_children?: MenuItemWrapper<Rm, keyof Rm>[]
+// }
+//
+// export type Menu<Rm extends RendererMap> = {
+// 	rendererMap: Rm
+// 	_children: MenuItemWrapper<Rm, keyof Rm>[]
+// }
 
 export class MenuModule_Class
 	extends Module<{}> {
@@ -56,13 +55,13 @@ export class MenuModule_Class
 export const MenuModule = new MenuModule_Class();
 
 export class MenuBuilder {
-	private readonly menu: Menu<any>;
+	private readonly menu: _Menu<any>;
 	private readonly position: MenuPosition;
 	private id: string = generateHex(8);
 	private onNodeClicked?: Function;
 	private onNodeDoubleClicked?: Function;
 
-	constructor(menu: Menu<any>, position: MenuPosition) {
+	constructor(menu: _Menu<any>, position: MenuPosition) {
 		this.menu = menu;
 		this.position = position;
 	}

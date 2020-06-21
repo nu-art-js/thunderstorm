@@ -28,7 +28,7 @@ import {
 } from "@nu-art/ts-common";
 
 export class StorageModule_Class
-	extends Module<void> {
+	extends Module {
 	private cache: { [s: string]: string | number | object } = {};
 
 	getStorage = (persist: boolean) => persist ? localStorage : sessionStorage;
