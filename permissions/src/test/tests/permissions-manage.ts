@@ -139,26 +139,6 @@ export function checkPatchOfGroupAccessLevelsPropertyToHigherValue() {
 	return scenario;
 }
 
-export function checkUpdateOfUserAccessLevelsPropertyToHigherValue() {
-	const scenario = __scenario("Update user with higher accessLevel - same domain, expect to fail");
-	scenario.add(cleanup());
-	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
-	scenario.add(__custom(async (action, data) => {
-		const user = await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1});
-		const higherValueLevel = await AccessLevelPermissionsDB.upsert({...testLevel2, domainId: data.level.domainId});
-		if (!user.accessLevelIds) {
-			throw new TestException("Didn't insert the user properly");
-		}
-
-		user.accessLevelIds.push(higherValueLevel._id);
-		const updatedUser = await UserPermissionsDB.upsert(user);
-		if (!updatedUser.__accessLevels || updatedUser.__accessLevels.length !== 1 || updatedUser.__accessLevels[0].value !== testLevel2.value) {
-			throw new TestException("Didn't update user __accessLevels");
-		}
-	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
-	return scenario;
-}
-
 export function checkGroupAccessLevelsAfterUpdatingLevelDocument() {
 	const scenario = __scenario("Check group access level after updating level");
 	scenario.add(cleanup());
@@ -177,44 +157,6 @@ export function checkGroupAccessLevelsAfterUpdatingLevelDocument() {
 	return scenario;
 }
 
-export function checkUserAccessLevelsAfterUpdatingLevelDocument() {
-	const scenario = __scenario("Check user access level after updating level");
-	scenario.add(cleanup());
-	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
-	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1});
-		const newLevelValue = 353;
-		data.level.value = newLevelValue;
-		await AccessLevelPermissionsDB.upsert(data.level);
-		const user = await UserPermissionsDB.queryUnique({uuid: userUuid1});
-
-		if (!user.__accessLevels || user.__accessLevels.length !== 1 || user.__accessLevels[0].value !== newLevelValue) {
-			throw new TestException("Didn't update user __accessLevels");
-		}
-	}).setReadKey(contextKey1).setLabel('User __accessLevels has updated successfully by updating level document'));
-	return scenario;
-}
-
-export function checkPatchOfUserAccessLevelsPropertyToHigherValue() {
-	const scenario = __scenario("Patch user with higher accessLevel - same domain, expect to fail");
-	scenario.add(cleanup());
-	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
-	scenario.add(__custom(async (action, data) => {
-		const user = await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1, customFields: [], groupIds: []});
-		const higherValueLevel = await AccessLevelPermissionsDB.upsert({...testLevel2, domainId: data.level.domainId});
-		if (!user.accessLevelIds) {
-			throw new TestException("Didn't insert the user properly");
-		}
-
-		user.accessLevelIds.push(higherValueLevel._id);
-		const updatedUser = await UserPermissionsDB.patch(user);
-		if (!updatedUser.__accessLevels || updatedUser.__accessLevels.length !== 1 || updatedUser.__accessLevels[0].value !== testLevel2.value) {
-			throw new TestException("Didn't update user __accessLevels");
-		}
-	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
-	return scenario;
-}
-
 export function checkGroupAccessLevelsAfterPatchingLevelDocument() {
 	const scenario = __scenario("Check group access level after patching level");
 	scenario.add(cleanup());
@@ -230,67 +172,6 @@ export function checkGroupAccessLevelsAfterPatchingLevelDocument() {
 			throw new TestException("Didn't update group __accessLevels");
 		}
 	}).setReadKey(contextKey1).setLabel('Group __accessLevels has updated successfully by updating level document'));
-	return scenario;
-}
-
-export function checkUserAccessLevelsAfterPatchingLevelDocument() {
-	const scenario = __scenario("Check user access level after patching level");
-	scenario.add(cleanup());
-	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
-	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1, customFields: []});
-		const newLevelValue = 353;
-		data.level.value = newLevelValue;
-		await AccessLevelPermissionsDB.patch(data.level);
-		const user = await UserPermissionsDB.queryUnique({uuid: userUuid1});
-
-		if (!user.__accessLevels || user.__accessLevels.length !== 1 || user.__accessLevels[0].value !== newLevelValue) {
-			throw new TestException("Didn't update user __accessLevels");
-		}
-	}).setReadKey(contextKey1).setLabel('User __accessLevels has updated successfully by updating level document'));
-	return scenario;
-}
-
-export function checkAccessLevelsPropertyOfUser() {
-	const scenario = __scenario("Create user with accessLevelIds");
-	scenario.add(cleanup());
-	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
-	scenario.add(__custom(async (action, data) => {
-		const user = await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1});
-		if (!user.__accessLevels || !user.__accessLevels.length || user.__accessLevels[0].value !== data.level.value) {
-			throw new TestException("Didn't add __accessLevels to user");
-		}
-	}).setReadKey(contextKey1).setLabel('User with __accessLevel has created'));
-	return scenario;
-}
-
-export function checkUpdateOfUserAccessLevelsProperty() {
-	const scenario = __scenario("Update user accessLevelIds");
-	scenario.add(cleanup());
-	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
-	scenario.add(__custom(async (action, data) => {
-		const user = await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1});
-		user.accessLevelIds = [];
-		const updatedUser = await UserPermissionsDB.upsert(user);
-		if (updatedUser.__accessLevels && updatedUser.__accessLevels.length) {
-			throw new TestException("Didn't update user __accessLevels");
-		}
-	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully'));
-	return scenario;
-}
-
-export function checkPatchOfUserAccessLevelsProperty() {
-	const scenario = __scenario("Patch user accessLevelIds");
-	scenario.add(cleanup());
-	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
-	scenario.add(__custom(async (action, data) => {
-		const user = await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [data.level._id], _id: uniqId1, customFields: [], groupIds: []});
-		user.accessLevelIds = [];
-		const updatedUser = await UserPermissionsDB.patch(user);
-		if (updatedUser.__accessLevels && updatedUser.__accessLevels.length) {
-			throw new TestException("Didn't update user __accessLevels");
-		}
-	}).setReadKey(contextKey1).setLabel('User accessLevelIds has updated successfully'));
 	return scenario;
 }
 
@@ -349,7 +230,7 @@ export function checkInsertUserIfNotExist() {
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
 		await UserPermissionsDB.insertIfNotExist(userUuid1);
-		await UserPermissionsDB.queryUnique({uuid: userUuid1});
+		await UserPermissionsDB.queryUnique({userId: userUuid1});
 	}).setLabel('Insert not exist user'));
 	return scenario;
 }
@@ -358,9 +239,9 @@ export function checkInsertUserIfNotExistByExistUser() {
 	const scenario = __scenario("Check insertIfNotExist function by exist user");
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({uuid: userUuid1, groupIds: [], accessLevelIds: [uniqId3], _id: uniqId1});
+		await UserPermissionsDB.upsert({userId: userUuid1, groups: [], _id: uniqId1});
 		await UserPermissionsDB.insertIfNotExist(userUuid1);
-		await UserPermissionsDB.queryUnique({uuid: userUuid1});
+		await UserPermissionsDB.queryUnique({userId: userUuid1});
 	}).setLabel('Skip insert exist user'));
 	return scenario;
 }
@@ -369,27 +250,27 @@ export function createTowUsers() {
 	const scenario = __scenario("Create two users");
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({uuid: userUuid1, groupIds: [], accessLevelIds: [uniqId3], _id: uniqId1});
-		await UserPermissionsDB.upsert({uuid: userUuid2, groupIds: [uniqId4, uniqId5], accessLevelIds: [], _id: uniqId2});
+		await UserPermissionsDB.upsert({userId: userUuid1, groups: [], _id: uniqId1});
+		await UserPermissionsDB.upsert({userId: userUuid2, groups: [{groupId: uniqId4}, {groupId: uniqId5}], _id: uniqId2});
 	}).setLabel('Two users created'));
 	return scenario;
 }
 
-export function failedCreateUserWithDuplicateAccessLevel() {
-	const scenario = __scenario("Expect Fail to bind duplicate levels to user");
-	scenario.add(cleanup());
-	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [uniqId3, uniqId3], _id: uniqId1});
-	}).setLabel('Fail to bind duplicate levels to user, as expected')
-	  .expectToFail(ApiException));
-	return scenario;
-}
+// export function failedCreateUserWithDuplicateAccessLevel() {
+// 	const scenario = __scenario("Expect Fail to bind duplicate levels to user");
+// 	scenario.add(cleanup());
+// 	scenario.add(__custom(async (action, data) => {
+// 		await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [uniqId3, uniqId3], _id: uniqId1});
+// 	}).setLabel('Fail to bind duplicate levels to user, as expected')
+// 	  .expectToFail(ApiException));
+// 	return scenario;
+// }
 
 export function failedCreateUserWithDuplicateGroups() {
 	const scenario = __scenario("Expect Fail to bind duplicate groups to user");
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({uuid: userUuid1, groupIds: [uniqId2, uniqId2], _id: uniqId1});
+		await UserPermissionsDB.upsert({userId: userUuid1, groups: [{groupId: uniqId2}, {groupId: uniqId2}], _id: uniqId1});
 	}).setLabel('Fail to bind duplicate groups to user, as expected')
 	  .expectToFail(ApiException));
 	return scenario;
