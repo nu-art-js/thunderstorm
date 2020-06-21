@@ -104,20 +104,17 @@ export class PermissionsAssert_Class
 			if (ServerApi.isDebug)
 				return;
 
-			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${path}`)
+			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${path}`);
 		}
 
-		const user = userDetails.user;
 		const groups = userDetails.userGroups;
-		const userPermissions = userDetails.userLevels;
 		const requestPermissions = apiDetails.requestPermissions;
 
-		const requestPairWithLevelsObj: RequestPairWithLevelsObj = {accessLevels: requestPermissions, customField: requestCustomField}
-		const userPairWithLevelsObj: GroupPairWithBaseLevelsObj = {accessLevels: userPermissions, customFields: user.customFields || []}
+		const requestPairWithLevelsObj: RequestPairWithLevelsObj = {accessLevels: requestPermissions, customField: requestCustomField};
 
 		let groupMatch = false;
 		const groupsMatchArray = groups.map(group => {
-			const groupPairWithLevelsObj: GroupPairWithBaseLevelsObj = {accessLevels: group.__accessLevels || [], customFields: group.customFields || []}
+			const groupPairWithLevelsObj: GroupPairWithBaseLevelsObj = {accessLevels: group.__accessLevels || [], customFields: group.customFields || []};
 
 			return this.isMatchWithLevelsObj(groupPairWithLevelsObj, requestPairWithLevelsObj);
 		});
@@ -127,25 +124,37 @@ export class PermissionsAssert_Class
 				groupMatch = true;
 		}
 
-		if (this.isMatchWithLevelsObj(userPairWithLevelsObj, requestPairWithLevelsObj))
-			groupMatch = true;
-
 		if (!groupMatch) {
 			throw new ApiException(403, "Action Forbidden");
 		}
 	}
 
 	private async getUserDetails(uuid: string) {
-		const user = await UserPermissionsDB.queryUnique({uuid: uuid});
+		const user = await UserPermissionsDB.queryUnique({userId: uuid});
+		const groups = user.groups || [];
+		const groupIds = groups.map(userGroup => userGroup.groupId);
 		const groupsArray: DB_PermissionsGroup[][] = await Promise.all(
-			this.splitToManyArrays(user.groupIds || []).map(subGroupIds => GroupPermissionsDB.query({where: {_id: {$in: subGroupIds}}})));
+			this.splitToManyArrays(groupIds || []).map(subGroupIds => GroupPermissionsDB.query({where: {_id: {$in: subGroupIds}}})));
 		const userGroups: DB_PermissionsGroup[] = ([] as DB_PermissionsGroup[]).concat(...groupsArray);
-		const userLevels = await this.getAccessLevels(user.accessLevelIds || []);
+
+		userGroups.map(userGroup => {
+			const group = groups.find(groupItem => groupItem.groupId === userGroup._id);
+			if (!group)
+				throw new BadImplementationException("You are missing group in your code implementation");
+
+			const cfArray = [];
+			if (userGroup.customFields) {
+				cfArray.push(...userGroup.customFields);
+			}
+
+			if (group.customField) {
+				cfArray.push(group.customField);
+			}
+		});
 
 		return {
 			user,
-			userGroups,
-			userLevels
+			userGroups
 		}
 	}
 

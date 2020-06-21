@@ -45,7 +45,7 @@ export type Request_AssignAppPermissions = {
 	groupIdsToRemove: string[],
 	groupId: string,
 	userId: string
-	customFields: StringMap
+	customField: StringMap
 }
 
 
