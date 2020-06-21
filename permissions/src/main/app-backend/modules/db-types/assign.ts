@@ -30,22 +30,18 @@ import {
 	validateOptionalId,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
-import {
-	OnNewUserRegistered,
-	OnUserLogin
-} from "@nu-art/user-account/backend";
 import {Clause_Where} from "@nu-art/firebase";
 import {ApiException} from "@nu-art/thunderstorm/backend";
 
 import {
+	_keys,
+	batchAction,
 	filterDuplicates,
+	filterInstances,
 	TypeValidator,
 	validateArray,
 	validateObjectValues,
-	validateRegexp,
-	batchAction,
-	filterInstances,
-	_keys
+	validateRegexp
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
@@ -130,8 +126,8 @@ export class GroupsDB_Class
 
 
 export class UsersDB_Class
-	extends BaseDB_ApiGenerator<DB_PermissionsUser>
-	implements OnNewUserRegistered, OnUserLogin {
+	extends BaseDB_ApiGenerator<DB_PermissionsUser> {
+
 	static _validator: TypeValidator<DB_PermissionsUser> = {
 		_id: validateOptionalId,
 		userId: validateUserUuid,
@@ -146,14 +142,6 @@ export class UsersDB_Class
 	protected internalFilter(item: DB_PermissionsUser): Clause_Where<DB_PermissionsUser>[] {
 		const {userId} = item;
 		return [{userId}];
-	}
-
-	async __onUserLogin(email: string) {
-		await this.insertIfNotExist(email);
-	}
-
-	async __onNewUserRegistered(email: string) {
-		await this.insertIfNotExist(email);
 	}
 
 	async insertIfNotExist(email: string) {
