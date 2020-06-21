@@ -131,35 +131,18 @@ export class UsersDB_Class
 	implements OnNewUserRegistered, OnUserLogin {
 	static _validator: TypeValidator<DB_PermissionsUser> = {
 		_id: validateOptionalId,
-		uuid: validateUserUuid,
-		groupIds: validateArray(validateUniqueId, false),
-		accessLevelIds: validateArray(validateUniqueId, false),
-		customFields: validateArray(validateObjectValues<string>(validateCustomFieldValues), false),
-		__accessLevels: undefined
+		userId: validateUserUuid,
+		groups: validateArray({groupId: validateUniqueId, customFields: undefined}, false)
 	};
 
 	constructor() {
 		super(CollectionName_Users, UsersDB_Class._validator, "user");
-		this.setLockKeys(['__accessLevels', "uuid"]);
+		this.setLockKeys(["userId"]);
 	}
 
 	protected internalFilter(item: DB_PermissionsUser): Clause_Where<DB_PermissionsUser>[] {
-		const {uuid} = item;
-		return [{uuid}];
-	}
-
-	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser): Promise<DB_PermissionsUser> {
-		dbInstance.__accessLevels = [];
-		const accessLevelIds = dbInstance.accessLevelIds || [];
-		if (accessLevelIds.length) {
-			const userLevels = await AccessLevelPermissionsDB.query({where: {_id: {$in: accessLevelIds}}});
-			checkDuplicateLevelsDomain(userLevels);
-			dbInstance.__accessLevels = userLevels.map(level => {
-				return {domainId: level.domainId, value: level.value};
-			});
-		}
-
-		return super.upsertImpl(transaction, dbInstance);
+		const {userId} = item;
+		return [{userId}];
 	}
 
 	async __onUserLogin(email: string) {
@@ -171,11 +154,11 @@ export class UsersDB_Class
 	}
 
 	async insertIfNotExist(email: string) {
-		const users = await this.query({where: {uuid: email}});
+		const users = await this.query({where: {userId: email}});
 		if (users.length)
 			return;
 
-		return this.upsert({uuid: email, groupIds: [], accessLevelIds: []});
+		return this.upsert({userId: email, groups: []});
 	}
 }
 
