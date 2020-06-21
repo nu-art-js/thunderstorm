@@ -115,13 +115,19 @@ export class FirestoreTransaction {
 	}
 
 	async patch<Type extends object>(collection: FirestoreCollection<Type>, instance: Subset<Type>) {
+		return (await this.patch_Read(collection, instance))();
+	}
+
+	async patch_Read<Type extends object>(collection: FirestoreCollection<Type>, instance: Subset<Type>) {
 		const doc = await this._queryItem(collection, instance);
 		if (!doc)
 			throw new BadImplementationException(`Patching a non existent doc for query ${FirestoreInterface.buildUniqueQuery(collection, instance)}`);
 
-		const patchedInstance = merge(await doc.data() as Type, instance);
-		this.transaction.set(doc.ref as admin.firestore.DocumentReference, patchedInstance);
-		return patchedInstance;
+		return async () => {
+			const patchedInstance = merge(await doc.data() as Type, instance);
+			this.transaction.set(doc.ref as admin.firestore.DocumentReference, patchedInstance);
+			return patchedInstance;
+		}
 	}
 
 	async delete<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
@@ -131,7 +137,7 @@ export class FirestoreTransaction {
 	async delete_Read<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
 		const docs = await this._query(collection, ourQuery);
 
-		if(docs.length > 500)
+		if (docs.length > 500)
 			throw new BadImplementationException(`Trying to delete ${docs.length} documents. Not allowed more then 5oo in a single transaction`);
 
 		return async () => {
