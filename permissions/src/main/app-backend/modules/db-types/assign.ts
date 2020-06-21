@@ -22,7 +22,8 @@ import {
 	DB_PermissionAccessLevel,
 	DB_PermissionsGroup,
 	DB_PermissionsUser,
-	PredefinedGroup
+	PredefinedGroup,
+	Request_AssignAppPermissions
 } from "../_imports";
 import {
 	BaseDB_ApiGenerator,
@@ -43,7 +44,8 @@ import {
 	validateObjectValues,
 	validateRegexp,
 	batchAction,
-	filterInstances
+	filterInstances,
+	_keys
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
@@ -159,6 +161,27 @@ export class UsersDB_Class
 			return;
 
 		return this.upsert({userId: email, groups: []});
+	}
+
+	async assignAppPermissions(body: Request_AssignAppPermissions) {
+		await this.runInTransaction(async (transaction) => {
+			const user = await transaction.queryUnique(this.collection, {where: {_id: body.userId}});
+			if (!user)
+				throw new ApiException(404, `No permissions USER for id ${body.userId}`);
+
+			const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: `${body.projectId}--${body.groupId}`}});
+			if (!_group)
+				throw new ApiException(404, `No permissions GROUP for id ${body.groupId}`);
+
+			if (!body.customFields || _keys(body.customFields).length === 0)
+				throw new ApiException(400, `Cannot set app permissions '${body.projectId}--${body.groupId}', request must have custom fields restriction!!`);
+
+			const newGroups = (user.groups || [])?.filter(group => !body.groupIdsToRemove.find(idToRemove => idToRemove === group.groupId))
+			newGroups.push({groupId: _group._id, customFields: body.customFields})
+			user.groups = newGroups;
+
+			return transaction.upsert(this.collection, user);
+		});
 	}
 }
 
