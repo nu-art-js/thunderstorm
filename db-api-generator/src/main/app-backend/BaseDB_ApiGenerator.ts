@@ -357,7 +357,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	/**
 	 * Deletes a unique document based on its `_id`. Uses a transaction, after deletion assertions occur.
 	 *
-	 * @param _id - The _if of th object to be deleted.
+	 * @param _id - The _id of the object to be deleted.
 	 *
 	 * @throws `ApiException` when the document doesn't exist in the collection.
 	 *
@@ -382,8 +382,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	/**
 	 * Uses the `transaction` to delete a unique document, querying with the `ourQuery`.
 	 *
-	 * @param transaction
-	 * @param ourQuery
+	 * @param transaction - The transaction object.
+	 * @param ourQuery - The query to be used for the deletion.
 	 *
 	 * @returns
 	 * A promise of the document that was deleted.

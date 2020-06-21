@@ -27,7 +27,7 @@ import {
 import {__stringify} from "@nu-art/ts-common";
 import {
 	AccountModule,
-	ApiAccountAssertLoginSAML,
+	AccountApi_AssertLoginSAML,
 	PostAssertBody,
 	QueryParam_Email,
 	QueryParam_RedirectUrl,
@@ -39,7 +39,7 @@ import {HttpMethod} from "@nu-art/thunderstorm";
 
 
 class AssertSamlToken
-	extends ServerApi<ApiAccountAssertLoginSAML> {
+	extends ServerApi<AccountApi_AssertLoginSAML> {
 
 	constructor() {
 		super(HttpMethod.POST, "assert");

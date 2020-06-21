@@ -24,9 +24,9 @@ import {
 
 // noinspection ES6PreferShortImport
 import {
-	Permissions_ApiRegisterProject,
+	PermissionsApi_RegisterProject,
 	Request_RegisterProject,
-	Permissions_ApiRegisterExternalProject
+	PermissionsApi_RegisterExternalProject
 } from "../permissions/_imports";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
@@ -34,7 +34,7 @@ import {PermissionsModule} from "../../../modules/PermissionsModule";
 
 
 class ServerApi_RegisterExternalProject
-	extends ServerApi<Permissions_ApiRegisterExternalProject> {
+	extends ServerApi<PermissionsApi_RegisterExternalProject> {
 
 	constructor() {
 		super(HttpMethod.POST, "register-external-project");
@@ -47,7 +47,7 @@ class ServerApi_RegisterExternalProject
 }
 
 class ServerApi_RegisterProject
-	extends ServerApi<Permissions_ApiRegisterProject> {
+	extends ServerApi<PermissionsApi_RegisterProject> {
 
 	constructor() {
 		super(HttpMethod.GET, "register-project");

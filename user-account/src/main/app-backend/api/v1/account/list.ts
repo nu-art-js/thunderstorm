@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of 
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -22,26 +23,23 @@ import {
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
-	PermissionsApi_UserUrlsPermissions,
-	Request_UserUrlsPermissions
+	AccountApi_ListUsers,
+	AccountModule
 } from "./_imports";
 import {HttpMethod} from "@nu-art/thunderstorm";
-import {AccountModule} from "@nu-art/user-account/backend";
-import {PermissionsModule} from "../../../modules/PermissionsModule";
 
-class ServerApi_UserUrlsPermissions
-	extends ServerApi<PermissionsApi_UserUrlsPermissions> {
+
+class ListAccounts
+	extends ServerApi<AccountApi_ListUsers> {
 
 	constructor() {
-		super(HttpMethod.POST, "user-urls-permissions");
-		this.dontPrintResponse();
+		super(HttpMethod.GET, "query");
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UserUrlsPermissions) {
-		const userId = await AccountModule.validateSession(request);
-		return PermissionsModule.getUserUrlsPermissions(body.projectId, body.urls, userId, body.requestCustomField);
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
+		const users: { email: string; _id: string }[] = await AccountModule.listUsers();
+		return {users}
 	}
-
 }
 
-module.exports = new ServerApi_UserUrlsPermissions();
+module.exports = new ListAccounts();

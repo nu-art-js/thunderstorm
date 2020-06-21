@@ -43,3 +43,4 @@ export const Backend_ModulePack_Permissions = [
 export * from "../modules/db-types/managment"
 export * from "../modules/db-types/assign"
 export * from "../modules/permissions-assert"
+export * from "../modules/PermissionsModule"

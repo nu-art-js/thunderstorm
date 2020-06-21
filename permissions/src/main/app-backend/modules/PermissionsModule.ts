@@ -17,21 +17,18 @@
  */
 
 import {
-	batchAction,
 	ImplementationMissingException,
 	Module,
 	StringMap
 } from "@nu-art/ts-common";
 import {
-	DB_PermissionAccessLevel,
 	DB_PermissionProject,
+	PredefinedGroup,
 	Request_RegisterProject,
-	UserUrlsPermissions,
-    PredefinedGroup
+	UserUrlsPermissions
 } from "./_imports";
 import {PermissionsAssert} from "./permissions-assert";
 import {
-	AccessLevelPermissionsDB,
 	ApiPermissionsDB,
 	ProjectPermissionsDB
 } from "./db-types/managment";
@@ -78,21 +75,6 @@ export class PermissionsModule_Class
 		}
 
 		return {url, isAllowed}
-	}
-
-	async getApiAccessLevels(projectId: string, routes: string[]): Promise<DB_PermissionAccessLevel[]> {
-		const levels: DB_PermissionAccessLevel[][] = await batchAction(routes, 10, async (chunk: string[]) => {
-			const api = await ApiPermissionsDB.queryUnique({path: {$in: chunk}, projectId});
-			if (!api.accessLevelIds || api.accessLevelIds.length === 0)
-				return [];
-
-			return AccessLevelPermissionsDB.query({where: {_id: {$in: api.accessLevelIds}}})
-		});
-
-		return levels.reduce((toRet, _levels) => {
-			toRet.concat(_levels)
-			return toRet;
-		}, [])
 	}
 
 	async registerProject() {

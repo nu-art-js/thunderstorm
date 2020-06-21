@@ -25,14 +25,14 @@ import {
 
 import {
 	AccountModule,
-	ApiAccountCreate,
+	AccountApi_Create,
 	Request_CreateAccount
 } from "./_imports";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_Account_Create
-	extends ServerApi<ApiAccountCreate> {
+	extends ServerApi<AccountApi_Create> {
 
 	constructor() {
 		super(HttpMethod.POST, "create");

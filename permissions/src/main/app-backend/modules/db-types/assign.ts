@@ -121,6 +121,7 @@ export class GroupsDB_Class
 				return transaction.queryUnique(this.collection, {where: {_id: {$in: chunk}}})
 			}));
 
+			//TODO patch the predefined groups, in case app changed the label of the group..
 			const groupsToInsert = _groups.filter(group => !dbGroups.find(dbGroup => dbGroup._id === group._id));
 			return Promise.all(groupsToInsert.map(group => this.insertImpl(transaction, group)));
 		});
@@ -169,17 +170,21 @@ export class UsersDB_Class
 			if (!user)
 				throw new ApiException(404, `No permissions USER for id ${body.userId}`);
 
-			const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: `${body.projectId}--${body.groupId}`}});
-			if (!_group)
-				throw new ApiException(404, `No permissions GROUP for id ${body.groupId}`);
 
 			if (!body.customField || _keys(body.customField).length === 0)
 				throw new ApiException(400, `Cannot set app permissions '${body.projectId}--${body.groupId}', request must have custom fields restriction!!`);
 
 			const newGroups = (user.groups || [])?.filter(group => !body.groupIdsToRemove.find(idToRemove => idToRemove === group.groupId))
-			newGroups.push({groupId: _group._id, customField: body.customField})
-			user.groups = newGroups;
 
+			if (body.groupId) {
+				const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: `${body.projectId}--${body.groupId}`}});
+				if (!_group)
+					throw new ApiException(404, `No permissions GROUP for id ${body.groupId}`);
+
+				newGroups.push({groupId: _group._id, customField: body.customField})
+			}
+
+			user.groups = newGroups;
 			return transaction.upsert(this.collection, user);
 		});
 	}

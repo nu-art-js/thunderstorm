@@ -25,12 +25,12 @@ import {
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	AccountModule,
-	ApiAccountValidateSession
+	AccountApi_ValidateSession
 } from "./_imports";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ValidateToken
-	extends ServerApi<ApiAccountValidateSession> {
+	extends ServerApi<AccountApi_ValidateSession> {
 
 	constructor() {
 		super(HttpMethod.GET, "validate");

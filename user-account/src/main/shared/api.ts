@@ -65,6 +65,13 @@ export type Response_Validation = {
 	email: string
 };
 
+export type Response_ListUsers = {
+	users: {
+		_id: string,
+		email: string
+	}[]
+};
+
 export type RequestParams_LoginSAML = {
 	[QueryParam_RedirectUrl]: string
 };
@@ -74,8 +81,10 @@ export type PostAssertBody = {
 	RelayState: string
 };
 
-export type ApiAccountCreate = ApiWithBody<'/v1/account/create', Request_CreateAccount, Response_Auth>
-export type ApiAccountLogin = ApiWithBody<'/v1/account/login', Request_LoginAccount, Response_Auth>
-export type ApiAccountLoginSAML = ApiWithQuery<"/v1/account/login-saml", Response_LoginSAML, RequestParams_LoginSAML>
-export type ApiAccountValidateSession = ApiWithQuery<'/v1/account/validate', Response_Validation>
-export type ApiAccountAssertLoginSAML = ApiWithBody<"/v1/account/assert", PostAssertBody, void>
+export type AccountApi_Create = ApiWithBody<'/v1/account/create', Request_CreateAccount, Response_Auth>
+export type AccountApi_Login = ApiWithBody<'/v1/account/login', Request_LoginAccount, Response_Auth>
+export type AccountApi_LoginSAML = ApiWithQuery<"/v1/account/login-saml", Response_LoginSAML, RequestParams_LoginSAML>
+export type AccountApi_ValidateSession = ApiWithQuery<'/v1/account/validate', Response_Validation>
+export type AccountApi_AssertLoginSAML = ApiWithBody<"/v1/account/assert", PostAssertBody, void>
+
+export type AccountApi_ListUsers = ApiWithQuery<'/v1/account/query', Response_ListUsers>

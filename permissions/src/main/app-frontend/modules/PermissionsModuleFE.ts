@@ -9,7 +9,7 @@ import {ThunderDispatcher} from "@nu-art/thunderstorm/app-frontend/core/thunder-
 import { HttpModule } from "@nu-art/thunderstorm/frontend";
 import { HttpMethod } from "@nu-art/thunderstorm";
 import {
-	Permissions_ApiUserUrlsPermissions,
+	PermissionsApi_UserUrlsPermissions,
 	UserUrlsPermissions
 } from "../..";
 
@@ -56,7 +56,7 @@ export class PermissionsModuleFE_Class
 
 		this.timeOutHandle = _setTimeout(() => {
 			HttpModule
-				.createRequest<Permissions_ApiUserUrlsPermissions>(HttpMethod.POST, 'user-urls-permissions')
+				.createRequest<PermissionsApi_UserUrlsPermissions>(HttpMethod.POST, 'user-urls-permissions')
 				.setRelativeUrl(`/v1/permissions/user-urls-permissions`)
 				.setOnError(`Failed to get user urls permissions`)
 				.setLabel(`Getting user urls permissions`)

@@ -61,13 +61,13 @@ export type Response_User = {
 	userId: string;
 };
 
-export type Permissions_AssignAppPermissions = ApiWithBody<"/v1/permissions/assert/app-permissions", Request_AssignAppPermissions, void>;
+export type PermissionsApi_AssignAppPermissions = ApiWithBody<"/v1/permissions/assert/app-permissions", Request_AssignAppPermissions, void>;
 
-export type Permissions_ApiAssertUserAccess = ApiWithBody<"/v1/permissions/assert-user-access", Request_AssertApiForUser, Response_User>;
-export type Permissions_ApiUserUrlsPermissions = ApiWithBody<"/v1/permissions/user-urls-permissions", Request_UserUrlsPermissions, UserUrlsPermissions>;
+export type PermissionsApi_AssertUserAccess = ApiWithBody<"/v1/permissions/assert-user-access", Request_AssertApiForUser, Response_User>;
+export type PermissionsApi_UserUrlsPermissions = ApiWithBody<"/v1/permissions/user-urls-permissions", Request_UserUrlsPermissions, UserUrlsPermissions>;
 
 
-export type Permissions_ApiRegisterExternalProject = ApiWithBody<"/v1/register/register-external-project", Request_RegisterProject, void>;
-export type Permissions_ApiRegisterProject = ApiWithQuery<"/v1/register/register-project", void>;
-export type Permissions_ApiTestPermissions = ApiWithQuery<"/test/test-permissions", void>;
+export type PermissionsApi_RegisterExternalProject = ApiWithBody<"/v1/register/register-external-project", Request_RegisterProject, void>;
+export type PermissionsApi_RegisterProject = ApiWithQuery<"/v1/register/register-project", void>;
+export type PermissionsApi_TestPermissions = ApiWithQuery<"/test/test-permissions", void>;
 
