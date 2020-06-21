@@ -22,7 +22,6 @@ import {__scenario} from "@nu-art/testelot";
 import {createTwoAccessLevels} from "./tests/create-project";
 import {
 	checkAccessLevelsPropertyOfGroup,
-	checkAccessLevelsPropertyOfUser,
 	checkDeleteAccessLevelsDocument,
 	checkGroupAccessLevelsAfterPatchingLevelDocument,
 	checkGroupAccessLevelsAfterUpdatingLevelDocument,
@@ -30,14 +29,8 @@ import {
 	checkInsertUserIfNotExistByExistUser,
 	checkPatchOfGroupAccessLevelsProperty,
 	checkPatchOfGroupAccessLevelsPropertyToHigherValue,
-	checkPatchOfUserAccessLevelsProperty,
-	checkPatchOfUserAccessLevelsPropertyToHigherValue,
 	checkUpdateOfGroupAccessLevelsProperty,
 	checkUpdateOfGroupAccessLevelsPropertyToHigherValue,
-	checkUpdateOfUserAccessLevelsProperty,
-	checkUpdateOfUserAccessLevelsPropertyToHigherValue,
-	checkUserAccessLevelsAfterPatchingLevelDocument,
-	checkUserAccessLevelsAfterUpdatingLevelDocument,
 	createApi,
 	createApiWithAccessLevel,
 	createGroupWithLegalCustomField,
@@ -46,7 +39,6 @@ import {
 	failedCreateApi,
 	failedCreateGroupWithDuplicateAccessLevel,
 	failedCreateTwoGroupsWithSameName,
-	failedCreateUserWithDuplicateAccessLevel,
 	failedCreateUserWithDuplicateGroups,
 	failToCreateGroupWithIllegalCustomField,
 	tryDeleteAccessLevelAssociatedWithApi,
@@ -67,25 +59,18 @@ mainScenario.add(createApi());
 mainScenario.add(failedCreateApi());
 mainScenario.add(checkAccessLevelsPropertyOfGroup());
 mainScenario.add(checkUpdateOfGroupAccessLevelsProperty());
-mainScenario.add(checkAccessLevelsPropertyOfUser());
-mainScenario.add(checkUpdateOfUserAccessLevelsProperty());
 mainScenario.add(checkUpdateOfGroupAccessLevelsPropertyToHigherValue());
 mainScenario.add(checkPatchOfGroupAccessLevelsProperty());
 mainScenario.add(checkGroupAccessLevelsAfterPatchingLevelDocument());
 mainScenario.add(checkPatchOfGroupAccessLevelsPropertyToHigherValue());
-mainScenario.add(checkUpdateOfUserAccessLevelsPropertyToHigherValue());
 mainScenario.add(checkGroupAccessLevelsAfterUpdatingLevelDocument());
-mainScenario.add(checkUserAccessLevelsAfterUpdatingLevelDocument());
-mainScenario.add(checkPatchOfUserAccessLevelsProperty());
-mainScenario.add(checkUserAccessLevelsAfterPatchingLevelDocument());
-mainScenario.add(checkPatchOfUserAccessLevelsPropertyToHigherValue());
 mainScenario.add(createTowGroups());
 mainScenario.add(createGroupWithLegalCustomField());
 mainScenario.add(failToCreateGroupWithIllegalCustomField());
 mainScenario.add(failedCreateTwoGroupsWithSameName());
 mainScenario.add(failedCreateGroupWithDuplicateAccessLevel());
 mainScenario.add(createTowUsers());
-mainScenario.add(failedCreateUserWithDuplicateAccessLevel());
+// mainScenario.add(failedCreateUserWithDuplicateAccessLevel());
 mainScenario.add(failedCreateUserWithDuplicateGroups());
 mainScenario.add(createApiWithAccessLevel());
 mainScenario.add(checkInsertUserIfNotExist());
