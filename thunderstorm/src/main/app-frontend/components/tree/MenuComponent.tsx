@@ -20,22 +20,34 @@
  */
 
 
-// import * as React from "react";
-//
-// export type InferItemType<R> = R extends Renderer<infer Item> ? Item : "Make sure the Renderer Renders the correct item type e.g. (props:{item:Item}) => React.ReactNode";
-//
-// export type Renderer<Item> = React.ElementType<{ item: Item }>
-//
-// export type RendererMap<T extends any = any> = {
-// 	[k: string]: Renderer<T>
-// }
-//
-// export type ItemWrapper<Rm extends RendererMap, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
-// 	item: Item
-// 	type: K
-// }
-//
-// export type GenericRenderer<Rm extends RendererMap, ItemType extends ItemWrapper<Rm> = ItemWrapper<Rm>> = {
-// 	rendererMap: Rm
-// 	items: ItemType[]
-// }
+import * as React from "react";
+import {generateHex} from "@nu-art/ts-common";
+import {BaseComponent} from "../../core/BaseComponent";
+import {Adapter} from "./Adapter";
+import {Tree} from "./Tree";
+
+type Props = {
+	adapter: Adapter
+	childrenContainerStyle?: any
+	onNodeClicked?: Function
+	onNodeDoubleClicked?: Function // TODO: Need to handle this
+	id?: string
+}
+
+export class MenuComponent
+	extends BaseComponent<Props> {
+	private readonly id: string;
+
+	constructor(props: Props) {
+		super(props);
+		this.id = this.props.id || generateHex(8);
+	}
+
+	render() {
+		return <Tree
+			id={this.id}
+			adapter={this.props.adapter}
+			onNodeClicked={this.props.onNodeClicked}
+		/>
+	}
+}

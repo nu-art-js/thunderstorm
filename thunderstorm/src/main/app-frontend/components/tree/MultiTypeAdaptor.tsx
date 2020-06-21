@@ -1,5 +1,8 @@
 /*
- * A typescript & react boilerplate with api call example
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,13 +19,13 @@
  * limitations under the License.
  */
 
+import {_keys} from "@nu-art/ts-common";
 import {
 	_Renderer,
 	_RendererMap,
 	Adapter,
 	TreeRendererProps
-} from "@nu-art/thunderstorm/frontend";
-import {_keys} from "@nu-art/ts-common";
+} from "./Adapter";
 
 export class MultiTypeAdapter<Rm extends _RendererMap>
 	extends Adapter {

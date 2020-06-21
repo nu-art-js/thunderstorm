@@ -7,6 +7,7 @@ import {
 } from "./MenuModule";
 import {BaseComponent} from "../../core/BaseComponent";
 import {stopPropagation} from '../../utils/tools';
+import {MenuComponent} from "../../components/tree/MenuComponent";
 
 export type MenuPosition = { left: number, top: number };
 
@@ -100,14 +101,11 @@ export class PopupMenu
 		return <div style={{position: "absolute"}}>
 			<div id="overlay" ref={this.overlayRef} style={overlayStyle}>
 				<div style={this.style(element.pos)}>
-					TEMPORARILY DISABLED
-
-					{/*<MultiTypeTree*/}
-					{/*	menu={element.menu}*/}
-					{/*	root={element.menu}*/}
-					{/*	onNodeDoubleClicked={element.onNodeDoubleClicked}*/}
-					{/*	onNodeClicked={element.onNodeClicked}*/}
-					{/*/>*/}
+					<MenuComponent
+						adapter={element.adapter}
+						onNodeDoubleClicked={element.onNodeDoubleClicked}
+						onNodeClicked={element.onNodeClicked}
+					/>
 				</div>
 			</div>
 		</div>;

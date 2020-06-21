@@ -19,21 +19,20 @@
 import * as React from "react";
 import {css} from "emotion";
 import {
+	_RendererMap,
 	DropDown,
 	DropDown_Node,
-	InputProps,
-	HeaderStyleProps,
-	ValueProps,
-	inputStyle,
-	headerStyle,
-	ListStyleProps,
-	listStyle,
 	DropDownItemRenderer,
-	MenuItemWrapper,
-	RendererMap
+	headerStyle,
+	HeaderStyleProps,
+	InputProps,
+	inputStyle,
+	ItemToRender,
+	listStyle,
+	ListStyleProps,
+	ValueProps
 } from "@nu-art/thunderstorm/frontend";
 import {ICONS} from "@res/icons";
-
 // const optionRendererWrapperStyle = css({":hover": {backgroundColor: "lime"}});
 
 const optionRendererStyle = (selected: boolean) => css(
@@ -68,7 +67,7 @@ const plagues: Plague[] = [
 	{label: 'Internet', value: 'internet'},
 ];
 
-const plaguesWithTitles: MenuItemWrapper<RendererMap, string>[] = [
+const plaguesWithTitles: ItemToRender<_RendererMap, string>[] = [
 	{
 		item: {label: 'Phisical', value: 'title'},
 		_children: [
@@ -216,7 +215,7 @@ export class Example_DropDown
 						onSelected={this.onSelected}
 						valueRenderer={valueRenderer}
 						inputResolver={inputResolverWithCustomInlineStyle}
-						filter={(item) => [(item as MenuItemWrapper<RendererMap, string>).item.label.toLowerCase()]}
+						filter={(item) => [(item as ItemToRender<_RendererMap, string>).item.label.toLowerCase()]}
 						selected={plagues[2]}
 						mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowOpen(undefined, 14)}</div>}
 						headerStyleResolver={headerResolverStyle}
