@@ -1,20 +1,20 @@
 import * as React from "react";
+import {ReactNode} from "react";
 import {BaseComponent} from "../../core/BaseComponent";
 import {
-	Menu,
+	_Menu,
 	Menu_Model,
 	MenuBuilder,
 	MenuListener,
 	resolveRealPosition
 } from "./MenuModule";
 import {BadImplementationException} from "@nu-art/ts-common";
-import {ReactNode} from "react";
 
 type Props = {
 	id: string
 	iconOpen: ReactNode
 	iconClosed: ReactNode
-	menu: Menu<any>
+	menu: _Menu<any>
 }
 
 export class MenuAndButton

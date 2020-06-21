@@ -1,23 +1,23 @@
 import * as React from "react";
 import {Component} from "react";
 import {
-	Menu,
-	MenuAndButton,
-	MenuItemWrapper,
-	Renderer,
+	_Menu,
+	_Renderer,
+	ItemToRender,
+	MenuAndButton
 } from "@nu-art/thunderstorm/frontend";
 import {
 	_keys,
 	randomObject
 } from "@nu-art/ts-common";
 import {ICONS} from "@res/icons";
-
+import {SimpleMenu} from "./SimpleMenu";
 
 type RendererString = { action?: (item: { toDisplay: string }) => void, toDisplay: string };
 
 type Rm = {
-	normal: Renderer<RendererString>
-	bold: Renderer<RendererString>
+	normal: _Renderer<RendererString>
+	bold: _Renderer<RendererString>
 };
 
 const rendererMap: Rm = {
@@ -28,23 +28,23 @@ const rendererMap: Rm = {
 const menuItems = ['hi', 'bye', 'ciao', 'nice to meet', 'you'];
 const menuItems1 = ["pah", "zevel", "ashpa"];
 
-const createMenu = (): Menu<Rm> => {
+const createMenu = (): _Menu<Rm> => {
 	const _children = menuItems.map(item => {
-		const menuItem: MenuItemWrapper<Rm, keyof Rm> = {
+		const menuItem: ItemToRender<Rm, keyof Rm> = {
 			item: {toDisplay: item},
 			type: randomObject(_keys(rendererMap))
 		};
 		return menuItem;
 	});
 	const _children1 = menuItems1.map(item => {
-		const menuItem: MenuItemWrapper<Rm, keyof Rm> = {
+		const menuItem: ItemToRender<Rm, keyof Rm> = {
 			item: {toDisplay: item},
 			type: randomObject(_keys(rendererMap))
 		};
 		return menuItem;
 	});
 	_children[2]._children = _children1;
-	return {_children, rendererMap};
+	return {items: _children, rendererMap};
 };
 
 export class Example_Menu
@@ -52,7 +52,7 @@ export class Example_Menu
 
 
 	render() {
-		const menu = createMenu() as Menu<any>;
+		const menu = createMenu() as _Menu<any>;
 		return <div>
 			<div>
 				<h2>Here is a Menu Button</h2>
@@ -67,7 +67,7 @@ export class Example_Menu
 			<div>
 				<h2>Here is the same menu but as a component</h2>
 				TEMPORARILY DISABLED
-				{/*<MultiTypeTree menu={menu} root={menu}/>*/}
+				<SimpleMenu menu={menu}/>
 			</div>
 		</div>
 	}

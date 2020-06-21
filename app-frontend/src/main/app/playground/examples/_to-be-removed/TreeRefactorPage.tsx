@@ -18,7 +18,7 @@
 
 import * as React from "react";
 import {Example_VerySimpleTree} from "../keyboard-listener/Example_VerySimpleTree";
-import {Example_Menu} from "../Example_Menu";
+import {Example_Menu} from "../menu/Example_Menu";
 import {Example_DropDown} from "../Example_DropDown";
 import {Example_DataTree} from "../keyboard-listener/Example_DataTree";
 import {Example_FakeMenu} from "../keyboard-listener/Example_FakeMenu";

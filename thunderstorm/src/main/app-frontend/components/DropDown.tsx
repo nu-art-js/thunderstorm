@@ -25,10 +25,12 @@ import {
 	_keys,
 	generateHex
 } from "@nu-art/ts-common";
-import {RendererMap} from "../types/renderer-map";
-import {MenuItemWrapper} from "../modules/menu/MenuModule";
 import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
+import {
+	_RendererMap,
+	ItemToRender
+} from "./tree/Adapter";
 
 const defaultWidth = "222px";
 const defaultTitleHeight = "28px";
@@ -105,7 +107,7 @@ export type ValueProps<ItemType> = {
 export type Refs = { [k: string]: React.RefObject<HTMLDivElement> };
 
 type State<ItemType> = {
-	filteredOptions: (ItemType | MenuItemWrapper<RendererMap, string>)[]
+	filteredOptions: (ItemType | ItemToRender<_RendererMap, string>)[]
 	open: boolean
 	selected?: ItemType
 	hover?: ItemType
@@ -118,7 +120,7 @@ export type DropDown_Node<ItemType> = {
 }
 
 export type DropDownItemRenderer<ItemType> = (props: DropDown_Node<ItemType>) => React.ReactNode
-export type DropDownRendererMap<ItemType> = RendererMap | { [k: string]: DropDownItemRenderer<ItemType> }
+export type DropDownRendererMap<ItemType> = _RendererMap | { [k: string]: DropDownItemRenderer<ItemType> }
 
 export type SingleRendererAndOptions<ItemType> = {
 	options: ItemType[] | (() => ItemType[]),
@@ -126,7 +128,7 @@ export type SingleRendererAndOptions<ItemType> = {
 }
 
 export type MultipleRenderersAndOptions<ItemType> = {
-	options: MenuItemWrapper<RendererMap, string>[] | (() => MenuItemWrapper<RendererMap, string>[]),
+	options: ItemToRender<_RendererMap, string>[] | (() => ItemToRender<_RendererMap, string>[]),
 	rendererMap: { [key: string]: DropDownItemRenderer<ItemType> },
 	avoidActionOnTypes?: string[]
 }
@@ -139,7 +141,7 @@ type Props<ItemType> = StaticProps & {
 	renderersAndOptions: RenderersAndOptions<ItemType>
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
-	filter?: (item: ItemType | MenuItemWrapper<RendererMap, string>) => string[]
+	filter?: (item: ItemType | ItemToRender<_RendererMap, string>) => string[]
 	inputResolver?: (selected?: ItemType) => InputProps
 	placeholder?: string
 
@@ -241,11 +243,11 @@ export class DropDown<ItemType>
 
 		const inputComplementary = (this.props.inputResolver || this.inputResolver)(this.state.selected);
 		const options = this.props.renderersAndOptions.options;
-		return (<FilterInput<ItemType | MenuItemWrapper<RendererMap, string>>
+		return (<FilterInput<ItemType | ItemToRender<_RendererMap, string>>
 			id={this.props.id}
 			filter={this.props.filter}
 			list={Array.isArray(options) ? options : options()}
-			onChange={(filtered: (ItemType | MenuItemWrapper<RendererMap, string>)[]) => this.setState(() => ({filteredOptions: filtered}))}
+			onChange={(filtered: (ItemType | ItemToRender<_RendererMap, string>)[]) => this.setState(() => ({filteredOptions: filtered}))}
 			focus={true}
 			className={inputComplementary.className}
 			inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
@@ -349,7 +351,7 @@ export class DropDown<ItemType>
 		const items = this.state.filteredOptions;
 		let rendererMap: DropDownRendererMap<ItemType> | { [key: string]: React.ReactNode };
 		// @ts-ignore
-		let _children: MenuItemWrapper<RendererMap, string>[];
+		let _children: ItemToRender<_RendererMap, string>[];
 
 		if (this.isSingleRendererAndOptions(this.props.renderersAndOptions)) {
 			rendererMap = {
@@ -369,7 +371,7 @@ export class DropDown<ItemType>
 			Object.keys(rendererMap).forEach(
 				(el) => rendererMap[el] = this.funcCreator(rendererMap[el] as DropDownItemRenderer<ItemType>, allowAction(el, _avoidAction)));
 
-			_children = items as MenuItemWrapper<RendererMap, string>[];
+			_children = items as ItemToRender<_RendererMap, string>[];
 		}
 
 		const listComplementary = (this.props.listStyleResolver || this.listStyleResolver);
