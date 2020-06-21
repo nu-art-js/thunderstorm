@@ -24,23 +24,23 @@ export type Base_AccessLevels = {
 	value: number
 }
 
-export type Request_PermissionsBase = {
-	accessLevelIds?: string[]
-	__accessLevels?: Base_AccessLevels[]
+export type Request_CreateGroup = {
+	label: string,
+	accessLevelIds?: string[],
+	__accessLevels?: Base_AccessLevels[],
 	customFields?: StringMap[]
-}
-
-
-export type Request_CreateGroup = Request_PermissionsBase & {
-	label: string
 };
 
 export type DB_PermissionsGroup = DB_Object & Request_CreateGroup;
 
+export type User_Group = {
+	groupId: string,
+	customFields?: StringMap
+}
 
-export type Request_CreateUser = Request_PermissionsBase & {
-	uuid: string,
-	groupIds?: string[]
+export type Request_CreateUser = {
+	userId: string,
+	groups?: User_Group[]
 };
 
 export type DB_PermissionsUser = DB_Object & Request_CreateUser
