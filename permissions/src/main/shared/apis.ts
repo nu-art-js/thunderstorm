@@ -21,10 +21,7 @@ import {
 	ApiWithQuery
 } from "@nu-art/thunderstorm";
 import {StringMap} from "@nu-art/ts-common";
-import {
-	DB_PermissionAccessLevel,
-	DB_PermissionProject
-} from "./manager-types";
+import {DB_PermissionProject} from "./manager-types";
 
 
 export type UserUrlsPermissions = {
@@ -43,26 +40,33 @@ export type Request_UserUrlsPermissions = {
 	requestCustomField: StringMap
 }
 
-export type Params_ApiLevels = {
-	apiPath: string,
-	projectId: string
+export type Request_AssignAppPermissions = {
+	projectId: string,
+	groupId: string,
+	userId: string
+	customFields: StringMap
 }
+
+
+export type PredefinedGroup = { _id: string, label: string };
 
 export type Request_RegisterProject = {
 	project: DB_PermissionProject,
 	routes: string[];
+	predefinedGroups?: PredefinedGroup[]
 };
 
 export type Response_User = {
 	userId: string;
 };
 
+export type Permissions_AssignAppPermissions = ApiWithBody<"/v1/permissions/assert/app-permissions", Request_AssignAppPermissions, void>;
+
 export type Permissions_ApiAssertUserAccess = ApiWithBody<"/v1/permissions/assert-user-access", Request_AssertApiForUser, Response_User>;
 export type Permissions_ApiUserUrlsPermissions = ApiWithBody<"/v1/permissions/user-urls-permissions", Request_UserUrlsPermissions, UserUrlsPermissions>;
 
-export type Permissions_ApiLevels = ApiWithQuery<"/v1/permissions/api-levels", DB_PermissionAccessLevel[], Params_ApiLevels>;
 
 export type Permissions_ApiRegisterExternalProject = ApiWithBody<"/v1/register/register-external-project", Request_RegisterProject, void>;
 export type Permissions_ApiRegisterProject = ApiWithQuery<"/v1/register/register-project", void>;
-export declare type Permissions_ApiTestPermissions = ApiWithQuery<"/test/test-permissions", void>;
+export type Permissions_ApiTestPermissions = ApiWithQuery<"/test/test-permissions", void>;
 

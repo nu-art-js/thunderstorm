@@ -23,7 +23,8 @@ import {
 	Dispatcher,
 	generateHex,
 	hashPasswordWithSalt,
-	Module
+	Module,
+	__stringify
 } from "@nu-art/ts-common";
 
 
@@ -73,7 +74,7 @@ export class AccountsModule_Class
 
 	protected init(): void {
 		const firestore = FirebaseModule.createAdminSession(this.config.projectId).getFirestore();
-		this.sessions = firestore.getCollection<DB_Session>(Collection_Sessions, ["email"]);
+		this.sessions = firestore.getCollection<DB_Session>(Collection_Sessions, ["userId"]);
 		this.accounts = firestore.getCollection<DB_Account>(Collection_Accounts, ["email"]);
 	}
 
@@ -87,7 +88,7 @@ export class AccountsModule_Class
 	}
 
 	async listSessions() {
-		return this.sessions.getAll(["email", "timestamp"]);
+		return this.sessions.getAll(["userId", "timestamp"]);
 	}
 
 	async getSession(_email: string) {
@@ -113,6 +114,7 @@ export class AccountsModule_Class
 
 			const salt = generateHex(32);
 			account = {
+				_id: generateHex(32),
 				_audit: auditBy(request.email),
 				email: request.email,
 				salt,
@@ -136,25 +138,31 @@ export class AccountsModule_Class
 		if (account.saltedPassword !== hashPasswordWithSalt(account.salt, request.password))
 			throw new ApiException(401, "wrong username or password");
 
+		if (!account._id) {
+			account._id = generateHex(32);
+			await this.accounts.upsert(account);
+		}
+
 		await dispatch_onUserLogin.dispatchModuleAsync([request.email]);
 		return this.upsertSession(request.email);
 	}
 
 	async loginSAML(_email: string): Promise<Response_Auth> {
 		const email = _email.toLowerCase();
-		await this.createSAML(email);
+		const account = await this.createSAML(email);
 
 		await dispatch_onUserLogin.dispatchModuleAsync([email]);
-		return this.upsertSession(email);
+		return this.upsertSession(account._id);
 	}
 
 	private async createSAML(_email: string) {
 		const email = _email.toLowerCase();
 		const query = {where: {email}};
-		await this.accounts.runInTransaction(async (transaction) => {
+		const account = await this.accounts.runInTransaction(async (transaction) => {
 			let _account = await transaction.queryUnique(this.accounts, query);
 			if (!_account) {
 				_account = {
+					_id: generateHex(32),
 					_audit: auditBy(email),
 					email,
 				};
@@ -162,10 +170,16 @@ export class AccountsModule_Class
 				await transaction.insert(this.accounts, _account);
 			}
 
+			if (!_account._id) {
+				_account._id = generateHex(32);
+				await transaction.upsert(this.accounts, _account);
+			}
+
 			return _account;
 		});
 
 		await dispatch_onNewUserRegistered.dispatchModuleAsync([email]);
+		return account;
 	}
 
 	async validateSession(request: ExpressRequest): Promise<string> {
@@ -183,7 +197,17 @@ export class AccountsModule_Class
 		if (this.TTLExpired(session))
 			throw new ApiException(401, "Session timed out");
 
-		return session.email;
+		return await this.getUserEmailFromSession(session);
+	}
+
+	private async getUserEmailFromSession(session: DB_Session) {
+		const user = await this.accounts.queryUnique({where: {_id: session.userId}})
+		if (!user) {
+			await this.sessions.deleteItem(session);
+			throw new ApiException(403, `No user found for session: ${__stringify(session)}`);
+		}
+
+		return user.email;
 	}
 
 	private TTLExpired = (session: DB_Session) => {
@@ -191,19 +215,18 @@ export class AccountsModule_Class
 		return delta > Day || delta < 0
 	};
 
-	private upsertSession = async (_email: string): Promise<Response_Auth> => {
-		const email = _email.toLowerCase();
-
-		let session = await this.sessions.queryUnique({where: {email}});
+	private upsertSession = async (userId: string): Promise<Response_Auth> => {
+		let session = await this.sessions.queryUnique({where: {userId}});
 		if (!session || this.TTLExpired(session)) {
 			session = {
 				sessionId: generateHex(64),
 				timestamp: currentTimeMillies(),
-				email
+				userId
 			};
 			await this.sessions.upsert(session);
 		}
 
+		const email = await this.getUserEmailFromSession(session);
 		return {sessionId: session.sessionId, email};
 	};
 }

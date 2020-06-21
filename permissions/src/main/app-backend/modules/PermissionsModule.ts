@@ -17,14 +17,34 @@
  */
 
 import {
+	batchAction,
+	ImplementationMissingException,
 	Module,
-	ImplementationMissingException
+	StringMap
 } from "@nu-art/ts-common";
-import {DB_PermissionProject} from "./_imports";
+import {
+	DB_PermissionAccessLevel,
+	DB_PermissionProject,
+	Request_RegisterProject,
+	UserUrlsPermissions,
+    PredefinedGroup
+} from "./_imports";
+import {PermissionsAssert} from "./permissions-assert";
+import {
+	AccessLevelPermissionsDB,
+	ApiPermissionsDB,
+	ProjectPermissionsDB
+} from "./db-types/managment";
+import {HttpServer} from "@nu-art/thunderstorm/backend";
+import {GroupPermissionsDB} from "./db-types/assign";
 
+type Config = {
+	project: DB_PermissionProject
+	predefinedGroups?: PredefinedGroup[]
+}
 
 export class PermissionsModule_Class
-	extends Module<DB_PermissionProject> {
+	extends Module<Config> {
 
 	constructor() {
 		super();
@@ -35,7 +55,72 @@ export class PermissionsModule_Class
 			throw new ImplementationMissingException("MUST set config with project identity!!");
 	}
 
-	getProjectIdentity = () => this.config;
+	getProjectIdentity = () => this.config.project;
+
+	async getUserUrlsPermissions(projectId: string, urls: UserUrlsPermissions, userId: string, requestCustomField: StringMap) {
+		const userUrlsPermissions: UserUrlsPermissions = {};
+		const userUrlsPermissionsArray = await Promise.all(Object.keys(urls).map(url => this.isUserHasPermissions(projectId, url, userId, requestCustomField)));
+		userUrlsPermissionsArray.forEach(urlPermission => {
+			userUrlsPermissions[urlPermission.url] = urlPermission.isAllowed;
+		});
+
+		return userUrlsPermissions;
+	}
+
+	private async isUserHasPermissions(projectId: string, url: string, userId: string, requestCustomField: StringMap) {
+		let isAllowed;
+
+		try {
+			await PermissionsAssert.assertUserPermissions(projectId, url, userId, requestCustomField);
+			isAllowed = true;
+		} catch (e) {
+			isAllowed = false;
+		}
+
+		return {url, isAllowed}
+	}
+
+	async getApiAccessLevels(projectId: string, routes: string[]): Promise<DB_PermissionAccessLevel[]> {
+		const levels: DB_PermissionAccessLevel[][] = await batchAction(routes, 10, async (chunk: string[]) => {
+			const api = await ApiPermissionsDB.queryUnique({path: {$in: chunk}, projectId});
+			if (!api.accessLevelIds || api.accessLevelIds.length === 0)
+				return [];
+
+			return AccessLevelPermissionsDB.query({where: {_id: {$in: api.accessLevelIds}}})
+		});
+
+		return levels.reduce((toRet, _levels) => {
+			toRet.concat(_levels)
+			return toRet;
+		}, [])
+	}
+
+	async registerProject() {
+		const serverRoutes = HttpServer.getRoutes();
+
+		let routes: string[] = serverRoutes.map((httpRoute: { path: string; }) => httpRoute.path);
+		routes = routes.filter(path => path !== '*');
+
+		const projectIdentity = PermissionsModule.getProjectIdentity();
+		const projectRoutes = {
+			project: projectIdentity,
+			routes: routes,
+			predefinedGroups: this.config.predefinedGroups
+		};
+
+		return this._registerProject(projectRoutes)
+	}
+
+	async _registerProject(registerProject: Request_RegisterProject) {
+		const project = registerProject.project;
+		await ProjectPermissionsDB.upsert(project);
+		await ApiPermissionsDB.registerApis(project._id, registerProject.routes);
+		const predefinedGroups = registerProject.predefinedGroups;
+		if (!predefinedGroups || predefinedGroups.length === 0)
+			return;
+
+		return GroupPermissionsDB.upsertPredefinedGroups(project._id, predefinedGroups);
+	}
 }
 
 export const PermissionsModule = new PermissionsModule_Class();

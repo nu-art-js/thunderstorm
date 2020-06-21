@@ -40,7 +40,6 @@ export type Request_CreateLevel = DB_RequestObject & {
 	domainId: string
 	name: string
 	value: number
-	isDefault?: boolean
 }
 
 export type DB_PermissionAccessLevel = DB_Object & Request_CreateLevel

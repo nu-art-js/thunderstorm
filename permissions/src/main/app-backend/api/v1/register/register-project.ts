@@ -18,19 +18,19 @@
 
 import {
 	ServerApi,
-	ApiResponse
+	ApiResponse,
+	RemoteProxy
 } from "@nu-art/thunderstorm/backend";
 
-// noinspection TypeScriptPreferShortImport
+// noinspection ES6PreferShortImport
 import {
 	Permissions_ApiRegisterProject,
 	Request_RegisterProject,
-	PermissionsRegisterProject,
 	Permissions_ApiRegisterExternalProject
 } from "../permissions/_imports";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
-
+import {PermissionsModule} from "../../../modules/PermissionsModule";
 
 
 class ServerApi_RegisterExternalProject
@@ -41,7 +41,8 @@ class ServerApi_RegisterExternalProject
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_RegisterProject): Promise<void> {
-		await PermissionsRegisterProject._registerProject(body);
+		RemoteProxy.assertSecret(request);
+		await PermissionsModule._registerProject(body);
 	}
 }
 
@@ -53,7 +54,8 @@ class ServerApi_RegisterProject
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void): Promise<void> {
-		await PermissionsRegisterProject.registerProject();
+		RemoteProxy.assertSecret(request);
+		await PermissionsModule.registerProject();
 	}
 }
 

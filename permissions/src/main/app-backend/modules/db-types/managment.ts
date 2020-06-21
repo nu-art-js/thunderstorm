@@ -18,6 +18,10 @@
 
 import {
 	BaseDB_ApiGenerator,
+	ServerApi_Delete,
+	ServerApi_Query,
+	ServerApi_Unique,
+	ServerApi_Update,
 	validateNameWithDashesAndDots,
 	validateOptionalId,
 	validateStringWithDashes,
@@ -41,7 +45,6 @@ import {
 	MUSTNeverHappenException,
 	TypeValidator,
 	validateArray,
-	validateExists,
 	validateRange,
 	validateRegexp
 } from "@nu-art/ts-common";
@@ -52,10 +55,11 @@ import {
 } from "./assign";
 import {Clause_Where} from "@nu-art/firebase";
 import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
+import {ServerApi} from "@nu-art/thunderstorm/backend";
 
 const validateProjectId = validateRegexp(/^[a-z-]{3,20}$/);
-const validateProjectName = validateRegexp(/^[A-Za-z- ]{3,20}$/);
-const validateStringWithDashesAndSlash = validateRegexp(/^[0-9A-Za-z-/]+$/);
+export const validateProjectName = validateRegexp(/^[A-Za-z- ]{3,20}$/);
+export const validateStringWithDashesAndSlash = validateRegexp(/^[0-9A-Za-z-/]+$/);
 
 export class ProjectDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionProject> {
@@ -67,7 +71,14 @@ export class ProjectDB_Class
 
 	constructor() {
 		super(CollectionName_Projects, ProjectDB_Class._validator, "project");
-		this.setLockKeys(['customKeys']);
+	}
+
+	apis(pathPart?: string): ServerApi<any>[] {
+		return [
+			// new ServerApi_Delete(this, pathPart),
+			new ServerApi_Query(this, pathPart),
+			new ServerApi_Unique(this, pathPart),
+		];
 	}
 }
 
@@ -104,13 +115,12 @@ export class LevelDB_Class
 		_id: validateOptionalId,
 		domainId: validateUniqueId,
 		name: validateStringWithDashes,
-		value: validateRange([[-1, 10000]]),
-		isDefault: validateExists(false)
+		value: validateRange([[-1, 1000]]),
 	};
 
 	constructor() {
 		super(CollectionName_Level, LevelDB_Class._validator, "level");
-		this.setLockKeys(['domainId', "isDefault"]);
+		this.setLockKeys(['domainId']);
 	}
 
 	protected internalFilter(item: DB_PermissionAccessLevel): Clause_Where<DB_PermissionAccessLevel>[] {
@@ -242,6 +252,14 @@ export class ApiDB_Class
 		});
 	}
 
+	apis(pathPart?: string): ServerApi<any>[] {
+		return [
+			new ServerApi_Delete(this, pathPart),
+			new ServerApi_Query(this, pathPart),
+			new ServerApi_Unique(this, pathPart),
+			new ServerApi_Update(this, pathPart),
+		];
+	}
 }
 
 

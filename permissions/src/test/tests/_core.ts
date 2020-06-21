@@ -30,7 +30,7 @@ import {
 import {BaseDB_ApiGenerator} from "@nu-art/db-api-generator/backend";
 import {__custom} from "@nu-art/testelot";
 
-export type SetupLevel = { name: string, value: number, isDefault: boolean }
+export type SetupLevel = { name: string, value: number }
 export type SetupConfig = {
 	project: { name: string, _id: string }
 	domain: string
@@ -58,9 +58,9 @@ const domain1 = "domain.name.one";
 const domain2 = "domain.name.two";
 const domain3 = "domain.name.three";
 
-export const testLevel1 = {name: "Level-One", value: 100, isDefault: false, _id: "57a4b6c4db964fd0aa4dba593775ab53"};
-export const testLevel2 = {name: "Level-Two", value: 200, isDefault: false, _id: "0eed1e3329d6492dbeff176ac2f67e0f"};
-export const testLevel3 = {name: "Level-Three", value: 300, isDefault: false, _id: "846e1faa825740588b48eee82d0cfc9b"};
+export const testLevel1 = {name: "Level-One", value: 100, _id: "57a4b6c4db964fd0aa4dba593775ab53"};
+export const testLevel2 = {name: "Level-Two", value: 200, _id: "0eed1e3329d6492dbeff176ac2f67e0f"};
+export const testLevel3 = {name: "Level-Three", value: 300, _id: "846e1faa825740588b48eee82d0cfc9b"};
 
 export const testConfig1: SetupConfig = {project: project1, domain: domain1};
 export const testConfig2: SetupConfig = {project: project2, domain: domain2};

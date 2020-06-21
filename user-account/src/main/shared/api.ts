@@ -31,7 +31,7 @@ export const QueryParam_RedirectUrl = "redirectUrl";
 export const HeaderKey_CurrentPage = "current-page";
 
 export type DB_Session = {
-	email: string
+	userId: string
 	sessionId: string
 	timestamp: number
 }

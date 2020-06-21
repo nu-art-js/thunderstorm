@@ -110,5 +110,5 @@ export const defaultRouteNode = (route: RoutePath): React.ReactElement => {
 	if (typeof route.component === "string")
 		return <ReactEntryComponentInjector src={route.component}/>;
 
-	return <Route exact={route.exact} key={route.key} path={route.path} component={route.component}/>;
+	return <Route exact={route.exact} key={route.key} path={route.path} component={route.component} />;
 };

@@ -21,7 +21,8 @@ import {
 	CollectionName_Users,
 	DB_PermissionAccessLevel,
 	DB_PermissionsGroup,
-	DB_PermissionsUser
+	DB_PermissionsUser,
+	PredefinedGroup
 } from "../_imports";
 import {
 	BaseDB_ApiGenerator,
@@ -40,7 +41,9 @@ import {
 	TypeValidator,
 	validateArray,
 	validateObjectValues,
-	validateRegexp
+	validateRegexp,
+	batchAction,
+	filterInstances
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
@@ -107,6 +110,19 @@ export class GroupsDB_Class
 	getConfig() {
 		return this.config;
 	}
+
+	upsertPredefinedGroups(projectId: string, predefinedGroups: PredefinedGroup[]) {
+		return this.runInTransaction(async (transaction) => {
+			const _groups = predefinedGroups.map(group => ({_id: `${projectId}-${group._id}`, label: group.label}));
+
+			const dbGroups = filterInstances(await batchAction(_groups.map(group => group._id), 10, (chunk) => {
+				return transaction.queryUnique(this.collection, {where: {_id: {$in: chunk}}})
+			}));
+
+			const groupsToInsert = _groups.filter(group => !dbGroups.find(dbGroup => dbGroup._id === group._id));
+			return Promise.all(groupsToInsert.map(group => this.insertImpl(transaction, group)));
+		});
+	}
 }
 
 
@@ -162,7 +178,6 @@ export class UsersDB_Class
 		return this.upsert({uuid: email, groupIds: [], accessLevelIds: []});
 	}
 }
-
 
 export const GroupPermissionsDB = new GroupsDB_Class();
 export const UserPermissionsDB = new UsersDB_Class();
