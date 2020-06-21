@@ -18,6 +18,7 @@
  */
 
 import {AuditBy} from "@nu-art/ts-common";
+import { DB_Object } from "@nu-art/firebase";
 
 export * from "../../index";
 
@@ -29,7 +30,7 @@ export type RequestBody_SamlAssertOptions = {
 	allow_unencrypted_assertion?: boolean;
 }
 
-export type DB_Account = {
+export type DB_Account = DB_Object & {
 	email: string
 	_audit: AuditBy
 

@@ -18,6 +18,7 @@
 
 import {
 	ApiResponse,
+	ExpressRequest,
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
@@ -25,9 +26,8 @@ import {
 	Request_UserUrlsPermissions
 } from "./_imports";
 import {HttpMethod} from "@nu-art/thunderstorm";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
-import { AccountModule } from "@nu-art/user-account/backend";
-import {UserUrlsPermissionsModule} from "../../../modules/UserUrlsPermissionsModule";
+import {AccountModule} from "@nu-art/user-account/backend";
+import {PermissionsModule} from "../../../modules/PermissionsModule";
 
 class ServerApi_UserUrlsPermissions
 	extends ServerApi<Permissions_ApiUserUrlsPermissions> {
@@ -39,7 +39,7 @@ class ServerApi_UserUrlsPermissions
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UserUrlsPermissions) {
 		const userId = await AccountModule.validateSession(request);
-		return UserUrlsPermissionsModule.getUserUrlsPermissions(body.projectId, body.urls, userId, body.requestCustomField);
+		return PermissionsModule.getUserUrlsPermissions(body.projectId, body.urls, userId, body.requestCustomField);
 	}
 
 }

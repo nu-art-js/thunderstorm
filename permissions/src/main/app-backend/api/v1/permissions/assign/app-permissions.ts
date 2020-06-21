@@ -18,28 +18,35 @@
 
 import {
 	ApiResponse,
+	ExpressRequest,
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
-	AccessLevelPermissionsDB,
-	ApiPermissionsDB,
-	Params_ApiLevels,
-	Permissions_ApiLevels
-} from "./_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+	GroupPermissionsDB,
+	Permissions_AssignAppPermissions,
+	Request_AssignAppPermissions,
+	UserPermissionsDB,
+} from "../_imports";
+import {
+	HttpMethod,
+	QueryParams
+} from "@nu-art/thunderstorm";
 
 class ServerApi_UserUrlsPermissions
-	extends ServerApi<Permissions_ApiLevels> {
+	extends ServerApi<Permissions_AssignAppPermissions> {
 
 	constructor() {
-		super(HttpMethod.GET, "api-levels");
+		super(HttpMethod.GET, "app-permissions");
 		this.dontPrintResponse();
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: Params_ApiLevels, body: void) {
-		const api = await ApiPermissionsDB.queryUnique( {path: queryParams.apiPath, projectId: queryParams.projectId});
-		return AccessLevelPermissionsDB.query({where: {_id: {$in: api.accessLevelIds || []}}})
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: Request_AssignAppPermissions) {
+		const user = await UserPermissionsDB.queryUnique({_id: body.userId});
+		const group = await GroupPermissionsDB.queryUnique({_id: `${body.projectId}--${body.groupId}`});
+
+		// user.
+		// const api = await ApiPermissionsDB.queryUnique({path: queryParams.apiPath, projectId: queryParams.projectId});
+		// AccessLevelPermissionsDB.query({where: {_id: {$in: api.accessLevelIds || []}}})
 	}
 
 }
