@@ -42,6 +42,7 @@ import {
 	Request_LoginAccount,
 	RequestParams_LoginSAML,
 	Response_Auth,
+	Response_ListUsers,
 	Response_LoginSAML
 } from "../../shared/api";
 import {HttpMethod} from "@nu-art/thunderstorm";
@@ -192,18 +193,8 @@ export class AccountModule_Class
 			.createRequest<AccountApi_ListUsers>(HttpMethod.GET, RequestKey_ValidateSession)
 			.setLabel(`Fetching users...`)
 			.setRelativeUrl("/v1/account/query")
-			.setOnError((request, resError) => {
-				if (request.xhr.status === 0) {
-					ToastModule.toastError("Cannot reach Server... trying in 30 sec");
-					setTimeout(() => this.validateToken(), 30 * Second);
-					return;
-				}
-
-				StorageKey_SessionId.delete();
-				return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
-			})
-			.execute(async () => {
-				this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+			.execute(async (res: Response_ListUsers) => {
+				// TODO dispatch list users returned
 			});
 
 	}
