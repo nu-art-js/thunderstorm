@@ -37,7 +37,7 @@ import {
 	DB_PermissionApi,
 	DB_PermissionDomain,
 	DB_PermissionProject,
-	Request_PermissionsBase,
+	Request_CreateGroup,
 	Request_UpdateApiPermissions
 } from "../_imports";
 import {
@@ -50,8 +50,7 @@ import {
 } from "@nu-art/ts-common";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
 import {
-	GroupPermissionsDB,
-	UserPermissionsDB
+	GroupPermissionsDB
 } from "./assign";
 import {Clause_Where} from "@nu-art/firebase";
 import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
@@ -134,16 +133,15 @@ export class LevelDB_Class
 
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel): Promise<DB_PermissionAccessLevel> {
 		const existDbLevel = await transaction.queryUnique(this.collection, {where: {_id: dbInstance._id}});
-		const users = await UserPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
 		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
 		const upsertRead = await transaction.upsert_Read(this.collection, dbInstance);
 		if (existDbLevel) {
-			const callbackfn = (user: Request_PermissionsBase) => {
-				const index = user.accessLevelIds?.indexOf(dbInstance._id);
+			const callbackfn = (group: Request_CreateGroup) => {
+				const index = group.accessLevelIds?.indexOf(dbInstance._id);
 				if (index === undefined)
 					throw new MUSTNeverHappenException("Query said it does exists!!");
 
-				const accessLevel = user.__accessLevels?.[index];
+				const accessLevel = group.__accessLevels?.[index];
 				if (accessLevel === undefined)
 					throw new MUSTNeverHappenException("Query said it does exists!!");
 
@@ -151,12 +149,6 @@ export class LevelDB_Class
 			};
 
 			const asyncs = [];
-			asyncs.push(...users.map(async user => {
-				callbackfn(user);
-				await UserPermissionsDB.validateImpl(user);
-				await UserPermissionsDB.assertUniqueness(transaction, user);
-			}));
-
 			asyncs.push(...groups.map(async group => {
 				callbackfn(group);
 				await GroupPermissionsDB.validateImpl(group);
@@ -164,11 +156,9 @@ export class LevelDB_Class
 			}));
 
 			const upsertGroups = await transaction.upsertAll_Read(GroupPermissionsDB.collection, groups);
-			const upsertUsers = await transaction.upsertAll_Read(UserPermissionsDB.collection, users);
 			await Promise.all(asyncs);
 
 			// --- writes part
-			await upsertUsers();
 			await upsertGroups();
 		}
 
@@ -176,15 +166,14 @@ export class LevelDB_Class
 	}
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
-		const users = await UserPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
 		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
 		const apis = await ApiPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
 
-		if (users.length || groups.length || apis.length)
+		if (groups.length || apis.length)
 			throw new ApiException(403, 'You trying delete access level that associated with users/groups/apis, you need delete the associations first');
 	}
 
-	setUpdatedLevel(dbLevel: DB_PermissionAccessLevel, units: Request_PermissionsBase[]) {
+	setUpdatedLevel(dbLevel: DB_PermissionAccessLevel, units: Request_CreateGroup[]) {
 		units.forEach(unit => {
 			let hasGroupDomainLevel = false;
 			const updatedLevels = unit.__accessLevels?.map(level => {
