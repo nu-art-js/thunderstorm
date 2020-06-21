@@ -134,7 +134,7 @@ export class UsersDB_Class
 	static _validator: TypeValidator<DB_PermissionsUser> = {
 		_id: validateOptionalId,
 		userId: validateUserUuid,
-		groups: validateArray({groupId: validateUniqueId, customFields: undefined}, false)
+		groups: validateArray({groupId: validateUniqueId, customField: undefined}, false)
 	};
 
 	constructor() {
@@ -173,11 +173,11 @@ export class UsersDB_Class
 			if (!_group)
 				throw new ApiException(404, `No permissions GROUP for id ${body.groupId}`);
 
-			if (!body.customFields || _keys(body.customFields).length === 0)
+			if (!body.customField || _keys(body.customField).length === 0)
 				throw new ApiException(400, `Cannot set app permissions '${body.projectId}--${body.groupId}', request must have custom fields restriction!!`);
 
 			const newGroups = (user.groups || [])?.filter(group => !body.groupIdsToRemove.find(idToRemove => idToRemove === group.groupId))
-			newGroups.push({groupId: _group._id, customFields: body.customFields})
+			newGroups.push({groupId: _group._id, customField: body.customField})
 			user.groups = newGroups;
 
 			return transaction.upsert(this.collection, user);
