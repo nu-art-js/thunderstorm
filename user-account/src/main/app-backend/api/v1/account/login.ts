@@ -25,14 +25,14 @@ import {
 
 import {
 	AccountModule,
-	ApiAccountLogin,
+	AccountApi_Login,
 	Request_LoginAccount
 } from "./_imports";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_Account_Login
-	extends ServerApi<ApiAccountLogin> {
+	extends ServerApi<AccountApi_Login> {
 
 	constructor() {
 		super(HttpMethod.POST, "login");

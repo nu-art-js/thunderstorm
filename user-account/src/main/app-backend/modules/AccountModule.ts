@@ -84,7 +84,7 @@ export class AccountsModule_Class
 	}
 
 	async listUsers() {
-		return this.accounts.getAll(["email"]);
+		return this.accounts.getAll(["_id", "email"]) as Promise<{ email: string, _id: string }[]>;
 	}
 
 	async listSessions() {

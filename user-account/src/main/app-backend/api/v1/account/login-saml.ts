@@ -24,14 +24,14 @@ import {
 
 
 import {
-	ApiAccountLoginSAML,
+	AccountApi_LoginSAML,
 	RequestParams_LoginSAML,
 	SamlModule
 } from "./_imports";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_Account_LoginSAML
-	extends ServerApi_Get<ApiAccountLoginSAML> {
+	extends ServerApi_Get<AccountApi_LoginSAML> {
 
 	constructor() {
 		super("login-saml");

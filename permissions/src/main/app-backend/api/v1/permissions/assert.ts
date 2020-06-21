@@ -24,7 +24,7 @@ import {
 
 import {AccountModule} from "@nu-art/user-account/backend";
 import {
-	Permissions_ApiAssertUserAccess,
+	PermissionsApi_AssertUserAccess,
 	Request_AssertApiForUser
 } from "./_imports";
 import {HttpMethod} from "@nu-art/thunderstorm";
@@ -32,7 +32,7 @@ import {PermissionsAssert} from "../../../modules/permissions-assert";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_AssertPermissions
-	extends ServerApi<Permissions_ApiAssertUserAccess> {
+	extends ServerApi<PermissionsApi_AssertUserAccess> {
 
 	constructor() {
 		super(HttpMethod.POST, "assert-user-access");

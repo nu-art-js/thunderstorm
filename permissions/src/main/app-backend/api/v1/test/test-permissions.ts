@@ -24,12 +24,12 @@ import {
 
 import {HttpMethod} from "@nu-art/thunderstorm";
 
-import { Permissions_ApiTestPermissions } from "../permissions/_imports";
+import { PermissionsApi_TestPermissions } from "../permissions/_imports";
 import {testUserPermissionsTime} from "./_imports";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_TestPermissions
-	extends ServerApi<Permissions_ApiTestPermissions> {
+	extends ServerApi<PermissionsApi_TestPermissions> {
 
 	constructor() {
 		super(HttpMethod.GET, "test-permissions");

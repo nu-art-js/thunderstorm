@@ -30,10 +30,11 @@ import {
 	ToastModule
 } from "@nu-art/thunderstorm/frontend";
 import {
-	ApiAccountCreate,
-	ApiAccountLogin,
-	ApiAccountLoginSAML,
-	ApiAccountValidateSession,
+	AccountApi_Create,
+	AccountApi_ListUsers,
+	AccountApi_Login,
+	AccountApi_LoginSAML,
+	AccountApi_ValidateSession,
 	HeaderKey_SessionId,
 	QueryParam_Email,
 	QueryParam_SessionId,
@@ -118,7 +119,7 @@ export class AccountModule_Class
 
 	public create(request: Request_CreateAccount) {
 		HttpModule
-			.createRequest<ApiAccountCreate>(HttpMethod.POST, RequestKey_AccountCreate)
+			.createRequest<AccountApi_Create>(HttpMethod.POST, RequestKey_AccountCreate)
 			.setRelativeUrl("/v1/account/create")
 			.setJsonBody(request)
 			.setLabel(`User register...`)
@@ -130,7 +131,7 @@ export class AccountModule_Class
 
 	public login(request: Request_LoginAccount) {
 		HttpModule
-			.createRequest<ApiAccountLogin>(HttpMethod.POST, RequestKey_AccountLogin)
+			.createRequest<AccountApi_Login>(HttpMethod.POST, RequestKey_AccountLogin)
 			.setRelativeUrl("/v1/account/login")
 			.setJsonBody(request)
 			.setLabel(`User login with password...`)
@@ -148,7 +149,7 @@ export class AccountModule_Class
 
 	public loginSAML(request: RequestParams_LoginSAML) {
 		HttpModule
-			.createRequest<ApiAccountLoginSAML>(HttpMethod.GET, RequestKey_AccountLoginSAML)
+			.createRequest<AccountApi_LoginSAML>(HttpMethod.GET, RequestKey_AccountLoginSAML)
 			.setRelativeUrl("/v1/account/login-saml")
 			.setUrlParams(request)
 			.setLabel(`User login SAML...`)
@@ -163,7 +164,7 @@ export class AccountModule_Class
 
 	private validateToken = () => {
 		HttpModule
-			.createRequest<ApiAccountValidateSession>(HttpMethod.GET, RequestKey_ValidateSession)
+			.createRequest<AccountApi_ValidateSession>(HttpMethod.GET, RequestKey_ValidateSession)
 			.setLabel(`Validate token...`)
 			.setRelativeUrl("/v1/account/validate")
 			.setOnError((request, resError) => {
@@ -185,6 +186,27 @@ export class AccountModule_Class
 		StorageKey_SessionId.delete();
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	};
+
+	listUsers = () => {
+		HttpModule
+			.createRequest<AccountApi_ListUsers>(HttpMethod.GET, RequestKey_ValidateSession)
+			.setLabel(`Fetching users...`)
+			.setRelativeUrl("/v1/account/query")
+			.setOnError((request, resError) => {
+				if (request.xhr.status === 0) {
+					ToastModule.toastError("Cannot reach Server... trying in 30 sec");
+					setTimeout(() => this.validateToken(), 30 * Second);
+					return;
+				}
+
+				StorageKey_SessionId.delete();
+				return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+			})
+			.execute(async () => {
+				this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+			});
+
+	}
 }
 
 export const AccountModule = new AccountModule_Class();

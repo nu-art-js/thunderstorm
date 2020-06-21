@@ -19,12 +19,10 @@
 import {
 	ApiResponse,
 	ExpressRequest,
-	ServerApi,
-	ApiException
+	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
-	GroupPermissionsDB,
-	Permissions_AssignAppPermissions,
+	PermissionsApi_AssignAppPermissions,
 	Request_AssignAppPermissions,
 	UserPermissionsDB,
 } from "../_imports";
@@ -33,10 +31,8 @@ import {
 	QueryParams
 } from "@nu-art/thunderstorm";
 
-import {_keys} from "@nu-art/ts-common";
-
 class ServerApi_UserUrlsPermissions
-	extends ServerApi<Permissions_AssignAppPermissions> {
+	extends ServerApi<PermissionsApi_AssignAppPermissions> {
 
 	constructor() {
 		super(HttpMethod.GET, "app-permissions");
