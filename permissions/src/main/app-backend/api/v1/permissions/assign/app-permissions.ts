@@ -19,11 +19,9 @@
 import {
 	ApiResponse,
 	ExpressRequest,
-	ServerApi,
-	ApiException
+	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
-	GroupPermissionsDB,
 	Permissions_AssignAppPermissions,
 	Request_AssignAppPermissions,
 	UserPermissionsDB,
