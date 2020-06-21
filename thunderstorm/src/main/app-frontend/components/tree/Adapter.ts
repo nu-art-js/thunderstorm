@@ -25,7 +25,7 @@ import {TreeNode} from "./types";
 import {
 	SimpleNodeRenderer,
 	SimpleTreeNodeRenderer
-} from "./DefaultTreeRenderer";
+} from "./SimpleTreeNodeRenderer";
 
 export type TreeRendererProps<Item extends any = any, MoreProps extends object = {}> = { item: Item, node: TreeNode } & MoreProps
 export type _Renderer<Item, MoreProps extends object = {}> = React.ComponentType<TreeRendererProps<Item, MoreProps>>
@@ -54,6 +54,7 @@ export class Adapter<T extends any = any> {
 
 	setData(data: object) {
 		this.data = data;
+		return this;
 	}
 
 	filter(obj: T, key: keyof T) {

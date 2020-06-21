@@ -9,12 +9,13 @@ import {
 	resolveRealPosition
 } from "./MenuModule";
 import {BadImplementationException} from "@nu-art/ts-common";
+import {Adapter} from "../../components/tree/Adapter";
 
 type Props = {
 	id: string
 	iconOpen: ReactNode
 	iconClosed: ReactNode
-	menu: _Menu<any>
+	adapter: Adapter
 }
 
 export class MenuAndButton
@@ -43,7 +44,10 @@ export class MenuAndButton
 	};
 
 	render() {
-		return <div className={'clickable'} onClick={this.open} style={{position: "relative", padding: 10}}>
+		return <div
+			className={'clickable'}
+			onClick={this.open}
+			style={{position: "relative", padding: 10}}>
 			<div ref={this.ref}
 			     onMouseOver={e => this.setState({over: true})}
 			     onMouseOut={e => this.setState({over: false})}>
@@ -56,7 +60,7 @@ export class MenuAndButton
 		if (!this.ref.current)
 			throw new BadImplementationException("Could not find image reference");
 
-		new MenuBuilder(this.props.menu, resolveRealPosition(this.ref.current))
+		new MenuBuilder(this.props.adapter, resolveRealPosition(this.ref.current))
 			.setId(this.props.id)
 			.show()
 	}

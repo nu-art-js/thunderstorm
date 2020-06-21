@@ -104,8 +104,6 @@ export type ValueProps<ItemType> = {
 	placeholder?: string
 }
 
-export type Refs = { [k: string]: React.RefObject<HTMLDivElement> };
-
 type State<ItemType> = {
 	filteredOptions: (ItemType | ItemToRender<_RendererMap, string>)[]
 	open: boolean
