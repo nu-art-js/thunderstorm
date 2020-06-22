@@ -41,7 +41,13 @@ export class SimpleTreeNodeRenderer
 		else
 			toDisplay = "+";
 
-		return <div className={`clickable`} id={this.props.node.path} onClick={this.props.node.expandToggler} style={{width: "15px"}}>{toDisplay}</div>
+		return <div
+			className={`clickable`}
+			id={this.props.node.path}
+			onClick={this.props.node.expandToggler}
+			style={{width: "15px"}}>
+			{toDisplay}
+		</div>
 	}
 
 	render() {

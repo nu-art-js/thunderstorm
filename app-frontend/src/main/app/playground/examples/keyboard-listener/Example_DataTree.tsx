@@ -51,7 +51,7 @@ export class Example_DataTree
 	};
 
 	render() {
-		const adapter = new Adapter();
+		const adapter = new Adapter().setData(this.elements).setTreeNodeRenderer(Example_ColorfulNodeRenderer);
 		adapter.hideRoot = true;
 		adapter.adjust = (data: object) => {
 			if (data === undefined || data === null)
@@ -63,11 +63,8 @@ export class Example_DataTree
 			}
 
 			return {data, deltaPath: ""};
-		}
+		};
 
-		adapter.getTreeNodeRenderer = () => Example_ColorfulNodeRenderer;
-
-		adapter.data = this.elements;
 		return <div>
 			<h1>Data Tree</h1>
 			<Tree

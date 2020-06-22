@@ -29,7 +29,7 @@ import {Tree} from "./Tree";
 type Props = {
 	adapter: Adapter
 	childrenContainerStyle?: any
-	onNodeClicked?: Function
+	onNodeClicked?: (path:string,item:any) => void
 	onNodeDoubleClicked?: Function // TODO: Need to handle this
 	id?: string
 }
