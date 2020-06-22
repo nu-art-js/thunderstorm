@@ -31,7 +31,7 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {
 	AccountApi_Create,
-	AccountApi_ListUsers,
+	AccountApi_ListAccounts,
 	AccountApi_Login,
 	AccountApi_LoginSAML,
 	AccountApi_ValidateSession,
@@ -42,8 +42,9 @@ import {
 	Request_LoginAccount,
 	RequestParams_LoginSAML,
 	Response_Auth,
-	Response_ListUsers,
-	Response_LoginSAML
+	Response_ListAccounts,
+	Response_LoginSAML,
+	UI_Account
 } from "../../shared/api";
 import {HttpMethod} from "@nu-art/thunderstorm";
 
@@ -68,16 +69,26 @@ export enum LoggedStatus {
 
 type Config = {}
 
+export interface OnAccountsLoaded {
+	__onAccountsLoaded: () => void;
+}
+
+const dispatch_onAccountsLoaded = new ThunderDispatcher<OnAccountsLoaded, "__onAccountsLoaded">("__onAccountsLoaded");
+
 export class AccountModule_Class
 	extends Module<Config> {
 
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	private dispatchUI_loginChanged!: ThunderDispatcher<OnLoginStatusUpdated, "onLoginStatusUpdated">;
+	private accounts: UI_Account[] = [];
 
 	constructor() {
 		super();
 	}
 
+	getAccounts() {
+		return this.accounts;
+	}
 
 	getLoggedStatus = () => this.status;
 
@@ -175,6 +186,7 @@ export class AccountModule_Class
 					return;
 				}
 
+
 				StorageKey_SessionId.delete();
 				return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 			})
@@ -190,11 +202,12 @@ export class AccountModule_Class
 
 	listUsers = () => {
 		HttpModule
-			.createRequest<AccountApi_ListUsers>(HttpMethod.GET, RequestKey_ValidateSession)
+			.createRequest<AccountApi_ListAccounts>(HttpMethod.GET, RequestKey_ValidateSession)
 			.setLabel(`Fetching users...`)
 			.setRelativeUrl("/v1/account/query")
-			.execute(async (res: Response_ListUsers) => {
-				// TODO dispatch list users returned
+			.execute(async (res: Response_ListAccounts) => {
+				this.accounts = res.accounts.filter(account => account._id);
+				dispatch_onAccountsLoaded.dispatchUI([]);
 			});
 
 	}

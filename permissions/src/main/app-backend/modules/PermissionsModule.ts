@@ -101,7 +101,7 @@ export class PermissionsModule_Class
 		if (!predefinedGroups || predefinedGroups.length === 0)
 			return;
 
-		return GroupPermissionsDB.upsertPredefinedGroups(project._id, predefinedGroups);
+		return GroupPermissionsDB.upsertPredefinedGroups(project._id, predefinedGroups.map(group => ({_id: group._id, label: `__${group._id}`})));
 	}
 }
 

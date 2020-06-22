@@ -18,7 +18,7 @@
 
 import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
 import {DB_PermissionsUser} from "../../../index";
-import { ThunderDispatcher } from "@nu-art/thunderstorm/frontend";
+import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
 
 export interface OnPermissionsUsersLoaded {
 	__onPermissionsUsersLoaded: () => void;
@@ -53,6 +53,10 @@ export class PermissionsUserModule_Class
 	protected async onQueryReturned(response: DB_PermissionsUser[]): Promise<void> {
 		this.users = response;
 		dispatch_onPermissionsUsersLoaded.dispatchUI([]);
+	}
+
+	getUserByAccountId(accountId: string) {
+		return this.users.filter(user=>user.accountId).find(user => user.accountId === accountId);
 	}
 
 	getUsers() {

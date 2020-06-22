@@ -230,7 +230,7 @@ export function checkInsertUserIfNotExist() {
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
 		await UserPermissionsDB.insertIfNotExist(userUuid1);
-		await UserPermissionsDB.queryUnique({userId: userUuid1});
+		await UserPermissionsDB.queryUnique({accountId: userUuid1});
 	}).setLabel('Insert not exist user'));
 	return scenario;
 }
@@ -239,9 +239,9 @@ export function checkInsertUserIfNotExistByExistUser() {
 	const scenario = __scenario("Check insertIfNotExist function by exist user");
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({userId: userUuid1, groups: [], _id: uniqId1});
+		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [], _id: uniqId1});
 		await UserPermissionsDB.insertIfNotExist(userUuid1);
-		await UserPermissionsDB.queryUnique({userId: userUuid1});
+		await UserPermissionsDB.queryUnique({accountId: userUuid1});
 	}).setLabel('Skip insert exist user'));
 	return scenario;
 }
@@ -250,8 +250,8 @@ export function createTowUsers() {
 	const scenario = __scenario("Create two users");
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({userId: userUuid1, groups: [], _id: uniqId1});
-		await UserPermissionsDB.upsert({userId: userUuid2, groups: [{groupId: uniqId4}, {groupId: uniqId5}], _id: uniqId2});
+		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [], _id: uniqId1});
+		await UserPermissionsDB.upsert({accountId: userUuid2, groups: [{groupId: uniqId4}, {groupId: uniqId5}], _id: uniqId2});
 	}).setLabel('Two users created'));
 	return scenario;
 }
@@ -270,7 +270,7 @@ export function failedCreateUserWithDuplicateGroups() {
 	const scenario = __scenario("Expect Fail to bind duplicate groups to user");
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({userId: userUuid1, groups: [{groupId: uniqId2}, {groupId: uniqId2}], _id: uniqId1});
+		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [{groupId: uniqId2}, {groupId: uniqId2}], _id: uniqId1});
 	}).setLabel('Fail to bind duplicate groups to user, as expected')
 	  .expectToFail(ApiException));
 	return scenario;
