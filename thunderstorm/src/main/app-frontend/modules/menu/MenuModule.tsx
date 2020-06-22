@@ -7,7 +7,7 @@ import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import {
 	_GenericRenderer,
 	_RendererMap,
-    Adapter
+	Adapter
 } from "../../components/tree/Adapter";
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
@@ -22,7 +22,7 @@ export type Menu_Model = {
 	id: string
 	adapter: Adapter,
 	pos: MenuPosition,
-	onNodeClicked?: Function,
+	onNodeClicked?: (path: string, item: any) => void
 	onNodeDoubleClicked?: Function,
 };
 
@@ -59,7 +59,7 @@ export class MenuBuilder {
 	private readonly adapter: Adapter;
 	private readonly position: MenuPosition;
 	private id: string = generateHex(8);
-	private onNodeClicked?: Function;
+	private onNodeClicked?: (path: string, item: any) => void;
 	private onNodeDoubleClicked?: Function;
 
 	constructor(menu: Adapter, position: MenuPosition) {
@@ -84,12 +84,13 @@ export class MenuBuilder {
 		return this;
 	}
 
-	setOnClick(func: Function) {
+	setOnClick(func: (path:string,item:any) => void) {
 		this.onNodeClicked = func;
 		return this;
 	}
 
 	setOnDoubleClick(func: Function) {
+
 		this.onNodeDoubleClicked = func;
 		return this;
 	}

@@ -51,6 +51,7 @@ export class Adapter<T extends any = any> {
 
 	data!: object;
 	hideRoot: boolean = false
+	private treeNodeRenderer: _Renderer<T> = SimpleTreeNodeRenderer;
 
 	setData(data: object) {
 		this.data = data;
@@ -61,11 +62,16 @@ export class Adapter<T extends any = any> {
 		return true;
 	}
 
-	getTreeNodeRenderer(): _Renderer<TreeRendererProps> {
-		return SimpleTreeNodeRenderer;
+	setTreeNodeRenderer(renderer: _Renderer<T>) {
+		this.treeNodeRenderer = renderer;
+		return this;
 	}
 
-	resolveRenderer(propKey: string): _Renderer<any> {
+	getTreeNodeRenderer(): _Renderer<T> {
+		return this.treeNodeRenderer;
+	}
+
+	resolveRenderer(propKey: string): _Renderer<T> {
 		return SimpleNodeRenderer;
 	}
 
