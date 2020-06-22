@@ -23,22 +23,23 @@ import {
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
-	AccountApi_ListUsers,
-	AccountModule
+	AccountApi_ListAccounts,
+	AccountModule,
+    UI_Account
 } from "./_imports";
 import {HttpMethod} from "@nu-art/thunderstorm";
 
 
 class ListAccounts
-	extends ServerApi<AccountApi_ListUsers> {
+	extends ServerApi<AccountApi_ListAccounts> {
 
 	constructor() {
 		super(HttpMethod.GET, "query");
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		const users: { email: string; _id: string }[] = await AccountModule.listUsers();
-		return {users}
+		const accounts: UI_Account[] = await AccountModule.listUsers();
+		return {accounts}
 	}
 }
 

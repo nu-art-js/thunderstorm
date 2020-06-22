@@ -38,7 +38,8 @@ import {
 	HeaderKey_SessionId,
 	Request_CreateAccount,
 	Request_LoginAccount,
-	Response_Auth
+	Response_Auth,
+	UI_Account
 } from "./_imports";
 import {
 	ApiException,
@@ -144,7 +145,7 @@ export class AccountsModule_Class
 		}
 
 		await dispatch_onUserLogin.dispatchModuleAsync([request.email]);
-		return this.upsertSession(request.email);
+		return this.upsertSession(account._id);
 	}
 
 	async loginSAML(_email: string): Promise<Response_Auth> {
@@ -182,7 +183,7 @@ export class AccountsModule_Class
 		return account;
 	}
 
-	async validateSession(request: ExpressRequest): Promise<string> {
+	async validateSession(request: ExpressRequest): Promise<UI_Account> {
 		const sessionId = Header_SessionId.get(request);
 		return this.validateSessionId(sessionId);
 	}
@@ -201,13 +202,14 @@ export class AccountsModule_Class
 	}
 
 	private async getUserEmailFromSession(session: DB_Session) {
-		const user = await this.accounts.queryUnique({where: {_id: session.userId}})
-		if (!user) {
+		const account = await this.accounts.queryUnique({where: {_id: session.userId}})
+		if (!account) {
 			await this.sessions.deleteItem(session);
 			throw new ApiException(403, `No user found for session: ${__stringify(session)}`);
 		}
 
-		return user.email;
+		const {email, _id} = account;
+		return {email, _id};
 	}
 
 	private TTLExpired = (session: DB_Session) => {
@@ -226,8 +228,8 @@ export class AccountsModule_Class
 			await this.sessions.upsert(session);
 		}
 
-		const email = await this.getUserEmailFromSession(session);
-		return {sessionId: session.sessionId, email};
+		const account = await this.getUserEmailFromSession(session);
+		return {sessionId: session.sessionId, email: account.email};
 	};
 }
 

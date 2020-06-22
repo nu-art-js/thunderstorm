@@ -87,7 +87,7 @@ export async function testUserPermissionsTime() {
 		return transaction.upsertAll(collection, dbInstances);
 	});
 
-	await UserPermissionsDB.upsert({_id: userId, userId: userUuid, groups: groupIdArray});
+	await UserPermissionsDB.upsert({_id: userId, accountId: userUuid, groups: groupIdArray});
 
 	const tests = new Array<number>().fill(0, 0, 50);
 	const durations: number[] = await Promise.all(tests.map(test => runAssertion(projectId, apiPath, userUuid, customField)));

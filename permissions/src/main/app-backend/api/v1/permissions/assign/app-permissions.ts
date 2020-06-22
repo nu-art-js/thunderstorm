@@ -31,6 +31,7 @@ import {
 	QueryParams
 } from "@nu-art/thunderstorm";
 
+
 class ServerApi_UserUrlsPermissions
 	extends ServerApi<PermissionsApi_AssignAppPermissions> {
 

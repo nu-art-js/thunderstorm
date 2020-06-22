@@ -57,8 +57,8 @@ export class PermissionsAssert_Class
 	readonly Middleware = (keys: string[]): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
 		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
 
-			const userId = await AccountModule.validateSession(req);
-			return this.assertUserPermissions(projectId, data.url, userId, customFields);
+			const account = await AccountModule.validateSession(req);
+			return this.assertUserPermissions(projectId, data.url, account._id, customFields);
 		})(req, data);
 	};
 
@@ -130,7 +130,7 @@ export class PermissionsAssert_Class
 	}
 
 	private async getUserDetails(uuid: string) {
-		const user = await UserPermissionsDB.queryUnique({userId: uuid});
+		const user = await UserPermissionsDB.queryUnique({accountId: uuid});
 		const groups = user.groups || [];
 		const groupIds = groups.map(userGroup => userGroup.groupId);
 		const groupsArray: DB_PermissionsGroup[][] = await Promise.all(

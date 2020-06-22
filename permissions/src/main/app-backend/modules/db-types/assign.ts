@@ -30,6 +30,11 @@ import {
 	validateOptionalId,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
+import {
+	OnNewUserRegistered,
+	OnUserLogin,
+	AccountModule
+} from "@nu-art/user-account/backend";
 import {Clause_Where} from "@nu-art/firebase";
 import {ApiException} from "@nu-art/thunderstorm/backend";
 
@@ -41,7 +46,8 @@ import {
 	TypeValidator,
 	validateArray,
 	validateObjectValues,
-	validateRegexp
+	validateRegexp,
+    BadImplementationException
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
@@ -126,33 +132,51 @@ export class GroupsDB_Class
 
 
 export class UsersDB_Class
-	extends BaseDB_ApiGenerator<DB_PermissionsUser> {
-
+	extends BaseDB_ApiGenerator<DB_PermissionsUser>
+	implements OnNewUserRegistered, OnUserLogin {
 	static _validator: TypeValidator<DB_PermissionsUser> = {
 		_id: validateOptionalId,
-		userId: validateUserUuid,
+		accountId: validateUserUuid,
 		groups: validateArray({groupId: validateUniqueId, customField: undefined}, false)
 	};
 
 	constructor() {
 		super(CollectionName_Users, UsersDB_Class._validator, "user");
-		this.setLockKeys(["userId"]);
+		this.setLockKeys(["accountId"]);
 	}
 
 	protected internalFilter(item: DB_PermissionsUser): Clause_Where<DB_PermissionsUser>[] {
-		const {userId} = item;
-		return [{userId}];
+		const {accountId} = item;
+		return [{accountId}];
+	}
+
+	async __onUserLogin(email: string) {
+		await this.insertIfNotExist(email);
+	}
+
+	async __onNewUserRegistered(email: string) {
+		await this.insertIfNotExist(email);
 	}
 
 	async insertIfNotExist(email: string) {
-		const users = await this.query({where: {userId: email}});
-		if (users.length)
-			return;
+		this.runInTransaction(async (transaction) => {
 
-		return this.upsert({userId: email, groups: []});
+			const account = await AccountModule.getUser(email);
+			if (!account)
+				throw new ApiException(404, `user not found for email ${email}`);
+
+			const users = await transaction.query(this.collection, {where: {accountId: account._id}});
+			if (users.length)
+				return;
+
+			return this.insertImpl(transaction, {accountId: account._id, groups: []});
+		})
 	}
 
 	async assignAppPermissions(body: Request_AssignAppPermissions) {
+		if(!body.groupsToRemove.find(groupToRemove => groupToRemove._id === body.group._id))
+			throw new BadImplementationException("Group to must be a part of the groups to removed array");
+
 		await this.runInTransaction(async (transaction) => {
 			const user = await transaction.queryUnique(this.collection, {where: {_id: body.userId}});
 			if (!user)
@@ -160,14 +184,14 @@ export class UsersDB_Class
 
 
 			if (!body.customField || _keys(body.customField).length === 0)
-				throw new ApiException(400, `Cannot set app permissions '${body.projectId}--${body.groupId}', request must have custom fields restriction!!`);
+				throw new ApiException(400, `Cannot set app permissions '${body.projectId}--${body.group._id}', request must have custom fields restriction!!`);
 
-			const newGroups = (user.groups || [])?.filter(group => !body.groupIdsToRemove.find(idToRemove => idToRemove === group.groupId))
+			const newGroups = (user.groups || [])?.filter(group => !body.groupsToRemove.find(idToRemove => idToRemove._id === group.groupId))
 
-			if (body.groupId) {
-				const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: `${body.projectId}--${body.groupId}`}});
+			if (body.group) {
+				const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: `${body.projectId}--${body.group._id}`}});
 				if (!_group)
-					throw new ApiException(404, `No permissions GROUP for id ${body.groupId}`);
+					throw new ApiException(404, `No permissions GROUP for id ${body.group._id}`);
 
 				newGroups.push({groupId: _group._id, customField: body.customField})
 			}

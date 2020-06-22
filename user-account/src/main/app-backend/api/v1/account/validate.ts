@@ -37,8 +37,8 @@ class ValidateToken
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		const email = await AccountModule.validateSession(request);
-		return {email};
+		const account = await AccountModule.validateSession(request);
+		return {email: account.email};
 	}
 }
 

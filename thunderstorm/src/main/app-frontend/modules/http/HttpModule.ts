@@ -346,16 +346,16 @@ export class HttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 		return this;
 	}
 
-	setJsonBody(bodyObject: B, compress: boolean = true) {
+	setJsonBody(bodyObject: B, compress?: boolean) {
 		this.setHeaders({"content-type": "application/json"});
 		this.setBody(JSON.stringify(bodyObject), compress);
 		return this;
 	}
 
-	setBody(bodyAsString: BodyInit, compress: boolean = true) {
+	setBody(bodyAsString: BodyInit, compress?: boolean) {
 		this.body = bodyAsString;
-		this.compress = compress;
-		if (typeof bodyAsString === "string" && compress)
+		this.compress = compress !== undefined ? compress : this.compress;
+		if (typeof bodyAsString === "string" && this.compress)
 			this.setHeader("Content-encoding", "gzip");
 
 		return this;

@@ -39,7 +39,7 @@ export type User_Group = {
 }
 
 export type Request_CreateUser = {
-	userId: string,
+	accountId: string,
 	groups?: User_Group[]
 };
 

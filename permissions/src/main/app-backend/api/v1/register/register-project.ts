@@ -54,7 +54,7 @@ class ServerApi_RegisterProject
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void): Promise<void> {
-		RemoteProxy.assertSecret(request);
+		// RemoteProxy.assertSecret(request);
 		await PermissionsModule.registerProject();
 	}
 }
