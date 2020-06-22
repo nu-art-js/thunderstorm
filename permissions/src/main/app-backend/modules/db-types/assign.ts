@@ -158,14 +158,6 @@ export class UsersDB_Class
 		await this.insertIfNotExist(email);
 	}
 
-	async __onUserLogin(email: string) {
-		await this.insertIfNotExist(email);
-	}
-
-	async __onNewUserRegistered(email: string) {
-		await this.insertIfNotExist(email);
-	}
-
 	async insertIfNotExist(email: string) {
 		this.runInTransaction(async (transaction) => {
 

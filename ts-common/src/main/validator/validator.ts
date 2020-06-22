@@ -140,7 +140,7 @@ export const validateRange = (ranges: [number, number][], mandatory = true): Val
 			return;
 
 		for (const range of ranges) {
-			if (range[0] < input && input < range[1])
+			if (range[0] <= input && input <= range[1])
 				return;
 		}
 

@@ -114,7 +114,7 @@ export class LevelDB_Class
 		_id: validateOptionalId,
 		domainId: validateUniqueId,
 		name: validateStringWithDashes,
-		value: validateRange([[-1, 1000]]),
+		value: validateRange([[0, 1000]]),
 	};
 
 	constructor() {
