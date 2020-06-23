@@ -30,9 +30,9 @@ import {
 	listStyle,
 	ListStyleProps,
 	MultiTypeAdapter,
+	stopPropagation,
 	TreeRendererProps,
-	ValueProps,
-    stopPropagation
+	ValueProps
 } from "@nu-art/thunderstorm/frontend";
 import {ICONS} from "@res/icons";
 
@@ -132,15 +132,15 @@ export class Example_DropDown
 		return <>
 			<h1>dropdowns</h1>
 			<div className={'ll_h_t match_width'} style={{justifyContent: "space-around", height: 100}}>
-				{this.renderDefaults()}
-				{this.renderSecond()}
+				{/*{this.renderDefaults()}*/}
+				{/*{this.renderSecond()}*/}
 				{this.renderMultiRenderer()}
 			</div>
 			{/*<h4>{this.state._selected ? `You chose ${this.state._selected}` : "You didn't choose yet"}</h4>*/}
 		</>;
 	}
 
-	private renderDefaults() {
+	renderDefaults() {
 		const simpleAdapter = new Adapter<Plague>().setData(plagues).setTreeNodeRenderer(ItemRenderer);
 		simpleAdapter.hideRoot = true;
 		return <div>
@@ -152,7 +152,7 @@ export class Example_DropDown
 		</div>
 	}
 
-	private renderSecond() {
+	renderSecond() {
 		const valueRenderer = (props: ValueProps<Plague>) => {
 			const style: React.CSSProperties = {backgroundColor: "lime", boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
 			if (props.selected)
@@ -191,8 +191,7 @@ export class Example_DropDown
 			title: TitleRender
 		};
 		const adapter = new MultiTypeAdapter(rendererMap).setData(plaguesWithTitles);
-		adapter.getTreeNodeRenderer = () => NodeRenderer;
-		adapter.hideRoot = true;
+		adapter.getTreeNodeRenderer = () => Example_NodeRenderer_HoverToExpand;
 		const inputResolverWithCustomInlineStyle = (selected?: Plague): InputProps => (
 			{
 				className: customInputStyle(!!selected),
@@ -235,50 +234,48 @@ export class Example_DropDown
 	}
 }
 
-export class ItemRenderer
+class ItemRenderer
 	extends React.Component<TreeRendererProps> {
 
 	render() {
 		if (typeof this.props.item !== "object")
 			return null;
 
-		console.log('RENDERER PROPS!!!!!', this.props.item);
-		return <div
-			className="ll_h_c clickable"
-			id={this.props.node.path}
-			onClick={(event: React.MouseEvent) => {
-				this.props.node.onClick(event);
-			}}
-			style={this.props.node.focused ? {backgroundColor: "lime"} : {}}
-		>
-			<div className={optionRendererStyle(this.props.node.focused)}>
-				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
-					<div>{this.props.item.label}</div>
-					{this.props.node.focused && <div>{ICONS.check(undefined, 14)}</div>}
+		return (
+			<div className="ll_h_c clickable"
+			     id={this.props.node.path}
+			     onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
+			     style={this.props.node.focused ? {backgroundColor: "lime"} : {}}>
+
+				<div className={optionRendererStyle(this.props.node.focused)}>
+					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
+						<div>{this.props.item.label}</div>
+						{this.props.node.focused && <div>{ICONS.check(undefined, 14)}</div>}
+					</div>
 				</div>
 			</div>
-		</div>;
+		);
 	}
 }
 
-export class TitleRender
+class TitleRender
 	extends React.Component<TreeRendererProps<Plague>> {
+
 	render() {
-		return <div style={{backgroundColor: "lightgray"}} onClick={() => {
-			return
-		}}>
-			<div className={optionRendererStyle(this.props.node.focused)} style={{color: "yellow"}}>
-				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
-					<div>{this.props.item.label}</div>
+		return (
+			<div style={{backgroundColor: "lightgray"}} onClick={() => console.log("pah")}>
+				<div className={optionRendererStyle(this.props.node.focused)} style={{color: "yellow"}}>
+					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
+						<div>{this.props.item.label}</div>
+					</div>
 				</div>
 			</div>
-		</div>;
-
+		);
 	}
 }
 
 
-class NodeRenderer
+class Example_NodeRenderer_HoverToExpand
 	extends React.Component<TreeRendererProps> {
 
 	constructor(props: TreeRendererProps) {
@@ -297,16 +294,13 @@ class NodeRenderer
 			<div
 				className="ll_h_c clickable"
 				id={this.props.node.path}
+				onMouseEnter={(e) => this.props.node.expandToggler(e, true)}
+				onMouseLeave={(e) => this.props.node.expandToggler(e, false)}
 				onMouseDown={stopPropagation}
-				onMouseUp={(e) => this.props.node.onClick(e)}
-			>
+				onMouseUp={(e) => this.props.node.onClick(e)}>
+
 				<Renderer node={this.props.node} item={item}/>
-				{hasChildren && <div
-					id={this.props.node.path}
-					onMouseDown={stopPropagation}
-					onMouseUp={(e) => this.props.node.expandToggler(e, !this.props.node.expanded)}
-					style={{cursor: "pointer", marginRight: 10}}
-				>{this.props.node.expanded ? "+" : "-"}</div>}
+				{hasChildren && <div>{">"}</div>}
 			</div>
 		);
 	};
