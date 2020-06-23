@@ -27,28 +27,32 @@ import {
 } from "../_imports";
 import {
 	BaseDB_ApiGenerator,
+	ServerApi_Create,
 	validateOptionalId,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
 import {
+	AccountModule,
 	OnNewUserRegistered,
-	OnUserLogin,
-	AccountModule
+	OnUserLogin
 } from "@nu-art/user-account/backend";
 import {Clause_Where} from "@nu-art/firebase";
-import {ApiException} from "@nu-art/thunderstorm/backend";
+import {
+	ApiException,
+	ServerApi
+} from "@nu-art/thunderstorm/backend";
 
 import {
 	_keys,
+	BadImplementationException,
 	batchAction,
+	compare,
 	filterDuplicates,
 	filterInstances,
 	TypeValidator,
 	validateArray,
 	validateObjectValues,
 	validateRegexp,
-	BadImplementationException,
-	compare,
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
@@ -128,6 +132,10 @@ export class GroupsDB_Class
 			const groupsToInsert = _groups.filter(group => !dbGroups.find(dbGroup => dbGroup._id === group._id));
 			return Promise.all(groupsToInsert.map(group => this.insertImpl(transaction, group)));
 		});
+	}
+
+	protected apiCreate(pathPart?: string): ServerApi<any> {
+		return new ServerApi_Create(this, pathPart);
 	}
 }
 
