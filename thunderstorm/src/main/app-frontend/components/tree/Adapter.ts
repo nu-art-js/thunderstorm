@@ -27,8 +27,10 @@ import {
 	SimpleTreeNodeRenderer
 } from "./SimpleTreeNodeRenderer";
 
-export type TreeRendererProps<Item extends any = any, MoreProps extends object = {}> = { item: Item, node: TreeNode } & MoreProps
-export type _Renderer<Item, MoreProps extends object = {}> = React.ComponentType<TreeRendererProps<Item, MoreProps>>
+export type TreeRendererProps<Item extends any = any> = { item: Item, node: TreeNode }
+type _BaseRenderer<Item> = React.ComponentType<Item>
+export type _TreeRenderer<Item> = _BaseRenderer<TreeRendererProps<Item>>
+export type _Renderer<Item> = _BaseRenderer<{ item: Item }>
 
 export type _InferItemType<R> = R extends _Renderer<infer Item> ? Item : "Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode";
 
@@ -51,7 +53,7 @@ export class Adapter<T extends any = any> {
 
 	data!: object;
 	hideRoot: boolean = false
-	private treeNodeRenderer: _Renderer<T> = SimpleTreeNodeRenderer;
+	private treeNodeRenderer: _TreeRenderer<T> = SimpleTreeNodeRenderer;
 
 	setData(data: object) {
 		this.data = data;
@@ -62,16 +64,16 @@ export class Adapter<T extends any = any> {
 		return true;
 	}
 
-	setTreeNodeRenderer(renderer: _Renderer<T>) {
+	setTreeNodeRenderer(renderer: _TreeRenderer<T>) {
 		this.treeNodeRenderer = renderer;
 		return this;
 	}
 
-	getTreeNodeRenderer(): _Renderer<T> {
+	getTreeNodeRenderer(): _TreeRenderer<T> {
 		return this.treeNodeRenderer;
 	}
 
-	resolveRenderer(propKey: string): _Renderer<T> {
+	resolveRenderer(propKey: string): _TreeRenderer<T> {
 		return SimpleNodeRenderer;
 	}
 

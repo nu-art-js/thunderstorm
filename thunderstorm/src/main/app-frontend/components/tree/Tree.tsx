@@ -31,7 +31,8 @@ import {stopPropagation} from '../../utils/tools';
 import {
 	_Renderer,
 	Adapter,
-	TreeRendererProps
+	TreeRendererProps,
+    _TreeRenderer
 } from "./Adapter";
 
 
@@ -148,7 +149,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		if (this.props.adapter.hideRoot && path.length === 1)
 			return null;
 
-		const TreeNodeRenderer: _Renderer<TreeRendererProps> = this.props.adapter.getTreeNodeRenderer();
+		const TreeNodeRenderer: _TreeRenderer<TreeRendererProps> = this.props.adapter.getTreeNodeRenderer();
 		const node: TreeNode = {
 			adapter: this.props.adapter,
 			propKey: key,
