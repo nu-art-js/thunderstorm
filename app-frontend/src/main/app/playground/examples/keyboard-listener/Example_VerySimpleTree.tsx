@@ -55,7 +55,7 @@ export class Example_VerySimpleTree
 	};
 
 	render() {
-		const adapter = new Adapter();
+		const adapter = new Adapter().setData(this.elements);
 		adapter.hideRoot = true;
 		adapter.adjust = (data: object) => {
 			if (Object.keys(data).find(key => key === "data")) {
@@ -68,7 +68,6 @@ export class Example_VerySimpleTree
 
 		adapter.getTreeNodeRenderer = () => Example_NodeRenderer;
 
-		adapter.data = this.elements;
 		return <div>
 			<h1>Very Simple Tree</h1>
 			<Tree

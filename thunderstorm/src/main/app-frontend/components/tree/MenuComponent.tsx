@@ -19,31 +19,35 @@
  * limitations under the License.
  */
 
-/**
- * Created by tacb0ss on 27/07/2018.
- */
-import {Module} from "@nu-art/ts-common";
 
-export type ResourceId = string;
+import * as React from "react";
+import {generateHex} from "@nu-art/ts-common";
+import {BaseComponent} from "../../core/BaseComponent";
+import {Adapter} from "./Adapter";
+import {Tree} from "./Tree";
 
-export class ResourcesModule_Class
-	extends Module {
-
-	private readonly relativePath: string;
-	private readonly relativePathImages: string;
-
-	constructor() {
-		super();
-		this.relativePath = "../../res/";
-		this.relativePathImages = `${this.relativePath}images/`;
-	}
-
-	init() {
-	}
-
-	public getImageUrl(relativePath: ResourceId): string {
-		return `${this.relativePathImages}${relativePath}`
-	}
+type Props = {
+	adapter: Adapter
+	childrenContainerStyle?: any
+	onNodeClicked?: (path:string,item:any) => void
+	onNodeDoubleClicked?: Function // TODO: Need to handle this
+	id?: string
 }
 
-export const ResourcesModule = new ResourcesModule_Class();
+export class MenuComponent
+	extends BaseComponent<Props> {
+	private readonly id: string;
+
+	constructor(props: Props) {
+		super(props);
+		this.id = this.props.id || generateHex(8);
+	}
+
+	render() {
+		return <Tree
+			id={this.id}
+			adapter={this.props.adapter}
+			onNodeClicked={this.props.onNodeClicked}
+		/>
+	}
+}

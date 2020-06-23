@@ -51,7 +51,7 @@ export abstract class Module<Config = any>
 		this.configValidator = validator;
 	}
 
-	public setDefaultConfig(config: Config) {
+	public setDefaultConfig(config: Partial<Config>) {
 		// @ts-ignore
 		this.config = config;
 	}

@@ -185,6 +185,9 @@ export class AccountsModule_Class
 
 	async validateSession(request: ExpressRequest): Promise<UI_Account> {
 		const sessionId = Header_SessionId.get(request);
+		if(!sessionId)
+			throw new ApiException(404, 'Missing sessionId');
+
 		return this.validateSessionId(sessionId);
 	}
 
