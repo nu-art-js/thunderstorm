@@ -34,7 +34,7 @@ import {
 import {QueryParams} from "../../index";
 
 export class BrowserHistoryModule_Class
-	extends Module<void> {
+	extends Module {
 	private readonly history: History<any>;
 
 	constructor() {

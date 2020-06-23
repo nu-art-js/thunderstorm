@@ -19,18 +19,20 @@
 import * as React from "react";
 import {css} from "emotion";
 import {
+	_RendererMap,
+	Adapter,
 	DropDown,
-	DropDown_Node,
-	InputProps,
-	HeaderStyleProps,
-	ValueProps,
-	inputStyle,
 	headerStyle,
-	ListStyleProps,
+	HeaderStyleProps,
+	InputProps,
+	inputStyle,
+	ItemToRender,
 	listStyle,
-	DropDownItemRenderer,
-	MenuItemWrapper,
-	RendererMap
+	ListStyleProps,
+	MultiTypeAdapter,
+	TreeRendererProps,
+	ValueProps,
+    stopPropagation
 } from "@nu-art/thunderstorm/frontend";
 import {ICONS} from "@res/icons";
 
@@ -45,7 +47,7 @@ const optionRendererStyle = (selected: boolean) => css(
 		padding: "5px 0",
 		borderBottom: "solid 1px #d8d8d880",
 	});
-
+// @ts-ignore
 const customInputStyle = (selected: boolean) => css(
 	{
 		backgroundColor: "lime",
@@ -67,8 +69,8 @@ const plagues: Plague[] = [
 	{label: 'Coronavirus', value: 'COVID-19'},
 	{label: 'Internet', value: 'internet'},
 ];
-
-const plaguesWithTitles: MenuItemWrapper<RendererMap, string>[] = [
+// @ts-ignore
+const plaguesWithTitles: ItemToRender<_RendererMap, string>[] = [
 	{
 		item: {label: 'Phisical', value: 'title'},
 		_children: [
@@ -127,35 +129,36 @@ export class Example_DropDown
 
 
 	render() {
-		const itemRenderer = (props: DropDown_Node<Plague>) => <div style={props.hover ? {backgroundColor: "lime"} : {}}>
-			<div className={optionRendererStyle(props.selected)}>
-				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
-					<div>{props.item.label}</div>
-					{props.selected && <div>{ICONS.check(undefined, 14)}</div>}
-				</div>
+		return <>
+			<h1>dropdowns</h1>
+			<div className={'ll_h_t match_width'} style={{justifyContent: "space-around", height: 100}}>
+				{this.renderDefaults()}
+				{this.renderSecond()}
+				{this.renderMultiRenderer()}
 			</div>
-		</div>;
-		const titleRender = (props: DropDown_Node<Plague>) => <div style={{backgroundColor: "lightgray"}} onClick={() => {
-			return
-		}}>
-			<div className={optionRendererStyle(props.selected)} style={{color: "yellow"}}>
-				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
-					<div>{props.item.label}</div>
-				</div>
-			</div>
-		</div>;
-		const rendererMap: { [key: string]: DropDownItemRenderer<Plague> } = {
-			normal: itemRenderer,
-			title: titleRender
-		};
+			{/*<h4>{this.state._selected ? `You chose ${this.state._selected}` : "You didn't choose yet"}</h4>*/}
+		</>;
+	}
 
+	private renderDefaults() {
+		const simpleAdapter = new Adapter<Plague>().setData(plagues).setTreeNodeRenderer(ItemRenderer);
+		simpleAdapter.hideRoot = true;
+		return <div>
+			<h4>Only defaults</h4>
+			<DropDown
+				adapter={simpleAdapter}
+				onSelected={this.onSelected}
+			/>
+		</div>
+	}
+
+	private renderSecond() {
 		const valueRenderer = (props: ValueProps<Plague>) => {
 			const style: React.CSSProperties = {backgroundColor: "lime", boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
 			if (props.selected)
 				return <div style={{...style, color: "red"}}>{props.selected.label}</div>;
 			return <div style={style}>{props.placeholder}</div>
 		};
-
 		const inputResolver = (selected?: Plague): InputProps => (
 			{
 				className: customInputStyle(!!selected),
@@ -163,7 +166,33 @@ export class Example_DropDown
 				placeholder: this.state._selected
 			}
 		);
+		const headerResolverClass: HeaderStyleProps = {headerStyle, headerClassName: css({boxShadow: "5px 10px #888888"})};
+		const simpleAdapter = new Adapter<Plague>().setData(plagues).setTreeNodeRenderer(ItemRenderer);
+		simpleAdapter.hideRoot = true;
+		return <div>
+			<h4>Filter, 2 carets, placeholder & all renderers</h4>
+			<DropDown
+				adapter={simpleAdapter}
+				onSelected={this.onSelected}
+				valueRenderer={valueRenderer}
+				inputResolver={inputResolver}
+				filter={(item) => [(item as Plague).label.toLowerCase()]}
+				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowOpen(undefined, 14)}</div>}
+				closeCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowClose(undefined, 14)}</div>}
+				placeholder={"Choose a plague"}
+				headerStyleResolver={headerResolverClass}
+			/>
+		</div>
+	}
 
+	private renderMultiRenderer() {
+		const rendererMap: _RendererMap<Plague> = {
+			normal: ItemRenderer,
+			title: TitleRender
+		};
+		const adapter = new MultiTypeAdapter(rendererMap).setData(plaguesWithTitles);
+		adapter.getTreeNodeRenderer = () => NodeRenderer;
+		adapter.hideRoot = true;
 		const inputResolverWithCustomInlineStyle = (selected?: Plague): InputProps => (
 			{
 				className: customInputStyle(!!selected),
@@ -171,8 +200,12 @@ export class Example_DropDown
 				placeholder: this.state._selected
 			}
 		);
-
-		const headerResolverClass: HeaderStyleProps = {headerStyle, headerClassName: css({boxShadow: "5px 10px #888888"})};
+		const valueRenderer = (props: ValueProps<Plague>) => {
+			const style: React.CSSProperties = {backgroundColor: "lime", boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
+			if (props.selected)
+				return <div style={{...style, color: "red"}}>{props.selected.label}</div>;
+			return <div style={style}>{props.placeholder}</div>
+		};
 		const headerResolverStyle: HeaderStyleProps = {headerStyle: {...headerStyle, border: "solid 2px red", borderRadius: "5px 5px 0px 0px"}};
 		const listResolverStyle: ListStyleProps = {
 			listStyle: {
@@ -184,47 +217,97 @@ export class Example_DropDown
 				maxHeight: 90
 			}
 		};
+		return <div>
+			<h4>Filter, 1 caret, default value, all renderers & custom inline style</h4>
+			<DropDown
+				adapter={adapter}
+				// renderersAndOptions={{options: plaguesWithTitles, rendererMap, avoidActionOnTypes: ['title']}}
+				onSelected={this.onSelected}
+				valueRenderer={valueRenderer}
+				inputResolver={inputResolverWithCustomInlineStyle}
+				filter={(item) => [(item as ItemToRender<_RendererMap, string>).item.label.toLowerCase()]}
+				selected={plagues[2]}
+				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowOpen(undefined, 14)}</div>}
+				headerStyleResolver={headerResolverStyle}
+				listStyleResolver={listResolverStyle}
+			/>
+		</div>
+	}
+}
 
-		return <>
-			<h1>dropdowns</h1>
-			<div className={'ll_h_t match_width'} style={{justifyContent: "space-around", height: 100}}>
-				<div>
-					<h4>Only defaults</h4>
-					<DropDown
-						renderersAndOptions={{options: plagues, itemRenderer}}
-						onSelected={this.onSelected}
-					/>
-				</div>
-				<div>
-					<h4>Filter, 2 carets, placeholder & all renderers</h4>
-					<DropDown
-						renderersAndOptions={{options: plagues, itemRenderer}}
-						onSelected={this.onSelected}
-						valueRenderer={valueRenderer}
-						inputResolver={inputResolver}
-						filter={(item) => [(item as Plague).label.toLowerCase()]}
-						mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowOpen(undefined, 14)}</div>}
-						closeCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowClose(undefined, 14)}</div>}
-						placeholder={"Choose a plague"}
-						headerStyleResolver={headerResolverClass}
-					/>
-				</div>
-				<div>
-					<h4>Filter, 1 caret, default value, all renderers & custom inline style</h4>
-					<DropDown
-						renderersAndOptions={{options: plaguesWithTitles, rendererMap, avoidActionOnTypes: ['title']}}
-						onSelected={this.onSelected}
-						valueRenderer={valueRenderer}
-						inputResolver={inputResolverWithCustomInlineStyle}
-						filter={(item) => [(item as MenuItemWrapper<RendererMap, string>).item.label.toLowerCase()]}
-						selected={plagues[2]}
-						mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowOpen(undefined, 14)}</div>}
-						headerStyleResolver={headerResolverStyle}
-						listStyleResolver={listResolverStyle}
-					/>
+export class ItemRenderer
+	extends React.Component<TreeRendererProps> {
+
+	render() {
+		if (typeof this.props.item !== "object")
+			return null;
+
+		console.log('RENDERER PROPS!!!!!', this.props.item);
+		return <div
+			className="ll_h_c clickable"
+			id={this.props.node.path}
+			onClick={(event: React.MouseEvent) => {
+				this.props.node.onClick(event);
+			}}
+			style={this.props.node.focused ? {backgroundColor: "lime"} : {}}
+		>
+			<div className={optionRendererStyle(this.props.node.focused)}>
+				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
+					<div>{this.props.item.label}</div>
+					{this.props.node.focused && <div>{ICONS.check(undefined, 14)}</div>}
 				</div>
 			</div>
-			<h4>{this.state._selected ? `You chose ${this.state._selected}` : "You didn't choose yet"}</h4>
-		</>;
+		</div>;
 	}
+}
+
+export class TitleRender
+	extends React.Component<TreeRendererProps<Plague>> {
+	render() {
+		return <div style={{backgroundColor: "lightgray"}} onClick={() => {
+			return
+		}}>
+			<div className={optionRendererStyle(this.props.node.focused)} style={{color: "yellow"}}>
+				<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
+					<div>{this.props.item.label}</div>
+				</div>
+			</div>
+		</div>;
+
+	}
+}
+
+
+class NodeRenderer
+	extends React.Component<TreeRendererProps> {
+
+	constructor(props: TreeRendererProps) {
+		super(props);
+	}
+
+	render() {
+		const item = this.props.item.item;
+		const Renderer = this.props.node.adapter.resolveRenderer(this.props.item.type);
+		if (!Renderer)
+			return "";
+
+		const hasChildren = Array.isArray(this.props.item) && this.props.item.length > 0;
+
+		return (
+			<div
+				className="ll_h_c clickable"
+				id={this.props.node.path}
+				onMouseDown={stopPropagation}
+				onMouseUp={(e) => this.props.node.onClick(e)}
+			>
+				<Renderer node={this.props.node} item={item}/>
+				{hasChildren && <div
+					id={this.props.node.path}
+					onMouseDown={stopPropagation}
+					onMouseUp={(e) => this.props.node.expandToggler(e, !this.props.node.expanded)}
+					style={{cursor: "pointer", marginRight: 10}}
+				>{this.props.node.expanded ? "+" : "-"}</div>}
+			</div>
+		);
+	};
 }

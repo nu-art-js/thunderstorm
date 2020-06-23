@@ -3,13 +3,12 @@ import {
 	Module
 } from "@nu-art/ts-common";
 import {MenuPosition} from "./PopupMenu";
-
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import {
-	InferItemType,
-	ItemWrapper,
-	RendererMap
-} from "../../types/renderer-map";
+	_GenericRenderer,
+	_RendererMap,
+	Adapter
+} from "../../components/tree/Adapter";
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 	const pos = button.getBoundingClientRect();
@@ -17,12 +16,13 @@ export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 };
 
 // export type TreeAction = (path: string, id: string) => void;
+export type _Menu<Rm extends _RendererMap> = _GenericRenderer<Rm>
 
 export type Menu_Model = {
 	id: string
-	menu: Menu<any>,
+	adapter: Adapter,
 	pos: MenuPosition,
-	onNodeClicked?: Function,
+	onNodeClicked?: (path: string, item: any) => void
 	onNodeDoubleClicked?: Function,
 };
 
@@ -31,14 +31,14 @@ export interface MenuListener {
 	__onMenuHide: (id: string) => void
 }
 
-export type MenuItemWrapper<Rm extends RendererMap, K extends keyof Rm, Item = InferItemType<Rm[K]>> = ItemWrapper<Rm, K> & {
-	_children?: MenuItemWrapper<Rm, keyof Rm>[]
-}
-
-export type Menu<Rm extends RendererMap> = {
-	rendererMap: Rm
-	_children: MenuItemWrapper<Rm, keyof Rm>[]
-}
+// export type MenuItemWrapper<Rm extends RendererMap, K extends keyof Rm, Item = InferItemType<Rm[K]>> = ItemWrapper<Rm, K> & {
+// 	_children?: MenuItemWrapper<Rm, keyof Rm>[]
+// }
+//
+// export type Menu<Rm extends RendererMap> = {
+// 	rendererMap: Rm
+// 	_children: MenuItemWrapper<Rm, keyof Rm>[]
+// }
 
 export class MenuModule_Class
 	extends Module<{}> {
@@ -56,21 +56,21 @@ export class MenuModule_Class
 export const MenuModule = new MenuModule_Class();
 
 export class MenuBuilder {
-	private readonly menu: Menu<any>;
+	private readonly adapter: Adapter;
 	private readonly position: MenuPosition;
 	private id: string = generateHex(8);
-	private onNodeClicked?: Function;
+	private onNodeClicked?: (path: string, item: any) => void;
 	private onNodeDoubleClicked?: Function;
 
-	constructor(menu: Menu<any>, position: MenuPosition) {
-		this.menu = menu;
+	constructor(menu: Adapter, position: MenuPosition) {
+		this.adapter = menu;
 		this.position = position;
 	}
 
 	show() {
 		const model: Menu_Model = {
 			id: this.id,
-			menu: this.menu,
+			adapter: this.adapter,
 			pos: this.position,
 			onNodeClicked: this.onNodeClicked,
 			onNodeDoubleClicked: this.onNodeDoubleClicked
@@ -84,12 +84,13 @@ export class MenuBuilder {
 		return this;
 	}
 
-	setOnClick(func: Function) {
+	setOnClick(func: (path:string,item:any) => void) {
 		this.onNodeClicked = func;
 		return this;
 	}
 
 	setOnDoubleClick(func: Function) {
+
 		this.onNodeDoubleClicked = func;
 		return this;
 	}

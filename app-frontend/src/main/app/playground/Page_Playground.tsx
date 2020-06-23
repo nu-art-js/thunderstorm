@@ -30,7 +30,7 @@ import {Example_Tabs} from "./examples/tabs/Example_Tabs";
 import {Example_VerySimpleTree} from './examples/keyboard-listener/Example_VerySimpleTree';
 import {Example_Dialogs} from './examples/Example_Dialogs';
 import {Example_Toaster} from './examples/Example_Toaster';
-import {Example_Menu} from './examples/Example_Menu';
+import {Example_Menu} from './examples/menu/Example_Menu';
 import {Example_DropDown} from "./examples/Example_DropDown";
 import {TreeRefactorPage} from "./examples/_to-be-removed/TreeRefactorPage";
 import {ICONS} from "@res/icons";
