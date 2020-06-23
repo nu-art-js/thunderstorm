@@ -40,12 +40,13 @@ export type Request_UserUrlsPermissions = {
 	requestCustomField: StringMap
 }
 
-export type Request_AssignAppPermissions = {
+export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 	projectId: string,
 	groupsToRemove: PredefinedGroup[],
 	group: PredefinedGroup,
 	userId: string
-	customField: StringMap
+	customField: T
+	assertKeys?: (keyof T)[]
 }
 
 

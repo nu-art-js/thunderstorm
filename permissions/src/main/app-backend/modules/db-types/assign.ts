@@ -47,7 +47,8 @@ import {
 	validateArray,
 	validateObjectValues,
 	validateRegexp,
-    BadImplementationException
+	BadImplementationException,
+	compare,
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
@@ -174,7 +175,7 @@ export class UsersDB_Class
 	}
 
 	async assignAppPermissions(body: Request_AssignAppPermissions) {
-		if(!body.groupsToRemove.find(groupToRemove => groupToRemove._id === body.group._id))
+		if (!body.groupsToRemove.find(groupToRemove => groupToRemove._id === body.group._id))
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");
 
 		await this.runInTransaction(async (transaction) => {
@@ -186,7 +187,13 @@ export class UsersDB_Class
 			if (!body.customField || _keys(body.customField).length === 0)
 				throw new ApiException(400, `Cannot set app permissions '${body.projectId}--${body.group._id}', request must have custom fields restriction!!`);
 
-			const newGroups = (user.groups || [])?.filter(group => !body.groupsToRemove.find(idToRemove => idToRemove._id === group.groupId))
+			const newGroups = (user.groups || [])?.filter(
+				group => !body.groupsToRemove.find(groupToRemove => {
+					if (groupToRemove._id !== group.groupId)
+						return false;
+
+					compare(group.customField, body.customField, body.assertKeys);
+				}))
 
 			if (body.group) {
 				const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: `${body.projectId}--${body.group._id}`}});
