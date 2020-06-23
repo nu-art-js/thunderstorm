@@ -135,7 +135,7 @@ export class Example_FakeMenu
 
 		const adapter = new MultiTypeAdapter(renderMap);
 
-		adapter.getTreeNodeRenderer = () => Example_NodeRenderer;
+		adapter.getTreeNodeRenderer = () => Example_NodeRenderer_ClickToExpand;
 
 		adapter.data = menu;
 		return <div>
@@ -204,7 +204,7 @@ class ItemRenderer_Number
 }
 
 
-class Example_NodeRenderer
+class Example_NodeRenderer_ClickToExpand
 	extends React.Component<TreeRendererProps> {
 
 	constructor(props: TreeRendererProps) {
