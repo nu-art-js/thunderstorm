@@ -189,7 +189,7 @@ export class UsersDB_Class
 	}
 
 	async insertIfNotExist(email: string) {
-		this.runInTransaction(async (transaction) => {
+		return this.runInTransaction(async (transaction) => {
 
 			const account = await AccountModule.getUser(email);
 			if (!account)
@@ -200,7 +200,7 @@ export class UsersDB_Class
 				return;
 
 			return this.insertImpl(transaction, {accountId: account._id, groups: []});
-		})
+		});
 	}
 
 	async assignAppPermissions(body: Request_AssignAppPermissions) {
