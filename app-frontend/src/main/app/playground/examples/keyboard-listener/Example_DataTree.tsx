@@ -18,9 +18,9 @@
 
 import * as React from "react";
 import {
-	Adapter,
 	BaseComponent,
 	Tree,
+	TreeAdapter,
 	TreeNode,
 	TreeRendererProps,
 } from "@nu-art/thunderstorm/frontend";
@@ -51,7 +51,7 @@ export class Example_DataTree
 	};
 
 	render() {
-		const adapter = new Adapter().setData(this.elements).setTreeNodeRenderer(Example_ColorfulNodeRenderer);
+		const adapter = new TreeAdapter(this.elements).setTreeNodeRenderer(Example_ColorfulNodeRenderer);
 		adapter.hideRoot = true;
 		adapter.adjust = (data: object) => {
 			if (data === undefined || data === null)

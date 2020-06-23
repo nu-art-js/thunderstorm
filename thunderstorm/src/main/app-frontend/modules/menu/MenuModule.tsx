@@ -6,8 +6,8 @@ import {MenuPosition} from "./PopupMenu";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import {
 	_GenericRenderer,
-	_RendererMap,
-	Adapter
+	RendererMap,
+	TreeAdapter
 } from "../../components/tree/Adapter";
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
@@ -16,11 +16,11 @@ export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 };
 
 // export type TreeAction = (path: string, id: string) => void;
-export type _Menu<Rm extends _RendererMap> = _GenericRenderer<Rm>
+export type _Menu<Rm extends RendererMap> = _GenericRenderer<Rm>
 
 export type Menu_Model = {
 	id: string
-	adapter: Adapter,
+	adapter: TreeAdapter,
 	pos: MenuPosition,
 	onNodeClicked?: (path: string, item: any) => void
 	onNodeDoubleClicked?: Function,
@@ -56,13 +56,13 @@ export class MenuModule_Class
 export const MenuModule = new MenuModule_Class();
 
 export class MenuBuilder {
-	private readonly adapter: Adapter;
+	private readonly adapter: TreeAdapter;
 	private readonly position: MenuPosition;
 	private id: string = generateHex(8);
 	private onNodeClicked?: (path: string, item: any) => void;
 	private onNodeDoubleClicked?: Function;
 
-	constructor(menu: Adapter, position: MenuPosition) {
+	constructor(menu: TreeAdapter, position: MenuPosition) {
 		this.adapter = menu;
 		this.position = position;
 	}

@@ -18,10 +18,9 @@
  */
 
 import {
-	_RendererMap,
-	ItemToRender,
+	RendererMap,
 	TreeRendererProps
-} from "@nu-art/thunderstorm/app-frontend/components/tree/Adapter";
+} from "@nu-art/thunderstorm/frontend";
 import {
 	DropDown,
 	headerStyle,
@@ -41,7 +40,7 @@ import {
 	plagues,
 	plaguesWithTitles
 } from "./Example_DropDowns";
-import {MultiTypeAdapter} from "@nu-art/thunderstorm/app-frontend/components/tree/MultiTypeAdaptor";
+import {MultiTypeAdapter} from "@nu-art/thunderstorm/frontend";
 import {ICONS} from "@res/icons";
 import {stopPropagation} from "@nu-art/thunderstorm/app-frontend/utils/tools";
 
@@ -55,12 +54,11 @@ export class Example_MultiRendererDropDown
 	};
 
 	render() {
-		const rendererMap: _RendererMap<Plague> = {
+		const rendererMap: RendererMap<TreeRendererProps<Plague>> = {
 			normal: ItemRenderer,
 			title: TitleRender
 		};
-		const adapter = new MultiTypeAdapter(rendererMap).setData(plaguesWithTitles);
-		adapter.getTreeNodeRenderer = () => Example_NodeRenderer_HoverToExpand;
+		const adapter = new MultiTypeAdapter(plaguesWithTitles, rendererMap).setTreeNodeRenderer(Example_NodeRenderer_HoverToExpand);
 		const inputResolverWithCustomInlineStyle = (selected?: Plague): InputProps => (
 			{
 				className: customInputStyle(!!selected),
@@ -95,7 +93,7 @@ export class Example_MultiRendererDropDown
 				onSelected={this.onSelected}
 				valueRenderer={valueRenderer}
 				inputResolver={inputResolverWithCustomInlineStyle}
-				filter={(item) => [(item as ItemToRender<_RendererMap, string>).item.label.toLowerCase()]}
+				// filter={(item) => [(item as ItemToRender<RendererMap, string>).item.label.toLowerCase()]}
 				selected={plagues[2]}
 				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowOpen(undefined, 14)}</div>}
 				headerStyleResolver={headerResolverStyle}
