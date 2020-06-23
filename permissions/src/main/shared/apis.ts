@@ -49,7 +49,6 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 	assertKeys?: (keyof T)[]
 }
 
-
 export type PredefinedGroup = { _id: string, label: string };
 
 export type Request_RegisterProject = {

@@ -470,6 +470,26 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
+	protected apiCreate(pathPart?: string): ServerApi<any> {
+		return new ServerApi_Create(this, pathPart);
+	}
+
+	protected apiQuery(pathPart?: string): ServerApi<any> {
+		return new ServerApi_Query(this, pathPart);
+	}
+
+	protected apiQueryUnique(pathPart?: string): ServerApi<any> {
+		return new ServerApi_Unique(this, pathPart);
+	}
+
+	protected apiUpdate(pathPart?: string): ServerApi<any> {
+		return new ServerApi_Update(this, pathPart);
+	}
+
+	protected apiDelete(pathPart?: string): ServerApi<any> {
+		return new ServerApi_Delete(this, pathPart);
+	}
+
 	/**
 	 * Override this method, to control which server api endpoints are created automatically.
 	 *
@@ -480,11 +500,11 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	apis(pathPart?: string): ServerApi<any>[] {
 		return [
-			new ServerApi_Create(this, pathPart),
-			new ServerApi_Delete(this, pathPart),
-			new ServerApi_Update(this, pathPart),
-			new ServerApi_Query(this, pathPart),
-			new ServerApi_Unique(this, pathPart),
+			this.apiCreate(pathPart),
+			this.apiQuery(pathPart),
+			this.apiQueryUnique(pathPart),
+			this.apiUpdate(pathPart),
+			this.apiDelete(pathPart),
 		];
 	}
 }
