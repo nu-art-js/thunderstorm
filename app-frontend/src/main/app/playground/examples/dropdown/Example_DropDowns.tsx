@@ -20,8 +20,8 @@
 import * as React from "react";
 import {css} from "emotion";
 import {
-	_RendererMap,
 	ItemToRender,
+	RendererMap,
 	TreeRendererProps
 } from "@nu-art/thunderstorm/frontend";
 import {ICONS} from "@res/icons";
@@ -40,7 +40,7 @@ export const optionRendererStyle = (selected: boolean) => css(
 		padding: "5px 0",
 		borderBottom: "solid 1px #d8d8d880",
 	});
-// @ts-ignore
+
 export const customInputStyle = (selected: boolean) => css(
 	{
 		backgroundColor: "lime",
@@ -62,8 +62,8 @@ export const plagues: Plague[] = [
 	{label: 'Coronavirus', value: 'COVID-19'},
 	{label: 'Internet', value: 'internet'},
 ];
-// @ts-ignore
-export const plaguesWithTitles: ItemToRender<_RendererMap, string>[] = [
+
+export const plaguesWithTitles: ItemToRender<RendererMap, string>[] = [
 	{
 		item: {label: 'Phisical', value: 'title'},
 		_children: [

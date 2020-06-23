@@ -9,13 +9,13 @@ import {
 	resolveRealPosition
 } from "./MenuModule";
 import {BadImplementationException} from "@nu-art/ts-common";
-import {Adapter} from "../../components/tree/Adapter";
+import {TreeAdapter} from "../../components/tree/Adapter";
 
 type Props = {
 	id: string
 	iconOpen: ReactNode
 	iconClosed: ReactNode
-	adapter: Adapter
+	adapter: TreeAdapter
 }
 
 export class MenuAndButton

@@ -25,8 +25,8 @@ import {generateHex} from "@nu-art/ts-common";
 import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
 import {
-	_RendererMap,
-	Adapter,
+	RendererMap,
+	TreeAdapter,
 	ItemToRender
 } from "./tree/Adapter";
 import {Tree} from "./tree/Tree";
@@ -104,7 +104,7 @@ export type ValueProps<ItemType> = {
 }
 
 type State<ItemType> = {
-	filteredOptions: (ItemType | ItemToRender<_RendererMap, string>)[]
+	filteredOptions: (ItemType | ItemToRender<RendererMap, string>)[]
 	open: boolean
 	selected?: ItemType
 	hover?: ItemType
@@ -135,11 +135,11 @@ type State<ItemType> = {
 type StaticProps = { id: string }
 
 type Props<ItemType> = StaticProps & {
-	adapter: Adapter
+	adapter: TreeAdapter
 	// renderersAndOptions: RenderersAndOptions<ItemType>
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
-	filter?: (item: ItemType | ItemToRender<_RendererMap, string>) => string[]
+	filter?: (item: ItemType | ItemToRender<RendererMap, string>) => string[]
 	inputResolver?: (selected?: ItemType) => InputProps
 	placeholder?: string
 
@@ -243,11 +243,11 @@ export class DropDown<ItemType>
 		const options = this.props.adapter.data as ItemType[];
 
 		// const options = this.props.renderersAndOptions.options;
-		return (<FilterInput<ItemType | ItemToRender<_RendererMap, string>>
+		return (<FilterInput<ItemType | ItemToRender<RendererMap, string>>
 			id={this.props.id}
 			filter={this.props.filter}
 			list={options}
-			onChange={(filtered: (ItemType | ItemToRender<_RendererMap, string>)[]) => this.setState(() => ({filteredOptions: filtered}))}
+			onChange={(filtered: (ItemType | ItemToRender<RendererMap, string>)[]) => this.setState(() => ({filteredOptions: filtered}))}
 			focus={true}
 			className={inputComplementary.className}
 			inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}

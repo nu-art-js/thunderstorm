@@ -28,58 +28,61 @@ import {
 } from "./SimpleTreeNodeRenderer";
 
 export type TreeRendererProps<Item extends any = any> = { item: Item, node: TreeNode }
-type _BaseRenderer<Item> = React.ComponentType<Item>
-export type _TreeRenderer<Item> = _BaseRenderer<TreeRendererProps<Item>>
-export type _Renderer<Item> = _BaseRenderer<{ item: Item }>
+type BaseRenderer<Item> = React.ComponentType<Item>
+export type TreeRenderer<Item> = BaseRenderer<TreeRendererProps<Item>>
+export type Renderer<Item> = BaseRenderer<{ item: Item }>
 
-export type _InferItemType<R> = R extends _Renderer<infer Item> ? Item : "Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode";
+export type InferItemType<R> = R extends Renderer<infer Item> ? Item : "Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode";
 
-export type _RendererMap<T extends any = any> = {
-	[k: string]: _Renderer<T>
+export type RendererMap<T extends any = any> = {
+	[k: string]: BaseRenderer<T>
 }
 
-export type ItemToRender<Rm extends _RendererMap, K extends keyof Rm = keyof Rm, Item = _InferItemType<Rm[K]>> = {
+export type ItemToRender<Rm extends RendererMap, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
 	_children?: ItemToRender<Rm>[]
 	item: Item
 	type: K
 }
 
-export type _GenericRenderer<Rm extends _RendererMap, ItemType extends ItemToRender<Rm> = ItemToRender<Rm>> = {
+export type _GenericRenderer<Rm extends RendererMap, ItemType extends ItemToRender<Rm> = ItemToRender<Rm>> = {
 	rendererMap: Rm
 	items: ItemType[]
 }
 
-export class Adapter<T extends any = any> {
+export class Adapter<T extends any = any, R extends BaseRenderer<T> = BaseRenderer<T>> {
 
-	data!: object;
+	data: any;
 	hideRoot: boolean = false
-	private treeNodeRenderer: _TreeRenderer<T> = SimpleTreeNodeRenderer;
+	protected treeNodeRenderer!: R;
+	protected simpleRenderer!: R;
+
+	constructor(data: any){
+		this.data = data
+	}
 
 	setData(data: object) {
 		this.data = data;
 		return this;
 	}
 
-	filter(obj: T, key: keyof T) {
+	filter<K>(obj: K, key: keyof K) {
 		return true;
 	}
 
-	setTreeNodeRenderer(renderer: _TreeRenderer<T>) {
+	setTreeNodeRenderer(renderer: R) {
 		this.treeNodeRenderer = renderer;
 		return this;
 	}
 
-	getTreeNodeRenderer(): _TreeRenderer<T> {
+	getTreeNodeRenderer(): R {
 		return this.treeNodeRenderer;
 	}
 
-	resolveRenderer(propKey: string): _TreeRenderer<T> {
-		return SimpleNodeRenderer;
+	public resolveRenderer(propKey: string): R {
+		return this.simpleRenderer;
 	}
 
-	getChildren(obj: any) {
-		return _keys(obj);
-	}
+	getChildren = <K>(obj: K): (keyof K)[] => _keys(obj);
 
 	getFilteredChildren(obj: any) {
 		if (obj === undefined || obj === null)
@@ -88,10 +91,18 @@ export class Adapter<T extends any = any> {
 		if (typeof obj !== "object" && !Array.isArray(obj))
 			return [];
 
-		return this.getChildren(obj).filter((__key) => this.filter(obj, __key as keyof T))
+		return this.getChildren(obj).filter((__key) => this.filter(obj, __key))
 	}
 
-	adjust(obj: T) {
+	adjust(obj: any): { data: any, deltaPath?: string } {
 		return {data: obj, deltaPath: ""};
 	}
+}
+
+export class TreeAdapter<T extends any = any>
+	extends Adapter<{ item: T, node: TreeNode }> {
+
+	hideRoot: boolean = false;
+	treeNodeRenderer = SimpleTreeNodeRenderer;
+	simpleRenderer = SimpleNodeRenderer;
 }

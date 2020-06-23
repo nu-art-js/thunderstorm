@@ -18,25 +18,25 @@
 
 import * as React from "react";
 import {
-	_RendererMap,
+	RendererMap,
 	BaseComponent,
 	ItemToRender,
+	MultiTypeAdapter,
 	stopPropagation,
 	Tree,
 	TreeRendererProps,
-    MultiTypeAdapter,
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
 
-// type _InferRenderingType<Rm> = Rm extends _RendererMap<infer I> ? I : never;
+// type _InferRenderingType<Rm> = Rm extends RendererMap<infer I> ? I : never;
 
-// export type _GenericRenderer<Rm extends _RendererMap, ItemType extends ItemToRender<Rm> = ItemToRender<Rm>> = {
+// export type _GenericRenderer<Rm extends RendererMap, ItemType extends ItemToRender<Rm> = ItemToRender<Rm>> = {
 // 	rendererMap: Rm
 // 	items: ItemType[]
 // }
 
-// class MultiTypeAdapter<Rm extends _RendererMap>
+// class MultiTypeAdapter<Rm extends RendererMap>
 // 	extends Adapter {
 //
 // 	private readonly rendererMap: Rm;
@@ -83,7 +83,7 @@ import {__stringify} from "@nu-art/ts-common";
 // 	// 	return this.getChildren(obj);//.filter((__key: any) => this.filter(obj, __key as keyof T))
 // 	// }
 //
-// 	resolveRenderer(propKey: string): _Renderer<TreeRendererProps> {
+// 	resolveRenderer(propKey: string): Renderer<TreeRendererProps> {
 // 		return this.rendererMap[propKey];
 // 	}
 // }
@@ -95,7 +95,7 @@ export class Example_FakeMenu
 
 	render() {
 
-		const renderMap: _RendererMap = {
+		const renderMap: RendererMap = {
 			"number": ItemRenderer_Number,
 			"string": ItemRenderer_String,
 			"boolean": ItemRenderer_Boolean,
@@ -104,40 +104,37 @@ export class Example_FakeMenu
 			"submenu": ItemRenderer_Fallback
 		};
 
-		const menu: ItemToRender<_RendererMap>[] = [
-			      {
-				      item: 42,
-				      type: "number"
-			      },
-			      {
-				      item: "a string",
-				      type: "string"
-			      },
-			      {
-				      item: true,
-				      type: "boolean"
-			      },
-			      {
-				      item: "Sub Menu",
-				      type: "submenu",
-				      _children: [
-					      {
-						      item: [10, 20, 30, 40, 100],
-						      type: "array"
-					      },
-					      {
-						      item: {key: "value"},
-						      type: "object"
-					      },
-				      ],
-			      },
-		      ];
+		const menu: ItemToRender<RendererMap>[] = [
+			{
+				item: 42,
+				type: "number"
+			},
+			{
+				item: "a string",
+				type: "string"
+			},
+			{
+				item: true,
+				type: "boolean"
+			},
+			{
+				item: "Sub Menu",
+				type: "submenu",
+				_children: [
+					{
+						item: [10, 20, 30, 40, 100],
+						type: "array"
+					},
+					{
+						item: {key: "value"},
+						type: "object"
+					},
+				],
+			},
+		];
 
-		const adapter = new MultiTypeAdapter(renderMap);
+		const adapter = new MultiTypeAdapter(menu, renderMap).setTreeNodeRenderer(Example_NodeRenderer_ClickToExpand);
 
-		adapter.getTreeNodeRenderer = () => Example_NodeRenderer_ClickToExpand;
-
-		adapter.data = menu;
 		return <div>
 			<h1>Fake Menu</h1>
 			<Tree

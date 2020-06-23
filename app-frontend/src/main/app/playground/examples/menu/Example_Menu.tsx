@@ -1,8 +1,8 @@
 import * as React from "react";
 import {Component} from "react";
 import {
-	_Renderer,
-	_RendererMap,
+	Renderer,
+	RendererMap,
 	ItemToRender,
 	MenuAndButton,
 	MultiTypeAdapter,
@@ -20,8 +20,8 @@ import {ICONS} from "@res/icons";
 type RendererString = { action?: (item: { toDisplay: string }) => void, toDisplay: string };
 
 type Rm = {
-	normal: _Renderer<RendererString>
-	bold: _Renderer<RendererString>
+	normal: Renderer<RendererString>
+	bold: Renderer<RendererString>
 };
 
 const rendererMap: Rm = {
@@ -54,7 +54,7 @@ export class Example_Menu
 
 
 	render() {
-		const adapter: MultiTypeAdapter<_RendererMap> = new MultiTypeAdapter(rendererMap).setData(items);
+		const adapter: MultiTypeAdapter<RendererMap> = new MultiTypeAdapter(items,rendererMap);
 
 		adapter.getTreeNodeRenderer = () => NodeRenderer;
 

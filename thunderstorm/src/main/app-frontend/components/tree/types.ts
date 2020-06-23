@@ -20,13 +20,13 @@
  */
 
 import * as React from "react";
-import {Adapter} from "./Adapter";
+import {TreeAdapter} from "./Adapter";
 
 export type TreeNode = {
 	propKey: string
 	path: string
 	item: any
-	adapter: Adapter
+	adapter: TreeAdapter
 	expandToggler: (e: React.MouseEvent, expand?: boolean) => void
 	onClick: (e: React.MouseEvent) => void
 	onFocus: (e: React.MouseEvent) => void

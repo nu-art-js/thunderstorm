@@ -23,11 +23,11 @@
 import * as React from "react";
 import {generateHex} from "@nu-art/ts-common";
 import {BaseComponent} from "../../core/BaseComponent";
-import {Adapter} from "./Adapter";
+import {TreeAdapter} from "./Adapter";
 import {Tree} from "./Tree";
 
 type Props = {
-	adapter: Adapter
+	adapter: TreeAdapter
 	childrenContainerStyle?: any
 	onNodeClicked?: (path:string,item:any) => void
 	onNodeDoubleClicked?: Function // TODO: Need to handle this

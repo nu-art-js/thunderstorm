@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Adapter} from "@nu-art/thunderstorm/app-frontend/components/tree/Adapter";
+import {TreeAdapter} from "@nu-art/thunderstorm/app-frontend/components/tree/Adapter";
 import {DropDown} from "@nu-art/thunderstorm/app-frontend/components/DropDown";
 import * as React from "react";
 import {
@@ -27,7 +27,7 @@ import {
 } from "./Example_DropDowns";
 
 export class Example_DefaultsDropDown
-extends React.Component<{}, { _selected: string }> {
+	extends React.Component<{}, { _selected: string }> {
 
 	state = {_selected: ''};
 
@@ -36,7 +36,7 @@ extends React.Component<{}, { _selected: string }> {
 	};
 
 	render() {
-		const simpleAdapter = new Adapter<Plague>().setData(plagues).setTreeNodeRenderer(ItemRenderer);
+		const simpleAdapter = new TreeAdapter(plagues).setTreeNodeRenderer(ItemRenderer);
 		simpleAdapter.hideRoot = true;
 		return <div>
 			<h4>Only defaults, single renderer</h4>
