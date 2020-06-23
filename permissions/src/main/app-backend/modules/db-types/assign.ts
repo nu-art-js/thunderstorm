@@ -27,7 +27,7 @@ import {
 } from "../_imports";
 import {
 	BaseDB_ApiGenerator,
-	ServerApi_Create,
+	GenericServerApi,
 	validateOptionalId,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
@@ -39,6 +39,8 @@ import {
 import {Clause_Where} from "@nu-art/firebase";
 import {
 	ApiException,
+	ApiResponse,
+	ExpressRequest,
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
 
@@ -56,6 +58,10 @@ import {
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
+import {
+	ApiBinder_DBCreate,
+	DefaultApiDefs
+} from "@nu-art/db-api-generator";
 
 const validateUserUuid = validateRegexp(/^.{0,50}$/);
 const validateGroupLabel = validateRegexp(/^[a-z-\._ ]+$/);
@@ -66,6 +72,22 @@ function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 	const filteredDomainIds = filterDuplicates(domainIds);
 	if (filteredDomainIds.length !== domainIds.length)
 		throw new ApiException(422, 'You trying insert duplicate accessLevel with the same domain');
+}
+
+export class ServerApi_CreateGroup<DBType>
+	extends GenericServerApi<DB_PermissionsGroup, ApiBinder_DBCreate<DB_PermissionsGroup>> {
+
+	constructor(dbModule: BaseDB_ApiGenerator<DB_PermissionsGroup>, pathPart?: string) {
+		super(dbModule, DefaultApiDefs.Create, pathPart);
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: DB_PermissionsGroup) {
+		console.log("__ group");
+		if (body.label.startsWith("__"))
+			throw new ApiException(422, "You trying insert group with label name starts with '__' - just predefined groups can be like that");
+
+		return this.dbModule.upsert(body);
+	}
 }
 
 export class GroupsDB_Class
@@ -134,11 +156,10 @@ export class GroupsDB_Class
 		});
 	}
 
-	protected apiCreate(pathPart?: string): ServerApi<any> {
-		return new ServerApi_Create(this, pathPart);
+	protected ServerApi_Create(pathPart?: string): ServerApi<any> {
+		return new ServerApi_CreateGroup(this, pathPart);
 	}
 }
-
 
 export class UsersDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionsUser>
