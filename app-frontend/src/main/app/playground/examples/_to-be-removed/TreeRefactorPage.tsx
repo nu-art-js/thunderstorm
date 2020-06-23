@@ -18,15 +18,15 @@
 
 import * as React from "react";
 import {Example_Menu} from "../menu/Example_Menu";
-import {Example_DropDown} from "../Example_DropDown";
 import {Example_DataTree} from "../keyboard-listener/Example_DataTree";
 import {Example_FakeMenu} from "../keyboard-listener/Example_FakeMenu";
 import {Example_VerySimpleTree} from "../keyboard-listener/Example_VerySimpleTree";
 import {COLORS} from "@res/colors";
+import { Example_DropDowns } from "../dropdown/Example_DropDowns";
 
 export const TreeRefactorPage = () => (<>
 	<div style={{width: "100%", height:"400px"}}>
-		<Example_DropDown/>
+		<Example_DropDowns/>
 	</div>
 	<hr style={{width: "100%"}}/>
 	<div className="ll_h_c match_width" style={{justifyContent: "space-between"}}>
