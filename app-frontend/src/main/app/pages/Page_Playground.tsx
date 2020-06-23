@@ -30,7 +30,7 @@ import {Example_Tabs} from "../playground/examples/tabs/Example_Tabs";
 import {Example_Dialogs} from '../playground/examples/Example_Dialogs';
 import {Example_Toaster} from '../playground/examples/Example_Toaster';
 import {Example_Menu} from '../playground/examples/menu/Example_Menu';
-import {Example_DropDown} from "../playground/examples/Example_DropDown";
+import {Example_DropDowns} from "../playground/examples/dropdown/Example_DropDowns";
 import {Example_ErrorBoundary} from "../playground/Example_ErrorBoundary";
 import {selectStyles} from "../playground/Page_Playground";
 
@@ -95,7 +95,7 @@ export class Page_Playground
 			},
 			{
 				name: "DropDown Examples",
-				renderer: Example_DropDown
+				renderer: Example_DropDowns
 			},
 			{
 				name: "Menu",

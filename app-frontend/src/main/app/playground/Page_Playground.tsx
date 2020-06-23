@@ -31,12 +31,15 @@ import {Example_VerySimpleTree} from './examples/keyboard-listener/Example_VeryS
 import {Example_Dialogs} from './examples/Example_Dialogs';
 import {Example_Toaster} from './examples/Example_Toaster';
 import {Example_Menu} from './examples/menu/Example_Menu';
-import {Example_DropDown} from "./examples/Example_DropDown";
 import {TreeRefactorPage} from "./examples/_to-be-removed/TreeRefactorPage";
 import {ICONS} from "@res/icons";
 import {COLORS} from "@res/colors";
 import {Example_Form} from "./examples/Example_Form";
 import {Example_TriggerPush} from "./examples/Example_TriggerPush";
+import {Example_DropDowns} from "./examples/dropdown/Example_DropDowns";
+import {Example_DefaultsDropDown} from "./examples/dropdown/Example_DefaultsDropDown";
+import {Example_SingleRendererDropDown} from "./examples/dropdown/Example_SingleRendererDropDown";
+import {Example_MultiRendererDropDown} from "./examples/dropdown/Example_MultiRendererDropDown";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -103,7 +106,10 @@ export class Page_Playground
 			{renderer: Example_Tabs2, name: "Tabs",},
 			{renderer: Example_Tabs, name: "GenericTabs",},
 			{renderer: Example_GenericSelect, name: "GenericSelect",},
-			{renderer: Example_DropDown, name: "DropDown Examples",},
+			{renderer: Example_DropDowns, name: "DropDown Examples"},
+			{renderer: Example_DefaultsDropDown, name: "Defaults Single Renderer DropDown Example"},
+			{renderer: Example_SingleRendererDropDown, name: "Customized Single Renderer DropDown Example"},
+			{renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
 			{renderer: Example_Menu, name: "Menu",},
 			{renderer: Example_VerySimpleTree, name: "Special keyboard listener",},
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring",}
