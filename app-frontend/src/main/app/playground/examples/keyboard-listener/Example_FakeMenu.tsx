@@ -18,19 +18,15 @@
 
 import * as React from "react";
 import {
-	_Renderer,
 	_RendererMap,
-	Adapter,
 	BaseComponent,
 	ItemToRender,
 	stopPropagation,
 	Tree,
 	TreeRendererProps,
+    MultiTypeAdapter,
 } from "@nu-art/thunderstorm/frontend";
-import {
-	__stringify,
-	_keys
-} from "@nu-art/ts-common";
+import {__stringify} from "@nu-art/ts-common";
 
 
 // type _InferRenderingType<Rm> = Rm extends _RendererMap<infer I> ? I : never;
@@ -40,57 +36,57 @@ import {
 // 	items: ItemType[]
 // }
 
-class MultiTypeAdapter<Rm extends _RendererMap>
-	extends Adapter {
-
-	private readonly rendererMap: Rm;
-
-	constructor(rendererMap: Rm) {
-		super();
-		this.hideRoot = true;
-		this.rendererMap = rendererMap;
-	}
-
-
-	filter(obj: any, key: keyof any): boolean {
-		return key !== "item" && key !== 'type';
-	}
-
-	adjust(obj: any): { data: any; deltaPath: string } {
-		console.log(`adjust: ${JSON.stringify(obj)}`)
-		if (!_keys(obj).find(key => key === "_children"))
-			return {data: obj, deltaPath: ""};
-
-		// @ts-ignore
-		const objElement = obj['_children'];
-		// @ts-ignore
-		objElement.type = obj.type;
-		// @ts-ignore
-		objElement.item = obj.item;
-
-		// @ts-ignore
-		return {data: objElement, deltaPath: '_children'};
-
-	}
-
-	// getChildren(obj: any) {
-	// 	return obj["_children"] || [];
-	// }
-
-	// getFilteredChildren(obj: any) {
-	// 	if (obj === undefined || obj === null)
-	// 		return [];
-	//
-	// 	// if (typeof obj === "object" && !Array.isArray(obj))
-	// 	// 	return [];
-	//
-	// 	return this.getChildren(obj);//.filter((__key: any) => this.filter(obj, __key as keyof T))
-	// }
-
-	resolveRenderer(propKey: string): _Renderer<TreeRendererProps> {
-		return this.rendererMap[propKey];
-	}
-}
+// class MultiTypeAdapter<Rm extends _RendererMap>
+// 	extends Adapter {
+//
+// 	private readonly rendererMap: Rm;
+//
+// 	constructor(rendererMap: Rm) {
+// 		super();
+// 		this.hideRoot = true;
+// 		this.rendererMap = rendererMap;
+// 	}
+//
+//
+// 	filter(obj: any, key: keyof any): boolean {
+// 		return key !== "item" && key !== 'type';
+// 	}
+//
+// 	adjust(obj: any): { data: any; deltaPath: string } {
+// 		console.log(`adjust: ${JSON.stringify(obj)}`)
+// 		if (!_keys(obj).find(key => key === "_children"))
+// 			return {data: obj, deltaPath: ""};
+//
+// 		// @ts-ignore
+// 		const objElement = obj['_children'];
+// 		// @ts-ignore
+// 		objElement.type = obj.type;
+// 		// @ts-ignore
+// 		objElement.item = obj.item;
+//
+// 		// @ts-ignore
+// 		return {data: objElement, deltaPath: '_children'};
+//
+// 	}
+//
+// 	// getChildren(obj: any) {
+// 	// 	return obj["_children"] || [];
+// 	// }
+//
+// 	// getFilteredChildren(obj: any) {
+// 	// 	if (obj === undefined || obj === null)
+// 	// 		return [];
+// 	//
+// 	// 	// if (typeof obj === "object" && !Array.isArray(obj))
+// 	// 	// 	return [];
+// 	//
+// 	// 	return this.getChildren(obj);//.filter((__key: any) => this.filter(obj, __key as keyof T))
+// 	// }
+//
+// 	resolveRenderer(propKey: string): _Renderer<TreeRendererProps> {
+// 		return this.rendererMap[propKey];
+// 	}
+// }
 
 export class Example_FakeMenu
 	extends BaseComponent<{}> {

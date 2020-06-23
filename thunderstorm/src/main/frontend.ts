@@ -19,8 +19,6 @@
  * limitations under the License.
  */
 
-export * from "./app-frontend/types/renderer-map";
-
 export * from "./app-frontend/core/Thunder";
 export * from "./app-frontend/core/thunder-dispatcher";
 
@@ -54,12 +52,13 @@ export * from "./app-frontend/components/DropDown";
 export * from "./app-frontend/components/form/types";
 export * from "./app-frontend/components/form/Form";
 
-
-export * from "./app-frontend/components/tree/MultiTypeTreeRenderer";
+export * from "./app-frontend/components/tree/MultiTypeAdaptor";
 export * from "./app-frontend/components/tree/Adapter";
 export * from "./app-frontend/components/tree/Tree";
 export * from "./app-frontend/components/tree/types";
-export * from "./app-frontend/components/tree/DefaultTreeRenderer";
+export * from "./app-frontend/components/tree/SimpleTreeNodeRenderer";
+
+export * from "./app-frontend/components/tree/MenuComponent";
 
 export * from "./app-frontend/components/GenericSelect";
 export * from "./app-frontend/components/Playground";

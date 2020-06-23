@@ -23,12 +23,9 @@ import * as React from 'react';
 import {CSSProperties} from 'react';
 import {
 	_keys,
-	removeItemFromArray,
-    __stringify
+	removeItemFromArray
 } from "@nu-art/ts-common";
-import {
-	TreeNode,
-} from "./types";
+import {TreeNode,} from "./types";
 import {KeyboardListener} from "../../tools/KeyboardListener";
 import {stopPropagation} from '../../utils/tools';
 import {
@@ -40,8 +37,8 @@ import {
 
 export type BaseTreeProps = {
 	id: string
-	onNodeFocused?: Function;
-	onNodeClicked?: Function;
+	onNodeFocused?: (path: string, item: any) => void;
+	onNodeClicked?: (path: string, item: any) => void;
 	callBackState: (key: string, value: any, level: number) => boolean
 	childrenContainerStyle?: (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentRef?: HTMLDivElement) => CSSProperties
 	nodesState?: TreeNodeState;
@@ -158,7 +155,8 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			path,
 			item,
 			expandToggler: this.toggleExpandState,
-			onClick: this.onNodeFocused,
+			onClick: this.onNodeClicked,
+			onFocus: this.onNodeFocused,
 			expanded: expanded,
 			focused: path === this.state.focused,
 		}
@@ -254,25 +252,34 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 		if (focused && keyCode === "Enter") {
 			stopPropagation(e);
-			let element: any = this.props.adapter.data;
-			const hierarchy: string[] = focused.split('/');
-			hierarchy.shift();
+			const item = this.getItemByPath(focused);
 
-			for (const el of hierarchy) {
-				if (el) {
-					element = element[el];
-					if (!element)
-						return;
-				}
-			}
-			const deltaPath = this.props.adapter.adjust(element).deltaPath;
-			if (deltaPath)
-				element = element[deltaPath];
+			if (item.action && typeof item.action === "function")
+				return item.action();
 
-			const action = element.action || this.props.onNodeClicked;
-			return action ? action() : null;
+			this.props.onNodeClicked && this.props.onNodeClicked(focused, item);
 		}
 	};
+
+	getItemByPath(path: string) {
+		let item: any = this.props.adapter.data;
+
+		const hierarchy: string[] = path.split('/');
+		hierarchy.shift();
+
+		for (const el of hierarchy) {
+			if (el) {
+				item = item[el];
+				if (!item)
+					return;
+			}
+		}
+		const deltaPath = this.props.adapter.adjust(item).deltaPath;
+		if (deltaPath)
+			item = item[deltaPath];
+
+		return item;
+	}
 
 	recursivelyExpand = (obj: object, condition: (key: string, value: any, level: number) => boolean) => {
 		const state = {'/': condition ? condition('/', obj, 0) : false};
@@ -310,13 +317,24 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	};
 
 	private onNodeFocused = (e: React.MouseEvent): void => {
+		// This is an assumption that we should document somewhere
 		const path = e.currentTarget.id;
-		if (this.state.focused !== path) {
-			this.props.onNodeFocused && this.props.onNodeFocused(path, this.props.id)
-			return this.setFocusedNode(path);
-		}
+		const item = this.getItemByPath(path);
 
-		this.props.onNodeClicked && this.props.onNodeClicked(path, this.props.id)
+		this.props.onNodeFocused && this.props.onNodeFocused(path, item);
+		if (this.state.focused === path)
+			return;
+
+		this.setFocusedNode(path);
+	};
+
+	private onNodeClicked = (e: React.MouseEvent): void => {
+		this.onNodeFocused(e);
+		// This is an assumption that we should document somewhere
+		const path = e.currentTarget.id;
+		const item = this.getItemByPath(path);
+
+		this.props.onNodeClicked && this.props.onNodeClicked(path, item)
 	};
 
 	private onBlur = () => {
