@@ -50,13 +50,15 @@ export class FirestoreInterface {
 					return _query.where(whereField as string, "==", whereValue);
 
 				if (Array.isArray(whereValue)) {
-					if (whereValue.length !== 1) {
+					if (whereValue.length === 0 || whereValue.length > 10)
 						throw new BadImplementationException(
-							"While querying in an array you can only provide a single value to query by... this " +
-							"is due to Firestore limitation... for a more detailed reason you can check our previous error message!!!");
-					}
+							"While querying in an array you can only provide one or more values to query by and not more than 10... this " +
+							"is due to Firestore limitation... ");
 
-					return _query.where(whereField as string, 'array-contains', whereValue[0]);
+					if (whereValue.length === 1)
+						return _query.where(whereField as string, 'array-contains', whereValue[0]);
+
+					return _query.where(whereField as string, 'array-contains-any', whereValue);
 				}
 
 				const keys = _keys(whereValue as {});
