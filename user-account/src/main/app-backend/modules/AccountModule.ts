@@ -79,9 +79,9 @@ export class AccountsModule_Class
 		this.accounts = firestore.getCollection<DB_Account>(Collection_Accounts, ["email"]);
 	}
 
-	async getUser(_email: string) {
+	async getUser(_email: string): Promise<UI_Account> {
 		const email = _email.toLowerCase();
-		return this.accounts.queryUnique({where: {email}});
+		return this.accounts.queryUnique({where: {email}, select: ["email", "_id"]}) as Promise<UI_Account>;
 	}
 
 	async listUsers() {
@@ -185,7 +185,7 @@ export class AccountsModule_Class
 
 	async validateSession(request: ExpressRequest): Promise<UI_Account> {
 		const sessionId = Header_SessionId.get(request);
-		if(!sessionId)
+		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
 
 		return this.validateSessionId(sessionId);

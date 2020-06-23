@@ -202,7 +202,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			return carry;
 		}, keys);
 
-		let focused = this.state.focused;
+		const focused = this.state.focused;
 		const idx = renderedElements.findIndex(el => el === focused);
 		if (idx >= renderedElements.length)
 			return;

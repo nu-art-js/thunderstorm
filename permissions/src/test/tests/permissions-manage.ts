@@ -20,7 +20,11 @@ import {
 	UserPermissionsDB
 } from "../_main";
 import {ApiException} from "@nu-art/thunderstorm/backend";
-import {generateHex} from "@nu-art/ts-common";
+import {
+	generateHex,
+	ThisShouldNotHappenException
+} from "@nu-art/ts-common";
+import {AccountModule} from "@nu-art/user-account/backend";
 
 
 const apiPath = 'v1/assert/something';
@@ -229,8 +233,14 @@ export function checkInsertUserIfNotExist() {
 	const scenario = __scenario("Check insertIfNotExist by doesn't exist user");
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
+
+		await AccountModule.loginSAML(userUuid1);
+		const account = await AccountModule.getUser(userUuid1);
+		if (!account)
+			throw new ThisShouldNotHappenException("Created a user and now cannot query for it...");
+
 		await UserPermissionsDB.insertIfNotExist(userUuid1);
-		await UserPermissionsDB.queryUnique({accountId: userUuid1});
+		await UserPermissionsDB.queryUnique({accountId: account._id});
 	}).setLabel('Insert not exist user'));
 	return scenario;
 }
@@ -239,6 +249,7 @@ export function checkInsertUserIfNotExistByExistUser() {
 	const scenario = __scenario("Check insertIfNotExist function by exist user");
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
+		await AccountModule.loginSAML(userUuid1);
 		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [], _id: uniqId1});
 		await UserPermissionsDB.insertIfNotExist(userUuid1);
 		await UserPermissionsDB.queryUnique({accountId: userUuid1});
