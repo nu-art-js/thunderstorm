@@ -54,7 +54,7 @@ export class FilterInput<T>
 	}
 
 	shouldComponentUpdate(nextProps: Readonly<Props<T>>, nextState: Readonly<State>, nextContext: any): boolean {
-		let b = this.props.list !== nextProps.list;
+		const b = this.props.list !== nextProps.list;
 		if (b)
 			this.callOnChange(nextProps.list);
 

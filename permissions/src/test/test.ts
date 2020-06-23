@@ -50,6 +50,7 @@ import {
 	permissionsAssertIsLevelsMatchTests
 } from "./tests/permissions-assert";
 import { FirebaseModule } from "@nu-art/firebase/backend";
+import { AccountModule } from "@nu-art/user-account/backend";
 
 
 export const mainScenario = __scenario("Permissions");
@@ -70,11 +71,8 @@ mainScenario.add(failToCreateGroupWithIllegalCustomField());
 mainScenario.add(failedCreateTwoGroupsWithSameName());
 mainScenario.add(failedCreateGroupWithDuplicateAccessLevel());
 mainScenario.add(createTowUsers());
-// mainScenario.add(failedCreateUserWithDuplicateAccessLevel());
 mainScenario.add(failedCreateUserWithDuplicateGroups());
 mainScenario.add(createApiWithAccessLevel());
-mainScenario.add(checkInsertUserIfNotExist());
-mainScenario.add(checkInsertUserIfNotExistByExistUser());
 
 mainScenario.add(permissionsAssertIsLevelsMatchTests());
 mainScenario.add(permissionsAssertDoesCustomFieldsSatisfiesTests());
@@ -84,9 +82,15 @@ mainScenario.add(tryDeleteAccessLevelAssociatedWithGroup());
 mainScenario.add(tryDeleteAccessLevelAssociatedWithApi());
 mainScenario.add(checkDeleteAccessLevelsDocument());
 
+mainScenario.add(checkInsertUserIfNotExist());
+mainScenario.add(checkInsertUserIfNotExistByExistUser());
+// disabled for now
+// mainScenario.add(failedCreateUserWithDuplicateAccessLevel());
+
 
 module.exports = new StormTester()
 	.addModules(FirebaseModule)
+	.addModules(AccountModule)
 	.addModules(...Backend_ModulePack_Permissions)
 	.setScenario(mainScenario)
 	.build();
