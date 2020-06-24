@@ -199,7 +199,7 @@ export class UsersDB_Class
 			if (users.length)
 				return;
 
-			return this.insertImpl(transaction, {accountId: account._id, groups: []});
+			return this.upsert(transaction, {accountId: account._id, groups: []});
 		});
 	}
 
