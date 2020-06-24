@@ -40,6 +40,7 @@ import {Example_DropDowns} from "./examples/dropdown/Example_DropDowns";
 import {Example_DefaultsDropDown} from "./examples/dropdown/Example_DefaultsDropDown";
 import {Example_SingleRendererDropDown} from "./examples/dropdown/Example_SingleRendererDropDown";
 import {Example_MultiRendererDropDown} from "./examples/dropdown/Example_MultiRendererDropDown";
+import {Example_FlatSingleTypeMenu} from "./examples/menu/Example_FlatSingleTypeMenu";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -95,6 +96,7 @@ export class Page_Playground
 
 	getScreens(): PlaygroundScreen[] {
 		return [
+			{renderer: Example_FlatSingleTypeMenu, name: "Flat Single Item Type Menu",},
 			{renderer: Example_Form, name: "Form - Register",},
 			{renderer: Hello, name: "Hello",},
 			{renderer: Example_Dialogs, name: "Dialog Examples",},
@@ -115,5 +117,4 @@ export class Page_Playground
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring",}
 		];
 	}
-
 }

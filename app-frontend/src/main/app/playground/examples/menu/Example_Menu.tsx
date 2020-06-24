@@ -54,9 +54,9 @@ export class Example_Menu
 
 
 	render() {
-		const adapter: MultiTypeAdapter<RendererMap> = new MultiTypeAdapter(items,rendererMap);
+		const adapter: MultiTypeAdapter<RendererMap> = new MultiTypeAdapter(items, rendererMap);
 
-		adapter.getTreeNodeRenderer = () => NodeRenderer;
+		adapter.treeNodeRenderer = NodeRenderer;
 
 		return <div>
 			<div>

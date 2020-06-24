@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {TreeAdapter} from "@nu-art/thunderstorm/app-frontend/components/tree/Adapter";
+import {Adapter} from "@nu-art/thunderstorm/app-frontend/components/tree/Adapter";
 import {DropDown} from "@nu-art/thunderstorm/app-frontend/components/DropDown";
 import * as React from "react";
 import {
@@ -36,7 +36,7 @@ export class Example_DefaultsDropDown
 	};
 
 	render() {
-		const simpleAdapter = new TreeAdapter(plagues).setTreeNodeRenderer(ItemRenderer);
+		const simpleAdapter = new Adapter(plagues).setTreeNodeRenderer(ItemRenderer);
 		simpleAdapter.hideRoot = true;
 		return <div>
 			<h4>Only defaults, single renderer</h4>

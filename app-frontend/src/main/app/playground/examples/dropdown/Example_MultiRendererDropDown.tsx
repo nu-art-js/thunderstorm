@@ -54,7 +54,7 @@ export class Example_MultiRendererDropDown
 	};
 
 	render() {
-		const rendererMap: RendererMap<TreeRendererProps<Plague>> = {
+		const rendererMap: RendererMap = {
 			normal: ItemRenderer,
 			title: TitleRender
 		};

@@ -18,7 +18,7 @@
 
 import * as React from "react";
 import {
-	TreeAdapter,
+	Adapter,
 	BaseComponent,
 	Tree,
 	TreeNode,
@@ -55,7 +55,7 @@ export class Example_VerySimpleTree
 	};
 
 	render() {
-		const adapter = new TreeAdapter(this.elements);
+		const adapter = new Adapter(this.elements);
 		adapter.hideRoot = true;
 		adapter.adjust = (data: object) => {
 			if (Object.keys(data).find(key => key === "data")) {
@@ -66,7 +66,8 @@ export class Example_VerySimpleTree
 			return {data, deltaPath: ""};
 		};
 
-		adapter.getTreeNodeRenderer = () => Example_NodeRenderer;
+		adapter.treeNodeRenderer = Example_NodeRenderer;
+
 
 		return <div>
 			<h1>Very Simple Tree</h1>
