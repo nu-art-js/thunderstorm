@@ -38,7 +38,8 @@ import {
 	validate,
 	validateRegexp,
 	ValidationException,
-	ValidatorTypeResolver
+	ValidatorTypeResolver,
+	filterInstances
 } from "@nu-art/ts-common";
 import {
 	ServerApi_Create,
@@ -470,23 +471,23 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	protected apiCreate(pathPart?: string): ServerApi<any> {
+	protected apiCreate(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Create(this, pathPart);
 	}
 
-	protected apiQuery(pathPart?: string): ServerApi<any> {
+	protected apiQuery(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Query(this, pathPart);
 	}
 
-	protected apiQueryUnique(pathPart?: string): ServerApi<any> {
+	protected apiQueryUnique(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Unique(this, pathPart);
 	}
 
-	protected apiUpdate(pathPart?: string): ServerApi<any> {
+	protected apiUpdate(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Update(this, pathPart);
 	}
 
-	protected apiDelete(pathPart?: string): ServerApi<any> {
+	protected apiDelete(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Delete(this, pathPart);
 	}
 
@@ -499,12 +500,12 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * An array of api endpoints.
 	 */
 	apis(pathPart?: string): ServerApi<any>[] {
-		return [
-			this.apiCreate(pathPart),
-			this.apiQuery(pathPart),
-			this.apiQueryUnique(pathPart),
-			this.apiUpdate(pathPart),
-			this.apiDelete(pathPart),
-		];
+		return filterInstances([
+			                       this.apiCreate(pathPart),
+			                       this.apiQuery(pathPart),
+			                       this.apiQueryUnique(pathPart),
+			                       this.apiUpdate(pathPart),
+			                       this.apiDelete(pathPart),
+		                       ]);
 	}
 }
