@@ -70,7 +70,7 @@ export class FirestoreCollection<Type extends object> {
 
 	private async _queryUnique(ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
 		const results: FirestoreType_DocumentSnapshot[] = await this._query(ourQuery);
-		return FirestoreInterface.assertUniqueDocument(results, ourQuery);
+		return FirestoreInterface.assertUniqueDocument(results, ourQuery, this.name);
 	}
 
 	async queryUnique(ourQuery: FirestoreQuery<Type>): Promise<Type | undefined> {

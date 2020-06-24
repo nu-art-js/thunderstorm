@@ -81,9 +81,9 @@ export class FirestoreInterface {
 		return myQuery as admin.firestore.Query;
 	}
 
-	static assertUniqueDocument(results: FirestoreType_DocumentSnapshot[], query: FirestoreQuery<any>): (FirestoreType_DocumentSnapshot | undefined) {
+	static assertUniqueDocument(results: FirestoreType_DocumentSnapshot[], query: FirestoreQuery<any>, collectionName: string): (FirestoreType_DocumentSnapshot | undefined) {
 		if (results.length > 1)
-			throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.name}`);
+			throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${collectionName}`);
 
 		if (results.length === 0)
 			return;
