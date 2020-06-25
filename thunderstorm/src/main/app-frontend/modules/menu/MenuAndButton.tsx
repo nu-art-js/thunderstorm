@@ -47,7 +47,7 @@ export class MenuAndButton
 		return <div
 			className={'clickable'}
 			onClick={this.open}
-			style={{position: "relative", padding: 10}}>
+			style={{position: "relative"}}>
 			<div ref={this.ref}
 			     onMouseOver={e => this.setState({over: true})}
 			     onMouseOut={e => this.setState({over: false})}>
