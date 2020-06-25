@@ -39,8 +39,10 @@ import {Example_TriggerPush} from "./examples/Example_TriggerPush";
 import {Example_DropDowns} from "./examples/dropdown/Example_DropDowns";
 import {Example_DefaultsDropDown} from "./examples/dropdown/Example_DefaultsDropDown";
 import {Example_SingleRendererDropDown} from "./examples/dropdown/Example_SingleRendererDropDown";
-import {Example_MultiRendererDropDown} from "./examples/dropdown/Example_MultiRendererDropDown";
-import {Example_FlatSingleTypeMenu} from "./examples/menu/Example_FlatSingleTypeMenu";
+// import {Example_MultiRendererDropDown} from "./examples/dropdown/Example_MultiRendererDropDown";
+import {Example_ListSingleTypeMenu} from "./examples/menu/Example_ListSingleTypeMenu";
+import {Example_ListMultiTypeMenu} from "./examples/menu/Example_ListMultiTypeMenu";
+import { Example_TreeSingleTypeMenu } from './examples/menu/Example_TreeSingleTypeMenu';
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -96,7 +98,9 @@ export class Page_Playground
 
 	getScreens(): PlaygroundScreen[] {
 		return [
-			{renderer: Example_FlatSingleTypeMenu, name: "Flat Single Item Type Menu",},
+			{renderer: Example_TreeSingleTypeMenu, name: "Tree Single Item Type Menu",},
+			{renderer: Example_ListMultiTypeMenu, name: "List Multi Item Type Menu",},
+			{renderer: Example_ListSingleTypeMenu, name: "List Single Item Type Menu",},
 			{renderer: Example_Form, name: "Form - Register",},
 			{renderer: Hello, name: "Hello",},
 			{renderer: Example_Dialogs, name: "Dialog Examples",},
@@ -111,7 +115,7 @@ export class Page_Playground
 			{renderer: Example_DropDowns, name: "DropDown Examples"},
 			{renderer: Example_DefaultsDropDown, name: "Defaults Single Renderer DropDown Example"},
 			{renderer: Example_SingleRendererDropDown, name: "Customized Single Renderer DropDown Example"},
-			{renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
+			// {renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
 			{renderer: Example_Menu, name: "Menu",},
 			{renderer: Example_VerySimpleTree, name: "Special keyboard listener",},
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring",}
