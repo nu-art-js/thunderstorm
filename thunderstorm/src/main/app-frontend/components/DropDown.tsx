@@ -164,7 +164,7 @@ export class DropDown<ItemType>
 
 	constructor(props: Props<ItemType>) {
 		super(props);
-		const options = this.props.adapter.data as ItemType[]
+		const options = this.props.adapter.data as ItemType[];
 		// const options = this.props.renderersAndOptions.options;
 		this.state = {
 			filteredOptions: options,
@@ -182,6 +182,7 @@ export class DropDown<ItemType>
 	}
 
 	// isSingleRendererAndOptions = (checkedItem: RenderersAndOptions<ItemType>): checkedItem is SingleRendererAndOptions<ItemType> => !!(checkedItem as SingleRendererAndOptions<ItemType>).itemRenderer;
+	isItemToRender = (checkedItem: ItemType | ItemToRender<RendererMap, any>): checkedItem is ItemToRender<RendererMap, any> => !!(checkedItem as ItemToRender<RendererMap, any>).type;
 
 	toggleList = (e: React.MouseEvent) => {
 		stopPropagation(e);
@@ -190,14 +191,14 @@ export class DropDown<ItemType>
 		// this.renderMenu();
 	};
 
-	onSelected = (item: ItemType) => {
-		console.log(this.state);
+	onSelected = (item: ItemType | ItemToRender<RendererMap, any>) => {
+		const _item: ItemType = this.isItemToRender(item) ? item.item as ItemType : item as ItemType;
 		this.setState(prevState => ({
-			open: !prevState.open,
-			selected: item
-		}));
+				              open: !prevState.open,
+				              selected: _item
+			              }));
 
-		this.props.onSelected(item);
+		this.props.onSelected(_item);
 	};
 
 	render() {
@@ -238,7 +239,6 @@ export class DropDown<ItemType>
 		if (!this.state.open || !this.props.filter)
 			return this.renderValue();
 
-
 		const inputComplementary = (this.props.inputResolver || this.inputResolver)(this.state.selected);
 		const options = this.props.adapter.data as ItemType[];
 
@@ -247,7 +247,7 @@ export class DropDown<ItemType>
 			id={this.props.id}
 			filter={this.props.filter}
 			list={options}
-			onChange={(filtered: (ItemType | ItemToRender<RendererMap, string>)[]) => this.setState(() => ({filteredOptions: filtered}))}
+			onChange={(filtered: (ItemType | ItemToRender<RendererMap, string>)[]) => this.setState({filteredOptions: filtered})}
 			focus={true}
 			className={inputComplementary.className}
 			inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
@@ -374,7 +374,9 @@ export class DropDown<ItemType>
 		// }
 
 		const listComplementary = (this.props.listStyleResolver || this.listStyleResolver);
-
+		// const a = new TreeAdapter(this.props.adapter);
+		// console.log(a, this.props.adapter)
+		// a.data = this.state.filteredOptions
 		return <div style={listContainerStyle}>
 			<div className={listComplementary.listClassName}>
 				{items.length === 0 ?

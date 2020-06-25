@@ -39,7 +39,7 @@ export class MultiTypeAdapter<Rm extends RendererMap, T extends any = any>
 
 
 	filter(obj: any, key: keyof any): boolean {
-		return key !== "item" && key !== 'type';
+		return key !== "item" && key !== 'rendererType';
 	}
 
 	adjust(obj: any): { data: any; deltaPath: string } {

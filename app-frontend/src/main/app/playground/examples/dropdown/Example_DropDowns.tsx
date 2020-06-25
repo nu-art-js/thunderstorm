@@ -116,11 +116,6 @@ export class Example_DropDowns
 		this.state = {_selected: ''}
 	}
 
-	onSelected = (plague: Plague) => {
-		this.setState({_selected: plague.value});
-	};
-
-
 	render() {
 		return <>
 			<h1>dropdowns</h1>
@@ -129,7 +124,6 @@ export class Example_DropDowns
 				<Example_SingleRendererDropDown/>
 				<Example_MultiRendererDropDown/>
 			</div>
-			{/*<h4>{this.state._selected ? `You chose ${this.state._selected}` : "You didn't choose yet"}</h4>*/}
 		</>;
 	}
 }

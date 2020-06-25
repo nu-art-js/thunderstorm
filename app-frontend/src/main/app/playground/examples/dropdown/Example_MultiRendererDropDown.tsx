@@ -18,6 +18,7 @@
  */
 
 import {
+	MultiTypeAdapter,
 	RendererMap,
 	TreeRendererProps
 } from "@nu-art/thunderstorm/frontend";
@@ -37,10 +38,8 @@ import {
 	ItemRenderer,
 	optionRendererStyle,
 	Plague,
-	plagues,
 	plaguesWithTitles
 } from "./Example_DropDowns";
-import {MultiTypeAdapter} from "@nu-art/thunderstorm/frontend";
 import {ICONS} from "@res/icons";
 import {stopPropagation} from "@nu-art/thunderstorm/app-frontend/utils/tools";
 
@@ -49,8 +48,8 @@ export class Example_MultiRendererDropDown
 
 	state = {_selected: ''};
 
-	onSelected = (plague: Plague) => {
-		this.setState({_selected: plague.value});
+	onSelected = (item: any) => {
+		this.setState({_selected: item.value});
 	};
 
 	render() {
@@ -94,11 +93,13 @@ export class Example_MultiRendererDropDown
 				valueRenderer={valueRenderer}
 				inputResolver={inputResolverWithCustomInlineStyle}
 				// filter={(item) => [(item as ItemToRender<RendererMap, string>).item.label.toLowerCase()]}
-				selected={plagues[2]}
+				selected={plaguesWithTitles[4].item as Plague}
+				// placeholder={"Choose a plague"}
 				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>{ICONS.arrowOpen(undefined, 14)}</div>}
 				headerStyleResolver={headerResolverStyle}
 				listStyleResolver={listResolverStyle}
 			/>
+			<h4>{this.state._selected ? `You chose ${this.state._selected}` : "You didn't choose yet"}</h4>
 		</div>
 	}
 }
