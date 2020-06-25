@@ -8,7 +8,7 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
-export class Example_ListSingleTypeMenu
+export class Example_List_SingleType_Menu
 	extends Component<{}> {
 
 	render() {
@@ -27,3 +27,5 @@ export class Example_ListSingleTypeMenu
 		</div>
 	}
 }
+
+

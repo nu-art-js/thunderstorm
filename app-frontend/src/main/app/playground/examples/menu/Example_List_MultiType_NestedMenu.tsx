@@ -8,22 +8,28 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
-export class Example_TreeSingleTypeMenu
+export class Example_List_MultiType_NestedMenu
 	extends Component<{}> {
 
 	render() {
 		const adapter: Adapter = AdapterBuilder()
 			.list()
-			.singleRender((data: { item: string }) => <div>{data.item}</div>)
+			.multiRender({
+				             reg: (props: { item: string }) => <div>{props.item}</div>,
+				             bold: (props: { item: string }) => <div><b>{props.item}</b></div>
+			             })
 			.nested()
-			.setData(['hi',
-			          'bye',
+			.setData([{type: "reg", item: 'hi'},
+				         {type: "reg", item: 'bye'},
+				         {type: "reg", item: 'ciao'},
 				         {
-					         item: 'ciao',
-					         _children: ["pah", "zevel", "ashpa"]
+					         type: "bold", item: 'submenu', _children: [
+						         {type: "bold", item: 'Pah'},
+						         {type: "reg", item: 'Mallle'},
+						         {type: "bold", item: 'ZEVEL'}]
 				         },
-				        'nice to meet',
-				        'you'])
+				         {type: "reg", item: 'you'},
+			         ])
 			.build()
 
 
