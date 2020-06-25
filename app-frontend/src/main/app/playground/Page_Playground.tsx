@@ -42,7 +42,8 @@ import {Example_SingleRendererDropDown} from "./examples/dropdown/Example_Single
 // import {Example_MultiRendererDropDown} from "./examples/dropdown/Example_MultiRendererDropDown";
 import {Example_List_SingleType_Menu} from "./examples/menu/Example_List_SingleType_Menu";
 import {Example_List_MultiType_Menu} from "./examples/menu/Example_List_MultiType_Menu";
-import { Example_List_SingleType_NestedMenu } from './examples/menu/Example_List_SingleType_NestedMenu';
+import {Example_List_SingleType_NestedMenu} from './examples/menu/Example_List_SingleType_NestedMenu';
+import { Example_List_MultiType_NestedMenu } from './examples/menu/Example_List_MultiType_NestedMenu';
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -98,9 +99,11 @@ export class Page_Playground
 
 	getScreens(): PlaygroundScreen[] {
 		return [
-			{renderer: Example_List_SingleType_NestedMenu, name: "Tree Single Item Type Menu",},
-			{renderer: Example_List_MultiType_Menu, name: "List Multi Item Type Menu",},
-			{renderer: Example_List_SingleType_Menu, name: "List Single Item Type Menu",},
+			{renderer: Example_List_SingleType_Menu, name: "List_SingleType_Menu",},
+			{renderer: Example_List_SingleType_NestedMenu, name: "List_SingleType_NestedMenu",},
+			{renderer: Example_List_MultiType_Menu, name: "List_MultiType_Menu",},
+			{renderer: Example_List_MultiType_NestedMenu, name: "List_MultiType_NestedMenu",},
+
 			{renderer: Example_Form, name: "Form - Register",},
 			{renderer: Hello, name: "Hello",},
 			{renderer: Example_Dialogs, name: "Dialog Examples",},

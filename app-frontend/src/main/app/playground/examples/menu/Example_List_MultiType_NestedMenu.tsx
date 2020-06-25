@@ -23,7 +23,8 @@ export class Example_List_MultiType_NestedMenu
 				         {type: "reg", item: 'bye'},
 				         {type: "reg", item: 'ciao'},
 				         {
-					         type: "bold", item: 'submenu', _children: [
+					         type: "bold", item: 'submenu',
+					         _children: [
 						         {type: "bold", item: 'Pah'},
 						         {type: "reg", item: 'Mallle'},
 						         {type: "bold", item: 'ZEVEL'}]
