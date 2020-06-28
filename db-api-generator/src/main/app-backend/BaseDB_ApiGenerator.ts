@@ -302,10 +302,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			let toProcess;
 			let dbInstance: DBType;
 			if (instance._id === undefined) {
-				toProcess = this.createImpl;
+				toProcess = this.createImpl.bind(this);
 				dbInstance = {...instance, _id: generateHex(idLength)} as unknown as DBType;
 			} else {
-				toProcess = this.upsertImpl;
+				toProcess = this.upsertImpl.bind(this);
 				dbInstance = instance as unknown as DBType;
 			}
 
