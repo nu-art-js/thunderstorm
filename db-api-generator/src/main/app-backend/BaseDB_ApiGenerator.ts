@@ -50,6 +50,7 @@ import {
 } from "./apis";
 import {
 	ApiException,
+	ExpressRequest,
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
@@ -280,7 +281,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was inserted.
 	 */
-	async createImpl(transaction: FirestoreTransaction, instance: DBType) {
+	async createImpl(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest) {
 		await this.validateImpl(instance);
 		await this.assertUniqueness(transaction, instance);
 		return transaction.insert(this.collection, instance);
@@ -296,7 +297,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was upserted.
 	 */
-	async upsert(instance: UType, transaction?: FirestoreTransaction) {
+	async upsert(instance: UType, transaction?: FirestoreTransaction, request?: ExpressRequest) {
 		const processor = async (_transaction: FirestoreTransaction) => {
 			let toProcess;
 			let dbInstance: DBType;
@@ -308,7 +309,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 				dbInstance = instance as unknown as DBType;
 			}
 
-			return toProcess(_transaction, dbInstance);
+			return toProcess(_transaction, dbInstance, request);
 		};
 
 		if (transaction)
@@ -325,21 +326,21 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of an array of documents that were upserted.
 	 */
-	async upsertAll(instances: UType[]): Promise<DBType[]> {
+	async upsertAll(instances: UType[], request?: ExpressRequest): Promise<DBType[]> {
 		const writes: DBType[] = [];
 		await batchAction(instances, 500, async (chunked: UType[]) => {
-			addAllItemToArray(writes, await this.upsertAllBatched(chunked));
+			addAllItemToArray(writes, await this.upsertAllBatched(chunked, request));
 		});
 		return writes;
 	}
 
-	private async upsertAllBatched(instances: UType[]): Promise<DBType[]> {
+	private async upsertAllBatched(instances: UType[], request?: ExpressRequest): Promise<DBType[]> {
 		return this.collection.runInTransaction(async (transaction) => {
 			const dbInstances: DBType[] = instances.map(instance => ({...instance, _id: instance._id || generateHex(idLength)} as unknown as DBType));
 			await Promise.all(dbInstances.map(async dbInstance => this.validateImpl(dbInstance)));
 			await Promise.all(dbInstances.map(async dbInstance => this.assertUniqueness(transaction, dbInstance)));
 
-			return this.upsertAllImpl(transaction, dbInstances);
+			return this.upsertAllImpl(transaction, dbInstances, request);
 		});
 	}
 
@@ -352,7 +353,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was upserted.
 	 */
-	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType): Promise<DBType> {
+	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<DBType> {
 		await this.validateImpl(dbInstance);
 		await this.assertUniqueness(transaction, dbInstance);
 		return transaction.upsert(this.collection, dbInstance);
@@ -369,7 +370,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the array of documents that were upserted.
 	 */
-	protected async upsertAllImpl(transaction: FirestoreTransaction, dbInstances: DBType[]): Promise<DBType[]> {
+	protected async upsertAllImpl(transaction: FirestoreTransaction, dbInstances: DBType[], request?: ExpressRequest): Promise<DBType[]> {
 		return transaction.upsertAll(this.collection, dbInstances);
 	}
 
@@ -383,7 +384,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	async deleteUnique(_id: string) {
+	async deleteUnique(_id: string, request?: ExpressRequest) {
 		if (!_id)
 			throw new BadImplementationException(`No _id for deletion provided.`);
 		return this.collection.runInTransaction(async (transaction: FirestoreTransaction) => {
@@ -393,7 +394,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 				throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
 			await this.assertDeletion(transaction, dbInstance);
-			await this.deleteImpl(transaction, ourQuery);
+			await this.deleteImpl(transaction, ourQuery, request);
 			return dbInstance;
 		});
 	}
@@ -407,7 +408,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	private async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }) {
+	private async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest) {
 		return transaction.deleteUnique(this.collection, ourQuery);
 	}
 
@@ -416,7 +417,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 *
 	 * @param query - The query to be executed for the deletion.
 	 */
-	async delete(query: FirestoreQuery<DBType>) {
+	async delete(query: FirestoreQuery<DBType>, request?: ExpressRequest) {
 		return this.collection.delete(query);
 	}
 
@@ -430,7 +431,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * The DB document that was found.
 	 */
-	async queryUnique(where: Clause_Where<DBType>) {
+	async queryUnique(where: Clause_Where<DBType>, request?: ExpressRequest) {
 		const dbItem = await this.collection.queryUnique({where});
 		if (!dbItem)
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique query: ${JSON.stringify(where)}`);
@@ -446,7 +447,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of an array of documents.
 	 */
-	async query(query: FirestoreQuery<DBType>) {
+	async query(query: FirestoreQuery<DBType>, request?: ExpressRequest) {
 		return await this.collection.query(query);
 	}
 
@@ -462,7 +463,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the patched document.
 	 */
-	async patch(instance: DBType, propsToPatch?: (keyof DBType)[]): Promise<DBType> {
+	async patch(instance: DBType, propsToPatch?: (keyof DBType)[], request?: ExpressRequest): Promise<DBType> {
 		return this.collection.runInTransaction(async (transaction) => {
 			const dbInstance: DBType = await this.assertExternalQueryUnique(instance, transaction);
 			// If the caller has specified props to be changed, make sure the don't conflict with the lockKeys.
@@ -485,7 +486,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 			await this.assertUniqueness(transaction, mergedObject);
 
-			return this.upsertImpl(transaction, mergedObject);
+			return this.upsertImpl(transaction, mergedObject, request);
 		});
 	}
 
