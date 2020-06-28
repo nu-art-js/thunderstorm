@@ -8,7 +8,7 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
-export class Example_List_MultiType_Menu
+export class Example_List_MultiType
 	extends Component<{}> {
 
 	render() {
@@ -29,7 +29,7 @@ export class Example_List_MultiType_Menu
 
 		return <div>
 			<div>
-				<h2>Here is a simple menu with multiple Item Types</h2>
+				<h2>Here is a nested list with multiple Item Types</h2>
 				<MenuComponent adapter={adapter} onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
 		</div>

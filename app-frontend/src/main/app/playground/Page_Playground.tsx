@@ -40,10 +40,12 @@ import {Example_DropDowns} from "./examples/dropdown/Example_DropDowns";
 import {Example_DefaultsDropDown} from "./examples/dropdown/Example_DefaultsDropDown";
 import {Example_SingleRendererDropDown} from "./examples/dropdown/Example_SingleRendererDropDown";
 // import {Example_MultiRendererDropDown} from "./examples/dropdown/Example_MultiRendererDropDown";
-import {Example_List_SingleType_Menu} from "./examples/menu/Example_List_SingleType_Menu";
-import {Example_List_MultiType_Menu} from "./examples/menu/Example_List_MultiType_Menu";
-import {Example_List_SingleType_NestedMenu} from './examples/menu/Example_List_SingleType_NestedMenu';
-import { Example_List_MultiType_NestedMenu } from './examples/menu/Example_List_MultiType_NestedMenu';
+import {Example_List_SingleType} from "./examples/list/Example_List_SingleType";
+import {Example_List_MultiType} from "./examples/list/Example_List_MultiType";
+import {Example_NestedList_SingleType} from './examples/list/Example_NestedList_SingleType';
+import {Example_NestedList_MultiType} from './examples/list/Example_NestedList_MultiType';
+import {Example_List_All} from "./examples/list/Example_List_All";
+import {Example_Tree_SingleType} from './examples/tree/Example_Tree_SingleType';
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -99,10 +101,12 @@ export class Page_Playground
 
 	getScreens(): PlaygroundScreen[] {
 		return [
-			{renderer: Example_List_SingleType_Menu, name: "List_SingleType_Menu",},
-			{renderer: Example_List_SingleType_NestedMenu, name: "List_SingleType_NestedMenu",},
-			{renderer: Example_List_MultiType_Menu, name: "List_MultiType_Menu",},
-			{renderer: Example_List_MultiType_NestedMenu, name: "List_MultiType_NestedMenu",},
+			{renderer: Example_Tree_SingleType, name: "Example_Tree_SingleType",},
+			{renderer: Example_List_SingleType, name: "List_SingleType_Menu",},
+			{renderer: Example_NestedList_SingleType, name: "List_SingleType_NestedMenu",},
+			{renderer: Example_List_MultiType, name: "List_MultiType_Menu",},
+			{renderer: Example_NestedList_MultiType, name: "List_MultiType_NestedMenu",},
+			{renderer: Example_List_All, name: "Example_List_All",},
 
 			{renderer: Example_Form, name: "Form - Register",},
 			{renderer: Hello, name: "Hello",},

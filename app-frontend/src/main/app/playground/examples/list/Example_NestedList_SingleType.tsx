@@ -8,24 +8,30 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
-export class Example_List_SingleType_Menu
+export class Example_NestedList_SingleType
 	extends Component<{}> {
 
 	render() {
 		const adapter: Adapter = AdapterBuilder()
 			.list()
-			.singleRender((data: { item: string }) => <div>{data.item}</div>)
-			.setData(['hi', 'bye', 'ciao', 'nice to meet', 'you'])
+			.singleRender((props: { item: string }) => <div>{props.item}</div>)
+			.nested()
+			.setData(['hi',
+			          'bye',
+				         {
+					         item: 'ciao',
+					         _children: ["pah", "zevel", "ashpa"]
+				         },
+				        'nice to meet',
+				        'you'])
 			.build()
 
 
 		return <div>
 			<div>
-				<h2>Here is the same menu but as a component</h2>
+				<h2>Here is a nested list with one Item Type</h2>
 				<MenuComponent adapter={adapter} onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
 		</div>
 	}
 }
-
-
