@@ -158,7 +158,7 @@ class ListSingleAdapterBuilder<ItemType extends any = any>
 			const item: NestedObjectOfType<ItemType> = props.item;
 			const _Renderer = this.renderer
 			return <div id={props.node.path} onClick={props.node.onClick}>
-				<_Renderer item={typeof props.item === "object" ? (item as NestedType<ItemType>).item as ItemType : props.item as ItemType}/>
+				<_Renderer item={typeof props.item === "object" ? (item as NestedType<ItemType>).item : props.item}/>
 			</div>;
 		}
 
@@ -247,7 +247,7 @@ class TreeSingleAdapterBuilder<RenderItemType extends any = any>
 		const item: RenderItemType = props.item;
 		const _Renderer = this.renderer
 		return <div id={props.node.path} onClick={props.node.onClick}>
-			<_Renderer item={typeof props.item === "object" ? (item as NestedType<RenderItemType>).item as RenderItemType : props.item as RenderItemType}/>
+			<_Renderer item={typeof props.item === "object" ? (item as NestedType<RenderItemType>).item : props.item}/>
 		</div>;
 	}
 
