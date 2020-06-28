@@ -91,7 +91,7 @@ export class GenericServerApi_Query<DBType extends DB_Object>
 		else
 			query = {where: body};
 
-		let toRet = await this.dbModule.query(query);
+		let toRet = await this.dbModule.query(query, request);
 		for (const postProcessor of this.postProcessors) {
 			toRet = await postProcessor(toRet);
 		}
@@ -108,7 +108,7 @@ export class ServerApi_Create<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Omit<DBType, "_id">) {
-		let toRet = await this.dbModule.upsert(body);
+		let toRet = await this.dbModule.upsert(body, undefined, request);
 		for (const postProcessor of this.postProcessors) {
 			toRet = await postProcessor(toRet);
 		}
@@ -124,7 +124,7 @@ export class ServerApi_Update<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: DBType): Promise<DBType> {
-		return this.dbModule.patch(body);
+		return this.dbModule.patch(body, undefined, request);
 	}
 }
 
@@ -136,7 +136,7 @@ export class ServerApi_Unique<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DB_Object, body: void): Promise<DBType> {
-		return this.dbModule.queryUnique(queryParams as Clause_Where<DBType>);
+		return this.dbModule.queryUnique(queryParams as Clause_Where<DBType>, request);
 	}
 }
 
@@ -148,7 +148,7 @@ export class ServerApi_Query<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Partial<DBType>): Promise<DBType[]> {
-		return this.dbModule.query({where: body});
+		return this.dbModule.query({where: body}, request);
 	}
 }
 
@@ -160,6 +160,6 @@ export class ServerApi_Delete<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DB_Object, body: void) {
-		return this.dbModule.deleteUnique(queryParams._id);
+		return this.dbModule.deleteUnique(queryParams._id, request);
 	}
 }
