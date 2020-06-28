@@ -8,7 +8,7 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
-export class Example_List_MultiType_NestedMenu
+export class Example_NestedList_MultiType
 	extends Component<{}> {
 
 	render() {
@@ -23,11 +23,25 @@ export class Example_List_MultiType_NestedMenu
 				         {type: "reg", item: 'bye'},
 				         {type: "reg", item: 'ciao'},
 				         {
-					         type: "bold", item: 'submenu',
+					         type: "bold", item: 'submenu1',
 					         _children: [
 						         {type: "bold", item: 'Pah'},
 						         {type: "reg", item: 'Mallle'},
-						         {type: "bold", item: 'ZEVEL'}]
+						         {type: "bold", item: 'ZEVEL'},
+						         {
+							         type: "bold", item: 'submenu2',
+							         _children: [
+								         {type: "bold", item: 'Pah'},
+								         {type: "reg", item: 'Mallle'},
+								         {type: "bold", item: 'ZEVEL'},
+								         {
+									         type: "bold", item: 'submenu3',
+									         _children: [
+										         {type: "bold", item: 'Pah'},
+										         {type: "reg", item: 'Mallle'},
+										         {type: "bold", item: 'ZEVEL'}]
+								         },]
+						         },]
 				         },
 				         {type: "reg", item: 'you'},
 			         ])
@@ -36,7 +50,7 @@ export class Example_List_MultiType_NestedMenu
 
 		return <div>
 			<div>
-				<h2>Here is the same menu but as a component</h2>
+				<h2>Here is a simple list with multiple Item Types</h2>
 				<MenuComponent adapter={adapter} onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
 		</div>
