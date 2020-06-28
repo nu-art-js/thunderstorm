@@ -160,7 +160,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	init() {
 		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
 		// @ts-ignore
-		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys);
+		this["collection"] = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys);
 	}
 
 	private async assertExternalQueryUnique(instance: DBType, transaction: FirestoreTransaction): Promise<DBType> {
