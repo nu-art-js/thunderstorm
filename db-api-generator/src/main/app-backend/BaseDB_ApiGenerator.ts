@@ -280,25 +280,41 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was inserted.
 	 */
-	async insertImpl(transaction: FirestoreTransaction, instance: UType) {
-		return transaction.insert(this.collection, {...instance, _id: generateHex(idLength)} as unknown as DBType);
+	async createImpl(transaction: FirestoreTransaction, instance: DBType) {
+		await this.validateImpl(instance);
+		await this.assertUniqueness(transaction, instance);
+		return transaction.insert(this.collection, instance);
 	}
+
 
 	/**
 	 * Upserts the `instance` using a transaction, after validating it and asserting uniqueness.
 	 *
 	 * @param instance - The object to be upserted.
+	 * @param transaction - OPTIONAL transaction to perform the upsert operation on
 	 *
 	 * @returns
 	 * A promise of the document that was upserted.
 	 */
-	async upsert(instance: UType) {
-		return this.collection.runInTransaction(async (transaction) => {
-			const dbInstance: DBType = {...instance, _id: instance._id || generateHex(idLength)} as unknown as DBType;
-			await this.validateImpl(dbInstance);
-			await this.assertUniqueness(transaction, dbInstance);
-			return this.upsertImpl(transaction, dbInstance);
-		});
+	async upsert(instance: UType, transaction?: FirestoreTransaction) {
+		const processor = async (_transaction: FirestoreTransaction) => {
+			let toProcess;
+			let dbInstance: DBType;
+			if (instance._id === undefined) {
+				toProcess = this.createImpl;
+				dbInstance = {...instance, _id: generateHex(idLength)} as unknown as DBType;
+			} else {
+				toProcess = this.upsertImpl;
+				dbInstance = instance as unknown as DBType;
+			}
+
+			return toProcess(_transaction, dbInstance);
+		};
+
+		if (transaction)
+			return processor(transaction);
+
+		return this.collection.runInTransaction(processor);
 	}
 
 	/**
@@ -337,6 +353,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of the document that was upserted.
 	 */
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType): Promise<DBType> {
+		await this.validateImpl(dbInstance);
+		await this.assertUniqueness(transaction, dbInstance);
 		return transaction.upsert(this.collection, dbInstance);
 	}
 
@@ -471,7 +489,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	protected apiCreate(pathPart?: string): ServerApi<any> | undefined {
+	protected apiCreate(pathPart?: string): ServerApi_Create<DBType> | ServerApi<any> | undefined {
 		return new ServerApi_Create(this, pathPart);
 	}
 

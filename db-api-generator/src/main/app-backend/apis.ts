@@ -44,24 +44,39 @@ import {
 	ExpressRequest,
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
+import {addItemToArray} from "@nu-art/ts-common";
 
 export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
 	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? "/" + pathSuffix : ""}`;
 }
 
-export abstract class GenericServerApi<DBType extends DB_Object, Binder extends ApiTypeBinder<string, R, B, P>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams | {} = DeriveQueryType<Binder>>
+export abstract class GenericServerApi<DBType extends DB_Object, Binder extends ApiTypeBinder<string, R, B, P>, PostProcessor = never, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams | {} = DeriveQueryType<Binder>>
 	extends ServerApi<Binder> {
 
 	protected readonly dbModule: BaseDB_ApiGenerator<DBType>;
+	protected readonly postProcessors: PostProcessor[] = [];
 
 	protected constructor(dbModule: BaseDB_ApiGenerator<DBType>, def: GenericApiDef, pathPart?: string) {
 		super(def.method, resolveUrlPart(dbModule, pathPart, def.suffix));
 		this.dbModule = dbModule;
 	}
+
+	addPostProcessor(processor: PostProcessor) {
+		addItemToArray(this.postProcessors, processor);
+	}
+
+	// protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DeriveQueryType<Binder>, body: DeriveBodyType<Binder>): Promise<DeriveResponseType<Binder>> {
+	// 	const toRet = await this._process(request, response, queryParams as P, body as B);
+	//
+	// 	return toRet as DeriveResponseType<Binder>;
+	// }
+	//
+	// protected abstract async _process(request: ExpressRequest, response: ApiResponse, queryParams: P, body: B): Promise<R>;
+
 }
 
 export class GenericServerApi_Query<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBQuery<DB_Object>> {
+	extends GenericServerApi<DBType, ApiBinder_DBQuery<DB_Object>, (items: DBType[]) => Promise<DBType[]>> {
 	private readonly query?: FirestoreQuery<DBType>;
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, def: GenericApiDef, pathPart?: string, query?: FirestoreQuery<DBType>) {
@@ -76,19 +91,28 @@ export class GenericServerApi_Query<DBType extends DB_Object>
 		else
 			query = {where: body};
 
-		return this.dbModule.query(query);
+		let toRet = await this.dbModule.query(query);
+		for (const postProcessor of this.postProcessors) {
+			toRet = await postProcessor(toRet);
+		}
+
+		return toRet;
 	}
 }
 
 export class ServerApi_Create<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBCreate<DBType>> {
+	extends GenericServerApi<DBType, ApiBinder_DBCreate<DBType>, (item: DBType) => DBType> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
 		super(dbModule, DefaultApiDefs.Create, pathPart);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Omit<DBType, "_id">) {
-		return this.dbModule.upsert(body);
+		let toRet = await this.dbModule.upsert(body);
+		for (const postProcessor of this.postProcessors) {
+			toRet = await postProcessor(toRet);
+		}
+		return toRet;
 	}
 }
 
