@@ -17,13 +17,13 @@
  */
 
 import {
+	AssignAppPermissions,
 	CollectionName_Groups,
 	CollectionName_Users,
 	DB_PermissionAccessLevel,
 	DB_PermissionsGroup,
 	DB_PermissionsUser,
-	PredefinedGroup,
-	Request_AssignAppPermissions
+	PredefinedGroup
 } from "../_imports";
 import {
 	BaseDB_ApiGenerator,
@@ -183,7 +183,7 @@ export class UsersDB_Class
 		});
 	}
 
-	async assignAppPermissions(body: Request_AssignAppPermissions) {
+	async assignAppPermissions(body: AssignAppPermissions) {
 		if (!body.groupsToRemove.find(groupToRemove => groupToRemove._id === body.group._id))
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");
 

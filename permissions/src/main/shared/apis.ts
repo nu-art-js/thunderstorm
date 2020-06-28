@@ -44,10 +44,11 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 	projectId: string,
 	groupsToRemove: PredefinedGroup[],
 	group: PredefinedGroup,
-	userId: string
 	customField: T
 	assertKeys?: (keyof T)[]
 }
+
+export type AssignAppPermissions = Request_AssignAppPermissions & {userId: string};
 
 export type PredefinedGroup = { _id: string, label: string };
 
