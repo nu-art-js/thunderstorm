@@ -19,14 +19,10 @@
 
 import * as React from "react";
 import {css} from "emotion";
-import {
-	ItemToRender,
-	RendererMap,
-	TreeRendererProps
-} from "@nu-art/thunderstorm/frontend";
 import {ICONS} from "@res/icons";
 import {Example_DefaultsDropDown} from "./Example_DefaultsDropDown";
 import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
+import { BaseNodeRenderer } from "@nu-art/thunderstorm/frontend";
 // import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
 
 // const optionRendererWrapperStyle = css({":hover": {backgroundColor: "lime"}});
@@ -74,7 +70,7 @@ export const plagues: Plague[] = [
 	{label: 'Internet', value: 'internet'},
 ];
 
-export const plaguesWithTitles: ItemToRender<RendererMap, string>[] = [
+export const plaguesWithTitles = [
 	{
 		item: {label: 'Phisical', value: 'title'},
 		_children: [
@@ -148,8 +144,8 @@ export class _ItemRenderer
 		return (
 			<div className="ll_h_c clickable"
 			     id={this.props.node.path}
-			     // onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
-			     style={this.props.node.focused ? {backgroundColor: "lime"} : {}}>
+				// onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
+				   style={this.props.node.focused ? {backgroundColor: "lime"} : {}}>
 
 				<div className={optionRendererStyle(this.props.node.focused)}>
 					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
@@ -163,12 +159,9 @@ export class _ItemRenderer
 }
 
 export class ItemRenderer
-	extends React.Component<TreeRendererProps<Plague>> {
+	extends BaseNodeRenderer<Plague> {
 
-	render() {
-		if (typeof this.props.item !== "object")
-			return null;
-
+	renderItem(item: Plague) {
 		return (
 			<div className="ll_h_c clickable"
 			     id={this.props.node.path}

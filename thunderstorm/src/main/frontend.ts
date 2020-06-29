@@ -53,7 +53,8 @@ export * from "./app-frontend/components/form/types";
 export * from "./app-frontend/components/form/Form";
 
 export * from "./app-frontend/components/tree/MultiTypeAdaptor";
-export * from "./app-frontend/components/tree/Adapter";
+export * from "./app-frontend/components/adapter/Adapter";
+export * from "./app-frontend/components/adapter/BaseRenderer";
 export * from "./app-frontend/components/tree/Tree";
 export * from "./app-frontend/components/tree/types";
 export * from "./app-frontend/components/tree/SimpleTreeNodeRenderer";

@@ -22,7 +22,7 @@ import {
 	Tree,
 	Adapter,
 	TreeNode,
-	TreeRendererProps,
+	NodeRendererProps,
 } from "@nu-art/thunderstorm/frontend";
 
 type State = { focused?: string, actionMessage: string };
@@ -100,9 +100,9 @@ const ExpandCollapseComponentSVG = (props: TreeNode) => {
 }
 
 class Example_ColorfulNodeRenderer
-	extends React.Component<TreeRendererProps> {
+	extends React.Component<NodeRendererProps> {
 
-	constructor(props: TreeRendererProps) {
+	constructor(props: NodeRendererProps) {
 		super(props);
 	}
 
