@@ -17,14 +17,19 @@
  * limitations under the License.
  */
 
-import {Adapter} from "@nu-art/thunderstorm/app-frontend/components/tree/Adapter";
+import {
+	Adapter,
+	AdapterBuilder
+} from "@nu-art/thunderstorm/app-frontend/components/tree/Adapter";
 import {DropDown} from "@nu-art/thunderstorm/app-frontend/components/DropDown";
 import * as React from "react";
 import {
-	ItemRenderer,
+	optionRendererStyle,
 	Plague,
-	plagues
+	plagues,
+	Props
 } from "./Example_DropDowns";
+import {ICONS} from "@res/icons";
 
 export class Example_DefaultsDropDown
 	extends React.Component<{}, { _selected: string }> {
@@ -36,15 +41,46 @@ export class Example_DefaultsDropDown
 	};
 
 	render() {
-		const simpleAdapter = new Adapter(plagues).setTreeNodeRenderer(ItemRenderer);
-		simpleAdapter.hideRoot = true;
+		// const simpleAdapter = new Adapter(plagues).setTreeNodeRenderer(ItemRenderer);
+		const simpleAdapter: Adapter = AdapterBuilder()
+			.list()
+			.multiRender({reg: (props: { item: Plague }) => <_ItemRenderer item={props.item} node={{path:`/${props.item.value}`, focused: true, selected: props.item.value === this.state._selected}}/>})
+			.setData( plagues.map(plague => (
+				{type: "reg", item: plague}
+			)))
+			.build();
+		// simpleAdapter.hideRoot = true;
 		return <div>
 			<h4>Only defaults, single renderer</h4>
 			<h4>single renderer</h4>
 			<DropDown
 				adapter={simpleAdapter}
 				onSelected={this.onSelected}
+				// listStyleResolver={{listStyle:{backgroundColor:"red", border:'2px solid black'}}}
 			/>
+			<h4>{this.state._selected ? `You chose ${this.state._selected}` : "You didn't choose yet"}</h4>
 		</div>
+	}
+}
+class _ItemRenderer
+	extends React.Component<Props> {
+	render() {
+		if (typeof this.props.item !== "object")
+			return null;
+
+		return (
+			<div className="ll_h_c clickable"
+			     id={this.props.node.path}
+				// onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
+				   style={this.props.node.focused ? {backgroundColor: "lime"} : {}}>
+
+				<div className={optionRendererStyle(this.props.node.focused)}>
+					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
+						<div>{this.props.item.label}</div>
+						{this.props.node.selected && <div>{ICONS.check(undefined, 14)}</div>}
+					</div>
+				</div>
+			</div>
+		);
 	}
 }
