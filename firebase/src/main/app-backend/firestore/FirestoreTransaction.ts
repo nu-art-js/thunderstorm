@@ -106,12 +106,9 @@ export class FirestoreTransaction {
 	}
 
 	async upsertAll_Read<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<() => Promise<Type[]>> {
-		const refs = (await Promise.all(instances.map(instance => this.getOrCreateDocument(collection, instance))));
+		const writes = await Promise.all(instances.map(async instance => this.upsert_Read(collection,instance)));
 
-		return async () => {
-			await Promise.all(instances.map((instance, idx) => this.transaction.set(refs[idx] as admin.firestore.DocumentReference, instance)));
-			return instances;
-		};
+		return async () => Promise.all(writes.map(async _write => _write()));
 	}
 
 	async patch<Type extends object>(collection: FirestoreCollection<Type>, instance: Subset<Type>) {
