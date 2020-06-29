@@ -36,8 +36,7 @@ import {
 } from "../index";
 import {
 	Clause_Where,
-	DB_Object,
-	FirestoreQuery
+	DB_Object
 } from "@nu-art/firebase";
 import {
 	ApiResponse,
@@ -73,31 +72,6 @@ export abstract class GenericServerApi<DBType extends DB_Object, Binder extends 
 	//
 	// protected abstract async _process(request: ExpressRequest, response: ApiResponse, queryParams: P, body: B): Promise<R>;
 
-}
-
-export class GenericServerApi_Query<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBQuery<DB_Object>, (items: DBType[]) => Promise<DBType[]>> {
-	private readonly query?: FirestoreQuery<DBType>;
-
-	constructor(dbModule: BaseDB_ApiGenerator<DBType>, def: GenericApiDef, pathPart?: string, query?: FirestoreQuery<DBType>) {
-		super(dbModule, DefaultApiDefs.Query, pathPart);
-		this.query = query;
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Partial<DBType>): Promise<DBType[]> {
-		let query: FirestoreQuery<DBType>;
-		if (this.query)
-			query = {...this.query, where: body};
-		else
-			query = {where: body};
-
-		let toRet = await this.dbModule.query(query, request);
-		for (const postProcessor of this.postProcessors) {
-			toRet = await postProcessor(toRet);
-		}
-
-		return toRet;
-	}
 }
 
 export class ServerApi_Create<DBType extends DB_Object>
@@ -141,13 +115,18 @@ export class ServerApi_Unique<DBType extends DB_Object>
 }
 
 export class ServerApi_Query<DBType extends DB_Object>
-	extends GenericServerApi_Query<DBType> {
+	extends GenericServerApi<DBType, ApiBinder_DBQuery<DB_Object>, () => Promise<Partial<DBType>[]>> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
 		super(dbModule, DefaultApiDefs.Query, pathPart);
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Partial<DBType>): Promise<DBType[]> {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, _body: Partial<DBType>): Promise<DBType[]> {
+		let body = _body;
+		// for (const postProcessor of this.postProcessors) {
+		// 	queries = await postProcessor();
+		// }
+
 		return this.dbModule.query({where: body}, request);
 	}
 }
