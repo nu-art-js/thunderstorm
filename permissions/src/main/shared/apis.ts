@@ -62,7 +62,7 @@ export type Response_User = {
 	userId: string;
 };
 
-export type PermissionsApi_AssignAppPermissions = ApiWithBody<"/v1/permissions/assert/app-permissions", Request_AssignAppPermissions, void>;
+export type PermissionsApi_AssignAppPermissions = ApiWithBody<"/v1/permissions/assign/app-permissions", Request_AssignAppPermissions, void>;
 
 export type PermissionsApi_AssertUserAccess = ApiWithBody<"/v1/permissions/assert-user-access", Request_AssertApiForUser, Response_User>;
 export type PermissionsApi_UserUrlsPermissions = ApiWithBody<"/v1/permissions/user-urls-permissions", Request_UserUrlsPermissions, UserUrlsPermissions>;
