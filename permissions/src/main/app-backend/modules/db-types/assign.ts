@@ -188,7 +188,7 @@ export class UsersDB_Class
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");
 
 		await this.runInTransaction(async (transaction) => {
-			const user = await transaction.queryUnique(this.collection, {where: {_id: body.userId}});
+			const user = await transaction.queryUnique(this.collection, {where: {accountId: body.userId}});
 			if (!user)
 				throw new ApiException(404, `No permissions USER for id ${body.userId}`);
 

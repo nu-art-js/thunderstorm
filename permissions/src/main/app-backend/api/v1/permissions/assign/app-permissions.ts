@@ -37,7 +37,7 @@ class ServerApi_UserUrlsPermissions
 	extends ServerApi<PermissionsApi_AssignAppPermissions> {
 
 	constructor() {
-		super(HttpMethod.GET, "app-permissions");
+		super(HttpMethod.POST, "app-permissions");
 		this.dontPrintResponse();
 	}
 
