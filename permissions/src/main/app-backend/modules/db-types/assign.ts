@@ -17,17 +17,16 @@
  */
 
 import {
+	AssignAppPermissions,
 	CollectionName_Groups,
 	CollectionName_Users,
 	DB_PermissionAccessLevel,
 	DB_PermissionsGroup,
 	DB_PermissionsUser,
-	PredefinedGroup,
-	Request_AssignAppPermissions
+	PredefinedGroup
 } from "../_imports";
 import {
 	BaseDB_ApiGenerator,
-	GenericServerApi,
 	validateOptionalId,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
@@ -38,10 +37,7 @@ import {
 } from "@nu-art/user-account/backend";
 import {Clause_Where} from "@nu-art/firebase";
 import {
-	ApiException,
-	ApiResponse,
-	ExpressRequest,
-	ServerApi
+	ApiException
 } from "@nu-art/thunderstorm/backend";
 
 import {
@@ -58,10 +54,6 @@ import {
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
-import {
-	ApiBinder_DBCreate,
-	DefaultApiDefs
-} from "@nu-art/db-api-generator";
 
 const validateUserUuid = validateRegexp(/^.{0,50}$/);
 const validateGroupLabel = validateRegexp(/^[a-z-\._ ]+$/);
@@ -72,22 +64,6 @@ function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 	const filteredDomainIds = filterDuplicates(domainIds);
 	if (filteredDomainIds.length !== domainIds.length)
 		throw new ApiException(422, 'You trying insert duplicate accessLevel with the same domain');
-}
-
-export class ServerApi_CreateGroup<DBType>
-	extends GenericServerApi<DB_PermissionsGroup, ApiBinder_DBCreate<DB_PermissionsGroup>> {
-
-	constructor(dbModule: BaseDB_ApiGenerator<DB_PermissionsGroup>, pathPart?: string) {
-		super(dbModule, DefaultApiDefs.Create, pathPart);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: DB_PermissionsGroup) {
-		console.log("__ group");
-		if (body.label.startsWith("__"))
-			throw new ApiException(422, "You trying insert group with label name starts with '__' - just predefined groups can be like that");
-
-		return this.dbModule.upsert(body);
-	}
 }
 
 export class GroupsDB_Class
@@ -113,6 +89,13 @@ export class GroupsDB_Class
 	protected internalFilter(item: DB_PermissionsGroup): Clause_Where<DB_PermissionsGroup>[] {
 		const {label} = item;
 		return [{label}];
+	}
+
+	createImpl(transaction: FirestoreTransaction, instance: DB_PermissionsGroup): Promise<DB_PermissionsGroup> {
+		if (instance.label.startsWith("__"))
+			throw new ApiException(422, "You trying insert group with label name starts with '__' - just predefined groups can be like that");
+
+		return super.createImpl(transaction, instance);
 	}
 
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup): Promise<DB_PermissionsGroup> {
@@ -152,13 +135,10 @@ export class GroupsDB_Class
 
 			//TODO patch the predefined groups, in case app changed the label of the group..
 			const groupsToInsert = _groups.filter(group => !dbGroups.find(dbGroup => dbGroup._id === group._id));
-			return Promise.all(groupsToInsert.map(group => this.insertImpl(transaction, group)));
+			return Promise.all(groupsToInsert.map(group => this.createImpl(transaction, group)));
 		});
 	}
 
-	protected ServerApi_Create(pathPart?: string): ServerApi<any> {
-		return new ServerApi_CreateGroup(this, pathPart);
-	}
 }
 
 export class UsersDB_Class
@@ -199,11 +179,11 @@ export class UsersDB_Class
 			if (users.length)
 				return;
 
-			return this.insertImpl(transaction, {accountId: account._id, groups: []});
+			return this.upsert({accountId: account._id, groups: []}, transaction);
 		});
 	}
 
-	async assignAppPermissions(body: Request_AssignAppPermissions) {
+	async assignAppPermissions(body: AssignAppPermissions) {
 		if (!body.groupsToRemove.find(groupToRemove => groupToRemove._id === body.group._id))
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");
 

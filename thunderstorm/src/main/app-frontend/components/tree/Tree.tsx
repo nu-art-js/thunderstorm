@@ -29,8 +29,8 @@ import {TreeNode,} from "./types";
 import {KeyboardListener} from "../../tools/KeyboardListener";
 import {stopPropagation} from '../../utils/tools';
 import {
+	Adapter,
 	TreeRenderer,
-	TreeAdapter,
 	TreeRendererProps
 } from "./Adapter";
 
@@ -48,7 +48,7 @@ export type BaseTreeProps = {
 	onFocus?: () => void
 	onBlur?: () => void
 
-	adapter: TreeAdapter
+	adapter: Adapter
 }
 
 export type TreeNodeState = { [path: string]: boolean };
@@ -148,7 +148,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		if (this.props.adapter.hideRoot && path.length === 1)
 			return null;
 
-		const TreeNodeRenderer: TreeRenderer<TreeRendererProps> = this.props.adapter.getTreeNodeRenderer();
+		const TreeNodeRenderer: TreeRenderer<TreeRendererProps> = this.props.adapter.treeNodeRenderer;
 		const node: TreeNode = {
 			adapter: this.props.adapter,
 			propKey: key,

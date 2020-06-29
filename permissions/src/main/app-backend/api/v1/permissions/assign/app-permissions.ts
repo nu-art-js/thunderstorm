@@ -30,6 +30,7 @@ import {
 	HttpMethod,
 	QueryParams
 } from "@nu-art/thunderstorm";
+import {AccountModule} from "@nu-art/user-account/app-backend/modules/AccountModule";
 
 
 class ServerApi_UserUrlsPermissions
@@ -41,7 +42,9 @@ class ServerApi_UserUrlsPermissions
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: Request_AssignAppPermissions) {
-		await UserPermissionsDB.assignAppPermissions(body);
+		const account = await AccountModule.validateSession(request);
+		const assignAppPermissions = {...body, userId: account._id};
+		await UserPermissionsDB.assignAppPermissions(assignAppPermissions);
 	}
 }
 

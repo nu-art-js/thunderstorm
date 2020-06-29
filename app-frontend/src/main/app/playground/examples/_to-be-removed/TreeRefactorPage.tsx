@@ -19,7 +19,7 @@
 import * as React from "react";
 import {Example_Menu} from "../menu/Example_Menu";
 import {Example_DataTree} from "../keyboard-listener/Example_DataTree";
-import {Example_FakeMenu} from "../keyboard-listener/Example_FakeMenu";
+// import {Example_FakeMenu} from "../keyboard-listener/Example_FakeMenu";
 import {Example_VerySimpleTree} from "../keyboard-listener/Example_VerySimpleTree";
 import {COLORS} from "@res/colors";
 import { Example_DropDowns } from "../dropdown/Example_DropDowns";
@@ -32,7 +32,7 @@ export const TreeRefactorPage = () => (<>
 	<div className="ll_h_c match_width" style={{justifyContent: "space-between"}}>
 		<Example_DataTree/>
 		<div style={{height: "100%", width: "1px", background: COLORS.amber()}}/>
-		<Example_FakeMenu/>
+		{/*<Example_FakeMenu/>*/}
 		<div style={{height: "100%", width: "1px", background: COLORS.amber()}}/>
 		<Example_VerySimpleTree/>
 	</div>
