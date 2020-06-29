@@ -9,13 +9,13 @@ import {
 	resolveRealPosition
 } from "./MenuModule";
 import {BadImplementationException} from "@nu-art/ts-common";
-import {TreeAdapter} from "../../components/tree/Adapter";
+import {Adapter} from "../../components/tree/Adapter";
 
 type Props = {
 	id: string
 	iconOpen: ReactNode
 	iconClosed: ReactNode
-	adapter: TreeAdapter
+	adapter: Adapter
 }
 
 export class MenuAndButton
@@ -47,7 +47,7 @@ export class MenuAndButton
 		return <div
 			className={'clickable'}
 			onClick={this.open}
-			style={{position: "relative", padding: 10}}>
+			style={{position: "relative"}}>
 			<div ref={this.ref}
 			     onMouseOver={e => this.setState({over: true})}
 			     onMouseOut={e => this.setState({over: false})}>

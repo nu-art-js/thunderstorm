@@ -21,13 +21,12 @@
 
 import {_keys} from "@nu-art/ts-common";
 import {
-	RendererMap,
-	TreeRenderer,
-	TreeAdapter
+	Adapter,
+	RendererMap
 } from "./Adapter";
 
 export class MultiTypeAdapter<Rm extends RendererMap, T extends any = any>
-	extends TreeAdapter<T> {
+	extends Adapter<T> {
 
 	private readonly rendererMap: Rm;
 
@@ -58,7 +57,7 @@ export class MultiTypeAdapter<Rm extends RendererMap, T extends any = any>
 
 	}
 
-	resolveRenderer(propKey: string): TreeRenderer<T> {
+	resolveRenderer(propKey: string): any {
 		return this.rendererMap[propKey];
 	}
 }

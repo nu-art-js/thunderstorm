@@ -41,13 +41,13 @@ export class FirestoreTransaction {
 
 	private async _queryUnique<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
 		const results: FirestoreType_DocumentSnapshot[] = await this._query(collection, ourQuery);
-		return FirestoreInterface.assertUniqueDocument(results, ourQuery);
+		return FirestoreInterface.assertUniqueDocument(results, ourQuery, collection.name);
 	}
 
 	private async _queryItem<Type extends object>(collection: FirestoreCollection<Type>, instance: Subset<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
 		const ourQuery = FirestoreInterface.buildUniqueQuery(collection, instance);
 		const results: FirestoreType_DocumentSnapshot[] = await this._query(collection, ourQuery);
-		return FirestoreInterface.assertUniqueDocument(results, ourQuery);
+		return FirestoreInterface.assertUniqueDocument(results, ourQuery, collection.name);
 	}
 
 	async query<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<Type[]> {

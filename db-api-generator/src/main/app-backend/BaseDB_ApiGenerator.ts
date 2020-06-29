@@ -38,7 +38,8 @@ import {
 	validate,
 	validateRegexp,
 	ValidationException,
-	ValidatorTypeResolver
+	ValidatorTypeResolver,
+	filterInstances
 } from "@nu-art/ts-common";
 import {
 	ServerApi_Create,
@@ -49,6 +50,7 @@ import {
 } from "./apis";
 import {
 	ApiException,
+	ExpressRequest,
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
@@ -158,7 +160,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	init() {
 		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
 		// @ts-ignore
-		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys);
+		this["collection"] = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys);
 	}
 
 	private async assertExternalQueryUnique(instance: DBType, transaction: FirestoreTransaction): Promise<DBType> {
@@ -279,25 +281,41 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was inserted.
 	 */
-	async insertImpl(transaction: FirestoreTransaction, instance: UType) {
-		return transaction.insert(this.collection, {...instance, _id: generateHex(idLength)} as unknown as DBType);
+	async createImpl(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest) {
+		await this.validateImpl(instance);
+		await this.assertUniqueness(transaction, instance);
+		return transaction.insert(this.collection, instance);
 	}
+
 
 	/**
 	 * Upserts the `instance` using a transaction, after validating it and asserting uniqueness.
 	 *
 	 * @param instance - The object to be upserted.
+	 * @param transaction - OPTIONAL transaction to perform the upsert operation on
 	 *
 	 * @returns
 	 * A promise of the document that was upserted.
 	 */
-	async upsert(instance: UType) {
-		return this.collection.runInTransaction(async (transaction) => {
-			const dbInstance: DBType = {...instance, _id: instance._id || generateHex(idLength)} as unknown as DBType;
-			await this.validateImpl(dbInstance);
-			await this.assertUniqueness(transaction, dbInstance);
-			return this.upsertImpl(transaction, dbInstance);
-		});
+	async upsert(instance: UType, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+		const processor = async (_transaction: FirestoreTransaction) => {
+			let toProcess;
+			let dbInstance: DBType;
+			if (instance._id === undefined) {
+				toProcess = this.createImpl.bind(this);
+				dbInstance = {...instance, _id: generateHex(idLength)} as unknown as DBType;
+			} else {
+				toProcess = this.upsertImpl.bind(this);
+				dbInstance = instance as unknown as DBType;
+			}
+
+			return toProcess(_transaction, dbInstance, request);
+		};
+
+		if (transaction)
+			return processor(transaction);
+
+		return this.collection.runInTransaction(processor);
 	}
 
 	/**
@@ -308,21 +326,21 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of an array of documents that were upserted.
 	 */
-	async upsertAll(instances: UType[]): Promise<DBType[]> {
+	async upsertAll(instances: UType[], request?: ExpressRequest): Promise<DBType[]> {
 		const writes: DBType[] = [];
 		await batchAction(instances, 500, async (chunked: UType[]) => {
-			addAllItemToArray(writes, await this.upsertAllBatched(chunked));
+			addAllItemToArray(writes, await this.upsertAllBatched(chunked, request));
 		});
 		return writes;
 	}
 
-	private async upsertAllBatched(instances: UType[]): Promise<DBType[]> {
+	private async upsertAllBatched(instances: UType[], request?: ExpressRequest): Promise<DBType[]> {
 		return this.collection.runInTransaction(async (transaction) => {
 			const dbInstances: DBType[] = instances.map(instance => ({...instance, _id: instance._id || generateHex(idLength)} as unknown as DBType));
 			await Promise.all(dbInstances.map(async dbInstance => this.validateImpl(dbInstance)));
 			await Promise.all(dbInstances.map(async dbInstance => this.assertUniqueness(transaction, dbInstance)));
 
-			return this.upsertAllImpl(transaction, dbInstances);
+			return this.upsertAllImpl(transaction, dbInstances, request);
 		});
 	}
 
@@ -335,7 +353,9 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was upserted.
 	 */
-	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType): Promise<DBType> {
+	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<DBType> {
+		await this.validateImpl(dbInstance);
+		await this.assertUniqueness(transaction, dbInstance);
 		return transaction.upsert(this.collection, dbInstance);
 	}
 
@@ -350,7 +370,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the array of documents that were upserted.
 	 */
-	protected async upsertAllImpl(transaction: FirestoreTransaction, dbInstances: DBType[]): Promise<DBType[]> {
+	protected async upsertAllImpl(transaction: FirestoreTransaction, dbInstances: DBType[], request?: ExpressRequest): Promise<DBType[]> {
 		return transaction.upsertAll(this.collection, dbInstances);
 	}
 
@@ -364,7 +384,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	async deleteUnique(_id: string) {
+	async deleteUnique(_id: string, request?: ExpressRequest) {
 		if (!_id)
 			throw new BadImplementationException(`No _id for deletion provided.`);
 		return this.collection.runInTransaction(async (transaction: FirestoreTransaction) => {
@@ -374,7 +394,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 				throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
 			await this.assertDeletion(transaction, dbInstance);
-			await this.deleteImpl(transaction, ourQuery);
+			await this.deleteImpl(transaction, ourQuery, request);
 			return dbInstance;
 		});
 	}
@@ -388,7 +408,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	private async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }) {
+	private async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest) {
 		return transaction.deleteUnique(this.collection, ourQuery);
 	}
 
@@ -397,7 +417,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 *
 	 * @param query - The query to be executed for the deletion.
 	 */
-	async delete(query: FirestoreQuery<DBType>) {
+	async delete(query: FirestoreQuery<DBType>, request?: ExpressRequest) {
 		return this.collection.delete(query);
 	}
 
@@ -411,7 +431,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * The DB document that was found.
 	 */
-	async queryUnique(where: Clause_Where<DBType>) {
+	async queryUnique(where: Clause_Where<DBType>, request?: ExpressRequest) {
 		const dbItem = await this.collection.queryUnique({where});
 		if (!dbItem)
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique query: ${JSON.stringify(where)}`);
@@ -427,7 +447,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of an array of documents.
 	 */
-	async query(query: FirestoreQuery<DBType>) {
+	async query(query: FirestoreQuery<DBType>, request?: ExpressRequest) {
 		return await this.collection.query(query);
 	}
 
@@ -443,7 +463,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the patched document.
 	 */
-	async patch(instance: DBType, propsToPatch?: (keyof DBType)[]): Promise<DBType> {
+	async patch(instance: DBType, propsToPatch?: (keyof DBType)[], request?: ExpressRequest): Promise<DBType> {
 		return this.collection.runInTransaction(async (transaction) => {
 			const dbInstance: DBType = await this.assertExternalQueryUnique(instance, transaction);
 			// If the caller has specified props to be changed, make sure the don't conflict with the lockKeys.
@@ -466,27 +486,27 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 			await this.assertUniqueness(transaction, mergedObject);
 
-			return this.upsertImpl(transaction, mergedObject);
+			return this.upsertImpl(transaction, mergedObject, request);
 		});
 	}
 
-	protected apiCreate(pathPart?: string): ServerApi<any> {
+	protected apiCreate(pathPart?: string): ServerApi_Create<DBType> | ServerApi<any> | undefined {
 		return new ServerApi_Create(this, pathPart);
 	}
 
-	protected apiQuery(pathPart?: string): ServerApi<any> {
+	protected apiQuery(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Query(this, pathPart);
 	}
 
-	protected apiQueryUnique(pathPart?: string): ServerApi<any> {
+	protected apiQueryUnique(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Unique(this, pathPart);
 	}
 
-	protected apiUpdate(pathPart?: string): ServerApi<any> {
+	protected apiUpdate(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Update(this, pathPart);
 	}
 
-	protected apiDelete(pathPart?: string): ServerApi<any> {
+	protected apiDelete(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Delete(this, pathPart);
 	}
 
@@ -499,12 +519,12 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * An array of api endpoints.
 	 */
 	apis(pathPart?: string): ServerApi<any>[] {
-		return [
-			this.apiCreate(pathPart),
-			this.apiQuery(pathPart),
-			this.apiQueryUnique(pathPart),
-			this.apiUpdate(pathPart),
-			this.apiDelete(pathPart),
-		];
+		return filterInstances([
+			                       this.apiCreate(pathPart),
+			                       this.apiQuery(pathPart),
+			                       this.apiQueryUnique(pathPart),
+			                       this.apiUpdate(pathPart),
+			                       this.apiDelete(pathPart),
+		                       ]);
 	}
 }

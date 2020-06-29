@@ -26,7 +26,7 @@ import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
 import {
 	RendererMap,
-	TreeAdapter,
+	Adapter,
 	ItemToRender
 } from "./tree/Adapter";
 import {Tree} from "./tree/Tree";
@@ -135,7 +135,7 @@ type State<ItemType> = {
 type StaticProps = { id: string }
 
 type Props<ItemType> = StaticProps & {
-	adapter: TreeAdapter
+	adapter: Adapter
 	// renderersAndOptions: RenderersAndOptions<ItemType>
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
@@ -268,7 +268,7 @@ export class DropDown<ItemType>
 		if (!props.selected)
 			return <div>{this.props.placeholder}</div>
 
-		const Renderer = this.props.adapter.getTreeNodeRenderer();
+		const Renderer = this.props.adapter.treeNodeRenderer;
 		const node = {
 			propKey: 'string',
 			path: 'string',

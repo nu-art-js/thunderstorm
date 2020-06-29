@@ -237,7 +237,7 @@ export class ApiDB_Class
 				.filter(path => !existingProjectApis.find(api => api.path === path))
 				.map(path => ({path, projectId: projectId}));
 
-			return Promise.all(apisToAdd.map((api) => this.insertImpl(transaction, api)));
+			return Promise.all(apisToAdd.map((api) => this.upsert(api, transaction)));
 		});
 	}
 

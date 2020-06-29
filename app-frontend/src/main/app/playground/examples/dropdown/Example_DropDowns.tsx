@@ -27,7 +27,7 @@ import {
 import {ICONS} from "@res/icons";
 import {Example_DefaultsDropDown} from "./Example_DefaultsDropDown";
 import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
-import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
+// import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
 
 // const optionRendererWrapperStyle = css({":hover": {backgroundColor: "lime"}});
 
@@ -122,7 +122,7 @@ export class Example_DropDowns
 			<div className={'ll_h_t match_width'} style={{justifyContent: "space-around", height: 100}}>
 				<Example_DefaultsDropDown/>
 				<Example_SingleRendererDropDown/>
-				<Example_MultiRendererDropDown/>
+				{/*<Example_MultiRendererDropDown/>*/}
 			</div>
 		</>;
 	}
