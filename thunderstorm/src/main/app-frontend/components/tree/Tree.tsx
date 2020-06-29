@@ -30,9 +30,8 @@ import {KeyboardListener} from "../../tools/KeyboardListener";
 import {stopPropagation} from '../../utils/tools';
 import {
 	Adapter,
-	TreeRenderer,
-	TreeRendererProps
-} from "./Adapter";
+} from "../adapter/Adapter";
+import {_BaseNodeRenderer} from "../adapter/BaseRenderer";
 
 
 export type BaseTreeProps = {
@@ -148,7 +147,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		if (this.props.adapter.hideRoot && path.length === 1)
 			return null;
 
-		const TreeNodeRenderer: TreeRenderer<TreeRendererProps> = this.props.adapter.treeNodeRenderer;
+		const TreeNodeRenderer: _BaseNodeRenderer<any> = this.props.adapter.treeNodeRenderer;
 		const node: TreeNode = {
 			adapter: this.props.adapter,
 			propKey: key,

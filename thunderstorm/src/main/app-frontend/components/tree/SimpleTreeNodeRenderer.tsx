@@ -20,15 +20,13 @@
  */
 
 import * as React from "react";
-import {TreeRendererProps} from "./Adapter";
+import {
+	BaseNodeRenderer,
+	NodeRendererProps
+} from "../adapter/BaseRenderer";
 
 export class SimpleTreeNodeRenderer
-	extends React.Component<TreeRendererProps> {
-
-
-	constructor(props: TreeRendererProps) {
-		super(props);
-	}
+	extends BaseNodeRenderer<any> {
 
 	renderCollapse() {
 		let toDisplay;
@@ -50,7 +48,7 @@ export class SimpleTreeNodeRenderer
 		</div>
 	}
 
-	render() {
+	protected renderItem(item: any): React.ReactNode {
 		return (<div className="ll_h_c">
 			{this.renderCollapse()}
 			<div
@@ -65,8 +63,9 @@ export class SimpleTreeNodeRenderer
 	};
 }
 
+
 export class SimpleNodeRenderer
-	extends React.Component<TreeRendererProps> {
+	extends React.Component<NodeRendererProps> {
 
 	render() {
 		let label;

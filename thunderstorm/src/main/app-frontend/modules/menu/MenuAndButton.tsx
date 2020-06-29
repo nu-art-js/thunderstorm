@@ -9,7 +9,7 @@ import {
 	resolveRealPosition
 } from "./MenuModule";
 import {BadImplementationException} from "@nu-art/ts-common";
-import {Adapter} from "../../components/tree/Adapter";
+import {Adapter} from "../../components/adapter/Adapter";
 
 type Props = {
 	id: string

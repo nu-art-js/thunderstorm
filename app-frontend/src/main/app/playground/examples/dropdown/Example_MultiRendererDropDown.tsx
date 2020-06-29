@@ -19,7 +19,7 @@
 //
 // import {
 // 	RendererMap,
-// 	TreeRendererProps
+// 	NodeRendererProps
 // } from "@nu-art/thunderstorm/frontend";
 // import {
 // 	DropDown,
@@ -104,7 +104,7 @@
 // }
 //
 // class TitleRender
-// 	extends React.Component<TreeRendererProps<Plague>> {
+// 	extends React.Component<NodeRendererProps<Plague>> {
 //
 // 	render() {
 // 		return (
@@ -120,9 +120,9 @@
 // }
 //
 // class Example_NodeRenderer_HoverToExpand
-// 	extends React.Component<TreeRendererProps> {
+// 	extends React.Component<NodeRendererProps> {
 //
-// 	constructor(props: TreeRendererProps) {
+// 	constructor(props: NodeRendererProps) {
 // 		super(props);
 // 	}
 //

@@ -24,7 +24,7 @@
 // 	MultiTypeAdapter,
 // 	stopPropagation,
 // 	Tree,
-// 	TreeRendererProps,
+// 	NodeRendererProps,
 // 	TreeRenderer,
 // 	AdapterBuilder,
 // } from "@nu-art/thunderstorm/frontend";
@@ -104,9 +104,9 @@
 // }
 //
 // class ItemRenderer<Type>
-// 	extends React.Component<TreeRendererProps<Type>> {
+// 	extends React.Component<NodeRendererProps<Type>> {
 //
-// 	constructor(props: TreeRendererProps<Type>) {
+// 	constructor(props: NodeRendererProps<Type>) {
 // 		super(props);
 // 	}
 //
@@ -156,9 +156,9 @@
 //
 //
 // class Example_NodeRenderer_ClickToExpand
-// 	extends React.Component<TreeRendererProps> {
+// 	extends React.Component<NodeRendererProps> {
 //
-// 	constructor(props: TreeRendererProps) {
+// 	constructor(props: NodeRendererProps) {
 // 		super(props);
 // 	}
 //

@@ -20,7 +20,7 @@
  */
 
 import * as React from "react";
-import {Adapter} from "./Adapter";
+import {Adapter} from "../adapter/Adapter";
 
 export type TreeNode = {
 	propKey: string

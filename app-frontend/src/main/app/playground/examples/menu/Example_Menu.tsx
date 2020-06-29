@@ -8,7 +8,7 @@ import {
 	MultiTypeAdapter,
 	MenuComponent,
 	stopPropagation,
-	TreeRendererProps
+	NodeRendererProps
 } from "@nu-art/thunderstorm/frontend";
 import {
 	_keys,
@@ -78,9 +78,9 @@ export class Example_Menu
 }
 
 class NodeRenderer
-	extends React.Component<TreeRendererProps> {
+	extends React.Component<NodeRendererProps> {
 
-	constructor(props: TreeRendererProps) {
+	constructor(props: NodeRendererProps) {
 		super(props);
 	}
 

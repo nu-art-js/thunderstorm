@@ -24,11 +24,7 @@ import {FilterInput} from "./FilterInput";
 import {generateHex} from "@nu-art/ts-common";
 import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
-import {
-	RendererMap,
-	Adapter,
-	ItemToRender
-} from "./tree/Adapter";
+import {Adapter,} from "./adapter/Adapter";
 import {Tree} from "./tree/Tree";
 
 const defaultWidth = "222px";
@@ -104,7 +100,7 @@ export type ValueProps<ItemType> = {
 }
 
 type State<ItemType> = {
-	filteredOptions: (ItemType | ItemToRender<RendererMap, string>)[]
+	filteredOptions: (ItemType)[]
 	open: boolean
 	selected?: ItemType
 	hover?: ItemType
@@ -139,7 +135,7 @@ type Props<ItemType> = StaticProps & {
 	// renderersAndOptions: RenderersAndOptions<ItemType>
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
-	filter?: (item: ItemType | ItemToRender<RendererMap, string>) => string[]
+	filter?: (item: ItemType) => string[]
 	inputResolver?: (selected?: ItemType) => InputProps
 	placeholder?: string
 
@@ -181,9 +177,6 @@ export class DropDown<ItemType>
 		document.removeEventListener('mousedown', this.handleMouseClick);
 	}
 
-	// isSingleRendererAndOptions = (checkedItem: RenderersAndOptions<ItemType>): checkedItem is SingleRendererAndOptions<ItemType> => !!(checkedItem as SingleRendererAndOptions<ItemType>).itemRenderer;
-	isItemToRender = (checkedItem: ItemType | ItemToRender<RendererMap, any>): checkedItem is ItemToRender<RendererMap, any> => !!(checkedItem as ItemToRender<RendererMap, any>).type;
-
 	toggleList = (e: React.MouseEvent) => {
 		stopPropagation(e);
 
@@ -191,14 +184,13 @@ export class DropDown<ItemType>
 		// this.renderMenu();
 	};
 
-	onSelected = (item: ItemType | ItemToRender<RendererMap, any>) => {
-		const _item: ItemType = this.isItemToRender(item) ? item.item as ItemType : item as ItemType;
+	onSelected = (item: ItemType) => {
 		this.setState(prevState => ({
-				              open: !prevState.open,
-				              selected: _item
-			              }));
+			open: !prevState.open,
+			selected: item
+		}));
 
-		this.props.onSelected(_item);
+		this.props.onSelected(item);
 	};
 
 	render() {
@@ -243,11 +235,11 @@ export class DropDown<ItemType>
 		const options = this.props.adapter.data as ItemType[];
 
 		// const options = this.props.renderersAndOptions.options;
-		return (<FilterInput<ItemType | ItemToRender<RendererMap, string>>
+		return (<FilterInput<ItemType>
 			id={this.props.id}
 			filter={this.props.filter}
 			list={options}
-			onChange={(filtered: (ItemType | ItemToRender<RendererMap, string>)[]) => this.setState({filteredOptions: filtered})}
+			onChange={(filtered: (ItemType)[]) => this.setState({filteredOptions: filtered})}
 			focus={true}
 			className={inputComplementary.className}
 			inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
@@ -274,9 +266,12 @@ export class DropDown<ItemType>
 			path: 'string',
 			item: 'any',
 			adapter: this.props.adapter,
-			expandToggler: (e: React.MouseEvent, expand?: boolean) => {},
-			onClick: (e: React.MouseEvent) => {},
-			onFocus: (e: React.MouseEvent) => {},
+			expandToggler: (e: React.MouseEvent, expand?: boolean) => {
+			},
+			onClick: (e: React.MouseEvent) => {
+			},
+			onFocus: (e: React.MouseEvent) => {
+			},
 			expanded: true,
 			focused: true
 		};

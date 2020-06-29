@@ -20,12 +20,10 @@
  */
 
 import {_keys} from "@nu-art/ts-common";
-import {
-	Adapter,
-	RendererMap
-} from "./Adapter";
+import {Adapter,} from "../adapter/Adapter";
+import {BaseRendererMap} from "../adapter/BaseRenderer";
 
-export class MultiTypeAdapter<Rm extends RendererMap, T extends any = any>
+export class MultiTypeAdapter<Rm extends BaseRendererMap<any>, T extends any = any>
 	extends Adapter<T> {
 
 	private readonly rendererMap: Rm;
