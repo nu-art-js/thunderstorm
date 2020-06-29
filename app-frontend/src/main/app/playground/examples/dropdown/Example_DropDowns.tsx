@@ -50,9 +50,20 @@ export const customInputStyle = (selected: boolean) => css(
 		}
 	});
 
+export type Node = {
+	path: string
+	focused: boolean,
+	selected?: boolean,
+}
+
 export type Plague = {
 	label: string,
 	value: string
+}
+
+export type Props = {
+	item: Plague,
+	node: Node
 }
 
 export const plagues: Plague[] = [
@@ -128,8 +139,31 @@ export class Example_DropDowns
 	}
 }
 
+export class _ItemRenderer
+	extends React.Component<Props> {
+	render() {
+		if (typeof this.props.item !== "object")
+			return null;
+
+		return (
+			<div className="ll_h_c clickable"
+			     id={this.props.node.path}
+			     // onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
+			     style={this.props.node.focused ? {backgroundColor: "lime"} : {}}>
+
+				<div className={optionRendererStyle(this.props.node.focused)}>
+					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
+						<div>{this.props.item.label}</div>
+						{this.props.node.selected && <div>{ICONS.check(undefined, 14)}</div>}
+					</div>
+				</div>
+			</div>
+		);
+	}
+}
+
 export class ItemRenderer
-	extends React.Component<TreeRendererProps> {
+	extends React.Component<TreeRendererProps<Plague>> {
 
 	render() {
 		if (typeof this.props.item !== "object")
