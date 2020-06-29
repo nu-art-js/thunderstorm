@@ -490,23 +490,23 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	protected apiCreate(pathPart?: string): ServerApi_Create<DBType> | ServerApi<any> | undefined {
+	apiCreate(pathPart?: string): ServerApi_Create<DBType> | ServerApi<any> | undefined {
 		return new ServerApi_Create(this, pathPart);
 	}
 
-	protected apiQuery(pathPart?: string): ServerApi<any> | undefined {
+	apiQuery(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Query(this, pathPart);
 	}
 
-	protected apiQueryUnique(pathPart?: string): ServerApi<any> | undefined {
+	apiQueryUnique(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Unique(this, pathPart);
 	}
 
-	protected apiUpdate(pathPart?: string): ServerApi<any> | undefined {
+	apiUpdate(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Update(this, pathPart);
 	}
 
-	protected apiDelete(pathPart?: string): ServerApi<any> | undefined {
+	apiDelete(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Delete(this, pathPart);
 	}
 
