@@ -5,14 +5,9 @@ import {
 	AdapterBuilder,
 	MenuComponent,
 	ToastModule,
-	TreeNode,
-	DropDown
+	TreeNode
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
-import {
-	Plague,
-	plagues
-} from "../dropdown/Example_DropDowns";
 
 export class Example_List_MultiType
 	extends Component<{}> {
@@ -49,7 +44,7 @@ export class Example_List_MultiType1
 		const adapter: Adapter = AdapterBuilder()
 			.list()
 			.multiRender({
-				             reg: (props: { item: { value: string } }) => <div>{props.item}</div>,
+				             reg: (props: { item: { value: string }, node: TreeNode }) => <div>{props.item}</div>,
 				             bold: (props: { item: { value: string } }) => <div><b>{props.item}</b></div>
 			             })
 			.setData([{type: "reg", item: {value: 'hi'}},
