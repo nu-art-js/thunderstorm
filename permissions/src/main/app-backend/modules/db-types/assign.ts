@@ -28,6 +28,7 @@ import {
 import {
 	BaseDB_ApiGenerator,
 	validateOptionalId,
+	validateStringWithDashes,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
 import {
@@ -56,7 +57,7 @@ import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
 
 const validateUserUuid = validateRegexp(/^.{0,50}$/);
-const validateGroupLabel = validateRegexp(/^[a-z-\._ ]+$/);
+const validateGroupLabel = validateRegexp(/^[A-Za-z-\._ ]+$/);
 const validateCustomFieldValues = validateRegexp(/^.{0,500}$/);
 
 function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
@@ -69,7 +70,7 @@ function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 export class GroupsDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionsGroup> {
 	static _validator: TypeValidator<DB_PermissionsGroup> = {
-		_id: validateOptionalId,
+		_id: validateStringWithDashes,
 		label: validateGroupLabel,
 		accessLevelIds: validateArray(validateUniqueId, false),
 		customFields: validateArray(validateObjectValues<string>(validateCustomFieldValues), false),
@@ -89,13 +90,6 @@ export class GroupsDB_Class
 	protected internalFilter(item: DB_PermissionsGroup): Clause_Where<DB_PermissionsGroup>[] {
 		const {label} = item;
 		return [{label}];
-	}
-
-	createImpl(transaction: FirestoreTransaction, instance: DB_PermissionsGroup): Promise<DB_PermissionsGroup> {
-		if (instance.label.startsWith("__"))
-			throw new ApiException(422, "You trying insert group with label name starts with '__' - just predefined groups can be like that");
-
-		return super.createImpl(transaction, instance);
 	}
 
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup): Promise<DB_PermissionsGroup> {
@@ -125,9 +119,9 @@ export class GroupsDB_Class
 		return this.config;
 	}
 
-	upsertPredefinedGroups(projectId: string, predefinedGroups: PredefinedGroup[]) {
+	upsertPredefinedGroups(projectId: string, projectName: string, predefinedGroups: PredefinedGroup[]) {
 		return this.runInTransaction(async (transaction) => {
-			const _groups = predefinedGroups.map(group => ({_id: `${projectId}-${group._id}`, label: group.label}));
+			const _groups = predefinedGroups.map(group => ({_id: `${projectId}--${group._id}`, label: `${projectName}--${group.label}`}));
 
 			const dbGroups = filterInstances(await batchAction(_groups.map(group => group._id), 10, (chunk) => {
 				return transaction.queryUnique(this.collection, {where: {_id: {$in: chunk}}})
@@ -205,9 +199,10 @@ export class UsersDB_Class
 				}))
 
 			if (body.group) {
-				const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: `${body.projectId}--${body.group._id}`}});
+				const groupId = `${body.projectId}--${body.group._id}`;
+				const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: groupId}});
 				if (!_group)
-					throw new ApiException(404, `No permissions GROUP for id ${body.group._id}`);
+					throw new ApiException(404, `No permissions GROUP for id ${groupId}`);
 
 				newGroups.push({groupId: _group._id, customField: body.customField})
 			}

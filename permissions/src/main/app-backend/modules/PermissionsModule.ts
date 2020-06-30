@@ -17,7 +17,6 @@
  */
 
 import {
-	BadImplementationException,
 	ImplementationMissingException,
 	Module,
 	StringMap
@@ -102,12 +101,7 @@ export class PermissionsModule_Class
 		if (!predefinedGroups || predefinedGroups.length === 0)
 			return;
 
-		predefinedGroups.map(predefinedGroup => {
-			if (!predefinedGroup.label.startsWith('__'))
-				throw new BadImplementationException("Predefined group label must starts with '__', please change it to be like that");
-		});
-
-		return GroupPermissionsDB.upsertPredefinedGroups(project._id, predefinedGroups);
+		return GroupPermissionsDB.upsertPredefinedGroups(project._id, project.name, predefinedGroups);
 	}
 }
 
