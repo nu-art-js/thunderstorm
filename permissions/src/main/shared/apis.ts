@@ -50,7 +50,7 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 
 export type AssignAppPermissions = Request_AssignAppPermissions & {userId: string};
 
-export type PredefinedGroup = { _id: string, label: string };
+export type PredefinedGroup = { _id: string, key: string, label: string };
 
 export type Request_RegisterProject = {
 	project: DB_PermissionProject,

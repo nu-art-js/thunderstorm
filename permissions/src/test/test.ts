@@ -36,6 +36,9 @@ import {
 	createGroupWithLegalCustomField,
 	createTowGroups,
 	createTowUsers,
+	createUser,
+	createUserWithDuplicateGroupIdButDifferentCustomField,
+	createUserWithGroups,
 	failedCreateApi,
 	failedCreateGroupWithDuplicateAccessLevel,
 	failedCreateTwoGroupsWithSameName,
@@ -55,6 +58,16 @@ import { AccountModule } from "@nu-art/user-account/backend";
 
 export const mainScenario = __scenario("Permissions");
 
+mainScenario.add(createUser());
+mainScenario.add(createUserWithGroups());
+mainScenario.add(createTowUsers());
+
+// TODO: after we will implement the group delete assertion
+// mainScenario.add(failedDeleteGroupAssociatedToUser());
+
+mainScenario.add(failedCreateUserWithDuplicateGroups());
+mainScenario.add(createUserWithDuplicateGroupIdButDifferentCustomField());
+
 mainScenario.add(createTwoAccessLevels());
 mainScenario.add(createApi());
 mainScenario.add(failedCreateApi());
@@ -70,8 +83,6 @@ mainScenario.add(createGroupWithLegalCustomField());
 mainScenario.add(failToCreateGroupWithIllegalCustomField());
 mainScenario.add(failedCreateTwoGroupsWithSameName());
 mainScenario.add(failedCreateGroupWithDuplicateAccessLevel());
-mainScenario.add(createTowUsers());
-mainScenario.add(failedCreateUserWithDuplicateGroups());
 mainScenario.add(createApiWithAccessLevel());
 
 mainScenario.add(permissionsAssertIsLevelsMatchTests());
@@ -84,8 +95,6 @@ mainScenario.add(checkDeleteAccessLevelsDocument());
 
 mainScenario.add(checkInsertUserIfNotExist());
 mainScenario.add(checkInsertUserIfNotExistByExistUser());
-// disabled for now
-// mainScenario.add(failedCreateUserWithDuplicateAccessLevel());
 
 
 module.exports = new StormTester()
