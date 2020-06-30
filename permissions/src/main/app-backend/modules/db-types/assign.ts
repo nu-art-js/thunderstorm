@@ -28,7 +28,7 @@ import {
 import {
 	BaseDB_ApiGenerator,
 	validateOptionalId,
-	validateStringWithDashes,
+	validateStringAndNumbersWithDashes,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
 import {
@@ -70,7 +70,7 @@ function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 export class GroupsDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionsGroup> {
 	static _validator: TypeValidator<DB_PermissionsGroup> = {
-		_id: validateStringWithDashes,
+		_id: validateStringAndNumbersWithDashes,
 		label: validateGroupLabel,
 		accessLevelIds: validateArray(validateUniqueId, false),
 		customFields: validateArray(validateObjectValues<string>(validateCustomFieldValues), false),
