@@ -69,7 +69,7 @@ export function checkAccessLevelsPropertyOfGroup() {
 		if (!group.__accessLevels || !group.__accessLevels.length || group.__accessLevels[0].value !== data.level.value) {
 			throw new TestException("Didn't add __accessLevels to group");
 		}
-	}).setReadKey(contextKey1).setLabel('Group with __accessLevel has created'));
+	}).setReadKey(contextKey1).setLabel('Group with __accessLevel has been created'));
 	return scenario;
 }
 
@@ -189,6 +189,83 @@ export function createTowGroups() {
 	return scenario;
 }
 
+export function createUser() {
+	const scenario = __scenario("Create permissions user");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		await UserPermissionsDB.upsert({accountId: uniqId1});
+	}).setLabel('Permissions user has been created successfully'));
+	return scenario;
+}
+
+export function createUserWithGroups() {
+	const scenario = __scenario("Create permissions user with groups");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		const group1 = await GroupPermissionsDB.upsert({label: 'test group one', accessLevelIds: [uniqId3]});
+		const group2 = await GroupPermissionsDB.upsert({label: 'test group two', accessLevelIds: []});
+		await UserPermissionsDB.upsert({accountId: uniqId1, groups: [{groupId: group1._id, customField: {unit: "eq1"}}, {groupId: group2._id, customField: {unit: "eq2"}}]});
+	}).setLabel('Permissions user with groups has been created successfully'));
+	return scenario;
+}
+
+export function createTowUsers() {
+	const scenario = __scenario("Create two users");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		const customField = {unit: 'eq1'};
+		const group1 = await GroupPermissionsDB.upsert({label: "test group one"});
+		const group2 = await GroupPermissionsDB.upsert({label: "test group two"});
+		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [], _id: uniqId1});
+		await UserPermissionsDB.upsert({accountId: userUuid2, groups: [{groupId: group1._id, customField}, {groupId: group2._id, customField}]});
+	}).setLabel('Two users created'));
+	return scenario;
+}
+
+// TODO: For Adam VDK, test success with or without expectToFail!!
+// export function failedCreateUserWithDuplicateGroups() {
+// 	const scenario = __scenario("Expect Fail to bind duplicate groups to user");
+// 	scenario.add(cleanup());
+// 	scenario.add(__custom(async (action, data) => {
+// 		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [{groupId: uniqId2, customField: {unit: "eq1"}}, {groupId: uniqId2, customField: {unit: "eq2"}}], _id: uniqId1});
+// 	}).setLabel('Fail to bind duplicate groups to user, as expected')
+// 	  .expectToFail(ApiException));
+// 	return scenario;
+// }
+
+export function failedCreateUserWithDuplicateGroups() {
+	const scenario = __scenario("Expect Fail to bind duplicate groups (with the same groupId && customField) to user");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		const customField = {unit: 'eq1'};
+		const group = await GroupPermissionsDB.upsert({label: "test group"});
+		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [{groupId: group._id, customField: customField}, {groupId: group._id, customField: customField}]});
+	}).setLabel('Fail to bind duplicate groups (with the same groupId && customField) to user, as expected').expectToFail(ApiException));
+	return scenario;
+}
+
+// TODO: after we will implement the group delete assertion
+// export function failedDeleteGroupAssociatedToUser() {
+// 	const scenario = __scenario("Expect Fail to delete group associated with user");
+// 	scenario.add(cleanup());
+// 	scenario.add(__custom(async (action, data) => {
+// 		const group = await GroupPermissionsDB.upsert({label: "test group"});
+// 		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [{groupId: group._id, customField: {unit: "eq1"}}, {groupId: group._id, customField: {unit: "eq2"}}]});
+// 		await GroupPermissionsDB.deleteUnique(group._id);
+// 	}).setLabel('Fail to delete group associated with user, as expected'));
+// 	return scenario;
+// }
+
+export function createUserWithDuplicateGroupIdButDifferentCustomField() {
+	const scenario = __scenario("Create user with duplicate groupId but different customField");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		const group = await GroupPermissionsDB.upsert({label: "test group"});
+		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [{groupId: group._id, customField: {unit: "eq2", test: "test1"}}, {groupId: group._id, customField: {unit: "eq2"}}]});
+	}).setLabel('User with duplicate groupId but different customField has been created'));
+	return scenario;
+}
+
 export function createGroupWithLegalCustomField() {
 	const scenario = __scenario("Create group with legal customFields");
 	scenario.add(cleanup());
@@ -254,36 +331,6 @@ export function checkInsertUserIfNotExistByExistUser() {
 		await UserPermissionsDB.insertIfNotExist(userUuid1);
 		await UserPermissionsDB.queryUnique({accountId: userUuid1});
 	}).setLabel('Skip insert exist user'));
-	return scenario;
-}
-
-export function createTowUsers() {
-	const scenario = __scenario("Create two users");
-	scenario.add(cleanup());
-	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [], _id: uniqId1});
-		await UserPermissionsDB.upsert({accountId: userUuid2, groups: [{groupId: uniqId4}, {groupId: uniqId5}], _id: uniqId2});
-	}).setLabel('Two users created'));
-	return scenario;
-}
-
-// export function failedCreateUserWithDuplicateAccessLevel() {
-// 	const scenario = __scenario("Expect Fail to bind duplicate levels to user");
-// 	scenario.add(cleanup());
-// 	scenario.add(__custom(async (action, data) => {
-// 		await UserPermissionsDB.upsert({uuid: userUuid1, accessLevelIds: [uniqId3, uniqId3], _id: uniqId1});
-// 	}).setLabel('Fail to bind duplicate levels to user, as expected')
-// 	  .expectToFail(ApiException));
-// 	return scenario;
-// }
-
-export function failedCreateUserWithDuplicateGroups() {
-	const scenario = __scenario("Expect Fail to bind duplicate groups to user");
-	scenario.add(cleanup());
-	scenario.add(__custom(async (action, data) => {
-		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [{groupId: uniqId2}, {groupId: uniqId2}], _id: uniqId1});
-	}).setLabel('Fail to bind duplicate groups to user, as expected')
-	  .expectToFail(ApiException));
 	return scenario;
 }
 
