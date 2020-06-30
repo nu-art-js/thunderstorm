@@ -30,7 +30,8 @@ import {
 	MUSTNeverHappenException,
 	ServerErrorSeverity,
 	validate,
-	ValidatorTypeResolver
+	ValidatorTypeResolver,
+	ValidationException
 } from "@nu-art/ts-common";
 
 import {Stream} from "stream";
@@ -165,10 +166,10 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 			body: body as B,
 		};
 
-		this.bodyValidator && validate<B>(body as B, this.bodyValidator);
-		this.queryValidator && validate<P>(reqQuery, this.queryValidator);
-
 		try {
+			this.bodyValidator && validate<B>(body as B, this.bodyValidator);
+			this.queryValidator && validate<P>(reqQuery, this.queryValidator);
+
 			if (this.middlewares)
 				await Promise.all(this.middlewares.map(m => m(req, requestData)));
 
@@ -207,6 +208,9 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 				this.logErrorBold(`Original error thrown: ${JSON.stringify(e)}`);
 				this.logErrorBold(`-- Someone was stupid... you MUST only throw an Error and not objects or strings!! --`);
 			}
+
+			if (!isErrorOfType(e, ValidationException))
+				e = new ApiException(400, "Validator exception", e);
 
 			if (!isErrorOfType(e, ApiException))
 				e = new ApiException(500, "Unexpected server error", e);
