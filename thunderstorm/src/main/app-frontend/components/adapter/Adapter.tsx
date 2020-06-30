@@ -29,12 +29,15 @@ import {
 	_BaseNodeRenderer,
 	_BaseItemRenderer,
 	BaseRendererMap,
-    NodeRendererProps,
-    TreeRendererMap,
+	NodeRendererProps,
+	TreeRendererMap,
 } from "./BaseRenderer";
+import {TreeNode} from "../tree/types";
 
 
-export type InferItemType<R> = R extends React.ComponentType<{ item: infer Item }> ? Item : "Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode";
+export type InferItemType<R> =
+	R extends React.ComponentType<{ item: infer Item1, node: TreeNode }> ? Item1 :
+	R extends React.ComponentType<{ item: infer Item }> ? Item : "Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode";
 
 export type FlatItemToRender<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
 	item: Item
