@@ -47,7 +47,7 @@ export type BaseTreeProps = {
 	onFocus?: () => void
 	onBlur?: () => void
 	unMountFromOutside?: () => void
-
+	selectedItem?: any
 	adapter: Adapter
 }
 
@@ -165,8 +165,9 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			onFocus: this.onNodeFocused,
 			expanded: expanded,
 			focused: path === this.state.focused,
-		}
-		return (<TreeNodeRenderer item={item} node={node}/>);
+			selected: item === this.props.selectedItem
+		};
+		return <div onMouseEnter={()=>this.setState({focused: node.path})} onMouseLeave={()=>this.setState({focused: ''})}><TreeNodeRenderer item={item} node={node}/></div>;
 	}
 
 	private getChildrenContainerStyle = (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentContainerRef?: HTMLDivElement): CSSProperties => {

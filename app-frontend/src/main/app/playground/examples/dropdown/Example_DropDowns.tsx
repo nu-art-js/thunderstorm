@@ -37,6 +37,7 @@ export const optionRendererStyle = (selected: boolean) => css(
 		margin: "0 5px",
 		padding: "5px 0",
 		borderBottom: "solid 1px #d8d8d880",
+		width: "100%"
 	});
 
 export const customInputStyle = (selected: boolean) => css(
@@ -54,7 +55,7 @@ export type Node = {
 	selected?: boolean,
 }
 
-export type Plague = {label: string}
+export type Plague = {label: string, value: string}
 
 export type Props = {
 	item: Plague,
@@ -62,11 +63,11 @@ export type Props = {
 }
 
 export const plagues: Plague[] = [
-	{label: 'Spanish Flu'},
-	{label: 'Smallpox'},
-	{label: 'Black Plague'},
-	{label: 'Coronavirus'},
-	{label: 'Internet'},
+	{label: 'Spanish Flu', value: 'spanishFlu'},
+	{label: 'Smallpox', value: 'smallpox'},
+	{label: 'Black Plague', value: 'blackPlague'},
+	{label: 'Coronavirus', value: 'COVID-19'},
+	{label: 'Internet', value: 'internet'},
 ];
 
 
@@ -168,10 +169,10 @@ export class ItemRenderer
 			     onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
 			     style={this.props.node.focused ? {backgroundColor: "lime"} : {}}>
 
-				<div className={optionRendererStyle(this.props.node.focused)}>
+				<div className={optionRendererStyle(this.props.node.selected)}>
 					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
 						<div>{this.props.item.label}</div>
-						{this.props.node.focused && <div>{ICONS.check(undefined, 14)}</div>}
+						{this.props.node.selected && <div>{ICONS.check(undefined, 14)}</div>}
 					</div>
 				</div>
 			</div>

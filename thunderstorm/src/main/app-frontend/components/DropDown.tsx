@@ -281,7 +281,8 @@ export class DropDown<ItemType>
 			onFocus: (e: React.MouseEvent) => {
 			},
 			expanded: true,
-			focused: true
+			focused: false,
+			selected: true
 		};
 		return <Renderer item={props.selected} node={node}/>
 	};
@@ -392,6 +393,7 @@ export class DropDown<ItemType>
 						adapter={this.props.adapter}
 						indentPx={0}
 						callBackState={(key: string, value: any, level: number) => key === '/'}
+						selectedItem={this.state.selected}
 						onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
 						unMountFromOutside={() => this.setState({open: false})}
 					/>
