@@ -28,6 +28,7 @@ import {
 import {
 	BaseDB_ApiGenerator,
 	validateOptionalId,
+	validateStringAndNumbersWithDashes,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
 import {
@@ -56,7 +57,7 @@ import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
 
 const validateUserUuid = validateRegexp(/^.{0,50}$/);
-const validateGroupLabel = validateRegexp(/^[a-z-\._ ]+$/);
+const validateGroupLabel = validateRegexp(/^[A-Za-z-\._ ]+$/);
 const validateCustomFieldValues = validateRegexp(/^.{0,500}$/);
 
 function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
@@ -69,7 +70,7 @@ function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 export class GroupsDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionsGroup> {
 	static _validator: TypeValidator<DB_PermissionsGroup> = {
-		_id: validateOptionalId,
+		_id: validateStringAndNumbersWithDashes,
 		label: validateGroupLabel,
 		accessLevelIds: validateArray(validateUniqueId, false),
 		customFields: validateArray(validateObjectValues<string>(validateCustomFieldValues), false),
@@ -91,12 +92,15 @@ export class GroupsDB_Class
 		return [{label}];
 	}
 
-	createImpl(transaction: FirestoreTransaction, instance: DB_PermissionsGroup): Promise<DB_PermissionsGroup> {
-		if (instance.label.startsWith("__"))
-			throw new ApiException(422, "You trying insert group with label name starts with '__' - just predefined groups can be like that");
-
-		return super.createImpl(transaction, instance);
-	}
+	// TODO: enable this code after we will support query of nested object/array
+	// protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup): Promise<void> {
+	// 	// @ts-ignore
+	// 	const groups = await UserPermissionsDB.collection.query({where: {groups: {$ac: {groupId: dbInstance._id}}}});
+	// 	console.log("groups: ", groups, " ", groups.length);
+	// 	if (groups.length) {
+	// 		throw new ApiException(403, 'You trying delete group that associated with users, you need delete this group from users first');
+	// 	}
+	// }
 
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup): Promise<DB_PermissionsGroup> {
 		dbInstance.__accessLevels = [];
@@ -125,9 +129,9 @@ export class GroupsDB_Class
 		return this.config;
 	}
 
-	upsertPredefinedGroups(projectId: string, predefinedGroups: PredefinedGroup[]) {
+	upsertPredefinedGroups(projectId: string, projectName: string, predefinedGroups: PredefinedGroup[]) {
 		return this.runInTransaction(async (transaction) => {
-			const _groups = predefinedGroups.map(group => ({_id: `${projectId}-${group._id}`, label: group.label}));
+			const _groups = predefinedGroups.map(group => ({_id: `${projectId}--${group._id}`, label: `${projectName}--${group.key}-${group.label}`}));
 
 			const dbGroups = filterInstances(await batchAction(_groups.map(group => group._id), 10, (chunk) => {
 				return transaction.queryUnique(this.collection, {where: {_id: {$in: chunk}}})
@@ -147,12 +151,36 @@ export class UsersDB_Class
 	static _validator: TypeValidator<DB_PermissionsUser> = {
 		_id: validateOptionalId,
 		accountId: validateUserUuid,
-		groups: validateArray({groupId: validateUniqueId, customField: undefined}, false)
+		groups: validateArray({groupId: validateUniqueId, customField: validateObjectValues<string>(validateCustomFieldValues)}, false)
 	};
 
 	constructor() {
 		super(CollectionName_Users, UsersDB_Class._validator, "user");
 		this.setLockKeys(["accountId"]);
+	}
+
+	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser): Promise<void> {
+		const userGroupIds = filterDuplicates(dbInstance.groups?.map(group => group.groupId) || []);
+		if (!userGroupIds.length)
+			return;
+
+		const userGroups = await GroupPermissionsDB.query({where: {_id: {$in: userGroupIds}}});
+
+		if (userGroupIds.length !== userGroups.length) {
+			throw new ApiException(422, 'You trying upsert user with group that not found in group permissions db');
+		}
+
+		const userGroupsItems = dbInstance.groups || [];
+		userGroupsItems.forEach((userGroupItem) => {
+			userGroupsItems.forEach(innerUserGroupItem => {
+				if (userGroupsItems.indexOf(userGroupItem) === userGroupsItems.indexOf(innerUserGroupItem))
+					return;
+
+				if (compare(userGroupItem, innerUserGroupItem))
+					throw new ApiException(422, 'You trying upsert user with duplicate UserGroup (with the same groupId && customField)');
+			});
+		});
+
 	}
 
 	protected internalFilter(item: DB_PermissionsUser): Clause_Where<DB_PermissionsUser>[] {
@@ -205,9 +233,10 @@ export class UsersDB_Class
 				}))
 
 			if (body.group) {
-				const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: `${body.projectId}--${body.group._id}`}});
+				const groupId = `${body.projectId}--${body.group._id}`;
+				const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: groupId}});
 				if (!_group)
-					throw new ApiException(404, `No permissions GROUP for id ${body.group._id}`);
+					throw new ApiException(404, `No permissions GROUP for id ${groupId}`);
 
 				newGroups.push({groupId: _group._id, customField: body.customField})
 			}
