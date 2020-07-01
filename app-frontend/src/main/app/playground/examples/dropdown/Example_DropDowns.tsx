@@ -24,7 +24,6 @@ import {Example_DefaultsDropDown} from "./Example_DefaultsDropDown";
 // import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
 import {
 	BaseNodeRenderer,
-	DropDownItem
 } from "@nu-art/thunderstorm/frontend";
 // import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
 
@@ -55,7 +54,7 @@ export type Node = {
 	selected?: boolean,
 }
 
-export type Plague = DropDownItem<string>
+export type Plague = {label: string}
 
 export type Props = {
 	item: Plague,
@@ -63,12 +62,13 @@ export type Props = {
 }
 
 export const plagues: Plague[] = [
-	{label: 'Spanish Flu', value: 'spanishFlu'},
-	{label: 'Smallpox', value: 'smallpox'},
-	{label: 'Black Plague', value: 'blackPlague'},
-	{label: 'Coronavirus', value: 'COVID-19'},
-	{label: 'Internet', value: 'internet'},
+	{label: 'Spanish Flu'},
+	{label: 'Smallpox'},
+	{label: 'Black Plague'},
+	{label: 'Coronavirus'},
+	{label: 'Internet'},
 ];
+
 
 export const plaguesWithTitles = [
 	{
