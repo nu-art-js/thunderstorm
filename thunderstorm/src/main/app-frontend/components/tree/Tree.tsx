@@ -46,6 +46,7 @@ export type BaseTreeProps = {
 	keyEventHandler?: (node: HTMLDivElement, e: KeyboardEvent) => boolean;
 	onFocus?: () => void
 	onBlur?: () => void
+	unMountFromOutside?: () => void
 
 	adapter: Adapter
 }
@@ -75,7 +76,12 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		this.state = {expanded: this.recursivelyExpand(this.props.adapter.data, this.props.callBackState || (() => true))} as S;
 	}
 
+	// componentDidMount(): void {
+	// 	// this.setFocusedNode(this.props.adapter.hideRoot ? Object.keys(this.state.expanded)[1] : Object.keys(this.state.expanded)[0]);
+	// }
+
 	render() {
+		console.log(`focused on ${this.state.focused}`);
 		return <KeyboardListener
 			id={this.props.id}
 			onKeyboardEventListener={this.keyEventHandler}
@@ -173,7 +179,6 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	};
 
 	private setFocusedNode(path: string) {
-		console.log(`focused: ${path}`);
 		this.setState({focused: path});
 	}
 
@@ -186,13 +191,15 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		let keyCode = e.code;
 		if (keyCode === "Escape") {
 			stopPropagation(e);
-			return node.blur();
+			return this.props.unMountFromOutside ? this.props.unMountFromOutside() : node.blur();
 		}
 
 		const keys = Object.keys(this.state.expanded);
 		const renderedElements: string[] = keys.reduce((carry, key) => {
 			if (this.state.expanded[key])
 				return carry;
+
+			this.props.adapter.hideRoot && removeItemFromArray(carry, '/');
 
 			keys.forEach(el => {
 				if (el.startsWith(key) && el !== key)
@@ -346,9 +353,10 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 	private onFocus = () => {
 		this.setState({
-			              focused: this.state.lastFocused || '',
+			              focused: this.state.lastFocused || (this.props.adapter.hideRoot ? Object.keys(this.state.expanded)[1] : Object.keys(this.state.expanded)[0]),
 			              lastFocused: ''
 		              });
+
 		this.props.onFocus && this.props.onFocus();
 	};
 }
