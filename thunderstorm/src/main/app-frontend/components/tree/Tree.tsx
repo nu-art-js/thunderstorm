@@ -154,12 +154,13 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			return null;
 
 		const TreeNodeRenderer: _BaseNodeRenderer<any> = this.props.adapter.treeNodeRenderer;
+		console.log("isParent: ", this.props.adapter.isParent(item))
 		const node: TreeNode = {
 			adapter: this.props.adapter,
 			propKey: key,
 			path,
 			item,
-			expandToggler: this.toggleExpandState,
+			expandToggler: this.props.adapter.isParent(item) ? this.toggleExpandState : this.ignoreToggler,
 			onClick: this.onNodeClicked,
 			onFocus: this.onNodeFocused,
 			expanded: expanded,
@@ -308,12 +309,20 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		}, state);
 	};
 
+	private ignoreToggler = (e: React.MouseEvent, _expanded?: boolean): void => {
+	};
+
 	private toggleExpandState = (e: React.MouseEvent, _expanded?: boolean): void => {
 		const path = e.currentTarget.id;
+
 		this.expandOrCollapse(path, _expanded);
 	};
 
 	private expandOrCollapse = (path: string, _expanded?: boolean): void => {
+		if (path === "/" && this.props.adapter.hideRoot && _expanded === false)
+			return;
+
+
 		this.setState((prevState: TreeState) => {
 			const expanded = prevState.expanded[path];
 			prevState.expanded[path] = _expanded !== undefined ? _expanded : !expanded;
@@ -353,7 +362,8 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 	private onFocus = () => {
 		this.setState({
-			              focused: this.state.lastFocused || (this.props.adapter.hideRoot ? Object.keys(this.state.expanded)[1] : Object.keys(this.state.expanded)[0]),
+			              focused: this.state.lastFocused || (this.props.adapter.hideRoot ? Object.keys(this.state.expanded)[1] : Object.keys(
+				              this.state.expanded)[0]),
 			              lastFocused: ''
 		              });
 

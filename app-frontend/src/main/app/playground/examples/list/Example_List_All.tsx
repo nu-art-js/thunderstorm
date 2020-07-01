@@ -18,7 +18,10 @@
 
 import * as React from "react";
 // import {Example_FakeMenu} from "../keyboard-listener/Example_FakeMenu";
-import {Example_List_SingleType} from "./Example_List_SingleType";
+import {
+	Example_List_SingleObjectType,
+	Example_List_SingleType
+} from "./Example_List_SingleType";
 import {Example_NestedList_SingleType} from "./Example_NestedList_SingleType";
 import {Example_List_MultiType} from "./Example_List_MultiType";
 import {Example_NestedList_MultiType} from "./Example_NestedList_MultiType";
@@ -29,6 +32,7 @@ export const Example_List_All = () => (
 		<hr style={{width: "100%"}}/>
 		<div className="ll_h_c match_width" style={{justifyContent: "space-between"}}>
 			<Example_List_SingleType/>
+			<Example_List_SingleObjectType/>
 			<Example_NestedList_SingleType/>
 		</div>
 		<hr style={{width: "100%"}}/>

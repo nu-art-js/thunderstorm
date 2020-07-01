@@ -103,10 +103,10 @@ export type ValueProps<ItemType> = {
 }
 
 type State<ItemType> = {
-	filteredOptions: (DropDownItem<ItemType>)[]
+	filteredOptions: (ItemType)[]
 	open: boolean
-	selected?: DropDownItem<ItemType>
-	hover?: DropDownItem<ItemType>
+	selected?: ItemType
+	hover?: ItemType
 }
 
 // export type DropDown_Node<ItemType> = {
@@ -133,22 +133,22 @@ type State<ItemType> = {
 
 type StaticProps = { id: string }
 
-export type DropDownItem<ItemType> = {
-	label: (string | number | symbol),
-	value: ItemType | DropDownItem<ItemType>[]
-}
+// export type ItemType = {
+// 	label: (string | number | symbol),
+// 	value: ItemType | ItemType[]
+// }
 
 type Props<ItemType> = StaticProps & {
 	adapter: Adapter
 	// renderersAndOptions: RenderersAndOptions<ItemType>
-	onSelected: (selected: DropDownItem<ItemType>) => void
-	selected?: DropDownItem<ItemType>
-	filter?: (item: DropDownItem<ItemType>) => string[]
-	inputResolver?: (selected?: DropDownItem<ItemType>) => InputProps
+	onSelected: (selected: ItemType) => void
+	selected?: ItemType
+	filter?: (item: ItemType) => string[]
+	inputResolver?: (selected?: ItemType) => InputProps
 	placeholder?: string
 
 	headerStyleResolver?: HeaderStyleProps
-	valueRenderer?: (props: ValueProps<DropDownItem<ItemType>>) => React.ReactNode
+	valueRenderer?: (props: ValueProps<ItemType>) => React.ReactNode
 	mainCaret?: React.ReactNode
 	closeCaret?: React.ReactNode
 
@@ -168,7 +168,7 @@ export class DropDown<ItemType>
 
 	constructor(props: Props<ItemType>) {
 		super(props);
-		const options = this.props.adapter.data as DropDownItem<ItemType>[];
+		const options = this.props.adapter.data as ItemType[];
 		// const options = this.props.renderersAndOptions.options;
 		this.state = {
 			filteredOptions: options,
@@ -176,10 +176,6 @@ export class DropDown<ItemType>
 			selected: this.props.selected,
 		};
 	}
-
-	isDropDownItem = (checkedItem: any): checkedItem is DropDownItem<ItemType> => !!(checkedItem as DropDownItem<ItemType>).label
-		&& !!(checkedItem as DropDownItem<ItemType>).value
-		&& _keys(checkedItem).length === 2;
 
 	componentDidMount() {
 		document.addEventListener('mousedown', this.handleMouseClick);
@@ -196,7 +192,7 @@ export class DropDown<ItemType>
 		// this.renderMenu();
 	};
 
-	onSelected = (item: DropDownItem<ItemType>) => {
+	onSelected = (item: ItemType) => {
 		this.setState({
 			              open: false,
 			              selected: item
@@ -244,14 +240,14 @@ export class DropDown<ItemType>
 			return this.renderValue();
 
 		const inputComplementary = (this.props.inputResolver || this.inputResolver)(this.state.selected);
-		const options = this.props.adapter.data as DropDownItem<ItemType>[];
+		const options = this.props.adapter.data as ItemType[];
 
 		// const options = this.props.renderersAndOptions.options;
-		return (<FilterInput<DropDownItem<ItemType>>
+		return (<FilterInput<ItemType>
 			id={this.props.id}
 			filter={this.props.filter}
 			list={options}
-			onChange={(filtered: (DropDownItem<ItemType>)[]) => this.setState({filteredOptions: filtered})}
+			onChange={(filtered: (ItemType)[]) => this.setState({filteredOptions: filtered})}
 			focus={true}
 			className={inputComplementary.className}
 			inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
@@ -259,7 +255,7 @@ export class DropDown<ItemType>
 		/>);
 	};
 
-	private inputResolver = (selected?: DropDownItem<ItemType>): InputProps => ({inputStyle, placeholder: this.props.placeholder});
+	private inputResolver = (selected?: ItemType): InputProps => ({inputStyle, placeholder: this.props.placeholder});
 
 	private handleMouseClick = (e: MouseEvent) => {
 		if (this.node && this.node.contains(e.target)) {
@@ -268,7 +264,7 @@ export class DropDown<ItemType>
 		this.setState({open: false});
 	};
 
-	private valueRenderer: (props: ValueProps<DropDownItem<ItemType>>) => React.ReactNode = (props: ValueProps<DropDownItem<ItemType>>) => {
+	private valueRenderer: (props: ValueProps<ItemType>) => React.ReactNode = (props: ValueProps<ItemType>) => {
 		if (!props.selected)
 			return <div>{this.props.placeholder}</div>
 
@@ -357,12 +353,6 @@ export class DropDown<ItemType>
 			return null;
 
 		const items = this.state.filteredOptions;
-		this.props.adapter.setFilteredChildren((obj: any) => {
-			if (this.isDropDownItem(obj))
-				return [];
-
-			return _keys(obj);
-		});
 		// let adapter: Adapter;
 		// // let rendererMap: DropDownRendererMap<ItemType> | { [key: string]: React.ReactNode };
 		// // // @ts-ignore
@@ -402,7 +392,7 @@ export class DropDown<ItemType>
 						adapter={this.props.adapter}
 						indentPx={0}
 						callBackState={(key: string, value: any, level: number) => key === '/'}
-						onNodeClicked={(path: string, item: DropDownItem<ItemType>) => this.onSelected(item)}
+						onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
 						unMountFromOutside={() => this.setState({open: false})}
 					/>
 				}

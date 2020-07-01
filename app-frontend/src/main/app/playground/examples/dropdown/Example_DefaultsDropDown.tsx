@@ -53,7 +53,7 @@ export class Example_DefaultsDropDown
 				onSelected={this.onSelected}
 				// listStyleResolver={{listStyle:{backgroundColor:"red", border:'2px solid black'}}}
 			/>
-			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
+			<h4>{this.state?._selected ? `You chose ${this.state._selected}` : "You didn't choose yet"}</h4>
 		</div>
 	}
 }
