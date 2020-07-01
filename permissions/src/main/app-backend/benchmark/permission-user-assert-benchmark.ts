@@ -31,7 +31,10 @@ import {
 	UserPermissionsDB
 } from "../modules/db-types/assign";
 import {PermissionsAssert} from "../modules/permissions-assert";
-import {DB_PermissionsGroup} from "../..";
+import {
+	DB_PermissionsGroup,
+	User_Group
+} from "../..";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
 
 function makeAlphaBetIdForTestOnly(length: number) {
@@ -61,7 +64,7 @@ export async function testUserPermissionsTime() {
 	const accessLevel = await AccessLevelPermissionsDB.upsert({_id: permissionId, name: 'test-permission', domainId, value: permissionValue});
 	await ApiPermissionsDB.upsert({projectId: projectId, _id: apiId, path: apiPath, accessLevelIds: [permissionId]});
 
-	const groupIdArray = [];
+	const groupIdArray: User_Group[] = [];
 	const dbInstances: DB_PermissionsGroup[] = [];
 	for (let counter = 0; counter < 100; counter++) {
 		const groupId = generateHex(32);
@@ -73,7 +76,7 @@ export async function testUserPermissionsTime() {
 			                 customFields: [customField],
 			                 label: `group-${makeAlphaBetIdForTestOnly(5)}`
 		                 });
-		groupIdArray.push({groupId});
+		groupIdArray.push({groupId, customField: {test: "test"}});
 	}
 
 	console.log('dbInstances ready to upsert');

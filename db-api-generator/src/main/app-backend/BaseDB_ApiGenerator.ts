@@ -69,6 +69,7 @@ export const validateId = (length: number, mandatory: boolean = true) => validat
 export const validateUniqueId = validateId(idLength);
 export const validateOptionalId = validateId(idLength, false);
 export const validateStringWithDashes = validateRegexp(/^[A-Za-z-]+$/);
+export const validateStringAndNumbersWithDashes = validateRegexp(/^[0-9A-Za-z-]+$/);
 export const validateNameWithDashesAndDots = validateRegexp(/^[a-z-.]+$/);
 
 
