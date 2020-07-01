@@ -29,7 +29,6 @@ import {
 	Plague,
 	plagues
 } from "./Example_DropDowns";
-import {ICONS} from "@res/icons";
 
 export class Example_DefaultsDropDown
 	extends React.Component<{}, { _selected?: Plague }> {
@@ -45,6 +44,8 @@ export class Example_DefaultsDropDown
 			.setData(plagues)
 			.build();
 
+		console.log(this.state?._selected)
+
 		return <div>
 			<h4>Only defaults</h4>
 			<h4>single renderer</h4>
@@ -53,7 +54,7 @@ export class Example_DefaultsDropDown
 				onSelected={this.onSelected}
 				// listStyleResolver={{listStyle:{backgroundColor:"red", border:'2px solid black'}}}
 			/>
-			<h4>{this.state?._selected ? `You chose ${this.state._selected}` : "You didn't choose yet"}</h4>
+			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>
 	}
 }
@@ -64,15 +65,15 @@ export class ItemRenderer
 
 	renderItem(item: Plague) {
 		return (
-			<div className="ll_h_c clickable"
+			<div className="ll_h_c clickable match_width"
 			     id={this.props.node.path}
 			     onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
-			     style={this.props.node.focused ? {backgroundColor: "white"} : {}}>
+			     style={(this.props.node.focused || this.props.node.selected) ? {backgroundColor: "white"} : {}}>
 
-				<div className={optionRendererStyle(this.props.node.focused)}>
-					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
-						<div>{item.label}</div>
-						{this.props.node.focused && <div>{ICONS.check(undefined, 14)}</div>}
+				<div className={optionRendererStyle(this.props.node.selected)}>
+					<div className={`ll_h_c match_width`} style={{justifyContent: "space-between"}}>
+						<div style={this.props.node.focused ? {fontWeight: "bold"} : {}}>{item.label}</div>
+						{this.props.node.selected && <img src={require('@res/icons/icon__check.svg')} width={12}/>}
 					</div>
 				</div>
 			</div>

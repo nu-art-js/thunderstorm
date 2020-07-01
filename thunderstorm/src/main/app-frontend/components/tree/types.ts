@@ -32,4 +32,5 @@ export type TreeNode = {
 	onFocus: (e: React.MouseEvent) => void
 	expanded: boolean
 	focused: boolean
+	selected: boolean
 };
