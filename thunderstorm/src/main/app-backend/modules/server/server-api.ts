@@ -209,7 +209,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 				this.logErrorBold(`-- Someone was stupid... you MUST only throw an Error and not objects or strings!! --`);
 			}
 
-			if (!isErrorOfType(e, ValidationException))
+			if (isErrorOfType(e, ValidationException))
 				e = new ApiException(400, "Validator exception", e);
 
 			if (!isErrorOfType(e, ApiException))
