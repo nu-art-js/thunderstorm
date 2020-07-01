@@ -20,13 +20,11 @@
 import {
 	Adapter,
 	AdapterBuilder,
-	DropDown,
-	TreeNode,
-	BaseNodeRenderer
+	BaseNodeRenderer,
+	DropDown
 } from "@nu-art/thunderstorm/frontend";
 import * as React from "react";
 import {
-	ItemRenderer,
 	optionRendererStyle,
 	Plague,
 	plagues
@@ -34,12 +32,10 @@ import {
 import {ICONS} from "@res/icons";
 
 export class Example_DefaultsDropDown
-	extends React.Component<{}, { _selected: string }> {
-
-	state = {_selected: ''};
+	extends React.Component<{}, { _selected?: Plague }> {
 
 	onSelected = (plague: Plague) => {
-		this.setState({_selected: plague.value});
+		this.setState({_selected: plague});
 	};
 
 	render() {
@@ -50,20 +46,20 @@ export class Example_DefaultsDropDown
 			.build();
 
 		return <div>
-			<h4>Only defaults, single renderer</h4>
+			<h4>Only defaults</h4>
 			<h4>single renderer</h4>
 			<DropDown
 				adapter={simpleAdapter}
 				onSelected={this.onSelected}
 				// listStyleResolver={{listStyle:{backgroundColor:"red", border:'2px solid black'}}}
 			/>
-			<h4>{this.state._selected ? `You chose ${this.state._selected}` : "You didn't choose yet"}</h4>
+			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>
 	}
 }
 
 
-export class __ItemRenderer
+export class ItemRenderer
 	extends BaseNodeRenderer<Plague> {
 
 	renderItem(item: Plague) {
@@ -71,7 +67,7 @@ export class __ItemRenderer
 			<div className="ll_h_c clickable"
 			     id={this.props.node.path}
 			     onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
-			     style={this.props.node.focused ? {backgroundColor: "lime"} : {}}>
+			     style={this.props.node.focused ? {backgroundColor: "white"} : {}}>
 
 				<div className={optionRendererStyle(this.props.node.focused)}>
 					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>

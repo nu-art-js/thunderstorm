@@ -17,12 +17,11 @@
  */
 
 import * as React from "react";
-import {Example_Menu} from "../menu/Example_Menu";
 import {Example_DataTree} from "../keyboard-listener/Example_DataTree";
 // import {Example_FakeMenu} from "../keyboard-listener/Example_FakeMenu";
 import {Example_VerySimpleTree} from "../keyboard-listener/Example_VerySimpleTree";
 import {COLORS} from "@res/colors";
-import { Example_DropDowns } from "../dropdown/Example_DropDowns";
+import {Example_DropDowns} from "../dropdown/Example_DropDowns";
 
 export const TreeRefactorPage = () => (<>
 	<div style={{width: "100%", height:"400px"}}>
@@ -36,6 +35,6 @@ export const TreeRefactorPage = () => (<>
 		<div style={{height: "100%", width: "1px", background: COLORS.amber()}}/>
 		<Example_VerySimpleTree/>
 	</div>
-	<hr style={{width: "100%"}}/>
-	<Example_Menu/>
+	{/*<hr style={{width: "100%"}}/>*/}
+	{/*<Example_Menu/>*/}
 </>);

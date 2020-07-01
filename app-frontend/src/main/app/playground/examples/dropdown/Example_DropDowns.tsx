@@ -21,8 +21,11 @@ import * as React from "react";
 import {css} from "emotion";
 import {ICONS} from "@res/icons";
 import {Example_DefaultsDropDown} from "./Example_DefaultsDropDown";
-import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
-import { BaseNodeRenderer } from "@nu-art/thunderstorm/frontend";
+// import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
+import {
+	BaseNodeRenderer,
+	DropDownItem
+} from "@nu-art/thunderstorm/frontend";
 // import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
 
 // const optionRendererWrapperStyle = css({":hover": {backgroundColor: "lime"}});
@@ -52,10 +55,7 @@ export type Node = {
 	selected?: boolean,
 }
 
-export type Plague = {
-	label: string,
-	value: string
-}
+export type Plague = DropDownItem<string>
 
 export type Props = {
 	item: Plague,
@@ -128,7 +128,7 @@ export class Example_DropDowns
 			<h1>dropdowns</h1>
 			<div className={'ll_h_t match_width'} style={{justifyContent: "space-around", height: 100}}>
 				<Example_DefaultsDropDown/>
-				<Example_SingleRendererDropDown/>
+				{/*<Example_SingleRendererDropDown/>*/}
 				{/*<Example_MultiRendererDropDown/>*/}
 			</div>
 		</>;
