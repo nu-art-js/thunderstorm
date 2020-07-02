@@ -210,27 +210,24 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 		} catch (e) {
 			err = this.shouldFailCondition?.(e) ? undefined : e;
 		} finally {
-			if (this.status === Status.Skipped)
-				return;
+			if (this.status !== Status.Skipped) {
+				this.setStatus(err ? Status.Error : Status.Success);
+				this.reporter.onActionEnded(this);
+				if (err) {
+					label && this.reporter.logError(`Error in Action: ${label}`);
+					this.reporter.logError(err);
+				} else {
+					// only set the ret value if we expect a success...
+					if (this.writeKey && !this.shouldFailCondition) {
+						this.set(this.writeKey, retValue);
+					}
+					this.assertFailCondition?.(retValue);
 
-			this.setStatus(err ? Status.Error : Status.Success);
 
-			this.reporter.onActionEnded(this);
-
-			if (err) {
-				label && this.reporter.logError(`Error in Action: ${label}`);
-				this.reporter.logError(err);
-			} else {
-				// only set the ret value if we expect a success...
-				if (this.writeKey && !this.shouldFailCondition) {
-					this.set(this.writeKey, retValue);
+					// label && this.reporter.logVerbose(`ended: ${label}`);
+					if (this.isContainer())
+						label && this.reporter.logVerbose(`- ${label}`);
 				}
-				this.assertFailCondition?.(retValue);
-
-
-				// label && this.reporter.logVerbose(`ended: ${label}`);
-				if (this.isContainer())
-					label && this.reporter.logVerbose(`- ${label}`);
 			}
 		}
 
