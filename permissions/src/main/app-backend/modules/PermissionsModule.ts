@@ -110,7 +110,7 @@ export class PermissionsModule_Class
 		if (!predefinedUser)
 			return;
 
-		const groupsUser = predefinedUser.groups.map(groupItem => {return {groupId: GroupPermissionsDB.getPredefinedGroupId(project._id, groupItem._id), customField: {}}})
+		const groupsUser = predefinedUser.groups.map(groupItem => {return {groupId: GroupPermissionsDB.getPredefinedGroupId(project._id, groupItem._id)}});
 		await UserPermissionsDB.upsert({...predefinedUser, groups: groupsUser});
 	}
 }
