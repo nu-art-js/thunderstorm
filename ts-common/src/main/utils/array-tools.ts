@@ -82,9 +82,15 @@ export function sortArray<T>(array: T[], map: (item: T) => any, invert = false) 
 export async function batchAction<T extends any = any, R extends any = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R>): Promise<R[]> {
 	const result: R[] = [];
 	for (let i = 0, j = arr.length; i < j; i += chunk) {
-		const temp = arr.slice(i, i + chunk);
-
-		addItemToArray(result, await action(temp));
+		addItemToArray(result, await action(arr.slice(i, i + chunk)));
 	}
 	return result;
+}
+
+export async function batchActionParallel<T extends any = any, R extends any = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R>): Promise<R[]> {
+	const result: Promise<R>[] = [];
+	for (let i = 0, j = arr.length; i < j; i += chunk) {
+		addItemToArray(result, action(arr.slice(i, i + chunk)));
+	}
+	return Promise.all(result);
 }

@@ -28,6 +28,7 @@ import {
 	testInstance3,
 	testInstance4,
 	testInstance5,
+	testItem1,
 	testNumber2,
 	testNumber3,
 	testString1,
@@ -95,6 +96,11 @@ const queryTests: QueryGeneral_TestCase[] = [
 		expected: [testInstance3]
 	},
 	{
+		label: "Query EQUALS to",
+		where: {numeric: testNumber3},
+		expected: [testInstance3]
+	},
+	{
 		label: "Query IN number",
 		where: {numeric: {"$in": [testNumber3, testNumber2]}},
 		expected: [testInstance2, testInstance3]
@@ -157,6 +163,18 @@ const queryTests: QueryGeneral_TestCase[] = [
 		limit: 1,
 		expected: [testInstance1]
 	},
+	{
+		insert: [testInstance1, testInstance2],
+		label: "Query array of objects",
+		where: {objectArray: [{key: testItem1.key, value: testItem1.value}]},
+		expected: [testInstance1, testInstance2]
+	},
+	// {
+	// 	insert: [testInstance1, testInstance2],
+	// 	label: "Query nested object",
+	// 	where: {nestedObject: {one: {key: testItem1.key}}},
+	// 	expected: []
+	// },
 ];
 
 
@@ -164,7 +182,7 @@ export const scenarioQuery = __scenario("Query");
 for (const queryTest of queryTests) {
 	const instances = queryTest.insert;
 	if (instances)
-		scenarioQuery.add(testCollection.processClean("Populate db with items", async (collection) => {
+		scenarioQuery.add(testCollection.processClean(`Populate db with items - ${queryTest.label}`, async (collection) => {
 			await collection.insertAll(instances);
 		}));
 

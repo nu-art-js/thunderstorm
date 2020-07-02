@@ -57,6 +57,7 @@ export class FirestoreCollection<Type extends object> {
 				throw new BadImplementationException("In order to use a unique query your collection MUST have a unique filter");
 
 			return externalFilterKeys.reduce((where, key: keyof Type) => {
+				// @ts-ignore
 				where[key] = instance[key];
 				return where;
 			}, {} as Clause_Where<Type>)
