@@ -23,6 +23,7 @@ import {
 } from "@nu-art/ts-common";
 import {
 	__scenario,
+	Action,
 	Reporter,
 	Scenario
 } from "@nu-art/testelot";
@@ -76,13 +77,8 @@ export class FirebaseTester
 	prepare = () => {
 		FirebaseModule_Class.localAdminConfigId = "test-permissions";
 
-		let pathToServiceAccount = process.env.npm_config_service_account || process.argv.find((arg: string) => arg.startsWith("--service-account="));
-		if (!pathToServiceAccount)
-			throw new ImplementationMissingException("could not find path to service account!!!");
-
-		pathToServiceAccount = pathToServiceAccount.replace("--service-account=", "");
-		const key = JSON.parse(fs.readFileSync(pathToServiceAccount, "utf8"));
-		FirebaseModule.setDefaultConfig({"test-permissions": key});
+		const serviceAccount = this.resolveServiceAccount();
+		FirebaseModule.setDefaultConfig({"test-permissions": serviceAccount});
 	};
 
 	private runTestsImpl = async () => {
@@ -93,8 +89,18 @@ export class FirebaseTester
 		this.init();
 		this.reporter.init();
 
+		Action.resolveTestsToRun()
 		const scenario = __scenario("root", this.reporter);
 		scenario.add(this.scenario);
 		await scenario.run();
 	};
+
+	private resolveServiceAccount() {
+		let pathToServiceAccount = process.env.npm_config_service_account || process.argv.find((arg: string) => arg.startsWith("--service-account="));
+		if (!pathToServiceAccount)
+			throw new ImplementationMissingException("could not find path to service account!!!");
+
+		pathToServiceAccount = pathToServiceAccount.replace("--service-account=", "");
+		return JSON.parse(fs.readFileSync(pathToServiceAccount, "utf8"))
+	}
 }
