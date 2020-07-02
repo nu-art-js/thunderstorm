@@ -206,7 +206,7 @@ class ListMultiAdapterBuilder<Rm extends TreeRendererMap, ItemType extends FlatI
 			if (props.node.propKey === "_children")
 				return null;
 
-			const _Renderer: _BaseNodeRenderer<any> = this.rendererMap[props.item.type]
+			const _Renderer: _BaseNodeRenderer<any> = this.rendererMap[props.item.type];
 			return <div id={props.node.path} onClick={props.node.onClick}>
 				<_Renderer item={props.item.item} node={props.node}/>
 			</div>;
@@ -215,6 +215,19 @@ class ListMultiAdapterBuilder<Rm extends TreeRendererMap, ItemType extends FlatI
 
 
 	nested(): ListMultiAdapterBuilder<Rm, ItemToRender<Rm>> {
+		return this as unknown as ListMultiAdapterBuilder<Rm, ItemToRender<Rm>>;
+	}
+
+	noGeneralOnClick(): ListMultiAdapterBuilder<Rm, ItemToRender<Rm>>{
+		this.treeNodeRenderer = (props: NodeRendererProps<ItemType>) => {
+			if (props.node.propKey === "_children")
+				return null;
+
+			const _Renderer: _BaseNodeRenderer<any> = this.rendererMap[props.item.type];
+			return <div id={props.node.path}>
+				<_Renderer item={props.item.item} node={props.node}/>
+			</div>;
+		};
 		return this as unknown as ListMultiAdapterBuilder<Rm, ItemToRender<Rm>>;
 	}
 
