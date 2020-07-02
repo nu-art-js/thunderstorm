@@ -59,6 +59,7 @@ export type Request_RegisterProject = {
 	project: DB_PermissionProject,
 	routes: string[];
 	predefinedGroups?: PredefinedGroup[]
+	predefinedUser?:{accountId:string,_id:string, groups:PredefinedGroup[]}
 };
 
 export type Response_User = {
