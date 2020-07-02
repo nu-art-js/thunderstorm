@@ -87,9 +87,9 @@ export class GenericServerApi_Query<DBType extends DB_Object>
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Partial<DBType>): Promise<DBType[]> {
 		let query: FirestoreQuery<DBType>;
 		if (this.query)
-			query = {...this.query, where: body};
+			query = {...this.query, where: body} as FirestoreQuery<DBType>;
 		else
-			query = {where: body};
+			query = {where: body} as FirestoreQuery<DBType>;
 
 		let toRet = await this.dbModule.query(query, request);
 		for (const postProcessor of this.postProcessors) {
@@ -148,7 +148,7 @@ export class ServerApi_Query<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Partial<DBType>): Promise<DBType[]> {
-		return this.dbModule.query({where: body}, request);
+		return this.dbModule.query({where: body} as FirestoreQuery<DBType>, request);
 	}
 }
 
