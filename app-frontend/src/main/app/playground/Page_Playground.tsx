@@ -39,7 +39,7 @@ import {Example_TriggerPush} from "./examples/Example_TriggerPush";
 import {Example_DropDowns} from "./examples/dropdown/Example_DropDowns";
 import {Example_DefaultsDropDown} from "./examples/dropdown/Example_DefaultsDropDown";
 import {Example_SingleRendererDropDown} from "./examples/dropdown/Example_SingleRendererDropDown";
-// import {Example_MultiRendererDropDown} from "./examples/dropdown/Example_MultiRendererDropDown";
+import {Example_MultiRendererDropDown} from "./examples/dropdown/Example_MultiRendererDropDown";
 import {Example_List_SingleType} from "./examples/list/Example_List_SingleType";
 import {Example_List_MultiType} from "./examples/list/Example_List_MultiType";
 import {Example_NestedList_SingleType} from './examples/list/Example_NestedList_SingleType';
@@ -122,7 +122,7 @@ export class Page_Playground
 			{renderer: Example_DropDowns, name: "DropDown Examples"},
 			{renderer: Example_DefaultsDropDown, name: "Defaults Single Renderer DropDown Example"},
 			{renderer: Example_SingleRendererDropDown, name: "Customized Single Renderer DropDown Example"},
-			// {renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
+			{renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
 			// {renderer: Example_Menu, name: "Menu",},
 			{renderer: Example_VerySimpleTree, name: "Special keyboard listener",},
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring",}
