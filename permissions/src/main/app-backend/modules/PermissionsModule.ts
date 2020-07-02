@@ -24,6 +24,7 @@ import {
 import {
 	DB_PermissionProject,
 	PredefinedGroup,
+	PredefinedUser,
 	Request_RegisterProject,
 	UserUrlsPermissions
 } from "./_imports";
@@ -40,7 +41,8 @@ import {
 
 type Config = {
 	project: DB_PermissionProject
-	predefinedGroups?: PredefinedGroup[]
+	predefinedGroups?: PredefinedGroup[],
+	predefinedUser?: PredefinedUser
 }
 
 export class PermissionsModule_Class
@@ -90,7 +92,8 @@ export class PermissionsModule_Class
 		const projectRoutes = {
 			project: projectIdentity,
 			routes: routes,
-			predefinedGroups: this.config.predefinedGroups
+			predefinedGroups: this.config.predefinedGroups,
+			predefinedUser: this.config.predefinedUser
 		};
 
 		return this._registerProject(projectRoutes)
