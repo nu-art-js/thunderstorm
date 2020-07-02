@@ -20,12 +20,10 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 
 export class Example_SingleRendererDropDown
-	extends React.Component<{}, { _selected: string }> {
-
-	state = {_selected: ''};
+	extends React.Component<{}, { _selected?: Plague }> {
 
 	onSelected = (plague: Plague) => {
-		this.setState({_selected: plague.value});
+		this.setState({_selected: plague});
 	};
 
 	render() {
@@ -39,7 +37,7 @@ export class Example_SingleRendererDropDown
 			{
 				className: customInputStyle(!!selected),
 				inputStyle,
-				placeholder: this.state._selected
+				placeholder: this.state?._selected?.label
 			}
 		);
 		const headerResolverClass: HeaderStyleProps = {headerStyle, headerClassName: css({boxShadow: "5px 10px #888888"})};
@@ -52,7 +50,7 @@ export class Example_SingleRendererDropDown
 		// simpleAdapter.hideRoot = true;
 		return <div>
 			<h4>Filter, carets, placeholder & all renderers</h4>
-			<h4>single renderer</h4>
+			<h4>single renderer, flat list</h4>
 			<DropDown
 				adapter={simpleAdapter}
 				onSelected={this.onSelected}
@@ -64,6 +62,7 @@ export class Example_SingleRendererDropDown
 				placeholder={"Choose a plague"}
 				headerStyleResolver={headerResolverClass}
 			/>
+			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>
 	}
 }
