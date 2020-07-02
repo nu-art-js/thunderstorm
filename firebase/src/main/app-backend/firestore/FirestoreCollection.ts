@@ -17,7 +17,6 @@
  */
 
 import {
-	addAllItemToArray,
 	BadImplementationException,
 	batchAction,
 	generateHex,
@@ -100,11 +99,7 @@ export class FirestoreCollection<Type extends object> {
 	}
 
 	async upsertAll(instances: Type[]) {
-		const writes: Type[] = [];
-		await batchAction(instances, 500, async chunked => {
-			addAllItemToArray(writes, await this.runInTransaction(transaction => transaction.upsertAll(this, chunked)));
-		});
-		return writes;
+		return batchAction(instances, 500, async chunked => this.runInTransaction(transaction => transaction.upsertAll(this, chunked)));
 	}
 
 	async patch(instance: Subset<Type>): Promise<Type> {
