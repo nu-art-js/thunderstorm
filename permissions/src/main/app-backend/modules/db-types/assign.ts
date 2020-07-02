@@ -133,9 +133,13 @@ export class GroupsDB_Class
 		return this.config;
 	}
 
+	getPredefinedGroupId(projectId: string, predefinedGroupId: string) {
+		return `${projectId}--${predefinedGroupId}`;
+	}
+
 	upsertPredefinedGroups(projectId: string, projectName: string, predefinedGroups: PredefinedGroup[]) {
 		return this.runInTransaction(async (transaction) => {
-			const _groups = predefinedGroups.map(group => ({_id: `${projectId}--${group._id}`, label: `${projectName}--${group.key}-${group.label}`}));
+			const _groups = predefinedGroups.map(group => ({_id: this.getPredefinedGroupId(projectId, group._id), label: `${projectName}--${group.key}-${group.label}`}));
 
 			const dbGroups = filterInstances(await batchAction(_groups.map(group => group._id), 10, (chunk) => {
 				return transaction.queryUnique(this.collection, {where: {_id: {$in: chunk}}})
@@ -221,10 +225,11 @@ export class UsersDB_Class
 	}
 
 	async assignAppPermissions(assignAppPermissionsObj: AssignAppPermissions) {
-		if (!assignAppPermissionsObj.sharedUserId)
-			throw new BadImplementationException("SharedUserId is missing");
+		const sharedUserIds = assignAppPermissionsObj.sharedUserIds || [];
+		if (!sharedUserIds.length)
+			throw new BadImplementationException("SharedUserIds is missing");
 
-		const groupId = `${assignAppPermissionsObj.projectId}--${assignAppPermissionsObj.group._id}`;
+		const groupId = GroupPermissionsDB.getPredefinedGroupId(assignAppPermissionsObj.projectId, assignAppPermissionsObj.group._id);
 		// await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId,
 		//                                                        {groupId, customField: assignAppPermissionsObj.customField});
 
@@ -232,32 +237,34 @@ export class UsersDB_Class
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");
 
 		await this.runInTransaction(async (transaction) => {
-			const user = await transaction.queryUnique(this.collection, {where: {accountId: assignAppPermissionsObj.sharedUserId}});
-			if (!user)
-				throw new ApiException(404, `No permissions USER for id ${assignAppPermissionsObj.sharedUserId}`);
+			const users = await transaction.query(this.collection, {where: {accountId: {$in: sharedUserIds}}}); // TODO
+			if (users.length !== sharedUserIds.length)
+				throw new ApiException(404, `No permissions USER for all user ids`); // TODO
 
 
 			if (!assignAppPermissionsObj.customField || _keys(assignAppPermissionsObj.customField).length === 0)
 				throw new ApiException(400, `Cannot set app permissions '${assignAppPermissionsObj.projectId}--${assignAppPermissionsObj.group._id}', request must have custom fields restriction!!`);
 
-			const newGroups = (user.groups || [])?.filter(
-				group => !assignAppPermissionsObj.groupsToRemove.find(groupToRemove => {
-					if (groupToRemove._id !== group.groupId)
-						return false;
+			const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: groupId}});
+			if (!_group)
+				throw new ApiException(404, `No permissions GROUP for id ${groupId}`);
 
-					compare(group.customField, assignAppPermissionsObj.customField, assignAppPermissionsObj.assertKeys);
-				}))
+			const updatedUsers = users.map(user => {
+				const newGroups = (user.groups || [])?.filter(
+					group => !assignAppPermissionsObj.groupsToRemove.find(groupToRemove => {
+						if (groupToRemove._id !== group.groupId)
+							return false;
 
-			if (assignAppPermissionsObj.group) {
-				const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: groupId}});
-				if (!_group)
-					throw new ApiException(404, `No permissions GROUP for id ${groupId}`);
+						compare(group.customField, assignAppPermissionsObj.customField, assignAppPermissionsObj.assertKeys);
+					}));
 
 				newGroups.push({groupId: _group._id, customField: assignAppPermissionsObj.customField})
-			}
 
-			user.groups = newGroups;
-			return transaction.upsert(this.collection, user);
+				user.groups = newGroups;
+				return user;
+			});
+
+			return transaction.upsertAll(this.collection, updatedUsers);
 		});
 	}
 }

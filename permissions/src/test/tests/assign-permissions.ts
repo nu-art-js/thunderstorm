@@ -55,7 +55,7 @@ export function assignUserPermissions() {
 			projectId: project._id,
 			group: Permissions_WorkspaceOwner,
 			groupsToRemove: PermissionWorkspaceGroups,
-			sharedUserId: user.accountId,
+			sharedUserIds: [user.accountId],
 			granterUserId: user.accountId,
 			customField: {workspace: "workspace1"},
 			customKey: generateHex(32)

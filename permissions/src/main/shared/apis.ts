@@ -48,18 +48,21 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 	customField: T
 	assertKeys?: (keyof T)[],
 	customKey: string,
-	sharedUserId?: string
+	sharedUserIds?: string[],
+	appAccountId?: string
 }
 
 export type AssignAppPermissions = Request_AssignAppPermissions & {granterUserId: string};
 
 export type PredefinedGroup = { _id: string, key: string, label: string };
 
+export type PredefinedUser = { accountId:string, _id:string, groups: PredefinedGroup[] };
+
 export type Request_RegisterProject = {
 	project: DB_PermissionProject,
 	routes: string[];
 	predefinedGroups?: PredefinedGroup[]
-	predefinedUser?:{accountId:string,_id:string, groups:PredefinedGroup[]}
+	predefinedUser?: PredefinedUser
 };
 
 export type Response_User = {

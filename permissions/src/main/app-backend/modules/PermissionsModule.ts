@@ -33,7 +33,10 @@ import {
 	ProjectPermissionsDB
 } from "./db-types/managment";
 import {HttpServer} from "@nu-art/thunderstorm/backend";
-import {GroupPermissionsDB} from "./db-types/assign";
+import {
+	GroupPermissionsDB,
+	UserPermissionsDB
+} from "./db-types/assign";
 
 type Config = {
 	project: DB_PermissionProject
@@ -101,7 +104,14 @@ export class PermissionsModule_Class
 		if (!predefinedGroups || predefinedGroups.length === 0)
 			return;
 
-		return GroupPermissionsDB.upsertPredefinedGroups(project._id, project.name, predefinedGroups);
+		await GroupPermissionsDB.upsertPredefinedGroups(project._id, project.name, predefinedGroups);
+
+		const predefinedUser = registerProject.predefinedUser;
+		if (!predefinedUser)
+			return;
+
+		const groupsUser = predefinedUser.groups.map(groupItem => {return {groupId: GroupPermissionsDB.getPredefinedGroupId(project._id, groupItem._id), customField: {}}})
+		await UserPermissionsDB.upsert({...predefinedUser, groups: groupsUser});
 	}
 }
 
