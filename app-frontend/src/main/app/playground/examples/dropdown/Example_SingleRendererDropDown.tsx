@@ -56,7 +56,7 @@ export class Example_SingleRendererDropDown
 				onSelected={this.onSelected}
 				valueRenderer={valueRenderer}
 				inputResolver={inputResolver}
-				filter={(item) => [(item as Plague).label.toLowerCase()]}
+				filter={(item) => [item.label.toLowerCase()]}
 				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><div style={{marginTop:3}}>{ICONS.arrowOpen(undefined, 11)}</div></div>}
 				closeCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><div style={{marginTop:3}}>{ICONS.arrowClose(undefined, 11)}</div></div>}
 				placeholder={"Choose a plague"}
