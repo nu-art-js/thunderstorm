@@ -237,9 +237,9 @@ export class UsersDB_Class
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");
 
 		await this.runInTransaction(async (transaction) => {
-			const users = await transaction.query(this.collection, {where: {accountId: {$in: sharedUserIds}}}); // TODO
+			const users = await transaction.query(this.collection, {where: {accountId: {$in: sharedUserIds}}}); // TODO bachAction
 			if (users.length !== sharedUserIds.length)
-				throw new ApiException(404, `No permissions USER for all user ids`); // TODO
+				throw new ApiException(404, `No permissions USER for all user ids`); // TODO mention who miss?
 
 
 			if (!assignAppPermissionsObj.customField || _keys(assignAppPermissionsObj.customField).length === 0)
