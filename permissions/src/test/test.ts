@@ -55,6 +55,12 @@ import {
 import { FirebaseModule } from "@nu-art/firebase/backend";
 import { AccountModule } from "@nu-art/user-account/backend";
 import { assignUserPermissions } from "./tests/assign-permissions";
+import {
+	expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered,
+	expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered,
+	expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCovered,
+	testFullAssertUserPermissionsWithExtraGroupCFCovered
+} from "./tests/full-permission-user-assert";
 
 
 export const mainScenario = __scenario("Permissions");
@@ -98,6 +104,12 @@ mainScenario.add(checkInsertUserIfNotExist());
 mainScenario.add(checkInsertUserIfNotExistByExistUser());
 
 mainScenario.add(assignUserPermissions());
+
+
+mainScenario.add(testFullAssertUserPermissionsWithExtraGroupCFCovered());
+mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered());
+mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCovered());
+mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered());
 
 
 module.exports = new StormTester()

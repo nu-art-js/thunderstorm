@@ -22,6 +22,7 @@ import {
 } from "@nu-art/thunderstorm";
 import {StringMap} from "@nu-art/ts-common";
 import {DB_PermissionProject} from "./manager-types";
+import {User_Group} from "./assign-types";
 
 
 export type UserUrlsPermissions = {
@@ -45,10 +46,12 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 	groupsToRemove: PredefinedGroup[],
 	group: PredefinedGroup,
 	customField: T
-	assertKeys?: (keyof T)[]
+	assertKeys?: (keyof T)[],
+	customKey: string,
+	sharedUserId?: string
 }
 
-export type AssignAppPermissions = Request_AssignAppPermissions & {userId: string};
+export type AssignAppPermissions = Request_AssignAppPermissions & {granterUserId: string};
 
 export type PredefinedGroup = { _id: string, key: string, label: string };
 
@@ -63,6 +66,8 @@ export type Response_User = {
 };
 
 export type PermissionsApi_AssignAppPermissions = ApiWithBody<"/v1/permissions/assign/app-permissions", Request_AssignAppPermissions, void>;
+export type PermissionsApi_ShareWithUser = ApiWithBody<"/v1/permissions/share-with-user", Request_AssignAppPermissions, void>;
+export type PermissionsApi_VerifyPermissionsGrantingAllowed = ApiWithBody<"/v1/permissions/verify-permissions-granting-allowed", User_Group, void>;
 
 export type PermissionsApi_AssertUserAccess = ApiWithBody<"/v1/permissions/assert-user-access", Request_AssertApiForUser, Response_User>;
 export type PermissionsApi_UserUrlsPermissions = ApiWithBody<"/v1/permissions/user-urls-permissions", Request_UserUrlsPermissions, UserUrlsPermissions>;

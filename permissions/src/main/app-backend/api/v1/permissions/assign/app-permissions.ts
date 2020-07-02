@@ -43,7 +43,7 @@ class ServerApi_UserUrlsPermissions
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: Request_AssignAppPermissions) {
 		const account = await AccountModule.validateSession(request);
-		const assignAppPermissions = {...body, userId: account._id};
+		const assignAppPermissions = {...body, granterUserId: account._id, sharedUserId: body.sharedUserId || account._id};
 		await UserPermissionsDB.assignAppPermissions(assignAppPermissions);
 	}
 }
