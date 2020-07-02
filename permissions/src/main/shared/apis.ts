@@ -50,7 +50,7 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 
 export type AssignAppPermissions = Request_AssignAppPermissions & {userId: string};
 
-export type PredefinedGroup = { _id: string, label: string };
+export type PredefinedGroup = { _id: string, key: string, label: string };
 
 export type Request_RegisterProject = {
 	project: DB_PermissionProject,
@@ -62,7 +62,7 @@ export type Response_User = {
 	userId: string;
 };
 
-export type PermissionsApi_AssignAppPermissions = ApiWithBody<"/v1/permissions/assert/app-permissions", Request_AssignAppPermissions, void>;
+export type PermissionsApi_AssignAppPermissions = ApiWithBody<"/v1/permissions/assign/app-permissions", Request_AssignAppPermissions, void>;
 
 export type PermissionsApi_AssertUserAccess = ApiWithBody<"/v1/permissions/assert-user-access", Request_AssertApiForUser, Response_User>;
 export type PermissionsApi_UserUrlsPermissions = ApiWithBody<"/v1/permissions/user-urls-permissions", Request_UserUrlsPermissions, UserUrlsPermissions>;
