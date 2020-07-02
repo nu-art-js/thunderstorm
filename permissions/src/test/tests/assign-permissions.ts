@@ -55,8 +55,10 @@ export function assignUserPermissions() {
 			projectId: project._id,
 			group: Permissions_WorkspaceOwner,
 			groupsToRemove: PermissionWorkspaceGroups,
-			userId: user.accountId,
-			customField: {workspace: "workspace1"}
+			sharedUserId: user.accountId,
+			granterUserId: user.accountId,
+			customField: {workspace: "workspace1"},
+			customKey: generateHex(32)
 		};
 
 		await UserPermissionsDB.assignAppPermissions(assignAppPermissionsObj);

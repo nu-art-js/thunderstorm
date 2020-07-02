@@ -32,7 +32,8 @@ import {
 import {
 	Base_AccessLevels,
 	DB_PermissionAccessLevel,
-	DB_PermissionsGroup
+	DB_PermissionsGroup,
+	User_Group
 } from "../..";
 import {
 	AccessLevelPermissionsDB,
@@ -48,7 +49,7 @@ import {PermissionsModule} from "./PermissionsModule";
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
 export type GroupPairWithBaseLevelsObj = { accessLevels: Base_AccessLevels[], customFields: StringMap[] };
-export type RequestPairWithLevelsObj = { accessLevels: DB_PermissionAccessLevel[], customField: StringMap };
+export type RequestPairWithLevelsObj = { accessLevels: DB_PermissionAccessLevel[], customFields: StringMap[] };
 
 
 export class PermissionsAssert_Class
@@ -98,7 +99,8 @@ export class PermissionsAssert_Class
 
 	async assertUserPermissions(projectId: string, _path: string, userId: string, requestCustomField: StringMap) {
 		const path = _path.substring(0, (_path + '?').indexOf('?'));
-		const [apiDetails, userDetails] = await Promise.all([this.getApiDetails(path, projectId), this.getUserDetails(userId)]);
+		const [apiDetails, userDetails] = await Promise.all([this.getApiDetails(path, projectId),
+		                                                     this.getUserDetails(userId)]);
 
 		if (!apiDetails.apiDb.accessLevelIds) {
 			if (ServerApi.isDebug)
@@ -107,13 +109,22 @@ export class PermissionsAssert_Class
 			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${path}`);
 		}
 
-		const groups = userDetails.userGroups;
-		const requestPermissions = apiDetails.requestPermissions;
+		await this.assertUserPermissionsImpl(userDetails.userGroups, apiDetails.requestPermissions, [requestCustomField]);
+	}
 
-		const requestPairWithLevelsObj: RequestPairWithLevelsObj = {accessLevels: requestPermissions, customField: requestCustomField};
+	async assertUserSharingGroup(granterUserId: string, userGroup: User_Group) {
+		const [granterUser, groupToShare] = await Promise.all([this.getUserDetails(granterUserId), GroupPermissionsDB.queryUnique({_id: userGroup.groupId})]);
+		this.combineUserGroupsCF([userGroup], [groupToShare]);
+		const requestPermissions = await this.getAccessLevels(groupToShare.accessLevelIds || []);
+		const requestCustomFields = groupToShare.customFields || [];
+		await this.assertUserPermissionsImpl(granterUser.userGroups, requestPermissions, requestCustomFields);
+	}
+
+	async assertUserPermissionsImpl(userGroups: DB_PermissionsGroup[], requestPermissions: DB_PermissionAccessLevel[], requestCustomFields: StringMap[]) {
+		const requestPairWithLevelsObj: RequestPairWithLevelsObj = {accessLevels: requestPermissions, customFields: requestCustomFields};
 
 		let groupMatch = false;
-		const groupsMatchArray = groups.map(group => {
+		const groupsMatchArray = userGroups.map(group => {
 			const groupPairWithLevelsObj: GroupPairWithBaseLevelsObj = {accessLevels: group.__accessLevels || [], customFields: group.customFields || []};
 
 			return this.isMatchWithLevelsObj(groupPairWithLevelsObj, requestPairWithLevelsObj);
@@ -131,31 +142,37 @@ export class PermissionsAssert_Class
 
 	private async getUserDetails(uuid: string) {
 		const user = await UserPermissionsDB.queryUnique({accountId: uuid});
-		const groups = user.groups || [];
-		const groupIds = groups.map(userGroup => userGroup.groupId);
+		const userGroups = user.groups || [];
+		const groupIds = userGroups.map(userGroup => userGroup.groupId);
 		const groupsArray: DB_PermissionsGroup[][] = await Promise.all(
 			this.splitToManyArrays(groupIds || []).map(subGroupIds => GroupPermissionsDB.query({where: {_id: {$in: subGroupIds}}})));
-		const userGroups: DB_PermissionsGroup[] = ([] as DB_PermissionsGroup[]).concat(...groupsArray);
+		const groups: DB_PermissionsGroup[] = ([] as DB_PermissionsGroup[]).concat(...groupsArray);
 
-		userGroups.map(userGroup => {
-			const group = groups.find(groupItem => groupItem.groupId === userGroup._id);
-			if (!group)
-				throw new BadImplementationException("You are missing group in your code implementation");
-
-			const cfArray = [];
-			if (userGroup.customFields) {
-				cfArray.push(...userGroup.customFields);
-			}
-
-			if (group.customField) {
-				cfArray.push(group.customField);
-			}
-		});
+		this.combineUserGroupsCF(userGroups, groups);
 
 		return {
 			user,
-			userGroups
+			userGroups: groups
 		}
+	}
+
+	private combineUserGroupsCF(userGroups: User_Group[], groups: DB_PermissionsGroup[]) {
+		groups.map(group => {
+			const userGroup = userGroups.find(groupItem => groupItem.groupId === group._id);
+			if (!userGroup)
+				throw new BadImplementationException("You are missing group in your code implementation");
+
+			const cfArray = [];
+			if (group.customFields) {
+				cfArray.push(...group.customFields);
+			}
+
+			if (userGroup.customField) {
+				cfArray.push(userGroup.customField);
+			}
+
+			group.customFields = cfArray;
+		});
 	}
 
 	private async getApiDetails(path: string, projectId: string) {
@@ -187,9 +204,15 @@ export class PermissionsAssert_Class
 
 	isMatchWithLevelsObj(groupPair: GroupPairWithBaseLevelsObj, requestPair: RequestPairWithLevelsObj) {
 		let match = true;
-		if (!this.doesCustomFieldsSatisfies(groupPair.customFields, requestPair.customField)) {
+
+		requestPair.customFields.forEach(requestCF => {
+			if (!this.doesCustomFieldsSatisfies(groupPair.customFields, requestCF)) {
+				match = false;
+			}
+		});
+
+		if (!match)
 			return false;
-		}
 
 		const groupDomainLevelMap = this.getDomainLevelMap(groupPair.accessLevels);
 		requestPair.accessLevels.forEach((requiredLevel, index) => {

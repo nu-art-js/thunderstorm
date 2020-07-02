@@ -106,6 +106,10 @@ export class GroupsDB_Class
 		dbInstance.__accessLevels = [];
 		const accessLevelIds = dbInstance.accessLevelIds || [];
 		if (accessLevelIds.length) {
+			// TODO: fix array of arrays
+			// const groupLevels = await batchAction(accessLevelIds, 10, (chunked) => {
+			// 	return AccessLevelPermissionsDB.query({where: {_id: {$in: chunked}}});
+			// });
 			const groupLevels = await AccessLevelPermissionsDB.query({where: {_id: {$in: accessLevelIds}}});
 			checkDuplicateLevelsDomain(groupLevels);
 			dbInstance.__accessLevels = groupLevels.map(level => {
@@ -166,6 +170,11 @@ export class UsersDB_Class
 
 		const userGroups = await GroupPermissionsDB.query({where: {_id: {$in: userGroupIds}}});
 
+		// TODO: fix array of arrays
+		// const userGroups = await batchAction(userGroupIds, 10, (chunked) => {
+		// 	return GroupPermissionsDB.query({where: {_id: {$in: chunked}}});
+		// });
+
 		if (userGroupIds.length !== userGroups.length) {
 			throw new ApiException(422, 'You trying upsert user with group that not found in group permissions db');
 		}
@@ -211,34 +220,40 @@ export class UsersDB_Class
 		});
 	}
 
-	async assignAppPermissions(body: AssignAppPermissions) {
-		if (!body.groupsToRemove.find(groupToRemove => groupToRemove._id === body.group._id))
+	async assignAppPermissions(assignAppPermissionsObj: AssignAppPermissions) {
+		if (!assignAppPermissionsObj.sharedUserId)
+			throw new BadImplementationException("SharedUserId is missing");
+
+		const groupId = `${assignAppPermissionsObj.projectId}--${assignAppPermissionsObj.group._id}`;
+		// await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId,
+		//                                                        {groupId, customField: assignAppPermissionsObj.customField});
+
+		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");
 
 		await this.runInTransaction(async (transaction) => {
-			const user = await transaction.queryUnique(this.collection, {where: {accountId: body.userId}});
+			const user = await transaction.queryUnique(this.collection, {where: {accountId: assignAppPermissionsObj.sharedUserId}});
 			if (!user)
-				throw new ApiException(404, `No permissions USER for id ${body.userId}`);
+				throw new ApiException(404, `No permissions USER for id ${assignAppPermissionsObj.sharedUserId}`);
 
 
-			if (!body.customField || _keys(body.customField).length === 0)
-				throw new ApiException(400, `Cannot set app permissions '${body.projectId}--${body.group._id}', request must have custom fields restriction!!`);
+			if (!assignAppPermissionsObj.customField || _keys(assignAppPermissionsObj.customField).length === 0)
+				throw new ApiException(400, `Cannot set app permissions '${assignAppPermissionsObj.projectId}--${assignAppPermissionsObj.group._id}', request must have custom fields restriction!!`);
 
 			const newGroups = (user.groups || [])?.filter(
-				group => !body.groupsToRemove.find(groupToRemove => {
+				group => !assignAppPermissionsObj.groupsToRemove.find(groupToRemove => {
 					if (groupToRemove._id !== group.groupId)
 						return false;
 
-					compare(group.customField, body.customField, body.assertKeys);
+					compare(group.customField, assignAppPermissionsObj.customField, assignAppPermissionsObj.assertKeys);
 				}))
 
-			if (body.group) {
-				const groupId = `${body.projectId}--${body.group._id}`;
+			if (assignAppPermissionsObj.group) {
 				const _group = await transaction.queryUnique(GroupPermissionsDB.collection, {where: {_id: groupId}});
 				if (!_group)
 					throw new ApiException(404, `No permissions GROUP for id ${groupId}`);
 
-				newGroups.push({groupId: _group._id, customField: body.customField})
+				newGroups.push({groupId: _group._id, customField: assignAppPermissionsObj.customField})
 			}
 
 			user.groups = newGroups;
