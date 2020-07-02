@@ -49,10 +49,10 @@ class ServerApi_UserUrlsPermissions
 		let assignAppPermissions;
 		if (body.appAccountId)
 			// when creating project
-			assignAppPermissions = {...body, granterUserId: body.appAccountId, sharedUserId: account._id};
+			assignAppPermissions = {...body, granterUserId: body.appAccountId, sharedUserIds: [account._id]};
 		else
 			// when I share with you
-			assignAppPermissions = {...body, granterUserId: account._id, sharedUserId: body.sharedUserId};
+			assignAppPermissions = {...body, granterUserId: account._id, sharedUserIds: body.sharedUserIds};
 
 		await UserPermissionsDB.assignAppPermissions(assignAppPermissions);
 	}
