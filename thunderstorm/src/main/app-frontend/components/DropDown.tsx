@@ -383,10 +383,7 @@ export class DropDown<ItemType>
 		return <div style={listContainerStyle}>
 			<div className={listComplementary.listClassName} style={listComplementary.listStyle}>
 				{items.length === 0 ?
-					<div
-						style={{...listComplementary.listStyle || (!listComplementary.listClassName ? listStyle : {}), alignItems: "center", opacity: 0.5}}>
-						No options
-					</div>
+					<div style={{textAlign: "center", opacity: 0.5}}>No options</div>
 					:
 					<Tree
 						id={this.props.id}
