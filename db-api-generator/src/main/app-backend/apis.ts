@@ -36,7 +36,8 @@ import {
 } from "../index";
 import {
 	Clause_Where,
-	DB_Object
+	DB_Object,
+    FirestoreQuery
 } from "@nu-art/firebase";
 import {
 	ApiResponse,
