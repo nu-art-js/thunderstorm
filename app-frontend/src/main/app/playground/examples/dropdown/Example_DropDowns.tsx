@@ -25,6 +25,7 @@ import {Example_DefaultsDropDown} from "./Example_DefaultsDropDown";
 import {
 	BaseNodeRenderer,
 } from "@nu-art/thunderstorm/frontend";
+import { Example_SingleRendererDropDown } from "./Example_SingleRendererDropDown";
 // import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
 
 // const optionRendererWrapperStyle = css({":hover": {backgroundColor: "lime"}});
@@ -129,7 +130,7 @@ export class Example_DropDowns
 			<h1>dropdowns</h1>
 			<div className={'ll_h_t match_width'} style={{justifyContent: "space-around", height: 100}}>
 				<Example_DefaultsDropDown/>
-				{/*<Example_SingleRendererDropDown/>*/}
+				<Example_SingleRendererDropDown/>
 				{/*<Example_MultiRendererDropDown/>*/}
 			</div>
 		</>;
