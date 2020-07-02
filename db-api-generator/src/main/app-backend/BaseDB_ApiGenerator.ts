@@ -26,7 +26,6 @@ import {
 import {
 	__stringify,
 	_keys,
-	addAllItemToArray,
 	BadImplementationException,
 	batchAction,
 	filterDuplicates,
@@ -330,11 +329,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of an array of documents that were upserted.
 	 */
 	async upsertAll(instances: UType[], request?: ExpressRequest): Promise<DBType[]> {
-		const toReturn: DBType[] = [];
-		await batchAction(instances, 500, async (chunked: UType[]) => {
-			addAllItemToArray(toReturn, await this.upsertAllBatched(chunked, request));
-		});
-		return toReturn;
+		return await batchAction(instances, 500, async (chunked: UType[]) => this.upsertAllBatched(chunked, request));
 	}
 
 	private async upsertAllBatched(instances: UType[], request?: ExpressRequest, transaction?: FirestoreTransaction): Promise<DBType[]> {
