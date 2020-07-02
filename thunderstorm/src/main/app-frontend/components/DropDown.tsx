@@ -165,13 +165,12 @@ export class DropDown<ItemType>
 	private node: any = null;
 	private headerStyleResolver: HeaderStyleProps = {headerStyle};
 	private listStyleResolver: ListStyleProps = {listStyle};
+	private options = this.props.adapter.data;
 
 	constructor(props: Props<ItemType>) {
 		super(props);
-		const options = this.props.adapter.data as ItemType[];
-		// const options = this.props.renderersAndOptions.options;
 		this.state = {
-			filteredOptions: options,
+			filteredOptions: this.options,
 			open: false,
 			selected: this.props.selected,
 		};
@@ -240,13 +239,13 @@ export class DropDown<ItemType>
 			return this.renderValue();
 
 		const inputComplementary = (this.props.inputResolver || this.inputResolver)(this.state.selected);
-		const options = this.props.adapter.data as ItemType[];
+		// const options = {...this.props.adapter.data};
 
 		// const options = this.props.renderersAndOptions.options;
 		return (<FilterInput<ItemType>
 			id={this.props.id}
 			filter={this.props.filter}
-			list={options}
+			list={this.options}
 			onChange={(filtered: (ItemType)[]) => this.setState({filteredOptions: filtered})}
 			focus={true}
 			className={inputComplementary.className}
@@ -354,6 +353,7 @@ export class DropDown<ItemType>
 			return null;
 
 		const items = this.state.filteredOptions;
+		this.props.adapter.data = items;
 		// let adapter: Adapter;
 		// // let rendererMap: DropDownRendererMap<ItemType> | { [key: string]: React.ReactNode };
 		// // // @ts-ignore
@@ -377,9 +377,6 @@ export class DropDown<ItemType>
 		// }
 
 		const listComplementary = (this.props.listStyleResolver || this.listStyleResolver);
-		// const a = new TreeAdapter(this.props.adapter);
-		// console.log(a, this.props.adapter)
-		// a.data = this.state.filteredOptions
 		return <div style={listContainerStyle}>
 			<div className={listComplementary.listClassName} style={listComplementary.listStyle}>
 				{items.length === 0 ?
