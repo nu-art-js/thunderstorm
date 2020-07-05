@@ -58,7 +58,7 @@ import {
 } from "./tests/permissions-assert";
 import { FirebaseModule } from "@nu-art/firebase/backend";
 import { AccountModule } from "@nu-art/user-account/backend";
-import { assignUserPermissions } from "./tests/assign-permissions";
+import { assignUsersPermissions } from "./tests/assign-permissions";
 import {
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered,
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered,
@@ -109,7 +109,7 @@ mainScenario.add(checkDeleteAccessLevelsDocument());
 mainScenario.add(checkInsertUserIfNotExist());
 mainScenario.add(checkInsertUserIfNotExistByExistUser());
 
-mainScenario.add(assignUserPermissions());
+mainScenario.add(assignUsersPermissions());
 
 
 mainScenario.add(testFullAssertUserPermissionsWithExtraGroupCFCovered());

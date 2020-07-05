@@ -38,8 +38,7 @@ import {
 } from "@nu-art/user-account/backend";
 import {Clause_Where} from "@nu-art/firebase";
 import {
-	ApiException,
-	ExpressRequest
+	ApiException
 } from "@nu-art/thunderstorm/backend";
 
 import {
@@ -56,6 +55,7 @@ import {
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
+import {PermissionsShare} from "../permissions-share";
 
 const validateUserUuid = validateRegexp(/^.{0,50}$/);
 const validateGroupLabel = validateRegexp(/^[A-Za-z-\._ ]+$/);
@@ -115,20 +115,11 @@ export class GroupsDB_Class
 		}
 	}
 
-	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup, request?: ExpressRequest): Promise<DB_PermissionsGroup> {
-		await this.setAccessLevels(dbInstance);
-		return super.upsertImpl(transaction, dbInstance, request);
-	}
-
-	async createImpl(transaction: FirestoreTransaction, instance: DB_PermissionsGroup, request?: ExpressRequest): Promise<DB_PermissionsGroup> {
-		await this.setAccessLevels(instance);
-		return super.createImpl(transaction, instance, request);
-	}
-
 	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup) {
 		if (!dbInstance.accessLevelIds)
 			return;
 
+		await this.setAccessLevels(dbInstance);
 		const filterAccessLevelIds = filterDuplicates(dbInstance.accessLevelIds);
 		if (filterAccessLevelIds.length !== dbInstance.accessLevelIds?.length)
 			throw new ApiException(422, 'You trying insert duplicate accessLevel id in group');
@@ -174,6 +165,7 @@ export class UsersDB_Class
 	}
 
 	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser): Promise<void> {
+		this.setGroupIds(dbInstance);
 		const userGroupIds = filterDuplicates(dbInstance.groups?.map(group => group.groupId) || []);
 		if (!userGroupIds.length)
 			return;
@@ -211,15 +203,6 @@ export class UsersDB_Class
 			dbInstance.__groupIds = userGroups.map(userGroup => userGroup.groupId);
 		}
 	}
-	protected upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser, request?: ExpressRequest): Promise<DB_PermissionsUser> {
-		this.setGroupIds(dbInstance);
-		return super.upsertImpl(transaction, dbInstance, request);
-	}
-
-	createImpl(transaction: FirestoreTransaction, instance: DB_PermissionsUser, request?: ExpressRequest): Promise<DB_PermissionsUser> {
-		this.setGroupIds(instance);
-		return super.createImpl(transaction, instance, request);
-	}
 
 	async __onUserLogin(email: string) {
 		await this.insertIfNotExist(email);
@@ -250,8 +233,8 @@ export class UsersDB_Class
 			throw new BadImplementationException("SharedUserIds is missing");
 
 		const groupId = GroupPermissionsDB.getPredefinedGroupId(assignAppPermissionsObj.projectId, assignAppPermissionsObj.group._id);
-		// await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId,
-		//                                                        {groupId, customField: assignAppPermissionsObj.customField});
+		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId,
+		                                                       {groupId, customField: assignAppPermissionsObj.customField});
 
 		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");
@@ -287,6 +270,7 @@ export class UsersDB_Class
 				return user;
 			});
 
+			updatedUsers.map(updateUser => this.setGroupIds(updateUser));
 			return transaction.upsertAll(this.collection, updatedUsers);
 		});
 	}

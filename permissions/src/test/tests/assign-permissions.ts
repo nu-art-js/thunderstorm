@@ -43,30 +43,44 @@ export const PermissionWorkspaceGroups = [Permissions_WorkspaceOwner,
                                           Permissions_WorkspaceViewer]
 
 
-export function assignUserPermissions() {
+export function assignUsersPermissions() {
 	const scenario = __scenario("Assign user permissions");
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
 		const project = await ProjectPermissionsDB.upsert(project1);
 		const user = await UserPermissionsDB.upsert({accountId: generateHex(32), groups: []});
+		const usersObjects = [];
+		const assignUserNumbers = 4;
+		for (let i = 0; i < assignUserNumbers; i++) {
+			usersObjects.push({accountId: generateHex(32), groups: []});
+		}
+
+		const users = await UserPermissionsDB.upsertAll(usersObjects);
 		await GroupPermissionsDB.upsertPredefinedGroups(project._id, project.name, PermissionWorkspaceGroups);
+		const usersAccountIds = users.map(userItem => userItem.accountId);
 
 		const assignAppPermissionsObj: AssignAppPermissions = {
 			projectId: project._id,
 			group: Permissions_WorkspaceOwner,
 			groupsToRemove: PermissionWorkspaceGroups,
-			sharedUserIds: [user.accountId],
+			sharedUserIds: usersAccountIds,
 			granterUserId: user.accountId,
 			customField: {workspace: "workspace1"},
 			customKey: generateHex(32)
 		};
 
 		await UserPermissionsDB.assignAppPermissions(assignAppPermissionsObj);
-		const assignedUser = await UserPermissionsDB.queryUnique({_id: user._id});
+		const assignedUsers = await UserPermissionsDB.query({where: {accountId: {$in: usersAccountIds}}});
 
-		if (!assignedUser.groups || assignedUser.groups.length !== 1 || !compare(assignedUser.groups[0].customField, assignAppPermissionsObj.customField)) {
-			throw new TestException("User didn't assigned with permissions");
-		}
+		if (assignedUsers.length !== assignUserNumbers)
+			throw new TestException("assignedUsers.length !== assignUserNumbers");
+
+		assignedUsers.forEach(assignedUser => {
+			if (!assignedUser.groups || assignedUser.groups.length !== 1 || !compare(assignedUser.groups[0].customField, assignAppPermissionsObj.customField)) {
+				throw new TestException("User didn't assigned with permissions");
+			}
+		});
+
 	}).setLabel('Assign user permissions has been successfully'));
 	return scenario;
 }
