@@ -121,6 +121,9 @@ export class PermissionsAssert_Class
 	}
 
 	async assertUserPermissionsImpl(userGroups: DB_PermissionsGroup[], requestPermissions: DB_PermissionAccessLevel[], requestCustomFields: StringMap[]) {
+		if (!requestPermissions.length)
+			return;
+
 		const requestPairWithLevelsObj: RequestPairWithLevelsObj = {accessLevels: requestPermissions, customFields: requestCustomFields};
 
 		let groupMatch = false;
