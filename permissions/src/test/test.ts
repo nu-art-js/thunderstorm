@@ -22,6 +22,8 @@ import {__scenario} from "@nu-art/testelot";
 import {createTwoAccessLevels} from "./tests/create-project";
 import {
 	checkAccessLevelsPropertyOfGroup,
+	checkCreateUserWithEmptyGroups,
+	checkCreateUserWithGroups,
 	checkDeleteAccessLevelsDocument,
 	checkGroupAccessLevelsAfterPatchingLevelDocument,
 	checkGroupAccessLevelsAfterUpdatingLevelDocument,
@@ -46,7 +48,9 @@ import {
 	failToCreateGroupWithIllegalCustomField,
 	tryDeleteAccessLevelAssociatedWithApi,
 	tryDeleteAccessLevelAssociatedWithGroup,
-	tryDeleteDomainAssociatedWithAccessLevel
+	tryDeleteDomainAssociatedWithAccessLevel,
+    checkUpdatedUserGroups,
+    failedDeleteGroupAssociatedToUser
 } from "./tests/permissions-manage";
 import {
 	permissionsAssertDoesCustomFieldsSatisfiesTests,
@@ -69,8 +73,7 @@ mainScenario.add(createUser());
 mainScenario.add(createUserWithGroups());
 mainScenario.add(createTowUsers());
 
-// TODO: after we will implement the group delete assertion
-// mainScenario.add(failedDeleteGroupAssociatedToUser());
+mainScenario.add(failedDeleteGroupAssociatedToUser());
 
 mainScenario.add(failedCreateUserWithDuplicateGroups());
 mainScenario.add(createUserWithDuplicateGroupIdButDifferentCustomField());
@@ -78,7 +81,10 @@ mainScenario.add(createUserWithDuplicateGroupIdButDifferentCustomField());
 mainScenario.add(createTwoAccessLevels());
 mainScenario.add(createApi());
 mainScenario.add(failedCreateApi());
+mainScenario.add(checkCreateUserWithGroups());
+mainScenario.add(checkCreateUserWithEmptyGroups());
 mainScenario.add(checkAccessLevelsPropertyOfGroup());
+mainScenario.add(checkUpdatedUserGroups());
 mainScenario.add(checkUpdateOfGroupAccessLevelsProperty());
 mainScenario.add(checkUpdateOfGroupAccessLevelsPropertyToHigherValue());
 mainScenario.add(checkPatchOfGroupAccessLevelsProperty());

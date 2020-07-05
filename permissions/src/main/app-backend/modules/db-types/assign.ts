@@ -38,7 +38,8 @@ import {
 } from "@nu-art/user-account/backend";
 import {Clause_Where} from "@nu-art/firebase";
 import {
-	ApiException
+	ApiException,
+	ExpressRequest
 } from "@nu-art/thunderstorm/backend";
 
 import {
@@ -92,17 +93,15 @@ export class GroupsDB_Class
 		return [{label}];
 	}
 
-	// TODO: enable this code after we will support query of nested object/array
-	// protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup): Promise<void> {
-	// 	// @ts-ignore
-	// 	const groups = await UserPermissionsDB.collection.query({where: {groups: {$ac: {groupId: dbInstance._id}}}});
-	// 	console.log("groups: ", groups, " ", groups.length);
-	// 	if (groups.length) {
-	// 		throw new ApiException(403, 'You trying delete group that associated with users, you need delete this group from users first');
-	// 	}
-	// }
+	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup): Promise<void> {
+		const groups = await UserPermissionsDB.collection.query({where: {__groupIds: {$ac: dbInstance._id}}});
 
-	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup): Promise<DB_PermissionsGroup> {
+		if (groups.length) {
+			throw new ApiException(403, 'You trying delete group that associated with users, you need delete this group from users first');
+		}
+	}
+
+	private async setAccessLevels(dbInstance: DB_PermissionsGroup) {
 		dbInstance.__accessLevels = [];
 		const accessLevelIds = dbInstance.accessLevelIds || [];
 		if (accessLevelIds.length) {
@@ -114,8 +113,16 @@ export class GroupsDB_Class
 				return {domainId: level.domainId, value: level.value};
 			});
 		}
+	}
 
-		return super.upsertImpl(transaction, dbInstance);
+	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup, request?: ExpressRequest): Promise<DB_PermissionsGroup> {
+		await this.setAccessLevels(dbInstance);
+		return super.upsertImpl(transaction, dbInstance, request);
+	}
+
+	async createImpl(transaction: FirestoreTransaction, instance: DB_PermissionsGroup, request?: ExpressRequest): Promise<DB_PermissionsGroup> {
+		await this.setAccessLevels(instance);
+		return super.createImpl(transaction, instance, request);
 	}
 
 	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup) {
@@ -157,7 +164,8 @@ export class UsersDB_Class
 	static _validator: TypeValidator<DB_PermissionsUser> = {
 		_id: validateOptionalId,
 		accountId: validateUserUuid,
-		groups: validateArray({groupId: validateUniqueId, customField: validateObjectValues<string>(validateCustomFieldValues)}, false)
+		groups: validateArray({groupId: validateUniqueId, customField: validateObjectValues<string>(validateCustomFieldValues)}, false),
+		__groupIds: validateArray(validateStringAndNumbersWithDashes, false)
 	};
 
 	constructor() {
@@ -196,6 +204,23 @@ export class UsersDB_Class
 		return [{accountId}];
 	}
 
+	private setGroupIds(dbInstance: DB_PermissionsUser) {
+		dbInstance.__groupIds = [];
+		const userGroups = dbInstance.groups || [];
+		if (userGroups.length) {
+			dbInstance.__groupIds = userGroups.map(userGroup => userGroup.groupId);
+		}
+	}
+	protected upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser, request?: ExpressRequest): Promise<DB_PermissionsUser> {
+		this.setGroupIds(dbInstance);
+		return super.upsertImpl(transaction, dbInstance, request);
+	}
+
+	createImpl(transaction: FirestoreTransaction, instance: DB_PermissionsUser, request?: ExpressRequest): Promise<DB_PermissionsUser> {
+		this.setGroupIds(instance);
+		return super.createImpl(transaction, instance, request);
+	}
+
 	async __onUserLogin(email: string) {
 		await this.insertIfNotExist(email);
 	}
@@ -232,8 +257,6 @@ export class UsersDB_Class
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");
 
 		await this.runInTransaction(async (transaction) => {
-			// const users = await transaction.query(this.collection, {where: {accountId: {$in: sharedUserIds}}}); // TODO bachAction
-
 			const users = await batchAction(sharedUserIds, 10, (chunked) => {
 				return transaction.query(this.collection, {where: {accountId: {$in: chunked}}});
 			});
