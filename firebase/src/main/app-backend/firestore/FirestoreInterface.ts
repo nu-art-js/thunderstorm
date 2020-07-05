@@ -28,7 +28,8 @@ import {FirestoreCollection} from "./FirestoreCollection";
 import {
 	__stringify,
 	_keys,
-	BadImplementationException
+	BadImplementationException,
+    ImplementationMissingException
 } from "@nu-art/ts-common";
 import * as admin from "firebase-admin";
 
@@ -43,7 +44,7 @@ export class FirestoreInterface {
 			const whereClause = query.where;
 			myQuery = Object.keys(whereClause).reduce((_query: FirestoreType_Query, _whereField) => {
 				let whereField = _whereField;
-				const whereValue = whereClause[whereField as keyof Type];
+				let whereValue: any = whereClause[whereField as keyof Type];
 				if (whereValue === undefined || whereValue === null)
 					return _query;
 
@@ -59,23 +60,43 @@ export class FirestoreInterface {
 					return _query.where(whereField, 'array-contains-any', whereValue);
 				}
 
-				let valueType = typeof whereValue;
-				if (!this.isQueryObject(whereValue)) {
-
-					// if (valueType === "object")
-					// 	whereField += "." + Object.keys(whereValue)[0];
-
-					if (valueType === "string" || valueType === "number" || valueType === "boolean")
-						return _query.where(whereField, "==", whereValue);
+				if (this.isQueryObject(whereValue)) {
+					// @ts-ignore
+					return _query.where(whereField, ComparatorMap[keys[0]], Object.values(whereValue)[0]);
 				}
 
 
-				const keys = _keys(whereValue as {});
-				if (keys.length !== 1)
-					throw new BadImplementationException("query comparator must have only one comparator");
+				const processObject = (whereKey: string, _whereValue: any) => {
+					let valueType = typeof _whereValue;
 
-				// @ts-ignore
-				return _query.where(whereField, ComparatorMap[keys[0]], Object.values(whereValue)[0]);
+					if (valueType === "string" || valueType === "number" || valueType === "boolean")
+						return _query.where(whereKey, "==", _whereValue);
+
+					if (valueType == "object") {
+						return Object.keys(_whereValue as object).forEach(key => {
+							processObject(`${whereKey}.${key}`, _whereValue[key])
+						});
+					}
+
+					throw new ImplementationMissingException(
+						`Could not compose where clause for '${whereField}' with value type '${valueType}'in query: ${__stringify(query)}`)
+				};
+
+				processObject(whereField, whereValue);
+
+				// if (valueType === "object") {
+				// 	let key = Object.keys(whereValue as object)[0];
+				// 	whereField += "." + key;
+				// 	whereValue = whereValue[key]
+				// 	let key2 = Object.keys(whereValue as object)[0];
+				// 	whereField += "." + key2;
+				// 	whereValue = whereValue[key2]
+				//
+				// 	return _query.where(whereField, "==", whereValue);
+				// }
+
+				return myQuery;
+
 			}, myQuery);
 		}
 
@@ -91,8 +112,7 @@ export class FirestoreInterface {
 	}
 
 	private static isQueryObject(whereValue: any) {
-		return typeof whereValue === "object" && (
-			Object.keys(whereValue).length > 1 ||
+		return typeof whereValue === "object" && Object.keys(whereValue).length === 1 && (
 			whereValue["$ac"] ||
 			whereValue["$aca"] ||
 			whereValue["$in"] ||
