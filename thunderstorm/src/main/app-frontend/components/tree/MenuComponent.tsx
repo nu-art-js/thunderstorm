@@ -23,7 +23,7 @@
 import * as React from "react";
 import {generateHex} from "@nu-art/ts-common";
 import {BaseComponent} from "../../core/BaseComponent";
-import {Adapter} from "./Adapter";
+import {Adapter} from "../adapter/Adapter";
 import {Tree} from "./Tree";
 
 type Props = {

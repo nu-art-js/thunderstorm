@@ -36,7 +36,8 @@ import {
 } from "../index";
 import {
 	Clause_Where,
-	DB_Object
+	DB_Object,
+    FirestoreQuery
 } from "@nu-art/firebase";
 import {
 	ApiResponse,
@@ -127,7 +128,7 @@ export class ServerApi_Query<DBType extends DB_Object>
 		// 	queries = await postProcessor();
 		// }
 
-		return this.dbModule.query({where: body}, request);
+		return this.dbModule.query({where: body} as FirestoreQuery<DBType>, request);
 	}
 }
 
