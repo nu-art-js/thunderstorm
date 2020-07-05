@@ -32,7 +32,8 @@ import {HttpServer} from "@nu-art/thunderstorm/backend";
 import {
 	__scenario,
 	Reporter,
-	Scenario
+	Scenario,
+	Action
 } from "@nu-art/testelot";
 
 const modules: Module[] = [
@@ -94,6 +95,7 @@ export class StormTester
 		await HttpServer.startServer();
 
 		this.reporter.init();
+		Action.resolveTestsToRun()
 
 		const scenario = __scenario("root", this.reporter);
 		scenario.add(this.scenario);
