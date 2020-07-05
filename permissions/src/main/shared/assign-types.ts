@@ -40,7 +40,8 @@ export type User_Group = {
 
 export type Request_CreateUser = {
 	accountId: string,
-	groups?: User_Group[]
+	groups?: User_Group[],
+	__groupIds?: string[]
 };
 
 export type DB_PermissionsUser = DB_Object & Request_CreateUser
