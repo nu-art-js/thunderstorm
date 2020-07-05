@@ -67,7 +67,7 @@ export async function testUserPermissions(groupCustomFields: StringMap[], extraG
 
 	const groupIdArray: User_Group[] = [];
 	const dbInstances: DB_PermissionsGroup[] = [];
-	for (let counter = 0; counter < 10; counter++) {
+	for (let counter = 0; counter < 11; counter++) {
 		const groupId = generateHex(32);
 		const baseAccessLevel = {domainId: accessLevel.domainId, value: accessLevel.value};
 		dbInstances.push({

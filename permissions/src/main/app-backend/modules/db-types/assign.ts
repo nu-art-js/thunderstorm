@@ -106,11 +106,9 @@ export class GroupsDB_Class
 		dbInstance.__accessLevels = [];
 		const accessLevelIds = dbInstance.accessLevelIds || [];
 		if (accessLevelIds.length) {
-			// TODO: fix array of arrays
-			// const groupLevels = await batchAction(accessLevelIds, 10, (chunked) => {
-			// 	return AccessLevelPermissionsDB.query({where: {_id: {$in: chunked}}});
-			// });
-			const groupLevels = await AccessLevelPermissionsDB.query({where: {_id: {$in: accessLevelIds}}});
+			const groupLevels = await batchAction(accessLevelIds, 10, (chunked) => {
+				return AccessLevelPermissionsDB.query({where: {_id: {$in: chunked}}});
+			});
 			checkDuplicateLevelsDomain(groupLevels);
 			dbInstance.__accessLevels = groupLevels.map(level => {
 				return {domainId: level.domainId, value: level.value};
@@ -172,12 +170,9 @@ export class UsersDB_Class
 		if (!userGroupIds.length)
 			return;
 
-		const userGroups = await GroupPermissionsDB.query({where: {_id: {$in: userGroupIds}}});
-
-		// TODO: fix array of arrays
-		// const userGroups = await batchAction(userGroupIds, 10, (chunked) => {
-		// 	return GroupPermissionsDB.query({where: {_id: {$in: chunked}}});
-		// });
+		const userGroups = await batchAction(userGroupIds, 10, (chunked) => {
+			return GroupPermissionsDB.query({where: {_id: {$in: chunked}}});
+		});
 
 		if (userGroupIds.length !== userGroups.length) {
 			throw new ApiException(422, 'You trying upsert user with group that not found in group permissions db');
@@ -237,7 +232,12 @@ export class UsersDB_Class
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");
 
 		await this.runInTransaction(async (transaction) => {
-			const users = await transaction.query(this.collection, {where: {accountId: {$in: sharedUserIds}}}); // TODO bachAction
+			// const users = await transaction.query(this.collection, {where: {accountId: {$in: sharedUserIds}}}); // TODO bachAction
+
+			const users = await batchAction(sharedUserIds, 10, (chunked) => {
+				return transaction.query(this.collection, {where: {accountId: {$in: chunked}}});
+			});
+
 			if (users.length !== sharedUserIds.length)
 				throw new ApiException(404, `No permissions USER for all user ids`); // TODO mention who miss?
 
