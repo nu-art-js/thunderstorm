@@ -181,6 +181,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	};
 
 	private setFocusedNode(path: string) {
+		this.rendererRefs[path].scrollIntoView({block:"nearest"});
 		this.setState({focused: path});
 	}
 

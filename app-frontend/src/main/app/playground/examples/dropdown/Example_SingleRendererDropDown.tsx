@@ -41,13 +41,11 @@ export class Example_SingleRendererDropDown
 			}
 		);
 		const headerResolverClass: HeaderStyleProps = {headerStyle, headerClassName: css({boxShadow: "5px 10px #888888"})};
-		// const simpleAdapter = new Adapter(plagues).setTreeNodeRenderer(ItemRenderer);
 		const simpleAdapter: Adapter = AdapterBuilder()
 			.list()
 			.singleRender(ItemRenderer)
 			.setData(plagues)
 			.build();
-		// simpleAdapter.hideRoot = true;
 		return <div>
 			<h4>Filter, carets, placeholder & all renderers</h4>
 			<h4>single renderer, flat list</h4>
@@ -74,7 +72,6 @@ export class ItemRenderer
 		return (
 			<div className="ll_h_c clickable match_width"
 			     id={this.props.node.path}
-			     onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
 			     style={(this.props.node.focused || this.props.node.selected) ? {backgroundColor: "white"} : {}}>
 
 				<div className={optionRendererStyle(this.props.node.selected)}>
