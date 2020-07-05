@@ -2,7 +2,6 @@ import * as React from "react";
 import {ReactNode} from "react";
 import {BaseComponent} from "../../core/BaseComponent";
 import {
-	_Menu,
 	Menu_Model,
 	MenuBuilder,
 	MenuListener,
