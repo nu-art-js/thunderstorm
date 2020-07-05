@@ -31,6 +31,8 @@ mainScenario.add(testCollections);
 mainScenario.add(testStorage);
 // mainScenario.add(testFirestoreBackup);
 module.exports = new FirebaseTester()
-	.addModules(FirebaseModule, TestModuleThatUsesCollection, ProjectFirestoreBackup)
+	.addModules(FirebaseModule,
+	            TestModuleThatUsesCollection,
+	            ProjectFirestoreBackup)
 	.setScenario(mainScenario)
 	.build();
