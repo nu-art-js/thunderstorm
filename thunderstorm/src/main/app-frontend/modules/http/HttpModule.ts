@@ -451,6 +451,7 @@ export class HttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 	}
 
 	private executeImpl() {
+		//loop through whatever preprocessor
 		return new Promise<void>((resolve, reject) => {
 			if (this.aborted)
 				return resolve();
