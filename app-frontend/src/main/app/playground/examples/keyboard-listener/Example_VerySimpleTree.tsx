@@ -22,7 +22,7 @@ import {
 	BaseComponent,
 	Tree,
 	TreeNode,
-	TreeRendererProps,
+	NodeRendererProps,
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
@@ -85,8 +85,8 @@ export class Example_VerySimpleTree
 }
 
 class ItemRenderer
-	extends React.Component<TreeRendererProps> {
-	constructor(props: TreeRendererProps) {
+	extends React.Component<NodeRendererProps> {
+	constructor(props: NodeRendererProps) {
 		super(props);
 	}
 
@@ -142,9 +142,9 @@ const ExpandCollapseComponent = (props: TreeNode) => {
 }
 
 class Example_NodeRenderer
-	extends React.Component<TreeRendererProps> {
+	extends React.Component<NodeRendererProps> {
 
-	constructor(props: TreeRendererProps) {
+	constructor(props: NodeRendererProps) {
 		super(props);
 	}
 

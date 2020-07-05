@@ -28,4 +28,23 @@ export class Example_List_SingleType
 	}
 }
 
+export class Example_List_SingleObjectType
+	extends Component<{}> {
+
+	render() {
+		const adapter: Adapter = AdapterBuilder()
+			.list()
+			.singleRender((props: { item: { price: string } }) => <div>{props.item.price}</div>)
+			.setData([{price: 'hi'}, {price: 'bye'}, {price: 'ciao'}, {price: 'nice to meet'}, {price: 'you'}])
+			.build()
+
+
+		return <div>
+			<div>
+				<h2>Here is a simple list with one Item as object Type</h2>
+				<MenuComponent adapter={adapter} onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
+			</div>
+		</div>
+	}
+}
 

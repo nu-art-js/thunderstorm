@@ -6,9 +6,9 @@ import {MenuPosition} from "./PopupMenu";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import {
 	_GenericRenderer,
-	RendererMap,
-	Adapter
-} from "../../components/tree/Adapter";
+	Adapter,
+} from "../../components/adapter/Adapter";
+import {BaseRendererMap} from "../../components/adapter/BaseRenderer";
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 	const pos = button.getBoundingClientRect();
@@ -16,7 +16,7 @@ export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 };
 
 // export type TreeAction = (path: string, id: string) => void;
-export type _Menu<Rm extends RendererMap> = _GenericRenderer<Rm>
+export type _Menu<Rm extends BaseRendererMap<any>> = _GenericRenderer<Rm>
 
 export type Menu_Model = {
 	id: string

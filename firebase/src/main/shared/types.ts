@@ -68,9 +68,11 @@ export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = 
 	$lte: "<=",
 	$eq: "==",
 };
+
 export type FilterKeys<T extends object> = MandatoryKeys<T, string | number>[];
 export type FirestoreType_OrderByDirection = 'desc' | 'asc';
-export type Clause_Where<T extends object> = { [P in keyof T]?: QueryComparator<T[P]> | T[P] | [T[P]] }
+export type WhereValue<Value> = QueryComparator<Value> | (Value extends object ? Clause_Where<Value> : Value | [Value])  ;
+export type Clause_Where<T extends object> = { [P in keyof T]?: WhereValue<T[P]> }
 export type Clause_OrderBy<T extends object> = [{ key: keyof T, order: FirestoreType_OrderByDirection }];
 export type Clause_Select<T extends object, K extends keyof T = keyof T> = K[];
 

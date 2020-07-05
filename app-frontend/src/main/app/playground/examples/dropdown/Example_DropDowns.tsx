@@ -19,15 +19,14 @@
 
 import * as React from "react";
 import {css} from "emotion";
-import {
-	ItemToRender,
-	RendererMap,
-	TreeRendererProps
-} from "@nu-art/thunderstorm/frontend";
 import {ICONS} from "@res/icons";
 import {Example_DefaultsDropDown} from "./Example_DefaultsDropDown";
-import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
-// import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
+// import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
+import {
+	BaseNodeRenderer,
+} from "@nu-art/thunderstorm/frontend";
+import { Example_SingleRendererDropDown } from "./Example_SingleRendererDropDown";
+import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
 
 // const optionRendererWrapperStyle = css({":hover": {backgroundColor: "lime"}});
 
@@ -39,6 +38,7 @@ export const optionRendererStyle = (selected: boolean) => css(
 		margin: "0 5px",
 		padding: "5px 0",
 		borderBottom: "solid 1px #d8d8d880",
+		width: "100%"
 	});
 
 export const customInputStyle = (selected: boolean) => css(
@@ -50,9 +50,17 @@ export const customInputStyle = (selected: boolean) => css(
 		}
 	});
 
-export type Plague = {
-	label: string,
-	value: string
+export type Node = {
+	path: string
+	focused: boolean,
+	selected?: boolean,
+}
+
+export type Plague = {label: string, value: string}
+
+export type Props = {
+	item: Plague,
+	node: Node
 }
 
 export const plagues: Plague[] = [
@@ -63,7 +71,8 @@ export const plagues: Plague[] = [
 	{label: 'Internet', value: 'internet'},
 ];
 
-export const plaguesWithTitles: ItemToRender<RendererMap, string>[] = [
+
+export const plaguesWithTitles = [
 	{
 		item: {label: 'Phisical', value: 'title'},
 		_children: [
@@ -116,27 +125,20 @@ export class Example_DropDowns
 		this.state = {_selected: ''}
 	}
 
-	onSelected = (plague: Plague) => {
-		this.setState({_selected: plague.value});
-	};
-
-
 	render() {
 		return <>
 			<h1>dropdowns</h1>
 			<div className={'ll_h_t match_width'} style={{justifyContent: "space-around", height: 100}}>
 				<Example_DefaultsDropDown/>
 				<Example_SingleRendererDropDown/>
-				{/*<Example_MultiRendererDropDown/>*/}
+				<Example_MultiRendererDropDown/>
 			</div>
-			{/*<h4>{this.state._selected ? `You chose ${this.state._selected}` : "You didn't choose yet"}</h4>*/}
 		</>;
 	}
 }
 
-export class ItemRenderer
-	extends React.Component<TreeRendererProps> {
-
+export class _ItemRenderer
+	extends React.Component<Props> {
 	render() {
 		if (typeof this.props.item !== "object")
 			return null;
@@ -144,13 +146,34 @@ export class ItemRenderer
 		return (
 			<div className="ll_h_c clickable"
 			     id={this.props.node.path}
-			     onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
-			     style={this.props.node.focused ? {backgroundColor: "lime"} : {}}>
+				// onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
+				   style={this.props.node.focused ? {backgroundColor: "lime"} : {}}>
 
 				<div className={optionRendererStyle(this.props.node.focused)}>
 					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
 						<div>{this.props.item.label}</div>
-						{this.props.node.focused && <div>{ICONS.check(undefined, 14)}</div>}
+						{this.props.node.selected && <div>{ICONS.check(undefined, 14)}</div>}
+					</div>
+				</div>
+			</div>
+		);
+	}
+}
+
+export class ItemRenderer
+	extends BaseNodeRenderer<Plague> {
+
+	renderItem(item: Plague) {
+		return (
+			<div className="ll_h_c clickable"
+			     id={this.props.node.path}
+			     onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
+			     style={this.props.node.focused ? {backgroundColor: "lime"} : {}}>
+
+				<div className={optionRendererStyle(this.props.node.selected)}>
+					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
+						<div>{this.props.item.label}</div>
+						{this.props.node.selected && <div>{ICONS.check(undefined, 14)}</div>}
 					</div>
 				</div>
 			</div>

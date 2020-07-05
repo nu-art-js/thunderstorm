@@ -26,7 +26,8 @@ import {
 	timeout,
 	Void,
 	Constructor,
-	isErrorOfType
+	isErrorOfType,
+	__stringify
 } from "@nu-art/ts-common";
 import {ContextKey} from "./ContainerContext";
 import {Reporter} from "./Reporter";
@@ -52,6 +53,7 @@ export type ReturnValueProcessor<ReturnValue extends any = any> = (returnValue?:
 
 export abstract class Action<ParamValue extends any = any, ReturnValue extends any = any>
 	extends Logger {
+	private static testsToRun: string[] = [];
 
 	readonly actionType: string;
 
@@ -76,6 +78,14 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 		super(tag || "Testelot");
 
 		this.actionType = actionType.name;
+	}
+
+	static resolveTestsToRun() {
+		let strings = process.argv.filter((arg: string) => arg.includes("--test="));
+		console.log(`raw: ${__stringify(strings)}`);
+
+		this.testsToRun = strings.map(arg => arg.replace("--test=", ""));
+		console.log(`Tests to run: ${__stringify(this.testsToRun)}`);
 	}
 
 	expectToFail<T extends Error>(_exceptionType: Constructor<T>, assertFailCondition?: ShouldFailCondition<T>) {
@@ -135,12 +145,14 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 		return this;
 	}
 
-	getStarted(){
+	getStarted() {
 		return this._started;
 	}
-	getEnded(){
+
+	getEnded() {
 		return this._ended;
 	}
+
 	protected async _executeSubAction(action: Action) {
 		action.setParent(this);
 		action.setReporter(this.reporter);
@@ -158,7 +170,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 	private async _execute() {
 		this._started = currentTimeMillies();
 
-		let label;
+		let label: string | undefined;
 		let err;
 		let retValue: ReturnValue | undefined = undefined;
 		try {
@@ -167,6 +179,11 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 				param = this.get(this.readKey);
 
 			label = this.resolveLabel(param);
+			if (Action.testsToRun.length > 0 && !Action.testsToRun.find(testToRun => (label || "").includes(testToRun)))
+				this.setStatus(Status.Skipped);
+			else
+				this.setStatus(Status.Ready);
+
 			if (this.status === Status.Skipped) {
 				if (this.isContainer())
 					// @ts-ignore
@@ -193,24 +210,24 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 		} catch (e) {
 			err = this.shouldFailCondition?.(e) ? undefined : e;
 		} finally {
-			this.setStatus(err ? Status.Error : Status.Success);
+			if (this.status !== Status.Skipped) {
+				this.setStatus(err ? Status.Error : Status.Success);
+				this.reporter.onActionEnded(this);
+				if (err) {
+					label && this.reporter.logError(`Error in Action: ${label}`);
+					this.reporter.logError(err);
+				} else {
+					// only set the ret value if we expect a success...
+					if (this.writeKey && !this.shouldFailCondition) {
+						this.set(this.writeKey, retValue);
+					}
+					this.assertFailCondition?.(retValue);
 
-			this.reporter.onActionEnded(this);
 
-			if (err) {
-				label && this.reporter.logError(`Error in Action: ${label}`);
-				this.reporter.logError(err);
-			} else {
-				// only set the ret value if we expect a success...
-				if (this.writeKey && !this.shouldFailCondition) {
-					this.set(this.writeKey, retValue);
+					// label && this.reporter.logVerbose(`ended: ${label}`);
+					if (this.isContainer())
+						label && this.reporter.logVerbose(`- ${label}`);
 				}
-				this.assertFailCondition?.(retValue);
-
-
-				// label && this.reporter.logVerbose(`ended: ${label}`);
-				if (this.isContainer())
-					label && this.reporter.logVerbose(`- ${label}`);
 			}
 		}
 

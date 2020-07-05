@@ -33,6 +33,7 @@ import {
 import * as admin from "firebase-admin";
 
 export class FirestoreInterface {
+
 	static buildQuery<Type extends object>(collection: FirestoreCollection<Type>, query?: FirestoreQuery<Type>): admin.firestore.Query {
 		let myQuery: FirestoreType_Query = collection.collection;
 		if (query && query.select)
@@ -40,14 +41,11 @@ export class FirestoreInterface {
 
 		if (query && query.where) {
 			const whereClause = query.where;
-			myQuery = _keys(whereClause).reduce((_query: FirestoreType_Query, whereField) => {
-				const whereValue = whereClause[whereField];
+			myQuery = Object.keys(whereClause).reduce((_query: FirestoreType_Query, _whereField) => {
+				let whereField = _whereField;
+				const whereValue = whereClause[whereField as keyof Type];
 				if (whereValue === undefined || whereValue === null)
 					return _query;
-
-				const valueType = typeof whereValue;
-				if (valueType === "string" || valueType === "number" || valueType === "boolean")
-					return _query.where(whereField as string, "==", whereValue);
 
 				if (Array.isArray(whereValue)) {
 					if (whereValue.length === 0 || whereValue.length > 10)
@@ -56,10 +54,21 @@ export class FirestoreInterface {
 							"is due to Firestore limitation... ");
 
 					if (whereValue.length === 1)
-						return _query.where(whereField as string, 'array-contains', whereValue[0]);
+						return _query.where(whereField, 'array-contains', whereValue[0]);
 
-					return _query.where(whereField as string, 'array-contains-any', whereValue);
+					return _query.where(whereField, 'array-contains-any', whereValue);
 				}
+
+				let valueType = typeof whereValue;
+				if (!this.isQueryObject(whereValue)) {
+
+					// if (valueType === "object")
+					// 	whereField += "." + Object.keys(whereValue)[0];
+
+					if (valueType === "string" || valueType === "number" || valueType === "boolean")
+						return _query.where(whereField, "==", whereValue);
+				}
+
 
 				const keys = _keys(whereValue as {});
 				if (keys.length !== 1)
@@ -79,6 +88,19 @@ export class FirestoreInterface {
 			myQuery = myQuery.limit(query.limit);
 
 		return myQuery as admin.firestore.Query;
+	}
+
+	private static isQueryObject(whereValue: any) {
+		return typeof whereValue === "object" && (
+			Object.keys(whereValue).length > 1 ||
+			whereValue["$ac"] ||
+			whereValue["$aca"] ||
+			whereValue["$in"] ||
+			whereValue["$gt"] ||
+			whereValue["$gte"] ||
+			whereValue["$lt"] ||
+			whereValue["$lte"] ||
+			whereValue["$eq"]);
 	}
 
 	static assertUniqueDocument(results: FirestoreType_DocumentSnapshot[], query: FirestoreQuery<any>, collectionName: string): (FirestoreType_DocumentSnapshot | undefined) {
