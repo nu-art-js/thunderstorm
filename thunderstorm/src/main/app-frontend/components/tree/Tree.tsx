@@ -43,7 +43,7 @@ export type BaseTreeProps = {
 	nodesState?: TreeNodeState;
 	indentPx: number;
 	checkExpanded: (expanded: TreeNodeState, path: string) => boolean
-	keyEventHandler?: (node: HTMLDivElement, e: KeyboardEvent) => boolean;
+	keyEventHandler?: (node: HTMLDivElement, e: KeyboardEvent) => void;
 	onFocus?: () => void
 	onBlur?: () => void
 	unMountFromOutside?: () => void
@@ -69,6 +69,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 	protected containerRefs: { [k: string]: HTMLDivElement } = {};
 	protected rendererRefs: { [k: string]: HTMLDivElement } = {};
+	protected renderedElements: string[] = [];
 
 	constructor(props: P) {
 		super(props);
@@ -76,9 +77,26 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		this.state = {expanded: this.recursivelyExpand(this.props.adapter.data, this.props.callBackState || (() => true))} as S;
 	}
 
-	// componentDidMount(): void {
-	// 	// this.setFocusedNode(this.props.adapter.hideRoot ? Object.keys(this.state.expanded)[1] : Object.keys(this.state.expanded)[0]);
-	// }
+	componentDidMount(): void {
+		this.renderedElementsInit();
+	}
+
+	renderedElementsInit = () => {
+		const keys = Object.keys(this.state.expanded);
+		this.renderedElements = keys.reduce((carry, key) => {
+			if (this.state.expanded[key])
+				return carry;
+
+			this.props.adapter.hideRoot && removeItemFromArray(carry, '/');
+
+			keys.forEach(el => {
+				if (el.startsWith(key) && el !== key)
+					removeItemFromArray(carry, el);
+			});
+			return carry;
+		}, keys);
+		console.log(keys);
+	};
 
 	render() {
 		console.log(`focused on ${this.state.focused}`);
@@ -186,8 +204,10 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	}
 
 	protected keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent): void => {
-		if (this.props.keyEventHandler && this.props.keyEventHandler(node, e))
-			return;
+		// if (this.props.keyEventHandler && this.props.keyEventHandler(node, e))
+		// 	return this.props.keyEventHandler(node, e);
+
+		this.props.keyEventHandler && this.props.keyEventHandler(node, e);
 
 		console.log(`focused on tree: ${this.props.id}`);
 
@@ -197,23 +217,24 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			return this.props.unMountFromOutside ? this.props.unMountFromOutside() : node.blur();
 		}
 
-		const keys = Object.keys(this.state.expanded);
-		const renderedElements: string[] = keys.reduce((carry, key) => {
-			if (this.state.expanded[key])
-				return carry;
-
-			this.props.adapter.hideRoot && removeItemFromArray(carry, '/');
-
-			keys.forEach(el => {
-				if (el.startsWith(key) && el !== key)
-					removeItemFromArray(carry, el);
-			});
-			return carry;
-		}, keys);
+		// const keys = Object.keys(this.state.expanded);
+		// const renderedElements: string[] = keys.reduce((carry, key) => {
+		// 	if (this.state.expanded[key])
+		// 		return carry;
+		//
+		// 	this.props.adapter.hideRoot && removeItemFromArray(carry, '/');
+		//
+		// 	keys.forEach(el => {
+		// 		if (el.startsWith(key) && el !== key)
+		// 			removeItemFromArray(carry, el);
+		// 	});
+		// 	return carry;
+		// }, keys);
+		// console.log(keys);
 
 		const focused = this.state.focused;
-		const idx = renderedElements.findIndex(el => el === focused);
-		if (idx >= renderedElements.length)
+		const idx = this.renderedElements.findIndex(el => el === focused);
+		if (idx >= this.renderedElements.length)
 			return;
 
 
@@ -242,21 +263,21 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 		if (keyCode === "ArrowDown") {
 			stopPropagation(e);
-			if (idx === -1 || idx + 1 === renderedElements.length)
-				return this.setFocusedNode(renderedElements[0]);
+			if (idx === -1 || idx + 1 === this.renderedElements.length)
+				return this.setFocusedNode(this.renderedElements[0]);
 
-			return this.setFocusedNode(renderedElements[idx + 1])
+			return this.setFocusedNode(this.renderedElements[idx + 1])
 		}
 
 		if (keyCode === "ArrowUp") {
 			stopPropagation(e);
 			if (idx === -1)
-				return this.setFocusedNode(renderedElements[0]);
+				return this.setFocusedNode(this.renderedElements[0]);
 
 			if (idx === 0)
-				return this.setFocusedNode(renderedElements[renderedElements.length - 1]);
+				return this.setFocusedNode(this.renderedElements[this.renderedElements.length - 1]);
 
-			return this.setFocusedNode(renderedElements[idx - 1])
+			return this.setFocusedNode(this.renderedElements[idx - 1])
 		}
 
 		if (focused && keyCode === "Enter") {
