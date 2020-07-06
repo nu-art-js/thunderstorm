@@ -150,9 +150,9 @@ export class LevelDB_Class
 
 			const asyncs = [];
 			asyncs.push(...groups.map(async group => {
-				callbackfn(group);
 				await GroupPermissionsDB.validateImpl(group);
 				await GroupPermissionsDB.assertUniqueness(transaction, group);
+				callbackfn(group);
 			}));
 
 			const upsertGroups = await transaction.upsertAll_Read(GroupPermissionsDB.collection, groups);

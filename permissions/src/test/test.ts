@@ -22,6 +22,8 @@ import {__scenario} from "@nu-art/testelot";
 import {createTwoAccessLevels} from "./tests/create-project";
 import {
 	checkAccessLevelsPropertyOfGroup,
+	checkCreateUserWithEmptyGroups,
+	checkCreateUserWithGroups,
 	checkDeleteAccessLevelsDocument,
 	checkGroupAccessLevelsAfterPatchingLevelDocument,
 	checkGroupAccessLevelsAfterUpdatingLevelDocument,
@@ -46,7 +48,9 @@ import {
 	failToCreateGroupWithIllegalCustomField,
 	tryDeleteAccessLevelAssociatedWithApi,
 	tryDeleteAccessLevelAssociatedWithGroup,
-	tryDeleteDomainAssociatedWithAccessLevel
+	tryDeleteDomainAssociatedWithAccessLevel,
+    checkUpdatedUserGroups,
+    failedDeleteGroupAssociatedToUser
 } from "./tests/permissions-manage";
 import {
 	permissionsAssertDoesCustomFieldsSatisfiesTests,
@@ -54,7 +58,15 @@ import {
 } from "./tests/permissions-assert";
 import { FirebaseModule } from "@nu-art/firebase/backend";
 import { AccountModule } from "@nu-art/user-account/backend";
-import { assignUserPermissions } from "./tests/assign-permissions";
+import {
+	assignUserPermissionsTests
+} from "./tests/assign-permissions";
+import {
+	expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered,
+	expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered,
+	expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCovered,
+	testFullAssertUserPermissionsWithExtraGroupCFCovered
+} from "./tests/full-permission-user-assert";
 
 
 export const mainScenario = __scenario("Permissions");
@@ -63,8 +75,7 @@ mainScenario.add(createUser());
 mainScenario.add(createUserWithGroups());
 mainScenario.add(createTowUsers());
 
-// TODO: after we will implement the group delete assertion
-// mainScenario.add(failedDeleteGroupAssociatedToUser());
+mainScenario.add(failedDeleteGroupAssociatedToUser());
 
 mainScenario.add(failedCreateUserWithDuplicateGroups());
 mainScenario.add(createUserWithDuplicateGroupIdButDifferentCustomField());
@@ -72,7 +83,10 @@ mainScenario.add(createUserWithDuplicateGroupIdButDifferentCustomField());
 mainScenario.add(createTwoAccessLevels());
 mainScenario.add(createApi());
 mainScenario.add(failedCreateApi());
+mainScenario.add(checkCreateUserWithGroups());
+mainScenario.add(checkCreateUserWithEmptyGroups());
 mainScenario.add(checkAccessLevelsPropertyOfGroup());
+mainScenario.add(checkUpdatedUserGroups());
 mainScenario.add(checkUpdateOfGroupAccessLevelsProperty());
 mainScenario.add(checkUpdateOfGroupAccessLevelsPropertyToHigherValue());
 mainScenario.add(checkPatchOfGroupAccessLevelsProperty());
@@ -97,7 +111,12 @@ mainScenario.add(checkDeleteAccessLevelsDocument());
 mainScenario.add(checkInsertUserIfNotExist());
 mainScenario.add(checkInsertUserIfNotExistByExistUser());
 
-mainScenario.add(assignUserPermissions());
+mainScenario.add(assignUserPermissionsTests());
+
+mainScenario.add(testFullAssertUserPermissionsWithExtraGroupCFCovered());
+mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered());
+mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCovered());
+mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered());
 
 
 module.exports = new StormTester()

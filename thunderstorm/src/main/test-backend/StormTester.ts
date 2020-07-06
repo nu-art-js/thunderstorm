@@ -29,7 +29,8 @@ import {
 import {
 	__scenario,
 	Reporter,
-	Scenario
+	Scenario,
+    Action
 } from "@nu-art/testelot";
 
 export class StormTester
@@ -89,6 +90,7 @@ export class StormTester
 		this.prepare();
 		this.init();
 		this.reporter.init();
+		Action.resolveTestsToRun()
 
 		const scenario = __scenario("root", this.reporter);
 		scenario.add(this.scenario);
