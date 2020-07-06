@@ -46,6 +46,7 @@ import {Example_NestedList_SingleType} from './examples/list/Example_NestedList_
 import {Example_NestedList_MultiType} from './examples/list/Example_NestedList_MultiType';
 import {Example_List_All} from "./examples/list/Example_List_All";
 import {Example_Tree_SingleType} from './examples/tree/Example_Tree_SingleType';
+import {OstudioEx} from "./examples/dropdown/OstudioEx";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -124,8 +125,9 @@ export class Page_Playground
 			{renderer: Example_SingleRendererDropDown, name: "Customized Single Renderer DropDown Example"},
 			{renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
 			// {renderer: Example_Menu, name: "Menu",},
-			{renderer: Example_VerySimpleTree, name: "Special keyboard listener",},
-			{renderer: TreeRefactorPage, name: "Page for Tree refactoring",}
+			{renderer: Example_VerySimpleTree, name: "Special keyboard listener"},
+			{renderer: TreeRefactorPage, name: "Page for Tree refactoring"},
+			{renderer: OstudioEx, name: 'stam'}
 		];
 	}
 }
