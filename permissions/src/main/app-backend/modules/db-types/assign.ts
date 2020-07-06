@@ -155,7 +155,7 @@ export class UsersDB_Class
 	static _validator: TypeValidator<DB_PermissionsUser> = {
 		_id: validateOptionalId,
 		accountId: validateUserUuid,
-		groups: validateArray({groupId: validateUniqueId, customField: validateObjectValues<string>(validateCustomFieldValues)}, false),
+		groups: validateArray({groupId: validateStringAndNumbersWithDashes, customField: validateObjectValues<string>(validateCustomFieldValues, false)}, false),
 		__groupIds: validateArray(validateStringAndNumbersWithDashes, false)
 	};
 
