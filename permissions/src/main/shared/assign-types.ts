@@ -35,12 +35,13 @@ export type DB_PermissionsGroup = DB_Object & Request_CreateGroup;
 
 export type User_Group = {
 	groupId: string,
-	customField: StringMap
+	customField?: StringMap
 }
 
 export type Request_CreateUser = {
 	accountId: string,
-	groups?: User_Group[]
+	groups?: User_Group[],
+	__groupIds?: string[]
 };
 
 export type DB_PermissionsUser = DB_Object & Request_CreateUser
