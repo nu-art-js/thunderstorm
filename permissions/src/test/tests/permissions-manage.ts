@@ -65,7 +65,7 @@ export function checkAccessLevelsPropertyOfGroup() {
 	scenario.add(cleanup());
 	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey1));
 	scenario.add(__custom(async (action, data) => {
-		const group = await GroupPermissionsDB.upsert({label: 'test group one', accessLevelIds: [data.level._id], _id: uniqId1});
+		const group = await GroupPermissionsDB.upsert({label: 'test group one', accessLevelIds: [data.level._id]});
 		if (!group.__accessLevels || !group.__accessLevels.length || group.__accessLevels[0].value !== data.level.value) {
 			throw new TestException("Didn't add __accessLevels to group");
 		}
@@ -222,6 +222,55 @@ export function createTowUsers() {
 	return scenario;
 }
 
+export function checkCreateUserWithEmptyGroups() {
+	const scenario = __scenario("Create permissions user - checking empty groupIds property");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		const user = await UserPermissionsDB.upsert({accountId: userUuid1, groups: [], _id: uniqId1});
+		if (user.__groupIds && user.__groupIds.length)
+			throw new TestException("__groupIds property doesn't empty");
+
+	}).setLabel('Permissions user has been created with groupIds property successfully'));
+	return scenario;
+}
+
+export function checkCreateUserWithGroups() {
+	const scenario = __scenario("Create permissions user - checking groupIds property");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		const customField = {unit: 'eq1'};
+		const group1 = await GroupPermissionsDB.upsert({label: "test group one"});
+		const group2 = await GroupPermissionsDB.upsert({label: "test group two"});
+		const user = await UserPermissionsDB.upsert({accountId: userUuid2, groups: [{groupId: group1._id, customField}, {groupId: group2._id, customField}]});
+		if (!user.__groupIds || user.__groupIds.length !== 2)
+			throw new TestException("__groupIds property didn't created");
+
+	}).setLabel('Permissions user has been created with groupIds property successfully'));
+	return scenario;
+}
+
+export function checkUpdatedUserGroups() {
+	const scenario = __scenario("Update permissions user - checking groupIds property");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		const customField = {unit: 'eq1'};
+		const group1 = await GroupPermissionsDB.upsert({label: "test group one"});
+		const group2 = await GroupPermissionsDB.upsert({label: "test group two"});
+		const groups = [{groupId: group1._id, customField}, {groupId: group2._id, customField}];
+		const user = await UserPermissionsDB.upsert({accountId: userUuid2, groups});
+		if (!user.__groupIds || user.__groupIds.length !== 2)
+			throw new TestException("__groupIds property didn't created");
+
+		const group3 = await GroupPermissionsDB.upsert({label: "test group three"});
+		groups.push({groupId: group3._id, customField});
+		const updatedUser = await UserPermissionsDB.upsert({...user, groups});
+		if (!updatedUser.__groupIds || updatedUser.__groupIds.length !== 3)
+			throw new TestException("__groupIds property didn't updated");
+
+	}).setLabel('Permissions user has been updated with groupIds property successfully'));
+	return scenario;
+}
+
 // TODO: For Adam VDK, test success with or without expectToFail!!
 // export function failedCreateUserWithDuplicateGroups() {
 // 	const scenario = __scenario("Expect Fail to bind duplicate groups to user");
@@ -244,17 +293,16 @@ export function failedCreateUserWithDuplicateGroups() {
 	return scenario;
 }
 
-// TODO: after we will implement the group delete assertion
-// export function failedDeleteGroupAssociatedToUser() {
-// 	const scenario = __scenario("Expect Fail to delete group associated with user");
-// 	scenario.add(cleanup());
-// 	scenario.add(__custom(async (action, data) => {
-// 		const group = await GroupPermissionsDB.upsert({label: "test group"});
-// 		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [{groupId: group._id, customField: {unit: "eq1"}}, {groupId: group._id, customField: {unit: "eq2"}}]});
-// 		await GroupPermissionsDB.deleteUnique(group._id);
-// 	}).setLabel('Fail to delete group associated with user, as expected'));
-// 	return scenario;
-// }
+export function failedDeleteGroupAssociatedToUser() {
+	const scenario = __scenario("Expect Fail to delete group associated with user");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		const group = await GroupPermissionsDB.upsert({label: "test group"});
+		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [{groupId: group._id, customField: {unit: "eq1"}}, {groupId: group._id, customField: {unit: "eq2"}}]});
+		await GroupPermissionsDB.deleteUnique(group._id);
+	}).setLabel('Fail to delete group associated with user, as expected').expectToFail(ApiException));
+	return scenario;
+}
 
 export function createUserWithDuplicateGroupIdButDifferentCustomField() {
 	const scenario = __scenario("Create user with duplicate groupId but different customField");

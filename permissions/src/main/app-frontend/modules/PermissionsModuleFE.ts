@@ -67,7 +67,6 @@ export class PermissionsModuleFE_Class
 				         })
 				.execute(async (userUrlsPermissions: UserUrlsPermissions) => {
 					this.userUrlsPermissions = userUrlsPermissions;
-					console.log(userUrlsPermissions);
 					dispatch_onPermissionsChanged.dispatchUI([]);
 				});
 		}, this.TIME);
