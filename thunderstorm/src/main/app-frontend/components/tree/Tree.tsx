@@ -95,7 +95,6 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			});
 			return carry;
 		}, keys);
-		console.log(keys);
 	};
 
 	render() {
@@ -204,33 +203,16 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	}
 
 	protected keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent): void => {
-		// if (this.props.keyEventHandler && this.props.keyEventHandler(node, e))
-		// 	return this.props.keyEventHandler(node, e);
 
 		this.props.keyEventHandler && this.props.keyEventHandler(node, e);
 
-		console.log(`focused on tree: ${this.props.id}`);
+		// console.log(`focused on tree: ${this.props.id}`);
 
 		let keyCode = e.code;
 		if (keyCode === "Escape") {
 			stopPropagation(e);
 			return this.props.unMountFromOutside ? this.props.unMountFromOutside() : node.blur();
 		}
-
-		// const keys = Object.keys(this.state.expanded);
-		// const renderedElements: string[] = keys.reduce((carry, key) => {
-		// 	if (this.state.expanded[key])
-		// 		return carry;
-		//
-		// 	this.props.adapter.hideRoot && removeItemFromArray(carry, '/');
-		//
-		// 	keys.forEach(el => {
-		// 		if (el.startsWith(key) && el !== key)
-		// 			removeItemFromArray(carry, el);
-		// 	});
-		// 	return carry;
-		// }, keys);
-		// console.log(keys);
 
 		const focused = this.state.focused;
 		const idx = this.renderedElements.findIndex(el => el === focused);

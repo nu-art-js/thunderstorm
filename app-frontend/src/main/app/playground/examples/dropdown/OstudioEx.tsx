@@ -137,7 +137,7 @@ export const AppDropDown = <T extends any = any>(props: DropdownProps<T>) => {
 	const valueRenderer = (_props: ValueProps<T>) => (
 		<div id={`${props.id}-val`} className={`ll_h_c clickable ${optionRendererStyle(false, false)}`}
 		     style={_props.selected ? {paddingLeft: 9} : {color: "#959ca5", paddingLeft: 10, fontSize: 11, fontStyle: "italic"}}>
-			{_props.selected ? props.labelResolver(_props.selected as T) : _props.placeholder || 'choose'}
+			{_props.selected ? props.labelResolver(_props.selected) : _props.placeholder || 'choose'}
 		</div>
 	);
 
@@ -156,7 +156,7 @@ export const AppDropDown = <T extends any = any>(props: DropdownProps<T>) => {
 		{
 			className: customInputStyle(!!selected),
 			inputStyle,
-			placeholder: selected ? props.labelResolver(selected as T) : props.placeholder || 'choose'
+			placeholder: selected ? props.labelResolver(selected) : props.placeholder || 'choose'
 		}
 	);
 
