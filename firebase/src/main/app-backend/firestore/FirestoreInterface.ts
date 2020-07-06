@@ -82,21 +82,7 @@ export class FirestoreInterface {
 						`Could not compose where clause for '${whereField}' with value type '${valueType}'in query: ${__stringify(___query)}`)
 				};
 
-				return processObject(_query,whereField, whereValue);
-
-				// if (valueType === "object") {
-				// 	let key = Object.keys(whereValue as object)[0];
-				// 	whereField += "." + key;
-				// 	whereValue = whereValue[key]
-				// 	let key2 = Object.keys(whereValue as object)[0];
-				// 	whereField += "." + key2;
-				// 	whereValue = whereValue[key2]
-				//
-				// 	return _query.where(whereField, "==", whereValue);
-				// }
-
-				return myQuery;
-
+				return processObject(_query, whereField, whereValue);
 			}, myQuery);
 		}
 
