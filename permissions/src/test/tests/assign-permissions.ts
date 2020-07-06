@@ -20,21 +20,30 @@
 import {
 	__custom,
 	__scenario,
+	ContextKey,
 	TestException
 } from "@nu-art/testelot";
-import {cleanup} from "./_core";
 import {
-	GroupPermissionsDB,
-	UserPermissionsDB
-} from "../../main/app-backend/modules/db-types/assign";
-import {AssignAppPermissions} from "../../main";
-import {ProjectPermissionsDB} from "../../main/app-backend/modules/db-types/managment";
+	cleanup,
+	ConfigDB,
+	setupDatabase,
+	testConfig1,
+	testLevel1
+} from "./_core";
 import {
 	compare,
-	generateHex
+	generateHex,
+	StringMap
 } from "@nu-art/ts-common";
+import {
+	UserPermissionsDB,
+	GroupPermissionsDB,
+	AccessLevelPermissionsDB,
+	AssignAppPermissions,
+	PredefinedGroup
+} from "../_main";
 
-const project1 = {name: "Project One", _id: "project-one"};
+const contextKey2 = new ContextKey<ConfigDB>("config-2");
 export const Permissions_WorkspaceOwner = {_id: "workspace-owner", key: "Workspace", label: "Owner"}
 export const Permissions_WorkspaceEditor = {_id: "workspace-editor", key: "Workspace", label: "Editor"}
 export const Permissions_WorkspaceViewer = {_id: "workspace-viewer", key: "Workspace", label: "Viewer"}
@@ -42,46 +51,135 @@ export const PermissionWorkspaceGroups = [Permissions_WorkspaceOwner,
                                           Permissions_WorkspaceEditor,
                                           Permissions_WorkspaceViewer]
 
+type AssignUserModels = {
+	granterUserCF: StringMap,
+	givenGroupCF: StringMap,
+	givenGroup: PredefinedGroup,
+	granterUserGroup: PredefinedGroup,
+	label: string,
+	expected: boolean
+}
 
-export function assignUsersPermissions() {
+const assignUserModels: AssignUserModels[] = [{
+	granterUserCF: {workspace: "workspace1"},
+	givenGroupCF: {workspace: "workspace1"},
+	givenGroup: Permissions_WorkspaceOwner,
+	granterUserGroup: Permissions_WorkspaceOwner,
+	label: "Granter & given group with the same level and customField",
+	expected: true
+}, {
+	granterUserCF: {workspace: "workspace1"},
+	givenGroupCF: {workspace: "workspace1"},
+	givenGroup: Permissions_WorkspaceEditor,
+	granterUserGroup: Permissions_WorkspaceOwner,
+	label: "Granter with higher permissions than given group",
+	expected: true
+}, {
+	granterUserCF: {workspace: "workspace1"},
+	givenGroupCF: {workspace: "workspace1"},
+	givenGroup: Permissions_WorkspaceOwner,
+	granterUserGroup: Permissions_WorkspaceEditor,
+	label: "Granter with lower permissions than given group",
+	expected: false
+}, {
+	granterUserCF: {workspace: "workspace1"},
+	givenGroupCF: {workspace: "workspace2"},
+	givenGroup: Permissions_WorkspaceOwner,
+	granterUserGroup: Permissions_WorkspaceOwner,
+	label: "Granter & given group with the same level different customField",
+	expected: false
+}, {
+	granterUserCF: {workspace: "workspace1"},
+	givenGroupCF: {workspace: "workspace1", test: "test"},
+	givenGroup: Permissions_WorkspaceOwner,
+	granterUserGroup: Permissions_WorkspaceOwner,
+	label: "Granter & given group with the same level different given group customField",
+	expected: false
+}, {
+	granterUserCF: {workspace: "workspace[1-2]", test: "test"},
+	givenGroupCF: {workspace: "workspace1"},
+	givenGroup: Permissions_WorkspaceOwner,
+	granterUserGroup: Permissions_WorkspaceOwner,
+	label: "Granter & given group with the same level and covered granter customField",
+	expected: true
+}];
+
+async function setPredefinedGroupsPermissions(data: ConfigDB) {
+	const project = data.project;
+	const domain = data.domain;
+	await GroupPermissionsDB.upsertPredefinedGroups(project._id, project.name, PermissionWorkspaceGroups);
+	const ownerLevel = await AccessLevelPermissionsDB.upsert({value: 1000, name: "teat-owner-level", domainId: domain._id});
+	const editorLevel = await AccessLevelPermissionsDB.upsert({value: 500, name: "teat-editor-level", domainId: domain._id});
+	const viewerLevel = await AccessLevelPermissionsDB.upsert({value: 200, name: "teat-viewer-level", domainId: domain._id});
+	const ownerGroup = await GroupPermissionsDB.queryUnique({_id: GroupPermissionsDB.getPredefinedGroupId(project._id, Permissions_WorkspaceOwner._id)});
+	const editorGroup = await GroupPermissionsDB.queryUnique({_id: GroupPermissionsDB.getPredefinedGroupId(project._id, Permissions_WorkspaceEditor._id)});
+	const viewerGroup = await GroupPermissionsDB.queryUnique({_id: GroupPermissionsDB.getPredefinedGroupId(project._id, Permissions_WorkspaceViewer._id)});
+	await GroupPermissionsDB.upsertAll([{...ownerGroup, accessLevelIds: [ownerLevel._id]}, {...editorGroup, accessLevelIds: [editorLevel._id]}, {...viewerGroup, accessLevelIds: [viewerLevel._id]}]);
+}
+
+export function assignUserPermissionsTests() {
 	const scenario = __scenario("Assign user permissions");
+	let satisfy;
+	let oneTimeFlag = true;
 	scenario.add(cleanup());
-	scenario.add(__custom(async (action, data) => {
-		const project = await ProjectPermissionsDB.upsert(project1);
-		const user = await UserPermissionsDB.upsert({accountId: generateHex(32), groups: []});
-		const usersObjects = [];
-		const assignUserNumbers = 4;
-		for (let i = 0; i < assignUserNumbers; i++) {
-			usersObjects.push({accountId: generateHex(32), groups: []});
-		}
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey2));
+	for (const model of assignUserModels) {
+		scenario.add(__custom(async (action, data) => {
+			if (oneTimeFlag)
+				await setPredefinedGroupsPermissions(data);
 
-		const users = await UserPermissionsDB.upsertAll(usersObjects);
-		await GroupPermissionsDB.upsertPredefinedGroups(project._id, project.name, PermissionWorkspaceGroups);
-		const usersAccountIds = users.map(userItem => userItem.accountId);
+			oneTimeFlag = false;
+			satisfy = await isAssignUsersPermissions(data, model);
+			if (satisfy !== model.expected)
+				throw new TestException(`Expect assign user permissions to be ${model.expected}, but you got ${!model.expected}`);
+		}).setReadKey(contextKey2).setLabel(model.label));
+	}
 
-		const assignAppPermissionsObj: AssignAppPermissions = {
-			projectId: project._id,
-			group: Permissions_WorkspaceOwner,
-			groupsToRemove: PermissionWorkspaceGroups,
-			sharedUserIds: usersAccountIds,
-			granterUserId: user.accountId,
-			customField: {workspace: "workspace1"},
-			customKey: generateHex(32)
-		};
-
-		await UserPermissionsDB.assignAppPermissions(assignAppPermissionsObj);
-		const assignedUsers = await UserPermissionsDB.query({where: {accountId: {$in: usersAccountIds}}});
-
-		if (assignedUsers.length !== assignUserNumbers)
-			throw new TestException("assignedUsers.length !== assignUserNumbers");
-
-		assignedUsers.forEach(assignedUser => {
-			if (!assignedUser.groups || assignedUser.groups.length !== 1 || !compare(assignedUser.groups[0].customField, assignAppPermissionsObj.customField)) {
-				throw new TestException("User didn't assigned with permissions");
-			}
-		});
-
-	}).setLabel('Assign user permissions has been successfully'));
 	return scenario;
+}
+
+
+async function isAssignUsersPermissions(data: ConfigDB, assignUserObj: AssignUserModels) {
+	let satisfy = true;
+	const project = data.project;
+	const usersObjects = [];
+	const assignUserNumbers = 4;
+	for (let i = 0; i < assignUserNumbers; i++) {
+		usersObjects.push({accountId: generateHex(32), groups: []});
+	}
+
+	const users = await UserPermissionsDB.upsertAll(usersObjects);
+	const usersAccountIds = users.map(userItem => userItem.accountId);
+	const granterUser = await UserPermissionsDB.upsert({accountId: generateHex(32),
+		                                                   groups: [{groupId: GroupPermissionsDB.getPredefinedGroupId(project._id, assignUserObj.granterUserGroup._id), customField: assignUserObj.granterUserCF}]});
+
+	const assignAppPermissionsObj: AssignAppPermissions = {
+		projectId: project._id,
+		group: assignUserObj.givenGroup,
+		groupsToRemove: PermissionWorkspaceGroups,
+		sharedUserIds: usersAccountIds,
+		granterUserId: granterUser.accountId,
+		customField: assignUserObj.givenGroupCF,
+		customKey: generateHex(32)
+	};
+
+	try {
+		await UserPermissionsDB.assignAppPermissions(assignAppPermissionsObj);
+	} catch (e) {
+		return false;
+	}
+
+	const assignedUsers = await UserPermissionsDB.query({where: {accountId: {$in: usersAccountIds}}});
+
+	if (assignedUsers.length !== assignUserNumbers)
+		satisfy = false;
+
+	assignedUsers.forEach(assignedUser => {
+		if (!assignedUser.groups || assignedUser.groups.length !== 1 || !compare(assignedUser.groups[0].customField, assignAppPermissionsObj.customField)) {
+			satisfy = false;
+		}
+	});
+
+	return satisfy;
 }
 
