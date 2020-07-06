@@ -169,12 +169,12 @@ const queryTests: QueryGeneral_TestCase[] = [
 		where: {objectArray: [{key: testItem1.key, value: testItem1.value}]},
 		expected: [testInstance1, testInstance2]
 	},
-	// {
-	// 	insert: [testInstance1, testInstance2],
-	// 	label: "Query nested object",
-	// 	where: {nestedObject: {one: {key: testItem1.key}}},
-	// 	expected: []
-	// },
+	{
+		insert: [testInstance1, testInstance2],
+		label: "Query nested object",
+		where: {nestedObject: {one: testItem1}},
+		expected: [testInstance1]
+	},
 ];
 
 
