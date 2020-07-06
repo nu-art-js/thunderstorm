@@ -21,9 +21,12 @@ import {
 	ApiWithBody,
 	ApiWithQuery
 } from "@nu-art/thunderstorm";
-import {DB_Object} from "@nu-art/firebase";
 import {Auditable} from "@nu-art/ts-common";
 import {TicketDetails} from "../app-backend/modules/BugReportModule";
+
+type DB_Object = {
+	_id: string
+}
 
 export type BugReport = {
 	name: string
