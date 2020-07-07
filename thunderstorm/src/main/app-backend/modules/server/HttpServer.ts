@@ -381,7 +381,7 @@ export class RouteResolver {
 				content = [content];
 
 			content.forEach(api => {
-				api.setMiddlewares(...this.middlewares);
+				api.addMiddlewares(...this.middlewares);
 				api.route(this.express, urlPrefix);
 			});
 		});
