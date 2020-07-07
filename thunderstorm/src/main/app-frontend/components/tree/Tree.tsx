@@ -110,7 +110,17 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		if (renderChildren)
 			filteredKeys = this.props.adapter.getFilteredChildren(data);
 
-		const nodeRefResolver = (_ref: HTMLDivElement) => {
+		const nodeRefResolver = this.nodeResolver(nodePath, renderChildren, filteredKeys);
+		const containerRefResolver = this.resolveContainer(nodePath, renderChildren, filteredKeys);
+
+		return <div key={nodePath} ref={nodeRefResolver}>
+			{this.renderItem(data, nodePath, key, expanded)}
+			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
+		</div>
+	};
+
+	private nodeResolver(nodePath: string, renderChildren: boolean, filteredKeys: any[]) {
+		return (_ref: HTMLDivElement) => {
 			if (this.rendererRefs[nodePath])
 				return;
 
@@ -118,8 +128,10 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			if (this.containerRefs[nodePath] && renderChildren && filteredKeys.length > 0)
 				this.forceUpdate();
 		};
+	}
 
-		const containerRefResolver = (_ref: HTMLDivElement) => {
+	private resolveContainer(nodePath: string, renderChildren: boolean, filteredKeys: any[]) {
+		return (_ref: HTMLDivElement) => {
 			if (this.containerRefs[nodePath])
 				return;
 
@@ -127,12 +139,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			if (renderChildren && filteredKeys.length > 0)
 				this.forceUpdate();
 		};
-
-		return <div key={nodePath} ref={nodeRefResolver}>
-			{this.renderItem(data, nodePath, key, expanded)}
-			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
-		</div>
-	};
+	}
 
 	private renderChildren(data: any, nodePath: string, _path: string, level: number, filteredKeys: any[], renderChildren: boolean, adjustedNode: { data: object; deltaPath?: string }, containerRefResolver: (_ref: HTMLDivElement) => void) {
 		if (!(filteredKeys.length > 0 && renderChildren))
