@@ -25,11 +25,13 @@ import {
 	ExampleModule,
 	patchTest
 } from "./tests/db-api-generator";
+import {upsertAllTest} from "./tests/upsertAll";
 
 export const mainScenario = __scenario("Tests for base-db-api-generator.");
 
-mainScenario.add(patchTest());
-mainScenario.add(deleteTest());
+mainScenario.add(upsertAllTest());
+// mainScenario.add(patchTest());
+// mainScenario.add(deleteTest());
 
 module.exports = new StormTester()
 	.addModules(FirebaseModule)
