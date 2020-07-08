@@ -283,11 +283,11 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was inserted.
 	 */
-	createImpl = async (transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<DBType> => {
+	async createImpl(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<DBType> {
 		return (await this.createImpl_Read(transaction, instance, request))()
 	};
 
-	createImpl_Read = async (transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> => {
+	async createImpl_Read(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		await this.validateImpl(instance);
 		await this.assertUniqueness(transaction, instance);
 		return async () => transaction.insert(this.collection, instance);
