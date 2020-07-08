@@ -119,3 +119,63 @@ export class Example_NestedList_MultiType_Object
 		</div>
 	}
 }
+
+const children: { type: "reg" | "add1" | "add2", item: { label: string } }[] = [
+	{type: "reg", item: {label: 'PAH'}},
+	{type: "reg", item: {label: 'SHELL'}},
+	{type: "reg", item: {label: 'ZEVEL'}},
+]
+
+const toAdd1: { type: "reg" | "add1" | "add2", item: { label: string }, _children?: any }[] = [];
+const toAdd2: { type: "reg" | "add1" | "add2", item: { label: string }, _children?: any }[] = [];
+
+export class Example_NestedList_MultiType_Object_Dynamic
+	extends Component<{}> {
+
+	render() {
+		let rendererMap = {
+			reg: (props: { item: { label: string } }) => <div>{`Label: ${props.item.label}`}</div>,
+			add1: (props: { item: { stam: number } }) => <div onClick={() => {
+				toAdd1.push({type: "reg", item: {label: 'item-toAdd1'}, _children: children})
+				this.forceUpdate();
+			}}><b>{`List ${props.item.stam}: ${toAdd1.length}`}</b></div>,
+			add2: (props: { item: { stam: number } }) => <div onClick={() => {
+				toAdd2.push({type: "reg", item: {label: 'item-toAdd2'}, _children: children})
+				this.forceUpdate();
+			}}><b>{`List ${props.item.stam}: ${toAdd2.length}`}</b></div>
+		};
+		const adapter: Adapter = AdapterBuilder()
+			.list()
+			.multiRender(rendererMap)
+			.nested()
+			.setData([
+				         {
+					         type: "add1", item: {stam: 1},
+					         _children: toAdd1
+				         },
+				         // {
+				         //   type: "add2", item: {stam: 2},
+				         //   _children: toAdd2
+				         // },
+			         ])
+			.build().setTreeNodeRenderer((props: NodeRendererProps) => {
+				                             if (props.node.propKey === "_children")
+					                             return null;
+
+				                             // @ts-ignore
+				                             const _Renderer: _BaseNodeRenderer<any> = rendererMap[props.item.type];
+				                             return <div id={props.node.path} onClick={props.node.onClick}>
+					                             <_Renderer item={props.item.item} node={props.node}/>
+				                             </div>;
+			                             }
+			)
+
+
+		return <div>
+			<div>
+				<h2>Here is a simple list with multiple Item Types</h2>
+				<MenuComponent adapter={adapter} onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
+			</div>
+		</div>
+	}
+}
