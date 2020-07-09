@@ -69,6 +69,18 @@ export class PermissionsModule_Class
 		return userUrlsPermissions;
 	}
 
+	async getUserCFsByShareGroups(userId: string, groupsIds: string[]) {
+		const user = await UserPermissionsDB.queryUnique({accountId: userId});
+		const userGroups = user.groups || [];
+		const userCFs: StringMap[] = [];
+		userGroups.map(userGroup => {
+			if (groupsIds.find(groupId => groupId === userGroup.groupId) && userGroup.customField)
+				userCFs.push(userGroup.customField);
+		});
+
+		return userCFs;
+	}
+
 	private async isUserHasPermissions(projectId: string, url: string, userId: string, requestCustomField: StringMap) {
 		let isAllowed;
 
