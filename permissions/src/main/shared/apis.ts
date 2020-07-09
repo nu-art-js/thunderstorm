@@ -41,6 +41,10 @@ export type Request_UserUrlsPermissions = {
 	requestCustomField: StringMap
 }
 
+export type Request_UserCFsByShareGroups = {
+	groupsIds: string[]
+}
+
 export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 	projectId: string,
 	groupsToRemove: PredefinedGroup[],
@@ -56,7 +60,7 @@ export type AssignAppPermissions = Request_AssignAppPermissions & {granterUserId
 
 export type PredefinedGroup = { _id: string, key: string, label: string };
 
-export type PredefinedUser = { accountId:string, _id:string, groups: PredefinedGroup[] };
+export type PredefinedUser = { accountId: string, _id: string, groups: PredefinedGroup[] };
 
 export type Request_RegisterProject = {
 	project: DB_PermissionProject,
@@ -75,6 +79,7 @@ export type PermissionsApi_VerifyPermissionsGrantingAllowed = ApiWithBody<"/v1/p
 
 export type PermissionsApi_AssertUserAccess = ApiWithBody<"/v1/permissions/assert-user-access", Request_AssertApiForUser, Response_User>;
 export type PermissionsApi_UserUrlsPermissions = ApiWithBody<"/v1/permissions/user-urls-permissions", Request_UserUrlsPermissions, UserUrlsPermissions>;
+export type PermissionsApi_UserCFsByShareGroups = ApiWithBody<"/v1/user-custom-fields/user-cf-by-share-groups", Request_UserCFsByShareGroups, StringMap[]>;
 
 
 export type PermissionsApi_RegisterExternalProject = ApiWithBody<"/v1/register/register-external-project", Request_RegisterProject, void>;
