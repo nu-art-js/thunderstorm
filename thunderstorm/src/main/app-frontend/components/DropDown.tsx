@@ -40,6 +40,7 @@ const wrapperStyle: React.CSSProperties = {
 
 export const headerStyle: React.CSSProperties = {
 	display: "flex",
+	alignItems:"center",
 	boxSizing: "border-box",
 	position: "relative",
 	border: "solid 1px",
@@ -54,7 +55,7 @@ export const inputStyle: React.CSSProperties = {
 	border: "unset",
 	boxSizing: "border-box",
 	outline: "none",
-	padding: "0 5px",
+	// padding: "0 5px",
 	width: "100%",
 };
 
@@ -217,7 +218,7 @@ export class DropDown<ItemType>
 
 		if (e.code === "ArrowDown") {
 			// node.blur();
-			return document.getElementById(`${this.props.id}-listener`)?.focus()
+			return document.getElementById(`${this.props.id}-tree-listener`)?.focus()
 		}
 
 	};
@@ -226,6 +227,7 @@ export class DropDown<ItemType>
 		const headerComplementary = (this.props.headerStyleResolver || this.headerStyleResolver);
 		return (
 			<div
+				id={`${this.props.id}-header`}
 				className={headerComplementary.headerClassName}
 				style={headerComplementary.headerStyle || (!headerComplementary.headerClassName ? headerStyle : {})}
 				onClick={this.toggleList}>
@@ -243,7 +245,7 @@ export class DropDown<ItemType>
 
 		// const options = this.props.renderersAndOptions.options;
 		return (<FilterInput<ItemType>
-			id={this.props.id}
+			id={`${this.props.id}-input`}
 			filter={this.props.filter}
 			list={this.options}
 			onChange={(filtered: (ItemType)[]) => this.setState({filteredOptions: filtered})}
@@ -377,22 +379,31 @@ export class DropDown<ItemType>
 		// }
 
 		const listComplementary = (this.props.listStyleResolver || this.listStyleResolver);
+		const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id)
 		return <div style={listContainerStyle}>
 			<div className={listComplementary.listClassName} style={listComplementary.listStyle}>
 				{items.length === 0 ?
 					<div style={{textAlign: "center", opacity: 0.5}}>No options</div>
 					:
 					<Tree
-						id={this.props.id}
+						id={`${this.props.id}-tree`}
 						adapter={this.props.adapter}
 						indentPx={0}
 						callBackState={(key: string, value: any, level: number) => key === '/'}
 						selectedItem={this.state.selected}
 						onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
 						unMountFromOutside={() => this.setState({open: false})}
+						keyEventHandler={treeKeyEventHandler}
 					/>
 				}
 			</div>
 		</div>
 	}
 }
+
+const treeKeyEventHandlerResolver = (id: string) => {
+	return (node: HTMLDivElement, e: KeyboardEvent) => {
+		if(!["Escape", "ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Enter"].includes(e.code))
+			document.getElementById(`${id}-input`)?.focus();
+	}
+};

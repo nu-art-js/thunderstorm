@@ -26,6 +26,7 @@ import {
 import {
 	__stringify,
 	_keys,
+	addItemToArray,
 	BadImplementationException,
 	batchAction,
 	filterDuplicates,
@@ -282,11 +283,15 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was inserted.
 	 */
-	async createImpl(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest) {
+	async createImpl(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<DBType> {
+		return (await this.createImpl_Read(transaction, instance, request))()
+	};
+
+	async createImpl_Read(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		await this.validateImpl(instance);
 		await this.assertUniqueness(transaction, instance);
-		return transaction.insert(this.collection, instance);
-	}
+		return async () => transaction.insert(this.collection, instance);
+	};
 
 	/**
 	 * Upserts the `instance` using a transaction, after validating it and asserting uniqueness.
@@ -329,18 +334,31 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of an array of documents that were upserted.
 	 */
 	async upsertAll(instances: UType[], request?: ExpressRequest): Promise<DBType[]> {
-		return await batchAction(instances, 500, async (chunked: UType[]) => this.upsertAllBatched(chunked, request));
+		return batchAction(instances, 500, async (chunked: UType[]) => this.upsertAllBatched(chunked, request));
 	}
 
 	private async upsertAllBatched(instances: UType[], request?: ExpressRequest, transaction?: FirestoreTransaction): Promise<DBType[]> {
 		const processor = async (_transaction: FirestoreTransaction) => {
-			const dbInstances: DBType[] = instances.map(instance => ({...instance, _id: instance._id || generateHex(idLength)} as unknown as DBType));
+			const actions = [] as Promise<() => Promise<any>>[];
 
-			return this.upsertAllImpl(_transaction, dbInstances, request);
+			instances.reduce((carry, instance: UType) => {
+				let dbInstance: DBType;
+				if (instance._id === undefined) {
+					dbInstance = {...instance, _id: generateHex(idLength)} as unknown as DBType;
+					addItemToArray(carry, this.createImpl_Read(_transaction, dbInstance, request))
+				} else {
+					dbInstance = instance as unknown as DBType;
+					addItemToArray(carry, this.upsertImpl_Read(_transaction, dbInstance, request))
+				}
+				return carry;
+			}, actions);
+
+			const writes = await Promise.all(actions);
+			return Promise.all(writes.map(write => write()));
 		};
 
-		if(transaction)
-			return processor(transaction)
+		if (transaction)
+			return processor(transaction);
 
 		return this.collection.runInTransaction(processor);
 	}
@@ -356,10 +374,14 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of the document that was upserted.
 	 */
 	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<DBType> {
+		return (await this.upsertImpl_Read(transaction, dbInstance, request))();
+	};
+
+	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		await this.validateImpl(dbInstance);
 		await this.assertUniqueness(transaction, dbInstance);
-		return transaction.upsert(this.collection, dbInstance);
-	}
+		return transaction.upsert_Read(this.collection, dbInstance);
+	};
 
 	/**
 	 * Upserts the `dbInstances` using the `transaction` object.
