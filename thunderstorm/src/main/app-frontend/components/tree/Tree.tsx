@@ -357,21 +357,35 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	};
 
 	private onBlur = () => {
-		this.setState({
-			              focused: '',
-			              lastFocused: this.state.focused || ''
-		              });
-		this.props.onBlur && this.props.onBlur();
+		if (this.props.onBlur && this.props.onBlur())
+			return;
+
+		this.setState(state => {
+			if (!state.focused)
+				return {};
+
+			return ({
+				focused: '',
+				lastFocused: state.focused
+			});
+		})
 	};
 
 	private onFocus = () => {
-		this.setState({
-			              focused: this.state.lastFocused || (this.props.adapter.hideRoot ? Object.keys(this.state.expanded)[1] : Object.keys(
-				              this.state.expanded)[0]),
-			              lastFocused: ''
-		              });
+		if (this.props.onFocus && this.props.onFocus())
+			return;
 
-		this.props.onFocus && this.props.onFocus();
+		this.setState(state => {
+			const focused = state.lastFocused || (this.props.adapter.hideRoot ? Object.keys(state.expanded)[1] : Object.keys(state.expanded)[0]);
+			if (state.focused === focused)
+				return {};
+
+			return ({
+				focused,
+				lastFocused: ''
+			});
+		});
+
 	};
 }
 
