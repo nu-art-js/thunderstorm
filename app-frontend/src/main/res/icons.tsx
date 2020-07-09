@@ -41,6 +41,8 @@ export const iconsRenderer = (key: IconData, color?: string, width: number = 24)
 
 const arrowClose: IconData = {ratio: 5 / 6,  value: require('@res/icons/icon__arrowClose.svg')};
 const arrowOpen: IconData = {ratio: 5 / 6,  value: require('@res/icons/icon__arrowOpen.svg')};
+const arrowheadFullDown: IconData = {ratio: 24 / 24,  value: require('@res/icons/icon_arrowheadFullDown.svg')};
+const arrowheadFullUp: IconData = {ratio: 24 / 24,  value: require('@res/icons/icon_arrowheadFullUp.svg')};
 const avatar: IconData = {ratio: 14 / 13,  value: require('@res/icons/icon__avatar.svg')};
 const check: IconData = {ratio: 12 / 12,  value: require('@res/icons/icon__check.svg')};
 const close: IconData = {ratio: 10 / 10,  value: require('@res/icons/icon__close.svg')};
@@ -51,6 +53,8 @@ const successToast: IconData = {ratio: 24 / 26,  value: require('@res/icons/icon
 
 export const ICONS = {
 
+	arrowheadFullDown: (color?: string, width?: number) => iconsRenderer(arrowheadFullDown, color, width),
+	arrowheadFullUp: (color?: string, width?: number) => iconsRenderer(arrowheadFullUp, color, width),
 	arrowClose: (color?: string, width?: number) => iconsRenderer(arrowClose, color, width),
 	arrowOpen: (color?: string, width?: number) => iconsRenderer(arrowOpen, color, width),
 	avatar: (color?: string, width?: number) => iconsRenderer(avatar, color, width),

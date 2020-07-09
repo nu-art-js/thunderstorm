@@ -9,6 +9,7 @@ const mint = "#E3EFE2";
 const brightSkyBlue = "#00b5ff";
 const darkTwo = "#2f304f";
 const black = "#000000";
+const grays_1 = "#edf2f6";
 
 function calculateColorWithAlpha(color: string, alpha?: number) {
 	return alpha === undefined ? color : color + ((alpha * 256) % 256).toString(16);
@@ -26,4 +27,5 @@ export const COLORS = {
 	brightSkyBlue: (alpha?: number) => calculateColorWithAlpha(brightSkyBlue, alpha),
 	darkTwo: (alpha?: number) => calculateColorWithAlpha(darkTwo, alpha),
 	black: (alpha?: number) => calculateColorWithAlpha(black, alpha),
+	grays_1: (alpha?: number) => calculateColorWithAlpha(grays_1, alpha),
 };
