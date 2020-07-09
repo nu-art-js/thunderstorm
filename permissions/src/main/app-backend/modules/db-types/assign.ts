@@ -27,7 +27,6 @@ import {
 } from "../_imports";
 import {
 	BaseDB_ApiGenerator,
-	validateOptionalId,
 	validateStringAndNumbersWithDashes,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
@@ -138,7 +137,7 @@ export class GroupsDB_Class
 			const _groups = predefinedGroups.map(group => ({_id: this.getPredefinedGroupId(projectId, group._id), label: `${projectName}--${group.key}-${group.label}`}));
 
 			const dbGroups = filterInstances(await batchAction(_groups.map(group => group._id), 10, (chunk) => {
-				return transaction.queryUnique(this.collection, {where: {_id: {$in: chunk}}})
+				return transaction.query(this.collection, {where: {_id: {$in: chunk}}})
 			}));
 
 			//TODO patch the predefined groups, in case app changed the label of the group..
@@ -153,7 +152,7 @@ export class UsersDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionsUser>
 	implements OnNewUserRegistered, OnUserLogin {
 	static _validator: TypeValidator<DB_PermissionsUser> = {
-		_id: validateOptionalId,
+		_id: undefined,
 		accountId: validateUserUuid,
 		groups: validateArray({groupId: validateStringAndNumbersWithDashes, customField: validateObjectValues<string>(validateCustomFieldValues, false)}, false),
 		__groupIds: validateArray(validateStringAndNumbersWithDashes, false)
