@@ -23,8 +23,7 @@ import * as React from 'react';
 import {CSSProperties} from 'react';
 import {
 	_keys,
-	removeItemFromArray,
-    compare
+	removeItemFromArray
 } from "@nu-art/ts-common";
 import {TreeNode,} from "./types";
 import {KeyboardListener} from "../../tools/KeyboardListener";
@@ -82,7 +81,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	}
 
 	static getDerivedStateFromProps(props: BaseTreeProps, state: TreeState) {
-		if (compare(props.adapter.data, state.adapter.data))
+		if (props.adapter.data === state.adapter.data)
 			return null;
 
 		state.adapter = props.adapter;
