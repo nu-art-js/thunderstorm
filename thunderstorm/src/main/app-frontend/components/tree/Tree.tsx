@@ -28,9 +28,7 @@ import {
 import {TreeNode,} from "./types";
 import {KeyboardListener} from "../../tools/KeyboardListener";
 import {stopPropagation} from '../../utils/tools';
-import {
-	Adapter,
-} from "../adapter/Adapter";
+import {Adapter} from "../adapter/Adapter";
 import {_BaseNodeRenderer} from "../adapter/BaseRenderer";
 
 
@@ -42,7 +40,7 @@ export type BaseTreeProps = {
 	childrenContainerStyle?: (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentRef?: HTMLDivElement) => CSSProperties
 	nodesState?: TreeNodeState;
 	indentPx: number;
-	checkExpanded: (expanded: TreeNodeState, path: string) => boolean
+	checkExpanded: (expanded: TreeNodeState, path: string) => boolean | undefined
 	keyEventHandler?: (node: HTMLDivElement, e: KeyboardEvent) => void;
 	onFocus?: () => void
 	onBlur?: () => void
@@ -64,7 +62,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 	static defaultProps: Partial<BaseTreeProps> = {
 		indentPx: 20,
-		checkExpanded: (expanded: TreeNodeState, path: string) => expanded[path],
+		checkExpanded: (expanded: TreeNodeState, path: string) => expanded[path]
 	};
 
 	protected containerRefs: { [k: string]: HTMLDivElement } = {};
@@ -98,7 +96,6 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	};
 
 	render() {
-		console.log(`focused on ${this.state.focused}`);
 		return <KeyboardListener
 			id={this.props.id}
 			onKeyboardEventListener={this.keyEventHandler}
@@ -114,12 +111,10 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		const adjustedNode = this.props.adapter.adjust(data);
 		data = adjustedNode.data;
 
-		let renderChildren = true;
 		let filteredKeys: any[] = [];
 
 		const expanded = this.props.checkExpanded(this.state.expanded, nodePath);
-		if (!expanded)
-			renderChildren = false;
+		let renderChildren = expanded !== false;
 
 		if (typeof data !== "object")
 			renderChildren = false;
@@ -127,7 +122,17 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		if (renderChildren)
 			filteredKeys = this.props.adapter.getFilteredChildren(data);
 
-		const nodeRefResolver = (_ref: HTMLDivElement) => {
+		const nodeRefResolver = this.nodeResolver(nodePath, renderChildren, filteredKeys);
+		const containerRefResolver = this.resolveContainer(nodePath, renderChildren, filteredKeys);
+
+		return <div key={nodePath} ref={nodeRefResolver}>
+			{this.renderItem(data, nodePath, key, expanded)}
+			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
+		</div>
+	};
+
+	private nodeResolver(nodePath: string, renderChildren: boolean, filteredKeys: any[]) {
+		return (_ref: HTMLDivElement) => {
 			if (this.rendererRefs[nodePath])
 				return;
 
@@ -135,8 +140,10 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			if (this.containerRefs[nodePath] && renderChildren && filteredKeys.length > 0)
 				this.forceUpdate();
 		};
+	}
 
-		const containerRefResolver = (_ref: HTMLDivElement) => {
+	private resolveContainer(nodePath: string, renderChildren: boolean, filteredKeys: any[]) {
+		return (_ref: HTMLDivElement) => {
 			if (this.containerRefs[nodePath])
 				return;
 
@@ -144,12 +151,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			if (renderChildren && filteredKeys.length > 0)
 				this.forceUpdate();
 		};
-
-		return <div key={nodePath} ref={nodeRefResolver}>
-			{this.renderItem(data, nodePath, key, expanded)}
-			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
-		</div>
-	};
+	}
 
 	private renderChildren(data: any, nodePath: string, _path: string, level: number, filteredKeys: any[], renderChildren: boolean, adjustedNode: { data: object; deltaPath?: string }, containerRefResolver: (_ref: HTMLDivElement) => void) {
 		if (!(filteredKeys.length > 0 && renderChildren))
@@ -166,7 +168,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			</div>);
 	}
 
-	private renderItem(item: any, path: string, key: string, expanded: boolean) {
+	private renderItem(item: any, path: string, key: string, expanded?: boolean) {
 		if (this.props.adapter.hideRoot && path.length === 1)
 			return null;
 
@@ -180,11 +182,11 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			expandToggler: this.props.adapter.isParent(item) ? this.toggleExpandState : this.ignoreToggler,
 			onClick: this.onNodeClicked,
 			onFocus: this.onNodeFocused,
-			expanded: expanded,
+			expanded: !!expanded,
 			focused: path === this.state.focused,
 			selected: item === this.props.selectedItem
 		};
-		return <div onMouseEnter={()=>this.setState({focused: node.path})} onMouseLeave={()=>this.setState({focused: ''})}><TreeNodeRenderer item={item} node={node}/></div>;
+		return <div onMouseEnter={() => this.setState({focused: node.path})} onMouseLeave={() => this.setState({focused: ''})}><TreeNodeRenderer item={item} node={node}/></div>;
 	}
 
 	private getChildrenContainerStyle = (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentContainerRef?: HTMLDivElement): CSSProperties => {
@@ -198,15 +200,13 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	};
 
 	private setFocusedNode(path: string) {
-		this.rendererRefs[path].scrollIntoView({block:"nearest"});
+		this.rendererRefs[path].scrollIntoView({block: "nearest"});
 		this.setState({focused: path});
 	}
 
 	protected keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent): void => {
 
 		this.props.keyEventHandler && this.props.keyEventHandler(node, e);
-
-		// console.log(`focused on tree: ${this.props.id}`);
 
 		let keyCode = e.code;
 		if (keyCode === "Escape") {
@@ -327,10 +327,9 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		if (path === "/" && this.props.adapter.hideRoot && _expanded === false)
 			return;
 
-
 		this.setState((prevState: TreeState) => {
 			const expanded = prevState.expanded[path];
-			prevState.expanded[path] = _expanded !== undefined ? _expanded : !expanded;
+			prevState.expanded[path] = _expanded !== undefined ? _expanded : (expanded !== undefined ? !expanded : false);
 			prevState.focused = path;
 			return prevState;
 		})
@@ -358,21 +357,35 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	};
 
 	private onBlur = () => {
-		this.setState({
-			              focused: '',
-			              lastFocused: this.state.focused || ''
-		              });
-		this.props.onBlur && this.props.onBlur();
+		if (this.props.onBlur && this.props.onBlur())
+			return;
+
+		this.setState(state => {
+			if (!state.focused)
+				return {};
+
+			return ({
+				focused: '',
+				lastFocused: state.focused
+			});
+		})
 	};
 
 	private onFocus = () => {
-		this.setState({
-			              focused: this.state.lastFocused || (this.props.adapter.hideRoot ? Object.keys(this.state.expanded)[1] : Object.keys(
-				              this.state.expanded)[0]),
-			              lastFocused: ''
-		              });
+		if (this.props.onFocus && this.props.onFocus())
+			return;
 
-		this.props.onFocus && this.props.onFocus();
+		this.setState(state => {
+			const focused = state.lastFocused || (this.props.adapter.hideRoot ? Object.keys(state.expanded)[1] : Object.keys(state.expanded)[0]);
+			if (state.focused === focused)
+				return {};
+
+			return ({
+				focused,
+				lastFocused: ''
+			});
+		});
+
 	};
 }
 
