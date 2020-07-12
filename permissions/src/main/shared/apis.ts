@@ -58,7 +58,7 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 
 export type AssignAppPermissions = Request_AssignAppPermissions & {granterUserId: string};
 
-export type PredefinedGroup = { _id: string, key: string, label: string };
+export type PredefinedGroup = { _id: string, key: string, label: string, customKeys?: string[] };
 
 export type PredefinedUser = { accountId: string, _id: string, groups: PredefinedGroup[] };
 
