@@ -102,6 +102,27 @@ const assignUserModels: AssignUserModels[] = [{
 	granterUserGroup: Permissions_WorkspaceOwner,
 	label: "Granter & given group with the same level and covered granter customField",
 	expected: true
+}, {
+	granterUserCF: {},
+	givenGroupCF: {workspace: "workspace1"},
+	givenGroup: Permissions_WorkspaceOwner,
+	granterUserGroup: Permissions_WorkspaceOwner,
+	label: "Granter & given group with the same level and empty granter customField",
+	expected: false
+}, {
+	granterUserCF: {productId: ".*"},
+	givenGroupCF: {productId: "123456"},
+	givenGroup: Permissions_WorkspaceOwner,
+	granterUserGroup: Permissions_WorkspaceOwner,
+	label: "Granter & given group with the same level and '.*' granter Rex. customField",
+	expected: true
+}, {
+	granterUserCF: {},
+	givenGroupCF: {},
+	givenGroup: Permissions_WorkspaceOwner,
+	granterUserGroup: Permissions_WorkspaceOwner,
+	label: "Granter & given group with the same level and same empty customField, expect to fail cause for assign user permissions: request must have custom fields restriction!",
+	expected: false
 }];
 
 async function setPredefinedGroupsPermissions(data: ConfigDB) {
