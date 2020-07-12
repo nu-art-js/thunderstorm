@@ -50,7 +50,6 @@ export class TS_Input<Key extends string>
 	};
 
 	handleKeyEvent = (ev: KeyboardEvent) => {
-		console.log('handling keydown');
 		ev.stopPropagation();
 	};
 
@@ -66,8 +65,6 @@ export class TS_Input<Key extends string>
 
 		if (this.props.onCancel && event.which === 27)
 			this.props.onCancel();
-
-		console.log('bastard');
 	};
 
 	render() {
@@ -82,14 +79,18 @@ export class TS_Input<Key extends string>
 			placeholder={placeholder}
 			onChange={this.changeValue}
 			onKeyDown={this.handleKeyDown}
-			onBlur={onBlur}
+			onBlur={() => {
+				this.ref?.removeEventListener('keydown', this.handleKeyEvent);
+				this.ref = null;
+				onBlur && onBlur();
+			}}
 			ref={input => {
 				if (this.ref || !input)
 					return;
 
 				this.ref = input;
 				focus && this.ref.focus();
-				this.ref.addEventListener('keydown', this.handleKeyEvent)
+				this.ref.addEventListener('keydown', this.handleKeyEvent);
 			}}
 			spellCheck={spellCheck}
 		/>;

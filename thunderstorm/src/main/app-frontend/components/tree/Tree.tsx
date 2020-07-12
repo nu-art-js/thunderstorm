@@ -76,8 +76,14 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 		this.state = {
 			adapter: this.props.adapter,
-			expanded: this.recursivelyExpand(this.props.adapter.data, this.props.callBackState || (() => true))
+			expanded: Tree.recursivelyExpand(props)
 		};
+	}
+
+	private static recursivelyExpand(props: BaseTreeProps) {
+		const condition = props.callBackState || (() => true);
+		const state = {'/': condition ? condition('/', props.adapter.data, 0, '/') : false};
+		return recursivelyExpandImpl(props.adapter.data, state, condition, props.adapter);
 	}
 
 	static getDerivedStateFromProps(props: BaseTreeProps, state: TreeState) {
@@ -85,6 +91,14 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			return null;
 
 		state.adapter = props.adapter;
+		const expanded: TreeNodeState = Tree.recursivelyExpand(props);
+		_keys(expanded).reduce((carry, el) => {
+			if (state.expanded[el] === undefined)
+				carry[el] = expanded[el];
+
+			return carry;
+		}, state.expanded);
+
 		return state
 	}
 
@@ -119,15 +133,14 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	}
 
 	private renderNode = (_data: any, key: string, _path: string, level: number) => {
-		let data = _data;
 		const nodePath = `${_path}${key}/`;
-		const adjustedNode = this.state.adapter.adjust(data);
-		data = adjustedNode.data;
+		const adjustedNode = this.state.adapter.adjust(_data);
+		const data = adjustedNode.data;
 
 		let filteredKeys: any[] = [];
 
-		const expanded = this.props.checkExpanded(this.state.expanded, nodePath);
-		let renderChildren = expanded !== false;
+		const expanded = !!this.props.checkExpanded(this.state.expanded, nodePath);
+		let renderChildren = expanded;
 
 		if (typeof data !== "object")
 			renderChildren = false;
@@ -186,7 +199,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			return null;
 
 		const TreeNodeRenderer: _BaseNodeRenderer<any> = this.state.adapter.treeNodeRenderer;
-		console.log("isParent: ", this.state.adapter.isParent(item));
+		// console.log("isParent: ", this.state.adapter.isParent(item));
 		const node: TreeNode = {
 			adapter: this.state.adapter,
 			propKey: key,
@@ -306,30 +319,6 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		return item;
 	}
 
-	recursivelyExpand = (obj: object, condition: CallBackState) => {
-		const state = {'/': condition ? condition('/', obj, 0, '/') : false};
-		return this.recursivelyExpandImpl(obj, state, condition)
-	};
-
-	private recursivelyExpandImpl = (obj: object, state: TreeNodeState, condition: CallBackState, path: string = "/", level: number = 1) => {
-		if (obj === null)
-			return state;
-
-		const _obj = this.props.adapter.adjust(obj);
-		return _keys(obj).reduce((_state, key) => {
-			const value = obj[key];
-			const newPath = `${path}${key}/`;
-
-			if (!_obj.deltaPath)
-				_state[newPath] = condition(key, value, level, newPath);
-
-			if (condition(key, value, level, newPath) && typeof value === "object")
-				this.recursivelyExpandImpl(value, _state, condition, newPath, level + 1);
-
-			return _state;
-		}, state);
-	};
-
 	private ignoreToggler = (): void => {
 	};
 
@@ -405,4 +394,25 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		});
 	};
 }
+
+const recursivelyExpandImpl = <K extends object>(obj: K, state: TreeNodeState, condition: CallBackState, adapter: Adapter, path: string = "/", level: number = 1): TreeNodeState => {
+	if (obj === null)
+		return state;
+
+	const _obj = adapter.adjust(obj);
+	const children: (keyof K)[] = adapter.getFilteredChildren(obj);
+	return children.reduce((_state: TreeNodeState, _key: keyof K) => {
+		const key = _key as string
+		const value = obj[_key];
+		const newPath = `${path}${key}/`;
+
+		if (!_obj.deltaPath)
+			_state[newPath] = condition(key, value, level, newPath);
+
+		if (condition(key, value, level, newPath) && typeof value === "object")
+			recursivelyExpandImpl(value as unknown as object, _state, condition, adapter, newPath, level + 1);
+
+		return _state;
+	}, state);
+};
 
