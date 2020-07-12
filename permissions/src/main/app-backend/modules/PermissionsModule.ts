@@ -125,7 +125,23 @@ export class PermissionsModule_Class
 		if (!predefinedUser)
 			return;
 
-		const groupsUser = predefinedUser.groups.map(groupItem => {return {groupId: GroupPermissionsDB.getPredefinedGroupId(project._id, groupItem._id)}});
+		const groupsUser = predefinedUser.groups.map(groupItem => {
+			let customField: StringMap = {};
+			const allRegEx = ".*";
+			console.log("groupItem.customKeys: ", groupItem.customKeys);
+			if (!groupItem.customKeys || !groupItem.customKeys.length)
+				customField["_id"] = allRegEx;
+			else {
+				groupItem.customKeys.forEach((customKey) => {
+					customField[customKey] = allRegEx;
+				});
+			}
+
+			return {
+				groupId: GroupPermissionsDB.getPredefinedGroupId(project._id, groupItem._id),
+				customField
+			}
+		});
 		await UserPermissionsDB.upsert({...predefinedUser, groups: groupsUser});
 	}
 }
