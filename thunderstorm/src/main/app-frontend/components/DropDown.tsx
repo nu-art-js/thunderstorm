@@ -380,13 +380,15 @@ export class DropDown<ItemType>
 
 		const listComplementary = (this.props.listStyleResolver || this.listStyleResolver);
 		const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id)
+		const id = `${this.props.id}-tree`;
 		return <div style={listContainerStyle}>
 			<div className={listComplementary.listClassName} style={listComplementary.listStyle}>
 				{items.length === 0 ?
 					<div style={{textAlign: "center", opacity: 0.5}}>No options</div>
 					:
 					<Tree
-						id={`${this.props.id}-tree`}
+						id={id}
+						key={id}
 						adapter={this.props.adapter}
 						indentPx={0}
 						callBackState={(key: string, value: any, level: number) => key === '/'}
