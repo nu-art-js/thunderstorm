@@ -41,11 +41,18 @@ type State = { value: string }
 
 export class TS_Input<Key extends string>
 	extends React.Component<Props<Key>, State> {
+	private ref?: HTMLInputElement | null;
+
 	constructor(props: Props<Key>) {
 		super(props);
 
 		this.state = {value: props.value || ""};
-	}
+	};
+
+	handleKeyEvent = (ev: KeyboardEvent) => {
+		console.log('handling keydown');
+		ev.stopPropagation();
+	};
 
 	changeValue = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = event.target.value;
@@ -59,6 +66,8 @@ export class TS_Input<Key extends string>
 
 		if (this.props.onCancel && event.which === 27)
 			this.props.onCancel();
+
+		console.log('bastard');
 	};
 
 	render() {
@@ -74,7 +83,14 @@ export class TS_Input<Key extends string>
 			onChange={this.changeValue}
 			onKeyDown={this.handleKeyDown}
 			onBlur={onBlur}
-			ref={input => focus && input && input.focus()}
+			ref={input => {
+				if (this.ref || !input)
+					return;
+
+				this.ref = input;
+				focus && this.ref.focus();
+				this.ref.addEventListener('keydown', this.handleKeyEvent)
+			}}
 			spellCheck={spellCheck}
 		/>;
 	}
