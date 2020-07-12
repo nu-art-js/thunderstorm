@@ -82,7 +82,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 	private static recursivelyExpand(props: BaseTreeProps) {
 		const condition = props.callBackState || (() => true);
-		const state = {'/': condition ? condition('/', props.adapter.data, 0, '/') : false};
+		const state = {'/': condition('/', props.adapter.data, 0, '/')};
 		return recursivelyExpandImpl(props.adapter.data, state, condition, props.adapter);
 	}
 
@@ -91,6 +91,12 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			return null;
 
 		state.adapter = props.adapter;
+		Tree.recalculateExpanded(props, state);
+
+		return state
+	}
+
+	private static recalculateExpanded(props: BaseTreeProps, state: TreeState) {
 		const expanded: TreeNodeState = Tree.recursivelyExpand(props);
 		_keys(expanded).reduce((carry, el) => {
 			if (state.expanded[el] === undefined)
@@ -98,8 +104,6 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 			return carry;
 		}, state.expanded);
-
-		return state
 	}
 
 	componentDidMount(): void {
@@ -336,6 +340,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			const expanded = prevState.expanded[path];
 			prevState.expanded[path] = _expanded !== undefined ? _expanded : (expanded !== undefined ? !expanded : false);
 			prevState.focused = path;
+
 			return prevState;
 		})
 	};
@@ -409,7 +414,8 @@ const recursivelyExpandImpl = <K extends object>(obj: K, state: TreeNodeState, c
 		if (!_obj.deltaPath)
 			_state[newPath] = condition(key, value, level, newPath);
 
-		if (condition(key, value, level, newPath) && typeof value === "object")
+		// if (condition(key, value, level, newPath) && typeof value === "object")
+		if (typeof value === "object")
 			recursivelyExpandImpl(value as unknown as object, _state, condition, adapter, newPath, level + 1);
 
 		return _state;
