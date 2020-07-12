@@ -185,6 +185,10 @@ export class DropDown<ItemType>
 		document.removeEventListener('mousedown', this.handleMouseClick);
 	}
 
+	// shouldComponentUpdate(nextProps: Readonly<Props<ItemType>>, nextState: Readonly<State<ItemType>>, nextContext: any): boolean {
+	// 	return this.props.adapter.data !== nextProps.adapter.data;
+	// }
+
 	toggleList = (e: React.MouseEvent) => {
 		stopPropagation(e);
 
@@ -202,6 +206,7 @@ export class DropDown<ItemType>
 	};
 
 	render() {
+		console.log(this.props.adapter.data)
 		return (
 			<KeyboardListener onKeyboardEventListener={this.keyEventHandler}>
 				<div ref={node => this.node = node} id={this.props.id} style={wrapperStyle}>
