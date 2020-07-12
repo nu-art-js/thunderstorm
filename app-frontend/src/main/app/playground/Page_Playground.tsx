@@ -51,6 +51,7 @@ import {
 import {Example_List_All} from "./examples/list/Example_List_All";
 import {Example_Tree_SingleType} from './examples/tree/Example_Tree_SingleType';
 import {OstudioEx} from "./examples/dropdown/OstudioEx";
+import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -111,6 +112,7 @@ export class Page_Playground
 			{renderer: Example_NestedList_SingleType, name: "List_SingleType_NestedMenu",},
 			{renderer: Example_List_MultiType, name: "List_MultiType_Menu",},
 			{renderer: Example_NestedList_MultiType, name: "NestedList_MultiType",},
+			{renderer: Example_List_WithInput, name: "Example_List_WithInput",},
 			{renderer: Example_NestedList_MultiType_Object, name: "NestedList_MultiType_Object",},
 			{renderer: Example_NestedList_MultiType_Object_Dynamic, name: "NestedList_MultiType_Object_Dynamic",},
 			{renderer: Example_List_All, name: "Example_List_All",},
