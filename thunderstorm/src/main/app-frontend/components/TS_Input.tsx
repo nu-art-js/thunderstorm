@@ -62,8 +62,8 @@ export class TS_Input<Key extends string>
 	};
 
 	render() {
-		const {id, type, placeholder, style, className, spellCheck} = this.props;
-		return (<input
+		const {id, type, placeholder, style, className, spellCheck, focus, onBlur} = this.props;
+		return <input
 			className={className}
 			style={{...style}}
 			key={id}
@@ -73,10 +73,10 @@ export class TS_Input<Key extends string>
 			placeholder={placeholder}
 			onChange={this.changeValue}
 			onKeyDown={this.handleKeyDown}
-			onBlur={this.props.onBlur}
-			ref={input => this.props.focus && input && input.focus()}
+			onBlur={onBlur}
+			ref={input => focus && input && input.focus()}
 			spellCheck={spellCheck}
-		/>);
+		/>;
 	}
 
 }
