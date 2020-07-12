@@ -73,7 +73,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 	constructor(props: P) {
 		super(props);
-
+		console.log('treeeeeeeee')
 		this.state = {expanded: this.recursivelyExpand(this.props.adapter.data, this.props.callBackState || (() => true))} as S;
 	}
 
@@ -171,7 +171,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			return null;
 
 		const TreeNodeRenderer: _BaseNodeRenderer<any> = this.props.adapter.treeNodeRenderer;
-		console.log("isParent: ", this.props.adapter.isParent(item))
+		// console.log("isParent: ", this.props.adapter.isParent(item))
 		const node: TreeNode = {
 			adapter: this.props.adapter,
 			propKey: key,
