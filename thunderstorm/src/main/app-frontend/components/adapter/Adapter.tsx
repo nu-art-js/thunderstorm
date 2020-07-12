@@ -74,13 +74,14 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 	getChildren = <K extends object>(obj: K): (keyof K)[] => _keys(obj);
 	isParent = (obj: any) => true;
 
-	getFilteredChildren(obj: any) {
+	getFilteredChildren<K extends any>(obj: K): (keyof K)[] | [] {
 		if (obj === undefined || obj === null)
 			return [];
 
 		if (typeof obj !== "object" && !Array.isArray(obj))
 			return [];
 
+		// @ts-ignore
 		return this.getChildren(obj).filter((__key) => this.filter(obj, __key))
 	}
 
