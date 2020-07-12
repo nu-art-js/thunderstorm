@@ -407,7 +407,7 @@ const recursivelyExpandImpl = <K extends object>(obj: K, state: TreeNodeState, c
 		const newPath = `${path}${key}/`;
 
 		if (!_obj.deltaPath)
-			_state[newPath] = condition(key as string, value, level, newPath);
+			_state[newPath] = condition(key, value, level, newPath);
 
 		if (condition(key, value, level, newPath) && typeof value === "object")
 			recursivelyExpandImpl(value as unknown as object, _state, condition, adapter, newPath, level + 1);
