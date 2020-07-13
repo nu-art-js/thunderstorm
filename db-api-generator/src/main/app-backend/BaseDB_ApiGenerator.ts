@@ -334,10 +334,22 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of an array of documents that were upserted.
 	 */
 	async upsertAll(instances: UType[], request?: ExpressRequest): Promise<DBType[]> {
-		return batchAction(instances, 500, async (chunked: UType[]) => this.upsertAllBatched(chunked, request));
+		return batchAction(instances, 500, async (chunked: UType[]) => this.upsertAllImpl(chunked, request));
 	}
 
-	private async upsertAllBatched(instances: UType[], request?: ExpressRequest, transaction?: FirestoreTransaction): Promise<DBType[]> {
+	/**
+	 * Upserts the `dbInstances` using the `transaction` object.
+	 *
+	 * @param transaction - The transaction object.
+	 * @param instances - The instances to update.
+	 * @param request - The request in order to possibly obtain more info.
+	 *
+	 * @throws `BadImplementationException` when the instances are more than 500.
+	 *
+	 * @returns
+	 * A promise of the array of documents that were upserted.
+	 */
+	protected async upsertAllImpl(instances: UType[], request?: ExpressRequest, transaction?: FirestoreTransaction): Promise<DBType[]> {
 		const processor = async (_transaction: FirestoreTransaction) => {
 			const actions = [] as Promise<() => Promise<any>>[];
 
@@ -382,26 +394,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		await this.assertUniqueness(transaction, dbInstance);
 		return transaction.upsert_Read(this.collection, dbInstance);
 	};
-
-	/**
-	 * Upserts the `dbInstances` using the `transaction` object.
-	 *
-	 * @param transaction - The transaction object.
-	 * @param dbInstances - The instances to update.
-	 * @param request - The request in order to possibly obtain more info.
-	 *
-	 * @throws `BadImplementationException` when the instances are more than 500.
-	 *
-	 * @returns
-	 * A promise of the array of documents that were upserted.
-	 */
-	protected async upsertAllImpl(transaction: FirestoreTransaction, dbInstances: DBType[], request?: ExpressRequest): Promise<DBType[]> {
-
-		await Promise.all(dbInstances.map(async dbInstance => this.validateImpl(dbInstance)));
-		await Promise.all(dbInstances.map(async dbInstance => this.assertUniqueness(transaction, dbInstance)));
-
-		return transaction.upsertAll(this.collection, dbInstances);
-	}
 
 	/**
 	 * Deletes a unique document based on its `_id`. Uses a transaction, after deletion assertions occur.
