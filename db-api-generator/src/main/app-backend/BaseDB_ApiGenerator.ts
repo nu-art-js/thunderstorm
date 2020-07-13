@@ -315,17 +315,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	}
 
 	async upsert_Read(instance: UType, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
-		let toProcess;
-		let dbInstance: DBType;
-		if (instance._id === undefined) {
-			toProcess = this.createImpl_Read.bind(this);
-			dbInstance = {...instance, _id: generateHex(idLength)} as unknown as DBType;
-		} else {
-			toProcess = this.upsertImpl_Read.bind(this);
-			dbInstance = instance as unknown as DBType;
-		}
+		if (instance._id === undefined)
+			return this.createImpl_Read(transaction, {...instance, _id: generateHex(idLength)} as unknown as DBType, request);
 
-		return toProcess(transaction, dbInstance, request);
+		return this.upsertImpl_Read(transaction, instance as unknown as DBType, request);
 	}
 
 	/**
