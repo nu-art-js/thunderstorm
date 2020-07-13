@@ -305,23 +305,27 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	async upsert(instance: UType, transaction?: FirestoreTransaction, request?: ExpressRequest) {
 		const processor = async (_transaction: FirestoreTransaction) => {
-			let toProcess;
-			let dbInstance: DBType;
-			if (instance._id === undefined) {
-				toProcess = this.createImpl.bind(this);
-				dbInstance = {...instance, _id: generateHex(idLength)} as unknown as DBType;
-			} else {
-				toProcess = this.upsertImpl.bind(this);
-				dbInstance = instance as unknown as DBType;
-			}
-
-			return toProcess(_transaction, dbInstance, request);
+			return (await this.upsert_Read(instance, _transaction, request))();
 		};
 
 		if (transaction)
 			return processor(transaction);
 
 		return this.collection.runInTransaction(processor);
+	}
+
+	async upsert_Read(instance: UType, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
+		let toProcess;
+		let dbInstance: DBType;
+		if (instance._id === undefined) {
+			toProcess = this.createImpl_Read.bind(this);
+			dbInstance = {...instance, _id: generateHex(idLength)} as unknown as DBType;
+		} else {
+			toProcess = this.upsertImpl_Read.bind(this);
+			dbInstance = instance as unknown as DBType;
+		}
+
+		return toProcess(transaction, dbInstance, request);
 	}
 
 	/**
@@ -351,21 +355,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	protected async upsertAllImpl(instances: UType[], request?: ExpressRequest, transaction?: FirestoreTransaction): Promise<DBType[]> {
 		const processor = async (_transaction: FirestoreTransaction) => {
-			const actions = [] as Promise<() => Promise<any>>[];
-
-			instances.reduce((carry, instance: UType) => {
-				let dbInstance: DBType;
-				if (instance._id === undefined) {
-					dbInstance = {...instance, _id: generateHex(idLength)} as unknown as DBType;
-					addItemToArray(carry, this.createImpl_Read(_transaction, dbInstance, request))
-				} else {
-					dbInstance = instance as unknown as DBType;
-					addItemToArray(carry, this.upsertImpl_Read(_transaction, dbInstance, request))
-				}
-				return carry;
-			}, actions);
-
-			const writes = await Promise.all(actions);
+			const writes = await Promise.all(await this.upsertAllImpl_Read(instances, _transaction, request));
 			return Promise.all(writes.map(write => write()));
 		};
 
@@ -373,6 +363,18 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			return processor(transaction);
 
 		return this.collection.runInTransaction(processor);
+	}
+
+
+	protected async upsertAllImpl_Read(instances: UType[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]> {
+		const actions = [] as Promise<() => Promise<DBType>>[];
+
+		instances.reduce((carry, instance: UType) => {
+			addItemToArray(carry, this.upsert_Read(instance, transaction, request))
+			return carry;
+		}, actions);
+
+		return Promise.all(actions);
 	}
 
 	/**
