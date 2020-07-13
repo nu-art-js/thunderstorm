@@ -114,9 +114,9 @@ export class PermissionsAssert_Class
 
 	async assertUserSharingGroup(granterUserId: string, userGroup: User_Group) {
 		const [granterUser, groupToShare] = await Promise.all([this.getUserDetails(granterUserId), GroupPermissionsDB.queryUnique({_id: userGroup.groupId})]);
-		this.combineUserGroupsCF([userGroup], [groupToShare]);
+		groupToShare.customFields = this.getCombineUserGroupCF(userGroup, groupToShare);
 		const requestPermissions = await this.getAccessLevels(groupToShare.accessLevelIds || []);
-		const requestCustomFields = groupToShare.customFields || [];
+		const requestCustomFields = groupToShare.customFields;
 		await this.assertUserPermissionsImpl(granterUser.userGroups, requestPermissions, requestCustomFields);
 	}
 
@@ -151,31 +151,40 @@ export class PermissionsAssert_Class
 			this.splitToManyArrays(groupIds || []).map(subGroupIds => GroupPermissionsDB.query({where: {_id: {$in: subGroupIds}}})));
 		const groups: DB_PermissionsGroup[] = ([] as DB_PermissionsGroup[]).concat(...groupsArray);
 
-		this.combineUserGroupsCF(userGroups, groups);
-
 		return {
 			user,
-			userGroups: groups
+			userGroups: this.getCombineUserGroups(userGroups, groups)
 		}
 	}
 
-	private combineUserGroupsCF(userGroups: User_Group[], groups: DB_PermissionsGroup[]) {
-		groups.map(group => {
-			const userGroup = userGroups.find(groupItem => groupItem.groupId === group._id);
-			if (!userGroup)
+	private getCombineUserGroupCF(userGroup: User_Group, group: DB_PermissionsGroup) {
+		const cfArray = [];
+		if (group.customFields) {
+			cfArray.push(...group.customFields);
+		}
+
+		if (userGroup.customField) {
+			cfArray.push(userGroup.customField);
+		}
+
+		return cfArray;
+	}
+
+	private getCombineUserGroups(userGroups: User_Group[], groups: DB_PermissionsGroup[]) {
+		const combinedGroups: DB_PermissionsGroup[] = [];
+		groups.forEach(group => {
+			const existUserGroupItem = userGroups.find(groupItem => groupItem.groupId === group._id);
+			if (!existUserGroupItem)
 				throw new BadImplementationException("You are missing group in your code implementation");
 
-			const cfArray = [];
-			if (group.customFields) {
-				cfArray.push(...group.customFields);
-			}
-
-			if (userGroup.customField) {
-				cfArray.push(userGroup.customField);
-			}
-
-			group.customFields = cfArray;
+			userGroups.forEach((userGroup) => {
+				if (userGroup.groupId === group._id) {
+					combinedGroups.push({...group, customFields: this.getCombineUserGroupCF(userGroup, group)});
+				}
+			});
 		});
+
+		return combinedGroups;
 	}
 
 	private async getApiDetails(path: string, projectId: string) {
