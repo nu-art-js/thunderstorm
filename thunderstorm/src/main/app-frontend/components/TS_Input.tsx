@@ -50,6 +50,12 @@ export class TS_Input<Key extends string>
 	};
 
 	handleKeyEvent = (ev: KeyboardEvent) => {
+		if (this.props.onAccept && ev.which === 13)
+			this.props.onAccept();
+
+		if (this.props.onCancel && ev.which === 27)
+			this.props.onCancel();
+
 		ev.stopPropagation();
 	};
 
@@ -57,14 +63,6 @@ export class TS_Input<Key extends string>
 		const value = event.target.value;
 		this.setState({value: value});
 		this.props.onChange(value, event.target.id as Key)
-	};
-
-	handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-		if (this.props.onAccept && event.which === 13)
-			this.props.onAccept();
-
-		if (this.props.onCancel && event.which === 27)
-			this.props.onCancel();
 	};
 
 	render() {
@@ -78,7 +76,6 @@ export class TS_Input<Key extends string>
 			value={this.state.value}
 			placeholder={placeholder}
 			onChange={this.changeValue}
-			onKeyDown={this.handleKeyDown}
 			onBlur={() => {
 				this.ref?.removeEventListener('keydown', this.handleKeyEvent);
 				this.ref = null;
