@@ -182,8 +182,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @param transaction - The transaction object.
 	 * @param instance - The document for which the uniqueness assertion will occur.
 	 */
-	public async assertUniqueness(transaction: FirestoreTransaction, instance: DBType) {
-		await this.assertCustomUniqueness(transaction, instance);
+	public async assertUniqueness(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest) {
+		await this.assertCustomUniqueness(transaction, instance, request);
 
 		const uniqueQueries = this.internalFilter(instance);
 		if (uniqueQueries.length === 0)
@@ -242,7 +242,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @param transaction - The transaction object.
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
 	 */
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DBType) {
+	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
 	}
 
 	/**
@@ -289,7 +289,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	async createImpl_Read(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		await this.validateImpl(instance);
-		await this.assertUniqueness(transaction, instance);
+		await this.assertUniqueness(transaction, instance, request);
 		return async () => transaction.insert(this.collection, instance);
 	};
 
@@ -331,7 +331,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of an array of documents that were upserted.
 	 */
 	async upsertAll(instances: UType[], request?: ExpressRequest): Promise<DBType[]> {
-		return batchAction(instances, 500, async (chunked: UType[]) => this.upsertAllImpl(chunked, request));
+		return batchAction(instances, 500, async (chunked: UType[]) => this.upsertAllImpl(chunked, undefined, request));
 	}
 
 	/**
@@ -346,7 +346,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the array of documents that were upserted.
 	 */
-	protected async upsertAllImpl(instances: UType[], request?: ExpressRequest, transaction?: FirestoreTransaction): Promise<DBType[]> {
+	protected async upsertAllImpl(instances: UType[], transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]> {
 		const processor = async (_transaction: FirestoreTransaction) => {
 			const writes = await Promise.all(await this.upsertAllImpl_Read(instances, _transaction, request));
 			return Promise.all(writes.map(write => write()));
@@ -386,7 +386,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		await this.validateImpl(dbInstance);
-		await this.assertUniqueness(transaction, dbInstance);
+		await this.assertUniqueness(transaction, dbInstance, request);
 		return transaction.upsert_Read(this.collection, dbInstance);
 	};
 
@@ -506,7 +506,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 			await validate(mergedObject, this.validator);
 
-			await this.assertUniqueness(transaction, mergedObject);
+			await this.assertUniqueness(transaction, mergedObject, request);
 
 			return this.upsertImpl(transaction, mergedObject, request);
 		});

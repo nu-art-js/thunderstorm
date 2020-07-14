@@ -128,7 +128,6 @@ export class PermissionsModule_Class
 		const groupsUser = predefinedUser.groups.map(groupItem => {
 			let customField: StringMap = {};
 			const allRegEx = ".*";
-			console.log("groupItem.customKeys: ", groupItem.customKeys);
 			if (!groupItem.customKeys || !groupItem.customKeys.length)
 				customField["_id"] = allRegEx;
 			else {

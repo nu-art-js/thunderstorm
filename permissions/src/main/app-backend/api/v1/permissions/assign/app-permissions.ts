@@ -54,7 +54,7 @@ class ServerApi_UserUrlsPermissions
 			// when I share with you
 			assignAppPermissions = {...body, granterUserId: account._id, sharedUserIds: body.sharedUserIds};
 
-		await UserPermissionsDB.assignAppPermissions(assignAppPermissions);
+		await UserPermissionsDB.assignAppPermissions(assignAppPermissions, request);
 	}
 }
 

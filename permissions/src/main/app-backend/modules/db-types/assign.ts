@@ -37,11 +37,13 @@ import {
 } from "@nu-art/user-account/backend";
 import {Clause_Where} from "@nu-art/firebase";
 import {
-	ApiException
+	ApiException,
+	ExpressRequest
 } from "@nu-art/thunderstorm/backend";
 
 import {
 	_keys,
+	auditBy,
 	BadImplementationException,
 	batchAction,
 	compare,
@@ -114,7 +116,12 @@ export class GroupsDB_Class
 		}
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup) {
+	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup, request?: ExpressRequest) {
+		if (request) {
+			const account = await AccountModule.validateSession(request);
+			dbInstance._audit = auditBy(account.email)
+		}
+
 		if (!dbInstance.accessLevelIds)
 			return;
 
@@ -163,7 +170,12 @@ export class UsersDB_Class
 		this.setLockKeys(["accountId"]);
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser): Promise<void> {
+	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser, request?: ExpressRequest): Promise<void> {
+		if (request) {
+			const account = await AccountModule.validateSession(request);
+			dbInstance._audit = auditBy(account.email)
+		}
+
 		this.setGroupIds(dbInstance);
 		const userGroupIds = filterDuplicates(dbInstance.groups?.map(group => group.groupId) || []);
 		if (!userGroupIds.length)
@@ -183,8 +195,9 @@ export class UsersDB_Class
 				if (userGroupsItems.indexOf(userGroupItem) === userGroupsItems.indexOf(innerUserGroupItem))
 					return;
 
-				if (compare(userGroupItem, innerUserGroupItem))
+				if (compare(userGroupItem, innerUserGroupItem)) {
 					throw new ApiException(422, 'You trying upsert user with duplicate UserGroup (with the same groupId && customField)');
+				}
 			});
 		});
 
@@ -226,7 +239,7 @@ export class UsersDB_Class
 		});
 	}
 
-	async assignAppPermissions(assignAppPermissionsObj: AssignAppPermissions) {
+	async assignAppPermissions(assignAppPermissionsObj: AssignAppPermissions, request?: ExpressRequest) {
 		const sharedUserIds = assignAppPermissionsObj.sharedUserIds || [];
 		if (!sharedUserIds.length)
 			throw new BadImplementationException("SharedUserIds is missing");
@@ -269,8 +282,7 @@ export class UsersDB_Class
 				return user;
 			});
 
-			updatedUsers.map(updateUser => this.setGroupIds(updateUser));
-			return transaction.upsertAll(this.collection, updatedUsers);
+			return this.upsertAllImpl(updatedUsers, transaction, request);
 		});
 	}
 }
