@@ -149,7 +149,7 @@ export class GroupsDB_Class
 
 			//TODO patch the predefined groups, in case app changed the label of the group..
 			const groupsToInsert = _groups.filter(group => !dbGroups.find(dbGroup => dbGroup._id === group._id));
-			return this.upsertAllImpl(groupsToInsert, transaction);
+			return this.upsertAll(groupsToInsert, transaction);
 		});
 	}
 
@@ -282,7 +282,7 @@ export class UsersDB_Class
 				return user;
 			});
 
-			return this.upsertAllImpl(updatedUsers, transaction, request);
+			return this.upsertAll(updatedUsers, transaction, request);
 		});
 	}
 }
