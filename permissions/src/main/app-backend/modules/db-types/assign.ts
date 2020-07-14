@@ -149,7 +149,7 @@ export class GroupsDB_Class
 
 			//TODO patch the predefined groups, in case app changed the label of the group..
 			const groupsToInsert = _groups.filter(group => !dbGroups.find(dbGroup => dbGroup._id === group._id));
-			return Promise.all(groupsToInsert.map(group => this.createImpl(transaction, group)));
+			return this.upsertAllImpl(groupsToInsert, transaction);
 		});
 	}
 
