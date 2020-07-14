@@ -49,8 +49,9 @@ import {
 	tryDeleteAccessLevelAssociatedWithApi,
 	tryDeleteAccessLevelAssociatedWithGroup,
 	tryDeleteDomainAssociatedWithAccessLevel,
-    checkUpdatedUserGroups,
-    failedDeleteGroupAssociatedToUser
+	checkUpdatedUserGroups,
+	failedDeleteGroupAssociatedToUser,
+	failedCreateUserWithDuplicateGroupsButOneUndefinedCFAndOtherEmptyObj
 } from "./tests/permissions-manage";
 import {
 	permissionsAssertDoesCustomFieldsSatisfiesTests,
@@ -65,6 +66,7 @@ import {
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered,
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered,
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCovered,
+	testFullAssertUserPermissionsWithEmptyUserCFsArrayAndEmptyRequestCFObj,
 	testFullAssertUserPermissionsWithExtraGroupCFCovered
 } from "./tests/full-permission-user-assert";
 
@@ -98,6 +100,7 @@ mainScenario.add(createGroupWithLegalCustomField());
 mainScenario.add(failToCreateGroupWithIllegalCustomField());
 mainScenario.add(failedCreateTwoGroupsWithSameName());
 mainScenario.add(failedCreateGroupWithDuplicateAccessLevel());
+mainScenario.add(failedCreateUserWithDuplicateGroupsButOneUndefinedCFAndOtherEmptyObj());
 mainScenario.add(createApiWithAccessLevel());
 
 mainScenario.add(permissionsAssertIsLevelsMatchTests());
@@ -114,6 +117,7 @@ mainScenario.add(checkInsertUserIfNotExistByExistUser());
 mainScenario.add(assignUserPermissionsTests());
 
 mainScenario.add(testFullAssertUserPermissionsWithExtraGroupCFCovered());
+mainScenario.add(testFullAssertUserPermissionsWithEmptyUserCFsArrayAndEmptyRequestCFObj());
 mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered());
 mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCovered());
 mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered());
