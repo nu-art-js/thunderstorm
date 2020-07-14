@@ -26,7 +26,7 @@ import {TS_Input} from "./TS_Input";
 type Props<T> = {
 	filter: (item: T) => string[],
 	list: T[],
-	onChange: (items: T[]) => void,
+	onChange: (items: T[], filterTextLength?: number) => void,
 	id?: string,
 	initialFilterText?: string,
 	focus?: boolean,
@@ -61,14 +61,14 @@ export class FilterInput<T>
 		return b;
 	}
 
-	callOnChange = (list: T[]) => {
+	callOnChange = (list: T[], filterTextLength?:number) => {
 		const {filter, onChange} = this.props;
-		onChange(this.filterInstance.filter(list, filter));
+		onChange(this.filterInstance.filter(list, filter), filterTextLength);
 	};
 
 	filter = (text: string) => {
 		this.filterInstance.setFilter(text);
-		this.callOnChange(this.props.list);
+		this.callOnChange(this.props.list, text.length);
 	};
 
 	render() {
