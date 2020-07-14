@@ -108,6 +108,7 @@ type State<ItemType> = {
 	open: boolean
 	selected?: ItemType
 	hover?: ItemType
+	filterTextLength?: number
 }
 
 // export type DropDown_Node<ItemType> = {
@@ -155,6 +156,7 @@ type Props<ItemType> = StaticProps & {
 
 	listStyleResolver?: ListStyleProps
 
+	autocomplete?: boolean
 }
 
 export class DropDown<ItemType>
@@ -184,11 +186,6 @@ export class DropDown<ItemType>
 	componentWillUnmount() {
 		document.removeEventListener('mousedown', this.handleMouseClick);
 	}
-
-	// shouldComponentUpdate(nextProps: Readonly<Props<ItemType>>, nextState: Readonly<State<ItemType>>, nextContext: any): boolean {
-	// 	return this.props.adapter.data !== nextProps.adapter.data;
-	// }
-
 	toggleList = (e: React.MouseEvent) => {
 		stopPropagation(e);
 
@@ -206,7 +203,6 @@ export class DropDown<ItemType>
 	};
 
 	render() {
-		console.log(this.props.adapter.data)
 		return (
 			<KeyboardListener onKeyboardEventListener={this.keyEventHandler}>
 				<div ref={node => this.node = node} id={this.props.id} style={wrapperStyle}>
@@ -217,7 +213,6 @@ export class DropDown<ItemType>
 	}
 
 	private keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent) => {
-		console.log('lala');
 		if (e.code === "Escape")
 			return this.setState({open: false});
 
@@ -253,7 +248,7 @@ export class DropDown<ItemType>
 			id={`${this.props.id}-input`}
 			filter={this.props.filter}
 			list={this.options}
-			onChange={(filtered: (ItemType)[]) => this.setState({filteredOptions: filtered})}
+			onChange={(filteredOptions: ItemType[], filterTextLength) => this.setState({filteredOptions: this.props.autocomplete && this.props.filter && !filterTextLength ? [] : filteredOptions, filterTextLength})}
 			focus={true}
 			className={inputComplementary.className}
 			inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
@@ -387,10 +382,11 @@ export class DropDown<ItemType>
 		const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id)
 		return <div style={listContainerStyle}>
 			<div className={listComplementary.listClassName} style={listComplementary.listStyle}>
-				{items.length === 0 ?
+				{(!this.props.filter || !this.props.autocomplete || this.state.filterTextLength) && items.length === 0 ?
 					<div style={{textAlign: "center", opacity: 0.5}}>No options</div>
 					:
 					<Tree
+						key={`${this.props.id}-tree`}
 						id={`${this.props.id}-tree`}
 						adapter={this.props.adapter}
 						indentPx={0}
