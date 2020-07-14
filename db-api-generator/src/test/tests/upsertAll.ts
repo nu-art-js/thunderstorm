@@ -61,6 +61,12 @@ export function upsertAllTest() {
 		assert("Expecting the order of the passed elements to be maintained", ret[1], exampleDocument2);
 	}).setLabel("Upserting ordered"));
 
+	scenario.add(__custom(async () => {
+		const docs = new Array(10).fill(0).map(() => exampleDocument1);
+		await ExampleModule.upsertAll(docs);
+
+		assert("Expecting 10 docs in the db", (await ExampleModule.query({where: {}})).length, 10);
+	}).setLabel("Upserting 10 docs"));
 
 	return scenario;
 }
