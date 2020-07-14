@@ -25,14 +25,16 @@ import {
 	assert,
 	compare,
 	currentTimeMillies,
-	Hour,
-	generateHex
+	generateHex,
+	Hour
 } from "@nu-art/ts-common";
 import {
 	DB_PushKeys,
 	DB_PushSession,
 	Request_PushRegister
 } from "../main";
+import {FirestoreTransaction} from "../../../firebase/src/main/app-backend/firestore/FirestoreTransaction";
+import {FirestoreCollection} from "../../../firebase/src/main/app-backend/firestore/FirestoreCollection";
 
 const arrayOf2 = Array(2).fill(0);
 export const scenarioCleanup = __scenario("Scheduled Cleaup");
@@ -53,12 +55,12 @@ const testRegister = async function (request: Request_PushRegister, timestamp: n
 	}));
 
 	// @ts-ignore
-	return PushPubSubModule.pushKeys.runInTransaction(async transaction => {
-		// @ts-ignore
-		const data = await transaction.query(PushPubSubModule.pushKeys, {where: {firebaseToken: request.firebaseToken}});
+	const pushKeysCollection: FirestoreCollection<DB_PushKeys> = PushPubSubModule.pushKeys;
+
+	return pushKeysCollection.runInTransaction(async (transaction: FirestoreTransaction) => {
+		const data = await transaction.query(pushKeysCollection, {where: {firebaseToken: request.firebaseToken}});
 		const toInsert = subscriptions.filter(s => !data.find((d: DB_PushKeys) => compare(d, s)));
-		// @ts-ignore
-		return Promise.all(toInsert.map(instance => transaction.insert(PushPubSubModule.pushKeys, instance)));
+		return Promise.all(toInsert.map(instance => transaction.insert(pushKeysCollection, instance)));
 	})
 };
 

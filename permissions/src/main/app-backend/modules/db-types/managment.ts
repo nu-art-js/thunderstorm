@@ -41,6 +41,7 @@ import {
 	Request_UpdateApiPermissions
 } from "../_imports";
 import {
+	addItemToArray,
 	auditBy,
 	filterDuplicates,
 	MUSTNeverHappenException,
@@ -50,9 +51,7 @@ import {
 	validateRegexp
 } from "@nu-art/ts-common";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
-import {
-	GroupPermissionsDB
-} from "./assign";
+import {GroupPermissionsDB} from "./assign";
 import {Clause_Where} from "@nu-art/firebase";
 import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
 import {
@@ -153,10 +152,11 @@ export class LevelDB_Class
 		}
 	}
 
-	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, request: ExpressRequest): Promise<DB_PermissionAccessLevel> {
+	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, request: ExpressRequest): Promise<() => Promise<DB_PermissionAccessLevel>> {
 		const existDbLevel = await transaction.queryUnique(this.collection, {where: {_id: dbInstance._id}});
 		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
-		const upsertRead = await transaction.upsert_Read(this.collection, dbInstance);
+		const upsertWrite = await transaction.upsert_Read(this.collection, dbInstance);
+		const writes: (() => Promise<any>)[] = [upsertWrite];
 		if (existDbLevel) {
 			const callbackfn = (group: Request_CreateGroup) => {
 				const index = group.accessLevelIds?.indexOf(dbInstance._id);
@@ -181,10 +181,13 @@ export class LevelDB_Class
 			await Promise.all(asyncs);
 
 			// --- writes part
-			await upsertGroups();
+			addItemToArray(writes, upsertGroups);
 		}
 
-		return upsertRead();
+		const returnWrite = await super.upsertImpl_Read(transaction, dbInstance, request);
+		await Promise.all(writes.map(c => c()));
+
+		return returnWrite
 	}
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
