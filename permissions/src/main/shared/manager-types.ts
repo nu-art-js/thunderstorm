@@ -20,20 +20,21 @@ import {
 	DB_Object,
 	DB_RequestObject
 } from "@nu-art/firebase";
+import {Auditable} from "@nu-art/ts-common";
 
 export type Request_CreateDomain = DB_RequestObject & {
 	projectId: string
 	namespace: string
 }
 
-export type DB_PermissionDomain = DB_Object & Request_CreateDomain;
+export type DB_PermissionDomain = DB_Object & Request_CreateDomain & Auditable;
 
 export type Request_CreateProject = DB_RequestObject & {
 	name: string,
 	customKeys?: string[]
 }
 
-export type DB_PermissionProject = DB_Object & Request_CreateProject
+export type DB_PermissionProject = DB_Object & Request_CreateProject & Auditable
 
 
 export type Request_CreateLevel = DB_RequestObject & {
@@ -42,7 +43,7 @@ export type Request_CreateLevel = DB_RequestObject & {
 	value: number
 }
 
-export type DB_PermissionAccessLevel = DB_Object & Request_CreateLevel
+export type DB_PermissionAccessLevel = DB_Object & Request_CreateLevel & Auditable
 
 
 export type Request_UpdateApiPermissions = DB_RequestObject & {
@@ -52,4 +53,4 @@ export type Request_UpdateApiPermissions = DB_RequestObject & {
 }
 
 
-export type DB_PermissionApi = DB_Object & Request_UpdateApiPermissions
+export type DB_PermissionApi = DB_Object & Request_UpdateApiPermissions & Auditable
