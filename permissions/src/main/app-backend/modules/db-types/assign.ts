@@ -195,7 +195,7 @@ export class UsersDB_Class
 				if (userGroupsItems.indexOf(userGroupItem) === userGroupsItems.indexOf(innerUserGroupItem))
 					return;
 
-				if (compare(userGroupItem, innerUserGroupItem)) {
+				if (compare(userGroupItem.groupId, innerUserGroupItem.groupId) && compare(userGroupItem.customField || {}, innerUserGroupItem.customField || {})) {
 					throw new ApiException(422, 'You trying upsert user with duplicate UserGroup (with the same groupId && customField)');
 				}
 			});

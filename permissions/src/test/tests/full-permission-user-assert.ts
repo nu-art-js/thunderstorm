@@ -119,6 +119,18 @@ export function testFullAssertUserPermissionsWithExtraGroupCFCovered() {
 	return scenario;
 }
 
+export function testFullAssertUserPermissionsWithEmptyUserCFsArrayAndEmptyRequestCFObj() {
+	const scenario = __scenario("Test full assert user permissions");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		const requestCustomField: StringMap = {};
+		const groupCustomFields: StringMap[] = [];
+		const extraGroupCustomField = {UnitId: 'eq[1-3]', testOne: "test-one", testTwo: "test-two"};
+		await testUserPermissions(groupCustomFields, extraGroupCustomField, requestCustomField);
+	}).setLabel("Test full assert user permissions with empty user CF's array and empty request CF Obj - passed successfully"));
+	return scenario;
+}
+
 export function expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered() {
 	const scenario = __scenario("Test full assert user permissions");
 	scenario.add(cleanup());

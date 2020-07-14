@@ -57,7 +57,8 @@ type AssignUserModels = {
 	givenGroup: PredefinedGroup,
 	granterUserGroup: PredefinedGroup,
 	label: string,
-	expected: boolean
+	expected: boolean,
+	runTwice?: boolean
 }
 
 const assignUserModels: AssignUserModels[] = [{
@@ -67,6 +68,14 @@ const assignUserModels: AssignUserModels[] = [{
 	granterUserGroup: Permissions_WorkspaceOwner,
 	label: "Granter & given group with the same level and customField",
 	expected: true
+}, {
+	granterUserCF: {workspace: "workspace1"},
+	givenGroupCF: {workspace: "workspace1"},
+	givenGroup: Permissions_WorkspaceOwner,
+	granterUserGroup: Permissions_WorkspaceOwner,
+	label: "Granter & given group with the same level and customField, but twice",
+	expected: false,
+	runTwice: true
 }, {
 	granterUserCF: {workspace: "workspace1"},
 	givenGroupCF: {workspace: "workspace1"},
@@ -186,6 +195,9 @@ async function isAssignUsersPermissions(data: ConfigDB, assignUserObj: AssignUse
 
 	try {
 		await UserPermissionsDB.assignAppPermissions(assignAppPermissionsObj);
+		if (assignUserObj.runTwice) {
+			await UserPermissionsDB.assignAppPermissions(assignAppPermissionsObj);
+		}
 	} catch (e) {
 		return false;
 	}
