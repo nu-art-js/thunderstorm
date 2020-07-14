@@ -41,7 +41,6 @@ import {
 	Request_UpdateApiPermissions
 } from "../_imports";
 import {
-	addItemToArray,
 	auditBy,
 	filterDuplicates,
 	MUSTNeverHappenException,
@@ -155,8 +154,7 @@ export class LevelDB_Class
 	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, request: ExpressRequest): Promise<() => Promise<DB_PermissionAccessLevel>> {
 		const existDbLevel = await transaction.queryUnique(this.collection, {where: {_id: dbInstance._id}});
 		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
-		const upsertWrite = await transaction.upsert_Read(this.collection, dbInstance);
-		const writes: (() => Promise<any>)[] = [upsertWrite];
+		const returnWrite = await super.upsertImpl_Read(transaction, dbInstance, request);
 		if (existDbLevel) {
 			const callbackfn = (group: Request_CreateGroup) => {
 				const index = group.accessLevelIds?.indexOf(dbInstance._id);
@@ -181,13 +179,10 @@ export class LevelDB_Class
 			await Promise.all(asyncs);
 
 			// --- writes part
-			addItemToArray(writes, upsertGroups);
+			await upsertGroups();
 		}
 
-		const returnWrite = await super.upsertImpl_Read(transaction, dbInstance, request);
-		await Promise.all(writes.map(c => c()));
-
-		return returnWrite
+		return returnWrite;
 	}
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {

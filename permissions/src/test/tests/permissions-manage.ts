@@ -175,7 +175,7 @@ export function checkGroupAccessLevelsAfterPatchingLevelDocument() {
 		if (!group.__accessLevels || group.__accessLevels.length !== 1 || group.__accessLevels[0].value !== newLevelValue) {
 			throw new TestException("Didn't update group __accessLevels");
 		}
-	}).setReadKey(contextKey1).setLabel('Group __accessLevels has updated successfully by updating level document'));
+	}).setReadKey(contextKey1).setLabel('Group __accessLevels has updated successfully by patching level document'));
 	return scenario;
 }
 
