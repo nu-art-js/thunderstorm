@@ -293,6 +293,16 @@ export function failedCreateUserWithDuplicateGroups() {
 	return scenario;
 }
 
+export function failedCreateUserWithDuplicateGroupsButOneUndefinedCFAndOtherEmptyObj() {
+	const scenario = __scenario("Expect Fail to bind duplicate groups (with the same groupId && customField - one undefined and the other empty Obj) to user");
+	scenario.add(cleanup());
+	scenario.add(__custom(async (action, data) => {
+		const group = await GroupPermissionsDB.upsert({label: "test group"});
+		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [{groupId: group._id, customField: undefined}, {groupId: group._id, customField: {}}]});
+	}).setLabel('Fail to bind duplicate groups (with the same groupId && customField - one undefined and the other empty Obj) to user, as expected').expectToFail(ApiException));
+	return scenario;
+}
+
 export function failedDeleteGroupAssociatedToUser() {
 	const scenario = __scenario("Expect Fail to delete group associated with user");
 	scenario.add(cleanup());
