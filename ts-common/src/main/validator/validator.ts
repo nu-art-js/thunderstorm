@@ -48,9 +48,9 @@ import {
 export type ValidatorTypeResolver<K> =
 	K extends any[] ? Validator<K> :
 		K extends object ? TypeValidator<K> | Validator<K> :
-			Validator<K> | undefined;
+			Validator<K> ;
 
-export type Validator<P> = (path: string, p?: P) => void;
+export type Validator<P> = undefined | ((path: string, p?: P) => void);
 export type TypeValidator<T extends ObjectTS> = { [P in keyof T]: ValidatorTypeResolver<T[P]> };
 
 export class ValidationException
@@ -88,8 +88,13 @@ export const validateObjectValues = <V, T = { [k: string]: V }>(validator: Valid
 
 		for (const key of _keys(input)) {
 			const inputValue = input[key];
-			if (typeof inputValue === "object")
-				return validateObjectValues(validator, mandatory)(`${path}/${key}`, inputValue as unknown as { [k: string]: V });
+			if (typeof inputValue === "object") {
+				const objectValidator = validateObjectValues(validator, mandatory);
+				if (!objectValidator)
+					return;
+
+				return objectValidator(`${path}/${key}`, inputValue as unknown as { [k: string]: V });
+			}
 
 			validate(inputValue as unknown as V, validator, `${path}/${key}`);
 		}
@@ -153,8 +158,13 @@ export const validate = <T extends any>(instance: T, _validator: ValidatorTypeRe
 	if (!_validator)
 		return;
 
-	if (typeof _validator === "function")
-		return (_validator as Validator<T>)(`${path}`, instance);
+	if (typeof _validator === "function") {
+		const validator = _validator as Validator<T>;
+		if (!validator)
+			return;
+
+		return validator(`${path}`, instance);
+	}
 
 	if (typeof _validator === "object") {
 		if (!instance && _validator)
@@ -166,7 +176,7 @@ export const validate = <T extends any>(instance: T, _validator: ValidatorTypeRe
 	}
 };
 
-export const validateObject = <T>(__validator: TypeValidator<object>, instance: T, path: string="") => {
+export const validateObject = <T>(__validator: TypeValidator<object>, instance: T, path: string = "") => {
 	const validatorKeys = _keys(__validator);
 	const instanceKeys = Object.keys(instance as unknown as object);
 

@@ -50,6 +50,9 @@ export class FirestoreCollection<Type extends object> {
 	constructor(name: string, wrapper: FirestoreWrapper, externalFilterKeys?: FilterKeys<Type>) {
 		this.name = name;
 		this.wrapper = wrapper;
+		if(!/[a-z-]{3,}/.test(name))
+			console.log("Please follow name pattern for collections /[a-z-]{3,}/")
+
 		this.collection = wrapper.firestore.collection(name);
 		this.externalUniqueFilter = (instance: Type) => {
 			if (!externalFilterKeys)
