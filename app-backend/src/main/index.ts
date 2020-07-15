@@ -29,7 +29,7 @@ import {
 	ExampleModule
 } from "@modules/ExampleModule";
 import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
-import {Module} from "@nu-art/ts-common";
+import {Module, __stringify} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
 import {Backend_ModulePack_BugReport} from "@nu-art/bug-report/backend";
 import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
@@ -66,8 +66,9 @@ const _exports = new Storm()
 	.setEnvironment(Environment.name)
 	.build();
 
-_exports.logTest = functions.database.ref('triggerLogs').onWrite(() => {
+_exports.logTest = functions.database.ref('triggerLogs').onWrite((change, context) => {
 	console.log('LOG_TEST FUNCTION! -- Logging string');
+	console.log(`Changed from: ${change.before} to --> ${change.after} with context: ${__stringify(context)}`);
 	console.log({
 		            firstProps: 'String prop',
 		            secondProps: {

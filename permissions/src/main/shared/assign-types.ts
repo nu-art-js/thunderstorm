@@ -16,7 +16,10 @@
  * limitations under the License.
  */
 
-import {StringMap} from "@nu-art/ts-common";
+import {
+	Auditable,
+	StringMap
+} from "@nu-art/ts-common";
 import {DB_Object} from "@nu-art/firebase";
 
 export type Base_AccessLevels = {
@@ -31,7 +34,7 @@ export type Request_CreateGroup = {
 	customFields?: StringMap[]
 };
 
-export type DB_PermissionsGroup = DB_Object & Request_CreateGroup;
+export type DB_PermissionsGroup = DB_Object & Request_CreateGroup & Auditable;
 
 export type User_Group = {
 	groupId: string,
@@ -44,4 +47,4 @@ export type Request_CreateUser = {
 	__groupIds?: string[]
 };
 
-export type DB_PermissionsUser = DB_Object & Request_CreateUser
+export type DB_PermissionsUser = DB_Object & Request_CreateUser & Auditable

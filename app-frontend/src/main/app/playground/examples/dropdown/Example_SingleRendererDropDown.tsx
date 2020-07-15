@@ -59,7 +59,7 @@ export class Example_SingleRendererDropDown
 				closeCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><div style={{marginTop:3}}>{ICONS.arrowClose(undefined, 11)}</div></div>}
 				placeholder={"Choose a plague"}
 				headerStyleResolver={headerResolverClass}
-				// autocomplete={true}
+				autocomplete={true}
 			/>
 			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>
