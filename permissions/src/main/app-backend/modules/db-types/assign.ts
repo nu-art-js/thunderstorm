@@ -149,7 +149,7 @@ export class GroupsDB_Class
 
 			//TODO patch the predefined groups, in case app changed the label of the group..
 			const groupsToInsert = _groups.filter(group => !dbGroups.find(dbGroup => dbGroup._id === group._id));
-			return this.upsertAllImpl(groupsToInsert, transaction);
+			return this.upsertAll(groupsToInsert, transaction);
 		});
 	}
 
@@ -195,7 +195,7 @@ export class UsersDB_Class
 				if (userGroupsItems.indexOf(userGroupItem) === userGroupsItems.indexOf(innerUserGroupItem))
 					return;
 
-				if (compare(userGroupItem, innerUserGroupItem)) {
+				if (compare(userGroupItem.groupId, innerUserGroupItem.groupId) && compare(userGroupItem.customField || {}, innerUserGroupItem.customField || {})) {
 					throw new ApiException(422, 'You trying upsert user with duplicate UserGroup (with the same groupId && customField)');
 				}
 			});
@@ -282,7 +282,7 @@ export class UsersDB_Class
 				return user;
 			});
 
-			return this.upsertAllImpl(updatedUsers, transaction, request);
+			return this.upsertAll(updatedUsers, transaction, request);
 		});
 	}
 }

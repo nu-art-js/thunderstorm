@@ -330,8 +330,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of an array of documents that were upserted.
 	 */
-	async upsertAll(instances: UType[], request?: ExpressRequest): Promise<DBType[]> {
-		return batchAction(instances, 500, async (chunked: UType[]) => this.upsertAllImpl(chunked, undefined, request));
+	async upsertAll_Batched(instances: UType[], request?: ExpressRequest): Promise<DBType[]> {
+		return batchAction(instances, 500, async (chunked: UType[]) => this.upsertAll(chunked, undefined, request));
 	}
 
 	/**
@@ -346,7 +346,14 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the array of documents that were upserted.
 	 */
-	protected async upsertAllImpl(instances: UType[], transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]> {
+	async upsertAll(instances: UType[], transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]> {
+		if (instances.length > 500) {
+			if (transaction)
+				throw new BadImplementationException('Firestore transaction supports maximum 500 at a time');
+
+			return this.upsertAll_Batched(instances, request);
+		}
+
 		const processor = async (_transaction: FirestoreTransaction) => {
 			const writes = await Promise.all(await this.upsertAllImpl_Read(instances, _transaction, request));
 			return Promise.all(writes.map(write => write()));
