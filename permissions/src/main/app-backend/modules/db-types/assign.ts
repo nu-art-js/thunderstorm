@@ -76,7 +76,8 @@ export class GroupsDB_Class
 		label: validateGroupLabel,
 		accessLevelIds: validateArray(validateUniqueId, false),
 		customFields: validateArray(validateObjectValues<string>(validateCustomFieldValues), false),
-		__accessLevels: undefined
+		__accessLevels: undefined,
+		_audit: undefined
 	};
 
 	constructor() {
@@ -162,7 +163,8 @@ export class UsersDB_Class
 		_id: undefined,
 		accountId: validateUserUuid,
 		groups: validateArray({groupId: validateStringAndNumbersWithDashes, customField: validateObjectValues<string>(validateCustomFieldValues, false)}, false),
-		__groupIds: validateArray(validateStringAndNumbersWithDashes, false)
+		__groupIds: validateArray(validateStringAndNumbersWithDashes, false),
+		_audit: undefined
 	};
 
 	constructor() {
