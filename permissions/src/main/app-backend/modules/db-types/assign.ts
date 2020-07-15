@@ -116,7 +116,7 @@ export class GroupsDB_Class
 		}
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup, request?: ExpressRequest) {
+	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup, request?: ExpressRequest) {
 		if (request) {
 			const account = await AccountModule.validateSession(request);
 			dbInstance._audit = auditBy(account.email)
@@ -170,7 +170,7 @@ export class UsersDB_Class
 		this.setLockKeys(["accountId"]);
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser, request?: ExpressRequest): Promise<void> {
+	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser, request?: ExpressRequest): Promise<void> {
 		if (request) {
 			const account = await AccountModule.validateSession(request);
 			dbInstance._audit = auditBy(account.email)
