@@ -146,6 +146,7 @@ type Props<ItemType> = StaticProps & {
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
 	filter?: (item: ItemType) => string[]
+	onFilter?: (list?: ItemType[]) => void
 	inputResolver?: (selected?: ItemType) => InputProps
 	placeholder?: string
 
@@ -248,7 +249,12 @@ export class DropDown<ItemType>
 			id={`${this.props.id}-input`}
 			filter={this.props.filter}
 			list={this.options}
-			onChange={(filteredOptions: ItemType[], filterTextLength) => this.setState({filteredOptions: this.props.autocomplete && this.props.filter && !filterTextLength ? [] : filteredOptions, filterTextLength})}
+			onChange={(filteredOptions: ItemType[], filterTextLength) => {
+				this.setState({
+					filteredOptions: this.props.autocomplete && this.props.filter && !filterTextLength ? [] : filteredOptions,
+					filterTextLength
+				}, () => this.props.onFilter && this.props.onFilter(this.state.filteredOptions));
+			}}
 			focus={true}
 			className={inputComplementary.className}
 			inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
@@ -381,6 +387,10 @@ export class DropDown<ItemType>
 		const listComplementary = (this.props.listStyleResolver || this.listStyleResolver);
 		const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id)
 		const id = `${this.props.id}-tree`;
+
+		if (this.props.autocomplete && !this.state.filterTextLength)
+			return null;
+
 		return <div style={listContainerStyle}>
 			<div className={listComplementary.listClassName} style={listComplementary.listStyle}>
 				{(!this.props.filter || !this.props.autocomplete || this.state.filterTextLength) && items.length === 0 ?
