@@ -41,6 +41,7 @@ import {
 	Request_UpdateApiPermissions
 } from "../_imports";
 import {
+	auditBy,
 	filterDuplicates,
 	MUSTNeverHappenException,
 	TypeValidator,
@@ -49,12 +50,14 @@ import {
 	validateRegexp
 } from "@nu-art/ts-common";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
-import {
-	GroupPermissionsDB
-} from "./assign";
+import {GroupPermissionsDB} from "./assign";
 import {Clause_Where} from "@nu-art/firebase";
 import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
-import {ServerApi} from "@nu-art/thunderstorm/backend";
+import {
+	ExpressRequest,
+	ServerApi
+} from "@nu-art/thunderstorm/backend";
+import {AccountModule} from "@nu-art/user-account/app-backend/modules/AccountModule";
 
 const validateProjectId = validateRegexp(/^[a-z-]{3,20}$/);
 export const validateProjectName = validateRegexp(/^[A-Za-z- ]{3,20}$/);
@@ -70,6 +73,13 @@ export class ProjectDB_Class
 
 	constructor() {
 		super(CollectionName_Projects, ProjectDB_Class._validator, "project");
+	}
+
+	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {
+		if (request) {
+			const account = await AccountModule.validateSession(request);
+			dbInstance._audit = auditBy(account.email)
+		}
 	}
 
 	apis(pathPart?: string): ServerApi<any>[] {
@@ -102,8 +112,13 @@ export class DomainDB_Class
 		}
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {
+	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain, request?: ExpressRequest) {
 		await ProjectPermissionsDB.queryUnique({_id: dbInstance.projectId});
+
+		if (request) {
+			const account = await AccountModule.validateSession(request);
+			dbInstance._audit = auditBy(account.email)
+		}
 	}
 }
 
@@ -127,14 +142,19 @@ export class LevelDB_Class
 		return [{domainId, name}, {domainId, value}];
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
+	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, request?: ExpressRequest) {
 		await DomainPermissionsDB.queryUnique({_id: dbInstance.domainId});
+
+		if (request) {
+			const account = await AccountModule.validateSession(request);
+			dbInstance._audit = auditBy(account.email)
+		}
 	}
 
-	protected async upsertImpl(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel): Promise<DB_PermissionAccessLevel> {
+	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, request: ExpressRequest): Promise<() => Promise<DB_PermissionAccessLevel>> {
 		const existDbLevel = await transaction.queryUnique(this.collection, {where: {_id: dbInstance._id}});
 		const groups = await GroupPermissionsDB.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
-		const upsertRead = await transaction.upsert_Read(this.collection, dbInstance);
+		const returnWrite = await super.upsertImpl_Read(transaction, dbInstance, request);
 		if (existDbLevel) {
 			const callbackfn = (group: Request_CreateGroup) => {
 				const index = group.accessLevelIds?.indexOf(dbInstance._id);
@@ -162,7 +182,7 @@ export class LevelDB_Class
 			await upsertGroups();
 		}
 
-		return upsertRead();
+		return returnWrite;
 	}
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
@@ -217,7 +237,12 @@ export class ApiDB_Class
 		return [{projectId, path}];
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionApi) {
+	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionApi, request?: ExpressRequest) {
+		if (request) {
+			const account = await AccountModule.validateSession(request);
+			dbInstance._audit = auditBy(account.email)
+		}
+
 		await ProjectPermissionsDB.queryUnique({_id: dbInstance.projectId});
 
 		// need to assert that all the permissions levels exists in the db

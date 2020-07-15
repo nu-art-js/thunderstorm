@@ -41,24 +41,28 @@ type State = { value: string }
 
 export class TS_Input<Key extends string>
 	extends React.Component<Props<Key>, State> {
+	private ref?: HTMLInputElement | null;
+
 	constructor(props: Props<Key>) {
 		super(props);
 
 		this.state = {value: props.value || ""};
-	}
+	};
+
+	handleKeyEvent = (ev: KeyboardEvent) => {
+		if (this.props.onAccept && ev.which === 13)
+			this.props.onAccept();
+
+		if (this.props.onCancel && ev.which === 27)
+			this.props.onCancel();
+
+		ev.stopPropagation();
+	};
 
 	changeValue = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = event.target.value;
 		this.setState({value: value});
 		this.props.onChange(value, event.target.id as Key)
-	};
-
-	handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-		if (this.props.onAccept && event.which === 13)
-			this.props.onAccept();
-
-		if (this.props.onCancel && event.which === 27)
-			this.props.onCancel();
 	};
 
 	render() {
@@ -72,9 +76,19 @@ export class TS_Input<Key extends string>
 			value={this.state.value}
 			placeholder={placeholder}
 			onChange={this.changeValue}
-			onKeyDown={this.handleKeyDown}
-			onBlur={onBlur}
-			ref={input => focus && input && input.focus()}
+			onBlur={() => {
+				this.ref?.removeEventListener('keydown', this.handleKeyEvent);
+				this.ref = null;
+				onBlur && onBlur();
+			}}
+			ref={input => {
+				if (this.ref || !input)
+					return;
+
+				this.ref = input;
+				focus && this.ref.focus();
+				this.ref.addEventListener('keydown', this.handleKeyEvent);
+			}}
 			spellCheck={spellCheck}
 		/>;
 	}
