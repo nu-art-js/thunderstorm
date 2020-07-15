@@ -176,14 +176,14 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	/**
 	 * Asserts the uniqueness of an instance in two steps:
-	 * - Executes `this.assertCustomUniqueness`.
+	 * - Executes `this.preUpsertProcessing`.
 	 * - Asserts uniqueness based on the internal filters.
 	 *
 	 * @param transaction - The transaction object.
 	 * @param instance - The document for which the uniqueness assertion will occur.
 	 */
 	public async assertUniqueness(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest) {
-		await this.assertCustomUniqueness(transaction, instance, request);
+		await this.preUpsertProcessing(transaction, instance, request);
 
 		const uniqueQueries = this.internalFilter(instance);
 		if (uniqueQueries.length === 0)
@@ -242,7 +242,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @param transaction - The transaction object.
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
 	 */
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
+	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
 	}
 
 	/**

@@ -75,7 +75,7 @@ export class ProjectDB_Class
 		super(CollectionName_Projects, ProjectDB_Class._validator, "project");
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {
+	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {
 		if (request) {
 			const account = await AccountModule.validateSession(request);
 			dbInstance._audit = auditBy(account.email)
@@ -112,7 +112,7 @@ export class DomainDB_Class
 		}
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain, request?: ExpressRequest) {
+	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain, request?: ExpressRequest) {
 		await ProjectPermissionsDB.queryUnique({_id: dbInstance.projectId});
 
 		if (request) {
@@ -142,7 +142,7 @@ export class LevelDB_Class
 		return [{domainId, name}, {domainId, value}];
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, request?: ExpressRequest) {
+	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, request?: ExpressRequest) {
 		await DomainPermissionsDB.queryUnique({_id: dbInstance.domainId});
 
 		if (request) {
@@ -237,7 +237,7 @@ export class ApiDB_Class
 		return [{projectId, path}];
 	}
 
-	protected async assertCustomUniqueness(transaction: FirestoreTransaction, dbInstance: DB_PermissionApi, request?: ExpressRequest) {
+	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionApi, request?: ExpressRequest) {
 		if (request) {
 			const account = await AccountModule.validateSession(request);
 			dbInstance._audit = auditBy(account.email)
