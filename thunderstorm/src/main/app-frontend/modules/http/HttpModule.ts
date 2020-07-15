@@ -479,19 +479,19 @@ export class HttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 			};
 
 			this.xhr.onload = (err) => {
-				HttpModule.logVerbose("onload");
+				// HttpModule.logVerbose("onload");
 			};
 
 			this.xhr.onloadstart = (err) => {
-				HttpModule.logVerbose("onloadstart");
+				// HttpModule.logVerbose("onloadstart");
 			};
 
 			this.xhr.onloadend = (err) => {
-				HttpModule.logVerbose("onloadend");
+				// HttpModule.logVerbose("onloadend");
 			};
 
 			this.xhr.onabort = (err) => {
-				HttpModule.logVerbose("onabort");
+				// HttpModule.logVerbose("onabort");
 			};
 
 			let nextOperator = "?"
