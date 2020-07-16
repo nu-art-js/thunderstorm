@@ -73,8 +73,8 @@ const assignUserModels: AssignUserModels[] = [{
 	givenGroupCF: {workspace: "workspace1"},
 	givenGroup: Permissions_WorkspaceOwner,
 	granterUserGroup: Permissions_WorkspaceOwner,
-	label: "Granter & given group with the same level and customField, but twice",
-	expected: false,
+	label: "Granter & given group with the same level and customField, but twice, the second one not insert to db",
+	expected: true,
 	runTwice: true
 }, {
 	granterUserCF: {workspace: "workspace1"},
