@@ -272,13 +272,15 @@ export class UsersDB_Class
 			const updatedUsers = users.map(user => {
 				const newGroups = (user.groups || [])?.filter(
 					group => !assignAppPermissionsObj.groupsToRemove.find(groupToRemove => {
-						if (groupToRemove._id !== group.groupId)
+						if (GroupPermissionsDB.getPredefinedGroupId(assignAppPermissionsObj.projectId, groupToRemove._id) !== group.groupId)
 							return false;
 
-						compare(group.customField, assignAppPermissionsObj.customField, assignAppPermissionsObj.assertKeys);
+						return compare(group.customField, assignAppPermissionsObj.customField, assignAppPermissionsObj.assertKeys);
 					}));
 
-				newGroups.push({groupId: _group._id, customField: assignAppPermissionsObj.customField})
+				if (!newGroups.find(nGroup => nGroup.groupId === _group._id && compare(nGroup.customField, assignAppPermissionsObj.customField))) {
+					newGroups.push({groupId: _group._id, customField: assignAppPermissionsObj.customField});
+				}
 
 				user.groups = newGroups;
 				return user;
