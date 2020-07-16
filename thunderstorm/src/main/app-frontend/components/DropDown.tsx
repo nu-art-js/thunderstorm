@@ -152,7 +152,7 @@ type Props<ItemType> = StaticProps & {
     filter?: (item: ItemType) => string[]
     onFilter?: (list?: ItemType[]) => void
     inputResolver?: (selected?: ItemType) => InputProps
-    inputEvntHandler?: (state:State<ItemType>, e: KeyboardEvent) => State<ItemType>
+    inputEventHandler?: (state:State<ItemType>, e: KeyboardEvent) => State<ItemType>
     placeholder?: string
 
     headerStyleResolver?: HeaderStyleProps
@@ -220,13 +220,13 @@ export class DropDown<ItemType>
     }
 
     private keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent) => {
-        if (this.props.inputEvntHandler)
+        if (this.props.inputEventHandler)
             return this.setState(()=>{
-                const state = this.props.inputEvntHandler ? this.props.inputEvntHandler(this.state, e) : this.state;
+                const state = this.props.inputEventHandler ? this.props.inputEventHandler(this.state, e) : this.state;
                 return state;
             })
 
-        if (e.code === "Enter")
+        if (e.code === "Enter" && this.state.filteredOptions)
             return this.onSelected(this.state.filteredOptions[0])
         if (e.code === "Escape")
             return this.setState({open: false});
@@ -258,7 +258,7 @@ export class DropDown<ItemType>
         // const options = {...this.props.adapter.data};
 
         // const options = this.props.renderersAndOptions.options;
-        return (<FilterInput<ItemType>
+        return <FilterInput<ItemType>
             id={`${this.props.id}-input`}
             filter={this.props.filter}
             list={this.options}
@@ -268,14 +268,12 @@ export class DropDown<ItemType>
                     filterTextLength
                 }, () => this.props.onFilter && this.props.onFilter(this.state.filteredOptions));
             }}
-            handleKeyEvent={(e) => {
-                return
-            }}
+            handleKeyEvent={(e) => {return}}
             focus={true}
             className={inputComplementary.className}
             inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
             placeholder={inputComplementary.placeholder || this.props.placeholder}
-        />);
+        />;
     };
 
     private inputResolver = (selected?: ItemType): InputProps => ({inputStyle, placeholder: this.props.placeholder});

@@ -170,7 +170,7 @@ export class Example_MultiRendererDropDown
 				onSelected={this.onSelected}
 				valueRenderer={valueRenderer}
 				inputResolver={inputResolverWithCustomInlineStyle}
-				inputEvntHandler={(_state, e)=>{
+				inputEventHandler={(_state, e)=>{
 					if (e.code === "Enter") {
 						const newOption = _state.filteredOptions ? _state.filteredOptions[1]: _state.selected
 						_state.selected = newOption;
