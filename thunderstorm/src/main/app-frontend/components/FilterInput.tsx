@@ -33,6 +33,7 @@ type Props<T> = {
 	inputStyle?: React.CSSProperties,
 	className?: string,
 	placeholder?: string
+	handleKeyEvent?: (e: KeyboardEvent) => void
 }
 
 type State = {}
@@ -85,6 +86,7 @@ export class FilterInput<T>
 				placeholder={placeholder}
 				className={className}
 				style={inputStyle}
+				handleKeyEvent={this.props.handleKeyEvent}
 			/>
 		);
 	}
