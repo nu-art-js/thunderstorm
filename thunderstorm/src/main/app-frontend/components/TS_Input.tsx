@@ -26,6 +26,7 @@ type Props<Key> = {
 	onAccept?: () => void
 	onCancel?: () => void
 	onBlur?: () => void
+	handleKeyEvent?: (e: KeyboardEvent) => void
 	className?: string
 	style?: React.CSSProperties
 	value?: string
@@ -67,6 +68,7 @@ export class TS_Input<Key extends string>
 
 	render() {
 		const {id, type, placeholder, style, className, spellCheck, focus, onBlur} = this.props;
+		const handleKeyEvent = this.props.handleKeyEvent || this.handleKeyEvent
 		return <input
 			className={className}
 			style={{...style}}
@@ -77,7 +79,7 @@ export class TS_Input<Key extends string>
 			placeholder={placeholder}
 			onChange={this.changeValue}
 			onBlur={() => {
-				this.ref?.removeEventListener('keydown', this.handleKeyEvent);
+				this.ref?.removeEventListener('keydown', handleKeyEvent);
 				this.ref = null;
 				onBlur && onBlur();
 			}}
@@ -87,7 +89,7 @@ export class TS_Input<Key extends string>
 
 				this.ref = input;
 				focus && this.ref.focus();
-				this.ref.addEventListener('keydown', this.handleKeyEvent);
+				this.ref.addEventListener('keydown', handleKeyEvent);
 			}}
 			spellCheck={spellCheck}
 		/>;
