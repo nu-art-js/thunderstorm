@@ -68,7 +68,8 @@ export class ProjectDB_Class
 	static _validator: TypeValidator<DB_PermissionProject> = {
 		_id: validateProjectId,
 		name: validateProjectName,
-		customKeys: undefined
+		customKeys: undefined,
+		_audit: undefined
 	};
 
 	constructor() {
@@ -97,7 +98,8 @@ export class DomainDB_Class
 	static _validator: TypeValidator<DB_PermissionDomain> = {
 		_id: validateOptionalId,
 		projectId: validateProjectId,
-		namespace: validateNameWithDashesAndDots
+		namespace: validateNameWithDashesAndDots,
+		_audit: undefined
 	};
 
 	constructor() {
@@ -130,6 +132,7 @@ export class LevelDB_Class
 		domainId: validateUniqueId,
 		name: validateStringWithDashes,
 		value: validateRange([[0, 1000]]),
+		_audit: undefined
 	};
 
 	constructor() {
@@ -219,7 +222,8 @@ export class ApiDB_Class
 		_id: validateOptionalId,
 		projectId: validateProjectId,
 		path: validateStringWithDashesAndSlash,
-		accessLevelIds: validateArray(validateUniqueId, false)
+		accessLevelIds: validateArray(validateUniqueId, false),
+		_audit: undefined
 	};
 
 	constructor() {
