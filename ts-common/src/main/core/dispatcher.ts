@@ -38,7 +38,7 @@ export class Dispatcher<T extends object, K extends FunctionKeys<T>, P = Paramet
 
 	public async dispatchModuleAsync(p: P) {
 		const listeners = Dispatcher.modulesResolver();
-		await Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
+		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			const params: any = p;
 			return listener[this.method](...params);
 		}));
