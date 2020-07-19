@@ -60,6 +60,14 @@ export class TS_Input<Key extends string>
 		ev.stopPropagation();
 	};
 
+	private onDoubleClick(e: React.MouseEvent) {
+		if (!this.ref || !this.props.focus)
+			return;
+
+		this.ref.select();
+		e.stopPropagation();
+	}
+
 	changeValue = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = event.target.value;
 		this.setState({value: value});
@@ -68,13 +76,14 @@ export class TS_Input<Key extends string>
 
 	render() {
 		const {id, type, placeholder, style, className, spellCheck, focus, onBlur} = this.props;
-		const handleKeyEvent = this.props.handleKeyEvent || this.handleKeyEvent
+		const handleKeyEvent = this.props.handleKeyEvent || this.handleKeyEvent;
 		return <input
 			className={className}
 			style={{...style}}
 			key={id}
 			id={id}
 			type={type}
+			onDoubleClick={this.onDoubleClick}
 			value={this.state.value}
 			placeholder={placeholder}
 			onChange={this.changeValue}
@@ -94,5 +103,4 @@ export class TS_Input<Key extends string>
 			spellCheck={spellCheck}
 		/>;
 	}
-
 }
