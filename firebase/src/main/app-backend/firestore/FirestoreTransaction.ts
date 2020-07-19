@@ -148,14 +148,24 @@ export class FirestoreTransaction {
 		return this.deleteUnique(collection, FirestoreInterface.buildUniqueQuery(collection, instance))
 	}
 
-	async deleteUnique<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
+	async deleteUnique<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<Type | undefined> {
+		const write = await this.deleteUnique_Read(collection, ourQuery);
+		if (!write)
+			return;
+
+		return write();
+	}
+
+	async deleteUnique_Read<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<undefined | (() => Promise<Type>)> {
 		const doc = (await this._queryUnique(collection, ourQuery));
 		if (!doc)
 			return;
 
-		const result = doc.data() as Type;
-		await this.transaction.delete(doc.ref as admin.firestore.DocumentReference);
+		return async () => {
+			const result = doc.data() as Type;
+			await this.transaction.delete(doc.ref as admin.firestore.DocumentReference);
 
-		return result;
+			return result;
+		}
 	}
 }
