@@ -223,7 +223,9 @@ export class ApiDB_Class
 		projectId: validateProjectId,
 		path: validateStringWithDashesAndSlash,
 		accessLevelIds: validateArray(validateUniqueId, false),
-		_audit: undefined
+		_audit: undefined,
+		deprecated: undefined,
+		onlyForApplication: undefined
 	};
 
 	constructor() {
