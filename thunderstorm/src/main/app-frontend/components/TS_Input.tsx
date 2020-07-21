@@ -50,15 +50,25 @@ export class TS_Input<Key extends string>
 		this.state = {value: props.value || ""};
 	};
 
-	handleKeyEvent = (ev: KeyboardEvent) => {
-		if (this.props.onAccept && ev.which === 13)
+	private handleKeyEvent = (ev: KeyboardEvent) => {
+		if (this.props.onAccept && ev.which === 13) {
 			this.props.onAccept();
+			ev.stopPropagation();
+		}
 
-		if (this.props.onCancel && ev.which === 27)
+		if (this.props.onCancel && ev.which === 27) {
 			this.props.onCancel();
-
-		ev.stopPropagation();
+			ev.stopPropagation();
+		}
 	};
+
+	private onDoubleClick(ev: React.MouseEvent) {
+		if (!this.ref || !this.props.focus)
+			return;
+
+		this.ref.select();
+		ev.stopPropagation();
+	}
 
 	changeValue = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = event.target.value;
@@ -68,13 +78,14 @@ export class TS_Input<Key extends string>
 
 	render() {
 		const {id, type, placeholder, style, className, spellCheck, focus, onBlur} = this.props;
-		const handleKeyEvent = this.props.handleKeyEvent || this.handleKeyEvent
+		const handleKeyEvent = this.props.handleKeyEvent || this.handleKeyEvent;
 		return <input
 			className={className}
 			style={{...style}}
 			key={id}
 			id={id}
 			type={type}
+			onDoubleClick={this.onDoubleClick}
 			value={this.state.value}
 			placeholder={placeholder}
 			onChange={this.changeValue}
@@ -94,5 +105,4 @@ export class TS_Input<Key extends string>
 			spellCheck={spellCheck}
 		/>;
 	}
-
 }

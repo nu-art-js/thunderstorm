@@ -41,7 +41,7 @@ export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P = 
 
 	public async dispatchUIAsync(p: P) {
 		const listeners = ThunderDispatcher.listenersResolver();
-		await Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
+		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			const params: any = p;
 			return listener[this.method](...params);
 		}));
