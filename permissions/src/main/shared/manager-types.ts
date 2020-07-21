@@ -49,7 +49,9 @@ export type DB_PermissionAccessLevel = DB_Object & Request_CreateLevel & Auditab
 export type Request_UpdateApiPermissions = DB_RequestObject & {
 	projectId: string
 	path: string
-	accessLevelIds?: string[]
+	accessLevelIds?: string[],
+	deprecated?: boolean,
+	onlyForApplication?: boolean
 }
 
 
