@@ -20,6 +20,10 @@
  */
 
 import * as React from 'react';
+import {
+	_clearTimeout,
+	currentTimeMillies
+} from '@nu-art/ts-common';
 
 type Props<Key> = {
 	onChange: (value: string, id: Key) => void
@@ -39,10 +43,13 @@ type Props<Key> = {
 }
 
 type State = { value: string }
+const MIN_DELTA = 200;
 
 export class TS_Input<Key extends string>
 	extends React.Component<Props<Key>, State> {
 	private ref?: HTMLInputElement | null;
+	private clickedTimestamp?: number;
+	private timeout?: number;
 
 	constructor(props: Props<Key>) {
 		super(props);
@@ -59,13 +66,19 @@ export class TS_Input<Key extends string>
 			this.props.onCancel();
 	};
 
-	private onDoubleClick(ev: React.MouseEvent) {
+	private onClick = (ev: React.MouseEvent) => {
 		if (!this.ref || !this.props.focus)
 			return;
 
-		this.ref.select();
 		ev.stopPropagation();
-	}
+		const now = currentTimeMillies();
+		if (!this.clickedTimestamp || now - this.clickedTimestamp >= MIN_DELTA)
+			return this.clickedTimestamp = now;
+
+		this.timeout && _clearTimeout(this.timeout);
+		delete this.clickedTimestamp;
+		this.ref.select();
+	};
 
 	changeValue = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = event.target.value;
@@ -82,7 +95,7 @@ export class TS_Input<Key extends string>
 			key={id}
 			id={id}
 			type={type}
-			onDoubleClick={this.onDoubleClick}
+			onClick={this.onClick}
 			value={this.state.value}
 			placeholder={placeholder}
 			onChange={this.changeValue}
