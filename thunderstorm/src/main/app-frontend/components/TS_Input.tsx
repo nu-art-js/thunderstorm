@@ -51,15 +51,13 @@ export class TS_Input<Key extends string>
 	};
 
 	private handleKeyEvent = (ev: KeyboardEvent) => {
-		if (this.props.onAccept && ev.which === 13) {
+		if (this.props.onAccept && ev.which === 13)
 			this.props.onAccept();
-			ev.stopPropagation();
-		}
 
-		if (this.props.onCancel && ev.which === 27) {
+		if (this.props.onCancel && ev.which === 27)
 			this.props.onCancel();
-			ev.stopPropagation();
-		}
+
+		ev.stopPropagation();
 	};
 
 	private onDoubleClick(ev: React.MouseEvent) {
