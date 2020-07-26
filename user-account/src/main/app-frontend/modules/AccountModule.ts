@@ -195,8 +195,11 @@ export class AccountModule_Class
 			});
 	};
 
-	logout = () => {
+	logout = (url?: string) => {
 		StorageKey_SessionId.delete();
+		if(url)
+			window.location.href = url;
+
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	};
 
