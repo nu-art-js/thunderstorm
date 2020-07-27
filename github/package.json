@@ -1,14 +1,12 @@
 {
   "name": "@nu-art/github",
   "version": "0.0.0",
-  "description": "github api",
+  "description": "Github api Module",
   "keywords": [
     "TacB0sS",
     "backend",
     "boilerplate",
-    "express",
-    "infra",
-    "nu-art",
+    "github",
     "typescript"
   ],
   "repository": {
@@ -19,12 +17,6 @@
   "author": "TacB0sS",
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "launch": "tsc --watch & firebase serve --only functions --port 5040",
-    "lint": "tslint --project tsconfig.json",
-    "serve": "cd .. && bash ./build-and-install.sh -lb -nb"
-  },
   "dependencies": {
     "@nu-art/thunderstorm": "~0.26.0",
     "@nu-art/ts-common": "~0.26.0",
@@ -49,11 +41,6 @@
   },
   "engines": {
     "node": "10"
-  },
-  "_moduleAliases": {
-    "@consts": "dist/consts",
-    "@modules": "dist/modules",
-    "@shared": "dist/app-shared"
   }
 }
 
