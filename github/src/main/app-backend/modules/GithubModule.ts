@@ -31,7 +31,6 @@ import {
 	ExpressRequest,
 	promisifyRequest
 } from "@nu-art/thunderstorm/backend";
-// import {Product} from "@app-kaspero/types/products";
 
 type Config = {
 	appId: string
@@ -153,30 +152,43 @@ export class GithubModule_Class
 	}
 
 	private async getLargeFile(client: Octokit, repo: string, filePath: string, branch: string) {
+		const fileSha = await this.getFileBySha(client, repo, filePath, branch);
+		const request = {
+			owner: this.config.gitOwner,
+			repo,
+			file_sha: fileSha
+		};
+		const response = await client.git.getBlob(request);
+
+		if (!response || !response.data || !response.data.content)
+			throw new Exception('Failed to get file contents from Github');
+
+		const buffer = Buffer.from(response.data.content, 'base64');
+		return buffer.toString('utf8');
+	}
+
+	private async getFileBySha(client: Octokit, repo: string, filePath: string, branch: string) {
 		const parentPath = path.dirname(filePath);
 		let parentDirectoryResponse: OctokitResponse<RestEndpointMethodTypes["repos"]["getContent"]["response"]["data"]>;
 		try {
-			parentDirectoryResponse = await client.repos.getContent(
-				{
-					owner: this.config.gitOwner,
-					repo,
-					path: parentPath,
-					ref: branch
-				});
+			const request = {
+				owner: this.config.gitOwner,
+				repo,
+				path: parentPath,
+				ref: branch
+			};
+			parentDirectoryResponse = await client.repos.getContent(request);
 		} catch (error) {
-			this.logError(`Failed to fetch parent directory contents of file ${filePath}.`);
-			throw new Exception(`Failed to fetch parent directory contents of file ${filePath}`);
+			throw new Exception(`Failed to fetch parent directory contents of file ${filePath}`, error);
 		}
 
-		if (!parentDirectoryResponse || !parentDirectoryResponse.data) {
-			this.logError(`Failed to fetch parent directory contents of file ${filePath}.`);
+		if (!parentDirectoryResponse || !parentDirectoryResponse.data)
 			throw new Exception(`Failed to fetch parent directory contents of file ${filePath}`);
-		}
 
 		// Check that if parentDirectoryResponse.data is an array.
-		if (!Array.isArray(parentDirectoryResponse.data)) {
+		if (!Array.isArray(parentDirectoryResponse.data))
 			throw new BadImplementationException("File's parent directory is not an array")
-		}
+
 
 		let fileSha = '';
 		for (const responseEntry of parentDirectoryResponse.data) {
@@ -185,44 +197,32 @@ export class GithubModule_Class
 				break;
 			}
 		}
-		if (!fileSha) {
-			this.logError(`Failed to get file sha, file ${filePath} was not found.`);
+
+		if (!fileSha)
 			throw new Exception(`File ${filePath} was not found`);
-		}
 
-		const response = await client.git.getBlob(
-			{
-				owner: this.config.gitOwner,
-				repo,
-				file_sha: fileSha
-			});
-
-		if (!response || !response.data || !response.data.content) {
-			throw new Exception('Failed to get file contents from Github');
-		}
-
-		const buffer = Buffer.from(response.data.content, 'base64');
-		const decodedContent = buffer.toString('utf8');
-		return decodedContent;
+		return fileSha;
 	}
 
-	async getReleaseBranches(product: string, request: ExpressRequest): Promise<string[]> {
-		const branches = await this.listBranches(product, request);
+	async getReleaseBranches(product: string): Promise<string[]> {
+		const branches = await this.listBranches(product);
 		if (!branches || !branches.length) {
 			return [];
 		}
+
 		// Response includes (besides branch name) extra information about the branch.
 		const releaseBranches = branches.map(branch => branch.name).filter(
 			name => {
 				return name.startsWith(`release/`);
 			}
 		).reverse();
+
 		// Return master with the release branches.
 		releaseBranches.unshift('master');
 		return releaseBranches
 	}
 
-	async listBranches(repo: string, request: ExpressRequest): Promise<RestEndpointMethodTypes["repos"]["listBranches"]["response"]["data"]> {
+	async listBranches(repo: string): Promise<RestEndpointMethodTypes["repos"]["listBranches"]["response"]["data"]> {
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
@@ -245,13 +245,10 @@ export class GithubModule_Class
 		}
 
 		// Response includes (besides branch name) extra information about the branch.
-		// return branches.map(branch => branch.name);
 		return branches;
 	};
 
-	async getArchiveUrl(repo: string, branch: string, request: ExpressRequest) {
-		// const productObj: Product = await KasperoProxy.getProduct(request, product);
-		// const repo = productObj.dataRepo.name;
+	async getArchiveUrl(repo: string, branch: string) {
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 		const response = await client.repos.downloadArchive(
@@ -270,7 +267,6 @@ export class GithubModule_Class
 	}
 
 	async downloadArchive(url: string, branch: string, request: ExpressRequest) {
-		// const url = await this.getArchiveUrl(product, branch, request);
 		const response = await promisifyRequest({uri: url, encoding: null});
 		if (!response || !response.body) {
 			throw new Exception(`Failed to download archive for branch ${branch} of product ${url}`)
@@ -282,14 +278,12 @@ export class GithubModule_Class
 
 	/**
 	 *
-	 * @param product The name of the product.
+	 * @param repo The name of the repo.
 	 * @param branch The name of the branch.
 	 *
 	 * This API has an upper limit of 1,000 files for a directory.
 	 */
-	async listDirectoryContents(repo: string, branch: string, _path: string, request: ExpressRequest) {
-		// const productObj: Product = await KasperoProxy.getProduct(request, product);
-		// const repo = productObj.dataRepo.name;
+	async listDirectoryContents(repo: string, branch: string, _path: string) {
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
