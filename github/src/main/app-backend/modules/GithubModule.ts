@@ -1,8 +1,7 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * A backend boilerplate with example apis
  *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2018  Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +31,7 @@ import {
 	ExpressRequest,
 	promisifyRequest
 } from "@nu-art/thunderstorm/backend";
-import {Product} from "@app-kaspero/types/products";
+// import {Product} from "@app-kaspero/types/products";
 
 type Config = {
 	appId: string
@@ -41,7 +40,7 @@ type Config = {
 	gitOwner: string
 };
 
-export class GithubCoreModule_Class
+export class GithubModule_Class
 	extends Module<Config> {
 
 	private createClient(token: string, prefix?: string) {
@@ -251,6 +250,8 @@ export class GithubCoreModule_Class
 	};
 
 	async getArchiveUrl(repo: string, branch: string, request: ExpressRequest) {
+		// const productObj: Product = await KasperoProxy.getProduct(request, product);
+		// const repo = productObj.dataRepo.name;
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 		const response = await client.repos.downloadArchive(
@@ -268,11 +269,11 @@ export class GithubCoreModule_Class
 		return response.url;
 	}
 
-	async downloadArchive(product: Product, branch: string, request: ExpressRequest) {
-		const url = await this.getArchiveUrl(product, branch, request);
+	async downloadArchive(url: string, branch: string, request: ExpressRequest) {
+		// const url = await this.getArchiveUrl(product, branch, request);
 		const response = await promisifyRequest({uri: url, encoding: null});
 		if (!response || !response.body) {
-			throw new Exception(`Failed to download archive for branch ${branch} of product ${product}`)
+			throw new Exception(`Failed to download archive for branch ${branch} of product ${url}`)
 		}
 		this.logDebug(`Got archive in zip format.`);
 		// Returns a buffer.
@@ -281,12 +282,14 @@ export class GithubCoreModule_Class
 
 	/**
 	 *
-	 * @param repo The name of the product.
+	 * @param product The name of the product.
 	 * @param branch The name of the branch.
 	 *
 	 * This API has an upper limit of 1,000 files for a directory.
 	 */
 	async listDirectoryContents(repo: string, branch: string, _path: string, request: ExpressRequest) {
+		// const productObj: Product = await KasperoProxy.getProduct(request, product);
+		// const repo = productObj.dataRepo.name;
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
@@ -298,7 +301,7 @@ export class GithubCoreModule_Class
 				repo,
 				path: _path,
 				ref: branch,
-			}) as OctokitResponse<RestEndpointMethodTypes["repos"]["getContent"]["response"]["data"]>;
+			});
 
 		if (!response || !response.data)
 			return [];
@@ -312,4 +315,4 @@ export class GithubCoreModule_Class
 
 }
 
-export const GithubModule = new GithubCoreModule_Class();
+export const GithubModule = new GithubModule_Class();
