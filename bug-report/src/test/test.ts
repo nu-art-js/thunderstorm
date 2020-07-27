@@ -25,9 +25,9 @@ import {issueScenario} from "./jira/issue";
 const mainScenario = __scenario("Bug Report Testing");
 mainScenario.add(issueScenario);
 
-const noa_email = 'noabkr@intuitionrobotics.com';
-const noa_key = 'bQfDHHtlLbHUIwSxklRa715A';
-JiraModule.setDefaultConfig({auth: {email: noa_email, apiKey: noa_key}});
+const email = 'email';
+const key = 'key';
+JiraModule.setDefaultConfig({auth: {email: email, apiKey: key}});
 
 module.exports = new Tester()
 	.addModules(JiraModule)
