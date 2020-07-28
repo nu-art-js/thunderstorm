@@ -59,10 +59,10 @@ export class TS_Input<Key extends string>
 
 	private handleKeyEvent = (ev: KeyboardEvent) => {
 		ev.stopPropagation();
-		if (this.props.onAccept && ev.which === 13)
+		if (this.props.onAccept && ev.key === "Enter")
 			this.props.onAccept();
 
-		if (this.props.onCancel && ev.which === 27)
+		if (this.props.onCancel && ev.key === Escape)
 			this.props.onCancel();
 	};
 

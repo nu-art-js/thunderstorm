@@ -81,7 +81,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 	}
 
 	static resolveTestsToRun() {
-		let strings = process.argv.filter((arg: string) => arg.includes("--test="));
+		const strings = process.argv.filter((arg: string) => arg.includes("--test="));
 		console.log(`raw: ${__stringify(strings)}`);
 
 		this.testsToRun = strings.map(arg => arg.replace("--test=", ""));
