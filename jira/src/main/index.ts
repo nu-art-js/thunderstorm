@@ -17,19 +17,6 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {JiraModule} from "../main/app-backend/modules/JiraModule";
-import {Tester} from "./_core/Tester";
-import {issueScenario} from "./jira/issue";
+export * from "./app-backend/core/module-pack";
 
-const mainScenario = __scenario("Bug Report Testing");
-mainScenario.add(issueScenario);
-
-const email = 'email';
-const key = 'key';
-JiraModule.setDefaultConfig({auth: {email: email, apiKey: key}});
-
-module.exports = new Tester()
-	.addModules(JiraModule)
-	.setScenario(mainScenario)
-	.build();
+export * from "./app-backend/modules/JiraModule";
