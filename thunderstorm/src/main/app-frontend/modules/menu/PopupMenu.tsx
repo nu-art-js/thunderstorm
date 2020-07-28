@@ -117,6 +117,6 @@ export class PopupMenu
 			return;
 
 		// _current.addEventListener("mousedown", this.stopClickCascading, false);
-		_current.addEventListener("mouseup", this.closeMenu, false);
+		_current.addEventListener("mousedown", this.closeMenu, false);
 	};
 };
