@@ -42,7 +42,7 @@ type Props<Key> = {
 	spellCheck?: boolean
 }
 
-type State = { value: string }
+type State = { value?: string }
 const MIN_DELTA = 200;
 
 export class TS_Input<Key extends string>
@@ -50,11 +50,14 @@ export class TS_Input<Key extends string>
 	private ref?: HTMLInputElement | null;
 	private clickedTimestamp?: number;
 	private timeout?: number;
+	private readonly controlled: boolean;
 
 	constructor(props: Props<Key>) {
 		super(props);
 
-		this.state = {value: props.value || ""};
+		this.controlled = this.props.value !== undefined;
+		if(!this.controlled)
+			this.state = {value: ""};
 	};
 
 	private handleKeyEvent = (ev: KeyboardEvent) => {
@@ -82,13 +85,16 @@ export class TS_Input<Key extends string>
 
 	changeValue = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = event.target.value;
-		this.setState({value: value});
-		this.props.onChange(value, event.target.id as Key)
+		this.props.onChange(value, event.target.id as Key);
+
+		if(!this.controlled)
+			this.setState({value: value});
 	};
 
 	render() {
 		const {id, type, placeholder, style, className, spellCheck, focus, onBlur} = this.props;
 		const handleKeyEvent = this.props.handleKeyEvent || this.handleKeyEvent;
+		const value = this.controlled ? this.props.value : this.state.value;
 		return <input
 			className={className}
 			style={{...style}}
@@ -96,7 +102,7 @@ export class TS_Input<Key extends string>
 			id={id}
 			type={type}
 			onClick={this.onClick}
-			value={this.state.value}
+			value={value}
 			placeholder={placeholder}
 			onChange={this.changeValue}
 			onBlur={() => {
