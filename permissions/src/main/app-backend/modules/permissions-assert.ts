@@ -24,7 +24,6 @@ import {
 } from "@nu-art/ts-common";
 import {
 	ApiException,
-	ServerApi,
 	HttpRequestData,
 	ExpressRequest,
 	ServerApi_Middleware
@@ -102,10 +101,8 @@ export class PermissionsAssert_Class
 		const [apiDetails, userDetails] = await Promise.all([this.getApiDetails(path, projectId),
 		                                                     this.getUserDetails(userId)]);
 
-		if (!apiDetails.apiDb.accessLevelIds) {
-			if (ServerApi.isDebug)
-				return;
-
+		const apiAccessLevelIds = apiDetails.apiDb.accessLevelIds || [];
+		if (!apiAccessLevelIds.length) {
 			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${path}`);
 		}
 
