@@ -91,7 +91,7 @@ class ItemRenderer
 	}
 
 	renderItem(moreProps: { focusedColor: string }) {
-		let value = __stringify(this.props.item);
+		const value = __stringify(this.props.item);
 
 		return <div
 			id={this.props.node.path}

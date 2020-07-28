@@ -53,7 +53,7 @@ export class TS_TextArea<Key extends string>
 		if (!this.props.onAccept)
 			return;
 
-		if (event.which === 13)
+		if (event.key === "Escape")
 			this.props.onAccept();
 	};
 

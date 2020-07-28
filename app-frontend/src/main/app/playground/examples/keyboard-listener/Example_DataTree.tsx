@@ -107,8 +107,8 @@ class Example_ColorfulNodeRenderer
 	}
 
 	render() {
-		const valueStyle = (key: string, value: any) => {
-			switch (typeof value) {
+		const valueStyle = (key: string, _value: any) => {
+			switch (typeof _value) {
 				case "string":
 					return {color: "#e67e22"};
 
@@ -116,7 +116,7 @@ class Example_ColorfulNodeRenderer
 					return {color: "#bf95d0"};
 
 				case "number":
-					if (isNaN(value))
+					if (isNaN(_value))
 						return {color: "#e0e0e0"};
 
 					return {color: "#2ecc71"};
@@ -125,7 +125,7 @@ class Example_ColorfulNodeRenderer
 					return {color: "#000"};
 
 				case "object":
-					if (value === null)
+					if (_value === null)
 						return {color: "#f1c40f"};
 
 				default:
@@ -134,7 +134,7 @@ class Example_ColorfulNodeRenderer
 		}
 
 		let value: any;
-		let item = this.props.item;
+		const item = this.props.item;
 		if (typeof item !== "object")
 			value = item;
 		else if (Object.keys(item).length === 0)
