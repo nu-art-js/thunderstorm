@@ -62,7 +62,7 @@ export class TS_Input<Key extends string>
 		if (this.props.onAccept && ev.key === "Enter")
 			this.props.onAccept();
 
-		if (this.props.onCancel && ev.key === Escape)
+		if (this.props.onCancel && ev.key === "Escape")
 			this.props.onCancel();
 	};
 
