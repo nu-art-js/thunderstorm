@@ -55,7 +55,7 @@ export class TS_Input<Key extends string>
 	constructor(props: Props<Key>) {
 		super(props);
 
-		this.controlled = this.props.value === undefined;
+		this.controlled = this.props.value !== undefined;
 		if(!this.controlled)
 			this.state = {value: ""};
 	};
