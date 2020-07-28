@@ -64,7 +64,7 @@ export class Example_NestedList_MultiType_Object
 	extends Component<{}> {
 
 	render() {
-		let rendererMap = {
+		const rendererMap = {
 			reg: (props: { item: { label: string } }) => <div>{`Label: ${props.item.label}`}</div>,
 			bold: (props: { item: { stam: number } }) => <div><b>{`Number: ${props.item.stam}`}</b></div>
 		};
@@ -133,7 +133,7 @@ export class Example_NestedList_MultiType_Object_Dynamic
 	extends Component<{}> {
 
 	render() {
-		let rendererMap = {
+		const rendererMap = {
 			reg: (props: { item: { label: string } }) => <div>{`Label: ${props.item.label}`}</div>,
 			add1: (props: { item: { stam: number } }) => <div onClick={() => {
 				toAdd1.push({type: "reg", item: {label: 'item-toAdd1'}, _children: children})
