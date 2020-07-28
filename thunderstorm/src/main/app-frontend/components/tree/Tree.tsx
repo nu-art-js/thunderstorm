@@ -186,7 +186,6 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 		let keyCode = e.code;
 		if (keyCode === "Escape") {
-			stopPropagation(e);
 			return node.blur();
 		}
 
@@ -251,7 +250,6 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		}
 
 		if (focused && keyCode === "Enter") {
-			stopPropagation(e);
 			const item = this.getItemByPath(focused);
 
 			if (item.action && typeof item.action === "function")

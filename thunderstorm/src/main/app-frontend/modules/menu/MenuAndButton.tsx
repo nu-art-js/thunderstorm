@@ -2,7 +2,6 @@ import * as React from "react";
 import {ReactNode} from "react";
 import {BaseComponent} from "../../core/BaseComponent";
 import {
-	_Menu,
 	Menu_Model,
 	MenuBuilder,
 	MenuListener,
@@ -47,7 +46,7 @@ export class MenuAndButton
 		return <div
 			className={'clickable'}
 			onClick={this.open}
-			style={{position: "relative", padding: 10}}>
+			style={{position: "relative"}}>
 			<div ref={this.ref}
 			     onMouseOver={e => this.setState({over: true})}
 			     onMouseOut={e => this.setState({over: false})}>
