@@ -21,4 +21,10 @@ import {ModuleManager} from "./module-manager";
 export class Application
 	extends ModuleManager {
 
+	build(onStarted?: () => Promise<void>) {
+		super.build();
+		onStarted && onStarted()
+			.then(() => this.logInfo("Completed"))
+			.catch((err) => this.logError("Error", err));
+	}
 }
