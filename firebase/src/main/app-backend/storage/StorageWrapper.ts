@@ -38,7 +38,7 @@ export class StorageWrapper
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.storage = firebaseSession.app.storage() as FirebaseType_Storage;
+		this.storage = firebaseSession.app.storage();
 	}
 
 	async getOrCreateBucket(bucketName?: string): Promise<BucketWrapper> {
