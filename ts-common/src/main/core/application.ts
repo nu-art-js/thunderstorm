@@ -25,10 +25,13 @@ export class Application
 		super();
 	}
 
-	build(onStarted?: () => Promise<void>) {
+	build(onStarted?: () => Promise<any>) {
 		super.build();
 		onStarted && onStarted()
-			.then(() => this.logInfo("Completed"))
+			.then((data) => {
+				data && this.logInfo("data: ", data);
+				this.logInfo("Completed");
+			})
 			.catch((err) => this.logError("Error", err));
 	}
 }
