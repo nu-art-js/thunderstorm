@@ -141,7 +141,7 @@ export class FirestoreCollection<Type extends object> {
 	}
 
 	async runInTransaction<ReturnType>(processor: (transaction: FirestoreTransaction) => Promise<ReturnType>): Promise<ReturnType> {
-		const firestore = this.wrapper.firestore as admin.firestore.Firestore;
+		const firestore = this.wrapper.firestore;
 		return firestore.runTransaction<ReturnType>(async (transaction: admin.firestore.Transaction) => {
 			return processor(new FirestoreTransaction(transaction));
 		});

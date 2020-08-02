@@ -69,14 +69,14 @@ export class FirebaseSession_Admin
 	}
 
 	public getAuth(): auth.Auth {
-		return (this.app as admin.app.App).auth();
+		return this.app.auth();
 	}
 
 	public async sendMessage<T extends StringMap>(token: string, message: T) {
 		if (!this.app)
 			this.connect();
 
-		return await (this.app as admin.app.App).messaging().send(Object.assign({data: message}, {token: token}));
+		return await this.app.messaging().send(Object.assign({data: message}, {token: token}));
 	}
 }
 

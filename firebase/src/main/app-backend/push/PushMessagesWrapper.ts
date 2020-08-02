@@ -34,7 +34,7 @@ export class PushMessagesWrapper
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.messaging = firebaseSession.app.messaging() as FirebaseType_PushMessages;
+		this.messaging = firebaseSession.app.messaging();
 	}
 
 	async send(message: FirebaseType_Message, dryRun?: boolean): Promise<string> {
