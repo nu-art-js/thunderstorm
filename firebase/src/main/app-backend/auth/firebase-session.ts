@@ -36,7 +36,8 @@ export type Firebase_UserCredential = {
 	}
 };
 
-export type FirebaseApp = admin.app.App | firebase.app.App
+// export type FirebaseApp = admin.app.App | firebase.app.App
+export type FirebaseApp = admin.app.App
 
 export abstract class FirebaseSession<Config>
 	extends Logger {
