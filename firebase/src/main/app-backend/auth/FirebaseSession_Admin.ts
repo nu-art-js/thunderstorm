@@ -19,7 +19,6 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import * as admin from "firebase-admin";
 import {
 	auth,
 	credential,
