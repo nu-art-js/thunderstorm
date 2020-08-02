@@ -1,9 +1,7 @@
 import * as React from 'react';
-import { StorageKey } from '../modules/StorageModule';
-import { BaseComponent } from '../core/BaseComponent';
-import { TS_Input } from '../components/TS_Input';
-
-type State = {};
+import {StorageKey} from '../modules/StorageModule';
+import {BaseComponent} from '../core/BaseComponent';
+import {TS_Input} from '../components/TS_Input';
 
 type Props = {
 	isEditing: boolean;
@@ -19,46 +17,38 @@ type Props = {
 };
 
 export class FieldEditor
-	extends BaseComponent<Props, State> {
-
-	private resetStorage = () => {
-		const storageValue = this.props.storageKey.get();
-		if (!storageValue) {
-			this.props.storageKey.set(this.props.value || "");
-		}
-	};
+	extends BaseComponent<Props> {
 
 	constructor(props: Props) {
 		super(props);
-		this.state = {}
+		this.props.storageKey.set(this.props.value || "");
 	}
 
 	onChange = (value: string) => {
 		this.props.storageKey.set(value);
+		this.forceUpdate()
 	};
 
 	private renderInput = () => {
-		this.resetStorage();
 		return (
 			<TS_Input<string>
-				type="text"
-				onChange={this.onChange}
-				value={this.props.storageKey.get()}
-				style={this.props.inputStyle}
-				onAccept={this.props.onAccept}
 				id={this.props.id}
+				key={this.props.id}
+				type={"text"}
+				value={this.props.storageKey.get() || ""}
+				style={this.props.inputStyle}
+				onChange={this.onChange}
+				onAccept={this.props.onAccept}
+				onCancel={this.props.onCancel}
 				placeholder={this.props.placeholder}
 				focus={this.props.isEditing}
 			/>
 		);
 	};
 
-	private renderLabel = () => {
-		return <div style={this.props.labelStyle}>{this.props.value || ""}</div>
-	};
+	private renderLabel = () => <div style={this.props.labelStyle}>{this.props.value || ""}</div>;
 
 	render() {
-		const renderer = this.props.isEditing ? this.renderInput : this.renderLabel;
-		return renderer();
+		return this.props.isEditing ? this.renderInput() : this.renderLabel();
 	}
 }
