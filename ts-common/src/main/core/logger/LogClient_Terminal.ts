@@ -61,7 +61,7 @@ class LogClient_Terminal_class
 		const color = this.getColor(level, bold);
 		const paramsAsStrings = _logger_convertLogParamsToStrings(toLog);
 
-		console.log(_logger_indentNewLineBy(color + prefix, paramsAsStrings.join(" ") + NoColor))
+		console.log(_logger_indentNewLineBy(color + prefix, paramsAsStrings.join(" ")) + NoColor)
 	}
 }
 
