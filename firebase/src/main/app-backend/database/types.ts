@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import * as firebase from "firebase";
 import * as admin from "firebase-admin";
 import {EventType} from "../../shared/types";
 
-export type FirebaseType_DB = admin.database.Database | firebase.database.Database
+// export type FirebaseType_DB = admin.database.Database | firebase.database.Database
+export type FirebaseType_DB = admin.database.Database
 
 export interface Firebase_DB {
 	ref(path: string): Firebase_Reference;

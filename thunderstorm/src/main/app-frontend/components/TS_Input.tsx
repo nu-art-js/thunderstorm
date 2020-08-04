@@ -97,7 +97,7 @@ export class TS_Input<Key extends string>
 		const value = this.controlled ? this.props.value : this.state.value;
 		return <input
 			className={className}
-			style={{...style}}
+			style={style}
 			key={id}
 			id={id}
 			type={type}

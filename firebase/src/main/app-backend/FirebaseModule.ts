@@ -29,7 +29,7 @@ import {
 	ThisShouldNotHappenException
 } from "@nu-art/ts-common";
 import {FirebaseSession_Admin} from "./auth/FirebaseSession_Admin";
-import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword";
+// import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword";
 import {JWTInput} from "google-auth-library";
 import {readFileSync} from "fs";
 import {Firebase_UserCredential} from "./auth/firebase-session";
@@ -43,7 +43,7 @@ type ConfigType = {
 export class FirebaseModule_Class
 	extends Module<ConfigType> {
 
-	private readonly tokenSessions: { [s: string]: FirebaseSession_UserPassword; } = {};
+	// private readonly tokenSessions: { [s: string]: FirebaseSession_UserPassword; } = {};
 	private readonly adminSessions: { [s: string]: FirebaseSession_Admin; } = {};
 	private localAdmin!: FirebaseSession_Admin;
 	public static localAdminConfigId: string;
@@ -93,21 +93,21 @@ export class FirebaseModule_Class
 		});
 	}
 
-	public async createSessionWithUsernameAndPassword(configId: string) {
-		let session = this.tokenSessions[configId];
-		if (session)
-			return session;
-
-		const config = this.getProjectAuth(configId) as Firebase_UserCredential;
-		if (!config || !config.config || !config.credentials || !config.credentials.password || !config.credentials.user)
-			throw new BadImplementationException(`Config for key ${configId} is not a User & Password credentials pattern`);
-
-		session = new FirebaseSession_UserPassword(config, configId);
-		this.tokenSessions[configId] = session;
-
-		await session.connect();
-		return session;
-	}
+	// public async createSessionWithUsernameAndPassword(configId: string) {
+	// 	let session = this.tokenSessions[configId];
+	// 	if (session)
+	// 		return session;
+	//
+	// 	const config = this.getProjectAuth(configId) as Firebase_UserCredential;
+	// 	if (!config || !config.config || !config.credentials || !config.credentials.password || !config.credentials.user)
+	// 		throw new BadImplementationException(`Config for key ${configId} is not a User & Password credentials pattern`);
+	//
+	// 	session = new FirebaseSession_UserPassword(config, configId);
+	// 	this.tokenSessions[configId] = session;
+	//
+	// 	await session.connect();
+	// 	return session;
+	// }
 
 	private createLocalAdminSession() {
 		if (this.localAdmin)

@@ -16,13 +16,19 @@
  * limitations under the License.
  */
 
-import * as firebase from "firebase";
 import * as admin from "firebase-admin";
 
-export type FirestoreType_Collection = admin.firestore.CollectionReference | firebase.firestore.CollectionReference;
-export type FirestoreType_DocumentSnapshot = admin.firestore.QueryDocumentSnapshot | firebase.firestore.QueryDocumentSnapshot;
-export type FirestoreType_Query = (admin.firestore.Query | firebase.firestore.Query) & { select?: (...field: string[]) => FirestoreType_Query };
-export type FirestoreType_DocumentReference = admin.firestore.DocumentReference | firebase.firestore.DocumentReference;
-export type FirestoreType = (admin.firestore.Firestore | firebase.firestore.Firestore) & ({ listCollections?: () => Promise<FirestoreType_Collection[]> });
-export type FirestoreType_Transaction = admin.firestore.Transaction | firebase.firestore.Transaction;
+export type FirestoreType_Collection = admin.firestore.CollectionReference ;
+export type FirestoreType_DocumentSnapshot = admin.firestore.QueryDocumentSnapshot ;
+export type FirestoreType_Query = admin.firestore.Query;
+export type FirestoreType_DocumentReference = admin.firestore.DocumentReference ;
+export type FirestoreType = admin.firestore.Firestore ;
+export type FirestoreType_Transaction = admin.firestore.Transaction;
 
+// export type FirestoreType_Collection = admin.firestore.CollectionReference | firebase.firestore.CollectionReference;
+// export type FirestoreType_DocumentSnapshot = admin.firestore.QueryDocumentSnapshot | firebase.firestore.QueryDocumentSnapshot;
+// export type FirestoreType_Query = (admin.firestore.Query | firebase.firestore.Query) & { select?: (...field: string[]) => FirestoreType_Query };
+// export type FirestoreType_DocumentReference = admin.firestore.DocumentReference | firebase.firestore.DocumentReference;
+// export type FirestoreType = (admin.firestore.Firestore | firebase.firestore.Firestore) & ({ listCollections?: () => Promise<FirestoreType_Collection[]> });
+// export type FirestoreType_Transaction = admin.firestore.Transaction | firebase.firestore.Transaction;
+//
