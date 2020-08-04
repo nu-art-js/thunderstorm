@@ -20,6 +20,7 @@ export * from './testing/test-model';
 
 export * from './core/module';
 export * from './core/module-manager';
+export * from './core/application';
 export * from './core/exceptions';
 export * from './core/dispatcher';
 export * from './core/error-handling';

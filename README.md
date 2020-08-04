@@ -7,7 +7,6 @@ This boilerplate is a unification of both frontend and backend in one repo..
 ## First things first...
 
  * First and foremost you need [**bash** (4.4 and higher)](https://www.google.com/search?q=how+to+install+bash) if you don't have/use it..  grow up and install it..
- * You would need to install **EXACTLY** [**npm** (6.4.1) and **node** (8.15.0)](https://www.google.com/search?q=how+to+install+node+and+npm)
 
 ### What is in the repo:
  
@@ -37,9 +36,7 @@ This boilerplate is a unification of both frontend and backend in one repo..
  Before you can run the project you need to set it up...
  
  You can setup **dev** environment using this command: `bash build-and-install.sh --install --set-env=dev` 
- 
-**NOTE:** Install whatever other node packages the script asks and re-run the script
- 
+  
   * Finally (if you have configured everything correctly) you can launch the "Hello World" sample from your own firebase project by executing: `bash build-and-install.sh --launch-frontend --launch-backend`
 
 
