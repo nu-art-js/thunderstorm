@@ -176,7 +176,7 @@ export const validate = <T extends any>(instance: T, _validator: ValidatorTypeRe
 	}
 };
 
-export const validateObject = <T>(__validator: TypeValidator<object>, instance: T, path: string = "") => {
+export const validateObject = <T>(__validator: TypeValidator<object>, instance: T, path = "") => {
 	const validatorKeys = _keys(__validator);
 	const instanceKeys = Object.keys(instance as unknown as object);
 
