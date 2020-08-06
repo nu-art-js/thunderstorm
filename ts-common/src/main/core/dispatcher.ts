@@ -18,7 +18,7 @@
 
 import {FunctionKeys} from "../utils/types";
 
-export class Dispatcher<T extends object, K extends FunctionKeys<T>, P = Parameters<T[K]>> {
+export class Dispatcher<T extends object, K extends FunctionKeys<T>, P = Parameters<T[K]>, R = ReturnType<T[K]>> {
 
 	static modulesResolver: () => any[];
 
@@ -30,13 +30,13 @@ export class Dispatcher<T extends object, K extends FunctionKeys<T>, P = Paramet
 		this.filter = (listener: any) => !!listener[this.method];
 	}
 
-	public dispatchModule(p: P) {
+	public dispatchModule(p: P): R[] {
 		const listeners = Dispatcher.modulesResolver();
 		const params: any = p;
-		listeners.filter(this.filter).forEach((listener: T) => listener[this.method](...params));
+		return listeners.filter(this.filter).map((listener: T) => listener[this.method](...params));
 	}
 
-	public async dispatchModuleAsync(p: P) {
+	public async dispatchModuleAsync(p: P): Promise<R[]> {
 		const listeners = Dispatcher.modulesResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			const params: any = p;

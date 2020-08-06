@@ -21,10 +21,7 @@
 
 import * as React from 'react';
 import {FilterInput} from "./FilterInput";
-import {
-    _keys,
-    generateHex
-} from "@nu-art/ts-common";
+import {generateHex} from "@nu-art/ts-common";
 import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
 import {Adapter,} from "./adapter/Adapter";
@@ -39,80 +36,81 @@ const defaultListHeight = "150px";
 // }
 
 const wrapperStyle: React.CSSProperties = {
-    display: "inline-block"
+	display: "inline-block"
 };
 
 export const headerStyle: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    boxSizing: "border-box",
-    position: "relative",
-    border: "solid 1px",
-    borderRadius: 2,
-    color: "black",
-    backgroundColor: "white",
-    width: defaultWidth,
-    height: defaultTitleHeight,
+	display: "flex",
+	alignItems: "center",
+	boxSizing: "border-box",
+	position: "relative",
+	border: "solid 1px",
+	borderRadius: 2,
+	color: "black",
+	backgroundColor: "white",
+	width: defaultWidth,
+	height: defaultTitleHeight,
 };
 
 export const inputStyle: React.CSSProperties = {
-    border: "unset",
-    boxSizing: "border-box",
-    outline: "none",
-    // padding: "0 5px",
-    width: "100%",
+	border: "unset",
+	boxSizing: "border-box",
+	outline: "none",
+	// padding: "0 5px",
+	width: "100%",
 };
 
 const listContainerStyle: React.CSSProperties = {
-    display: "inline-block",
-    position: "absolute",
-    zIndex: 10,
+	display: "inline-block",
+	position: "absolute",
+	zIndex: 10,
 };
 
 export const listStyle: React.CSSProperties = {
-    boxSizing: "border-box",
-    backgroundColor: "whitesmoke",
-    border: "solid 1px",
-    borderRadius: 5,
-    display: "flex",
-    flexFlow: "column",
-    alignItems: "stretch",
-    maxHeight: defaultListHeight,
-    overflowX: "hidden",
-    overflowY: "auto",
-    position: "relative",
-    top: 5,
-    width: defaultWidth,
+	boxSizing: "border-box",
+	backgroundColor: "whitesmoke",
+	border: "solid 1px",
+	borderRadius: 5,
+	display: "flex",
+	flexFlow: "column",
+	alignItems: "stretch",
+	maxHeight: defaultListHeight,
+	overflowX: "hidden",
+	overflowY: "auto",
+	position: "relative",
+	top: 5,
+	width: defaultWidth,
 
 };
 
 export type HeaderStyleProps = {
-    headerClassName?: string
-    headerStyle?: React.CSSProperties
+	headerClassName?: string
+	headerStyle?: React.CSSProperties
 }
 
 export type InputProps = {
-    className?: string
-    inputStyle?: React.CSSProperties
-    placeholder?: string
+	className?: string
+	inputStyle?: React.CSSProperties
+	placeholder?: string
 }
 
 export type ListStyleProps = {
-    listClassName?: string
-    listStyle?: React.CSSProperties
+	listClassName?: string
+	listStyle?: React.CSSProperties
 }
 
 export type ValueProps<ItemType> = {
-    selected?: ItemType
-    placeholder?: string
+	selected?: ItemType
+	placeholder?: string
 }
 
 export type State<ItemType> = {
-    filteredOptions: ItemType[]
-    open: boolean
-    selected?: ItemType
-    hover?: ItemType
-    filterTextLength?: number
+	filteredOptions: ItemType[]
+	originalData: ItemType[]
+	open: boolean
+	selected?: ItemType
+	hover?: ItemType
+	filterTextLength?: number
 }
 
 // export type DropDown_Node<ItemType> = {
@@ -145,294 +143,288 @@ type StaticProps = { id: string }
 // }
 
 type Props<ItemType> = StaticProps & {
-    adapter: Adapter
-    // renderersAndOptions: RenderersAndOptions<ItemType>
-    onSelected: (selected: ItemType) => void
-    selected?: ItemType
-    filter?: (item: ItemType) => string[]
-    onFilter?: (list?: ItemType[]) => void
-    inputResolver?: (selected?: ItemType) => InputProps
-    inputEventHandler?: (state:State<ItemType>, e: KeyboardEvent) => State<ItemType>
-    placeholder?: string
+	adapter: Adapter
+	// renderersAndOptions: RenderersAndOptions<ItemType>
+	onSelected: (selected: ItemType) => void
+	selected?: ItemType
+	filter?: (item: ItemType) => string[]
+	onFilter?: (list?: ItemType[]) => void
+	inputResolver?: (selected?: ItemType) => InputProps
+	inputEventHandler?: (state: State<ItemType>, e: KeyboardEvent) => State<ItemType>
+	placeholder?: string
 
-    headerStyleResolver?: HeaderStyleProps
-    valueRenderer?: (props: ValueProps<ItemType>) => React.ReactNode
-    mainCaret?: React.ReactNode
-    closeCaret?: React.ReactNode
+	headerStyleResolver?: HeaderStyleProps
+	valueRenderer?: (props: ValueProps<ItemType>) => React.ReactNode
+	mainCaret?: React.ReactNode
+	closeCaret?: React.ReactNode
 
-    listStyleResolver?: ListStyleProps
+	listStyleResolver?: ListStyleProps
 
-    autocomplete?: boolean
+	autocomplete?: boolean
 }
 
 export class DropDown<ItemType>
-    extends React.Component<Props<ItemType>, State<ItemType>> {
+	extends React.Component<Props<ItemType>, State<ItemType>> {
 
-    static defaultProps: Partial<StaticProps> = {
-        id: generateHex(8),
-    };
-    private node: any = null;
-    private headerStyleResolver: HeaderStyleProps = {headerStyle};
-    private listStyleResolver: ListStyleProps = {listStyle};
-    private options = this.props.adapter.data;
+	static defaultProps: Partial<StaticProps> = {
+		id: generateHex(8),
+	};
+	private node: any = null;
+	private headerStyleResolver: HeaderStyleProps = {headerStyle};
+	private listStyleResolver: ListStyleProps = {listStyle};
 
-    constructor(props: Props<ItemType>) {
-        super(props);
-        this.state = {
-            filteredOptions: this.options,
-            open: false,
-            selected: this.props.selected,
-        };
-    }
+	constructor(props: Props<ItemType>) {
+		super(props);
+		this.state = {
+			filteredOptions: this.props.adapter.data,
+			originalData: this.props.adapter.data,
+			open: false,
+			selected: this.props.selected,
+		};
+	}
 
-    componentDidMount() {
-        document.addEventListener('mousedown', this.handleMouseClick);
-    }
+	static getDerivedStateFromProps(nextProps: Props<any>, prevState: State<any>): State<any> {
+		return {
+			...prevState,
+			originalData: nextProps.adapter.data,
+			filteredOptions: nextProps.adapter.data
+		}
+	}
 
-    componentWillUnmount() {
-        document.removeEventListener('mousedown', this.handleMouseClick);
-    }
+	// shouldComponentUpdate(nextProps: Readonly<Props<ItemType>>, nextState: Readonly<State<ItemType>>, nextContext: any): boolean {
+	//     if(nextProps.adapter.data !== this.props.adapter.data)
+	//         return true;
+	//
+	//     return super.shouldComponentUpdate?.(nextProps, nextState, nextContext) || true;
+	// }
 
-    toggleList = (e: React.MouseEvent) => {
-        stopPropagation(e);
+	componentDidMount() {
+		document.addEventListener('mousedown', this.handleMouseClick);
+	}
 
-        this.setState(prevState => ({open: !prevState.open}));
-        // this.renderMenu();
-    };
+	componentWillUnmount() {
+		document.removeEventListener('mousedown', this.handleMouseClick);
+	}
 
-    onSelected = (item: ItemType) => {
-        this.setState({
-            open: false,
-            selected: item
-        });
+	toggleList = (e: React.MouseEvent) => {
+		stopPropagation(e);
 
-        this.props.onSelected(item);
-    };
+		this.setState(prevState => ({open: !prevState.open}));
+		// this.renderMenu();
+	};
 
-    render() {
-        return (
-            <KeyboardListener onKeyboardEventListener={this.keyEventHandler}>
-                <div ref={node => this.node = node} id={this.props.id} style={wrapperStyle}>
-                    {this.renderHeader()}
-                    {this.renderTree()}
-                </div>
-            </KeyboardListener>)
-    }
+	onSelected = (item: ItemType) => {
+		this.setState({
+			              open: false,
+			              selected: item
+		              });
 
-    private keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent) => {
-        if (this.props.inputEventHandler)
-            return this.setState(()=>{
-                const state = this.props.inputEventHandler ? this.props.inputEventHandler(this.state, e) : this.state;
-                return state;
-            })
+		this.props.onSelected(item);
+	};
 
-        if (e.code === "Enter" && this.state.filteredOptions)
-            return this.onSelected(this.state.filteredOptions[0])
-        if (e.code === "Escape")
-            return this.setState({open: false});
+	render() {
+		return (
+			<KeyboardListener onKeyboardEventListener={this.keyEventHandler}>
+				<div ref={node => this.node = node} id={this.props.id} style={wrapperStyle}>
+					{this.renderHeader()}
+					{this.renderTree()}
+				</div>
+			</KeyboardListener>)
+	}
 
-        if (e.code === "ArrowDown") {
-            return document.getElementById(`${this.props.id}-tree-listener`)?.focus()
-        }
+	private keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent) => {
+		if (this.props.inputEventHandler)
+			return this.setState(state => this.props.inputEventHandler ? this.props.inputEventHandler(state, e) : state);
 
-    };
+		if (e.code === "Enter" && this.state.filteredOptions)
+			return this.onSelected(this.state.filteredOptions[0])
+		if (e.code === "Escape")
+			return this.setState({open: false});
 
-    private renderHeader = () => {
-        const headerComplementary = (this.props.headerStyleResolver || this.headerStyleResolver);
-        return (
-            <div
-                id={`${this.props.id}-header`}
-                className={headerComplementary.headerClassName}
-                style={headerComplementary.headerStyle || (!headerComplementary.headerClassName ? headerStyle : {})}
-                onClick={this.toggleList}>
-                {this.renderField()}
-                {this.renderCaret()}
-            </div>);
-    };
+		if (e.code === "ArrowDown") {
+			return document.getElementById(`${this.props.id}-tree-listener`)?.focus()
+		}
 
-    private renderField = () => {
-        if (!this.state.open || !this.props.filter)
-            return this.renderValue();
+	};
 
-        const inputComplementary = (this.props.inputResolver || this.inputResolver)(this.state.selected);
-        // const options = {...this.props.adapter.data};
+	private renderHeader = () => {
+		const headerComplementary = (this.props.headerStyleResolver || this.headerStyleResolver);
+		return (
+			<div
+				id={`${this.props.id}-header`}
+				className={headerComplementary.headerClassName}
+				style={headerComplementary.headerStyle || (!headerComplementary.headerClassName ? headerStyle : {})}
+				onClick={this.toggleList}>
+				{this.renderField()}
+				{this.renderCaret()}
+			</div>);
+	};
 
-        // const options = this.props.renderersAndOptions.options;
-        return <FilterInput<ItemType>
-            id={`${this.props.id}-input`}
-            filter={this.props.filter}
-            list={this.options}
-            onChange={(filteredOptions: ItemType[], filterTextLength) => {
-                this.setState({
-                    filteredOptions: this.props.autocomplete && this.props.filter && !filterTextLength ? [] : filteredOptions,
-                    filterTextLength
-                }, () => this.props.onFilter && this.props.onFilter(this.state.filteredOptions));
-            }}
-            handleKeyEvent={(e) => {return}}
-            focus={true}
-            className={inputComplementary.className}
-            inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
-            placeholder={inputComplementary.placeholder || this.props.placeholder}
-        />;
-    };
+	private renderField = () => {
+		if (!this.state.open || !this.props.filter)
+			return this.renderValue();
 
-    private inputResolver = (selected?: ItemType): InputProps => ({inputStyle, placeholder: this.props.placeholder});
+		const inputComplementary = (this.props.inputResolver || this.inputResolver)(this.state.selected);
+		// const options = {...this.props.adapter.data};
 
-    private handleMouseClick = (e: MouseEvent) => {
-        if (this.node && this.node.contains(e.target)) {
-            return;
-        }
-        this.setState({open: false});
-    };
+		// const options = this.props.renderersAndOptions.options;
+		return <FilterInput<ItemType>
+			id={`${this.props.id}-input`}
+			filter={this.props.filter}
+			list={this.state.originalData}
+			onChange={(filteredOptions: ItemType[], filterTextLength) => {
+				filteredOptions.pop();
+				this.setState({
+					              filteredOptions: this.props.autocomplete && this.props.filter && !filterTextLength ? [] : filteredOptions,
+					              filterTextLength
+				              }, () => this.props.onFilter && this.props.onFilter(this.state.filteredOptions));
+			}}
+			handleKeyEvent={(e) => {
+				return
+			}}
+			focus={true}
+			className={inputComplementary.className}
+			inputStyle={inputComplementary.inputStyle || (!inputComplementary.className ? inputStyle : {})}
+			placeholder={inputComplementary.placeholder || this.props.placeholder}
+		/>;
+	};
 
-    private valueRenderer: (props: ValueProps<ItemType>) => React.ReactNode = (props: ValueProps<ItemType>) => {
-        if (!props.selected)
-            return <div>{this.props.placeholder}</div>
+	private inputResolver = (selected?: ItemType): InputProps => ({inputStyle, placeholder: this.props.placeholder});
 
-        const Renderer = this.props.adapter.treeNodeRenderer;
-        const node = {
-            propKey: 'string',
-            path: 'string',
-            item: 'any',
-            adapter: this.props.adapter,
-            expandToggler: (e: React.MouseEvent, expand?: boolean) => {
-            },
-            onClick: (e: React.MouseEvent) => {
-            },
-            onFocus: (e: React.MouseEvent) => {
-            },
-            expanded: true,
-            focused: false,
-            selected: true
-        };
-        return <Renderer item={props.selected} node={node}/>
-    };
+	private handleMouseClick = (e: MouseEvent) => {
+		if (this.node && this.node.contains(e.target)) {
+			return;
+		}
+		this.setState({open: false});
+	};
 
-    private renderValue = () => (
-        <div className={'match_width'}>
-            {(this.props.valueRenderer || this.valueRenderer)({
-                selected: this.state.selected,
-                placeholder: this.props.placeholder
-            })}
-        </div>);
+	private valueRenderer: (props: ValueProps<ItemType>) => React.ReactNode = (props: ValueProps<ItemType>) => {
+		if (!props.selected)
+			return <div>{this.props.placeholder}</div>
+
+		const Renderer = this.props.adapter.treeNodeRenderer;
+		const node = {
+			propKey: 'string',
+			path: 'string',
+			item: 'any',
+			adapter: this.props.adapter,
+			expandToggler: (e: React.MouseEvent, expand?: boolean) => {
+			},
+			onClick: (e: React.MouseEvent) => {
+			},
+			onFocus: (e: React.MouseEvent) => {
+			},
+			expanded: true,
+			focused: false,
+			selected: true
+		};
+		return <Renderer item={props.selected} node={node}/>
+	};
+
+	private renderValue = () => (
+		<div className={'match_width'}>
+			{(this.props.valueRenderer || this.valueRenderer)({
+				                                                  selected: this.state.selected,
+				                                                  placeholder: this.props.placeholder
+			                                                  })}
+		</div>);
 
 
-    private renderCaret = () => {
-        if (!this.props.mainCaret)
-            return <></>;
+	private renderCaret = () => {
+		if (!this.props.mainCaret)
+			return <></>;
 
-        const closeCaret = this.props.closeCaret || this.props.mainCaret;
-        return this.state.open ? closeCaret : this.props.mainCaret;
-    };
+		const closeCaret = this.props.closeCaret || this.props.mainCaret;
+		return this.state.open ? closeCaret : this.props.mainCaret;
+	};
 
-    // private renderOptions = () => {
-    // 	if (!this.state.open)
-    // 		return "";
-    //
-    // 	const Renderer = this.props.itemRenderer;
-    // 	const items = this.state.filteredOptions;
-    //
-    // 	return <div style={listContainerStyle}>
-    // 		<div style={listStyle}>
-    // 			{items.length === 0 ?
-    // 				<div style={{opacity: 0.5, margin: "auto"}}>No options</div>
-    // 				:
-    // 				<>{items.map((item, index) => (
-    // 					<div key={index}
-    // 					     tabIndex={0}
-    // 					     onMouseEnter={() => this.setState({hover: item})}
-    // 					     onMouseLeave={() => this.setState({hover: undefined})}
-    // 					     onMouseDown={(e: React.MouseEvent) => {
-    // 						     e.stopPropagation();
-    // 						     e.preventDefault();
-    // 					     }}
-    // 					     onMouseUp={(e: React.MouseEvent) => {
-    // 						     e.stopPropagation();
-    // 						     e.preventDefault();
-    // 						     this.onSelected(e, item);
-    // 					     }}
-    // 					     className={'clickable match_width'}>
-    // 						{Renderer({item: item, selected: item === this.state.selected, hover: this.state.hover === item})}
-    // 					</div>
-    // 				))}</>
-    // 			}
-    // 		</div>
-    // 	</div>
-    // };
+	// private renderOptions = () => {
+	// 	if (!this.state.open)
+	// 		return "";
+	//
+	// 	const Renderer = this.props.itemRenderer;
+	// 	const items = this.state.filteredOptions;
+	//
+	// 	return <div style={listContainerStyle}>
+	// 		<div style={listStyle}>
+	// 			{items.length === 0 ?
+	// 				<div style={{opacity: 0.5, margin: "auto"}}>No options</div>
+	// 				:
+	// 				<>{items.map((item, index) => (
+	// 					<div key={index}
+	// 					     tabIndex={0}
+	// 					     onMouseEnter={() => this.setState({hover: item})}
+	// 					     onMouseLeave={() => this.setState({hover: undefined})}
+	// 					     onMouseDown={(e: React.MouseEvent) => {
+	// 						     e.stopPropagation();
+	// 						     e.preventDefault();
+	// 					     }}
+	// 					     onMouseUp={(e: React.MouseEvent) => {
+	// 						     e.stopPropagation();
+	// 						     e.preventDefault();
+	// 						     this.onSelected(e, item);
+	// 					     }}
+	// 					     className={'clickable match_width'}>
+	// 						{Renderer({item: item, selected: item === this.state.selected, hover: this.state.hover === item})}
+	// 					</div>
+	// 				))}</>
+	// 			}
+	// 		</div>
+	// 	</div>
+	// };
 
-    // private listElementWrapper = (renderer: React.ReactNode, item: ItemType, allowAction: boolean = true) => <div
-    // 	onMouseEnter={() => this.setState({hover: item})}
-    // 	onMouseLeave={() => this.setState({hover: undefined})}
-    // 	onMouseUp={(e: React.MouseEvent) => allowAction && this.onSelected(e, item)}
-    // 	className={`${allowAction ? `clickable` : ''} match_width`}>
-    // 	{renderer}</div>;
+	// private listElementWrapper = (renderer: React.ReactNode, item: ItemType, allowAction: boolean = true) => <div
+	// 	onMouseEnter={() => this.setState({hover: item})}
+	// 	onMouseLeave={() => this.setState({hover: undefined})}
+	// 	onMouseUp={(e: React.MouseEvent) => allowAction && this.onSelected(e, item)}
+	// 	className={`${allowAction ? `clickable` : ''} match_width`}>
+	// 	{renderer}</div>;
 
-    // private funcCreator = (renderer: DropDownItemRenderer<ItemType>, allowAction: boolean) =>
-    // 	(item: DropDown_Node<ItemType>) => this.listElementWrapper(
-    // 		renderer({item: item.item, selected: allowAction && item.item === this.state.selected, hover: allowAction && item.item === this.state.hover}),
-    // 		item.item,
-    // 		allowAction);
+	// private funcCreator = (renderer: DropDownItemRenderer<ItemType>, allowAction: boolean) =>
+	// 	(item: DropDown_Node<ItemType>) => this.listElementWrapper(
+	// 		renderer({item: item.item, selected: allowAction && item.item === this.state.selected, hover: allowAction && item.item === this.state.hover}),
+	// 		item.item,
+	// 		allowAction);
 
-    private renderTree = () => {
-        if (!this.state.open)
-            return null;
+	private renderTree = () => {
+		if (!this.state.open)
+			return null;
 
-        const items = this.state.filteredOptions;
-        this.props.adapter.data = items;
-        // let adapter: Adapter;
-        // // let rendererMap: DropDownRendererMap<ItemType> | { [key: string]: React.ReactNode };
-        // // // @ts-ignore
-        // // let _children: ItemToRender<_RendererMap, string>[];
-        //
-        // if (this.isSingleRendererAndOptions(this.props.renderersAndOptions)) {
-        // 	adapter = new Adapter().setData(items);
-        // 	adapter.getTreeNodeRenderer = () => SimpleDropdownRenderer
-        // } else {
-        // 	adapter = new MultiTypeAdapter(this.props.renderersAndOptions.rendererMap).setData(items);
-        // 	adapter.getTreeNodeRenderer = () => SimpleDropdownRenderer;
-        //
-        //
-        // 	// rendererMap = this.props.renderersAndOptions.rendererMap;
-        // 	// const allowAction = (el: string, avoidAction: string[] = []): boolean => !avoidAction.includes(el);
-        // 	// const _avoidAction = this.props.renderersAndOptions.avoidActionOnTypes;
-        // 	// Object.keys(rendererMap).forEach(
-        // 	// 	(el) => rendererMap[el] = this.funcCreator(rendererMap[el] as DropDownItemRenderer<ItemType>, allowAction(el, _avoidAction)));
-        // 	//
-        // 	// _children = items as ItemToRender<_RendererMap, string>[];
-        // }
+		const listComplementary = (this.props.listStyleResolver || this.listStyleResolver);
+		if (this.props.autocomplete && !this.state.filterTextLength)
+			return null;
 
-        const listComplementary = (this.props.listStyleResolver || this.listStyleResolver);
-        const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id)
-        const id = `${this.props.id}-tree`;
+		return <div style={listContainerStyle}>
+			<div className={listComplementary.listClassName} style={listComplementary.listStyle}>
+				{this.renderTreeImpl()}
+			</div>
+		</div>
+	}
 
-        if (this.props.autocomplete && !this.state.filterTextLength)
-            return null;
+	private renderTreeImpl = () => {
+		const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
+		const id = `${this.props.id}-tree`;
+		this.props.adapter.data = this.state.filteredOptions;
+		if ((!this.props.filter || !this.props.autocomplete || this.state.filterTextLength) && this.props.adapter.data.length === 0)
+			return <div style={{textAlign: "center", opacity: 0.5}}>No options</div>;
 
-        return <div style={listContainerStyle}>
-            <div className={listComplementary.listClassName} style={listComplementary.listStyle}>
-                {(!this.props.filter || !this.props.autocomplete || this.state.filterTextLength) && items.length === 0 ?
-                    <div style={{textAlign: "center", opacity: 0.5}}>No options</div>
-                    :
-                    <Tree
-                        id={id}
-                        key={id}
-                        adapter={this.props.adapter}
-                        indentPx={0}
-                        callBackState={(key: string, value: any, level: number) => key === '/'}
-                        selectedItem={this.state.selected}
-                        onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
-                        unMountFromOutside={() => this.setState({open: false})}
-                        keyEventHandler={treeKeyEventHandler}
-                    />
-                }
-            </div>
-        </div>
-    }
+		return <Tree
+			id={id}
+			key={id}
+			adapter={this.props.adapter}
+			indentPx={0}
+			callBackState={(key: string, value: any, level: number) => key === '/'}
+			selectedItem={this.state.selected}
+			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
+			unMountFromOutside={() => this.setState({open: false})}
+			keyEventHandler={treeKeyEventHandler}
+		/>
+	};
 }
 
 const treeKeyEventHandlerResolver = (id: string) => {
-    return (node: HTMLDivElement, e: KeyboardEvent) => {
-        if (!["Escape", "ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Enter"].includes(e.code))
-            document.getElementById(`${id}-input`)?.focus();
-    }
+	return (node: HTMLDivElement, e: KeyboardEvent) => {
+		if (!["Escape", "ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Enter"].includes(e.code))
+			document.getElementById(`${id}-input`)?.focus();
+	}
 };

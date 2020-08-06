@@ -24,11 +24,13 @@ import {FirebaseModule} from "../main/app-backend/FirebaseModule";
 import {testStorage} from "./firestore/storage/test-storage";
 import {__scenario} from "@nu-art/testelot";
 import {testDatabase} from "./database/test-database";
+import {scenarioUpsert} from "./firestore/collection/test/insert-and-query";
 
 const mainScenario = __scenario("Firebase testing");
-mainScenario.add(testDatabase)
-mainScenario.add(testCollections);
-mainScenario.add(testStorage);
+// mainScenario.add(testDatabase)
+// mainScenario.add(testCollections);
+// mainScenario.add(testStorage);
+mainScenario.add(scenarioUpsert);
 // mainScenario.add(testFirestoreBackup);
 module.exports = new FirebaseTester()
 	.addModules(FirebaseModule,
