@@ -23,11 +23,11 @@ import {
 import {
 	assert,
 	BadImplementationException,
-	isErrorOfType,
 	sortArray
 } from "@nu-art/ts-common";
 import {FirestoreCollection} from "../../../_main";
 import {
+	simpleTypeCollection,
 	testCollection,
 	testInstance1,
 	testInstance2,
@@ -35,7 +35,10 @@ import {
 	testInstance4,
 	testInstance5
 } from "../_core/consts";
-import {FB_Type} from "../_core/types";
+import {
+	FB_Type,
+	SimpleType
+} from "../_core/types";
 
 
 function testInsert(scenario: Scenario, processor: (collection: FirestoreCollection<FB_Type>, ...items: FB_Type[]) => Promise<any>) {
@@ -59,7 +62,7 @@ function testInsert(scenario: Scenario, processor: (collection: FirestoreCollect
 		await processor(collection, testInstance1, testInstance2);
 
 		await collection.getAll();
-	}).expectToFail(BadImplementationException,(e: Error) => e.message.toLowerCase().startsWith("too many results")));
+	}).expectToFail(BadImplementationException, (e: Error) => e.message.toLowerCase().startsWith("too many results")));
 
 	scenario.add(testCollection.processClean("Insert and query - five items", async (collection) => {
 		const _items = [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5];
@@ -90,3 +93,24 @@ export const scenarioInsertAll = __scenario("Insert All & Query");
 testInsert(scenarioInsertAll, async (collection, ...items: FB_Type[]) => {
 	return collection.insertAll(items)
 });
+
+
+export const scenarioUpsert = __scenario('Upsert');
+
+scenarioUpsert.add(simpleTypeCollection.processClean("Upsert", async (collection) => {
+	const x: SimpleType = {
+		label: 'a',
+		deleteId: 'b'
+	};
+	await collection.upsert(x)
+
+}));
+scenarioUpsert.add(simpleTypeCollection.processClean("Upsert undefined should fail", async (collection) => {
+	const x: SimpleType = {
+		label: 'a',
+		deleteId: 'b',
+		optional: undefined
+	};
+	await collection.upsert(x)
+
+}).expectToFail(BadImplementationException, (e: Error) => e.message.toLowerCase().startsWith("no where properties are allowed to be null or undefined")));

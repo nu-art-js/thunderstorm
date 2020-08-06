@@ -33,25 +33,38 @@ import {
 export class Example_DefaultsDropDown
 	extends React.Component<{}, { _selected?: Plague }> {
 
+
 	onSelected = (plague: Plague) => {
 		this.setState({_selected: plague});
 	};
+	private plagues = plagues;
+
+	addPlague = () => {
+		this.plagues = [...this.plagues, plagues[0]]
+		// this.plagues.push(plagues[0]);
+		this.forceUpdate()
+	};
+
 
 	render() {
 		const simpleAdapter: Adapter = AdapterBuilder()
 			.list()
 			.singleRender(ItemRenderer)
-			.setData(plagues)
+			.setData([...this.plagues])
 			.build();
 
-		console.log(this.state?._selected)
+		console.log(this.state?._selected);
 
 		return <div>
 			<h4>Only defaults</h4>
 			<h4>single renderer, flat list</h4>
+			<div onClick={this.addPlague}>Add Plague</div>
 			<DropDown
 				adapter={simpleAdapter}
 				onSelected={this.onSelected}
+				filter={item => {
+					return [item.label]
+				}}
 			/>
 			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>

@@ -33,8 +33,10 @@ import {
 	DB_PushSession,
 	Request_PushRegister
 } from "../main";
-import {FirestoreTransaction} from "../../../firebase/src/main/app-backend/firestore/FirestoreTransaction";
-import {FirestoreCollection} from "../../../firebase/src/main/app-backend/firestore/FirestoreCollection";
+import {
+	FirestoreCollection,
+	FirestoreTransaction
+} from "@nu-art/firebase/backend";
 
 const arrayOf2 = Array(2).fill(0);
 export const scenarioCleanup = __scenario("Scheduled Cleaup");
