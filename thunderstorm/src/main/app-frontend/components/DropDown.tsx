@@ -228,6 +228,7 @@ export class DropDown<ItemType>
 
         if (e.code === "Enter" && this.state.filteredOptions)
             return this.onSelected(this.state.filteredOptions[0])
+
         if (e.code === "Escape")
             return this.setState({open: false});
 
@@ -319,7 +320,7 @@ export class DropDown<ItemType>
 
     private renderCaret = () => {
         if (!this.props.mainCaret)
-            return <></>;
+            return;
 
         const closeCaret = this.props.closeCaret || this.props.mainCaret;
         return this.state.open ? closeCaret : this.props.mainCaret;

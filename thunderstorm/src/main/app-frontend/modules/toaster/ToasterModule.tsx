@@ -27,11 +27,8 @@ import {
 } from "@nu-art/ts-common";
 // noinspection TypeScriptPreferShortImport
 import {Color} from "csstype";
-import {
-	Stylable,
-	StylableBuilder
-} from "../dialog/DialogModule";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
+import { Stylable, StylableBuilder } from "../../tools/Stylable";
 
 
 export enum ToastType {

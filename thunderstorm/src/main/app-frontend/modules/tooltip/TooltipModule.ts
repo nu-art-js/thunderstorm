@@ -24,19 +24,19 @@ import {
 	Module,
 	Second
 } from "@nu-art/ts-common";
-import {Properties} from "csstype";
-import {StylableBuilder} from "../dialog/DialogModule";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
+import {
+	Stylable,
+	StylableBuilder
+} from "../../tools/Stylable";
 
-export type  Tooltip_Model = {
+export type  Tooltip_Model = Stylable & {
 	content: React.ReactNode;
 	location?: {
 		x: number,
 		y: number
 	};
-	style?: Properties;
 	duration: number;
-	className?: string;
 };
 
 export interface TooltipListener {
