@@ -72,6 +72,10 @@ export * from "./app-frontend/modules/menu/MenuAndButton";
 export * from "./app-frontend/modules/menu/PopupMenu";
 export * from "./app-frontend/modules/toaster/Toaster";
 export * from "./app-frontend/modules/dialog/Dialog";
+
+export * from "./app-frontend/tools/KeyboardListener";
+export * from "./app-frontend/tools/Stylable";
+
 export * from "./app-frontend/utils/tools";
 
 

@@ -69,8 +69,6 @@ export class KeyboardListener<P extends KeyboardListenerProps>
 				this.node = node;
 				this.forceUpdate();
 			}}
-			className={'match_width'}
-			style={{outline: "none"}}
 			tabIndex={1}
 			onFocus={this.onFocus}
 			onBlur={this.onBlur}>

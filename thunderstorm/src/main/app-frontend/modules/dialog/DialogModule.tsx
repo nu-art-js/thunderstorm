@@ -26,11 +26,7 @@ import {
 	Properties
 } from "csstype";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
-
-export type  Stylable = {
-	style?: Properties
-	className?: string
-}
+import { Stylable, StylableBuilder } from "../../tools/Stylable";
 
 export type Dialog_Model = Stylable & {
 	zIndex: number,
@@ -72,33 +68,6 @@ export class DialogModule_Class
 	}
 }
 
-export class StylableBuilder {
-	style?: Properties;
-	className?: string;
-
-	setStyle(style: Properties) {
-		this.style = style;
-		return this;
-	}
-
-	clearInlineStyle() {
-		this.style = {};
-		return this;
-	}
-
-	addStyle(style: Properties) {
-		if (!this.style)
-			return this.setStyle(style);
-
-		this.style = {...this.style, ...style};
-		return this;
-	}
-
-	setClassName(className: string) {
-		this.className = className;
-		return this;
-	}
-}
 
 export class DialogButton_Builder
 	extends StylableBuilder {
