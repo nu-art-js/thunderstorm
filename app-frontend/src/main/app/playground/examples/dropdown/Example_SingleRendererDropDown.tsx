@@ -1,6 +1,6 @@
 import * as React from "react";
+import {ReactNode} from "react";
 import {
-	customInputStyle,
 	optionRendererStyle,
 	Plague,
 	plagues
@@ -8,17 +8,15 @@ import {
 import {css} from "emotion";
 import {ICONS} from "@res/icons";
 import {
-	HeaderStyleProps,
-	InputProps,
-	inputStyle,
-	ValueProps,
 	Adapter,
 	AdapterBuilder,
-	headerStyle,
+	BaseNodeRenderer,
 	DropDown,
-	BaseNodeRenderer
+	headerStyle,
+	inputStyle,
+	Stylable
 } from "@nu-art/thunderstorm/frontend";
-import {ReactNode} from "react";
+import {inputClassName} from "./OstudioEx";
 
 export class Example_SingleRendererDropDown
 	extends React.Component<{}, { _selected?: Plague }> {
@@ -28,20 +26,19 @@ export class Example_SingleRendererDropDown
 	};
 
 	render() {
-		const valueRenderer = (props: ValueProps<Plague>) => {
+		const valueRenderer = (selected?: Plague) => {
 			const style: React.CSSProperties = {backgroundColor: "lime", boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
-			if (props.selected)
-				return <div style={{...style, color: "red"}}>{props.selected.label}</div>;
-			return <div style={style}>{props.placeholder}</div>
+			if (!selected)
+				return <div style={style}>CHOOSE</div>
+			return <div style={{...style, color: "red"}}>{selected.label}</div>;
 		};
-		const inputResolver = (selected?: Plague): InputProps => (
-			{
-				className: customInputStyle(!!selected),
-				inputStyle,
-				placeholder: this.state?._selected?.label
-			}
-		);
-		const headerResolverClass: HeaderStyleProps = {headerStyle, headerClassName: css({boxShadow: "5px 10px #888888"})};
+
+		const inputStylable = {
+			className: inputClassName,
+			style: inputStyle,
+			placeholder: this.state?._selected?.label
+		};
+		const headerResolverClass: Stylable = {style: headerStyle, className: css({boxShadow: "5px 10px #888888"})};
 		const simpleAdapter: Adapter = AdapterBuilder()
 			.list()
 			.singleRender(ItemRenderer)
@@ -59,12 +56,11 @@ export class Example_SingleRendererDropDown
 			<DropDown
 				adapter={simpleAdapter}
 				onSelected={this.onSelected}
-				valueRenderer={valueRenderer}
-				inputResolver={inputResolver}
+				selectedItemRenderer={valueRenderer}
+				inputStylable={inputStylable}
 				filter={(item) => [item.label.toLowerCase()]}
 				caret={caret}
-				placeholder={"Choose a plague"}
-				headerStyleResolver={headerResolverClass}
+				headerStylable={headerResolverClass}
 				autocomplete={true}
 			/>
 			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>

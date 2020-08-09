@@ -160,7 +160,7 @@ export class DropDown<ItemType>
 			return null;
 
 		const adapter = DropDown.cloneAdapter(nextProps);
-		adapter.data = prevState.adapter.data;
+		// adapter.data = prevState.adapter.data;
 		return {adapter}
 	}
 

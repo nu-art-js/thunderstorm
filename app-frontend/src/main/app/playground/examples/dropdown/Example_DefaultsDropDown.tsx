@@ -23,7 +23,6 @@ import {
 	BaseNodeRenderer,
 	DropDown,
 	TreeRendererMap,
-	ValueProps
 } from "@nu-art/thunderstorm/frontend";
 import * as React from "react";
 import {
@@ -97,18 +96,18 @@ export class Example_DefaultsDropDown
 				}}
 				// onSelected={this.onSelected}
 				filter={this.filter}
-				valueRenderer={this.valueRenderer}
+				selectedItemRenderer={this.valueRenderer}
 			/>
 			{console.log(this.state?._selected?.value)}
 			{/*<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>*/}
 		</div>
 	}
 
-	private valueRenderer = (props: ValueProps<PlagueWithTitle | Plague>) => {
-		const selected = props.selected;
-		if (selected)
-			return <div>{this.isSimple(selected) ? selected.label : selected.item?.label}</div>;
-		return <div>{props.placeholder}</div>
+	private valueRenderer = (selected?: PlagueWithTitle | Plague) => {
+		if(!selected)
+			return <div>{"BLAH BLAH"}</div>
+
+		return <div>{this.isSimple(selected) ? selected.label : selected.item?.label}</div>;
 	};
 
 	private filter = (item: PlagueWithTitle | Plague) => {
