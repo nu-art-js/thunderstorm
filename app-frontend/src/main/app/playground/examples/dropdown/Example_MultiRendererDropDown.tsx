@@ -27,17 +27,16 @@ import {
 import {
 	DropDown,
 	headerStyle,
-	InputProps,
 	inputStyle,
 	listStyle,
 } from "@nu-art/thunderstorm/app-frontend/components/DropDown";
 import * as React from "react";
 import {
-	customInputStyle,
 	optionRendererStyle,
 	Plague,
 } from "./Example_DropDowns";
 import {ICONS} from "@res/icons";
+import {css} from "emotion";
 
 export class FlatItemRenderer
 	extends BaseNodeRenderer<Plague> {
@@ -134,14 +133,21 @@ export class Example_MultiRendererDropDown
 			.setData(flatPlaguesWithTitles)
 			.noGeneralOnClick()
 			.build();
-		const inputResolverWithCustomInlineStyle = (selected?: FlatItemToRender<TreeRendererMap>): InputProps => (
-			{
-				className: customInputStyle(!!selected),
-				style: {...inputStyle, padding: "0 20px"},
-				placeholder: this.state?._selected?.label
-			}
-		);
-		const valueRenderer = (selected: FlatItemToRender<TreeRendererMap>) => {
+
+		const inputStylable = {
+			className: css(
+				{
+					backgroundColor: "lime",
+					fontSize: 13,
+					"::placeholder": {
+						color: "red",
+					}
+				}),
+			style:{...inputStyle, padding: "0 20px"},
+			placeholder:this.state?._selected?.label
+		}
+
+		const valueRenderer = (selected: FlatItemToRender<TreeRendererMap>["item"]) => {
 			const style: React.CSSProperties = {backgroundColor: "lime", boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
 			if (selected)
 				return <div style={{...style, color: "red"}}>{selected?.item?.label}</div>;
@@ -170,7 +176,7 @@ export class Example_MultiRendererDropDown
 				adapter={adapter}
 				onSelected={this.onSelected}
 				selectedItemRenderer={valueRenderer}
-				inputStylable={inputResolverWithCustomInlineStyle}
+				inputStylable={inputStylable}
 				inputEventHandler={(_state, e) => {
 					if (e.code === "Enter") {
 						const newOption = _state.filteredOptions ? _state.filteredOptions[1] : _state.selected
@@ -183,41 +189,10 @@ export class Example_MultiRendererDropDown
 				filter={(item) => [(item as FlatItemToRender<TreeRendererMap>).item.label.toLowerCase()]}
 				selected={flatPlaguesWithTitles[2]}
 				caret={caret}
-				headerStyleResolver={headerStylable}
-				listStyleResolver={listStylable}
+				headerStylable={headerStylable}
+				listStylable={listStylable}
 			/>
 			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>
 	}
 }
-
-// class Example_NodeRenderer_HoverToExpand
-// 	extends React.Component<NodeRendererProps> {
-//
-// 	constructor(props: NodeRendererProps) {
-// 		super(props);
-// 	}
-//
-// 	render() {
-// 		const item = this.props.item.item;
-// 		const Renderer = this.props.node.adapter.resolveRenderer(this.props.item.type);
-// 		if (!Renderer)
-// 			return "";
-//
-// 		const hasChildren = Array.isArray(this.props.item) && this.props.item.length > 0;
-//
-// 		return (
-// 			<div
-// 				className="ll_h_c clickable"
-// 				id={this.props.node.path}
-// 				onMouseEnter={(e) => this.props.node.expandToggler(e, true)}
-// 				onMouseLeave={(e) => this.props.node.expandToggler(e, false)}
-// 				onMouseDown={stopPropagation}
-// 				onMouseUp={(e) => this.props.node.onClick(e)}>
-//
-// 				<Renderer node={this.props.node} item={item}/>
-// 				{hasChildren && <div>{">"}</div>}
-// 			</div>
-// 		);
-// 	};
-// }

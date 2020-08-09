@@ -39,14 +39,6 @@ export const optionRendererStyle = (selected: boolean) => css(
 		width: "100%"
 	});
 
-export const customInputStyle = (selected: boolean) => css(
-	{
-		backgroundColor: "lime",
-		fontSize: 13,
-		"::placeholder": {
-			color: selected ? "red" : "black",
-		}
-	});
 
 export type Node = {
 	path: string

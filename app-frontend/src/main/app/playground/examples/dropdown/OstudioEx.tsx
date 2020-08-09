@@ -92,14 +92,14 @@ const listResolverStyle = (width: number = DropdownWidth.Long): Stylable => ({
 	}
 });
 
-export const customInputStyle = (selected: boolean) => css(
+export const inputClassName = css(
 	{
 		fontSize: 14,
 		color: "#001636",
 		paddingLeft: 9,
 		"::placeholder": {
 			color: "#959ca5",
-			fontSize: selected ? 14 : 11,
+			fontSize: 14,
 			fontStyle: "italic",
 			// paddingLeft: selected ? 9 : 10
 		}
@@ -162,7 +162,7 @@ export const AppDropDown = <T extends any = any>(props: DropdownProps<T>) => {
 		caret={caret}
 		inputStylable={{
 			style: inputStyle,
-			className: customInputStyle(!!props.selected),
+			className: inputClassName,
 			placeholder: props.selected ? props.labelResolver(props.selected) : props.placeholder || 'choose'
 		}}
 		selectedItemRenderer={valueRenderer}
