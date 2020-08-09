@@ -24,15 +24,14 @@ import {
 	_clearTimeout,
 	currentTimeMillies
 } from '@nu-art/ts-common';
+import {Stylable} from "../tools/Stylable";
 
-type Props<Key> = {
+type Props<Key> = Stylable & {
 	onChange: (value: string, id: Key) => void
 	onAccept?: () => void
 	onCancel?: () => void
 	onBlur?: () => void
 	handleKeyEvent?: (e: KeyboardEvent) => void
-	className?: string
-	style?: React.CSSProperties
 	value?: string
 	error?: string
 	type: 'text' | 'number' | 'password'

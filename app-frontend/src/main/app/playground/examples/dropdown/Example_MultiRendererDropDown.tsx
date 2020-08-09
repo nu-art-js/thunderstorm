@@ -27,12 +27,9 @@ import {
 import {
 	DropDown,
 	headerStyle,
-	HeaderStyleProps,
 	InputProps,
 	inputStyle,
 	listStyle,
-	ListStyleProps,
-	ValueProps
 } from "@nu-art/thunderstorm/app-frontend/components/DropDown";
 import * as React from "react";
 import {
@@ -140,19 +137,19 @@ export class Example_MultiRendererDropDown
 		const inputResolverWithCustomInlineStyle = (selected?: FlatItemToRender<TreeRendererMap>): InputProps => (
 			{
 				className: customInputStyle(!!selected),
-				inputStyle: {...inputStyle, padding: "0 20px"},
+				style: {...inputStyle, padding: "0 20px"},
 				placeholder: this.state?._selected?.label
 			}
 		);
-		const valueRenderer = (props: ValueProps<FlatItemToRender<TreeRendererMap>>) => {
+		const valueRenderer = (selected: FlatItemToRender<TreeRendererMap>) => {
 			const style: React.CSSProperties = {backgroundColor: "lime", boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
-			if (props.selected)
-				return <div style={{...style, color: "red"}}>{props.selected?.item?.label}</div>;
-			return <div style={style}>{props.placeholder}</div>
+			if (selected)
+				return <div style={{...style, color: "red"}}>{selected?.item?.label}</div>;
+			return <div style={style}>CHOOSE</div>
 		};
-		const headerResolverStyle: HeaderStyleProps = {headerStyle: {...headerStyle, border: "solid 2px red", borderRadius: "5px 5px 0px 0px"}};
-		const listResolverStyle: ListStyleProps = {
-			listStyle: {
+		const headerStylable = {style: {...headerStyle, border: "solid 2px red", borderRadius: "5px 5px 0px 0px"}};
+		const listStylable = {
+			style: {
 				...listStyle,
 				border: "solid 2px red",
 				borderRadius: "0px 0px 5px 5px",
@@ -161,6 +158,10 @@ export class Example_MultiRendererDropDown
 				maxHeight: 90
 			}
 		};
+		let caretItem = <div style={{backgroundColor: "lime", paddingRight: 8}}>
+			<div style={{marginTop: 3}}>{ICONS.arrowOpen(undefined, 11)}</div>
+		</div>;
+		const caret = {open: caretItem, close: caretItem}
 		return <div>
 			<h4>Filter, 1 caret, default value,</h4>
 			<h4>all renderers & custom inline style</h4>
@@ -168,8 +169,8 @@ export class Example_MultiRendererDropDown
 			<DropDown
 				adapter={adapter}
 				onSelected={this.onSelected}
-				valueRenderer={valueRenderer}
-				inputResolver={inputResolverWithCustomInlineStyle}
+				selectedItemRenderer={valueRenderer}
+				inputStylable={inputResolverWithCustomInlineStyle}
 				inputEventHandler={(_state, e) => {
 					if (e.code === "Enter") {
 						const newOption = _state.filteredOptions ? _state.filteredOptions[1] : _state.selected
@@ -181,11 +182,9 @@ export class Example_MultiRendererDropDown
 				}}
 				filter={(item) => [(item as FlatItemToRender<TreeRendererMap>).item.label.toLowerCase()]}
 				selected={flatPlaguesWithTitles[2]}
-				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>
-					<div style={{marginTop: 3}}>{ICONS.arrowOpen(undefined, 11)}</div>
-				</div>}
-				headerStyleResolver={headerResolverStyle}
-				listStyleResolver={listResolverStyle}
+				caret={caret}
+				headerStyleResolver={headerStylable}
+				listStyleResolver={listStylable}
 			/>
 			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>

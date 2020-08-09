@@ -18,6 +18,7 @@ import {
 	DropDown,
 	BaseNodeRenderer
 } from "@nu-art/thunderstorm/frontend";
+import {ReactNode} from "react";
 
 export class Example_SingleRendererDropDown
 	extends React.Component<{}, { _selected?: Plague }> {
@@ -46,6 +47,12 @@ export class Example_SingleRendererDropDown
 			.singleRender(ItemRenderer)
 			.setData(plagues)
 			.build();
+
+		const caret = {
+			open: this.caretItem(ICONS.arrowOpen(undefined, 11)),
+			close: this.caretItem(ICONS.arrowClose(undefined, 11))
+		}
+
 		return <div>
 			<h4>Filter, carets, placeholder & all renderers</h4>
 			<h4>single renderer, flat list</h4>
@@ -55,14 +62,19 @@ export class Example_SingleRendererDropDown
 				valueRenderer={valueRenderer}
 				inputResolver={inputResolver}
 				filter={(item) => [item.label.toLowerCase()]}
-				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><div style={{marginTop:3}}>{ICONS.arrowOpen(undefined, 11)}</div></div>}
-				closeCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><div style={{marginTop:3}}>{ICONS.arrowClose(undefined, 11)}</div></div>}
+				caret={caret}
 				placeholder={"Choose a plague"}
 				headerStyleResolver={headerResolverClass}
 				autocomplete={true}
 			/>
 			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>
+	}
+
+	private caretItem(icon: ReactNode) {
+		return <div style={{backgroundColor: "lime", paddingRight: 8}}>
+			<div style={{marginTop: 3}}>{icon}</div>
+		</div>;
 	}
 }
 
