@@ -23,7 +23,7 @@ import {swSelf} from "./self";
 import {ModuleManager} from "@nu-art/ts-common/core/module-manager";
 import {BeLogged} from "@nu-art/ts-common/core/logger/BeLogged";
 import {LogClient_Browser} from "@nu-art/ts-common/core/logger/LogClient_Browser";
-import {LogLevel} from "@nu-art/ts-common";
+import {LogLevel} from "@nu-art/ts-common/core/logger/types";
 
 export class ServiceWorker
 	extends ModuleManager {

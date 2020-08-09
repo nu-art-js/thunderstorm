@@ -23,11 +23,11 @@ import {
 import {
 	assert,
 	BadImplementationException,
-	isErrorOfType,
 	sortArray
 } from "@nu-art/ts-common";
 import {FirestoreCollection} from "../../../_main";
 import {
+	simpleTypeCollection,
 	testCollection,
 	testInstance1,
 	testInstance2,
@@ -35,7 +35,10 @@ import {
 	testInstance4,
 	testInstance5
 } from "../_core/consts";
-import {FB_Type} from "../_core/types";
+import {
+	FB_Type,
+	SimpleType
+} from "../_core/types";
 
 
 function testInsert(scenario: Scenario, processor: (collection: FirestoreCollection<FB_Type>, ...items: FB_Type[]) => Promise<any>) {
@@ -59,7 +62,7 @@ function testInsert(scenario: Scenario, processor: (collection: FirestoreCollect
 		await processor(collection, testInstance1, testInstance2);
 
 		await collection.getAll();
-	}).expectToFail(BadImplementationException,(e: Error) => e.message.toLowerCase().startsWith("too many results")));
+	}).expectToFail(BadImplementationException, (e: Error) => e.message.toLowerCase().startsWith("too many results")));
 
 	scenario.add(testCollection.processClean("Insert and query - five items", async (collection) => {
 		const _items = [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5];

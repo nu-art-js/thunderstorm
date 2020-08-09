@@ -19,9 +19,9 @@
 import {FirestoreCollection_Tester} from "./collection-wrapper";
 import {
 	FB_ArrayType,
-	FB_Type
+	FB_Type,
+	SimpleType
 } from "./types";
-
 
 export const testString1 = "string-1";
 export const testString2 = "string-2";
@@ -45,7 +45,8 @@ export const testNumber9 = 99;
 
 export const testCollection = new FirestoreCollection_Tester<FB_Type>("test-collection");
 export const testCollectionWithUnique = new FirestoreCollection_Tester<FB_Type>("test-collection-unique", ["numeric"]);
-export const simpleTypeCollection = new FirestoreCollection_Tester<{ label: string, deleteId: string }>("test-collection-label");
+export const simpleTypeCollection = new FirestoreCollection_Tester<SimpleType>("test-collection-label");
+export const simpleTypeCollectionUpsert = new FirestoreCollection_Tester<SimpleType>("test-collection-upsert", ["label"]);
 
 export const testItem1: FB_ArrayType = {key: testString1, value: testNumber1};
 export const testItem2: FB_ArrayType = {key: testString2, value: testNumber2};
@@ -64,7 +65,7 @@ export const testInstance1: FB_Type = {
 	numeric: testNumber1,
 	stringArray: [testString1, testString5],
 	objectArray: [testItem1, testItem2],
-	nestedObject: {one:testItem1, two:testItem2}
+	nestedObject: {one: testItem1, two: testItem2}
 };
 
 export const testInstance2: FB_Type = {
@@ -73,7 +74,7 @@ export const testInstance2: FB_Type = {
 	numeric: testNumber2,
 	stringArray: [testString1, testString2, testString3],
 	objectArray: [testItem1, testItem2, testItem3],
-	nestedObject: {one:testItem2, two:testItem3}
+	nestedObject: {one: testItem2, two: testItem3}
 };
 
 export const testInstance3: FB_Type = {
@@ -82,7 +83,7 @@ export const testInstance3: FB_Type = {
 	numeric: testNumber3,
 	stringArray: [testString2, testString3, testString4, testString5],
 	objectArray: [testItem2, testItem3, testItem4, testItem5],
-	nestedObject: {one:testItem4, two:testItem5}
+	nestedObject: {one: testItem4, two: testItem5}
 };
 
 export const testInstance4: FB_Type = {
@@ -91,7 +92,7 @@ export const testInstance4: FB_Type = {
 	numeric: testNumber4,
 	stringArray: [testString3, testString4, testString5],
 	objectArray: [testItem3, testItem4, testItem5],
-	nestedObject: {one:testItem3, two:testItem4}
+	nestedObject: {one: testItem3, two: testItem4}
 };
 
 export const testInstance5: FB_Type = {
@@ -100,7 +101,7 @@ export const testInstance5: FB_Type = {
 	numeric: testNumber5,
 	stringArray: [testString1, testString2, testString3, testString4, testString5],
 	objectArray: [testItem1, testItem2, testItem3, testItem4, testItem5],
-	nestedObject: {one:testItem2, two:testItem4}
+	nestedObject: {one: testItem2, two: testItem4}
 };
 
 
