@@ -72,3 +72,7 @@ export type PackageJson = {
 	version: string;
 	name: string;
 };
+
+export type DeflatePromise<T> = T extends Promise<infer A> ? A : T
+
+export type ReturnPromiseType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? DeflatePromise<R> : never;

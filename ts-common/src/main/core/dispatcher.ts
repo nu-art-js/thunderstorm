@@ -16,9 +16,12 @@
  * limitations under the License.
  */
 
-import {FunctionKeys} from "../utils/types";
+import {
+	FunctionKeys,
+	ReturnPromiseType
+} from "../utils/types";
 
-export class Dispatcher<T extends object, K extends FunctionKeys<T>, P = Parameters<T[K]>, R = ReturnType<T[K]>> {
+export class Dispatcher<T extends object, K extends FunctionKeys<T>, P = Parameters<T[K]>, R = ReturnPromiseType<T[K]>> {
 
 	static modulesResolver: () => any[];
 
