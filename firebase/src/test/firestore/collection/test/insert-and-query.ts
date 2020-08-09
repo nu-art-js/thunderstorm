@@ -93,24 +93,3 @@ export const scenarioInsertAll = __scenario("Insert All & Query");
 testInsert(scenarioInsertAll, async (collection, ...items: FB_Type[]) => {
 	return collection.insertAll(items)
 });
-
-
-export const scenarioUpsert = __scenario('Upsert');
-
-scenarioUpsert.add(simpleTypeCollection.processClean("Upsert", async (collection) => {
-	const x: SimpleType = {
-		label: 'a',
-		deleteId: 'b'
-	};
-	await collection.upsert(x)
-
-}));
-scenarioUpsert.add(simpleTypeCollection.processClean("Upsert undefined should fail", async (collection) => {
-	const x: SimpleType = {
-		label: 'a',
-		deleteId: 'b',
-		optional: undefined
-	};
-	await collection.upsert(x)
-
-}).expectToFail(BadImplementationException, (e: Error) => e.message.toLowerCase().startsWith("no where properties are allowed to be null or undefined")));
