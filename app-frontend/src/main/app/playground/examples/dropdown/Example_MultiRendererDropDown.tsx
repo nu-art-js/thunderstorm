@@ -42,7 +42,7 @@ import {
 } from "./Example_DropDowns";
 import {ICONS} from "@res/icons";
 
-export class ItemRenderer
+export class FlatItemRenderer
 	extends BaseNodeRenderer<Plague> {
 
 	renderItem(item: Plague) {
@@ -63,7 +63,7 @@ export class ItemRenderer
 	}
 }
 
-class TitleRender
+export class FlatTitleRender
 	extends React.Component<NodeRendererProps<Plague>> {
 
 	render() {
@@ -80,12 +80,12 @@ class TitleRender
 }
 
 
-const rendererMap: TreeRendererMap = {
-	normal: ItemRenderer,
-	title: TitleRender
+export const flatRendererMap: TreeRendererMap = {
+	normal: FlatItemRenderer,
+	title: FlatTitleRender
 };
 
-const plaguesWithTitles: FlatItemToRender<TreeRendererMap>[] = [
+export const flatPlaguesWithTitles: FlatItemToRender<TreeRendererMap>[] = [
 	{
 		item: {label: 'Phisical', value: 'title'},
 		type: "title"
@@ -123,9 +123,9 @@ const plaguesWithTitles: FlatItemToRender<TreeRendererMap>[] = [
 export class Example_MultiRendererDropDown
 	extends React.Component<{}, { _selected?: Plague }> {
 
-	state={_selected: plaguesWithTitles[2].item};
+	state = {_selected: flatPlaguesWithTitles[2].item};
 
-	onSelected = (plague: {item: Plague, type: any}) => {
+	onSelected = (plague: { item: Plague, type: any }) => {
 		this.setState({_selected: plague.item});
 	};
 
@@ -133,8 +133,8 @@ export class Example_MultiRendererDropDown
 
 		const adapter = AdapterBuilder()
 			.list()
-			.multiRender(rendererMap)
-			.setData(plaguesWithTitles)
+			.multiRender(flatRendererMap)
+			.setData(flatPlaguesWithTitles)
 			.noGeneralOnClick()
 			.build();
 		const inputResolverWithCustomInlineStyle = (selected?: FlatItemToRender<TreeRendererMap>): InputProps => (
@@ -170,9 +170,9 @@ export class Example_MultiRendererDropDown
 				onSelected={this.onSelected}
 				valueRenderer={valueRenderer}
 				inputResolver={inputResolverWithCustomInlineStyle}
-				inputEventHandler={(_state, e)=>{
+				inputEventHandler={(_state, e) => {
 					if (e.code === "Enter") {
-						const newOption = _state.filteredOptions ? _state.filteredOptions[1]: _state.selected
+						const newOption = _state.filteredOptions ? _state.filteredOptions[1] : _state.selected
 						_state.selected = newOption;
 						_state.open = false;
 						newOption && this.onSelected(newOption)
@@ -180,8 +180,10 @@ export class Example_MultiRendererDropDown
 					return _state;
 				}}
 				filter={(item) => [(item as FlatItemToRender<TreeRendererMap>).item.label.toLowerCase()]}
-				selected={plaguesWithTitles[2]}
-				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><div style={{marginTop:3}}>{ICONS.arrowOpen(undefined, 11)}</div></div>}
+				selected={flatPlaguesWithTitles[2]}
+				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}>
+					<div style={{marginTop: 3}}>{ICONS.arrowOpen(undefined, 11)}</div>
+				</div>}
 				headerStyleResolver={headerResolverStyle}
 				listStyleResolver={listResolverStyle}
 			/>
@@ -189,6 +191,7 @@ export class Example_MultiRendererDropDown
 		</div>
 	}
 }
+
 // class Example_NodeRenderer_HoverToExpand
 // 	extends React.Component<NodeRendererProps> {
 //

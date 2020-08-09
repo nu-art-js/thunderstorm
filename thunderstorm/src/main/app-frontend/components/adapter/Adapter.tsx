@@ -88,6 +88,13 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 	adjust(obj: any): { data: any, deltaPath?: string } {
 		return {data: obj, deltaPath: ""};
 	}
+
+	clone(baseAdapter: this){
+		_keys(this).forEach(k => {
+			baseAdapter[k] = this[k]
+		});
+		return baseAdapter
+	}
 }
 
 export class Adapter<T extends any = any, I extends NodeRendererProps<T> = NodeRendererProps<T>>

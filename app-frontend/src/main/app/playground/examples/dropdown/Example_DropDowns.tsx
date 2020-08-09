@@ -22,10 +22,8 @@ import {css} from "emotion";
 import {ICONS} from "@res/icons";
 import {Example_DefaultsDropDown} from "./Example_DefaultsDropDown";
 // import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
-import {
-	BaseNodeRenderer,
-} from "@nu-art/thunderstorm/frontend";
-import { Example_SingleRendererDropDown } from "./Example_SingleRendererDropDown";
+import {BaseNodeRenderer,} from "@nu-art/thunderstorm/frontend";
+import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
 import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
 
 // const optionRendererWrapperStyle = css({":hover": {backgroundColor: "lime"}});
@@ -56,7 +54,7 @@ export type Node = {
 	selected?: boolean,
 }
 
-export type Plague = {label: string, value: string}
+export type Plague = { label: string, value: string }
 
 export type Props = {
 	item: Plague,
@@ -71,6 +69,11 @@ export const plagues: Plague[] = [
 	{label: 'Internet', value: 'internet'},
 ];
 
+export type PlagueWithTitle = {
+	item: Plague
+	_children: PlagueWithTitle[]
+	type: string
+}
 
 export const plaguesWithTitles = [
 	{

@@ -21,21 +21,53 @@ import {
 	Adapter,
 	AdapterBuilder,
 	BaseNodeRenderer,
-	DropDown
+	DropDown,
+	TreeRendererMap,
+	ValueProps
 } from "@nu-art/thunderstorm/frontend";
 import * as React from "react";
 import {
 	optionRendererStyle,
 	Plague,
-	plagues
+	plagues,
+	PlagueWithTitle
 } from "./Example_DropDowns";
+import {
+	FlatItemRenderer,
+	flatPlaguesWithTitles,
+	FlatTitleRender,
+} from "./Example_MultiRendererDropDown";
+
+export const flatRendererMap: TreeRendererMap = {
+	normal: FlatItemRenderer,
+	title: FlatTitleRender
+};
 
 export class Example_DefaultsDropDown
-	extends React.Component<{}, { _selected?: Plague }> {
+	extends React.Component<{}, { _selected?: Plague, simpleAdapter: boolean }> {
 
-	onSelected = (plague: Plague) => {
-		this.setState({_selected: plague});
+	constructor(props: {}) {
+		super(props);
+		this.state = {
+			simpleAdapter: false
+		}
+	}
+
+	// onSelected = (plague: Plague) => {
+	// 	this.setState({_selected: plague});
+	// };
+	private plagues = plagues;
+
+	addPlague = () => {
+		this.plagues = [...this.plagues, plagues[0]]
+		// this.plagues.push(plagues[0]);
+		this.forceUpdate()
 	};
+
+	switchAdapter = () => {
+		this.setState(state => ({simpleAdapter: !state.simpleAdapter}))
+	};
+
 
 	render() {
 		const simpleAdapter: Adapter = AdapterBuilder()
@@ -44,17 +76,50 @@ export class Example_DefaultsDropDown
 			.setData(plagues)
 			.build();
 
-		console.log(this.state?._selected)
+		const adapter = AdapterBuilder()
+			.list()
+			.multiRender(flatRendererMap)
+			.setData(flatPlaguesWithTitles)
+			.noGeneralOnClick()
+			.build();
+
+		const realAdapter = this.state.simpleAdapter ? simpleAdapter : adapter;
 
 		return <div>
 			<h4>Only defaults</h4>
 			<h4>single renderer, flat list</h4>
-			<DropDown
-				adapter={simpleAdapter}
-				onSelected={this.onSelected}
+			<div onClick={this.addPlague} style={{cursor: "pointer"}}>Add Plague</div>
+			<div onClick={this.switchAdapter} style={{cursor: "pointer"}}>Switch Adapter</div>
+			<DropDown<Plague | PlagueWithTitle>
+				// key={this.state.simpleAdapter ? 'simple' : 'complex'}
+				adapter={realAdapter}
+				onSelected={() => {
+				}}
+				// onSelected={this.onSelected}
+				filter={this.filter}
+				valueRenderer={this.valueRenderer}
 			/>
-			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
+			{console.log(this.state?._selected?.value)}
+			{/*<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>*/}
 		</div>
+	}
+
+	private valueRenderer = (props: ValueProps<PlagueWithTitle | Plague>) => {
+		const selected = props.selected;
+		if (selected)
+			return <div>{this.isSimple(selected) ? selected.label : selected.item?.label}</div>;
+		return <div>{props.placeholder}</div>
+	};
+
+	private filter = (item: PlagueWithTitle | Plague) => {
+		if (this.isSimple(item))
+			return [item.label];
+
+		return [item.item.label]
+	};
+
+	private isSimple(item: PlagueWithTitle | Plague): item is Plague {
+		return this.state.simpleAdapter;
 	}
 }
 
