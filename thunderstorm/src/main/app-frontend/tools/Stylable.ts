@@ -19,18 +19,18 @@
  * limitations under the License.
  */
 
-import {Properties} from "csstype";
+import {CSSProperties} from "react";
 
 export type  Stylable = {
-	style?: Properties
+	style?: CSSProperties
 	className?: string
 }
 
 export class StylableBuilder {
-	style?: Properties;
+	style?: CSSProperties;
 	className?: string;
 
-	setStyle(style: Properties) {
+	setStyle(style: CSSProperties) {
 		this.style = style;
 		return this;
 	}
@@ -40,7 +40,7 @@ export class StylableBuilder {
 		return this;
 	}
 
-	addStyle(style: Properties) {
+	addStyle(style: CSSProperties) {
 		if (!this.style)
 			return this.setStyle(style);
 

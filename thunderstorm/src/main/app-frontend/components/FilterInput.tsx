@@ -22,16 +22,15 @@
 import * as React from 'react';
 import {Filter} from "@nu-art/ts-common/utils/filter-tools";
 import {TS_Input} from "./TS_Input";
+import {Stylable} from "../tools/Stylable";
 
-type Props<T> = {
+type Props<T> = Stylable & {
 	filter: (item: T) => string[],
 	list: T[],
 	onChange: (items: T[], filterTextLength?: number) => void,
 	id?: string,
 	initialFilterText?: string,
 	focus?: boolean,
-	inputStyle?: React.CSSProperties,
-	className?: string,
 	placeholder?: string
 	handleKeyEvent?: (e: KeyboardEvent) => void
 }
@@ -62,7 +61,7 @@ export class FilterInput<T>
 		return b;
 	}
 
-	callOnChange = (list: T[], filterTextLength?:number) => {
+	callOnChange = (list: T[], filterTextLength?: number) => {
 		const {filter, onChange} = this.props;
 		onChange(this.filterInstance.filter(list, filter), filterTextLength);
 	};
@@ -73,7 +72,7 @@ export class FilterInput<T>
 	};
 
 	render() {
-		const {id, placeholder, inputStyle, className, focus} = this.props;
+		const {id, placeholder, focus} = this.props;
 		return (
 			<TS_Input
 				type='text'
@@ -84,8 +83,8 @@ export class FilterInput<T>
 				}}
 				focus={focus}
 				placeholder={placeholder}
-				className={className}
-				style={inputStyle}
+				className={this.props.className}
+				style={this.props.style}
 				handleKeyEvent={this.props.handleKeyEvent}
 			/>
 		);
