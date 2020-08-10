@@ -2,20 +2,22 @@ import {
 	generateHex,
 	Module
 } from "@nu-art/ts-common";
-import {MenuPosition} from "./PopupMenu";
+import {
+	MenuPosition
+} from "./PopupMenu";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import {
 	_GenericRenderer,
 	Adapter,
 } from "../../components/adapter/Adapter";
 import {BaseRendererMap} from "../../components/adapter/BaseRenderer";
+import {CSSProperties} from "react";
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 	const pos = button.getBoundingClientRect();
-	return {top: pos.top + button.offsetHeight, left: pos.left};
+	return {top: pos.top + button.offsetHeight, right: pos.right};
 };
 
-// export type TreeAction = (path: string, id: string) => void;
 export type _Menu<Rm extends BaseRendererMap<any>> = _GenericRenderer<Rm>
 
 export type Menu_Model = {
@@ -24,6 +26,7 @@ export type Menu_Model = {
 	pos: MenuPosition,
 	onNodeClicked?: (path: string, item: any) => void
 	onNodeDoubleClicked?: Function,
+	css?: CSSProperties
 };
 
 export interface MenuListener {
@@ -31,14 +34,6 @@ export interface MenuListener {
 	__onMenuHide: (id: string) => void
 }
 
-// export type MenuItemWrapper<Rm extends RendererMap, K extends keyof Rm, Item = InferItemType<Rm[K]>> = ItemWrapper<Rm, K> & {
-// 	_children?: MenuItemWrapper<Rm, keyof Rm>[]
-// }
-//
-// export type Menu<Rm extends RendererMap> = {
-// 	rendererMap: Rm
-// 	_children: MenuItemWrapper<Rm, keyof Rm>[]
-// }
 
 export class MenuModule_Class
 	extends Module<{}> {
@@ -58,13 +53,20 @@ export const MenuModule = new MenuModule_Class();
 export class MenuBuilder {
 	private readonly adapter: Adapter;
 	private readonly position: MenuPosition;
+	private readonly cssContainer?: CSSProperties
 	private id: string = generateHex(8);
 	private onNodeClicked?: (path: string, item: any) => void;
 	private onNodeDoubleClicked?: Function;
 
-	constructor(menu: Adapter, position: MenuPosition) {
+	//this has to change
+	//menu position has to be top right, top left, bottom right, bottom left. left and top but you also need || left bottom || top right, etc
+	//once you have that, then we need another property called CSS container also in the constructor of the menu builder, optional, that maps to another property
+	//which is the CSS props (CSS properties) and then that is added to the menu model, which can be undefined, and this is passed to the menu module and then the event is
+	//dispatched and caught my the pop up menu, and we use this model in the popup menu and used to determine its position.
+	constructor(menu: Adapter, position: MenuPosition, cssContainer?: CSSProperties) {
 		this.adapter = menu;
 		this.position = position;
+		this.cssContainer = cssContainer
 	}
 
 	show() {
@@ -73,7 +75,8 @@ export class MenuBuilder {
 			adapter: this.adapter,
 			pos: this.position,
 			onNodeClicked: this.onNodeClicked,
-			onNodeDoubleClicked: this.onNodeDoubleClicked
+			onNodeDoubleClicked: this.onNodeDoubleClicked,
+			css: this.cssContainer
 		};
 
 		MenuModule.show(model);
@@ -84,7 +87,7 @@ export class MenuBuilder {
 		return this;
 	}
 
-	setOnClick(func: (path:string,item:any) => void) {
+	setOnClick(func: (path: string, item: any) => void) {
 		this.onNodeClicked = func;
 		return this;
 	}
