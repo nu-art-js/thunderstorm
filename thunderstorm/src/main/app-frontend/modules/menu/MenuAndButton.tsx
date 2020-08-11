@@ -58,6 +58,8 @@ export class MenuAndButton
 		</div>
 	}
 
+
+
 	open = () => {
 		if (!this.ref.current)
 			throw new BadImplementationException("Could not find image reference");
