@@ -10,12 +10,14 @@ import {
 } from "./MenuModule";
 import {BadImplementationException} from "@nu-art/ts-common";
 import {Adapter} from "../../components/adapter/Adapter";
+import {MenuPosition} from "./PopupMenu";
 
 type Props = {
 	id: string
 	iconOpen: ReactNode
 	iconClosed: ReactNode
 	adapter: Adapter
+	resolvePosition?: (button: HTMLImageElement) => MenuPosition
 }
 
 export class MenuAndButton
@@ -60,7 +62,7 @@ export class MenuAndButton
 		if (!this.ref.current)
 			throw new BadImplementationException("Could not find image reference");
 
-		new MenuBuilder(this.props.adapter, resolveRealPosition(this.ref.current))
+		new MenuBuilder(this.props.adapter, this.props.resolvePosition ? this.props.resolvePosition(this.ref.current) : resolveRealPosition(this.ref.current))
 			.setId(this.props.id)
 			.show()
 	}
