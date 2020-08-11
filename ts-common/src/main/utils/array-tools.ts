@@ -16,9 +16,8 @@
  * limitations under the License.
  */
 
-
-export function removeItemFromArray<T>(array: T[], item: T) {
-	const index = array.indexOf(item);
+export function removeItemFromArray<T>(array: T[], item: T |((_item: T) => boolean)) {
+	const index = typeof item !== "function" ? array.indexOf(item) : array.findIndex(item as ((i: T) => boolean));
 	if (index > -1)
 		array.splice(index, 1);
 
