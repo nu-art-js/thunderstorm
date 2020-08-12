@@ -408,7 +408,7 @@ export class HttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 		return this.resolveResponse();
 	}
 
-	execute(responseHandler?: (response: R) => Promise<void> | void) {
+	execute(responseHandler?: (response: R, data?: string) => Promise<void> | void) {
 
 		// @ts-ignore
 		HttpModule.runAsync(this.label || `http request: ${this.key}`, async () => {
@@ -426,7 +426,7 @@ export class HttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 			const response = this.resolveResponse();
 
 			this.onResponseListener && this.onResponseListener(response);
-			responseHandler && await responseHandler(response);
+			responseHandler && await responseHandler(response, this.requestData);
 			this.handleRequestSuccess(this);
 		});
 		return this;
