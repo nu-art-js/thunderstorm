@@ -66,6 +66,6 @@ export class MenuAndButton
 
 		new MenuBuilder(this.props.adapter, this.props.resolvePosition ? this.props.resolvePosition(this.ref.current) : resolveRealPosition(this.ref.current))
 			.setId(this.props.id)
-			.show()
+			.show()  
 	}
 }
