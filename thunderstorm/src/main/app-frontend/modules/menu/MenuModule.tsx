@@ -58,11 +58,7 @@ export class MenuBuilder {
 	private onNodeClicked?: (path: string, item: any) => void;
 	private onNodeDoubleClicked?: Function;
 
-	//this has to change
-	//menu position has to be top right, top left, bottom right, bottom left. left and top but you also need || left bottom || top right, etc
-	//once you have that, then we need another property called CSS container also in the constructor of the menu builder, optional, that maps to another property
-	//which is the CSS props (CSS properties) and then that is added to the menu model, which can be undefined, and this is passed to the menu module and then the event is
-	//dispatched and caught my the pop up menu, and we use this model in the popup menu and used to determine its position.
+
 	constructor(menu: Adapter, position: MenuPosition, cssContainer?: CSSProperties) {
 		this.adapter = menu;
 		this.position = position;

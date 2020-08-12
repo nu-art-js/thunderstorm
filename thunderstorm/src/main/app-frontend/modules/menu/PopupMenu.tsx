@@ -7,7 +7,8 @@ import {
 } from "./MenuModule";
 import {BaseComponent} from "../../core/BaseComponent";
 import {stopPropagation} from '../../utils/tools';
-import {MenuComponent} from "../../components/tree/MenuComponent";
+import {Tree} from "../../components/tree/Tree";
+import {generateHex} from "@nu-art/ts-common";
 
 export type MenuPosition =
 	{ left: number, top: number }
@@ -103,19 +104,21 @@ export class PopupMenu
 		const element = this.state?.element;
 		if (!element)
 			return null;
-
+//tree instead of menu component
 		return <div style={{position: "absolute"}}>
 			<div id="overlay" ref={this.overlayRef} style={overlayStyle}>
 				<div style={this.style(element.pos, element.css)}>
-					<MenuComponent
+					<Tree
+						id={generateHex(8)}
 						adapter={element.adapter}
-						onNodeDoubleClicked={element.onNodeDoubleClicked}
 						onNodeClicked={element.onNodeClicked}
+						indentPx={0}
 					/>
 				</div>
 			</div>
 		</div>;
 	}
+
 
 	private eventListenersEffect = () => {
 		const _current = this.overlayRef.current;
