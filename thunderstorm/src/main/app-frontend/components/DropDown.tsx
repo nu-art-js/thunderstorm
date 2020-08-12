@@ -161,6 +161,7 @@ type Props<ItemType> = StaticProps & {
 	listStyleResolver?: ListStyleProps
 
 	autocomplete?: boolean
+	disabled?: boolean
 }
 
 export class DropDown<ItemType>
@@ -207,6 +208,9 @@ export class DropDown<ItemType>
 	}
 
 	toggleList = (e: React.MouseEvent) => {
+		if (this.props.disabled)
+			return;
+
 		stopPropagation(e);
 
 		this.setState(prevState => ({open: !prevState.open}));
@@ -249,11 +253,12 @@ export class DropDown<ItemType>
 
 	private renderHeader = () => {
 		const headerComplementary = (this.props.headerStyleResolver || this.headerStyleResolver);
+		const style = headerComplementary.headerStyle || (!headerComplementary.headerClassName ? headerStyle : {});
 		return (
 			<div
 				id={`${this.props.id}-header`}
 				className={headerComplementary.headerClassName}
-				style={headerComplementary.headerStyle || (!headerComplementary.headerClassName ? headerStyle : {})}
+				style={{...style, opacity: this.props.disabled ? 0.5 : 1}}
 				onClick={this.toggleList}>
 				{this.renderField()}
 				{this.renderCaret()}
