@@ -107,6 +107,13 @@ export class Page_Playground
 
 	getScreens(): PlaygroundScreen[] {
 		return [
+			// DROPDOWNS
+			{renderer: Example_DropDowns, name: "DropDown Examples"},
+			{renderer: Example_DefaultsDropDown, name: "Defaults Single Renderer DropDown Example"},
+			{renderer: Example_SingleRendererDropDown, name: "Customized Single Renderer DropDown Example"},
+			{renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
+
+			// TREES / LISTS
 			{renderer: Example_Tree_SingleType, name: "Tree_SingleType",},
 			{renderer: Example_List_SingleType, name: "List_SingleType_Menu",},
 			{renderer: Example_NestedList_SingleType, name: "List_SingleType_NestedMenu",},
@@ -128,10 +135,6 @@ export class Page_Playground
 			{renderer: Example_Tabs2, name: "Tabs",},
 			{renderer: Example_Tabs, name: "GenericTabs",},
 			{renderer: Example_GenericSelect, name: "GenericSelect",},
-			{renderer: Example_DropDowns, name: "DropDown Examples"},
-			{renderer: Example_DefaultsDropDown, name: "Defaults Single Renderer DropDown Example"},
-			{renderer: Example_SingleRendererDropDown, name: "Customized Single Renderer DropDown Example"},
-			{renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
 			// {renderer: Example_Menu, name: "Menu",},
 			{renderer: Example_VerySimpleTree, name: "Special keyboard listener"},
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring"},

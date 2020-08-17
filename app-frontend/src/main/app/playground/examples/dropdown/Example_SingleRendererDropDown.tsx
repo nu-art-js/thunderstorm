@@ -2,8 +2,6 @@ import * as React from "react";
 import {ReactNode} from "react";
 import {
 	optionRendererStyle,
-	Plague,
-	plagues
 } from "./Example_DropDowns";
 import {css} from "emotion";
 import {ICONS} from "@res/icons";
@@ -17,6 +15,7 @@ import {
 	Stylable
 } from "@nu-art/thunderstorm/frontend";
 import {inputClassName} from "./OstudioEx";
+import { Plague, plagues } from "./consts";
 
 export class Example_SingleRendererDropDown
 	extends React.Component<{}, { _selected?: Plague }> {

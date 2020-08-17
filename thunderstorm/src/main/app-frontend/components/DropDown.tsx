@@ -90,6 +90,7 @@ export type InputProps = Stylable & {
 }
 
 export type State<ItemType> = {
+	id: string
 	filteredOptions: ItemType[]
 	adapter: Adapter
 	open: boolean
@@ -148,6 +149,7 @@ export class DropDown<ItemType>
 		super(props);
 
 		this.state = {
+			id: props.id,
 			filteredOptions: this.props.adapter.data,
 			adapter: DropDown.cloneAdapter(this.props),
 			open: false,
@@ -156,13 +158,16 @@ export class DropDown<ItemType>
 	}
 
 	static getDerivedStateFromProps(nextProps: Props<any>, prevState: State<any>): Partial<State<any>> | null {
-		console.log('deriving state', nextProps, prevState);
+		if (prevState.id !== nextProps.id)
+			console.log(`Changing ids: ${prevState.id} => ${nextProps.id}`);
+
+		// console.log('deriving state', nextProps, prevState);
 		if (prevState.adapter.data === nextProps.adapter.data)
 			return null;
 
 		const adapter = DropDown.cloneAdapter(nextProps);
 		// adapter.data = prevState.adapter.data;
-		return {adapter}
+		return {adapter,id:nextProps.id }
 	}
 
 	private static cloneAdapter = (nextProps: Props<any>) => {
@@ -254,7 +259,9 @@ export class DropDown<ItemType>
 				</div>);
 		}
 
+		console.log(`render Filter: ${this.state.id}  --  ${this.props.id}`)
 		return <FilterInput<ItemType>
+			key={this.state.id}
 			id={`${this.props.id}-input`}
 			filter={this.props.filter}
 			list={this.props.adapter.data}

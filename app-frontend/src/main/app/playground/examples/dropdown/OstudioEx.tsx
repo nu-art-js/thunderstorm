@@ -19,10 +19,6 @@
 
 import * as React from "react";
 import {css} from 'emotion';
-import {
-	Plague,
-	plagues
-} from "./Example_DropDowns";
 import {AdapterBuilder} from "@nu-art/thunderstorm/app-frontend/components/adapter/Adapter";
 import {NodeRendererProps} from "@nu-art/thunderstorm/app-frontend/components/adapter/BaseRenderer";
 import {
@@ -34,6 +30,7 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {generateHex} from "@nu-art/ts-common";
 import {ICONS} from "@res/icons";
+import { Plague, plagues } from "./consts";
 
 export class OstudioEx
 	extends React.Component<{}, { _selected?: Plague }> {

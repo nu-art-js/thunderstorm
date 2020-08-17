@@ -63,6 +63,7 @@ export class FilterInput<T>
 
 	callOnChange = (list: T[], filterTextLength?: number) => {
 		const {filter, onChange} = this.props;
+		console.log(`list: ${list.length}`)
 		onChange(this.filterInstance.filter(list, filter), filterTextLength);
 	};
 

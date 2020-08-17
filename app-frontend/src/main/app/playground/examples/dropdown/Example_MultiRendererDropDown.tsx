@@ -33,10 +33,10 @@ import {
 import * as React from "react";
 import {
 	optionRendererStyle,
-	Plague,
 } from "./Example_DropDowns";
 import {ICONS} from "@res/icons";
 import {css} from "emotion";
+import { flatPlaguesWithTitles, Plague } from "./consts";
 
 export class FlatItemRenderer
 	extends BaseNodeRenderer<Plague> {
@@ -81,40 +81,6 @@ export const flatRendererMap: TreeRendererMap = {
 	title: FlatTitleRender
 };
 
-export const flatPlaguesWithTitles: FlatItemToRender<TreeRendererMap>[] = [
-	{
-		item: {label: 'Phisical', value: 'title'},
-		type: "title"
-	},
-	{
-		item: {label: 'Spanish Flu', value: 'spanishFlu'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Smallpox', value: 'smallpox'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Black Plague', value: 'blackPlague'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Coronavirus', value: 'COVID-19'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Virtual', value: 'title'},
-		type: "title"
-	},
-	{
-		item: {label: 'Facebook', value: 'facebook'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Tik tok', value: 'tiktok'},
-		type: "normal"
-	},
-];
 
 export class Example_MultiRendererDropDown
 	extends React.Component<{}, { _selected?: Plague }> {
