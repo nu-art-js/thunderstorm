@@ -7,9 +7,26 @@ import {
 } from "./MenuModule";
 import {BaseComponent} from "../../core/BaseComponent";
 import {stopPropagation} from '../../utils/tools';
-import {MenuComponent} from "../../components/tree/MenuComponent";
+import {Tree} from "../../components/tree/Tree";
+import {generateHex} from "@nu-art/ts-common";
 
-export type MenuPosition = { left: number, top: number };
+export type MenuPosition =
+	{ left: number, top: number }
+	| { left: number, bottom: number }
+	| { right: number, top: number }
+	| { right: number, bottom: number };
+
+const defaultStyle: CSSProperties = {
+	width: 225,
+	overflowX: "hidden",
+	overflowY: "scroll",
+	maxHeight: "60vh",
+	borderRadius: 2,
+	boxShadow: "1px 1px 4px 0 rgba(0, 0, 0, 0.3)",
+	border: "solid 1px transparent",
+	backgroundColor: "#fff",
+	position: "absolute"
+};
 
 type State = {
 	element?: Menu_Model
@@ -77,39 +94,31 @@ export class PopupMenu
 		this.setState({element: undefined});
 	};
 
-	style = (pos: MenuPosition): CSSProperties => {
-		return {
-			width: 225,
-			overflowX: "hidden",
-			overflowY: "scroll",
-			maxHeight: "60vh",
-			borderRadius: 2,
-			boxShadow: "1px 1px 4px 0 rgba(0, 0, 0, 0.3)",
-			border: "solid 1px transparent",
-			backgroundColor: "#fff",
-			position: "absolute",
-			top: pos.top,
-			right: window.innerWidth - pos.left
-		}
-	};
+	style = (pos: MenuPosition, css?: CSSProperties): CSSProperties => ({
+		...defaultStyle,
+		...css,
+		...pos
+	});
 
 	render() {
 		const element = this.state?.element;
 		if (!element)
 			return null;
-
+//tree instead of menu component
 		return <div style={{position: "absolute"}}>
 			<div id="overlay" ref={this.overlayRef} style={overlayStyle}>
-				<div style={this.style(element.pos)}>
-					<MenuComponent
+				<div style={this.style(element.pos, element.css)}>
+					<Tree
+						id={generateHex(8)}
 						adapter={element.adapter}
-						onNodeDoubleClicked={element.onNodeDoubleClicked}
 						onNodeClicked={element.onNodeClicked}
+						indentPx={0}
 					/>
 				</div>
 			</div>
 		</div>;
 	}
+
 
 	private eventListenersEffect = () => {
 		const _current = this.overlayRef.current;

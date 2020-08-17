@@ -130,6 +130,7 @@ type Props<ItemType> = StaticProps & {
 		close: React.ReactNode,
 	},
 	autocomplete?: boolean
+	disabled?: boolean
 }
 
 export class DropDown<ItemType>
@@ -169,6 +170,9 @@ export class DropDown<ItemType>
 	};
 
 	toggleList = (e: React.MouseEvent) => {
+		if (this.props.disabled)
+			return;
+
 		stopPropagation(e);
 
 		this.setState(prevState => ({open: !prevState.open}));
