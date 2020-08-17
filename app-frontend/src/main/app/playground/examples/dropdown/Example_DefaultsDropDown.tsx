@@ -27,15 +27,17 @@ import {
 import * as React from "react";
 import {
 	optionRendererStyle,
-	Plague,
-	plagues,
-	PlagueWithTitle
 } from "./Example_DropDowns";
 import {
 	FlatItemRenderer,
-	flatPlaguesWithTitles,
 	FlatTitleRender,
 } from "./Example_MultiRendererDropDown";
+import {
+	Plague,
+	PlagueWithTitle,
+	plagues,
+	flatPlaguesWithTitles
+} from "./consts";
 
 export const flatRendererMap: TreeRendererMap = {
 	normal: FlatItemRenderer,
@@ -69,12 +71,41 @@ export class Example_DefaultsDropDown
 
 
 	render() {
-		const simpleAdapter: Adapter = AdapterBuilder()
+
+		return <div>
+			<h4>Only defaults</h4>
+			<h4>single renderer, flat list</h4>
+			<div onClick={this.addPlague} style={{cursor: "pointer"}}>Add Plague</div>
+			<div onClick={this.switchAdapter} style={{cursor: "pointer"}}>Switch Adapter</div>
+			{this.state.simpleAdapter ? this.renderSimple() : this.renderComplex()}
+			{/*<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>*/}
+		</div>
+	}
+
+	private renderSimple() {
+		const adapter: Adapter = AdapterBuilder()
 			.list()
 			.singleRender(ItemRenderer)
 			.setData(plagues)
 			.build();
 
+		return <DropDown
+			id="simple"
+			adapter={adapter}
+			onSelected={(item: Plague) => {
+				console.log(`Simple Selected: ${item.label}`)
+			}}
+			filter={(item: Plague) => [item.label]}
+			selectedItemRenderer={(selected?: Plague) => {
+				if (!selected)
+					return <div>{"Simple SHIT"}</div>
+
+				return <div>{selected.label}</div>;
+			}}
+		/>
+	}
+
+	private renderComplex() {
 		const adapter = AdapterBuilder()
 			.list()
 			.multiRender(flatRendererMap)
@@ -82,43 +113,21 @@ export class Example_DefaultsDropDown
 			.noGeneralOnClick()
 			.build();
 
-		const realAdapter = this.state.simpleAdapter ? simpleAdapter : adapter;
+		return <DropDown
+			id="complex"
+			adapter={adapter}
+			onSelected={(item: PlagueWithTitle) => {
+				console.log(`Complex Selected: ${item.item.label}`)
+			}}
+			filter={(item: PlagueWithTitle) => [item.item.label]}
+			selectedItemRenderer={(selected?: PlagueWithTitle) => {
+				if (!selected)
+					return <div>{"Complex SHIT"}</div>
 
-		return <div>
-			<h4>Only defaults</h4>
-			<h4>single renderer, flat list</h4>
-			<div onClick={this.addPlague} style={{cursor: "pointer"}}>Add Plague</div>
-			<div onClick={this.switchAdapter} style={{cursor: "pointer"}}>Switch Adapter</div>
-			<DropDown<Plague | PlagueWithTitle>
-				// key={this.state.simpleAdapter ? 'simple' : 'complex'}
-				adapter={realAdapter}
-				onSelected={() => {
-				}}
-				// onSelected={this.onSelected}
-				filter={this.filter}
-				selectedItemRenderer={this.valueRenderer}
-			/>
-			{console.log(this.state?._selected?.value)}
-			{/*<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>*/}
-		</div>
-	}
+				return <div>{selected.item.label}</div>;
+			}}
+		/>
 
-	private valueRenderer = (selected?: PlagueWithTitle | Plague) => {
-		if(!selected)
-			return <div>{"BLAH BLAH"}</div>
-
-		return <div>{this.isSimple(selected) ? selected.label : selected.item?.label}</div>;
-	};
-
-	private filter = (item: PlagueWithTitle | Plague) => {
-		if (this.isSimple(item))
-			return [item.label];
-
-		return [item.item.label]
-	};
-
-	private isSimple(item: PlagueWithTitle | Plague): item is Plague {
-		return this.state.simpleAdapter;
 	}
 }
 
