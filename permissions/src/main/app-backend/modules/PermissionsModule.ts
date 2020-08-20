@@ -61,7 +61,7 @@ export class PermissionsModule_Class
 
 	async getUserUrlsPermissions(projectId: string, urls: UserUrlsPermissions, userId: string, requestCustomField: StringMap) {
 		const userUrlsPermissions: UserUrlsPermissions = {};
-		const userUrlsPermissionsArray = await Promise.all(Object.keys(urls).map(url => this.isUserHasPermissions(projectId, url, userId, requestCustomField)));
+		const userUrlsPermissionsArray = await Promise.all(Object.keys(urls).map(url => this.doesUserHavePermissions(projectId, url, userId, requestCustomField)));
 		userUrlsPermissionsArray.forEach(urlPermission => {
 			userUrlsPermissions[urlPermission.url] = urlPermission.isAllowed;
 		});
@@ -81,7 +81,7 @@ export class PermissionsModule_Class
 		return userCFs;
 	}
 
-	private async isUserHasPermissions(projectId: string, url: string, userId: string, requestCustomField: StringMap) {
+	private async doesUserHavePermissions(projectId: string, url: string, userId: string, requestCustomField: StringMap) {
 		let isAllowed;
 
 		try {
