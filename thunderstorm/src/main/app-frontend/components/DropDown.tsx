@@ -21,7 +21,10 @@
 
 import * as React from 'react';
 import {FilterInput} from "./FilterInput";
-import {generateHex} from "@nu-art/ts-common";
+import {
+	generateHex,
+	__stringify
+} from "@nu-art/ts-common";
 import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
 import {Adapter,} from "./adapter/Adapter";
@@ -257,7 +260,6 @@ export class DropDown<ItemType>
 				</div>);
 		}
 
-		console.log(`render Filter: ${this.state.id}  --  ${this.props.id}`)
 		return <FilterInput<ItemType>
 			key={this.state.id}
 			id={`${this.props.id}-input`}
@@ -266,7 +268,8 @@ export class DropDown<ItemType>
 			onChange={(filteredOptions: ItemType[], filterBy) => {
 				this.setState(state => {
 					state.adapter.data = this.props.autocomplete && this.props.filter && !filterBy.length ? [] : filteredOptions;
-
+					console.log(`filter: ${this.props.id} (${filterBy}) -> ${__stringify(filteredOptions)}`)
+					console.log(`state.adapter.data: ${__stringify(state.adapter.data)}`)
 					return {
 						adapter: state.adapter,
 						filterTextLength: filterBy.length
