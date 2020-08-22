@@ -65,7 +65,7 @@ export class Example_NewProps<T, P = InferProps<T>>
 			<div onClick={() => {
 				this.setState(state => {
 					let index = state.index + 1;
-					if (index > this.props.data.length)
+					if (index >= this.props.data.length)
 						index = 0;
 
 					return {index: index}

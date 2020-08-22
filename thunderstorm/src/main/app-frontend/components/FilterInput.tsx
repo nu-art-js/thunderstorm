@@ -51,7 +51,7 @@ export class FilterInput<T>
 	}
 
 	componentDidMount() {
-		console.log(`componentDidMount: list === ${__stringify(this.props.list)}`);
+		console.log(`componentDidMount: props === ${__stringify(this.props)}`);
 		this.callOnChange(this.props.list, "");
 	}
 
