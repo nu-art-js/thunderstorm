@@ -18,25 +18,25 @@
  */
 
 import {
-	Adapter,
 	AdapterBuilder,
 	BaseNodeRenderer,
 	DropDown,
 	TreeRendererMap,
+	Example_NewProps,
+	Adapter,
+	Props_DropDown,
 } from "@nu-art/thunderstorm/frontend";
 import * as React from "react";
-import {
-	optionRendererStyle,
-} from "./Example_DropDowns";
+import {optionRendererStyle,} from "./Example_AllDropDowns";
 import {
 	FlatItemRenderer,
 	FlatTitleRender,
 } from "./Example_MultiRendererDropDown";
 import {
+	flatPlaguesWithTitles,
 	Plague,
-	PlagueWithTitle,
 	plagues,
-	flatPlaguesWithTitles
+	PlagueWithTitle
 } from "./consts";
 
 export const flatRendererMap: TreeRendererMap = {
@@ -44,7 +44,7 @@ export const flatRendererMap: TreeRendererMap = {
 	title: FlatTitleRender
 };
 
-export class Example_DefaultsDropDown
+export class Example_DropDown
 	extends React.Component<{}, { _selected?: Plague, simpleAdapter: boolean }> {
 
 	constructor(props: {}) {
@@ -71,63 +71,61 @@ export class Example_DefaultsDropDown
 
 
 	render() {
-
-		return <div>
-			<h4>Only defaults</h4>
-			<h4>single renderer, flat list</h4>
-			<div onClick={this.addPlague} style={{cursor: "pointer"}}>Add Plague</div>
-			<div onClick={this.switchAdapter} style={{cursor: "pointer"}}>Switch Adapter</div>
-			{this.state.simpleAdapter ? this.renderSimple() : this.renderComplex()}
-			{/*<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>*/}
-		</div>
+		return <Example_NewProps name={"Dropdown"} renderer={DropDown} data={[this.simpleAdapterProps(), this.complexAdapterProps()]}/>
 	}
 
-	private renderSimple() {
-		const adapter: Adapter = AdapterBuilder()
-			.list()
-			.singleRender(ItemRenderer)
-			.setData(plagues)
-			.build();
+	//
+	// private renderSimple() {
+	// 	return <DropDown {...this.simpleAdapterProps()}/>
+	// }
+	//
+	// private renderComplex() {
+	// 	return <DropDown {...this.complexAdapterProps()}/>
+	// }
 
-		return <DropDown
-			id="simple"
-			adapter={adapter}
-			onSelected={(item: Plague) => {
+	private simpleAdapterProps() {
+		return {
+			id: "simple",
+			key: "simple",
+			adapter: AdapterBuilder()
+				.list()
+				.singleRender(ItemRenderer)
+				.setData(plagues)
+				.build() as Adapter,
+			onSelected: (item: Plague) => {
 				console.log(`Simple Selected: ${item.label}`)
-			}}
-			filter={(item: Plague) => [item.label]}
-			selectedItemRenderer={(selected?: Plague) => {
+			},
+			filter: (item: Plague) => [item.label],
+			selectedItemRenderer: (selected?: Plague) => {
 				if (!selected)
 					return <div>{"Simple SHIT"}</div>
 
 				return <div>{selected.label}</div>;
-			}}
-		/>
+			},
+		} as Props_DropDown<any> & { key: string };
 	}
 
-	private renderComplex() {
-		const adapter = AdapterBuilder()
-			.list()
-			.multiRender(flatRendererMap)
-			.setData(flatPlaguesWithTitles)
-			.noGeneralOnClick()
-			.build();
-
-		return <DropDown
-			id="complex"
-			adapter={adapter}
-			onSelected={(item: PlagueWithTitle) => {
+	private complexAdapterProps() {
+		return {
+			id: "complex",
+			key: "complex",
+			adapter: AdapterBuilder()
+				.list()
+				.multiRender(flatRendererMap)
+				.setData(flatPlaguesWithTitles)
+				.noGeneralOnClick()
+				.build() as Adapter,
+			onSelected: (item: PlagueWithTitle) => {
 				console.log(`Complex Selected: ${item.item.label}`)
-			}}
-			filter={(item: PlagueWithTitle) => [item.item.label]}
-			selectedItemRenderer={(selected?: PlagueWithTitle) => {
+			},
+			filter: (item: PlagueWithTitle) => [item.item.label],
+			selectedItemRenderer: (selected?: PlagueWithTitle) => {
 				if (!selected)
 					return <div>{"Complex SHIT"}</div>
 
 				return <div>{selected.item.label}</div>;
-			}}
-		/>
-
+			},
+		} as Props_DropDown<any> & { key: string }
 	}
 }
 

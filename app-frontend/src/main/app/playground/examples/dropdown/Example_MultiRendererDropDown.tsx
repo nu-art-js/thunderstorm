@@ -33,7 +33,7 @@ import {
 import * as React from "react";
 import {
 	optionRendererStyle,
-} from "./Example_DropDowns";
+} from "./Example_AllDropDowns";
 import {ICONS} from "@res/icons";
 import {css} from "emotion";
 import { flatPlaguesWithTitles, Plague } from "./consts";

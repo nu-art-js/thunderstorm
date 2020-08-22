@@ -20,8 +20,9 @@
  */
 
 import * as React from 'react';
-import {GenericSelect} from "./GenericSelect";
-import {BrowserHistoryModule} from "../modules/HistoryModule";
+import {GenericSelect} from "../GenericSelect";
+import {BrowserHistoryModule} from "../../modules/HistoryModule";
+import {Example_NewProps} from "./Example_NewProps";
 
 const PLAYGROUND = "playground"
 
@@ -36,9 +37,10 @@ type State = {
 	selectedScreen?: PlaygroundScreen;
 }
 
-export type PlaygroundScreen = {
+export type PlaygroundScreen<T extends any = any> = {
 	name: string
-	renderer: React.ElementType
+	renderer: React.ComponentType<T>
+	data?: T[]
 }
 
 export class Playground
@@ -75,6 +77,13 @@ export class Playground
 		if (!this.state.selectedScreen)
 			return <div>Select a playground</div>
 
-		return <this.state.selectedScreen.renderer />
+		const data = this.state.selectedScreen.data;
+		if (!data || data.length === 0)
+			return <this.state.selectedScreen.renderer/>
+
+		if (data.length === 1)
+			return <this.state.selectedScreen.renderer {...data[0]}/>
+
+		return <Example_NewProps name={this.state.selectedScreen.name} data={data} renderer={this.state.selectedScreen.renderer}/>
 	}
 }

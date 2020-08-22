@@ -20,7 +20,7 @@
 import * as React from "react";
 import {css} from "emotion";
 import {ICONS} from "@res/icons";
-import {Example_DefaultsDropDown} from "./Example_DefaultsDropDown";
+import {Example_DropDown} from "./Example_DropDown";
 import {BaseNodeRenderer,} from "@nu-art/thunderstorm/frontend";
 import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
 import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
@@ -52,7 +52,7 @@ export type Props = {
 }
 
 
-export class Example_DropDowns
+export class Example_AllDropDowns
 	extends React.Component<{}, { _selected: string }> {
 	constructor(props: {}) {
 		super(props);
@@ -64,7 +64,7 @@ export class Example_DropDowns
 		return <>
 			<h1>dropdowns</h1>
 			<div className={'ll_h_t match_width'} style={{justifyContent: "space-around", height: 100}}>
-				<Example_DefaultsDropDown/>
+				<Example_DropDown/>
 				<Example_SingleRendererDropDown/>
 				<Example_MultiRendererDropDown/>
 			</div>
