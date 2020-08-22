@@ -23,11 +23,12 @@ import * as React from 'react';
 import {Filter} from "@nu-art/ts-common/utils/filter-tools";
 import {TS_Input} from "./TS_Input";
 import {Stylable} from "../tools/Stylable";
+import { __stringify } from '@nu-art/ts-common';
 
-type Props<T> = Stylable & {
+export type Props_FilterInput<T> = Stylable & {
 	filter: (item: T) => string[],
 	list: T[],
-	onChange: (items: T[], filterTextLength?: number) => void,
+	onChange: (items: T[], filterBy: string, id?: string) => void,
 	id?: string,
 	initialFilterText?: string,
 	focus?: boolean,
@@ -38,10 +39,10 @@ type Props<T> = Stylable & {
 type State = {}
 
 export class FilterInput<T>
-	extends React.Component<Props<T>, State> {
+	extends React.Component<Props_FilterInput<T>, State> {
 	private filterInstance: Filter;
 
-	constructor(props: Props<T>) {
+	constructor(props: Props_FilterInput<T>) {
 		super(props);
 
 		this.filterInstance = new Filter();
@@ -50,26 +51,31 @@ export class FilterInput<T>
 	}
 
 	componentDidMount() {
-		this.callOnChange(this.props.list);
+		console.log(`componentDidMount: list === ${__stringify(this.props.list)}`);
+		this.callOnChange(this.props.list, "");
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<Props<T>>, nextState: Readonly<State>, nextContext: any): boolean {
+	shouldComponentUpdate(nextProps: Readonly<Props_FilterInput<T>>, nextState: Readonly<State>, nextContext: any): boolean {
 		const b = this.props.list !== nextProps.list;
+		console.log(`shouldComponentUpdate: list === ${__stringify(nextProps.list)}`);
 		if (b)
-			this.callOnChange(nextProps.list);
+			this.callOnChange(nextProps.list, "");
 
 		return b;
 	}
 
-	callOnChange = (list: T[], filterTextLength?: number) => {
-		const {filter, onChange} = this.props;
-		console.log(`list: ${list.length}`)
-		onChange(this.filterInstance.filter(list, filter), filterTextLength);
+	callOnChange = (list: T[], filter: string) => {
+		console.log("GOT HERE");
+		console.log("callOnChange: list === ", list === undefined ? "undefined" : "[...]");
+
+		this.props.onChange(this.filterInstance.filter(list, this.props.filter), filter, this.props.id);
+		console.log("GOT THERE");
 	};
 
 	filter = (text: string) => {
 		this.filterInstance.setFilter(text);
-		this.callOnChange(this.props.list, text.length);
+		console.log(`filter: list === ${__stringify(this.props.list)}`);
+		this.callOnChange(this.props.list, text);
 	};
 
 	render() {

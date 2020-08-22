@@ -106,7 +106,7 @@ type StaticProps = {
 	inputStylable: InputProps
 }
 
-type Props<ItemType> = StaticProps & {
+export type Props_DropDown<ItemType> = StaticProps & {
 	adapter: Adapter
 	// selection: {
 	// 	onChange: (selected: ItemType) => void
@@ -135,7 +135,7 @@ type Props<ItemType> = StaticProps & {
 }
 
 export class DropDown<ItemType>
-	extends React.Component<Props<ItemType>, State<ItemType>> {
+	extends React.Component<Props_DropDown<ItemType>, State<ItemType>> {
 
 	static defaultProps: Partial<StaticProps> = {
 		id: generateHex(8),
@@ -145,7 +145,7 @@ export class DropDown<ItemType>
 	};
 
 
-	constructor(props: Props<ItemType>) {
+	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
 
 		this.state = {
@@ -157,20 +157,18 @@ export class DropDown<ItemType>
 		};
 	}
 
-	static getDerivedStateFromProps(nextProps: Props<any>, prevState: State<any>): Partial<State<any>> | null {
+	static getDerivedStateFromProps(nextProps: Props_DropDown<any>, prevState: State<any>): Partial<State<any>> | null {
 		if (prevState.id !== nextProps.id)
 			console.log(`Changing ids: ${prevState.id} => ${nextProps.id}`);
 
-		// console.log('deriving state', nextProps, prevState);
 		if (prevState.adapter.data === nextProps.adapter.data)
 			return null;
 
 		const adapter = DropDown.cloneAdapter(nextProps);
-		// adapter.data = prevState.adapter.data;
-		return {adapter,id:nextProps.id }
+		return {adapter, id: nextProps.id}
 	}
 
-	private static cloneAdapter = (nextProps: Props<any>) => {
+	private static cloneAdapter = (nextProps: Props_DropDown<any>) => {
 		return nextProps.adapter.clone(new Adapter(nextProps.autocomplete && nextProps.filter ? [] : nextProps.adapter.data));
 	};
 
@@ -265,13 +263,13 @@ export class DropDown<ItemType>
 			id={`${this.props.id}-input`}
 			filter={this.props.filter}
 			list={this.props.adapter.data}
-			onChange={(filteredOptions: ItemType[], filterTextLength) => {
+			onChange={(filteredOptions: ItemType[], filterBy) => {
 				this.setState(state => {
-					state.adapter.data = this.props.autocomplete && this.props.filter && !filterTextLength ? [] : filteredOptions;
+					state.adapter.data = this.props.autocomplete && this.props.filter && !filterBy.length ? [] : filteredOptions;
 
 					return {
 						adapter: state.adapter,
-						filterTextLength
+						filterTextLength: filterBy.length
 					}
 				}, () => this.props.onFilter && this.props.onFilter(this.state.filteredOptions));
 			}}

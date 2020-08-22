@@ -62,7 +62,8 @@ export * from "./app-frontend/components/tree/SimpleTreeNodeRenderer";
 export * from "./app-frontend/components/tree/MenuComponent";
 
 export * from "./app-frontend/components/GenericSelect";
-export * from "./app-frontend/components/Playground";
+export * from "./app-frontend/components/playground/Playground";
+export * from "./app-frontend/components/playground/Example_NewProps";
 
 export * from "./app-frontend/modules/component-loader/ReactEntryComponentInjector";
 export * from "./app-frontend/modules/component-loader/entry-component-loading-module";
