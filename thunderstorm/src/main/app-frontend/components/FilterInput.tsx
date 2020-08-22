@@ -51,13 +51,11 @@ export class FilterInput<T>
 	}
 
 	componentDidMount() {
-		console.log(`componentDidMount: props === ${__stringify(this.props)}`);
 		this.callOnChange(this.props.list, "");
 	}
 
 	shouldComponentUpdate(nextProps: Readonly<Props_FilterInput<T>>, nextState: Readonly<State>, nextContext: any): boolean {
 		const b = this.props.list !== nextProps.list;
-		console.log(`shouldComponentUpdate: list === ${__stringify(nextProps.list)}`);
 		if (b)
 			this.callOnChange(nextProps.list, "");
 
@@ -65,16 +63,11 @@ export class FilterInput<T>
 	}
 
 	callOnChange = (list: T[], filter: string) => {
-		console.log("GOT HERE");
-		console.log("callOnChange: list === ", list === undefined ? "undefined" : "[...]");
-
 		this.props.onChange(this.filterInstance.filter(list, this.props.filter), filter, this.props.id);
-		console.log("GOT THERE");
 	};
 
 	filter = (text: string) => {
 		this.filterInstance.setFilter(text);
-		console.log(`filter: list === ${__stringify(this.props.list)}`);
 		this.callOnChange(this.props.list, text);
 	};
 
