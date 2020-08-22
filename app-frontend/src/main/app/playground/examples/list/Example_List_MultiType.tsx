@@ -3,6 +3,7 @@ import {Component} from "react";
 import {
 	Adapter,
 	AdapterBuilder,
+	MenuAndButton,
 	MenuComponent,
 	ToastModule,
 	TreeNode
@@ -33,6 +34,15 @@ export class Example_List_MultiType
 				<h2>Here is a nested list with multiple Item Types</h2>
 				<MenuComponent adapter={adapter} onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
+			<div>
+				<h2>Here is a menu and button</h2>
+				<MenuAndButton
+					id={'menu-and-button'}
+					iconClosed={<div>^</div>}
+					iconOpen={<div>*</div>}
+					adapter={adapter}
+				/>
+			</div>
 		</div>
 	}
 }
@@ -57,10 +67,12 @@ export class Example_List_MultiType1
 
 
 		return <div>
+
 			<div>
-				<h2>Here is a nested list with multiple Item Types</h2>
+				<h2>Here is a list with multiple Item Types</h2>
 				<MenuComponent adapter={adapter} onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
+
 		</div>
 	}
 }

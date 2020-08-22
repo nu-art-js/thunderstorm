@@ -80,6 +80,14 @@ export class MUSTNeverHappenException
 	}
 }
 
+export class NotImplementedYetException
+	extends CustomException {
+
+	constructor(message: string, cause?: Error) {
+		super(NotImplementedYetException, message, cause);
+	}
+}
+
 export class ThisShouldNotHappenException
 	extends CustomException {
 

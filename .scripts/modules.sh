@@ -5,10 +5,9 @@ projectModules=(
   app-frontend
 )
 
-projectLibraries=(
+projectLibs=(
   ${thunderstormLibraries[@]}
   app-shared
-  test-backend
 )
 
 testServiceAccount=../.trash/test-account.json

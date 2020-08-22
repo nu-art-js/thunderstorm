@@ -33,11 +33,11 @@ import {
 	ApiBinder_DBUpdate,
 	DefaultApiDefs,
 	GenericApiDef
-} from "../index";
+} from "..";
 import {
 	Clause_Where,
 	DB_Object,
-    FirestoreQuery
+	FirestoreQuery
 } from "@nu-art/firebase";
 import {
 	ApiResponse,
@@ -123,12 +123,11 @@ export class ServerApi_Query<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, _body: Partial<DBType>): Promise<DBType[]> {
-		let body = _body;
 		// for (const postProcessor of this.postProcessors) {
 		// 	queries = await postProcessor();
 		// }
 
-		return this.dbModule.query({where: body} as FirestoreQuery<DBType>, request);
+		return this.dbModule.query({where: _body} as FirestoreQuery<DBType>, request);
 	}
 }
 

@@ -22,22 +22,23 @@
 import * as React from 'react';
 import {
 	_clearTimeout,
-	currentTimeMillies
+	currentTimeMillies,
+	generateHex
 } from '@nu-art/ts-common';
+import {Stylable} from "../tools/Stylable";
 
-type Props<Key> = {
+type Props<Key> = Stylable & {
 	onChange: (value: string, id: Key) => void
 	onAccept?: () => void
 	onCancel?: () => void
 	onBlur?: () => void
 	handleKeyEvent?: (e: KeyboardEvent) => void
-	className?: string
-	style?: React.CSSProperties
 	value?: string
 	error?: string
 	type: 'text' | 'number' | 'password'
 	placeholder?: string
-	id?: Key
+	id: Key
+	name?: string
 	focus?: boolean
 	spellCheck?: boolean
 }
@@ -52,11 +53,15 @@ export class TS_Input<Key extends string>
 	private timeout?: number;
 	private readonly controlled: boolean;
 
+	static defaultProps: Partial<Props<any>> = {
+		id: generateHex(16)
+	};
+
 	constructor(props: Props<Key>) {
 		super(props);
 
 		this.controlled = this.props.value !== undefined;
-		if(!this.controlled)
+		if (!this.controlled)
 			this.state = {value: ""};
 	};
 
@@ -87,16 +92,17 @@ export class TS_Input<Key extends string>
 		const value = event.target.value;
 		this.props.onChange(value, event.target.id as Key);
 
-		if(!this.controlled)
+		if (!this.controlled)
 			this.setState({value: value});
 	};
 
 	render() {
-		const {id, type, placeholder, style, className, spellCheck, focus, onBlur} = this.props;
+		const {id, name, type, placeholder, style, className, spellCheck, focus, onBlur} = this.props;
 		const handleKeyEvent = this.props.handleKeyEvent || this.handleKeyEvent;
 		const value = this.controlled ? this.props.value : this.state.value;
 		return <input
 			className={className}
+			name={name || id}
 			style={style}
 			key={id}
 			id={id}

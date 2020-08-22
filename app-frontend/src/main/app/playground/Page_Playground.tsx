@@ -36,8 +36,8 @@ import {ICONS} from "@res/icons";
 import {COLORS} from "@res/colors";
 import {Example_Form} from "./examples/Example_Form";
 import {Example_TriggerPush} from "./examples/Example_TriggerPush";
-import {Example_DropDowns} from "./examples/dropdown/Example_DropDowns";
-import {Example_DefaultsDropDown} from "./examples/dropdown/Example_DefaultsDropDown";
+import {Example_AllDropDowns} from "./examples/dropdown/Example_AllDropDowns";
+import {Example_DropDown} from "./examples/dropdown/Example_DropDown";
 import {Example_SingleRendererDropDown} from "./examples/dropdown/Example_SingleRendererDropDown";
 import {Example_MultiRendererDropDown} from "./examples/dropdown/Example_MultiRendererDropDown";
 import {Example_List_SingleType} from "./examples/list/Example_List_SingleType";
@@ -52,6 +52,7 @@ import {Example_List_All} from "./examples/list/Example_List_All";
 import {Example_Tree_SingleType} from './examples/tree/Example_Tree_SingleType';
 import {OstudioEx} from "./examples/dropdown/OstudioEx";
 import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
+import {Example_FilterInput} from "./examples/Example_FilterInput";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -107,6 +108,14 @@ export class Page_Playground
 
 	getScreens(): PlaygroundScreen[] {
 		return [
+			// DROPDOWNS
+			{renderer: Example_DropDown, name: "Dropdown Example"},
+			{renderer: Example_FilterInput, name: "FilterInput Examples"},
+			{renderer: Example_AllDropDowns, name: "ALL DropDown Examples"},
+			{renderer: Example_SingleRendererDropDown, name: "Customized Single Renderer DropDown Example"},
+			{renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
+
+			// TREES / LISTS
 			{renderer: Example_Tree_SingleType, name: "Tree_SingleType",},
 			{renderer: Example_List_SingleType, name: "List_SingleType_Menu",},
 			{renderer: Example_NestedList_SingleType, name: "List_SingleType_NestedMenu",},
@@ -128,14 +137,10 @@ export class Page_Playground
 			{renderer: Example_Tabs2, name: "Tabs",},
 			{renderer: Example_Tabs, name: "GenericTabs",},
 			{renderer: Example_GenericSelect, name: "GenericSelect",},
-			{renderer: Example_DropDowns, name: "DropDown Examples"},
-			{renderer: Example_DefaultsDropDown, name: "Defaults Single Renderer DropDown Example"},
-			{renderer: Example_SingleRendererDropDown, name: "Customized Single Renderer DropDown Example"},
-			{renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
 			// {renderer: Example_Menu, name: "Menu",},
 			{renderer: Example_VerySimpleTree, name: "Special keyboard listener"},
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring"},
-			{renderer: OstudioEx, name: 'stam'}
+			{renderer: OstudioEx, name: 'stam'},
 		];
 	}
 }

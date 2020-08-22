@@ -22,16 +22,15 @@
 import * as React from 'react';
 import {Filter} from "@nu-art/ts-common/utils/filter-tools";
 import {TS_Input} from "./TS_Input";
+import {Stylable} from "../tools/Stylable";
 
-type Props<T> = {
+export type Props_FilterInput<T> = Stylable & {
 	filter: (item: T) => string[],
 	list: T[],
-	onChange: (items: T[], filterTextLength?: number) => void,
+	onChange: (items: T[], filterBy: string, id?: string) => void,
 	id?: string,
 	initialFilterText?: string,
 	focus?: boolean,
-	inputStyle?: React.CSSProperties,
-	className?: string,
 	placeholder?: string
 	handleKeyEvent?: (e: KeyboardEvent) => void
 }
@@ -39,10 +38,10 @@ type Props<T> = {
 type State = {}
 
 export class FilterInput<T>
-	extends React.Component<Props<T>, State> {
+	extends React.Component<Props_FilterInput<T>, State> {
 	private filterInstance: Filter;
 
-	constructor(props: Props<T>) {
+	constructor(props: Props_FilterInput<T>) {
 		super(props);
 
 		this.filterInstance = new Filter();
@@ -51,29 +50,28 @@ export class FilterInput<T>
 	}
 
 	componentDidMount() {
-		this.callOnChange(this.props.list);
+		this.callOnChange(this.props.list, "");
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<Props<T>>, nextState: Readonly<State>, nextContext: any): boolean {
+	shouldComponentUpdate(nextProps: Readonly<Props_FilterInput<T>>, nextState: Readonly<State>, nextContext: any): boolean {
 		const b = this.props.list !== nextProps.list;
 		if (b)
-			this.callOnChange(nextProps.list);
+			this.callOnChange(nextProps.list, "");
 
 		return b;
 	}
 
-	callOnChange = (list: T[], filterTextLength?:number) => {
-		const {filter, onChange} = this.props;
-		onChange(this.filterInstance.filter(list, filter), filterTextLength);
+	callOnChange = (list: T[], filter: string) => {
+		this.props.onChange(this.filterInstance.filter(list, this.props.filter), filter, this.props.id);
 	};
 
 	filter = (text: string) => {
 		this.filterInstance.setFilter(text);
-		this.callOnChange(this.props.list, text.length);
+		this.callOnChange(this.props.list, text);
 	};
 
 	render() {
-		const {id, placeholder, inputStyle, className, focus} = this.props;
+		const {id, placeholder, focus} = this.props;
 		return (
 			<TS_Input
 				type='text'
@@ -84,8 +82,8 @@ export class FilterInput<T>
 				}}
 				focus={focus}
 				placeholder={placeholder}
-				className={className}
-				style={inputStyle}
+				className={this.props.className}
+				style={this.props.style}
 				handleKeyEvent={this.props.handleKeyEvent}
 			/>
 		);

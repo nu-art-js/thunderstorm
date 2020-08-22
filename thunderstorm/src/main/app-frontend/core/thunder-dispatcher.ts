@@ -21,10 +21,11 @@
 
 import {
 	Dispatcher,
-	FunctionKeys
+	FunctionKeys,
+	ReturnPromiseType
 } from "@nu-art/ts-common";
 
-export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P = Parameters<T[K]>>
+export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P = Parameters<T[K]>, R = ReturnPromiseType<T[K]>>
 	extends Dispatcher<T, K> {
 
 	static readonly listenersResolver: () => any[];
@@ -33,13 +34,13 @@ export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P = 
 		super(method);
 	}
 
-	public dispatchUI(p: P) {
+	public dispatchUI(p: P): R[] {
 		const listeners = ThunderDispatcher.listenersResolver();
 		// @ts-ignore
-		listeners.filter(this.filter).forEach((listener: T) => listener[this.method](...p));
+		return listeners.filter(this.filter).forEach((listener: T) => listener[this.method](...p));
 	}
 
-	public async dispatchUIAsync(p: P) {
+	public async dispatchUIAsync(p: P): Promise<R[]> {
 		const listeners = ThunderDispatcher.listenersResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			const params: any = p;

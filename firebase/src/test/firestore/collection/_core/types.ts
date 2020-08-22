@@ -22,7 +22,11 @@ export type FB_ArrayType = {
 	key: string
 	value: number
 }
-
+export type SimpleType = {
+	label: string
+	deleteId: string
+	optional?: string
+};
 export type FB_Type = {
 	numeric: number,
 	stringValue: string

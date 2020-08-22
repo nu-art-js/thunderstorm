@@ -20,15 +20,12 @@
 import * as React from "react";
 import {css} from "emotion";
 import {ICONS} from "@res/icons";
-import {Example_DefaultsDropDown} from "./Example_DefaultsDropDown";
-// import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
-import {
-	BaseNodeRenderer,
-} from "@nu-art/thunderstorm/frontend";
-import { Example_SingleRendererDropDown } from "./Example_SingleRendererDropDown";
+import {Example_DropDown} from "./Example_DropDown";
+import {BaseNodeRenderer,} from "@nu-art/thunderstorm/frontend";
+import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
 import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
+import { Plague } from "./consts";
 
-// const optionRendererWrapperStyle = css({":hover": {backgroundColor: "lime"}});
 
 export const optionRendererStyle = (selected: boolean) => css(
 	{
@@ -41,14 +38,6 @@ export const optionRendererStyle = (selected: boolean) => css(
 		width: "100%"
 	});
 
-export const customInputStyle = (selected: boolean) => css(
-	{
-		backgroundColor: "lime",
-		fontSize: 13,
-		"::placeholder": {
-			color: selected ? "red" : "black",
-		}
-	});
 
 export type Node = {
 	path: string
@@ -56,68 +45,14 @@ export type Node = {
 	selected?: boolean,
 }
 
-export type Plague = {label: string, value: string}
 
 export type Props = {
 	item: Plague,
 	node: Node
 }
 
-export const plagues: Plague[] = [
-	{label: 'Spanish Flu', value: 'spanishFlu'},
-	{label: 'Smallpox', value: 'smallpox'},
-	{label: 'Black Plague', value: 'blackPlague'},
-	{label: 'Coronavirus', value: 'COVID-19'},
-	{label: 'Internet', value: 'internet'},
-];
 
-
-export const plaguesWithTitles = [
-	{
-		item: {label: 'Phisical', value: 'title'},
-		_children: [
-			{
-				item: {label: 'kaki', value: 'kaka'},
-				type: "title"
-			},
-			{
-				item: {label: 'zevel', value: 'pah'},
-				type: "normal"
-			},
-		],
-		type: "title"
-	},
-	{
-		item: {label: 'Spanish Flu', value: 'spanishFlu'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Smallpox', value: 'smallpox'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Black Plague', value: 'blackPlague'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Coronavirus', value: 'COVID-19'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Virtual', value: 'title'},
-		type: "title"
-	},
-	{
-		item: {label: 'Facebook', value: 'facebook'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Tik tok', value: 'tiktok'},
-		type: "normal"
-	},
-];
-
-export class Example_DropDowns
+export class Example_AllDropDowns
 	extends React.Component<{}, { _selected: string }> {
 	constructor(props: {}) {
 		super(props);
@@ -129,7 +64,7 @@ export class Example_DropDowns
 		return <>
 			<h1>dropdowns</h1>
 			<div className={'ll_h_t match_width'} style={{justifyContent: "space-around", height: 100}}>
-				<Example_DefaultsDropDown/>
+				<Example_DropDown/>
 				<Example_SingleRendererDropDown/>
 				<Example_MultiRendererDropDown/>
 			</div>

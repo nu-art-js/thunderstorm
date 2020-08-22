@@ -19,15 +19,9 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/modules/proxy/RemoteProxyCaller";
-export * from "./app-backend/modules/proxy/RemoteProxy";
-export * from "./app-backend/modules/server/server-errors";
-export * from "./app-backend/modules/server/server-api";
-export * from "./app-backend/modules/server/HttpServer";
-export * from "./app-backend/modules/ForceUpgrade";
-export * from "./app-backend/utils/promisify-request";
-export * from "./app-backend/utils/to-be-removed";
-export * from "./app-backend/utils/types";
-export * from "./app-backend/exceptions";
-export * from "./app-backend/core/Storm";
-export * from "./app-frontend/types/request";
+import {
+	CoreOptions,
+	UriOptions
+} from "request";
+
+export type RequestOptions = CoreOptions & UriOptions
