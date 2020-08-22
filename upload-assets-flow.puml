@@ -1,0 +1,24 @@
+@startuml
+participant App_FE
+participant App_BE
+participant Firestore as DB
+participant Bucket
+
+
+App_FE->App_FE: Drops a file into the page
+App_FE -> App_BE: Request signed url to \n<b>TEMP</b> bucket folder\n(request will contain file type key)
+App_BE -> DB: Add document to DB about\nthis temp file
+App_BE -> App_FE: Return <b>temp DB id</b> + signed url to\n<b>TEMP</b> bucket folder
+App_FE -> Bucket: Upload file to\n<b>TEMP</b> bucket folder
+...
+--> App_BE: Function Trigger:\n"OnFileAddedToBucket"
+
+App_BE -> App_BE: Parse / Validate / Whatever and extract metadata
+App_BE -> Bucket: Save file to app folder in the bucket
+App_BE -> DB: Save file metadata
+App_BE -> DB: Delete temp document
+App_BE -> App_FE: Send push that File\nwith <b>temp DB id</b> was\nprocessed and is <b>valid / invalid</b>
+
+...
+--> App_BE: Function Schedule Trigger:\n"Clean up invalid or corrupted files and db entries"
+@enduml
