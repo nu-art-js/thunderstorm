@@ -35,7 +35,7 @@ export class Example_FilterInput
 	render() {
 		const props1 = this.simpleStringProps();
 		const props2 = this.simpleObjectProps();
-		return <Example_NewProps name={"Filter Input"} renderer={FilterInput} data={[props1, props2]}/>
+		return <Example_NewProps name={"Filter Input"} renderer={FilterInput} data={[props1, props2]} showList={false}/>
 	}
 
 	private simpleStringProps() {
