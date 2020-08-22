@@ -1,23 +1,21 @@
 import * as React from "react";
+import {ReactNode} from "react";
 import {
-	customInputStyle,
 	optionRendererStyle,
-	Plague,
-	plagues
-} from "./Example_DropDowns";
+} from "./Example_AllDropDowns";
 import {css} from "emotion";
 import {ICONS} from "@res/icons";
 import {
-	HeaderStyleProps,
-	InputProps,
-	inputStyle,
-	ValueProps,
 	Adapter,
 	AdapterBuilder,
-	headerStyle,
+	BaseNodeRenderer,
 	DropDown,
-	BaseNodeRenderer
+	headerStyle,
+	inputStyle,
+	Stylable
 } from "@nu-art/thunderstorm/frontend";
+import {inputClassName} from "./OstudioEx";
+import { Plague, plagues } from "./consts";
 
 export class Example_SingleRendererDropDown
 	extends React.Component<{}, { _selected?: Plague }> {
@@ -27,42 +25,51 @@ export class Example_SingleRendererDropDown
 	};
 
 	render() {
-		const valueRenderer = (props: ValueProps<Plague>) => {
+		const valueRenderer = (selected?: Plague) => {
 			const style: React.CSSProperties = {backgroundColor: "lime", boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
-			if (props.selected)
-				return <div style={{...style, color: "red"}}>{props.selected.label}</div>;
-			return <div style={style}>{props.placeholder}</div>
+			if (!selected)
+				return <div style={style}>CHOOSE</div>
+			return <div style={{...style, color: "red"}}>{selected.label}</div>;
 		};
-		const inputResolver = (selected?: Plague): InputProps => (
-			{
-				className: customInputStyle(!!selected),
-				inputStyle,
-				placeholder: this.state?._selected?.label
-			}
-		);
-		const headerResolverClass: HeaderStyleProps = {headerStyle, headerClassName: css({boxShadow: "5px 10px #888888"})};
+
+		const inputStylable = {
+			className: inputClassName,
+			style: inputStyle,
+			placeholder: this.state?._selected?.label
+		};
+		const headerResolverClass: Stylable = {style: headerStyle, className: css({boxShadow: "5px 10px #888888"})};
 		const simpleAdapter: Adapter = AdapterBuilder()
 			.list()
 			.singleRender(ItemRenderer)
 			.setData(plagues)
 			.build();
+
+		const caret = {
+			open: this.caretItem(ICONS.arrowOpen(undefined, 11)),
+			close: this.caretItem(ICONS.arrowClose(undefined, 11))
+		}
+
 		return <div>
 			<h4>Filter, carets, placeholder & all renderers</h4>
 			<h4>single renderer, flat list</h4>
 			<DropDown
 				adapter={simpleAdapter}
 				onSelected={this.onSelected}
-				valueRenderer={valueRenderer}
-				inputResolver={inputResolver}
+				selectedItemRenderer={valueRenderer}
+				inputStylable={inputStylable}
 				filter={(item) => [item.label.toLowerCase()]}
-				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><div style={{marginTop:3}}>{ICONS.arrowOpen(undefined, 11)}</div></div>}
-				closeCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><div style={{marginTop:3}}>{ICONS.arrowClose(undefined, 11)}</div></div>}
-				placeholder={"Choose a plague"}
-				headerStyleResolver={headerResolverClass}
+				caret={caret}
+				headerStylable={headerResolverClass}
 				autocomplete={true}
 			/>
 			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>
+	}
+
+	private caretItem(icon: ReactNode) {
+		return <div style={{backgroundColor: "lime", paddingRight: 8}}>
+			<div style={{marginTop: 3}}>{icon}</div>
+		</div>;
 	}
 }
 

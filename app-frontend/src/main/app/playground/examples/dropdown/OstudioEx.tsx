@@ -19,27 +19,18 @@
 
 import * as React from "react";
 import {css} from 'emotion';
-import {
-	Plague,
-	plagues
-} from "./Example_DropDowns";
-import {
-	Adapter,
-	AdapterBuilder
-} from "@nu-art/thunderstorm/app-frontend/components/adapter/Adapter";
+import {AdapterBuilder} from "@nu-art/thunderstorm/app-frontend/components/adapter/Adapter";
 import {NodeRendererProps} from "@nu-art/thunderstorm/app-frontend/components/adapter/BaseRenderer";
 import {
 	DropDown,
 	headerStyle,
-	HeaderStyleProps,
-	InputProps,
 	inputStyle,
 	listStyle,
-	ListStyleProps,
-	ValueProps
-} from "@nu-art/thunderstorm/app-frontend/components/DropDown";
+	Stylable,
+} from "@nu-art/thunderstorm/frontend";
 import {generateHex} from "@nu-art/ts-common";
 import {ICONS} from "@res/icons";
+import { Plague, plagues } from "./consts";
 
 export class OstudioEx
 	extends React.Component<{}, { _selected?: Plague }> {
@@ -83,8 +74,8 @@ const optionRendererStyle = (focused: boolean, selected: boolean) => css(
 		paddingLeft: 14
 	});
 
-const listResolverStyle = (width: number = DropdownWidth.Long): ListStyleProps => ({
-	listStyle: {
+const listResolverStyle = (width: number = DropdownWidth.Long): Stylable => ({
+	style: {
 		...listStyle,
 		backgroundColor: "#fff",
 		border: "unset",
@@ -98,14 +89,14 @@ const listResolverStyle = (width: number = DropdownWidth.Long): ListStyleProps =
 	}
 });
 
-export const customInputStyle = (selected: boolean) => css(
+export const inputClassName = css(
 	{
 		fontSize: 14,
 		color: "#001636",
 		paddingLeft: 9,
 		"::placeholder": {
 			color: "#959ca5",
-			fontSize: selected ? 14 : 11,
+			fontSize: 14,
 			fontStyle: "italic",
 			// paddingLeft: selected ? 9 : 10
 		}
@@ -134,15 +125,15 @@ export const AppDropDown = <T extends any = any>(props: DropdownProps<T>) => {
 
 	);
 
-	const valueRenderer = (_props: ValueProps<T>) => (
+	const valueRenderer = (selected?: T) => (
 		<div id={`${props.id}-val`} className={`ll_h_c clickable ${optionRendererStyle(false, false)}`}
-		     style={_props.selected ? {paddingLeft: 9} : {color: "#959ca5", paddingLeft: 10, fontSize: 11, fontStyle: "italic"}}>
-			{_props.selected ? props.labelResolver(_props.selected) : _props.placeholder || 'choose'}
+		     style={selected ? {paddingLeft: 9} : {color: "#959ca5", paddingLeft: 10, fontSize: 11, fontStyle: "italic"}}>
+			{selected ? props.labelResolver(selected) : 'choose'}
 		</div>
 	);
 
-	const headerResolverStyle: HeaderStyleProps = {
-		headerStyle: {
+	const headerResolverStyle: Stylable = {
+		style: {
 			...headerStyle,
 			border: `solid 1px ${props.error ? "#de3728" : "#cbd3dd"}`,
 			borderRadius: 2,
@@ -152,32 +143,27 @@ export const AppDropDown = <T extends any = any>(props: DropdownProps<T>) => {
 		}
 	};
 
-	const inputResolver = (selected?: T): InputProps => (
-		{
-			className: customInputStyle(!!selected),
-			inputStyle,
-			placeholder: selected ? props.labelResolver(selected) : props.placeholder || 'choose'
-		}
-	);
-
-	const adapter: Adapter = AdapterBuilder()
+	const adapter = AdapterBuilder()
 		.list()
 		.singleRender(optionRenderer)
 		.setData(props.options)
 		.build();
 
-	return <DropDown
+	const caret = {open: ICONS.arrowheadFullUp("#8392a6"), close: ICONS.arrowheadFullDown("#8392a6")};
+	return <DropDown<T>
 		id={props.id}
 		adapter={adapter}
 		selected={props.selected}
 		onSelected={props.onSelected}
 		filter={props.filter}
-		mainCaret={ICONS.arrowheadFullDown("#8392a6")}
-		closeCaret={ICONS.arrowheadFullUp("#8392a6")}
-		placeholder={'choose'}
-		inputResolver={inputResolver}
-		valueRenderer={valueRenderer}
-		listStyleResolver={listResolverStyle(props.width)}
-		headerStyleResolver={headerResolverStyle}
+		caret={caret}
+		inputStylable={{
+			style: inputStyle,
+			className: inputClassName,
+			placeholder: props.selected ? props.labelResolver(props.selected) : props.placeholder || 'choose'
+		}}
+		selectedItemRenderer={valueRenderer}
+		listStylable={listResolverStyle(props.width)}
+		headerStylable={headerResolverStyle}
 	/>
 };

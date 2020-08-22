@@ -35,6 +35,7 @@ import {
 	BaseSubscriptionData,
 	PubSubRegisterClient,
 	Request_PushRegister,
+	SubscribeProps,
 	SubscriptionData
 } from "../../index";
 import {HttpMethod} from "@nu-art/thunderstorm";
@@ -46,8 +47,8 @@ import {
 
 export const Command_SwToApp = 'SwToApp';
 
-export interface OnFirebaseMessageReceived {
-	onMessageReceived(payload: SubscriptionData[]): void
+export interface OnPushMessageReceived {
+	__onMessageReceived(pushKey: string, props?: SubscribeProps, data?: any): void
 }
 
 type FirebaseConfig = {
@@ -72,7 +73,7 @@ export class PushPubSubModule_Class
 	private firebaseToken?: string;
 	private messaging?: MessagingWrapper;
 
-	private dispatch_pushMessage = new ThunderDispatcher<OnFirebaseMessageReceived, "onMessageReceived">("onMessageReceived");
+	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived, "__onMessageReceived">("__onMessageReceived");
 
 	init() {
 		if (!this.config?.publicKeyBase64)
@@ -143,8 +144,13 @@ export class PushPubSubModule_Class
 
 	private processMessage = (data: StringMap) => {
 		const arr: SubscriptionData[] = JSON.parse(data.messages);
-		const mySubscriptions = arr.filter(s => this.subscriptions.find(_s => _s.pushKey === s.pushKey && (s.props ? compare(_s.props, s.props) : true)));
-		this.dispatch_pushMessage.dispatchModule([mySubscriptions]);
+		arr.forEach(s => {
+			const sub = this.subscriptions.find(_s => _s.pushKey === s.pushKey && (s.props ? compare(_s.props, s.props) : true));
+			if (!sub)
+				return;
+
+			this.dispatch_pushMessage.dispatchModule([s.pushKey, s.props, s.data]);
+		});
 	};
 
 	subscribe = (subscription: BaseSubscriptionData) => {
@@ -174,10 +180,6 @@ export class PushPubSubModule_Class
 			.setOnError(() => ToastModule.toastError("Failed to register for push"))
 			.execute()
 	};
-
-	filterSubscriptions(payload: SubscriptionData[], mySubscription: BaseSubscriptionData) {
-		return payload.filter(subscription => compare({pushKey: subscription.pushKey, props: subscription.props}, mySubscription));
-	}
 }
 
 export const PushPubSubModule = new PushPubSubModule_Class();

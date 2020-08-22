@@ -23,10 +23,6 @@ import {
 	ImplementationMissingException,
 	Module,
 } from "@nu-art/ts-common";
-import {
-	CoreOptions,
-	UriOptions
-} from "request";
 // noinspection TypeScriptPreferShortImport
 import {
 	ApiWithBody,
@@ -40,6 +36,7 @@ import {
 } from "../../../shared/types";
 import {promisifyRequest} from "../../utils/promisify-request";
 import {ApiException} from "../../exceptions";
+import {RequestOptions} from "../../../backend";
 
 export type RemoteServerConfig = {
 	secretHeaderName: string
@@ -81,7 +78,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 		if (params && params.length > 0)
 			urlParams = `?${params.join("&")}`;
 
-		const proxyRequest: UriOptions & CoreOptions = {
+		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,
 				[this.config.secretHeaderName]: this.config.secret,
@@ -96,7 +93,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 	};
 
 	protected executePostRequest = async <Binder extends ApiWithBody<U, R, B>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>>(url: U, body: B, _headers?: { [key: string]: string }): Promise<R> => {
-		const proxyRequest: UriOptions & CoreOptions = {
+		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,
 				'Content-Type': 'application/json',
@@ -112,7 +109,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 		return this.executeRequest<R>(proxyRequest);
 	};
 
-	private executeRequest = async <ResponseType>(proxyRequest: UriOptions & CoreOptions): Promise<ResponseType> => {
+	private executeRequest = async <ResponseType>(proxyRequest: RequestOptions): Promise<ResponseType> => {
 		const response = await promisifyRequest(proxyRequest, false);
 		if (proxyRequest.headers)
 			delete proxyRequest.headers[this.config.secretHeaderName];

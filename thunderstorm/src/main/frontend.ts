@@ -62,7 +62,8 @@ export * from "./app-frontend/components/tree/SimpleTreeNodeRenderer";
 export * from "./app-frontend/components/tree/MenuComponent";
 
 export * from "./app-frontend/components/GenericSelect";
-export * from "./app-frontend/components/Playground";
+export * from "./app-frontend/components/playground/Playground";
+export * from "./app-frontend/components/playground/Example_NewProps";
 
 export * from "./app-frontend/modules/component-loader/ReactEntryComponentInjector";
 export * from "./app-frontend/modules/component-loader/entry-component-loading-module";
@@ -72,6 +73,10 @@ export * from "./app-frontend/modules/menu/MenuAndButton";
 export * from "./app-frontend/modules/menu/PopupMenu";
 export * from "./app-frontend/modules/toaster/Toaster";
 export * from "./app-frontend/modules/dialog/Dialog";
+
+export * from "./app-frontend/tools/KeyboardListener";
+export * from "./app-frontend/tools/Stylable";
+
 export * from "./app-frontend/utils/tools";
 
 

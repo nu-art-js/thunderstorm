@@ -19,15 +19,46 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/modules/proxy/RemoteProxyCaller";
-export * from "./app-backend/modules/proxy/RemoteProxy";
-export * from "./app-backend/modules/server/server-errors";
-export * from "./app-backend/modules/server/server-api";
-export * from "./app-backend/modules/server/HttpServer";
-export * from "./app-backend/modules/ForceUpgrade";
-export * from "./app-backend/utils/promisify-request";
-export * from "./app-backend/utils/to-be-removed";
-export * from "./app-backend/utils/types";
-export * from "./app-backend/exceptions";
-export * from "./app-backend/core/Storm";
-export * from "./app-frontend/types/request";
+import {CSSProperties} from "react";
+
+export type  Stylable = {
+	style?: CSSProperties
+	className?: string
+}
+
+export class StylableBuilder {
+	style?: CSSProperties;
+	className?: string;
+
+	setStyle(style: CSSProperties) {
+		this.style = style;
+		return this;
+	}
+
+	clearInlineStyle() {
+		this.style = {};
+		return this;
+	}
+
+	addStyle(style: CSSProperties) {
+		if (!this.style)
+			return this.setStyle(style);
+
+		this.style = {...this.style, ...style};
+		return this;
+	}
+
+	setClassName(className: string) {
+		this.className = className;
+		return this;
+	}
+
+	build() {
+		const styleable: Stylable = {
+			style: this.style,
+			className: this.className
+		}
+
+		return styleable;
+	}
+}

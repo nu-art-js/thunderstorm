@@ -45,11 +45,11 @@ import {
 } from "@nu-art/thunderstorm";
 import {Test} from "@modules/TestModule";
 import {
-	OnFirebaseMessageReceived,
+	OnPushMessageReceived,
 	PushPubSubModule
 } from "@nu-art/push-pub-sub/frontend";
-import {SubscriptionData} from "@nu-art/push-pub-sub";
 import {FirebaseModule} from "@nu-art/firebase/frontend";
+import {SubscribeProps} from "@nu-art/push-pub-sub";
 
 type Config = {
 	remoteUrl: string
@@ -74,7 +74,7 @@ const mySubscription = {
 
 export class ExampleModule_Class
 	extends Module<Config>
-	implements OnFirebaseMessageReceived {
+	implements OnPushMessageReceived {
 
 	private message!: string;
 
@@ -93,13 +93,10 @@ export class ExampleModule_Class
 		analytics.setCurrentScreen('Example Screen')
 	};
 
-	onMessageReceived(payload: SubscriptionData[]) {
-		const myPayload = PushPubSubModule.filterSubscriptions(payload, mySubscription);
-		if (myPayload.length === 0)
-			return;
-
-		ToastModule.toastSuccess(`You got data! ${__stringify(myPayload)}`);
-		console.log('payload received in module', myPayload);
+	__onMessageReceived(pushKey: string, props?: SubscribeProps, data?: any) {
+		const message = `You got data! pushKey: ${pushKey}, props: ${__stringify(props)} with data: ${__stringify(data)}`;
+		ToastModule.toastSuccess(message);
+		this.logInfo('payload received in module', message);
 	}
 
 	callCustomErrorApi() {

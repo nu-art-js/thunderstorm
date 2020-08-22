@@ -27,22 +27,18 @@ import {
 import {
 	DropDown,
 	headerStyle,
-	HeaderStyleProps,
-	InputProps,
 	inputStyle,
 	listStyle,
-	ListStyleProps,
-	ValueProps
 } from "@nu-art/thunderstorm/app-frontend/components/DropDown";
 import * as React from "react";
 import {
-	customInputStyle,
 	optionRendererStyle,
-	Plague,
-} from "./Example_DropDowns";
+} from "./Example_AllDropDowns";
 import {ICONS} from "@res/icons";
+import {css} from "emotion";
+import { flatPlaguesWithTitles, Plague } from "./consts";
 
-export class ItemRenderer
+export class FlatItemRenderer
 	extends BaseNodeRenderer<Plague> {
 
 	renderItem(item: Plague) {
@@ -63,7 +59,7 @@ export class ItemRenderer
 	}
 }
 
-class TitleRender
+export class FlatTitleRender
 	extends React.Component<NodeRendererProps<Plague>> {
 
 	render() {
@@ -80,52 +76,18 @@ class TitleRender
 }
 
 
-const rendererMap: TreeRendererMap = {
-	normal: ItemRenderer,
-	title: TitleRender
+export const flatRendererMap: TreeRendererMap = {
+	normal: FlatItemRenderer,
+	title: FlatTitleRender
 };
 
-const plaguesWithTitles: FlatItemToRender<TreeRendererMap>[] = [
-	{
-		item: {label: 'Phisical', value: 'title'},
-		type: "title"
-	},
-	{
-		item: {label: 'Spanish Flu', value: 'spanishFlu'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Smallpox', value: 'smallpox'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Black Plague', value: 'blackPlague'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Coronavirus', value: 'COVID-19'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Virtual', value: 'title'},
-		type: "title"
-	},
-	{
-		item: {label: 'Facebook', value: 'facebook'},
-		type: "normal"
-	},
-	{
-		item: {label: 'Tik tok', value: 'tiktok'},
-		type: "normal"
-	},
-];
 
 export class Example_MultiRendererDropDown
 	extends React.Component<{}, { _selected?: Plague }> {
 
-	state={_selected: plaguesWithTitles[2].item};
+	state = {_selected: flatPlaguesWithTitles[2].item};
 
-	onSelected = (plague: {item: Plague, type: any}) => {
+	onSelected = (plague: { item: Plague, type: any }) => {
 		this.setState({_selected: plague.item});
 	};
 
@@ -133,26 +95,33 @@ export class Example_MultiRendererDropDown
 
 		const adapter = AdapterBuilder()
 			.list()
-			.multiRender(rendererMap)
-			.setData(plaguesWithTitles)
+			.multiRender(flatRendererMap)
+			.setData(flatPlaguesWithTitles)
 			.noGeneralOnClick()
 			.build();
-		const inputResolverWithCustomInlineStyle = (selected?: FlatItemToRender<TreeRendererMap>): InputProps => (
-			{
-				className: customInputStyle(!!selected),
-				inputStyle: {...inputStyle, padding: "0 20px"},
-				placeholder: this.state?._selected?.label
-			}
-		);
-		const valueRenderer = (props: ValueProps<FlatItemToRender<TreeRendererMap>>) => {
+
+		const inputStylable = {
+			className: css(
+				{
+					backgroundColor: "lime",
+					fontSize: 13,
+					"::placeholder": {
+						color: "red",
+					}
+				}),
+			style:{...inputStyle, padding: "0 20px"},
+			placeholder:this.state?._selected?.label
+		}
+
+		const valueRenderer = (selected: FlatItemToRender<TreeRendererMap>["item"]) => {
 			const style: React.CSSProperties = {backgroundColor: "lime", boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
-			if (props.selected)
-				return <div style={{...style, color: "red"}}>{props.selected?.item?.label}</div>;
-			return <div style={style}>{props.placeholder}</div>
+			if (selected)
+				return <div style={{...style, color: "red"}}>{selected?.item?.label}</div>;
+			return <div style={style}>CHOOSE</div>
 		};
-		const headerResolverStyle: HeaderStyleProps = {headerStyle: {...headerStyle, border: "solid 2px red", borderRadius: "5px 5px 0px 0px"}};
-		const listResolverStyle: ListStyleProps = {
-			listStyle: {
+		const headerStylable = {style: {...headerStyle, border: "solid 2px red", borderRadius: "5px 5px 0px 0px"}};
+		const listStylable = {
+			style: {
 				...listStyle,
 				border: "solid 2px red",
 				borderRadius: "0px 0px 5px 5px",
@@ -161,6 +130,10 @@ export class Example_MultiRendererDropDown
 				maxHeight: 90
 			}
 		};
+		let caretItem = <div style={{backgroundColor: "lime", paddingRight: 8}}>
+			<div style={{marginTop: 3}}>{ICONS.arrowOpen(undefined, 11)}</div>
+		</div>;
+		const caret = {open: caretItem, close: caretItem}
 		return <div>
 			<h4>Filter, 1 caret, default value,</h4>
 			<h4>all renderers & custom inline style</h4>
@@ -168,11 +141,11 @@ export class Example_MultiRendererDropDown
 			<DropDown
 				adapter={adapter}
 				onSelected={this.onSelected}
-				valueRenderer={valueRenderer}
-				inputResolver={inputResolverWithCustomInlineStyle}
-				inputEventHandler={(_state, e)=>{
+				selectedItemRenderer={valueRenderer}
+				inputStylable={inputStylable}
+				inputEventHandler={(_state, e) => {
 					if (e.code === "Enter") {
-						const newOption = _state.filteredOptions ? _state.filteredOptions[1]: _state.selected
+						const newOption = _state.filteredOptions ? _state.filteredOptions[1] : _state.selected
 						_state.selected = newOption;
 						_state.open = false;
 						newOption && this.onSelected(newOption)
@@ -180,42 +153,12 @@ export class Example_MultiRendererDropDown
 					return _state;
 				}}
 				filter={(item) => [(item as FlatItemToRender<TreeRendererMap>).item.label.toLowerCase()]}
-				selected={plaguesWithTitles[2]}
-				mainCaret={<div style={{backgroundColor: "lime", paddingRight: 8}}><div style={{marginTop:3}}>{ICONS.arrowOpen(undefined, 11)}</div></div>}
-				headerStyleResolver={headerResolverStyle}
-				listStyleResolver={listResolverStyle}
+				selected={flatPlaguesWithTitles[2]}
+				caret={caret}
+				headerStylable={headerStylable}
+				listStylable={listStylable}
 			/>
 			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>
 	}
 }
-// class Example_NodeRenderer_HoverToExpand
-// 	extends React.Component<NodeRendererProps> {
-//
-// 	constructor(props: NodeRendererProps) {
-// 		super(props);
-// 	}
-//
-// 	render() {
-// 		const item = this.props.item.item;
-// 		const Renderer = this.props.node.adapter.resolveRenderer(this.props.item.type);
-// 		if (!Renderer)
-// 			return "";
-//
-// 		const hasChildren = Array.isArray(this.props.item) && this.props.item.length > 0;
-//
-// 		return (
-// 			<div
-// 				className="ll_h_c clickable"
-// 				id={this.props.node.path}
-// 				onMouseEnter={(e) => this.props.node.expandToggler(e, true)}
-// 				onMouseLeave={(e) => this.props.node.expandToggler(e, false)}
-// 				onMouseDown={stopPropagation}
-// 				onMouseUp={(e) => this.props.node.onClick(e)}>
-//
-// 				<Renderer node={this.props.node} item={item}/>
-// 				{hasChildren && <div>{">"}</div>}
-// 			</div>
-// 		);
-// 	};
-// }
