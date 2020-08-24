@@ -5,11 +5,11 @@ import {
 	PermissionsFE
 } from "./PermissionsModuleFE";
 
-declare type Props = {
+type Props = {
 	url: string
 }
 
-declare type State = {
+type State = {
 	hasPermissions: false
 }
 
