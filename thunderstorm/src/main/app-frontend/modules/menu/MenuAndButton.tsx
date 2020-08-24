@@ -1,5 +1,8 @@
 import * as React from "react";
-import {ReactNode} from "react";
+import {
+	CSSProperties,
+	ReactNode
+} from "react";
 import {BaseComponent} from "../../core/BaseComponent";
 import {
 	Menu_Model,
@@ -18,6 +21,7 @@ type Props = {
 	iconClosed: ReactNode
 	adapter: Adapter
 	resolvePosition?: (button: HTMLImageElement) => MenuPosition
+	css?: CSSProperties
 }
 
 export class MenuAndButton
@@ -64,7 +68,7 @@ export class MenuAndButton
 		if (!this.ref.current)
 			throw new BadImplementationException("Could not find image reference");
 
-		new MenuBuilder(this.props.adapter, this.props.resolvePosition ? this.props.resolvePosition(this.ref.current) : resolveRealPosition(this.ref.current))
+		new MenuBuilder(this.props.adapter, this.props.resolvePosition ? this.props.resolvePosition(this.ref.current) : resolveRealPosition(this.ref.current), this.props.css && this.props.css)
 			.setId(this.props.id)
 			.show()  
 	}

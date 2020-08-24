@@ -24,6 +24,7 @@ import {
 import {testSuit_versionComparison} from "./version-tools/versions";
 import {validatorTestSuits} from "./validators/test";
 import {testSuit_compare} from "./compare/compare";
+import {testSuit_newSecret} from "./newSecret/newSecret";
 
 // require("./logger/test-logger");
 // require("./merge/test-merge");
@@ -33,6 +34,7 @@ import {testSuit_compare} from "./compare/compare";
 const testSuits: TestSuit<any, any, any>[] = [
 	testSuit_versionComparison,
 	testSuit_compare,
+	testSuit_newSecret
 ];
 
 testSuits.push(...validatorTestSuits);

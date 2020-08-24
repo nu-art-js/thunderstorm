@@ -35,7 +35,7 @@ export class PermissionsModuleFE_Class
 		this.resetSetPermissionsTimeOut();
 	}
 
-	isUserHasPermissions(url: string) {
+	doesUserHavePermissions(url: string) {
 		if (this.userUrlsPermissions[url] === undefined) {
 			this.userUrlsPermissions[url] = false;
 			this.resetSetPermissionsTimeOut();
