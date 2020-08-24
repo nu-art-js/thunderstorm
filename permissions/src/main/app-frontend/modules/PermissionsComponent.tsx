@@ -7,6 +7,7 @@ import {
 
 type Props = {
 	url: string
+	fallback?: React.ComponentType
 }
 
 type State = {
@@ -23,8 +24,11 @@ export class PermissionsComponent
 
 	render() {
 		const {url} = this.props;
-		if (PermissionsFE.isUserHasPermissions(url))
+		if (PermissionsFE.doesUserHavePermissions(url))
 			return <>{this.props.children}</>;
+
+		if(this.props.fallback)
+			return <this.props.fallback />
 
 		return null;
 	}
