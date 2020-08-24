@@ -81,7 +81,7 @@ const models: ModelFail[] = [
 
 const basePath = '/test';
 const path = `${basePath}/object`;
-const objectModel = {
+const objectModel: { path: string; label: string; value: { a?: number; b: string } } = {
 	path: path,
 	value: {a: 1, b: 'cc'},
 	label: 'Removing a node'
