@@ -21,10 +21,9 @@ import {
 	AdapterBuilder,
 	BaseNodeRenderer,
 	DropDown,
-	TreeRendererMap,
 	Example_NewProps,
-	Adapter,
 	Props_DropDown,
+	TreeRendererMap,
 } from "@nu-art/thunderstorm/frontend";
 import * as React from "react";
 import {optionRendererStyle,} from "./Example_AllDropDowns";
@@ -91,7 +90,7 @@ export class Example_DropDown
 				.list()
 				.singleRender(ItemRenderer)
 				.setData(plagues)
-				.build() as Adapter,
+				.build(),
 			onSelected: (item: Plague) => {
 				console.log(`Simple Selected: ${item.label}`)
 			},
@@ -114,7 +113,7 @@ export class Example_DropDown
 				.multiRender(flatRendererMap)
 				.setData(flatPlaguesWithTitles)
 				.noGeneralOnClick()
-				.build() as Adapter,
+				.build(),
 			onSelected: (item: PlagueWithTitle) => {
 				console.log(`Complex Selected: ${item.item.label}`)
 			},
