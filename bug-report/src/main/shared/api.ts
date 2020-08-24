@@ -40,7 +40,7 @@ export type Request_BugReport = {
 	createIssue: boolean,
 };
 
-export declare type ReportMetaData = {
+export type ReportMetaData = {
 	description: string,
 	path: string,
 	minPath: string

@@ -26,7 +26,10 @@ import {
 	GetSignedUrlConfig,
 	MakeFilePublicResponse,
 } from "@google-cloud/storage";
-import {FirebaseType_Storage, FirebaseType_Metadata} from "./types";
+import {
+	FirebaseType_Metadata,
+	FirebaseType_Storage
+} from "./types";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
 
@@ -138,10 +141,6 @@ export class FileWrapper {
 		return (await this.file.exists())[0];
 	}
 
-	async setMetadata(metaData: FirebaseType_Metadata): Promise<FirebaseType_Metadata> {
-		return (await this.file.setMetadata(metaData))[0];
-	}
-
 	async write(data: string | number | object | boolean) {
 		if (Buffer.isBuffer(data))
 			return this.file.save(data);
@@ -188,5 +187,13 @@ export class FileWrapper {
 
 	async makePublic(): Promise<MakeFilePublicResponse> {
 		return this.file.makePublic();
+	}
+
+	async setMetadata(metadata: FirebaseType_Metadata, options?: object): Promise<FirebaseType_Metadata> {
+		return (await this.file.setMetadata(metadata, options))[0]
+	}
+
+	async getMetadata(options?: object): Promise<FirebaseType_Metadata> {
+		return (await this.file.getMetadata(options))[0]
 	}
 }

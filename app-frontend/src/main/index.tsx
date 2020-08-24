@@ -22,9 +22,9 @@ import './res/styles/styles.scss';
 import * as React from 'react';
 import {App} from "./app/App";
 import {
+	ForceUpgrade,
 	Thunder,
-	ToastBuilder,
-	ForceUpgrade
+	ToastBuilder
 } from "@nu-art/thunderstorm/frontend";
 import {
 	Frontend_ModulePack_LiveDocs,
@@ -35,8 +35,9 @@ import {ExampleModule} from "@modules/ExampleModule";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/frontend";
 import {FirebaseModule} from "@nu-art/firebase/frontend";
 import {BugReportModule} from "@nu-art/bug-report/frontend";
+import {Module} from '@nu-art/ts-common';
 
-const modules = [
+const modules: Module[] = [
 	FirebaseModule,
 	ForceUpgrade,
 	PushPubSubModule,
