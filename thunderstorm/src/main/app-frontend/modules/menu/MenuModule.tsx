@@ -15,7 +15,7 @@ import {CSSProperties} from "react";
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 	const pos = button.getBoundingClientRect();
-	return {top: pos.top + button.offsetHeight, right: pos.right};
+	return {top: pos.top + button.offsetHeight, left: pos.left};
 };
 
 export type _Menu<Rm extends BaseRendererMap<any>> = _GenericRenderer<Rm>
