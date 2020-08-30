@@ -19,13 +19,16 @@
 import {Firebase_StorageFunction} from "@nu-art/firebase/backend-functions";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import {EventContext} from "firebase-functions";
-import {UploaderModule} from "./UploaderModule";
+import {
+	Temp_Path,
+	UploaderModule
+} from "./UploaderModule";
 
 export class BucketListener_Class
 	extends Firebase_StorageFunction {
 
 	constructor() {
-		super("bucketListener");
+		super(Temp_Path);
 	}
 
 	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
@@ -37,4 +40,4 @@ export class BucketListener_Class
 
 }
 
-export const StorageListener = new BucketListener_Class();
+export const BucketListener = new BucketListener_Class();

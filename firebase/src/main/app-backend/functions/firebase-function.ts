@@ -248,9 +248,11 @@ export abstract class Firebase_StorageFunction<ConfigType extends any = any>
 	private toBeExecuted: (() => Promise<any>)[] = [];
 	private isReady: boolean = false;
 	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
+	private readonly path: string;
 
-	protected constructor(name?: string) {
+	protected constructor(path:string,name?: string) {
 		super();
+		this.path = path;
 		name && this.setName(name);
 	}
 
@@ -260,7 +262,10 @@ export abstract class Firebase_StorageFunction<ConfigType extends any = any>
 		if (this.function)
 			return this.function;
 
-		return this.function = functions.storage.object().onFinalize((object: ObjectMetadata, context: EventContext) => {
+		return this.function = functions.storage.bucket().object().onFinalize((object: ObjectMetadata, context: EventContext) => {
+			if (!object.name?.startsWith(this.path))
+				return;
+
 			if (this.isReady)
 				return this.onFinalize(object, context);
 

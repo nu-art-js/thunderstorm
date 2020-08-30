@@ -17,7 +17,15 @@
  * limitations under the License.
  */
 
-import { ApiWithBody } from "@nu-art/thunderstorm"
+import {ApiWithBody} from "@nu-art/thunderstorm"
+
+export const fileUploadedKey = 'file-uploaded';
+
+export enum UploadResult {
+	Success = "Success",
+	Failure = "Failure"
+}
+
 export type Request_GetUploadUrl = {
 	name: string
 	type: string
@@ -26,6 +34,7 @@ export type Request_GetUploadUrl = {
 
 export type Response_GetUploadUrl = {
 	secureUrl: string
+	tempId: string
 }
 
 export type Api_GetUploadUrl = ApiWithBody<'/v1/upload/get-url', Request_GetUploadUrl, Response_GetUploadUrl>

@@ -36,14 +36,10 @@ export type DB_Temp_File = DB_Object & {
 	path: string
 	name: string
 	type: string
+	key: string
 	_audit: AuditBy
-	bucket?: BucketConfig
+	bucketName?: string
 }
-
-export type BucketConfig = {
-	projectId: string
-	name: string
-};
 
 export const validateName = validateRegexp(/^.{3,}$/);
 
@@ -53,6 +49,7 @@ export class UploaderTempFileModule_Class
 		_id: validateUniqueId,
 		name: validateName,
 		type: validateExists(true),
+		key: validateExists(true),
 		path: validateExists(true),
 		_audit: auditValidator()
 	};

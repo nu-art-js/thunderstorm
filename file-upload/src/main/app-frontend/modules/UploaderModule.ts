@@ -28,8 +28,15 @@ import {
 
 import {
 	Api_GetUploadUrl,
-	Request_GetUploadUrl
+	fileUploadedKey,
+	Request_GetUploadUrl,
+	UploadResult
 } from "../../shared/types";
+import {
+	OnPushMessageReceived,
+	PushPubSubModule
+} from "@nu-art/push-pub-sub/frontend";
+import {SubscribeProps} from "@nu-art/push-pub-sub";
 
 const RequestKey_UploadUrl = 'get-upload-url';
 const RequestKey_UploadFile = 'upload-file';
@@ -37,24 +44,37 @@ const RequestKey_UploadFile = 'upload-file';
 type Config = {}
 
 export class UploaderModule_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements OnPushMessageReceived {
 
 	upload(file: File, key?: string) {
-		// Define which file type
-		// request upload url
 		const requestBody: Request_GetUploadUrl = {
 			name: file.name,
 			type: file.type,
 			key
-		}
+		};
 		HttpModule
 			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
 			.setRelativeUrl("/v1/upload/get-url")
 			.setJsonBody(requestBody)
 			.execute(response => {
 				this.uploadFile(file, response.secureUrl)
+				PushPubSubModule.subscribe({pushKey: fileUploadedKey, props: {_id: response.tempId}});
 			});
 
+	}
+
+	__onMessageReceived(pushKey: string, props?: SubscribeProps, data?: any): void {
+		this.logInfo('message received', pushKey, props, data);
+		if (pushKey !== fileUploadedKey)
+			return;
+
+		switch (data.result) {
+			case UploadResult.Success:
+				return ToastModule.toastSuccess(data.message);
+			case UploadResult.Failure:
+				ToastModule.toastError(data.message)
+		}
 	}
 
 	private uploadFile(file: File, secureUrl: string) {
@@ -62,10 +82,6 @@ export class UploaderModule_Class
 			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
 			.setUrl(secureUrl)
 			.setTimeout(10 * Minute)
-			// .setOnProgressListener((ev: ProgressEvent) => {
-			// 	itemStatus.progress = ev.loaded / ev.total;
-			// 	progressListener()
-			// })
 			.setBody(file)
 			.execute(response => {
 				ToastModule.toastSuccess(`File ${file.name} uploaded!`)

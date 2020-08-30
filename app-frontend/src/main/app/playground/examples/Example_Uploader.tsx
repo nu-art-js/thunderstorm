@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import { UploaderModule } from "@nu-art/file-upload/frontend";
+import {UploaderModule} from "@nu-art/file-upload/frontend";
 
 
 export class Example_Uploader
@@ -33,7 +33,7 @@ export class Example_Uploader
 			Object.keys(files).forEach((key: string) => {
 				// @ts-ignore
 				const file = files[key];
-				UploaderModule.upload(file);
+				UploaderModule.upload(file, 'default');
 			})
 		}
 	};

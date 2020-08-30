@@ -95,7 +95,7 @@ export class ExampleModule_Class
 
 	__onMessageReceived(pushKey: string, props?: SubscribeProps, data?: any) {
 		const message = `You got data! pushKey: ${pushKey}, props: ${__stringify(props)} with data: ${__stringify(data)}`;
-		ToastModule.toastSuccess(message);
+		// ToastModule.toastSuccess(message);
 		this.logInfo('payload received in module', message);
 	}
 
