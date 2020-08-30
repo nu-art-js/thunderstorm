@@ -29,6 +29,7 @@
     "@app/app-shared": "file:.dependencies/app-shared",
     "@nu-art/bug-report": "file:.dependencies/bug-report",
     "@nu-art/db-api-generator": "file:.dependencies/db-api-generator",
+    "@nu-art/file-upload": "file:.dependencies/file-upload",
     "@nu-art/firebase": "file:.dependencies/firebase",
     "@nu-art/live-docs": "file:.dependencies/live-docs",
     "@nu-art/permissions": "file:.dependencies/permissions",

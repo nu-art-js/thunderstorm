@@ -1,0 +1,55 @@
+{
+  "name": "@nu-art/file-upload",
+  "version": "0.0.0",
+  "description": "File Uploader - Express & Typescript based backend framework",
+  "keywords": [
+    "TacB0sS",
+    "infra",
+    "nu-art",
+    "storm",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/file-upload",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/file-upload/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/file-upload.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "main/index.js",
+  "types": "main/index.d.ts",
+  "files": [
+    "**/*"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "~0.0.1",
+    "@nu-art/thunderstorm": "~0.0.1",
+    "@nu-art/firebase": "~0.0.1",
+    "@nu-art/db-api-generator": "~0.0.1",
+    "@nu-art/push-pub-sub": "~0.0.1"
+  },
+  "devDependencies": {
+    "@google-cloud/common": "^3.0.0",
+    "@google-cloud/firestore": "^3.7.5",
+    "@google-cloud/storage": "^2.5.0",
+    "@nu-art/testelot": "~0.0.1",
+    "@types/compression": "^1.0.1",
+    "@types/express": "^4.17.2",
+    "@types/firebase": "^3.2.1",
+    "express": "^4.17.1",
+    "firebase": "^7.2.3",
+    "firebase-admin": "8.9.0",
+    "firebase-functions": "^3.3.0",
+    "fs": "0.0.1-security",
+    "google-auth-library": "^3.1.0",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.7.2"
+  }
+}

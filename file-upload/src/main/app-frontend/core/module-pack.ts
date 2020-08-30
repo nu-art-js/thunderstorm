@@ -1,5 +1,6 @@
 /*
- * Firebase is a simpler Typescript wrapper to all of firebase services.
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -15,10 +16,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {UploaderModule} from "../modules/UploaderModule";
 
-import * as admin from "firebase-admin";
-import {Metadata} from "@google-cloud/common";
-
-export type FirebaseType_Storage = admin.storage.Storage;
-export type FirebaseType_Metadata = Metadata;
-export type ReturnType_Metadata = {metadata?: Metadata};
+export const Frontend_ModulePack_Uploader = [
+	UploaderModule
+];

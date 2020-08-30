@@ -18,6 +18,7 @@
 
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register'
+import * as functions from "firebase-functions";
 import {
 	ForceUpgrade,
 	RouteResolver,
@@ -29,7 +30,10 @@ import {
 	ExampleModule
 } from "@modules/ExampleModule";
 import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
-import {Module, __stringify} from "@nu-art/ts-common";
+import {
+	__stringify,
+	Module
+} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
 import {Backend_ModulePack_BugReport} from "@nu-art/bug-report/backend";
 import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
@@ -39,8 +43,8 @@ import {
 	Slack_ServerApiError,
 	SlackModule
 } from "@nu-art/storm/slack";
-
-import * as functions from "firebase-functions";
+import {Backend_ModulePack_Uploader} from "@nu-art/file-upload/backend";
+import {StorageListener} from '@modules/StorageListener';
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -53,13 +57,15 @@ const modules: Module[] = [
 	SlackModule,
 	Slack_ServerApiError,
 	DispatchModule,
-	PushPubSubModule
+	PushPubSubModule,
+	StorageListener
 ];
 
 const _exports = new Storm()
 	.addModules(...Backend_ModulePack_BugReport)
 	.addModules(...Backend_ModulePack_LiveDocs)
 	.addModules(...Backend_ModulePack_Permissions)
+	.addModules(...Backend_ModulePack_Uploader)
 	.addModules(...modules)
 	.setInitialRouteResolver(new RouteResolver(require, __dirname, "api"))
 	.setInitialRoutePath("/api")

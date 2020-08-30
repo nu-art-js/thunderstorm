@@ -76,3 +76,8 @@ export type PackageJson = {
 export type DeflatePromise<T> = T extends Promise<infer A> ? A : T
 
 export type ReturnPromiseType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? DeflatePromise<R> : never;
+
+export type RangeTimestamp = {
+	min: number;
+	max: number;
+};

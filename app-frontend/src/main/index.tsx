@@ -36,6 +36,7 @@ import {PushPubSubModule} from "@nu-art/push-pub-sub/frontend";
 import {FirebaseModule} from "@nu-art/firebase/frontend";
 import {BugReportModule} from "@nu-art/bug-report/frontend";
 import {Module} from '@nu-art/ts-common';
+import {Frontend_ModulePack_Uploader} from "@nu-art/file-upload/frontend";
 
 const modules: Module[] = [
 	FirebaseModule,
@@ -48,6 +49,7 @@ const modules: Module[] = [
 new Thunder()
 	.setConfig(require("./config").config)
 	.addModules(...Frontend_ModulePack_LiveDocs)
+	.addModules(...Frontend_ModulePack_Uploader)
 	.addModules(...modules)
 	.setMainApp(App)
 	.build();

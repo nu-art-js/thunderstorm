@@ -36,6 +36,7 @@
     "@app/app-shared": "~0.0.1",
     "@nu-art/bug-report": "~0.0.1",
     "@nu-art/db-api-generator": "~0.0.1",
+    "@nu-art/file-upload": "~0.0.1",
     "@nu-art/firebase": "~0.0.1",
     "@nu-art/live-docs": "~0.0.1",
     "@nu-art/permissions": "~0.0.1",

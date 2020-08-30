@@ -1,5 +1,5 @@
 /*
- * Firebase is a simpler Typescript wrapper to all of firebase services.
+ * A backend boilerplate with example apis
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,9 +16,22 @@
  * limitations under the License.
  */
 
-import * as admin from "firebase-admin";
-import {Metadata} from "@google-cloud/common";
+import {Firebase_StorageFunction} from "@nu-art/firebase/backend-functions";
+import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
+import {EventContext} from "firebase-functions";
 
-export type FirebaseType_Storage = admin.storage.Storage;
-export type FirebaseType_Metadata = Metadata;
-export type ReturnType_Metadata = {metadata?: Metadata};
+export class StorageListener_Class
+	extends Firebase_StorageFunction {
+
+	constructor() {
+		super("bucketListener");
+	}
+
+	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
+		this.logInfo('Object is ', object);
+		this.logInfo('Context is ', context);
+	}
+
+}
+
+export const StorageListener = new StorageListener_Class();
