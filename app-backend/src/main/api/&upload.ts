@@ -1,5 +1,5 @@
 /*
- * Firebase is a simpler Typescript wrapper to all of firebase services.
+ * A backend boilerplate with example apis
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,9 +16,4 @@
  * limitations under the License.
  */
 
-import * as admin from "firebase-admin";
-import {Metadata} from "@google-cloud/common";
-
-export type FirebaseType_Storage = admin.storage.Storage;
-export type FirebaseType_Metadata = Metadata;
-export type ReturnType_Metadata = {metadata?: Metadata};
+module.exports = require("@nu-art/file-upload/app-backend/api/_upload");

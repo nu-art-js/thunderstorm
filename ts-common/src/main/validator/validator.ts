@@ -24,8 +24,14 @@ import {__stringify,} from "../utils/tools";
 import {_keys} from "../utils/object-tools";
 import {
 	ArrayType,
-	ObjectTS
+	AuditBy,
+	ObjectTS,
+	RangeTimestamp
 } from "../utils/types";
+import {
+	currentTimeMillies,
+	Day
+} from "..";
 
 /*
  * ts-common is the basic building blocks of
@@ -192,4 +198,13 @@ export const validateObject = <T>(__validator: TypeValidator<object>, instance: 
 		const validator = __validator[key];
 		validate(value, validator, `${path}/${key}`);
 	}
+};
+
+export const isTimestampValid = (time: number, range = {min: currentTimeMillies() - 1000 * Day, max: currentTimeMillies() + 1000 * Day}): boolean => {
+	return time >= range.min && time <= range.max;
+};
+
+export const auditValidator = (range?: RangeTimestamp) => (_path: string, audit?: AuditBy) => {
+	if (!audit || !isTimestampValid(audit.auditAt.timestamp, range))
+		throw new ValidationException('Time is not proper', _path, audit);
 };

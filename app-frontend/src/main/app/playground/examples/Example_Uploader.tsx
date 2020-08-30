@@ -1,5 +1,5 @@
 /*
- * Firebase is a simpler Typescript wrapper to all of firebase services.
+ * A typescript & react boilerplate with api call example
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,9 +16,32 @@
  * limitations under the License.
  */
 
-import * as admin from "firebase-admin";
-import {Metadata} from "@google-cloud/common";
+import * as React from "react";
+import { UploaderModule } from "@nu-art/file-upload/frontend";
 
-export type FirebaseType_Storage = admin.storage.Storage;
-export type FirebaseType_Metadata = Metadata;
-export type ReturnType_Metadata = {metadata?: Metadata};
+
+export class Example_Uploader
+	extends React.Component {
+	constructor(props: {}) {
+		super(props);
+
+	}
+
+	onSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const files = e.target.files;
+		if (files) {
+			Object.keys(files).forEach((key: string) => {
+				// @ts-ignore
+				const file = files[key];
+				UploaderModule.upload(file);
+			})
+		}
+	};
+
+
+	render() {
+		return <>
+			<input type={'file'} onChange={this.onSelect}/>
+		</>;
+	}
+}

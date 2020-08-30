@@ -53,6 +53,7 @@ import {Example_Tree_SingleType} from './examples/tree/Example_Tree_SingleType';
 import {OstudioEx} from "./examples/dropdown/OstudioEx";
 import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
 import {Example_FilterInput} from "./examples/Example_FilterInput";
+import {Example_Uploader} from "./examples/Example_Uploader";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -125,6 +126,8 @@ export class Page_Playground
 			{renderer: Example_NestedList_MultiType_Object, name: "NestedList_MultiType_Object",},
 			{renderer: Example_NestedList_MultiType_Object_Dynamic, name: "NestedList_MultiType_Object_Dynamic",},
 			{renderer: Example_List_All, name: "Example_List_All",},
+
+			{renderer: Example_Uploader, name: "File Uploader",},
 
 			{renderer: Example_Form, name: "Form - Register",},
 			{renderer: Hello, name: "Hello",},

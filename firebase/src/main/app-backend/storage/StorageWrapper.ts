@@ -28,7 +28,8 @@ import {
 } from "@google-cloud/storage";
 import {
 	FirebaseType_Metadata,
-	FirebaseType_Storage
+	FirebaseType_Storage,
+	ReturnType_Metadata
 } from "./types";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
@@ -190,10 +191,10 @@ export class FileWrapper {
 	}
 
 	async setMetadata(metadata: FirebaseType_Metadata, options?: object): Promise<FirebaseType_Metadata> {
-		return (await this.file.setMetadata(metadata, options))[0]
+		return (await this.file.setMetadata({metadata}, options))[0]
 	}
 
-	async getMetadata(options?: object): Promise<FirebaseType_Metadata> {
+	async getMetadata(options?: object): Promise<ReturnType_Metadata> {
 		return (await this.file.getMetadata(options))[0]
 	}
 }

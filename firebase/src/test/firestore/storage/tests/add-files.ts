@@ -25,8 +25,12 @@ import {
 	FirebaseModule
 } from "../../../_main";
 import {File} from "@google-cloud/storage";
-import { assert } from "@nu-art/ts-common";
+import {assert} from "@nu-art/ts-common";
 
+const metadata = {
+	my: 'custom',
+	properties: 'go here'
+}
 
 export function saveAndDeleteFilesTest() {
 	const scenario = __scenario("Save files and delete them");
@@ -49,6 +53,15 @@ export function saveAndDeleteFilesTest() {
 
 	scenario.add(__custom(async () => {
 		return (await bucket.getFile(`${pathToTestFile}-object.txt`)).write({test: "object", nested: {another: "other object"}})
+	}).setLabel("Save object to file"));
+
+	scenario.add(__custom(async () => {
+		return (await bucket.getFile(`${pathToTestFile}-object.txt`)).setMetadata(metadata);
+	}).setLabel("Set metadata for obj file"));
+
+	scenario.add(__custom(async () => {
+		const meta = await (await bucket.getFile(`${pathToTestFile}-object.txt`)).getMetadata();
+		assert("Metadata doesn't match expected", metadata, meta.metadata);
 	}).setLabel("Save object to file"));
 
 	scenario.add(__custom(async () => {

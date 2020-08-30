@@ -1,0 +1,22 @@
+[
+  {
+    "method": [
+      "GET",
+      "HEAD",
+      "PUT"
+    ],
+    "origin": [
+      "https://localhost:5001"
+    ],
+    "responseHeader": [
+      "content-length",
+      "content-type",
+      "Access-Control-Allow-Origin",
+      "x-token",
+      "x-session-id",
+      "current-page",
+      "x-browser-type",
+      "x-app-version"
+    ]
+  }
+]

@@ -31,9 +31,10 @@ import {
 import {
 	addItemToArray,
 	deepClone,
-	Module,
-	ImplementationMissingException
+	ImplementationMissingException,
+	Module
 } from "@nu-art/ts-common";
+import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 
 const functions = require('firebase-functions');
 
@@ -204,7 +205,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 		if (this.function)
 			return this.function;
 
-		return this.function = functions.pubsub.schedule(this.schedule).onRun(() => {
+		return this.function = functions.pubsub.schedule(this.schedule).onRun(async () => {
 			if (this.isReady) {
 				this.logDebug(`FirebaseScheduledFunction schedule`);
 				return this._onScheduledEvent();
@@ -232,6 +233,56 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 				await toExecute();
 			} catch (e) {
 				this.logError("Error running function: ", e);
+			}
+		}
+
+		this.toBeResolved && this.toBeResolved();
+	};
+}
+
+export abstract class Firebase_StorageFunction<ConfigType extends any = any>
+	extends Module<ConfigType>
+	implements FirebaseFunction {
+
+	private function!: CloudFunction<ObjectMetadata>;
+	private toBeExecuted: (() => Promise<any>)[] = [];
+	private isReady: boolean = false;
+	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
+
+	protected constructor(name?: string) {
+		super();
+		name && this.setName(name);
+	}
+
+	async abstract onFinalize(object: ObjectMetadata, context: EventContext): Promise<any>;
+
+	getFunction = () => {
+		if (this.function)
+			return this.function;
+
+		return this.function = functions.storage.object().onFinalize((object: ObjectMetadata, context: EventContext) => {
+			if (this.isReady)
+				return this.onFinalize(object, context);
+
+			return new Promise((resolve) => {
+				addItemToArray(this.toBeExecuted, async () => {
+					return this.onFinalize(object, context);
+				});
+
+				this.toBeResolved = resolve;
+			});
+		});
+	};
+
+	onFunctionReady = async () => {
+		this.isReady = true;
+		const toBeExecuted = this.toBeExecuted;
+		this.toBeExecuted = [];
+		for (const toExecute of toBeExecuted) {
+			try {
+				await toExecute();
+			} catch (e) {
+				console.error("Error running function: ", e);
 			}
 		}
 
