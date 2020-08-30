@@ -13,6 +13,7 @@ App_FE -> Bucket: Upload file to\n<b>TEMP</b> bucket folder
 ...
 --> App_BE: Function Trigger:\n"OnFileAddedToBucket"
 
+DB <-> App_BE: Get Doc from temp folder using filepath
 App_BE -> App_BE: Parse / Validate / Whatever and extract metadata
 App_BE -> Bucket: Save file to app folder in the bucket
 App_BE -> DB: Save file metadata

@@ -6,7 +6,8 @@
       "PUT"
     ],
     "origin": [
-      "https://localhost:5001"
+      "https://localhost:5001",
+      "https://local-ts-testing-alan.firebaseapp.com"
     ],
     "responseHeader": [
       "content-length",

@@ -19,8 +19,10 @@
 
 import {UploaderModule} from "../modules/UploaderModule";
 import {UploaderTempFileModule} from "../modules/UploaderTempFileModule";
+import {BucketListener} from "../modules/BucketListener";
 
 export const Backend_ModulePack_Uploader = [
 	UploaderModule,
-	UploaderTempFileModule
+	UploaderTempFileModule,
+	BucketListener
 ];

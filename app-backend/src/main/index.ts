@@ -43,8 +43,11 @@ import {
 	Slack_ServerApiError,
 	SlackModule
 } from "@nu-art/storm/slack";
-import {Backend_ModulePack_Uploader} from "@nu-art/file-upload/backend";
-import {StorageListener} from '@modules/StorageListener';
+import {
+	Backend_ModulePack_Uploader,
+	UploaderModule
+} from "@nu-art/file-upload/backend";
+import {FileWrapper} from '@nu-art/firebase/backend';
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -57,9 +60,15 @@ const modules: Module[] = [
 	SlackModule,
 	Slack_ServerApiError,
 	DispatchModule,
-	PushPubSubModule,
-	StorageListener
+	PushPubSubModule
 ];
+
+const postProcessor: { [k: string]: (file: FileWrapper) => Promise<void> } = {
+	default: async (file: FileWrapper) => {
+		console.log(file)
+	}
+};
+UploaderModule.setPostProcessor(postProcessor);
 
 const _exports = new Storm()
 	.addModules(...Backend_ModulePack_BugReport)
