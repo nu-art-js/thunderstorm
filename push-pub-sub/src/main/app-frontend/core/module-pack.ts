@@ -17,14 +17,12 @@
  * limitations under the License.
  */
 
-import {UploaderModule} from "../modules/UploaderModule";
-import {UploaderTempFileModule} from "../modules/UploaderTempFileModule";
-import {BucketListener} from "../modules/BucketListener";
-import {Backend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/backend";
+import {PushPubSubModule} from "../modules/PushPubSubModule";
+import {FirebaseModule} from "@nu-art/firebase/frontend";
 
-export const Backend_ModulePack_Uploader = [
-	...Backend_ModulePack_PushPubSub,
-	UploaderModule,
-	UploaderTempFileModule,
-	BucketListener
+export const Frontend_ModulePack_PushPubSub = [
+	FirebaseModule,
+	PushPubSubModule
 ];
+
+export * from "../modules/PushPubSubModule"
