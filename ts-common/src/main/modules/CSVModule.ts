@@ -3,11 +3,6 @@
  */
 
 import {
-	Module,
-	ObjectTS,
-	StringMap,
-} from "@nu-art/ts-common";
-import {
 	ExportToCsv,
 	Options
 } from 'export-to-csv';
@@ -16,6 +11,8 @@ import {
 	promises as fs
 } from 'fs';
 import csvParser = require("csv-parser/index");
+import { ObjectTS, StringMap } from '../utils/types';
+import { Module } from '../core/module';
 
 
 type Config = {
