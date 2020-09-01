@@ -29,19 +29,12 @@ export class Example_Uploader
 
 	onSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
-		if (files) {
-			Object.keys(files).forEach((key: string) => {
-				// @ts-ignore
-				const file = files[key];
-				UploaderModule.upload(file, 'default');
-			})
-		}
+		files && UploaderModule.upload(Object.values(files), 'default');
 	};
-
 
 	render() {
 		return <>
-			<input type={'file'} onChange={this.onSelect}/>
+			<input type={'file'} onChange={this.onSelect} multiple={true}/>
 		</>;
 	}
 }

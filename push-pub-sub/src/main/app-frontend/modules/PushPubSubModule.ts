@@ -21,18 +21,22 @@ import {
 	compare,
 	ImplementationMissingException,
 	Module,
+	removeFromArray,
 	StringMap
 } from "@nu-art/ts-common";
 
 import {
 	HttpModule,
-	HttpRequest,
 	ThunderDispatcher,
 	ToastModule
 } from "@nu-art/thunderstorm/frontend";
 // noinspection TypeScriptPreferShortImport
 import {
 	BaseSubscriptionData,
+	IFP,
+	ISP,
+	ITP,
+	MessageType,
 	PubSubRegisterClient,
 	Request_PushRegister,
 	SubscribeProps,
@@ -47,8 +51,11 @@ import {
 
 export const Command_SwToApp = 'SwToApp';
 
-export interface OnPushMessageReceived {
-	__onMessageReceived(pushKey: string, props?: SubscribeProps, data?: any): void
+export interface OnPushMessageReceived<M extends MessageType<any, any, any> = never,
+	S extends string = IFP<M>,
+	P extends SubscribeProps = ISP<M>,
+	D = ITP<M>> {
+	__onMessageReceived(pushKey: S, props?: P, data?: D): void
 }
 
 type FirebaseConfig = {
@@ -69,11 +76,10 @@ export class PushPubSubModule_Class
 	extends Module<PushPubSubConfig> {
 
 	private subscriptions: BaseSubscriptionData[] = [];
-	private registerRequest?: HttpRequest<any>;
 	private firebaseToken?: string;
 	private messaging?: MessagingWrapper;
 
-	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived, "__onMessageReceived">("__onMessageReceived");
+	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, "__onMessageReceived">("__onMessageReceived");
 
 	init() {
 		if (!this.config?.publicKeyBase64)
@@ -153,32 +159,50 @@ export class PushPubSubModule_Class
 		});
 	};
 
-	subscribe = (subscription: BaseSubscriptionData) => {
+	subscribe = async (subscription: BaseSubscriptionData) => {
+		this.subscribeImpl(subscription)
+		return this.register();
+	};
+
+	private subscribeImpl(subscription: BaseSubscriptionData) {
 		if (this.subscriptions.find(d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props)))
 			return;
 
 		addItemToArray(this.subscriptions, subscription);
-		this.register();
+	}
+
+	subscribeMulti = async (subscriptions: BaseSubscriptionData[]) => {
+		subscriptions.forEach(subscription => this.subscribeImpl(subscription))
+		return this.register();
 	};
 
-	private register = () => {
+	unsubscribe = async (subscription: BaseSubscriptionData) => {
+		removeFromArray(this.subscriptions, d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props));
+		return this.register();
+	};
+
+	private register = async () => {
 		if (!this.firebaseToken || this.subscriptions.length === 0)
 			return;
-
-		if (this.registerRequest)
-			this.registerRequest.abort();
 
 		const body: Request_PushRegister = {
 			firebaseToken: this.firebaseToken,
 			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
 		};
 
-		this.registerRequest = HttpModule
-			.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
-			.setRelativeUrl("/v1/push/register")
-			.setJsonBody(body)
-			.setOnError(() => ToastModule.toastError("Failed to register for push"))
-			.execute()
+		return new Promise(resolve => {
+			this.throttle(() => {
+				HttpModule
+					.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
+					.setRelativeUrl("/v1/push/register")
+					.setJsonBody(body)
+					.setOnError(() => ToastModule.toastError("Failed to register for push"))
+					.execute(() => {
+						resolve()
+					})
+			}, 'push-registration', 500)
+		})
+
 	};
 }
 

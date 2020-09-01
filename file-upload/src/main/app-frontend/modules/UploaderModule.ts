@@ -17,8 +17,11 @@
  * limitations under the License.
  */
 import {
+	BadImplementationException,
+	generateHex,
 	Minute,
-	Module
+	Module,
+	Queue
 } from "@nu-art/ts-common";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
@@ -28,64 +31,92 @@ import {
 
 import {
 	Api_GetUploadUrl,
+	BaseUploaderFile,
 	fileUploadedKey,
-	Request_GetUploadUrl,
+	Push_FileUploaded,
+	TempSecureUrl,
 	UploadResult
 } from "../../shared/types";
 import {
 	OnPushMessageReceived,
 	PushPubSubModule
 } from "@nu-art/push-pub-sub/frontend";
-import {SubscribeProps} from "@nu-art/push-pub-sub";
 
 const RequestKey_UploadUrl = 'get-upload-url';
 const RequestKey_UploadFile = 'upload-file';
 
-type Config = {}
-
 export class UploaderModule_Class
-	extends Module<Config>
-	implements OnPushMessageReceived {
+	extends Module<{}>
+	implements OnPushMessageReceived<Push_FileUploaded> {
+	private files: { [id: string]: File } = {};
+	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(3);
 
-	upload(file: File, key?: string) {
-		const requestBody: Request_GetUploadUrl = {
-			name: file.name,
-			type: file.type,
-			key
-		};
+	constructor() {
+		super();
+	}
+
+	upload(files: File[], key?: string) {
+		const body: BaseUploaderFile[] = files.map(file => {
+			const requestBody: BaseUploaderFile = {
+				feId: generateHex(32),
+				name: file.name,
+				mimeType: file.type
+			};
+
+			if (key)
+				requestBody.key = key;
+
+			this.files[requestBody.feId] = file;
+			return requestBody;
+		});
+
 		HttpModule
 			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
 			.setRelativeUrl("/v1/upload/get-url")
-			.setJsonBody(requestBody)
-			.execute(response => {
-				this.uploadFile(file, response.secureUrl)
-				PushPubSubModule.subscribe({pushKey: fileUploadedKey, props: {_id: response.tempId}});
+			.setJsonBody(body)
+			.execute(async (response: TempSecureUrl[]) => {
+				await this.uploadFiles(response)
 			});
-
 	}
 
-	__onMessageReceived(pushKey: string, props?: SubscribeProps, data?: any): void {
-		this.logInfo('message received', pushKey, props, data);
+	private uploadFile = async (response: TempSecureUrl) => {
+		const file = this.files[response.tempDoc.feId];
+		if (!file)
+			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
+
+		return HttpModule
+			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
+			.setUrl(response.secureUrl)
+			.setTimeout(10 * Minute)
+			.setBody(file)
+			.executeSync();
+	};
+
+	private uploadFiles = async (response: TempSecureUrl[]) => {
+		// Subscribe
+		await PushPubSubModule.subscribeMulti(response.map(r => ({pushKey: fileUploadedKey, props: {_id: r.tempDoc._id}})));
+		//
+		response.forEach(r => {
+			this.uploadQueue.addItem(async () => {
+				return this.uploadFile(r)
+			});
+		})
+	};
+
+	__onMessageReceived(pushKey: string, props: { _id: string }, data: { message: string, result: string }): void {
 		if (pushKey !== fileUploadedKey)
 			return;
 
 		switch (data.result) {
 			case UploadResult.Success:
-				return ToastModule.toastSuccess(data.message);
+				ToastModule.toastSuccess(data.message);
+				break;
 			case UploadResult.Failure:
-				ToastModule.toastError(data.message)
+				ToastModule.toastError(data.message);
+				break
 		}
-	}
 
-	private uploadFile(file: File, secureUrl: string) {
-		HttpModule
-			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
-			.setUrl(secureUrl)
-			.setTimeout(10 * Minute)
-			.setBody(file)
-			.execute(response => {
-				ToastModule.toastSuccess(`File ${file.name} uploaded!`)
-			});
+		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props})
 	}
 }
 

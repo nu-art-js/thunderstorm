@@ -47,7 +47,10 @@ import {
 	Backend_ModulePack_Uploader,
 	UploaderModule
 } from "@nu-art/file-upload/backend";
-import {FileWrapper} from '@nu-art/firebase/backend';
+import {
+	FileWrapper,
+	FirebaseModule
+} from '@nu-art/firebase/backend';
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -65,6 +68,7 @@ const modules: Module[] = [
 
 const postProcessor: { [k: string]: (file: FileWrapper) => Promise<void> } = {
 	default: async (file: FileWrapper) => {
+		await FirebaseModule.createAdminSession().getDatabase().set(`/alan/testing/${file.path}`, {path: file.path, name: await file.exists()});
 		console.log(file)
 	}
 };

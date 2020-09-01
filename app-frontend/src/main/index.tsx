@@ -32,22 +32,20 @@ import {
 	showEditModalExample
 } from "@nu-art/live-docs/frontend";
 import {ExampleModule} from "@modules/ExampleModule";
-import {PushPubSubModule} from "@nu-art/push-pub-sub/frontend";
-import {FirebaseModule} from "@nu-art/firebase/frontend";
+import {Frontend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/frontend";
 import {BugReportModule} from "@nu-art/bug-report/frontend";
 import {Module} from '@nu-art/ts-common';
 import {Frontend_ModulePack_Uploader} from "@nu-art/file-upload/frontend";
 
 const modules: Module[] = [
-	FirebaseModule,
 	ForceUpgrade,
-	PushPubSubModule,
 	ExampleModule,
 	BugReportModule
 ];
 
 new Thunder()
 	.setConfig(require("./config").config)
+	.addModules(...Frontend_ModulePack_PushPubSub)
 	.addModules(...Frontend_ModulePack_LiveDocs)
 	.addModules(...Frontend_ModulePack_Uploader)
 	.addModules(...modules)

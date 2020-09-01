@@ -31,7 +31,7 @@ export const Week = Day * 7;
 export const Format_HHmmss_DDMMYYYY = "HH:mm:ss_DD-MM-YYYY";
 export const Format_YYYYMMDD_HHmmss = "YYYY-MM-DD_HH:mm:ss";
 
-type TimerHandler = (...args: any[]) => void;
+export type TimerHandler = (...args: any[]) => void;
 
 export async function timeout(sleepMs: number) {
 	return new Promise(resolve => setTimeout(resolve, sleepMs));
@@ -41,15 +41,19 @@ export function _setTimeout(handler: TimerHandler, sleepMs = 0, ...args: any[]) 
 	return setTimeout(handler, sleepMs, ...args) as unknown as number;
 }
 
-export function _clearTimeout(handlerId: number) {
+export function _clearTimeout(handlerId?: number) {
+	if (!handlerId)
+		return;
 	return clearTimeout(handlerId as unknown as ReturnType<typeof setTimeout>);
 }
 
 export function _setInterval(handler: TimerHandler, sleepMs = 0, ...args: any[]) {
-	return setInterval(handler, sleepMs, ...args)  as unknown as number;
+	return setInterval(handler, sleepMs, ...args) as unknown as number;
 }
 
-export function _clearInterval(handlerId: number) {
+export function _clearInterval(handlerId?: number) {
+	if (!handlerId)
+		return;
 	return clearInterval(handlerId as unknown as ReturnType<typeof setInterval>);
 }
 

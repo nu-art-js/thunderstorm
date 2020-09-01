@@ -25,7 +25,12 @@ import {ModuleManager} from "./module-manager";
 import {BadImplementationException} from "./exceptions";
 import {merge} from "../utils/merge-tools";
 import {Logger} from "./logger/Logger";
-import {ValidatorTypeResolver} from "..";
+import {
+	_clearTimeout,
+	_setTimeout,
+	TimerHandler,
+	ValidatorTypeResolver
+} from "..";
 
 export abstract class Module<Config = any>
 	extends Logger {
@@ -35,6 +40,7 @@ export abstract class Module<Config = any>
 	protected readonly initiated = false;
 	protected readonly config: Config = {} as Config;
 	protected readonly configValidator?: ValidatorTypeResolver<Config>;
+	private timeoutMap: { [k: string]: number } = {};
 
 	// noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
 	constructor(tag?: string) {
@@ -44,6 +50,11 @@ export abstract class Module<Config = any>
 			throw new BadImplementationException("Module class MUST end with '_Class' e.g. MyModule_Class");
 
 		this.name = this.name.replace("_Class", "");
+	}
+
+	throttle(handler: TimerHandler, key: string, ms = 0) {
+		_clearTimeout(this.timeoutMap[key]);
+		this.timeoutMap[key] = _setTimeout(handler, ms)
 	}
 
 	public setConfigValidator(validator: ValidatorTypeResolver<Config>) {

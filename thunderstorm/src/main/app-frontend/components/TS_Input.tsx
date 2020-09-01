@@ -65,6 +65,10 @@ export class TS_Input<Key extends string>
 			this.state = {value: ""};
 	};
 
+	componentWillUnmount(): void {
+		this.ref?.removeEventListener('keydown', this.props.handleKeyEvent || this.handleKeyEvent)
+	}
+
 	private handleKeyEvent = (ev: KeyboardEvent) => {
 		ev.stopPropagation();
 		if (this.props.onAccept && ev.key === "Enter")
