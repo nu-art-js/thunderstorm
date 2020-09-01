@@ -17,29 +17,19 @@
  * limitations under the License.
  */
 import {
-	AuditBy,
 	auditValidator,
 	TypeValidator,
 	validateExists,
 	validateRegexp
 } from "@nu-art/ts-common";
-import {DB_Object} from "@nu-art/firebase";
 import {ServerApi} from "@nu-art/thunderstorm/backend"
 import {
 	BaseDB_ApiGenerator,
 	validateUniqueId
 } from "@nu-art/db-api-generator/backend";
+import {DB_Temp_File} from "../../shared/types";
 
 export const TEMP_COLLECTION = 'temp-files-upload';
-
-export type DB_Temp_File = DB_Object & {
-	path: string
-	name: string
-	type: string
-	key: string
-	_audit: AuditBy
-	bucketName?: string
-}
 
 export const validateName = validateRegexp(/^.{3,}$/);
 
@@ -48,7 +38,8 @@ export class UploaderTempFileModule_Class
 	static _validator: TypeValidator<DB_Temp_File> = {
 		_id: validateUniqueId,
 		name: validateName,
-		type: validateExists(true),
+		feId: validateExists(true),
+		mimeType: validateExists(true),
 		key: validateExists(true),
 		path: validateExists(true),
 		_audit: auditValidator()

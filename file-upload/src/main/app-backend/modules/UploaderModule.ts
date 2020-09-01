@@ -19,11 +19,12 @@
 import {
 	__stringify,
 	auditBy,
+	BadImplementationException,
 	generateHex,
 	Hour,
 	ImplementationMissingException,
 	Module,
-    BadImplementationException
+	ThisShouldNotHappenException
 } from "@nu-art/ts-common";
 import {
 	FileWrapper,
@@ -31,14 +32,14 @@ import {
 	StorageWrapper
 } from "@nu-art/firebase/backend";
 import {
+	BaseUploaderFile,
+	DB_Temp_File,
 	fileUploadedKey,
-	Request_GetUploadUrl,
+	Push_FileUploaded,
+	TempSecureUrl,
 	UploadResult
 } from "../../shared/types";
-import {
-	DB_Temp_File,
-	UploaderTempFileModule
-} from "./UploaderTempFileModule";
+import {UploaderTempFileModule} from "./UploaderTempFileModule";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
 
 export const Temp_Path = 'files-temp';
@@ -64,37 +65,41 @@ export class UploaderModule_Class
 		this.storage = FirebaseModule.createAdminSession().getStorage();
 	}
 
-	async getUrl(body: Request_GetUploadUrl) {
-		const key = body.key || body.type;
-		if (!this.postProcessor[key])
-			throw new ImplementationMissingException(`Missing validator for type ${key}`);
+	async getUrl(body: BaseUploaderFile[]): Promise<TempSecureUrl[]> {
+		const bucketName = this.config?.bucketName;
+		const bucket = await this.storage.getOrCreateBucket(bucketName);
+		return Promise.all(body.map(async _file => {
+			const key = _file.key || _file.mimeType;
+			if (!this.postProcessor[key])
+				throw new ImplementationMissingException(`Missing validator for type ${key}`);
 
-		const _id = generateHex(32);
-		const path = `${Temp_Path}/${_id}`;
-		const instance: DB_Temp_File = {
-			_id,
-			name: body.name,
-			type: body.type,
-			key,
-			path,
-			_audit: auditBy('be-stub')
-		};
-		if (this.config?.bucketName)
-			instance.bucketName = this.config.bucketName;
+			const _id = generateHex(32);
+			const path = `${Temp_Path}/${_id}`;
+			const instance: DB_Temp_File = {
+				_id,
+				feId: _file.feId,
+				name: _file.name,
+				mimeType: _file.mimeType,
+				key,
+				path,
+				_audit: auditBy('be-stub')
+			};
+			if (bucketName)
+				instance.bucketName = bucketName;
 
-		const temp = await UploaderTempFileModule.upsert(instance);
-		const bucket = await this.storage.getOrCreateBucket(instance.bucketName);
-		const file = await bucket.getFile(temp.path);
-		const url = await file.getWriteSecuredUrl(body.type, Hour);
-		return {
-			secureUrl: url.securedUrl,
-			tempId: temp._id
-		}
+			const temp = await UploaderTempFileModule.upsert(instance);
+			const file = await bucket.getFile(temp.path);
+			const url = await file.getWriteSecuredUrl(_file.mimeType, Hour);
+			return {
+				secureUrl: url.securedUrl,
+				tempDoc: temp
+			}
+		}));
 	}
 
 	async fileUploaded(filePath?: string) {
 		if (!filePath)
-			throw new BadImplementationException('Missing file path');
+			throw new ThisShouldNotHappenException('Missing file path');
 
 		this.logInfo(`Looking for file with path ${filePath}`);
 		// I use collection and not the module directly since I want to handle failure my way
@@ -119,7 +124,7 @@ export class UploaderModule_Class
 	}
 
 	private notifyFrontend = async (_id: string, message: string, result: UploadResult) => {
-		await PushPubSubModule.pushToKey(fileUploadedKey, {_id}, {message, result})
+		await PushPubSubModule.pushToKey<Push_FileUploaded>(fileUploadedKey, {_id}, {message, result})
 	};
 
 }

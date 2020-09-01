@@ -36,6 +36,10 @@ import {
 import {
 	DB_PushKeys,
 	DB_PushSession,
+	IFP,
+	ISP,
+	ITP,
+	MessageType,
 	Request_PushRegister,
 	SubscribeProps,
 	SubscriptionData
@@ -73,23 +77,28 @@ export class PushPubSubModule_Class
 		};
 		await this.pushSessions.upsert(session);
 
-		const subscriptions = request.subscriptions.map((s): DB_PushKeys => ({
-			firebaseToken: request.firebaseToken,
-			pushKey: s.pushKey,
-			props: s.props
-		}));
+		const subscriptions: DB_PushKeys[] = request.subscriptions.map((s): DB_PushKeys => {
+			const sub: DB_PushKeys = {
+				firebaseToken: request.firebaseToken,
+				pushKey: s.pushKey
+			};
+			if (s.props)
+				sub.props = s.props;
+
+			return sub;
+		});
 
 		return this.pushKeys.runInTransaction(async transaction => {
-			const data = await transaction.query(this.pushKeys, {where: {firebaseToken: request.firebaseToken}});
-			const toInsert = subscriptions.filter(s => !data.find(d => compare(d, s)));
-			return Promise.all(toInsert.map(instance => transaction.insert(this.pushKeys, instance)));
+			const write = await transaction.delete_Read(this.pushKeys, {where: {firebaseToken: request.firebaseToken}});
+			await transaction.upsertAll(this.pushKeys, subscriptions)
+			return write()
 		})
 	}
 
-	async pushToKey(key: string, props?: SubscribeProps, data?: any) {
+	async pushToKey<M extends MessageType<any, any, any> = never, S extends string = IFP<M>, P extends SubscribeProps = ISP<M>, D = ITP<M>>(key: S, props?: P, data?: D) {
 		let docs = await this.pushKeys.query({where: {pushKey: key}});
 		if (props)
-			docs = docs.filter(doc => compare(doc.props, props));
+			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
 
 		if (docs.length === 0)
 			return;
@@ -97,24 +106,21 @@ export class PushPubSubModule_Class
 		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
 			carry[db_pushKey.firebaseToken] = carry[db_pushKey.firebaseToken] || [];
 
-			const item = {
+			const item: SubscriptionData = {
 				pushKey: db_pushKey.pushKey,
-				props: db_pushKey.props,
 				data
 			};
-			carry[db_pushKey.firebaseToken].push(item)
+			if (db_pushKey.props)
+				item.props = db_pushKey.props;
+
+			carry[db_pushKey.firebaseToken].push(item);
 
 			return carry
 		}, {} as TempMessages);
 
-		const messages = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}))
-		const res: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
-		this.logInfo(`${res.successCount} sent, ${res.failureCount} failed`);
-
-		if (res.failureCount > 0)
-			this.logWarning(res.responses.filter(r => r.error));
-
-		return this.cleanUp(res, messages)
+		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}))
+		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
+		return this.cleanUp(response, messages)
 	}
 
 	scheduledCleanup = async () => {
@@ -126,11 +132,14 @@ export class PushPubSubModule_Class
 	};
 
 	private cleanUp = async (response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]) => {
+		this.logInfo(`${response.successCount} sent, ${response.failureCount} failed`);
+
+		if (response.failureCount > 0)
+			this.logWarning(response.responses.filter(r => r.error));
+
 		const toDelete = response.responses.reduce((carry, resp, i) => {
-			if (!resp.success) {
-				const message = messages[i];
-				message && carry.push(message.token);
-			}
+			if (!resp.success && messages[i])
+				carry.push(messages[i].token);
 
 			return carry
 		}, [] as string[]);

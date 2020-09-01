@@ -23,7 +23,10 @@ import {Module} from "./module";
 import {Dispatcher} from "./dispatcher";
 import {BadImplementationException} from "./exceptions";
 import {Logger} from "./logger/Logger";
-import {addAllItemToArray} from "../utils/array-tools";
+import {
+	addItemToArray,
+	filterDuplicates
+} from "../utils/array-tools";
 
 const _modules: Module[] = [];
 
@@ -58,12 +61,17 @@ export class ModuleManager
 	}
 
 	public addModules(...modules: Module[]) {
-		addAllItemToArray(this.modules, modules);
+		modules.reduce((carry: Module[], module: Module) => {
+			if (!carry.includes(module))
+				addItemToArray(carry, module);
+
+			return carry
+		}, this.modules);
 		return this;
 	}
 
 	public setModules(...modules: Module[]) {
-		this.modules = modules;
+		this.modules = filterDuplicates(modules);
 		return this;
 	}
 
@@ -74,7 +82,7 @@ export class ModuleManager
 			module.setManager(this);
 
 			if (this.config)
-				// @ts-ignore
+			// @ts-ignore
 				module.setConfig(this.config[module.getName()]);
 		});
 

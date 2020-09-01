@@ -18,23 +18,35 @@
  */
 
 import {ApiWithBody} from "@nu-art/thunderstorm"
+import {DB_Object} from "@nu-art/firebase";
+import {AuditBy} from "@nu-art/ts-common";
+import {MessageType} from "@nu-art/push-pub-sub";
 
 export const fileUploadedKey = 'file-uploaded';
+export type Push_FileUploaded = MessageType<'file-uploaded', { _id: string }, { message: string, result: string }>;
 
 export enum UploadResult {
 	Success = "Success",
 	Failure = "Failure"
 }
 
-export type Request_GetUploadUrl = {
+export type BaseUploaderFile = {
+	feId: string
 	name: string
-	type: string
+	mimeType: string
 	key?: string
-}
+};
 
-export type Response_GetUploadUrl = {
+export type DB_Temp_File = DB_Object & BaseUploaderFile & Required<Pick<BaseUploaderFile, 'key'>> & {
+	path: string
+	_audit: AuditBy
+	bucketName?: string
+}
+export type Request_GetUploadUrl = BaseUploaderFile[]
+
+export type TempSecureUrl = {
 	secureUrl: string
-	tempId: string
+	tempDoc: DB_Temp_File
 }
 
-export type Api_GetUploadUrl = ApiWithBody<'/v1/upload/get-url', Request_GetUploadUrl, Response_GetUploadUrl>
+export type Api_GetUploadUrl = ApiWithBody<'/v1/upload/get-url', BaseUploaderFile[], TempSecureUrl[]>

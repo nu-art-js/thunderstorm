@@ -24,7 +24,7 @@ import {
 } from "@nu-art/thunderstorm/backend";
 import {
 	Api_GetUploadUrl,
-	Request_GetUploadUrl
+	BaseUploaderFile
 } from "../../../../shared/types";
 import {QueryParams} from "@nu-art/thunderstorm";
 import {UploaderModule} from "../../../modules/UploaderModule";
@@ -36,7 +36,7 @@ class ServerApi_GetUploadUrl
 		super('get-url')
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: Request_GetUploadUrl) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: BaseUploaderFile[]) {
 		return UploaderModule.getUrl(body);
 	}
 }
