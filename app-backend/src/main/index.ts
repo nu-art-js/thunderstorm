@@ -45,11 +45,13 @@ import {
 } from "@nu-art/storm/slack";
 import {
 	Backend_ModulePack_Uploader,
+	PostProcessor,
 	UploaderModule
 } from "@nu-art/file-upload/backend";
 import {
 	FileWrapper,
-	FirebaseModule
+	FirebaseModule,
+    FirestoreTransaction
 } from '@nu-art/firebase/backend';
 
 const packageJson = require("./package.json");
@@ -66,8 +68,8 @@ const modules: Module[] = [
 	PushPubSubModule
 ];
 
-const postProcessor: { [k: string]: (file: FileWrapper) => Promise<void> } = {
-	default: async (file: FileWrapper) => {
+const postProcessor: { [k: string]: PostProcessor } = {
+	default: async (transaction: FirestoreTransaction, file: FileWrapper) => {
 		await FirebaseModule.createAdminSession().getDatabase().set(`/alan/testing/${file.path}`, {path: file.path, name: await file.exists()});
 		console.log(file)
 	}

@@ -29,6 +29,7 @@ import {
 import {
 	FileWrapper,
 	FirebaseModule,
+	FirestoreTransaction,
 	StorageWrapper
 } from "@nu-art/firebase/backend";
 import {
@@ -48,13 +49,15 @@ type Config = {
 	bucketName?: string
 }
 
+export type PostProcessor = (transaction: FirestoreTransaction, file: FileWrapper) => Promise<void>;
+
 export class UploaderModule_Class
 	extends Module<Config> {
 	private storage!: StorageWrapper;
 
-	private postProcessor!: { [k: string]: (file: FileWrapper) => Promise<void> };
+	private postProcessor!: { [k: string]: PostProcessor };
 
-	setPostProcessor(validator: { [k: string]: (file: FileWrapper) => Promise<void> }) {
+	setPostProcessor(validator: { [k: string]: PostProcessor }) {
 		this.postProcessor = validator
 	};
 
@@ -102,25 +105,29 @@ export class UploaderModule_Class
 			throw new ThisShouldNotHappenException('Missing file path');
 
 		this.logInfo(`Looking for file with path ${filePath}`);
-		// I use collection and not the module directly since I want to handle failure my way
-		const tempMeta = await UploaderTempFileModule.collection.queryUnique({where: {path: filePath}});
-		if (!tempMeta)
-			throw new BadImplementationException(`File with path: ${filePath}, not found in temp collection db`);
 
-		this.logInfo(`Found temp meta with _id: ${tempMeta._id}`, tempMeta);
-		const val = this.postProcessor[tempMeta.key];
-		this.logInfo(`Found a validator ${!!val}`);
-		if (!val)
-			return this.notifyFrontend(tempMeta._id, `Missing a validator for ${tempMeta.key} for file: ${tempMeta.name}`, UploadResult.Failure);
+		await UploaderTempFileModule.runInTransaction(async (transaction: FirestoreTransaction) => {
+			// I use collection and not the module directly since I want to handle failure my way
+			const tempMeta = await transaction.queryUnique(UploaderTempFileModule.collection, {where: {path: filePath}});
+			if (!tempMeta)
+				throw new BadImplementationException(`File with path: ${filePath}, not found in temp collection db`);
 
-		const bucket = await this.storage.getOrCreateBucket(tempMeta.bucketName);
-		const file = await bucket.getFile(tempMeta.path);
-		try {
-			await val(file);
-		} catch (e) {
-			return await this.notifyFrontend(tempMeta._id, `Post-processing failed for file: ${tempMeta.name} with error: ${__stringify(e)}`, UploadResult.Failure);
-		}
-		return this.notifyFrontend(tempMeta._id, `Successfully parsed and processed file ${tempMeta.name}`, UploadResult.Success)
+			this.logInfo(`Found temp meta with _id: ${tempMeta._id}`, tempMeta);
+			const val = this.postProcessor[tempMeta.key];
+			this.logInfo(`Found a validator ${!!val}`);
+			if (!val)
+				return this.notifyFrontend(tempMeta._id, `Missing a validator for ${tempMeta.key} for file: ${tempMeta.name}`, UploadResult.Failure);
+
+			const bucket = await this.storage.getOrCreateBucket(tempMeta.bucketName);
+			const file = await bucket.getFile(tempMeta.path);
+			try {
+				await val(transaction, file);
+			} catch (e) {
+				return await this.notifyFrontend(tempMeta._id, `Post-processing failed for file: ${tempMeta.name} with error: ${__stringify(e)}`, UploadResult.Failure);
+			}
+			return this.notifyFrontend(tempMeta._id, `Successfully parsed and processed file ${tempMeta.name}`, UploadResult.Success)
+
+		})
 	}
 
 	private notifyFrontend = async (_id: string, message: string, result: UploadResult) => {
