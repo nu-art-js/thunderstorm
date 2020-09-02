@@ -47,7 +47,7 @@ import {
 const RequestKey_UploadUrl = 'get-upload-url';
 const RequestKey_UploadFile = 'upload-file';
 
-export enum StatusEnum {
+export enum FileStatus {
 	ObtainingUrl   = "ObtainingUrl",
 	UploadingFile  = "UploadingFile",
 	// I can assume that in between I upload and I get
@@ -57,8 +57,8 @@ export enum StatusEnum {
 	Error          = "Error"
 }
 
-export type FileStatus = {
-	status: StatusEnum
+export type FileInfo = {
+	status: FileStatus
 	progress?: number
 	request?: HttpRequest<any>
 	file: File
@@ -71,12 +71,25 @@ export interface OnFileStatusChanged {
 export class UploaderModule_Class
 	extends Module<{}>
 	implements OnPushMessageReceived<Push_FileUploaded> {
-	private files: { [id: string]: FileStatus } = {};
+	private files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(3);
 	private readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged')
 
 	constructor() {
 		super();
+	}
+
+	getFileInfo<K extends Extract<keyof FileInfo, 'progress' | 'status'>>(id: string, key: K): FileInfo[K] | undefined {
+		return this.files[id] && this.files[id][key]
+	}
+
+	setFileInfo<K extends keyof FileInfo>(id: string, key: K, value: FileInfo[K]) {
+		if (!this.files[id])
+			throw new BadImplementationException(`Trying to set ${key} for non existent file with id: ${id}`);
+
+		this.files[id][key] = value;
+		this.dispatch_fileStatusChange.dispatchUI([id]);
+		this.dispatch_fileStatusChange.dispatchModule([id])
 	}
 
 	upload(files: File[], key?: string): BaseUploaderFile[] {
@@ -92,7 +105,7 @@ export class UploaderModule_Class
 
 			this.files[requestBody.feId] = {
 				file,
-				status: StatusEnum.ObtainingUrl
+				status: FileStatus.ObtainingUrl
 			};
 			return requestBody;
 		});
@@ -101,6 +114,9 @@ export class UploaderModule_Class
 			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
 			.setRelativeUrl("/v1/upload/get-url")
 			.setJsonBody(body)
+			.setOnError(() => {
+				body.forEach(f => this.setFileInfo(f.feId, "status", FileStatus.Error))
+			})
 			.execute(async (response: TempSecureUrl[]) => {
 				await this.uploadFiles(response)
 			});
@@ -108,39 +124,38 @@ export class UploaderModule_Class
 		return body;
 	}
 
-	setStatus<K extends keyof FileStatus>(id: string, key: K, value: FileStatus[K]) {
-		this.files[id][key] = value;
-		this.dispatch_fileStatusChange.dispatchUI([id]);
-		this.dispatch_fileStatusChange.dispatchModule([id])
-	}
-
-	private uploadFile = async (response: TempSecureUrl) => {
-		const file = this.files[response.tempDoc.feId];
-		if (!file)
-			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
-
-		return HttpModule
-			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
-			.setUrl(response.secureUrl)
-			.setOnProgressListener((ev: ProgressEvent) => {
-				this.setStatus(response.tempDoc.feId, "progress", ev.loaded / ev.total);
-			})
-			.setTimeout(10 * Minute)
-			.setBody(file.file)
-			.executeSync();
-	};
-
 	private uploadFiles = async (response: TempSecureUrl[]) => {
 		// Subscribe
 		await PushPubSubModule.subscribeMulti(response.map(r => ({pushKey: fileUploadedKey, props: {_id: r.tempDoc.feId}})));
 		//
 		response.forEach(r => {
 			this.uploadQueue.addItem(async () => {
-				this.setStatus(r.tempDoc.feId, "status", StatusEnum.UploadingFile);
+				this.setFileInfo(r.tempDoc.feId, "status", FileStatus.UploadingFile);
 				await this.uploadFile(r);
-				this.setStatus(r.tempDoc.feId, "status", StatusEnum.PostProcessing);
+				this.setFileInfo(r.tempDoc.feId, "status", FileStatus.PostProcessing);
+				//TODO: Probably need to set a timer here in case we dont get a push back (contingency)
 			});
 		})
+	};
+
+	private uploadFile = async (response: TempSecureUrl) => {
+		const fileInfo = this.files[response.tempDoc.feId];
+		if (!fileInfo)
+			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
+
+		fileInfo.request = HttpModule
+			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
+			.setUrl(response.secureUrl)
+			.setOnError(() => {
+				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error)
+			})
+			.setOnProgressListener((ev: ProgressEvent) => {
+				this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
+			})
+			.setTimeout(10 * Minute)
+			.setBody(fileInfo.file);
+
+		return fileInfo.request.executeSync();
 	};
 
 	__onMessageReceived(pushKey: string, props: { feId: string }, data: { message: string, result: string }): void {
@@ -149,11 +164,11 @@ export class UploaderModule_Class
 
 		switch (data.result) {
 			case UploadResult.Success:
-				this.setStatus(props.feId, "status", StatusEnum.Completed);
+				this.setFileInfo(props.feId, "status", FileStatus.Completed);
 				ToastModule.toastSuccess(data.message);
 				break;
 			case UploadResult.Failure:
-				this.setStatus(props.feId, "status", StatusEnum.Error);
+				this.setFileInfo(props.feId, "status", FileStatus.Error);
 				ToastModule.toastError(data.message);
 				break
 		}
