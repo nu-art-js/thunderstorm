@@ -40,7 +40,7 @@ export class FirebaseDatabaseTester {
 			if (clean) {
 				const config = await db.get('/_config');
 				await db.delete('/', '/');
-				await db.set('/_config', config);
+				config && await db.set('/_config', config);
 			}
 			return processor(db)
 		}).setLabel(label);
