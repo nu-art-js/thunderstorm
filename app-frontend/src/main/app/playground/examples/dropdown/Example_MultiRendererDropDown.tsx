@@ -130,7 +130,7 @@ export class Example_MultiRendererDropDown
 				maxHeight: 90
 			}
 		};
-		let caretItem = <div style={{backgroundColor: "lime", paddingRight: 8}}>
+		const caretItem = <div style={{backgroundColor: "lime", paddingRight: 8}}>
 			<div style={{marginTop: 3}}>{ICONS.arrowOpen(undefined, 11)}</div>
 		</div>;
 		const caret = {open: caretItem, close: caretItem}

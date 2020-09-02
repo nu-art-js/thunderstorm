@@ -19,8 +19,8 @@
 
 import * as React from "react";
 import {
-	FilterInput,
 	Example_NewProps,
+	FilterInput,
 	Props_FilterInput
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
@@ -54,16 +54,16 @@ export class Example_FilterInput
 	}
 
 	private simpleObjectProps() {
-		let list = [
-			{label: "abcde"},
-			{label: "cdefg"},
-			{label: "efghi"},
-			{label: "ghijk"}];
 		return {
 			key: "simple-object-input",
 			id: "simple-object-input",
 			filter: (item: { label: string }) => [item.label],
-			list: list,
+			list: [
+				{label: "abcde"},
+				{label: "cdefg"},
+				{label: "efghi"},
+				{label: "ghijk"}
+			],
 			onChange: (filteredOptions: { label: string }[], filter: string, id?: string) => {
 				console.log(`id: ${id}\nfilter: ${filter}\n items: ${__stringify(filteredOptions)}`)
 			},

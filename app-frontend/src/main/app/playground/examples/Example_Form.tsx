@@ -47,7 +47,7 @@ const inputStyle = css({
                        });
 
 
-let renderer = (icon: React.ReactNode, props: Form_FieldProps<Request_CreateAccount, any>) => {
+const renderer = (icon: React.ReactNode, props: Form_FieldProps<Request_CreateAccount, any>) => {
 	const field = props.field;
 	return <div className={`ll_h_c ${fieldStyle}`}>
 		{icon}

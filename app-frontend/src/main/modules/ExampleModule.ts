@@ -83,8 +83,14 @@ export class ExampleModule_Class
 	private max: number = 0;
 
 	protected init(): void {
-		PushPubSubModule.subscribe(mySubscription)
-		this.runAsync('Initializing Analytics', this.initAnalytics)
+		this.runAsync('Async start', async () => {
+			const asyncs = [
+				PushPubSubModule.subscribe(mySubscription),
+				this.initAnalytics()
+
+			];
+			return Promise.all(asyncs)
+		})
 	}
 
 	initAnalytics = async () => {
