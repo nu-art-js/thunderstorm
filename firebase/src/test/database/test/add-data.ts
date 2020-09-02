@@ -58,6 +58,17 @@ const objectModel2 = {
 	label: 'Adding an object'
 };
 
+const modelToEscape = {
+	path: objectPath,
+	value: {
+		command: "flash-dsp",
+		data: "https://storage.googleapis.com/elliq-env-dev.appspot.com/resources/test/ElliQ_ver2.22_20200629.mbi"
+	},
+	label: 'Adding an object'
+};
+
+
+
 const simpleModels: ModelDb[] = [
 	stringModel,
 	numberModel,
@@ -85,6 +96,10 @@ const scenarioUpdate = myDb.processClean('Update an object over another just pat
 	assert("Values don't match", readVal, merge(objectModel.value, objectModel2.value));
 });
 
+const scenarioEscape = myDb.processDirty('Do I need to escape my values?', async db => {
+	await db.set(modelToEscape.path,modelToEscape.value);
+});
+
 simpleModels.forEach(model => scenarioAddData.add(addData(model)))
 scenarioAddData.add(scenarioSet);
-scenarioAddData.add(scenarioUpdate);
+scenarioAddData.add(scenarioEscape);

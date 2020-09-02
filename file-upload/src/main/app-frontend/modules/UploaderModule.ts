@@ -116,7 +116,7 @@ export class UploaderModule_Class
 				break
 		}
 
-		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props})
+		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props}).catch()
 	}
 }
 
