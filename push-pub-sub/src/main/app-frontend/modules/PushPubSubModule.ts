@@ -127,7 +127,7 @@ export class PushPubSubModule_Class
 			if (!this.firebaseToken)
 				return;
 
-			this.register();
+			await this.register();
 			this.logVerbose('new token received: ' + this.firebaseToken);
 			this.messaging.onTokenRefresh(() => this.runAsync('Token refresh', this.getToken));
 
