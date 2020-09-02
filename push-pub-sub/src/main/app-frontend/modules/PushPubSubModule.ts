@@ -160,7 +160,7 @@ export class PushPubSubModule_Class
 	};
 
 	subscribe = async (subscription: BaseSubscriptionData) => {
-		this.subscribeImpl(subscription)
+		this.subscribeImpl(subscription);
 		return this.register();
 	};
 
@@ -172,7 +172,7 @@ export class PushPubSubModule_Class
 	}
 
 	subscribeMulti = async (subscriptions: BaseSubscriptionData[]) => {
-		subscriptions.forEach(subscription => this.subscribeImpl(subscription))
+		subscriptions.forEach(subscription => this.subscribeImpl(subscription));
 		return this.register();
 	};
 
@@ -200,7 +200,7 @@ export class PushPubSubModule_Class
 					.execute(() => {
 						resolve()
 					})
-			}, 'push-registration', 500)
+			}, 'push-registration', 800)
 		})
 
 	};

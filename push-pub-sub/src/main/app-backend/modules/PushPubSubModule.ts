@@ -90,7 +90,7 @@ export class PushPubSubModule_Class
 
 		return this.pushKeys.runInTransaction(async transaction => {
 			const write = await transaction.delete_Read(this.pushKeys, {where: {firebaseToken: request.firebaseToken}});
-			await transaction.upsertAll(this.pushKeys, subscriptions)
+			await transaction.insertAll(this.pushKeys, subscriptions)
 			return write()
 		})
 	}

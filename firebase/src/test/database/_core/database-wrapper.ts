@@ -37,7 +37,11 @@ export class FirebaseDatabaseTester {
 	private process(label: string, processor: (db: DatabaseWrapper) => Promise<void>, clean: boolean) {
 		return __custom(async () => {
 			const db = FirebaseModule.createAdminSession().getDatabase();
-			clean && await db.delete('/', '/');
+			if (clean) {
+				const config = await db.get('/_config');
+				await db.delete('/', '/');
+				await db.set('/_config', config);
+			}
 			return processor(db)
 		}).setLabel(label);
 	}
