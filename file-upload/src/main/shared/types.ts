@@ -23,7 +23,7 @@ import {AuditBy} from "@nu-art/ts-common";
 import {MessageType} from "@nu-art/push-pub-sub";
 
 export const fileUploadedKey = 'file-uploaded';
-export type Push_FileUploaded = MessageType<'file-uploaded', { _id: string }, { message: string, result: string }>;
+export type Push_FileUploaded = MessageType<'file-uploaded', { feId: string }, { message: string, result: string }>;
 
 export enum UploadResult {
 	Success = "Success",

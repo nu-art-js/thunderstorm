@@ -116,22 +116,22 @@ export class UploaderModule_Class
 			const val = this.postProcessor[tempMeta.key];
 			this.logInfo(`Found a validator ${!!val}`);
 			if (!val)
-				return this.notifyFrontend(tempMeta._id, `Missing a validator for ${tempMeta.key} for file: ${tempMeta.name}`, UploadResult.Failure);
+				return this.notifyFrontend(tempMeta.feId, `Missing a validator for ${tempMeta.key} for file: ${tempMeta.name}`, UploadResult.Failure);
 
 			const bucket = await this.storage.getOrCreateBucket(tempMeta.bucketName);
 			const file = await bucket.getFile(tempMeta.path);
 			try {
 				await val(transaction, file);
 			} catch (e) {
-				return await this.notifyFrontend(tempMeta._id, `Post-processing failed for file: ${tempMeta.name} with error: ${__stringify(e)}`, UploadResult.Failure);
+				return await this.notifyFrontend(tempMeta.feId, `Post-processing failed for file: ${tempMeta.name} with error: ${__stringify(e)}`, UploadResult.Failure);
 			}
-			return this.notifyFrontend(tempMeta._id, `Successfully parsed and processed file ${tempMeta.name}`, UploadResult.Success)
+			return this.notifyFrontend(tempMeta.feId, `Successfully parsed and processed file ${tempMeta.name}`, UploadResult.Success)
 
 		})
 	}
 
-	private notifyFrontend = async (_id: string, message: string, result: UploadResult) => {
-		await PushPubSubModule.pushToKey<Push_FileUploaded>(fileUploadedKey, {_id}, {message, result})
+	private notifyFrontend = async (feId: string, message: string, result: UploadResult) => {
+		await PushPubSubModule.pushToKey<Push_FileUploaded>(fileUploadedKey, {feId}, {message, result})
 	};
 
 }
