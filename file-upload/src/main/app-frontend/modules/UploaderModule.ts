@@ -26,6 +26,8 @@ import {
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	HttpModule,
+	HttpRequest,
+	ThunderDispatcher,
 	ToastModule
 } from "@nu-art/thunderstorm/frontend";
 
@@ -45,17 +47,39 @@ import {
 const RequestKey_UploadUrl = 'get-upload-url';
 const RequestKey_UploadFile = 'upload-file';
 
+export enum StatusEnum {
+	ObtainingUrl   = "ObtainingUrl",
+	UploadingFile  = "UploadingFile",
+	// I can assume that in between I upload and I get
+	// the push I'm processing the file in the be
+	PostProcessing = "PostProcessing",
+	Completed      = "Completed",
+	Error          = "Error"
+}
+
+export type FileStatus = {
+	status: StatusEnum
+	progress?: number
+	request?: HttpRequest<any>
+	file: File
+};
+
+export interface OnFileStatusChanged {
+	__onFileStatusChanged: (id: string) => void
+}
+
 export class UploaderModule_Class
 	extends Module<{}>
 	implements OnPushMessageReceived<Push_FileUploaded> {
-	private files: { [id: string]: File } = {};
+	private files: { [id: string]: FileStatus } = {};
 	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(3);
+	private readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged')
 
 	constructor() {
 		super();
 	}
 
-	upload(files: File[], key?: string) {
+	upload(files: File[], key?: string): BaseUploaderFile[] {
 		const body: BaseUploaderFile[] = files.map(file => {
 			const requestBody: BaseUploaderFile = {
 				feId: generateHex(32),
@@ -66,7 +90,10 @@ export class UploaderModule_Class
 			if (key)
 				requestBody.key = key;
 
-			this.files[requestBody.feId] = file;
+			this.files[requestBody.feId] = {
+				file,
+				status: StatusEnum.ObtainingUrl
+			};
 			return requestBody;
 		});
 
@@ -77,6 +104,14 @@ export class UploaderModule_Class
 			.execute(async (response: TempSecureUrl[]) => {
 				await this.uploadFiles(response)
 			});
+
+		return body;
+	}
+
+	setStatus<K extends keyof FileStatus>(id: string, key: K, value: FileStatus[K]) {
+		this.files[id][key] = value;
+		this.dispatch_fileStatusChange.dispatchUI([id]);
+		this.dispatch_fileStatusChange.dispatchModule([id])
 	}
 
 	private uploadFile = async (response: TempSecureUrl) => {
@@ -87,31 +122,38 @@ export class UploaderModule_Class
 		return HttpModule
 			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
 			.setUrl(response.secureUrl)
+			.setOnProgressListener((ev: ProgressEvent) => {
+				this.setStatus(response.tempDoc.feId, "progress", ev.loaded / ev.total);
+			})
 			.setTimeout(10 * Minute)
-			.setBody(file)
+			.setBody(file.file)
 			.executeSync();
 	};
 
 	private uploadFiles = async (response: TempSecureUrl[]) => {
 		// Subscribe
-		await PushPubSubModule.subscribeMulti(response.map(r => ({pushKey: fileUploadedKey, props: {_id: r.tempDoc._id}})));
+		await PushPubSubModule.subscribeMulti(response.map(r => ({pushKey: fileUploadedKey, props: {_id: r.tempDoc.feId}})));
 		//
 		response.forEach(r => {
 			this.uploadQueue.addItem(async () => {
-				return this.uploadFile(r)
+				this.setStatus(r.tempDoc.feId, "status", StatusEnum.UploadingFile);
+				await this.uploadFile(r);
+				this.setStatus(r.tempDoc.feId, "status", StatusEnum.PostProcessing);
 			});
 		})
 	};
 
-	__onMessageReceived(pushKey: string, props: { _id: string }, data: { message: string, result: string }): void {
+	__onMessageReceived(pushKey: string, props: { feId: string }, data: { message: string, result: string }): void {
 		if (pushKey !== fileUploadedKey)
 			return;
 
 		switch (data.result) {
 			case UploadResult.Success:
+				this.setStatus(props.feId, "status", StatusEnum.Completed);
 				ToastModule.toastSuccess(data.message);
 				break;
 			case UploadResult.Failure:
+				this.setStatus(props.feId, "status", StatusEnum.Error);
 				ToastModule.toastError(data.message);
 				break
 		}
