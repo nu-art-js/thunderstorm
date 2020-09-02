@@ -21,7 +21,8 @@ import {
 	generateHex,
 	Minute,
 	Module,
-	Queue
+	Queue,
+    __stringify
 } from "@nu-art/ts-common";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
@@ -59,6 +60,7 @@ export enum FileStatus {
 
 export type FileInfo = {
 	status: FileStatus
+	messageStatus?: string
 	progress?: number
 	request?: HttpRequest<any>
 	file: File
@@ -79,7 +81,7 @@ export class UploaderModule_Class
 		super();
 	}
 
-	getFileInfo<K extends Extract<keyof FileInfo, 'progress' | 'status'>>(id: string, key: K): FileInfo[K] | undefined {
+	getFileInfo<K extends keyof FileInfo>(id: string, key: K): FileInfo[K] | undefined {
 		return this.files[id] && this.files[id][key]
 	}
 
@@ -114,8 +116,11 @@ export class UploaderModule_Class
 			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
 			.setRelativeUrl("/v1/upload/get-url")
 			.setJsonBody(body)
-			.setOnError(() => {
-				body.forEach(f => this.setFileInfo(f.feId, "status", FileStatus.Error))
+			.setOnError((request) => {
+				body.forEach(f => {
+					this.setFileInfo(f.feId, "messageStatus", __stringify(request.xhr.response));
+					this.setFileInfo(f.feId, "status", FileStatus.Error);
+				})
 			})
 			.execute(async (response: TempSecureUrl[]) => {
 				await this.uploadFiles(response)
@@ -146,8 +151,9 @@ export class UploaderModule_Class
 		fileInfo.request = HttpModule
 			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
 			.setUrl(response.secureUrl)
-			.setOnError(() => {
+			.setOnError((request) => {
 				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error)
+				this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(request.xhr.response))
 			})
 			.setOnProgressListener((ev: ProgressEvent) => {
 				this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
