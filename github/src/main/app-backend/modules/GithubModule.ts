@@ -25,7 +25,10 @@ import {
 	Octokit,
 	RestEndpointMethodTypes
 } from '@octokit/rest';
-import {OctokitResponse} from "@octokit/types"
+import {
+	OctokitResponse,
+	ReposGetContentResponseData
+} from "@octokit/types"
 import * as path from "path";
 import {
 	ExpressRequest,
@@ -283,7 +286,7 @@ export class GithubModule_Class
 	 *
 	 * This API has an upper limit of 1,000 files for a directory.
 	 */
-	async listDirectoryContents(repo: string, branch: string, _path: string) {
+	async listDirectoryContents(repo: string, branch: string, _path: string): Promise<ReposGetContentResponseData | undefined> {
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
@@ -298,7 +301,7 @@ export class GithubModule_Class
 			});
 
 		if (!response || !response.data)
-			return [];
+			return;
 
 		if (!Array.isArray(response.data)) {
 			throw new Exception(`Invalid response from octokit's repos.getContent`);
