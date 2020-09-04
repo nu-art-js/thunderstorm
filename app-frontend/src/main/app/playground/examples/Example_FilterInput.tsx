@@ -26,26 +26,34 @@ import {
 import {__stringify} from "@nu-art/ts-common";
 
 export class Example_FilterInput
-	extends React.Component<{}, {}> {
+	extends React.Component<{}, { filteredOptions: any[] }> {
+
 	constructor(props: {}) {
 		super(props);
-
+		this.state = {filteredOptions: []}
 	}
 
 	render() {
 		const props1 = this.simpleStringProps();
 		const props2 = this.simpleObjectProps();
-		return <Example_NewProps name={"Filter Input"} renderer={FilterInput} data={[props1, props2]} showList={false}/>
+		return <>
+			<Example_NewProps name={"Filter Input"} renderer={FilterInput} data={[props1, props2]} showList={false}/>
+			<div>
+				{this.state.filteredOptions.map((item, index) => <div key={index}>{__stringify(item)}</div>)}
+			</div>
+		</>
 	}
 
 	private simpleStringProps() {
+		let list = ["abcde", "cdefg", "efghi", "ghijk"];
 		return {
 			key: "simple-string-input",
 			id: "simple-string-input",
 			filter: (item: string) => [item],
-			list: ["abcde", "cdefg", "efghi", "ghijk"],
+			list: list,
 			onChange: (filteredOptions: string[], filter: string, id?: string) => {
 				console.log(`id: ${id}\nfilter: ${filter}\n items: ${__stringify(filteredOptions)}`)
+				this.setState({filteredOptions})
 			},
 			placeholder: "simple string",
 			focus: true,
@@ -54,18 +62,20 @@ export class Example_FilterInput
 	}
 
 	private simpleObjectProps() {
+		let list = [
+			{label: "abcde"},
+			{label: "cdefg"},
+			{label: "efghi"},
+			{label: "ghijk"}
+		];
 		return {
 			key: "simple-object-input",
 			id: "simple-object-input",
 			filter: (item: { label: string }) => [item.label],
-			list: [
-				{label: "abcde"},
-				{label: "cdefg"},
-				{label: "efghi"},
-				{label: "ghijk"}
-			],
+			list: list,
 			onChange: (filteredOptions: { label: string }[], filter: string, id?: string) => {
 				console.log(`id: ${id}\nfilter: ${filter}\n items: ${__stringify(filteredOptions)}`)
+				this.setState({filteredOptions})
 			},
 			focus: true,
 			placeholder: "simple object",

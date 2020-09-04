@@ -51,7 +51,6 @@ export class Example_NewProps<T, P = InferProps<T>>
 		return <div>
 			<div style={{marginBottom: "10px"}}>{this.props.name}</div>
 			{this.renderList(Renderer)}
-
 			{this.renderToggle(Renderer)}
 		</div>
 	}
