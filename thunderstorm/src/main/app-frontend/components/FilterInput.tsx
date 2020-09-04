@@ -23,6 +23,7 @@ import * as React from 'react';
 import {Filter} from "@nu-art/ts-common/utils/filter-tools";
 import {TS_Input} from "./TS_Input";
 import {Stylable} from "../tools/Stylable";
+import {compare} from '@nu-art/ts-common';
 
 export type Props_FilterInput<T> = Stylable & {
 	filter: (item: T) => string[],
@@ -40,13 +41,14 @@ type State = {}
 export class FilterInput<T>
 	extends React.Component<Props_FilterInput<T>, State> {
 	private filterInstance: Filter;
+	private notifyChanges: boolean;
 
 	constructor(props: Props_FilterInput<T>) {
 		super(props);
 
 		this.filterInstance = new Filter();
 		this.filterInstance.setFilter(props.initialFilterText || '');
-		this.state = {};
+		this.notifyChanges = true;
 	}
 
 	componentDidMount() {
@@ -54,7 +56,7 @@ export class FilterInput<T>
 	}
 
 	shouldComponentUpdate(nextProps: Readonly<Props_FilterInput<T>>, nextState: Readonly<State>, nextContext: any): boolean {
-		const b = this.props.list !== nextProps.list;
+		const b = this.notifyChanges = !compare(this.props.list, nextProps.list);
 		if (b)
 			this.callOnChange(nextProps.list, "");
 
@@ -62,15 +64,20 @@ export class FilterInput<T>
 	}
 
 	callOnChange = (list: T[], filter: string) => {
-		this.props.onChange(this.filterInstance.filter(list, this.props.filter), filter, this.props.id);
+		if (this.notifyChanges)
+			this.props.onChange(this.filterInstance.filter(list, this.props.filter), filter, this.props.id);
+
+		this.notifyChanges = false;
 	};
 
 	filter = (text: string) => {
 		this.filterInstance.setFilter(text);
+		this.notifyChanges = true;
 		this.callOnChange(this.props.list, text);
 	};
 
 	render() {
+
 		const {id, placeholder, focus} = this.props;
 		return (
 			<TS_Input
