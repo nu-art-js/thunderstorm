@@ -27,14 +27,13 @@ import {
 } from '@nu-art/ts-common';
 import {Stylable} from "../tools/Stylable";
 
-type Props<Key> = Stylable & {
+export type TS_InputProps<Key> = Stylable & {
 	onChange: (value: string, id: Key) => void
 	onAccept?: () => void
 	onCancel?: () => void
 	onBlur?: () => void
 	handleKeyEvent?: (e: KeyboardEvent) => void
 	value?: string
-	error?: string
 	type: 'text' | 'number' | 'password'
 	placeholder?: string
 	id: Key
@@ -43,27 +42,45 @@ type Props<Key> = Stylable & {
 	spellCheck?: boolean
 }
 
-type State = { value?: string }
+type State = {
+	id: string,
+	name?: string,
+	value?: string
+}
 const MIN_DELTA = 200;
 
 export class TS_Input<Key extends string>
-	extends React.Component<Props<Key>, State> {
+	extends React.Component<TS_InputProps<Key>, State> {
+
 	private ref?: HTMLInputElement | null;
 	private clickedTimestamp?: number;
 	private timeout?: number;
-	private readonly controlled: boolean;
 
-	static defaultProps: Partial<Props<any>> = {
+	static defaultProps: Partial<TS_InputProps<any>> = {
 		id: generateHex(16)
 	};
 
-	constructor(props: Props<Key>) {
+	constructor(props: TS_InputProps<Key>) {
 		super(props);
 
-		this.controlled = this.props.value !== undefined;
-		if (!this.controlled)
-			this.state = {value: ""};
+		this.state = {
+			id: this.props.id,
+			name: this.props.name,
+			value: this.props.value || ""
+		};
 	};
+
+	static getDerivedStateFromProps(props: TS_InputProps<any>, state: State) {
+		if (props.id === state.id && state.name === props.name)
+			return {value:state.value};
+
+		return {
+			id: props.id,
+			name: props.name,
+			value: props.value || ""
+		}
+	}
+
 
 	componentWillUnmount(): void {
 		this.ref?.removeEventListener('keydown', this.props.handleKeyEvent || this.handleKeyEvent)
@@ -95,15 +112,14 @@ export class TS_Input<Key extends string>
 	changeValue = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const value = event.target.value;
 		this.props.onChange(value, event.target.id as Key);
-
-		if (!this.controlled)
-			this.setState({value: value});
+		this.setState({value: value});
 	};
 
 	render() {
 		const {id, name, type, placeholder, style, className, spellCheck, focus, onBlur} = this.props;
 		const handleKeyEvent = this.props.handleKeyEvent || this.handleKeyEvent;
-		const value = this.controlled ? this.props.value : this.state.value;
+		const value = this.state.value
+
 		return <input
 			className={className}
 			name={name || id}

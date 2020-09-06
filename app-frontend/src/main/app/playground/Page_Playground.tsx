@@ -54,6 +54,7 @@ import {OstudioEx} from "./examples/dropdown/OstudioEx";
 import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
 import {Example_FilterInput} from "./examples/Example_FilterInput";
 import {Example_Uploader} from "./examples/Example_Uploader";
+import {Example_TSInput} from "./examples/Example_TSInput";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -110,6 +111,7 @@ export class Page_Playground
 	getScreens(): PlaygroundScreen[] {
 		return [
 			// DROPDOWNS
+			{renderer: Example_TSInput, name: "TSInput Example"},
 			{renderer: Example_DropDown, name: "Dropdown Example"},
 			{renderer: Example_FilterInput, name: "FilterInput Examples"},
 			{renderer: Example_AllDropDowns, name: "ALL DropDown Examples"},
