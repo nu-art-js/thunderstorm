@@ -23,13 +23,13 @@ import * as React from 'react';
 import {Filter} from "@nu-art/ts-common/utils/filter-tools";
 import {TS_Input} from "./TS_Input";
 import {Stylable} from "../tools/Stylable";
-import {compare} from '@nu-art/ts-common';
+import {compare, generateHex} from '@nu-art/ts-common';
 
 export type Props_FilterInput<T> = Stylable & {
 	filter: (item: T) => string[],
 	list: T[],
 	onChange: (items: T[], filterBy: string, id?: string) => void,
-	id?: string,
+	id: string,
 	initialFilterText?: string,
 	focus?: boolean,
 	placeholder?: string
@@ -42,6 +42,10 @@ export class FilterInput<T>
 	extends React.Component<Props_FilterInput<T>, State> {
 	private filterInstance: Filter;
 	private notifyChanges: boolean;
+
+	static defaultProps: Partial<Props_FilterInput<any>> = {
+		id: generateHex(16)
+	};
 
 	constructor(props: Props_FilterInput<T>) {
 		super(props);

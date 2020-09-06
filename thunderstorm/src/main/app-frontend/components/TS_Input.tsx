@@ -22,8 +22,7 @@
 import * as React from 'react';
 import {
 	_clearTimeout,
-	currentTimeMillies,
-	generateHex
+	currentTimeMillies
 } from '@nu-art/ts-common';
 import {Stylable} from "../tools/Stylable";
 
@@ -45,6 +44,7 @@ export type TS_InputProps<Key> = Stylable & {
 type State = {
 	id: string,
 	name?: string,
+	initialValue?: string
 	value?: string
 }
 const MIN_DELTA = 200;
@@ -56,29 +56,26 @@ export class TS_Input<Key extends string>
 	private clickedTimestamp?: number;
 	private timeout?: number;
 
-	static defaultProps: Partial<TS_InputProps<any>> = {
-		id: generateHex(16)
-	};
-
 	constructor(props: TS_InputProps<Key>) {
 		super(props);
 
-		this.state = {
-			id: this.props.id,
-			name: this.props.name,
-			value: this.props.value || ""
-		};
+		this.state = TS_Input.getInitialState(props);
 	};
 
-	static getDerivedStateFromProps(props: TS_InputProps<any>, state: State) {
-		if (props.id === state.id && state.name === props.name)
-			return {value:state.value};
-
+	private static getInitialState(props: TS_InputProps<any>) {
 		return {
 			id: props.id,
 			name: props.name,
+			initialValue: props.value,
 			value: props.value || ""
-		}
+		};
+	}
+
+	static getDerivedStateFromProps(props: TS_InputProps<any>, state: State) {
+		if (props.id === state.id && state.name === props.name && state.initialValue === props.value)
+			return {value: state.value};
+
+		return TS_Input.getInitialState(props)
 	}
 
 
@@ -116,35 +113,33 @@ export class TS_Input<Key extends string>
 	};
 
 	render() {
-		const {id, name, type, placeholder, style, className, spellCheck, focus, onBlur} = this.props;
 		const handleKeyEvent = this.props.handleKeyEvent || this.handleKeyEvent;
-		const value = this.state.value
 
 		return <input
-			className={className}
-			name={name || id}
-			style={style}
-			key={id}
-			id={id}
-			type={type}
+			className={this.props.className}
+			name={this.props.name || this.props.id}
+			style={this.props.style}
+			key={this.props.id}
+			id={this.props.id}
+			type={this.props.type}
 			onClick={this.onClick}
-			value={value}
-			placeholder={placeholder}
+			value={this.state.value}
+			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
 			onBlur={() => {
 				this.ref?.removeEventListener('keydown', handleKeyEvent);
 				this.ref = null;
-				onBlur && onBlur();
+				this.props.onBlur && this.props.onBlur();
 			}}
 			ref={input => {
 				if (this.ref || !input)
 					return;
 
 				this.ref = input;
-				focus && this.ref.focus();
+				this.props.focus && this.ref.focus();
 				this.ref.addEventListener('keydown', handleKeyEvent);
 			}}
-			spellCheck={spellCheck}
+			spellCheck={this.props.spellCheck}
 		/>;
 	}
 }

@@ -35,7 +35,7 @@ type Type = {
 };
 
 type State = {
- [K in Keys]: string
+	[K in Keys]: string
 }
 
 export class Example_List_WithInput
@@ -62,7 +62,13 @@ export class Example_List_WithInput
 				if (typeof props.item !== 'object')
 					return null;
 
-				return <div><TS_Input type={"text"} focus={true} placeholder={props.item.placeHolder} value={this.state[props.item.value]} onChange={value => {
+				return <div><TS_Input
+					id="test"
+					type={"text"}
+					focus={true}
+					placeholder={props.item.placeHolder}
+					value={this.state[props.item.value]}
+					onChange={value => {
 					const key: "first" | "second" = props.item.value;
 					// @ts-ignore
 					this.setState({[key]: value});
