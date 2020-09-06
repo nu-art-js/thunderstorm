@@ -22,9 +22,10 @@
 import * as React from 'react';
 import {
 	_clearTimeout,
-	currentTimeMillies
+	currentTimeMillies, generateHex
 } from '@nu-art/ts-common';
 import {Stylable} from "../tools/Stylable";
+import {Props_FilterInput} from "./FilterInput";
 
 export type TS_InputProps<Key> = Stylable & {
 	onChange: (value: string, id: Key) => void
@@ -55,6 +56,10 @@ export class TS_Input<Key extends string>
 	private ref?: HTMLInputElement | null;
 	private clickedTimestamp?: number;
 	private timeout?: number;
+
+	static defaultProps: Partial<Props_FilterInput<any>> = {
+		id: generateHex(16)
+	};
 
 	constructor(props: TS_InputProps<Key>) {
 		super(props);

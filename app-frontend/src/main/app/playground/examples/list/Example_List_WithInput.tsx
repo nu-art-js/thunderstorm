@@ -62,19 +62,20 @@ export class Example_List_WithInput
 				if (typeof props.item !== 'object')
 					return null;
 
-				return <div><TS_Input
-					id="test"
-					type={"text"}
-					focus={true}
-					placeholder={props.item.placeHolder}
-					value={this.state[props.item.value]}
-					onChange={value => {
-					const key: "first" | "second" = props.item.value;
-					// @ts-ignore
-					this.setState({[key]: value});
-					return console.log(value);
-				}}
-				/>
+				return <div>
+					<TS_Input
+						id="test"
+						type={"text"}
+						focus={true}
+						placeholder={props.item.placeHolder}
+						value={this.state[props.item.value]}
+						onChange={value => {
+							const key: "first" | "second" = props.item.value;
+							// @ts-ignore
+							this.setState({[key]: value});
+							return console.log(value);
+						}}
+					/>
 					<div>{props.item.value}</div>
 				</div>;
 			})
