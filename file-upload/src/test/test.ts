@@ -17,73 +17,14 @@
  * limitations under the License.
  */
 
-import {
-	__custom,
-	__scenario,
-	AppTester
-} from "@nu-art/testelot";
-import {
-	FirebaseModule,
-	FirebaseModule_Class
-} from "@nu-art/firebase/backend";
+import {__scenario} from "@nu-art/testelot";
+import {FirebaseModule} from "@nu-art/firebase/backend";
+import {parseApk} from "./apk-parsing/parse";
+import {MyTester} from "./core";
 
-import * as fs from "fs";
-import {
-	assert,
-	ImplementationMissingException
-} from "@nu-art/ts-common";
 
-const PkgReader = require("isomorphic-apk-reader");
-const ApkPath = 'files-temp/kaspero.apk';
 const mainScenario = __scenario("File Uploading Testing");
-mainScenario.add(__custom(async () => {
-	const bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
-	const file = await bucket.getFile(ApkPath);
-	const buffer = await file.read();
-	const fileName = 'kasper.apk';
-	fs.writeFileSync(fileName, buffer);
-	let resp;
-	try {
-		resp = await new Promise((res, rej) => {
-			const callback = async (err: any, manifest: any) => {
-				return err ? rej(err) : res(manifest)
-			};
-			new PkgReader(fileName, 'apk').parse(callback);
-		});
-	} finally {
-		fs.unlinkSync(fileName)
-	}
-
-	assert('It returned an actual manifest', !!resp, true)
-}).setLabel('Parse Apk'));
-
-
-class MyTester
-	extends AppTester {
-
-	prepare() {
-		console.log('damn');
-		FirebaseModule_Class.localAdminConfigId = "test-permissions";
-
-		const serviceAccount = this.resolveServiceAccount();
-
-		FirebaseModule.setDefaultConfig({"test-permissions": serviceAccount});
-	}
-
-	private resolveServiceAccount() {
-		let pathToServiceAccount = process.env.npm_config_service_account || process.argv.find((arg: string) => arg.startsWith("--service-account="));
-		if (!pathToServiceAccount)
-			throw new ImplementationMissingException("could not find path to service account!!!");
-
-		pathToServiceAccount = pathToServiceAccount.replace("--service-account=", "");
-		return JSON.parse(fs.readFileSync(pathToServiceAccount, "utf8"))
-	}
-
-	build(): void {
-		console.log('ciao');
-		super.build()
-	}
-}
+// mainScenario.add(parseApk);
 
 module.exports = new MyTester()
 	.addModules(FirebaseModule)
