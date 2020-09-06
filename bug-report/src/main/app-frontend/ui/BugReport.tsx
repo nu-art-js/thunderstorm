@@ -84,6 +84,7 @@ export class BugReport
 		const content =
 			      <div className={'ll_v_c'}>
 				      <TS_Input
+					      id={"bug-report-subject"}
 					      type={"text"}
 					      value={subject}
 					      placeholder={"type a subject here"}

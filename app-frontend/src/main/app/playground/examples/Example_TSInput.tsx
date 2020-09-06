@@ -43,7 +43,7 @@ export class Example_TSInput
 		const props1 = this.props1();
 		const props2 = this.props2();
 		return <>
-			<Example_NewProps name={"TS Input"} renderer={TS_Input} data={[props1, props2]} />
+			<Example_NewProps name={"TS Input"} renderer={TS_Input} data={[props1, props2]}/>
 		</>
 	}
 

@@ -22,10 +22,9 @@
 import * as React from 'react';
 import {
 	_clearTimeout,
-	currentTimeMillies, generateHex
+	currentTimeMillies
 } from '@nu-art/ts-common';
 import {Stylable} from "../tools/Stylable";
-import {Props_FilterInput} from "./FilterInput";
 
 export type TS_InputProps<Key> = Stylable & {
 	onChange: (value: string, id: Key) => void
@@ -50,16 +49,16 @@ type State = {
 }
 const MIN_DELTA = 200;
 
-export class TS_Input<Key extends string>
+export class TS_Input<Key extends string= string>
 	extends React.Component<TS_InputProps<Key>, State> {
 
 	private ref?: HTMLInputElement | null;
 	private clickedTimestamp?: number;
 	private timeout?: number;
 
-	static defaultProps: Partial<Props_FilterInput<any>> = {
-		id: generateHex(16)
-	};
+	// static defaultProps: Partial<Props_FilterInput<string>> = {
+	// 	id: generateHex(16)
+	// };
 
 	constructor(props: TS_InputProps<Key>) {
 		super(props);
