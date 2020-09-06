@@ -21,17 +21,16 @@
 
 import * as React from "react";
 
-
 type Props<P> = {
 	name: string
 	renderer: React.ComponentType<P>
-	data: P[],
+	data: P[]
 	showList?: boolean
 	showToggle?: boolean
 };
 
 type State = { index: number };
-type InferProps<T> = T extends React.ComponentType<infer P> ? P : "blah blah"
+type InferProps<T> = T extends React.ComponentType<infer P> ? P : "blah blah";
 
 export class Example_NewProps<T, P = InferProps<T>>
 	extends React.Component<Props<P>, State> {
@@ -59,7 +58,6 @@ export class Example_NewProps<T, P = InferProps<T>>
 		if (!this.props.showToggle)
 			return;
 
-
 		return <div>
 			<div onClick={() => {
 				this.setState(state => {
@@ -67,7 +65,7 @@ export class Example_NewProps<T, P = InferProps<T>>
 					if (index >= this.props.data.length)
 						index = 0;
 
-					return {index: index}
+					return {index}
 				})
 			}}>
 				click to switch

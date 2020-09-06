@@ -51,8 +51,9 @@ import {
 import {
 	FileWrapper,
 	FirebaseModule,
-    FirestoreTransaction
+	FirestoreTransaction
 } from '@nu-art/firebase/backend';
+import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -69,7 +70,7 @@ const modules: Module[] = [
 ];
 
 const postProcessor: { [k: string]: PostProcessor } = {
-	default: async (transaction: FirestoreTransaction, file: FileWrapper) => {
+	default: async (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => {
 		await FirebaseModule.createAdminSession().getDatabase().set(`/alan/testing/${file.path}`, {path: file.path, name: await file.exists()});
 		console.log(file)
 	}
