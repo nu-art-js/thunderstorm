@@ -47,10 +47,14 @@ export class AppTester
 		    });
 	}
 
+	prepare() {
+	}
+
 	runTestsImpl = async () => {
 		if (!this.scenario)
 			throw new ImplementationMissingException("No test specified!!");
 
+		this.prepare();
 		this.init();
 		this.reporter.init();
 		Action.resolveTestsToRun()

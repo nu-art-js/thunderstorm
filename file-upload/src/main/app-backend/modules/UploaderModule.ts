@@ -49,7 +49,7 @@ type Config = {
 	bucketName?: string
 }
 
-export type PostProcessor = (transaction: FirestoreTransaction, file: FileWrapper) => Promise<void>;
+export type PostProcessor = (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => Promise<void>;
 
 export class UploaderModule_Class
 	extends Module<Config> {
@@ -121,7 +121,7 @@ export class UploaderModule_Class
 			const bucket = await this.storage.getOrCreateBucket(tempMeta.bucketName);
 			const file = await bucket.getFile(tempMeta.path);
 			try {
-				await val(transaction, file);
+				await val(transaction, file, tempMeta);
 			} catch (e) {
 				return await this.notifyFrontend(tempMeta.feId, `Post-processing failed for file: ${tempMeta.name} with error: ${__stringify(e)}`, UploadResult.Failure);
 			}

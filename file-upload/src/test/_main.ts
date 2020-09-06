@@ -1,5 +1,5 @@
 /*
- * Testelot is a typescript scenario composing framework
+ * Firebase is a simpler Typescript wrapper to all of firebase services.
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,16 +16,6 @@
  * limitations under the License.
  */
 
-export * from './core/TestException';
-export * from './core/Action';
-export * from './core/Action_Container';
-export * from './core/Action_Custom';
-export * from './core/Action_Http';
-export * from './core/Action_Log';
-export * from './core/Action_Sleep';
-export * from './core/Action_ThrowException';
-export * from './core/ContainerContext';
-export * from './core/Reporter';
-export * from './core/Scenario';
-export * from './core/_base_apis';
-export * from './test-app/AppTester';
+export * from "../main"
+export * from "../main/backend"
+export * from "../main/backend-firestore-backup"
