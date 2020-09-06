@@ -18,4 +18,3 @@
 
 export * from "../main"
 export * from "../main/backend"
-export * from "../main/backend-firestore-backup"
