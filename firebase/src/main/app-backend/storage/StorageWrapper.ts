@@ -18,7 +18,8 @@
 
 import {
 	BadImplementationException,
-	currentTimeMillies
+	currentTimeMillies,
+	ThisShouldNotHappenException
 } from "@nu-art/ts-common";
 import {
 	Bucket,
@@ -27,6 +28,7 @@ import {
 	MakeFilePublicResponse,
 } from "@google-cloud/storage";
 import {
+	Firebase_CopyResponse,
 	FirebaseType_Metadata,
 	FirebaseType_Storage,
 	ReturnType_Metadata
@@ -166,6 +168,36 @@ export class FileWrapper {
 	async read(): Promise<Buffer> {
 		const downloadResponse = await this.file.download();
 		return downloadResponse[0]
+	}
+
+	async copy(destination: string | BucketWrapper | FileWrapper): Promise<File> {
+		const copy = await this.copyImpl(destination);
+		return copy[0];
+	}
+
+	private copyImpl(destination: string | BucketWrapper | FileWrapper): Promise<Firebase_CopyResponse>  {
+		if (typeof destination === "string")
+			return this.file.copy(destination);
+
+		const file = (destination as FileWrapper).file;
+		if (file)
+			return this.file.copy(file);
+
+		return this.file.copy((destination as BucketWrapper).bucket);
+	}
+
+	async move(destination: string | BucketWrapper | FileWrapper) {
+		const file = await this.copy(destination);
+		try {
+			await this.delete()
+		} catch (e) {
+			try {
+				await file.delete();
+			} catch (err) {
+				throw new ThisShouldNotHappenException('Error during the deletion of the recently copied file, check the attached error', err)
+			}
+			throw new BadImplementationException('Error during the deletion of the file after a successful copy, attached error stack', e);
+		}
 	}
 
 	async delete() {

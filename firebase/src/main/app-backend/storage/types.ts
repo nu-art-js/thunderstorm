@@ -18,7 +18,9 @@
 
 import * as admin from "firebase-admin";
 import {Metadata} from "@google-cloud/common";
+import {CopyResponse} from "@google-cloud/storage";
 
 export type FirebaseType_Storage = admin.storage.Storage;
 export type FirebaseType_Metadata = Metadata;
 export type ReturnType_Metadata = {metadata?: Metadata};
+export type Firebase_CopyResponse  = CopyResponse

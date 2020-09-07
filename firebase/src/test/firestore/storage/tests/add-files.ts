@@ -56,6 +56,72 @@ export function saveAndDeleteFilesTest() {
 	}).setLabel("Save object to file"));
 
 	scenario.add(__custom(async () => {
+		const files = await bucket.listFiles(testFolder, (file: File) => file.name.includes(`${pathToTestFile}`));
+		assert("Expected 3 files.. ", 3, files.length);
+	}).setLabel("Assert three files found"));
+
+	scenario.add(__custom(async () => {
+		const file = await bucket.getFile(`${pathToTestFile}-object.txt`);
+		const destination = `${pathToTestFile}-moved-object.txt`;
+		await file.move(destination);
+		const exists = await (await bucket.getFile(destination)).exists();
+		assert('File is not where it should', exists, true);
+		assert('Original file should not be there anymore', await file.exists(), false);
+	}).setLabel("Move file"));
+
+	scenario.add(__custom(async () => {
+		const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket('gs://local-ts-testing-alan');
+		const file = await bucket.getFile(`${pathToTestFile}-moved-object.txt`);
+		await file.move(bucket2);
+		const exists = await (await bucket2.getFile(`${pathToTestFile}-moved-object.txt`)).exists();
+		assert('File is not where it should', exists, true);
+		assert('Original file should not be there anymore', await file.exists(), false);
+	}).setLabel("Move file to another bucket"));
+
+	scenario.add(__custom(async () => {
+		const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket('gs://local-ts-testing-alan');
+		const file = await bucket2.getFile(`${pathToTestFile}-moved-object.txt`);
+		const destination = `${pathToTestFile}-object.txt`;
+		const file2 = await bucket.getFile(destination);
+		await file.move(file2);
+		assert('File is not where it should', await file2.exists(), true);
+		assert('Original file should not be there anymore', await file.exists(), false);
+	}).setLabel("Move file to another file"));
+
+	scenario.add(__custom(async () => {
+		const file = await bucket.getFile(`${pathToTestFile}-number.txt`);
+		const destination = `${pathToTestFile}-copied-number.txt`;
+		await file.copy(destination);
+		const exists = await (await bucket.getFile(destination)).exists();
+		assert('File is not where it should', exists, true);
+		assert('Original file should still be there', await file.exists(), true);
+	}).setLabel("Copy file"));
+
+	scenario.add(__custom(async () => {
+		const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket('gs://local-ts-testing-alan');
+		const file = await bucket.getFile(`${pathToTestFile}-number.txt`);
+		await file.copy(bucket2);
+		const exists = await (await bucket2.getFile(`${pathToTestFile}-number.txt`)).exists();
+		assert('File is not where it should', exists, true);
+		assert('Original file should still be there', await file.exists(), true);
+	}).setLabel("Copy file to another bucket"));
+
+	scenario.add(__custom(async () => {
+		const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket('gs://local-ts-testing-alan');
+		const file = await bucket.getFile(`${pathToTestFile}-number.txt`);
+		const destination = `${pathToTestFile}-moved-copied-number.txt`;
+		const file2 = await bucket2.getFile(destination);
+		await file.copy(file2);
+		assert('File is not where it should', await file2.exists(), true);
+		assert('Original file should still be there', await file.exists(), true);
+	}).setLabel("Copy file to another file"));
+
+	scenario.add(__custom(async () => {
+		const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket('gs://local-ts-testing-alan');
+		return bucket2.deleteFiles(testFolder, (file: File) => file.name.includes(`${pathToTestFile}`));
+	}).setLabel("delete test files from bucket 2"));
+
+	scenario.add(__custom(async () => {
 		return (await bucket.getFile(`${pathToTestFile}-object.txt`)).setMetadata(metadata);
 	}).setLabel("Set metadata for obj file"));
 
@@ -63,11 +129,6 @@ export function saveAndDeleteFilesTest() {
 		const meta = await (await bucket.getFile(`${pathToTestFile}-object.txt`)).getMetadata();
 		assert("Metadata doesn't match expected", metadata, meta.metadata);
 	}).setLabel("Save object to file"));
-
-	scenario.add(__custom(async () => {
-		const files = await bucket.listFiles(testFolder, (file: File) => file.name.includes(`${pathToTestFile}`));
-		assert("Expected 3 files.. ", 3, files.length);
-	}).setLabel("Assert three files found"));
 
 	scenario.add(__custom(async () => {
 		return bucket.deleteFiles(testFolder, (file: File) => file.name.includes(`${pathToTestFile}`));
