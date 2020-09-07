@@ -125,13 +125,13 @@ export function saveAndDeleteFilesTest() {
 	// }).setLabel("delete test files from extra bucket"));
 
 	scenario.add(__custom(async () => {
-		return (await bucket.getFile(`${pathToTestFile}-object.txt`)).setMetadata(metadata);
-	}).setLabel("Set metadata for obj file"));
+		return (await bucket.getFile(`${pathToTestFile}-string.txt`)).setMetadata(metadata);
+	}).setLabel("Set metadata for file"));
 
 	scenario.add(__custom(async () => {
-		const meta = await (await bucket.getFile(`${pathToTestFile}-object.txt`)).getMetadata();
+		const meta = await (await bucket.getFile(`${pathToTestFile}-string.txt`)).getMetadata();
 		assert("Metadata doesn't match expected", metadata, meta.metadata);
-	}).setLabel("Save object to file"));
+	}).setLabel("Get metadata"));
 
 	scenario.add(__custom(async () => {
 		return bucket.deleteFiles(testFolder, (file: File) => file.name.includes(`${pathToTestFile}`));
