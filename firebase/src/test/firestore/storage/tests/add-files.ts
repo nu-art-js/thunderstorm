@@ -70,25 +70,6 @@ export function saveAndDeleteFilesTest() {
 	}).setLabel("Move file"));
 
 	scenario.add(__custom(async () => {
-		const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket('gs://local-ts-testing-alan');
-		const file = await bucket.getFile(`${pathToTestFile}-moved-object.txt`);
-		await file.move(bucket2);
-		const exists = await (await bucket2.getFile(`${pathToTestFile}-moved-object.txt`)).exists();
-		assert('File is not where it should', exists, true);
-		assert('Original file should not be there anymore', await file.exists(), false);
-	}).setLabel("Move file to another bucket"));
-
-	scenario.add(__custom(async () => {
-		const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket('gs://local-ts-testing-alan');
-		const file = await bucket2.getFile(`${pathToTestFile}-moved-object.txt`);
-		const destination = `${pathToTestFile}-object.txt`;
-		const file2 = await bucket.getFile(destination);
-		await file.move(file2);
-		assert('File is not where it should', await file2.exists(), true);
-		assert('Original file should not be there anymore', await file.exists(), false);
-	}).setLabel("Move file to another file"));
-
-	scenario.add(__custom(async () => {
 		const file = await bucket.getFile(`${pathToTestFile}-number.txt`);
 		const destination = `${pathToTestFile}-copied-number.txt`;
 		await file.copy(destination);
@@ -97,29 +78,51 @@ export function saveAndDeleteFilesTest() {
 		assert('Original file should still be there', await file.exists(), true);
 	}).setLabel("Copy file"));
 
-	scenario.add(__custom(async () => {
-		const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket('gs://local-ts-testing-alan');
-		const file = await bucket.getFile(`${pathToTestFile}-number.txt`);
-		await file.copy(bucket2);
-		const exists = await (await bucket2.getFile(`${pathToTestFile}-number.txt`)).exists();
-		assert('File is not where it should', exists, true);
-		assert('Original file should still be there', await file.exists(), true);
-	}).setLabel("Copy file to another bucket"));
-
-	scenario.add(__custom(async () => {
-		const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket('gs://local-ts-testing-alan');
-		const file = await bucket.getFile(`${pathToTestFile}-number.txt`);
-		const destination = `${pathToTestFile}-moved-copied-number.txt`;
-		const file2 = await bucket2.getFile(destination);
-		await file.copy(file2);
-		assert('File is not where it should', await file2.exists(), true);
-		assert('Original file should still be there', await file.exists(), true);
-	}).setLabel("Copy file to another file"));
-
-	scenario.add(__custom(async () => {
-		const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket('gs://local-ts-testing-alan');
-		return bucket2.deleteFiles(testFolder, (file: File) => file.name.includes(`${pathToTestFile}`));
-	}).setLabel("delete test files from bucket 2"));
+	// TODO: Set the extra bucket name to test this functionality
+	// You'll need to manually create this bucket in the project to which your service account has access to
+	// const extraBucketName = 'gs://local-ts-testing-alan';
+	// scenario.add(__custom(async () => {
+	// 	const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
+	// 	const file = await bucket.getFile(`${pathToTestFile}-moved-object.txt`);
+	// 	await file.move(bucket2);
+	// 	const exists = await (await bucket2.getFile(`${pathToTestFile}-moved-object.txt`)).exists();
+	// 	assert('File is not where it should', exists, true);
+	// 	assert('Original file should not be there anymore', await file.exists(), false);
+	// }).setLabel("Move file to another bucket"));
+	//
+	// scenario.add(__custom(async () => {
+	// 	const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
+	// 	const file = await bucket2.getFile(`${pathToTestFile}-moved-object.txt`);
+	// 	const destination = `${pathToTestFile}-object.txt`;
+	// 	const file2 = await bucket.getFile(destination);
+	// 	await file.move(file2);
+	// 	assert('File is not where it should', await file2.exists(), true);
+	// 	assert('Original file should not be there anymore', await file.exists(), false);
+	// }).setLabel("Move file to another file"));
+	//
+	// scenario.add(__custom(async () => {
+	// 	const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
+	// 	const file = await bucket.getFile(`${pathToTestFile}-number.txt`);
+	// 	await file.copy(bucket2);
+	// 	const exists = await (await bucket2.getFile(`${pathToTestFile}-number.txt`)).exists();
+	// 	assert('File is not where it should', exists, true);
+	// 	assert('Original file should still be there', await file.exists(), true);
+	// }).setLabel("Copy file to another bucket"));
+	//
+	// scenario.add(__custom(async () => {
+	// 	const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
+	// 	const file = await bucket.getFile(`${pathToTestFile}-number.txt`);
+	// 	const destination = `${pathToTestFile}-moved-copied-number.txt`;
+	// 	const file2 = await bucket2.getFile(destination);
+	// 	await file.copy(file2);
+	// 	assert('File is not where it should', await file2.exists(), true);
+	// 	assert('Original file should still be there', await file.exists(), true);
+	// }).setLabel("Copy file to another file"));
+	//
+	// scenario.add(__custom(async () => {
+	// 	const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
+	// 	return bucket2.deleteFiles(testFolder, (file: File) => file.name.includes(`${pathToTestFile}`));
+	// }).setLabel("delete test files from extra bucket"));
 
 	scenario.add(__custom(async () => {
 		return (await bucket.getFile(`${pathToTestFile}-object.txt`)).setMetadata(metadata);
