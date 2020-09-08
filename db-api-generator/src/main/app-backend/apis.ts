@@ -139,6 +139,6 @@ export class ServerApi_Delete<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DB_Object, body: void) {
-		return this.dbModule.deleteUnique(queryParams._id, request);
+		return this.dbModule.deleteUnique(queryParams._id, undefined, request);
 	}
 }
