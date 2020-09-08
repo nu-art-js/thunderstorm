@@ -57,7 +57,7 @@ export class UploaderModule_Class
 
 	private postProcessor!: { [k: string]: PostProcessor };
 
-	setPostProcessor(validator: { [k: string]: PostProcessor }) {
+	setPostProcessor = (validator: { [k: string]: PostProcessor }) => {
 		this.postProcessor = validator
 	};
 
@@ -100,7 +100,7 @@ export class UploaderModule_Class
 		}));
 	}
 
-	async fileUploaded(filePath?: string) {
+	fileUploaded = async (filePath?: string) => {
 		if (!filePath)
 			throw new ThisShouldNotHappenException('Missing file path');
 
@@ -128,7 +128,7 @@ export class UploaderModule_Class
 			return this.notifyFrontend(tempMeta.feId, `Successfully parsed and processed file ${tempMeta.name}`, UploadResult.Success)
 
 		})
-	}
+	};
 
 	private notifyFrontend = async (feId: string, message: string, result: UploadResult) => {
 		await PushPubSubModule.pushToKey<Push_FileUploaded>(fileUploadedKey, {feId}, {message, result})
