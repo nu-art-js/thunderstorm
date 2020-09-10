@@ -18,28 +18,54 @@
  */
 
 import * as fs from "fs";
-import { __custom } from "@nu-art/testelot";
-import { FirebaseModule } from "@nu-art/firebase/backend";
-import { assert } from "@nu-art/ts-common";
+import {__custom} from "@nu-art/testelot";
+import {
+	FileWrapper,
+	FirebaseModule
+} from "@nu-art/firebase/backend";
+import {
+	assert,
+	BadImplementationException
+} from "@nu-art/ts-common";
+
 const PkgReader = require("isomorphic-apk-reader");
 const ApkPath = 'files-temp/kaspero.apk';
-export const parseApk = __custom(async () => {
-	const bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
-	const file = await bucket.getFile(ApkPath);
+
+async function parseApkImpl(file: FileWrapper) {
 	const buffer = await file.read();
-	const fileName = 'kasper.apk';
-	fs.writeFileSync(fileName, buffer);
-	let resp;
+	const metadata = await file.getMetadata();
+// @ts-ignore
+	const mediaLink = metadata.mediaLink;
+	console.log(metadata, mediaLink)
+	console.log(`File read ${file.path}`);
+	// const fileName = './temp.apk';
+	// @ts-ignore
+	const fileName = `gs://${metadata.bucket}/${metadata.name}`;
+	// await fs.promises.writeFile(fileName, buffer);
+	console.log(`File wrote locally ${file.path}`);
+	let manifest;
 	try {
-		resp = await new Promise((res, rej) => {
-			const callback = async (err: any, manifest: any) => {
-				return err ? rej(err) : res(manifest)
+		manifest = await new Promise((res, rej) => {
+			const callback = async (err: any, _manifest: any) => {
+				console.log(err,_manifest)
+				return err ? rej(err) : res(_manifest)
 			};
 			new PkgReader(fileName, 'apk').parse(callback);
 		});
+	} catch (e) {
+		throw new BadImplementationException('Failed to parse manifest', e)
 	} finally {
-		fs.unlinkSync(fileName)
+		console.log(`Cleaup`);
+		// await fs.promises.unlink(fileName);
 	}
+	console.log(`Manifest`, manifest);
+	return manifest
+}
 
+export const parseApk = __custom(async () => {
+	const bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
+	const file = await bucket.getFile(ApkPath);
+
+	const resp = await parseApkImpl(file);
 	assert('It returned an actual manifest', !!resp, true)
 }).setLabel('Parse Apk');

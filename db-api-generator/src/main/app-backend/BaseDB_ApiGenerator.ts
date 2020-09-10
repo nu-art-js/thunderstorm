@@ -404,6 +404,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * Deletes a unique document based on its `_id`. Uses a transaction, after deletion assertions occur.
 	 *
 	 * @param _id - The _id of the object to be deleted.
+	 * @param transaction
 	 * @param request - The request in order to possibly obtain more info.
 	 *
 	 * @throws `ApiException` when the document doesn't exist in the collection.
@@ -411,20 +412,35 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	async deleteUnique(_id: string, request?: ExpressRequest) {
+	async deleteUnique(_id: string, transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType> {
 		if (!_id)
 			throw new BadImplementationException(`No _id for deletion provided.`);
 
-		return this.collection.runInTransaction(async (transaction: FirestoreTransaction) => {
-			const ourQuery = {where: {_id} as Clause_Where<DBType>};
-			const dbInstance = await transaction.queryUnique(this.collection, ourQuery);
-			if (!dbInstance)
+		const processor = async (_transaction: FirestoreTransaction) => {
+			const write = await this.deleteUnique_Read(_id, _transaction, request);
+			if(!write)
 				throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
-			await this.assertDeletion(transaction, dbInstance);
-			await this.deleteImpl(transaction, ourQuery, request);
-			return dbInstance;
-		});
+			return write();
+		};
+
+		if (transaction)
+			return processor(transaction);
+
+		return this.collection.runInTransaction(processor);
+	}
+
+	async deleteUnique_Read(_id: string, transaction: FirestoreTransaction, request?: ExpressRequest) {
+		if (!_id)
+			throw new BadImplementationException(`No _id for deletion provided.`);
+
+		const ourQuery = {where: {_id} as Clause_Where<DBType>};
+		const dbInstance = await transaction.queryUnique(this.collection, ourQuery);
+		if (!dbInstance)
+			throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
+
+		await this.assertDeletion(transaction, dbInstance);
+		return this.deleteImpl_Read(transaction, ourQuery, request);
 	}
 
 	/**
@@ -437,8 +453,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	private async deleteImpl(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest) {
-		return transaction.deleteUnique(this.collection, ourQuery);
+	private async deleteImpl_Read(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest): Promise<(() => Promise<DBType>) | undefined> {
+		return transaction.deleteUnique_Read(this.collection, ourQuery);
 	}
 
 	/**
