@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 import {
+	__stringify,
 	BadImplementationException,
 	generateHex,
 	Minute,
 	Module,
-	Queue,
-    __stringify
+	Queue
 } from "@nu-art/ts-common";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
@@ -67,7 +67,7 @@ export type FileInfo = {
 };
 
 export interface OnFileStatusChanged {
-	__onFileStatusChanged: (id: string) => void
+	__onFileStatusChanged: (id?: string) => void
 }
 
 export class UploaderModule_Class
@@ -85,11 +85,19 @@ export class UploaderModule_Class
 		return this.files[id] && this.files[id][key]
 	}
 
-	setFileInfo<K extends keyof FileInfo>(id: string, key: K, value: FileInfo[K]) {
+	getFullFileInfo(id: string): FileInfo | undefined {
+		return this.files[id]
+	}
+
+	private setFileInfo<K extends keyof FileInfo>(id: string, key: K, value: FileInfo[K]) {
 		if (!this.files[id])
 			throw new BadImplementationException(`Trying to set ${key} for non existent file with id: ${id}`);
 
 		this.files[id][key] = value;
+		this.dispatchFileStatusChange(id)
+	}
+
+	private dispatchFileStatusChange(id?: string) {
 		this.dispatch_fileStatusChange.dispatchUI([id]);
 		this.dispatch_fileStatusChange.dispatchModule([id])
 	}
@@ -116,6 +124,9 @@ export class UploaderModule_Class
 			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
 			.setRelativeUrl("/v1/upload/get-url")
 			.setJsonBody(body)
+			.setOnProgressListener((ev: ProgressEvent) => {
+				body.forEach(f => this.setFileInfo(f.feId, "progress", ev.loaded / ev.total))
+			})
 			.setOnError((request) => {
 				body.forEach(f => {
 					this.setFileInfo(f.feId, "messageStatus", __stringify(request.xhr.response));
@@ -123,6 +134,7 @@ export class UploaderModule_Class
 				})
 			})
 			.execute(async (response: TempSecureUrl[]) => {
+				this.dispatchFileStatusChange();
 				await this.uploadFiles(response)
 			});
 
@@ -132,18 +144,18 @@ export class UploaderModule_Class
 	private uploadFiles = async (response: TempSecureUrl[]) => {
 		// Subscribe
 		await PushPubSubModule.subscribeMulti(response.map(r => ({pushKey: fileUploadedKey, props: {feId: r.tempDoc.feId}})));
-		//
+
 		response.forEach(r => {
 			this.uploadQueue.addItem(async () => {
-				this.setFileInfo(r.tempDoc.feId, "status", FileStatus.UploadingFile);
 				await this.uploadFile(r);
-				this.setFileInfo(r.tempDoc.feId, "status", FileStatus.PostProcessing);
 				//TODO: Probably need to set a timer here in case we dont get a push back (contingency)
 			});
 		})
 	};
 
 	private uploadFile = async (response: TempSecureUrl) => {
+		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.UploadingFile);
+
 		const fileInfo = this.files[response.tempDoc.feId];
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
@@ -161,7 +173,11 @@ export class UploaderModule_Class
 			.setTimeout(10 * Minute)
 			.setBody(fileInfo.file);
 
-		return fileInfo.request.executeSync();
+		await fileInfo.request.executeSync();
+
+		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
+		this.setFileInfo(response.tempDoc.feId, "request", undefined);
+		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.PostProcessing);
 	};
 
 	__onMessageReceived(pushKey: string, props: { feId: string }, data: { message: string, result: string }): void {
