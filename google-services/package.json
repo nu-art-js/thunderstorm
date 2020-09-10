@@ -1,0 +1,69 @@
+{
+  "name": "@nu-art/google-services",
+  "version": "0.0.0",
+  "description": "google-services",
+  "keywords": [
+    "TacB0sS",
+    "create account",
+    "express",
+    "infra",
+    "login",
+    "nu-art",
+    "permissions",
+    "saml",
+    "thunderstorm",
+    "typescript",
+    "user-account"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "~0.0.1",
+    "@nu-art/db-api-generator": "~0.0.1",
+    "@nu-art/firebase": "~0.0.1",
+    "@nu-art/storm": "~0.0.1",
+    "@nu-art/thunderstorm": "~0.0.1",
+    "@nu-art/user-account": "~0.0.1",
+    "moment": "^2.24.0"
+  },
+  "devDependencies": {
+    "firebase": "^7.0.0",
+    "@google-cloud/resource": "^1.2.1",
+    "@nu-art/testelot": "~0.0.1",
+    "@types/adm-zip": "^0.4.33",
+    "@types/express": "^4.17.7",
+    "@types/node": "^11.11.1",
+    "@types/node-fetch": "^2.3.2",
+    "@types/request": "^2.48.1",
+    "@types/rimraf": "^3.0.0",
+    "@types/saml2-js": "^1.6.8",
+    "adm-zip": "^0.4.16",
+    "compression": "^1.7.4",
+    "express": "^4.16.4",
+    "firebase-admin": "8.9.0",
+    "firebase-functions": "^3.6.2",
+    "google-auth-library": "^6.0.6",
+    "googleapis": "^55.0.0",
+    "moment": "^2.24.0",
+    "neo4j-driver": "*",
+    "request": "^2.88.0",
+    "rimraf": "^3.0.2",
+    "ts-node": "^8.10.2",
+    "tslint": "^5.16.0",
+    "typescript": "^3.9.7",
+    "use-strict": "^1.0.1"
+  }
+}
