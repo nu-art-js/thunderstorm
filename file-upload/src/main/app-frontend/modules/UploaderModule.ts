@@ -131,7 +131,7 @@ export class UploaderModule_Class
 
 	private uploadFiles = async (response: TempSecureUrl[]) => {
 		// Subscribe
-		await PushPubSubModule.subscribeMulti(response.map(r => ({pushKey: fileUploadedKey, props: {_id: r.tempDoc.feId}})));
+		await PushPubSubModule.subscribeMulti(response.map(r => ({pushKey: fileUploadedKey, props: {feId: r.tempDoc.feId}})));
 		//
 		response.forEach(r => {
 			this.uploadQueue.addItem(async () => {
