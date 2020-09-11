@@ -181,6 +181,7 @@ export class UploaderModule_Class
 	};
 
 	__onMessageReceived(pushKey: string, props: { feId: string }, data: { message: string, result: string }): void {
+		this.logInfo('Message received from service worker', pushKey, props, data)
 		if (pushKey !== fileUploadedKey)
 			return;
 
