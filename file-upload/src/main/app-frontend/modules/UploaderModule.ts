@@ -36,7 +36,8 @@ import {
 	BaseUploaderFile,
 	fileUploadedKey,
 	Push_FileUploaded,
-	TempSecureUrl
+	TempSecureUrl,
+	UploadResult
 } from "../../shared/types";
 import {
 	OnPushMessageReceived,
@@ -179,6 +180,15 @@ export class UploaderModule_Class
 		this.logInfo('Message received from service worker', pushKey, props, data);
 		if (pushKey !== fileUploadedKey)
 			return;
+
+		switch (data.result) {
+			case UploadResult.Success:
+				this.setFileInfo(props.feId, "status", FileStatus.Completed);
+				break;
+			case UploadResult.Failure:
+				this.setFileInfo(props.feId, "status", FileStatus.Error);
+				break
+		}
 
 		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props}).catch()
 	}
