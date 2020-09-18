@@ -19,7 +19,8 @@ import {
 	Change,
 	CloudFunction,
 	EventContext,
-	HttpsFunction
+	HttpsFunction,
+	RuntimeOptions
 } from 'firebase-functions';
 import {DataSnapshot} from "firebase-functions/lib/providers/database";
 
@@ -240,7 +241,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 	};
 }
 
-export abstract class Firebase_StorageFunction<ConfigType extends any = any>
+export abstract class Firebase_StorageFunction<ConfigType extends RuntimeOptions = RuntimeOptions>
 	extends Module<ConfigType>
 	implements FirebaseFunction {
 
@@ -249,6 +250,7 @@ export abstract class Firebase_StorageFunction<ConfigType extends any = any>
 	private isReady: boolean = false;
 	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
 	private readonly path: string;
+	private runtimeOpts: RuntimeOptions = {};
 
 	protected constructor(path: string, name?: string) {
 		super();
@@ -262,7 +264,12 @@ export abstract class Firebase_StorageFunction<ConfigType extends any = any>
 		if (this.function)
 			return this.function;
 
-		return this.function = functions.storage.bucket().object().onFinalize(async (object: ObjectMetadata, context: EventContext) => {
+		this.runtimeOpts = {
+			timeoutSeconds: this.config?.timeoutSeconds || 300,
+			memory: this.config?.memory || '2GB'
+		};
+
+		return this.function = functions.runWith(this.runtimeOpts).storage.bucket().object().onFinalize(async (object: ObjectMetadata, context: EventContext) => {
 			if (!object.name?.startsWith(this.path))
 				return;
 
