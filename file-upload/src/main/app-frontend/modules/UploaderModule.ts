@@ -28,8 +28,7 @@ import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	HttpModule,
 	HttpRequest,
-	ThunderDispatcher,
-	ToastModule
+	ThunderDispatcher
 } from "@nu-art/thunderstorm/frontend";
 
 import {
@@ -124,9 +123,6 @@ export class UploaderModule_Class
 			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
 			.setRelativeUrl("/v1/upload/get-url")
 			.setJsonBody(body)
-			.setOnProgressListener((ev: ProgressEvent) => {
-				body.forEach(f => this.setFileInfo(f.feId, "progress", ev.loaded / ev.total))
-			})
 			.setOnError((request) => {
 				body.forEach(f => {
 					this.setFileInfo(f.feId, "messageStatus", __stringify(request.xhr.response));
@@ -164,7 +160,7 @@ export class UploaderModule_Class
 			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
 			.setUrl(response.secureUrl)
 			.setOnError((request) => {
-				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error)
+				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
 				this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(request.xhr.response))
 			})
 			.setOnProgressListener((ev: ProgressEvent) => {
@@ -181,17 +177,16 @@ export class UploaderModule_Class
 	};
 
 	__onMessageReceived(pushKey: string, props: { feId: string }, data: { message: string, result: string }): void {
+		this.logInfo('Message received from service worker', pushKey, props, data);
 		if (pushKey !== fileUploadedKey)
 			return;
 
 		switch (data.result) {
 			case UploadResult.Success:
 				this.setFileInfo(props.feId, "status", FileStatus.Completed);
-				ToastModule.toastSuccess(data.message);
 				break;
 			case UploadResult.Failure:
 				this.setFileInfo(props.feId, "status", FileStatus.Error);
-				ToastModule.toastError(data.message);
 				break
 		}
 

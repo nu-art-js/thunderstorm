@@ -26,7 +26,8 @@ import {
 	ApiException,
 	HttpRequestData,
 	ExpressRequest,
-	ServerApi_Middleware
+	ServerApi_Middleware,
+	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
 	Base_AccessLevels,
@@ -101,8 +102,10 @@ export class PermissionsAssert_Class
 		const [apiDetails, userDetails] = await Promise.all([this.getApiDetails(path, projectId),
 		                                                     this.getUserDetails(userId)]);
 
-		const apiAccessLevelIds = apiDetails.apiDb.accessLevelIds || [];
-		if (!apiAccessLevelIds.length) {
+		if (!apiDetails.apiDb.accessLevelIds) {
+			if (ServerApi.isDebug)
+				return;
+
 			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${path}`);
 		}
 
