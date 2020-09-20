@@ -57,6 +57,7 @@ import {
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
 import {PermissionsShare} from "../permissions-share";
+import { UI_Account } from "@nu-art/user-account";
 
 const validateUserUuid = validateRegexp(/^.{0,50}$/);
 const validateGroupLabel = validateRegexp(/^[A-Za-z-\._ ]+$/);
@@ -218,20 +219,20 @@ export class UsersDB_Class
 		}
 	}
 
-	async __onUserLogin(email: string) {
-		await this.insertIfNotExist(email);
+	async __onUserLogin(account: UI_Account) {
+		await this.insertIfNotExist(account);
 	}
 
-	async __onNewUserRegistered(email: string) {
-		await this.insertIfNotExist(email);
+	async __onNewUserRegistered(account: UI_Account) {
+		await this.insertIfNotExist(account);
 	}
 
-	async insertIfNotExist(email: string) {
+	async insertIfNotExist(_account: UI_Account) {
 		return this.runInTransaction(async (transaction) => {
 
-			const account = await AccountModule.getUser(email);
+			const account = await AccountModule.getUser(_account.email);
 			if (!account)
-				throw new ApiException(404, `user not found for email ${email}`);
+				throw new ApiException(404, `user not found for email ${_account.email}`);
 
 			const users = await transaction.query(this.collection, {where: {accountId: account._id}});
 			if (users.length)
