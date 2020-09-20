@@ -220,19 +220,19 @@ export class UsersDB_Class
 	}
 
 	async __onUserLogin(account: UI_Account) {
-		await this.insertIfNotExist(account);
+		await this.insertIfNotExist(account.email);
 	}
 
 	async __onNewUserRegistered(account: UI_Account) {
-		await this.insertIfNotExist(account);
+		await this.insertIfNotExist(account.email);
 	}
 
-	async insertIfNotExist(_account: UI_Account) {
+	async insertIfNotExist(email: string) {
 		return this.runInTransaction(async (transaction) => {
 
-			const account = await AccountModule.getUser(_account.email);
+			const account = await AccountModule.getUser(email);
 			if (!account)
-				throw new ApiException(404, `user not found for email ${_account.email}`);
+				throw new ApiException(404, `user not found for email ${email}`);
 
 			const users = await transaction.query(this.collection, {where: {accountId: account._id}});
 			if (users.length)
