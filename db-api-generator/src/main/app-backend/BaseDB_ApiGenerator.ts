@@ -59,10 +59,7 @@ import {
 	FirestoreInterface,
 	FirestoreTransaction,
 } from "@nu-art/firebase/backend";
-import {
-	BadInputErrorBody,
-	ErrorKey_BadInput
-} from "../index";
+import {BadInputErrorBody, ErrorKey_BadInput } from "../shared/types";
 
 const idLength = 32;
 export const validateId = (length: number, mandatory: boolean = true) => validateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
