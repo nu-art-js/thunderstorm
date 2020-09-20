@@ -47,7 +47,7 @@ import {
 	ExpressRequest,
 	HeaderKey
 } from "@nu-art/thunderstorm/backend";
-import {validateEmail} from "../../../../../db-api-generator/src/main/app-backend/BaseDB_ApiGenerator";
+import {validateEmail} from "@nu-art/db-api-generator/backend";
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
