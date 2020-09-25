@@ -24,12 +24,16 @@ import {
 } from "@nu-art/ts-common";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
+import {
+	addItemToArray,
+	calculateJsonSizeMb
+} from "../../../../../ts-common/src/main";
 
 export class DatabaseWrapper
 	extends FirebaseBaseWrapper {
 
 	private readonly database: Firebase_DB;
-	private readonly maxDataSizePerOneSetInMB: number = 3;
+
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
@@ -53,7 +57,7 @@ export class DatabaseWrapper
 		try {
 			this.database.ref(path).on("value", (snapshot) => callback(snapshot ? snapshot.val() : undefined));
 		} catch (e) {
-			throw new BadImplementationException(`Error while getting value from path: ${path}`);
+			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}
 	}
 
@@ -61,31 +65,20 @@ export class DatabaseWrapper
 		try {
 			return await this.database.ref(path).set(value);
 		} catch (e) {
-			throw new BadImplementationException(`Error while setting value to path: ${path}`);
+			throw new BadImplementationException(`Error while setting value to path: ${path}`, e);
 		}
 	}
 
-	private getDataSizeInMB = (data: ObjectTS) => {
-		const number = JSON.stringify(data).length / 1024 / 1024;
-		return Math.round(number * 100) / 100;
-	};
+	public async uploadByChunks(parentPath: string, data: ObjectTS, maxSizeMB: number = 3, itemsToRef: Promise<any>[] = []) {
+		return Promise.all(Object.keys(data).reduce((toRet, key) => {
+			const node = `${parentPath}/${key}`;
+			if (calculateJsonSizeMb(data[key]) < maxSizeMB)
+				addItemToArray(toRet, this.set(node, data[key]));
+			else
+				addItemToArray(toRet, this.uploadByChunks(node, data[key], maxSizeMB, itemsToRef));
 
-	public async uploadByChunks(_firebaseNodePath: string, _toUpload: ObjectTS) {
-		const keysArray = Object.keys(_toUpload);
-		for (const key of keysArray) {
-			const value = _toUpload[key];
-			const node = `${_firebaseNodePath}/${key}`;
-			const dataSize = this.getDataSizeInMB(_toUpload[key]);
-			if (dataSize < this.maxDataSizePerOneSetInMB) {
-				console.log(`Uploading data to: ${node} (data size: ${dataSize}mb)...`);
-				await this.set(node, value);
-				console.log(`Data uploaded to: ${node}`);
-			}
-			else {
-				console.log(`Uploading data in chunks to: ${node} (data size: ${dataSize}mb)`);
-				await this.uploadByChunks(node, value);
-			}
-		}
+			return toRet;
+		}, itemsToRef as Promise<any>[]))
 	};
 
 	public async update<T>(path: string, value: T) {
@@ -97,7 +90,7 @@ export class DatabaseWrapper
 		try {
 			return await this.database.ref(path).update(value);
 		} catch (e) {
-			throw new BadImplementationException(`Error while updating value to path: ${path}`);
+			throw new BadImplementationException(`Error while updating value to path: ${path}`, e);
 		}
 	}
 
@@ -116,7 +109,7 @@ export class DatabaseWrapper
 		try {
 			return await this.database.ref(path).remove();
 		} catch (e) {
-			throw new BadImplementationException(`Error while removing path: ${path}`);
+			throw new BadImplementationException(`Error while removing path: ${path}`, e);
 		}
 	}
 }
