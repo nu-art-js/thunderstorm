@@ -20,14 +20,12 @@
 import {Firebase_DB} from "./types";
 import {
 	BadImplementationException,
-	ObjectTS
+	ObjectTS,
+	addItemToArray,
+	calculateJsonSizeMb
 } from "@nu-art/ts-common";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
-import {
-	addItemToArray,
-	calculateJsonSizeMb
-} from "../../../../../ts-common/src/main";
 
 export class DatabaseWrapper
 	extends FirebaseBaseWrapper {
