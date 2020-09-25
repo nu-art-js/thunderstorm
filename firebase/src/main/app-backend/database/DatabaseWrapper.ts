@@ -76,7 +76,7 @@ export class DatabaseWrapper
 				addItemToArray(toRet, this.uploadByChunks(node, data[key], maxSizeMB, itemsToRef));
 
 			return toRet;
-		}, itemsToRef as Promise<any>[]))
+		}, itemsToRef))
 	};
 
 	public async update<T>(path: string, value: T) {
