@@ -20,9 +20,8 @@
 import {Firebase_DB} from "./types";
 import {
 	BadImplementationException,
-	ObjectTS,
-	addItemToArray,
-	calculateJsonSizeMb
+	calculateJsonSizeMb,
+	ObjectTS
 } from "@nu-art/ts-common";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
