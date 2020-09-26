@@ -68,15 +68,13 @@ export class DatabaseWrapper
 	}
 
 	public async uploadByChunks(parentPath: string, data: ObjectTS, maxSizeMB: number = 3, itemsToRef: Promise<any>[] = []) {
-		return Promise.all(Object.keys(data).reduce((toRet, key) => {
+		for (const key in data) {
 			const node = `${parentPath}/${key}`;
 			if (calculateJsonSizeMb(data[key]) < maxSizeMB)
-				addItemToArray(toRet, this.set(node, data[key]));
+				await this.set(node, data[key]);
 			else
-				addItemToArray(toRet, this.uploadByChunks(node, data[key], maxSizeMB, itemsToRef));
-
-			return toRet;
-		}, itemsToRef))
+				await this.uploadByChunks(node, data[key], maxSizeMB, itemsToRef);
+		}
 	};
 
 	public async update<T>(path: string, value: T) {
