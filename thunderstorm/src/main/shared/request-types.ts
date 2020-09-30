@@ -19,7 +19,16 @@
  * limitations under the License.
  */
 
-export * from "./shared/types";
-export * from "./shared/request-types";
-export * from "./shared/force-upgrade";
-export * from "./shared/consts";
+import {ErrorResponse} from "./types";
+import {BaseHttpRequest} from "./BaseHttpRequest";
+
+export class HttpException
+	extends Error {
+	constructor(responseCode: number, url: string) {
+		super(`${responseCode} - ${url}`);
+	}
+}
+
+export type RequestErrorHandler<E extends void | object, Request extends BaseHttpRequest<any, any, any, any, any> = BaseHttpRequest<any, any, any, any, any>> = (request: Request, resError?: ErrorResponse<any>) => void;
+export type RequestSuccessHandler<Request extends BaseHttpRequest<any, any, any, any, any> = BaseHttpRequest<any, any, any, any, any>> = (request: Request) => void;
+export type ResponseHandler<Request extends BaseHttpRequest<any, any, any, any, any> = BaseHttpRequest<any, any, any, any, any>> = (request: Request) => boolean;

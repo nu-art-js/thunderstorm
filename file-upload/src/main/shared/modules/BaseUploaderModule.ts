@@ -25,24 +25,15 @@ import {
 	Queue
 } from "@nu-art/ts-common";
 import {HttpMethod} from "@nu-art/thunderstorm";
-import {
-	HttpModule,
-	HttpRequest,
-	ThunderDispatcher
-} from "@nu-art/thunderstorm/frontend";
+import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
 
 import {
-	Api_GetUploadUrl,
 	BaseUploaderFile,
 	fileUploadedKey,
-	Push_FileUploaded,
 	TempSecureUrl,
 	UploadResult
 } from "../../shared/types";
-import {
-	OnPushMessageReceived,
-	PushPubSubModule
-} from "@nu-art/push-pub-sub/frontend";
+import {PushPubSubModule} from "@nu-art/push-pub-sub/frontend";
 
 const RequestKey_UploadUrl = 'get-upload-url';
 const RequestKey_UploadFile = 'upload-file';
@@ -61,17 +52,22 @@ export type FileInfo = {
 	status: FileStatus
 	messageStatus?: string
 	progress?: number
-	request?: HttpRequest<any>
-	file: File
+	abortCallback?: () => void
+	file: File | ArrayBuffer
 };
 
 export interface OnFileStatusChanged {
 	__onFileStatusChanged: (id?: string) => void
 }
 
-export class UploaderModule_Class
-	extends Module<{}>
-	implements OnPushMessageReceived<Push_FileUploaded> {
+export type Request_Uploader = {
+	name: string
+	mimeType: string
+	key?: string
+}
+
+export abstract class BaseUploaderModule_Class
+	extends Module<{}> {
 	private files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(3);
 	private readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
@@ -79,6 +75,16 @@ export class UploaderModule_Class
 	constructor() {
 		super();
 	}
+
+	protected abstract getSecuredUrls(
+		url: '/v1/upload/get-url',
+		method: HttpMethod,
+		body: BaseUploaderFile[],
+		key: string,
+		onError: (errorMessage: string) => void | Promise<void>
+	): Promise<TempSecureUrl[]>
+
+	protected abstract subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void>
 
 	getFileInfo<K extends keyof FileInfo>(id: string, key: K): FileInfo[K] | undefined {
 		return this.files[id] && this.files[id][key];
@@ -101,45 +107,32 @@ export class UploaderModule_Class
 		this.dispatch_fileStatusChange.dispatchModule([id]);
 	}
 
-	upload(files: File[], key?: string): BaseUploaderFile[] {
-		const body: BaseUploaderFile[] = files.map(file => {
-			const requestBody: BaseUploaderFile = {
-				feId: generateHex(32),
-				name: file.name,
-				mimeType: file.type
-			};
+	async uploadImpl(files: Request_Uploader[]): Promise<BaseUploaderFile[]> {
+		const body: BaseUploaderFile[] = files.map(fileData => ({
+			...fileData,
+			feId: generateHex(32)
+		}));
 
-			if (key)
-				requestBody.key = key;
-
-			this.files[requestBody.feId] = {
-				file,
-				status: FileStatus.ObtainingUrl
-			};
-			return requestBody;
-		});
-
-		HttpModule
-			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
-			.setRelativeUrl("/v1/upload/get-url")
-			.setJsonBody(body)
-			.setOnError((request) => {
+		const response = await this.getSecuredUrls(
+			'/v1/upload/get-url',
+			HttpMethod.POST,
+			body,
+			RequestKey_UploadUrl,
+			(errorMessage) => {
 				body.forEach(f => {
-					this.setFileInfo(f.feId, "messageStatus", __stringify(request.getResponse()));
+					this.setFileInfo(f.feId, "messageStatus", __stringify(errorMessage));
 					this.setFileInfo(f.feId, "status", FileStatus.Error);
 				});
-			})
-			.execute(async (response: TempSecureUrl[]) => {
-				this.dispatchFileStatusChange();
-				await this.uploadFiles(response);
 			});
 
+		this.dispatchFileStatusChange();
+		await this.uploadFiles(response);
 		return body;
 	}
 
 	private uploadFiles = async (response: TempSecureUrl[]) => {
 		// Subscribe
-		await PushPubSubModule.subscribeMulti(response.map(r => ({pushKey: fileUploadedKey, props: {feId: r.tempDoc.feId}})));
+		await this.subscribeToPush(response);
 
 		response.forEach(r => {
 			this.uploadQueue.addItem(async () => {
@@ -149,6 +142,15 @@ export class UploaderModule_Class
 		});
 	};
 
+	protected abstract uploadFileImpl(
+		url: string,
+		method: HttpMethod,
+		body: BodyInit,
+		key: string,
+		timeout: number,
+		onError: (errorMessage: string) => void | Promise<void>
+	): Promise<() => void>
+
 	private uploadFile = async (response: TempSecureUrl) => {
 		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.UploadingFile);
 
@@ -156,23 +158,19 @@ export class UploaderModule_Class
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
 
-		fileInfo.request = HttpModule
-			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
-			.setUrl(response.secureUrl)
-			.setOnError((request) => {
+		fileInfo.abortCallback = await this.uploadFileImpl(
+			response.secureUrl,
+			HttpMethod.PUT,
+			fileInfo.file,
+			RequestKey_UploadFile,
+			10 * Minute,
+			(message) => {
 				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
-				this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(request.getResponse()));
-			})
-			.setOnProgressListener((ev: ProgressEvent) => {
-				this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
-			})
-			.setTimeout(10 * Minute)
-			.setBody(fileInfo.file);
-
-		await fileInfo.request.executeSync();
+				this.setFileInfo(response.tempDoc.feId, "messageStatus", message);
+			});
 
 		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
-		this.setFileInfo(response.tempDoc.feId, "request", undefined);
+		this.setFileInfo(response.tempDoc.feId, "abortCallback", undefined);
 		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.PostProcessing);
 	};
 
@@ -193,9 +191,6 @@ export class UploaderModule_Class
 		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props}).catch();
 	}
 }
-
-export const UploaderModule = new UploaderModule_Class();
-
 
 
 
