@@ -18,7 +18,11 @@
 
 // import {FirestoreCollection} from "./FirestoreCollection";
 import {Firebase_DB} from "./types";
-import {BadImplementationException} from "@nu-art/ts-common";
+import {
+	BadImplementationException,
+	calculateJsonSizeMb,
+	ObjectTS
+} from "@nu-art/ts-common";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
 
@@ -26,6 +30,7 @@ export class DatabaseWrapper
 	extends FirebaseBaseWrapper {
 
 	private readonly database: Firebase_DB;
+
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
@@ -49,7 +54,7 @@ export class DatabaseWrapper
 		try {
 			this.database.ref(path).on("value", (snapshot) => callback(snapshot ? snapshot.val() : undefined));
 		} catch (e) {
-			throw new BadImplementationException(`Error while getting value from path: ${path}`);
+			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}
 	}
 
@@ -57,9 +62,19 @@ export class DatabaseWrapper
 		try {
 			return await this.database.ref(path).set(value);
 		} catch (e) {
-			throw new BadImplementationException(`Error while setting value to path: ${path}`);
+			throw new BadImplementationException(`Error while setting value to path: ${path}`, e);
 		}
 	}
+
+	public async uploadByChunks(parentPath: string, data: ObjectTS, maxSizeMB: number = 3, itemsToRef: Promise<any>[] = []) {
+		for (const key in data) {
+			const node = `${parentPath}/${key}`;
+			if (calculateJsonSizeMb(data[key]) < maxSizeMB)
+				await this.set(node, data[key]);
+			else
+				await this.uploadByChunks(node, data[key], maxSizeMB, itemsToRef);
+		}
+	};
 
 	public async update<T>(path: string, value: T) {
 		this.logWarning("update will be deprecated!! please use patch");
@@ -70,7 +85,7 @@ export class DatabaseWrapper
 		try {
 			return await this.database.ref(path).update(value);
 		} catch (e) {
-			throw new BadImplementationException(`Error while updating value to path: ${path}`);
+			throw new BadImplementationException(`Error while updating value to path: ${path}`, e);
 		}
 	}
 
@@ -89,7 +104,7 @@ export class DatabaseWrapper
 		try {
 			return await this.database.ref(path).remove();
 		} catch (e) {
-			throw new BadImplementationException(`Error while removing path: ${path}`);
+			throw new BadImplementationException(`Error while removing path: ${path}`, e);
 		}
 	}
 }
