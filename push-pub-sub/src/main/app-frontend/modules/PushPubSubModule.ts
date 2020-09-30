@@ -85,7 +85,7 @@ export class PushPubSubModule_Class
 		if (!this.config?.publicKeyBase64)
 			throw new ImplementationMissingException(`Please specify the right config for the 'PushPubSubModule'`);
 
-		this.runAsync('Initializing Firebase SDK and registering SW', this.initApp)
+		this.runAsync('Initializing Firebase SDK and registering SW', this.initApp);
 	}
 
 	private registerServiceWorker = async () => navigator.serviceWorker.register('/service_worker.js');
@@ -106,7 +106,7 @@ export class PushPubSubModule_Class
 			await this.getToken();
 
 			navigator.serviceWorker.onmessage = (event: MessageEvent) => {
-				this.processMessageFromSw(event.data)
+				this.processMessageFromSw(event.data);
 			};
 		}
 	};
@@ -132,7 +132,7 @@ export class PushPubSubModule_Class
 			this.messaging.onTokenRefresh(() => this.runAsync('Token refresh', this.getToken));
 
 			this.messaging.onMessage((payload) => {
-				this.processMessage(payload.data)
+				this.processMessage(payload.data);
 			});
 
 		} catch (err) {
@@ -142,13 +142,15 @@ export class PushPubSubModule_Class
 	};
 
 	private processMessageFromSw = (data: any) => {
+		this.logInfo('Got data from SW: ', data);
 		if (!data.command || !data.message || data.command !== Command_SwToApp)
 			return;
 
-		this.processMessage(data.message)
+		this.processMessage(data.message);
 	};
 
 	private processMessage = (data: StringMap) => {
+		this.logInfo('process message', data);
 		const arr: SubscriptionData[] = JSON.parse(data.messages);
 		arr.forEach(s => {
 			const sub = this.subscriptions.find(_s => _s.pushKey === s.pushKey && (s.props ? compare(_s.props, s.props) : true));
@@ -198,10 +200,10 @@ export class PushPubSubModule_Class
 					.setJsonBody(body)
 					.setOnError(() => ToastModule.toastError("Failed to register for push"))
 					.execute(() => {
-						resolve()
-					})
-			}, 'push-registration', 800)
-		})
+						resolve();
+					});
+			}, 'push-registration', 800);
+		});
 
 	};
 }

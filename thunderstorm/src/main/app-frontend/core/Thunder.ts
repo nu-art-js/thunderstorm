@@ -33,9 +33,7 @@ import {
 } from "@nu-art/ts-common";
 import {
 	HttpModule,
-	OnRequestListener,
-	RequestErrorHandler,
-	RequestSuccessHandler
+	OnRequestListener
 } from "../modules/http/HttpModule";
 import {ToastModule} from "../modules/toaster/ToasterModule";
 import {DialogModule} from "../modules/dialog/DialogModule";
@@ -45,6 +43,10 @@ import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
 import {ThunderDispatcher} from "./thunder-dispatcher";
 import { LocaleModule } from "../modules/locale/LocaleModule";
+import {
+	RequestErrorHandler,
+	RequestSuccessHandler
+} from "../../shared/request-types";
 
 export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?) => {
 	const errorMessage = request.errorMessage || resError?.debugMessage;

@@ -180,7 +180,7 @@ export class AccountModule_Class
 			.setLabel(`Validate token...`)
 			.setRelativeUrl("/v1/account/validate")
 			.setOnError((request, resError) => {
-				if (request.xhr.status === 0) {
+				if (request.getStatus() === 0) {
 					ToastModule.toastError("Cannot reach Server... trying in 30 sec");
 					setTimeout(() => this.validateToken(), 30 * Second);
 					return;

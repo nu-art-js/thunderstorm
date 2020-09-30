@@ -24,7 +24,8 @@ import {
 	DeriveResponseType,
 	DeriveUrlType,
 	ErrorResponse,
-	QueryParams
+	QueryParams,
+	RequestErrorHandler
 } from "@nu-art/thunderstorm";
 import {
 	ApiBinder_DBCreate,
@@ -37,8 +38,6 @@ import {
 import {DB_Object} from "@nu-art/firebase";
 import {
 	HttpModule,
-	HttpRequest,
-	RequestErrorHandler,
 	ToastModule
 } from "@nu-art/thunderstorm/frontend";
 
@@ -46,6 +45,7 @@ import {
 	Module,
 	PartialProperties
 } from "@nu-art/ts-common";
+import {BaseHttpRequest} from "@nu-art/thunderstorm/shared/BaseHttpRequest";
 
 export type BaseApiConfig = {
 	relativeUrl: string
@@ -56,8 +56,8 @@ export type BaseApiConfig = {
 export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType extends PartialProperties<DBType, "_id"> = PartialProperties<DBType, "_id">>
 	extends Module<BaseApiConfig> {
 
-	private readonly errorHandler: RequestErrorHandler<any> = (request: HttpRequest<any>, resError?: ErrorResponse<any>) => ToastModule.toastError(
-		request.xhr.status === 403 ? "You are not allowed to perform this action. Please check your permissions." : "Failed to perform action.");
+	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => ToastModule.toastError(
+		request.getStatus() === 403 ? "You are not allowed to perform this action. Please check your permissions." : "Failed to perform action.");
 
 	constructor(config: BaseApiConfig) {
 		super();
@@ -68,7 +68,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		return HttpModule
 			.createRequest<ApiTypeBinder<string, R, B, P, any>>(apiDef.method, `request-api--${this.config.key}-${apiDef.key}`)
 			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? "/" + apiDef.suffix : ""}`)
-			.setOnError(this.errorHandler)
+			.setOnError(this.errorHandler);
 
 	}
 
