@@ -51,7 +51,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 	errorMessage!: string;
 	successMessage!: string;
 
-	protected origin!: string;
+	protected origin: string = '';
 	protected headers: { [s: string]: string[] } = {};
 	protected method: HttpMethod = HttpMethod.GET;
 	protected timeout: number = 10000;
@@ -70,6 +70,16 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 		this.key = requestKey;
 		this.requestData = requestData;
 		this.compress = false;
+	}
+
+	setHandleRequestSuccess(handleRequestSuccess: RequestSuccessHandler) {
+		this.handleRequestSuccess = handleRequestSuccess;
+		return this;
+	}
+
+	setHandleRequestFailure(handleRequestFailure: RequestErrorHandler<E>) {
+		this.handleRequestFailure = handleRequestFailure;
+		return this;
 	}
 
 	getErrorMessage() {
@@ -215,9 +225,6 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 	}
 
 	asJson() {
-		if (!this.getResponse())
-			throw new BadImplementationException("No xhr object... maybe you didn't wait for the request to return??");
-
 		const response = this.getResponse();
 		if (!response)
 			throw new BadImplementationException("No xhr.response...");
@@ -226,13 +233,14 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 	}
 
 	asText() {
-		if (!this.getResponse())
+		const response = this.getResponse();
+		if (!response)
 			throw new BadImplementationException("No xhr object... maybe you didn't wait for the request to return??");
 
-		return this.getResponse() as R;
+		return response as R;
 	}
 
-	protected resolveResponse() {
+	protected resolveResponse(): R {
 		const rawResponse = this.getResponse();
 		let response: R = undefined as unknown as R;
 		if (rawResponse) {
@@ -247,10 +255,16 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 
 	async executeSync(): Promise<R> {
 		await this.executeImpl();
-		if (this.getStatus() !== 200)
-			throw new HttpException(this.getStatus(), this.url);
+		if (this.isValidStatus())
+			return this.resolveResponse();
 
-		return this.resolveResponse();
+		this.handleRequestFailure?.(this, this.getErrorResponse());
+		throw new HttpException(this.getStatus(), this.url);
+	}
+
+	private isValidStatus() {
+		const statusCode = this.getStatus();
+		return statusCode >= 200 && statusCode < 300;
 	}
 
 	abstract getStatus(): number;
@@ -266,7 +280,9 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 			// if (HttpModule.processDefaultResponseHandlers(this))
 			// 	return;
 
-			if (this.getStatus() !== 200)
+			const isnot200 = !this.isValidStatus();
+			console.log('isnot200', isnot200);
+			if (isnot200)
 				return this.handleRequestFailure?.(this, this.getErrorResponse());
 
 			const response = this.resolveResponse();
@@ -289,18 +305,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 
 	abstract getResponse(): any
 
-	getErrorResponse(): ErrorResponse<E> {
-		const rawResponse = this.getResponse();
-		let response: ErrorResponse<E> = undefined as unknown as ErrorResponse<E>;
-		if (rawResponse) {
-			try {
-				response = rawResponse && this.asJson() as unknown as ErrorResponse<E>;
-			} catch (e) {
-				response = {debugMessage: rawResponse};
-			}
-		}
-		return response;
-	}
+	abstract getErrorResponse(): ErrorResponse<E>
 
 	abstract abortImpl(): void
 

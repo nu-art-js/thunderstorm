@@ -4,7 +4,7 @@
  * Typescript & Express backend infrastructure that natively runs on firebase function
  * Typescript & React frontend infrastructure
  *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2020 Alan Ben
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,33 +36,31 @@ import {
 	BadImplementationException,
 	Module,
 	removeItemFromArray,
+	StringMap,
 } from "@nu-art/ts-common";
-import {gzip} from "zlib";
 import {
-	HttpException,
 	RequestErrorHandler,
 	RequestSuccessHandler,
 	ResponseHandler
 } from "../../../shared/request-types";
 import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
+import axios, {
+	AxiosRequestConfig,
+	AxiosResponse,
+	Method
+} from 'axios';
 
 type HttpConfig = {
-	origin: string
-	timeout: number
-	compress: boolean
+	timeout?: number
+	compress?: boolean
 }
 
-export interface OnRequestListener {
-	__onRequestCompleted: (key: string, success: boolean, requestData?: string) => void;
-}
-
-export class HttpModule_Class
+export class BeHttpModule_Class
 	extends Module<HttpConfig> {
 
 	private defaultErrorHandlers: RequestErrorHandler<any>[] = [];
 	private defaultSuccessHandlers: RequestSuccessHandler[] = [];
 
-	private origin!: string;
 	private timeout: number = 10000;
 	private readonly defaultResponseHandler: ResponseHandler[] = [];
 	private readonly defaultHeaders: { [s: string]: (() => string | string[]) | string | string[] } = {};
@@ -81,16 +79,10 @@ export class HttpModule_Class
 	}
 
 	init() {
-		this.origin = this.config.origin.replace("${hostname}", window.location.hostname).replace("${protocol}", window.location.protocol);
 		this.timeout = this.config.timeout || this.timeout;
 	}
 
-	protected validate(): void {
-		if (!this.origin)
-			throw new Error("MUST specify server origin path, e.g. 'https://localhost:3000'");
-	};
-
-	public createRequest = <Binder extends ApiTypeBinder<U, R, B, P> = ApiTypeBinder<void, void, void, {}>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): HttpRequest<DeriveRealBinder<Binder>> => {
+	public createRequest = <Binder extends ApiTypeBinder<U, R, B, P> = ApiTypeBinder<void, void, void, {}>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BeHttpRequest<DeriveRealBinder<Binder>> => {
 		const defaultHeaders = Object.keys(this.defaultHeaders).reduce((toRet, _key) => {
 			const defaultHeader = this.defaultHeaders[_key];
 			switch (typeof defaultHeader) {
@@ -119,8 +111,7 @@ export class HttpModule_Class
 			return toRet;
 		}, {} as { [k: string]: string | string[] });
 
-		return new HttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
-			.setOrigin(this.origin)
+		return new BeHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
 			.setMethod(method)
 			.setTimeout(this.timeout)
 			.addHeaders(defaultHeaders)
@@ -154,15 +145,11 @@ export class HttpModule_Class
 	}
 
 	handleRequestFailure: RequestErrorHandler<any> = (request: BaseHttpRequest<any, any, any, any, any>, resError?: ErrorResponse<any>) => {
-		const feError = request.getErrorMessage();
-		const beError = resError?.debugMessage;
+		const error = request.getErrorMessage();
 
 		this.logError(`Http request for key '${request.key}' failed...`);
-		if (feError)
-			this.logError(` + FE error:  ${feError}`);
-
-		if (beError)
-			this.logError(` + BE error:  ${beError}`);
+		if (error)
+			this.logError(` + Error:  ${error}`);
 
 		for (const errorHandler of this.defaultErrorHandlers) {
 			errorHandler(request, resError);
@@ -170,11 +157,11 @@ export class HttpModule_Class
 	};
 
 	handleRequestSuccess: RequestSuccessHandler = (request: BaseHttpRequest<any, any, any, any, any>) => {
-		const feMessage = request.getSuccessMessage();
+		const message = request.getSuccessMessage();
 
 		this.logInfo(`Http request for key '${request.key}' completed`);
-		if (feMessage)
-			this.logInfo(` + FE message:  ${feMessage}`);
+		if (message)
+			this.logInfo(` + Message:  ${message}`);
 
 		for (const successHandler of this.defaultSuccessHandlers) {
 			successHandler(request);
@@ -184,13 +171,11 @@ export class HttpModule_Class
 
 export type DeriveRealBinder<Binder> = Binder extends ApiTypeBinder<infer U, infer R, infer B, infer P> ? ApiTypeBinder<U, R, B, P> : void;
 
-export const HttpModule = new HttpModule_Class();
+export const BeHttpModule = new BeHttpModule_Class();
 
-export class HttpRequest<Binder extends ApiTypeBinder<any, any, any, any>,E = DeriveErrorType<DeriveRealBinder<Binder>>>
+export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	extends BaseHttpRequest<DeriveRealBinder<Binder>> {
-
-	readonly xhr?: XMLHttpRequest;
-	protected onProgressListener!: (ev: ProgressEvent) => void;
+	private response?: AxiosResponse<DeriveResponseType<DeriveRealBinder<Binder>>>;
 
 	constructor(requestKey: string, requestData?: string, shouldCompress?: boolean) {
 		super(requestKey, requestData);
@@ -198,93 +183,38 @@ export class HttpRequest<Binder extends ApiTypeBinder<any, any, any, any>,E = De
 	}
 
 	getStatus(): number {
-		const xhr = this.xhr;
-		if (!xhr)
-			throw new BadImplementationException('No xhr object!');
+		if (!this.response)
+			throw new BadImplementationException('Missing response object..');
 
-		return xhr.status;
+		return this.response?.status;
 	}
 
-	getResponse() {
-		const xhr = this.xhr;
-		if (!xhr)
-			throw new BadImplementationException('No xhr object!');
+	getResponse(): any {
+		if (!this.response)
+			throw new BadImplementationException('Missing response object..');
 
-		return xhr.response;
+		return this.response.data;
+	}
+
+	protected resolveResponse() {
+		return this.getResponse();
 	}
 
 	abortImpl(): void {
-		this.xhr?.abort();
-	}
-
-	setOnProgressListener(onProgressListener: (ev: ProgressEvent) => void) {
-		this.onProgressListener = onProgressListener;
-		return this;
+		//TODO to implement
 	}
 
 	getErrorResponse(): ErrorResponse<DeriveErrorType<DeriveRealBinder<Binder>>> {
-		const rawResponse = this.getResponse();
-		let response  = undefined as unknown as ErrorResponse<DeriveErrorType<DeriveRealBinder<Binder>>>;
-		if (rawResponse) {
-			try {
-				response = rawResponse && this.asJson() as unknown as ErrorResponse<DeriveErrorType<DeriveRealBinder<Binder>>>;
-			} catch (e) {
-				response = {debugMessage: rawResponse};
-			}
-		}
-		return response;
+		return {debugMessage: this.getResponse()}
 	}
 
 	protected executeImpl(): Promise<void> {
 		//loop through whatever preprocessor
-		return new Promise<void>((resolve, reject) => {
+		return new Promise<void>(async (resolve, reject) => {
 			if (this.aborted)
 				return resolve();
 
-			const xhr = new XMLHttpRequest();
-			// @ts-ignore
-			// noinspection JSConstantReassignment
-			this.xhr = xhr;
-			this.xhr.onreadystatechange = () => {
-				if (xhr.readyState !== 4)
-					return;
-
-				resolve();
-			};
-
-			this.xhr.onerror = (err) => {
-				if (xhr.readyState === 4 && xhr.status === 0) {
-					reject(new HttpException(404, this.url));
-					return;
-				}
-
-				reject(err);
-			};
-
-			this.xhr.ontimeout = (err) => {
-				reject(err);
-			};
-
-			this.xhr.onload = (err) => {
-				// HttpModule.logVerbose("onload");
-			};
-
-			this.xhr.onloadstart = (err) => {
-				// HttpModule.logVerbose("onloadstart");
-			};
-
-			this.xhr.onloadend = (err) => {
-				// HttpModule.logVerbose("onloadend");
-			};
-
-			this.xhr.onabort = (err) => {
-				// HttpModule.logVerbose("onabort");
-			};
-
-			let nextOperator = "?";
-			if (this.url.indexOf("?") !== -1) {
-				nextOperator = "&";
-			}
+			let nextOperator = this.url.indexOf("?") === -1 ? "?" : "&";
 
 			const fullUrl = Object.keys(this.params).reduce((url: string, paramKey: string) => {
 				const param: string | undefined = this.params[paramKey];
@@ -296,24 +226,50 @@ export class HttpRequest<Binder extends ApiTypeBinder<any, any, any, any>,E = De
 				return toRet;
 			}, this.url);
 
-			this.xhr.upload.onprogress = this.onProgressListener;
-			this.xhr.open(this.method, fullUrl);
-			this.xhr.timeout = this.timeout;
-
-			Object.keys(this.headers).forEach((key) => {
-				xhr.setRequestHeader(key, this.headers[key].join('; '));
-			});
-
+			// TODO set progress listener
+			// this.xhr.upload.onprogress = this.onProgressListener;
 			const body = this.body;
-			if (typeof body === "string" && this.compress)
-				return gzip(body, (error: Error | null, result: Buffer) => {
-					if (error)
-						return reject(error);
 
-					xhr.send(result);
-				});
+			// TODO add zipping of body
+			// if (typeof body === "string" && this.compress)
+			// 	return gzip(body, (error: Error | null, result: Buffer) => {
+			// 		if (error)
+			// 			return reject(error);
+			//
+			// 		xhr.send(result);
+			// 	});
+			//
+			// this.xhr.send(body as BodyInit);
 
-			this.xhr.send(body as BodyInit);
+			const headers = Object.keys(this.headers).reduce((carry: StringMap, headerKey: string) => {
+				carry[headerKey] = this.headers[headerKey].join('; ');
+				return carry;
+			}, {} as StringMap);
+
+			const options: AxiosRequestConfig = {
+				url: fullUrl,
+				method: this.method as Method,
+				headers: headers,
+				// TODO will probably need to use the abortController with a timeout for this.
+				timeout: this.timeout
+			};
+
+			if (body)
+				options.data = body;
+
+			let response: AxiosResponse<DeriveResponseType<DeriveRealBinder<Binder>>>;
+			try {
+				response = await axios.request(options);
+			} catch (e) {
+				// TODO handle this here
+				// 	if (xhr.readyState === 4 && xhr.status === 0) {
+				// 		reject(new HttpException(404, this.url));
+				// 		return;
+				// 	}
+				response = e.response;
+			}
+			this.response = response;
+			resolve()
 		});
 	}
 }
