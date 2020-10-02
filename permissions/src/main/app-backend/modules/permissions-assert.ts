@@ -24,7 +24,6 @@ import {
 } from "@nu-art/ts-common";
 import {
 	ApiException,
-	ServerApi,
 	HttpRequestData,
 	ExpressRequest,
 	ServerApi_Middleware
@@ -51,9 +50,12 @@ export type UserCalculatedAccessLevel = { [domainId: string]: number };
 export type GroupPairWithBaseLevelsObj = { accessLevels: Base_AccessLevels[], customFields: StringMap[] };
 export type RequestPairWithLevelsObj = { accessLevels: DB_PermissionAccessLevel[], customFields: StringMap[] };
 
+type Config = {
+	strictMode?: boolean
+}
 
 export class PermissionsAssert_Class
-	extends Module {
+	extends Module<Config> {
 
 	readonly Middleware = (keys: string[]): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
 		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
@@ -103,7 +105,7 @@ export class PermissionsAssert_Class
 		                                                     this.getUserDetails(userId)]);
 
 		if (!apiDetails.apiDb.accessLevelIds) {
-			if (ServerApi.isDebug)
+			if (!this.config.strictMode)
 				return;
 
 			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${path}`);
