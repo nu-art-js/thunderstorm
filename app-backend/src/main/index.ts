@@ -17,7 +17,7 @@
  */
 
 // tslint:disable-next-line:no-import-side-effect
-import 'module-alias/register'
+import 'module-alias/register';
 import * as functions from "firebase-functions";
 import {
 	ForceUpgrade,
@@ -54,6 +54,8 @@ import {
 	FirestoreTransaction
 } from '@nu-art/firebase/backend';
 import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
+import {BeHttpModule} from "@nu-art/thunderstorm/app-backend/modules/http/HttpModule";
+import {HttpMethod} from "@nu-art/thunderstorm";
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -66,13 +68,14 @@ const modules: Module[] = [
 	SlackModule,
 	Slack_ServerApiError,
 	DispatchModule,
-	PushPubSubModule
+	PushPubSubModule,
+	BeHttpModule
 ];
 
 const postProcessor: { [k: string]: PostProcessor } = {
 	default: async (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => {
 		await FirebaseModule.createAdminSession().getDatabase().set(`/alan/testing/${file.path}`, {path: file.path, name: await file.exists()});
-		console.log(file)
+		console.log(file);
 	}
 };
 UploaderModule.setPostProcessor(postProcessor);
@@ -86,7 +89,17 @@ const _exports = new Storm()
 	.setInitialRouteResolver(new RouteResolver(require, __dirname, "api"))
 	.setInitialRoutePath("/api")
 	.setEnvironment(Environment.name)
-	.build();
+	.build(async () => {
+		const response = await BeHttpModule
+			.createRequest(HttpMethod.GET, 'google-request')
+			.setUrl('https://us-central1thunderstorm-staging.cloudfunctions.net/api/v1/sample/get-max')
+			.setOnError((request,errorData) => {
+				console.log('I got error', errorData);
+			})
+			.setTimeout(30000)
+			.executeSync();
+		console.log('I got respose', response);
+	});
 
 _exports.logTest = functions.database.ref('triggerLogs').onWrite((change, context) => {
 	console.log('LOG_TEST FUNCTION! -- Logging string');
@@ -98,6 +111,6 @@ _exports.logTest = functions.database.ref('triggerLogs').onWrite((change, contex
 			            b: 10000
 		            }
 	            });
-})
+});
 
 module.exports = _exports;
