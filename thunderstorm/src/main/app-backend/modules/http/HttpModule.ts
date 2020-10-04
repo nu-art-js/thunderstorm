@@ -47,6 +47,7 @@ import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
 import axios, {
 	AxiosRequestConfig,
 	AxiosResponse,
+	CancelTokenSource,
 	Method
 } from 'axios';
 
@@ -176,10 +177,12 @@ export const BeHttpModule = new BeHttpModule_Class();
 export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	extends BaseHttpRequest<DeriveRealBinder<Binder>> {
 	private response?: AxiosResponse<DeriveResponseType<DeriveRealBinder<Binder>>>;
+	private cancelSignal: CancelTokenSource;
 
 	constructor(requestKey: string, requestData?: string, shouldCompress?: boolean) {
 		super(requestKey, requestData);
 		this.compress = shouldCompress === undefined ? true : shouldCompress;
+		this.cancelSignal = axios.CancelToken.source();
 	}
 
 	getStatus(): number {
@@ -201,11 +204,11 @@ export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	}
 
 	abortImpl(): void {
-		//TODO to implement
+		this.cancelSignal.cancel(`Request with key: '${this.key}' aborted by the user.`);
 	}
 
 	getErrorResponse(): ErrorResponse<DeriveErrorType<DeriveRealBinder<Binder>>> {
-		return {debugMessage: this.getResponse()}
+		return {debugMessage: this.getResponse()};
 	}
 
 	protected executeImpl(): Promise<void> {
@@ -251,7 +254,8 @@ export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				method: this.method as Method,
 				headers: headers,
 				// TODO will probably need to use the abortController with a timeout for this.
-				timeout: this.timeout
+				timeout: this.timeout,
+				cancelToken: this.cancelSignal.token
 			};
 
 			if (body)
@@ -266,10 +270,17 @@ export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				// 		reject(new HttpException(404, this.url));
 				// 		return;
 				// 	}
+				//
+				if (axios.isCancel(e)) {
+					// Should already be set when I abort but just in case its aborted somehow else
+					this.aborted = true;
+					console.log('Api cancelled: ', e.message);
+				}
+
 				response = e.response;
 			}
 			this.response = response;
-			resolve()
+			resolve();
 		});
 	}
 }
