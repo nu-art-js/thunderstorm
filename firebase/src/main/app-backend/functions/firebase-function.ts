@@ -66,8 +66,10 @@ export class Firebase_ExpressFunction
 		if (this.function)
 			return this.function;
 
-		const realFunction = functions.https.onRequest(this.express);
-		return this.function = functions.https.onRequest((req: Request, res: Response) => {
+		const runtimeOpts = {};
+
+		const realFunction = functions.runWith(runtimeOpts).https.onRequest(this.express);
+		return this.function = functions.runWith(runtimeOpts).https.onRequest((req: Request, res: Response) => {
 			if (this.isReady)
 				return realFunction(req, res);
 			return new Promise((resolve) => {
