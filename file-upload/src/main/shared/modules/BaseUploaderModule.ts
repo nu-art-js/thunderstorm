@@ -95,12 +95,12 @@ export abstract class BaseUploaderModule_Class
 	protected files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(3);
 	protected readonly dispatch_fileStatusChange = new Dispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
-	protected createRequest: Type_CreateRequest;
 
-	protected constructor(createRequest: Type_CreateRequest) {
-		super();
-		this.createRequest = createRequest;
-	}
+	protected abstract createRequest<Binder extends ApiTypeBinder<U, R, B, P> = ApiTypeBinder<void, void, void, {}>,
+		U extends string = DeriveUrlType<Binder>,
+		R = DeriveResponseType<Binder>,
+		B = DeriveBodyType<Binder>,
+		P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BaseHttpRequest<DeriveRealBinder<Binder>>
 
 	protected async getSecuredUrls(
 		body: BaseUploaderFile[],
@@ -196,6 +196,7 @@ export abstract class BaseUploaderModule_Class
 	};
 
 	protected async uploadFileImpl(
+		feId: string,
 		url: string,
 		body: BodyInit,
 		onError: (errorMessage: string) => void | Promise<void>
@@ -206,11 +207,18 @@ export abstract class BaseUploaderModule_Class
 			.setOnError((request) => {
 				onError(__stringify(request.getResponse()));
 			})
-			// .setOnProgressListener((ev: ProgressEvent) => {
-			// 	this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
-			// })
 			.setTimeout(10 * Minute)
 			.setBody(body);
+
+		// Handle this more cleverly
+		// @ts-ignore
+		if (request.setOnProgressListener) {
+			// @ts-ignore
+			request.setOnProgressListener((ev: ProgressEvent) => {
+				this.setFileInfo(feId, "progress", ev.loaded / ev.total);
+			});
+		}
+
 		await request.executeSync();
 		return request;
 	}
@@ -223,6 +231,7 @@ export abstract class BaseUploaderModule_Class
 			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
 
 		fileInfo.request = await this.uploadFileImpl(
+			response.tempDoc.feId,
 			response.secureUrl,
 			fileInfo.file,
 			(message) => {

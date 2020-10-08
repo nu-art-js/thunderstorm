@@ -56,6 +56,7 @@ import {
 import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
 import {BeHttpModule} from "@nu-art/thunderstorm/app-backend/modules/http/HttpModule";
 import {HttpMethod} from "@nu-art/thunderstorm";
+import { Firebase_ExpressFunction } from '@nu-art/firebase/backend-functions';
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -79,7 +80,7 @@ const postProcessor: { [k: string]: PostProcessor } = {
 	}
 };
 UploaderModule.setPostProcessor(postProcessor);
-
+Firebase_ExpressFunction.setConfig({memory: "1GB", timeoutSeconds: 540});
 const _exports = new Storm()
 	.addModules(...Backend_ModulePack_BugReport)
 	.addModules(...Backend_ModulePack_LiveDocs)
@@ -92,12 +93,12 @@ const _exports = new Storm()
 	.build(async () => {
 		const response = await BeHttpModule
 			.createRequest(HttpMethod.GET, 'google-request')
-			.setUrl('https://us-central1thunderstorm-staging.cloudfunctions.net/api/v1/sample/get-max')
-			.setOnError((request,errorData) => {
+			.setUrl('https://us-central1-thunderstorm-staging.cloudfunctions.net/api/v1/sample/get-max')
+			.setOnError((request, errorData) => {
 				console.log('I got error', errorData);
 			})
 			.setTimeout(30000)
-			.executeSync();
+		.executeSync();
 		console.log('I got respose', response);
 	});
 

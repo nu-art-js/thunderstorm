@@ -52,7 +52,7 @@ export abstract class Module<Config = any>
 		this.name = this.name.replace("_Class", "");
 	}
 
-	throttle(handler: TimerHandler, key: string, ms = 0) {
+	public throttle(handler: TimerHandler, key: string, ms = 0) {
 		_clearTimeout(this.timeoutMap[key]);
 		this.timeoutMap[key] = _setTimeout(handler, ms)
 	}

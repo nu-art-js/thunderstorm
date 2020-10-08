@@ -39,7 +39,7 @@ import {
 	RequestSuccessHandler
 } from "./request-types";
 
-export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
+export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E>,
 	U extends string = DeriveUrlType<Binder>,
 	R = DeriveResponseType<Binder>,
 	B = DeriveBodyType<Binder>,
@@ -280,9 +280,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P>,
 			// if (HttpModule.processDefaultResponseHandlers(this))
 			// 	return;
 
-			const isnot200 = !this.isValidStatus();
-			console.log('isnot200', isnot200);
-			if (isnot200)
+			if (!this.isValidStatus())
 				return this.handleRequestFailure?.(this, this.getErrorResponse());
 
 			const response = this.resolveResponse();

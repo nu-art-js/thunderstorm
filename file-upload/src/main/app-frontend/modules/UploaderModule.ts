@@ -17,12 +17,6 @@
  * limitations under the License.
  */
 import {
-	ApiTypeBinder,
-	DeriveQueryType,
-	DeriveUrlType,
-	HttpMethod
-} from "@nu-art/thunderstorm";
-import {
 	DeriveRealBinder,
 	HttpModule,
 	ThunderDispatcher
@@ -44,6 +38,16 @@ import {
 	FileStatus,
 	OnFileStatusChanged
 } from "../../shared/modules/BaseUploaderModule";
+import {
+	ApiTypeBinder,
+	BaseHttpRequest,
+	DeriveBodyType,
+	DeriveQueryType,
+	DeriveResponseType,
+	DeriveUrlType,
+	HttpMethod,
+	QueryParams
+} from "@nu-art/thunderstorm";
 
 
 export class UploaderModule_Class
@@ -52,12 +56,17 @@ export class UploaderModule_Class
 
 	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 
-	constructor() {
-		super(HttpModule.createRequest);
+	protected createRequest<Binder extends ApiTypeBinder<U, R, B, P>,
+		U extends string = DeriveUrlType<Binder>,
+		R = DeriveResponseType<Binder>,
+		B = DeriveBodyType<Binder>,
+		P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BaseHttpRequest<DeriveRealBinder<Binder>> {
+		// @ts-ignore
+		return HttpModule.createRequest(method, key, data);
 	}
 
 	protected dispatchFileStatusChange(id?: string) {
-		this.dispatch_fileStatusChange.dispatchUI([]);
+		this.dispatch_fileStatusChange.dispatchUI([id]);
 		super.dispatchFileStatusChange(id);
 	}
 
