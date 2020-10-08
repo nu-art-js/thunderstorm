@@ -53,9 +53,14 @@ export class Firebase_ExpressFunction
 	private isReady: boolean = false;
 	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
 	private name: string = "api";
+	static config: RuntimeOptions = {};
 
 	constructor(_express: express.Express) {
 		this.express = _express;
+	}
+
+	static setConfig(config: RuntimeOptions){
+		this.config = config;
 	}
 
 	getName() {
@@ -66,19 +71,14 @@ export class Firebase_ExpressFunction
 		if (this.function)
 			return this.function;
 
-		const runtimeOpts = {};
-
-		const realFunction = functions.runWith(runtimeOpts).https.onRequest(this.express);
-		return this.function = functions.runWith(runtimeOpts).https.onRequest((req: Request, res: Response) => {
+		const realFunction = functions.runWith(Firebase_ExpressFunction.config).https.onRequest(this.express);
+		return this.function = functions.runWith(Firebase_ExpressFunction.config).https.onRequest((req: Request, res: Response) => {
 			if (this.isReady)
 				return realFunction(req, res);
 			return new Promise((resolve) => {
-				addItemToArray(this.toBeExecuted, () => {
-					return realFunction(req, res);
-				});
+				addItemToArray(this.toBeExecuted, () => realFunction(req, res));
 				this.toBeResolved = resolve;
 			});
-
 		});
 	};
 
@@ -140,7 +140,7 @@ export abstract class FirebaseFunctionModule<DataType = any, ConfigType = any>
 					this.logDebug(`Queuing function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
 					this.toBeResolved = resolve;
 				});
-			})
+			});
 	};
 
 	onFunctionReady = async () => {
@@ -222,7 +222,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 				this.logDebug(`FirebaseScheduledFunction schedule`);
 				this.toBeResolved = resolve;
 			});
-		})
+		});
 	};
 
 	onFunctionReady = async () => {
