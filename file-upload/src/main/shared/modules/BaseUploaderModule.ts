@@ -178,7 +178,7 @@ export abstract class BaseUploaderModule_Class
 
 			await this.uploadFiles(response);
 			resolve();
-		});
+		}).catch((e) => this.logError('Something wrong here', e));
 
 		return body;
 	}
