@@ -61,7 +61,6 @@ export class UploaderModule_Class
 		R = DeriveResponseType<Binder>,
 		B = DeriveBodyType<Binder>,
 		P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BaseHttpRequest<DeriveRealBinder<Binder>> {
-		// @ts-ignore
 		return HttpModule.createRequest(method, key, data);
 	}
 
@@ -84,10 +83,6 @@ export class UploaderModule_Class
 	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {
 		await PushPubSubModule.subscribeMulti(toSubscribe.map(r => ({pushKey: fileUploadedKey, props: {feId: r.tempDoc.feId}})));
 	}
-
-// .setOnProgressListener((ev: ProgressEvent) => {
-// 	this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
-// })
 
 	__onMessageReceived(pushKey: string, props: { feId: string }, data: { message: string, result: string }): void {
 		this.logInfo('Message received from service worker', pushKey, props, data);

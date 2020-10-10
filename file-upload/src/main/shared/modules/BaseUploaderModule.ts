@@ -33,7 +33,8 @@ import {
 	DeriveResponseType,
 	DeriveUrlType,
 	HttpMethod,
-	QueryParams
+	QueryParams,
+	TS_Progress
 } from "@nu-art/thunderstorm";
 import {DeriveRealBinder} from "@nu-art/thunderstorm/frontend";
 
@@ -162,7 +163,7 @@ export abstract class BaseUploaderModule_Class
 			return fileInfo;
 		});
 
-		new Promise(async (resolve, reject) => {
+		this.runAsync('Running uploading flow', async () => {
 			const response = await this.getSecuredUrls(
 				body,
 				(errorMessage) => {
@@ -174,11 +175,10 @@ export abstract class BaseUploaderModule_Class
 
 			this.dispatchFileStatusChange();
 			if (!response)
-				return resolve();
+				return;
 
 			await this.uploadFiles(response);
-			resolve();
-		}).catch((e) => this.logError('Something wrong here', e));
+		});
 
 		return body;
 	}
@@ -195,34 +195,6 @@ export abstract class BaseUploaderModule_Class
 		});
 	};
 
-	protected async uploadFileImpl(
-		feId: string,
-		url: string,
-		body: BodyInit,
-		onError: (errorMessage: string) => void | Promise<void>
-	): Promise<BaseHttpRequest<any>> {
-		const request = this
-			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
-			.setUrl(url)
-			.setOnError((request) => {
-				onError(__stringify(request.getResponse()));
-			})
-			.setTimeout(10 * Minute)
-			.setBody(body);
-
-		// Handle this more cleverly
-		// @ts-ignore
-		if (request.setOnProgressListener) {
-			// @ts-ignore
-			request.setOnProgressListener((ev: ProgressEvent) => {
-				this.setFileInfo(feId, "progress", ev.loaded / ev.total);
-			});
-		}
-
-		await request.executeSync();
-		return request;
-	}
-
 	private uploadFile = async (response: TempSecureUrl) => {
 		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.UploadingFile);
 
@@ -230,14 +202,20 @@ export abstract class BaseUploaderModule_Class
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
 
-		fileInfo.request = await this.uploadFileImpl(
-			response.tempDoc.feId,
-			response.secureUrl,
-			fileInfo.file,
-			(message) => {
+		fileInfo.request = this
+			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
+			.setUrl(response.secureUrl)
+			.setOnError((request) => {
 				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
-				this.setFileInfo(response.tempDoc.feId, "messageStatus", message);
+				this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(request.getResponse()));
+			})
+			.setTimeout(10 * Minute)
+			.setBody(fileInfo.file)
+			.setOnProgressListener((ev: TS_Progress) => {
+				this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
 			});
+
+		await fileInfo.request.executeSync();
 
 		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
 		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.PostProcessing);

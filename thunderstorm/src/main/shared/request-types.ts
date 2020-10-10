@@ -29,6 +29,17 @@ export class HttpException
 	}
 }
 
-export type RequestErrorHandler<E extends void | object, Request extends BaseHttpRequest<any, any, any, any, any> = BaseHttpRequest<any, any, any, any, any>> = (request: Request, resError?: ErrorResponse<any>) => void;
-export type RequestSuccessHandler<Request extends BaseHttpRequest<any, any, any, any, any> = BaseHttpRequest<any, any, any, any, any>> = (request: Request) => void;
-export type ResponseHandler<Request extends BaseHttpRequest<any, any, any, any, any> = BaseHttpRequest<any, any, any, any, any>> = (request: Request) => boolean;
+export type TS_Progress = {
+	readonly lengthComputable: boolean;
+	readonly loaded: number;
+	readonly target: any;
+	readonly total: number;
+}
+
+export interface OnRequestListener {
+	__onRequestCompleted: (key: string, success: boolean, requestData?: string) => void;
+}
+
+export type RequestErrorHandler<E extends void | object, Request extends BaseHttpRequest<any> = BaseHttpRequest<any>> = (request: Request, resError?: ErrorResponse<E>) => void;
+export type RequestSuccessHandler<Request extends BaseHttpRequest<any> = BaseHttpRequest<any>> = (request: Request) => void;
+export type ResponseHandler<Request extends BaseHttpRequest<any> = BaseHttpRequest<any>> = (request: Request) => boolean;

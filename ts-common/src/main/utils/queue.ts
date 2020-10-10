@@ -29,6 +29,7 @@ export class Queue
 	private running = 0;
 	private queue: (() => Promise<void>)[] = [];
 	private onQueueEmpty?: () => void;
+	private finalResolve?: () => void;
 
 	constructor(name: string) {
 		super(name);
@@ -72,7 +73,7 @@ export class Queue
 	execute() {
 		if (this.queue.length === 0 && this.running === 0) {
 			this.onQueueEmpty && this.onQueueEmpty();
-			return
+			return this.finalResolve?.();
 		}
 
 		for (let i = 0; this.running < this.parallelCount && i < this.queue.length; i++) {
@@ -83,5 +84,12 @@ export class Queue
 				.catch(this.ignore);
 
 		}
+	}
+
+	async executeSync() {
+		await new Promise(resolve => {
+			this.finalResolve = resolve;
+			this.execute();
+		});
 	}
 }

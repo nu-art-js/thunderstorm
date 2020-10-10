@@ -22,24 +22,25 @@ import {
 	AdminBRModule,
 	RequestKey_GetLog
 } from "../modules/AdminBRModule";
-import {
-	BaseComponent,
-	OnRequestListener
-} from "@nu-art/thunderstorm/frontend";
-import {
-	DB_BugReport,
-	ReportLogFile
-} from "../../shared/api";
-import { __stringify } from "@nu-art/ts-common";
+import {BaseComponent,} from "@nu-art/thunderstorm/frontend";
+import {DB_BugReport} from "../../shared/api";
+import {__stringify} from "@nu-art/ts-common";
+import {OnRequestListener} from "@nu-art/thunderstorm";
 
 export class AdminBR
 	extends BaseComponent
 	implements OnRequestListener {
 
-	download = (paths: ReportLogFile[]) => paths.forEach(log => AdminBRModule.downloadLogs(log.path));
-
-	private createTable() {
-		return <table style={{width: "100%"}}>{AdminBRModule.getLogs().map(this.createRow)}</table>
+	render() {
+		const logs = AdminBRModule.getLogs();
+		return (
+			<div>
+				<button onClick={AdminBRModule.retrieveLogs}>click to display logs</button>
+				<div>
+					<table style={{width: "100%"}}>{logs.map(this.createRow)}</table>
+				</div>
+			</div>
+		);
 	}
 
 	private createRow = (report: DB_BugReport) => <tr>
@@ -47,21 +48,9 @@ export class AdminBR
 		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>{report.reports[0].path}</td>
 		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>{__stringify(report.tickets)}</td>
 		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>
-			<button onClick={() => this.download(report.reports)}>download</button>
+			<button onClick={() => AdminBRModule.downloadMultiLogs(report.reports)}>download</button>
 		</td>
 	</tr>;
-
-	render() {
-		return (
-			<div>
-				<button onClick={AdminBRModule.retrieveLogs}>click to display logs</button>
-				<div>
-					{this.createTable()}
-				</div>
-			</div>
-		);
-	}
-
 
 	__onRequestCompleted = (key: string, success: boolean) => {
 		switch (key) {
@@ -69,7 +58,7 @@ export class AdminBR
 				return;
 
 			case RequestKey_GetLog:
-				this.forceUpdate()
+				this.forceUpdate();
 		}
 	};
 }
