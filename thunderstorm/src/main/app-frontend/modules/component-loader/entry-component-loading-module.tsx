@@ -20,12 +20,16 @@
  */
 import {
 	ApiWithQuery,
-	HttpMethod
+	HttpMethod,
+	TS_Progress
 } from "../../../index";
 
 import {Module} from "@nu-art/ts-common";
 // noinspection TypeScriptPreferShortImport
-import {HttpModule} from "../http/HttpModule";
+import {
+	HttpModule,
+	HttpRequest
+} from "../http/HttpModule";
 import {BrowserHistoryModule} from "../HistoryModule";
 
 type ScriptLoaderBinder = ApiWithQuery<string, string, {}, any>
@@ -36,9 +40,11 @@ export class PageLoadingModule_Class
 	private readonly injected: { [src: string]: HTMLScriptElement } = {};
 
 	loadScript(src: string, progressListener: (progress: number) => void) {
+		const baseHttpRequest: HttpRequest<ScriptLoaderBinder> = HttpModule.createRequest<ScriptLoaderBinder>(HttpMethod.GET, src);
+		console.log(baseHttpRequest);
 		HttpModule.createRequest<ScriptLoaderBinder>(HttpMethod.GET, src)
 		          .setUrl(`${BrowserHistoryModule.getOrigin()}/${src}`)
-		          .setOnProgressListener((ev: ProgressEvent) => {
+		          .setOnProgressListener((ev: TS_Progress) => {
 			          const progress = ev.loaded / ev.total;
 			          progressListener(progress);
 		          })

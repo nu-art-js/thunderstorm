@@ -24,7 +24,6 @@ import {
 import {BaseUploaderModule_Class} from "../../shared/modules/BaseUploaderModule";
 import {
 	ApiTypeBinder,
-	BaseHttpRequest,
 	DeriveBodyType,
 	DeriveQueryType,
 	DeriveResponseType,
@@ -32,7 +31,10 @@ import {
 	HttpMethod,
 	QueryParams
 } from "@nu-art/thunderstorm";
-import {BeHttpModule} from "@nu-art/thunderstorm/app-backend/modules/http/HttpModule";
+import {
+	BeHttpModule,
+	BeHttpRequest
+} from "@nu-art/thunderstorm/app-backend/modules/http/BeHttpModule";
 import {DeriveRealBinder} from "@nu-art/thunderstorm/frontend";
 
 
@@ -45,9 +47,8 @@ export class ServerUploaderModule_Class
 		U extends string = DeriveUrlType<Binder>,
 		R = DeriveResponseType<Binder>,
 		B = DeriveBodyType<Binder>,
-		P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BaseHttpRequest<DeriveRealBinder<Binder>> {
-		// @ts-ignore
-		return BeHttpModule.createRequest(method, key, data);
+		P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BeHttpRequest<DeriveRealBinder<Binder>> {
+		return BeHttpModule.createRequest<Binder>(method, key, data);
 	}
 
 	upload(file: Buffer, name: string, mimeType: string, key?: string): BaseUploaderFile[] | undefined {

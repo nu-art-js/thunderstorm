@@ -21,13 +21,21 @@
 // noinspection TypeScriptPreferShortImport
 import {
 	ApiTypeBinder,
+	DeriveBodyType,
 	DeriveErrorType,
+	DeriveQueryType,
 	DeriveResponseType,
-	ErrorResponse
+	DeriveUrlType,
+	ErrorResponse,
+	HttpMethod,
+	QueryParams
 } from "../../../shared/types";
 
 import {
+	addItemToArray,
 	BadImplementationException,
+	Module,
+	removeItemFromArray,
 	StringMap,
 } from "@nu-art/ts-common";
 import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
@@ -37,140 +45,138 @@ import axios, {
 	CancelTokenSource,
 	Method
 } from 'axios';
-import {BaseHttpModule_Class} from "../../../shared/BaseHttpModule";
+import {
+	RequestErrorHandler,
+	RequestSuccessHandler,
+	ResponseHandler
+} from "../_imports";
+
+type HttpConfig = {
+	origin?: string
+	timeout?: number
+	compress?: boolean
+}
 
 export class BeHttpModule_Class
-	extends BaseHttpModule_Class {
+	extends Module<HttpConfig> {
+
+	private defaultErrorHandlers: RequestErrorHandler<any>[] = [];
+	private defaultSuccessHandlers: RequestSuccessHandler[] = [];
+
+	private timeout: number = 10000;
+	private readonly defaultResponseHandler: ResponseHandler[] = [];
+	private readonly defaultHeaders: { [s: string]: (() => string | string[]) | string | string[] } = {};
 
 	constructor() {
 		super();
+		this.setDefaultConfig({compress: true});
 	}
 
-	protected buildRequest(requestKey: string, requestData?: string | undefined): BaseHttpRequest<any, any, any, any, any, any> {
-		return new BeHttpRequest(requestKey, requestData, this.shouldCompress());
+	shouldCompress() {
+		return this.config.compress;
 	}
+
+	addDefaultHeader(key: string, header: (() => string | string[]) | string | string[]) {
+		this.defaultHeaders[key] = header;
+	}
+
+	init() {
+		this.timeout = this.config.timeout || this.timeout;
+	}
+
+	public createRequest = <Binder extends ApiTypeBinder<U, R, B, P> = ApiTypeBinder<void, void, void, {}>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BeHttpRequest<DeriveRealBinder<Binder>> => {
+		const defaultHeaders = Object.keys(this.defaultHeaders).reduce((toRet, _key) => {
+			const defaultHeader = this.defaultHeaders[_key];
+			switch (typeof defaultHeader) {
+				case "string":
+					toRet[_key] = [defaultHeader];
+					break;
+
+				case "function":
+					toRet[_key] = defaultHeader();
+					break;
+
+				case "object":
+					if (Array.isArray(defaultHeader)) {
+						toRet[_key] = defaultHeader;
+						break;
+					}
+
+				case "boolean":
+				case "number":
+				case "symbol":
+				case "bigint":
+				case "undefined":
+					throw new BadImplementationException("Headers values can only be of type: (() => string | string[]) | string | string[] ");
+			}
+
+			return toRet;
+		}, {} as { [k: string]: string | string[] });
+
+		return new BeHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
+			.setMethod(method)
+			.setTimeout(this.timeout)
+			.addHeaders(defaultHeaders)
+			.setHandleRequestSuccess(this.handleRequestSuccess)
+			.setHandleRequestFailure(this.handleRequestFailure);
+	};
+
+	processDefaultResponseHandlers = (httpRequest: BaseHttpRequest<any, any, any, any, any>) => {
+		let resolved = false;
+		for (const responseHandler of this.defaultResponseHandler) {
+			resolved = resolved || responseHandler(httpRequest);
+		}
+
+		return resolved;
+	};
+
+	addDefaultResponseHandler(defaultResponseHandler: ResponseHandler) {
+		addItemToArray(this.defaultResponseHandler, defaultResponseHandler);
+	}
+
+	removeDefaultResponseHandler(defaultResponseHandler: ResponseHandler) {
+		removeItemFromArray(this.defaultResponseHandler, defaultResponseHandler);
+	}
+
+	setErrorHandlers(defaultErrorHandlers: RequestErrorHandler<any>[]) {
+		this.defaultErrorHandlers = defaultErrorHandlers;
+	}
+
+	setSuccessHandlers(defaultErrorHandlers: RequestSuccessHandler[]) {
+		this.defaultSuccessHandlers = defaultErrorHandlers;
+	}
+
+	handleRequestFailure: RequestErrorHandler<any> = (request: BaseHttpRequest<any, any, any, any, any>, resError?: ErrorResponse<any>) => {
+		const error = request.getErrorMessage();
+
+		this.logError(`Http request for key '${request.key}' failed...`);
+		if (error)
+			this.logError(` + Error:  ${error}`);
+
+		for (const errorHandler of this.defaultErrorHandlers) {
+			errorHandler(request, resError);
+		}
+	};
+
+	handleRequestSuccess: RequestSuccessHandler = (request: BaseHttpRequest<any, any, any, any, any>) => {
+		const message = request.getSuccessMessage();
+
+		this.logInfo(`Http request for key '${request.key}' completed`);
+		if (message)
+			this.logInfo(` + Message:  ${message}`);
+
+		for (const successHandler of this.defaultSuccessHandlers) {
+			successHandler(request);
+		}
+	};
 }
-
-// export class BeHttpModule_Class
-// 	extends Module<HttpConfig> {
-//
-// 	private defaultErrorHandlers: RequestErrorHandler<any>[] = [];
-// 	private defaultSuccessHandlers: RequestSuccessHandler[] = [];
-//
-// 	private timeout: number = 10000;
-// 	private readonly defaultResponseHandler: ResponseHandler[] = [];
-// 	private readonly defaultHeaders: { [s: string]: (() => string | string[]) | string | string[] } = {};
-//
-// 	constructor() {
-// 		super();
-// 		this.setDefaultConfig({compress: true});
-// 	}
-//
-// 	shouldCompress() {
-// 		return this.config.compress;
-// 	}
-//
-// 	addDefaultHeader(key: string, header: (() => string | string[]) | string | string[]) {
-// 		this.defaultHeaders[key] = header;
-// 	}
-//
-// 	init() {
-// 		this.timeout = this.config.timeout || this.timeout;
-// 	}
-//
-// 	public createRequest = <Binder extends ApiTypeBinder<U, R, B, P> = ApiTypeBinder<void, void, void, {}>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BeHttpRequest<DeriveRealBinder<Binder>> => {
-// 		const defaultHeaders = Object.keys(this.defaultHeaders).reduce((toRet, _key) => {
-// 			const defaultHeader = this.defaultHeaders[_key];
-// 			switch (typeof defaultHeader) {
-// 				case "string":
-// 					toRet[_key] = [defaultHeader];
-// 					break;
-//
-// 				case "function":
-// 					toRet[_key] = defaultHeader();
-// 					break;
-//
-// 				case "object":
-// 					if (Array.isArray(defaultHeader)) {
-// 						toRet[_key] = defaultHeader;
-// 						break;
-// 					}
-//
-// 				case "boolean":
-// 				case "number":
-// 				case "symbol":
-// 				case "bigint":
-// 				case "undefined":
-// 					throw new BadImplementationException("Headers values can only be of type: (() => string | string[]) | string | string[] ");
-// 			}
-//
-// 			return toRet;
-// 		}, {} as { [k: string]: string | string[] });
-//
-// 		return new BeHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
-// 			.setMethod(method)
-// 			.setTimeout(this.timeout)
-// 			.addHeaders(defaultHeaders)
-// 			.setHandleRequestSuccess(this.handleRequestSuccess)
-// 			.setHandleRequestFailure(this.handleRequestFailure);
-// 	};
-//
-// 	processDefaultResponseHandlers = (httpRequest: BaseHttpRequest<any, any, any, any, any>) => {
-// 		let resolved = false;
-// 		for (const responseHandler of this.defaultResponseHandler) {
-// 			resolved = resolved || responseHandler(httpRequest);
-// 		}
-//
-// 		return resolved;
-// 	};
-//
-// 	addDefaultResponseHandler(defaultResponseHandler: ResponseHandler) {
-// 		addItemToArray(this.defaultResponseHandler, defaultResponseHandler);
-// 	}
-//
-// 	removeDefaultResponseHandler(defaultResponseHandler: ResponseHandler) {
-// 		removeItemFromArray(this.defaultResponseHandler, defaultResponseHandler);
-// 	}
-//
-// 	setErrorHandlers(defaultErrorHandlers: RequestErrorHandler<any>[]) {
-// 		this.defaultErrorHandlers = defaultErrorHandlers;
-// 	}
-//
-// 	setSuccessHandlers(defaultErrorHandlers: RequestSuccessHandler[]) {
-// 		this.defaultSuccessHandlers = defaultErrorHandlers;
-// 	}
-//
-// 	handleRequestFailure: RequestErrorHandler<any> = (request: BaseHttpRequest<any, any, any, any, any>, resError?: ErrorResponse<any>) => {
-// 		const error = request.getErrorMessage();
-//
-// 		this.logError(`Http request for key '${request.key}' failed...`);
-// 		if (error)
-// 			this.logError(` + Error:  ${error}`);
-//
-// 		for (const errorHandler of this.defaultErrorHandlers) {
-// 			errorHandler(request, resError);
-// 		}
-// 	};
-//
-// 	handleRequestSuccess: RequestSuccessHandler = (request: BaseHttpRequest<any, any, any, any, any>) => {
-// 		const message = request.getSuccessMessage();
-//
-// 		this.logInfo(`Http request for key '${request.key}' completed`);
-// 		if (message)
-// 			this.logInfo(` + Message:  ${message}`);
-//
-// 		for (const successHandler of this.defaultSuccessHandlers) {
-// 			successHandler(request);
-// 		}
-// 	};
-// }
 
 export type DeriveRealBinder<Binder> = Binder extends ApiTypeBinder<infer U, infer R, infer B, infer P> ? ApiTypeBinder<U, R, B, P> : void;
 
 export const BeHttpModule = new BeHttpModule_Class();
 
 export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
-	extends BaseHttpRequest<DeriveRealBinder<Binder>> {
+	extends BaseHttpRequest<Binder> {
 	private response?: AxiosResponse<DeriveResponseType<DeriveRealBinder<Binder>>>;
 	private cancelSignal: CancelTokenSource;
 
@@ -202,7 +208,7 @@ export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		this.cancelSignal.cancel(`Request with key: '${this.key}' aborted by the user.`);
 	}
 
-	getErrorResponse(): ErrorResponse<DeriveErrorType<DeriveRealBinder<Binder>>> {
+	getErrorResponse(): ErrorResponse<DeriveErrorType<Binder>> {
 		return {debugMessage: this.getResponse()};
 	}
 

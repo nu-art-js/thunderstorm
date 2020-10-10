@@ -21,10 +21,11 @@ import {Module} from "@nu-art/ts-common";
 import {HttpModule} from "@nu-art/thunderstorm/frontend";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
-    ApiGetLog,
-    ApiPostPath,
-    DB_BugReport,
-    Paths
+	ApiGetLog,
+	ApiPostPath,
+	DB_BugReport,
+	Paths,
+	ReportLogFile
 } from "../../shared/api";
 
 export const RequestKey_GetLog = "GetLog";
@@ -62,6 +63,10 @@ export class AdminBRModule_Class
 			.setOnError(`Error getting new message from backend`)
 			.execute();
 	};
+
+	public downloadMultiLogs = (reports: ReportLogFile[]) => {
+		reports.forEach(report => this.downloadLogs(report.path))
+	}
 
 	public getLogs = () => this.logs
 }

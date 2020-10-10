@@ -20,6 +20,7 @@
  */
 import {
 	_keys,
+	_setTimeout,
 	BadImplementationException
 } from "@nu-art/ts-common";
 import {
@@ -36,7 +37,8 @@ import {
 import {
 	HttpException,
 	RequestErrorHandler,
-	RequestSuccessHandler
+	RequestSuccessHandler,
+	TS_Progress
 } from "./request-types";
 
 export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E>,
@@ -61,6 +63,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 
 	protected label!: string;
 	protected onResponseListener!: (response: R) => void;
+	protected onProgressListener!: (ev: TS_Progress) => void;
 	protected handleRequestSuccess?: RequestSuccessHandler;
 	protected handleRequestFailure?: RequestErrorHandler<E>;
 	protected aborted: boolean = false;
@@ -114,6 +117,11 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		// @ts-ignore
 		// noinspection JSConstantReassignment
 		this.successMessage = successMessage;
+		return this;
+	}
+
+	setOnProgressListener(onProgressListener: (ev: TS_Progress) => void) {
+		this.onProgressListener = onProgressListener;
 		return this;
 	}
 
@@ -290,14 +298,12 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 			this.handleRequestSuccess?.(this);
 		};
 
-		setTimeout(() => {
+		_setTimeout(() => {
 			const label = this.label || `http request: ${this.key}`;
 			new Promise(toCall)
-				.then(() => {
-					console.log(`Async call completed: ${label}`);
-				})
+				.then(() => console.log(`Async call completed: ${label}`))
 				.catch(reason => console.warn(`Async call error: ${label}`, reason));
-		}, 0);
+		});
 		return this;
 	}
 

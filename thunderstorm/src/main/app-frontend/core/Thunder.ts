@@ -31,10 +31,7 @@ import {
 	ModuleManager,
 	removeItemFromArray
 } from "@nu-art/ts-common";
-import {
-	HttpModule,
-	OnRequestListener
-} from "../modules/http/HttpModule";
+import {HttpModule} from "../modules/http/HttpModule";
 import {ToastModule} from "../modules/toaster/ToasterModule";
 import {DialogModule} from "../modules/dialog/DialogModule";
 import {RoutingModule} from "../modules/routing/RoutingModule";
@@ -42,8 +39,9 @@ import {BrowserHistoryModule} from "../modules/HistoryModule";
 import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
 import {ThunderDispatcher} from "./thunder-dispatcher";
-import { LocaleModule } from "../modules/locale/LocaleModule";
+import {LocaleModule} from "../modules/locale/LocaleModule";
 import {
+	OnRequestListener,
 	RequestErrorHandler,
 	RequestSuccessHandler
 } from "../../shared/request-types";
@@ -104,12 +102,12 @@ export class Thunder
 
 	protected addUIListener(listener: any): void {
 		this.logInfo(`Register UI listener: ${listener}`);
-		this.listeners.push(listener)
+		this.listeners.push(listener);
 	}
 
 	protected removeUIListener(listener: any): void {
 		this.logInfo(`Unregister UI listener: ${listener}`);
-		removeItemFromArray(this.listeners, listener)
+		removeItemFromArray(this.listeners, listener);
 	}
 
 	public setMainApp(mainApp: React.ElementType<WrapperProps>): Thunder {
