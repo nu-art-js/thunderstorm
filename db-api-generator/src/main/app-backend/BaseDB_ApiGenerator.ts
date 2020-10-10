@@ -36,6 +36,7 @@ import {
 	merge,
 	Module,
 	PartialProperties,
+	ThisShouldNotHappenException,
 	validate,
 	validateRegexp,
 	ValidationException,
@@ -59,7 +60,10 @@ import {
 	FirestoreInterface,
 	FirestoreTransaction,
 } from "@nu-art/firebase/backend";
-import {BadInputErrorBody, ErrorKey_BadInput } from "../shared/types";
+import {
+	BadInputErrorBody,
+	ErrorKey_BadInput
+} from "../shared/types";
 
 const idLength = 32;
 export const validateId = (length: number, mandatory: boolean = true) => validateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
@@ -223,7 +227,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			const error = isErrorOfType(e, ValidationException);
 			if (error) {
 				const errorBody = {type: ErrorKey_BadInput, body: {path: error.path, input: error.input}};
-				throw new ApiException<BadInputErrorBody>(400, error.message).setErrorBody(errorBody)
+				throw new ApiException<BadInputErrorBody>(400, error.message).setErrorBody(errorBody);
 			}
 		}
 	}
@@ -372,7 +376,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		const actions = [] as Promise<() => Promise<DBType>>[];
 
 		instances.reduce((carry, instance: UType) => {
-			addItemToArray(carry, this.upsert_Read(instance, transaction, request))
+			addItemToArray(carry, this.upsert_Read(instance, transaction, request));
 			return carry;
 		}, actions);
 
@@ -429,7 +433,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.collection.runInTransaction(processor);
 	}
 
-	async deleteUnique_Read(_id: string, transaction: FirestoreTransaction, request?: ExpressRequest) {
+	async deleteUnique_Read(_id: string, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		if (!_id)
 			throw new BadImplementationException(`No _id for deletion provided.`);
 
@@ -438,8 +442,9 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		if (!dbInstance)
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
+		const write = await this.deleteUniqueImpl_Read(transaction, ourQuery, request);
 		await this.assertDeletion(transaction, dbInstance);
-		return this.deleteImpl_Read(transaction, ourQuery, request);
+		return write;
 	}
 
 	/**
@@ -452,8 +457,12 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	private async deleteImpl_Read(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest): Promise<(() => Promise<DBType>) | undefined> {
-		return transaction.deleteUnique_Read(this.collection, ourQuery);
+	private async deleteUniqueImpl_Read(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest): Promise<() => Promise<DBType>> {
+		const write = await transaction.deleteUnique_Read(this.collection, ourQuery);
+		if (!write)
+			throw new ThisShouldNotHappenException(`I just checked that I had an instance for query: ${__stringify(ourQuery)}`);
+
+		return write;
 	}
 
 	/**
