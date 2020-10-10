@@ -128,16 +128,9 @@ export class HttpModule_Class
 			.setTimeout(this.timeout)
 			.addHeaders(defaultHeaders)
 			.setHandleRequestSuccess(this.handleRequestSuccess)
-			.setHandleRequestFailure(this.handleRequestFailure);
-	};
-
-	processDefaultResponseHandlers = (httpRequest: HttpRequest<any>) => {
-		let resolved = false;
-		for (const responseHandler of this.defaultResponseHandler) {
-			resolved = resolved || responseHandler(httpRequest);
-		}
-
-		return resolved;
+			.setHandleRequestFailure(this.handleRequestFailure)
+			.setDefaultRequestHandler(this.processDefaultResponseHandlers)
+			;
 	};
 
 	addDefaultResponseHandler(defaultResponseHandler: ResponseHandler) {
@@ -156,7 +149,7 @@ export class HttpModule_Class
 		this.defaultSuccessHandlers = defaultErrorHandlers;
 	}
 
-	handleRequestFailure: RequestErrorHandler<any> = (request: BaseHttpRequest<any, any, any, any, any>, resError?: ErrorResponse<any>) => {
+	handleRequestFailure: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
 		const feError = request.getErrorMessage();
 		const beError = resError?.debugMessage;
 
@@ -172,7 +165,7 @@ export class HttpModule_Class
 		}
 	};
 
-	handleRequestSuccess: RequestSuccessHandler = (request: BaseHttpRequest<any, any, any, any, any>) => {
+	handleRequestSuccess: RequestSuccessHandler = (request: BaseHttpRequest<any>) => {
 		const feMessage = request.getSuccessMessage();
 
 		this.logInfo(`Http request for key '${request.key}' completed`);
@@ -182,6 +175,15 @@ export class HttpModule_Class
 		for (const successHandler of this.defaultSuccessHandlers) {
 			successHandler(request);
 		}
+	};
+
+	processDefaultResponseHandlers = (httpRequest: BaseHttpRequest<any>) => {
+		let resolved = false;
+		for (const responseHandler of this.defaultResponseHandler) {
+			resolved = resolved || responseHandler(httpRequest);
+		}
+
+		return resolved;
 	};
 }
 

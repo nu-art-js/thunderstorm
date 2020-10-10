@@ -118,7 +118,8 @@ export class BeHttpModule_Class
 			.setTimeout(this.timeout)
 			.addHeaders(defaultHeaders)
 			.setHandleRequestSuccess(this.handleRequestSuccess)
-			.setHandleRequestFailure(this.handleRequestFailure);
+			.setHandleRequestFailure(this.handleRequestFailure)
+			.setDefaultRequestHandler(this.processDefaultResponseHandlers);
 	};
 
 	processDefaultResponseHandlers = (httpRequest: BaseHttpRequest<any, any, any, any, any>) => {
