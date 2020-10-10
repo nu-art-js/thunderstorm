@@ -54,7 +54,7 @@ import {
 	FirestoreTransaction
 } from '@nu-art/firebase/backend';
 import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
-import {BeHttpModule} from "@nu-art/thunderstorm/app-backend/modules/http/HttpModule";
+import {BeHttpModule} from "@nu-art/thunderstorm/app-backend/modules/http/BeHttpModule";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import { Firebase_ExpressFunction } from '@nu-art/firebase/backend-functions';
 

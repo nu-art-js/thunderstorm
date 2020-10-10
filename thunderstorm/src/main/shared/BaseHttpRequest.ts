@@ -62,12 +62,13 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 	protected params: { [K in keyof P]?: P[K] } = {};
 
 	protected label!: string;
-	protected onResponseListener!: (response: R) => void;
 	protected onProgressListener!: (ev: TS_Progress) => void;
-	protected handleRequestSuccess?: RequestSuccessHandler;
-	protected handleRequestFailure?: RequestErrorHandler<E>;
+	protected handleRequestSuccess!: RequestSuccessHandler;
+	protected handleRequestFailure!: RequestErrorHandler<E>;
+	protected onError?: RequestErrorHandler<E>;
 	protected aborted: boolean = false;
 	protected compress: boolean;
+	private defaultResponseHandler?: (request: BaseHttpRequest<any>) => boolean;
 
 	constructor(requestKey: string, requestData?: string) {
 		this.key = requestKey;
@@ -108,7 +109,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 			// noinspection JSConstantReassignment
 			this.errorMessage = errorMessage;
 		} else
-			this.handleRequestFailure = errorMessage;
+			this.onError = errorMessage;
 
 		return this;
 	}
@@ -125,8 +126,8 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		return this;
 	}
 
-	setOnResponseListener(listener: (response: R) => void) {
-		this.onResponseListener = listener;
+	setDefaultRequestHandler(processDefaultResponseHandlers: (request: BaseHttpRequest<any>) => boolean) {
+		this.defaultResponseHandler = processDefaultResponseHandlers;
 		return this;
 	}
 
@@ -261,13 +262,11 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		return response;
 	}
 
-	async executeSync(): Promise<R> {
-		await this.executeImpl();
-		if (this.isValidStatus())
-			return this.resolveResponse();
-
-		this.handleRequestFailure?.(this, this.getErrorResponse());
-		throw new HttpException(this.getStatus(), this.url);
+	private handleFailure(reject?: (reason?: any) => void) {
+		const errorResponse = this.getErrorResponse();
+		this.onError?.(this, errorResponse);
+		this.handleRequestFailure(this, errorResponse);
+		reject?.(errorResponse);
 	}
 
 	private isValidStatus() {
@@ -277,25 +276,39 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 
 	abstract getStatus(): number;
 
+	async executeSync(): Promise<R> {
+		await this.executeImpl();
+		if (this.aborted)
+			throw new HttpException(this.getStatus(), this.url);// should be status 0
+
+		// run this anyway to have consistent behaviour
+		this.defaultResponseHandler?.(this);
+
+		if (!this.isValidStatus()) {
+			this.handleFailure();
+			throw new HttpException(this.getStatus(), this.url);
+		}
+
+		this.handleRequestSuccess(this);
+		return this.resolveResponse();
+	}
+
 	execute(responseHandler?: (response: R, data?: string) => Promise<void> | void) {
-		const toCall = async () => {
+		const toCall = async (resolve: () => void, reject: (reason?: any) => void) => {
 			await this.executeImpl();
-
 			if (this.aborted)
-				return;
+				return resolve();
 
-			// TODO need to handle this ()
-			// if (HttpModule.processDefaultResponseHandlers(this))
-			// 	return;
+			if (this.defaultResponseHandler?.(this))
+				return resolve();
 
 			if (!this.isValidStatus())
-				return this.handleRequestFailure?.(this, this.getErrorResponse());
+				return this.handleFailure(reject);
 
 			const response = this.resolveResponse();
-
-			this.onResponseListener && this.onResponseListener(response);
 			responseHandler && await responseHandler(response, this.requestData);
-			this.handleRequestSuccess?.(this);
+			this.handleRequestSuccess(this);
+			resolve();
 		};
 
 		_setTimeout(() => {

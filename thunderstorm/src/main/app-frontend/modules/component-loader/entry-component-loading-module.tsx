@@ -26,10 +26,7 @@ import {
 
 import {Module} from "@nu-art/ts-common";
 // noinspection TypeScriptPreferShortImport
-import {
-	HttpModule,
-	HttpRequest
-} from "../http/HttpModule";
+import {HttpModule} from "../http/HttpModule";
 import {BrowserHistoryModule} from "../HistoryModule";
 
 type ScriptLoaderBinder = ApiWithQuery<string, string, {}, any>
@@ -40,22 +37,20 @@ export class PageLoadingModule_Class
 	private readonly injected: { [src: string]: HTMLScriptElement } = {};
 
 	loadScript(src: string, progressListener: (progress: number) => void) {
-		const baseHttpRequest: HttpRequest<ScriptLoaderBinder> = HttpModule.createRequest<ScriptLoaderBinder>(HttpMethod.GET, src);
-		console.log(baseHttpRequest);
-		HttpModule.createRequest<ScriptLoaderBinder>(HttpMethod.GET, src)
-		          .setUrl(`${BrowserHistoryModule.getOrigin()}/${src}`)
-		          .setOnProgressListener((ev: TS_Progress) => {
-			          const progress = ev.loaded / ev.total;
-			          progressListener(progress);
-		          })
-		          .setOnResponseListener(response => {
-			          const divElement: HTMLScriptElement = document.createElement("script");
-			          divElement.innerHTML = response;
-			          divElement.id = src;
-			          divElement.async = true;
-			          this.injected[src] = divElement;
-		          })
-		          .execute();
+		HttpModule
+			.createRequest<ScriptLoaderBinder>(HttpMethod.GET, src)
+			.setUrl(`${BrowserHistoryModule.getOrigin()}/${src}`)
+			.setOnProgressListener((ev: TS_Progress) => {
+				const progress = ev.loaded / ev.total;
+				progressListener(progress);
+			})
+			.execute(response => {
+				const divElement: HTMLScriptElement = document.createElement("script");
+				divElement.innerHTML = response;
+				divElement.id = src;
+				divElement.async = true;
+				this.injected[src] = divElement;
+			});
 	}
 
 	getNode(src: string) {
