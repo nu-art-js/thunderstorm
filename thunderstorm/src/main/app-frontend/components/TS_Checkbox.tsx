@@ -7,8 +7,9 @@ type RadioProps<T> = {
 	checked: boolean
 	onCheck?: (value: T) => void
 	label: ReactNode
-	buttonStyle?: string
-	containerStyle?: string
+	buttonClass?: string
+	containerClass?: string,
+	innerClass?: string
 }
 
 const radioContainer: React.CSSProperties = {
@@ -23,29 +24,24 @@ export class TS_Checkbox<T>
 			borderRadius: "50%",
 			border: "1px solid #68678d50",
 			boxShadow: "0px 0 1px 0px #867979",
-			marginRight: "10px",
+			marginRight: 10,
 
 		};
 
-		// const defaultButtonStyle = emotion.css`
-		// 	border-radius: 50%;
-		// 	border: 1px solid #68678d50;
-		// 	box-shadow: 0px 0 1px 0px #867979;
-		// 	margin-right: 10px;
-		// 	& .btnInner{
-		// 		width: 15px;
-		// 		height: 15px;
-		// 		border-radius: 50%;
-		// 		box-sizing: border-box;
-		// 	}
-		// 	&.checked .btnInner{
-		// 			border: 4.5px #3499fe solid;
-		// 		}
-		// `;
+		const btnInner: React.CSSProperties = {
+			width: 15,
+			height: 15,
+			borderRadius: "50%",
+			boxSizing: "border-box"
+		};
 
-		return <div className={`${this.props.containerStyle} ${radioContainer} ll_h_c`} id={this.props.id} onClick={() => this.props.onCheck && this.props.onCheck(this.props.value)}>
-			<div className={`${this.props.buttonStyle || defaultButtonStyle} ${this.props.checked ? 'checked' : 'unchecked'}`}>
-				<div className={`btnInner`}/>
+		if (this.props.checked) {
+			btnInner.border = "4.5px #3499fe solid";
+		}
+
+		return <div className={`${this.props.containerClass} ${radioContainer} ll_h_c`} id={this.props.id} onClick={() => this.props.onCheck && this.props.onCheck(this.props.value)}>
+			<div style={defaultButtonStyle} className={`${this.props.buttonClass} ${this.props.checked ? 'checked' : 'unchecked'}`}>
+				<div style={btnInner} className={`btnInner`}/>
 			</div>
 			<div className={'label'}>{this.props.label}</div>
 		</div>
