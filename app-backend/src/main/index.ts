@@ -32,6 +32,8 @@ import {
 import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
 import {
 	__stringify,
+	_setTimeout,
+	Minute,
 	Module
 } from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
@@ -46,6 +48,7 @@ import {
 import {
 	Backend_ModulePack_Uploader,
 	PostProcessor,
+	ServerUploaderModule,
 	UploaderModule
 } from "@nu-art/file-upload/backend";
 import {
@@ -56,7 +59,8 @@ import {
 import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
 import {BeHttpModule} from "@nu-art/thunderstorm/app-backend/modules/http/BeHttpModule";
 import {HttpMethod} from "@nu-art/thunderstorm";
-import { Firebase_ExpressFunction } from '@nu-art/firebase/backend-functions';
+import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
+import {ExampleSetMax} from '@app/app-shared';
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -76,10 +80,21 @@ const modules: Module[] = [
 const postProcessor: { [k: string]: PostProcessor } = {
 	default: async (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => {
 		await FirebaseModule.createAdminSession().getDatabase().set(`/alan/testing/${file.path}`, {path: file.path, name: await file.exists()});
+
+		const resp = ServerUploaderModule.upload(await file.read(), 'myTest.txt', doc.mimeType);
+
+		await new Promise(res => {
+			_setTimeout(() => {
+				console.log(ServerUploaderModule.getFullFileInfo(resp[0].feId));
+				res();
+			}, 0.5 * Minute);
+		});
+
 		console.log(file);
 	}
 };
 UploaderModule.setPostProcessor(postProcessor);
+// BucketListener.setDefaultConfig({memory: "1GB", timeoutSeconds: 540})
 Firebase_ExpressFunction.setConfig({memory: "1GB", timeoutSeconds: 540});
 const _exports = new Storm()
 	.addModules(...Backend_ModulePack_BugReport)
@@ -92,13 +107,14 @@ const _exports = new Storm()
 	.setEnvironment(Environment.name)
 	.build(async () => {
 		const response = await BeHttpModule
-			.createRequest(HttpMethod.GET, 'google-request')
-			.setUrl('https://us-central1-thunderstorm-staging.cloudfunctions.net/api/v1/sample/get-max')
+			.createRequest<ExampleSetMax>(HttpMethod.POST, 'internal-be-request')
+			.setUrl('https://us-central1-thunderstorm-staging.cloudfunctions.net/api/v1/sample/set-max')
+			.setJsonBody({n: 65})
 			.setOnError((request, errorData) => {
 				console.log('I got error', errorData);
 			})
 			.setTimeout(30000)
-		.executeSync();
+			.executeSync();
 		console.log('I got respose', response);
 	});
 

@@ -212,6 +212,10 @@ export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	getErrorResponse(): ErrorResponse<DeriveErrorType<Binder>> {
 		return {debugMessage: this.getResponse()};
 	}
+	//
+	// setBody(bodyAsString: any, _compress?: boolean) {
+	// 	return super.setBody(Buffer.from(bodyAsString), _compress);
+	// }
 
 	protected executeImpl(): Promise<void> {
 		//loop through whatever preprocessor

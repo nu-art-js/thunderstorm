@@ -51,6 +51,7 @@ export type ExampleApiTest = ApiWithQuery<string, string>
 export type ExampleTestPush = ApiWithQuery<"/v1/sample/push-test", string>
 
 export type ExampleGetMax = ApiWithQuery<"/v1/sample/get-max", { n: number }>
+export type ExampleSetMax = ApiWithBody<"/v1/sample/set-max", { n: number }, void>
 export type ApiType_GetWithoutParams = ApiWithQuery<"/v1/sample/get-without-params-endpoint", string>
 export type ApiType_ApiGetWithParams = ApiWithQuery<"/v1/sample/get-with-params-endpoint", string, ParamsToGet>
 export type ApiType_ApiPostWithoutResponse = ApiWithBody<"/v1/sample/post-without-body-endpoint", CommonBodyReq, void>
