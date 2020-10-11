@@ -143,7 +143,7 @@ export abstract class BaseUploaderModule_Class
 		this.dispatch_fileStatusChange.dispatchModule([id]);
 	}
 
-	uploadImpl(files: FilesToUpload[]): BaseUploaderFile[] | undefined {
+	uploadImpl(files: FilesToUpload[]): BaseUploaderFile[] {
 		const body: BaseUploaderFile[] = files.map(fileData => {
 			const fileInfo: BaseUploaderFile = {
 				name: fileData.name,

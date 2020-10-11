@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * A backend boilerplate with example apis
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,9 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {
+	ApiResponse,
+	ServerApi_Get,
+} from "@nu-art/thunderstorm/backend";
 
-export * from "./app-backend/core/module-pack";
 
-export * from "./app-backend/modules/UploaderModule";
-export * from "./app-backend/modules/UploaderTempFileModule";
-export * from "./app-backend/modules/ServerUploaderModule";
+import {DispatchModule} from "@modules/ExampleModule";
+import {ExampleSetMax} from "@app/app-shared";
+import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+
+class ServerApi_EndpointExample
+	extends ServerApi_Get<ExampleSetMax> {
+
+	constructor() {
+		super("set-max");
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: {n:number}) {
+		return DispatchModule.setMax(body.n)
+	}
+}
+
+module.exports = new ServerApi_EndpointExample();
+
+

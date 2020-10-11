@@ -51,7 +51,7 @@ export class ServerUploaderModule_Class
 		return BeHttpModule.createRequest<Binder>(method, key, data);
 	}
 
-	upload(file: Buffer, name: string, mimeType: string, key?: string): BaseUploaderFile[] | undefined {
+	upload(file: Buffer, name: string, mimeType: string, key?: string): BaseUploaderFile[]{
 		return this.uploadImpl([{name, mimeType, key, file}]);
 	}
 
