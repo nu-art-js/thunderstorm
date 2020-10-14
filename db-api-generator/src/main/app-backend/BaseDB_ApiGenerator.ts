@@ -65,6 +65,10 @@ const idLength = 32;
 export const validateId = (length: number, mandatory: boolean = true) => validateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
 export const validateEmail = validateRegexp(
 	/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/);
+export const validateBucketUrl = (mandatory?: boolean) => validateRegexp(
+	/gs?:\/\/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
+export const validateGeneralUrl = (mandatory?: boolean) => validateRegexp(
+	/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
 export const validateUniqueId = validateId(idLength);
 export const validateOptionalId = validateId(idLength, false);
 export const validateStringWithDashes = validateRegexp(/^[A-Za-z-]+$/);
