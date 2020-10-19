@@ -45,12 +45,12 @@ export class Example_FilterInput
 	}
 
 	private simpleStringProps() {
-		let list = ["abcde", "cdefg", "efghi", "ghijk"];
+		const list = ["abcde", "cdefg", "efghi", "ghijk"];
 		return {
 			key: "simple-string-input",
 			id: "simple-string-input",
 			filter: (item: string) => [item],
-			list: list,
+			list,
 			onChange: (filteredOptions: string[], filter: string, id?: string) => {
 				console.log(`id: ${id}\nfilter: ${filter}\n items: ${__stringify(filteredOptions)}`)
 				this.setState({filteredOptions})
@@ -62,7 +62,7 @@ export class Example_FilterInput
 	}
 
 	private simpleObjectProps() {
-		let list = [
+		const list = [
 			{label: "abcde"},
 			{label: "cdefg"},
 			{label: "efghi"},
@@ -72,7 +72,7 @@ export class Example_FilterInput
 			key: "simple-object-input",
 			id: "simple-object-input",
 			filter: (item: { label: string }) => [item.label],
-			list: list,
+			list,
 			onChange: (filteredOptions: { label: string }[], filter: string, id?: string) => {
 				console.log(`id: ${id}\nfilter: ${filter}\n items: ${__stringify(filteredOptions)}`)
 				this.setState({filteredOptions})
