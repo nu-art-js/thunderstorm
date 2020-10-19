@@ -52,7 +52,7 @@ type _SlackMessage = {
 	channel: string
 }
 
-type SlackMessage = string | _SlackMessage
+export type SlackMessage = string | _SlackMessage
 
 type MessageMap = {
 	[text: string]: number
