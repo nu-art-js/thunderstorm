@@ -28,7 +28,6 @@ import {
 } from "./ToasterModule";
 // noinspection TypeScriptPreferShortImport
 import {BaseComponent} from "../../core/BaseComponent";
-import {_setTimeout} from "@nu-art/ts-common";
 
 type State = { model?: Toast_Model };
 
@@ -40,11 +39,9 @@ export abstract class BaseToaster
 	extends BaseComponent<ToastProps, State>
 	implements ToastListener {
 
-	private timeoutInterval?: number;
-
 	protected constructor(props: ToastProps) {
 		super(props);
-		this.state = {}
+		this.state = {};
 	}
 
 	__showToast = (model?: Toast_Model): void => {
@@ -56,12 +53,8 @@ export abstract class BaseToaster
 		if (duration <= 0)
 			return;
 
-		if (this.timeoutInterval)
-			clearTimeout(this.timeoutInterval);
-
-		this.timeoutInterval = _setTimeout(ToastModule.hideToast, duration, model);
+		this.throttle(() => ToastModule.hideToast(model), 'closing_action', duration);
 	};
-
 
 	render() {
 		const toast = this.state.model;
@@ -77,7 +70,7 @@ export abstract class BaseToaster
 
 		return <div className={'ll_v_l'}>{React.Children.map(toast.actions, (action, idx) =>
 			React.cloneElement(action, {key: idx})
-		)}</div>
+		)}</div>;
 	};
 
 	protected abstract renderToaster(toast: Toast_Model): React.ReactNode ;
