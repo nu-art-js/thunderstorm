@@ -25,9 +25,12 @@
 import * as React from "react";
 
 import {
+	_clearTimeout,
+	_setTimeout,
 	Logger,
 	LogLevel,
-	LogParam
+	LogParam,
+	TimerHandler
 } from "@nu-art/ts-common";
 import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
@@ -42,6 +45,7 @@ export class BaseComponent<P = any, S = any>
 	private logger: Logger;
 	private readonly _componentDidMount: (() => void) | undefined;
 	private readonly _componentWillUnmount: (() => void) | undefined;
+	private timeoutMap: { [k: string]: number } = {};
 
 	constructor(props: P) {
 		super(props);
@@ -63,7 +67,12 @@ export class BaseComponent<P = any, S = any>
 
 			// @ts-ignore
 			Thunder.getInstance().removeUIListener(this);
-		}
+		};
+	}
+
+	throttle(handler: TimerHandler, key: string, ms = 0) {
+		_clearTimeout(this.timeoutMap[key]);
+		this.timeoutMap[key] = _setTimeout(handler, ms);
 	}
 
 	setStateKeysToUpdate(stateKeysToUpdate?: (keyof S)[]) {

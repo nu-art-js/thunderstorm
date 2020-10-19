@@ -23,6 +23,7 @@
 
 import {
 	currentTimeMillies,
+	ImplementationMissingException,
 	Minute,
 	Module
 } from "@nu-art/ts-common";
@@ -67,13 +68,17 @@ export class SlackModule_Class
 	}
 
 	protected init(): void {
+		if (!this.config.token)
+			throw new ImplementationMissingException('Missing config token for SlackModule. Please add it');
+
 		this.web = new WebClient(this.config.token);
 	}
 
 	public async postMessage(slackMessage: SlackMessage) {
 		const parameters: SlackMessage = typeof slackMessage === 'string' ? {text: slackMessage, channel: this.config.defaultChannel} : slackMessage;
 
-		if (this.messageMap[parameters.text])
+		const time = this.messageMap[parameters.text];
+		if (time && currentTimeMillies() - time < (this.config.throttlingTime || Minute))
 			return;
 
 		try {
@@ -86,10 +91,6 @@ export class SlackModule_Class
 	private async postMessageImpl(message: _SlackMessage) {
 		const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
 		this.messageMap[message.text] = currentTimeMillies();
-		setTimeout(
-			() => delete this.messageMap[message.text],
-			this.config.throttlingTime || Minute
-		);
 
 		this.logDebug(
 			`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);
