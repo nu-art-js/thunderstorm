@@ -54,6 +54,7 @@ import {
 	FirestoreTransaction
 } from '@nu-art/firebase/backend';
 import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
+import {DialogFlowModule} from "@nu-art/google-services";
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -66,7 +67,8 @@ const modules: Module[] = [
 	SlackModule,
 	Slack_ServerApiError,
 	DispatchModule,
-	PushPubSubModule
+	PushPubSubModule,
+	DialogFlowModule
 ];
 
 const postProcessor: { [k: string]: PostProcessor } = {
