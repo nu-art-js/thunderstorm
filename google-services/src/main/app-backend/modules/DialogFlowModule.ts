@@ -4,13 +4,16 @@ import {dialogflow_v2} from "googleapis";
 import Params$Resource$Projects$Agent$Entitytypes$Entities$Batchcreate = dialogflow_v2.Params$Resource$Projects$Agent$Entitytypes$Entities$Batchcreate;
 import Schema$GoogleCloudDialogflowV2EntityTypeEntity = dialogflow_v2.Schema$GoogleCloudDialogflowV2EntityTypeEntity;
 
+type DialogFlowModuleConfig = {
+	dialogFlowProject?: string
+}
 export class DialogFlowModule_Class
-	extends Module {
+	extends Module<DialogFlowModuleConfig> {
 
 	private dialogFlowApi!: dialogflow_v2.Dialogflow;
 
 	protected init() {
-		this.dialogFlowApi = new dialogflow_v2.Dialogflow(AuthModule.auth2);
+		this.dialogFlowApi = new dialogflow_v2.Dialogflow(AuthModule.getAuth(this.config?.dialogFlowProject));
 	}
 
 	agent = {
@@ -62,7 +65,7 @@ export class DialogFlowModule_Class
 	}
 
 	intent = {
-		create: async (agentProjectId: string) => {
+		list: async (agentProjectId: string) => {
 			this.logInfo(`Create ${agentProjectId}`)
 			return (await this.dialogFlowApi.projects.agent.intents.list({parent: agentProjectId})).data;
 		},

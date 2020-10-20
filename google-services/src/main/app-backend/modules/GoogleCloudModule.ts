@@ -57,9 +57,9 @@ export class GoogleCloudManager_Class
 
 
 	protected init() {
-		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.auth1);
-		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.auth2);
-		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.auth1);
+		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.getAuth(undefined, 'v1'));
+		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.getAuth());
+		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.getAuth(undefined, 'v1'));
 	}
 
 	// FOLDERS

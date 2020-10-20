@@ -2,34 +2,56 @@
  * Created by tacb0ss on 07/05/2018.
  */
 
-import {Module} from "@nu-art/ts-common";
+import {
+	ImplementationMissingException,
+	Module
+} from "@nu-art/ts-common";
 import {
 	JWT,
-	GoogleAuth
+	GoogleAuth,
+	JWTInput
 } from "google-auth-library";
 
+type AuthModuleConfig = {
+	auth: {
+		[k: string]: JWTInput | string
+	}
+}
 
 export class AuthModule_Class
-	extends Module {
+	extends Module<AuthModuleConfig> {
 
-	public auth1!: { auth: any; version: string };
-	public auth2!: { auth: any; version: string };
+	getAuth(projectId?: string, version: 'v1' | 'v2' = 'v2') {
+		let projectAuth: JWTInput | string | undefined;
+		if (!projectId) {
+			projectAuth = '../.trash/service-account.json'
+		} else {
+			projectAuth = this.config?.auth?.[projectId];
+		}
 
-	protected init() {
-		const auth = new GoogleAuth({
-			                            keyFile: '../.trash/service-account.json',
-			                            scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-		                            });
+		if (!projectAuth) {
+			throw new ImplementationMissingException(`Config of AuthModule_Class fro project ${projectId} was not found`);
+		}
 
-		this.auth1 = {
-			version: 'v1',
-			auth: auth,
-		};
+		let auth;
 
-		this.auth2 = {
-			version: 'v2',
-			auth: auth
-		};
+		if (typeof projectAuth === 'string') {
+			auth = new GoogleAuth(
+				{
+					keyFile: projectAuth,
+					scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+				}
+			);
+		} else {
+			auth = new GoogleAuth(
+				{
+					credentials: projectAuth,
+					scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+				}
+			);
+		}
+
+		return {version, auth};
 	}
 
 	async getToken() {
