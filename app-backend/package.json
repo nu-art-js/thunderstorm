@@ -31,6 +31,7 @@
     "@nu-art/db-api-generator": "file:.dependencies/db-api-generator",
     "@nu-art/file-upload": "file:.dependencies/file-upload",
     "@nu-art/firebase": "file:.dependencies/firebase",
+    "@nu-art/google-services": "file:.dependencies/google-services",
     "@nu-art/live-docs": "file:.dependencies/live-docs",
     "@nu-art/permissions": "file:.dependencies/permissions",
     "@nu-art/push-pub-sub": "file:.dependencies/push-pub-sub",

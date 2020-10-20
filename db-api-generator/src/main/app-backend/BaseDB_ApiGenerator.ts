@@ -73,6 +73,7 @@ export const validateUniqueId = validateId(idLength);
 export const validateOptionalId = validateId(idLength, false);
 export const validateStringWithDashes = validateRegexp(/^[A-Za-z-]+$/);
 export const validateStringAndNumbersWithDashes = validateRegexp(/^[0-9A-Za-z-]+$/);
+export const validator_JavaObjectMemberName = validateRegexp(/^[a-z][a-zA-Z0-9]+$/);
 export const validateNameWithDashesAndDots = validateRegexp(/^[a-z-.]+$/);
 export const validator_LowercaseStringWithDashes = validateRegexp(/^[a-z-.]+$/);
 export const validator_LowerUpperStringWithSpaces = validateRegexp(/^[A-Za-z ]+$/);
