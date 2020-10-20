@@ -37,7 +37,7 @@ import {
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
 import {Backend_ModulePack_BugReport} from "@nu-art/bug-report/backend";
 import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
-import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
+import {PushPubSubModule, ScheduledCleanup} from '@nu-art/push-pub-sub/backend';
 import {ValueChangedListener} from "@modules/ValueChangedListener";
 import {
 	Slack_ServerApiError,

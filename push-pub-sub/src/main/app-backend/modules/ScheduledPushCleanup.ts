@@ -25,7 +25,7 @@ export class ScheduledCleanup_Class
 
 	constructor() {
 		super();
-		this.setSchedule('every 1 hour');
+		this.setSchedule('every 1 hours');
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
