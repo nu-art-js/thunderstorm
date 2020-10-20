@@ -17,7 +17,7 @@
  */
 
 // tslint:disable-next-line:no-import-side-effect
-import 'module-alias/register'
+import 'module-alias/register';
 import * as functions from "firebase-functions";
 import {
 	ForceUpgrade,
@@ -37,7 +37,7 @@ import {
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
 import {Backend_ModulePack_BugReport} from "@nu-art/bug-report/backend";
 import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
-import {PushPubSubModule, ScheduledCleanup} from '@nu-art/push-pub-sub/backend';
+import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
 import {ValueChangedListener} from "@modules/ValueChangedListener";
 import {
 	Slack_ServerApiError,
@@ -74,7 +74,7 @@ const modules: Module[] = [
 const postProcessor: { [k: string]: PostProcessor } = {
 	default: async (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => {
 		await FirebaseModule.createAdminSession().getDatabase().set(`/alan/testing/${file.path}`, {path: file.path, name: await file.exists()});
-		console.log(file)
+		console.log(file);
 	}
 };
 UploaderModule.setPostProcessor(postProcessor);
@@ -100,6 +100,6 @@ _exports.logTest = functions.database.ref('triggerLogs').onWrite((change, contex
 			            b: 10000
 		            }
 	            });
-})
+});
 
 module.exports = _exports;
