@@ -66,8 +66,8 @@ export class DialogFlowModule_Class
 
 	intent = {
 		list: async (agentProjectId: string) => {
-			this.logInfo(`Create ${agentProjectId}`)
-			return (await this.dialogFlowApi.projects.agent.intents.list({parent: agentProjectId})).data;
+			this.logInfo(`List intents of ${agentProjectId}`)
+			return (await this.dialogFlowApi.projects.agent.intents.list({parent: `projects/${agentProjectId}`})).data;
 		},
 	}
 
