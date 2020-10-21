@@ -57,18 +57,18 @@ export class GoogleCloudManager_Class
 
 
 	protected init() {
-		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.getAuth(undefined, 'v1'));
+		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.getAuth(undefined, undefined, 'v1'));
 		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.getAuth());
-		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.getAuth(undefined, 'v1'));
+		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.getAuth(undefined, undefined, 'v1'));
 	}
 
 	// FOLDERS
 	async getOrCreateFolder(parentFolderId: string, folderName: string) {
 		if (parentFolderId === undefined)
-			throw new BadImplementationException("MUST provide a parentFolderId")
+			throw new BadImplementationException("MUST provide a parentFolderId");
 
 		if (folderName === undefined)
-			throw new BadImplementationException("MUST provide a folderName")
+			throw new BadImplementationException("MUST provide a folderName");
 
 		const folders = await this.queryFolders({parentId: parentFolderId, folderName});
 		let parentFolder;
@@ -80,7 +80,7 @@ export class GoogleCloudManager_Class
 			parentFolder = await this.createFolder({parentId: parentFolderId, folderName});
 
 		if (!parentFolder)
-			throw new BadImplementationException("MUST be parentFolder")
+			throw new BadImplementationException("MUST be parentFolder");
 
 		return this.getFolderId(parentFolder);
 	}
@@ -100,7 +100,7 @@ export class GoogleCloudManager_Class
 
 	async queryFolders(_query: QueryFolder) {
 		const query = {query: `parent=folders/${_query.parentId} AND displayName=${_query.folderName}`};
-		const res = await this.cloudResourcesManagerAPI.folders.search({requestBody: query})
+		const res = await this.cloudResourcesManagerAPI.folders.search({requestBody: query});
 
 		return res.data.folders || [];
 	}
@@ -113,7 +113,7 @@ export class GoogleCloudManager_Class
 		let retry = 5;
 		while (retry >= 0) {
 			await timeout(2000);
-			const res = await this.cloudResourcesManagerAPI.operations.get({name})
+			const res = await this.cloudResourcesManagerAPI.operations.get({name});
 			if (res.data.done)
 				return res.data.response;
 
@@ -138,7 +138,8 @@ export class GoogleCloudManager_Class
 			.filter((project) => !existingProjects.find((gcproject) => gcproject.name === project.name));
 
 		const newProjects = await Promise.all(projectsToCreate.map(project => this.createProject(parentId, project.projectId, project.name)));
-		const allProjects = [...existingProjects, ...newProjects];
+		const allProjects = [...existingProjects,
+		                     ...newProjects];
 		return projects.map(project => allProjects.find(gcpProject => gcpProject.name === project.name));
 	}
 
@@ -156,14 +157,14 @@ export class GoogleCloudManager_Class
 
 		this.logInfo(`Creating GCP Project "${parentId}/${projectId}/${name}"`);
 		const response = await this.cloudResourcesManagerAPIv1.projects.create({requestBody: options});
-		return this._waitForProjectOperation(response.data.name as string) as Schema$Project
+		return this._waitForProjectOperation(response.data.name as string) as Schema$Project;
 	}
 
 	async _waitForProjectOperation(name: string) {
 		let retry = 5;
 		while (retry >= 0) {
 			await timeout(2000);
-			const res = await this.cloudResourcesManagerAPIv1.operations.get({name})
+			const res = await this.cloudResourcesManagerAPIv1.operations.get({name});
 			if (res.data.done)
 				return res.data.response;
 
@@ -181,7 +182,7 @@ export class GoogleCloudManager_Class
 
 	async enableService(serviceKey: ServiceKey, enable: boolean, ...projectIds: string[]) {
 		this.logInfo(`Enabling Service "${serviceKey}" for projects: ${__stringify(projectIds)}`);
-		return Promise.all(projectIds.map(projectId => this._enableService(serviceKey, projectId, enable)))
+		return Promise.all(projectIds.map(projectId => this._enableService(serviceKey, projectId, enable)));
 	}
 
 	// @ts-ignore
@@ -197,7 +198,7 @@ export class GoogleCloudManager_Class
 		else
 			res = await this.cloudServicesManagerAPI.services.disable({name});
 
-		service = await this._waitForServiceOperation(res.data.name as string)
+		service = await this._waitForServiceOperation(res.data.name as string);
 		if (this._isEnabled(service))
 			this.logVerbose(`Service "${serviceKey}" is now enabled for project: ${projectId}`);
 		else
@@ -211,7 +212,7 @@ export class GoogleCloudManager_Class
 		let retry = 5;
 		while (retry >= 0) {
 			await timeout(2000);
-			const res = await this.cloudServicesManagerAPI.operations.get({name})
+			const res = await this.cloudServicesManagerAPI.operations.get({name});
 			if (res.data.done)
 				return res.data.response?.service as Schema$GoogleApiServiceusageV1Service;
 
@@ -227,7 +228,7 @@ export class GoogleCloudManager_Class
 	}
 
 	private _isEnabled(service: Schema$GoogleApiServiceusageV1Service) {
-		return service.state === "ENABLED"
+		return service.state === "ENABLED";
 	}
 
 }
