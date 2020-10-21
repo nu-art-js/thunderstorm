@@ -9,7 +9,7 @@ import {
 import {
 	JWT,
 	GoogleAuth,
-	JWTInput
+	JWTInput,
 } from "google-auth-library";
 
 type AuthModuleConfig = {
@@ -21,16 +21,16 @@ type AuthModuleConfig = {
 export class AuthModule_Class
 	extends Module<AuthModuleConfig> {
 
-	getAuth(projectId?: string, version: 'v1' | 'v2' = 'v2') {
+	getAuth(configKey?: string, projectId?: string, version: 'v1' | 'v2' = 'v2') {
 		let projectAuth: JWTInput | string | undefined;
-		if (!projectId) {
-			projectAuth = '../.trash/service-account.json'
+		if (!configKey) {
+			projectAuth = '../.trash/service-account.json';
 		} else {
-			projectAuth = this.config?.auth?.[projectId];
+			projectAuth = this.config?.auth?.[configKey];
 		}
 
 		if (!projectAuth) {
-			throw new ImplementationMissingException(`Config of AuthModule_Class fro project ${projectId} was not found`);
+			throw new ImplementationMissingException(`Config of AuthModule_Class for project ${projectId} was not found`);
 		}
 
 		let auth;
@@ -39,6 +39,7 @@ export class AuthModule_Class
 			auth = new GoogleAuth(
 				{
 					keyFile: projectAuth,
+					projectId,
 					scopes: ['https://www.googleapis.com/auth/cloud-platform'],
 				}
 			);
@@ -46,6 +47,7 @@ export class AuthModule_Class
 			auth = new GoogleAuth(
 				{
 					credentials: projectAuth,
+					projectId,
 					scopes: ['https://www.googleapis.com/auth/cloud-platform'],
 				}
 			);
