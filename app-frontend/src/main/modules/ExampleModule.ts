@@ -49,7 +49,10 @@ import {
 	PushPubSubModule
 } from "@nu-art/push-pub-sub/frontend";
 import {FirebaseModule} from "@nu-art/firebase/frontend";
-import {SubscribeProps} from "@nu-art/push-pub-sub";
+import {
+	BaseSubscriptionData,
+	SubscribeProps
+} from "@nu-art/push-pub-sub";
 
 type Config = {
 	remoteUrl: string
@@ -64,13 +67,16 @@ export const exampleDispatcher = new ThunderDispatcher<TestDispatch, 'testDispat
 
 export const dispatchAll = () => {
 	exampleDispatcher.dispatchUI([]);
-	exampleDispatcher.dispatchModule([])
+	exampleDispatcher.dispatchModule([]);
 };
 
-const mySubscription = {
+const mySubscriptions: BaseSubscriptionData[] = [{
 	pushKey: 'key',
 	props: {a: 'prop'}
-};
+}, {
+	pushKey: 'test',
+	props: {id: 'test1'}
+}];
 
 export class ExampleModule_Class
 	extends Module<Config>
@@ -84,19 +90,19 @@ export class ExampleModule_Class
 
 	protected init(): void {
 		this.runAsync('Async start', async () => {
-			const asyncs = [
-				PushPubSubModule.subscribe(mySubscription),
+			const asyncs: Promise<any>[] = [
+				PushPubSubModule.subscribeMulti(mySubscriptions),
 				this.initAnalytics()
 
 			];
-			return Promise.all(asyncs)
-		})
+			return Promise.all(asyncs);
+		});
 	}
 
 	initAnalytics = async () => {
 		const localSession = await FirebaseModule.createSession();
 		const analytics = localSession.getAnalytics();
-		analytics.setCurrentScreen('Example Screen')
+		analytics.setCurrentScreen('Example Screen');
 	};
 
 	__onMessageReceived(pushKey: string, props?: SubscribeProps, data?: any) {
@@ -192,15 +198,15 @@ export class ExampleModule_Class
 		console.log('testing...');
 		setTimeout(() => {
 			this.setData();
-			dispatchAll()
-		}, 2 * Second)
+			dispatchAll();
+		}, 2 * Second);
 	};
 
 	testModDispatcher = () => {
 		console.log("testing the mod dispatcher");
 		setTimeout(() => {
 			Test.setModData();
-		}, 2 * Second)
+		}, 2 * Second);
 	};
 
 	testBackendDispatcher = () => {
@@ -214,11 +220,11 @@ export class ExampleModule_Class
 				console.log("i think i got something...");
 				console.log(response);
 				this.api_data = response;
-				dispatchAll()
+				dispatchAll();
 			});
 
 		this.logInfo("continue... will receive an event once request is completed..");
-	}
+	};
 
 	fetchMax = () => {
 		HttpModule
@@ -227,9 +233,9 @@ export class ExampleModule_Class
 			.setOnError(`Error getting max from backend`)
 			.execute(async response => {
 				this.max = response.n;
-				dispatchAll()
+				dispatchAll();
 			});
-	}
+	};
 
 	getMax = () => this.max;
 }
