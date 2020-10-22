@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="de38a261-3a11-4118-9323-fe001bf6236d" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/menu/Example_ListMultiTypeMenu.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/menu/Example_ListSingleTypeMenu.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/menu/Example_TreeSingleTypeMenu.tsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/app-frontend/components/tree/Adapter.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/pages/Page_Playground.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/Page_Playground.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/Page_Playground.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/_to-be-removed/TreeRefactorPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/_to-be-removed/TreeRefactorPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/dropdown/Example_DefaultsDropDown.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/dropdown/Example_DefaultsDropDown.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/dropdown/Example_DropDowns.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/dropdown/Example_DropDowns.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/dropdown/Example_MultiRendererDropDown.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/dropdown/Example_MultiRendererDropDown.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/dropdown/Example_SingleRendererDropDown.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/dropdown/Example_SingleRendererDropDown.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/keyboard-listener/Example_DataTree.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/keyboard-listener/Example_DataTree.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/keyboard-listener/Example_FakeMenu.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/keyboard-listener/Example_FakeMenu.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/keyboard-listener/Example_VerySimpleTree.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/keyboard-listener/Example_VerySimpleTree.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/menu/Example_Menu.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../app-frontend/src/main/app/playground/examples/menu/Example_Menu.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../db-api-generator/src/main/app-backend/BaseDB_ApiGenerator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../db-api-generator/src/main/app-backend/BaseDB_ApiGenerator.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firebase/src/main/app-backend/firestore/FirestoreCollection.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../firebase/src/main/app-backend/firestore/FirestoreCollection.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firebase/src/main/app-backend/firestore/FirestoreInterface.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../firebase/src/main/app-backend/firestore/FirestoreInterface.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../firebase/src/main/app-backend/firestore/FirestoreTransaction.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../firebase/src/main/app-backend/firestore/FirestoreTransaction.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../permissions/src/main/app-backend/modules/db-types/assign.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../permissions/src/main/app-backend/modules/db-types/assign.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/app-frontend/components/DropDown.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/app-frontend/components/DropDown.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/app-frontend/components/tree/Adapter.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/app-frontend/components/tree/MenuComponent.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/app-frontend/components/tree/MenuComponent.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/app-frontend/components/tree/MultiTypeAdaptor.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/app-frontend/components/tree/MultiTypeAdaptor.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/app-frontend/components/tree/Tree.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/app-frontend/components/tree/Tree.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/app-frontend/components/tree/types.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/app-frontend/components/tree/types.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/app-frontend/modules/menu/MenuAndButton.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/app-frontend/modules/menu/MenuAndButton.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/app-frontend/modules/menu/MenuModule.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/app-frontend/modules/menu/MenuModule.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../version-thunderstorm.json" beforeDir="false" afterPath="$PROJECT_DIR$/../version-thunderstorm.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="IgnoredFileRootStore">
+    <option name="generatedRoots">
+      <set>
+        <option value="$PROJECT_DIR$/.idea" />
+      </set>
+    </option>
+  </component>
+  <component name="ProjectId" id="1dkq3EqTeVjcW5QF5T44TJ9HwxJ" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="de38a261-3a11-4118-9323-fe001bf6236d" name="Default Changelist" comment="" />
+      <created>1592979237932</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1592979237932</updated>
+      <workItem from="1592979240603" duration="7997000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+</project>
