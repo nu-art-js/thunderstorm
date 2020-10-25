@@ -1,8 +1,9 @@
 import * as React from "react";
 import {ReactNode} from "react";
 
-type RadioProps<T> = {
-	id: string
+type CheckboxProps<T> = {
+	key?: number | string
+	id?: string
 	value: T
 	checked: boolean
 	onCheck?: (value: T) => void
@@ -16,7 +17,7 @@ type RadioProps<T> = {
 }
 
 export class TS_Checkbox<T>
-	extends React.Component<RadioProps<T>> {
+	extends React.Component<CheckboxProps<T>> {
 
 	render() {
 		const defaultButtonStyle: React.CSSProperties = {

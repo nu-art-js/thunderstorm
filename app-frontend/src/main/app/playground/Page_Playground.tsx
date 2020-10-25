@@ -55,7 +55,8 @@ import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
 import {Example_FilterInput} from "./examples/Example_FilterInput";
 import {Example_Uploader} from "./examples/Example_Uploader";
 import {Example_TSInput} from "./examples/Example_TSInput";
-import { Example_SingleCheckbox } from './examples/dropdown/Example_SingleCheckbox';
+import { Example_SingleCheckbox } from './examples/checkbox/Example_SingleCheckbox';
+import { Example_CheckboxField } from './examples/checkbox/Example_CheckboxField';
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -148,7 +149,9 @@ export class Page_Playground
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring"},
 			{renderer: OstudioEx, name: 'stam'},
 
-			{renderer: Example_SingleCheckbox, name: 'Single Checkbox'}
+			{renderer: Example_SingleCheckbox, name: 'Single Checkbox'},
+			{renderer: Example_CheckboxField, name: 'Checkbox fields'}
+
 		];
 	}
 }
