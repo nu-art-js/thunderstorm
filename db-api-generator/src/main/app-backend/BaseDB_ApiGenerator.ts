@@ -59,7 +59,10 @@ import {
 	FirestoreInterface,
 	FirestoreTransaction,
 } from "@nu-art/firebase/backend";
-import {BadInputErrorBody, ErrorKey_BadInput } from "../shared/types";
+import {
+	BadInputErrorBody,
+	ErrorKey_BadInput
+} from "../shared/types";
 
 const idLength = 32;
 export const validateId = (length: number, mandatory: boolean = true) => validateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
@@ -228,7 +231,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			const error = isErrorOfType(e, ValidationException);
 			if (error) {
 				const errorBody = {type: ErrorKey_BadInput, body: {path: error.path, input: error.input}};
-				throw new ApiException<BadInputErrorBody>(400, error.message).setErrorBody(errorBody)
+				throw new ApiException<BadInputErrorBody>(400, error.message).setErrorBody(errorBody);
 			}
 		}
 	}
@@ -377,7 +380,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		const actions = [] as Promise<() => Promise<DBType>>[];
 
 		instances.reduce((carry, instance: UType) => {
-			addItemToArray(carry, this.upsert_Read(instance, transaction, request))
+			addItemToArray(carry, this.upsert_Read(instance, transaction, request));
 			return carry;
 		}, actions);
 
