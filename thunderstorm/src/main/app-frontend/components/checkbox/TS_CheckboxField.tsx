@@ -30,7 +30,7 @@ export type CheckboxOption<T> = {
 
 type LabelType = ReactNode | ((checked: boolean, disabled: boolean) => ReactNode)
 
-type CheckboxFieldProps<T> = {
+export type CheckboxFieldProps<T> = {
     id?: string
     options: CheckboxOption<T>[]
     label: (option: CheckboxOption<T>) => LabelType
