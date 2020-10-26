@@ -1,7 +1,7 @@
 import * as React from "react";
 import {ReactNode} from "react";
 
-type CheckboxProps<T> = {
+export type CheckboxProps<T> = {
 	key?: number | string
 	id?: string
 	value: T

@@ -19,10 +19,15 @@
 
 import * as React from 'react';
 import {css} from "emotion";
-import {CheckboxOption, TS_CheckboxField} from "@nu-art/thunderstorm/app-frontend/components/checkbox/TS_CheckboxField";
-import {options, ChckbxOption, lessOptions} from "./data";
+import {
+    CheckboxFieldProps,
+    CheckboxOption,
+    TS_CheckboxField
+} from "@nu-art/thunderstorm/app-frontend/components/checkbox/TS_CheckboxField";
+import {ChckbxOption, lessOptions, options} from "./data";
 import {deepClone} from "@nu-art/ts-common";
 import {ICONS} from "@res/icons";
+import {Example_NewProps} from "@nu-art/thunderstorm/app-frontend/components/playground/Example_NewProps";
 
 const container = css({
     width: '500px'
@@ -57,37 +62,58 @@ export class Example_CheckboxField
     }
 
     render() {
+        const props1 = this.props1();
+        const props2 = this.props2();
+        const props3 = this.props3();
+        const props4 = this.props4();
         return <>
-            <TS_CheckboxField
-                options={this._opts}
-                gridColumns={4}
-                label={this.label}
-                innerNode={(checked => checked ?
-                    <div>{ICONS.successToast("blue", 13)}</div> :
-                    <div style={{width: 13, height: 13}}/>)}
-                onFieldChange={cb1=> this.setState({cb1: cb1 as ChckbxOption[]})}
-                fieldContainerClass={container}
-            />
+            <Example_NewProps name={"Grid-column 4 cols, multiple, disabled options, button with image"} renderer={TS_CheckboxField} data={[props1]} showToggle={false}/>
             <div>you chose</div>
             <div>{this.state.cb1.map(opt=><span key={opt.label}>{opt.value},</span>)}</div>
+            <div>in grid multiple choice</div>
             <hr/>
-            <TS_CheckboxField
-                options={options}
-                circle
-                singleValue
-                gridColumns={3}
-                horizontal
-                label={this.label}
-                onFieldChange={cb2=> this.setState({cb2: cb2 as ChckbxOption})}
-                fieldContainerClass={container}
-            />
-            <div>you chose {this.state.cb2?.value}</div>
+            <Example_NewProps name={"Grid-row 3 cols, single, disabled option, circle"} renderer={TS_CheckboxField} data={[props2]} showToggle={false}/>
+            <div>you chose {this.state.cb2?.value} in grid single choice</div>
             <hr/>
-            <TS_CheckboxField options={lessOptions} label={this.label} horizontal/>
-            <hr/>
-            <TS_CheckboxField options={lessOptions} label={this.label} circle singleValue/>
+            <Example_NewProps name={"no grid, horizontal and vertical"} renderer={TS_CheckboxField} data={[props3, props4]} showToggle={false}/>
         </>;
     }
 
+    private props1 = (): CheckboxFieldProps<any> => ({
+        options: this._opts,
+        gridColumns: 4,
+        label: this.label,
+        innerNode: (checked => checked ?
+            <div>{ICONS.successToast("blue", 13)}</div> :
+            <div style={{width: 13, height: 13}}/>),
+        onFieldChange: cb1=> this.setState({cb1: cb1 as ChckbxOption[]}),
+        fieldContainerClass: container
+    })
 
+    private props2 = (): CheckboxFieldProps<any> => ({
+        options: options,
+        circle: true,
+        singleValue: true,
+        gridColumns: 3,
+        horizontal: true,
+        label: this.label,
+        innerNode: (checked => checked ?
+            <div>{ICONS.successToast("blue", 13)}</div> :
+            <div style={{width: 13, height: 13}}/>),
+        onFieldChange: cb2=> this.setState({cb2: cb2 as ChckbxOption}),
+        fieldContainerClass: container
+    })
+
+    private props3 = (): CheckboxFieldProps<any> => ({
+        options: lessOptions,
+        label: this.label,
+        horizontal: true,
+    })
+
+    private props4 = (): CheckboxFieldProps<any> => ({
+        options: lessOptions,
+        label: this.label,
+        circle: true,
+        singleValue: true,
+    })
 }
