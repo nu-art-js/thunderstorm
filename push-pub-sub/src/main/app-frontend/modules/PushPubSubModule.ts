@@ -88,7 +88,11 @@ export class PushPubSubModule_Class
 		this.runAsync('Initializing Firebase SDK and registering SW', this.initApp)
 	}
 
-	private registerServiceWorker = async () => navigator.serviceWorker.register('/service_worker.js');
+	private registerServiceWorker = async () => {
+		const registration = await navigator.serviceWorker.register('/service_worker.js');
+		await registration.update();
+		return registration;
+	};
 
 	private initApp = async () => {
 		if ('serviceWorker' in navigator) {
