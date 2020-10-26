@@ -57,7 +57,7 @@ class PushPubSubModule_Class
 		const messaging = app.getMessaging();
 
 		messaging.setBackgroundMessageHandler((payload: any) => {
-			this.runAsync(`Sending message to window ${__stringify(payload.data, true)}`, () => this.sendMessage(payload.data))
+			this.runAsync(`Sending message to window ${__stringify(payload.data, true)}`, async () => this.sendMessage(payload.data))
 		});
 	};
 

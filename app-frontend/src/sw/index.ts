@@ -15,13 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {TS_ServiceWorker} from '@nu-art/thunderstorm/index-sw';
 import {FirebaseModule} from "@nu-art/firebase/frontend";
-import {ServiceWorker} from '@nu-art/thunderstorm/index-sw';
 import {PushPubSubModule} from "@nu-art/push-pub-sub/index-sw";
 
-new ServiceWorker()
+new TS_ServiceWorker()
 	.setConfig(require('../main/config').config)
 	.addModules(FirebaseModule, PushPubSubModule)
 	.build();
 
-export default null;
+// export default null;
