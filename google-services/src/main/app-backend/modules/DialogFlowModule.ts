@@ -49,15 +49,15 @@ export class DialogFlow
 		},
 		copy: async (fromAgent: string, toAgent: string) => {
 			this.logInfo(`Merging agent ${fromAgent} => ${toAgent}`)
-			const content: string = await DialogFlowModule.agent.export(fromAgent);
+			const content: string = await this.agent.export(fromAgent);
 			if (content)
-				await DialogFlowModule.agent.import(toAgent, content);
+				await this.agent.import(toAgent, content);
 		},
 		override: async (fromAgent: string, toAgent: string) => {
 			this.logInfo(`Overriding agent ${fromAgent} => ${toAgent}`)
-			const content: string = await DialogFlowModule.agent.export(fromAgent);
+			const content: string = await this.agent.export(fromAgent);
 			if (content)
-				await DialogFlowModule.agent.restore(toAgent, content);
+				await this.agent.restore(toAgent, content);
 		}
 	}
 
