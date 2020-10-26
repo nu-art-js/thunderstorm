@@ -100,5 +100,3 @@ export class DialogFlow
 		},
 	}
 }
-
-export const DialogFlowModule = new DialogFlowModule_Class();
