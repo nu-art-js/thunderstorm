@@ -4,14 +4,14 @@
 
 import {
 	ImplementationMissingException,
-	Module
+	Module,
+	NotImplementedYetException
 } from "@nu-art/ts-common";
 import {
 	JWT,
 	GoogleAuth,
 	JWTInput,
 } from "google-auth-library";
-import {NotImplementedYetException} from "../../../../../ts-common/src/main";
 
 type AuthModuleConfig = {
 	auth: {
