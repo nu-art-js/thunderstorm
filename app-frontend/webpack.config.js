@@ -43,7 +43,7 @@ module.exports = (env, argv) => {
 		context: sourcePath,
 		entry: {
 			main: './main/index.tsx',
-			service_worker: './sw/index.ts',
+			ts_service_worker: './sw/index.ts',
 		},
 		output: {
 			path: outputFolder,
