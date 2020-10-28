@@ -4,14 +4,14 @@
 
 import {
 	ImplementationMissingException,
-	Module
+	Module,
+    NotImplementedYetException
 } from "@nu-art/ts-common";
 import {
 	JWT,
 	GoogleAuth,
 	JWTInput,
 } from "google-auth-library";
-import {NotImplementedYetException} from "../../../../../ts-common/src/main";
 
 type AuthModuleConfig = {
 	auth: {
@@ -25,27 +25,17 @@ export class AuthModule_Class
 	getAuth(authKey: string, scopes: string[], version: 'v1' | 'v2' = 'v2') {
 		const authConfig = this.getAuthConfig(authKey)
 
-		let auth;
+		let opts;
 		if (typeof authConfig === 'string') {
-			auth = new GoogleAuth(
-				{
-					keyFile: authConfig,
-					scopes,
-				}
-			);
+			opts = {keyFile: authConfig, scopes,};
 		} else {
-			auth = new GoogleAuth(
-				{
-					credentials: authConfig,
-					scopes,
-				}
-			);
+			opts = {credentials: authConfig, scopes,};
 		}
 
-		return {version, auth};
+		return {version, auth: new GoogleAuth(opts)};
 	}
 
-	private getAuthConfig(authKey: string) {
+	 getAuthConfig(authKey: string) {
 		const projectAuth: JWTInput | string | undefined = this.config.auth[authKey];
 
 		if (!projectAuth)

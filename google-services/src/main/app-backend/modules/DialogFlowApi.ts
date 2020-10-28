@@ -1,16 +1,18 @@
 import {Logger} from "@nu-art/ts-common";
 import {dialogflow_v2} from "googleapis";
 import {AuthModule} from "./AuthModule";
+import { GCPScope } from "./consts";
 import Params$Resource$Projects$Agent$Entitytypes$Entities$Batchcreate = dialogflow_v2.Params$Resource$Projects$Agent$Entitytypes$Entities$Batchcreate;
 import Schema$GoogleCloudDialogflowV2EntityTypeEntity = dialogflow_v2.Schema$GoogleCloudDialogflowV2EntityTypeEntity;
 
 export class DialogFlowApi
 	extends Logger {
+
 	private dialogFlowApi: dialogflow_v2.Dialogflow;
 
 	constructor(authKey: string) {
 		super()
-		this.dialogFlowApi = new dialogflow_v2.Dialogflow(AuthModule.getAuth(authKey, ['https://www.googleapis.com/auth/cloud-platform']));
+		this.dialogFlowApi = new dialogflow_v2.Dialogflow(AuthModule.getAuth(authKey, [GCPScope.CloudPlatform]));
 	}
 
 	agent = {
