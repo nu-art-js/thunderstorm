@@ -23,18 +23,19 @@ import {
     CheckboxFieldProps,
     CheckboxOption,
     TS_CheckboxField
-} from "@nu-art/thunderstorm/app-frontend/components/checkbox/TS_CheckboxField";
+} from "@nu-art/thunderstorm/frontend";
 import {ChckbxOption, lessOptions, options} from "./data";
-import {deepClone} from "@nu-art/ts-common";
+import {deepClone, toggleElementInArray} from "@nu-art/ts-common";
 import {ICONS} from "@res/icons";
 import {Example_NewProps} from "@nu-art/thunderstorm/app-frontend/components/playground/Example_NewProps";
 
 const container = css({
     width: '500px'
 })
+type State = {cb1: ChckbxOption[], cb2?: ChckbxOption, cb3: ChckbxOption[], cb4?: ChckbxOption}
 
 export class Example_CheckboxField
-    extends React.Component<{}, {cb1: ChckbxOption[], cb2?: ChckbxOption}> {
+    extends React.Component<{}, State> {
     private _opts = deepClone(options);
     constructor(props:{}) {
         super(props);
@@ -42,7 +43,6 @@ export class Example_CheckboxField
         const cb1: ChckbxOption[] = [];
         this._opts.map(opt => {
             if (opt.value.value === "el4" || opt.value.value === "el7" || opt.value.value === "el8" || opt.value.value === "el14") {
-                opt.checked = true;
                 cb1.push(opt.value);
             }
             if (opt.value.value === "el2" || opt.value.value === "el4") {
@@ -51,7 +51,8 @@ export class Example_CheckboxField
             return opt;
         });
         this.state={
-            cb1
+            cb1,
+            cb3: []
         }
     }
 
@@ -81,39 +82,54 @@ export class Example_CheckboxField
 
     private props1 = (): CheckboxFieldProps<any> => ({
         options: this._opts,
+        value: this.state.cb1,
         gridColumns: 4,
         label: this.label,
         innerNode: (checked => checked ?
             <div>{ICONS.successToast("blue", 13)}</div> :
             <div style={{width: 13, height: 13}}/>),
-        onFieldChange: cb1=> this.setState({cb1: cb1 as ChckbxOption[]}),
+        onCheck: (item: ChckbxOption) => {
+            this.setState(prev => {
+                toggleElementInArray(prev.cb1, item);
+                return {cb1: prev.cb1};
+            })
+        },
         fieldContainerClass: container
     })
 
     private props2 = (): CheckboxFieldProps<any> => ({
         options: options,
+        value: this.state.cb2,
         circle: true,
-        singleValue: true,
         gridColumns: 3,
         horizontal: true,
         label: this.label,
-        innerNode: (checked => checked ?
-            <div>{ICONS.successToast("blue", 13)}</div> :
-            <div style={{width: 13, height: 13}}/>),
-        onFieldChange: cb2=> this.setState({cb2: cb2 as ChckbxOption}),
+        onCheck: (item: ChckbxOption) => {
+            this.setState({cb2: item})
+        },
         fieldContainerClass: container
     })
 
     private props3 = (): CheckboxFieldProps<any> => ({
         options: lessOptions,
+        value: this.state.cb3,
         label: this.label,
         horizontal: true,
+        onCheck: (item: ChckbxOption) => {
+            this.setState((prev) => {
+                toggleElementInArray(prev.cb3, item);
+                return {cb3: prev.cb3};
+            })
+        },
     })
 
     private props4 = (): CheckboxFieldProps<any> => ({
         options: lessOptions,
+        value: this.state.cb4,
         label: this.label,
         circle: true,
-        singleValue: true,
+        onCheck: (item: ChckbxOption) => {
+            this.setState({cb4: item})
+        },
     })
 }
