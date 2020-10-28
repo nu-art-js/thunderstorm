@@ -41,13 +41,14 @@ import CloudresourcemanagerV1 = cloudresourcemanager_v1.Cloudresourcemanager;
 import Schema$GoogleApiServiceusageV1Service = serviceusage_v1.Schema$GoogleApiServiceusageV1Service;
 import Schema$Folder = cloudresourcemanager_v2.Schema$Folder;
 import Schema$Project = cloudresourcemanager_v1.Schema$Project;
+import {
+	GCPScope,
+	ServiceKey
+} from "./consts";
 
 type CreateFolder = { parentId: string, folderName: string };
 type QueryFolder = { parentId: string, folderName: string };
 
-export enum ServiceKey {
-	DialogFlow = "dialogflow.googleapis.com"
-}
 
 export class GoogleCloudManager_Class
 	extends Module {
@@ -57,9 +58,9 @@ export class GoogleCloudManager_Class
 
 
 	protected init() {
-		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.getAuth(undefined, undefined, 'v1'));
-		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.getAuth());
-		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.getAuth(undefined, undefined, 'v1'));
+		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.getAuth(this.config.authKey, [GCPScope.CloudPlatform], 'v1'));
+		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.getAuth(this.config.authKey, [GCPScope.CloudPlatform]));
+		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.getAuth(this.config.authKey, [GCPScope.CloudPlatform], 'v1'));
 	}
 
 	// FOLDERS
