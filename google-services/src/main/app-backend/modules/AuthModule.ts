@@ -12,6 +12,9 @@ import {
 	GoogleAuth,
 	JWTInput,
 } from "google-auth-library";
+import {JWTOptions} from "google-auth-library/build/src/auth/jwtclient";
+import {OAuth2ClientOptions} from "google-auth-library/build/src/auth/oauth2client";
+import {UserRefreshClientOptions} from "google-auth-library/build/src/auth/refreshclient";
 
 type AuthModuleConfig = {
 	auth: {
@@ -23,14 +26,14 @@ type Version = 'v1' | 'v2'
 export class AuthModule_Class
 	extends Module<AuthModuleConfig> {
 
-	getAuth<T extends Version = "v2">(authKey: string, scopes: string[], version: T = 'v2' as T) {
+	getAuth<T extends Version = "v2">(authKey: string, scopes: string[], version: T = 'v2' as T, clientOptions?: JWTOptions | OAuth2ClientOptions | UserRefreshClientOptions) {
 		const authConfig = this.getAuthConfig(authKey)
 
 		let opts;
 		if (typeof authConfig === 'string') {
-			opts = {keyFile: authConfig, scopes,};
+			opts = {keyFile: authConfig, scopes, clientOptions};
 		} else {
-			opts = {credentials: authConfig, scopes,};
+			opts = {credentials: authConfig, scopes, clientOptions};
 		}
 
 		return {version, auth: new GoogleAuth(opts)};
