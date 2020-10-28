@@ -89,8 +89,11 @@ export class PushPubSubModule_Class
 	}
 
 	private registerServiceWorker = async () => {
-		const registration = await navigator.serviceWorker.register('/service_worker.js');
-		await registration.update();
+		console.log('registering...')
+		const registration = await navigator.serviceWorker.register('/ts_service_worker.js');
+		// await registration.update()
+		// await registration.update();
+		console.log(registration)
 		return registration;
 	};
 
@@ -104,11 +107,10 @@ export class PushPubSubModule_Class
 			const {0: registration, 1: app} = await Promise.all(asyncs);
 
 			this.messaging = app.getMessaging();
-			this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
-			this.messaging.useServiceWorker(registration);
-
-			await this.getToken();
-
+			// this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
+			// this.messaging.useServiceWorker(registration);
+			await this.getToken({vapidKey: this.config.publicKeyBase64, serviceWorkerRegistration: registration});
+			await registration.update()
 			navigator.serviceWorker.onmessage = (event: MessageEvent) => {
 				this.processMessageFromSw(event.data)
 			};
@@ -116,7 +118,10 @@ export class PushPubSubModule_Class
 	};
 
 	// / need to call this from the login verified
-	public getToken = async () => {
+	public getToken = async (options?: {
+		vapidKey?: string;
+		serviceWorkerRegistration?: ServiceWorkerRegistration;
+	}) => {
 		try {
 			this.logVerbose('Checking/Requesting permission...');
 			const permission = await Notification.requestPermission();
@@ -127,13 +132,13 @@ export class PushPubSubModule_Class
 			if (!this.messaging)
 				return;
 
-			this.firebaseToken = await this.messaging.getToken();
+			this.firebaseToken = await this.messaging.getToken(options);
 			if (!this.firebaseToken)
 				return;
 
 			await this.register();
 			this.logVerbose('new token received: ' + this.firebaseToken);
-			this.messaging.onTokenRefresh(() => this.runAsync('Token refresh', this.getToken));
+			this.messaging.onTokenRefresh(() => this.runAsync('Token refresh', async () => this.getToken(options)));
 
 			this.messaging.onMessage((payload) => {
 				this.processMessage(payload.data)

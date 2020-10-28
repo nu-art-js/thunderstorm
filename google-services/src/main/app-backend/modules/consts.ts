@@ -2,7 +2,7 @@
  * Permissions management system, define access level for each of
  * your server apis, and restrict users by giving them access levels
  *
- * Copyright (C) 2020 Yair bcm
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@
  * limitations under the License.
  */
 
-export * from './app-backend/modules/DialogFlowApi';
-export * from './app-backend/modules/GoogleCloudModule';
-export * from './app-backend/modules/AuthModule';
+export enum ServiceKey {
+	DialogFlow = "dialogflow.googleapis.com"
+}
 
+export enum GCPScope {
+	CloudPlatform = 'https://www.googleapis.com/auth/cloud-platform'
+}

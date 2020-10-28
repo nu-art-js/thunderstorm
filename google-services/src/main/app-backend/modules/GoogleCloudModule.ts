@@ -27,7 +27,8 @@ import {
 	ImplementationMissingException,
 	Module,
 	ThisShouldNotHappenException,
-	timeout
+	timeout,
+	filterInstances
 } from "@nu-art/ts-common";
 import {
 	cloudresourcemanager_v1,
@@ -41,25 +42,35 @@ import CloudresourcemanagerV1 = cloudresourcemanager_v1.Cloudresourcemanager;
 import Schema$GoogleApiServiceusageV1Service = serviceusage_v1.Schema$GoogleApiServiceusageV1Service;
 import Schema$Folder = cloudresourcemanager_v2.Schema$Folder;
 import Schema$Project = cloudresourcemanager_v1.Schema$Project;
+import {
+	GCPScope,
+	ServiceKey
+} from "./consts";
 
 type CreateFolder = { parentId: string, folderName: string };
 type QueryFolder = { parentId: string, folderName: string };
 
-export enum ServiceKey {
-	DialogFlow = "dialogflow.googleapis.com"
+
+type GoogleCloudManagerConfig = {
+	authKey: string,
+	scopes: string[]
 }
 
 export class GoogleCloudManager_Class
-	extends Module {
+	extends Module<GoogleCloudManagerConfig> {
 	private cloudServicesManagerAPI!: serviceusage_v1.Serviceusage;
 	private cloudResourcesManagerAPI!: cloudresourcemanager_v2.Cloudresourcemanager;
 	private cloudResourcesManagerAPIv1!: cloudresourcemanager_v1.Cloudresourcemanager;
 
+	constructor() {
+		super();
+		this.setDefaultConfig({scopes: [GCPScope.CloudPlatform]} as GoogleCloudManagerConfig)
+	}
 
 	protected init() {
-		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.getAuth(undefined, undefined, 'v1'));
-		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.getAuth());
-		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.getAuth(undefined, undefined, 'v1'));
+		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.getAuth(this.config.authKey, this.config.scopes, 'v1'));
+		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.getAuth(this.config.authKey, this.config.scopes));
+		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.getAuth(this.config.authKey, this.config.scopes, 'v1'));
 	}
 
 	// FOLDERS
@@ -138,14 +149,11 @@ export class GoogleCloudManager_Class
 			.filter((project) => !existingProjects.find((gcproject) => gcproject.name === project.name));
 
 		const newProjects = await Promise.all(projectsToCreate.map(project => this.createProject(parentId, project.projectId, project.name)));
-		const allProjects = [...existingProjects,
-		                     ...newProjects];
+		const allProjects = filterInstances([...existingProjects, ...newProjects]);
 		return projects.map(project => allProjects.find(gcpProject => gcpProject.name === project.name));
 	}
 
-	async createProject(parentId: string, projectId: string, name: string) {
-
-		// @ts-ignore
+	async createProject(parentId: string, projectId: string, name = projectId) {
 		const options: Schema$Project = {
 			projectId,
 			name,
@@ -157,7 +165,7 @@ export class GoogleCloudManager_Class
 
 		this.logInfo(`Creating GCP Project "${parentId}/${projectId}/${name}"`);
 		const response = await this.cloudResourcesManagerAPIv1.projects.create({requestBody: options});
-		return this._waitForProjectOperation(response.data.name as string) as Schema$Project;
+		return this._waitForProjectOperation(response.data.name as string);
 	}
 
 	async _waitForProjectOperation(name: string) {
