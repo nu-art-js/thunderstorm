@@ -1,9 +1,13 @@
-import {Logger} from "@nu-art/ts-common";
+import {
+	Logger,
+	ThisShouldNotHappenException
+} from "@nu-art/ts-common";
 import {dialogflow_v2} from "googleapis";
 import {AuthModule} from "./AuthModule";
 import { GCPScope } from "./consts";
 import Params$Resource$Projects$Agent$Entitytypes$Entities$Batchcreate = dialogflow_v2.Params$Resource$Projects$Agent$Entitytypes$Entities$Batchcreate;
 import Schema$GoogleCloudDialogflowV2EntityTypeEntity = dialogflow_v2.Schema$GoogleCloudDialogflowV2EntityTypeEntity;
+import Schema$GoogleCloudDialogflowV2ListIntentsResponse = dialogflow_v2.Schema$GoogleCloudDialogflowV2ListIntentsResponse;
 
 export class DialogFlowApi
 	extends Logger {
@@ -64,9 +68,31 @@ export class DialogFlowApi
 	}
 
 	intent = {
-		create: async (agentProjectId: string) => {
-			this.logInfo(`Create ${agentProjectId}`)
-			return (await this.dialogFlowApi.projects.agent.intents.list({parent: agentProjectId})).data;
+		list: async (agentProjectId: string) => {
+			this.logInfo(`List intents of ${agentProjectId}`);
+			const intentList = [];
+			let counter = 1;
+			let pageToken: string | undefined = undefined;
+			do {
+				const response: { data: Schema$GoogleCloudDialogflowV2ListIntentsResponse } = await this.dialogFlowApi.projects.agent.intents.list(
+					{
+						parent: `projects/${agentProjectId}/agent`,
+						pageToken,
+						pageSize: 1000
+					}
+				);
+				if (!response.data.intents)
+					break;
+
+				pageToken = response.data.nextPageToken || undefined;
+				intentList.push(...response.data.intents);
+				counter++;
+
+				if (counter > 10)
+					throw new ThisShouldNotHappenException('Too many calls to DialogFlow API');
+
+			} while (pageToken);
+			return intentList;
 		},
 	}
 
