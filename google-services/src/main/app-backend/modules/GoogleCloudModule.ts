@@ -41,25 +41,35 @@ import CloudresourcemanagerV1 = cloudresourcemanager_v1.Cloudresourcemanager;
 import Schema$GoogleApiServiceusageV1Service = serviceusage_v1.Schema$GoogleApiServiceusageV1Service;
 import Schema$Folder = cloudresourcemanager_v2.Schema$Folder;
 import Schema$Project = cloudresourcemanager_v1.Schema$Project;
+import {
+	GCPScope,
+	ServiceKey
+} from "./consts";
 
 type CreateFolder = { parentId: string, folderName: string };
 type QueryFolder = { parentId: string, folderName: string };
 
-export enum ServiceKey {
-	DialogFlow = "dialogflow.googleapis.com"
+
+type GoogleCloudManagerConfig = {
+	authKey: string,
+	scopes: string[]
 }
 
 export class GoogleCloudManager_Class
-	extends Module {
+	extends Module<GoogleCloudManagerConfig> {
 	private cloudServicesManagerAPI!: serviceusage_v1.Serviceusage;
 	private cloudResourcesManagerAPI!: cloudresourcemanager_v2.Cloudresourcemanager;
 	private cloudResourcesManagerAPIv1!: cloudresourcemanager_v1.Cloudresourcemanager;
 
+	constructor() {
+		super();
+		this.setDefaultConfig({scopes: [GCPScope.CloudPlatform]} as GoogleCloudManagerConfig)
+	}
 
 	protected init() {
-		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.getAuth(undefined, undefined, 'v1'));
-		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.getAuth());
-		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.getAuth(undefined, undefined, 'v1'));
+		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.getAuth(this.config.authKey, this.config.scopes, 'v1'));
+		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.getAuth(this.config.authKey,this.config.scopes ));
+		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.getAuth(this.config.authKey, this.config.scopes, 'v1'));
 	}
 
 	// FOLDERS
