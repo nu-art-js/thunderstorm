@@ -4,7 +4,8 @@
 
 import {
 	ImplementationMissingException,
-	Module
+	Module,
+    NotImplementedYetException
 } from "@nu-art/ts-common";
 import {
 	JWT,
@@ -21,43 +22,35 @@ type AuthModuleConfig = {
 export class AuthModule_Class
 	extends Module<AuthModuleConfig> {
 
-	getAuth(configKey?: string, projectId?: string, version: 'v1' | 'v2' = 'v2') {
-		let projectAuth: JWTInput | string | undefined;
-		if (!configKey) {
-			projectAuth = '../.trash/service-account.json';
+	getAuth(authKey: string, scopes: string[], version: 'v1' | 'v2' = 'v2') {
+		const authConfig = this.getAuthConfig(authKey)
+
+		let opts;
+		if (typeof authConfig === 'string') {
+			opts = {keyFile: authConfig, scopes,};
 		} else {
-			projectAuth = this.config?.auth?.[configKey];
+			opts = {credentials: authConfig, scopes,};
 		}
 
-		if (!projectAuth) {
-			throw new ImplementationMissingException(`Config of AuthModule_Class for project ${projectId} was not found`);
-		}
-
-		let auth;
-
-		if (typeof projectAuth === 'string') {
-			auth = new GoogleAuth(
-				{
-					keyFile: projectAuth,
-					projectId,
-					scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-				}
-			);
-		} else {
-			auth = new GoogleAuth(
-				{
-					credentials: projectAuth,
-					projectId,
-					scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-				}
-			);
-		}
-
-		return {version, auth};
+		return {version, auth: new GoogleAuth(opts)};
 	}
 
-	async getToken() {
-		return new JWT({keyFile: '../service-account.json', scopes: ['https://www.googleapis.com/auth/cloud-platform']}).authorize();
+	 getAuthConfig(authKey: string) {
+		const projectAuth: JWTInput | string | undefined = this.config.auth[authKey];
+
+		if (!projectAuth)
+			throw new ImplementationMissingException(`Config of AuthModule_Class for authKey: ${authKey} was not found`);
+
+		return projectAuth;
+	}
+
+	async getJWT(authKey: string, scopes: string[]) {
+		const authConfig = this.getAuthConfig(authKey)
+		if (typeof authConfig === 'string') {
+			return new JWT({keyFile: authConfig, scopes}).authorize();
+		}
+
+		throw new NotImplementedYetException("cannot create a JWT from a raw credentials.. need path to file")
 	};
 }
 
