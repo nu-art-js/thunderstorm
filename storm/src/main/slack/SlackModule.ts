@@ -23,7 +23,6 @@
 
 import {
 	currentTimeMillies,
-	ImplementationMissingException,
 	Minute,
 	Module
 } from "@nu-art/ts-common";
@@ -69,7 +68,8 @@ export class SlackModule_Class
 
 	protected init(): void {
 		if (!this.config.token)
-			throw new ImplementationMissingException('Missing config token for SlackModule. Please add it');
+			return
+			// throw new ImplementationMissingException('Missing config token for SlackModule. Please add it');
 
 		this.web = new WebClient(this.config.token);
 	}
