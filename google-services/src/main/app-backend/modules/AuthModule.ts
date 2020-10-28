@@ -5,7 +5,7 @@
 import {
 	ImplementationMissingException,
 	Module,
-    NotImplementedYetException
+	NotImplementedYetException
 } from "@nu-art/ts-common";
 import {
 	JWT,
@@ -18,11 +18,12 @@ type AuthModuleConfig = {
 		[k: string]: JWTInput | string
 	}
 }
+type Version = 'v1' | 'v2'
 
 export class AuthModule_Class
 	extends Module<AuthModuleConfig> {
 
-	getAuth(authKey: string, scopes: string[], version: 'v1' | 'v2' = 'v2') {
+	getAuth<T extends Version = "v2">(authKey: string, scopes: string[], version: T = 'v2' as T) {
 		const authConfig = this.getAuthConfig(authKey)
 
 		let opts;
@@ -35,7 +36,7 @@ export class AuthModule_Class
 		return {version, auth: new GoogleAuth(opts)};
 	}
 
-	 getAuthConfig(authKey: string) {
+	getAuthConfig(authKey: string) {
 		const projectAuth: JWTInput | string | undefined = this.config.auth[authKey];
 
 		if (!projectAuth)

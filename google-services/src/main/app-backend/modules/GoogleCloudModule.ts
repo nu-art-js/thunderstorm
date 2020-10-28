@@ -27,7 +27,8 @@ import {
 	ImplementationMissingException,
 	Module,
 	ThisShouldNotHappenException,
-	timeout
+	timeout,
+	filterInstances
 } from "@nu-art/ts-common";
 import {
 	cloudresourcemanager_v1,
@@ -68,7 +69,7 @@ export class GoogleCloudManager_Class
 
 	protected init() {
 		this.cloudServicesManagerAPI = new Serviceusage(AuthModule.getAuth(this.config.authKey, this.config.scopes, 'v1'));
-		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.getAuth(this.config.authKey,this.config.scopes ));
+		this.cloudResourcesManagerAPI = new Cloudresourcemanager(AuthModule.getAuth(this.config.authKey, this.config.scopes));
 		this.cloudResourcesManagerAPIv1 = new CloudresourcemanagerV1(AuthModule.getAuth(this.config.authKey, this.config.scopes, 'v1'));
 	}
 
@@ -148,14 +149,11 @@ export class GoogleCloudManager_Class
 			.filter((project) => !existingProjects.find((gcproject) => gcproject.name === project.name));
 
 		const newProjects = await Promise.all(projectsToCreate.map(project => this.createProject(parentId, project.projectId, project.name)));
-		const allProjects = [...existingProjects,
-		                     ...newProjects];
+		const allProjects = filterInstances([...existingProjects, ...newProjects]);
 		return projects.map(project => allProjects.find(gcpProject => gcpProject.name === project.name));
 	}
 
-	async createProject(parentId: string, projectId: string, name: string) {
-
-		// @ts-ignore
+	async createProject(parentId: string, projectId: string, name = projectId) {
 		const options: Schema$Project = {
 			projectId,
 			name,
@@ -167,7 +165,7 @@ export class GoogleCloudManager_Class
 
 		this.logInfo(`Creating GCP Project "${parentId}/${projectId}/${name}"`);
 		const response = await this.cloudResourcesManagerAPIv1.projects.create({requestBody: options});
-		return this._waitForProjectOperation(response.data.name as string) as Schema$Project;
+		return this._waitForProjectOperation(response.data.name as string);
 	}
 
 	async _waitForProjectOperation(name: string) {
