@@ -35,8 +35,11 @@ export class MessagingWrapper
 		this.messaging.usePublicVapidKey(vapidKey);
 	}
 
-	async getToken() {
-		return this.messaging.getToken();
+	async getToken(options?: {
+		vapidKey?: string;
+		serviceWorkerRegistration?: ServiceWorkerRegistration;
+	}) {
+		return this.messaging.getToken(options);
 	}
 
 	useServiceWorker(registration: ServiceWorkerRegistration) {
