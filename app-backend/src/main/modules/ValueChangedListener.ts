@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 import {FirebaseFunctionModule,} from "@nu-art/firebase/backend-functions";
+import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
 
 export class ValueChangedListener_Class
 	extends FirebaseFunctionModule {
@@ -28,6 +29,7 @@ export class ValueChangedListener_Class
 
 	processChanges = async (previousValue: any, newValue: any, params: { [p: string]: any }): Promise<any> => {
 		this.logInfo(`Doing nothing...`);
+		await PushPubSubModule.pushToKey('test', {id: 'test1'}, {a: 'b', b: 1});
 	};
 }
 

@@ -1,5 +1,6 @@
 /*
- * A backend boilerplate with example apis
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,16 +17,10 @@
  * limitations under the License.
  */
 
-// tslint:disable-next-line:no-import-side-effect
-import 'module-alias/register'
-import {StormTester} from "./test/StormTester";
-import {runTest} from './test/_core';
-import { __scenario } from '@nu-art/testelot';
+export enum ServiceKey {
+	DialogFlow = "dialogflow.googleapis.com"
+}
 
-const mainScenario = __scenario('root')
-mainScenario.add(runTest)
-
-module.exports = new StormTester()
-	.setEnvironment('dev')
-	.setScenario(mainScenario)
-	.build();
+export enum GCPScope {
+	CloudPlatform = 'https://www.googleapis.com/auth/cloud-platform'
+}

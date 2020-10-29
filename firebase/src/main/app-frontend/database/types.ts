@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import * as firebase from 'firebase/app';
+import firebase from 'firebase/app';
 
 import {EventType} from "../../shared/types";
 

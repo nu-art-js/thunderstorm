@@ -2,38 +2,59 @@
  * Created by tacb0ss on 07/05/2018.
  */
 
-import {Module} from "@nu-art/ts-common";
+import {
+	ImplementationMissingException,
+	Module,
+	NotImplementedYetException
+} from "@nu-art/ts-common";
 import {
 	JWT,
-	GoogleAuth
+	GoogleAuth,
+	JWTInput,
 } from "google-auth-library";
+import {JWTOptions} from "google-auth-library/build/src/auth/jwtclient";
+import {OAuth2ClientOptions} from "google-auth-library/build/src/auth/oauth2client";
+import {UserRefreshClientOptions} from "google-auth-library/build/src/auth/refreshclient";
 
+type AuthModuleConfig = {
+	auth: {
+		[k: string]: JWTInput | string
+	}
+}
+type Version = 'v1' | 'v2'
 
 export class AuthModule_Class
-	extends Module {
+	extends Module<AuthModuleConfig> {
 
-	public auth1!: { auth: any; version: string };
-	public auth2!: { auth: any; version: string };
+	getAuth<T extends Version = "v2">(authKey: string, scopes: string[], version: T = 'v2' as T, clientOptions?: JWTOptions | OAuth2ClientOptions | UserRefreshClientOptions) {
+		const authConfig = this.getAuthConfig(authKey)
 
-	protected init() {
-		const auth = new GoogleAuth({
-			                            keyFile: '../.trash/service-account.json',
-			                            scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-		                            });
+		let opts;
+		if (typeof authConfig === 'string') {
+			opts = {keyFile: authConfig, scopes, clientOptions};
+		} else {
+			opts = {credentials: authConfig, scopes, clientOptions};
+		}
 
-		this.auth1 = {
-			version: 'v1',
-			auth: auth,
-		};
-
-		this.auth2 = {
-			version: 'v2',
-			auth: auth
-		};
+		return {version, auth: new GoogleAuth(opts)};
 	}
 
-	async getToken() {
-		return new JWT({keyFile: '../service-account.json', scopes: ['https://www.googleapis.com/auth/cloud-platform']}).authorize();
+	getAuthConfig(authKey: string) {
+		const projectAuth: JWTInput | string | undefined = this.config.auth[authKey];
+
+		if (!projectAuth)
+			throw new ImplementationMissingException(`Config of AuthModule_Class for authKey: ${authKey} was not found`);
+
+		return projectAuth;
+	}
+
+	async getJWT(authKey: string, scopes: string[]) {
+		const authConfig = this.getAuthConfig(authKey)
+		if (typeof authConfig === 'string') {
+			return new JWT({keyFile: authConfig, scopes}).authorize();
+		}
+
+		throw new NotImplementedYetException("cannot create a JWT from a raw credentials.. need path to file")
 	};
 }
 

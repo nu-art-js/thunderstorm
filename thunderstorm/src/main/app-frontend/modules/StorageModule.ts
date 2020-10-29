@@ -26,10 +26,25 @@ import {
 	merge,
 	Module
 } from "@nu-art/ts-common";
+import {ThunderDispatcher} from "../core/thunder-dispatcher";
+
+export interface StorageKeyEvent {
+	__onStorageKeyEvent(event: StorageEvent): void
+}
 
 export class StorageModule_Class
 	extends Module {
 	private cache: { [s: string]: string | number | object } = {};
+
+	protected init(): void {
+		window.addEventListener('storage', this.handleStorageEvent);
+	}
+
+	private handleStorageEvent = (e: StorageEvent) => {
+		const dispatcher = new ThunderDispatcher<StorageKeyEvent,'__onStorageKeyEvent'>('__onStorageKeyEvent');
+		dispatcher.dispatchUI([e]);
+		dispatcher.dispatchModule([e]);
+	};
 
 	getStorage = (persist: boolean) => persist ? localStorage : sessionStorage;
 
@@ -69,7 +84,7 @@ export const StorageModule = new StorageModule_Class();
 //TODO Generic Keys like in the tests contexts
 export class StorageKey<ValueType = string | number | object> {
 	private readonly key: string;
-	private persist: boolean;
+	private readonly persist: boolean;
 
 	constructor(key: string, persist: boolean = true) {
 		this.key = key;

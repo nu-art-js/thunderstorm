@@ -46,7 +46,7 @@ export class Queue
 	}
 
 	addItem<T>(toExecute: () => Promise<T>, onCompleted?: (output: T) => void, onError?: (error: Error) => void) {
-		addItemToArray(this.queue, async () => {
+		addItemToArray(this.queue, async (resolve: () => void) => {
 			this.running++;
 			try {
 				const output: T = await toExecute();
@@ -61,6 +61,7 @@ export class Queue
 				}
 			}
 			this.running--;
+			resolve();
 			this.execute();
 		});
 

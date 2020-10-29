@@ -1,5 +1,6 @@
+"use strict";
 /*
- * A typescript & react boilerplate with api call example
+ * A backend boilerplate with example apis
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -15,13 +16,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {TS_ServiceWorker} from '@nu-art/thunderstorm/index-sw';
-import {FirebaseModule} from "@nu-art/firebase/frontend";
-import {PushPubSubModule} from "@nu-art/push-pub-sub/index-sw";
-
-new TS_ServiceWorker()
-	.setConfig(require('../main/config').config)
-	.addModules(FirebaseModule, PushPubSubModule)
-	.build();
-
-// export default null;
+Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable-next-line:no-import-side-effect
+require("module-alias/register");
+var StormTester_1 = require("./test/StormTester");
+var _core_1 = require("./test/_core");
+var testelot_1 = require("@nu-art/testelot");
+var mainScenario = testelot_1.__scenario('root');
+mainScenario.add(_core_1.runTest);
+module.exports = new StormTester_1.StormTester()
+    .setEnvironment('dev')
+    .setScenario(mainScenario)
+    .build();
+//# sourceMappingURL=index.js.map
