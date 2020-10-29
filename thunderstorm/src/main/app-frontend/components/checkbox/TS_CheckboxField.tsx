@@ -20,11 +20,9 @@
 import * as React from "react";
 import {Component, ReactNode} from "react";
 import {TS_Checkbox} from "./TS_Checkbox";
-import {toggleElementInArray} from "@nu-art/ts-common";
 
 export type CheckboxOption<T> = {
     value: T
-    checked?: boolean
     disabled?: boolean
 }
 
@@ -33,11 +31,11 @@ type LabelType = ReactNode | ((checked: boolean, disabled: boolean) => ReactNode
 export type CheckboxFieldProps<T> = {
     id?: string
     options: CheckboxOption<T>[]
+    value: T | T[]
     label: (option: CheckboxOption<T>) => LabelType
-    singleValue?: boolean
     circle?: boolean
     rtl?: boolean
-    onFieldChange?: (value: T | T[]) => void
+    onCheck: (value: T, checked: boolean) => void
     fieldContainerClass?: string
     gridColumns?: number
     horizontal?: boolean
@@ -46,26 +44,8 @@ export type CheckboxFieldProps<T> = {
     innerNode?: (checked: boolean, disabled: boolean) => ReactNode
 }
 
-type State<T> = {
-    value?: T | T[]
-}
-
 export class TS_CheckboxField<T>
-    extends Component<CheckboxFieldProps<T>, State<T>> {
-
-    initState = () => {
-        if (this.props.singleValue)
-            return {value: this.props.options.find(option => option.checked)?.value};
-
-        const value: T[] = [];
-        this.props.options.forEach(option => {
-            if (option.checked)
-                value.push(option.value)
-        })
-        return {value}
-    }
-
-    state = this.initState()
+    extends Component<CheckboxFieldProps<T>, {}> {
 
     gridCss = (): React.CSSProperties => {
         if (this.props.gridColumns)
@@ -84,15 +64,8 @@ export class TS_CheckboxField<T>
                 <TS_Checkbox
                     key={i}
                     value={option.value}
-                    checked={Array.isArray(this.state.value) ? this.state.value.includes(option.value) : this.state.value === option.value}
-                    onCheck={(value: T) => {
-                        this.setState(prev => {
-                            if (this.props.singleValue)
-                                return {value}
-                            toggleElementInArray(prev.value as T[], value);
-                            return {value: prev.value}
-                        }, ()=> this.props.onFieldChange && this.props.onFieldChange(this.state.value as T | T[]));
-                    }}
+                    checked={Array.isArray(this.props.value) ? this.props.value.includes(option.value) : this.props.value === option.value}
+                    onCheck={this.props.onCheck}
                     label={this.props.label(option)}
                     circle={this.props.circle}
                     rtl={this.props.rtl}
