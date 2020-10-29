@@ -40,7 +40,7 @@ export class TS_ServiceWorker
 	build(): void {
 		BeLogged.addClient(LogClient_Browser);
 
-		Promise.all([this.install(),this.activate()])
+		Promise.all([this.install(), this.activate()])
 		       .then(() => {
 			       this.logVerbose('SW installed and activated');
 			       super.build();
@@ -72,20 +72,35 @@ export class TS_ServiceWorker
 
 	private async activate() {
 		return new Promise((resolve, reject) => {
-			// Substitute previous service workers with the new one
 			swSelf.addEventListener("activate", (ev: ExtendableEvent) => {
-				swSelf
-					.clients
-					.claim()
-					.then(() => {
-						this.logVerbose('Service Worker activated');
-						resolve();
-					})
-					.catch(e => {
-						this.logError('Something wrong while activating Service worker. Report to QA', e);
-						reject(e);
-					});
-			});
-		});
+				console.log('caches: '+caches.keys())
+				ev.waitUntil(caches.keys().then(function (cacheNames) {
+					console.log(cacheNames)
+					return Promise.all(
+						cacheNames.map(function (cacheName) {
+							console.log(cacheName)
+							return caches.delete(cacheName);
+
+							// if (cacheName !== version) {
+							// 	return caches.delete(cacheName);
+							// }
+						})
+					)
+				}).then(function () {
+					return swSelf
+						.clients
+						.claim()
+						.then(() => {
+							resolve()
+						})
+						.catch(e => {
+							reject(e)
+						})
+				}))
+
+			})
+
+		})
 	}
+
 }
