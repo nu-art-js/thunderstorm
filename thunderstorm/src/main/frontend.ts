@@ -47,6 +47,7 @@ export * from "./app-frontend/core/BaseComponent";
 export * from "./app-frontend/core/AppWrapper";
 export * from "./app-frontend/components/TS_TextArea";
 export * from "./app-frontend/components/TS_Input";
+export * from "./app-frontend/components/checkbox/TS_Checkbox";
 export * from "./app-frontend/components/FilterInput";
 export * from "./app-frontend/components/DropDown";
 
@@ -65,6 +66,9 @@ export * from "./app-frontend/components/tree/MenuComponent";
 export * from "./app-frontend/components/GenericSelect";
 export * from "./app-frontend/components/playground/Playground";
 export * from "./app-frontend/components/playground/Example_NewProps";
+
+export * from "./app-frontend/components/checkbox/TS_Checkbox";
+export * from "./app-frontend/components/checkbox/TS_CheckboxField";
 
 export * from "./app-frontend/modules/component-loader/ReactEntryComponentInjector";
 export * from "./app-frontend/modules/component-loader/entry-component-loading-module";

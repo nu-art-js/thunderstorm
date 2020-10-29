@@ -48,7 +48,7 @@ export class Example_TSInput
 	}
 
 	private props1(): TS_InputProps<any> {
-		let placeholder = "prop1";
+		const placeholder = "prop1";
 		const prop: TS_InputProps<"prop1"> = {
 			type: "text",
 			id: "prop1",
@@ -65,7 +65,7 @@ export class Example_TSInput
 	}
 
 	private props2(): TS_InputProps<any> {
-		let placeholder = "prop2";
+		const placeholder = "prop2";
 		const prop: TS_InputProps<"prop2"> = {
 			type: "text",
 			id: "prop2",

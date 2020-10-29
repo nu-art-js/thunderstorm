@@ -1,16 +1,22 @@
-import {Module} from "@nu-art/ts-common";
-import {AuthModule} from "./AuthModule";
+import {
+	Logger,
+	ThisShouldNotHappenException
+} from "@nu-art/ts-common";
 import {dialogflow_v2} from "googleapis";
+import {AuthModule} from "./AuthModule";
+import { GCPScope } from "./consts";
 import Params$Resource$Projects$Agent$Entitytypes$Entities$Batchcreate = dialogflow_v2.Params$Resource$Projects$Agent$Entitytypes$Entities$Batchcreate;
 import Schema$GoogleCloudDialogflowV2EntityTypeEntity = dialogflow_v2.Schema$GoogleCloudDialogflowV2EntityTypeEntity;
+import Schema$GoogleCloudDialogflowV2ListIntentsResponse = dialogflow_v2.Schema$GoogleCloudDialogflowV2ListIntentsResponse;
 
-export class DialogFlowModule_Class
-	extends Module {
+export class DialogFlowApi
+	extends Logger {
 
-	private dialogFlowApi!: dialogflow_v2.Dialogflow;
+	private dialogFlowApi: dialogflow_v2.Dialogflow;
 
-	protected init() {
-		this.dialogFlowApi = new dialogflow_v2.Dialogflow(AuthModule.auth2);
+	constructor(authKey: string) {
+		super()
+		this.dialogFlowApi = new dialogflow_v2.Dialogflow(AuthModule.getAuth(authKey, [GCPScope.CloudPlatform]));
 	}
 
 	agent = {
@@ -49,22 +55,44 @@ export class DialogFlowModule_Class
 		},
 		copy: async (fromAgent: string, toAgent: string) => {
 			this.logInfo(`Merging agent ${fromAgent} => ${toAgent}`)
-			const content: string = await DialogFlowModule.agent.export(fromAgent);
+			const content: string = await this.agent.export(fromAgent);
 			if (content)
-				await DialogFlowModule.agent.import(toAgent, content);
+				await this.agent.import(toAgent, content);
 		},
 		override: async (fromAgent: string, toAgent: string) => {
 			this.logInfo(`Overriding agent ${fromAgent} => ${toAgent}`)
-			const content: string = await DialogFlowModule.agent.export(fromAgent);
+			const content: string = await this.agent.export(fromAgent);
 			if (content)
-				await DialogFlowModule.agent.restore(toAgent, content);
+				await this.agent.restore(toAgent, content);
 		}
 	}
 
 	intent = {
-		create: async (agentProjectId: string) => {
-			this.logInfo(`Create ${agentProjectId}`)
-			return (await this.dialogFlowApi.projects.agent.intents.list({parent: agentProjectId})).data;
+		list: async (agentProjectId: string) => {
+			this.logInfo(`List intents of ${agentProjectId}`);
+			const intentList = [];
+			let counter = 1;
+			let pageToken: string | undefined = undefined;
+			do {
+				const response: { data: Schema$GoogleCloudDialogflowV2ListIntentsResponse } = await this.dialogFlowApi.projects.agent.intents.list(
+					{
+						parent: `projects/${agentProjectId}/agent`,
+						pageToken,
+						pageSize: 1000
+					}
+				);
+				if (!response.data.intents)
+					break;
+
+				pageToken = response.data.nextPageToken || undefined;
+				intentList.push(...response.data.intents);
+				counter++;
+
+				if (counter > 10)
+					throw new ThisShouldNotHappenException('Too many calls to DialogFlow API');
+
+			} while (pageToken);
+			return intentList;
 		},
 	}
 
@@ -100,6 +128,3 @@ export class DialogFlowModule_Class
 		},
 	}
 }
-
-
-export const DialogFlowModule = new DialogFlowModule_Class();

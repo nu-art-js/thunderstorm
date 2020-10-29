@@ -17,16 +17,7 @@
  * limitations under the License.
  */
 
-import {FirebaseModule} from "@nu-art/firebase/backend";
-import {__custom} from "@nu-art/testelot";
+import {dialogflow_v2} from "googleapis";
+import Schema$GoogleCloudDialogflowV2Intent = dialogflow_v2.Schema$GoogleCloudDialogflowV2Intent;
 
-export const runTest = __custom(async () => {
-	// Write here our tests!
-	const session = FirebaseModule.createAdminSession();
-	const firestore = session.getFirestore();
-
-	const collection = firestore.getCollection<{ a: number }>('test-backend', ['a']);
-	await collection.deleteAll();
-
-	await collection.upsert({a: 1})
-}).setLabel('Insert in collection');
+export type TS_Intent = Schema$GoogleCloudDialogflowV2Intent;
