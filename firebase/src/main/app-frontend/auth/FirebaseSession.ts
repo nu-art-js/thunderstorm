@@ -20,7 +20,7 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import * as firebase from 'firebase/app'
+import firebase from "firebase";
 // tslint:disable:no-import-side-effect
 import 'firebase/auth';
 import {
