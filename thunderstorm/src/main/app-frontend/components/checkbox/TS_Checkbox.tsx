@@ -6,7 +6,7 @@ export type CheckboxProps<T> = {
 	id?: string
 	value: T
 	checked: boolean
-	onCheck?: (value: T) => void
+	onCheck?: (value: T, checked: boolean) => void
 	label: ReactNode | ((checked: boolean, disabled: boolean) => ReactNode)
 	circle?: boolean
 	rtl?: boolean
@@ -44,7 +44,7 @@ export class TS_Checkbox<T>
 			if (!this.props.circle) btnInner.background = "#3499fe";
 		}
 
-		return <div className={`${this.props.containerClass && this.props.containerClass(this.props.checked, !!this.props.disabled)} ll_h_c`} style={radioContainer} id={this.props.id} onClick={() => !this.props.disabled && this.props.onCheck && this.props.onCheck(this.props.value)}>
+		return <div className={`${this.props.containerClass && this.props.containerClass(this.props.checked, !!this.props.disabled)} ll_h_c`} style={radioContainer} id={this.props.id} onClick={() => !this.props.disabled && this.props.onCheck && this.props.onCheck(this.props.value, this.props.checked)}>
 			{this.props.rtl && this.renderLabel()}
 			<div style={this.props.buttonClass ? {} : defaultButtonStyle} className={this.props.buttonClass && this.props.buttonClass(this.props.checked, !!this.props.disabled)}>
 				{this.props.innerNode ? this.props.innerNode(this.props.checked, !!this.props.disabled) :<div style={btnInner}/>}
@@ -53,5 +53,5 @@ export class TS_Checkbox<T>
 		</div>
 	}
 
-	renderLabel = () => <div>{typeof this.props.label === "function" ? this.props.label(this.props.checked, !!this.props.disabled) : this.props.label}</div>
+	renderLabel = () => <div className={'match_width'}>{typeof this.props.label === "function" ? this.props.label(this.props.checked, !!this.props.disabled) : this.props.label}</div>
 }
