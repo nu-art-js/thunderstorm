@@ -70,9 +70,18 @@ export class BaseComponent<P = any, S = any>
 		};
 	}
 
-	throttle(handler: TimerHandler, key: string, ms = 0) {
+	debounce(handler: TimerHandler, key: string, ms = 0) {
 		_clearTimeout(this.timeoutMap[key]);
 		this.timeoutMap[key] = _setTimeout(handler, ms);
+	}
+
+	throttle(handler: TimerHandler, key: string, ms = 0) {
+		if (this.timeoutMap[key])
+			return;
+		this.timeoutMap[key] = _setTimeout(() => {
+			handler();
+			delete this.timeoutMap[key];
+		}, ms);
 	}
 
 	setStateKeysToUpdate(stateKeysToUpdate?: (keyof S)[]) {

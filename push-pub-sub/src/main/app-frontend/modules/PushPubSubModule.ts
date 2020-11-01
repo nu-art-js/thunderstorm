@@ -200,7 +200,7 @@ export class PushPubSubModule_Class
 		};
 
 		return new Promise(resolve => {
-			this.throttle(() => {
+			this.debounce(() => {
 				HttpModule
 					.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
 					.setRelativeUrl("/v1/push/register")
