@@ -40,7 +40,7 @@ export class TS_ServiceWorker
 	build(): void {
 		BeLogged.addClient(LogClient_Browser);
 
-		Promise.all([this.install(),this.activate()])
+		Promise.all([this.install(), this.activate()])
 		       .then(() => {
 			       this.logVerbose('SW installed and activated');
 			       super.build();
