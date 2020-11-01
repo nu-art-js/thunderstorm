@@ -18,7 +18,11 @@
  */
 
 import {Logger} from "@nu-art/ts-common";
-import {FirebaseType_Analytics} from "./types";
+import {
+	FirebaseType_Analytics,
+	FirebaseType_CallOptions,
+	FirebaseType_EventNameString
+} from "./types";
 // tslint:disable:no-import-side-effect
 import 'firebase/analytics';
 
@@ -48,6 +52,12 @@ export class AnalyticsWrapper
 		this.analytics.setUserProperties(customPros);
 	}
 
-	logEvent = this.analytics.logEvent;
+	logEvent<T extends string>(
+		eventName: FirebaseType_EventNameString | string,
+		eventParams?: { [key: string]: any },
+		options?: FirebaseType_CallOptions
+	) {
+		return this.analytics.logEvent(eventName, eventParams, options);
+	}
 
 }
