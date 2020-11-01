@@ -17,6 +17,10 @@
  * limitations under the License.
  */
 
-import firebase from "firebase/app";
+export enum ServiceKey {
+	DialogFlow = "dialogflow.googleapis.com"
+}
 
-export type FirebaseType_Analytics = firebase.analytics.Analytics
+export enum GCPScope {
+	CloudPlatform = 'https://www.googleapis.com/auth/cloud-platform'
+}
