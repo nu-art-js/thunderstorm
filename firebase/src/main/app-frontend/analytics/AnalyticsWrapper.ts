@@ -32,20 +32,22 @@ export class AnalyticsWrapper
 		this.analytics = analytics;
 	}
 
-	setUserId(userId: string){
-		this.analytics.setUserId(userId)
+	setUserId(userId: string) {
+		this.analytics.setUserId(userId);
 	}
 
-	setCurrentScreen(screenName: string){
-		this.analytics.setCurrentScreen(screenName)
+	setCurrentScreen(screenName: string) {
+		this.analytics.setCurrentScreen(screenName);
 	}
 
-	setAnalyticsCollectionEnabled(bool: boolean){
-		this.analytics.setAnalyticsCollectionEnabled(bool)
+	setAnalyticsCollectionEnabled(bool: boolean) {
+		this.analytics.setAnalyticsCollectionEnabled(bool);
 	}
 
-	setUserProperties(customPros: object){
-		this.analytics.setUserProperties(customPros)
+	setUserProperties(customPros: object) {
+		this.analytics.setUserProperties(customPros);
 	}
+
+	logEvent = this.analytics.logEvent;
 
 }
