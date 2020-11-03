@@ -28,13 +28,14 @@ export class PermissionsComponent
 		const permitted = PermissionsFE.doesUserHavePermissions(url)
 		if(permitted===undefined)
 			return <this.props.loadingComponent/>;
-		if (!permitted)
-			return <>{this.props.children}</>;
+		if (!permitted){
+			if (this.props.fallback)
+				return <this.props.fallback/>;
+			else
+				return null;
+		}
 
-		if (this.props.fallback)
-			return <this.props.fallback/>;
-
-		return null;
+		return <>{this.props.children}</>;
 	}
 
 }
