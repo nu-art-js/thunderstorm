@@ -23,7 +23,7 @@ const dispatch_onPermissionsChanged = new ThunderDispatcher<OnPermissionsChanged
 
 export class PermissionsModuleFE_Class
 	extends Module<PermissionsModuleFEConfig> {
-	private loaded: boolean = false
+	private loadingUrls: string[] = []
 	private userUrlsPermissions: UserUrlsPermissions = {};
 	private requestCustomField: StringMap = {};
 	private readonly TIME = 100;
@@ -33,18 +33,18 @@ export class PermissionsModuleFE_Class
 		this.setPermissions();
 	}
 
-	isLoaded(): boolean {
-		return this.loaded
-	}
-
-	doesUserHavePermissions(url: string): boolean {
+	doesUserHavePermissions(url: string): boolean | undefined {
+		console.log("doesUserHavePermissions")
 		const userUrlsPermission = this.userUrlsPermissions[url];
 		if (userUrlsPermission !== undefined)
 			return userUrlsPermission;
 
-		this.userUrlsPermissions[url] = false;
-		this.setPermissions();
-		return false;
+		if(!this.loadingUrls.includes(url)) {
+			this.loadingUrls.push(url)
+			this.setPermissions();
+		}
+
+		return undefined;
 	}
 
 	setPermissions() {
@@ -64,7 +64,6 @@ export class PermissionsModuleFE_Class
 				             })
 				.execute(async (userUrlsPermissions: UserUrlsPermissions) => {
 					this.userUrlsPermissions = userUrlsPermissions;
-					this.loaded = true
 					dispatch_onPermissionsChanged.dispatchUI([]);
 				});
 		}, 'get-permissions', this.TIME);
