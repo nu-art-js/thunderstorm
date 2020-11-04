@@ -15,22 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {File,} from "@google-cloud/storage";
+import {File} from "@google-cloud/storage";
 
-import * as firestore from "@google-cloud/firestore"
+import * as firestore from "@google-cloud/firestore";
 import {FirebaseModule} from "../FirebaseModule";
 import {JWTInput} from "google-auth-library";
 import {FirebaseProjectCollections} from "../../shared/types";
 import {
+	__stringify,
+	_logger_logException,
 	createReadableTimestampObject,
+	currentTimeMillies,
+	Day,
+	dispatch_onServerError,
+	filterDuplicates,
 	Format_YYYYMMDD_HHmmss,
 	Module,
 	parseTimeString,
-	currentTimeMillies,
-	Day,
-	__stringify,
-	_logger_logException,
-	dispatch_onServerError,
 	ServerErrorSeverity,
 	Timestamp
 } from "@nu-art/ts-common";
@@ -74,7 +75,7 @@ export class ProjectFirestoreBackup_Class
 		const exportConfig = {
 			name: client.databasePath(projectToBackup.projectId, '(default)'),
 			outputUriPrefix: `${bucketName}/${currentBackupFolder}/${projectToBackup.projectId}`,
-			collectionIds: projectToBackup.collections
+			collectionIds: filterDuplicates(projectToBackup.collections)
 		};
 
 		this.logVerbose("projectAuth:", projectAuth);
