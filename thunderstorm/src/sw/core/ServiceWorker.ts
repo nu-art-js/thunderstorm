@@ -31,11 +31,14 @@ export class TS_ServiceWorker
 	constructor() {
 		super();
 		this._DEBUG_FLAG.enable(false);
-		this.setMinLevel(LogLevel.Debug)
+		this.setMinLevel(LogLevel.Debug);
 	}
 
 	build(): void {
 		BeLogged.addClient(LogClient_Browser);
+		swSelf.addEventListener("notificationclick", this.defaultHandler);
+		swSelf.addEventListener("pushsubscriptionchange", this.defaultHandler);
+		swSelf.addEventListener("push", this.defaultHandler);
 
 		// Substitute previous service workers with the new one
 		swSelf.addEventListener('install', () => {
@@ -50,17 +53,13 @@ export class TS_ServiceWorker
 				.clients
 				.claim()
 				.then(() => this.logVerbose('Service Worker activated'))
-				.catch(e => this.logError('Error activating service worker'))
-		})
+				.catch(e => this.logError('Error activating service worker', e));
+		});
 
-		swSelf.addEventListener("notificationclick", this.defaultHandler);
-		swSelf.addEventListener("pushsubscriptionchange", this.defaultHandler);
-		swSelf.addEventListener("push", this.defaultHandler);
-
-		super.build()
+		super.build();
 	}
 
 	private defaultHandler = (event: Event) => {
-		this.logVerbose(`Event listened in sw of type ${event.type}`, event)
+		this.logVerbose(`Event listened in sw of type ${event.type}`, event);
 	};
 }

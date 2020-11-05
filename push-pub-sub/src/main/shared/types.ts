@@ -15,6 +15,7 @@ export type Request_PushRegister = FirebaseToken & {
 
 export type DB_PushSession = FirebaseToken & {
 	timestamp: number
+	userId?: string
 }
 
 export type DB_PushKeys = FirebaseToken & BaseSubscriptionData
