@@ -31,61 +31,36 @@ export class TS_ServiceWorker
 	constructor() {
 		super();
 		this._DEBUG_FLAG.enable(false);
-		this.setMinLevel(LogLevel.Debug);
-		swSelf.addEventListener("notificationclick", this.defaultHandler);
-		swSelf.addEventListener("pushsubscriptionchange", this.defaultHandler);
-		swSelf.addEventListener("push", this.defaultHandler);
+		this.setMinLevel(LogLevel.Debug)
 	}
 
 	build(): void {
 		BeLogged.addClient(LogClient_Browser);
 
-		Promise.all([this.install(), this.activate()])
-		       .then(() => {
-			       this.logVerbose('SW installed and activated');
-			       super.build();
-		       })
-		       .catch(e => this.logError('Something wrong with installing and activating SW, check logs above', e));
+		// Substitute previous service workers with the new one
+		swSelf.addEventListener('install', () => {
+			swSelf
+				.skipWaiting()
+				.then(() => this.logVerbose('Skipped waiting, now using the new SW'))
+				.catch(e => this.logError('Something wrong while skipping waiting. Service worker not queued', e));
+		});
+
+		swSelf.addEventListener('activate', () => {
+			swSelf
+				.clients
+				.claim()
+				.then(() => this.logVerbose('Service Worker activated'))
+				.catch(e => this.logError('Error activating service worker'))
+		})
+
+		swSelf.addEventListener("notificationclick", this.defaultHandler);
+		swSelf.addEventListener("pushsubscriptionchange", this.defaultHandler);
+		swSelf.addEventListener("push", this.defaultHandler);
+
+		super.build()
 	}
 
 	private defaultHandler = (event: Event) => {
-		this.logVerbose(`Event listened in sw of type ${event.type}`, event);
+		this.logVerbose(`Event listened in sw of type ${event.type}`, event)
 	};
-
-	private async install() {
-		return new Promise((resolve, reject) => {
-			// Substitute previous service workers with the new one
-			swSelf.addEventListener('install', (ev: ExtendableEvent) => {
-				swSelf
-					.skipWaiting()
-					.then(() => {
-						this.logVerbose('Skipped waiting, now using the new SW');
-						resolve();
-					})
-					.catch(e => {
-						this.logError('Something wrong while skipping waiting. Service worker not queued', e);
-						reject(e);
-					});
-			});
-		});
-	}
-
-	private async activate() {
-		return new Promise((resolve, reject) => {
-			// Substitute previous service workers with the new one
-			swSelf.addEventListener("activate", (ev: ExtendableEvent) => {
-				swSelf
-					.clients
-					.claim()
-					.then(() => {
-						this.logVerbose('Service Worker activated');
-						resolve();
-					})
-					.catch(e => {
-						this.logError('Something wrong while activating Service worker. Report to QA', e);
-						reject(e);
-					});
-			});
-		});
-	}
 }
