@@ -34,7 +34,6 @@ export class PermissionsModuleFE_Class
 	}
 
 	doesUserHavePermissions(url: string): boolean | undefined {
-		console.log("doesUserHavePermissions")
 		if(this.loadingUrls.has(url))
 			return undefined
 
