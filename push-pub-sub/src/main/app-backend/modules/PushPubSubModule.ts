@@ -86,9 +86,10 @@ export class PushPubSubModule_Class
 
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
-			timestamp: currentTimeMillies(),
-			userId: user?.data._id
+			timestamp: currentTimeMillies()
 		};
+		if (user)
+			session.userId = user.data._id
 
 		await this.pushSessions.upsert(session);
 
