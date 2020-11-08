@@ -38,7 +38,7 @@ class ExampleModule_Class
 	dispatcher = new Dispatcher<TestDispatch, 'testDispatch'>('testDispatch');
 
 
-	__getUserData(): { key: string; data: any } {
+	async __getUserData(): Promise<{ key: string; data: any }> {
 		return {
 			key: 'userId', data: {_id: 'noabkr@intuitionrobotics.com'}
 		}
