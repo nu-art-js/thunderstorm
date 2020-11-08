@@ -71,8 +71,6 @@ export class PushPubSubModule_Class
 	private notifications!: FirestoreCollection<DB_Notifications>
 	private messaging!: PushMessagesWrapper;
 
-	private user: { key: string; data: any; } = {key: '', data: undefined};
-
 	protected init(): void {
 		const session = FirebaseModule.createAdminSession();
 		const firestore = session.getFirestore();
@@ -84,14 +82,15 @@ export class PushPubSubModule_Class
 	}
 
 	async register(body: Request_PushRegister, request: ExpressRequest) {
-		const resp = await dispatch_getUser.dispatchModule([request]);
+		const resp = await dispatch_getUser.dispatchModuleAsync([request]);
+		console.log('this is the dispatcher response: '+resp)
 		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
+		console.log(user)
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
 			timestamp: currentTimeMillies()
 		};
 		if (user) {
-			this.user = user
 			session.userId = user.data._id
 		}
 
@@ -145,10 +144,13 @@ export class PushPubSubModule_Class
 
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
-
-		if (this.user.data !== undefined) {
+		const tokens = docs.map(_doc => _doc.firebaseToken)
+		console.log(tokens.length, tokens[0])
+		const user = await this.pushSessions.queryUnique({where: {firebaseToken: {$in:tokens}}})
+		console.log('heres the user from the db '+user?.userId)
+		if (user && !!user.userId) {
 			const notification: DB_Notifications = {
-				userId: userId ? userId : this.user.data._id,
+				userId: userId ? userId : user.userId,
 				timestamp: Math.floor(Date.now() / 1000.0),
 				read: false,
 				pushKey: key
