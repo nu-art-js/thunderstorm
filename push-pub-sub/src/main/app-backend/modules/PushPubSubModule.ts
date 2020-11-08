@@ -58,7 +58,7 @@ type TempMessages = {
 
 //TODO make more structured
 export interface GetUserData {
-	__getUserData(): { key: string, data: any }
+	__getUserData(request: ExpressRequest): { key: string, data: any }
 }
 
 const dispatch_getUser = new Dispatcher<GetUserData, '__getUserData'>('__getUserData');
@@ -71,6 +71,8 @@ export class PushPubSubModule_Class
 	private notifications!: FirestoreCollection<DB_Notifications>
 	private messaging!: PushMessagesWrapper;
 
+	private user: { key: string; data: any; } = {key: '', data: undefined};
+
 	protected init(): void {
 		const session = FirebaseModule.createAdminSession();
 		const firestore = session.getFirestore();
@@ -82,14 +84,16 @@ export class PushPubSubModule_Class
 	}
 
 	async register(body: Request_PushRegister, request: ExpressRequest) {
-		const resp = await dispatch_getUser.dispatchModuleAsync([]);
+		const resp = await dispatch_getUser.dispatchModuleAsync([request]);
 		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
 			timestamp: currentTimeMillies()
 		};
-		if (user)
+		if (user) {
+			this.user = user
 			session.userId = user.data._id
+		}
 
 		await this.pushSessions.upsert(session);
 
@@ -112,7 +116,7 @@ export class PushPubSubModule_Class
 		if (!user)
 			return
 		const notifications = await this.notifications.query({where: {userId: user.data._id}})
-		console.log('notifications: '+notifications)
+		console.log('notifications: ' + notifications)
 		return notifications
 	}
 
@@ -142,11 +146,9 @@ export class PushPubSubModule_Class
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
 
-		const resp = await dispatch_getUser.dispatchModuleAsync([]);
-		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
-		if (user) {
+		if (this.user.data !== undefined) {
 			const notification: DB_Notifications = {
-				userId: userId ? userId : user.data._id,
+				userId: userId ? userId : this.user.data._id,
 				timestamp: Math.floor(Date.now() / 1000.0),
 				read: false,
 				pushKey: key

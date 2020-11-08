@@ -37,8 +37,7 @@ class ServerApi_PushTest
 
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		const myNotifications = await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'});
-		console.log(myNotifications)
+		await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'});
 		return "push succeeded!"
 	}
 }
