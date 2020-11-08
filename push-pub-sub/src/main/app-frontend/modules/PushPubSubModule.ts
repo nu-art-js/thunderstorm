@@ -39,6 +39,7 @@ import {
 	MessageType,
 	PubSubRegisterClient,
 	Request_PushRegister,
+	Response_PushRegister,
 	SubscribeProps,
 	SubscriptionData
 } from "../../index";
@@ -109,7 +110,7 @@ export class PushPubSubModule_Class
 			if (navigator.serviceWorker.controller) {
 				console.log(`This page is currently controlled by: ${navigator.serviceWorker.controller}`);
 			}
-			navigator.serviceWorker.oncontrollerchange = function() {
+			navigator.serviceWorker.oncontrollerchange = function () {
 				console.log('This page is now controlled by:', navigator.serviceWorker.controller);
 			};
 			navigator.serviceWorker.onmessage = (event: MessageEvent) => {
@@ -169,7 +170,7 @@ export class PushPubSubModule_Class
 		});
 	};
 
-	subscribe = async (subscription: BaseSubscriptionData) => {
+	subscribe = async (subscription: BaseSubscriptionData): Promise<Response_PushRegister> => {
 		this.subscribeImpl(subscription);
 		return this.register();
 	};
@@ -191,7 +192,7 @@ export class PushPubSubModule_Class
 		return this.register();
 	};
 
-	private register = async () => {
+	private register = async (): Promise<Response_PushRegister> => {
 		if (!this.firebaseToken || this.subscriptions.length === 0)
 			return;
 
