@@ -264,6 +264,12 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @param dbInstance - The DB entry that is going to be deleted.
 	 */
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
+		return (await this.assertDeletion_Read(transaction, dbInstance, request))();
+	}
+
+	protected async assertDeletion_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => void> {
+		return async () => {
+		};
 	}
 
 	/**
@@ -447,9 +453,14 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
 		const write = await this.deleteImpl_Read(transaction, ourQuery, request);
-		// Here can do both read an write!
-		await this.assertDeletion(transaction, dbInstance, request);
-		return write;
+		if (!write)
+			return;
+		return async () => {
+			// Here can do both read an write!
+			await this.assertDeletion(transaction, dbInstance, request);
+
+			return write();
+		};
 	}
 
 	/**
