@@ -1,5 +1,6 @@
 import {
 	ApiResponse,
+	ExpressRequest,
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
 
@@ -10,7 +11,6 @@ import {
 	PubSubRegisterClient,
 	Request_PushRegister
 } from "../../../../index";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_PushRegister
 	extends ServerApi<PubSubRegisterClient> {
@@ -21,8 +21,7 @@ class ServerApi_PushRegister
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_PushRegister) {
 		// const user = await KasperoProxy.validateSession(request);
-
-		await PushPubSubModule.register(body);
+		return await PushPubSubModule.register(body, request);
 	}
 }
 

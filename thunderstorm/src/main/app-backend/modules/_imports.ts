@@ -29,4 +29,6 @@ export * from "../exceptions";
 export * from "../utils/promisify-request";
 export * from "../utils/to-be-removed";
 
+export * from "./CleanupScheduler";
+
 export * from "../../index";

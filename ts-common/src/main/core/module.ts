@@ -52,9 +52,18 @@ export abstract class Module<Config = any>
 		this.name = this.name.replace("_Class", "");
 	}
 
-	throttle(handler: TimerHandler, key: string, ms = 0) {
+	debounce(handler: TimerHandler, key: string, ms = 0) {
 		_clearTimeout(this.timeoutMap[key]);
-		this.timeoutMap[key] = _setTimeout(handler, ms)
+		this.timeoutMap[key] = _setTimeout(handler, ms);
+	}
+
+	throttle(handler: TimerHandler, key: string, ms = 0) {
+		if (this.timeoutMap[key])
+			return;
+		this.timeoutMap[key] = _setTimeout(() => {
+			handler();
+			delete this.timeoutMap[key];
+		}, ms);
 	}
 
 	public setConfigValidator(validator: ValidatorTypeResolver<Config>) {
@@ -93,7 +102,7 @@ export abstract class Module<Config = any>
 					this.logDebug(`Async call completed: ${label}`);
 				})
 				.catch(reason => this.logError(`Async call error: ${label}`, reason));
-		}, 0)
+		}, 0);
 	};
 
 	protected init(): void {

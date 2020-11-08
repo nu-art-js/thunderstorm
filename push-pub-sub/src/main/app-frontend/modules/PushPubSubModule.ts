@@ -90,11 +90,7 @@ export class PushPubSubModule_Class
 
 	private registerServiceWorker = async () => {
 		console.log('registering...')
-		const registration = await navigator.serviceWorker.register('/ts_service_worker.js');
-		// await registration.update()
-		// await registration.update();
-		console.log(registration)
-		return registration;
+		return await navigator.serviceWorker.register('/ts_service_worker.js');
 	};
 
 	private initApp = async () => {
@@ -105,12 +101,17 @@ export class PushPubSubModule_Class
 			];
 
 			const {0: registration, 1: app} = await Promise.all(asyncs);
-
+			await registration.update()
 			this.messaging = app.getMessaging();
 			// this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
-			// this.messaging.useServiceWorker(registration);
+			this.messaging.useServiceWorker(registration);
 			await this.getToken({vapidKey: this.config.publicKeyBase64, serviceWorkerRegistration: registration});
-			await registration.update()
+			if (navigator.serviceWorker.controller) {
+				console.log(`This page is currently controlled by: ${navigator.serviceWorker.controller}`);
+			}
+			navigator.serviceWorker.oncontrollerchange = function() {
+				console.log('This page is now controlled by:', navigator.serviceWorker.controller);
+			};
 			navigator.serviceWorker.onmessage = (event: MessageEvent) => {
 				this.processMessageFromSw(event.data)
 			};
@@ -200,13 +201,13 @@ export class PushPubSubModule_Class
 		};
 
 		return new Promise(resolve => {
-			this.throttle(() => {
+			this.debounce(() => {
 				HttpModule
 					.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
 					.setRelativeUrl("/v1/push/register")
 					.setJsonBody(body)
 					.setOnError(() => ToastModule.toastError("Failed to register for push"))
-					.execute(() => {
+					.execute((response) => {
 						resolve()
 					})
 			}, 'push-registration', 800)
