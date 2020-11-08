@@ -263,7 +263,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @param transaction - The transaction object
 	 * @param dbInstance - The DB entry that is going to be deleted.
 	 */
-	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DBType) {
+	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
 	}
 
 	/**
@@ -448,7 +448,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 		const write = await this.deleteImpl_Read(transaction, ourQuery, request);
 		// Here can do both read an write!
-		await this.assertDeletion(transaction, dbInstance);
+		await this.assertDeletion(transaction, dbInstance, request);
 		return write;
 	}
 
