@@ -53,7 +53,7 @@ export abstract class BaseToaster
 		if (duration <= 0)
 			return;
 
-		this.throttle(() => ToastModule.hideToast(model), 'closing_action', duration);
+		this.debounce(() => ToastModule.hideToast(model), 'closing_action', duration);
 	};
 
 	render() {

@@ -3,6 +3,7 @@ export type SubscribeProps = { [prop: string]: string | number };
 export type BaseSubscriptionData = {
 	props?: SubscribeProps
 	pushKey: string
+	userId?: string
 }
 
 export type SubscriptionData = BaseSubscriptionData & {
@@ -13,8 +14,16 @@ export type Request_PushRegister = FirebaseToken & {
 	subscriptions: BaseSubscriptionData[]
 }
 
+export type Response_PushRegister = DB_Notifications[] | undefined
+
 export type DB_PushSession = FirebaseToken & {
 	timestamp: number
+	userId?: string
+}
+
+export type DB_Notifications = BaseSubscriptionData & {
+	timestamp: number,
+	read: boolean
 }
 
 export type DB_PushKeys = FirebaseToken & BaseSubscriptionData

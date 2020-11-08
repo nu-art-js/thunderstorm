@@ -36,12 +36,14 @@ import {Frontend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/frontend";
 import {BugReportModule} from "@nu-art/bug-report/frontend";
 import {Module} from '@nu-art/ts-common';
 import {Frontend_ModulePack_Uploader} from "@nu-art/file-upload/frontend";
+import {PermissionsFE} from '@nu-art/permissions/frontend';
 
 const modules: Module[] = [
 	ForceUpgrade,
 	ExampleModule,
 	BugReportModule
 ];
+PermissionsFE.setDefaultConfig({projectId: 'thunderstorm-staging'});
 
 new Thunder()
 	.setConfig(require("./config").config)
