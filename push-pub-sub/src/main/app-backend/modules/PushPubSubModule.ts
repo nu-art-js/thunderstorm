@@ -58,7 +58,7 @@ type TempMessages = {
 
 //TODO make more structured
 export interface GetUserData {
-	__getUserData(request: ExpressRequest): { key: string, data: any }
+	__getUserData(request: ExpressRequest): Promise<{ key: string, data: any }>
 }
 
 const dispatch_getUser = new Dispatcher<GetUserData, '__getUserData'>('__getUserData');
@@ -84,7 +84,7 @@ export class PushPubSubModule_Class
 	}
 
 	async register(body: Request_PushRegister, request: ExpressRequest) {
-		const resp = await dispatch_getUser.dispatchModuleAsync([request]);
+		const resp = await dispatch_getUser.dispatchModule([request]);
 		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
