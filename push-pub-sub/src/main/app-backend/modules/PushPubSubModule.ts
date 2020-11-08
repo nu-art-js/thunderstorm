@@ -149,7 +149,7 @@ export class PushPubSubModule_Class
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
 		// const tokens = docs.map(_doc => _doc.firebaseToken)
 		// const user = await this.pushSessions.queryUnique({where: {firebaseToken: {$in:tokens}}})
-		if (this.user) {
+		if (this.user.data._id) {
 			const notification: DB_Notifications = {
 				userId: userId ? userId : this.user.data._id,
 				timestamp: Math.floor(Date.now() / 1000.0),
