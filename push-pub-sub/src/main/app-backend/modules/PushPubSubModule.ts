@@ -22,6 +22,7 @@ import {
 	compare,
 	currentTimeMillies,
 	Dispatcher,
+	generateHex,
 	Hour,
 	Module
 } from "@nu-art/ts-common";
@@ -151,6 +152,7 @@ export class PushPubSubModule_Class
 		const user = await this.pushSessions.queryUnique({where: {firebaseToken: {$in:tokens}}})
 		if (user) {
 			const notification: DB_Notifications = {
+				_id: generateHex(16),
 				userId: userId ? userId : user.userId,
 				timestamp: Math.floor(Date.now() / 1000.0),
 				read: false,
