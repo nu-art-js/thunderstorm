@@ -446,8 +446,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		if (!dbInstance)
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
+		const write = await this.deleteImpl_Read(transaction, ourQuery, request);
+		// Here can do both read an write!
 		await this.assertDeletion(transaction, dbInstance);
-		return this.deleteImpl_Read(transaction, ourQuery, request);
+		return write;
 	}
 
 	/**
