@@ -128,4 +128,22 @@ export const lessOptions: CheckboxOption<ChckbxOption>[] = [
             value: "el3"
         }
     },
-    ]
+]
+
+export const lessOptions2: CheckboxOption<ChckbxOption>[] = [
+    {value: {
+            label: "One",
+            value: "el1"
+        }
+    },
+    {value: {
+            label: "Two",
+            value: "el2"
+        }
+    },
+    {value: {
+            label: "Three",
+            value: "el3"
+        }
+    },
+]

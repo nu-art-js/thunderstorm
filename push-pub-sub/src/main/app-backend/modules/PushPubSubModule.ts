@@ -84,8 +84,10 @@ export class PushPubSubModule_Class
 	}
 
 	async register(body: Request_PushRegister, request: ExpressRequest) {
-		const resp = await dispatch_getUser.dispatchModule([request]);
+		const resp = await dispatch_getUser.dispatchModuleAsync([request]);
+		console.log('this is the dispatcher response: '+resp)
 		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
+		console.log(user)
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
 			timestamp: currentTimeMillies()
@@ -145,8 +147,9 @@ export class PushPubSubModule_Class
 
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
-
-		if (this.user.data !== undefined) {
+		// const tokens = docs.map(_doc => _doc.firebaseToken)
+		// const user = await this.pushSessions.queryUnique({where: {firebaseToken: {$in:tokens}}})
+		if (this.user) {
 			const notification: DB_Notifications = {
 				userId: userId ? userId : this.user.data._id,
 				timestamp: Math.floor(Date.now() / 1000.0),
