@@ -101,7 +101,7 @@ export class PushPubSubModule_Class
 			];
 
 			const {0: registration, 1: app} = await Promise.all(asyncs);
-			// await registration.update()
+			await registration.update()
 			this.messaging = app.getMessaging();
 			// this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
 			this.messaging.useServiceWorker(registration);
@@ -207,7 +207,7 @@ export class PushPubSubModule_Class
 					.setRelativeUrl("/v1/push/register")
 					.setJsonBody(body)
 					.setOnError(() => ToastModule.toastError("Failed to register for push"))
-					.execute(() => {
+					.execute((response) => {
 						resolve()
 					})
 			}, 'push-registration', 800)

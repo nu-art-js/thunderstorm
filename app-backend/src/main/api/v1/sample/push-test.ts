@@ -23,7 +23,9 @@ import {
 } from "@nu-art/thunderstorm/backend";
 
 import {ExampleTestPush} from "@app/app-shared";
-import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
+import {
+	PushPubSubModule
+} from "@nu-art/push-pub-sub/backend";
 
 class ServerApi_PushTest
 	extends ServerApi_Get<ExampleTestPush> {
@@ -32,8 +34,11 @@ class ServerApi_PushTest
 		super("push-test");
 	}
 
+
+
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'});
+		const myNotifications = await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'});
+		console.log(myNotifications)
 		return "push succeeded!"
 	}
 }

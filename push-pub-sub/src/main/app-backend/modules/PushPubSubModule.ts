@@ -35,6 +35,7 @@ import {
 } from '@nu-art/firebase/backend';
 // noinspection TypeScriptPreferShortImport
 import {
+	DB_Notifications,
 	DB_PushKeys,
 	DB_PushSession,
 	IFP,
@@ -57,7 +58,7 @@ type TempMessages = {
 
 //TODO make more structured
 export interface GetUserData {
-	__getUserData(request: ExpressRequest): { key: string, data: any }
+	__getUserData(): { key: string, data: any }
 }
 
 const dispatch_getUser = new Dispatcher<GetUserData, '__getUserData'>('__getUserData');
@@ -67,6 +68,7 @@ export class PushPubSubModule_Class
 
 	private pushSessions!: FirestoreCollection<DB_PushSession>;
 	private pushKeys!: FirestoreCollection<DB_PushKeys>;
+	private notifications!: FirestoreCollection<DB_Notifications>
 	private messaging!: PushMessagesWrapper;
 
 	protected init(): void {
@@ -75,15 +77,13 @@ export class PushPubSubModule_Class
 
 		this.pushSessions = firestore.getCollection<DB_PushSession>('push-sessions', ["firebaseToken"]);
 		this.pushKeys = firestore.getCollection<DB_PushKeys>('push-keys');
-		// Notifcations collection with userId and BaseSubscriptionData and timestamp and read boolean
-
+		this.notifications = firestore.getCollection<DB_Notifications>('notifications')
 		this.messaging = session.getMessaging();
 	}
 
 	async register(body: Request_PushRegister, request: ExpressRequest) {
-		const resp = await dispatch_getUser.dispatchModuleAsync([request]);
+		const resp = await dispatch_getUser.dispatchModuleAsync([]);
 		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
-
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
 			timestamp: currentTimeMillies()
@@ -109,11 +109,14 @@ export class PushPubSubModule_Class
 			await transaction.insertAll(this.pushKeys, subscriptions);
 			return write();
 		});
-
-		return // query notifications of user
+		if (!user)
+			return
+		const notifications = await this.notifications.query({where: {userId: user.data._id}})
+		console.log('notifications: '+notifications)
+		return notifications
 	}
 
-	async pushToKey<M extends MessageType<any, any, any> = never, S extends string = IFP<M>, P extends SubscribeProps = ISP<M>, D = ITP<M>>(key: S, props?: P, data?: D) {
+	async pushToKey<M extends MessageType<any, any, any> = never, S extends string = IFP<M>, P extends SubscribeProps = ISP<M>, D = ITP<M>>(key: S, props?: P, data?: D, userId?: S) {
 		let docs = await this.pushKeys.query({where: {pushKey: key}});
 		if (props)
 			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
@@ -138,6 +141,22 @@ export class PushPubSubModule_Class
 
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
+
+		const resp = await dispatch_getUser.dispatchModuleAsync([]);
+		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
+		if (user) {
+			const notification: DB_Notifications = {
+				userId: userId ? userId : user.data._id,
+				timestamp: Math.floor(Date.now() / 1000.0),
+				read: false,
+				pushKey: key
+			};
+			if (props)
+				notification.props = props
+
+			await this.notifications.insert(notification)
+		}
+
 		return this.cleanUp(response, messages);
 	}
 
@@ -162,6 +181,7 @@ export class PushPubSubModule_Class
 			return carry;
 		}, [] as string[]);
 
+		//TODO: delete notifications for the user that are older than X
 		return this.cleanUpImpl(toDelete);
 	};
 
