@@ -205,6 +205,12 @@ export class PushPubSubModule_Class
 
 	getNotifications = () => this.notifications
 
+	readNotification = () => {
+		//make an api call that changes the read boolean of the notification id thats passed in
+		// HttpModule
+		// 	.createRequest<PubSubReadNotification>(HttpMethod.POST)
+	}
+
 	private register = async (): Promise<Response_PushRegister> => {
 		if (!this.firebaseToken || this.subscriptions.length === 0)
 			return;

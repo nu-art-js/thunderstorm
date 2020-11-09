@@ -14,6 +14,11 @@ export type Request_PushRegister = FirebaseToken & {
 	subscriptions: BaseSubscriptionData[]
 }
 
+export type Request_ReadPush = {
+	_id:string,
+	read:boolean
+}
+
 export type Response_PushRegister = DB_Notifications[] | undefined
 
 export type DB_PushSession = FirebaseToken & {
