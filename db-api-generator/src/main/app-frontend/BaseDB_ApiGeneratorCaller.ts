@@ -56,8 +56,11 @@ export type BaseApiConfig = {
 export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType extends PartialProperties<DBType, "_id"> = PartialProperties<DBType, "_id">>
 	extends Module<BaseApiConfig> {
 
-	private readonly errorHandler: RequestErrorHandler<any> = (request: HttpRequest<any>, resError?: ErrorResponse<any>) => ToastModule.toastError(
-		request.xhr.status === 403 ? "You are not allowed to perform this action. Please check your permissions." : "Failed to perform action.");
+	private readonly errorHandler: RequestErrorHandler<any> = (request: HttpRequest<any>, resError?: ErrorResponse<any>) => {
+		if (this.onError(request, resError))
+			return;
+		return ToastModule.toastError(request.xhr.status === 403 ? "You are not allowed to perform this action. Please check your permissions." : "Failed to perform action.");
+	};
 
 	constructor(config: BaseApiConfig) {
 		super();
@@ -68,8 +71,11 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		return HttpModule
 			.createRequest<ApiTypeBinder<string, R, B, P, any>>(apiDef.method, `request-api--${this.config.key}-${apiDef.key}`)
 			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? "/" + apiDef.suffix : ""}`)
-			.setOnError(this.errorHandler)
+			.setOnError(this.errorHandler);
+	}
 
+	protected onError(request: HttpRequest<any>, resError?: ErrorResponse<any>): boolean {
+		return false;
 	}
 
 	create = (toCreate: UType) => {
