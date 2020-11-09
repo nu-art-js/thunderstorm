@@ -31,8 +31,8 @@ export class MessagingWrapper
 		this.messaging = messaging;
 	}
 
-	usePublicVapidKey(vapidKey: string) {
-		this.messaging.usePublicVapidKey(vapidKey);
+	async usePublicVapidKey(vapidKey: string) {
+		await this.messaging.getToken({vapidKey});
 	}
 
 	async getToken(options?: {
@@ -42,8 +42,8 @@ export class MessagingWrapper
 		return this.messaging.getToken(options);
 	}
 
-	useServiceWorker(registration: ServiceWorkerRegistration) {
-		this.messaging.getToken({serviceWorkerRegistration: registration});
+	async useServiceWorker(registration: ServiceWorkerRegistration) {
+		await this.messaging.getToken({serviceWorkerRegistration: registration});
 	}
 
 	onTokenRefresh(callback: () => void) {
