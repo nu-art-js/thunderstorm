@@ -5,14 +5,14 @@ import {
 import {FirebaseScheduledFunction} from "@nu-art/firebase/app-backend/functions/firebase-function";
 import {FirebaseModule} from "@nu-art/firebase/app-backend/FirebaseModule";
 
-enum CleanupStatus {
+export enum ActStatus {
 	Success = "Success",
 	Failure = "Failure"
 }
 
-export type CleanupDoc = {
+export type ActDetailsDoc = {
 	timeStamp: number,
-	status: CleanupStatus,
+	status: ActStatus,
 	moduleKey: string
 }
 
@@ -37,18 +37,18 @@ export class CleanupScheduler_Class
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
-		const cleanupStatusCollection =  FirebaseModule.createAdminSession().getFirestore().getCollection<CleanupDoc>('cleanup-status', ["moduleKey"]);
+		const cleanupStatusCollection =  FirebaseModule.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('cleanup-status', ["moduleKey"]);
 		const cleanups = dispatch_onCleanupSchedulerAct.dispatchModule([]);
 		await Promise.all(cleanups.map(async cleanupItem => {
 			const doc = await cleanupStatusCollection.queryUnique({where: {moduleKey: cleanupItem.moduleKey}});
-			if (doc && doc.timeStamp + cleanupItem.interval > currentTimeMillies() && doc.status !== CleanupStatus.Failure)
+			if (doc && doc.timeStamp + cleanupItem.interval > currentTimeMillies() && doc.status !== ActStatus.Failure)
 				return;
 
-			let status: CleanupStatus = CleanupStatus.Success;
+			let status: ActStatus = ActStatus.Success;
 			try {
 				await cleanupItem.cleanup();
 			} catch (e) {
-				status = CleanupStatus.Failure;
+				status = ActStatus.Failure;
 				this.logWarning(`cleanup of ${cleanupItem.moduleKey} has failed with error '${e}'`);
 			} finally {
 				await cleanupStatusCollection.upsert({timeStamp: currentTimeMillies(), status, moduleKey: cleanupItem.moduleKey});
