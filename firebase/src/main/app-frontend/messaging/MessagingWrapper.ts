@@ -43,7 +43,7 @@ export class MessagingWrapper
 	}
 
 	useServiceWorker(registration: ServiceWorkerRegistration) {
-		this.messaging.useServiceWorker(registration);
+		this.messaging.getToken({serviceWorkerRegistration: registration});
 	}
 
 	onTokenRefresh(callback: () => void) {
