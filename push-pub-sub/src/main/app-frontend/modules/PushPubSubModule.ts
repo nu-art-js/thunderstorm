@@ -33,6 +33,7 @@ import {
 // noinspection TypeScriptPreferShortImport
 import {
 	BaseSubscriptionData,
+	DB_Notifications,
 	IFP,
 	ISP,
 	ITP,
@@ -72,6 +73,10 @@ export type PushPubSubConfig = {
 	publicKeyBase64: string
 }
 
+export interface OnNotificationsReceived {
+	__onNotificationsReceived(notifications: DB_Notifications[] | undefined): void
+}
+
 
 export class PushPubSubModule_Class
 	extends Module<PushPubSubConfig> {
@@ -81,6 +86,9 @@ export class PushPubSubModule_Class
 	private messaging?: MessagingWrapper;
 
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, "__onMessageReceived">("__onMessageReceived");
+	private dispatch_notifications = new ThunderDispatcher<OnNotificationsReceived, '__onNotificationsReceived'>('__onNotificationsReceived');
+
+	private notifications: DB_Notifications[] = []
 
 	init() {
 		if (!this.config?.publicKeyBase64)
@@ -172,7 +180,8 @@ export class PushPubSubModule_Class
 
 	subscribe = async (subscription: BaseSubscriptionData): Promise<Response_PushRegister> => {
 		this.subscribeImpl(subscription);
-		return this.register();
+		return this.register()
+
 	};
 
 	private subscribeImpl(subscription: BaseSubscriptionData) {
@@ -184,13 +193,17 @@ export class PushPubSubModule_Class
 
 	subscribeMulti = async (subscriptions: BaseSubscriptionData[]) => {
 		subscriptions.forEach(subscription => this.subscribeImpl(subscription));
-		return this.register();
+		return this.register()
+		// console.log(this.getNotifications())
+		// return this.getNotifications()
 	};
 
 	unsubscribe = async (subscription: BaseSubscriptionData) => {
 		removeFromArray(this.subscriptions, d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props));
 		return this.register();
 	};
+
+	getNotifications = () => this.notifications
 
 	private register = async (): Promise<Response_PushRegister> => {
 		if (!this.firebaseToken || this.subscriptions.length === 0)
@@ -209,6 +222,7 @@ export class PushPubSubModule_Class
 					.setJsonBody(body)
 					.setOnError(() => ToastModule.toastError("Failed to register for push"))
 					.execute((response) => {
+						this.dispatch_notifications.dispatchModule([response])
 						resolve()
 					})
 			}, 'push-registration', 800)
