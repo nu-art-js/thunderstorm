@@ -38,8 +38,8 @@ export class SwMessagingWrapper
 		// Also because it would fail since firebase would initialize the messaging controller as the main thread one instead of the sw one...
 		if(!(self && 'ServiceWorkerGlobalScope' in self))
 			return this.logInfo('Not a service worker context');
-
-		this.messaging.setBackgroundMessageHandler(callback);
+		this.messaging.onBackgroundMessage(callback)
+		// this.messaging.setBackgroundMessageHandler(callback);
 	}
 
 }
