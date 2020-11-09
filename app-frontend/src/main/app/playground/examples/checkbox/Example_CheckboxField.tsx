@@ -24,7 +24,7 @@ import {
     CheckboxOption,
     TS_CheckboxField
 } from "@nu-art/thunderstorm/frontend";
-import {ChckbxOption, lessOptions, options} from "./data";
+import {ChckbxOption, lessOptions, options, lessOptions2} from "./data";
 import {deepClone, toggleElementInArray} from "@nu-art/ts-common";
 import {ICONS} from "@res/icons";
 import {Example_NewProps} from "@nu-art/thunderstorm/app-frontend/components/playground/Example_NewProps";
@@ -32,7 +32,7 @@ import {Example_NewProps} from "@nu-art/thunderstorm/app-frontend/components/pla
 const container = css({
     width: '500px'
 })
-type State = {cb1: ChckbxOption[], cb2?: ChckbxOption, cb3: ChckbxOption[], cb4?: ChckbxOption}
+type State = {cb1: ChckbxOption[], cb2?: ChckbxOption, cb3: ChckbxOption[], cb4?: ChckbxOption, cb5: ChckbxOption[], cb6: ChckbxOption[]}
 
 export class Example_CheckboxField
     extends React.Component<{}, State> {
@@ -52,7 +52,9 @@ export class Example_CheckboxField
         });
         this.state={
             cb1,
-            cb3: []
+            cb3: [],
+            cb5: [],
+            cb6: []
         }
     }
 
@@ -67,6 +69,8 @@ export class Example_CheckboxField
         const props2 = this.props2();
         const props3 = this.props3();
         const props4 = this.props4();
+        const props5 = this.props5();
+        const props6 = this.props6();
         return <>
             <Example_NewProps name={"Grid-column 4 cols, multiple, disabled options, button with image"} renderer={TS_CheckboxField} data={[props1]} showToggle={false}/>
             <div>you chose</div>
@@ -77,6 +81,8 @@ export class Example_CheckboxField
             <div>you chose {this.state.cb2?.value} in grid single choice</div>
             <hr/>
             <Example_NewProps name={"no grid, horizontal and vertical"} renderer={TS_CheckboxField} data={[props3, props4]} showToggle={false}/>
+            <hr/>
+            <Example_NewProps name={"toggle between fields"} renderer={TS_CheckboxField} data={[props5, props6]}/>
         </>;
     }
 
@@ -95,7 +101,7 @@ export class Example_CheckboxField
             })
         },
         fieldContainerClass: container
-    })
+    });
 
     private props2 = (): CheckboxFieldProps<any> => ({
         options: options,
@@ -108,7 +114,7 @@ export class Example_CheckboxField
             this.setState({cb2: item})
         },
         fieldContainerClass: container
-    })
+    });
 
     private props3 = (): CheckboxFieldProps<any> => ({
         options: lessOptions,
@@ -121,7 +127,7 @@ export class Example_CheckboxField
                 return {cb3: prev.cb3};
             })
         },
-    })
+    });
 
     private props4 = (): CheckboxFieldProps<any> => ({
         options: lessOptions,
@@ -131,5 +137,31 @@ export class Example_CheckboxField
         onCheck: (item: ChckbxOption) => {
             this.setState({cb4: item})
         },
-    })
+    });
+
+    private props5 = (): CheckboxFieldProps<any> => ({
+        options: lessOptions,
+        value: this.state.cb5,
+        label: this.label,
+        horizontal: true,
+        onCheck: (item: ChckbxOption) => {
+            this.setState((prev) => {
+                toggleElementInArray(prev.cb5, item);
+                return {cb5: prev.cb5};
+            })
+        },
+    });
+
+    private props6 = (): CheckboxFieldProps<any> => ({
+        options: lessOptions2,
+        value: this.state.cb6,
+        label: this.label,
+        horizontal: true,
+        onCheck: (item: ChckbxOption) => {
+            this.setState((prev) => {
+                toggleElementInArray(prev.cb6, item);
+                return {cb6: prev.cb6};
+            })
+        },
+    });
 }

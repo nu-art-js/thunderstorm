@@ -33,12 +33,14 @@ import {
 // noinspection TypeScriptPreferShortImport
 import {
 	BaseSubscriptionData,
+	DB_Notifications,
 	IFP,
 	ISP,
 	ITP,
 	MessageType,
 	PubSubRegisterClient,
 	Request_PushRegister,
+	Response_PushRegister,
 	SubscribeProps,
 	SubscriptionData
 } from "../../index";
@@ -71,6 +73,10 @@ export type PushPubSubConfig = {
 	publicKeyBase64: string
 }
 
+export interface OnNotificationsReceived {
+	__onNotificationsReceived(notifications: DB_Notifications[] | undefined): void
+}
+
 
 export class PushPubSubModule_Class
 	extends Module<PushPubSubConfig> {
@@ -80,6 +86,9 @@ export class PushPubSubModule_Class
 	private messaging?: MessagingWrapper;
 
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, "__onMessageReceived">("__onMessageReceived");
+	private dispatch_notifications = new ThunderDispatcher<OnNotificationsReceived, '__onNotificationsReceived'>('__onNotificationsReceived');
+
+	private notifications: DB_Notifications[] = []
 
 	init() {
 		if (!this.config?.publicKeyBase64)
@@ -90,11 +99,7 @@ export class PushPubSubModule_Class
 
 	private registerServiceWorker = async () => {
 		console.log('registering...')
-		const registration = await navigator.serviceWorker.register('/ts_service_worker.js');
-		// await registration.update()
-		// await registration.update();
-		console.log(registration)
-		return registration;
+		return await navigator.serviceWorker.register('/ts_service_worker.js');
 	};
 
 	private initApp = async () => {
@@ -105,12 +110,17 @@ export class PushPubSubModule_Class
 			];
 
 			const {0: registration, 1: app} = await Promise.all(asyncs);
-
+			await registration.update()
 			this.messaging = app.getMessaging();
 			// this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
-			// this.messaging.useServiceWorker(registration);
+			this.messaging.useServiceWorker(registration);
 			await this.getToken({vapidKey: this.config.publicKeyBase64, serviceWorkerRegistration: registration});
-			await registration.update()
+			if (navigator.serviceWorker.controller) {
+				console.log(`This page is currently controlled by: ${navigator.serviceWorker.controller}`);
+			}
+			navigator.serviceWorker.oncontrollerchange = function () {
+				console.log('This page is now controlled by:', navigator.serviceWorker.controller);
+			};
 			navigator.serviceWorker.onmessage = (event: MessageEvent) => {
 				this.processMessageFromSw(event.data)
 			};
@@ -168,9 +178,10 @@ export class PushPubSubModule_Class
 		});
 	};
 
-	subscribe = async (subscription: BaseSubscriptionData) => {
+	subscribe = async (subscription: BaseSubscriptionData): Promise<Response_PushRegister> => {
 		this.subscribeImpl(subscription);
-		return this.register();
+		return this.register()
+
 	};
 
 	private subscribeImpl(subscription: BaseSubscriptionData) {
@@ -182,7 +193,9 @@ export class PushPubSubModule_Class
 
 	subscribeMulti = async (subscriptions: BaseSubscriptionData[]) => {
 		subscriptions.forEach(subscription => this.subscribeImpl(subscription));
-		return this.register();
+		return this.register()
+		// console.log(this.getNotifications())
+		// return this.getNotifications()
 	};
 
 	unsubscribe = async (subscription: BaseSubscriptionData) => {
@@ -190,7 +203,9 @@ export class PushPubSubModule_Class
 		return this.register();
 	};
 
-	private register = async () => {
+	getNotifications = () => this.notifications
+
+	private register = async (): Promise<Response_PushRegister> => {
 		if (!this.firebaseToken || this.subscriptions.length === 0)
 			return;
 
@@ -206,7 +221,8 @@ export class PushPubSubModule_Class
 					.setRelativeUrl("/v1/push/register")
 					.setJsonBody(body)
 					.setOnError(() => ToastModule.toastError("Failed to register for push"))
-					.execute(() => {
+					.execute((response) => {
+						this.dispatch_notifications.dispatchModule([response])
 						resolve()
 					})
 			}, 'push-registration', 800)
