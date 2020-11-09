@@ -113,7 +113,7 @@ export class PushPubSubModule_Class
 			await registration.update()
 			this.messaging = app.getMessaging();
 			// this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
-			this.messaging.useServiceWorker(registration);
+			await this.messaging.useServiceWorker(registration);
 			await this.getToken({vapidKey: this.config.publicKeyBase64, serviceWorkerRegistration: registration});
 			if (navigator.serviceWorker.controller) {
 				console.log(`This page is currently controlled by: ${navigator.serviceWorker.controller}`);
