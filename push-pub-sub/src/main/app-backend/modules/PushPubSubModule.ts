@@ -72,7 +72,7 @@ export class PushPubSubModule_Class
 	private notifications!: FirestoreCollection<DB_Notifications>
 	private messaging!: PushMessagesWrapper;
 
-	// private user: { key: string; data: any; } = {key: '', data: undefined};
+	private user: { key: string; data: any; } = {key: '', data: undefined};
 
 	protected init(): void {
 		const session = FirebaseModule.createAdminSession();
@@ -94,7 +94,7 @@ export class PushPubSubModule_Class
 			timestamp: currentTimeMillies()
 		};
 		if (user) {
-			// this.user = user
+			this.user = user
 			session.userId = user.data._id
 		}
 
@@ -148,12 +148,12 @@ export class PushPubSubModule_Class
 
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
-		const tokens = docs.map(_doc => _doc.firebaseToken)
-		const user = await this.pushSessions.queryUnique({where: {firebaseToken: {$in:tokens}}})
-		if (user) {
+		// const tokens = docs.map(_doc => _doc.firebaseToken)
+		// const user = await this.pushSessions.queryUnique({where: {firebaseToken: {$in:tokens}}})
+		if (this.user.data !== undefined) {
 			const notification: DB_Notifications = {
 				_id: generateHex(16),
-				userId: userId ? userId : user.userId,
+				userId: userId ? userId : this.user.data._id,
 				timestamp: Math.floor(Date.now() / 1000.0),
 				read: false,
 				pushKey: key
