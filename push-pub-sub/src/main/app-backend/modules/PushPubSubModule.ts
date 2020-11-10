@@ -19,6 +19,7 @@
 
 import {
 	__stringify,
+	BadImplementationException,
 	compare,
 	currentTimeMillies,
 	Dispatcher,
@@ -86,7 +87,7 @@ export class PushPubSubModule_Class
 
 	async register(body: Request_PushRegister, request: ExpressRequest) {
 		const resp = await dispatch_getUser.dispatchModuleAsync([request]);
-		console.log('this is the dispatcher response: '+resp)
+		console.log('this is the dispatcher response: ' + resp)
 		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
 		console.log(user)
 		const session: DB_PushSession = {
@@ -123,7 +124,7 @@ export class PushPubSubModule_Class
 		return notifications
 	}
 
-	async pushToKey<M extends MessageType<any, any, any> = never, S extends string = IFP<M>, P extends SubscribeProps = ISP<M>, D = ITP<M>>(key: S, props?: P, data?: D, userId?: S) {
+	async pushToKey<M extends MessageType<any, any, any> = never, S extends string = IFP<M>, P extends SubscribeProps = ISP<M>, D = ITP<M>>(key: S, props?: P, data?: D, userId?: S, persistent: boolean = false) {
 		let docs = await this.pushKeys.query({where: {pushKey: key}});
 		if (props)
 			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
@@ -150,7 +151,7 @@ export class PushPubSubModule_Class
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
 		// const tokens = docs.map(_doc => _doc.firebaseToken)
 		// const user = await this.pushSessions.queryUnique({where: {firebaseToken: {$in:tokens}}})
-		if (this.user.data !== undefined) {
+		if (this.user.data !== undefined && persistent) {
 			const notification: DB_Notifications = {
 				_id: generateHex(16),
 				userId: userId ? userId : this.user.data._id,
@@ -165,6 +166,14 @@ export class PushPubSubModule_Class
 		}
 
 		return this.cleanUp(response, messages);
+	}
+
+	readNotification = async (id: string, read: boolean) => {
+		const notification = await this.notifications.queryUnique({where: {_id: id}})
+		if (!notification)
+			throw new BadImplementationException('cannot read a nonexistent notification')
+		notification.read = true
+		await this.notifications.upsert(notification)
 	}
 
 	scheduledCleanup = async () => {

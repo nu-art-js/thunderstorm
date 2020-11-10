@@ -29,7 +29,8 @@ export type DB_PushSession = FirebaseToken & {
 export type DB_Notifications = BaseSubscriptionData & {
 	_id:string,
 	timestamp: number,
-	read: boolean
+	read: boolean,
+	persistent?: boolean
 }
 
 export type DB_PushKeys = FirebaseToken & BaseSubscriptionData
