@@ -38,6 +38,7 @@ import {
 	ISP,
 	ITP,
 	MessageType,
+	PubSubReadNotification,
 	PubSubRegisterClient,
 	Request_PushRegister,
 	Response_PushRegister,
@@ -205,10 +206,19 @@ export class PushPubSubModule_Class
 
 	getNotifications = () => this.notifications
 
-	readNotification = () => {
+	readNotification = (id:string, read:boolean) => {
 		//make an api call that changes the read boolean of the notification id thats passed in
-		// HttpModule
-		// 	.createRequest<PubSubReadNotification>(HttpMethod.POST)
+		const body = {
+			_id:id,
+			read
+		}
+
+		HttpModule
+			.createRequest<PubSubReadNotification>(HttpMethod.POST, 'read-notification')
+			.setUrl('/v1/push/read-notification')
+			.setJsonBody(body)
+			.setOnError(() => ToastModule.toastError('Something went wrong while reading your notification'))
+			.execute()
 	}
 
 	private register = async (): Promise<Response_PushRegister> => {
