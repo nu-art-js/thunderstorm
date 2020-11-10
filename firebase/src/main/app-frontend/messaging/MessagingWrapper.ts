@@ -31,6 +31,7 @@ export class MessagingWrapper
 		this.messaging = messaging;
 	}
 
+	/** @deprecated */
 	usePublicVapidKey(vapidKey: string) {
 		this.messaging.usePublicVapidKey(vapidKey);
 	}
@@ -42,10 +43,12 @@ export class MessagingWrapper
 		return this.messaging.getToken(options);
 	}
 
+	/** @deprecated */
 	useServiceWorker(registration: ServiceWorkerRegistration) {
 		this.messaging.useServiceWorker(registration);
 	}
 
+	/** @deprecated */
 	onTokenRefresh(callback: () => void) {
 		return this.messaging.onTokenRefresh(callback)
 	}

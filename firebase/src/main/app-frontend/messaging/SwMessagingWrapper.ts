@@ -17,7 +17,10 @@
  * limitations under the License.
  */
 
-import {Logger} from "@nu-art/ts-common";
+import {
+	_setTimeout,
+	Logger
+} from "@nu-art/ts-common";
 import {FirebaseType_Messaging} from "./types";
 // tslint:disable:no-import-side-effect
 import 'firebase/messaging';
@@ -36,8 +39,12 @@ export class SwMessagingWrapper
 	setBackgroundMessageHandler(callback: (payload: any) => void){
 		// This means that the bundle is being evaluated in the main thread to register the service worker so there is no need to run the rest
 		// Also because it would fail since firebase would initialize the messaging controller as the main thread one instead of the sw one...
-		if(!(self && 'ServiceWorkerGlobalScope' in self))
-			return this.logInfo('Not a service worker context');
+		if(!(self && 'ServiceWorkerGlobalScope' in self)) {
+			this.logWarning('Not a service worker context');
+			return
+		}
+
+		this.logInfo('Not a service worker context');
 		this.messaging.onBackgroundMessage(callback)
 		// this.messaging.setBackgroundMessageHandler(callback);
 	}
