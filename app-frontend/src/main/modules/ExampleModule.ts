@@ -52,7 +52,6 @@ import {
 import {FirebaseModule} from "@nu-art/firebase/frontend";
 import {
 	BaseSubscriptionData,
-	DB_Notifications,
 	SubscribeProps
 } from "@nu-art/push-pub-sub";
 
@@ -113,7 +112,7 @@ export class ExampleModule_Class
 	}
 
 	__onNotificationsReceived(): void {
-		this.logInfo('these are the notifications you actually care about:'+__stringify(PushPubSubModule.getNotifications()))
+		this.logInfo('these are the notifications you actually care about:' + __stringify(PushPubSubModule.getNotifications()));
 	}
 
 	callCustomErrorApi() {
