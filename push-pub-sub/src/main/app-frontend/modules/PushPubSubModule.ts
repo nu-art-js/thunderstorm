@@ -114,7 +114,7 @@ export class PushPubSubModule_Class
 			await registration.update()
 			this.messaging = app.getMessaging();
 			// this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
-			await this.messaging.useServiceWorker(registration);
+			// await this.messaging.useServiceWorker(registration);
 			await this.getToken({vapidKey: this.config.publicKeyBase64, serviceWorkerRegistration: registration});
 			if (navigator.serviceWorker.controller) {
 				console.log(`This page is currently controlled by: ${navigator.serviceWorker.controller}`);
@@ -149,7 +149,7 @@ export class PushPubSubModule_Class
 
 			await this.register();
 			this.logVerbose('new token received: ' + this.firebaseToken);
-			this.messaging.onTokenRefresh(() => this.runAsync('Token refresh', async () => this.getToken(options)));
+			// this.messaging.onTokenRefresh(() => this.runAsync('Token refresh', async () => this.getToken(options)));
 
 			this.messaging.onMessage((payload) => {
 				this.processMessage(payload.data)

@@ -19,13 +19,13 @@
 
 import {
 	__stringify,
-	BadImplementationException,
 	compare,
 	currentTimeMillies,
 	Dispatcher,
 	generateHex,
 	Hour,
-	Module
+	Module,
+	Subset
 } from "@nu-art/ts-common";
 
 import {
@@ -70,10 +70,8 @@ export class PushPubSubModule_Class
 
 	private pushSessions!: FirestoreCollection<DB_PushSession>;
 	private pushKeys!: FirestoreCollection<DB_PushKeys>;
-	private notifications!: FirestoreCollection<DB_Notifications>
+	private notifications!: FirestoreCollection<DB_Notifications>;
 	private messaging!: PushMessagesWrapper;
-
-	private user: { key: string; data: any; } = {key: '', data: undefined};
 
 	protected init(): void {
 		const session = FirebaseModule.createAdminSession();
@@ -81,25 +79,21 @@ export class PushPubSubModule_Class
 
 		this.pushSessions = firestore.getCollection<DB_PushSession>('push-sessions', ["firebaseToken"]);
 		this.pushKeys = firestore.getCollection<DB_PushKeys>('push-keys');
-		this.notifications = firestore.getCollection<DB_Notifications>('notifications')
+		this.notifications = firestore.getCollection<DB_Notifications>('notifications');
 		this.messaging = session.getMessaging();
 	}
 
 	async register(body: Request_PushRegister, request: ExpressRequest) {
 		const resp = await dispatch_getUser.dispatchModuleAsync([request]);
-		console.log('this is the dispatcher response: ' + resp)
+		console.log('this is the dispatcher response: ' + resp);
 		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
-		console.log(user)
+		console.log(user);
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
 			timestamp: currentTimeMillies()
 		};
-		if (user) {
-			this.user = user
-			session.userId = user.data._id
-		}
-
-		await this.pushSessions.upsert(session);
+		if (user)
+			session.userId = user.data._id;
 
 		const subscriptions: DB_PushKeys[] = body.subscriptions.map((s): DB_PushKeys => {
 			const sub: DB_PushKeys = {
@@ -112,19 +106,26 @@ export class PushPubSubModule_Class
 			return sub;
 		});
 
-		await this.pushKeys.runInTransaction(async transaction => {
+		let notifications: DB_Notifications[] = [];
+		await this.pushSessions.runInTransaction(async transaction => {
+			if (user)
+				notifications = await transaction.query(this.notifications, {where: {userId: user.data._id}});
+
+			const writePush = await transaction.upsert_Read(this.pushSessions, session);
+
 			const write = await transaction.delete_Read(this.pushKeys, {where: {firebaseToken: body.firebaseToken}});
 			await transaction.insertAll(this.pushKeys, subscriptions);
-			return write();
+			await Promise.all([write(), writePush()]);
 		});
-		if (!user)
-			return
-		const notifications = await this.notifications.query({where: {userId: user.data._id}})
-		console.log('notifications: ' + notifications)
-		return notifications
+
+		console.log('notifications: ' + notifications);
+		return notifications;
 	}
 
-	async pushToKey<M extends MessageType<any, any, any> = never, S extends string = IFP<M>, P extends SubscribeProps = ISP<M>, D = ITP<M>>(key: S, props?: P, data?: D, userId?: S, persistent: boolean = false) {
+	async pushToKey<M extends MessageType<any, any, any> = never,
+		S extends string = IFP<M>,
+		P extends SubscribeProps = ISP<M>,
+		D = ITP<M>>(key: S, props?: P, data?: D, userId?: S, persistent: boolean = false) {
 		let docs = await this.pushKeys.query({where: {pushKey: key}});
 		if (props)
 			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
@@ -139,42 +140,49 @@ export class PushPubSubModule_Class
 				pushKey: db_pushKey.pushKey,
 				data
 			};
+
 			if (db_pushKey.props)
 				item.props = db_pushKey.props;
 
 			carry[db_pushKey.firebaseToken].push(item);
 
 			return carry;
-	}, {} as TempMessages);
+		}, {} as TempMessages);
 
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
-		// const tokens = docs.map(_doc => _doc.firebaseToken)
-		// const user = await this.pushSessions.queryUnique({where: {firebaseToken: {$in:tokens}}})
-		if (this.user.data !== undefined && persistent) {
-			const notification: DB_Notifications = {
-				_id: generateHex(16),
-				userId: userId ? userId : this.user.data._id,
-				timestamp: Math.floor(Date.now() / 1000.0),
-				read: false,
-				pushKey: key
-			};
-			if (props)
-				notification.props = props
 
-			await this.notifications.insert(notification)
+		const tokens = docs.map(_doc => _doc.firebaseToken);
+		const sessions = await this.pushSessions.query({where: {firebaseToken: {$in: tokens}}});
+		if (persistent) {
+
+			const notifications = sessions.reduce((carry: DB_Notifications[], session) => {
+				if (!session.userId)
+					return carry;
+
+				const notification: DB_Notifications = {
+					_id: generateHex(16),
+					userId: session.userId,
+					timestamp: currentTimeMillies(),
+					read: false,
+					pushKey: key
+				};
+				if (props)
+					notification.props = props;
+
+				carry.push(notification);
+				return carry;
+			}, []);
+
+			await this.notifications.insertAll(notifications);
 		}
 
 		return this.cleanUp(response, messages);
 	}
 
 	readNotification = async (id: string, read: boolean) => {
-		const notification = await this.notifications.queryUnique({where: {_id: id}})
-		if (!notification)
-			throw new BadImplementationException('cannot read a nonexistent notification')
-		notification.read = true
-		await this.notifications.upsert(notification)
-	}
+		await this.notifications.patch({_id: id, read} as Subset<DB_Notifications>);
+	};
 
 	scheduledCleanup = async () => {
 		const delta_time = this.config?.delta_time || Hour;
