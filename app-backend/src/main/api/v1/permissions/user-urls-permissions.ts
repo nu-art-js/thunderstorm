@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * A backend boilerplate with example apis
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,27 +18,26 @@
 import {
 	ApiResponse,
 	ExpressRequest,
-	ServerApi_Get,
+	ServerApi
 } from "@nu-art/thunderstorm/backend";
-
-import {ExampleTestPush} from "@app/app-shared";
+import {HttpMethod} from "@nu-art/thunderstorm";
 import {
-	PushPubSubModule
-} from "@nu-art/push-pub-sub/backend";
+	PermissionsApi_UserUrlsPermissions,
+	Request_UserUrlsPermissions
+} from "@nu-art/permissions";
 
-class ServerApi_PushTest
-	extends ServerApi_Get<ExampleTestPush> {
+class ServerApi_UserUrlsPermissions
+	extends ServerApi<PermissionsApi_UserUrlsPermissions> {
 
 	constructor() {
-		super("push-test");
+		super(HttpMethod.POST, "user-urls-permissions");
+		this.dontPrintResponse();
 	}
 
-
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'});
-		return "push succeeded!"
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UserUrlsPermissions) {
+		return {'/v1/test/api': true};
 	}
 }
 
-module.exports = new ServerApi_PushTest();
+module.exports = new ServerApi_UserUrlsPermissions();
+
