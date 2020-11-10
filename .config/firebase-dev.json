@@ -12,15 +12,6 @@
       "echo \"Trying to deploy DEV env... Failing\" && exit 2"
     ]
   },
-  "hosting": {
-    "public": "app-frontend/dist/dev",
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  },
   "emulators": {
     "ui": {
       "enabled": true,
@@ -28,9 +19,6 @@
     },
     "functions": {
       "port": "5000"
-    },
-    "hosting": {
-      "port": "5009"
     },
     "database": {
       "port": "5002"

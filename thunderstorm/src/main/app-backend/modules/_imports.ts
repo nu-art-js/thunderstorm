@@ -29,4 +29,7 @@ export * from "../exceptions";
 export * from "../utils/promisify-request";
 export * from "../utils/to-be-removed";
 
+export * from "./CleanupScheduler";
+export * from "./FirestoreBackupScheduler";
+
 export * from "../../index";

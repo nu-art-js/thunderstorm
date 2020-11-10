@@ -31,7 +31,7 @@ import {
 	ModuleManager,
 	removeItemFromArray
 } from "@nu-art/ts-common";
-import {HttpModule} from "../modules/http/HttpModule";
+import {XhrHttpModule} from "../modules/http/HttpModule";
 import {ToastModule} from "../modules/toaster/ToasterModule";
 import {DialogModule} from "../modules/dialog/DialogModule";
 import {RoutingModule} from "../modules/routing/RoutingModule";
@@ -56,7 +56,7 @@ export const ErrorHandler_Dispatch: RequestErrorHandler<any> = (request) => disp
 export const SuccessHandler_Dispatch: RequestSuccessHandler = (request) => dispatch_requestCompleted.dispatchUI([request.key, true, request.requestData]);
 
 const modules: Module[] = [
-	HttpModule,
+	XhrHttpModule,
 
 	ToastModule,
 	DialogModule,
@@ -93,8 +93,8 @@ export class Thunder
 
 		super.init();
 		// @ts-ignore
-		HttpModule.setErrorHandlers([ErrorHandler_Toast, ErrorHandler_Dispatch]);
-		HttpModule.setSuccessHandlers([SuccessHandler_Toast, SuccessHandler_Dispatch]);
+		XhrHttpModule.setErrorHandlers([ErrorHandler_Toast, ErrorHandler_Dispatch]);
+		XhrHttpModule.setSuccessHandlers([SuccessHandler_Toast, SuccessHandler_Dispatch]);
 
 		renderApp();
 		return this;

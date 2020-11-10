@@ -40,6 +40,6 @@ export interface OnRequestListener {
 	__onRequestCompleted: (key: string, success: boolean, requestData?: string) => void;
 }
 
-export type RequestErrorHandler<E extends void | object, Request extends BaseHttpRequest<any> = BaseHttpRequest<any>> = (request: Request, resError?: ErrorResponse<E>) => void;
-export type RequestSuccessHandler<Request extends BaseHttpRequest<any> = BaseHttpRequest<any>> = (request: Request) => void;
-export type ResponseHandler<Request extends BaseHttpRequest<any> = BaseHttpRequest<any>> = (request: Request) => boolean;
+export type RequestErrorHandler<E extends void | object> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<E>) => void;
+export type RequestSuccessHandler = (request: BaseHttpRequest<any>) => void;
+export type ResponseHandler = (request: BaseHttpRequest<any>) => boolean;

@@ -24,6 +24,7 @@ import {
 	FirebaseModule,
 	FirestoreCollection
 } from "@nu-art/firebase/backend";
+import {GetUserData} from "@nu-art/push-pub-sub/backend";
 
 
 type Config = {
@@ -32,8 +33,16 @@ type Config = {
 }
 
 class ExampleModule_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements GetUserData {
 	dispatcher = new Dispatcher<TestDispatch, 'testDispatch'>('testDispatch');
+
+
+	async __getUserData(): Promise<{ key: string; data: any }> {
+		return {
+			key: 'userId', data: {_id: 'noabkr@intuitionrobotics.com'}
+		}
+	}
 
 	getRandomString() {
 		return this.config.options[Math.floor(Math.random() * (this.config.options.length))];

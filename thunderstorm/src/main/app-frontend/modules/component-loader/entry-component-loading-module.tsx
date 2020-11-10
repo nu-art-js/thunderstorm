@@ -26,7 +26,7 @@ import {
 
 import {Module} from "@nu-art/ts-common";
 // noinspection TypeScriptPreferShortImport
-import {HttpModule} from "../http/HttpModule";
+import {XhrHttpModule} from "../http/HttpModule";
 import {BrowserHistoryModule} from "../HistoryModule";
 
 type ScriptLoaderBinder = ApiWithQuery<string, string, {}, any>
@@ -37,7 +37,7 @@ export class PageLoadingModule_Class
 	private readonly injected: { [src: string]: HTMLScriptElement } = {};
 
 	loadScript(src: string, progressListener: (progress: number) => void) {
-		HttpModule
+		XhrHttpModule
 			.createRequest<ScriptLoaderBinder>(HttpMethod.GET, src)
 			.setUrl(`${BrowserHistoryModule.getOrigin()}/${src}`)
 			.setOnProgressListener((ev: TS_Progress) => {

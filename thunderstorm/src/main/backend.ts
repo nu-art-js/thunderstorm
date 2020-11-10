@@ -21,6 +21,8 @@
 
 export * from "./app-backend/modules/proxy/RemoteProxyCaller";
 export * from "./app-backend/modules/proxy/RemoteProxy";
+export * from "./app-backend/modules/CleanupScheduler";
+export * from "./app-backend/modules/FirestoreBackupScheduler";
 export * from "./app-backend/modules/server/server-errors";
 export * from "./app-backend/modules/server/server-api";
 export * from "./app-backend/modules/server/HttpServer";

@@ -320,11 +320,11 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		return this;
 	}
 
-	abstract getResponse(): any
+	protected abstract getResponse(): any
 
 	abstract getErrorResponse(): ErrorResponse<E>
 
-	abstract abortImpl(): void
+	protected abstract abortImpl(): void
 
 	abort() {
 		this.aborted = true;

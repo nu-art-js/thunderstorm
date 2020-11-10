@@ -57,6 +57,7 @@ import {Example_Uploader} from "./examples/Example_Uploader";
 import {Example_TSInput} from "./examples/Example_TSInput";
 import { Example_SingleCheckbox } from './examples/checkbox/Example_SingleCheckbox';
 import { Example_CheckboxField } from './examples/checkbox/Example_CheckboxField';
+import {Example_PermissionsComponent} from "./examples/Example_PermissionsComponent";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -150,7 +151,8 @@ export class Page_Playground
 			{renderer: OstudioEx, name: 'stam'},
 
 			{renderer: Example_SingleCheckbox, name: 'Single Checkbox'},
-			{renderer: Example_CheckboxField, name: 'Checkbox fields'}
+			{renderer: Example_CheckboxField, name: 'Checkbox fields'},
+			{renderer: Example_PermissionsComponent, name: 'Permissions Component'}
 
 		];
 	}

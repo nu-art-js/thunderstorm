@@ -264,7 +264,13 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @param transaction - The transaction object
 	 * @param dbInstance - The DB entry that is going to be deleted.
 	 */
-	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DBType) {
+	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
+		return (await this.assertDeletion_Read(transaction, dbInstance, request))();
+	}
+
+	protected async assertDeletion_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => void> {
+		return async () => {
+		};
 	}
 
 	/**
@@ -447,9 +453,16 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		if (!dbInstance)
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
-		const write = await this.deleteUniqueImpl_Read(transaction, ourQuery, request);
-		await this.assertDeletion(transaction, dbInstance);
-		return write;
+		const write = await this.deleteImpl_Read(transaction, ourQuery, request);
+		return async () => {
+			if (!write)
+				return dbInstance;
+
+			// Here can do both read an write!
+			await this.assertDeletion(transaction, dbInstance, request);
+
+			return write();
+		};
 	}
 
 	/**
@@ -462,7 +475,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	private async deleteUniqueImpl_Read(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest): Promise<() => Promise<DBType>> {
+	private async deleteImpl_Read(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		const write = await transaction.deleteUnique_Read(this.collection, ourQuery);
 		if (!write)
 			throw new ThisShouldNotHappenException(`I just checked that I had an instance for query: ${__stringify(ourQuery)}`);

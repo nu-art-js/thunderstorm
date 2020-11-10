@@ -46,6 +46,12 @@ export class Queue
 	}
 
 	addItem<T>(toExecute: () => Promise<T>, onCompleted?: (output: T) => void, onError?: (error: Error) => void) {
+		this.addItemImpl(toExecute.bind(this),onCompleted?.bind(this),onError?.bind(this));
+
+		this.execute();
+	}
+
+	addItemImpl<T>(toExecute: () => Promise<T>, onCompleted?: (output: T) => void, onError?: (error: Error) => void) {
 		addItemToArray(this.queue, async (resolve: () => void) => {
 			this.running++;
 			try {
@@ -64,8 +70,6 @@ export class Queue
 			resolve();
 			this.execute();
 		});
-
-		this.execute();
 	}
 
 	ignore = () => {
@@ -83,7 +87,6 @@ export class Queue
 			new Promise(toExecute.bind(this))
 				.then(this.ignore)
 				.catch(this.ignore);
-
 		}
 	}
 

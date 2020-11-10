@@ -23,7 +23,7 @@ import {
 	Module,
 	Dispatcher
 } from "@nu-art/ts-common";
-import {HttpModule} from "./http/HttpModule";
+import {XhrHttpModule} from "./http/HttpModule";
 import {
 	ApiBinder_AssertAppVersion,
 	HeaderKey_AppVersion,
@@ -48,12 +48,12 @@ class ForceUpgrade_Class
 	extends Module<Config> {
 
 	protected init(): void {
-		HttpModule.addDefaultHeader(HeaderKey_AppVersion, `${process.env.appVersion}`);
-		HttpModule.addDefaultHeader(HeaderKey_BrowserType, `${browserType()}`);
+		XhrHttpModule.addDefaultHeader(HeaderKey_AppVersion, `${process.env.appVersion}`);
+		XhrHttpModule.addDefaultHeader(HeaderKey_BrowserType, `${browserType()}`);
 	}
 
 	compareVersion = () => {
-		HttpModule
+		XhrHttpModule
 			.createRequest<ApiBinder_AssertAppVersion>(HttpMethod.GET, RequestKey_AssertAppVersion)
 			.setRelativeUrl(this.config.assertVersionUrl)
 			.execute((response: UpgradeRequired) => {
