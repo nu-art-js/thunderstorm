@@ -83,7 +83,7 @@ export class PushPubSubModule_Class
 		this.messaging = session.getMessaging();
 	}
 
-	async register(body: Request_PushRegister, request: ExpressRequest) {
+	async register(body: Request_PushRegister, request: ExpressRequest): Promise<DB_Notifications[]> {
 		const resp = await dispatch_getUser.dispatchModuleAsync([request]);
 		console.log('this is the dispatcher response: ' + resp);
 		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');

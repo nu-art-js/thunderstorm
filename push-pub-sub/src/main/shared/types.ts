@@ -19,7 +19,7 @@ export type Request_ReadPush = {
 	read:boolean
 }
 
-export type Response_PushRegister = DB_Notifications[] | undefined
+export type Response_PushRegister = DB_Notifications[]
 
 export type DB_PushSession = FirebaseToken & {
 	timestamp: number
