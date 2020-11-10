@@ -145,7 +145,7 @@ export class PushPubSubModule_Class
 			carry[db_pushKey.firebaseToken].push(item);
 
 			return carry;
-		}, {} as TempMessages);
+	}, {} as TempMessages);
 
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);

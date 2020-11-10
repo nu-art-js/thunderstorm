@@ -8,20 +8,20 @@ import {
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {PushPubSubModule} from "../../../modules/PushPubSubModule";
 import {
-	PubSubRegisterClient,
-	Request_PushRegister
+	PubSubReadNotification,
+	Request_ReadPush
 } from "../../../../index";
 
 class ServerApi_PushRead
-	extends ServerApi<PubSubRegisterClient> {
+	extends ServerApi<PubSubReadNotification> {
 
 	constructor() {
 		super(HttpMethod.POST, "register");
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_PushRegister) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_ReadPush) {
 		// const user = await KasperoProxy.validateSession(request);
-		return await PushPubSubModule.register(body, request);
+		return await PushPubSubModule.readNotification(body._id, body.read);
 	}
 }
 
