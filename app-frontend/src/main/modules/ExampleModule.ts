@@ -112,8 +112,8 @@ export class ExampleModule_Class
 		this.logInfo('payload received in module', message);
 	}
 
-	__onNotificationsReceived(notifications: DB_Notifications[] | undefined): void {
-		console.log('these are the notifications you actually care about:'+notifications)
+	__onNotificationsReceived(): void {
+		this.logInfo('these are the notifications you actually care about:'+__stringify(PushPubSubModule.getNotifications()))
 	}
 
 	callCustomErrorApi() {
