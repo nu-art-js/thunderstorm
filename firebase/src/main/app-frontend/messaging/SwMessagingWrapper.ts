@@ -44,7 +44,7 @@ export class SwMessagingWrapper
 			return
 		}
 
-		this.logInfo('Not a service worker context');
+		this.logInfo('This is a service worker context');
 		this.messaging.onBackgroundMessage(callback)
 		// this.messaging.setBackgroundMessageHandler(callback);
 	}
