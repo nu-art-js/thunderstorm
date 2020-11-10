@@ -16,7 +16,7 @@ class ServerApi_PushRead
 	extends ServerApi<PubSubReadNotification> {
 
 	constructor() {
-		super(HttpMethod.POST, "register");
+		super(HttpMethod.POST, "read");
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_ReadPush) {
