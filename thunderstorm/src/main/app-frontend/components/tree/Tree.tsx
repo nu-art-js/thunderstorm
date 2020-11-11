@@ -73,7 +73,6 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 	constructor(props: P) {
 		super(props);
-		console.log('treeeeeeeee')
 		this.state = {
 			adapter: this.props.adapter,
 			expanded: Tree.recursivelyExpand(props)

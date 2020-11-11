@@ -29,6 +29,7 @@ export class Queue
 	private running = 0;
 	private queue: (() => Promise<void>)[] = [];
 	private onQueueEmpty?: () => void;
+	private finalResolve?: () => void;
 
 	constructor(name: string) {
 		super(name);
@@ -71,12 +72,14 @@ export class Queue
 		});
 	}
 
-	ignore = (params: any) => {
+	ignore = () => {
 	};
 
 	execute() {
-		if (this.queue.length === 0 && this.running === 0)
-			return this.onQueueEmpty && this.onQueueEmpty();
+		if (this.queue.length === 0 && this.running === 0) {
+			this.onQueueEmpty && this.onQueueEmpty();
+			return this.finalResolve?.();
+		}
 
 		for (let i = 0; this.running < this.parallelCount && i < this.queue.length; i++) {
 			const toExecute = this.queue[0];
@@ -85,5 +88,12 @@ export class Queue
 				.then(this.ignore)
 				.catch(this.ignore);
 		}
+	}
+
+	async executeSync() {
+		await new Promise(resolve => {
+			this.finalResolve = resolve;
+			this.execute();
+		});
 	}
 }

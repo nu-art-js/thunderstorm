@@ -18,13 +18,14 @@
  */
 
 import {Module} from "@nu-art/ts-common";
-import {HttpModule} from "@nu-art/thunderstorm/frontend";
+import {XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
-    ApiGetLog,
-    ApiPostPath,
-    DB_BugReport,
-    Paths
+	ApiGetLog,
+	ApiPostPath,
+	DB_BugReport,
+	Paths,
+	ReportLogFile
 } from "../../shared/api";
 
 export const RequestKey_GetLog = "GetLog";
@@ -41,7 +42,7 @@ export class AdminBRModule_Class
 
 	public retrieveLogs = () => {
 		this.logInfo("getting logs from firestore...");
-		HttpModule
+		XhrHttpModule
 			.createRequest<ApiGetLog>(HttpMethod.GET, RequestKey_GetLog)
 			.setRelativeUrl("/v1/bug-reports/get-logs")
 			.setOnError(`Error getting new message from backend`)
@@ -55,13 +56,17 @@ export class AdminBRModule_Class
 	public downloadLogs = (path: string) => {
 		this.logInfo("downloading the logs to the client..");
 		const bodyObject: Paths = {path: path};
-		HttpModule
+		XhrHttpModule
 			.createRequest<ApiPostPath>(HttpMethod.POST, RequestKey_PostPath)
 			.setJsonBody(bodyObject)
 			.setRelativeUrl("/v1/bug-reports/download-logs")
 			.setOnError(`Error getting new message from backend`)
 			.execute();
 	};
+
+	public downloadMultiLogs = (reports: ReportLogFile[]) => {
+		reports.forEach(report => this.downloadLogs(report.path))
+	}
 
 	public getLogs = () => this.logs
 }

@@ -23,9 +23,9 @@ import {
 } from "@nu-art/ts-common";
 
 import {
-	HttpModule,
 	ThunderDispatcher,
-	ToastModule
+	ToastModule,
+	XhrHttpModule
 } from "@nu-art/thunderstorm/frontend";
 import {
 	CommonBodyReq,
@@ -113,11 +113,11 @@ export class ExampleModule_Class
 	}
 
 	__onNotificationsReceived(notifications: DB_Notifications[] | undefined): void {
-		console.log('these are the notifications you actually care about:'+notifications)
+		console.log('these are the notifications you actually care about:' + notifications);
 	}
 
 	callCustomErrorApi() {
-		HttpModule
+		XhrHttpModule
 			.createRequest<ExampleApiCustomError>(HttpMethod.POST, RequestKey_CustomError)
 			.setRelativeUrl("/v1/sample/custom-error")
 			.setOnError((request, resError?: ErrorResponse<CustomError1 | CustomError2>) => {
@@ -152,7 +152,7 @@ export class ExampleModule_Class
 		this.logInfo("getting label from server");
 		const bodyObject: CommonBodyReq = {message: this.message || "No message"};
 
-		HttpModule
+		XhrHttpModule
 			.createRequest<ExampleApiPostType>(HttpMethod.POST, RequestKey_PostApi)
 			.setJsonBody(bodyObject)
 			.setRelativeUrl("/v1/sample/another-endpoint")
@@ -165,7 +165,7 @@ export class ExampleModule_Class
 	public getMessageFromServer2 = () => {
 		this.logInfo("getting label from server");
 
-		HttpModule
+		XhrHttpModule
 			.createRequest<ExampleApiGetType>(HttpMethod.GET, RequestKey_GetApi)
 			.setRelativeUrl(this.config.remoteUrl)
 			.setOnError(`Error getting new message from backend`)
@@ -177,7 +177,7 @@ export class ExampleModule_Class
 	testPush = () => {
 		this.logInfo("getting label from server");
 
-		HttpModule
+		XhrHttpModule
 			.createRequest<ExampleTestPush>(HttpMethod.GET, RequestKey_TestPush)
 			.setRelativeUrl('/v1/sample/push-test')
 			.setOnError(`Error testing push message pub sub`)
@@ -216,7 +216,7 @@ export class ExampleModule_Class
 
 	testBackendDispatcher = () => {
 		this.logInfo("passing to server");
-		HttpModule
+		XhrHttpModule
 			.createRequest<ExampleApiTest>(HttpMethod.GET, RequestKey_TestApi)
 			.setRelativeUrl("/v1/sample/dispatch-endpoint")
 			.setOnError(`Error getting a message from backend`)
@@ -232,7 +232,7 @@ export class ExampleModule_Class
 	};
 
 	fetchMax = () => {
-		HttpModule
+		XhrHttpModule
 			.createRequest<ExampleGetMax>(HttpMethod.GET, RequestKey_TestApi)
 			.setRelativeUrl("/v1/sample/get-max")
 			.setOnError(`Error getting max from backend`)

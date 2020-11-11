@@ -30,8 +30,8 @@ import {
 	MUSTNeverHappenException,
 	ServerErrorSeverity,
 	validate,
-	ValidatorTypeResolver,
-	ValidationException
+	ValidationException,
+	ValidatorTypeResolver
 } from "@nu-art/ts-common";
 
 import {Stream} from "stream";
@@ -102,7 +102,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 	}
 
 	addHeaderToLog(...headersToLog: string[]) {
-		this.headersToLog.push(...headersToLog)
+		this.headersToLog.push(...headersToLog);
 	}
 
 	setBodyValidator(bodyValidator: ValidatorTypeResolver<B>) {
@@ -142,7 +142,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 		this.logInfo(`-- Url: ${req.path}`);
 
 		if (this.headersToLog.length > 0) {
-			const headers: { [s: string]: string | undefined } = {}
+			const headers: { [s: string]: string | undefined } = {};
 			for (const headerName of this.headersToLog) {
 				headers[headerName] = req.header(headerName);
 			}
@@ -292,7 +292,7 @@ export class ServerApi_Redirect
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: any): Promise<void> {
-		response.redirect(this.responseCode, `${HttpServer.getBaseUrl()}${this.redirectUrl}`)
+		response.redirect(this.responseCode, `${HttpServer.getBaseUrl()}${this.redirectUrl}`);
 	}
 }
 

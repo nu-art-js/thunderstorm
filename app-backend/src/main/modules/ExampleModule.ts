@@ -21,8 +21,8 @@ import {
 } from "@nu-art/ts-common";
 import {TestDispatch} from "@app/app-shared";
 import {
-	FirestoreCollection,
-	FirebaseModule
+	FirebaseModule,
+	FirestoreCollection
 } from "@nu-art/firebase/backend";
 import {GetUserData} from "@nu-art/push-pub-sub/backend";
 
@@ -49,7 +49,7 @@ class ExampleModule_Class
 	}
 
 	async getDispatchNumber() {
-		await this.dispatcher.dispatchModuleAsync([])
+		await this.dispatcher.dispatchModuleAsync([]);
 		return this.config.dispatchNum;
 	}
 }
@@ -71,13 +71,16 @@ class DispatchModule_Class
 	};
 
 	getMax = async () => {
-		const n = await this.getMaxImpl()
-		return {n}
+		const n = await this.getMaxImpl();
+		return {n};
+	};
+
+	setMax = async (n: number) => {
+		await this.numbers.upsert({n});
 	};
 
 	private async getMaxImpl() {
 		const data = await this.numbers.getAll();
-		console.log(data);
 		return data.length > 0 ? Math.max(...data.map(d => d.n)) : 0;
 	}
 }

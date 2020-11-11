@@ -22,7 +22,8 @@
 import * as React from 'react';
 import {EntryComponentLoadingModule} from "./entry-component-loading-module";
 import {BaseComponent} from "../../core/BaseComponent";
-import {OnRequestListener} from "../http/HttpModule";
+// noinspection TypeScriptPreferShortImport
+import {OnRequestListener} from '../../../shared/request-types';
 
 export type LoaderProps = { progress: number };
 
@@ -44,7 +45,7 @@ export class ReactEntryComponentInjector
 
 	constructor(props: Props) {
 		super(props);
-		this.state = {loading: false, progress: 0}
+		this.state = {loading: false, progress: 0};
 	}
 
 	__onRequestCompleted = (key: string, success: boolean) => {
@@ -82,6 +83,6 @@ export class ReactEntryComponentInjector
 		if (Loader)
 			return <Loader progress={this.state.progress}/>;
 
-		return <div style={{width: "100%", height: "100%"}}>{this.state.progress} %</div>
+		return <div style={{width: "100%", height: "100%"}}>{this.state.progress} %</div>;
 	}
 }

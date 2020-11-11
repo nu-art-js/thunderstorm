@@ -24,7 +24,7 @@ import {
 import {
 	BaseComponent,
 	BrowserHistoryModule,
-	HttpModule,
+	XhrHttpModule,
 	StorageKey,
 	ThunderDispatcher,
 	ToastModule
@@ -107,8 +107,8 @@ export class AccountModule_Class
 
 
 	protected init(): void {
-		HttpModule.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
-		// HttpModule.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
+		XhrHttpModule.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
+		// XhrHttpModule.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
 		this.dispatchUI_loginChanged = new ThunderDispatcher<OnLoginStatusUpdated, "onLoginStatusUpdated">("onLoginStatusUpdated");
 		const email = BaseComponent.getQueryParameter(QueryParam_Email);
@@ -130,7 +130,7 @@ export class AccountModule_Class
 	}
 
 	public create(request: Request_CreateAccount) {
-		HttpModule
+		XhrHttpModule
 			.createRequest<AccountApi_Create>(HttpMethod.POST, RequestKey_AccountCreate)
 			.setRelativeUrl("/v1/account/create")
 			.setJsonBody(request)
@@ -142,7 +142,7 @@ export class AccountModule_Class
 	}
 
 	public login(request: Request_LoginAccount) {
-		HttpModule
+		XhrHttpModule
 			.createRequest<AccountApi_Login>(HttpMethod.POST, RequestKey_AccountLogin)
 			.setRelativeUrl("/v1/account/login")
 			.setJsonBody(request)
@@ -160,7 +160,7 @@ export class AccountModule_Class
 	}
 
 	public loginSAML(request: RequestParams_LoginSAML) {
-		HttpModule
+		XhrHttpModule
 			.createRequest<AccountApi_LoginSAML>(HttpMethod.GET, RequestKey_AccountLoginSAML)
 			.setRelativeUrl("/v1/account/login-saml")
 			.setUrlParams(request)
@@ -175,12 +175,12 @@ export class AccountModule_Class
 	}
 
 	private validateToken = () => {
-		HttpModule
+		XhrHttpModule
 			.createRequest<AccountApi_ValidateSession>(HttpMethod.GET, RequestKey_ValidateSession)
 			.setLabel(`Validate token...`)
 			.setRelativeUrl("/v1/account/validate")
 			.setOnError((request, resError) => {
-				if (request.xhr.status === 0) {
+				if (request.getStatus() === 0) {
 					ToastModule.toastError("Cannot reach Server... trying in 30 sec");
 					setTimeout(() => this.validateToken(), 30 * Second);
 					return;
@@ -198,13 +198,13 @@ export class AccountModule_Class
 	logout = (url?: string) => {
 		StorageKey_SessionId.delete();
 		if(url)
-			window.location.href = url;
+			return window.location.href = url;
 
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	};
 
 	listUsers = () => {
-		HttpModule
+		XhrHttpModule
 			.createRequest<AccountApi_ListAccounts>(HttpMethod.GET, RequestKey_ValidateSession)
 			.setLabel(`Fetching users...`)
 			.setRelativeUrl("/v1/account/query")

@@ -36,6 +36,7 @@ import {
 	merge,
 	Module,
 	PartialProperties,
+	ThisShouldNotHappenException,
 	validate,
 	validateRegexp,
 	ValidationException,
@@ -443,7 +444,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.collection.runInTransaction(processor);
 	}
 
-	async deleteUnique_Read(_id: string, transaction: FirestoreTransaction, request?: ExpressRequest) {
+	async deleteUnique_Read(_id: string, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		if (!_id)
 			throw new BadImplementationException(`No _id for deletion provided.`);
 
@@ -453,9 +454,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
 		const write = await this.deleteImpl_Read(transaction, ourQuery, request);
-		if (!write)
-			return;
 		return async () => {
+			if (!write)
+				return dbInstance;
+
 			// Here can do both read an write!
 			await this.assertDeletion(transaction, dbInstance, request);
 
@@ -473,8 +475,12 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	private async deleteImpl_Read(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest): Promise<(() => Promise<DBType>) | undefined> {
-		return transaction.deleteUnique_Read(this.collection, ourQuery);
+	private async deleteImpl_Read(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest): Promise<() => Promise<DBType>> {
+		const write = await transaction.deleteUnique_Read(this.collection, ourQuery);
+		if (!write)
+			throw new ThisShouldNotHappenException(`I just checked that I had an instance for query: ${__stringify(ourQuery)}`);
+
+		return write;
 	}
 
 	/**

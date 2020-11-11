@@ -31,12 +31,7 @@ import {
 	ModuleManager,
 	removeItemFromArray
 } from "@nu-art/ts-common";
-import {
-	HttpModule,
-	OnRequestListener,
-	RequestErrorHandler,
-	RequestSuccessHandler
-} from "../modules/http/HttpModule";
+import {XhrHttpModule} from "../modules/http/XhrHttpModule";
 import {ToastModule} from "../modules/toaster/ToasterModule";
 import {DialogModule} from "../modules/dialog/DialogModule";
 import {RoutingModule} from "../modules/routing/RoutingModule";
@@ -44,7 +39,12 @@ import {BrowserHistoryModule} from "../modules/HistoryModule";
 import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
 import {ThunderDispatcher} from "./thunder-dispatcher";
-import { LocaleModule } from "../modules/locale/LocaleModule";
+import {LocaleModule} from "../modules/locale/LocaleModule";
+import {
+	OnRequestListener,
+	RequestErrorHandler,
+	RequestSuccessHandler
+} from "../../shared/request-types";
 
 export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?) => {
 	const errorMessage = request.errorMessage || resError?.debugMessage;
@@ -56,7 +56,7 @@ export const ErrorHandler_Dispatch: RequestErrorHandler<any> = (request) => disp
 export const SuccessHandler_Dispatch: RequestSuccessHandler = (request) => dispatch_requestCompleted.dispatchUI([request.key, true, request.requestData]);
 
 const modules: Module[] = [
-	HttpModule,
+	XhrHttpModule,
 
 	ToastModule,
 	DialogModule,
@@ -93,8 +93,8 @@ export class Thunder
 
 		super.init();
 		// @ts-ignore
-		HttpModule.setErrorHandlers([ErrorHandler_Toast, ErrorHandler_Dispatch]);
-		HttpModule.setSuccessHandlers([SuccessHandler_Toast, SuccessHandler_Dispatch]);
+		XhrHttpModule.setErrorHandlers([ErrorHandler_Toast, ErrorHandler_Dispatch]);
+		XhrHttpModule.setSuccessHandlers([SuccessHandler_Toast, SuccessHandler_Dispatch]);
 
 		renderApp();
 		return this;
@@ -102,12 +102,12 @@ export class Thunder
 
 	protected addUIListener(listener: any): void {
 		this.logInfo(`Register UI listener: ${listener}`);
-		this.listeners.push(listener)
+		this.listeners.push(listener);
 	}
 
 	protected removeUIListener(listener: any): void {
 		this.logInfo(`Unregister UI listener: ${listener}`);
-		removeItemFromArray(this.listeners, listener)
+		removeItemFromArray(this.listeners, listener);
 	}
 
 	public setMainApp(mainApp: React.ElementType<WrapperProps>): Thunder {

@@ -17,22 +17,12 @@
  * limitations under the License.
  */
 import {
-	__stringify,
-	BadImplementationException,
-	generateHex,
-	Minute,
-	Module,
-	Queue
-} from "@nu-art/ts-common";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {
-	HttpModule,
-	HttpRequest,
-	ThunderDispatcher
+	ThunderDispatcher,
+	XhrHttpModule,
+	XhrHttpModule_Class
 } from "@nu-art/thunderstorm/frontend";
 
 import {
-	Api_GetUploadUrl,
 	BaseUploaderFile,
 	fileUploadedKey,
 	Push_FileUploaded,
@@ -43,138 +33,42 @@ import {
 	OnPushMessageReceived,
 	PushPubSubModule
 } from "@nu-art/push-pub-sub/frontend";
+import {
+	BaseUploaderModule_Class,
+	FileStatus,
+	OnFileStatusChanged
+} from "../../shared/modules/BaseUploaderModule";
 
-const RequestKey_UploadUrl = 'get-upload-url';
-const RequestKey_UploadFile = 'upload-file';
-
-export enum FileStatus {
-	ObtainingUrl   = "ObtainingUrl",
-	UploadingFile  = "UploadingFile",
-	// I can assume that in between I upload and I get
-	// the push I'm processing the file in the be
-	PostProcessing = "PostProcessing",
-	Completed      = "Completed",
-	Error          = "Error"
-}
-
-export type FileInfo = {
-	status: FileStatus
-	messageStatus?: string
-	progress?: number
-	request?: HttpRequest<any>
-	file: File
-};
-
-export interface OnFileStatusChanged {
-	__onFileStatusChanged: (id?: string) => void
-}
 
 export class UploaderModule_Class
-	extends Module<{}>
+	extends BaseUploaderModule_Class<XhrHttpModule_Class>
 	implements OnPushMessageReceived<Push_FileUploaded> {
-	private files: { [id: string]: FileInfo } = {};
-	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(3);
-	private readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged')
+
+	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 
 	constructor() {
-		super();
+		super(XhrHttpModule);
 	}
 
-	getFileInfo<K extends keyof FileInfo>(id: string, key: K): FileInfo[K] | undefined {
-		return this.files[id] && this.files[id][key]
-	}
-
-	getFullFileInfo(id: string): FileInfo | undefined {
-		return this.files[id]
-	}
-
-	private setFileInfo<K extends keyof FileInfo>(id: string, key: K, value: FileInfo[K]) {
-		if (!this.files[id])
-			throw new BadImplementationException(`Trying to set ${key} for non existent file with id: ${id}`);
-
-		this.files[id][key] = value;
-		this.dispatchFileStatusChange(id)
-	}
-
-	private dispatchFileStatusChange(id?: string) {
+	protected dispatchFileStatusChange(id?: string) {
 		this.dispatch_fileStatusChange.dispatchUI([id]);
-		this.dispatch_fileStatusChange.dispatchModule([id])
+		super.dispatchFileStatusChange(id);
 	}
 
-	upload(files: File[], key?: string): BaseUploaderFile[] {
-		const body: BaseUploaderFile[] = files.map(file => {
-			const requestBody: BaseUploaderFile = {
-				feId: generateHex(32),
+	upload(files: File[], key?: string): BaseUploaderFile[] | undefined {
+		return this.uploadImpl(files.map((file => {
+			return {
 				name: file.name,
-				mimeType: file.type
+				mimeType: file.type,
+				key,
+				file
 			};
-
-			if (key)
-				requestBody.key = key;
-
-			this.files[requestBody.feId] = {
-				file,
-				status: FileStatus.ObtainingUrl
-			};
-			return requestBody;
-		});
-
-		HttpModule
-			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
-			.setRelativeUrl("/v1/upload/get-url")
-			.setJsonBody(body)
-			.setOnError((request) => {
-				body.forEach(f => {
-					this.setFileInfo(f.feId, "messageStatus", __stringify(request.xhr.response));
-					this.setFileInfo(f.feId, "status", FileStatus.Error);
-				})
-			})
-			.execute(async (response: TempSecureUrl[]) => {
-				this.dispatchFileStatusChange();
-				await this.uploadFiles(response)
-			});
-
-		return body;
+		})));
 	}
 
-	private uploadFiles = async (response: TempSecureUrl[]) => {
-		// Subscribe
-		await PushPubSubModule.subscribeMulti(response.map(r => ({pushKey: fileUploadedKey, props: {feId: r.tempDoc.feId}})));
-
-		response.forEach(r => {
-			this.uploadQueue.addItem(async () => {
-				await this.uploadFile(r);
-				//TODO: Probably need to set a timer here in case we dont get a push back (contingency)
-			});
-		})
-	};
-
-	private uploadFile = async (response: TempSecureUrl) => {
-		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.UploadingFile);
-
-		const fileInfo = this.files[response.tempDoc.feId];
-		if (!fileInfo)
-			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
-
-		fileInfo.request = HttpModule
-			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
-			.setUrl(response.secureUrl)
-			.setOnError((request) => {
-				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
-				this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(request.xhr.response))
-			})
-			.setOnProgressListener((ev: ProgressEvent) => {
-				this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
-			})
-			.setTimeout(10 * Minute)
-			.setBody(fileInfo.file);
-
-		await fileInfo.request.executeSync();
-
-		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
-		this.setFileInfo(response.tempDoc.feId, "request", undefined);
-		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.PostProcessing);
-	};
+	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {
+		await PushPubSubModule.subscribeMulti(toSubscribe.map(r => ({pushKey: fileUploadedKey, props: {feId: r.tempDoc.feId}})));
+	}
 
 	__onMessageReceived(pushKey: string, props: { feId: string }, data: { message: string, result: string }): void {
 		this.logInfo('Message received from service worker', pushKey, props, data);
@@ -187,10 +81,10 @@ export class UploaderModule_Class
 				break;
 			case UploadResult.Failure:
 				this.setFileInfo(props.feId, "status", FileStatus.Error);
-				break
+				break;
 		}
 
-		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props}).catch()
+		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props}).catch();
 	}
 }
 
