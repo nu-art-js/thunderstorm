@@ -162,7 +162,7 @@ export class PushPubSubModule_Class
 
 				const notification: DB_Notifications = {
 					_id: generateHex(16),
-					userId: session.userId,
+					userId: userId || session.userId,
 					timestamp: currentTimeMillies(),
 					read: false,
 					pushKey: key
