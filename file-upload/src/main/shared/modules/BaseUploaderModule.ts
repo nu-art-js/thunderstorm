@@ -26,17 +26,11 @@ import {
 	Queue
 } from "@nu-art/ts-common";
 import {
-	ApiTypeBinder,
+	BaseHttpModule_Class,
 	BaseHttpRequest,
-	DeriveBodyType,
-	DeriveQueryType,
-	DeriveResponseType,
-	DeriveUrlType,
 	HttpMethod,
-	QueryParams,
 	TS_Progress
 } from "@nu-art/thunderstorm";
-import {DeriveRealBinder} from "@nu-art/thunderstorm/frontend";
 
 import {
 	Api_GetUploadUrl,
@@ -81,27 +75,17 @@ export type FilesToUpload = Request_Uploader & {
 	file: any
 }
 
-export type Type_CreateRequest = <Binder extends ApiTypeBinder<U, R, B, P> = ApiTypeBinder<void, void, void, {}>,
-	U extends string = DeriveUrlType<Binder>,
-	R = DeriveResponseType<Binder>,
-	B = DeriveBodyType<Binder>,
-	P extends QueryParams = DeriveQueryType<Binder>>(
-	method: HttpMethod,
-	requestKey: string,
-	requestData?: string
-) => BaseHttpRequest<DeriveRealBinder<Binder>>;
-
-export abstract class BaseUploaderModule_Class
-	extends Module<{}> {
+export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class>
+	extends Module {
 	protected files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(3);
 	protected readonly dispatch_fileStatusChange = new Dispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
+	private httpModule: HttpModule;
 
-	protected abstract createRequest<Binder extends ApiTypeBinder<U, R, B, P> = ApiTypeBinder<void, void, void, {}>,
-		U extends string = DeriveUrlType<Binder>,
-		R = DeriveResponseType<Binder>,
-		B = DeriveBodyType<Binder>,
-		P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BaseHttpRequest<DeriveRealBinder<Binder>>
+	protected constructor(httpModule: HttpModule) {
+		super();
+		this.httpModule = httpModule;
+	}
 
 	protected async getSecuredUrls(
 		body: BaseUploaderFile[],
@@ -110,6 +94,7 @@ export abstract class BaseUploaderModule_Class
 		let response: TempSecureUrl[];
 		try {
 			response = await this
+				.httpModule
 				.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
 				.setRelativeUrl('/v1/upload/get-url')
 				.setJsonBody(body)
@@ -203,11 +188,12 @@ export abstract class BaseUploaderModule_Class
 			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
 
 		fileInfo.request = this
+			.httpModule
 			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
 			.setUrl(response.secureUrl)
 			.setOnError((request) => {
 				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
-				this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(request.getResponse()));
+				this.setFileInfo(response.tempDoc.feId, "messageStatus", request.asText());
 			})
 			.setTimeout(10 * Minute)
 			.setBody(fileInfo.file)

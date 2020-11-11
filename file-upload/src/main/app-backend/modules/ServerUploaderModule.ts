@@ -23,35 +23,18 @@ import {
 } from "../../shared/types";
 import {BaseUploaderModule_Class} from "../../shared/modules/BaseUploaderModule";
 import {
-	ApiTypeBinder,
-	DeriveBodyType,
-	DeriveQueryType,
-	DeriveResponseType,
-	DeriveUrlType,
-	HttpMethod,
-	QueryParams
-} from "@nu-art/thunderstorm";
-import {
-	BeHttpModule,
-	BeHttpRequest
-} from "@nu-art/thunderstorm/app-backend/modules/http/BeHttpModule";
-import {DeriveRealBinder} from "@nu-art/thunderstorm/frontend";
-
+	AxiosHttpModule,
+	AxiosHttpModule_Class
+} from "@nu-art/thunderstorm/app-backend/modules/http/AxiosHttpModule";
 
 export class ServerUploaderModule_Class
-	extends BaseUploaderModule_Class
-	// implements OnPushMessageReceived<Push_FileUploaded>
-{
+	extends BaseUploaderModule_Class<AxiosHttpModule_Class> {
 
-	protected createRequest<Binder extends ApiTypeBinder<U, R, B, P>,
-		U extends string = DeriveUrlType<Binder>,
-		R = DeriveResponseType<Binder>,
-		B = DeriveBodyType<Binder>,
-		P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BeHttpRequest<DeriveRealBinder<Binder>> {
-		return BeHttpModule.createRequest<Binder>(method, key, data);
+	constructor() {
+		super(AxiosHttpModule);
 	}
 
-	upload(file: Buffer, name: string, mimeType: string, key?: string): BaseUploaderFile[]{
+	upload(file: Buffer, name: string, mimeType: string, key?: string): BaseUploaderFile[] {
 		return this.uploadImpl([{name, mimeType, key, file}]);
 	}
 
@@ -59,24 +42,6 @@ export class ServerUploaderModule_Class
 		// Not sure now
 		// We said timeout
 	}
-
-	// Get notification it uploaded somehow or ping server
-	// __onMessageReceived(pushKey: string, props: { feId: string }, data: { message: string, result: string }): void {
-	// 	this.logInfo('Message received from service worker', pushKey, props, data);
-	// 	if (pushKey !== fileUploadedKey)
-	// 		return;
-	//
-	// 	switch (data.result) {
-	// 		case UploadResult.Success:
-	// 			this.setFileInfo(props.feId, "status", FileStatus.Completed);
-	// 			break;
-	// 		case UploadResult.Failure:
-	// 			this.setFileInfo(props.feId, "status", FileStatus.Error);
-	// 			break;
-	// 	}
-	//
-	// 	PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props}).catch();
-	// }
 }
 
 export const ServerUploaderModule = new ServerUploaderModule_Class();

@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 import {
-	DeriveRealBinder,
-	HttpModule,
-	ThunderDispatcher
+	ThunderDispatcher,
+	XhrHttpModule,
+	XhrHttpModule_Class
 } from "@nu-art/thunderstorm/frontend";
 
 import {
@@ -38,30 +38,16 @@ import {
 	FileStatus,
 	OnFileStatusChanged
 } from "../../shared/modules/BaseUploaderModule";
-import {
-	ApiTypeBinder,
-	BaseHttpRequest,
-	DeriveBodyType,
-	DeriveQueryType,
-	DeriveResponseType,
-	DeriveUrlType,
-	HttpMethod,
-	QueryParams
-} from "@nu-art/thunderstorm";
 
 
 export class UploaderModule_Class
-	extends BaseUploaderModule_Class
+	extends BaseUploaderModule_Class<XhrHttpModule_Class>
 	implements OnPushMessageReceived<Push_FileUploaded> {
 
 	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 
-	protected createRequest<Binder extends ApiTypeBinder<U, R, B, P>,
-		U extends string = DeriveUrlType<Binder>,
-		R = DeriveResponseType<Binder>,
-		B = DeriveBodyType<Binder>,
-		P extends QueryParams = DeriveQueryType<Binder>>(method: HttpMethod, key: string, data?: string): BaseHttpRequest<DeriveRealBinder<Binder>> {
-		return HttpModule.createRequest(method, key, data);
+	constructor() {
+		super(XhrHttpModule);
 	}
 
 	protected dispatchFileStatusChange(id?: string) {

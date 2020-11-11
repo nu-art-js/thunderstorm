@@ -21,21 +21,14 @@
 // noinspection TypeScriptPreferShortImport
 import {
 	ApiTypeBinder,
-	DeriveBodyType,
 	DeriveErrorType,
-	DeriveQueryType,
 	DeriveResponseType,
-	DeriveUrlType,
 	ErrorResponse,
-	HttpMethod,
-	QueryParams
+	HttpMethod
 } from "../../../shared/types";
 
 import {
-	addItemToArray,
 	BadImplementationException,
-	Module,
-	removeItemFromArray,
 	StringMap,
 } from "@nu-art/ts-common";
 import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
@@ -45,27 +38,13 @@ import axios, {
 	CancelTokenSource,
 	Method
 } from 'axios';
-import {
-	RequestErrorHandler,
-	RequestSuccessHandler,
-	ResponseHandler
-} from "../_imports";
 import {BaseHttpModule_Class} from "../../../shared/BaseHttpModule";
 
-type HttpConfig = {
-	origin?: string
-	timeout?: number
-	compress?: boolean
-}
+export class AxiosHttpModule_Class
+	extends BaseHttpModule_Class {
 
-
-
-export class XhrHttpModule_Class extends BaseHttpModule_Class {
-
-	protected createRequest<
-		Binder extends ApiTypeBinder<any,any,any,any>
-		>(method: HttpMethod, key: string, data: string | undefined): XhrHttpRequest<DeriveRealBinder<Binder>> {
-		return new XhrHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
+	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): AxiosHttpRequest<DeriveRealBinder<Binder>> {
+		return new AxiosHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
 			.setOrigin(this.origin)
 			.setMethod(method)
 			.setTimeout(this.timeout)
@@ -79,9 +58,9 @@ export class XhrHttpModule_Class extends BaseHttpModule_Class {
 
 export type DeriveRealBinder<Binder> = Binder extends ApiTypeBinder<infer U, infer R, infer B, infer P> ? ApiTypeBinder<U, R, B, P> : void;
 
-export const BeHttpModule = new BeHttpModule_Class();
+export const AxiosHttpModule = new AxiosHttpModule_Class();
 
-export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
+class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	extends BaseHttpRequest<Binder> {
 	private response?: AxiosResponse<DeriveResponseType<DeriveRealBinder<Binder>>>;
 	private cancelSignal: CancelTokenSource;
@@ -110,7 +89,7 @@ export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		return this.getResponse();
 	}
 
-	abortImpl(): void {
+	protected abortImpl(): void {
 		this.cancelSignal.cancel(`Request with key: '${this.key}' aborted by the user.`);
 	}
 
@@ -185,9 +164,8 @@ export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			if (body)
 				options.data = body;
 
-			let response: AxiosResponse<DeriveResponseType<DeriveRealBinder<Binder>>>;
 			try {
-				response = await axios.request(options);
+				this.response = await axios.request(options);
 			} catch (e) {
 				// TODO handle this here
 				// 	if (xhr.readyState === 4 && xhr.status === 0) {
@@ -201,10 +179,10 @@ export class BeHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 					console.log('Api cancelled: ', e.message);
 				}
 
-				response = e.response;
+				this.response = e.response;
+			} finally {
+				resolve();
 			}
-			this.response = response;
-			resolve();
 		});
 	}
 }

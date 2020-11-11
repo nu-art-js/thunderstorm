@@ -18,7 +18,7 @@
  */
 
 export const config = {
-	HttpModule: {
+	XhrHttpModule: {
 		origin: "https://us-central1-local-ts-testing-alan.cloudfunctions.net/api",
 		timeout: 30000,
 		compress: false

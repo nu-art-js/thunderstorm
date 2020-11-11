@@ -37,9 +37,9 @@ import {BaseHttpModule_Class, DeriveRealBinder} from "../../../shared/BaseHttpMo
 
 export class XhrHttpModule_Class extends BaseHttpModule_Class {
 
-	protected createRequest<
+	createRequest<
 		Binder extends ApiTypeBinder<any,any,any,any>
-		>(method: HttpMethod, key: string, data: string | undefined): XhrHttpRequest<DeriveRealBinder<Binder>> {
+		>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<DeriveRealBinder<Binder>> {
 		return new XhrHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
 			.setOrigin(this.origin)
 			.setMethod(method)

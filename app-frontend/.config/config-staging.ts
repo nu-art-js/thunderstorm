@@ -18,7 +18,7 @@
  */
 
 export const config = {
-	HttpModule: {
+	XhrHttpModule: {
 		origin: "https://us-central1-thunderstorm-staging.cloudfunctions.net/api",
 		timeout: 10000
 	},

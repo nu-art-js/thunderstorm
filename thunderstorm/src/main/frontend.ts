@@ -22,7 +22,7 @@
 export * from "./app-frontend/core/Thunder";
 export * from "./app-frontend/core/thunder-dispatcher";
 
-export * from "./app-frontend/modules/http/HttpModule"
+export * from "./app-frontend/modules/http/XhrHttpModule"
 
 export * from "./app-frontend/modules/menu/MenuModule";
 export * from "./app-frontend/modules/dialog/DialogModule";
@@ -83,5 +83,3 @@ export * from "./app-frontend/tools/KeyboardListener";
 export * from "./app-frontend/tools/Stylable";
 
 export * from "./app-frontend/utils/tools";
-
-

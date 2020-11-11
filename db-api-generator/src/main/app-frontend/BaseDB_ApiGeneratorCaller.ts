@@ -19,6 +19,7 @@
 
 import {
 	ApiTypeBinder,
+	BaseHttpRequest,
 	DeriveBodyType,
 	DeriveQueryType,
 	DeriveResponseType,
@@ -37,9 +38,8 @@ import {
 } from "../index";
 import {DB_Object} from "@nu-art/firebase";
 import {
-	HttpModule,
-	HttpRequest,
-	ToastModule
+	ToastModule,
+	XhrHttpModule
 } from "@nu-art/thunderstorm/frontend";
 
 import {
@@ -55,7 +55,7 @@ export type BaseApiConfig = {
 export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType extends PartialProperties<DBType, "_id"> = PartialProperties<DBType, "_id">>
 	extends Module<BaseApiConfig> {
 
-	private readonly errorHandler: RequestErrorHandler<any, HttpRequest<any>> = (request: HttpRequest<any>, resError?: ErrorResponse<any>) => {
+	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
 		if (this.onError(request, resError))
 			return;
 		return ToastModule.toastError(request.getStatus() === 403 ? "You are not allowed to perform this action. Please check your permissions." : "Failed to perform action.");
@@ -66,27 +66,31 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		this.setDefaultConfig(config);
 	}
 
-	private createRequest<Binder extends ApiTypeBinder<U, R, B, P, any> = ApiTypeBinder<void, void, void, {}, any>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams = DeriveQueryType<Binder>>(apiDef: GenericApiDef) {
-		return HttpModule
+	private createRequest<Binder extends ApiTypeBinder<U, R, B, P, any> = ApiTypeBinder<void, void, void, {}, any>,
+		U extends string = DeriveUrlType<Binder>,
+		R = DeriveResponseType<Binder>,
+		B = DeriveBodyType<Binder>,
+		P extends QueryParams = DeriveQueryType<Binder>>(apiDef: GenericApiDef) {
+		return XhrHttpModule
 			.createRequest<ApiTypeBinder<string, R, B, P, any>>(apiDef.method, `request-api--${this.config.key}-${apiDef.key}`)
 			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? "/" + apiDef.suffix : ""}`)
 			.setOnError(this.errorHandler);
 	}
 
-	protected onError(request: HttpRequest<any>, resError?: ErrorResponse<any>): boolean {
+	protected onError(request: BaseHttpRequest<any>, resError?: ErrorResponse<any>): boolean {
 		return false;
 	}
 
-	create = (toCreate: UType) => {
+	create(toCreate: UType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
 		return this
 			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Create)
 			.setJsonBody(toCreate)
 			.execute(async (response: DBType) => {
 				return this.onEntryCreated(response);
 			});
-	};
+	}
 
-	update = (toUpdate: DBType) => {
+	update = (toUpdate: DBType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
 		return this
 			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Update)
 			.setJsonBody(toUpdate)
@@ -95,7 +99,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			});
 	};
 
-	query = (query?: Partial<DBType>) => {
+	query = (query?: Partial<DBType>): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
 		let _query = query;
 		if (!_query)
 			_query = {} as Partial<DBType>;
@@ -108,7 +112,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			});
 	};
 
-	unique = (_id: string) => {
+	unique = (_id: string): BaseHttpRequest<ApiBinder_DBUniuqe<DBType>> => {
 		return this
 			.createRequest<ApiBinder_DBUniuqe<DBType>>(DefaultApiDefs.Unique)
 			.setUrlParams({_id})
@@ -117,7 +121,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			});
 	};
 
-	delete = (_id: string) => {
+	delete = (_id: string): BaseHttpRequest<ApiBinder_DBDelete<DBType>> => {
 		return this
 			.createRequest<ApiBinder_DBDelete<DBType>>(DefaultApiDefs.Delete)
 			.setUrlParams({_id})
