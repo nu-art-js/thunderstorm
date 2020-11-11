@@ -26,7 +26,7 @@ import {
 } from "@nu-art/ts-common";
 
 import {
-	HttpModule,
+	XhrHttpModule,
 	ThunderDispatcher,
 	ToastModule
 } from "@nu-art/thunderstorm/frontend";
@@ -218,7 +218,7 @@ export class PushPubSubModule_Class
 
 		return new Promise(resolve => {
 			this.debounce(() => {
-				HttpModule
+				XhrHttpModule
 					.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
 					.setRelativeUrl("/v1/push/register")
 					.setJsonBody(body)

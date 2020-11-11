@@ -18,7 +18,7 @@
  */
 
 export const config = {
-	HttpModule: {
+	XhrHttpModule: {
 		origin: "http://localhost:5000/local-ts-testing-alan/us-central1/api",
 		timeout: 30000,
 		compress: false

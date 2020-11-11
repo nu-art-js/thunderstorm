@@ -4,7 +4,7 @@ import {
 	StringMap
 } from "@nu-art/ts-common";
 import {ThunderDispatcher} from "@nu-art/thunderstorm/app-frontend/core/thunder-dispatcher";
-import {HttpModule} from "@nu-art/thunderstorm/frontend";
+import {XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	PermissionsApi_UserUrlsPermissions,
@@ -52,7 +52,7 @@ export class PermissionsModuleFE_Class
 			throw new ImplementationMissingException("need to set up a project id config");
 
 		this.debounce(() => {
-			HttpModule
+			XhrHttpModule
 				.createRequest<PermissionsApi_UserUrlsPermissions>(HttpMethod.POST, 'user-urls-permissions')
 				.setRelativeUrl(`/v1/permissions/user-urls-permissions`)
 				.setOnError(`Failed to get user urls permissions`)

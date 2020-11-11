@@ -19,7 +19,7 @@
 
 import {Module} from "@nu-art/ts-common";
 import {
-	HttpModule,
+	XhrHttpModule,
 	ToastBuilder,
 	ToastModule
 } from "@nu-art/thunderstorm/frontend";
@@ -78,7 +78,7 @@ export class LiveDocsModule_Class
 		else
 			ToastModule.toastInfo("Loading...");
 
-		HttpModule
+		XhrHttpModule
 			.createRequest<ApiGetLiveDoc>(HttpMethod.GET, RequestKey_FetchDoc, docKey)
 			.setUrlParams({key: docKey})
 			.setRelativeUrl("/v1/live-docs/get")
@@ -97,7 +97,7 @@ export class LiveDocsModule_Class
 	update(liveDoc: Request_UpdateDocument) {
 		const docKey = liveDoc.key;
 
-		HttpModule
+		XhrHttpModule
 			.createRequest<ApiUpdateLiveDocs>(HttpMethod.POST, RequestKey_UpdateDoc, docKey)
 			.setJsonBody(liveDoc)
 			.setRelativeUrl("/v1/live-docs/update")
@@ -107,7 +107,7 @@ export class LiveDocsModule_Class
 	}
 
 	changeHistory(docKey: string, change: "undo" | "redo") {
-		HttpModule
+		XhrHttpModule
 			.createRequest<ApiHistoryLiveDocs>(HttpMethod.POST, RequestKey_UpdateDoc, docKey)
 			.setJsonBody({key: docKey, change: change})
 			.setRelativeUrl("/v1/live-docs/change-history")

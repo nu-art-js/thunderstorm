@@ -26,10 +26,10 @@ import {
 
 import {Module} from "@nu-art/ts-common";
 // noinspection TypeScriptPreferShortImport
-import {XhrHttpModule} from "../http/HttpModule";
+import {XhrHttpModule} from "../http/XhrHttpModule";
 import {BrowserHistoryModule} from "../HistoryModule";
 
-type ScriptLoaderBinder = ApiWithQuery<string, string, {}, any>
+type ScriptLoaderBinder = ApiWithQuery<string, string>
 
 export class PageLoadingModule_Class
 	extends Module<{}> {

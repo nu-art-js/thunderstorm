@@ -31,7 +31,7 @@ import {
 	ModuleManager,
 	removeItemFromArray
 } from "@nu-art/ts-common";
-import {XhrHttpModule} from "../modules/http/HttpModule";
+import {XhrHttpModule} from "../modules/http/XhrHttpModule";
 import {ToastModule} from "../modules/toaster/ToasterModule";
 import {DialogModule} from "../modules/dialog/DialogModule";
 import {RoutingModule} from "../modules/routing/RoutingModule";

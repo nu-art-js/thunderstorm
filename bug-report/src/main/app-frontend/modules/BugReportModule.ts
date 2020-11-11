@@ -24,7 +24,7 @@ import {
 	LogLevelOrdinal,
 	Module
 } from "@nu-art/ts-common";
-import {HttpModule} from "@nu-art/thunderstorm/frontend";
+import {XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	ApiBugReport,
@@ -61,7 +61,7 @@ export class BugReportModule_Class
 			createIssue: withJira
 		};
 
-		HttpModule
+		XhrHttpModule
 			.createRequest<ApiBugReport>(HttpMethod.POST, RequestKey_BugReportApi)
 			.setJsonBody(body)
 			.setRelativeUrl("/v1/bug-reports/report")
