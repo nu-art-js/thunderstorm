@@ -23,7 +23,7 @@ export type Response_PushRegister = DB_Notifications[]
 
 export type DB_PushSession = FirebaseToken & {
 	timestamp: number
-	userId?: string
+	userId: string
 }
 
 export type DB_Notifications = BaseSubscriptionData & {

@@ -21,9 +21,9 @@ import {
 	__stringify,
 	compare,
 	currentTimeMillies,
-	Dispatcher,
 	generateHex,
 	Hour,
+	ImplementationMissingException,
 	Module,
 	Subset
 } from "@nu-art/ts-common";
@@ -48,7 +48,10 @@ import {
 	SubscribeProps,
 	SubscriptionData
 } from "../../index";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {
+	dispatch_queryRequestInfo,
+	ExpressRequest
+} from "@nu-art/thunderstorm/backend";
 
 type Config = {
 	delta_time?: number
@@ -57,13 +60,6 @@ type Config = {
 type TempMessages = {
 	[token: string]: SubscriptionData[]
 };
-
-//TODO make more structured
-export interface GetUserData {
-	__getUserData(request: ExpressRequest): Promise<{ key: string, data: any }>
-}
-
-const dispatch_getUser = new Dispatcher<GetUserData, '__getUserData'>('__getUserData');
 
 export class PushPubSubModule_Class
 	extends Module<Config> {
@@ -84,16 +80,18 @@ export class PushPubSubModule_Class
 	}
 
 	async register(body: Request_PushRegister, request: ExpressRequest): Promise<DB_Notifications[]> {
-		const resp = await dispatch_getUser.dispatchModuleAsync([request]);
-		console.log('this is the dispatcher response: ' + resp);
-		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
-		console.log(user);
+		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync([request]);
+		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data._id || resp.find(e => e.key === 'RemoteProxy')?.data;
+		if (!userId)
+			throw new ImplementationMissingException('Missing user from accounts Module');
+
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
-			timestamp: currentTimeMillies()
+			timestamp: currentTimeMillies(),
+			userId
 		};
-		if (user)
-			session.userId = user.data._id;
+
+		await this.pushSessions.upsert(session);
 
 		const subscriptions: DB_PushKeys[] = body.subscriptions.map((s): DB_PushKeys => {
 			const sub: DB_PushKeys = {
@@ -106,20 +104,16 @@ export class PushPubSubModule_Class
 			return sub;
 		});
 
-		let notifications: DB_Notifications[] = [];
-		await this.pushSessions.runInTransaction(async transaction => {
-			if (user)
-				notifications = await transaction.query(this.notifications, {where: {userId: user.data._id}});
+		return this.pushSessions.runInTransaction(async transaction => {
+			const notifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {userId}});
 
 			const writePush = await transaction.upsert_Read(this.pushSessions, session);
 
 			const write = await transaction.delete_Read(this.pushKeys, {where: {firebaseToken: body.firebaseToken}});
 			await transaction.insertAll(this.pushKeys, subscriptions);
 			await Promise.all([write(), writePush()]);
+			return notifications
 		});
-
-		console.log('notifications: ' + notifications);
-		return notifications;
 	}
 
 	async pushToKey<M extends MessageType<any, any, any> = never,
@@ -159,7 +153,6 @@ export class PushPubSubModule_Class
 			const notifications = sessions.reduce((carry: DB_Notifications[], session) => {
 				if (!session.userId)
 					return carry;
-
 				const notification: DB_Notifications = {
 					_id: generateHex(16),
 					userId: userId || session.userId,
