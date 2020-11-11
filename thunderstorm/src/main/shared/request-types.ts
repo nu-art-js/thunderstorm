@@ -19,9 +19,27 @@
  * limitations under the License.
  */
 
-export * from "./shared/types";
-export * from "./shared/request-types";
-export * from "./shared/force-upgrade";
-export * from "./shared/consts";
-export * from "./shared/BaseHttpRequest";
-export * from "./shared/BaseHttpModule";
+import {ErrorResponse} from "./types";
+import {BaseHttpRequest} from "./BaseHttpRequest";
+
+export class HttpException
+	extends Error {
+	constructor(responseCode: number, url: string) {
+		super(`${responseCode} - ${url}`);
+	}
+}
+
+export type TS_Progress = {
+	readonly lengthComputable: boolean;
+	readonly loaded: number;
+	readonly target: any;
+	readonly total: number;
+}
+
+export interface OnRequestListener {
+	__onRequestCompleted: (key: string, success: boolean, requestData?: string) => void;
+}
+
+export type RequestErrorHandler<E extends void | object> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<E>) => void;
+export type RequestSuccessHandler = (request: BaseHttpRequest<any>) => void;
+export type ResponseHandler = (request: BaseHttpRequest<any>) => boolean;

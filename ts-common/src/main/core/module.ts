@@ -52,12 +52,12 @@ export abstract class Module<Config = any>
 		this.name = this.name.replace("_Class", "");
 	}
 
-	debounce(handler: TimerHandler, key: string, ms = 0) {
+	public debounce(handler: TimerHandler, key: string, ms = 0) {
 		_clearTimeout(this.timeoutMap[key]);
 		this.timeoutMap[key] = _setTimeout(handler, ms);
 	}
 
-	throttle(handler: TimerHandler, key: string, ms = 0) {
+	public throttle(handler: TimerHandler, key: string, ms = 0) {
 		if (this.timeoutMap[key])
 			return;
 		this.timeoutMap[key] = _setTimeout(() => {

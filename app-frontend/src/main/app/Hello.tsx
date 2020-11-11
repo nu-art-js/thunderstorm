@@ -24,11 +24,11 @@ import {
 } from "@modules/ExampleModule";
 import {
 	BaseComponent,
-	OnRequestListener,
 	ForceUpgrade
 } from "@nu-art/thunderstorm/frontend";
 import {LiveDoc} from "@nu-art/live-docs/frontend";
-import {AdminBR} from "@nu-art/bug-report/frontend"
+import {AdminBR} from "@nu-art/bug-report/frontend";
+import {OnRequestListener} from "@nu-art/thunderstorm";
 
 export class Hello
 	extends BaseComponent<{}, { label: string }>

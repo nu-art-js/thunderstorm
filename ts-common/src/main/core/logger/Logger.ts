@@ -37,10 +37,7 @@ export class Logger {
 	protected minLevel = LogLevel.Verbose;
 
 	public constructor(tag?: string) {
-		if (!tag)
-			this.tag = this.constructor["name"];
-		else
-			this.tag = tag;
+		this.tag = tag ?? this.constructor["name"];
 
 		this._DEBUG_FLAG = DebugFlags.createFlag(this.tag);
 		this._DEBUG_FLAG.enable(Logger.defaultFlagState);
