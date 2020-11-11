@@ -81,6 +81,7 @@ export class PushPubSubModule_Class
 
 	async register(body: Request_PushRegister, request: ExpressRequest): Promise<DB_Notifications[]> {
 		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync([request]);
+		console.log('response from dispatcher',resp);
 		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data._id || resp.find(e => e.key === 'RemoteProxy')?.data;
 		if (!userId)
 			throw new ImplementationMissingException('Missing user from accounts Module');

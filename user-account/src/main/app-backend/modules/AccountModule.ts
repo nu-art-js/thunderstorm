@@ -79,7 +79,7 @@ export class AccountsModule_Class
 	extends Module<Config>
 	implements QueryRequestInfo {
 
-	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; }> {
+	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; } > {
 		let data: UI_Account | undefined;
 		try {
 			data = await this.validateSession(request);
