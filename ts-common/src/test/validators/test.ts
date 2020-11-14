@@ -33,7 +33,7 @@ export type ValidatorTestInput<T> = {
 
 export type ValidatorTest<T> = TestModel<ValidatorTestInput<T>, "pass" | "fail">;
 
-export const validatorTestSuits = [
+export const testSuits_validator = [
 	testSuit_dynamicPropsObjectValidator,
 	testSuit_simpleObjectValidator,
 	testSuit_nestedObjectValidator,
