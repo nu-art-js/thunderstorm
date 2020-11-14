@@ -18,15 +18,15 @@
 
 export function removeItemFromArray<T>(array: T[], item: T) {
 	const index = array.indexOf(item);
-	return removeFromArrayImpl(array,index);
+	return removeFromArrayImpl(array, index);
 }
 
 export function removeFromArray<T>(array: T[], item: (_item: T) => boolean) {
 	const index = array.findIndex(item);
-	return removeFromArrayImpl(array,index);
+	return removeFromArrayImpl(array, index);
 }
 
-function removeFromArrayImpl<T>(array: T[], index: number){
+function removeFromArrayImpl<T>(array: T[], index: number) {
 	if (index > -1)
 		array.splice(index, 1);
 
@@ -121,3 +121,15 @@ export async function batchActionParallel<T extends any = any, R extends any = a
 
 	return toRet;
 }
+
+export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
+	for (let i = 0, length = arr.length; i < length; i++) {
+		const value = arr[i];
+		if (Array.isArray(value)) {
+			flatArray(value, result);
+		} else {
+			result.push(value);
+		}
+	}
+	return result;
+};

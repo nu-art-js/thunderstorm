@@ -22,9 +22,11 @@ import {
 	TestSuit
 } from "../main/testing/test-model";
 import {testSuit_versionComparison} from "./version-tools/versions";
-import {validatorTestSuits} from "./validators/test";
+import {testSuits_validator} from "./validators/test";
 import {testSuit_compare} from "./compare/compare";
 import {testSuit_newSecret} from "./newSecret/newSecret";
+import {testSuit_filter} from "./object/recursive-find-all-true";
+import { testSuit_cliModule } from "./cliModule/test-cliModule";
 
 // require("./logger/test-logger");
 // require("./merge/test-merge");
@@ -32,12 +34,14 @@ import {testSuit_newSecret} from "./newSecret/newSecret";
 // require("./clone/test-clone");
 
 const testSuits: TestSuit<any, any, any>[] = [
-	testSuit_versionComparison,
-	testSuit_compare,
-	testSuit_newSecret
+	testSuit_cliModule,
+	// testSuit_versionComparison,
+	// testSuit_compare,
+	// testSuit_newSecret,
+	// testSuit_filter,
+	// ...testSuits_validator,
 ];
 
-testSuits.push(...validatorTestSuits);
 
 runTestSuits(testSuits)
 	.then(() => assertNoTestErrors())

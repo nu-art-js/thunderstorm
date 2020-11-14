@@ -31,7 +31,7 @@ type FilterKeys = TypedMap<boolean | TypedMap<boolean | TypedMap<boolean>>>
 
 type VersionTest = TestModel<FilterKeys, boolean>;
 
-export const test_filter: TestSuit<VersionTest> = {
+export const testSuit_filter: TestSuit<VersionTest> = {
 	key: 'filters',
 	label: "filter",
 	processor: async (model: FilterKeys) => {

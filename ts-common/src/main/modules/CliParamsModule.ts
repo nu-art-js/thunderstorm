@@ -1,110 +1,84 @@
-import { Module } from "../core/module";
-import { TypedMap, ObjectTS } from "../utils/types";
-import { BadImplementationException, ImplementationMissingException } from "../core/exceptions";
+import {Module} from "../core/module";
+import {
+	TypedMap,
+	ObjectTS
+} from "../utils/types";
+import {
+	BadImplementationException,
+	ImplementationMissingException
+} from "../core/exceptions";
+import {
+	filterInstances,
+	flatArray
+} from "..";
 
 
 export type CliParam<K, T extends string | string[] = string> = {
 	keys: string[];
 	name: string;
 	keyName: K;
-	mandatory?: boolean;
+	optional?: true
 	options?: string[];
 	defaultValue?: string;
+	isArray?: T extends string[] ? true : never
 	process?: (value: T) => T;
 }
 
-type Params = CliParam<string> | CliParam<string, string[]>;
+type Param = CliParam<string> | CliParam<string, string[]>;
 type Config = {
-	params: Params[];
+	params: Param[];
 }
 
 class CliParamsModule_Class
 	extends Module<Config> {
 
-	private paramsValue: TypedMap<string | string[]> = {};
+	private paramsValue: TypedMap<string | string[] | undefined> = {};
 
 	init() {
-		this.extractParams(this.config.params);
-	}
-
-	getParam<T extends string | string[]>(param: CliParam<string, T>) {
-		if (!this.config.params.find(_param => _param.keyName === param.keyName))
-			throw new BadImplementationException("Requested not existing param");
-
-		const value = this.paramsValue[param.keyName] as T;
-		return param.process ? param.process(value) : value;
-	}
-
-	printHowTo = (argsDetails: Params[], foundArgs: ObjectTS) => {
-		const _foundArgs = argsDetails.filter((arg) => {
-			return foundArgs[arg.keyName];
-		});
-
-		if (_foundArgs.length) {
-			this.logInfoBold(`        Found Args:`);
-			_foundArgs.forEach((arg) => {
-				const foundArg = foundArgs[arg.keyName];
-				if (foundArg)
-					this.logInfo(`          ${arg.keys[0]}=${foundArg}`);
-			});
-		}
-
-		const mandatoryArgs = argsDetails.filter((arg) => {
-			return arg.mandatory;
-		});
-
-		if (_foundArgs.length === mandatoryArgs.length) {
-			argsDetails
-				.filter((arg) => !arg.mandatory && foundArgs[arg.keyName] === undefined)
-				.forEach((arg) => foundArgs[arg.keyName] = undefined);
-			return
-		}
-
-		this.logErrorBold(`\n        Missing Args:`);
-		argsDetails.forEach((arg) => {
-			const foundArg = foundArgs[arg.keyName];
-			if (!foundArg)
-				this.logWarning(`          ${arg.keys.join("/")}=<${arg.name}>`);
-		});
-
-		throw new ImplementationMissingException("Missing cli params")
-
-	}
-
-	getParams = () => {
+		this.config.params.forEach((param) => this.paramsValue[param.keyName] = this.getParam<any>(param));
+		this.printHowTo(this.config.params);
 		return this.paramsValue;
 	}
 
-	extractParams = (argsDetails: Params[], argv?: string[]) => {
-		argsDetails.forEach((argDetails) => {
-			console.log("argDetails: " + argDetails.keyName);
-			const cliArgv = argv || process.argv.slice(2, process.argv.length);
-			cliArgv.forEach((arg) => {
-				const value = argDetails.keys.map((key) => {
-					const match = arg.match(new RegExp(`${key}=(.*)`));
-					return match ? match[1] : null;
-				}).find((argValue) => {
-					return argValue;
-				});
+	getParam<T extends string | string[]>(param: CliParam<string, T>, args: string[] = process.argv.slice(2, process.argv.length)) {
+		if (!this.config.params.find(_param => _param.keyName === param.keyName))
+			throw new BadImplementationException("Requested not existing param");
 
-				if (value) {
-					const type = typeof this.paramsValue[argDetails.keyName];
-					switch (type) {
-						case "undefined":
-							this.paramsValue[argDetails.keyName] = value;
-							break;
-						case "string":
-							this.paramsValue[argDetails.keyName] = [this.paramsValue[argDetails.keyName] as string, value];
-							break;
-						default:
-							(this.paramsValue[argDetails.keyName] as string[]).push(value);
-							break;
-					}
-				}
-			});
-		});
+		const value = this.extractParam(param, args) as T;
+		return param.process ? param.process(value) : value;
+	}
 
-		this.printHowTo(argsDetails, this.paramsValue);
+	private extractParam<T extends string | string[]>(param: CliParam<string, T>, argv: string[]) {
+		if (param.isArray)
+			return param.keys.reduce((values: string[], key) => {
+				values.push(...filterInstances(argv.map(arg => arg.match(new RegExp(`${key}=(.*)`))?.[1])))
+				return values;
+			}, [])
+
+		let find = param.keys.map(key => argv.map(arg => arg.match(new RegExp(`${key}=(.*)`))?.[1]));
+		return flatArray(find).find(k => k);
+	}
+
+	printHowTo = (params: Param[]) => {
+		const missingParams = params.filter((arg) => !this.paramsValue[arg.keyName]);
+		const foundParams = params.filter((arg) => this.paramsValue[arg.keyName]);
+		// const mandatoryParams = params.filter((arg) => !arg.optional);
+		// const optionalParams = params.filter((arg) => arg.optional);
+
+		this.printFoundArgs("Found Args", foundParams, this.paramsValue);
+		this.printFoundArgs("Missing Args", missingParams, this.paramsValue);
+		throw new ImplementationMissingException("Missing cli params")
+	}
+
+	private printFoundArgs(title: string, params: Param[], foundArgs: ObjectTS) {
+		if (params.length)
+			return
+
+		this.logInfoBold(`  ${title}:`);
+		params.forEach((param) => this.logInfo(`    ${param.keys[0]}=${foundArgs[param.keyName] || `<${param.name}>`}`));
+	}
+
+	getParams = () => {
 		return this.paramsValue;
 	}
 }
