@@ -51,7 +51,7 @@ class CliParamsModule_Class
 		if (!value)
 			return value as T;
 
-		return (param.process ? param.process(value) : value) as T;
+		return (param.process ? param.process(value) : value);
 	}
 
 	private extractParam<T extends string | string[]>(param: CliParam<string, T>, argv: string[]) {
