@@ -29,6 +29,17 @@ export const CliParam_TestString: CliTestParam<"test", string> = {
 	value: ["test-value"]
 }
 
+export const CliParam_TestStringOptional: CliTestParam<"test", string> = {
+	...CliParam_TestString,
+	optional: true
+}
+
+export const CliParam_TestStringDefault: CliTestParam<"test", string> = {
+	...CliParam_TestString,
+	value: ["test-string-value"],
+	defaultValue: "default-test-value",
+}
+
 export const CliParam_TestArray: CliTestParam<"test", string[]> = {
 	keys: ["--test"],
 	keyName: "test",
@@ -37,7 +48,12 @@ export const CliParam_TestArray: CliTestParam<"test", string[]> = {
 	value: ["test-value1", "test-value2"]
 }
 
-export const CliParam_TestStringOptional: CliTestParam<"test", string> = {
-	...CliParam_TestString,
+export const CliParam_TestArrayOptional: CliTestParam<"test", string[]> = {
+	...CliParam_TestArray,
 	optional: true
+}
+
+export const CliParam_TestArrayDefault: CliTestParam<"test", string[]> = {
+	...CliParam_TestArray,
+	defaultValue: ["pah", "zevel"]
 }
