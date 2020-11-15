@@ -50,10 +50,18 @@ export class MessagingWrapper
 
 	/** @deprecated */
 	onTokenRefresh(callback: () => void) {
-		return this.messaging.onTokenRefresh(callback)
+		return this.messaging.onTokenRefresh(callback);
 	}
 
 	onMessage(callback: (payload: any) => void) {
-		return this.messaging.onMessage(callback)
+		return this.messaging.onMessage((callbackPayload) => {
+			return callback(callbackPayload);
+		});
+	}
+
+	onBackgroundMessage(callback: (payload: any) => void) {
+		return this.messaging.onMessage((callbackPayload) => {
+			return callback(callbackPayload);
+		});
 	}
 }

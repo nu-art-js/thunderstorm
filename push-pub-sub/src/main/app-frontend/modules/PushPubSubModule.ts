@@ -141,16 +141,18 @@ export class PushPubSubModule_Class
 			if (!this.messaging)
 				return;
 
-			this.messaging.onMessage((payload) => {
-				this.processMessage(payload.data);
-			});
-
 			this.firebaseToken = await this.messaging.getToken(options);
 			if (!this.firebaseToken)
 				return;
 
 			this.logVerbose('new token received: ' + this.firebaseToken);
+
+			this.messaging.onMessage((payload) => {
+				this.processMessage(payload.data);
+			});
+
 			await this.register();
+
 		} catch (err) {
 			this.logError("Unable to get token", err);
 		}
