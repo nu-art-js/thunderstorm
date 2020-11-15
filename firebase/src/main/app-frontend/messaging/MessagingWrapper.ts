@@ -25,6 +25,8 @@ export class MessagingWrapper
 	extends Logger {
 
 	private readonly messaging: FirebaseType_Messaging;
+	private callback?: (payload: any) => void;
+	private token?: string;
 
 	constructor(messaging: FirebaseType_Messaging) {
 		super();
@@ -40,7 +42,11 @@ export class MessagingWrapper
 		vapidKey?: string;
 		serviceWorkerRegistration?: ServiceWorkerRegistration;
 	}) {
-		return this.messaging.getToken(options);
+		this.token = await this.messaging.getToken(options);
+		if (this.callback)
+			this.messaging.onMessage(this.callback);
+
+		return this.token;
 	}
 
 	/** @deprecated */
@@ -54,12 +60,10 @@ export class MessagingWrapper
 	}
 
 	onMessage(callback: (payload: any) => void) {
-		return this.messaging.onMessage((callbackPayload) => {
-			return callback(callbackPayload);
-		});
-	}
+		this.callback = callback;
+		if (!this.token)
+			return;
 
-	onBackgroundMessage(callback: (payload: any) => void) {
 		return this.messaging.onMessage((callbackPayload) => {
 			return callback(callbackPayload);
 		});

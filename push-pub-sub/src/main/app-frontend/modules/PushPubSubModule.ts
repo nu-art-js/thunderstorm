@@ -22,7 +22,8 @@ import {
 	ImplementationMissingException,
 	Module,
 	removeFromArray,
-	StringMap
+	StringMap,
+	BadImplementationException
 } from "@nu-art/ts-common";
 
 import {
@@ -70,6 +71,7 @@ type FirebaseConfig = {
 export type PushPubSubConfig = {
 	config?: FirebaseConfig
 	publicKeyBase64: string
+	swFileName?: string
 }
 
 export interface OnNotificationsReceived {
@@ -98,7 +100,7 @@ export class PushPubSubModule_Class
 
 	private registerServiceWorker = async () => {
 		console.log('registering...');
-		return await navigator.serviceWorker.register('/ts_service_worker.js');
+		return await navigator.serviceWorker.register(`/${this.config.swFileName || 'ts_service_worker.js'}`);
 	};
 
 	private initApp = async () => {
@@ -139,11 +141,15 @@ export class PushPubSubModule_Class
 				return;
 
 			if (!this.messaging)
-				return;
+				throw new BadImplementationException('I literally just set this!');
 
 			this.firebaseToken = await this.messaging.getToken(options);
 			if (!this.firebaseToken)
 				return;
+
+			this.messaging.onMessage((payload) => {
+				this.processMessage(payload.data);
+			});
 
 			this.logVerbose('new token received: ' + this.firebaseToken);
 
@@ -217,7 +223,7 @@ export class PushPubSubModule_Class
 	};
 
 	private register = async (): Promise<void> => {
-		if (!this.firebaseToken || this.subscriptions.length === 0)
+		if (!this.firebaseToken)
 			return;
 
 		const body: Request_PushRegister = {
