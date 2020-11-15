@@ -66,12 +66,13 @@ class CliParamsModule_Class
 	}
 
 	printHowTo = (params: Param[]) => {
-		const missingParams = params.filter((arg) => !this.paramsValue[arg.keyName]);
-		const foundParams = params.filter((arg) => this.paramsValue[arg.keyName]);
-		// const mandatoryParams = params.filter((arg) => !arg.optional);
-		// const optionalParams = params.filter((arg) => arg.optional);
+		const missingParams = params.filter((param) => !this.paramsValue[param.keyName] && !param.optional);
+		const foundParams = params.filter((param) => this.paramsValue[param.keyName]);
 
 		this.printFoundArgs("Found Args", foundParams, this.paramsValue);
+		if (missingParams.length === 0)
+			return;
+
 		this.printFoundArgs("Missing Args", missingParams, this.paramsValue);
 		throw new ImplementationMissingException("Missing cli params")
 	}
