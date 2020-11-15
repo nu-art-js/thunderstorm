@@ -17,10 +17,10 @@ export type CliParam<K, T extends string | string[] = string> = {
 	keys: string[];
 	name: string;
 	keyName: K;
-	optional?: true
+	optional?: true;
 	options?: string[];
 	defaultValue?: T;
-	isArray?: T extends string[] ? true : never
+	isArray?: T extends string[] ? true : never;
 	process?: (value: T) => T;
 }
 
@@ -49,9 +49,9 @@ class CliParamsModule_Class
 			value = param.defaultValue;
 
 		if (!value)
-			return value;
+			return value as T;
 
-		return param.process ? param.process(value) : value;
+		return (param.process ? param.process(value) : value) as T;
 	}
 
 	private extractParam<T extends string | string[]>(param: CliParam<string, T>, argv: string[]) {
@@ -61,7 +61,7 @@ class CliParamsModule_Class
 				return values;
 			}, [])
 
-		let find = param.keys.map(key => argv.map(arg => arg.match(new RegExp(`${key}=(.*)`))?.[1]));
+		const find = param.keys.map(key => argv.map(arg => arg.match(new RegExp(`${key}=(.*)`))?.[1]));
 		return flatArray(find).find(k => k);
 	}
 
