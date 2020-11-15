@@ -35,11 +35,11 @@ import { testSuit_cliModule } from "./cliModule/test-cliModule";
 
 const testSuits: TestSuit<any, any, any>[] = [
 	testSuit_cliModule,
-	// testSuit_versionComparison,
-	// testSuit_compare,
-	// testSuit_newSecret,
-	// testSuit_filter,
-	// ...testSuits_validator,
+	testSuit_versionComparison,
+	testSuit_compare,
+	testSuit_newSecret,
+	testSuit_filter,
+	...testSuits_validator,
 ];
 
 
