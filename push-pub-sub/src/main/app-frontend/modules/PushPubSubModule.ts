@@ -208,7 +208,6 @@ export class PushPubSubModule_Class
 	getNotifications = () => this.notifications;
 
 	readNotification = (id: string, read: boolean) => {
-		//make an api call that changes the read boolean of the notification id thats passed in
 		const body = {
 			_id: id,
 			read
@@ -216,7 +215,7 @@ export class PushPubSubModule_Class
 
 		HttpModule
 			.createRequest<PubSubReadNotification>(HttpMethod.POST, 'read-notification')
-			.setUrl('/v1/push/read-notification')
+			.setRelativeUrl("/v1/push/read")
 			.setJsonBody(body)
 			.setOnError('Something went wrong while reading your notification')
 			.execute();
@@ -239,8 +238,10 @@ export class PushPubSubModule_Class
 					.setJsonBody(body)
 					.setOnError("Failed to register for push")
 					.executeSync();
-				this.dispatch_notifications.dispatchModule([]);
+
 				this.notifications = response;
+				this.dispatch_notifications.dispatchModule([]);
+				this.dispatch_notifications.dispatchUI([])
 				this.logVerbose('Finished register PubSub');
 				resolve();
 			}, 'push-registration', 800);
