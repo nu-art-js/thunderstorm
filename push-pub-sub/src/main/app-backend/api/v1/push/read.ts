@@ -21,6 +21,7 @@ class ServerApi_PushRead
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_ReadPush) {
 		// const user = await KasperoProxy.validateSession(request);
+		console.log('here i am')
 		return await PushPubSubModule.readNotification(body._id, body.read);
 	}
 }

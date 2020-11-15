@@ -75,7 +75,7 @@ export class PushPubSubModule_Class
 
 		this.pushSessions = firestore.getCollection<DB_PushSession>('push-sessions', ["firebaseToken"]);
 		this.pushKeys = firestore.getCollection<DB_PushKeys>('push-keys');
-		this.notifications = firestore.getCollection<DB_Notifications>('notifications');
+		this.notifications = firestore.getCollection<DB_Notifications>('notifications', ["_id"]);
 		this.messaging = session.getMessaging();
 	}
 
