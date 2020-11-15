@@ -19,7 +19,7 @@ export type CliParam<K, T extends string | string[] = string> = {
 	keyName: K;
 	optional?: true
 	options?: string[];
-	defaultValue?: string;
+	defaultValue?: T;
 	isArray?: T extends string[] ? true : never
 	process?: (value: T) => T;
 }
@@ -44,7 +44,13 @@ class CliParamsModule_Class
 		if (!this.config.params.find(_param => _param.keyName === param.keyName))
 			throw new BadImplementationException("Requested not existing param");
 
-		const value = this.extractParam(param, args) as T;
+		let value: T | undefined = this.extractParam(param, args) as T;
+		if (!value)
+			value = param.defaultValue;
+
+		if (!value)
+			return value;
+
 		return param.process ? param.process(value) : value;
 	}
 

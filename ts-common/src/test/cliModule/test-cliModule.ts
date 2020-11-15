@@ -26,7 +26,9 @@ import {
 } from "../_main";
 import {
 	CliParam_TestArray,
+	CliParam_TestArrayOptional,
 	CliParam_TestString,
+	CliParam_TestStringDefault,
 	CliParam_TestStringOptional,
 	CliTestParam
 } from "./consts";
@@ -34,7 +36,7 @@ import {
 type CliTestInput = {
 	param: CliTestParam<any, any>;
 	input?: CliTestParam<any, any>[];
-	expected?: CliTestParam<any, any>;
+	expected?: string[];
 }
 
 type CliModuleTest = TestModel<CliTestInput, "pass" | "fail">;
@@ -47,7 +49,7 @@ export const testSuit_cliModule: TestSuit<CliModuleTest> = {
 	key: "cliModule",
 	label: "CliModule",
 	processor: async (input) => {
-		CliParamsModule.setDefaultConfig({params: [input.expected || input.param]})
+		CliParamsModule.setDefaultConfig({params: [input.param]})
 		// create the cli input
 		const cliInput = flatArray<string>((input.input || [input.param]).map(generateCliParams));
 
@@ -55,12 +57,12 @@ export const testSuit_cliModule: TestSuit<CliModuleTest> = {
 		const retrievedValue: string | string[] = CliParamsModule.getParam(input.param, cliInput)
 
 		// pass optional that doesn't exists
-		if (retrievedValue === undefined && input.param.optional)
+		if ((retrievedValue === undefined || retrievedValue.length === 0) && input.param.optional)
 			return "pass";
 
 		// convert to array.. lower common dominator
 		const output = Array.isArray(retrievedValue) ? retrievedValue : [retrievedValue]
-		const expected = input.param.value;
+		const expected = input.expected || input.param.value;
 
 		// compare
 		return compare(output, expected) ? "pass" : "fail";
@@ -70,6 +72,12 @@ export const testSuit_cliModule: TestSuit<CliModuleTest> = {
 		{expected: "fail", input: {param: CliParam_TestString, input: []}},
 		{expected: "pass", input: {param: CliParam_TestStringOptional}},
 		{expected: "pass", input: {param: CliParam_TestStringOptional, input: []}},
+		{expected: "pass", input: {param: CliParam_TestStringDefault, input: [], expected: [CliParam_TestStringDefault.defaultValue as string]}},
+		{expected: "pass", input: {param: CliParam_TestStringDefault}},
+		{expected: "pass", input: {param: CliParam_TestStringDefault, input: [CliParam_TestString], expected:CliParam_TestString.value}},
+		{expected: "fail", input: {param: CliParam_TestStringDefault, input: [CliParam_TestString]}},
 		{expected: "pass", input: {param: CliParam_TestArray}},
+		{expected: "pass", input: {param: CliParam_TestArrayOptional, input: []}},
+		{expected: "fail", input: {param: CliParam_TestArrayOptional, input: [CliParam_TestString]}},
 	]
 };
