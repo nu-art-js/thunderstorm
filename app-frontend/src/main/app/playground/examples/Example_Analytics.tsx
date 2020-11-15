@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {AnalyticsModule} from "@nu-art/analytics/app-frontend/modules/AnalyticsModule";
 
 export class Example_Analytics extends React.Component {
 
@@ -9,7 +10,8 @@ export class Example_Analytics extends React.Component {
 	}
 
 	addEvent = () => {
-		console.log("adding event...")
+		AnalyticsModule.logEvent("test")
+		console.log("event added")
 	}
 
 }

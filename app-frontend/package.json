@@ -44,6 +44,7 @@
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/ts-common": "~0.0.1",
     "@nu-art/user-account": "~0.0.1",
+    "@nu-art/analytics": "~0.0.1",
     "@types/history": "^4.7.2",
     "@types/qs": "^6.5.2",
     "@types/react": "^16.8.7",
