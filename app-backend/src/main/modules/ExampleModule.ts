@@ -38,7 +38,7 @@ class ExampleModule_Class
 
 	async __queryRequestInfo(): Promise<{ key: string; data: any }> {
 		return {
-			key: 'userId', data: {_id: 'noabkr@intuitionrobotics.com'}
+			key: 'AccountsModule', data: {_id: 'noabkr@intuitionrobotics.com'}
 		};
 	}
 

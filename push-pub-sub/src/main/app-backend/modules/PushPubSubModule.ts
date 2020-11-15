@@ -121,9 +121,11 @@ export class PushPubSubModule_Class
 		S extends string = IFP<M>,
 		P extends SubscribeProps = ISP<M>,
 		D = ITP<M>>(key: S, props?: P, data?: D, userId?: S, persistent: boolean = false) {
+		console.log('i am pushign to key...')
 		let docs = await this.pushKeys.query({where: {pushKey: key}});
 		if (props)
 			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
+		console.log('here are the docs: '+docs)
 
 		if (docs.length === 0)
 			return;
@@ -145,7 +147,9 @@ export class PushPubSubModule_Class
 		}, {} as TempMessages);
 
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
+		console.log('sending a message')
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
+		console.log('and this is the response: '+response.responses.map(_response => _response.success))
 
 		const tokens = docs.map(_doc => _doc.firebaseToken);
 		const sessions = await this.pushSessions.query({where: {firebaseToken: {$in: tokens}}});
