@@ -21,10 +21,11 @@ import {
 	__stringify,
 	compare,
 	currentTimeMillies,
-	Dispatcher,
 	generateHex,
 	Hour,
-	Module
+	ImplementationMissingException,
+	Module,
+	Subset
 } from "@nu-art/ts-common";
 
 import {
@@ -47,7 +48,10 @@ import {
 	SubscribeProps,
 	SubscriptionData
 } from "../../index";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {
+	dispatch_queryRequestInfo,
+	ExpressRequest
+} from "@nu-art/thunderstorm/backend";
 
 type Config = {
 	delta_time?: number
@@ -57,22 +61,13 @@ type TempMessages = {
 	[token: string]: SubscriptionData[]
 };
 
-//TODO make more structured
-export interface GetUserData {
-	__getUserData(request: ExpressRequest): Promise<{ key: string, data: any }>
-}
-
-const dispatch_getUser = new Dispatcher<GetUserData, '__getUserData'>('__getUserData');
-
 export class PushPubSubModule_Class
 	extends Module<Config> {
 
 	private pushSessions!: FirestoreCollection<DB_PushSession>;
 	private pushKeys!: FirestoreCollection<DB_PushKeys>;
-	private notifications!: FirestoreCollection<DB_Notifications>
+	private notifications!: FirestoreCollection<DB_Notifications>;
 	private messaging!: PushMessagesWrapper;
-
-	// private user: { key: string; data: any; } = {key: '', data: undefined};
 
 	protected init(): void {
 		const session = FirebaseModule.createAdminSession();
@@ -80,25 +75,21 @@ export class PushPubSubModule_Class
 
 		this.pushSessions = firestore.getCollection<DB_PushSession>('push-sessions', ["firebaseToken"]);
 		this.pushKeys = firestore.getCollection<DB_PushKeys>('push-keys');
-		this.notifications = firestore.getCollection<DB_Notifications>('notifications')
+		this.notifications = firestore.getCollection<DB_Notifications>('notifications', ["_id"]);
 		this.messaging = session.getMessaging();
 	}
 
-	async register(body: Request_PushRegister, request: ExpressRequest) {
-		const resp = await dispatch_getUser.dispatchModuleAsync([request]);
-		console.log('this is the dispatcher response: '+resp)
-		const user: { key: string, data: { _id: string } } | undefined = resp.find(e => e.key === 'userId');
-		console.log(user)
+	async register(body: Request_PushRegister, request: ExpressRequest): Promise<DB_Notifications[]> {
+		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync([request]);
+		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data._id || resp.find(e => e.key === 'RemoteProxy')?.data;
+		if (!userId)
+			throw new ImplementationMissingException('Missing user from accounts Module');
+
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
-			timestamp: currentTimeMillies()
+			timestamp: currentTimeMillies(),
+			userId
 		};
-		if (user) {
-			// this.user = user
-			session.userId = user.data._id
-		}
-
-		await this.pushSessions.upsert(session);
 
 		const subscriptions: DB_PushKeys[] = body.subscriptions.map((s): DB_PushKeys => {
 			const sub: DB_PushKeys = {
@@ -111,22 +102,29 @@ export class PushPubSubModule_Class
 			return sub;
 		});
 
-		await this.pushKeys.runInTransaction(async transaction => {
+		return this.pushSessions.runInTransaction(async transaction => {
+			const notifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {userId}});
+
+			const writePush = await transaction.upsert_Read(this.pushSessions, session);
+
+			const items = await transaction.query(this.pushKeys, {where: {firebaseToken: body.firebaseToken}});
+			items
 			const write = await transaction.delete_Read(this.pushKeys, {where: {firebaseToken: body.firebaseToken}});
 			await transaction.insertAll(this.pushKeys, subscriptions);
-			return write();
+			await Promise.all([write(), writePush()]);
+			return notifications
 		});
-		if (!user)
-			return
-		const notifications = await this.notifications.query({where: {userId: user.data._id}})
-		console.log('notifications: ' + notifications)
-		return notifications
 	}
 
-	async pushToKey<M extends MessageType<any, any, any> = never, S extends string = IFP<M>, P extends SubscribeProps = ISP<M>, D = ITP<M>>(key: S, props?: P, data?: D, userId?: S) {
+	async pushToKey<M extends MessageType<any, any, any> = never,
+		S extends string = IFP<M>,
+		P extends SubscribeProps = ISP<M>,
+		D = ITP<M>>(key: S, props?: P, data?: D, userId?: S, persistent: boolean = false) {
+		console.log('i am pushign to key...')
 		let docs = await this.pushKeys.query({where: {pushKey: key}});
 		if (props)
 			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
+		console.log('here are the docs: '+docs)
 
 		if (docs.length === 0)
 			return;
@@ -138,6 +136,7 @@ export class PushPubSubModule_Class
 				pushKey: db_pushKey.pushKey,
 				data
 			};
+
 			if (db_pushKey.props)
 				item.props = db_pushKey.props;
 
@@ -147,25 +146,40 @@ export class PushPubSubModule_Class
 		}, {} as TempMessages);
 
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
+		console.log('sending a message')
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
-		const tokens = docs.map(_doc => _doc.firebaseToken)
-		const user = await this.pushSessions.queryUnique({where: {firebaseToken: {$in:tokens}}})
-		if (user) {
-			const notification: DB_Notifications = {
-				_id: generateHex(16),
-				userId: userId ? userId : user.userId,
-				timestamp: Math.floor(Date.now() / 1000.0),
-				read: false,
-				pushKey: key
-			};
-			if (props)
-				notification.props = props
+		console.log('and this is the response: '+response.responses.map(_response => _response.success))
 
-			await this.notifications.insert(notification)
+		const tokens = docs.map(_doc => _doc.firebaseToken);
+		const sessions = await this.pushSessions.query({where: {firebaseToken: {$in: tokens}}});
+		if (persistent) {
+
+			const notifications = sessions.reduce((carry: DB_Notifications[], session) => {
+				if (!session.userId)
+					return carry;
+				const notification: DB_Notifications = {
+					_id: generateHex(16),
+					userId: userId || session.userId,
+					timestamp: currentTimeMillies(),
+					read: false,
+					pushKey: key
+				};
+				if (props)
+					notification.props = props;
+
+				carry.push(notification);
+				return carry;
+			}, []);
+
+			await this.notifications.insertAll(notifications);
 		}
 
 		return this.cleanUp(response, messages);
 	}
+
+	readNotification = async (id: string, read: boolean) => {
+		await this.notifications.patch({_id: id, read} as Subset<DB_Notifications>);
+	};
 
 	scheduledCleanup = async () => {
 		const delta_time = this.config?.delta_time || Hour;
