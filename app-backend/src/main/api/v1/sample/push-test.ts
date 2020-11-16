@@ -34,10 +34,8 @@ class ServerApi_PushTest
 		super("push-test");
 	}
 
-
-
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'});
+		await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'}, undefined, true);
 		return "push succeeded!"
 	}
 }
