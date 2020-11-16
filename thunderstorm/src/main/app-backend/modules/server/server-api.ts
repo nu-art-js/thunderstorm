@@ -61,6 +61,7 @@ import {
 	ExpressResponse,
 	ExpressRouter
 } from "../../utils/types";
+import {RemoteProxy} from "../proxy/RemoteProxy";
 
 export type HttpRequestData = {
 	originalUrl: string
@@ -81,7 +82,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 
 	private readonly method: HttpMethod;
 	private url!: string;
-	private readonly relativePath: string;
+	readonly relativePath: string;
 	private middlewares?: ServerApi_Middleware[];
 	private bodyValidator?: ValidatorTypeResolver<B>;
 	private queryValidator?: ValidatorTypeResolver<P>;
@@ -114,6 +115,10 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 
 	setQueryValidator(queryValidator: ValidatorTypeResolver<P>) {
 		this.queryValidator = queryValidator;
+	}
+
+	asProxy(): ServerApi<Binder> {
+		return new ServerApi_Proxy<Binder>(this);
 	}
 
 	getUrl() {
@@ -280,6 +285,21 @@ export abstract class ServerApi_Post<Binder extends ApiWithBody<U, R, B>, U exte
 
 	protected constructor(apiName: string) {
 		super(HttpMethod.POST, apiName);
+	}
+}
+
+export class ServerApi_Proxy<Binder extends ApiTypeBinder<string, R, B, P>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams | {} = DeriveQueryType<Binder>>
+	extends ServerApi<Binder> {
+	private readonly api: ServerApi<Binder>;
+	public constructor(api: ServerApi<any>) {
+		super(HttpMethod.ALL, `${api.relativePath}/proxy`);
+		this.api = api;
+		this.setMiddlewares(RemoteProxy.Middleware)
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DeriveQueryType<Binder>, body: DeriveBodyType<Binder>): Promise<DeriveResponseType<Binder>> {
+		// @ts-ignore
+		return this.api.process(request, response, queryParams, body);
 	}
 }
 

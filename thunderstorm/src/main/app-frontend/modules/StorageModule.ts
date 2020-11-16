@@ -98,12 +98,15 @@ export class StorageKey<ValueType = string | number | object> {
 
 	patch(value: ValueType extends object ? Partial<ValueType> : ValueType) {
 		const previousValue = this.get();
-		this.set(merge(previousValue, value));
+		const mergedValue = merge(previousValue, value);
+		this.set(mergedValue);
+		return mergedValue;
 	}
 
 	set(value: ValueType) {
 		// @ts-ignore
 		StorageModule.set(this.key, value, this.persist);
+		return value;
 	}
 
 	delete() {
