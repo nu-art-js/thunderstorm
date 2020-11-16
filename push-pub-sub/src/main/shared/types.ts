@@ -1,42 +1,46 @@
+import {DB_Object} from "@nu-art/ts-common";
+
 export type SubscribeProps = { [prop: string]: string | number };
 
 export type BaseSubscriptionData = {
 	props?: SubscribeProps
 	pushKey: string
-	userId?: string
 }
 
 export type SubscriptionData = BaseSubscriptionData & {
 	data?: any
 }
 
-export type Request_PushRegister = FirebaseToken & {
+export type Request_PushRegister = FirebaseToken & PushSessionId & {
 	subscriptions: BaseSubscriptionData[]
 }
 
-export type Request_ReadPush = {
-	_id:string,
-	read:boolean
+export type Request_ReadPush = DB_Object & {
+	read: boolean
 }
 
 export type Response_PushRegister = DB_Notifications[]
 
-export type DB_PushSession = FirebaseToken & {
+export type DB_PushSession = FirebaseToken & PushSessionId & {
 	timestamp: number
 	userId: string
 }
 
-export type DB_Notifications = BaseSubscriptionData & {
-	_id:string,
-	timestamp: number,
-	read: boolean,
+export type DB_Notifications = DB_Object & SubscriptionData & {
+	userId: string
+	timestamp: number
+	read: boolean
 	persistent?: boolean
 }
 
-export type DB_PushKeys = FirebaseToken & BaseSubscriptionData
+export type DB_PushKeys = PushSessionId & BaseSubscriptionData
 
 export type FirebaseToken = {
 	firebaseToken: string
+}
+
+export type PushSessionId = {
+	pushSessionId: string
 }
 
 export type MessageType<S extends string, P extends SubscribeProps, D> = {}
