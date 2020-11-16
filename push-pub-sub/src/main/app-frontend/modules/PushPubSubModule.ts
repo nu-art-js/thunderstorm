@@ -28,9 +28,9 @@ import {
 } from "@nu-art/ts-common";
 
 import {
-	HttpModule,
 	StorageKey,
-	ThunderDispatcher
+	ThunderDispatcher,
+	HttpModule
 } from "@nu-art/thunderstorm/frontend";
 // noinspection TypeScriptPreferShortImport
 import {
@@ -191,7 +191,7 @@ export class PushPubSubModule_Class
 		arr.forEach(s => {
 			const sub = this.subscriptions.find(_s => _s.pushKey === s.pushKey && (s.props ? compare(_s.props, s.props) : true));
 			if (!sub)
-				return;
+				return this.logInfo('I disregard this push, since I didnt subscribe', s);
 
 			this.dispatch_pushMessage.dispatchModule([s.pushKey, s.props, s.data]);
 		});
@@ -241,6 +241,7 @@ export class PushPubSubModule_Class
 
 		const body: Request_PushRegister = {
 			firebaseToken: this.firebaseToken,
+			pushSessionId: this.pushSessionId,
 			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
 		};
 
@@ -263,4 +264,5 @@ export class PushPubSubModule_Class
 		});
 	};
 }
+
 export const PushPubSubModule = new PushPubSubModule_Class();
