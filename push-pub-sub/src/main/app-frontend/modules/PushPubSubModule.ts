@@ -190,7 +190,7 @@ export class PushPubSubModule_Class
 		const arr: SubscriptionData[] = JSON.parse(data.messages);
 		arr.forEach(s => {
 			const sub = this.subscriptions.find(_s => _s.pushKey === s.pushKey && (s.props ? compare(_s.props, s.props) : true));
-			if (!sub)
+			if (!sub && s.pushKey !== 'push-to-user')
 				return this.logInfo('I disregard this push, since I didnt subscribe', s);
 
 			this.dispatch_pushMessage.dispatchModule([s.pushKey, s.props, s.data]);
