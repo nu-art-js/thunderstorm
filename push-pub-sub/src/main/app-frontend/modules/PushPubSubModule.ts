@@ -249,5 +249,4 @@ export class PushPubSubModule_Class
 		});
 	};
 }
-
 export const PushPubSubModule = new PushPubSubModule_Class();
