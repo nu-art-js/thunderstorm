@@ -1,7 +1,8 @@
 import * as React from 'react';
-import {AnalyticsModule} from "@nu-art/analytics/app-frontend/modules/AnalyticsModule";
+import {InfoToast} from "../../themes/toaster";
 
-export class Example_Analytics extends React.Component {
+export class Example_Analytics
+	extends React.Component {
 
 	render() {
 		return <div onClick={this.addEvent} style={{border: "solid 1px gray", padding: 10}}>
@@ -10,8 +11,7 @@ export class Example_Analytics extends React.Component {
 	}
 
 	addEvent = () => {
-		AnalyticsModule.logEvent("test")
-		console.log("event added")
-	}
+		InfoToast('No Analytics set up yet');
+	};
 
 }
