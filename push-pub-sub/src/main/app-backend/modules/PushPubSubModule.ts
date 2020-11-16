@@ -131,7 +131,7 @@ export class PushPubSubModule_Class
 			return;
 
 		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
-			carry[db_pushKey.firebaseToken] = carry[db_pushKey.firebaseToken] || [];
+			carry[git fethn] = carry[db_pushKey.firebaseToken] || [];
 
 			const item: SubscriptionData = {
 				pushKey: db_pushKey.pushKey,
