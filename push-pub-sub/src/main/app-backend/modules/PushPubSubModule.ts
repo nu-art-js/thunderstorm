@@ -107,8 +107,6 @@ export class PushPubSubModule_Class
 
 			const writePush = await transaction.upsert_Read(this.pushSessions, session);
 
-			const items = await transaction.query(this.pushKeys, {where: {firebaseToken: body.firebaseToken}});
-			items
 			const write = await transaction.delete_Read(this.pushKeys, {where: {firebaseToken: body.firebaseToken}});
 			await transaction.insertAll(this.pushKeys, subscriptions);
 			await Promise.all([write(), writePush()]);
