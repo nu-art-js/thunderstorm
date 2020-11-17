@@ -18,16 +18,18 @@
 
 import {
 	addItemToArray,
+	BadImplementationException,
 	compare,
+	generateHex,
 	ImplementationMissingException,
 	Module,
 	removeFromArray,
-	StringMap,
-	BadImplementationException
+	StringMap
 } from "@nu-art/ts-common";
 
 import {
 	HttpModule,
+	StorageKey,
 	ThunderDispatcher
 } from "@nu-art/thunderstorm/frontend";
 // noinspection TypeScriptPreferShortImport
@@ -78,6 +80,8 @@ export interface OnNotificationsReceived {
 	__onNotificationsReceived(): void
 }
 
+export const pushSessionIdKey = 'x-push-session-id';
+const pushSessionId = new StorageKey<string>(pushSessionIdKey, false);
 
 export class PushPubSubModule_Class
 	extends Module<PushPubSubConfig> {
@@ -90,12 +94,22 @@ export class PushPubSubModule_Class
 	private dispatch_notifications = new ThunderDispatcher<OnNotificationsReceived, '__onNotificationsReceived'>('__onNotificationsReceived');
 
 	private notifications: DB_Notifications[] = [];
+	private readonly pushSessionId: string;
+
+	constructor() {
+		super();
+		this.pushSessionId = pushSessionId.get() || pushSessionId.set(generateHex(32));
+	}
 
 	init() {
 		if (!this.config?.publicKeyBase64)
 			throw new ImplementationMissingException(`Please specify the right config for the 'PushPubSubModule'`);
 
 		this.runAsync('Initializing Firebase SDK and registering SW', this.initApp);
+	}
+
+	getPushSessionId() {
+		return this.pushSessionId;
 	}
 
 	private registerServiceWorker = async () => {
@@ -241,7 +255,7 @@ export class PushPubSubModule_Class
 
 				this.notifications = response;
 				this.dispatch_notifications.dispatchModule([]);
-				this.dispatch_notifications.dispatchUI([])
+				this.dispatch_notifications.dispatchUI([]);
 				this.logVerbose('Finished register PubSub');
 				resolve();
 			}, 'push-registration', 800);

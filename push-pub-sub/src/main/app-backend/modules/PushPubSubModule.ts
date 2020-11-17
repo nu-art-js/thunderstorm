@@ -81,7 +81,6 @@ export class PushPubSubModule_Class
 
 	async register(body: Request_PushRegister, request: ExpressRequest): Promise<DB_Notifications[]> {
 		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync([request]);
-		console.log('response from dispatcher',resp);
 		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data._id || resp.find(e => e.key === 'RemoteProxy')?.data;
 		if (!userId)
 			throw new ImplementationMissingException('Missing user from accounts Module');
@@ -91,8 +90,6 @@ export class PushPubSubModule_Class
 			timestamp: currentTimeMillies(),
 			userId
 		};
-
-		await this.pushSessions.upsert(session);
 
 		const subscriptions: DB_PushKeys[] = body.subscriptions.map((s): DB_PushKeys => {
 			const sub: DB_PushKeys = {
@@ -110,6 +107,8 @@ export class PushPubSubModule_Class
 
 			const writePush = await transaction.upsert_Read(this.pushSessions, session);
 
+			const items = await transaction.query(this.pushKeys, {where: {firebaseToken: body.firebaseToken}});
+			items
 			const write = await transaction.delete_Read(this.pushKeys, {where: {firebaseToken: body.firebaseToken}});
 			await transaction.insertAll(this.pushKeys, subscriptions);
 			await Promise.all([write(), writePush()]);
