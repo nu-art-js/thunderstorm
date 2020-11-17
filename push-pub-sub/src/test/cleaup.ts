@@ -43,6 +43,7 @@ export const scenarioCleanup = __scenario("Scheduled Cleaup");
 
 const testRegister = async function (request: Request_PushRegister, timestamp: number) {
 	const session: DB_PushSession = {
+		pushSessionId: 'abc',
 		firebaseToken: request.firebaseToken,
 		timestamp,
 		userId: 'fake-user'
@@ -52,7 +53,7 @@ const testRegister = async function (request: Request_PushRegister, timestamp: n
 	await PushPubSubModule.pushSessions.upsert(session);
 
 	const subscriptions = request.subscriptions.map((s): DB_PushKeys => ({
-		firebaseToken: request.firebaseToken,
+		pushSessionId: request.pushSessionId,
 		pushKey: s.pushKey,
 		props: s.props
 	}));
@@ -61,7 +62,7 @@ const testRegister = async function (request: Request_PushRegister, timestamp: n
 	const pushKeysCollection: FirestoreCollection<DB_PushKeys> = PushPubSubModule.pushKeys;
 
 	return pushKeysCollection.runInTransaction(async (transaction: FirestoreTransaction) => {
-		const data = await transaction.query(pushKeysCollection, {where: {firebaseToken: request.firebaseToken}});
+		const data = await transaction.query(pushKeysCollection, {where: {pushSessionId: request.pushSessionId}});
 		const toInsert = subscriptions.filter(s => !data.find((d: DB_PushKeys) => compare(d, s)));
 		return Promise.all(toInsert.map(instance => transaction.insert(pushKeysCollection, instance)));
 	});
@@ -76,6 +77,7 @@ const processClean = __custom(async () => {
 const populate = (timestamp: number) => __custom(async () => {
 	for (const i in arrayOf2) {
 		const instance = {
+			pushSessionId: generateHex(8),
 			firebaseToken: generateHex(8),
 			subscriptions: arrayOf2.map((_e, _i) => ({pushKey: generateHex(8), props: {a: _i}}))
 		};

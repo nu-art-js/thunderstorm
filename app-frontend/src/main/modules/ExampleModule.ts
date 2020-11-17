@@ -47,12 +47,13 @@ import {Test} from "@modules/TestModule";
 import {
 	OnNotificationsReceived,
 	OnPushMessageReceived,
-	PushPubSubModule
+	PushPubSubModule,
+	NotificationsModule
 } from "@nu-art/push-pub-sub/frontend";
 import {FirebaseModule} from "@nu-art/firebase/frontend";
 import {
 	BaseSubscriptionData,
-	SubscribeProps
+	DB_Notifications
 } from "@nu-art/push-pub-sub";
 
 type Config = {
@@ -105,14 +106,14 @@ export class ExampleModule_Class
 		analytics.setCurrentScreen('Example Screen');
 	};
 
-	__onMessageReceived(pushKey: string, props?: SubscribeProps, data?: any) {
-		const message = `You got data! pushKey: ${pushKey}, props: ${__stringify(props)} with data: ${__stringify(data)}`;
+	__onMessageReceived(notification: DB_Notifications) {
+		const message = `You got data! pushKey: ${notification.pushKey}, props: ${__stringify(notification.props)} with data: ${__stringify(notification.data)}`;
 		// ToastModule.toastSuccess(message);
-		this.logInfo('payload received in module', message);
+		this.logInfo('payload received in module', message, notification);
 	}
 
 	__onNotificationsReceived(): void {
-		this.logInfo('these are the notifications you actually care about:', PushPubSubModule.getNotifications());
+		this.logInfo('these are the notifications you actually care about:', NotificationsModule.getNotifications());
 	}
 
 	callCustomErrorApi() {

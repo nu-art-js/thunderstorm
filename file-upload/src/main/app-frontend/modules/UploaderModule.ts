@@ -43,6 +43,7 @@ import {
 	OnPushMessageReceived,
 	PushPubSubModule
 } from "@nu-art/push-pub-sub/frontend";
+import {DB_Notifications} from "@nu-art/push-pub-sub";
 
 const RequestKey_UploadUrl = 'get-upload-url';
 const RequestKey_UploadFile = 'upload-file';
@@ -74,18 +75,18 @@ export class UploaderModule_Class
 	implements OnPushMessageReceived<Push_FileUploaded> {
 	private files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(3);
-	private readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged')
+	private readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 
 	constructor() {
 		super();
 	}
 
 	getFileInfo<K extends keyof FileInfo>(id: string, key: K): FileInfo[K] | undefined {
-		return this.files[id] && this.files[id][key]
+		return this.files[id] && this.files[id][key];
 	}
 
 	getFullFileInfo(id: string): FileInfo | undefined {
-		return this.files[id]
+		return this.files[id];
 	}
 
 	private setFileInfo<K extends keyof FileInfo>(id: string, key: K, value: FileInfo[K]) {
@@ -93,12 +94,12 @@ export class UploaderModule_Class
 			throw new BadImplementationException(`Trying to set ${key} for non existent file with id: ${id}`);
 
 		this.files[id][key] = value;
-		this.dispatchFileStatusChange(id)
+		this.dispatchFileStatusChange(id);
 	}
 
 	private dispatchFileStatusChange(id?: string) {
 		this.dispatch_fileStatusChange.dispatchUI([id]);
-		this.dispatch_fileStatusChange.dispatchModule([id])
+		this.dispatch_fileStatusChange.dispatchModule([id]);
 	}
 
 	upload(files: File[], key?: string): BaseUploaderFile[] {
@@ -127,11 +128,11 @@ export class UploaderModule_Class
 				body.forEach(f => {
 					this.setFileInfo(f.feId, "messageStatus", __stringify(request.xhr.response));
 					this.setFileInfo(f.feId, "status", FileStatus.Error);
-				})
+				});
 			})
 			.execute(async (response: TempSecureUrl[]) => {
 				this.dispatchFileStatusChange();
-				await this.uploadFiles(response)
+				await this.uploadFiles(response);
 			});
 
 		return body;
@@ -146,7 +147,7 @@ export class UploaderModule_Class
 				await this.uploadFile(r);
 				//TODO: Probably need to set a timer here in case we dont get a push back (contingency)
 			});
-		})
+		});
 	};
 
 	private uploadFile = async (response: TempSecureUrl) => {
@@ -161,7 +162,7 @@ export class UploaderModule_Class
 			.setUrl(response.secureUrl)
 			.setOnError((request) => {
 				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
-				this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(request.xhr.response))
+				this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(request.xhr.response));
 			})
 			.setOnProgressListener((ev: ProgressEvent) => {
 				this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
@@ -176,21 +177,21 @@ export class UploaderModule_Class
 		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.PostProcessing);
 	};
 
-	__onMessageReceived(pushKey: string, props: { feId: string }, data: { message: string, result: string }): void {
-		this.logInfo('Message received from service worker', pushKey, props, data);
-		if (pushKey !== fileUploadedKey)
+	__onMessageReceived(notification: DB_Notifications): void {
+		this.logInfo('Message received from service worker', notification.pushKey, notification.props, notification.data);
+		if (notification.pushKey !== fileUploadedKey)
 			return;
 
-		switch (data.result) {
+		switch (notification.data.result) {
 			case UploadResult.Success:
-				this.setFileInfo(props.feId, "status", FileStatus.Completed);
+				this.setFileInfo(notification.props?.feId as string, "status", FileStatus.Completed);
 				break;
 			case UploadResult.Failure:
-				this.setFileInfo(props.feId, "status", FileStatus.Error);
-				break
+				this.setFileInfo(notification.props?.feId as string, "status", FileStatus.Error);
+				break;
 		}
 
-		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props}).catch()
+		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props: notification.props}).catch();
 	}
 }
 
