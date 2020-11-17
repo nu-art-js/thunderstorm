@@ -32,6 +32,10 @@ export class Tester
 	private scenario!: Scenario;
 	private reporter = new Reporter();
 
+	constructor() {
+		super();
+	}
+
 	setScenario(scenario: Scenario) {
 		this.scenario = scenario;
 		return this;
