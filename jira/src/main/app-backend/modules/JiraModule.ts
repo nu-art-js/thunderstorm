@@ -21,19 +21,21 @@ import {
 	Module,
 	StringMap,
 	TypedMap,
-	_keys
+	_keys,
+    generateHex
 } from "@nu-art/ts-common";
 import {
 	ApiException,
-	promisifyRequest
-} from "@nu-art/thunderstorm/backend"
-import {HttpMethod} from "@nu-art/thunderstorm"
+	promisifyRequest,
+    AxiosHttpModule
+} from "@nu-art/thunderstorm/backend";
 import {
 	CoreOptions,
 	Headers,
 	Response,
 	UriOptions
-} from 'request'
+} from 'request';
+import { HttpMethod } from "@nu-art/thunderstorm";
 
 type Config = {
 	auth: JiraAuth
@@ -259,25 +261,19 @@ export class JiraModule_Class
 		return this.executeRequest(request);
 	}
 
+	private async executeGetRequest<T>(url: string, _params?: { [k: string]: string }): Promise<T> {
+		if(!this.config.baseUrl)
+			throw new ImplementationMissingException('Need a baseUrl');
 
-	private async executeGetRequest<T>(url: string, _params?: { [k: string]: string }) {
-		const params = _params && Object.keys(_params).map((key) => {
-			return `${key}=${_params[key]}`;
-		});
-
-		let urlParams = "";
-		if (params && params.length > 0)
-			urlParams = `?${params.join("&")}`;
-
-		const request: UriOptions & CoreOptions = {
-			headers: this.headersJson,
-			uri: `${this.config.baseUrl}${url}${urlParams}`,
-			method: HttpMethod.GET,
-			json: true
-		};
-
-		console.log(`request: `, request)
-		return this.executeRequest<T>(request);
+		const resp = await AxiosHttpModule
+			.createRequest(HttpMethod.GET, generateHex(8))
+			.setOrigin(this.config.baseUrl)
+			.setUrl(url)
+			.setUrlParams(_params)
+			.setHeaders(this.headersJson)
+			.executeSync();
+		console.log(resp);
+		return resp
 	}
 
 	private handleResponse<T>(response: Response) {

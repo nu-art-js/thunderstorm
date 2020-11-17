@@ -28,6 +28,7 @@ import {
 import {
 	BaseHttpModule_Class,
 	BaseHttpRequest,
+	ErrorResponse,
 	HttpMethod,
 	TS_Progress
 } from "@nu-art/thunderstorm";
@@ -148,22 +149,24 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 			return fileInfo;
 		});
 
-		this.runAsync('Running uploading flow', async () => {
-			const response = await this.getSecuredUrls(
-				body,
-				(errorMessage) => {
-					body.forEach(f => {
-						this.setFileInfo(f.feId, "messageStatus", __stringify(errorMessage));
-						this.setFileInfo(f.feId, "status", FileStatus.Error);
-					});
+		this
+			.httpModule
+			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
+			.setRelativeUrl('/v1/upload/get-url')
+			.setJsonBody(body)
+			.setOnError((request: BaseHttpRequest<any>, resError?: ErrorResponse) => {
+				body.forEach(f => {
+					this.setFileInfo(f.feId, "messageStatus", __stringify(resError?.debugMessage));
+					this.setFileInfo(f.feId, "status", FileStatus.Error);
 				});
+			})
+			.execute(async (response: TempSecureUrl[]) => {
+				this.dispatchFileStatusChange();
+				if (!response)
+					return;
 
-			this.dispatchFileStatusChange();
-			if (!response)
-				return;
-
-			await this.uploadFiles(response);
-		});
+				await this.uploadFiles(response);
+			});
 
 		return body;
 	}
