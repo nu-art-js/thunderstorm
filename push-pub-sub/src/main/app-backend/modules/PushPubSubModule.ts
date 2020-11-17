@@ -150,7 +150,7 @@ export class PushPubSubModule_Class
 		}, {} as TempMessages);
 
 		const {response, messages} = await this.sendMessage(persistent, _messages, notifications);
-		this.deleteNotifications();
+		await this.deleteNotifications();
 		return this.cleanUp(response, messages);
 	}
 
