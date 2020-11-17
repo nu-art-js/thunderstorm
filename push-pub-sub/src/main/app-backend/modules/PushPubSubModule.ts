@@ -184,7 +184,7 @@ export class PushPubSubModule_Class
 			return carry;
 		}, {} as TempMessages);
 		await this.sendMessage(persistent, _messages, notifications);
-		this.deleteNotifications();
+		await this.deleteNotifications();
 	}
 
 	buildNotification = (user: string, pushkey: string, persistent:boolean, data?: any, props?: any) => {
@@ -206,7 +206,7 @@ export class PushPubSubModule_Class
 		return notification;
 	};
 
-	sendMessage = async (persistent: boolean, _messages: TempMessages, notifications: DB_Notifications[]) => {
+	sendMessage = async (persistent: boolean, _messages: TempMessages, notifications: DB_Notifications[]): Promise<{response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]}> => {
 		if (persistent)
 			await this.notifications.insertAll(notifications);
 
