@@ -142,19 +142,7 @@ export class PushPubSubModule_Class
 
 			carry[session.firebaseToken] = carry[session.firebaseToken] || [];
 
-			const notification: DB_Notifications = {
-				_id: generateHex(16),
-				userId: session.userId,
-				timestamp: currentTimeMillies(),
-				read: false,
-				pushKey: db_pushKey.pushKey
-			};
-
-			if(data)
-				notification.data = data;
-
-			if (props)
-				notification.props = props;
+			const notification = this.buildNotification(session.userId, db_pushKey.pushKey, data, props)
 
 			carry[session.firebaseToken].push(notification);
 			if(persistent)
@@ -163,13 +151,7 @@ export class PushPubSubModule_Class
 			return carry;
 		}, {} as TempMessages);
 
-		if(persistent)
-			await this.notifications.insertAll(notifications);
-
-		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
-		console.log('sending a message')
-		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
-		console.log('and this is the response: '+response.responses.map(_response => _response.success))
+		const {response, messages} = await this.sendMessage(persistent, _messages, notifications)
 
 		return this.cleanUp(response, messages);
 	}
@@ -195,19 +177,7 @@ export class PushPubSubModule_Class
 
 			carry[session.firebaseToken] = carry[session.firebaseToken] || [];
 
-			const notification: DB_Notifications = {
-				_id: generateHex(16),
-				userId: user,
-				timestamp: currentTimeMillies(),
-				read: false,
-				pushKey: 'push-to-user'
-			};
-
-			if(data)
-				notification.data = data;
-
-			if (props)
-				notification.props = props;
+			const notification = this.buildNotification(user, 'push-to-user', props, data)
 
 			carry[session.firebaseToken].push(notification);
 			if(persistent)
@@ -215,7 +185,28 @@ export class PushPubSubModule_Class
 
 			return carry;
 		}, {} as TempMessages);
+		await this.sendMessage(persistent, _messages, notifications)
+	}
 
+	buildNotification = (user:string, pushkey:string,  data?:any, props?: any) => {
+		const notification: DB_Notifications = {
+			_id: generateHex(16),
+			userId: user,
+			timestamp: currentTimeMillies(),
+			read: false,
+			pushKey: pushkey
+		};
+
+		if(data)
+			notification.data = data;
+
+		if (props)
+			notification.props = props;
+
+		return notification
+	}
+
+	sendMessage =  async (persistent:boolean, _messages: TempMessages, notifications: DB_Notifications[]) =>{
 		if(persistent)
 			await this.notifications.insertAll(notifications);
 
@@ -223,6 +214,7 @@ export class PushPubSubModule_Class
 		console.log('sending a message')
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
 		console.log('and this is the response: '+response.responses.map(_response => _response.success))
+		return {response, messages}
 	}
 
 	readNotification = async (id: string, read: boolean) => {
