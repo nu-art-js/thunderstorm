@@ -80,7 +80,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 	readonly printResponse: boolean = true;
 	readonly headersToLog: string[] = [];
 
-	private readonly method: HttpMethod;
+	readonly method: HttpMethod;
 	private url!: string;
 	readonly relativePath: string;
 	private middlewares?: ServerApi_Middleware[];
@@ -92,7 +92,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 		this.setMinLevel(ServerApi.isDebug? LogLevel.Verbose:LogLevel.Info)
 
 		this.method = method;
-		this.relativePath = `/${relativePath}`;
+		this.relativePath = `${relativePath}`;
 	}
 
 	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
@@ -136,7 +136,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 	}
 
 	public route(router: ExpressRouter, prefixUrl: string) {
-		const fullPath = `${prefixUrl ? prefixUrl : ""}${this.relativePath}`;
+		const fullPath = `${prefixUrl ? prefixUrl : ""}/${this.relativePath}`;
 		this.setTag(fullPath);
 		router[this.method](fullPath, this.call);
 		this.url = `${HttpServer.getBaseUrl()}${fullPath}`;
@@ -292,7 +292,7 @@ export class ServerApi_Proxy<Binder extends ApiTypeBinder<string, R, B, P>, R = 
 	extends ServerApi<Binder> {
 	private readonly api: ServerApi<Binder>;
 	public constructor(api: ServerApi<any>) {
-		super(HttpMethod.ALL, `${api.relativePath}/proxy`);
+		super(api.method, `${api.relativePath}/proxy`);
 		this.api = api;
 		this.setMiddlewares(RemoteProxy.Middleware)
 	}
