@@ -36,6 +36,7 @@ import {
 import {
 	Api_GetUploadUrl,
 	BaseUploaderFile,
+	DB_Temp_File,
 	TempSecureUrl
 } from "../../shared/types";
 
@@ -59,6 +60,7 @@ export type FileInfo = {
 	name: string
 	request?: BaseHttpRequest<any>
 	file: any
+	tempDoc?: DB_Temp_File
 };
 
 export interface OnFileStatusChanged {
@@ -185,18 +187,18 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 
 	private uploadFile = async (response: TempSecureUrl) => {
 		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.UploadingFile);
-
+		this.setFileInfo(response.tempDoc.feId, "tempDoc", response.tempDoc);
 		const fileInfo = this.files[response.tempDoc.feId];
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
 
-		fileInfo.request = this
+		const request = this
 			.httpModule
 			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
 			.setUrl(response.secureUrl)
-			.setOnError((request) => {
+			.setOnError((_request) => {
 				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
-				this.setFileInfo(response.tempDoc.feId, "messageStatus", request.asText());
+				this.setFileInfo(response.tempDoc.feId, "messageStatus", _request.asText());
 			})
 			.setTimeout(10 * Minute)
 			.setBody(fileInfo.file)
@@ -204,7 +206,8 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 				this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
 			});
 
-		await fileInfo.request.executeSync();
+		this.setFileInfo(response.tempDoc.feId, "request", request);
+		await request.executeSync();
 
 		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
 		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.PostProcessing);
