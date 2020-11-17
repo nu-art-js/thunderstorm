@@ -19,10 +19,13 @@
 
 import {PushPubSubModule} from "../modules/PushPubSubModule";
 import {FirebaseModule} from "@nu-art/firebase/frontend";
+import {NotificationsModule} from "../modules/NotificationModule";
 
 export const Frontend_ModulePack_PushPubSub = [
 	FirebaseModule,
-	PushPubSubModule
+	PushPubSubModule,
+	NotificationsModule
 ];
 
-export * from "../modules/PushPubSubModule"
+export * from "../modules/PushPubSubModule";
+export * from "../modules/NotificationModule";

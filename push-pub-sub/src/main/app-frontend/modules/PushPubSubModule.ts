@@ -28,9 +28,9 @@ import {
 } from "@nu-art/ts-common";
 
 import {
+	HttpModule,
 	StorageKey,
-	ThunderDispatcher,
-	HttpModule
+	ThunderDispatcher
 } from "@nu-art/thunderstorm/frontend";
 // noinspection TypeScriptPreferShortImport
 import {
@@ -43,8 +43,7 @@ import {
 	PubSubReadNotification,
 	PubSubRegisterClient,
 	Request_PushRegister,
-	SubscribeProps,
-	SubscriptionData
+	SubscribeProps
 } from "../../index";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
@@ -52,6 +51,10 @@ import {
 	FirebaseSession,
 	MessagingWrapper
 } from "@nu-art/firebase/frontend";
+import {
+	dispatch_NotificationsUpdated,
+	NotificationsModule
+} from "./NotificationModule";
 
 export const Command_SwToApp = 'SwToApp';
 
@@ -59,7 +62,7 @@ export interface OnPushMessageReceived<M extends MessageType<any, any, any> = ne
 	S extends string = IFP<M>,
 	P extends SubscribeProps = ISP<M>,
 	D = ITP<M>> {
-	__onMessageReceived(pushKey: S, props?: P, data?: D): void
+	__onMessageReceived(notification: DB_Notifications): void
 }
 
 type FirebaseConfig = {
@@ -93,7 +96,6 @@ export class PushPubSubModule_Class
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, "__onMessageReceived">("__onMessageReceived");
 	private dispatch_notifications = new ThunderDispatcher<OnNotificationsReceived, '__onNotificationsReceived'>('__onNotificationsReceived');
 
-	private notifications: DB_Notifications[] = [];
 	private readonly pushSessionId: string;
 
 	constructor() {
@@ -187,13 +189,14 @@ export class PushPubSubModule_Class
 	};
 
 	private processMessage = (data: StringMap) => {
-		const arr: SubscriptionData[] = JSON.parse(data.messages);
+		const arr: DB_Notifications[] = JSON.parse(data.messages);
 		arr.forEach(s => {
 			const sub = this.subscriptions.find(_s => _s.pushKey === s.pushKey && (s.props ? compare(_s.props, s.props) : true));
 			if (!sub && s.pushKey !== 'push-to-user')
 				return this.logInfo('I disregard this push, since I didnt subscribe', s);
+			NotificationsModule.addNotification(s);
 
-			this.dispatch_pushMessage.dispatchModule([s.pushKey, s.props, s.data]);
+			this.dispatch_pushMessage.dispatchModule([s]);
 		});
 	};
 
@@ -219,7 +222,6 @@ export class PushPubSubModule_Class
 		return this.register();
 	};
 
-	getNotifications = () => this.notifications;
 
 	readNotification = (id: string, read: boolean) => {
 		const body = {
@@ -232,7 +234,9 @@ export class PushPubSubModule_Class
 			.setRelativeUrl("/v1/push/read")
 			.setJsonBody(body)
 			.setOnError('Something went wrong while reading your notification')
-			.execute();
+			.execute(() => {
+				dispatch_NotificationsUpdated.dispatchUI([]);
+			});
 	};
 
 	private register = async (): Promise<void> => {
@@ -254,7 +258,7 @@ export class PushPubSubModule_Class
 					.setOnError("Failed to register for push")
 					.executeSync();
 
-				this.notifications = response;
+				NotificationsModule.retrieveNotificationList(response);
 				this.dispatch_notifications.dispatchModule([]);
 				this.dispatch_notifications.dispatchUI([]);
 				this.logVerbose('Finished register PubSub');
