@@ -76,6 +76,7 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		if (!origin)
 			throw new BadImplementationException('Did you forget to set the origin config key for the HttpModule?');
 
+		this.origin = origin;
 		this.timeout = this.config.timeout || this.timeout;
 	}
 
