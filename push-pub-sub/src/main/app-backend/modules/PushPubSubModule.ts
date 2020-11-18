@@ -165,20 +165,23 @@ export class PushPubSubModule_Class
 			return;
 
 		const sessionsIds = docs.map(d => d.pushSessionId);
-		const sessions = await batchAction(sessionsIds, 10, async elements => this.pushSessions.query({where: {pushSessionId: {$in: elements}}}));
+		const sessions = await batchAction(sessionsIds, 10, async elements => {
+			console.log('elements',elements)
+			return await this.pushSessions.query({where: {pushSessionId: {$in: elements}}});
+		});
 
-		console.log('we have sessions..')
+		console.log('we have sessions..');
 		const notifications: DB_Notifications[] = [];
 		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushSession) => {
 			const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
 			if (!session)
 				return carry;
-			console.log('and a session with the right id')
+			console.log('and a session with the right id');
 
 
 			const notification = this.buildNotification(user, 'push-to-user', persistent, props, data);
 
-			console.log('also the right notification')
+			console.log('also the right notification');
 			carry[session.firebaseToken] = [notification];
 			if (persistent)
 				notifications.push(notification);
@@ -189,7 +192,7 @@ export class PushPubSubModule_Class
 		await this.deleteNotifications();
 	}
 
-	buildNotification = (user: string, pushkey: string, persistent:boolean, data?: any, props?: any) => {
+	buildNotification = (user: string, pushkey: string, persistent: boolean, data?: any, props?: any) => {
 		const notification: DB_Notifications = {
 			_id: generateHex(16),
 			userId: user,
@@ -208,7 +211,7 @@ export class PushPubSubModule_Class
 		return notification;
 	};
 
-	sendMessage = async (persistent: boolean, _messages: TempMessages, notifications: DB_Notifications[]): Promise<{response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]}> => {
+	sendMessage = async (persistent: boolean, _messages: TempMessages, notifications: DB_Notifications[]): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] }> => {
 		if (persistent)
 			await this.notifications.insertAll(notifications);
 
