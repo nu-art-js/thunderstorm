@@ -178,7 +178,6 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 					console.log('Api cancelled: ', e.message);
 				}
 
-				console.log(e);
 				this.response = e.response;
 				return reject(e);
 			}
