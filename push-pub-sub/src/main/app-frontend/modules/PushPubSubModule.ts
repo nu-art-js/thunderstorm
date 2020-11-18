@@ -258,7 +258,7 @@ export class PushPubSubModule_Class
 					.setOnError("Failed to register for push")
 					.executeSync();
 
-				NotificationsModule.retrieveNotificationList(response);
+				NotificationsModule.setNotificationList(response);
 				this.dispatch_notifications.dispatchModule([]);
 				this.dispatch_notifications.dispatchUI([]);
 				this.logVerbose('Finished register PubSub');

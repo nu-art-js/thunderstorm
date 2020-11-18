@@ -173,11 +173,10 @@ export class PushPubSubModule_Class
 			if (!session)
 				return carry;
 
-			carry[session.firebaseToken] = carry[session.firebaseToken] || [];
 
 			const notification = this.buildNotification(user, 'push-to-user', persistent, props, data);
 
-			carry[session.firebaseToken].push(notification);
+			carry[session.firebaseToken] = [notification];
 			if (persistent)
 				notifications.push(notification);
 
