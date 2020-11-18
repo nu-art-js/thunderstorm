@@ -4,8 +4,6 @@ import {DB_Notifications} from "../..";
 import {PushPubSubModule} from "./PushPubSubModule";
 
 
-export const sampleNotificationList: DB_Notifications[] = [];
-
 export interface OnNotificationsUpdated {
 	__onNotificationsUpdated(): void
 }
@@ -22,7 +20,7 @@ export class NotificationsModule_Class
 		return this.notifications;
 	}
 
-	retrieveNotificationList = (notifications: DB_Notifications[]) => {
+	setNotificationList = (notifications: DB_Notifications[]) => {
 		this.notifications = notifications;
 	};
 
