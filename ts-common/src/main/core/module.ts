@@ -72,7 +72,6 @@ export abstract class Module<Config = any>
 	}
 
 	public setDefaultConfig(config: Partial<Config>) {
-		console.log('Default',this.name, config, this.config);
 		// @ts-ignore
 		this.config = config;
 	}
@@ -86,7 +85,6 @@ export abstract class Module<Config = any>
 	}
 
 	private setConfig(config: Config): void {
-		console.log(this.name, config, this.config);
 		// @ts-ignore
 		this.config = this.config ? merge(this.config, config || {}) : config;
 	}
