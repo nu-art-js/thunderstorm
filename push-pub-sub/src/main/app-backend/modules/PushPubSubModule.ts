@@ -167,15 +167,18 @@ export class PushPubSubModule_Class
 		const sessionsIds = docs.map(d => d.pushSessionId);
 		const sessions = await batchAction(sessionsIds, 10, async elements => this.pushSessions.query({where: {pushSessionId: {$in: elements}}}));
 
+		console.log('we have sessions..')
 		const notifications: DB_Notifications[] = [];
 		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushSession) => {
 			const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
 			if (!session)
 				return carry;
+			console.log('and a session with the right id')
 
 
 			const notification = this.buildNotification(user, 'push-to-user', persistent, props, data);
 
+			console.log('also the right notification')
 			carry[session.firebaseToken] = [notification];
 			if (persistent)
 				notifications.push(notification);
