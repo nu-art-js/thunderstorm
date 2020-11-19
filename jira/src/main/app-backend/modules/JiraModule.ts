@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 import {
+	_keys,
+	BadImplementationException,
 	ImplementationMissingException,
 	Module,
-	StringMap,
-	TypedMap,
-	_keys
+	TypedMap
 } from "@nu-art/ts-common";
 import {
 	ApiException,
@@ -34,6 +34,11 @@ import {
 	Response,
 	UriOptions
 } from 'request'
+import {
+	JiraVersion,
+	JiraVersion_Create
+} from "../../shared/version";
+import {JiraUtils} from "./utils";
 
 type Config = {
 	auth: JiraAuth
@@ -44,10 +49,6 @@ type JiraAuth = {
 	email: string
 	apiKey: string
 };
-
-export type JiraIssueType = {
-	fields: JiraFields
-}
 
 type JiraContent = {
 	type: "paragraph" | string
@@ -61,19 +62,19 @@ type JiraDescription = string | {
 	content: JiraContent[]
 }
 
-type JiraFields = {
-	project: JiraProjectInfo
+export type JiraIssue_Fields = {
+	project: JiraProject
 	issuetype: IssueType
 	description: JiraDescription
 	summary: string
-}
+} & TypedMap<any>
 
 export type IssueType = {
 	id: string
 	name: string
 }
 
-export type JiraProjectInfo = {
+export type JiraProject = {
 	id: string
 	name: string
 	key: string
@@ -87,7 +88,7 @@ export type BaseIssue = {
 
 export type JiraIssue = BaseIssue & {
 	expand: string
-	fields: JiraFields & StringMap
+	fields: JiraIssue_Fields
 };
 
 export type FixVersionType = {
@@ -100,7 +101,7 @@ export type JiraQuery = TypedMap<string | string[]> & {
 	fixVersion?: string | string[]
 };
 
-export type JiraQueryResponse = {
+export type JiraResponse_IssuesQuery = {
 	expand: string,
 	startAt: number,
 	maxResults: number,
@@ -115,6 +116,8 @@ export class JiraModule_Class
 	extends Module<Config> {
 	private headersJson!: Headers;
 	private headersForm!: Headers;
+	private projects!: JiraProject[];
+	private versions: { [projectId: string]: JiraVersion[] }= {};
 
 	protected init(): void {
 		if (!this.config.baseUrl)
@@ -127,7 +130,7 @@ export class JiraModule_Class
 		this.headersForm = this.buildHeaders(this.config.auth, false);
 	}
 
-	buildHeaders = ({apiKey, email}: JiraAuth, check: boolean) => {
+	private buildHeaders = ({apiKey, email}: JiraAuth, check: boolean) => {
 		const headers: Headers = {
 			Authorization: `Basic ${Buffer.from(email + ':' + apiKey).toString('base64')}`
 		};
@@ -143,71 +146,71 @@ export class JiraModule_Class
 		return headers;
 	};
 
-	createTextBody = (description: string) => {
-		return {
-			type: "doc",
-			version: 1,
-			content: [
-				{
-					type: "paragraph",
-					content: [
-						{
-							type: "text",
-							text: description
-						}
-					]
+	project = {
+		query: async (projectKey: string) => {
+			if (!this.projects)
+				this.projects = await this.executeGetRequest<JiraProject[]>(`/project`)
+
+			const project = this.projects.find(project => project.key === projectKey);
+			if (!project)
+				throw new BadImplementationException(`Could not find project: ${projectKey}`)
+
+			return project;
+		},
+	}
+
+	version = {
+		query: async (projectId: string, versionName: string) => {
+			if (!this.versions[projectId])
+				this.versions[projectId] = await this.executeGetRequest<JiraVersion[]>(`/project/${projectId}/versions`);
+
+			return this.versions[projectId].find(version => version.name === versionName);
+		},
+		create: async (projectId: string, versionName: string) => {
+			const version = await this.executePostRequest<JiraVersion, JiraVersion_Create>(`/version`, {projectId, name: versionName});
+			this.versions[projectId].push(version);
+			return version
+		}
+	}
+
+	comment = {
+		add: async (issueKey: string, comment: string) => {
+			return this.executePostRequest(`/issue/${issueKey}/comment`, JiraUtils.createText(comment))
+		}
+	}
+
+	issue = {
+		comment: this.comment,
+		create: async (project: JiraProject, issueType: IssueType, summary: string, description: string): Promise<ResponsePostIssue> => {
+			return this.executePostRequest<ResponsePostIssue, Pick<JiraIssue, "fields">>('/issue', {
+				fields: {
+					project,
+					issuetype: issueType,
+					description: JiraUtils.createText(description),
+					summary
 				}
-			]
-		};
-	};
+			});
+		},
+		update: async (issueKey: string, fields: Partial<JiraIssue_Fields>) => {
+			return this.executePutRequest<{ fields: Partial<JiraIssue_Fields> }>(`/issue/${issueKey}`, {fields});
+		},
+		resolve: async (issueKey: string, projectKey: string, versionName: string, status: string) => {
+			const project = await JiraModule.project.query(projectKey);
+			let version = await JiraModule.version.query(projectKey, versionName);
+			if (!version)
+				version = await JiraModule.version.create(project.id, versionName);
 
-	createBody = (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string): JiraIssueType => {
-		return {
-			fields: {
-				project,
-				issuetype: issueType,
-				description: this.createTextBody(description),
-				summary
-			}
-		}
-	};
-
-	createVersionBody = (data: any) => {
-		return {
-			fields: data
-		}
-	};
+			return this.executePutRequest<{ fields: Partial<JiraIssue_Fields> }>(`/issue/${issueKey}`, {fields: {fixVersions: [{id: version.id}]}});
+		},
+	}
 
 	getIssueTypes = async (id: string) => {
-		console.log("here");
 		return this.executeGetRequest('/issue/createmetadata', {projectKeys: id});
 	};
 
-	editIssue = (issueKey: string, data: FixVersionType | any) => {
-		return this.executePutRequest(`/issue/${issueKey}`, this.createVersionBody(data));
-	};
-
-	private buildQuery = (query: JiraQuery) => {
-		const params = _keys(query).map((key) => {
-			let queryValue;
-			if (Array.isArray(query[key])) {
-				queryValue = (query[key] as string[]).map(value => `"${value}"`).join(",");
-				queryValue = `(${queryValue})`
-			} else
-				queryValue = `"${query[key]}"`
-
-			return `${key}=${queryValue}`;
-		});
-		return params.join(" and ")
-	};
 
 	query = async (query: JiraQuery): Promise<JiraIssue[]> => {
-		const jql = this.buildQuery(query);
-		return (await this.executeGetRequest<JiraQueryResponse>(`/search`, {jql})).issues;
-	};
-
-	postIssueRequest = async (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string): Promise<ResponsePostIssue> => {
-		return this.executePostRequest<ResponsePostIssue>('/issue', this.createBody(project, issueType, summary, description));
+		return (await this.executeGetRequest<JiraResponse_IssuesQuery>(`/search`, {jql: JiraUtils.buildJQL(query)})).issues;
 	};
 
 	getIssueRequest = async (issue: string): Promise<JiraIssue> => {
@@ -215,16 +218,7 @@ export class JiraModule_Class
 	};
 
 	addIssueAttachment = async (issue: string, file: Buffer) => {
-		// formData.append("file", file);
 		return this.executeFormRequest(`/issue/${issue}/attachments`, file)
-	};
-
-	addCommentRequest = (issue: string, comment: string) => {
-		// create comment
-		const obj = {
-			body: this.createTextBody(comment)
-		};
-		return this.executePostRequest(`/issue/${issue}/comment`, obj)
 	};
 
 	private executeFormRequest = async (url: string, buffer: Buffer) => {
@@ -237,7 +231,7 @@ export class JiraModule_Class
 		return this.executeRequest(request);
 	};
 
-	private async executePostRequest<T>(url: string, body: any) {
+	private async executePostRequest<Res, Req>(url: string, body: Req) {
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
 			uri: `${this.config.baseUrl}${url}`,
@@ -245,10 +239,10 @@ export class JiraModule_Class
 			method: HttpMethod.POST,
 			json: true
 		};
-		return this.executeRequest<T>(request);
+		return this.executeRequest<Res>(request);
 	}
 
-	private async executePutRequest(url: string, body: any) {
+	private async executePutRequest<T>(url: string, body: T) {
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
 			uri: `${this.config.baseUrl}${url}`,
@@ -258,7 +252,6 @@ export class JiraModule_Class
 		};
 		return this.executeRequest(request);
 	}
-
 
 	private async executeGetRequest<T>(url: string, _params?: { [k: string]: string }) {
 		const params = _params && Object.keys(_params).map((key) => {
@@ -276,7 +269,6 @@ export class JiraModule_Class
 			json: true
 		};
 
-		console.log(`request: `, request)
 		return this.executeRequest<T>(request);
 	}
 
@@ -287,14 +279,12 @@ export class JiraModule_Class
 		return response.toJSON().body as T;
 	}
 
-	private async executeRequest<T>(body: UriOptions & CoreOptions) {
-		const response = await promisifyRequest(body, false);
+	private async executeRequest<T>(request: UriOptions & CoreOptions) {
+		console.log(`request: `, request.uri)
+		const response = await promisifyRequest(request, false);
 		return this.handleResponse<T>(response);
 	}
 }
 
 export const JiraModule = new JiraModule_Class();
-
-
-
 
