@@ -76,14 +76,9 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		if (!origin)
 			throw new BadImplementationException('Did you forget to set the origin config key for the HttpModule?');
 
-		this.origin = origin.replace("${hostname}", window.location.hostname).replace("${protocol}", window.location.protocol);
+		this.origin = origin;
 		this.timeout = this.config.timeout || this.timeout;
 	}
-
-	protected validate(): void {
-		if (!this.origin)
-			throw new Error("MUST specify server origin path, e.g. 'https://localhost:3000'");
-	};
 
 	protected getDefaultHeaders() {
 		return Object.keys(this.defaultHeaders).reduce((toRet, _key) => {

@@ -20,6 +20,7 @@
 import 'module-alias/register';
 import * as functions from "firebase-functions";
 import {
+	AxiosHttpModule,
 	ForceUpgrade,
 	RouteResolver,
 	Storm
@@ -57,10 +58,7 @@ import {
 	FirestoreTransaction
 } from '@nu-art/firebase/backend';
 import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
-import {HttpMethod} from "@nu-art/thunderstorm";
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
-import {ExampleSetMax} from '@app/app-shared';
-import {AxiosHttpModule} from "@nu-art/thunderstorm/backend";
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -76,6 +74,8 @@ const modules: Module[] = [
 	PushPubSubModule,
 	AxiosHttpModule
 ];
+
+AxiosHttpModule.setDefaultConfig({origin: 'https://us-central1-thunderstorm-staging.cloudfunctions.net/api/'});
 
 const postProcessor: { [k: string]: PostProcessor } = {
 	default: async (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => {
@@ -106,16 +106,16 @@ const _exports = new Storm()
 	.setInitialRoutePath("/api")
 	.setEnvironment(Environment.name)
 	.build(async () => {
-		const response = await AxiosHttpModule
-			.createRequest<ExampleSetMax>(HttpMethod.POST, 'internal-be-request')
-			.setUrl('https://us-central1-thunderstorm-staging.cloudfunctions.net/api/v1/sample/set-max')
-			.setJsonBody({n: 65})
-			.setOnError((request, errorData) => {
-				console.log('I got error', errorData);
-			})
-			.setTimeout(30000)
-			.executeSync();
-		console.log('I got respose', response);
+		// const response = await AxiosHttpModule
+		// 	.createRequest<ExampleSetMax>(HttpMethod.POST, 'internal-be-request')
+		// 	.setUrl('http://localhost:5000/thunderstorm-staging/us-central1/api/v1/sample/set-max')
+		// 	.setJsonBody({n: 65})
+		// 	.setOnError((request, errorData) => {
+		// 		console.log('I got error', errorData);
+		// 	})
+		// 	.setTimeout(30000)
+		// 	.execute();
+		// console.log('I got respose', response);
 	});
 
 _exports.logTest = functions.database.ref('triggerLogs').onWrite((change, context) => {

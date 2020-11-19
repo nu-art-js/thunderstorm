@@ -33,6 +33,7 @@ class ServerApi_EndpointExample
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: {n:number}) {
+		console.log('Setting max');
 		return DispatchModule.setMax(body.n)
 	}
 }
