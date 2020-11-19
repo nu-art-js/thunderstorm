@@ -22,6 +22,7 @@ import {
 	batchAction,
 	compare,
 	currentTimeMillies,
+	Day,
 	generateHex,
 	Hour,
 	ImplementationMissingException,
@@ -54,7 +55,8 @@ import {
 } from "@nu-art/thunderstorm/backend";
 
 type Config = {
-	delta_time?: number
+	notificationsCleanupTime?: number
+	sessionsCleanupTime?: number
 };
 
 type TempMessages = {
@@ -81,7 +83,7 @@ export class PushPubSubModule_Class
 
 	async register(body: Request_PushRegister, request: ExpressRequest): Promise<DB_Notifications[]> {
 		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync([request]);
-		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data._id || resp.find(e => e.key === 'RemoteProxy')?.data;
+		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data?._id || resp.find(e => e.key === 'RemoteProxy')?.data;
 		if (!userId)
 			throw new ImplementationMissingException('Missing user from accounts Module');
 
@@ -144,52 +146,44 @@ export class PushPubSubModule_Class
 			return carry;
 		}, {} as TempMessages);
 		const {response, messages} = await this.sendMessage(persistent, _messages);
-		await this.deleteNotifications();
 		return this.cleanUp(response, messages);
 	}
 
 	async pushToUser<M extends MessageType<any, any, any> = never,
 		S extends string = IFP<M>,
 		P extends SubscribeProps = ISP<M>,
-		D = ITP<M>>(user: string, props?: P, data?: D, persistent: boolean = false) {
+		D = ITP<M>>(user: string, key: string, props?: P, data?: D, persistent: boolean = false) {
 		console.log('i am pushing to user...', user, props);
 
-		const notification = this.buildNotification(user, 'push-to-user', persistent, props, data);
+		const notification = this.buildNotification(user, key, persistent, props, data);
 		const notifications: DB_Notifications[] = [];
 		if (persistent) {
 			notifications.push(notification);
 			await this.notifications.insertAll(notifications);
 		}
 
-		let docs = await this.pushSessions.query({where: {userId: user}});
-
+		const docs = await this.pushSessions.query({where: {userId: user}});
 		if (docs.length === 0)
 			return;
 
 		const sessionsIds = docs.map(d => d.pushSessionId);
-		const sessions = await batchAction(sessionsIds, 10, async elements => {
-			console.log('elements', elements);
-			return await this.pushSessions.query({where: {pushSessionId: {$in: elements}}});
-		});
-
-		console.log('we have sessions..');
+		const sessions = await batchAction(sessionsIds, 10, async elements => this.pushSessions.query({where: {pushSessionId: {$in: elements}}}));
 
 		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushSession) => {
 			const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
 			if (!session)
 				return carry;
-			console.log('and a session with the right id');
-			console.log('also the right notification');
+
 			carry[session.firebaseToken] = [notification];
 
 
 			return carry;
 		}, {} as TempMessages);
+
 		await this.sendMessage(persistent, _messages);
-		await this.deleteNotifications();
 	}
 
-	buildNotification = (user: string, pushkey: string, persistent: boolean, data?: any, props?: any) => {
+	private buildNotification = (user: string, pushkey: string, persistent: boolean, data?: any, props?: any) => {
 		const notification: DB_Notifications = {
 			_id: generateHex(16),
 			userId: user,
@@ -221,11 +215,15 @@ export class PushPubSubModule_Class
 	};
 
 	scheduledCleanup = async () => {
-		const delta_time = this.config?.delta_time || Hour;
+		const sessionsCleanupTime = this.config?.sessionsCleanupTime || Hour;
+		const notificationsCleanupTime = this.config?.notificationsCleanupTime || 7 * Day;
 
-		const docs = await this.pushSessions.query({where: {timestamp: {$lt: currentTimeMillies() - delta_time}}});
+		const docs = await this.pushSessions.query({where: {timestamp: {$lt: currentTimeMillies() - sessionsCleanupTime}}});
 
-		return this.cleanUpImpl(docs.map(d => d.firebaseToken));
+		await Promise.all([
+			                  this.notifications.delete({where: {timestamp: {$lt: currentTimeMillies() - notificationsCleanupTime}}}),
+			                  this.cleanUpImpl(docs.map(d => d.firebaseToken))
+		                  ]);
 	};
 
 	private cleanUp = async (response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]) => {
@@ -256,14 +254,6 @@ export class PushPubSubModule_Class
 		];
 
 		await Promise.all(async);
-	}
-
-	private async deleteNotifications() {
-		const aWeekAgo = currentTimeMillies() - 604800000;
-		const notifications = await this.notifications.query({where: {}});
-		console.log(notifications.length);
-		await batchAction(notifications, 10, async elements => this.notifications.delete({where: {timestamp: {$lt: aWeekAgo}}}));
-
 	}
 }
 
