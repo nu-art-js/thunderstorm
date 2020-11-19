@@ -124,32 +124,26 @@ export class PushPubSubModule_Class
 		if (props)
 			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
 
-		if (docs.length === 0)
+		if (docs.length === 0) {
 			return;
+		}
 
-		//  {sessionId: string, pushKey: string, props?: Props}[]
-		// I get the docs from the pushKeys
-		// I deduce the sessions
 		const sessionsIds = docs.map(d => d.pushSessionId);
 		// I get the tokens relative to those sessions (query)
 		const sessions = await batchAction(sessionsIds, 10, async elements => this.pushSessions.query({where: {pushSessionId: {$in: elements}}}));
 
-		const notifications: DB_Notifications[] = [];
 		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
 			const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
 			if (!session)
 				return carry;
 
-			const notification = this.buildNotification(session.userId, db_pushKey.pushKey, persistent, data, props);
+			const notification = this.buildNotification(session.userId, db_pushKey.pushKey, false, data, props);
 
 			carry[session.firebaseToken] = [notification];
-			if (persistent)
-				notifications.push(notification);
 
 			return carry;
 		}, {} as TempMessages);
-
-		const {response, messages} = await this.sendMessage(persistent, _messages, notifications);
+		const {response, messages} = await this.sendMessage(persistent, _messages);
 		await this.deleteNotifications();
 		return this.cleanUp(response, messages);
 	}
@@ -162,8 +156,10 @@ export class PushPubSubModule_Class
 
 		const notification = this.buildNotification(user, 'push-to-user', persistent, props, data);
 		const notifications: DB_Notifications[] = [];
-		if (persistent)
+		if (persistent) {
 			notifications.push(notification);
+			await this.notifications.insertAll(notifications);
+		}
 
 		let docs = await this.pushSessions.query({where: {userId: user}});
 
@@ -189,7 +185,7 @@ export class PushPubSubModule_Class
 
 			return carry;
 		}, {} as TempMessages);
-		await this.sendMessage(persistent, _messages, notifications);
+		await this.sendMessage(persistent, _messages);
 		await this.deleteNotifications();
 	}
 
@@ -212,10 +208,7 @@ export class PushPubSubModule_Class
 		return notification;
 	};
 
-	sendMessage = async (persistent: boolean, _messages: TempMessages, notifications: DB_Notifications[]): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] }> => {
-		if (persistent)
-			await this.notifications.insertAll(notifications);
-
+	sendMessage = async (persistent: boolean, _messages: TempMessages): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] }> => {
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
 		console.log('sending a message');
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
