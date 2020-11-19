@@ -159,6 +159,9 @@ export class PushPubSubModule_Class
 		P extends SubscribeProps = ISP<M>,
 		D = ITP<M>>(user: string, props?: P, data?: D, persistent: boolean = false) {
 		console.log('i am pushing to user...', user, props);
+
+		const notification = this.buildNotification(user, 'push-to-user', persistent, props, data);
+
 		let docs = await this.pushSessions.query({where: {userId: user}});
 
 		if (docs.length === 0)
@@ -166,7 +169,7 @@ export class PushPubSubModule_Class
 
 		const sessionsIds = docs.map(d => d.pushSessionId);
 		const sessions = await batchAction(sessionsIds, 10, async elements => {
-			console.log('elements',elements)
+			console.log('elements', elements);
 			return await this.pushSessions.query({where: {pushSessionId: {$in: elements}}});
 		});
 
@@ -177,10 +180,6 @@ export class PushPubSubModule_Class
 			if (!session)
 				return carry;
 			console.log('and a session with the right id');
-
-
-			const notification = this.buildNotification(user, 'push-to-user', persistent, props, data);
-
 			console.log('also the right notification');
 			carry[session.firebaseToken] = [notification];
 			if (persistent)
