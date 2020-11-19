@@ -161,6 +161,9 @@ export class PushPubSubModule_Class
 		console.log('i am pushing to user...', user, props);
 
 		const notification = this.buildNotification(user, 'push-to-user', persistent, props, data);
+		const notifications: DB_Notifications[] = [];
+		if (persistent)
+			notifications.push(notification);
 
 		let docs = await this.pushSessions.query({where: {userId: user}});
 
@@ -174,7 +177,7 @@ export class PushPubSubModule_Class
 		});
 
 		console.log('we have sessions..');
-		const notifications: DB_Notifications[] = [];
+
 		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushSession) => {
 			const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
 			if (!session)
@@ -182,8 +185,7 @@ export class PushPubSubModule_Class
 			console.log('and a session with the right id');
 			console.log('also the right notification');
 			carry[session.firebaseToken] = [notification];
-			if (persistent)
-				notifications.push(notification);
+
 
 			return carry;
 		}, {} as TempMessages);
