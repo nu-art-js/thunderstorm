@@ -19,19 +19,21 @@
 import {
 	ImplementationMissingException,
 	Module,
-	StringMap
+	StringMap,
+    generateHex
 } from "@nu-art/ts-common";
 import {
 	ApiException,
-	promisifyRequest
-} from "@nu-art/thunderstorm/backend"
-import {HttpMethod} from "@nu-art/thunderstorm"
+	promisifyRequest,
+    AxiosHttpModule
+} from "@nu-art/thunderstorm/backend";
+import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	CoreOptions,
 	Headers,
 	Response,
 	UriOptions
-} from 'request'
+} from 'request';
 
 type Config = {
 	auth: JiraAuth
@@ -158,13 +160,13 @@ export class JiraModule_Class
 				description: this.createTextBody(description),
 				summary
 			}
-		}
+		};
 	};
 
 	createVersionBody = (data: any) => {
 		return {
 			fields: data
-		}
+		};
 	};
 
 	getIssueTypes = async (id: string) => {
@@ -178,7 +180,7 @@ export class JiraModule_Class
 
 	private buildSearch = (params: StringMap) => {
 		const search = Object.keys(params).reduce((carry, key) => {
-			return `${carry}${carry.length !== 0 ? '%20and%20' : ''}${key}${key === 'project' ? '=' : '~'}${encodeURIComponent(params[key])}`
+			return `${carry}${carry.length !== 0 ? '%20and%20' : ''}${key}${key === 'project' ? '=' : '~'}${encodeURIComponent(params[key])}`;
 		}, '');
 		return 'jql=' + (search);
 	};
@@ -186,7 +188,7 @@ export class JiraModule_Class
 	getIssueByCustomField = async (project: string, query: StringMap) => {
 		// return this.executeGetRequest('/search?jql=summary~'+summary+'&project='+project)
 		const search = this.buildSearch({project, ...query});
-		return this.executeGetRequest(`/search?${search}`)
+		return this.executeGetRequest(`/search?${search}`);
 	};
 
 
@@ -195,12 +197,12 @@ export class JiraModule_Class
 	};
 
 	getIssueRequest = async (issue: string): Promise<ResponseGetIssue> => {
-		return this.executeGetRequest(`/issue/${issue}`)
+		return this.executeGetRequest(`/issue/${issue}`);
 	};
 
 	addIssueAttachment = async (issue: string, file: Buffer) => {
 		// formData.append("file", file);
-		return this.executeFormRequest(`/issue/${issue}/attachments`, file)
+		return this.executeFormRequest(`/issue/${issue}/attachments`, file);
 	};
 
 	addCommentRequest = (issue: string, comment: string) => {
@@ -208,7 +210,7 @@ export class JiraModule_Class
 		const obj = {
 			body: this.createTextBody(comment)
 		};
-		return this.executePostRequest(`/issue/${issue}/comment`, obj)
+		return this.executePostRequest(`/issue/${issue}/comment`, obj);
 	};
 
 
@@ -256,28 +258,21 @@ export class JiraModule_Class
 		return this.executeRequest(request);
 	}
 
-
 	private async executeGetRequest(url: string, _params?: { [k: string]: string }) {
-		const params = _params && Object.keys(_params).map((key) => {
-			return `${key}=${_params[key]}`;
-		});
-
-		let urlParams = "";
-		if (params && params.length > 0)
-			urlParams = `?${params.join("&")}`;
-
-		const request: UriOptions & CoreOptions = {
-			headers: this.headersJson,
-			uri: `${this.baseUrl}${url}${urlParams}`,
-			method: HttpMethod.GET,
-			json: true
-		};
-		return this.executeRequest(request);
+		const resp = await AxiosHttpModule
+			.createRequest(HttpMethod.GET, generateHex(8))
+			.setOrigin(this.baseUrl)
+			.setRelativeUrl(url)
+			.setUrlParams(_params)
+			.setHeaders(this.headersJson)
+			.executeSync();
+		console.log(resp);
+		return resp;
 	}
 
 	private handleResponse(response: Response) {
 		if (`${response.statusCode}`[0] !== '2')
-			throw new ApiException(response.statusCode, response.body)
+			throw new ApiException(response.statusCode, response.body);
 
 		return response.toJSON().body;
 	}

@@ -21,7 +21,6 @@ import {
 	XhrHttpModule,
 	XhrHttpModule_Class
 } from "@nu-art/thunderstorm/frontend";
-
 import {
 	BaseUploaderFile,
 	fileUploadedKey,
@@ -39,7 +38,6 @@ import {
 	OnFileStatusChanged
 } from "../../shared/modules/BaseUploaderModule";
 
-
 export class UploaderModule_Class
 	extends BaseUploaderModule_Class<XhrHttpModule_Class>
 	implements OnPushMessageReceived<Push_FileUploaded> {
@@ -55,7 +53,7 @@ export class UploaderModule_Class
 		super.dispatchFileStatusChange(id);
 	}
 
-	upload(files: File[], key?: string): BaseUploaderFile[] | undefined {
+	upload(files: File[], key?: string): BaseUploaderFile[] {
 		return this.uploadImpl(files.map((file => {
 			return {
 				name: file.name,
@@ -89,7 +87,3 @@ export class UploaderModule_Class
 }
 
 export const UploaderModule = new UploaderModule_Class();
-
-
-
-

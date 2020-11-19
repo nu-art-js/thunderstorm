@@ -64,6 +64,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	extends BaseHttpRequest<Binder> {
 	private response?: AxiosResponse<DeriveResponseType<DeriveRealBinder<Binder>>>;
 	private cancelSignal: CancelTokenSource;
+	protected status?: number;
 
 	constructor(requestKey: string, requestData?: string, shouldCompress?: boolean) {
 		super(requestKey, requestData);
@@ -72,17 +73,14 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	}
 
 	getStatus(): number {
-		if (!this.response)
-			throw new BadImplementationException('Missing response object..');
+		if (!this.status)
+			throw new BadImplementationException('Missing status..');
 
-		return this.response?.status;
+		return this.status;
 	}
 
 	getResponse(): any {
-		if (!this.response)
-			throw new BadImplementationException('Missing response object..');
-
-		return this.response.data;
+		return this.response?.data;
 	}
 
 	protected resolveResponse() {
@@ -96,11 +94,6 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	getErrorResponse(): ErrorResponse<DeriveErrorType<Binder>> {
 		return {debugMessage: this.getResponse()};
 	}
-
-	//
-	// setBody(bodyAsString: any, _compress?: boolean) {
-	// 	return super.setBody(Buffer.from(bodyAsString), _compress);
-	// }
 
 	protected executeImpl(): Promise<void> {
 		//loop through whatever preprocessor
@@ -164,9 +157,15 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			if (body)
 				options.data = body;
 
+			console.log('I am trying to perform the api call....');
 			try {
+				console.log('before I call');
 				this.response = await axios.request(options);
+				console.log('After I call');
+				console.log(this.response);
+				return resolve()
 			} catch (e) {
+				console.log('In catch');
 				// TODO handle this here
 				// 	if (xhr.readyState === 4 && xhr.status === 0) {
 				// 		reject(new HttpException(404, this.url));
@@ -180,8 +179,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				}
 
 				this.response = e.response;
-			} finally {
-				resolve();
+				return reject(e);
 			}
 		});
 	}
