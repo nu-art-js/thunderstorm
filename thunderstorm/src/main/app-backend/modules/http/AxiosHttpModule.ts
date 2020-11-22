@@ -144,26 +144,16 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				// onDownloadProgress: (progressEvent: ProgressEvent) => {
 				// }
 			};
-			//{
-			//   onDownloadProgress: progressEvent => {
-			//     const total = parseFloat(progressEvent.currentTarget.responseHeaders['Content-Length'])
-			//     const current = progressEvent.currentTarget.response.length
-			//
-			//     let percentCompleted = Math.floor(current / total * 100)
-			//     console.log('completed: ', percentCompleted)
-			//   }
-			// }
 
 			if (body)
 				options.data = body;
 
-			console.log('I am trying to perform the api call....');
 			try {
 				console.log('before I call');
 				this.response = await axios.request(options);
 				console.log('After I call');
-				console.log(this.response);
-				return resolve()
+				this.status = this.response?.status || 200;
+				return resolve();
 			} catch (e) {
 				console.log('In catch');
 				// TODO handle this here
@@ -179,6 +169,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				}
 
 				this.response = e.response;
+				this.status = this.response?.status || 500;
 				return reject(e);
 			}
 		});
