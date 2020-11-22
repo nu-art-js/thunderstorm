@@ -29,7 +29,7 @@ export class Queue
 	private running = 0;
 	private queue: (() => Promise<void>)[] = [];
 	private onQueueEmpty?: () => void;
-	private finalResolve?: () => void;
+	private finalResolve?: (value?: unknown) => void;
 
 	constructor(name: string) {
 		super(name);
