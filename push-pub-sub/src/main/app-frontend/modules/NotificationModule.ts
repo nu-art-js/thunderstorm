@@ -31,7 +31,7 @@ export class NotificationsModule_Class
 
 	updateReadNotification = async (notification: DB_Notifications, read: boolean) => {
 		const readNotification = this.notifications.find(_notification => _notification._id === notification._id);
-		if (!readNotification)
+		if (!readNotification || !readNotification.persistent)
 			return;
 
 		readNotification.read = read;
