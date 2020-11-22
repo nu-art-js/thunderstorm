@@ -294,7 +294,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 	}
 
 	execute(responseHandler?: (response: R, data?: string) => Promise<void> | void) {
-		const toCall = async (resolve: () => void, reject: (reason?: any) => void) => {
+		const toCall = async (resolve: (value?: unknown) => void, reject: (reason?: any) => void) => {
 			await this.executeImpl();
 			if (this.aborted)
 				return resolve();
