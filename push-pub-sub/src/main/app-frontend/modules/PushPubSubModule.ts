@@ -191,11 +191,13 @@ export class PushPubSubModule_Class
 	private processMessage = (data: StringMap) => {
 		const arr: DB_Notifications[] = JSON.parse(data.messages);
 		arr.forEach(s => {
-			const sub = this.subscriptions.find(_s => _s.pushKey === s.pushKey && (s.props ? compare(_s.props, s.props) : true));
-			if (!sub && s.pushKey !== 'push-to-user')
-				return this.logInfo('I disregard this push, since I didnt subscribe', s);
-			NotificationsModule.addNotification(s);
+			// if(s.userId is mine)
 
+			// const sub = this.subscriptions.find(_s => _s.pushKey === s.pushKey && (s.props ? compare(_s.props, s.props) : true));
+			// if (!sub && s.pushKey !== 'push-to-user')
+			// 	return this.logInfo('I disregard this push, since I didnt subscribe', s);
+
+			s.persistent && NotificationsModule.addNotification(s);
 			this.dispatch_pushMessage.dispatchModule([s]);
 		});
 	};
