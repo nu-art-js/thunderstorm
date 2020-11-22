@@ -81,7 +81,7 @@ const postProcessor: { [k: string]: PostProcessor } = {
 	default: async (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => {
 		await FirebaseModule.createAdminSession().getDatabase().set(`/alan/testing/${file.path}`, {path: file.path, name: await file.exists()});
 
-		const resp = ServerUploaderModule.upload(await file.read(), 'myTest.txt', doc.mimeType);
+		const resp = ServerUploaderModule.upload([{file: await file.read(), name: 'myTest.txt', mimeType: doc.mimeType}]);
 
 		await new Promise(res => {
 			_setTimeout(() => {
