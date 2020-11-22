@@ -68,7 +68,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 
 	constructor(requestKey: string, requestData?: string, shouldCompress?: boolean) {
 		super(requestKey, requestData);
-		this.compress = shouldCompress === undefined ? true : shouldCompress;
+		this.compress = shouldCompress === undefined ? false : shouldCompress;
 		this.cancelSignal = axios.CancelToken.source();
 	}
 
