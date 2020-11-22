@@ -152,7 +152,7 @@ export class JiraModule_Class
 			if (!this.projects)
 				this.projects = await this.executeGetRequest<JiraProject[]>(`/project`)
 
-			const project = this.projects.find(project => project.key === projectKey);
+			const project = this.projects.find(_project => _project.key === projectKey);
 			if (!project)
 				throw new BadImplementationException(`Could not find project: ${projectKey}`)
 

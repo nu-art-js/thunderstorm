@@ -21,11 +21,18 @@ import {
 	BaseUploaderFile,
 	TempSecureUrl
 } from "../../shared/types";
-import {BaseUploaderModule_Class} from "../../shared/modules/BaseUploaderModule";
+import {
+	BaseUploaderModule_Class,
+	Request_Uploader
+} from "../../shared/modules/BaseUploaderModule";
 import {
 	AxiosHttpModule,
 	AxiosHttpModule_Class
-} from "@nu-art/thunderstorm/app-backend/modules/http/AxiosHttpModule";
+} from "@nu-art/thunderstorm/backend";
+
+export type ServerFilesToUpload = Request_Uploader & {
+	file: Buffer
+}
 
 export class ServerUploaderModule_Class
 	extends BaseUploaderModule_Class<AxiosHttpModule_Class> {
@@ -34,8 +41,8 @@ export class ServerUploaderModule_Class
 		super(AxiosHttpModule);
 	}
 
-	upload(file: Buffer, name: string, mimeType: string, key?: string): BaseUploaderFile[] {
-		return this.uploadImpl([{name, mimeType, key, file}]);
+	upload(files: ServerFilesToUpload[]): BaseUploaderFile[] {
+		return this.uploadImpl(files);
 	}
 
 	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {
