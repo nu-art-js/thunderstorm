@@ -26,7 +26,7 @@ import {BaseComponent} from "../../core/BaseComponent";
 import {Adapter} from "../adapter/Adapter";
 import {Tree} from "./Tree";
 
-type Props = {
+export type MenuComponentProps = {
 	adapter: Adapter
 	childrenContainerStyle?: any
 	onNodeClicked?: (path:string,item:any) => void
@@ -35,10 +35,10 @@ type Props = {
 }
 
 export class MenuComponent
-	extends BaseComponent<Props> {
+	extends BaseComponent<MenuComponentProps> {
 	private readonly id: string;
 
-	constructor(props: Props) {
+	constructor(props: MenuComponentProps) {
 		super(props);
 		this.id = this.props.id || generateHex(8);
 	}
