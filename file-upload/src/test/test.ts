@@ -17,13 +17,28 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
+import {
+	__custom,
+	__scenario
+} from "@nu-art/testelot";
 import {FirebaseModule} from "@nu-art/firebase/backend";
-import {parseApk} from "./apk-parsing/parse";
 import {MyTester} from "./core";
+import {AxiosHttpModule} from "@nu-art/thunderstorm/app-backend/modules/http/AxiosHttpModule";
+import {HttpMethod} from "@nu-art/thunderstorm";
 
-
+AxiosHttpModule.setDefaultConfig({origin: 'sjdfojds'});
 const mainScenario = __scenario("File Uploading Testing");
+mainScenario.add(__custom(async () => {
+	await AxiosHttpModule.createRequest(HttpMethod.GET, 'google call')
+	               .setUrl('https://google.com/')
+	                     .setJsonBody({})
+	               .setHeaders({'a': 'b'})
+	               .setOnError(() => {
+		               console.log('something is wrong');
+	               })
+		.executeSync();
+	console.log('works');
+}).setLabel('HEaders'));
 // mainScenario.add(parseApk);
 
 module.exports = new MyTester()
