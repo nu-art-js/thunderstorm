@@ -88,7 +88,7 @@ export class BucketWrapper {
 	}
 
 	private async iterateOverFiles(folder: string, filter: (file: File) => boolean, action: (file: File) => Promise<any>) {
-		return new Promise<any>((resolve, reject) => {
+		return new Promise<void>((resolve, reject) => {
 			const callback = async (err: Error | null, files?: File[], nextQuery?: {}) => {
 				if (err)
 					return reject(err);
