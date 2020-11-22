@@ -246,7 +246,7 @@ export class PushPubSubModule_Class
 			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
 		};
 
-		await new Promise((resolve, reject) => {
+		await new Promise<void>((resolve, reject) => {
 			this.debounce(async () => {
 				const response = await XhrHttpModule
 					.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
