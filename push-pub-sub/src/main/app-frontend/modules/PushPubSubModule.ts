@@ -77,6 +77,7 @@ export type PushPubSubConfig = {
 	config?: FirebaseConfig
 	publicKeyBase64: string
 	swFileName?: string
+	registerOnInit?: boolean
 }
 
 export interface OnNotificationsReceived {
@@ -104,10 +105,10 @@ export class PushPubSubModule_Class
 	}
 
 	init() {
-		if (!this.config?.publicKeyBase64)
-			throw new ImplementationMissingException(`Please specify the right config for the 'PushPubSubModule'`);
+		if (this.config?.registerOnInit === false)
+			return;
 
-		this.runAsync('Initializing Firebase SDK and registering SW', this.initApp);
+		this.initApp();
 	}
 
 	getPushSessionId() {
@@ -119,29 +120,34 @@ export class PushPubSubModule_Class
 		return await navigator.serviceWorker.register(`/${this.config.swFileName || 'ts_service_worker.js'}`);
 	};
 
-	private initApp = async () => {
-		if ('serviceWorker' in navigator) {
-			const asyncs: [Promise<ServiceWorkerRegistration>, Promise<FirebaseSession>] = [
-				this.registerServiceWorker(),
-				FirebaseModule.createSession()
-			];
+	private initApp = () => {
+		if (!this.config?.publicKeyBase64)
+			throw new ImplementationMissingException(`Please specify the right config for the 'PushPubSubModule'`);
 
-			const {0: registration, 1: app} = await Promise.all(asyncs);
-			await registration.update();
-			this.messaging = app.getMessaging();
-			// this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
-			// await this.messaging.useServiceWorker(registration);
-			await this.getToken({vapidKey: this.config.publicKeyBase64, serviceWorkerRegistration: registration});
-			if (navigator.serviceWorker.controller) {
-				console.log(`This page is currently controlled by: ${navigator.serviceWorker.controller}`);
+		this.runAsync('Initializing Firebase SDK and registering SW', async () => {
+			if ('serviceWorker' in navigator) {
+				const asyncs: [Promise<ServiceWorkerRegistration>, Promise<FirebaseSession>] = [
+					this.registerServiceWorker(),
+					FirebaseModule.createSession()
+				];
+
+				const {0: registration, 1: app} = await Promise.all(asyncs);
+				await registration.update();
+				this.messaging = app.getMessaging();
+				// this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
+				// await this.messaging.useServiceWorker(registration);
+				await this.getToken({vapidKey: this.config.publicKeyBase64, serviceWorkerRegistration: registration});
+				if (navigator.serviceWorker.controller) {
+					console.log(`This page is currently controlled by: ${navigator.serviceWorker.controller}`);
+				}
+				navigator.serviceWorker.oncontrollerchange = function () {
+					console.log('This page is now controlled by:', navigator.serviceWorker.controller);
+				};
+				navigator.serviceWorker.onmessage = (event: MessageEvent) => {
+					this.processMessageFromSw(event.data);
+				};
 			}
-			navigator.serviceWorker.oncontrollerchange = function () {
-				console.log('This page is now controlled by:', navigator.serviceWorker.controller);
-			};
-			navigator.serviceWorker.onmessage = (event: MessageEvent) => {
-				this.processMessageFromSw(event.data);
-			};
-		}
+		});
 	};
 
 	// / need to call this from the login verified
@@ -182,6 +188,7 @@ export class PushPubSubModule_Class
 	};
 
 	private processMessageFromSw = (data: any) => {
+		this.logInfo('Got data from SW: ', data);
 		if (!data.command || !data.message || data.command !== Command_SwToApp)
 			return;
 
