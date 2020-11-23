@@ -1,5 +1,8 @@
 import {ThunderDispatcher} from "@nu-art/thunderstorm/app-frontend/core/thunder-dispatcher";
-import {Module} from "@nu-art/ts-common";
+import {
+	Module,
+	removeItemFromArray
+} from "@nu-art/ts-common";
 import {DB_Notifications} from "../..";
 import {PushPubSubModule} from "./PushPubSubModule";
 
@@ -27,6 +30,11 @@ export class NotificationsModule_Class
 	addNotification(newNotification: DB_Notifications) {
 		this.notifications.push(newNotification);
 		dispatch_NotificationsUpdated.dispatchUI([]);
+	}
+
+	removeNotification(notification: DB_Notifications){
+		removeItemFromArray(this.notifications, notification)
+		return notification._id
 	}
 
 	updateReadNotification = async (notification: DB_Notifications, read: boolean) => {
