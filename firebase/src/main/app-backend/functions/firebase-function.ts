@@ -113,7 +113,7 @@ export abstract class FirebaseFunctionModule<DataType = any, ConfigType = any>
 		this.listeningPath = listeningPath;
 	}
 
-	async abstract processChanges(before: DataType, after: DataType, params: { [param: string]: any }): Promise<any>;
+	abstract processChanges(before: DataType, after: DataType, params: { [param: string]: any }): Promise<any>;
 
 	getFunction = () => {
 		if (this.function)
@@ -186,7 +186,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 		return this;
 	}
 
-	async abstract onScheduledEvent(): Promise<any>;
+	abstract onScheduledEvent(): Promise<any>;
 
 	private async _onScheduledEvent() {
 		const results: boolean[] = await Promise.all(this.runningCondition.map(condition => condition()));
@@ -258,7 +258,7 @@ export abstract class Firebase_StorageFunction<ConfigType extends RuntimeOptions
 		name && this.setName(name);
 	}
 
-	async abstract onFinalize(object: ObjectMetadata, context: EventContext): Promise<any>;
+	abstract onFinalize(object: ObjectMetadata, context: EventContext): Promise<any>;
 
 	getFunction = () => {
 		if (this.function)
