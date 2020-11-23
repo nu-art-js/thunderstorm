@@ -28,17 +28,24 @@ import {HttpMethod} from "@nu-art/thunderstorm";
 
 AxiosHttpModule.setDefaultConfig({origin: 'sjdfojds'});
 const mainScenario = __scenario("File Uploading Testing");
-mainScenario.add(__custom(async () => {
-	await AxiosHttpModule.createRequest(HttpMethod.GET, 'google call')
-	               .setUrl('https://google.com/')
-	                     .setJsonBody({})
-	               .setHeaders({'a': 'b'})
-	               .setOnError(() => {
-		               console.log('something is wrong');
-	               })
-		.executeSync();
-	console.log('works');
-}).setLabel('HEaders'));
+const googleCall = __custom(async () => {
+	try {
+		await AxiosHttpModule
+			.createRequest(HttpMethod.GET, 'google call')
+			.setUrl('https://google.com/')
+			.setHeaders({'a': 'b'})
+			.setOnError(() => {
+				console.log('something is wrong');
+			})
+			.executeSync();
+		console.log('works');
+
+	} catch (e) {
+		console.log('breaks');
+		console.log(e);
+	}
+}).setLabel('Headers');
+mainScenario.add(googleCall);
 // mainScenario.add(parseApk);
 
 module.exports = new MyTester()
