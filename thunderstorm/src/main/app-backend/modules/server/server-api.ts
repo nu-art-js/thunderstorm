@@ -269,7 +269,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 		}
 	};
 
-	protected abstract async process(request: ExpressRequest, response: ApiResponse, queryParams: P, body: B): Promise<R>;
+	protected abstract process(request: ExpressRequest, response: ApiResponse, queryParams: P, body: B): Promise<R>;
 }
 
 export abstract class ServerApi_Get<Binder extends ApiWithQuery<U, R, P>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, P extends QueryParams | {} = DeriveQueryType<Binder>>

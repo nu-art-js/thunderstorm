@@ -241,7 +241,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 		this.status = status;
 	}
 
-	protected abstract async execute(param: ParamValue): Promise<ReturnValue>;
+	protected abstract execute(param: ParamValue): Promise<ReturnValue>;
 
 	public get<ValueType>(key: ContextKey<ValueType>): ValueType | undefined {
 		if (!this.parent)
