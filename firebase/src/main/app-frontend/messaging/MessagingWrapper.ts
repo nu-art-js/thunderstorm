@@ -17,7 +17,10 @@
  */
 
 import {Logger} from "@nu-art/ts-common";
-import {FirebaseType_Messaging} from "./types";
+import {
+	FirebaseType_Messaging,
+	FirebaseType_Unsubscribe
+} from "./types";
 // tslint:disable:no-import-side-effect
 import 'firebase/messaging';
 
@@ -55,11 +58,11 @@ export class MessagingWrapper
 	}
 
 	/** @deprecated */
-	onTokenRefresh(callback: () => void) {
+	onTokenRefresh(callback: () => void): FirebaseType_Unsubscribe {
 		return this.messaging.onTokenRefresh(callback);
 	}
 
-	onMessage(callback: (payload: any) => void) {
+	onMessage(callback: (payload: any) => void): FirebaseType_Unsubscribe | void {
 		this.callback = callback;
 		if (!this.token)
 			return;
