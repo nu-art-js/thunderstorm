@@ -27,7 +27,7 @@ export type DB_PushSession = FirebaseToken & PushSessionId & {
 }
 
 export type DB_Notifications = DB_Object & SubscriptionData & {
-	userId: string
+	userId?: string
 	timestamp: number
 	read: boolean
 	persistent?: boolean

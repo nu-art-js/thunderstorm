@@ -23,6 +23,7 @@ import {
 	compare,
 	currentTimeMillies,
 	Day,
+	filterDuplicates,
 	generateHex,
 	Hour,
 	ImplementationMissingException,
@@ -106,14 +107,23 @@ export class PushPubSubModule_Class
 		});
 
 		return this.pushSessions.runInTransaction(async transaction => {
-			const notifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {userId}});
+			const pushKeys = subscriptions.map(_sub => _sub.pushKey);
+			console.log(pushKeys);
+			let subscriptionNotifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {pushKey:{$in:pushKeys}}})
+			const userNotifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {userId}})
+			subscriptionNotifications = subscriptionNotifications.filter(_notification => {
+				const x = subscriptions.find(_sub => _sub.pushKey === _notification.pushKey)?.props
+				console.log(compare(x, _notification.props), x, _notification.props)
+				return compare(x, _notification.props) || _notification.userId;
+			});
 
+			const notifications = userNotifications.concat(subscriptionNotifications)
 			const writePush = await transaction.upsert_Read(this.pushSessions, session);
 
 			const write = await transaction.delete_Read(this.pushKeys, {where: {pushSessionId: body.pushSessionId}});
 			await transaction.insertAll(this.pushKeys, subscriptions);
 			await Promise.all([write(), writePush()]);
-			return notifications;
+			return filterDuplicates(notifications);
 		});
 	}
 
@@ -126,6 +136,14 @@ export class PushPubSubModule_Class
 		if (props)
 			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
 
+		const notifications: DB_Notifications[] = [];
+
+		const notification = this.buildNotification(key, persistent, data, props);
+		if (persistent) {
+			notifications.push(notification);
+			await this.notifications.insertAll(notifications);
+		}
+
 		if (docs.length === 0) {
 			return;
 		}
@@ -133,13 +151,10 @@ export class PushPubSubModule_Class
 		const sessionsIds = docs.map(d => d.pushSessionId);
 		// I get the tokens relative to those sessions (query)
 		const sessions = await batchAction(sessionsIds, 10, async elements => this.pushSessions.query({where: {pushSessionId: {$in: elements}}}));
-
 		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
 			const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
 			if (!session)
 				return carry;
-
-			const notification = this.buildNotification(session.userId, db_pushKey.pushKey, false, data, props);
 
 			carry[session.firebaseToken] = [notification];
 
@@ -155,7 +170,7 @@ export class PushPubSubModule_Class
 		D = ITP<M>>(user: string, key: string, props?: P, data?: D, persistent: boolean = false) {
 		console.log('i am pushing to user...', user, props);
 
-		const notification = this.buildNotification(user, key, persistent, props, data);
+		const notification = this.buildNotification(key, persistent, data, props, user);
 		const notifications: DB_Notifications[] = [];
 		if (persistent) {
 			notifications.push(notification);
@@ -183,10 +198,9 @@ export class PushPubSubModule_Class
 		await this.sendMessage(persistent, _messages);
 	}
 
-	private buildNotification = (user: string, pushkey: string, persistent: boolean, data?: any, props?: any) => {
+	private buildNotification = ( pushkey: string, persistent: boolean, data?: any, props?: any, user?: string,) => {
 		const notification: DB_Notifications = {
 			_id: generateHex(16),
-			userId: user,
 			timestamp: currentTimeMillies(),
 			read: false,
 			pushKey: pushkey,
@@ -198,6 +212,9 @@ export class PushPubSubModule_Class
 
 		if (props)
 			notification.props = props;
+
+		if(user)
+			notification.userId = user
 
 		return notification;
 	};
