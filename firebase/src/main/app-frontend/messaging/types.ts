@@ -19,3 +19,4 @@
 import firebase from 'firebase/app';
 
 export type FirebaseType_Messaging = firebase.messaging.Messaging
+export type FirebaseType_Unsubscribe = firebase.Unsubscribe
