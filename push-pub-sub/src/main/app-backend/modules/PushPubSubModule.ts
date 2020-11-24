@@ -109,15 +109,17 @@ export class PushPubSubModule_Class
 		return this.pushSessions.runInTransaction(async transaction => {
 			const pushKeys = subscriptions.map(_sub => _sub.pushKey);
 			console.log(pushKeys);
-			let subscriptionNotifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {pushKey:{$in:pushKeys}}})
-			const userNotifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {userId}})
-			subscriptionNotifications = subscriptionNotifications.filter(_notification => {
-				const x = subscriptions.find(_sub => _sub.pushKey === _notification.pushKey)?.props
-				console.log(compare(x, _notification.props), x, _notification.props)
-				return compare(x, _notification.props) || _notification.userId;
-			});
+			let subscriptionNotifications: DB_Notifications[] = pushKeys.length !== 0 ?
+				await transaction.query(this.notifications, {where: {pushKey: {$in: pushKeys}}}) : [];
+			const userNotifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {userId}});
+			if (subscriptionNotifications.length !== 0)
+				subscriptionNotifications = subscriptionNotifications.filter(_notification => {
+					const x = subscriptions.find(_sub => _sub.pushKey === _notification.pushKey)?.props;
+					console.log(compare(x, _notification.props), x, _notification.props);
+					return compare(x, _notification.props) || _notification.userId;
+				});
 
-			const notifications = userNotifications.concat(subscriptionNotifications)
+			const notifications = userNotifications.concat(subscriptionNotifications);
 			const writePush = await transaction.upsert_Read(this.pushSessions, session);
 
 			const write = await transaction.delete_Read(this.pushKeys, {where: {pushSessionId: body.pushSessionId}});
@@ -198,7 +200,7 @@ export class PushPubSubModule_Class
 		await this.sendMessage(persistent, _messages);
 	}
 
-	private buildNotification = ( pushkey: string, persistent: boolean, data?: any, props?: any, user?: string,) => {
+	private buildNotification = (pushkey: string, persistent: boolean, data?: any, props?: any, user?: string,) => {
 		const notification: DB_Notifications = {
 			_id: generateHex(16),
 			timestamp: currentTimeMillies(),
@@ -213,8 +215,8 @@ export class PushPubSubModule_Class
 		if (props)
 			notification.props = props;
 
-		if(user)
-			notification.userId = user
+		if (user)
+			notification.userId = user;
 
 		return notification;
 	};
