@@ -160,15 +160,10 @@ export class DropDown<ItemType>
 		};
 	}
 
-	static getDerivedStateFromProps(nextProps: Props_DropDown<any>, prevState: State<any>): Partial<State<any>> | null {
-		// if (prevState.id !== nextProps.id)
-			// console.log(`Changing ids: ${prevState.id} => ${nextProps.id}`);
-
-		if (prevState.adapter.data === nextProps.adapter.data)
-			return null;
-
-		const adapter = DropDown.cloneAdapter(nextProps);
-		return {adapter, id: nextProps.id}
+	componentDidUpdate(prevProps: Props_DropDown<any>) {
+		if (this.props.adapter.data !== prevProps.adapter.data) {
+			this.setState({adapter: DropDown.cloneAdapter(this.props), id: this.props.id})
+		}
 	}
 
 	private static cloneAdapter = (nextProps: Props_DropDown<any>) => {
