@@ -176,7 +176,7 @@ export class ToastModule_Class
 			content = ToastModule.adjustStringMessage(_message);
 
 		// console.log("_message:", _message)
-		this.DefaultBuilder.setContent(content).setDuration(interval).setBackground(color).show();
+		this.DefaultBuilder.setContent(content).setDuration(interval).setBackground(color).setType(type).show();
 	}
 
 	adjustStringMessage = (_message: string) => {
