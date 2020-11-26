@@ -192,22 +192,24 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
 
-		const request = this
-			.httpModule
-			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
-			.setUrl(response.secureUrl)
-			.setOnError((_request) => {
-				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
-				this.setFileInfo(response.tempDoc.feId, "messageStatus", _request.asText());
-			})
-			.setTimeout(10 * Minute)
-			.setBody(fileInfo.file)
-			.setOnProgressListener((ev: TS_Progress) => {
-				this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
-			});
+		try {
+			const request = this
+				.httpModule
+				.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
+				.setUrl(response.secureUrl)
+				.setHeader('Content-Type', response.tempDoc.mimeType)
+				.setTimeout(10 * Minute)
+				.setBody(fileInfo.file)
+				.setOnProgressListener((ev: TS_Progress) => {
+					this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
+				});
 
-		this.setFileInfo(response.tempDoc.feId, "request", request);
-		await request.executeSync();
+			this.setFileInfo(response.tempDoc.feId, "request", request);
+			await request.executeSync();
+		} catch (e) {
+			this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
+			this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(e));
+		}
 
 		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
 		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.PostProcessing);
