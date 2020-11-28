@@ -118,7 +118,7 @@ export class JiraModule_Class
 	private headersJson!: Headers;
 	private headersForm!: Headers;
 	private projects!: JiraProject[];
-	private versions: { [projectId: string]: JiraVersion[] }= {};
+	private versions: { [projectId: string]: JiraVersion[] } = {};
 
 	protected init(): void {
 		if (!this.config.baseUrl)
@@ -254,8 +254,8 @@ export class JiraModule_Class
 		return this.executeRequest(request);
 	}
 
-	private async executeGetRequest<T>(url: string, _params?: { [k: string]: string }): Promise<T> {
-		if(!this.config.baseUrl)
+	async executeGetRequestNew<T>(url: string, _params?: { [k: string]: string }): Promise<T> {
+		if (!this.config.baseUrl)
 			throw new ImplementationMissingException('Need a baseUrl');
 
 		const resp = await AxiosHttpModule
@@ -274,6 +274,25 @@ export class JiraModule_Class
 			throw new ApiException(response.statusCode, response.body)
 
 		return response.toJSON().body as T;
+	}
+
+	private async executeGetRequest<T>(url: string, _params?: { [k: string]: string }) {
+		const params = _params && Object.keys(_params).map((key) => {
+			return `${key}=${_params[key]}`;
+		});
+
+		let urlParams = "";
+		if (params && params.length > 0)
+			urlParams = `?${params.join("&")}`;
+
+		const request: UriOptions & CoreOptions = {
+			headers: this.headersJson,
+			uri: `${this.config.baseUrl}${url}${urlParams}`,
+			method: HttpMethod.GET,
+			json: true
+		};
+
+		return this.executeRequest<T>(request);
 	}
 
 	private async executeRequest<T>(request: UriOptions & CoreOptions) {
