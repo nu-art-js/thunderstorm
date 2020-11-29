@@ -23,16 +23,17 @@
  * Created by tacb0ss on 11/07/2018.
  */
 import {
+	_keys,
 	BadImplementationException,
 	dispatch_onServerError,
 	isErrorOfType,
 	Logger,
+	LogLevel,
 	MUSTNeverHappenException,
 	ServerErrorSeverity,
 	validate,
-	ValidatorTypeResolver,
 	ValidationException,
-    LogLevel
+	ValidatorTypeResolver
 } from "@nu-art/ts-common";
 
 import {Stream} from "stream";
@@ -89,7 +90,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 
 	protected constructor(method: HttpMethod, relativePath: string, tag?: string) {
 		super(tag || relativePath);
-		this.setMinLevel(ServerApi.isDebug? LogLevel.Verbose:LogLevel.Info)
+		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
 
 		this.method = method;
 		this.relativePath = `${relativePath}`;
@@ -291,10 +292,11 @@ export abstract class ServerApi_Post<Binder extends ApiWithBody<U, R, B>, U exte
 export class ServerApi_Proxy<Binder extends ApiTypeBinder<string, R, B, P>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams | {} = DeriveQueryType<Binder>>
 	extends ServerApi<Binder> {
 	private readonly api: ServerApi<Binder>;
+
 	public constructor(api: ServerApi<any>) {
 		super(api.method, `${api.relativePath}/proxy`);
 		this.api = api;
-		this.setMiddlewares(RemoteProxy.Middleware)
+		this.setMiddlewares(RemoteProxy.Middleware);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DeriveQueryType<Binder>, body: DeriveBodyType<Binder>): Promise<DeriveResponseType<Binder>> {
@@ -315,7 +317,8 @@ export class ServerApi_Redirect
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: any): Promise<void> {
-		response.redirect(this.responseCode, `${HttpServer.getBaseUrl()}${this.redirectUrl}`);
+		const query = queryParams ? _keys<QueryParams, string>(queryParams).reduce((c: string, k: string) => c + '&' + k + '=' + queryParams[k], '?') : '';
+		response.redirect(this.responseCode, `${HttpServer.getBaseUrl()}${this.redirectUrl}${query}`);
 	}
 }
 

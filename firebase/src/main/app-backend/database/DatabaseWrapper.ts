@@ -85,6 +85,7 @@ export class DatabaseWrapper
 		try {
 			return await this.database.ref(path).update(value);
 		} catch (e) {
+			this.logError(e);
 			throw new BadImplementationException(`Error while updating value to path: ${path}`, e);
 		}
 	}
