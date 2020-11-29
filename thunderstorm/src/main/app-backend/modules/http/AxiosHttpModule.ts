@@ -65,6 +65,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	private response?: AxiosResponse<DeriveResponseType<DeriveRealBinder<Binder>>>;
 	private cancelSignal: CancelTokenSource;
 	protected status?: number;
+	private requestOption: AxiosRequestConfig = {};
 
 	constructor(requestKey: string, requestData?: string, shouldCompress?: boolean) {
 		super(requestKey, requestData);
@@ -93,6 +94,11 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 
 	getErrorResponse(): ErrorResponse<DeriveErrorType<Binder>> {
 		return {debugMessage: this.getResponse()};
+	}
+
+	setRequestOption(requestOption: AxiosRequestConfig) {
+		this.requestOption = requestOption;
+		return this;
 	}
 
 	protected executeImpl(): Promise<void> {
@@ -134,15 +140,13 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			}, {} as StringMap);
 
 			const options: AxiosRequestConfig = {
+				...this.requestOption,
 				url: fullUrl,
 				method: this.method as Method,
 				headers: headers,
 				// TODO will probably need to use the abortController with a timeout for this.
 				timeout: this.timeout,
-				cancelToken: this.cancelSignal.token,
-				// this is a ui thing. not backend
-				// onDownloadProgress: (progressEvent: ProgressEvent) => {
-				// }
+				cancelToken: this.cancelSignal.token
 			};
 
 			if (body)
@@ -161,7 +165,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				// 		reject(new HttpException(404, this.url));
 				// 		return;
 				// 	}
-				//
+
 				if (axios.isCancel(e)) {
 					// Should already be set when I abort but just in case its aborted somehow else
 					this.aborted = true;

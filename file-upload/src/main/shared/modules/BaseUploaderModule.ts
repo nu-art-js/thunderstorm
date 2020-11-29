@@ -209,6 +209,8 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 		} catch (e) {
 			this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
 			this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(e));
+			this.setFileInfo(response.tempDoc.feId, "progress", undefined);
+			return;
 		}
 
 		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
