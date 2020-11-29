@@ -24,7 +24,7 @@
     "test": "firebase serve --only=functions --project=local-ts-testing-alan"
   },
   "dependencies": {
-    "@nu-art/bug-report": "~0.24.0",
+    "@nu-art/": "~0.24.0",
     "@nu-art/db-api-generator": "~0.24.0",
     "@nu-art/firebase": "~0.24.0",
     "@nu-art/live-docs": "~0.24.0",

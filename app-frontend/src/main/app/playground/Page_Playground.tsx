@@ -59,6 +59,7 @@ import { Example_SingleCheckbox } from './examples/checkbox/Example_SingleCheckb
 import { Example_CheckboxField } from './examples/checkbox/Example_CheckboxField';
 import {Example_PermissionsComponent} from "./examples/Example_PermissionsComponent";
 import {Example_Analytics} from "./examples/Example_Analytics";
+import Example_Scatter from "./examples/Example_Scatter";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -154,7 +155,8 @@ export class Page_Playground
 			{renderer: Example_SingleCheckbox, name: 'Single Checkbox'},
 			{renderer: Example_CheckboxField, name: 'Checkbox fields'},
 			{renderer: Example_PermissionsComponent, name: 'Permissions Component'},
-			{renderer: Example_Analytics, name: 'Analytics'}
+			{renderer: Example_Analytics, name: 'Analytics'},
+			{renderer: Example_Scatter, name: 'Scatter Plot'}
 
 		];
 	}
