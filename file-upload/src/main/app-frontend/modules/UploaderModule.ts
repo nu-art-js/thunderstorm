@@ -37,6 +37,7 @@ import {
 	FileStatus,
 	OnFileStatusChanged
 } from "../../shared/modules/BaseUploaderModule";
+import {DB_Notifications} from "@nu-art/push-pub-sub";
 
 export class UploaderModule_Class
 	extends BaseUploaderModule_Class<XhrHttpModule_Class>
@@ -68,21 +69,21 @@ export class UploaderModule_Class
 		await PushPubSubModule.subscribeMulti(toSubscribe.map(r => ({pushKey: fileUploadedKey, props: {feId: r.tempDoc.feId}})));
 	}
 
-	__onMessageReceived(pushKey: string, props: { feId: string }, data: { message: string, result: string }): void {
-		this.logInfo('Message received from service worker', pushKey, props, data);
-		if (pushKey !== fileUploadedKey)
+	__onMessageReceived(notification: DB_Notifications): void {
+		this.logInfo('Message received from service worker', notification.pushKey, notification.props, notification.data);
+		if (notification.pushKey !== fileUploadedKey)
 			return;
 
-		switch (data.result) {
+		switch (notification.data.result) {
 			case UploadResult.Success:
-				this.setFileInfo(props.feId, "status", FileStatus.Completed);
+				this.setFileInfo(notification.props?.feId as string, "status", FileStatus.Completed);
 				break;
 			case UploadResult.Failure:
-				this.setFileInfo(props.feId, "status", FileStatus.Error);
+				this.setFileInfo(notification.props?.feId as string, "status", FileStatus.Error);
 				break;
 		}
 
-		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props}).catch();
+		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props: notification.props}).catch();
 	}
 }
 

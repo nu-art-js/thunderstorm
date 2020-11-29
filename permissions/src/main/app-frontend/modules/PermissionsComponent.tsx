@@ -20,22 +20,21 @@ export class PermissionsComponent
 	};
 
 	__onPermissionsChanged() {
-		this.forceUpdate()
+		this.forceUpdate();
 	}
 
 	render() {
 		const {url} = this.props;
-		const permitted = PermissionsFE.doesUserHavePermissions(url)
-		if(permitted===undefined)
+		const permitted = PermissionsFE.doesUserHavePermissions(url);
+		if (permitted === undefined)
 			return <this.props.loadingComponent/>;
-		if (!permitted){
-			if (this.props.fallback)
-				return <this.props.fallback/>;
-			else
-				return null;
-		}
 
-		return <>{this.props.children}</>;
+		if (permitted)
+			return <>{this.props.children}</>;
+
+		if (this.props.fallback)
+			return <this.props.fallback/>;
+
+		return null;
 	}
-
 }
