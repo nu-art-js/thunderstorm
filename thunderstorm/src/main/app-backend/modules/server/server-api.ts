@@ -23,16 +23,17 @@
  * Created by tacb0ss on 11/07/2018.
  */
 import {
+	_keys,
 	BadImplementationException,
 	dispatch_onServerError,
 	isErrorOfType,
 	Logger,
+	LogLevel,
 	MUSTNeverHappenException,
 	ServerErrorSeverity,
 	validate,
-	ValidatorTypeResolver,
 	ValidationException,
-    LogLevel
+	ValidatorTypeResolver
 } from "@nu-art/ts-common";
 
 import {Stream} from "stream";
@@ -315,7 +316,8 @@ export class ServerApi_Redirect
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: any): Promise<void> {
-		response.redirect(this.responseCode, `${HttpServer.getBaseUrl()}${this.redirectUrl}`)
+		const query = queryParams ?  _keys(queryParams).reduce((c:string, k) => c + '&' + k + '=' + queryParams[k], '?') : '';
+		response.redirect(this.responseCode, `${HttpServer.getBaseUrl()}${this.redirectUrl}${query}`)
 	}
 }
 
