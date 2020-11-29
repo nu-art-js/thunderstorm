@@ -120,7 +120,7 @@ export class PushPubSubModule_Class
 		return await navigator.serviceWorker.register(`/${this.config.swFileName || 'ts_service_worker.js'}`);
 	};
 
-	private initApp = () => {
+	initApp = () => {
 		if (!this.config?.publicKeyBase64)
 			throw new ImplementationMissingException(`Please specify the right config for the 'PushPubSubModule'`);
 
