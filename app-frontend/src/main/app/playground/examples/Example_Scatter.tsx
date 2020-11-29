@@ -3,22 +3,35 @@ import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponen
 import {scaleLinear} from "d3-scale";
 import AxisLeft from "./d3components/Example_AxisLeft";
 import AxisBottom from "./d3components/Example_AxisBottom.";
+import {TS_Input} from "@nu-art/thunderstorm/app-frontend/components/TS_Input";
+
+export type Coordinates = {
+	x: number,
+	y: number
+}
 
 export class Example_Scatter
-	extends BaseComponent {
+	extends BaseComponent<{}, { data: Coordinates[] }> {
 
-	randomData = () => {
-		const data = [...Array(100)].map((e, i) => {
-			return {
-				x: Math.random() * 50,
-				y: Math.random() * 50,
-				temperature: Math.random() * 500
-			};
-		});
-		return data;
-	};
+	constructor(props: {}) {
+		super(props);
+		this.state = {
+			data: [{x: 5, y: 5}]
+		};
+	}
 
-	private data = this.randomData();
+	private minAndMax = () => this.extent(this.state.data)
+
+	private circles = () => this.state.data.map((d, i) => (
+		<circle
+			key={i}
+			r={5}
+			cx={this.xScale()(d.x)}
+			cy={this.yScale()(d.y)}
+			style={{fill: "lightblue"}}
+		/>
+	));
+
 	w = 600;
 	h = 600;
 	margin = {
@@ -27,35 +40,71 @@ export class Example_Scatter
 		left: 40,
 		right: 40
 	};
-	width = this.w - this.margin.right - this.margin.left
-	height = this.h - this.margin.top - this.margin.bottom
+	width = this.w - this.margin.right - this.margin.left;
+	height = this.h - this.margin.top - this.margin.bottom;
 
-	xScale = scaleLinear()
-		.domain([0, 50])
-		.range([0, this.width]);
+	randomData = () => {
+		const data = [...Array(100)].map((e, i) => {
+			return {
+				x: Math.random() * 50,
+				y: Math.random() * 50
+			};
+		});
+		return data;
+	};
 
-	yScale = scaleLinear()
-		.domain([0, 50])
+	extent = (domain: Coordinates[]) => {
+		console.log('this is the domain, ', domain);
+		let minX = Number.MAX_VALUE;
+		let maxX = Number.MIN_VALUE;
+		let minY = Number.MAX_VALUE;
+		let maxY = Number.MIN_VALUE;
+		domain.forEach(_xy => {
+			if (_xy.x < minX)
+				minX = _xy.x;
+			if (_xy.y < minY)
+				minY = _xy.y;
+			if (_xy.x > maxX)
+				maxX = _xy.x;
+			if (_xy.y > maxY)
+				maxY = _xy.y;
+		});
+		return {minX, maxX, minY, maxY};
+	};
+
+	private x = 0;
+	private y = 0;
+
+	xScale = () => {
+		return scaleLinear()
+			.domain([this.minAndMax().minX, this.minAndMax().maxX])
+			.range([0, this.width]);
+	};
+
+	yScale = () => scaleLinear()
+		.domain([this.minAndMax().minY, this.minAndMax().maxY])
 		.range([this.height, 0]);
 
-	circles = this.data.map((d, i) => (
-		<circle
-			key={i}
-			r={5}
-			cx={this.xScale(d.x)}
-			cy={this.yScale(d.y)}
-			style={{fill: "lightblue"}}
-		/>
-	));
+	updateData = (newData: Coordinates) => {
+		console.log('updating...')
+		this.setState((state) => {
+			state.data.push(newData);
+			return state;
+		});
+	};
+
 
 	render() {
 		return <div>
+			<TS_Input onChange={(x) => this.x = parseInt(x)} type='text' id={'x'} placeholder={'type x value'}/>
+			<TS_Input onChange={(y) => this.y = parseInt(y)} type='text' id={'y'} placeholder={'type y value'}/>
+			<button onClick={() => this.updateData({x: this.x, y: this.y})}>plot</button>
 			<h1>Scatter plot using React + D3</h1>
 			<svg width={this.w} height={this.h}>
 				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
-					<AxisLeft yScale={this.yScale} width={this.width}/>
-					<AxisBottom xScale={this.xScale} height={this.height}/>
-					{this.circles}
+					<AxisLeft yScale={this.yScale()} width={this.width}/>
+					<AxisBottom xScale={this.xScale()} height={this.height}/>
+					{this.circles()}
 				</g>
 			</svg>
 		</div>;
