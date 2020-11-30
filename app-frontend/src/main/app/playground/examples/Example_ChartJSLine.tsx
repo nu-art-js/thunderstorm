@@ -6,28 +6,50 @@ export class Example_ChartJSLine
 	extends BaseComponent {
 
 	private data = {
-		labels: ["January", "February", "March", "April", "May", "June", "July"],
+		labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
 		datasets: [{
-			label: "My First dataset",
+			label: "diastolic",
 			backgroundColor: 'rgb(255, 99, 132)',
 			fill: false,
 			lineTension: 0,
 			borderColor: 'rgb(255, 99, 132)',
-			data: [0, 10, 5, 2, 20, 30, 45],
+			data: [78, 73, 69, 90, 65],
 		},
 			{
-				label: "My Second dataset",
+				label: "systolic",
 				backgroundColor: 'lightpink',
 				fill: false,
 				lineTension: 0,
 				borderColor: 'lightpink',
-				data: [0, 5, 10, 4, 10, 30, 45],
+				data: [115, 105, 120, 145]
 			}]
 	};
 
+	private options = {
+		scales: {
+			yAxes: [{
+				ticks: {
+					min: 0
+				}
+			}],
+			xAxes: [{
+				ticks: {
+					padding: 50
+				}
+			}]
+		}
+	}
+
+	pulse = () => {
+		return <div>
+
+		</div>
+	}
 
 	render() {
-		return <Line data={this.data}/>;
+		return <div style={{width: '50%'}}>
+			<Line data={this.data} options={this.options}/>
+		</div> ;
 	}
 }
 
