@@ -9,28 +9,46 @@ export type Coordinates = {
 	x: number,
 	y: number
 }
+type baseValue = {
+	y: number
+}
+export type Props = {
+	baseValue?: baseValue[]
+}
 
-export class Example_Scatter
-	extends BaseComponent<{}, { data: Coordinates[] }> {
+export class Example_Line
+	extends BaseComponent<Props, { data1: Coordinates[], data2: Coordinates[] }> {
 
-	constructor(props: {}) {
+	constructor(props: Props) {
 		super(props);
 		this.state = {
-			data: [{x: 5, y: 5}]
+			data1: [{x: 5, y: 5}],
+			data2: [{x: 5, y: 5}]
 		};
 	}
 
-	private minAndMax = () => this.extent(this.state.data)
+	private minAndMax = () => this.extent(this.state.data1.concat(this.state.data2));
 
-	private circles = () => this.state.data.map((d, i) => (
+	private circles = (data: Coordinates[], color: string) => data.map((d, i) => (
 		<circle
 			key={i}
-			r={5}
+			r={2}
 			cx={this.xScale()(d.x)}
 			cy={this.yScale()(d.y)}
-			style={{fill: "lightblue"}}
+			style={{fill: color}}
 		/>
 	));
+
+	private lines = (color: string, data: Coordinates[]) => {
+		const lineArray = [];
+		if (data.length > 1)
+			for (let i = 0; i < data.length - 1; i++) {
+				lineArray.push(<line x1={this.xScale()(data[i].x)} x2={this.xScale()(data[i + 1].x)} y1={this.yScale()(data[i].y)}
+				                     y2={this.yScale()(data[i + 1].y)}
+				                     strokeWidth={5} stroke={color}/>);
+			}
+		return lineArray;
+	};
 
 	w = 600;
 	h = 600;
@@ -44,7 +62,6 @@ export class Example_Scatter
 	height = this.h - this.margin.top - this.margin.bottom;
 
 	extent = (domain: Coordinates[]) => {
-		console.log('this is the domain, ', domain);
 		let minX = Number.MAX_VALUE;
 		let maxX = Number.MIN_VALUE;
 		let minY = Number.MAX_VALUE;
@@ -64,6 +81,8 @@ export class Example_Scatter
 
 	private x = 0;
 	private y = 0;
+	private x2 = 0;
+	private y2 = 0;
 
 	xScale = () => {
 		return scaleLinear()
@@ -75,10 +94,15 @@ export class Example_Scatter
 		.domain([this.minAndMax().minY, this.minAndMax().maxY])
 		.range([this.height, 0]);
 
-	updateData = (newData: Coordinates) => {
-		console.log('updating...')
+	updateData1 = (newData: Coordinates) => {
 		this.setState((state) => {
-			state.data.push(newData);
+			state.data1.push(newData);
+			return state;
+		});
+	};
+	updateData2 = (newData: Coordinates) => {
+		this.setState((state) => {
+			state.data2.push(newData);
 			return state;
 		});
 	};
@@ -87,13 +111,20 @@ export class Example_Scatter
 		return <div>
 			<TS_Input onChange={(x) => this.x = parseInt(x)} type='text' id={'x'} placeholder={'type x value'}/>
 			<TS_Input onChange={(y) => this.y = parseInt(y)} type='text' id={'y'} placeholder={'type y value'}/>
-			<button onClick={() => this.updateData({x: this.x, y: this.y})}>plot</button>
-			<h1>Scatter plot using React + D3</h1>
+			<button onClick={() => this.updateData1({x: this.x, y: this.y})}>plot</button>
+			<br/>
+			<TS_Input onChange={(x2) => this.x2 = parseInt(x2)} type='text' id={'x2'} placeholder={'type x2 value'}/>
+			<TS_Input onChange={(y2) => this.y2 = parseInt(y2)} type='text' id={'y2'} placeholder={'type y2 value'}/>
+			<button onClick={() => this.updateData2({x: this.x2, y: this.y2})}>plot</button>
+			<h1>Line graph using React + D3</h1>
 			<svg width={this.w} height={this.h}>
 				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
 					<AxisLeft yScale={this.yScale()} width={this.width}/>
 					<AxisBottom xScale={this.xScale()} height={this.height}/>
-					{this.circles()}
+					{this.circles(this.state.data1, 'lightblue')}
+					{this.lines('lightblue', this.state.data1)}
+					{this.circles(this.state.data2, 'lightpink')}
+					{this.lines('lightpink', this.state.data2)}
 				</g>
 			</svg>
 		</div>;
@@ -102,4 +133,4 @@ export class Example_Scatter
 }
 
 
-export default Example_Scatter;
+export default Example_Line;
