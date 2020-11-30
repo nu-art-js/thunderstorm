@@ -151,10 +151,7 @@ export class PushPubSubModule_Class
 	};
 
 	// / need to call this from the login verified
-	public getToken = async (options?: {
-		vapidKey?: string;
-		serviceWorkerRegistration?: ServiceWorkerRegistration;
-	}) => {
+	public getToken = async (options?: { vapidKey?: string; serviceWorkerRegistration?: ServiceWorkerRegistration; }) => {
 		try {
 			this.logVerbose('Checking/Requesting permission...');
 			const permission = await Notification.requestPermission();
