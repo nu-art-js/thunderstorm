@@ -9,11 +9,17 @@ export type Coordinates = {
 	x: number,
 	y: number
 }
+type baseValue = {
+	y: number
+}
+export type Props = {
+	baseValue?: baseValue[]
+}
 
 export class Example_Line
-	extends BaseComponent<{}, { data1: Coordinates[], data2: Coordinates[] }> {
+	extends BaseComponent<Props, { data1: Coordinates[], data2: Coordinates[] }> {
 
-	constructor(props: {}) {
+	constructor(props: Props) {
 		super(props);
 		this.state = {
 			data1: [{x: 5, y: 5}],
