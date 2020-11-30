@@ -10,7 +10,7 @@ export type Coordinates = {
 	y: number
 }
 
-export class Example_Scatter
+export class Example_Line
 	extends BaseComponent<{}, { data: Coordinates[] }> {
 
 	constructor(props: {}) {
@@ -20,17 +20,27 @@ export class Example_Scatter
 		};
 	}
 
-	private minAndMax = () => this.extent(this.state.data)
+	private minAndMax = () => this.extent(this.state.data);
 
 	private circles = () => this.state.data.map((d, i) => (
 		<circle
 			key={i}
-			r={5}
+			r={2}
 			cx={this.xScale()(d.x)}
 			cy={this.yScale()(d.y)}
 			style={{fill: "lightblue"}}
 		/>
 	));
+
+	private lines = () => {
+		const lineArray = [];
+		if (this.state.data.length > 1)
+			for (let i = 0; i < this.state.data.length - 1; i++) {
+				lineArray.push(<line x1={this.xScale()(this.state.data[i].x)} x2={this.xScale()(this.state.data[i + 1].x)} y1={this.yScale()(this.state.data[i].y)} y2={this.yScale()(this.state.data[i + 1].y)}
+				                     strokeWidth={5} stroke={'lightblue'}/>);
+			}
+		return lineArray;
+	};
 
 	w = 600;
 	h = 600;
@@ -76,7 +86,7 @@ export class Example_Scatter
 		.range([this.height, 0]);
 
 	updateData = (newData: Coordinates) => {
-		console.log('updating...')
+		console.log('updating...');
 		this.setState((state) => {
 			state.data.push(newData);
 			return state;
@@ -94,6 +104,7 @@ export class Example_Scatter
 					<AxisLeft yScale={this.yScale()} width={this.width}/>
 					<AxisBottom xScale={this.xScale()} height={this.height}/>
 					{this.circles()}
+					{this.lines()}
 				</g>
 			</svg>
 		</div>;
@@ -102,4 +113,4 @@ export class Example_Scatter
 }
 
 
-export default Example_Scatter;
+export default Example_Line;
