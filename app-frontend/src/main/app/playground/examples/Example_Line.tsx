@@ -4,6 +4,13 @@ import {scaleLinear} from "d3-scale";
 import AxisLeft from "./d3components/Example_AxisLeft";
 import AxisBottom from "./d3components/Example_AxisBottom.";
 import {TS_Input} from "@nu-art/thunderstorm/app-frontend/components/TS_Input";
+import {
+	ChartDataSets
+} from "chart.js";
+import {
+	ChartData,
+	Line
+} from "react-chartjs-2";
 
 export type Coordinates = {
 	x: number,
@@ -17,13 +24,29 @@ export type Props = {
 }
 
 export class Example_Line
-	extends BaseComponent<Props, { data1: Coordinates[], data2: Coordinates[] }> {
+	extends BaseComponent<Props, { data1: Coordinates[], data2: Coordinates[], chartJSdata: ChartDataSets[] }> {
 
 	constructor(props: Props) {
 		super(props);
 		this.state = {
 			data1: [{x: 5, y: 5}],
-			data2: [{x: 5, y: 5}]
+			data2: [{x: 5, y: 5}],
+			chartJSdata: [{
+				label: "line 1",
+				backgroundColor: 'rgb(255, 99, 132)',
+				fill: false,
+				lineTension: 0,
+				borderColor: 'rgb(255, 99, 132)',
+				data: [5],
+			},
+				{
+					label: "line 2",
+					backgroundColor: 'rgb(255, 99, 132)',
+					fill: false,
+					lineTension: 0,
+					borderColor: 'lightpink',
+					data: [5],
+				}]
 		};
 	}
 
@@ -97,14 +120,26 @@ export class Example_Line
 	updateData1 = (newData: Coordinates) => {
 		this.setState((state) => {
 			state.data1.push(newData);
-			return state;
+			const line1 = this.state.chartJSdata.find(_dataset => _dataset.label === 'line 1');
+			line1 &&	line1.data?.push(newData.y);
+			return (state);
 		});
 	};
 	updateData2 = (newData: Coordinates) => {
 		this.setState((state) => {
 			state.data2.push(newData);
-			return state;
+			const line2 = this.state.chartJSdata.find(_dataset => _dataset.label === 'line 2');
+			line2 &&	line2.data?.push(newData.y);
+			return (state);
 		});
+	};
+
+	buildData = () : ChartData<any> => {
+		return {
+			labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+			datasets: [this.state.chartJSdata.find(_dataset => _dataset.label === 'line 1') || [],
+			           this.state.chartJSdata.find(_dataset => _dataset.label === 'line 2') || []]
+		};
 	};
 
 	render() {
@@ -116,17 +151,22 @@ export class Example_Line
 			<TS_Input onChange={(x2) => this.x2 = parseInt(x2)} type='text' id={'x2'} placeholder={'type x2 value'}/>
 			<TS_Input onChange={(y2) => this.y2 = parseInt(y2)} type='text' id={'y2'} placeholder={'type y2 value'}/>
 			<button onClick={() => this.updateData2({x: this.x2, y: this.y2})}>plot</button>
-			<h1>Line graph using React + D3</h1>
-			<svg width={this.w} height={this.h}>
-				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
-					<AxisLeft yScale={this.yScale()} width={this.width}/>
-					<AxisBottom xScale={this.xScale()} height={this.height}/>
-					{this.circles(this.state.data1, 'lightblue')}
-					{this.lines('lightblue', this.state.data1)}
-					{this.circles(this.state.data2, 'lightpink')}
-					{this.lines('lightpink', this.state.data2)}
-				</g>
-			</svg>
+			<Line data={this.buildData()} redraw={true}/>
+			<div style={{width: '100%'}}>
+				<div style={{float: 'left', width: '50%'}}>
+					<svg width={this.w} height={this.h} style={{float: 'left'}}>
+						<g transform={`translate(${this.margin.left},${this.margin.top})`}>
+							<AxisLeft yScale={this.yScale()} width={this.width}/>
+							<AxisBottom xScale={this.xScale()} height={this.height}/>
+							{this.circles(this.state.data1, 'lightblue')}
+							{this.lines('lightblue', this.state.data1)}
+							{this.circles(this.state.data2, 'lightpink')}
+							{this.lines('lightpink', this.state.data2)}
+						</g>
+					</svg>
+				</div>
+			</div>
+
 		</div>;
 	}
 
