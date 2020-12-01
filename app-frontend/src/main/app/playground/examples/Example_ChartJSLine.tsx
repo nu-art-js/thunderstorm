@@ -34,22 +34,32 @@ export class Example_ChartJSLine
 			}],
 			xAxes: [{
 				ticks: {
-					padding: 50
+					padding: 35
 				}
 			}]
 		}
-	}
+	};
+
+	pulseData = [92, 102, 94, 92];
 
 	pulse = () => {
-		return <div>
-
-		</div>
-	}
+		let left = 5
+		return this.pulseData.map(_pulse => {
+			const element =  <div style={{height: '9%', width: '15.3%', backgroundColor: 'white', border: 'solid 1px', borderColor: 'gray', position: 'absolute', top: '81%', left: `${left}%`}}>
+				<div style={{position: 'relative', fontSize: 14, textAlign: 'center', marginTop: '5px', color: 'rgb(255, 99, 132)'}}>
+					{_pulse}
+				</div>
+			</div>;
+			left += 15.3
+			return element
+		});
+	};
 
 	render() {
-		return <div style={{width: '50%'}}>
+		return <div style={{width: '50%', position: 'relative'}}>
 			<Line data={this.data} options={this.options}/>
-		</div> ;
+			{this.pulse()}
+		</div>;
 	}
 }
 
