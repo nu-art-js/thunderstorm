@@ -1,32 +1,34 @@
 import * as React from "react";
 import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
 import {scaleLinear} from "d3-scale";
-import AxisLeft from "./Example_AxisLeft";
+import AxisX from "./Example_AxisX";
 import AxisBottom from "./Example_AxisBottom.";
+import {ReactNode} from "react";
 
 export type Coordinates = {
 	x: number,
 	y: number
 }
 
-export type LineData = {
-	label: string,
+export type D3ChartData = {
+	label: string | number | ReactNode,
 	data: Coordinates[],
 	color: string
 }
+
 type baseValue = {
 	y: number
 }
 
-type AxesLabels = {
-	x: string,
-	y: string
+export type AxesLabels = {
+	x: string[],
+	y: string[]
 }
 
 export type Props = {
-	data: LineData[],
+	data: D3ChartData[],
 	axesLabels?: AxesLabels,
-	baseValue?: baseValue[]
+	baseValue?: baseValue
 }
 
 export class Example_LineGraph
@@ -39,10 +41,8 @@ export class Example_LineGraph
 	private minAndMax = () => {
 		let arrayOfProps: Coordinates[] = [];
 		this.props.data.map(_lineData => {
-			console.log('props data:', _lineData.data)
 			arrayOfProps = arrayOfProps.concat([], _lineData.data);
 		});
-		console.log(arrayOfProps);
 		return this.extent(arrayOfProps);
 	};
 
@@ -60,7 +60,7 @@ export class Example_LineGraph
 		const lineArray = [];
 		if (data.length > 1)
 			for (let i = 0; i < data.length - 1; i++) {
-				lineArray.push(<line x1={this.xScale()(data[i].x)} x2={this.xScale()(data[i + 1].x)} y1={this.yScale()(data[i].y)}
+				lineArray.push(<line key={i} x1={this.xScale()(data[i].x)} x2={this.xScale()(data[i + 1].x)} y1={this.yScale()(data[i].y)}
 				                     y2={this.yScale()(data[i + 1].y)}
 				                     strokeWidth={3} stroke={color}/>);
 			}
@@ -68,7 +68,7 @@ export class Example_LineGraph
 	};
 
 	w = 600;
-	h = 400;
+	h = 300;
 	margin = {
 		top: 40,
 		bottom: 40,
@@ -79,8 +79,6 @@ export class Example_LineGraph
 	height = this.h - this.margin.top - this.margin.bottom;
 
 	extent = (domain: Coordinates[]) => {
-		console.log('domain, ', domain);
-		console.log('domain, ', domain);
 		let minX = Number.MAX_VALUE;
 		let maxX = Number.MIN_VALUE;
 		let minY = Number.MAX_VALUE;
@@ -95,7 +93,6 @@ export class Example_LineGraph
 			if (_xy.y > maxY)
 				maxY = _xy.y;
 		});
-		console.log('min and max: ', minX, maxX, minY, maxY);
 		return {minX, maxX, minY, maxY};
 	};
 
@@ -113,10 +110,11 @@ export class Example_LineGraph
 		return <>
 			<svg width={this.w} height={this.h} style={{float: 'left'}}>
 				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
-					<AxisLeft yScale={this.yScale()} width={this.width}/>
+					<AxisX yScale={this.yScale()} width={this.width}/>
 					<AxisBottom xScale={this.xScale()} height={this.height}/>
 					{this.props.data.map(_data => this.lines(_data.color, _data.data))}
 					{this.props.data.map(_data => this.circles(_data.data, _data.color))}
+					{this.props.baseValue && this.lines('gray', [{x: this.minAndMax().minX, y: this.props.baseValue.y}])}
 				</g>
 			</svg>
 		</>;

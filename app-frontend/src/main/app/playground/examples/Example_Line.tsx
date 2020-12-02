@@ -1,12 +1,14 @@
 import * as React from "react";
 import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
 import {TS_Input} from "@nu-art/thunderstorm/app-frontend/components/TS_Input";
-import {ChartDataSets} from "chart.js";
+import {
+	ChartDataSets
+} from "chart.js";
 import {
 	ChartData,
 	Line
 } from "react-chartjs-2";
-import Example_LineGraph, {LineData} from "./d3components/Example_LineGraph";
+import Example_LineGraph, {D3ChartData} from "./d3components/Example_LineGraph";
 
 export type Coordinates = {
 	x: number,
@@ -20,7 +22,7 @@ export type Props = {
 }
 
 export class Example_Line
-	extends BaseComponent<Props, { data: LineData[], chartJSdata: ChartDataSets[] }> {
+	extends BaseComponent<Props, { data: D3ChartData[], chartJSdata: ChartDataSets[] }> {
 
 	constructor(props: Props) {
 		super(props);
@@ -56,14 +58,14 @@ export class Example_Line
 	private x = 0;
 	private y = 0;
 	private x2 = 0;
-	private y2 = 0
+	private y2 = 0;
 
 	updateData = (newData: Coordinates, label: string) => {
 		this.setState((state) => {
 			const chartJSline = this.state.chartJSdata.find(_dataset => _dataset.label === label);
 			chartJSline && chartJSline.data?.push(newData.y);
-			const d3line = this.state.data.find(_data => _data.label === label)
-			d3line && d3line.data.push(newData)
+			const d3line = this.state.data.find(_data => _data.label === label);
+			d3line && d3line.data.push(newData);
 			return (state);
 		});
 	};
@@ -88,7 +90,7 @@ export class Example_Line
 			<button onClick={() => this.updateData({x: this.x2, y: this.y2}, 'line 2')}>plot</button>
 			<div style={{width: '100%'}}>
 				<div style={{float: 'left', width: '50%'}}>
-				<Example_LineGraph data={this.state.data}/>
+					<Example_LineGraph data={this.state.data}/>
 				</div>
 				<div style={{float: 'left', width: '50%'}}>
 					<Line data={this.buildChartJSData()} redraw={true}/>
@@ -96,7 +98,6 @@ export class Example_Line
 			</div>
 		</div>;
 	}
-
 }
 
 
