@@ -1,7 +1,7 @@
 import * as React from "react";
 import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
 import {scaleLinear} from "d3-scale";
-import AxisLeft from "./d3components/Example_AxisLeft";
+import AxisX from "./d3components/Example_AxisX";
 import AxisBottom from "./d3components/Example_AxisBottom.";
 import {TS_Input} from "@nu-art/thunderstorm/app-frontend/components/TS_Input";
 
@@ -91,7 +91,7 @@ export class Example_Scatter
 			<h1>Scatter plot using React + D3</h1>
 			<svg width={this.w} height={this.h}>
 				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
-					<AxisLeft yScale={this.yScale()} width={this.width}/>
+					<AxisX yScale={this.yScale()} width={this.width}/>
 					<AxisBottom xScale={this.xScale()} height={this.height}/>
 					{this.circles()}
 				</g>
