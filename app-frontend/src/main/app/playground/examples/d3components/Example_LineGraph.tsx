@@ -1,9 +1,9 @@
 import * as React from "react";
+import {ReactNode} from "react";
 import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
 import {scaleLinear} from "d3-scale";
 import AxisX from "./Example_AxisX";
 import AxisBottom from "./Example_AxisBottom.";
-import {ReactNode} from "react";
 
 export type Coordinates = {
 	x: number,
@@ -32,11 +32,16 @@ export type Props = {
 }
 
 export class Example_LineGraph
-	extends BaseComponent<Props, {}> {
+	extends BaseComponent<Props, { x?: number, y?: number }> {
 
 	constructor(props: Props) {
 		super(props);
+		this.state = {x: undefined, y: undefined}
 	}
+
+	updateLegend = (x: number, y: number) => {
+		this.setState({x, y});
+	};
 
 	private minAndMax = () => {
 		let arrayOfProps: Coordinates[] = [];
@@ -47,12 +52,14 @@ export class Example_LineGraph
 	};
 
 	private circles = (data: Coordinates[], color: string) => data.map((d, i) => (
-		<circle
-			key={i}
-			r={5}
-			cx={this.xScale()(d.x)}
-			cy={this.yScale()(d.y)}
-			style={{fill: color}}
+		<circle onMouseEnter={(e) => {
+			this.updateLegend(d.x, d.y);
+		}}
+		        key={i}
+		        r={5}
+		        cx={this.xScale()(d.x)}
+		        cy={this.yScale()(d.y)}
+		        style={{fill: color}}
 		/>
 	));
 
@@ -117,6 +124,9 @@ export class Example_LineGraph
 					{this.props.baseValue && this.lines('gray', [{x: this.minAndMax().minX, y: this.props.baseValue.y}])}
 				</g>
 			</svg>
+			<div style={{fontSize: 12}}>
+				{`mouse is hovering over x: ${this.state.x ? this.state.x : 'null'}, ${this.state.y ? this.state.y : 'null'}`}
+			</div>
 		</>;
 	}
 
