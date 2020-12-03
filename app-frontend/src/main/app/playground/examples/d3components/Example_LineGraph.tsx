@@ -21,14 +21,16 @@ type baseValue = {
 }
 
 export type AxesLabels = {
-	x: string[],
-	y: string[]
+	x?: string[],
+	y?: string[]
 }
 
 export type Props = {
 	data: D3ChartData[],
 	axesLabels?: AxesLabels,
-	baseValue?: baseValue
+	baseValue?: baseValue,
+	startFromZero?: boolean,
+	borderBox?: boolean
 }
 
 export class Example_LineGraph
@@ -86,9 +88,9 @@ export class Example_LineGraph
 	height = this.h - this.margin.top - this.margin.bottom;
 
 	extent = (domain: Coordinates[]) => {
-		let minX = Number.MAX_VALUE;
+		let minX = this.props.startFromZero ? 0 : Number.MAX_VALUE;
 		let maxX = Number.MIN_VALUE;
-		let minY = Number.MAX_VALUE;
+		let minY = this.props.startFromZero ? 0 : Number.MAX_VALUE;
 		let maxY = Number.MIN_VALUE;
 		domain.forEach(_xy => {
 			if (_xy.x < minX)
@@ -105,7 +107,7 @@ export class Example_LineGraph
 
 	xScale = () => {
 		return scaleLinear()
-			.domain([this.minAndMax().minX, this.minAndMax().maxX])
+			.domain([ this.minAndMax().minX, this.minAndMax().maxX])
 			.range([0, this.width]);
 	};
 
@@ -115,10 +117,10 @@ export class Example_LineGraph
 
 	render() {
 		return <>
-			<svg width={this.w} height={this.h} style={{float: 'left'}}>
+			<svg width={this.w} height={this.h} style={{float: 'left', overflow: 'visible'}}>
 				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
 					<AxisX yScale={this.yScale()} width={this.width}/>
-					<AxisBottom xScale={this.xScale()} height={this.height}/>
+					<AxisBottom xScale={this.xScale()} height={this.height} tickValues={this.props.axesLabels?.x} borderBox={this.props.borderBox}/>
 					{this.props.data.map(_data => this.lines(_data.color, _data.data))}
 					{this.props.data.map(_data => this.circles(_data.data, _data.color))}
 					{this.props.baseValue && this.lines('gray', [{x: this.minAndMax().minX, y: this.props.baseValue.y}])}

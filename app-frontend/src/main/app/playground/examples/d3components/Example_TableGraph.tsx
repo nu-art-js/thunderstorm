@@ -58,7 +58,7 @@ export class Example_TableGraph
 	width = this.w - this.margin.right - this.margin.left;
 	height = this.h - this.margin.top - this.margin.bottom;
 
-	private maxX = this.props.axesLabels.x.length;
+	private maxX = this.props.axesLabels.x ? this.props.axesLabels.x.length : 0;
 	private maxY = this.props.rows;
 
 	private midX = () => {
@@ -89,11 +89,12 @@ export class Example_TableGraph
 
 
 	render() {
+		const xLabels = this.props.axesLabels.x ? this.props.axesLabels.x : []
 		return <>
 			<svg width={this.w} height={this.h} style={{float: 'left'}}>
 				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
 					<AxisX yScale={this.yScale()} width={this.width} ticks={this.maxY} tickValues={this.props.axesLabels.y} placeInMiddle={true}/>
-					<AxisYBorder xScale={this.xScale()} height={this.height} ticks={this.maxX} tickValues={[""].concat(this.props.axesLabels.x)} placeInMiddle={true}/>
+					<AxisYBorder xScale={this.xScale()} height={this.height} ticks={this.maxX} tickValues={[""].concat(xLabels)} placeInMiddle={true}/>
 					{this.props.data.map(_data => this.plots(_data.data, _data.color, _data.icon))}
 				</g>
 			</svg>
