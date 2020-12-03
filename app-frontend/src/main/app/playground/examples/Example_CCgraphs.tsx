@@ -50,7 +50,7 @@ export class Example_CCgraphs
 			}],
 			tableData: [ {
 				label: 'x',
-				data: [{x: 1, y: 1}],
+				data: [{x: 2, y: 2}],
 				color: 'lightpink',
 				icon: <circle r={15} style={{fill: 'lightpink'}}/>
 			}]
@@ -69,11 +69,11 @@ export class Example_CCgraphs
 	render() {
 		return <div>
 			<div style={{width: '100%'}}>
-				<div style={{float: 'left', width: '50%'}}>
+				<div style={{float: 'left', width: '70%'}}>
 					<Example_LineGraph data={this.state.data}/>
 				</div>
-				<div style={{float: 'left', width: '50%'}}>
-					<Example_TableGraph rows={3} data={this.state.tableData} axesLabels={{x: ["", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], y: ['Stress reduction', 'Physical']}}/>
+				<div style={{float: 'left', width: '70%'}}>
+					<Example_TableGraph rows={3} data={this.state.tableData} axesLabels={{x: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], y: ['Stress reduction', 'Physical']}}/>
 				</div>
 			</div>
 		</div>;
