@@ -41,11 +41,11 @@ export class Example_CCgraphs
 		this.state = {
 			data: [{
 				label: 'line 1',
-				data: [{x: 5, y: 5}, {x: 8, y: 12}, {x: 16, y: 9}],
+				data: [{x: 0, y: 100}, {x: 1, y: 79}, {x: 2, y: 98}, {x: 3, y: 0}, {x: 4, y: 0}, {x: 5, y: 120}],
 				color: 'rgb(255, 99, 132)'
 			}, {
 				label: 'line 2',
-				data: [{x: 5, y: 5}, {x: 9, y: 8}],
+				data: [{x: 0, y: 68}, {x: 1, y: 74}, {x: 2, y: 89}, {x: 3, y: 0}, {x: 4, y: 0}, {x: 5, y: 85}],
 				color: 'lightpink'
 			}],
 			tableData: [{
@@ -88,7 +88,7 @@ export class Example_CCgraphs
 		return <div>
 			<div style={{width: '100%'}}>
 				<div style={{float: 'left', width: '70%'}}>
-					<Example_LineGraph data={this.state.data}/>
+					<Example_LineGraph data={this.state.data} startFromZero={true} axesLabels={{x: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]}} borderBox={true}/>
 				</div>
 				<div style={{float: 'left', width: '70%'}}>
 					<Example_TableGraph rows={3} data={this.state.tableData}

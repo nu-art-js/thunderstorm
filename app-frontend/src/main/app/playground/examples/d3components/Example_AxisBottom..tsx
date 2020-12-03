@@ -26,7 +26,9 @@ type Props = {
 	height: number,
 	ticks?: number,
 	tickValues?: string[],
-	placeInMiddle?: boolean
+	placeInMiddle?: boolean,
+	borderBox?: boolean,
+	borderBoxValues?: string[]
 }
 
 export class AxisBottom
@@ -37,11 +39,11 @@ export class AxisBottom
 	}
 
 	axisBottom = () => {
-		const textPaddingY = 10;
+		const textPaddingY = this.props.borderBox ? 35 : 10;
 		// const textPaddingX = this.props.textPaddingX || 0
 
 		const axis = this.props.xScale.ticks(this.props.ticks).map((d, i) => (
-			<g className="x-tick" key={i}>
+			<svg className="x-tick" key={i} style={{overflow: 'visible'}}>
 				<line
 					style={{stroke: "#e4e5eb"}}
 					y1={0}
@@ -49,15 +51,21 @@ export class AxisBottom
 					x1={this.props.xScale(d)}
 					x2={this.props.xScale(d)}
 				/>
+				{this.props.borderBox && <rect
+					width={this.props.xScale(this.props.xScale.ticks(this.props.ticks)[i + 1]) - this.props.xScale(d)}
+					height={30}
+					x={this.props.xScale(d)}
+					y={this.props.height}
+					style={{strokeWidth: 1, fill: 'none', stroke: 'black'}} />}
 				<text
 					style={{textAnchor: "middle", fontSize: 12}}
 					dy=".71em"
-					x={this.props.placeInMiddle ? this.props.xScale(d) + ((this.props.xScale(this.props.xScale.ticks(this.props.ticks)[i + 1]) - this.props.xScale(d))/ 2) : this.props.xScale(d)}
+					x={this.props.placeInMiddle ? this.props.xScale(d) + ((this.props.xScale(this.props.xScale.ticks(this.props.ticks)[i + 1]) - this.props.xScale(d)) / 2) : this.props.xScale(d)}
 					y={this.props.height + textPaddingY}
 				>
 					{this.props.tickValues ? this.props.tickValues[d] : d}
 				</text>
-			</g>
+			</svg>
 		));
 		return <>{axis}</>;
 	};
