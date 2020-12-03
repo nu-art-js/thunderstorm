@@ -34,33 +34,51 @@ export type Props = {
 }
 
 export class Example_CCgraphs
-	extends BaseComponent<Props, { data: D3ChartData[], tableData: TableData[]}> {
+	extends BaseComponent<Props, { data: D3ChartData[], tableData: TableData[] }> {
 
 	constructor(props: Props) {
 		super(props);
 		this.state = {
 			data: [{
 				label: 'line 1',
-				data: [{x: 5, y: 5}, {x: 8, y: 12}],
+				data: [{x: 5, y: 5}, {x: 8, y: 12}, {x: 16, y: 9}],
 				color: 'rgb(255, 99, 132)'
 			}, {
 				label: 'line 2',
-				data: [{x: 5, y: 5}],
+				data: [{x: 5, y: 5}, {x: 9, y: 8}],
 				color: 'lightpink'
 			}],
-			tableData: [ {
+			tableData: [{
 				label: 'x',
 				data: [{x: 2, y: 2}],
 				color: 'lightpink',
 				icon: <circle r={15} style={{fill: 'lightpink'}}/>
-			}]
+			},
+				{
+					label: 'x',
+					data: [{x: 1, y: 2}],
+					color: 'lightblue',
+					icon: <circle r={15} style={{fill: 'lightblue'}}/>
+				},
+				{
+					label: 'x',
+					data: [{x: 5, y: 1}],
+					color: 'DarkTurquoise',
+					icon: <circle r={15} style={{fill: 'DarkTurquoise'}}/>
+				},
+				{
+					label: 'x',
+					data: [{x: 7, y: 1}],
+					color: 'PaleGreen',
+					icon: <circle r={15} style={{fill: 'PaleGreen'}}/>
+				}]
 		};
 	}
 
 	updateData = (newData: Coordinates, label: string) => {
 		this.setState((state) => {
-			const d3line = this.state.data.find(_data => _data.label === label)
-			d3line && d3line.data.push(newData)
+			const d3line = this.state.data.find(_data => _data.label === label);
+			d3line && d3line.data.push(newData);
 			return (state);
 		});
 	};
@@ -73,7 +91,8 @@ export class Example_CCgraphs
 					<Example_LineGraph data={this.state.data}/>
 				</div>
 				<div style={{float: 'left', width: '70%'}}>
-					<Example_TableGraph rows={3} data={this.state.tableData} axesLabels={{x: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], y: ['Stress reduction', 'Physical']}}/>
+					<Example_TableGraph rows={3} data={this.state.tableData}
+					                    axesLabels={{x: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], y: ['Stress reduction', 'Physical']}}/>
 				</div>
 			</div>
 		</div>;
