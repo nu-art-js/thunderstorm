@@ -93,6 +93,7 @@ export class BugReport
 					      }}
 				      />
 				      <TS_TextArea
+					      type="text"
 					      style={{height: "110px", margin: "8px", width: "100%", outline: "none"}}
 					      value={description}
 					      placeholder={"type your description here"}
