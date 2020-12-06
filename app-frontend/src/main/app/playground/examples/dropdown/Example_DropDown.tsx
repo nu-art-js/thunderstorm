@@ -53,14 +53,10 @@ export class Example_DropDown
 		}
 	}
 
-	// onSelected = (plague: Plague) => {
-	// 	this.setState({_selected: plague});
-	// };
 	private plagues = plagues;
 
 	addPlague = () => {
 		this.plagues = [...this.plagues, plagues[0]]
-		// this.plagues.push(plagues[0]);
 		this.forceUpdate()
 	};
 
@@ -72,15 +68,6 @@ export class Example_DropDown
 	render() {
 		return <Example_NewProps name={"Dropdown"} renderer={DropDown} data={[this.simpleAdapterProps(), this.complexAdapterProps()]}/>
 	}
-
-	//
-	// private renderSimple() {
-	// 	return <DropDown {...this.simpleAdapterProps()}/>
-	// }
-	//
-	// private renderComplex() {
-	// 	return <DropDown {...this.complexAdapterProps()}/>
-	// }
 
 	private simpleAdapterProps() {
 		return {

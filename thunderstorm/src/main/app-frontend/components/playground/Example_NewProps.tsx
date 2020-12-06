@@ -67,7 +67,7 @@ export class Example_NewProps<T, P = InferProps<T>>
 
 					return {index}
 				})
-			}}>
+			}} style={{width: "fit-content"}}>
 				click to switch
 			</div>
 			<Renderer {...this.props.data[this.state.index]}/>
