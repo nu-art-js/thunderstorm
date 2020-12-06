@@ -34,9 +34,9 @@ export type TS_InputProps<Key> = Stylable & {
 	handleKeyEvent?: (e: KeyboardEvent) => void
 	value?: string
 	type: 'text' | 'number' | 'password'
+	name?: string
 	placeholder?: string
 	id: Key
-	name?: string
 	focus?: boolean
 	spellCheck?: boolean
 }

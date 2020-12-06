@@ -41,6 +41,7 @@ export * from "./app-frontend/modules/routing/RoutingModule";
 
 export * from "./app-frontend/modules/ResourcesModule";
 export * from "./app-frontend/modules/HistoryModule";
+export * from "./app-frontend/modules/ThunderstormModule";
 
 export * from "./app-frontend/core/SimpleScriptInjector";
 export * from "./app-frontend/core/BaseComponent";

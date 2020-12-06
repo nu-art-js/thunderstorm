@@ -45,6 +45,7 @@ import {
 	RequestErrorHandler,
 	RequestSuccessHandler
 } from "../../shared/request-types";
+import {ThunderstormModule} from "../modules/ThunderstormModule";
 
 export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?) => {
 	const errorMessage = request.errorMessage || resError?.debugMessage;
@@ -56,6 +57,7 @@ export const ErrorHandler_Dispatch: RequestErrorHandler<any> = (request) => disp
 export const SuccessHandler_Dispatch: RequestSuccessHandler = (request) => dispatch_requestCompleted.dispatchUI([request.key, true, request.requestData]);
 
 const modules: Module[] = [
+	ThunderstormModule,
 	XhrHttpModule,
 
 	ToastModule,
@@ -68,6 +70,7 @@ const modules: Module[] = [
 	StorageModule,
 	LocaleModule,
 	ResourcesModule,
+
 ];
 
 export class Thunder
