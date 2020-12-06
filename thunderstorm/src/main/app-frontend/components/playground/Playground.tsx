@@ -54,8 +54,8 @@ export class Playground
 	}
 
 	render() {
-		return <div className={'ll_v_c match_height match_width'}>
-			<div className='ll_h_c' style={{alignSelf: "start", padding: 20}}>
+		return <div className={'match_height match_width'}>
+			<div style={{alignSelf: "start", padding: "20px"}}>
 				<GenericSelect<PlaygroundScreen>
 					iconClose={this.props.iconClose}
 					iconOpen={this.props.iconOpen}
@@ -69,7 +69,7 @@ export class Playground
 					presentation={(screen) => screen.name}
 				/>
 			</div>
-			{this.renderPlayground()}
+			<div style={{borderStyle: "double", display: "inline-block", padding: "12px", margin: "12px"}}>{this.renderPlayground()}</div>
 		</div>
 	}
 

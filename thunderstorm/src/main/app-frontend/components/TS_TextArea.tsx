@@ -21,32 +21,59 @@
 
 import * as React from 'react';
 import {KeyboardEvent} from 'react';
+import {Stylable} from "../tools/Stylable";
 
-type Props<Key> = {
-	onChange: (value: string, id: Key) => void
+export type TS_TextAreaProps<Key> = Stylable & {
+	onChange?: (value: string, id: Key) => void
 	onAccept?: () => void
+	type: 'text' | 'number' | 'password'
+	name?: string
 
-	style?: object
 	value?: string
 	error?: string
 	placeholder?: string
+	enable?: boolean
 	id?: Key
 }
 
-type State = { value: string }
+type State = {
+	id: string,
+	name?: string,
+	initialValue?: string
+	value?: string
+}
 
 export class TS_TextArea<Key extends string>
-	extends React.Component<Props<Key>, State> {
-	constructor(props: Props<Key>) {
+	extends React.Component<TS_TextAreaProps<Key>, State> {
+
+	private ref: React.RefObject<HTMLTextAreaElement> = React.createRef();
+
+	constructor(props: TS_TextAreaProps<Key>) {
 		super(props);
 
-		this.state = {value: props.value || ""};
+		this.state = TS_TextArea.getInitialState(props);
 	}
+
+	private static getInitialState(props: TS_TextAreaProps<any>) {
+		return {
+			id: props.id,
+			name: props.name,
+			initialValue: props.value,
+			value: props.value || ""
+		};
+	}
+
+	static getDerivedStateFromProps(props: TS_TextAreaProps<any>, state: State) {
+		if (props.id === state.id && state.name === props.name && state.initialValue === props.value)
+			return {value: state.value};
+
+		return TS_TextArea.getInitialState(props);
+	}
+
 
 	changeValue = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const value = event.target.value;
-		this.setState({value: value});
-		this.props.onChange(value, event.target.id as Key)
+		this.props.onChange?.(value, event.target.id as Key)
 	};
 
 	handleKeyPress = (event: KeyboardEvent) => {
@@ -58,18 +85,21 @@ export class TS_TextArea<Key extends string>
 	};
 
 	render() {
+		if (this.ref.current && this.state.value)
+			this.ref.current.value = this.state.value;
+
 		const {id, placeholder, style} = this.props;
-		return (<div style={{display: "flex", flexGrow: 1, alignItems: "center", justifyContent: "center", width: "100%"}}>
-			<textarea
-				key={id}
-				id={id}
-				onKeyPress={this.handleKeyPress}
-				onChange={this.changeValue}
-				value={this.state.value}
-				placeholder={placeholder}
-				style={{...style}}
-			/>
-		</div>);
+		return <textarea
+			disabled={this.props.enable === false}
+			key={id}
+			id={id}
+			onKeyPress={this.handleKeyPress}
+			onChange={this.changeValue}
+			value={this.state.value}
+			placeholder={placeholder}
+			style={{...style}}
+			ref={this.ref}
+		/>
 	}
 
 }
