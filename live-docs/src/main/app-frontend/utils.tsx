@@ -50,10 +50,11 @@ export const showEditModalExample = (docKey: string) => {
 	const doc = LiveDocsModule.get(docKey);
 
 	const originalDoc = doc.document;
-	const content = <TS_TextArea style={{height: "110px", margin: "8px", width: "100%", outline: "none"}} value={doc.document} onChange={(value: string) => {
-			doc.document = value;
-			ToastModule.toastInfo(doc.document);
-		}}/>;
+	const content = <TS_TextArea type="text" style={{height: "110px", margin: "8px", width: "100%", outline: "none"}} value={doc.document}
+	                             onChange={(value: string) => {
+		                             doc.document = value;
+		                             ToastModule.toastInfo(doc.document);
+	                             }}/>;
 
 	new Dialog_Builder(content)
 		.setTitle(title)
