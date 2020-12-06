@@ -62,6 +62,7 @@ import {Example_Analytics} from "./examples/Example_Analytics";
 import Example_Scatter from "./examples/Example_Scatter";
 import Example_Line from "./examples/Example_Line";
 import Example_ChartJSLine from "./examples/Example_ChartJSLine";
+import {Example_TSTextArea} from "./examples/Example_TSTextArea";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -119,6 +120,7 @@ export class Page_Playground
 		return [
 			// DROPDOWNS
 			{renderer: Example_TSInput, name: "TSInput Example"},
+			{renderer: Example_TSTextArea, name: "TSTextArea Example"},
 			{renderer: Example_DropDown, name: "Dropdown Example"},
 			{renderer: Example_FilterInput, name: "FilterInput Examples"},
 			{renderer: Example_AllDropDowns, name: "ALL DropDown Examples"},
