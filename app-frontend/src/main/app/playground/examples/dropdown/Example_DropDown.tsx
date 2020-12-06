@@ -38,19 +38,24 @@ import {
 	PlagueWithTitle
 } from "./consts";
 
+export type TestType = {
+	prop1?: Plague | PlagueWithTitle,
+	prop2?: Plague | PlagueWithTitle,
+	prop3?: Plague | PlagueWithTitle,
+	prop4?: Plague | PlagueWithTitle,
+}
+
 export const flatRendererMap: TreeRendererMap = {
 	normal: FlatItemRenderer,
 	title: FlatTitleRender
 };
 
 export class Example_DropDown
-	extends React.Component<{}, { _selected?: Plague, simpleAdapter: boolean }> {
+	extends React.Component<{}, { instance: TestType }> {
 
 	constructor(props: {}) {
 		super(props);
-		this.state = {
-			simpleAdapter: false
-		}
+		this.state = {instance: {}}
 	}
 
 	private plagues = plagues;
@@ -60,13 +65,10 @@ export class Example_DropDown
 		this.forceUpdate()
 	};
 
-	switchAdapter = () => {
-		this.setState(state => ({simpleAdapter: !state.simpleAdapter}))
-	};
-
-
 	render() {
-		return <Example_NewProps name={"Dropdown"} renderer={DropDown} data={[this.simpleAdapterProps(), this.complexAdapterProps()]}/>
+		const props1 = this.simpleAdapterProps();
+		const props2 = this.complexAdapterProps();
+		return <Example_NewProps name={"Dropdown"} renderer={DropDown} data={[props1, props2]}/>
 	}
 
 	private simpleAdapterProps() {
@@ -78,8 +80,12 @@ export class Example_DropDown
 				.singleRender(ItemRenderer)
 				.setData(plagues)
 				.build(),
+			selected: this.state.instance["prop1"],
 			onSelected: (item: Plague) => {
-				console.log(`Simple Selected: ${item.label}`)
+				console.log(`Simple Selected: ${item.label}`);
+				this.setState(state => ({
+					instance: {...state.instance, ["prop1"]: item}
+				}))
 			},
 			filter: (item: Plague) => [item.label],
 			selectedItemRenderer: (selected?: Plague) => {
@@ -101,8 +107,12 @@ export class Example_DropDown
 				.setData(flatPlaguesWithTitles)
 				.noGeneralOnClick()
 				.build(),
+			selected: this.state.instance["prop2"],
 			onSelected: (item: PlagueWithTitle) => {
-				console.log(`Complex Selected: ${item.item.label}`)
+				console.log(`Complex Selected: ${item.item.label}`);
+				this.setState(state => ({
+					instance: {...state.instance, ["prop2"]: item}
+				}))
 			},
 			filter: (item: PlagueWithTitle) => [item.item.label],
 			selectedItemRenderer: (selected?: PlagueWithTitle) => {

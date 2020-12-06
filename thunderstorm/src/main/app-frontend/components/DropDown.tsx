@@ -161,9 +161,9 @@ export class DropDown<ItemType>
 	}
 
 	componentDidUpdate(prevProps: Props_DropDown<any>) {
-		if (this.props.adapter.data !== prevProps.adapter.data) {
+		if (this.props.adapter.data !== prevProps.adapter.data || this.props.selected !== prevProps.selected) {
 			const newAdapter = DropDown.cloneAdapter(this.props);
-			this.setState({id: this.props.id, adapter: newAdapter, filteredOptions: newAdapter.data});
+			this.setState({id: this.props.id, adapter: newAdapter, filteredOptions: newAdapter.data, selected: this.props.selected});
 		}
 	}
 
