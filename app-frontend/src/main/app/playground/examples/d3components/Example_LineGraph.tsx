@@ -2,7 +2,7 @@ import * as React from "react";
 import {ReactNode} from "react";
 import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
 import {scaleLinear} from "d3-scale";
-import AxisX from "./Example_AxisX";
+import AxisLeft from "./Example_AxisX";
 import AxisBottom from "./Example_AxisBottom.";
 
 export type Coordinates = {
@@ -30,7 +30,8 @@ export type Props = {
 	axesLabels?: AxesLabels,
 	baseValue?: baseValue,
 	startFromZero?: boolean,
-	borderBox?: boolean
+	borderBox?: boolean,
+	borderBoxValues?: string[]
 }
 
 export class Example_LineGraph
@@ -107,7 +108,7 @@ export class Example_LineGraph
 
 	xScale = () => {
 		return scaleLinear()
-			.domain([ this.minAndMax().minX, this.minAndMax().maxX])
+			.domain([ this.minAndMax().minX, 7])
 			.range([0, this.width]);
 	};
 
@@ -119,8 +120,8 @@ export class Example_LineGraph
 		return <>
 			<svg width={this.w} height={this.h} style={{float: 'left', overflow: 'visible'}}>
 				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
-					<AxisX yScale={this.yScale()} width={this.width}/>
-					<AxisBottom xScale={this.xScale()} height={this.height} tickValues={this.props.axesLabels?.x} borderBox={this.props.borderBox}/>
+					<AxisLeft yScale={this.yScale()} width={this.width}/>
+					<AxisBottom xScale={this.xScale()} height={this.height} ticks={this.props.axesLabels?.x?.length} placeInMiddle={true} tickValues={this.props.axesLabels?.x} borderBox={this.props.borderBox} borderBoxValues={this.props.borderBoxValues}/>
 					{this.props.data.map(_data => this.lines(_data.color, _data.data))}
 					{this.props.data.map(_data => this.circles(_data.data, _data.color))}
 					{this.props.baseValue && this.lines('gray', [{x: this.minAndMax().minX, y: this.props.baseValue.y}])}
