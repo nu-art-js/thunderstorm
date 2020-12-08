@@ -128,8 +128,8 @@ export class Example_LineGraph
 				</g>
 			</svg>
 			<div style={{fontSize: 12}}>
-				{`mouse is hovering over x: ${this.state.x ? this.state.x : 'null'}, ${this.state.y ? this.state.y : 'null'}`}
-			</div>
+				{`mouse is hovering over x: ${this.state.x && this.props.axesLabels?.x ? this.props.axesLabels?.x[this.state.x] : 'null'}, ${this.state.y ? this.state.y : 'null'}`}
+			</div>]
 		</>;
 	}
 

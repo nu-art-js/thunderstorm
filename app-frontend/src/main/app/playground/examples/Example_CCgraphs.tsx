@@ -21,6 +21,7 @@ import * as React from "react";
 import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
 import Example_LineGraph, {D3ChartData} from "./d3components/Example_LineGraph";
 import Example_TableGraph, {TableData} from "./d3components/Example_TableGraph";
+import {TS_Input} from "@nu-art/thunderstorm/app-frontend/components/TS_Input";
 
 export type Coordinates = {
 	x: number,
@@ -41,11 +42,11 @@ export class Example_CCgraphs
 		this.state = {
 			data: [{
 				label: 'line 1',
-				data: [{x: 0, y: 100}, {x: 1, y: 79}, {x: 2, y: 98}, {x: 3, y: 0}, {x: 4, y: 0}, {x: 5, y: 120}],
+				data: [{x: 0, y: 100}, {x: 1, y: 79}, {x: 2, y: 98}],
 				color: 'rgb(255, 99, 132)'
 			}, {
 				label: 'line 2',
-				data: [{x: 0, y: 68}, {x: 1, y: 74}, {x: 2, y: 89}, {x: 3, y: 0}, {x: 4, y: 0}, {x: 5, y: 85}, {x: 6, y: 85}],
+				data: [{x: 0, y: 68}, {x: 1, y: 74}, {x: 2, y: 89}],
 				color: 'lightpink'
 			}],
 			tableData: [{
@@ -83,17 +84,25 @@ export class Example_CCgraphs
 		});
 	};
 
+	private x = 'Monday'
+	private y = 0;
+	private axesLabelsX = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
 
 	render() {
 		return <div>
 			<div style={{width: '100%'}}>
 				<div style={{float: 'left', width: '70%'}}>
-					<Example_LineGraph data={this.state.data} startFromZero={true} axesLabels={{x: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]}} borderBox={true}
+					<Example_LineGraph data={this.state.data} startFromZero={true} axesLabels={{x: this.axesLabelsX}} borderBox={true}
 					borderBoxValues={['90', '88', '92', '99', '89', '91', '90']}/>
+					<br/>
+					<TS_Input onChange={(x) => this.x = x} type='text' id={'x'} placeholder={'type systic x value'}/>
+					<TS_Input onChange={(y) => this.y = parseInt(y)} type='text' id={'y'} placeholder={'type systic y value'}/>
+					<button onClick={() => this.updateData({x: this.axesLabelsX.indexOf(this.x), y: this.y}, 'line 1')}>plot</button>
 				</div>
 				<div style={{float: 'left', width: '70%'}}>
 					<Example_TableGraph rows={3} data={this.state.tableData}
-					                    axesLabels={{x: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], y: ['Stress reduction', 'Physical']}}/>
+					                    axesLabels={{x: this.axesLabelsX, y: ['Stress reduction', 'Physical']}}/>
 				</div>
 			</div>
 		</div>;
