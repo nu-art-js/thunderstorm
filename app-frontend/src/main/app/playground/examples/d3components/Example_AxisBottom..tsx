@@ -51,12 +51,16 @@ export class AxisBottom
 					x1={this.props.xScale(d)}
 					x2={this.props.xScale(d)}
 				/>
-				{this.props.borderBox && <rect
-					width={this.props.xScale(this.props.xScale.ticks(this.props.ticks)[i + 1]) - this.props.xScale(d)}
-					height={30}
-					x={this.props.xScale(d)}
-					y={this.props.height}
-					style={{strokeWidth: 1, fill: 'none', stroke: 'black'}} />}
+				{this.props.borderBox && <svg style={{overflow: 'visible'}}>
+					<rect
+						width={this.props.xScale(this.props.xScale.ticks(this.props.ticks)[i + 1]) - this.props.xScale(d)}
+						height={30}
+						x={this.props.xScale(d)}
+						y={this.props.height}
+						style={{strokeWidth: 1, fill: 'none', stroke: 'black'}}/>
+					<text x={this.props.xScale(d) + ((this.props.xScale(this.props.xScale.ticks(this.props.ticks)[i + 1]) - this.props.xScale(d)) / 2)} y={this.props.height + 15} dominantBaseline={"middle"}
+					      textAnchor={"middle"}>{this.props.borderBoxValues && this.props.borderBoxValues[i]}</text>
+				</svg>}
 				<text
 					style={{textAnchor: "middle", fontSize: 12}}
 					dy=".71em"

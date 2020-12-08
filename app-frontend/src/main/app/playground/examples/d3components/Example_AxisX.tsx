@@ -10,7 +10,7 @@ type Props = {
 	placeInMiddle?: boolean
 }
 
-export class AxisX
+export class AxisLeft
 	extends BaseComponent<Props, {}> {
 
 	constructor(props: Props) {
@@ -40,4 +40,4 @@ export class AxisX
 	}
 }
 
-export default AxisX;
+export default AxisLeft;

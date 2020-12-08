@@ -26,7 +26,7 @@ import {
 	Coordinates,
 	D3ChartData
 } from "./Example_LineGraph";
-import AxisX from "./Example_AxisX";
+import AxisLeft from "./Example_AxisX";
 import AxisYBorder from "./Example_AxisYBorder";
 
 export type TableData = D3ChartData & {
@@ -93,7 +93,7 @@ export class Example_TableGraph
 		return <>
 			<svg width={this.w} height={this.h} style={{float: 'left'}}>
 				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
-					<AxisX yScale={this.yScale()} width={this.width} ticks={this.maxY} tickValues={this.props.axesLabels.y} placeInMiddle={true}/>
+					<AxisLeft yScale={this.yScale()} width={this.width} ticks={this.maxY} tickValues={this.props.axesLabels.y} placeInMiddle={true}/>
 					<AxisYBorder xScale={this.xScale()} height={this.height} ticks={this.maxX} tickValues={[""].concat(xLabels)} placeInMiddle={true}/>
 					{this.props.data.map(_data => this.plots(_data.data, _data.color, _data.icon))}
 				</g>
