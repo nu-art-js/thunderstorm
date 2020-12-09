@@ -163,9 +163,9 @@ export class UploaderModule_Class
 		const request = HttpModule
 			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
 			.setUrl(response.secureUrl)
-			.setOnError((request) => {
+			.setOnError((_request) => {
 				this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
-				this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(request.xhr.response));
+				this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(_request.xhr.response));
 			})
 			.setOnProgressListener((ev: ProgressEvent) => {
 				this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
