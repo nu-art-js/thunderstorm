@@ -8,6 +8,7 @@ participant Bucket
 App_FE->App_FE: Drops a file into the page
 App_FE -> App_BE: Request signed url to \n<b>TEMP</b> bucket folder\n(request will contain file type key)
 App_BE -> DB: Add document to DB about\nthis temp file
+App_BE <-> Bucket: getSignedUrl per file
 App_BE -> App_FE: Return <b>temp DB id</b> + signed url to\n<b>TEMP</b> bucket folder
 App_FE -> Bucket: Upload file to\n<b>TEMP</b> bucket folder
 ...

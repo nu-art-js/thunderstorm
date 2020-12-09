@@ -34,6 +34,7 @@ import {
 import {
 	Api_GetUploadUrl,
 	BaseUploaderFile,
+	DB_Temp_File,
 	fileUploadedKey,
 	Push_FileUploaded,
 	TempSecureUrl,
@@ -64,6 +65,7 @@ export type FileInfo = {
 	progress?: number
 	request?: HttpRequest<any>
 	file: File
+	tempDoc?: DB_Temp_File
 };
 
 export interface OnFileStatusChanged {
@@ -152,12 +154,13 @@ export class UploaderModule_Class
 
 	private uploadFile = async (response: TempSecureUrl) => {
 		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.UploadingFile);
+		this.setFileInfo(response.tempDoc.feId, "tempDoc", response.tempDoc);
 
 		const fileInfo = this.files[response.tempDoc.feId];
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
 
-		fileInfo.request = HttpModule
+		const request = HttpModule
 			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
 			.setUrl(response.secureUrl)
 			.setOnError((request) => {
@@ -170,7 +173,8 @@ export class UploaderModule_Class
 			.setTimeout(10 * Minute)
 			.setBody(fileInfo.file);
 
-		await fileInfo.request.executeSync();
+		this.setFileInfo(response.tempDoc.feId, "request", request);
+		await request.executeSync();
 
 		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
 		this.setFileInfo(response.tempDoc.feId, "request", undefined);
