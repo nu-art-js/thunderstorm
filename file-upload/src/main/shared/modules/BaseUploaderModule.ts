@@ -78,8 +78,12 @@ export type FilesToUpload = Request_Uploader & {
 	file: any
 }
 
+type Config = {
+	uploadQueueParallelCount?: number
+}
+
 export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class>
-	extends Module {
+	extends Module<Config> {
 	protected files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(3);
 	protected readonly dispatch_fileStatusChange = new Dispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
@@ -88,6 +92,11 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 	protected constructor(httpModule: HttpModule) {
 		super();
 		this.httpModule = httpModule;
+	}
+
+	init(){
+		if (this.config.uploadQueueParallelCount)
+			this.uploadQueue.setParallelCount(this.config.uploadQueueParallelCount);
 	}
 
 	protected async getSecuredUrls(
