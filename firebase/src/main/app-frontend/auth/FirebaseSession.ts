@@ -50,7 +50,7 @@ export class FirebaseSession
 	}
 
 	public connect(): void {
-		this.app = firebase.initializeApp(this.config);
+		this.app = firebase.initializeApp(this.config, this.sessionName);
 	}
 
 	getMessaging() {
