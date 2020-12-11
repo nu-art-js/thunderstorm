@@ -2,6 +2,7 @@ import {Module} from "@nu-art/ts-common";
 
 type Config = {
 	appName: string
+	themeColor: string
 }
 
 class ThunderstormModule_Class
@@ -13,7 +14,23 @@ class ThunderstormModule_Class
 	}
 
 	init() {
-		document.title = this.config.appName;
+		this.setAppName(this.config.appName);
+		this.setChromeThemeColor(this.config.themeColor);
+	}
+
+	setAppName(appName: string) {
+		document.title = appName
+	}
+
+	setChromeThemeColor(themeColor: string) {
+		let themeTag: HTMLMetaElement | null = document.head.querySelector('meta[name="theme-color"]');
+		if (!themeTag) {
+			themeTag = document.createElement('meta');
+			themeTag.name = "theme-color";
+			document.getElementsByTagName('head')[0].appendChild(themeTag);
+		}
+
+		themeTag.setAttribute('content', themeColor);
 	}
 
 	getAppName() {
