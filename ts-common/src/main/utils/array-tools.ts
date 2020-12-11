@@ -18,15 +18,15 @@
 
 export function removeItemFromArray<T>(array: T[], item: T) {
 	const index = array.indexOf(item);
-	return removeFromArrayImpl(array, index);
+	return removeFromArrayByIndex(array, index);
 }
 
 export function removeFromArray<T>(array: T[], item: (_item: T) => boolean) {
 	const index = array.findIndex(item);
-	return removeFromArrayImpl(array, index);
+	return removeFromArrayByIndex(array, index);
 }
 
-function removeFromArrayImpl<T>(array: T[], index: number) {
+export function removeFromArrayByIndex<T>(array: T[], index: number) {
 	if (index > -1)
 		array.splice(index, 1);
 
