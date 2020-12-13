@@ -10,6 +10,7 @@ import {
 } from "./CleanupScheduler";
 import {FirestoreCollection} from "@nu-art/firebase/app-backend/firestore/FirestoreCollection";
 import {FirestoreQuery} from "@nu-art/firebase";
+import {filterInstances} from "../../../../../ts-common/src/main";
 
 export type FirestoreBackupDetails<T extends object> = {
 	moduleKey: string,
@@ -22,7 +23,8 @@ export interface OnFirestoreBackupSchedulerAct<T extends object> {
 	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<T>
 }
 
-const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct<any>, "__onFirestoreBackupSchedulerAct">("__onFirestoreBackupSchedulerAct");
+const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct<any>, "__onFirestoreBackupSchedulerAct">(
+	"__onFirestoreBackupSchedulerAct");
 
 export class FirestoreBackupScheduler_Class
 	extends FirebaseScheduledFunction {
@@ -33,8 +35,9 @@ export class FirestoreBackupScheduler_Class
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
-		const backupStatusCollection =  FirebaseModule.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('firestore-backup-status', ["moduleKey"]);
-		const backups = dispatch_onFirestoreBackupSchedulerAct.dispatchModule([]);
+		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('firestore-backup-status', ["moduleKey"]);
+		const backups = filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule([]));
+
 		await Promise.all(backups.map(async backupItem => {
 			const doc = await backupStatusCollection.queryUnique({where: {moduleKey: backupItem.moduleKey}});
 			if (doc && doc.timeStamp + backupItem.interval > currentTimeMillies() && doc.status !== ActStatus.Failure)

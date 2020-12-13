@@ -52,6 +52,8 @@ import {
 import {
 	ApiException,
 	ExpressRequest,
+	FirestoreBackupDetails,
+	OnFirestoreBackupSchedulerAct,
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
@@ -64,6 +66,7 @@ import {
 	BadInputErrorBody,
 	ErrorKey_BadInput
 } from "../shared/types";
+import {Day} from "../../../../ts-common/src/main";
 
 const idLength = 32;
 export const validateId = (length: number, mandatory: boolean = true) => validateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
@@ -100,7 +103,8 @@ export type Config<Type extends object> = {
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
 export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType extends Config<DBType> = Config<DBType>, UType extends PartialProperties<DBType, "_id"> = PartialProperties<DBType, "_id">>
-	extends Module<ConfigType> {
+	extends Module<ConfigType>
+	implements OnFirestoreBackupSchedulerAct<DBType> {
 
 	public readonly collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
@@ -116,7 +120,20 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		this.validator = validator;
 	}
 
-	// this.setExternalUniqueKeys(["accessLevelIds"]);
+	__onFirestoreBackupSchedulerAct(): FirestoreBackupDetails<DBType> {
+		return {
+			backupQuery: this.resolveBackupQuery(),
+			collection: this.collection,
+			interval: Day,
+			moduleKey: this.config.collectionName
+		};
+	}
+
+	protected resolveBackupQuery(): FirestoreQuery<DBType> {
+		return {where: {}};
+	}
+
+// this.setExternalUniqueKeys(["accessLevelIds"]);
 
 	/**
 	 * Sets the external unique keys. External keys are the attributes of a document that must be unique inside the
