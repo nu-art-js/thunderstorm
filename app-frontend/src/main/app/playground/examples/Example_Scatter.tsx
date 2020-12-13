@@ -1,7 +1,7 @@
 import * as React from "react";
 import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
 import {scaleLinear} from "d3-scale";
-import AxisLeft from "./d3components/Example_AxisLeft";
+import AxisLeft from "./d3components/Example_AxisX";
 import AxisBottom from "./d3components/Example_AxisBottom.";
 import {TS_Input} from "@nu-art/thunderstorm/app-frontend/components/TS_Input";
 

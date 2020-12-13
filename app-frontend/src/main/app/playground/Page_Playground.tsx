@@ -55,14 +55,15 @@ import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
 import {Example_FilterInput} from "./examples/Example_FilterInput";
 import {Example_Uploader} from "./examples/Example_Uploader";
 import {Example_TSInput} from "./examples/Example_TSInput";
-import { Example_SingleCheckbox } from './examples/checkbox/Example_SingleCheckbox';
-import { Example_CheckboxField } from './examples/checkbox/Example_CheckboxField';
+import {Example_SingleCheckbox} from './examples/checkbox/Example_SingleCheckbox';
+import {Example_CheckboxField} from './examples/checkbox/Example_CheckboxField';
 import {Example_PermissionsComponent} from "./examples/Example_PermissionsComponent";
 import {Example_Analytics} from "./examples/Example_Analytics";
 import Example_Scatter from "./examples/Example_Scatter";
 import Example_Line from "./examples/Example_Line";
 import Example_ChartJSLine from "./examples/Example_ChartJSLine";
 import {Example_TSTextArea} from "./examples/Example_TSTextArea";
+import Example_CCgraphs from "./examples/Example_CCgraphs";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -162,8 +163,8 @@ export class Page_Playground
 			{renderer: Example_Analytics, name: 'Analytics'},
 			{renderer: Example_Scatter, name: 'Scatter Plot'},
 			{renderer: Example_Line, name: 'Line Graph'},
-			{renderer: Example_ChartJSLine, name: 'ChartJS Line Graph'}
-
+			{renderer: Example_ChartJSLine, name: 'ChartJS Line Graph'},
+			{renderer: Example_CCgraphs, name: 'CC Graphs'}
 		];
 	}
 }

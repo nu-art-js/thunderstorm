@@ -81,9 +81,9 @@ export class FirebaseModule_Class
 			const config = await resp.json() as Promise<FirebaseConfig>;
 			// @ts-ignore
 			this.setConfig({[localSessionId]: config});
-			return config
+			return config;
 		} catch (e) {
-			throw new ImplementationMissingException(`Either specify configs for the 'FirebaseModule' or use SDK auto-configuration with firebase hosting`)
+			throw new ImplementationMissingException(`Either specify configs for the 'FirebaseModule' or use SDK auto-configuration with firebase hosting`);
 		}
 	};
 
@@ -92,7 +92,7 @@ export class FirebaseModule_Class
 			return this.createLocalSession(token);
 
 		if (typeof projectId === "object")
-			return this.createSessionWithConfigs(projectId);
+			return this.createSessionWithConfigs(projectId, token);
 
 		const session = this.sessions[projectId];
 		if (session)
@@ -106,14 +106,16 @@ export class FirebaseModule_Class
 		return this.initiateSession(projectId, config, token);
 	}
 
-	private async createSessionWithConfigs(config: FirebaseConfig): Promise<FirebaseSession> {
+	private async createSessionWithConfigs(config: FirebaseConfig, token?: string): Promise<FirebaseSession> {
 		if (!config || !config.projectId || !config.databaseURL || !config.authDomain || !config.apiKey)
 			throw new BadImplementationException(`Config: ${__stringify(config)} is not a credentials pattern`);
 
-		// @ts-ignore
-		this.setConfig({[config.projectId]: config});
+		const projectId = config.projectId + (token || '');
 
-		return this.createSession(config.projectId);
+		// @ts-ignore
+		this.setConfig({[projectId]: config});
+
+		return this.createSession(projectId, token);
 	}
 
 	private getProjectAuth(projectId: string) {
