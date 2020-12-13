@@ -20,12 +20,12 @@
   "dependencies": {
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/ts-common": "~0.0.1",
-    "@octokit/rest": "~18.0.3",
+    "@octokit/rest": "18.0.9",
     "@octokit/plugin-paginate-rest": "2.2.1",
     "jsonwebtoken": "~8.5.1"
   },
   "devDependencies": {
-    "@octokit/types": "~5.2.0",
+    "@octokit/types": "^5.5.0",
     "@types/jsonwebtoken": "~8.5.0",
     "ts-node": "^8.10.1",
     "typescript": "^3.8.3"

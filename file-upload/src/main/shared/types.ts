@@ -40,7 +40,7 @@ export type BaseUploaderFile = {
 export type DB_Temp_File = DB_Object & BaseUploaderFile & Required<Pick<BaseUploaderFile, 'key'>> & {
 	path: string
 	_audit: AuditBy
-	bucketName?: string
+	bucketName: string
 }
 export type Request_GetUploadUrl = BaseUploaderFile[]
 

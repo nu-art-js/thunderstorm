@@ -84,10 +84,9 @@ export class UploaderModule_Class
 				mimeType: _file.mimeType,
 				key,
 				path,
-				_audit: auditBy('be-stub')
+				_audit: auditBy('be-stub'),
+				bucketName: bucket.bucketName
 			};
-			if (bucketName)
-				instance.bucketName = bucketName;
 
 			const temp = await UploaderTempFileModule.upsert(instance);
 			const file = await bucket.getFile(temp.path);

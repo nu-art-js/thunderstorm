@@ -172,10 +172,6 @@ export class PushPubSubModule_Class
 
 			this.logVerbose('new token received: ' + this.firebaseToken);
 
-			this.messaging.onMessage((payload) => {
-				this.processMessage(payload.data);
-			});
-
 			await this.register();
 
 		} catch (err) {
