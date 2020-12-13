@@ -85,7 +85,7 @@ type Config = {
 export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class>
 	extends Module<Config> {
 	protected files: { [id: string]: FileInfo } = {};
-	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(3);
+	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(2);
 	protected readonly dispatch_fileStatusChange = new Dispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 	private httpModule: HttpModule;
 
