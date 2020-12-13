@@ -221,6 +221,8 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 			this.setFileInfo(response.tempDoc.feId, "progress", undefined);
 			this.setFileInfo(response.tempDoc.feId, "file", undefined);
 			return;
+		} finally {
+			delete this.files[response.tempDoc.feId]
 		}
 
 		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
