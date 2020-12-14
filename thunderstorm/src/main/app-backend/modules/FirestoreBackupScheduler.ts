@@ -9,9 +9,7 @@ import {
 } from "@nu-art/ts-common";
 import {FirebaseScheduledFunction} from "@nu-art/firebase/app-backend/functions/firebase-function";
 import {FirebaseModule} from "@nu-art/firebase/app-backend/FirebaseModule";
-import {
-	ActDetailsDoc,
-} from "./CleanupScheduler";
+import {ActDetailsDoc,} from "./CleanupScheduler";
 import {FirestoreCollection} from "@nu-art/firebase/app-backend/firestore/FirestoreCollection";
 import {FirestoreQuery} from "@nu-art/firebase";
 
