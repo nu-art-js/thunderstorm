@@ -1,6 +1,7 @@
 import {
 	currentTimeMillies,
-	Dispatcher
+	Dispatcher,
+	filterInstances
 } from "@nu-art/ts-common";
 import {FirebaseScheduledFunction} from "@nu-art/firebase/app-backend/functions/firebase-function";
 import {FirebaseModule} from "@nu-art/firebase/app-backend/FirebaseModule";
@@ -10,7 +11,6 @@ import {
 } from "./CleanupScheduler";
 import {FirestoreCollection} from "@nu-art/firebase/app-backend/firestore/FirestoreCollection";
 import {FirestoreQuery} from "@nu-art/firebase";
-import {filterInstances} from "../../../../../ts-common/src/main";
 
 export type FirestoreBackupDetails<T extends object> = {
 	moduleKey: string,
@@ -56,6 +56,12 @@ export class FirestoreBackupScheduler_Class
 			}
 		}));
 	};
+
+	static cleanup(keepBackupUntil: number) {
+		return async function () {
+			//TODO yair... here clean up the backups till ${keepBackupUntil}
+		};
+	}
 }
 
 export const FirestoreBackupScheduler = new FirestoreBackupScheduler_Class();
