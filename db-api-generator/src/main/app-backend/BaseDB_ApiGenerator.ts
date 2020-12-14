@@ -29,6 +29,7 @@ import {
 	addItemToArray,
 	BadImplementationException,
 	batchAction,
+	Day,
 	filterDuplicates,
 	filterInstances,
 	generateHex,
@@ -40,8 +41,7 @@ import {
 	validate,
 	validateRegexp,
 	ValidationException,
-	ValidatorTypeResolver,
-    Day
+	ValidatorTypeResolver
 } from "@nu-art/ts-common";
 import {
 	ServerApi_Create,
@@ -52,11 +52,8 @@ import {
 } from "./apis";
 import {
 	ApiException,
-	CleanupDetails,
 	ExpressRequest,
 	FirestoreBackupDetails,
-	FirestoreBackupScheduler_Class,
-	OnCleanupSchedulerAct,
 	OnFirestoreBackupSchedulerAct,
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
@@ -107,7 +104,7 @@ export type Config<Type extends object> = {
  */
 export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType extends Config<DBType> = Config<DBType>, UType extends PartialProperties<DBType, "_id"> = PartialProperties<DBType, "_id">>
 	extends Module<ConfigType>
-	implements OnFirestoreBackupSchedulerAct<DBType>, OnCleanupSchedulerAct {
+	implements OnFirestoreBackupSchedulerAct<DBType> {
 
 	public readonly collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
@@ -119,14 +116,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		this.validator = validator;
 	}
 
-	__onCleanupSchedulerAct(): CleanupDetails {
-		return {
-			cleanup: FirestoreBackupScheduler_Class.cleanup(7 * Day),
-			interval: Day,
-			moduleKey: this.config.collectionName
-		}
-	};
-
 	setValidator(validator: ValidatorTypeResolver<DBType>) {
 		this.validator = validator;
 	}
@@ -135,6 +124,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return {
 			backupQuery: this.resolveBackupQuery(),
 			collection: this.collection,
+			keepInterval: 7 * Day,
 			interval: Day,
 			moduleKey: this.config.collectionName
 		};

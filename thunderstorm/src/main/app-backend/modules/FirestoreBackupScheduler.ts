@@ -1,4 +1,5 @@
 import {
+	batchActionParallel,
 	currentTimeMillies,
 	Dispatcher,
 	filterInstances
@@ -15,6 +16,7 @@ import {FirestoreQuery} from "@nu-art/firebase";
 export type FirestoreBackupDetails<T extends object> = {
 	moduleKey: string,
 	interval: number,
+	keepInterval?: number,
 	collection: FirestoreCollection<T>,
 	backupQuery: FirestoreQuery<T>
 }
@@ -31,16 +33,18 @@ export class FirestoreBackupScheduler_Class
 
 	constructor() {
 		super();
-		this.setSchedule('every 1 hours');
+		this.setSchedule('every 24 hours');
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
 		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('firestore-backup-status', ["moduleKey"]);
 		const backups = filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule([]));
+		const docs = await batchActionParallel(backups.map(backupItem => backupItem.moduleKey), 10,
+		                                       (chunk) => backupStatusCollection.query({where: {moduleKey: {$in: chunk}}}))
 
-		await Promise.all(backups.map(async backupItem => {
-			const doc = await backupStatusCollection.queryUnique({where: {moduleKey: backupItem.moduleKey}});
-			if (doc && doc.timeStamp + backupItem.interval > currentTimeMillies() && doc.status !== ActStatus.Failure)
+		await Promise.all(backups.map(async (backupItem, index) => {
+			const doc = docs[index];
+			if (doc && doc.timeStamp + backupItem.interval > currentTimeMillies() && doc.status === ActStatus.Success)
 				return;
 
 			let status: ActStatus = ActStatus.Success;
@@ -48,6 +52,9 @@ export class FirestoreBackupScheduler_Class
 				const toBackupData = await backupItem.collection.query(backupItem.backupQuery);
 				const backupPath = `backup/firestore/${backupItem.moduleKey}/${currentTimeMillies()}.json`;
 				await (await (await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket()).getFile(backupPath)).write(toBackupData);
+
+				//TODO yair... here clean up the backups till ${backupItem.keepInterval}
+
 			} catch (e) {
 				status = ActStatus.Failure;
 				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error '${e}'`);
@@ -56,12 +63,6 @@ export class FirestoreBackupScheduler_Class
 			}
 		}));
 	};
-
-	static cleanup(keepBackupUntil: number) {
-		return async function () {
-			//TODO yair... here clean up the backups till ${keepBackupUntil}
-		};
-	}
 }
 
 export const FirestoreBackupScheduler = new FirestoreBackupScheduler_Class();
