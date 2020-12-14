@@ -59,7 +59,7 @@ export type FileInfo = {
 	progress?: number
 	name: string
 	request?: BaseHttpRequest<any>
-	file: any
+	file?: any
 	tempDoc?: DB_Temp_File
 };
 
@@ -219,14 +219,12 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 			this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
 			this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(e));
 			this.setFileInfo(response.tempDoc.feId, "progress", undefined);
-			this.setFileInfo(response.tempDoc.feId, "file", undefined);
 			return;
 		} finally {
-			delete this.files[response.tempDoc.feId]
+			delete this.files[response.tempDoc.feId].file
+			this.setFileInfo(response.tempDoc.feId, "progress", undefined);
+			this.setFileInfo(response.tempDoc.feId, "status", FileStatus.PostProcessing);
 		}
-
-		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
-		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.PostProcessing);
 	};
 }
 
