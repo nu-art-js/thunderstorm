@@ -1,5 +1,4 @@
 import {
-	batchActionParallel,
 	currentTimeMillies,
 	Dispatcher,
 	filterInstances
@@ -37,21 +36,27 @@ export class FirestoreBackupScheduler_Class
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
-		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('firestore-backup-status', ["moduleKey"]);
+		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('firestore-backup-status',
+		                                                                                                               ["moduleKey", "timestamp"]);
 		const backups = filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule([]));
-		const docs = await batchActionParallel(backups.map(backupItem => backupItem.moduleKey), 10,
-		                                       (chunk) => backupStatusCollection.query({where: {moduleKey: {$in: chunk}}}))
 
-		await Promise.all(backups.map(async (backupItem, index) => {
-			const doc = docs[index];
-			if (doc && doc.timeStamp + backupItem.interval > currentTimeMillies() && doc.status === ActStatus.Success)
+		const bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
+		await Promise.all(backups.map(async (backupItem) => {
+			const query: FirestoreQuery<ActDetailsDoc> = {
+				where: {moduleKey: backupItem.moduleKey},
+				orderBy: [{key: "timestamp", order: "asc"}],
+			};
+			const docs = await backupStatusCollection.query(query);
+			const latestDoc = docs[0];
+			if (latestDoc && latestDoc.timestamp + backupItem.interval > currentTimeMillies() && latestDoc.status === ActStatus.Success)
 				return;
 
 			let status: ActStatus = ActStatus.Success;
+			const backupPath = `backup/firestore/${backupItem.moduleKey}/${currentTimeMillies()}.json`;
 			try {
 				const toBackupData = await backupItem.collection.query(backupItem.backupQuery);
-				const backupPath = `backup/firestore/${backupItem.moduleKey}/${currentTimeMillies()}.json`;
-				await (await (await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket()).getFile(backupPath)).write(toBackupData);
+				await (await bucket.getFile(backupPath)).write(toBackupData);
+
 
 				//TODO yair... here clean up the backups till ${backupItem.keepInterval}
 
@@ -59,7 +64,7 @@ export class FirestoreBackupScheduler_Class
 				status = ActStatus.Failure;
 				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error '${e}'`);
 			} finally {
-				await backupStatusCollection.upsert({timeStamp: currentTimeMillies(), status, moduleKey: backupItem.moduleKey});
+				await backupStatusCollection.upsert({timestamp: currentTimeMillies(), status, moduleKey: backupItem.moduleKey, backupPath});
 			}
 		}));
 	};
