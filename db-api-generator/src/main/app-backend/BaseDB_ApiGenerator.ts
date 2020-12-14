@@ -40,7 +40,8 @@ import {
 	validate,
 	validateRegexp,
 	ValidationException,
-	ValidatorTypeResolver
+	ValidatorTypeResolver,
+    Day
 } from "@nu-art/ts-common";
 import {
 	ServerApi_Create,
@@ -66,7 +67,6 @@ import {
 	BadInputErrorBody,
 	ErrorKey_BadInput
 } from "../shared/types";
-import {Day} from "../../../../ts-common/src/main";
 
 const idLength = 32;
 export const validateId = (length: number, mandatory: boolean = true) => validateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
