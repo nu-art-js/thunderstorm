@@ -103,7 +103,7 @@ export class SamlModule_Class
 			const relay_state = options.request_body.RelayState;
 			if (!relay_state)
 				return rejected('LoginContext lost along the way');
-			response
+
 			resolve({
 				        userId: response.user.name_id,
 				        loginContext: JSON.parse(relay_state),
