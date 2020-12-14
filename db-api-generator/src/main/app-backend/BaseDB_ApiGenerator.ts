@@ -67,6 +67,11 @@ import {
 	ErrorKey_BadInput
 } from "../shared/types";
 import {Day} from "../../../../ts-common/src/main";
+import {
+	CleanupDetails,
+	OnCleanupSchedulerAct
+} from "../../../../thunderstorm/src/main/app-backend/modules/CleanupScheduler";
+import {FirestoreBackupScheduler_Class} from "../../../../thunderstorm/src/main/app-backend/modules/FirestoreBackupScheduler";
 
 const idLength = 32;
 export const validateId = (length: number, mandatory: boolean = true) => validateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
@@ -104,7 +109,7 @@ export type Config<Type extends object> = {
  */
 export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType extends Config<DBType> = Config<DBType>, UType extends PartialProperties<DBType, "_id"> = PartialProperties<DBType, "_id">>
 	extends Module<ConfigType>
-	implements OnFirestoreBackupSchedulerAct<DBType> {
+	implements OnFirestoreBackupSchedulerAct<DBType>, OnCleanupSchedulerAct {
 
 	public readonly collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
@@ -115,6 +120,14 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		this.setDefaultConfig({itemName, collectionName, externalFilterKeys: ["_id"], lockKeys: ["_id"]});
 		this.validator = validator;
 	}
+
+	__onCleanupSchedulerAct(): CleanupDetails {
+		return {
+			cleanup: FirestoreBackupScheduler_Class.cleanup(7 * Day),
+			interval: Day,
+			moduleKey: this.config.collectionName
+		}
+	};
 
 	setValidator(validator: ValidatorTypeResolver<DBType>) {
 		this.validator = validator;
