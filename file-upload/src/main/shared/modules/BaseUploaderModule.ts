@@ -59,7 +59,7 @@ export type FileInfo = {
 	progress?: number
 	name: string
 	request?: BaseHttpRequest<any>
-	file: any
+	file?: any
 	tempDoc?: DB_Temp_File
 };
 
@@ -195,11 +195,12 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 	};
 
 	private uploadFile = async (response: TempSecureUrl) => {
-		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.UploadingFile);
-		this.setFileInfo(response.tempDoc.feId, "tempDoc", response.tempDoc);
-		const fileInfo = this.files[response.tempDoc.feId];
+		const feId = response.tempDoc.feId;
+		this.setFileInfo(feId, "status", FileStatus.UploadingFile);
+		this.setFileInfo(feId, "tempDoc", response.tempDoc);
+		const fileInfo = this.files[feId];
 		if (!fileInfo)
-			throw new BadImplementationException(`Missing file with id ${response.tempDoc.feId} and name: ${response.tempDoc.name}`);
+			throw new BadImplementationException(`Missing file with id ${feId} and name: ${response.tempDoc.name}`);
 
 		try {
 			const request = this
@@ -210,23 +211,20 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 				.setTimeout(10 * Minute)
 				.setBody(fileInfo.file)
 				.setOnProgressListener((ev: TS_Progress) => {
-					this.setFileInfo(response.tempDoc.feId, "progress", ev.loaded / ev.total);
+					this.setFileInfo(feId, "progress", ev.loaded / ev.total);
 				});
 
-			this.setFileInfo(response.tempDoc.feId, "request", request);
+			this.setFileInfo(feId, "request", request);
 			await request.executeSync();
+			this.setFileInfo(feId, "status", FileStatus.PostProcessing);
 		} catch (e) {
-			this.setFileInfo(response.tempDoc.feId, "status", FileStatus.Error);
-			this.setFileInfo(response.tempDoc.feId, "messageStatus", __stringify(e));
-			this.setFileInfo(response.tempDoc.feId, "progress", undefined);
-			this.setFileInfo(response.tempDoc.feId, "file", undefined);
-			return;
+			this.logWarning('Uploading failed with error: ',e)
+			this.setFileInfo(feId, "status", FileStatus.Error);
+			this.setFileInfo(feId, "messageStatus", __stringify(e));
 		} finally {
-			delete this.files[response.tempDoc.feId]
+			delete this.files[feId].file
+			this.setFileInfo(feId, "progress", undefined);
 		}
-
-		this.setFileInfo(response.tempDoc.feId, "progress", undefined);
-		this.setFileInfo(response.tempDoc.feId, "status", FileStatus.PostProcessing);
 	};
 }
 
