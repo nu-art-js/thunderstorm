@@ -27,6 +27,7 @@ export * from "./app-backend/modules/server/server-errors";
 export * from "./app-backend/modules/server/server-api";
 export * from "./app-backend/modules/server/HttpServer";
 export * from "./app-backend/modules/http/AxiosHttpModule";
+export * from "./app-backend/modules/http/types";
 export * from "./app-backend/modules/ForceUpgrade";
 export * from "./app-backend/utils/promisify-request";
 export * from "./app-backend/utils/to-be-removed";

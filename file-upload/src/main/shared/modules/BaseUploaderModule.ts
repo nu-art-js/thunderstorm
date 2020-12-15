@@ -82,8 +82,8 @@ type Config = {
 	uploadQueueParallelCount?: number
 }
 
-export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class>
-	extends Module<Config> {
+export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class,CustomConfig extends object = {}>
+	extends Module<Config & CustomConfig> {
 	protected files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(2);
 	protected readonly dispatch_fileStatusChange = new Dispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
