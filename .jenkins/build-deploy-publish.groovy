@@ -16,7 +16,7 @@ class Pipeline_Build
 			declareEnv("dev", "thunderstorm-dev")
 			declareEnv("staging", "thunderstorm-staging")
 			declareEnv("prod", "nu-art-thunderstorm")
-			setGitRepoId("nu-art-js/thunderstorm")
+			setGitRepoId("nu-art-js/thunderstorm", true)
 			super.init()
 		}
 }
