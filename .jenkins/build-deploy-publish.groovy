@@ -21,6 +21,6 @@ class Pipeline_Build
 		}
 }
 
-node("ci") {
+node() {
 	Workflow.createWorkflow(Pipeline_Build.class, this)
 }
