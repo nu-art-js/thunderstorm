@@ -26,6 +26,7 @@ import {
 	Request_Uploader
 } from "../../shared/modules/BaseUploaderModule";
 import {
+	Axios_RequestConfig,
 	AxiosHttpModule,
 	AxiosHttpModule_Class
 } from "@nu-art/thunderstorm/backend";
@@ -35,10 +36,15 @@ export type ServerFilesToUpload = Request_Uploader & {
 }
 
 export class ServerUploaderModule_Class
-	extends BaseUploaderModule_Class<AxiosHttpModule_Class> {
+	extends BaseUploaderModule_Class<AxiosHttpModule_Class, { requestConfig: Axios_RequestConfig }> {
 
 	constructor() {
 		super(AxiosHttpModule);
+	}
+
+	init() {
+		super.init();
+		AxiosHttpModule.setRequestOption(this.config.requestConfig);
 	}
 
 	upload(files: ServerFilesToUpload[]): BaseUploaderFile[] {
