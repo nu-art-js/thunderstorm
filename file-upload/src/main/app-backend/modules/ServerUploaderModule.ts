@@ -40,6 +40,10 @@ export class ServerUploaderModule_Class
 
 	constructor() {
 		super(AxiosHttpModule);
+	}
+
+	init() {
+		super.init();
 		AxiosHttpModule.setRequestOption(this.config.requestConfig);
 	}
 
