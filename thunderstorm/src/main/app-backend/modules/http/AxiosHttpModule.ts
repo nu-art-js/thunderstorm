@@ -19,6 +19,7 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
+import axios from 'axios';
 import {
 	ApiTypeBinder,
 	DeriveErrorType,
@@ -26,22 +27,22 @@ import {
 	ErrorResponse,
 	HttpMethod
 } from "../../../shared/types";
-
 import {
 	BadImplementationException,
 	StringMap,
 } from "@nu-art/ts-common";
 import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
-import axios, {
-	AxiosRequestConfig,
-	AxiosResponse,
-	CancelTokenSource,
-	Method
-} from 'axios';
 import {BaseHttpModule_Class} from "../../../shared/BaseHttpModule";
+import {
+	Axios_CancelTokenSource,
+	Axios_Method,
+	Axios_RequestConfig,
+	Axios_Response
+} from "./types";
 
 export class AxiosHttpModule_Class
 	extends BaseHttpModule_Class {
+	private requestOption: Axios_RequestConfig = {};
 
 	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): AxiosHttpRequest<DeriveRealBinder<Binder>> {
 		return new AxiosHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
@@ -51,7 +52,13 @@ export class AxiosHttpModule_Class
 			.addHeaders(this.getDefaultHeaders())
 			.setHandleRequestSuccess(this.handleRequestSuccess)
 			.setHandleRequestFailure(this.handleRequestFailure)
-			.setDefaultRequestHandler(this.processDefaultResponseHandlers);
+			.setDefaultRequestHandler(this.processDefaultResponseHandlers)
+			.setRequestOption(this.requestOption);
+	}
+
+	setRequestOption(requestOption: Axios_RequestConfig) {
+		this.requestOption = requestOption;
+		return this;
 	}
 
 }
@@ -62,10 +69,10 @@ export const AxiosHttpModule = new AxiosHttpModule_Class();
 
 class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	extends BaseHttpRequest<Binder> {
-	private response?: AxiosResponse<DeriveResponseType<DeriveRealBinder<Binder>>>;
-	private cancelSignal: CancelTokenSource;
+	private response?: Axios_Response<DeriveResponseType<DeriveRealBinder<Binder>>>;
+	private cancelSignal: Axios_CancelTokenSource;
 	protected status?: number;
-	private requestOption: AxiosRequestConfig = {};
+	private requestOption: Axios_RequestConfig = {};
 
 	constructor(requestKey: string, requestData?: string, shouldCompress?: boolean) {
 		super(requestKey, requestData);
@@ -96,7 +103,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		return {debugMessage: this.getResponse()};
 	}
 
-	setRequestOption(requestOption: AxiosRequestConfig) {
+	setRequestOption(requestOption: Axios_RequestConfig) {
 		this.requestOption = requestOption;
 		return this;
 	}
@@ -139,10 +146,10 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				return carry;
 			}, {} as StringMap);
 
-			const options: AxiosRequestConfig = {
+			const options: Axios_RequestConfig = {
 				...this.requestOption,
 				url: fullUrl,
-				method: this.method as Method,
+				method: this.method as Axios_Method,
 				headers: headers,
 				// TODO will probably need to use the abortController with a timeout for this.
 				timeout: this.timeout,
