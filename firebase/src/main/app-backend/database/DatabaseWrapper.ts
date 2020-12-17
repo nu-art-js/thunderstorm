@@ -17,7 +17,10 @@
  */
 
 // import {FirestoreCollection} from "./FirestoreCollection";
-import {Firebase_DB} from "./types";
+import {
+	FirebaseListener,
+	Firebase_DB
+} from "./types";
 import {
 	BadImplementationException,
 	calculateJsonSizeMb,
@@ -34,7 +37,7 @@ export class DatabaseWrapper
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.database = firebaseSession.app.database();
+		this.database = firebaseSession.app.database() as Firebase_DB;
 	}
 
 
@@ -50,9 +53,17 @@ export class DatabaseWrapper
 		return toRet;
 	}
 
-	public listen<T>(path: string, callback: (value: T | undefined) => void) {
+	public listen<T>(path: string, callback: (value: T | undefined) => void): FirebaseListener {
 		try {
-			this.database.ref(path).on("value", (snapshot) => callback(snapshot ? snapshot.val() : undefined));
+			return this.database.ref(path).on("value", (snapshot) => callback(snapshot ? snapshot.val() : undefined));
+		} catch (e) {
+			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
+		}
+	}
+
+	public stopListening<T>(path: string, listener: FirebaseListener): void {
+		try {
+			this.database.ref(path).off("value", listener);
 		} catch (e) {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}
