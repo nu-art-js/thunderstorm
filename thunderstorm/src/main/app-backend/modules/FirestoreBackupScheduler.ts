@@ -1,20 +1,26 @@
 import {
 	currentTimeMillies,
 	Dispatcher,
-	filterInstances
+	dispatch_onServerError,
+	filterInstances,
+    ServerErrorSeverity,
+	_logger_logException,
+	__stringify
 } from "@nu-art/ts-common";
 import {FirebaseScheduledFunction} from "@nu-art/firebase/app-backend/functions/firebase-function";
 import {FirebaseModule} from "@nu-art/firebase/app-backend/FirebaseModule";
-import {
-	ActDetailsDoc,
-	ActStatus
-} from "./CleanupScheduler";
+import {ActDetailsDoc,} from "./CleanupScheduler";
 import {FirestoreCollection} from "@nu-art/firebase/app-backend/firestore/FirestoreCollection";
 import {FirestoreQuery} from "@nu-art/firebase";
+
+export type BackupDoc = ActDetailsDoc & {
+	backupPath: string,
+}
 
 export type FirestoreBackupDetails<T extends object> = {
 	moduleKey: string,
 	interval: number,
+	keepInterval?: number,
 	collection: FirestoreCollection<T>,
 	backupQuery: FirestoreQuery<T>
 }
@@ -31,28 +37,40 @@ export class FirestoreBackupScheduler_Class
 
 	constructor() {
 		super();
-		this.setSchedule('every 1 hours');
+		this.setSchedule('every 24 hours');
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
-		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('firestore-backup-status', ["moduleKey"]);
+		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<BackupDoc>('firestore-backup-status',
+		                                                                                                           ["moduleKey", "timestamp"]);
 		const backups = filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule([]));
 
-		await Promise.all(backups.map(async backupItem => {
-			const doc = await backupStatusCollection.queryUnique({where: {moduleKey: backupItem.moduleKey}});
-			if (doc && doc.timeStamp + backupItem.interval > currentTimeMillies() && doc.status !== ActStatus.Failure)
+		const bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
+		await Promise.all(backups.map(async (backupItem) => {
+			const query: FirestoreQuery<BackupDoc> = {
+				where: {moduleKey: backupItem.moduleKey},
+				orderBy: [{key: "timestamp", order: "asc"}],
+			};
+			const docs = await backupStatusCollection.query(query);
+			const latestDoc = docs[0];
+			if (latestDoc && latestDoc.timestamp + backupItem.interval > currentTimeMillies())
 				return;
 
-			let status: ActStatus = ActStatus.Success;
+			const backupPath = `backup/firestore/${backupItem.moduleKey}/${currentTimeMillies()}.json`;
 			try {
 				const toBackupData = await backupItem.collection.query(backupItem.backupQuery);
-				const backupPath = `backup/firestore/${backupItem.moduleKey}/${currentTimeMillies()}.json`;
-				await (await (await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket()).getFile(backupPath)).write(toBackupData);
+				await (await bucket.getFile(backupPath)).write(toBackupData);
+				await backupStatusCollection.upsert({timestamp: currentTimeMillies(), moduleKey: backupItem.moduleKey, backupPath});
+
+
+				//TODO yair... here clean up the backups till ${backupItem.keepInterval}
+
 			} catch (e) {
-				status = ActStatus.Failure;
-				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error '${e}'`);
-			} finally {
-				await backupStatusCollection.upsert({timeStamp: currentTimeMillies(), status, moduleKey: backupItem.moduleKey});
+				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error`,e);
+				const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backupItem, true)}\nError: ${_logger_logException(e)}`;
+
+				await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, errorMessage]);
+
 			}
 		}));
 	};

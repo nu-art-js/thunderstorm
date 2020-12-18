@@ -29,6 +29,7 @@ import {
 	addItemToArray,
 	BadImplementationException,
 	batchAction,
+	Day,
 	filterDuplicates,
 	filterInstances,
 	generateHex,
@@ -40,8 +41,7 @@ import {
 	validate,
 	validateRegexp,
 	ValidationException,
-	ValidatorTypeResolver,
-    Day
+	ValidatorTypeResolver
 } from "@nu-art/ts-common";
 import {
 	ServerApi_Create,
@@ -124,6 +124,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return {
 			backupQuery: this.resolveBackupQuery(),
 			collection: this.collection,
+			keepInterval: 7 * Day,
 			interval: Day,
 			moduleKey: this.config.collectionName
 		};

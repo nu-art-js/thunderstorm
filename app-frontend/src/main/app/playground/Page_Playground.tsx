@@ -58,6 +58,11 @@ import {Example_TSInput} from "./examples/Example_TSInput";
 import {Example_SingleCheckbox} from './examples/checkbox/Example_SingleCheckbox';
 import {Example_CheckboxField} from './examples/checkbox/Example_CheckboxField';
 import {Example_PermissionsComponent} from "./examples/Example_PermissionsComponent";
+import {SP_Example_Tree_SingleType} from "./examples/new-props-examples/tree/SP_Example_Tree_SingleType";
+import {SP_Example_NestedList_SingleType} from "./examples/new-props-examples/list/SP_Example_NestedList_SingleType";
+import {SP_Example_List_MultiType} from "./examples/new-props-examples/list/SP_Example_List_MultiType";
+import {SP_Example_List_SingleType} from "./examples/new-props-examples/list/SP_Example_List_SingleType";
+import {SP_Example_NestedList_MultiType} from "./examples/new-props-examples/list/SP_Example_NestedList_MultiType";
 import {Example_Analytics} from "./examples/Example_Analytics";
 import Example_Scatter from "./examples/Example_Scatter";
 import Example_Line from "./examples/Example_Line";
@@ -127,6 +132,14 @@ export class Page_Playground
 			{renderer: Example_AllDropDowns, name: "ALL DropDown Examples"},
 			{renderer: Example_SingleRendererDropDown, name: "Customized Single Renderer DropDown Example"},
 			{renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
+
+			// SWITCH PROPS
+			// TREES / LISTS
+			{renderer: SP_Example_Tree_SingleType, name: "SP_Example_Tree_SingleType",},
+			{renderer: SP_Example_List_MultiType, name: "SP_Example_List_MultiType",},
+			{renderer: SP_Example_List_SingleType, name: "SP_Example_List_SingleType",},
+			{renderer: SP_Example_NestedList_SingleType, name: "SP_Example_NestedList_SingleType",},
+			{renderer: SP_Example_NestedList_MultiType, name: "SP_Example_NestedList_MultiType",},
 
 			// TREES / LISTS
 			{renderer: Example_Tree_SingleType, name: "Tree_SingleType",},
