@@ -54,6 +54,7 @@ type _SamlAssertResponse = {
 }
 
 type SamlAssertResponse = {
+	fullResponse: _SamlAssertResponse
 	userId: string
 	loginContext: RequestParams_LoginSAML
 }
@@ -105,7 +106,8 @@ export class SamlModule_Class
 
 			resolve({
 				        userId: response.user.name_id,
-				        loginContext: JSON.parse(relay_state)
+				        loginContext: JSON.parse(relay_state),
+				        fullResponse: response
 			        });
 		});
 	});

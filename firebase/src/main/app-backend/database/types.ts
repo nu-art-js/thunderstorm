@@ -32,9 +32,13 @@ export interface Firebase_DataSnapshot {
 	val(): any;
 }
 
+export type FirebaseListener = (snapshot: Firebase_DataSnapshot | null) => void;
+
 export interface Firebase_Reference {
 
-	on(eventType: EventType, callback: (snapshot: Firebase_DataSnapshot | null) => void): void;
+	on(eventType: EventType, callback: FirebaseListener): any;
+
+	off(eventType: EventType, callback: FirebaseListener): void;
 
 	remove(): Promise<void>;
 
