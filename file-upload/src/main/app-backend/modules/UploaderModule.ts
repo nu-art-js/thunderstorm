@@ -128,6 +128,7 @@ export class UploaderModule_Class
 	};
 
 	private notifyFrontend = async (feId: string, result: UploadResult, message: string, cause?: Error) => {
+		cause && this.logWarning(cause)
 		const data = {message, result, cause};
 		await PushPubSubModule.pushToKey<Push_FileUploaded>(fileUploadedKey, {feId}, data)
 	};

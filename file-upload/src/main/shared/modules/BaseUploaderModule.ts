@@ -208,7 +208,7 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 				.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
 				.setUrl(response.secureUrl)
 				.setHeader('Content-Type', response.tempDoc.mimeType)
-				.setTimeout(10 * Minute)
+				.setTimeout(20 * Minute)
 				.setBody(fileInfo.file)
 				.setOnProgressListener((ev: TS_Progress) => {
 					this.setFileInfo(feId, "progress", ev.loaded / ev.total);
