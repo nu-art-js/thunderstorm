@@ -38,8 +38,8 @@ type PushPubSubConfig = {
 class PushPubSubModule_Class
 	extends Module<PushPubSubConfig> {
 
-	constructor(){
-		super('Service Worker PushPubSubModule')
+	constructor() {
+		super('Service Worker PushPubSubModule');
 	}
 
 	protected init(): void {
@@ -52,12 +52,13 @@ class PushPubSubModule_Class
 	}
 
 	private initApp = async () => {
+		this.logDebug('SW: Initiating app');
 		const app = await FirebaseModule.createSwSession();
-
+		this.logDebug('SW: app session', app);
 		const messaging = app.getMessaging();
-
+		this.logDebug('SW: messaging wrapper', messaging);
 		messaging.onBackgroundMessage((payload: any) => {
-			this.runAsync(`Sending message to window ${__stringify(payload.data, true)}`, async () => this.sendMessage(payload.data))
+			this.runAsync(`Sending message to window ${__stringify(payload.data, true)}`, async () => this.sendMessage(payload.data));
 		});
 	};
 
@@ -73,7 +74,7 @@ class PushPubSubModule_Class
 
 		clients.forEach(function (client) {
 			client.postMessage(message);
-		})
+		});
 	};
 
 	handleMessageFromClient(event: ExtendableMessageEvent) {
