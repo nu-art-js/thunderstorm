@@ -160,9 +160,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				options.data = body;
 
 			try {
-				console.log('before I call');
 				this.response = await axios.request(options);
-				console.log('After I call');
 				this.status = this.response?.status || 200;
 				return resolve();
 			} catch (e) {

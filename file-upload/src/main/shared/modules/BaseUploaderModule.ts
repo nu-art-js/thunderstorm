@@ -45,6 +45,7 @@ const RequestKey_UploadFile = 'upload-file';
 
 export enum FileStatus {
 	ObtainingUrl   = "ObtainingUrl",
+	UrlObtained    = "UrlObtained",
 	UploadingFile  = "UploadingFile",
 	// I can assume that in between I upload and I get
 	// the push I'm processing the file in the be
@@ -82,7 +83,7 @@ type Config = {
 	uploadQueueParallelCount?: number
 }
 
-export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class,CustomConfig extends object = {}>
+export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class, CustomConfig extends object = {}>
 	extends Module<Config & CustomConfig> {
 	protected files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(2);
@@ -94,7 +95,7 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 		this.httpModule = httpModule;
 	}
 
-	init(){
+	init() {
 		if (this.config.uploadQueueParallelCount)
 			this.uploadQueue.setParallelCount(this.config.uploadQueueParallelCount);
 	}
@@ -172,10 +173,11 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 				});
 			})
 			.execute(async (response: TempSecureUrl[]) => {
-				this.dispatchFileStatusChange();
+				body.forEach(f => this.setFileInfo(f.feId, "status", FileStatus.UrlObtained));
 				if (!response)
 					return;
 
+				// Not a relevant await but still...
 				await this.uploadFiles(response);
 			});
 
@@ -187,9 +189,17 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 		await this.subscribeToPush(response);
 
 		response.forEach(r => {
+			const feId = r.tempDoc.feId;
 			this.uploadQueue.addItem(async () => {
 				await this.uploadFile(r);
+				delete this.files[feId].file;
+				this.setFileInfo(feId, "progress", undefined);
 				//TODO: Probably need to set a timer here in case we dont get a push back (contingency)
+			}, () => {
+				this.setFileInfo(feId, "status", FileStatus.PostProcessing);
+			}, error => {
+				this.setFileInfo(feId, "status", FileStatus.Error);
+				this.setFileInfo(feId, "messageStatus", __stringify(error));
 			});
 		});
 	};
@@ -202,29 +212,19 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${feId} and name: ${response.tempDoc.name}`);
 
-		try {
-			const request = this
-				.httpModule
-				.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
-				.setUrl(response.secureUrl)
-				.setHeader('Content-Type', response.tempDoc.mimeType)
-				.setTimeout(20 * Minute)
-				.setBody(fileInfo.file)
-				.setOnProgressListener((ev: TS_Progress) => {
-					this.setFileInfo(feId, "progress", ev.loaded / ev.total);
-				});
+		const request = this
+			.httpModule
+			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
+			.setUrl(response.secureUrl)
+			.setHeader('Content-Type', response.tempDoc.mimeType)
+			.setTimeout(20 * Minute)
+			.setBody(fileInfo.file)
+			.setOnProgressListener((ev: TS_Progress) => {
+				this.setFileInfo(feId, "progress", ev.loaded / ev.total);
+			});
 
-			this.setFileInfo(feId, "request", request);
-			await request.executeSync();
-			this.setFileInfo(feId, "status", FileStatus.PostProcessing);
-		} catch (e) {
-			this.logWarning('Uploading failed with error: ',e)
-			this.setFileInfo(feId, "status", FileStatus.Error);
-			this.setFileInfo(feId, "messageStatus", __stringify(e));
-		} finally {
-			delete this.files[feId].file
-			this.setFileInfo(feId, "progress", undefined);
-		}
+		this.setFileInfo(feId, "request", request);
+		await request.executeSync();
 	};
 }
 
