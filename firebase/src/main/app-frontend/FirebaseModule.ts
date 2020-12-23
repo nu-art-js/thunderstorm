@@ -46,14 +46,8 @@ export class FirebaseModule_Class
 		super("firebase fe");
 	}
 
-	private defaultHandler = (event: Event) => {
-		this.logVerbose(`Event listened in sw of type ${event.type}`, event);
-	};
 
 	async createSwSession(): Promise<SwFirebaseSession> {
-		self.addEventListener("notificationclick", this.defaultHandler);
-		self.addEventListener("pushsubscriptionchange", this.defaultHandler);
-		self.addEventListener("push", this.defaultHandler);
 		const swSession = this.swSession;
 		if (swSession)
 			return swSession;

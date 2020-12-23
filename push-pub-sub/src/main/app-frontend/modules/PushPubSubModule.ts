@@ -151,6 +151,7 @@ export class PushPubSubModule_Class
 		});
 	};
 
+
 	// / need to call this from the login verified
 	public getToken = async (options?: {
 		vapidKey?: string;
