@@ -36,6 +36,9 @@ export class TS_ServiceWorker
 
 	build(): void {
 		BeLogged.addClient(LogClient_Browser);
+		// swSelf.addEventListener("notificationclick", this.defaultHandler);
+		// swSelf.addEventListener("pushsubscriptionchange", this.defaultHandler);
+		// swSelf.addEventListener("push", this.defaultHandler);
 
 		// Substitute previous service workers with the new one
 		swSelf.addEventListener('install', () => {
@@ -45,7 +48,7 @@ export class TS_ServiceWorker
 				.catch(e => this.logError('Something wrong while skipping waiting. Service worker not queued', e));
 		});
 
-		swSelf.addEventListener('activate', (event) => {
+		swSelf.addEventListener('activate', () => {
 			swSelf
 				.clients
 				.claim()
@@ -56,5 +59,7 @@ export class TS_ServiceWorker
 		super.build();
 	}
 
-
+	// private defaultHandler = (event: Event) => {
+	// 	this.logVerbose(`Event listened in sw of type ${event.type}`, event);
+	// };
 }
