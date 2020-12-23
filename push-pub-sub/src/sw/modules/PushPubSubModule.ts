@@ -43,7 +43,6 @@ class PushPubSubModule_Class
 	}
 
 	protected init(): void {
-
 		this.runAsync('Init App', this.initApp);
 
 		// swSelf.addEventListener('message', (event) => {
@@ -53,15 +52,15 @@ class PushPubSubModule_Class
 	}
 
 	private initApp = async () => {
-
+		this.logDebug('SW: Initiating app');
 		const app = await FirebaseModule.createSwSession();
+		this.logDebug('SW: app session', app);
 		const messaging = app.getMessaging();
+		this.logDebug('SW: messaging wrapper', messaging);
 		messaging.onBackgroundMessage((payload: any) => {
 			this.runAsync(`Sending message to window ${__stringify(payload.data, true)}`, async () => this.sendMessage(payload.data));
 		});
 	};
-
-
 
 	getClients = async () => swSelf.clients.matchAll({type: "window"});
 
