@@ -53,12 +53,12 @@ export class BugReportModule_Class
 		this.reports.forEach(report => BeLogged.addClient(report));
 	}
 
-	sendBugReport = (subject: string, description: string, withJira: boolean) => {
+	sendBugReport = (subject: string, description: string) => {
 		const body: Request_BugReport = {
 			subject,
 			description,
 			reports: this.reports.map(report => ({log: report.buffers, name: report.name})),
-			createIssue: withJira
+			createTicket: true
 		};
 
 		HttpModule
