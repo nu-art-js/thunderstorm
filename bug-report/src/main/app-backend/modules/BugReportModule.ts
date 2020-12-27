@@ -100,11 +100,6 @@ export class BugReportModule_Class
 		if (this.config?.bucket)
 			instance.bucket = this.config.bucket;
 
-		if (!bugReport.createIssue) {
-			await this.bugReport.insert(instance);
-			return;
-		}
-
 		instance.tickets = await Promise.all(this.ticketCreatorApis.map(api => api(bugReport, logs)));
 		await this.bugReport.insert(instance);
 	};

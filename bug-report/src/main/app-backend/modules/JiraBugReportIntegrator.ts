@@ -25,7 +25,7 @@ import {
 import {
 	JiraModule,
 	JiraProjectInfo
-} from "./JiraModule"
+} from "@nu-art/jira"
 import {
 	ReportLogFile,
 	Request_BugReport
@@ -34,7 +34,6 @@ import {TicketDetails} from "./BugReportModule";
 
 type Config = {
 	jiraProject: JiraProjectInfo
-
 }
 
 class JiraBugReportIntegrator_Class
