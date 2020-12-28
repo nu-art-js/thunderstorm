@@ -191,6 +191,7 @@ export class JiraModule_Class
 
 
 	postIssueRequest = async (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string): Promise<ResponsePostIssue> => {
+		console.log('this is the project', project)
 		return this.executePostRequest('/issue', this.createBody(project, issueType, summary, description));
 	};
 
@@ -242,6 +243,7 @@ export class JiraModule_Class
 			method: HttpMethod.POST,
 			json: true
 		};
+		console.log('this is the body: ', body)
 		return this.executeRequest(request);
 	}
 
@@ -276,6 +278,7 @@ export class JiraModule_Class
 	}
 
 	private handleResponse(response: Response) {
+		console.log('this is the response code: ', response.statusCode)
 		if (`${response.statusCode}`[0] !== '2')
 			throw new ApiException(response.statusCode, response.body)
 

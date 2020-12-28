@@ -36,7 +36,7 @@ import {
 	DB_BugReport,
 	ReportLogFile,
 	Request_BugReport
-} from "../../shared/api";
+} from "../..";
 
 import * as JSZip from "jszip";
 
@@ -100,6 +100,7 @@ export class BugReportModule_Class
 		if (this.config?.bucket)
 			instance.bucket = this.config.bucket;
 
+		console.log('configs in BR: ', this.config)
 		instance.tickets = await Promise.all(this.ticketCreatorApis.map(api => api(bugReport, logs)));
 		await this.bugReport.insert(instance);
 	};
