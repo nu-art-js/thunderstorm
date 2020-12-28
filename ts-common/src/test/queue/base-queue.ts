@@ -1,4 +1,3 @@
-
 /*
  * ts-common is the basic building blocks of our typescript projects
  *
@@ -17,7 +16,10 @@
  * limitations under the License.
  */
 
-import { Queue, timeout } from "../_main";
+import {
+	Queue,
+	timeout
+} from "../_main";
 
 const queue = new Queue("test");
 
@@ -29,11 +31,13 @@ function addItem(key: string, sleepMs: number) {
 	});
 }
 
-for (let i = 0; i < 10; i += 2) {
-	addItem(`${i}`, 700);
-	addItem(`${i + 1}`, 900);
+for (let i = 0; i < 20; i += 3) {
+	addItem(`${i}`, 2000);
+	addItem(`${i + 1}`, 3000);
+	addItem(`${i + 2}`, 4000);
 }
 
 queue.setParallelCount(3);
+queue.setOnQueueEmpty(() => console.log("EMPTY EVENT"));
 // @ts-ignore
 queue.execute();

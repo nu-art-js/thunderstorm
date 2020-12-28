@@ -60,6 +60,7 @@
     "react-router-dom": "^5.1.2",
     "react-select": "^3.0.8",
     "request": "^2.88.0",
+    "ts-node": "^9.1.1",
     "tslint": "^5.16.0",
     "typescript": "^3.7.4",
     "use-strict": "^1.0.1"

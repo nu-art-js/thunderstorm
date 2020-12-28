@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * ts-common is the basic building blocks of our typescript projects
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,6 +16,26 @@
  * limitations under the License.
  */
 
-export * from "./app-frontend/core/module-pack";
-export * from "./app-frontend/ui/BugReport"
-export * from "./app-frontend/ui/AdminBR"
+import {
+	BeLogged,
+	LogClient_MemBuffer,
+	Logger,
+	padNumber
+} from "../_main";
+
+BeLogged.addClient(new LogClient_MemBuffer("test mem buffer", 10, 1024).setRotationListener((index: number) => {
+console.log(`Rotating buffer: ${index}`)
+}));
+
+class TestLogger
+	extends Logger {
+
+	writeLogs() {
+		for (let i = 0; i < 1000; i++) {
+			this.logDebug(`This is a test line ${padNumber(i, 5)}`);
+		}
+	}
+}
+
+
+new TestLogger().writeLogs();

@@ -15,7 +15,7 @@ to the backend via an API call.
 ###The Logs Themselves:
 
 The logs are also part of the frontend, located in app-frontend/core/logger. The logger directory contains the log client of the bug report, and relies on 
-the logger library located in ts-common. The LogClient_BugReport file creates the logs as part of a string[], accounting for max size so the logs don't get too 
+the logger library located in ts-common. The LogClient_MemBuffer file creates the logs as part of a string[], accounting for max size so the logs don't get too 
 heavy. There are two logs that are created in this file--one "concise" log that only catches specific LogLevels, 
 and one log that logs all LogLevels. These logs are communicated to the backend via an api call from BugReportModule in the frontend. 
 

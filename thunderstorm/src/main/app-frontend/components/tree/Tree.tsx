@@ -21,27 +21,24 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {
-	_keys,
-	removeItemFromArray
-} from "@nu-art/ts-common";
+import {removeItemFromArray} from "@nu-art/ts-common";
 import {TreeNode,} from "./types";
 import {KeyboardListener} from "../../tools/KeyboardListener";
 import {stopPropagation} from '../../utils/tools';
 import {Adapter} from "../adapter/Adapter";
 import {_BaseNodeRenderer} from "../adapter/BaseRenderer";
 
-export type CallBackState = (key: string, value: any, level: number, path: string) => boolean;
+export type NodeExpandCondition = (key: string, value: any, level: number, path: string) => boolean | undefined;
 
 export type BaseTreeProps = {
 	id: string
 	onNodeFocused?: (path: string, item: any) => void;
 	onNodeClicked?: (path: string, item: any) => void;
-	callBackState: CallBackState
+	expanded: TreeNodeExpandState
 	childrenContainerStyle?: (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentRef?: HTMLDivElement) => CSSProperties
 	// nodesState?: TreeNodeState;
 	indentPx: number;
-	checkExpanded: (expanded: TreeNodeState, path: string) => boolean | undefined
+	checkExpanded: (expanded: TreeNodeExpandState, path: string) => boolean | undefined
 	keyEventHandler?: (node: HTMLDivElement, e: KeyboardEvent) => void;
 	onFocus?: () => void
 	onBlur?: () => void
@@ -50,9 +47,9 @@ export type BaseTreeProps = {
 	adapter: Adapter
 }
 
-export type TreeNodeState = { [path: string]: boolean };
+export type TreeNodeExpandState = { [path: string]: true | undefined };
 type TreeState = {
-	expanded: TreeNodeState
+	expanded: TreeNodeExpandState
 	focused?: string
 	lastFocused?: string
 	adapter: Adapter
@@ -64,7 +61,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 	static defaultProps: Partial<BaseTreeProps> = {
 		indentPx: 20,
-		checkExpanded: (expanded: TreeNodeState, path: string) => expanded[path]
+		checkExpanded: (expanded: TreeNodeExpandState, path: string) => expanded[path]
 	};
 
 	protected containerRefs: { [k: string]: HTMLDivElement } = {};
@@ -75,14 +72,8 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		super(props);
 		this.state = {
 			adapter: this.props.adapter,
-			expanded: Tree.recursivelyExpand(props)
+			expanded: props.expanded || {"/": true}
 		};
-	}
-
-	private static recursivelyExpand(props: BaseTreeProps) {
-		const condition = props.callBackState || (() => true);
-		const state = {'/': condition('/', props.adapter.data, 0, '/')};
-		return recursivelyExpandImpl(props.adapter.data, state, condition, props.adapter);
 	}
 
 	static getDerivedStateFromProps(props: BaseTreeProps, state: TreeState) {
@@ -90,19 +81,9 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			return null;
 
 		state.adapter = props.adapter;
-		Tree.recalculateExpanded(props, state);
+		// Tree.recalculateExpanded(props, state);
 
-		return state
-	}
-
-	private static recalculateExpanded(props: BaseTreeProps, state: TreeState) {
-		const expanded: TreeNodeState = Tree.recursivelyExpand(props);
-		_keys(expanded).reduce((carry, el) => {
-			if (state.expanded[el] === undefined)
-				carry[el] = expanded[el];
-
-			return carry;
-		}, state.expanded);
+		return state;
 	}
 
 	componentDidMount(): void {
@@ -142,7 +123,10 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 
 		let filteredKeys: any[] = [];
 
-		const expanded = !!this.props.checkExpanded(this.state.expanded, nodePath);
+		let expanded = !!this.props.checkExpanded(this.state.expanded, nodePath);
+		if (nodePath.endsWith("_children/"))
+			expanded = true;
+
 		let renderChildren = expanded;
 
 		if (typeof data !== "object")
@@ -157,7 +141,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		return <div key={nodePath} ref={nodeRefResolver}>
 			{this.renderItem(data, nodePath, key, expanded)}
 			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
-		</div>
+		</div>;
 	};
 
 	private nodeResolver(nodePath: string, renderChildren: boolean, filteredKeys: any[]) {
@@ -215,7 +199,9 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			focused: path === this.state.focused,
 			selected: item === this.props.selectedItem
 		};
-		return <div onMouseEnter={() => this.setState({focused: node.path})} onMouseLeave={() => this.setState({focused: ''})}><TreeNodeRenderer item={item} node={node}/></div>;
+		return <div onMouseEnter={() => this.setState({focused: node.path})} onMouseLeave={() => this.setState({focused: ''})}><TreeNodeRenderer item={item}
+		                                                                                                                                         node={node}/>
+		</div>;
 	}
 
 	private getChildrenContainerStyle = (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentContainerRef?: HTMLDivElement): CSSProperties => {
@@ -277,7 +263,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			if (idx === -1 || idx + 1 === this.renderedElements.length)
 				return this.setFocusedNode(this.renderedElements[0]);
 
-			return this.setFocusedNode(this.renderedElements[idx + 1])
+			return this.setFocusedNode(this.renderedElements[idx + 1]);
 		}
 
 		if (keyCode === "ArrowUp") {
@@ -288,7 +274,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			if (idx === 0)
 				return this.setFocusedNode(this.renderedElements[this.renderedElements.length - 1]);
 
-			return this.setFocusedNode(this.renderedElements[idx - 1])
+			return this.setFocusedNode(this.renderedElements[idx - 1]);
 		}
 
 		if (focused && keyCode === "Enter") {
@@ -331,17 +317,23 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		this.expandOrCollapse(path, _expanded);
 	};
 
-	private expandOrCollapse = (path: string, _expanded?: boolean): void => {
-		if (path === "/" && this.state.adapter.hideRoot && _expanded === false)
+	private expandOrCollapse = (path: string, forceExpandState?: boolean): void => {
+		if (path === "/" && this.state.adapter.hideRoot && forceExpandState === false)
 			return;
 
-		this.setState((prevState: TreeState) => {
-			const expanded = prevState.expanded[path];
-			prevState.expanded[path] = _expanded !== undefined ? _expanded : (expanded !== undefined ? !expanded : false);
-			prevState.focused = path;
+		const treeExpandedState = this.state.expanded;
+		const currentExpandState = treeExpandedState[path];
+		let newExpandState = currentExpandState === undefined;
+		if (forceExpandState !== undefined)
+			newExpandState = forceExpandState ? forceExpandState : false;
 
-			return prevState;
-		})
+		if (newExpandState)
+			treeExpandedState[path] = newExpandState;
+		else
+			delete treeExpandedState[path];
+
+		this.setState({focused: path});
+		this.forceUpdate();
 	};
 
 	private onNodeFocused = (e: React.MouseEvent): void => {
@@ -362,7 +354,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 		const path = e.currentTarget.id;
 		const item = this.getItemByPath(path);
 
-		this.props.onNodeClicked && this.props.onNodeClicked(path, item)
+		this.props.onNodeClicked && this.props.onNodeClicked(path, item);
 	};
 
 	private onBlur = () => {
@@ -378,7 +370,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 				lastFocused: state.focused,
 				focused: ''
 			};
-		})
+		});
 	};
 
 	private onFocus = () => {
@@ -397,21 +389,30 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 			};
 		});
 	};
+
+	public static recursivelyExpand(adapter: Adapter, expandCondition: NodeExpandCondition = () => true, state: TreeNodeExpandState = {
+		'/': expandCondition('/', adapter.data, 0, '/') || undefined
+	}) {
+		return recursivelyExpandImpl(adapter.data, state, expandCondition, adapter);
+	}
 }
 
-const recursivelyExpandImpl = <K extends object>(obj: K, state: TreeNodeState, condition: CallBackState, adapter: Adapter, path: string = "/", level: number = 1): TreeNodeState => {
+const recursivelyExpandImpl = <K extends object>(obj: K, state: TreeNodeExpandState, condition: NodeExpandCondition, adapter: Adapter, path: string = "/", level: number = 1): TreeNodeExpandState => {
 	if (obj === null)
 		return state;
 
 	const _obj = adapter.adjust(obj);
 	const children: (keyof K)[] = adapter.getFilteredChildren(obj);
-	return children.reduce((_state: TreeNodeState, _key: keyof K) => {
-		const key = _key as string
+	return children.reduce((_state: TreeNodeExpandState, _key: keyof K) => {
+		const key = _key as string;
 		const value = obj[_key];
 		const newPath = `${path}${key}/`;
 
-		if (!_obj.deltaPath)
-			_state[newPath] = condition(key, value, level, newPath);
+		if (!_obj.deltaPath) {
+			const b = condition(key, value, level, newPath);
+			if (b)
+				_state[newPath] = b;
+		}
 
 		// if (condition(key, value, level, newPath) && typeof value === "object")
 		if (typeof value === "object")
