@@ -112,6 +112,7 @@ export class JiraModule_Class
 		if (!this.config?.auth?.email || !this.config.auth.apiKey)
 			throw new ImplementationMissingException('Missing right config variables for JiraModule');
 
+		console.log('jira configs: ', this.config.auth)
 		this.headersJson = this.buildHeaders(this.config.auth, true);
 		this.headersForm = this.buildHeaders(this.config.auth, false);
 	}

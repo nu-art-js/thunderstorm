@@ -20,9 +20,11 @@
 import {BugReportModule} from "../modules/BugReportModule";
 import {AdminBRModule} from "../modules/AdminBRModule";
 import {JiraBugReportIntegrator} from "../modules/JiraBugReportIntegrator";
+import {JiraModule} from "@nu-art/jira";
 
 export const Backend_ModulePack_BugReport = [
 	BugReportModule,
 	AdminBRModule,
-	JiraBugReportIntegrator
+	JiraBugReportIntegrator,
+	JiraModule
 ];
