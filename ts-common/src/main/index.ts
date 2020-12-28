@@ -27,7 +27,9 @@ export * from './core/error-handling';
 
 export * from './core/debug-flags';
 export * from './core/logger/utils';
+export * from './core/logger/LogClient_BaseRotate';
 export * from './core/logger/LogClient_Terminal';
+export * from './core/logger/LogClient_MemBuffer';
 export * from './core/logger/LogClient_Browser';
 export * from './core/logger/LogClient_Function';
 export * from './core/logger/BeLogged';

@@ -1,6 +1,8 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,6 +19,15 @@
  * limitations under the License.
  */
 
-export * from "./app-frontend/core/module-pack";
-export * from "./app-frontend/ui/BugReport"
-export * from "./app-frontend/ui/AdminBR"
+import * as fs from "fs";
+
+
+export async function fileToBase64(file: string) {
+	const buffer = await fs.readFileSync(file);
+	return buffer.toString('base64');
+}
+
+export async function base64ToFile(contentAsBase64: string, file: string) {
+	const bitmap = Buffer.from(contentAsBase64, 'base64');
+	await fs.writeFileSync(file, bitmap);
+}

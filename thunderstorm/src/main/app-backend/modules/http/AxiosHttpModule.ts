@@ -37,8 +37,10 @@ import {
 	Axios_CancelTokenSource,
 	Axios_Method,
 	Axios_RequestConfig,
-	Axios_Response
+	Axios_Response,
+	Axios_ResponseType
 } from "./types";
+import * as fs from "fs";
 
 export class AxiosHttpModule_Class
 	extends BaseHttpModule_Class {
@@ -61,6 +63,21 @@ export class AxiosHttpModule_Class
 		return this;
 	}
 
+	async downloadFile(url: string, outputFile: string, key=`Download file: ${url}`) {
+		const downloadRequest = await this.createRequest(HttpMethod.GET, key)
+		                                  .setResponseType("arraybuffer")
+		                                  .setUrl(url);
+
+
+		const downloadResponse = await downloadRequest.executeSync();
+		const outputFolder = outputFile.substring(0, outputFile.lastIndexOf("/"));
+		if (!fs.existsSync(outputFolder))
+			fs.mkdirSync(outputFolder);
+
+		fs.writeFileSync(outputFile, downloadResponse);
+		return outputFile;
+	}
+
 }
 
 export type DeriveRealBinder<Binder> = Binder extends ApiTypeBinder<infer U, infer R, infer B, infer P> ? ApiTypeBinder<U, R, B, P> : void;
@@ -77,6 +94,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	constructor(requestKey: string, requestData?: string, shouldCompress?: boolean) {
 		super(requestKey, requestData);
 		this.compress = shouldCompress === undefined ? false : shouldCompress;
+
 		this.cancelSignal = axios.CancelToken.source();
 	}
 
@@ -129,7 +147,8 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			// TODO set progress listener
 			// this.xhr.upload.onprogress = this.onProgressListener;
 			const body = this.body;
-
+			if (body)
+				this.addHeader("Content-Length", `${body.length}`);
 			// TODO add zipping of body
 			// if (typeof body === "string" && this.compress)
 			// 	return gzip(body, (error: Error | null, result: Buffer) => {
@@ -159,12 +178,15 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			if (body)
 				options.data = body;
 
+			if (this.responseType)
+				options.responseType = this.responseType as Axios_ResponseType;
+
 			try {
 				this.response = await axios.request(options);
 				this.status = this.response?.status || 200;
 				return resolve();
 			} catch (e) {
-				console.log('In catch');
+				// console.log('In catch');
 				// TODO handle this here
 				// 	if (xhr.readyState === 4 && xhr.status === 0) {
 				// 		reject(new HttpException(404, this.url));
@@ -182,5 +204,12 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				return reject(e);
 			}
 		});
+	}
+
+	getResponseHeader(headerKey: string): string | string[] | undefined {
+		if (!this.response)
+			throw new BadImplementationException(`axios didn't return yet`);
+
+		return this.response.headers[headerKey];
 	}
 }

@@ -60,6 +60,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 	protected body!: B;
 	protected url!: string;
 	protected params: { [K in keyof P]?: P[K] } = {};
+	protected responseType!: string;
 
 	protected label!: string;
 	protected onProgressListener!: (ev: TS_Progress) => void;
@@ -138,6 +139,11 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 
 	public setMethod(method: HttpMethod) {
 		this.method = method;
+		return this;
+	}
+
+	public setResponseType(responseType: string) {
+		this.responseType = responseType;
 		return this;
 	}
 
@@ -274,8 +280,6 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		return statusCode >= 200 && statusCode < 300;
 	}
 
-	abstract getStatus(): number;
-
 	async executeSync(): Promise<R> {
 		await this.executeImpl();
 		if (this.aborted)
@@ -325,6 +329,11 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 	abstract getErrorResponse(): ErrorResponse<E>
 
 	protected abstract abortImpl(): void
+
+	abstract getStatus(): number;
+
+	abstract getResponseHeader(headerKey: string): string | string[] | undefined;
+
 
 	abort() {
 		this.aborted = true;
