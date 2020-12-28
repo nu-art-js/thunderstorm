@@ -19,8 +19,10 @@
 
 import {BugReportModule} from "../modules/BugReportModule";
 import {AdminBRModule} from "../modules/AdminBRModule";
+import {JiraBugReportIntegrator} from "../modules/JiraBugReportIntegrator";
 
 export const Backend_ModulePack_BugReport = [
 	BugReportModule,
-	AdminBRModule
+	AdminBRModule,
+	JiraBugReportIntegrator
 ];

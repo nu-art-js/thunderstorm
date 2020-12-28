@@ -25,7 +25,7 @@ import {
 import {
 	JiraModule,
 	JiraProjectInfo
-} from "@nu-art/jira"
+} from "@nu-art/jira";
 import {
 	ReportLogFile,
 	Request_BugReport
@@ -36,18 +36,26 @@ type Config = {
 	jiraProject: JiraProjectInfo
 }
 
-class JiraBugReportIntegrator_Class
+export class JiraBugReportIntegrator_Class
 	extends Module<Config> {
 
-	async openTicket(bugReport: Request_BugReport, logs: ReportLogFile[]): Promise<TicketDetails> {
-		const description = logs.reduce((carry, el) => `${carry}${el.path}, `, `${bugReport.description}, `);
-		if (!this.config.jiraProject)
-			throw new ImplementationMissingException("missing Jira project in bug report configurations")
+	protected init(): void {
+		super.init();
+		console.log(this.config);
+	}
 
+	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[]): Promise<TicketDetails> => {
+		const description = logs.reduce((carry, el) => `${carry}${el.path}, `, `${bugReport.description}, `);
+		console.log('hello there');
+		console.log('configs', this.config);
+		if (!this.config.jiraProject)
+			throw new ImplementationMissingException("missing Jira project in bug report configurations");
+
+		console.log(this.config.jiraProject)
 		const message = await JiraModule.postIssueRequest(this.config.jiraProject, {name: "Task"}, `Bug Report ${createReadableTimestampObject().pretty}`,
 		                                                  description);
 		return {platform: "jira", issueId: message.key};
-	}
+	};
 }
 
 export const JiraBugReportIntegrator = new JiraBugReportIntegrator_Class();
