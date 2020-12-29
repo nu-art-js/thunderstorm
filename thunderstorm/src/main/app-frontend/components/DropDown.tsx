@@ -22,8 +22,8 @@
 import * as React from 'react';
 import {FilterInput} from "./FilterInput";
 import {
-	generateHex,
-	__stringify
+	__stringify,
+	generateHex
 } from "@nu-art/ts-common";
 import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
@@ -199,7 +199,7 @@ export class DropDown<ItemType>
 					</div>
 				</KeyboardListener>
 			</Overlay>
-		)
+		);
 	}
 
 	private renderHeader = () => {
@@ -227,24 +227,24 @@ export class DropDown<ItemType>
 			<div {...this.props.listStylable}>
 				{this.renderTreeImpl()}
 			</div>
-		</div>
-	}
+		</div>;
+	};
 
 	private keyEventHandler = (node: HTMLDivElement, e: KeyboardEvent) => {
 		if (this.props.inputEventHandler)
 			return this.setState(() => {
 				const state = this.props.inputEventHandler ? this.props.inputEventHandler(this.state, e) : this.state;
 				return state;
-			})
+			});
 
 		if (e.code === "Enter" && this.state.filteredOptions)
-			return this.onSelected(this.state.filteredOptions[0])
+			return this.onSelected(this.state.filteredOptions[0]);
 
 		if (e.code === "Escape")
 			return this.setState({open: false});
 
 		if (e.code === "ArrowDown") {
-			return document.getElementById(`${this.props.id}-tree-listener`)?.focus()
+			return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
 		}
 	};
 
@@ -264,16 +264,16 @@ export class DropDown<ItemType>
 			onChange={(filteredOptions: ItemType[], filterBy) => {
 				this.setState(state => {
 					state.adapter.data = this.props.autocomplete && this.props.filter && !filterBy.length ? [] : filteredOptions;
-					console.log(`filter: ${this.props.id} (${filterBy}) -> ${__stringify(filteredOptions)}`)
-					console.log(`state.adapter.data: ${__stringify(state.adapter.data)}`)
+					console.log(`filter: ${this.props.id} (${filterBy}) -> ${__stringify(filteredOptions)}`);
+					console.log(`state.adapter.data: ${__stringify(state.adapter.data)}`);
 					return {
 						adapter: state.adapter,
 						filterTextLength: filterBy.length
-					}
+					};
 				}, () => this.props.onFilter && this.props.onFilter(this.state.filteredOptions));
 			}}
 			handleKeyEvent={(e) => {
-				return
+				return;
 			}}
 			focus={true}
 			{...this.props.inputStylable}
@@ -285,7 +285,7 @@ export class DropDown<ItemType>
 			return this.props.selectedItemRenderer(selected);
 
 		if (selected === undefined)
-			return <div>{this.props.inputStylable.placeholder}</div>
+			return <div>{this.props.inputStylable.placeholder}</div>;
 
 		const Renderer = this.props.adapter.treeNodeRenderer;
 		const node = {
@@ -303,7 +303,7 @@ export class DropDown<ItemType>
 			focused: false,
 			selected: true
 		};
-		return <Renderer item={selected} node={node}/>
+		return <Renderer item={selected} node={node}/>;
 	};
 
 
@@ -327,12 +327,11 @@ export class DropDown<ItemType>
 			key={id}
 			adapter={this.state.adapter}
 			indentPx={0}
-			callBackState={(key: string, value: any, level: number) => key === '/'}
 			selectedItem={this.state.selected}
 			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
 			unMountFromOutside={() => this.setState({open: false})}
 			keyEventHandler={treeKeyEventHandler}
-		/>
+		/>;
 	};
 }
 
@@ -340,5 +339,5 @@ const treeKeyEventHandlerResolver = (id: string) => {
 	return (node: HTMLDivElement, e: KeyboardEvent) => {
 		if (!["Escape", "ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Enter"].includes(e.code))
 			document.getElementById(`${id}-input`)?.focus();
-	}
+	};
 };

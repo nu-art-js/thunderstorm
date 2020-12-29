@@ -20,6 +20,7 @@
 import {
 	addItemToArray,
 	BeLogged,
+	LogClient_MemBuffer,
 	LogLevel,
 	LogLevelOrdinal,
 	Module
@@ -30,22 +31,18 @@ import {
 	ApiBugReport,
 	Request_BugReport
 } from "../../shared/api";
-import {
-	LogClient_BugReport,
-	LogClient_DefaultBugReport
-} from "../core/logger/LogClient_BugReport";
 
 export const RequestKey_BugReportApi = "BugReport";
 
 export class BugReportModule_Class
 	extends Module {
 
-	private readonly reports: LogClient_BugReport[] = [];
+	private readonly reports: LogClient_MemBuffer[] = [];
 
 	constructor() {
 		super();
-		addItemToArray(this.reports, LogClient_DefaultBugReport);
-		addItemToArray(this.reports, new LogClient_BugReport("info")
+		addItemToArray(this.reports, new LogClient_MemBuffer("default"));
+		addItemToArray(this.reports, new LogClient_MemBuffer("info")
 			.setFilter(level => LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(LogLevel.Info)));
 	}
 
