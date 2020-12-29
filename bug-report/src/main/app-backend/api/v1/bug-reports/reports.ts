@@ -42,7 +42,7 @@ class ServerApi_SendReport
 		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync([request]);
 		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data?.email || resp.find(e => e.key === 'RemoteProxy')?.data.email;
 		console.log('this is the email: ', userId)
-		await BugReportModule.saveFile(body, userId);
+		return await BugReportModule.saveFile(body, userId);
 	}
 }
 

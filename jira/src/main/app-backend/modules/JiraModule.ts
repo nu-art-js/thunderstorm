@@ -60,7 +60,7 @@ type JiraDescription = string | {
 }
 
 type JiraReporter = {
-	email: string
+	emailAddress: string
 }
 
 type JiraFields = {
@@ -109,6 +109,7 @@ export class JiraModule_Class
 	private headersJson!: Headers;
 	private headersForm!: Headers;
 	private baseUrl = "https://introb.atlassian.net/rest/api/3";
+	private returnUrl = "https://introb.atlassian.net/browse/"
 
 	protected init(): void {
 		if (this.config?.baseUrl)
@@ -121,6 +122,8 @@ export class JiraModule_Class
 		this.headersJson = this.buildHeaders(this.config.auth, true);
 		this.headersForm = this.buildHeaders(this.config.auth, false);
 	}
+
+	getReturnUrl = () => this.returnUrl;
 
 	buildHeaders = ({apiKey, email}: JiraAuth, check: boolean) => {
 		const headers: Headers = {
@@ -166,7 +169,7 @@ export class JiraModule_Class
 			}
 		};
 		if (email)
-			body.fields.reporter = {email};
+			body.fields.reporter = {emailAddress: email};
 		return body;
 	};
 
@@ -200,7 +203,6 @@ export class JiraModule_Class
 
 
 	postIssueRequest = async (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string, email?: string): Promise<ResponsePostIssue> => {
-		console.log('this is the project', project);
 		return this.executePostRequest('/issue', this.createBody(project, issueType, summary, description, email));
 	};
 
@@ -292,6 +294,7 @@ export class JiraModule_Class
 		if (`${response.statusCode}`[0] !== '2')
 			throw new ApiException(response.statusCode, response.body);
 
+		console.log(response.toJSON().body)
 		return response.toJSON().body;
 	}
 
