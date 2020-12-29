@@ -50,8 +50,8 @@ export class JiraBugReportIntegrator_Class
 
 		console.log(this.config.jiraProject);
 		const message = await JiraModule.postIssueRequest(this.config.jiraProject, {name: "Task"}, `Bug Report -- ${bugReport.subject}`,
-		                                                  description);
-		return {platform: "jira", issueId: message.key};
+		                                                  description, email);
+		return {platform: "jira", issueId: "https://introb.atlassian.net/browse/" + message.key};
 	};
 }
 

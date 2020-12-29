@@ -34,6 +34,7 @@ import {
 	LogClient_BugReport,
 	LogClient_DefaultBugReport
 } from "../core/logger/LogClient_BugReport";
+import {Dialog_Success} from "../ui/Dialog_Success";
 
 export const RequestKey_BugReportApi = "BugReport";
 
@@ -67,7 +68,10 @@ export class BugReportModule_Class
 			.setRelativeUrl("/v1/bug-reports/report")
 			.setOnError(`Error updating the report`)
 			.setOnSuccessMessage(`Bug report sent!`)
-			.execute();
+			.execute((response) => {
+				console.log('response: ', response)
+				response.map(_url => Dialog_Success.show(_url.issueId))
+			});
 	};
 }
 

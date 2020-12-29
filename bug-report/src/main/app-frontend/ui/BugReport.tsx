@@ -86,15 +86,22 @@ export class BugReport
 
 		const content =
 			      <div className={'ll_v_c'}>
-				      <TS_Input
-					      id={"bug-report-subject"}
-					      type={"text"}
-					      value={this.state.subject || ''}
-					      placeholder={"type bug name here"}
-					      onChange={(value: string) => {
-						      this.setState({subject: value});
-					      }}
-				      />
+				      <div style={{
+					      border: `1px solid darkslategray`,
+					      marginBottom: "5px",
+					      width: "91%",
+					      margin: "8px"
+				      }}>
+					      <TS_Input
+						      id={"bug-report-subject"}
+						      type={"text"}
+						      value={this.state.subject || ''}
+						      placeholder={"type bug name here"}
+						      onChange={(value: string) => {
+							      this.setState({subject: value});
+						      }}
+					      />
+				      </div>
 				      <TS_TextArea
 					      style={{height: "110px", margin: "8px", width: "100%", outline: "none"}}
 					      value={this.state.description || ''}
@@ -111,7 +118,8 @@ export class BugReport
 			.addButton(DialogButton_Submit(() => onSubmit(), 'Submit'))
 			.setOverlayColor("rgba(102, 255, 255, 0.4)")
 			.show();
-	};
+	}
+	;
 
 	render() {
 		if (this.state.errorInfo) {
@@ -128,6 +136,7 @@ export class BugReport
 				</div>
 			);
 		}
+
 		return (
 			<>
 				{this.props.children}
@@ -139,4 +148,4 @@ export class BugReport
 			</>
 		);
 	}
-}
+};
