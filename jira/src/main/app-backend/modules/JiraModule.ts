@@ -24,14 +24,14 @@ import {
 import {
 	ApiException,
 	promisifyRequest
-} from "@nu-art/thunderstorm/backend"
-import {HttpMethod} from "@nu-art/thunderstorm"
+} from "@nu-art/thunderstorm/backend";
+import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	CoreOptions,
 	Headers,
 	Response,
 	UriOptions
-} from 'request'
+} from 'request';
 
 type Config = {
 	auth: JiraAuth
@@ -59,11 +59,16 @@ type JiraDescription = string | {
 	content: JiraContent[]
 }
 
+type JiraReporter = {
+	email: string
+}
+
 type JiraFields = {
 	project: JiraProjectInfo
 	issuetype: IssueType
 	description: JiraDescription
 	summary: string
+	reporter?: JiraReporter
 }
 
 export type IssueType = {
@@ -112,7 +117,7 @@ export class JiraModule_Class
 		if (!this.config?.auth?.email || !this.config.auth.apiKey)
 			throw new ImplementationMissingException('Missing right config variables for JiraModule');
 
-		console.log('jira configs: ', this.config.auth)
+		console.log('jira configs: ', this.config.auth);
 		this.headersJson = this.buildHeaders(this.config.auth, true);
 		this.headersForm = this.buildHeaders(this.config.auth, false);
 	}
@@ -151,21 +156,24 @@ export class JiraModule_Class
 		};
 	};
 
-	createBody = (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string): JiraIssueType => {
-		return {
+	createBody = (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string, email?: string): JiraIssueType => {
+		const body: JiraIssueType = {
 			fields: {
 				project,
 				issuetype: issueType,
 				description: this.createTextBody(description),
 				summary
 			}
-		}
+		};
+		if (email)
+			body.fields.reporter = {email};
+		return body;
 	};
 
 	createVersionBody = (data: any) => {
 		return {
 			fields: data
-		}
+		};
 	};
 
 	getIssueTypes = async (id: string) => {
@@ -179,7 +187,7 @@ export class JiraModule_Class
 
 	private buildSearch = (params: StringMap) => {
 		const search = Object.keys(params).reduce((carry, key) => {
-			return `${carry}${carry.length !== 0 ? '%20and%20' : ''}${key}${key === 'project' ? '=' : '~'}${encodeURIComponent(params[key])}`
+			return `${carry}${carry.length !== 0 ? '%20and%20' : ''}${key}${key === 'project' ? '=' : '~'}${encodeURIComponent(params[key])}`;
 		}, '');
 		return 'jql=' + (search);
 	};
@@ -187,22 +195,22 @@ export class JiraModule_Class
 	getIssueByCustomField = async (project: string, query: StringMap) => {
 		// return this.executeGetRequest('/search?jql=summary~'+summary+'&project='+project)
 		const search = this.buildSearch({project, ...query});
-		return this.executeGetRequest(`/search?${search}`)
+		return this.executeGetRequest(`/search?${search}`);
 	};
 
 
-	postIssueRequest = async (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string): Promise<ResponsePostIssue> => {
-		console.log('this is the project', project)
-		return this.executePostRequest('/issue', this.createBody(project, issueType, summary, description));
+	postIssueRequest = async (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string, email?: string): Promise<ResponsePostIssue> => {
+		console.log('this is the project', project);
+		return this.executePostRequest('/issue', this.createBody(project, issueType, summary, description, email));
 	};
 
 	getIssueRequest = async (issue: string): Promise<ResponseGetIssue> => {
-		return this.executeGetRequest(`/issue/${issue}`)
+		return this.executeGetRequest(`/issue/${issue}`);
 	};
 
 	addIssueAttachment = async (issue: string, file: Buffer) => {
 		// formData.append("file", file);
-		return this.executeFormRequest(`/issue/${issue}/attachments`, file)
+		return this.executeFormRequest(`/issue/${issue}/attachments`, file);
 	};
 
 	addCommentRequest = (issue: string, comment: string) => {
@@ -210,7 +218,7 @@ export class JiraModule_Class
 		const obj = {
 			body: this.createTextBody(comment)
 		};
-		return this.executePostRequest(`/issue/${issue}/comment`, obj)
+		return this.executePostRequest(`/issue/${issue}/comment`, obj);
 	};
 
 
@@ -236,15 +244,16 @@ export class JiraModule_Class
 		return this.executeRequest(request);
 	};
 
-	private async executePostRequest(url: string, body: any) {
+	private async executePostRequest(url: string, body: any, email?: string) {
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
 			uri: `${this.baseUrl}${url}`,
 			body,
 			method: HttpMethod.POST,
-			json: true
+			json: true,
 		};
-		console.log('this is the body: ', body)
+		console.log('this is the body: ', body);
+
 		return this.executeRequest(request);
 	}
 
@@ -279,9 +288,9 @@ export class JiraModule_Class
 	}
 
 	private handleResponse(response: Response) {
-		console.log('this is the response code: ', response.statusCode)
+		console.log('this is the response code: ', response.statusCode);
 		if (`${response.statusCode}`[0] !== '2')
-			throw new ApiException(response.statusCode, response.body)
+			throw new ApiException(response.statusCode, response.body);
 
 		return response.toJSON().body;
 	}
