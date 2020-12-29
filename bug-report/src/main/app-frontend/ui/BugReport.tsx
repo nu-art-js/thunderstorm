@@ -49,6 +49,8 @@ const style: React.CSSProperties = {
 type State = {
 	error: Error | null,
 	errorInfo: React.ErrorInfo | null
+	description: string
+	subject: string
 }
 
 export class BugReport
@@ -56,14 +58,14 @@ export class BugReport
 
 	constructor(props: {}) {
 		super(props);
-		this.state = {error: null, errorInfo: null};
+		this.state = {error: null, errorInfo: null, description: "", subject: ""};
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 		this.setState({
 			              error: error,
 			              errorInfo: errorInfo
-		              })
+		              });
 	}
 
 	onSubmitAutomatic = (withJira: boolean = false) => {
@@ -73,11 +75,11 @@ export class BugReport
 
 	showAppConfirmationDialogExample = () => {
 		const title = "Submit bug report";
-		let description: string = "";
-		let subject: string = "";
+		const _subject = this.state.subject;
+		const _description = this.state.description;
 
 		const onSubmit = (withJira: boolean = false) => {
-			BugReportModule.sendBugReport(subject, description, withJira);
+			BugReportModule.sendBugReport(_subject, _description, withJira);
 			DialogModule.close();
 		};
 
@@ -86,21 +88,19 @@ export class BugReport
 				      <TS_Input
 					      id={"bug-report-subject"}
 					      type={"text"}
-					      value={subject}
+					      value={_subject}
 					      placeholder={"type a subject here"}
-					      onChange={(value: string) => {
-						      subject = value;
-					      }}
+					      onChange={(subject: string) => this.setState({subject})}
 				      />
 				      <TS_TextArea
+					      id={"bug-report-description"}
 					      type="text"
 					      style={{height: "110px", margin: "8px", width: "100%", outline: "none"}}
-					      value={description}
+					      value={_description}
 					      placeholder={"type your description here"}
-					      onChange={(value: string) => {
-						      description = value;
-					      }}/>
-			      </div>
+					      onChange={(description: string) => this.setState({description})}
+				      />
+			      </div>;
 
 
 		new Dialog_Builder(content)
@@ -114,7 +114,7 @@ export class BugReport
 
 	render() {
 		if (this.state.errorInfo) {
-			this.onSubmitAutomatic()
+			this.onSubmitAutomatic();
 			return (
 				<div>
 					<h2>Something went wrong.</h2>
