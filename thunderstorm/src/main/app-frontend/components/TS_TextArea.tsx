@@ -46,8 +46,6 @@ type State = {
 export class TS_TextArea<Key extends string>
 	extends React.Component<TS_TextAreaProps<Key>, State> {
 
-	private ref: React.RefObject<HTMLTextAreaElement> = React.createRef();
-
 	constructor(props: TS_TextAreaProps<Key>) {
 		super(props);
 
@@ -73,7 +71,8 @@ export class TS_TextArea<Key extends string>
 
 	changeValue = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const value = event.target.value;
-		this.props.onChange?.(value, event.target.id as Key)
+		this.setState({value});
+		this.props.onChange?.(value, event.target.id as Key);
 	};
 
 	handleKeyPress = (event: KeyboardEvent) => {
@@ -85,9 +84,6 @@ export class TS_TextArea<Key extends string>
 	};
 
 	render() {
-		if (this.ref.current && this.state.value)
-			this.ref.current.value = this.state.value;
-
 		const {id, placeholder, style} = this.props;
 		return <textarea
 			disabled={this.props.enable === false}
@@ -98,8 +94,7 @@ export class TS_TextArea<Key extends string>
 			value={this.state.value}
 			placeholder={placeholder}
 			style={{...style}}
-			ref={this.ref}
-		/>
+		/>;
 	}
 
 }
