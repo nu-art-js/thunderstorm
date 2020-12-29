@@ -44,6 +44,13 @@ export class AxiosHttpModule_Class
 	extends BaseHttpModule_Class {
 	private requestOption: Axios_RequestConfig = {};
 
+	init() {
+		super.init()
+		const origin = this.config.origin;
+		if (origin)
+			this.origin = origin;
+	}
+
 	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): AxiosHttpRequest<DeriveRealBinder<Binder>> {
 		return new AxiosHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
 			.setOrigin(this.origin)
@@ -115,7 +122,6 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				return resolve();
 
 			let nextOperator = this.url.indexOf("?") === -1 ? "?" : "&";
-
 			const fullUrl = Object.keys(this.params).reduce((url: string, paramKey: string) => {
 				const param: string | undefined = this.params[paramKey];
 				if (!param)

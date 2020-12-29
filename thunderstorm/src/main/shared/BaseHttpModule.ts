@@ -53,7 +53,7 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 	private defaultErrorHandlers: RequestErrorHandler<any>[] = [];
 	private defaultSuccessHandlers: RequestSuccessHandler[] = [];
 
-	protected origin!: string;
+	protected origin?: string;
 	protected timeout: number = 10000;
 	private readonly defaultResponseHandler: ResponseHandler[] = [];
 	private readonly defaultHeaders: { [s: string]: (() => string | string[]) | string | string[] } = {};
@@ -63,21 +63,16 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		this.setDefaultConfig({compress: true} as Partial<Config>);
 	}
 
+	init() {
+		this.timeout = this.config.timeout || this.timeout;
+	}
+
 	shouldCompress() {
 		return this.config.compress;
 	}
 
 	addDefaultHeader(key: string, header: (() => string | string[]) | string | string[]) {
 		this.defaultHeaders[key] = header;
-	}
-
-	init() {
-		const origin = this.config.origin;
-		if (!origin)
-			throw new BadImplementationException('Did you forget to set the origin config key for the HttpModule?');
-
-		this.origin = origin;
-		this.timeout = this.config.timeout || this.timeout;
 	}
 
 	protected getDefaultHeaders() {
