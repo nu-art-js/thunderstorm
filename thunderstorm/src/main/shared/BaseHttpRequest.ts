@@ -53,7 +53,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 	errorMessage!: string;
 	successMessage!: string;
 
-	protected origin: string = '';
+	protected origin?: string;
 	protected headers: { [s: string]: string[] } = {};
 	protected method: HttpMethod = HttpMethod.GET;
 	protected timeout: number = 10000;
@@ -98,7 +98,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		return this.requestData;
 	}
 
-	setOrigin(origin: string) {
+	setOrigin(origin?: string) {
 		this.origin = origin;
 		return this;
 	}
@@ -165,6 +165,9 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 	}
 
 	public setRelativeUrl(relativeUrl: U) {
+		if(!this.origin)
+			throw new BadImplementationException('if you want to use relative urls, you need to set an origin')
+
 		this.url = this.origin + relativeUrl;
 		return this;
 	}
