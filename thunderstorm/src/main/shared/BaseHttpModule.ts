@@ -105,7 +105,7 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		}, {} as { [k: string]: string | string[] });
 	}
 
-	abstract createRequest<Binder extends ApiTypeBinder<any, any, any, any> = ApiTypeBinder<void, void, void, {}>>(method: HttpMethod, key: string, data?: string): BaseHttpRequest<DeriveRealBinder<Binder>>
+	abstract createRequest<Binder extends ApiTypeBinder<any, any, any, any> = ApiTypeBinder<void, void, void, {}>>(method: HttpMethod, key: string, data?: string): BaseHttpRequest<DeriveRealBinder<Binder>,any>
 
 	processDefaultResponseHandlers = (httpRequest: BaseHttpRequest<any>) => {
 		let resolved = false;

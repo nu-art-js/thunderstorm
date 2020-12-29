@@ -17,9 +17,7 @@
  * limitations under the License.
  */
 
-import {
-	Module
-} from "@nu-art/ts-common";
+import {Module} from "@nu-art/ts-common";
 
 import {
 	Collection,
@@ -34,14 +32,10 @@ type Config = {
 	client?: MongoClientOptions
 }
 
-export type MongoDBItem = {
-	_id: string
-}
-
 export class MongoModule_Class
 	extends Module<Config> {
 	private mongo!: MongoClient;
-	private dbs: Map<string, Db> = new Map<string, Db>();
+	private dbs: { [key: string]: Db } = {};
 
 	constructor() {
 		super("mongo");
@@ -63,14 +57,14 @@ export class MongoModule_Class
 			await this.connect();
 
 		const mongoDb = this.mongo.db(dbName);
-		this.dbs.set(dbName, mongoDb);
+		this.dbs[dbName] = mongoDb;
 		return mongoDb;
 	}
 
 	public async getCollection<T>(dbName: string, collectionName: string): Promise<Collection<T>> {
-		let db = this.dbs.get(dbName);
+		let db = this.dbs[dbName];
 		if (!db)
-			db = await this.getDatabase(dbName)
+			db = await this.getDatabase(dbName);
 
 		return db.collection(collectionName);
 	}

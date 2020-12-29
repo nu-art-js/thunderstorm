@@ -32,9 +32,13 @@ import {gzip} from "zlib";
 import {HttpException} from "../../../shared/request-types";
 // noinspection TypeScriptPreferShortImport
 import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
-import {BaseHttpModule_Class, DeriveRealBinder} from "../../../shared/BaseHttpModule";
+import {
+	BaseHttpModule_Class,
+	DeriveRealBinder
+} from "../../../shared/BaseHttpModule";
 
-export class XhrHttpModule_Class extends BaseHttpModule_Class {
+export class XhrHttpModule_Class
+	extends BaseHttpModule_Class {
 
 	init() {
 		super.init()
@@ -45,9 +49,7 @@ export class XhrHttpModule_Class extends BaseHttpModule_Class {
 		this.origin = origin;
 	}
 
-	createRequest<
-		Binder extends ApiTypeBinder<any,any,any,any>
-		>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<DeriveRealBinder<Binder>> {
+	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<DeriveRealBinder<Binder>> {
 		return new XhrHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
 			.setOrigin(this.origin)
 			.setMethod(method)
@@ -185,5 +187,19 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 
 			this.xhr.send(body as BodyInit);
 		});
+	}
+
+	getResponseHeader(headerKey: string): string | string[] | undefined {
+		if (!this.xhr)
+			throw new BadImplementationException('No xhr object!');
+
+		if (!this.xhr.response)
+			throw new BadImplementationException(`xhr didn't return yet`);
+
+		const header = this.xhr.getResponseHeader(headerKey);
+		if (!header)
+			return undefined;
+
+		return header;
 	}
 }

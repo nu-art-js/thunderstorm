@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="test--ts-common--queue" type="NodeJSConfigurationType" application-parameters="--service-account=../.trash/test-account.json" node-parameters="--require ts-node/register " path-to-js-file="src/test/queue/base-queue.ts" working-dir="$PROJECT_DIR$/ts-common">
+    <method v="2" />
+  </configuration>
+</component>
