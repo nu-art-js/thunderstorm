@@ -18,9 +18,8 @@
  */
 
 import {
-	Module,
 	ImplementationMissingException,
-	createReadableTimestampObject
+	Module
 } from "@nu-art/ts-common";
 import {
 	JiraModule,
@@ -44,15 +43,13 @@ export class JiraBugReportIntegrator_Class
 		console.log(this.config);
 	}
 
-	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[]): Promise<TicketDetails> => {
+	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[], email?: string): Promise<TicketDetails> => {
 		const description = logs.reduce((carry, el) => `${carry}${el.path}, `, `${bugReport.description}, `);
-		console.log('hello there');
-		console.log('configs', this.config);
 		if (!this.config.jiraProject)
 			throw new ImplementationMissingException("missing Jira project in bug report configurations");
 
-		console.log(this.config.jiraProject)
-		const message = await JiraModule.postIssueRequest(this.config.jiraProject, {name: "Task"}, `Bug Report ${createReadableTimestampObject().pretty}`,
+		console.log(this.config.jiraProject);
+		const message = await JiraModule.postIssueRequest(this.config.jiraProject, {name: "Task"}, `Bug Report -- ${bugReport.subject}`,
 		                                                  description);
 		return {platform: "jira", issueId: message.key};
 	};
