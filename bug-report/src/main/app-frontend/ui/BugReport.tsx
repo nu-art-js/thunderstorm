@@ -81,6 +81,7 @@ export class BugReport
 			if (!this.state.subject)
 				return ToastModule.toastError('you must first add a subject');
 			BugReportModule.sendBugReport(this.state.subject, this.state.description || '');
+			this.setState({subject: undefined, description: undefined});
 			DialogModule.close();
 		};
 
@@ -114,7 +115,10 @@ export class BugReport
 
 		new Dialog_Builder(content)
 			.setTitle(title)
-			.addButton(DialogButton_Cancel(DialogModule.close))
+			.addButton(DialogButton_Cancel(() => {
+				this.setState({description: undefined, subject: undefined})
+				DialogModule.close();
+			}))
 			.addButton(DialogButton_Submit(() => onSubmit(), 'Submit'))
 			.setOverlayColor("rgba(102, 255, 255, 0.4)")
 			.show();
