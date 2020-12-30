@@ -123,7 +123,6 @@ export class BugReport
 			.setOverlayColor("rgba(102, 255, 255, 0.4)")
 			.show();
 	}
-	;
 
 	render() {
 		if (this.state.errorInfo) {
