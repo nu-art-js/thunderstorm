@@ -40,7 +40,7 @@ export class Dialog_Success
 							paddingRight: 10,
 							paddingLeft: 10,
 							borderRadius: 16,
-							width: '93px',
+							width: '98px',
 							fontSize: '14px',
 							color: 'darkslategray',
 							position: "absolute",
