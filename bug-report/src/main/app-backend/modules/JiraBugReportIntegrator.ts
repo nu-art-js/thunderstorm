@@ -38,20 +38,25 @@ type Config = {
 export class JiraBugReportIntegrator_Class
 	extends Module<Config> {
 
+	private bugName = ''
+
 	protected init(): void {
 		super.init();
-		console.log(this.config);
 	}
 
+	setBugName = (name:string) => this.bugName = name
+
 	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[], email?: string): Promise<TicketDetails> => {
-		const description = logs.reduce((carry, el) => `${carry}${el.path}, `, `${bugReport.description}, `);
+		// const description = logs.reduce((carry, el) => `${carry}${el.path}, `, `${bugReport.description}, `);
 		if (!this.config.jiraProject)
 			throw new ImplementationMissingException("missing Jira project in bug report configurations");
 
+		const description = {text:`${bugReport.description }\n`, link: logs[0].path, linkText: 'Click to view logs', email: `Reported by: ${email}\n`}
+
 		console.log(this.config.jiraProject);
-		const message = await JiraModule.postIssueRequest(this.config.jiraProject, {name: "Task"}, `Bug Report -- ${bugReport.subject}`,
+		const message = await JiraModule.postIssueRequest(this.config.jiraProject, {name: "Bug"}, `${this.bugName} ${bugReport.subject}`,
 		                                                  description, email);
-		return {platform: "jira", issueId: "https://introb.atlassian.net/browse/" + message.key};
+		return {platform: "jira", issueId: `${this.config.jiraProject.baseUrl}/browse/${message.key}`};
 	};
 }
 

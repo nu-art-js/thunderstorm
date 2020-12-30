@@ -60,7 +60,7 @@ type JiraDescription = string | {
 }
 
 type JiraReporter = {
-	emailAddress: string
+	id: string
 }
 
 type JiraFields = {
@@ -78,11 +78,14 @@ export type IssueType = {
 }
 
 export type JiraProjectInfo = {
-	id: string
+	id: string,
+	baseUrl:string
 } | {
-	name: string
+	name: string,
+	baseUrl:string
 } | {
-	key: string
+	key: string,
+	baseUrl:string
 }
 
 export type ResponseGetIssue = BaseIssue & {
@@ -102,6 +105,8 @@ export type FixVersionType = {
 
 export type ResponsePostIssue = BaseIssue;
 
+type TextWithLink = { text: string, link: string, linkText: string, email:string }
+
 const createFormData = (filename: string, buffer: Buffer) => ({file: {value: buffer, options: {filename}}});
 
 export class JiraModule_Class
@@ -109,7 +114,6 @@ export class JiraModule_Class
 	private headersJson!: Headers;
 	private headersForm!: Headers;
 	private baseUrl = "https://introb.atlassian.net/rest/api/3";
-	private returnUrl = "https://introb.atlassian.net/browse/"
 
 	protected init(): void {
 		if (this.config?.baseUrl)
@@ -122,8 +126,6 @@ export class JiraModule_Class
 		this.headersJson = this.buildHeaders(this.config.auth, true);
 		this.headersForm = this.buildHeaders(this.config.auth, false);
 	}
-
-	getReturnUrl = () => this.returnUrl;
 
 	buildHeaders = ({apiKey, email}: JiraAuth, check: boolean) => {
 		const headers: Headers = {
@@ -141,7 +143,7 @@ export class JiraModule_Class
 		return headers;
 	};
 
-	createTextBody = (description: string) => {
+	createTextBody = (description: TextWithLink) => {
 		return {
 			type: "doc",
 			version: 1,
@@ -150,8 +152,24 @@ export class JiraModule_Class
 					type: "paragraph",
 					content: [
 						{
+							"type": "text",
+							"text": description.text
+						},
+						{
+							"type": "text",
+							"text": description.email
+						},
+						{
 							type: "text",
-							text: description
+							text: description.linkText,
+							marks: [
+								{
+									type: "link",
+									attrs: {
+										href: description.link
+									}
+								}
+							]
 						}
 					]
 				}
@@ -159,7 +177,8 @@ export class JiraModule_Class
 		};
 	};
 
-	createBody = (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string, email?: string): JiraIssueType => {
+
+	createBody = (project: JiraProjectInfo, issueType: IssueType, summary: string, description: TextWithLink, email?: string): JiraIssueType => {
 		const body: JiraIssueType = {
 			fields: {
 				project,
@@ -168,8 +187,6 @@ export class JiraModule_Class
 				summary
 			}
 		};
-		if (email)
-			body.fields.reporter = {emailAddress: email};
 		return body;
 	};
 
@@ -202,7 +219,7 @@ export class JiraModule_Class
 	};
 
 
-	postIssueRequest = async (project: JiraProjectInfo, issueType: IssueType, summary: string, description: string, email?: string): Promise<ResponsePostIssue> => {
+	postIssueRequest = async (project: JiraProjectInfo, issueType: IssueType, summary: string, description: TextWithLink, email?: string): Promise<ResponsePostIssue> => {
 		return this.executePostRequest('/issue', this.createBody(project, issueType, summary, description, email));
 	};
 
@@ -215,7 +232,7 @@ export class JiraModule_Class
 		return this.executeFormRequest(`/issue/${issue}/attachments`, file);
 	};
 
-	addCommentRequest = (issue: string, comment: string) => {
+	addCommentRequest = (issue: string, comment: TextWithLink) => {
 		// create comment
 		const obj = {
 			body: this.createTextBody(comment)
@@ -294,7 +311,7 @@ export class JiraModule_Class
 		if (`${response.statusCode}`[0] !== '2')
 			throw new ApiException(response.statusCode, response.body);
 
-		console.log(response.toJSON().body)
+		console.log(response.toJSON().body);
 		return response.toJSON().body;
 	}
 
