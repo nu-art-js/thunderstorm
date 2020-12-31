@@ -47,7 +47,7 @@ export class BaseComponent<P = any, S = any>
 	private readonly _componentDidMount: (() => void) | undefined;
 	private readonly _componentWillUnmount: (() => void) | undefined;
 	private timeoutMap: { [k: string]: number } = {};
-	protected readonly pageTitle?: string
+	protected readonly pageTitle?: string;
 
 	constructor(props: P) {
 		super(props);
@@ -73,12 +73,13 @@ export class BaseComponent<P = any, S = any>
 	}
 
 	componentDidMount() {
-		if(this.pageTitle)
+		if (this.pageTitle)
 			document.title = this.pageTitle;
 	}
 
 	componentWillUnmount() {
-		document.title = ThunderstormModule.getAppName();
+		if (this.pageTitle)
+			document.title = ThunderstormModule.getAppName();
 	}
 
 	debounce(handler: TimerHandler, key: string, ms = 0) {
