@@ -36,7 +36,6 @@ import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
 import {BrowserHistoryModule} from "../modules/HistoryModule";
 import {Thunder} from "./Thunder";
-import {ThunderstormModule} from "../modules/ThunderstormModule";
 
 // @ts-ignore
 export class BaseComponent<P = any, S = any>
@@ -47,7 +46,8 @@ export class BaseComponent<P = any, S = any>
 	private readonly _componentDidMount: (() => void) | undefined;
 	private readonly _componentWillUnmount: (() => void) | undefined;
 	private timeoutMap: { [k: string]: number } = {};
-	protected readonly pageTitle?: string;
+	private pageTitle?: string;
+	private prevTitle?: string;
 
 	constructor(props: P) {
 		super(props);
@@ -72,14 +72,16 @@ export class BaseComponent<P = any, S = any>
 		};
 	}
 
-	componentDidMount() {
-		if (this.pageTitle)
-			document.title = this.pageTitle;
+	protected setPageTitle(pageTitle: string) {
+		this.prevTitle = document.title;
+		document.title = (this.pageTitle = pageTitle);
 	}
 
 	componentWillUnmount() {
-		if (this.pageTitle)
-			document.title = ThunderstormModule.getAppName();
+		if (this.pageTitle && this.prevTitle)
+			document.title = this.prevTitle;
+
+		super.componentWillUnmount?.();
 	}
 
 	debounce(handler: TimerHandler, key: string, ms = 0) {
