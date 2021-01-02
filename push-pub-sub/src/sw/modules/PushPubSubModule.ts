@@ -38,28 +38,36 @@ type PushPubSubConfig = {
 class PushPubSubModule_Class
 	extends Module<PushPubSubConfig> {
 
-	constructor(){
-		super('Service Worker PushPubSubModule')
+	constructor() {
+		super('Service Worker PushPubSubModule');
 	}
 
 	protected init(): void {
 		this.runAsync('Init App', this.initApp);
-
+		swSelf.addEventListener("notificationclick", this.defaultHandler);
+		swSelf.addEventListener("pushsubscriptionchange", this.defaultHandler);
+		swSelf.addEventListener("push", this.defaultHandler);
 		// swSelf.addEventListener('message', (event) => {
 		// 	this.logInfo(`The client sent me a message:`, event);
 		// 	this.handleMessageFromClient(event)
 		// });
 	}
 
+	private defaultHandler = (event: Event) => {
+		this.logVerbose(`Event listened in sw of type ${event.type}`, event);
+	};
+
 	private initApp = async () => {
+		this.logDebug('SW: Initiating app');
 		const app = await FirebaseModule.createSwSession();
-
+		this.logDebug('SW: app session', app);
 		const messaging = app.getMessaging();
-
+		this.logDebug('SW: messaging wrapper', messaging);
 		messaging.onBackgroundMessage((payload: any) => {
-			this.runAsync(`Sending message to window ${__stringify(payload.data, true)}`, async () => this.sendMessage(payload.data))
+			this.runAsync(`Sending message to window ${__stringify(payload.data, true)}`, async () => this.sendMessage(payload.data));
 		});
 	};
+
 
 	getClients = async () => swSelf.clients.matchAll({type: "window"});
 
@@ -73,7 +81,7 @@ class PushPubSubModule_Class
 
 		clients.forEach(function (client) {
 			client.postMessage(message);
-		})
+		});
 	};
 
 	handleMessageFromClient(event: ExtendableMessageEvent) {

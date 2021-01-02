@@ -119,7 +119,7 @@ export class Page_Playground
 			iconClose={ICONS.arrowClose(COLORS.veryLightPink())}
 			iconOpen={ICONS.arrowOpen(COLORS.veryLightPink())}
 			screens={screens}
-		/>
+		/>;
 	}
 
 	getScreens(): PlaygroundScreen[] {

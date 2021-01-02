@@ -31,6 +31,7 @@ import {
 	ApiBugReport,
 	Request_BugReport
 } from "../../shared/api";
+import {Dialog_Success} from "../ui/Dialog_Success";
 
 export const RequestKey_BugReportApi = "BugReport";
 
@@ -50,12 +51,12 @@ export class BugReportModule_Class
 		this.reports.forEach(report => BeLogged.addClient(report));
 	}
 
-	sendBugReport = (subject: string, description: string, withJira: boolean) => {
+	sendBugReport = (subject: string, description: string) => {
 		const body: Request_BugReport = {
 			subject,
 			description,
 			reports: this.reports.map(report => ({log: report.buffers, name: report.name})),
-			createIssue: withJira
+			createTicket: true
 		};
 
 		XhrHttpModule
@@ -64,7 +65,10 @@ export class BugReportModule_Class
 			.setRelativeUrl("/v1/bug-reports/report")
 			.setOnError(`Error updating the report`)
 			.setOnSuccessMessage(`Bug report sent!`)
-			.execute();
+			.execute((response) => {
+				console.log('response: ', response)
+				response.map(_url => Dialog_Success.show(_url.issueId))
+			});
 	};
 }
 

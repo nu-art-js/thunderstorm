@@ -36,7 +36,7 @@ import {
 	DB_BugReport,
 	ReportLogFile,
 	Request_BugReport
-} from "../../shared/api";
+} from "../..";
 
 import * as JSZip from "jszip";
 
@@ -48,7 +48,7 @@ type Config = {
 	projectId?: string,
 	bucket?: string,
 }
-type TicketCreatorApi = (bugReport: Request_BugReport, logs: ReportLogFile[]) => Promise<TicketDetails>;
+type TicketCreatorApi = (bugReport: Request_BugReport, logs: ReportLogFile[], email?:string) => Promise<TicketDetails>;
 
 export class BugReportModule_Class
 	extends Module<Config> {
@@ -84,7 +84,7 @@ export class BugReportModule_Class
 		};
 	};
 
-	saveFile = async (bugReport: Request_BugReport, email: string = "bug-report") => {
+	saveFile = async (bugReport: Request_BugReport, email?: string) => {
 
 		const _id = generateHex(16);
 		const logs: ReportLogFile[] = await Promise.all(bugReport.reports.map(report => this.saveLog(report, _id)));
@@ -94,19 +94,16 @@ export class BugReportModule_Class
 			subject: bugReport.subject,
 			description: bugReport.description,
 			reports: logs,
-			_audit: auditBy(email),
+			_audit: auditBy(email || "bug-report"),
 		};
 
 		if (this.config?.bucket)
 			instance.bucket = this.config.bucket;
 
-		if (!bugReport.createIssue) {
-			await this.bugReport.insert(instance);
-			return;
-		}
-
-		instance.tickets = await Promise.all(this.ticketCreatorApis.map(api => api(bugReport, logs)));
+		console.log('configs in BR: ', this.config)
+		instance.tickets = await Promise.all(this.ticketCreatorApis.map(api => api(bugReport, logs, email)));
 		await this.bugReport.insert(instance);
+		return instance.tickets
 	};
 }
 
