@@ -17,14 +17,21 @@
  * limitations under the License.
  */
 
-import {PushPubSubModule} from "../modules/PushPubSubModule";
-import {ScheduledCleanup} from "../modules/ScheduledPushCleanup";
+import {ObjectTS} from "@nu-art/ts-common";
+import {PushPubSubModule} from "./PushPubSubModule";
+import {SubscribeProps} from "./_imports";
 
-export const Backend_ModulePack_PushPubSub = [
-	PushPubSubModule,
-	ScheduledCleanup
-];
+export class PushKey<K extends string, P extends SubscribeProps, D extends ObjectTS> {
 
-export * from "../modules/PushPubSubModule"
-export * from "../modules/ScheduledPushCleanup"
-export * from "../modules/PushKey"
+	private readonly key: K;
+	private readonly persist: boolean;
+
+	constructor(key: K, persist = false) {
+		this.key = key;
+		this.persist = persist;
+	}
+
+	async push(data: D, props?: P) {
+		return PushPubSubModule.pushToKey(this.key, props, data, this.persist);
+	};
+}
