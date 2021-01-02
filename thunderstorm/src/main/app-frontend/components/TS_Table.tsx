@@ -24,21 +24,21 @@ import {CSSProperties} from "react";
 import {Stylable} from "../tools/Stylable";
 import React = require("react");
 
-type HeaderRenderer<T extends ObjectTS> = {
+export type HeaderRenderer<T extends ObjectTS> = {
 	[P in keyof T]: (columnKey: P) => React.ReactNode
 };
 
-type ActionItemRenderer<P> = (rowIndex: number, actionKey: P) => React.ReactNode;
-type ActionsRenderer<A extends ObjectTS> = {
+export type ActionItemRenderer<P> = (rowIndex: number, actionKey: P) => React.ReactNode;
+export type ActionsRenderer<A extends ObjectTS> = {
 	[P in keyof A]: ActionItemRenderer<P>
 };
 
-type CellRenderer<P, V> = (cellValue: V, rowIndex: number, columnKey: P) => React.ReactNode;
-type RowRenderer<T extends ObjectTS> = {
+export type CellRenderer<P, V> = (cellValue: V, rowIndex: number, columnKey: P) => React.ReactNode;
+export type RowRenderer<T extends ObjectTS> = {
 	[P in keyof T]: CellRenderer<P, T[P]>
 };
 
-type TableProps<T extends ObjectTS, A extends ObjectTS = never> = Stylable & {
+export type TableProps<T extends ObjectTS, A extends ObjectTS = never> = Stylable & {
 	id: string,
 	header: (keyof T)[],
 	rows: T[],
