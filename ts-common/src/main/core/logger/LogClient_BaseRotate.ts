@@ -33,7 +33,7 @@ export abstract class LogClient_BaseRotate
 	readonly maxEntries: number;
 	readonly maxSize: number;
 
-	protected bufferSize: number = 0;
+	protected bufferSize = 0;
 
 	private rotationListener?: LogRotateListener;
 
