@@ -240,7 +240,7 @@ export class PushPubSubModule_Class
 
 	private register = async (): Promise<void> => {
 		if (!this.firebaseToken)
-			return;
+			return this.logWarning("No Firebase token...");
 
 		const body: Request_PushRegister = {
 			firebaseToken: this.firebaseToken,

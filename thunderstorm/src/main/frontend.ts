@@ -48,6 +48,7 @@ export * from "./app-frontend/core/BaseComponent";
 export * from "./app-frontend/core/AppWrapper";
 export * from "./app-frontend/components/TS_TextArea";
 export * from "./app-frontend/components/TS_Input";
+export * from "./app-frontend/components/TS_Table";
 export * from "./app-frontend/components/checkbox/TS_Checkbox";
 export * from "./app-frontend/components/FilterInput";
 export * from "./app-frontend/components/DropDown";
