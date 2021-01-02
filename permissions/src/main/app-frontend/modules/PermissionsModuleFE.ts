@@ -26,11 +26,19 @@ export class PermissionsModuleFE_Class
 	private loadingUrls = new Set<string>();
 	private userUrlsPermissions: UserUrlsPermissions = {};
 	private requestCustomField: StringMap = {};
-	private readonly TIME = 100;
+	private debounceTime = 100;
+
+	setDebounceTime(time: number){
+		this.debounceTime = time
+	}
 
 	setCustomField(key: string, value: string) {
 		this.requestCustomField[key] = value;
 		this.setPermissions();
+	}
+
+	loadUrls(urls: string[]){
+		urls.forEach(url => this.doesUserHavePermissions(url))
 	}
 
 	doesUserHavePermissions(url: string): boolean | undefined {
@@ -69,7 +77,7 @@ export class PermissionsModuleFE_Class
 					});
 					dispatch_onPermissionsChanged.dispatchUI([]);
 				});
-		}, 'get-permissions', this.TIME);
+		}, 'get-permissions', this.debounceTime);
 	}
 
 }
