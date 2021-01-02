@@ -133,7 +133,7 @@ export class PushPubSubModule_Class
 		S extends string = IFP<M>,
 		P extends SubscribeProps = ISP<M>,
 		D = ITP<M>>(key: S, props?: P, data?: D, persistent: boolean = false) {
-		console.log('i am pushing to key...', key, props);
+		console.log('i am pushing to key...', key, props, data);
 		let docs = await this.pushKeys.query({where: {pushKey: key}});
 		if (props)
 			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
