@@ -37,7 +37,7 @@ export type Request_BugReport = {
 	subject: string;
 	description: string;
 	reports: BugReport[]
-	createIssue: boolean,
+	createTicket: boolean
 };
 
 export type ReportMetaData = {
@@ -70,4 +70,4 @@ export type SecuredUrl = {
 
 export type ApiGetLog = ApiWithQuery<string, DB_BugReport[]>
 export type ApiPostPath = ApiWithBody<'/v1/bug-reports/download-logs', Paths, SecuredUrl>
-export type ApiBugReport = ApiWithBody<'/v1/bug-reports/report', Request_BugReport, void>
+export type ApiBugReport = ApiWithBody<'/v1/bug-reports/report', Request_BugReport, TicketDetails[]>

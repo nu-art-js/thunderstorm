@@ -18,14 +18,14 @@
  */
 
 import {
-	Module,
 	ImplementationMissingException,
-	createReadableTimestampObject
+	Module
 } from "@nu-art/ts-common";
 import {
+	JiraIssueText,
 	JiraModule,
-	JiraProjectInfo
-} from "./JiraModule"
+	JiraProject
+} from "@nu-art/jira";
 import {
 	ReportLogFile,
 	Request_BugReport
@@ -33,22 +33,34 @@ import {
 import {TicketDetails} from "./BugReportModule";
 
 type Config = {
-	jiraProject: JiraProjectInfo
-
+	jiraProject: JiraProject
 }
 
-class JiraBugReportIntegrator_Class
+export class JiraBugReportIntegrator_Class
 	extends Module<Config> {
 
-	async openTicket(bugReport: Request_BugReport, logs: ReportLogFile[]): Promise<TicketDetails> {
-		const description = logs.reduce((carry, el) => `${carry}${el.path}, `, `${bugReport.description}, `);
-		if (!this.config.jiraProject)
-			throw new ImplementationMissingException("missing Jira project in bug report configurations")
-
-		const message = await JiraModule.postIssueRequest(this.config.jiraProject, {name: "Task"}, `Bug Report ${createReadableTimestampObject().pretty}`,
-		                                                  description);
-		return {platform: "jira", issueId: message.key};
+	setIssueTitleProcessor(parser: (name: string) => string) {
+		this.parser = parser;
 	}
+	private parser = (name: string) => `Bug: ${name}`;
+
+	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[], reporter?: string): Promise<TicketDetails> => {
+		// const description = logs.reduce((carry, el) => `${carry}${el.path}, `, `${bugReport.description}, `);
+		if (!this.config.jiraProject)
+			throw new ImplementationMissingException("missing Jira project in bug report configurations");
+
+		const description: JiraIssueText[] = [bugReport.description];
+
+		logs.forEach((log,i) => {
+			description.push({href: log.path, text: `Click to view logs (${i})`});
+		});
+
+		description.push(`Reported by: ${reporter}`)
+
+		console.log(this.config.jiraProject);
+		const issue = await JiraModule.issue.create(this.config.jiraProject, {name: 'Bug'}, this.parser(bugReport.subject), description);
+		return {platform: "jira", issueId: issue.url};
+	};
 }
 
 export const JiraBugReportIntegrator = new JiraBugReportIntegrator_Class();

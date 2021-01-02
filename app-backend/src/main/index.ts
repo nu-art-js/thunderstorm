@@ -38,7 +38,10 @@ import {
 	Module
 } from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
-import {Backend_ModulePack_BugReport} from "@nu-art/bug-report/backend";
+import {
+	Backend_ModulePack_BugReport,
+	BugReportModule
+} from "@nu-art/bug-report/backend";
 import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
 import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
 import {ValueChangedListener} from "@modules/ValueChangedListener";
@@ -59,6 +62,7 @@ import {
 } from '@nu-art/firebase/backend';
 import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
+import {JiraBugReportIntegrator} from "@nu-art/bug-report/app-backend/modules/JiraBugReportIntegrator";
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -117,6 +121,8 @@ const _exports = new Storm()
 		// 	.execute();
 		// console.log('I got respose', response);
 	});
+
+BugReportModule.addTicketCreator(JiraBugReportIntegrator.openTicket)
 
 _exports.logTest = functions.database.ref('triggerLogs').onWrite((change, context) => {
 	console.log('LOG_TEST FUNCTION! -- Logging string');

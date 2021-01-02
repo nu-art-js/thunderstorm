@@ -124,6 +124,7 @@ export class PushPubSubModule_Class
 		if (!this.config?.publicKeyBase64)
 			throw new ImplementationMissingException(`Please specify the right config for the 'PushPubSubModule'`);
 
+
 		this.runAsync('Initializing Firebase SDK and registering SW', async () => {
 			if ('serviceWorker' in navigator) {
 				const asyncs: [Promise<ServiceWorkerRegistration>, Promise<FirebaseSession>] = [
@@ -149,6 +150,7 @@ export class PushPubSubModule_Class
 			}
 		});
 	};
+
 
 	// / need to call this from the login verified
 	public getToken = async (options?: { vapidKey?: string; serviceWorkerRegistration?: ServiceWorkerRegistration; }) => {

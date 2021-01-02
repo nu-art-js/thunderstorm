@@ -36,6 +36,7 @@ export class SwFirebaseSession
 
 	constructor(sessionName: string, app: firebase.app.App) {
 		super(`service worker firebase: ${sessionName}`);
+
 		this.sessionName = sessionName;
 		this.app = app;
 	}

@@ -17,22 +17,39 @@
  * limitations under the License.
  */
 
-import { _keys } from "@nu-art/ts-common";
+import {_keys} from "@nu-art/ts-common";
 import {JiraQuery} from "./JiraModule";
 
-function createText(text: string) {
+export type JiraIssueText = string | { href: string, text: string };
+
+function createText(...texts: JiraIssueText[]) {
 	return {
 		type: "doc",
 		version: 1,
 		content: [
 			{
 				type: "paragraph",
-				content: [
-					{
+				content: texts.map(text => {
+					if (typeof text === "string")
+						return {
+							type: "text",
+							text
+						};
+
+					return  {
 						type: "text",
-						text
+						text: text.text,
+						marks: [
+							{
+								type: "link",
+								attrs: {
+									href: text.href
+								}
+							}
+						]
 					}
-				]
+
+				})
 			}
 		]
 	};
@@ -43,16 +60,16 @@ function buildJQL(query: JiraQuery) {
 		let queryValue;
 		if (Array.isArray(query[key])) {
 			queryValue = (query[key] as string[]).map(value => `"${value}"`).join(",");
-			queryValue = `(${queryValue})`
+			queryValue = `(${queryValue})`;
 		} else
-			queryValue = `"${query[key]}"`
+			queryValue = `"${query[key]}"`;
 
 		return `${key}=${queryValue}`;
 	});
-	return params.join(" and ")
+	return params.join(" and ");
 };
 
 export const JiraUtils = {
 	createText,
 	buildJQL,
-}
+};

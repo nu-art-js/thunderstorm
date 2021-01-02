@@ -28,14 +28,17 @@ import {
 	AxiosHttpModule,
 	promisifyRequest
 } from "@nu-art/thunderstorm/backend";
+import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	CoreOptions,
 	Headers,
 	Response,
 	UriOptions
 } from 'request';
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {JiraUtils} from "./utils";
+import {
+	JiraIssueText,
+	JiraUtils
+} from "./utils";
 import {
 	JiraVersion,
 	JiraVersion_Create
@@ -51,9 +54,17 @@ type JiraAuth = {
 	apiKey: string
 };
 
+type JiraMark = {
+	type: string
+	attrs: {
+		href: string
+	}
+}
+
 type JiraContent = {
 	type: "paragraph" | string
 	text?: string
+	marks?: JiraMark[]
 	content?: JiraContent[]
 }
 
@@ -65,13 +76,16 @@ type JiraDescription = string | {
 
 export type JiraIssue_Fields = {
 	project: JiraProject
+	// project: JiraProjectInfo
 	issuetype: IssueType
 	description: JiraDescription
 	summary: string
+	reporter?: { id: string }
 } & TypedMap<any>
 
 export type IssueType = {
 	id: string
+} | {
 	name: string
 }
 
@@ -85,6 +99,7 @@ export type BaseIssue = {
 	id: string
 	key: string
 	self: string
+	url: string
 };
 
 export type JiraIssue = BaseIssue & {
@@ -119,11 +134,14 @@ export class JiraModule_Class
 	private headersForm!: Headers;
 	private projects!: JiraProject[];
 	private versions: { [projectId: string]: JiraVersion[] } = {};
+	private restUrl!: string
 
 	protected init(): void {
 		if (!this.config.baseUrl)
-			throw new ImplementationMissingException("Missing Jira subdomain")
+			throw new ImplementationMissingException("Missing Jira subdomain");
 
+		this.restUrl = this.config.baseUrl + '/rest/api/3';
+		console.log(this.restUrl);
 		if (!this.config.auth || !this.config.auth.apiKey || !this.config.auth.email)
 			throw new ImplementationMissingException('Missing auth config variables for JiraModule');
 
@@ -150,15 +168,15 @@ export class JiraModule_Class
 	project = {
 		query: async (projectKey: string) => {
 			if (!this.projects)
-				this.projects = await this.executeGetRequest<JiraProject[]>(`/project`)
+				this.projects = await this.executeGetRequest<JiraProject[]>(`/project`);
 
 			const project = this.projects.find(_project => _project.key === projectKey);
 			if (!project)
-				throw new BadImplementationException(`Could not find project: ${projectKey}`)
+				throw new BadImplementationException(`Could not find project: ${projectKey}`);
 
 			return project;
 		},
-	}
+	};
 
 	version = {
 		query: async (projectId: string, versionName: string) => {
@@ -170,27 +188,29 @@ export class JiraModule_Class
 		create: async (projectId: string, versionName: string) => {
 			const version = await this.executePostRequest<JiraVersion, JiraVersion_Create>(`/version`, {projectId, name: versionName});
 			this.versions[projectId].push(version);
-			return version
+			return version;
 		}
-	}
+	};
 
 	comment = {
 		add: async (issueKey: string, comment: string) => {
-			return this.executePostRequest(`/issue/${issueKey}/comment`, JiraUtils.createText(comment))
+			return this.executePostRequest(`/issue/${issueKey}/comment`, JiraUtils.createText(comment));
 		}
-	}
+	};
 
 	issue = {
 		comment: this.comment,
-		create: async (project: JiraProject, issueType: IssueType, summary: string, description: string): Promise<ResponsePostIssue> => {
-			return this.executePostRequest<ResponsePostIssue, Pick<JiraIssue, "fields">>('/issue', {
+		create: async (project: JiraProject, issueType: IssueType, summary: string, descriptions: JiraIssueText[]): Promise<ResponsePostIssue> => {
+			const issue = await this.executePostRequest<ResponsePostIssue, Pick<JiraIssue, "fields">>('/issue', {
 				fields: {
 					project,
 					issuetype: issueType,
-					description: JiraUtils.createText(description),
+					description: JiraUtils.createText(...descriptions),
 					summary
 				}
 			});
+			issue.url = `${this.config.baseUrl}/browse/${issue.key}`;
+			return issue;
 		},
 		update: async (issueKey: string, fields: Partial<JiraIssue_Fields>) => {
 			return this.executePutRequest<{ fields: Partial<JiraIssue_Fields> }>(`/issue/${issueKey}`, {fields});
@@ -203,7 +223,7 @@ export class JiraModule_Class
 
 			return this.executePutRequest<{ fields: Partial<JiraIssue_Fields> }>(`/issue/${issueKey}`, {fields: {fixVersions: [{id: version.id}]}});
 		},
-	}
+	};
 
 	getIssueTypes = async (id: string) => {
 		return this.executeGetRequest('/issue/createmetadata', {projectKeys: id});
@@ -215,17 +235,17 @@ export class JiraModule_Class
 	};
 
 	getIssueRequest = async (issue: string): Promise<JiraIssue> => {
-		return this.executeGetRequest(`/issue/${issue}`)
+		return this.executeGetRequest(`/issue/${issue}`);
 	};
 
 	addIssueAttachment = async (issue: string, file: Buffer) => {
-		return this.executeFormRequest(`/issue/${issue}/attachments`, file)
+		return this.executeFormRequest(`/issue/${issue}/attachments`, file);
 	};
 
 	private executeFormRequest = async (url: string, buffer: Buffer) => {
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersForm,
-			uri: `${this.config.baseUrl}${url}`,
+			uri: `${this.restUrl}${url}`,
 			formData: createFormData('logs.zip', buffer),
 			method: HttpMethod.POST,
 		};
@@ -235,7 +255,7 @@ export class JiraModule_Class
 	private async executePostRequest<Res, Req>(url: string, body: Req) {
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
-			uri: `${this.config.baseUrl}${url}`,
+			uri: `${this.restUrl}${url}`,
 			body,
 			method: HttpMethod.POST,
 			json: true
@@ -246,7 +266,7 @@ export class JiraModule_Class
 	private async executePutRequest<T>(url: string, body: T) {
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
-			uri: `${this.config.baseUrl}${url}`,
+			uri: `${this.restUrl}${url}`,
 			body,
 			method: HttpMethod.PUT,
 			json: true
@@ -255,23 +275,21 @@ export class JiraModule_Class
 	}
 
 	async executeGetRequestNew<T>(url: string, _params?: { [k: string]: string }): Promise<T> {
-		if (!this.config.baseUrl)
+		if (!this.restUrl)
 			throw new ImplementationMissingException('Need a baseUrl');
 
-		const resp = await AxiosHttpModule
+		return AxiosHttpModule
 			.createRequest(HttpMethod.GET, generateHex(8))
-			.setOrigin(this.config.baseUrl)
+			.setOrigin(this.restUrl)
 			.setUrl(url)
 			.setUrlParams(_params)
 			.setHeaders(this.headersJson)
 			.executeSync();
-		console.log(resp);
-		return resp
 	}
 
 	private handleResponse<T>(response: Response) {
 		if (`${response.statusCode}`[0] !== '2')
-			throw new ApiException(response.statusCode, response.body)
+			throw new ApiException(response.statusCode, response.body);
 
 		return response.toJSON().body as T;
 	}
@@ -287,7 +305,7 @@ export class JiraModule_Class
 
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
-			uri: `${this.config.baseUrl}${url}${urlParams}`,
+			uri: `${this.restUrl}${url}${urlParams}`,
 			method: HttpMethod.GET,
 			json: true
 		};
@@ -296,7 +314,6 @@ export class JiraModule_Class
 	}
 
 	private async executeRequest<T>(request: UriOptions & CoreOptions) {
-		console.log(`request: `, request.uri)
 		const response = await promisifyRequest(request, false);
 		return this.handleResponse<T>(response);
 	}

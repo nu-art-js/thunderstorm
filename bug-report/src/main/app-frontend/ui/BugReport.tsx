@@ -24,6 +24,7 @@ import {
 	DialogButton_Cancel,
 	DialogButton_Submit,
 	DialogModule,
+	ToastModule,
 	TS_Input,
 	TS_TextArea
 } from "@nu-art/thunderstorm/frontend";
@@ -47,74 +48,78 @@ const style: React.CSSProperties = {
 	borderColor: 'transparent'
 };
 type State = {
-	error: Error | null,
-	errorInfo: React.ErrorInfo | null
-	description: string
-	subject: string
+	error?: Error,
+	errorInfo?: React.ErrorInfo
+	description?: string
+	subject?: string
 }
 
 export class BugReport
 	extends React.Component<Props, State> {
 
-	constructor(props: {}) {
+	constructor(props: Props) {
 		super(props);
-		this.state = {error: null, errorInfo: null, description: "", subject: ""};
+		this.state = {}
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+		BugReportModule.sendBugReport("Automatic submission", "these logs were triggered by a UI failure");
 		this.setState({
 			              error: error,
 			              errorInfo: errorInfo
 		              });
 	}
 
-	onSubmitAutomatic = (withJira: boolean = false) => {
-		BugReportModule.sendBugReport("Automatic submission", "these logs were triggered by a UI failure", withJira);
-		DialogModule.close();
-	};
-
 	showAppConfirmationDialogExample = () => {
-		const title = "Submit bug report";
-		const _subject = this.state.subject;
-		const _description = this.state.description;
+		const title = "Bug Report";
 
-		const onSubmit = (withJira: boolean = false) => {
-			BugReportModule.sendBugReport(_subject, _description, withJira);
+		const onSubmit = () => {
+			if (!this.state.subject)
+				return ToastModule.toastError('you must first add a subject');
+			BugReportModule.sendBugReport(this.state.subject, this.state.description || '');
+			this.setState({subject: undefined, description: undefined});
 			DialogModule.close();
 		};
 
 		const content =
 			      <div className={'ll_v_c'}>
-				      <TS_Input
-					      id={"bug-report-subject"}
-					      type={"text"}
-					      value={_subject}
-					      placeholder={"type a subject here"}
-					      onChange={(subject: string) => this.setState({subject})}
-				      />
+				      <div style={{
+					      border: `1px solid darkslategray`,
+					      marginBottom: "5px",
+					      width: "91%",
+					      margin: "8px"
+				      }}>
+					      <TS_Input
+						      id={"bug-report-subject"}
+						      type={"text"}
+						      value={this.state.subject || ''}
+						      placeholder={"type bug name here"}
+						      onChange={(subject: string) => this.setState({subject})}
+					      />
+				      </div>
 				      <TS_TextArea
 					      id={"bug-report-description"}
 					      type="text"
 					      style={{height: "110px", margin: "8px", width: "100%", outline: "none"}}
-					      value={_description}
-					      placeholder={"type your description here"}
-					      onChange={(description: string) => this.setState({description})}
-				      />
+					      value={this.state.description || ''}
+					      placeholder={"type bug description here"}
+					      onChange={(description: string) => this.setState({description})}/>
 			      </div>;
 
 
 		new Dialog_Builder(content)
 			.setTitle(title)
-			.addButton(DialogButton_Cancel(DialogModule.close))
-			.addButton(DialogButton_Submit(() => onSubmit(true), 'Jira'))
-			.addButton(DialogButton_Submit(() => onSubmit(false), 'No Jira'))
+			.addButton(DialogButton_Cancel(() => {
+				this.setState({description: undefined, subject: undefined})
+				DialogModule.close();
+			}))
+			.addButton(DialogButton_Submit(() => onSubmit(), 'Submit'))
 			.setOverlayColor("rgba(102, 255, 255, 0.4)")
 			.show();
-	};
+	}
 
 	render() {
 		if (this.state.errorInfo) {
-			this.onSubmitAutomatic();
 			return (
 				<div>
 					<h2>Something went wrong.</h2>
@@ -127,6 +132,7 @@ export class BugReport
 				</div>
 			);
 		}
+
 		return (
 			<>
 				{this.props.children}
@@ -138,4 +144,4 @@ export class BugReport
 			</>
 		);
 	}
-}
+};

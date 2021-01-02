@@ -46,6 +46,7 @@ export class FirebaseModule_Class
 		super("firebase fe");
 	}
 
+
 	async createSwSession(): Promise<SwFirebaseSession> {
 		const swSession = this.swSession;
 		if (swSession)
