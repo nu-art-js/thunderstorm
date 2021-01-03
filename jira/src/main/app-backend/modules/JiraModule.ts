@@ -85,7 +85,6 @@ export type JiraIssue_Fields = {
 
 export type IssueType = {
 	id: string
-} | {
 	name: string
 }
 

@@ -24,7 +24,8 @@ import {
 import {
 	JiraIssueText,
 	JiraModule,
-	JiraProject
+	JiraProject,
+	IssueType
 } from "@nu-art/jira";
 import {
 	ReportLogFile,
@@ -34,6 +35,7 @@ import {TicketDetails} from "./BugReportModule";
 
 type Config = {
 	jiraProject: JiraProject
+	issueType: IssueType
 }
 
 export class JiraBugReportIntegrator_Class
@@ -42,6 +44,7 @@ export class JiraBugReportIntegrator_Class
 	setIssueTitleProcessor(parser: (name: string) => string) {
 		this.parser = parser;
 	}
+
 	private parser = (name: string) => `Bug: ${name}`;
 
 	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[], reporter?: string): Promise<TicketDetails> => {
@@ -49,16 +52,15 @@ export class JiraBugReportIntegrator_Class
 		if (!this.config.jiraProject)
 			throw new ImplementationMissingException("missing Jira project in bug report configurations");
 
-		const description: JiraIssueText[] = [bugReport.description];
+		const description = logs.reduce((carry: JiraIssueText[], log: ReportLogFile, i: number) => {
+			carry.push({href: log.path, text: "\nClick to view logs (" + i + ")"});
+			return carry;
+		}, [bugReport.description]);
 
-		logs.forEach((log,i) => {
-			description.push({href: log.path, text: `Click to view logs (${i})`});
-		});
+		if (reporter)
+			description.push("\nReported by: " + reporter);
 
-		description.push(`Reported by: ${reporter}`)
-
-		console.log(this.config.jiraProject);
-		const issue = await JiraModule.issue.create(this.config.jiraProject, {name: 'Bug'}, this.parser(bugReport.subject), description);
+		const issue = await JiraModule.issue.create(this.config.jiraProject, this.config.issueType, this.parser(bugReport.subject), description);
 		return {platform: "jira", issueId: issue.url};
 	};
 }
