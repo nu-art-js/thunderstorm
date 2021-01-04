@@ -46,8 +46,6 @@ export class BaseComponent<P = any, S = any>
 	private readonly _componentDidMount: (() => void) | undefined;
 	private readonly _componentWillUnmount: (() => void) | undefined;
 	private timeoutMap: { [k: string]: number } = {};
-	private pageTitle?: string;
-	private prevTitle?: string;
 
 	constructor(props: P) {
 		super(props);
@@ -70,18 +68,6 @@ export class BaseComponent<P = any, S = any>
 			// @ts-ignore
 			Thunder.getInstance().removeUIListener(this);
 		};
-	}
-
-	protected setPageTitle(pageTitle: string) {
-		this.prevTitle = document.title;
-		document.title = (this.pageTitle = pageTitle);
-	}
-
-	componentWillUnmount() {
-		if (this.pageTitle && this.prevTitle)
-			document.title = this.prevTitle;
-
-		super.componentWillUnmount?.();
 	}
 
 	debounce(handler: TimerHandler, key: string, ms = 0) {
