@@ -41,7 +41,8 @@ const defaultListHeight = "150px";
 // }
 
 const wrapperStyle: React.CSSProperties = {
-	display: "inline-block"
+	display: "inline-block",
+	position: 'relative'
 };
 
 export const headerStyle: React.CSSProperties = {
