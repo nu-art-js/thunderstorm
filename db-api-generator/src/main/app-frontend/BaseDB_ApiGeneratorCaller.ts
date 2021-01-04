@@ -27,7 +27,7 @@ import {
 	ErrorResponse,
 	QueryParams,
 	RequestErrorHandler
-} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm";
 import {
 	ApiBinder_DBCreate,
 	ApiBinder_DBDelete,
@@ -36,16 +36,16 @@ import {
 	DefaultApiDefs,
 	GenericApiDef
 } from "../index";
-import {DB_Object} from "@nu-art/firebase";
+import {DB_Object} from "@ir/firebase";
 import {
 	ToastModule,
 	XhrHttpModule
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 
 import {
 	Module,
 	PartialProperties
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 export type BaseApiConfig = {
 	relativeUrl: string

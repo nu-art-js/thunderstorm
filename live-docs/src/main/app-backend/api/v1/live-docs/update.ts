@@ -20,18 +20,18 @@
 import {
 	ApiResponse,
 	ServerApi,
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 
-import {auditBy,} from "@nu-art/ts-common";
-import {HttpMethod} from "@nu-art/thunderstorm";
+import {auditBy,} from "@ir/ts-common";
+import {HttpMethod} from "@ir/thunderstorm";
 
 import {
 	ApiUpdateLiveDocs,
 	LiveDocsModule,
 	Request_UpdateDocument
 } from "./_imports";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {ExpressRequest} from "@ir/thunderstorm/backend";
 
 class ServerApi_LiveDoc_Update
 	extends ServerApi<ApiUpdateLiveDocs> {

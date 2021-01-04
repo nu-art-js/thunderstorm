@@ -18,10 +18,10 @@
  */
 
 import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
+import {BaseComponent} from "@ir/thunderstorm/app-frontend/core/BaseComponent";
 import Example_LineGraph, {D3ChartData} from "./d3components/Example_LineGraph";
 import Example_TableGraph, {TableData} from "./d3components/Example_TableGraph";
-import {TS_Input} from "@nu-art/thunderstorm/app-frontend/components/TS_Input";
+import {TS_Input} from "@ir/thunderstorm/app-frontend/components/TS_Input";
 
 export type Coordinates = {
 	x: number,

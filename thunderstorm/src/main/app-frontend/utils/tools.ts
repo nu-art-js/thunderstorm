@@ -23,7 +23,7 @@ import {Browser} from "../../shared/consts";
 import {
 	BadImplementationException,
 	ImplementationMissingException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import * as React from "react";
 
 export function browserType(): Browser {

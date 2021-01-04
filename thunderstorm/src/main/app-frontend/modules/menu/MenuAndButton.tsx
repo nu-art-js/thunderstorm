@@ -11,7 +11,7 @@ import {
 	// resolveGenericPosition,
 	resolveRealPosition
 } from "./MenuModule";
-import {BadImplementationException} from "@nu-art/ts-common";
+import {BadImplementationException} from "@ir/ts-common";
 import {Adapter} from "../../components/adapter/Adapter";
 import {MenuPosition} from "./PopupMenu";
 

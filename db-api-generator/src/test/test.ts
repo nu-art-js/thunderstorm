@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {StormTester} from "@nu-art/thunderstorm/backend-test";
-import {__scenario} from "@nu-art/testelot";
-import { FirebaseModule } from "@nu-art/firebase/backend";
+import {StormTester} from "@ir/thunderstorm/backend-test";
+import {__scenario} from "@ir/testelot";
+import { FirebaseModule } from "@ir/firebase/backend";
 import {
 	deleteTest,
 	ExampleModule,

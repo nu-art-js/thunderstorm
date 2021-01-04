@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@nu-art/file-upload/app-backend/api/_upload");
+module.exports = require("@ir/file-upload/app-backend/api/_upload");

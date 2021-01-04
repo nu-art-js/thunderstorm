@@ -17,17 +17,17 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {BaseComponent} from "@nu-art/thunderstorm/frontend";
+import {BaseComponent} from "@ir/thunderstorm/frontend";
 import {
 	_setTimeout,
 	Second
-} from '@nu-art/ts-common';
+} from '@ir/ts-common';
 import {ExampleModule} from "@modules/ExampleModule";
 import {
 	NotificationsModule,
 	OnNotificationsReceived
-} from "@nu-art/push-pub-sub/frontend";
-import {DB_Notifications} from "@nu-art/push-pub-sub/shared/types";
+} from "@ir/push-pub-sub/frontend";
+import {DB_Notifications} from "@ir/push-pub-sub/shared/types";
 
 export type State = {
 	notifications: DB_Notifications[]

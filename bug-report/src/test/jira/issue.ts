@@ -19,13 +19,13 @@
 import {
     __custom,
     __scenario
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 import {JiraModule} from "../../main/app-backend/modules/JiraModule";
 import {
     assert,
     generateHex,
     StringMap
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 const JSZip = require('jszip');
 

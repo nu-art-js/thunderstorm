@@ -26,7 +26,7 @@ import {
 	HttpMethod
 } from "../../../shared/types";
 
-import {BadImplementationException,} from "@nu-art/ts-common";
+import {BadImplementationException,} from "@ir/ts-common";
 import {gzip} from "zlib";
 // noinspection TypeScriptPreferShortImport
 import {HttpException} from "../../../shared/request-types";

@@ -1,5 +1,5 @@
 {
-  "name": "@nu-art/github",
+  "name": "@ir/github",
   "version": "0.0.0",
   "description": "Github api Module",
   "keywords": [
@@ -18,8 +18,8 @@
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@nu-art/thunderstorm": "~0.0.1",
-    "@nu-art/ts-common": "~0.0.1",
+    "@ir/thunderstorm": "~0.0.1",
+    "@ir/ts-common": "~0.0.1",
     "@octokit/rest": "18.0.9",
     "@octokit/plugin-paginate-rest": "2.2.1",
     "jsonwebtoken": "~8.5.1"

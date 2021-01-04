@@ -6,8 +6,8 @@ import {
 	MenuComponent,
 	MenuComponentProps,
 	ToastModule
-} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
+} from "@ir/thunderstorm/frontend";
+import {__stringify} from "@ir/ts-common";
 
 export class SP_Example_NestedList_MultiType
 	extends Component<{}> {

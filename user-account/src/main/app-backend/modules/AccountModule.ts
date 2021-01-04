@@ -26,13 +26,13 @@ import {
 	hashPasswordWithSalt,
 	Module,
 	validate
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 
 import {
 	FirebaseModule,
 	FirestoreCollection
-} from "@nu-art/firebase/backend";
+} from "@ir/firebase/backend";
 import {
 	DB_Account,
 	DB_Session,
@@ -47,8 +47,8 @@ import {
 	ExpressRequest,
 	HeaderKey,
 	QueryRequestInfo
-} from "@nu-art/thunderstorm/backend";
-import {validateEmail} from "@nu-art/db-api-generator/backend";
+} from "@ir/thunderstorm/backend";
+import {validateEmail} from "@ir/db-api-generator/backend";
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 

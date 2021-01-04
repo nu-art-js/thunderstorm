@@ -20,12 +20,12 @@
 import {
 	ImplementationMissingException,
 	ModuleManager
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	__scenario,
 	Reporter,
 	Scenario
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 
 export class Tester
 	extends ModuleManager {

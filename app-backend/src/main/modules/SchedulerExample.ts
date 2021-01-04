@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {FirebaseScheduledFunction} from "@nu-art/firebase/backend-functions";
+import {FirebaseScheduledFunction} from "@ir/firebase/backend-functions";
 
 export class SchedulerExample_Class
 	extends FirebaseScheduledFunction {

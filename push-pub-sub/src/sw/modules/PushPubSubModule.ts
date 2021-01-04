@@ -25,9 +25,9 @@ import {
 	__stringify,
 	Module,
 	StringMap
-} from '@nu-art/ts-common';
-import {FirebaseModule} from "@nu-art/firebase/frontend";
-import {swSelf} from "@nu-art/thunderstorm/core/self";
+} from '@ir/ts-common';
+import {FirebaseModule} from "@ir/firebase/frontend";
+import {swSelf} from "@ir/thunderstorm/core/self";
 
 export const Command_SwToApp = 'SwToApp';
 

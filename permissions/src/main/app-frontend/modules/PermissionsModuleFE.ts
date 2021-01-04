@@ -2,10 +2,10 @@ import {
 	ImplementationMissingException,
 	Module,
 	StringMap
-} from "@nu-art/ts-common";
-import {ThunderDispatcher} from "@nu-art/thunderstorm/app-frontend/core/thunder-dispatcher";
-import {XhrHttpModule} from "@nu-art/thunderstorm/frontend";
-import {HttpMethod} from "@nu-art/thunderstorm";
+} from "@ir/ts-common";
+import {ThunderDispatcher} from "@ir/thunderstorm/app-frontend/core/thunder-dispatcher";
+import {XhrHttpModule} from "@ir/thunderstorm/frontend";
+import {HttpMethod} from "@ir/thunderstorm";
 import {
 	PermissionsApi_UserUrlsPermissions,
 	UserUrlsPermissions

@@ -26,7 +26,7 @@ import {
 	__stringify,
 	_keys,
 	StringMap
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 
 export type AppPropsResolver = (requestData: HttpRequestData) => Promise<StringMap>;
@@ -59,7 +59,7 @@ export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], p
 				                        .replace(/\\n/g, `\n`)
 				                        .replace(/\\"/g, `"`)
 				                        .replace(/\\t/g, '')
-				                        .replace(/\/@nu-art/g, '')}\n`;
+				                        .replace(/\/@ir/g, '')}\n`;
 				slackMessage += "--------------------------------------------------------------------------------------\n";
 			}
 		}

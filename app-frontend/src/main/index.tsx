@@ -25,18 +25,18 @@ import {
 	ForceUpgrade,
 	Thunder,
 	ToastBuilder
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import {
 	Frontend_ModulePack_LiveDocs,
 	LiveDocsModule,
 	showEditModalExample
-} from "@nu-art/live-docs/frontend";
+} from "@ir/live-docs/frontend";
 import {ExampleModule} from "@modules/ExampleModule";
-import {Frontend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/frontend";
-import {BugReportModule} from "@nu-art/bug-report/frontend";
-import {Module} from '@nu-art/ts-common';
-import {Frontend_ModulePack_Uploader} from "@nu-art/file-upload/frontend";
-import {PermissionsFE} from '@nu-art/permissions/frontend';
+import {Frontend_ModulePack_PushPubSub} from "@ir/push-pub-sub/frontend";
+import {BugReportModule} from "@ir/bug-report/frontend";
+import {Module} from '@ir/ts-common';
+import {Frontend_ModulePack_Uploader} from "@ir/file-upload/frontend";
+import {PermissionsFE} from '@ir/permissions/frontend';
 
 const modules: Module[] = [
 	ForceUpgrade,

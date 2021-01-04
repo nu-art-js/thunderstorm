@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
+import {__scenario} from "@ir/testelot";
 import {
 	assert,
 	BadImplementationException,
 	generateHex,
 	merge
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {Patch_TestCase,} from "../_core/types";
 import {FirestoreCollection_Tester} from "../_core/collection-wrapper";
 

@@ -17,19 +17,19 @@
  * limitations under the License.
  */
 
-import {DB_Object} from "@nu-art/firebase";
+import {DB_Object} from "@ir/firebase";
 import {
 	assert,
 	BadImplementationException,
 	TypeValidator
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	ServerApi
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 import {
 	__custom,
 	__scenario
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 import {
 	BaseDB_ApiGenerator,
 	validateUniqueId

@@ -22,14 +22,14 @@ import {
 	dispatch_queryRequestInfo,
 	ExpressRequest,
 	ServerApi_Post,
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 import {
 	ApiBugReport,
 	BugReportModule,
 	Request_BugReport
 } from "./_imports";
 
-// import {AccountModule} from "@nu-art/user-account/backend";
+// import {AccountModule} from "@ir/user-account/backend";
 
 class ServerApi_SendReport
 	extends ServerApi_Post<ApiBugReport> {

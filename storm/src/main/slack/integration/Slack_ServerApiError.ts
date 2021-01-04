@@ -21,7 +21,7 @@ import {
 	OnApplicationError,
 	ServerErrorSeverity,
 	ServerErrorSeverity_Ordinal
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {SlackModule} from "../SlackModule";
 
 type Config = {

@@ -20,7 +20,7 @@ import * as React from 'react';
 import {
 	Playground,
 	PlaygroundScreen
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import {Page_ApiGen} from "../pages/Page_ApiGen";
 import {Hello} from "../Hello";
 import {Example_ApiCustomError} from './examples/Example_ApiCustomError';

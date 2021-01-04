@@ -23,7 +23,7 @@ import {
 	Exception,
 	ImplementationMissingException,
 	regexpCase,
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {Action} from "./Action";
 import * as fetch from "node-fetch"
 

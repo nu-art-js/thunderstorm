@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {Logger} from "@nu-art/ts-common";
+import {Logger} from "@ir/ts-common";
 import {
 	FirebaseType_Messaging,
 	FirebaseType_Unsubscribe

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
+import {__scenario} from "@ir/testelot";
 import {JiraModule} from "../main/app-backend/modules/JiraModule";
 import {Tester} from "./_core/Tester";
 import {issueScenario} from "./jira/issue";

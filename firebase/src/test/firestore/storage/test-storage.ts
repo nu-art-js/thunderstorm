@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
+import {__scenario} from "@ir/testelot";
 import {saveAndDeleteFilesTest} from "./tests/add-files";
 
 export const testStorage = __scenario("test-storage");

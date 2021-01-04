@@ -28,7 +28,7 @@ import {
 	Constructor,
 	isErrorOfType,
 	__stringify
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {ContextKey} from "./ContainerContext";
 import {Reporter} from "./Reporter";
 import {TestException} from "./TestException";

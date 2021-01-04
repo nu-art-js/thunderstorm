@@ -1,9 +1,9 @@
 import {
 	currentTimeMillies,
 	Dispatcher
-} from "@nu-art/ts-common";
-import {FirebaseScheduledFunction} from "@nu-art/firebase/app-backend/functions/firebase-function";
-import {FirebaseModule} from "@nu-art/firebase/app-backend/FirebaseModule";
+} from "@ir/ts-common";
+import {FirebaseScheduledFunction} from "@ir/firebase/app-backend/functions/firebase-function";
+import {FirebaseModule} from "@ir/firebase/app-backend/FirebaseModule";
 
 export type ActDetailsDoc = {
 	timestamp: number,

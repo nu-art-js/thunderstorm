@@ -18,11 +18,11 @@
 import {
 	ApiResponse,
 	ServerApi_Get,
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 
 import {ApiType_GetWithoutParams} from "@app/app-shared";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {ExpressRequest} from "@ir/thunderstorm/backend";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Get<ApiType_GetWithoutParams> {

@@ -24,9 +24,9 @@ import {
 	LogLevel,
 	LogLevelOrdinal,
 	Module
-} from "@nu-art/ts-common";
-import {XhrHttpModule} from "@nu-art/thunderstorm/frontend";
-import {HttpMethod} from "@nu-art/thunderstorm";
+} from "@ir/ts-common";
+import {XhrHttpModule} from "@ir/thunderstorm/frontend";
+import {HttpMethod} from "@ir/thunderstorm";
 import {
 	ApiBugReport,
 	Request_BugReport

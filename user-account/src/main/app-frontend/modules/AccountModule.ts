@@ -20,7 +20,7 @@
 import {
 	Module,
 	Second
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	BaseComponent,
 	BrowserHistoryModule,
@@ -28,7 +28,7 @@ import {
 	StorageKey,
 	ThunderDispatcher,
 	ToastModule
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import {
 	AccountApi_Create,
 	AccountApi_ListAccounts,
@@ -46,7 +46,7 @@ import {
 	Response_LoginSAML,
 	UI_Account
 } from "../../shared/api";
-import {HttpMethod} from "@nu-art/thunderstorm";
+import {HttpMethod} from "@ir/thunderstorm";
 
 export const StorageKey_SessionId: StorageKey<string> = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
 export const StorageKey_UserEmail: StorageKey<string> = new StorageKey<string>(`storage-${QueryParam_Email}`);

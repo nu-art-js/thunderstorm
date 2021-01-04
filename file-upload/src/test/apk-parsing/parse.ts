@@ -18,15 +18,15 @@
  */
 
 import * as fs from "fs";
-import {__custom} from "@nu-art/testelot";
+import {__custom} from "@ir/testelot";
 import {
 	FileWrapper,
 	FirebaseModule
-} from "@nu-art/firebase/backend";
+} from "@ir/firebase/backend";
 import {
 	assert,
 	BadImplementationException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 const PkgReader = require("isomorphic-apk-reader");
 const ApkPath = 'files-temp/kaspero.apk';

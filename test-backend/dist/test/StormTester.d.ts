@@ -1,5 +1,5 @@
-import { BaseStorm } from "@nu-art/thunderstorm/app-backend/core/BaseStorm";
-import { Scenario } from "@nu-art/testelot";
+import { BaseStorm } from "@ir/thunderstorm/app-backend/core/BaseStorm";
+import { Scenario } from "@ir/testelot";
 export declare class StormTester extends BaseStorm {
     private function;
     private scenario?;

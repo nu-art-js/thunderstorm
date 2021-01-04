@@ -21,7 +21,7 @@ import {
 	ToastBuilder,
 	ToastModule,
 	ToastType
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import * as emotion from 'emotion';
 import {
 	_paddingTop

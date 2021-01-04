@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {ObjectTS} from "@nu-art/ts-common";
+import {ObjectTS} from "@ir/ts-common";
 import {CSSProperties} from "react";
 import {Stylable} from "../tools/Stylable";
 import React = require("react");

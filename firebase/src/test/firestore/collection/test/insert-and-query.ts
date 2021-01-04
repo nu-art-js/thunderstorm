@@ -19,12 +19,12 @@
 import {
 	__scenario,
 	Scenario
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 import {
 	assert,
 	BadImplementationException,
 	sortArray
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {FirestoreCollection} from "../../../_main";
 import {
 	simpleTypeCollection,

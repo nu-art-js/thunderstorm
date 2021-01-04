@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-import {AuditBy} from "@nu-art/ts-common";
-import { DB_Object } from "@nu-art/firebase";
+import {AuditBy} from "@ir/ts-common";
+import { DB_Object } from "@ir/firebase";
 
 export * from "../../index";
 

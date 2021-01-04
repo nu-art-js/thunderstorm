@@ -20,11 +20,11 @@
 import {
 	__custom,
 	__scenario
-} from "@nu-art/testelot";
-import {FirebaseModule} from "@nu-art/firebase/backend";
+} from "@ir/testelot";
+import {FirebaseModule} from "@ir/firebase/backend";
 import {MyTester} from "./core";
-import {AxiosHttpModule} from "@nu-art/thunderstorm/app-backend/modules/http/AxiosHttpModule";
-import {HttpMethod} from "@nu-art/thunderstorm";
+import {AxiosHttpModule} from "@ir/thunderstorm/app-backend/modules/http/AxiosHttpModule";
+import {HttpMethod} from "@ir/thunderstorm";
 
 AxiosHttpModule.setDefaultConfig({origin: 'sjdfojds'});
 const mainScenario = __scenario("File Uploading Testing");

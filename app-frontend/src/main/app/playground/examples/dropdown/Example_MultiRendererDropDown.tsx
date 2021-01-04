@@ -23,13 +23,13 @@ import {
 	FlatItemToRender,
 	NodeRendererProps,
 	TreeRendererMap,
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import {
 	DropDown,
 	headerStyle,
 	inputStyle,
 	listStyle,
-} from "@nu-art/thunderstorm/app-frontend/components/DropDown";
+} from "@ir/thunderstorm/app-frontend/components/DropDown";
 import * as React from "react";
 import {
 	optionRendererStyle,

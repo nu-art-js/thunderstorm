@@ -23,7 +23,7 @@ import {
 	Dispatcher,
 	FunctionKeys,
 	ReturnPromiseType
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>>
 	extends Dispatcher<T, K> {

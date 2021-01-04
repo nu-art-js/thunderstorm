@@ -21,7 +21,7 @@ import {
 	ApiResponse,
 	ServerApi_Get,
     ExpressRequest
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 
 import {

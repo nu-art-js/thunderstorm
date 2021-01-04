@@ -18,7 +18,7 @@
  */
 
 import * as React from 'react';
-import {CheckboxProps, Example_NewProps, TS_Checkbox} from '@nu-art/thunderstorm/frontend';
+import {CheckboxProps, Example_NewProps, TS_Checkbox} from '@ir/thunderstorm/frontend';
 import {css} from 'emotion';
 import {ICONS} from "@res/icons";
 

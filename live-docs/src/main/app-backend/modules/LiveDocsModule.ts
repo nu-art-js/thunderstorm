@@ -22,7 +22,7 @@ import {
 	Module,
 	removeItemFromArray,
     BadImplementationException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 import {
 	DB_Document,
@@ -33,9 +33,9 @@ import {
 import {
 	FirebaseModule,
 	FirestoreCollection
-} from "@nu-art/firebase/backend";
+} from "@ir/firebase/backend";
 
-import {ApiException} from "@nu-art/thunderstorm/backend";
+import {ApiException} from "@ir/thunderstorm/backend";
 
 export const CollectionName_LiveDocs = "live-docs";
 

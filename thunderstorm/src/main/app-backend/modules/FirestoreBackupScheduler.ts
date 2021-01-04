@@ -6,12 +6,12 @@ import {
     ServerErrorSeverity,
 	_logger_logException,
 	__stringify
-} from "@nu-art/ts-common";
-import {FirebaseScheduledFunction} from "@nu-art/firebase/app-backend/functions/firebase-function";
-import {FirebaseModule} from "@nu-art/firebase/app-backend/FirebaseModule";
+} from "@ir/ts-common";
+import {FirebaseScheduledFunction} from "@ir/firebase/app-backend/functions/firebase-function";
+import {FirebaseModule} from "@ir/firebase/app-backend/FirebaseModule";
 import {ActDetailsDoc,} from "./CleanupScheduler";
-import {FirestoreCollection} from "@nu-art/firebase/app-backend/firestore/FirestoreCollection";
-import {FirestoreQuery} from "@nu-art/firebase";
+import {FirestoreCollection} from "@ir/firebase/app-backend/firestore/FirestoreCollection";
+import {FirestoreQuery} from "@ir/firebase";
 
 export type BackupDoc = ActDetailsDoc & {
 	backupPath: string,

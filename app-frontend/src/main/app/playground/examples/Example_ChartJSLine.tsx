@@ -1,5 +1,5 @@
 import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
+import {BaseComponent} from "@ir/thunderstorm/app-frontend/core/BaseComponent";
 import {Line} from 'react-chartjs-2';
 
 export class Example_ChartJSLine

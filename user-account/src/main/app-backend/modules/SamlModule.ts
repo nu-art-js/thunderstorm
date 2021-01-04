@@ -27,7 +27,7 @@ import {
 	__stringify,
 	ImplementationMissingException,
 	Module
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	RequestBody_SamlAssertOptions,
 	RequestParams_LoginSAML

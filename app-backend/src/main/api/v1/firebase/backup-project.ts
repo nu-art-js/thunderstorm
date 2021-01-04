@@ -19,15 +19,15 @@
 import {
 	ServerApi,
 	ApiResponse
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 import {
 	HttpMethod,
 	ApiWithQuery
-} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm";
 
-// import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+// import {ProjectFirestoreBackup} from "@ir/firebase/backend-firestore-backup";
+import {ExpressRequest} from "@ir/thunderstorm/backend";
 
 
 class ServerApi_RegisterExternalProject

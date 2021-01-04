@@ -19,7 +19,7 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi_Post,
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 import {
 	CommonBodyReq,

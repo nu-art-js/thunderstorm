@@ -21,14 +21,14 @@ import {
 	__scenario,
 	ContextKey,
     __custom
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 import {
 	AccountModule,
 	DB_Account
 } from "../_main";
 import {cleanup} from "./_core";
-import {isErrorOfType} from "@nu-art/ts-common";
-import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
+import {isErrorOfType} from "@ir/ts-common";
+import {ApiException} from "@ir/thunderstorm/app-backend/exceptions";
 
 const userContextKey1 = new ContextKey<DB_Account>("user-1");
 

@@ -1,4 +1,4 @@
-import {Module} from "@nu-art/ts-common";
+import {Module} from "@ir/ts-common";
 
 type Config = {
 	appName: string

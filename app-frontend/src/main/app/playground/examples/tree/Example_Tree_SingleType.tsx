@@ -5,8 +5,8 @@ import {
 	AdapterBuilder,
 	ToastModule,
 	Tree
-} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
+} from "@ir/thunderstorm/frontend";
+import {__stringify} from "@ir/ts-common";
 
 type Type = {
 	label: string | number

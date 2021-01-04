@@ -18,10 +18,10 @@
 import {
 	DB_PermissionsGroup
 } from "../../../index";
-import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
+import {BaseDB_ApiGeneratorCaller} from "@ir/db-api-generator/frontend";
 import {
 	ThunderDispatcher
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 
 
 export interface OnPermissionsGroupsLoaded {

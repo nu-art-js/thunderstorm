@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {__custom} from "@nu-art/testelot";
+import {__custom} from "@ir/testelot";
 import {ExampleModule} from "./db-api-generator";
 
 export function cleanup() {

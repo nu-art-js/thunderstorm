@@ -24,8 +24,8 @@ import {
 	ToastModule,
 	Tree,
 	TS_Input
-} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
+} from "@ir/thunderstorm/frontend";
+import {__stringify} from "@ir/ts-common";
 
 type Keys = 'first' | 'second'
 

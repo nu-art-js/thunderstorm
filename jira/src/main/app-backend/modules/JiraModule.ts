@@ -22,13 +22,13 @@ import {
 	ImplementationMissingException,
 	Module,
 	TypedMap
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	ApiException,
 	AxiosHttpModule,
 	promisifyRequest
-} from "@nu-art/thunderstorm/backend";
-import {HttpMethod} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm/backend";
+import {HttpMethod} from "@ir/thunderstorm";
 import {
 	CoreOptions,
 	Headers,

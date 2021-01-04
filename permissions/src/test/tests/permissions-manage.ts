@@ -3,7 +3,7 @@ import {
 	ContextKey,
 	__custom,
 	TestException
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 import {
 	cleanup,
 	ConfigDB,
@@ -19,12 +19,12 @@ import {
 	GroupPermissionsDB,
 	UserPermissionsDB
 } from "../_main";
-import {ApiException} from "@nu-art/thunderstorm/backend";
+import {ApiException} from "@ir/thunderstorm/backend";
 import {
 	generateHex,
 	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
-import {AccountModule} from "@nu-art/user-account/backend";
+} from "@ir/ts-common";
+import {AccountModule} from "@ir/user-account/backend";
 
 
 const apiPath = 'v1/assert/something';

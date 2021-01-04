@@ -24,7 +24,7 @@ import {
 import {
 	__custom,
 	ErrorPolicy
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 
 export class FirestoreCollection_Tester<DBType extends object> {
 	private collectionName: string;

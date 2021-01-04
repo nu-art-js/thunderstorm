@@ -22,7 +22,7 @@ import {
 	__stringify,
 	ImplementationMissingException,
 	Module,
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 // noinspection TypeScriptPreferShortImport
 import {
 	ApiWithBody,

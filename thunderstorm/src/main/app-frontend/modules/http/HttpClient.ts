@@ -22,7 +22,7 @@
 import {
 	__stringify,
 	StringMap
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	ErrorResponse,
 	HttpMethod

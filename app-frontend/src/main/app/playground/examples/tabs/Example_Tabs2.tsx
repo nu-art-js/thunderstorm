@@ -1,7 +1,7 @@
 import {
 	Tab,
 	Tabs
-} from "@nu-art/thunderstorm/app-frontend/components/Tabs";
+} from "@ir/thunderstorm/app-frontend/components/Tabs";
 import * as React from "react";
 import {CSSProperties} from "react";
 import {COLORS} from "@res/colors";

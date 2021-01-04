@@ -25,7 +25,7 @@
 import {
 	_keys,
 	Module,
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	createBrowserHistory,
 	History,

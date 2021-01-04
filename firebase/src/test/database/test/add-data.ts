@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
+import {__scenario} from "@ir/testelot";
 import {myDb} from "../_core/database-wrapper";
 import {
 	assert,
 	merge
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 type ModelDb = {
 	path: string

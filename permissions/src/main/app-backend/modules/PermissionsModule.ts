@@ -20,7 +20,7 @@ import {
 	ImplementationMissingException,
 	Module,
 	StringMap
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	DB_PermissionProject,
 	PredefinedGroup,
@@ -33,7 +33,7 @@ import {
 	ApiPermissionsDB,
 	ProjectPermissionsDB
 } from "./db-types/managment";
-import {HttpServer} from "@nu-art/thunderstorm/backend";
+import {HttpServer} from "@ir/thunderstorm/backend";
 import {
 	GroupPermissionsDB,
 	UserPermissionsDB

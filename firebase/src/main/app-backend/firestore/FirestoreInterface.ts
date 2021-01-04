@@ -30,7 +30,7 @@ import {
 	_keys,
 	BadImplementationException,
 	ImplementationMissingException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import * as admin from "firebase-admin";
 
 export class FirestoreInterface {

@@ -7,8 +7,8 @@ import {
 	MenuComponent,
 	ToastModule,
 	TreeNode
-} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
+} from "@ir/thunderstorm/frontend";
+import {__stringify} from "@ir/ts-common";
 
 export class Example_List_MultiType
 	extends Component<{}> {

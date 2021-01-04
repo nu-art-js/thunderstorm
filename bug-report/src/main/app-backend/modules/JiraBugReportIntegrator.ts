@@ -20,12 +20,12 @@
 import {
 	ImplementationMissingException,
 	Module
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	JiraIssueText,
 	JiraModule,
 	JiraProject
-} from "@nu-art/jira";
+} from "@ir/jira";
 import {
 	ReportLogFile,
 	Request_BugReport

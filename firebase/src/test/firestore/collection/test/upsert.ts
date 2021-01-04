@@ -19,8 +19,8 @@
 
 import {simpleTypeCollectionUpsert} from "../_core/consts";
 import {SimpleType} from "../_core/types";
-import {__scenario} from "@nu-art/testelot";
-import {BadImplementationException} from "@nu-art/ts-common";
+import {__scenario} from "@ir/testelot";
+import {BadImplementationException} from "@ir/ts-common";
 
 export const scenarioUpsert = __scenario('Upsert');
 

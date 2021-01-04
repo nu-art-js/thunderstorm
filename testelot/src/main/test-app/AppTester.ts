@@ -1,7 +1,7 @@
 import {
 	ImplementationMissingException,
 	ModuleManager
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	__scenario,
 	Action,

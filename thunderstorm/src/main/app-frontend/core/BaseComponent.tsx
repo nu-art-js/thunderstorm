@@ -31,7 +31,7 @@ import {
 	LogLevel,
 	LogParam,
 	TimerHandler
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
 import {BrowserHistoryModule} from "../modules/HistoryModule";

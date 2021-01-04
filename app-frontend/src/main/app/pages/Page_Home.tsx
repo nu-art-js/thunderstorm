@@ -22,7 +22,7 @@ import {
 	showAppConfirmationDialogExample,
 	showDefaultInfoModalExample,
 } from "../themes/dialog";
-import {ToastModule} from "@nu-art/thunderstorm/frontend";
+import {ToastModule} from "@ir/thunderstorm/frontend";
 import {ExampleModule} from "@modules/ExampleModule";
 
 

@@ -22,12 +22,12 @@ import {
 	Component_Form,
 	FormProps,
 	ToastModule
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import {
 	deepClone,
 	ObjectTS,
 	validateObject
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 type State<T extends ObjectTS> = {
 	value: Partial<T>,

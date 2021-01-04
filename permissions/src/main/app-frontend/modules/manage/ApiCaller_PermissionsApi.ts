@@ -17,9 +17,9 @@
  */
 
 import {DB_PermissionApi} from "../../../index";
-import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
-import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
-import {TypedMap} from "@nu-art/ts-common";
+import {BaseDB_ApiGeneratorCaller} from "@ir/db-api-generator/frontend";
+import {ThunderDispatcher} from "@ir/thunderstorm/frontend";
+import {TypedMap} from "@ir/ts-common";
 
 
 export interface OnPermissionsApisLoaded {

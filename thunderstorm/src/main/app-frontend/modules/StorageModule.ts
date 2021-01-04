@@ -25,7 +25,7 @@
 import {
 	merge,
 	Module
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {ThunderDispatcher} from "../core/thunder-dispatcher";
 
 export interface StorageKeyEvent {

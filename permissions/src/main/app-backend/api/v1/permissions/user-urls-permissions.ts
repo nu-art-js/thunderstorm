@@ -20,13 +20,13 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 import {
 	PermissionsApi_UserUrlsPermissions,
 	Request_UserUrlsPermissions
 } from "./_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {AccountModule} from "@nu-art/user-account/backend";
+import {HttpMethod} from "@ir/thunderstorm";
+import {AccountModule} from "@ir/user-account/backend";
 import {PermissionsModule} from "../../../modules/PermissionsModule";
 
 class ServerApi_UserUrlsPermissions

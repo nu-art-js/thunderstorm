@@ -20,7 +20,7 @@ import {
 	__custom,
 	__scenario,
 	TestException
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 import {
 	testLevel1,
 	testLevel2
@@ -33,7 +33,7 @@ import {
 import {
 	generateHex,
 	StringMap
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 
 const customField1 = {unit: 'eq1'};

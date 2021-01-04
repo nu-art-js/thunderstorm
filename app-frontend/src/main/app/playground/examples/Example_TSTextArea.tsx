@@ -22,7 +22,7 @@ import {
 	Example_NewProps,
 	TS_TextAreaProps,
 	TS_TextArea
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 
 type TestType = {
 	prop1?: string,

@@ -30,7 +30,7 @@ import {FirebaseSession} from "./firebase-session";
 import {
 	StringMap,
 	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 export class FirebaseSession_Admin
 	extends FirebaseSession<JWTInput | undefined> {

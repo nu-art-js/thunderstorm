@@ -21,12 +21,12 @@ import {
 	TypeValidator,
 	validateExists,
 	validateRegexp
-} from "@nu-art/ts-common";
-import {ServerApi} from "@nu-art/thunderstorm/backend"
+} from "@ir/ts-common";
+import {ServerApi} from "@ir/thunderstorm/backend"
 import {
 	BaseDB_ApiGenerator,
 	validateUniqueId
-} from "@nu-art/db-api-generator/backend";
+} from "@ir/db-api-generator/backend";
 import {DB_Temp_File} from "../../shared/types";
 
 export const TEMP_COLLECTION = 'temp-files-upload';

@@ -22,7 +22,7 @@ import {TestModuleThatUsesCollection,} from "./firestore/backup/test-project-bac
 import {ProjectFirestoreBackup} from "../main/app-backend/firestore/ProjectFirestoreBackup";
 import {FirebaseModule} from "../main/app-backend/FirebaseModule";
 import {testStorage} from "./firestore/storage/test-storage";
-import {__scenario} from "@nu-art/testelot";
+import {__scenario} from "@ir/testelot";
 import {testDatabase} from "./database/test-database";
 import {scenarioUpsert} from "./firestore/collection/test/upsert";
 

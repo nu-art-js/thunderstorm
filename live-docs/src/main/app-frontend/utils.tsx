@@ -26,7 +26,7 @@ import {
 	ToastBuilder,
 	ToastModule,
 	TS_TextArea
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import {
 	LiveDocActionResolver,
 	LiveDocsModule

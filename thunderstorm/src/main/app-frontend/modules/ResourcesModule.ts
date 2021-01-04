@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {Module} from "@nu-art/ts-common";
+import {Module} from "@ir/ts-common";
 
 export type ResourceId = string;
 

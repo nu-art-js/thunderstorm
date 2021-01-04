@@ -29,7 +29,7 @@ import {
 	_keys,
 	ObjectTS,
 	TypeValidator
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 export type FormProps<T extends object = object> = {
 	form: Form<T>,

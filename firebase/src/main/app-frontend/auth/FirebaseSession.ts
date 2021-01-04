@@ -26,7 +26,7 @@ import 'firebase/auth';
 import {
 	Logger,
 	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 // noinspection TypeScriptPreferShortImport
 import {FirebaseConfig} from "../../index";
 import {MessagingWrapper} from "../messaging/MessagingWrapper";

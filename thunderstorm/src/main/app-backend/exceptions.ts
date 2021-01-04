@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {CustomException,} from "@nu-art/ts-common";
+import {CustomException,} from "@ir/ts-common";
 import {
 	ErrorBody,
 	ErrorResponse

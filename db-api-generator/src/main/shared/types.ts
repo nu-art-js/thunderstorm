@@ -16,12 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DB_Object} from "@nu-art/firebase";
+import {DB_Object} from "@ir/firebase";
 import {
 	ApiWithBody,
 	ApiWithQuery,
 	HttpMethod,
-} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm";
 
 export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
 	Create: {

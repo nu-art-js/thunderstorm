@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {RoutingModule} from "@nu-art/thunderstorm/frontend";
+import {RoutingModule} from "@ir/thunderstorm/frontend";
 import {Page_Playground} from "./playground/Page_Playground";
 
 export const Route_Home = "home";

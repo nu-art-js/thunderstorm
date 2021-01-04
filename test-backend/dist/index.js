@@ -21,7 +21,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 require("module-alias/register");
 var StormTester_1 = require("./test/StormTester");
 var _core_1 = require("./test/_core");
-var testelot_1 = require("@nu-art/testelot");
+var testelot_1 = require("@ir/testelot");
 var mainScenario = testelot_1.__scenario('root');
 mainScenario.add(_core_1.runTest);
 module.exports = new StormTester_1.StormTester()

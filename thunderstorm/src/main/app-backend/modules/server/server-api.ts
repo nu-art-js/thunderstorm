@@ -34,7 +34,7 @@ import {
 	validate,
 	ValidationException,
 	ValidatorTypeResolver
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 import {Stream} from "stream";
 import {parse} from "url";

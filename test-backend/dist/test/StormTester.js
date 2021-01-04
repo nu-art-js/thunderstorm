@@ -70,12 +70,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StormTester = void 0;
-var backend_1 = require("@nu-art/firebase/backend");
-var ts_common_1 = require("@nu-art/ts-common");
-var backend_functions_1 = require("@nu-art/firebase/backend-functions");
-var BaseStorm_1 = require("@nu-art/thunderstorm/app-backend/core/BaseStorm");
-var backend_2 = require("@nu-art/thunderstorm/backend");
-var testelot_1 = require("@nu-art/testelot");
+var backend_1 = require("@ir/firebase/backend");
+var ts_common_1 = require("@ir/ts-common");
+var backend_functions_1 = require("@ir/firebase/backend-functions");
+var BaseStorm_1 = require("@ir/thunderstorm/app-backend/core/BaseStorm");
+var backend_2 = require("@ir/thunderstorm/backend");
+var testelot_1 = require("@ir/testelot");
 var modules = [
     backend_2.HttpServer,
     backend_1.FirebaseModule,

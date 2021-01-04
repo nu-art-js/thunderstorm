@@ -19,14 +19,14 @@
 import {
 	ApiWithBody,
 	ApiWithQuery
-} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm";
 import {
 	ApiResponse,
 	ExpressRequest,
 	RemoteProxy,
 	ServerApi_Get
-} from "@nu-art/thunderstorm/backend";
-import {PermissionsAssert} from "@nu-art/permissions/backend";
+} from "@ir/thunderstorm/backend";
+import {PermissionsAssert} from "@ir/permissions/backend";
 
 const PROP_A = "a";
 const PROP_E = "e";

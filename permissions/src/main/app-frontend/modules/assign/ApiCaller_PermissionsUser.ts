@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
+import {BaseDB_ApiGeneratorCaller} from "@ir/db-api-generator/frontend";
 import {DB_PermissionsUser} from "../../../index";
-import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
+import {ThunderDispatcher} from "@ir/thunderstorm/frontend";
 
 export interface OnPermissionsUsersLoaded {
 	__onPermissionsUsersLoaded: () => void;

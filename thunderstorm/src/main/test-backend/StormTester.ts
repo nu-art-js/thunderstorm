@@ -19,19 +19,19 @@
  * limitations under the License.
  */
 
-import {ImplementationMissingException} from "@nu-art/ts-common";
+import {ImplementationMissingException} from "@ir/ts-common";
 import {BaseStorm} from '../app-backend/core/BaseStorm';
 import * as fs from "fs";
 import {
 	FirebaseModule,
 	FirebaseModule_Class
-} from '@nu-art/firebase/backend';
+} from '@ir/firebase/backend';
 import {
 	__scenario,
 	Reporter,
 	Scenario,
     Action
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 
 export class StormTester
 	extends BaseStorm {

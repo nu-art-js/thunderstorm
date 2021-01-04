@@ -34,7 +34,7 @@ import {
 	parseTimeString,
 	ServerErrorSeverity,
 	Timestamp
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {BucketWrapper} from "../storage/StorageWrapper";
 
 type Config = {

@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {removeItemFromArray} from "@nu-art/ts-common";
+import {removeItemFromArray} from "@ir/ts-common";
 import {TreeNode,} from "./types";
 import {KeyboardListener} from "../../tools/KeyboardListener";
 import {stopPropagation} from '../../utils/tools';

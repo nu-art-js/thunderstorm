@@ -24,7 +24,7 @@ import {FilterInput} from "./FilterInput";
 import {
 	__stringify,
 	generateHex
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
 import {Adapter,} from "./adapter/Adapter";

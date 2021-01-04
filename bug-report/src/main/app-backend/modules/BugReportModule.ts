@@ -23,13 +23,13 @@ import {
 	generateHex,
 	Module,
 	padNumber
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 import {
 	FirebaseModule,
 	FirestoreCollection,
 	StorageWrapper
-} from "@nu-art/firebase/backend";
+} from "@ir/firebase/backend";
 
 import {
 	BugReport,

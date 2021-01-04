@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {Module} from "@nu-art/ts-common";
-import {XhrHttpModule} from "@nu-art/thunderstorm/frontend";
-import {HttpMethod} from "@nu-art/thunderstorm";
+import {Module} from "@ir/ts-common";
+import {XhrHttpModule} from "@ir/thunderstorm/frontend";
+import {HttpMethod} from "@ir/thunderstorm";
 import {
 	ApiGetLog,
 	ApiPostPath,

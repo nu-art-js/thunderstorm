@@ -30,7 +30,7 @@ import {
 import {
 	ImplementationMissingException,
 	Module
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {format} from "util";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import {StorageKey} from "../StorageModule";

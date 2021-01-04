@@ -21,12 +21,12 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi_Post
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 import {
 	Api_GetUploadUrl,
 	BaseUploaderFile
 } from "../../../../shared/types";
-import {QueryParams} from "@nu-art/thunderstorm";
+import {QueryParams} from "@ir/thunderstorm";
 import {UploaderModule} from "../../../modules/UploaderModule";
 
 

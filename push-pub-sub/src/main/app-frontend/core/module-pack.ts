@@ -18,7 +18,7 @@
  */
 
 import {PushPubSubModule} from "../modules/PushPubSubModule";
-import {FirebaseModule} from "@nu-art/firebase/frontend";
+import {FirebaseModule} from "@ir/firebase/frontend";
 import {NotificationsModule} from "../modules/NotificationModule";
 
 export const Frontend_ModulePack_PushPubSub = [

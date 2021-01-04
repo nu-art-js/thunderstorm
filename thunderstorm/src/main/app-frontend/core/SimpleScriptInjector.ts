@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {_setTimeout} from '@nu-art/ts-common';
+import {_setTimeout} from '@ir/ts-common';
 
 type Props = {
 	src: string

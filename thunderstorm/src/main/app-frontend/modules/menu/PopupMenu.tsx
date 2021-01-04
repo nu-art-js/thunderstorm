@@ -8,7 +8,7 @@ import {
 import {BaseComponent} from "../../core/BaseComponent";
 import {stopPropagation} from '../../utils/tools';
 import {Tree} from "../../components/tree/Tree";
-import {generateHex} from "@nu-art/ts-common";
+import {generateHex} from "@ir/ts-common";
 
 export type MenuPosition =
 	{ left: number, top: number }

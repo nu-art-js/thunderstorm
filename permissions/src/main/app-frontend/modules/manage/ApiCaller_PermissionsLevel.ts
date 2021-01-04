@@ -17,8 +17,8 @@
  */
 
 import {DB_PermissionAccessLevel} from "../../../index";
-import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
-import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
+import {BaseDB_ApiGeneratorCaller} from "@ir/db-api-generator/frontend";
+import {ThunderDispatcher} from "@ir/thunderstorm/frontend";
 
 
 export interface OnPermissionsLevelsLoaded {

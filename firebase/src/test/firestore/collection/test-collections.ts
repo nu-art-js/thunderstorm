@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
+import {__scenario} from "@ir/testelot";
 import {
 	scenarioInsert,
 	scenarioInsertAll

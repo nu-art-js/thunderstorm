@@ -30,7 +30,7 @@ import {
 import {
 	BadImplementationException,
 	StringMap,
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
 import {BaseHttpModule_Class} from "../../../shared/BaseHttpModule";
 import {

@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-import {Module} from "@nu-art/ts-common";
+import {Module} from "@ir/ts-common";
 import {
 	XhrHttpModule,
 	ToastBuilder,
 	ToastModule
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import {
 	DB_Document,
 	Request_UpdateDocument
@@ -33,7 +33,7 @@ import {
 	ApiUpdateLiveDocs
 } from "../../shared/api";
 import {setDefaultLiveDocEditor} from "../utils";
-import {HttpMethod} from "@nu-art/thunderstorm";
+import {HttpMethod} from "@ir/thunderstorm";
 
 export const RequestKey_FetchDoc = "FetchDoc";
 export const RequestKey_UpdateDoc = "UpdateDoc";

@@ -24,15 +24,15 @@ import {
 	RoutingModule,
 	Toaster,
 	WrapperProps
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 
 import {VersionOnScreen} from './components/VersionOnScreen';
 import {
 	AccountModule,
 	OnLoginStatusUpdated
-} from "@nu-art/user-account/frontend";
+} from "@ir/user-account/frontend";
 import {registerRoutes} from "./Routes";
-import {BugReport} from '@nu-art/bug-report/frontend';
+import {BugReport} from '@ir/bug-report/frontend';
 
 export class App
 	extends BaseComponent<WrapperProps>

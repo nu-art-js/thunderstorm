@@ -27,8 +27,8 @@ import {
 	ProjectPermissionsDB,
 	UserPermissionsDB
 } from "../_main";
-import {BaseDB_ApiGenerator} from "@nu-art/db-api-generator/backend";
-import {__custom} from "@nu-art/testelot";
+import {BaseDB_ApiGenerator} from "@ir/db-api-generator/backend";
+import {__custom} from "@ir/testelot";
 
 export type SetupLevel = { name: string, value: number }
 export type SetupConfig = {

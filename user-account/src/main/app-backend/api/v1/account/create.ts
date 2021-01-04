@@ -20,7 +20,7 @@
 import {
 	ApiResponse,
 	ServerApi
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 
 import {
@@ -28,8 +28,8 @@ import {
 	AccountApi_Create,
 	Request_CreateAccount
 } from "./_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {HttpMethod} from "@ir/thunderstorm";
+import {ExpressRequest} from "@ir/thunderstorm/backend";
 
 class ServerApi_Account_Create
 	extends ServerApi<AccountApi_Create> {

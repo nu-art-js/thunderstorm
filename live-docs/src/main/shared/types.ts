@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Auditable} from "@nu-art/ts-common";
+import {Auditable} from "@ir/ts-common";
 
 export type LiveDocReqParams = {
 	key: string

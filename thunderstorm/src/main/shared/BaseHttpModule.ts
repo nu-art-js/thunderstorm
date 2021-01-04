@@ -30,7 +30,7 @@ import {
 	BadImplementationException,
 	Module,
 	removeItemFromArray,
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 // noinspection TypeScriptPreferShortImport
 import {
 	RequestErrorHandler,

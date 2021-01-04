@@ -19,17 +19,17 @@
  * limitations under the License.
  */
 
-import {FirebaseModule} from "@nu-art/firebase/backend";
+import {FirebaseModule} from "@ir/firebase/backend";
 import {
 	BeLogged,
 	LogClient_Function,
 	LogClient_Terminal,
 	Module
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	Firebase_ExpressFunction,
 	FirebaseFunction
-} from '@nu-art/firebase/backend-functions';
+} from '@ir/firebase/backend-functions';
 import {BaseStorm} from "./BaseStorm";
 import {
 	HttpServer,

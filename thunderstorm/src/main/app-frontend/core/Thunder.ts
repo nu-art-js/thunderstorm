@@ -30,7 +30,7 @@ import {
 	Module,
 	ModuleManager,
 	removeItemFromArray
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {XhrHttpModule} from "../modules/http/XhrHttpModule";
 import {ToastModule} from "../modules/toaster/ToasterModule";
 import {DialogModule} from "../modules/dialog/DialogModule";

@@ -24,7 +24,7 @@ import {
 	addAllItemToArray,
 	Module,
 	Second
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 // noinspection TypeScriptPreferShortImport
 import {Color} from "csstype";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";

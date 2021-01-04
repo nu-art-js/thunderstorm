@@ -20,10 +20,10 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi_Get,
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 import {ExampleTestPush} from "@app/app-shared";
-import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
+import {PushPubSubModule} from "@ir/push-pub-sub/backend";
 
 class ServerApi_PushTest
 	extends ServerApi_Get<ExampleTestPush> {

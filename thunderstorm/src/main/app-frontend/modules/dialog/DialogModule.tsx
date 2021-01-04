@@ -20,7 +20,7 @@
  */
 
 import * as React from "react";
-import {Module} from "@nu-art/ts-common";
+import {Module} from "@ir/ts-common";
 import {
 	Color,
 	Properties

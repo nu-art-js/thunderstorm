@@ -25,7 +25,7 @@ import {
 	BadImplementationException,
 	calculateJsonSizeMb,
 	ObjectTS
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
 

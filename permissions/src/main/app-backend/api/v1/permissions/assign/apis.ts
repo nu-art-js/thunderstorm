@@ -20,8 +20,8 @@ import {
 	UserPermissionsDB,
 	GroupPermissionsDB
 } from "../_imports";
-import {addAllItemToArray} from "@nu-art/ts-common";
-import {ServerApi} from "@nu-art/thunderstorm/backend";
+import {addAllItemToArray} from "@ir/ts-common";
+import {ServerApi} from "@ir/thunderstorm/backend";
 
 
 const assignmentApis: ServerApi<any>[] = [];

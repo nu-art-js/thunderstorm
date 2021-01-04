@@ -29,17 +29,17 @@ import {
 	BaseDB_ApiGenerator,
 	validateStringAndNumbersWithDashes,
 	validateUniqueId
-} from "@nu-art/db-api-generator/backend";
+} from "@ir/db-api-generator/backend";
 import {
 	AccountModule,
 	OnNewUserRegistered,
 	OnUserLogin
-} from "@nu-art/user-account/backend";
-import {Clause_Where} from "@nu-art/firebase";
+} from "@ir/user-account/backend";
+import {Clause_Where} from "@ir/firebase";
 import {
 	ApiException,
 	ExpressRequest
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 import {
 	_keys,
@@ -53,11 +53,11 @@ import {
 	validateArray,
 	validateObjectValues,
 	validateRegexp,
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
-import {FirestoreTransaction} from "@nu-art/firebase/backend";
+import {FirestoreTransaction} from "@ir/firebase/backend";
 import {PermissionsShare} from "../permissions-share";
-import { UI_Account } from "@nu-art/user-account";
+import { UI_Account } from "@ir/user-account";
 
 const validateUserUuid = validateRegexp(/^.{0,50}$/);
 const validateGroupLabel = validateRegexp(/^[A-Za-z-\._ ]+$/);

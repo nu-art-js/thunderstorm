@@ -24,7 +24,7 @@ import {
 	Example_NewProps,
 	Props_DropDown,
 	TreeRendererMap,
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import * as React from "react";
 import {optionRendererStyle,} from "./Example_AllDropDowns";
 import {

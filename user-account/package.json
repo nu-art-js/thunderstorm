@@ -1,5 +1,5 @@
 {
-  "name": "@nu-art/user-account",
+  "name": "@ir/user-account",
   "version": "0.0.0",
   "description": "User Account",
   "keywords": [
@@ -30,17 +30,17 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "~0.0.1",
+    "@ir/ts-common": "~0.0.1",
     "moment": "^2.24.0",
     "saml2-js": "^2.0.5",
     "xmlbuilder": "^15.1.1"
   },
   "devDependencies": {
-    "@nu-art/db-api-generator": "~0.0.1",
-    "@nu-art/firebase": "~0.0.1",
-    "@nu-art/storm": "~0.0.1",
-    "@nu-art/testelot": "~0.0.1",
-    "@nu-art/thunderstorm": "~0.0.1",
+    "@ir/db-api-generator": "~0.0.1",
+    "@ir/firebase": "~0.0.1",
+    "@ir/storm": "~0.0.1",
+    "@ir/testelot": "~0.0.1",
+    "@ir/thunderstorm": "~0.0.1",
     "@types/express": "^4.16.1",
     "@types/history": "^4.7.2",
     "@types/react": "^16.8.7",

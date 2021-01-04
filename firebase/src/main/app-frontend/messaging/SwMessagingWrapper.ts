@@ -20,7 +20,7 @@
 import {
 	_setTimeout,
 	Logger
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {FirebaseType_Messaging} from "./types";
 // tslint:disable:no-import-side-effect
 import 'firebase/messaging';

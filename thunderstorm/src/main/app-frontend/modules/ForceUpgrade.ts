@@ -22,7 +22,7 @@
 import {
 	Module,
 	Dispatcher
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {XhrHttpModule} from "./http/XhrHttpModule";
 import {
 	ApiBinder_AssertAppVersion,

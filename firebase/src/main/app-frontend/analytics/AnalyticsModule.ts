@@ -19,7 +19,7 @@
 import {
 	ImplementationMissingException,
 	Module
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {FirebaseModule} from "../FirebaseModule";
 import {AnalyticsWrapper} from "./AnalyticsWrapper";
 

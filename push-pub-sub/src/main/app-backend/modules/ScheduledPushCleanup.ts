@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {FirebaseScheduledFunction} from "@nu-art/firebase/backend-functions";
+import {FirebaseScheduledFunction} from "@ir/firebase/backend-functions";
 import {PushPubSubModule} from "./PushPubSubModule";
 
 export class ScheduledCleanup_Class

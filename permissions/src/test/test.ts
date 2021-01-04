@@ -17,8 +17,8 @@
  */
 
 import {Backend_ModulePack_Permissions} from "../main/backend";
-import {StormTester} from "@nu-art/thunderstorm/backend-test";
-import {__scenario} from "@nu-art/testelot";
+import {StormTester} from "@ir/thunderstorm/backend-test";
+import {__scenario} from "@ir/testelot";
 import {createTwoAccessLevels} from "./tests/create-project";
 import {
 	checkAccessLevelsPropertyOfGroup,
@@ -57,8 +57,8 @@ import {
 	permissionsAssertDoesCustomFieldsSatisfiesTests,
 	permissionsAssertIsLevelsMatchTests
 } from "./tests/permissions-assert";
-import { FirebaseModule } from "@nu-art/firebase/backend";
-import { AccountModule } from "@nu-art/user-account/backend";
+import { FirebaseModule } from "@ir/firebase/backend";
+import { AccountModule } from "@ir/user-account/backend";
 import {
 	assignUserPermissionsTests
 } from "./tests/assign-permissions";

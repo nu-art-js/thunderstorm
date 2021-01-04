@@ -22,7 +22,7 @@ import {
 	_keys,
 	_setTimeout,
 	BadImplementationException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	ApiTypeBinder,
 	DeriveBodyType,

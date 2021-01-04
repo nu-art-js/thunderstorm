@@ -18,12 +18,12 @@
 import {
 	ApiResponse,
 	ServerApi_Get,
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 
 import {DispatchModule} from "@modules/ExampleModule";
 import {ExampleSetMax} from "@app/app-shared";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {ExpressRequest} from "@ir/thunderstorm/backend";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Get<ExampleSetMax> {

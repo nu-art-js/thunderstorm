@@ -24,45 +24,45 @@ import {
 	ForceUpgrade,
 	RouteResolver,
 	Storm
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 import {Environment} from "./config";
 import {
 	DispatchModule,
 	ExampleModule
 } from "@modules/ExampleModule";
-import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
+import {Backend_ModulePack_LiveDocs} from "@ir/live-docs/backend";
 import {
 	__stringify,
 	_setTimeout,
 	Minute,
 	Module
-} from "@nu-art/ts-common";
-import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
+} from "@ir/ts-common";
+import {Backend_ModulePack_Permissions} from "@ir/permissions/backend";
 import {
 	Backend_ModulePack_BugReport,
 	BugReportModule
-} from "@nu-art/bug-report/backend";
-import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
-import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
+} from "@ir/bug-report/backend";
+import {ProjectFirestoreBackup} from "@ir/firebase/backend-firestore-backup";
+import {PushPubSubModule} from '@ir/push-pub-sub/backend';
 import {ValueChangedListener} from "@modules/ValueChangedListener";
 import {
 	Slack_ServerApiError,
 	SlackModule
-} from "@nu-art/storm/slack";
+} from "@ir/storm/slack";
 import {
 	Backend_ModulePack_Uploader,
 	PostProcessor,
 	ServerUploaderModule,
 	UploaderModule
-} from "@nu-art/file-upload/backend";
+} from "@ir/file-upload/backend";
 import {
 	FileWrapper,
 	FirebaseModule,
 	FirestoreTransaction
-} from '@nu-art/firebase/backend';
-import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
-import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
-import {JiraBugReportIntegrator} from "@nu-art/bug-report/app-backend/modules/JiraBugReportIntegrator";
+} from '@ir/firebase/backend';
+import {DB_Temp_File} from '@ir/file-upload/shared/types';
+import {Firebase_ExpressFunction} from '@ir/firebase/backend-functions';
+import {JiraBugReportIntegrator} from "@ir/bug-report/app-backend/modules/JiraBugReportIntegrator";
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);

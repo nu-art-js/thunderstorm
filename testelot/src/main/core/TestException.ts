@@ -19,7 +19,7 @@
 /**
  * Created by TacB0sS on 3/18/17.
  */
-import {CustomException} from "@nu-art/ts-common";
+import {CustomException} from "@ir/ts-common";
 
 
 export class TestException

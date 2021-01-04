@@ -19,7 +19,7 @@
 import {
 	RequireOptionals,
 	MandatoryKeys
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 export type Firebase_Message = {
 	token?: string,

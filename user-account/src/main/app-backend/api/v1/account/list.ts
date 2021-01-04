@@ -21,13 +21,13 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 import {
 	AccountApi_ListAccounts,
 	AccountModule,
     UI_Account
 } from "./_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
+import {HttpMethod} from "@ir/thunderstorm";
 
 
 class ListAccounts

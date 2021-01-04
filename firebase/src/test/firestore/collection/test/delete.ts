@@ -22,12 +22,12 @@ import {
 	testInstance2,
 	testInstance3
 } from "../_core/consts";
-import {__scenario} from "@nu-art/testelot";
+import {__scenario} from "@ir/testelot";
 import {
 	assert,
 	sortArray,
 	BadImplementationException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {FB_Type} from "../_core/types";
 
 const resultsSorter = (items: FB_Type[], invert: boolean = true) => sortArray(items, (item: FB_Type) => item.numeric, invert);

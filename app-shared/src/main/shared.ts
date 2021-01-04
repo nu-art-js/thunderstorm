@@ -20,7 +20,7 @@
 import {
 	ApiWithBody,
 	ApiWithQuery
-} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm";
 
 export type CommonBodyReq = {
 	message: string

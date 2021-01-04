@@ -1,4 +1,4 @@
-import {DB_Object} from "@nu-art/ts-common";
+import {DB_Object} from "@ir/ts-common";
 
 export type SubscribeProps = { [prop: string]: string | number };
 

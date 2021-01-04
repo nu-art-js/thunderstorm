@@ -20,7 +20,7 @@ import {
 	__scenario,
 	ContextKey,
     __custom
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 import {
 	cleanup,
 	ConfigDB,

@@ -23,7 +23,7 @@ import * as React from "react";
 import {
 	Module,
 	Second
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import {
 	Stylable,

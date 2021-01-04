@@ -21,15 +21,15 @@ import {
 	__custom,
 	__scenario,
 	TestException
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 import {LiveDocsModule} from "../_main";
 import {
 	assert,
 	auditBy,
 	isErrorOfType
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {cleanup} from "./_core";
-import {ApiException} from "@nu-art/thunderstorm/backend";
+import {ApiException} from "@ir/thunderstorm/backend";
 
 export function getNoneExistingDoc() {
 	const liveDocKey = "my-first-key";

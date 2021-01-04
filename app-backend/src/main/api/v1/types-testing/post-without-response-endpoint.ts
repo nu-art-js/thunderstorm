@@ -18,14 +18,14 @@
 import {
 	ApiResponse,
 	ServerApi_Post,
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 
 import {
 	ApiType_ApiPostWithoutResponse,
 	CommonBodyReq
 } from "@app/app-shared";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {ExpressRequest} from "@ir/thunderstorm/backend";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Post<ApiType_ApiPostWithoutResponse> {

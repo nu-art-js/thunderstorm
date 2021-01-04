@@ -23,7 +23,7 @@ import {
 	BadImplementationException,
 	merge,
 	Subset
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {FirestoreQuery} from "../../shared/types";
 import {FirestoreInterface} from "./FirestoreInterface";
 

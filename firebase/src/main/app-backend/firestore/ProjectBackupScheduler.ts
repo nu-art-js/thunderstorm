@@ -22,7 +22,7 @@ import {FirebaseModule} from "../FirebaseModule";
 import {
 	currentTimeMillies,
 	Day
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 type Config = {
 	backupIntervalMs: number

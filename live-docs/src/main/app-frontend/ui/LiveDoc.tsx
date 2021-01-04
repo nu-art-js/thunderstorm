@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseComponent} from "@nu-art/thunderstorm/frontend";
+import {BaseComponent} from "@ir/thunderstorm/frontend";
 import * as React from "react";
 import {LiveDocsModule} from "../modules/LiveDocsModule";
 

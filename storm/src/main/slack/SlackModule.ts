@@ -25,7 +25,7 @@ import {
 	currentTimeMillies,
 	Minute,
 	Module
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	WebAPICallResult,
 	WebClient

@@ -23,11 +23,11 @@ import {
     CheckboxFieldProps,
     CheckboxOption,
     TS_CheckboxField
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import {ChckbxOption, lessOptions, options, lessOptions2} from "./data";
-import {deepClone, toggleElementInArray} from "@nu-art/ts-common";
+import {deepClone, toggleElementInArray} from "@ir/ts-common";
 import {ICONS} from "@res/icons";
-import {Example_NewProps} from "@nu-art/thunderstorm/app-frontend/components/playground/Example_NewProps";
+import {Example_NewProps} from "@ir/thunderstorm/app-frontend/components/playground/Example_NewProps";
 
 const container = css({
     width: '500px'

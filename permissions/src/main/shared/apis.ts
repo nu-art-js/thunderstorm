@@ -19,8 +19,8 @@
 import {
 	ApiWithBody,
 	ApiWithQuery
-} from "@nu-art/thunderstorm";
-import {StringMap} from "@nu-art/ts-common";
+} from "@ir/thunderstorm";
+import {StringMap} from "@ir/ts-common";
 import {DB_PermissionProject} from "./manager-types";
 import {User_Group} from "./assign-types";
 

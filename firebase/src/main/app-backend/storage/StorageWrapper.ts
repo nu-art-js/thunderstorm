@@ -20,7 +20,7 @@ import {
 	BadImplementationException,
 	currentTimeMillies,
 	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	Bucket,
 	File,

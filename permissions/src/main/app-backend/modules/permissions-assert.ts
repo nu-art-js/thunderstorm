@@ -21,13 +21,13 @@ import {
 	StringMap,
 	_keys,
 	BadImplementationException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	ApiException,
 	HttpRequestData,
 	ExpressRequest,
 	ServerApi_Middleware
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 import {
 	Base_AccessLevels,
 	DB_PermissionAccessLevel,
@@ -42,8 +42,8 @@ import {
 	GroupPermissionsDB,
 	UserPermissionsDB
 } from "./db-types/assign";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {AccountModule} from "@nu-art/user-account/backend";
+import {HttpMethod} from "@ir/thunderstorm";
+import {AccountModule} from "@ir/user-account/backend";
 import {PermissionsModule} from "./PermissionsModule";
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };

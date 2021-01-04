@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
+import {__scenario} from "@ir/testelot";
 import {
 	assert,
 	sortArray
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	testCollection,
 	testInstance1,

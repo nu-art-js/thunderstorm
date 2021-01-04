@@ -20,7 +20,7 @@ import {
 	ThunderDispatcher,
 	XhrHttpModule,
 	XhrHttpModule_Class
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import {
 	BaseUploaderFile,
 	fileUploadedKey,
@@ -31,13 +31,13 @@ import {
 import {
 	OnPushMessageReceived,
 	PushPubSubModule
-} from "@nu-art/push-pub-sub/frontend";
+} from "@ir/push-pub-sub/frontend";
 import {
 	BaseUploaderModule_Class,
 	FileStatus,
 	OnFileStatusChanged
 } from "../../shared/modules/BaseUploaderModule";
-import {DB_Notifications} from "@nu-art/push-pub-sub";
+import {DB_Notifications} from "@ir/push-pub-sub";
 
 export class UploaderModule_Class
 	extends BaseUploaderModule_Class<XhrHttpModule_Class>

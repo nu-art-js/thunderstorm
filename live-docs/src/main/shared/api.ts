@@ -20,7 +20,7 @@
 import {
 	ApiWithBody,
 	ApiWithQuery
-} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm";
 import {
 	DB_Document,
 	LiveDocHistoryReqParams,

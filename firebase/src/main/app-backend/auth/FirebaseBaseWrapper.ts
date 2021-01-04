@@ -17,7 +17,7 @@
  */
 
 import {FirebaseSession} from "./firebase-session";
-import {Logger} from "@nu-art/ts-common";
+import {Logger} from "@ir/ts-common";
 
 export abstract class FirebaseBaseWrapper
 	extends Logger {

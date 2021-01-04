@@ -23,8 +23,8 @@ import {
 	Tree,
 	TreeNode,
 	NodeRendererProps,
-} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
+} from "@ir/thunderstorm/frontend";
+import {__stringify} from "@ir/ts-common";
 
 type State = { focused?: string, actionMessage: string };
 export type Element = { label: string, action?: () => void }

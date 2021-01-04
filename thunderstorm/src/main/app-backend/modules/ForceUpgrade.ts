@@ -25,7 +25,7 @@ import {
 	compareVersions,
 	Module,
 	ImplementationMissingException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	HeaderKey,
 	ServerApi_Middleware

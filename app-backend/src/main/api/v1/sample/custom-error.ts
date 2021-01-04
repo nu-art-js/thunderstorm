@@ -19,7 +19,7 @@ import {
 	ApiException,
 	ApiResponse,
 	ServerApi_Post,
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 
 import {
@@ -27,8 +27,8 @@ import {
 	CustomError2,
 	ExampleApiCustomError
 } from "@app/app-shared";
-import {randomObject} from "@nu-art/ts-common";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {randomObject} from "@ir/ts-common";
+import {ExpressRequest} from "@ir/thunderstorm/backend";
 
 class ServerApi_CustomError
 	extends ServerApi_Post<ExampleApiCustomError> {

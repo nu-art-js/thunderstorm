@@ -19,8 +19,8 @@
 import {
 	DB_Object,
 	DB_RequestObject
-} from "@nu-art/firebase";
-import {Auditable} from "@nu-art/ts-common";
+} from "@ir/firebase";
+import {Auditable} from "@ir/ts-common";
 
 export type Request_CreateDomain = DB_RequestObject & {
 	projectId: string

@@ -23,7 +23,7 @@ import {
 	Adapter,
 	TreeNode,
 	NodeRendererProps,
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 
 type State = { focused?: string, actionMessage: string };
 export type Element = { label: string, action?: () => void }

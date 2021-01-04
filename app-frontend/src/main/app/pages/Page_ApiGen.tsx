@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import {ApiCaller_PermissionsProject} from "@nu-art/permissions/frontend";
+import {ApiCaller_PermissionsProject} from "@ir/permissions/frontend";
 
 
 export class Page_ApiGen

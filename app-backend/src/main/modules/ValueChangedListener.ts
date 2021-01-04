@@ -15,8 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {FirebaseFunctionModule,} from "@nu-art/firebase/backend-functions";
-import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
+import {FirebaseFunctionModule,} from "@ir/firebase/backend-functions";
+import {PushPubSubModule} from "@ir/push-pub-sub/backend";
 
 export class ValueChangedListener_Class
 	extends FirebaseFunctionModule {

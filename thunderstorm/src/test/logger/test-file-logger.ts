@@ -23,7 +23,7 @@ import {
 	BeLogged,
 	Logger,
 	padNumber
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {LogClient_File} from "../../main/app-backend/utils/LogClient_File";
 
 BeLogged.addClient(new LogClient_File("logger", "../.trash/logger-test", 10, 1024).setRotationListener(() => {

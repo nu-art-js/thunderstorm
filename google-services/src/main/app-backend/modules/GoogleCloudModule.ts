@@ -29,7 +29,7 @@ import {
 	ThisShouldNotHappenException,
 	timeout,
 	filterInstances
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	cloudresourcemanager_v1,
 	cloudresourcemanager_v2,

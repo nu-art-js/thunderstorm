@@ -1,5 +1,5 @@
 {
-  "name": "@nu-art/push-pub-sub",
+  "name": "@ir/push-pub-sub",
   "version": "0.0.0",
   "description": "push-pub-sub",
   "keywords": [
@@ -23,13 +23,13 @@
     "build": "tsc -b -f"
   },
   "dependencies": {
-    "@nu-art/firebase": "~0.0.1",
-    "@nu-art/thunderstorm": "~0.0.1",
-    "@nu-art/ts-common": "~0.0.1",
+    "@ir/firebase": "~0.0.1",
+    "@ir/thunderstorm": "~0.0.1",
+    "@ir/ts-common": "~0.0.1",
     "moment": "^2.24.0"
   },
   "devDependencies": {
-    "@nu-art/testelot": "~0.0.1",
+    "@ir/testelot": "~0.0.1",
     "firebase": "^8.0.0",
     "firebase-admin": "^9.3.0",
     "ts-node": "^8.6.2",

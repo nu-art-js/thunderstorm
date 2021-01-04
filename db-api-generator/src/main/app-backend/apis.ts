@@ -24,7 +24,7 @@ import {
 	DeriveQueryType,
 	DeriveResponseType,
 	QueryParams
-} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm";
 import {
 	ApiBinder_DBCreate,
 	ApiBinder_DBDelete,
@@ -38,13 +38,13 @@ import {
 	Clause_Where,
 	DB_Object,
 	FirestoreQuery
-} from "@nu-art/firebase";
+} from "@ir/firebase";
 import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi
-} from "@nu-art/thunderstorm/backend";
-import {addItemToArray} from "@nu-art/ts-common";
+} from "@ir/thunderstorm/backend";
+import {addItemToArray} from "@ir/ts-common";
 
 export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
 	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? "/" + pathSuffix : ""}`;

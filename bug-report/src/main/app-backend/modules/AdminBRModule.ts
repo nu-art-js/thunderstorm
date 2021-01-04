@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Module} from "@nu-art/ts-common";
+import {Module} from "@ir/ts-common";
 import {
 	DB_BugReport,
 	Paths
@@ -27,7 +27,7 @@ import {
 	FirebaseModule,
 	FirestoreCollection,
 	StorageWrapper
-} from "@nu-art/firebase/backend";
+} from "@ir/firebase/backend";
 
 type Config = {
 	projectId: string

@@ -21,7 +21,7 @@ import * as React from "react";
 import {css} from "emotion";
 import {ICONS} from "@res/icons";
 import {Example_DropDown} from "./Example_DropDown";
-import {BaseNodeRenderer,} from "@nu-art/thunderstorm/frontend";
+import {BaseNodeRenderer,} from "@ir/thunderstorm/frontend";
 import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
 import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
 import { Plague } from "./consts";

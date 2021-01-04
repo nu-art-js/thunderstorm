@@ -24,14 +24,14 @@ import {
 	Minute,
 	Module,
 	Queue
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	BaseHttpModule_Class,
 	BaseHttpRequest,
 	ErrorResponse,
 	HttpMethod,
 	TS_Progress
-} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm";
 
 import {
 	Api_GetUploadUrl,

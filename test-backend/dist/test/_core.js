@@ -55,8 +55,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.runTest = void 0;
-var backend_1 = require("@nu-art/firebase/backend");
-var testelot_1 = require("@nu-art/testelot");
+var backend_1 = require("@ir/firebase/backend");
+var testelot_1 = require("@ir/testelot");
 exports.runTest = testelot_1.__custom(function () { return __awaiter(void 0, void 0, void 0, function () {
     var session, firestore, collection;
     return __generator(this, function (_a) {

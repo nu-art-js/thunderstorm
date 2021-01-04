@@ -33,7 +33,7 @@ import {
 	LogClient_Terminal,
 	LogParam
 
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 class ReportSummary {
 	Running: number = 0;

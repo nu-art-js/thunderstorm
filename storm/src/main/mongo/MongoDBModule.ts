@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Module} from "@nu-art/ts-common";
+import {Module} from "@ir/ts-common";
 
 import {
 	Collection,

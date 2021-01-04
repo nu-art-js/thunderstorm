@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
+import {__scenario} from "@ir/testelot";
 import {Tester} from "./_core/Tester";
-import {FirebaseModule} from "@nu-art/firebase/backend";
+import {FirebaseModule} from "@ir/firebase/backend";
 import {PushPubSubModule} from "../main/app-backend/modules/PushPubSubModule";
 import {scenarioCleanup} from "./cleaup";
 

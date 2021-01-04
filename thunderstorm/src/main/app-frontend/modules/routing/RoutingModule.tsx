@@ -23,7 +23,7 @@ import {
 	addItemToArray,
 	BadImplementationException,
 	Module
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import * as React from "react";
 import {ReactElement} from "react";
 import {

@@ -1,5 +1,5 @@
-import {Dialog_Builder} from "@nu-art/thunderstorm/app-frontend/modules/dialog/DialogModule";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
+import {Dialog_Builder} from "@ir/thunderstorm/app-frontend/modules/dialog/DialogModule";
+import {BaseComponent} from "@ir/thunderstorm/app-frontend/core/BaseComponent";
 import * as React from "react";
 
 

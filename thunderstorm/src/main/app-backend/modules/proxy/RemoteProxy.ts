@@ -22,7 +22,7 @@ import {
 	ImplementationMissingException,
 	Module,
 	ObjectTS
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 import {
 	HeaderKey,

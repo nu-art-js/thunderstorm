@@ -25,10 +25,10 @@ import {
 import {
 	BaseComponent,
 	ForceUpgrade
-} from "@nu-art/thunderstorm/frontend";
-import {LiveDoc} from "@nu-art/live-docs/frontend";
-import {AdminBR} from "@nu-art/bug-report/frontend";
-import {OnRequestListener} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm/frontend";
+import {LiveDoc} from "@ir/live-docs/frontend";
+import {AdminBR} from "@ir/bug-report/frontend";
+import {OnRequestListener} from "@ir/thunderstorm";
 
 export class Hello
 	extends BaseComponent<{}, { label: string }>

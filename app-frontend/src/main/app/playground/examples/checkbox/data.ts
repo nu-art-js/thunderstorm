@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {CheckboxOption} from "@nu-art/thunderstorm/app-frontend/components/checkbox/TS_CheckboxField";
+import {CheckboxOption} from "@ir/thunderstorm/app-frontend/components/checkbox/TS_CheckboxField";
 
 export type ChckbxOption = {
     label: string

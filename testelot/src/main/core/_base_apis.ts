@@ -19,7 +19,7 @@
 import {
 	BeLogged,
 	LogLevel
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 import {
 	Action_Custom,

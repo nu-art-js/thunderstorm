@@ -1,4 +1,4 @@
-import {Module} from "@nu-art/ts-common";
+import {Module} from "@ir/ts-common";
 import {
 	User_Group
 } from "../..";

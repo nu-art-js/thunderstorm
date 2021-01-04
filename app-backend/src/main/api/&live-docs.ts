@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@nu-art/live-docs/app-backend/api/_live-docs");
+module.exports = require("@ir/live-docs/app-backend/api/_live-docs");

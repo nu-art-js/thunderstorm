@@ -19,7 +19,7 @@
 import {
 	__custom,
 	__scenario
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 import {PushPubSubModule} from "../main/app-backend/modules/PushPubSubModule";
 import {
 	assert,
@@ -27,7 +27,7 @@ import {
 	currentTimeMillies,
 	generateHex,
 	Hour
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	DB_PushKeys,
 	DB_PushSession,
@@ -36,7 +36,7 @@ import {
 import {
 	FirestoreCollection,
 	FirestoreTransaction
-} from "@nu-art/firebase/backend";
+} from "@ir/firebase/backend";
 
 const arrayOf2 = Array(2).fill(0);
 export const scenarioCleanup = __scenario("Scheduled Cleaup");

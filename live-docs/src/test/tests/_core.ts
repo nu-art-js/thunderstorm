@@ -21,7 +21,7 @@ import {
 	DB_Document,
 	LiveDocsModule
 } from "../_main";
-import {__custom} from "@nu-art/testelot";
+import {__custom} from "@ir/testelot";
 
 export const liveDoc1 :DB_Document= {document: "document - 1"};
 export const liveDoc2 :DB_Document= {document: "document - 2"};

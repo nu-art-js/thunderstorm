@@ -1,5 +1,5 @@
 import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/frontend";
+import {BaseComponent} from "@ir/thunderstorm/frontend";
 import {
 	OnPermissionsChanged,
 	PermissionsFE

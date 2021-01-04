@@ -26,7 +26,7 @@ import {
 	validateOptionalId,
 	validateStringWithDashes,
 	validateUniqueId
-} from "@nu-art/db-api-generator/backend";
+} from "@ir/db-api-generator/backend";
 
 import {
 	CollectionName_Api,
@@ -48,16 +48,16 @@ import {
 	validateArray,
 	validateRange,
 	validateRegexp
-} from "@nu-art/ts-common";
-import {FirestoreTransaction} from "@nu-art/firebase/backend";
+} from "@ir/ts-common";
+import {FirestoreTransaction} from "@ir/firebase/backend";
 import {GroupPermissionsDB} from "./assign";
-import {Clause_Where} from "@nu-art/firebase";
-import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
+import {Clause_Where} from "@ir/firebase";
+import {ApiException} from "@ir/thunderstorm/app-backend/exceptions";
 import {
 	ExpressRequest,
 	ServerApi
-} from "@nu-art/thunderstorm/backend";
-import {AccountModule} from "@nu-art/user-account/app-backend/modules/AccountModule";
+} from "@ir/thunderstorm/backend";
+import {AccountModule} from "@ir/user-account/app-backend/modules/AccountModule";
 
 const validateProjectId = validateRegexp(/^[a-z-]{3,20}$/);
 export const validateProjectName = validateRegexp(/^[A-Za-z- ]{3,20}$/);

@@ -1,4 +1,4 @@
-import {ApiWithBody} from "@nu-art/thunderstorm";
+import {ApiWithBody} from "@ir/thunderstorm";
 import {
 	Request_PushRegister,
 	Request_ReadPush,

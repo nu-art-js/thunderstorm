@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 import {UploaderModule} from "../modules/UploaderModule";
-import {Frontend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/frontend";
+import {Frontend_ModulePack_PushPubSub} from "@ir/push-pub-sub/frontend";
 
 export const Frontend_ModulePack_Uploader = [
 	...Frontend_ModulePack_PushPubSub,

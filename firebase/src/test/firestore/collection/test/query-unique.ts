@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {assert} from "@nu-art/ts-common";
+import {__scenario} from "@ir/testelot";
+import {assert} from "@ir/ts-common";
 import {
 	testCollection,
 	testInstance1,

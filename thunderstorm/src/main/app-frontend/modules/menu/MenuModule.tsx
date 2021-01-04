@@ -1,7 +1,7 @@
 import {
 	generateHex,
 	Module
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	MenuPosition
 } from "./PopupMenu";

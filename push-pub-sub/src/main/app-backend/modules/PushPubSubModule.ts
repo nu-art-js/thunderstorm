@@ -29,7 +29,7 @@ import {
 	ImplementationMissingException,
 	Module,
 	Subset
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 import {
 	FirebaseModule,
@@ -37,7 +37,7 @@ import {
 	FirebaseType_Message,
 	FirestoreCollection,
 	PushMessagesWrapper
-} from '@nu-art/firebase/backend';
+} from '@ir/firebase/backend';
 // noinspection TypeScriptPreferShortImport
 import {
 	DB_Notifications,
@@ -53,7 +53,7 @@ import {
 import {
 	dispatch_queryRequestInfo,
 	ExpressRequest
-} from "@nu-art/thunderstorm/backend";
+} from "@ir/thunderstorm/backend";
 
 type Config = {
 	notificationsCleanupTime?: number

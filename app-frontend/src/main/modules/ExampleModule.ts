@@ -20,13 +20,13 @@ import {
 	__stringify,
 	Module,
 	Second
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 
 import {
 	ThunderDispatcher,
 	ToastModule,
 	XhrHttpModule
-} from "@nu-art/thunderstorm/frontend";
+} from "@ir/thunderstorm/frontend";
 import {
 	CommonBodyReq,
 	CustomError1,
@@ -42,19 +42,19 @@ import {
 import {
 	ErrorResponse,
 	HttpMethod
-} from "@nu-art/thunderstorm";
+} from "@ir/thunderstorm";
 import {Test} from "@modules/TestModule";
 import {
 	OnNotificationsReceived,
 	OnPushMessageReceived,
 	PushPubSubModule,
 	NotificationsModule
-} from "@nu-art/push-pub-sub/frontend";
-import {FirebaseModule} from "@nu-art/firebase/frontend";
+} from "@ir/push-pub-sub/frontend";
+import {FirebaseModule} from "@ir/firebase/frontend";
 import {
 	BaseSubscriptionData,
 	DB_Notifications
-} from "@nu-art/push-pub-sub";
+} from "@ir/push-pub-sub";
 
 type Config = {
 	remoteUrl: string

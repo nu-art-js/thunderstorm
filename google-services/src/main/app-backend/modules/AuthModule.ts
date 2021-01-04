@@ -6,7 +6,7 @@ import {
 	ImplementationMissingException,
 	Module,
 	NotImplementedYetException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	JWT,
 	GoogleAuth,

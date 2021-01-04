@@ -20,13 +20,13 @@ import * as fs from "fs";
 import {
 	ImplementationMissingException,
 	ModuleManager
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {
 	__scenario,
 	Action,
 	Reporter,
 	Scenario
-} from "@nu-art/testelot";
+} from "@ir/testelot";
 import {
 	FirebaseModule,
 	FirebaseModule_Class

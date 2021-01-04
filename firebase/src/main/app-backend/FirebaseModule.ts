@@ -27,7 +27,7 @@ import {
 	_keys,
 	moduleResolver,
 	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
+} from "@ir/ts-common";
 import {FirebaseSession_Admin} from "./auth/FirebaseSession_Admin";
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword";
 import {JWTInput} from "google-auth-library";
