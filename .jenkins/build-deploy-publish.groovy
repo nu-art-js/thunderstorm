@@ -31,11 +31,13 @@ class Pipeline_Build
 	@Override
 	void pipeline() {
 		super.pipeline()
-		Cli cli = new Cli("#!/bin/bash")
-			.append("nvm use")
-			.append('npm config set "@intuitionrobotics:registry" https://npm.intuitionrobotics.com/')
-			.append("npm config set \"${Env_SecretNPM.get()}\"")
-		getRepo().sh(cli)
+		addStage("Auth NPM", {
+			Cli cli = new Cli("#!/bin/bash")
+				.append("nvm use")
+				.append('npm config set "@intuitionrobotics:registry" https://npm.intuitionrobotics.com/')
+				.append("npm config set \"${Env_SecretNPM.get()}\"")
+			getRepo().sh(cli)
+		})
 		publish()
 	}
 }
