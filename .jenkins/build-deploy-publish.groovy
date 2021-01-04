@@ -1,24 +1,43 @@
 @Library('dev-tools')
 
 import com.nu.art.pipeline.modules.SlackModule
+import com.nu.art.pipeline.modules.git.Cli
 import com.nu.art.pipeline.thunderstorm.Pipeline_ThunderstormMain
 import com.nu.art.pipeline.workflow.Workflow
+import com.nu.art.pipeline.workflow.variables.Var_Creds
+import com.nu.art.pipeline.workflow.variables.Var_Env
 
 class Pipeline_Build
 	extends Pipeline_ThunderstormMain<Pipeline_Build> {
 
-		Pipeline_Build() {
-			super("Thunderstorm", "thunderstorm", SlackModule.class)
-		}
+	public Var_Env Env_SecretNPM = new Var_Env("NPM_SECRET")
+	public Var_Creds Creds_SecretNPM = new Var_Creds("string", "npm_token", Env_SecretNPM)
 
-		@Override
-		protected void init() {
-			declareEnv("dev", "thunderstorm-dev")
-			declareEnv("staging", "thunderstorm-staging")
-			declareEnv("prod", "nu-art-thunderstorm")
-			setGitRepoId("nu-art-js/thunderstorm", true)
-			super.init()
-		}
+	Pipeline_Build() {
+		super("Thunderstorm", "thunderstorm", SlackModule.class)
+	}
+
+	@Override
+	protected void init() {
+		setRequiredCredentials(Creds_SecretNPM)
+
+		declareEnv("dev", "ir-thunderstorm-dev")
+		declareEnv("staging", "ir-thunderstorm-staging")
+		declareEnv("prod", "ir-thunderstorm")
+		setGitRepoId("intuition-robotics/thunderstorm", true)
+		super.init()
+	}
+
+	@Override
+	void pipeline() {
+		super.pipeline()
+		Cli cli = new Cli("#!/bin/bash")
+			.append("nvm use")
+			.append('npm config set "@intuitionrobotics:registry" https://npm.intuitionrobotics.com/')
+			.append("npm config set \"${Env_SecretNPM.get()}\"")
+		getRepo().sh(cli)
+		publish()
+	}
 }
 
 node() {
