@@ -4,8 +4,8 @@ projectModules=(
   #  app-backend
   #  app-frontend
 )
-thunderstormLibraries=(ts-common)
-projectLibs=(
+
+projectLibraries=(
   ts-common
   #  ${thunderstormLibraries[@]}
   #  app-shared
