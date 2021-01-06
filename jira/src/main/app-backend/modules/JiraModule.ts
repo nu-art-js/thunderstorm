@@ -46,6 +46,7 @@ import {
 
 type Config = {
 	auth: JiraAuth
+	defaultAssignee: JiraUser,
 	baseUrl?: string
 }
 
@@ -53,6 +54,12 @@ type JiraAuth = {
 	email: string
 	apiKey: string
 };
+
+type JiraUser = {
+	accountId: string,
+	name?: string,
+	email?: string
+}
 
 type JiraMark = {
 	type: string
@@ -84,7 +91,7 @@ export type JiraIssue_Fields = {
 } & TypedMap<any>
 
 export type IssueType = {
-	id: string
+	id?: string
 	name: string
 }
 
@@ -133,7 +140,7 @@ export class JiraModule_Class
 	private headersForm!: Headers;
 	private projects!: JiraProject[];
 	private versions: { [projectId: string]: JiraVersion[] } = {};
-	private restUrl!: string
+	private restUrl!: string;
 
 	protected init(): void {
 		if (!this.config.baseUrl)
@@ -205,7 +212,10 @@ export class JiraModule_Class
 					project,
 					issuetype: issueType,
 					description: JiraUtils.createText(...descriptions),
-					summary
+					summary,
+					assignee: {
+						accountId: this.config.defaultAssignee.accountId
+					}
 				}
 			});
 			issue.url = `${this.config.baseUrl}/browse/${issue.key}`;
