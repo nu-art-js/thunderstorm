@@ -33,6 +33,7 @@ class Pipeline_Build
 		super.pipeline()
 		addStage("Auth NPM", {
 			Cli cli = new Cli("#!/bin/bash")
+				.append("source \"\$HOME/.nvm/nvm.sh\"")
 				.append("nvm use")
 				.append('npm config set "@intuitionrobotics:registry" https://npm.intuitionrobotics.com/')
 				.append("npm config set \"${Env_SecretNPM.get()}\"")
