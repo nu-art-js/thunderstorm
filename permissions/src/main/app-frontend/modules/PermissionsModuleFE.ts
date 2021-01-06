@@ -28,8 +28,8 @@ export class PermissionsModuleFE_Class
 	private requestCustomField: StringMap = {};
 	private debounceTime = 100;
 
-	setDebounceTime(time: number){
-		this.debounceTime = time
+	setDebounceTime(time: number) {
+		this.debounceTime = time;
 	}
 
 	setCustomField(key: string, value: string) {
@@ -37,8 +37,10 @@ export class PermissionsModuleFE_Class
 		this.setPermissions();
 	}
 
-	loadUrls(urls: string[]){
-		urls.forEach(url => this.doesUserHavePermissions(url))
+	loadUrls(urls: string[]) {
+		for (const url of urls) {
+			this.doesUserHavePermissions(url);
+		}
 	}
 
 	doesUserHavePermissions(url: string): boolean | undefined {
