@@ -30,7 +30,18 @@ class Pipeline_Build
 
 	@Override
 	void pipeline() {
-		super.pipeline()
+//		super.pipeline()
+		checkout({
+			getModule(SlackModule.class).setOnSuccess(getRepo().getChangeLog().toSlackMessage())
+		})
+
+		install()
+		clean()
+		build()
+//		test()
+
+//		deploy()
+
 		addStage("Auth NPM", {
 			Cli cli = new Cli("#!/bin/bash")
 				.append("source \"\$HOME/.nvm/nvm.sh\"")
