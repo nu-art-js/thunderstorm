@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {__custom} from "@ir/testelot";
+import {__custom} from "@intuitionrobotics/testelot";
 import {AccountModule} from "../_main";
 
 export function cleanup() {

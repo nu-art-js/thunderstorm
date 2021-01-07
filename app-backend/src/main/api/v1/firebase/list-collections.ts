@@ -19,16 +19,16 @@
 import {
 	ServerApi,
 	ApiResponse
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 import {
 	HttpMethod,
 	ApiWithQuery
-} from "@ir/thunderstorm";
+} from "@intuitionrobotics/thunderstorm";
 
-import {FirebaseProjectCollections} from "@ir/firebase";
-import {FirebaseModule} from "@ir/firebase/backend";
-import {ExpressRequest} from "@ir/thunderstorm/backend";
+import {FirebaseProjectCollections} from "@intuitionrobotics/firebase";
+import {FirebaseModule} from "@intuitionrobotics/firebase/backend";
+import {ExpressRequest} from "@intuitionrobotics/thunderstorm/backend";
 
 
 class ServerApi_RegisterExternalProject

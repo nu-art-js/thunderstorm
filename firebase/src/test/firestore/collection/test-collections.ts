@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@ir/testelot";
+import {__scenario} from "@intuitionrobotics/testelot";
 import {
 	scenarioInsert,
 	scenarioInsertAll

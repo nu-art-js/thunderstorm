@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-import {DB_Object} from "@ir/firebase";
-import {assert, generateHex} from "@ir/ts-common";
+import {DB_Object} from "@intuitionrobotics/firebase";
+import {assert, generateHex} from "@intuitionrobotics/ts-common";
 import {
 	__custom,
 	__scenario
-} from "@ir/testelot";
+} from "@intuitionrobotics/testelot";
 import {cleanup} from "./_core";
 import {ExampleModule} from "./db-api-generator";
 

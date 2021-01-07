@@ -25,13 +25,13 @@ import {
 	Module,
 	removeFromArray,
 	StringMap
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 import {
 	StorageKey,
 	ThunderDispatcher,
 	XhrHttpModule
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 // noinspection TypeScriptPreferShortImport
 import {
 	BaseSubscriptionData,
@@ -45,12 +45,12 @@ import {
 	Request_PushRegister,
 	SubscribeProps
 } from "../../index";
-import {HttpMethod} from "@ir/thunderstorm";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
 import {
 	FirebaseModule,
 	FirebaseSession,
 	MessagingWrapper
-} from "@ir/firebase/frontend";
+} from "@intuitionrobotics/firebase/frontend";
 import {
 	dispatch_NotificationsUpdated,
 	NotificationsModule

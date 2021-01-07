@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-import {ApiWithBody} from "@ir/thunderstorm"
-import {DB_Object} from "@ir/firebase";
-import {AuditBy} from "@ir/ts-common";
-import {MessageType} from "@ir/push-pub-sub";
+import {ApiWithBody} from "@intuitionrobotics/thunderstorm"
+import {DB_Object} from "@intuitionrobotics/firebase";
+import {AuditBy} from "@intuitionrobotics/ts-common";
+import {MessageType} from "@intuitionrobotics/push-pub-sub";
 
 export const fileUploadedKey = 'file-uploaded';
 export type Push_FileUploaded = MessageType<'file-uploaded', { feId: string }, { message: string, result: string, cause?: Error }>;

@@ -22,9 +22,9 @@ import {
 	ApiResponse,
 	ServerApi,
 	ExpressRequest
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
-import {__stringify} from "@ir/ts-common";
+import {__stringify} from "@intuitionrobotics/ts-common";
 import {
 	AccountModule,
 	AccountApi_AssertLoginSAML,
@@ -35,7 +35,7 @@ import {
 	RequestBody_SamlAssertOptions,
 	SamlModule
 } from "./_imports";
-import {HttpMethod} from "@ir/thunderstorm";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
 
 
 class AssertSamlToken

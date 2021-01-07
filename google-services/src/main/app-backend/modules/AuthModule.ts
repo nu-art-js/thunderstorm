@@ -6,7 +6,7 @@ import {
 	ImplementationMissingException,
 	Module,
 	NotImplementedYetException
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	JWT,
 	GoogleAuth,

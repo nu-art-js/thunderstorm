@@ -22,7 +22,7 @@ import {
 	DialogButton_Cancel,
 	DialogButton_Submit,
 	DialogModule,
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 
 export const noButton = () => {
 	new Dialog_Builder("No Buttons!")

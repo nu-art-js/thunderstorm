@@ -1,8 +1,8 @@
-import {ThunderDispatcher} from "@ir/thunderstorm/app-frontend/core/thunder-dispatcher";
+import {ThunderDispatcher} from "@intuitionrobotics/thunderstorm/app-frontend/core/thunder-dispatcher";
 import {
 	Module,
 	removeItemFromArray
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {DB_Notifications} from "../..";
 import {PushPubSubModule} from "./PushPubSubModule";
 

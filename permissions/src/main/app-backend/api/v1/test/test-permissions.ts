@@ -19,14 +19,14 @@
 import {
 	ServerApi,
 	ApiResponse
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 
-import {HttpMethod} from "@ir/thunderstorm";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
 
 import { PermissionsApi_TestPermissions } from "../permissions/_imports";
 import {testUserPermissionsTime} from "./_imports";
-import {ExpressRequest} from "@ir/thunderstorm/backend";
+import {ExpressRequest} from "@intuitionrobotics/thunderstorm/backend";
 
 class ServerApi_TestPermissions
 	extends ServerApi<PermissionsApi_TestPermissions> {

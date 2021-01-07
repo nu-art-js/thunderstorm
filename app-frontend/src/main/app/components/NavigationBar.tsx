@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 import * as React from "react";
-import {RoutingModule} from "@ir/thunderstorm/frontend";
+import {RoutingModule} from "@intuitionrobotics/thunderstorm/frontend";
 import {Page_Home} from "../pages/Page_Home";
 import {css} from "emotion";
-import {Component_Login} from "@ir/user-account/frontend";
+import {Component_Login} from "@intuitionrobotics/user-account/frontend";
 import {Page_ApiGen} from "../pages/Page_ApiGen";
 import { Example_Dialogs } from "../playground/examples/Example_Dialogs";
 import { Example_Toaster } from "../playground/examples/Example_Toaster";

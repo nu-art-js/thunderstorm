@@ -24,45 +24,45 @@ import {
 	ForceUpgrade,
 	RouteResolver,
 	Storm
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 import {Environment} from "./config";
 import {
 	DispatchModule,
 	ExampleModule
 } from "@modules/ExampleModule";
-import {Backend_ModulePack_LiveDocs} from "@ir/live-docs/backend";
+import {Backend_ModulePack_LiveDocs} from "@intuitionrobotics/live-docs/backend";
 import {
 	__stringify,
 	_setTimeout,
 	Minute,
 	Module
-} from "@ir/ts-common";
-import {Backend_ModulePack_Permissions} from "@ir/permissions/backend";
+} from "@intuitionrobotics/ts-common";
+import {Backend_ModulePack_Permissions} from "@intuitionrobotics/permissions/backend";
 import {
 	Backend_ModulePack_BugReport,
 	BugReportModule
-} from "@ir/bug-report/backend";
-import {ProjectFirestoreBackup} from "@ir/firebase/backend-firestore-backup";
-import {PushPubSubModule} from '@ir/push-pub-sub/backend';
+} from "@intuitionrobotics/bug-report/backend";
+import {ProjectFirestoreBackup} from "@intuitionrobotics/firebase/backend-firestore-backup";
+import {PushPubSubModule} from '@intuitionrobotics/push-pub-sub/backend';
 import {ValueChangedListener} from "@modules/ValueChangedListener";
 import {
 	Slack_ServerApiError,
 	SlackModule
-} from "@ir/storm/slack";
+} from "@intuitionrobotics/storm/slack";
 import {
 	Backend_ModulePack_Uploader,
 	PostProcessor,
 	ServerUploaderModule,
 	UploaderModule
-} from "@ir/file-upload/backend";
+} from "@intuitionrobotics/file-upload/backend";
 import {
 	FileWrapper,
 	FirebaseModule,
 	FirestoreTransaction
-} from '@ir/firebase/backend';
-import {DB_Temp_File} from '@ir/file-upload/shared/types';
-import {Firebase_ExpressFunction} from '@ir/firebase/backend-functions';
-import {JiraBugReportIntegrator} from "@ir/bug-report/app-backend/modules/JiraBugReportIntegrator";
+} from '@intuitionrobotics/firebase/backend';
+import {DB_Temp_File} from '@intuitionrobotics/file-upload/shared/types';
+import {Firebase_ExpressFunction} from '@intuitionrobotics/firebase/backend-functions';
+import {JiraBugReportIntegrator} from "@intuitionrobotics/bug-report/app-backend/modules/JiraBugReportIntegrator";
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);

@@ -20,12 +20,12 @@
 import {
 	ImplementationMissingException,
 	ModuleManager
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	__scenario,
 	Reporter,
 	Scenario
-} from "@ir/testelot";
+} from "@intuitionrobotics/testelot";
 
 export class Tester
 	extends ModuleManager {

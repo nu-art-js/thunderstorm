@@ -25,7 +25,7 @@ import {Router} from 'react-router-dom';
 // noinspection TypeScriptPreferShortImport`
 import {BrowserHistoryModule} from "../modules/HistoryModule";
 import {Thunder} from "./Thunder";
-import {ImplementationMissingException} from "@ir/ts-common";
+import {ImplementationMissingException} from "@intuitionrobotics/ts-common";
 
 
 export type WrapperProps = {}

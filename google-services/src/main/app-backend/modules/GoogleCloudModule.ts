@@ -29,7 +29,7 @@ import {
 	ThisShouldNotHappenException,
 	timeout,
 	filterInstances
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	cloudresourcemanager_v1,
 	cloudresourcemanager_v2,

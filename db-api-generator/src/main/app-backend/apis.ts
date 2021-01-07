@@ -24,7 +24,7 @@ import {
 	DeriveQueryType,
 	DeriveResponseType,
 	QueryParams
-} from "@ir/thunderstorm";
+} from "@intuitionrobotics/thunderstorm";
 import {
 	ApiBinder_DBCreate,
 	ApiBinder_DBDelete,
@@ -38,13 +38,13 @@ import {
 	Clause_Where,
 	DB_Object,
 	FirestoreQuery
-} from "@ir/firebase";
+} from "@intuitionrobotics/firebase";
 import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi
-} from "@ir/thunderstorm/backend";
-import {addItemToArray} from "@ir/ts-common";
+} from "@intuitionrobotics/thunderstorm/backend";
+import {addItemToArray} from "@intuitionrobotics/ts-common";
 
 export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
 	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? "/" + pathSuffix : ""}`;

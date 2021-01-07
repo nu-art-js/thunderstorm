@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@ir/thunderstorm/app-backend/api/v1/utils/version/_assert");
+module.exports = require("@intuitionrobotics/thunderstorm/app-backend/api/v1/utils/version/_assert");

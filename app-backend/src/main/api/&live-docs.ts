@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@ir/live-docs/app-backend/api/_live-docs");
+module.exports = require("@intuitionrobotics/live-docs/app-backend/api/_live-docs");

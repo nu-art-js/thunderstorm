@@ -1,5 +1,5 @@
 {
-  "name": "@ir/firebase",
+  "name": "@intuitionrobotics/firebase",
   "version": "0.0.0",
   "description": "Storm - Express & Typescript based backend framework",
   "keywords": [
@@ -29,13 +29,13 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@ir/ts-common": "~0.0.1"
+    "@intuitionrobotics/ts-common": "~0.0.1"
   },
   "devDependencies": {
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/firestore": "^4.8.1",
     "@google-cloud/storage": "^2.5.0",
-    "@ir/testelot": "~0.0.1",
+    "@intuitionrobotics/testelot": "~0.0.1",
     "@types/compression": "^1.0.1",
     "@types/express": "^4.17.2",
     "express": "^4.17.1",

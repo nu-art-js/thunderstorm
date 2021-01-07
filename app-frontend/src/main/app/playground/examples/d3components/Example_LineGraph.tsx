@@ -1,6 +1,6 @@
 import * as React from "react";
 import {ReactNode} from "react";
-import {BaseComponent} from "@ir/thunderstorm/app-frontend/core/BaseComponent";
+import {BaseComponent} from "@intuitionrobotics/thunderstorm/app-frontend/core/BaseComponent";
 import {scaleLinear} from "d3-scale";
 import AxisLeft from "./Example_AxisX";
 import AxisBottom from "./Example_AxisBottom.";

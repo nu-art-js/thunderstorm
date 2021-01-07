@@ -19,7 +19,7 @@ import {
 	currentTimeMillies,
 	generateHex,
 	StringMap
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	ProjectPermissionsDB,
 	DomainPermissionsDB,
@@ -31,13 +31,13 @@ import {
     PermissionsAssert,
     GroupPermissionsDB
 } from "../_main";
-import { FirestoreTransaction } from "@ir/firebase/backend";
+import { FirestoreTransaction } from "@intuitionrobotics/firebase/backend";
 import { cleanup } from "./_core";
 import {
 	__custom,
 	__scenario
-} from "@ir/testelot";
-import { ApiException } from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/testelot";
+import { ApiException } from "@intuitionrobotics/thunderstorm/backend";
 
 function makeAlphaBetIdForTestOnly(length: number) {
 	let result = '';

@@ -27,7 +27,7 @@ import {
 	TooltipModule
 } from "./TooltipModule";
 import {BaseComponent} from "../../core/BaseComponent";
-import {_setTimeout} from "@ir/ts-common";
+import {_setTimeout} from "@intuitionrobotics/ts-common";
 
 type State = { model?: Tooltip_Model };
 

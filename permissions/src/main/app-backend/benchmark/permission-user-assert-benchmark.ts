@@ -19,7 +19,7 @@
 import {
 	generateHex,
 	currentTimeMillies
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	AccessLevelPermissionsDB,
 	ApiPermissionsDB,
@@ -35,7 +35,7 @@ import {
 	DB_PermissionsGroup,
 	User_Group
 } from "../..";
-import {FirestoreTransaction} from "@ir/firebase/backend";
+import {FirestoreTransaction} from "@intuitionrobotics/firebase/backend";
 
 function makeAlphaBetIdForTestOnly(length: number) {
 	let result = '';

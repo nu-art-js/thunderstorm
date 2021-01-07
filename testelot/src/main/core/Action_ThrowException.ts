@@ -20,7 +20,7 @@
  * Created by TacB0sS on 3/18/17.
  */
 import {Action} from "./Action";
-import {Exception} from "@ir/ts-common";
+import {Exception} from "@intuitionrobotics/ts-common";
 
 
 export class Action_ThrowException

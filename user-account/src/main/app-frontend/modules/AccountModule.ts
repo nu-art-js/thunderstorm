@@ -20,7 +20,7 @@
 import {
 	Module,
 	Second
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	BaseComponent,
 	BrowserHistoryModule,
@@ -28,7 +28,7 @@ import {
 	StorageKey,
 	ThunderDispatcher,
 	ToastModule
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 import {
 	AccountApi_Create,
 	AccountApi_ListAccounts,
@@ -46,7 +46,7 @@ import {
 	Response_LoginSAML,
 	UI_Account
 } from "../../shared/api";
-import {HttpMethod} from "@ir/thunderstorm";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
 
 export const StorageKey_SessionId: StorageKey<string> = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
 export const StorageKey_UserEmail: StorageKey<string> = new StorageKey<string>(`storage-${QueryParam_Email}`);

@@ -17,8 +17,8 @@
 //  */
 //
 // import * as React from "react";
-// import {BaseComponent} from "@ir/thunderstorm/frontend";
-// import {_keys} from "@ir/ts-common";
+// import {BaseComponent} from "@intuitionrobotics/thunderstorm/frontend";
+// import {_keys} from "@intuitionrobotics/ts-common";
 // import {
 // 	KeyboardListener,
 // 	KeyboardListenerComponentProps

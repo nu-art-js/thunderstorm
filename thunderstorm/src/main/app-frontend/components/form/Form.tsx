@@ -29,7 +29,7 @@ import {
 	_keys,
 	ObjectTS,
 	TypeValidator
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 export type FormProps<T extends object = object> = {
 	form: Form<T>,

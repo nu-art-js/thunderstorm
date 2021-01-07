@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@ir/push-pub-sub/app-backend/api/_push");
+module.exports = require("@intuitionrobotics/push-pub-sub/app-backend/api/_push");

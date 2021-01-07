@@ -19,12 +19,12 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi
-} from "@ir/thunderstorm/backend";
-import {HttpMethod} from "@ir/thunderstorm";
+} from "@intuitionrobotics/thunderstorm/backend";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
 import {
 	PermissionsApi_UserUrlsPermissions,
 	Request_UserUrlsPermissions
-} from "@ir/permissions";
+} from "@intuitionrobotics/permissions";
 
 class ServerApi_UserUrlsPermissions
 	extends ServerApi<PermissionsApi_UserUrlsPermissions> {

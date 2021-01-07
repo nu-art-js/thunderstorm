@@ -19,7 +19,7 @@
 import {
 	RequireOptionals,
 	MandatoryKeys
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 export type Firebase_Message = {
 	token?: string,

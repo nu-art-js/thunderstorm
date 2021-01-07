@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {PermissionsComponent} from "@ir/permissions/frontend";
+import {PermissionsComponent} from "@intuitionrobotics/permissions/frontend";
 
 export class Example_PermissionsComponent
 	extends React.Component {

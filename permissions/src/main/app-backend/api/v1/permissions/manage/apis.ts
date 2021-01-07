@@ -22,8 +22,8 @@ import {
 	AccessLevelPermissionsDB,
 	ProjectPermissionsDB
 } from "../_imports";
-import {addAllItemToArray} from "@ir/ts-common";
-import {ServerApi} from "@ir/thunderstorm/backend";
+import {addAllItemToArray} from "@intuitionrobotics/ts-common";
+import {ServerApi} from "@intuitionrobotics/thunderstorm/backend";
 
 
 const managementApis: ServerApi<any>[] = [];

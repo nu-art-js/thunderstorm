@@ -20,7 +20,7 @@ import {
 	BadImplementationException,
 	currentTimeMillies,
 	ThisShouldNotHappenException
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	Bucket,
 	File,

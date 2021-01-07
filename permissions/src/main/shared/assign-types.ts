@@ -19,8 +19,8 @@
 import {
 	Auditable,
 	StringMap
-} from "@ir/ts-common";
-import {DB_Object} from "@ir/firebase";
+} from "@intuitionrobotics/ts-common";
+import {DB_Object} from "@intuitionrobotics/firebase";
 
 export type Base_AccessLevels = {
 	domainId: string,

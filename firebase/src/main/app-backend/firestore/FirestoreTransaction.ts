@@ -23,7 +23,7 @@ import {
 	BadImplementationException,
 	merge,
 	Subset
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {FirestoreQuery} from "../../shared/types";
 import {FirestoreInterface} from "./FirestoreInterface";
 

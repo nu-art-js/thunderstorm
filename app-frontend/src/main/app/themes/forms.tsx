@@ -22,12 +22,12 @@ import {
 	Component_Form,
 	FormProps,
 	ToastModule
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 import {
 	deepClone,
 	ObjectTS,
 	validateObject
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 type State<T extends ObjectTS> = {
 	value: Partial<T>,

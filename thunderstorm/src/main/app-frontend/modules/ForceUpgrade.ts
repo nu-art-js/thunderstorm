@@ -22,7 +22,7 @@
 import {
 	Module,
 	Dispatcher
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {XhrHttpModule} from "./http/XhrHttpModule";
 import {
 	ApiBinder_AssertAppVersion,

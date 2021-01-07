@@ -25,7 +25,7 @@
 import {
 	merge,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {ThunderDispatcher} from "../core/thunder-dispatcher";
 
 export interface StorageKeyEvent {

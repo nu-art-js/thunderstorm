@@ -1,5 +1,5 @@
-import { BaseStorm } from "@ir/thunderstorm/app-backend/core/BaseStorm";
-import { Scenario } from "@ir/testelot";
+import { BaseStorm } from "@intuitionrobotics/thunderstorm/app-backend/core/BaseStorm";
+import { Scenario } from "@intuitionrobotics/testelot";
 export declare class StormTester extends BaseStorm {
     private function;
     private scenario?;

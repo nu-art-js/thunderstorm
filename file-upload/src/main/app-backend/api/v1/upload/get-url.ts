@@ -21,12 +21,12 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi_Post
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 import {
 	Api_GetUploadUrl,
 	BaseUploaderFile
 } from "../../../../shared/types";
-import {QueryParams} from "@ir/thunderstorm";
+import {QueryParams} from "@intuitionrobotics/thunderstorm";
 import {UploaderModule} from "../../../modules/UploaderModule";
 
 

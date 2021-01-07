@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {Firebase_StorageFunction} from "@ir/firebase/backend-functions";
+import {Firebase_StorageFunction} from "@intuitionrobotics/firebase/backend-functions";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import {EventContext} from "firebase-functions";
 import {

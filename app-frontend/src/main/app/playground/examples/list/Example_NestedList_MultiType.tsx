@@ -7,8 +7,8 @@ import {
 	ToastModule,
 	_BaseNodeRenderer,
 	NodeRendererProps
-} from "@ir/thunderstorm/frontend";
-import {__stringify} from "@ir/ts-common";
+} from "@intuitionrobotics/thunderstorm/frontend";
+import {__stringify} from "@intuitionrobotics/ts-common";
 
 export class Example_NestedList_MultiType
 	extends Component<{}> {

@@ -18,12 +18,12 @@
 import {
 	ApiResponse,
 	ServerApi_Get,
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 
 import {DispatchModule} from "@modules/ExampleModule";
 import {ExampleGetMax} from "@app/app-shared";
-import {ExpressRequest} from "@ir/thunderstorm/backend";
+import {ExpressRequest} from "@intuitionrobotics/thunderstorm/backend";
 
 class ServerApi_EndpointExample
 	extends ServerApi_Get<ExampleGetMax> {

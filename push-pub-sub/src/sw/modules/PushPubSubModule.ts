@@ -25,9 +25,9 @@ import {
 	__stringify,
 	Module,
 	StringMap
-} from '@ir/ts-common';
-import {FirebaseModule} from "@ir/firebase/frontend";
-import {swSelf} from "@ir/thunderstorm/core/self";
+} from '@intuitionrobotics/ts-common';
+import {FirebaseModule} from "@intuitionrobotics/firebase/frontend";
+import {swSelf} from "@intuitionrobotics/thunderstorm/core/self";
 
 export const Command_SwToApp = 'SwToApp';
 

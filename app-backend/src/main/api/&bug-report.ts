@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@ir/bug-report/app-backend/api/_bug-report");
+module.exports = require("@intuitionrobotics/bug-report/app-backend/api/_bug-report");

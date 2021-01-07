@@ -19,7 +19,7 @@
 import {
 	BeLogged,
 	LogLevel
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 import {
 	Action_Custom,

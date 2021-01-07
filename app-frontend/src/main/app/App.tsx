@@ -24,15 +24,15 @@ import {
 	RoutingModule,
 	Toaster,
 	WrapperProps
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 
 import {VersionOnScreen} from './components/VersionOnScreen';
 import {
 	AccountModule,
 	OnLoginStatusUpdated
-} from "@ir/user-account/frontend";
+} from "@intuitionrobotics/user-account/frontend";
 import {registerRoutes} from "./Routes";
-import {BugReport} from '@ir/bug-report/frontend';
+import {BugReport} from '@intuitionrobotics/bug-report/frontend';
 
 export class App
 	extends BaseComponent<WrapperProps>

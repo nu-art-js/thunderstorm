@@ -19,16 +19,16 @@
 
 import * as React from "react";
 import {css} from 'emotion';
-import {AdapterBuilder} from "@ir/thunderstorm/app-frontend/components/adapter/Adapter";
-import {NodeRendererProps} from "@ir/thunderstorm/app-frontend/components/adapter/BaseRenderer";
+import {AdapterBuilder} from "@intuitionrobotics/thunderstorm/app-frontend/components/adapter/Adapter";
+import {NodeRendererProps} from "@intuitionrobotics/thunderstorm/app-frontend/components/adapter/BaseRenderer";
 import {
 	DropDown,
 	headerStyle,
 	inputStyle,
 	listStyle,
 	Stylable,
-} from "@ir/thunderstorm/frontend";
-import {generateHex} from "@ir/ts-common";
+} from "@intuitionrobotics/thunderstorm/frontend";
+import {generateHex} from "@intuitionrobotics/ts-common";
 import {ICONS} from "@res/icons";
 import { Plague, plagues } from "./consts";
 

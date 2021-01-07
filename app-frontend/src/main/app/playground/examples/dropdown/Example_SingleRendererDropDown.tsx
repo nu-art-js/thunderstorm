@@ -13,7 +13,7 @@ import {
 	headerStyle,
 	inputStyle,
 	Stylable
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 import {inputClassName} from "./OstudioEx";
 import { Plague, plagues } from "./consts";
 

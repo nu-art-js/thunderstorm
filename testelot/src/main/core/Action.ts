@@ -28,7 +28,7 @@ import {
 	Constructor,
 	isErrorOfType,
 	__stringify
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {ContextKey} from "./ContainerContext";
 import {Reporter} from "./Reporter";
 import {TestException} from "./TestException";

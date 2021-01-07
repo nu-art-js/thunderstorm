@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {CustomException,} from "@ir/ts-common";
+import {CustomException,} from "@intuitionrobotics/ts-common";
 import {
 	ErrorBody,
 	ErrorResponse

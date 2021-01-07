@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ObjectTS} from "@ir/ts-common";
+import {ObjectTS} from "@intuitionrobotics/ts-common";
 import {PushPubSubModule} from "./PushPubSubModule";
 import {SubscribeProps} from "./_imports";
 

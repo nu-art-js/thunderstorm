@@ -1,5 +1,5 @@
 {
-  "name": "@ir/thunderstorm",
+  "name": "@intuitionrobotics/thunderstorm",
   "version": "0.0.0",
   "description": "Thunderstorm",
   "keywords": [
@@ -26,14 +26,14 @@
     "build": "tsc -b -f"
   },
   "dependencies": {
-    "@ir/ts-common": "~0.0.1",
+    "@intuitionrobotics/ts-common": "~0.0.1",
     "abort-controller": "^3.0.0",
     "axios": "^0.20.0",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {
-    "@ir/firebase": "~0.0.1",
-    "@ir/testelot": "~0.0.1",
+    "@intuitionrobotics/firebase": "~0.0.1",
+    "@intuitionrobotics/testelot": "~0.0.1",
     "@types/compression": "^1.7.0",
     "@types/express": "^4.16.1",
     "@types/history": "^4.7.2",

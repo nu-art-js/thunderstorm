@@ -18,11 +18,11 @@
  */
 
 import {simpleTypeCollection} from "../_core/consts";
-import {__scenario} from "@ir/testelot";
+import {__scenario} from "@intuitionrobotics/testelot";
 import {
 	BadImplementationException,
 	generateHex
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 export const scenarioCollectionDeleteInTransaction = __scenario("Delete In Transaction");
 const deleteId = generateHex(8);

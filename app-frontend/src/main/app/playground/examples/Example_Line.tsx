@@ -1,6 +1,6 @@
 import * as React from "react";
-import {BaseComponent} from "@ir/thunderstorm/app-frontend/core/BaseComponent";
-import {TS_Input} from "@ir/thunderstorm/app-frontend/components/TS_Input";
+import {BaseComponent} from "@intuitionrobotics/thunderstorm/app-frontend/core/BaseComponent";
+import {TS_Input} from "@intuitionrobotics/thunderstorm/app-frontend/components/TS_Input";
 import {
 	ChartDataSets
 } from "chart.js";

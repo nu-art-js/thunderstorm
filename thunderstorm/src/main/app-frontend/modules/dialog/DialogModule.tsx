@@ -20,7 +20,7 @@
  */
 
 import * as React from "react";
-import {Module} from "@ir/ts-common";
+import {Module} from "@intuitionrobotics/ts-common";
 import {
 	Color,
 	Properties

@@ -25,7 +25,7 @@
 import {
 	_keys,
 	Module,
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	createBrowserHistory,
 	History,

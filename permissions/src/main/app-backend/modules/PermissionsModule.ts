@@ -20,7 +20,7 @@ import {
 	ImplementationMissingException,
 	Module,
 	StringMap
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	DB_PermissionProject,
 	PredefinedGroup,
@@ -33,7 +33,7 @@ import {
 	ApiPermissionsDB,
 	ProjectPermissionsDB
 } from "./db-types/managment";
-import {HttpServer} from "@ir/thunderstorm/backend";
+import {HttpServer} from "@intuitionrobotics/thunderstorm/backend";
 import {
 	GroupPermissionsDB,
 	UserPermissionsDB

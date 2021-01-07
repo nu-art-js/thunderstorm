@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@ir/testelot";
+import {__scenario} from "@intuitionrobotics/testelot";
 import {
 	assert,
 	BadImplementationException,
 	generateHex,
 	merge
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {Patch_TestCase,} from "../_core/types";
 import {FirestoreCollection_Tester} from "../_core/collection-wrapper";
 

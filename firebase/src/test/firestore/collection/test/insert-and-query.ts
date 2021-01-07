@@ -19,12 +19,12 @@
 import {
 	__scenario,
 	Scenario
-} from "@ir/testelot";
+} from "@intuitionrobotics/testelot";
 import {
 	assert,
 	BadImplementationException,
 	sortArray
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {FirestoreCollection} from "../../../_main";
 import {
 	simpleTypeCollection,

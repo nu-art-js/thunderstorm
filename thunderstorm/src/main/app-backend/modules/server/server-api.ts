@@ -34,7 +34,7 @@ import {
 	validate,
 	ValidationException,
 	ValidatorTypeResolver
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 import {Stream} from "stream";
 import {parse} from "url";

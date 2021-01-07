@@ -19,8 +19,8 @@
 import {
 	DB_PermissionDomain
 } from "../../../index";
-import {BaseDB_ApiGeneratorCaller} from "@ir/db-api-generator/frontend";
-import {ThunderDispatcher} from "@ir/thunderstorm/frontend";
+import {BaseDB_ApiGeneratorCaller} from "@intuitionrobotics/db-api-generator/frontend";
+import {ThunderDispatcher} from "@intuitionrobotics/thunderstorm/frontend";
 
 export interface OnPermissionsDomainsLoaded {
 	__onPermissionsDomainsLoaded: () => void;

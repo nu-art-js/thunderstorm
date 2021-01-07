@@ -1,5 +1,5 @@
 {
-  "name": "@ir/jira",
+  "name": "@intuitionrobotics/jira",
   "version": "0.0.0",
   "description": "Jira api Module",
   "keywords": [
@@ -18,7 +18,7 @@
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@ir/ts-common": "~0.0.1",
+    "@intuitionrobotics/ts-common": "~0.0.1",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",
     "debug": "^3.1.0",
@@ -35,7 +35,7 @@
     "@types/node-fetch": "^2.5.7",
     "@types/request": "^2.48.3",
     "@types/saml2-js": "^1.6.8",
-    "@ir/thunderstorm": "~0.0.1",
+    "@intuitionrobotics/thunderstorm": "~0.0.1",
     "node-fetch": "^2.6.0",
     "ts-node": "^8.6.2",
     "typescript": "^3.8.3"

@@ -24,7 +24,7 @@ import {
 	addAllItemToArray,
 	Module,
 	Second
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 // noinspection TypeScriptPreferShortImport
 import {Color} from "csstype";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";

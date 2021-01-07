@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-import {Module} from "@ir/ts-common";
+import {Module} from "@intuitionrobotics/ts-common";
 import {
 	XhrHttpModule,
 	ToastBuilder,
 	ToastModule
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 import {
 	DB_Document,
 	Request_UpdateDocument
@@ -33,7 +33,7 @@ import {
 	ApiUpdateLiveDocs
 } from "../../shared/api";
 import {setDefaultLiveDocEditor} from "../utils";
-import {HttpMethod} from "@ir/thunderstorm";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
 
 export const RequestKey_FetchDoc = "FetchDoc";
 export const RequestKey_UpdateDoc = "UpdateDoc";

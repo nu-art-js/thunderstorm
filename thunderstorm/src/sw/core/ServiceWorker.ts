@@ -20,10 +20,10 @@
  */
 
 import {swSelf} from "./self";
-import {ModuleManager} from "@ir/ts-common/core/module-manager";
-import {BeLogged} from "@ir/ts-common/core/logger/BeLogged";
-import {LogClient_Browser} from "@ir/ts-common/core/logger/LogClient_Browser";
-import {LogLevel} from "@ir/ts-common/core/logger/types";
+import {ModuleManager} from "@intuitionrobotics/ts-common/core/module-manager";
+import {BeLogged} from "@intuitionrobotics/ts-common/core/logger/BeLogged";
+import {LogClient_Browser} from "@intuitionrobotics/ts-common/core/logger/LogClient_Browser";
+import {LogLevel} from "@intuitionrobotics/ts-common/core/logger/types";
 
 export class TS_ServiceWorker
 	extends ModuleManager {

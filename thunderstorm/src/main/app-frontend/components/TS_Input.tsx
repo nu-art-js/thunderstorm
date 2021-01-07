@@ -23,7 +23,7 @@ import * as React from 'react';
 import {
 	_clearTimeout,
 	currentTimeMillies
-} from '@ir/ts-common';
+} from '@intuitionrobotics/ts-common';
 import {Stylable} from "../tools/Stylable";
 
 export type TS_InputProps<Key> = Stylable & {

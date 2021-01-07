@@ -22,7 +22,7 @@ import {
 	_keys,
 	_setTimeout,
 	BadImplementationException
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	ApiTypeBinder,
 	DeriveBodyType,

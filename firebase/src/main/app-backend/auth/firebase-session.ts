@@ -19,7 +19,7 @@
 /**
  * Created by tacb0ss on 25/08/2018.
  */
-import {Logger} from "@ir/ts-common";
+import {Logger} from "@intuitionrobotics/ts-common";
 import {FirestoreWrapper} from "../firestore/FirestoreWrapper";
 import {DatabaseWrapper} from "../database/DatabaseWrapper";
 import {StorageWrapper} from "../storage/StorageWrapper";

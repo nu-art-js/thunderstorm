@@ -20,7 +20,7 @@
 import {
 	ApiResponse,
 	ServerApi_Get
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 
 import {
@@ -28,7 +28,7 @@ import {
 	RequestParams_LoginSAML,
 	SamlModule
 } from "./_imports";
-import {ExpressRequest} from "@ir/thunderstorm/backend";
+import {ExpressRequest} from "@intuitionrobotics/thunderstorm/backend";
 
 class ServerApi_Account_LoginSAML
 	extends ServerApi_Get<AccountApi_LoginSAML> {

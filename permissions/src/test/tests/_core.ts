@@ -27,8 +27,8 @@ import {
 	ProjectPermissionsDB,
 	UserPermissionsDB
 } from "../_main";
-import {BaseDB_ApiGenerator} from "@ir/db-api-generator/backend";
-import {__custom} from "@ir/testelot";
+import {BaseDB_ApiGenerator} from "@intuitionrobotics/db-api-generator/backend";
+import {__custom} from "@intuitionrobotics/testelot";
 
 export type SetupLevel = { name: string, value: number }
 export type SetupConfig = {

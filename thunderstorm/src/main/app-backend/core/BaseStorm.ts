@@ -22,11 +22,11 @@
 import {
 	DatabaseWrapper,
 	FirebaseModule
-} from "@ir/firebase/backend";
+} from "@intuitionrobotics/firebase/backend";
 import {
 	merge,
 	ModuleManager
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 export abstract class BaseStorm
 	extends ModuleManager {

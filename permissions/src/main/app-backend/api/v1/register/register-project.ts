@@ -20,7 +20,7 @@ import {
 	ServerApi,
 	ApiResponse,
 	RemoteProxy
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 // noinspection ES6PreferShortImport
 import {
@@ -28,8 +28,8 @@ import {
 	Request_RegisterProject,
 	PermissionsApi_RegisterExternalProject
 } from "../permissions/_imports";
-import {HttpMethod} from "@ir/thunderstorm";
-import {ExpressRequest} from "@ir/thunderstorm/backend";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
+import {ExpressRequest} from "@intuitionrobotics/thunderstorm/backend";
 import {PermissionsModule} from "../../../modules/PermissionsModule";
 
 

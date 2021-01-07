@@ -26,7 +26,7 @@ import {
 	validateOptionalId,
 	validateStringWithDashes,
 	validateUniqueId
-} from "@ir/db-api-generator/backend";
+} from "@intuitionrobotics/db-api-generator/backend";
 
 import {
 	CollectionName_Api,
@@ -48,16 +48,16 @@ import {
 	validateArray,
 	validateRange,
 	validateRegexp
-} from "@ir/ts-common";
-import {FirestoreTransaction} from "@ir/firebase/backend";
+} from "@intuitionrobotics/ts-common";
+import {FirestoreTransaction} from "@intuitionrobotics/firebase/backend";
 import {GroupPermissionsDB} from "./assign";
-import {Clause_Where} from "@ir/firebase";
-import {ApiException} from "@ir/thunderstorm/app-backend/exceptions";
+import {Clause_Where} from "@intuitionrobotics/firebase";
+import {ApiException} from "@intuitionrobotics/thunderstorm/app-backend/exceptions";
 import {
 	ExpressRequest,
 	ServerApi
-} from "@ir/thunderstorm/backend";
-import {AccountModule} from "@ir/user-account/app-backend/modules/AccountModule";
+} from "@intuitionrobotics/thunderstorm/backend";
+import {AccountModule} from "@intuitionrobotics/user-account/app-backend/modules/AccountModule";
 
 const validateProjectId = validateRegexp(/^[a-z-]{3,20}$/);
 export const validateProjectName = validateRegexp(/^[A-Za-z- ]{3,20}$/);

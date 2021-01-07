@@ -27,7 +27,7 @@ import {
 	ToastModule,
 	TS_Input,
 	TS_TextArea
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 
 type Props = {
 	component?: React.ReactNode

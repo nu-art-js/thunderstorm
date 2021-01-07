@@ -29,17 +29,17 @@ import {
 	BaseDB_ApiGenerator,
 	validateStringAndNumbersWithDashes,
 	validateUniqueId
-} from "@ir/db-api-generator/backend";
+} from "@intuitionrobotics/db-api-generator/backend";
 import {
 	AccountModule,
 	OnNewUserRegistered,
 	OnUserLogin
-} from "@ir/user-account/backend";
-import {Clause_Where} from "@ir/firebase";
+} from "@intuitionrobotics/user-account/backend";
+import {Clause_Where} from "@intuitionrobotics/firebase";
 import {
 	ApiException,
 	ExpressRequest
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 import {
 	_keys,
@@ -53,11 +53,11 @@ import {
 	validateArray,
 	validateObjectValues,
 	validateRegexp,
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
-import {FirestoreTransaction} from "@ir/firebase/backend";
+import {FirestoreTransaction} from "@intuitionrobotics/firebase/backend";
 import {PermissionsShare} from "../permissions-share";
-import { UI_Account } from "@ir/user-account";
+import { UI_Account } from "@intuitionrobotics/user-account";
 
 const validateUserUuid = validateRegexp(/^.{0,50}$/);
 const validateGroupLabel = validateRegexp(/^[A-Za-z-\._ ]+$/);

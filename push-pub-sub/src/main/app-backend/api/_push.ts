@@ -1,3 +1,3 @@
-import {RouteResolver} from "@ir/thunderstorm/backend";
+import {RouteResolver} from "@intuitionrobotics/thunderstorm/backend";
 
 module.exports = new RouteResolver(require, __dirname);

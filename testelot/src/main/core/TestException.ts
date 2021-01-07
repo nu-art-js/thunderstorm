@@ -19,7 +19,7 @@
 /**
  * Created by TacB0sS on 3/18/17.
  */
-import {CustomException} from "@ir/ts-common";
+import {CustomException} from "@intuitionrobotics/ts-common";
 
 
 export class TestException

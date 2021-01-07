@@ -17,8 +17,8 @@
  */
 
 import {DB_PermissionProject} from "../../../index";
-import {BaseDB_ApiGeneratorCaller} from "@ir/db-api-generator/frontend";
-import {ThunderDispatcher} from "@ir/thunderstorm/frontend";
+import {BaseDB_ApiGeneratorCaller} from "@intuitionrobotics/db-api-generator/frontend";
+import {ThunderDispatcher} from "@intuitionrobotics/thunderstorm/frontend";
 
 export interface OnPermissionsProjectsLoaded {
 	__onPermissionsProjectsLoaded: () => void;

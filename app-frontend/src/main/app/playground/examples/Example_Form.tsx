@@ -22,14 +22,14 @@ import {
 	TS_Input,
 	FormRenderer,
 	ToastModule
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 import * as React from "react";
-import {Request_CreateAccount} from "@ir/user-account/shared/api";
+import {Request_CreateAccount} from "@intuitionrobotics/user-account/shared/api";
 import {css} from "emotion";
 import {COLORS} from "@res/colors";
 import {ICONS} from "@res/icons";
 import {renderForm} from "../../themes/forms";
-import {__stringify} from "@ir/ts-common";
+import {__stringify} from "@intuitionrobotics/ts-common";
 
 const fieldStyle = css({
 	                       borderBottom: `1px solid ${COLORS.gold()}`,

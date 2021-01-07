@@ -19,7 +19,7 @@
 import {
 	ImplementationMissingException,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {FirebaseModule} from "../FirebaseModule";
 import {AnalyticsWrapper} from "./AnalyticsWrapper";
 

@@ -1,7 +1,7 @@
 import {
 	ImplementationMissingException,
 	ModuleManager
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	__scenario,
 	Action,

@@ -25,7 +25,7 @@
 // Perhaps we may need to change this especially if it should be able to
 // be used as a standalone package.
 import {createClient} from "redis";
-import {Module} from "@ir/ts-common";
+import {Module} from "@intuitionrobotics/ts-common";
 
 type ConfigType = { port: number, host: string };
 

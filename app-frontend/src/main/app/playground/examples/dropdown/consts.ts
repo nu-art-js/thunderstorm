@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import { FlatItemToRender, TreeRendererMap } from "@ir/thunderstorm/frontend";
+import { FlatItemToRender, TreeRendererMap } from "@intuitionrobotics/thunderstorm/frontend";
 
 export type Plague = { label: string, value: string }
 

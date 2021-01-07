@@ -22,7 +22,7 @@ import {
 	DB_Object,
 	FilterKeys,
 	FirestoreQuery,
-} from "@ir/firebase";
+} from "@intuitionrobotics/firebase";
 import {
 	__stringify,
 	_keys,
@@ -42,7 +42,7 @@ import {
 	validateRegexp,
 	ValidationException,
 	ValidatorTypeResolver
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	ServerApi_Create,
 	ServerApi_Delete,
@@ -56,13 +56,13 @@ import {
 	FirestoreBackupDetails,
 	OnFirestoreBackupSchedulerAct,
 	ServerApi
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 import {
 	FirebaseModule,
 	FirestoreCollection,
 	FirestoreInterface,
 	FirestoreTransaction,
-} from "@ir/firebase/backend";
+} from "@intuitionrobotics/firebase/backend";
 import {
 	BadInputErrorBody,
 	ErrorKey_BadInput

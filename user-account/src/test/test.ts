@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {StormTester} from "@ir/thunderstorm/backend-test";
+import {StormTester} from "@intuitionrobotics/thunderstorm/backend-test";
 import {
 	createUser,
 	testBadSessionID,
@@ -26,8 +26,8 @@ import {
 	testSuccessfulLogin
 } from "./tests/create-user";
 import {AccountModule} from "./_main";
-import {__scenario} from "@ir/testelot";
-import {FirebaseModule} from "@ir/firebase/backend";
+import {__scenario} from "@intuitionrobotics/testelot";
+import {FirebaseModule} from "@intuitionrobotics/firebase/backend";
 
 export const mainScenario = __scenario("login");
 

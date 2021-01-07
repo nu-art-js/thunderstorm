@@ -21,12 +21,12 @@ import {
 	TypeValidator,
 	validateExists,
 	validateRegexp
-} from "@ir/ts-common";
-import {ServerApi} from "@ir/thunderstorm/backend"
+} from "@intuitionrobotics/ts-common";
+import {ServerApi} from "@intuitionrobotics/thunderstorm/backend"
 import {
 	BaseDB_ApiGenerator,
 	validateUniqueId
-} from "@ir/db-api-generator/backend";
+} from "@intuitionrobotics/db-api-generator/backend";
 import {DB_Temp_File} from "../../shared/types";
 
 export const TEMP_COLLECTION = 'temp-files-upload';

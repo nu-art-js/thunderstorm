@@ -25,18 +25,18 @@ import {
 	ForceUpgrade,
 	Thunder,
 	ToastBuilder
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 import {
 	Frontend_ModulePack_LiveDocs,
 	LiveDocsModule,
 	showEditModalExample
-} from "@ir/live-docs/frontend";
+} from "@intuitionrobotics/live-docs/frontend";
 import {ExampleModule} from "@modules/ExampleModule";
-import {Frontend_ModulePack_PushPubSub} from "@ir/push-pub-sub/frontend";
-import {BugReportModule} from "@ir/bug-report/frontend";
-import {Module} from '@ir/ts-common';
-import {Frontend_ModulePack_Uploader} from "@ir/file-upload/frontend";
-import {PermissionsFE} from '@ir/permissions/frontend';
+import {Frontend_ModulePack_PushPubSub} from "@intuitionrobotics/push-pub-sub/frontend";
+import {BugReportModule} from "@intuitionrobotics/bug-report/frontend";
+import {Module} from '@intuitionrobotics/ts-common';
+import {Frontend_ModulePack_Uploader} from "@intuitionrobotics/file-upload/frontend";
+import {PermissionsFE} from '@intuitionrobotics/permissions/frontend';
 
 const modules: Module[] = [
 	ForceUpgrade,

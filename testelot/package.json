@@ -1,5 +1,5 @@
 {
-  "name": "@ir/testelot",
+  "name": "@intuitionrobotics/testelot",
   "version": "0.0.0",
   "description": "Nu-Art Sir Testelot",
   "keywords": [
@@ -29,7 +29,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@ir/ts-common": "~0.0.1",
+    "@intuitionrobotics/ts-common": "~0.0.1",
     "fetch": "^1.1.0",
     "node-fetch": "^2.3.0",
     "object-hash": "^1.3.1"

@@ -1,4 +1,4 @@
-import {ApiWithBody} from "@ir/thunderstorm";
+import {ApiWithBody} from "@intuitionrobotics/thunderstorm";
 import {
 	Request_PushRegister,
 	Request_ReadPush,

@@ -18,13 +18,13 @@
 import {
 	Dispatcher,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {TestDispatch} from "@app/app-shared";
 import {
 	FirebaseModule,
 	FirestoreCollection
-} from "@ir/firebase/backend";
-import {QueryRequestInfo} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/firebase/backend";
+import {QueryRequestInfo} from "@intuitionrobotics/thunderstorm/backend";
 
 type Config = {
 	options: string[],

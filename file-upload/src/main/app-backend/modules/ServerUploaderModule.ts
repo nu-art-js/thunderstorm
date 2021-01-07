@@ -29,7 +29,7 @@ import {
 	Axios_RequestConfig,
 	AxiosHttpModule,
 	AxiosHttpModule_Class
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 export type ServerFilesToUpload = Request_Uploader & {
 	file: Buffer

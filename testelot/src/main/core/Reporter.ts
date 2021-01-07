@@ -33,7 +33,7 @@ import {
 	LogClient_Terminal,
 	LogParam
 
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 class ReportSummary {
 	Running: number = 0;

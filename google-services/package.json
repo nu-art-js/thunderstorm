@@ -1,5 +1,5 @@
 {
-  "name": "@ir/google-services",
+  "name": "@intuitionrobotics/google-services",
   "version": "0.0.0",
   "description": "google-services",
   "keywords": [
@@ -31,17 +31,17 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@ir/ts-common": "~0.0.1",
-    "@ir/db-api-generator": "~0.0.1",
-    "@ir/firebase": "~0.0.1",
-    "@ir/storm": "~0.0.1",
-    "@ir/thunderstorm": "~0.0.1",
-    "@ir/user-account": "~0.0.1",
+    "@intuitionrobotics/ts-common": "~0.0.1",
+    "@intuitionrobotics/db-api-generator": "~0.0.1",
+    "@intuitionrobotics/firebase": "~0.0.1",
+    "@intuitionrobotics/storm": "~0.0.1",
+    "@intuitionrobotics/thunderstorm": "~0.0.1",
+    "@intuitionrobotics/user-account": "~0.0.1",
     "moment": "^2.24.0"
   },
   "devDependencies": {
     "@google-cloud/resource": "^1.2.1",
-    "@ir/testelot": "~0.0.1",
+    "@intuitionrobotics/testelot": "~0.0.1",
     "@types/adm-zip": "^0.4.33",
     "@types/express": "^4.17.7",
     "@types/node": "^11.11.1",

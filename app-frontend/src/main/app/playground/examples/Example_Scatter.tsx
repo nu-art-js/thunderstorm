@@ -1,9 +1,9 @@
 import * as React from "react";
-import {BaseComponent} from "@ir/thunderstorm/app-frontend/core/BaseComponent";
+import {BaseComponent} from "@intuitionrobotics/thunderstorm/app-frontend/core/BaseComponent";
 import {scaleLinear} from "d3-scale";
 import AxisLeft from "./d3components/Example_AxisX";
 import AxisBottom from "./d3components/Example_AxisBottom.";
-import {TS_Input} from "@ir/thunderstorm/app-frontend/components/TS_Input";
+import {TS_Input} from "@intuitionrobotics/thunderstorm/app-frontend/components/TS_Input";
 
 export type Coordinates = {
 	x: number,

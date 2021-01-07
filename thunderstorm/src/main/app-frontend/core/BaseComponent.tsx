@@ -31,7 +31,7 @@ import {
 	LogLevel,
 	LogParam,
 	TimerHandler
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
 import {BrowserHistoryModule} from "../modules/HistoryModule";

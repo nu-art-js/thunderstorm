@@ -19,7 +19,7 @@
 import {
 	BadImplementationException,
 	Logger
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {FirebaseType_DB} from "./types";
 // tslint:disable:no-import-side-effect
 import 'firebase/database';

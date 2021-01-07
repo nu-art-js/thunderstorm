@@ -22,13 +22,13 @@ import {CSSProperties} from "react";
 import {
 	_keys,
 	addItemToArray
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {AccountModule} from "../modules/AccountModule";
 import {Request_LoginAccount} from "../../shared/api";
 import {
 	ToastModule,
 	TS_Input
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 
 export type ValueAndError = {
 	value?: string

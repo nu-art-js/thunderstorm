@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@ir/testelot";
-import {assert} from "@ir/ts-common";
+import {__scenario} from "@intuitionrobotics/testelot";
+import {assert} from "@intuitionrobotics/ts-common";
 import {
 	testCollection,
 	testInstance1,

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Module} from "@ir/ts-common";
+import {Module} from "@intuitionrobotics/ts-common";
 
 import {
 	Collection,

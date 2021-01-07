@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Auditable} from "@ir/ts-common";
+import {Auditable} from "@intuitionrobotics/ts-common";
 
 export type LiveDocReqParams = {
 	key: string

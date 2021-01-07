@@ -27,7 +27,7 @@ import {
 	__stringify,
 	ImplementationMissingException,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	RequestBody_SamlAssertOptions,
 	RequestParams_LoginSAML

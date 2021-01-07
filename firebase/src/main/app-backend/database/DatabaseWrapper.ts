@@ -25,7 +25,7 @@ import {
 	BadImplementationException,
 	calculateJsonSizeMb,
 	ObjectTS
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
 

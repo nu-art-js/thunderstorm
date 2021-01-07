@@ -2,10 +2,10 @@ import {
 	ImplementationMissingException,
 	Module,
 	StringMap
-} from "@ir/ts-common";
-import {ThunderDispatcher} from "@ir/thunderstorm/app-frontend/core/thunder-dispatcher";
-import {XhrHttpModule} from "@ir/thunderstorm/frontend";
-import {HttpMethod} from "@ir/thunderstorm";
+} from "@intuitionrobotics/ts-common";
+import {ThunderDispatcher} from "@intuitionrobotics/thunderstorm/app-frontend/core/thunder-dispatcher";
+import {XhrHttpModule} from "@intuitionrobotics/thunderstorm/frontend";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
 import {
 	PermissionsApi_UserUrlsPermissions,
 	UserUrlsPermissions

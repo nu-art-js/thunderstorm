@@ -20,7 +20,7 @@ import {
 	__custom,
 	__scenario,
 	TestException
-} from "@ir/testelot";
+} from "@intuitionrobotics/testelot";
 import {
 	testLevel1,
 	testLevel2
@@ -33,7 +33,7 @@ import {
 import {
 	generateHex,
 	StringMap
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 
 const customField1 = {unit: 'eq1'};

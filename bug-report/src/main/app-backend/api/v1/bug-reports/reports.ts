@@ -22,14 +22,14 @@ import {
 	dispatch_queryRequestInfo,
 	ExpressRequest,
 	ServerApi_Post,
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 import {
 	ApiBugReport,
 	BugReportModule,
 	Request_BugReport
 } from "./_imports";
 
-// import {AccountModule} from "@ir/user-account/backend";
+// import {AccountModule} from "@intuitionrobotics/user-account/backend";
 
 class ServerApi_SendReport
 	extends ServerApi_Post<ApiBugReport> {

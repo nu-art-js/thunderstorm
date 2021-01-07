@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@ir/testelot";
+import {__scenario} from "@intuitionrobotics/testelot";
 import {Tester} from "./_core/Tester";
-import {FirebaseModule} from "@ir/firebase/backend";
+import {FirebaseModule} from "@intuitionrobotics/firebase/backend";
 import {PushPubSubModule} from "../main/app-backend/modules/PushPubSubModule";
 import {scenarioCleanup} from "./cleaup";
 

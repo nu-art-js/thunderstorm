@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@ir/testelot";
+import {__scenario} from "@intuitionrobotics/testelot";
 import {myDb} from "../_core/database-wrapper";
 import {
 	assert,
 	BadImplementationException
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 const removeData = () => myDb.processDirty('Removing a node', async db => {
 	await db.set(objectModel.path, objectModel.value);

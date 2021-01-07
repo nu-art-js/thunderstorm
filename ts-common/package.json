@@ -1,5 +1,5 @@
 {
-  "name": "@ir/ts-common",
+  "name": "@intuitionrobotics/ts-common",
   "version": "0.0.0",
   "description": "js and ts infra",
   "keywords": [

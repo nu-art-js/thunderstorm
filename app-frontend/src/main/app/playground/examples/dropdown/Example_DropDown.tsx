@@ -24,7 +24,7 @@ import {
 	Example_NewProps,
 	Props_DropDown,
 	TreeRendererMap,
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 import * as React from "react";
 import {optionRendererStyle,} from "./Example_AllDropDowns";
 import {

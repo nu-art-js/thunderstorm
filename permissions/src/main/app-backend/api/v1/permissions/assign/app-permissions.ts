@@ -20,7 +20,7 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 import {
 	PermissionsApi_AssignAppPermissions,
 	Request_AssignAppPermissions,
@@ -29,8 +29,8 @@ import {
 import {
 	HttpMethod,
 	QueryParams
-} from "@ir/thunderstorm";
-import {AccountModule} from "@ir/user-account/app-backend/modules/AccountModule";
+} from "@intuitionrobotics/thunderstorm";
+import {AccountModule} from "@intuitionrobotics/user-account/app-backend/modules/AccountModule";
 
 
 class ServerApi_UserUrlsPermissions

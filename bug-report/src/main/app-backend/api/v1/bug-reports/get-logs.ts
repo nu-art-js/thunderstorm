@@ -21,7 +21,7 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi_Get,
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 import {
 	AdminBRModule,
 	ApiGetLog

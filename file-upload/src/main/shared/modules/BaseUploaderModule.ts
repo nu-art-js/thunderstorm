@@ -24,14 +24,14 @@ import {
 	Minute,
 	Module,
 	Queue
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	BaseHttpModule_Class,
 	BaseHttpRequest,
 	ErrorResponse,
 	HttpMethod,
 	TS_Progress
-} from "@ir/thunderstorm";
+} from "@intuitionrobotics/thunderstorm";
 
 import {
 	Api_GetUploadUrl,

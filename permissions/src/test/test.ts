@@ -17,8 +17,8 @@
  */
 
 import {Backend_ModulePack_Permissions} from "../main/backend";
-import {StormTester} from "@ir/thunderstorm/backend-test";
-import {__scenario} from "@ir/testelot";
+import {StormTester} from "@intuitionrobotics/thunderstorm/backend-test";
+import {__scenario} from "@intuitionrobotics/testelot";
 import {createTwoAccessLevels} from "./tests/create-project";
 import {
 	checkAccessLevelsPropertyOfGroup,
@@ -57,8 +57,8 @@ import {
 	permissionsAssertDoesCustomFieldsSatisfiesTests,
 	permissionsAssertIsLevelsMatchTests
 } from "./tests/permissions-assert";
-import { FirebaseModule } from "@ir/firebase/backend";
-import { AccountModule } from "@ir/user-account/backend";
+import { FirebaseModule } from "@intuitionrobotics/firebase/backend";
+import { AccountModule } from "@intuitionrobotics/user-account/backend";
 import {
 	assignUserPermissionsTests
 } from "./tests/assign-permissions";

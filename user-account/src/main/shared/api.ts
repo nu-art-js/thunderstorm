@@ -20,7 +20,7 @@
 import {
 	ApiWithBody,
 	ApiWithQuery
-} from "@ir/thunderstorm";
+} from "@intuitionrobotics/thunderstorm";
 
 export const HeaderKey_SessionId = "x-session-id";
 export const HeaderKey_Email = "x-email";

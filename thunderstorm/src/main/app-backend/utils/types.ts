@@ -21,7 +21,7 @@
 
 
 import * as express from "express";
-import {Dispatcher} from "@ir/ts-common";
+import {Dispatcher} from "@intuitionrobotics/ts-common";
 
 export type Express = express.Express
 export type ExpressRouter = express.Router

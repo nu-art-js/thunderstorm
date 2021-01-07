@@ -1,5 +1,5 @@
 {
-  "name": "@ir/db-api-generator",
+  "name": "@intuitionrobotics/db-api-generator",
   "version": "0.0.0",
   "description": "db-api-generator",
   "keywords": [
@@ -27,14 +27,14 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@ir/ts-common": "~0.0.1",
+    "@intuitionrobotics/ts-common": "~0.0.1",
     "moment": "^2.24.0",
     "use-strict": "^1.0.1"
   },
   "devDependencies": {
-    "@ir/firebase": "~0.0.1",
-    "@ir/testelot": "~0.0.1",
-    "@ir/thunderstorm": "~0.0.1",
+    "@intuitionrobotics/firebase": "~0.0.1",
+    "@intuitionrobotics/testelot": "~0.0.1",
+    "@intuitionrobotics/thunderstorm": "~0.0.1",
     "@types/compression": "^1.7.0",
     "@types/express": "^4.16.1",
     "@types/history": "^4.7.2",

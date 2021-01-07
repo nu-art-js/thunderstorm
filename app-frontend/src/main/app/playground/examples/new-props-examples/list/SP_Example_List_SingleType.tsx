@@ -6,8 +6,8 @@ import {
 	MenuComponent,
 	MenuComponentProps,
 	ToastModule
-} from "@ir/thunderstorm/frontend";
-import {__stringify} from "@ir/ts-common";
+} from "@intuitionrobotics/thunderstorm/frontend";
+import {__stringify} from "@intuitionrobotics/ts-common";
 
 export class SP_Example_List_SingleType
 	extends Component<{}> {

@@ -22,13 +22,13 @@ import {
 	ImplementationMissingException,
 	Module,
 	TypedMap
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	ApiException,
 	AxiosHttpModule,
 	promisifyRequest
-} from "@ir/thunderstorm/backend";
-import {HttpMethod} from "@ir/thunderstorm";
+} from "@intuitionrobotics/thunderstorm/backend";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
 import {
 	CoreOptions,
 	Headers,

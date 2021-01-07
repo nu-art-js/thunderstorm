@@ -19,7 +19,7 @@ import {
 	BadImplementationException,
 	Exception,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import * as jwt from "jsonwebtoken";
 import {
 	Octokit,
@@ -32,7 +32,7 @@ import * as path from "path";
 import {
 	ExpressRequest,
 	promisifyRequest
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 type Config = {
 	appId: string

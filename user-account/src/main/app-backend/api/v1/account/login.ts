@@ -20,7 +20,7 @@
 import {
 	ApiResponse,
 	ServerApi
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 
 import {
@@ -28,8 +28,8 @@ import {
 	AccountApi_Login,
 	Request_LoginAccount
 } from "./_imports";
-import {HttpMethod} from "@ir/thunderstorm";
-import {ExpressRequest} from "@ir/thunderstorm/backend";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
+import {ExpressRequest} from "@intuitionrobotics/thunderstorm/backend";
 
 class ServerApi_Account_Login
 	extends ServerApi<AccountApi_Login> {

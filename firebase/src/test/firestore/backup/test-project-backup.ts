@@ -20,13 +20,13 @@ import {
 	__scenario,
 	__custom,
 	Scenario
-} from "@ir/testelot";
+} from "@intuitionrobotics/testelot";
 import {
 	FirebaseModule,
 	FirestoreCollection,
 	ProjectFirestoreBackup
 } from "../../_main";
-import {Module} from "@ir/ts-common";
+import {Module} from "@intuitionrobotics/ts-common";
 
 export const testFirestoreBackup: Scenario = __scenario("test-project-backup");
 testFirestoreBackup.add(__custom(async () => {

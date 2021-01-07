@@ -22,7 +22,7 @@ import {
 	ImplementationMissingException,
 	Module,
 	ObjectTS
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 import {
 	HeaderKey,

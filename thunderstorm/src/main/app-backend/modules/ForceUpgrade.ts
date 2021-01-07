@@ -25,7 +25,7 @@ import {
 	compareVersions,
 	Module,
 	ImplementationMissingException
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	HeaderKey,
 	ServerApi_Middleware

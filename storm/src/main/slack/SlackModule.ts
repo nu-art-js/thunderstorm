@@ -25,7 +25,7 @@ import {
 	currentTimeMillies,
 	Minute,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	WebAPICallResult,
 	WebClient

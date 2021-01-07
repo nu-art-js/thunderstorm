@@ -21,7 +21,7 @@ import {
 	batchAction,
 	generateHex,
 	Subset
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	FirestoreType_Collection,
 	FirestoreType_DocumentSnapshot

@@ -23,7 +23,7 @@ import * as React from "react";
 import {
 	ObjectTS,
 	ValidatorTypeResolver
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 export type InputField<T, K extends keyof T = keyof T> = {
 	type: 'text' | 'number' | 'password'

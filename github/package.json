@@ -1,5 +1,5 @@
 {
-  "name": "@ir/github",
+  "name": "@intuitionrobotics/github",
   "version": "0.0.0",
   "description": "Github api Module",
   "keywords": [
@@ -18,8 +18,8 @@
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@ir/thunderstorm": "~0.0.1",
-    "@ir/ts-common": "~0.0.1",
+    "@intuitionrobotics/thunderstorm": "~0.0.1",
+    "@intuitionrobotics/ts-common": "~0.0.1",
     "@octokit/rest": "18.0.9",
     "@octokit/plugin-paginate-rest": "2.2.1",
     "jsonwebtoken": "~8.5.1"

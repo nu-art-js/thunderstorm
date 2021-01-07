@@ -19,14 +19,14 @@
 import {
 	ApiWithBody,
 	ApiWithQuery
-} from "@ir/thunderstorm";
+} from "@intuitionrobotics/thunderstorm";
 import {
 	ApiResponse,
 	ExpressRequest,
 	RemoteProxy,
 	ServerApi_Get
-} from "@ir/thunderstorm/backend";
-import {PermissionsAssert} from "@ir/permissions/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
+import {PermissionsAssert} from "@intuitionrobotics/permissions/backend";
 
 const PROP_A = "a";
 const PROP_E = "e";

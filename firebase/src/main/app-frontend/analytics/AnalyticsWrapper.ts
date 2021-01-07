@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Logger} from "@ir/ts-common";
+import {Logger} from "@intuitionrobotics/ts-common";
 import {
 	FirebaseType_Analytics,
 	FirebaseType_CallOptions,

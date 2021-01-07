@@ -24,7 +24,7 @@ import {
 	TS_Progress
 } from "../../../index";
 
-import {Module} from "@ir/ts-common";
+import {Module} from "@intuitionrobotics/ts-common";
 // noinspection TypeScriptPreferShortImport
 import {XhrHttpModule} from "../http/XhrHttpModule";
 import {BrowserHistoryModule} from "../HistoryModule";

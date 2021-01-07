@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import {UploaderModule} from "@ir/file-upload/frontend";
+import {UploaderModule} from "@intuitionrobotics/file-upload/frontend";
 
 
 export class Example_Uploader

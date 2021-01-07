@@ -21,7 +21,7 @@
 
 
 import * as React from "react";
-import {generateHex} from "@ir/ts-common";
+import {generateHex} from "@intuitionrobotics/ts-common";
 import {BaseComponent} from "../../core/BaseComponent";
 import {Adapter} from "../adapter/Adapter";
 import {Tree} from "./Tree";

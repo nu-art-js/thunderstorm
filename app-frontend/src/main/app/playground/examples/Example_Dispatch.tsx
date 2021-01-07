@@ -19,9 +19,9 @@
 import {
 	BaseComponent,
 	ThunderDispatcher
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 import * as React from "react";
-import {Second} from "@ir/ts-common";
+import {Second} from "@intuitionrobotics/ts-common";
 import {ExampleModule} from "@modules/ExampleModule";
 import {Test} from "@modules/TestModule";
 import {TestDispatch} from "@app/app-shared";

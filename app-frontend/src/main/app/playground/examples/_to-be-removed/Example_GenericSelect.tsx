@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import {GenericSelect} from "@ir/thunderstorm/app-frontend/components/GenericSelect";
+import {GenericSelect} from "@intuitionrobotics/thunderstorm/app-frontend/components/GenericSelect";
 import {ICONS} from "@res/icons";
 import {selectStyles} from "../../Page_Playground";
 

@@ -26,13 +26,13 @@ import {
 	hashPasswordWithSalt,
 	Module,
 	validate
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 
 import {
 	FirebaseModule,
 	FirestoreCollection
-} from "@ir/firebase/backend";
+} from "@intuitionrobotics/firebase/backend";
 import {
 	DB_Account,
 	DB_Session,
@@ -47,8 +47,8 @@ import {
 	ExpressRequest,
 	HeaderKey,
 	QueryRequestInfo
-} from "@ir/thunderstorm/backend";
-import {validateEmail} from "@ir/db-api-generator/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
+import {validateEmail} from "@intuitionrobotics/db-api-generator/backend";
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 

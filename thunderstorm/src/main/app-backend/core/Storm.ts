@@ -19,17 +19,17 @@
  * limitations under the License.
  */
 
-import {FirebaseModule} from "@ir/firebase/backend";
+import {FirebaseModule} from "@intuitionrobotics/firebase/backend";
 import {
 	BeLogged,
 	LogClient_Function,
 	LogClient_Terminal,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	Firebase_ExpressFunction,
 	FirebaseFunction
-} from '@ir/firebase/backend-functions';
+} from '@intuitionrobotics/firebase/backend-functions';
 import {BaseStorm} from "./BaseStorm";
 import {
 	HttpServer,

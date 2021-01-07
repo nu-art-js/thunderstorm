@@ -20,13 +20,13 @@
  */
 
 import * as React from 'react';
-import {Filter} from "@ir/ts-common/utils/filter-tools";
+import {Filter} from "@intuitionrobotics/ts-common/utils/filter-tools";
 import {TS_Input} from "./TS_Input";
 import {Stylable} from "../tools/Stylable";
 import {
 	compare,
 	generateHex
-} from '@ir/ts-common';
+} from '@intuitionrobotics/ts-common';
 
 export type Props_FilterInput<T> = Stylable & {
 	filter: (item: T) => string[],

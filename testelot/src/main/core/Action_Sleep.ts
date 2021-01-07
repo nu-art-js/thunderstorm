@@ -20,7 +20,7 @@
  * Created by TacB0sS on 3/18/17.
  */
 import {Action} from "./Action";
-import {timeout} from "@ir/ts-common";
+import {timeout} from "@intuitionrobotics/ts-common";
 
 
 export class Action_Sleep

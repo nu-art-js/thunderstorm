@@ -22,7 +22,7 @@ import {
 	Example_NewProps,
 	TS_Input,
 	TS_InputProps
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 
 type TestType = {
 	prop1?: string,

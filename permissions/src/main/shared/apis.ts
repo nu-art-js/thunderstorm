@@ -19,8 +19,8 @@
 import {
 	ApiWithBody,
 	ApiWithQuery
-} from "@ir/thunderstorm";
-import {StringMap} from "@ir/ts-common";
+} from "@intuitionrobotics/thunderstorm";
+import {StringMap} from "@intuitionrobotics/ts-common";
 import {DB_PermissionProject} from "./manager-types";
 import {User_Group} from "./assign-types";
 

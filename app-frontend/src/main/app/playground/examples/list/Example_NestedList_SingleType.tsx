@@ -5,8 +5,8 @@ import {
 	AdapterBuilder,
 	MenuComponent,
 	ToastModule
-} from "@ir/thunderstorm/frontend";
-import {__stringify} from "@ir/ts-common";
+} from "@intuitionrobotics/thunderstorm/frontend";
+import {__stringify} from "@intuitionrobotics/ts-common";
 
 export class Example_NestedList_SingleType
 	extends Component<{}> {

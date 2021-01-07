@@ -22,7 +22,7 @@ import {FirebaseModule} from "../FirebaseModule";
 import {
 	currentTimeMillies,
 	Day
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 type Config = {
 	backupIntervalMs: number

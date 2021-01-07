@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGeneratorCaller} from "@ir/db-api-generator/frontend";
+import {BaseDB_ApiGeneratorCaller} from "@intuitionrobotics/db-api-generator/frontend";
 import {DB_PermissionsUser} from "../../../index";
-import {ThunderDispatcher} from "@ir/thunderstorm/frontend";
+import {ThunderDispatcher} from "@intuitionrobotics/thunderstorm/frontend";
 
 export interface OnPermissionsUsersLoaded {
 	__onPermissionsUsersLoaded: () => void;

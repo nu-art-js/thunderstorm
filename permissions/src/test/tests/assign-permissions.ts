@@ -22,7 +22,7 @@ import {
 	__scenario,
 	ContextKey,
 	TestException
-} from "@ir/testelot";
+} from "@intuitionrobotics/testelot";
 import {
 	cleanup,
 	ConfigDB,
@@ -34,7 +34,7 @@ import {
 	compare,
 	generateHex,
 	StringMap
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	UserPermissionsDB,
 	GroupPermissionsDB,

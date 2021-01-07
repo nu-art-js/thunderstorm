@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Module} from "@ir/ts-common";
+import {Module} from "@intuitionrobotics/ts-common";
 import {
 	DB_BugReport,
 	Paths
@@ -27,7 +27,7 @@ import {
 	FirebaseModule,
 	FirestoreCollection,
 	StorageWrapper
-} from "@ir/firebase/backend";
+} from "@intuitionrobotics/firebase/backend";
 
 type Config = {
 	projectId: string

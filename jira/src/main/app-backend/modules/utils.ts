@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {_keys} from "@ir/ts-common";
+import {_keys} from "@intuitionrobotics/ts-common";
 import {JiraQuery} from "./JiraModule";
 
 export type JiraIssueText = string | { href: string, text: string };

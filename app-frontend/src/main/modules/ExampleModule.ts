@@ -20,13 +20,13 @@ import {
 	__stringify,
 	Module,
 	Second
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 import {
 	ThunderDispatcher,
 	ToastModule,
 	XhrHttpModule
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 import {
 	CommonBodyReq,
 	CustomError1,
@@ -42,19 +42,19 @@ import {
 import {
 	ErrorResponse,
 	HttpMethod
-} from "@ir/thunderstorm";
+} from "@intuitionrobotics/thunderstorm";
 import {Test} from "@modules/TestModule";
 import {
 	OnNotificationsReceived,
 	OnPushMessageReceived,
 	PushPubSubModule,
 	NotificationsModule
-} from "@ir/push-pub-sub/frontend";
-import {FirebaseModule} from "@ir/firebase/frontend";
+} from "@intuitionrobotics/push-pub-sub/frontend";
+import {FirebaseModule} from "@intuitionrobotics/firebase/frontend";
 import {
 	BaseSubscriptionData,
 	DB_Notifications
-} from "@ir/push-pub-sub";
+} from "@intuitionrobotics/push-pub-sub";
 
 type Config = {
 	remoteUrl: string

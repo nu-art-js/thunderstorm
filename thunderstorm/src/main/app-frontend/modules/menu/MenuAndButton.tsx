@@ -11,7 +11,7 @@ import {
 	// resolveGenericPosition,
 	resolveRealPosition
 } from "./MenuModule";
-import {BadImplementationException} from "@ir/ts-common";
+import {BadImplementationException} from "@intuitionrobotics/ts-common";
 import {Adapter} from "../../components/adapter/Adapter";
 import {MenuPosition} from "./PopupMenu";
 

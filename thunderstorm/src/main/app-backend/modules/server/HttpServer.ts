@@ -33,7 +33,7 @@ import {
 	addItemToArray,
 	LogLevel,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	HttpRequestData,
 	ServerApi

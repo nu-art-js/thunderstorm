@@ -19,13 +19,13 @@
 import {
 	__custom,
 	__scenario
-} from "@ir/testelot";
+} from "@intuitionrobotics/testelot";
 import {
 	BucketWrapper,
 	FirebaseModule
 } from "../../../_main";
 import {File} from "@google-cloud/storage";
-import {assert} from "@ir/ts-common";
+import {assert} from "@intuitionrobotics/ts-common";
 
 const metadata = {
 	my: 'custom',

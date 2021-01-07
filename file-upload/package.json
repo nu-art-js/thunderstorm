@@ -1,5 +1,5 @@
 {
-  "name": "@ir/file-upload",
+  "name": "@intuitionrobotics/file-upload",
   "version": "0.0.0",
   "description": "File Uploader - Express & Typescript based backend framework",
   "keywords": [
@@ -29,17 +29,17 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@ir/ts-common": "~0.0.1",
-    "@ir/thunderstorm": "~0.0.1",
-    "@ir/firebase": "~0.0.1",
-    "@ir/db-api-generator": "~0.0.1",
-    "@ir/push-pub-sub": "~0.0.1"
+    "@intuitionrobotics/ts-common": "~0.0.1",
+    "@intuitionrobotics/thunderstorm": "~0.0.1",
+    "@intuitionrobotics/firebase": "~0.0.1",
+    "@intuitionrobotics/db-api-generator": "~0.0.1",
+    "@intuitionrobotics/push-pub-sub": "~0.0.1"
   },
   "devDependencies": {
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/firestore": "^3.7.5",
     "@google-cloud/storage": "^2.5.0",
-    "@ir/testelot": "~0.0.1",
+    "@intuitionrobotics/testelot": "~0.0.1",
     "@types/compression": "^1.0.1",
     "@types/express": "^4.17.2",
     "isomorphic-apk-reader": "^1.1.24",

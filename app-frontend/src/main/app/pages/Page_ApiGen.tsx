@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import {ApiCaller_PermissionsProject} from "@ir/permissions/frontend";
+import {ApiCaller_PermissionsProject} from "@intuitionrobotics/permissions/frontend";
 
 
 export class Page_ApiGen

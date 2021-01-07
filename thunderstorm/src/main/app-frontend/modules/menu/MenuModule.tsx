@@ -1,7 +1,7 @@
 import {
 	generateHex,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	MenuPosition
 } from "./PopupMenu";

@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {_keys} from "@ir/ts-common";
+import {_keys} from "@intuitionrobotics/ts-common";
 import {Adapter,} from "../adapter/Adapter";
 import {BaseRendererMap} from "../adapter/BaseRenderer";
 

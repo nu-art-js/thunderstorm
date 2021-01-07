@@ -34,7 +34,7 @@ import {
 	deepClone,
 	ImplementationMissingException,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 
 const functions = require('firebase-functions');

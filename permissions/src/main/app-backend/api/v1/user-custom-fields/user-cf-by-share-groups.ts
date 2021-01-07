@@ -21,13 +21,13 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 import {
 	PermissionsApi_UserCFsByShareGroups,
 	Request_UserCFsByShareGroups
 } from "../permissions/_imports";
-import {HttpMethod} from "@ir/thunderstorm";
-import {AccountModule} from "@ir/user-account/backend";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
+import {AccountModule} from "@intuitionrobotics/user-account/backend";
 import {PermissionsModule} from "../../../modules/PermissionsModule";
 
 class ServerApi_UserCFsByShareGroups

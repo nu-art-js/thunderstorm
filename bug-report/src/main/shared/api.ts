@@ -20,8 +20,8 @@
 import {
 	ApiWithBody,
 	ApiWithQuery
-} from "@ir/thunderstorm";
-import {Auditable} from "@ir/ts-common";
+} from "@intuitionrobotics/thunderstorm";
+import {Auditable} from "@intuitionrobotics/ts-common";
 import {TicketDetails} from "../app-backend/modules/BugReportModule";
 
 type DB_Object = {

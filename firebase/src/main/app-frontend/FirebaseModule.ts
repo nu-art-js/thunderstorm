@@ -25,7 +25,7 @@ import {
 	BadImplementationException,
 	ImplementationMissingException,
 	Module
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {FirebaseConfig} from "..";
 import {FirebaseSession} from "./auth/FirebaseSession";
 import {SwFirebaseSession} from "./auth/SwFirebaseSession";

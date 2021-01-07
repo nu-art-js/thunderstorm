@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@ir/permissions/app-backend/api/v1/permissions/_permissions");
+module.exports = require("@intuitionrobotics/permissions/app-backend/api/v1/permissions/_permissions");

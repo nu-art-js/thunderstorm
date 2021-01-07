@@ -19,17 +19,17 @@
 import {
 	ApiResponse,
 	ServerApi
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 
-import {AccountModule} from "@ir/user-account/backend";
+import {AccountModule} from "@intuitionrobotics/user-account/backend";
 import {
 	PermissionsApi_AssertUserAccess,
 	Request_AssertApiForUser
 } from "./_imports";
-import {HttpMethod} from "@ir/thunderstorm";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
 import {PermissionsAssert} from "../../../modules/permissions-assert";
-import {ExpressRequest} from "@ir/thunderstorm/backend";
+import {ExpressRequest} from "@intuitionrobotics/thunderstorm/backend";
 
 class ServerApi_AssertPermissions
 	extends ServerApi<PermissionsApi_AssertUserAccess> {

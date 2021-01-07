@@ -21,16 +21,16 @@ import * as fs from "fs";
 import {
 	ImplementationMissingException,
 	ModuleManager
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	__scenario,
 	Reporter,
 	Scenario
-} from "@ir/testelot";
+} from "@intuitionrobotics/testelot";
 import {
 	FirebaseModule,
 	FirebaseModule_Class
-} from "@ir/firebase/backend";
+} from "@intuitionrobotics/firebase/backend";
 
 export class Tester
 	extends ModuleManager {

@@ -20,17 +20,17 @@
 import {
 	ApiResponse,
 	ServerApi,
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 
 
-import {auditBy,} from "@ir/ts-common";
+import {auditBy,} from "@intuitionrobotics/ts-common";
 import {
 	ApiHistoryLiveDocs,
 	LiveDocHistoryReqParams,
 	LiveDocsModule
 } from "./_imports";
-import {HttpMethod} from "@ir/thunderstorm";
-import {ExpressRequest} from "@ir/thunderstorm/backend";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
+import {ExpressRequest} from "@intuitionrobotics/thunderstorm/backend";
 
 class ServerApi_LiveDoc_ChangeHistory
 	extends ServerApi<ApiHistoryLiveDocs> {

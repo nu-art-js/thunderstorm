@@ -23,11 +23,11 @@ import {
     CheckboxFieldProps,
     CheckboxOption,
     TS_CheckboxField
-} from "@ir/thunderstorm/frontend";
+} from "@intuitionrobotics/thunderstorm/frontend";
 import {ChckbxOption, lessOptions, options, lessOptions2} from "./data";
-import {deepClone, toggleElementInArray} from "@ir/ts-common";
+import {deepClone, toggleElementInArray} from "@intuitionrobotics/ts-common";
 import {ICONS} from "@res/icons";
-import {Example_NewProps} from "@ir/thunderstorm/app-frontend/components/playground/Example_NewProps";
+import {Example_NewProps} from "@intuitionrobotics/thunderstorm/app-frontend/components/playground/Example_NewProps";
 
 const container = css({
     width: '500px'

@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {Module} from "@ir/ts-common";
+import {Module} from "@intuitionrobotics/ts-common";
 
 export type ResourceId = string;
 

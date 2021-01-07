@@ -23,13 +23,13 @@ import {
 	generateHex,
 	Module,
 	padNumber
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 
 import {
 	FirebaseModule,
 	FirestoreCollection,
 	StorageWrapper
-} from "@ir/firebase/backend";
+} from "@intuitionrobotics/firebase/backend";
 
 import {
 	BugReport,

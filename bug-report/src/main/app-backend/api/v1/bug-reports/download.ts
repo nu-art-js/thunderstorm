@@ -21,14 +21,14 @@ import {
 	ApiResponse,
 	ExpressRequest,
 	ServerApi_Post
-} from "@ir/thunderstorm/backend";
+} from "@intuitionrobotics/thunderstorm/backend";
 import {
 	AdminBRModule,
 	ApiPostPath,
 	Paths
 } from "./_imports";
 
-// import {AccountModule} from "@ir/user-account/backend";
+// import {AccountModule} from "@intuitionrobotics/user-account/backend";
 
 class ServerApi_DownloadLogs
 	extends ServerApi_Post<ApiPostPath> {

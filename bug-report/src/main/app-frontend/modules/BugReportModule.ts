@@ -24,9 +24,9 @@ import {
 	LogLevel,
 	LogLevelOrdinal,
 	Module
-} from "@ir/ts-common";
-import {XhrHttpModule} from "@ir/thunderstorm/frontend";
-import {HttpMethod} from "@ir/thunderstorm";
+} from "@intuitionrobotics/ts-common";
+import {XhrHttpModule} from "@intuitionrobotics/thunderstorm/frontend";
+import {HttpMethod} from "@intuitionrobotics/thunderstorm";
 import {
 	ApiBugReport,
 	Request_BugReport

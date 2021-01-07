@@ -24,13 +24,13 @@ import {
 	ImplementationMissingException,
 	Module,
 	ThisShouldNotHappenException
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {
 	FileWrapper,
 	FirebaseModule,
 	FirestoreTransaction,
 	StorageWrapper
-} from "@ir/firebase/backend";
+} from "@intuitionrobotics/firebase/backend";
 import {
 	BaseUploaderFile,
 	DB_Temp_File,
@@ -40,7 +40,7 @@ import {
 	UploadResult
 } from "../../shared/types";
 import {UploaderTempFileModule} from "./UploaderTempFileModule";
-import {PushPubSubModule} from "@ir/push-pub-sub/backend";
+import {PushPubSubModule} from "@intuitionrobotics/push-pub-sub/backend";
 
 export const Temp_Path = 'files-temp';
 

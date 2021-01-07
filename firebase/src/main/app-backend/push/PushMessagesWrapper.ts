@@ -25,7 +25,7 @@ import {
 } from "./types";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
 import {FirebaseSession} from "../auth/firebase-session";
-import {StringMap} from "@ir/ts-common";
+import {StringMap} from "@intuitionrobotics/ts-common";
 
 export class PushMessagesWrapper
 	extends FirebaseBaseWrapper {

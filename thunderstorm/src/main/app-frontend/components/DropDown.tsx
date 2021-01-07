@@ -24,7 +24,7 @@ import {FilterInput} from "./FilterInput";
 import {
 	__stringify,
 	generateHex
-} from "@ir/ts-common";
+} from "@intuitionrobotics/ts-common";
 import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
 import {Adapter,} from "./adapter/Adapter";

@@ -21,7 +21,7 @@
 
 import * as React from "react";
 import {ComponentType} from "react";
-import {_keys,} from "@ir/ts-common";
+import {_keys,} from "@intuitionrobotics/ts-common";
 import {
 	SimpleNodeRenderer,
 	SimpleTreeNodeRenderer

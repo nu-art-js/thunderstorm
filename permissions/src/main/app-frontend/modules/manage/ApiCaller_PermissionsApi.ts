@@ -17,9 +17,9 @@
  */
 
 import {DB_PermissionApi} from "../../../index";
-import {BaseDB_ApiGeneratorCaller} from "@ir/db-api-generator/frontend";
-import {ThunderDispatcher} from "@ir/thunderstorm/frontend";
-import {TypedMap} from "@ir/ts-common";
+import {BaseDB_ApiGeneratorCaller} from "@intuitionrobotics/db-api-generator/frontend";
+import {ThunderDispatcher} from "@intuitionrobotics/thunderstorm/frontend";
+import {TypedMap} from "@intuitionrobotics/ts-common";
 
 
 export interface OnPermissionsApisLoaded {

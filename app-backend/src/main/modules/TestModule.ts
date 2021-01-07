@@ -18,8 +18,8 @@
 import {
 	generateHex,
 	Module
-} from "@ir/ts-common";
-import {FirebaseModule} from "@ir/firebase/backend";
+} from "@intuitionrobotics/ts-common";
+import {FirebaseModule} from "@intuitionrobotics/firebase/backend";
 
 type Type = {
 	id: number

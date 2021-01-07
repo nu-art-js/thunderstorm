@@ -18,12 +18,12 @@
  */
 
 import * as fs from "fs";
-import {AppTester} from "@ir/testelot";
+import {AppTester} from "@intuitionrobotics/testelot";
 import {
 	FirebaseModule,
 	FirebaseModule_Class
-} from "@ir/firebase/backend";
-import {ImplementationMissingException} from "@ir/ts-common";
+} from "@intuitionrobotics/firebase/backend";
+import {ImplementationMissingException} from "@intuitionrobotics/ts-common";
 
 export class MyTester
 	extends AppTester {
