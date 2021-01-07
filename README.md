@@ -29,7 +29,7 @@ This boilerplate is a unification of both frontend and backend in one repo..
  **NOTE:** These should always be aligned and compiling together with this repo!!
   
 # Start Using Thunderstorm: 
-  To start using Thunderstorm go to the [boilerplate app](https://github.com/nu-art-js/thunderstorm-app) and follow up on the how to fork Thunderstorm section
+  To start using Thunderstorm go to the [boilerplate app](https://github.com/intuition-robotics/thunderstorm-app) and follow up on the how to fork Thunderstorm section
 
  
 ### Set Environment

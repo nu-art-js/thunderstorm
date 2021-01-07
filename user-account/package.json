@@ -14,13 +14,13 @@
     "typescript",
     "user-account"
   ],
-  "homepage": "https://github.com/nu-art-js/user-account",
+  "homepage": "https://github.com/intuition-robotics/user-account",
   "bugs": {
-    "url": "https://github.com/nu-art-js/user-account/issues"
+    "url": "https://github.com/intuition-robotics/user-account/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/user-account.git"
+    "url": "git+ssh://git@github.com:intuition-robotics/user-account.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",

@@ -5,4 +5,4 @@
 
 [submodule "_wiki"]
 	path = _wiki
-	url = git@github.com:nu-art-js/thunderstorm.wiki.git
+	url = git@github.com:intuition-robotics/thunderstorm.wiki.git

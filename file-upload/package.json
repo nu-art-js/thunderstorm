@@ -10,13 +10,13 @@
     "thunderstorm",
     "typescript"
   ],
-  "homepage": "https://github.com/nu-art-js/file-upload",
+  "homepage": "https://github.com/intuition-robotics/file-upload",
   "bugs": {
-    "url": "https://github.com/nu-art-js/file-upload/issues"
+    "url": "https://github.com/intuition-robotics/file-upload/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/file-upload.git"
+    "url": "git+ssh://git@github.com:intuition-robotics/file-upload.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",

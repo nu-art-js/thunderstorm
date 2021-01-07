@@ -11,13 +11,13 @@
     "thunderstorm",
     "typescript"
   ],
-  "homepage": "https://github.com/nu-art-js/bug-report",
+  "homepage": "https://github.com/intuition-robotics/bug-report",
   "bugs": {
-    "url": "https://github.com/nu-art-js/bug-report/issues"
+    "url": "https://github.com/intuition-robotics/bug-report/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/bug-report.git"
+    "url": "git+ssh://git@github.com:intuition-robotics/bug-report.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",

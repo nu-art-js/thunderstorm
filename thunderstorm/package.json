@@ -10,13 +10,13 @@
     "thunderstorm",
     "typescript"
   ],
-  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "homepage": "https://github.com/intuition-robotics/thunderstorm",
   "bugs": {
-    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+    "url": "https://github.com/intuition-robotics/thunderstorm/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+    "url": "git+ssh://git@github.com:intuition-robotics/thunderstorm.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",

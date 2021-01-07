@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/push-pub-sub.git"
+    "url": "git+ssh://git@github.com:intuition-robotics/push-pub-sub.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",

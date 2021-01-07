@@ -10,13 +10,13 @@
     "ts-common",
     "typescript"
   ],
-  "homepage": "https://github.com/nu-art-js/ts-common",
+  "homepage": "https://github.com/intuition-robotics/ts-common",
   "bugs": {
-    "url": "https://github.com/nu-art-js/ts-common/issues"
+    "url": "https://github.com/intuition-robotics/ts-common/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/ts-common.git"
+    "url": "git+ssh://git@github.com:intuition-robotics/ts-common.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",

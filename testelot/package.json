@@ -10,13 +10,13 @@
     "thunderstorm",
     "typescript"
   ],
-  "homepage": "https://github.com/nu-art-js/testelot",
+  "homepage": "https://github.com/intuition-robotics/testelot",
   "bugs": {
-    "url": "https://github.com/nu-art-js/testelot/issues"
+    "url": "https://github.com/intuition-robotics/testelot/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/testelot.git"
+    "url": "git+ssh://git@github.com:intuition-robotics/testelot.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",

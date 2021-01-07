@@ -11,7 +11,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm-boilerplate.git"
+    "url": "git+ssh://git@github.com:intuition-robotics/thunderstorm-boilerplate.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",

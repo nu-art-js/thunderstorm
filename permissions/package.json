@@ -15,13 +15,13 @@
     "typescript",
     "user-account"
   ],
-  "homepage": "https://github.com/nu-art-js/permissions",
+  "homepage": "https://github.com/intuition-robotics/permissions",
   "bugs": {
-    "url": "https://github.com/nu-art-js/permissions/issues"
+    "url": "https://github.com/intuition-robotics/permissions/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/permissions.git"
+    "url": "git+ssh://git@github.com:intuition-robotics/permissions.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",

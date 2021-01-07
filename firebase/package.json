@@ -10,13 +10,13 @@
     "thunderstorm",
     "typescript"
   ],
-  "homepage": "https://github.com/nu-art-js/firebase",
+  "homepage": "https://github.com/intuition-robotics/firebase",
   "bugs": {
-    "url": "https://github.com/nu-art-js/firebase/issues"
+    "url": "https://github.com/intuition-robotics/firebase/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com:nu-art-js/firebase.git"
+    "url": "git+ssh://git@github.com:intuition-robotics/firebase.git"
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
