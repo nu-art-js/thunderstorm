@@ -38,9 +38,15 @@ export class PermissionsModuleFE_Class
 	}
 
 	loadUrls(urls: string[]) {
-		for (const url of urls) {
-			this.doesUserHavePermissions(url);
-		}
+		urls.forEach(url => {
+			if (this.loadingUrls.has(url) || this.userUrlsPermissions[url] !== undefined)
+				return;
+
+			this.loadingUrls.add(url);
+			this.userUrlsPermissions[url] = false;
+		})
+
+		this.setPermissions();
 	}
 
 	doesUserHavePermissions(url: string): boolean | undefined {
