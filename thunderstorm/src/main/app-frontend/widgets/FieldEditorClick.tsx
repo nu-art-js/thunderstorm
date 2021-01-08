@@ -1,14 +1,14 @@
 import * as React from 'react';
 import {FieldEditor} from "./FieldEditor";
-import { BaseComponent } from '../core/BaseComponent';
-import { StorageKey } from '../modules/StorageModule';
+import {BaseComponent} from '../core/BaseComponent';
+import {StorageKey} from '../modules/StorageModule';
 
 type State = {
 	isEditing: boolean;
 	storageKey: StorageKey<string>;
 };
 
-type Props = {
+export type FieldEditorClickProps = {
 	inputStyle?: React.CSSProperties;
 	labelStyle?: React.CSSProperties
 	placeholder?: string;
@@ -18,38 +18,37 @@ type Props = {
 };
 
 export class FieldEditorClick
-	extends BaseComponent<Props, State> {
+	extends BaseComponent<FieldEditorClickProps, State> {
 
 	private createStorageKey() {
 		return new StorageKey<string>(`editable-label-controller-${this.props.id}`);
 	}
 
-	constructor(props: Props) {
+	constructor(props: FieldEditorClickProps) {
 		super(props);
-		const storage = this.createStorageKey();
 		this.state = {
-			storageKey: storage,
+			storageKey: this.createStorageKey(),
 			isEditing: false,
 		};
 	}
 
-	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
-		if (prevProps.id !== this.props.id) {
+	componentDidUpdate(prevProps: Readonly<FieldEditorClickProps>, prevState: Readonly<State>) {
+		if (prevProps.id !== this.props.id)
 			this.setState({storageKey: this.createStorageKey()});
-		}
 	}
 
-	handleSave = () => {
+	private handleSave = () => {
 		this.props.onAccept(this.state.storageKey.get());
 		this.endEdit();
 	};
 
-	startEdit = () => {
+	private startEdit = () => {
 		addEventListener("keydown", this.keyPressed);
-		this.setState({isEditing: true})
-	}
+		this.state.storageKey.set(this.props.value || '');
+		this.setState({isEditing: true});
+	};
 
-	endEdit = () => {
+	private endEdit = () => {
 		removeEventListener("keydown", this.keyPressed);
 		this.state.storageKey.delete();
 		this.setState({isEditing: false});
@@ -57,15 +56,15 @@ export class FieldEditorClick
 
 	keyPressed = (e: KeyboardEvent) => {
 		if (e.code === 'Escape')
-			this.endEdit()
-	}
+			this.endEdit();
+	};
 
 	render() {
 		const {inputStyle, labelStyle} = this.props;
 		return (
 			<div className={`ll_h_c`}
 			     onDoubleClick={this.startEdit}
-			     onBlur={() => {this.handleSave()}}
+			     onBlur={() => this.handleSave()}
 			>
 				<FieldEditor
 					isEditing={this.state.isEditing}
