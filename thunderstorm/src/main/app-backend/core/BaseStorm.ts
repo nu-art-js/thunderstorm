@@ -65,6 +65,5 @@ export abstract class BaseStorm
 		const overrideConfig = config[1] || {};
 
 		this.setConfig(merge(defaultConfig, overrideConfig) || {});
-		console.log(this.config);
 	};
 }

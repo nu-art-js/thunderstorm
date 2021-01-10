@@ -18,13 +18,11 @@
  */
 
 import {AccountModule} from "../modules/AccountModule";
-import {SamlModule} from "../modules/SamlModule";
 
 export const Backend_ModulePack_Users = [
 	AccountModule,
-	SamlModule
 ];
 
-export * from "../modules/AccountModule"
-export * from "../modules/SamlModule"
+export * from "../modules/AccountModule";
+export * from "../modules/SamlModule";
 

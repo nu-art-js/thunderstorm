@@ -30,7 +30,7 @@ import {
 } from "./DialogModule";
 // noinspection TypeScriptPreferShortImport
 import {BaseComponent} from "../../core/BaseComponent";
-import { stopPropagation } from "../../utils/tools";
+import {stopPropagation} from "../../utils/tools";
 
 const modalOverlay: Properties = {
 	position: "fixed",
@@ -55,15 +55,6 @@ const defaultDialogStyle: Properties = {
 	// left: "50%",
 	// msTransform: "translate(-50%, -50%)",
 	// transform: "translate(-50%, -50%)"
-};
-
-const defaultTitleStyle: Properties = {
-	// display: "inline-block",
-	fontSize: "1.25rem",
-	fontWeight: 500,
-	lineHeight: 1.6,
-	letterSpacing: "0.0075em",
-	padding: "5px 14px 0px",
 };
 
 const defaultContentStyle: Properties = {
@@ -177,7 +168,7 @@ export class Dialog
 			return "";
 
 		if (typeof title === "string")
-			return <div style={defaultTitleStyle}>
+			return <div style={{marginBottom: "12px"}}>
 				<div dangerouslySetInnerHTML={{__html: title}}/>
 			</div>;
 
@@ -196,18 +187,18 @@ export class Dialog
 	renderButtons = (model: Dialog_Model) => {
 		if (!model)
 			return null;
+
 		if (model.buttons.length === 0)
 			return "";
 
-		return <div className={`ll_h_c`} style={{
-			marginTop: "auto",
-			justifyContent: model.buttons.length > 1 ? "flex-end" : "center",
-			padding: "12px 0", ...(model.actionsStyle ? model.actionsStyle : {})
-		}}>{model.buttons.map(
-			(button, idx) => <div key={idx}>
-				<button className={button.className} style={button.style}
-				        onClick={button.action}>{button.content}</button>
-			</div>)}</div>
+		const actionsStyle = {justifyContent: model.buttons.length > 1 ? "flex-end" : "center", ...(model.actionsStyle ? model.actionsStyle : {})};
+		return <div className={`ll_h_c`} style={actionsStyle}>{model.buttons.map(
+			(button, idx) =>
+				<div key={idx}
+				     className={button.className}
+				     style={button.style}
+				     onClick={button.action}>{button.content}
+				</div>)}</div>;
 	};
 
 	private onOverlayClicked = (e: React.MouseEvent) => {

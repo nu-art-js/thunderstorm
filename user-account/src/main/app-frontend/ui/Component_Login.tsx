@@ -85,17 +85,18 @@ export class Component_Login
 	render() {
 		const data = this.state.data;
 		return <>
-			<div className={'ll_h_c'} style={{justifyContent: 'space-evenly'}}>
+			<div className={'ll_v_c'} style={{justifyContent: 'space-evenly'}}>
 				{_keys(form).map(key => {
 					                 const field = form[key];
 					                 return <TS_Input
 						                 id={key}
+						                 key={key}
 						                 value={data[key]}
 						                 type={field.type}
 						                 placeholder={field.hint}
 						                 onChange={this.onValueChanged}
 						                 onAccept={this.loginClicked}
-					                 />
+					                 />;
 				                 }
 				)}
 			</div>
@@ -109,7 +110,7 @@ export class Component_Login
 	private onValueChanged = (value: string, id: keyof Request_LoginAccount) => {
 		this.setState(state => {
 			state.data[id] = value;
-			return state
+			return state;
 		});
 	};
 
@@ -127,6 +128,6 @@ export class Component_Login
 		if (errors.length > 0)
 			return ToastModule.toastError(`Wrong input:\n${errors.join("\n")}`);
 
-		AccountModule.login(this.state.data as Request_LoginAccount)
+		AccountModule.login(this.state.data as Request_LoginAccount);
 	};
 }

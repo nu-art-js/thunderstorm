@@ -116,7 +116,7 @@ export class PushPubSubModule_Class
 	}
 
 	private registerServiceWorker = async () => {
-		console.log('registering...');
+		console.log('Registering service worker...');
 		return await navigator.serviceWorker.register(`/${this.config.swFileName || 'ts_service_worker.js'}`);
 	};
 
@@ -174,12 +174,13 @@ export class PushPubSubModule_Class
 
 			this.logVerbose('new token received: ' + this.firebaseToken);
 
-			await this.register();
+			this.logWarning("I don't believe there is a good reason to register whenever an app starts.. before we have any information about user or app status!!")
+			this.logWarning("Convince me otherwise.. :)")
+			// await this.register();
 
 		} catch (err) {
 			this.logError("Unable to get token", err);
 		}
-
 	};
 
 	private processMessageFromSw = (data: any) => {
