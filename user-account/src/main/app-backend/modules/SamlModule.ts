@@ -69,13 +69,13 @@ export class SamlModule_Class
 	}
 
 	protected init(): void {
-		this.identityProvider = new IdentityProvider(this.config.idConfig);
-
 		if (!this.config.idConfig)
 			throw new ImplementationMissingException("Config must contain idConfig");
 
 		if (!this.config.spConfig)
 			throw new ImplementationMissingException("Config must contain spConfig");
+
+		this.identityProvider = new IdentityProvider(this.config.idConfig);
 	}
 
 	loginRequest = async (loginContext: RequestParams_LoginSAML) => {

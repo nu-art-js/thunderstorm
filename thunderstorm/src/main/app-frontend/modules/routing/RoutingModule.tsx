@@ -81,7 +81,7 @@ class RoutingModule_Class
 	}
 
 	getPath(key: string) {
-		return RoutingModule.getRoute(key).path
+		return RoutingModule.getRoute(key).path;
 	}
 
 	goToRoute(key: string, params?: RouteParams) {
@@ -92,7 +92,7 @@ class RoutingModule_Class
 	}
 
 	redirect(key: string) {
-		return <Redirect to={RoutingModule.getPath(key)}/>
+		return <Redirect to={RoutingModule.getPath(key)}/>;
 	}
 
 	getMyRouteKey = () => Object.keys(this.routes).find(key => this.routes[key].path === BrowserHistoryModule.getCurrent().pathname);
@@ -105,7 +105,7 @@ class RoutingModule_Class
 	getRoutesMap() {
 		return <Switch>
 			{this.ordinalRoutes.map(key => this.createRouteNode(this.getRoute(key)))}
-		</Switch>
+		</Switch>;
 	}
 }
 

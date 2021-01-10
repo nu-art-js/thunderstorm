@@ -38,13 +38,16 @@ import {
 } from "../index";
 import {DB_Object} from "@nu-art/firebase";
 import {
+	ThunderDispatcher,
 	ToastModule,
 	XhrHttpModule
 } from "@nu-art/thunderstorm/frontend";
 
 import {
+	addItemToArray,
 	Module,
-	PartialProperties
+	PartialProperties,
+	removeItemFromArray
 } from "@nu-art/ts-common";
 
 export type BaseApiConfig = {
@@ -58,12 +61,19 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
 		if (this.onError(request, resError))
 			return;
-		return ToastModule.toastError(request.getStatus() === 403 ? "You are not allowed to perform this action. Please check your permissions." : "Failed to perform action.");
+		return ToastModule.toastError(
+			request.getStatus() === 403 ? "You are not allowed to perform this action. Please check your permissions." : "Failed to perform action.");
 	};
+
+	private defaultDispatcher?: ThunderDispatcher<any, string>;
 
 	constructor(config: BaseApiConfig) {
 		super();
 		this.setDefaultConfig(config);
+	}
+
+	setDefaultDispatcher(defaultDispatcher: ThunderDispatcher<any, string>) {
+		this.defaultDispatcher = defaultDispatcher;
 	}
 
 	private createRequest<Binder extends ApiTypeBinder<U, R, B, P, any> = ApiTypeBinder<void, void, void, {}, any>,
@@ -130,15 +140,45 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			});
 	};
 
-	protected abstract onEntryCreated(response: DBType): Promise<void>;
+	private ids: string[] = [];
+	private items: { [k: string]: DBType } = {};
 
-	protected abstract onEntryUpdated(response: DBType): Promise<void>;
+	public getItems() {
+		return this.ids.map(id => this.items[id]);
+	}
 
-	protected abstract onQueryReturned(response: DBType[]): Promise<void>;
+	protected async onEntryCreated(item: DBType): Promise<void> {
+		addItemToArray(this.ids, item._id);
+		this.items[item._id] = item;
+		this.defaultDispatcher?.dispatchUI([]);
+	}
 
-	protected abstract onGotUnique(response: DBType): Promise<void>;
+	protected async onEntryDeleted(item: DBType): Promise<void> {
+		removeItemFromArray(this.ids, item._id);
+		delete this.items[item._id];
 
-	protected abstract onEntryDeleted(response: DBType): Promise<void>;
+		this.defaultDispatcher?.dispatchUI([]);
+	}
 
+	protected async onEntryUpdated(item: DBType): Promise<void> {
+		this.items[item._id] = item;
+		this.defaultDispatcher?.dispatchUI([]);
+	}
 
+	protected async onGotUnique(item: DBType): Promise<void> {
+		if (!this.ids.includes(item._id))
+			addItemToArray(this.ids, item._id);
+
+		this.items[item._id] = item;
+		this.defaultDispatcher?.dispatchUI([]);
+	}
+
+	protected async onQueryReturned(items: DBType[]): Promise<void> {
+		this.ids = items.map(item => item._id);
+		this.items = items.reduce((toRet, item) => {
+			toRet[item._id] = item;
+			return toRet;
+		}, {} as { [k: string]: DBType });
+		this.defaultDispatcher?.dispatchUI([]);
+	}
 }
