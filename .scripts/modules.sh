@@ -1,12 +1,7 @@
 #!/bin/bash
 
-projectModules=(
-  app-backend
-  app-frontend
-)
-
 projectLibs=(
-  ${thunderstormLibraries[@]}
+  ${tsLibs[@]}
   app-shared
 )
 

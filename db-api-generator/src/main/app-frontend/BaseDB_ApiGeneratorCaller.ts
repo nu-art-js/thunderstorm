@@ -76,15 +76,15 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		this.defaultDispatcher = defaultDispatcher;
 	}
 
-	private createRequest<Binder extends ApiTypeBinder<U, R, B, P, any> = ApiTypeBinder<void, void, void, {}, any>,
+	protected createRequest<Binder extends ApiTypeBinder<U, R, B, P, any> = ApiTypeBinder<void, void, void, {}, any>,
 		U extends string = DeriveUrlType<Binder>,
 		R = DeriveResponseType<Binder>,
 		B = DeriveBodyType<Binder>,
-		P extends QueryParams = DeriveQueryType<Binder>>(apiDef: GenericApiDef) {
+		P extends QueryParams = DeriveQueryType<Binder>>(apiDef: GenericApiDef): BaseHttpRequest<Binder> {
 		return XhrHttpModule
-			.createRequest<ApiTypeBinder<string, R, B, P, any>>(apiDef.method, `request-api--${this.config.key}-${apiDef.key}`)
+			.createRequest(apiDef.method, `request-api--${this.config.key}-${apiDef.key}`)
 			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? "/" + apiDef.suffix : ""}`)
-			.setOnError(this.errorHandler);
+			.setOnError(this.errorHandler) as BaseHttpRequest<any>;
 	}
 
 	protected onError(request: BaseHttpRequest<any>, resError?: ErrorResponse<any>): boolean {

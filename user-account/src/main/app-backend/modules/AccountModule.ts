@@ -54,6 +54,7 @@ export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
 type Config = {
 	projectId: string
+	sessionTTLms: number
 }
 
 export const Collection_Sessions = "user-account--sessions";
@@ -78,8 +79,12 @@ function getUIAccount(account: DB_Account): UI_Account {
 export class AccountsModule_Class
 	extends Module<Config>
 	implements QueryRequestInfo {
+	constructor() {
+		super();
+		this.setDefaultConfig({sessionTTLms: Day});
+	}
 
-	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; } > {
+	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; }> {
 		let data: UI_Account | undefined;
 		try {
 			data = await this.validateSession(request);
@@ -242,7 +247,7 @@ export class AccountsModule_Class
 
 	private TTLExpired = (session: DB_Session) => {
 		const delta = currentTimeMillies() - session.timestamp;
-		return delta > Day || delta < 0;
+		return delta > this.config.sessionTTLms || delta < 0;
 	};
 
 	private upsertSession = async (userId: string): Promise<Response_Auth> => {
