@@ -54,7 +54,7 @@ import {
 export type ValidatorTypeResolver<K> =
 	K extends any[] ? Validator<K> :
 		K extends object ? TypeValidator<K> | Validator<K> :
-			Validator<K> ;
+			Validator<K>;
 
 export type Validator<P> = undefined | ((path: string, p?: P) => void);
 export type TypeValidator<T extends ObjectTS> = { [P in keyof T]: ValidatorTypeResolver<T[P]> };
@@ -82,7 +82,7 @@ const assertMandatory = (mandatory: boolean, path: string, input?: any) => {
 export const validateExists = (mandatory = true): Validator<any> => {
 	return (path: string, input?: any) => {
 		assertMandatory(mandatory, path, input);
-	}
+	};
 };
 
 export const validateObjectValues = <V, T = { [k: string]: V }>(validator: ValidatorTypeResolver<V>, mandatory = true): Validator<T> =>
@@ -128,7 +128,7 @@ export const validateRegexp = (regexp: RegExp, mandatory = true): Validator<stri
 			return;
 
 		throw new ValidationException(`Input is not valid:\n  input: ${input}\n  regexp: ${regexp}\n`, path, input);
-	}
+	};
 };
 
 export const validateValue = (values: string[], mandatory = true): Validator<string> => {
@@ -141,7 +141,7 @@ export const validateValue = (values: string[], mandatory = true): Validator<str
 			return;
 
 		throw new ValidationException(`Input is not valid:\n  input: ${input}\n  options: ${__stringify(values)}\n`, path, input);
-	}
+	};
 };
 
 export const validateRange = (ranges: [number, number][], mandatory = true): Validator<number> => {
@@ -156,7 +156,7 @@ export const validateRange = (ranges: [number, number][], mandatory = true): Val
 		}
 
 		throw new ValidationException(`Input is not valid:\n  input: ${input}\n  regexp: ${__stringify(ranges)}\n`, path, input);
-	}
+	};
 };
 
 
