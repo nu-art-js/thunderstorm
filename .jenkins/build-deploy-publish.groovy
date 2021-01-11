@@ -1,7 +1,6 @@
 @Library('dev-tools')
 
 import com.nu.art.pipeline.modules.SlackModule
-import com.nu.art.pipeline.modules.build.BuildModule
 import com.nu.art.pipeline.thunderstorm.Pipeline_ThunderstormMain
 import com.nu.art.pipeline.workflow.Workflow
 
@@ -14,7 +13,6 @@ class Pipeline_Build
 
 	@Override
 	protected void init() {
-		getModule(BuildModule.class).printCauses()
 		declareEnv("dev", "thunderstorm-dev")
 		declareEnv("staging", "thunderstorm-staging")
 		declareEnv("prod", "nu-art-thunderstorm")
