@@ -25,6 +25,7 @@ class Pipeline_Build
 	@Override
 	void _postInit() {
 		TriggerCause[] causes = getModule(BuildModule.class).getTriggerCause(TriggerCause.Type_SCM)
+		this.logInfo("GOT HERE!! ${causes.size()}")
 		TriggerCause cause = causes.find { it.originator == "Nu-Art-Jenkins" }
 		causes.each {
 			this.logInfo("Detected SCM cause: '${it.originator}'")
