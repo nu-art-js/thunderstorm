@@ -2,8 +2,9 @@
 tsLibs=(
   ts-common
 )
+
 projectLibs=(
-  ${tsLibs[@]}
+#  ${tsLibs[@]}
 #  app-shared
 )
 
