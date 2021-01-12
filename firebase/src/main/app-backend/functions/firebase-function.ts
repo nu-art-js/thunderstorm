@@ -162,6 +162,70 @@ export abstract class FirebaseFunctionModule<DataType = any, ConfigType = any>
 	};
 }
 
+//TODO: I would like to add a type for the params..
+export abstract class FirestoreFunctionModule<DataType = any, ConfigType = any>
+	extends Module<ConfigType>
+	implements FirebaseFunction {
+
+	private toBeExecuted: (() => Promise<any>)[] = [];
+	private isReady: boolean = false;
+	private readonly collectionName: string;
+	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
+	private function!: CloudFunction<Change<DataSnapshot>>;
+
+	protected constructor(collectionName: string, name?: string) {
+		super();
+		name && this.setName(name);
+		this.collectionName = collectionName;
+	}
+
+	abstract processChanges(before: DataType, after: DataType, params: { [param: string]: any }): Promise<any>;
+
+	getFunction = () => {
+		if (this.function)
+			return this.function;
+
+		return this.function = functions.firestore.document(`${this.collectionName}/{docId}`).onWrite(
+			(change: Change<DataSnapshot>, context: EventContext) => {
+				const before: DataType = change.before && change.before.val();
+				const after: DataType = change.after && change.after.val();
+				const params = deepClone(context.params);
+
+				if (this.isReady) {
+					this.logDebug(`Processing function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
+					return this.processChanges(before, after, params);
+				}
+
+				return new Promise((resolve) => {
+					addItemToArray(this.toBeExecuted, async () => {
+						return await this.processChanges(before, after, params);
+					});
+
+					this.logDebug(`Queuing function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
+					this.toBeResolved = resolve;
+				});
+			});
+	};
+
+	onFunctionReady = async () => {
+		this.isReady = true;
+		const toBeExecuted = this.toBeExecuted;
+		this.toBeExecuted = [];
+		this.logDebug(`onFunctionReady, ${toBeExecuted.length} actions to execute`);
+		this.logInfo(`Listening on path: ${this.collectionName}`);
+
+		for (const toExecute of toBeExecuted) {
+			try {
+				await toExecute();
+			} catch (e) {
+				this.logError("Error running function: ", e);
+			}
+		}
+
+		this.toBeResolved && this.toBeResolved();
+	};
+}
+
 export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 	extends Module<ConfigType>
 	implements FirebaseFunction {

@@ -110,7 +110,7 @@ export class PushPubSubModule_Class
 			const pushKeys = subscriptions.map(_sub => _sub.pushKey);
 			console.log(pushKeys);
 			let subscriptionNotifications: DB_Notifications[] = pushKeys.length !== 0 ?
-				await transaction.query(this.notifications, {where: {pushKey: {$in: pushKeys}}}) : [];
+			await batchAction(pushKeys, 10, async elements => transaction.query(this.notifications, {where: {pushKey: {$in: elements}}})): [];
 			const userNotifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {userId}});
 			if (subscriptionNotifications.length !== 0)
 				subscriptionNotifications = subscriptionNotifications.filter(_notification => {
