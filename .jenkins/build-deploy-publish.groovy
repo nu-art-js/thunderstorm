@@ -25,7 +25,9 @@ class Pipeline_Build
 	@Override
 	protected void postInit() {
 		TriggerCause[] cause = getModule(BuildModule.class).getTriggerCause(TriggerCause.Type_SCM)
-		cause.find {it.originator == "nu-art-jenkins"}
+		if (cause.find { it.originator == "Nu-Art-Jenkins" })
+			workflow.terminate("Detected push from Jenkins")
+
 		super.postInit()
 	}
 }
