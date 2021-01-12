@@ -23,7 +23,7 @@ class Pipeline_Build
 	}
 
 	@Override
-	protected void postInit() {
+	void _postInit() {
 		TriggerCause[] causes = getModule(BuildModule.class).getTriggerCause(TriggerCause.Type_SCM)
 		TriggerCause cause = causes.find { it.originator == "Nu-Art-Jenkins" }
 		causes.each {
