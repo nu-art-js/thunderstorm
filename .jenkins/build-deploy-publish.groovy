@@ -1,6 +1,8 @@
 @Library('dev-tools')
 
 import com.nu.art.pipeline.modules.SlackModule
+import com.nu.art.pipeline.modules.build.BuildModule
+import com.nu.art.pipeline.modules.build.TriggerCause
 import com.nu.art.pipeline.thunderstorm.Pipeline_ThunderstormMain
 import com.nu.art.pipeline.workflow.Workflow
 
@@ -18,6 +20,13 @@ class Pipeline_Build
 		declareEnv("prod", "nu-art-thunderstorm")
 		setGitRepoId("nu-art-js/thunderstorm", true)
 		super.init()
+	}
+
+	@Override
+	protected void postInit() {
+		TriggerCause[] cause = getModule(BuildModule.class).getTriggerCause(TriggerCause.Type_SCM)
+		cause.find {it.originator == "nu-art-jenkins"}
+		super.postInit()
 	}
 }
 
