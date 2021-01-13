@@ -76,6 +76,8 @@ export class BugReport
 		const onSubmit = () => {
 			if (!this.state.subject)
 				return ToastModule.toastError('you must first add a subject');
+			if (!this.state.description)
+				return ToastModule.toastError('you must first add a description')
 			BugReportModule.sendBugReport(this.state.subject, this.state.description || '');
 			this.setState({subject: undefined, description: undefined});
 			DialogModule.close();

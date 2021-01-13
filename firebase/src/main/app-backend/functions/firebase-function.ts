@@ -36,6 +36,9 @@ import {
 	Module
 } from "@nu-art/ts-common";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
+import firebase from "firebase";
+import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
+import DocumentData = firebase.firestore.DocumentData;
 
 const functions = require('firebase-functions');
 
@@ -59,7 +62,7 @@ export class Firebase_ExpressFunction
 		this.express = _express;
 	}
 
-	static setConfig(config: RuntimeOptions){
+	static setConfig(config: RuntimeOptions) {
 		this.config = config;
 	}
 
@@ -179,29 +182,29 @@ export abstract class FirestoreFunctionModule<DataType = any, ConfigType = any>
 		this.collectionName = collectionName;
 	}
 
-	abstract processChanges(before: DataType, after: DataType, params: { [param: string]: any }): Promise<any>;
+	abstract processChanges(params: { [param: string]: any }, before?: DocumentData, after?: DocumentData, ): Promise<any>;
 
 	getFunction = () => {
 		if (this.function)
 			return this.function;
 
 		return this.function = functions.firestore.document(`${this.collectionName}/{docId}`).onWrite(
-			(change: Change<DataSnapshot>, context: EventContext) => {
-				const before: DataType = change.before && change.before.val();
-				const after: DataType = change.after && change.after.val();
+			(change: Change<DocumentSnapshot<DocumentData>>, context: EventContext) => {
+				const before: DocumentData | undefined = change.before && change.before.data();
+				const after: DocumentData | undefined = change.after && change.after.data();
 				const params = deepClone(context.params);
 
 				if (this.isReady) {
-					this.logDebug(`Processing function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
-					return this.processChanges(before, after, params);
+					this.logDebug(`Processing function Params: ${JSON.stringify(params, null, 2)}`);
+					return this.processChanges(params, before, after);
 				}
 
 				return new Promise((resolve) => {
 					addItemToArray(this.toBeExecuted, async () => {
-						return await this.processChanges(before, after, params);
+						// return await this.processChanges(before, after, params);
 					});
 
-					this.logDebug(`Queuing function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
+					// this.logDebug(`Queuing function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
 					this.toBeResolved = resolve;
 				});
 			});
