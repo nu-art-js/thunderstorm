@@ -1,11 +1,7 @@
 #!/bin/bash
-tsLibs=(
-  ts-common
-)
-
 projectLibs=(
-#  ${tsLibs[@]}
-#  app-shared
+  ${tsLibs[@]}
+  app-shared
 )
 
 backendApps=(

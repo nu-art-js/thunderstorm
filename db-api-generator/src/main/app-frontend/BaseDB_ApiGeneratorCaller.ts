@@ -178,7 +178,8 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		this.items = items.reduce((toRet, item) => {
 			toRet[item._id] = item;
 			return toRet;
-		}, {} as { [k: string]: DBType });
+		}, this.items);
+
 		this.defaultDispatcher?.dispatchUI([]);
 	}
 }
