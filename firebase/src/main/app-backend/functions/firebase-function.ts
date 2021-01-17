@@ -165,8 +165,12 @@ export abstract class FirebaseFunctionModule<DataType = any, ConfigType = any>
 	};
 }
 
+export type FirestoreConfigs = {
+	runTimeOptions?: RuntimeOptions,
+	configs: any
+}
 //TODO: I would like to add a type for the params..
-export abstract class FirestoreFunctionModule<DataType = any, ConfigType = any>
+export abstract class FirestoreFunctionModule<DataType = any, ConfigType extends FirestoreConfigs = FirestoreConfigs>
 	extends Module<ConfigType>
 	implements FirebaseFunction {
 
@@ -188,7 +192,7 @@ export abstract class FirestoreFunctionModule<DataType = any, ConfigType = any>
 		if (this.function)
 			return this.function;
 
-		return this.function = functions.firestore.document(`${this.collectionName}/{docId}`).onWrite(
+		return this.function = functions.runWith(this.config?.runTimeOptions || {}).firestore.document(`${this.collectionName}/{docId}`).onWrite(
 			(change: Change<DocumentSnapshot<DocumentData>>, context: EventContext) => {
 				const before: DocumentData | undefined = change.before && change.before.data();
 				const after: DocumentData | undefined = change.after && change.after.data();
