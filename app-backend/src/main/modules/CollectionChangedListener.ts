@@ -27,10 +27,10 @@ export class CollectionChangedListener_Class
 		this.onFunctionReady = this.onFunctionReady.bind(this);
 	}
 
-	processChanges = async (params: { [p: string]: any }, previousValue?: object, newValue?: object ): Promise<any> => {
+	async processChanges(params: { [p: string]: any }, previousValue?: object, newValue?: object): Promise<any> {
 		this.logInfo(`Doing nothing...${previousValue}, ${newValue}`);
 		await PushPubSubModule.pushToKey('collection_test', {id: 'collection_test1'}, {a: 'b', b: 1});
-	};
+	}
 }
 
 export const CollectionChangedListener = new CollectionChangedListener_Class();
