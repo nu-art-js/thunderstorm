@@ -38,7 +38,6 @@ import {
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import firebase from "firebase";
 import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
-import DocumentData = firebase.firestore.DocumentData;
 
 const functions = require('firebase-functions');
 
@@ -170,7 +169,7 @@ export type FirestoreConfigs = {
 	configs: any
 }
 //TODO: I would like to add a type for the params..
-export abstract class FirestoreFunctionModule<DataType = any, ConfigType extends FirestoreConfigs = FirestoreConfigs>
+export abstract class FirestoreFunctionModule<DataType extends object, ConfigType extends FirestoreConfigs = FirestoreConfigs>
 	extends Module<ConfigType>
 	implements FirebaseFunction {
 
@@ -186,16 +185,16 @@ export abstract class FirestoreFunctionModule<DataType = any, ConfigType extends
 		this.collectionName = collectionName;
 	}
 
-	abstract processChanges(params: { [param: string]: any }, before?: DocumentData, after?: DocumentData, ): Promise<any>;
+	abstract processChanges(params: { [param: string]: any }, before?: DataType, after?: DataType, ): Promise<any>;
 
 	getFunction = () => {
 		if (this.function)
 			return this.function;
 
 		return this.function = functions.runWith(this.config?.runTimeOptions || {}).firestore.document(`${this.collectionName}/{docId}`).onWrite(
-			(change: Change<DocumentSnapshot<DocumentData>>, context: EventContext) => {
-				const before: DocumentData | undefined = change.before && change.before.data();
-				const after: DocumentData | undefined = change.after && change.after.data();
+			(change: Change<DocumentSnapshot<DataType>>, context: EventContext) => {
+				const before: DataType | undefined = change.before && change.before.data();
+				const after: DataType | undefined = change.after && change.after.data();
 				const params = deepClone(context.params);
 
 				if (this.isReady) {
@@ -205,10 +204,10 @@ export abstract class FirestoreFunctionModule<DataType = any, ConfigType extends
 
 				return new Promise((resolve) => {
 					addItemToArray(this.toBeExecuted, async () => {
-						// return await this.processChanges(before, after, params);
+						return await this.processChanges(params, before, after);
 					});
 
-					// this.logDebug(`Queuing function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
+					this.logDebug(`Queuing firestore function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
 					this.toBeResolved = resolve;
 				});
 			});
