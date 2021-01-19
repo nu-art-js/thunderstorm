@@ -117,7 +117,12 @@ export type FixVersionType = {
 	fixVersions: { name: string }[]
 };
 
-export type JiraQuery = TypedMap<string | string[]> & {
+export type QueryItemWithOperator = {
+	value: string,
+	operator: string
+}
+
+export type JiraQuery = TypedMap<string | string[] | QueryItemWithOperator> & {
 	status?: string | string[]
 	project?: string | string[]
 	fixVersion?: string | string[]
@@ -205,6 +210,12 @@ export class JiraModule_Class
 	};
 
 	issue = {
+		query: async (query: JiraQuery): Promise<JiraIssue[]> => {
+			return (await this.executeGetRequest<JiraResponse_IssuesQuery>(`/search`, {jql: JiraUtils.buildJQL(query)})).issues;
+		},
+		get: async (issueId: string): Promise<JiraIssue> => {
+			return this.executeGetRequest(`/issue/${issueId}`);
+		},
 		comment: this.comment,
 		create: async (project: JiraProject, issueType: IssueType, summary: string, descriptions: JiraIssueText[]): Promise<ResponsePostIssue> => {
 			const issue = await this.executePostRequest<ResponsePostIssue, Pick<JiraIssue, "fields">>('/issue', {
@@ -244,8 +255,8 @@ export class JiraModule_Class
 		return (await this.executeGetRequest<JiraResponse_IssuesQuery>(`/search`, {jql: JiraUtils.buildJQL(query)})).issues;
 	};
 
-	getIssueRequest = async (issue: string): Promise<JiraIssue> => {
-		return this.executeGetRequest(`/issue/${issue}`);
+	getIssueRequest = async (issueId: string): Promise<JiraIssue> => {
+		return this.executeGetRequest(`/issue/${issueId}`);
 	};
 
 	addIssueAttachment = async (issue: string, file: Buffer) => {
