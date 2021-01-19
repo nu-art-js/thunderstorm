@@ -60,8 +60,6 @@ export class JiraBugReportIntegrator_Class
 		if (reporter)
 			description.push("\nReported by: " + reporter);
 
-		console.log('this is the config issue type: ', this.config.issueType)
-
 		const issue = await JiraModule.issue.create(this.config.jiraProject, this.config.issueType, this.parser(bugReport.subject), description);
 		return {platform: "jira", issueId: issue.url};
 	};

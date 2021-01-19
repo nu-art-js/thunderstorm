@@ -213,6 +213,7 @@ export class JiraModule_Class
 					issuetype: issueType,
 					description: JiraUtils.createText(...descriptions),
 					summary,
+					labels: [project.key],
 					assignee: {
 						accountId: this.config.defaultAssignee.accountId
 					}
