@@ -28,6 +28,7 @@ import {
 	TS_Input,
 	TS_TextArea
 } from "@nu-art/thunderstorm/frontend";
+import {generateHex} from "@nu-art/ts-common";
 
 type Props = {
 	component?: React.ReactNode
@@ -96,6 +97,7 @@ export class BugReport
 						      type={"text"}
 						      value={this.state.subject || ''}
 						      placeholder={"type bug name here"}
+						      name={generateHex(8)}
 						      onChange={(subject: string) => this.setState({subject})}
 					      />
 				      </div>
