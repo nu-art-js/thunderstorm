@@ -50,7 +50,6 @@ export class JiraBugReportIntegrator_Class
 	private parser = (name: string) => `Bug: ${name}`;
 
 	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[], reporter?: string): Promise<TicketDetails> => {
-		// const description = logs.reduce((carry, el) => `${carry}${el.path}, `, `${bugReport.description}, `);
 		if (!this.config.jiraProject)
 			throw new ImplementationMissingException("missing Jira project in bug report configurations");
 
