@@ -25,7 +25,8 @@ import {
 	JiraIssueText,
 	JiraModule,
 	JiraProject,
-	IssueType
+	IssueType,
+	LabelType
 } from "@nu-art/jira";
 import {
 	ReportLogFile,
@@ -36,6 +37,7 @@ import {TicketDetails} from "./BugReportModule";
 type Config = {
 	jiraProject: JiraProject
 	issueType: IssueType
+	label: LabelType
 }
 
 export class JiraBugReportIntegrator_Class
@@ -60,7 +62,7 @@ export class JiraBugReportIntegrator_Class
 		if (reporter)
 			description.push("\nReported by: " + reporter);
 
-		const issue = await JiraModule.issue.create(this.config.jiraProject, this.config.issueType, this.parser(bugReport.subject), description);
+		const issue = await JiraModule.issue.create(this.config.jiraProject, this.config.issueType, this.parser(bugReport.subject), description, this.config.label.label);
 		return {platform: "jira", issueId: issue.url};
 	};
 }

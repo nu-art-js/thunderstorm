@@ -95,6 +95,10 @@ export type IssueType = {
 	name: string
 }
 
+export type LabelType = {
+	label: string[]
+}
+
 export type JiraProject = {
 	id: string
 	name: string
@@ -217,14 +221,14 @@ export class JiraModule_Class
 			return this.executeGetRequest(`/issue/${issueId}`);
 		},
 		comment: this.comment,
-		create: async (project: JiraProject, issueType: IssueType, summary: string, descriptions: JiraIssueText[]): Promise<ResponsePostIssue> => {
+		create: async (project: JiraProject, issueType: IssueType, summary: string, descriptions: JiraIssueText[], label: string[]): Promise<ResponsePostIssue> => {
 			const issue = await this.executePostRequest<ResponsePostIssue, Pick<JiraIssue, "fields">>('/issue', {
 				fields: {
 					project,
 					issuetype: issueType,
 					description: JiraUtils.createText(...descriptions),
 					summary,
-					labels: [project.key],
+					labels: label,
 					assignee: {
 						accountId: this.config.defaultAssignee.accountId
 					}
@@ -273,7 +277,7 @@ export class JiraModule_Class
 		return this.executeRequest(request);
 	};
 
-	private async executePostRequest<Res, Req>(url: string, body: Req) {
+	private async executePostRequest<Res, Req>(url: string, body: Req, label?:string[]) {
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
 			uri: `${this.restUrl}${url}`,
