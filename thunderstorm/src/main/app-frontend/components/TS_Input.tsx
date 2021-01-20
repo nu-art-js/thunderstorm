@@ -26,6 +26,7 @@ import {
 } from '@nu-art/ts-common';
 import {Stylable} from "../tools/Stylable";
 
+export type InputType = 'text' | 'number' | 'password';
 export type TS_InputProps<Key> = Stylable & {
 	onChange: (value: string, id: Key) => void
 	onAccept?: () => void
@@ -33,7 +34,7 @@ export type TS_InputProps<Key> = Stylable & {
 	onBlur?: () => void
 	handleKeyEvent?: (e: KeyboardEvent) => void
 	value?: string
-	type: 'text' | 'number' | 'password'
+	type: InputType
 	name?: string
 	placeholder?: string
 	id: Key
