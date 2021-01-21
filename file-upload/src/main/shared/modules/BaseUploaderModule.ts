@@ -37,7 +37,8 @@ import {
 	Api_GetUploadUrl,
 	BaseUploaderFile,
 	DB_Temp_File,
-	TempSecureUrl
+	TempSecureUrl,
+    Request_Uploader
 } from "../../shared/types";
 
 const RequestKey_UploadUrl = 'get-upload-url';
@@ -66,12 +67,6 @@ export type FileInfo = {
 
 export interface OnFileStatusChanged {
 	__onFileStatusChanged: (id?: string) => void
-}
-
-export type Request_Uploader = {
-	name: string
-	mimeType: string
-	key?: string
 }
 
 export type FilesToUpload = Request_Uploader & {
@@ -151,6 +146,9 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 
 			if (fileData.key)
 				fileInfo.key = fileData.key;
+
+			if(fileData.public)
+				fileInfo.public = fileData.public;
 
 			this.files[fileInfo.feId] = {
 				file: fileData.file,
