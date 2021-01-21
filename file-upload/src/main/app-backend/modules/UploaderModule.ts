@@ -57,7 +57,7 @@ export class UploaderModule_Class
 	private postProcessor!: { [k: string]: PostProcessor };
 
 	setPostProcessor = (validator: { [k: string]: PostProcessor }) => {
-		this.postProcessor = validator
+		this.postProcessor = validator;
 	};
 
 	init() {
@@ -88,13 +88,16 @@ export class UploaderModule_Class
 				bucketName: bucket.bucketName
 			};
 
+			if (_file.public)
+				instance.public = _file.public;
+
 			const temp = await UploaderTempFileModule.upsert(instance);
 			const file = await bucket.getFile(temp.path);
 			const url = await file.getWriteSecuredUrl(_file.mimeType, Hour);
 			return {
 				secureUrl: url.securedUrl,
 				tempDoc: temp
-			}
+			};
 		}));
 	}
 
@@ -118,19 +121,27 @@ export class UploaderModule_Class
 
 			const bucket = await this.storage.getOrCreateBucket(tempMeta.bucketName);
 			const file = await bucket.getFile(tempMeta.path);
+			if (tempMeta.public) {
+				try {
+					await file.makePublic();
+				} catch (e) {
+					await this.notifyFrontend(tempMeta.feId, UploadResult.Failure, `Failed to make the file public: ${tempMeta.name}`, e);
+				}
+			}
+
 			try {
 				await val(transaction, file, tempMeta);
 			} catch (e) {
 				return await this.notifyFrontend(tempMeta.feId, UploadResult.Failure, `Post-processing failed for file: ${tempMeta.name}`, e);
 			}
-			return this.notifyFrontend(tempMeta.feId, UploadResult.Success, `Successfully parsed and processed file ${tempMeta.name}`)
-		})
+			return this.notifyFrontend(tempMeta.feId, UploadResult.Success, `Successfully parsed and processed file ${tempMeta.name}`);
+		});
 	};
 
 	private notifyFrontend = async (feId: string, result: UploadResult, message: string, cause?: Error) => {
-		cause && this.logWarning(cause)
+		cause && this.logWarning(cause);
 		const data = {message, result, cause};
-		await PushPubSubModule.pushToKey<Push_FileUploaded>(fileUploadedKey, {feId}, data)
+		await PushPubSubModule.pushToKey<Push_FileUploaded>(fileUploadedKey, {feId}, data);
 	};
 
 }
