@@ -37,8 +37,8 @@ import {
 	Api_GetUploadUrl,
 	BaseUploaderFile,
 	DB_Temp_File,
-	TempSecureUrl,
-    Request_Uploader
+	Request_Uploader,
+	TempSecureUrl
 } from "../../shared/types";
 
 const RequestKey_UploadUrl = 'get-upload-url';
@@ -95,25 +95,6 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 			this.uploadQueue.setParallelCount(this.config.uploadQueueParallelCount);
 	}
 
-	protected async getSecuredUrls(
-		body: BaseUploaderFile[],
-		onError: (errorMessage: string) => void | Promise<void>
-	): Promise<TempSecureUrl[] | undefined> {
-		let response: TempSecureUrl[];
-		try {
-			response = await this
-				.httpModule
-				.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
-				.setRelativeUrl('/v1/upload/get-url')
-				.setJsonBody(body)
-				.executeSync();
-		} catch (e) {
-			onError(e.debugMessage);
-			return;
-		}
-		return response;
-	}
-
 	protected abstract subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void>
 
 	getFileInfo<K extends keyof FileInfo>(id: string, key: K): FileInfo[K] | undefined {
@@ -147,7 +128,7 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 			if (fileData.key)
 				fileInfo.key = fileData.key;
 
-			if(fileData.public)
+			if (fileData.public)
 				fileInfo.public = fileData.public;
 
 			this.files[fileInfo.feId] = {

@@ -18,7 +18,6 @@
  */
 import {
 	auditBy,
-	BadImplementationException,
 	generateHex,
 	Hour,
 	ImplementationMissingException,
@@ -111,7 +110,7 @@ export class UploaderModule_Class
 			// I use collection and not the module directly since I want to handle failure my way
 			const tempMeta = await transaction.queryUnique(UploaderTempFileModule.collection, {where: {path: filePath}});
 			if (!tempMeta)
-				throw new BadImplementationException(`File with path: ${filePath}, not found in temp collection db`);
+				return this.logInfo(`File with path: ${filePath}, not found in temp collection db`);
 
 			this.logInfo(`Found temp meta with _id: ${tempMeta._id}`, tempMeta);
 			const val = this.postProcessor[tempMeta.key];
@@ -132,6 +131,7 @@ export class UploaderModule_Class
 			try {
 				await val(transaction, file, tempMeta);
 			} catch (e) {
+				//TODO delete the file and the temp doc
 				return await this.notifyFrontend(tempMeta.feId, UploadResult.Failure, `Post-processing failed for file: ${tempMeta.name}`, e);
 			}
 			return this.notifyFrontend(tempMeta.feId, UploadResult.Success, `Successfully parsed and processed file ${tempMeta.name}`);
