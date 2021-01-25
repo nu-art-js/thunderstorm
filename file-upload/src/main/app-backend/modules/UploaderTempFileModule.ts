@@ -43,7 +43,8 @@ export class UploaderTempFileModule_Class
 		key: validateExists(true),
 		path: validateExists(true),
 		_audit: auditValidator(),
-		bucketName: validateExists(true)
+		bucketName: validateExists(true),
+		public: undefined
 	};
 
 	constructor() {
