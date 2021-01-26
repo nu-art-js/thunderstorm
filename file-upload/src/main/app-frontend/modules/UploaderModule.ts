@@ -54,13 +54,14 @@ export class UploaderModule_Class
 		super.dispatchFileStatusChange(id);
 	}
 
-	upload(files: File[], key?: string): BaseUploaderFile[] {
+	upload(files: File[], key?: string, _public?: boolean): BaseUploaderFile[] {
 		return this.uploadImpl(files.map((file => {
 			return {
 				name: file.name,
 				mimeType: file.type,
 				key,
-				file
+				file,
+				public: _public
 			};
 		})));
 	}
