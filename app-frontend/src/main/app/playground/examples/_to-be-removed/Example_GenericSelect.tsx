@@ -56,7 +56,7 @@ export class Example_GenericSelect extends React.Component<{}, State> {
 			<button onClick={() => {
 				this.setState({selectedOption: undefined})
 			}}>Clear</button>
-			<div style={{height: 20}}/>
+			<div style={{height: 20, overflow: 'hidden'}}/>
 			<GenericSelect<Option>
 				iconClose={ICONS.arrowClose(undefined, 14)}
 				iconOpen={ICONS.arrowOpen(undefined, 14)}
@@ -69,7 +69,7 @@ export class Example_GenericSelect extends React.Component<{}, State> {
 				styles={selectStyles}
 				presentation={(o) => o.title}
 			/>
-			<div style={{height: 20}}/>
+			<div style={{height: 20, overflow: 'hidden'}}/>
 			<span>{selectedOption ? selectedOption.title : "none"}</span>
 		</div>
 	}
