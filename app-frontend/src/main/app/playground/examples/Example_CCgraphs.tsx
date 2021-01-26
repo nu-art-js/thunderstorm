@@ -21,7 +21,6 @@ import * as React from "react";
 import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
 import Example_LineGraph, {D3ChartData} from "./d3components/Example_LineGraph";
 import Example_TableGraph, {TableData} from "./d3components/Example_TableGraph";
-import {TS_Input} from "@nu-art/thunderstorm/app-frontend/components/TS_Input";
 
 export type Coordinates = {
 	x: number,
@@ -42,34 +41,39 @@ export class Example_CCgraphs
 		this.state = {
 			data: [{
 				label: 'line 1',
-				data: [{x: 0, y: 100}, {x: 1, y: 79}, {x: 2, y: 98}],
-				color: 'rgb(255, 99, 132)'
-			}, {
+				data: [{x: 1609545600000, y: 100}, {x: 1609632000000, y: 79}, {x: 1609718400000, y: 98}, {x: 1609804800000, y: 99}, {x: 1609891200000, y: 78}, {x: 1610064000000, y: 101}, {x: 1610236800000, y: 99},
+					{x: 1610323200000, y: 88}, {x: 1610496000000, y: 92}, {x: 1610755200000, y: 95}],
+				color: '#b596b7',
+				baseValue: 95
+			}
+			, {
 				label: 'line 2',
-				data: [{x: 0, y: 68}, {x: 1, y: 74}, {x: 2, y: 89}],
-				color: 'lightpink'
-			}],
+				data: [{x: 1609545600000, y: 88}, {x: 1609632000000, y: 72}, {x: 1609718400000, y: 71}, {x: 1609804800000, y: 84}, {x: 1609891200000, y: 90}, {x: 1610064000000, y: 81}],
+				color: '#92c0c0',
+				baseValue: 88
+			}
+			],
 			tableData: [{
 				label: 'x',
-				data: [{x: 2, y: 2}],
+				data: [{x: 2, y: 1}],
 				color: 'lightpink',
 				icon: <circle r={15} style={{fill: 'lightpink'}}/>
 			},
 				{
 					label: 'x',
-					data: [{x: 1, y: 2}],
+					data: [{x: 1, y: 1}],
 					color: 'lightblue',
 					icon: <circle r={15} style={{fill: 'lightblue'}}/>
 				},
 				{
 					label: 'x',
-					data: [{x: 5, y: 1}],
+					data: [{x: 5, y: 0}],
 					color: 'DarkTurquoise',
 					icon: <circle r={15} style={{fill: 'DarkTurquoise'}}/>
 				},
 				{
 					label: 'x',
-					data: [{x: 7, y: 1}],
+					data: [{x: 7, y: 0}],
 					color: 'PaleGreen',
 					icon: <circle r={15} style={{fill: 'PaleGreen'}}/>
 				}]
@@ -84,25 +88,28 @@ export class Example_CCgraphs
 		});
 	};
 
-	private x = 'Monday'
-	private y = 0;
-	private axesLabelsX = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-
+	private axesLabelsX = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 	render() {
 		return <div>
 			<div style={{width: '100%'}}>
 				<div style={{float: 'left', width: '70%'}}>
-					<Example_LineGraph data={this.state.data} startFromZero={true} axesLabels={{x: this.axesLabelsX}} borderBox={true}
-					borderBoxValues={['90', '88', '92', '99', '89', '91', '90']}/>
+					<Example_LineGraph
+						data={this.state.data}
+						frequency={86400000}
+						startFromValue={50}
+						axesLabels={{x: this.axesLabelsX}}
+						borderBoxValues={['90', '88', '92', '99', '89', '91', '90']}
+						xDomain={7}/>
 					<br/>
-					<TS_Input onChange={(x) => this.x = x} type='text' id={'x'} placeholder={'type systic x value'}/>
-					<TS_Input onChange={(y) => this.y = parseInt(y)} type='text' id={'y'} placeholder={'type systic y value'}/>
-					<button onClick={() => this.updateData({x: this.axesLabelsX.indexOf(this.x), y: this.y}, 'line 1')}>plot</button>
 				</div>
 				<div style={{float: 'left', width: '70%'}}>
-					<Example_TableGraph rows={3} data={this.state.tableData}
-					                    axesLabels={{x: this.axesLabelsX, y: ['Stress reduction', 'Physical']}}/>
+					<Example_TableGraph
+						frequency={1}
+						rows={3}
+						data={this.state.tableData}
+						xDomain={7}
+						axesLabels={{x: this.axesLabelsX, y: ['Stress reduction', 'Physical']}}/>
 				</div>
 			</div>
 		</div>;
