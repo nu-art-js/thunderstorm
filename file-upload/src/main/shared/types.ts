@@ -30,11 +30,15 @@ export enum UploadResult {
 	Failure = "Failure"
 }
 
-export type BaseUploaderFile = {
-	feId: string
+export type Request_Uploader = {
 	name: string
 	mimeType: string
 	key?: string
+	public?: boolean
+}
+
+export type BaseUploaderFile = Request_Uploader & {
+	feId: string
 };
 
 export type DB_Temp_File = DB_Object & BaseUploaderFile & Required<Pick<BaseUploaderFile, 'key'>> & {
