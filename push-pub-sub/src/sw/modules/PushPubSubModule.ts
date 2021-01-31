@@ -44,18 +44,7 @@ class PushPubSubModule_Class
 
 	protected init(): void {
 		this.runAsync('Init App', this.initApp);
-		swSelf.addEventListener("notificationclick", this.defaultHandler);
-		swSelf.addEventListener("pushsubscriptionchange", this.defaultHandler);
-		swSelf.addEventListener("push", this.defaultHandler);
-		// swSelf.addEventListener('message', (event) => {
-		// 	this.logInfo(`The client sent me a message:`, event);
-		// 	this.handleMessageFromClient(event)
-		// });
 	}
-
-	private defaultHandler = (event: Event) => {
-		this.logVerbose(`Event listened in sw of type ${event.type}`, event);
-	};
 
 	private initApp = async () => {
 		this.logDebug('SW: Initiating app');
