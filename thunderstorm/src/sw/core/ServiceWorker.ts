@@ -32,20 +32,17 @@ export class TS_ServiceWorker
 		super();
 		this._DEBUG_FLAG.enable(false);
 		this.setMinLevel(LogLevel.Debug);
-	}
-
-	build(): void {
 		BeLogged.addClient(LogClient_Browser);
-		// swSelf.addEventListener("notificationclick", this.defaultHandler);
-		// swSelf.addEventListener("pushsubscriptionchange", this.defaultHandler);
-		// swSelf.addEventListener("push", this.defaultHandler);
+		swSelf.addEventListener("notificationclick", this.defaultHandler);
+		swSelf.addEventListener("pushsubscriptionchange", this.defaultHandler);
+		swSelf.addEventListener("push", this.defaultHandler);
 
 		// Substitute previous service workers with the new one
 		swSelf.addEventListener('install', () => {
-			swSelf
-				.skipWaiting()
-				.then(() => this.logVerbose('Skipped waiting, now using the new SW'))
-				.catch(e => this.logError('Something wrong while skipping waiting. Service worker not queued', e));
+			// swSelf
+			// 	.skipWaiting()
+			// 	.then(() => this.logVerbose('Skipped waiting, now using the new SW'))
+			// 	.catch(e => this.logError('Something wrong while skipping waiting. Service worker not queued', e));
 		});
 
 		swSelf.addEventListener('activate', () => {
@@ -55,11 +52,9 @@ export class TS_ServiceWorker
 				.then(() => this.logVerbose('Service Worker activated'))
 				.catch(e => this.logError('Error activating service worker', e));
 		});
-
-		super.build();
 	}
 
-	// private defaultHandler = (event: Event) => {
-	// 	this.logVerbose(`Event listened in sw of type ${event.type}`, event);
-	// };
+	private defaultHandler = (event: Event) => {
+		this.logVerbose(`Event listened in sw of type ${event.type}`, event);
+	};
 }
