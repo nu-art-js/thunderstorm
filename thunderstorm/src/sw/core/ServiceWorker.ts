@@ -38,19 +38,20 @@ export class TS_ServiceWorker
 		swSelf.addEventListener("push", this.defaultHandler);
 
 		// Substitute previous service workers with the new one
-		swSelf.addEventListener('install', () => {
-			// swSelf
-			// 	.skipWaiting()
-			// 	.then(() => this.logVerbose('Skipped waiting, now using the new SW'))
-			// 	.catch(e => this.logError('Something wrong while skipping waiting. Service worker not queued', e));
-		});
-
 		swSelf.addEventListener('activate', () => {
 			swSelf
 				.clients
 				.claim()
 				.then(() => this.logVerbose('Service Worker activated'))
 				.catch(e => this.logError('Error activating service worker', e));
+		});
+
+		swSelf.addEventListener('install', () => {
+			swSelf
+				.skipWaiting()
+				.then(() => this.logVerbose('Skipped waiting, now using the new SW'))
+				.catch(e => this.logError('Something wrong while skipping waiting. Service worker not queued', e));
+
 		});
 	}
 
