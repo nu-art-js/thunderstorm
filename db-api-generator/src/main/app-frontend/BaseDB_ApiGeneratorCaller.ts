@@ -91,7 +91,12 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		return false;
 	}
 
-	create(toCreate: UType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
+	create(toUpsert: UType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
+		this.logWarning("create is deprecated... use upsert");
+		return this.upsert(toUpsert);
+	}
+
+	upsert(toCreate: UType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
 		return this
 			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Create)
 			.setJsonBody(toCreate)
@@ -100,7 +105,11 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			});
 	}
 
-	update = (toUpdate: DBType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
+	update = (toPatch: DBType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
+		this.logWarning("update is deprecated... use patch");
+		return this.patch(toPatch);
+	};
+	patch = (toUpdate: DBType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
 		return this
 			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Update)
 			.setJsonBody(toUpdate)
@@ -145,6 +154,10 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 
 	public getItems() {
 		return this.ids.map(id => this.items[id]);
+	}
+
+	public getItem(id: string): DBType | undefined {
+		return this.items[id];
 	}
 
 	protected async onEntryCreated(item: DBType): Promise<void> {

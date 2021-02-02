@@ -23,10 +23,10 @@ import {BaseComponent} from "./BaseComponent";
 import {ThunderDispatcher} from "./thunder-dispatcher";
 
 export interface OnPageTitleChangedListener {
-	onPageTitleChanged(title: string): void;
+	__onPageTitleChanged(title: string): void;
 }
 
-export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChangedListener, "onPageTitleChanged">("onPageTitleChanged");
+export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChangedListener, "__onPageTitleChanged">("__onPageTitleChanged");
 
 
 export abstract class AppPage<P, S>
@@ -39,23 +39,36 @@ export abstract class AppPage<P, S>
 	protected constructor(p: P, pageTitle?: string) {
 		super(p);
 		this.pageTitle = pageTitle || document.title;
+		const _componentDidMount = this.componentDidMount;
+		this.componentDidMount = () => {
+			if (_componentDidMount)
+				_componentDidMount();
+
+			this.logDebug(`Mounting page: ${this.pageTitle}`);
+			this.prevTitle = document.title;
+			this.updateTitle();
+			this.mounted = true;
+		};
+
+		const _componentWillUnmount = this.componentWillUnmount;
+		this.componentWillUnmount = () => {
+			if (_componentWillUnmount)
+				_componentWillUnmount();
+
+			document.title = this.prevTitle;
+		};
 	}
 
 	setPageTitle(pageTitle: string) {
 		this.pageTitle = pageTitle;
 		if (this.mounted)
-			document.title = this.pageTitle;
+			this.updateTitle();
 	}
 
-	componentDidMount() {
-		this.logDebug(`Mounting page: ${this.pageTitle}`);
-		this.prevTitle = document.title;
+
+	private updateTitle() {
 		document.title = this.pageTitle;
-		this.mounted = true;
+		dispatch_onPageTitleChanged.dispatchUI([this.pageTitle]);
 	}
 
-	componentWillUnmount() {
-		document.title = this.prevTitle;
-		super.componentWillUnmount?.();
-	}
 }
