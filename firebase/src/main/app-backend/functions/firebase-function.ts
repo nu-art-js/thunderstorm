@@ -312,8 +312,12 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 		this.toBeResolved && this.toBeResolved();
 	};
 }
+export type BucketConfigs = {
+	runtimeOpts?: RuntimeOptions
+	bucketName?: string
+}
 
-export abstract class Firebase_StorageFunction<ConfigType extends RuntimeOptions = RuntimeOptions>
+export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs = BucketConfigs>
 	extends Module<ConfigType>
 	implements FirebaseFunction {
 
@@ -337,11 +341,11 @@ export abstract class Firebase_StorageFunction<ConfigType extends RuntimeOptions
 			return this.function;
 
 		this.runtimeOpts = {
-			timeoutSeconds: this.config?.timeoutSeconds || 300,
-			memory: this.config?.memory || '2GB'
+			timeoutSeconds: this.config?.runtimeOpts?.timeoutSeconds || 300,
+			memory: this.config?.runtimeOpts?.memory || '2GB'
 		};
 
-		return this.function = functions.runWith(this.runtimeOpts).storage.bucket().object().onFinalize(async (object: ObjectMetadata, context: EventContext) => {
+		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(async (object: ObjectMetadata, context: EventContext) => {
 			if (!object.name?.startsWith(this.path))
 				return;
 
