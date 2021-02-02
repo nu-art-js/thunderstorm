@@ -39,7 +39,7 @@ export function addAllItemToArray<T>(array: T[], items: T[]) {
 }
 
 export function addItemToArray<T>(array: T[], item: T) {
-	array.push(item)
+	array.push(item);
 	return array;
 }
 
@@ -82,7 +82,18 @@ export function arrayToMap<T extends object>(array: T[], getKey: (item: T) => st
 // }
 
 
+export function _sortArray<T>(array: T[], map: (item: T) => any, invert = false) {
+	const compareFn = (a: T, b: T) => {
+		const _a = map(a);
+		const _b = map(b);
+		return (_a < _b ? -1 : (_a === _b ? 0 : 1)) * (invert ? -1 : 1);
+	};
+
+	return array.sort(compareFn);
+}
+
 export function sortArray<T>(array: T[], map: (item: T) => any, invert = false) {
+	console.log("sortArray is deprecated and inverted... please use _sortArray");
 	const compareFn = (a: T, b: T) => {
 		const _a = map(a);
 		const _b = map(b);
