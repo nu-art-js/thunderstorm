@@ -57,6 +57,22 @@ export abstract class Module<Config = any>
 		this.timeoutMap[key] = _setTimeout(handler, ms);
 	}
 
+	// // possibly to add
+	// public async debounceSync(handler: TimerHandler, key: string, ms = 0) {
+	// 	_clearTimeout(this.timeoutMap[key]);
+	//
+	// 	await new Promise((resolve, reject) => {
+	// 		this.timeoutMap[key] = setTimeout(async (..._args) => {
+	// 			try {
+	// 				await handler(..._args);
+	// 				resolve();
+	// 			} catch (e) {
+	// 				reject(e);
+	// 			}
+	// 		}, ms) as unknown as number;
+	// 	});
+	// }
+
 	public throttle(handler: TimerHandler, key: string, ms = 0) {
 		if (this.timeoutMap[key])
 			return;
