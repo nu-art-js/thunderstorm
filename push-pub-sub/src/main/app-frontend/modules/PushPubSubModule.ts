@@ -222,18 +222,22 @@ export class PushPubSubModule_Class
 			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
 		};
 
-		await new Promise<void>((resolve) => {
+		await new Promise<void>((resolve, reject) => {
 			this.debounce(async () => {
-				const response = await XhrHttpModule
-					.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
-					.setRelativeUrl("/v1/push/register")
-					.setJsonBody(body)
-					.setOnError("Failed to register for push")
-					.executeSync();
+				try {
+					const response = await XhrHttpModule
+						.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
+						.setRelativeUrl("/v1/push/register")
+						.setJsonBody(body)
+						.setOnError("Failed to register for push")
+						.executeSync();
 
-				NotificationsModule.setNotificationList(response);
-				this.logVerbose('Finished register PubSub');
-				resolve();
+					NotificationsModule.setNotificationList(response);
+					this.logVerbose('Finished register PubSub');
+					resolve();
+				} catch (e) {
+					reject(e);
+				}
 			}, 'push-registration', 800);
 
 		});
