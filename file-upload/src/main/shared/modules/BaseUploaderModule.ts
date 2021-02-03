@@ -37,6 +37,7 @@ import {
 	Api_GetUploadUrl,
 	BaseUploaderFile,
 	DB_Temp_File,
+	Request_Uploader,
 	TempSecureUrl
 } from "../../shared/types";
 
@@ -68,12 +69,6 @@ export interface OnFileStatusChanged {
 	__onFileStatusChanged: (id?: string) => void
 }
 
-export type Request_Uploader = {
-	name: string
-	mimeType: string
-	key?: string
-}
-
 export type FilesToUpload = Request_Uploader & {
 	// Unfortunately be doesnt know File and File doesnt map to ArrayBuffer
 	file: any
@@ -98,25 +93,6 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 	init() {
 		if (this.config.uploadQueueParallelCount)
 			this.uploadQueue.setParallelCount(this.config.uploadQueueParallelCount);
-	}
-
-	protected async getSecuredUrls(
-		body: BaseUploaderFile[],
-		onError: (errorMessage: string) => void | Promise<void>
-	): Promise<TempSecureUrl[] | undefined> {
-		let response: TempSecureUrl[];
-		try {
-			response = await this
-				.httpModule
-				.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
-				.setRelativeUrl('/v1/upload/get-url')
-				.setJsonBody(body)
-				.executeSync();
-		} catch (e) {
-			onError(e.debugMessage);
-			return;
-		}
-		return response;
 	}
 
 	protected abstract subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void>
@@ -151,6 +127,9 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 
 			if (fileData.key)
 				fileInfo.key = fileData.key;
+
+			if (fileData.public)
+				fileInfo.public = fileData.public;
 
 			this.files[fileInfo.feId] = {
 				file: fileData.file,

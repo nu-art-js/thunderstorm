@@ -40,7 +40,6 @@ import {
 	ISP,
 	ITP,
 	MessageType,
-	PubSubReadNotification,
 	PubSubRegisterClient,
 	Request_PushRegister,
 	SubscribeProps
@@ -51,10 +50,7 @@ import {
 	FirebaseSession,
 	MessagingWrapper
 } from "@nu-art/firebase/frontend";
-import {
-	dispatch_NotificationsUpdated,
-	NotificationsModule
-} from "./NotificationModule";
+import {NotificationsModule} from "./NotificationModule";
 
 export const Command_SwToApp = 'SwToApp';
 
@@ -80,10 +76,6 @@ export type PushPubSubConfig = {
 	registerOnInit?: boolean
 }
 
-export interface OnNotificationsReceived {
-	__onNotificationsReceived(): void
-}
-
 export const pushSessionIdKey = 'x-push-session-id';
 const pushSessionId = new StorageKey<string>(pushSessionIdKey, false);
 
@@ -95,7 +87,6 @@ export class PushPubSubModule_Class
 	private messaging?: MessagingWrapper;
 
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, "__onMessageReceived">("__onMessageReceived");
-	private dispatch_notifications = new ThunderDispatcher<OnNotificationsReceived, '__onNotificationsReceived'>('__onNotificationsReceived');
 
 	private readonly pushSessionId: string;
 
@@ -222,23 +213,6 @@ export class PushPubSubModule_Class
 		return this.register();
 	};
 
-
-	readNotification = (id: string, read: boolean) => {
-		const body = {
-			_id: id,
-			read
-		};
-
-		XhrHttpModule
-			.createRequest<PubSubReadNotification>(HttpMethod.POST, 'read-notification')
-			.setRelativeUrl("/v1/push/read")
-			.setJsonBody(body)
-			.setOnError('Something went wrong while reading your notification')
-			.execute(() => {
-				dispatch_NotificationsUpdated.dispatchUI([]);
-			});
-	};
-
 	private register = async (): Promise<void> => {
 		if (!this.firebaseToken)
 			return this.logWarning("No Firebase token...");
@@ -249,20 +223,22 @@ export class PushPubSubModule_Class
 			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
 		};
 
-		await new Promise<void>((resolve) => {
+		await new Promise<void>((resolve, reject) => {
 			this.debounce(async () => {
-				const response = await XhrHttpModule
-					.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
-					.setRelativeUrl("/v1/push/register")
-					.setJsonBody(body)
-					.setOnError("Failed to register for push")
-					.executeSync();
+				try {
+					const response = await XhrHttpModule
+						.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
+						.setRelativeUrl("/v1/push/register")
+						.setJsonBody(body)
+						.setOnError("Failed to register for push")
+						.executeSync();
 
-				NotificationsModule.setNotificationList(response);
-				this.dispatch_notifications.dispatchModule([]);
-				this.dispatch_notifications.dispatchUI([]);
-				this.logVerbose('Finished register PubSub');
-				resolve();
+					NotificationsModule.setNotificationList(response);
+					this.logVerbose('Finished register PubSub');
+					resolve();
+				} catch (e) {
+					reject(e);
+				}
 			}, 'push-registration', 800);
 
 		});

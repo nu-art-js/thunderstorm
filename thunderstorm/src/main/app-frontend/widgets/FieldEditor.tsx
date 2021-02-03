@@ -3,7 +3,7 @@ import {StorageKey} from '../modules/StorageModule';
 import {BaseComponent} from '../core/BaseComponent';
 import {TS_Input} from '../components/TS_Input';
 
-type Props = {
+export type FieldEditorProps = {
 	isEditing: boolean;
 	value?: string;
 	storageKey: StorageKey<string>;
@@ -17,9 +17,9 @@ type Props = {
 };
 
 export class FieldEditor
-	extends BaseComponent<Props> {
+	extends BaseComponent<FieldEditorProps> {
 
-	constructor(props: Props) {
+	constructor(props: FieldEditorProps) {
 		super(props);
 		this.props.storageKey.set(this.props.value || "");
 	}

@@ -45,7 +45,7 @@ import {
 } from "@nu-art/thunderstorm";
 import {Test} from "@modules/TestModule";
 import {
-	OnNotificationsReceived,
+	OnNotificationsUpdated,
 	OnPushMessageReceived,
 	PushPubSubModule,
 	NotificationsModule
@@ -82,7 +82,7 @@ const mySubscriptions: BaseSubscriptionData[] = [{
 
 export class ExampleModule_Class
 	extends Module<Config>
-	implements OnPushMessageReceived, OnNotificationsReceived {
+	implements OnPushMessageReceived, OnNotificationsUpdated {
 
 	private message!: string;
 
@@ -112,7 +112,7 @@ export class ExampleModule_Class
 		this.logInfo('payload received in module', message, notification);
 	}
 
-	__onNotificationsReceived(): void {
+	__onNotificationsUpdated(): void {
 		this.logInfo('these are the notifications you actually care about:', NotificationsModule.getNotifications());
 	}
 

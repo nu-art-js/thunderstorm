@@ -23,7 +23,10 @@ import {selectStyles} from "../../Page_Playground";
 
 type State = {
 	selectedOption?: Option
+	selectedSimpleOption?: string
 }
+
+const simpleOptions:string[] = ['a','b','c']
 
 type Option = {
 	title: string
@@ -43,20 +46,14 @@ const options: Option[] = [
 
 export class Example_GenericSelect extends React.Component<{}, State> {
 
-	constructor(props: {}) {
-		super(props);
-		this.state = {
-			selectedOption: undefined
-		}
-	}
-
 	render(){
-		const selectedOption = this.state.selectedOption;
-		return <div>
+		const selectedOption = this.state?.selectedOption;
+		const selectedSimpleOption = this.state?.selectedSimpleOption;
+		return <div><div>
 			<button onClick={() => {
 				this.setState({selectedOption: undefined})
 			}}>Clear</button>
-			<div style={{height: 20}}/>
+			<div style={{height: 20, overflow: 'hidden'}}/>
 			<GenericSelect<Option>
 				iconClose={ICONS.arrowClose(undefined, 14)}
 				iconOpen={ICONS.arrowOpen(undefined, 14)}
@@ -69,8 +66,29 @@ export class Example_GenericSelect extends React.Component<{}, State> {
 				styles={selectStyles}
 				presentation={(o) => o.title}
 			/>
-			<div style={{height: 20}}/>
+			<div style={{height: 20, overflow: 'hidden'}}/>
 			<span>{selectedOption ? selectedOption.title : "none"}</span>
+		</div>
+			<div>
+				<button onClick={() => {
+					this.setState({selectedSimpleOption: undefined})
+				}}>Clear</button>
+				<div style={{height: 20, overflow: 'hidden'}}/>
+				<GenericSelect<string>
+					iconClose={ICONS.arrowClose(undefined, 14)}
+					iconOpen={ICONS.arrowOpen(undefined, 14)}
+					selectedOption={selectedSimpleOption}
+					options={simpleOptions}
+					onChange={(o: string) => {
+						console.log(`selected ${o}`);
+						this.setState({selectedSimpleOption: o});
+					}}
+					styles={selectStyles}
+					presentation={(o) => o}
+				/>
+				<div style={{height: 20, overflow: 'hidden'}}/>
+				<span>{selectedSimpleOption ? selectedSimpleOption : "none"}</span>
+			</div>
 		</div>
 	}
 }

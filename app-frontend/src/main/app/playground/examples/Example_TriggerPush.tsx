@@ -25,7 +25,7 @@ import {
 import {ExampleModule} from "@modules/ExampleModule";
 import {
 	NotificationsModule,
-	OnNotificationsReceived
+	OnNotificationsUpdated
 } from "@nu-art/push-pub-sub/frontend";
 import {DB_Notifications} from "@nu-art/push-pub-sub/shared/types";
 
@@ -35,7 +35,7 @@ export type State = {
 
 export class Example_TriggerPush
 	extends BaseComponent<{}, State>
-	implements OnNotificationsReceived {
+	implements OnNotificationsUpdated {
 
 	constructor(props: {}) {
 		super(props);
@@ -44,7 +44,7 @@ export class Example_TriggerPush
 		};
 	}
 
-	__onNotificationsReceived(): void {
+	__onNotificationsUpdated(): void {
 		this.setState({notifications: NotificationsModule.getNotifications()});
 	}
 
@@ -52,7 +52,7 @@ export class Example_TriggerPush
 		return <div className={'ll_h_v'}>
 			<button onClick={() => this.triggerPush()}>Trigger Push</button>
 			<button onClick={() => this.triggerPush(Second)}>Trigger Delayed Push</button>
-			{this.state.notifications.map(_notification => <div onClick={() => NotificationsModule.updateReadNotification(_notification, !_notification.read)}>{_notification.read.toString()}</div>)}
+			{this.state.notifications.map(_notification => <div onClick={() => NotificationsModule.read(_notification, !_notification.read)}>{_notification.read.toString()}</div>)}
 		</div>;
 	}
 

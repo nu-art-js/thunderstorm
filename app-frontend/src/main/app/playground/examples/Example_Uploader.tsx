@@ -29,7 +29,7 @@ export class Example_Uploader
 
 	onSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
-		files && UploaderModule.upload(Object.values(files), 'default');
+		files && UploaderModule.upload(Object.values(files), 'default', true);
 	};
 
 	render() {

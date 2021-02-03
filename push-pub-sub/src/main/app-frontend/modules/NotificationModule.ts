@@ -3,9 +3,12 @@ import {
 	Module,
 	removeItemFromArray
 } from "@nu-art/ts-common";
-import {DB_Notifications} from "../..";
-import {PushPubSubModule} from "./PushPubSubModule";
-
+import {
+	DB_Notifications,
+	PubSubReadNotification
+} from "../..";
+import {XhrHttpModule} from "@nu-art/thunderstorm/frontend";
+import {HttpMethod} from "@nu-art/thunderstorm";
 
 export interface OnNotificationsUpdated {
 	__onNotificationsUpdated(): void
@@ -25,6 +28,7 @@ export class NotificationsModule_Class
 
 	setNotificationList = (notifications: DB_Notifications[]) => {
 		this.notifications = notifications;
+		dispatch_NotificationsUpdated.dispatchUI([]);
 	};
 
 	addNotification(newNotification: DB_Notifications) {
@@ -32,18 +36,35 @@ export class NotificationsModule_Class
 		dispatch_NotificationsUpdated.dispatchUI([]);
 	}
 
-	removeNotification(notification: DB_Notifications){
-		removeItemFromArray(this.notifications, notification)
-		return notification._id
+	removeNotification(notification: DB_Notifications) {
+		removeItemFromArray(this.notifications, notification);
+		dispatch_NotificationsUpdated.dispatchUI([]);
+		return notification._id;
 	}
 
-	updateReadNotification = async (notification: DB_Notifications, read: boolean) => {
+	read = async (notification: DB_Notifications, read: boolean) => {
 		const readNotification = this.notifications.find(_notification => _notification._id === notification._id);
 		if (!readNotification || !readNotification.persistent)
 			return;
 
 		readNotification.read = read;
-		await PushPubSubModule.readNotification(notification._id, read);
+		await this.readNotification(notification._id, read);
+	};
+
+	readNotification = (id: string, read: boolean) => {
+		const body = {
+			_id: id,
+			read
+		};
+
+		XhrHttpModule
+			.createRequest<PubSubReadNotification>(HttpMethod.POST, 'read-notification')
+			.setRelativeUrl("/v1/push/read")
+			.setJsonBody(body)
+			.setOnError('Something went wrong while reading your notification')
+			.execute(() => {
+				dispatch_NotificationsUpdated.dispatchUI([]);
+			});
 	};
 
 }

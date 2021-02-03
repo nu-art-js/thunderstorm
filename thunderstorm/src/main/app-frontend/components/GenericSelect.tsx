@@ -40,7 +40,7 @@ type State = {
 	menuIsOpen: boolean
 }
 
-export class GenericSelect<T extends object>
+export class GenericSelect<T>
 	extends React.Component<Props<T>, State> {
 
 	constructor(props: Props<T>) {

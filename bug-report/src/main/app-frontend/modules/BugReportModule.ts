@@ -66,7 +66,6 @@ export class BugReportModule_Class
 			.setOnError(`Error updating the report`)
 			.setOnSuccessMessage(`Bug report sent!`)
 			.execute((response) => {
-				console.log('response: ', response)
 				response.map(_url => Dialog_Success.show(_url.issueId))
 			});
 	};

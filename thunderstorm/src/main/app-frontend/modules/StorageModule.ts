@@ -41,7 +41,7 @@ export class StorageModule_Class
 	}
 
 	private handleStorageEvent = (e: StorageEvent) => {
-		const dispatcher = new ThunderDispatcher<StorageKeyEvent,'__onStorageKeyEvent'>('__onStorageKeyEvent');
+		const dispatcher = new ThunderDispatcher<StorageKeyEvent, '__onStorageKeyEvent'>('__onStorageKeyEvent');
 		dispatcher.dispatchUI([e]);
 		dispatcher.dispatchModule([e]);
 	};
@@ -76,6 +76,25 @@ export class StorageModule_Class
 			return defaultValue || null;
 
 		return this.cache[key] = JSON.parse(value);
+	}
+
+	public query<T>(query: RegExp): T[] {
+		const toRet: T[] = [];
+
+		for (let i = 0; i < localStorage.length; i++) {
+			const key = localStorage.key(i);
+			if (key?.match(query)) {
+				const item = localStorage.getItem(key);
+				if (item) {
+					try {
+						const exp = JSON.parse(item);
+						toRet.push(exp);
+					} catch (e) {
+					}
+				}
+			}
+		}
+		return toRet;
 	}
 }
 
