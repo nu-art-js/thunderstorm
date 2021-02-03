@@ -23,8 +23,8 @@ import {
 	padNumber
 } from "../_main";
 
-BeLogged.addClient(new LogClient_MemBuffer("test mem buffer", 10, 1024).setRotationListener((index: number) => {
-console.log(`Rotating buffer: ${index}`)
+BeLogged.addClient(new LogClient_MemBuffer("test mem buffer", 10, 1024).setRotationListener(() => {
+	console.log(`Rotating buffer`);
 }));
 
 class TestLogger

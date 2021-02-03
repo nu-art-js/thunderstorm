@@ -18,6 +18,8 @@
 
 import {__scenario} from "@nu-art/testelot";
 import {saveAndDeleteFilesTest} from "./tests/add-files";
+import {makeFilesPublicTest} from "./tests/test-public";
 
 export const testStorage = __scenario("test-storage");
-testStorage.add(saveAndDeleteFilesTest());
+testStorage.add(makeFilesPublicTest());
+// testStorage.add(saveAndDeleteFilesTest());

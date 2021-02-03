@@ -46,6 +46,7 @@ import {
 
 type Config = {
 	auth: JiraAuth
+	defaultAssignee: JiraUser,
 	baseUrl?: string
 }
 
@@ -53,6 +54,12 @@ type JiraAuth = {
 	email: string
 	apiKey: string
 };
+
+type JiraUser = {
+	accountId: string,
+	name?: string,
+	email?: string
+}
 
 type JiraMark = {
 	type: string
@@ -84,9 +91,12 @@ export type JiraIssue_Fields = {
 } & TypedMap<any>
 
 export type IssueType = {
-	id: string
-} | {
+	id?: string
 	name: string
+}
+
+export type LabelType = {
+	label: string[]
 }
 
 export type JiraProject = {
@@ -111,7 +121,12 @@ export type FixVersionType = {
 	fixVersions: { name: string }[]
 };
 
-export type JiraQuery = TypedMap<string | string[]> & {
+export type QueryItemWithOperator = {
+	value: string,
+	operator: string
+}
+
+export type JiraQuery = TypedMap<string | string[] | QueryItemWithOperator> & {
 	status?: string | string[]
 	project?: string | string[]
 	fixVersion?: string | string[]
@@ -134,7 +149,7 @@ export class JiraModule_Class
 	private headersForm!: Headers;
 	private projects!: JiraProject[];
 	private versions: { [projectId: string]: JiraVersion[] } = {};
-	private restUrl!: string
+	private restUrl!: string;
 
 	protected init(): void {
 		if (!this.config.baseUrl)
@@ -199,14 +214,24 @@ export class JiraModule_Class
 	};
 
 	issue = {
+		query: async (query: JiraQuery): Promise<JiraIssue[]> => {
+			return (await this.executeGetRequest<JiraResponse_IssuesQuery>(`/search`, {jql: JiraUtils.buildJQL(query)})).issues;
+		},
+		get: async (issueId: string): Promise<JiraIssue> => {
+			return this.executeGetRequest(`/issue/${issueId}`);
+		},
 		comment: this.comment,
-		create: async (project: JiraProject, issueType: IssueType, summary: string, descriptions: JiraIssueText[]): Promise<ResponsePostIssue> => {
+		create: async (project: JiraProject, issueType: IssueType, summary: string, descriptions: JiraIssueText[], label: string[]): Promise<ResponsePostIssue> => {
 			const issue = await this.executePostRequest<ResponsePostIssue, Pick<JiraIssue, "fields">>('/issue', {
 				fields: {
 					project,
 					issuetype: issueType,
 					description: JiraUtils.createText(...descriptions),
-					summary
+					summary,
+					labels: label,
+					assignee: {
+						accountId: this.config.defaultAssignee.accountId
+					}
 				}
 			});
 			issue.url = `${this.config.baseUrl}/browse/${issue.key}`;
@@ -234,8 +259,8 @@ export class JiraModule_Class
 		return (await this.executeGetRequest<JiraResponse_IssuesQuery>(`/search`, {jql: JiraUtils.buildJQL(query)})).issues;
 	};
 
-	getIssueRequest = async (issue: string): Promise<JiraIssue> => {
-		return this.executeGetRequest(`/issue/${issue}`);
+	getIssueRequest = async (issueId: string): Promise<JiraIssue> => {
+		return this.executeGetRequest(`/issue/${issueId}`);
 	};
 
 	addIssueAttachment = async (issue: string, file: Buffer) => {
@@ -252,7 +277,7 @@ export class JiraModule_Class
 		return this.executeRequest(request);
 	};
 
-	private async executePostRequest<Res, Req>(url: string, body: Req) {
+	private async executePostRequest<Res, Req>(url: string, body: Req, label?:string[]) {
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
 			uri: `${this.restUrl}${url}`,

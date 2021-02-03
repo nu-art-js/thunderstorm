@@ -222,12 +222,18 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			return transaction.queryUnique(this.collection, {where: uniqueQuery});
 		}));
 
-		for (const dbInstance of dbInstances) {
-			if (!dbInstance)
+		for (const idx in dbInstances) {
+			const dbInstance = dbInstances[idx];
+			if (!dbInstance || dbInstance._id === instance._id)
 				continue;
 
-			if (dbInstance._id !== instance._id)
-				throw new ApiException(422, `${this.config.itemName} uniqueness violation`);
+			const query = uniqueQueries[idx];
+			const message = _keys(query).reduce((carry, key) => {
+				return carry + "\n" + `${key}: ${query[key]}`;
+			}, `${this.config.itemName} uniqueness violation. There is already a document with`);
+
+			this.logWarning(message);
+			throw new ApiException(422, message);
 		}
 	}
 

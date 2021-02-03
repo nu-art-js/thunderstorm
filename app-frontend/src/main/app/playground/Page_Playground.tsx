@@ -69,6 +69,7 @@ import Example_Line from "./examples/Example_Line";
 import Example_ChartJSLine from "./examples/Example_ChartJSLine";
 import {Example_TSTextArea} from "./examples/Example_TSTextArea";
 import Example_CCgraphs from "./examples/Example_CCgraphs";
+import { Example_FieldEditorClick } from './examples/Example_FieldEditorClick';
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -124,9 +125,12 @@ export class Page_Playground
 
 	getScreens(): PlaygroundScreen[] {
 		return [
-			// DROPDOWNS
+			// Inputs
 			{renderer: Example_TSInput, name: "TSInput Example"},
 			{renderer: Example_TSTextArea, name: "TSTextArea Example"},
+			{renderer: Example_FieldEditorClick, name: "FieldEditorClick Example"},
+
+			// DROPDOWNS
 			{renderer: Example_DropDown, name: "Dropdown Example"},
 			{renderer: Example_FilterInput, name: "FilterInput Examples"},
 			{renderer: Example_AllDropDowns, name: "ALL DropDown Examples"},
