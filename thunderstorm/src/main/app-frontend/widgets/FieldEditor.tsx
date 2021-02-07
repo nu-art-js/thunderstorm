@@ -11,7 +11,7 @@ import {InputType} from '../components/input/TS_BaseInput';
 
 export type FieldEditorInputProps<K extends string | number> = Omit<TS_InputProps<K>, "onChange" | "value" | "onAccept">
 
-type Props = {
+export type FieldEditorProps = {
 	isEditing: boolean;
 	value?: string;
 	type: InputType;
@@ -26,9 +26,9 @@ type Props = {
 };
 
 export class FieldEditor
-	extends BaseComponent<Props> {
+	extends BaseComponent<FieldEditorProps> {
 
-	constructor(props: Props) {
+	constructor(props: FieldEditorProps) {
 		super(props);
 		const prevValue = this.props.storageKey.get();
 		if (!prevValue) {

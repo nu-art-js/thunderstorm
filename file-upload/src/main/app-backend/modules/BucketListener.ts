@@ -31,6 +31,12 @@ export class BucketListener_Class
 		super(Temp_Path);
 	}
 
+	init(){
+		super.init()
+		// @ts-ignore
+		this.logInfo('bucketName',this.config.bucketName)
+	}
+
 	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
 		const filePath = object.name;
 		await UploaderModule.fileUploaded(filePath);

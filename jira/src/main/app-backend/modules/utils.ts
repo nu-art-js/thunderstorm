@@ -18,7 +18,10 @@
  */
 
 import {_keys} from "@nu-art/ts-common";
-import {JiraQuery} from "./JiraModule";
+import {
+	JiraQuery,
+	QueryItemWithOperator
+} from "./JiraModule";
 
 export type JiraIssueText = string | { href: string, text: string };
 
@@ -58,13 +61,18 @@ function createText(...texts: JiraIssueText[]) {
 function buildJQL(query: JiraQuery) {
 	const params = _keys(query).map((key) => {
 		let queryValue;
+		let operator = '=';
 		if (Array.isArray(query[key])) {
 			queryValue = (query[key] as string[]).map(value => `"${value}"`).join(",");
 			queryValue = `(${queryValue})`;
+		} else if (typeof query[key] === 'object') {
+			const queryItemWithOperator = query[key] as QueryItemWithOperator;
+			queryValue = `"${queryItemWithOperator.value}"`
+			operator = queryItemWithOperator.operator;
 		} else
 			queryValue = `"${query[key]}"`;
 
-		return `${key}=${queryValue}`;
+		return `${key}${operator}${queryValue}`;
 	});
 	return params.join(" and ");
 };

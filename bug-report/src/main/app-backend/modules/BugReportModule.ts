@@ -18,6 +18,7 @@
  */
 
 import {
+	__stringify,
 	addItemToArray,
 	auditBy,
 	generateHex,
@@ -48,7 +49,7 @@ type Config = {
 	projectId?: string,
 	bucket?: string,
 }
-type TicketCreatorApi = (bugReport: Request_BugReport, logs: ReportLogFile[], email?:string) => Promise<TicketDetails>;
+type TicketCreatorApi = (bugReport: Request_BugReport, logs: ReportLogFile[], email?: string) => Promise<TicketDetails>;
 
 export class BugReportModule_Class
 	extends Module<Config> {
@@ -79,7 +80,7 @@ export class BugReportModule_Class
 		const file = await bucket.getFile(fileName);
 		await file.write(buffer);
 		return {
-			path: `https://console.cloud.google.com/storage/browser/${file.file.metadata.id}`,
+			path: `https://storage.cloud.google.com/${file.file.metadata.bucket}/${file.file.metadata.name}`,
 			name: fileName
 		};
 	};
@@ -100,10 +101,10 @@ export class BugReportModule_Class
 		if (this.config?.bucket)
 			instance.bucket = this.config.bucket;
 
-		console.log('configs in BR: ', this.config)
+		console.log('configs in BR: ', this.config);
 		instance.tickets = await Promise.all(this.ticketCreatorApis.map(api => api(bugReport, logs, email)));
 		await this.bugReport.insert(instance);
-		return instance.tickets
+		return instance.tickets;
 	};
 }
 

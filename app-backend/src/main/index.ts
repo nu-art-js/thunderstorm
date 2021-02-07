@@ -63,12 +63,14 @@ import {
 import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {JiraBugReportIntegrator} from "@nu-art/bug-report/app-backend/modules/JiraBugReportIntegrator";
+import {CollectionChangedListener} from "@modules/CollectionChangedListener";
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 
 const modules: Module[] = [
 	ValueChangedListener,
+	CollectionChangedListener,
 	ExampleModule,
 	ForceUpgrade,
 	ProjectFirestoreBackup,

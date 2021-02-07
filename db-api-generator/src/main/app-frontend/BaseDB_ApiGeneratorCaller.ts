@@ -81,10 +81,20 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		R = DeriveResponseType<Binder>,
 		B = DeriveBodyType<Binder>,
 		P extends QueryParams = DeriveQueryType<Binder>>(apiDef: GenericApiDef): BaseHttpRequest<Binder> {
-		return XhrHttpModule
+
+		const request = XhrHttpModule
 			.createRequest(apiDef.method, `request-api--${this.config.key}-${apiDef.key}`)
 			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? "/" + apiDef.suffix : ""}`)
 			.setOnError(this.errorHandler) as BaseHttpRequest<any>;
+
+		const timeout = this.timeoutHandler(apiDef);
+		if (timeout)
+			request.setTimeout(timeout);
+
+		return request;
+	}
+
+	protected timeoutHandler(apiDef: GenericApiDef): number | void {
 	}
 
 	protected onError(request: BaseHttpRequest<any>, resError?: ErrorResponse<any>): boolean {

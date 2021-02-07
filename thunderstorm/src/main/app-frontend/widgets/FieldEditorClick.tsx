@@ -13,7 +13,7 @@ type State = {
 	storageKey: StorageKey<string>;
 };
 
-type Props = {
+export type FieldEditorClickProps = {
 	inputProps: FieldEditorInputProps<any>;
 	labelProps?: HTMLProps<HTMLDivElement>
 	placeholder?: string;
@@ -24,22 +24,21 @@ type Props = {
 };
 
 export class FieldEditorClick
-	extends BaseComponent<Props, State> {
+	extends BaseComponent<FieldEditorClickProps, State> {
 
 	private createStorageKey() {
 		return new StorageKey<string>(`editable-label-controller-${this.props.id}`);
 	}
 
-	constructor(props: Props) {
+	constructor(props: FieldEditorClickProps) {
 		super(props);
-		const storage = this.createStorageKey();
 		this.state = {
-			storageKey: storage,
+			storageKey: this.createStorageKey(),
 			isEditing: false,
 		};
 	}
 
-	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>) {
+	componentDidUpdate(prevProps: Readonly<FieldEditorClickProps>, prevState: Readonly<State>) {
 		let storageKey = prevState.storageKey;
 		if (prevProps.id !== this.props.id) {
 			storageKey = this.createStorageKey();
@@ -47,22 +46,22 @@ export class FieldEditorClick
 		}
 
 		const prevValue = storageKey.get();
-		if (!prevValue) {
+		if (!prevValue)
 			storageKey.set(this.props.value || "");
-		}
 	}
 
-	handleSave = () => {
+	private handleSave = () => {
 		this.props.onAccept(this.state.storageKey.get());
 		this.endEdit();
 	};
 
-	startEdit = () => {
+	private startEdit = () => {
 		addEventListener("keydown", this.keyPressed);
+		this.state.storageKey.set(this.props.value || '');
 		this.setState({isEditing: true});
 	};
 
-	endEdit = () => {
+	private endEdit = () => {
 		removeEventListener("keydown", this.keyPressed);
 		this.logDebug("endEdit");
 		this.state.storageKey.delete();
@@ -78,7 +77,8 @@ export class FieldEditorClick
 		return (
 			<div className={`ll_h_c`}
 			     onDoubleClick={this.startEdit}
-			     onBlur={() => this.handleSave()}>
+			     onBlur={() => this.handleSave()}
+			>
 				<FieldEditor
 					id={this.props.id}
 					type={this.props.type}

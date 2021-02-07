@@ -92,7 +92,7 @@ export class Example_Scatter
 			<svg width={this.w} height={this.h}>
 				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
 					<AxisLeft yScale={this.yScale()} width={this.width}/>
-					<AxisBottom xScale={this.xScale()} height={this.height}/>
+					<AxisBottom xScale={this.xScale()} height={this.height} frequency={1} viewBox={7}/>
 					{this.circles()}
 				</g>
 			</svg>

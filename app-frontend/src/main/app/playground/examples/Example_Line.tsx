@@ -90,7 +90,7 @@ export class Example_Line
 			<button onClick={() => this.updateData({x: this.x2, y: this.y2}, 'line 2')}>plot</button>
 			<div style={{width: '100%'}}>
 				<div style={{float: 'left', width: '50%'}}>
-					<Example_LineGraph data={this.state.data}/>
+					<Example_LineGraph data={this.state.data} frequency={1} xDomain={7}/>
 				</div>
 				<div style={{float: 'left', width: '50%'}}>
 					<Line data={this.buildChartJSData()} redraw={true}/>

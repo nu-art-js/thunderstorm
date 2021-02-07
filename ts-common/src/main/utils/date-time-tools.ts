@@ -37,7 +37,7 @@ export async function timeout(sleepMs: number) {
 	return new Promise(resolve => setTimeout(resolve, sleepMs));
 }
 
-export function _setTimeout(handler: TimerHandler, sleepMs = 0, ...args: any[]) {
+export function _setTimeout(handler: TimerHandler, sleepMs = 0, ...args: any[]): number {
 	return setTimeout(handler, sleepMs, ...args) as unknown as number;
 }
 
@@ -93,7 +93,7 @@ export function createReadableTimestampObject(pattern: string = Format_HHmmss_DD
 	if (timezone)
 		timeObj.timezone = timezone;
 
-	return timeObj
+	return timeObj;
 }
 
 export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillies(), timezone?: string) {
