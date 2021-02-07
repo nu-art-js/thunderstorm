@@ -22,11 +22,12 @@
 import * as React from 'react';
 import {Filter} from "@nu-art/ts-common/utils/filter-tools";
 import {TS_Input} from "./TS_Input";
-import {Stylable} from "../tools/Stylable";
+import {Stylable} from "../../tools/Stylable";
 import {
 	compare,
 	generateHex
 } from '@nu-art/ts-common';
+import {KeyboardEvent} from "react";
 
 export type Props_FilterInput<T> = Stylable & {
 	filter: (item: T) => string[],
@@ -36,7 +37,7 @@ export type Props_FilterInput<T> = Stylable & {
 	initialFilterText?: string,
 	focus?: boolean,
 	placeholder?: string
-	handleKeyEvent?: (e: KeyboardEvent) => void
+	handleKeyEvent?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 }
 
 type State = {}

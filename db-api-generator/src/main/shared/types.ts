@@ -24,14 +24,14 @@ import {
 } from "@nu-art/thunderstorm";
 
 export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
-	Create: {
+	Upsert: {
 		method: HttpMethod.POST,
-		key: "create",
+		key: "upsert",
 		suffix: "create"
 	},
-	Update: {
+	Patch: {
 		method: HttpMethod.POST,
-		key: "update",
+		key: "patch",
 		suffix: "update"
 	},
 	Delete: {

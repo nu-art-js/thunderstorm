@@ -79,7 +79,7 @@ export class ServerApi_Create<DBType extends DB_Object>
 	extends GenericServerApi<DBType, ApiBinder_DBCreate<DBType>, (item: DBType) => DBType> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
-		super(dbModule, DefaultApiDefs.Create, pathPart);
+		super(dbModule, DefaultApiDefs.Upsert, pathPart);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Omit<DBType, "_id">) {
@@ -95,7 +95,7 @@ export class ServerApi_Update<DBType extends DB_Object>
 	extends GenericServerApi<DBType, ApiBinder_DBUpdate<DBType>> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
-		super(dbModule, DefaultApiDefs.Update, pathPart);
+		super(dbModule, DefaultApiDefs.Patch, pathPart);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: DBType): Promise<DBType> {

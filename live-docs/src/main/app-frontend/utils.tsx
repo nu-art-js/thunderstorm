@@ -38,7 +38,7 @@ const resolver: LiveDocActionResolver = (docKey: string) => {
 
 	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${docKey}` : doc.document).setActions(
 		[<button style={{marginRight: 8}} onClick={() => showEditModalExample(docKey)}>Edit</button>]);
-}
+};
 
 export function setDefaultLiveDocEditor() {
 	LiveDocsModule.setActionsResolver(resolver);
@@ -50,7 +50,8 @@ export const showEditModalExample = (docKey: string) => {
 	const doc = LiveDocsModule.get(docKey);
 
 	const originalDoc = doc.document;
-	const content = <TS_TextArea type="text" style={{height: "110px", margin: "8px", width: "100%", outline: "none"}} value={doc.document}
+	const content = <TS_TextArea id={`livedoc-${docKey}`} type="text" style={{height: "110px", margin: "8px", width: "100%", outline: "none"}}
+	                             value={doc.document}
 	                             onChange={(value: string) => {
 		                             doc.document = value;
 		                             ToastModule.toastInfo(doc.document);

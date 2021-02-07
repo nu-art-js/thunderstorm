@@ -1,7 +1,12 @@
 import * as React from 'react';
-import {FieldEditor} from "./FieldEditor";
+import {HTMLProps} from 'react';
+import {
+	FieldEditor,
+	FieldEditorInputProps
+} from "./FieldEditor";
 import {StorageKey} from '../modules/StorageModule';
 import {BaseComponent} from '../core/BaseComponent';
+import { InputType } from '../components/input/TS_BaseInput';
 
 type State = {
 	isEditing: boolean;
@@ -9,9 +14,10 @@ type State = {
 };
 
 type Props = {
-	inputStyle?: React.CSSProperties;
-	labelStyle?: React.CSSProperties
+	inputProps: FieldEditorInputProps<any>;
+	labelProps?: HTMLProps<HTMLDivElement>
 	placeholder?: string;
+	type: InputType;
 	id: string;
 	onAccept: (value: string) => void;
 	value?: string;
@@ -56,20 +62,20 @@ export class FieldEditorWithButtons
 
 	render() {
 		const {isEditing} = this.state;
-		const {inputStyle, labelStyle} = this.props;
 		return (
 			<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
 				<div>
 					<FieldEditor
+						id={this.props.id}
+						type={this.props.type}
 						isEditing={this.state.isEditing}
-						inputStyle={inputStyle}
-						labelStyle={labelStyle}
+						inputProps={this.props.inputProps}
+						labelProps={this.props.labelProps}
 						onAccept={this.handleSave}
 						onCancel={this.handleCancel}
 						storageKey={this.state.storageKey}
 						value={this.props.value}
 						placeholder={this.props.placeholder}
-						id={this.props.id}
 					/>
 				</div>
 				{isEditing ? this.renderControlButtons() : this.renderEditButton()}
@@ -80,7 +86,7 @@ export class FieldEditorWithButtons
 	private renderEditButton = () => {
 		return <button onClick={this.handleEdit}>
 			Edit
-		</button>
+		</button>;
 	};
 
 	private renderControlButtons = () => {
@@ -92,5 +98,5 @@ export class FieldEditorWithButtons
 				Cancel
 			</button>
 		</div>;
-	}
+	};
 }
