@@ -98,7 +98,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 
 	upsert(toCreate: UType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
 		return this
-			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Create)
+			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Upsert)
 			.setJsonBody(toCreate)
 			.execute(async (response: DBType) => {
 				return this.onEntryCreated(response);
@@ -111,7 +111,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	};
 	patch = (toUpdate: DBType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
 		return this
-			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Update)
+			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Patch)
 			.setJsonBody(toUpdate)
 			.execute(async response => {
 				return this.onEntryUpdated(response);
@@ -161,9 +161,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	}
 
 	protected async onEntryCreated(item: DBType): Promise<void> {
-		addItemToArray(this.ids, item._id);
-		this.items[item._id] = item;
-		this.defaultDispatcher?.dispatchUI([]);
+		return this.onEntryUpdated(item);
 	}
 
 	protected async onEntryDeleted(item: DBType): Promise<void> {
@@ -174,16 +172,15 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	}
 
 	protected async onEntryUpdated(item: DBType): Promise<void> {
-		this.items[item._id] = item;
-		this.defaultDispatcher?.dispatchUI([]);
-	}
-
-	protected async onGotUnique(item: DBType): Promise<void> {
 		if (!this.ids.includes(item._id))
 			addItemToArray(this.ids, item._id);
 
 		this.items[item._id] = item;
 		this.defaultDispatcher?.dispatchUI([]);
+	}
+
+	protected async onGotUnique(item: DBType): Promise<void> {
+		return this.onEntryUpdated(item);
 	}
 
 	protected async onQueryReturned(items: DBType[]): Promise<void> {

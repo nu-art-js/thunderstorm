@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {FilterInput} from "./FilterInput";
+import {FilterInput} from "./input/FilterInput";
 import {
 	__stringify,
 	generateHex
