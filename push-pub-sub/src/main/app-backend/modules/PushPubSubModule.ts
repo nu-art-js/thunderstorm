@@ -108,17 +108,17 @@ export class PushPubSubModule_Class
 
 		return this.pushSessions.runInTransaction(async transaction => {
 			const pushKeys = subscriptions.map(_sub => _sub.pushKey);
-			console.log(pushKeys);
+
 			let subscriptionNotifications: DB_Notifications[] = pushKeys.length !== 0 ?
-				await transaction.query(this.notifications, {where: {pushKey: {$in: pushKeys}}}) : [];
-			const userNotifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {userId}});
-			if (subscriptionNotifications.length !== 0)
+				await batchAction(pushKeys, 10, async elements => transaction.query(this.notifications, {where: {pushKey: {$in: elements}}})) : [];
+
+			if (subscriptionNotifications.length > 0)
 				subscriptionNotifications = subscriptionNotifications.filter(_notification => {
 					const x = subscriptions.find(_sub => _sub.pushKey === _notification.pushKey)?.props;
-					console.log(compare(x, _notification.props), x, _notification.props);
 					return compare(x, _notification.props) || _notification.userId;
 				});
 
+			const userNotifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {userId}});
 			const notifications = userNotifications.concat(subscriptionNotifications);
 			const writePush = await transaction.upsert_Read(this.pushSessions, session);
 
@@ -146,9 +146,8 @@ export class PushPubSubModule_Class
 			await this.notifications.insertAll(notifications);
 		}
 
-		if (docs.length === 0) {
+		if (docs.length === 0)
 			return;
-		}
 
 		const sessionsIds = docs.map(d => d.pushSessionId);
 		// I get the tokens relative to those sessions (query)

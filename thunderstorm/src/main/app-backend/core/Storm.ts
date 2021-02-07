@@ -56,7 +56,6 @@ export class Storm
 	}
 
 	init() {
-		// console.log(process.env);
 		BeLogged.addClient(process.env.GCLOUD_PROJECT && process.env.FUNCTIONS_EMULATOR ? LogClient_Terminal : LogClient_Function);
 		ServerApi.isDebug = !!this.config.isDebug;
 

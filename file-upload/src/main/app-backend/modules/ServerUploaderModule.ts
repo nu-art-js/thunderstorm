@@ -19,11 +19,11 @@
 
 import {
 	BaseUploaderFile,
-	TempSecureUrl
+	TempSecureUrl,
+    Request_Uploader
 } from "../../shared/types";
 import {
 	BaseUploaderModule_Class,
-	Request_Uploader
 } from "../../shared/modules/BaseUploaderModule";
 import {
 	Axios_RequestConfig,

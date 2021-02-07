@@ -28,6 +28,7 @@ import {
 	TS_Input,
 	TS_TextArea
 } from "@nu-art/thunderstorm/frontend";
+import {generateHex} from "@nu-art/ts-common";
 
 type Props = {
 	component?: React.ReactNode
@@ -76,6 +77,8 @@ export class BugReport
 		const onSubmit = () => {
 			if (!this.state.subject)
 				return ToastModule.toastError('you must first add a subject');
+			if (!this.state.description)
+				return ToastModule.toastError('you must first add a description')
 			BugReportModule.sendBugReport(this.state.subject, this.state.description || '');
 			this.setState({subject: undefined, description: undefined});
 			DialogModule.close();
@@ -94,6 +97,7 @@ export class BugReport
 						      type={"text"}
 						      value={this.state.subject || ''}
 						      placeholder={"type bug name here"}
+						      name={generateHex(8)}
 						      onChange={(subject: string) => this.setState({subject})}
 					      />
 				      </div>
