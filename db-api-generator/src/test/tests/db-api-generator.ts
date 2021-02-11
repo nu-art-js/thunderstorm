@@ -32,7 +32,7 @@ import {
 } from "@nu-art/testelot";
 import {
 	BaseDB_ApiGenerator,
-	validateUniqueId
+	tsValidateUniqueId
 } from "../_main";
 import {cleanup} from "./_core";
 
@@ -48,7 +48,7 @@ const CollectionName_Examples = "examples";
 export class ExampleModule_Class
 	extends BaseDB_ApiGenerator<ExampleDBType> {
 	static _validator: TypeValidator<ExampleDBType> = {
-		_id: validateUniqueId,
+		_id: tsValidateUniqueId,
 		first: undefined,
 		second: undefined,
 		third: undefined

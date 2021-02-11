@@ -162,6 +162,10 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	private ids: string[] = [];
 	private items: { [k: string]: DBType } = {};
 
+	public getId(item: DBType) {
+		return item._id;
+	}
+
 	public getItems() {
 		return this.ids.map(id => this.items[id]);
 	}

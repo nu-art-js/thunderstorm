@@ -9,14 +9,14 @@ import {
 import {TS_TextArea} from "../components/input/TS_TextArea";
 import {InputType} from '../components/input/TS_BaseInput';
 
-export type FieldEditorInputProps<K extends string | number> = Omit<TS_InputProps<K>, "onChange" | "value" | "onAccept">
+export type FieldEditorInputProps<K extends string | number> = Omit<TS_InputProps<K>, "onChange" | "value" | "onAccept" | "type" | "id">
 
 export type FieldEditorProps = {
 	isEditing: boolean;
 	value?: string;
 	type: InputType;
 	storageKey: StorageKey<string>;
-	inputProps: FieldEditorInputProps<any>;
+	inputProps?: FieldEditorInputProps<any>;
 	labelProps?: HTMLProps<HTMLDivElement>
 	onAccept?: () => void;
 	onCancel?: () => void;
@@ -43,11 +43,12 @@ export class FieldEditor
 		this.forceUpdate();
 	};
 
-	private renderInput = () => {
-		const value = this.props.storageKey.get() || "";
+	private renderInput = (value: string) => {
 		return (
 			<TS_Input<string>
 				{...this.props.inputProps}
+				id={this.props.id}
+				type={this.props.type}
 				onAccept={this.props.onAccept}
 				value={value}
 				onChange={this.onChange}
@@ -55,12 +56,14 @@ export class FieldEditor
 		);
 	};
 
-	renderArea = () => {
+	renderArea = (value: string) => {
 		return (
 			<TS_TextArea<string>
 				{...this.props.inputProps}
+				id={this.props.id}
+				type={this.props.type}
 				onAccept={this.props.onAccept}
-				value={this.props.storageKey.get() || ""}
+				value={value}
 				onChange={this.onChange}
 			/>
 		);
@@ -69,6 +72,7 @@ export class FieldEditor
 	private renderLabel = () => <div {...this.props.labelProps}>{this.props.value || ""}</div>;
 
 	render() {
-		return this.props.isEditing ? this.renderInput() : this.renderLabel();
+		const value = this.props.storageKey.get() || "";
+		return this.props.isEditing ? this.renderInput(value) : this.renderLabel();
 	}
 }

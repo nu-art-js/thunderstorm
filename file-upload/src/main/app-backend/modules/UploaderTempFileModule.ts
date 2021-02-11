@@ -17,33 +17,33 @@
  * limitations under the License.
  */
 import {
-	auditValidator,
+	tsValidateAudit,
 	TypeValidator,
-	validateExists,
-	validateRegexp
+	tsValidateExists,
+	tsValidateRegexp
 } from "@nu-art/ts-common";
 import {ServerApi} from "@nu-art/thunderstorm/backend"
 import {
 	BaseDB_ApiGenerator,
-	validateUniqueId
+	tsValidateUniqueId
 } from "@nu-art/db-api-generator/backend";
 import {DB_Temp_File} from "../../shared/types";
 
 export const TEMP_COLLECTION = 'temp-files-upload';
 
-export const validateName = validateRegexp(/^.{3,}$/);
+export const validateName = tsValidateRegexp(/^.{3,}$/);
 
 export class UploaderTempFileModule_Class
 	extends BaseDB_ApiGenerator<DB_Temp_File> {
 	static _validator: TypeValidator<DB_Temp_File> = {
-		_id: validateUniqueId,
+		_id: tsValidateUniqueId,
 		name: validateName,
-		feId: validateExists(true),
-		mimeType: validateExists(true),
-		key: validateExists(true),
-		path: validateExists(true),
-		_audit: auditValidator(),
-		bucketName: validateExists(true),
+		feId: tsValidateExists(true),
+		mimeType: tsValidateExists(true),
+		key: tsValidateExists(true),
+		path: tsValidateExists(true),
+		_audit: tsValidateAudit(),
+		bucketName: tsValidateExists(true),
 		public: undefined
 	};
 

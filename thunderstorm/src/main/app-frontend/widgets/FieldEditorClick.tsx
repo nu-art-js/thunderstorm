@@ -14,7 +14,7 @@ type State = {
 };
 
 export type FieldEditorClickProps = {
-	inputProps: FieldEditorInputProps<any>;
+	inputProps?: FieldEditorInputProps<any>;
 	labelProps?: HTMLProps<HTMLDivElement>
 	placeholder?: string;
 	type: InputType;
