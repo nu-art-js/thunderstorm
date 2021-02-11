@@ -1,16 +1,14 @@
 #!/bin/bash
 projectLibs=(
-  ${tsLibs[@]}
   app-shared
 )
 
 backendApps=(
-#  app-backend
+  app-backend
 )
 
 frontendApps=(
-#  app-frontend
+  app-frontend
 )
-
 
 testServiceAccount=../.trash/test-account.json

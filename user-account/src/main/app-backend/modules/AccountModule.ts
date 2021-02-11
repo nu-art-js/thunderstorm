@@ -25,7 +25,7 @@ import {
 	generateHex,
 	hashPasswordWithSalt,
 	Module,
-	validate
+	tsValidate
 } from "@nu-art/ts-common";
 
 
@@ -48,7 +48,7 @@ import {
 	HeaderKey,
 	QueryRequestInfo
 } from "@nu-art/thunderstorm/backend";
-import {validateEmail} from "@nu-art/db-api-generator/backend";
+import {tsValidateEmail} from "@nu-art/db-api-generator/backend";
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
@@ -134,7 +134,7 @@ export class AccountsModule_Class
 
 	async createAccount(request: Request_CreateAccount) {
 		request.email = request.email.toLowerCase();
-		validate(request.email, validateEmail);
+		tsValidate(request.email, tsValidateEmail);
 
 		return this.accounts.runInTransaction(async (transaction) => {
 			let account = await transaction.queryUnique(this.accounts, {where: {email: request.email}});

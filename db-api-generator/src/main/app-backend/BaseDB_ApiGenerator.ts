@@ -38,8 +38,8 @@ import {
 	Module,
 	PartialProperties,
 	ThisShouldNotHappenException,
-	validate,
-	validateRegexp,
+	tsValidate,
+	tsValidateRegexp,
 	ValidationException,
 	ValidatorTypeResolver
 } from "@nu-art/ts-common";
@@ -69,22 +69,22 @@ import {
 } from "../shared/types";
 
 const idLength = 32;
-export const validateId = (length: number, mandatory: boolean = true) => validateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
-export const validateEmail = validateRegexp(
+export const tsValidateId = (length: number, mandatory: boolean = true) => tsValidateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
+export const tsValidateEmail = tsValidateRegexp(
 	/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/);
-export const validateBucketUrl = (mandatory?: boolean) => validateRegexp(
+export const tsValidateBucketUrl = (mandatory?: boolean) => tsValidateRegexp(
 	/gs?:\/\/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
-export const validateGeneralUrl = (mandatory?: boolean) => validateRegexp(
+export const tsValidateGeneralUrl = (mandatory?: boolean) => tsValidateRegexp(
 	/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
-export const validateUniqueId = validateId(idLength);
-export const validateOptionalId = validateId(idLength, false);
-export const validateStringWithDashes = validateRegexp(/^[A-Za-z-]+$/);
-export const validateStringAndNumbersWithDashes = validateRegexp(/^[0-9A-Za-z-]+$/);
-export const validator_JavaObjectMemberName = validateRegexp(/^[a-z][a-zA-Z0-9]+$/);
-export const validateNameWithDashesAndDots = validateRegexp(/^[a-z-.]+$/);
-export const validator_LowercaseStringWithDashes = validateRegexp(/^[a-z-.]+$/);
-export const validator_LowerUpperStringWithSpaces = validateRegexp(/^[A-Za-z ]+$/);
-export const validator_LowerUpperStringWithDashesAndUnderscore = validateRegexp(/^[A-Za-z-_]+$/);
+export const tsValidateUniqueId = tsValidateId(idLength);
+export const tsValidateOptionalId = tsValidateId(idLength, false);
+export const tsValidateStringWithDashes = tsValidateRegexp(/^[A-Za-z-]+$/);
+export const tsValidateStringAndNumbersWithDashes = tsValidateRegexp(/^[0-9A-Za-z-]+$/);
+export const tsValidator_JavaObjectMemberName = tsValidateRegexp(/^[a-z][a-zA-Z0-9]+$/);
+export const tsValidateNameWithDashesAndDots = tsValidateRegexp(/^[a-z-.]+$/);
+export const tsValidator_LowercaseStringWithDashes = tsValidateRegexp(/^[a-z-.]+$/);
+export const tsValidator_LowerUpperStringWithSpaces = tsValidateRegexp(/^[A-Za-z ]+$/);
+export const tsValidator_LowerUpperStringWithDashesAndUnderscore = tsValidateRegexp(/^[A-Za-z-_]+$/);
 
 
 export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
@@ -246,7 +246,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	public async validateImpl(instance: DBType) {
 		try {
-			await validate(instance, this.validator);
+			await tsValidate(instance, this.validator);
 		} catch (e) {
 
 			const badImplementation = isErrorOfType(e, BadImplementationException);
@@ -580,7 +580,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 			const mergedObject = merge(dbInstance, instance);
 
-			await validate(mergedObject, this.validator);
+			await tsValidate(mergedObject, this.validator);
 
 			await this.assertUniqueness(transaction, mergedObject, request);
 

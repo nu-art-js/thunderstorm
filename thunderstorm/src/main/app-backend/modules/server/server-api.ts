@@ -31,7 +31,7 @@ import {
 	LogLevel,
 	MUSTNeverHappenException,
 	ServerErrorSeverity,
-	validate,
+	tsValidate,
 	ValidationException,
 	ValidatorTypeResolver
 } from "@nu-art/ts-common";
@@ -182,8 +182,8 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 		};
 
 		try {
-			this.bodyValidator && validate<B>(body as B, this.bodyValidator);
-			this.queryValidator && validate<P>(reqQuery, this.queryValidator);
+			this.bodyValidator && tsValidate<B>(body as B, this.bodyValidator);
+			this.queryValidator && tsValidate<P>(reqQuery, this.queryValidator);
 
 			if (this.middlewares)
 				await Promise.all(this.middlewares.map(m => m(req, requestData)));

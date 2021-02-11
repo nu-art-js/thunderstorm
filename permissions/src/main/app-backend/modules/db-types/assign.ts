@@ -27,8 +27,8 @@ import {
 } from "../_imports";
 import {
 	BaseDB_ApiGenerator,
-	validateStringAndNumbersWithDashes,
-	validateUniqueId
+	tsValidateStringAndNumbersWithDashes,
+	tsValidateUniqueId
 } from "@nu-art/db-api-generator/backend";
 import {
 	AccountModule,
@@ -50,18 +50,18 @@ import {
 	filterDuplicates,
 	filterInstances,
 	TypeValidator,
-	validateArray,
-	validateObjectValues,
-	validateRegexp,
+	tsValidateArray,
+	tsValidateObjectValues,
+	tsValidateRegexp,
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
 import {PermissionsShare} from "../permissions-share";
 import { UI_Account } from "@nu-art/user-account";
 
-const validateUserUuid = validateRegexp(/^.{0,50}$/);
-const validateGroupLabel = validateRegexp(/^[A-Za-z-\._ ]+$/);
-const validateCustomFieldValues = validateRegexp(/^.{0,500}$/);
+const validateUserUuid = tsValidateRegexp(/^.{0,50}$/);
+const validateGroupLabel = tsValidateRegexp(/^[A-Za-z-\._ ]+$/);
+const validateCustomFieldValues = tsValidateRegexp(/^.{0,500}$/);
 
 function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 	const domainIds = levels.map(level => level.domainId);
@@ -73,10 +73,10 @@ function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 export class GroupsDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionsGroup> {
 	static _validator: TypeValidator<DB_PermissionsGroup> = {
-		_id: validateStringAndNumbersWithDashes,
+		_id: tsValidateStringAndNumbersWithDashes,
 		label: validateGroupLabel,
-		accessLevelIds: validateArray(validateUniqueId, false),
-		customFields: validateArray(validateObjectValues<string>(validateCustomFieldValues), false),
+		accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
+		customFields: tsValidateArray(tsValidateObjectValues<string>(validateCustomFieldValues), false),
 		__accessLevels: undefined,
 		_audit: undefined
 	};
@@ -163,8 +163,8 @@ export class UsersDB_Class
 	static _validator: TypeValidator<DB_PermissionsUser> = {
 		_id: undefined,
 		accountId: validateUserUuid,
-		groups: validateArray({groupId: validateStringAndNumbersWithDashes, customField: validateObjectValues<string>(validateCustomFieldValues, false)}, false),
-		__groupIds: validateArray(validateStringAndNumbersWithDashes, false),
+		groups: tsValidateArray({groupId: tsValidateStringAndNumbersWithDashes, customField: tsValidateObjectValues<string>(validateCustomFieldValues, false)}, false),
+		__groupIds: tsValidateArray(tsValidateStringAndNumbersWithDashes, false),
 		_audit: undefined
 	};
 

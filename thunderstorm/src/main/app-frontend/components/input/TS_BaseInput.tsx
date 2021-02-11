@@ -29,12 +29,12 @@ import {Stylable} from "../../tools/Stylable";
 export type InputType = 'text' | 'number' | 'password';
 
 export type TS_BaseInputProps<Key> = Stylable & {
+	type: InputType
+	id: Key
 	onChange?: (value: string, id: Key) => void
 	onAccept?: () => void
 	onCancel?: () => void
 	onBlur?: () => void
-	type: InputType
-	id: Key
 	placeholder?: string
 	enable?: boolean
 	name?: string

@@ -22,10 +22,10 @@ import {
 	ServerApi_Query,
 	ServerApi_Unique,
 	ServerApi_Update,
-	validateNameWithDashesAndDots,
-	validateOptionalId,
-	validateStringWithDashes,
-	validateUniqueId
+	tsValidateNameWithDashesAndDots,
+	tsValidateOptionalId,
+	tsValidateStringWithDashes,
+	tsValidateUniqueId
 } from "@nu-art/db-api-generator/backend";
 
 import {
@@ -45,9 +45,9 @@ import {
 	filterDuplicates,
 	MUSTNeverHappenException,
 	TypeValidator,
-	validateArray,
-	validateRange,
-	validateRegexp
+	tsValidateArray,
+	tsValidateRange,
+	tsValidateRegexp
 } from "@nu-art/ts-common";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
 import {GroupPermissionsDB} from "./assign";
@@ -59,9 +59,9 @@ import {
 } from "@nu-art/thunderstorm/backend";
 import {AccountModule} from "@nu-art/user-account/app-backend/modules/AccountModule";
 
-const validateProjectId = validateRegexp(/^[a-z-]{3,20}$/);
-export const validateProjectName = validateRegexp(/^[A-Za-z- ]{3,20}$/);
-export const validateStringWithDashesAndSlash = validateRegexp(/^[0-9A-Za-z-/]+$/);
+const validateProjectId = tsValidateRegexp(/^[a-z-]{3,20}$/);
+export const validateProjectName = tsValidateRegexp(/^[A-Za-z- ]{3,20}$/);
+export const tsValidateStringWithDashesAndSlash = tsValidateRegexp(/^[0-9A-Za-z-/]+$/);
 
 export class ProjectDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionProject> {
@@ -96,9 +96,9 @@ export class ProjectDB_Class
 export class DomainDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionDomain> {
 	static _validator: TypeValidator<DB_PermissionDomain> = {
-		_id: validateOptionalId,
+		_id: tsValidateOptionalId,
 		projectId: validateProjectId,
-		namespace: validateNameWithDashesAndDots,
+		namespace: tsValidateNameWithDashesAndDots,
 		_audit: undefined
 	};
 
@@ -128,10 +128,10 @@ export class DomainDB_Class
 export class LevelDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionAccessLevel> {
 	static _validator: TypeValidator<DB_PermissionAccessLevel> = {
-		_id: validateOptionalId,
-		domainId: validateUniqueId,
-		name: validateStringWithDashes,
-		value: validateRange([[0, 1000]]),
+		_id: tsValidateOptionalId,
+		domainId: tsValidateUniqueId,
+		name: tsValidateStringWithDashes,
+		value: tsValidateRange([[0, 1000]]),
 		_audit: undefined
 	};
 
@@ -220,10 +220,10 @@ export class ApiDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionApi> {
 
 	static _validator: TypeValidator<DB_PermissionApi> = {
-		_id: validateOptionalId,
+		_id: tsValidateOptionalId,
 		projectId: validateProjectId,
-		path: validateStringWithDashesAndSlash,
-		accessLevelIds: validateArray(validateUniqueId, false),
+		path: tsValidateStringWithDashesAndSlash,
+		accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
 		_audit: undefined,
 		deprecated: undefined,
 		onlyForApplication: undefined

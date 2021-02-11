@@ -79,13 +79,13 @@ const assertMandatory = (mandatory: boolean, path: string, input?: any) => {
 		throw new ValidationException(`Missing mandatory field: ${path}\n`, path, input);
 };
 
-export const validateExists = (mandatory = true): Validator<any> => {
+export const tsValidateExists = (mandatory = true): Validator<any> => {
 	return (path: string, input?: any) => {
 		assertMandatory(mandatory, path, input);
 	};
 };
 
-export const validateObjectValues = <V, T = { [k: string]: V }>(validator: ValidatorTypeResolver<V>, mandatory = true): Validator<T> =>
+export const tsValidateObjectValues = <V, T = { [k: string]: V }>(validator: ValidatorTypeResolver<V>, mandatory = true): Validator<T> =>
 	(path: string, input?: T) => {
 		assertMandatory(mandatory, path, input);
 		if (!input)
@@ -95,18 +95,18 @@ export const validateObjectValues = <V, T = { [k: string]: V }>(validator: Valid
 		for (const key of _keys(input)) {
 			const inputValue = input[key];
 			if (typeof inputValue === "object") {
-				const objectValidator = validateObjectValues(validator, mandatory);
+				const objectValidator = tsValidateObjectValues(validator, mandatory);
 				if (!objectValidator)
 					return;
 
 				return objectValidator(`${path}/${key}`, inputValue as unknown as { [k: string]: V });
 			}
 
-			validate(inputValue as unknown as V, validator, `${path}/${key}`);
+			tsValidate(inputValue as unknown as V, validator, `${path}/${key}`);
 		}
 	};
 
-export const validateArray = <T extends any[], I = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true): Validator<I[]> =>
+export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true): Validator<I[]> =>
 	(path, input?: I[]) => {
 		assertMandatory(mandatory, path, input);
 		if (!input)
@@ -114,11 +114,11 @@ export const validateArray = <T extends any[], I = ArrayType<T>>(validator: Vali
 
 		const _input = input as unknown as I[];
 		for (let i = 0; i < _input.length; i++) {
-			validate(_input[i], validator, `${path}/${i}`);
+			tsValidate(_input[i], validator, `${path}/${i}`);
 		}
 	};
 
-export const validateRegexp = (regexp: RegExp, mandatory = true): Validator<string> => {
+export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<string> => {
 	return (path: string, input?: string) => {
 		assertMandatory(mandatory, path, input);
 		if (!input)
@@ -131,7 +131,35 @@ export const validateRegexp = (regexp: RegExp, mandatory = true): Validator<stri
 	};
 };
 
-export const validateValue = (values: string[], mandatory = true): Validator<string> => {
+export const tsValidateNumber = (mandatory = true): Validator<number> => {
+	return (path: string, input?: number) => {
+		assertMandatory(mandatory, path, input);
+		if (!input)
+			return;
+
+		// noinspection SuspiciousTypeOfGuard
+		if (typeof input === "number")
+			return;
+
+		throw new ValidationException(`input is not a number! \nvalue: ${input}\ntype: ${typeof input}`, path, input);
+	};
+};
+
+export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
+	return (path: string, input?: boolean) => {
+		assertMandatory(mandatory, path, input);
+		if (!input)
+			return;
+
+		// noinspection SuspiciousTypeOfGuard
+		if (typeof input === "boolean")
+			return;
+
+		throw new ValidationException(`input is not a boolean! \nvalue: ${input}\ntype: ${typeof input}`, path, input);
+	};
+};
+
+export const tsValidateValue = (values: string[], mandatory = true): Validator<string> => {
 	return (path: string, input?: string) => {
 		assertMandatory(mandatory, path, input);
 		if (!input)
@@ -144,7 +172,7 @@ export const validateValue = (values: string[], mandatory = true): Validator<str
 	};
 };
 
-export const validateRange = (ranges: [number, number][], mandatory = true): Validator<number> => {
+export const tsValidateRange = (ranges: [number, number][], mandatory = true): Validator<number> => {
 	return (path: string, input?: number) => {
 		assertMandatory(mandatory, path, input);
 		if (!input)
@@ -160,7 +188,7 @@ export const validateRange = (ranges: [number, number][], mandatory = true): Val
 };
 
 
-export const validate = <T extends any>(instance: T, _validator: ValidatorTypeResolver<T>, path = "") => {
+export const tsValidate = <T extends any>(instance: T, _validator: ValidatorTypeResolver<T>, path = "") => {
 	if (!_validator)
 		return;
 
@@ -178,11 +206,11 @@ export const validate = <T extends any>(instance: T, _validator: ValidatorTypeRe
 				`Unexpect object at '${path}'\nif you want to ignore the validation of this object,\n add the following to your validator:\n {\n  ...\n  ${path}: undefined\n  ...\n}\n`);
 
 		const __validator = _validator as TypeValidator<object>;
-		validateObject(__validator, instance, path);
+		tsValidateObject(__validator, instance, path);
 	}
 };
 
-export const validateObject = <T>(__validator: TypeValidator<object>, instance: T, path = "") => {
+export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance: T, path = "") => {
 	const validatorKeys = _keys(__validator);
 	const instanceKeys = Object.keys(instance as unknown as object);
 
@@ -196,15 +224,15 @@ export const validateObject = <T>(__validator: TypeValidator<object>, instance: 
 	for (const key of validatorKeys) {
 		const value: T[keyof T] = instance[key];
 		const validator = __validator[key];
-		validate(value, validator, `${path}/${key}`);
+		tsValidate(value, validator, `${path}/${key}`);
 	}
 };
 
-export const isTimestampValid = (time: number, range = {min: currentTimeMillies() - 1000 * Day, max: currentTimeMillies() + 1000 * Day}): boolean => {
+export const tsValidateTimestamp = (time: number, range = {min: currentTimeMillies() - 1000 * Day, max: currentTimeMillies() + 1000 * Day}): boolean => {
 	return time >= range.min && time <= range.max;
 };
 
-export const auditValidator = (range?: RangeTimestamp) => (_path: string, audit?: AuditBy) => {
-	if (!audit || !isTimestampValid(audit.auditAt.timestamp, range))
+export const tsValidateAudit = (range?: RangeTimestamp) => (_path: string, audit?: AuditBy) => {
+	if (!audit || !tsValidateTimestamp(audit.auditAt.timestamp, range))
 		throw new ValidationException('Time is not proper', _path, audit);
 };

@@ -53,12 +53,13 @@ export class Example_FieldEditorClick
 	private props1(): FieldEditorClickProps {
 		return {
 			id: "prop1",
+			type: "text",
 			onAccept: (value: string) => {
 				this.setState(state => ({
 					instance: {...state.instance, ['prop1']: value}
 				}));
 			},
-			labelStyle: {height: 20, width: 170},
+			labelProps: {style: {height: 20, width: 170}},
 			value: this.state.instance.prop1
 		};
 	}
@@ -66,12 +67,13 @@ export class Example_FieldEditorClick
 	private props2(): FieldEditorClickProps {
 		return {
 			id: "prop2",
+			type: "text",
 			onAccept: (value: string) => {
 				this.setState(state => ({
 					instance: {...state.instance, ['prop2']: value}
 				}));
 			},
-			labelStyle: {height: 20, width: 170},
+			labelProps: {style: {height: 20, width: 170}},
 			value: this.state.instance.prop2
 		};
 	}

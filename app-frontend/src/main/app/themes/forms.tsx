@@ -26,7 +26,7 @@ import {
 import {
 	deepClone,
 	ObjectTS,
-	validateObject
+	tsValidateObject
 } from "@nu-art/ts-common";
 
 type State<T extends ObjectTS> = {
@@ -60,7 +60,7 @@ class ConfirmationFormWrapper<T extends ObjectTS>
 	onAccept = () => {
 		try {
 			const value = this.state.value as T;
-			this.props.validator && validateObject(value, this.props.validator);
+			this.props.validator && tsValidateObject(value, this.props.validator);
 			this.props.onAccept(value)
 		} catch (e) {
 			this.setState({showErrors: true})

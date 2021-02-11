@@ -18,8 +18,8 @@
 
 import {
 	TestSuit,
-	validateObjectValues,
-	validateRegexp
+	tsValidateObjectValues,
+	tsValidateRegexp
 } from "../_main";
 import {ValidatorTest,} from "./test";
 import {validatorProcessor} from "./_common";
@@ -37,15 +37,15 @@ export const testSuit_dynamicPropsObjectValidator: TestSuit<ValidatorTest<Dynami
 	label: "Object Validator - Simple Object",
 	processor: validatorProcessor,
 	models: [
-		{expected: "pass", input: {instance: simpleObject1, validator: validateObjectValues<_DynamicProps>(validateRegexp(/Adam|Yair/))}},
-		{expected: "pass", input: {instance: simpleObject2, validator: validateObjectValues<_DynamicProps>(validateRegexp(/Adam|Yair/))}},
-		{expected: "pass", input: {instance: simpleObject3, validator: validateObjectValues<_DynamicProps>(validateRegexp(/Adam|Yair/))}},
-		{expected: "fail", input: {instance: simpleObject3, validator: validateObjectValues<_DynamicProps>(validateRegexp(/Adam2|Yair/))}},
-		{expected: "fail", input: {instance: simpleObject3, validator: validateObjectValues<_DynamicProps>(validateRegexp(/Adam|Yair2/))}},
-		{expected: "pass", input: {instance: simpleObject4, validator: validateObjectValues<_DynamicProps>(validateRegexp(/Adam|Yair/))}},
-		{expected: "pass", input: {instance: simpleObject4, validator: validateObjectValues<_DynamicProps>(validateRegexp(/Adam|Yair/))}},
-		{expected: "pass", input: {instance: simpleObject4, validator: validateObjectValues<_DynamicProps>(validateRegexp(/Adam|Yair/))}},
-		{expected: "fail", input: {instance: simpleObject4, validator: validateObjectValues<_DynamicProps>(validateRegexp(/Adam2|Yair/))}},
-		{expected: "fail", input: {instance: simpleObject4, validator: validateObjectValues<_DynamicProps>(validateRegexp(/Adam|Yair2/))}},
+		{expected: "pass", input: {instance: simpleObject1, validator: tsValidateObjectValues<_DynamicProps>(tsValidateRegexp(/Adam|Yair/))}},
+		{expected: "pass", input: {instance: simpleObject2, validator: tsValidateObjectValues<_DynamicProps>(tsValidateRegexp(/Adam|Yair/))}},
+		{expected: "pass", input: {instance: simpleObject3, validator: tsValidateObjectValues<_DynamicProps>(tsValidateRegexp(/Adam|Yair/))}},
+		{expected: "fail", input: {instance: simpleObject3, validator: tsValidateObjectValues<_DynamicProps>(tsValidateRegexp(/Adam2|Yair/))}},
+		{expected: "fail", input: {instance: simpleObject3, validator: tsValidateObjectValues<_DynamicProps>(tsValidateRegexp(/Adam|Yair2/))}},
+		{expected: "pass", input: {instance: simpleObject4, validator: tsValidateObjectValues<_DynamicProps>(tsValidateRegexp(/Adam|Yair/))}},
+		{expected: "pass", input: {instance: simpleObject4, validator: tsValidateObjectValues<_DynamicProps>(tsValidateRegexp(/Adam|Yair/))}},
+		{expected: "pass", input: {instance: simpleObject4, validator: tsValidateObjectValues<_DynamicProps>(tsValidateRegexp(/Adam|Yair/))}},
+		{expected: "fail", input: {instance: simpleObject4, validator: tsValidateObjectValues<_DynamicProps>(tsValidateRegexp(/Adam2|Yair/))}},
+		{expected: "fail", input: {instance: simpleObject4, validator: tsValidateObjectValues<_DynamicProps>(tsValidateRegexp(/Adam|Yair2/))}},
 	]
 };

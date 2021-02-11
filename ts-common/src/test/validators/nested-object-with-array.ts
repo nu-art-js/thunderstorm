@@ -18,8 +18,8 @@
 
 import {ValidatorTest,} from "./test";
 import {
-	validateArray,
-	validateRegexp,
+	tsValidateArray,
+	tsValidateRegexp,
 	TestSuit
 } from "../_main";
 import {
@@ -40,11 +40,11 @@ export const testSuit_nestedObjectWithArrayValidator: TestSuit<ValidatorTest<Obj
 	label: "Object Validator - Nested Object With Array",
 	processor: validatorProcessor,
 	models: [
-		{expected: "pass", input: {instance: objectWithNestedArray0, validator: {prop2: {prop1: validateArray(validateRegexp(/Adam/))}}}},
-		{expected: "pass", input: {instance: objectWithNestedArray0, validator: {prop2: {prop1: validateArray(validateRegexp(/pah/))}}}},
-		{expected: "pass", input: {instance: objectWithNestedArray1, validator: {prop2: {prop1: validateArray(validateRegexp(/Adam/))}}}},
-		{expected: "fail", input: {instance: objectWithNestedArray1, validator: {prop2: {prop1: validateArray(validateRegexp(/pah/))}}}},
-		{expected: "pass", input: {instance: objectWithNestedArray2, validator: {prop2: {prop1: validateArray(validateRegexp(/Adam|Yair/))}}}},
-		{expected: "fail", input: {instance: objectWithNestedArray2, validator: {prop2: {prop1: validateArray(validateRegexp(/pah/))}}}},
+		{expected: "pass", input: {instance: objectWithNestedArray0, validator: {prop2: {prop1: tsValidateArray(tsValidateRegexp(/Adam/))}}}},
+		{expected: "pass", input: {instance: objectWithNestedArray0, validator: {prop2: {prop1: tsValidateArray(tsValidateRegexp(/pah/))}}}},
+		{expected: "pass", input: {instance: objectWithNestedArray1, validator: {prop2: {prop1: tsValidateArray(tsValidateRegexp(/Adam/))}}}},
+		{expected: "fail", input: {instance: objectWithNestedArray1, validator: {prop2: {prop1: tsValidateArray(tsValidateRegexp(/pah/))}}}},
+		{expected: "pass", input: {instance: objectWithNestedArray2, validator: {prop2: {prop1: tsValidateArray(tsValidateRegexp(/Adam|Yair/))}}}},
+		{expected: "fail", input: {instance: objectWithNestedArray2, validator: {prop2: {prop1: tsValidateArray(tsValidateRegexp(/pah/))}}}},
 	]
 };
