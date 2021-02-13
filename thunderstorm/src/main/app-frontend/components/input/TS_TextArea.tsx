@@ -32,7 +32,17 @@ export class TS_TextArea<Key extends string>
 
 	render() {
 		return <textarea
-			ref={this.input}
+			ref={input => {
+				if (this.ref || !input)
+					return;
+
+				this.ref = input;
+				this.ref.focus();
+			}}
+			onBlur={() => {
+				this.ref = undefined;
+				this.props.onBlur?.();
+			}}
 			disabled={this.props.enable === false}
 			name={this.props.name || this.props.id}
 			key={this.props.id}
@@ -42,7 +52,6 @@ export class TS_TextArea<Key extends string>
 			value={this.state.value}
 			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
-			onBlur={this.props.onBlur}
 			onKeyPress={this.props.handleKeyEvent || this.handleKeyEvent}
 			autoComplete={this.props.autocomplete ? "on" : "off"}
 			spellCheck={this.props.spellCheck}
