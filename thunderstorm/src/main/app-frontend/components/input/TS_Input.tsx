@@ -30,10 +30,21 @@ export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key>
 export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
 
+
 	render() {
 		return <input
 			autoFocus={this.props.focus}
-			ref={this.input}
+			ref={input => {
+				if (this.ref || !input)
+					return;
+
+				this.ref = input;
+				this.ref.focus();
+			}}
+			onBlur={() => {
+				this.ref = undefined;
+				this.props.onBlur?.();
+			}}
 			disabled={this.props.enable === false}
 			name={this.props.name || this.props.id}
 			key={this.props.id}
@@ -43,7 +54,6 @@ export class TS_Input<Key extends string = string>
 			value={this.state.value}
 			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
-			onBlur={this.props.onBlur}
 			onKeyPress={this.props.handleKeyEvent || this.handleKeyEvent}
 			autoComplete={this.props.autocomplete ? "on" : "off"}
 			spellCheck={this.props.spellCheck}

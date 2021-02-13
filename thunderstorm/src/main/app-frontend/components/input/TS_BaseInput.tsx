@@ -55,11 +55,10 @@ type InputState = {
 export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInputProps<Key>, Input = HTMLInputElement | HTMLTextAreaElement>
 	extends React.Component<Props, InputState> {
 
-	protected input;
+	protected ref?: HTMLInputElement | HTMLTextAreaElement;
 
 	constructor(props: Props) {
 		super(props);
-		this.input = React.createRef<Input>();
 
 		this.state = TS_BaseInput.getInitialState(props);
 	}
