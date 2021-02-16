@@ -1,5 +1,8 @@
 import * as React from 'react';
-import {HTMLProps} from 'react';
+import {
+	HTMLProps,
+	ReactNode
+} from 'react';
 import {StorageKey} from '../modules/StorageModule';
 import {BaseComponent} from '../core/BaseComponent';
 import {
@@ -11,13 +14,15 @@ import {InputType} from '../components/input/TS_BaseInput';
 
 export type FieldEditorInputProps<K extends string | number> = Omit<TS_InputProps<K>, "onChange" | "value" | "onAccept" | "type" | "id">
 
+export type EditorType = "input" | "textarea";
 export type FieldEditorProps = {
 	isEditing: boolean;
 	value?: string;
+	editorType?: EditorType
 	type: InputType;
 	storageKey: StorageKey<string>;
 	inputProps?: FieldEditorInputProps<any>;
-	labelProps?: HTMLProps<HTMLDivElement>
+	labelProps?: HTMLProps<HTMLDivElement> | ((value: string) => ReactNode)
 	onAccept?: () => void;
 	onCancel?: () => void;
 	onBlur?: () => void;
@@ -47,6 +52,7 @@ export class FieldEditor
 		return (
 			<TS_Input<string>
 				{...this.props.inputProps}
+				focus={true}
 				id={this.props.id}
 				type={this.props.type}
 				onAccept={this.props.onAccept}
@@ -60,6 +66,7 @@ export class FieldEditor
 		return (
 			<TS_TextArea<string>
 				{...this.props.inputProps}
+				focus={true}
 				id={this.props.id}
 				type={this.props.type}
 				onAccept={this.props.onAccept}
@@ -69,10 +76,23 @@ export class FieldEditor
 		);
 	};
 
-	private renderLabel = () => <div {...this.props.labelProps}>{this.props.value || ""}</div>;
+	private renderLabel = () => {
+		if (typeof this.props.labelProps === "function")
+			return this.props.labelProps(this.props.value || "");
+
+		return <div {...this.props.labelProps}>{this.props.value || ""}</div>;
+	};
 
 	render() {
 		const value = this.props.storageKey.get() || "";
-		return this.props.isEditing ? this.renderInput(value) : this.renderLabel();
+		if (!this.props.isEditing)
+			return this.renderLabel();
+
+		switch (this.props.editorType || "input") {
+			case "input":
+				return this.renderInput(value);
+			case "textarea":
+				return this.renderArea(value);
+		}
 	}
 }
