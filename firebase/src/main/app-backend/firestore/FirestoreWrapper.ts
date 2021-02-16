@@ -48,8 +48,8 @@ export class FirestoreWrapper
 
 	public listen<Type extends DB_Object>(collection: FirestoreCollection<Type>, doc: string) {
 		collection.wrapper.firestore.doc(`${collection.name}/${doc}`).onSnapshot(_snapshot => {
-			console.log('recieved snapshot!')
-		})
+			console.log('recieved snapshot!');
+		});
 	}
 
 	public async deleteCollection(name: string) {

@@ -39,7 +39,7 @@ export class TS_Input<Key extends string = string>
 					return;
 
 				this.ref = input;
-				this.ref.focus();
+				this.props.focus && this.ref.focus();
 			}}
 			onBlur={() => {
 				this.ref = undefined;

@@ -37,7 +37,7 @@ export class TS_TextArea<Key extends string>
 					return;
 
 				this.ref = input;
-				this.ref.focus();
+				this.props.focus && this.ref.focus();
 			}}
 			onBlur={() => {
 				this.ref = undefined;

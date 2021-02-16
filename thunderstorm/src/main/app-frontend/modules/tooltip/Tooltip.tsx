@@ -45,13 +45,15 @@ export class Tooltip
 	extends BaseComponent<{}, State>
 	implements TooltipListener {
 
-	private ref = React.createRef<HTMLDivElement>();
+	private ref?: HTMLDivElement | null;
 	private timeoutInterval?: number;
 
 	__showTooltip = (model?: Tooltip_Model) => {
 		this.setState(() => ({model}));
-		if (!model)
+		if (!model) {
+			this.ref = null;
 			return;
+		}
 
 		const duration = model.duration;
 		if (duration <= 0)
@@ -73,17 +75,22 @@ export class Tooltip
 		if (!model || !model.content)
 			return null;
 
+		const top = model.location && model.location.y || 0;
+		const left = model.location && model.location.x || 0;
 
-		const top = model.location && model.location.y;
-		const left = model.location && model.location.x;
-
-
+		const height = (this.ref?.getBoundingClientRect().height || 0) / 2;
 		const positionStyle = {
-			top: `${top}px`,
+			top: `${top - height}px`,
 			left: `${left}px`
 		};
-		return <div ref={this.ref} id={"tooltip"} style={{...(model.style || TooltipDefaultStyle), ...positionStyle}}>
+		return <div ref={(ref) => {
+			if (this.ref)
+				return;
+
+			this.ref = ref;
+			this.forceUpdate();
+		}} id={"tooltip"} style={{...(model.style || TooltipDefaultStyle), ...positionStyle}}>
 			{typeof model.content === "string" ? <div dangerouslySetInnerHTML={{__html: model.content}}/> : model.content}
-		</div>
+		</div>;
 	}
 }

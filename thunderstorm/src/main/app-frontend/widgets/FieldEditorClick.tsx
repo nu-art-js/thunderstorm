@@ -1,12 +1,16 @@
 import * as React from 'react';
-import {HTMLProps} from 'react';
 import {
+	HTMLProps,
+	ReactNode
+} from 'react';
+import {
+	EditorType,
 	FieldEditor,
 	FieldEditorInputProps
 } from "./FieldEditor";
 import {BaseComponent} from '../core/BaseComponent';
 import {StorageKey} from '../modules/StorageModule';
-import { InputType } from '../components/input/TS_BaseInput';
+import {InputType} from '../components/input/TS_BaseInput';
 
 type State = {
 	isEditing: boolean;
@@ -15,7 +19,8 @@ type State = {
 
 export type FieldEditorClickProps = {
 	inputProps?: FieldEditorInputProps<any>;
-	labelProps?: HTMLProps<HTMLDivElement>
+	labelProps?: HTMLProps<HTMLDivElement> | ((value: string) => ReactNode)
+	editorType?: EditorType
 	placeholder?: string;
 	type: InputType;
 	id: string;
@@ -56,6 +61,9 @@ export class FieldEditorClick
 	};
 
 	private startEdit = () => {
+		if (this.state.isEditing)
+			return;
+
 		addEventListener("keydown", this.keyPressed);
 		this.state.storageKey.set(this.props.value || '');
 		this.setState({isEditing: true});
@@ -77,11 +85,11 @@ export class FieldEditorClick
 		return (
 			<div className={`ll_h_c`}
 			     onDoubleClick={this.startEdit}
-			     onBlur={() => this.handleSave()}
-			>
+			     onBlur={() => this.handleSave()}>
 				<FieldEditor
 					id={this.props.id}
 					type={this.props.type}
+					editorType={this.props.editorType}
 					isEditing={this.state.isEditing}
 					inputProps={this.props.inputProps}
 					labelProps={this.props.labelProps}
