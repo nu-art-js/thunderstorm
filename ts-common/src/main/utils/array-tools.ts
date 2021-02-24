@@ -67,7 +67,7 @@ export function filterDuplicates<T>(array: T[]): T[] {
 	return Array.from(new Set(array));
 }
 
-export function filterInstances<T>(array: (T | undefined | null)[]): T[] {
+export function filterInstances<T>(array: (T | undefined | null | void)[]): T[] {
 	return array.filter(item => !!item) as T[];
 }
 
