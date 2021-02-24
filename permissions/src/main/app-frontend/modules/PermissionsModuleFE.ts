@@ -93,6 +93,7 @@ export class PermissionsModuleFE_Class
 					dispatch_onPermissionsFailed.dispatchModule([]);
 				})
 				.execute(async (userUrlsPermissions: UserUrlsPermissions) => {
+					this.retryCounter = 0;
 					Object.keys(userUrlsPermissions).forEach(url => {
 						this.loadingUrls.delete(url);
 						this.userUrlsPermissions[url] = userUrlsPermissions[url];
