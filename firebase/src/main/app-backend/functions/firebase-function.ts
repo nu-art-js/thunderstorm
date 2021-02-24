@@ -41,14 +41,21 @@ import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
 
 const functions = require('firebase-functions');
 
-export interface FirebaseFunction {
+export interface FirebaseFunctionInterface {
 	getFunction(): HttpsFunction;
-
 	onFunctionReady(): Promise<void>;
 }
 
+export abstract class FirebaseFunction<Config = any>
+	extends Module<Config>
+	implements FirebaseFunctionInterface {
+
+	abstract getFunction(): HttpsFunction
+	abstract onFunctionReady(): Promise<void>
+}
+
 export class Firebase_ExpressFunction
-	implements FirebaseFunction {
+	implements FirebaseFunctionInterface {
 	private readonly express: express.Express;
 	private function!: HttpsFunction;
 	private toBeExecuted: (() => Promise<any>)[] = [];
@@ -102,8 +109,7 @@ export class Firebase_ExpressFunction
 
 //TODO: I would like to add a type for the params..
 export abstract class FirebaseFunctionModule<DataType = any, ConfigType = any>
-	extends Module<ConfigType>
-	implements FirebaseFunction {
+	extends FirebaseFunction<ConfigType> {
 
 	private toBeExecuted: (() => Promise<any>)[] = [];
 	private isReady: boolean = false;
@@ -168,10 +174,10 @@ export type FirestoreConfigs = {
 	runTimeOptions?: RuntimeOptions,
 	configs: any
 }
+
 //TODO: I would like to add a type for the params..
 export abstract class FirestoreFunctionModule<DataType extends object, ConfigType extends FirestoreConfigs = FirestoreConfigs>
-	extends Module<ConfigType>
-	implements FirebaseFunction {
+	extends FirebaseFunction<ConfigType> {
 
 	private toBeExecuted: (() => Promise<any>)[] = [];
 	private isReady: boolean = false;
@@ -185,7 +191,7 @@ export abstract class FirestoreFunctionModule<DataType extends object, ConfigTyp
 		this.collectionName = collectionName;
 	}
 
-	abstract processChanges(params: { [param: string]: any }, before?: DataType, after?: DataType, ): Promise<any>;
+	abstract processChanges(params: { [param: string]: any }, before?: DataType, after?: DataType,): Promise<any>;
 
 	getFunction = () => {
 		if (this.function)
@@ -233,8 +239,7 @@ export abstract class FirestoreFunctionModule<DataType extends object, ConfigTyp
 }
 
 export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
-	extends Module<ConfigType>
-	implements FirebaseFunction {
+	extends FirebaseFunction<ConfigType> {
 
 	private toBeExecuted: (() => Promise<any>)[] = [];
 	private isReady: boolean = false;
@@ -312,14 +317,14 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 		this.toBeResolved && this.toBeResolved();
 	};
 }
+
 export type BucketConfigs = {
 	runtimeOpts?: RuntimeOptions
 	bucketName?: string
 }
 
 export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs = BucketConfigs>
-	extends Module<ConfigType>
-	implements FirebaseFunction {
+	extends FirebaseFunction<ConfigType> {
 
 	private function!: CloudFunction<ObjectMetadata>;
 	private toBeExecuted: (() => Promise<any>)[] = [];
