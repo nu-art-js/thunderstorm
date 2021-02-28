@@ -42,7 +42,7 @@ export type TableProps<T extends ObjectTS, A extends ObjectTS = never> = Stylabl
 	id: string,
 	header: (keyof T)[],
 	rows: T[],
-	headerRenderer: (columnKey: keyof T) => React.ReactNode | HeaderRenderer<T>,
+	headerRenderer: ((columnKey: keyof T) => React.ReactNode) | HeaderRenderer<T>,
 	cellRenderer: CellRenderer<keyof T, T[keyof T]> | RowRenderer<T>
 	actions?: (keyof A)[],
 	actionsRenderer?: ActionsRenderer<A> | ActionItemRenderer<keyof A>
@@ -69,10 +69,10 @@ export class TS_Table<T extends ObjectTS, A extends ObjectTS = never>
 	private renderTableHeader() {
 		let renderers: HeaderRenderer<T>;
 		if (typeof this.props.headerRenderer === "object")
-			renderers = this.props.headerRenderer;
+			renderers = this.props.headerRenderer as HeaderRenderer<T>;
 		else
 			renderers = this.props.header.reduce((toRet, headerProp) => {
-				toRet[headerProp] = this.props.headerRenderer;
+				toRet[headerProp] = this.props.headerRenderer as ((columnKey: keyof T) => React.ReactNode);
 				return toRet;
 			}, {} as HeaderRenderer<T>);
 
