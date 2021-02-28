@@ -205,6 +205,10 @@ export const isTimestampValid = (time: number, range = {min: currentTimeMillies(
 };
 
 export const auditValidator = (range?: RangeTimestamp) => (_path: string, audit?: AuditBy) => {
-	if (!audit || !isTimestampValid(audit.auditAt.timestamp, range))
-		throw new ValidationException('Time is not proper', _path, audit);
+	timestampValidator(range)(_path,audit?.auditAt?.timestamp)
 };
+
+export const timestampValidator = (range?: RangeTimestamp) => (_path: string, timestamp?: number) => {
+	if (!timestamp || !isTimestampValid(timestamp, range))
+		throw new ValidationException('Time is not proper', _path, timestamp);
+}
