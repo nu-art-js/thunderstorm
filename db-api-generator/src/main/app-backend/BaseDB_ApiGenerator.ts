@@ -104,7 +104,7 @@ export type Config<Type extends object> = {
  */
 export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType extends Config<DBType> = Config<DBType>, UType extends PartialProperties<DBType, "_id"> = PartialProperties<DBType, "_id">>
 	extends Module<ConfigType>
-	implements OnFirestoreBackupSchedulerAct<DBType> {
+	implements OnFirestoreBackupSchedulerAct {
 
 	public readonly collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
@@ -120,14 +120,14 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		this.validator = validator;
 	}
 
-	__onFirestoreBackupSchedulerAct(): FirestoreBackupDetails<DBType> {
-		return {
+	__onFirestoreBackupSchedulerAct(): FirestoreBackupDetails<DBType>[] {
+		return [{
 			backupQuery: this.resolveBackupQuery(),
 			collection: this.collection,
 			keepInterval: 7 * Day,
 			interval: Day,
 			moduleKey: this.config.collectionName
-		};
+		}];
 	}
 
 	protected resolveBackupQuery(): FirestoreQuery<DBType> {
