@@ -25,11 +25,11 @@ export type FirestoreBackupDetails<T extends object> = {
 	backupQuery: FirestoreQuery<T>
 }
 
-export interface OnFirestoreBackupSchedulerAct<T extends object> {
-	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<T>
+export interface OnFirestoreBackupSchedulerAct {
+	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<any>[]
 }
 
-const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct<any>, "__onFirestoreBackupSchedulerAct">(
+const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, "__onFirestoreBackupSchedulerAct">(
 	"__onFirestoreBackupSchedulerAct");
 
 export class FirestoreBackupScheduler_Class
@@ -43,7 +43,10 @@ export class FirestoreBackupScheduler_Class
 	onScheduledEvent = async (): Promise<any> => {
 		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<BackupDoc>('firestore-backup-status',
 		                                                                                                           ["moduleKey", "timestamp"]);
-		const backups = filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule([]));
+		const backups: FirestoreBackupDetails<any>[] = [];
+		filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule([])).forEach(backupArray => {
+			backups.push(...backupArray);
+		});
 
 		const bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
 		await Promise.all(backups.map(async (backupItem) => {
