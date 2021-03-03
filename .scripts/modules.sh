@@ -1,6 +1,5 @@
 #!/bin/bash
 projectLibs=(
-  ${tsLibs[@]}
   app-shared
 )
 
