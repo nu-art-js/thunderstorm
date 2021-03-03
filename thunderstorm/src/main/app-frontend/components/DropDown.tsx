@@ -121,6 +121,7 @@ export type Props_DropDown<ItemType> = StaticProps & {
 	// 	filter: (item: ItemType) => string[]
 	// 	onChange?: (list?: ItemType[]) => void
 	// }
+	placeholder?: string,
 
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
@@ -259,6 +260,7 @@ export class DropDown<ItemType>
 
 		return <FilterInput<ItemType>
 			key={this.state.id}
+			placeholder={this.props.placeholder}
 			id={`${this.props.id}-input`}
 			filter={this.props.filter}
 			list={this.props.adapter.data}
