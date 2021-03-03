@@ -43,8 +43,8 @@ import {
 
 export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E>,
 	U extends string = DeriveUrlType<Binder>,
-	R = DeriveResponseType<Binder>,
-	B = DeriveBodyType<Binder>,
+	R extends any = DeriveResponseType<Binder>,
+	B extends any = DeriveBodyType<Binder>,
 	P extends QueryParams = DeriveQueryType<Binder>,
 	E extends void | object = DeriveErrorType<Binder>> {
 
@@ -242,12 +242,12 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		return this;
 	}
 
-	asJson() {
+	asJson(): R {
 		const response = this.getResponse();
 		if (!response)
 			throw new BadImplementationException("No xhr.response...");
 
-		return JSON.parse(response) as R;
+		return JSON.parse(response as unknown as string) as R;
 	}
 
 	asText() {
@@ -255,7 +255,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		if (!response)
 			throw new BadImplementationException("No xhr object... maybe you didn't wait for the request to return??");
 
-		return response as R;
+		return response;
 	}
 
 	protected resolveResponse(): R {
@@ -327,7 +327,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		return this;
 	}
 
-	protected abstract getResponse(): any
+	protected abstract getResponse(): R
 
 	abstract getErrorResponse(): ErrorResponse<E>
 

@@ -41,14 +41,37 @@ import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
 
 const functions = require('firebase-functions');
 
-export interface FirebaseFunction {
+export interface FirebaseFunctionInterface {
 	getFunction(): HttpsFunction;
-
 	onFunctionReady(): Promise<void>;
 }
 
+export abstract class FirebaseFunction<Config = any>
+	extends Module<Config>
+	implements FirebaseFunctionInterface {
+	protected isReady: boolean = false;
+	protected toBeExecuted: (() => Promise<any>)[] = [];
+	protected toBeResolved!: (value?: (PromiseLike<any>)) => void;
+
+	abstract getFunction(): HttpsFunction
+	onFunctionReady = async () => {
+		this.isReady = true;
+		const toBeExecuted = this.toBeExecuted;
+		this.toBeExecuted = [];
+		for (const toExecute of toBeExecuted) {
+			try {
+				await toExecute();
+			} catch (e) {
+				console.error("Error running function: ", e);
+			}
+		}
+
+		this.toBeResolved && this.toBeResolved();
+	};
+}
+
 export class Firebase_ExpressFunction
-	implements FirebaseFunction {
+	implements FirebaseFunctionInterface {
 	private readonly express: express.Express;
 	private function!: HttpsFunction;
 	private toBeExecuted: (() => Promise<any>)[] = [];
@@ -102,13 +125,9 @@ export class Firebase_ExpressFunction
 
 //TODO: I would like to add a type for the params..
 export abstract class FirebaseFunctionModule<DataType = any, ConfigType = any>
-	extends Module<ConfigType>
-	implements FirebaseFunction {
+	extends FirebaseFunction<ConfigType> {
 
-	private toBeExecuted: (() => Promise<any>)[] = [];
-	private isReady: boolean = false;
 	private readonly listeningPath: string;
-	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
 	private function!: CloudFunction<Change<DataSnapshot>>;
 
 	protected constructor(listeningPath: string, name?: string) {
@@ -144,39 +163,18 @@ export abstract class FirebaseFunctionModule<DataType = any, ConfigType = any>
 				});
 			});
 	};
-
-	onFunctionReady = async () => {
-		this.isReady = true;
-		const toBeExecuted = this.toBeExecuted;
-		this.toBeExecuted = [];
-		this.logDebug(`onFunctionReady, ${toBeExecuted.length} actions to execute`);
-		this.logInfo(`Listening on path: ${this.listeningPath}`);
-
-		for (const toExecute of toBeExecuted) {
-			try {
-				await toExecute();
-			} catch (e) {
-				this.logError("Error running function: ", e);
-			}
-		}
-
-		this.toBeResolved && this.toBeResolved();
-	};
 }
 
 export type FirestoreConfigs = {
 	runTimeOptions?: RuntimeOptions,
 	configs: any
 }
+
 //TODO: I would like to add a type for the params..
 export abstract class FirestoreFunctionModule<DataType extends object, ConfigType extends FirestoreConfigs = FirestoreConfigs>
-	extends Module<ConfigType>
-	implements FirebaseFunction {
+	extends FirebaseFunction<ConfigType> {
 
-	private toBeExecuted: (() => Promise<any>)[] = [];
-	private isReady: boolean = false;
 	private readonly collectionName: string;
-	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
 	private function!: CloudFunction<Change<DataSnapshot>>;
 
 	protected constructor(collectionName: string, name?: string) {
@@ -185,7 +183,7 @@ export abstract class FirestoreFunctionModule<DataType extends object, ConfigTyp
 		this.collectionName = collectionName;
 	}
 
-	abstract processChanges(params: { [param: string]: any }, before?: DataType, after?: DataType, ): Promise<any>;
+	abstract processChanges(params: { [param: string]: any }, before?: DataType, after?: DataType,): Promise<any>;
 
 	getFunction = () => {
 		if (this.function)
@@ -212,33 +210,11 @@ export abstract class FirestoreFunctionModule<DataType extends object, ConfigTyp
 				});
 			});
 	};
-
-	onFunctionReady = async () => {
-		this.isReady = true;
-		const toBeExecuted = this.toBeExecuted;
-		this.toBeExecuted = [];
-		this.logDebug(`onFunctionReady, ${toBeExecuted.length} actions to execute`);
-		this.logInfo(`Listening on path: ${this.collectionName}`);
-
-		for (const toExecute of toBeExecuted) {
-			try {
-				await toExecute();
-			} catch (e) {
-				this.logError("Error running function: ", e);
-			}
-		}
-
-		this.toBeResolved && this.toBeResolved();
-	};
 }
 
 export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
-	extends Module<ConfigType>
-	implements FirebaseFunction {
+	extends FirebaseFunction<ConfigType> {
 
-	private toBeExecuted: (() => Promise<any>)[] = [];
-	private isReady: boolean = false;
-	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
 	private function!: CloudFunction<Change<DataSnapshot>>;
 	private schedule?: string;
 	private runningCondition: (() => Promise<boolean>)[] = [async () => true];
@@ -294,37 +270,17 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 			});
 		});
 	};
-
-	onFunctionReady = async () => {
-		this.isReady = true;
-		const toBeExecuted = this.toBeExecuted;
-		this.toBeExecuted = [];
-		this.logDebug(`onFunctionReady, ${toBeExecuted.length} actions to execute`);
-
-		for (const toExecute of toBeExecuted) {
-			try {
-				await toExecute();
-			} catch (e) {
-				this.logError("Error running function: ", e);
-			}
-		}
-
-		this.toBeResolved && this.toBeResolved();
-	};
 }
+
 export type BucketConfigs = {
 	runtimeOpts?: RuntimeOptions
 	bucketName?: string
 }
 
 export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs = BucketConfigs>
-	extends Module<ConfigType>
-	implements FirebaseFunction {
+	extends FirebaseFunction<ConfigType> {
 
 	private function!: CloudFunction<ObjectMetadata>;
-	private toBeExecuted: (() => Promise<any>)[] = [];
-	private isReady: boolean = false;
-	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
 	private readonly path: string;
 	private runtimeOpts: RuntimeOptions = {};
 
@@ -360,20 +316,5 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 				this.toBeResolved = resolve;
 			});
 		});
-	};
-
-	onFunctionReady = async () => {
-		this.isReady = true;
-		const toBeExecuted = this.toBeExecuted;
-		this.toBeExecuted = [];
-		for (const toExecute of toBeExecuted) {
-			try {
-				await toExecute();
-			} catch (e) {
-				console.error("Error running function: ", e);
-			}
-		}
-
-		this.toBeResolved && this.toBeResolved();
 	};
 }
