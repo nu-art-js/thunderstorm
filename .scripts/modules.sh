@@ -1,13 +1,14 @@
 #!/bin/bash
-
-projectModules=(
-  app-backend
-  app-frontend
+projectLibs=(
+  app-shared
 )
 
-projectLibs=(
-  ${thunderstormLibraries[@]}
-  app-shared
+backendApps=(
+#  app-backend
+)
+
+frontendApps=(
+#  app-frontend
 )
 
 testServiceAccount=../.trash/test-account.json
