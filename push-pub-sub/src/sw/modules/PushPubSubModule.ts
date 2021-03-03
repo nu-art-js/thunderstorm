@@ -58,7 +58,7 @@ class PushPubSubModule_Class
 	};
 
 
-	getClients = async () => swSelf.clients.matchAll({type: "window"});
+	getClients = async () => swSelf.clients.matchAll({type: "window", includeUncontrolled: true});
 
 	sendMessage = async (data: StringMap) => {
 		const clients = await this.getClients();

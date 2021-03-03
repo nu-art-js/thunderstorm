@@ -28,7 +28,7 @@
     "@octokit/types": "^5.5.0",
     "@types/jsonwebtoken": "~8.5.0",
     "ts-node": "^8.10.1",
-    "typescript": "^3.8.3"
+    "typescript": "~4.1.0"
   },
   "engines": {
     "node": "10"

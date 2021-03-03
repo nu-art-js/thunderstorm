@@ -22,5 +22,5 @@ import {CopyResponse} from "@google-cloud/storage";
 
 export type FirebaseType_Storage = admin.storage.Storage;
 export type FirebaseType_Metadata = Metadata;
-export type ReturnType_Metadata = {metadata?: Metadata};
-export type Firebase_CopyResponse  = CopyResponse
+export type ReturnType_Metadata = { metadata?: Metadata };
+export type Firebase_CopyResponse = [CopyResponse[0], CopyResponse[1] | undefined]

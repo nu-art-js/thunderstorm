@@ -84,7 +84,7 @@ export class BucketWrapper {
 	}
 
 	async deleteFiles(folder: string = "", filter: (file: File) => boolean = () => true): Promise<void> {
-		await this.iterateOverFiles(folder, filter, (file: File) => file.delete())
+		await this.iterateOverFiles(folder, filter, (file: File) => file.delete());
 	}
 
 	private async iterateOverFiles(folder: string, filter: (file: File) => boolean, action: (file: File) => Promise<any>) {
@@ -94,7 +94,7 @@ export class BucketWrapper {
 					return reject(err);
 
 				if (files) {
-					await Promise.all(files.filter(filter).map(file => action(file)))
+					await Promise.all(files.filter(filter).map(file => action(file)));
 				}
 
 				if (!nextQuery)
@@ -167,7 +167,7 @@ export class FileWrapper {
 
 	async read(): Promise<Buffer> {
 		const downloadResponse = await this.file.download();
-		return downloadResponse[0]
+		return downloadResponse[0];
 	}
 
 	async copy(destination: string | BucketWrapper | FileWrapper): Promise<File> {
@@ -175,26 +175,44 @@ export class FileWrapper {
 		return copy[0];
 	}
 
-	private copyImpl(destination: string | BucketWrapper | FileWrapper): Promise<Firebase_CopyResponse>  {
+	private copyImpl(destination: string | BucketWrapper | FileWrapper): Promise<Firebase_CopyResponse> {
 		if (typeof destination === "string")
 			return this.file.copy(destination);
 
-		const file = (destination as FileWrapper).file;
-		if (file)
-			return this.file.copy(file);
+		const bucketWrapper: BucketWrapper = destination instanceof FileWrapper ? destination.bucket : destination;
+		if (this.bucket.storage.firebaseSession !== bucketWrapper.storage.firebaseSession)
+			return this.copyByStream(destination);
 
-		return this.file.copy((destination as BucketWrapper).bucket);
+		if (destination instanceof FileWrapper)
+			return this.file.copy(destination.file);
+
+		return this.file.copy(destination.bucket);
+	}
+
+	private async copyByStream(destination: FileWrapper | BucketWrapper): Promise<Firebase_CopyResponse> {
+		const destinationFile = destination instanceof FileWrapper ? destination.file : (await destination.getFile(this.path)).file;
+		return new Promise<Firebase_CopyResponse>((resolve, reject) => {
+			this
+				.file
+				.createReadStream()
+				.pipe(destinationFile
+					      .createWriteStream()
+					      .on('error', reject)
+					      .on('finish', () => resolve([destinationFile, undefined]))
+				)
+				.on('error', reject);
+		});
 	}
 
 	async move(destination: string | BucketWrapper | FileWrapper) {
 		const file = await this.copy(destination);
 		try {
-			await this.delete()
+			await this.delete();
 		} catch (e) {
 			try {
 				await file.delete();
 			} catch (err) {
-				throw new ThisShouldNotHappenException('Error during the deletion of the recently copied file, check the attached error', err)
+				throw new ThisShouldNotHappenException('Error during the deletion of the recently copied file, check the attached error', err);
 			}
 			throw new BadImplementationException('Error during the deletion of the file after a successful copy, attached error stack', e);
 		}
@@ -223,10 +241,10 @@ export class FileWrapper {
 	}
 
 	async setMetadata(metadata: FirebaseType_Metadata, options?: object): Promise<FirebaseType_Metadata> {
-		return (await this.file.setMetadata({metadata}, options))[0]
+		return (await this.file.setMetadata({metadata}, options))[0];
 	}
 
 	async getMetadata(options?: object): Promise<ReturnType_Metadata> {
-		return (await this.file.getMetadata(options))[0]
+		return (await this.file.getMetadata(options))[0];
 	}
 }

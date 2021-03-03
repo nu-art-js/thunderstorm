@@ -22,6 +22,6 @@
   "devDependencies": {
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/ts-common": "~0.0.1",
-    "typescript": "^3.8.3"
+    "typescript": "~4.1.0"
   }
 }
