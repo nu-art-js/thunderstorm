@@ -53,6 +53,7 @@ export class FirestoreBackupScheduler_Class
 			const query: FirestoreQuery<BackupDoc> = {
 				where: {moduleKey: backupItem.moduleKey},
 				orderBy: [{key: "timestamp", order: "asc"}],
+				limit: 1
 			};
 			const docs = await backupStatusCollection.query(query);
 			const latestDoc = docs[0];
@@ -65,8 +66,16 @@ export class FirestoreBackupScheduler_Class
 				await (await bucket.getFile(backupPath)).write(toBackupData);
 				await backupStatusCollection.upsert({timestamp: currentTimeMillies(), moduleKey: backupItem.moduleKey, backupPath});
 
+				const keepInterval = backupItem.keepInterval;
+				if (keepInterval) {
+					const queryOld = {where: {moduleKey: backupItem.moduleKey, timestamp: {$lt: currentTimeMillies() - keepInterval}}};
+					const oldDocs = await backupStatusCollection.query(queryOld);
+					await Promise.all(oldDocs.map(async oldDoc => {
+						(await bucket.getFile(oldDoc.backupPath)).delete();
+					}));
 
-				//TODO yair... here clean up the backups till ${backupItem.keepInterval}
+					await backupStatusCollection.delete(queryOld);
+				}
 
 			} catch (e) {
 				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error`,e);
