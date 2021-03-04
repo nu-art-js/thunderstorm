@@ -89,7 +89,7 @@ const postProcessor: { [k: string]: PostProcessor } = {
 
 		const resp = ServerUploaderModule.upload([{file: await file.read(), name: 'myTest.txt', mimeType: doc.mimeType}]);
 
-		await new Promise(res => {
+		await new Promise<void>(res => {
 			_setTimeout(() => {
 				console.log(ServerUploaderModule.getFullFileInfo(resp[0].feId));
 				res();
