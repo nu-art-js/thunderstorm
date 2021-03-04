@@ -54,6 +54,7 @@ export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
 type Config = {
 	projectId: string
+	ttl: number
 }
 
 export const Collection_Sessions = "user-account--sessions";
@@ -242,7 +243,7 @@ export class AccountsModule_Class
 
 	private TTLExpired = (session: DB_Session) => {
 		const delta = currentTimeMillies() - session.timestamp;
-		return delta > Day || delta < 0;
+		return (delta > (this.config?.ttl || Day)) || delta < 0;
 	};
 
 	private upsertSession = async (userId: string): Promise<Response_Auth> => {

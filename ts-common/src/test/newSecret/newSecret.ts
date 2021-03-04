@@ -23,6 +23,11 @@ export const testSuit_newSecret = {
 	label: 'new secret',
 	models: [{expected: undefined, input: ''},],
 	processor: async (model: string) => {
+		// Generate passwords
+		// const salt = generateHex(32);
+		// const password = 'newPass';ø
+		// const pass = hashPasswordWithSalt(salt, password)
+		// console.log(pass,salt);
 		return console.log(generateHex(256));
 	}
 };
