@@ -92,7 +92,8 @@ export class PushPubSubModule_Class
 
 	constructor() {
 		super();
-		this.pushSessionId = pushSessionId.get() || pushSessionId.set(generateHex(32));
+		window.name = window.name || generateHex(32);
+		this.pushSessionId = pushSessionId.set(window.name);
 	}
 
 	init() {
@@ -219,7 +220,7 @@ export class PushPubSubModule_Class
 
 		const body: Request_PushRegister = {
 			firebaseToken: this.firebaseToken,
-			pushSessionId: this.pushSessionId,
+			pushSessionId: this.getPushSessionId(),
 			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
 		};
 
