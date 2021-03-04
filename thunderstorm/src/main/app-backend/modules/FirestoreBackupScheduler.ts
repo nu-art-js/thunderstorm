@@ -71,7 +71,7 @@ export class FirestoreBackupScheduler_Class
 					const queryOld = {where: {moduleKey: backupItem.moduleKey, timestamp: {$lt: currentTimeMillies() - keepInterval}}};
 					const oldDocs = await backupStatusCollection.query(queryOld);
 					await Promise.all(oldDocs.map(async oldDoc => {
-						(await bucket.getFile(oldDoc.backupPath)).delete();
+						await (await bucket.getFile(oldDoc.backupPath)).delete();
 					}));
 
 					await backupStatusCollection.delete(queryOld);
