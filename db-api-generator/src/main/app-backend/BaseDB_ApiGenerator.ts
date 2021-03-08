@@ -108,6 +108,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	public readonly collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
+	static __validator = {
+		_id: tsValidateUniqueId,
+	};
+
 
 	protected constructor(collectionName: string, validator: ValidatorTypeResolver<DBType>, itemName: string) {
 		super();
