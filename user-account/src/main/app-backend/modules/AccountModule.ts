@@ -200,6 +200,7 @@ export class AccountsModule_Class
 				};
 
 				await transaction.insert(this.accounts, _account);
+				await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
 			}
 
 			if (!_account._id) {
@@ -210,7 +211,6 @@ export class AccountsModule_Class
 			return _account;
 		});
 
-		await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
 		return account;
 	}
 
