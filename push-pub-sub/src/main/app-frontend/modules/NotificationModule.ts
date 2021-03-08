@@ -1,5 +1,6 @@
 import {ThunderDispatcher} from "@nu-art/thunderstorm/app-frontend/core/thunder-dispatcher";
 import {
+	Minute,
 	Module,
 	removeItemFromArray
 } from "@nu-art/ts-common";
@@ -42,13 +43,13 @@ export class NotificationsModule_Class
 		return notification._id;
 	}
 
-	read = async (notification: DB_Notifications, read: boolean) => {
+	read = (notification: DB_Notifications, read: boolean) => {
 		const readNotification = this.notifications.find(_notification => _notification._id === notification._id);
 		if (!readNotification || !readNotification.persistent)
 			return;
 
 		readNotification.read = read;
-		await this.readNotification(notification._id, read);
+		this.readNotification(notification._id, read);
 	};
 
 	readNotification = (id: string, read: boolean) => {
@@ -62,6 +63,7 @@ export class NotificationsModule_Class
 			.setRelativeUrl("/v1/push/read")
 			.setJsonBody(body)
 			.setOnError('Something went wrong while reading your notification')
+			.setTimeout(Minute)
 			.execute(() => {
 				dispatch_NotificationsUpdated.dispatchUI([]);
 			});

@@ -41,7 +41,7 @@ export class XhrHttpModule_Class
 	extends BaseHttpModule_Class {
 
 	init() {
-		super.init()
+		super.init();
 		const origin = this.config.origin;
 		if (!origin)
 			throw new BadImplementationException('Did you forget to set the origin config key for the HttpModule?');
