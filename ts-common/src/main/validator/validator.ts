@@ -28,10 +28,6 @@ import {
 	ObjectTS,
 	RangeTimestamp
 } from "../utils/types";
-import {
-	currentTimeMillies,
-	Day
-} from "..";
 
 /*
  * ts-common is the basic building blocks of
@@ -228,11 +224,6 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 	}
 };
 
-export const tsValidateTimestamp = (time: number, range = {min: currentTimeMillies() - 1000 * Day, max: currentTimeMillies() + 1000 * Day}): boolean => {
-	return time >= range.min && time <= range.max;
-};
-
 export const tsValidateAudit = (range?: RangeTimestamp) => (_path: string, audit?: AuditBy) => {
-	if (!audit || !tsValidateTimestamp(audit.auditAt.timestamp, range))
-		throw new ValidationException('Time is not proper', _path, audit);
+	tsValidateRange([[0, Number.MAX_VALUE]], true)?.(_path, audit?.auditAt?.timestamp);
 };

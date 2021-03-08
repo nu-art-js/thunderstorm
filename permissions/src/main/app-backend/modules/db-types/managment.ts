@@ -79,7 +79,7 @@ export class ProjectDB_Class
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {
 		if (request) {
 			const account = await AccountModule.validateSession(request);
-			dbInstance._audit = auditBy(account.email)
+			dbInstance._audit = auditBy(account.email);
 		}
 	}
 
@@ -119,7 +119,7 @@ export class DomainDB_Class
 
 		if (request) {
 			const account = await AccountModule.validateSession(request);
-			dbInstance._audit = auditBy(account.email)
+			dbInstance._audit = auditBy(account.email);
 		}
 	}
 }
@@ -150,7 +150,7 @@ export class LevelDB_Class
 
 		if (request) {
 			const account = await AccountModule.validateSession(request);
-			dbInstance._audit = auditBy(account.email)
+			dbInstance._audit = auditBy(account.email);
 		}
 	}
 
@@ -168,7 +168,7 @@ export class LevelDB_Class
 				if (accessLevel === undefined)
 					throw new MUSTNeverHappenException("Query said it does exists!!");
 
-				accessLevel.value = dbInstance.value
+				accessLevel.value = dbInstance.value;
 			};
 
 			const asyncs = [];
@@ -247,7 +247,7 @@ export class ApiDB_Class
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionApi, request?: ExpressRequest) {
 		if (request) {
 			const account = await AccountModule.validateSession(request);
-			dbInstance._audit = auditBy(account.email)
+			dbInstance._audit = auditBy(account.email);
 		}
 
 		await ProjectPermissionsDB.queryUnique({_id: dbInstance.projectId});
@@ -269,7 +269,7 @@ export class ApiDB_Class
 				.filter(path => !existingProjectApis.find(api => api.path === path))
 				.map(path => ({path, projectId: projectId}));
 
-			return Promise.all(apisToAdd.map((api) => this.upsert(api, transaction)));
+			return this.upsertAll(apisToAdd, transaction);
 		});
 	}
 
