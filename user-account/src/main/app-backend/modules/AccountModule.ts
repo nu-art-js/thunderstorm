@@ -190,28 +190,22 @@ export class AccountsModule_Class
 	private async createSAML(__email: string) {
 		const _email = __email.toLowerCase();
 		const query = {where: {email: _email}};
-		const account = await this.accounts.runInTransaction(async (transaction) => {
-			let _account = await transaction.queryUnique(this.accounts, query);
-			if (!_account) {
-				_account = {
-					_id: generateHex(32),
-					_audit: auditBy(_email),
-					email: _email,
-				};
+		return this.accounts.runInTransaction<DB_Account>(async (transaction) => {
+			const account = await transaction.queryUnique(this.accounts, query);
+			if (account?._id)
+				return account
 
-				await transaction.insert(this.accounts, _account);
+			const _account: DB_Account = {
+				_id: generateHex(32),
+				_audit: auditBy(_email),
+				email: _email,
+				...account
 			}
 
-			if (!_account._id) {
-				_account._id = generateHex(32);
-				await transaction.upsert(this.accounts, _account);
-			}
-
+			await transaction.upsert(this.accounts, _account);
+			await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(_account)]);
 			return _account;
 		});
-
-		await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
-		return account;
 	}
 
 	async validateSession(request: ExpressRequest): Promise<UI_Account> {
