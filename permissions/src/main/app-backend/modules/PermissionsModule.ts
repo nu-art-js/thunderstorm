@@ -59,11 +59,23 @@ export class PermissionsModule_Class
 
 	getProjectIdentity = () => this.config.project;
 
-	async getUserUrlsPermissions(projectId: string, urls: UserUrlsPermissions, userId: string, requestCustomField: StringMap) {
+	async getUserUrlsPermissions(projectId: string, urlsMap: UserUrlsPermissions, userId: string, requestCustomField: StringMap) {
 		const userUrlsPermissions: UserUrlsPermissions = {};
-		const userUrlsPermissionsArray = await Promise.all(Object.keys(urls).map(url => this.doesUserHavePermissions(projectId, url, userId, requestCustomField)));
-		userUrlsPermissionsArray.forEach(urlPermission => {
-			userUrlsPermissions[urlPermission.url] = urlPermission.isAllowed;
+		const urls = Object.keys(urlsMap);
+		const [userDetails,apiDetails] = await Promise.all(
+			[
+				PermissionsAssert.getUserDetails(userId),
+				Promise.all(urls.map(url => PermissionsAssert.getApiDetails(url, projectId)))
+			]);
+
+		urls.forEach((url, i) => {
+			const apiDetail = apiDetails[i];
+			try {
+				PermissionsAssert._assertUserPermissionsImpl(apiDetail, projectId, userDetails, requestCustomField);
+				userUrlsPermissions[url] = true;
+			} catch (e) {
+				userUrlsPermissions[url] = false;
+			}
 		});
 
 		return userUrlsPermissions;
@@ -81,19 +93,6 @@ export class PermissionsModule_Class
 		return userCFs;
 	}
 
-	private async doesUserHavePermissions(projectId: string, url: string, userId: string, requestCustomField: StringMap) {
-		let isAllowed;
-
-		try {
-			await PermissionsAssert.assertUserPermissions(projectId, url, userId, requestCustomField);
-			isAllowed = true;
-		} catch (e) {
-			isAllowed = false;
-		}
-
-		return {url, isAllowed}
-	}
-
 	async registerProject() {
 		const serverRoutes = HttpServer.getRoutes();
 
@@ -108,7 +107,7 @@ export class PermissionsModule_Class
 			predefinedUser: this.config.predefinedUser
 		};
 
-		return this._registerProject(projectRoutes)
+		return this._registerProject(projectRoutes);
 	}
 
 	async _registerProject(registerProject: Request_RegisterProject) {
@@ -139,7 +138,7 @@ export class PermissionsModule_Class
 			return {
 				groupId: GroupPermissionsDB.getPredefinedGroupId(project._id, groupItem._id),
 				customField
-			}
+			};
 		});
 		await UserPermissionsDB.upsert({...predefinedUser, groups: groupsUser});
 	}
