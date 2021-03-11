@@ -40,11 +40,9 @@ export abstract class BaseStorm
 
 	protected resolveConfig = async () => {
 		const database: DatabaseWrapper = FirebaseModule.createAdminSession().getDatabase();
-		console.log('resolving config');
 		let initialized = 0;
 
 		const listener = (resolve: (value: unknown) => void) => (snapshot: any) => {
-			console.log('in resolving config');
 			if (initialized >= 2) {
 				console.log("CONFIGURATION HAS CHANGED... KILLING PROCESS!!!");
 				process.exit(2);
@@ -55,13 +53,12 @@ export abstract class BaseStorm
 			initialized++;
 		};
 
-		const defaultPromise = new Promise((resolve, reject) => {
+		const defaultPromise = new Promise((resolve) => {
 			database.listen(`/_config/default`, listener(resolve));
 		});
 		const envPromise = new Promise((resolve) => {
 			database.listen(`/_config/${this.envKey}`, listener(resolve));
 		});
-		console.log('after resolving config');
 		const [
 			      defaultConfig,
 			      overrideConfig
@@ -71,7 +68,6 @@ export abstract class BaseStorm
 				envPromise
 			]
 		);
-		console.log('after resolving config promise');
 
 		this.setConfig(merge(defaultConfig, overrideConfig) || {});
 	};
