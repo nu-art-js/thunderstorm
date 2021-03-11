@@ -28,28 +28,28 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "~0.0.1",
-    "jszip": "^3.3.0",
-    "moment": "^2.24.0",
-    "use-strict": "^1.0.1"
-  },
-  "devDependencies": {
     "@nu-art/firebase": "~0.0.1",
     "@nu-art/testelot": "~0.0.1",
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/user-account": "~0.0.1",
     "@nu-art/jira": "~0.0.1",
+    "express": "^4.16.4",
+    "firebase": "^8.0.0",
+    "firebase-admin": "^9.3.0",
+    "jszip": "^3.3.0",
+    "request": "^2.88.0",
+    "moment": "^2.24.0",
+    "use-strict": "^1.0.1"
+  },
+  "devDependencies": {
     "@types/express": "^4.16.1",
     "@types/file-saver": "^2.0.1",
     "@types/history": "^4.7.2",
     "@types/jszip": "^3.1.7",
     "@types/react": "^16.8.7",
     "@types/request": "^2.48.1",
-    "express": "^4.16.4",
-    "firebase": "^8.0.0",
-    "firebase-admin": "^9.3.0",
     "module-alias": "^2.2.0",
     "react": "^16.8.1",
-    "request": "^2.88.0",
     "ts-node": "^8.6.2",
     "tslint": "^5.16.0",
     "typescript": "~4.1.0"

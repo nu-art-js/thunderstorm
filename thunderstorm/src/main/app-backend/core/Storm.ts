@@ -95,6 +95,7 @@ export class Storm
 	}
 
 	build(onStarted?: () => Promise<void>) {
+		console.log('build called?');
 		return this.startServer(onStarted);
 	}
 

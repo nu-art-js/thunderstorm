@@ -63,7 +63,8 @@ import {
 import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {JiraBugReportIntegrator} from "@nu-art/bug-report/app-backend/modules/JiraBugReportIntegrator";
-import {CollectionChangedListener} from "@modules/CollectionChangedListener";
+import {CollectionChangedListener} from "@modules/CollectionChangedListener"
+import {HttpServer} from "@nu-art/thunderstorm/backend";
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -112,6 +113,8 @@ const _exports = new Storm()
 	.setInitialRoutePath("/api")
 	.setEnvironment(Environment.name)
 	.build(async () => {
+		// @ts-ignore
+		console.log(HttpServer.config);
 		// const response = await AxiosHttpModule
 		// 	.createRequest<ExampleSetMax>(HttpMethod.POST, 'internal-be-request')
 		// 	.setUrl('http://localhost:5000/thunderstorm-staging/us-central1/api/v1/sample/set-max')
