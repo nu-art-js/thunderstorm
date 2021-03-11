@@ -39,30 +39,39 @@ export abstract class BaseStorm
 	}
 
 	protected resolveConfig = async () => {
-		const adminSession = FirebaseModule.createAdminSession();
-
-		const database: DatabaseWrapper = adminSession.getDatabase();
-		const async = [];
-		async.push(database.get(`/_config/default`));
-		async.push(database.get(`/_config/${this.envKey}`));
-		const config = await Promise.all(async);
-
-
+		const database: DatabaseWrapper = FirebaseModule.createAdminSession().getDatabase();
+		console.log('resolving config');
 		let initialized = 0;
-		const terminationListener = (snapshot: any) => {
+
+		const listener = (resolve: (value: unknown) => void) => (snapshot: any) => {
+			console.log('in resolving config');
 			if (initialized >= 2) {
 				console.log("CONFIGURATION HAS CHANGED... KILLING PROCESS!!!");
 				process.exit(2);
 			}
 
+			resolve(snapshot || {});
+
 			initialized++;
 		};
 
-		database.listen(`/_config/default`, terminationListener);
-		database.listen(`/_config/${this.envKey}`, terminationListener);
-
-		const defaultConfig = config[0] || {};
-		const overrideConfig = config[1] || {};
+		const defaultPromise = new Promise((resolve, reject) => {
+			database.listen(`/_config/default`, listener(resolve));
+		});
+		const envPromise = new Promise((resolve) => {
+			database.listen(`/_config/${this.envKey}`, listener(resolve));
+		});
+		console.log('after resolving config');
+		const [
+			      defaultConfig,
+			      overrideConfig
+		      ] = await Promise.all(
+			[
+				defaultPromise,
+				envPromise
+			]
+		);
+		console.log('after resolving config promise');
 
 		this.setConfig(merge(defaultConfig, overrideConfig) || {});
 	};
