@@ -318,3 +318,47 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 		});
 	};
 }
+
+
+export abstract class Firebase_PubSubFunction<MyType>
+	extends FirebaseFunction {
+
+	private function!: CloudFunction<ObjectMetadata>;
+	private readonly topic: string;
+	private runtimeOpts: RuntimeOptions = {};
+
+	protected constructor(topic: string, name?: string) {
+		super();
+		this.topic = topic;
+		name && this.setName(name);
+	}
+
+	abstract onPublish(object: ObjectMetadata, context: EventContext): Promise<any>;
+
+	getFunction = () => {
+		if (this.function)
+			return this.function;
+
+		this.runtimeOpts = {
+			timeoutSeconds: this.config?.runtimeOpts?.timeoutSeconds || 300,
+			memory: this.config?.runtimeOpts?.memory || '2GB'
+		};
+
+		return this.function = functions.pubsub.topic(this.topic).onPublish(async (message: Message, context: EventContext) => {
+			// need to validate etc...
+			const toJSON: MyType = message.toJSON();
+
+			if (this.isReady)
+				return await this.onPublish(object, context);
+
+			return new Promise((resolve) => {
+				addItemToArray(this.toBeExecuted, async () => {
+					return await this.onPublish(object, context);
+				});
+
+				this.toBeResolved = resolve;
+			});
+		});
+	};
+}
+
