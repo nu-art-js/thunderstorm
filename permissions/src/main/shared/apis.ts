@@ -37,7 +37,7 @@ export type Request_AssertApiForUser = {
 
 export type Request_UserUrlsPermissions = {
 	projectId: string
-	urls: UserUrlsPermissions
+	urls: string[]
 	requestCustomField: StringMap
 }
 
