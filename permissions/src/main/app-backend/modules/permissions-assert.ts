@@ -215,10 +215,15 @@ export class PermissionsAssert_Class
 			if (!apiDb)
 				return;
 
-			return ({
-				apiDb,
-				requestPermissions: await this.getAccessLevels(apiDb.accessLevelIds)
-			});
+			try {
+				const requestPermissions = await this.getAccessLevels(apiDb.accessLevelIds);
+				return ({
+					apiDb,
+					requestPermissions
+				});
+			}catch (e) {
+				return
+			}
 		}));
 	}
 
