@@ -65,11 +65,14 @@ export class PermissionsModule_Class
 		const [userDetails,apiDetails] = await Promise.all(
 			[
 				PermissionsAssert.getUserDetails(userId),
-				Promise.all(urls.map(url => PermissionsAssert.getApiDetails(url, projectId)))
+				PermissionsAssert.getApisDetails(urls, projectId)
 			]);
 
 		urls.forEach((url, i) => {
 			const apiDetail = apiDetails[i];
+			if(!apiDetail)
+				return userUrlsPermissions[url] = false;
+
 			try {
 				PermissionsAssert._assertUserPermissionsImpl(apiDetail, projectId, userDetails, requestCustomField);
 				userUrlsPermissions[url] = true;
