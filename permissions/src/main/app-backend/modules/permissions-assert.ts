@@ -19,6 +19,8 @@
 import {
 	_keys,
 	BadImplementationException,
+	batchActionParallel,
+	filterDuplicates,
 	Module,
 	StringMap
 } from "@nu-art/ts-common";
@@ -31,7 +33,9 @@ import {
 import {
 	Base_AccessLevels,
 	DB_PermissionAccessLevel,
+	DB_PermissionApi,
 	DB_PermissionsGroup,
+	DB_PermissionsUser,
 	User_Group
 } from "../..";
 import {
@@ -99,8 +103,7 @@ export class PermissionsAssert_Class
 		await action(projectId, customFields);
 	};
 
-	async assertUserPermissions(projectId: string, _path: string, userId: string, requestCustomField: StringMap) {
-		const path = _path.substring(0, (_path + '?').indexOf('?'));
+	async assertUserPermissions(projectId: string, path: string, userId: string, requestCustomField: StringMap) {
 		const [apiDetails, userDetails] = await Promise.all(
 			[
 				this.getApiDetails(path, projectId),
@@ -110,12 +113,12 @@ export class PermissionsAssert_Class
 		this._assertUserPermissionsImpl(apiDetails, projectId, userDetails, requestCustomField);
 	}
 
-	_assertUserPermissionsImpl(apiDetails: { apiDb: any; requestPermissions: DB_PermissionAccessLevel[], path: string }, projectId: string, userDetails: { userGroups: DB_PermissionsGroup[]; user: any }, requestCustomField: StringMap) {
+	_assertUserPermissionsImpl(apiDetails: { apiDb: DB_PermissionApi; requestPermissions: DB_PermissionAccessLevel[] }, projectId: string, userDetails: { user: DB_PermissionsUser, userGroups: DB_PermissionsGroup[] }, requestCustomField: StringMap) {
 		if (!apiDetails.apiDb.accessLevelIds) {
 			if (!this.config.strictMode)
 				return;
 
-			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${apiDetails.path}`);
+			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${apiDetails.apiDb.path}`);
 		}
 
 		this.assertUserPermissionsImpl(userDetails.userGroups, apiDetails.requestPermissions, [requestCustomField]);
@@ -152,13 +155,10 @@ export class PermissionsAssert_Class
 		}
 	}
 
-	async getUserDetails(uuid: string) {
+	async getUserDetails(uuid: string): Promise<{ user: DB_PermissionsUser, userGroups: DB_PermissionsGroup[] }> {
 		const user = await UserPermissionsDB.queryUnique({accountId: uuid});
 		const userGroups = user.groups || [];
-		const groupIds = userGroups.map(userGroup => userGroup.groupId);
-		const groupsArray: DB_PermissionsGroup[][] = await Promise.all(
-			this.splitToManyArrays(groupIds || []).map(subGroupIds => GroupPermissionsDB.query({where: {_id: {$in: subGroupIds}}})));
-		const groups: DB_PermissionsGroup[] = ([] as DB_PermissionsGroup[]).concat(...groupsArray);
+		const groups: DB_PermissionsGroup[] = await batchActionParallel(userGroups.map(userGroup => userGroup.groupId), 10, subGroupIds => GroupPermissionsDB.query({where: {_id: {$in: subGroupIds}}}));
 
 		return {
 			user,
@@ -203,35 +203,41 @@ export class PermissionsAssert_Class
 
 		return {
 			apiDb,
-			requestPermissions,
-			path
+			requestPermissions
 		};
 	}
 
-	private async getAccessLevels(accessLevelIds: string[]): Promise<DB_PermissionAccessLevel[]> {
-		return Promise.all(accessLevelIds.map((levelId: string) => AccessLevelPermissionsDB.queryUnique({_id: levelId})));
+	async getApisDetails(urls: string[], projectId: string) {
+		const paths = urls.map(_path => _path.substring(0, (_path + '?').indexOf('?')));
+		const apiDbs = await batchActionParallel(paths, 10, elements => ApiPermissionsDB.query({where: {projectId, path: {$in: elements}}}));
+		return Promise.all(paths.map(async path => {
+			const apiDb = apiDbs.find(_apiDb => _apiDb.path === path);
+			if (!apiDb)
+				return;
+
+			return ({
+				apiDb,
+				requestPermissions: await this.getAccessLevels(apiDb.accessLevelIds)
+			});
+		}));
 	}
 
-	private splitToManyArrays(arrayIds: string[]) {
-		const bulkSize = 10;
-		const bulksNumber = Math.ceil(arrayIds.length / bulkSize);
-		const containArray = [];
-		for (let i = 0; i < bulksNumber; i++) {
-			const startIndex = i * bulkSize;
-			const subArrayIds = arrayIds.slice(startIndex, startIndex + bulkSize);
-			containArray.push(subArrayIds);
-		}
+	private async getAccessLevels(_accessLevelIds?: string[]): Promise<DB_PermissionAccessLevel[]> {
+		const accessLevelIds = filterDuplicates(_accessLevelIds || []);
+		const requestPermissions = await batchActionParallel(accessLevelIds, 10, elements => AccessLevelPermissionsDB.query({where: {_id: {$in: elements}}}));
+		const idNotFound = accessLevelIds.find(lId => !requestPermissions.find(r => r._id === lId));
+		if (idNotFound)
+			throw new ApiException(404, `Could not find api level with _id: ${idNotFound}`);
 
-		return containArray;
+		return requestPermissions;
 	}
 
 	isMatchWithLevelsObj(groupPair: GroupPairWithBaseLevelsObj, requestPair: RequestPairWithLevelsObj) {
 		let match = true;
 
 		requestPair.customFields.forEach(requestCF => {
-			if (!this.doesCustomFieldsSatisfies(groupPair.customFields, requestCF)) {
+			if (!this.doesCustomFieldsSatisfies(groupPair.customFields, requestCF))
 				match = false;
-			}
 		});
 
 		if (!match)
@@ -261,9 +267,12 @@ export class PermissionsAssert_Class
 		if (!Object.keys(requestCustomField).length)
 			return true;
 
-		return groupCustomFields.reduce((doesSatisfies, customField) => {
-			return doesSatisfies || this.doesCustomFieldSatisfies(customField, requestCustomField);
-		}, false);
+		for (const customField of groupCustomFields) {
+			if (this.doesCustomFieldSatisfies(customField, requestCustomField))
+				return true;
+		}
+
+		return false;
 	}
 
 	private doesCustomFieldSatisfies(groupCustomField: StringMap, requestCustomField: StringMap) {
