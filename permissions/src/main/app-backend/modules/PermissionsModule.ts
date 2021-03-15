@@ -59,8 +59,10 @@ export class PermissionsModule_Class
 
 	getProjectIdentity = () => this.config.project;
 
-	async getUserUrlsPermissions(projectId: string, urls: string[], userId: string, requestCustomField: StringMap) {
+	async getUserUrlsPermissions(projectId: string, urlsMap: UserUrlsPermissions, userId: string, requestCustomField: StringMap) {
 		const userUrlsPermissions: UserUrlsPermissions = {};
+		const urls = Object.keys(urlsMap);
+
 		const [userDetails,apiDetails] = await Promise.all(
 			[
 				PermissionsAssert.getUserDetails(userId),

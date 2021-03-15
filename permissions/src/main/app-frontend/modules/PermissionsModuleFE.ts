@@ -72,8 +72,10 @@ export class PermissionsModuleFE_Class
 			throw new ImplementationMissingException("need to set up a project id config");
 
 		this.debounce(() => {
-			const urls: string[] = [];
-			this.loadingUrls.forEach(url => urls.push(url))
+			const urls: UserUrlsPermissions = {};
+			this.loadingUrls.forEach(url => {
+				urls[url] = false;
+			});
 			XhrHttpModule
 				.createRequest<PermissionsApi_UserUrlsPermissions>(HttpMethod.POST, 'user-urls-permissions')
 				.setRelativeUrl(`/v1/permissions/user-urls-permissions`)
