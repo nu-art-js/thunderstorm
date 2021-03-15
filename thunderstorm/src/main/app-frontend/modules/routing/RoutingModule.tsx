@@ -25,8 +25,8 @@ import {
 	Module
 } from "@nu-art/ts-common";
 import * as React from "react";
-import {ReactElement} from "react";
 import {
+	defaultLinkNode,
 	defaultNavLinkNode,
 	defaultRouteNode,
 	RouteParams,
@@ -44,12 +44,14 @@ class RoutingModule_Class
 	private readonly routes: { [key: string]: RoutePath } = {};
 	private readonly ordinalRoutes: string[] = [];
 
-	private createNavLinkNode: (route: RoutePath) => ReactElement;
-	private createRouteNode: (route: RoutePath) => ReactElement;
+	private readonly createNavLinkNode: (route: RoutePath) => React.ReactElement;
+	private readonly createRouteNode: (route: RoutePath) => React.ReactElement;
+	private readonly createLinkNode: (route: RoutePath, node?: React.ReactNode) => React.ReactElement;
 
 	constructor() {
 		super();
 		this.createNavLinkNode = defaultNavLinkNode;
+		this.createLinkNode = defaultLinkNode;
 		this.createRouteNode = defaultRouteNode;
 	}
 
@@ -95,11 +97,19 @@ class RoutingModule_Class
 		return <Redirect to={RoutingModule.getPath(key)}/>;
 	}
 
-	getMyRouteKey = () => Object.keys(this.routes).find(key => this.routes[key].path === BrowserHistoryModule.getCurrent().pathname);
+	getMyRouteKey = () => this.ordinalRoutes.find(key => this.routes[key].path === BrowserHistoryModule.getCurrent().pathname);
 
 	// need to figure out how to create parameterized urls from this call !!
 	getNavLinks(keys: string[]) {
 		return keys.map(key => this.getRoute(key)).filter(route => route.visible && route.visible()).map(route => this.createNavLinkNode(route));
+	}
+
+	getNavLink(key: string) {
+		return this.createNavLinkNode(this.getRoute(key));
+	}
+
+	getLink(key: string) {
+		return this.createLinkNode(this.getRoute(key));
 	}
 
 	getRoutesMap() {
