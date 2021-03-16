@@ -33,8 +33,7 @@ import {
 	addItemToArray,
 	deepClone,
 	ImplementationMissingException,
-	Module,
-    ObjectTS
+	Module
 } from "@nu-art/ts-common";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import firebase from "firebase";
