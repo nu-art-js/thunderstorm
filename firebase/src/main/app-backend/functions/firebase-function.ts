@@ -33,11 +33,14 @@ import {
 	addItemToArray,
 	deepClone,
 	ImplementationMissingException,
-	Module
+	Module,
+    ObjectTS
 } from "@nu-art/ts-common";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import firebase from "firebase";
 import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
+import { Message } from 'firebase-functions/lib/providers/pubsub';
+
 
 const functions = require('firebase-functions');
 
@@ -319,13 +322,12 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 	};
 }
 
-
-export abstract class Firebase_PubSubFunction<MyType>
+export type FirebaseEventContext = EventContext;
+export abstract class Firebase_PubSubFunction<T>
 	extends FirebaseFunction {
 
 	private function!: CloudFunction<ObjectMetadata>;
 	private readonly topic: string;
-	private runtimeOpts: RuntimeOptions = {};
 
 	protected constructor(topic: string, name?: string) {
 		super();
@@ -333,27 +335,22 @@ export abstract class Firebase_PubSubFunction<MyType>
 		name && this.setName(name);
 	}
 
-	abstract onPublish(object: ObjectMetadata, context: EventContext): Promise<any>;
+	abstract onPublish(object: T, context: FirebaseEventContext): Promise<any>;
 
 	getFunction = () => {
 		if (this.function)
 			return this.function;
 
-		this.runtimeOpts = {
-			timeoutSeconds: this.config?.runtimeOpts?.timeoutSeconds || 300,
-			memory: this.config?.runtimeOpts?.memory || '2GB'
-		};
-
-		return this.function = functions.pubsub.topic(this.topic).onPublish(async (message: Message, context: EventContext) => {
+		return this.function = functions.pubsub.topic(this.topic).onPublish(async (message: Message, context: FirebaseEventContext) => {
 			// need to validate etc...
-			const toJSON: MyType = message.toJSON();
+			const toJSON: T = message.toJSON();
 
 			if (this.isReady)
-				return await this.onPublish(object, context);
+				return await this.onPublish(toJSON, context);
 
 			return new Promise((resolve) => {
 				addItemToArray(this.toBeExecuted, async () => {
-					return await this.onPublish(object, context);
+					return await this.onPublish(toJSON, context);
 				});
 
 				this.toBeResolved = resolve;
