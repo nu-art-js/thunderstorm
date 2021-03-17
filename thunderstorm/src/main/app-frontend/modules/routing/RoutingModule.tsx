@@ -76,14 +76,15 @@ class RoutingModule_Class
 	}
 
 	getRoute(key: string) {
-		if (!this.routes[key])
+		const route = this.routes[key];
+		if (!route)
 			throw new BadImplementationException(`No Route for key '${key}'... Did you forget to add it??`);
 
-		return this.routes[key];
+		return route;
 	}
 
 	getPath(key: string) {
-		return RoutingModule.getRoute(key).path;
+		return this.getRoute(key).path;
 	}
 
 	goToRoute(key: string, params?: RouteParams) {
@@ -97,7 +98,7 @@ class RoutingModule_Class
 		return <Redirect to={RoutingModule.getPath(key)}/>;
 	}
 
-	getMyRouteKey = () => this.ordinalRoutes.find(key => this.routes[key].path === BrowserHistoryModule.getCurrent().pathname);
+	getMyRouteKey = () => Object.keys(this.routes).find(key => this.routes[key].path === BrowserHistoryModule.getCurrent().pathname);
 
 	// need to figure out how to create parameterized urls from this call !!
 	getNavLinks(keys: string[]) {
