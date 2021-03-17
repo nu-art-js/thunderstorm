@@ -113,9 +113,9 @@ class RoutingModule_Class
 		return this.createLinkNode(this.getRoute(key));
 	}
 
-	getRoutesMap() {
+	getRoutesMap(keys?: string[]) {
 		return <Switch>
-			{this.ordinalRoutes.map(key => this.createRouteNode(this.getRoute(key)))}
+			{(keys || this.ordinalRoutes).map(key => this.createRouteNode(this.getRoute(key)))}
 		</Switch>;
 	}
 }
