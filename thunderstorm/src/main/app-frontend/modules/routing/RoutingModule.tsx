@@ -59,10 +59,10 @@ class RoutingModule_Class
 	}
 
 	clearRoutes() {
-		for (const i in this.ordinalRoutes) {
-			delete this.routes[this.ordinalRoutes[i]];
-			delete this.ordinalRoutes[i];
+		for (const item of this.ordinalRoutes) {
+			delete this.routes[item];
 		}
+		this.ordinalRoutes.splice(0);
 	}
 
 	addRoute(key: string, route: string, component: React.ComponentClass | string) {
