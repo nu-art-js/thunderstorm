@@ -18,7 +18,7 @@
 
 import {
 	BadImplementationException,
-	currentTimeMillies,
+	currentTimeMillis,
 	ThisShouldNotHappenException
 } from "@nu-art/ts-common";
 import {
@@ -126,7 +126,7 @@ export class FileWrapper {
 		const options: GetSignedUrlConfig = {
 			action: 'write',
 			contentType: contentType,
-			expires: currentTimeMillies() + expiresInMs,
+			expires: currentTimeMillis() + expiresInMs,
 		};
 		return this.getSignedUrl(options);
 	}
@@ -134,7 +134,7 @@ export class FileWrapper {
 	async getReadSecuredUrl(contentType: string, expiresInMs: number) {
 		const options: GetSignedUrlConfig = {
 			action: 'read',
-			expires: currentTimeMillies() + expiresInMs,
+			expires: currentTimeMillis() + expiresInMs,
 		};
 		return this.getSignedUrl(options);
 	}

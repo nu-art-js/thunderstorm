@@ -26,9 +26,9 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {
 	DropDown,
-	headerStyle,
-	inputStyle,
-	listStyle,
+	DropDown_headerStyle,
+	DropDown_inputStyle,
+	DropDown_listStyle,
 } from "@nu-art/thunderstorm/app-frontend/components/DropDown";
 import * as React from "react";
 import {
@@ -109,7 +109,7 @@ export class Example_MultiRendererDropDown
 						color: "red",
 					}
 				}),
-			style:{...inputStyle, padding: "0 20px"},
+			style:{...DropDown_inputStyle, padding: "0 20px"},
 			placeholder:this.state?._selected?.label
 		}
 
@@ -119,10 +119,10 @@ export class Example_MultiRendererDropDown
 				return <div style={{...style, color: "red"}}>{selected?.item?.label}</div>;
 			return <div style={style}>CHOOSE</div>
 		};
-		const headerStylable = {style: {...headerStyle, border: "solid 2px red", borderRadius: "5px 5px 0px 0px"}};
+		const headerStylable = {style: {...DropDown_headerStyle, border: "solid 2px red", borderRadius: "5px 5px 0px 0px"}};
 		const listStylable = {
 			style: {
-				...listStyle,
+				...DropDown_listStyle,
 				border: "solid 2px red",
 				borderRadius: "0px 0px 5px 5px",
 				borderTop: "none",

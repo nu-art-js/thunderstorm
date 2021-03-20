@@ -10,8 +10,8 @@ import {
 	AdapterBuilder,
 	BaseNodeRenderer,
 	DropDown,
-	headerStyle,
-	inputStyle,
+	DropDown_headerStyle,
+	DropDown_inputStyle,
 	Stylable
 } from "@nu-art/thunderstorm/frontend";
 import {inputClassName} from "./OstudioEx";
@@ -34,10 +34,10 @@ export class Example_SingleRendererDropDown
 
 		const inputStylable = {
 			className: inputClassName,
-			style: inputStyle,
+			style: DropDown_inputStyle,
 			placeholder: this.state?._selected?.label
 		};
-		const headerResolverClass: Stylable = {style: headerStyle, className: css({boxShadow: "5px 10px #888888"})};
+		const headerResolverClass: Stylable = {style: DropDown_headerStyle, className: css({boxShadow: "5px 10px #888888"})};
 		const simpleAdapter: Adapter = AdapterBuilder()
 			.list()
 			.singleRender(ItemRenderer)

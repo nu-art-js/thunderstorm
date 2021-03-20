@@ -57,7 +57,7 @@ export function _clearInterval(handlerId?: number) {
 	return clearInterval(handlerId as unknown as ReturnType<typeof setInterval>);
 }
 
-export function auditBy(user: string, comment?: string, timestamp: number = currentTimeMillies()): AuditBy {
+export function auditBy(user: string, comment?: string, timestamp: number = currentTimeMillis()): AuditBy {
 	const _auditBy: AuditBy = {
 		auditBy: user,
 		auditAt: createReadableTimestampObject(Format_HHmmss_DDMMYYYY, timestamp),
@@ -68,22 +68,22 @@ export function auditBy(user: string, comment?: string, timestamp: number = curr
 	return _auditBy;
 }
 
-export function currentTimeMillies() {
+export function currentTimeMillis() {
 	const date = new Date();
 	return date.getTime();
 }
 
-export function currentLocalTimeMillies() {
+export function currentLocalTimeMillis() {
 	const date = new Date();
 	return date.getTime();
 }
 
-export function currentTimeMilliesWithTimeZone() {
+export function currentTimeMillisWithTimeZone() {
 	const date = new Date();
 	return date.getTime() + date.getTimezoneOffset();
 }
 
-export function createReadableTimestampObject(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillies(), timezone?: string) {
+export function createReadableTimestampObject(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillis(), timezone?: string) {
 
 	const timeObj: Timestamp = {
 		timestamp: timestamp,
@@ -96,7 +96,7 @@ export function createReadableTimestampObject(pattern: string = Format_HHmmss_DD
 	return timeObj;
 }
 
-export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillies(), timezone?: string) {
+export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillis(), timezone?: string) {
 	const m = moment.utc(timestamp);
 	if (timezone) {
 		m.utcOffset(timezone);

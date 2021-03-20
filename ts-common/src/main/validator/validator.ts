@@ -123,7 +123,7 @@ export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<st
 		if (regexp.test(input))
 			return;
 
-		throw new ValidationException(`Input is not valid:\n  input: ${input}\n  regexp: ${regexp}\n`, path, input);
+		throw new ValidationException(`Input does not match regexp for path(${path}):\n  input: ${input}\n  regexp: ${regexp}\n`, path, input);
 	};
 };
 
@@ -137,7 +137,7 @@ export const tsValidateNumber = (mandatory = true): Validator<number> => {
 		if (typeof input === "number")
 			return;
 
-		throw new ValidationException(`input is not a number! \nvalue: ${input}\ntype: ${typeof input}`, path, input);
+		throw new ValidationException(`Input is not a number for path(${path})! \nvalue: ${input}\ntype: ${typeof input}`, path, input);
 	};
 };
 

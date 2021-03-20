@@ -97,6 +97,7 @@ class RoutingModule_Class
 
 	getMyRouteKey = () => Object.keys(this.routes).find(key => this.routes[key].path === BrowserHistoryModule.getCurrent().pathname);
 
+
 	// need to figure out how to create parameterized urls from this call !!
 	getNavLinks(keys: string[]) {
 		return keys.map(key => this.getRoute(key)).filter(route => route.visible && route.visible()).map(route => this.createNavLinkNode(route));

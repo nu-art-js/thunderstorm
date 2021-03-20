@@ -1,5 +1,5 @@
 import {
-	currentTimeMillies,
+	currentTimeMillis,
 	Dispatcher,
 	dispatch_onServerError,
 	filterInstances,
@@ -57,18 +57,18 @@ export class FirestoreBackupScheduler_Class
 			};
 			const docs = await backupStatusCollection.query(query);
 			const latestDoc = docs[0];
-			if (latestDoc && latestDoc.timestamp + backupItem.interval > currentTimeMillies())
+			if (latestDoc && latestDoc.timestamp + backupItem.interval > currentTimeMillis())
 				return;
 
-			const backupPath = `backup/firestore/${backupItem.moduleKey}/${currentTimeMillies()}.json`;
+			const backupPath = `backup/firestore/${backupItem.moduleKey}/${currentTimeMillis()}.json`;
 			try {
 				const toBackupData = await backupItem.collection.query(backupItem.backupQuery);
 				await (await bucket.getFile(backupPath)).write(toBackupData);
-				await backupStatusCollection.upsert({timestamp: currentTimeMillies(), moduleKey: backupItem.moduleKey, backupPath});
+				await backupStatusCollection.upsert({timestamp: currentTimeMillis(), moduleKey: backupItem.moduleKey, backupPath});
 
 				const keepInterval = backupItem.keepInterval;
 				if (keepInterval) {
-					const queryOld = {where: {moduleKey: backupItem.moduleKey, timestamp: {$lt: currentTimeMillies() - keepInterval}}};
+					const queryOld = {where: {moduleKey: backupItem.moduleKey, timestamp: {$lt: currentTimeMillis() - keepInterval}}};
 					const oldDocs = await backupStatusCollection.query(queryOld);
 					await Promise.all(oldDocs.map(async oldDoc => {
 						await (await bucket.getFile(oldDoc.backupPath)).delete();

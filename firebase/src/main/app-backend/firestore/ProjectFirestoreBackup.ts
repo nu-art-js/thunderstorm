@@ -25,7 +25,7 @@ import {
 	__stringify,
 	_logger_logException,
 	createReadableTimestampObject,
-	currentTimeMillies,
+	currentTimeMillis,
 	Day,
 	dispatch_onServerError,
 	filterDuplicates,
@@ -108,7 +108,7 @@ export class ProjectFirestoreBackup_Class
 				return false;
 
 			const backupTimestamp = parseTimeString(match[1], Format_YYYYMMDD_HHmmss);
-			const delta = currentTimeMillies() - backupTimestamp;
+			const delta = currentTimeMillis() - backupTimestamp;
 			return delta > (this.config.expirationDays || 10) * Day;
 		});
 	}

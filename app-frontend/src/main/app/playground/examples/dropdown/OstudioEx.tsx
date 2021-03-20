@@ -23,9 +23,9 @@ import {AdapterBuilder} from "@nu-art/thunderstorm/app-frontend/components/adapt
 import {NodeRendererProps} from "@nu-art/thunderstorm/app-frontend/components/adapter/BaseRenderer";
 import {
 	DropDown,
-	headerStyle,
-	inputStyle,
-	listStyle,
+	DropDown_headerStyle,
+	DropDown_inputStyle,
+	DropDown_listStyle,
 	Stylable,
 } from "@nu-art/thunderstorm/frontend";
 import {generateHex} from "@nu-art/ts-common";
@@ -76,7 +76,7 @@ const optionRendererStyle = (focused: boolean, selected: boolean) => css(
 
 const listResolverStyle = (width: number = DropdownWidth.Long): Stylable => ({
 	style: {
-		...listStyle,
+		...DropDown_listStyle,
 		backgroundColor: "#fff",
 		border: "unset",
 		borderRadius: 2,
@@ -134,7 +134,7 @@ export const AppDropDown = <T extends any = any>(props: DropdownProps<T>) => {
 
 	const headerResolverStyle: Stylable = {
 		style: {
-			...headerStyle,
+			...DropDown_headerStyle,
 			border: `solid 1px ${props.error ? "#de3728" : "#cbd3dd"}`,
 			borderRadius: 2,
 			height: 32,
@@ -158,7 +158,7 @@ export const AppDropDown = <T extends any = any>(props: DropdownProps<T>) => {
 		filter={props.filter}
 		caret={caret}
 		inputStylable={{
-			style: inputStyle,
+			style: DropDown_inputStyle,
 			className: inputClassName,
 			placeholder: props.selected ? props.labelResolver(props.selected) : props.placeholder || 'choose'
 		}}

@@ -21,10 +21,7 @@
 
 import * as React from 'react';
 import {FilterInput} from "./input/FilterInput";
-import {
-	__stringify,
-	generateHex
-} from "@nu-art/ts-common";
+import {generateHex} from "@nu-art/ts-common";
 import {KeyboardListener} from '../tools/KeyboardListener';
 import {stopPropagation} from "../utils/tools";
 import {Adapter,} from "./adapter/Adapter";
@@ -32,7 +29,7 @@ import {Tree} from "./tree/Tree";
 import {Stylable} from '../tools/Stylable';
 import {Overlay} from "./Overlay";
 
-const defaultWidth = "222px";
+export const DropDown_defaultWidth = 222;
 const defaultTitleHeight = "28px";
 const defaultListHeight = "150px";
 
@@ -45,7 +42,7 @@ const wrapperStyle: React.CSSProperties = {
 	position: 'relative'
 };
 
-export const headerStyle: React.CSSProperties = {
+export const DropDown_headerStyle: React.CSSProperties = {
 	display: "flex",
 	alignItems: "center",
 	boxSizing: "border-box",
@@ -54,11 +51,11 @@ export const headerStyle: React.CSSProperties = {
 	borderRadius: 2,
 	color: "black",
 	backgroundColor: "white",
-	width: defaultWidth,
+	width: DropDown_defaultWidth,
 	height: defaultTitleHeight,
 };
 
-export const inputStyle: React.CSSProperties = {
+export const DropDown_inputStyle: React.CSSProperties = {
 	border: "unset",
 	boxSizing: "border-box",
 	outline: "none",
@@ -72,7 +69,7 @@ const listContainerStyle: React.CSSProperties = {
 	zIndex: 10,
 };
 
-export const listStyle: React.CSSProperties = {
+export const DropDown_listStyle: React.CSSProperties = {
 	boxSizing: "border-box",
 	backgroundColor: "whitesmoke",
 	border: "solid 1px",
@@ -84,9 +81,8 @@ export const listStyle: React.CSSProperties = {
 	overflowX: "hidden",
 	overflowY: "auto",
 	position: "relative",
-	top: 5,
-	width: defaultWidth,
-
+	top: 1,
+	width: DropDown_defaultWidth,
 };
 
 export type InputProps = Stylable & {
@@ -144,9 +140,9 @@ export class DropDown<ItemType>
 
 	static defaultProps: Partial<StaticProps> = {
 		id: generateHex(8),
-		headerStylable: {style: headerStyle},
-		listStylable: {style: listStyle},
-		inputStylable: {style: inputStyle}
+		headerStylable: {style: DropDown_headerStyle},
+		listStylable: {style: DropDown_listStyle},
+		inputStylable: {style: DropDown_inputStyle}
 	};
 
 
@@ -267,8 +263,8 @@ export class DropDown<ItemType>
 			onChange={(filteredOptions: ItemType[], filterBy) => {
 				this.setState(state => {
 					state.adapter.data = this.props.autocomplete && this.props.filter && !filterBy.length ? [] : filteredOptions;
-					console.log(`filter: ${this.props.id} (${filterBy}) -> ${__stringify(filteredOptions)}`);
-					console.log(`state.adapter.data: ${__stringify(state.adapter.data)}`);
+					// console.log(`filter: ${this.props.id} (${filterBy}) -> ${__stringify(filteredOptions)}`);
+					// console.log(`state.adapter.data: ${__stringify(state.adapter.data)}`);
 					return {
 						adapter: state.adapter,
 						filterTextLength: filterBy.length

@@ -19,7 +19,7 @@
 import {
 	__stringify,
 	auditBy,
-	currentTimeMillies,
+	currentTimeMillis,
 	Day,
 	Dispatcher,
 	generateHex,
@@ -246,7 +246,7 @@ export class AccountsModule_Class
 	}
 
 	private TTLExpired = (session: DB_Session) => {
-		const delta = currentTimeMillies() - session.timestamp;
+		const delta = currentTimeMillis() - session.timestamp;
 		return delta > this.config.sessionTTLms || delta < 0;
 	};
 
@@ -255,7 +255,7 @@ export class AccountsModule_Class
 		if (!session || this.TTLExpired(session)) {
 			session = {
 				sessionId: generateHex(64),
-				timestamp: currentTimeMillies(),
+				timestamp: currentTimeMillis(),
 				userId
 			};
 			await this.sessions.upsert(session);
