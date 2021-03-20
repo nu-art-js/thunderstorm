@@ -25,7 +25,7 @@ export class Dispatcher<T extends object, K extends FunctionKeys<T>> {
 
 	static modulesResolver: () => any[];
 
-	protected readonly method: K;
+	readonly method: K;
 	protected readonly filter: (listener: any) => boolean;
 
 	constructor(method: K) {

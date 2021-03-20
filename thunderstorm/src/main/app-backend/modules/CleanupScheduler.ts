@@ -1,5 +1,5 @@
 import {
-	currentTimeMillies,
+	currentTimeMillis,
 	Dispatcher
 } from "@nu-art/ts-common";
 import {FirebaseScheduledFunction} from "@nu-art/firebase/app-backend/functions/firebase-function";
@@ -35,12 +35,12 @@ export class CleanupScheduler_Class
 		const cleanups = dispatch_onCleanupSchedulerAct.dispatchModule([]);
 		await Promise.all(cleanups.map(async cleanupItem => {
 			const doc = await cleanupStatusCollection.queryUnique({where: {moduleKey: cleanupItem.moduleKey}});
-			if (doc && doc.timestamp + cleanupItem.interval > currentTimeMillies())
+			if (doc && doc.timestamp + cleanupItem.interval > currentTimeMillis())
 				return;
 
 			try {
 				await cleanupItem.cleanup();
-				await cleanupStatusCollection.upsert({timestamp: currentTimeMillies(), moduleKey: cleanupItem.moduleKey});
+				await cleanupStatusCollection.upsert({timestamp: currentTimeMillis(), moduleKey: cleanupItem.moduleKey});
 			} catch (e) {
 				this.logWarning(`cleanup of ${cleanupItem.moduleKey} has failed with error '${e}'`);
 			}

@@ -20,7 +20,7 @@
  * Created by TacB0sS on 3/18/17.
  */
 import {
-	currentTimeMillies,
+	currentTimeMillis,
 	generateUUID,
 	Logger,
 	timeout,
@@ -168,7 +168,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 	}
 
 	private async _execute() {
-		this._started = currentTimeMillies();
+		this._started = currentTimeMillis();
 
 		let label: string | undefined;
 		let err;
@@ -191,7 +191,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 
 				label && this.reporter.logVerbose(`skipped: ${label}`);
 				this.reporter.onActionEnded(this);
-				this._ended = currentTimeMillies();
+				this._ended = currentTimeMillis();
 				return;
 			}
 
@@ -234,7 +234,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 		if (this.postExecutionDelay > 0)
 			await timeout(this.postExecutionDelay);
 
-		this._ended = currentTimeMillies();
+		this._ended = currentTimeMillis();
 	}
 
 	setStatus(status: Status) {

@@ -22,7 +22,7 @@
  */
 
 import {
-	currentTimeMillies,
+	currentTimeMillis,
 	Minute,
 	Module
 } from "@nu-art/ts-common";
@@ -78,7 +78,7 @@ export class SlackModule_Class
 		const parameters: SlackMessage = typeof slackMessage === 'string' ? {text: slackMessage, channel: this.config.defaultChannel} : slackMessage;
 
 		const time = this.messageMap[parameters.text];
-		if (time && currentTimeMillies() - time < (this.config.throttlingTime || Minute))
+		if (time && currentTimeMillis() - time < (this.config.throttlingTime || Minute))
 			return;
 
 		try {
@@ -90,7 +90,7 @@ export class SlackModule_Class
 
 	private async postMessageImpl(message: _SlackMessage) {
 		const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
-		this.messageMap[message.text] = currentTimeMillies();
+		this.messageMap[message.text] = currentTimeMillis();
 
 		this.logDebug(
 			`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);

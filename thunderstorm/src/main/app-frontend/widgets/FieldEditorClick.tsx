@@ -18,6 +18,7 @@ type State = {
 };
 
 export type FieldEditorClickProps = {
+	clicks?: 1 | 2
 	inputProps?: FieldEditorInputProps<any>;
 	labelProps?: HTMLProps<HTMLDivElement> | ((value: string) => ReactNode)
 	editorType?: EditorType
@@ -84,7 +85,8 @@ export class FieldEditorClick
 	render() {
 		return (
 			<div className={`ll_h_c`}
-			     onDoubleClick={this.startEdit}
+			     onClick={this.props.clicks === 1 ? this.startEdit : undefined}
+			     onDoubleClick={this.props.clicks === undefined || this.props.clicks === 2 ? this.startEdit : undefined}
 			     onBlur={() => this.handleSave()}>
 				<FieldEditor
 					id={this.props.id}

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import {
-	currentTimeMillies,
+	currentTimeMillis,
 	generateHex,
 	StringMap
 } from "@nu-art/ts-common";
@@ -100,9 +100,9 @@ export async function testUserPermissions(groupCustomFields: StringMap[], extraG
 }
 
 async function runAssertion(projectId: string, apiPath: string, userUuid: string, customField: StringMap) {
-	const start = currentTimeMillies();
+	const start = currentTimeMillis();
 	await PermissionsAssert.assertUserPermissions(projectId, apiPath, userUuid, customField);
-	const runTime = currentTimeMillies() - start;
+	const runTime = currentTimeMillis() - start;
 	console.log(`Call to assertion took ${runTime}ms`);
 	return runTime;
 }

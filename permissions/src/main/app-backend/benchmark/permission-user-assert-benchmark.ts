@@ -18,7 +18,7 @@
 
 import {
 	generateHex,
-	currentTimeMillies
+	currentTimeMillis
 } from "@nu-art/ts-common";
 import {
 	AccessLevelPermissionsDB,
@@ -112,9 +112,9 @@ export async function testUserPermissionsTime() {
 }
 
 async function runAssertion(projectId: string, apiPath: string, userUuid: string, customField: { UnitId: string }) {
-	const start = currentTimeMillies();
+	const start = currentTimeMillis();
 	await PermissionsAssert.assertUserPermissions(projectId, apiPath, userUuid, customField);
-	const runTime = currentTimeMillies() - start;
+	const runTime = currentTimeMillis() - start;
 	console.log(`Call to assertion took ${runTime}ms`);
 	return runTime;
 }

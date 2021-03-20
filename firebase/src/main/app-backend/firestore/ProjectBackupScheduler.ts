@@ -20,7 +20,7 @@ import {FirebaseScheduledFunction} from "../functions/firebase-function";
 import {ProjectFirestoreBackup} from "./ProjectFirestoreBackup";
 import {FirebaseModule} from "../FirebaseModule";
 import {
-	currentTimeMillies,
+	currentTimeMillis,
 	Day
 } from "@nu-art/ts-common";
 
@@ -39,7 +39,7 @@ export class ProjectBackupScheduler_Class
 			if (!lastSuccess)
 				lastSuccess = 0;
 
-			return currentTimeMillies() - lastSuccess > this.config.backupIntervalMs * 0.98;
+			return currentTimeMillis() - lastSuccess > this.config.backupIntervalMs * 0.98;
 		});
 
 	}
@@ -47,7 +47,7 @@ export class ProjectBackupScheduler_Class
 	onScheduledEvent = async (): Promise<any> => {
 		try {
 			await ProjectFirestoreBackup.backupProject(`scheduled function: ${this.getName()}`);
-			await FirebaseModule.createAdminSession().getDatabase().set<number>("/_firestore-backup", currentTimeMillies());
+			await FirebaseModule.createAdminSession().getDatabase().set<number>("/_firestore-backup", currentTimeMillis());
 		} catch (e) {
 			this.logError("Error backing up firestore", e);
 		}

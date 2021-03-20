@@ -166,7 +166,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 
 	public getItems = () => this.ids.map(id => this.items[id]);
 
-	public getItem = (id: string): DBType | undefined => this.items[id];
+	public getItem = (id?: string): DBType | undefined => id ? this.items[id] : undefined;
 
 	protected async onEntryCreated(item: DBType): Promise<void> {
 		return this.onEntryUpdated(item);

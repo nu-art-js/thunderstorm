@@ -21,7 +21,7 @@ import {
 	__stringify,
 	batchAction,
 	compare,
-	currentTimeMillies,
+	currentTimeMillis,
 	Day,
 	filterDuplicates,
 	generateHex,
@@ -91,7 +91,7 @@ export class PushPubSubModule_Class
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
 			pushSessionId: body.pushSessionId,
-			timestamp: currentTimeMillies(),
+			timestamp: currentTimeMillis(),
 			userId
 		};
 
@@ -202,7 +202,7 @@ export class PushPubSubModule_Class
 	private buildNotification = (pushkey: string, persistent: boolean, data?: any, props?: any, user?: string,) => {
 		const notification: DB_Notifications = {
 			_id: generateHex(16),
-			timestamp: currentTimeMillies(),
+			timestamp: currentTimeMillis(),
 			read: false,
 			pushKey: pushkey,
 			persistent
@@ -236,10 +236,10 @@ export class PushPubSubModule_Class
 		const sessionsCleanupTime = this.config?.sessionsCleanupTime || Hour;
 		const notificationsCleanupTime = this.config?.notificationsCleanupTime || 7 * Day;
 
-		const docs = await this.pushSessions.query({where: {timestamp: {$lt: currentTimeMillies() - sessionsCleanupTime}}});
+		const docs = await this.pushSessions.query({where: {timestamp: {$lt: currentTimeMillis() - sessionsCleanupTime}}});
 
 		await Promise.all([
-			                  this.notifications.delete({where: {timestamp: {$lt: currentTimeMillies() - notificationsCleanupTime}}}),
+			                  this.notifications.delete({where: {timestamp: {$lt: currentTimeMillis() - notificationsCleanupTime}}}),
 			                  this.cleanUpImpl(docs.map(d => d.firebaseToken))
 		                  ]);
 	};
