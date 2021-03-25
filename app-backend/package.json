@@ -46,7 +46,7 @@
     "debug": "^3.1.0",
     "express": "^4.16.3",
     "firebase": "^8.0.0",
-    "firebase-admin": "^9.3.0",
+    "firebase-admin": "^9.5.0",
     "firebase-functions": "^3.13.0",
     "fs": "0.0.1-security",
     "js-base64": "^2.5.1",
