@@ -37,12 +37,15 @@ import {
 } from "@nu-art/ts-common";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import firebase from "firebase";
+import {Message} from 'firebase-functions/lib/providers/pubsub';
 import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
+
 
 const functions = require('firebase-functions');
 
 export interface FirebaseFunctionInterface {
 	getFunction(): HttpsFunction;
+
 	onFunctionReady(): Promise<void>;
 }
 
@@ -53,7 +56,13 @@ export abstract class FirebaseFunction<Config = any>
 	protected toBeExecuted: (() => Promise<any>)[] = [];
 	protected toBeResolved!: (value?: (PromiseLike<any>)) => void;
 
+	protected constructor(tag?: string) {
+		super(tag);
+		this.onFunctionReady = this.onFunctionReady.bind(this)
+	}
+
 	abstract getFunction(): HttpsFunction
+
 	onFunctionReady = async () => {
 		this.isReady = true;
 		const toBeExecuted = this.toBeExecuted;
@@ -301,16 +310,55 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 			memory: this.config?.runtimeOpts?.memory || '2GB'
 		};
 
-		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(async (object: ObjectMetadata, context: EventContext) => {
-			if (!object.name?.startsWith(this.path))
-				return;
+		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(
+			async (object: ObjectMetadata, context: EventContext) => {
+				if (!object.name?.startsWith(this.path))
+					return;
+
+				if (this.isReady)
+					return await this.onFinalize(object, context);
+
+				return new Promise((resolve) => {
+					addItemToArray(this.toBeExecuted, async () => {
+						return await this.onFinalize(object, context);
+					});
+
+					this.toBeResolved = resolve;
+				});
+			});
+	};
+}
+
+export type FirebaseEventContext = EventContext;
+
+export abstract class Firebase_PubSubFunction<T>
+	extends FirebaseFunction {
+
+	private function!: CloudFunction<ObjectMetadata>;
+	private readonly topic: string;
+
+	protected constructor(topic: string, name?: string) {
+		super();
+		this.topic = topic;
+		name && this.setName(name);
+	}
+
+	abstract onPublish(object: T, context: FirebaseEventContext): Promise<any>;
+
+	getFunction = () => {
+		if (this.function)
+			return this.function;
+
+		return this.function = functions.pubsub.topic(this.topic).onPublish(async (message: Message, context: FirebaseEventContext) => {
+			// need to validate etc...
+			const toJSON: T = message.toJSON();
 
 			if (this.isReady)
-				return await this.onFinalize(object, context);
+				return await this.onPublish(toJSON, context);
 
 			return new Promise((resolve) => {
 				addItemToArray(this.toBeExecuted, async () => {
-					return await this.onFinalize(object, context);
+					return await this.onPublish(toJSON, context);
 				});
 
 				this.toBeResolved = resolve;
@@ -318,3 +366,4 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 		});
 	};
 }
+
