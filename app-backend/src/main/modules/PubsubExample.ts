@@ -16,8 +16,10 @@
  * limitations under the License.
  */
 
-import {Firebase_PubSubFunction, FirebaseEventContext} from "@nu-art/firebase/backend-functions";
-
+import {
+	Firebase_PubSubFunction,
+	FirebaseEventContext
+} from "@nu-art/firebase/backend-functions";
 
 type MyType = any;
 
