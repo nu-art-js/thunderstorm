@@ -35,7 +35,7 @@
     "@nu-art/jira": "~0.0.1",
     "express": "^4.16.4",
     "firebase": "^8.0.0",
-    "firebase-admin": "^9.3.0",
+    "firebase-admin": "^9.5.0",
     "jszip": "^3.3.0",
     "request": "^2.88.0",
     "moment": "^2.24.0",
