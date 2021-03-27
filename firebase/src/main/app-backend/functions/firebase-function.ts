@@ -337,10 +337,9 @@ export abstract class Firebase_PubSubFunction<T>
 	private function!: CloudFunction<ObjectMetadata>;
 	private readonly topic: string;
 
-	protected constructor(topic: string, name?: string) {
+	protected constructor(topic: string) {
 		super();
 		this.topic = topic;
-		name && this.setName(name);
 	}
 
 	abstract onPublish(object: T, context: FirebaseEventContext): Promise<any>;
