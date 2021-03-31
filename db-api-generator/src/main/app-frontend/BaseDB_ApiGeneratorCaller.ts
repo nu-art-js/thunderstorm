@@ -157,6 +157,10 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		return this.ids.map(id => this.items[id]);
 	}
 
+	public get(id: string) {
+		return this.items[id];
+	}
+
 	protected async onEntryCreated(item: DBType): Promise<void> {
 		addItemToArray(this.ids, item._id);
 		this.items[item._id] = item;
