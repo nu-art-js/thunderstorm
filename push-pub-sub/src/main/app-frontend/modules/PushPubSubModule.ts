@@ -166,8 +166,8 @@ export class PushPubSubModule_Class
 
 			this.logVerbose('new token received: ' + this.firebaseToken);
 
-			this.logWarning("I don't believe there is a good reason to register whenever an app starts.. before we have any information about user or app status!!")
-			this.logWarning("Convince me otherwise.. :)")
+			// this.logWarning("I don't believe there is a good reason to register whenever an app starts.. before we have any information about user or app status!!")
+			// this.logWarning("Convince me otherwise.. :)")
 			// await this.register();
 
 		} catch (err) {
