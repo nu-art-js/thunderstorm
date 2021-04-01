@@ -320,7 +320,7 @@ export abstract class Firebase_PubSubFunction<T>
 		try {
 			return await this.onPublish(object, originalMessage, context)
 		} catch (e) {
-			const _message = `Error publishing pub/sub message to topic ${this.topic}`
+			const _message = `Error publishing pub/sub message to topic ${this.topic} ` + __stringify(e)
 			this.logError(_message)
 			try {
 				await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
