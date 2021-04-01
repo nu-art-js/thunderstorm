@@ -164,8 +164,13 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	protected async onEntryCreated(item: DBType): Promise<void> {
 		addItemToArray(this.ids, item._id);
 		this.items[item._id] = item;
-		this.defaultDispatcher?.dispatchUI([]);
+		this.dispatch();
 	}
+
+	private dispatch = () => {
+		this.defaultDispatcher?.dispatchUI([]);
+		this.defaultDispatcher?.dispatchModule([]);
+	};
 
 	protected async onEntryDeleted(item: DBType): Promise<void> {
 		removeItemFromArray(this.ids, item._id);
