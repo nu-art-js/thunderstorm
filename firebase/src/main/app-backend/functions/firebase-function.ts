@@ -30,19 +30,26 @@ import {
 	Response
 } from "express";
 import {
+	__stringify,
 	addItemToArray,
 	deepClone,
+	dispatch_onServerError,
 	ImplementationMissingException,
-	Module
+	Module,
+	ServerErrorSeverity,
+	StringMap
 } from "@nu-art/ts-common";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import firebase from "firebase";
+import {Message} from 'firebase-functions/lib/providers/pubsub';
 import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
+
 
 const functions = require('firebase-functions');
 
 export interface FirebaseFunctionInterface {
 	getFunction(): HttpsFunction;
+
 	onFunctionReady(): Promise<void>;
 }
 
@@ -53,7 +60,24 @@ export abstract class FirebaseFunction<Config = any>
 	protected toBeExecuted: (() => Promise<any>)[] = [];
 	protected toBeResolved!: (value?: (PromiseLike<any>)) => void;
 
+	protected constructor(tag?: string) {
+		super(tag);
+		this.onFunctionReady = this.onFunctionReady.bind(this)
+	}
+
 	abstract getFunction(): HttpsFunction
+
+	protected async handleCallback(callback: () => Promise<any>) {
+		if (this.isReady)
+			return await callback()
+
+		return new Promise((resolve) => {
+			addItemToArray(this.toBeExecuted, async () => await callback());
+
+			this.toBeResolved = resolve;
+		});
+	}
+
 	onFunctionReady = async () => {
 		this.isReady = true;
 		const toBeExecuted = this.toBeExecuted;
@@ -148,19 +172,7 @@ export abstract class FirebaseFunctionModule<DataType = any, ConfigType = any>
 				const after: DataType = change.after && change.after.val();
 				const params = deepClone(context.params);
 
-				if (this.isReady) {
-					this.logDebug(`Processing function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
-					return this.processChanges(before, after, params);
-				}
-
-				return new Promise((resolve) => {
-					addItemToArray(this.toBeExecuted, async () => {
-						return await this.processChanges(before, after, params);
-					});
-
-					this.logDebug(`Queuing function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
-					this.toBeResolved = resolve;
-				});
+				return this.handleCallback(() => this.processChanges(before, after, params))
 			});
 	};
 }
@@ -177,13 +189,13 @@ export abstract class FirestoreFunctionModule<DataType extends object, ConfigTyp
 	private readonly collectionName: string;
 	private function!: CloudFunction<Change<DataSnapshot>>;
 
-	protected constructor(collectionName: string, name?: string) {
-		super();
+	protected constructor(collectionName: string, name?: string, tag?: string) {
+		super(tag);
 		name && this.setName(name);
 		this.collectionName = collectionName;
 	}
 
-	abstract processChanges(params: { [param: string]: any }, before?: DataType, after?: DataType,): Promise<any>;
+	abstract processChanges(params: { [param: string]: any }, before?: DataType, after?: DataType): Promise<any>;
 
 	getFunction = () => {
 		if (this.function)
@@ -195,20 +207,8 @@ export abstract class FirestoreFunctionModule<DataType extends object, ConfigTyp
 				const after: DataType | undefined = change.after && change.after.data();
 				const params = deepClone(context.params);
 
-				if (this.isReady) {
-					this.logDebug(`Processing function Params: ${JSON.stringify(params, null, 2)}`);
-					return this.processChanges(params, before, after);
-				}
-
-				return new Promise((resolve) => {
-					addItemToArray(this.toBeExecuted, async () => {
-						return await this.processChanges(params, before, after);
-					});
-
-					this.logDebug(`Queuing firestore function: ${before} => ${after}\nParams: ${JSON.stringify(params, null, 2)}`);
-					this.toBeResolved = resolve;
-				});
-			});
+				return this.handleCallback(() => this.processChanges(params, before, after))
+			})
 	};
 }
 
@@ -219,8 +219,8 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 	private schedule?: string;
 	private runningCondition: (() => Promise<boolean>)[] = [async () => true];
 
-	constructor(name?: string) {
-		super();
+	protected constructor(name?: string, tag?: string) {
+		super(tag);
 		name && this.setName(name);
 	}
 
@@ -236,7 +236,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 
 	abstract onScheduledEvent(): Promise<any>;
 
-	private async _onScheduledEvent() {
+	private _onScheduledEvent = async () => {
 		const results: boolean[] = await Promise.all(this.runningCondition.map(condition => condition()));
 
 		if (results.includes(false)) {
@@ -245,7 +245,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 		}
 
 		return this.onScheduledEvent();
-	}
+	};
 
 	getFunction = () => {
 		if (!this.schedule)
@@ -255,19 +255,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 			return this.function;
 
 		return this.function = functions.pubsub.schedule(this.schedule).onRun(async () => {
-			if (this.isReady) {
-				this.logDebug(`FirebaseScheduledFunction schedule`);
-				return this._onScheduledEvent();
-			}
-
-			return new Promise((resolve) => {
-				addItemToArray(this.toBeExecuted, async () => {
-					return this._onScheduledEvent();
-				});
-
-				this.logDebug(`FirebaseScheduledFunction schedule`);
-				this.toBeResolved = resolve;
-			});
+			return this.handleCallback(() => this._onScheduledEvent())
 		});
 	};
 }
@@ -301,20 +289,66 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 			memory: this.config?.runtimeOpts?.memory || '2GB'
 		};
 
-		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(async (object: ObjectMetadata, context: EventContext) => {
-			if (!object.name?.startsWith(this.path))
-				return;
+		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(
+			async (object: ObjectMetadata, context: EventContext) => {
+				if (!object.name?.startsWith(this.path))
+					return;
 
-			if (this.isReady)
-				return await this.onFinalize(object, context);
-
-			return new Promise((resolve) => {
-				addItemToArray(this.toBeExecuted, async () => {
-					return await this.onFinalize(object, context);
-				});
-
-				this.toBeResolved = resolve;
+				return this.handleCallback(() => this.onFinalize(object, context))
 			});
+	};
+}
+
+export type FirebaseEventContext = EventContext;
+
+export type TopicMessage = { data: string, attributes: StringMap };
+
+export abstract class Firebase_PubSubFunction<T>
+	extends FirebaseFunction {
+
+	private function!: CloudFunction<ObjectMetadata>;
+	private readonly topic: string;
+
+	protected constructor(topic: string, tag?: string) {
+		super(tag);
+		this.topic = topic;
+	}
+
+	abstract onPublish(object: T | undefined, originalMessage: TopicMessage, context: FirebaseEventContext): Promise<any>;
+
+	private _onPublish = async (object: T | undefined, originalMessage: TopicMessage, context: FirebaseEventContext) => {
+		try {
+			return await this.onPublish(object, originalMessage, context)
+		} catch (e) {
+			const _message = `Error publishing pub/sub message to topic ${this.topic} ` + __stringify(e)
+			this.logError(_message)
+			try {
+				await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
+			} catch (_e) {
+				this.logError("Error while handing pubsub error", _e);
+			}
+			throw e;
+		}
+	};
+
+	getFunction = () => {
+		if (this.function)
+			return this.function;
+
+		return this.function = functions.pubsub.topic(this.topic).onPublish(async (message: Message, context: FirebaseEventContext) => {
+			// need to validate etc...
+			const originalMessage: TopicMessage = message.toJSON();
+
+			let data: T | undefined;
+			try {
+				data = JSON.parse(Buffer.from(originalMessage.data, 'base64').toString());
+			} catch (e) {
+				this.logError(`Error parsing the data attribute from pub/sub message to topic ${this.topic}` +
+					              "\n" + __stringify(originalMessage.data) + "\n" + __stringify(e))
+			}
+
+			return this.handleCallback(() => this._onPublish(data, originalMessage, context))
 		});
 	};
 }
+

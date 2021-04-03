@@ -166,9 +166,12 @@ export class PushPubSubModule_Class
 
 			this.logVerbose('new token received: ' + this.firebaseToken);
 
-			this.logWarning("I don't believe there is a good reason to register whenever an app starts.. before we have any information about user or app status!!")
-			this.logWarning("Convince me otherwise.. :)")
-			// await this.register();
+			// this.logWarning("I don't believe there is a good reason to register whenever an app starts.. before we have any information about user or app status!!")
+			// this.logWarning("Convince me otherwise.. :)")
+			// Race Condition in CC proved that I didnt register for push due to the getToken being async which ended after modules init
+			// so I had subscriptions but didnt register them
+			if(this.subscriptions.length > 0)
+				await this.register();
 
 		} catch (err) {
 			this.logError("Unable to get token", err);

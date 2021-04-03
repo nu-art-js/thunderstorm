@@ -168,6 +168,11 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 
 	public getItem = (id?: string): DBType | undefined => id ? this.items[id] : undefined;
 
+	private dispatch = () => {
+		this.defaultDispatcher?.dispatchUI([]);
+		this.defaultDispatcher?.dispatchModule([]);
+	};
+
 	protected async onEntryCreated(item: DBType): Promise<void> {
 		return this.onEntryUpdated(item);
 	}
@@ -176,7 +181,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		removeItemFromArray(this.ids, item._id);
 		delete this.items[item._id];
 
-		this.defaultDispatcher?.dispatchUI([]);
+		this.dispatch()
 	}
 
 	protected async onEntryUpdated(item: DBType): Promise<void> {
@@ -184,7 +189,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			addItemToArray(this.ids, item._id);
 
 		this.items[item._id] = item;
-		this.defaultDispatcher?.dispatchUI([]);
+		this.dispatch()
 	}
 
 	protected async onGotUnique(item: DBType): Promise<void> {
@@ -198,6 +203,6 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			return toRet;
 		}, this.items);
 
-		this.defaultDispatcher?.dispatchUI([]);
+		this.dispatch()
 	}
 }

@@ -18,6 +18,9 @@
 
 import {RoutingModule} from "@nu-art/thunderstorm/frontend";
 import {Page_Playground} from "./playground/Page_Playground";
+import {Parent} from "./Parent";
+import {Child1} from "./Child1";
+import {Child2} from "./Child2";
 
 export const Route_Home = "home";
 export const Route_Login = "login";
@@ -27,5 +30,8 @@ export const registerRoutes = () => {
 	RoutingModule.clearRoutes();
 
 	//home route should be declared last
+	RoutingModule.addRoute('child2', "/parent/child2", Child2).setLabel('Child2');
+	RoutingModule.addRoute('child1', "/parent/child1", Child1).setLabel('Child1');
+	RoutingModule.addRoute('parent', "/parent", Parent);
 	RoutingModule.addRoute(Route_Home, "/", Page_Playground).setLabel("Home").setExact(false);
 };
