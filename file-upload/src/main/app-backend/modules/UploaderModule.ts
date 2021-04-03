@@ -22,7 +22,8 @@ import {
 	Hour,
 	ImplementationMissingException,
 	Module,
-	ThisShouldNotHappenException
+	ThisShouldNotHappenException,
+	TypedMap
 } from "@nu-art/ts-common";
 import {
 	FileWrapper,
@@ -48,21 +49,21 @@ type Config = {
 }
 
 export type PostProcessor = (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => Promise<void>;
+type AssetProcessor = {
+	callback: (file: FileWrapper, doc: DB_Temp_File) => void
+}
+
 
 export class UploaderModule_Class
 	extends Module<Config> {
 	private storage!: StorageWrapper;
+	processor: TypedMap<AssetProcessor> = {};
 
-	private postProcessor!: { [k: string]: PostProcessor };
+	register() {
 
-	setPostProcessor = (validator: { [k: string]: PostProcessor }) => {
-		this.postProcessor = validator;
-	};
+	}
 
 	init() {
-		if (!this.postProcessor)
-			throw new ImplementationMissingException('You must set a postProcessor for the UploaderModule');
-
 		this.storage = FirebaseModule.createAdminSession().getStorage();
 	}
 

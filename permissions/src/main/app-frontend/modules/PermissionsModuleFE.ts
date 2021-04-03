@@ -49,7 +49,6 @@ export class PermissionsModuleFE_Class
 				return;
 
 			this.loadingUrls.add(url);
-			this.userUrlsPermissions[url] = false;
 		});
 
 		this.setPermissions();
@@ -64,7 +63,6 @@ export class PermissionsModuleFE_Class
 			return permitted;
 
 		this.loadingUrls.add(url);
-		this.userUrlsPermissions[url] = false;
 		this.setPermissions();
 		return undefined;
 	}
@@ -74,6 +72,10 @@ export class PermissionsModuleFE_Class
 			throw new ImplementationMissingException("need to set up a project id config");
 
 		this.debounce(() => {
+			const urls: UserUrlsPermissions = {};
+			this.loadingUrls.forEach(url => {
+				urls[url] = false;
+			});
 			XhrHttpModule
 				.createRequest<PermissionsApi_UserUrlsPermissions>(HttpMethod.POST, 'user-urls-permissions')
 				.setRelativeUrl(`/v1/permissions/user-urls-permissions`)
@@ -81,7 +83,7 @@ export class PermissionsModuleFE_Class
 				.setLabel(`Getting user urls permissions`)
 				.setJsonBody({
 					             projectId: this.config.projectId,
-					             urls: this.userUrlsPermissions,
+					             urls: urls,
 					             requestCustomField: this.requestCustomField
 				             })
 				.setOnError(() => {

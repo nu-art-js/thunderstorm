@@ -1,5 +1,5 @@
 /*
- * Firebase is a simpler Typescript wrapper to all of firebase services.
+ * A typescript & react boilerplate with api call example
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,11 +16,22 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {scenarioAddData} from "./test/add-data";
-import {scenarioRemoveData} from "./test/remove-data";
+import * as React from "react";
+import {BaseComponent, RoutingModule} from "@nu-art/thunderstorm/frontend";
+import {Parent} from "./Parent";
 
+export class Child1
+	extends BaseComponent {
 
-export const testDatabase = __scenario("test-database");
-testDatabase.add(scenarioAddData);
-// testDatabase.add(scenarioRemoveData)
+	constructor(props: any) {
+		super(props);
+	}
+
+	render() {
+		return <Parent>
+			<div>Child1</div>
+			{RoutingModule.getLink('child2')}
+		</Parent>;
+	}
+
+}

@@ -69,7 +69,7 @@ import Example_Line from "./examples/Example_Line";
 import Example_ChartJSLine from "./examples/Example_ChartJSLine";
 import {Example_TSTextArea} from "./examples/Example_TSTextArea";
 import Example_CCgraphs from "./examples/Example_CCgraphs";
-import { Example_FieldEditorClick } from './examples/Example_FieldEditorClick';
+import {Example_FieldEditorClick} from './examples/Example_FieldEditorClick';
 
 export const selectStyles = {
 	container: (provided: any) => ({
