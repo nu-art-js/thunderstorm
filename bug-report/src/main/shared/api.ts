@@ -37,7 +37,6 @@ export type Request_BugReport = {
 	subject: string;
 	description: string;
 	reports: BugReport[]
-	createTicket: boolean
 };
 
 export type ReportMetaData = {

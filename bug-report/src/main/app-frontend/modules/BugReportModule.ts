@@ -55,8 +55,7 @@ export class BugReportModule_Class
 		const body: Request_BugReport = {
 			subject,
 			description,
-			reports: this.reports.map(report => ({log: report.buffers, name: report.name})),
-			createTicket: true
+			reports: this.reports.map(report => ({log: report.buffers, name: report.name}))
 		};
 
 		XhrHttpModule
