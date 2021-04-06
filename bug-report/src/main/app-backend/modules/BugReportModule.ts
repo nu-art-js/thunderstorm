@@ -101,7 +101,6 @@ export class BugReportModule_Class
 		if (this.config?.bucket)
 			instance.bucket = this.config.bucket;
 
-		console.log('configs in BR: ', this.config);
 		instance.tickets = await Promise.all(this.ticketCreatorApis.map(api => api(bugReport, logs, email)));
 		await this.bugReport.insert(instance);
 		return instance.tickets;
