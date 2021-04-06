@@ -18,25 +18,25 @@
  */
 import {
 	tsValidateAudit,
-	TypeValidator,
 	tsValidateExists,
-	tsValidateRegexp
+	tsValidateNumber,
+	tsValidateRegexp,
+	TypeValidator
 } from "@nu-art/ts-common";
-import {ServerApi} from "@nu-art/thunderstorm/backend"
 import {
 	BaseDB_ApiGenerator,
 	tsValidateUniqueId
 } from "@nu-art/db-api-generator/backend";
-import {DB_Temp_File} from "../../shared/types";
-
-export const TEMP_COLLECTION = 'temp-files-upload';
+import {DB_Asset} from "../../shared/types";
 
 export const validateName = tsValidateRegexp(/^.{3,}$/);
 
-export class UploaderTempFileModule_Class
-	extends BaseDB_ApiGenerator<DB_Temp_File> {
-	static _validator: TypeValidator<DB_Temp_File> = {
+export class AssetsModule_Class
+	extends BaseDB_ApiGenerator<DB_Asset> {
+
+	static _validator: TypeValidator<DB_Asset> = {
 		_id: tsValidateUniqueId,
+		timestamp: tsValidateNumber(),
 		name: validateName,
 		feId: tsValidateExists(true),
 		mimeType: tsValidateExists(true),
@@ -47,16 +47,12 @@ export class UploaderTempFileModule_Class
 		public: undefined
 	};
 
-	constructor() {
-		super(TEMP_COLLECTION, UploaderTempFileModule_Class._validator, 'temp-files')
-	}
-
-	apis(pathPart?: string): ServerApi<any>[] {
-		return [];
+	constructor(collectionName = "assets", validator = AssetsModule_Class._validator) {
+		super(collectionName, validator, collectionName);
 	}
 }
 
-export const UploaderTempFileModule = new UploaderTempFileModule_Class();
+export const AssetsModule = new AssetsModule_Class();
 
 
 

@@ -33,7 +33,7 @@ import {UploaderModule} from "../../../modules/UploaderModule";
 class ServerApi_GetUploadUrl
 	extends ServerApi_Post<Api_GetUploadUrl> {
 	constructor() {
-		super('get-url')
+		super('get-url');
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: BaseUploaderFile[]) {
@@ -41,4 +41,4 @@ class ServerApi_GetUploadUrl
 	}
 }
 
-module.exports = new ServerApi_GetUploadUrl()
+module.exports = new ServerApi_GetUploadUrl();

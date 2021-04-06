@@ -16,9 +16,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {ServerApi} from "@nu-art/thunderstorm/backend";
+import {AssetsModule_Class} from "./AssetsModule";
+import {DB_Asset} from "../..";
+import {
+	Minute,
+	tsValidateTimestamp,
+	TypeValidator
+} from "@nu-art/ts-common";
 
-export * from "./app-backend/core/module-pack";
 
-export * from "./app-backend/modules/UploaderModule";
-export * from "./app-backend/modules/AssetsTempModule";
-export * from "./app-backend/modules/ServerUploaderModule";
+export class AssetsTempModule_Class
+	extends AssetsModule_Class {
+	static __validator: TypeValidator<DB_Asset> = {
+		...AssetsModule_Class._validator,
+		timestamp: tsValidateTimestamp(Minute),
+	};
+
+	constructor() {
+		super('assets-temp', AssetsTempModule_Class.__validator);
+	}
+
+	apis(pathPart?: string): ServerApi<any>[] {
+		return [];
+	}
+}
+
+export const AssetsTempModule = new AssetsTempModule_Class();
+
+
+
+

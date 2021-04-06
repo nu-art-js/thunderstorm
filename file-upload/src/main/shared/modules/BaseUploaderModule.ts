@@ -36,7 +36,7 @@ import {
 import {
 	Api_GetUploadUrl,
 	BaseUploaderFile,
-	DB_Temp_File,
+	DB_Asset,
 	Request_Uploader,
 	TempSecureUrl
 } from "../../shared/types";
@@ -62,7 +62,7 @@ export type FileInfo = {
 	name: string
 	request?: BaseHttpRequest<any>
 	file?: any
-	tempDoc?: DB_Temp_File
+	tempDoc?: DB_Asset
 };
 
 export interface OnFileStatusChanged {

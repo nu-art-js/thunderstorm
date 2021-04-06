@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiWithBody} from "@nu-art/thunderstorm"
+import {ApiWithBody} from "@nu-art/thunderstorm";
 import {DB_Object} from "@nu-art/firebase";
 import {AuditBy} from "@nu-art/ts-common";
 import {MessageType} from "@nu-art/push-pub-sub";
@@ -41,7 +41,8 @@ export type BaseUploaderFile = Request_Uploader & {
 	feId: string
 };
 
-export type DB_Temp_File = DB_Object & BaseUploaderFile & Required<Pick<BaseUploaderFile, 'key'>> & {
+export type DB_Asset = DB_Object & BaseUploaderFile & Required<Pick<BaseUploaderFile, 'key'>> & {
+	timestamp: number
 	path: string
 	_audit: AuditBy
 	bucketName: string
@@ -50,7 +51,7 @@ export type Request_GetUploadUrl = BaseUploaderFile[]
 
 export type TempSecureUrl = {
 	secureUrl: string
-	tempDoc: DB_Temp_File
+	tempDoc: DB_Asset
 }
 
 export type Api_GetUploadUrl = ApiWithBody<'/v1/upload/get-url', BaseUploaderFile[], TempSecureUrl[]>
