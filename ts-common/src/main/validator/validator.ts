@@ -28,6 +28,7 @@ import {
 	ObjectTS,
 	RangeTimestamp
 } from "../utils/types";
+import {currentTimeMillis} from "..";
 
 /*
  * ts-common is the basic building blocks of
@@ -179,7 +180,7 @@ export const tsValidateRange = (ranges: [number, number][], mandatory = true): V
 				return;
 		}
 
-		throw new ValidationException(`Input is not valid:\n  input: ${input}\n  regexp: ${__stringify(ranges)}\n`, path, input);
+		throw new ValidationException(`Input is not valid:\n  input: ${input}\n  Expected Range: ${__stringify(ranges)}\n`, path, input);
 	};
 };
 
@@ -222,6 +223,22 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 		const validator = __validator[key];
 		tsValidate(value, validator, `${path}/${key}`);
 	}
+};
+
+
+export const tsValidateTimestamp = (interval: number, mandatory = true): Validator<number> => {
+	return (path: string, input?: number) => {
+		assertMandatory(mandatory, path, input);
+		if (!input)
+			return;
+
+		const now = currentTimeMillis();
+		const minTimestamp = now - interval;
+		if (minTimestamp <= input && input < now)
+			return;
+
+		throw new ValidationException(`Input is not valid:\n  input: ${input}\n  Expected Interval: ${minTimestamp} - ${now}\n`, path, input);
+	};
 };
 
 export const tsValidateAudit = (range?: RangeTimestamp) => (_path: string, audit?: AuditBy) => {

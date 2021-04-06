@@ -17,8 +17,7 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/core/module-pack";
 
-export * from "./app-backend/modules/UploaderModule";
-export * from "./app-backend/modules/AssetsTempModule";
-export * from "./app-backend/modules/ServerUploaderModule";
+import {AssetsModule} from "../../../modules/AssetsModule";
+
+module.exports = AssetsModule.apis();

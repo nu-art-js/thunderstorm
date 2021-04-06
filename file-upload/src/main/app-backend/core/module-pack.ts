@@ -18,15 +18,17 @@
  */
 
 import {UploaderModule} from "../modules/UploaderModule";
-import {UploaderTempFileModule} from "../modules/UploaderTempFileModule";
-import {BucketListener} from "../modules/BucketListener";
+import {AssetBucketListener} from "../modules/AssetBucketListener";
 import {Backend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/backend";
 import {ServerUploaderModule} from "../modules/ServerUploaderModule";
+import {AssetsModule} from "../modules/AssetsModule";
+import {AssetsTempModule} from "../modules/AssetsTempModule";
 
 export const Backend_ModulePack_Uploader = [
 	...Backend_ModulePack_PushPubSub,
 	ServerUploaderModule,
 	UploaderModule,
-	UploaderTempFileModule,
-	BucketListener
+	AssetsModule,
+	AssetsTempModule,
+	AssetBucketListener
 ];

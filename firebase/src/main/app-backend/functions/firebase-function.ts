@@ -62,14 +62,14 @@ export abstract class FirebaseFunction<Config = any>
 
 	protected constructor(tag?: string) {
 		super(tag);
-		this.onFunctionReady = this.onFunctionReady.bind(this)
+		this.onFunctionReady = this.onFunctionReady.bind(this);
 	}
 
 	abstract getFunction(): HttpsFunction
 
 	protected async handleCallback(callback: () => Promise<any>) {
 		if (this.isReady)
-			return await callback()
+			return await callback();
 
 		return new Promise((resolve) => {
 			addItemToArray(this.toBeExecuted, async () => await callback());
@@ -172,7 +172,7 @@ export abstract class FirebaseFunctionModule<DataType = any, ConfigType = any>
 				const after: DataType = change.after && change.after.val();
 				const params = deepClone(context.params);
 
-				return this.handleCallback(() => this.processChanges(before, after, params))
+				return this.handleCallback(() => this.processChanges(before, after, params));
 			});
 	};
 }
@@ -207,8 +207,8 @@ export abstract class FirestoreFunctionModule<DataType extends object, ConfigTyp
 				const after: DataType | undefined = change.after && change.after.data();
 				const params = deepClone(context.params);
 
-				return this.handleCallback(() => this.processChanges(params, before, after))
-			})
+				return this.handleCallback(() => this.processChanges(params, before, after));
+			});
 	};
 }
 
@@ -255,13 +255,14 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 			return this.function;
 
 		return this.function = functions.pubsub.schedule(this.schedule).onRun(async () => {
-			return this.handleCallback(() => this._onScheduledEvent())
+			return this.handleCallback(() => this._onScheduledEvent());
 		});
 	};
 }
 
 export type BucketConfigs = {
 	runtimeOpts?: RuntimeOptions
+	path: string
 	bucketName?: string
 }
 
@@ -269,12 +270,13 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 	extends FirebaseFunction<ConfigType> {
 
 	private function!: CloudFunction<ObjectMetadata>;
-	private readonly path: string;
 	private runtimeOpts: RuntimeOptions = {};
 
-	protected constructor(path: string, name?: string) {
+	protected constructor(path?: string, name?: string) {
 		super();
-		this.path = path;
+		if (path)
+			this.setDefaultConfig({path: path} as Partial<ConfigType>);
+
 		name && this.setName(name);
 	}
 
@@ -291,10 +293,10 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 
 		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(
 			async (object: ObjectMetadata, context: EventContext) => {
-				if (!object.name?.startsWith(this.path))
+				if (this.config.path && !object.name?.startsWith(this.config.path))
 					return;
 
-				return this.handleCallback(() => this.onFinalize(object, context))
+				return this.handleCallback(() => this.onFinalize(object, context));
 			});
 	};
 }
@@ -318,10 +320,10 @@ export abstract class Firebase_PubSubFunction<T>
 
 	private _onPublish = async (object: T | undefined, originalMessage: TopicMessage, context: FirebaseEventContext) => {
 		try {
-			return await this.onPublish(object, originalMessage, context)
+			return await this.onPublish(object, originalMessage, context);
 		} catch (e) {
-			const _message = `Error publishing pub/sub message to topic ${this.topic} ` + __stringify(e)
-			this.logError(_message)
+			const _message = `Error publishing pub/sub message to topic ${this.topic} ` + __stringify(e);
+			this.logError(_message);
 			try {
 				await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
 			} catch (_e) {
@@ -344,10 +346,10 @@ export abstract class Firebase_PubSubFunction<T>
 				data = JSON.parse(Buffer.from(originalMessage.data, 'base64').toString());
 			} catch (e) {
 				this.logError(`Error parsing the data attribute from pub/sub message to topic ${this.topic}` +
-					              "\n" + __stringify(originalMessage.data) + "\n" + __stringify(e))
+					              "\n" + __stringify(originalMessage.data) + "\n" + __stringify(e));
 			}
 
-			return this.handleCallback(() => this._onPublish(data, originalMessage, context))
+			return this.handleCallback(() => this._onPublish(data, originalMessage, context));
 		});
 	};
 }

@@ -59,6 +59,11 @@ export class StorageWrapper
 		// @ts-ignore
 		return new BucketWrapper(_bucketName, bucket, this);
 	}
+
+	async getFile(pathToRemoteFile: string, bucketName?: string) {
+		const bucket = await this.getOrCreateBucket(bucketName);
+		return bucket.getFile(pathToRemoteFile);
+	}
 }
 
 export class BucketWrapper {
