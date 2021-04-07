@@ -23,6 +23,7 @@ import {
 	Module
 } from "@nu-art/ts-common";
 import {
+	Platform_Slack,
 	ReportLogFile,
 	Request_BugReport
 } from "../..";
@@ -36,7 +37,10 @@ type Config = {
 export class SlackBugReportIntegrator_Class
 	extends Module<Config> {
 
-	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[], reporter?: string): Promise<TicketDetails> => {
+	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[], reporter?: string): Promise<TicketDetails | undefined> => {
+		if(bugReport.platforms && !bugReport.platforms.includes(Platform_Slack))
+			return;
+
 		if (!this.config.channel)
 			throw new ImplementationMissingException("Missing Slack Channel in bug report configurations");
 
@@ -52,7 +56,7 @@ export class SlackBugReportIntegrator_Class
 			channel: this.config.channel
 		};
 		await SlackModule.postMessage(slackMessage)
-		return {platform: "slack", issueId: generateHex(32)};
+		return {platform: Platform_Slack, issueId: generateHex(32)};
 	};
 }
 

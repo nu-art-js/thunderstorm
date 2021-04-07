@@ -22,13 +22,14 @@ import {
 	Module
 } from "@nu-art/ts-common";
 import {
+	IssueType,
 	JiraIssueText,
 	JiraModule,
 	JiraProject,
-	IssueType,
 	LabelType
 } from "@nu-art/jira";
 import {
+	Platform_Jira,
 	ReportLogFile,
 	Request_BugReport
 } from "../..";
@@ -49,7 +50,10 @@ export class JiraBugReportIntegrator_Class
 
 	private parser = (name: string) => `Bug: ${name}`;
 
-	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[], reporter?: string): Promise<TicketDetails> => {
+	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[], reporter?: string): Promise<TicketDetails | undefined> => {
+		if (bugReport.platforms && !bugReport.platforms.includes(Platform_Jira))
+			return;
+
 		if (!this.config.jiraProject)
 			throw new ImplementationMissingException("missing Jira project in bug report configurations");
 
@@ -61,8 +65,9 @@ export class JiraBugReportIntegrator_Class
 		if (reporter)
 			description.push("\nReported by: " + reporter);
 
-		const issue = await JiraModule.issue.create(this.config.jiraProject, this.config.issueType, this.parser(bugReport.subject), description, this.config.label.label);
-		return {platform: "jira", issueId: issue.url};
+		const issue = await JiraModule.issue.create(this.config.jiraProject, this.config.issueType, this.parser(bugReport.subject), description,
+		                                            this.config.label.label);
+		return {platform: Platform_Jira, issueId: issue.url};
 	};
 }
 

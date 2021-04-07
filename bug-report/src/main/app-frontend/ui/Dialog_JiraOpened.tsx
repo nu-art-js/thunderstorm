@@ -7,7 +7,7 @@ type Props = {
 	url: string
 }
 
-export class Dialog_Success
+export class Dialog_JiraOpened
 	extends BaseComponent<Props, {}> {
 
 
@@ -16,7 +16,7 @@ export class Dialog_Success
 	}
 
 	public static show(url: string) {
-		new Dialog_Builder(<Dialog_Success url={url}/>)
+		new Dialog_Builder(<Dialog_JiraOpened url={url}/>)
 			.setAllowIndirectClosing(true)
 			.show();
 	}
