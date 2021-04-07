@@ -64,8 +64,7 @@ export class BugReportModule_Class
 			.createRequest<ApiBugReport>(HttpMethod.POST, RequestKey_BugReportApi)
 			.setJsonBody(body)
 			.setRelativeUrl("/v1/bug-reports/report")
-			.setOnError(`Error updating the report`)
-			.setOnSuccessMessage(`Bug report sent!`)
+			.setOnError(() => this.logWarning(`Error updating the report`))
 			.execute((response) => {
 				const jiraTicket = response.find(ticket => ticket.platform === Platform_Jira);
 				if(jiraTicket)
