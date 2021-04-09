@@ -50,8 +50,8 @@ import {
 	SlackModule
 } from "@nu-art/storm/slack";
 import {
+	AssetsUploadingModuleBE,
 	Backend_ModulePack_Uploader,
-	FileValidator,
 	ServerUploaderModule,
 } from "@nu-art/file-upload/backend";
 import {
@@ -83,8 +83,8 @@ const modules: Module[] = [
 
 AxiosHttpModule.setDefaultConfig({origin: 'https://us-central1-thunderstorm-staging.cloudfunctions.net/api/'});
 
-const postProcessor: { [k: string]: FileValidator } = {
-	default: async (file: FileWrapper, doc: DB_Asset) => {
+AssetsUploadingModuleBE.register("default", {
+	validator: async (file: FileWrapper, doc: DB_Asset) => {
 		await FirebaseModule.createAdminSession().getDatabase().set(`/alan/testing/${file.path}`, {path: file.path, name: await file.exists()});
 
 		const resp = ServerUploaderModule.upload([{file: await file.read(), name: 'myTest.txt', mimeType: doc.mimeType}]);
@@ -98,8 +98,7 @@ const postProcessor: { [k: string]: FileValidator } = {
 
 		console.log(file);
 	}
-};
-UploaderModule.setPostProcessor(postProcessor);
+});
 // BucketListener.setDefaultConfig({memory: "1GB", timeoutSeconds: 540})
 Firebase_ExpressFunction.setConfig({memory: "1GB", timeoutSeconds: 540});
 const _exports = new Storm()
