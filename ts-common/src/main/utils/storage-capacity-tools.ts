@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * ts-common is the basic building blocks of our typescript projects
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,8 +16,9 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/core/module-pack";
-
-export * from "./app-backend/modules/AssetsUploadingModuleBE";
-export * from "./app-backend/modules/AssetsTempModule";
-export * from "./app-backend/modules/ServerUploaderModule";
+export const Byte = 1;
+export const KB = Byte * 1024;
+export const MB = KB * 1024;
+export const GB = MB * 1024;
+export const TB = GB * 1024;
+export const PB = TB * 1024;

@@ -17,10 +17,32 @@
  */
 
 import * as admin from "firebase-admin";
-import {Metadata} from "@google-cloud/common";
 import {CopyResponse} from "@google-cloud/storage";
 
 export type FirebaseType_Storage = admin.storage.Storage;
-export type FirebaseType_Metadata = Metadata;
-export type ReturnType_Metadata = { metadata?: Metadata };
+export type FirebaseType_Metadata = {
+	bucket: string;
+	cacheControl: string
+	componentCount: string
+	contentDisposition: string
+	contentEncoding: string
+	contentLanguage: string
+	contentType: string
+	customTime: string
+	crc32c: string
+	etag: string
+	generation: string
+	id: string
+	kmsKeyName: string
+	md5Hash: string
+	mediaLink: string
+	metageneration: string
+	name: string
+	size: number
+	storageClass: string
+	timeCreated: number;
+	updated: number;
+
+};
+export type ReturnType_Metadata = { metadata?: FirebaseType_Metadata };
 export type Firebase_CopyResponse = [CopyResponse[0], CopyResponse[1] | undefined]

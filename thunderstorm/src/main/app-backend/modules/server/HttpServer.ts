@@ -32,7 +32,8 @@ import {
 	addAllItemToArray,
 	addItemToArray,
 	LogLevel,
-	Module
+	Module,
+    MUSTNeverHappenException
 } from "@nu-art/ts-common";
 import {
 	HttpRequestData,
@@ -116,7 +117,7 @@ export class HttpServer_Class
 	}
 
 	protected async init() {
-		this.setMinLevel(ServerApi.isDebug? LogLevel.Verbose:LogLevel.Info)
+		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
 		const baseUrl = this.config.baseUrl;
 		if (baseUrl) {
 			if (baseUrl.endsWith("/"))
@@ -336,7 +337,7 @@ export class RouteResolver {
 	}
 
 	private resolveApi(urlPrefix: string) {
-		this.resolveApiImpl(urlPrefix, this.rootDir + "/" + this.apiFolder)
+		this.resolveApiImpl(urlPrefix, this.rootDir + "/" + this.apiFolder);
 	}
 
 	private resolveApiImpl(urlPrefix: string, workingDir: string) {
@@ -349,11 +350,13 @@ export class RouteResolver {
 			if (file.endsWith(".d.ts"))
 				return;
 
+
 			if (!file.endsWith(".js"))
 				return;
 
 			if (file.startsWith("_"))
 				return;
+
 
 			const relativePathToFile = `.${workingDir.replace(this.rootDir, "")}/${file}`;
 			if (file.startsWith("&")) {
@@ -383,6 +386,9 @@ export class RouteResolver {
 				content = [content];
 
 			content.forEach(api => {
+				if (!api.addMiddlewares)
+					throw new MUSTNeverHappenException(`Missing api.middleware for: ${relativePathToFile}`);
+
 				api.addMiddlewares(...this.middlewares);
 				api.route(this.express, urlPrefix);
 			});
