@@ -19,7 +19,7 @@
 import {Firebase_StorageFunction} from "@nu-art/firebase/backend-functions";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import {EventContext} from "firebase-functions";
-import {UploaderModule} from "./UploaderModule";
+import {AssetsUploadingModuleBE} from "./AssetsUploadingModuleBE";
 
 export class AssetBucketListener_Class
 	extends Firebase_StorageFunction {
@@ -36,7 +36,7 @@ export class AssetBucketListener_Class
 
 	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
 		const filePath = object.name;
-		await UploaderModule.fileUploaded(filePath);
+		await AssetsUploadingModuleBE.processAsset(filePath);
 		this.logInfo('Object is ', object);
 		this.logInfo('Context is ', context);
 	}

@@ -23,6 +23,7 @@ import {
 	currentTimeMillis,
 	Day,
 	filterInstances,
+	GB,
 	generateHex,
 	Hour,
 	ImplementationMissingException,
@@ -56,19 +57,48 @@ type Config = {
 	bucketName?: string
 	path: string
 }
+export type FileTypeValidation = {
+	fileType?: string[],
+	minSize?: number
+	maxSize?: number
+	validator?: FileValidator
+}
 
 export type FileValidator = (file: FileWrapper, doc: DB_Asset) => Promise<void>;
+export const fileSizeValidator = async (file: FileWrapper, minSizeInBytes: number = 0, maxSizeInBytes: number = GB) => {
+	const metadata = (await file.getMetadata()).metadata;
+	if (!metadata)
+		throw new ThisShouldNotHappenException(`could not resolve metadata for file: ${file.path}`);
 
-export class UploaderModule_Class
+	if (!metadata.size)
+		throw new ThisShouldNotHappenException(`could not resolve metadata.size for file: ${file.path}`);
+
+	return metadata.size >= minSizeInBytes && metadata.size <= maxSizeInBytes;
+};
+
+export class AssetsUploadingModuleBE_Class
 	extends Module<Config>
 	implements OnCleanupSchedulerAct {
 
 	private storage!: StorageWrapper;
-	fileValidator: TypedMap<FileValidator> = {};
+
+	mimeTypeValidator: TypedMap<FileValidator> = {};
+	fileValidator: TypedMap<FileTypeValidation> = {};
 
 	constructor() {
 		super();
 		this.setDefaultConfig({path: "assets"});
+	}
+
+	registerTypeValidator(mimeType: string, validator: (file: FileWrapper, doc: DB_Asset) => Promise<void>) {
+
+	}
+
+	register(key: string, validationConfig: FileTypeValidation) {
+		if (this.fileValidator[key] && this.fileValidator[key] !== validationConfig)
+			throw new BadImplementationException(`File Validator already exists for key: ${key}`);
+
+		this.fileValidator[key] = validationConfig;
 	}
 
 	__onCleanupSchedulerAct(): CleanupDetails {
@@ -96,13 +126,6 @@ export class UploaderModule_Class
 			AssetsTempModule.delete({where: {_id: {$in: toDelete.map(item => item._id)}}});
 		});
 	};
-
-	register(key: string, validator: FileValidator) {
-		if (this.fileValidator[key] && this.fileValidator[key] !== validator)
-			throw new BadImplementationException(`File Validator already exists for key: ${key}`);
-
-		this.fileValidator[key] = validator;
-	}
 
 	init() {
 		this.storage = FirebaseModule.createAdminSession().getStorage();
@@ -145,7 +168,12 @@ export class UploaderModule_Class
 		}));
 	}
 
-	fileUploaded = async (filePath?: string) => {
+	processAssetManually = async () => {
+		const unprocessedFiles: DB_Asset[] = await AssetsTempModule.query({limit: 1});
+		return Promise.all(unprocessedFiles.map(asset => this.processAsset(asset.path)));
+	};
+
+	processAsset = async (filePath?: string) => {
 		if (!filePath)
 			throw new ThisShouldNotHappenException('Missing file path');
 
@@ -155,13 +183,21 @@ export class UploaderModule_Class
 			throw new ThisShouldNotHappenException(`Could not find meta for file with path: ${filePath}`);
 
 		this.logInfo(`Found temp meta with _id: ${tempMeta._id}`, tempMeta);
-		const validator = this.fileValidator[tempMeta.key];
-		if (!validator)
-			return this.notifyFrontend(UploadResult.Failure, tempMeta.feId, `Missing a validator for ${tempMeta.key} for file: ${tempMeta.name}`);
+		const validationConfig = this.fileValidator[tempMeta.key];
+		if (!validationConfig)
+			return this.notifyFrontend(UploadResult.Failure, tempMeta.feId, `Missing a validation config for ${tempMeta.key} for file: ${tempMeta.name}`);
 
 		const file = await this.storage.getFile(tempMeta.path, tempMeta.bucketName);
+		let mimetypeValidator = validationConfig.validator;
+		if (!mimetypeValidator && validationConfig.fileType && validationConfig.fileType.includes(tempMeta.mimeType))
+			mimetypeValidator = this.mimeTypeValidator[tempMeta.mimeType];
+
+		if (!mimetypeValidator)
+			return this.notifyFrontend(UploadResult.Failure, tempMeta.feId,
+			                           `Missing a mimetype(${tempMeta.mimeType}) validator for ${tempMeta.key} for file: ${tempMeta.name}`);
 		try {
-			await validator(file, tempMeta);
+			await fileSizeValidator(file, validationConfig.minSize, validationConfig.maxSize);
+			await mimetypeValidator(file, tempMeta);
 		} catch (e) {
 			//TODO delete the file and the temp doc
 			return await this.notifyFrontend(UploadResult.Failure, tempMeta.feId, `Post-processing failed for file: ${tempMeta.name}`, e);
@@ -194,7 +230,7 @@ export class UploaderModule_Class
 
 }
 
-export const UploaderModule = new UploaderModule_Class();
+export const AssetsUploadingModuleBE = new AssetsUploadingModuleBE_Class();
 
 
 
