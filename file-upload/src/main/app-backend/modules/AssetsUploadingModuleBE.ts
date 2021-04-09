@@ -122,8 +122,8 @@ export class AssetsUploadingModuleBE_Class
 			return dbAsset;
 		}));
 
-		batchAction(filterInstances(dbEntriesToDelete), 10, async (toDelete) => {
-			AssetsTempModule.delete({where: {_id: {$in: toDelete.map(item => item._id)}}});
+		return batchAction(filterInstances(dbEntriesToDelete), 10, async (toDelete) => {
+			return AssetsTempModule.delete({where: {_id: {$in: toDelete.map(item => item._id)}}});
 		});
 	};
 
