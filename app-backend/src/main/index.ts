@@ -51,20 +51,18 @@ import {
 } from "@nu-art/storm/slack";
 import {
 	Backend_ModulePack_Uploader,
-	PostProcessor,
+	FileValidator,
 	ServerUploaderModule,
-	UploaderModule
 } from "@nu-art/file-upload/backend";
 import {
 	FileWrapper,
-	FirebaseModule,
-	FirestoreTransaction
+	FirebaseModule
 } from '@nu-art/firebase/backend';
-import {DB_Temp_File} from '@nu-art/file-upload/shared/types';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {JiraBugReportIntegrator} from "@nu-art/bug-report/app-backend/modules/JiraBugReportIntegrator";
-import {CollectionChangedListener} from "@modules/CollectionChangedListener"
+import {CollectionChangedListener} from "@modules/CollectionChangedListener";
 import {PubsubExample} from "@modules/PubsubExample";
+import {DB_Asset} from '@nu-art/file-upload';
 
 const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -85,8 +83,8 @@ const modules: Module[] = [
 
 AxiosHttpModule.setDefaultConfig({origin: 'https://us-central1-thunderstorm-staging.cloudfunctions.net/api/'});
 
-const postProcessor: { [k: string]: PostProcessor } = {
-	default: async (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => {
+const postProcessor: { [k: string]: FileValidator } = {
+	default: async (file: FileWrapper, doc: DB_Asset) => {
 		await FirebaseModule.createAdminSession().getDatabase().set(`/alan/testing/${file.path}`, {path: file.path, name: await file.exists()});
 
 		const resp = ServerUploaderModule.upload([{file: await file.read(), name: 'myTest.txt', mimeType: doc.mimeType}]);
@@ -126,7 +124,7 @@ const _exports = new Storm()
 		// console.log('I got respose', response);
 	});
 
-BugReportModule.addTicketCreator(JiraBugReportIntegrator.openTicket)
+BugReportModule.addTicketCreator(JiraBugReportIntegrator.openTicket);
 
 _exports.logTest = functions.database.ref('triggerLogs').onWrite((change, context) => {
 	console.log('LOG_TEST FUNCTION! -- Logging string');
