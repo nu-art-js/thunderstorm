@@ -212,9 +212,9 @@ export class AssetsUploadingModuleBE_Class
 			}
 		}
 
-		AssetsModule.runInTransaction(async (transaction) => {
+		return AssetsModule.runInTransaction(async (transaction) => {
 			const upsertWrite = await AssetsModule.upsert_Read(tempMeta, transaction);
-			AssetsTempModule.deleteUnique(tempMeta._id, transaction);
+			await AssetsTempModule.deleteUnique(tempMeta._id, transaction);
 			return upsertWrite();
 		});
 
