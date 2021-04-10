@@ -52,7 +52,8 @@ import {
 } from "../../index";
 import {
 	dispatch_queryRequestInfo,
-	ExpressRequest
+	ExpressRequest,
+	OnCleanupSchedulerAct
 } from "@nu-art/thunderstorm/backend";
 
 type Config = {
@@ -65,7 +66,8 @@ type TempMessages = {
 };
 
 export class PushPubSubModule_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements OnCleanupSchedulerAct {
 
 	private pushSessions!: FirestoreCollection<DB_PushSession>;
 	private pushKeys!: FirestoreCollection<DB_PushKeys>;
@@ -230,6 +232,14 @@ export class PushPubSubModule_Class
 
 	readNotification = async (id: string, read: boolean) => {
 		await this.notifications.patch({_id: id, read} as Subset<DB_Notifications>);
+	};
+
+	__onCleanupSchedulerAct = () => {
+		return {
+			cleanup: this.scheduledCleanup,
+			interval: Day,
+			moduleKey: this.getName()
+		};
 	};
 
 	scheduledCleanup = async () => {
