@@ -21,10 +21,10 @@
  */
 
 import {
+	_keys,
 	BadImplementationException,
 	ImplementationMissingException,
 	Module,
-	_keys,
 	moduleResolver,
 	ThisShouldNotHappenException
 } from "@nu-art/ts-common";
@@ -129,11 +129,11 @@ export class FirebaseModule_Class
 		if (session)
 			return session;
 
-		this.logInfo(`Creating Firebase session for project id: ${projectId}`);
 		let config = this.getProjectAuth(projectId) as JWTInput | string;
 		if (!config)
 			return this.createLocalAdminSession();
 
+		this.logInfo(`Creating Firebase session for project id: ${projectId}`);
 		if (typeof config === "string")
 			config = JSON.parse(readFileSync(config, "utf8")) as JWTInput;
 

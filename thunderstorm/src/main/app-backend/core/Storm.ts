@@ -62,7 +62,8 @@ export class Storm
 		super.init();
 
 		HttpServer.resolveApi(this.routeResolver, !process.env.GCLOUD_PROJECT ? this.initialPath : "");
-		HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? this.initialPath : "");
+		if (this.config.printApis)
+			HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? this.initialPath : "");
 		return this;
 	}
 
