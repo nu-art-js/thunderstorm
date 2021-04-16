@@ -252,4 +252,8 @@ export class FileWrapper {
 	async getMetadata(options?: object): Promise<ReturnType_Metadata> {
 		return (await this.file.getMetadata(options))[0];
 	}
+
+	async getDefaultMetadata(): Promise<ReturnType_Metadata> {
+		return (await this.file.get())[0].metadata;
+	}
 }

@@ -23,8 +23,9 @@ import {
 } from "@nu-art/thunderstorm/frontend";
 import {
 	BaseUploaderFile,
-	fileUploadedKey,
+	FileStatus,
 	Push_FileUploaded,
+	PushKey_FileUploaded,
 	TempSecureUrl,
 	UploadResult
 } from "../../shared/types";
@@ -34,7 +35,6 @@ import {
 } from "@nu-art/push-pub-sub/frontend";
 import {
 	BaseUploaderModule_Class,
-	FileStatus,
 	OnFileStatusChanged
 } from "../../shared/modules/BaseUploaderModule";
 import {DB_Notifications} from "@nu-art/push-pub-sub";
@@ -67,12 +67,12 @@ export class UploaderModule_Class
 	}
 
 	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {
-		await PushPubSubModule.subscribeMulti(toSubscribe.map(r => ({pushKey: fileUploadedKey, props: {feId: r.tempDoc.feId}})));
+		await PushPubSubModule.subscribeMulti(toSubscribe.map(r => ({pushKey: PushKey_FileUploaded, props: {feId: r.tempDoc.feId}})));
 	}
 
 	__onMessageReceived(notification: DB_Notifications): void {
 		this.logInfo('Message received from service worker', notification.pushKey, notification.props, notification.data);
-		if (notification.pushKey !== fileUploadedKey)
+		if (notification.pushKey !== PushKey_FileUploaded)
 			return;
 
 		switch (notification.data.result) {
@@ -84,7 +84,7 @@ export class UploaderModule_Class
 				break;
 		}
 
-		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props: notification.props}).catch();
+		PushPubSubModule.unsubscribe({pushKey: PushKey_FileUploaded, props: notification.props}).catch();
 	}
 }
 

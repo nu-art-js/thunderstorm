@@ -37,7 +37,7 @@ export type TS_Progress = {
 }
 
 export interface OnRequestListener {
-	__onRequestCompleted: (key: string, success: boolean, requestData?: string) => void;
+	__onRequestCompleted: (key: string, success: boolean, requestData?: any) => void;
 }
 
 export type RequestErrorHandler<E extends void | object> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<E>) => void;

@@ -35,25 +35,17 @@ import {
 
 import {
 	Api_GetUploadUrl,
+	Api_ProcessAssetManually,
 	BaseUploaderFile,
 	DB_Asset,
+	FileStatus,
 	Request_Uploader,
+	RequestKey_ProcessAssetManually,
+	RequestKey_UploadFile,
+	RequestKey_UploadUrl,
 	TempSecureUrl
 } from "../../shared/types";
 
-const RequestKey_UploadUrl = 'get-upload-url';
-const RequestKey_UploadFile = 'upload-file';
-
-export enum FileStatus {
-	ObtainingUrl   = "ObtainingUrl",
-	UrlObtained    = "UrlObtained",
-	UploadingFile  = "UploadingFile",
-	// I can assume that in between I upload and I get
-	// the push I'm processing the file in the be
-	PostProcessing = "PostProcessing",
-	Completed      = "Completed",
-	Error          = "Error"
-}
 
 export type FileInfo = {
 	status: FileStatus
@@ -101,7 +93,10 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 		return this.files[id] && this.files[id][key];
 	}
 
-	getFullFileInfo(id: string): FileInfo | undefined {
+	getFullFileInfo(id?: string): FileInfo | undefined {
+		if (!id)
+			return undefined;
+
 		return this.files[id];
 	}
 
@@ -142,7 +137,7 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 
 		this
 			.httpModule
-			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
+			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl, body.map(file => file.feId) as string[])
 			.setRelativeUrl('/v1/upload/get-url')
 			.setJsonBody(body)
 			.setOnError((request: BaseHttpRequest<any>, resError?: ErrorResponse) => {
@@ -175,7 +170,7 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 				this.setFileInfo(feId, "progress", undefined);
 				//TODO: Probably need to set a timer here in case we dont get a push back (contingency)
 			}, () => {
-				this.setFileInfo(feId, "status", FileStatus.PostProcessing);
+				this.setFileInfo(feId, "status", FileStatus.WaitingForProcessing);
 			}, error => {
 				this.setFileInfo(feId, "status", FileStatus.Error);
 				this.setFileInfo(feId, "messageStatus", __stringify(error));
@@ -193,7 +188,7 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 
 		const request = this
 			.httpModule
-			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
+			.createRequest(HttpMethod.PUT, RequestKey_UploadFile, feId)
 			.setUrl(response.secureUrl)
 			.setHeader('Content-Type', response.tempDoc.mimeType)
 			.setTimeout(20 * Minute)
@@ -204,6 +199,18 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 
 		this.setFileInfo(feId, "request", request);
 		await request.executeSync();
+	};
+
+	processAssetManually = (feId?: string) => {
+		const request = this
+			.httpModule
+			.createRequest<Api_ProcessAssetManually>(HttpMethod.GET, RequestKey_ProcessAssetManually, feId)
+			.setRelativeUrl('/v1/upload/process-asset-manually');
+
+		if (feId)
+			request.setUrlParam("feId", feId);
+
+		request.execute();
 	};
 }
 

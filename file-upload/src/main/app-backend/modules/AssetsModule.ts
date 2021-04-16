@@ -38,6 +38,7 @@ export class AssetsModule_Class
 		_id: tsValidateUniqueId,
 		timestamp: tsValidateNumber(),
 		name: validateName,
+		ext: tsValidateExists(true),
 		feId: tsValidateExists(true),
 		mimeType: tsValidateExists(true),
 		key: tsValidateExists(true),
