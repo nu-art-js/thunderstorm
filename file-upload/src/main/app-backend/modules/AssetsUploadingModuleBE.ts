@@ -23,10 +23,10 @@ import {
 	currentTimeMillis,
 	Day,
 	filterInstances,
-	GB,
 	generateHex,
 	Hour,
 	ImplementationMissingException,
+	MB,
 	Module,
 	ThisShouldNotHappenException,
 	TypedMap
@@ -39,8 +39,8 @@ import {
 import {
 	BaseUploaderFile,
 	DB_Asset,
-	fileUploadedKey,
 	Push_FileUploaded,
+	PushKey_FileUploaded,
 	TempSecureUrl,
 	UploadResult
 } from "../../shared/types";
@@ -51,12 +51,17 @@ import {
 	CleanupDetails,
 	OnCleanupSchedulerAct
 } from "@nu-art/thunderstorm/backend";
+import {fromBuffer} from "file-type";
+import {FileTypeResult} from "file-type/core";
+import {FirestoreQuery} from "@nu-art/firebase";
+import {FirebaseType_Metadata} from "../../../../../firebase/src/main/app-backend/storage/types";
 
 
 type Config = {
 	bucketName?: string
 	path: string
 }
+
 export type FileTypeValidation = {
 	fileType?: string[],
 	minSize?: number
@@ -64,12 +69,20 @@ export type FileTypeValidation = {
 	validator?: FileValidator
 }
 
-export type FileValidator = (file: FileWrapper, doc: DB_Asset) => Promise<void>;
-export const fileSizeValidator = async (file: FileWrapper, minSizeInBytes: number = 0, maxSizeInBytes: number = GB) => {
-	const metadata = (await file.getMetadata()).metadata;
-	if (!metadata)
-		throw new ThisShouldNotHappenException(`could not resolve metadata for file: ${file.path}`);
+export const DefaultMimetypeValidator = async (file: FileWrapper, doc: DB_Asset) => {
+	const buffer = await file.read();
+	const fileType = await fromBuffer(buffer);
+	if (!fileType)
+		throw new ImplementationMissingException(`No validator defined for asset of mimetype: ${doc.mimeType}`);
 
+	if (fileType.mime !== doc.mimeType)
+		throw new BadImplementationException(`Original mimetype (${doc.mimeType}) does not match the resolved mimetype: (${fileType.mime})`);
+
+	return fileType;
+};
+
+export type FileValidator = (file: FileWrapper, doc: DB_Asset) => Promise<FileTypeResult | undefined>;
+export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseType_Metadata, minSizeInBytes: number = 0, maxSizeInBytes: number = MB) => {
 	if (!metadata.size)
 		throw new ThisShouldNotHappenException(`could not resolve metadata.size for file: ${file.path}`);
 
@@ -128,7 +141,7 @@ export class AssetsUploadingModuleBE_Class
 	};
 
 	init() {
-		this.storage = FirebaseModule.createAdminSession().getStorage();
+		this.storage = FirebaseModule.createAdminSession("file-uploader").getStorage();
 	}
 
 	async getUrl(files: BaseUploaderFile[]): Promise<TempSecureUrl[]> {
@@ -148,6 +161,7 @@ export class AssetsUploadingModuleBE_Class
 				_id,
 				feId: _file.feId,
 				name: _file.name,
+				ext: _file.name.substring(_file.name.toLowerCase().lastIndexOf(".")),
 				mimeType: _file.mimeType,
 				key,
 				path,
@@ -168,8 +182,12 @@ export class AssetsUploadingModuleBE_Class
 		}));
 	}
 
-	processAssetManually = async () => {
-		const unprocessedFiles: DB_Asset[] = await AssetsTempModule.query({limit: 1});
+	processAssetManually = async (feId?: string) => {
+		let query: FirestoreQuery<DB_Asset> = {limit: 1};
+		if (feId)
+			query = {where: {feId}};
+
+		const unprocessedFiles: DB_Asset[] = await AssetsTempModule.query(query);
 		return Promise.all(unprocessedFiles.map(asset => this.processAsset(asset.path)));
 	};
 
@@ -187,17 +205,31 @@ export class AssetsUploadingModuleBE_Class
 		if (!validationConfig)
 			return this.notifyFrontend(UploadResult.Failure, tempMeta.feId, `Missing a validation config for ${tempMeta.key} for file: ${tempMeta.name}`);
 
-		const file = await this.storage.getFile(tempMeta.path, tempMeta.bucketName);
-		let mimetypeValidator = validationConfig.validator;
+		let mimetypeValidator: FileValidator = DefaultMimetypeValidator;
+		if (validationConfig.validator)
+			mimetypeValidator = validationConfig.validator;
+
 		if (!mimetypeValidator && validationConfig.fileType && validationConfig.fileType.includes(tempMeta.mimeType))
 			mimetypeValidator = this.mimeTypeValidator[tempMeta.mimeType];
 
 		if (!mimetypeValidator)
 			return this.notifyFrontend(UploadResult.Failure, tempMeta.feId,
 			                           `Missing a mimetype(${tempMeta.mimeType}) validator for ${tempMeta.key} for file: ${tempMeta.name}`);
+
+		const file = await this.storage.getFile(tempMeta.path, tempMeta.bucketName);
 		try {
-			await fileSizeValidator(file, validationConfig.minSize, validationConfig.maxSize);
-			await mimetypeValidator(file, tempMeta);
+			const metadata = (await file.getDefaultMetadata()).metadata;
+			if (!metadata)
+				throw new ThisShouldNotHappenException(`could not resolve metadata for file: ${file.path}`);
+
+			await fileSizeValidator(file, metadata, validationConfig.minSize, validationConfig.maxSize);
+			const fileType = await mimetypeValidator(file, tempMeta);
+
+			tempMeta.md5Hash = metadata.md5Hash;
+			if (fileType) {
+				this.logWarning(`renaming the file extension name: ${tempMeta.ext} => ${fileType.ext}`);
+				tempMeta.ext = fileType.ext;
+			}
 		} catch (e) {
 			//TODO delete the file and the temp doc
 			return await this.notifyFrontend(UploadResult.Failure, tempMeta.feId, `Post-processing failed for file: ${tempMeta.name}`, e);
@@ -212,12 +244,14 @@ export class AssetsUploadingModuleBE_Class
 			}
 		}
 
-		return AssetsModule.runInTransaction(async (transaction) => {
+		// need to check if the md5hash exists in db already otherwise add new entry..
+		await AssetsModule.runInTransaction(async (transaction) => {
 			const upsertWrite = await AssetsModule.upsert_Read(tempMeta, transaction);
 			await AssetsTempModule.deleteUnique(tempMeta._id, transaction);
 			return upsertWrite();
 		});
 
+		// need to return the new asset id so fe would know how to connect the asset id with the item it is editing atm!!
 		// message is not something to be served from BE.. FE needs info to compose the message.. think multiple languages!!
 		return this.notifyFrontend(UploadResult.Success, tempMeta.feId, `Successfully parsed and processed file ${tempMeta.name}`);
 	};
@@ -225,10 +259,10 @@ export class AssetsUploadingModuleBE_Class
 	private notifyFrontend = async (result: UploadResult, feId: string, message: string, cause?: Error) => {
 		cause && this.logWarning(cause);
 		const data = {message, result, cause};
-		await PushPubSubModule.pushToKey<Push_FileUploaded>(fileUploadedKey, {feId}, data);
+		await PushPubSubModule.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId}, data);
 	};
-
 }
+
 
 export const AssetsUploadingModuleBE = new AssetsUploadingModuleBE_Class();
 

@@ -49,7 +49,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 	E extends void | object = DeriveErrorType<Binder>> {
 
 	key: string;
-	requestData!: string | undefined;
+	requestData!: any;
 	errorMessage!: string;
 	successMessage!: string;
 
@@ -71,7 +71,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 	protected compress: boolean;
 	private defaultResponseHandler?: (request: BaseHttpRequest<any>) => boolean;
 
-	constructor(requestKey: string, requestData?: string) {
+	constructor(requestKey: string, requestData?: any) {
 		this.key = requestKey;
 		this.requestData = requestData;
 		this.compress = false;
@@ -171,8 +171,8 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 	}
 
 	public setRelativeUrl(relativeUrl: U) {
-		if(!this.origin)
-			throw new BadImplementationException('if you want to use relative urls, you need to set an origin')
+		if (!this.origin)
+			throw new BadImplementationException('if you want to use relative urls, you need to set an origin');
 
 		this.url = this.origin + relativeUrl;
 		return this;
