@@ -39,6 +39,7 @@ export class AssetsModule_Class
 		timestamp: tsValidateNumber(),
 		name: validateName,
 		ext: tsValidateExists(true),
+		md5Hash: tsValidateExists(false),
 		feId: tsValidateExists(true),
 		mimeType: tsValidateExists(true),
 		key: tsValidateExists(true),

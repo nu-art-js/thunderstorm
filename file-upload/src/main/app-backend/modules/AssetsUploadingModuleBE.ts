@@ -22,27 +22,30 @@ import {
 	batchAction,
 	currentTimeMillis,
 	Day,
+	dispatch_onServerError,
 	filterInstances,
 	generateHex,
 	Hour,
 	ImplementationMissingException,
 	MB,
 	Module,
+	ServerErrorSeverity,
 	ThisShouldNotHappenException,
 	TypedMap
 } from "@nu-art/ts-common";
 import {
 	FileWrapper,
 	FirebaseModule,
+	FirebaseType_Metadata,
 	StorageWrapper
 } from "@nu-art/firebase/backend";
 import {
 	BaseUploaderFile,
 	DB_Asset,
+	FileStatus,
 	Push_FileUploaded,
 	PushKey_FileUploaded,
 	TempSecureUrl,
-	UploadResult
 } from "../../shared/types";
 import {AssetsTempModule} from "./AssetsTempModule";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
@@ -54,7 +57,6 @@ import {
 import {fromBuffer} from "file-type";
 import {FileTypeResult} from "file-type/core";
 import {FirestoreQuery} from "@nu-art/firebase";
-import {FirebaseType_Metadata} from "../../../../../firebase/src/main/app-backend/storage/types";
 
 
 type Config = {
@@ -161,7 +163,7 @@ export class AssetsUploadingModuleBE_Class
 				_id,
 				feId: _file.feId,
 				name: _file.name,
-				ext: _file.name.substring(_file.name.toLowerCase().lastIndexOf(".")),
+				ext: _file.name.substring(_file.name.toLowerCase().lastIndexOf(".") + 1),
 				mimeType: _file.mimeType,
 				key,
 				path,
@@ -200,10 +202,11 @@ export class AssetsUploadingModuleBE_Class
 		if (!tempMeta)
 			throw new ThisShouldNotHappenException(`Could not find meta for file with path: ${filePath}`);
 
+		await this.notifyFrontend(FileStatus.Processing, tempMeta);
 		this.logInfo(`Found temp meta with _id: ${tempMeta._id}`, tempMeta);
 		const validationConfig = this.fileValidator[tempMeta.key];
 		if (!validationConfig)
-			return this.notifyFrontend(UploadResult.Failure, tempMeta.feId, `Missing a validation config for ${tempMeta.key} for file: ${tempMeta.name}`);
+			return this.notifyFrontend(FileStatus.ErrorNoConfig, tempMeta);
 
 		let mimetypeValidator: FileValidator = DefaultMimetypeValidator;
 		if (validationConfig.validator)
@@ -213,14 +216,14 @@ export class AssetsUploadingModuleBE_Class
 			mimetypeValidator = this.mimeTypeValidator[tempMeta.mimeType];
 
 		if (!mimetypeValidator)
-			return this.notifyFrontend(UploadResult.Failure, tempMeta.feId,
-			                           `Missing a mimetype(${tempMeta.mimeType}) validator for ${tempMeta.key} for file: ${tempMeta.name}`);
+			return this.notifyFrontend(FileStatus.ErrorNoValidator, tempMeta);
 
 		const file = await this.storage.getFile(tempMeta.path, tempMeta.bucketName);
+
 		try {
 			const metadata = (await file.getDefaultMetadata()).metadata;
 			if (!metadata)
-				throw new ThisShouldNotHappenException(`could not resolve metadata for file: ${file.path}`);
+				return this.notifyFrontend(FileStatus.ErrorRetrievingMetadata, tempMeta);
 
 			await fileSizeValidator(file, metadata, validationConfig.minSize, validationConfig.maxSize);
 			const fileType = await mimetypeValidator(file, tempMeta);
@@ -232,7 +235,7 @@ export class AssetsUploadingModuleBE_Class
 			}
 		} catch (e) {
 			//TODO delete the file and the temp doc
-			return await this.notifyFrontend(UploadResult.Failure, tempMeta.feId, `Post-processing failed for file: ${tempMeta.name}`, e);
+			return this.notifyFrontend(FileStatus.ErrorWhileProcessing, tempMeta);
 		}
 
 		if (tempMeta.public) {
@@ -240,26 +243,30 @@ export class AssetsUploadingModuleBE_Class
 				// need to handle the response status!
 				await file.makePublic();
 			} catch (e) {
-				await this.notifyFrontend(UploadResult.Failure, tempMeta.feId, `Failed to make the file public: ${tempMeta.name}`, e);
+				return this.notifyFrontend(FileStatus.ErrorMakingPublic, tempMeta);
 			}
 		}
 
-		// need to check if the md5hash exists in db already otherwise add new entry..
 		await AssetsModule.runInTransaction(async (transaction) => {
+			const duplicatedAssets = await AssetsModule.query({where: {md5Hash: tempMeta.md5Hash}});
+			if (duplicatedAssets.length && duplicatedAssets[0])
+				return this.logInfo(`${tempMeta.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
+
 			const upsertWrite = await AssetsModule.upsert_Read(tempMeta, transaction);
 			await AssetsTempModule.deleteUnique(tempMeta._id, transaction);
 			return upsertWrite();
 		});
 
-		// need to return the new asset id so fe would know how to connect the asset id with the item it is editing atm!!
-		// message is not something to be served from BE.. FE needs info to compose the message.. think multiple languages!!
-		return this.notifyFrontend(UploadResult.Success, tempMeta.feId, `Successfully parsed and processed file ${tempMeta.name}`);
+		return this.notifyFrontend(FileStatus.Completed, tempMeta);
 	};
 
-	private notifyFrontend = async (result: UploadResult, feId: string, message: string, cause?: Error) => {
-		cause && this.logWarning(cause);
-		const data = {message, result, cause};
-		await PushPubSubModule.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId}, data);
+	private notifyFrontend = async (result: FileStatus, asset: DB_Asset) => {
+		if (result !== FileStatus.Completed && result !== FileStatus.Processing) {
+			const message = `Error while processing asset: ${result}\n Failed on \n  Asset: ${asset.feId}\n    Key: ${asset.key}\n   Type: ${asset.mimeType}\n   File: ${asset.name}`;
+			await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Error, this, message]);
+		}
+
+		return PushPubSubModule.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: asset.feId}, {result, asset});
 	};
 }
 

@@ -135,7 +135,6 @@ export class PushPubSubModule_Class
 		S extends string = IFP<M>,
 		P extends SubscribeProps = ISP<M>,
 		D = ITP<M>>(key: S, props?: P, data?: D, persistent: boolean = false) {
-		console.log('i am pushing to key...', key, props, data);
 		let docs = await this.pushKeys.query({where: {pushKey: key}});
 		if (props)
 			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
@@ -153,6 +152,8 @@ export class PushPubSubModule_Class
 
 		const sessionsIds = docs.map(d => d.pushSessionId);
 		// I get the tokens relative to those sessions (query)
+		this.logDebug(
+			`Sending push to: \n Sessions: ${JSON.stringify(sessionsIds)}\n Key: ${key}\n Props: ${JSON.stringify(props)} \n Data: ${JSON.stringify(data)}`);
 		const sessions = await batchAction(sessionsIds, 10, async elements => this.pushSessions.query({where: {pushSessionId: {$in: elements}}}));
 		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
 			const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);

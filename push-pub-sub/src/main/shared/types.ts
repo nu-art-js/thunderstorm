@@ -7,8 +7,8 @@ export type BaseSubscriptionData = {
 	pushKey: string
 }
 
-export type SubscriptionData = BaseSubscriptionData & {
-	data?: any
+export type SubscriptionData<D = any> = BaseSubscriptionData & {
+	data?: D
 }
 
 export type Request_PushRegister = FirebaseToken & PushSessionId & {
@@ -26,7 +26,7 @@ export type DB_PushSession = FirebaseToken & PushSessionId & {
 	userId: string
 }
 
-export type DB_Notifications = DB_Object & SubscriptionData & {
+export type DB_Notifications<D = any> = DB_Object & SubscriptionData<D> & {
 	userId?: string
 	timestamp: number
 	read: boolean

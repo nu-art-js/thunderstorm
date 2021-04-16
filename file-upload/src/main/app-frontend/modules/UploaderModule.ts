@@ -24,10 +24,10 @@ import {
 import {
 	BaseUploaderFile,
 	FileStatus,
+	FileUploadResult,
 	Push_FileUploaded,
 	PushKey_FileUploaded,
-	TempSecureUrl,
-	UploadResult
+	TempSecureUrl
 } from "../../shared/types";
 import {
 	OnPushMessageReceived,
@@ -70,19 +70,12 @@ export class UploaderModule_Class
 		await PushPubSubModule.subscribeMulti(toSubscribe.map(r => ({pushKey: PushKey_FileUploaded, props: {feId: r.tempDoc.feId}})));
 	}
 
-	__onMessageReceived(notification: DB_Notifications): void {
+	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
 		this.logInfo('Message received from service worker', notification.pushKey, notification.props, notification.data);
 		if (notification.pushKey !== PushKey_FileUploaded)
 			return;
 
-		switch (notification.data.result) {
-			case UploadResult.Success:
-				this.setFileInfo(notification.props?.feId as string, "status", FileStatus.Completed);
-				break;
-			case UploadResult.Failure:
-				this.setFileInfo(notification.props?.feId as string, "status", FileStatus.Error);
-				break;
-		}
+		this.setFileInfo(notification.props?.feId as string, "status", notification.data?.result || FileStatus.Error);
 
 		PushPubSubModule.unsubscribe({pushKey: PushKey_FileUploaded, props: notification.props}).catch();
 	}
