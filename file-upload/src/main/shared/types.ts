@@ -30,23 +30,24 @@ export const RequestKey_UploadFile = 'upload-file';
 export const RequestKey_ProcessAssetManually = 'process-asset-manually';
 
 export const PushKey_FileUploaded = 'file-uploaded';
-export type Push_FileUploaded = MessageType<'file-uploaded', { feId: string }, { message: string, result: string, cause?: Error }>;
-
-export enum UploadResult {
-	Success = "Success",
-	Failure = "Failure"
-}
+export type FileUploadResult = { result: FileStatus, asset: DB_Asset };
+export type Push_FileUploaded = MessageType<'file-uploaded', { feId: string }, FileUploadResult>;
 
 export enum FileStatus {
-	Idle                 = "Idle",
-	ObtainingUrl         = "ObtainingUrl",
-	UrlObtained          = "UrlObtained",
-	UploadingFile        = "UploadingFile",
-	WaitingForProcessing = "WaitingForProcessing",
-	Processing           = "Processing",
-	PostProcessing       = "PostProcessing",
-	Completed            = "Completed",
-	Error                = "Error"
+	Idle                    = "Idle",
+	ObtainingUrl            = "ObtainingUrl",
+	UrlObtained             = "UrlObtained",
+	UploadingFile           = "UploadingFile",
+	WaitingForProcessing    = "WaitingForProcessing",
+	Processing              = "Processing",
+	PostProcessing          = "PostProcessing",
+	Completed               = "Completed",
+	ErrorWhileProcessing    = "ErrorWhileProcessing",
+	ErrorMakingPublic       = "ErrorMakingPublic",
+	ErrorNoValidator        = "ErrorNoValidator",
+	ErrorNoConfig           = "ErrorNoConfig",
+	ErrorRetrievingMetadata = "ErrorRetrievingMetadata",
+	Error                   = "Error"
 }
 
 export type Request_Uploader = {

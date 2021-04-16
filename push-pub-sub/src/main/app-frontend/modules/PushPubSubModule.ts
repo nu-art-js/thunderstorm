@@ -58,7 +58,7 @@ export interface OnPushMessageReceived<M extends MessageType<any, any, any> = ne
 	S extends string = IFP<M>,
 	P extends SubscribeProps = ISP<M>,
 	D = ITP<M>> {
-	__onMessageReceived(notification: DB_Notifications): void
+	__onMessageReceived(notification: DB_Notifications<D>): void
 }
 
 type FirebaseConfig = {
@@ -170,7 +170,7 @@ export class PushPubSubModule_Class
 			// this.logWarning("Convince me otherwise.. :)")
 			// Race Condition in CC proved that I didnt register for push due to the getToken being async which ended after modules init
 			// so I had subscriptions but didnt register them
-			if(this.subscriptions.length > 0)
+			if (this.subscriptions.length > 0)
 				await this.register();
 
 		} catch (err) {
