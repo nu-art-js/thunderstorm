@@ -101,62 +101,86 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		return false;
 	}
 
-	create(toUpsert: UType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
+	create(toUpsert: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
 		this.logWarning("create is deprecated... use upsert");
-		return this.upsert(toUpsert);
+		return this.upsert(toUpsert, requestData);
 	}
 
-	upsert(toCreate: UType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
+	upsert(toCreate: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
+		return this
+			.upsertImpl(toCreate, requestData)
+			.execute(async (response: DBType) => {
+				return this.onEntryCreated(response, requestData);
+			});
+	}
+
+	upsertImpl(toCreate: UType, requestData?: string) {
 		return this
 			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Upsert)
-			.setJsonBody(toCreate)
-			.execute(async (response: DBType) => {
-				return this.onEntryCreated(response);
-			});
+			.setJsonBody(toCreate);
 	}
 
-	update = (toPatch: DBType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
+	update = (toPatch: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
 		this.logWarning("update is deprecated... use patch");
-		return this.patch(toPatch);
+		return this.patch(toPatch, requestData);
 	};
-	patch = (toUpdate: DBType): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
-		return this
-			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Patch)
-			.setJsonBody(toUpdate)
-			.execute(async response => {
-				return this.onEntryUpdated(response);
-			});
+	patch = (toUpdate: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
+		return this.patchImpl(toUpdate, requestData)
+		           .execute(async response => {
+			           return this.onEntryUpdated(response, requestData);
+		           });
 	};
 
-	query = (query?: Partial<DBType>): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
+	patchImpl = (toUpdate: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
+		return this
+			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Patch)
+			.setJsonBody(toUpdate);
+	};
+
+	query = (query?: Partial<DBType>, requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
 		let _query = query;
 		if (!_query)
 			_query = {} as Partial<DBType>;
 
 		return this
-			.createRequest<ApiBinder_DBQuery<DBType>>(DefaultApiDefs.Query)
-			.setJsonBody(_query)
+			.queryImpl(_query, requestData)
 			.execute(async response => {
-				return this.onQueryReturned(response);
+				return this.onQueryReturned(response, requestData);
 			});
 	};
 
-	unique = (_id: string): BaseHttpRequest<ApiBinder_DBUniuqe<DBType>> => {
+	queryImpl = (query: Partial<DBType>, requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
+		return this
+			.createRequest<ApiBinder_DBQuery<DBType>>(DefaultApiDefs.Query)
+			.setJsonBody(query);
+	};
+
+	unique = (_id: string, requestData?: string): BaseHttpRequest<ApiBinder_DBUniuqe<DBType>> => {
+		return this
+			.uniqueImpl(_id, requestData)
+			.execute(async response => {
+				return this.onGotUnique(response, requestData);
+			});
+	};
+
+	uniqueImpl = (_id: string, requestData?: string): BaseHttpRequest<ApiBinder_DBUniuqe<DBType>> => {
 		return this
 			.createRequest<ApiBinder_DBUniuqe<DBType>>(DefaultApiDefs.Unique)
-			.setUrlParams({_id})
+			.setUrlParams({_id});
+	};
+
+	delete = (_id: string, requestData?: string): BaseHttpRequest<ApiBinder_DBDelete<DBType>> => {
+		return this
+			.deleteImpl(_id, requestData)
 			.execute(async response => {
-				return this.onGotUnique(response);
+				return this.onEntryDeleted(response, requestData);
 			});
 	};
 
-	delete = (_id: string): BaseHttpRequest<ApiBinder_DBDelete<DBType>> => {
+	deleteImpl = (_id: string, requestData?: string): BaseHttpRequest<ApiBinder_DBDelete<DBType>> => {
 		return this
 			.createRequest<ApiBinder_DBDelete<DBType>>(DefaultApiDefs.Delete)
-			.setUrlParams({_id})
-			.execute(async response => {
-				return this.onEntryDeleted(response);
-			});
+			.setUrlParams({_id});
 	};
 
 	private ids: string[] = [];
@@ -173,36 +197,36 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		this.defaultDispatcher?.dispatchModule([]);
 	};
 
-	protected async onEntryCreated(item: DBType): Promise<void> {
-		return this.onEntryUpdated(item);
+	protected async onEntryCreated(item: DBType, requestData?: string): Promise<void> {
+		return this.onEntryUpdated(item, requestData);
 	}
 
-	protected async onEntryDeleted(item: DBType): Promise<void> {
+	protected async onEntryDeleted(item: DBType, requestData?: string): Promise<void> {
 		removeItemFromArray(this.ids, item._id);
 		delete this.items[item._id];
 
-		this.dispatch()
+		this.dispatch();
 	}
 
-	protected async onEntryUpdated(item: DBType): Promise<void> {
+	protected async onEntryUpdated(item: DBType, requestData?: string): Promise<void> {
 		if (!this.ids.includes(item._id))
 			addItemToArray(this.ids, item._id);
 
 		this.items[item._id] = item;
-		this.dispatch()
+		this.dispatch();
 	}
 
-	protected async onGotUnique(item: DBType): Promise<void> {
-		return this.onEntryUpdated(item);
+	protected async onGotUnique(item: DBType, requestData?: string): Promise<void> {
+		return this.onEntryUpdated(item, requestData);
 	}
 
-	protected async onQueryReturned(items: DBType[]): Promise<void> {
+	protected async onQueryReturned(items: DBType[], requestData?: string): Promise<void> {
 		this.ids = items.map(item => item._id);
 		this.items = items.reduce((toRet, item) => {
 			toRet[item._id] = item;
 			return toRet;
 		}, this.items);
 
-		this.dispatch()
+		this.dispatch();
 	}
 }
