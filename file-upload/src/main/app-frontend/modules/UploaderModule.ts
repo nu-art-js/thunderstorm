@@ -38,12 +38,16 @@ import {
 	OnFileStatusChanged
 } from "../../shared/modules/BaseUploaderModule";
 import {DB_Notifications} from "@nu-art/push-pub-sub";
+import {
+	Second,
+	timeout
+} from "@nu-art/ts-common";
 
 export class UploaderModule_Class
 	extends BaseUploaderModule_Class<XhrHttpModule_Class>
 	implements OnPushMessageReceived<Push_FileUploaded> {
 
-	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
+	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, "__onFileStatusChanged">("__onFileStatusChanged");
 
 	constructor() {
 		super(XhrHttpModule);
@@ -67,11 +71,12 @@ export class UploaderModule_Class
 	}
 
 	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {
-		await PushPubSubModule.subscribeMulti(toSubscribe.map(r => ({pushKey: fileUploadedKey, props: {feId: r.tempDoc.feId}})));
+		PushPubSubModule.subscribeMulti(toSubscribe.map(r => ({pushKey: fileUploadedKey, props: {feId: r.tempDoc.feId}})));
+		await timeout(Second);
 	}
 
 	__onMessageReceived(notification: DB_Notifications): void {
-		this.logInfo('Message received from service worker', notification.pushKey, notification.props, notification.data);
+		this.logInfo("Message received from service worker", notification.pushKey, notification.props, notification.data);
 		if (notification.pushKey !== fileUploadedKey)
 			return;
 
@@ -84,7 +89,7 @@ export class UploaderModule_Class
 				break;
 		}
 
-		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props: notification.props}).catch();
+		PushPubSubModule.unsubscribe({pushKey: fileUploadedKey, props: notification.props});
 	}
 }
 
