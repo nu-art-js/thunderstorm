@@ -17,18 +17,16 @@
  * limitations under the License.
  */
 
-import {AssetsUploadingModuleBE} from "../modules/AssetsUploadingModuleBE";
+import {AssetsTempModuleBE} from "../modules/AssetsTempModuleBE";
+import {AssetsModuleBE} from "../modules/AssetsModuleBE";
 import {AssetBucketListener} from "../modules/AssetBucketListener";
 import {Backend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/backend";
 import {ServerUploaderModule} from "../modules/ServerUploaderModule";
-import {AssetsModule} from "../modules/AssetsModule";
-import {AssetsTempModule} from "../modules/AssetsTempModule";
 
 export const Backend_ModulePack_Uploader = [
 	...Backend_ModulePack_PushPubSub,
 	ServerUploaderModule,
-	AssetsUploadingModuleBE,
-	AssetsModule,
-	AssetsTempModule,
+	AssetsTempModuleBE,
+	AssetsModuleBE,
 	AssetBucketListener
 ];

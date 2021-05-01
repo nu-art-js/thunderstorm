@@ -18,6 +18,6 @@
  */
 
 
-import {AssetsModule} from "../../../modules/AssetsModule";
+import {AssetsModuleBE} from "../../modules/AssetsModuleBE";
 
-module.exports = AssetsModule.apis();
+module.exports = AssetsModuleBE.apis();

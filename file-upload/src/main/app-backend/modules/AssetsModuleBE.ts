@@ -19,47 +19,30 @@
 import {
 	auditBy,
 	BadImplementationException,
-	batchAction,
 	currentTimeMillis,
 	Day,
 	dispatch_onServerError,
-	filterInstances,
 	generateHex,
 	Hour,
 	ImplementationMissingException,
 	MB,
-	Module,
+	Minute,
 	ServerErrorSeverity,
 	ThisShouldNotHappenException,
 	TypedMap
 } from "@nu-art/ts-common";
-import {
-	FileWrapper,
-	FirebaseModule,
-	FirebaseType_Metadata,
-	StorageWrapper
-} from "@nu-art/firebase/backend";
-import {
-	BaseUploaderFile,
-	DB_Asset,
-	FileStatus,
-	Push_FileUploaded,
-	PushKey_FileUploaded,
-	TempSecureUrl,
-} from "../../shared/types";
-import {AssetsTempModule} from "./AssetsTempModule";
+import {FileWrapper, FirebaseModule, FirebaseType_Metadata, StorageWrapper} from "@nu-art/firebase/backend";
+import {BaseUploaderFile, DB_Asset, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl,} from "../../shared/types";
+import {_assetValidator, AssetsTempModuleBE} from "./AssetsTempModuleBE";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
-import {AssetsModule} from "./AssetsModule";
-import {
-	CleanupDetails,
-	OnCleanupSchedulerAct
-} from "@nu-art/thunderstorm/backend";
+import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from "@nu-art/thunderstorm/backend";
 import {fromBuffer} from "file-type";
 import {FileTypeResult} from "file-type/core";
-import {FirestoreQuery} from "@nu-art/firebase";
+import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
+import {BaseDB_ApiGenerator, Config} from "@nu-art/db-api-generator/backend";
 
 
-type Config = {
+type MyConfig = Config<DB_Asset> & {
 	bucketName?: string
 	path: string
 }
@@ -91,22 +74,35 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 	return metadata.size >= minSizeInBytes && metadata.size <= maxSizeInBytes;
 };
 
-export class AssetsUploadingModuleBE_Class
-	extends Module<Config>
+export class AssetsModuleBE_Class
+	extends BaseDB_ApiGenerator<DB_Asset, MyConfig>
 	implements OnCleanupSchedulerAct {
+
+	constructor() {
+		super("assets", _assetValidator, "assets");
+		this.setDefaultConfig({...this.config, path: "assets"});
+	}
 
 	private storage!: StorageWrapper;
 
 	mimeTypeValidator: TypedMap<FileValidator> = {};
 	fileValidator: TypedMap<FileTypeValidation> = {};
 
-	constructor() {
-		super();
-		this.setDefaultConfig({path: "assets"});
-	}
-
 	registerTypeValidator(mimeType: string, validator: (file: FileWrapper, doc: DB_Asset) => Promise<void>) {
 
+	}
+
+	async queryUnique(where: Clause_Where<DB_Asset>, request?: ExpressRequest): Promise<DB_Asset> {
+		const asset = await super.queryUnique(where, request);
+		let signedUrl = (asset.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset.signedUrl : undefined;
+		if (!signedUrl) {
+			let url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSecuredUrl(asset.mimeType, Day);
+			asset.signedUrl = {
+				url: url.securedUrl,
+				validUntil: currentTimeMillis() + Day - Minute
+			}
+		}
+		return asset;
 	}
 
 	register(key: string, validationConfig: FileTypeValidation) {
@@ -124,25 +120,23 @@ export class AssetsUploadingModuleBE_Class
 		};
 	}
 
-	private cleanup = async () => {
-		const entries: DB_Asset[] = await AssetsTempModule.query({where: {timestamp: {$lt: currentTimeMillis() - Hour}}});
+	private cleanup = async (interval = Hour, module: BaseDB_ApiGenerator<DB_Asset> = AssetsTempModuleBE) => {
+		const entries: DB_Asset[] = await module.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);
-		const dbEntriesToDelete = await Promise.all(entries.map(async dbAsset => {
+		await Promise.all(entries.map(async dbAsset => {
 			const file = await bucket.getFile(dbAsset.path);
 			if (!(await file.exists()))
 				return;
 
 			await file.delete();
-			return dbAsset;
 		}));
 
-		await batchAction(filterInstances(dbEntriesToDelete), 10, async (toDelete) => {
-			return AssetsTempModule.delete({where: {_id: {$in: toDelete.map(item => item._id)}}});
-		});
+		return module.delete({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 	};
 
 	init() {
+		super.init();
 		this.storage = FirebaseModule.createAdminSession("file-uploader").getStorage();
 	}
 
@@ -174,12 +168,12 @@ export class AssetsUploadingModuleBE_Class
 			if (_file.public)
 				dbAsset.public = _file.public;
 
-			const dbTempMeta = await AssetsTempModule.upsert(dbAsset);
+			const dbTempMeta = await AssetsTempModuleBE.upsert(dbAsset);
 			const fileWrapper = await bucket.getFile(dbTempMeta.path);
 			const url = await fileWrapper.getWriteSecuredUrl(_file.mimeType, Hour);
 			return {
 				secureUrl: url.securedUrl,
-				tempDoc: dbTempMeta
+				asset: dbTempMeta
 			};
 		}));
 	}
@@ -189,7 +183,7 @@ export class AssetsUploadingModuleBE_Class
 		if (feId)
 			query = {where: {feId}};
 
-		const unprocessedFiles: DB_Asset[] = await AssetsTempModule.query(query);
+		const unprocessedFiles: DB_Asset[] = await AssetsTempModuleBE.query(query);
 		return Promise.all(unprocessedFiles.map(asset => this.processAsset(asset.path)));
 	};
 
@@ -198,7 +192,7 @@ export class AssetsUploadingModuleBE_Class
 			throw new ThisShouldNotHappenException('Missing file path');
 
 		this.logInfo(`Looking for file with path: ${filePath}`);
-		const tempMeta = await AssetsTempModule.queryUnique({path: filePath});
+		const tempMeta = await AssetsTempModuleBE.queryUnique({path: filePath});
 		if (!tempMeta)
 			throw new ThisShouldNotHappenException(`Could not find meta for file with path: ${filePath}`);
 
@@ -229,7 +223,7 @@ export class AssetsUploadingModuleBE_Class
 			const fileType = await mimetypeValidator(file, tempMeta);
 
 			tempMeta.md5Hash = metadata.md5Hash;
-			if (fileType) {
+			if (fileType && tempMeta.ext !== fileType.ext) {
 				this.logWarning(`renaming the file extension name: ${tempMeta.ext} => ${fileType.ext}`);
 				tempMeta.ext = fileType.ext;
 			}
@@ -247,31 +241,31 @@ export class AssetsUploadingModuleBE_Class
 			}
 		}
 
-		await AssetsModule.runInTransaction(async (transaction) => {
-			const duplicatedAssets = await AssetsModule.query({where: {md5Hash: tempMeta.md5Hash}});
+		await this.runInTransaction(async (transaction) => {
+			const duplicatedAssets = await this.query({where: {md5Hash: tempMeta.md5Hash}});
 			if (duplicatedAssets.length && duplicatedAssets[0])
 				return this.logInfo(`${tempMeta.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
 
-			const upsertWrite = await AssetsModule.upsert_Read(tempMeta, transaction);
-			await AssetsTempModule.deleteUnique(tempMeta._id, transaction);
+			const upsertWrite = await this.upsert_Read(tempMeta, transaction);
+			await AssetsTempModuleBE.deleteUnique(tempMeta._id, transaction);
 			return upsertWrite();
 		});
 
 		return this.notifyFrontend(FileStatus.Completed, tempMeta);
 	};
 
-	private notifyFrontend = async (result: FileStatus, asset: DB_Asset) => {
-		if (result !== FileStatus.Completed && result !== FileStatus.Processing) {
-			const message = `Error while processing asset: ${result}\n Failed on \n  Asset: ${asset.feId}\n    Key: ${asset.key}\n   Type: ${asset.mimeType}\n   File: ${asset.name}`;
+	private notifyFrontend = async (status: FileStatus, asset: DB_Asset) => {
+		if (status !== FileStatus.Completed && status !== FileStatus.Processing) {
+			const message = `Error while processing asset: ${status}\n Failed on \n  Asset: ${asset.feId}\n    Key: ${asset.key}\n   Type: ${asset.mimeType}\n   File: ${asset.name}`;
 			await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Error, this, message]);
 		}
 
-		return PushPubSubModule.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: asset.feId}, {result, asset});
+		return PushPubSubModule.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: asset.feId}, {status, asset});
 	};
 }
 
 
-export const AssetsUploadingModuleBE = new AssetsUploadingModuleBE_Class();
+export const AssetsModuleBE = new AssetsModuleBE_Class();
 
 
 

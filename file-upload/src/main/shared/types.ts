@@ -17,10 +17,7 @@
  * limitations under the License.
  */
 
-import {
-	ApiWithBody,
-	ApiWithQuery
-} from "@nu-art/thunderstorm";
+import {ApiWithBody, ApiWithQuery, BaseHttpRequest} from "@nu-art/thunderstorm";
 import {DB_Object} from "@nu-art/firebase";
 import {AuditBy} from "@nu-art/ts-common";
 import {MessageType} from "@nu-art/push-pub-sub";
@@ -30,24 +27,38 @@ export const RequestKey_UploadFile = 'upload-file';
 export const RequestKey_ProcessAssetManually = 'process-asset-manually';
 
 export const PushKey_FileUploaded = 'file-uploaded';
-export type FileUploadResult = { result: FileStatus, asset: DB_Asset };
+export type FileUploadResult = { status: FileStatus, asset: DB_Asset };
 export type Push_FileUploaded = MessageType<'file-uploaded', { feId: string }, FileUploadResult>;
 
 export enum FileStatus {
-	Idle                    = "Idle",
-	ObtainingUrl            = "ObtainingUrl",
-	UrlObtained             = "UrlObtained",
-	UploadingFile           = "UploadingFile",
-	WaitingForProcessing    = "WaitingForProcessing",
-	Processing              = "Processing",
-	PostProcessing          = "PostProcessing",
-	Completed               = "Completed",
-	ErrorWhileProcessing    = "ErrorWhileProcessing",
-	ErrorMakingPublic       = "ErrorMakingPublic",
-	ErrorNoValidator        = "ErrorNoValidator",
-	ErrorNoConfig           = "ErrorNoConfig",
+	Idle = "Idle",
+	ObtainingUrl = "ObtainingUrl",
+	UrlObtained = "UrlObtained",
+	UploadingFile = "UploadingFile",
+	WaitingForProcessing = "WaitingForProcessing",
+	Processing = "Processing",
+	PostProcessing = "PostProcessing",
+	Completed = "Completed",
+	ErrorWhileProcessing = "ErrorWhileProcessing",
+	ErrorMakingPublic = "ErrorMakingPublic",
+	ErrorNoValidator = "ErrorNoValidator",
+	ErrorNoConfig = "ErrorNoConfig",
 	ErrorRetrievingMetadata = "ErrorRetrievingMetadata",
-	Error                   = "Error"
+	Error = "Error"
+}
+
+export type FileInfo = {
+	status: FileStatus
+	messageStatus?: string
+	progress?: number
+	name: string
+	request?: BaseHttpRequest<any>
+	file?: any
+	asset?: DB_Asset
+};
+
+export interface OnFileStatusChanged {
+	__onFileStatusChanged: (id: string) => void
 }
 
 export type Request_Uploader = {
@@ -68,12 +79,16 @@ export type DB_Asset = DB_Object & BaseUploaderFile & Required<Pick<BaseUploader
 	path: string
 	_audit: AuditBy
 	bucketName: string
+	signedUrl?: {
+		url: string,
+		validUntil: number
+	}
 }
 export type Request_GetUploadUrl = BaseUploaderFile[]
 
 export type TempSecureUrl = {
 	secureUrl: string
-	tempDoc: DB_Asset
+	asset: DB_Asset
 }
 
 export type Api_GetUploadUrl = ApiWithBody<'/v1/upload/get-url', BaseUploaderFile[], TempSecureUrl[]>

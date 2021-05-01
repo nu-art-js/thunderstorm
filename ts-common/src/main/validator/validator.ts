@@ -185,7 +185,7 @@ export const tsValidateRange = (ranges: [number, number][], mandatory = true): V
 };
 
 
-export const tsValidate = <T extends any>(instance: T, _validator: ValidatorTypeResolver<T>, path = "") => {
+export const tsValidate = <T extends any>(instance: T, _validator: ValidatorTypeResolver<T>, path = "", mandatory: boolean | Partial<T> = {}) => {
 	if (!_validator)
 		return;
 

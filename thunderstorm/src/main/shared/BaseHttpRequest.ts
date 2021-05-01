@@ -319,10 +319,10 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		};
 
 		_setTimeout(() => {
-			const label = this.label || `http request: ${this.key}`;
+			const label = this.label || `http request: ${this.key} ${this.requestData}`;
 			new Promise(toCall)
-				.then(() => console.log(`Async call completed: ${label}`))
-				.catch(reason => console.warn(`Async call error: ${label}`, reason));
+				.then(() => console.log(`Async call completed: ${label} ${this.requestData}`))
+				.catch(reason => console.warn(`Async call error: ${label} ${this.requestData}`, reason));
 		});
 		return this;
 	}

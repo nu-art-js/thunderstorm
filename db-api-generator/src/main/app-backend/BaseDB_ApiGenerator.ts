@@ -252,16 +252,19 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		try {
 			await tsValidate(instance, this.validator);
 		} catch (e) {
+			this.onValidationError(e);
+		}
+	}
 
-			const badImplementation = isErrorOfType(e, BadImplementationException);
-			if (badImplementation)
-				throw new ApiException(500, badImplementation.message);
+	protected onValidationError(e: Error) {
+		const badImplementation = isErrorOfType(e, BadImplementationException);
+		if (badImplementation)
+			throw new ApiException(500, badImplementation.message);
 
-			const error = isErrorOfType(e, ValidationException);
-			if (error) {
-				const errorBody = {type: ErrorKey_BadInput, body: {path: error.path, input: error.input}};
-				throw new ApiException<BadInputErrorBody>(400, error.message).setErrorBody(errorBody);
-			}
+		const error = isErrorOfType(e, ValidationException);
+		if (error) {
+			const errorBody = {type: ErrorKey_BadInput, body: {path: error.path, input: error.input}};
+			throw new ApiException<BadInputErrorBody>(400, error.message).setErrorBody(errorBody);
 		}
 	}
 

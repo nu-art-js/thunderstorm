@@ -16,42 +16,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	ThunderDispatcher,
-	XhrHttpModule,
-	XhrHttpModule_Class
-} from "@nu-art/thunderstorm/frontend";
-import {
-	BaseUploaderFile,
-	FileStatus,
-	FileUploadResult,
-	Push_FileUploaded,
-	PushKey_FileUploaded,
-	TempSecureUrl
-} from "../../shared/types";
-import {
-	OnPushMessageReceived,
-	PushPubSubModule
-} from "@nu-art/push-pub-sub/frontend";
-import {
-	BaseUploaderModule_Class,
-	OnFileStatusChanged
-} from "../../shared/modules/BaseUploaderModule";
+import {ThunderDispatcher, XhrHttpModule, XhrHttpModule_Class} from "@nu-art/thunderstorm/frontend";
+import {BaseUploaderFile, FileStatus, FileUploadResult, OnFileStatusChanged, PushKey_FileUploaded, TempSecureUrl} from "../../shared/types";
+import {PushPubSubModule} from "@nu-art/push-pub-sub/frontend";
+import {BaseUploaderModule_Class} from "../../shared/modules/BaseUploaderModule";
 import {DB_Notifications} from "@nu-art/push-pub-sub";
 
-export class UploaderModule_Class
-	extends BaseUploaderModule_Class<XhrHttpModule_Class>
-	implements OnPushMessageReceived<Push_FileUploaded> {
+export class UploaderFEModule_Class
+	extends BaseUploaderModule_Class<XhrHttpModule_Class> {
 
 	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 
 	constructor() {
 		super(XhrHttpModule);
-	}
-
-	protected dispatchFileStatusChange(id?: string) {
-		this.dispatch_fileStatusChange.dispatchUI([id]);
-		super.dispatchFileStatusChange(id);
 	}
 
 	upload(files: File[], key?: string, _public?: boolean): BaseUploaderFile[] {
@@ -66,19 +43,20 @@ export class UploaderModule_Class
 		})));
 	}
 
+	protected dispatchFileStatusChange(id: string) {
+		this.dispatch_fileStatusChange.dispatchUI([id]);
+	}
+
 	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {
-		await PushPubSubModule.subscribeMulti(toSubscribe.map(r => ({pushKey: PushKey_FileUploaded, props: {feId: r.tempDoc.feId}})));
+		return PushPubSubModule.subscribeMulti(toSubscribe.map(r => ({pushKey: PushKey_FileUploaded, props: {feId: r.asset.feId}})));
 	}
 
 	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
-		this.logInfo('Message received from service worker', notification.pushKey, notification.props, notification.data);
-		if (notification.pushKey !== PushKey_FileUploaded)
-			return;
-
-		this.setFileInfo(notification.props?.feId as string, "status", notification.data?.result || FileStatus.Error);
-
-		PushPubSubModule.unsubscribe({pushKey: PushKey_FileUploaded, props: notification.props}).catch();
+		super.__onMessageReceived(notification);
+		if (notification.data?.status === FileStatus.Completed || notification.data?.status?.startsWith("Error"))
+			PushPubSubModule.unsubscribe({pushKey: PushKey_FileUploaded, props: notification.props}).catch();
 	}
 }
 
-export const UploaderModule = new UploaderModule_Class();
+
+export const UploaderModuleFE = new UploaderFEModule_Class();

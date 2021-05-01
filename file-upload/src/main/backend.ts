@@ -19,6 +19,6 @@
 
 export * from "./app-backend/core/module-pack";
 
-export * from "./app-backend/modules/AssetsUploadingModuleBE";
-export * from "./app-backend/modules/AssetsTempModule";
+export * from "./app-backend/modules/AssetsModuleBE";
+export * from "./app-backend/modules/AssetsTempModuleBE";
 export * from "./app-backend/modules/ServerUploaderModule";
