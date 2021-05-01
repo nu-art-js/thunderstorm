@@ -1,12 +1,9 @@
 import * as React from 'react';
 import {HTMLProps} from 'react';
-import {
-	FieldEditor,
-	FieldEditorInputProps
-} from "./FieldEditor";
+import {FieldEditor, FieldEditorInputProps} from "./FieldEditor";
 import {StorageKey} from '../modules/StorageModule';
 import {BaseComponent} from '../core/BaseComponent';
-import { InputType } from '../components/input/TS_BaseInput';
+import {InputType} from '../components/input/TS_BaseInput';
 
 type State = {
 	isEditing: boolean;
@@ -16,7 +13,6 @@ type State = {
 type Props = {
 	inputProps: FieldEditorInputProps<any>;
 	labelProps?: HTMLProps<HTMLDivElement>
-	placeholder?: string;
 	type: InputType;
 	id: string;
 	onAccept: (value: string) => void;
@@ -75,7 +71,6 @@ export class FieldEditorWithButtons
 						onCancel={this.handleCancel}
 						storageKey={this.state.storageKey}
 						value={this.props.value}
-						placeholder={this.props.placeholder}
 					/>
 				</div>
 				{isEditing ? this.renderControlButtons() : this.renderEditButton()}

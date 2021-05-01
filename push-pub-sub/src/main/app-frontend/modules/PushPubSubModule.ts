@@ -217,7 +217,7 @@ export class PushPubSubModule_Class
 		return this.register();
 	};
 
-	private register = async (): Promise<void> => {
+	private register = () => {
 		if (!this.firebaseToken)
 			return this.logWarning("No Firebase token...");
 
@@ -227,25 +227,20 @@ export class PushPubSubModule_Class
 			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
 		};
 
-		await new Promise<void>((resolve, reject) => {
-			this.debounce(async () => {
-				try {
-					const response = await XhrHttpModule
-						.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
-						.setRelativeUrl("/v1/push/register")
-						.setJsonBody(body)
-						.setOnError("Failed to register for push")
-						.executeSync();
+		this.logDebug(`Subscribing: ${JSON.stringify(body)}`);
+		this.debounce(() => {
+			return XhrHttpModule
+				.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
+				.setRelativeUrl("/v1/push/register")
+				.setJsonBody(body)
+				.setOnError("Failed to register for push")
+				.execute(response => {
 
 					NotificationsModule.setNotificationList(response);
 					this.logVerbose('Finished register PubSub');
-					resolve();
-				} catch (e) {
-					reject(e);
-				}
-			}, 'push-registration', 800);
+				});
+		}, 'push-registration', 800);
 
-		});
 	};
 }
 

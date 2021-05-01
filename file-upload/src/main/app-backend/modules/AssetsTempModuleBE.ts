@@ -17,24 +17,37 @@
  * limitations under the License.
  */
 import {ServerApi} from "@nu-art/thunderstorm/backend";
-import {AssetsModule_Class} from "./AssetsModule";
 import {DB_Asset} from "../..";
-import {
-	Minute,
-	tsValidateTimestamp,
-	TypeValidator
-} from "@nu-art/ts-common";
+import {Minute, tsValidateAudit, tsValidateExists, tsValidateNumber, tsValidateRegexp, tsValidateTimestamp, TypeValidator} from "@nu-art/ts-common";
+import {BaseDB_ApiGenerator, tsValidateUniqueId} from "@nu-art/db-api-generator/backend";
 
+export const validateName = tsValidateRegexp(/^.{3,}$/);
 
-export class AssetsTempModule_Class
-	extends AssetsModule_Class {
+export const _assetValidator: TypeValidator<DB_Asset> = {
+	_id: tsValidateUniqueId,
+	timestamp: tsValidateNumber(),
+	name: validateName,
+	ext: tsValidateExists(true),
+	md5Hash: tsValidateExists(false),
+	feId: tsValidateExists(true),
+	mimeType: tsValidateExists(true),
+	key: tsValidateExists(true),
+	path: tsValidateExists(true),
+	_audit: tsValidateAudit(),
+	bucketName: tsValidateExists(true),
+	public: undefined
+};
+
+export class AssetsTempModuleBE_Class
+	extends BaseDB_ApiGenerator<DB_Asset> {
+
 	static __validator: TypeValidator<DB_Asset> = {
-		...AssetsModule_Class._validator,
+		..._assetValidator,
 		timestamp: tsValidateTimestamp(Minute),
 	};
 
 	constructor() {
-		super('assets-temp', AssetsTempModule_Class.__validator);
+		super('assets-temp', AssetsTempModuleBE_Class.__validator, 'assets-temp');
 	}
 
 	apis(pathPart?: string): ServerApi<any>[] {
@@ -42,7 +55,7 @@ export class AssetsTempModule_Class
 	}
 }
 
-export const AssetsTempModule = new AssetsTempModule_Class();
+export const AssetsTempModuleBE = new AssetsTempModuleBE_Class();
 
 
 

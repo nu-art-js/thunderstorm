@@ -1,14 +1,8 @@
 import * as React from 'react';
-import {
-	HTMLProps,
-	ReactNode
-} from 'react';
+import {HTMLProps, ReactNode} from 'react';
 import {StorageKey} from '../modules/StorageModule';
 import {BaseComponent} from '../core/BaseComponent';
-import {
-	TS_Input,
-	TS_InputProps
-} from '../components/input/TS_Input';
+import {TS_Input, TS_InputProps} from '../components/input/TS_Input';
 import {TS_TextArea} from "../components/input/TS_TextArea";
 import {InputType} from '../components/input/TS_BaseInput';
 
@@ -27,7 +21,6 @@ export type FieldEditorProps = {
 	onCancel?: () => void;
 	onBlur?: () => void;
 	id: string;
-	placeholder?: string;
 };
 
 export class FieldEditor
@@ -77,10 +70,12 @@ export class FieldEditor
 	};
 
 	private renderLabel = () => {
+		const label = this.props.value || this.props.inputProps?.placeholder || "";
 		if (typeof this.props.labelProps === "function")
-			return this.props.labelProps(this.props.value || "");
+			return this.props.labelProps(label);
 
-		return <div {...this.props.labelProps}>{this.props.value || ""}</div>;
+
+		return <div {...this.props.labelProps}>{label}</div>;
 	};
 
 	render() {

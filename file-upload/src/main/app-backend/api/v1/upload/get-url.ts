@@ -27,7 +27,7 @@ import {
 	BaseUploaderFile
 } from "../../../../shared/types";
 import {QueryParams} from "@nu-art/thunderstorm";
-import {AssetsUploadingModuleBE} from "../../../modules/AssetsUploadingModuleBE";
+import {AssetsModuleBE} from "../../../modules/AssetsModuleBE";
 
 
 class ServerApi_GetUploadUrl
@@ -37,7 +37,7 @@ class ServerApi_GetUploadUrl
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: BaseUploaderFile[]) {
-		return AssetsUploadingModuleBE.getUrl(body);
+		return AssetsModuleBE.getUrl(body);
 	}
 }
 

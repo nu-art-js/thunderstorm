@@ -22,7 +22,7 @@ import {
 	ExpressRequest,
 	ServerApi_Get
 } from "@nu-art/thunderstorm/backend";
-import {AssetsUploadingModuleBE} from "../../../modules/AssetsUploadingModuleBE";
+import {AssetsModuleBE} from "../../../modules/AssetsModuleBE";
 import {Api_ProcessAssetManually} from "../../../../shared/types";
 
 
@@ -35,7 +35,7 @@ class ServerApi_ProcessAssetManually
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: { feId: string }) {
 		console.log("query", JSON.stringify(request.query));
 		console.log("body", JSON.stringify(request.body));
-		await AssetsUploadingModuleBE.processAssetManually(queryParams.feId);
+		await AssetsModuleBE.processAssetManually(queryParams.feId);
 	}
 }
 
