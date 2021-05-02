@@ -241,26 +241,28 @@ export class AssetsModuleBE_Class
 			}
 		}
 
-		await this.runInTransaction(async (transaction) => {
+		const finalDbAsset = await this.runInTransaction(async (transaction): Promise<DB_Asset> => {
 			const duplicatedAssets = await this.query({where: {md5Hash: tempMeta.md5Hash}});
-			if (duplicatedAssets.length && duplicatedAssets[0])
-				return this.logInfo(`${tempMeta.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
+			if (duplicatedAssets.length && duplicatedAssets[0]) {
+				this.logInfo(`${tempMeta.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
+				return {...duplicatedAssets[0], feId: tempMeta.feId};
+			}
 
 			const upsertWrite = await this.upsert_Read(tempMeta, transaction);
 			await AssetsTempModuleBE.deleteUnique(tempMeta._id, transaction);
 			return upsertWrite();
 		});
 
-		return this.notifyFrontend(FileStatus.Completed, tempMeta);
+		return this.notifyFrontend(FileStatus.Completed, finalDbAsset);
 	};
 
-	private notifyFrontend = async (status: FileStatus, asset: DB_Asset) => {
+	private notifyFrontend = async (status: FileStatus, asset: DB_Asset, feId?: string) => {
 		if (status !== FileStatus.Completed && status !== FileStatus.Processing) {
 			const message = `Error while processing asset: ${status}\n Failed on \n  Asset: ${asset.feId}\n    Key: ${asset.key}\n   Type: ${asset.mimeType}\n   File: ${asset.name}`;
 			await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Error, this, message]);
 		}
 
-		return PushPubSubModule.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: asset.feId}, {status, asset});
+		return PushPubSubModule.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: feId || asset.feId}, {status, asset});
 	};
 }
 
