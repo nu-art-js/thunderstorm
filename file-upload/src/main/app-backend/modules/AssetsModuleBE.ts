@@ -94,9 +94,9 @@ export class AssetsModuleBE_Class
 
 	async queryUnique(where: Clause_Where<DB_Asset>, request?: ExpressRequest): Promise<DB_Asset> {
 		const asset = await super.queryUnique(where, request);
-		let signedUrl = (asset.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset.signedUrl : undefined;
+		const signedUrl = (asset.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset.signedUrl : undefined;
 		if (!signedUrl) {
-			let url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSecuredUrl(asset.mimeType, Day);
+			const url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSecuredUrl(asset.mimeType, Day);
 			asset.signedUrl = {
 				url: url.securedUrl,
 				validUntil: currentTimeMillis() + Day - Minute

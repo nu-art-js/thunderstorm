@@ -27,7 +27,7 @@ export interface OnPageTitleChangedListener {
 }
 
 export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChangedListener, "__onPageTitleChanged">("__onPageTitleChanged");
-
+dispatch_onPageTitleChanged.dispatchUI([""])
 
 export abstract class AppPage<P, S>
 	extends BaseComponent<P, S> {
