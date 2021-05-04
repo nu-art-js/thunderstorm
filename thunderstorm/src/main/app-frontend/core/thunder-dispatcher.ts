@@ -19,13 +19,9 @@
  * limitations under the License.
  */
 
-import {
-	Dispatcher,
-	FunctionKeys,
-	ReturnPromiseType
-} from "@nu-art/ts-common";
+import {Dispatcher, FunctionKeys, ReturnPromiseType} from "@nu-art/ts-common";
 
-export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>>
+export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P extends Parameters<T[K]>= Parameters<T[K]>>
 	extends Dispatcher<T, K> {
 
 	static readonly listenersResolver: () => any[];
@@ -34,12 +30,12 @@ export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>>
 		super(method);
 	}
 
-	public dispatchUI(p: Parameters<T[K]>): ReturnPromiseType<T[K]>[] {
+	public dispatchUI(p: P): ReturnPromiseType<T[K]>[] {
 		const listeners = ThunderDispatcher.listenersResolver();
 		return listeners.filter(this.filter).map((listener: T) => listener[this.method](...p));
 	}
 
-	public async dispatchUIAsync(p: Parameters<T[K]>): Promise<ReturnPromiseType<T[K]>[]> {
+	public async dispatchUIAsync(p: P): Promise<ReturnPromiseType<T[K]>[]> {
 		const listeners = ThunderDispatcher.listenersResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			const params: any = p;
