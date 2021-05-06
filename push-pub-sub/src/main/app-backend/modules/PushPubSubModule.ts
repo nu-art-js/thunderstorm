@@ -227,7 +227,7 @@ export class PushPubSubModule_Class
 
 	sendMessage = async (persistent: boolean, _messages: TempMessages): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] }> => {
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
-		console.log("sending a message");
+		console.log("sending a message to \n" + Object.keys(_messages).join("\n"));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
 		console.log("and this is the response: " + response.responses.map(_response => _response.success));
 		return {response, messages};
