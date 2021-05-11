@@ -22,17 +22,11 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {
-	_keys,
-	Module,
-} from "@nu-art/ts-common";
-import {
-	createBrowserHistory,
-	History,
-	LocationDescriptorObject
-} from "history";
+import {_keys, Module,} from "@nu-art/ts-common";
+import {createBrowserHistory, History, LocationDescriptorObject} from "history";
 import {QueryParams} from "../../index";
 
+// move all the shit from here to the Routing module
 export class BrowserHistoryModule_Class
 	extends Module {
 	private readonly history: History<any>;
