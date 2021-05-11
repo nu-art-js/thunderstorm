@@ -17,18 +17,8 @@
  * limitations under the License.
  */
 
-import {
-	Module,
-	Second
-} from "@nu-art/ts-common";
-import {
-	BaseComponent,
-	BrowserHistoryModule,
-	XhrHttpModule,
-	StorageKey,
-	ThunderDispatcher,
-	ToastModule
-} from "@nu-art/thunderstorm/frontend";
+import {Module, Second} from "@nu-art/ts-common";
+import {BaseComponent, BrowserHistoryModule, StorageKey, ThunderDispatcher, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 import {
 	AccountApi_Create,
 	AccountApi_ListAccounts,
@@ -58,7 +48,7 @@ export const RequestKey_AccountLoginSAML = "account-login-saml";
 export const RequestKey_ValidateSession = "account-validate";
 
 export interface OnLoginStatusUpdated {
-	onLoginStatusUpdated: () => void;
+	__onLoginStatusUpdated: () => void;
 }
 
 export enum LoggedStatus {
@@ -74,12 +64,12 @@ export interface OnAccountsLoaded {
 }
 
 const dispatch_onAccountsLoaded = new ThunderDispatcher<OnAccountsLoaded, "__onAccountsLoaded">("__onAccountsLoaded");
+const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, "__onLoginStatusUpdated">("__onLoginStatusUpdated");
 
 export class AccountModule_Class
 	extends Module<Config> {
 
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
-	private dispatchUI_loginChanged!: ThunderDispatcher<OnLoginStatusUpdated, "onLoginStatusUpdated">;
 	private accounts: UI_Account[] = [];
 
 	constructor() {
@@ -101,8 +91,8 @@ export class AccountModule_Class
 		const pervStatus = this.status;
 		this.status = newStatus;
 		this.logInfo(`Login status changes: ${LoggedStatus[pervStatus]} => ${LoggedStatus[newStatus]}`);
-		this.dispatchUI_loginChanged.dispatchUI([]);
-		this.dispatchUI_loginChanged.dispatchModule([]);
+		dispatch_onLoginStatusChanged.dispatchUI([]);
+		dispatch_onLoginStatusChanged.dispatchModule([]);
 	};
 
 
@@ -110,7 +100,6 @@ export class AccountModule_Class
 		XhrHttpModule.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
 		// XhrHttpModule.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
-		this.dispatchUI_loginChanged = new ThunderDispatcher<OnLoginStatusUpdated, "onLoginStatusUpdated">("onLoginStatusUpdated");
 		const email = BaseComponent.getQueryParameter(QueryParam_Email);
 		const sessionId = BaseComponent.getQueryParameter(QueryParam_SessionId);
 
@@ -197,7 +186,7 @@ export class AccountModule_Class
 
 	logout = (url?: string) => {
 		StorageKey_SessionId.delete();
-		if(url)
+		if (url)
 			return window.location.href = url;
 
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);

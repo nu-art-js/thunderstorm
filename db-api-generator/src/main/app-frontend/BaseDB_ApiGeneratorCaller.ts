@@ -32,14 +32,14 @@ import {ApiBinder_DBCreate, ApiBinder_DBDelete, ApiBinder_DBQuery, ApiBinder_DBU
 import {DB_Object} from "@nu-art/firebase";
 import {ThunderDispatcher, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 
-import {addItemToArray, Module, PartialProperties, removeItemFromArray, _keys} from "@nu-art/ts-common";
+import {_keys, addItemToArray, compare, Module, PartialProperties, removeItemFromArray} from "@nu-art/ts-common";
 
 export type BaseApiConfig = {
 	relativeUrl: string
 	key: string
 }
 
-export type SingleApiEvent = "create" | "update" | "unique" | "delete"
+export type SingleApiEvent = "create" | "update" | "unique" | "delete" | "patch"
 export type MultiApiEvent = "query"
 
 export type ApiEvent = SingleApiEvent | MultiApiEvent
@@ -91,16 +91,20 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		return false;
 	}
 
-	create(toUpsert: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
+	create(toCreate: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
 		this.logWarning("create is deprecated... use upsert");
-		return this.upsert(toUpsert, requestData);
-	}
-
-	upsert(toCreate: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
 		return this
 			.upsertImpl(toCreate, requestData)
 			.execute(async (response: DBType) => {
 				return this.onEntryCreated(response, requestData);
+			});
+	}
+
+	upsert(toUpsert: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
+		return this
+			.upsertImpl(toUpsert, requestData)
+			.execute(async (response: DBType) => {
+				return this.onEntryUpdated({...toUpsert, _id: response._id} as unknown as DBType, response, requestData);
 			});
 	}
 
@@ -114,10 +118,11 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		this.logWarning("update is deprecated... use patch");
 		return this.patch(toPatch, requestData);
 	};
+
 	patch = (toUpdate: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
 		return this.patchImpl(toUpdate, requestData)
 			.execute(async response => {
-				return this.onEntryUpdated(response, requestData);
+				return this.onEntryPatched(response, requestData);
 			});
 	};
 
@@ -186,6 +191,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		this.defaultDispatcher?.dispatchModule([event, itemId]);
 		this.defaultDispatcher?.dispatchUI([event, itemId]);
 	};
+
 	private dispatchMulti = (event: MultiApiEvent, itemId: string[]) => {
 		this.defaultDispatcher?.dispatchModule([event, itemId]);
 		this.defaultDispatcher?.dispatchUI([event, itemId]);
@@ -202,8 +208,15 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		this.dispatchSingle("delete", item._id);
 	}
 
-	protected async onEntryUpdated(item: DBType, requestData?: string): Promise<void> {
-		return this.onEntryUpdatedImpl("update", item, requestData);
+	protected async onEntryUpdated(original: DBType, item: DBType, requestData?: string): Promise<void> {
+		if (!compare(item, original))
+			this.logWarning("Hmmmm.. queried value not what was expected!");
+
+		return this.onEntryUpdatedImpl("update", original, requestData);
+	}
+
+	protected async onEntryPatched(item: DBType, requestData?: string): Promise<void> {
+		return this.onEntryUpdatedImpl("patch", item, requestData);
 	}
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType, requestData?: string): Promise<void> {
