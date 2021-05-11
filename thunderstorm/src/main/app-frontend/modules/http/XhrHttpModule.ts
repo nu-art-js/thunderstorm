@@ -119,7 +119,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			this.xhr = xhr;
 			this.xhr.onreadystatechange = () => {
 				if (xhr.readyState !== 4)
-					return;
+					return XhrHttpModule.logInfo(`Xhr request with key: ${this.key} is in readystate ${xhr.readyState}`);
 
 				resolve();
 			};
