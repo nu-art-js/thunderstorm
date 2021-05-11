@@ -39,7 +39,6 @@ import {
 import {DB_Object} from "@nu-art/firebase";
 import {
 	ThunderDispatcher,
-	ToastModule,
 	XhrHttpModule
 } from "@nu-art/thunderstorm/frontend";
 
@@ -61,8 +60,8 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
 		if (this.onError(request, resError))
 			return;
-		return ToastModule.toastError(
-			request.getStatus() === 403 ? "You are not allowed to perform this action. Please check your permissions." : "Failed to perform action.");
+
+		return XhrHttpModule.handleRequestFailure(request, resError);
 	};
 
 	private defaultDispatcher?: ThunderDispatcher<any, string>;
@@ -176,12 +175,12 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		removeItemFromArray(this.ids, item._id);
 		delete this.items[item._id];
 
-		this.dispatch()
+		this.dispatch();
 	}
 
 	protected async onEntryUpdated(item: DBType): Promise<void> {
 		this.items[item._id] = item;
-		this.dispatch()
+		this.dispatch();
 	}
 
 	protected async onGotUnique(item: DBType): Promise<void> {
@@ -189,7 +188,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			addItemToArray(this.ids, item._id);
 
 		this.items[item._id] = item;
-		this.dispatch()
+		this.dispatch();
 	}
 
 	protected async onQueryReturned(items: DBType[]): Promise<void> {
@@ -199,6 +198,6 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			return toRet;
 		}, this.items);
 
-		this.dispatch()
+		this.dispatch();
 	}
 }
