@@ -156,7 +156,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		return this.ids.map(id => this.items[id]);
 	}
 
-	public get(id: string) {
+	public get(id: string): DBType | undefined {
 		return this.items[id];
 	}
 
