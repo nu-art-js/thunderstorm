@@ -88,7 +88,7 @@ class RoutingModule_Class
 	}
 
 	goToRoute(key: string, params?: RouteParams) {
-		const pathname = RoutingModule.getPath(key);
+		const pathname = this.getPath(key);
 		const search = RoutePath.composeStringQuery(params);
 
 		BrowserHistoryModule.push({pathname, search});
