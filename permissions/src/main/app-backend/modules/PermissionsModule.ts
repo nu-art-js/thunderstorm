@@ -26,6 +26,7 @@ import {
 	PredefinedGroup,
 	PredefinedUser,
 	Request_RegisterProject,
+	Response_UsersCFsByShareGroups,
 	UserUrlsPermissions
 } from "./_imports";
 import {PermissionsAssert} from "./permissions-assert";
@@ -33,11 +34,15 @@ import {
 	ApiPermissionsDB,
 	ProjectPermissionsDB
 } from "./db-types/managment";
-import {HttpServer} from "@nu-art/thunderstorm/backend";
+import {
+	ApiException,
+	HttpServer
+} from "@nu-art/thunderstorm/backend";
 import {
 	GroupPermissionsDB,
 	UserPermissionsDB
 } from "./db-types/assign";
+import {AccountModule} from "@nu-art/user-account/backend";
 
 type Config = {
 	project: DB_PermissionProject
@@ -60,53 +65,73 @@ export class PermissionsModule_Class
 	getProjectIdentity = () => this.config.project;
 
 	async getUserUrlsPermissions(projectId: string, urlsMap: UserUrlsPermissions, userId: string, requestCustomField: StringMap) {
-		const userUrlsPermissions: UserUrlsPermissions = {};
 		const urls = Object.keys(urlsMap);
-
-		const [userDetails,apiDetails] = await Promise.all(
+		const [userDetails, apiDetails] = await Promise.all(
 			[
 				PermissionsAssert.getUserDetails(userId),
 				PermissionsAssert.getApisDetails(urls, projectId)
-			]);
+			]
+		);
 
-		urls.forEach((url, i) => {
+		return urls.reduce((userUrlsPermissions: UserUrlsPermissions, url, i) => {
 			const apiDetail = apiDetails[i];
-			if(!apiDetail)
-				return userUrlsPermissions[url] = false;
-
-			try {
-				PermissionsAssert._assertUserPermissionsImpl(apiDetail, projectId, userDetails, requestCustomField);
-				userUrlsPermissions[url] = true;
-			} catch (e) {
+			if (apiDetail) {
+				try {
+					PermissionsAssert._assertUserPermissionsImpl(apiDetail, projectId, userDetails, requestCustomField);
+					userUrlsPermissions[url] = true;
+				} catch (e) {
+					userUrlsPermissions[url] = false;
+				}
+			} else
 				userUrlsPermissions[url] = false;
-			}
-		});
 
-		return userUrlsPermissions;
+			return userUrlsPermissions;
+		}, {});
 	}
 
-	async getUserCFsByShareGroups(userId: string, groupsIds: string[]) {
+	async getUsersCFsByShareGroups(usersEmails: string[], groupsIds: string[]): Promise<Response_UsersCFsByShareGroups> {
+		const toRet: Response_UsersCFsByShareGroups = {};
+		await Promise.all(usersEmails.map(async email => {
+			const account = await AccountModule.getUser(email);
+			if (!account)
+				throw new ApiException(404, `Missing account for user ${email}`);
+
+			toRet[email] = await this.getUserCFsByShareGroups(account._id, groupsIds);
+		}));
+
+		return toRet;
+	}
+
+	async getUserCFsByShareGroups(userId: string, groupsIds: string[]): Promise<StringMap[]> {
 		const user = await UserPermissionsDB.queryUnique({accountId: userId});
-		const userGroups = user.groups || [];
 		const userCFs: StringMap[] = [];
-		userGroups.map(userGroup => {
-			if (groupsIds.find(groupId => groupId === userGroup.groupId) && userGroup.customField)
-				userCFs.push(userGroup.customField);
+		if (!user.groups)
+			return userCFs;
+
+		user.groups.forEach(userGroup => {
+			if (!groupsIds.find(groupId => groupId === userGroup.groupId))
+				return;
+
+			if (!userGroup.customField)
+				return;
+
+			userCFs.push(userGroup.customField);
 		});
 
 		return userCFs;
 	}
 
 	async registerProject() {
-		const serverRoutes = HttpServer.getRoutes();
+		const routes: string[] = HttpServer.getRoutes().reduce((carry: string[], httpRoute) => {
+			if (httpRoute.path !== "*")
+				carry.push(httpRoute.path);
 
-		let routes: string[] = serverRoutes.map((httpRoute: { path: string; }) => httpRoute.path);
-		routes = routes.filter(path => path !== '*');
+			return carry;
+		}, []);
 
-		const projectIdentity = PermissionsModule.getProjectIdentity();
 		const projectRoutes = {
-			project: projectIdentity,
-			routes: routes,
+			project: PermissionsModule.getProjectIdentity(),
+			routes,
 			predefinedGroups: this.config.predefinedGroups,
 			predefinedUser: this.config.predefinedUser
 		};

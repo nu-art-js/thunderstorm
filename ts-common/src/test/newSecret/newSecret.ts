@@ -31,3 +31,5 @@ export const testSuit_newSecret = {
 		return console.log(generateHex(256));
 	}
 };
+
+// testSuit_newSecret.processor('').catch()
