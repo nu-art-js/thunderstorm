@@ -43,7 +43,7 @@ export class App
 		ev.stopPropagation();
 	};
 
-	onLoginStatusUpdated = () => {
+	__onLoginStatusUpdated = () => {
 		const status = AccountModule.getLoggedStatus();
 		console.log('status update', status); 
 	};

@@ -20,12 +20,12 @@
  */
 
 import {ObjectTS} from "@nu-art/ts-common";
-import {CSSProperties} from "react";
+import {HTMLProps} from "react";
 import {Stylable} from "../tools/Stylable";
 import React = require("react");
 
 export type HeaderRenderer<T extends ObjectTS> = {
-	[P in keyof T]: (columnKey: P) => React.ReactNode
+	[P in keyof Partial<T>]: (columnKey: P) => React.ReactNode
 };
 
 export type ActionItemRenderer<P> = (rowIndex: number, actionKey: P) => React.ReactNode;
@@ -35,7 +35,7 @@ export type ActionsRenderer<A extends ObjectTS> = {
 
 export type CellRenderer<P, V> = (cellValue: V, rowIndex: number, columnKey: P) => React.ReactNode;
 export type RowRenderer<T extends ObjectTS> = {
-	[P in keyof T]: CellRenderer<P, T[P]>
+	[P in keyof Partial<T>]: CellRenderer<P, T[P]>
 };
 
 export type TableProps<T extends ObjectTS, A extends ObjectTS = never> = Stylable & {
@@ -46,9 +46,10 @@ export type TableProps<T extends ObjectTS, A extends ObjectTS = never> = Stylabl
 	cellRenderer: CellRenderer<keyof T, T[keyof T]> | RowRenderer<T>
 	actions?: (keyof A)[],
 	actionsRenderer?: ActionsRenderer<A> | ActionItemRenderer<keyof A>
-	body?: Stylable
-	tr?: Stylable
-	td?: Stylable
+	table?: HTMLProps<HTMLTableElement> | (() => HTMLProps<HTMLTableElement>)
+	body?: HTMLProps<HTMLTableSectionElement> | (() => HTMLProps<HTMLTableSectionElement>)
+	tr?: HTMLProps<HTMLTableRowElement> | ((rowIndex: number) => HTMLProps<HTMLTableRowElement>)
+	td?: HTMLProps<HTMLTableDataCellElement> | ((rowIndex: number, columnKey: keyof T | keyof A) => HTMLProps<HTMLTableDataCellElement>)
 };
 
 export class TS_Table<T extends ObjectTS, A extends ObjectTS = never>
@@ -58,8 +59,8 @@ export class TS_Table<T extends ObjectTS, A extends ObjectTS = never>
 	}
 
 	render() {
-		return <table className={this.props.className} style={this.props.style as CSSProperties}>
-			<tbody className={this.props.body?.className} style={this.props.body?.style as CSSProperties}>
+		return <table {...(typeof this.props.table === "function" ? this.props.table() : this.props.table)}>
+			<tbody {...(typeof this.props.body === "function" ? this.props.body() : this.props.body)}>
 			{this.renderTableHeader()}
 			{this.renderTableBody()}
 			</tbody>
@@ -77,10 +78,9 @@ export class TS_Table<T extends ObjectTS, A extends ObjectTS = never>
 			}, {} as HeaderRenderer<T>);
 
 		return (
-			<tr key={`${this.props.id}-0`} className={this.props.tr?.className} style={this.props.tr?.style as CSSProperties}>
-				{this.props.header.map(
-					(header, index) => <td key={`${this.props.id}-${index}`} className={this.props.td?.className}
-					                       style={this.props.td?.style as CSSProperties}>{renderers[header](header)}</td>)}
+			<tr key={`${this.props.id}-0`} {...(typeof this.props.tr === "function" ? this.props.tr(-1) : this.props.tr)}>
+				{this.props.header.map((header, index) => <td
+					key={`${this.props.id}-${index}`} {...(typeof this.props.td === "function" ? this.props.td(-1, header) : this.props.td)}>{renderers[header](header)}</td>)}
 				{this.props.actions?.map((action, index) => <td key={`${this.props.id}-${this.props.header.length + index}`}/>)}
 			</tr>
 		);
@@ -107,15 +107,15 @@ export class TS_Table<T extends ObjectTS, A extends ObjectTS = never>
 
 
 		return this.props.rows.map((row, rowIndex) => (
-			<tr key={`${this.props.id}-${rowIndex}`} className={this.props.tr?.className} style={this.props.tr?.style as CSSProperties}>
+			<tr key={`${this.props.id}-${rowIndex}`} {...(typeof this.props.tr === "function" ? this.props.tr(rowIndex) : this.props.tr)}>
 				{this.props.header.map((header, columnIndex) => {
-					return <td key={`${this.props.id}-${columnIndex}`} className={this.props.td?.className} style={this.props.td?.style as CSSProperties}>
+					return <td key={`${this.props.id}-${columnIndex}`} {...(typeof this.props.td === "function" ? this.props.td(rowIndex, header) : this.props.td)}>
 						{renderers[header](row[header], rowIndex, this.props.header[columnIndex])}
 					</td>;
 				})}
 				{this.props.actions?.map((actionKey, index) => {
-					return <td key={`${this.props.id}-${this.props.header.length + index}`} className={this.props.td?.className}
-					           style={this.props.td?.style as CSSProperties}>
+					return <td
+						key={`${this.props.id}-${this.props.header.length + index}`} {...(typeof this.props.td === "function" ? this.props.td(rowIndex, actionKey) : this.props.td)}>
 						{actionsRenderers?.[actionKey](rowIndex, actionKey)}
 					</td>;
 				})}
