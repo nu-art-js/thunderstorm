@@ -30,7 +30,7 @@ import {
 } from "@nu-art/thunderstorm";
 import {ApiBinder_DBCreate, ApiBinder_DBDelete, ApiBinder_DBQuery, ApiBinder_DBUniuqe, DefaultApiDefs, GenericApiDef} from "../index";
 import {DB_Object} from "@nu-art/firebase";
-import {ThunderDispatcher, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
+import {ThunderDispatcher,  XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 
 import {_keys, addItemToArray, compare, Module, PartialProperties, removeItemFromArray} from "@nu-art/ts-common";
 
@@ -51,8 +51,8 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
 		if (this.onError(request, resError))
 			return;
-		return ToastModule.toastError(
-			request.getStatus() === 403 ? "You are not allowed to perform this action. Please check your permissions." : "Failed to perform action.");
+
+		return XhrHttpModule.handleRequestFailure(request, resError);
 	};
 
 	private defaultDispatcher?: ThunderDispatcher<any, string, ApiCallerEventType>;

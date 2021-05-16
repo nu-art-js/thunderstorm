@@ -54,7 +54,7 @@ export class UploaderFEModule_Class
 	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
 		super.__onMessageReceived(notification);
 		if (notification.data?.status === FileStatus.Completed || notification.data?.status?.startsWith("Error"))
-			PushPubSubModule.unsubscribe({pushKey: PushKey_FileUploaded, props: notification.props}).catch();
+			PushPubSubModule.unsubscribe({pushKey: PushKey_FileUploaded, props: notification.props});
 	}
 }
 

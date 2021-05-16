@@ -29,6 +29,10 @@ import {
 	TS_TextArea
 } from "@nu-art/thunderstorm/frontend";
 import {generateHex} from "@nu-art/ts-common";
+import {
+	Platform_Jira,
+	Platform_Slack
+} from "../../shared/api";
 
 type Props = {
 	component?: React.ReactNode
@@ -64,7 +68,7 @@ export class BugReport
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-		BugReportModule.sendBugReport("Automatic submission", "these logs were triggered by a UI failure");
+		BugReportModule.sendBugReport("Automatic submission", "these logs were triggered by a UI failure",[Platform_Slack]);
 		this.setState({
 			              error: error,
 			              errorInfo: errorInfo
@@ -79,7 +83,7 @@ export class BugReport
 				return ToastModule.toastError('you must first add a subject');
 			if (!this.state.description)
 				return ToastModule.toastError('you must first add a description')
-			BugReportModule.sendBugReport(this.state.subject, this.state.description || '');
+			BugReportModule.sendBugReport(this.state.subject, this.state.description || '',[Platform_Jira]);
 			this.setState({subject: undefined, description: undefined});
 			DialogModule.close();
 		};
