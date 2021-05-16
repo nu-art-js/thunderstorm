@@ -53,7 +53,7 @@ class RoutingModule_Class
 		this.ordinalRoutes.splice(0);
 	}
 
-	addRoute(key: string, route: string, component: React.ComponentClass | string) {
+	addRoute(key: string, route: string, component: React.ComponentClass<any, any> | string) {
 		const previousRoute = this.routes[key];
 		if (previousRoute)
 			throw new BadImplementationException(
