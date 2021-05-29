@@ -89,6 +89,7 @@ export class PushPubSubModule_Class
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, "__onMessageReceived">("__onMessageReceived");
 
 	private readonly pushSessionId: string;
+	protected timeout: number = 800;
 
 	constructor() {
 		super();
@@ -227,15 +228,18 @@ export class PushPubSubModule_Class
 			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
 		};
 
-		XhrHttpModule
-			.createRequest<PubSubRegisterClient>(HttpMethod.POST, "register-pub-sub-tab")
-			.setRelativeUrl("/v1/push/register")
-			.setJsonBody(body)
-			.setOnError("Failed to register for push")
-			.execute((response) => {
-				NotificationsModule.setNotificationList(response);
-				this.logVerbose("Finished register PubSub");
-			});
+		this.debounce(() => {
+			XhrHttpModule
+				.createRequest<PubSubRegisterClient>(HttpMethod.POST, "register-pub-sub-tab")
+				.setRelativeUrl("/v1/push/register")
+				.setJsonBody(body)
+				.setOnError("Failed to register for push")
+				.execute((response) => {
+					NotificationsModule.setNotificationList(response);
+					this.logVerbose("Finished register PubSub");
+				});
+
+		}, "debounce-register", this.timeout);
 	};
 }
 
