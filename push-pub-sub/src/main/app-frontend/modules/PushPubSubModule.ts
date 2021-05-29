@@ -17,6 +17,7 @@
  */
 
 import {
+	__stringify,
 	addItemToArray,
 	BadImplementationException,
 	compare,
@@ -219,16 +220,18 @@ export class PushPubSubModule_Class
 	};
 
 	private register = (): void => {
-		if (!this.firebaseToken)
+		const firebaseToken = this.firebaseToken;
+		if (!firebaseToken)
 			return this.logWarning("No Firebase token...");
 
-		const body: Request_PushRegister = {
-			firebaseToken: this.firebaseToken,
-			pushSessionId: this.getPushSessionId(),
-			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
-		};
 
 		this.debounce(() => {
+			const body: Request_PushRegister = {
+				firebaseToken,
+				pushSessionId: this.getPushSessionId(),
+				subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
+			};
+			this.logInfo("Registering subscriptions", ...this.subscriptions.map(s => s.pushKey));
 			XhrHttpModule
 				.createRequest<PubSubRegisterClient>(HttpMethod.POST, "register-pub-sub-tab")
 				.setRelativeUrl("/v1/push/register")
