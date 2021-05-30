@@ -33,11 +33,14 @@ export type BugReport = {
 	log: string[]
 }
 
+export const Platform_Jira = "jira";
+export const Platform_Slack = "slack";
+
 export type Request_BugReport = {
-	subject: string;
-	description: string;
+	subject: string
+	description: string
 	reports: BugReport[]
-	createTicket: boolean
+	platforms?: string[]
 };
 
 export type ReportMetaData = {

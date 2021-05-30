@@ -7,17 +7,13 @@ import {
 
 type Props = {
 	url: string
-	loadingComponent: React.ComponentType
+	loadingComponent?: React.ComponentType
 	fallback?: React.ComponentType
 }
 
 export class PermissionsComponent
 	extends BaseComponent<Props>
 	implements OnPermissionsChanged {
-
-	static defaultProps = {
-		loadingComponent: () => <>Loading</>
-	};
 
 	__onPermissionsChanged() {
 		this.forceUpdate();
@@ -27,7 +23,7 @@ export class PermissionsComponent
 		const {url} = this.props;
 		const permitted = PermissionsFE.doesUserHavePermissions(url);
 		if (permitted === undefined)
-			return <this.props.loadingComponent/>;
+			return this.props.loadingComponent ? <this.props.loadingComponent/> : null;
 
 		if (permitted)
 			return <>{this.props.children}</>;
