@@ -231,7 +231,12 @@ export class PushPubSubModule_Class
 				pushSessionId: this.getPushSessionId(),
 				subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
 			};
-			this.logInfo("Registering subscriptions", ...this.subscriptions.map(s => s.pushKey));
+
+			this.logDebug("Registering subscriptions");
+			for (const sub of this.subscriptions) {
+				this.logDebug(`${sub.pushKey} => ${sub.props ? __stringify(sub.props) : "no props"}`);
+			}
+
 			XhrHttpModule
 				.createRequest<PubSubRegisterClient>(HttpMethod.POST, "register-pub-sub-tab")
 				.setRelativeUrl("/v1/push/register")

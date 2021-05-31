@@ -34,10 +34,7 @@ import {
 	ApiPermissionsDB,
 	ProjectPermissionsDB
 } from "./db-types/managment";
-import {
-	ApiException,
-	HttpServer
-} from "@nu-art/thunderstorm/backend";
+import {HttpServer} from "@nu-art/thunderstorm/backend";
 import {
 	GroupPermissionsDB,
 	UserPermissionsDB
@@ -94,7 +91,7 @@ export class PermissionsModule_Class
 		await Promise.all(usersEmails.map(async email => {
 			const account = await AccountModule.getUser(email);
 			if (!account)
-				throw new ApiException(404, `Missing account for user ${email}`);
+				return;
 
 			toRet[email] = await this.getUserCFsByShareGroups(account._id, groupsIds);
 		}));
