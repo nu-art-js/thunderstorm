@@ -132,7 +132,7 @@ export class AccountsModule_Class
 		return session;
 	}
 
-	async createAccountWithoutLogin(email: string, password?: string, password_check?: string): Promise<UI_Account> {
+	async addNewAccount(email: string, password?: string, password_check?: string): Promise<UI_Account> {
 		let account: UI_Account;
 		if (password && password_check)
 			account = await this.createAccount({password, password_check, email});
