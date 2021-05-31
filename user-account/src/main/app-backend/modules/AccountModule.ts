@@ -132,6 +132,16 @@ export class AccountsModule_Class
 		return session;
 	}
 
+	async addNewAccount(email: string, password?: string, password_check?: string): Promise<UI_Account> {
+		let account: UI_Account;
+		if (password && password_check)
+			account = await this.createAccount({password, password_check, email});
+		else
+			account = await this.createSAML(email);
+
+		return {_id: account._id, email: account.email};
+	}
+
 	async createAccount(request: Request_CreateAccount) {
 		request.email = request.email.toLowerCase();
 		validate(request.email, validateEmail);
