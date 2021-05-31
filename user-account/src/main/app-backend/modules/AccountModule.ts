@@ -133,13 +133,15 @@ export class AccountsModule_Class
 	}
 
 	async addNewAccount(email: string, password?: string, password_check?: string): Promise<UI_Account> {
-		let account: UI_Account;
-		if (password && password_check)
+		let account: DB_Account;
+		if (password && password_check) {
 			account = await this.createAccount({password, password_check, email});
+			await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
+		}
 		else
 			account = await this.createSAML(email);
 
-		return {_id: account._id, email: account.email};
+		return getUIAccount(account);
 	}
 
 	async createAccount(request: Request_CreateAccount) {
