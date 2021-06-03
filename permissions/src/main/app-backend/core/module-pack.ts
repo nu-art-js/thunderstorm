@@ -28,6 +28,7 @@ import {
 } from "../modules/db-types/assign";
 import {PermissionsAssert} from "../modules/permissions-assert";
 import {PermissionsModule} from "../modules/PermissionsModule";
+import {TagsDB} from "../modules/TagsModule";
 
 export const Backend_ModulePack_Permissions = [
 	ProjectPermissionsDB,
@@ -38,9 +39,11 @@ export const Backend_ModulePack_Permissions = [
 	UserPermissionsDB,
 	PermissionsAssert,
 	PermissionsModule,
+	TagsDB
 ];
 
 export * from "../modules/db-types/managment"
 export * from "../modules/db-types/assign"
 export * from "../modules/permissions-assert"
 export * from "../modules/PermissionsModule"
+export * from "../modules/TagsModule"
