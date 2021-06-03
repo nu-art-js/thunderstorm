@@ -2,9 +2,6 @@ import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
 import {DB_GroupTags} from "../../../index";
 import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
 
-export interface OnPermissionsUsersLoaded {
-	__onPermissionsUsersLoaded: () => void;
-}
 
 export interface OnPermissionsTagsLoaded {
 	__onPermissionsTagsLoaded: () => void
@@ -47,4 +44,4 @@ export class PermissionsTagsModule_Class
 	}
 }
 
-export const ApiCaller_PermissionsUser = new PermissionsTagsModule_Class();
+export const PermissionsTagsModule = new PermissionsTagsModule_Class();
