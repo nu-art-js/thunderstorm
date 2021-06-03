@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,6 +17,6 @@
  * limitations under the License.
  */
 
-export * from "../../../../index";
-export * from "../../../core/module-pack";
+import {TagsDB} from "../_imports";
 
+module.exports = TagsDB.apis();
