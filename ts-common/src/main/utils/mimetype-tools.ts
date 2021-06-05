@@ -18,8 +18,11 @@
 
 export const MimeType_txt = "text/plain";
 export const MimeType_html = "text/html";
+export const MimeType_csv = "text/csv";
+
 export const MimeType_png = "image/png";
 export const MimeType_jpeg = "image/jpeg";
 export const MimeType_jpg = "image/jpg";
 export const MimeType_gif = "image/gif";
+
 export const MimeType_pdf = "application/pdf";

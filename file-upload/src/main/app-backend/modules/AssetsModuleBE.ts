@@ -19,6 +19,7 @@
 import {
 	auditBy,
 	BadImplementationException,
+	batchActionParallel,
 	currentTimeMillis,
 	Day,
 	dispatch_onServerError,
@@ -37,7 +38,7 @@ import {_assetValidator, AssetsTempModuleBE} from "./AssetsTempModuleBE";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
 import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from "@nu-art/thunderstorm/backend";
 import {fromBuffer} from "file-type";
-import {FileTypeResult} from "file-type/core";
+import {FileExtension, MimeType} from "file-type/core";
 import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
 import {BaseDB_ApiGenerator, Config} from "@nu-art/db-api-generator/backend";
 
@@ -45,6 +46,14 @@ import {BaseDB_ApiGenerator, Config} from "@nu-art/db-api-generator/backend";
 type MyConfig = Config<DB_Asset> & {
 	bucketName?: string
 	path: string
+}
+
+export  type FileTypeResult = {
+	ext: FileExtension;
+	mime: MimeType;
+} | {
+	ext: string;
+	mime: string;
 }
 
 export type FileTypeValidation = {
@@ -87,6 +96,19 @@ export class AssetsModuleBE_Class
 
 	mimeTypeValidator: TypedMap<FileValidator> = {};
 	fileValidator: TypedMap<FileTypeValidation> = {};
+
+	init() {
+		super.init();
+		this.storage = FirebaseModule.createAdminSession("file-uploader").getStorage();
+	}
+
+	async getAssetsContent(assetIds: string[]) {
+		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, chunk => AssetsModuleBE.query({where: {_id: {$in: chunk}}}));
+		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)))
+		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()))
+
+		return assetIds.map((id, index) => ({asset: assetsToSync[index], content: assetContent[index]}))
+	}
 
 	registerTypeValidator(mimeType: string, validator: (file: FileWrapper, doc: DB_Asset) => Promise<void>) {
 
@@ -134,11 +156,6 @@ export class AssetsModuleBE_Class
 
 		return module.delete({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 	};
-
-	init() {
-		super.init();
-		this.storage = FirebaseModule.createAdminSession("file-uploader").getStorage();
-	}
 
 	async getUrl(files: BaseUploaderFile[]): Promise<TempSecureUrl[]> {
 		const bucketName = this.config?.bucketName;
@@ -229,6 +246,7 @@ export class AssetsModuleBE_Class
 			}
 		} catch (e) {
 			//TODO delete the file and the temp doc
+			this.logError(`Error while processing asset: ${tempMeta.name}`, e)
 			return this.notifyFrontend(FileStatus.ErrorWhileProcessing, tempMeta);
 		}
 
@@ -264,6 +282,7 @@ export class AssetsModuleBE_Class
 
 		return PushPubSubModule.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: feId || asset.feId}, {status, asset});
 	};
+
 }
 
 
