@@ -75,6 +75,7 @@ export class GroupsDB_Class
 	static _validator: TypeValidator<DB_PermissionsGroup> = {
 		_id: validateStringAndNumbersWithDashes,
 		label: validateGroupLabel,
+		tags: undefined,
 		accessLevelIds: validateArray(validateUniqueId, false),
 		customFields: validateArray(validateObjectValues<string>(validateCustomFieldValues), false),
 		__accessLevels: undefined,
