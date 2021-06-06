@@ -44,4 +44,4 @@ export class PermissionsTagsModule_Class
 	}
 }
 
-export const PermissionsTagsModule = new PermissionsTagsModule_Class();
+export const ApiCaller_PermissionsTags = new PermissionsTagsModule_Class();
