@@ -49,6 +49,7 @@ import {
 	compare,
 	filterDuplicates,
 	filterInstances,
+	removeItemFromArray,
 	TypeValidator,
 	validateArray,
 	validateObjectValues,
@@ -119,11 +120,23 @@ export class GroupsDB_Class
 		}
 	}
 
-	protected async getGroupsByTags(tags: string[]) {
+	async getGroupsByTags(tags: string[]) {
 		const groupsByTags = await this.collection.query({where: {tags: {$aca: tags}}});
 		if (!groupsByTags)
 			return [];
 		return groupsByTags;
+	}
+
+	async deleteTags(tag: string) {
+		const groupsWithTags: DB_PermissionsGroup[] | undefined = await this.collection.query({where: {tags: {$aca: [tag]}}});
+		if (!groupsWithTags)
+			return;
+		for (const _group of groupsWithTags) {
+			if (!_group.tags)
+				continue;
+			removeItemFromArray(_group.tags, tag);
+			await this.collection.upsert(_group);
+		}
 	}
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup, request?: ExpressRequest) {

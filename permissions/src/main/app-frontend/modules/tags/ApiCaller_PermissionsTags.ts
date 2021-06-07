@@ -26,6 +26,7 @@ export class PermissionsTagsModule_Class
 
 	//delete all tags in groups too
 	protected async onEntryDeleted(response: DB_GroupTags): Promise<void> {
+		this.query();
 	}
 
 	protected async onEntryUpdated(response: DB_GroupTags): Promise<void> {
