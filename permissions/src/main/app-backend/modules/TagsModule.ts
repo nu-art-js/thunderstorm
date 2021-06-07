@@ -6,13 +6,20 @@ import {
 	ServerApi_Unique,
 	validateStringAndNumbersWithDashes
 } from "@nu-art/db-api-generator/backend";
-import {Clause_Where} from "@nu-art/firebase";
-import {ServerApi} from "@nu-art/thunderstorm/backend";
+import {
+	Clause_Where,
+	FirestoreQuery
+} from "@nu-art/firebase";
+import {
+	ExpressRequest,
+	ServerApi
+} from "@nu-art/thunderstorm/backend";
 import {
 	TypeValidator,
 	validateRegexp,
 } from "@nu-art/ts-common";
 import {DB_GroupTags} from "../..";
+import {GroupPermissionsDB} from "./db-types/assign";
 
 const validateGroupLabel = validateRegexp(/^[A-Za-z-\._ ]+$/);
 
@@ -35,6 +42,11 @@ export class TagsDB_Class
 	protected internalFilter(item: DB_GroupTags): Clause_Where<DB_GroupTags>[] {
 		const {label} = item;
 		return [{label}];
+	}
+
+	async delete(query: FirestoreQuery<DB_GroupTags>, request?: ExpressRequest) {
+		query.where?._id && await GroupPermissionsDB.deleteTags(query.where?._id.toString())
+		return super.delete(query, request)
 	}
 
 	apis(pathPart?: string): ServerApi<any>[] {
