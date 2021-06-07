@@ -27,8 +27,8 @@ import {testDatabase} from "./database/test-database";
 import {scenarioUpsert} from "./firestore/collection/test/upsert";
 
 const mainScenario = __scenario("Firebase testing");
-mainScenario.add(testDatabase)
-// mainScenario.add(testCollections);
+// mainScenario.add(testDatabase)
+mainScenario.add(testCollections);
 // mainScenario.add(testStorage);
 // mainScenario.add(scenarioUpsert);
 // mainScenario.add(testFirestoreBackup);

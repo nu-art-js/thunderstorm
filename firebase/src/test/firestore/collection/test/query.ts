@@ -37,7 +37,7 @@ import {
 } from "../_core/consts";
 import {
 	FB_Type,
-	Query_TestCase,
+	Query_TestCase
 } from "../_core/types";
 
 export type QueryGeneral_TestCase = Query_TestCase<FB_Type, FB_Type[]> & {
@@ -174,7 +174,7 @@ const queryTests: QueryGeneral_TestCase[] = [
 		label: "Query nested object",
 		where: {nestedObject: {one: testItem1}},
 		expected: [testInstance1]
-	},
+	}
 ];
 
 
@@ -188,3 +188,30 @@ for (const queryTest of queryTests) {
 
 	scenarioQuery.add(query(queryTest.label, queryTest.expected, queryTest, resultsSorter));
 }
+
+
+export const scenarioQueryNested = __scenario("Query Nested");
+scenarioQueryNested.add(testCollection.processClean(`Populate db and query`, async (collection) => {
+	const instances1 = {
+		numeric: 1,
+		stringValue: "string",
+		booleanValue: true,
+		stringArray: [],
+		objectArray: [],
+		nestedObject: {one: {key: "", value: 1}, two: {key: "", value: 5643524}}
+	};
+	const instances2 = {
+		numeric: 1,
+		stringValue: "string",
+		booleanValue: true,
+		stringArray: [],
+		objectArray: [],
+	};
+
+	await collection.insertAll([instances1,instances2 ]);
+
+
+	// @ts-ignore
+	const res = await collection.query({where: {'nestedObject.one.value': 	{$gte: 1}	}})
+	assert('No match',res[0],instances1)
+}));

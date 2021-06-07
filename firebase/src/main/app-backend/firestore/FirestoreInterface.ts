@@ -45,7 +45,7 @@ export class FirestoreInterface {
 			myQuery = Object.keys(whereClause).reduce((_query: FirestoreType_Query, _whereField) => {
 				const whereField = _whereField;
 				const whereValue: any = whereClause[whereField as keyof Type];
-				if (whereValue === undefined || whereValue === null)
+				if (!this.isDefined(whereValue))
 					return _query;
 
 				if (Array.isArray(whereValue)) {
@@ -97,16 +97,20 @@ export class FirestoreInterface {
 		return myQuery as admin.firestore.Query;
 	}
 
+	private static isDefined(val: any):boolean{
+		return val !== null && val !== undefined
+	}
+
 	private static isQueryObject(whereValue: any) {
 		return typeof whereValue === "object" && Object.keys(whereValue).length === 1 && (
-			whereValue["$ac"] ||
-			whereValue["$aca"] ||
-			whereValue["$in"] ||
-			whereValue["$gt"] ||
-			whereValue["$gte"] ||
-			whereValue["$lt"] ||
-			whereValue["$lte"] ||
-			whereValue["$eq"]);
+			this.isDefined(whereValue["$ac"]) ||
+			this.isDefined(whereValue["$aca"]) ||
+			this.isDefined(whereValue["$in"]) ||
+			this.isDefined(whereValue["$gt"]) ||
+			this.isDefined(whereValue["$gte"]) ||
+			this.isDefined(whereValue["$lt"]) ||
+			this.isDefined(whereValue["$lte"]) ||
+			this.isDefined(whereValue["$eq"]));
 	}
 
 	static assertUniqueDocument(results: FirestoreType_DocumentSnapshot[], query: FirestoreQuery<any>, collectionName: string): (FirestoreType_DocumentSnapshot | undefined) {
