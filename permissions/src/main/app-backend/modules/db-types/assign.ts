@@ -57,7 +57,7 @@ import {
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
 import {PermissionsShare} from "../permissions-share";
-import { UI_Account } from "@nu-art/user-account";
+import {UI_Account} from "@nu-art/user-account";
 
 const validateUserUuid = validateRegexp(/^.{0,50}$/);
 const validateGroupLabel = validateRegexp(/^[A-Za-z-\._ ]+$/);
@@ -119,10 +119,17 @@ export class GroupsDB_Class
 		}
 	}
 
+	protected async getGroupsByTags(tags: string[]) {
+		const groupsByTags = await this.collection.query({where: {tags: {$aca: tags}}});
+		if (!groupsByTags)
+			return [];
+		return groupsByTags;
+	}
+
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup, request?: ExpressRequest) {
 		if (request) {
 			const account = await AccountModule.validateSession(request);
-			dbInstance._audit = auditBy(account.email)
+			dbInstance._audit = auditBy(account.email);
 		}
 
 		if (!dbInstance.accessLevelIds)
@@ -147,7 +154,7 @@ export class GroupsDB_Class
 			const _groups = predefinedGroups.map(group => ({_id: this.getPredefinedGroupId(projectId, group._id), label: `${projectName}--${group.key}-${group.label}`}));
 
 			const dbGroups = filterInstances(await batchAction(_groups.map(group => group._id), 10, (chunk) => {
-				return transaction.query(this.collection, {where: {_id: {$in: chunk}}})
+				return transaction.query(this.collection, {where: {_id: {$in: chunk}}});
 			}));
 
 			//TODO patch the predefined groups, in case app changed the label of the group..
@@ -177,7 +184,7 @@ export class UsersDB_Class
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser, request?: ExpressRequest): Promise<void> {
 		if (request) {
 			const account = await AccountModule.validateSession(request);
-			dbInstance._audit = auditBy(account.email)
+			dbInstance._audit = auditBy(account.email);
 		}
 
 		this.setGroupIds(dbInstance);
