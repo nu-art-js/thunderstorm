@@ -21,6 +21,7 @@ export class PermissionsTagsModule_Class
 	}
 
 	protected async onEntryCreated(response: DB_GroupTags): Promise<void> {
+		this.query();
 	}
 
 	protected async onEntryDeleted(response: DB_GroupTags): Promise<void> {
