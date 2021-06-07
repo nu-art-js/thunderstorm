@@ -29,7 +29,6 @@ export class TagsDB_Class
 
 	constructor() {
 		super(CollectionNameTags, TagsDB_Class._validator, "permissionsTags");
-		this.setLockKeys(['label']);
 	}
 
 
