@@ -1,5 +1,6 @@
 /*
- * Firebase is a simpler Typescript wrapper to all of firebase services.
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,11 +17,6 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {scenarioAddData} from "./test/add-data";
-import {scenarioRemoveData} from "./test/remove-data";
+import {TagsDB} from "../_imports";
 
-
-export const testDatabase = __scenario("test-database");
-testDatabase.add(scenarioAddData);
-// testDatabase.add(scenarioRemoveData)
+module.exports = TagsDB.apis();

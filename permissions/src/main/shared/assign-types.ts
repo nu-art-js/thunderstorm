@@ -27,8 +27,13 @@ export type Base_AccessLevels = {
 	value: number
 }
 
+export type DB_GroupTags = DB_Object & {
+	label: string
+}
+
 export type Request_CreateGroup = {
 	label: string,
+	tags?: string[],
 	accessLevelIds?: string[],
 	__accessLevels?: Base_AccessLevels[],
 	customFields?: StringMap[]

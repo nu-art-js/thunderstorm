@@ -45,7 +45,7 @@ export class FirestoreInterface {
 			myQuery = Object.keys(whereClause).reduce((_query: FirestoreType_Query, _whereField) => {
 				const whereField = _whereField;
 				const whereValue: any = whereClause[whereField as keyof Type];
-				if (whereValue === undefined || whereValue === null)
+				if (!this.isDefined(whereValue))
 					return _query;
 
 				if (Array.isArray(whereValue)) {
@@ -55,9 +55,9 @@ export class FirestoreInterface {
 							"is due to Firestore limitation... ");
 
 					if (whereValue.length === 1)
-						return _query.where(whereField, 'array-contains', whereValue[0]);
+						return _query.where(whereField, "array-contains", whereValue[0]);
 
-					return _query.where(whereField, 'array-contains-any', whereValue);
+					return _query.where(whereField, "array-contains-any", whereValue);
 				}
 
 				if (this.isQueryObject(whereValue)) {
@@ -74,12 +74,12 @@ export class FirestoreInterface {
 
 					if (valueType === "object") {
 						return Object.keys(_whereValue as object).reduce((__query: FirestoreType_Query, key) => {
-							return processObject(__query, `${whereKey}.${key}`, _whereValue[key])
+							return processObject(__query, `${whereKey}.${key}`, _whereValue[key]);
 						}, ___query);
 					}
 
 					throw new ImplementationMissingException(
-						`Could not compose where clause for '${whereField}' with value type '${valueType}'in query: ${__stringify(___query)}`)
+						`Could not compose where clause for '${whereField}' with value type '${valueType}'in query: ${__stringify(___query)}`);
 				};
 
 				return processObject(_query, whereField, whereValue);
@@ -97,16 +97,20 @@ export class FirestoreInterface {
 		return myQuery as admin.firestore.Query;
 	}
 
+	private static isDefined(val: any): boolean {
+		return val !== null && val !== undefined;
+	}
+
 	private static isQueryObject(whereValue: any) {
 		return typeof whereValue === "object" && Object.keys(whereValue).length === 1 && (
-			whereValue["$ac"] ||
-			whereValue["$aca"] ||
-			whereValue["$in"] ||
-			whereValue["$gt"] ||
-			whereValue["$gte"] ||
-			whereValue["$lt"] ||
-			whereValue["$lte"] ||
-			whereValue["$eq"]);
+			this.isDefined(whereValue["$ac"]) ||
+			this.isDefined(whereValue["$aca"]) ||
+			this.isDefined(whereValue["$in"]) ||
+			this.isDefined(whereValue["$gt"]) ||
+			this.isDefined(whereValue["$gte"]) ||
+			this.isDefined(whereValue["$lt"]) ||
+			this.isDefined(whereValue["$lte"]) ||
+			this.isDefined(whereValue["$eq"]));
 	}
 
 	static assertUniqueDocument(results: FirestoreType_DocumentSnapshot[], query: FirestoreQuery<any>, collectionName: string): (FirestoreType_DocumentSnapshot | undefined) {
@@ -123,7 +127,7 @@ export class FirestoreInterface {
 		_keys(instance).forEach((key) => {
 			if (instance[key] === undefined || instance[key] === null) {
 				throw new BadImplementationException(
-					`No where properties are allowed to be null or undefined.\nWhile querying collection '${collection.name}' we found property '${key}' to be '${instance[key]}'`)
+					`No where properties are allowed to be null or undefined.\nWhile querying collection '${collection.name}' we found property '${key}' to be '${instance[key]}'`);
 			}
 		});
 

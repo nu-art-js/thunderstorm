@@ -43,7 +43,7 @@ export class Example_TSTextArea
 		const props1 = this.props1();
 		const props2 = this.props2();
 		return <>
-			<Example_NewProps name={"TS Input"} renderer={TS_TextArea} data={[props1, props2]}/>
+			<Example_NewProps name={"TS Text Area"} renderer={TS_TextArea} data={[props1, props2]}/>
 		</>
 	}
 

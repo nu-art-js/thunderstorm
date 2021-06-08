@@ -29,9 +29,10 @@ import {XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	ApiBugReport,
+	Platform_Jira,
 	Request_BugReport
 } from "../../shared/api";
-import {Dialog_Success} from "../ui/Dialog_Success";
+import {Dialog_JiraOpened} from "../ui/Dialog_JiraOpened";
 
 export const RequestKey_BugReportApi = "BugReport";
 
@@ -51,22 +52,23 @@ export class BugReportModule_Class
 		this.reports.forEach(report => BeLogged.addClient(report));
 	}
 
-	sendBugReport = (subject: string, description: string) => {
+	sendBugReport = (subject: string, description: string, platforms?: string[]) => {
 		const body: Request_BugReport = {
 			subject,
 			description,
 			reports: this.reports.map(report => ({log: report.buffers, name: report.name})),
-			createTicket: true
+			platforms
 		};
 
 		XhrHttpModule
 			.createRequest<ApiBugReport>(HttpMethod.POST, RequestKey_BugReportApi)
 			.setJsonBody(body)
 			.setRelativeUrl("/v1/bug-reports/report")
-			.setOnError(`Error updating the report`)
-			.setOnSuccessMessage(`Bug report sent!`)
+			.setOnError(() => this.logWarning(`Error updating the report`))
 			.execute((response) => {
-				response.map(_url => Dialog_Success.show(_url.issueId))
+				const jiraTicket = response.find(ticket => ticket.platform === Platform_Jira);
+				if(jiraTicket)
+					Dialog_JiraOpened.show(jiraTicket.issueId)
 			});
 	};
 }

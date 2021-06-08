@@ -21,10 +21,15 @@ import {BugReportModule} from "../modules/BugReportModule";
 import {AdminBRModule} from "../modules/AdminBRModule";
 import {JiraBugReportIntegrator} from "../modules/JiraBugReportIntegrator";
 import {JiraModule} from "@nu-art/jira";
+import {SlackBugReportIntegrator} from "../modules/SlackBugReportIntegrator";
+import {SlackModule} from "@nu-art/storm/slack";
+
 
 export const Backend_ModulePack_BugReport = [
 	BugReportModule,
 	AdminBRModule,
 	JiraBugReportIntegrator,
-	JiraModule
+	JiraModule,
+	SlackBugReportIntegrator,
+	SlackModule
 ];

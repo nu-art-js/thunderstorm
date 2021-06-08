@@ -36,8 +36,9 @@ import {
 	FirebaseType_BatchResponse,
 	FirebaseType_Message,
 	FirestoreCollection,
+	FirestoreTransaction,
 	PushMessagesWrapper
-} from '@nu-art/firebase/backend';
+} from "@nu-art/firebase/backend";
 // noinspection TypeScriptPreferShortImport
 import {
 	DB_Notifications,
@@ -76,17 +77,17 @@ export class PushPubSubModule_Class
 		const session = FirebaseModule.createAdminSession();
 		const firestore = session.getFirestore();
 
-		this.pushSessions = firestore.getCollection<DB_PushSession>('push-sessions', ["pushSessionId"]);
-		this.pushKeys = firestore.getCollection<DB_PushKeys>('push-keys');
-		this.notifications = firestore.getCollection<DB_Notifications>('notifications', ["_id"]);
+		this.pushSessions = firestore.getCollection<DB_PushSession>("push-sessions", ["pushSessionId"]);
+		this.pushKeys = firestore.getCollection<DB_PushKeys>("push-keys");
+		this.notifications = firestore.getCollection<DB_Notifications>("notifications", ["_id"]);
 		this.messaging = session.getMessaging();
 	}
 
 	async register(body: Request_PushRegister, request: ExpressRequest): Promise<DB_Notifications[]> {
 		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync([request]);
-		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data?._id || resp.find(e => e.key === 'RemoteProxy')?.data;
+		const userId: string | undefined = resp.find(e => e.key === "AccountsModule")?.data?._id || resp.find(e => e.key === "RemoteProxy")?.data;
 		if (!userId)
-			throw new ImplementationMissingException('Missing user from accounts Module');
+			throw new ImplementationMissingException("Missing user from accounts Module");
 
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
@@ -132,44 +133,48 @@ export class PushPubSubModule_Class
 	async pushToKey<M extends MessageType<any, any, any> = never,
 		S extends string = IFP<M>,
 		P extends SubscribeProps = ISP<M>,
-		D = ITP<M>>(key: S, props?: P, data?: D, persistent: boolean = false) {
-		console.log('i am pushing to key...', key, props, data);
-		let docs = await this.pushKeys.query({where: {pushKey: key}});
-		if (props)
-			docs = docs.filter(doc => !doc.props || compare(doc.props, props));
+		D = ITP<M>>(key: S, props?: P, data?: D, persistent: boolean = false, transaction?: FirestoreTransaction) {
+		const processor = async (_transaction: FirestoreTransaction) => {
+			console.log("i am pushing to key...", key, props, data);
+			let docs = await _transaction.query(this.pushKeys, {where: {pushKey: key}});
+			if (props)
+				docs = docs.filter(doc => !doc.props || compare(doc.props, props));
 
-		const notifications: DB_Notifications[] = [];
+			const notification = this.buildNotification(key, persistent, data, props);
+			// If we need to do read and write for a transaction move this to a callback and rename to pushToKey_Read
+			if (persistent) {
+				await this.notifications.insertAll([notification]);
+			}
 
-		const notification = this.buildNotification(key, persistent, data, props);
-		if (persistent) {
-			notifications.push(notification);
-			await this.notifications.insertAll(notifications);
-		}
+			if (docs.length === 0)
+				return;
 
-		if (docs.length === 0)
-			return;
+			const sessionsIds = docs.map(d => d.pushSessionId);
+			// I get the tokens relative to those sessions (query)
+			const sessions = await batchAction(sessionsIds, 10, async elements => _transaction.query(this.pushSessions, {where: {pushSessionId: {$in: elements}}}));
+			const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
+				const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
+				if (!session)
+					return carry;
 
-		const sessionsIds = docs.map(d => d.pushSessionId);
-		// I get the tokens relative to those sessions (query)
-		const sessions = await batchAction(sessionsIds, 10, async elements => this.pushSessions.query({where: {pushSessionId: {$in: elements}}}));
-		const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
-			const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
-			if (!session)
+				carry[session.firebaseToken] = [notification];
+
 				return carry;
+			}, {} as TempMessages);
+			const {response, messages} = await this.sendMessage(persistent, _messages);
+			return this.cleanUp(response, messages);
+		};
+		if (transaction)
+			return processor(transaction);
 
-			carry[session.firebaseToken] = [notification];
-
-			return carry;
-		}, {} as TempMessages);
-		const {response, messages} = await this.sendMessage(persistent, _messages);
-		return this.cleanUp(response, messages);
+		return this.pushKeys.runInTransaction(processor);
 	}
 
 	async pushToUser<M extends MessageType<any, any, any> = never,
 		S extends string = IFP<M>,
 		P extends SubscribeProps = ISP<M>,
 		D = ITP<M>>(user: string, key: string, props?: P, data?: D, persistent: boolean = false) {
-		console.log('i am pushing to user...', user, props);
+		console.log("i am pushing to user...", user, props);
 
 		const notification = this.buildNotification(key, persistent, data, props, user);
 		const notifications: DB_Notifications[] = [];
@@ -199,7 +204,7 @@ export class PushPubSubModule_Class
 		await this.sendMessage(persistent, _messages);
 	}
 
-	private buildNotification = (pushkey: string, persistent: boolean, data?: any, props?: any, user?: string,) => {
+	private buildNotification = (pushkey: string, persistent: boolean, data?: any, props?: any, user?: string) => {
 		const notification: DB_Notifications = {
 			_id: generateHex(16),
 			timestamp: currentTimeMillies(),
@@ -222,9 +227,9 @@ export class PushPubSubModule_Class
 
 	sendMessage = async (persistent: boolean, _messages: TempMessages): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] }> => {
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
-		console.log('sending a message');
+		console.log("sending a message to \n" + Object.keys(_messages).join("\n"));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
-		console.log('and this is the response: ' + response.responses.map(_response => _response.success));
+		console.log("and this is the response: " + response.responses.map(_response => _response.success));
 		return {response, messages};
 	};
 

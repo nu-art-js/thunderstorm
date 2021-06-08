@@ -45,9 +45,8 @@ export class App
 
 	onLoginStatusUpdated = () => {
 		const status = AccountModule.getLoggedStatus();
-		console.log('status update', status);
+		console.log('status update', status); 
 	};
-
 
 	render() {
 		registerRoutes();
