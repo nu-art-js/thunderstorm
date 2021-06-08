@@ -21,7 +21,6 @@ import {
 	ToastBuilder,
 	ToastModule
 } from "@nu-art/thunderstorm/frontend";
-import * as ReactDOM from "react-dom";
 import {
 	ErrorToast,
 	InfoToast,
@@ -83,9 +82,9 @@ export class Example_Toaster
 	}
 }
 
-const elementById = document.getElementById("toasters.js");
-if (elementById)
-	ReactDOM.render(
-		<Example_Toaster/>,
-		elementById
-	);
+// const elementById = document.getElementById("toasters.js");
+// if (elementById)
+// 	ReactDOM.render(
+// 		<Example_Toaster/>,
+// 		elementById
+// 	);

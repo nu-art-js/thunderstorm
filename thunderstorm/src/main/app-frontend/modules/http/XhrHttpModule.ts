@@ -119,7 +119,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			this.xhr = xhr;
 			this.xhr.onreadystatechange = () => {
 				if (xhr.readyState !== 4)
-					return;
+					return XhrHttpModule.logInfo(`Xhr request with key: ${this.key} is in readystate ${xhr.readyState}`);
 
 				resolve();
 			};
@@ -168,7 +168,10 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				return toRet;
 			}, this.url);
 
+			// TODO: investigate which one should work
+			this.xhr.onprogress = this.onProgressListener;
 			this.xhr.upload.onprogress = this.onProgressListener;
+
 			this.xhr.open(this.method, fullUrl);
 			this.xhr.timeout = this.timeout;
 

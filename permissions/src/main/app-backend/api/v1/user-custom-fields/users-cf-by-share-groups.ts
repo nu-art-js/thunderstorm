@@ -19,31 +19,29 @@
 
 import {
 	ApiResponse,
-	dispatch_queryRequestInfo,
 	ExpressRequest,
-	ServerApi_Post,
+	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
-	ApiBugReport,
-	BugReportModule,
-	Request_BugReport
-} from "./_imports";
+	PermissionsApi_UsersCFsByShareGroups,
+	Request_UsersCFsByShareGroups,
+	PermissionsModule
+} from "../permissions/_imports";
+import {HttpMethod} from "@nu-art/thunderstorm";
+import {AccountModule} from "@nu-art/user-account/backend";
 
-// import {AccountModule} from "@nu-art/user-account/backend";
-
-class ServerApi_SendReport
-	extends ServerApi_Post<ApiBugReport> {
+class ServerApi_UsersCFsByShareGroups
+	extends ServerApi<PermissionsApi_UsersCFsByShareGroups> {
 
 	constructor() {
-		super("report");
+		super(HttpMethod.POST, "users-cf-by-share-groups");
+		this.dontPrintResponse();
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_BugReport) {
-		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync([request]);
-		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data?.email || resp.find(e => e.key === 'RemoteProxy')?.data;
-
-		return await BugReportModule.saveFile(body, userId);
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UsersCFsByShareGroups) {
+		await AccountModule.validateSession(request);
+		return PermissionsModule.getUsersCFsByShareGroups(body.usersEmails, body.groupsIds);
 	}
 }
 
-module.exports = new ServerApi_SendReport();
+module.exports = new ServerApi_UsersCFsByShareGroups();

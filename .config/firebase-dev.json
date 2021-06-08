@@ -17,11 +17,11 @@
       "enabled": true,
       "port": "5555"
     },
+    "pubsub": {
+      "port": "5004"
+    },
     "functions": {
       "port": "5000"
-    },
-    "database": {
-      "port": "5002"
     },
     "firestore": {
       "port": "5003"

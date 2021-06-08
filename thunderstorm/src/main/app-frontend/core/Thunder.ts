@@ -69,7 +69,7 @@ const modules: Module[] = [
 
 	StorageModule,
 	LocaleModule,
-	ResourcesModule,
+	ResourcesModule
 
 ];
 
@@ -120,6 +120,11 @@ export class Thunder
 
 	public getMainApp(): React.ElementType<WrapperProps> {
 		return this.mainApp;
+	}
+
+	public build(onStarted?: () => void) {
+		super.build()
+		onStarted?.();
 	}
 }
 

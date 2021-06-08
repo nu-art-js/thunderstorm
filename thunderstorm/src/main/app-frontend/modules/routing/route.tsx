@@ -22,6 +22,7 @@
 import * as React from "react";
 import {
 	NavLink,
+	Link,
 	Route
 } from "react-router-dom";
 import {ReactEntryComponentInjector} from "../component-loader/ReactEntryComponentInjector";
@@ -104,6 +105,10 @@ const activeStyle = {color: 'blue'};
 
 export const defaultNavLinkNode = (route: RoutePath): React.ReactElement => {
 	return <NavLink key={route.key} to={route.path} activeStyle={activeStyle}>{route.label}</NavLink>;
+};
+
+export const defaultLinkNode = (route: RoutePath, node?: React.ReactNode): React.ReactElement => {
+	return <Link key={route.key} to={route.path}>{node || route.label || route.key}</Link>;
 };
 
 export const defaultRouteNode = (route: RoutePath): React.ReactElement => {

@@ -78,6 +78,7 @@ module.exports = (env, argv) => {
 				{
 					test: /sw\/.+\.ts$/,
 					include: [swFolder],
+					exclude: [/node_modules/],
 					use: {
 						loader: "ts-loader",
 						options: {
@@ -88,6 +89,7 @@ module.exports = (env, argv) => {
 				{
 					test: /main\/.+\.tsx?$/,
 					include: [mainFolder],
+					exclude: [/node_modules/],
 					use: {
 						loader: "awesome-typescript-loader",
 						options: {

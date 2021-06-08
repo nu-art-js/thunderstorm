@@ -1,5 +1,5 @@
 /*
- * Firebase is a simpler Typescript wrapper to all of firebase services.
+ * A backend boilerplate with example apis
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,11 +16,24 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {scenarioAddData} from "./test/add-data";
-import {scenarioRemoveData} from "./test/remove-data";
+import {
+	Firebase_PubSubFunction,
+	FirebaseEventContext,
+	TopicMessage
+} from "@nu-art/firebase/backend-functions";
 
+type MyType = any;
 
-export const testDatabase = __scenario("test-database");
-testDatabase.add(scenarioAddData);
-// testDatabase.add(scenarioRemoveData)
+export class PubsubExample_Class
+	extends Firebase_PubSubFunction<MyType> {
+
+	constructor() {
+		super("example-topic");
+	}
+
+	onPublish = async (object: MyType | undefined, originalMessage: TopicMessage, context: FirebaseEventContext): Promise<any> => {
+		console.log(`Pubsub example`, object);
+	}
+}
+
+export const PubsubExample = new PubsubExample_Class();

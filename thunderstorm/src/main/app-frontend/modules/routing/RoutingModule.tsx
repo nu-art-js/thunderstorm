@@ -25,8 +25,8 @@ import {
 	Module
 } from "@nu-art/ts-common";
 import * as React from "react";
-import {ReactElement} from "react";
 import {
+	defaultLinkNode,
 	defaultNavLinkNode,
 	defaultRouteNode,
 	RouteParams,
@@ -44,12 +44,14 @@ class RoutingModule_Class
 	private readonly routes: { [key: string]: RoutePath } = {};
 	private readonly ordinalRoutes: string[] = [];
 
-	private createNavLinkNode: (route: RoutePath) => ReactElement;
-	private createRouteNode: (route: RoutePath) => ReactElement;
+	private readonly createNavLinkNode: (route: RoutePath) => React.ReactElement;
+	private readonly createRouteNode: (route: RoutePath) => React.ReactElement;
+	private readonly createLinkNode: (route: RoutePath, node?: React.ReactNode) => React.ReactElement;
 
 	constructor() {
 		super();
 		this.createNavLinkNode = defaultNavLinkNode;
+		this.createLinkNode = defaultLinkNode;
 		this.createRouteNode = defaultRouteNode;
 	}
 
@@ -57,10 +59,10 @@ class RoutingModule_Class
 	}
 
 	clearRoutes() {
-		for (const i in this.ordinalRoutes) {
-			delete this.routes[this.ordinalRoutes[i]];
-			delete this.ordinalRoutes[i];
+		for (const item of this.ordinalRoutes) {
+			delete this.routes[item];
 		}
+		this.ordinalRoutes.splice(0);
 	}
 
 	addRoute(key: string, route: string, component: React.ComponentClass | string) {
@@ -74,18 +76,19 @@ class RoutingModule_Class
 	}
 
 	getRoute(key: string) {
-		if (!this.routes[key])
+		const route = this.routes[key];
+		if (!route)
 			throw new BadImplementationException(`No Route for key '${key}'... Did you forget to add it??`);
 
-		return this.routes[key];
+		return route;
 	}
 
 	getPath(key: string) {
-		return RoutingModule.getRoute(key).path;
+		return this.getRoute(key).path;
 	}
 
 	goToRoute(key: string, params?: RouteParams) {
-		const pathname = RoutingModule.getPath(key);
+		const pathname = this.getPath(key);
 		const search = RoutePath.composeStringQuery(params);
 
 		BrowserHistoryModule.push({pathname, search});
@@ -102,9 +105,17 @@ class RoutingModule_Class
 		return keys.map(key => this.getRoute(key)).filter(route => route.visible && route.visible()).map(route => this.createNavLinkNode(route));
 	}
 
-	getRoutesMap() {
+	getNavLink(key: string) {
+		return this.createNavLinkNode(this.getRoute(key));
+	}
+
+	getLink(key: string) {
+		return this.createLinkNode(this.getRoute(key));
+	}
+
+	getRoutesMap(keys?: string[]) {
 		return <Switch>
-			{this.ordinalRoutes.map(key => this.createRouteNode(this.getRoute(key)))}
+			{(keys || this.ordinalRoutes).map(key => this.createRouteNode(this.getRoute(key)))}
 		</Switch>;
 	}
 }
