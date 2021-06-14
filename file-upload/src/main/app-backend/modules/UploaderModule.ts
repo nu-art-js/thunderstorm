@@ -45,6 +45,7 @@ export const Temp_Path = 'files-temp';
 
 type Config = {
 	bucketName?: string
+	uploaderProjectId?: string
 }
 
 export type PostProcessor = (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => Promise<void>;
@@ -63,7 +64,7 @@ export class UploaderModule_Class
 		if (!this.postProcessor)
 			throw new ImplementationMissingException('You must set a postProcessor for the UploaderModule');
 
-		this.storage = FirebaseModule.createAdminSession().getStorage();
+		this.storage = FirebaseModule.createAdminSession(this.config.uploaderProjectId).getStorage();
 	}
 
 	async getUrl(body: BaseUploaderFile[]): Promise<TempSecureUrl[]> {
