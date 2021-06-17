@@ -26,7 +26,7 @@ import {
 	HttpMethod
 } from "../../../shared/types";
 
-import {BadImplementationException,} from "@nu-art/ts-common";
+import {BadImplementationException} from "@nu-art/ts-common";
 import {gzip} from "zlib";
 // noinspection TypeScriptPreferShortImport
 import {HttpException} from "../../../shared/request-types";
@@ -44,7 +44,7 @@ export class XhrHttpModule_Class
 		super.init();
 		const origin = this.config.origin;
 		if (!origin)
-			throw new BadImplementationException('Did you forget to set the origin config key for the HttpModule?');
+			throw new BadImplementationException("Did you forget to set the origin config key for the HttpModule?");
 
 		this.origin = origin;
 	}
@@ -77,7 +77,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	getStatus(): number {
 		const xhr = this.xhr;
 		if (!xhr)
-			throw new BadImplementationException('No xhr object!');
+			throw new BadImplementationException("No xhr object!");
 
 		return xhr.status;
 	}
@@ -85,7 +85,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	protected getResponse() {
 		const xhr = this.xhr;
 		if (!xhr)
-			throw new BadImplementationException('No xhr object!');
+			throw new BadImplementationException("No xhr object!");
 
 		return xhr.response;
 	}
@@ -119,7 +119,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			this.xhr = xhr;
 			this.xhr.onreadystatechange = () => {
 				if (xhr.readyState !== 4)
-					return XhrHttpModule.logInfo(`Xhr request with key: ${this.key} is in readystate ${xhr.readyState}`);
+					return;
 
 				resolve();
 			};
@@ -176,7 +176,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			this.xhr.timeout = this.timeout;
 
 			Object.keys(this.headers).forEach((key) => {
-				xhr.setRequestHeader(key, this.headers[key].join('; '));
+				xhr.setRequestHeader(key, this.headers[key].join("; "));
 			});
 
 			const body = this.body;
@@ -194,7 +194,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 
 	getResponseHeader(headerKey: string): string | string[] | undefined {
 		if (!this.xhr)
-			throw new BadImplementationException('No xhr object!');
+			throw new BadImplementationException("No xhr object!");
 
 		if (!this.xhr.response)
 			throw new BadImplementationException(`xhr didn't return yet`);

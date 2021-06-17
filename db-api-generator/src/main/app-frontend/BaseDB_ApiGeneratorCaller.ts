@@ -161,7 +161,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	}
 
 	protected async onEntryCreated(item: DBType): Promise<void> {
-		addItemToArray(this.ids, item._id);
+		this.upsertId(item._id);
 		this.items[item._id] = item;
 		this.dispatch();
 	}
@@ -192,7 +192,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	}
 
 	protected async onQueryReturned(items: DBType[]): Promise<void> {
-		this.ids = items.map(item => item._id);
+		items.forEach(item => this.upsertId(item._id));
 		this.items = items.reduce((toRet, item) => {
 			toRet[item._id] = item;
 			return toRet;
@@ -200,4 +200,9 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 
 		this.dispatch();
 	}
+
+	private upsertId = (id: string) => {
+		if (!this.ids.includes(id))
+			addItemToArray(this.ids, id);
+	};
 }
