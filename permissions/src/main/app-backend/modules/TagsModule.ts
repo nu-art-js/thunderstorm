@@ -6,8 +6,8 @@ import {
 	ServerApi_Unique,
 	validateStringAndNumbersWithDashes
 } from "@nu-art/db-api-generator/backend";
-import {Clause_Where} from "@nu-art/firebase";
-import {ServerApi} from "@nu-art/thunderstorm/backend";
+import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
+import {ExpressRequest, ServerApi} from "@nu-art/thunderstorm/backend";
 import {
 	TypeValidator,
 	validateRegexp,
