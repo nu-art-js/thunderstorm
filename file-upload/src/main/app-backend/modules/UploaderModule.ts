@@ -40,6 +40,7 @@ import {
 } from "../../shared/types";
 import {UploaderTempFileModule} from "./UploaderTempFileModule";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
+import { OnFileUploaded } from "./BucketListener";
 
 export const Temp_Path = 'files-temp';
 
@@ -51,10 +52,16 @@ type Config = {
 export type PostProcessor = (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => Promise<void>;
 
 export class UploaderModule_Class
-	extends Module<Config> {
+	extends Module<Config>
+  implements OnFileUploaded {
+
 	private storage!: StorageWrapper;
 
 	private postProcessor!: { [k: string]: PostProcessor };
+
+	async __onFileUploaded(filePath?: string) {
+		await this.fileUploaded(filePath);
+	}
 
 	setPostProcessor = (validator: { [k: string]: PostProcessor }) => {
 		this.postProcessor = validator;
