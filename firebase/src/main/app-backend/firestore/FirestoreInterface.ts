@@ -97,8 +97,8 @@ export class FirestoreInterface {
 		return myQuery as admin.firestore.Query;
 	}
 
-	private static isDefined(val: any): boolean {
-		return val !== null && val !== undefined;
+	private static isDefined(val: any):boolean{
+		return val !== null && val !== undefined
 	}
 
 	private static isQueryObject(whereValue: any) {
