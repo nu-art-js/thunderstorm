@@ -40,20 +40,28 @@ import {
 } from "../../shared/types";
 import {UploaderTempFileModule} from "./UploaderTempFileModule";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
+import { OnFileUploaded } from "./BucketListener";
 
 export const Temp_Path = 'files-temp';
 
 type Config = {
 	bucketName?: string
+	uploaderProjectId?: string
 }
 
 export type PostProcessor = (transaction: FirestoreTransaction, file: FileWrapper, doc: DB_Temp_File) => Promise<void>;
 
 export class UploaderModule_Class
-	extends Module<Config> {
+	extends Module<Config>
+  implements OnFileUploaded {
+
 	private storage!: StorageWrapper;
 
 	private postProcessor!: { [k: string]: PostProcessor };
+
+	async __onFileUploaded(filePath?: string) {
+		await this.fileUploaded(filePath);
+	}
 
 	setPostProcessor = (validator: { [k: string]: PostProcessor }) => {
 		this.postProcessor = validator;
@@ -63,7 +71,7 @@ export class UploaderModule_Class
 		if (!this.postProcessor)
 			throw new ImplementationMissingException('You must set a postProcessor for the UploaderModule');
 
-		this.storage = FirebaseModule.createAdminSession().getStorage();
+		this.storage = FirebaseModule.createAdminSession(this.config.uploaderProjectId).getStorage();
 	}
 
 	async getUrl(body: BaseUploaderFile[]): Promise<TempSecureUrl[]> {

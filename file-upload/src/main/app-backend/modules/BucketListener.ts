@@ -19,17 +19,22 @@
 import {Firebase_StorageFunction} from "@nu-art/firebase/backend-functions";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import {EventContext} from "firebase-functions";
-import {
-	Temp_Path,
-	UploaderModule
-} from "./UploaderModule";
+import {Temp_Path} from "./UploaderModule";
+import { Dispatcher } from "@nu-art/ts-common";
+
+export interface OnFileUploaded {
+	__onFileUploaded(filePath?: string): void;
+}
+
+const dispatcher_onFileUploaded = new Dispatcher<OnFileUploaded, "__onFileUploaded">("__onFileUploaded");
+
 
 export class BucketListener_Class
-	extends Firebase_StorageFunction {
-
+extends Firebase_StorageFunction {
 	constructor() {
 		super(Temp_Path);
 	}
+
 
 	init(){
 		super.init()
@@ -39,7 +44,7 @@ export class BucketListener_Class
 
 	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
 		const filePath = object.name;
-		await UploaderModule.fileUploaded(filePath);
+		await dispatcher_onFileUploaded.dispatchModuleAsync([filePath]);
 		this.logInfo('Object is ', object);
 		this.logInfo('Context is ', context);
 	}
