@@ -162,7 +162,8 @@ export class PushPubSubModule_Class
 				return carry;
 			}, {} as TempMessages);
 			const {response, messages} = await this.sendMessage(persistent, _messages);
-			return this.cleanUp(response, messages);
+			this.logInfo(`${response.successCount} sent, ${response.failureCount} failed`, "messages", messages);
+			// return this.cleanUp(response, messages);
 		};
 		if (transaction)
 			return processor(transaction);
@@ -249,7 +250,7 @@ export class PushPubSubModule_Class
 		                  ]);
 	};
 
-	private cleanUp = async (response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]) => {
+	cleanUp = async (response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]) => {
 		this.logInfo(`${response.successCount} sent, ${response.failureCount} failed`);
 
 		if (response.failureCount > 0)
