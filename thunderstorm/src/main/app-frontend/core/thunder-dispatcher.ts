@@ -48,7 +48,9 @@ export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>>
 	}
 
 	public dispatchAll(p: Parameters<T[K]>): ReturnPromiseType<T[K]>[] {
-		return [...this.dispatchUI(p), ...this.dispatchModule(p)];
+		const moduleResponses = this.dispatchModule(p)
+		const uiResponses = this.dispatchUI(p);
+		return [...moduleResponses,...uiResponses]
 	}
 
 	public async dispatchAllAsync(p: Parameters<T[K]>): Promise<ReturnPromiseType<T[K]>[]> {
