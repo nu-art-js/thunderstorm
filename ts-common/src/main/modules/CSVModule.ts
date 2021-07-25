@@ -69,9 +69,7 @@ class CSVModule_Class
 	}
 
 	async readCsvFromBuffer<T extends Partial<StringMap>>(buffer: Buffer, columnsToProps?: ReadPropsMap<T>): Promise<T[]> {
-		console.log("PAH")
 		const stream: Readable = Readable.from(buffer.toString("utf-8"), {encoding: "utf8"});
-		console.log("ZEVEL")
 		return this.readCsvFromStream(stream, columnsToProps);
 	}
 

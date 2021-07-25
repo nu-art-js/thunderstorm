@@ -48,6 +48,11 @@ type MyConfig = Config<DB_Asset> & {
 	path: string
 }
 
+export type AssetContent = {
+	asset: DB_Asset
+	content: Buffer
+}
+
 export  type FileTypeResult = {
 	ext: FileExtension;
 	mime: MimeType;
@@ -102,7 +107,7 @@ export class AssetsModuleBE_Class
 		this.storage = FirebaseModule.createAdminSession("file-uploader").getStorage();
 	}
 
-	async getAssetsContent(assetIds: string[]) {
+	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
 		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, chunk => AssetsModuleBE.query({where: {_id: {$in: chunk}}}));
 		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)))
 		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()))
