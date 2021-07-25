@@ -22,7 +22,11 @@ import {
 	scenarioInsertAll
 } from "./test/insert-and-query";
 import {scenarioQueryUnique} from "./test/query-unique";
-import {scenarioQuery, scenarioQueryNested} from "./test/query";
+import {
+	scenarioQuery,
+	scenarioQueryArrayContainsObject,
+	scenarioQueryNested
+} from "./test/query";
 import {scenarioCollectionPatch} from "./test/patch";
 import {scenarioCollectionDelete} from "./test/delete";
 import {scenarioCollectionDeleteInTransaction} from "./test/delete-in-transaction";
@@ -36,3 +40,4 @@ testCollections.add(scenarioInsertAll);
 testCollections.add(scenarioQueryUnique);
 testCollections.add(scenarioQuery);
 testCollections.add(scenarioQueryNested);
+testCollections.add(scenarioQueryArrayContainsObject);
