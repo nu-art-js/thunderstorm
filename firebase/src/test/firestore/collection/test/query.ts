@@ -205,13 +205,53 @@ scenarioQueryNested.add(testCollection.processClean(`Populate db and query`, asy
 		stringValue: "string",
 		booleanValue: true,
 		stringArray: [],
-		objectArray: [],
+		objectArray: []
 	};
 
-	await collection.insertAll([instances1,instances2 ]);
-
+	await collection.insertAll([instances1, instances2]);
 
 	// @ts-ignore
-	const res = await collection.query({where: {'nestedObject.one.value': 	{$gte: 1}	}})
-	assert('No match',res[0],instances1)
+	// const res = await collection.query({where: {'nestedObject.two.value': 5643524	}})
+	const res = await collection.query({
+		                                   where: {
+			                                   nestedObject: {
+				                                   two: {
+					                                   value: 5643524
+				                                   }
+			                                   }
+		                                   }
+	                                   });
+	assert("No match", res[0], instances1);
+}));
+
+export const scenarioQueryArrayContainsObject = __scenario("Query Array Contains");
+scenarioQueryArrayContainsObject.add(testCollection.processClean(`Populate db and query`, async (collection) => {
+	const instances1 = {
+		numeric: 1,
+		stringValue: "string",
+		booleanValue: true,
+		stringArray: [],
+		objectArray: [
+			{
+				key: "string",
+				value: 1
+			}, {
+				key: "string2",
+				value: 2
+			}
+		],
+		nestedObject: {one: {key: "", value: 1}, two: {key: "", value: 5643524}}
+	};
+	const instances2 = {
+		numeric: 1,
+		stringValue: "string",
+		booleanValue: true,
+		stringArray: [],
+		objectArray: []
+	};
+
+	await collection.insertAll([instances1, instances2]);
+
+	const res = await collection.query({where: {objectArray: {$ac: {value: 1, key: "string"}}}});
+	assert("No match", res[0], instances1);
 }));
