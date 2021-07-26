@@ -33,7 +33,7 @@ import {
 } from "@nu-art/ts-common";
 
 export class FirebaseSession_Admin
-	extends FirebaseSession<JWTInput | undefined> {
+	extends FirebaseSession<JWTInput & {databaseURL?: string} | undefined> {
 
 	constructor(sessionName: string, config?: JWTInput) {
 		super(config, sessionName);
@@ -61,9 +61,10 @@ export class FirebaseSession_Admin
 		if (!this.config)
 			return initializeApp();
 
+		const databaseURL = this.config.databaseURL || `https://${this.config.project_id}.firebaseio.com`;
 		return initializeApp({
 			                     credential: credential.cert(this.config as ServiceAccount),
-			                     databaseURL: `https://${this.config.project_id}.firebaseio.com`
+			                     databaseURL: databaseURL
 		                     }, this.sessionName);
 	}
 

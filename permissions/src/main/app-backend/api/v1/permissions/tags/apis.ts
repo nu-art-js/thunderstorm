@@ -17,9 +17,6 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/core/module-pack";
+import {TagsDB} from "../_imports";
 
-export * from "./app-backend/modules/AssetsModuleBE";
-export * from "./app-backend/modules/AssetBucketListener";
-export * from "./app-backend/modules/AssetsTempModuleBE";
-export * from "./app-backend/modules/ServerUploaderModule";
+module.exports = TagsDB.apis();

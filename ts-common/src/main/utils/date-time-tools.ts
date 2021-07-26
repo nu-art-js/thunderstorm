@@ -34,7 +34,7 @@ export const Format_YYYYMMDD_HHmmss = "YYYY-MM-DD_HH:mm:ss";
 export type TimerHandler = (...args: any[]) => void;
 
 export async function timeout(sleepMs: number) {
-	return new Promise(resolve => setTimeout(resolve, sleepMs));
+	return new Promise(resolve => setTimeout(resolve, sleepMs, undefined));
 }
 
 export function _setTimeout(handler: TimerHandler, sleepMs = 0, ...args: any[]): number {
@@ -60,7 +60,7 @@ export function _clearInterval(handlerId?: number) {
 export function auditBy(user: string, comment?: string, timestamp: number = currentTimeMillis()): AuditBy {
 	const _auditBy: AuditBy = {
 		auditBy: user,
-		auditAt: createReadableTimestampObject(Format_HHmmss_DDMMYYYY, timestamp),
+		auditAt: createReadableTimestampObject(Format_HHmmss_DDMMYYYY, timestamp)
 	};
 
 	if (comment)

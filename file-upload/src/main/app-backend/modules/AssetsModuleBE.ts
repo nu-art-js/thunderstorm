@@ -41,6 +41,7 @@ import {fromBuffer} from "file-type";
 import {FileExtension, MimeType} from "file-type/core";
 import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
 import {BaseDB_ApiGenerator, Config} from "@nu-art/db-api-generator/backend";
+import {OnAssetUploaded} from "./AssetBucketListener";
 
 
 type MyConfig = Config<DB_Asset> & {
@@ -90,7 +91,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 
 export class AssetsModuleBE_Class
 	extends BaseDB_ApiGenerator<DB_Asset, MyConfig>
-	implements OnCleanupSchedulerAct {
+	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {
 		super("assets", _assetValidator, "assets");
@@ -206,10 +207,10 @@ export class AssetsModuleBE_Class
 			query = {where: {feId}};
 
 		const unprocessedFiles: DB_Asset[] = await AssetsTempModuleBE.query(query);
-		return Promise.all(unprocessedFiles.map(asset => this.processAsset(asset.path)));
+		return Promise.all(unprocessedFiles.map(asset => this.__processAsset(asset.path)));
 	};
 
-	processAsset = async (filePath?: string) => {
+	__processAsset = async (filePath?: string) => {
 		if (!filePath)
 			throw new ThisShouldNotHappenException('Missing file path');
 
