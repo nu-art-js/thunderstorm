@@ -51,14 +51,17 @@ export type DB_RequestObject = Partial<DB_Object>
 export type QueryComparator<T> =
 	{ $ac: T extends (infer I)[] ? I : never } |
 	{ $aca: T extends (infer I)[] ? I[] : never } |
+	{ $nin: T extends (infer I)[] ? never : T[] } |
 	{ $in: T extends (infer I)[] ? never : T[] } |
 	{ $gt: number } |
 	{ $gte: number } |
 	{ $lt: number } |
 	{ $lte: number } |
-	{ $eq: number };
+	{ $eq: number } |
+	{ $neq: T } ;
 
 export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = {
+	$nin: "not-in",
 	$in: "in",
 	$ac: "array-contains",
 	$aca: "array-contains-any",
@@ -67,6 +70,7 @@ export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = 
 	$lt: "<",
 	$lte: "<=",
 	$eq: "==",
+	$neq: "!=",
 };
 
 export type FilterKeys<T extends object> = MandatoryKeys<T, string | number>[];

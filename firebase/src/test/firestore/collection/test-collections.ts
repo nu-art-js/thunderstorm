@@ -17,16 +17,9 @@
  */
 
 import {__scenario} from "@nu-art/testelot";
-import {
-	scenarioInsert,
-	scenarioInsertAll
-} from "./test/insert-and-query";
+import {scenarioInsert, scenarioInsertAll} from "./test/insert-and-query";
 import {scenarioQueryUnique} from "./test/query-unique";
-import {
-	scenarioQuery,
-	scenarioQueryArrayContainsObject,
-	scenarioQueryNested
-} from "./test/query";
+import {scenarioQuery} from "./test/query";
 import {scenarioCollectionPatch} from "./test/patch";
 import {scenarioCollectionDelete} from "./test/delete";
 import {scenarioCollectionDeleteInTransaction} from "./test/delete-in-transaction";
@@ -39,5 +32,3 @@ testCollections.add(scenarioInsert);
 testCollections.add(scenarioInsertAll);
 testCollections.add(scenarioQueryUnique);
 testCollections.add(scenarioQuery);
-testCollections.add(scenarioQueryNested);
-testCollections.add(scenarioQueryArrayContainsObject);

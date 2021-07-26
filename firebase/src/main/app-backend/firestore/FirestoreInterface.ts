@@ -45,29 +45,28 @@ export class FirestoreInterface {
 			myQuery = Object.keys(whereClause).reduce((_query: FirestoreType_Query, _whereField) => {
 				const whereField = _whereField;
 				const whereValue: any = whereClause[whereField as keyof Type];
-				if (!this.isDefined(whereValue))
+				if (whereValue === undefined || whereValue === null)
 					return _query;
-
-				if (Array.isArray(whereValue)) {
-					if (whereValue.length === 0 || whereValue.length > 10)
-						throw new BadImplementationException(
-							"While querying in an array you can only provide one or more values to query by and not more than 10... this " +
-							"is due to Firestore limitation... ");
-
-					if (whereValue.length === 1)
-						return _query.where(whereField, 'array-contains', whereValue[0]);
-
-					return _query.where(whereField, 'array-contains-any', whereValue);
-				}
-
-				if (this.isQueryObject(whereValue)) {
-					// @ts-ignore
-					return _query.where(whereField, ComparatorMap[Object.keys(whereValue)[0]], Object.values(whereValue)[0]);
-				}
-
 
 				const processObject = (___query: FirestoreType_Query, whereKey: string, _whereValue: any): FirestoreType_Query => {
 					const valueType = typeof _whereValue;
+
+					if (Array.isArray(_whereValue)) {
+						if (_whereValue.length === 0 || _whereValue.length > 10)
+							throw new BadImplementationException(
+								"While querying in an array you can only provide one or more values to query by and not more than 10... this " +
+								"is due to Firestore limitation... ");
+
+						if (_whereValue.length === 1)
+							return _query.where(whereKey, 'array-contains', _whereValue[0]);
+
+						return _query.where(whereKey, 'array-contains-any', _whereValue);
+					}
+
+					if (this.isQueryObject(_whereValue)) {
+						// @ts-ignore
+						return _query.where(whereKey, ComparatorMap[Object.keys(_whereValue)[0]], Object.values(_whereValue)[0]);
+					}
 
 					if (valueType === "string" || valueType === "number" || valueType === "boolean")
 						return ___query.where(whereKey, "==", _whereValue);
@@ -79,7 +78,7 @@ export class FirestoreInterface {
 					}
 
 					throw new ImplementationMissingException(
-						`Could not compose where clause for '${whereField}' with value type '${valueType}'in query: ${__stringify(___query)}`)
+						`Could not compose where clause for '${whereKey}' with value type '${valueType}'in query: ${__stringify(___query)}`)
 				};
 
 				return processObject(_query, whereField, whereValue);
@@ -97,20 +96,18 @@ export class FirestoreInterface {
 		return myQuery as admin.firestore.Query;
 	}
 
-	private static isDefined(val: any):boolean{
-		return val !== null && val !== undefined
-	}
-
 	private static isQueryObject(whereValue: any) {
 		return typeof whereValue === "object" && Object.keys(whereValue).length === 1 && (
-			this.isDefined(whereValue["$ac"]) ||
-			this.isDefined(whereValue["$aca"]) ||
-			this.isDefined(whereValue["$in"]) ||
-			this.isDefined(whereValue["$gt"]) ||
-			this.isDefined(whereValue["$gte"]) ||
-			this.isDefined(whereValue["$lt"]) ||
-			this.isDefined(whereValue["$lte"]) ||
-			this.isDefined(whereValue["$eq"]));
+			whereValue["$ac"] ||
+			whereValue["$aca"] ||
+			whereValue["$in"] ||
+			whereValue["$nin"] ||
+			whereValue["$gt"] ||
+			whereValue["$gte"] ||
+			whereValue["$lt"] ||
+			whereValue["$lte"] ||
+			whereValue["$neq"] ||
+			whereValue["$eq"]);
 	}
 
 	static assertUniqueDocument(results: FirestoreType_DocumentSnapshot[], query: FirestoreQuery<any>, collectionName: string): (FirestoreType_DocumentSnapshot | undefined) {
