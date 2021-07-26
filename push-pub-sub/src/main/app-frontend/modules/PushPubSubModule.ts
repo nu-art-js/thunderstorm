@@ -17,6 +17,7 @@
  */
 
 import {
+	__stringify,
 	addItemToArray,
 	BadImplementationException,
 	compare,
@@ -71,6 +72,7 @@ export class PushPubSubModule_Class
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, "__onMessageReceived">("__onMessageReceived");
 
 	private readonly pushSessionId: string;
+	protected timeout: number = 800;
 
 	constructor() {
 		super();

@@ -42,5 +42,21 @@ export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P ex
 			return listener[this.method](...params);
 		}));
 	}
+
+	public dispatchAll(p: Parameters<T[K]>): ReturnPromiseType<T[K]>[] {
+		const moduleResponses = this.dispatchModule(p)
+		const uiResponses = this.dispatchUI(p as P);
+		return [...moduleResponses,...uiResponses]
+	}
+
+	public async dispatchAllAsync(p: Parameters<T[K]>): Promise<ReturnPromiseType<T[K]>[]> {
+		const listenersUI = ThunderDispatcher.listenersResolver();
+		const listenersModules = Dispatcher.modulesResolver();
+
+		return Promise.all(listenersUI.concat(listenersModules).filter(this.filter).map(async (listener: T) => {
+			const params: any = p;
+			return listener[this.method](...params);
+		}));
+	}
 }
 

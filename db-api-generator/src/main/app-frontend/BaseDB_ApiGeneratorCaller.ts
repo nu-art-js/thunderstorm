@@ -236,7 +236,6 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 	}
 
 	protected async onQueryReturned(items: DBType[], requestData?: string): Promise<void> {
-		const ids = items.map(item => item._id);
 		this.items = items.reduce((toRet, item) => {
 			toRet[item._id] = item;
 			return toRet;
@@ -244,6 +243,6 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 
 		this.ids = _keys(this.items);
 
-		this.dispatchMulti("query", ids);
+		this.dispatchMulti("query", this.ids);
 	}
 }

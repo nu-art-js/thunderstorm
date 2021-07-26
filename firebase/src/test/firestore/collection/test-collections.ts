@@ -17,10 +17,7 @@
  */
 
 import {__scenario} from "@nu-art/testelot";
-import {
-	scenarioInsert,
-	scenarioInsertAll
-} from "./test/insert-and-query";
+import {scenarioInsert, scenarioInsertAll} from "./test/insert-and-query";
 import {scenarioQueryUnique} from "./test/query-unique";
 import {scenarioQuery} from "./test/query";
 import {scenarioCollectionPatch} from "./test/patch";

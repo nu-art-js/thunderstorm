@@ -164,8 +164,13 @@ export class PushPubSubModule_Class
 
 				return carry;
 			}, {} as TempMessages);
-			const {response, messages} = await this.sendMessage(persistent, _messages);
-			return this.cleanUp(response, messages);
+			const resp = await this.sendMessage(persistent, _messages);
+			if (!resp)
+				return this.logInfo('No messages to send. Empty subscriptions');
+
+			const {response, messages} = resp;
+			this.logInfo(`${response.successCount} sent, ${response.failureCount} failed`, "messages", messages);
+			// return this.cleanUp(response, messages);
 		};
 		if (transaction)
 			return processor(transaction);
@@ -228,8 +233,11 @@ export class PushPubSubModule_Class
 		return notification;
 	};
 
-	sendMessage = async (persistent: boolean, _messages: TempMessages): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] }> => {
+	sendMessage = async (persistent: boolean, _messages: TempMessages): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] } | undefined> => {
 		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
+		if (messages.length === 0)
+			return;
+
 		console.log("sending a message to \n" + Object.keys(_messages).join("\n"));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
 		console.log("and this is the response: " + response.responses.map(_response => _response.success));
@@ -260,7 +268,7 @@ export class PushPubSubModule_Class
 		                  ]);
 	};
 
-	private cleanUp = async (response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]) => {
+	cleanUp = async (response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]) => {
 		this.logInfo(`${response.successCount} sent, ${response.failureCount} failed`);
 
 		if (response.failureCount > 0)
