@@ -18,11 +18,7 @@
  */
 
 import * as React from "react";
-import {
-	Example_NewProps,
-	FilterInput,
-	Props_FilterInput
-} from "@nu-art/thunderstorm/frontend";
+import {Example_NewProps, TS_FilterInput, Props_FilterInput} from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
 export class Example_FilterInput
@@ -37,7 +33,7 @@ export class Example_FilterInput
 		const props1 = this.simpleStringProps();
 		const props2 = this.simpleObjectProps();
 		return <>
-			<Example_NewProps name={"Filter Input"} renderer={FilterInput} data={[props1, props2]} showList={false}/>
+			<Example_NewProps name={"Filter Input"} renderer={TS_FilterInput} data={[props1, props2]} showList={false}/>
 			<div>
 				{this.state.filteredOptions.map((item, index) => <div key={index}>{__stringify(item)}</div>)}
 			</div>

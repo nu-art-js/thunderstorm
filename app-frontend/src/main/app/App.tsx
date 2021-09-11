@@ -17,22 +17,11 @@
  */
 
 import * as React from 'react';
-import {
-	BaseComponent,
-	Dialog,
-	PopupMenu,
-	RoutingModule,
-	Toaster,
-	WrapperProps
-} from "@nu-art/thunderstorm/frontend";
+import {BaseComponent, Dialog, PopupMenu, RoutingModule, Toaster, WrapperProps} from "@nu-art/thunderstorm/frontend";
 
 import {VersionOnScreen} from './components/VersionOnScreen';
-import {
-	AccountModule,
-	OnLoginStatusUpdated
-} from "@nu-art/user-account/frontend";
+import {AccountModule, OnLoginStatusUpdated} from "@nu-art/user-account/frontend";
 import {registerRoutes} from "./Routes";
-import {BugReport} from '@nu-art/bug-report/frontend';
 
 export class App
 	extends BaseComponent<WrapperProps>
@@ -52,9 +41,9 @@ export class App
 		registerRoutes();
 		return (
 			<div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
-				<BugReport>
+				{/*<BugReport>*/}
 					{RoutingModule.getRoutesMap()}
-				</BugReport>
+				{/*</BugReport>*/}
 				<VersionOnScreen/>
 				<Dialog/>
 				<Toaster/>

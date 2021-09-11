@@ -47,6 +47,7 @@ export * from "./app-frontend/core/SimpleScriptInjector";
 export * from "./app-frontend/core/BaseComponent";
 export * from "./app-frontend/core/AppPage";
 export * from "./app-frontend/core/AppWrapper";
+export * from "./app-frontend/core/ErrorBoundary";
 export * from "./app-frontend/components/input/TS_BaseInput";
 export * from "./app-frontend/components/input/TS_TextArea";
 export * from "./app-frontend/components/input/TS_Input";
@@ -54,9 +55,9 @@ export * from "./app-frontend/widgets/FieldEditor";
 export * from "./app-frontend/widgets/FieldEditorClick";
 export * from "./app-frontend/widgets/FieldEditorWithButtons";
 export * from "./app-frontend/components/TS_Table";
-export * from "./app-frontend/components/checkbox/TS_Checkbox";
-export * from "./app-frontend/components/input/FilterInput";
+export * from "./app-frontend/components/input/TS_FilterInput";
 export * from "./app-frontend/components/DropDown";
+export * from "./app-frontend/components/dropdown/TS_DropDown";
 
 export * from "./app-frontend/components/form/types";
 export * from "./app-frontend/components/form/Form";
@@ -65,6 +66,7 @@ export * from "./app-frontend/components/tree/MultiTypeAdaptor";
 export * from "./app-frontend/components/adapter/Adapter";
 export * from "./app-frontend/components/adapter/BaseRenderer";
 export * from "./app-frontend/components/tree/Tree";
+export * from "./app-frontend/components/tree/TS_Tree";
 export * from "./app-frontend/components/tree/types";
 export * from "./app-frontend/components/tree/SimpleTreeNodeRenderer";
 
@@ -75,7 +77,8 @@ export * from "./app-frontend/components/playground/Playground";
 export * from "./app-frontend/components/playground/Example_NewProps";
 
 export * from "./app-frontend/components/checkbox/TS_Checkbox";
-export * from "./app-frontend/components/checkbox/TS_CheckboxField";
+export * from "./app-frontend/components/checkbox-OLD/TS_CheckboxField-OLD";
+export * from "./app-frontend/components/checkbox-OLD/TS_Checkbox-OLD";
 
 export * from "./app-frontend/modules/component-loader/ReactEntryComponentInjector";
 export * from "./app-frontend/modules/component-loader/entry-component-loading-module";

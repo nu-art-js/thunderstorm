@@ -17,17 +17,13 @@
  */
 
 import * as React from 'react';
-import {
-	Playground,
-	PlaygroundScreen
-} from "@nu-art/thunderstorm/frontend";
+import {Playground, PlaygroundScreen} from "@nu-art/thunderstorm/frontend";
 import {Page_ApiGen} from "../pages/Page_ApiGen";
 import {Hello} from "../Hello";
 import {Example_ApiCustomError} from './examples/Example_ApiCustomError';
 import {Example_Tabs2} from "./examples/tabs/Example_Tabs2";
 import {Example_GenericSelect} from "./examples/_to-be-removed/Example_GenericSelect";
 import {Example_Tabs} from "./examples/tabs/Example_Tabs";
-import {Example_VerySimpleTree} from './examples/keyboard-listener/Example_VerySimpleTree';
 import {Example_Dialogs} from './examples/Example_Dialogs';
 import {Example_Toaster} from './examples/Example_Toaster';
 // import {Example_Menu} from './examples/menu/Example_Menu';
@@ -37,9 +33,7 @@ import {COLORS} from "@res/colors";
 import {Example_Form} from "./examples/Example_Form";
 import {Example_TriggerPush} from "./examples/Example_TriggerPush";
 import {Example_AllDropDowns} from "./examples/dropdown/Example_AllDropDowns";
-import {Example_DropDown} from "./examples/dropdown/Example_DropDown";
-import {Example_SingleRendererDropDown} from "./examples/dropdown/Example_SingleRendererDropDown";
-import {Example_MultiRendererDropDown} from "./examples/dropdown/Example_MultiRendererDropDown";
+import {Playground_DropdownSingleAndMulti} from "./examples/dropdown/Example_Dropdown_SingleAndMulti";
 import {Example_List_SingleType} from "./examples/list/Example_List_SingleType";
 import {Example_List_MultiType} from "./examples/list/Example_List_MultiType";
 import {Example_NestedList_SingleType} from './examples/list/Example_NestedList_SingleType';
@@ -70,6 +64,12 @@ import Example_ChartJSLine from "./examples/Example_ChartJSLine";
 import {Example_TSTextArea} from "./examples/Example_TSTextArea";
 import Example_CCgraphs from "./examples/Example_CCgraphs";
 import {Example_FieldEditorClick} from './examples/Example_FieldEditorClick';
+import {Example_Tree_MultiType} from "./examples/tree/Example_Tree_MultiType";
+import { Playground_DropdownSingleType } from './examples/dropdown/Example_Dropdown_SingleType';
+import {Playground_DropdownMultiType} from "./examples/dropdown/Example_Dropdown_MultiType";
+import {Playground_Tree_Data} from "./examples/keyboard-listener/Example_Tree_Data";
+import {Playground_Tree_Basic} from "./examples/keyboard-listener/Example_Tree_Basic";
+import {Playground_Tree_MultiType} from "./examples/keyboard-listener/Example_Tree_MultiType";
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -131,11 +131,11 @@ export class Page_Playground
 			{renderer: Example_FieldEditorClick, name: "FieldEditorClick Example"},
 
 			// DROPDOWNS
-			{renderer: Example_DropDown, name: "Dropdown Example"},
+			Playground_DropdownSingleAndMulti(),
 			{renderer: Example_FilterInput, name: "FilterInput Examples"},
 			{renderer: Example_AllDropDowns, name: "ALL DropDown Examples"},
-			{renderer: Example_SingleRendererDropDown, name: "Customized Single Renderer DropDown Example"},
-			{renderer: Example_MultiRendererDropDown, name: "Customized Multiple Renderers DropDown Example"},
+			Playground_DropdownSingleType(),
+			Playground_DropdownMultiType(),
 
 			// SWITCH PROPS
 			// TREES / LISTS
@@ -146,7 +146,11 @@ export class Page_Playground
 			{renderer: SP_Example_NestedList_MultiType, name: "SP_Example_NestedList_MultiType",},
 
 			// TREES / LISTS
+			Playground_Tree_Data(),
+			Playground_Tree_Basic(),
+			Playground_Tree_MultiType(),
 			{renderer: Example_Tree_SingleType, name: "Tree_SingleType",},
+			{renderer: Example_Tree_MultiType, name: "Tree_MultiType",},
 			{renderer: Example_List_SingleType, name: "List_SingleType_Menu",},
 			{renderer: Example_NestedList_SingleType, name: "List_SingleType_NestedMenu",},
 			{renderer: Example_List_MultiType, name: "List_MultiType_Menu",},
@@ -169,8 +173,6 @@ export class Page_Playground
 			{renderer: Example_Tabs2, name: "Tabs",},
 			{renderer: Example_Tabs, name: "GenericTabs",},
 			{renderer: Example_GenericSelect, name: "GenericSelect",},
-			// {renderer: Example_Menu, name: "Menu",},
-			{renderer: Example_VerySimpleTree, name: "Special keyboard listener"},
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring"},
 			{renderer: OstudioEx, name: 'stam'},
 

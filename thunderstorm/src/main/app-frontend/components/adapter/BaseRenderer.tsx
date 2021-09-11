@@ -54,6 +54,5 @@ export type BaseRendererMap<R extends React.ComponentType<any>> = {
 	[k: string]: R
 }
 
-export type ItemRendererMap = BaseRendererMap<_BaseItemRenderer<any>>;
 export type TreeRendererMap = BaseRendererMap<_BaseNodeRenderer<any>>;
 

@@ -17,72 +17,17 @@
  * limitations under the License.
  */
 
-import {
-	AdapterBuilder,
-	BaseNodeRenderer,
-	FlatItemToRender,
-	NodeRendererProps,
-	TreeRendererMap,
-} from "@nu-art/thunderstorm/frontend";
-import {
-	DropDown,
-	DropDown_headerStyle,
-	DropDown_inputStyle,
-	DropDown_listStyle,
-} from "@nu-art/thunderstorm/app-frontend/components/DropDown";
+import {AdapterBuilder, TreeItem} from "@nu-art/thunderstorm/frontend";
+import {DropDown, DropDown_headerStyle, DropDown_inputStyle, DropDown_listStyle,} from "@nu-art/thunderstorm/app-frontend/components/DropDown";
 import * as React from "react";
-import {
-	optionRendererStyle,
-} from "./Example_AllDropDowns";
 import {ICONS} from "@res/icons";
 import {css} from "emotion";
-import { flatPlaguesWithTitles, Plague } from "./consts";
-
-export class FlatItemRenderer
-	extends BaseNodeRenderer<Plague> {
-
-	renderItem(item: Plague) {
-		return (
-			<div className="ll_h_c clickable match_width"
-			     id={this.props.node.path}
-			     onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
-			     style={(this.props.node.focused || this.props.node.selected) ? {backgroundColor: "white"} : {}}>
-
-				<div className={optionRendererStyle(this.props.node.selected)}>
-					<div className={`ll_h_c match_width`} style={{justifyContent: "space-between"}}>
-						<div style={this.props.node.focused ? {fontWeight: "bold"} : {}}>{item.label}</div>
-						{this.props.node.selected && <img src={require('@res/icons/icon__check.svg')} width={12}/>}
-					</div>
-				</div>
-			</div>
-		);
-	}
-}
-
-export class FlatTitleRender
-	extends React.Component<NodeRendererProps<Plague>> {
-
-	render() {
-		return (
-			<div style={{backgroundColor: "lightgray"}}>
-				<div className={optionRendererStyle(false)} style={{color: "yellow"}}>
-					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
-						<div>{this.props.item.label}</div>
-					</div>
-				</div>
-			</div>
-		);
-	}
-}
+import {flatPlaguesWithTitles, Plague, RendererMap_Plague} from "./consts";
+import {PlaygroundExample_BodyStyle, PlaygroundExample_HeaderStyle} from "../consts";
+import {PG_Example} from "../_core/PG_Example";
 
 
-export const flatRendererMap: TreeRendererMap = {
-	normal: FlatItemRenderer,
-	title: FlatTitleRender
-};
-
-
-export class Example_MultiRendererDropDown
+export class Example_Dropdown_MultiType
 	extends React.Component<{}, { _selected?: Plague }> {
 
 	state = {_selected: flatPlaguesWithTitles[2].item};
@@ -95,7 +40,7 @@ export class Example_MultiRendererDropDown
 
 		const adapter = AdapterBuilder()
 			.list()
-			.multiRender(flatRendererMap)
+			.multiRender(RendererMap_Plague)
 			.setData(flatPlaguesWithTitles)
 			.noGeneralOnClick()
 			.build();
@@ -109,14 +54,14 @@ export class Example_MultiRendererDropDown
 						color: "red",
 					}
 				}),
-			style:{...DropDown_inputStyle, padding: "0 20px"},
-			placeholder:this.state?._selected?.label
+			style: {...DropDown_inputStyle, padding: "0 20px"},
+			placeholder: this.state?._selected?.label
 		}
 
-		const valueRenderer = (selected: FlatItemToRender<TreeRendererMap>["item"]) => {
+		const valueRenderer = (selected?: TreeItem<Plague>) => {
 			const style: React.CSSProperties = {backgroundColor: "lime", boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
 			if (selected)
-				return <div style={{...style, color: "red"}}>{selected?.item?.label}</div>;
+				return <div style={{...style, color: "red"}}>{selected?.item.label}</div>;
 			return <div style={style}>CHOOSE</div>
 		};
 		const headerStylable = {style: {...DropDown_headerStyle, border: "solid 2px red", borderRadius: "5px 5px 0px 0px"}};
@@ -134,7 +79,8 @@ export class Example_MultiRendererDropDown
 			<div style={{marginTop: 3}}>{ICONS.arrowOpen(undefined, 11)}</div>
 		</div>;
 		const caret = {open: caretItem, close: caretItem}
-		return <div>
+		return <div {...PlaygroundExample_BodyStyle}>
+			<div {...PlaygroundExample_HeaderStyle}>Multiple renderers, flat list</div>
 			<h4>Filter, 1 caret, default value,</h4>
 			<h4>all renderers & custom inline style</h4>
 			<h4>multiple renderers, flat list</h4>
@@ -144,7 +90,7 @@ export class Example_MultiRendererDropDown
 				selectedItemRenderer={valueRenderer}
 				inputStylable={inputStylable}
 				inputEventHandler={(_state, e) => {
-					if (e.code === "Enter") {
+					if (e.key === "Enter") {
 						const newOption = _state.filteredOptions ? _state.filteredOptions[1] : _state.selected
 						_state.selected = newOption;
 						_state.open = false;
@@ -152,7 +98,7 @@ export class Example_MultiRendererDropDown
 					}
 					return _state;
 				}}
-				filter={(item) => [(item as FlatItemToRender<TreeRendererMap>).item.label.toLowerCase()]}
+				filter={(item) => [(item as TreeItem<Plague>).item.label.toLowerCase()]}
 				selected={flatPlaguesWithTitles[2]}
 				caret={caret}
 				headerStylable={headerStylable}
@@ -161,4 +107,14 @@ export class Example_MultiRendererDropDown
 			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : "You didn't choose yet"}</h4>
 		</div>
 	}
+}
+
+
+const name = "Dropdown - Multi Type";
+
+export function Playground_DropdownMultiType() {
+	return {
+		renderer: () => <PG_Example name={name}> <Example_Dropdown_MultiType/> </PG_Example>,
+		name
+	};
 }

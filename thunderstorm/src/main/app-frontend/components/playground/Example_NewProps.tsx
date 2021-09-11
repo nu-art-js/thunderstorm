@@ -22,7 +22,7 @@
 import * as React from "react";
 
 type Props<P> = {
-	name: string
+	name?: string
 	renderer: React.ComponentType<P>
 	data: P[]
 	showList?: boolean
@@ -48,7 +48,7 @@ export class Example_NewProps<T, P = InferProps<T>>
 	render() {
 		const Renderer = this.props.renderer;
 		return <div>
-			<div style={{marginBottom: "10px"}}>{this.props.name}</div>
+			{this.props.name && <div style={{marginBottom: "10px"}}>{this.props.name}</div>}
 			{this.renderList(Renderer)}
 			{this.renderToggle(Renderer)}
 		</div>

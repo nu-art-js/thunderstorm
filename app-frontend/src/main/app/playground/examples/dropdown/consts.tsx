@@ -16,7 +16,9 @@
  * limitations under the License.
  */
 
-import { FlatItemToRender, TreeRendererMap } from "@nu-art/thunderstorm/frontend";
+import {BaseNodeRenderer,TreeItem,TreeRendererMap} from "@nu-art/thunderstorm/frontend";
+import * as React from "react";
+import {css} from "emotion";
 
 export type Plague = { label: string, value: string }
 
@@ -80,7 +82,7 @@ export const plaguesWithTitles = [
 ];
 
 
-export const flatPlaguesWithTitles: FlatItemToRender<TreeRendererMap>[] = [
+export const flatPlaguesWithTitles: TreeItem<Plague>[] = [
 	{
 		item: {label: 'Phisical', value: 'title'},
 		type: "title"
@@ -114,3 +116,59 @@ export const flatPlaguesWithTitles: FlatItemToRender<TreeRendererMap>[] = [
 		type: "normal"
 	},
 ];
+
+
+export const optionRendererStyle = (selected: boolean) => css(
+	{
+		fontSize: "13px",
+		fontWeight: selected ? 500 : 200,
+		color: selected ? "#00b5ff" : "#2f304f",
+		margin: "0 5px",
+		padding: "5px 0",
+		borderBottom: "solid 1px #d8d8d880",
+		width: "100%"
+	});
+
+
+export class ItemRenderer_Plague
+	extends BaseNodeRenderer<Plague> {
+
+	renderItem(item: Plague) {
+		return (
+			<div className="ll_h_c clickable match_width"
+					 id={this.props.node.path}
+					 onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
+					 style={(this.props.node.focused || this.props.node.selected) ? {backgroundColor: "white"} : {}}>
+
+				<div className={optionRendererStyle(this.props.node.selected)}>
+					<div className={`ll_h_c match_width`} style={{justifyContent: "space-between"}}>
+						<div style={this.props.node.focused ? {fontWeight: "bold"} : {}}>{item.label}</div>
+						{this.props.node.selected && <img src={require('@res/icons/icon__check.svg')} width={12}/>}
+					</div>
+				</div>
+			</div>
+		);
+	}
+}
+
+export class ItemRenderer_PlagueTitle
+	extends BaseNodeRenderer<Plague> {
+
+	renderItem(item: Plague) {
+		return (
+			<div style={{backgroundColor: "lightgray"}}>
+				<div className={optionRendererStyle(false)} style={{color: "yellow"}}>
+					<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
+						<div>{item.label}</div>
+					</div>
+				</div>
+			</div>
+		);
+	}
+}
+
+export const RendererMap_Plague: TreeRendererMap = {
+	normal: ItemRenderer_Plague,
+	title: ItemRenderer_PlagueTitle
+};
+

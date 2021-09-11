@@ -17,18 +17,14 @@
  */
 
 import * as React from "react";
-import {
-	BaseComponent,
-	Tree,
-	Adapter,
-	TreeNode,
-	NodeRendererProps,
-} from "@nu-art/thunderstorm/frontend";
+import {Adapter, BaseComponent, NodeRendererProps, Tree, TreeNode,} from "@nu-art/thunderstorm/frontend";
+import {PlaygroundExample_BodyStyle, PlaygroundExample_ResultStyle} from "../consts";
+import {PG_Example} from "../_core/PG_Example";
 
 type State = { focused?: string, actionMessage: string };
 export type Element = { label: string, action?: () => void }
 
-export class Example_DataTree
+class Example_Tree_Data
 	extends BaseComponent<{}, State> {
 
 	state = {actionMessage: "No action yet"};
@@ -65,10 +61,8 @@ export class Example_DataTree
 			return {data, deltaPath: ""};
 		};
 
-		return <div>
-			<h1>Data Tree</h1>
+		return <div {...PlaygroundExample_BodyStyle} style={{minWidth: 180}}>
 			<Tree
-
 				id={"DataTree"}
 				adapter={adapter}
 				onNodeFocused={(path: string) => this.setState({actionMessage: `on focused: ${path}`})}
@@ -76,7 +70,7 @@ export class Example_DataTree
 				onFocus={() => console.log("Focused")}
 				onBlur={() => console.log("Blurred")}
 			/>
-			<h4>{this.state.actionMessage}</h4>
+			<div {...PlaygroundExample_ResultStyle}>{this.state.actionMessage}</div>
 		</div>
 	}
 }
@@ -162,3 +156,11 @@ class Example_ColorfulNodeRenderer
 	};
 }
 
+const name = "Tree - Data";
+
+export function Playground_Tree_Data() {
+	return {
+		renderer: ()=><PG_Example name={name}> <Example_Tree_Data/> </PG_Example>,
+		name
+	};
+}

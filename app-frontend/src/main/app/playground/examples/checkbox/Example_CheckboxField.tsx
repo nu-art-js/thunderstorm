@@ -22,7 +22,7 @@ import {css} from "emotion";
 import {
     CheckboxFieldProps,
     CheckboxOption,
-    TS_CheckboxField
+    TS_CheckboxFieldOLD,
 } from "@nu-art/thunderstorm/frontend";
 import {ChckbxOption, lessOptions, options, lessOptions2} from "./data";
 import {deepClone, toggleElementInArray} from "@nu-art/ts-common";
@@ -72,17 +72,17 @@ export class Example_CheckboxField
         const props5 = this.props5();
         const props6 = this.props6();
         return <>
-            <Example_NewProps name={"Grid-column 4 cols, multiple, disabled options, button with image"} renderer={TS_CheckboxField} data={[props1]} showToggle={false}/>
+            <Example_NewProps name={"Grid-column 4 cols, multiple, disabled options, button with image"} renderer={TS_CheckboxFieldOLD} data={[props1]} showToggle={false}/>
             <div>you chose</div>
             <div>{this.state.cb1.map(opt=><span key={opt.label}>{opt.value},</span>)}</div>
             <div>in grid multiple choice</div>
             <hr/>
-            <Example_NewProps name={"Grid-row 3 cols, single, disabled option, circle"} renderer={TS_CheckboxField} data={[props2]} showToggle={false}/>
+            <Example_NewProps name={"Grid-row 3 cols, single, disabled option, circle"} renderer={TS_CheckboxFieldOLD} data={[props2]} showToggle={false}/>
             <div>you chose {this.state.cb2?.value} in grid single choice</div>
             <hr/>
-            <Example_NewProps name={"no grid, horizontal and vertical"} renderer={TS_CheckboxField} data={[props3, props4]} showToggle={false}/>
+            <Example_NewProps name={"no grid, horizontal and vertical"} renderer={TS_CheckboxFieldOLD} data={[props3, props4]} showToggle={false}/>
             <hr/>
-            <Example_NewProps name={"toggle between fields"} renderer={TS_CheckboxField} data={[props5, props6]}/>
+            <Example_NewProps name={"toggle between fields"} renderer={TS_CheckboxFieldOLD} data={[props5, props6]}/>
         </>;
     }
 

@@ -1,16 +1,9 @@
 import * as React from "react";
-import {Component} from "react";
-import {
-	AdapterBuilder,
-	Example_NewProps,
-	MenuComponent,
-	MenuComponentProps,
-	ToastModule
-} from "@nu-art/thunderstorm/frontend";
+import {AdapterBuilder, Example_NewProps, MenuComponent, MenuComponentProps, ToastModule} from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
 export class SP_Example_List_MultiType
-	extends Component<{}> {
+	extends React.Component<{}> {
 	private data: any;
 	private complexData: any;
 	private rendererMap: any;

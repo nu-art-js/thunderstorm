@@ -17,24 +17,26 @@
  */
 
 import * as React from "react";
-import {Example_DataTree} from "../keyboard-listener/Example_DataTree";
 // import {Example_FakeMenu} from "../keyboard-listener/Example_FakeMenu";
-import {Example_VerySimpleTree} from "../keyboard-listener/Example_VerySimpleTree";
-import {COLORS} from "@res/colors";
-import {Example_AllDropDowns} from "../dropdown/Example_AllDropDowns";
+import {PlaygroundExample_GroupStyle} from "../consts";
+import {Playground_DropdownSingleAndMulti} from "../dropdown/Example_Dropdown_SingleAndMulti";
+import {Playground_DropdownMultiType} from "../dropdown/Example_Dropdown_MultiType";
+import {Playground_DropdownSingleType} from "../dropdown/Example_Dropdown_SingleType";
+import {Playground_Tree_Data} from "../keyboard-listener/Example_Tree_Data";
+import {Playground_Tree_Basic} from "../keyboard-listener/Example_Tree_Basic";
+import {Playground_Tree_MultiType} from "../keyboard-listener/Example_Tree_MultiType";
 
 export const TreeRefactorPage = () => (<>
-	<div style={{width: "100%", height:"400px"}}>
-		<Example_AllDropDowns/>
+	<div className="ll_v_l" style={{width: "100%", height: "100%"}}>
+		<div {...PlaygroundExample_GroupStyle}>
+				{Playground_DropdownSingleAndMulti().renderer()}
+				{Playground_DropdownSingleType().renderer()}
+				{Playground_DropdownMultiType().renderer()}
+		</div>
+		<div {...PlaygroundExample_GroupStyle}>
+				{Playground_Tree_Data().renderer()}
+				{Playground_Tree_Basic().renderer()}
+				{Playground_Tree_MultiType().renderer()}
+		</div>
 	</div>
-	<hr style={{width: "100%"}}/>
-	<div className="ll_h_c match_width" style={{justifyContent: "space-between"}}>
-		<Example_DataTree/>
-		<div style={{height: "100%", width: "1px", background: COLORS.amber()}}/>
-		{/*<Example_FakeMenu/>*/}
-		<div style={{height: "100%", width: "1px", background: COLORS.amber()}}/>
-		<Example_VerySimpleTree/>
-	</div>
-	{/*<hr style={{width: "100%"}}/>*/}
-	{/*<Example_Menu/>*/}
 </>);

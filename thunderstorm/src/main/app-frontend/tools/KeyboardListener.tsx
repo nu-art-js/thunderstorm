@@ -19,7 +19,7 @@
 import * as React from "react";
 
 export type KeyboardListenerProps = {
-	onKeyboardEventListener: (node: HTMLDivElement, e: KeyboardEvent) => void
+	onKeyboardEventListener: (e: React.KeyboardEvent) => void
 	className?: string
 	onFocus?: () => void
 	onBlur?: () => void
@@ -47,7 +47,7 @@ export class KeyboardListener<P extends KeyboardListenerProps>
 		this.node?.removeEventListener("keydown", this.keyboardEventHandler)
 	}
 
-	keyboardEventHandler = (e: KeyboardEvent) => this.node && this.props.onKeyboardEventListener && this.props.onKeyboardEventListener(this.node, e);
+	keyboardEventHandler = (e: KeyboardEvent) => this.node && this.props.onKeyboardEventListener && this.props.onKeyboardEventListener(e as unknown as React.KeyboardEvent);
 
 	onFocus = () => {
 		this.addKeyboardListener();

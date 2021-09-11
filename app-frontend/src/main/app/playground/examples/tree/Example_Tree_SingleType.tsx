@@ -1,12 +1,7 @@
 import * as React from "react";
 import {Component} from "react";
-import {
-	Adapter,
-	AdapterBuilder,
-	ToastModule,
-	Tree
-} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
+import {Adapter, AdapterBuilder, ToastModule, TS_Tree} from "@nu-art/thunderstorm/frontend";
+import {__stringify, deepClone} from "@nu-art/ts-common";
 
 type Type = {
 	label: string | number
@@ -15,6 +10,7 @@ type Type = {
 
 export class Example_Tree_SingleType
 	extends Component<{}> {
+	static index = 0;
 	private data: any;
 
 	constructor(props: {}) {
@@ -33,15 +29,9 @@ export class Example_Tree_SingleType
 
 					label: 'Second element',
 					other: 'Other element',
-					zevel: {
-						data: {
-							label: 'Second element',
-							other: 'Other element',
-						},
-					}
 				},
 				data: {
-					data: {
+					ashpa: {
 						label: 'Second element',
 						other: 'Other element',
 					},
@@ -68,6 +58,7 @@ export class Example_Tree_SingleType
 			.setData(this.data)
 			.build();
 
+		// adapter.adjust = adapter.adjustNodes("data")
 		return <div>
 			<div>
 				<h2>Here is a tree with one renderer Type</h2>
@@ -75,7 +66,7 @@ export class Example_Tree_SingleType
 				<div onClick={() => this.addItem('Second')}>Add Second</div>
 				<div onClick={() => this.addItem('Third')}>Add Third</div>
 				<div onClick={() => this.addItem('Forth')}>Add Forth</div>
-				<Tree
+				<TS_Tree
 					adapter={adapter}
 					onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
@@ -83,7 +74,7 @@ export class Example_Tree_SingleType
 	}
 
 	private addItem = (path: string) => {
-		this.data[`${path}_copy`] = this.data[path];
+		this.data[`${path}_${Example_Tree_SingleType.index++}`] = deepClone(this.data[path]);
 		this.forceUpdate();
 	};
 }

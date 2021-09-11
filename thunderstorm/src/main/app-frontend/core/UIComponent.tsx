@@ -24,63 +24,34 @@
  */
 import * as React from "react";
 
-import {
-	_clearTimeout,
-	_setTimeout,
-	Logger,
-	LogLevel,
-	LogParam,
-	TimerHandler
-} from "@nu-art/ts-common";
+import {Logger, LogLevel, LogParam} from "@nu-art/ts-common";
 import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
 import {BrowserHistoryModule} from "../modules/HistoryModule";
-import {Thunder} from "./Thunder";
 
-export class BaseComponent<P = any, S = any>
+export class UIComponent<P = any, S = any>
 	extends React.Component<P, S> {
 
 	private stateKeysToUpdate?: (keyof S)[];
 	private logger: Logger;
-	private readonly _componentDidMount: (() => void) | undefined;
-	private readonly _componentWillUnmount: (() => void) | undefined;
-	private timeoutMap: { [k: string]: number } = {};
 
 	constructor(props: P) {
 		super(props);
 		this.logger = new Logger(this.constructor.name);
-
-		this._componentDidMount = this.componentDidMount;
-		this.componentDidMount = () => {
-			// @ts-ignore
-			Thunder.getInstance().addUIListener(this);
-
-			if (this._componentDidMount)
-				this._componentDidMount();
-		};
-
-		this._componentWillUnmount = this.componentWillUnmount;
-		this.componentWillUnmount = () => {
-			if (this._componentWillUnmount)
-				this._componentWillUnmount();
-
-			// @ts-ignore
-			Thunder.getInstance().removeUIListener(this);
-		};
+		this.deriveStateFromProps.bind(this);
+		const state = this.deriveStateFromProps(props);
+		if (state)
+			this.state = state;
 	}
 
-	debounce(handler: TimerHandler, key: string, ms = 0) {
-		_clearTimeout(this.timeoutMap[key]);
-		this.timeoutMap[key] = _setTimeout(handler, ms);
+	UNSAFE_componentWillReceiveProps(nextProps: P) {
+		const state = this.deriveStateFromProps(nextProps);
+		if (state)
+			this.setState(state);
 	}
 
-	throttle(handler: TimerHandler, key: string, ms = 0) {
-		if (this.timeoutMap[key])
-			return;
-		this.timeoutMap[key] = _setTimeout(() => {
-			handler();
-			delete this.timeoutMap[key];
-		}, ms);
+	protected deriveStateFromProps(nextProps: P): S | undefined {
+		return undefined;
 	}
 
 	setStateKeysToUpdate(stateKeysToUpdate?: (keyof S)[]) {
