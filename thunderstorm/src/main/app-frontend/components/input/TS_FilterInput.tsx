@@ -20,14 +20,12 @@
  */
 
 import * as React from 'react';
+import {KeyboardEvent} from 'react';
 import {Filter} from "@nu-art/ts-common/utils/filter-tools";
 import {TS_Input} from "./TS_Input";
 import {Stylable} from "../../tools/Stylable";
-import {
-	compare,
-	generateHex
-} from '@nu-art/ts-common';
-import {KeyboardEvent} from "react";
+import {generateHex} from '@nu-art/ts-common';
+import {UIComponent} from "../../core/UIComponent";
 
 export type Props_FilterInput<T> = Stylable & {
 	filter: (item: T) => string[],
@@ -42,10 +40,10 @@ export type Props_FilterInput<T> = Stylable & {
 
 type State = {}
 
-export class FilterInput<T>
-	extends React.Component<Props_FilterInput<T>, State> {
-	private filterInstance: Filter;
-	private notifyChanges: boolean;
+export class TS_FilterInput<T>
+	extends UIComponent<Props_FilterInput<T>, State> {
+
+	private filter!: Filter;
 
 	static defaultProps: Partial<Props_FilterInput<any>> = {
 		id: generateHex(16)
@@ -53,46 +51,40 @@ export class FilterInput<T>
 
 	constructor(props: Props_FilterInput<T>) {
 		super(props);
-
-		this.filterInstance = new Filter();
-		this.filterInstance.setFilter(props.initialFilterText || '');
-		this.notifyChanges = true;
+		this.callOnChange();
 	}
 
-	componentDidMount() {
-		this.callOnChange(this.props.list, "");
+	protected deriveStateFromProps(nextProps: Props_FilterInput<T>): State | undefined {
+		if (!this.filter)
+			this.filter = new Filter()
+
+		this.filter.setFilter(nextProps.initialFilterText || '');
+
+		if (this.props.initialFilterText !== nextProps.initialFilterText)
+			this.filter.setFilter(nextProps.initialFilterText || '');
+
+		if (this.state)
+			this.callOnChange();
+
+		return
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<Props_FilterInput<T>>, nextState: Readonly<State>, nextContext: any): boolean {
-		const b = this.notifyChanges = !compare(this.props.list, nextProps.list);
-		if (b)
-			this.callOnChange(nextProps.list, "");
-
-		return b;
-	}
-
-	callOnChange = (list: T[], filter: string) => {
-		if (this.notifyChanges)
-			this.props.onChange(this.filterInstance.filter(list, this.props.filter), filter, this.props.id);
-
-		this.notifyChanges = false;
-	};
-
-	filter = (text: string) => {
-		this.filterInstance.setFilter(text);
-		this.notifyChanges = true;
-		this.callOnChange(this.props.list, text);
+	callOnChange = () => {
+		const filteredOptions = this.filter.filter(this.props.list, this.props.filter);
+		this.props.onChange(filteredOptions, this.filter.getFilter(), this.props.id);
 	};
 
 	render() {
-
 		const {id, placeholder, focus} = this.props;
 		return (
 			<TS_Input
 				type='text'
 				id={id}
 				value={this.props.initialFilterText}
-				onChange={(text) => this.filter(text)}
+				onChange={(filterText) => {
+					this.filter.setFilter(filterText);
+					this.callOnChange();
+				}}
 				focus={focus}
 				placeholder={placeholder}
 				className={this.props.className}

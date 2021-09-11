@@ -17,26 +17,10 @@
  * limitations under the License.
  */
 
-import {
-	AdapterBuilder,
-	BaseNodeRenderer,
-	DropDown,
-	Example_NewProps,
-	Props_DropDown,
-	TreeRendererMap,
-} from "@nu-art/thunderstorm/frontend";
+import {AdapterBuilder, Example_NewProps, Props_DropDownOLD, TS_DropDown,} from "@nu-art/thunderstorm/frontend";
 import * as React from "react";
-import {optionRendererStyle,} from "./Example_AllDropDowns";
-import {
-	FlatItemRenderer,
-	FlatTitleRender,
-} from "./Example_MultiRendererDropDown";
-import {
-	flatPlaguesWithTitles,
-	Plague,
-	plagues,
-	PlagueWithTitle
-} from "./consts";
+import {flatPlaguesWithTitles, ItemRenderer_Plague, Plague, plagues, PlagueWithTitle, RendererMap_Plague} from "./consts";
+import {PG_Example} from "../_core/PG_Example";
 
 export type TestType = {
 	prop1?: Plague | PlagueWithTitle,
@@ -45,12 +29,7 @@ export type TestType = {
 	prop4?: Plague | PlagueWithTitle,
 }
 
-export const flatRendererMap: TreeRendererMap = {
-	normal: FlatItemRenderer,
-	title: FlatTitleRender
-};
-
-export class Example_DropDown
+class Example_Dropdown_SingleAndMulti
 	extends React.Component<{}, { instance: TestType }> {
 
 	constructor(props: {}) {
@@ -68,7 +47,7 @@ export class Example_DropDown
 	render() {
 		const props1 = this.simpleAdapterProps();
 		const props2 = this.complexAdapterProps();
-		return <Example_NewProps name={"Dropdown"} renderer={DropDown} data={[props1, props2]}/>
+		return <Example_NewProps renderer={TS_DropDown} data={[props1, props2]}/>
 	}
 
 	private simpleAdapterProps() {
@@ -77,7 +56,7 @@ export class Example_DropDown
 			key: "simple",
 			adapter: AdapterBuilder()
 				.list()
-				.singleRender(ItemRenderer)
+				.singleRender(ItemRenderer_Plague)
 				.setData(plagues)
 				.build(),
 			selected: this.state.instance["prop1"],
@@ -94,7 +73,7 @@ export class Example_DropDown
 
 				return <div>{selected.label}</div>;
 			},
-		} as Props_DropDown<any> & { key: string };
+		} as Props_DropDownOLD<any> & { key: string };
 	}
 
 	private complexAdapterProps() {
@@ -103,7 +82,7 @@ export class Example_DropDown
 			key: "complex",
 			adapter: AdapterBuilder()
 				.list()
-				.multiRender(flatRendererMap)
+				.multiRender(RendererMap_Plague)
 				.setData(flatPlaguesWithTitles)
 				.noGeneralOnClick()
 				.build(),
@@ -121,28 +100,16 @@ export class Example_DropDown
 
 				return <div>{selected.item.label}</div>;
 			},
-		} as Props_DropDown<any> & { key: string }
+		} as Props_DropDownOLD<any> & { key: string }
 	}
 }
 
 
-export class ItemRenderer
-	extends BaseNodeRenderer<Plague> {
+const name = "Dropdown - Single & Multi";
 
-	renderItem(item: Plague) {
-		return (
-			<div className="ll_h_c clickable match_width"
-			     id={this.props.node.path}
-			     onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
-			     style={(this.props.node.focused || this.props.node.selected) ? {backgroundColor: "white"} : {}}>
-
-				<div className={optionRendererStyle(this.props.node.selected)}>
-					<div className={`ll_h_c match_width`} style={{justifyContent: "space-between"}}>
-						<div style={this.props.node.focused ? {fontWeight: "bold"} : {}}>{item.label}</div>
-						{this.props.node.selected && <img src={require('@res/icons/icon__check.svg')} width={12}/>}
-					</div>
-				</div>
-			</div>
-		);
-	}
+export function Playground_DropdownSingleAndMulti() {
+	return {
+		renderer: () => <PG_Example name={name}> <Example_Dropdown_SingleAndMulti/> </PG_Example>,
+		name
+	};
 }

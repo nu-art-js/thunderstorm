@@ -18,7 +18,7 @@
  */
 
 import * as React from 'react';
-import {CheckboxProps, Example_NewProps, TS_Checkbox} from '@nu-art/thunderstorm/frontend';
+import {CheckboxPropsOLD, Example_NewProps, TS_CheckboxOLD} from '@nu-art/thunderstorm/frontend';
 import {css} from 'emotion';
 import {ICONS} from "@res/icons";
 
@@ -34,17 +34,17 @@ export class Example_SingleCheckbox
     state = {f1: false, f2: true, f3: true, f4: false};
 
     render() {
-        return <Example_NewProps name={"TS checkbox: regular, circle, disabled, image in button + css"} renderer={TS_Checkbox} data={[this.props1(), this.props2(),this.props3(),this.props4(),]} showToggle={false}/>
+        return <Example_NewProps name={"TS checkbox: regular, circle, disabled, image in button + css"} renderer={TS_CheckboxOLD} data={[this.props1(), this.props2(),this.props3(),this.props4(),]} showToggle={false}/>
     }
 
-    private props1 = (): CheckboxProps<any> => ({
+    private props1 = (): CheckboxPropsOLD<any> => ({
         id: 'f1',
         label: 'checkbox field',
         value: 'sing with us!',
         checked: this.state.f1,
         onCheck: () => this.setState((prev) => ({f1: !prev.f1}))
     });
-    private props2 = (): CheckboxProps<any> => ({
+    private props2 = (): CheckboxPropsOLD<any> => ({
         id: 'f2',
         label: 'checkbox field',
         value: 'sing with us!',
@@ -53,7 +53,7 @@ export class Example_SingleCheckbox
         rtl: true,
         onCheck: () => this.setState((prev) => ({f2: !prev.f2}))
     });
-    private props3 = (): CheckboxProps<any> => ({
+    private props3 = (): CheckboxPropsOLD<any> => ({
         id: 'f3',
         label: 'checkbox field',
         value: 'sing with us!',
@@ -61,7 +61,7 @@ export class Example_SingleCheckbox
         disabled: true,
         onCheck: () => this.setState((prev) => ({f3: !prev.f3}))
     });
-    private props4 = (): CheckboxProps<any> => ({
+    private props4 = (): CheckboxPropsOLD<any> => ({
         id: 'f4',
         label: 'checkbox field',
         value: 'sing with us!',

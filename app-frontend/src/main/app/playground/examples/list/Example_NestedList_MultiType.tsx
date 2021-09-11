@@ -20,7 +20,6 @@ export class Example_NestedList_MultiType
 				             reg: (props: { item: string }) => <div>{props.item}</div>,
 				             bold: (props: { item: string }) => <div><b>{props.item}</b></div>
 			             })
-			.nested()
 			.setData([{type: "reg", item: 'hi'},
 				         {type: "reg", item: 'bye'},
 				         {type: "reg", item: 'ciao'},
@@ -71,7 +70,6 @@ export class Example_NestedList_MultiType_Object
 		const adapter: Adapter = AdapterBuilder()
 			.list()
 			.multiRender(rendererMap)
-			.nested()
 			.setData([{type: "reg", item: {label: 'hi'}},
 				         {type: "reg", item: {label: 'bye'}},
 				         {type: "reg", item: {label: 'ciao'}},
@@ -147,7 +145,6 @@ export class Example_NestedList_MultiType_Object_Dynamic
 		const adapter: Adapter = AdapterBuilder()
 			.list()
 			.multiRender(rendererMap)
-			.nested()
 			.setData([
 				         {
 					         type: "add1", item: {stam: 1},

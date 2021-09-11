@@ -23,8 +23,8 @@ export class Filter {
 		this._filter = filter;
 	}
 
-	getFilter(filter: string) {
-		this._filter = filter;
+	getFilter() {
+		return this._filter;
 	}
 
 	filter<T>(items: T[], filter: (item: T) => string[]): T[] {

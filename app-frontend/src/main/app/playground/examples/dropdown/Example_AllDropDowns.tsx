@@ -18,25 +18,12 @@
  */
 
 import * as React from "react";
-import {css} from "emotion";
 import {ICONS} from "@res/icons";
-import {Example_DropDown} from "./Example_DropDown";
 import {BaseNodeRenderer,} from "@nu-art/thunderstorm/frontend";
-import {Example_SingleRendererDropDown} from "./Example_SingleRendererDropDown";
-import {Example_MultiRendererDropDown} from "./Example_MultiRendererDropDown";
-import { Plague } from "./consts";
-
-
-export const optionRendererStyle = (selected: boolean) => css(
-	{
-		fontSize: "13px",
-		fontWeight: selected ? 500 : 200,
-		color: selected ? "#00b5ff" : "#2f304f",
-		margin: "0 5px",
-		padding: "5px 0",
-		borderBottom: "solid 1px #d8d8d880",
-		width: "100%"
-	});
+import {optionRendererStyle, Plague } from "./consts";
+import {Playground_DropdownSingleAndMulti} from "./Example_Dropdown_SingleAndMulti";
+import { Playground_DropdownMultiType } from "./Example_Dropdown_MultiType";
+import { Playground_DropdownSingleType } from "./Example_Dropdown_SingleType";
 
 
 export type Node = {
@@ -64,9 +51,9 @@ export class Example_AllDropDowns
 		return <>
 			<h1>dropdowns</h1>
 			<div className={'ll_h_t match_width'} style={{justifyContent: "space-around", height: 100}}>
-				<Example_DropDown/>
-				<Example_SingleRendererDropDown/>
-				<Example_MultiRendererDropDown/>
+				{Playground_DropdownSingleAndMulti().renderer()}
+				{Playground_DropdownSingleType().renderer()}
+				{Playground_DropdownMultiType().renderer()}
 			</div>
 		</>;
 	}

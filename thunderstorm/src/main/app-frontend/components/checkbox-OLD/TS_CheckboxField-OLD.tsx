@@ -19,7 +19,7 @@
 
 import * as React from "react";
 import {Component, ReactNode} from "react";
-import {TS_Checkbox} from "./TS_Checkbox";
+import {TS_CheckboxOLD} from "./TS_Checkbox-OLD";
 
 export type CheckboxOption<T> = {
     value: T
@@ -44,7 +44,7 @@ export type CheckboxFieldProps<T> = {
     innerNode?: (checked: boolean, disabled: boolean) => ReactNode
 }
 
-export class TS_CheckboxField<T>
+export class TS_CheckboxFieldOLD<T>
     extends Component<CheckboxFieldProps<T>, {}> {
 
     gridCss = (): React.CSSProperties => {
@@ -61,7 +61,7 @@ export class TS_CheckboxField<T>
     render() {
         return <div className={`${this.props.fieldContainerClass} ${this.props.horizontal && !this.props.gridColumns ? 'll_h_c' : ''}`} style={this.gridCss()}>
             {this.props.options.map((option, i: number) =>
-                <TS_Checkbox
+                <TS_CheckboxOLD
                     key={i}
                     value={option.value}
                     checked={Array.isArray(this.props.value) ? this.props.value.includes(option.value) : this.props.value === option.value}
@@ -77,5 +77,6 @@ export class TS_CheckboxField<T>
             )}
         </div>;
     }
+
 
 }

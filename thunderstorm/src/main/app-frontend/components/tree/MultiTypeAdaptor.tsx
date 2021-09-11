@@ -1,4 +1,4 @@
-/*
+`zzz`/*
  * Thunderstorm is a full web app framework!
  *
  * Typescript & Express backend infrastructure that natively runs on firebase function
@@ -35,25 +35,24 @@ export class MultiTypeAdapter<Rm extends BaseRendererMap<any>, T extends any = a
 	}
 
 
-	filter(obj: any, key: keyof any): boolean {
-		return key !== "item" && key !== 'rendererType';
-	}
+	filter = (obj: any, key: keyof any): boolean => key !== "item" && key !== 'rendererType';
 
-	adjust(obj: any): { data: any; deltaPath: string } {
-		if (!_keys(obj).find(key => key === "_children"))
+	adjust = (obj: any): { data: any; deltaPath: string } => this._adjustImpl(obj, "_children");
+
+	_adjustImpl = (obj: any, childrenKey: string) => {
+		if (!_keys(obj).find(key => key === childrenKey))
 			return {data: obj, deltaPath: ""};
 
 		// @ts-ignore
-		const objElement = obj['_children'];
+		const objElement = obj[childrenKey];
 		// @ts-ignore
 		objElement.type = obj.type;
 		// @ts-ignore
 		objElement.item = obj.item;
 
-		// @ts-ignore
-		return {data: objElement, deltaPath: '_children'};
+		return {data: objElement, deltaPath: childrenKey};
+	};
 
-	}
 
 	resolveRenderer(propKey: string): any {
 		return this.rendererMap[propKey];

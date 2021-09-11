@@ -20,77 +20,18 @@
  */
 
 import * as React from 'react';
-import {KeyboardEvent} from 'react';
-import {TS_FilterInput} from "./input/TS_FilterInput";
+import {TS_FilterInput} from "../input/TS_FilterInput";
 import {generateHex} from "@nu-art/ts-common";
-import {KeyboardListener} from '../tools/KeyboardListener';
-import {stopPropagation} from "../utils/tools";
-import {Adapter,} from "./adapter/Adapter";
-import {Stylable} from '../tools/Stylable';
-import {Overlay} from "./Overlay";
-import { Tree } from './tree/Tree';
+import {KeyboardListener} from '../../tools/KeyboardListener';
+import {stopPropagation} from "../../utils/tools";
+import {Adapter,} from "../adapter/Adapter";
+import {Stylable} from '../../tools/Stylable';
+import {Overlay} from "../Overlay";
+import {TS_Tree} from '../tree/TS_Tree';
+import {DropDown_headerStyle, DropDown_inputStyle, DropDown_listStyle, InputProps, listContainerStyle, wrapperStyle} from '../DropDown';
+import {UIComponent} from "../../core/UIComponent";
 
-export const DropDown_defaultWidth = 222;
-const defaultTitleHeight = "28px";
-const defaultListHeight = "150px";
-
-// export enum OnEnterOptions {
-//     SelectFirstOption= (e:)
-// }
-
-export const wrapperStyle: React.CSSProperties = {
-	display: "inline-block",
-	position: 'relative'
-};
-
-export const DropDown_headerStyle: React.CSSProperties = {
-	display: "flex",
-	alignItems: "center",
-	boxSizing: "border-box",
-	position: "relative",
-	border: "solid 1px",
-	borderRadius: 2,
-	color: "black",
-	backgroundColor: "white",
-	width: DropDown_defaultWidth,
-	height: defaultTitleHeight,
-};
-
-export const DropDown_inputStyle: React.CSSProperties = {
-	border: "unset",
-	boxSizing: "border-box",
-	outline: "none",
-	// padding: "0 5px",
-	width: "100%",
-};
-
-export const listContainerStyle: React.CSSProperties = {
-	display: "inline-block",
-	position: "absolute",
-	zIndex: 10,
-};
-
-export const DropDown_listStyle: React.CSSProperties = {
-	boxSizing: "border-box",
-	backgroundColor: "whitesmoke",
-	border: "solid 1px",
-	borderRadius: 5,
-	display: "flex",
-	flexFlow: "column",
-	alignItems: "stretch",
-	maxHeight: defaultListHeight,
-	overflowX: "hidden",
-	overflowY: "auto",
-	position: "relative",
-	top: 1,
-	width: DropDown_defaultWidth,
-};
-
-export type InputProps = Stylable & {
-	placeholder?: string
-}
-
-export type State<ItemType> = {
+type State<ItemType> = {
 	id: string
 	filteredOptions: ItemType[]
 	adapter: Adapter
@@ -107,7 +48,7 @@ type StaticProps = {
 	inputStylable: InputProps
 }
 
-export type Props_DropDownOLD<ItemType> = StaticProps & {
+export type Props_DropDown<ItemType> = StaticProps & {
 	adapter: Adapter
 	placeholder?: string,
 
@@ -116,9 +57,8 @@ export type Props_DropDownOLD<ItemType> = StaticProps & {
 	selected?: ItemType
 
 	filter?: (item: ItemType) => string[]
-	onFilter?: (list?: ItemType[]) => void
 
-	inputEventHandler?: (state: State<ItemType>, e: KeyboardEvent) => State<ItemType>
+	inputEventHandler?: (state: State<ItemType>, e: React.KeyboardEvent) => State<ItemType>
 	selectedItemRenderer?: (props?: ItemType) => React.ReactNode
 	caret?: {
 		open: React.ReactNode,
@@ -128,8 +68,8 @@ export type Props_DropDownOLD<ItemType> = StaticProps & {
 	disabled?: boolean
 }
 
-export class DropDown<ItemType>
-	extends React.Component<Props_DropDownOLD<ItemType>, State<ItemType>> {
+export class TS_DropDown<ItemType>
+	extends UIComponent<Props_DropDown<ItemType>, State<ItemType>> {
 
 	static defaultProps: Partial<StaticProps> = {
 		id: generateHex(8),
@@ -141,36 +81,22 @@ export class DropDown<ItemType>
 	private filteredOptions: ItemType[] = [];
 
 
-	constructor(props: Props_DropDownOLD<ItemType>) {
+	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
+	}
 
-		this.state = {
-			id: props.id,
-			filteredOptions: this.props.adapter.data,
-			adapter: DropDown.cloneAdapter(this.props),
-			open: false,
-			selected: this.props.selected,
+	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
+		const newAdapter = TS_DropDown.cloneAdapter(nextProps);
+		return {
+			id: nextProps.id,
+			adapter: newAdapter,
+			filteredOptions: newAdapter.data,
+			selected: nextProps.selected,
+			open: this.state?.open || false
 		};
 	}
 
-	// static getDerivedStateFromProps(props: Props_DropDownOLD<any>, state: State<any>) {
-	// 	if (props.adapter.data === state.adapter.data)
-	// 		return null;
-	//
-	// 	state.adapter = props.adapter;
-	// 	// Tree.recalculateExpanded(props, state);
-	//
-	// 	return state;
-	// }
-
-	componentDidUpdate(prevProps: Props_DropDownOLD<any>) {
-		if (this.props.adapter.data !== prevProps.adapter.data || this.props.selected !== prevProps.selected) {
-			const newAdapter = DropDown.cloneAdapter(this.props);
-			this.setState({id: this.props.id, adapter: newAdapter, filteredOptions: newAdapter.data, selected: this.props.selected});
-		}
-	}
-
-	private static cloneAdapter = (nextProps: Props_DropDownOLD<any>) => {
+	private static cloneAdapter = (nextProps: Props_DropDown<any>) => {
 		return nextProps.adapter.clone(new Adapter(nextProps.autocomplete && nextProps.filter ? [] : nextProps.adapter.data));
 	};
 
@@ -187,9 +113,7 @@ export class DropDown<ItemType>
 		this.setState({
 			open: false,
 			selected: item
-		});
-
-		this.props.onSelected(item);
+		}, () => this.props.onSelected(item));
 	};
 
 	render() {
@@ -242,10 +166,10 @@ export class DropDown<ItemType>
 			});
 
 		if (e.key === "Enter")
-			if (this.filteredOptions.length > 0)
-				return this.onSelected(this.filteredOptions[0]);
-			else
+			if (this.state.filterText)
 				return this.props.onNoMatchingSelectionForString?.(this.state.filterText)
+			else
+				return this.onSelected(this.filteredOptions[0]);
 
 		if (e.key === "Escape")
 			return this.setState({open: false});
@@ -272,6 +196,7 @@ export class DropDown<ItemType>
 			onChange={(filteredOptions: ItemType[], filterBy) => {
 				this.setState(state => {
 					state.adapter.data = this.props.autocomplete && this.props.filter && !filterBy.length ? [] : filteredOptions;
+
 					// console.log(`filter: ${this.props.id} (${filterBy}) -> ${__stringify(filteredOptions)}`);
 					// console.log(`state.adapter.data: ${__stringify(state.adapter.data)}`);
 					this.filteredOptions = filteredOptions;
@@ -279,7 +204,7 @@ export class DropDown<ItemType>
 						adapter: state.adapter,
 						filterText: filterBy,
 					};
-				}, () => this.props.onFilter && this.props.onFilter(this.state.filteredOptions));
+				});
 			}}
 			handleKeyEvent={this.keyEventHandler}
 			focus={true}
@@ -324,26 +249,26 @@ export class DropDown<ItemType>
 
 
 	private renderTreeImpl = () => {
-		const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
+		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const id = `${this.props.id}-tree`;
 		if ((!this.props.filter || !this.props.autocomplete || this.state.filterText?.length) && this.state.adapter.data.length === 0)
 			return <div style={{textAlign: "center", opacity: 0.5}}>No options</div>;
 
-		return <Tree
+		return <TS_Tree
 			id={id}
 			key={id}
 			adapter={this.state.adapter}
 			indentPx={0}
 			selectedItem={this.state.selected}
 			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
-			keyEventHandler={treeKeyEventHandler}
+			// keyEventHandler={treeKeyEventHandler}
 		/>;
 	};
 }
 
-const treeKeyEventHandlerResolver = (id: string) => {
-	return (e: React.KeyboardEvent, node?: HTMLDivElement) => {
-		if (!["Escape", "ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Enter"].includes(e.key))
-			document.getElementById(`${id}-input`)?.focus();
-	};
-};
+// const treeKeyEventHandlerResolver = (id: string) => {
+// 	return (e: React.KeyboardEvent, node?: HTMLDivElement) => {
+// 		if (!["Escape", "ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Enter"].includes(e.key))
+// 			document.getElementById(`${id}-input`)?.focus();
+// 	};
+// };

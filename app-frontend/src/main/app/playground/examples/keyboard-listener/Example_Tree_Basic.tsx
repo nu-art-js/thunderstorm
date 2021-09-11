@@ -17,23 +17,18 @@
  */
 
 import * as React from "react";
-import {
-	Adapter,
-	BaseComponent,
-	Tree,
-	TreeNode,
-	NodeRendererProps,
-} from "@nu-art/thunderstorm/frontend";
+import {AdapterBuilder, BaseNodeRenderer, NodeRendererProps, TreeNode, TS_Tree,} from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
+import {PlaygroundExample_ResultStyle} from "../consts";
+import {PG_Example} from "../_core/PG_Example";
 
 type State = { focused?: string, actionMessage: string };
-export type Element = { label: string, action?: () => void }
 
-export class Example_VerySimpleTree
-	extends BaseComponent<{}, State> {
+class Example_Tree_Basic
+	extends React.Component<{}, State> {
 
 	state = {actionMessage: "No action yet"};
-	private elements: { [key: string]: Element | object } = {
+	private elements = {
 		First: {
 			label: 'First element',
 			other: 'Other element',
@@ -55,37 +50,32 @@ export class Example_VerySimpleTree
 	};
 
 	render() {
-		const adapter = new Adapter(this.elements);
+		const adapter = AdapterBuilder()
+			.tree()
+			.singleRender(Example_NodeRenderer)
+			.setData(this.elements)
+			.build();
+
 		adapter.hideRoot = true;
-		adapter.adjust = (data: object) => {
-			if (Object.keys(data).find(key => key === "data")) {
-				// @ts-ignore
-				return {data: data['data'], deltaPath: "data"}
-			}
-
-			return {data, deltaPath: ""};
-		};
-
-		adapter.treeNodeRenderer = Example_NodeRenderer;
 
 
-		return <div>
-			<h1>Very Simple Tree</h1>
-			<Tree
+		return <>
+			<TS_Tree
 				id={"VerySimpleTree"}
 				adapter={adapter}
 				onNodeFocused={(path: string) => this.setState({actionMessage: `on focused: ${path}`})}
 				onNodeClicked={(path: string) => this.setState({actionMessage: `on clicked: ${path}`})}
-				onFocus={() => console.log("Focused")}
-				onBlur={() => console.log("Blurred")}
+				// onFocus={() => console.log("Focused")}
+				// onBlur={() => console.log("Blurred")}
 			/>
-			<h4>{this.state.actionMessage}</h4>
-		</div>
+			<div {...PlaygroundExample_ResultStyle}>{this.state.actionMessage}</div>
+		</>
 	}
 }
 
 class ItemRenderer
-	extends React.Component<NodeRendererProps> {
+	extends BaseNodeRenderer<any>{
+
 	constructor(props: NodeRendererProps) {
 		super(props);
 	}
@@ -167,4 +157,13 @@ class Example_NodeRenderer
 
 		return this.props.node.propKey === "other" ? ItemRenderer1 : ItemRenderer0;
 	}
+}
+
+const name = "Tree - Basic";
+
+export function Playground_Tree_Basic() {
+	return {
+		renderer: ()=><PG_Example name={name}> <Example_Tree_Basic/> </PG_Example>,
+		name
+	};
 }

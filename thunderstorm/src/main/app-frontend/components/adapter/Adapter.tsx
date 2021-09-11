@@ -22,41 +22,71 @@
 import * as React from "react";
 import {ComponentType} from "react";
 import {_keys,} from "@nu-art/ts-common";
-import {
-	SimpleNodeRenderer,
-	SimpleTreeNodeRenderer
-} from "../tree/SimpleTreeNodeRenderer";
-import {
-	_BaseNodeRenderer,
-	BaseRendererMap,
-	NodeRendererProps,
-	TreeRendererMap,
-} from "./BaseRenderer";
+import {SimpleTreeNodeRenderer} from "../tree/SimpleTreeNodeRenderer";
+import {_BaseNodeRenderer, BaseRendererMap, NodeRendererProps, TreeRendererMap,} from "./BaseRenderer";
 import {TreeNode} from "../tree/types";
 
 
 export type InferItemType<R> =
-	R extends React.ComponentType<{ item: infer Item1, node: TreeNode }> ? Item1 :
-		R extends React.ComponentType<{ item: infer Item }> ? Item : "Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode";
+	R extends React.ComponentType<{ item: infer Item, node: TreeNode }> ? Item :
+		"Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode";
 
-export type FlatItemToRender<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
-	item: Item
-	type: K
-}
+// export type TreeItem<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
+// 	item: Item
+// 	type: K
+// 	_children?: ItemToRender<Rm>[]
+// }
+//
+// export type ItemToRender<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = TreeItem<Rm, K> & {
+// 	_children?: ItemToRender<Rm>[]
+// }
 
-export type ItemToRender<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = FlatItemToRender<Rm, K> & {
-	_children?: ItemToRender<Rm>[]
-}
-
-export type _GenericRenderer<Rm extends BaseRendererMap<any>, ItemType extends ItemToRender<Rm> = ItemToRender<Rm>> = {
+export type _GenericRenderer<Rm extends BaseRendererMap<any>, ItemType extends InferItemType<Rm[keyof Rm]> = InferItemType<Rm[keyof Rm]>> = {
 	rendererMap: Rm
 	items: ItemType[]
 }
 
+// Simple LIST is an array of item of type T
+export type ListData<I> = I[];
+
+// the moment we want to have a nested LIST of a single item of type T
+export type ListItem<I> = {
+	item: I
+	_children?: ListItem<I>[]
+}
+
+export type NestedListItem<I> = {
+	item: I
+	_children?: NestedListData<I>[]
+}
+
+export type NestedListData<I> = I | NestedListItem<I>;
+
+// Simple TREE with simple key as string and single item of type T
+export type TreeData<I> = { [k: string]: I | TreeData<I> }
+
+// the moment we want to have a TREE of a single item of type T
+export type TreeItem<I> = ListItem<I> & {
+	type: string
+	_children?: TreeItem<I>[]
+}
+
+// the moment we want to have a TREE with multiple item types
+export type TreeData_MultiType<Rm extends BaseRendererMap<any>, I extends InferItemType<Rm[keyof Rm]> = InferItemType<Rm[keyof Rm]>> =
+	TreeItem<I>
+	| TreeData<TreeItem<I>>
+
+
+// type NodeAdjuster = (obj: any) => { data: any; deltaPath?: string };
+// type NestedType<T extends any = any> = { item: T, _children: NestedObjectOfType<T>[] };
+// type NestedObjectOfType<T extends any = any> = T | NestedType<T>;
+
+type AdapterData<D> = D | (() => D);
 
 export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> = React.ComponentType<T>> {
 
 	data: any;
+	childrenKey?: string;
 
 	constructor(data: any) {
 		this.data = data
@@ -67,29 +97,50 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 		return this;
 	}
 
-	filter<K>(obj: K, key: keyof K) {
-		return true;
-	}
+	filter = <K extends any>(obj: K, key: keyof K) => true;
 
-	getChildren = <K extends object>(obj: K): (keyof K)[] => _keys(obj);
-	isParent = (obj: any) => true;
+	// by default all objects and arrays are parents
+	isParent = (obj: any) => {
+		if (!this.childrenKey)
+			return Array.isArray(obj) || typeof obj === "object";
 
-	getFilteredChildren<K extends any>(obj: K): (keyof K)[] | [] {
+		return typeof obj === "object" && obj["_isParent"] === true || Array.isArray(obj);
+	};
+
+	// this can be gone.. and builders must use the new filterChildren
+	getFilteredChildren<K extends object>(obj: K): (keyof K)[] | [] {
 		if (obj === undefined || obj === null)
 			return [];
 
-		if (typeof obj !== "object" && !Array.isArray(obj))
+		if (typeof obj !== "object")
 			return [];
 
-		// @ts-ignore
-		return this.getChildren(obj).filter((__key) => this.filter(obj, __key))
+		if (Array.isArray(obj))
+			return _keys(obj);
+
+		if (!this.childrenKey)
+			return _keys(obj).filter(k => this.filter(obj, k));
+
+		if (!obj[this.childrenKey as keyof K])
+			return [];
+
+		return _keys(obj[this.childrenKey as keyof K] as any) as (keyof K)[];
 	}
 
-	adjust(obj: any): { data: any, deltaPath?: string } {
-		return {data: obj, deltaPath: ""};
+	// this to allow us to navigate and skip into nested items in an object without changing the object
+	// adjust = (obj: any): { data: any; deltaPath: string } => this.adjustImpl(obj, "_children");
+	adjust: ((obj: any) => { data: any; deltaPath: string }) = (obj: any) => {
+		if (!this.childrenKey)
+			return ({data: obj, deltaPath: ""});
+
+		if (!obj[this.childrenKey])
+			return {data: obj, deltaPath: ""};
+
+		const objElement: any = {...obj[this.childrenKey], type: obj.type, item: obj.item, _isParent: true};
+		return {data: objElement, deltaPath: this.childrenKey || ""};
 	}
 
-	clone(baseAdapter: this){
+	clone(baseAdapter: this) {
 		_keys(this).forEach(k => {
 			baseAdapter[k] = this[k]
 		});
@@ -113,28 +164,31 @@ export class Adapter<T extends any = any, I extends NodeRendererProps<T> = NodeR
 	}
 }
 
-// type NodeAdjuster = (obj: any) => { data: any; deltaPath?: string };
-type NestedType<T extends any = any> = { item: T, _children: NestedObjectOfType<T>[] };
-type NestedObjectOfType<T extends any = any> = T | NestedType<T>;
-
-type ListData<I> = I[];
-type AdapterData<D> = D | (() => D);
-
-class BaseAdapterBuilder<I, Data> {
+class BaseAdapterBuilder<Data> {
 	data!: Data;
-	treeNodeRenderer!: ComponentType<NodeRendererProps<I>>;
-	getChildrenKeys: (obj: any) => (any[]) = (obj: any) => _keys(obj);
-	isParent: (obj: any) => (boolean) = (obj: any) => true;
-	adjust: ((obj: any) => { data: any; deltaPath: string }) = (obj: any) => ({data: obj, deltaPath: ""});
+	treeNodeRenderer!: ComponentType<NodeRendererProps>;
+
+	protected filter = <K extends any>(obj: K, key: keyof K) => true;
+	childrenKey?: string;
 
 	setData(data: Data) {
 		this.data = data;
 		return this;
 	}
+
+	// Utility - move to builder
+	setChildrenKey = (childrenKey: string) => {
+		this.childrenKey = childrenKey;
+		return this;
+	};
+
+	setFilter(filter: <K extends any>(obj: K, key: keyof K) => boolean) {
+		this.filter = filter;
+	}
 }
 
 class ListSingleAdapterBuilder<ItemType extends any = any>
-	extends BaseAdapterBuilder<ItemType, AdapterData<ListData<ItemType>>> {
+	extends BaseAdapterBuilder<AdapterData<ListData<ItemType>>> {
 
 	readonly renderer: _BaseNodeRenderer<ItemType>
 
@@ -148,69 +202,44 @@ class ListSingleAdapterBuilder<ItemType extends any = any>
 			</div>;
 		}
 
-		this.isParent = (obj: any) => obj === this.data;
 	}
 
 	nested() {
-		this.getChildrenKeys = (obj: any) => {
-			if (typeof obj !== "object")
-				return [];
-
-			if (Array.isArray(obj))
-				return _keys(obj);
-
-			if (!obj._children)
-				return [];
-
-			return ["_children"];
-		}
-
+		this.childrenKey = "_children";
 		this.treeNodeRenderer = (props: NodeRendererProps<ItemType>) => {
-			const item: NestedObjectOfType<ItemType> = props.item;
 			const _Renderer = this.renderer
 			return <div id={props.node.path} onClick={props.node.onClick}>
-				<_Renderer item={typeof props.item === "object" ? (item as NestedType<ItemType>).item : props.item} node={props.node}/>
+				<_Renderer {...props}/>
 			</div>;
 		}
 
-		return this as ListSingleAdapterBuilder<NestedObjectOfType<ItemType>>;
+		return this as ListSingleAdapterBuilder<NestedListData<ItemType>>;
 	}
 
 	build() {
 		const adapter = new Adapter(this.data);
 		adapter.hideRoot = true;
 		adapter.treeNodeRenderer = this.treeNodeRenderer;
-		adapter.getChildren = this.getChildrenKeys
-		adapter.isParent = this.isParent
-		adapter.adjust = this.adjust
+		adapter.childrenKey = this.childrenKey;
+		adapter.isParent = (obj: any) => obj === this.data
 		// @ts-ignore
 		adapter.itemRenderer = this.renderer;
 		return adapter;
 	}
 }
 
-class ListMultiAdapterBuilder<Rm extends TreeRendererMap, ItemType extends FlatItemToRender<Rm> = FlatItemToRender<Rm>>
-	extends BaseAdapterBuilder<ItemType, AdapterData<ListData<ItemType>>> {
+class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
+	extends BaseAdapterBuilder<DataType> {
 
 	readonly rendererMap: Rm
+	private hideRoot = true;
 
 	constructor(rendererMap: Rm) {
 		super();
 		this.rendererMap = rendererMap;
-		this.getChildrenKeys = (obj: any) => {
-			if (typeof obj !== "object")
-				return [];
+		this.childrenKey = "_children";
 
-			if (Array.isArray(obj))
-				return _keys(obj);
-
-			if (!obj._children)
-				return [];
-
-			return ["_children"];
-		}
-
-		this.treeNodeRenderer = (props: NodeRendererProps<ItemType>) => {
+		this.treeNodeRenderer = (props: NodeRendererProps<TreeItem<any>>) => {
 			if (props.node.propKey === "_children")
 				return null;
 
@@ -221,13 +250,14 @@ class ListMultiAdapterBuilder<Rm extends TreeRendererMap, ItemType extends FlatI
 		}
 	}
 
-
-	nested(): ListMultiAdapterBuilder<Rm, ItemToRender<Rm>> {
-		return this as unknown as ListMultiAdapterBuilder<Rm, ItemToRender<Rm>>;
+	tree() {
+		this.treeNodeRenderer = this.defaultTreeNodeRenderer
+		this.hideRoot = false;
+		return this as unknown as MultiTypeAdapterBuilder<Rm, DataType>;
 	}
 
-	noGeneralOnClick(): ListMultiAdapterBuilder<Rm, ItemToRender<Rm>>{
-		this.treeNodeRenderer = (props: NodeRendererProps<ItemType>) => {
+	noGeneralOnClick(): MultiTypeAdapterBuilder<Rm, DataType> {
+		this.treeNodeRenderer = (props: NodeRendererProps<TreeItem<any>>) => {
 			if (props.node.propKey === "_children")
 				return null;
 
@@ -236,40 +266,71 @@ class ListMultiAdapterBuilder<Rm extends TreeRendererMap, ItemType extends FlatI
 				<_Renderer item={props.item.item} node={props.node}/>
 			</div>;
 		};
-		return this as unknown as ListMultiAdapterBuilder<Rm, ItemToRender<Rm>>;
+		return this as unknown as MultiTypeAdapterBuilder<Rm, DataType>;
+	}
+
+	private defaultTreeNodeRenderer = (props: NodeRendererProps) => {
+		const renderCollapse = () => {
+			let toDisplay;
+			if (typeof props.item !== "object")
+				toDisplay = "";
+			else if (Object.keys(props.item).length === 0)
+				toDisplay = "";
+			else if (props.node.adapter.isParent(props.item)) {
+				if (props.node.expanded)
+					toDisplay = "-";
+				else
+					toDisplay = "+";
+			}
+
+			return <div
+				className={`clickable`}
+				id={props.node.path}
+				onClick={props.node.expandToggler}
+				style={{width: "15px"}}>
+				{toDisplay}
+			</div>
+		}
+
+
+		const _Renderer: _BaseNodeRenderer<any> = this.rendererMap[props.item.type];
+		return (<div className="ll_h_c">
+			{renderCollapse()}
+			<div
+				id={props.node.path}
+				className='clickable'
+				onClick={props.node.onClick}
+				style={{backgroundColor: props.node.focused ? "red" : "salmon", userSelect: "none"}}>
+
+				<_Renderer item={props.item.item} node={props.node}/>
+			</div>
+		</div>);
 	}
 
 	build() {
 		const adapter = new Adapter(this.data);
-		adapter.hideRoot = true;
-		adapter.adjust = this.adjust;
+		adapter.hideRoot = this.hideRoot;
 		adapter.treeNodeRenderer = this.treeNodeRenderer;
-		adapter.getChildren = this.getChildrenKeys
+		adapter.childrenKey = this.childrenKey;
 		return adapter;
 
 	}
 }
 
-type NestedTreeData<I> = { [k: string]: I | TreeData<I> }
-type TreeData<I> = NestedTreeData<I>
+abstract class TreeBaseAdapterBuilder<Data>
+	extends BaseAdapterBuilder<Data> {
+
+
+}
 
 class TreeSingleAdapterBuilder<RenderItemType extends any = any>
-	extends BaseAdapterBuilder<RenderItemType, AdapterData<TreeData<RenderItemType>>> {
+	extends TreeBaseAdapterBuilder<AdapterData<TreeData<RenderItemType>>> {
 
 	readonly renderer: _BaseNodeRenderer<RenderItemType>
 
 	constructor(renderer: _BaseNodeRenderer<RenderItemType>) {
 		super();
 		this.renderer = renderer;
-	}
-
-	treeNodeRenderer = (props: NodeRendererProps<RenderItemType>) => {
-
-		const item: RenderItemType = props.item;
-		const _Renderer = this.renderer
-		return <div id={props.node.path} onClick={props.node.onClick}>
-			<_Renderer item={typeof props.item === "object" ? (item as NestedType<RenderItemType>).item : props.item} node={props.node}/>
-		</div>;
 	}
 
 	build() {
@@ -303,15 +364,14 @@ class TreeSingleAdapterBuilder<RenderItemType extends any = any>
 					onClick={props.node.onClick}
 					style={{backgroundColor: props.node.focused ? "red" : "salmon", userSelect: "none"}}>
 
-					<SimpleNodeRenderer {...props}/>
+					<this.renderer {...props}/>
 				</div>
 			</div>);
 		}
-
+		;
 		return adapter;
 	}
 }
-
 
 class ListAdapterBuilder {
 
@@ -319,8 +379,8 @@ class ListAdapterBuilder {
 		return new ListSingleAdapterBuilder<Item>(renderer);
 	}
 
-	multiRender<Rm extends TreeRendererMap>(rendererMap: Rm) {
-		return new ListMultiAdapterBuilder<Rm>(rendererMap);
+	multiRender<Rm extends TreeRendererMap, ItemType extends TreeData_MultiType<Rm> = TreeData_MultiType<Rm>>(rendererMap: Rm) {
+		return new MultiTypeAdapterBuilder<Rm, ListData<ItemType>>(rendererMap);
 	}
 }
 
@@ -331,9 +391,9 @@ class TreeAdapterBuilder {
 		return new TreeSingleAdapterBuilder<Item>(renderer);
 	}
 
-	// multiRender<Rm extends RendererMap>(rendererMap: Rm) {
-	// 	return new TreeMultiAdapterBuilder<Rm>(rendererMap);
-	// }
+	multiRender<Rm extends TreeRendererMap, ItemType extends TreeItem<Rm> = TreeItem<Rm>>(rendererMap: Rm) {
+		return new MultiTypeAdapterBuilder<Rm, TreeData_MultiType<ItemType>>(rendererMap).tree();
+	}
 }
 
 class MainAdapterBuilder {
