@@ -20,21 +20,23 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import firebase from 'firebase/app'
+import {FirebaseApp} from "@firebase/app";
 // tslint:disable:no-import-side-effect
-import 'firebase/auth';
+import "@firebase/auth";
 import {Logger} from "@nu-art/ts-common";
 // noinspection TypeScriptPreferShortImport
 import {SwMessagingWrapper} from "../messaging/SwMessagingWrapper";
+import {getMessaging} from "@firebase/messaging";
+
 
 export class SwFirebaseSession
 	extends Logger {
-	app!: firebase.app.App;
+	app!: FirebaseApp;
 
 	protected sessionName: string;
 	protected messaging?: SwMessagingWrapper;
 
-	constructor(sessionName: string, app: firebase.app.App) {
+	constructor(sessionName: string, app: FirebaseApp) {
 		super(`service worker firebase: ${sessionName}`);
 
 		this.sessionName = sessionName;
@@ -45,7 +47,7 @@ export class SwFirebaseSession
 		if (this.messaging)
 			return this.messaging;
 
-		return this.messaging = new SwMessagingWrapper(this.app.messaging());
+		return this.messaging = new SwMessagingWrapper(getMessaging(this.app));
 	}
 }
 

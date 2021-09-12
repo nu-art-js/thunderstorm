@@ -20,9 +20,13 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import firebase from "firebase/app";
 // tslint:disable:no-import-side-effect
-import 'firebase/auth';
+import "@firebase/auth";
+import {getAuth,signInWithCustomToken,signOut} from "@firebase/auth";
+import {
+	FirebaseApp,
+	initializeApp
+} from "@firebase/app";
 import {
 	Logger,
 	ThisShouldNotHappenException
@@ -32,10 +36,14 @@ import {FirebaseConfig} from "../../index";
 import {MessagingWrapper} from "../messaging/MessagingWrapper";
 import {AnalyticsWrapper} from "../analytics/AnalyticsWrapper";
 import {DatabaseWrapper} from "../database/DatabaseWrapper";
+import {getMessaging} from "@firebase/messaging";
+import {getAnalytics} from "@firebase/analytics";
+import {getDatabase} from "@firebase/database";
+// import auth = firebase.auth;
 
 export class FirebaseSession
 	extends Logger {
-	app!: firebase.app.App;
+	app!: FirebaseApp;
 
 	protected config: FirebaseConfig;
 	protected sessionName: string;
@@ -50,44 +58,44 @@ export class FirebaseSession
 	}
 
 	public connect(): void {
-		this.app = firebase.initializeApp(this.config, this.sessionName);
+		this.app = initializeApp(this.config, this.sessionName);
 	}
 
 	getMessaging() {
 		if (this.messaging)
 			return this.messaging;
 
-		return this.messaging = new MessagingWrapper(this.app.messaging());
+		return this.messaging = new MessagingWrapper(getMessaging(this.app));
 	}
 
 	getAnalytics() {
 		if (this.analytics)
 			return this.analytics;
 
-		return this.analytics = new AnalyticsWrapper(this.app.analytics());
+		return this.analytics = new AnalyticsWrapper(getAnalytics(this.app));
 	}
 
 	getDatabase() {
 		if (this.database)
 			return this.database;
 
-		return this.database = new DatabaseWrapper(this.app.database());
+		return this.database = new DatabaseWrapper(getDatabase(this.app));
 	}
 
 	async signInWithToken(token: string) {
-		return this.app.auth().signInWithCustomToken(token)
+		return signInWithCustomToken(getAuth(this.app),token)
 	};
 
 	async signOut() {
-		return this.app.auth().signOut()
+		return signOut(getAuth(this.app))
 	}
 
 	getProjectId(): string {
 		if (!this.config)
-			throw new ThisShouldNotHappenException("Missing config. Probably init not resolved yet!")
+			throw new ThisShouldNotHappenException("Missing config. Probably init not resolved yet!");
 
 		if (!this.config.projectId)
-			throw new ThisShouldNotHappenException("Could not deduce project id from session config.. if you need the functionality.. add it to the config!!")
+			throw new ThisShouldNotHappenException("Could not deduce project id from session config.. if you need the functionality.. add it to the config!!");
 
 		return this.config.projectId;
 	}
