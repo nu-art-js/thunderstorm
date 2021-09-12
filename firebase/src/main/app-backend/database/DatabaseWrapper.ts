@@ -19,6 +19,7 @@
 // import {FirestoreCollection} from "./FirestoreCollection";
 import {
 	FirebaseListener,
+	Firebase_DataSnapshot,
 	Firebase_DB
 } from "./types";
 import {
@@ -37,9 +38,8 @@ export class DatabaseWrapper
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.database = firebaseSession.app.database() as Firebase_DB;
+		this.database = firebaseSession.app.database();
 	}
-
 
 	public async get<T>(path: string, defaultValue?: T): Promise<T | undefined> {
 		const snapshot = await this.database.ref(path).once("value");
@@ -55,7 +55,7 @@ export class DatabaseWrapper
 
 	public listen<T>(path: string, callback: (value: T | undefined) => void): FirebaseListener {
 		try {
-			return this.database.ref(path).on("value", (snapshot) => callback(snapshot ? snapshot.val() : undefined));
+			return this.database.ref(path).on("value", (snapshot: Firebase_DataSnapshot) => callback(snapshot ? snapshot.val() : undefined));
 		} catch (e) {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}

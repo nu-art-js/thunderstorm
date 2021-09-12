@@ -16,31 +16,5 @@
  * limitations under the License.
  */
 
-import firebase from 'firebase/app';
-
-import {EventType} from "../../shared/types";
-
-export type FirebaseType_DB = firebase.database.Database
-
-export interface Firebase_DB {
-	ref(path: string): Firebase_Reference;
-}
-
-export interface Firebase_DataSnapshot {
-	toJSON(): Object | null;
-
-	val(): any;
-}
-
-export interface Firebase_Reference {
-
-	on(eventType: EventType, callback: (snapshot: Firebase_DataSnapshot | null) => void): void;
-
-	remove(): Promise<void>;
-
-	set(value: any): Promise<void>;
-
-	update(values: any): Promise<void>;
-
-	once(eventType: EventType): Promise<Firebase_DataSnapshot>;
-}
+import {Database} from "@firebase/database"
+export type FirebaseType_DB = Database

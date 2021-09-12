@@ -21,7 +21,7 @@ import {
 	EventContext,
 	HttpsFunction,
 	RuntimeOptions
-} from 'firebase-functions';
+} from "firebase-functions";
 import {DataSnapshot} from "firebase-functions/lib/providers/database";
 
 import * as express from "express";
@@ -40,12 +40,10 @@ import {
 	StringMap
 } from "@nu-art/ts-common";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
-import firebase from "firebase";
-import {Message} from 'firebase-functions/lib/providers/pubsub';
-import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
+import {Message} from "firebase-functions/lib/providers/pubsub";
+import {DocumentSnapshot} from "@google-cloud/firestore";
 
-
-const functions = require('firebase-functions');
+const functions = require("firebase-functions");
 
 export interface FirebaseFunctionInterface {
 	getFunction(): HttpsFunction;
@@ -62,14 +60,14 @@ export abstract class FirebaseFunction<Config = any>
 
 	protected constructor(tag?: string) {
 		super(tag);
-		this.onFunctionReady = this.onFunctionReady.bind(this)
+		this.onFunctionReady = this.onFunctionReady.bind(this);
 	}
 
 	abstract getFunction(): HttpsFunction
 
 	protected async handleCallback(callback: () => Promise<any>) {
 		if (this.isReady)
-			return await callback()
+			return await callback();
 
 		return new Promise((resolve) => {
 			addItemToArray(this.toBeExecuted, async () => await callback());
@@ -172,7 +170,7 @@ export abstract class FirebaseFunctionModule<DataType = any, ConfigType = any>
 				const after: DataType = change.after && change.after.val();
 				const params = deepClone(context.params);
 
-				return this.handleCallback(() => this.processChanges(before, after, params))
+				return this.handleCallback(() => this.processChanges(before, after, params));
 			});
 	};
 }
@@ -207,8 +205,8 @@ export abstract class FirestoreFunctionModule<DataType extends object, ConfigTyp
 				const after: DataType | undefined = change.after && change.after.data();
 				const params = deepClone(context.params);
 
-				return this.handleCallback(() => this.processChanges(params, before, after))
-			})
+				return this.handleCallback(() => this.processChanges(params, before, after));
+			});
 	};
 }
 
@@ -255,7 +253,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 			return this.function;
 
 		return this.function = functions.pubsub.schedule(this.schedule).onRun(async () => {
-			return this.handleCallback(() => this._onScheduledEvent())
+			return this.handleCallback(() => this._onScheduledEvent());
 		});
 	};
 }
@@ -286,7 +284,7 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 
 		this.runtimeOpts = {
 			timeoutSeconds: this.config?.runtimeOpts?.timeoutSeconds || 300,
-			memory: this.config?.runtimeOpts?.memory || '2GB'
+			memory: this.config?.runtimeOpts?.memory || "2GB"
 		};
 
 		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(
@@ -294,7 +292,7 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 				if (!object.name?.startsWith(this.path))
 					return;
 
-				return this.handleCallback(() => this.onFinalize(object, context))
+				return this.handleCallback(() => this.onFinalize(object, context));
 			});
 	};
 }
@@ -318,11 +316,11 @@ export abstract class Firebase_PubSubFunction<T>
 
 	private _onPublish = async (object: T | undefined, originalMessage: TopicMessage, context: FirebaseEventContext) => {
 		try {
-			return await this.onPublish(object, originalMessage, context)
+			return await this.onPublish(object, originalMessage, context);
 		} catch (e) {
 			const _message = `Error publishing pub/sub message` + __stringify(object) +
-				"\n" + ` to topic ${this.topic}` + "\n with attributes: " + __stringify(originalMessage.attributes) + "\n" + __stringify(e)
-			this.logError(_message)
+				"\n" + ` to topic ${this.topic}` + "\n with attributes: " + __stringify(originalMessage.attributes) + "\n" + __stringify(e);
+			this.logError(_message);
 			try {
 				await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
 			} catch (_e) {
@@ -342,13 +340,13 @@ export abstract class Firebase_PubSubFunction<T>
 
 			let data: T | undefined;
 			try {
-				data = JSON.parse(Buffer.from(originalMessage.data, 'base64').toString());
+				data = JSON.parse(Buffer.from(originalMessage.data, "base64").toString());
 			} catch (e) {
 				this.logError(`Error parsing the data attribute from pub/sub message to topic ${this.topic}` +
-					              "\n" + __stringify(originalMessage.data) + "\n" + __stringify(e))
+					              "\n" + __stringify(originalMessage.data) + "\n" + __stringify(e));
 			}
 
-			return this.handleCallback(() => this._onPublish(data, originalMessage, context))
+			return this.handleCallback(() => this._onPublish(data, originalMessage, context));
 		});
 	};
 }

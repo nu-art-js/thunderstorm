@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import {TS_ServiceWorker} from '@nu-art/thunderstorm/index-sw';
-import {FirebaseModule} from "@nu-art/firebase/frontend";
+import {FirebaseModule} from "@nu-art/firebase/sw";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/index-sw";
 
 new TS_ServiceWorker()
