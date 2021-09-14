@@ -63,7 +63,7 @@ class Example_Tree_Data
 
 		return <div {...PlaygroundExample_BodyStyle} style={{minWidth: 180}}>
 			<Tree
-				id={"DataTree"}
+				id={name}
 				adapter={adapter}
 				onNodeFocused={(path: string) => this.setState({actionMessage: `on focused: ${path}`})}
 				onNodeClicked={(path: string) => this.setState({actionMessage: `on clicked: ${path}`})}
