@@ -130,7 +130,7 @@ class Example_Tree_MultiType
 
 		return <>
 			<TS_Tree
-				id={"VerySimpleTree"}
+				id={name}
 				adapter={adapter}
 				onNodeFocused={(path: string) => this.setState({actionMessage: `on focused: ${path}`})}
 				onNodeClicked={(path: string) => this.setState({actionMessage: `on clicked: ${path}`})}
