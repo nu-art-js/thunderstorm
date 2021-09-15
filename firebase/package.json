@@ -29,14 +29,14 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "~0.0.1",
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/firestore": "^4.8.1",
     "@google-cloud/storage": "^2.5.0",
+    "@nu-art/ts-common": "~0.0.1",
     "express": "^4.17.1",
-    "firebase": "^8.0.0",
-    "firebase-admin": "^9.5.0",
-    "firebase-functions": "^3.13.0",
+    "firebase": "^9.0.0",
+    "firebase-admin": "^9.11.1",
+    "firebase-functions": "^3.15.4",
     "google-auth-library": "^6.0.6"
   },
   "devDependencies": {

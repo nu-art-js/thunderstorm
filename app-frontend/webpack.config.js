@@ -165,6 +165,7 @@ module.exports = (env, argv) => {
 				template: "./main/index.ejs",
 				filename: "./index.html",
 				minify: envConfig.htmlMinificationOptions(),
+				excludeChunks: ['ts_service_worker']
 			}),
 			// new WebpackMd5Hash(),
 			envConfig.getPrettifierPlugin(),

@@ -21,7 +21,7 @@ import {
 	EventContext,
 	HttpsFunction,
 	RuntimeOptions
-} from 'firebase-functions';
+} from "firebase-functions";
 import {DataSnapshot} from "firebase-functions/lib/providers/database";
 
 import * as express from "express";
@@ -40,12 +40,10 @@ import {
 	StringMap
 } from "@nu-art/ts-common";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
-import firebase from "firebase";
-import {Message} from 'firebase-functions/lib/providers/pubsub';
-import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
+import {Message} from "firebase-functions/lib/providers/pubsub";
+import {DocumentSnapshot} from "@google-cloud/firestore";
 
-
-const functions = require('firebase-functions');
+const functions = require("firebase-functions");
 
 export interface FirebaseFunctionInterface {
 	getFunction(): HttpsFunction;
@@ -288,7 +286,7 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 
 		this.runtimeOpts = {
 			timeoutSeconds: this.config?.runtimeOpts?.timeoutSeconds || 300,
-			memory: this.config?.runtimeOpts?.memory || '2GB'
+			memory: this.config?.runtimeOpts?.memory || "2GB"
 		};
 
 		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(
@@ -344,7 +342,7 @@ export abstract class Firebase_PubSubFunction<T>
 
 			let data: T | undefined;
 			try {
-				data = JSON.parse(Buffer.from(originalMessage.data, 'base64').toString());
+				data = JSON.parse(Buffer.from(originalMessage.data, "base64").toString());
 			} catch (e) {
 				this.logError(`Error parsing the data attribute from pub/sub message to topic ${this.topic}` +
 					              "\n" + __stringify(originalMessage.data) + "\n" + __stringify(e));
