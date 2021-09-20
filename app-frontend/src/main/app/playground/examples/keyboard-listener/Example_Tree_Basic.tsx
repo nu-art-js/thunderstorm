@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import {AdapterBuilder, BaseNodeRenderer, NodeRendererProps, TreeNode, TS_Tree,} from "@nu-art/thunderstorm/frontend";
+import {AdapterBuilder, BaseNodeRenderer, NodeRendererProps, TS_Tree,} from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 import {PlaygroundExample_ResultStyle} from "../consts";
 import {PG_Example} from "../_core/PG_Example";
@@ -116,21 +116,6 @@ class ItemRenderer2
 	}
 }
 
-const ExpandCollapseComponent = (props: TreeNode) => {
-	const children = props.adapter.getFilteredChildren(props.item);
-
-	let toDisplay;
-	if (children.length === 0)
-		toDisplay = "";
-	else if (props.expanded)
-		toDisplay = "-";
-	else
-		toDisplay = "+";
-
-	return <div className={`clickable`} id={props.path} onClick={props.expandToggler} style={{width: "15px"}}>{toDisplay}</div>
-
-}
-
 class Example_NodeRenderer
 	extends React.Component<NodeRendererProps> {
 
@@ -140,7 +125,6 @@ class Example_NodeRenderer
 
 	render() {
 		return (<div className="ll_h_c">
-			<ExpandCollapseComponent {...this.props.node}/>
 			{this.renderItems()}
 		</div>);
 	};

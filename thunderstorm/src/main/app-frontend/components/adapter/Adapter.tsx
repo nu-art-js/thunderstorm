@@ -21,15 +21,11 @@
 
 import * as React from "react";
 import {ComponentType} from "react";
-import {_keys,} from "@nu-art/ts-common";
+import {_keys, BadImplementationException,} from "@nu-art/ts-common";
 import {SimpleTreeNodeRenderer} from "../tree/SimpleTreeNodeRenderer";
 import {_BaseNodeRenderer, BaseRendererMap, NodeRendererProps, TreeRendererMap,} from "./BaseRenderer";
 import {TreeNode} from "../tree/types";
 
-
-export type InferItemType<R> =
-	R extends React.ComponentType<{ item: infer Item, node: TreeNode }> ? Item :
-		"Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode";
 
 // export type TreeItem<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
 // 	item: Item
@@ -40,11 +36,6 @@ export type InferItemType<R> =
 // export type ItemToRender<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = TreeItem<Rm, K> & {
 // 	_children?: ItemToRender<Rm>[]
 // }
-
-export type _GenericRenderer<Rm extends BaseRendererMap<any>, ItemType extends InferItemType<Rm[keyof Rm]> = InferItemType<Rm[keyof Rm]>> = {
-	rendererMap: Rm
-	items: ItemType[]
-}
 
 // Simple LIST is an array of item of type T
 export type ListData<I> = I[];
@@ -71,15 +62,20 @@ export type TreeItem<I> = ListItem<I> & {
 	_children?: TreeItem<I>[]
 }
 
+export type InferItemType<R> =
+	R extends React.ComponentType<{ item: infer Item, node: TreeNode }> ? Item :
+		"Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode";
+
+export type _GenericRenderer<Rm extends BaseRendererMap<any>, ItemType extends InferItemType<Rm[keyof Rm]> = InferItemType<Rm[keyof Rm]>> = {
+	rendererMap: Rm
+	items: ItemType[]
+}
+
 // the moment we want to have a TREE with multiple item types
 export type TreeData_MultiType<Rm extends BaseRendererMap<any>, I extends InferItemType<Rm[keyof Rm]> = InferItemType<Rm[keyof Rm]>> =
 	TreeItem<I>
 	| TreeData<TreeItem<I>>
 
-
-// type NodeAdjuster = (obj: any) => { data: any; deltaPath?: string };
-// type NestedType<T extends any = any> = { item: T, _children: NestedObjectOfType<T>[] };
-// type NestedObjectOfType<T extends any = any> = T | NestedType<T>;
 
 type AdapterData<D> = D | (() => D);
 
@@ -164,17 +160,35 @@ export class Adapter<T extends any = any, I extends NodeRendererProps<T> = NodeR
 	}
 }
 
-class BaseAdapterBuilder<Data> {
+abstract class BaseAdapterBuilder<Data> {
 	data!: Data;
 	treeNodeRenderer!: ComponentType<NodeRendererProps>;
+	multiRenderer = false;
+	expandCollapseRenderer: ComponentType<NodeRendererProps>;
+
 
 	protected filter = <K extends any>(obj: K, key: keyof K) => true;
 	childrenKey?: string;
+
+	constructor() {
+		this.expandCollapseRenderer = this.defaultExpandCollapseRenderer;
+	}
 
 	setData(data: Data) {
 		this.data = data;
 		return this;
 	}
+
+	setNodeRenderer(treeNodeRenderer: ComponentType<NodeRendererProps>) {
+		this.treeNodeRenderer = treeNodeRenderer;
+		return this;
+	}
+
+	setExpandCollapseRenderer(expandCollapseRenderer: ComponentType<NodeRendererProps>) {
+		this.expandCollapseRenderer = expandCollapseRenderer;
+		return this;
+	}
+
 
 	// Utility - move to builder
 	setChildrenKey = (childrenKey: string) => {
@@ -185,6 +199,44 @@ class BaseAdapterBuilder<Data> {
 	setFilter(filter: <K extends any>(obj: K, key: keyof K) => boolean) {
 		this.filter = filter;
 	}
+
+	protected defaultExpandCollapseRenderer = (props: NodeRendererProps) => {
+		function resolveSymbol() {
+
+			if (typeof props.item !== "object")
+				return "";
+
+			if (Object.keys(props.item).length === 0)
+				return "";
+
+			if (props.node.adapter.isParent(props.item)) {
+				if (props.node.expanded)
+					return "-";
+
+				return "+";
+			}
+
+			return "";
+		}
+
+		return (<div style={{minWidth: 12}}>{resolveSymbol()}</div>);
+	}
+
+	protected defaultTreeNodeRenderer = (props: NodeRendererProps) => {
+		const _Renderer: _BaseNodeRenderer<any> = this.resolveRenderer(props.item.type);
+		return (
+			<div className="ll_h_c clickable"
+					 id={props.node.path}
+					 onClick={props.node.expandToggler}>
+
+				<this.expandCollapseRenderer {...props}/>
+				<_Renderer item={this.multiRenderer ? props.item.item : props.item} node={props.node}/>
+			</div>
+		);
+	}
+
+	protected abstract resolveRenderer(type: string): _BaseNodeRenderer<any>;
+
 }
 
 class ListSingleAdapterBuilder<ItemType extends any = any>
@@ -196,12 +248,16 @@ class ListSingleAdapterBuilder<ItemType extends any = any>
 		super();
 		this.renderer = renderer;
 		this.treeNodeRenderer = (props: NodeRendererProps<ItemType>) => {
-			const _Renderer = this.renderer
+			const _Renderer = this.resolveRenderer()
 			return <div id={props.node.path} onClick={props.node.onClick}>
 				<_Renderer item={props.item} node={props.node}/>
 			</div>;
 		}
 
+	}
+
+	protected resolveRenderer(type?: string): _BaseNodeRenderer<any> {
+		return this.renderer;
 	}
 
 	nested() {
@@ -236,6 +292,7 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 
 	constructor(rendererMap: Rm) {
 		super();
+		this.multiRenderer = true;
 		this.rendererMap = rendererMap;
 		this.childrenKey = "_children";
 
@@ -243,11 +300,22 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 			if (props.node.propKey === "_children")
 				return null;
 
-			const _Renderer: _BaseNodeRenderer<any> = this.rendererMap[props.item.type];
+			const _Renderer: _BaseNodeRenderer<any> = this.resolveRenderer(props.item.type);
 			return <div id={props.node.path} onClick={props.node.onClick}>
 				<_Renderer item={props.item.item} node={props.node}/>
 			</div>;
 		}
+	}
+
+	protected resolveRenderer(type?: string): _BaseNodeRenderer<any> {
+		if (!type)
+			throw new BadImplementationException("multi renderer adapter items must have a type to resolve renderer")
+
+		const renderer = this.rendererMap[type];
+		if (!renderer)
+			throw new BadImplementationException(`renderer of type ${type} doesn't exists, in rendererMap found keys: ${JSON.stringify(_keys(this.rendererMap))}`)
+
+		return renderer;
 	}
 
 	tree() {
@@ -256,6 +324,7 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 		return this as unknown as MultiTypeAdapterBuilder<Rm, DataType>;
 	}
 
+	// TO REMOVE
 	noGeneralOnClick(): MultiTypeAdapterBuilder<Rm, DataType> {
 		this.treeNodeRenderer = (props: NodeRendererProps<TreeItem<any>>) => {
 			if (props.node.propKey === "_children")
@@ -269,44 +338,6 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 		return this as unknown as MultiTypeAdapterBuilder<Rm, DataType>;
 	}
 
-	private defaultTreeNodeRenderer = (props: NodeRendererProps) => {
-		const renderCollapse = () => {
-			let toDisplay;
-			if (typeof props.item !== "object")
-				toDisplay = "";
-			else if (Object.keys(props.item).length === 0)
-				toDisplay = "";
-			else if (props.node.adapter.isParent(props.item)) {
-				if (props.node.expanded)
-					toDisplay = "-";
-				else
-					toDisplay = "+";
-			}
-
-			return <div
-				className={`clickable`}
-				id={props.node.path}
-				onClick={props.node.expandToggler}
-				style={{width: "15px"}}>
-				{toDisplay}
-			</div>
-		}
-
-
-		const _Renderer: _BaseNodeRenderer<any> = this.rendererMap[props.item.type];
-		return (<div className="ll_h_c">
-			{renderCollapse()}
-			<div
-				id={props.node.path}
-				className='clickable'
-				onClick={props.node.onClick}
-				style={{backgroundColor: props.node.focused ? "red" : "salmon", userSelect: "none"}}>
-
-				<_Renderer item={props.item.item} node={props.node}/>
-			</div>
-		</div>);
-	}
-
 	build() {
 		const adapter = new Adapter(this.data);
 		adapter.hideRoot = this.hideRoot;
@@ -317,58 +348,25 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 	}
 }
 
-abstract class TreeBaseAdapterBuilder<Data>
-	extends BaseAdapterBuilder<Data> {
-
-
-}
-
 class TreeSingleAdapterBuilder<RenderItemType extends any = any>
-	extends TreeBaseAdapterBuilder<AdapterData<TreeData<RenderItemType>>> {
+	extends BaseAdapterBuilder<AdapterData<TreeData<RenderItemType>>> {
 
 	readonly renderer: _BaseNodeRenderer<RenderItemType>
 
 	constructor(renderer: _BaseNodeRenderer<RenderItemType>) {
 		super();
 		this.renderer = renderer;
+		this.treeNodeRenderer = this.defaultTreeNodeRenderer;
+	}
+
+	protected resolveRenderer(type?: string): _BaseNodeRenderer<any> {
+		return this.renderer;
 	}
 
 	build() {
 		const adapter = new Adapter(this.data);
-		adapter.treeNodeRenderer = (props: NodeRendererProps) => {
-			const renderCollapse = () => {
-				let toDisplay;
-				if (typeof props.item !== "object")
-					toDisplay = "";
-				else if (Object.keys(props.item).length === 0)
-					toDisplay = "";
-				else if (props.node.expanded)
-					toDisplay = "-";
-				else
-					toDisplay = "+";
+		adapter.treeNodeRenderer = this.treeNodeRenderer;
 
-				return <div
-					className={`clickable`}
-					id={props.node.path}
-					onClick={props.node.expandToggler}
-					style={{width: "15px"}}>
-					{toDisplay}
-				</div>
-			}
-
-			return (<div className="ll_h_c">
-				{renderCollapse()}
-				<div
-					id={props.node.path}
-					className='clickable'
-					onClick={props.node.onClick}
-					style={{backgroundColor: props.node.focused ? "red" : "salmon", userSelect: "none"}}>
-
-					<this.renderer {...props}/>
-				</div>
-			</div>);
-		}
-		;
 		return adapter;
 	}
 }
@@ -391,12 +389,12 @@ class TreeAdapterBuilder {
 		return new TreeSingleAdapterBuilder<Item>(renderer);
 	}
 
-	multiRender<Rm extends TreeRendererMap, ItemType extends TreeItem<Rm> = TreeItem<Rm>>(rendererMap: Rm) {
-		return new MultiTypeAdapterBuilder<Rm, TreeData_MultiType<ItemType>>(rendererMap).tree();
+	multiRender<Rm extends TreeRendererMap, ItemType extends TreeData_MultiType<Rm> = TreeData_MultiType<Rm>>(rendererMap: Rm) {
+		return new MultiTypeAdapterBuilder<Rm, ItemType>(rendererMap).tree();
 	}
 }
 
-class MainAdapterBuilder {
+class _AdapterBuilder {
 
 	list() {
 		return new ListAdapterBuilder();
@@ -408,5 +406,5 @@ class MainAdapterBuilder {
 }
 
 export function AdapterBuilder() {
-	return new MainAdapterBuilder();
+	return new _AdapterBuilder();
 }

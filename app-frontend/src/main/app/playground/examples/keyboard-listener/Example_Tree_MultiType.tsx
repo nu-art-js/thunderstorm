@@ -93,20 +93,31 @@ export class ItemRenderer_Title
 	}
 }
 
+// type TypeMap ={
+// 	person:Person
+// 	cat:Cat
+// 	title: string
+// }
+
 const ItemsRendererMap: TreeRendererMap = {
 	person: ItemRenderer_Person,
 	cat: ItemRenderer_Cat,
 	title: ItemRenderer_Title
 };
 
-// const CAT_Mulan:TreeItem<Cat> = {type: "cat", item: {name: "Mulan"}};
+const CAT_Mulan: TreeItem<Cat> = {type: "cat", item: {name: "Mulan"}};
 
 const CAT_Lili = {type: "cat", item: {name: "Lili"}};
 
 const PERSON_Adam: TreeItem<Person | Cat> = {
 	type: "person",
 	item: {name: "Adam", lastName: "van der Kruk"},
-	_children: [CAT_Lili]
+	_children: [CAT_Lili, CAT_Mulan]
+};
+const PERSON_Alan: TreeItem<Person | Cat> = {
+	type: "person",
+	item: {name: "Alan", lastName: "stronzo"},
+	_children: [CAT_Lili, CAT_Mulan]
 };
 
 class Example_Tree_MultiType
@@ -118,7 +129,7 @@ class Example_Tree_MultiType
 	private elements: TreeData_MultiType<typeof ItemsRendererMap> = {
 		type: "title",
 		item: "People",
-		_children: [PERSON_Adam]
+		_children: [PERSON_Adam,PERSON_Alan]
 	};
 
 	render() {
