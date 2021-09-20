@@ -214,10 +214,6 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			}
 		}
 
-		const deltaPath = this.state.adapter.adjust(item).deltaPath;
-		if (deltaPath)
-			item = item[deltaPath];
-
 		return item;
 	}
 
