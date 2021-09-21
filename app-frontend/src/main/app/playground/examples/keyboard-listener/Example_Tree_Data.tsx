@@ -49,17 +49,6 @@ class Example_Tree_Data
 	render() {
 		const adapter = new Adapter(this.elements).setTreeNodeRenderer(Example_ColorfulNodeRenderer);
 		adapter.hideRoot = true;
-		adapter.adjust = (data: object) => {
-			if (data === undefined || data === null)
-				return {data: "", deltaPath: ""};
-
-			if (Object.keys(data).find(key => key === "data")) {
-				// @ts-ignore
-				return {data: data['data'], deltaPath: "data"}
-			}
-
-			return {data, deltaPath: ""};
-		};
 
 		return <div {...PlaygroundExample_BodyStyle} style={{minWidth: 180}}>
 			<Tree
