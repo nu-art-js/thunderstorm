@@ -216,7 +216,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		if (!compare(item, original))
 			this.logWarning("Hmmmm.. queried value not what was expected!");
 
-		return this.onEntryUpdatedImpl("update", original, requestData);
+		return this.onEntryUpdatedImpl("update", item, requestData);
 	}
 
 	protected async onEntryPatched(item: DBType, requestData?: string): Promise<void> {
