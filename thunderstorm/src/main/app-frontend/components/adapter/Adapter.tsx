@@ -97,6 +97,9 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 
 	// by default all objects and arrays are parents
 	isParent = (obj: any) => {
+		if (obj === undefined || obj === null)
+			return false;
+
 		if (!this.childrenKey)
 			return Array.isArray(obj) || typeof obj === "object";
 

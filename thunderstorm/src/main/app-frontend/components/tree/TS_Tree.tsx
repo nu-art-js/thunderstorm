@@ -21,7 +21,6 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {removeItemFromArray} from "@nu-art/ts-common";
 import {TreeNode, TreeNodeExpandState,} from "./types";
 import {Adapter} from "../adapter/Adapter";
 import {_BaseNodeRenderer} from "../adapter/BaseRenderer";
@@ -31,7 +30,7 @@ export type Props_Tree = {
 	id: string
 	onNodeFocused?: (path: string, item: any) => void;
 	onNodeClicked?: (path: string, item: any) => void;
-	expanded: TreeNodeExpandState
+	expanded?: TreeNodeExpandState
 	childrenContainerStyle?: (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentRef?: HTMLDivElement) => CSSProperties
 	indentPx: number;
 	checkExpanded: (expanded: TreeNodeExpandState, path: string) => boolean | undefined
@@ -68,30 +67,30 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	protected deriveStateFromProps(nextProps: P) {
 		return {
 			adapter: nextProps.adapter,
-			expanded: this.state?.expanded || nextProps.expanded || {"/": true},
+			expanded: (this.props.id !== nextProps.id ? nextProps.expanded : this.state?.expanded) || {"/": true},
 			selectedItem: nextProps.selectedItem
 		};
 	}
 
-	componentDidMount(): void {
-		this.renderedElementsInit();
-	}
-
-	renderedElementsInit = () => {
-		const keys = Object.keys(this.state.expanded);
-		this.renderedElements = keys.reduce((toRet, key) => {
-			if (this.state.expanded[key])
-				return toRet;
-
-			this.state.adapter.hideRoot && removeItemFromArray(toRet, '/');
-
-			keys.forEach(el => {
-				if (el.startsWith(key) && el !== key)
-					removeItemFromArray(toRet, el);
-			});
-			return toRet;
-		}, keys);
-	};
+	// componentDidMount(): void {
+	// 	this.renderedElementsInit();
+	// }
+	//
+	// renderedElementsInit = () => {
+	// 	const keys = Object.keys(this.state.expanded);
+	// 	this.renderedElements = keys.reduce((toRet, key) => {
+	// 		if (this.state.expanded[key])
+	// 			return toRet;
+	//
+	// 		this.state.adapter.hideRoot && removeItemFromArray(toRet, '/');
+	//
+	// 		keys.forEach(el => {
+	// 			if (el.startsWith(key) && el !== key)
+	// 				removeItemFromArray(toRet, el);
+	// 		});
+	// 		return toRet;
+	// 	}, keys);
+	// };
 
 	render() {
 		return this.renderNode(this.state.adapter.data, "", "", 1);
