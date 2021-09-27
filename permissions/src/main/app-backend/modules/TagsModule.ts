@@ -1,6 +1,6 @@
 import {
 	BaseDB_ApiGenerator,
-	ServerApi_Create,
+	ServerApi_Upsert,
 	ServerApi_Delete,
 	ServerApi_Query,
 	ServerApi_Unique,
@@ -45,7 +45,7 @@ export class TagsDB_Class
 			new ServerApi_Delete(this, pathPart),
 			new ServerApi_Query(this, pathPart),
 			new ServerApi_Unique(this, pathPart),
-			new ServerApi_Create(this, pathPart)
+			new ServerApi_Upsert(this, pathPart)
 		];
 	}
 }

@@ -18,32 +18,10 @@
  */
 
 import {BaseDB_ApiGenerator} from "./BaseDB_ApiGenerator";
-import {
-	ApiTypeBinder,
-	DeriveBodyType,
-	DeriveQueryType,
-	DeriveResponseType,
-	QueryParams
-} from "@nu-art/thunderstorm";
-import {
-	ApiBinder_DBCreate,
-	ApiBinder_DBDelete,
-	ApiBinder_DBQuery,
-	ApiBinder_DBUniuqe,
-	ApiBinder_DBUpdate,
-	DefaultApiDefs,
-	GenericApiDef
-} from "..";
-import {
-	Clause_Where,
-	DB_Object,
-	FirestoreQuery
-} from "@nu-art/firebase";
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
+import {ApiTypeBinder, DeriveBodyType, DeriveQueryType, DeriveResponseType, QueryParams} from "@nu-art/thunderstorm";
+import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUniuqe, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from "..";
+import {Clause_Where, DB_Object, FirestoreQuery} from "@nu-art/firebase";
+import {ApiResponse, ExpressRequest, ServerApi} from "@nu-art/thunderstorm/backend";
 import {addItemToArray} from "@nu-art/ts-common";
 
 export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
@@ -75,8 +53,8 @@ export abstract class GenericServerApi<DBType extends DB_Object, Binder extends 
 
 }
 
-export class ServerApi_Create<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBCreate<DBType>, (item: DBType) => DBType> {
+export class ServerApi_Upsert<DBType extends DB_Object>
+	extends GenericServerApi<DBType, ApiBinder_DBUpsert<DBType>, (item: DBType) => DBType> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
 		super(dbModule, DefaultApiDefs.Upsert, pathPart);
@@ -91,8 +69,8 @@ export class ServerApi_Create<DBType extends DB_Object>
 	}
 }
 
-export class ServerApi_Update<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBUpdate<DBType>> {
+export class ServerApi_Patch<DBType extends DB_Object>
+	extends GenericServerApi<DBType, ApiBinder_DBPatch<DBType>> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
 		super(dbModule, DefaultApiDefs.Patch, pathPart);

@@ -21,7 +21,7 @@ import {
 	ServerApi_Delete,
 	ServerApi_Query,
 	ServerApi_Unique,
-	ServerApi_Update,
+	ServerApi_Patch,
 	tsValidateNameWithDashesAndDots,
 	tsValidateOptionalId,
 	tsValidateStringWithDashes,
@@ -40,23 +40,12 @@ import {
 	Request_CreateGroup,
 	Request_UpdateApiPermissions
 } from "../_imports";
-import {
-	auditBy,
-	filterDuplicates,
-	MUSTNeverHappenException,
-	TypeValidator,
-	tsValidateArray,
-	tsValidateRange,
-	tsValidateRegexp
-} from "@nu-art/ts-common";
+import {auditBy, filterDuplicates, MUSTNeverHappenException, tsValidateArray, tsValidateRange, tsValidateRegexp, TypeValidator} from "@nu-art/ts-common";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
 import {GroupPermissionsDB} from "./assign";
 import {Clause_Where} from "@nu-art/firebase";
 import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
-import {
-	ExpressRequest,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
+import {ExpressRequest, ServerApi} from "@nu-art/thunderstorm/backend";
 import {AccountModule} from "@nu-art/user-account/app-backend/modules/AccountModule";
 
 const validateProjectId = tsValidateRegexp(/^[a-z-]{3,20}$/);
@@ -278,7 +267,7 @@ export class ApiDB_Class
 			new ServerApi_Delete(this, pathPart),
 			new ServerApi_Query(this, pathPart),
 			new ServerApi_Unique(this, pathPart),
-			new ServerApi_Update(this, pathPart),
+			new ServerApi_Patch(this, pathPart),
 		];
 	}
 }

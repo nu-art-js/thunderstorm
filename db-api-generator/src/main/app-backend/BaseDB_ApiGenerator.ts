@@ -44,11 +44,11 @@ import {
 	ValidatorTypeResolver
 } from "@nu-art/ts-common";
 import {
-	ServerApi_Create,
+	ServerApi_Upsert,
 	ServerApi_Delete,
 	ServerApi_Query,
 	ServerApi_Unique,
-	ServerApi_Update
+	ServerApi_Patch
 } from "./apis";
 import {
 	ApiException,
@@ -599,8 +599,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	apiCreate(pathPart?: string): ServerApi_Create<DBType> | ServerApi<any> | undefined {
-		return new ServerApi_Create(this, pathPart);
+	apiCreate(pathPart?: string): ServerApi_Upsert<DBType> | ServerApi<any> | undefined {
+		return new ServerApi_Upsert(this, pathPart);
 	}
 
 	apiQuery(pathPart?: string): ServerApi<any> | undefined {
@@ -612,7 +612,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	}
 
 	apiUpdate(pathPart?: string): ServerApi<any> | undefined {
-		return new ServerApi_Update(this, pathPart);
+		return new ServerApi_Patch(this, pathPart);
 	}
 
 	apiDelete(pathPart?: string): ServerApi<any> | undefined {
