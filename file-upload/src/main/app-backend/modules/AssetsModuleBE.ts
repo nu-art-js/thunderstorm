@@ -40,11 +40,11 @@ import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from "@nu-art/thu
 import {fromBuffer} from "file-type";
 import {FileExtension, MimeType} from "file-type/core";
 import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
-import {BaseDB_ApiGenerator, Config} from "@nu-art/db-api-generator/backend";
+import {BaseDB_ApiGenerator, DBApiConfig} from "@nu-art/db-api-generator/backend";
 import {OnAssetUploaded} from "./AssetBucketListener";
 
 
-type MyConfig = Config<DB_Asset> & {
+type MyConfig = DBApiConfig<DB_Asset> & {
 	bucketName?: string
 	path: string
 }
