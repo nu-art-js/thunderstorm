@@ -28,9 +28,9 @@ import {
 	QueryParams,
 	RequestErrorHandler
 } from "@nu-art/thunderstorm";
-import {ApiBinder_DBCreate, ApiBinder_DBDelete, ApiBinder_DBQuery, ApiBinder_DBUniuqe, DefaultApiDefs, GenericApiDef} from "../index";
+import {ApiBinder_DBDelete, ApiBinder_DBQuery, ApiBinder_DBUniuqe, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from "../index";
 import {DB_Object} from "@nu-art/firebase";
-import {ThunderDispatcher,  XhrHttpModule} from "@nu-art/thunderstorm/frontend";
+import {ThunderDispatcher, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 
 import {_keys, addItemToArray, compare, Module, PartialProperties, removeItemFromArray} from "@nu-art/ts-common";
 
@@ -95,7 +95,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		return false;
 	}
 
-	create(toCreate: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
+	create(toCreate: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> {
 		this.logWarning("create is deprecated... use upsert");
 		return this
 			.upsertImpl(toCreate, requestData)
@@ -104,7 +104,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			});
 	}
 
-	upsert(toUpsert: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> {
+	upsert(toUpsert: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> {
 		return this
 			.upsertImpl(toUpsert, requestData)
 			.execute(async (response: DBType) => {
@@ -112,27 +112,27 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 			});
 	}
 
-	upsertImpl(toCreate: UType, requestData?: string) {
+	private upsertImpl(toCreate: UType, requestData?: string) {
 		return this
-			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Upsert)
+			.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Upsert)
 			.setJsonBody(toCreate);
 	}
 
-	update = (toPatch: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
+	update = (toPatch: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> => {
 		this.logWarning("update is deprecated... use patch");
 		return this.patch(toPatch, requestData);
 	};
 
-	patch = (toUpdate: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
+	patch = (toUpdate: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> => {
 		return this.patchImpl(toUpdate, requestData)
 			.execute(async response => {
 				return this.onEntryPatched(response, requestData);
 			});
 	};
 
-	patchImpl = (toUpdate: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBCreate<DBType>> => {
+	patchImpl = (toUpdate: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> => {
 		return this
-			.createRequest<ApiBinder_DBCreate<DBType>>(DefaultApiDefs.Patch)
+			.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Patch)
 			.setJsonBody(toUpdate);
 	};
 
