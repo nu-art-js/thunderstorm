@@ -89,7 +89,7 @@ export const tsValidator_LowerUpperStringWithDashesAndUnderscore = tsValidateReg
 
 export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
 
-export type Config<Type extends object> = {
+export type DBApiConfig<Type extends object> = {
 	projectId?: string,
 	lockKeys: (keyof Type)[]
 	collectionName: string
@@ -102,7 +102,7 @@ export type Config<Type extends object> = {
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType extends Config<DBType> = Config<DBType>, UType extends PartialProperties<DBType, "_id"> = PartialProperties<DBType, "_id">>
+export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, UType extends PartialProperties<DBType, "_id"> = PartialProperties<DBType, "_id">>
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerAct {
 

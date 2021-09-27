@@ -19,5 +19,6 @@
 
 export * from './app-backend/modules/DialogFlowApi';
 export * from './app-backend/modules/GoogleCloudModule';
+export * from './app-backend/modules/GoogleContactsModule';
 export * from './app-backend/modules/AuthModule';
 
