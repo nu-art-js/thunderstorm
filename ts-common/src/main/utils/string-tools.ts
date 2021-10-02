@@ -20,3 +20,16 @@ export function padNumber(num: number | string, length: number): string {
 	const _num = num.toString();
 	return _num.length < length ? padNumber("0" + _num, length) : _num;
 }
+
+export function stringToHashCode(stringToHash: string) {
+	let hash = 0;
+	if (stringToHash.length === 0)
+		return hash;
+
+	for (let i = 0; i < stringToHash.length; i++) {
+		hash = ((hash << 5) - hash) + stringToHash.charCodeAt(i);
+		hash = hash & hash; // Convert to 32bit integer
+	}
+
+	return hash;
+}
