@@ -31,9 +31,11 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@google-cloud/pubsub": "^2.6.0",
     "@nu-art/ts-common": "~0.0.1",
     "@nu-art/db-api-generator": "~0.0.1",
     "@nu-art/firebase": "~0.0.1",
+    "@nu-art/google-services": "~0.30.0",
     "@nu-art/storm": "~0.0.1",
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/user-account": "~0.0.1",
