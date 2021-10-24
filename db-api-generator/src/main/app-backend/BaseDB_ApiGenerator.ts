@@ -85,6 +85,7 @@ export const validateNameWithDashesAndDots = validateRegexp(/^[a-z-.]+$/);
 export const validator_LowercaseStringWithDashes = validateRegexp(/^[a-z-.]+$/);
 export const validator_LowerUpperStringWithSpaces = validateRegexp(/^[A-Za-z ]+$/);
 export const validator_LowerUpperStringWithDashesAndUnderscore = validateRegexp(/^[A-Za-z-_]+$/);
+export const validator_InternationalPhoneNumber = validateRegexp(/^\+(?:[0-9] ?){6,14}[0-9]$/);
 
 
 export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
