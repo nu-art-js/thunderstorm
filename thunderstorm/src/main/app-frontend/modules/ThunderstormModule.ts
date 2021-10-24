@@ -5,6 +5,13 @@ type Config = {
 	themeColor: string
 }
 
+type FileDownloadProps = {
+	content: Blob | string
+	fileName: string
+	mimeType?: string
+	charset?: string
+}
+
 class ThunderstormModule_Class
 	extends Module<Config> {
 
@@ -35,6 +42,22 @@ class ThunderstormModule_Class
 
 	getAppName() {
 		return this.config.appName;
+	}
+
+	downloadFile(props: FileDownloadProps) {
+		if (!document)
+			return;
+
+		const element = document.createElement('a');
+		let content: string;
+		if (typeof props.content === "string")
+			content = encodeURIComponent(props.content);
+		else
+			content = URL.createObjectURL(props.content);
+
+		element.setAttribute('href', `data:${props.mimeType || "text/text"};charset=${props.charset || "utf-8"},${content}`);
+		element.setAttribute('download', `${props.fileName}`);
+		element.click();
 	}
 }
 

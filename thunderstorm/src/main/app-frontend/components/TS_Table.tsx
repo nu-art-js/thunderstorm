@@ -45,6 +45,7 @@ export type TableProps<R extends ObjectTS, A extends ObjectTS = never> = Stylabl
 	headerRenderer: ((columnKey: keyof R) => React.ReactNode) | HeaderRenderer<R>,
 	cellRenderer: CellRenderer<R, keyof R, R[keyof R]> | RowRenderer<R>
 	actions?: (keyof A)[],
+	actionHeaderRenderer?: ((columnKey: keyof A) => React.ReactNode) | HeaderRenderer<A>,
 	actionsRenderer?: ActionsRenderer<R, A> | ActionItemRenderer<R, keyof A>
 	table?: HTMLProps<HTMLTableElement> | (() => HTMLProps<HTMLTableElement>)
 	body?: HTMLProps<HTMLTableSectionElement> | (() => HTMLProps<HTMLTableSectionElement>)
@@ -77,11 +78,21 @@ export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 				return toRet;
 			}, {} as HeaderRenderer<R>);
 
+		let actionsRenderers: HeaderRenderer<A>;
+		if (typeof this.props.actionHeaderRenderer === "object")
+			actionsRenderers = this.props.actionHeaderRenderer;
+		else
+			actionsRenderers = (this.props.actions || []).reduce((toRet, headerProp) => {
+				toRet[headerProp] = this.props.actionHeaderRenderer as ((columnKey: keyof A) => React.ReactNode);
+				return toRet;
+			}, {} as HeaderRenderer<A>);
+
 		return (
 			<tr key={`${this.props.id}-0`} {...(typeof this.props.tr === "function" ? this.props.tr(-1) : this.props.tr)}>
 				{this.props.header.map((header, index) => <td
 					key={`${this.props.id}-${index}`} {...(typeof this.props.td === "function" ? this.props.td(-1, header) : this.props.td)}>{renderers[header](header)}</td>)}
-				{this.props.actions?.map((action, index) => <td key={`${this.props.id}-${this.props.header.length + index}`}/>)}
+				{this.props.actions?.map((action, index) => <td
+					key={`${this.props.id}-${this.props.header.length + index}`} {...(typeof this.props.td === "function" ? this.props.td(-1, action) : this.props.td)}>{actionsRenderers[action](action)}</td>)}
 			</tr>
 		);
 	}

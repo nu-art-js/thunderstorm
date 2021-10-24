@@ -56,7 +56,7 @@ export type Props_DropDown<ItemType> = StaticProps & {
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
 
-	filter?: (item: ItemType) => string[]
+	filterMapper?: (item: ItemType) => string[]
 
 	inputEventHandler?: (state: State<ItemType>, e: React.KeyboardEvent) => State<ItemType>
 	selectedItemRenderer?: (props?: ItemType) => React.ReactNode
@@ -97,7 +97,7 @@ export class TS_DropDown<ItemType>
 	}
 
 	private static cloneAdapter = (nextProps: Props_DropDown<any>) => {
-		return nextProps.adapter.clone(new Adapter(nextProps.autocomplete && nextProps.filter ? [] : nextProps.adapter.data));
+		return nextProps.adapter.clone(new Adapter(nextProps.autocomplete && nextProps.filterMapper ? [] : nextProps.adapter.data));
 	};
 
 	toggleList = (e: React.MouseEvent) => {
@@ -180,7 +180,7 @@ export class TS_DropDown<ItemType>
 	};
 
 	private renderSelectedOrFilterInput = () => {
-		if (!this.state.open || !this.props.filter) {
+		if (!this.state.open || !this.props.filterMapper) {
 			return (
 				<div className={'match_width'}>
 					{this.renderSelectedItem(this.state.selected)}
@@ -191,11 +191,11 @@ export class TS_DropDown<ItemType>
 			key={this.state.id}
 			placeholder={this.props.placeholder}
 			id={`${this.props.id}-input`}
-			filter={this.props.filter}
+			mapper={this.props.filterMapper}
 			list={this.props.adapter.data}
 			onChange={(filteredOptions: ItemType[], filterBy) => {
 				this.setState(state => {
-					state.adapter.data = this.props.autocomplete && this.props.filter && !filterBy.length ? [] : filteredOptions;
+					state.adapter.data = this.props.autocomplete && this.props.filterMapper && !filterBy.length ? [] : filteredOptions;
 
 					// console.log(`filter: ${this.props.id} (${filterBy}) -> ${__stringify(filteredOptions)}`);
 					// console.log(`state.adapter.data: ${__stringify(state.adapter.data)}`);
@@ -251,7 +251,7 @@ export class TS_DropDown<ItemType>
 	private renderTreeImpl = () => {
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const id = `${this.props.id}-tree`;
-		if ((!this.props.filter || !this.props.autocomplete || this.state.filterText?.length) && this.state.adapter.data.length === 0)
+		if ((!this.props.filterMapper || !this.props.autocomplete || this.state.filterText?.length) && this.state.adapter.data.length === 0)
 			return <div style={{textAlign: "center", opacity: 0.5}}>No options</div>;
 
 		return <TS_Tree

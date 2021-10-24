@@ -226,14 +226,14 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 };
 
 
-export const tsValidateTimestamp = (interval: number, mandatory = true): Validator<number> => {
+export const tsValidateTimestamp = (interval?: number, mandatory = true): Validator<number> => {
 	return (path: string, input?: number) => {
 		assertMandatory(mandatory, path, input);
 		if (!input)
 			return;
 
 		const now = currentTimeMillis();
-		const minTimestamp = now - interval;
+		const minTimestamp = now - (interval || now);
 		if (minTimestamp <= input && input < now)
 			return;
 

@@ -41,7 +41,7 @@ export const AppWrapper = (props: WrapperProps) => {
 		</Router>)
 };
 
-export function renderApp(appId: string = "app") {
+export function renderApp(appId: string = "root") {
 	ReactDOM.render(
 		<AppWrapper/>,
 		document.getElementById(appId)

@@ -1,4 +1,4 @@
-@Library('dev-tools')
+@Library('dev-tools@pipeline')
 
 import com.nu.art.pipeline.modules.SlackModule
 import com.nu.art.pipeline.modules.build.BuildModule
