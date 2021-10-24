@@ -18,9 +18,16 @@
 
 export class Filter {
 	private _filter = "";
+	private regexp = true;
 
 	setFilter(filter: string) {
 		this._filter = filter;
+		return this;
+	}
+
+	setRegexp(regexp: boolean) {
+		this.regexp = regexp;
+		return this;
 	}
 
 	getFilter() {
@@ -46,8 +53,13 @@ export class Filter {
 		filter = filter.trim();
 		filter = filter.toLowerCase();
 		filter = filter.replace(/\s+/, " ");
-		filter = filter.replace(new RegExp("(.)", "g"), ".*?$1");
+		if (this.regexp) {
+			filter = filter.replace(new RegExp("(.)", "g"), ".*?$1");
+		} else {
+			filter = `.*?${filter}`;
+		}
 		filter.length === 0 ? filter = ".*?" : filter += ".*";
+
 
 		return new RegExp(filter);
 	}

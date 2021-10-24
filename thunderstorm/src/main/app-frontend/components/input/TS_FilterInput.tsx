@@ -28,11 +28,13 @@ import {generateHex} from '@nu-art/ts-common';
 import {UIComponent} from "../../core/UIComponent";
 
 export type Props_FilterInput<T> = Stylable & {
-	filter: (item: T) => string[],
+	mapper: (item: T) => string[],
+	filter?: Filter,
 	list: T[],
 	onChange: (items: T[], filterBy: string, id?: string) => void,
 	id: string,
 	initialFilterText?: string,
+	regexp: boolean,
 	focus?: boolean,
 	placeholder?: string
 	handleKeyEvent?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
@@ -46,7 +48,8 @@ export class TS_FilterInput<T>
 	private filter!: Filter;
 
 	static defaultProps: Partial<Props_FilterInput<any>> = {
-		id: generateHex(16)
+		id: generateHex(16),
+		regexp: true
 	};
 
 	constructor(props: Props_FilterInput<T>) {
@@ -55,22 +58,31 @@ export class TS_FilterInput<T>
 	}
 
 	protected deriveStateFromProps(nextProps: Props_FilterInput<T>): State | undefined {
+		let evaluate = false;
+		// @ts-ignore
+		this.filter = nextProps.filter;
+
 		if (!this.filter)
 			this.filter = new Filter()
 
-		this.filter.setFilter(nextProps.initialFilterText || '');
-
-		if (this.props.initialFilterText !== nextProps.initialFilterText)
+		if (this.props.initialFilterText !== nextProps.initialFilterText) {
 			this.filter.setFilter(nextProps.initialFilterText || '');
+			evaluate = true;
+		}
 
-		if (this.state)
+		if (this.props.regexp !== nextProps.regexp) {
+			this.filter.setRegexp(nextProps.regexp);
+			evaluate = true;
+		}
+
+		if (evaluate)
 			this.callOnChange();
 
 		return
 	}
 
 	callOnChange = () => {
-		const filteredOptions = this.filter.filter(this.props.list, this.props.filter);
+		const filteredOptions = this.filter.filter(this.props.list, this.props.mapper);
 		this.props.onChange(filteredOptions, this.filter.getFilter(), this.props.id);
 	};
 

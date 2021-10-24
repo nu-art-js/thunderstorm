@@ -267,7 +267,7 @@ export class DropDown<ItemType>
 			key={this.state.id}
 			placeholder={this.props.placeholder}
 			id={`${this.props.id}-input`}
-			filter={this.props.filter}
+			mapper={this.props.filter}
 			list={this.props.adapter.data}
 			onChange={(filteredOptions: ItemType[], filterBy) => {
 				this.setState(state => {
