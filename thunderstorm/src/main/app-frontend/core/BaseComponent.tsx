@@ -24,14 +24,7 @@
  */
 import * as React from "react";
 
-import {
-	_clearTimeout,
-	_setTimeout,
-	Logger,
-	LogLevel,
-	LogParam,
-	TimerHandler
-} from "@nu-art/ts-common";
+import {_clearTimeout, _setTimeout, Logger, LogLevel, LogParam, TimerHandler} from "@nu-art/ts-common";
 import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
 import {BrowserHistoryModule} from "../modules/HistoryModule";
@@ -67,7 +60,23 @@ export class BaseComponent<P = any, S = any>
 			// @ts-ignore
 			Thunder.getInstance().removeUIListener(this);
 		};
+
+		this.deriveStateFromProps.bind(this);
+		const state = this.deriveStateFromProps(props);
+		if (state)
+			this.state = state;
 	}
+
+	UNSAFE_componentWillReceiveProps(nextProps: P) {
+		const state = this.deriveStateFromProps(nextProps);
+		if (state)
+			this.setState(state);
+	}
+
+	protected deriveStateFromProps(nextProps: P): S | undefined {
+		return undefined;
+	}
+
 
 	debounce(handler: TimerHandler, key: string, ms = 0) {
 		_clearTimeout(this.timeoutMap[key]);
