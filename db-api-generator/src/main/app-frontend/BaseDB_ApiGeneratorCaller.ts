@@ -41,7 +41,7 @@ import {
 import {DB_Object, FirestoreQuery} from "@nu-art/firebase";
 import {ThunderDispatcher, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 
-import {_keys, addItemToArray, compare, Module, removeItemFromArray} from "@nu-art/ts-common";
+import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray} from "@nu-art/ts-common";
 
 export type BaseApiConfig = {
 	relativeUrl: string
@@ -114,7 +114,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object>
 					return responseHandler(response);
 			});
 
-	patch = (toUpdate: Partial<DBType> & DB_Object, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBPatch<DBType>> => {
+	patch = (toUpdate: Partial<DBType> & DB_BaseObject, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBPatch<DBType>> => {
 		return this.createRequest<ApiBinder_DBPatch<DBType>>(DefaultApiDefs.Patch, toUpdate, requestData)
 			.execute(async response => {
 				await this.onEntryPatched(response, requestData);

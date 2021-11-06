@@ -59,6 +59,6 @@ export type GenericApiDef = { method: HttpMethod, key: string, suffix?: string }
 export type ApiBinder_DBUpsert<DBType extends DB_Object, RequestType extends PreDBObject<DBType> = PreDBObject<DBType>> = ApiWithBody<string, RequestType, DBType>;
 export type ApiBinder_DBDelete<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;
 export type ApiBinder_DBUniuqe<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;
-export type ApiBinder_DBPatch<DBType extends DB_Object> = ApiWithBody<string, Partial<DBType> & DB_Object, DBType>;
+export type ApiBinder_DBPatch<DBType extends DB_Object> = ApiWithBody<string, Partial<DBType> & DB_BaseObject, DBType>;
 export type ApiBinder_DBQuery<DBType extends DB_Object> = ApiWithBody<string, FirestoreQuery<DBType>, DBType[]>;
 
