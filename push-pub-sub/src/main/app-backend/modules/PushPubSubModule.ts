@@ -40,22 +40,8 @@ import {
 	PushMessagesWrapper
 } from "@nu-art/firebase/backend";
 // noinspection TypeScriptPreferShortImport
-import {
-	DB_Notifications,
-	DB_PushKeys,
-	DB_PushSession,
-	IFP,
-	ISP,
-	ITP,
-	MessageType,
-	Request_PushRegister,
-	SubscribeProps
-} from "../../index";
-import {
-	dispatch_queryRequestInfo,
-	ExpressRequest,
-	OnCleanupSchedulerAct
-} from "@nu-art/thunderstorm/backend";
+import {DB_Notifications, DB_PushKeys, DB_PushSession, IFP, ISP, ITP, MessageType, Request_PushRegister, SubscribeProps} from "../../index";
+import {dispatch_queryRequestInfo, ExpressRequest, OnCleanupSchedulerAct} from "@nu-art/thunderstorm/backend";
 
 type Config = {
 	notificationsCleanupTime?: number
@@ -153,8 +139,8 @@ export class PushPubSubModule_Class
 			const sessionsIds = docs.map(d => d.pushSessionId);
 			// I get the tokens relative to those sessions (query)
 			this.logDebug(
-			`Sending push to: \n Sessions: ${JSON.stringify(sessionsIds)}\n Key: ${key}\n Props: ${JSON.stringify(props)} \n Data: ${JSON.stringify(data)}`);
-		const sessions = await batchAction(sessionsIds, 10, async elements => _transaction.query(this.pushSessions, {where: {pushSessionId: {$in: elements}}}));
+				`Sending push to: \n Sessions: ${JSON.stringify(sessionsIds)}\n Key: ${key}\n Props: ${JSON.stringify(props)} \n Data: ${JSON.stringify(data)}`);
+			const sessions = await batchAction(sessionsIds, 10, async elements => _transaction.query(this.pushSessions, {where: {pushSessionId: {$in: elements}}}));
 			const _messages = docs.reduce((carry: TempMessages, db_pushKey: DB_PushKeys) => {
 				const session = sessions.find(s => s.pushSessionId === db_pushKey.pushSessionId);
 				if (!session)
@@ -213,9 +199,12 @@ export class PushPubSubModule_Class
 	}
 
 	private buildNotification = (pushkey: string, persistent: boolean, data?: any, props?: any, user?: string) => {
+		const now = currentTimeMillis();
 		const notification: DB_Notifications = {
 			_id: generateHex(16),
-			timestamp: currentTimeMillis(),
+			__created: now,
+			__updated: now,
+			timestamp: now,
 			read: false,
 			pushKey: pushkey,
 			persistent
@@ -263,9 +252,9 @@ export class PushPubSubModule_Class
 		const docs = await this.pushSessions.query({where: {timestamp: {$lt: currentTimeMillis() - sessionsCleanupTime}}});
 
 		await Promise.all([
-			                  this.notifications.delete({where: {timestamp: {$lt: currentTimeMillis() - notificationsCleanupTime}}}),
-			                  this.cleanUpImpl(docs.map(d => d.firebaseToken))
-		                  ]);
+			this.notifications.delete({where: {timestamp: {$lt: currentTimeMillis() - notificationsCleanupTime}}}),
+			this.cleanUpImpl(docs.map(d => d.firebaseToken))
+		]);
 	};
 
 	cleanUp = async (response: FirebaseType_BatchResponse, messages: FirebaseType_Message[]) => {

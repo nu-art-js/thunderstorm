@@ -16,10 +16,7 @@
  * limitations under the License.
  */
 
-import {
-	RequireOptionals,
-	MandatoryKeys
-} from "@nu-art/ts-common";
+import {MandatoryKeys, RequireOptionals} from "@nu-art/ts-common";
 
 export type Firebase_Message = {
 	token?: string,
@@ -42,7 +39,9 @@ export type FirebaseConfig = {
 }
 
 export type DB_Object = {
-	_id: string
+	_id: string;
+	__created: number;
+	__updated: number;
 }
 
 type Comparator = "in" | "array-contains" | "array-contains-any" | ">" | ">=" | "<" | "<=" | "==";
@@ -58,7 +57,7 @@ export type QueryComparator<T> =
 	{ $lt: number } |
 	{ $lte: number } |
 	{ $eq: number } |
-	{ $neq: T } ;
+	{ $neq: T };
 
 export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = {
 	$nin: "not-in",
@@ -75,7 +74,7 @@ export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = 
 
 export type FilterKeys<T extends object> = MandatoryKeys<T, string | number>[];
 export type FirestoreType_OrderByDirection = 'desc' | 'asc';
-export type WhereValue<Value> = QueryComparator<Value> | (Value extends object ? Clause_Where<Value> : Value | [Value])  ;
+export type WhereValue<Value> = QueryComparator<Value> | (Value extends object ? Clause_Where<Value> : Value | [Value]);
 export type Clause_Where<T extends object> = { [P in keyof T]?: WhereValue<T[P]> }
 export type Clause_OrderBy<T extends object> = [{ key: keyof T, order: FirestoreType_OrderByDirection }];
 export type Clause_Select<T extends object, K extends keyof T = keyof T> = K[];
@@ -91,10 +90,10 @@ export type FirestoreQueryImpl<T extends object> = {
 export type EventType = 'value' | 'child_added' | 'child_changed' | 'child_moved' | 'child_removed';
 
 export enum Firebase_EventType {
-	Value        = "value",
-	ChildAdded   = "child_added",
+	Value = "value",
+	ChildAdded = "child_added",
 	ChildChanged = "child_changed",
-	ChildMoved   = "child_moved",
+	ChildMoved = "child_moved",
 	ChildRemoved = "child_removed"
 
 }

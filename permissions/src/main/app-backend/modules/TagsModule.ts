@@ -1,9 +1,9 @@
 import {
 	BaseDB_ApiGenerator,
-	ServerApi_Upsert,
 	ServerApi_Delete,
 	ServerApi_Query,
 	ServerApi_Unique,
+	ServerApi_Upsert,
 	tsValidateStringAndNumbersWithDashes
 } from "@nu-art/db-api-generator/backend";
 import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
@@ -21,6 +21,7 @@ export class TagsDB_Class
 	extends BaseDB_ApiGenerator<DB_GroupTags> {
 
 	static _validator: TypeValidator<DB_GroupTags> = {
+		...BaseDB_ApiGenerator.__validator,
 		_id: tsValidateStringAndNumbersWithDashes,
 		label: validateGroupLabel
 	};

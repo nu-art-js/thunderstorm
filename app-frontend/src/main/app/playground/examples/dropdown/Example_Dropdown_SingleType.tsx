@@ -80,7 +80,7 @@ class Example_Dropdown_SingleType
 				onSelected={this.onSelected}
 				selectedItemRenderer={valueRenderer}
 				inputStylable={inputStylable}
-				mapper={this.state.filter ? (item) => [item.label.toLowerCase()] : undefined}
+				filterMapper={this.state.filter ? (item) => [item.label.toLowerCase()] : undefined}
 				caret={caret}
 				headerStylable={{style: DropDown_headerStyle}}
 				autocomplete={this.state.autoComplete}

@@ -98,7 +98,7 @@ export class Example_Dropdown_MultiType
 					}
 					return _state;
 				}}
-				mapper={(item) => [(item as TreeItem<Plague>).item.label.toLowerCase()]}
+				filter={(item) => [(item as TreeItem<Plague>).item.label.toLowerCase()]}
 				selected={flatPlaguesWithTitles[2]}
 				caret={caret}
 				headerStylable={headerStylable}

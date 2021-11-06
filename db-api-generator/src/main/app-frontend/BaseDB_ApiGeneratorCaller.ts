@@ -28,11 +28,20 @@ import {
 	QueryParams,
 	RequestErrorHandler
 } from "@nu-art/thunderstorm";
-import {ApiBinder_DBDelete, ApiBinder_DBQuery, ApiBinder_DBUniuqe, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from "../index";
-import {DB_Object} from "@nu-art/firebase";
+import {
+	ApiBinder_DBDelete,
+	ApiBinder_DBPatch,
+	ApiBinder_DBQuery,
+	ApiBinder_DBUniuqe,
+	ApiBinder_DBUpsert,
+	DefaultApiDefs,
+	GenericApiDef,
+	PreDBObject
+} from "../index";
+import {DB_Object, FirestoreQuery} from "@nu-art/firebase";
 import {ThunderDispatcher, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 
-import {_keys, addItemToArray, compare, Module, PartialProperties, removeItemFromArray} from "@nu-art/ts-common";
+import {_keys, addItemToArray, compare, Module, removeItemFromArray} from "@nu-art/ts-common";
 
 export type BaseApiConfig = {
 	relativeUrl: string
@@ -40,12 +49,11 @@ export type BaseApiConfig = {
 }
 
 export type SingleApiEvent = "create" | "update" | "unique" | "delete" | "patch"
-export type MultiApiEvent = "query"
+export type MultiApiEvent = "query" | "multi-update"
 
-export type ApiEvent = SingleApiEvent | MultiApiEvent
 export type ApiCallerEventType = [SingleApiEvent, string] | [MultiApiEvent, string[]];
 
-export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType extends PartialProperties<DBType, "_id"> = PartialProperties<DBType, "_id">>
+export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object>
 	extends Module<BaseApiConfig> {
 
 	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
@@ -74,12 +82,15 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		U extends string = DeriveUrlType<Binder>,
 		R = DeriveResponseType<Binder>,
 		B = DeriveBodyType<Binder>,
-		P extends QueryParams = DeriveQueryType<Binder>>(apiDef: GenericApiDef): BaseHttpRequest<Binder> {
+		P extends QueryParams = DeriveQueryType<Binder>>(apiDef: GenericApiDef, body?: B, requestData?: string): BaseHttpRequest<Binder> {
 
 		const request = XhrHttpModule
-			.createRequest(apiDef.method, `request-api--${this.config.key}-${apiDef.key}`)
+			.createRequest(apiDef.method, requestData || `request-api--${this.config.key}-${apiDef.key}`)
 			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? "/" + apiDef.suffix : ""}`)
 			.setOnError(this.errorHandler) as BaseHttpRequest<any>;
+
+		if (body)
+			request.setJsonBody(body)
 
 		const timeout = this.timeoutHandler(apiDef);
 		if (timeout)
@@ -95,92 +106,60 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		return false;
 	}
 
-	create(toCreate: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> {
-		this.logWarning("create is deprecated... use upsert");
-		return this
-			.upsertImpl(toCreate, requestData)
+	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
+		this.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Upsert, toUpsert, requestData)
 			.execute(async (response: DBType) => {
-				return this.onEntryCreated(response, requestData);
+				await this.onEntryUpdated({...toUpsert, _id: response._id} as unknown as DBType, response, requestData);
+				if (responseHandler)
+					return responseHandler(response);
 			});
-	}
 
-	upsert(toUpsert: UType, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> {
-		return this
-			.upsertImpl(toUpsert, requestData)
-			.execute(async (response: DBType) => {
-				return this.onEntryUpdated({...toUpsert, _id: response._id} as unknown as DBType, response, requestData);
-			});
-	}
-
-	private upsertImpl(toCreate: UType, requestData?: string) {
-		return this
-			.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Upsert)
-			.setJsonBody(toCreate);
-	}
-
-	update = (toPatch: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> => {
-		this.logWarning("update is deprecated... use patch");
-		return this.patch(toPatch, requestData);
-	};
-
-	patch = (toUpdate: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> => {
-		return this.patchImpl(toUpdate, requestData)
+	patch = (toUpdate: Partial<DBType> & DB_Object, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBPatch<DBType>> => {
+		return this.createRequest<ApiBinder_DBPatch<DBType>>(DefaultApiDefs.Patch, toUpdate, requestData)
 			.execute(async response => {
-				return this.onEntryPatched(response, requestData);
+				await this.onEntryPatched(response, requestData);
+				if (responseHandler)
+					return responseHandler(response);
 			});
 	};
 
-	patchImpl = (toUpdate: DBType, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> => {
-		return this
-			.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Patch)
-			.setJsonBody(toUpdate);
-	};
-
-	query = (query?: Partial<DBType>, requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
+	query = (query?: FirestoreQuery<DBType>, responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
 		let _query = query;
 		if (!_query)
-			_query = {} as Partial<DBType>;
+			_query = {} as FirestoreQuery<DBType>;
 
 		return this
-			.queryImpl(_query, requestData)
+			.createRequest<ApiBinder_DBQuery<DBType>>(DefaultApiDefs.Query, _query, requestData)
 			.execute(async response => {
-				return this.onQueryReturned(response, requestData);
+				await this.onQueryReturned(response, requestData);
+				if (responseHandler)
+					return responseHandler(response);
 			});
 	};
 
-	queryImpl = (query: Partial<DBType>, requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
-		return this
-			.createRequest<ApiBinder_DBQuery<DBType>>(DefaultApiDefs.Query)
-			.setJsonBody(query);
-	};
 
-	unique = (_id: string, requestData?: string): BaseHttpRequest<ApiBinder_DBUniuqe<DBType>> => {
+	unique = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUniuqe<DBType>> => {
 		return this
-			.uniqueImpl(_id, requestData)
+			.createRequest<ApiBinder_DBUniuqe<DBType>>(DefaultApiDefs.Unique, undefined, requestData)
+			.setUrlParams({_id})
 			.execute(async response => {
-				return this.onGotUnique(response, requestData);
+				await this.onGotUnique(response, requestData);
+				if (responseHandler)
+					return responseHandler(response);
 			});
 	};
 
-	uniqueImpl = (_id: string, requestData?: string): BaseHttpRequest<ApiBinder_DBUniuqe<DBType>> => {
+	delete = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBDelete<DBType>> => {
 		return this
-			.createRequest<ApiBinder_DBUniuqe<DBType>>(DefaultApiDefs.Unique)
-			.setUrlParams({_id});
-	};
-
-	delete = (_id: string, requestData?: string): BaseHttpRequest<ApiBinder_DBDelete<DBType>> => {
-		return this
-			.deleteImpl(_id, requestData)
+			.createRequest<ApiBinder_DBDelete<DBType>>(DefaultApiDefs.Delete, undefined, requestData)
+			.setUrlParams({_id})
 			.execute(async response => {
-				return this.onEntryDeleted(response, requestData);
+				await this.onEntryDeleted(response, requestData);
+				if (responseHandler)
+					return responseHandler(response);
 			});
 	};
 
-	deleteImpl = (_id: string, requestData?: string): BaseHttpRequest<ApiBinder_DBDelete<DBType>> => {
-		return this
-			.createRequest<ApiBinder_DBDelete<DBType>>(DefaultApiDefs.Delete)
-			.setUrlParams({_id});
-	};
 
 	private ids: string[] = [];
 	private items: { [k: string]: DBType } = {};
@@ -201,15 +180,26 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, UType 
 		this.defaultDispatcher?.dispatchUI([event, itemId]);
 	};
 
-	protected async onEntryCreated(item: DBType, requestData?: string): Promise<void> {
-		return this.onEntryUpdatedImpl("create", item, requestData);
-	}
-
 	protected async onEntryDeleted(item: DBType, requestData?: string): Promise<void> {
 		removeItemFromArray(this.ids, item._id);
 		delete this.items[item._id];
 
 		this.dispatchSingle("delete", item._id);
+	}
+
+	protected async onEntriesUpdated(items: DBType[], requestData?: string): Promise<void> {
+		items.forEach(item => {
+			if (!this.ids.includes(item._id))
+				addItemToArray(this.ids, item._id);
+
+			this.items[item._id] = item;
+		})
+
+		this.dispatchMulti("multi-update", items.map(item => item._id));
+	}
+
+	protected async onEntryCreated(item: DBType, requestData?: string): Promise<void> {
+		return this.onEntryUpdatedImpl("create", item, requestData);
 	}
 
 	protected async onEntryUpdated(original: DBType, item: DBType, requestData?: string): Promise<void> {

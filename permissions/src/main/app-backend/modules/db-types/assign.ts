@@ -25,21 +25,10 @@ import {
 	DB_PermissionsUser,
 	PredefinedGroup
 } from "../_imports";
-import {
-	BaseDB_ApiGenerator,
-	tsValidateStringAndNumbersWithDashes,
-	tsValidateUniqueId
-} from "@nu-art/db-api-generator/backend";
-import {
-	AccountModule,
-	OnNewUserRegistered,
-	OnUserLogin
-} from "@nu-art/user-account/backend";
+import {BaseDB_ApiGenerator, tsValidateStringAndNumbersWithDashes, tsValidateUniqueId} from "@nu-art/db-api-generator/backend";
+import {AccountModule, OnNewUserRegistered, OnUserLogin} from "@nu-art/user-account/backend";
 import {Clause_Where} from "@nu-art/firebase";
-import {
-	ApiException,
-	ExpressRequest
-} from "@nu-art/thunderstorm/backend";
+import {ApiException, ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 import {
 	_keys,
@@ -50,10 +39,10 @@ import {
 	filterDuplicates,
 	filterInstances,
 	removeItemFromArray,
-	TypeValidator,
 	tsValidateArray,
 	tsValidateObjectValues,
 	tsValidateRegexp,
+	TypeValidator,
 } from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB} from "./managment";
 import {FirestoreTransaction} from "@nu-art/firebase/backend";
@@ -74,6 +63,7 @@ function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 export class GroupsDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionsGroup> {
 	static _validator: TypeValidator<DB_PermissionsGroup> = {
+		...BaseDB_ApiGenerator.__validator,
 		_id: tsValidateStringAndNumbersWithDashes,
 		label: validateGroupLabel,
 		tags: undefined,
@@ -164,7 +154,10 @@ export class GroupsDB_Class
 
 	upsertPredefinedGroups(projectId: string, projectName: string, predefinedGroups: PredefinedGroup[]) {
 		return this.runInTransaction(async (transaction) => {
-			const _groups = predefinedGroups.map(group => ({_id: this.getPredefinedGroupId(projectId, group._id), label: `${projectName}--${group.key}-${group.label}`}));
+			const _groups = predefinedGroups.map(group => ({
+				_id: this.getPredefinedGroupId(projectId, group._id),
+				label: `${projectName}--${group.key}-${group.label}`
+			}));
 
 			const dbGroups = filterInstances(await batchAction(_groups.map(group => group._id), 10, (chunk) => {
 				return transaction.query(this.collection, {where: {_id: {$in: chunk}}});
@@ -182,9 +175,12 @@ export class UsersDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionsUser>
 	implements OnNewUserRegistered, OnUserLogin {
 	static _validator: TypeValidator<DB_PermissionsUser> = {
-		_id: undefined,
+		...BaseDB_ApiGenerator.__validator,
 		accountId: validateUserUuid,
-		groups: tsValidateArray({groupId: tsValidateStringAndNumbersWithDashes, customField: tsValidateObjectValues<string>(validateCustomFieldValues, false)}, false),
+		groups: tsValidateArray({
+			groupId: tsValidateStringAndNumbersWithDashes,
+			customField: tsValidateObjectValues<string>(validateCustomFieldValues, false)
+		}, false),
 		__groupIds: tsValidateArray(tsValidateStringAndNumbersWithDashes, false),
 		_audit: undefined
 	};
@@ -270,7 +266,7 @@ export class UsersDB_Class
 
 		const groupId = GroupPermissionsDB.getPredefinedGroupId(assignAppPermissionsObj.projectId, assignAppPermissionsObj.group._id);
 		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId,
-		                                                       {groupId, customField: assignAppPermissionsObj.customField});
+			{groupId, customField: assignAppPermissionsObj.customField});
 
 		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
 			throw new BadImplementationException("Group to must be a part of the groups to removed array");

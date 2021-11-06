@@ -45,7 +45,7 @@ export class Example_FilterInput
 		return {
 			key: "simple-string-input",
 			id: "simple-string-input",
-			filter: (item: string) => [item],
+			mapper: (item: string) => [item],
 			list,
 			onChange: (filteredOptions: string[], filter: string, id?: string) => {
 				console.log(`id: ${id}\nfilter: ${filter}\n items: ${__stringify(filteredOptions)}`)
@@ -67,7 +67,7 @@ export class Example_FilterInput
 		return {
 			key: "simple-object-input",
 			id: "simple-object-input",
-			filter: (item: { label: string }) => [item.label],
+			mapper: (item: { label: string }) => [item.label],
 			list,
 			onChange: (filteredOptions: { label: string }[], filter: string, id?: string) => {
 				console.log(`id: ${id}\nfilter: ${filter}\n items: ${__stringify(filteredOptions)}`)

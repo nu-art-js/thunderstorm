@@ -20,26 +20,11 @@
  */
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
-import {
-	ApiTypeBinder,
-	DeriveErrorType,
-	DeriveResponseType,
-	ErrorResponse,
-	HttpMethod
-} from "../../../shared/types";
-import {
-	BadImplementationException,
-	StringMap,
-} from "@nu-art/ts-common";
+import {ApiTypeBinder, DeriveErrorType, DeriveResponseType, ErrorResponse, HttpMethod} from "../../../shared/types";
+import {BadImplementationException, StringMap,} from "@nu-art/ts-common";
 import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
 import {BaseHttpModule_Class} from "../../../shared/BaseHttpModule";
-import {
-	Axios_CancelTokenSource,
-	Axios_Method,
-	Axios_RequestConfig,
-	Axios_Response,
-	Axios_ResponseType
-} from "./types";
+import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from "./types";
 import * as fs from "fs";
 
 export class AxiosHttpModule_Class
@@ -70,10 +55,10 @@ export class AxiosHttpModule_Class
 		return this;
 	}
 
-	async downloadFile(url: string, outputFile: string, key=`Download file: ${url}`) {
+	async downloadFile(url: string, outputFile: string, key = `Download file: ${url}`) {
 		const downloadRequest = await this.createRequest(HttpMethod.GET, key)
-		                                  .setResponseType("arraybuffer")
-		                                  .setUrl(url);
+			.setResponseType("arraybuffer")
+			.setUrl(url);
 
 
 		const downloadResponse = await downloadRequest.executeSync();

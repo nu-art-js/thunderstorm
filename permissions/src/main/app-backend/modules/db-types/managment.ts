@@ -19,9 +19,9 @@
 import {
 	BaseDB_ApiGenerator,
 	ServerApi_Delete,
+	ServerApi_Patch,
 	ServerApi_Query,
 	ServerApi_Unique,
-	ServerApi_Patch,
 	tsValidateNameWithDashesAndDots,
 	tsValidateOptionalId,
 	tsValidateStringWithDashes,
@@ -55,6 +55,7 @@ export const tsValidateStringWithDashesAndSlash = tsValidateRegexp(/^[0-9A-Za-z-
 export class ProjectDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionProject> {
 	static _validator: TypeValidator<DB_PermissionProject> = {
+		...BaseDB_ApiGenerator.__validator,
 		_id: validateProjectId,
 		name: validateProjectName,
 		customKeys: undefined,
@@ -85,6 +86,7 @@ export class ProjectDB_Class
 export class DomainDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionDomain> {
 	static _validator: TypeValidator<DB_PermissionDomain> = {
+		...BaseDB_ApiGenerator.__validator,
 		_id: tsValidateOptionalId,
 		projectId: validateProjectId,
 		namespace: tsValidateNameWithDashesAndDots,
@@ -117,6 +119,7 @@ export class DomainDB_Class
 export class LevelDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionAccessLevel> {
 	static _validator: TypeValidator<DB_PermissionAccessLevel> = {
+		...BaseDB_ApiGenerator.__validator,
 		_id: tsValidateOptionalId,
 		domainId: tsValidateUniqueId,
 		name: tsValidateStringWithDashes,
@@ -209,6 +212,8 @@ export class ApiDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionApi> {
 
 	static _validator: TypeValidator<DB_PermissionApi> = {
+		...BaseDB_ApiGenerator.__validator,
+
 		_id: tsValidateOptionalId,
 		projectId: validateProjectId,
 		path: tsValidateStringWithDashesAndSlash,

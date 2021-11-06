@@ -1,4 +1,4 @@
-import {DB_Object} from "@nu-art/ts-common";
+import {DB_BaseObject, DB_Object} from "@nu-art/ts-common";
 
 export type SubscribeProps = { [prop: string]: string | number };
 
@@ -15,7 +15,7 @@ export type Request_PushRegister = FirebaseToken & PushSessionId & {
 	subscriptions: BaseSubscriptionData[]
 }
 
-export type Request_ReadPush = DB_Object & {
+export type Request_ReadPush = DB_BaseObject & {
 	read: boolean
 }
 

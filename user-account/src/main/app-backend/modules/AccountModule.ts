@@ -16,38 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	__stringify,
-	auditBy,
-	currentTimeMillis,
-	Day,
-	Dispatcher,
-	generateHex,
-	hashPasswordWithSalt,
-	Module,
-	tsValidate
-} from "@nu-art/ts-common";
+import {__stringify, auditBy, currentTimeMillis, Day, Dispatcher, generateHex, hashPasswordWithSalt, Module, tsValidate} from "@nu-art/ts-common";
 
 
-import {
-	FirebaseModule,
-	FirestoreCollection
-} from "@nu-art/firebase/backend";
-import {
-	DB_Account,
-	DB_Session,
-	HeaderKey_SessionId,
-	Request_CreateAccount,
-	Request_LoginAccount,
-	Response_Auth,
-	UI_Account
-} from "./_imports";
-import {
-	ApiException,
-	ExpressRequest,
-	HeaderKey,
-	QueryRequestInfo
-} from "@nu-art/thunderstorm/backend";
+import {FirebaseModule, FirestoreCollection} from "@nu-art/firebase/backend";
+import {DB_Account, DB_Session, HeaderKey_SessionId, Request_CreateAccount, Request_LoginAccount, Response_Auth, UI_Account} from "./_imports";
+import {ApiException, ExpressRequest, HeaderKey, QueryRequestInfo} from "@nu-art/thunderstorm/backend";
 import {tsValidateEmail} from "@nu-art/db-api-generator/backend";
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
@@ -137,8 +111,7 @@ export class AccountsModule_Class
 		if (password && password_check) {
 			account = await this.createAccount({password, password_check, email});
 			await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
-		}
-		else
+		} else
 			account = await this.createSAML(email);
 
 		return getUIAccount(account);
@@ -154,8 +127,11 @@ export class AccountsModule_Class
 				throw new ApiException(422, "User with email already exists");
 
 			const salt = generateHex(32);
+			const now = currentTimeMillis();
 			account = {
 				_id: generateHex(32),
+				__created: now,
+				__updated: now,
 				_audit: auditBy(request.email),
 				email: request.email,
 				salt,
@@ -208,8 +184,11 @@ export class AccountsModule_Class
 			if (account?._id)
 				return account;
 
+			const now = currentTimeMillis();
 			const _account: DB_Account = {
 				_id: generateHex(32),
+				__created: now,
+				__updated: now,
 				_audit: auditBy(_email),
 				email: _email,
 				...account
@@ -219,7 +198,7 @@ export class AccountsModule_Class
 			return transaction.upsert(this.accounts, _account);
 		});
 
-		if(dispatchEvent)
+		if (dispatchEvent)
 			await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(toRet)]);
 
 		return toRet;
