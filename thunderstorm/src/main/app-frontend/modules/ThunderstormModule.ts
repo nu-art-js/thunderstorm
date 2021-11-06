@@ -29,6 +29,28 @@ class ThunderstormModule_Class
 		document.title = appName
 	}
 
+	printDiv(div: HTMLDivElement) {
+		//create, and remove iframe from body dynamically!!
+		const printingIFrame: HTMLIFrameElement | null = document.getElementById("to-print") as HTMLIFrameElement;
+		if (!printingIFrame)
+			return this.logWarning("could not find printing iframe");
+
+		const printingContentWindow = printingIFrame.contentWindow;
+		if (!printingContentWindow)
+			return this.logWarning("printingContentWindow is undefined");
+
+
+		printingContentWindow.document.open();
+		printingContentWindow.document.write(div.innerHTML);
+		const html = printingContentWindow.document.getElementsByTagName("html")?.[0];
+		html.removeChild(html.getElementsByTagName("head")?.[0])
+		const body: HTMLBodyElement | null = html.getElementsByTagName("body")?.[0];
+		html?.insertBefore(window.document.getElementsByTagName("head")?.[0]?.cloneNode(true), body);
+		printingContentWindow.document.close();
+		printingContentWindow.focus();
+		setTimeout(() => printingContentWindow.print(), 1);
+	}
+
 	setChromeThemeColor(themeColor: string) {
 		let themeTag: HTMLMetaElement | null = document.head.querySelector('meta[name="theme-color"]');
 		if (!themeTag) {
@@ -42,6 +64,11 @@ class ThunderstormModule_Class
 
 	getAppName() {
 		return this.config.appName;
+	}
+
+	openNewTab(url: string, newTab = false) {
+		if (window)
+			window.open(url, newTab ? "" : '_blank');
 	}
 
 	downloadFile(props: FileDownloadProps) {

@@ -19,12 +19,12 @@
 import {ServerApi} from "@nu-art/thunderstorm/backend";
 import {DB_Asset} from "../..";
 import {Minute, tsValidateAudit, tsValidateExists, tsValidateNumber, tsValidateRegexp, tsValidateTimestamp, TypeValidator} from "@nu-art/ts-common";
-import {BaseDB_ApiGenerator, tsValidateUniqueId} from "@nu-art/db-api-generator/backend";
+import {BaseDB_ApiGenerator} from "@nu-art/db-api-generator/backend";
 
 export const validateName = tsValidateRegexp(/^.{3,}$/);
 
 export const _assetValidator: TypeValidator<DB_Asset> = {
-	_id: tsValidateUniqueId,
+	...BaseDB_ApiGenerator.__validator,
 	timestamp: tsValidateNumber(),
 	name: validateName,
 	ext: tsValidateExists(true),

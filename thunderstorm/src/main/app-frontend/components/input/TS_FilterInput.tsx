@@ -34,7 +34,7 @@ export type Props_FilterInput<T> = Stylable & {
 	onChange: (items: T[], filterBy: string, id?: string) => void,
 	id: string,
 	initialFilterText?: string,
-	regexp: boolean,
+	regexp?: boolean,
 	focus?: boolean,
 	placeholder?: string
 	handleKeyEvent?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
@@ -71,7 +71,7 @@ export class TS_FilterInput<T>
 		}
 
 		if (this.props.regexp !== nextProps.regexp) {
-			this.filter.setRegexp(nextProps.regexp);
+			this.filter.setRegexp(nextProps.regexp || true);
 			evaluate = true;
 		}
 

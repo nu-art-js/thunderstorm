@@ -155,7 +155,7 @@ export const AppDropDown = <T extends any = any>(props: DropdownProps<T>) => {
 		adapter={adapter}
 		selected={props.selected}
 		onSelected={props.onSelected}
-		mapper={props.filter}
+		filter={props.filter}
 		caret={caret}
 		inputStylable={{
 			style: DropDown_inputStyle,

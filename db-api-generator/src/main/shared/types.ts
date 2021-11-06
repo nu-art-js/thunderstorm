@@ -16,12 +16,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DB_Object} from "@nu-art/firebase";
-import {
-	ApiWithBody,
-	ApiWithQuery,
-	HttpMethod,
-} from "@nu-art/thunderstorm";
+import {FirestoreQuery} from "@nu-art/firebase";
+import {DB_BaseObject, DB_Object, PartialProperties} from "@nu-art/ts-common";
+import {ApiWithBody, ApiWithQuery, HttpMethod,} from "@nu-art/thunderstorm";
+
+export type PreDBObject<T extends DB_Object> = PartialProperties<T, "_id" | "__created" | "__updated">
 
 export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
 	Upsert: {
@@ -57,9 +56,9 @@ export type BadInputErrorBody = { path: string, input?: string };
 
 export type GenericApiDef = { method: HttpMethod, key: string, suffix?: string };
 
-export type ApiBinder_DBUpsert<DBType extends DB_Object, RequestType extends Omit<DBType, "_id"> = Omit<DBType, "_id">> = ApiWithBody<string, RequestType, DBType>;
-export type ApiBinder_DBDelete<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_Object>;
-export type ApiBinder_DBUniuqe<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_Object>;
-export type ApiBinder_DBPatch<DBType extends DB_Object> = ApiWithBody<string, DBType, DBType>;
-export type ApiBinder_DBQuery<DBType extends DB_Object> = ApiWithBody<string, Partial<DBType>, DBType[]>;
+export type ApiBinder_DBUpsert<DBType extends DB_Object, RequestType extends PreDBObject<DBType> = PreDBObject<DBType>> = ApiWithBody<string, RequestType, DBType>;
+export type ApiBinder_DBDelete<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;
+export type ApiBinder_DBUniuqe<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;
+export type ApiBinder_DBPatch<DBType extends DB_Object> = ApiWithBody<string, Partial<DBType> & DB_Object, DBType>;
+export type ApiBinder_DBQuery<DBType extends DB_Object> = ApiWithBody<string, FirestoreQuery<DBType>, DBType[]>;
 

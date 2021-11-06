@@ -48,7 +48,15 @@ export type TypedMap<ValueType> = { [s: string]: ValueType };
 
 export type TypedMapValue<T extends ObjectTS, ValueType> = { [P in keyof T]: ValueType };
 
-export type DB_Object = { _id: string }
+export type DB_BaseObject = {
+	_id: string;
+}
+export type DB_Object = DB_BaseObject & {
+	__created: number;
+	__updated: number;
+}
+
+export type Draftable = { _isDraft: boolean };
 
 export type Auditable = {
 	_audit?: AuditBy;

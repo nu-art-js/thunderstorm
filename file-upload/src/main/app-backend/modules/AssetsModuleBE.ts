@@ -42,6 +42,7 @@ import {FileExtension, MimeType} from "file-type/core";
 import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
 import {BaseDB_ApiGenerator, DBApiConfig} from "@nu-art/db-api-generator/backend";
 import {OnAssetUploaded} from "./AssetBucketListener";
+import {PreDBObject} from "@nu-art/db-api-generator";
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -175,7 +176,7 @@ export class AssetsModuleBE_Class
 
 			const _id = generateHex(32);
 			const path = `${this.config.path}/${_id}`;
-			const dbAsset: DB_Asset = {
+			const dbAsset: PreDBObject<DB_Asset> = {
 				timestamp: currentTimeMillis(),
 				_id,
 				feId: _file.feId,
