@@ -228,9 +228,13 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 	}
 
 	setJsonBody(bodyObject: B, compress?: boolean) {
-		this.setHeaders({"content-type": "application/json"});
-		this.setBody(JSON.stringify(bodyObject), compress);
+		this.setHeader("content-type", "application/json");
+		this.setBody(this.prepareJsonBody(bodyObject), compress);
 		return this;
+	}
+
+	protected prepareJsonBody(bodyObject: B): any {
+		return bodyObject
 	}
 
 	setBody(bodyAsString: any, _compress?: boolean) {
