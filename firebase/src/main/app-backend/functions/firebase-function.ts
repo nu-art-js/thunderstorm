@@ -294,7 +294,20 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 				if (this.config.path && !object.name?.startsWith(this.config.path))
 					return;
 
-				return this.handleCallback(() => this.onFinalize(object, context));
+				try {
+					return await this.handleCallback(() => this.onFinalize(object, context));
+				} catch (e) {
+					const _message = `Error handling callback to onFinalize bucket listener method on path:` + this.path +
+						"\n" + `File changed ${object.name}` + "\n with attributes: " + __stringify(context) + "\n" + __stringify(e);
+					this.logError(_message);
+					try {
+						await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
+					} catch (_e) {
+						this.logError("Error while handing bucket listener error", _e);
+					}
+					throw e;
+				}
+
 			});
 	};
 }

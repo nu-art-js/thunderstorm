@@ -153,7 +153,7 @@ export class JiraModule_Class
 
 	protected init(): void {
 		if (!this.config.baseUrl)
-			throw new ImplementationMissingException("Missing Jira subdomain");
+			throw new ImplementationMissingException("Missing Jira baseUrl for JiraModule, please add the key baseUrl to the config");
 
 		this.restUrl = this.config.baseUrl + '/rest/api/3';
 		console.log(this.restUrl);

@@ -107,6 +107,10 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		return response;
 	}
 
+	protected prepareJsonBody(bodyObject: any) {
+		return JSON.stringify(bodyObject);
+	}
+
 	protected executeImpl(): Promise<void> {
 		//loop through whatever preprocessor
 		return new Promise<void>((resolve, reject) => {
