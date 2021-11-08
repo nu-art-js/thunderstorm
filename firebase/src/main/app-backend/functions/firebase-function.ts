@@ -15,20 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	Change,
-	CloudFunction,
-	EventContext,
-	HttpsFunction,
-	RuntimeOptions
-} from "firebase-functions";
+import {Change, CloudFunction, EventContext, HttpsFunction, RuntimeOptions} from "firebase-functions";
 import {DataSnapshot} from "firebase-functions/lib/providers/database";
 
 import * as express from "express";
-import {
-	Request,
-	Response
-} from "express";
+import {Request, Response} from "express";
 import {
 	__stringify,
 	addItemToArray,
@@ -297,7 +288,7 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 				try {
 					return await this.handleCallback(() => this.onFinalize(object, context));
 				} catch (e) {
-					const _message = `Error handling callback to onFinalize bucket listener method on path:` + this.path +
+					const _message = `Error handling callback to onFinalize bucket listener method on path:` + this.config.path +
 						"\n" + `File changed ${object.name}` + "\n with attributes: " + __stringify(context) + "\n" + __stringify(e);
 					this.logError(_message);
 					try {
@@ -358,7 +349,7 @@ export abstract class Firebase_PubSubFunction<T>
 				data = JSON.parse(Buffer.from(originalMessage.data, "base64").toString());
 			} catch (e) {
 				this.logError(`Error parsing the data attribute from pub/sub message to topic ${this.topic}` +
-					              "\n" + __stringify(originalMessage.data) + "\n" + __stringify(e));
+					"\n" + __stringify(originalMessage.data) + "\n" + __stringify(e));
 			}
 
 			return this.handleCallback(() => this._onPublish(data, originalMessage, context));
