@@ -176,6 +176,7 @@ export class UsersDB_Class
 	implements OnNewUserRegistered, OnUserLogin {
 	static _validator: TypeValidator<DB_PermissionsUser> = {
 		...BaseDB_ApiGenerator.__validator,
+		_id: undefined,
 		accountId: validateUserUuid,
 		groups: tsValidateArray({
 			groupId: tsValidateStringAndNumbersWithDashes,
