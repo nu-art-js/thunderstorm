@@ -343,7 +343,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		if (instance._id === undefined)
 			return this.createImpl_Read(transaction, {...instance, _id: this.generateId(), __created: timestamp, __updated: timestamp} as unknown as DBType, request);
 
-		return this.upsertImpl_Read(transaction, {...instance, __create: instance.__created || timestamp, __updated: timestamp} as unknown as DBType, request);
+		return this.upsertImpl_Read(transaction, {...instance, __created: instance.__created || timestamp, __updated: timestamp} as unknown as DBType, request);
 	}
 
 	protected generateId() {

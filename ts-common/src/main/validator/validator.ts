@@ -234,7 +234,7 @@ export const tsValidateTimestamp = (interval?: number, mandatory = true): Valida
 
 		const now = currentTimeMillis();
 		const minTimestamp = now - (interval || now);
-		if (minTimestamp <= input && input < now)
+		if (minTimestamp <= input && input <= now)
 			return;
 
 		throw new ValidationException(`Input is not valid:\n  input: ${input}\n  Expected Interval: ${minTimestamp} - ${now}\n`, path, input);
