@@ -18,6 +18,7 @@ src/main/config.ts
 database-debug.log
 firestore-debug.log
 ui-debug.log
+pubsub-debug.log
 
 # Temp?
 src/main/dummy
