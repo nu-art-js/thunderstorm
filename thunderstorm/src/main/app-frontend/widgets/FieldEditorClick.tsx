@@ -76,8 +76,7 @@ export class FieldEditorClick
 
 	render() {
 		return (
-			<div className={`ll_h_c`}
-					 onClick={this.props.clicks === 1 ? this.startEdit : undefined}
+			<div onClick={this.props.clicks === 1 ? this.startEdit : undefined}
 					 onDoubleClick={this.props.clicks === undefined || this.props.clicks === 2 ? this.startEdit : undefined}
 					 onBlur={() => this.handleSave()}
 					 {...this.props.labelProps}>

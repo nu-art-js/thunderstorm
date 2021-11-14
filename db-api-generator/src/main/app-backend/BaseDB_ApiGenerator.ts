@@ -193,8 +193,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @param instance - The document for which the uniqueness assertion will occur.
 	 */
 	public async assertUniqueness(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest) {
-		await this.preUpsertProcessing(transaction, instance, request);
-
 		const uniqueQueries = this.internalFilter(instance);
 		if (uniqueQueries.length === 0)
 			return;
@@ -205,7 +203,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 		for (const idx in dbInstances) {
 			const dbInstance = dbInstances[idx];
-			if (!dbInstance || dbInstance._id === instance._id)
+			this.logInfo(`keys: ${__stringify(this.config.externalFilterKeys)}`)
+			this.logInfo(`pre instance: ${__stringify(dbInstance)}`)
+			this.logInfo(`new instance: ${__stringify(instance)}`)
+			if (!dbInstance || !this.config.externalFilterKeys.find(key => dbInstance[key] !== instance[key]))
 				continue;
 
 			const query = uniqueQueries[idx];
@@ -256,7 +257,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	}
 
 	/**
-	 * Override this method to customize the assertions that should be done before the insertion of the document to the DB.
+	 * Override this method to customize the assertions that should be done bepreUpsertProcessingfore the insertion of the document to the DB.
 	 *
 	 * @param transaction - The transaction object.
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
@@ -313,6 +314,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	// };
 
 	async createImpl_Read(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
+		await this.preUpsertProcessing(transaction, instance, request);
 		await this.validateImpl(instance);
 		await this.assertUniqueness(transaction, instance, request);
 		return async () => transaction.insert(this.collection, instance);
@@ -341,10 +343,16 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	async upsert_Read(instance: PreDBObject<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		const timestamp = currentTimeMillis();
-		if (instance._id === undefined)
+
+		if (this.config.externalFilterKeys[0] === "_id" && instance._id === undefined)
 			return this.createImpl_Read(transaction, {...instance, _id: this.generateId(), __created: timestamp, __updated: timestamp} as unknown as DBType, request);
 
-		return this.upsertImpl_Read(transaction, {...instance, __created: instance.__created || timestamp, __updated: timestamp} as unknown as DBType, request);
+		return this.upsertImpl_Read(transaction, {
+			...instance,
+			_id: instance._id || this.generateId(),
+			__created: instance.__created || timestamp,
+			__updated: timestamp
+		} as unknown as DBType, request);
 	}
 
 	protected generateId() {
@@ -422,6 +430,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	};
 
 	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
+		await this.preUpsertProcessing(transaction, dbInstance, request);
 		await this.validateImpl(dbInstance);
 		await this.assertUniqueness(transaction, dbInstance, request);
 		return transaction.upsert_Read(this.collection, dbInstance);
@@ -572,7 +581,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			mergedObject.__updated = currentTimeMillis();
 
 			await tsValidate(mergedObject, this.validator);
-
 			await this.assertUniqueness(transaction, mergedObject, request);
 
 			return this.upsertImpl(transaction, mergedObject, request);

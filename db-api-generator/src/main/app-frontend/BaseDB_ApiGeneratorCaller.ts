@@ -42,18 +42,16 @@ import {DB_Object, FirestoreQuery} from "@nu-art/firebase";
 import {ThunderDispatcher, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 
 import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray} from "@nu-art/ts-common";
+import {MultiApiEvent, SingleApiEvent} from "./types";
 
 export type BaseApiConfig = {
 	relativeUrl: string
 	key: string
 }
 
-export type SingleApiEvent = "create" | "update" | "unique" | "delete" | "patch"
-export type MultiApiEvent = "query" | "multi-update"
-
 export type ApiCallerEventType = [SingleApiEvent, string] | [MultiApiEvent, string[]];
 
-export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object>
+export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config extends BaseApiConfig = BaseApiConfig>
 	extends Module<BaseApiConfig> {
 
 	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {

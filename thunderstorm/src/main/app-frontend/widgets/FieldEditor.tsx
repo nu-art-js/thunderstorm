@@ -30,13 +30,13 @@ export class FieldEditor
 		super(props);
 		const prevValue = this.props.storageKey.get();
 		if (!prevValue) {
-			this.logDebug(`FieldEditor: ${this.props.value}`);
+			// this.logDebug(`FieldEditor: ${this.props.value}`);
 			this.props.storageKey.set(this.props.value || "");
 		}
 	}
 
 	onChange = (value: string) => {
-		this.logDebug(`input onChange: ${value}`);
+		// this.logDebug(`input onChange: ${value}`);
 		this.props.storageKey.set(value);
 		this.forceUpdate();
 	};
