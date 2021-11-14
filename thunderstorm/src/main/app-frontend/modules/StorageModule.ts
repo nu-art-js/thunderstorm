@@ -22,10 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {
-	merge,
-	Module
-} from "@nu-art/ts-common";
+import {merge, Module} from "@nu-art/ts-common";
 import {ThunderDispatcher} from "../core/thunder-dispatcher";
 
 export interface StorageKeyEvent {
@@ -73,7 +70,10 @@ export class StorageModule_Class
 		value = this.getStorage(persist).getItem(key);
 		// this.logDebug(`get: ${key} = ${value}`)
 		if (!value)
-			return defaultValue || null;
+			if (defaultValue === null || defaultValue === undefined)
+				return null
+			else
+				return defaultValue;
 
 		return this.cache[key] = JSON.parse(value);
 	}

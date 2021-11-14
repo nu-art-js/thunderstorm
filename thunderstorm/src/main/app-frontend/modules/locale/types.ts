@@ -28,6 +28,7 @@ export type Locale = string;
 export type LocaleDef = {
 	locale: Locale,
 	label: StringKey,
+	rtl: boolean,
 	icon: string,
 	texts: { [k: string]: string }
 };

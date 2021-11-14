@@ -32,6 +32,8 @@ export type DBConfig<T extends ObjectTS, Ks extends keyof T> = {
 	upgradeProcessor?: (db: UpgradeDB) => void
 };
 
+export type IndexKeys<T extends ObjectTS, Ks extends keyof T> = { [K in Ks]: T[K] };
+
 export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 	private db!: DB;
 	private config: DBConfig<T, Ks>;
@@ -66,7 +68,7 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 		return this.db.transaction(this.config.name, write ? 'readwrite' : 'readonly').objectStore<T, Ks>(this.config.name);
 	};
 
-	public async get(key: { [K in Ks]: T[K] }): Promise<T | undefined> {
+	public async get(key: IndexKeys<T, Ks>): Promise<T | undefined> {
 		const map = this.config.uniqueKeys.map(k => key[k]);
 		// @ts-ignore
 		return (await this.store()).get(map);
@@ -101,7 +103,7 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 		return result;
 	}
 
-	public async delete(key: { [K in Ks]: T[K] }): Promise<T | undefined> {
+	public async delete(key: IndexKeys<T, Ks>): Promise<T | undefined> {
 		const keys = this.config.uniqueKeys.map(k => key[k]);
 		const store = (await this.store(true));
 		// @ts-ignore

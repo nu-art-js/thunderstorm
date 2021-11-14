@@ -26,12 +26,12 @@ export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
 	Upsert: {
 		method: HttpMethod.POST,
 		key: "upsert",
-		suffix: "create"
+		suffix: "upsert"
 	},
 	Patch: {
 		method: HttpMethod.POST,
 		key: "patch",
-		suffix: "update"
+		suffix: "patch"
 	},
 	Delete: {
 		method: HttpMethod.GET, // delete doesn't works, so we changed it to get
