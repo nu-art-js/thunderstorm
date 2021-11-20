@@ -203,10 +203,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 		for (const idx in dbInstances) {
 			const dbInstance = dbInstances[idx];
-			this.logInfo(`keys: ${__stringify(this.config.externalFilterKeys)}`)
-			this.logInfo(`pre instance: ${__stringify(dbInstance)}`)
-			this.logInfo(`new instance: ${__stringify(instance)}`)
-			if (!dbInstance || !this.config.externalFilterKeys.find(key => dbInstance[key] !== instance[key]))
+			// this.logInfo(`keys: ${__stringify(this.config.externalFilterKeys)}`)
+			// this.logInfo(`pre instance: ${__stringify(dbInstance)}`)
+			// this.logInfo(`new instance: ${__stringify(instance)}`)
+			if (!dbInstance || !this.config.externalFilterKeys.find((key: keyof DBType) => dbInstance[key] !== instance[key]))
 				continue;
 
 			const query = uniqueQueries[idx];
@@ -257,7 +257,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	}
 
 	/**
-	 * Override this method to customize the assertions that should be done bepreUpsertProcessingfore the insertion of the document to the DB.
+	 * Override this method to customize the assertions that should be done before the insertion of the document to the DB.
 	 *
 	 * @param transaction - The transaction object.
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
