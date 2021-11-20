@@ -67,7 +67,7 @@ export async function testUserPermissionsTime() {
 
 	console.log('dbInstances ready to upsert');
 
-	GroupPermissionsDB.upsertAll(dbInstances);
+	await GroupPermissionsDB.upsertAll(dbInstances);
 
 	await UserPermissionsDB.upsert({_id: userId, accountId: userUuid, groups: groupIdArray});
 

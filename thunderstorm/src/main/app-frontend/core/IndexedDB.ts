@@ -107,8 +107,8 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 		const keys = this.config.uniqueKeys.map(k => key[k]);
 		const store = (await this.store(true));
 		// @ts-ignore
-		const item = store.get(keys);
-		store.delete(keys);
+		const item = await store.get(keys);
+		await store.delete(keys);
 		return item;
 	}
 }

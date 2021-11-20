@@ -120,10 +120,11 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 		if (!this.childrenKey)
 			return _keys(obj).filter(k => this.filter(obj, k));
 
-		if (!obj[this.childrenKey as keyof K])
+		const objElement = obj[this.childrenKey as keyof K];
+		if (!objElement)
 			return [];
 
-		return _keys(obj[this.childrenKey as keyof K] as any) as (keyof K)[];
+		return _keys(objElement) as unknown as (keyof K)[];
 	}
 
 	// this to allow us to navigate and skip into nested items in an object without changing the object
