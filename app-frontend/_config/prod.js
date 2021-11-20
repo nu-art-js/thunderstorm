@@ -66,6 +66,9 @@ class ProdConfig
 	getServerPort() {
 		return 5000;
 	}
+	getHostingPort() {
+		return 0;
+	}
 }
 
 module.exports = new ProdConfig();

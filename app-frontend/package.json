@@ -24,6 +24,7 @@
     "build-prod": "webpack --mode production --env prod",
     "dev": "cd .. && bash ./build-and-install.sh -lf -nb",
     "launch": "webpack-dev-server --open --mode development --env dev --ssl true",
+    "launch-prod": "webpack-dev-server --open --mode production --env prod --ssl true",
     "lint": "npm run lint-main && npm run lint-sw",
     "lint-main": "tslint --project ./src/main",
     "lint-sw": "tslint --project ./src/sw"

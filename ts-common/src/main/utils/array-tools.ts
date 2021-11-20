@@ -71,9 +71,9 @@ export function filterInstances<T>(array: (T | undefined | null | void)[]): T[] 
 	return array.filter(item => !!item) as T[];
 }
 
-export function arrayToMap<T extends object>(array: T[], getKey: (item: T) => string | number, map?: { [k: string]: T }): { [k: string]: T } {
-	return array.reduce((toRet, element) => {
-		toRet[getKey(element)] = element;
+export function arrayToMap<T>(array: T[], getKey: (item: T, index: number) => string | number, map?: { [k: string]: T }): { [k: string]: T } {
+	return array.reduce((toRet, element, index) => {
+		toRet[getKey(element, index)] = element;
 		return toRet;
 	}, map || {});
 }

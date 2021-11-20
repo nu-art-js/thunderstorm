@@ -102,6 +102,9 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	}
 
 	syncDB = (responseHandler?: ((response: DBType[]) => Promise<void> | void)) => {
+		// locally indexing and sorting is not working????
+		// {where: {__updated: {$gte: this.lastSync.get(0)}}, orderBy: [{key: "__updated", order: "desc"}]}
+
 		this.query({where: {}}, (items) => {
 			if (!items.length)
 				return;
