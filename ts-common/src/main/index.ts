@@ -45,6 +45,7 @@ export * from './utils/crypto-tools';
 export * from './utils/random-tools';
 export * from './utils/storage-capacity-tools';
 export * from './utils/mimetype-tools';
+export * from './utils/number-tools';
 export * from './utils/string-tools';
 export * from './utils/date-time-tools';
 export * from './utils/array-tools';

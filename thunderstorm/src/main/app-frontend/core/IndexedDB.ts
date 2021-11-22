@@ -29,6 +29,7 @@ export type DBConfig<T extends ObjectTS, Ks extends keyof T> = {
 	version?: number
 	autoIncrement?: boolean,
 	uniqueKeys: Ks[]
+	indices?: { id: string, keys: keyof T | (keyof T)[], params?: { multiEntry: boolean, unique: boolean } }[]
 	upgradeProcessor?: (db: UpgradeDB) => void
 };
 
@@ -43,8 +44,14 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 		this.config = {
 			...config,
 			upgradeProcessor: (db: UpgradeDB) => {
-				if (!db.objectStoreNames.contains(this.config.name))
-					db.createObjectStore(this.config.name, {autoIncrement: config.autoIncrement, keyPath: config.uniqueKeys as unknown as string[]});
+				if (!db.objectStoreNames.contains(this.config.name)) {
+					const store = db.createObjectStore(this.config.name, {autoIncrement: config.autoIncrement, keyPath: config.uniqueKeys as unknown as string[]});
+					this.config.indices?.forEach(index => store.createIndex(index.id, index.keys as string | string[], {
+						multiEntry: index.params?.multiEntry,
+						unique: index.params?.unique
+					}))
+				}
+
 
 				config.upgradeProcessor?.(db);
 			},
@@ -74,8 +81,12 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 		return (await this.store()).get(map);
 	}
 
-	public async getAll(): Promise<T[]> {
-		return (await this.store()).getAll();
+	public async query(query?: string | number | string[] | number[], indexKey?: string): Promise<T[] | undefined> {
+		const store = await this.store();
+		if (indexKey)
+			return store.index(indexKey).getAll(query)
+
+		return store.getAll(query);
 	}
 
 	public async insert(value: T, _store?: ObjectStore<T, Ks>) {

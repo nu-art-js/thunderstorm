@@ -172,11 +172,13 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			});
 	};
 
-	public getId = (item: DBType) => item._id;
+	public getUniqueId = (item: DBType) => item._id;
 
-	public getItems = (): Promise<DBType[]> => this.db.getAll()
+	public async queryCache(query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> {
+		return (await this.db.query(query, indexKey)) || [];
+	}
 
-	public getItem = async (_key?: string | IndexKeys<DBType, Ks>): Promise<DBType | undefined> => {
+	public uniqueQueryCache = async (_key?: string | IndexKeys<DBType, Ks>): Promise<DBType | undefined> => {
 		if (_key === undefined)
 			return _key;
 
