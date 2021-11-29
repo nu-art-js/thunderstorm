@@ -70,7 +70,7 @@ export class UploaderModule_Class
 	public getProcessor = (k: string) => {
 		const postProcessorElement = this.postProcessor[k];
 		if (!postProcessorElement)
-			throw new ImplementationMissingException(`Missing validator for type ${key}`);
+			throw new ImplementationMissingException(`Missing validator for type ${k}`);
 
 		return postProcessorElement;
 	};
