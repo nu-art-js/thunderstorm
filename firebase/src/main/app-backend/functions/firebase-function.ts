@@ -269,12 +269,10 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 	extends FirebaseFunction<ConfigType> {
 
 	private function!: CloudFunction<ObjectMetadata>;
-	private readonly path: string;
 	private runtimeOpts: RuntimeOptions = {};
 
-	protected constructor(path: string, name?: string) {
+	protected constructor(name?: string) {
 		super();
-		this.path = path;
 		name && this.setName(name);
 	}
 
@@ -291,13 +289,10 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 
 		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(
 			async (object: ObjectMetadata, context: EventContext) => {
-				if (!object.name?.startsWith(this.path))
-					return;
-
 				try {
 					return await this.handleCallback(() => this.onFinalize(object, context));
 				} catch (e) {
-					const _message = `Error handling callback to onFinalize bucket listener method on path:` + this.path +
+					const _message = `Error handling callback to onFinalize bucket listener method` +
 						"\n" + `File changed ${object.name}` + "\n with attributes: " + __stringify(context) + "\n" + __stringify(e);
 					this.logError(_message);
 					try {
