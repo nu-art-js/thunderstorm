@@ -75,7 +75,7 @@ export class FieldEditor
 			return this.props.labelProps(label);
 
 
-		return <div {...this.props.labelProps}>{label}</div>;
+		return <div  {...this.props.labelProps}>{label}</div>;
 	};
 
 	render() {

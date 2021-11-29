@@ -58,8 +58,16 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
 
-	constructor(config: Config) {
+	constructor(config: Config & { dbConfig?: DBConfig<DBType, Ks> }) {
 		super();
+		if (!config.dbConfig)
+			config.dbConfig = {
+				version: 1,
+				name: config.key,
+				autoIncrement: false,
+				uniqueKeys: ["_id"] as Ks[]
+			}
+
 		this.setDefaultConfig(config);
 		this.db = IndexedDBModule.getOrCreate(this.config.dbConfig);
 		this.lastSync = new StorageKey<number>("last-sync--" + this.config.dbConfig.name);
@@ -105,6 +113,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		// locally indexing and sorting is not working????
 		// {where: {__updated: {$gte: this.lastSync.get(0)}}, orderBy: [{key: "__updated", order: "desc"}]}
 
+		// this.query({where: {__updated: {$gte: this.lastSync.get(0)}}, orderBy: [{key: "__updated", order: "desc"}]}, (items) => {
 		this.query({where: {}}, (items) => {
 			if (!items.length)
 				return;

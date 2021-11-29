@@ -21,6 +21,7 @@
  * Created by tacb0ss on 19/09/2018.
  */
 // tslint:disable:no-import-side-effect
+import "@firebase/messaging";
 import "@firebase/auth";
 import {getAuth,signInWithCustomToken,signOut} from "@firebase/auth";
 import {

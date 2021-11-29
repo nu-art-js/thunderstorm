@@ -29,9 +29,8 @@
     "moment": "^2.24.0"
   },
   "devDependencies": {
+    "firebase": "^9.5.0",
     "@nu-art/testelot": "~0.0.1",
-    "firebase": "^9.0.0",
-    "firebase-admin": "^9.11.1",
     "ts-node": "^8.6.2",
     "tslint": "^5.16.0",
     "typescript": "~4.1.0",

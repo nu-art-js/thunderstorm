@@ -29,23 +29,23 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@google-cloud/common": "^3.0.0",
+    "@google-cloud/firestore": "^4.8.1",
+    "@google-cloud/storage": "^5.14.5",
+    "@nu-art/ts-common": "~0.0.1",
+    "express": "^4.17.1",
+    "google-auth-library": "^6.0.6"
+  },
+  "devDependencies": {
+    "firebase": "^9.5.0",
+    "firebase-admin": "^10.0.0",
+    "firebase-functions": "^3.16.0",
     "@firebase/analytics": "^0.7.4",
     "@firebase/app": "^0.7.9",
     "@firebase/auth": "^0.19.3",
     "@firebase/database": "^0.12.4",
     "@firebase/messaging": "^0.9.4",
     "@firebase/util": "^1.4.2",
-    "@google-cloud/common": "^3.0.0",
-    "@google-cloud/firestore": "^4.8.1",
-    "@google-cloud/storage": "^5.14.5",
-    "@nu-art/ts-common": "~0.0.1",
-    "express": "^4.17.1",
-    "firebase": "^9.0.0",
-    "firebase-admin": "^9.11.1",
-    "firebase-functions": "^3.15.4",
-    "google-auth-library": "^6.0.6"
-  },
-  "devDependencies": {
     "@nu-art/testelot": "~0.0.1",
     "@types/compression": "^1.0.1",
     "@types/express": "^4.17.2",

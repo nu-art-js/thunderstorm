@@ -17,7 +17,6 @@
  */
 
 import {
-	__stringify,
 	addItemToArray,
 	BadImplementationException,
 	compare,
@@ -25,7 +24,8 @@ import {
 	ImplementationMissingException,
 	Module,
 	removeFromArray,
-	StringMap
+	StringMap,
+    timeout
 } from "@nu-art/ts-common";
 
 import {StorageKey, ThunderDispatcher, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
@@ -102,6 +102,7 @@ export class PushPubSubModule_Class
 
 
 		this.runAsync("Initializing Firebase SDK and registering SW", async () => {
+			await timeout(2000);
 			if ("serviceWorker" in navigator) {
 				const asyncs: [Promise<ServiceWorkerRegistration>, Promise<FirebaseSession>] = [
 					this.registerServiceWorker(),
@@ -145,8 +146,8 @@ export class PushPubSubModule_Class
 				return;
 
 			this.messaging.onMessage((payload) => {
-				if(!payload.data)
-					return this.logInfo('No data passed to the message handler, I got this',payload);
+				if (!payload.data)
+					return this.logInfo('No data passed to the message handler, I got this', payload);
 
 				this.processMessage(payload.data);
 			});
