@@ -28,7 +28,7 @@ import {stopPropagation} from "../utils/tools";
 import {Adapter,} from "./adapter/Adapter";
 import {Stylable} from '../tools/Stylable';
 import {Overlay} from "./Overlay";
-import { Tree } from './tree/Tree';
+import {Tree} from './tree/Tree';
 
 export const DropDown_defaultWidth = 222;
 const defaultTitleHeight = "28px";
@@ -40,6 +40,7 @@ const defaultListHeight = "150px";
 
 export const wrapperStyle: React.CSSProperties = {
 	display: "inline-block",
+	width: "100%",
 	position: 'relative'
 };
 

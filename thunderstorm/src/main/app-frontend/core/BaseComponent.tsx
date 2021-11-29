@@ -35,27 +35,23 @@ export class BaseComponent<P = any, S = any>
 
 	private stateKeysToUpdate?: (keyof S)[];
 	private logger: Logger;
-	private readonly _componentDidMount: (() => void) | undefined;
-	private readonly _componentWillUnmount: (() => void) | undefined;
 	private timeoutMap: { [k: string]: number } = {};
 
 	constructor(props: P) {
 		super(props);
 		this.logger = new Logger(this.constructor.name);
 
-		this._componentDidMount = this.componentDidMount;
+		const __componentDidMount = this.componentDidMount?.bind(this);
 		this.componentDidMount = () => {
 			// @ts-ignore
 			Thunder.getInstance().addUIListener(this);
 
-			if (this._componentDidMount)
-				this._componentDidMount();
+			__componentDidMount?.();
 		};
 
-		this._componentWillUnmount = this.componentWillUnmount;
+		const __componentWillUnmount = this.componentWillUnmount?.bind(this);
 		this.componentWillUnmount = () => {
-			if (this._componentWillUnmount)
-				this._componentWillUnmount();
+			__componentWillUnmount?.();
 
 			// @ts-ignore
 			Thunder.getInstance().removeUIListener(this);

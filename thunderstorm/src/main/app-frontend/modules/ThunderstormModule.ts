@@ -48,7 +48,7 @@ class ThunderstormModule_Class
 		html?.insertBefore(window.document.getElementsByTagName("head")?.[0]?.cloneNode(true), body);
 		printingContentWindow.document.close();
 		printingContentWindow.focus();
-		setTimeout(() => printingContentWindow.print(), 1);
+		setTimeout(() => printingContentWindow.print(), 1500);
 	}
 
 	setChromeThemeColor(themeColor: string) {
