@@ -19,34 +19,16 @@
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register';
 import * as functions from "firebase-functions";
-import {
-	AxiosHttpModule,
-	ForceUpgrade,
-	RouteResolver,
-	Storm
-} from "@nu-art/thunderstorm/backend";
+import {AxiosHttpModule, ForceUpgrade, RouteResolver, Storm} from "@nu-art/thunderstorm/backend";
 import {Environment} from "./config";
-import {
-	DispatchModule,
-	ExampleModule
-} from "@modules/ExampleModule";
+import {DispatchModule, ExampleModule} from "@modules/ExampleModule";
 import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
-import {
-	__stringify,
-	Module
-} from "@nu-art/ts-common";
+import {__stringify, Module} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
-import {
-	Backend_ModulePack_BugReport,
-	BugReportModule
-} from "@nu-art/bug-report/backend";
+import {Backend_ModulePack_BugReport, BugReportModule} from "@nu-art/bug-report/backend";
 import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
 import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
-import {ValueChangedListener} from "@modules/ValueChangedListener";
-import {
-	Slack_ServerApiError,
-	SlackModule
-} from "@nu-art/storm/slack";
+import {Slack_ServerApiError, SlackModule} from "@nu-art/storm/slack";
 import {Backend_ModulePack_Uploader,} from "@nu-art/file-upload/backend";
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {JiraBugReportIntegrator} from "@nu-art/bug-report/app-backend/modules/JiraBugReportIntegrator";
@@ -57,7 +39,6 @@ const packageJson = require("./package.json");
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 
 const modules: Module[] = [
-	ValueChangedListener,
 	CollectionChangedListener,
 	ExampleModule,
 	ForceUpgrade,
@@ -97,17 +78,5 @@ const _exports = new Storm()
 	});
 
 BugReportModule.addTicketCreator(JiraBugReportIntegrator.openTicket);
-
-_exports.logTest = functions.database.ref('triggerLogs').onWrite((change, context) => {
-	console.log('LOG_TEST FUNCTION! -- Logging string');
-	console.log(`Changed from: ${change.before} to --> ${change.after} with context: ${__stringify(context)}`);
-	console.log({
-		            firstProps: 'String prop',
-		            secondProps: {
-			            a: 'Nested Object Prop',
-			            b: 10000
-		            }
-	            });
-});
 
 module.exports = _exports;
