@@ -17,21 +17,9 @@
  */
 
 import {Logger} from "@nu-art/ts-common";
-import {
-	FirebaseType_Messaging,
-	FirebaseType_Unsubscribe
-} from "./types";
-import {
-	getToken,
-	GetTokenOptions,
-	onMessage
-} from "@firebase/messaging";
-import {
-	NextFn,
-	Observer
-} from "@firebase/util";
-import firebase from "firebase/compat";
-import MessagePayload = firebase.messaging.MessagePayload;
+import {FirebaseType_Messaging, FirebaseType_Unsubscribe} from "./types";
+import {getMessaging, getToken, GetTokenOptions, MessagePayload, NextFn, Observer, onMessage} from "firebase/messaging";
+import {FirebaseApp} from "firebase/app";
 
 export class MessagingWrapper
 	extends Logger {
@@ -40,9 +28,9 @@ export class MessagingWrapper
 	private callback?: NextFn<MessagePayload> | Observer<MessagePayload>;
 	private token?: string;
 
-	constructor(messaging: FirebaseType_Messaging) {
+	constructor(app: FirebaseApp) {
 		super();
-		this.messaging = messaging;
+		this.messaging = getMessaging(app);
 	}
 
 	async getToken(options?: GetTokenOptions): Promise<string> {

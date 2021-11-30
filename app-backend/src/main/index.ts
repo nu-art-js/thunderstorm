@@ -18,12 +18,11 @@
 
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register';
-import * as functions from "firebase-functions";
 import {AxiosHttpModule, ForceUpgrade, RouteResolver, Storm} from "@nu-art/thunderstorm/backend";
 import {Environment} from "./config";
 import {DispatchModule, ExampleModule} from "@modules/ExampleModule";
 import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
-import {__stringify, Module} from "@nu-art/ts-common";
+import {Module} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
 import {Backend_ModulePack_BugReport, BugReportModule} from "@nu-art/bug-report/backend";
 import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
