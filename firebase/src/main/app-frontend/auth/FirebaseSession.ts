@@ -20,26 +20,15 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-// tslint:disable:no-import-side-effect
-import "@firebase/messaging";
-import "@firebase/auth";
-import {getAuth,signInWithCustomToken,signOut} from "@firebase/auth";
-import {
-	FirebaseApp,
-	initializeApp
-} from "@firebase/app";
-import {
-	Logger,
-	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
-// noinspection TypeScriptPreferShortImport
+import {Logger, ThisShouldNotHappenException} from "@nu-art/ts-common";
 import {FirebaseConfig} from "../../index";
 import {MessagingWrapper} from "../messaging/MessagingWrapper";
 import {AnalyticsWrapper} from "../analytics/AnalyticsWrapper";
 import {DatabaseWrapper} from "../database/DatabaseWrapper";
-import {getMessaging} from "@firebase/messaging";
-import {getAnalytics} from "@firebase/analytics";
-import {getDatabase} from "@firebase/database";
+import {getAuth, signInWithCustomToken, signOut} from "firebase/auth";
+import {getDatabase} from "firebase/database";
+import {FirebaseApp, initializeApp} from "firebase/app";
+
 // import auth = firebase.auth;
 
 export class FirebaseSession
@@ -66,14 +55,14 @@ export class FirebaseSession
 		if (this.messaging)
 			return this.messaging;
 
-		return this.messaging = new MessagingWrapper(getMessaging(this.app));
+		return this.messaging = new MessagingWrapper(this.app);
 	}
 
 	getAnalytics() {
 		if (this.analytics)
 			return this.analytics;
 
-		return this.analytics = new AnalyticsWrapper(getAnalytics(this.app));
+		return this.analytics = new AnalyticsWrapper(this.app);
 	}
 
 	getDatabase() {
@@ -84,7 +73,7 @@ export class FirebaseSession
 	}
 
 	async signInWithToken(token: string) {
-		return signInWithCustomToken(getAuth(this.app),token)
+		return signInWithCustomToken(getAuth(this.app), token)
 	};
 
 	async signOut() {

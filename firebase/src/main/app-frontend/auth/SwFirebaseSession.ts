@@ -20,13 +20,13 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import {FirebaseApp} from "@firebase/app";
+import {FirebaseApp} from "firebase/app";
 // tslint:disable:no-import-side-effect
-import "@firebase/auth";
+import "firebase/auth";
 import {Logger} from "@nu-art/ts-common";
 // noinspection TypeScriptPreferShortImport
 import {SwMessagingWrapper} from "../messaging/SwMessagingWrapper";
-import {getMessaging} from "@firebase/messaging";
+import {getMessaging} from "firebase/messaging";
 
 
 export class SwFirebaseSession

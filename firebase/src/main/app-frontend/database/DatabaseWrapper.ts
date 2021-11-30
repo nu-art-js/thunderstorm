@@ -28,7 +28,7 @@ import {
 	remove,
 	set,
 	update
-} from "@firebase/database";
+} from "firebase/database";
 
 export class DatabaseWrapper
 	extends Logger {

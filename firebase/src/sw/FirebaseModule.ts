@@ -7,7 +7,7 @@ import {getMessaging} from "firebase/messaging/sw";
 import {
 	FirebaseApp,
 	FirebaseOptions
-} from "@firebase/app";
+} from "firebase/app";
 
 type Config = {
 	[s: string]: FirebaseOptions;
