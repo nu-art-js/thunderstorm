@@ -18,34 +18,34 @@
  */
 
 import {Logger} from "@nu-art/ts-common";
-import {FirebaseType_CallOptions, FirebaseType_EventNameString} from "./types";
-import {CustomParams,} from "firebase/analytics";
+import {FirebaseType_Analytics, FirebaseType_CallOptions, FirebaseType_EventNameString} from "./types";
+import {CustomParams, getAnalytics, logEvent, setAnalyticsCollectionEnabled, setCurrentScreen, setUserId, setUserProperties,} from "firebase/analytics";
 import {FirebaseApp} from "firebase/app";
 
 export class AnalyticsWrapper
 	extends Logger {
 
-	// private readonly analytics: FirebaseType_Analytics;
+	private readonly analytics: FirebaseType_Analytics;
 
-	constructor(analytics: FirebaseApp) {
+	constructor(app: FirebaseApp) {
 		super();
-		// this.analytics = analytics;
+		this.analytics = getAnalytics(app);
 	}
 
 	setUserId(userId: string, options?: FirebaseType_CallOptions) {
-		// setUserId(this.analytics, userId, options);
+		setUserId(this.analytics, userId, options);
 	}
 
 	setCurrentScreen(screenName: string, options?: FirebaseType_CallOptions) {
-		// setCurrentScreen(this.analytics, screenName, options);
+		setCurrentScreen(this.analytics, screenName, options);
 	}
 
 	setAnalyticsCollectionEnabled(enabled: boolean) {
-		// setAnalyticsCollectionEnabled(this.analytics, enabled);
+		setAnalyticsCollectionEnabled(this.analytics, enabled);
 	}
 
 	setUserProperties(properties: CustomParams, options?: FirebaseType_CallOptions) {
-		// setUserProperties(this.analytics, properties);
+		setUserProperties(this.analytics, properties);
 	}
 
 	logEvent<T extends string>(
@@ -53,7 +53,7 @@ export class AnalyticsWrapper
 		eventParams?: { [key: string]: any },
 		options?: FirebaseType_CallOptions
 	) {
-		// return logEvent(this.analytics, eventName, eventParams, options);
+		return logEvent(this.analytics, eventName, eventParams, options);
 	}
 
 }
