@@ -26,7 +26,6 @@ import {MessagingWrapper} from "../messaging/MessagingWrapper";
 import {AnalyticsWrapper} from "../analytics/AnalyticsWrapper";
 import {DatabaseWrapper} from "../database/DatabaseWrapper";
 import {getAuth, signInWithCustomToken, signOut} from "firebase/auth";
-import {getDatabase} from "firebase/database";
 import {FirebaseApp, initializeApp} from "firebase/app";
 
 // import auth = firebase.auth;
@@ -69,7 +68,7 @@ export class FirebaseSession
 		if (this.database)
 			return this.database;
 
-		return this.database = new DatabaseWrapper(getDatabase(this.app));
+		return this.database = new DatabaseWrapper(this.app);
 	}
 
 	async signInWithToken(token: string) {

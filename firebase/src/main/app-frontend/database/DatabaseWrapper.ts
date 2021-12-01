@@ -16,28 +16,19 @@
  * limitations under the License.
  */
 
-import {
-	BadImplementationException,
-	Logger
-} from "@nu-art/ts-common";
+import {BadImplementationException, Logger} from "@nu-art/ts-common";
 import {FirebaseType_DB} from "./types";
-// tslint:disable:no-import-side-effect
-import {
-	onValue,
-	ref,
-	remove,
-	set,
-	update
-} from "firebase/database";
+import {getDatabase, onValue, ref, remove, set, update} from "firebase/database";
+import {FirebaseApp} from "firebase/app";
 
 export class DatabaseWrapper
 	extends Logger {
 
 	private readonly database: FirebaseType_DB;
 
-	constructor(database: FirebaseType_DB) {
+	constructor(app: FirebaseApp) {
 		super();
-		this.database = database;
+		this.database = getDatabase(app);
 	}
 
 
