@@ -91,7 +91,7 @@ module.exports = (env, argv) => {
 					include: [mainFolder],
 					exclude: [/node_modules/],
 					use: {
-						loader: "awesome-typescript-loader",
+						loader: "ts-loader",
 						options: {
 							configFileName: mainConfig
 						}

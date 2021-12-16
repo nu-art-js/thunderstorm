@@ -40,10 +40,9 @@ import {
 	StringMap
 } from "@nu-art/ts-common";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
-import firebase from "firebase";
 import {Message} from "firebase-functions/lib/providers/pubsub";
-import DocumentSnapshot = firebase.firestore.DocumentSnapshot;
-
+import {firestore} from "firebase-admin";
+import DocumentSnapshot = firestore.DocumentSnapshot;
 
 const functions = require("firebase-functions");
 

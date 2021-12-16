@@ -20,7 +20,7 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import firebase from "firebase/app";
+
 // tslint:disable:no-import-side-effect
 import 'firebase/auth';
 import {
@@ -33,9 +33,11 @@ import {MessagingWrapper} from "../messaging/MessagingWrapper";
 import {AnalyticsWrapper} from "../analytics/AnalyticsWrapper";
 import {DatabaseWrapper} from "../database/DatabaseWrapper";
 
+import { initializeApp } from 'firebase/app';
+
 export class FirebaseSession
 	extends Logger {
-	app!: firebase.app.App;
+	app!: App;
 
 	protected config: FirebaseConfig;
 	protected sessionName: string;
@@ -50,7 +52,7 @@ export class FirebaseSession
 	}
 
 	public connect(): void {
-		this.app = firebase.initializeApp(this.config, this.sessionName);
+		this.app = initializeApp(this.config, this.sessionName);
 	}
 
 	getMessaging() {
