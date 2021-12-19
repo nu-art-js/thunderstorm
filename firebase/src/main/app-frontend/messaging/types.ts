@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import firebase from 'firebase/app';
+import {Messaging, Unsubscribe} from "firebase/messaging";
 
-export type FirebaseType_Messaging = firebase.messaging.Messaging
-export type FirebaseType_Unsubscribe = firebase.Unsubscribe
+export type FirebaseType_Messaging = Messaging
+export type FirebaseType_Unsubscribe = Unsubscribe
