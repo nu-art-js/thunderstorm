@@ -25,7 +25,6 @@ import {Backend_ModulePack_LiveDocs} from "@nu-art/live-docs/backend";
 import {Module} from "@nu-art/ts-common";
 import {Backend_ModulePack_Permissions} from "@nu-art/permissions/backend";
 import {Backend_ModulePack_BugReport, BugReportModule} from "@nu-art/bug-report/backend";
-import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
 import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
 import {Slack_ServerApiError, SlackModule} from "@nu-art/storm/slack";
 import {Backend_ModulePack_Uploader,} from "@nu-art/file-upload/backend";
@@ -41,7 +40,6 @@ const modules: Module[] = [
 	CollectionChangedListener,
 	ExampleModule,
 	ForceUpgrade,
-	ProjectFirestoreBackup,
 	SlackModule,
 	Slack_ServerApiError,
 	DispatchModule,
