@@ -24,7 +24,7 @@ import {
 import {
 	FirebaseModule,
 	FirestoreCollection,
-	ProjectFirestoreBackup
+	// ProjectFirestoreBackup
 } from "../../_main";
 import {Module} from "@nu-art/ts-common";
 
@@ -35,9 +35,9 @@ testFirestoreBackup.add(__custom(async () => {
 	await TestModuleThatUsesCollection.insertTestDocument({label: "doc2"});
 }).setLabel("Populating collection"));
 
-testFirestoreBackup.add(__custom(async () => {
-	await ProjectFirestoreBackup.backupProject("automation-test");
-}).setLabel("Backing up project.."));
+// testFirestoreBackup.add(__custom(async () => {
+// 	await ProjectFirestoreBackup.backupProject("automation-test");
+// }).setLabel("Backing up project.."));
 
 class TestModuleThatUsesCollection_Class
 	extends Module {
