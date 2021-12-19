@@ -15,29 +15,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { initializeApp,FirebaseOptions } from "firebase/app";
-import { getMessaging,onBackgroundMessage } from "firebase/messaging/sw";
-var config = require('../main/config').config;
-var LogLevel = {
-	INFO:'INFO',
-	ERROR:'ERROR'
+const config = require('../main/config').config;
+const firebaseVersion = config?.ServiceWorker?.firebaseVersion;
+if(firebaseVersion)
+	importScripts(`https://www.gstatic.com/firebasejs/${firebaseVersion}/firebase-app.js`,
+	              `https://www.gstatic.com/firebasejs/${firebaseVersion}/firebase-messaging.js`);
+
+enum LogLevel {
+	INFO,
+	ERROR
 }
 
-function myLog(level, ...text) {
-	var color = level === LogLevel.INFO ? 'orange' : 'red';
-	for(var t of text){
+function myLog(level: LogLevel, ...text: any[]) {
+	const color = level === LogLevel.INFO ? 'orange' : 'red';
+	for(const t of text){
 		if(typeof t === "object")
 			console.log(t)
 		else
-			console.log('%c ' + t, `color: ${color};`);
+			console.log('%c ' + text, `color: ${color};`);
 	}
 }
 
-function myLogError(...text) {
+function myLogError(...text: any[]) {
 	myLog(LogLevel.ERROR, ...text);
 }
 
-function myLogInfo(...text) {
+function myLogInfo(...text: any[]) {
 	myLog(LogLevel.INFO, ...text);
 }
 
@@ -52,19 +55,19 @@ self.addEventListener('activate', () => {
 	myLogInfo('Activated SW');
 	// @ts-ignore
 	self.clients
-		.claim()
-		.then(() => myLogInfo('Service Worker activated'))
+	    .claim()
+	    .then(() => myLogInfo('Service Worker activated'))
 		// @ts-ignore
-		.catch(e => myLogError('Error activating service worker', e));
+		  .catch(e => myLogError('Error activating service worker', e));
 });
 
 self.addEventListener('install', () => {
 	myLogInfo('Installed SW');
 	// @ts-ignore
 	self.skipWaiting()
-		.then(() => myLogInfo('Skipped waiting, now using the new SW'))
+	    .then(() => myLogInfo('Skipped waiting, now using the new SW'))
 		// @ts-ignore
-		.catch(e => myLogError('Something wrong while skipping waiting. Service worker not queued', e));
+		  .catch(e => myLogError('Something wrong while skipping waiting. Service worker not queued', e));
 
 });
 
@@ -75,31 +78,29 @@ self.addEventListener('install', () => {
 if (typeof firebase === 'undefined') {
 	console.warn('You forgot to import firebase?');
 } else {
-	const firebaseApp = initializeApp(config.FirebaseModule.local as FirebaseOptions);
-	const messaging = getMessaging(firebaseApp);
 
-	// Retrieve an instance of Firebase Messaging so that it can handle background
-	// messages.
-	onBackgroundMessage(
-		messaging, {
-			next: async (payload) => {
-				myLogInfo('[ts_service_worker.js] Received background message ', payload);
-				// @ts-ignore
-				self.clients.matchAll({type: "window", includeUncontrolled: true}).then(clients => {
-						// @ts-ignore
-						clients.forEach(function (client) {
-							client.postMessage(
-								{
-									command: 'SwToApp',
-									message: payload.data
-								});
-						})
-				})
-			},
-			error: myLogError,
-			complete: myLogInfo
-		}
-	);
+	// @ts-ignore
+	const session = firebase.initializeApp(config.FirebaseModule.local);
+
+// Retrieve an instance of Firebase Messaging so that it can handle background
+// messages.
+	const messaging = session.messaging();
+// @ts-ignore
+	messaging.onBackgroundMessage((payload) => {
+		myLogInfo('[ts_service_worker.js] Received background message ', payload);
+		const message = {
+			command: 'SwToApp',
+			message: payload.data
+		};
+
+		// @ts-ignore
+		self.clients.matchAll({type: "window", includeUncontrolled: true}).then(clients => {
+			// @ts-ignore
+			clients.forEach(function (client) {
+				client.postMessage(message);
+			});
+		});
+	});
 }
 
 export default null;

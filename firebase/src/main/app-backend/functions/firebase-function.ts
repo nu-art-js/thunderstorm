@@ -301,7 +301,6 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 					}
 					throw e;
 				}
-
 			});
 	};
 }

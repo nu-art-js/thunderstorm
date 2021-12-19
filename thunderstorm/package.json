@@ -23,7 +23,7 @@
   "main": "./dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc -b -f"
+    "build": "tsc"
   },
   "dependencies": {
     "@nu-art/firebase": "~0.0.1",
@@ -40,7 +40,7 @@
     "react-dom": "^16.0.0",
     "react-router": "^5.1.2",
     "react-router-dom": "^5.1.2",
-    "react-select": "^5.0.0",
+    "react-select": "^4.0.0",
     "request": "^2.88.0"
   },
   "devDependencies": {
@@ -50,8 +50,10 @@
     "@types/node-fetch": "^2.5.7",
     "@types/qs": "^6.5.2",
     "@types/react": "^16.8.7",
+    "@types/react-dom": "^16.0.0",
     "@types/react-router": "^5.1.4",
     "@types/react-router-dom": "^5.1.3",
+    "@types/react-select": "^4.0.0",
     "@types/request": "^2.48.1",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",

@@ -26,6 +26,7 @@ import {
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
 import {FirebaseSession} from "../auth/firebase-session";
 import {StringMap} from "@nu-art/ts-common";
+import {getMessaging} from "firebase-admin/messaging";
 
 export class PushMessagesWrapper
 	extends FirebaseBaseWrapper {
@@ -34,7 +35,7 @@ export class PushMessagesWrapper
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.messaging = firebaseSession.app.messaging();
+		this.messaging = getMessaging(firebaseSession.app)
 	}
 
 	async send(message: FirebaseType_Message, dryRun?: boolean): Promise<string> {
