@@ -23,17 +23,18 @@
     "build": "tsc -b -f"
   },
   "dependencies": {
-    "@nu-art/firebase": "~0.0.1",
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/ts-common": "~0.0.1",
     "moment": "^2.24.0"
   },
   "devDependencies": {
+    "@nu-art/firebase": "~0.0.1",
     "firebase": "^9.5.0",
     "@nu-art/testelot": "~0.0.1",
     "ts-node": "^8.6.2",
     "tslint": "^5.16.0",
     "typescript": "~4.1.0",
+    "@types/express-serve-static-core": "^4.17.18",
     "use-strict": "^1.0.1"
   }
 }

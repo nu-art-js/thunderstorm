@@ -62,7 +62,7 @@ class ConfirmationFormWrapper<T extends ObjectTS>
 			const value = this.state.value as T;
 			this.props.validator && tsValidateObject(value, this.props.validator);
 			this.props.onAccept(value)
-		} catch (e) {
+		} catch (e:any) {
 			this.setState({showErrors: true})
 			ToastModule.toastError(e.message);
 		}

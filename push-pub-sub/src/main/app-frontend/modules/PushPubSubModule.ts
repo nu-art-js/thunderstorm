@@ -16,23 +16,11 @@
  * limitations under the License.
  */
 
-import {
-	addItemToArray,
-	BadImplementationException,
-	compare,
-	generateHex,
-	ImplementationMissingException,
-	Module,
-	removeFromArray,
-	StringMap,
-    timeout
-} from "@nu-art/ts-common";
-
+import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, StringMap} from "@nu-art/ts-common";
 import {StorageKey, ThunderDispatcher, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
-// noinspection TypeScriptPreferShortImport
 import {BaseSubscriptionData, DB_Notifications, IFP, ISP, ITP, MessageType, PubSubRegisterClient, Request_PushRegister, SubscribeProps} from "../../index";
 import {HttpMethod} from "@nu-art/thunderstorm";
-import {FirebaseModule, FirebaseSession, MessagingWrapper} from "@nu-art/firebase/frontend";
+import {FirebaseModule, MessagingWrapper} from "@nu-art/firebase/frontend";
 import {NotificationsModule} from "./NotificationModule";
 
 export const Command_SwToApp = "SwToApp";
@@ -67,7 +55,7 @@ export class PushPubSubModule_Class
 
 	private subscriptions: BaseSubscriptionData[] = [];
 	private firebaseToken?: string;
-	private messaging?: MessagingWrapper;
+	private messaging!: MessagingWrapper;
 
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, "__onMessageReceived">("__onMessageReceived");
 
@@ -84,6 +72,9 @@ export class PushPubSubModule_Class
 		if (this.config?.registerOnInit === false)
 			return;
 
+		if (!this.config?.publicKeyBase64)
+			throw new ImplementationMissingException(`PushPubSubModule config is missing the publicKeyBase64`);
+
 		this.initApp();
 	}
 
@@ -92,59 +83,28 @@ export class PushPubSubModule_Class
 	}
 
 	private registerServiceWorker = async () => {
-		console.log("Registering service worker...");
-		return await navigator.serviceWorker.register(`/${this.config.swFileName || "ts_service_worker.js"}`);
+		this.logInfo("Registering service worker...");
+		if (!("serviceWorker" in navigator)) {
+			return this.logWarning("serviceWorker property is missing in navigator");
+		}
+
+		const registration = await navigator.serviceWorker.register(`/${this.config.swFileName || "service_worker.js"}`);
+		await registration.update();
+		navigator.serviceWorker.oncontrollerchange = () => {
+			this.logInfo("This page is now controlled by:", this.getControlingServiceWorker());
+		};
+
+		navigator.serviceWorker.onmessage = (event: MessageEvent) => {
+			this.processMessageFromSw(event.data);
+		};
 	};
 
 	initApp = () => {
-		if (!this.config?.publicKeyBase64)
-			throw new ImplementationMissingException(`Please specify the right config for the 'PushPubSubModule'`);
-
-
 		this.runAsync("Initializing Firebase SDK and registering SW", async () => {
-			await timeout(2000);
-			if ("serviceWorker" in navigator) {
-				const asyncs: [Promise<ServiceWorkerRegistration>, Promise<FirebaseSession>] = [
-					this.registerServiceWorker(),
-					FirebaseModule.createSession()
-				];
+			await this.registerServiceWorker()
+			const session = await FirebaseModule.createSession()
 
-				const {0: registration, 1: app} = await Promise.all(asyncs);
-				await registration.update();
-				this.messaging = app.getMessaging();
-				// this.messaging.usePublicVapidKey(this.config.publicKeyBase64);
-				// await this.messaging.useServiceWorker(registration);
-				await this.getToken({vapidKey: this.config.publicKeyBase64, serviceWorkerRegistration: registration});
-				if (navigator.serviceWorker.controller) {
-					console.log(`This page is currently controlled by: ${navigator.serviceWorker.controller}`);
-				}
-				navigator.serviceWorker.oncontrollerchange = function () {
-					console.log("This page is now controlled by:", navigator.serviceWorker.controller);
-				};
-				navigator.serviceWorker.onmessage = (event: MessageEvent) => {
-					this.processMessageFromSw(event.data);
-				};
-			}
-		});
-	};
-
-
-	// / need to call this from the login verified
-	public getToken = async (options?: { vapidKey?: string; serviceWorkerRegistration?: ServiceWorkerRegistration; }) => {
-		try {
-			this.logVerbose("Checking/Requesting permission...");
-			const permission = await Notification.requestPermission();
-			this.logVerbose(`Notification permission: ${permission}`);
-			if (permission !== "granted")
-				return;
-
-			if (!this.messaging)
-				throw new BadImplementationException("I literally just set this!");
-
-			this.firebaseToken = await this.messaging.getToken(options);
-			if (!this.firebaseToken)
-				return;
-
+			this.messaging = session.getMessaging();
 			this.messaging.onMessage((payload) => {
 				if (!payload.data)
 					return this.logInfo('No data passed to the message handler, I got this', payload);
@@ -152,18 +112,42 @@ export class PushPubSubModule_Class
 				this.processMessage(payload.data);
 			});
 
-			this.logVerbose("new token received: " + this.firebaseToken);
+			await this.getToken();
+			if (this.getControlingServiceWorker()) {
+				this.logInfo(`This page is currently controlled by: `, this.getControlingServiceWorker());
+			}
+		});
+	};
 
-			// this.logWarning("I don't believe there is a good reason to register whenever an app starts.. before we have any information about user or app status!!")
-			// this.logWarning("Convince me otherwise.. :)")
-			// Race Condition in CC proved that I didnt register for push due to the getToken being async which ended after modules init
-			// so I had subscriptions but didnt register them
-			if (this.subscriptions.length > 0)
-				await this.register();
+	private getControlingServiceWorker() {
+		return navigator.serviceWorker.controller;
+	}
 
-		} catch (err) {
-			this.logError("Unable to get token", err);
-		}
+	public deleteToken() {
+		return this.messaging.deleteToken();
+	}
+
+	isNotificationEnabled() {
+		return Notification.permission === "granted";
+	}
+
+	async requestPermissions() {
+		if (this.isNotificationEnabled())
+			return this.logVerbose("Notification already allowed");
+
+		const permission = await Notification.requestPermission();
+		if (permission !== "granted")
+			return this.logWarning("Notification was NOT granted");
+
+		return this.logVerbose("Notification WAS granted");
+	}
+
+	public getToken = async (options?: { vapidKey?: string; serviceWorkerRegistration?: ServiceWorkerRegistration; }) => {
+		if (!this.isNotificationEnabled())
+			return;
+
+		this.firebaseToken = await this.messaging.getToken(options);
+		this.logVerbose("new token received: " + this.firebaseToken);
 	};
 
 	private processMessageFromSw = (data: any) => {
