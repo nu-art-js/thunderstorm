@@ -19,16 +19,10 @@
 
 import * as React from "react";
 import {CSSProperties} from "react";
-import {
-	_keys,
-	addItemToArray
-} from "@nu-art/ts-common";
+import {_keys, addItemToArray} from "@nu-art/ts-common";
 import {AccountModule} from "../modules/AccountModule";
 import {Request_LoginAccount} from "../../shared/api";
-import {
-	ToastModule,
-	TS_Input
-} from "@nu-art/thunderstorm/frontend";
+import {ToastModule, TS_Input} from "@nu-art/thunderstorm/frontend";
 
 export type ValueAndError = {
 	value?: string
@@ -85,21 +79,23 @@ export class Component_Login
 	render() {
 		const data = this.state.data;
 		return <>
-			<div className={'ll_v_c'} style={{justifyContent: 'space-evenly'}}>
-				{_keys(form).map(key => {
-					                 const field = form[key];
-					                 return <TS_Input
-						                 id={key}
-						                 key={key}
-						                 value={data[key]}
-						                 type={field.type}
-						                 placeholder={field.hint}
-						                 onChange={this.onValueChanged}
-						                 onAccept={this.loginClicked}
-					                 />;
-				                 }
-				)}
-			</div>
+			<form>
+				<div className={'ll_v_c'} style={{justifyContent: 'space-evenly'}}>
+					{_keys(form).map(key => {
+							const field = form[key];
+							return <TS_Input
+								id={key}
+								key={key}
+								value={data[key]}
+								type={field.type}
+								placeholder={field.hint}
+								onChange={this.onValueChanged}
+								onAccept={this.loginClicked}
+							/>;
+						}
+					)}
+				</div>
+			</form>
 			<div className={'ll_h_c'} style={{justifyContent: 'center'}}>
 				<button onClick={this.loginClicked} className={`clickable`} style={style}>Login
 				</button>

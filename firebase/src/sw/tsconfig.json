@@ -1,7 +1,0 @@
-{
-  "extends": "../../../dev-tools/typescript/tsconfig-lib-sw.json",
-  "compilerOptions": {
-    "outDir": "sw",
-    "rootDir": "./src/sw"
-  }
-}

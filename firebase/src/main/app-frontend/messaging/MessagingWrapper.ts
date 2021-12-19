@@ -18,7 +18,7 @@
 
 import {Logger} from "@nu-art/ts-common";
 import {FirebaseType_Messaging, FirebaseType_Unsubscribe} from "./types";
-import {getMessaging, getToken, GetTokenOptions, MessagePayload, NextFn, Observer, onMessage} from "firebase/messaging";
+import {deleteToken, getMessaging, getToken, GetTokenOptions, MessagePayload, NextFn, Observer, onMessage} from "firebase/messaging";
 import {FirebaseApp} from "firebase/app";
 
 export class MessagingWrapper
@@ -35,10 +35,18 @@ export class MessagingWrapper
 
 	async getToken(options?: GetTokenOptions): Promise<string> {
 		this.token = await getToken(this.messaging, options);
+
 		if (this.callback)
 			onMessage(this.messaging, this.callback);
 
 		return this.token;
+	}
+
+	async deleteToken() {
+		this.logVerbose("Deleting firebase messaging token")
+		await deleteToken(this.messaging);
+
+		delete this.token;
 	}
 
 	onMessage(callback: NextFn<MessagePayload> | Observer<MessagePayload>): FirebaseType_Unsubscribe | void {

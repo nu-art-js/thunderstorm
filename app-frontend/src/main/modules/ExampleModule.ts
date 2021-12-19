@@ -16,17 +16,9 @@
  * limitations under the License.
  */
 
-import {
-	__stringify,
-	Module,
-	Second
-} from "@nu-art/ts-common";
+import {__stringify, Module, Second} from "@nu-art/ts-common";
 
-import {
-	ThunderDispatcher,
-	ToastModule,
-	XhrHttpModule
-} from "@nu-art/thunderstorm/frontend";
+import {ThunderDispatcher, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 import {
 	CommonBodyReq,
 	CustomError1,
@@ -39,22 +31,11 @@ import {
 	ExampleTestPush,
 	TestDispatch
 } from "@app/app-shared";
-import {
-	ErrorResponse,
-	HttpMethod
-} from "@nu-art/thunderstorm";
+import {ErrorResponse, HttpMethod} from "@nu-art/thunderstorm";
 import {Test} from "@modules/TestModule";
-import {
-	OnNotificationsUpdated,
-	OnPushMessageReceived,
-	PushPubSubModule,
-	NotificationsModule
-} from "@nu-art/push-pub-sub/frontend";
+import {NotificationsModule, OnNotificationsUpdated, OnPushMessageReceived, PushPubSubModule} from "@nu-art/push-pub-sub/frontend";
 import {FirebaseModule} from "@nu-art/firebase/frontend";
-import {
-	BaseSubscriptionData,
-	DB_Notifications
-} from "@nu-art/push-pub-sub";
+import {BaseSubscriptionData, DB_Notifications} from "@nu-art/push-pub-sub";
 
 type Config = {
 	remoteUrl: string
@@ -147,12 +128,13 @@ export class ExampleModule_Class
 		this.logInfo("getting label from server");
 		const bodyObject: CommonBodyReq = {message: this.message || "No message"};
 
-		XhrHttpModule
+		const r = XhrHttpModule
 			.createRequest<ExampleApiPostType>(HttpMethod.POST, RequestKey_PostApi)
 			.setJsonBody(bodyObject)
 			.setRelativeUrl("/v1/sample/another-endpoint")
-			.setOnError(`Error getting new message from backend`)
-			.execute(this.setMessage);
+			.setOnError(`Error getting new message from backend`);
+
+		r.execute(this.setMessage);
 
 		this.logInfo("continue... will receive an event once request is completed..");
 	};
@@ -160,11 +142,12 @@ export class ExampleModule_Class
 	public getMessageFromServer2 = () => {
 		this.logInfo("getting label from server");
 
-		XhrHttpModule
+		const r = XhrHttpModule
 			.createRequest<ExampleApiGetType>(HttpMethod.GET, RequestKey_GetApi)
 			.setRelativeUrl(this.config.remoteUrl)
-			.setOnError(`Error getting new message from backend`)
-			.execute(this.setMessage);
+			.setOnError(`Error getting new message from backend`);
+
+		r.execute(this.setMessage);
 
 		this.logInfo("continue... will receive an event once request is completed..");
 	};
@@ -179,7 +162,8 @@ export class ExampleModule_Class
 			.execute();
 	};
 
-	setMessage = async (message: string) => {
+	setMessage = async (_message: unknown) => {
+		const message = _message as string
 		this.logInfo(`got message: ${message}`);
 		this.message = message;
 	};
@@ -219,7 +203,7 @@ export class ExampleModule_Class
 				this.fetchMax();
 				console.log("i think i got something...");
 				console.log(response);
-				this.api_data = response;
+				this.api_data = response as string;
 				dispatchAll();
 			});
 
@@ -227,14 +211,15 @@ export class ExampleModule_Class
 	};
 
 	fetchMax = () => {
-		XhrHttpModule
+		const r = XhrHttpModule
 			.createRequest<ExampleGetMax>(HttpMethod.GET, RequestKey_TestApi)
 			.setRelativeUrl("/v1/sample/get-max")
 			.setOnError(`Error getting max from backend`)
-			.execute(async response => {
-				this.max = response.n;
-				dispatchAll();
-			});
+
+		r.execute(async response => {
+			this.max = (response as { n: number }).n;
+			dispatchAll();
+		});
 	};
 
 	getMax = () => this.max;

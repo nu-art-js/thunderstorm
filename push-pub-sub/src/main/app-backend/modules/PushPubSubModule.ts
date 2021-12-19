@@ -153,6 +153,7 @@ export class PushPubSubModule_Class
 			const resp = await this.sendMessage(persistent, _messages);
 			if (!resp)
 				return this.logInfo('No messages to send. Empty subscriptions');
+			this.logWarning(resp);
 
 			const {response, messages} = resp;
 			this.logInfo(`${response.successCount} sent, ${response.failureCount} failed`, "messages", messages);
