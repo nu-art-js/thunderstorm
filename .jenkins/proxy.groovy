@@ -12,7 +12,7 @@ class Pipeline_Router
 //	protected GitRepo repo
 
 	Pipeline_Router() {
-		super("Thunderstorm-Router", SlackModule.class, DockerModule.class, GitModule.class)
+		super("Thunderstorm-Proxy", SlackModule.class, DockerModule.class, GitModule.class)
 	}
 
 	@Override
