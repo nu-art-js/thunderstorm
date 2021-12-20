@@ -74,7 +74,7 @@ export type Timestamp = {
 	timezone?: string;
 };
 
-export type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T];
+export type FunctionKeys<T> = { [K in keyof T]: T[K] extends (...args: any) => any ? K : never }[keyof T];
 
 export const Void = (() => {
 })();

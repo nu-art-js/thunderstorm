@@ -19,9 +19,28 @@
  * limitations under the License.
  */
 
-import {Dispatcher, FunctionKeys, ReturnPromiseType} from "@nu-art/ts-common";
+import {Dispatcher} from "@nu-art/ts-common";
 
-export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P extends Parameters<T[K]>= Parameters<T[K]>>
+export type FunctionKeys<T> = { [K in keyof T]: T[K] extends (...args: any) => any ? K : never }[keyof T];
+// type A = { p: () => string; k: string };
+
+// type B = FunctionKeys<A>;
+// const a: A = {
+// 	p: () => "p",
+// 	k: "K"
+// }
+//
+// const b:B ="k"
+//
+// console.log(b)
+
+
+export type DeflatePromise<T> = T extends Promise<infer A> ? A : T
+
+export type ReturnPromiseType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? DeflatePromise<R> : never;
+
+
+export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P extends Parameters<T[K]> = Parameters<T[K]>>
 	extends Dispatcher<T, K> {
 
 	static readonly listenersResolver: () => any[];
@@ -46,7 +65,7 @@ export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P ex
 	public dispatchAll(p: Parameters<T[K]>): ReturnPromiseType<T[K]>[] {
 		const moduleResponses = this.dispatchModule(p)
 		const uiResponses = this.dispatchUI(p as P);
-		return [...moduleResponses,...uiResponses]
+		return [...moduleResponses, ...uiResponses]
 	}
 
 	public async dispatchAllAsync(p: Parameters<T[K]>): Promise<ReturnPromiseType<T[K]>[]> {
