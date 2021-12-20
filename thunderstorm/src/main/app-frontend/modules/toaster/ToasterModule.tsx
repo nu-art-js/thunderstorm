@@ -26,10 +26,9 @@ import {
 	Second
 } from "@nu-art/ts-common";
 // noinspection TypeScriptPreferShortImport
-import {Color} from "csstype";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import { Stylable, StylableBuilder } from "../../tools/Stylable";
-
+import {ColorProperty} from "csstype";
 
 export enum ToastType {
 	"success",
@@ -59,7 +58,7 @@ const Interval_DefaultToast = 6 * Second;
 export class ToastBuilder
 	extends StylableBuilder {
 
-	private bgColor: Color = "#eeffef";
+	private bgColor: ColorProperty = "#eeffef";
 	private duration: number = Interval_DefaultToast;
 	private type: ToastType = ToastType.info;
 	private positionVertical: PositionVertical = "top";
@@ -77,7 +76,7 @@ export class ToastBuilder
 		return this;
 	}
 
-	setBackground(bgColor: Color) {
+	setBackground(bgColor: ColorProperty) {
 		this.bgColor = bgColor;
 		return this;
 	}
@@ -152,7 +151,7 @@ export class ToastModule_Class
 	}
 
 	private toast(_message: React.ReactNode, type: ToastType, interval: number = Interval_DefaultToast) {
-		let color: Color;
+		let color: ColorProperty;
 		switch (type) {
 			case ToastType.success:
 				color = "#2ee06f";
