@@ -57,7 +57,7 @@
     "@types/request": "^2.48.1",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
-    "csstype": "^2.6.7",
+    "csstype": "^3.0.0",
     "history": "^4.9.0",
     "moment": "^2.24.0",
     "qs": "^6.6.0",
