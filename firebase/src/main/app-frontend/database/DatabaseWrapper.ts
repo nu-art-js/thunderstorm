@@ -52,11 +52,11 @@ export class DatabaseWrapper
 	}
 
 	public listen<T>(path: string, callback: (value: T) => void) {
-		onValue(this.getRef(path), snapshot => {
+		return onValue(this.getRef(path), snapshot => {
 			callback(!snapshot || snapshot.val());
 		}, (error: Error) => {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, error);
-		}, {onlyOnce: true});
+		}, {onlyOnce: false});
 	}
 
 	private getRef = (path: string) => ref(this.database, path);
