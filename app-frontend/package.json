@@ -55,7 +55,7 @@
     "child_process": "^1.0.2",
     "clean-webpack-plugin": "^0.1.19",
     "css-loader": "^1.0.0",
-    "csstype": "^2.6.7",
+    "csstype": "^3.0.0",
     "d3-array": "^2.8.0",
     "d3-scale": "^3.2.3",
     "emotion": "^9.2.12",
