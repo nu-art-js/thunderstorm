@@ -16,12 +16,15 @@
  * limitations under the License.
  */
 
-import {
-	FunctionKeys,
-	ReturnPromiseType
-} from "../utils/types";
+import {FunctionKeys, ReturnPromiseType} from "../utils/types";
 
-export class Dispatcher<T extends object, K extends FunctionKeys<T>> {
+export type ParamResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? Parameters<T[K]> : never
+export type ReturnTypeResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? ReturnPromiseType<T[K]> : never
+
+export class Dispatcher<T,
+	K extends FunctionKeys<T>,
+	P extends ParamResolver<T, K> = ParamResolver<T, K>,
+	R extends ReturnTypeResolver<T, K> = ReturnTypeResolver<T, K>> {
 
 	static modulesResolver: () => any[];
 
@@ -33,13 +36,13 @@ export class Dispatcher<T extends object, K extends FunctionKeys<T>> {
 		this.filter = (listener: any) => !!listener[this.method];
 	}
 
-	public dispatchModule(p: Parameters<T[K]>): ReturnPromiseType<T[K]>[] {
+	public dispatchModule(p: P): R[] {
 		const listeners = Dispatcher.modulesResolver();
 		const params: any = p;
 		return listeners.filter(this.filter).map((listener: T) => listener[this.method](...params));
 	}
 
-	public async dispatchModuleAsync(p: Parameters<T[K]>): Promise<ReturnPromiseType<T[K]>[]> {
+	public async dispatchModuleAsync(p: P): Promise<R[]> {
 		const listeners = Dispatcher.modulesResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			const params: any = p;
