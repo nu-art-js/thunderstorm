@@ -19,29 +19,16 @@
  * limitations under the License.
  */
 
-import {Dispatcher} from "@nu-art/ts-common";
-
-export type FunctionKeys<T> = { [K in keyof T]: T[K] extends (...args: any) => any ? K : never }[keyof T];
-// type A = { p: () => string; k: string };
-
-// type B = FunctionKeys<A>;
-// const a: A = {
-// 	p: () => "p",
-// 	k: "K"
-// }
-//
-// const b:B ="k"
-//
-// console.log(b)
+import {Dispatcher, FunctionKeys, ParamResolver, ReturnTypeResolver} from "@nu-art/ts-common";
 
 
-export type DeflatePromise<T> = T extends Promise<infer A> ? A : T
+// type ValidKeyResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? K : never
 
-export type ReturnPromiseType<T extends (...args: any) => any> = T extends (...args: any) => infer R ? DeflatePromise<R> : never;
-
-
-export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P extends Parameters<T[K]> = Parameters<T[K]>>
-	extends Dispatcher<T, K> {
+export class ThunderDispatcher<T,
+	K extends FunctionKeys<T>,
+	P extends ParamResolver<T, K> = ParamResolver<T, K>,
+	R extends ReturnTypeResolver<T, K> = ReturnTypeResolver<T, K>>
+	extends Dispatcher<T, K, P, R> {
 
 	static readonly listenersResolver: () => any[];
 
@@ -49,12 +36,12 @@ export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P ex
 		super(method);
 	}
 
-	public dispatchUI(p: P): ReturnPromiseType<T[K]>[] {
+	public dispatchUI(p: P): R[] {
 		const listeners = ThunderDispatcher.listenersResolver();
 		return listeners.filter(this.filter).map((listener: T) => listener[this.method](...p));
 	}
 
-	public async dispatchUIAsync(p: P): Promise<ReturnPromiseType<T[K]>[]> {
+	public async dispatchUIAsync(p: P): Promise<R[]> {
 		const listeners = ThunderDispatcher.listenersResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			const params: any = p;
@@ -62,13 +49,13 @@ export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>, P ex
 		}));
 	}
 
-	public dispatchAll(p: Parameters<T[K]>): ReturnPromiseType<T[K]>[] {
-		const moduleResponses = this.dispatchModule(p)
+	public dispatchAll(p: P): R[] {
+		const moduleResponses = this.dispatchModule(p as P)
 		const uiResponses = this.dispatchUI(p as P);
 		return [...moduleResponses, ...uiResponses]
 	}
 
-	public async dispatchAllAsync(p: Parameters<T[K]>): Promise<ReturnPromiseType<T[K]>[]> {
+	public async dispatchAllAsync(p: P): Promise<R[]> {
 		const listenersUI = ThunderDispatcher.listenersResolver();
 		const listenersModules = Dispatcher.modulesResolver();
 
