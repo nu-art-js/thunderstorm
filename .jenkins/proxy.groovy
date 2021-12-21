@@ -25,7 +25,7 @@ class Pipeline_Router
 	}
 
 	void setDisplayName() {
-		var branch = Env_Branch.get()
+		def branch = Env_Branch.get()
 		getModule(BuildModule.class).setDisplayName("#${VarConsts.Var_BuildNumber.get()}: ${getName()} ${branch}")
 	}
 
