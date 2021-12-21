@@ -19,7 +19,7 @@ class Pipeline_ThunderstormProxy
 
 		declareJob("dev", "thunderstorm--DEV")
 		declareJob("staging", "thunderstorm--STAGING")
-		declareJob("master", "thunderstorm--PROD")
+		declareJob("prod", "thunderstorm--PROD")
 
 		super.init()
 	}
