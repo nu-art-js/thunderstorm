@@ -47,3 +47,4 @@ class Pipeline_Build
 node() {
 	Workflow.createWorkflow(Pipeline_Build.class, this)
 }
+
