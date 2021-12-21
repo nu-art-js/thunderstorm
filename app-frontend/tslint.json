@@ -15,7 +15,7 @@
     "no-reference": true,
     // Do not allow type assertions that do nothing. This is a big warning that the developer may not understand the
     // code currently being edited (they may be incorrectly handling a different type case that does not exist).
-    "no-unnecessary-type-assertion": true,
+    "no-unnecessary-type-assertion": false,
     // Disallow nonsensical label usage.
     "label-position": true,
     // Disallows the (often typo) syntax if (var1 = var2). Replace with if (var2) { var1 = var2 }.
