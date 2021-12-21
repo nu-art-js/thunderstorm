@@ -19,7 +19,7 @@ class Pipeline_Router<T extends Pipeline_Router>
 	def envJobs = [:]
 
 	Pipeline_Router() {
-		this("proxy")
+		this("proxy", [] as Class<? extends WorkflowModule>[])
 	}
 
 	Pipeline_Router(Class<? extends WorkflowModule>... modules) {
