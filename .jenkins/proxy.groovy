@@ -1,14 +1,14 @@
 @Library('dev-tools@pipeline')
 
 import com.nu.art.pipeline.modules.SlackModule
-import com.nu.art.pipeline.workflow.Pipeline_BaseRouter
+import com.nu.art.pipeline.workflow.Pipeline_BaseProxy
 import com.nu.art.pipeline.workflow.Workflow
 import com.nu.art.pipeline.workflow.WorkflowModule
 
-class Pipeline_ThunderstormRouter
-	extends Pipeline_BaseRouter<Pipeline_ThunderstormRouter> {
+class Pipeline_ThunderstormProxy
+	extends Pipeline_BaseProxy<Pipeline_ThunderstormProxy> {
 
-	Pipeline_ThunderstormRouter() {
+	Pipeline_ThunderstormProxy() {
 		super("proxy", [SlackModule.class] as Class<? extends WorkflowModule>[])
 	}
 
@@ -26,6 +26,6 @@ class Pipeline_ThunderstormRouter
 
 
 node() {
-	Workflow.createWorkflow(Pipeline_ThunderstormRouter.class, this)
+	Workflow.createWorkflow(Pipeline_ThunderstormProxy.class, this)
 }
 
