@@ -2,26 +2,36 @@
 
 import com.nu.art.pipeline.modules.SlackModule
 import com.nu.art.pipeline.modules.build.BuildModule
+import com.nu.art.pipeline.modules.build.JobTrigger
 import com.nu.art.pipeline.modules.docker.DockerModule
 import com.nu.art.pipeline.modules.git.GitModule
 import com.nu.art.pipeline.workflow.BasePipeline
 import com.nu.art.pipeline.workflow.Workflow
+import com.nu.art.pipeline.workflow.WorkflowModule
 import com.nu.art.pipeline.workflow.variables.VarConsts
 import com.nu.art.pipeline.workflow.variables.Var_Env
 
-class Pipeline_Router
-	extends BasePipeline<Pipeline_Router> {
+class Pipeline_Router<T extends Pipeline_Router>
+	extends BasePipeline<T> {
 
+	private static Class<? extends WorkflowModule>[] defaultModules = [SlackModule.class, DockerModule.class, GitModule.class]
 	public Var_Env Env_Branch = new Var_Env("BRANCH_NAME")
+	def envJobs = [:]
 
 	Pipeline_Router() {
-		super("Proxy", SlackModule.class, DockerModule.class, GitModule.class)
+		this("proxy")
 	}
 
-	@Override
-	protected void init() {
-		getModule(SlackModule.class).setDefaultChannel("thunderstorm")
-		super.init()
+	Pipeline_Router(Class<? extends WorkflowModule>... modules) {
+		this("proxy", modules)
+	}
+
+	Pipeline_Router(String name, Class<? extends WorkflowModule>... modules) {
+		super(name, defaultModules + modules)
+	}
+
+	void declareJob(String branch, String jobName) {
+		envJobs.put(branch, jobName)
 	}
 
 	void setDisplayName() {
@@ -31,70 +41,37 @@ class Pipeline_Router
 
 	@Override
 	void pipeline() {
-		run("something", { logDebug("something") })
-//		checkout({
-//			getModule(SlackModule.class).setOnSuccess(getRepo().getChangeLog().toSlackMessage())
-//		})
+		addStage("running", {
+			def branch = Env_Branch.get()
+			def jobName = (String) envJobs[branch]
+			JobTrigger trigger = new JobTrigger(workflow, jobName)
+			def result = trigger.run()
+			getModule(BuildModule.class).setResult(result.result)
+		})
 	}
-//
-//	GitRepo getRepo() {
-//		return repo
-//	}
-//
-//	@Override
-//	void _postInit() {
-//		TriggerCause[] causes = getModule(BuildModule.class).getTriggerCause(TriggerCause.Type_SCM)
-//		this.logInfo("GOT HERE!! ${causes.size()}")
-//		TriggerCause cause = causes.find { it.originator == "Nu-Art-Jenkins" }
-//		causes.each {
-//			this.logInfo("Detected SCM cause: '${it.originator}'")
-//		}
-//
-//		if (cause) {
-//			workflow.terminate("Detected push from Jenkins")
-//		}
-//
-//		super.postInit()
-//	}
-//
-//	T checkout(Closure postCheckout) {
-//		if (repo)
-//			addStage("checkout", {
-//				getRepo().cloneRepo()
-//				getRepo().cloneSCM()
-//				if (postCheckout)
-//					postCheckout()
-//			})
-//		return (T) this
-//	}
-
-	Pipeline_Router run(String name, Closure toRun) {
-		addStage(name, { toRun() })
-		return this
-	}
-//
-//	String _sh(GString command, readOutput = false) {
-//		return _sh(command.toString(), readOutput)
-//	}
-//
-//	String _sh(String command, readOutput = false) {
-//		if (docker)
-//			return docker.sh(command, "${VarConsts.Var_Workspace.get()}/${repo.getOutputFolder()}")
-//
-//		return repo.sh(command, readOutput)
-//	}
-//
-//	@Override
-//	void cleanup() {
-//		if (docker)
-//			docker.kill()
-//
-//		super.cleanup()
-//	}
-
 }
 
+
+class Pipeline_ThunderstormRouter
+	extends Pipeline_Router<Pipeline_ThunderstormRouter> {
+
+	Pipeline_ThunderstormRouter() {
+		super()
+	}
+
+	@Override
+	protected void init() {
+		declareEnv("dev", "thunderstorm--DEV")
+		declareEnv("staging", "thunderstorm--STAGING")
+		declareEnv("master", "thunderstorm--PROD")
+
+		getModule(SlackModule.class).setDefaultChannel("thunderstorm")
+		super.init()
+	}
+}
+
+
 node() {
-	Workflow.createWorkflow(Pipeline_Router.class, this)
+	Workflow.createWorkflow(Pipeline_ThunderstormRouter.class, this)
 }
 
