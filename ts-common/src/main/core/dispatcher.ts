@@ -38,15 +38,13 @@ export class Dispatcher<T,
 
 	public dispatchModule(p: P): R[] {
 		const listeners = Dispatcher.modulesResolver();
-		const params: any = p;
-		return listeners.filter(this.filter).map((listener: T) => listener[this.method](...params));
+		return listeners.filter(this.filter).map((listener: T) => listener[this.method](...p));
 	}
 
 	public async dispatchModuleAsync(p: P): Promise<R[]> {
 		const listeners = Dispatcher.modulesResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
-			const params: any = p;
-			return listener[this.method](...params);
+			return listener[this.method](...p);
 		}));
 	}
 }
