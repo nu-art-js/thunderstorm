@@ -25,7 +25,8 @@ class Pipeline_Router
 	}
 
 	protected void setDisplayName() {
-		getModule(BuildModule.class).setDisplayName("#${VarConsts.Var_BuildNumber.get()}: ${name}")
+		var branch = Env_Branch.get()
+		getModule(BuildModule.class).setDisplayName("#${VarConsts.Var_BuildNumber.get()}: ${name} ${branch}")
 	}
 
 	@Override
