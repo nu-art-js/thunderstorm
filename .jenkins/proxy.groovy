@@ -51,10 +51,14 @@ abstract class Pipeline_Router<T extends Pipeline_Router>
 
 
 class Pipeline_ThunderstormRouter
-	extends Pipeline_Router<Pipeline_ThunderstormRouter> {
+	extends BasePipeline<Pipeline_ThunderstormRouter> {
+
+	private static Class<? extends WorkflowModule>[] defaultModules = [SlackModule.class]
+	public Var_Env Env_Branch = new Var_Env("BRANCH_NAME")
+	def envJobs = [:]
 
 	Pipeline_ThunderstormRouter() {
-		super()
+		super("proxy")
 	}
 
 	@Override
@@ -66,6 +70,27 @@ class Pipeline_ThunderstormRouter
 		getModule(SlackModule.class).setDefaultChannel("thunderstorm")
 		super.init()
 	}
+
+	void declareJob(String branch, String jobName) {
+		envJobs.put(branch, jobName)
+	}
+
+	void setDisplayName() {
+		def branch = Env_Branch.get()
+		getModule(BuildModule.class).setDisplayName("#${VarConsts.Var_BuildNumber.get()}: ${getName()}-${branch}")
+	}
+
+	@Override
+	void pipeline() {
+		addStage("running", {
+			def branch = Env_Branch.get()
+			def jobName = (String) envJobs[branch]
+			JobTrigger trigger = new JobTrigger(workflow, jobName)
+			def result = trigger.run()
+			getModule(BuildModule.class).setResult(result.result)
+		})
+	}
+
 }
 
 
