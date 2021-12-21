@@ -16,15 +16,15 @@ abstract class Pipeline_Router<T extends Pipeline_Router>
 	def envJobs = [:]
 
 	Pipeline_Router() {
-		super("proxy", ([SlackModule.class] as Class<? extends WorkflowModule>[]))
+		super("proxy", ([SlackModule.class] as Class<? extends WorkflowModule>[]) as Class<? extends WorkflowModule>[])
 	}
 
 	Pipeline_Router(Class<? extends WorkflowModule>... modules) {
-		super("proxy", (([SlackModule.class] as Class<? extends WorkflowModule>[]) + modules))
+		super("proxy", (([SlackModule.class] as Class<? extends WorkflowModule>[]) + modules) as Class<? extends WorkflowModule>[])
 	}
 
 	Pipeline_Router(String name, Class<? extends WorkflowModule>... modules) {
-		super(name, (([SlackModule.class] as Class<? extends WorkflowModule>[]) + modules))
+		super(name, (([SlackModule.class] as Class<? extends WorkflowModule>[]) + modules) as Class<? extends WorkflowModule>[])
 	}
 
 	void declareJob(String branch, String jobName) {
