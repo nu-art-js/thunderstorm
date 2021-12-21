@@ -32,7 +32,7 @@ class FCMServiceWorker {
 			if (typeof t === "object")
 				console.log(t);
 			else
-				console.log('%c ' + text, `color: ${color};`);
+				console.log('%c ' + t, `color: ${color};`);
 		}
 	}
 
