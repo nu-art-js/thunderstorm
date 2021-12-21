@@ -16,13 +16,16 @@ class Pipeline_Router
 
 	Pipeline_Router() {
 		super("Thunderstorm-Proxy", SlackModule.class, DockerModule.class, GitModule.class)
-		setDisplayName()
 	}
 
 	@Override
 	protected void init() {
 		getModule(SlackModule.class).setDefaultChannel("thunderstorm")
 		super.init()
+	}
+
+	protected void setDisplayName() {
+		getModule(BuildModule.class).setDisplayName("#${VarConsts.Var_BuildNumber.get()}: ${name}")
 	}
 
 	@Override
