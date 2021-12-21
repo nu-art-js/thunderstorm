@@ -58,7 +58,7 @@ class Pipeline_ThunderstormRouter
 	def envJobs = [:]
 
 	Pipeline_ThunderstormRouter() {
-		super("proxy")
+		super("proxy", defaultModules)
 	}
 
 	@Override
