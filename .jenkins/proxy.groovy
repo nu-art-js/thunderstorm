@@ -3,7 +3,6 @@
 import com.nu.art.pipeline.modules.SlackModule
 import com.nu.art.pipeline.modules.build.BuildModule
 import com.nu.art.pipeline.modules.build.JobTrigger
-import com.nu.art.pipeline.modules.docker.DockerModule
 import com.nu.art.pipeline.modules.git.GitModule
 import com.nu.art.pipeline.workflow.BasePipeline
 import com.nu.art.pipeline.workflow.Workflow
@@ -14,7 +13,7 @@ import com.nu.art.pipeline.workflow.variables.Var_Env
 class Pipeline_Router<T extends Pipeline_Router>
 	extends BasePipeline<T> {
 
-	private static Class<? extends WorkflowModule>[] defaultModules = [SlackModule.class, DockerModule.class, GitModule.class]
+	private static Class<? extends WorkflowModule>[] defaultModules = [SlackModule.class]
 	public Var_Env Env_Branch = new Var_Env("BRANCH_NAME")
 	def envJobs = [:]
 
