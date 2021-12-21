@@ -8,6 +8,7 @@ import com.nu.art.pipeline.workflow.WorkflowModule
 class Pipeline_ThunderstormProxy
 	extends Pipeline_BaseProxy<Pipeline_ThunderstormProxy> {
 
+
 	Pipeline_ThunderstormProxy() {
 		super("proxy", [SlackModule.class] as Class<? extends WorkflowModule>[])
 	}
