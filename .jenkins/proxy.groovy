@@ -1,10 +1,12 @@
 @Library('dev-tools@pipeline')
 
 import com.nu.art.pipeline.modules.SlackModule
+import com.nu.art.pipeline.modules.build.BuildModule
 import com.nu.art.pipeline.modules.docker.DockerModule
 import com.nu.art.pipeline.modules.git.GitModule
 import com.nu.art.pipeline.workflow.BasePipeline
 import com.nu.art.pipeline.workflow.Workflow
+import com.nu.art.pipeline.workflow.variables.VarConsts
 import com.nu.art.pipeline.workflow.variables.Var_Env
 
 class Pipeline_Router
@@ -14,12 +16,17 @@ class Pipeline_Router
 
 	Pipeline_Router() {
 		super("Thunderstorm-Proxy", SlackModule.class, DockerModule.class, GitModule.class)
+		setDisplayName()
 	}
 
 	@Override
 	protected void init() {
 		getModule(SlackModule.class).setDefaultChannel("thunderstorm")
 		super.init()
+	}
+
+	void setDisplayName() {
+		getModule(BuildModule.class).setDisplayName("#${VarConsts.Var_BuildNumber.get()}: ${name} ${Env_Branch.get()}")
 	}
 
 	@Override
