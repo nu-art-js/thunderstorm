@@ -15,7 +15,7 @@ class Pipeline_Router
 	public Var_Env Env_Branch = new Var_Env("BRANCH_NAME")
 
 	Pipeline_Router() {
-		super("Thunderstorm-Proxy", SlackModule.class, DockerModule.class, GitModule.class)
+		super("Proxy", SlackModule.class, DockerModule.class, GitModule.class)
 	}
 
 	@Override
@@ -26,7 +26,7 @@ class Pipeline_Router
 
 	void setDisplayName() {
 		def branch = Env_Branch.get()
-		getModule(BuildModule.class).setDisplayName("#${VarConsts.Var_BuildNumber.get()}: ${getName()} ${branch}")
+		getModule(BuildModule.class).setDisplayName("#${VarConsts.Var_BuildNumber.get()}: ${getName()}-${branch}")
 	}
 
 	@Override
