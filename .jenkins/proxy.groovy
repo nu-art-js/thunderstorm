@@ -10,7 +10,7 @@ import com.nu.art.pipeline.workflow.WorkflowModule
 import com.nu.art.pipeline.workflow.variables.VarConsts
 import com.nu.art.pipeline.workflow.variables.Var_Env
 
-class Pipeline_Router<T extends Pipeline_Router>
+abstract class Pipeline_Router<T extends Pipeline_Router>
 	extends BasePipeline<T> {
 
 	private static Class<? extends WorkflowModule>[] defaultModules = [SlackModule.class]
