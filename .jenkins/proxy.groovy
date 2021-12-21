@@ -21,7 +21,7 @@ abstract class Pipeline_Router<T extends Pipeline_Router>
 	}
 
 	Pipeline_Router(Class<? extends WorkflowModule>... modules) {
-		this("proxy", modules)
+		super("proxy", defaultModules + modules)
 	}
 
 	Pipeline_Router(String name, Class<? extends WorkflowModule>... modules = []) {
