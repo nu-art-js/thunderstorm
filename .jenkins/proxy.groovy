@@ -3,7 +3,6 @@
 import com.nu.art.pipeline.modules.SlackModule
 import com.nu.art.pipeline.modules.build.BuildModule
 import com.nu.art.pipeline.modules.build.JobTrigger
-import com.nu.art.pipeline.modules.git.GitModule
 import com.nu.art.pipeline.workflow.BasePipeline
 import com.nu.art.pipeline.workflow.Workflow
 import com.nu.art.pipeline.workflow.WorkflowModule
@@ -18,7 +17,7 @@ abstract class Pipeline_Router<T extends Pipeline_Router>
 	def envJobs = [:]
 
 	Pipeline_Router() {
-		this("proxy", [] as Class<? extends WorkflowModule>[])
+		super("proxy", defaultModules)
 	}
 
 	Pipeline_Router(Class<? extends WorkflowModule>... modules) {
@@ -55,7 +54,7 @@ class Pipeline_ThunderstormRouter
 	extends Pipeline_Router<Pipeline_ThunderstormRouter> {
 
 	Pipeline_ThunderstormRouter() {
-		super("pah")
+		super()
 	}
 
 	@Override
