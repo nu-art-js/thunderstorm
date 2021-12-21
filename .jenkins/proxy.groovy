@@ -26,7 +26,7 @@ class Pipeline_Router<T extends Pipeline_Router>
 		this("proxy", modules)
 	}
 
-	Pipeline_Router(String name, Class<? extends WorkflowModule>... modules) {
+	Pipeline_Router(String name, Class<? extends WorkflowModule>... modules = []) {
 		super(name, defaultModules + modules)
 	}
 
