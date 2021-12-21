@@ -60,9 +60,9 @@ class Pipeline_ThunderstormRouter
 
 	@Override
 	protected void init() {
-		declareEnv("dev", "thunderstorm--DEV")
-		declareEnv("staging", "thunderstorm--STAGING")
-		declareEnv("master", "thunderstorm--PROD")
+		declareJob("dev", "thunderstorm--DEV")
+		declareJob("staging", "thunderstorm--STAGING")
+		declareJob("master", "thunderstorm--PROD")
 
 		getModule(SlackModule.class).setDefaultChannel("thunderstorm")
 		super.init()
