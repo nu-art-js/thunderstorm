@@ -53,12 +53,11 @@ abstract class Pipeline_Router<T extends Pipeline_Router>
 class Pipeline_ThunderstormRouter
 	extends BasePipeline<Pipeline_ThunderstormRouter> {
 
-	private static Class<? extends WorkflowModule>[] defaultModules = [SlackModule.class]
 	public Var_Env Env_Branch = new Var_Env("BRANCH_NAME")
 	def envJobs = [:]
 
 	Pipeline_ThunderstormRouter() {
-		super("proxy", defaultModules)
+		super("proxy", [SlackModule.class] as Class<? extends WorkflowModule>[])
 	}
 
 	@Override
