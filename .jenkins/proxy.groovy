@@ -84,9 +84,7 @@ class Pipeline_ThunderstormRouter
 		addStage("running", {
 			def branch = Env_Branch.get()
 			def jobName = (String) envJobs[branch]
-			JobTrigger trigger = new JobTrigger(workflow, jobName)
-			def result = trigger.run()
-			getModule(BuildModule.class).setResult(result.result)
+			new JobTrigger(workflow, jobName).setWait(false).run()
 		})
 	}
 
