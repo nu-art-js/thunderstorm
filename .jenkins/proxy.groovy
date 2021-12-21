@@ -56,7 +56,7 @@ class Pipeline_ThunderstormRouter
 	extends Pipeline_Router<Pipeline_ThunderstormRouter> {
 
 	Pipeline_ThunderstormRouter() {
-		super()
+		super("pah")
 	}
 
 	@Override
