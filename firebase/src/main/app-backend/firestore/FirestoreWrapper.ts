@@ -25,7 +25,7 @@ import {FilterKeys} from "../../shared/types";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
 import {DB_Object} from "@nu-art/ts-common";
-
+import {getFirestore} from "firebase-admin/firestore";
 
 export class FirestoreWrapper
 	extends FirebaseBaseWrapper {
@@ -35,7 +35,7 @@ export class FirestoreWrapper
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.firestore = firebaseSession.app.firestore();
+		this.firestore = getFirestore(firebaseSession.app)
 	}
 
 	public getCollection<Type extends object>(name: string, externalFilterKeys?: FilterKeys<Type>): FirestoreCollection<Type> {

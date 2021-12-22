@@ -163,6 +163,9 @@ export class PushPubSubModule_Class
 				return;
 
 			this.messaging.onMessage((payload) => {
+				if(!payload.data)
+					return this.logInfo('No data passed to the message handler, I got this',payload);
+
 				this.processMessage(payload.data);
 			});
 

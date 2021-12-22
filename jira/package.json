@@ -21,7 +21,7 @@
     "@nu-art/ts-common": "~0.0.1",
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/firebase": "~0.0.1",
-    "firebase-admin": "^9.5.0",
+    "firebase-admin": "^10.0.1",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",
     "debug": "^3.1.0",
@@ -41,9 +41,6 @@
     "node-fetch": "^2.6.0",
     "ts-node": "^8.6.2",
     "typescript": "~4.1.0"
-  },
-  "engines": {
-    "node": "10"
   },
   "_moduleAliases": {
     "@consts": "dist/consts",

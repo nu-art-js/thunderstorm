@@ -42,7 +42,6 @@ import {
 	Backend_ModulePack_BugReport,
 	BugReportModule
 } from "@nu-art/bug-report/backend";
-import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
 import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
 import {ValueChangedListener} from "@modules/ValueChangedListener";
 import {
@@ -74,7 +73,6 @@ const modules: Module[] = [
 	CollectionChangedListener,
 	ExampleModule,
 	ForceUpgrade,
-	ProjectFirestoreBackup,
 	SlackModule,
 	Slack_ServerApiError,
 	DispatchModule,

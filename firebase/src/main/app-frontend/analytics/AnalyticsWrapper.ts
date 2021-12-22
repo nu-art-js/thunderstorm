@@ -24,7 +24,14 @@ import {
 	FirebaseType_EventNameString
 } from "./types";
 // tslint:disable:no-import-side-effect
-import 'firebase/analytics';
+import {
+	CustomParams,
+	logEvent,
+	setAnalyticsCollectionEnabled,
+	setCurrentScreen,
+	setUserId,
+	setUserProperties
+} from "firebase/analytics";
 
 export class AnalyticsWrapper
 	extends Logger {
@@ -36,20 +43,20 @@ export class AnalyticsWrapper
 		this.analytics = analytics;
 	}
 
-	setUserId(userId: string) {
-		this.analytics.setUserId(userId);
+	setUserId(userId: string, options?: FirebaseType_CallOptions) {
+		setUserId(this.analytics, userId, options);
 	}
 
-	setCurrentScreen(screenName: string) {
-		this.analytics.setCurrentScreen(screenName);
+	setCurrentScreen(screenName: string, options?: FirebaseType_CallOptions) {
+		setCurrentScreen(this.analytics, screenName, options);
 	}
 
-	setAnalyticsCollectionEnabled(bool: boolean) {
-		this.analytics.setAnalyticsCollectionEnabled(bool);
+	setAnalyticsCollectionEnabled(enabled: boolean) {
+		setAnalyticsCollectionEnabled(this.analytics, enabled);
 	}
 
-	setUserProperties(customPros: object) {
-		this.analytics.setUserProperties(customPros);
+	setUserProperties(properties: CustomParams, options?: FirebaseType_CallOptions) {
+		setUserProperties(this.analytics, properties);
 	}
 
 	logEvent<T extends string>(
@@ -57,7 +64,7 @@ export class AnalyticsWrapper
 		eventParams?: { [key: string]: any },
 		options?: FirebaseType_CallOptions
 	) {
-		return this.analytics.logEvent(eventName, eventParams, options);
+		return logEvent(this.analytics, eventName, eventParams, options);
 	}
 
 }

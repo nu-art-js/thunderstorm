@@ -80,9 +80,11 @@ module.exports = (env, argv) => {
 					include: [swFolder],
 					exclude: [/node_modules/],
 					use: {
-						loader: "ts-loader",
+						loader: "awesome-typescript-loader",
 						options: {
-							configFile: swConfig
+							configFileName: swConfig,
+							transpileOnly: true,
+							useCache: true
 						}
 					}
 				},
@@ -91,9 +93,10 @@ module.exports = (env, argv) => {
 					include: [mainFolder],
 					exclude: [/node_modules/],
 					use: {
-						loader: "awesome-typescript-loader",
+						loader: "ts-loader",
 						options: {
-							configFileName: mainConfig
+							configFile: mainConfig,
+							transpileOnly: true
 						}
 					}
 				},
@@ -165,6 +168,7 @@ module.exports = (env, argv) => {
 				template: "./main/index.ejs",
 				filename: "./index.html",
 				minify: envConfig.htmlMinificationOptions(),
+				excludeChunks: ['ts_service_worker']
 			}),
 			// new WebpackMd5Hash(),
 			envConfig.getPrettifierPlugin(),

@@ -21,12 +21,9 @@
 
 import * as React from "react";
 import {Module} from "@nu-art/ts-common";
-import {
-	Color,
-	Properties
-} from "csstype";
 import {ThunderDispatcher} from "../../core/thunder-dispatcher";
 import { Stylable, StylableBuilder } from "../../tools/Stylable";
+import {Color, Properties} from "../../components/types";
 
 export type Dialog_Model = Stylable & {
 	zIndex: number,

@@ -27,10 +27,7 @@ import {
 } from "firebase-admin";
 import {JWTInput} from "google-auth-library";
 import {FirebaseSession} from "./firebase-session";
-import {
-	StringMap,
-	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
+import {ThisShouldNotHappenException} from "@nu-art/ts-common";
 
 export class FirebaseSession_Admin
 	extends FirebaseSession<JWTInput & {databaseURL?: string} | undefined> {
@@ -70,13 +67,6 @@ export class FirebaseSession_Admin
 
 	public getAuth(): auth.Auth {
 		return this.app.auth();
-	}
-
-	public async sendMessage<T extends StringMap>(token: string, message: T) {
-		if (!this.app)
-			this.connect();
-
-		return await this.app.messaging().send(Object.assign({data: message}, {token: token}));
 	}
 }
 

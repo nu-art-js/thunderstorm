@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import * as admin from "firebase-admin";
 import {Metadata} from "@google-cloud/common";
 import {CopyResponse} from "@google-cloud/storage";
+import {Storage} from "firebase-admin/storage";
+export type FirebaseType_Storage =  Storage;
 
-export type FirebaseType_Storage = admin.storage.Storage;
 export type FirebaseType_Metadata = Metadata;
-export type ReturnType_Metadata = { metadata?: Metadata };
+export type ReturnType_Metadata = { metadata?: FirebaseType_Metadata };
 export type Firebase_CopyResponse = [CopyResponse[0], CopyResponse[1] | undefined]

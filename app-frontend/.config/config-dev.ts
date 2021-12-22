@@ -20,7 +20,7 @@
 export const config = {
 	XhrHttpModule: {
 		// origin: "http://192.168.1.5:3000",
-		origin: "http://localhost:5000/thunderstorm-staging/us-central1/api",
+		origin: "http://localhost:5002/thunderstorm-staging/us-central1/api",
 		timeout: 30000,
 		compress: false
 	},
