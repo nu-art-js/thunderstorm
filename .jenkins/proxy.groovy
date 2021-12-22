@@ -15,7 +15,7 @@ class Pipeline_ThunderstormProxy
 	@Override
 	protected void init() {
 		getModule(SlackModule.class).setDefaultChannel("thunderstorm")
-
+		logDebug("YOYOYO")
 		declareJob("dev", "thunderstorm--DEV")
 		declareJob("staging", "thunderstorm--STAGING")
 		declareJob("master", "thunderstorm--PROD")
