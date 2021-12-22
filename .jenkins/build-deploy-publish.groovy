@@ -15,6 +15,7 @@ class Pipeline_Build
 
 	@Override
 	protected void init() {
+		logDebug("KAKAKA")
 		declareEnv("dev", "thunderstorm-dev")
 		declareEnv("staging", "thunderstorm-staging")
 		declareEnv("prod", "nu-art-thunderstorm")
