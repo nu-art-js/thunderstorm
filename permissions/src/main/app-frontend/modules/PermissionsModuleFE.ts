@@ -1,6 +1,8 @@
 import {
+	_setTimeout,
 	ImplementationMissingException,
 	Module,
+	Second,
 	StringMap
 } from "@nu-art/ts-common";
 import {ThunderDispatcher} from "@nu-art/thunderstorm/app-frontend/core/thunder-dispatcher";
@@ -20,7 +22,7 @@ export interface OnPermissionsChanged {
 }
 
 export interface OnPermissionsFailed {
-	__onPermissionsFailed: () => void
+	__onPermissionsFailed: () => void;
 }
 
 const dispatch_onPermissionsChanged = new ThunderDispatcher<OnPermissionsChanged, "__onPermissionsChanged">("__onPermissionsChanged");
@@ -67,7 +69,7 @@ export class PermissionsModuleFE_Class
 		return undefined;
 	}
 
-	setPermissions() {
+	private setPermissions = () => {
 		if (!this.config || !this.config.projectId)
 			throw new ImplementationMissingException("need to set up a project id config");
 
@@ -77,7 +79,7 @@ export class PermissionsModuleFE_Class
 				urls[url] = false;
 			});
 			XhrHttpModule
-				.createRequest<PermissionsApi_UserUrlsPermissions>(HttpMethod.POST, 'user-urls-permissions')
+				.createRequest<PermissionsApi_UserUrlsPermissions>(HttpMethod.POST, "user-urls-permissions")
 				.setRelativeUrl(`/v1/permissions/user-urls-permissions`)
 				// .setOnError(`Failed to get user urls permissions`)
 				.setLabel(`Getting user urls permissions`)
@@ -90,7 +92,7 @@ export class PermissionsModuleFE_Class
 					this.logWarning(`Failed to get user urls permissions`);
 					if (this.retryCounter < 5) {
 						this.retryCounter++;
-						return this.setPermissions();
+						return _setTimeout(this.setPermissions, 5 * Second);
 					}
 					dispatch_onPermissionsFailed.dispatchModule([]);
 				})
@@ -102,8 +104,8 @@ export class PermissionsModuleFE_Class
 					});
 					dispatch_onPermissionsChanged.dispatchUI([]);
 				});
-		}, 'get-permissions', this.debounceTime);
-	}
+		}, "get-permissions", this.debounceTime);
+	};
 
 }
 

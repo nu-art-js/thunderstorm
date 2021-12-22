@@ -17,18 +17,14 @@
  */
 
 import {Logger} from "@nu-art/ts-common";
-import {
-	FirebaseType_Messaging,
-	FirebaseType_Unsubscribe
-} from "./types";
-// tslint:disable:no-import-side-effect
-import 'firebase/messaging';
+import {FirebaseType_Messaging, FirebaseType_Unsubscribe} from "./types";
+import {getToken, GetTokenOptions, MessagePayload, NextFn, Observer, onMessage} from "firebase/messaging";
 
 export class MessagingWrapper
 	extends Logger {
 
 	private readonly messaging: FirebaseType_Messaging;
-	private callback?: (payload: any) => void;
+	private callback?: NextFn<MessagePayload> | Observer<MessagePayload>;
 	private token?: string;
 
 	constructor(messaging: FirebaseType_Messaging) {
@@ -36,39 +32,19 @@ export class MessagingWrapper
 		this.messaging = messaging;
 	}
 
-	/** @deprecated */
-	usePublicVapidKey(vapidKey: string) {
-		this.messaging.usePublicVapidKey(vapidKey);
-	}
-
-	async getToken(options?: {
-		vapidKey?: string;
-		serviceWorkerRegistration?: ServiceWorkerRegistration;
-	}) {
-		this.token = await this.messaging.getToken(options);
+	async getToken(options?: GetTokenOptions): Promise<string> {
+		this.token = await getToken(this.messaging,options);
 		if (this.callback)
-			this.messaging.onMessage(this.callback);
+			onMessage(this.messaging, this.callback);
 
 		return this.token;
 	}
 
-	/** @deprecated */
-	useServiceWorker(registration: ServiceWorkerRegistration) {
-		this.messaging.useServiceWorker(registration);
-	}
-
-	/** @deprecated */
-	onTokenRefresh(callback: () => void): FirebaseType_Unsubscribe {
-		return this.messaging.onTokenRefresh(callback);
-	}
-
-	onMessage(callback: (payload: any) => void): FirebaseType_Unsubscribe | void {
+	onMessage(callback: NextFn<MessagePayload> | Observer<MessagePayload>): FirebaseType_Unsubscribe | void {
 		this.callback = callback;
 		if (!this.token)
 			return;
 
-		return this.messaging.onMessage((callbackPayload) => {
-			return callback(callbackPayload);
-		});
+		return onMessage(this.messaging, callback);
 	}
 }

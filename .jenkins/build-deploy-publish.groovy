@@ -1,4 +1,4 @@
-@Library('dev-tools')
+@Library('dev-tools@pipeline')
 
 import com.nu.art.pipeline.modules.SlackModule
 import com.nu.art.pipeline.modules.build.BuildModule
@@ -21,8 +21,6 @@ class Pipeline_Build
 		setGitRepoId("nu-art-js/thunderstorm", true)
 
 		super.init()
-
-//		getRepo().assertCommitDiffs()
 	}
 
 	@Override
@@ -39,6 +37,10 @@ class Pipeline_Build
 		}
 
 		super.postInit()
+	}
+
+	@Override
+	protected void _test() {
 	}
 }
 

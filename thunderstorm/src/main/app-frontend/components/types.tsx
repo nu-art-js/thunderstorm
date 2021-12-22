@@ -19,8 +19,7 @@
  * limitations under the License.
  */
 
-// Unfortunately the tsconfig webworker lib is shared for service-workers,
-// web-workers and shared-workers so I need to cast this
+import * as React from "react";
 
-// @ts-ignore
-export const swSelf = self as ServiceWorkerGlobalScope;
+export type Properties = React.CSSProperties
+export type Color = Properties['color'];

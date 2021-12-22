@@ -42,9 +42,6 @@
     "ts-node": "^8.6.2",
     "typescript": "~4.1.0"
   },
-  "engines": {
-    "node": "10"
-  },
   "_moduleAliases": {
     "@main": "dist/main/ts",
     "@test": "dist/test/ts"

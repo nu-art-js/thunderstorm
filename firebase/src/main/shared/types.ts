@@ -88,16 +88,4 @@ export type FirestoreQueryImpl<T extends object> = {
 	limit?: number
 }
 
-export type EventType = 'value' | 'child_added' | 'child_changed' | 'child_moved' | 'child_removed';
-
-export enum Firebase_EventType {
-	Value        = "value",
-	ChildAdded   = "child_added",
-	ChildChanged = "child_changed",
-	ChildMoved   = "child_moved",
-	ChildRemoved = "child_removed"
-
-}
-
-
 export type FirebaseProjectCollections = { projectId: string, collections: string[] };

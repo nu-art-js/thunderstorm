@@ -40,9 +40,9 @@ import {
 } from "../../shared/types";
 import {UploaderTempFileModule} from "./UploaderTempFileModule";
 import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
-import { OnFileUploaded } from "./BucketListener";
+import {OnFileUploaded} from "./BucketListener";
 
-export const Temp_Path = 'files-temp';
+export const Temp_Path = "files-temp";
 
 type Config = {
 	bucketName?: string
@@ -53,7 +53,7 @@ export type PostProcessor = (transaction: FirestoreTransaction, file: FileWrappe
 
 export class UploaderModule_Class
 	extends Module<Config>
-  implements OnFileUploaded {
+	implements OnFileUploaded {
 
 	private storage!: StorageWrapper;
 
@@ -67,23 +67,30 @@ export class UploaderModule_Class
 		this.postProcessor = validator;
 	};
 
+	public getProcessor = (k: string) => {
+		const postProcessorElement = this.postProcessor[k];
+		if (!postProcessorElement)
+			throw new ImplementationMissingException(`Missing validator for type ${k}`);
+
+		return postProcessorElement;
+	};
+
 	init() {
 		if (!this.postProcessor)
-			throw new ImplementationMissingException('You must set a postProcessor for the UploaderModule');
+			throw new ImplementationMissingException("You must set a postProcessor for the UploaderModule");
 
 		this.storage = FirebaseModule.createAdminSession(this.config.uploaderProjectId).getStorage();
 	}
 
-	async getUrl(body: BaseUploaderFile[]): Promise<TempSecureUrl[]> {
+	async getUrl(body: BaseUploaderFile[], pathPrefix: string = Temp_Path): Promise<TempSecureUrl[]> {
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);
 		return Promise.all(body.map(async _file => {
 			const key = _file.key || _file.mimeType;
-			if (!this.postProcessor[key])
-				throw new ImplementationMissingException(`Missing validator for type ${key}`);
+			this.getProcessor(key);
 
 			const _id = generateHex(32);
-			const path = `${Temp_Path}/${_id}`;
+			const path = `${pathPrefix}/${_id}`;
 			const instance: DB_Temp_File = {
 				_id,
 				feId: _file.feId,
@@ -91,12 +98,15 @@ export class UploaderModule_Class
 				mimeType: _file.mimeType,
 				key,
 				path,
-				_audit: auditBy('be-stub'),
+				_audit: auditBy("be-stub"),
 				bucketName: bucket.bucketName
 			};
 
 			if (_file.public)
 				instance.public = _file.public;
+
+			if (_file.metadata)
+				instance.metadata = _file.metadata;
 
 			const temp = await UploaderTempFileModule.upsert(instance);
 			const file = await bucket.getFile(temp.path);
@@ -110,7 +120,7 @@ export class UploaderModule_Class
 
 	fileUploaded = async (filePath?: string) => {
 		if (!filePath)
-			throw new ThisShouldNotHappenException('Missing file path');
+			throw new ThisShouldNotHappenException("Missing file path");
 
 		this.logInfo(`Looking for file with path ${filePath}`);
 

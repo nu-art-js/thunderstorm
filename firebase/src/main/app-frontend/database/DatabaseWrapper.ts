@@ -22,7 +22,13 @@ import {
 } from "@nu-art/ts-common";
 import {FirebaseType_DB} from "./types";
 // tslint:disable:no-import-side-effect
-import 'firebase/database';
+import {
+	onValue,
+	ref,
+	remove,
+	set,
+	update
+} from "firebase/database";
 
 export class DatabaseWrapper
 	extends Logger {
@@ -35,40 +41,49 @@ export class DatabaseWrapper
 	}
 
 
-	public async get<T>(path: string): Promise<T> {
-		const snapshot = await this.database.ref(path).once("value");
-		return snapshot.val() as T;
+	public async get<T>(path: string): Promise<T | null> {
+		return new Promise<T | null>(async (resolve, reject) => {
+			onValue(this.getRef(path), snapshot => {
+				resolve(snapshot.val() as T);
+			}, (error: Error) => {
+				reject(error);
+			}, {onlyOnce: true});
+		});
 	}
 
 	public listen<T>(path: string, callback: (value: T) => void) {
-		try {
-			this.database.ref(path).on("value", (snapshot) => callback(!snapshot || snapshot.val()));
-		} catch (e) {
-			throw new BadImplementationException(`Error while getting value from path: ${path}`);
-		}
+		return onValue(this.getRef(path), snapshot => {
+			callback(!snapshot || snapshot.val());
+		}, (error: Error) => {
+			throw new BadImplementationException(`Error while getting value from path: ${path}`, error);
+		}, {onlyOnce: false});
 	}
+
+	private getRef = (path: string) => ref(this.database, path);
 
 	public async set<T>(path: string, value: T) {
 		try {
-			return this.database.ref(path).set(value);
+			await set(this.getRef(path), value);
 		} catch (e) {
 			throw new BadImplementationException(`Error while setting value to path: ${path}`);
 		}
 	}
 
-	public async update<T>(path: string, value: T) {
+	/** @deprecated */
+	public async update<T extends object>(path: string, value: T) {
 		this.logWarning("update will be deprecated!! please use patch");
 		return this.patch(path, value);
 	}
 
-	public async patch<T>(path: string, value: T) {
+	public async patch<T extends object>(path: string, value: T) {
 		try {
-			return this.database.ref(path).update(value);
+			await update(this.getRef(path), value);
 		} catch (e) {
 			throw new BadImplementationException(`Error while updating value to path: ${path}`);
 		}
 	}
 
+	/** @deprecated */
 	public async remove<T>(path: string, assertionRegexp: string = "^/.*?/.*") {
 		this.logWarning("remove will be deprecated!! please use delete");
 		return this.delete(path, assertionRegexp);
@@ -82,7 +97,7 @@ export class DatabaseWrapper
 			throw new BadImplementationException(`path: '${path}'  does not match assertion: '${assertionRegexp}'`);
 
 		try {
-			return this.database.ref(path).remove();
+			await remove(this.getRef(path));
 		} catch (e) {
 			throw new BadImplementationException(`Error while removing path: ${path}`);
 		}

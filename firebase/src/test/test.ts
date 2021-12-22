@@ -19,7 +19,6 @@
 import {FirebaseTester} from "./_core/Firebase-Tester";
 import {testCollections} from "./firestore/collection/test-collections";
 import {TestModuleThatUsesCollection,} from "./firestore/backup/test-project-backup";
-import {ProjectFirestoreBackup} from "../main/app-backend/firestore/ProjectFirestoreBackup";
 import {FirebaseModule} from "../main/app-backend/FirebaseModule";
 import {testStorage} from "./firestore/storage/test-storage";
 import {__scenario} from "@nu-art/testelot";
@@ -34,7 +33,6 @@ mainScenario.add(scenarioUpsert);
 // mainScenario.add(testFirestoreBackup);
 module.exports = new FirebaseTester()
 	.addModules(FirebaseModule,
-	            TestModuleThatUsesCollection,
-	            ProjectFirestoreBackup)
+	            TestModuleThatUsesCollection)
 	.setScenario(mainScenario)
 	.build();

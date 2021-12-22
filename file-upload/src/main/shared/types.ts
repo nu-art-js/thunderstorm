@@ -17,13 +17,16 @@
  * limitations under the License.
  */
 
-import {ApiWithBody} from "@nu-art/thunderstorm"
+import {ApiWithBody} from "@nu-art/thunderstorm";
 import {DB_Object} from "@nu-art/firebase";
-import {AuditBy} from "@nu-art/ts-common";
+import {
+	AuditBy,
+	ObjectTS
+} from "@nu-art/ts-common";
 import {MessageType} from "@nu-art/push-pub-sub";
 
-export const fileUploadedKey = 'file-uploaded';
-export type Push_FileUploaded = MessageType<'file-uploaded', { feId: string }, { message: string, result: string, cause?: Error }>;
+export const fileUploadedKey = "file-uploaded";
+export type Push_FileUploaded = MessageType<"file-uploaded", { feId: string }, { message: string, result: string, cause?: Error }>;
 
 export enum UploadResult {
 	Success = "Success",
@@ -35,13 +38,14 @@ export type Request_Uploader = {
 	mimeType: string
 	key?: string
 	public?: boolean
+	metadata?: ObjectTS
 }
 
 export type BaseUploaderFile = Request_Uploader & {
 	feId: string
 };
 
-export type DB_Temp_File = DB_Object & BaseUploaderFile & Required<Pick<BaseUploaderFile, 'key'>> & {
+export type DB_Temp_File = DB_Object & BaseUploaderFile & Required<Pick<BaseUploaderFile, "key">> & {
 	path: string
 	_audit: AuditBy
 	bucketName: string
@@ -53,4 +57,4 @@ export type TempSecureUrl = {
 	tempDoc: DB_Temp_File
 }
 
-export type Api_GetUploadUrl = ApiWithBody<'/v1/upload/get-url', BaseUploaderFile[], TempSecureUrl[]>
+export type Api_GetUploadUrl = ApiWithBody<"/v1/upload/get-url", BaseUploaderFile[], TempSecureUrl[]>
