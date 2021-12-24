@@ -59,7 +59,7 @@ export class RedisModule_Class
 		return new Promise<void>((resolve, rejected) => {
 			try {
 				this.client = createClient(this.config.port, this.config.host);
-			} catch (e) {
+			} catch (e:any) {
 				rejected(e)
 			}
 			return this.client.on('connect');

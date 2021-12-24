@@ -22,6 +22,7 @@
 import {
 	Exception,
 	ImplementationMissingException,
+	ObjectTS,
 	regexpCase,
 } from "@nu-art/ts-common";
 import {Action} from "./Action";
@@ -38,7 +39,7 @@ export enum HttpMethod {
 	HEAD    = "head",
 }
 
-export class Action_Http<T extends object = any>
+export class Action_Http<T extends ObjectTS = any>
 	extends Action {
 
 	private readonly headers: { [key: string]: string | ((action: Action<any>) => string) } = {};

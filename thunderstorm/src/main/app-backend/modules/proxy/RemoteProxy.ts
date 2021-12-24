@@ -56,7 +56,7 @@ export class RemoteProxy_Class<Config extends RemoteProxyConfig>
 		let data: string | undefined;
 		try {
 			data = this.proxyHeader.get(request);
-		} catch (e) {
+		} catch (e:any) {
 		}
 		return {
 			key: this.getName(),

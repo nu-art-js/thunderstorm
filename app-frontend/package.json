@@ -25,12 +25,10 @@
     "dev": "cd .. && bash ./build-and-install.sh -lf -nb",
     "launch": "webpack-dev-server --open --mode development --env dev true",
     "launch-prod": "webpack-dev-server --open --mode production --env prod --ssl true",
-    "lint": "npm run lint-main && npm run lint-sw",
-    "lint-main": "tslint --project ./src/main",
-    "lint-sw": "tslint --project ./src/sw"
+    "lint": "tslint --project ./src/main"
   },
   "dependencies": {
-    "firebase": "^9.0.0",
+    "firebase": "^9.6.1",
     "moment": "2.24.0",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
@@ -89,7 +87,6 @@
     "react-color": "^2.14.1",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
-    "react-hot-loader": "^4.3.11",
     "react-router-dom": "^5.1.2",
     "sass-loader": "^12.4.0",
     "source-map-loader": "^0.2.4",

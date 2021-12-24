@@ -38,12 +38,16 @@ export class Dispatcher<T,
 
 	public dispatchModule(p: P): R[] {
 		const listeners = Dispatcher.modulesResolver();
-		return listeners.filter(this.filter).map((listener: T) => listener[this.method](...p));
+		return listeners.filter(this.filter).map((listener: T) => {
+			// @ts-ignore
+			return (listener[this.method])(...p);
+		});
 	}
 
 	public async dispatchModuleAsync(p: P): Promise<R[]> {
 		const listeners = Dispatcher.modulesResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
+			// @ts-ignore
 			return listener[this.method](...p);
 		}));
 	}

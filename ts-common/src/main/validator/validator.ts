@@ -50,7 +50,7 @@ import {currentTimeMillis} from "..";
  */
 export type ValidatorTypeResolver<K> =
 	K extends any[] ? Validator<K> :
-		K extends object ? TypeValidator<K> | Validator<K> :
+		K extends ObjectTS ? TypeValidator<K> | Validator<K> :
 			Validator<K>;
 
 export type Validator<P> = undefined | ((path: string, p?: P) => void);

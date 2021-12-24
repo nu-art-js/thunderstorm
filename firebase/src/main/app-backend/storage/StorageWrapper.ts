@@ -35,16 +35,17 @@ import {
 } from "./types";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
-
+import {getStorage} from "firebase-admin/storage";
 
 export class StorageWrapper
 	extends FirebaseBaseWrapper {
 
-	readonly storage: FirebaseType_Storage;
+	// readonly storage: FirebaseType_Storage;
+	private storage: FirebaseType_Storage;
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.storage = firebaseSession.app.storage();
+		this.storage = getStorage(firebaseSession.app);
 	}
 
 	async getOrCreateBucket(bucketName?: string): Promise<BucketWrapper> {
@@ -213,10 +214,10 @@ export class FileWrapper {
 		const file = await this.copy(destination);
 		try {
 			await this.delete();
-		} catch (e) {
+		} catch (e:any) {
 			try {
 				await file.delete();
-			} catch (err) {
+			} catch (err:any) {
 				throw new ThisShouldNotHappenException('Error during the deletion of the recently copied file, check the attached error', err);
 			}
 			throw new BadImplementationException('Error during the deletion of the file after a successful copy, attached error stack', e);

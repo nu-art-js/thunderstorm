@@ -16,17 +16,11 @@
  * limitations under the License.
  */
 
-import {
-	FilterKeys,
-	FirebaseModule,
-	FirestoreCollection
-} from "../../../_main";
-import {
-	__custom,
-	ErrorPolicy
-} from "@nu-art/testelot";
+import {FilterKeys, FirebaseModule, FirestoreCollection} from "../../../_main";
+import {__custom, ErrorPolicy} from "@nu-art/testelot";
+import {ObjectTS} from "@nu-art/ts-common";
 
-export class FirestoreCollection_Tester<DBType extends object> {
+export class FirestoreCollection_Tester<DBType extends ObjectTS> {
 	private collectionName: string;
 	private externalUniqueFilter?: FilterKeys<DBType>;
 

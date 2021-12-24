@@ -41,7 +41,7 @@ export class CleanupScheduler_Class
 			try {
 				await cleanupItem.cleanup();
 				await cleanupStatusCollection.upsert({timestamp: currentTimeMillis(), moduleKey: cleanupItem.moduleKey});
-			} catch (e) {
+			} catch (e:any) {
 				this.logWarning(`cleanup of ${cleanupItem.moduleKey} has failed with error '${e}'`);
 			}
 		}));

@@ -17,17 +17,12 @@
  * limitations under the License.
  */
 
-import {
-	ApiException,
-	ApiResponse,
-	ServerApi,
-	ExpressRequest
-} from "@nu-art/thunderstorm/backend";
+import {ApiException, ApiResponse, ExpressRequest, ServerApi} from "@nu-art/thunderstorm/backend";
 
 import {__stringify} from "@nu-art/ts-common";
 import {
-	AccountModule,
 	AccountApi_AssertLoginSAML,
+	AccountModule,
 	PostAssertBody,
 	QueryParam_Email,
 	QueryParam_RedirectUrl,
@@ -63,7 +58,7 @@ class AssertSamlToken
 			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), "g"), userEmail);
 
 			return await response.redirect(302, redirectUrl);
-		} catch (error) {
+		} catch (error: any) {
 			throw new ApiException(401, 'Error authenticating user', error);
 		}
 	}

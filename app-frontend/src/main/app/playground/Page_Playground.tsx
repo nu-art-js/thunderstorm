@@ -26,7 +26,6 @@ import {Example_GenericSelect} from "./examples/_to-be-removed/Example_GenericSe
 import {Example_Tabs} from "./examples/tabs/Example_Tabs";
 import {Example_Dialogs} from './examples/Example_Dialogs';
 import {Example_Toaster} from './examples/Example_Toaster';
-// import {Example_Menu} from './examples/menu/Example_Menu';
 import {TreeRefactorPage} from "./examples/_to-be-removed/TreeRefactorPage";
 import {ICONS} from "@res/icons";
 import {COLORS} from "@res/colors";
@@ -59,8 +58,6 @@ import {SP_Example_List_SingleType} from "./examples/new-props-examples/list/SP_
 import {SP_Example_NestedList_MultiType} from "./examples/new-props-examples/list/SP_Example_NestedList_MultiType";
 import {Example_Analytics} from "./examples/Example_Analytics";
 import Example_Scatter from "./examples/Example_Scatter";
-import Example_Line from "./examples/Example_Line";
-import Example_ChartJSLine from "./examples/Example_ChartJSLine";
 import {Example_TSTextArea} from "./examples/Example_TSTextArea";
 import Example_CCgraphs from "./examples/Example_CCgraphs";
 import {Example_FieldEditorClick} from './examples/Example_FieldEditorClick';
@@ -181,8 +178,6 @@ export class Page_Playground
 			{renderer: Example_PermissionsComponent, name: 'Permissions Component'},
 			{renderer: Example_Analytics, name: 'Analytics'},
 			{renderer: Example_Scatter, name: 'Scatter Plot'},
-			{renderer: Example_Line, name: 'Line Graph'},
-			{renderer: Example_ChartJSLine, name: 'ChartJS Line Graph'},
 			{renderer: Example_CCgraphs, name: 'CC Graphs'}
 		];
 	}

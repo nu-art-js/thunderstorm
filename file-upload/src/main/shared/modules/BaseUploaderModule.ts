@@ -24,7 +24,8 @@ import {
 	generateHex,
 	Minute,
 	Module,
-	Queue
+	Queue,
+    ObjectTS
 } from "@nu-art/ts-common";
 import {
 	BaseHttpModule_Class,
@@ -63,7 +64,7 @@ type Config = {
 	uploadQueueParallelCount?: number
 }
 
-export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class, CustomConfig extends object = {}>
+export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class, CustomConfig extends ObjectTS = {}>
 	extends Module<Config & CustomConfig>
 	implements OnPushMessageReceived<Push_FileUploaded> {
 

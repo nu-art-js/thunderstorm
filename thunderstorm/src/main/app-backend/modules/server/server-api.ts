@@ -38,30 +38,13 @@ import {
 
 import {Stream} from "stream";
 import {parse} from "url";
-import {
-	HttpServer,
-	ServerApi_Middleware
-} from "./HttpServer";
+import {HttpServer, ServerApi_Middleware} from "./HttpServer";
 import {IncomingHttpHeaders} from "http";
 // noinspection TypeScriptPreferShortImport
-import {
-	ApiTypeBinder,
-	ApiWithBody,
-	ApiWithQuery,
-	DeriveBodyType,
-	DeriveQueryType,
-	DeriveResponseType,
-	DeriveUrlType,
-	HttpMethod,
-	QueryParams
-} from "../../../shared/types";
+import {ApiTypeBinder, ApiWithBody, ApiWithQuery, HttpMethod, QueryParams} from "../../../shared/types";
 import {assertProperty} from "../../utils/to-be-removed";
 import {ApiException,} from "../../exceptions";
-import {
-	ExpressRequest,
-	ExpressResponse,
-	ExpressRouter
-} from "../../utils/types";
+import {ExpressRequest, ExpressResponse, ExpressRouter} from "../../utils/types";
 import {RemoteProxy} from "../proxy/RemoteProxy";
 
 export type HttpRequestData = {
@@ -74,12 +57,12 @@ export type HttpRequestData = {
 }
 
 
-export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams | {} = DeriveQueryType<Binder>>
+export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>, R = Binder["response"], B = Binder["body"], P extends QueryParams | {} = Binder["params"]>
 	extends Logger {
 	public static isDebug: boolean;
 
-	readonly printResponse: boolean = true;
-	readonly headersToLog: string[] = [];
+	printResponse: boolean = true;
+	headersToLog: string[] = [];
 
 	readonly method: HttpMethod;
 	private url!: string;
@@ -118,8 +101,8 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 		this.queryValidator = queryValidator;
 	}
 
-	asProxy(): ServerApi<Binder> {
-		return new ServerApi_Proxy<Binder>(this);
+	asProxy(): ServerApi<Binder, R, B, P> {
+		return new ServerApi_Proxy<Binder, R, B, P>(this);
 	}
 
 	getUrl() {
@@ -207,7 +190,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 				return await response.html(200, toReturn as string);
 
 			return await response.text(200, toReturn as string);
-		} catch (err) {
+		} catch (err: any) {
 			let e: any = err;
 			let severity: ServerErrorSeverity = ServerErrorSeverity.Warning;
 			if (typeof e === "string")
@@ -218,7 +201,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 
 			try {
 				this.logErrorBold(e);
-			} catch (e2) {
+			} catch (e2: any) {
 				this.logErrorBold("Error while handling error on request...", e2);
 				this.logErrorBold(`Original error thrown: ${JSON.stringify(e)}`);
 				this.logErrorBold(`-- Someone was stupid... you MUST only throw an Error and not objects or strings!! --`);
@@ -260,7 +243,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 			const message = await HttpServer.errorMessageComposer(requestData, apiException);
 			try {
 				await dispatch_onServerError.dispatchModuleAsync([severity, HttpServer, message]);
-			} catch (e) {
+			} catch (e: any) {
 				this.logError("Error while handing server error", e);
 			}
 			if (apiException.responseCode === 500)
@@ -273,33 +256,33 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 	protected abstract process(request: ExpressRequest, response: ApiResponse, queryParams: P, body: B): Promise<R>;
 }
 
-export abstract class ServerApi_Get<Binder extends ApiWithQuery<U, R, P>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, P extends QueryParams | {} = DeriveQueryType<Binder>>
-	extends ServerApi<Binder> {
+export abstract class ServerApi_Get<Binder extends ApiWithQuery<any, any, any>, U extends string = Binder["url"], R = Binder["response"], P extends QueryParams | {} = Binder["params"]>
+	extends ServerApi<Binder, R, void, P> {
 
 	protected constructor(apiName: string) {
 		super(HttpMethod.GET, apiName);
 	}
 }
 
-export abstract class ServerApi_Post<Binder extends ApiWithBody<U, R, B>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>>
-	extends ServerApi<Binder> {
+export abstract class ServerApi_Post<Binder extends ApiWithBody<any, any, any>, U extends string = Binder["url"], R = Binder["response"], B = Binder["body"]>
+	extends ServerApi<Binder, R, B, QueryParams> {
 
 	protected constructor(apiName: string) {
 		super(HttpMethod.POST, apiName);
 	}
 }
 
-export class ServerApi_Proxy<Binder extends ApiTypeBinder<string, R, B, P>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams | {} = DeriveQueryType<Binder>>
+export class ServerApi_Proxy<Binder extends ApiTypeBinder<any, any, any, any>, R = Binder["response"], B = Binder["body"], P extends QueryParams | {} = Binder["params"]>
 	extends ServerApi<Binder> {
 	private readonly api: ServerApi<Binder>;
 
-	public constructor(api: ServerApi<any>) {
+	public constructor(api: ServerApi<Binder>) {
 		super(api.method, `${api.relativePath}/proxy`);
 		this.api = api;
 		this.setMiddlewares(RemoteProxy.Middleware);
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DeriveQueryType<Binder>, body: DeriveBodyType<Binder>): Promise<DeriveResponseType<Binder>> {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: P, body: B): Promise<R> {
 		// @ts-ignore
 		return this.api.process(request, response, queryParams, body);
 	}
@@ -327,7 +310,7 @@ export class ApiResponse {
 	private readonly res: ExpressResponse;
 	private consumed: boolean = false;
 
-	constructor(api: ServerApi<any>, res: ExpressResponse) {
+	constructor(api: ServerApi<any, any, any, any>, res: ExpressResponse) {
 		this.api = api;
 		this.res = res;
 	}

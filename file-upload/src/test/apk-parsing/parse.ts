@@ -52,7 +52,7 @@ async function parseApkImpl(file: FileWrapper) {
 			};
 			new PkgReader(fileName, 'apk').parse(callback);
 		});
-	} catch (e) {
+	} catch (e:any) {
 		throw new BadImplementationException('Failed to parse manifest', e)
 	} finally {
 		console.log(`Cleaup`);

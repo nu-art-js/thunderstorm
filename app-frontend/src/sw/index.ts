@@ -69,7 +69,7 @@ class FCMServiceWorker {
 			// @ts-ignore
 			await self.clients.claim();
 			this.logInfo('Service Worker activated');
-		} catch (e) {
+		} catch (e:any) {
 			this.logError('Error activating service worker', e);
 		}
 	};
@@ -80,7 +80,7 @@ class FCMServiceWorker {
 			// @ts-ignore
 			await self.skipWaiting.claim();
 			this.logInfo('Skipped waiting, now using the new SW');
-		} catch (e) {
+		} catch (e:any) {
 			this.logError('Something wrong while skipping waiting. Service worker not queued', e);
 		}
 	};

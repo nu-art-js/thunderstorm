@@ -18,7 +18,8 @@
 
 import {
 	BeLogged,
-	LogLevel
+	LogLevel,
+    ObjectTS
 } from "@nu-art/ts-common";
 
 import {
@@ -46,7 +47,7 @@ export function __sleep(sleepMs: number): Action_Sleep {
 	return new Action_Sleep(sleepMs);
 }
 
-export function __http<T extends object = any>(method: HttpMethod): Action_Http {
+export function __http<T extends ObjectTS = any>(method: HttpMethod): Action_Http {
 	// @ts-ignore
 	return new Action_Http<T>(method);
 }
@@ -88,7 +89,7 @@ export function enableTerminalLogReWrite() {
 
 		try {
 			require("child_process").execSync(rewriteCommand, {stdio: 'inherit'});
-		} catch (e) {
+		} catch (e:any) {
 		}
 	});
 }

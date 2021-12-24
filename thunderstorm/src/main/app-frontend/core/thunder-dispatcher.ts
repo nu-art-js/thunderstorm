@@ -38,12 +38,16 @@ export class ThunderDispatcher<T,
 
 	public dispatchUI(p: P): R[] {
 		const listeners = ThunderDispatcher.listenersResolver();
-		return listeners.filter(this.filter).map((listener: T) => listener[this.method](...p));
+		return listeners.filter(this.filter).map((listener: T) => {
+			// @ts-ignore
+			return listener[this.method](...p);
+		});
 	}
 
 	public async dispatchUIAsync(p: P): Promise<R[]> {
 		const listeners = ThunderDispatcher.listenersResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
+			// @ts-ignore
 			return listener[this.method](...p);
 		}));
 	}
@@ -59,6 +63,7 @@ export class ThunderDispatcher<T,
 		const listenersModules = Dispatcher.modulesResolver();
 
 		return Promise.all(listenersUI.concat(listenersModules).filter(this.filter).map(async (listener: T) => {
+			// @ts-ignore
 			return listener[this.method](...p);
 		}));
 	}

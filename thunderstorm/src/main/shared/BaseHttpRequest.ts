@@ -18,35 +18,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	_keys,
-	_setTimeout,
-	BadImplementationException
-} from "@nu-art/ts-common";
-import {
-	ApiTypeBinder,
-	DeriveBodyType,
-	DeriveErrorType,
-	DeriveQueryType,
-	DeriveResponseType,
-	DeriveUrlType,
-	ErrorResponse,
-	HttpMethod,
-	QueryParams
-} from "./types";
-import {
-	HttpException,
-	RequestErrorHandler,
-	RequestSuccessHandler,
-	TS_Progress
-} from "./request-types";
+import {_keys, _setTimeout, BadImplementationException, ObjectTS} from "@nu-art/ts-common";
+import {ApiTypeBinder, ErrorResponse, HttpMethod, QueryParams} from "./types";
+import {HttpException, RequestErrorHandler, RequestSuccessHandler, TS_Progress} from "./request-types";
 
-export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E>,
-	U extends string = DeriveUrlType<Binder>,
-	R extends any = DeriveResponseType<Binder>,
-	B extends any = DeriveBodyType<Binder>,
-	P extends QueryParams = DeriveQueryType<Binder>,
-	E extends void | object = DeriveErrorType<Binder>> {
+export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>,
+	U extends string = Binder["url"],
+	R extends any = Binder["response"],
+	B extends any = Binder["body"],
+	P extends QueryParams = Binder["params"],
+	E extends ObjectTS = Binder["errors"]> {
 
 	key: string;
 	requestData!: any;
@@ -268,7 +249,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<U, R, B, P, E
 		if (rawResponse) {
 			try {
 				response = rawResponse && this.asJson();
-			} catch (e) {
+			} catch (e: any) {
 				response = this.asText();
 			}
 		}

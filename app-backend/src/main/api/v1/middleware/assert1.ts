@@ -16,16 +16,8 @@
  * limitations under the License.
  */
 
-import {
-	ApiWithBody,
-	ApiWithQuery
-} from "@nu-art/thunderstorm";
-import {
-	ApiResponse,
-	ExpressRequest,
-	RemoteProxy,
-	ServerApi_Get
-} from "@nu-art/thunderstorm/backend";
+import {ApiWithBody, ApiWithQuery} from "@nu-art/thunderstorm";
+import {ApiResponse, ExpressRequest, RemoteProxy, ServerApi_Get, ServerApi_Post} from "@nu-art/thunderstorm/backend";
 import {PermissionsAssert} from "@nu-art/permissions/backend";
 
 const PROP_A = "a";
@@ -46,7 +38,7 @@ class ServerApi_TestMiddleware1
 		this.setMiddlewares(RemoteProxy.Middleware, Middleware__Assert_AE)
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: Assert1_Params, body: void) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: Assert1_Params, body: never) {
 		// PermissionsAssert.processApi(k(queryParams))
 		console.log("queryParams:", queryParams);
 		return "";
@@ -57,7 +49,7 @@ type Assert2_Body = { a: string, b: number, c: string };
 type AssertTest2 = ApiWithBody<"/v1/test/permission", Assert2_Body, string>
 
 class ServerApi_TestMiddleware2
-	extends ServerApi_Get<AssertTest2> {
+	extends ServerApi_Post<AssertTest2> {
 
 	constructor() {
 		super("test2");

@@ -20,6 +20,7 @@ import {
 	BadImplementationException,
 	batchAction,
 	generateHex,
+	ObjectTS,
 	Subset
 } from "@nu-art/ts-common";
 import {
@@ -37,7 +38,7 @@ import {FirestoreInterface} from "./FirestoreInterface";
 import {FirestoreTransaction} from "./FirestoreTransaction";
 import admin = require("firebase-admin");
 
-export class FirestoreCollection<Type extends object> {
+export class FirestoreCollection<Type extends ObjectTS> {
 	readonly name: string;
 	readonly wrapper: FirestoreWrapper;
 	readonly collection: FirestoreType_Collection;

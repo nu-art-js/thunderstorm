@@ -60,7 +60,7 @@ export class PermissionsModule_Class
 				try {
 					PermissionsAssert._assertUserPermissionsImpl(apiDetail, projectId, userDetails, requestCustomField);
 					userUrlsPermissions[url] = true;
-				} catch (e) {
+				} catch (e:any) {
 					userUrlsPermissions[url] = false;
 				}
 			} else

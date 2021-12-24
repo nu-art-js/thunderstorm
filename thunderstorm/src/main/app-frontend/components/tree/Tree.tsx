@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {removeItemFromArray} from "@nu-art/ts-common";
+import {ObjectTS, removeItemFromArray} from "@nu-art/ts-common";
 import {NodeExpandCondition, TreeNode, TreeNodeExpandState,} from "./types";
 import {KeyboardListener} from "../../tools/KeyboardListener";
 import {stopPropagation} from '../../utils/tools';
@@ -392,7 +392,7 @@ export class Tree<P extends BaseTreeProps = BaseTreeProps, S extends TreeState =
 	}
 }
 
-const recursivelyExpandImpl = <K extends object>(obj: K, state: TreeNodeExpandState, condition: NodeExpandCondition, adapter: Adapter, path: string = "/", level: number = 1): TreeNodeExpandState => {
+const recursivelyExpandImpl = <K extends ObjectTS>(obj: K, state: TreeNodeExpandState, condition: NodeExpandCondition, adapter: Adapter, path: string = "/", level: number = 1): TreeNodeExpandState => {
 	if (obj === null)
 		return state;
 

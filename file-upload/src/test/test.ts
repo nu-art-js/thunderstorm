@@ -40,7 +40,7 @@ const googleCall = __custom(async () => {
 			.executeSync();
 		console.log('works');
 
-	} catch (e) {
+	} catch (e:any) {
 		console.log('breaks');
 		console.log(e);
 	}

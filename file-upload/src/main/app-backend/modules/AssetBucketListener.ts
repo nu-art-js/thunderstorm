@@ -19,7 +19,7 @@
 import {Firebase_StorageFunction} from "@nu-art/firebase/backend-functions";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import {EventContext} from "firebase-functions";
-import { Dispatcher } from "@nu-art/ts-common";
+import {Dispatcher} from "@nu-art/ts-common";
 
 export interface OnAssetUploaded {
 	__processAsset(filePath?: string): void;
@@ -29,7 +29,7 @@ const dispatcher_onAssetUploaded = new Dispatcher<OnAssetUploaded, "__processAss
 
 
 export class AssetBucketListener_Class
-extends Firebase_StorageFunction {
+	extends Firebase_StorageFunction {
 
 	constructor() {
 		super();
@@ -39,14 +39,14 @@ extends Firebase_StorageFunction {
 	init() {
 		super.init();
 		// @ts-ignore
-		this.logInfo('bucketName', this.config.bucketName);
+		this.logInfo("bucketName", this.config.bucketName);
 	}
 
 	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
 		const filePath = object.name;
 		await dispatcher_onAssetUploaded.dispatchModuleAsync([filePath]);
-		this.logInfo('Object is ', object);
-		this.logInfo('Context is ', context);
+		this.logInfo("Object is ", object);
+		this.logInfo("Context is ", context);
 	}
 
 }

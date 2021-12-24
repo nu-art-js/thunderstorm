@@ -19,16 +19,19 @@
 
 import {ApiWithBody, ApiWithQuery, BaseHttpRequest} from "@nu-art/thunderstorm";
 import {DB_Object} from "@nu-art/firebase";
-import {AuditBy} from "@nu-art/ts-common";
+import {
+	AuditBy,
+	ObjectTS
+} from "@nu-art/ts-common";
 import {MessageType} from "@nu-art/push-pub-sub";
 
 export const RequestKey_UploadUrl = 'get-upload-url';
 export const RequestKey_UploadFile = 'upload-file';
 export const RequestKey_ProcessAssetManually = 'process-asset-manually';
 
-export const PushKey_FileUploaded = 'file-uploaded';
+export const PushKey_FileUploaded = "file-uploaded";
 export type FileUploadResult = { status: FileStatus, asset: DB_Asset };
-export type Push_FileUploaded = MessageType<'file-uploaded', { feId: string }, FileUploadResult>;
+export type Push_FileUploaded = MessageType<"file-uploaded", { feId: string }, FileUploadResult>;
 
 export enum FileStatus {
 	Idle = "Idle",
@@ -66,13 +69,14 @@ export type Request_Uploader = {
 	mimeType: string
 	key?: string
 	public?: boolean
+	metadata?: ObjectTS
 }
 
 export type BaseUploaderFile = Request_Uploader & {
 	feId: string
 };
 
-export type DB_Asset = DB_Object & BaseUploaderFile & Required<Pick<BaseUploaderFile, 'key'>> & {
+export type DB_Asset = DB_Object & BaseUploaderFile & Required<Pick<BaseUploaderFile, "key">> & {
 	timestamp: number
 	ext: string
 	md5Hash?: string
@@ -91,5 +95,5 @@ export type TempSecureUrl = {
 	asset: DB_Asset
 }
 
-export type Api_GetUploadUrl = ApiWithBody<'/v1/upload/get-url', BaseUploaderFile[], TempSecureUrl[]>
+export type Api_GetUploadUrl = ApiWithBody<"/v1/upload/get-url", BaseUploaderFile[], TempSecureUrl[]>
 export type Api_ProcessAssetManually = ApiWithQuery<'/v1/upload/process-asset-manually', void, { feId: string }>

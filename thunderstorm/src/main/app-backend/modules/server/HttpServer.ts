@@ -363,7 +363,7 @@ export class RouteResolver {
 				let routeResolver: RouteResolver;
 				try {
 					routeResolver = this.require(relativePathToFile);
-				} catch (e) {
+				} catch (e:any) {
 					console.log(`could not reference RouteResolver for: ${workingDir}/${relativePathToFile}`, e);
 					throw e;
 				}
@@ -377,7 +377,7 @@ export class RouteResolver {
 			let content: ServerApi<any, any, any> | ServerApi<any, any, any>[];
 			try {
 				content = this.require(relativePathToFile);
-			} catch (e) {
+			} catch (e:any) {
 				console.log(`could not reference ServerApi for: ${workingDir}/${relativePathToFile}`, e);
 				throw e;
 			}

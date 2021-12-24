@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {MandatoryKeys, RequireOptionals} from "@nu-art/ts-common";
+import {MandatoryKeys, ObjectTS, RequireOptionals} from "@nu-art/ts-common";
 
 export type Firebase_Message = {
 	token?: string,
@@ -72,31 +72,19 @@ export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = 
 	$neq: "!=",
 };
 
-export type FilterKeys<T extends object> = MandatoryKeys<T, string | number>[];
+export type FilterKeys<T extends ObjectTS> = MandatoryKeys<T, string | number>[];
 export type FirestoreType_OrderByDirection = 'desc' | 'asc';
-export type WhereValue<Value> = QueryComparator<Value> | (Value extends object ? Clause_Where<Value> : Value | [Value]);
-export type Clause_Where<T extends object> = { [P in keyof T]?: WhereValue<T[P]> }
-export type Clause_OrderBy<T extends object> = [{ key: keyof T, order: FirestoreType_OrderByDirection }];
-export type Clause_Select<T extends object, K extends keyof T = keyof T> = K[];
+export type WhereValue<Value> = QueryComparator<Value> | (Value extends ObjectTS ? Clause_Where<Value> : Value | [Value]);
+export type Clause_Where<T extends ObjectTS> = { [P in keyof T]?: WhereValue<T[P]> }
+export type Clause_OrderBy<T extends ObjectTS> = [{ key: keyof T, order: FirestoreType_OrderByDirection }];
+export type Clause_Select<T extends ObjectTS, K extends keyof T = keyof T> = K[];
 
-export type FirestoreQuery<T extends object> = RequireOptionals<FirestoreQueryImpl<T>>
-export type FirestoreQueryImpl<T extends object> = {
+export type FirestoreQuery<T extends ObjectTS> = RequireOptionals<FirestoreQueryImpl<T>>
+export type FirestoreQueryImpl<T extends ObjectTS> = {
 	select?: Clause_Select<T>
 	orderBy?: Clause_OrderBy<T>
 	where?: Clause_Where<T>
 	limit?: number
 }
-
-export type EventType = 'value' | 'child_added' | 'child_changed' | 'child_moved' | 'child_removed';
-
-export enum Firebase_EventType {
-	Value = "value",
-	ChildAdded = "child_added",
-	ChildChanged = "child_changed",
-	ChildMoved = "child_moved",
-	ChildRemoved = "child_removed"
-
-}
-
 
 export type FirebaseProjectCollections = { projectId: string, collections: string[] };

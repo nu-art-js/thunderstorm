@@ -12,3 +12,4 @@ build
 _package.json
 package-lock.json
 src/main/config.ts
+.awcache

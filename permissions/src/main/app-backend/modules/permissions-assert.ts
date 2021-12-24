@@ -221,7 +221,7 @@ export class PermissionsAssert_Class
 					apiDb,
 					requestPermissions
 				});
-			}catch (e) {
+			}catch (e:any) {
 				return
 			}
 		}));

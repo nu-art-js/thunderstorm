@@ -82,7 +82,7 @@ export class PopupMenu
 	};
 
 	closeMenu = (e: MouseEvent) => {
-		if (e.which === 3)
+		if (e.button === 3)
 			return
 
 		if (this.overlayRef.current !== e.target)

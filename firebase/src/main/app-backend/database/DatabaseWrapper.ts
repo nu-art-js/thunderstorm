@@ -17,28 +17,20 @@
  */
 
 // import {FirestoreCollection} from "./FirestoreCollection";
-import {
-	FirebaseListener,
-	Firebase_DataSnapshot,
-	Firebase_DB
-} from "./types";
-import {
-	BadImplementationException,
-	calculateJsonSizeMb,
-	ObjectTS
-} from "@nu-art/ts-common";
+import {Firebase_DataSnapshot, Firebase_DB, FirebaseListener} from "./types";
+import {BadImplementationException, calculateJsonSizeMb, ObjectTS} from "@nu-art/ts-common";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
+import {getDatabase} from 'firebase-admin/database'
 
 export class DatabaseWrapper
 	extends FirebaseBaseWrapper {
 
 	private readonly database: Firebase_DB;
 
-
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.database = firebaseSession.app.database();
+		this.database = getDatabase(firebaseSession.app)
 	}
 
 	public async get<T>(path: string, defaultValue?: T): Promise<T | undefined> {
@@ -56,7 +48,7 @@ export class DatabaseWrapper
 	public listen<T>(path: string, callback: (value: T | undefined) => void): FirebaseListener {
 		try {
 			return this.database.ref(path).on("value", (snapshot: Firebase_DataSnapshot) => callback(snapshot ? snapshot.val() : undefined));
-		} catch (e) {
+		} catch (e: any) {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}
 	}
@@ -64,7 +56,7 @@ export class DatabaseWrapper
 	public stopListening<T>(path: string, listener: FirebaseListener): void {
 		try {
 			this.database.ref(path).off("value", listener);
-		} catch (e) {
+		} catch (e: any) {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}
 	}
@@ -72,7 +64,7 @@ export class DatabaseWrapper
 	public async set<T>(path: string, value: T) {
 		try {
 			return await this.database.ref(path).set(value);
-		} catch (e) {
+		} catch (e: any) {
 			throw new BadImplementationException(`Error while setting value to path: ${path}`, e);
 		}
 	}
@@ -95,7 +87,7 @@ export class DatabaseWrapper
 	public async patch<T>(path: string, value: T) {
 		try {
 			return await this.database.ref(path).update(value);
-		} catch (e) {
+		} catch (e: any) {
 			this.logError(e);
 			throw new BadImplementationException(`Error while updating value to path: ${path}`, e);
 		}
@@ -115,7 +107,7 @@ export class DatabaseWrapper
 
 		try {
 			return await this.database.ref(path).remove();
-		} catch (e) {
+		} catch (e: any) {
 			throw new BadImplementationException(`Error while removing path: ${path}`, e);
 		}
 	}

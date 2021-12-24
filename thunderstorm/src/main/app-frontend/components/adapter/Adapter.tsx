@@ -21,7 +21,7 @@
 
 import * as React from "react";
 import {ComponentType} from "react";
-import {_keys, BadImplementationException,} from "@nu-art/ts-common";
+import {_keys, BadImplementationException, ObjectTS,} from "@nu-art/ts-common";
 import {SimpleTreeNodeRenderer} from "../tree/SimpleTreeNodeRenderer";
 import {_BaseNodeRenderer, BaseRendererMap, NodeRendererProps, TreeRendererMap,} from "./BaseRenderer";
 import {TreeNode} from "../tree/types";
@@ -107,7 +107,7 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 	};
 
 	// this can be gone.. and builders must use the new filterChildren
-	getFilteredChildren<K extends object>(obj: K): (keyof K)[] | [] {
+	getFilteredChildren<K extends ObjectTS>(obj: K): (keyof K)[] | [] {
 		if (obj === undefined || obj === null)
 			return [];
 

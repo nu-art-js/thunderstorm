@@ -19,9 +19,10 @@
  * limitations under the License.
  */
 
+import { ObjectTS } from "@nu-art/ts-common";
 import {ApiException} from "../exceptions";
 
-export const assertProperty = <T extends object, K extends keyof T = keyof T>(instance: T, key: K | K[], statusCode: number = 400, check?: string | ((propValue: T[K]) => void)): void => {
+export const assertProperty = <T extends ObjectTS, K extends keyof T = keyof T>(instance: T, key: K | K[], statusCode: number = 400, check?: string | ((propValue: T[K]) => void)): void => {
 	if (Array.isArray(key))
 		return key.forEach(k => assertProperty(instance, k, statusCode, check));
 

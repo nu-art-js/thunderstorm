@@ -27,7 +27,6 @@ import {PushMessagesWrapper} from "../push/PushMessagesWrapper";
 import * as admin from "firebase-admin";
 import {FirebaseConfig} from "../..";
 
-
 export type Firebase_UserCredential = {
 	config: FirebaseConfig
 	credentials: {
