@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Dispatcher, FunctionKeys, ParamResolver, ReturnTypeResolver} from "@nu-art/ts-common";
+import {Dispatcher, FunctionKeys, ParamResolver, ReturnTypeResolver} from '@nu-art/ts-common';
 
 
 // type ValidKeyResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? K : never
@@ -53,9 +53,9 @@ export class ThunderDispatcher<T,
 	}
 
 	public dispatchAll(p: P): R[] {
-		const moduleResponses = this.dispatchModule(p)
+		const moduleResponses = this.dispatchModule(p);
 		const uiResponses = this.dispatchUI(p);
-		return [...moduleResponses, ...uiResponses]
+		return [...moduleResponses, ...uiResponses];
 	}
 
 	public async dispatchAllAsync(p: P): Promise<R[]> {

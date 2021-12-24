@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-export const HeaderKey_Env = "x-env";
-export const HeaderKey_CurrentPage = "x-current-page";
+export const HeaderKey_Env = 'x-env';
+export const HeaderKey_CurrentPage = 'x-current-page';
 
 
-export type Browser = "chrome" ;//| "firefox" | "blink" | "edge" | "ie" | "safari" | "opera"
+export type Browser = 'chrome';//| "firefox" | "blink" | "edge" | "ie" | "safari" | "opera"

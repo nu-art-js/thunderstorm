@@ -19,24 +19,19 @@
 /**
  * Created by TacB0sS on 3/18/17.
  */
-import {
-	Exception,
-	ImplementationMissingException,
-	ObjectTS,
-	regexpCase,
-} from "@nu-art/ts-common";
-import {Action} from "./Action";
-import * as fetch from "node-fetch"
+import {Exception, ImplementationMissingException, ObjectTS, regexpCase,} from '@nu-art/ts-common';
+import {Action} from './Action';
+import * as fetch from 'node-fetch';
 
 export enum HttpMethod {
-	ALL     = "all",
-	POST    = "post",
-	GET     = "get",
-	PATCH   = "patch",
-	DELETE  = "delete",
-	PUT     = "put",
-	OPTIONS = "options",
-	HEAD    = "head",
+	ALL = 'all',
+	POST = 'post',
+	GET = 'get',
+	PATCH = 'patch',
+	DELETE = 'delete',
+	PUT = 'put',
+	OPTIONS = 'options',
+	HEAD = 'head',
 }
 
 export class Action_Http<T extends ObjectTS = any>
@@ -63,22 +58,22 @@ export class Action_Http<T extends ObjectTS = any>
 	public setUrl(url: string | ((action: Action<any>) => string)) {
 		this.url = url;
 		return this;
-	};
+	}
 
 	public setBody(body: string | T | ((action: Action<any>) => string | T)) {
 		this.body = body;
 		return this;
-	};
+	}
 
 	public setParams(params: object) {
 		this.params = params;
 		return this;
-	};
+	}
 
 	public addHeader(key: string, value: string | ((action: Action<any>) => string)) {
 		this.headers[key] = value;
 		return this;
-	};
+	}
 
 	public setResponseStatus(status: number) {
 		this.responseStatus = status;
@@ -91,20 +86,20 @@ export class Action_Http<T extends ObjectTS = any>
 	}
 
 	private resolveBody(): string {
-		if (typeof this.body === "function")
+		if (typeof this.body === 'function')
 			this.body = this.body(this);
 
-		if (typeof this.body === "string")
+		if (typeof this.body === 'string')
 			return this.body;
 
-		this.addHeader("Accept", 'application/json');
-		this.addHeader("Content-Type", 'application/json');
+		this.addHeader('Accept', 'application/json');
+		this.addHeader('Content-Type', 'application/json');
 
 		return JSON.stringify(this.body, null, 2);
 	}
 
 	private resolveUrl() {
-		if (typeof this.url === "function")
+		if (typeof this.url === 'function')
 			this.url = this.url(this);
 
 		return this.url + `${this.toUrlParams()}`;
@@ -113,17 +108,17 @@ export class Action_Http<T extends ObjectTS = any>
 
 	private toUrlParams() {
 		if (!this.params)
-			return "";
+			return '';
 
-		if (typeof this.params === "function")
+		if (typeof this.params === 'function')
 			this.params = this.params();
 
 		if (Object.keys(this.params).length === 0)
-			return "";
+			return '';
 
 		return `?${Object.keys(this.params).map((key) => {
 			return `${key}=${this.params[key]}`;
-		}).join("&")}`;
+		}).join('&')}`;
 	}
 
 	protected async execute() {
@@ -132,7 +127,7 @@ export class Action_Http<T extends ObjectTS = any>
 		const headers: { [key: string]: string } = {};
 		for (const key of Object.keys(this.headers)) {
 			const value = this.headers[key];
-			if (typeof value !== "string") {
+			if (typeof value !== 'string') {
 				headers[key] = value(this);
 			} else
 				headers[key] = value;
@@ -148,37 +143,37 @@ export class Action_Http<T extends ObjectTS = any>
 		this.logInfo(`-------- Uri: ${url}`);
 
 		if (Object.keys(headers).length > 0) {
-			this.logVerbose("-------- Headers --------");
+			this.logVerbose('-------- Headers --------');
 			for (const key of Object.keys(headers)) {
 				this.logVerbose(`  ${key}: ${headers[key]}`);
 			}
-			this.logVerbose("-------------------------");
+			this.logVerbose('-------------------------');
 		}
 
 		if (requestBody.body) {
-			this.logVerbose("--------- Request Body ----------");
+			this.logVerbose('--------- Request Body ----------');
 			this.logVerbose(body);
-			this.logVerbose("-------------------------");
+			this.logVerbose('-------------------------');
 		}
 
-		return await this.executeHttpRequest(requestBody)
-	};
+		return await this.executeHttpRequest(requestBody);
+	}
 
 	private async resolveResponseBody(response: fetch.Response): Promise<any> {
-		const contentType = response.headers.get("Content-Type");
+		const contentType = response.headers.get('Content-Type');
 		if (!contentType)
 			return;
 
 		// @ts-ignore
 		let match;
 		switch (contentType) {
-			case (match = regexpCase(contentType, ".*application/json.*")).input:
+			case (match = regexpCase(contentType, '.*application/json.*')).input:
 				return await response.json();
 
-			case (match = regexpCase(contentType, ".*application/x-www-form-urlencoded.*")).input:
+			case (match = regexpCase(contentType, '.*application/x-www-form-urlencoded.*')).input:
 				return decodeURI((await response.text()));
 
-			case (match = regexpCase(contentType, "^text\\/.*")).input:
+			case (match = regexpCase(contentType, '^text\\/.*')).input:
 				return await response.text();
 
 			default:
@@ -193,12 +188,13 @@ export class Action_Http<T extends ObjectTS = any>
 		const response: fetch.Response = await fetch.default(this.resolveUrl(), requestBody);
 
 		const status = response.status;
-		let _responseBody: string = "";
+		let _responseBody: string = '';
 		const expectedStatus = this.responseStatus;
 		if (status !== expectedStatus || status >= 500 && status < 600) {
 			try {
 				_responseBody = await response.text();
-			} catch (ignore) {
+			} catch (ignore:any) {
+				this.logError(ignore);
 			}
 
 			this.logError(`Got Response code: ${status}`);
@@ -216,9 +212,9 @@ export class Action_Http<T extends ObjectTS = any>
 			responseBody = this.responseProcessor(responseBody);
 
 		if (responseBody) {
-			this.logVerbose("--------- Response ----------");
-			this.logVerbose(typeof responseBody === "object" ? JSON.stringify(responseBody, null, 2) : responseBody);
-			this.logVerbose("-------------------------");
+			this.logVerbose('--------- Response ----------');
+			this.logVerbose(typeof responseBody === 'object' ? JSON.stringify(responseBody, null, 2) : responseBody);
+			this.logVerbose('-------------------------');
 		}
 
 		return responseBody;

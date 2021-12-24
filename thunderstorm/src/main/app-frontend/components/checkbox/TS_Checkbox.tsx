@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 
 export type CheckboxBaseProps = {
 	id?: string
@@ -19,23 +19,23 @@ type State_Checkbox = {
 	checked: boolean
 }
 
-const CheckboxRenderer_DefaultBase = (borderRadius:string)=>(props: CheckboxRenderingProps) => {
+const CheckboxRenderer_DefaultBase = (borderRadius: string) => (props: CheckboxRenderingProps) => {
 	const innerStyle: React.CSSProperties = {
 		width: 18,
 		height: 18,
 		borderRadius,
-		boxSizing: "border-box"
-	}
+		boxSizing: 'border-box'
+	};
 
 	if (props.checked) {
-		innerStyle.background = "#4fa7ff"
-		innerStyle.border = `.5px white solid`
+		innerStyle.background = '#4fa7ff';
+		innerStyle.border = `.5px white solid`;
 	}
 
 	const boxStyle = {
 		borderRadius,
-		border: "1px solid #68678d50",
-		boxShadow: "0px 0 1px 0px #867979",
+		border: '1px solid #68678d50',
+		boxShadow: '0px 0 1px 0px #867979',
 	};
 
 	return <div className="ll_h_c">
@@ -48,8 +48,8 @@ const CheckboxRenderer_DefaultBase = (borderRadius:string)=>(props: CheckboxRend
 	</div>;
 };
 
-export const CheckboxRenderer_DefaultSquare = CheckboxRenderer_DefaultBase("1px")
-export const CheckboxRenderer_DefaultCircle = CheckboxRenderer_DefaultBase("50%")
+export const CheckboxRenderer_DefaultSquare = CheckboxRenderer_DefaultBase('1px');
+export const CheckboxRenderer_DefaultCircle = CheckboxRenderer_DefaultBase('50%');
 
 export class TS_Checkbox
 	extends React.Component<Props_Checkbox, State_Checkbox> {
@@ -60,7 +60,7 @@ export class TS_Checkbox
 
 	constructor(p: Props_Checkbox) {
 		super(p);
-		this.state = {checked: p.checked}
+		this.state = {checked: p.checked};
 	}
 
 	static getDerivedStateFromProps(props: Props_Checkbox, state: State_Checkbox) {
@@ -71,7 +71,7 @@ export class TS_Checkbox
 	}
 
 	render() {
-		let onClick: undefined | ((checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void)
+		let onClick: undefined | ((checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void);
 		if (!this.props.disabled)
 			onClick = this.props.onCheck;
 

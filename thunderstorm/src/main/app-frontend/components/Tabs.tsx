@@ -1,8 +1,5 @@
 import * as React from 'react';
-import {
-	CSSProperties,
-	ReactNode
-} from 'react';
+import {CSSProperties, ReactNode} from 'react';
 
 export class Tab {
 
@@ -33,12 +30,12 @@ export class Tabs
 		super(props);
 		this.state = {
 			selectedTab: this.props.tabs[0]
-		}
+		};
 	}
 
 	render() {
 		return <div>
-			<div className={'ll_h_c'} style={{height: 28, justifyContent: "center"}}>
+			<div className={'ll_h_c'} style={{height: 28, justifyContent: 'center'}}>
 				{this.props.tabs.map(this.renderTabHandle)}
 			</div>
 			{this.state.selectedTab.content}
@@ -52,7 +49,7 @@ export class Tabs
 			<span className={`clickable`} onClick={() => this.setState({selectedTab: tab})} style={style}>
 				{tab.title}
 			</span>
-		</div>
-	}
+		</div>;
+	};
 
 }

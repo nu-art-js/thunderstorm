@@ -318,7 +318,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		await this.validateImpl(instance);
 		await this.assertUniqueness(transaction, instance, request);
 		return async () => transaction.insert(this.collection, instance);
-	};
+	}
 
 	/**
 	 * Upserts the `instance` using a transaction, after validating it and asserting uniqueness.
@@ -427,14 +427,14 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	private async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<DBType> {
 		return (await this.upsertImpl_Read(transaction, dbInstance, request))();
-	};
+	}
 
 	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		await this.preUpsertProcessing(transaction, dbInstance, request);
 		await this.validateImpl(dbInstance);
 		await this.assertUniqueness(transaction, dbInstance, request);
 		return transaction.upsert_Read(this.collection, dbInstance);
-	};
+	}
 
 	/**
 	 * Deletes a unique document based on its `_id`. Uses a transaction, after deletion assertions occur.

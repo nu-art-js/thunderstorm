@@ -19,27 +19,13 @@
  * limitations under the License.
  */
 
-import {
-	__stringify,
-	BadImplementationException,
-	compareVersions,
-	Module,
-	ImplementationMissingException
-} from "@nu-art/ts-common";
-import {
-	HeaderKey,
-	ServerApi_Middleware
-} from "./server/HttpServer";
+import {__stringify, BadImplementationException, compareVersions, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {HeaderKey, ServerApi_Middleware} from './server/HttpServer';
 
-import {ApiException} from "../exceptions";
-import {
-	HeaderKey_AppVersion,
-	HeaderKey_BrowserType,
-	HeaderKey_UserAgent,
-	UpgradeRequired
-} from "../../shared/force-upgrade";
-import {Browser} from "../../shared/consts";
-import {ExpressRequest} from "../utils/types";
+import {ApiException} from '../exceptions';
+import {HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent, UpgradeRequired} from '../../shared/force-upgrade';
+import {Browser} from '../../shared/consts';
+import {ExpressRequest} from '../utils/types';
 
 type VersionConfig = {
 	regexp: {
@@ -56,7 +42,7 @@ const Header_BrowserType = new HeaderKey(HeaderKey_BrowserType);
 const Header_UserAgent = new HeaderKey(HeaderKey_UserAgent);
 
 const DefaultRegexps: { [k in Browser]: string } = {
-	chrome: "Chrome/([0-9\.]+)"
+	chrome: 'Chrome/([0-9\.]+)'
 };
 
 class ForceUpgrade_Class
@@ -88,13 +74,13 @@ class ForceUpgrade_Class
 		if (requiredBrowserVersion)
 			browser = compareVersions(version, requiredBrowserVersion) === 1;
 
-		return {app, browser}
+		return {app, browser};
 	}
 
 	async assertVersion(request: ExpressRequest): Promise<void> {
 		const upgradeRequired = this.compareVersion(request);
 		if (upgradeRequired.app || upgradeRequired.browser)
-			throw new ApiException<UpgradeRequired>(426, "require upgrade..").setErrorBody({type: "upgrade-required", body: upgradeRequired})
+			throw new ApiException<UpgradeRequired>(426, 'require upgrade..').setErrorBody({type: 'upgrade-required', body: upgradeRequired});
 	}
 }
 

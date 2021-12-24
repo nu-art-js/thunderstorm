@@ -19,14 +19,14 @@
  * limitations under the License.
  */
 
-import {BaseComponent} from "./BaseComponent";
-import {ThunderDispatcher} from "./thunder-dispatcher";
+import {BaseComponent} from './BaseComponent';
+import {ThunderDispatcher} from './thunder-dispatcher';
 
 export interface OnPageTitleChangedListener {
 	__onPageTitleChanged(title: string): void;
 }
 
-export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChangedListener, "__onPageTitleChanged">("__onPageTitleChanged");
+export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChangedListener, '__onPageTitleChanged'>('__onPageTitleChanged');
 
 export abstract class AppPage<P extends {} = {}, S extends {} = {}>
 	extends BaseComponent<P, S> {

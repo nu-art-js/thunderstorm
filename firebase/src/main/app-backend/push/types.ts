@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import * as admin from "firebase-admin";
+import * as admin from 'firebase-admin';
 
 type BaseMessage = {
 	data?: { [key: string]: string };

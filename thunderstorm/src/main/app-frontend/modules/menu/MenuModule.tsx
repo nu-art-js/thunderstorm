@@ -1,17 +1,9 @@
-import {
-	generateHex,
-	Module
-} from "@nu-art/ts-common";
-import {
-	MenuPosition
-} from "./PopupMenu";
-import {ThunderDispatcher} from "../../core/thunder-dispatcher";
-import {
-	_GenericRenderer,
-	Adapter,
-} from "../../components/adapter/Adapter";
-import {BaseRendererMap} from "../../components/adapter/BaseRenderer";
-import {CSSProperties} from "react";
+import {generateHex, Module} from '@nu-art/ts-common';
+import {MenuPosition} from './PopupMenu';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {_GenericRenderer, Adapter,} from '../../components/adapter/Adapter';
+import {BaseRendererMap} from '../../components/adapter/BaseRenderer';
+import {CSSProperties} from 'react';
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 	const pos = button.getBoundingClientRect();
@@ -30,19 +22,19 @@ export type Menu_Model = {
 };
 
 export interface MenuListener {
-	__onMenuDisplay: (menu: Menu_Model) => void
-	__onMenuHide: (id: string) => void
+	__onMenuDisplay: (menu: Menu_Model) => void;
+	__onMenuHide: (id: string) => void;
 }
 
 
 export class MenuModule_Class
 	extends Module<{}> {
 
-	private showMenu = new ThunderDispatcher<MenuListener, "__onMenuDisplay">("__onMenuDisplay");
-	private hideMenu = new ThunderDispatcher<MenuListener, "__onMenuHide">("__onMenuHide");
+	private showMenu = new ThunderDispatcher<MenuListener, '__onMenuDisplay'>('__onMenuDisplay');
+	private hideMenu = new ThunderDispatcher<MenuListener, '__onMenuHide'>('__onMenuHide');
 
 	show = (model: Menu_Model) => {
-		this.showMenu.dispatchUI([model])
+		this.showMenu.dispatchUI([model]);
 	};
 
 	hide = (id: string) => this.hideMenu.dispatchUI([id]);
@@ -53,7 +45,7 @@ export const MenuModule = new MenuModule_Class();
 export class MenuBuilder {
 	private readonly adapter: Adapter;
 	private readonly position: MenuPosition;
-	private readonly cssContainer?: CSSProperties
+	private readonly cssContainer?: CSSProperties;
 	private id: string = generateHex(8);
 	private onNodeClicked?: (path: string, item: any) => void;
 	private onNodeDoubleClicked?: Function;
@@ -62,7 +54,7 @@ export class MenuBuilder {
 	constructor(menu: Adapter, position: MenuPosition, cssContainer?: CSSProperties) {
 		this.adapter = menu;
 		this.position = position;
-		this.cssContainer = cssContainer
+		this.cssContainer = cssContainer;
 	}
 
 	show() {
@@ -76,7 +68,7 @@ export class MenuBuilder {
 		};
 
 		MenuModule.show(model);
-	};
+	}
 
 	setId(id: string) {
 		this.id = id;

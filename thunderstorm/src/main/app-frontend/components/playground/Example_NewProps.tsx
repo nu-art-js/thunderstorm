@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import * as React from "react";
+import * as React from 'react';
 
 type Props<P> = {
 	name?: string
@@ -30,7 +30,7 @@ type Props<P> = {
 };
 
 type State = { index: number };
-type InferProps<T> = T extends React.ComponentType<infer P> ? P : "blah blah";
+type InferProps<T> = T extends React.ComponentType<infer P> ? P : 'blah blah';
 
 export class Example_NewProps<T, P = InferProps<T>>
 	extends React.Component<Props<P>, State> {
@@ -48,10 +48,10 @@ export class Example_NewProps<T, P = InferProps<T>>
 	render() {
 		const Renderer = this.props.renderer;
 		return <div>
-			{this.props.name && <div style={{marginBottom: "10px"}}>{this.props.name}</div>}
+			{this.props.name && <div style={{marginBottom: '10px'}}>{this.props.name}</div>}
 			{this.renderList(Renderer)}
 			{this.renderToggle(Renderer)}
-		</div>
+		</div>;
 	}
 
 	private renderToggle(Renderer: React.ComponentType<P>) {
@@ -65,9 +65,9 @@ export class Example_NewProps<T, P = InferProps<T>>
 					if (index >= this.props.data.length)
 						index = 0;
 
-					return {index}
-				})
-			}} style={{width: "fit-content"}}>
+					return {index};
+				});
+			}} style={{width: 'fit-content'}}>
 				click to switch
 			</div>
 			<Renderer {...this.props.data[this.state.index]}/>
@@ -78,8 +78,8 @@ export class Example_NewProps<T, P = InferProps<T>>
 		if (!this.props.showList)
 			return;
 
-		return <div className="ll_v_l" style={{marginBottom: "20px"}}>
-			{this.props.data.map((_data, index) => <div key={index} style={{marginBottom: "5px"}}><Renderer {..._data}/></div>)}
+		return <div className="ll_v_l" style={{marginBottom: '20px'}}>
+			{this.props.data.map((_data, index) => <div key={index} style={{marginBottom: '5px'}}><Renderer {..._data}/></div>)}
 		</div>;
 	}
 }

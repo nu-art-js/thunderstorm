@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {scenarioAddData} from "./test/add-data";
-import {scenarioRemoveData} from "./test/remove-data";
+import {__scenario} from '@nu-art/testelot';
+import {scenarioAddData} from './test/add-data';
 
 
-export const testDatabase = __scenario("test-database");
+export const testDatabase = __scenario('test-database');
 testDatabase.add(scenarioAddData);
 // testDatabase.add(scenarioRemoveData)

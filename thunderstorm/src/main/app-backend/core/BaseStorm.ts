@@ -19,19 +19,13 @@
  * limitations under the License.
  */
 
-import {
-	DatabaseWrapper,
-	FirebaseModule
-} from "@nu-art/firebase/backend";
-import {
-	merge,
-	ModuleManager
-} from "@nu-art/ts-common";
+import {DatabaseWrapper, FirebaseModule} from '@nu-art/firebase/backend';
+import {merge, ModuleManager} from '@nu-art/ts-common';
 
 export abstract class BaseStorm
 	extends ModuleManager {
 
-	protected envKey: string = "dev";
+	protected envKey: string = 'dev';
 
 	setEnvironment(envKey: string) {
 		this.envKey = envKey;
@@ -44,7 +38,7 @@ export abstract class BaseStorm
 
 		const listener = (resolve: (value: unknown) => void) => (snapshot: any) => {
 			if (initialized >= 2) {
-				console.log("CONFIGURATION HAS CHANGED... KILLING PROCESS!!!");
+				console.log('CONFIGURATION HAS CHANGED... KILLING PROCESS!!!');
 				process.exit(2);
 			}
 
@@ -60,9 +54,9 @@ export abstract class BaseStorm
 			database.listen(`/_config/${this.envKey}`, listener(resolve));
 		});
 		const [
-			      defaultConfig,
-			      overrideConfig
-		      ] = await Promise.all(
+			defaultConfig,
+			overrideConfig
+		] = await Promise.all(
 			[
 				defaultPromise,
 				envPromise

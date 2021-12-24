@@ -1,4 +1,4 @@
-import {Module} from "@nu-art/ts-common";
+import {Module} from '@nu-art/ts-common';
 
 type Config = {
 	appName: string
@@ -17,7 +17,7 @@ class ThunderstormModule_Class
 
 	constructor() {
 		super();
-		this.setDefaultConfig({appName: "Thunderstorm-WebApp"});
+		this.setDefaultConfig({appName: 'Thunderstorm-WebApp'});
 	}
 
 	init() {
@@ -26,26 +26,26 @@ class ThunderstormModule_Class
 	}
 
 	setAppName(appName: string) {
-		document.title = appName
+		document.title = appName;
 	}
 
 	printDiv(div: HTMLDivElement) {
 		//create, and remove iframe from body dynamically!!
-		const printingIFrame: HTMLIFrameElement | null = document.getElementById("to-print") as HTMLIFrameElement;
+		const printingIFrame: HTMLIFrameElement | null = document.getElementById('to-print') as HTMLIFrameElement;
 		if (!printingIFrame)
-			return this.logWarning("could not find printing iframe");
+			return this.logWarning('could not find printing iframe');
 
 		const printingContentWindow = printingIFrame.contentWindow;
 		if (!printingContentWindow)
-			return this.logWarning("printingContentWindow is undefined");
+			return this.logWarning('printingContentWindow is undefined');
 
 
 		printingContentWindow.document.open();
 		printingContentWindow.document.write(div.innerHTML);
-		const html = printingContentWindow.document.getElementsByTagName("html")?.[0];
-		html.removeChild(html.getElementsByTagName("head")?.[0])
-		const body: HTMLBodyElement | null = html.getElementsByTagName("body")?.[0];
-		html?.insertBefore(window.document.getElementsByTagName("head")?.[0]?.cloneNode(true), body);
+		const html = printingContentWindow.document.getElementsByTagName('html')?.[0];
+		html.removeChild(html.getElementsByTagName('head')?.[0]);
+		const body: HTMLBodyElement | null = html.getElementsByTagName('body')?.[0];
+		html?.insertBefore(window.document.getElementsByTagName('head')?.[0]?.cloneNode(true), body);
 		printingContentWindow.document.close();
 		printingContentWindow.focus();
 		setTimeout(() => printingContentWindow.print(), 1500);
@@ -55,7 +55,7 @@ class ThunderstormModule_Class
 		let themeTag: HTMLMetaElement | null = document.head.querySelector('meta[name="theme-color"]');
 		if (!themeTag) {
 			themeTag = document.createElement('meta');
-			themeTag.name = "theme-color";
+			themeTag.name = 'theme-color';
 			document.getElementsByTagName('head')[0].appendChild(themeTag);
 		}
 
@@ -68,7 +68,7 @@ class ThunderstormModule_Class
 
 	openNewTab(url: string, newTab = false) {
 		if (window)
-			window.open(url, newTab ? "" : '_blank');
+			window.open(url, newTab ? '' : '_blank');
 	}
 
 	downloadFile(props: FileDownloadProps) {
@@ -77,12 +77,12 @@ class ThunderstormModule_Class
 
 		const element = document.createElement('a');
 		let content: string;
-		if (typeof props.content === "string")
+		if (typeof props.content === 'string')
 			content = encodeURIComponent(props.content);
 		else
 			content = URL.createObjectURL(props.content);
 
-		element.setAttribute('href', `data:${props.mimeType || "text/text"};charset=${props.charset || "utf-8"},${content}`);
+		element.setAttribute('href', `data:${props.mimeType || 'text/text'};charset=${props.charset || 'utf-8'},${content}`);
 		element.setAttribute('download', `${props.fileName}`);
 		element.click();
 	}

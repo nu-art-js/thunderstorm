@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import * as fs from "fs";
+import * as fs from 'fs';
 
 
 export async function fileToBase64(file: string) {

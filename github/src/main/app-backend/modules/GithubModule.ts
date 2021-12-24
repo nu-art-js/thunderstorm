@@ -46,7 +46,7 @@ export class GithubModule_Class
 				auth: auth
 			});
 		return client;
-	};
+	}
 
 	private async createClientWithJWT() {
 		const ts = Math.floor(Date.now() / 1000.0);
@@ -236,7 +236,7 @@ export class GithubModule_Class
 
 		// Response includes (besides branch name) extra information about the branch.
 		return branches;
-	};
+	}
 
 	async getArchiveUrl(repo: string, branch: string) {
 		const token = await this.getGithubInstallationToken();
@@ -277,9 +277,7 @@ export class GithubModule_Class
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
-		let response: RestEndpointMethodTypes["repos"]["getContent"]["response"];
-
-		response = await client.repos.getContent(
+		const response: RestEndpointMethodTypes["repos"]["getContent"]["response"] = await client.repos.getContent(
 			{
 				owner: this.config.gitOwner,
 				repo,

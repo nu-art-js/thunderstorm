@@ -19,9 +19,9 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import Select, {components} from "react-select";
-import {ReactNode} from "react";
+import * as React from 'react';
+import {ReactNode} from 'react';
+import Select, {components} from 'react-select';
 
 type Props<T> = {
 	iconClose: ReactNode,
@@ -59,8 +59,8 @@ export class GenericSelect<T>
 		if (options) {
 			const selectedOption = props.selectedOption;
 			options.forEach((option, idx) => {
-				const optionPresentation = props.presentation(option)
-				const item: SelectItem = {label: optionPresentation, value: "" + idx};
+				const optionPresentation = props.presentation(option);
+				const item: SelectItem = {label: optionPresentation, value: '' + idx};
 				if (selectedOption) {
 					if (optionPresentation === props.presentation(selectedOption)) {
 						value = item;

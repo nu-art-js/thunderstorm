@@ -19,36 +19,31 @@
  * limitations under the License.
  */
 
-import * as React from "react";
+import * as React from 'react';
 // noinspection TypeScriptPreferShortImport
-import {
-	Dialog_Model,
-	DialogButton_Builder,
-	DialogListener,
-	DialogModule
-} from "./DialogModule";
+import {Dialog_Model, DialogButton_Builder, DialogListener, DialogModule} from './DialogModule';
 // noinspection TypeScriptPreferShortImport
-import {BaseComponent} from "../../core/BaseComponent";
-import {stopPropagation} from "../../utils/tools";
-import { Properties } from "../../components/types";
+import {BaseComponent} from '../../core/BaseComponent';
+import {stopPropagation} from '../../utils/tools';
+import {Properties} from '../../components/types';
 
 const modalOverlay: Properties = {
-	position: "fixed",
+	position: 'fixed',
 	top: 0,
 	left: 0,
-	width: "100%",
-	height: "100%",
-	display: "flex",
-	alignItems: "center",
-	justifyContent: "center"
+	width: '100%',
+	height: '100%',
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent: 'center'
 };
 
 const defaultDialogStyle: Properties = {
-	borderRadius: "4px",
-	boxShadow: "0px 2px 5px 0 rgba(0, 0, 0, 0.28)",
-	backgroundColor: "#ffffff",
+	borderRadius: '4px',
+	boxShadow: '0px 2px 5px 0 rgba(0, 0, 0, 0.28)',
+	backgroundColor: '#ffffff',
 	margin: 0,
-	alignItems: "unset"
+	alignItems: 'unset'
 	// position: "absolute",
 	// top: "50%",
 	// left: "50%",
@@ -58,19 +53,19 @@ const defaultDialogStyle: Properties = {
 
 const defaultContentStyle: Properties = {
 	// display: "inline-block",
-	padding: "24px 18px 0",
+	padding: '24px 18px 0',
 };
 
 
 const defaultButtonStyle: Properties = {
-	borderRadius: "4px",
-	color: "white",
-	fontSize: "11px",
-	letterSpacing: "-0.18px",
-	outline: "none",
-	margin: "0px 6px",
-	height: "23px",
-	width: "68px"
+	borderRadius: '4px',
+	color: 'white',
+	fontSize: '11px',
+	letterSpacing: '-0.18px',
+	outline: 'none',
+	margin: '0px 6px',
+	height: '23px',
+	width: '68px'
 };
 
 const defaultSubmitStyle: Properties = {
@@ -78,44 +73,44 @@ const defaultSubmitStyle: Properties = {
 };
 
 const defaultCancelStyle: Properties = {
-	backgroundColor: "#d9d9d9"
+	backgroundColor: '#d9d9d9'
 };
 
 
 export const DialogButton_Submit = (onSubmit: () => void, label?: React.ReactNode) =>
 	new DialogButton_Builder()
 		.setStyle({...defaultSubmitStyle, ...defaultButtonStyle})
-		.setContent(label || "Submit")
+		.setContent(label || 'Submit')
 		.setAction(onSubmit);
 
 export const DialogButton_Save = (onSave: () => void, label?: React.ReactNode) =>
 	new DialogButton_Builder()
 		.setStyle({...defaultSubmitStyle, ...defaultButtonStyle})
-		.setContent(label || "Save")
+		.setContent(label || 'Save')
 		.setAction(onSave);
 
 export const DialogButton_Undo = (onSave: () => void, label?: React.ReactNode) =>
 	new DialogButton_Builder()
 		.setStyle({...defaultSubmitStyle, ...defaultButtonStyle})
-		.setContent(label || "Undo")
+		.setContent(label || 'Undo')
 		.setAction(onSave);
 
 export const DialogButton_Redo = (onSave: () => void, label?: React.ReactNode) =>
 	new DialogButton_Builder()
 		.setStyle({...defaultSubmitStyle, ...defaultButtonStyle})
-		.setContent(label || "Redo")
+		.setContent(label || 'Redo')
 		.setAction(onSave);
 
 export const DialogButton_Close = (onSubmit?: () => void, label?: React.ReactNode) =>
 	new DialogButton_Builder()
 		.setStyle({...defaultSubmitStyle, ...defaultButtonStyle})
-		.setContent(label || "Close")
+		.setContent(label || 'Close')
 		.setAction(onSubmit || DialogModule.close);
 
 export const DialogButton_Cancel = (onSubmit?: () => void, label?: React.ReactNode) =>
 	new DialogButton_Builder()
 		.setStyle({...defaultCancelStyle, ...defaultButtonStyle})
-		.setContent(label || "Cancel")
+		.setContent(label || 'Cancel')
 		.setAction(onSubmit || DialogModule.close);
 
 type Props = {}
@@ -138,9 +133,9 @@ export class Dialog
 
 	__showDialog = (model?: Dialog_Model): void => {
 		if (model && model.allowIndirectClosing)
-			addEventListener("keydown", Dialog.closeWithEsc);
+			addEventListener('keydown', Dialog.closeWithEsc);
 		else
-			removeEventListener("keydown", Dialog.closeWithEsc);
+			removeEventListener('keydown', Dialog.closeWithEsc);
 
 		this.setState({model});
 	};
@@ -152,8 +147,8 @@ export class Dialog
 
 		return (
 			<div id="overlay" style={{...modalOverlay, background: dialogModel.overlayColor, zIndex: dialogModel.zIndex}} onClick={this.onOverlayClicked}>
-				<div className={"ll_v_l"} style={{...defaultDialogStyle, ...(dialogModel.style || {})}}
-				     onClick={stopPropagation}>
+				<div className={'ll_v_l'} style={{...defaultDialogStyle, ...(dialogModel.style || {})}}
+						 onClick={stopPropagation}>
 					{dialogModel.title && this.renderTitle(dialogModel.title)}
 					{this.renderContent(dialogModel.content)}
 					{this.renderButtons(dialogModel)}
@@ -164,18 +159,18 @@ export class Dialog
 
 	renderTitle = (title?: React.ReactNode) => {
 		if (!title)
-			return "";
+			return '';
 
-		if (typeof title === "string")
-			return <div style={{marginBottom: "12px"}}>
+		if (typeof title === 'string')
+			return <div style={{marginBottom: '12px'}}>
 				<div dangerouslySetInnerHTML={{__html: title}}/>
 			</div>;
 
-		return <div className={"match_width"}>{title}</div>;
+		return <div className={'match_width'}>{title}</div>;
 	};
 
 	renderContent = (content: React.ReactNode) => {
-		if (typeof content === "string")
+		if (typeof content === 'string')
 			return <div style={defaultContentStyle}>
 				<div dangerouslySetInnerHTML={{__html: content}}/>
 			</div>;
@@ -188,15 +183,15 @@ export class Dialog
 			return null;
 
 		if (model.buttons.length === 0)
-			return "";
+			return '';
 
-		const actionsStyle = {justifyContent: model.buttons.length > 1 ? "flex-end" : "center", ...(model.actionsStyle ? model.actionsStyle : {})};
+		const actionsStyle = {justifyContent: model.buttons.length > 1 ? 'flex-end' : 'center', ...(model.actionsStyle ? model.actionsStyle : {})};
 		return <div className={`ll_h_c`} style={actionsStyle}>{model.buttons.map(
 			(button, idx) =>
 				<div key={idx}
-				     className={button.className}
-				     style={button.style}
-				     onClick={button.action}>{button.content}
+						 className={button.className}
+						 style={button.style}
+						 onClick={button.action}>{button.content}
 				</div>)}</div>;
 	};
 

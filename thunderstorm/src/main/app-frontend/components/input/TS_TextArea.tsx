@@ -20,10 +20,7 @@
  */
 
 import * as React from 'react';
-import {
-	TS_BaseInput,
-	TS_BaseInputProps
-} from './TS_BaseInput';
+import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 
 export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key>
 
@@ -53,7 +50,7 @@ export class TS_TextArea<Key extends string>
 			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
 			onKeyPress={this.props.handleKeyEvent || this.handleKeyEvent}
-			autoComplete={this.props.autocomplete ? "on" : "off"}
+			autoComplete={this.props.autocomplete ? 'on' : 'off'}
 			spellCheck={this.props.spellCheck}
 		/>;
 	}

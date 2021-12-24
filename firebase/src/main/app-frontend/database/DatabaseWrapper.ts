@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, Logger, ObjectTS} from "@nu-art/ts-common";
-import {FirebaseType_DB} from "./types";
-import {getDatabase, onValue, ref, remove, set, update} from "firebase/database";
-import {FirebaseApp} from "firebase/app";
+import {BadImplementationException, Logger, ObjectTS} from '@nu-art/ts-common';
+import {FirebaseType_DB} from './types';
+import {getDatabase, onValue, ref, remove, set, update} from 'firebase/database';
+import {FirebaseApp} from 'firebase/app';
 
 export class DatabaseWrapper
 	extends Logger {
@@ -33,7 +33,7 @@ export class DatabaseWrapper
 
 
 	public async get<T>(path: string): Promise<T | null> {
-		return new Promise<T | null>(async (resolve, reject) => {
+		return new Promise<T | null>( (resolve, reject) => {
 			onValue(this.getRef(path), snapshot => {
 				resolve(snapshot.val() as T);
 			}, (error: Error) => {
@@ -55,32 +55,32 @@ export class DatabaseWrapper
 	public async set<T>(path: string, value: T) {
 		try {
 			await set(this.getRef(path), value);
-		} catch (e:any) {
+		} catch (e: any) {
 			throw new BadImplementationException(`Error while setting value to path: ${path}`);
 		}
 	}
 
 	/** @deprecated */
 	public async update<T extends ObjectTS>(path: string, value: T) {
-		this.logWarning("update will be deprecated!! please use patch");
+		this.logWarning('update will be deprecated!! please use patch');
 		return this.patch(path, value);
 	}
 
 	public async patch<T extends ObjectTS>(path: string, value: T) {
 		try {
 			await update(this.getRef(path), value);
-		} catch (e:any) {
+		} catch (e: any) {
 			throw new BadImplementationException(`Error while updating value to path: ${path}`);
 		}
 	}
 
 	/** @deprecated */
-	public async remove<T>(path: string, assertionRegexp: string = "^/.*?/.*") {
-		this.logWarning("remove will be deprecated!! please use delete");
+	public async remove<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+		this.logWarning('remove will be deprecated!! please use delete');
 		return this.delete(path, assertionRegexp);
 	}
 
-	public async delete<T>(path: string, assertionRegexp: string = "^/.*?/.*") {
+	public async delete<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
 		if (!path)
 			throw new BadImplementationException(`Falsy value, path: '${path}'`);
 
@@ -89,7 +89,7 @@ export class DatabaseWrapper
 
 		try {
 			await remove(this.getRef(path));
-		} catch (e:any) {
+		} catch (e: any) {
 			throw new BadImplementationException(`Error while removing path: ${path}`);
 		}
 	}

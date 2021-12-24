@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {FirestoreQuery} from "../../../_main";
+import {FirestoreQuery} from '../../../_main';
 
 export type FB_ArrayType = {
 	key: string

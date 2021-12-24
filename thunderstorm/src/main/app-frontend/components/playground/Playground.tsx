@@ -20,11 +20,11 @@
  */
 
 import * as React from 'react';
-import {GenericSelect} from "../GenericSelect";
-import {BrowserHistoryModule} from "../../modules/HistoryModule";
-import {Example_NewProps} from "./Example_NewProps";
+import {GenericSelect} from '../GenericSelect';
+import {BrowserHistoryModule} from '../../modules/HistoryModule';
+import {Example_NewProps} from './Example_NewProps';
 
-const PLAYGROUND = "playground"
+const PLAYGROUND = 'playground';
 
 export type PlaygroundProps = {
 	selectStyle: any
@@ -50,40 +50,40 @@ export class Playground
 		super(props);
 		const queryParam = BrowserHistoryModule.getQueryParams()[PLAYGROUND];
 		const screen = this.props.screens.find(s => s.name === queryParam);
-		this.state = {selectedScreen: screen}
+		this.state = {selectedScreen: screen};
 	}
 
 	render() {
 		return <div className={'match_height match_width'}>
-			<div className={'match_height match_width'} style={{alignSelf: "start", padding: "20px"}}>
+			<div className={'match_height match_width'} style={{alignSelf: 'start', padding: '20px'}}>
 				<GenericSelect<PlaygroundScreen>
 					iconClose={this.props.iconClose}
 					iconOpen={this.props.iconOpen}
 					selectedOption={this.state.selectedScreen}
 					options={this.props.screens}
 					onChange={(screen: PlaygroundScreen) => {
-						this.setState({selectedScreen: screen})
-						BrowserHistoryModule.addQueryParam(PLAYGROUND, screen.name)
+						this.setState({selectedScreen: screen});
+						BrowserHistoryModule.addQueryParam(PLAYGROUND, screen.name);
 					}}
 					styles={this.props.selectStyle}
 					presentation={(screen) => screen.name}
 				/>
 			</div>
-			<div style={{borderStyle: "double", display: "inline-block", padding: "12px", margin: "12px"}}>{this.renderPlayground()}</div>
-		</div>
+			<div style={{borderStyle: 'double', display: 'inline-block', padding: '12px', margin: '12px'}}>{this.renderPlayground()}</div>
+		</div>;
 	}
 
 	private renderPlayground() {
 		if (!this.state.selectedScreen)
-			return <div>Select a playground</div>
+			return <div>Select a playground</div>;
 
 		const data = this.state.selectedScreen.data;
 		if (!data || data.length === 0)
-			return <this.state.selectedScreen.renderer/>
+			return <this.state.selectedScreen.renderer/>;
 
 		if (data.length === 1)
-			return <this.state.selectedScreen.renderer {...data[0]}/>
+			return <this.state.selectedScreen.renderer {...data[0]}/>;
 
-		return <Example_NewProps name={this.state.selectedScreen.name} data={data} renderer={this.state.selectedScreen.renderer}/>
+		return <Example_NewProps name={this.state.selectedScreen.name} data={data} renderer={this.state.selectedScreen.renderer}/>;
 	}
 }

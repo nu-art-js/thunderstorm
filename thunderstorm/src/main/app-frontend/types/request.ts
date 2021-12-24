@@ -19,9 +19,6 @@
  * limitations under the License.
  */
 
-import {
-	CoreOptions,
-	UriOptions
-} from "request";
+import {CoreOptions, UriOptions} from 'request';
 
 export type RequestOptions = CoreOptions & UriOptions

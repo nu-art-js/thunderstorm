@@ -17,11 +17,11 @@
  */
 
 // import {FirestoreCollection} from "./FirestoreCollection";
-import {Firebase_DataSnapshot, Firebase_DB, FirebaseListener} from "./types";
-import {BadImplementationException, calculateJsonSizeMb, ObjectTS} from "@nu-art/ts-common";
-import {FirebaseSession} from "../auth/firebase-session";
-import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
-import {getDatabase} from 'firebase-admin/database'
+import {Firebase_DataSnapshot, Firebase_DB, FirebaseListener} from './types';
+import {BadImplementationException, calculateJsonSizeMb, ObjectTS} from '@nu-art/ts-common';
+import {FirebaseSession} from '../auth/firebase-session';
+import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
+import {getDatabase} from 'firebase-admin/database';
 
 export class DatabaseWrapper
 	extends FirebaseBaseWrapper {
@@ -30,11 +30,11 @@ export class DatabaseWrapper
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.database = getDatabase(firebaseSession.app)
+		this.database = getDatabase(firebaseSession.app);
 	}
 
 	public async get<T>(path: string, defaultValue?: T): Promise<T | undefined> {
-		const snapshot = await this.database.ref(path).once("value");
+		const snapshot = await this.database.ref(path).once('value');
 		let toRet = defaultValue;
 		if (snapshot)
 			toRet = snapshot.val() as (T | undefined);
@@ -47,7 +47,7 @@ export class DatabaseWrapper
 
 	public listen<T>(path: string, callback: (value: T | undefined) => void): FirebaseListener {
 		try {
-			return this.database.ref(path).on("value", (snapshot: Firebase_DataSnapshot) => callback(snapshot ? snapshot.val() : undefined));
+			return this.database.ref(path).on('value', (snapshot: Firebase_DataSnapshot) => callback(snapshot ? snapshot.val() : undefined));
 		} catch (e: any) {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}
@@ -55,7 +55,7 @@ export class DatabaseWrapper
 
 	public stopListening<T>(path: string, listener: FirebaseListener): void {
 		try {
-			this.database.ref(path).off("value", listener);
+			this.database.ref(path).off('value', listener);
 		} catch (e: any) {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}
@@ -77,10 +77,10 @@ export class DatabaseWrapper
 			else
 				await this.uploadByChunks(node, data[key], maxSizeMB, itemsToRef);
 		}
-	};
+	}
 
 	public async update<T>(path: string, value: T) {
-		this.logWarning("update will be deprecated!! please use patch");
+		this.logWarning('update will be deprecated!! please use patch');
 		return this.patch(path, value);
 	}
 
@@ -93,12 +93,12 @@ export class DatabaseWrapper
 		}
 	}
 
-	public async remove<T>(path: string, assertionRegexp: string = "^/.*?/.*") {
-		this.logWarning("remove will be deprecated!! please use delete");
+	public async remove<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+		this.logWarning('remove will be deprecated!! please use delete');
 		return this.delete(path, assertionRegexp);
 	}
 
-	public async delete<T>(path: string, assertionRegexp: string = "^/.*?/.*") {
+	public async delete<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
 		if (!path)
 			throw new BadImplementationException(`Falsy value, path: '${path}'`);
 

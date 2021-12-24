@@ -16,26 +16,12 @@
  * limitations under the License.
  */
 
-import {
-	BeLogged,
-	LogLevel,
-    ObjectTS
-} from "@nu-art/ts-common";
+import {LogLevel, ObjectTS} from '@nu-art/ts-common';
 
-import {
-	Action_Custom,
-	Action_Http,
-	Action_Log,
-	Action_Sleep,
-	Action_ThrowException,
-	ContextKey,
-	HttpMethod,
-	Scenario,
-	TestException,
-} from "../index";
+import {Action_Custom, Action_Http, Action_Log, Action_Sleep, ContextKey, HttpMethod, Scenario, TestException,} from '../index';
 
-import {Reporter} from "./Reporter";
-import * as objectHash from "object-hash";
+import {Reporter} from './Reporter';
+import * as objectHash from 'object-hash';
 
 export function __log(logMessage: string, level: LogLevel = LogLevel.Verbose): Action_Log {
 	// @ts-ignore
@@ -73,36 +59,4 @@ export function __scenario(label: string | (() => string), reporter?: Reporter):
 	}
 
 	return scenario;
-}
-
-export function __throwException(message: string): Action_ThrowException {
-	// @ts-ignore
-	return new Action_ThrowException(message);
-}
-
-export function enableTerminalLogReWrite() {
-	BeLogged.rewriteConsole = (lineCount => {
-		let rewriteCommand = "";
-		for (let i = 0; i < lineCount; i++) {
-			rewriteCommand += "tput cuu1 tput el;"
-		}
-
-		try {
-			require("child_process").execSync(rewriteCommand, {stdio: 'inherit'});
-		} catch (e:any) {
-		}
-	});
-}
-
-
-export function _executeScenario(scenario: Scenario) {
-	new Promise(scenario.run)
-		.then(() => {
-			scenario.logInfo("-------------- COMPLETED -----------------");
-		})
-		.catch(reason => {
-			scenario.logError("---------------- ERROR -----------------");
-			scenario.logError(reason);
-		});
-
 }

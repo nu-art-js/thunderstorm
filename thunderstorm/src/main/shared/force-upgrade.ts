@@ -19,11 +19,11 @@
  * limitations under the License.
  */
 
-import {ApiWithQuery} from "./types";
+import {ApiWithQuery} from './types';
 
-export const HeaderKey_AppVersion = "x-app-version";
-export const HeaderKey_BrowserType = "x-browser-type";
-export const HeaderKey_UserAgent = "user-agent";
+export const HeaderKey_AppVersion = 'x-app-version';
+export const HeaderKey_BrowserType = 'x-browser-type';
+export const HeaderKey_UserAgent = 'user-agent';
 
 export type UpgradeRequired = {
 	browser: boolean,

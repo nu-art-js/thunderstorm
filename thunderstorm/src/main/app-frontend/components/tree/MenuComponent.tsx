@@ -20,16 +20,16 @@
  */
 
 
-import * as React from "react";
-import {generateHex} from "@nu-art/ts-common";
-import {BaseComponent} from "../../core/BaseComponent";
-import {Adapter} from "../adapter/Adapter";
-import {Tree} from "./Tree";
+import * as React from 'react';
+import {generateHex} from '@nu-art/ts-common';
+import {BaseComponent} from '../../core/BaseComponent';
+import {Adapter} from '../adapter/Adapter';
+import {Tree} from './Tree';
 
 export type MenuComponentProps = {
 	adapter: Adapter
 	childrenContainerStyle?: any
-	onNodeClicked?: (path:string,item:any) => void
+	onNodeClicked?: (path: string, item: any) => void
 	onNodeDoubleClicked?: Function // TODO: Need to handle this
 	id?: string
 }
@@ -48,6 +48,6 @@ export class MenuComponent
 			id={this.id}
 			adapter={this.props.adapter}
 			onNodeClicked={this.props.onNodeClicked}
-		/>
+		/>;
 	}
 }

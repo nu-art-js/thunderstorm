@@ -20,19 +20,19 @@
  */
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
-import {ApiTypeBinder, ErrorResponse, HttpMethod} from "../../../shared/types";
-import {BadImplementationException, StringMap,} from "@nu-art/ts-common";
-import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
-import {BaseHttpModule_Class} from "../../../shared/BaseHttpModule";
-import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from "./types";
-import * as fs from "fs";
+import {ApiTypeBinder, ErrorResponse, HttpMethod} from '../../../shared/types';
+import {BadImplementationException, StringMap,} from '@nu-art/ts-common';
+import {BaseHttpRequest} from '../../../shared/BaseHttpRequest';
+import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
+import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
+import * as fs from 'fs';
 
 export class AxiosHttpModule_Class
 	extends BaseHttpModule_Class {
 	private requestOption: Axios_RequestConfig = {};
 
 	init() {
-		super.init()
+		super.init();
 		const origin = this.config.origin;
 		if (origin)
 			this.origin = origin;
@@ -57,12 +57,12 @@ export class AxiosHttpModule_Class
 
 	async downloadFile(url: string, outputFile: string, key = `Download file: ${url}`) {
 		const downloadRequest = await this.createRequest(HttpMethod.GET, key)
-			.setResponseType("arraybuffer")
+			.setResponseType('arraybuffer')
 			.setUrl(url);
 
 
 		const downloadResponse = await downloadRequest.executeSync();
-		const outputFolder = outputFile.substring(0, outputFile.lastIndexOf("/"));
+		const outputFolder = outputFile.substring(0, outputFile.lastIndexOf('/'));
 		if (!fs.existsSync(outputFolder))
 			fs.mkdirSync(outputFolder);
 
@@ -76,7 +76,7 @@ export const AxiosHttpModule = new AxiosHttpModule_Class();
 
 class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	extends BaseHttpRequest<Binder> {
-	private response?: Axios_Response<Binder["response"]>;
+	private response?: Axios_Response<Binder['response']>;
 	private cancelSignal: Axios_CancelTokenSource;
 	protected status?: number;
 	private requestOption: Axios_RequestConfig = {};
@@ -107,7 +107,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		this.cancelSignal.cancel(`Request with key: '${this.key}' aborted by the user.`);
 	}
 
-	getErrorResponse(): ErrorResponse<Binder["errors"]> {
+	getErrorResponse(): ErrorResponse<Binder['errors']> {
 		return {debugMessage: this.getResponse()};
 	}
 
@@ -118,18 +118,18 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 
 	protected executeImpl(): Promise<void> {
 		//loop through whatever preprocessor
-		return new Promise<void>(async (resolve, reject) => {
+		const executor = async (resolve: () => void, reject: (error: any) => void) => {
 			if (this.aborted)
 				return resolve();
 
-			let nextOperator = this.url.indexOf("?") === -1 ? "?" : "&";
+			let nextOperator = this.url.indexOf('?') === -1 ? '?' : '&';
 			const fullUrl = Object.keys(this.params).reduce((url: string, paramKey: string) => {
 				const param: string | undefined = this.params[paramKey];
 				if (!param)
 					return url;
 
 				const toRet = `${url}${nextOperator}${paramKey}=${encodeURIComponent(param)}`;
-				nextOperator = "&";
+				nextOperator = '&';
 				return toRet;
 			}, this.url);
 
@@ -137,7 +137,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			// this.xhr.upload.onprogress = this.onProgressListener;
 			const body = this.body;
 			if (body)
-				this.addHeader("Content-Length", `${body.length}`);
+				this.addHeader('Content-Length', `${body.length}`);
 			// TODO add zipping of body
 			// if (typeof body === "string" && this.compress)
 			// 	return gzip(body, (error: Error | null, result: Buffer) => {
@@ -192,7 +192,8 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				this.status = this.response?.status || 500;
 				return reject(e);
 			}
-		});
+		};
+		return new Promise<void>(executor);
 	}
 
 	getResponseHeader(headerKey: string): string | string[] | undefined {

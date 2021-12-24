@@ -19,16 +19,10 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	Module,
-	Second
-} from "@nu-art/ts-common";
-import {ThunderDispatcher} from "../../core/thunder-dispatcher";
-import {
-	Stylable,
-	StylableBuilder
-} from "../../tools/Stylable";
+import * as React from 'react';
+import {Module, Second} from '@nu-art/ts-common';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {Stylable, StylableBuilder} from '../../tools/Stylable';
 
 export type  Tooltip_Model = Stylable & {
 	content: React.ReactNode;
@@ -43,7 +37,7 @@ export interface TooltipListener {
 	__showTooltip(tooltip?: Tooltip_Model): void;
 }
 
-const dispatch_showTooltip = new ThunderDispatcher<TooltipListener, "__showTooltip">("__showTooltip");
+const dispatch_showTooltip = new ThunderDispatcher<TooltipListener, '__showTooltip'>('__showTooltip');
 const Interval_DefaultTooltip = 6 * Second;
 
 export class TooltipModule_Class
@@ -54,7 +48,7 @@ export class TooltipModule_Class
 		if (!tooltip.location && e)
 			tooltip.location = {x: e.pageX + 10, y: e.pageY + 15};
 
-		dispatch_showTooltip.dispatchUI([tooltip])
+		dispatch_showTooltip.dispatchUI([tooltip]);
 	};
 
 	hide = () => dispatch_showTooltip.dispatchUI([]);
@@ -77,7 +71,7 @@ export class TooltipBuilder
 			this.location = {
 				x: e.pageX + 10,
 				y: e.pageY + 15
-			}
+			};
 	}
 
 	setLocation = (x: number, y: number) => {
@@ -100,7 +94,7 @@ export class TooltipBuilder
 			duration: this.duration,
 		};
 
-		TooltipModule.show(model)
-	}
+		TooltipModule.show(model);
+	};
 }
 

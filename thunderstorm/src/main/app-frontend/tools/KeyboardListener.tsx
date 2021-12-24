@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import * as React from "react";
+import * as React from 'react';
 
 export type KeyboardListenerProps = {
 	onKeyboardEventListener: (e: React.KeyboardEvent) => void
@@ -36,7 +36,7 @@ export class KeyboardListener<P extends KeyboardListenerProps>
 		if (!onKeyboardEventListener)
 			return;
 
-		this.node?.addEventListener("keydown", this.keyboardEventHandler)
+		this.node?.addEventListener('keydown', this.keyboardEventHandler);
 	}
 
 	private removeKeyboardListener() {
@@ -44,7 +44,7 @@ export class KeyboardListener<P extends KeyboardListenerProps>
 		if (!onKeyboardEventListener)
 			return;
 
-		this.node?.removeEventListener("keydown", this.keyboardEventHandler)
+		this.node?.removeEventListener('keydown', this.keyboardEventHandler);
 	}
 
 	keyboardEventHandler = (e: KeyboardEvent) => this.node && this.props.onKeyboardEventListener && this.props.onKeyboardEventListener(e as unknown as React.KeyboardEvent);
@@ -73,6 +73,6 @@ export class KeyboardListener<P extends KeyboardListenerProps>
 			onFocus={this.onFocus}
 			onBlur={this.onBlur}>
 			{this.props.children}
-		</div>
+		</div>;
 	}
 }

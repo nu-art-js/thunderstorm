@@ -61,7 +61,7 @@ export class AxisBottom
 	};
 
 	axisBottom = () => {
-		const textPaddingY = !!this.props.borderBoxValues ? 45 : 10;
+		const textPaddingY = this.props.borderBoxValues ? 45 : 10;
 		return this.calculateTicksByFreq().map((d, i) => (
 			<svg className="x-tick" key={i} style={{overflow: 'visible'}}>
 				<line
@@ -100,7 +100,7 @@ export class AxisBottom
 		return <line
 			style={{stroke: "#a6aab2"}}
 			y1={0}
-			y2={!!this.props.borderBoxValues ? this.props.height + 30 : this.props.height}
+			y2={this.props.borderBoxValues ? this.props.height + 30 : this.props.height}
 			x1={this.props.xScale(this.props.axisPoint || 0)}
 			x2={this.props.xScale(this.props.axisPoint || 0)}
 		/>;

@@ -30,12 +30,12 @@ export class App
 	public static dropBlocker<T>(ev: React.DragEvent<T>) {
 		ev.preventDefault();
 		ev.stopPropagation();
-	};
+	}
 
 	__onLoginStatusUpdated = () => {
 		const status = AccountModule.getLoggedStatus();
 		console.log('status update', status); 
-	};
+	}
 
 	render() {
 		registerRoutes();

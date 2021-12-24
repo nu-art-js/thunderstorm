@@ -19,11 +19,8 @@
  * limitations under the License.
  */
 
-import {CustomException, ObjectTS,} from "@nu-art/ts-common";
-import {
-	ErrorBody,
-	ErrorResponse
-} from "../index";
+import {CustomException, ObjectTS,} from '@nu-art/ts-common';
+import {ErrorBody, ErrorResponse} from '../index';
 
 export class ApiException<E extends ObjectTS | void = void>
 	extends CustomException {

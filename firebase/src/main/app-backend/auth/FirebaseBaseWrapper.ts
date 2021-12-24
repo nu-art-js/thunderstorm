@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {FirebaseSession} from "./firebase-session";
-import {Logger} from "@nu-art/ts-common";
+import {FirebaseSession} from './firebase-session';
+import {Logger} from '@nu-art/ts-common';
 
 export abstract class FirebaseBaseWrapper
 	extends Logger {

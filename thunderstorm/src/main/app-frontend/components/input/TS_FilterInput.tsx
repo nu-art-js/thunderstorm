@@ -21,11 +21,11 @@
 
 import * as React from 'react';
 import {KeyboardEvent} from 'react';
-import {Filter} from "@nu-art/ts-common/utils/filter-tools";
-import {TS_Input} from "./TS_Input";
-import {Stylable} from "../../tools/Stylable";
+import {Filter} from '@nu-art/ts-common/utils/filter-tools';
+import {TS_Input} from './TS_Input';
+import {Stylable} from '../../tools/Stylable';
 import {generateHex} from '@nu-art/ts-common';
-import {UIComponent} from "../../core/UIComponent";
+import {UIComponent} from '../../core/UIComponent';
 
 export type Props_FilterInput<T> = Stylable & {
 	mapper: (item: T) => string[],
@@ -63,7 +63,7 @@ export class TS_FilterInput<T>
 		this.filter = nextProps.filter;
 
 		if (!this.filter)
-			this.filter = new Filter()
+			this.filter = new Filter();
 
 		if (this.props.initialFilterText !== nextProps.initialFilterText) {
 			this.filter.setFilter(nextProps.initialFilterText || '');
@@ -78,7 +78,7 @@ export class TS_FilterInput<T>
 		if (evaluate)
 			this.callOnChange();
 
-		return
+		return;
 	}
 
 	callOnChange = () => {
@@ -90,7 +90,7 @@ export class TS_FilterInput<T>
 		const {id, placeholder, focus} = this.props;
 		return (
 			<TS_Input
-				type='text'
+				type="text"
 				id={id}
 				value={this.props.initialFilterText}
 				onChange={(filterText) => {

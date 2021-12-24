@@ -111,6 +111,7 @@ class Example_ColorfulNodeRenderer
 					if (_value === null)
 						return {color: "#f1c40f"};
 
+				// eslint-disable-next-line no-fallthrough
 				default:
 					return {color: "#000000"}
 			}
@@ -142,7 +143,7 @@ class Example_ColorfulNodeRenderer
 				</div>
 			</div>
 		);
-	};
+	}
 }
 
 const name = "Tree - Data";

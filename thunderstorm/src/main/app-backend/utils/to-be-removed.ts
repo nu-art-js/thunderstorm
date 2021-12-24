@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import { ObjectTS } from "@nu-art/ts-common";
-import {ApiException} from "../exceptions";
+import {ObjectTS} from '@nu-art/ts-common';
+import {ApiException} from '../exceptions';
 
 export const assertProperty = <T extends ObjectTS, K extends keyof T = keyof T>(instance: T, key: K | K[], statusCode: number = 400, check?: string | ((propValue: T[K]) => void)): void => {
 	if (Array.isArray(key))
@@ -34,20 +34,20 @@ export const assertProperty = <T extends ObjectTS, K extends keyof T = keyof T>(
 	if (!check)
 		return;
 
-	if (typeof value === "number")
+	if (typeof value === 'number')
 		return;
 
-	if (typeof value === "string") {
-		if (typeof check === "string") {
+	if (typeof value === 'string') {
+		if (typeof check === 'string') {
 			if (value.match(check))
 				return;
 
-			throw new ApiException(statusCode, `Value <strong>${value}</strong> doesn't match with check: ${check}`)
+			throw new ApiException(statusCode, `Value <strong>${value}</strong> doesn't match with check: ${check}`);
 		}
 
 		return check(value);
 	}
 
-	if (typeof value === "object" && typeof check === "function")
-		check(value)
+	if (typeof value === 'object' && typeof check === 'function')
+		check(value);
 };

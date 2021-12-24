@@ -16,17 +16,12 @@
  * limitations under the License.
  */
 
-import * as admin from "firebase-admin";
-import {FirestoreType_DocumentSnapshot} from "./types";
-import {FirestoreCollection,} from "./FirestoreCollection";
-import {
-	BadImplementationException,
-	merge,
-	ObjectTS,
-	Subset
-} from "@nu-art/ts-common";
-import {FirestoreQuery} from "../../shared/types";
-import {FirestoreInterface} from "./FirestoreInterface";
+import * as admin from 'firebase-admin';
+import {FirestoreType_DocumentSnapshot} from './types';
+import {FirestoreCollection,} from './FirestoreCollection';
+import {BadImplementationException, merge, ObjectTS, Subset} from '@nu-art/ts-common';
+import {FirestoreQuery} from '../../shared/types';
+import {FirestoreInterface} from './FirestoreInterface';
 
 export class FirestoreTransaction {
 	private transaction: admin.firestore.Transaction;
@@ -89,7 +84,7 @@ export class FirestoreTransaction {
 		return async () => {
 			await this.transaction.set(ref, instance);
 			return instance;
-		}
+		};
 	}
 
 	private async getOrCreateDocument<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type) {
@@ -125,11 +120,11 @@ export class FirestoreTransaction {
 			const patchedInstance = merge(await doc.data() as Type, instance);
 			this.transaction.set(doc.ref, patchedInstance);
 			return patchedInstance;
-		}
+		};
 	}
 
 	async delete<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
-		await (await this.delete_Read(collection, ourQuery))()
+		await (await this.delete_Read(collection, ourQuery))();
 	}
 
 	async delete_Read<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
@@ -142,11 +137,11 @@ export class FirestoreTransaction {
 			const toReturn = docs.map(doc => doc.data() as Type);
 			await Promise.all(docs.map(async (doc) => this.transaction.delete(doc.ref)));
 			return toReturn;
-		}
+		};
 	}
 
 	async deleteItem<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type) {
-		return this.deleteUnique(collection, FirestoreInterface.buildUniqueQuery(collection, instance))
+		return this.deleteUnique(collection, FirestoreInterface.buildUniqueQuery(collection, instance));
 	}
 
 	async deleteUnique<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<Type | undefined> {
@@ -167,6 +162,6 @@ export class FirestoreTransaction {
 			await this.transaction.delete(doc.ref);
 
 			return result;
-		}
+		};
 	}
 }

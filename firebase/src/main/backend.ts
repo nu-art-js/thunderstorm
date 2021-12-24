@@ -16,17 +16,17 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/auth/firebase-session";
-export * from "./app-backend/auth/FirebaseSession_Admin";
+export * from './app-backend/auth/firebase-session';
+export * from './app-backend/auth/FirebaseSession_Admin';
 // export * from "./app-backend/auth/FirebaseSession_UserPassword";
-export * from "./app-backend/FirebaseModule";
-export * from "./app-backend/firestore/FirestoreInterface";
-export * from "./app-backend/firestore/FirestoreCollection";
-export * from "./app-backend/firestore/FirestoreTransaction";
-export * from "./app-backend/firestore/FirestoreWrapper";
-export * from "./app-backend/firestore/types";
-export * from "./app-backend/database/DatabaseWrapper";
-export * from "./app-backend/storage/types";
-export * from "./app-backend/storage/StorageWrapper";
-export * from "./app-backend/push/PushMessagesWrapper";
-export * from "./app-backend/push/types";
+export * from './app-backend/FirebaseModule';
+export * from './app-backend/firestore/FirestoreInterface';
+export * from './app-backend/firestore/FirestoreCollection';
+export * from './app-backend/firestore/FirestoreTransaction';
+export * from './app-backend/firestore/FirestoreWrapper';
+export * from './app-backend/firestore/types';
+export * from './app-backend/database/DatabaseWrapper';
+export * from './app-backend/storage/types';
+export * from './app-backend/storage/StorageWrapper';
+export * from './app-backend/push/PushMessagesWrapper';
+export * from './app-backend/push/types';

@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {CSSProperties} from "react";
+import {CSSProperties} from 'react';
 
 export type  Stylable = {
 	style?: CSSProperties
@@ -57,7 +57,7 @@ export class StylableBuilder {
 		const styleable: Stylable = {
 			style: this.style,
 			className: this.className
-		}
+		};
 
 		return styleable;
 	}

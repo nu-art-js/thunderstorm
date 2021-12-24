@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {FilterKeys, FirebaseModule, FirestoreCollection} from "../../../_main";
-import {__custom, ErrorPolicy} from "@nu-art/testelot";
-import {ObjectTS} from "@nu-art/ts-common";
+import {FilterKeys, FirebaseModule, FirestoreCollection} from '../../../_main';
+import {__custom, ErrorPolicy} from '@nu-art/testelot';
+import {ObjectTS} from '@nu-art/ts-common';
 
 export class FirestoreCollection_Tester<DBType extends ObjectTS> {
 	private collectionName: string;
@@ -43,7 +43,7 @@ export class FirestoreCollection_Tester<DBType extends ObjectTS> {
 			const firestore = FirebaseModule.createAdminSession().getFirestore();
 			const collection = firestore.getCollection<DBType>(this.collectionName, this.externalUniqueFilter);
 			clean && await collection.deleteAll();
-			return processor(collection)
+			return processor(collection);
 		}).setLabel(label);
 	}
 }

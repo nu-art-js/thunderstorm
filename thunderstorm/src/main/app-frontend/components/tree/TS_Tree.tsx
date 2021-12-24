@@ -21,10 +21,10 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {TreeNode, TreeNodeExpandState,} from "./types";
-import {Adapter} from "../adapter/Adapter";
-import {_BaseNodeRenderer} from "../adapter/BaseRenderer";
-import {UIComponent} from "../../core/UIComponent";
+import {TreeNode, TreeNodeExpandState,} from './types';
+import {Adapter} from '../adapter/Adapter';
+import {_BaseNodeRenderer} from '../adapter/BaseRenderer';
+import {UIComponent} from '../../core/UIComponent';
 
 export type Props_Tree = {
 	id: string
@@ -67,7 +67,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	protected deriveStateFromProps(nextProps: P) {
 		return {
 			adapter: nextProps.adapter,
-			expanded: (this.props.id !== nextProps.id ? nextProps.expanded : this.state?.expanded) || {"/": true},
+			expanded: (this.props.id !== nextProps.id ? nextProps.expanded : this.state?.expanded) || {'/': true},
 			selectedItem: nextProps.selectedItem
 		};
 	}
@@ -93,7 +93,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	// };
 
 	render() {
-		return this.renderNode(this.state.adapter.data, "", "", 1);
+		return this.renderNode(this.state.adapter.data, '', '', 1);
 	}
 
 	private renderNode = (_data: any, key: string, _path: string, level: number) => {
@@ -104,12 +104,12 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		let filteredKeys: any[] = [];
 
 		let expanded = !!this.props.checkExpanded(this.state.expanded, nodePath);
-		if (nodePath.endsWith("_children/"))
+		if (nodePath.endsWith('_children/'))
 			expanded = true;
 
 		let renderChildren = expanded;
 
-		if (typeof data !== "object")
+		if (typeof data !== 'object')
 			renderChildren = false;
 
 		if (renderChildren)
@@ -157,7 +157,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 				style={this.getChildrenContainerStyle(level, this.rendererRefs[nodePath], containerRef, this.containerRefs[_path])}
 				ref={containerRefResolver}>
 				{containerRef && filteredKeys.map(
-					(childKey) => this.renderNode(data[childKey], childKey, nodePath + (adjustedNode.deltaPath ? adjustedNode.deltaPath + "/" : ""), level + 1))}
+					(childKey) => this.renderNode(data[childKey], childKey, nodePath + (adjustedNode.deltaPath ? adjustedNode.deltaPath + '/' : ''), level + 1))}
 			</div>);
 	}
 
@@ -195,7 +195,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	};
 
 	private setFocusedNode(path: string) {
-		this.rendererRefs[path].scrollIntoView({block: "nearest"});
+		this.rendererRefs[path].scrollIntoView({block: 'nearest'});
 		this.setState({focused: path});
 	}
 
@@ -222,7 +222,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	private toggleExpandState = (e: React.MouseEvent, _expanded?: boolean): void => this.expandOrCollapse(e.currentTarget.id, _expanded);
 
 	private expandOrCollapse = (path: string, forceExpandState?: boolean): void => {
-		if (path === "/" && this.state.adapter.hideRoot && forceExpandState === false)
+		if (path === '/' && this.state.adapter.hideRoot && forceExpandState === false)
 			return;
 
 		const treeExpandedState = this.state.expanded;

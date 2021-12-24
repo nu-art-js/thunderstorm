@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 
-import {ObjectTS} from "@nu-art/ts-common";
-import {HTMLProps} from "react";
-import {Stylable} from "../tools/Stylable";
-import React = require("react");
+import {ObjectTS} from '@nu-art/ts-common';
+import {HTMLProps} from 'react';
+import {Stylable} from '../tools/Stylable';
+import React = require('react');
 
 export type HeaderRenderer<T extends ObjectTS> = {
 	[P in keyof Partial<T>]: (columnKey: P) => React.ReactNode
@@ -60,8 +60,8 @@ export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 	}
 
 	render() {
-		return <table {...(typeof this.props.table === "function" ? this.props.table() : this.props.table)}>
-			<tbody {...(typeof this.props.body === "function" ? this.props.body() : this.props.body)}>
+		return <table {...(typeof this.props.table === 'function' ? this.props.table() : this.props.table)}>
+			<tbody {...(typeof this.props.body === 'function' ? this.props.body() : this.props.body)}>
 			{this.renderTableHeader()}
 			{this.renderTableBody()}
 			</tbody>
@@ -70,7 +70,7 @@ export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 
 	private renderTableHeader() {
 		let renderers: HeaderRenderer<R>;
-		if (typeof this.props.headerRenderer === "object")
+		if (typeof this.props.headerRenderer === 'object')
 			renderers = this.props.headerRenderer;
 		else
 			renderers = this.props.header.reduce((toRet, headerProp) => {
@@ -79,7 +79,7 @@ export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 			}, {} as HeaderRenderer<R>);
 
 		let actionsHeaderRenderers: HeaderRenderer<A>;
-		if (typeof this.props.actionHeaderRenderer === "object")
+		if (typeof this.props.actionHeaderRenderer === 'object')
 			actionsHeaderRenderers = this.props.actionHeaderRenderer;
 		else
 			actionsHeaderRenderers = (this.props.actions || []).reduce((toRet, headerProp) => {
@@ -88,18 +88,18 @@ export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 			}, {} as HeaderRenderer<A>);
 
 		return (
-			<tr key={`${this.props.id}-0`} {...(typeof this.props.tr === "function" ? this.props.tr(-1) : this.props.tr)}>
+			<tr key={`${this.props.id}-0`} {...(typeof this.props.tr === 'function' ? this.props.tr(-1) : this.props.tr)}>
 				{this.props.header.map((header, index) => <td
-					key={`${this.props.id}-${index}`} {...(typeof this.props.td === "function" ? this.props.td(-1, header) : this.props.td)}>{renderers[header](header)}</td>)}
+					key={`${this.props.id}-${index}`} {...(typeof this.props.td === 'function' ? this.props.td(-1, header) : this.props.td)}>{renderers[header](header)}</td>)}
 				{this.props.actions?.map((action, index) => <td
-					key={`${this.props.id}-${this.props.header.length + index}`} {...(typeof this.props.td === "function" ? this.props.td(-1, action) : this.props.td)}>{actionsHeaderRenderers[action](action)}</td>)}
+					key={`${this.props.id}-${this.props.header.length + index}`} {...(typeof this.props.td === 'function' ? this.props.td(-1, action) : this.props.td)}>{actionsHeaderRenderers[action](action)}</td>)}
 			</tr>
 		);
 	}
 
 	private renderTableBody() {
 		let renderers: RowRenderer<R>;
-		if (typeof this.props.cellRenderer === "object")
+		if (typeof this.props.cellRenderer === 'object')
 			renderers = this.props.cellRenderer;
 		else
 			renderers = this.props.header.reduce((toRet, headerProp) => {
@@ -108,7 +108,7 @@ export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 			}, {} as RowRenderer<R>);
 
 		let actionsRenderers: ActionsRenderer<R, A> | undefined;
-		if (typeof this.props.actionsRenderer === "object")
+		if (typeof this.props.actionsRenderer === 'object')
 			actionsRenderers = this.props.actionsRenderer;
 		else
 			actionsRenderers = this.props.actions?.reduce((toRet, actionKey) => {
@@ -118,15 +118,15 @@ export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 
 
 		return this.props.rows.map((row, rowIndex) => (
-			<tr key={`${this.props.id}-${rowIndex}`} {...(typeof this.props.tr === "function" ? this.props.tr(rowIndex) : this.props.tr)}>
+			<tr key={`${this.props.id}-${rowIndex}`} {...(typeof this.props.tr === 'function' ? this.props.tr(rowIndex) : this.props.tr)}>
 				{this.props.header.map((header, columnIndex) => {
-					return <td key={`${this.props.id}-${columnIndex}`} {...(typeof this.props.td === "function" ? this.props.td(rowIndex, header) : this.props.td)}>
+					return <td key={`${this.props.id}-${columnIndex}`} {...(typeof this.props.td === 'function' ? this.props.td(rowIndex, header) : this.props.td)}>
 						{renderers[header](row[header], rowIndex, row, this.props.header[columnIndex])}
 					</td>;
 				})}
 				{this.props.actions?.map((actionKey, index) => {
 					return <td
-						key={`${this.props.id}-${this.props.header.length + index}`} {...(typeof this.props.td === "function" ? this.props.td(rowIndex, actionKey) : this.props.td)}>
+						key={`${this.props.id}-${this.props.header.length + index}`} {...(typeof this.props.td === 'function' ? this.props.td(rowIndex, actionKey) : this.props.td)}>
 						{actionsRenderers?.[actionKey](rowIndex, row, actionKey)}
 					</td>;
 				})}

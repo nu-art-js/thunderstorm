@@ -16,15 +16,15 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {scenarioInsert, scenarioInsertAll} from "./test/insert-and-query";
-import {scenarioQueryUnique} from "./test/query-unique";
-import {scenarioQuery} from "./test/query";
-import {scenarioCollectionPatch} from "./test/patch";
-import {scenarioCollectionDelete} from "./test/delete";
-import {scenarioCollectionDeleteInTransaction} from "./test/delete-in-transaction";
+import {__scenario} from '@nu-art/testelot';
+import {scenarioInsert, scenarioInsertAll} from './test/insert-and-query';
+import {scenarioQueryUnique} from './test/query-unique';
+import {scenarioQuery} from './test/query';
+import {scenarioCollectionPatch} from './test/patch';
+import {scenarioCollectionDelete} from './test/delete';
+import {scenarioCollectionDeleteInTransaction} from './test/delete-in-transaction';
 
-export const testCollections = __scenario("test-collections");
+export const testCollections = __scenario('test-collections');
 testCollections.add(scenarioCollectionPatch);
 testCollections.add(scenarioCollectionDelete);
 testCollections.add(scenarioCollectionDeleteInTransaction);

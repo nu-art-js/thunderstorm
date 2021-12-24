@@ -19,19 +19,16 @@
  * limitations under the License.
  */
 
-import {Browser} from "../../shared/consts";
-import {
-	BadImplementationException,
-	ImplementationMissingException
-} from "@nu-art/ts-common";
-import * as React from "react";
+import {Browser} from '../../shared/consts';
+import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
+import * as React from 'react';
 
 export function browserType(): Browser {
-	if (navigator?.vendor.includes("Google")) {
+	if (navigator?.vendor.includes('Google')) {
 		return 'chrome';
 	}
 
-	throw new BadImplementationException("No matching browser detected");
+	throw new BadImplementationException('No matching browser detected');
 }
 
 export function convertBase64ToFile(fileName: string, base64: string, _mimeType?: string) {
@@ -39,7 +36,7 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 	const match = arr[0].match(/:(.*?);/);
 	const mimeType = (match && match[1]) || (_mimeType && _mimeType);
 	if (!mimeType)
-		throw new ImplementationMissingException("Could not extract mime type from data...");
+		throw new ImplementationMissingException('Could not extract mime type from data...');
 
 	const bstr = atob(arr[1]);
 	let n = bstr.length;

@@ -19,12 +19,12 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {ComponentType} from "react";
-import {_keys, BadImplementationException, ObjectTS,} from "@nu-art/ts-common";
-import {SimpleTreeNodeRenderer} from "../tree/SimpleTreeNodeRenderer";
-import {_BaseNodeRenderer, BaseRendererMap, NodeRendererProps, TreeRendererMap,} from "./BaseRenderer";
-import {TreeNode} from "../tree/types";
+import * as React from 'react';
+import {ComponentType} from 'react';
+import {_keys, BadImplementationException, ObjectTS,} from '@nu-art/ts-common';
+import {SimpleTreeNodeRenderer} from '../tree/SimpleTreeNodeRenderer';
+import {_BaseNodeRenderer, BaseRendererMap, NodeRendererProps, TreeRendererMap,} from './BaseRenderer';
+import {TreeNode} from '../tree/types';
 
 
 // export type TreeItem<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
@@ -64,7 +64,7 @@ export type TreeItem<I> = ListItem<I> & {
 
 export type InferItemType<R> =
 	R extends React.ComponentType<{ item: infer Item, node: TreeNode }> ? Item :
-		"Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode";
+		'Make sure the Renderer renders the correct item type e.g. (props:{item:Item, node: TreeNode}) => React.ReactNode';
 
 export type _GenericRenderer<Rm extends BaseRendererMap<any>, ItemType extends InferItemType<Rm[keyof Rm]> = InferItemType<Rm[keyof Rm]>> = {
 	rendererMap: Rm
@@ -85,7 +85,7 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 	childrenKey?: string;
 
 	constructor(data: any) {
-		this.data = data
+		this.data = data;
 	}
 
 	setData(data: object) {
@@ -101,9 +101,9 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 			return false;
 
 		if (!this.childrenKey)
-			return Array.isArray(obj) || typeof obj === "object";
+			return Array.isArray(obj) || typeof obj === 'object';
 
-		return typeof obj === "object" && obj["_isParent"] === true || Array.isArray(obj);
+		return typeof obj === 'object' && obj['_isParent'] === true || Array.isArray(obj);
 	};
 
 	// this can be gone.. and builders must use the new filterChildren
@@ -111,7 +111,7 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 		if (obj === undefined || obj === null)
 			return [];
 
-		if (typeof obj !== "object")
+		if (typeof obj !== 'object')
 			return [];
 
 		if (Array.isArray(obj))
@@ -131,20 +131,20 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 	// adjust = (obj: any): { data: any; deltaPath: string } => this.adjustImpl(obj, "_children");
 	adjust: ((obj: any) => { data: any; deltaPath: string }) = (obj: any) => {
 		if (!this.childrenKey)
-			return ({data: obj, deltaPath: ""});
+			return ({data: obj, deltaPath: ''});
 
 		if (!obj[this.childrenKey])
-			return {data: obj, deltaPath: ""};
+			return {data: obj, deltaPath: ''};
 
 		const objElement: any = {...obj[this.childrenKey], type: obj.type, item: obj.item, _isParent: true};
-		return {data: objElement, deltaPath: this.childrenKey || ""};
-	}
+		return {data: objElement, deltaPath: this.childrenKey || ''};
+	};
 
 	clone(baseAdapter: this) {
 		_keys(this).forEach(k => {
-			baseAdapter[k] = this[k]
+			baseAdapter[k] = this[k];
 		});
-		return baseAdapter
+		return baseAdapter;
 	}
 }
 
@@ -207,37 +207,37 @@ abstract class BaseAdapterBuilder<Data> {
 	protected defaultExpandCollapseRenderer = (props: NodeRendererProps) => {
 		function resolveSymbol() {
 
-			if (typeof props.item !== "object")
-				return "";
+			if (typeof props.item !== 'object')
+				return '';
 
 			if (Object.keys(props.item).length === 0)
-				return "";
+				return '';
 
 			if (props.node.adapter.isParent(props.item)) {
 				if (props.node.expanded)
-					return "-";
+					return '-';
 
-				return "+";
+				return '+';
 			}
 
-			return "";
+			return '';
 		}
 
 		return (<div style={{minWidth: 12}}>{resolveSymbol()}</div>);
-	}
+	};
 
 	protected defaultTreeNodeRenderer = (props: NodeRendererProps) => {
 		const _Renderer: _BaseNodeRenderer<any> = this.resolveRenderer(props.item.type);
 		return (
 			<div className="ll_h_c clickable"
-					 id={props.node.path}
-					 onClick={props.node.expandToggler}>
+			     id={props.node.path}
+			     onClick={props.node.expandToggler}>
 
 				<this.expandCollapseRenderer {...props}/>
 				<_Renderer item={this.multiRenderer ? props.item.item : props.item} node={props.node}/>
 			</div>
 		);
-	}
+	};
 
 	protected abstract resolveRenderer(type: string): _BaseNodeRenderer<any>;
 
@@ -246,17 +246,17 @@ abstract class BaseAdapterBuilder<Data> {
 class ListSingleAdapterBuilder<ItemType extends any = any>
 	extends BaseAdapterBuilder<AdapterData<ListData<ItemType>>> {
 
-	readonly renderer: _BaseNodeRenderer<ItemType>
+	readonly renderer: _BaseNodeRenderer<ItemType>;
 
 	constructor(renderer: _BaseNodeRenderer<ItemType>) {
 		super();
 		this.renderer = renderer;
 		this.treeNodeRenderer = (props: NodeRendererProps<ItemType>) => {
-			const _Renderer = this.resolveRenderer()
+			const _Renderer = this.resolveRenderer();
 			return <div id={props.node.path} onClick={props.node.onClick}>
 				<_Renderer item={props.item} node={props.node}/>
 			</div>;
-		}
+		};
 
 	}
 
@@ -265,13 +265,13 @@ class ListSingleAdapterBuilder<ItemType extends any = any>
 	}
 
 	nested() {
-		this.childrenKey = "_children";
+		this.childrenKey = '_children';
 		this.treeNodeRenderer = (props: NodeRendererProps<ItemType>) => {
-			const _Renderer = this.renderer
+			const _Renderer = this.renderer;
 			return <div id={props.node.path} onClick={props.node.onClick}>
 				<_Renderer {...props}/>
 			</div>;
-		}
+		};
 
 		return this as ListSingleAdapterBuilder<NestedListData<ItemType>>;
 	}
@@ -281,7 +281,7 @@ class ListSingleAdapterBuilder<ItemType extends any = any>
 		adapter.hideRoot = true;
 		adapter.treeNodeRenderer = this.treeNodeRenderer;
 		adapter.childrenKey = this.childrenKey;
-		adapter.isParent = (obj: any) => obj === this.data
+		adapter.isParent = (obj: any) => obj === this.data;
 		// @ts-ignore
 		adapter.itemRenderer = this.renderer;
 		return adapter;
@@ -291,39 +291,39 @@ class ListSingleAdapterBuilder<ItemType extends any = any>
 class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 	extends BaseAdapterBuilder<DataType> {
 
-	readonly rendererMap: Rm
+	readonly rendererMap: Rm;
 	private hideRoot = true;
 
 	constructor(rendererMap: Rm) {
 		super();
 		this.multiRenderer = true;
 		this.rendererMap = rendererMap;
-		this.childrenKey = "_children";
+		this.childrenKey = '_children';
 
 		this.treeNodeRenderer = (props: NodeRendererProps<TreeItem<any>>) => {
-			if (props.node.propKey === "_children")
+			if (props.node.propKey === '_children')
 				return null;
 
 			const _Renderer: _BaseNodeRenderer<any> = this.resolveRenderer(props.item.type);
 			return <div id={props.node.path} onClick={props.node.onClick}>
 				<_Renderer item={props.item.item} node={props.node}/>
 			</div>;
-		}
+		};
 	}
 
 	protected resolveRenderer(type?: string): _BaseNodeRenderer<any> {
 		if (!type)
-			throw new BadImplementationException("multi renderer adapter items must have a type to resolve renderer")
+			throw new BadImplementationException('multi renderer adapter items must have a type to resolve renderer');
 
 		const renderer = this.rendererMap[type];
 		if (!renderer)
-			throw new BadImplementationException(`renderer of type ${type} doesn't exists, in rendererMap found keys: ${JSON.stringify(_keys(this.rendererMap))}`)
+			throw new BadImplementationException(`renderer of type ${type} doesn't exists, in rendererMap found keys: ${JSON.stringify(_keys(this.rendererMap))}`);
 
 		return renderer;
 	}
 
 	tree() {
-		this.treeNodeRenderer = this.defaultTreeNodeRenderer
+		this.treeNodeRenderer = this.defaultTreeNodeRenderer;
 		this.hideRoot = false;
 		return this as unknown as MultiTypeAdapterBuilder<Rm, DataType>;
 	}
@@ -331,7 +331,7 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 	// TO REMOVE
 	noGeneralOnClick(): MultiTypeAdapterBuilder<Rm, DataType> {
 		this.treeNodeRenderer = (props: NodeRendererProps<TreeItem<any>>) => {
-			if (props.node.propKey === "_children")
+			if (props.node.propKey === '_children')
 				return null;
 
 			const _Renderer: _BaseNodeRenderer<any> = this.rendererMap[props.item.type];
@@ -355,7 +355,7 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 class TreeSingleAdapterBuilder<RenderItemType extends any = any>
 	extends BaseAdapterBuilder<AdapterData<TreeData<RenderItemType>>> {
 
-	readonly renderer: _BaseNodeRenderer<RenderItemType>
+	readonly renderer: _BaseNodeRenderer<RenderItemType>;
 
 	constructor(renderer: _BaseNodeRenderer<RenderItemType>) {
 		super();

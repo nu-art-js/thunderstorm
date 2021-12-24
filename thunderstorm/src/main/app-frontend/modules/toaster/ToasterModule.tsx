@@ -19,25 +19,21 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	addAllItemToArray,
-	Module,
-	Second
-} from "@nu-art/ts-common";
+import * as React from 'react';
+import {addAllItemToArray, Module, Second} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {ThunderDispatcher} from "../../core/thunder-dispatcher";
-import { Stylable, StylableBuilder } from "../../tools/Stylable";
-import {Color} from "../../components/types";
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {Stylable, StylableBuilder} from '../../tools/Stylable';
+import {Color} from '../../components/types';
 
 export enum ToastType {
-	"success",
-	"error",
-	"info"
+	'success',
+	'error',
+	'info'
 }
 
-type PositionVertical = "bottom" | "top";
-type PositionHorizontal = "left" | "right" | "center";
+type PositionVertical = 'bottom' | 'top';
+type PositionHorizontal = 'left' | 'right' | 'center';
 
 export type Toast_Model = Stylable & {
 	duration: number;
@@ -59,13 +55,13 @@ const Interval_DefaultToast = 6 * Second;
 export class ToastBuilder
 	extends StylableBuilder {
 
-	private bgColor: Color = "#eeffef";
+	private bgColor: Color = '#eeffef';
 	private duration: number = Interval_DefaultToast;
 	private type: ToastType = ToastType.info;
-	private positionVertical: PositionVertical = "top";
-	private positionHorizontal: PositionHorizontal = "center";
+	private positionVertical: PositionVertical = 'top';
+	private positionHorizontal: PositionHorizontal = 'center';
 	private actions: React.ReactElement[] = [];
-	private content: React.ReactNode = "NO CONTENT";
+	private content: React.ReactNode = 'NO CONTENT';
 
 	setType(type: ToastType) {
 		this.type = type;
@@ -125,7 +121,7 @@ export class ToastBuilder
 	}
 }
 
-const dispatch_showToast = new ThunderDispatcher<ToastListener, "__showToast">("__showToast");
+const dispatch_showToast = new ThunderDispatcher<ToastListener, '__showToast'>('__showToast');
 
 export class ToastModule_Class
 	extends Module<{}> {
@@ -155,24 +151,24 @@ export class ToastModule_Class
 		let color: Color;
 		switch (type) {
 			case ToastType.success:
-				color = "#2ee06f";
+				color = '#2ee06f';
 				break;
 
 			case ToastType.error:
-				color = "#ff4436";
+				color = '#ff4436';
 				break;
 
 			case ToastType.info:
-				color = "#49addb";
+				color = '#49addb';
 				break;
 
 			default:
-				color = "#e8e8e8";
+				color = '#e8e8e8';
 				break;
 		}
 
 		let content = _message;
-		if (typeof _message === "string")
+		if (typeof _message === 'string')
 			content = ToastModule.adjustStringMessage(_message);
 
 		// console.log("_message:", _message)
@@ -181,35 +177,35 @@ export class ToastModule_Class
 
 	adjustStringMessage = (_message: string) => {
 		let message = _message;
-		message = message.replace(/\n#### (.*?)\n/g, "\n<h4>$1</h4>\n");
-		message = message.replace(/\n### (.*?)\n/g, "\n<h3>$1</h3>\n");
-		message = message.replace(/\n## (.*?)\n/g, "\n<h2>$1</h2>\n");
-		message = message.replace(/\n# (.*?)\n/g, "\n<h1>$1</h1>\n");
-		message = message.replace(/(<\/?.*?>)\n/g, "$1");
-		message = message.replace(/([^>]?)\n/g, "$1<br/> ");
+		message = message.replace(/\n#### (.*?)\n/g, '\n<h4>$1</h4>\n');
+		message = message.replace(/\n### (.*?)\n/g, '\n<h3>$1</h3>\n');
+		message = message.replace(/\n## (.*?)\n/g, '\n<h2>$1</h2>\n');
+		message = message.replace(/\n# (.*?)\n/g, '\n<h1>$1</h1>\n');
+		message = message.replace(/(<\/?.*?>)\n/g, '$1');
+		message = message.replace(/([^>]?)\n/g, '$1<br/> ');
 		const ignore = message.match(/`(.*?)`/g);
 		if (ignore && ignore.length > 0)
 			message = ignore.reduce((input, toEscape) => {
 				const replaceValue = toEscape.substring(1, toEscape.length - 1)
-				                             .replace(/([^\\]?)_/g, "$1\\_")
-				                             .replace(/([^\\]?)\*/g, "$1\\*");
+					.replace(/([^\\]?)_/g, '$1\\_')
+					.replace(/([^\\]?)\*/g, '$1\\*');
 				return input.replace(toEscape, replaceValue);
 			}, message);
 
-		message = message.replace(/([^\\]?)_(.*?)([^\\])_/g, "$1<i>$2$3</i>");
-		message = message.replace(/([^\\]?)\*(.*?)([^\\])\*/g, "$1<b>$2$3</b>");
-		message = message.replace(/\\_/g, "_");
-		message = message.replace(/\\\*/g, "*");
+		message = message.replace(/([^\\]?)_(.*?)([^\\])_/g, '$1<i>$2$3</i>');
+		message = message.replace(/([^\\]?)\*(.*?)([^\\])\*/g, '$1<b>$2$3</b>');
+		message = message.replace(/\\_/g, '_');
+		message = message.replace(/\\\*/g, '*');
 		return message;
 	};
 
 	hideToast = (toast?: Toast_Model) => {
 		// in the future we can add more than one toast and manage a stack of them!!
-		dispatch_showToast.dispatchUI([])
+		dispatch_showToast.dispatchUI([]);
 	};
 
 	private toastImpl(toast: Toast_Model) {
-		dispatch_showToast.dispatchUI([toast])
+		dispatch_showToast.dispatchUI([toast]);
 	}
 }
 

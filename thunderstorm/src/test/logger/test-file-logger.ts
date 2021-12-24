@@ -19,14 +19,10 @@
  * limitations under the License.
  */
 
-import {
-	BeLogged,
-	Logger,
-	padNumber
-} from "@nu-art/ts-common";
-import {LogClient_File} from "../../main/app-backend/utils/LogClient_File";
+import {BeLogged, Logger, padNumber} from '@nu-art/ts-common';
+import {LogClient_File} from '../../main/app-backend/utils/LogClient_File';
 
-BeLogged.addClient(new LogClient_File("logger", "../.trash/logger-test", 10, 1024).setRotationListener(() => {
+BeLogged.addClient(new LogClient_File('logger', '../.trash/logger-test', 10, 1024).setRotationListener(() => {
 	console.log(`Rotating buffer`);
 }));
 

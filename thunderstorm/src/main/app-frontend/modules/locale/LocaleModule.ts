@@ -22,18 +22,11 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {
-	Locale,
-	LocaleDef,
-	StringKey
-} from "./types";
-import {
-	ImplementationMissingException,
-	Module
-} from "@nu-art/ts-common";
-import {format} from "util";
-import {ThunderDispatcher} from "../../core/thunder-dispatcher";
-import {StorageKey} from "../StorageModule";
+import {Locale, LocaleDef, StringKey} from './types';
+import {ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {format} from 'util';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {StorageKey} from '../StorageModule';
 
 type Config = {
 	defaultLocale: Locale,
@@ -44,19 +37,19 @@ export interface LanguageChangeListener {
 	__onLanguageChanged(): void;
 }
 
-const dispatch_onLanguageChanged = new ThunderDispatcher<LanguageChangeListener, "__onLanguageChanged">("__onLanguageChanged");
+const dispatch_onLanguageChanged = new ThunderDispatcher<LanguageChangeListener, '__onLanguageChanged'>('__onLanguageChanged');
 
 export class LocaleModule_Class
 	extends Module<Config> {
 
 	private activeLocale!: LocaleDef;
 	private defaultLocale!: LocaleDef;
-	private selectedLanguage: StorageKey<string> = new StorageKey<string>("locale--selected-language");
+	private selectedLanguage: StorageKey<string> = new StorageKey<string>('locale--selected-language');
 
 	protected init() {
 		const defaultLocale = this.selectedLanguage.get() || this.config.defaultLocale;
 		if (!defaultLocale)
-			throw new ImplementationMissingException("MUST set defaultLocale in the config data");
+			throw new ImplementationMissingException('MUST set defaultLocale in the config data');
 
 		this.defaultLocale = this.setLanguage(defaultLocale);
 	}
@@ -69,7 +62,7 @@ export class LocaleModule_Class
 		this.activeLocale = localeDef;
 		dispatch_onLanguageChanged.dispatchUI([]);
 		this.selectedLanguage.set(localeDef.locale);
-		return localeDef
+		return localeDef;
 	}
 
 	public getAvailableLanguages(): LocaleDef[] {

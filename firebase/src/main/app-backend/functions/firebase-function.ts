@@ -15,11 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Change, CloudFunction, EventContext, HttpsFunction, RuntimeOptions} from "firebase-functions";
-import {DataSnapshot} from "firebase-functions/lib/providers/database";
+import {Change, CloudFunction, EventContext, HttpsFunction, RuntimeOptions} from 'firebase-functions';
+import {DataSnapshot} from 'firebase-functions/lib/providers/database';
 
-import * as express from "express";
-import {Request, Response} from "express";
+import * as express from 'express';
+import {Request, Response} from 'express';
 import {
 	__stringify,
 	addItemToArray,
@@ -27,16 +27,16 @@ import {
 	dispatch_onServerError,
 	ImplementationMissingException,
 	Module,
+	ObjectTS,
 	ServerErrorSeverity,
-	StringMap,
-    ObjectTS
-} from "@nu-art/ts-common";
-import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
-import {Message} from "firebase-functions/lib/providers/pubsub";
-import {firestore} from "firebase-admin";
+	StringMap
+} from '@nu-art/ts-common';
+import {ObjectMetadata} from 'firebase-functions/lib/providers/storage';
+import {Message} from 'firebase-functions/lib/providers/pubsub';
+import {firestore} from 'firebase-admin';
 import DocumentSnapshot = firestore.DocumentSnapshot;
 
-const functions = require("firebase-functions");
+const functions = require('firebase-functions');
 
 export interface FirebaseFunctionInterface {
 	getFunction(): HttpsFunction;
@@ -76,8 +76,8 @@ export abstract class FirebaseFunction<Config = any>
 		for (const toExecute of toBeExecuted) {
 			try {
 				await toExecute();
-			} catch (e:any) {
-				console.error("Error running function: ", e);
+			} catch (e: any) {
+				console.error('Error running function: ', e);
 			}
 		}
 
@@ -92,7 +92,7 @@ export class Firebase_ExpressFunction
 	private toBeExecuted: (() => Promise<any>)[] = [];
 	private isReady: boolean = false;
 	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
-	private name: string = "api";
+	private name: string = 'api';
 	static config: RuntimeOptions = {};
 
 	constructor(_express: express.Express) {
@@ -129,8 +129,8 @@ export class Firebase_ExpressFunction
 		for (const toExecute of toBeExecuted) {
 			try {
 				await toExecute();
-			} catch (e:any) {
-				console.error("Error running function: ", e);
+			} catch (e: any) {
+				console.error('Error running function: ', e);
 			}
 		}
 
@@ -231,7 +231,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 		const results: boolean[] = await Promise.all(this.runningCondition.map(condition => condition()));
 
 		if (results.includes(false)) {
-			this.logDebug("will not execute backup.. running conditions didn't pass: ", results);
+			this.logDebug('will not execute backup.. running conditions didn\'t pass: ', results);
 			return;
 		}
 
@@ -240,7 +240,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 
 	getFunction = () => {
 		if (!this.schedule)
-			throw new ImplementationMissingException("MUST set schedule !!");
+			throw new ImplementationMissingException('MUST set schedule !!');
 
 		if (this.function)
 			return this.function;
@@ -279,21 +279,21 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 
 		this.runtimeOpts = {
 			timeoutSeconds: this.config?.runtimeOpts?.timeoutSeconds || 300,
-			memory: this.config?.runtimeOpts?.memory || "2GB"
+			memory: this.config?.runtimeOpts?.memory || '2GB'
 		};
 
 		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(
 			async (object: ObjectMetadata, context: EventContext) => {
 				try {
 					return await this.handleCallback(() => this.onFinalize(object, context));
-				} catch (e:any) {
+				} catch (e: any) {
 					const _message = `Error handling callback to onFinalize bucket listener method on path:` + this.config.path +
-						"\n" + `File changed ${object.name}` + "\n with attributes: " + __stringify(context) + "\n" + __stringify(e);
+						'\n' + `File changed ${object.name}` + '\n with attributes: ' + __stringify(context) + '\n' + __stringify(e);
 					this.logError(_message);
 					try {
 						await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
-					} catch (_e:any) {
-						this.logError("Error while handing bucket listener error", _e);
+					} catch (_e: any) {
+						this.logError('Error while handing bucket listener error', _e);
 					}
 					throw e;
 				}
@@ -321,14 +321,14 @@ export abstract class Firebase_PubSubFunction<T>
 	private _onPublish = async (object: T | undefined, originalMessage: TopicMessage, context: FirebaseEventContext) => {
 		try {
 			return await this.onPublish(object, originalMessage, context);
-		} catch (e:any) {
+		} catch (e: any) {
 			const _message = `Error publishing pub/sub message` + __stringify(object) +
-				"\n" + ` to topic ${this.topic}` + "\n with attributes: " + __stringify(originalMessage.attributes) + "\n" + __stringify(e);
+				'\n' + ` to topic ${this.topic}` + '\n with attributes: ' + __stringify(originalMessage.attributes) + '\n' + __stringify(e);
 			this.logError(_message);
 			try {
 				await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
-			} catch (_e:any) {
-				this.logError("Error while handing pubsub error", _e);
+			} catch (_e: any) {
+				this.logError('Error while handing pubsub error', _e);
 			}
 			throw e;
 		}
@@ -344,10 +344,10 @@ export abstract class Firebase_PubSubFunction<T>
 
 			let data: T | undefined;
 			try {
-				data = JSON.parse(Buffer.from(originalMessage.data, "base64").toString());
-			} catch (e:any) {
+				data = JSON.parse(Buffer.from(originalMessage.data, 'base64').toString());
+			} catch (e: any) {
 				this.logError(`Error parsing the data attribute from pub/sub message to topic ${this.topic}` +
-					"\n" + __stringify(originalMessage.data) + "\n" + __stringify(e));
+					'\n' + __stringify(originalMessage.data) + '\n' + __stringify(e));
 			}
 
 			return this.handleCallback(() => this._onPublish(data, originalMessage, context));

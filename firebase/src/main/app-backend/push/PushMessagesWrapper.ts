@@ -22,11 +22,11 @@ import {
 	FirebaseType_PushMessages,
 	FirebaseType_SubscriptionResponse,
 	FirebaseType_TopicResponse
-} from "./types";
-import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
-import {FirebaseSession} from "../auth/firebase-session";
-import {StringMap} from "@nu-art/ts-common";
-import {getMessaging} from "firebase-admin/messaging";
+} from './types';
+import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
+import {FirebaseSession} from '../auth/firebase-session';
+import {StringMap} from '@nu-art/ts-common';
+import {getMessaging} from 'firebase-admin/messaging';
 
 export class PushMessagesWrapper
 	extends FirebaseBaseWrapper {
@@ -35,7 +35,7 @@ export class PushMessagesWrapper
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.messaging = getMessaging(firebaseSession.app)
+		this.messaging = getMessaging(firebaseSession.app);
 	}
 
 	async send(message: FirebaseType_Message, dryRun?: boolean): Promise<string> {
@@ -51,14 +51,14 @@ export class PushMessagesWrapper
 	}
 
 	async sendToTopic(topic: string, data: StringMap, dryRun?: boolean): Promise<FirebaseType_TopicResponse> {
-		return this.messaging.sendToTopic(topic, {data}, {dryRun})
+		return this.messaging.sendToTopic(topic, {data}, {dryRun});
 	}
 
 	async subscribeToTopic(tokens: string[], topic: string): Promise<FirebaseType_SubscriptionResponse> {
-		return this.messaging.subscribeToTopic(tokens, topic)
+		return this.messaging.subscribeToTopic(tokens, topic);
 	}
 
 	async unsubscribeFromTopic(tokens: string[], topic: string): Promise<FirebaseType_SubscriptionResponse> {
-		return this.messaging.unsubscribeFromTopic(tokens, topic)
+		return this.messaging.unsubscribeFromTopic(tokens, topic);
 	}
 }

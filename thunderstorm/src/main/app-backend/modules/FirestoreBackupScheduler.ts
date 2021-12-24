@@ -1,18 +1,18 @@
 import {
+	__stringify,
+	_logger_logException,
 	currentTimeMillis,
-	Dispatcher,
 	dispatch_onServerError,
+	Dispatcher,
 	filterInstances,
 	ObjectTS,
-    ServerErrorSeverity,
-	_logger_logException,
-	__stringify
-} from "@nu-art/ts-common";
-import {FirebaseScheduledFunction} from "@nu-art/firebase/app-backend/functions/firebase-function";
-import {FirebaseModule} from "@nu-art/firebase/app-backend/FirebaseModule";
-import {ActDetailsDoc,} from "./CleanupScheduler";
-import {FirestoreCollection} from "@nu-art/firebase/app-backend/firestore/FirestoreCollection";
-import {FirestoreQuery} from "@nu-art/firebase";
+	ServerErrorSeverity
+} from '@nu-art/ts-common';
+import {FirebaseScheduledFunction} from '@nu-art/firebase/app-backend/functions/firebase-function';
+import {FirebaseModule} from '@nu-art/firebase/app-backend/FirebaseModule';
+import {ActDetailsDoc,} from './CleanupScheduler';
+import {FirestoreCollection} from '@nu-art/firebase/app-backend/firestore/FirestoreCollection';
+import {FirestoreQuery} from '@nu-art/firebase';
 
 export type BackupDoc = ActDetailsDoc & {
 	backupPath: string,
@@ -27,11 +27,11 @@ export type FirestoreBackupDetails<T extends ObjectTS> = {
 }
 
 export interface OnFirestoreBackupSchedulerAct {
-	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<any>[]
+	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<any>[];
 }
 
-const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, "__onFirestoreBackupSchedulerAct">(
-	"__onFirestoreBackupSchedulerAct");
+const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, '__onFirestoreBackupSchedulerAct'>(
+	'__onFirestoreBackupSchedulerAct');
 
 export class FirestoreBackupScheduler_Class
 	extends FirebaseScheduledFunction {
@@ -43,7 +43,7 @@ export class FirestoreBackupScheduler_Class
 
 	onScheduledEvent = async (): Promise<any> => {
 		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<BackupDoc>('firestore-backup-status',
-		                                                                                                           ["moduleKey", "timestamp"]);
+			['moduleKey', 'timestamp']);
 		const backups: FirestoreBackupDetails<any>[] = [];
 		filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule([])).forEach(backupArray => {
 			backups.push(...backupArray);
@@ -53,7 +53,7 @@ export class FirestoreBackupScheduler_Class
 		await Promise.all(backups.map(async (backupItem) => {
 			const query: FirestoreQuery<BackupDoc> = {
 				where: {moduleKey: backupItem.moduleKey},
-				orderBy: [{key: "timestamp", order: "asc"}],
+				orderBy: [{key: 'timestamp', order: 'asc'}],
 				limit: 1
 			};
 			const docs = await backupStatusCollection.query(query);
@@ -78,8 +78,8 @@ export class FirestoreBackupScheduler_Class
 					await backupStatusCollection.delete(queryOld);
 				}
 
-			} catch (e:any) {
-				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error`,e);
+			} catch (e: any) {
+				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error`, e);
 				const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backupItem, true)}\nError: ${_logger_logException(e)}`;
 
 				await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, errorMessage]);

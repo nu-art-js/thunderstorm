@@ -16,16 +16,13 @@
  * limitations under the License.
  */
 
-import {FirestoreCollection,} from "./FirestoreCollection";
-import {
-	FirestoreType,
-	FirestoreType_Collection,
-} from "./types";
-import {FilterKeys} from "../../shared/types";
-import {FirebaseSession} from "../auth/firebase-session";
-import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
-import {DB_Object, ObjectTS} from "@nu-art/ts-common";
-import {getFirestore} from "firebase-admin/firestore";
+import {FirestoreCollection,} from './FirestoreCollection';
+import {FirestoreType, FirestoreType_Collection,} from './types';
+import {FilterKeys} from '../../shared/types';
+import {FirebaseSession} from '../auth/firebase-session';
+import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
+import {DB_Object, ObjectTS} from '@nu-art/ts-common';
+import {getFirestore} from 'firebase-admin/firestore';
 
 export class FirestoreWrapper
 	extends FirebaseBaseWrapper {
@@ -35,7 +32,7 @@ export class FirestoreWrapper
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
-		this.firestore = getFirestore(firebaseSession.app)
+		this.firestore = getFirestore(firebaseSession.app);
 	}
 
 	public getCollection<Type extends ObjectTS>(name: string, externalFilterKeys?: FilterKeys<Type>): FirestoreCollection<Type> {

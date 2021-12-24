@@ -22,13 +22,13 @@
 /**
  * Created by tacb0ss on 28/07/2018.
  */
-import * as React from "react";
+import * as React from 'react';
 
-import {_clearTimeout, _setTimeout, Logger, LogLevel, LogParam, TimerHandler} from "@nu-art/ts-common";
-import {StorageModule} from "../modules/StorageModule";
-import {ResourcesModule} from "../modules/ResourcesModule";
-import {BrowserHistoryModule} from "../modules/HistoryModule";
-import {Thunder} from "./Thunder";
+import {_clearTimeout, _setTimeout, Logger, LogLevel, LogParam, TimerHandler} from '@nu-art/ts-common';
+import {StorageModule} from '../modules/StorageModule';
+import {ResourcesModule} from '../modules/ResourcesModule';
+import {BrowserHistoryModule} from '../modules/HistoryModule';
+import {Thunder} from './Thunder';
 
 export class BaseComponent<P = any, S = any>
 	extends React.Component<P, S> {
@@ -142,10 +142,10 @@ export class BaseComponent<P = any, S = any>
 	static getImageUrl(_relativePath: string) {
 		let relativePath = _relativePath;
 		if (!relativePath)
-			return "";
+			return '';
 
-		if (relativePath.indexOf(".") === -1)
-			relativePath += ".png";
+		if (relativePath.indexOf('.') === -1)
+			relativePath += '.png';
 
 		return ResourcesModule.getImageUrl(relativePath);
 	}

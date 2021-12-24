@@ -127,7 +127,7 @@ class Example_NodeRenderer
 		return (<div className="ll_h_c">
 			{this.renderItems()}
 		</div>);
-	};
+	}
 
 	private renderItems() {
 		const Renderer = this.getRendererType();

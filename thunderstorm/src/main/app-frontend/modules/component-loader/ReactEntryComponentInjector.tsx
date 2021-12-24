@@ -20,8 +20,8 @@
  */
 
 import * as React from 'react';
-import {EntryComponentLoadingModule} from "./entry-component-loading-module";
-import {BaseComponent} from "../../core/BaseComponent";
+import {EntryComponentLoadingModule} from './entry-component-loading-module';
+import {BaseComponent} from '../../core/BaseComponent';
 // noinspection TypeScriptPreferShortImport
 import {OnRequestListener} from '../../../shared/request-types';
 
@@ -53,7 +53,7 @@ export class ReactEntryComponentInjector
 			return;
 
 		if (!success)
-		// Need to add error handling here...
+			// Need to add error handling here...
 			return;
 
 		this.injectComponent(EntryComponentLoadingModule.getNode(key));
@@ -83,6 +83,6 @@ export class ReactEntryComponentInjector
 		if (Loader)
 			return <Loader progress={this.state.progress}/>;
 
-		return <div style={{width: "100%", height: "100%"}}>{this.state.progress} %</div>;
+		return <div style={{width: '100%', height: '100%'}}>{this.state.progress} %</div>;
 	}
 }

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {HTMLProps} from 'react';
-import {FieldEditor, FieldEditorInputProps} from "./FieldEditor";
+import {FieldEditor, FieldEditorInputProps} from './FieldEditor';
 import {StorageKey} from '../modules/StorageModule';
 import {BaseComponent} from '../core/BaseComponent';
 import {InputType} from '../components/input/TS_BaseInput';
@@ -59,7 +59,7 @@ export class FieldEditorWithButtons
 	render() {
 		const {isEditing} = this.state;
 		return (
-			<div className={`ll_h_c`} style={{justifyContent: "space-between"}}>
+			<div className={`ll_h_c`} style={{justifyContent: 'space-between'}}>
 				<div>
 					<FieldEditor
 						id={this.props.id}

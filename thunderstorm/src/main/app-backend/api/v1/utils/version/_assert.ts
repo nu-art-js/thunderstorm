@@ -19,6 +19,6 @@
  * limitations under the License.
  */
 
-import {RouteResolver} from "../../../../modules/server/HttpServer";
+import {RouteResolver} from '../../../../modules/server/HttpServer';
 
 module.exports = new RouteResolver(require, __dirname);

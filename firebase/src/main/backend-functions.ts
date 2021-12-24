@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/functions/firebase-function";
+export * from './app-backend/functions/firebase-function';
