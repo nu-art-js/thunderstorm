@@ -27,10 +27,6 @@ import {
 import {
 	ApiWithBody,
 	ApiWithQuery,
-	DeriveBodyType,
-	DeriveQueryType,
-	DeriveResponseType,
-	DeriveUrlType,
 	ErrorResponse,
 	QueryParams
 } from "../../../shared/types";
@@ -69,7 +65,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 			this.config.proxyHeaderName = 'x-proxy';
 	}
 
-	protected executeGetRequest = async <Binder extends ApiWithQuery<U, R, P>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, P extends QueryParams = DeriveQueryType<Binder>>(url: U, _params: P, _headers?: { [key: string]: string }): Promise<R> => {
+	protected executeGetRequest = async <Binder extends ApiWithQuery<any,any,any>, U = Binder["url"], R = Binder["response"], P extends QueryParams = Binder["params"]>(url: U, _params: P, _headers?: { [key: string]: string }): Promise<R> => {
 		const params = _params && Object.keys(_params).map((key) => {
 			return `${key}=${_params[key]}`;
 		});
@@ -92,7 +88,8 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 		return await this.executeRequest<R>(proxyRequest);
 	};
 
-	protected executePostRequest = async <Binder extends ApiWithBody<U, R, B>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>>(url: U, body: B, _headers?: { [key: string]: string }): Promise<R> => {
+
+	protected executePostRequest = async <Binder extends ApiWithBody<U, R, B>, U extends string = Binder["url"], R = Binder["response"], B = Binder["body"]>(url: U, body: B, _headers?: { [key: string]: string }): Promise<R> => {
 		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,

@@ -18,20 +18,9 @@
  */
 
 import {Module} from "@nu-art/ts-common";
-import {
-	XhrHttpModule,
-	ToastBuilder,
-	ToastModule
-} from "@nu-art/thunderstorm/frontend";
-import {
-	DB_Document,
-	Request_UpdateDocument
-} from "../../shared/types";
-import {
-	ApiGetLiveDoc,
-	ApiHistoryLiveDocs,
-	ApiUpdateLiveDocs
-} from "../../shared/api";
+import {ToastBuilder, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
+import {DB_Document, Request_UpdateDocument} from "../../shared/types";
+import {ApiGetLiveDoc, ApiHistoryLiveDocs, ApiUpdateLiveDocs} from "../../shared/api";
 import {setDefaultLiveDocEditor} from "../utils";
 import {HttpMethod} from "@nu-art/thunderstorm";
 
@@ -84,7 +73,9 @@ export class LiveDocsModule_Class
 			.setRelativeUrl("/v1/live-docs/get")
 			.setLabel(`Fetch live-docs for key: ${docKey}`)
 			.setOnError(`Error fetching live-docs for key: ${docKey}`)
-			.execute(async (response: DB_Document) => {
+			.execute(async (_response) => {
+				const response = _response as DB_Document;
+
 				const _doc = this.docs[docKey];
 				if (_doc && response.document === _doc.document)
 					return;

@@ -55,7 +55,7 @@ export class Playground
 
 	render() {
 		return <div className={'match_height match_width'}>
-			<div style={{alignSelf: "start", padding: "20px"}}>
+			<div className={'match_height match_width'} style={{alignSelf: "start", padding: "20px"}}>
 				<GenericSelect<PlaygroundScreen>
 					iconClose={this.props.iconClose}
 					iconOpen={this.props.iconOpen}

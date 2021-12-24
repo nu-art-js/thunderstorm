@@ -68,7 +68,7 @@ class TestLogger
 	printTextWithMyExceptionWithCause() {
 		try {
 			this.callOne()
-		} catch (e) {
+		} catch (e:any) {
 			this.logInfo("One line text.. with my exception with a cause",
 			             new ThisShouldNotHappenException("this is the error with a cause", e));
 		}

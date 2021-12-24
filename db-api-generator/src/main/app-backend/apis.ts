@@ -18,7 +18,7 @@
  */
 
 import {BaseDB_ApiGenerator} from "./BaseDB_ApiGenerator";
-import {ApiTypeBinder, DeriveBodyType, DeriveQueryType, DeriveResponseType, QueryParams} from "@nu-art/thunderstorm";
+import {ApiTypeBinder, QueryParams} from "@nu-art/thunderstorm";
 import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUniuqe, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef, PreDBObject} from "..";
 import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
 import {ApiResponse, ExpressRequest, ServerApi} from "@nu-art/thunderstorm/backend";
@@ -28,7 +28,7 @@ export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: st
 	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? "/" + pathSuffix : ""}`;
 }
 
-export abstract class GenericServerApi<DBType extends DB_Object, Binder extends ApiTypeBinder<string, R, B, P>, PostProcessor = never, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>, P extends QueryParams | {} = DeriveQueryType<Binder>>
+export abstract class GenericServerApi<DBType extends DB_Object, Binder extends ApiTypeBinder<string, any, any, any>, PostProcessor = never, R = Binder["response"], B = Binder["body"], P extends QueryParams | {} = Binder["params"]>
 	extends ServerApi<Binder> {
 
 	protected readonly dbModule: BaseDB_ApiGenerator<DBType>;

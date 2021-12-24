@@ -83,7 +83,7 @@ export class FirebaseModule_Class
 			// @ts-ignore
 			this.setConfig({[localSessionId]: config});
 			return config;
-		} catch (e) {
+		} catch (e:any) {
 			throw new ImplementationMissingException(`Either specify configs for the 'FirebaseModule' or use SDK auto-configuration with firebase hosting`);
 		}
 	};

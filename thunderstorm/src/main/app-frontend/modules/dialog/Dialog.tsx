@@ -20,7 +20,6 @@
  */
 
 import * as React from "react";
-import {Properties} from "csstype";
 // noinspection TypeScriptPreferShortImport
 import {
 	Dialog_Model,
@@ -31,6 +30,7 @@ import {
 // noinspection TypeScriptPreferShortImport
 import {BaseComponent} from "../../core/BaseComponent";
 import {stopPropagation} from "../../utils/tools";
+import { Properties } from "../../components/types";
 
 const modalOverlay: Properties = {
 	position: "fixed",

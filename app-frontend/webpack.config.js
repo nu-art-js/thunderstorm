@@ -108,7 +108,8 @@ module.exports = (env, argv) => {
 					use: {
 						loader: "ts-loader",
 						options: {
-							configFile: swConfig
+							configFile: swConfig,
+							transpileOnly: true,
 						}
 					}
 				},
@@ -118,7 +119,8 @@ module.exports = (env, argv) => {
 					use: {
 						loader: "ts-loader",
 						options: {
-							configFile: mainConfig
+							configFile: mainConfig,
+							transpileOnly: true
 						}
 					}
 				},

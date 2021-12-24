@@ -17,17 +17,7 @@
  * limitations under the License.
  */
 
-import {
-	ApiTypeBinder,
-	BaseHttpRequest,
-	DeriveBodyType,
-	DeriveQueryType,
-	DeriveResponseType,
-	DeriveUrlType,
-	ErrorResponse,
-	QueryParams,
-	RequestErrorHandler
-} from "@nu-art/thunderstorm";
+import {ApiTypeBinder, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from "@nu-art/thunderstorm";
 import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef, PreDBObject} from "../index";
 import {Clause_Where, DB_Object, FirestoreQuery} from "@nu-art/firebase";
 import {DBConfig, IndexedDB, IndexedDBModule, IndexKeys, StorageKey, ThunderDispatcher, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
@@ -81,14 +71,13 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.defaultDispatcher = defaultDispatcher;
 	}
 
-	protected createRequest<Binder extends ApiTypeBinder<U, R, B, P, any> = ApiTypeBinder<void, void, void, {}, any>,
-		U extends string = DeriveUrlType<Binder>,
-		R = DeriveResponseType<Binder>,
-		B = DeriveBodyType<Binder>,
-		P extends QueryParams = DeriveQueryType<Binder>>(apiDef: GenericApiDef, body?: B, requestData?: string): BaseHttpRequest<Binder> {
+	protected createRequest<Binder extends ApiTypeBinder<any, any, any, any, any>,
+		U extends string = Binder["url"],
+		R = Binder["response"],
+		B = Binder["body"],
+		P extends QueryParams = Binder["params"]>(apiDef: GenericApiDef, body?: B, requestData?: string): BaseHttpRequest<Binder> {
 
-		const request = XhrHttpModule
-			.createRequest(apiDef.method, requestData || `request-api--${this.config.key}-${apiDef.key}`)
+		const request = XhrHttpModule.createRequest<Binder>(apiDef.method, requestData || `request-api--${this.config.key}-${apiDef.key}`)
 			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? "/" + apiDef.suffix : ""}`)
 			.setOnError(this.errorHandler) as BaseHttpRequest<any>;
 
@@ -125,7 +114,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
 		this.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Upsert, toUpsert, requestData)
-			.execute(async (response: DBType) => {
+			.execute(async (response) => {
 				await this.onEntryUpdated({...toUpsert, _id: response._id} as unknown as DBType, response, requestData);
 				if (responseHandler)
 					return responseHandler(response);

@@ -20,7 +20,7 @@
  */
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
-import {ApiTypeBinder, DeriveErrorType, DeriveResponseType, ErrorResponse, HttpMethod} from "../../../shared/types";
+import {ApiTypeBinder, ErrorResponse, HttpMethod} from "../../../shared/types";
 import {BadImplementationException, StringMap,} from "@nu-art/ts-common";
 import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
 import {BaseHttpModule_Class} from "../../../shared/BaseHttpModule";
@@ -38,8 +38,8 @@ export class AxiosHttpModule_Class
 			this.origin = origin;
 	}
 
-	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): AxiosHttpRequest<DeriveRealBinder<Binder>> {
-		return new AxiosHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
+	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): AxiosHttpRequest<Binder> {
+		return new AxiosHttpRequest<Binder>(key, data, this.shouldCompress())
 			.setOrigin(this.origin)
 			.setMethod(method)
 			.setTimeout(this.timeout)
@@ -72,13 +72,11 @@ export class AxiosHttpModule_Class
 
 }
 
-export type DeriveRealBinder<Binder> = Binder extends ApiTypeBinder<infer U, infer R, infer B, infer P> ? ApiTypeBinder<U, R, B, P> : void;
-
 export const AxiosHttpModule = new AxiosHttpModule_Class();
 
 class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	extends BaseHttpRequest<Binder> {
-	private response?: Axios_Response<DeriveResponseType<DeriveRealBinder<Binder>>>;
+	private response?: Axios_Response<Binder["response"]>;
 	private cancelSignal: Axios_CancelTokenSource;
 	protected status?: number;
 	private requestOption: Axios_RequestConfig = {};
@@ -109,7 +107,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		this.cancelSignal.cancel(`Request with key: '${this.key}' aborted by the user.`);
 	}
 
-	getErrorResponse(): ErrorResponse<DeriveErrorType<Binder>> {
+	getErrorResponse(): ErrorResponse<Binder["errors"]> {
 		return {debugMessage: this.getResponse()};
 	}
 
@@ -176,7 +174,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				this.response = await axios.request(options);
 				this.status = this.response?.status || 200;
 				return resolve();
-			} catch (e) {
+			} catch (e: any) {
 				// console.log('In catch');
 				// TODO handle this here
 				// 	if (xhr.readyState === 4 && xhr.status === 0) {

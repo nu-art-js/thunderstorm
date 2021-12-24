@@ -19,12 +19,7 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {
-	ApiTypeBinder,
-	DeriveErrorType,
-	ErrorResponse,
-	HttpMethod
-} from "../../../shared/types";
+import {ApiTypeBinder, ErrorResponse, HttpMethod} from "../../../shared/types";
 
 import {BadImplementationException} from "@nu-art/ts-common";
 import {gzip} from "zlib";
@@ -32,10 +27,7 @@ import {gzip} from "zlib";
 import {HttpException} from "../../../shared/request-types";
 // noinspection TypeScriptPreferShortImport
 import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
-import {
-	BaseHttpModule_Class,
-	DeriveRealBinder
-} from "../../../shared/BaseHttpModule";
+import {BaseHttpModule_Class} from "../../../shared/BaseHttpModule";
 
 export class XhrHttpModule_Class
 	extends BaseHttpModule_Class {
@@ -49,8 +41,8 @@ export class XhrHttpModule_Class
 		this.origin = origin;
 	}
 
-	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<DeriveRealBinder<Binder>> {
-		return new XhrHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
+	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<Binder> {
+		return new XhrHttpRequest<Binder>(key, data, this.shouldCompress())
 			.setOrigin(this.origin)
 			.setMethod(method)
 			.setTimeout(this.timeout)
@@ -94,13 +86,13 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		this.xhr?.abort();
 	}
 
-	getErrorResponse(): ErrorResponse<DeriveErrorType<Binder>> {
+	getErrorResponse(): ErrorResponse<Binder["errors"]> {
 		const rawResponse = this.getResponse();
-		let response = undefined as unknown as ErrorResponse<DeriveErrorType<Binder>>;
+		let response = undefined as unknown as ErrorResponse<Binder["errors"]>;
 		if (rawResponse) {
 			try {
-				response = rawResponse && this.asJson() as unknown as ErrorResponse<DeriveErrorType<Binder>>;
-			} catch (e) {
+				response = rawResponse && this.asJson() as unknown as ErrorResponse<Binder["errors"]>;
+			} catch (e: any) {
 				response = {debugMessage: rawResponse};
 			}
 		}
@@ -192,7 +184,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 					xhr.send(result);
 				});
 
-			this.xhr.send(body as BodyInit);
+			this.xhr.send(body as XMLHttpRequestBodyInit);
 		});
 	}
 

@@ -24,13 +24,13 @@ export type Subset<T> = {
 	[P in keyof T]: T[P];
 };
 
-export type OptionalKeys<T extends object> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
-export type MandatoryKeys<T extends object, V extends any = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
+export type OptionalKeys<T extends ObjectTS> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
+export type MandatoryKeys<T extends ObjectTS, V extends any = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
 
-export type RequireOptionals<T extends object, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
+export type RequireOptionals<T extends ObjectTS, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
 	& { [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>> }[Keys]
 
-export type RequireOneOptional<T extends object, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
+export type RequireOneOptional<T extends ObjectTS, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
 	& { [K in Keys]-?: Required<Pick<T, K>> & Partial<Record<Exclude<Keys, K>, undefined>> }[Keys]
 
 export type Constructor<T> = new (...args: any) => T

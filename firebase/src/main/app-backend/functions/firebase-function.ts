@@ -28,11 +28,13 @@ import {
 	ImplementationMissingException,
 	Module,
 	ServerErrorSeverity,
-	StringMap
+	StringMap,
+    ObjectTS
 } from "@nu-art/ts-common";
 import {ObjectMetadata} from "firebase-functions/lib/providers/storage";
 import {Message} from "firebase-functions/lib/providers/pubsub";
-import {DocumentSnapshot} from "@google-cloud/firestore";
+import {firestore} from "firebase-admin";
+import DocumentSnapshot = firestore.DocumentSnapshot;
 
 const functions = require("firebase-functions");
 
@@ -74,7 +76,7 @@ export abstract class FirebaseFunction<Config = any>
 		for (const toExecute of toBeExecuted) {
 			try {
 				await toExecute();
-			} catch (e) {
+			} catch (e:any) {
 				console.error("Error running function: ", e);
 			}
 		}
@@ -127,7 +129,7 @@ export class Firebase_ExpressFunction
 		for (const toExecute of toBeExecuted) {
 			try {
 				await toExecute();
-			} catch (e) {
+			} catch (e:any) {
 				console.error("Error running function: ", e);
 			}
 		}
@@ -172,7 +174,7 @@ export type FirestoreConfigs = {
 }
 
 //TODO: I would like to add a type for the params..
-export abstract class FirestoreFunctionModule<DataType extends object, ConfigType extends FirestoreConfigs = FirestoreConfigs>
+export abstract class FirestoreFunctionModule<DataType extends ObjectTS, ConfigType extends FirestoreConfigs = FirestoreConfigs>
 	extends FirebaseFunction<ConfigType> {
 
 	private readonly collectionName: string;
@@ -282,23 +284,19 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 
 		return this.function = functions.runWith(this.runtimeOpts).storage.bucket(this.config.bucketName).object().onFinalize(
 			async (object: ObjectMetadata, context: EventContext) => {
-				if (this.config.path && !object.name?.startsWith(this.config.path))
-					return;
-
 				try {
 					return await this.handleCallback(() => this.onFinalize(object, context));
-				} catch (e) {
+				} catch (e:any) {
 					const _message = `Error handling callback to onFinalize bucket listener method on path:` + this.config.path +
 						"\n" + `File changed ${object.name}` + "\n with attributes: " + __stringify(context) + "\n" + __stringify(e);
 					this.logError(_message);
 					try {
 						await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
-					} catch (_e) {
+					} catch (_e:any) {
 						this.logError("Error while handing bucket listener error", _e);
 					}
 					throw e;
 				}
-
 			});
 	};
 }
@@ -323,13 +321,13 @@ export abstract class Firebase_PubSubFunction<T>
 	private _onPublish = async (object: T | undefined, originalMessage: TopicMessage, context: FirebaseEventContext) => {
 		try {
 			return await this.onPublish(object, originalMessage, context);
-		} catch (e) {
+		} catch (e:any) {
 			const _message = `Error publishing pub/sub message` + __stringify(object) +
 				"\n" + ` to topic ${this.topic}` + "\n with attributes: " + __stringify(originalMessage.attributes) + "\n" + __stringify(e);
 			this.logError(_message);
 			try {
 				await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
-			} catch (_e) {
+			} catch (_e:any) {
 				this.logError("Error while handing pubsub error", _e);
 			}
 			throw e;
@@ -347,7 +345,7 @@ export abstract class Firebase_PubSubFunction<T>
 			let data: T | undefined;
 			try {
 				data = JSON.parse(Buffer.from(originalMessage.data, "base64").toString());
-			} catch (e) {
+			} catch (e:any) {
 				this.logError(`Error parsing the data attribute from pub/sub message to topic ${this.topic}` +
 					"\n" + __stringify(originalMessage.data) + "\n" + __stringify(e));
 			}

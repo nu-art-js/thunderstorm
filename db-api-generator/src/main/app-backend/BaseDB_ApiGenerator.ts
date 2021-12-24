@@ -37,7 +37,8 @@ import {
 	tsValidateRegexp,
 	tsValidateTimestamp,
 	ValidationException,
-	ValidatorTypeResolver
+	ValidatorTypeResolver,
+    ObjectTS
 } from "@nu-art/ts-common";
 import {ServerApi_Delete, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert} from "./apis";
 import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct, ServerApi} from "@nu-art/thunderstorm/backend";
@@ -66,7 +67,7 @@ export const tsValidator_InternationalPhoneNumber = tsValidateRegexp(/^\+(?:[0-9
 
 export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
 
-export type DBApiConfig<Type extends object> = {
+export type DBApiConfig<Type extends ObjectTS> = {
 	projectId?: string,
 	lockKeys: (keyof Type)[]
 	collectionName: string
@@ -83,7 +84,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerAct {
 
-	public readonly collection!: FirestoreCollection<DBType>;
+	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
 	static __validator = {
 		_id: tsValidateUniqueId,
@@ -170,7 +171,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	init() {
 		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
-		// @ts-ignore
 		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys);
 	}
 
@@ -229,7 +229,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	public async validateImpl(instance: DBType) {
 		try {
 			await tsValidate(instance, this.validator);
-		} catch (e) {
+		} catch (e:any) {
 			this.onValidationError(e);
 		}
 	}

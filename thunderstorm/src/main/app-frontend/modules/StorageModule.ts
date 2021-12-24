@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {merge, Module} from "@nu-art/ts-common";
+import {merge, Module, ObjectTS} from "@nu-art/ts-common";
 import {ThunderDispatcher} from "../core/thunder-dispatcher";
 
 export interface StorageKeyEvent {
@@ -89,7 +89,7 @@ export class StorageModule_Class
 					try {
 						const exp = JSON.parse(item);
 						toRet.push(exp);
-					} catch (e) {
+					} catch (e:any) {
 					}
 				}
 			}
@@ -115,7 +115,7 @@ export class StorageKey<ValueType = string | number | object> {
 		return StorageModule.get(this.key, defaultValue, this.persist) as unknown as ValueType;
 	}
 
-	patch(value: ValueType extends object ? Partial<ValueType> : ValueType) {
+	patch(value: ValueType extends ObjectTS ? Partial<ValueType> : ValueType) {
 		const previousValue = this.get();
 		const mergedValue = merge(previousValue, value);
 		this.set(mergedValue);

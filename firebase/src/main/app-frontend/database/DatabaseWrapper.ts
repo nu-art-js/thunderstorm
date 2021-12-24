@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, Logger} from "@nu-art/ts-common";
+import {BadImplementationException, Logger, ObjectTS} from "@nu-art/ts-common";
 import {FirebaseType_DB} from "./types";
 import {getDatabase, onValue, ref, remove, set, update} from "firebase/database";
 import {FirebaseApp} from "firebase/app";
@@ -43,11 +43,11 @@ export class DatabaseWrapper
 	}
 
 	public listen<T>(path: string, callback: (value: T) => void) {
-		onValue(this.getRef(path), snapshot => {
+		return onValue(this.getRef(path), snapshot => {
 			callback(!snapshot || snapshot.val());
 		}, (error: Error) => {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, error);
-		}, {onlyOnce: true});
+		}, {onlyOnce: false});
 	}
 
 	private getRef = (path: string) => ref(this.database, path);
@@ -55,21 +55,21 @@ export class DatabaseWrapper
 	public async set<T>(path: string, value: T) {
 		try {
 			await set(this.getRef(path), value);
-		} catch (e) {
+		} catch (e:any) {
 			throw new BadImplementationException(`Error while setting value to path: ${path}`);
 		}
 	}
 
 	/** @deprecated */
-	public async update<T extends object>(path: string, value: T) {
+	public async update<T extends ObjectTS>(path: string, value: T) {
 		this.logWarning("update will be deprecated!! please use patch");
 		return this.patch(path, value);
 	}
 
-	public async patch<T extends object>(path: string, value: T) {
+	public async patch<T extends ObjectTS>(path: string, value: T) {
 		try {
 			await update(this.getRef(path), value);
-		} catch (e) {
+		} catch (e:any) {
 			throw new BadImplementationException(`Error while updating value to path: ${path}`);
 		}
 	}
@@ -89,7 +89,7 @@ export class DatabaseWrapper
 
 		try {
 			await remove(this.getRef(path));
-		} catch (e) {
+		} catch (e:any) {
 			throw new BadImplementationException(`Error while removing path: ${path}`);
 		}
 	}

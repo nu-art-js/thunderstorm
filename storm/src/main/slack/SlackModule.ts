@@ -83,7 +83,7 @@ export class SlackModule_Class
 
 		try {
 			return await this.postMessageImpl(parameters);
-		} catch (e) {
+		} catch (e:any) {
 			this.logError(`Error while sending a message to channel: ${parameters.channel}`, e);
 		}
 	}

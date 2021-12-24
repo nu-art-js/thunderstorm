@@ -16,31 +16,9 @@
  * limitations under the License.
  */
 
-import {EventType} from "../../shared/types";
 import * as admin from "firebase-admin";
-// export type FirebaseType_DB = admin.database.Database | firebase.database.Database
-// export type FirebaseType_DB = admin.database.Database
-
-// export interface Firebase_DB {
-// 	ref(path: string): Firebase_Reference;
-// }
 
 export type Firebase_DB = admin.database.Database
 export type Firebase_DataSnapshot = admin.database.DataSnapshot
 
 export type FirebaseListener = (snapshot: Firebase_DataSnapshot | null) => void;
-
-export interface Firebase_Reference {
-
-	on(eventType: EventType, callback: FirebaseListener): any;
-
-	off(eventType: EventType, callback: FirebaseListener): void;
-
-	remove(): Promise<void>;
-
-	set(value: any): Promise<void>;
-
-	update(values: any): Promise<void>;
-
-	once(eventType: EventType): Promise<Firebase_DataSnapshot>;
-}

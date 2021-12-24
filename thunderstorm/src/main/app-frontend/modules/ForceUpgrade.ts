@@ -56,7 +56,7 @@ class ForceUpgrade_Class
 		XhrHttpModule
 			.createRequest<ApiBinder_AssertAppVersion>(HttpMethod.GET, RequestKey_AssertAppVersion)
 			.setRelativeUrl(this.config.assertVersionUrl)
-			.execute((response: UpgradeRequired) => {
+			.execute((response) => {
 				dispatch_onUpgradeRequired.dispatchModule([response]);
 			});
 	};

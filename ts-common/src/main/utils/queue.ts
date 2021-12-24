@@ -16,10 +16,7 @@
  * limitations under the License.
  */
 
-import {
-	addItemToArray,
-	removeItemFromArray,
-} from "../index";
+import {addItemToArray, removeItemFromArray,} from "../index";
 import {Logger} from "../core/logger/Logger";
 
 export class Queue
@@ -46,7 +43,7 @@ export class Queue
 	}
 
 	addItem<T>(toExecute: () => Promise<T>, onCompleted?: (output: T) => void, onError?: (error: Error) => void) {
-		this.addItemImpl(toExecute.bind(this),onCompleted?.bind(this),onError?.bind(this));
+		this.addItemImpl(toExecute.bind(this), onCompleted?.bind(this), onError?.bind(this));
 
 		this.execute();
 	}
@@ -57,10 +54,10 @@ export class Queue
 			try {
 				const output: T = await toExecute();
 				onCompleted && onCompleted(output);
-			} catch (e) {
+			} catch (e: any) {
 				try {
 					onError && onError(e);
-				} catch (e1) {
+				} catch (e1: any) {
 					this.logError("Error while calling onError");
 					this.logError("--- Original: ", e);
 					this.logError("-- Secondary: ", e1);

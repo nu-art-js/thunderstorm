@@ -251,7 +251,7 @@ export class AssetsModuleBE_Class
 				this.logWarning(`renaming the file extension name: ${tempMeta.ext} => ${fileType.ext}`);
 				tempMeta.ext = fileType.ext;
 			}
-		} catch (e) {
+		} catch (e:any) {
 			//TODO delete the file and the temp doc
 			this.logError(`Error while processing asset: ${tempMeta.name}`, e)
 			return this.notifyFrontend(FileStatus.ErrorWhileProcessing, tempMeta);
@@ -261,7 +261,7 @@ export class AssetsModuleBE_Class
 			try {
 				// need to handle the response status!
 				await file.makePublic();
-			} catch (e) {
+			} catch (e:any) {
 				return this.notifyFrontend(FileStatus.ErrorMakingPublic, tempMeta);
 			}
 		}

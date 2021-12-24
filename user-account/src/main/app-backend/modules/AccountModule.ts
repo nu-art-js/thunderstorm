@@ -62,7 +62,7 @@ export class AccountsModule_Class
 		let data: UI_Account | undefined;
 		try {
 			data = await this.validateSession(request);
-		} catch (e) {
+		} catch (e:any) {
 		}
 
 		return {

@@ -78,7 +78,7 @@ export function arrayToMap<T>(array: T[], getKey: (item: T, index: number) => st
 	}, map || {});
 }
 
-// updateProperty<T extends object>(map: { [k: string]: T }, getKey: (element: T) => string, elements: T[]) {
+// updateProperty<T extends ObjectTS>(map: { [k: string]: T }, getKey: (element: T) => string, elements: T[]) {
 // }
 
 

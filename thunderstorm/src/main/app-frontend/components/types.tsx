@@ -1,5 +1,9 @@
+
 /*
- * A backend boilerplate with example apis
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -15,25 +19,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ApiResponse, ExpressRequest, ServerApi_Post,} from "@nu-art/thunderstorm/backend";
 
+import * as React from "react";
 
-import {DispatchModule} from "@modules/ExampleModule";
-import {ExampleSetMax} from "@app/app-shared";
-
-class ServerApi_EndpointExample
-	extends ServerApi_Post<ExampleSetMax> {
-
-	constructor() {
-		super("set-max");
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: { n: number }) {
-		console.log('Setting max');
-		return DispatchModule.setMax(body.n)
-	}
-}
-
-module.exports = new ServerApi_EndpointExample();
-
-
+export type Properties = React.CSSProperties
+export type Color = Properties['color'];

@@ -29,13 +29,14 @@ import {
 	__stringify,
 	_keys,
 	BadImplementationException,
-	ImplementationMissingException
+	ImplementationMissingException,
+    ObjectTS
 } from "@nu-art/ts-common";
 import * as admin from "firebase-admin";
 
 export class FirestoreInterface {
 
-	static buildQuery<Type extends object>(collection: FirestoreCollection<Type>, query?: FirestoreQuery<Type>): admin.firestore.Query {
+	static buildQuery<Type extends ObjectTS>(collection: FirestoreCollection<Type>, query?: FirestoreQuery<Type>): admin.firestore.Query {
 		let myQuery: FirestoreType_Query = collection.collection;
 		if (query && query.select)
 			myQuery = myQuery.select ? myQuery.select(...query.select as string[]) : myQuery;
@@ -120,7 +121,7 @@ export class FirestoreInterface {
 		return results[0];
 	};
 
-	static buildUniqueQuery<Type extends object>(collection: FirestoreCollection<Type>, instance: Type): FirestoreQuery<Type> {
+	static buildUniqueQuery<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type): FirestoreQuery<Type> {
 		_keys(instance).forEach((key) => {
 			if (instance[key] === undefined || instance[key] === null) {
 				throw new BadImplementationException(

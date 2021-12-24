@@ -31,7 +31,7 @@ import {
 	TypeValidator
 } from "@nu-art/ts-common";
 
-export type FormProps<T extends object = object> = {
+export type FormProps<T extends ObjectTS = object> = {
 	form: Form<T>,
 	renderer: FormRenderer<T>,
 	value: Partial<T>,
@@ -40,11 +40,11 @@ export type FormProps<T extends object = object> = {
 	onAccept: (value: T) => void;
 }
 
-type Props<T extends object = object> = FormProps<T> & {
+type Props<T extends ObjectTS = object> = FormProps<T> & {
 	showErrors: boolean
 }
 
-type State<T extends object = object> = { value: Partial<T> };
+type State<T extends ObjectTS = object> = { value: Partial<T> };
 
 export class Component_Form<T extends ObjectTS = ObjectTS>
 	extends React.Component<Props<T>, State<T>> {

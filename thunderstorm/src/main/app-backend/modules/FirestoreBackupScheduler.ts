@@ -3,6 +3,7 @@ import {
 	Dispatcher,
 	dispatch_onServerError,
 	filterInstances,
+	ObjectTS,
     ServerErrorSeverity,
 	_logger_logException,
 	__stringify
@@ -17,7 +18,7 @@ export type BackupDoc = ActDetailsDoc & {
 	backupPath: string,
 }
 
-export type FirestoreBackupDetails<T extends object> = {
+export type FirestoreBackupDetails<T extends ObjectTS> = {
 	moduleKey: string,
 	interval: number,
 	keepInterval?: number,
@@ -77,7 +78,7 @@ export class FirestoreBackupScheduler_Class
 					await backupStatusCollection.delete(queryOld);
 				}
 
-			} catch (e) {
+			} catch (e:any) {
 				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error`,e);
 				const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backupItem, true)}\nError: ${_logger_logException(e)}`;
 
