@@ -19,12 +19,12 @@
  * limitations under the License.
  */
 
-import {_keys, addItemToArray, BadImplementationException, Module} from "@nu-art/ts-common";
-import * as React from "react";
-import {defaultLinkNode, defaultNavLinkNode, defaultRouteNode, RouteParams, RoutePath} from "./route";
-import {Redirect, Switch} from "react-router-dom";
-import {BrowserHistoryModule} from "../HistoryModule";
-import {QueryParams} from "../../../shared/types";
+import {_keys, addItemToArray, BadImplementationException, Module} from '@nu-art/ts-common';
+import * as React from 'react';
+import {defaultLinkNode, defaultNavLinkNode, defaultRouteNode, RouteParams, RoutePath} from './route';
+import {Redirect, Switch} from 'react-router-dom';
+import {BrowserHistoryModule} from '../HistoryModule';
+import {QueryParams} from '../../../shared/types';
 
 
 class RoutingModule_Class
@@ -107,7 +107,7 @@ class RoutingModule_Class
 		</Switch>;
 	}
 
-	getCurrentUrl = () => window.location.href
+	getCurrentUrl = () => window.location.href;
 
 	private getEncodedQueryParams = (): QueryParams => {
 		const queryParams: QueryParams = {};
@@ -115,18 +115,18 @@ class RoutingModule_Class
 		if (!queryAsString || queryAsString.length === 0)
 			return {};
 
-		while (true) {
-			if (queryAsString.startsWith("?"))
+		while (queryAsString.startsWith('?') || queryAsString.startsWith('/?')) {
+			if (queryAsString.startsWith('?'))
 				queryAsString = queryAsString.substring(1);
-			else if (queryAsString.startsWith("/?"))
-				queryAsString = queryAsString.substring(1);
+			else if (queryAsString.startsWith('/?'))
+				queryAsString = queryAsString.substring(2);
 			else
 				break;
 		}
 
-		const query = queryAsString.split("&");
+		const query = queryAsString.split('&');
 		return query.map(param => {
-			const parts = param.split("=");
+			const parts = param.split('=');
 			return {key: parts[0], value: parts[1]};
 		}).reduce((toRet, param) => {
 			if (param.key && param.value)

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {BaseComponent} from "../../core/BaseComponent";
+import {BaseComponent} from '../../core/BaseComponent';
 
 type State = {};
 type Props = {
@@ -13,7 +13,7 @@ export class OverlayWithDocumentListener
 
 	constructor(props: Props) {
 		super(props);
-		this.state = {}
+		this.state = {};
 	}
 
 	onMouseMove = (e: MouseEvent) => {

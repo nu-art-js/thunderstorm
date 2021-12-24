@@ -18,16 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	ApiWithQuery,
-	HttpMethod,
-	TS_Progress
-} from "../../../index";
+import {ApiWithQuery, HttpMethod, TS_Progress} from '../../../index';
 
-import {Module} from "@nu-art/ts-common";
+import {Module} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {XhrHttpModule} from "../http/XhrHttpModule";
-import {BrowserHistoryModule} from "../HistoryModule";
+import {XhrHttpModule} from '../http/XhrHttpModule';
+import {BrowserHistoryModule} from '../HistoryModule';
 
 type ScriptLoaderBinder = ApiWithQuery<string, string>
 
@@ -45,7 +41,7 @@ export class PageLoadingModule_Class
 				progressListener(progress);
 			})
 			.execute(response => {
-				const divElement: HTMLScriptElement = document.createElement("script");
+				const divElement: HTMLScriptElement = document.createElement('script');
 				divElement.innerHTML = response;
 				divElement.id = src;
 				divElement.async = true;

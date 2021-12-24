@@ -19,18 +19,13 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import {
-	auth,
-	credential,
-	initializeApp,
-	ServiceAccount
-} from "firebase-admin";
-import {JWTInput} from "google-auth-library";
-import {FirebaseSession} from "./firebase-session";
-import {ThisShouldNotHappenException} from "@nu-art/ts-common";
+import {auth, credential, initializeApp, ServiceAccount} from 'firebase-admin';
+import {JWTInput} from 'google-auth-library';
+import {FirebaseSession} from './firebase-session';
+import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 
 export class FirebaseSession_Admin
-	extends FirebaseSession<JWTInput & {databaseURL?: string} | undefined> {
+	extends FirebaseSession<JWTInput & { databaseURL?: string } | undefined> {
 
 	constructor(sessionName: string, config?: JWTInput) {
 		super(config, sessionName);
@@ -43,13 +38,13 @@ export class FirebaseSession_Admin
 	getProjectId(): string {
 		if (!this.config) {
 			if (!process.env.GCLOUD_PROJECT)
-				throw new ThisShouldNotHappenException("Could not deduce project id from function const!!")
+				throw new ThisShouldNotHappenException('Could not deduce project id from function const!!');
 
 			return process.env.GCLOUD_PROJECT;
 		}
 
 		if (!this.config.project_id)
-			throw new ThisShouldNotHappenException("Could not deduce project id from session config.. if you need the functionality.. add it to the config!!")
+			throw new ThisShouldNotHappenException('Could not deduce project id from session config.. if you need the functionality.. add it to the config!!');
 
 		return this.config.project_id;
 	}
@@ -60,9 +55,9 @@ export class FirebaseSession_Admin
 
 		const databaseURL = this.config.databaseURL || `https://${this.config.project_id}.firebaseio.com`;
 		return initializeApp({
-			                     credential: credential.cert(this.config as ServiceAccount),
-			                     databaseURL: databaseURL
-		                     }, this.sessionName);
+			credential: credential.cert(this.config as ServiceAccount),
+			databaseURL: databaseURL
+		}, this.sessionName);
 	}
 
 	public getAuth(): auth.Auth {

@@ -143,4 +143,4 @@ export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
 		}
 	}
 	return result;
-};
+}

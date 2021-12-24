@@ -1,19 +1,10 @@
-import * as React from "react";
-import {
-	CSSProperties,
-	ReactNode
-} from "react";
-import {BaseComponent} from "../../core/BaseComponent";
-import {
-	Menu_Model,
-	MenuBuilder,
-	MenuListener,
-	// resolveGenericPosition,
-	resolveRealPosition
-} from "./MenuModule";
-import {BadImplementationException} from "@nu-art/ts-common";
-import {Adapter} from "../../components/adapter/Adapter";
-import {MenuPosition} from "./PopupMenu";
+import * as React from 'react';
+import {CSSProperties, ReactNode} from 'react';
+import {BaseComponent} from '../../core/BaseComponent';
+import {Menu_Model, MenuBuilder, MenuListener, resolveRealPosition} from './MenuModule';
+import {BadImplementationException} from '@nu-art/ts-common';
+import {Adapter} from '../../components/adapter/Adapter';
+import {MenuPosition} from './PopupMenu';
 
 type Props = {
 	id: string
@@ -53,23 +44,22 @@ export class MenuAndButton
 		return <div
 			className={'clickable'}
 			onClick={this.open}
-			style={{position: "relative"}}>
+			style={{position: 'relative'}}>
 			<div ref={this.ref}
-			     onMouseOver={e => this.setState({over: true})}
-			     onMouseOut={e => this.setState({over: false})}>
+					 onMouseOver={e => this.setState({over: true})}
+					 onMouseOut={e => this.setState({over: false})}>
 				{this.state.isOpen || this.state.over ? this.props.iconClosed : this.props.iconOpen}
 			</div>
-		</div>
+		</div>;
 	}
-
 
 
 	open = () => {
 		if (!this.ref.current)
-			throw new BadImplementationException("Could not find image reference");
+			throw new BadImplementationException('Could not find image reference');
 
 		new MenuBuilder(this.props.adapter, this.props.resolvePosition ? this.props.resolvePosition(this.ref.current) : resolveRealPosition(this.ref.current), this.props.css && this.props.css)
 			.setId(this.props.id)
-			.show()  
-	}
+			.show();
+	};
 }

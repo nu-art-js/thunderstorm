@@ -20,21 +20,14 @@
  * Created by tacb0ss on 25/08/2018.
  */
 
-import {
-	_keys,
-	BadImplementationException,
-	ImplementationMissingException,
-	Module,
-	moduleResolver,
-	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
-import {FirebaseSession_Admin} from "./auth/FirebaseSession_Admin";
+import {_keys, BadImplementationException, ImplementationMissingException, Module, moduleResolver, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {FirebaseSession_Admin} from './auth/FirebaseSession_Admin';
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword";
-import {JWTInput} from "google-auth-library";
-import {readFileSync} from "fs";
-import {Firebase_UserCredential} from "./auth/firebase-session";
-import {FirestoreCollection} from "./firestore/FirestoreCollection";
-import {FirebaseProjectCollections} from "../shared/types";
+import {JWTInput} from 'google-auth-library';
+import {readFileSync} from 'fs';
+import {Firebase_UserCredential} from './auth/firebase-session';
+import {FirestoreCollection} from './firestore/FirestoreCollection';
+import {FirebaseProjectCollections} from '../shared/types';
 
 type ConfigType = {
 	[s: string]: string | JWTInput | Firebase_UserCredential;
@@ -50,7 +43,7 @@ export class FirebaseModule_Class
 	private localProjectId!: string;
 
 	constructor() {
-		super("firebase");
+		super('firebase');
 	}
 
 	protected init(): void {
@@ -76,7 +69,7 @@ export class FirebaseModule_Class
 			projectId = process.env.GCLOUD_PROJECT;
 
 		if (!projectId)
-			throw new ThisShouldNotHappenException("Could not resolve project id...");
+			throw new ThisShouldNotHappenException('Could not resolve project id...');
 
 		return projectId;
 	}
@@ -113,8 +106,8 @@ export class FirebaseModule_Class
 		if (this.localAdmin)
 			return this.localAdmin;
 
-		this.logInfo("Creating local admin session");
-		this.localAdmin = new FirebaseSession_Admin("local-admin");
+		this.logInfo('Creating local admin session');
+		this.localAdmin = new FirebaseSession_Admin('local-admin');
 		this.localAdmin.connect();
 
 		return this.localAdmin;
@@ -134,8 +127,8 @@ export class FirebaseModule_Class
 			return this.createLocalAdminSession();
 
 		this.logInfo(`Creating Firebase session for project id: ${projectId}`);
-		if (typeof config === "string")
-			config = JSON.parse(readFileSync(config, "utf8")) as JWTInput;
+		if (typeof config === 'string')
+			config = JSON.parse(readFileSync(config, 'utf8')) as JWTInput;
 
 		if (!config || !config.client_email || !config.private_key)
 			throw new BadImplementationException(`Config for key ${projectId} is not an Admin credentials pattern`);
@@ -156,7 +149,7 @@ export class FirebaseModule_Class
 		const firebaseProjectCollections = modules.reduce((toRet, module) => {
 			const keys = _keys(module);
 			const _collections: FirestoreCollection<any>[] = keys
-				.filter(key => typeof module[key] === "object" && module[key].constructor?.["name"].startsWith("FirestoreCollection"))
+				.filter(key => typeof module[key] === 'object' && module[key].constructor?.['name'].startsWith('FirestoreCollection'))
 				.map(key => module[key] as unknown as FirestoreCollection<any>)
 				.filter(collection => collection.wrapper.isAdmin());
 

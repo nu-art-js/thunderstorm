@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {ChangeEvent, KeyboardEvent} from 'react';
-import {Stylable} from "../../tools/Stylable";
+import {Stylable} from '../../tools/Stylable';
 
 export type InputType = 'text' | 'number' | 'password';
 
@@ -72,7 +72,7 @@ export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInpu
 			id: props.id,
 			name: props.name,
 			initialValue: props.value,
-			value: props.value || ""
+			value: props.value || ''
 		};
 	}
 
@@ -83,12 +83,12 @@ export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInpu
 	};
 
 	handleKeyEvent = (ev: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-		if (this.props.onAccept && ev.key === "Enter" && !ev.shiftKey && !ev.altKey && !ev.ctrlKey && !ev.metaKey) {
+		if (this.props.onAccept && ev.key === 'Enter' && !ev.shiftKey && !ev.altKey && !ev.ctrlKey && !ev.metaKey) {
 			this.props.onAccept();
 			ev.stopPropagation();
 		}
 
-		if (this.props.onCancel && ev.key === "Escape" && !ev.shiftKey && !ev.altKey && !ev.ctrlKey && !ev.metaKey) {
+		if (this.props.onCancel && ev.key === 'Escape' && !ev.shiftKey && !ev.altKey && !ev.ctrlKey && !ev.metaKey) {
 			this.props.onCancel();
 			ev.stopPropagation();
 		}

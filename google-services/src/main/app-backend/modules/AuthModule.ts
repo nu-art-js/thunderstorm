@@ -55,7 +55,7 @@ export class AuthModule_Class
 		}
 
 		throw new NotImplementedYetException("cannot create a JWT from a raw credentials.. need path to file")
-	};
+	}
 }
 
 export const AuthModule = new AuthModule_Class();

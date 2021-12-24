@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {MandatoryKeys, ObjectTS, RequireOptionals} from "@nu-art/ts-common";
+import {MandatoryKeys, ObjectTS, RequireOptionals} from '@nu-art/ts-common';
 
 export type Firebase_Message = {
 	token?: string,
@@ -44,7 +44,7 @@ export type DB_Object = {
 	__updated: number;
 }
 
-type Comparator = "in" | "array-contains" | "array-contains-any" | ">" | ">=" | "<" | "<=" | "==";
+type Comparator = 'in' | 'array-contains' | 'array-contains-any' | '>' | '>=' | '<' | '<=' | '==';
 export type DB_RequestObject = Partial<DB_Object>
 
 export type QueryComparator<T> =
@@ -60,16 +60,16 @@ export type QueryComparator<T> =
 	{ $neq: T };
 
 export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = {
-	$nin: "not-in",
-	$in: "in",
-	$ac: "array-contains",
-	$aca: "array-contains-any",
-	$gt: ">",
-	$gte: ">=",
-	$lt: "<",
-	$lte: "<=",
-	$eq: "==",
-	$neq: "!=",
+	$nin: 'not-in',
+	$in: 'in',
+	$ac: 'array-contains',
+	$aca: 'array-contains-any',
+	$gt: '>',
+	$gte: '>=',
+	$lt: '<',
+	$lte: '<=',
+	$eq: '==',
+	$neq: '!=',
 };
 
 export type FilterKeys<T extends ObjectTS> = MandatoryKeys<T, string | number>[];

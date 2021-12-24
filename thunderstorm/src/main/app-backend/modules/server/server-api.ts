@@ -34,18 +34,18 @@ import {
 	tsValidate,
 	ValidationException,
 	ValidatorTypeResolver
-} from "@nu-art/ts-common";
+} from '@nu-art/ts-common';
 
-import {Stream} from "stream";
-import {parse} from "url";
-import {HttpServer, ServerApi_Middleware} from "./HttpServer";
-import {IncomingHttpHeaders} from "http";
+import {Stream} from 'stream';
+import {parse} from 'url';
+import {HttpServer, ServerApi_Middleware} from './HttpServer';
+import {IncomingHttpHeaders} from 'http';
 // noinspection TypeScriptPreferShortImport
-import {ApiTypeBinder, ApiWithBody, ApiWithQuery, HttpMethod, QueryParams} from "../../../shared/types";
-import {assertProperty} from "../../utils/to-be-removed";
-import {ApiException,} from "../../exceptions";
-import {ExpressRequest, ExpressResponse, ExpressRouter} from "../../utils/types";
-import {RemoteProxy} from "../proxy/RemoteProxy";
+import {ApiTypeBinder, ApiWithBody, ApiWithQuery, HttpMethod, QueryParams} from '../../../shared/types';
+import {assertProperty} from '../../utils/to-be-removed';
+import {ApiException,} from '../../exceptions';
+import {ExpressRequest, ExpressResponse, ExpressRouter} from '../../utils/types';
+import {RemoteProxy} from '../proxy/RemoteProxy';
 
 export type HttpRequestData = {
 	originalUrl: string
@@ -57,7 +57,7 @@ export type HttpRequestData = {
 }
 
 
-export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>, R = Binder["response"], B = Binder["body"], P extends QueryParams | {} = Binder["params"]>
+export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>, R = Binder['response'], B = Binder['body'], P extends QueryParams | {} = Binder['params']>
 	extends Logger {
 	public static isDebug: boolean;
 
@@ -120,7 +120,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>
 	}
 
 	public route(router: ExpressRouter, prefixUrl: string) {
-		const fullPath = `${prefixUrl ? prefixUrl : ""}/${this.relativePath}`;
+		const fullPath = `${prefixUrl ? prefixUrl : ''}/${this.relativePath}`;
 		this.setTag(fullPath);
 		router[this.method](fullPath, this.call);
 		this.url = `${HttpServer.getBaseUrl()}${fullPath}`;
@@ -142,13 +142,13 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>
 		}
 
 		const reqQuery: P = parse(req.url, true).query as P;
-		if (reqQuery && typeof reqQuery === "object" && Object.keys(reqQuery as QueryParams).length)
+		if (reqQuery && typeof reqQuery === 'object' && Object.keys(reqQuery as QueryParams).length)
 			this.logVerbose(`-- Url Params: `, reqQuery);
 		else
 			this.logVerbose(`-- No Params`);
 
 		const body: B | string | undefined = req.body;
-		if (body && ((typeof body === "object")))
+		if (body && ((typeof body === 'object')))
 			this.logVerbose(`-- Body (Object): `, body as unknown as object);
 		else if (body && (body as string).length)
 			this.logVerbose(`-- Body (String): `, body as unknown as string);
@@ -183,39 +183,39 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>
 			// 	return response.stream(200, toReturn as Buffer);
 
 			const responseType = typeof toReturn;
-			if (responseType === "object")
+			if (responseType === 'object')
 				return await response.json(200, toReturn as object);
 
-			if (responseType === "string" && (toReturn as string).toLowerCase().startsWith("<html"))
+			if (responseType === 'string' && (toReturn as string).toLowerCase().startsWith('<html'))
 				return await response.html(200, toReturn as string);
 
 			return await response.text(200, toReturn as string);
 		} catch (err: any) {
 			let e: any = err;
 			let severity: ServerErrorSeverity = ServerErrorSeverity.Warning;
-			if (typeof e === "string")
+			if (typeof e === 'string')
 				e = new BadImplementationException(`String was thrown: ${e}`);
 
-			if (!(e instanceof Error) && typeof e === "object")
+			if (!(e instanceof Error) && typeof e === 'object')
 				e = new BadImplementationException(`Object instance was thrown: ${JSON.stringify(e)}`);
 
 			try {
 				this.logErrorBold(e);
 			} catch (e2: any) {
-				this.logErrorBold("Error while handling error on request...", e2);
+				this.logErrorBold('Error while handling error on request...', e2);
 				this.logErrorBold(`Original error thrown: ${JSON.stringify(e)}`);
 				this.logErrorBold(`-- Someone was stupid... you MUST only throw an Error and not objects or strings!! --`);
 			}
 
 			if (isErrorOfType(e, ValidationException))
-				e = new ApiException(400, "Validator exception", e);
+				e = new ApiException(400, 'Validator exception', e);
 
 			if (!isErrorOfType(e, ApiException))
-				e = new ApiException(500, "Unexpected server error", e);
+				e = new ApiException(500, 'Unexpected server error', e);
 
 			const apiException = isErrorOfType(e, ApiException);
 			if (!apiException)
-				throw new MUSTNeverHappenException("MUST NEVER REACH HERE!!!");
+				throw new MUSTNeverHappenException('MUST NEVER REACH HERE!!!');
 
 			if (apiException.responseCode >= 500)
 				severity = ServerErrorSeverity.Error;
@@ -244,7 +244,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>
 			try {
 				await dispatch_onServerError.dispatchModuleAsync([severity, HttpServer, message]);
 			} catch (e: any) {
-				this.logError("Error while handing server error", e);
+				this.logError('Error while handing server error', e);
 			}
 			if (apiException.responseCode === 500)
 				return response.serverError(apiException);
@@ -256,7 +256,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>
 	protected abstract process(request: ExpressRequest, response: ApiResponse, queryParams: P, body: B): Promise<R>;
 }
 
-export abstract class ServerApi_Get<Binder extends ApiWithQuery<any, any, any>, U extends string = Binder["url"], R = Binder["response"], P extends QueryParams | {} = Binder["params"]>
+export abstract class ServerApi_Get<Binder extends ApiWithQuery<any, any, any>, U extends string = Binder['url'], R = Binder['response'], P extends QueryParams | {} = Binder['params']>
 	extends ServerApi<Binder, R, void, P> {
 
 	protected constructor(apiName: string) {
@@ -264,7 +264,7 @@ export abstract class ServerApi_Get<Binder extends ApiWithQuery<any, any, any>, 
 	}
 }
 
-export abstract class ServerApi_Post<Binder extends ApiWithBody<any, any, any>, U extends string = Binder["url"], R = Binder["response"], B = Binder["body"]>
+export abstract class ServerApi_Post<Binder extends ApiWithBody<any, any, any>, U extends string = Binder['url'], R = Binder['response'], B = Binder['body']>
 	extends ServerApi<Binder, R, B, QueryParams> {
 
 	protected constructor(apiName: string) {
@@ -272,7 +272,7 @@ export abstract class ServerApi_Post<Binder extends ApiWithBody<any, any, any>, 
 	}
 }
 
-export class ServerApi_Proxy<Binder extends ApiTypeBinder<any, any, any, any>, R = Binder["response"], B = Binder["body"], P extends QueryParams | {} = Binder["params"]>
+export class ServerApi_Proxy<Binder extends ApiTypeBinder<any, any, any, any>, R = Binder['response'], B = Binder['body'], P extends QueryParams | {} = Binder['params']>
 	extends ServerApi<Binder> {
 	private readonly api: ServerApi<Binder>;
 
@@ -321,7 +321,7 @@ export class ApiResponse {
 
 	private consume() {
 		if (this.consumed) {
-			this.api.logError("This API was already satisfied!!", new Error());
+			this.api.logError('This API was already satisfied!!', new Error());
 			return;
 		}
 
@@ -359,19 +359,19 @@ export class ApiResponse {
 
 	public code(responseCode: number, headers?: any) {
 		this.printHeaders(headers);
-		this.end(responseCode, "", headers);
+		this.end(responseCode, '', headers);
 	}
 
 	text(responseCode: number, response?: string, _headers?: any) {
 		const headers = (_headers || {});
-		headers["content-type"] = "text/plain";
+		headers['content-type'] = 'text/plain';
 
 		this.end(responseCode, response, headers);
 	}
 
 	html(responseCode: number, response?: string, _headers?: any) {
 		const headers = (_headers || {});
-		headers["content-type"] = "text/html";
+		headers['content-type'] = 'text/html';
 
 		this.end(responseCode, response, headers);
 	}
@@ -383,7 +383,7 @@ export class ApiResponse {
 
 	private _json(responseCode: number, response?: object | string, _headers?: any) {
 		const headers = (_headers || {});
-		headers["content-type"] = "application/json";
+		headers['content-type'] = 'application/json';
 
 		this.end(responseCode, response, headers);
 	}
@@ -396,7 +396,7 @@ export class ApiResponse {
 
 		this.res.set(headers);
 		this.res.writeHead(responseCode);
-		this.res.end(typeof response !== "string" ? JSON.stringify(response, null, 2) : response);
+		this.res.end(typeof response !== 'string' ? JSON.stringify(response, null, 2) : response);
 	}
 
 	redirect(responseCode: number, url: string) {
@@ -415,7 +415,7 @@ export class ApiResponse {
 
 	serverError(error: Error & { cause?: Error }, headers?: any) {
 		const stack = error.cause ? error.cause.stack : error.stack;
-		const message = (error.cause ? error.cause.message : error.message) || "";
+		const message = (error.cause ? error.cause.message : error.message) || '';
 		this.text(500, ServerApi.isDebug && stack ? stack : message, headers);
 	}
 }

@@ -19,33 +19,20 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	renderApp,
-	WrapperProps
-} from "./AppWrapper";
-import {
-	BeLogged,
-	LogClient_Browser,
-	Module,
-	ModuleManager,
-	removeItemFromArray
-} from "@nu-art/ts-common";
-import {XhrHttpModule} from "../modules/http/XhrHttpModule";
-import {ToastModule} from "../modules/toaster/ToasterModule";
-import {DialogModule} from "../modules/dialog/DialogModule";
-import {RoutingModule} from "../modules/routing/RoutingModule";
-import {BrowserHistoryModule} from "../modules/HistoryModule";
-import {StorageModule} from "../modules/StorageModule";
-import {ResourcesModule} from "../modules/ResourcesModule";
-import {ThunderDispatcher} from "./thunder-dispatcher";
-import {LocaleModule} from "../modules/locale/LocaleModule";
-import {
-	OnRequestListener,
-	RequestErrorHandler,
-	RequestSuccessHandler
-} from "../../shared/request-types";
-import {ThunderstormModule} from "../modules/ThunderstormModule";
+import * as React from 'react';
+import {renderApp, WrapperProps} from './AppWrapper';
+import {BeLogged, LogClient_Browser, Module, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
+import {XhrHttpModule} from '../modules/http/XhrHttpModule';
+import {ToastModule} from '../modules/toaster/ToasterModule';
+import {DialogModule} from '../modules/dialog/DialogModule';
+import {RoutingModule} from '../modules/routing/RoutingModule';
+import {BrowserHistoryModule} from '../modules/HistoryModule';
+import {StorageModule} from '../modules/StorageModule';
+import {ResourcesModule} from '../modules/ResourcesModule';
+import {ThunderDispatcher} from './thunder-dispatcher';
+import {LocaleModule} from '../modules/locale/LocaleModule';
+import {OnRequestListener, RequestErrorHandler, RequestSuccessHandler} from '../../shared/request-types';
+import {ThunderstormModule} from '../modules/ThunderstormModule';
 
 export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?) => {
 	const errorMessage = request.errorMessage || resError?.debugMessage;
@@ -123,9 +110,9 @@ export class Thunder
 	}
 
 	public build(onStarted?: () => void) {
-		super.build()
+		super.build();
 		onStarted?.();
 	}
 }
 
-export const dispatch_requestCompleted = new ThunderDispatcher<OnRequestListener, "__onRequestCompleted">("__onRequestCompleted");
+export const dispatch_requestCompleted = new ThunderDispatcher<OnRequestListener, '__onRequestCompleted'>('__onRequestCompleted');

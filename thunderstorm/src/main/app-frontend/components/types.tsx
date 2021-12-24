@@ -1,4 +1,3 @@
-
 /*
  * Thunderstorm is a full web app framework!
  *
@@ -20,7 +19,7 @@
  * limitations under the License.
  */
 
-import * as React from "react";
+import * as React from 'react';
 
 export type Properties = React.CSSProperties
 export type Color = Properties['color'];

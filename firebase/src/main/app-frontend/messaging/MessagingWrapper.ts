@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {Logger} from "@nu-art/ts-common";
-import {FirebaseType_Messaging, FirebaseType_Unsubscribe} from "./types";
-import {deleteToken, getMessaging, getToken, GetTokenOptions, MessagePayload, NextFn, Observer, onMessage} from "firebase/messaging";
-import {FirebaseApp} from "firebase/app";
+import {Logger} from '@nu-art/ts-common';
+import {FirebaseType_Messaging, FirebaseType_Unsubscribe} from './types';
+import {deleteToken, getMessaging, getToken, GetTokenOptions, MessagePayload, NextFn, Observer, onMessage} from 'firebase/messaging';
+import {FirebaseApp} from 'firebase/app';
 
 export class MessagingWrapper
 	extends Logger {
@@ -34,7 +34,7 @@ export class MessagingWrapper
 	}
 
 	async getToken(options?: GetTokenOptions): Promise<string> {
-		this.token = await getToken(this.messaging,options);
+		this.token = await getToken(this.messaging, options);
 
 		if (this.callback)
 			onMessage(this.messaging, this.callback);
@@ -43,7 +43,7 @@ export class MessagingWrapper
 	}
 
 	async deleteToken() {
-		this.logVerbose("Deleting firebase messaging token")
+		this.logVerbose('Deleting firebase messaging token');
 		await deleteToken(this.messaging);
 
 		delete this.token;

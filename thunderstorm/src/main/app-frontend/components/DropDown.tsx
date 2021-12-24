@@ -21,68 +21,68 @@
 
 import * as React from 'react';
 import {KeyboardEvent} from 'react';
-import {TS_FilterInput} from "./input/TS_FilterInput";
-import {generateHex} from "@nu-art/ts-common";
+import {TS_FilterInput} from './input/TS_FilterInput';
+import {generateHex} from '@nu-art/ts-common';
 import {KeyboardListener} from '../tools/KeyboardListener';
-import {stopPropagation} from "../utils/tools";
-import {Adapter,} from "./adapter/Adapter";
+import {stopPropagation} from '../utils/tools';
+import {Adapter,} from './adapter/Adapter';
 import {Stylable} from '../tools/Stylable';
-import {Overlay} from "./Overlay";
+import {Overlay} from './Overlay';
 import {Tree} from './tree/Tree';
 
 export const DropDown_defaultWidth = 222;
-const defaultTitleHeight = "28px";
-const defaultListHeight = "150px";
+const defaultTitleHeight = '28px';
+const defaultListHeight = '150px';
 
 // export enum OnEnterOptions {
 //     SelectFirstOption= (e:)
 // }
 
 export const wrapperStyle: React.CSSProperties = {
-	display: "inline-block",
-	width: "100%",
+	display: 'inline-block',
+	width: '100%',
 	position: 'relative'
 };
 
 export const DropDown_headerStyle: React.CSSProperties = {
-	display: "flex",
-	alignItems: "center",
-	boxSizing: "border-box",
-	position: "relative",
-	border: "solid 1px",
+	display: 'flex',
+	alignItems: 'center',
+	boxSizing: 'border-box',
+	position: 'relative',
+	border: 'solid 1px',
 	borderRadius: 2,
-	color: "black",
-	backgroundColor: "white",
+	color: 'black',
+	backgroundColor: 'white',
 	width: DropDown_defaultWidth,
 	height: defaultTitleHeight,
 };
 
 export const DropDown_inputStyle: React.CSSProperties = {
-	border: "unset",
-	boxSizing: "border-box",
-	outline: "none",
+	border: 'unset',
+	boxSizing: 'border-box',
+	outline: 'none',
 	// padding: "0 5px",
-	width: "100%",
+	width: '100%',
 };
 
 export const listContainerStyle: React.CSSProperties = {
-	display: "inline-block",
-	position: "absolute",
+	display: 'inline-block',
+	position: 'absolute',
 	zIndex: 10,
 };
 
 export const DropDown_listStyle: React.CSSProperties = {
-	boxSizing: "border-box",
-	backgroundColor: "whitesmoke",
-	border: "solid 1px",
+	boxSizing: 'border-box',
+	backgroundColor: 'whitesmoke',
+	border: 'solid 1px',
 	borderRadius: 5,
-	display: "flex",
-	flexFlow: "column",
-	alignItems: "stretch",
+	display: 'flex',
+	flexFlow: 'column',
+	alignItems: 'stretch',
 	maxHeight: defaultListHeight,
-	overflowX: "hidden",
-	overflowY: "auto",
-	position: "relative",
+	overflowX: 'hidden',
+	overflowY: 'auto',
+	position: 'relative',
 	top: 1,
 	width: DropDown_defaultWidth,
 };
@@ -242,16 +242,16 @@ export class DropDown<ItemType>
 				return state;
 			});
 
-		if (e.key === "Enter")
+		if (e.key === 'Enter')
 			if (this.filteredOptions.length > 0)
 				return this.onSelected(this.filteredOptions[0]);
 			else
-				return this.props.onNoMatchingSelectionForString?.(this.state.filterText)
+				return this.props.onNoMatchingSelectionForString?.(this.state.filterText);
 
-		if (e.key === "Escape")
+		if (e.key === 'Escape')
 			return this.setState({open: false});
 
-		if (e.key === "ArrowDown") {
+		if (e.key === 'ArrowDown') {
 			return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
 		}
 	};
@@ -328,7 +328,7 @@ export class DropDown<ItemType>
 		const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const id = `${this.props.id}-tree`;
 		if ((!this.props.filter || !this.props.autocomplete || this.state.filterText?.length) && this.state.adapter.data.length === 0)
-			return <div style={{textAlign: "center", opacity: 0.5}}>No options</div>;
+			return <div style={{textAlign: 'center', opacity: 0.5}}>No options</div>;
 
 		return <Tree
 			id={id}
@@ -344,7 +344,7 @@ export class DropDown<ItemType>
 
 const treeKeyEventHandlerResolver = (id: string) => {
 	return (e: React.KeyboardEvent, node?: HTMLDivElement) => {
-		if (!["Escape", "ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Enter"].includes(e.key))
+		if (!['Escape', 'ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Enter'].includes(e.key))
 			document.getElementById(`${id}-input`)?.focus();
 	};
 };

@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {TreeNode} from "../tree/types";
+import * as React from 'react';
+import {TreeNode} from '../tree/types';
 
 
 export type ItemRendererProps<Item extends any = any> = { item: Item }

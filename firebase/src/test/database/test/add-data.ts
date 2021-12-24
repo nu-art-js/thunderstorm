@@ -16,12 +16,9 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {myDb} from "../_core/database-wrapper";
-import {
-	assert,
-	merge
-} from "@nu-art/ts-common";
+import {__scenario} from '@nu-art/testelot';
+import {myDb} from '../_core/database-wrapper';
+import {assert, merge} from '@nu-art/ts-common';
 
 type ModelDb = {
 	path: string
@@ -29,7 +26,7 @@ type ModelDb = {
 	label: string
 };
 
-export const scenarioAddData = __scenario("Add data");
+export const scenarioAddData = __scenario('Add data');
 const objectPath = 'test/object';
 const stringModel = {
 	path: 'test/string',
@@ -81,8 +78,8 @@ const objectModel4 = {
 const modelToEscape = {
 	path: objectPath,
 	value: {
-		command: "flash-dsp",
-		data: "https://storage.googleapis.com/elliq-env-dev.appspot.com/resources/test/ElliQ_ver2.22_20200629.mbi"
+		command: 'flash-dsp',
+		data: 'https://storage.googleapis.com/elliq-env-dev.appspot.com/resources/test/ElliQ_ver2.22_20200629.mbi'
 	},
 	label: 'Adding an object'
 };
@@ -98,21 +95,21 @@ const simpleModels: ModelDb[] = [
 const addData = (model: ModelDb) => myDb.processDirty(model.label, async db => {
 	await db.set<typeof model.value>(model.path, model.value);
 	const readVal = await db.get(model.path);
-	assert("Values don't match", readVal, model.value);
+	assert('Values don\'t match', readVal, model.value);
 });
 
 const scenarioSet = myDb.processClean('Set an object over another overwrites', async db => {
 	await db.set(objectModel.path, objectModel.value);
 	await db.set(objectModel.path, objectModel2.value);
 	const readVal = await db.get(objectModel.path);
-	assert("Values don't match", readVal, objectModel2.value);
+	assert('Values don\'t match', readVal, objectModel2.value);
 });
 
 const scenarioUpdate = (obj1: ModelDb, obj2: ModelDb) => myDb.processClean('Update an object over another just patches', async db => {
 	await db.set(obj1.path, obj1.value);
 	await db.patch(obj1.path, obj2.value);
 	const actual = await db.get(obj1.path);
-	assert("Values don't match", merge(obj1.value, obj2.value), actual);
+	assert('Values don\'t match', merge(obj1.value, obj2.value), actual);
 });
 
 const scenarioEscape = myDb.processDirty('Do I need to escape my values?', async db => {

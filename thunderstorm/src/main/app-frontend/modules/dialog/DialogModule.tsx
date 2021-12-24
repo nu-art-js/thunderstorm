@@ -19,11 +19,11 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {Module} from "@nu-art/ts-common";
-import {ThunderDispatcher} from "../../core/thunder-dispatcher";
-import { Stylable, StylableBuilder } from "../../tools/Stylable";
-import {Color, Properties} from "../../components/types";
+import * as React from 'react';
+import {Module} from '@nu-art/ts-common';
+import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {Stylable, StylableBuilder} from '../../tools/Stylable';
+import {Color, Properties} from '../../components/types';
 
 export type Dialog_Model = Stylable & {
 	zIndex: number,
@@ -44,7 +44,7 @@ export interface DialogListener {
 	__showDialog(dialogModel?: Dialog_Model): void;
 }
 
-const dispatch_showDialog = new ThunderDispatcher<DialogListener, "__showDialog">("__showDialog");
+const dispatch_showDialog = new ThunderDispatcher<DialogListener, '__showDialog'>('__showDialog');
 
 export class DialogModule_Class
 	extends Module<{}> {
@@ -57,12 +57,12 @@ export class DialogModule_Class
 	}
 
 	public close = () => {
-		dispatch_showDialog.dispatchUI([])
+		dispatch_showDialog.dispatchUI([]);
 	};
 
 	public show = (params: Dialog_Model) => {
-		dispatch_showDialog.dispatchUI([params])
-	}
+		dispatch_showDialog.dispatchUI([params]);
+	};
 }
 
 
@@ -100,7 +100,7 @@ export class Dialog_Builder
 
 	title!: React.ReactNode;
 	buttons: DialogButtonModel[] = [];
-	overlayColor: Color = "rgba(29, 29, 48, 0.6)";
+	overlayColor: Color = 'rgba(29, 29, 48, 0.6)';
 	allowIndirectClosing: boolean = false;
 	actionsStyle: Properties = {};
 

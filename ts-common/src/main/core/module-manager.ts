@@ -88,7 +88,9 @@ export class ModuleManager
 
 		this.modules.forEach(module => {
 			this.logInfo(`---------  ${module.getName()}  ---------`);
+			// @ts-ignore
 			module.init();
+			// @ts-ignore
 			module.initiated = true;
 		});
 

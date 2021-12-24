@@ -19,9 +19,9 @@
  * limitations under the License.
  */
 
-import {ErrorResponse} from "./types";
-import {BaseHttpRequest} from "./BaseHttpRequest";
-import {ObjectTS} from "@nu-art/ts-common";
+import {ErrorResponse} from './types';
+import {BaseHttpRequest} from './BaseHttpRequest';
+import {ObjectTS} from '@nu-art/ts-common';
 
 export class HttpException
 	extends Error {

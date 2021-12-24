@@ -19,11 +19,8 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	ObjectTS,
-	ValidatorTypeResolver
-} from "@nu-art/ts-common";
+import * as React from 'react';
+import {ObjectTS, ValidatorTypeResolver} from '@nu-art/ts-common';
 
 export type InputField<T, K extends keyof T = keyof T> = {
 	type: 'text' | 'number' | 'password'

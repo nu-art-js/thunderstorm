@@ -16,13 +16,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, auditBy, currentTimeMillis, Day, Dispatcher, generateHex, hashPasswordWithSalt, Module, tsValidate} from "@nu-art/ts-common";
+import {__stringify, auditBy, currentTimeMillis, Day, Dispatcher, generateHex, hashPasswordWithSalt, Module, tsValidate} from '@nu-art/ts-common';
 
 
-import {FirebaseModule, FirestoreCollection} from "@nu-art/firebase/backend";
-import {DB_Account, DB_Session, HeaderKey_SessionId, Request_CreateAccount, Request_LoginAccount, Response_Auth, UI_Account} from "./_imports";
-import {ApiException, ExpressRequest, HeaderKey, QueryRequestInfo} from "@nu-art/thunderstorm/backend";
-import {tsValidateEmail} from "@nu-art/db-api-generator/backend";
+import {FirebaseModule, FirestoreCollection} from '@nu-art/firebase/backend';
+import {DB_Account, DB_Session, HeaderKey_SessionId, Request_CreateAccount, Request_LoginAccount, Response_Auth, UI_Account} from './_imports';
+import {ApiException, ExpressRequest, HeaderKey, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
+import {tsValidateEmail} from '@nu-art/db-api-generator/backend';
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
@@ -31,8 +31,8 @@ type Config = {
 	sessionTTLms: number
 }
 
-export const Collection_Sessions = "user-account--sessions";
-export const Collection_Accounts = "user-account--accounts";
+export const Collection_Sessions = 'user-account--sessions';
+export const Collection_Accounts = 'user-account--accounts';
 
 export interface OnNewUserRegistered {
 	__onNewUserRegistered(account: UI_Account): void;
@@ -42,8 +42,8 @@ export interface OnUserLogin {
 	__onUserLogin(account: UI_Account): void;
 }
 
-const dispatch_onUserLogin = new Dispatcher<OnUserLogin, "__onUserLogin">("__onUserLogin");
-const dispatch_onNewUserRegistered = new Dispatcher<OnNewUserRegistered, "__onNewUserRegistered">("__onNewUserRegistered");
+const dispatch_onUserLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
+const dispatch_onNewUserRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
 
 function getUIAccount(account: DB_Account): UI_Account {
 	const {email, _id} = account;
@@ -62,7 +62,8 @@ export class AccountsModule_Class
 		let data: UI_Account | undefined;
 		try {
 			data = await this.validateSession(request);
-		} catch (e:any) {
+		} catch (e: any) {
+			this.logError(e);
 		}
 
 		return {
@@ -76,21 +77,21 @@ export class AccountsModule_Class
 
 	protected init(): void {
 		const firestore = FirebaseModule.createAdminSession(this.config.projectId).getFirestore();
-		this.sessions = firestore.getCollection<DB_Session>(Collection_Sessions, ["userId"]);
-		this.accounts = firestore.getCollection<DB_Account>(Collection_Accounts, ["email"]);
+		this.sessions = firestore.getCollection<DB_Session>(Collection_Sessions, ['userId']);
+		this.accounts = firestore.getCollection<DB_Account>(Collection_Accounts, ['email']);
 	}
 
 	async getUser(_email: string): Promise<UI_Account | undefined> {
 		const email = _email.toLowerCase();
-		return this.accounts.queryUnique({where: {email}, select: ["email", "_id"]});
+		return this.accounts.queryUnique({where: {email}, select: ['email', '_id']});
 	}
 
 	async listUsers() {
-		return this.accounts.getAll(["_id", "email"]) as Promise<{ email: string, _id: string }[]>;
+		return this.accounts.getAll(['_id', 'email']) as Promise<{ email: string, _id: string }[]>;
 	}
 
 	async listSessions() {
-		return this.sessions.getAll(["userId", "timestamp"]);
+		return this.sessions.getAll(['userId', 'timestamp']);
 	}
 
 	async getSession(_email: string) {
@@ -124,7 +125,7 @@ export class AccountsModule_Class
 		return this.accounts.runInTransaction(async (transaction) => {
 			let account = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
 			if (account)
-				throw new ApiException(422, "User with email already exists");
+				throw new ApiException(422, 'User with email already exists');
 
 			const salt = generateHex(32);
 			const now = currentTimeMillis();
@@ -147,13 +148,13 @@ export class AccountsModule_Class
 		const query = {where: {email: request.email}};
 		const account = await this.accounts.queryUnique(query);
 		if (!account)
-			throw new ApiException(401, "account does not exists");
+			throw new ApiException(401, 'account does not exists');
 
 		if (!account.saltedPassword || !account.salt)
-			throw new ApiException(401, "Account login using SAML");
+			throw new ApiException(401, 'Account login using SAML');
 
 		if (account.saltedPassword !== hashPasswordWithSalt(account.salt, request.password))
-			throw new ApiException(401, "wrong username or password");
+			throw new ApiException(401, 'wrong username or password');
 
 		if (!account._id) {
 			account._id = generateHex(32);
@@ -220,7 +221,7 @@ export class AccountsModule_Class
 			throw new ApiException(401, `Invalid session id: ${sessionId}`);
 
 		if (this.TTLExpired(session))
-			throw new ApiException(401, "Session timed out");
+			throw new ApiException(401, 'Session timed out');
 
 		return await this.getUserEmailFromSession(session);
 	}

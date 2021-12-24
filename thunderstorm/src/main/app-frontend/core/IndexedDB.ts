@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Module, ObjectTS} from "@nu-art/ts-common";
+import {Module, ObjectTS} from '@nu-art/ts-common';
 import {DB, ObjectStore, openDb, UpgradeDB} from 'idb';
 
 type Config = {}
@@ -49,7 +49,7 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 					this.config.indices?.forEach(index => store.createIndex(index.id, index.keys as string | string[], {
 						multiEntry: index.params?.multiEntry,
 						unique: index.params?.unique
-					}))
+					}));
 				}
 
 
@@ -67,7 +67,7 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 
 	public readonly store = async (write = false, store?: ObjectStore<T, Ks>) => {
 		if (store)
-			return store
+			return store;
 
 		if (!this.db)
 			await this.open();
@@ -84,7 +84,7 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 	public async query(query?: string | number | string[] | number[], indexKey?: string): Promise<T[] | undefined> {
 		const store = await this.store();
 		if (indexKey)
-			return store.index(indexKey).getAll(query)
+			return store.index(indexKey).getAll(query);
 
 		return store.getAll(query);
 	}
@@ -127,7 +127,7 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 export class IndexedDBModule_Class
 	extends Module<Config> {
 
-	dbs: { [collection: string]: IndexedDB<any, any> } = {}
+	dbs: { [collection: string]: IndexedDB<any, any> } = {};
 
 	getOrCreate<T extends ObjectTS, Ks extends keyof T>(config: DBConfig<T, Ks>): IndexedDB<T, Ks> {
 		return this.dbs[config.name] || (this.dbs[config.name] = new IndexedDB<T, Ks>(config));

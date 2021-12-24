@@ -20,15 +20,10 @@
  * Created by tacb0ss on 25/08/2018.
  */
 
-import {
-	__stringify,
-	BadImplementationException,
-	ImplementationMissingException,
-	Module
-} from "@nu-art/ts-common";
-import {FirebaseConfig} from "..";
-import {FirebaseSession} from "./auth/FirebaseSession";
-import {SwFirebaseSession} from "./auth/SwFirebaseSession";
+import {__stringify, BadImplementationException, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {FirebaseConfig} from '..';
+import {FirebaseSession} from './auth/FirebaseSession';
+import {SwFirebaseSession} from './auth/SwFirebaseSession';
 
 const localSessionId = 'local';
 
@@ -43,7 +38,7 @@ export class FirebaseModule_Class
 	private swSession?: SwFirebaseSession;
 
 	constructor() {
-		super("firebase fe");
+		super('firebase fe');
 	}
 
 
@@ -83,7 +78,7 @@ export class FirebaseModule_Class
 			// @ts-ignore
 			this.setConfig({[localSessionId]: config});
 			return config;
-		} catch (e:any) {
+		} catch (e: any) {
 			throw new ImplementationMissingException(`Either specify configs for the 'FirebaseModule' or use SDK auto-configuration with firebase hosting`);
 		}
 	};
@@ -92,7 +87,7 @@ export class FirebaseModule_Class
 		if (!projectId)
 			return this.createLocalSession(token);
 
-		if (typeof projectId === "object")
+		if (typeof projectId === 'object')
 			return this.createSessionWithConfigs(projectId, token);
 
 		const session = this.sessions[projectId];

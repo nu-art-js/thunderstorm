@@ -20,16 +20,16 @@
  */
 
 import * as React from 'react';
-import {TS_FilterInput} from "../input/TS_FilterInput";
-import {generateHex} from "@nu-art/ts-common";
+import {TS_FilterInput} from '../input/TS_FilterInput';
+import {generateHex} from '@nu-art/ts-common';
 import {KeyboardListener} from '../../tools/KeyboardListener';
-import {stopPropagation} from "../../utils/tools";
-import {Adapter,} from "../adapter/Adapter";
+import {stopPropagation} from '../../utils/tools';
+import {Adapter,} from '../adapter/Adapter';
 import {Stylable} from '../../tools/Stylable';
-import {Overlay} from "../Overlay";
+import {Overlay} from '../Overlay';
 import {TS_Tree} from '../tree/TS_Tree';
 import {DropDown_headerStyle, DropDown_inputStyle, DropDown_listStyle, InputProps, listContainerStyle, wrapperStyle} from '../DropDown';
-import {UIComponent} from "../../core/UIComponent";
+import {UIComponent} from '../../core/UIComponent';
 
 type State<ItemType> = {
 	id: string
@@ -165,16 +165,16 @@ export class TS_DropDown<ItemType>
 				return state;
 			});
 
-		if (e.key === "Enter")
+		if (e.key === 'Enter')
 			if (this.state.filterText)
-				return this.props.onNoMatchingSelectionForString?.(this.state.filterText)
+				return this.props.onNoMatchingSelectionForString?.(this.state.filterText);
 			else
 				return this.onSelected(this.filteredOptions[0]);
 
-		if (e.key === "Escape")
+		if (e.key === 'Escape')
 			return this.setState({open: false});
 
-		if (e.key === "ArrowDown") {
+		if (e.key === 'ArrowDown') {
 			return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
 		}
 	};
@@ -252,7 +252,7 @@ export class TS_DropDown<ItemType>
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const id = `${this.props.id}-tree`;
 		if ((!this.props.filterMapper || !this.props.autocomplete || this.state.filterText?.length) && this.state.adapter.data.length === 0)
-			return <div style={{textAlign: "center", opacity: 0.5}}>No options</div>;
+			return <div style={{textAlign: 'center', opacity: 0.5}}>No options</div>;
 
 		return <TS_Tree
 			id={id}

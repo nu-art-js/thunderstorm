@@ -22,11 +22,11 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {merge, Module, ObjectTS} from "@nu-art/ts-common";
-import {ThunderDispatcher} from "../core/thunder-dispatcher";
+import {merge, Module, ObjectTS} from '@nu-art/ts-common';
+import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
 export interface StorageKeyEvent {
-	__onStorageKeyEvent(event: StorageEvent): void
+	__onStorageKeyEvent(event: StorageEvent): void;
 }
 
 export class StorageModule_Class
@@ -71,7 +71,7 @@ export class StorageModule_Class
 		// this.logDebug(`get: ${key} = ${value}`)
 		if (!value)
 			if (defaultValue === null || defaultValue === undefined)
-				return null
+				return null;
 			else
 				return defaultValue;
 
@@ -89,7 +89,8 @@ export class StorageModule_Class
 					try {
 						const exp = JSON.parse(item);
 						toRet.push(exp);
-					} catch (e:any) {
+					} catch (e: any) {
+						this.logError(e);
 					}
 				}
 			}

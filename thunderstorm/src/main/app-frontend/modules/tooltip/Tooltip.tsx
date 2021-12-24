@@ -19,26 +19,22 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {CSSProperties} from "react";
-import {
-	Tooltip_Model,
-	TooltipListener,
-	TooltipModule
-} from "./TooltipModule";
-import {BaseComponent} from "../../core/BaseComponent";
-import {_setTimeout} from "@nu-art/ts-common";
+import * as React from 'react';
+import {CSSProperties} from 'react';
+import {Tooltip_Model, TooltipListener, TooltipModule} from './TooltipModule';
+import {BaseComponent} from '../../core/BaseComponent';
+import {_setTimeout} from '@nu-art/ts-common';
 
 type State = { model?: Tooltip_Model };
 
 export const TooltipDefaultStyle: CSSProperties = {
-	backgroundColor: "#f9f9f9",
-	borderRadius: "3px",
-	boxShadow: "0 0 4px 0 #00000066",
-	color: "#333435",
-	fontSize: "13px",
-	padding: "1px 3px",
-	position: "fixed",
+	backgroundColor: '#f9f9f9',
+	borderRadius: '3px',
+	boxShadow: '0 0 4px 0 #00000066',
+	color: '#333435',
+	fontSize: '13px',
+	padding: '1px 3px',
+	position: 'fixed',
 };
 
 export class Tooltip
@@ -89,8 +85,8 @@ export class Tooltip
 
 			this.ref = ref;
 			this.forceUpdate();
-		}} id={"tooltip"} style={{...(model.style || TooltipDefaultStyle), ...positionStyle}}>
-			{typeof model.content === "string" ? <div dangerouslySetInnerHTML={{__html: model.content}}/> : model.content}
+		}} id={'tooltip'} style={{...(model.style || TooltipDefaultStyle), ...positionStyle}}>
+			{typeof model.content === 'string' ? <div dangerouslySetInnerHTML={{__html: model.content}}/> : model.content}
 		</div>;
 	}
 }

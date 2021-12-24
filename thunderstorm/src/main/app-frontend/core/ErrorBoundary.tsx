@@ -18,25 +18,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as React from "react";
+import * as React from 'react';
 
 type State = {
 	error?: Error,
 	errorInfo?: React.ErrorInfo
 }
 const style: React.CSSProperties = {
-	cursor: "pointer",
-	display: "flex",
-	alignItems: "center",
-	justifyContent: "center",
-	position: "absolute",
-	width: "50px",
-	height: "50px",
-	bottom: "0px",
-	right: "0px",
-	backgroundColor: "#FF5733",
-	color: "white",
-	borderRadius: "50%"
+	cursor: 'pointer',
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent: 'center',
+	position: 'absolute',
+	width: '50px',
+	height: '50px',
+	bottom: '0px',
+	right: '0px',
+	backgroundColor: '#FF5733',
+	color: 'white',
+	borderRadius: '50%'
 };
 
 export class ErrorBoundary
@@ -49,7 +49,7 @@ export class ErrorBoundary
 
 	static getDerivedStateFromError(error: Error) {
 		return {error};
-	};
+	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
 		this.setState({error, errorInfo});
@@ -57,7 +57,7 @@ export class ErrorBoundary
 
 	render() {
 		if (this.state.error) {
-			return (<div style={{position: "relative"}}>
+			return (<div style={{position: 'relative'}}>
 					<div style={{paddingBottom: 50}}>
 						<div style={{fontSize: 20, marginBottom: 8}}>Something went wrong...</div>
 						<div style={{fontSize: 16, marginBottom: 8}}>{this.state.error.toString()}</div>

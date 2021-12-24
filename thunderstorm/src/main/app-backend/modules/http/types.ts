@@ -1,10 +1,4 @@
-import {
-	AxiosRequestConfig,
-	AxiosResponse,
-	CancelTokenSource,
-	Method,
-	ResponseType
-} from "axios";
+import {AxiosRequestConfig, AxiosResponse, CancelTokenSource, Method, ResponseType} from 'axios';
 
 
 export type Axios_RequestConfig = AxiosRequestConfig

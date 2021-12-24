@@ -19,17 +19,17 @@
  * limitations under the License.
  */
 
-import { ObjectTS } from "@nu-art/ts-common";
+import {ObjectTS} from '@nu-art/ts-common';
 
 export enum HttpMethod {
-	ALL = "all",
-	POST = "post",
-	GET = "get",
-	PATCH = "patch",
-	DELETE = "delete",
-	PUT = "put",
-	OPTIONS = "options",
-	HEAD = "head",
+	ALL = 'all',
+	POST = 'post',
+	GET = 'get',
+	PATCH = 'patch',
+	DELETE = 'delete',
+	PUT = 'put',
+	OPTIONS = 'options',
+	HEAD = 'head',
 }
 
 export type QueryParams = { [key: string]: string | undefined; };

@@ -33,5 +33,5 @@ export class PushKey<K extends string, P extends SubscribeProps, D extends Objec
 
 	async push(data: D, props?: P) {
 		return PushPubSubModule.pushToKey(this.key, props, data, this.persist);
-	};
+	}
 }

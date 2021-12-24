@@ -18,16 +18,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {_keys, _setTimeout, BadImplementationException, ObjectTS} from "@nu-art/ts-common";
-import {ApiTypeBinder, ErrorResponse, HttpMethod, QueryParams} from "./types";
-import {HttpException, RequestErrorHandler, RequestSuccessHandler, TS_Progress} from "./request-types";
+import {_keys, _setTimeout, BadImplementationException, ObjectTS} from '@nu-art/ts-common';
+import {ApiTypeBinder, ErrorResponse, HttpMethod, QueryParams} from './types';
+import {HttpException, RequestErrorHandler, RequestSuccessHandler, TS_Progress} from './request-types';
 
 export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>,
-	U extends string = Binder["url"],
-	R extends any = Binder["response"],
-	B extends any = Binder["body"],
-	P extends QueryParams = Binder["params"],
-	E extends ObjectTS = Binder["errors"]> {
+	U extends string = Binder['url'],
+	R extends any = Binder['response'],
+	B extends any = Binder['body'],
+	P extends QueryParams = Binder['params'],
+	E extends ObjectTS = Binder['errors']> {
 
 	key: string;
 	requestData!: any;
@@ -86,7 +86,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 	}
 
 	setOnError(errorMessage: string | RequestErrorHandler<E>) {
-		if (typeof errorMessage === "string") {
+		if (typeof errorMessage === 'string') {
 			// @ts-ignore
 			// noinspection JSConstantReassignment
 			this.errorMessage = errorMessage;
@@ -134,7 +134,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 
 		_keys(params).forEach((key) => {
 			const param = params[key];
-			return param && typeof param === "string" && this.setUrlParam(key, param);
+			return param && typeof param === 'string' && this.setUrlParam(key, param);
 		});
 
 		return this;
@@ -209,20 +209,20 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 	}
 
 	setJsonBody(bodyObject: B, compress?: boolean) {
-		this.setHeader("content-type", "application/json");
+		this.setHeader('content-type', 'application/json');
 		this.setBody(this.prepareJsonBody(bodyObject), compress);
 		return this;
 	}
 
 	protected prepareJsonBody(bodyObject: B): any {
-		return bodyObject
+		return bodyObject;
 	}
 
 	setBody(bodyAsString: any, _compress?: boolean) {
 		this.body = bodyAsString;
 		this.compress = _compress === undefined ? this.compress : _compress;
-		if (typeof bodyAsString === "string" && this.compress)
-			this.setHeader("Content-encoding", "gzip");
+		if (typeof bodyAsString === 'string' && this.compress)
+			this.setHeader('Content-encoding', 'gzip');
 
 		return this;
 	}
@@ -230,7 +230,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 	asJson(): R {
 		const response = this.getResponse();
 		if (!response)
-			throw new BadImplementationException("No xhr.response...");
+			throw new BadImplementationException('No xhr.response...');
 
 		return JSON.parse(response as unknown as string) as R;
 	}
@@ -238,7 +238,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 	asText() {
 		const response = this.getResponse();
 		if (!response)
-			throw new BadImplementationException("No xhr object... maybe you didn't wait for the request to return??");
+			throw new BadImplementationException('No xhr object... maybe you didn\'t wait for the request to return??');
 
 		return response;
 	}

@@ -19,23 +19,12 @@
  * limitations under the License.
  */
 
-import {FirebaseModule} from "@nu-art/firebase/backend";
-import {
-	BeLogged,
-	LogClient_Function,
-	LogClient_Terminal,
-	Module
-} from "@nu-art/ts-common";
-import {
-	Firebase_ExpressFunction,
-	FirebaseFunction
-} from '@nu-art/firebase/backend-functions';
-import {BaseStorm} from "./BaseStorm";
-import {
-	HttpServer,
-	RouteResolver
-} from "../modules/server/HttpServer";
-import {ServerApi} from "../modules/server/server-api";
+import {FirebaseModule} from '@nu-art/firebase/backend';
+import {BeLogged, LogClient_Function, LogClient_Terminal, Module} from '@nu-art/ts-common';
+import {Firebase_ExpressFunction, FirebaseFunction} from '@nu-art/firebase/backend-functions';
+import {BaseStorm} from './BaseStorm';
+import {HttpServer, RouteResolver} from '../modules/server/HttpServer';
+import {ServerApi} from '../modules/server/server-api';
 
 
 const modules: Module[] = [
@@ -61,9 +50,9 @@ export class Storm
 
 		super.init();
 
-		HttpServer.resolveApi(this.routeResolver, !process.env.GCLOUD_PROJECT ? this.initialPath : "");
+		HttpServer.resolveApi(this.routeResolver, !process.env.GCLOUD_PROJECT ? this.initialPath : '');
 		if (this.config.printApis)
-			HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? this.initialPath : "");
+			HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? this.initialPath : '');
 		return this;
 	}
 
@@ -83,11 +72,11 @@ export class Storm
 		this.functions = [new Firebase_ExpressFunction(HttpServer.express), ...modulesAsFunction];
 
 		this.startServerImpl(onStarted)
-		    .then(() => console.log("Server Started!!"))
-		    .catch(reason => {
-			    this.logError("failed to launch server", reason);
-			    throw reason;
-		    });
+			.then(() => console.log('Server Started!!'))
+			.catch(reason => {
+				this.logError('failed to launch server', reason);
+				throw reason;
+			});
 
 		return this.functions.reduce((toRet, _function) => {
 			toRet[_function.getName()] = _function.getFunction();

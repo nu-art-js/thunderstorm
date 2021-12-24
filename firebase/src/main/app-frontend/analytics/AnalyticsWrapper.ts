@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-import {Logger} from "@nu-art/ts-common";
-import {FirebaseType_Analytics, FirebaseType_CallOptions, FirebaseType_EventNameString} from "./types";
-import {CustomParams, getAnalytics, logEvent, setAnalyticsCollectionEnabled, setCurrentScreen, setUserId, setUserProperties,} from "firebase/analytics";
-import {FirebaseApp} from "firebase/app";
+import {Logger} from '@nu-art/ts-common';
+import {FirebaseType_Analytics, FirebaseType_CallOptions, FirebaseType_EventNameString} from './types';
+import {CustomParams, getAnalytics, logEvent, setAnalyticsCollectionEnabled, setCurrentScreen, setUserId, setUserProperties,} from 'firebase/analytics';
+import {FirebaseApp} from 'firebase/app';
 
 export class AnalyticsWrapper
 	extends Logger {

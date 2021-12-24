@@ -16,23 +16,11 @@
  * limitations under the License.
  */
 
-import {
-	ComparatorMap,
-	FirestoreQuery
-} from "../..";
-import {
-	FirestoreType_DocumentSnapshot,
-	FirestoreType_Query
-} from "./types";
-import {FirestoreCollection} from "./FirestoreCollection";
-import {
-	__stringify,
-	_keys,
-	BadImplementationException,
-	ImplementationMissingException,
-    ObjectTS
-} from "@nu-art/ts-common";
-import * as admin from "firebase-admin";
+import {ComparatorMap, FirestoreQuery} from '../..';
+import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from './types';
+import {FirestoreCollection} from './FirestoreCollection';
+import {__stringify, _keys, BadImplementationException, ImplementationMissingException, ObjectTS} from '@nu-art/ts-common';
+import * as admin from 'firebase-admin';
 
 export class FirestoreInterface {
 
@@ -55,13 +43,13 @@ export class FirestoreInterface {
 					if (Array.isArray(_whereValue)) {
 						if (_whereValue.length === 0 || _whereValue.length > 10)
 							throw new BadImplementationException(
-								"While querying in an array you can only provide one or more values to query by and not more than 10... this " +
-								"is due to Firestore limitation... ");
+								'While querying in an array you can only provide one or more values to query by and not more than 10... this ' +
+								'is due to Firestore limitation... ');
 
 						if (_whereValue.length === 1)
-							return _query.where(whereKey, "array-contains", _whereValue[0]);
+							return _query.where(whereKey, 'array-contains', _whereValue[0]);
 
-						return _query.where(whereKey, "array-contains-any", _whereValue);
+						return _query.where(whereKey, 'array-contains-any', _whereValue);
 					}
 
 					if (this.isQueryObject(_whereValue)) {
@@ -69,10 +57,10 @@ export class FirestoreInterface {
 						return _query.where(whereKey, ComparatorMap[Object.keys(_whereValue)[0]], Object.values(_whereValue)[0]);
 					}
 
-					if (valueType === "string" || valueType === "number" || valueType === "boolean")
-						return ___query.where(whereKey, "==", _whereValue);
+					if (valueType === 'string' || valueType === 'number' || valueType === 'boolean')
+						return ___query.where(whereKey, '==', _whereValue);
 
-					if (valueType === "object") {
+					if (valueType === 'object') {
 						return Object.keys(_whereValue as object).reduce((__query: FirestoreType_Query, key) => {
 							return processObject(__query, `${whereKey}.${key}`, _whereValue[key]);
 						}, ___query);
@@ -98,17 +86,17 @@ export class FirestoreInterface {
 	}
 
 	private static isQueryObject(whereValue: any) {
-		return typeof whereValue === "object" && Object.keys(whereValue).length === 1 && (
-			whereValue["$ac"] ||
-			whereValue["$aca"] ||
-			whereValue["$in"] ||
-			whereValue["$nin"] ||
-			whereValue["$gt"] ||
-			whereValue["$gte"] ||
-			whereValue["$lt"] ||
-			whereValue["$lte"] ||
-			whereValue["$neq"] ||
-			whereValue["$eq"]);
+		return typeof whereValue === 'object' && Object.keys(whereValue).length === 1 && (
+			whereValue['$ac'] ||
+			whereValue['$aca'] ||
+			whereValue['$in'] ||
+			whereValue['$nin'] ||
+			whereValue['$gt'] ||
+			whereValue['$gte'] ||
+			whereValue['$lt'] ||
+			whereValue['$lte'] ||
+			whereValue['$neq'] ||
+			whereValue['$eq']);
 	}
 
 	static assertUniqueDocument(results: FirestoreType_DocumentSnapshot[], query: FirestoreQuery<any>, collectionName: string): (FirestoreType_DocumentSnapshot | undefined) {
@@ -119,7 +107,7 @@ export class FirestoreInterface {
 			return;
 
 		return results[0];
-	};
+	}
 
 	static buildUniqueQuery<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type): FirestoreQuery<Type> {
 		_keys(instance).forEach((key) => {

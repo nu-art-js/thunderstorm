@@ -3,12 +3,12 @@ import {HTMLProps, ReactNode} from 'react';
 import {StorageKey} from '../modules/StorageModule';
 import {BaseComponent} from '../core/BaseComponent';
 import {TS_Input, TS_InputProps} from '../components/input/TS_Input';
-import {TS_TextArea} from "../components/input/TS_TextArea";
+import {TS_TextArea} from '../components/input/TS_TextArea';
 import {InputType} from '../components/input/TS_BaseInput';
 
-export type FieldEditorInputProps<K extends string | number> = Omit<TS_InputProps<K>, "onChange" | "value" | "onAccept" | "type" | "id">
+export type FieldEditorInputProps<K extends string | number> = Omit<TS_InputProps<K>, 'onChange' | 'value' | 'onAccept' | 'type' | 'id'>
 
-export type EditorType = "input" | "textarea";
+export type EditorType = 'input' | 'textarea';
 export type FieldEditorProps = {
 	isEditing: boolean;
 	value?: string;
@@ -31,7 +31,7 @@ export class FieldEditor
 		const prevValue = this.props.storageKey.get();
 		if (!prevValue) {
 			// this.logDebug(`FieldEditor: ${this.props.value}`);
-			this.props.storageKey.set(this.props.value || "");
+			this.props.storageKey.set(this.props.value || '');
 		}
 	}
 
@@ -70,8 +70,8 @@ export class FieldEditor
 	};
 
 	private renderLabel = () => {
-		const label = this.props.value || this.props.inputProps?.placeholder || "";
-		if (typeof this.props.labelProps === "function")
+		const label = this.props.value || this.props.inputProps?.placeholder || '';
+		if (typeof this.props.labelProps === 'function')
 			return this.props.labelProps(label);
 
 
@@ -79,14 +79,14 @@ export class FieldEditor
 	};
 
 	render() {
-		const value = this.props.storageKey.get() || "";
+		const value = this.props.storageKey.get() || '';
 		if (!this.props.isEditing)
 			return this.renderLabel();
 
-		switch (this.props.editorType || "input") {
-			case "input":
+		switch (this.props.editorType || 'input') {
+			case 'input':
 				return this.renderInput(value);
-			case "textarea":
+			case 'textarea':
 				return this.renderArea(value);
 		}
 	}

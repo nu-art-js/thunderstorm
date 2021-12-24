@@ -1,6 +1,6 @@
-import * as React from "react";
-import {BaseComponent} from "../../core/BaseComponent";
-import {OverlayWithDocumentListener} from "./OverlayWithDocumentListener";
+import * as React from 'react';
+import {BaseComponent} from '../../core/BaseComponent';
+import {OverlayWithDocumentListener} from './OverlayWithDocumentListener';
 
 type Props = {
 	onMouseMove?: (e: MouseEvent) => void;
@@ -43,12 +43,12 @@ export class ClickToDrag
 	render = () => {
 		return (
 			<div
-				style={{display: "contents"}}
+				style={{display: 'contents'}}
 				onMouseDown={this.handleMouseDown}>
 				{this.props.children}
 				{this.renderOverlay()}
 			</div>
-		)
+		);
 	};
 
 	private renderOverlay = () => {
@@ -58,5 +58,5 @@ export class ClickToDrag
 				documentOnMouseUp={this.onMouseUp}
 				zIndex={this.props.overlayZIndex}
 			/>;
-	}
+	};
 }

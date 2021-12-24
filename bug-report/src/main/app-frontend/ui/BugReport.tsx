@@ -152,4 +152,4 @@ export class BugReport
 			</>
 		);
 	}
-};
+}

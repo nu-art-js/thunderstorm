@@ -16,26 +16,12 @@
  * limitations under the License.
  */
 
-import {
-	BadImplementationException,
-	currentTimeMillis,
-	ThisShouldNotHappenException
-} from "@nu-art/ts-common";
-import {
-	Bucket,
-	File,
-	GetSignedUrlConfig,
-	MakeFilePublicResponse,
-} from "@google-cloud/storage";
-import {
-	Firebase_CopyResponse,
-	FirebaseType_Metadata,
-	FirebaseType_Storage,
-	ReturnType_Metadata
-} from "./types";
-import {FirebaseSession} from "../auth/firebase-session";
-import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
-import {getStorage} from "firebase-admin/storage";
+import {BadImplementationException, currentTimeMillis, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {Bucket, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
+import {Firebase_CopyResponse, FirebaseType_Metadata, FirebaseType_Storage, ReturnType_Metadata} from './types';
+import {FirebaseSession} from '../auth/firebase-session';
+import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
+import {getStorage} from 'firebase-admin/storage';
 
 export class StorageWrapper
 	extends FirebaseBaseWrapper {
@@ -53,8 +39,8 @@ export class StorageWrapper
 		if (!_bucketName)
 			_bucketName = `gs://${this.firebaseSession.getProjectId()}.appspot.com`;
 
-		if (!_bucketName.startsWith("gs://"))
-			throw new BadImplementationException("Bucket name MUST start with 'gs://'");
+		if (!_bucketName.startsWith('gs://'))
+			throw new BadImplementationException('Bucket name MUST start with \'gs://\'');
 
 		const bucket = (await this.storage.bucket(_bucketName).get({autoCreate: true}))[0];
 		// @ts-ignore
@@ -83,13 +69,13 @@ export class BucketWrapper {
 		return new FileWrapper(pathToRemoteFile, await this.bucket.file(pathToRemoteFile), this);
 	}
 
-	async listFiles(folder: string = "", filter: (file: File) => boolean = () => true): Promise<File[]> {
+	async listFiles(folder: string = '', filter: (file: File) => boolean = () => true): Promise<File[]> {
 		const filteredFiles: File[] = [];
 		await this.iterateOverFiles(folder, filter, async (file: File) => filteredFiles.push(file));
 		return filteredFiles;
 	}
 
-	async deleteFiles(folder: string = "", filter: (file: File) => boolean = () => true): Promise<void> {
+	async deleteFiles(folder: string = '', filter: (file: File) => boolean = () => true): Promise<void> {
 		await this.iterateOverFiles(folder, filter, (file: File) => file.delete());
 	}
 
@@ -110,9 +96,9 @@ export class BucketWrapper {
 			};
 
 			this.bucket.getFiles({
-				                     prefix: folder,
-				                     autoPaginate: false
-			                     }, callback);
+				prefix: folder,
+				autoPaginate: false
+			}, callback);
 		});
 	}
 }
@@ -155,18 +141,18 @@ export class FileWrapper {
 			return this.file.save(data);
 
 		switch (typeof data) {
-			case "function":
-			case "symbol":
-			case "bigint":
-			case "undefined":
+			case 'function':
+			case 'symbol':
+			case 'bigint':
+			case 'undefined':
 				throw new BadImplementationException(`Cannot save file: ${this.file.name}, data is ${typeof data}`);
 
-			case "object":
+			case 'object':
 				return this.file.save(JSON.stringify(data));
 
-			case "boolean":
-			case "number":
-			case "string":
+			case 'boolean':
+			case 'number':
+			case 'string':
 				return this.file.save(`${data}`);
 		}
 	}
@@ -182,7 +168,7 @@ export class FileWrapper {
 	}
 
 	private copyImpl(destination: string | BucketWrapper | FileWrapper): Promise<Firebase_CopyResponse> {
-		if (typeof destination === "string")
+		if (typeof destination === 'string')
 			return this.file.copy(destination);
 
 		const bucketWrapper: BucketWrapper = destination instanceof FileWrapper ? destination.bucket : destination;
@@ -202,9 +188,9 @@ export class FileWrapper {
 				.file
 				.createReadStream()
 				.pipe(destinationFile
-					      .createWriteStream()
-					      .on('error', reject)
-					      .on('finish', () => resolve([destinationFile, undefined]))
+					.createWriteStream()
+					.on('error', reject)
+					.on('finish', () => resolve([destinationFile, undefined]))
 				)
 				.on('error', reject);
 		});
@@ -214,10 +200,10 @@ export class FileWrapper {
 		const file = await this.copy(destination);
 		try {
 			await this.delete();
-		} catch (e:any) {
+		} catch (e: any) {
 			try {
 				await file.delete();
-			} catch (err:any) {
+			} catch (err: any) {
 				throw new ThisShouldNotHappenException('Error during the deletion of the recently copied file, check the attached error', err);
 			}
 			throw new BadImplementationException('Error during the deletion of the file after a successful copy, attached error stack', e);

@@ -16,24 +16,16 @@
  * limitations under the License.
  */
 
-import {
-	__scenario,
-	__custom,
-	Scenario
-} from "@nu-art/testelot";
-import {
-	FirebaseModule,
-	FirestoreCollection,
-	// ProjectFirestoreBackup
-} from "../../_main";
-import {Module} from "@nu-art/ts-common";
+import {__custom, __scenario, Scenario} from '@nu-art/testelot';
+import {FirebaseModule, FirestoreCollection,} from '../../_main';
+import {Module} from '@nu-art/ts-common';
 
-export const testFirestoreBackup: Scenario = __scenario("test-project-backup");
+export const testFirestoreBackup: Scenario = __scenario('test-project-backup');
 testFirestoreBackup.add(__custom(async () => {
 	await TestModuleThatUsesCollection.deleteAllDocs();
-	await TestModuleThatUsesCollection.insertTestDocument({label: "doc1"});
-	await TestModuleThatUsesCollection.insertTestDocument({label: "doc2"});
-}).setLabel("Populating collection"));
+	await TestModuleThatUsesCollection.insertTestDocument({label: 'doc1'});
+	await TestModuleThatUsesCollection.insertTestDocument({label: 'doc2'});
+}).setLabel('Populating collection'));
 
 // testFirestoreBackup.add(__custom(async () => {
 // 	await ProjectFirestoreBackup.backupProject("automation-test");
@@ -44,7 +36,7 @@ class TestModuleThatUsesCollection_Class
 	private collection!: FirestoreCollection<any>;
 
 	protected init(): void {
-		this.collection = FirebaseModule.createAdminSession().getFirestore().getCollection("test-collection1");
+		this.collection = FirebaseModule.createAdminSession().getFirestore().getCollection('test-collection1');
 	}
 
 	async deleteAllDocs() {

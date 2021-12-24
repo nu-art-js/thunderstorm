@@ -34,20 +34,14 @@
  * limitations under the License.
  */
 
-import {
-	__custom,
-	__scenario
-} from "@nu-art/testelot";
-import {
-	BucketWrapper,
-	FirebaseModule
-} from "../../../_main";
-import {generateHex} from "@nu-art/ts-common";
+import {__custom, __scenario} from '@nu-art/testelot';
+import {BucketWrapper, FirebaseModule} from '../../../_main';
+import {generateHex} from '@nu-art/ts-common';
 
 export function makeFilesPublicTest() {
-	const scenario = __scenario("Save files and delete them");
-	const testFolder = "test-folder";
-	const testFilePrefix = "test-file";
+	const scenario = __scenario('Save files and delete them');
+	const testFolder = 'test-folder';
+	const testFilePrefix = 'test-file';
 	const pathToTestFile = `${testFolder}/${testFilePrefix}`;
 	let bucket: BucketWrapper;
 	const pathToRemoteFile = `${pathToTestFile}-string--${generateHex(4)}.txt`;
@@ -55,18 +49,18 @@ export function makeFilesPublicTest() {
 
 	scenario.add(__custom(async () => {
 		bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
-	}).setLabel("Create Storage"),);
+	}).setLabel('Create Storage'),);
 
 	scenario.add(__custom(async () => {
-		return (await bucket.getFile(pathToRemoteFile)).write("This is a test string");
-	}).setLabel("Save string to file"));
+		return (await bucket.getFile(pathToRemoteFile)).write('This is a test string');
+	}).setLabel('Save string to file'));
 
 	scenario.add(__custom(async () => {
-		const bucketPath = await bucket.getFile(pathToRemoteFile)
-		console.log(`https://storage.googleapis.com/${bucketPath.bucket.bucketName}/${testFolder}/${pathToRemoteFile}`)
+		const bucketPath = await bucket.getFile(pathToRemoteFile);
+		console.log(`https://storage.googleapis.com/${bucketPath.bucket.bucketName}/${testFolder}/${pathToRemoteFile}`);
 		// console.log(await bucket.getFile(`${pathToTestFile}-string.txt`))
 		return (await bucket.getFile(pathToRemoteFile)).makePublic();
-	}).setLabel("Making path public"));
+	}).setLabel('Making path public'));
 
 	return scenario;
 }

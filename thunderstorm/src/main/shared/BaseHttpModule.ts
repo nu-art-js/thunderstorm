@@ -19,26 +19,13 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {
-	ApiTypeBinder,
-	ErrorResponse,
-	HttpMethod
-} from "./types";
+import {ApiTypeBinder, ErrorResponse, HttpMethod} from './types';
 
-import {
-	addItemToArray,
-	BadImplementationException,
-	Module,
-	removeItemFromArray,
-} from "@nu-art/ts-common";
+import {addItemToArray, BadImplementationException, Module, removeItemFromArray,} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {
-	RequestErrorHandler,
-	RequestSuccessHandler,
-	ResponseHandler
-} from "./request-types";
+import {RequestErrorHandler, RequestSuccessHandler, ResponseHandler} from './request-types';
 // noinspection TypeScriptPreferShortImport
-import {BaseHttpRequest} from "./BaseHttpRequest";
+import {BaseHttpRequest} from './BaseHttpRequest';
 
 type HttpConfig = {
 	origin?: string
@@ -79,33 +66,34 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		return Object.keys(this.defaultHeaders).reduce((toRet, _key) => {
 			const defaultHeader = this.defaultHeaders[_key];
 			switch (typeof defaultHeader) {
-				case "string":
+				case 'string':
 					toRet[_key] = [defaultHeader];
 					break;
 
-				case "function":
+				case 'function':
 					toRet[_key] = defaultHeader();
 					break;
 
-				case "object":
+				case 'object':
 					if (Array.isArray(defaultHeader)) {
 						toRet[_key] = defaultHeader;
 						break;
 					}
 
-				case "boolean":
-				case "number":
-				case "symbol":
-				case "bigint":
-				case "undefined":
-					throw new BadImplementationException("Headers values can only be of type: (() => string | string[]) | string | string[] ");
+				// eslint-disable-next-line no-fallthrough
+				case 'boolean':
+				case 'number':
+				case 'symbol':
+				case 'bigint':
+				case 'undefined':
+					throw new BadImplementationException('Headers values can only be of type: (() => string | string[]) | string | string[] ');
 			}
 
 			return toRet;
 		}, {} as { [k: string]: string | string[] });
 	}
 
-	abstract createRequest<Binder extends ApiTypeBinder<any, any, any, any> = ApiTypeBinder<string, void, void, {}>>(method: HttpMethod, key: string, data?: any): BaseHttpRequest<DeriveRealBinder<Binder>,any>
+	abstract createRequest<Binder extends ApiTypeBinder<any, any, any, any> = ApiTypeBinder<string, void, void, {}>>(method: HttpMethod, key: string, data?: any): BaseHttpRequest<DeriveRealBinder<Binder>, any>
 
 	processDefaultResponseHandlers = (httpRequest: BaseHttpRequest<any>) => {
 		let resolved = false;

@@ -1,10 +1,10 @@
-import * as React from "react";
+import * as React from 'react';
 
 export class GenericTabs
 	extends React.Component<{}> {
 
-	render(){
-		return "hi";
+	render() {
+		return 'hi';
 	}
 
 }
