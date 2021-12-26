@@ -22,7 +22,7 @@ import {Clause_Select, Clause_Where, FilterKeys, FirestoreQuery} from '../../sha
 import {FirestoreWrapper} from './FirestoreWrapper';
 import {FirestoreInterface} from './FirestoreInterface';
 import {FirestoreTransaction} from './FirestoreTransaction';
-import { Transaction } from 'firebase-admin/firestore';
+import {Transaction} from 'firebase-admin/firestore';
 
 export class FirestoreCollection<Type extends ObjectTS> {
 	readonly name: string;
@@ -77,7 +77,7 @@ export class FirestoreCollection<Type extends ObjectTS> {
 	}
 
 	async insertAll(instances: Type[]) {
-		return Promise.all(instances.map(instance => this.insert(instance)));
+		return await Promise.all(instances.map(instance => this.insert(instance)));
 	}
 
 	async query(ourQuery: FirestoreQuery<Type>): Promise<Type[]> {

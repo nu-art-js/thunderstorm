@@ -70,7 +70,7 @@ export class FirestoreTransaction {
 	}
 
 	async insertAll<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instances: Type[]) {
-		return Promise.all(instances.map(instance => this.insert(collection, instance)));
+		return await Promise.all(instances.map(instance => this.insert(collection, instance)));
 	}
 
 //------------------------
