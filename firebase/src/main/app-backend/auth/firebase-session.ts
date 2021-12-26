@@ -24,8 +24,8 @@ import {FirestoreWrapper} from '../firestore/FirestoreWrapper';
 import {DatabaseWrapper} from '../database/DatabaseWrapper';
 import {StorageWrapper} from '../storage/StorageWrapper';
 import {PushMessagesWrapper} from '../push/PushMessagesWrapper';
-import * as admin from 'firebase-admin';
 import {FirebaseConfig} from '../..';
+import { App } from 'firebase-admin/app';
 
 export type Firebase_UserCredential = {
 	config: FirebaseConfig
@@ -36,11 +36,10 @@ export type Firebase_UserCredential = {
 };
 
 // export type FirebaseApp = admin.app.App | firebase.app.App
-export type FirebaseApp = admin.app.App
 
 export abstract class FirebaseSession<Config>
 	extends Logger {
-	app!: FirebaseApp;
+	app!: App;
 	protected database?: DatabaseWrapper;
 	protected storage?: StorageWrapper;
 	protected firestore?: FirestoreWrapper;

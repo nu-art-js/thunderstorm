@@ -22,7 +22,7 @@ import {Clause_Select, Clause_Where, FilterKeys, FirestoreQuery} from '../../sha
 import {FirestoreWrapper} from './FirestoreWrapper';
 import {FirestoreInterface} from './FirestoreInterface';
 import {FirestoreTransaction} from './FirestoreTransaction';
-import admin = require('firebase-admin');
+import { Transaction } from 'firebase-admin/firestore';
 
 export class FirestoreCollection<Type extends ObjectTS> {
 	readonly name: string;
@@ -129,7 +129,7 @@ export class FirestoreCollection<Type extends ObjectTS> {
 
 	async runInTransaction<ReturnType>(processor: (transaction: FirestoreTransaction) => Promise<ReturnType>): Promise<ReturnType> {
 		const firestore = this.wrapper.firestore;
-		return firestore.runTransaction<ReturnType>(async (transaction: admin.firestore.Transaction) => {
+		return firestore.runTransaction<ReturnType>(async (transaction: Transaction) => {
 			return processor(new FirestoreTransaction(transaction));
 		});
 	}

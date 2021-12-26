@@ -19,10 +19,12 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import {auth, credential, initializeApp, ServiceAccount} from 'firebase-admin';
+import {initializeApp, ServiceAccount} from 'firebase-admin/app';
 import {JWTInput} from 'google-auth-library';
 import {FirebaseSession} from './firebase-session';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {getAuth} from 'firebase-admin/auth';
+import {credential} from 'firebase-admin';
 
 export class FirebaseSession_Admin
 	extends FirebaseSession<JWTInput & { databaseURL?: string } | undefined> {
@@ -60,8 +62,8 @@ export class FirebaseSession_Admin
 		}, this.sessionName);
 	}
 
-	public getAuth(): auth.Auth {
-		return this.app.auth();
+	public getAuth() {
+		return getAuth(this.app);
 	}
 }
 
