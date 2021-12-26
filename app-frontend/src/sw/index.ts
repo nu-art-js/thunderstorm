@@ -18,12 +18,13 @@
 import { initializeApp,FirebaseOptions } from "firebase/app";
 import { getMessaging,onBackgroundMessage } from "firebase/messaging/sw";
 var config = require('../main/config').config;
-var LogLevel = {
-	INFO:'INFO',
-	ERROR:'ERROR'
+enum LogLevel {
+	INFO,
+	ERROR
 }
 
-function myLog(level, ...text) {
+console.warn('SW started');
+function myLog(level: LogLevel, ...text: any[]) {
 	var color = level === LogLevel.INFO ? 'orange' : 'red';
 	for(var t of text){
 		if(typeof t === "object")
@@ -33,11 +34,11 @@ function myLog(level, ...text) {
 	}
 }
 
-function myLogError(...text) {
+function myLogError(...text: any[]) {
 	myLog(LogLevel.ERROR, ...text);
 }
 
-function myLogInfo(...text) {
+function myLogInfo(...text: any[]) {
 	myLog(LogLevel.INFO, ...text);
 }
 
@@ -86,14 +87,14 @@ if (typeof firebase === 'undefined') {
 				myLogInfo('[ts_service_worker.js] Received background message ', payload);
 				// @ts-ignore
 				self.clients.matchAll({type: "window", includeUncontrolled: true}).then(clients => {
-						// @ts-ignore
-						clients.forEach(function (client) {
-							client.postMessage(
-								{
-									command: 'SwToApp',
-									message: payload.data
-								});
-						})
+					// @ts-ignore
+					clients.forEach(function (client) {
+						client.postMessage(
+							{
+								command: 'SwToApp',
+								message: payload.data
+							});
+					})
 				})
 			},
 			error: myLogError,
