@@ -18,6 +18,8 @@ class Pipeline_ThunderstormProxy
 		declareJob("staging", "thunderstorm--STAGING")
 		declareJob("prod", "thunderstorm--PROD")
 
+		getModule(SlackModule.class).disable()
+
 		super.init()
 	}
 }

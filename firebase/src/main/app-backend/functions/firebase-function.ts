@@ -33,8 +33,7 @@ import {
 } from '@nu-art/ts-common';
 import {ObjectMetadata} from 'firebase-functions/lib/providers/storage';
 import {Message} from 'firebase-functions/lib/providers/pubsub';
-import {firestore} from 'firebase-admin';
-import DocumentSnapshot = firestore.DocumentSnapshot;
+import {DocumentSnapshot} from 'firebase-admin/firestore';
 
 const functions = require('firebase-functions');
 

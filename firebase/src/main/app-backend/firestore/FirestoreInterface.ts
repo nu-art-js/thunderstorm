@@ -20,11 +20,11 @@ import {ComparatorMap, FirestoreQuery} from '../..';
 import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from './types';
 import {FirestoreCollection} from './FirestoreCollection';
 import {__stringify, _keys, BadImplementationException, ImplementationMissingException, ObjectTS} from '@nu-art/ts-common';
-import * as admin from 'firebase-admin';
+import {Query} from 'firebase-admin/firestore';
 
 export class FirestoreInterface {
 
-	static buildQuery<Type extends ObjectTS>(collection: FirestoreCollection<Type>, query?: FirestoreQuery<Type>): admin.firestore.Query {
+	static buildQuery<Type extends ObjectTS>(collection: FirestoreCollection<Type>, query?: FirestoreQuery<Type>) {
 		let myQuery: FirestoreType_Query = collection.collection;
 		if (query && query.select)
 			myQuery = myQuery.select ? myQuery.select(...query.select as string[]) : myQuery;
@@ -82,7 +82,7 @@ export class FirestoreInterface {
 		if (query && query.limit)
 			myQuery = myQuery.limit(query.limit);
 
-		return myQuery as admin.firestore.Query;
+		return myQuery as Query;
 	}
 
 	private static isQueryObject(whereValue: any) {

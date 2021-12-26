@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-import * as admin from 'firebase-admin';
+import * as firestore from 'firebase-admin/firestore';
 
-export type FirestoreType_Collection = admin.firestore.CollectionReference;
-export type FirestoreType_DocumentSnapshot = admin.firestore.QueryDocumentSnapshot;
-export type FirestoreType_Query = admin.firestore.Query;
-export type FirestoreType_DocumentReference = admin.firestore.DocumentReference;
-export type FirestoreType = admin.firestore.Firestore;
-export type FirestoreType_Transaction = admin.firestore.Transaction;
+export type FirestoreType_Collection = firestore.CollectionReference;
+export type FirestoreType_DocumentSnapshot = firestore.QueryDocumentSnapshot;
+export type FirestoreType_Query = firestore.Query;
+export type FirestoreType_DocumentReference = firestore.DocumentReference;
+export type FirestoreType = firestore.Firestore;
+export type FirestoreType_Transaction = firestore.Transaction;
 
 // export type FirestoreType_Collection = admin.firestore.CollectionReference | firebase.firestore.CollectionReference;
 // export type FirestoreType_DocumentSnapshot = admin.firestore.QueryDocumentSnapshot | firebase.firestore.QueryDocumentSnapshot;

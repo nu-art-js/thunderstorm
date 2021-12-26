@@ -20,7 +20,8 @@
 export const config = {
 	XhrHttpModule: {
 		origin: "https://us-central1-nu-art-thunderstorm.cloudfunctions.net/api",
-		timeout: 10000
+		timeout: 10000,
+		compress: false
 	},
 	frontend: {
 		origin: "https://nu-art-thunderstorm.firebaseapp.com",

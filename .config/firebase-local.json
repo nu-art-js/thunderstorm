@@ -9,7 +9,7 @@
       "node_modules"
     ],
     "predeploy": [
-      "echo \"Trying to deploy DEV env... Failing\" && exit 2"
+      "echo \"Trying to deploy LOCAL env... Failing\" && exit 2"
     ]
   },
   "emulators": {

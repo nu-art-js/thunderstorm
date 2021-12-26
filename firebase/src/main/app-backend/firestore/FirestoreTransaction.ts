@@ -16,17 +16,17 @@
  * limitations under the License.
  */
 
-import * as admin from 'firebase-admin';
 import {FirestoreType_DocumentSnapshot} from './types';
 import {FirestoreCollection,} from './FirestoreCollection';
 import {BadImplementationException, merge, ObjectTS, Subset} from '@nu-art/ts-common';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreInterface} from './FirestoreInterface';
+import { Transaction } from 'firebase-admin/firestore';
 
 export class FirestoreTransaction {
-	private transaction: admin.firestore.Transaction;
+	private transaction: Transaction;
 
-	constructor(transaction: admin.firestore.Transaction) {
+	constructor(transaction: Transaction) {
 		this.transaction = transaction;
 	}
 

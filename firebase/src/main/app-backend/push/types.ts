@@ -16,25 +16,25 @@
  * limitations under the License.
  */
 
-import * as admin from 'firebase-admin';
+import * as messaging from 'firebase-admin/messaging';
 
 type BaseMessage = {
 	data?: { [key: string]: string };
-	notification?: admin.messaging.Notification;
-	android?: admin.messaging.AndroidConfig;
-	webpush?: admin.messaging.WebpushConfig;
-	apns?: admin.messaging.ApnsConfig;
-	fcmOptions?: admin.messaging.FcmOptions;
+	notification?: messaging.Notification;
+	android?: messaging.AndroidConfig;
+	webpush?: messaging.WebpushConfig;
+	apns?: messaging.ApnsConfig;
+	fcmOptions?: messaging.FcmOptions;
 };
 
 type TokenMessage = BaseMessage & {
 	token: string;
 }
 
-export type FirebaseType_PushMessages = admin.messaging.Messaging;
-// export type FirebaseType_Message = admin.messaging.Message;
+export type FirebaseType_PushMessages = messaging.Messaging;
+// export type FirebaseType_Message = messaging.Message;
 export type FirebaseType_Message = TokenMessage
-export type FirebaseType_BatchResponse = admin.messaging.BatchResponse
-export type FirebaseType_TopicResponse = admin.messaging.MessagingTopicResponse;
-export type FirebaseType_MulticastMessage = admin.messaging.MulticastMessage;
-export type FirebaseType_SubscriptionResponse = admin.messaging.MessagingTopicManagementResponse;
+export type FirebaseType_BatchResponse = messaging.BatchResponse
+export type FirebaseType_TopicResponse = messaging.MessagingTopicResponse;
+export type FirebaseType_MulticastMessage = messaging.MulticastMessage;
+export type FirebaseType_SubscriptionResponse = messaging.MessagingTopicManagementResponse;

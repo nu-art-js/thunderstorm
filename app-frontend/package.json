@@ -73,7 +73,6 @@
     "css-loader": "^6.5.1",
     "csstype": "^2.6.7",
     "emotion": "^9.2.12",
-    "firebase": "^9.5.0",
     "history": "^4.9.0",
     "html-beautify-webpack-plugin": "^1.0.5",
     "html-loader": "^3.0.1",
