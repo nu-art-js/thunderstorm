@@ -18,10 +18,9 @@
 
 const path = require('path');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
-const WebpackMd5Hash = require('webpack-md5-hash');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const WriteFilePlugin = require('write-file-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const {WebpackManifestPlugin} = require("webpack-manifest-plugin");
 const packageJson = require('./package.json');
 const webpack = require("webpack");
 const sourcePath = path.join(__dirname, './src');
@@ -32,8 +31,8 @@ const mainConfig = path.join(__dirname, './src/main/tsconfig.json');
 
 module.exports = (env, argv) => {
 
+	env = env.dev ? "dev" : "prod"
 	const envConfig = require(`./_config/${env}`);
-
 	console.log("env: " + env);
 	console.log("argv: " + JSON.stringify(argv));
 	console.log("argv.mode: " + argv.mode);
@@ -41,6 +40,7 @@ module.exports = (env, argv) => {
 
 	return {
 		context: sourcePath,
+		target: ["web", "es2017"],
 		entry: {
 			main: './main/index.tsx',
 			ts_service_worker: './sw/index.ts',
@@ -49,17 +49,45 @@ module.exports = (env, argv) => {
 			path: outputFolder,
 			filename: '[name].js',
 			publicPath: '/',
+			clean: true
+		},
+		optimization: {
+			moduleIds: 'deterministic',
+			runtimeChunk: 'single',
+			splitChunks: {
+				cacheGroups: {
+					vendor: {
+						test: /[\\/]node_modules[\\/]/,
+						name: 'vendors',
+						chunks: 'all',
+					},
+				},
+			},
 		},
 		devtool: "source-map",
 
 		devServer: {
 			historyApiFallback: true,
 			compress: true,
-			https: !argv.ssl ? undefined : envConfig.getDevServerSSL(),
+			static: outputFolder,
+			server: {type: "https", options:envConfig.getDevServerSSL() },
 			port: envConfig.getHostingPort(),
 		},
 
 		resolve: {
+			fallback: {
+				"fs": false,
+				"tls": false,
+				"net": false,
+				"path": false,
+				"buffer": require.resolve("buffer/"),
+				"zlib": require.resolve("browserify-zlib"),
+				"util": require.resolve("util/"),
+				"http": false,
+				"https": false,
+				"stream": false,
+				"crypto": require.resolve("crypto-browserify"),
+			},
 			alias: {
 				"@modules": path.resolve(__dirname, "src/main/modules"),
 				"@consts": path.resolve(__dirname, "src/main/consts"),
@@ -78,25 +106,20 @@ module.exports = (env, argv) => {
 				{
 					test: /sw\/.+\.ts$/,
 					include: [swFolder],
-					exclude: [/node_modules/],
 					use: {
-						loader: "awesome-typescript-loader",
+						loader: "ts-loader",
 						options: {
-							configFileName: swConfig,
-							transpileOnly: true,
-							useCache: true
+							configFile: swConfig
 						}
 					}
 				},
 				{
 					test: /main\/.+\.tsx?$/,
 					include: [mainFolder],
-					exclude: [/node_modules/],
 					use: {
 						loader: "ts-loader",
 						options: {
-							configFile: mainConfig,
-							transpileOnly: true
+							configFile: mainConfig
 						}
 					}
 				},
@@ -120,33 +143,17 @@ module.exports = (env, argv) => {
 				},
 				{
 					test: /\.(jpe?g|png|gif|ico|svg)$/i,
-					use: [
-						{
-							loader: 'file-loader',
-							options: {
-								name: '[name].[ext]'
-							}
-						},
-					]
+					type: 'asset/resource'
 				},
 				{
 					test: /\.s?[c|a]ss$/,
 					use: [
 						'style-loader',
 						MiniCssExtractPlugin.loader,
-						{
-							loader: 'css-loader',
-							options: {minimize: envConfig.cssMinify(), importLoaders: 2}
-						},
-						{
-							loader: 'postcss-loader',
-							options: {
-								plugins: () => [
-									require('autoprefixer')
-								],
-							}
-						},
-						'sass-loader'
+						// Translates CSS into CommonJS
+						"css-loader",
+						// Compiles Sass to CSS
+						"sass-loader",
 					]
 				}
 			]
@@ -158,7 +165,7 @@ module.exports = (env, argv) => {
 					'appVersion': `"${packageJson.version}"`
 				}
 			}),
-			new CleanWebpackPlugin(outputFolder),
+			new CleanWebpackPlugin({cleanStaleWebpackAssets: false}),
 			new MiniCssExtractPlugin({
 				filename: 'main/res/styles.[contenthash].css',
 			}),
@@ -170,10 +177,7 @@ module.exports = (env, argv) => {
 				minify: envConfig.htmlMinificationOptions(),
 				excludeChunks: ['ts_service_worker']
 			}),
-			// new WebpackMd5Hash(),
-			envConfig.getPrettifierPlugin(),
-			new WriteFilePlugin(),
+			new WebpackManifestPlugin()
 		].filter(plugin => plugin),
-
-	};
+	}
 };
