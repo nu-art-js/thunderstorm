@@ -15,7 +15,7 @@
     ]
   },
   "hosting": {
-    "public": "app-frontend/dist/dev",
+    "public": "app-frontend/dist",
     "rewrites": [
       {
         "source": "**",

@@ -13,3 +13,4 @@ _package.json
 package-lock.json
 src/main/config.ts
 .awcache
+src/sw/index.js
