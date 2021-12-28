@@ -37,13 +37,14 @@ module.exports = (env, argv) => {
 	console.log("argv: " + JSON.stringify(argv));
 	console.log("argv.mode: " + argv.mode);
 	const outputFolder = path.resolve(__dirname, `dist/${envConfig.outputFolder()}`);
+	const swChunkName = 'sw';
 
 	return {
 		context: sourcePath,
 		target: ["web", "es2017"],
 		entry: {
 			main: './main/index.tsx',
-			ts_service_worker: './sw/index.ts',
+			[swChunkName]: './sw/index.js',
 		},
 		output: {
 			path: outputFolder,
@@ -53,10 +54,18 @@ module.exports = (env, argv) => {
 		},
 		optimization: {
 			moduleIds: 'deterministic',
-			runtimeChunk: 'single',
+			runtimeChunk: {
+				name: (entrypoint) => {
+					if(entrypoint.name === swChunkName)
+						return "ts_service_worker"
+
+					return `rc~${entrypoint.name}`
+				},
+			},
+			// minimize: false,
 			splitChunks: {
 				cacheGroups: {
-					vendor: {
+					defaultVendors: {
 						test: /[\\/]node_modules[\\/]/,
 						name: 'vendors',
 						chunks: 'all',
@@ -70,7 +79,7 @@ module.exports = (env, argv) => {
 			historyApiFallback: true,
 			compress: true,
 			static: outputFolder,
-			server: {type: "https", options:envConfig.getDevServerSSL() },
+			server: {type: "https", options: envConfig.getDevServerSSL()},
 			port: envConfig.getHostingPort(),
 		},
 
@@ -103,16 +112,6 @@ module.exports = (env, argv) => {
 
 		module: {
 			rules: [
-				{
-					test: /sw\/.+\.ts$/,
-					include: [swFolder],
-					use: {
-						loader: "ts-loader",
-						options: {
-							configFile: swConfig
-						}
-					}
-				},
 				{
 					test: /main\/.+\.tsx?$/,
 					include: [mainFolder],
@@ -175,7 +174,7 @@ module.exports = (env, argv) => {
 				template: "./main/index.ejs",
 				filename: "./index.html",
 				minify: envConfig.htmlMinificationOptions(),
-				excludeChunks: ['ts_service_worker']
+				excludeChunks: [swChunkName]
 			}),
 			new WebpackManifestPlugin()
 		].filter(plugin => plugin),
