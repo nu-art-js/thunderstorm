@@ -1,22 +1,6 @@
-/*
- * A typescript & react boilerplate with api call example
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-import { initializeApp,FirebaseOptions } from "firebase/app";
-import { getMessaging,onBackgroundMessage } from "firebase/messaging/sw";
+importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js');
+
 var config = require('../main/config').config;
 enum LogLevel {
 	INFO,
@@ -69,6 +53,13 @@ self.addEventListener('install', () => {
 
 });
 
+// @ts-ignore
+const isSupported = firebase?.messaging?.isSupported();
+if (!isSupported)
+	myLogError('Firebase not supported!')
+else
+	myLogInfo('Firebase is supported in SW!')
+
 // Initialize the Firebase app in the service worker by passing in
 // your app's Firebase config object.
 // https://firebase.google.com/docs/web/setup#config-object
@@ -76,14 +67,14 @@ self.addEventListener('install', () => {
 if (typeof firebase === 'undefined') {
 	console.warn('You forgot to import firebase?');
 } else {
-	const firebaseApp = initializeApp(config.FirebaseModule.local as FirebaseOptions);
-	const messaging = getMessaging(firebaseApp);
+	// @ts-ignore
+	const firebaseApp = firebase.initializeApp(config.FirebaseModule.local);
+	const messaging = firebaseApp.messaging();
 
 	// Retrieve an instance of Firebase Messaging so that it can handle background
 	// messages.
-	onBackgroundMessage(
-		messaging, {
-			next: async (payload) => {
+	messaging.onBackgroundMessage({
+			next: async (payload: any) => {
 				myLogInfo('[ts_service_worker.js] Received background message ', payload);
 				// @ts-ignore
 				self.clients.matchAll({type: "window", includeUncontrolled: true}).then(clients => {
@@ -102,5 +93,3 @@ if (typeof firebase === 'undefined') {
 		}
 	);
 }
-
-export default null;
