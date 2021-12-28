@@ -24,36 +24,37 @@ const {WebpackManifestPlugin} = require("webpack-manifest-plugin");
 const packageJson = require('./package.json');
 const webpack = require("webpack");
 const sourcePath = path.join(__dirname, './src');
-const swFolder = path.join(__dirname, './src/sw/');
-const swConfig = path.join(__dirname, './src/sw/tsconfig.json');
 const mainFolder = path.join(__dirname, './src/main/');
 const mainConfig = path.join(__dirname, './src/main/tsconfig.json');
 
 module.exports = (env, argv) => {
-	console.log(env)
 	env = env.dev ? "dev" : "prod"
 	const envConfig = require(`./_config/${env}`);
-	const outputFolder = path.resolve(__dirname, `dist/${envConfig.outputFolder()}`);
+	const outputFolder = path.resolve(__dirname, `dist`);
+	const swChunkName = 'pubsub-sw';
 
 	return {
 		context: sourcePath,
 		target: ["web", "es2017"],
 		entry: {
 			main: './main/index.tsx',
-			service_worker: './sw/index.ts',
+			[swChunkName]: './sw/index.js',
 		},
 		output: {
 			path: outputFolder,
 			filename: '[name].js',
 			publicPath: '/',
-			clean: true,
+			clean: true
 		},
 		optimization: {
 			moduleIds: 'deterministic',
-			runtimeChunk: 'single',
+			runtimeChunk: {
+				name: (entrypoint) => `${entrypoint.name}-rt`,
+			},
+			// minimize: false,
 			splitChunks: {
 				cacheGroups: {
-					vendor: {
+					defaultVendors: {
 						test: /[\\/]node_modules[\\/]/,
 						name: 'vendors',
 						chunks: 'all',
@@ -67,7 +68,7 @@ module.exports = (env, argv) => {
 			historyApiFallback: true,
 			compress: true,
 			static: outputFolder,
-			server: {type: "https", options:envConfig.getDevServerSSL() },
+			server: {type: "https", options: envConfig.getDevServerSSL()},
 			port: envConfig.getHostingPort(),
 		},
 
@@ -103,24 +104,13 @@ module.exports = (env, argv) => {
 		module: {
 			rules: [
 				{
-					test: /sw\/.+\.ts$/,
-					include: [swFolder],
-					use: {
-						loader: "ts-loader",
-						options: {
-							configFile: swConfig,
-							transpileOnly: true,
-						}
-					}
-				},
-				{
 					test: /main\/.+\.tsx?$/,
 					include: [mainFolder],
 					use: {
 						loader: "ts-loader",
 						options: {
 							configFile: mainConfig,
-							transpileOnly: true
+							// transpileOnly: true
 						}
 					}
 				},
@@ -143,8 +133,8 @@ module.exports = (env, argv) => {
 					exclude: /node_modules/,
 				},
 				{
-					test: /\.(png|svg|jpg|jpeg|gif|ico)$/i,
-					type: 'asset/resource',
+					test: /\.(jpe?g|png|gif|ico|svg)$/i,
+					type: 'asset/resource'
 				},
 				{
 					test: /\.s?[c|a]ss$/,
@@ -176,9 +166,9 @@ module.exports = (env, argv) => {
 				template: "./main/index.ejs",
 				filename: "./index.html",
 				minify: envConfig.htmlMinificationOptions(),
-				excludeChunks: ['service_worker']
+				excludeChunks: [swChunkName]
 			}),
-			new WebpackManifestPlugin(),
+			new WebpackManifestPlugin()
 		].filter(plugin => plugin),
 	}
 };

@@ -16,20 +16,20 @@
  * limitations under the License.
  */
 
-import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, StringMap} from "@nu-art/ts-common";
-import {StorageKey, ThunderDispatcher, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
-import {BaseSubscriptionData, DB_Notifications, IFP, ISP, ITP, MessageType, PubSubRegisterClient, Request_PushRegister, SubscribeProps} from "../../index";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {FirebaseModule, MessagingWrapper} from "@nu-art/firebase/frontend";
-import {NotificationsModule} from "./NotificationModule";
+import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, StringMap} from '@nu-art/ts-common';
+import {StorageKey, ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {BaseSubscriptionData, DB_Notifications, IFP, ISP, ITP, MessageType, PubSubRegisterClient, Request_PushRegister, SubscribeProps} from '../../index';
+import {HttpMethod} from '@nu-art/thunderstorm';
+import {FirebaseModule, MessagingWrapper} from '@nu-art/firebase/frontend';
+import {NotificationsModule} from './NotificationModule';
 
-export const Command_SwToApp = "SwToApp";
+export const Command_SwToApp = 'SwToApp';
 
 export interface OnPushMessageReceived<M extends MessageType<any, any, any> = never,
 	S extends string = IFP<M>,
 	P extends SubscribeProps = ISP<M>,
 	D = ITP<M>> {
-	__onMessageReceived(notification: DB_Notifications<D>): void
+	__onMessageReceived(notification: DB_Notifications<D>): void;
 }
 
 type FirebaseConfig = {
@@ -47,7 +47,7 @@ export type PushPubSubConfig = {
 	registerOnInit?: boolean
 }
 
-export const pushSessionIdKey = "x-push-session-id";
+export const pushSessionIdKey = 'x-push-session-id';
 const pushSessionId = new StorageKey<string>(pushSessionIdKey, false);
 
 export class PushPubSubModule_Class
@@ -57,7 +57,7 @@ export class PushPubSubModule_Class
 	private firebaseToken?: string;
 	private messaging!: MessagingWrapper;
 
-	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, "__onMessageReceived">("__onMessageReceived");
+	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, '__onMessageReceived'>('__onMessageReceived');
 
 	private readonly pushSessionId: string;
 	protected timeout: number = 800;
@@ -83,36 +83,41 @@ export class PushPubSubModule_Class
 	}
 
 	private registerServiceWorker = async () => {
-		this.logInfo("Registering service worker...");
-		if (!("serviceWorker" in navigator)) {
-			return this.logWarning("serviceWorker property is missing in navigator");
+		this.logInfo('Registering service worker...');
+		if (!('serviceWorker' in navigator)) {
+			this.logWarning('serviceWorker property is missing in navigator');
+			return undefined;
 		}
 
-		const registration = await navigator.serviceWorker.register(`/${this.config.swFileName || "service_worker.js"}`);
+		const registration = await navigator.serviceWorker.register(`/${this.config.swFileName || 'pubsub_sw.js'}`);
 		await registration.update();
 		navigator.serviceWorker.oncontrollerchange = () => {
-			this.logInfo("This page is now controlled by:", this.getControlingServiceWorker());
+			this.logInfo('This page is now controlled by:', this.getControlingServiceWorker());
 		};
 
 		navigator.serviceWorker.onmessage = (event: MessageEvent) => {
 			this.processMessageFromSw(event.data);
 		};
+
+		return registration;
 	};
 
 	initApp = () => {
-		this.runAsync("Initializing Firebase SDK and registering SW", async () => {
-			await this.registerServiceWorker()
-			const session = await FirebaseModule.createSession()
+		this.runAsync('Initializing Firebase SDK and registering SW', async () => {
+			const registration = await this.registerServiceWorker();
+			const session = await FirebaseModule.createSession();
 
 			this.messaging = session.getMessaging();
 			this.messaging.onMessage((payload) => {
+				this.logInfo('PAH ZEVEL');
 				if (!payload.data)
 					return this.logInfo('No data passed to the message handler, I got this', payload);
 
 				this.processMessage(payload.data);
 			});
 
-			await this.getToken();
+			await this.getToken({vapidKey: this.config?.publicKeyBase64, serviceWorkerRegistration: registration});
+
 			if (this.getControlingServiceWorker()) {
 				this.logInfo(`This page is currently controlled by: `, this.getControlingServiceWorker());
 			}
@@ -128,18 +133,18 @@ export class PushPubSubModule_Class
 	}
 
 	isNotificationEnabled() {
-		return Notification.permission === "granted";
+		return Notification.permission === 'granted';
 	}
 
 	async requestPermissions() {
 		if (this.isNotificationEnabled())
-			return this.logVerbose("Notification already allowed");
+			return this.logVerbose('Notification already allowed');
 
 		const permission = await Notification.requestPermission();
-		if (permission !== "granted")
-			return this.logWarning("Notification was NOT granted");
+		if (permission !== 'granted')
+			return this.logWarning('Notification was NOT granted');
 
-		return this.logVerbose("Notification WAS granted");
+		return this.logVerbose('Notification WAS granted');
 	}
 
 	public getToken = async (options?: { vapidKey?: string; serviceWorkerRegistration?: ServiceWorkerRegistration; }) => {
@@ -147,11 +152,11 @@ export class PushPubSubModule_Class
 			return;
 
 		this.firebaseToken = await this.messaging.getToken(options);
-		this.logVerbose("new token received: " + this.firebaseToken);
+		this.logVerbose('new token received: ' + this.firebaseToken);
 	};
 
 	private processMessageFromSw = (data: any) => {
-		this.logInfo("Got data from SW: ", data);
+		this.logInfo('Got data from SW: ', data);
 		if (!data.command || !data.message || data.command !== Command_SwToApp)
 			return;
 
@@ -159,7 +164,7 @@ export class PushPubSubModule_Class
 	};
 
 	private processMessage = (data: StringMap) => {
-		this.logInfo("process message", data);
+		this.logInfo('process message', data);
 		const arr: DB_Notifications[] = JSON.parse(data.messages);
 		arr.forEach(s => {
 			s.persistent && NotificationsModule.addNotification(s);
@@ -191,7 +196,7 @@ export class PushPubSubModule_Class
 
 	private register = () => {
 		if (!this.firebaseToken)
-			return this.logWarning("No Firebase token...");
+			return this.logWarning('No Firebase token...');
 
 		const body: Request_PushRegister = {
 			firebaseToken: this.firebaseToken,
@@ -202,10 +207,10 @@ export class PushPubSubModule_Class
 		this.logDebug(`Subscribing: ${JSON.stringify(body)}`);
 		this.debounce(() => {
 			return XhrHttpModule
-				.createRequest<PubSubRegisterClient>(HttpMethod.POST, "register-pub-sub-tab")
-				.setRelativeUrl("/v1/push/register")
+				.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
+				.setRelativeUrl('/v1/push/register')
 				.setJsonBody(body)
-				.setOnError("Failed to register for push")
+				.setOnError('Failed to register for push')
 				.execute((response) => {
 					NotificationsModule.setNotificationList(response);
 					this.logVerbose('Finished register PubSub');

@@ -47,7 +47,7 @@
     "@nu-art/testelot": "~0.0.1",
     "@types/adm-zip": "^0.4.33",
     "@types/express": "^4.17.7",
-    "@types/node-fetch": "^2.3.2",
+    "@types/node-fetch": "^2.5.7",
     "@types/request": "^2.48.1",
     "@types/rimraf": "^3.0.0",
     "@types/saml2-js": "^1.6.8",
