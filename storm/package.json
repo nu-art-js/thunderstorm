@@ -29,7 +29,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "~0.0.1"
+    "@nu-art/ts-common": "~0.0.1",
+    "@slack/web-api": "^5.1.0"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.8.0",
@@ -39,7 +40,6 @@
     "@nu-art/testelot": "~0.0.1",
     "@nu-art/thunderstorm": "~0.0.1",
     "@slack/events-api": "^2.3.0",
-    "@slack/web-api": "^5.1.0",
     "@types/mongodb": "3.1.22",
     "@types/redis": "^2.8.10",
     "firebase": "^9.6.1",

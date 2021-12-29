@@ -24,7 +24,9 @@
     "build-sw": "tsc ./src/sw/index.ts",
     "build-prod": "webpack --mode production --env prod",
     "dev": "cd .. && bash ./build-and-install.sh -lf -nb",
-    "launch": "npm run build-sw && webpack-dev-server --open --mode development --env dev true"
+    "launch": "npm run build-sw && webpack-dev-server --open --mode development --env dev true",
+    "wd": "webpack --mode development --env dev",
+    "lint": "tslint --project ./src/main"
   },
   "dependencies": {
     "browserify-zlib": "^0.2.0",
@@ -32,7 +34,7 @@
     "clean-html": "^1.5.0",
     "crypto-browserify": "^3.12.0",
     "file-loader": "^6.2.0",
-    "firebase": "^9.6.1",
+    "firebase": "^9.0.0",
     "mic-recorder-to-mp3": "^2.2.2",
     "moment": "2.24.0",
     "util": "^0.12.4"
@@ -61,6 +63,10 @@
     "autoprefixer": "^9.1.5",
     "chart.js": "^2.9.4",
     "child_process": "^1.0.2",
+    "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^10.0.0",
+    "css-loader": "^1.0.0",
+    "csstype": "^3.0.0",
     "d3-array": "^2.8.0",
     "d3-scale": "^3.2.3",
     "clean-webpack-plugin": "^4.0.0",
@@ -81,6 +87,7 @@
     "react-color": "^2.14.1",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
+    "react-hot-loader": "^4.3.11",
     "react-router-dom": "^5.1.2",
     "sass-loader": "^12.4.0",
     "source-map-loader": "^0.2.4",
