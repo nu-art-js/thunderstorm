@@ -32,6 +32,7 @@ module.exports = (env, argv) => {
 	const envConfig = require(`./_config/${env}`);
 	const outputFolder = path.resolve(__dirname, `dist`);
 	const swChunkName = 'pubsub-sw';
+	const swChunkName = 'sw';
 
 	return {
 		context: sourcePath,
@@ -86,7 +87,6 @@ module.exports = (env, argv) => {
 				"stream": false,
 				"crypto": require.resolve("crypto-browserify"),
 			},
-
 			alias: {
 				"@modules": path.resolve(__dirname, "src/main/modules"),
 				"@styles": path.resolve(__dirname, "src/main/res/styles"),
@@ -109,8 +109,7 @@ module.exports = (env, argv) => {
 					use: {
 						loader: "ts-loader",
 						options: {
-							configFile: mainConfig,
-							// transpileOnly: true
+							configFile: mainConfig
 						}
 					}
 				},
