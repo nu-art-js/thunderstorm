@@ -136,7 +136,7 @@ export class PushPubSubModule_Class
 		return Notification.permission === 'granted';
 	}
 
-	async requestPermissions() {
+	requestPermissions = async () => {
 		if (this.isNotificationEnabled())
 			return this.logVerbose('Notification already allowed');
 
@@ -145,7 +145,7 @@ export class PushPubSubModule_Class
 			return this.logWarning('Notification was NOT granted');
 
 		return this.logVerbose('Notification WAS granted');
-	}
+	};
 
 	public getToken = async (options?: { vapidKey?: string; serviceWorkerRegistration?: ServiceWorkerRegistration; }) => {
 		if (!this.isNotificationEnabled())
