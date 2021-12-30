@@ -1,7 +1,7 @@
 importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js');
 
-var config = require('../main/config').config;
+const config = require('../main/config').config;
 enum LogLevel {
 	INFO,
 	ERROR
@@ -9,8 +9,8 @@ enum LogLevel {
 
 console.warn('SW started');
 function myLog(level: LogLevel, ...text: any[]) {
-	var color = level === LogLevel.INFO ? 'orange' : 'red';
-	for(var t of text){
+	const color = level === LogLevel.INFO ? 'orange' : 'red';
+	for(const t of text){
 		if(typeof t === "object")
 			console.log(t)
 		else
