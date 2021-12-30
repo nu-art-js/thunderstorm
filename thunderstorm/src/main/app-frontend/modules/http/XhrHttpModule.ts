@@ -27,7 +27,7 @@ import {
 } from "../../../shared/types";
 
 import {BadImplementationException} from "@nu-art/ts-common";
-import {gzip} from "zlib";
+import {gzipSync} from "zlib";
 // noinspection TypeScriptPreferShortImport
 import {HttpException} from "../../../shared/request-types";
 // noinspection TypeScriptPreferShortImport
@@ -183,16 +183,15 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				xhr.setRequestHeader(key, this.headers[key].join("; "));
 			});
 
-			const body = this.body;
-			if (typeof body === "string" && this.compress)
-				return gzip(body, (error: Error | null, result: Buffer) => {
-					if (error)
-						return reject(error);
+			let body: any = this.body;
+			if (typeof body === 'string' && this.compress)
+				try {
+					body = gzipSync(this.body);
+				} catch (error) {
+					return reject(error);
+				}
 
-					xhr.send(result);
-				});
-
-			this.xhr.send(body as BodyInit);
+			return this.xhr.send(body);
 		});
 	}
 

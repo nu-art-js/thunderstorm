@@ -35,7 +35,7 @@ export class MessagingWrapper
 	async getToken(options?: GetTokenOptions): Promise<string> {
 		this.token = await getToken(this.messaging,options);
 		if (this.callback)
-			onMessage(this.messaging, this.callback);
+			this.onMessage(this.callback);
 
 		return this.token;
 	}

@@ -25,7 +25,6 @@ const packageJson = require('./package.json');
 const webpack = require("webpack");
 const sourcePath = path.join(__dirname, './src');
 const swFolder = path.join(__dirname, './src/sw/');
-const swConfig = path.join(__dirname, './src/sw/tsconfig.json');
 const mainFolder = path.join(__dirname, './src/main/');
 const mainConfig = path.join(__dirname, './src/main/tsconfig.json');
 
@@ -52,27 +51,19 @@ module.exports = (env, argv) => {
 			publicPath: '/',
 			clean: true
 		},
-		optimization: {
-			moduleIds: 'deterministic',
-			runtimeChunk: {
-				name: (entrypoint) => {
-					if(entrypoint.name === swChunkName)
-						return "ts_service_worker"
-
-					return `rc~${entrypoint.name}`
-				},
-			},
-			// minimize: false,
-			splitChunks: {
-				cacheGroups: {
-					defaultVendors: {
-						test: /[\\/]node_modules[\\/]/,
-						name: 'vendors',
-						chunks: 'all',
-					},
-				},
-			},
-		},
+		// optimization: {
+		// 	moduleIds: 'deterministic',
+		// 	// minimize: false,
+		// 	splitChunks: {
+		// 		cacheGroups: {
+		// 			defaultVendors: {
+		// 				test: /[\\/]node_modules[\\/]/,
+		// 				name: 'vendors',
+		// 				chunks: 'all',
+		// 			},
+		// 		},
+		// 	},
+		// },
 		devtool: "source-map",
 
 		devServer: {
@@ -94,7 +85,7 @@ module.exports = (env, argv) => {
 				"util": require.resolve("util/"),
 				"http": false,
 				"https": false,
-				"stream": false,
+				"stream": require.resolve("stream-browserify"),
 				"crypto": require.resolve("crypto-browserify"),
 			},
 			alias: {
@@ -122,6 +113,13 @@ module.exports = (env, argv) => {
 						}
 					}
 				},
+				// {
+				// 	test: /sw\/index.ts$/,
+				// 	include: [swFolder],
+				// 	use: {
+				// 		loader: "ts-loader",
+				// 	}
+				// },
 				{enforce: "pre", test: /\.js$/, loader: "source-map-loader", exclude: [/node_modules/, /dist/, /build/, /__test__/]},
 				{
 					test: /\.[ot]tf$/,
