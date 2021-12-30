@@ -46,22 +46,5 @@ export const config = {
 	},
 	PushPubSubModule: {
 		publicKeyBase64: 'BF0GqqEoe1UmqcU-dg3Dse_2ctkaq5uFpFuR6il1U9A3HkvYcL83I8yC_rX-G8mM8M0hnH5TqcSIsHScd4LTS28'
-	},
-	LocaleModule: {
-		defaultLocale: "en",
-		locales: [
-			{
-				locale: "en",
-				label: "Language_English",
-				icon: "languages/en",
-				texts: require(`./res/localization/en`)
-			},
-			{
-				locale: "nl",
-				label: "Language_Dutch",
-				icon: "languages/nl",
-				texts: require(`./res/localization/nl`)
-			}
-		]
 	}
 };

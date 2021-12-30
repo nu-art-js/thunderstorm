@@ -39,7 +39,7 @@ module.exports = (env, argv) => {
 		target: ["web", "es2017"],
 		entry: {
 			main: './main/index.tsx',
-			[swChunkName]: './sw/index.js',
+			[swChunkName]: './sw/index.ts',
 		},
 		output: {
 			path: outputFolder,
@@ -47,19 +47,19 @@ module.exports = (env, argv) => {
 			publicPath: '/',
 			clean: true
 		},
-		// optimization: {
-		// 	moduleIds: 'deterministic',
-		// 	// minimize: false,
-		// 	splitChunks: {
-		// 		cacheGroups: {
-		// 			defaultVendors: {
-		// 				test: /[\\/]node_modules[\\/]/,
-		// 				name: 'vendors',
-		// 				chunks: 'all',
-		// 			},
-		// 		},
-		// 	},
-		// },
+		optimization: {
+			moduleIds: 'deterministic',
+			// minimize: false,
+			splitChunks: {
+				cacheGroups: {
+					defaultVendors: {
+						test: /[\\/]node_modules[\\/]/,
+						name: 'vendors',
+						chunks: 'all',
+					},
+				},
+			},
+		},
 		devtool: "source-map",
 
 		devServer: {
@@ -110,13 +110,13 @@ module.exports = (env, argv) => {
 						}
 					}
 				},
-				// {
-				// 	test: /sw\/index.ts$/,
-				// 	include: [swFolder],
-				// 	use: {
-				// 		loader: "ts-loader",
-				// 	}
-				// },
+				{
+					test: /sw\/index.ts$/,
+					include: [swFolder],
+					use: {
+						loader: "ts-loader",
+					}
+				},
 				{enforce: "pre", test: /\.js$/, loader: "source-map-loader", exclude: [/node_modules/, /dist/, /build/, /__test__/]},
 				{
 					test: /\.[ot]tf$/,
