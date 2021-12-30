@@ -89,7 +89,7 @@ export class PushPubSubModule_Class
 			return undefined;
 		}
 
-		const registration = await navigator.serviceWorker.register(`/${this.config.swFileName || 'pubsub_sw.js'}`);
+		const registration = await navigator.serviceWorker.register(`/${this.config.swFileName || 'pubsub-sw.js'}`);
 		await registration.update();
 		navigator.serviceWorker.oncontrollerchange = () => {
 			this.logInfo('This page is now controlled by:', this.getControlingServiceWorker());

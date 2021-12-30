@@ -22,12 +22,12 @@
 import {ApiTypeBinder, ErrorResponse, HttpMethod} from '../../../shared/types';
 
 import {BadImplementationException} from '@nu-art/ts-common';
-import {gzip} from 'zlib';
 // noinspection TypeScriptPreferShortImport
 import {HttpException} from '../../../shared/request-types';
 // noinspection TypeScriptPreferShortImport
 import {BaseHttpRequest} from '../../../shared/BaseHttpRequest';
 import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
+import {gzipSync} from 'zlib';
 
 export class XhrHttpModule_Class
 	extends BaseHttpModule_Class {
@@ -175,16 +175,15 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				xhr.setRequestHeader(key, this.headers[key].join('; '));
 			});
 
-			const body = this.body;
+			let body = this.body;
 			if (typeof body === 'string' && this.compress)
-				return gzip(body, (error: Error | null, result: Buffer) => {
-					if (error)
-						return reject(error);
+				try {
+					body = gzipSync(this.body);
+				} catch (error) {
+					return reject(error);
+				}
 
-					xhr.send(result);
-				});
-
-			this.xhr.send(body as XMLHttpRequestBodyInit);
+			return this.xhr.send(body);
 		});
 	}
 
@@ -202,3 +201,4 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		return header;
 	}
 }
+

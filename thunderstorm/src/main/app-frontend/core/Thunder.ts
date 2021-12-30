@@ -30,7 +30,6 @@ import {BrowserHistoryModule} from '../modules/HistoryModule';
 import {StorageModule} from '../modules/StorageModule';
 import {ResourcesModule} from '../modules/ResourcesModule';
 import {ThunderDispatcher} from './thunder-dispatcher';
-import {LocaleModule} from '../modules/locale/LocaleModule';
 import {OnRequestListener, RequestErrorHandler, RequestSuccessHandler} from '../../shared/request-types';
 import {ThunderstormModule} from '../modules/ThunderstormModule';
 
@@ -55,7 +54,6 @@ const modules: Module[] = [
 	BrowserHistoryModule,
 
 	StorageModule,
-	LocaleModule,
 	ResourcesModule
 
 ];
