@@ -9,7 +9,7 @@ class Pipeline_ThunderstormProxy
 	extends Pipeline_BaseProxy<Pipeline_ThunderstormProxy> {
 
 	Pipeline_ThunderstormProxy() {
-		super("proxy", [SlackModule.class] as Class<? extends WorkflowModule>[])
+		super("proxy")
 	}
 
 	@Override
