@@ -21,7 +21,7 @@ export const config = {
 	XhrHttpModule: {
 		origin: "http://localhost:5000/thunderstorm-staging/us-central1/api",
 		timeout: 30000,
-		compress: false
+		compress: true
 	},
 	frontend: {
 		origin: "http://localhost:5001",

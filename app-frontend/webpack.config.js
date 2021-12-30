@@ -24,6 +24,7 @@ const {WebpackManifestPlugin} = require("webpack-manifest-plugin");
 const packageJson = require('./package.json');
 const webpack = require("webpack");
 const sourcePath = path.join(__dirname, './src');
+const swFolder = path.join(__dirname, './src/sw/');
 const mainFolder = path.join(__dirname, './src/main/');
 const mainConfig = path.join(__dirname, './src/main/tsconfig.json');
 
@@ -32,14 +33,13 @@ module.exports = (env, argv) => {
 	const envConfig = require(`./_config/${env}`);
 	const outputFolder = path.resolve(__dirname, `dist`);
 	const swChunkName = 'pubsub-sw';
-	const swChunkName = 'sw';
 
 	return {
 		context: sourcePath,
 		target: ["web", "es2017"],
 		entry: {
 			main: './main/index.tsx',
-			[swChunkName]: './sw/index.js',
+			[swChunkName]: './sw/index.ts',
 		},
 		output: {
 			path: outputFolder,
@@ -49,9 +49,6 @@ module.exports = (env, argv) => {
 		},
 		optimization: {
 			moduleIds: 'deterministic',
-			runtimeChunk: {
-				name: (entrypoint) => `${entrypoint.name}-rt`,
-			},
 			// minimize: false,
 			splitChunks: {
 				cacheGroups: {
@@ -84,7 +81,7 @@ module.exports = (env, argv) => {
 				"util": require.resolve("util/"),
 				"http": false,
 				"https": false,
-				"stream": false,
+				"stream": require.resolve("stream-browserify"),
 				"crypto": require.resolve("crypto-browserify"),
 			},
 			alias: {
@@ -111,6 +108,13 @@ module.exports = (env, argv) => {
 						options: {
 							configFile: mainConfig
 						}
+					}
+				},
+				{
+					test: /sw\/index.ts$/,
+					include: [swFolder],
+					use: {
+						loader: "ts-loader",
 					}
 				},
 				{enforce: "pre", test: /\.js$/, loader: "source-map-loader", exclude: [/node_modules/, /dist/, /build/, /__test__/]},
