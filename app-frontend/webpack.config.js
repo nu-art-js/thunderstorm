@@ -54,7 +54,6 @@ module.exports = (env, argv) => {
 				cacheGroups: {
 					defaultVendors: {
 						chunks(chunk) {
-							// exclude `my-excluded-chunk`
 							return chunk.name !== swChunkName;
 						},
 						test: /[\\/]node_modules[\\/]/,
@@ -116,11 +115,14 @@ module.exports = (env, argv) => {
 				{
 					test: /sw\/index.ts$/,
 					include: [swFolder],
-					use: {
-						loader: "ts-loader",
-					}
+					loader: "ts-loader",
 				},
-				{enforce: "pre", test: /\.js$/, loader: "source-map-loader", exclude: [/node_modules/, /dist/, /build/, /__test__/]},
+				{
+					loader: "source-map-loader",
+					enforce: "pre",
+					test: /\.js$/,
+					exclude: [/node_modules/, /dist/, /build/, /__test__/]
+				},
 				{
 					test: /\.[ot]tf$/,
 					use: [
