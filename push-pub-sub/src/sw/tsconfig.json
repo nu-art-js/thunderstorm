@@ -1,21 +1,3 @@
 {
-  "compilerOptions": {
-    "experimentalDecorators": true,
-    "module": "es6",
-    "moduleResolution": "node",
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
-    "outDir": "../../build/sw",
-    "rootDir": ".",
-    "removeComments": true,
-    "sourceMap": true,
-    "strict": true,
-    "target": "es5",
-    "lib": [
-      "es5",
-      "es6",
-      "es7",
-      "webworker"
-    ]
-  }
+  "extends": "../../../dev-tools/typescript/tsconfig-lib-sw.json"
 }

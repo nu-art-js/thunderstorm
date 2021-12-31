@@ -83,7 +83,6 @@ export class PushPubSubModule_Class
 	}
 
 	private registerServiceWorker = async () => {
-		this.logInfo('Registering service worker...');
 		if (!('serviceWorker' in navigator)) {
 			this.logWarning('serviceWorker property is missing in navigator');
 			return undefined;
@@ -109,14 +108,15 @@ export class PushPubSubModule_Class
 
 			this.messaging = session.getMessaging();
 			this.messaging.onMessage((payload) => {
-				this.logInfo('PAH ZEVEL');
 				if (!payload.data)
 					return this.logInfo('No data passed to the message handler, I got this', payload);
 
 				this.processMessage(payload.data);
 			});
 
+			this.logDebug('Getting new Token');
 			await this.getToken({vapidKey: this.config?.publicKeyBase64, serviceWorkerRegistration: registration});
+			this.logDebug('GOT new Token');
 
 			if (this.getControlingServiceWorker()) {
 				this.logInfo(`This page is currently controlled by: `, this.getControlingServiceWorker());
