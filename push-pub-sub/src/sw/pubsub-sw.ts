@@ -15,44 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js');
+
 import {initializeApp} from 'firebase/app';
 import {getMessaging, onBackgroundMessage} from 'firebase/messaging/sw';
+import {BeLogged, LogClient_Browser, Logger} from '@nu-art/ts-common';
 
-enum LogLevel {
-	INFO,
-	ERROR
-}
+export class FCMServiceWorker
+	extends Logger {
 
-export class FCMServiceWorker {
-	myLog(level: LogLevel, ...text: any[]) {
-		const color = level === LogLevel.INFO ? 'orange' : 'red';
-		for (const t of text) {
-			if (typeof t === 'object')
-				console.log(t);
-			else
-				console.log('%c ' + text, `color: ${color};`);
-		}
-	}
 
-	logError(...text: any[]) {
-		this.myLog(LogLevel.ERROR, ...text);
-	}
-
-	logInfo = (...text: any[]) => {
-		this.myLog(LogLevel.INFO, ...text);
-	};
-
-	init(firebaseConfig:any) {
+	init(firebaseConfig: any) {
 		this.logInfo('INIT');
 		if (!firebaseConfig)
 			throw new Error('forgot to add FirebaseModule.local to your config');
-
-		this.logInfo('Registering listeners');
-		self.addEventListener('notificationclick', this.onNotificationClicked);
-		self.addEventListener('pushsubscriptionchange', this.onSubscriptionChanged);
-		self.addEventListener('push', this.onPushReceived);
-		self.addEventListener('activate', this.onActivate);
-		self.addEventListener('install', this.onInstall);
 
 		this.logInfo('START');
 		const firebaseApp = initializeApp(firebaseConfig);
@@ -73,6 +50,14 @@ export class FCMServiceWorker {
 				});
 			});
 		});
+
+		this.logInfo('Registering listeners');
+		self.addEventListener('notificationclick', this.onNotificationClicked);
+		self.addEventListener('pushsubscriptionchange', this.onSubscriptionChanged);
+		self.addEventListener('push', this.onPushReceived);
+		self.addEventListener('activate', this.onActivate);
+		self.addEventListener('install', this.onInstall);
+		this.logInfo('SW DONE');
 	}
 
 	onPushReceived = (e: any) => {
@@ -85,7 +70,7 @@ export class FCMServiceWorker {
 			// @ts-ignore
 			await self.clients.claim();
 			this.logInfo('Service Worker activated');
-		} catch (e) {
+		} catch (e: any) {
 			this.logError('Error activating service worker', e);
 		}
 	};
@@ -94,9 +79,9 @@ export class FCMServiceWorker {
 		this.logInfo('Installed SW');
 		try {
 			// @ts-ignore
-			await self.skipWaiting.claim();
+			await self.skipWaiting();
 			this.logInfo('Skipped waiting, now using the new SW');
-		} catch (e) {
+		} catch (e: any) {
 			this.logError('Something wrong while skipping waiting. Service worker not queued', e);
 		}
 	};
@@ -109,3 +94,5 @@ export class FCMServiceWorker {
 		this.logInfo('onSubscriptionChanged in SW');
 	};
 }
+
+BeLogged.addClient(LogClient_Browser);
