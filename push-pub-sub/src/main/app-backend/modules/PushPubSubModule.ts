@@ -28,7 +28,8 @@ import {
 	Hour,
 	ImplementationMissingException,
 	Module,
-	Subset
+	Subset,
+    batchActionParallel
 } from "@nu-art/ts-common";
 
 import {
@@ -274,14 +275,16 @@ export class PushPubSubModule_Class
 		return this.cleanUpImpl(toDelete);
 	};
 
-	private async cleanUpImpl(toDelete: string[]) {
-		if (toDelete.length === 0)
+	private async cleanUpImpl(_toDelete: string[]) {
+		if (_toDelete.length === 0)
 			return;
 
-		const sessions = await this.pushSessions.query({where: {firebaseToken: {$in: toDelete}}});
+		const toDelete = filterDuplicates(_toDelete);
+		const _sessions = await batchActionParallel(toDelete, 10, async elements => this.pushSessions.query({where: {firebaseToken: {$in: elements}}}))
+		const sessions = filterDuplicates(_sessions.map(s => s.pushSessionId));
 		const async = [
-			batchAction(toDelete, 10, async elements => this.pushSessions.delete({where: {firebaseToken: {$in: elements}}})),
-			batchAction(sessions.map(s => s.pushSessionId), 10, async elements => this.pushKeys.delete({where: {pushSessionId: {$in: elements}}}))
+			batchActionParallel(toDelete, 10, async elements => this.pushSessions.delete({where: {firebaseToken: {$in: elements}}})),
+			batchActionParallel(sessions, 10, async elements => this.pushKeys.delete({where: {pushSessionId: {$in: elements}}}))
 		];
 
 		await Promise.all(async);
