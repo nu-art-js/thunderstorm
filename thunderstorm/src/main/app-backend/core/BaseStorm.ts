@@ -25,17 +25,23 @@ import {
 } from "@nu-art/firebase/backend";
 import {
 	merge,
-	ModuleManager
+	ModuleManager,
+	ObjectTS
 } from "@nu-art/ts-common";
 
 export abstract class BaseStorm
 	extends ModuleManager {
 
 	protected envKey: string = "dev";
+	private override: ObjectTS = {};
 
 	setEnvironment(envKey: string) {
 		this.envKey = envKey;
 		return this;
+	}
+
+	setOverride(override: ObjectTS) {
+		this.override = override
 	}
 
 	protected resolveConfig = async () => {
@@ -69,6 +75,7 @@ export abstract class BaseStorm
 			]
 		);
 
-		this.setConfig(merge(defaultConfig, overrideConfig) || {});
+		const merge1 = merge(defaultConfig, overrideConfig);
+		this.setConfig(merge(merge1, this.override) || {});
 	};
 }
