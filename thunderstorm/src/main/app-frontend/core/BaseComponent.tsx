@@ -36,6 +36,7 @@ export class BaseComponent<P = any, S = any>
 	private stateKeysToUpdate?: (keyof S)[];
 	private logger: Logger;
 	private timeoutMap: { [k: string]: number } = {};
+	protected mounted = false;
 
 	constructor(props: P) {
 		super(props);
@@ -47,14 +48,15 @@ export class BaseComponent<P = any, S = any>
 			Thunder.getInstance().addUIListener(this);
 
 			__componentDidMount?.();
+			this.mounted = true;
 		};
 
 		const __componentWillUnmount = this.componentWillUnmount?.bind(this);
 		this.componentWillUnmount = () => {
 			__componentWillUnmount?.();
-
 			// @ts-ignore
 			Thunder.getInstance().removeUIListener(this);
+			this.mounted = false;
 		};
 
 		this.deriveStateFromProps.bind(this);

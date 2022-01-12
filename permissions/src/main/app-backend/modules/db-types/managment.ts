@@ -18,15 +18,11 @@
 
 import {
 	BaseDB_ApiGenerator,
-	ServerApi_Delete,
-	ServerApi_Patch,
-	ServerApi_Query,
-	ServerApi_Unique,
 	tsValidateNameWithDashesAndDots,
 	tsValidateOptionalId,
 	tsValidateStringWithDashes,
 	tsValidateUniqueId
-} from "@nu-art/db-api-generator/backend";
+} from '@nu-art/db-api-generator/backend';
 
 import {
 	CollectionName_Api,
@@ -39,14 +35,14 @@ import {
 	DB_PermissionProject,
 	Request_CreateGroup,
 	Request_UpdateApiPermissions
-} from "../_imports";
-import {auditBy, filterDuplicates, MUSTNeverHappenException, tsValidateArray, tsValidateRange, tsValidateRegexp, TypeValidator} from "@nu-art/ts-common";
-import {FirestoreTransaction} from "@nu-art/firebase/backend";
-import {GroupPermissionsDB} from "./assign";
-import {Clause_Where} from "@nu-art/firebase";
-import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
-import {ExpressRequest, ServerApi} from "@nu-art/thunderstorm/backend";
-import {AccountModule} from "@nu-art/user-account/app-backend/modules/AccountModule";
+} from '../_imports';
+import {auditBy, filterDuplicates, MUSTNeverHappenException, tsValidateArray, tsValidateRange, tsValidateRegexp, TypeValidator} from '@nu-art/ts-common';
+import {FirestoreTransaction} from '@nu-art/firebase/backend';
+import {GroupPermissionsDB} from './assign';
+import {Clause_Where} from '@nu-art/firebase';
+import {ApiException} from '@nu-art/thunderstorm/app-backend/exceptions';
+import {ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {AccountModule} from '@nu-art/user-account/app-backend/modules/AccountModule';
 
 const validateProjectId = tsValidateRegexp(/^[a-z-]{3,20}$/);
 export const validateProjectName = tsValidateRegexp(/^[A-Za-z- ]{3,20}$/);
@@ -63,7 +59,7 @@ export class ProjectDB_Class
 	};
 
 	constructor() {
-		super(CollectionName_Projects, ProjectDB_Class._validator, "project");
+		super(CollectionName_Projects, ProjectDB_Class._validator, 'project');
 	}
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {
@@ -73,12 +69,16 @@ export class ProjectDB_Class
 		}
 	}
 
-	apis(pathPart?: string): ServerApi<any>[] {
-		return [
-			// new ServerApi_Delete(this, pathPart),
-			new ServerApi_Query(this, pathPart),
-			new ServerApi_Unique(this, pathPart),
-		];
+	apiPatch(pathPart?: string): ServerApi<any> | undefined {
+		return;
+	}
+
+	apiUpsert(pathPart?: string): ServerApi<any> | undefined {
+		return;
+	}
+
+	apiDelete(pathPart?: string): ServerApi<any> | undefined {
+		return;
 	}
 }
 
@@ -94,7 +94,7 @@ export class DomainDB_Class
 	};
 
 	constructor() {
-		super(CollectionName_Domain, DomainDB_Class._validator, "domain");
+		super(CollectionName_Domain, DomainDB_Class._validator, 'domain');
 		this.setLockKeys(['projectId']);
 	}
 
@@ -128,7 +128,7 @@ export class LevelDB_Class
 	};
 
 	constructor() {
-		super(CollectionName_Level, LevelDB_Class._validator, "level");
+		super(CollectionName_Level, LevelDB_Class._validator, 'level');
 		this.setLockKeys(['domainId']);
 	}
 
@@ -154,11 +154,11 @@ export class LevelDB_Class
 			const callbackfn = (group: Request_CreateGroup) => {
 				const index = group.accessLevelIds?.indexOf(dbInstance._id);
 				if (index === undefined)
-					throw new MUSTNeverHappenException("Query said it does exists!!");
+					throw new MUSTNeverHappenException('Query said it does exists!!');
 
 				const accessLevel = group.__accessLevels?.[index];
 				if (accessLevel === undefined)
-					throw new MUSTNeverHappenException("Query said it does exists!!");
+					throw new MUSTNeverHappenException('Query said it does exists!!');
 
 				accessLevel.value = dbInstance.value;
 			};
@@ -224,8 +224,8 @@ export class ApiDB_Class
 	};
 
 	constructor() {
-		super(CollectionName_Api, ApiDB_Class._validator, "api");
-		this.setLockKeys(['projectId', "path"]);
+		super(CollectionName_Api, ApiDB_Class._validator, 'api');
+		this.setLockKeys(['projectId', 'path']);
 	}
 
 	protected externalFilter(item: DB_PermissionApi): Clause_Where<DB_PermissionApi> {
@@ -267,13 +267,8 @@ export class ApiDB_Class
 		});
 	}
 
-	apis(pathPart?: string): ServerApi<any>[] {
-		return [
-			new ServerApi_Delete(this, pathPart),
-			new ServerApi_Query(this, pathPart),
-			new ServerApi_Unique(this, pathPart),
-			new ServerApi_Patch(this, pathPart),
-		];
+	apiUpsert(pathPart?: string): ServerApi<any> | undefined {
+		return;
 	}
 }
 

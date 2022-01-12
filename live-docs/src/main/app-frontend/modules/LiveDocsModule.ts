@@ -20,7 +20,7 @@
 import {Module} from "@nu-art/ts-common";
 import {ToastBuilder, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 import {DB_Document, Request_UpdateDocument} from "../../shared/types";
-import {ApiGetLiveDoc, ApiHistoryLiveDocs, ApiUpdateLiveDocs} from "../../shared/api";
+import {ApiGetLiveDoc, ApiHistoryLiveDocs, apiPatchLiveDocs} from "../../shared/api";
 import {setDefaultLiveDocEditor} from "../utils";
 import {HttpMethod} from "@nu-art/thunderstorm";
 
@@ -89,7 +89,7 @@ export class LiveDocsModule_Class
 		const docKey = liveDoc.key;
 
 		XhrHttpModule
-			.createRequest<ApiUpdateLiveDocs>(HttpMethod.POST, RequestKey_UpdateDoc, docKey)
+			.createRequest<apiPatchLiveDocs>(HttpMethod.POST, RequestKey_UpdateDoc, docKey)
 			.setJsonBody(liveDoc)
 			.setRelativeUrl("/v1/live-docs/update")
 			.setLabel(`Update live-docs with key: ${docKey}`)

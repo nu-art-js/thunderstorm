@@ -33,7 +33,6 @@ export abstract class AppPage<P extends {} = {}, S extends {} = {}>
 
 	private pageTitle: string;
 	private prevTitle!: string;
-	private mounted: boolean = false;
 
 	protected constructor(p: P, pageTitle?: string) {
 		super(p);
@@ -45,7 +44,6 @@ export abstract class AppPage<P extends {} = {}, S extends {} = {}>
 			this.logDebug(`Mounting page: ${this.pageTitle}`);
 			this.prevTitle = document.title;
 			this.updateTitle();
-			this.mounted = true;
 		};
 
 		const _componentWillUnmount = this.componentWillUnmount?.bind(this);

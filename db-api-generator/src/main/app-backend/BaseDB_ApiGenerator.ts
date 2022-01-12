@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Clause_Where, DB_Object, FilterKeys, FirestoreQuery,} from "@nu-art/firebase";
+import {Clause_Where, DB_Object, FilterKeys, FirestoreQuery,} from '@nu-art/firebase';
 import {
 	__stringify,
 	_keys,
@@ -32,18 +32,18 @@ import {
 	isErrorOfType,
 	merge,
 	Module,
+	ObjectTS,
 	ThisShouldNotHappenException,
 	tsValidate,
 	tsValidateRegexp,
 	tsValidateTimestamp,
 	ValidationException,
-	ValidatorTypeResolver,
-    ObjectTS
-} from "@nu-art/ts-common";
-import {ServerApi_Delete, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert} from "./apis";
-import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct, ServerApi} from "@nu-art/thunderstorm/backend";
-import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from "@nu-art/firebase/backend";
-import {BadInputErrorBody, ErrorKey_BadInput, PreDBObject} from "../shared/types";
+	ValidatorTypeResolver
+} from '@nu-art/ts-common';
+import {ServerApi_Delete, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert} from './apis';
+import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct, ServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
+import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
+import {BadInputErrorBody, ErrorKey_BadInput, PreDBObject} from '../shared/types';
 
 const idLength = 32;
 export const tsValidateId = (length: number, mandatory: boolean = true) => tsValidateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
@@ -75,6 +75,12 @@ export type DBApiConfig<Type extends ObjectTS> = {
 	externalFilterKeys: FilterKeys<Type>
 }
 
+export type ApisParams = {
+	pathPart?: string,
+	middleware?: ServerApi_Middleware[]
+	print?: boolean
+};
+
 /**
  * An abstract base class used for implementing CRUD operations on a specific collection.
  *
@@ -95,7 +101,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	protected constructor(collectionName: string, validator: ValidatorTypeResolver<DBType>, itemName: string) {
 		super();
 		// @ts-ignore
-		this.setDefaultConfig({itemName, collectionName, externalFilterKeys: ["_id"], lockKeys: ["_id", "__created", "__updated"]});
+		this.setDefaultConfig({itemName, collectionName, externalFilterKeys: ['_id'], lockKeys: ['_id', '__created', '__updated']});
 		this.validator = validator;
 	}
 
@@ -133,7 +139,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	protected setExternalUniqueKeys(keys: FilterKeys<DBType>) {
 		if (this.initiated)
-			throw new BadImplementationException("You can only update the 'externalUniqueKeys' before the module was initialized.. preferably from its constructor");
+			throw new BadImplementationException('You can only update the \'externalUniqueKeys\' before the module was initialized.. preferably from its constructor');
 
 		return this.config.externalFilterKeys = keys;
 	}
@@ -152,9 +158,9 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	protected setLockKeys(keys: (keyof DBType)[]) {
 		if (this.initiated)
-			throw new BadImplementationException("You can only update the 'lockKeys' before the module was initialized.. preferably from its constructor");
+			throw new BadImplementationException('You can only update the \'lockKeys\' before the module was initialized.. preferably from its constructor');
 
-		return this.config.lockKeys = filterDuplicates([...keys, "_id"]);
+		return this.config.lockKeys = filterDuplicates([...keys, '_id']);
 	}
 
 	getCollectionName() {
@@ -211,7 +217,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 			const query = uniqueQueries[idx];
 			const message = _keys(query).reduce((carry, key) => {
-				return carry + "\n" + `${key}: ${query[key]}`;
+				return carry + '\n' + `${key}: ${query[key]}`;
 			}, `${this.config.itemName} uniqueness violation. There is already a document with`);
 
 			this.logWarning(message);
@@ -229,7 +235,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	public async validateImpl(instance: DBType) {
 		try {
 			await tsValidate(instance, this.validator);
-		} catch (e:any) {
+		} catch (e: any) {
 			this.onValidationError(e);
 		}
 	}
@@ -344,7 +350,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	async upsert_Read(instance: PreDBObject<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		const timestamp = currentTimeMillis();
 
-		if (this.config.externalFilterKeys[0] === "_id" && instance._id === undefined)
+		if (this.config.externalFilterKeys[0] === '_id' && instance._id === undefined)
 			return this.createImpl_Read(transaction, {...instance, _id: this.generateId(), __created: timestamp, __updated: timestamp} as unknown as DBType, request);
 
 		return this.upsertImpl_Read(transaction, {
@@ -587,7 +593,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	apiCreate(pathPart?: string): ServerApi_Upsert<DBType> | ServerApi<any> | undefined {
+	apiUpsert(pathPart?: string): ServerApi<any> | ServerApi<any> | undefined {
 		return new ServerApi_Upsert(this, pathPart);
 	}
 
@@ -599,7 +605,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return new ServerApi_Unique(this, pathPart);
 	}
 
-	apiUpdate(pathPart?: string): ServerApi<any> | undefined {
+	apiPatch(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Patch(this, pathPart);
 	}
 
@@ -607,22 +613,29 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return new ServerApi_Delete(this, pathPart);
 	}
 
+	_apis(options?: ApisParams): (ServerApi<any> | undefined)[] {
+		return [
+			this.apiUpsert(options?.pathPart),
+			this.apiQuery(options?.pathPart),
+			this.apiQueryUnique(options?.pathPart),
+			this.apiPatch(options?.pathPart),
+			this.apiDelete(options?.pathPart),
+		];
+	}
+
 	/**
 	 * Override this method, to control which server api endpoints are created automatically.
 	 *
-	 * @param pathPart - The path part.
+	 * @param options - The path part.
 	 *
 	 * @returns
 	 * An array of api endpoints.
 	 */
-	apis(pathPart?: string): ServerApi<any>[] {
-		return filterInstances(
-			[
-				this.apiCreate(pathPart),
-				this.apiQuery(pathPart),
-				this.apiQueryUnique(pathPart),
-				this.apiUpdate(pathPart),
-				this.apiDelete(pathPart),
-			]);
+	apis(options?: ApisParams): ServerApi<any>[] {
+		return filterInstances(this._apis(options)).map(api => {
+			options?.middleware && api.setMiddlewares(...options.middleware);
+			options?.print !== true && api.dontPrintResponse();
+			return api;
+		});
 	}
 }

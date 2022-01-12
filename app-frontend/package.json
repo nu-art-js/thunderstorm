@@ -20,11 +20,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npm run build-sw && webpack --mode development --env dev",
-    "build-sw": "tsc ./src/sw/index.ts",
+    "build": "webpack --mode development --env dev",
     "build-prod": "webpack --mode production --env prod",
     "dev": "cd .. && bash ./build-and-install.sh -lf -nb",
-    "launch": "npm run build-sw && webpack-dev-server --open --mode development --env dev true"
+    "launch": "webpack-dev-server --open --mode development --env dev true"
   },
   "dependencies": {
     "clean-html": "^1.5.0",
