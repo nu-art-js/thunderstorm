@@ -1,16 +1,9 @@
-import {
-	BaseDB_ApiGenerator,
-	ServerApi_Delete,
-	ServerApi_Query,
-	ServerApi_Unique,
-	ServerApi_Upsert,
-	tsValidateStringAndNumbersWithDashes
-} from "@nu-art/db-api-generator/backend";
-import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
-import {ExpressRequest, ServerApi} from "@nu-art/thunderstorm/backend";
-import {tsValidateRegexp, TypeValidator,} from "@nu-art/ts-common";
-import {DB_GroupTags} from "../..";
-import {GroupPermissionsDB} from "./db-types/assign";
+import {BaseDB_ApiGenerator, tsValidateStringAndNumbersWithDashes} from '@nu-art/db-api-generator/backend';
+import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
+import {ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {tsValidateRegexp, TypeValidator,} from '@nu-art/ts-common';
+import {DB_GroupTags} from '../..';
+import {GroupPermissionsDB} from './db-types/assign';
 
 const validateGroupLabel = tsValidateRegexp(/^[A-Za-z-\._ ]+$/);
 
@@ -27,7 +20,7 @@ export class TagsDB_Class
 	};
 
 	constructor() {
-		super(CollectionNameTags, TagsDB_Class._validator, "permissionsTags");
+		super(CollectionNameTags, TagsDB_Class._validator, 'permissionsTags');
 	}
 
 
@@ -37,17 +30,12 @@ export class TagsDB_Class
 	}
 
 	async delete(query: FirestoreQuery<DB_GroupTags>, request?: ExpressRequest) {
-		query.where?._id && await GroupPermissionsDB.deleteTags(query.where?._id.toString())
-		return super.delete(query, request)
+		query.where?._id && await GroupPermissionsDB.deleteTags(query.where?._id.toString());
+		return super.delete(query, request);
 	}
 
-	apis(pathPart?: string): ServerApi<any>[] {
-		return [
-			new ServerApi_Delete(this, pathPart),
-			new ServerApi_Query(this, pathPart),
-			new ServerApi_Unique(this, pathPart),
-			new ServerApi_Upsert(this, pathPart)
-		];
+	apiPatch(pathPart?: string): ServerApi<any> | undefined {
+		return;
 	}
 }
 

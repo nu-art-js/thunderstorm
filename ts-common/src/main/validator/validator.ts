@@ -16,19 +16,11 @@
  * limitations under the License.
  */
 
-import {
-	BadImplementationException,
-	CustomException
-} from "../core/exceptions";
-import {__stringify,} from "../utils/tools";
-import {_keys} from "../utils/object-tools";
-import {
-	ArrayType,
-	AuditBy,
-	ObjectTS,
-	RangeTimestamp
-} from "../utils/types";
-import {currentTimeMillis} from "..";
+import {BadImplementationException, CustomException} from '../core/exceptions';
+import {__stringify,} from '../utils/tools';
+import {_keys} from '../utils/object-tools';
+import {ArrayType, AuditBy, ObjectTS, RangeTimestamp} from '../utils/types';
+import {currentTimeMillis} from '..';
 
 /*
  * ts-common is the basic building blocks of
@@ -61,8 +53,8 @@ export class ValidationException
 	public path: string;
 	public input?: string;
 
-	constructor(debugMessage: string, path: string, input?: any) {
-		super(ValidationException, debugMessage);
+	constructor(debugMessage: string, path: string, input?: any, e?: Error) {
+		super(ValidationException, debugMessage, e);
 		this.path = path;
 		this.input = input;
 	}
@@ -91,7 +83,7 @@ export const tsValidateObjectValues = <V, T = { [k: string]: V }>(validator: Val
 
 		for (const key of _keys(input)) {
 			const inputValue = input[key];
-			if (typeof inputValue === "object") {
+			if (typeof inputValue === 'object') {
 				const objectValidator = tsValidateObjectValues(validator, mandatory);
 				if (!objectValidator)
 					return;
@@ -135,7 +127,7 @@ export const tsValidateNumber = (mandatory = true): Validator<number> => {
 			return;
 
 		// noinspection SuspiciousTypeOfGuard
-		if (typeof input === "number")
+		if (typeof input === 'number')
 			return;
 
 		throw new ValidationException(`Input is not a number for path(${path})! \nvalue: ${input}\ntype: ${typeof input}`, path, input);
@@ -149,7 +141,7 @@ export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 			return;
 
 		// noinspection SuspiciousTypeOfGuard
-		if (typeof input === "boolean")
+		if (typeof input === 'boolean')
 			return;
 
 		throw new ValidationException(`input is not a boolean! \nvalue: ${input}\ntype: ${typeof input}`, path, input);
@@ -185,11 +177,11 @@ export const tsValidateRange = (ranges: [number, number][], mandatory = true): V
 };
 
 
-export const tsValidate = <T extends any>(instance: T, _validator: ValidatorTypeResolver<T>, path = "", mandatory: boolean | Partial<T> = {}) => {
+export const tsValidate = <T extends any>(instance: T, _validator: ValidatorTypeResolver<T>, path = '', mandatory: boolean | Partial<T> = {}) => {
 	if (!_validator)
 		return;
 
-	if (typeof _validator === "function") {
+	if (typeof _validator === 'function') {
 		const validator = _validator as Validator<T>;
 		if (!validator)
 			return;
@@ -197,7 +189,7 @@ export const tsValidate = <T extends any>(instance: T, _validator: ValidatorType
 		return validator(`${path}`, instance);
 	}
 
-	if (typeof _validator === "object") {
+	if (typeof _validator === 'object') {
 		if (!instance && _validator)
 			throw new BadImplementationException(
 				`Unexpect object at '${path}'\nif you want to ignore the validation of this object,\n add the following to your validator:\n {\n  ...\n  ${path}: undefined\n  ...\n}\n`);
@@ -207,7 +199,7 @@ export const tsValidate = <T extends any>(instance: T, _validator: ValidatorType
 	}
 };
 
-export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance: T, path = "") => {
+export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance: T, path = '') => {
 	const validatorKeys = _keys(__validator);
 	const instanceKeys = Object.keys(instance as unknown as object);
 

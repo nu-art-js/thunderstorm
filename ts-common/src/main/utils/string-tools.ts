@@ -18,7 +18,7 @@
 
 export function padNumber(num: number | string, length: number): string {
 	const _num = num.toString();
-	return _num.length < length ? padNumber("0" + _num, length) : _num;
+	return _num.length < length ? padNumber('0' + _num, length) : _num;
 }
 
 export function stringToHashCode(stringToHash: string) {
@@ -33,3 +33,14 @@ export function stringToHashCode(stringToHash: string) {
 
 	return hash;
 }
+
+export function escape_RegExp(string: string) {
+	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+export function stringFormat(input: string, params: string[] = []) {
+	return params?.reduce((toRet: string, param, index) => {
+		return toRet.replace(new RegExp(`\\{${index}\\}`, 'g'), param);
+	}, input || '') || input;
+}
+

@@ -317,7 +317,7 @@ export class RouteResolver {
 		this.apiFolder = apiFolder || '';
 	}
 
-	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
+	setMiddlewares(middlewares: ServerApi_Middleware[] = []) {
 		this.middlewares = middlewares;
 		return this;
 	}
