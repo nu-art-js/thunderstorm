@@ -16,28 +16,17 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
-import {
-	PermissionsApi_AssignAppPermissions,
-	Request_AssignAppPermissions,
-	UserPermissionsDB,
-} from "../_imports";
-import {
-	HttpMethod,
-	QueryParams
-} from "@nu-art/thunderstorm";
-import {AccountModule} from "@nu-art/user-account/app-backend/modules/AccountModule";
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {PermissionsApi_AssignAppPermissions, Request_AssignAppPermissions, UserPermissionsDB,} from '../_imports';
+import {HttpMethod, QueryParams} from '@nu-art/thunderstorm';
+import {AccountModule} from '@nu-art/user-account/app-backend/modules/AccountModule';
 
 
 class ServerApi_UserUrlsPermissions
 	extends ServerApi<PermissionsApi_AssignAppPermissions> {
 
 	constructor() {
-		super(HttpMethod.POST, "app-permissions");
+		super(HttpMethod.POST, 'app-permissions');
 		this.dontPrintResponse();
 	}
 

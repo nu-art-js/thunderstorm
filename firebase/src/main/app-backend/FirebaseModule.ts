@@ -146,6 +146,7 @@ export class FirebaseModule_Class
 
 	listCollectionsInModules() {
 		const modules: Module[] = moduleResolver();
+
 		const firebaseProjectCollections = modules.reduce((toRet, module) => {
 			const keys = _keys(module);
 			const _collections: FirestoreCollection<any>[] = keys

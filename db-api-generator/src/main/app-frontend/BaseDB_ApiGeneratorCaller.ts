@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiTypeBinder, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from "@nu-art/thunderstorm";
+import {ApiTypeBinder, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from '@nu-art/thunderstorm';
 import {
 	ApiBinder_DBDelete,
 	ApiBinder_DBPatch,
@@ -27,19 +27,19 @@ import {
 	DefaultApiDefs,
 	GenericApiDef,
 	PreDBObject
-} from "../index";
-import {DB_Object, FirestoreQuery} from "@nu-art/firebase";
-import {ThunderDispatcher, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
+} from '../index';
+import {DB_Object, FirestoreQuery} from '@nu-art/firebase';
+import {ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 
-import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray} from "@nu-art/ts-common";
-import {MultiApiEvent, SingleApiEvent} from "./types";
+import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray} from '@nu-art/ts-common';
+import {MultiApiEvent, SingleApiEvent} from './types';
 
 export type BaseApiConfig = {
 	relativeUrl: string
 	key: string
 }
 
-export type ApiCallerEventType = [SingleApiEvent, string] | [MultiApiEvent, string[]];
+export type ApiCallerEventType = [SingleApiEvent, string, boolean] | [MultiApiEvent, string[], boolean];
 
 export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config extends BaseApiConfig = BaseApiConfig>
 	extends Module<BaseApiConfig> {
@@ -67,17 +67,17 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 	}
 
 	protected createRequest<Binder extends ApiTypeBinder<any, any, any, any>,
-		U extends string = Binder["url"],
-		R = Binder["response"],
-		B = Binder["body"],
-		P extends QueryParams = Binder["params"]>(apiDef: GenericApiDef, body?: B, requestData?: string): BaseHttpRequest<Binder> {
+		U extends string = Binder['url'],
+		R = Binder['response'],
+		B = Binder['body'],
+		P extends QueryParams = Binder['params']>(apiDef: GenericApiDef, body?: B, requestData?: string): BaseHttpRequest<Binder> {
 
 		const request = XhrHttpModule.createRequest<Binder>(apiDef.method, requestData || `request-api--${this.config.key}-${apiDef.key}`)
-			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? "/" + apiDef.suffix : ""}`)
+			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? '/' + apiDef.suffix : ''}`)
 			.setOnError(this.errorHandler) as BaseHttpRequest<any>;
 
 		if (body)
-			request.setJsonBody(body)
+			request.setJsonBody(body);
 
 		const timeout = this.timeoutHandler(apiDef);
 		if (timeout)
@@ -140,6 +140,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		return this
 			.createRequest<ApiBinder_DBDelete<DBType>>(DefaultApiDefs.Delete, undefined, requestData)
 			.setUrlParams({_id})
+			.setOnError(() => this.dispatchSingle('delete', _id, false))
 			.execute(async response => {
 				await this.onEntryDeleted(response, requestData);
 				if (responseHandler)
@@ -157,21 +158,21 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 
 	public getItem = (id?: string): DBType | undefined => id ? this.items[id] : undefined;
 
-	private dispatchSingle = (event: SingleApiEvent, itemId: string) => {
-		this.defaultDispatcher?.dispatchModule([event, itemId]);
-		this.defaultDispatcher?.dispatchUI([event, itemId]);
+	private dispatchSingle = (event: SingleApiEvent, itemId: string, success = true) => {
+		this.defaultDispatcher?.dispatchModule([event, itemId, success]);
+		this.defaultDispatcher?.dispatchUI([event, itemId, success]);
 	};
 
-	private dispatchMulti = (event: MultiApiEvent, itemId: string[]) => {
-		this.defaultDispatcher?.dispatchModule([event, itemId]);
-		this.defaultDispatcher?.dispatchUI([event, itemId]);
+	private dispatchMulti = (event: MultiApiEvent, itemId: string[], success = true) => {
+		this.defaultDispatcher?.dispatchModule([event, itemId, success]);
+		this.defaultDispatcher?.dispatchUI([event, itemId, success]);
 	};
 
-	protected async onEntryDeleted(item: DBType, requestData?: string): Promise<void> {
+	protected async onEntryDeleted(item: DBType, requestDaTS_FilterInputta?: string): Promise<void> {
 		removeItemFromArray(this.ids, item._id);
 		delete this.items[item._id];
 
-		this.dispatchSingle("delete", item._id);
+		this.dispatchSingle('delete', item._id);
 	}
 
 	protected async onEntriesUpdated(items: DBType[], requestData?: string): Promise<void> {
@@ -180,24 +181,24 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 				addItemToArray(this.ids, item._id);
 
 			this.items[item._id] = item;
-		})
+		});
 
-		this.dispatchMulti("multi-update", items.map(item => item._id));
+		this.dispatchMulti('multi-update', items.map(item => item._id));
 	}
 
 	protected async onEntryCreated(item: DBType, requestData?: string): Promise<void> {
-		return this.onEntryUpdatedImpl("create", item, requestData);
+		return this.onEntryUpdatedImpl('create', item, requestData);
 	}
 
 	protected async onEntryUpdated(original: DBType, item: DBType, requestData?: string): Promise<void> {
 		if (!compare(item, original))
-			this.logWarning("Hmmmm.. queried value not what was expected!");
+			this.logWarning('Hmmmm.. queried value not what was expected!');
 
-		return this.onEntryUpdatedImpl("update", item, requestData);
+		return this.onEntryUpdatedImpl('update', item, requestData);
 	}
 
 	protected async onEntryPatched(item: DBType, requestData?: string): Promise<void> {
-		return this.onEntryUpdatedImpl("patch", item, requestData);
+		return this.onEntryUpdatedImpl('patch', item, requestData);
 	}
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType, requestData?: string): Promise<void> {
@@ -209,7 +210,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 	}
 
 	protected async onGotUnique(item: DBType, requestData?: string): Promise<void> {
-		return this.onEntryUpdatedImpl("unique", item, requestData);
+		return this.onEntryUpdatedImpl('unique', item, requestData);
 	}
 
 	protected async onQueryReturned(items: DBType[], requestData?: string): Promise<void> {
@@ -220,6 +221,6 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 
 		this.ids = _keys(this.items);
 
-		this.dispatchMulti("query", this.ids);
+		this.dispatchMulti('query', this.ids);
 	}
 }
