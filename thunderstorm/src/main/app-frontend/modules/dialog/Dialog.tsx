@@ -121,6 +121,7 @@ export class Dialog
 	extends BaseComponent<Props, State>
 	implements DialogListener {
 
+
 	constructor(props: Props) {
 		super(props);
 		this.state = {};
@@ -145,8 +146,10 @@ export class Dialog
 		if (!dialogModel)
 			return null;
 
+
 		return (
-			<div id="overlay" style={{...modalOverlay, background: dialogModel.overlayColor, zIndex: dialogModel.zIndex}} onClick={this.onOverlayClicked}>
+			<div id="overlay" style={{...modalOverlay, background: dialogModel.overlayColor, zIndex: dialogModel.zIndex}}
+					 onClick={this.onOverlayClicked}>
 				<div className={'ll_v_l'} style={{...defaultDialogStyle, ...(dialogModel.style || {})}}
 						 onClick={stopPropagation}>
 					{dialogModel.title && this.renderTitle(dialogModel.title)}

@@ -105,6 +105,10 @@ export class DomainDB_Class
 		}
 	}
 
+	internalFilter(item: DB_PermissionDomain) {
+		return [{namespace: item.namespace, projectId: item.projectId}];
+	}
+
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain, request?: ExpressRequest) {
 		await ProjectPermissionsDB.queryUnique({_id: dbInstance.projectId});
 

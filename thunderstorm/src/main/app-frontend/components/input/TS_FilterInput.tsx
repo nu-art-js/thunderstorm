@@ -36,6 +36,7 @@ export type Props_FilterInput<T> = Stylable & {
 	initialFilterText?: string,
 	regexp?: boolean,
 	focus?: boolean,
+	forceFilter?: boolean,
 	placeholder?: string
 	handleKeyEvent?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 }
@@ -49,6 +50,7 @@ export class TS_FilterInput<T>
 
 	static defaultProps: Partial<Props_FilterInput<any>> = {
 		id: generateHex(16),
+		forceFilter: false,
 		regexp: true
 	};
 
@@ -58,7 +60,7 @@ export class TS_FilterInput<T>
 	}
 
 	protected deriveStateFromProps(nextProps: Props_FilterInput<T>): State | undefined {
-		let evaluate = false;
+		let evaluate = nextProps.forceFilter || false;
 		// @ts-ignore
 		this.filter = nextProps.filter;
 
@@ -76,7 +78,7 @@ export class TS_FilterInput<T>
 		}
 
 		if (evaluate)
-			this.callOnChange();
+			this.callOnChange?.();
 
 		return;
 	}

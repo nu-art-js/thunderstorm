@@ -37,6 +37,7 @@ export type Dialog_Model = Stylable & {
 
 export type DialogButtonModel = Stylable & {
 	content: React.ReactNode;
+	associatedKeys: string[];
 	action: () => void;
 }
 
@@ -71,6 +72,7 @@ export class DialogButton_Builder
 
 	content!: React.ReactNode;
 	action!: () => void;
+	associatedKeys: string[] = [];
 
 
 	setContent(content: React.ReactNode) {
@@ -83,12 +85,18 @@ export class DialogButton_Builder
 		return this;
 	}
 
+	setAssociatedKeys(associatedKeys: string[]) {
+		this.associatedKeys = associatedKeys;
+		return this;
+	}
+
 	build(): DialogButtonModel {
 		return {
 			style: this.style,
 			className: this.className,
 			content: this.content,
 			action: this.action,
+			associatedKeys: this.associatedKeys,
 		};
 	}
 }
