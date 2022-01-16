@@ -17,18 +17,18 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGenerator} from "./BaseDB_ApiGenerator";
-import {ApiTypeBinder, QueryParams} from "@nu-art/thunderstorm";
-import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUniuqe, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef, PreDBObject} from "..";
-import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
-import {ApiResponse, ExpressRequest, ServerApi} from "@nu-art/thunderstorm/backend";
-import {addItemToArray, DB_BaseObject, DB_Object} from "@nu-art/ts-common";
+import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
+import {ApiTypeBinder, QueryParams} from '@nu-art/thunderstorm';
+import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUniuqe, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef, PreDBObject} from '..';
+import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {addItemToArray, DB_BaseObject, DB_Object} from '@nu-art/ts-common';
 
 export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
-	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? "/" + pathSuffix : ""}`;
+	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? '/' + pathSuffix : ''}`;
 }
 
-export abstract class GenericServerApi<DBType extends DB_Object, Binder extends ApiTypeBinder<string, any, any, any>, PostProcessor = never, R = Binder["response"], B = Binder["body"], P extends QueryParams | {} = Binder["params"]>
+export abstract class GenericServerApi<DBType extends DB_Object, Binder extends ApiTypeBinder<string, any, any, any>, PostProcessor = never, R = Binder['response'], B = Binder['body'], P extends QueryParams | {} = Binder['params']>
 	extends ServerApi<Binder> {
 
 	protected readonly dbModule: BaseDB_ApiGenerator<DBType>;
@@ -89,7 +89,7 @@ export class ServerApi_Unique<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DB_BaseObject, body: void): Promise<DBType> {
-		return this.dbModule.queryUnique(queryParams as Clause_Where<DBType>, request);
+		return this.dbModule.queryUnique(queryParams as Clause_Where<DBType>, undefined, request);
 	}
 }
 
@@ -101,7 +101,7 @@ export class ServerApi_Query<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, query: FirestoreQuery<DBType>): Promise<DBType[]> {
-		return this.dbModule.query(query, request);
+		return this.dbModule.query(query, undefined, request);
 	}
 }
 

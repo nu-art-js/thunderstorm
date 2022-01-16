@@ -1,5 +1,5 @@
 /*
- * Permissions management system, define access level for each of 
+ * Permissions management system, define access level for each of
  * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
@@ -17,7 +17,12 @@
  * limitations under the License.
  */
 
-export * from "./app-frontend/types"
-export * from "./app-frontend/consts"
-export * from "./app-frontend/BaseDB_ApiGeneratorCaller"
-export * from "./app-frontend/BaseDB_ApiGeneratorCallerV2"
+
+export const EventType_MultiUpdate = 'multi-update';
+export const EventType_Create = 'create';
+export const EventType_Update = 'update';
+export const EventType_Patch = 'patch';
+export const EventType_Unique = 'unique';
+export const EventType_Query = 'query';
+export const EventType_Delete = 'delete';
+
