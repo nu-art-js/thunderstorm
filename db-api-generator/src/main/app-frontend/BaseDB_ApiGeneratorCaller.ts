@@ -33,6 +33,7 @@ import {ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 
 import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from './types';
+import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from './consts';
 
 export type BaseApiConfig = {
 	relativeUrl: string
@@ -140,7 +141,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		return this
 			.createRequest<ApiBinder_DBDelete<DBType>>(DefaultApiDefs.Delete, undefined, requestData)
 			.setUrlParams({_id})
-			.setOnError(() => this.dispatchSingle('delete', _id, false))
+			.setOnError(() => this.dispatchSingle(EventType_Delete, _id, false))
 			.execute(async response => {
 				await this.onEntryDeleted(response, requestData);
 				if (responseHandler)
@@ -172,7 +173,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		removeItemFromArray(this.ids, item._id);
 		delete this.items[item._id];
 
-		this.dispatchSingle('delete', item._id);
+		this.dispatchSingle(EventType_Delete, item._id);
 	}
 
 	protected async onEntriesUpdated(items: DBType[], requestData?: string): Promise<void> {
@@ -183,22 +184,22 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			this.items[item._id] = item;
 		});
 
-		this.dispatchMulti('multi-update', items.map(item => item._id));
+		this.dispatchMulti(EventType_MultiUpdate, items.map(item => item._id));
 	}
 
 	protected async onEntryCreated(item: DBType, requestData?: string): Promise<void> {
-		return this.onEntryUpdatedImpl('create', item, requestData);
+		return this.onEntryUpdatedImpl(EventType_Create, item, requestData);
 	}
 
 	protected async onEntryUpdated(original: DBType, item: DBType, requestData?: string): Promise<void> {
 		if (!compare(item, original))
 			this.logWarning('Hmmmm.. queried value not what was expected!');
 
-		return this.onEntryUpdatedImpl('update', item, requestData);
+		return this.onEntryUpdatedImpl(EventType_Update, item, requestData);
 	}
 
 	protected async onEntryPatched(item: DBType, requestData?: string): Promise<void> {
-		return this.onEntryUpdatedImpl('patch', item, requestData);
+		return this.onEntryUpdatedImpl(EventType_Patch, item, requestData);
 	}
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType, requestData?: string): Promise<void> {
@@ -210,7 +211,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 	}
 
 	protected async onGotUnique(item: DBType, requestData?: string): Promise<void> {
-		return this.onEntryUpdatedImpl('unique', item, requestData);
+		return this.onEntryUpdatedImpl(EventType_Unique, item, requestData);
 	}
 
 	protected async onQueryReturned(items: DBType[], requestData?: string): Promise<void> {
@@ -221,6 +222,6 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 
 		this.ids = _keys(this.items);
 
-		this.dispatchMulti('query', this.ids);
+		this.dispatchMulti(EventType_Query, this.ids);
 	}
 }

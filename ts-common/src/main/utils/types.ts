@@ -56,6 +56,8 @@ export type DB_Object = DB_BaseObject & {
 	__updated: number;
 }
 
+export type PreDBObject<T extends DB_Object> = PartialProperties<T, keyof DB_Object>
+
 export type Draftable = { _isDraft: boolean };
 
 export type Auditable = {

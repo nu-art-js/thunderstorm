@@ -31,10 +31,10 @@ export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChan
 export abstract class AppPage<P extends {} = {}, S extends {} = {}>
 	extends BaseComponent<P, S> {
 
-	private pageTitle: string;
+	private pageTitle: string | (() => string);
 	private prevTitle!: string;
 
-	protected constructor(p: P, pageTitle?: string) {
+	protected constructor(p: P, pageTitle?: string | (() => string)) {
 		super(p);
 		this.pageTitle = pageTitle || document.title;
 		const _componentDidMount = this.componentDidMount?.bind(this);
@@ -54,7 +54,7 @@ export abstract class AppPage<P extends {} = {}, S extends {} = {}>
 		};
 	}
 
-	setPageTitle(pageTitle: string) {
+	setPageTitle(pageTitle: string | (() => string)) {
 		this.pageTitle = pageTitle;
 		if (this.mounted)
 			this.updateTitle();
@@ -62,8 +62,8 @@ export abstract class AppPage<P extends {} = {}, S extends {} = {}>
 
 
 	private updateTitle() {
-		document.title = this.pageTitle;
-		dispatch_onPageTitleChanged.dispatchUI([this.pageTitle]);
+		document.title = typeof this.pageTitle === 'function' ? this.pageTitle() : this.pageTitle;
+		dispatch_onPageTitleChanged.dispatchUI([document.title]);
 	}
 
 }

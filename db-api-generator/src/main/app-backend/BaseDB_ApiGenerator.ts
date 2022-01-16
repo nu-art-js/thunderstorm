@@ -41,7 +41,14 @@ import {
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {ServerApi_Delete, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert} from './apis';
-import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct, ServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
+import {
+	ApiException,
+	ExpressRequest,
+	FirestoreBackupDetails,
+	OnFirestoreBackupSchedulerAct,
+	ServerApi,
+	ServerApi_Middleware
+} from '@nu-art/thunderstorm/backend';
 import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
 import {BadInputErrorBody, ErrorKey_BadInput, PreDBObject} from '../shared/types';
 
@@ -517,7 +524,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @param query - The query to be executed for the deletion.
 	 * @param request - The request in order to possibly obtain more info.
 	 */
-	async delete(query: FirestoreQuery<DBType>, request?: ExpressRequest) {
+	async delete(query: FirestoreQuery<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest) {
 		return this.collection.delete(query);
 	}
 
@@ -532,8 +539,13 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * The DB document that was found.
 	 */
-	async queryUnique(where: Clause_Where<DBType>, request?: ExpressRequest) {
-		const dbItem = await this.collection.queryUnique({where});
+	async queryUnique(where: Clause_Where<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+		let dbItem;
+		if (transaction)
+			dbItem = await transaction.queryUnique(this.collection, {where});
+		else
+			dbItem = await this.collection.queryUnique({where});
+
 		if (!dbItem)
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique query: ${JSON.stringify(where)}`);
 
@@ -549,8 +561,11 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of an array of documents.
 	 */
-	async query(query: FirestoreQuery<DBType>, request?: ExpressRequest) {
-		return await this.collection.query(query);
+	async query(query: FirestoreQuery<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+		if (transaction)
+			return await transaction.query(this.collection, query);
+		else
+			return await this.collection.query(query);
 	}
 
 	/**
