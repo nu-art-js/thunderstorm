@@ -31,7 +31,8 @@ import {
 
 import {
 	FirebaseModule,
-	FirestoreCollection
+	FirestoreCollection,
+	FirestoreTransaction
 } from "@nu-art/firebase/backend";
 import {
 	DB_Account,
@@ -39,6 +40,7 @@ import {
 	HeaderKey_SessionId,
 	Request_CreateAccount,
 	Request_LoginAccount,
+	Request_UpsertAccount,
 	Response_Auth,
 	UI_Account
 } from "./_imports";
@@ -132,6 +134,20 @@ export class AccountsModule_Class
 		return session;
 	}
 
+	async upsert(request: Request_UpsertAccount) {
+		const account = await this.accounts.runInTransaction(async (transaction) => {
+			const existAccount = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
+			if (existAccount)
+				return this.changePassword(request.email, request.password, transaction);
+
+			return this.createAccount(request);
+		});
+
+		const session = await this.login(request);
+		await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
+		return session;
+	}
+
 	async addNewAccount(email: string, password?: string, password_check?: string): Promise<UI_Account> {
 		let account: DB_Account;
 		if (password && password_check) {
@@ -142,6 +158,22 @@ export class AccountsModule_Class
 			account = await this.createSAML(email);
 
 		return getUIAccount(account);
+	}
+
+	async changePassword(userEmail: string, newPassword: string, outsideTransaction: FirestoreTransaction) {
+		const email = userEmail.toLowerCase();
+		return this.accounts.runInTransaction(async (innerTransaction) => {
+			const transaction = outsideTransaction || innerTransaction;
+			const account = await transaction.queryUnique(this.accounts, {where: {email}});
+			if (!account)
+				throw new ApiException(422, "User with email does not exist");
+
+			if (!account.saltedPassword || !account.salt)
+				throw new ApiException(401, "Account login using SAML");
+
+			account.saltedPassword = hashPasswordWithSalt(account.salt, newPassword)
+			return transaction.upsert(this.accounts, account);
+		});
 	}
 
 	async createAccount(request: Request_CreateAccount) {
