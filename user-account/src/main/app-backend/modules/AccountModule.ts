@@ -171,7 +171,9 @@ export class AccountsModule_Class
 			if (!account.saltedPassword || !account.salt)
 				throw new ApiException(401, "Account login using SAML");
 
-			account.saltedPassword = hashPasswordWithSalt(account.salt, newPassword)
+			account.saltedPassword = hashPasswordWithSalt(account.salt, newPassword);
+			account._audit = auditBy(email, 'Changed password');
+
 			return transaction.upsert(this.accounts, account);
 		});
 	}
