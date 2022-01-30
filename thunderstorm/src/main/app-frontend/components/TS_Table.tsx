@@ -33,7 +33,7 @@ export type ActionsRenderer<R extends ObjectTS, A extends ObjectTS> = {
 	[K in keyof A]: ActionItemRenderer<R, K>
 };
 
-export type CellRenderer<R extends ObjectTS, K extends keyof R = keyof R, V extends R[K] = R[K]> = (cellValue: V, rowIndex: number, rowItem: R, columnKey: K) => React.ReactNode;
+export type CellRenderer<R extends ObjectTS, K extends keyof R = keyof R, V extends R[K] = R[K]> = (prop: K, item: R, index: number, value: V) => React.ReactNode;
 export type RowRenderer<R extends ObjectTS> = {
 	[K in keyof Partial<R>]: CellRenderer<R, K, R[K]>
 };
@@ -42,7 +42,7 @@ export type TableProps<R extends ObjectTS, A extends ObjectTS = never> = Stylabl
 	id: string,
 	header: (keyof R)[],
 	rows: R[],
-	headerRenderer: ((columnKey: keyof R) => React.ReactNode) | HeaderRenderer<R>,
+	headerRenderer?: ((columnKey: keyof R) => React.ReactNode) | HeaderRenderer<R>,
 	cellRenderer: CellRenderer<R, keyof R, R[keyof R]> | RowRenderer<R>
 	actions?: (keyof A)[],
 	actionHeaderRenderer?: ((columnKey: keyof A) => React.ReactNode) | HeaderRenderer<A>,
@@ -69,6 +69,9 @@ export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 	}
 
 	private renderTableHeader() {
+		if (!this.props.headerRenderer)
+			return;
+
 		let renderers: HeaderRenderer<R>;
 		if (typeof this.props.headerRenderer === 'object')
 			renderers = this.props.headerRenderer;
@@ -121,7 +124,7 @@ export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 			<tr key={`${this.props.id}-${rowIndex}`} {...(typeof this.props.tr === 'function' ? this.props.tr(row, rowIndex) : this.props.tr)}>
 				{this.props.header.map((header, columnIndex) => {
 					return <td key={`${this.props.id}-${columnIndex}`} {...(typeof this.props.td === 'function' ? this.props.td(row, rowIndex, header) : this.props.td)}>
-						{renderers[header](row[header], rowIndex, row, this.props.header[columnIndex])}
+						{renderers[header](this.props.header[columnIndex], row, rowIndex, row[header])}
 					</td>;
 				})}
 				{this.props.actions?.map((actionKey, index) => {

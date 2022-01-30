@@ -55,7 +55,7 @@ export abstract class FirebaseFunction<Config = any>
 		this.onFunctionReady = this.onFunctionReady.bind(this);
 	}
 
-	abstract getFunction(): HttpsFunction
+	abstract getFunction(): any
 
 	protected async handleCallback(callback: () => Promise<any>) {
 		if (this.isReady)
@@ -96,6 +96,11 @@ export class Firebase_ExpressFunction
 
 	constructor(_express: express.Express) {
 		this.express = _express;
+	}
+
+	setName(name: string) {
+		this.name = name;
+		return this;
 	}
 
 	static setConfig(config: RuntimeOptions) {

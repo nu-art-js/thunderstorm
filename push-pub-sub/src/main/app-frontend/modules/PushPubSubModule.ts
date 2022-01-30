@@ -206,6 +206,8 @@ export class PushPubSubModule_Class
 
 		this.logDebug(`Subscribing: ${JSON.stringify(body)}`);
 		this.debounce(() => {
+			this.logDebug(`debounce: ${JSON.stringify(body)}`);
+
 			return XhrHttpModule
 				.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
 				.setRelativeUrl('/v1/push/register')

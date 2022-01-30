@@ -31,18 +31,18 @@ import {
 	ServerErrorSeverity,
 	ThisShouldNotHappenException,
 	TypedMap
-} from "@nu-art/ts-common";
-import {FileWrapper, FirebaseModule, FirebaseType_Metadata, StorageWrapper} from "@nu-art/firebase/backend";
-import {BaseUploaderFile, DB_Asset, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl,} from "../../shared/types";
-import {_assetValidator, AssetsTempModuleBE} from "./AssetsTempModuleBE";
-import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
-import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from "@nu-art/thunderstorm/backend";
-import {fromBuffer} from "file-type";
-import {FileExtension, MimeType} from "file-type/core";
-import {Clause_Where, FirestoreQuery} from "@nu-art/firebase";
-import {BaseDB_ApiGenerator, DBApiConfig} from "@nu-art/db-api-generator/backend";
-import {OnAssetUploaded} from "./AssetBucketListener";
-import {PreDBObject} from "@nu-art/db-api-generator";
+} from '@nu-art/ts-common';
+import {FileWrapper, FirebaseModule, FirebaseType_Metadata, FirestoreTransaction, StorageWrapper} from '@nu-art/firebase/backend';
+import {BaseUploaderFile, DB_Asset, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl,} from '../../shared/types';
+import {_assetValidator, AssetsTempModuleBE} from './AssetsTempModuleBE';
+import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
+import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {fromBuffer} from 'file-type';
+import {FileExtension, MimeType} from 'file-type/core';
+import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
+import {BaseDB_ApiGenerator, DBApiConfig} from '@nu-art/db-api-generator/backend';
+import {OnAssetUploaded} from './AssetBucketListener';
+import {PreDBObject} from '@nu-art/db-api-generator';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -95,8 +95,8 @@ export class AssetsModuleBE_Class
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {
-		super("assets", _assetValidator, "assets");
-		this.setDefaultConfig({...this.config, path: "assets"});
+		super('assets', _assetValidator, 'assets');
+		this.setDefaultConfig({...this.config, path: 'assets'});
 	}
 
 	private storage!: StorageWrapper;
@@ -106,30 +106,30 @@ export class AssetsModuleBE_Class
 
 	init() {
 		super.init();
-		this.storage = FirebaseModule.createAdminSession("file-uploader").getStorage();
+		this.storage = FirebaseModule.createAdminSession('file-uploader').getStorage();
 	}
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
 		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, chunk => AssetsModuleBE.query({where: {_id: {$in: chunk}}}));
-		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)))
-		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()))
+		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)));
+		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()));
 
-		return assetIds.map((id, index) => ({asset: assetsToSync[index], content: assetContent[index]}))
+		return assetIds.map((id, index) => ({asset: assetsToSync[index], content: assetContent[index]}));
 	}
 
 	registerTypeValidator(mimeType: string, validator: (file: FileWrapper, doc: DB_Asset) => Promise<void>) {
 
 	}
 
-	async queryUnique(where: Clause_Where<DB_Asset>, request?: ExpressRequest): Promise<DB_Asset> {
-		const asset = await super.queryUnique(where, request);
+	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DB_Asset> {
+		const asset = await super.queryUnique(where, undefined, request);
 		const signedUrl = (asset.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset.signedUrl : undefined;
 		if (!signedUrl) {
 			const url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSecuredUrl(asset.mimeType, Day);
 			asset.signedUrl = {
 				url: url.securedUrl,
 				validUntil: currentTimeMillis() + Day - Minute
-			}
+			};
 		}
 		return asset;
 	}
@@ -181,7 +181,7 @@ export class AssetsModuleBE_Class
 				_id,
 				feId: _file.feId,
 				name: _file.name,
-				ext: _file.name.substring(_file.name.toLowerCase().lastIndexOf(".") + 1),
+				ext: _file.name.substring(_file.name.toLowerCase().lastIndexOf('.') + 1),
 				mimeType: _file.mimeType,
 				key,
 				path,
@@ -251,9 +251,9 @@ export class AssetsModuleBE_Class
 				this.logWarning(`renaming the file extension name: ${tempMeta.ext} => ${fileType.ext}`);
 				tempMeta.ext = fileType.ext;
 			}
-		} catch (e:any) {
+		} catch (e: any) {
 			//TODO delete the file and the temp doc
-			this.logError(`Error while processing asset: ${tempMeta.name}`, e)
+			this.logError(`Error while processing asset: ${tempMeta.name}`, e);
 			return this.notifyFrontend(FileStatus.ErrorWhileProcessing, tempMeta);
 		}
 
@@ -261,7 +261,7 @@ export class AssetsModuleBE_Class
 			try {
 				// need to handle the response status!
 				await file.makePublic();
-			} catch (e:any) {
+			} catch (e: any) {
 				return this.notifyFrontend(FileStatus.ErrorMakingPublic, tempMeta);
 			}
 		}

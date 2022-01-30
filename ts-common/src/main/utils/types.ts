@@ -37,6 +37,7 @@ export type Constructor<T> = new (...args: any) => T
 export type ArrayType<T extends any[]> = T extends (infer I)[] ? I : never;
 
 export type PartialProperties<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+export type KeyValue = { key: string, value: string };
 
 export type Identity = { id: string };
 
