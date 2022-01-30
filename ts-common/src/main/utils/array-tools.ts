@@ -63,6 +63,10 @@ export async function filterAsync<T>(arr: T[], filter: (parameter: T) => Promise
 	return arr.filter((item, index) => boolArray[index]);
 }
 
+export function findDuplicates<T>(array1: T[], array2: T[]): T[] {
+	return array1.filter(val => array2.indexOf(val) !== -1);
+}
+
 export function filterDuplicates<T>(array: T[]): T[] {
 	return Array.from(new Set(array));
 }
@@ -82,7 +86,7 @@ export function arrayToMap<T>(array: T[], getKey: (item: T, index: number) => st
 // }
 
 
-export function _sortArray<T>(array: T[], map: (item: T) => any, invert = false) {
+export function _sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
 	const compareFn = (a: T, b: T) => {
 		const _a = map(a);
 		const _b = map(b);
@@ -92,8 +96,8 @@ export function _sortArray<T>(array: T[], map: (item: T) => any, invert = false)
 	return array.sort(compareFn);
 }
 
-export function sortArray<T>(array: T[], map: (item: T) => any, invert = false) {
-	console.log("sortArray is deprecated and inverted... please use _sortArray");
+export function sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
+	console.log('sortArray is deprecated and inverted... please use _sortArray');
 	const compareFn = (a: T, b: T) => {
 		const _a = map(a);
 		const _b = map(b);

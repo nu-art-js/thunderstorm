@@ -84,7 +84,7 @@ export type FirestoreQueryImpl<T extends ObjectTS> = {
 	select?: Clause_Select<T>
 	orderBy?: Clause_OrderBy<T>
 	where?: Clause_Where<T>
-	limit?: number
+	limit?: number | { page?: number, itemsCount: number }
 }
 
 export type FirebaseProjectCollections = { projectId: string, collections: string[] };

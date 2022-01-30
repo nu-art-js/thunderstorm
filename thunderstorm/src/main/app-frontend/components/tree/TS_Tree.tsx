@@ -203,7 +203,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		return TS_Tree.resolveItemFromPath(this.state.adapter.data, path);
 	}
 
-	public static resolveItemFromPath(data: any, path: string) {
+	public static resolveItemFromPath(data: any, path?: string) {
+		if (!path)
+			return;
+
 		let item: any = data;
 		const hierarchy: string[] = path.split('/');
 		hierarchy.shift();

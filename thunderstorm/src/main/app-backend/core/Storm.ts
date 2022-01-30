@@ -67,7 +67,11 @@ export class Storm
 	}
 
 	startServer(onStarted?: () => Promise<void>) {
-		const modulesAsFunction: FirebaseFunction[] = this.modules.filter((module: Module): module is FirebaseFunction => module instanceof FirebaseFunction);
+		const modulesAsFunction: FirebaseFunction[] = this.modules.filter((module: Module): module is FirebaseFunction => {
+			const b = module instanceof FirebaseFunction;
+			// console.log(`${module.getName()} function ${b}`)
+			return b;
+		});
 
 		this.functions = [new Firebase_ExpressFunction(HttpServer.express), ...modulesAsFunction];
 

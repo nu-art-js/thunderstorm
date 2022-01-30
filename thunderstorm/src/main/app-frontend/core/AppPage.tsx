@@ -41,7 +41,6 @@ export abstract class AppPage<P extends {} = {}, S extends {} = {}>
 		this.componentDidMount = () => {
 			_componentDidMount?.();
 
-			this.logDebug(`Mounting page: ${this.pageTitle}`);
 			this.prevTitle = document.title;
 			this.updateTitle();
 		};
@@ -61,9 +60,12 @@ export abstract class AppPage<P extends {} = {}, S extends {} = {}>
 	}
 
 
-	private updateTitle() {
-		document.title = typeof this.pageTitle === 'function' ? this.pageTitle() : this.pageTitle;
+	protected updateTitle = () => {
+		const newTitle = this.resolveTitle();
+		document.title = newTitle;
+		this.logDebug(`Mounting page: ${newTitle}`);
 		dispatch_onPageTitleChanged.dispatchUI([document.title]);
-	}
+	};
 
+	private resolveTitle = () => typeof this.pageTitle === 'function' ? this.pageTitle() : this.pageTitle;
 }

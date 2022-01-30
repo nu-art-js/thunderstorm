@@ -74,7 +74,6 @@ export class FieldEditor
 		if (typeof this.props.labelProps === 'function')
 			return this.props.labelProps(label);
 
-
 		return <div  {...this.props.labelProps}>{label}</div>;
 	};
 

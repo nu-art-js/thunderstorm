@@ -80,7 +80,15 @@ export class FirestoreInterface {
 			}, myQuery);
 
 		if (query && query.limit)
-			myQuery = myQuery.limit(query.limit);
+			if (typeof query.limit === 'number')
+				myQuery = myQuery.limit(query.limit);
+			else {
+				const page = query.limit.page || 0;
+				if (page > 0)
+					myQuery.startAt(query.limit.itemsCount * page);
+
+				myQuery.limit(query.limit.itemsCount);
+			}
 
 		return myQuery as Query;
 	}

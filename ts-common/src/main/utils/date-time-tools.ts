@@ -16,11 +16,8 @@
  * limitations under the License.
  */
 
-import * as moment from "moment";
-import {
-	AuditBy,
-	Timestamp
-} from "./types";
+import * as moment from 'moment';
+import {AuditBy, Timestamp} from './types';
 
 export const Second = 1000;
 export const Minute = Second * 60;
@@ -28,8 +25,8 @@ export const Hour = Minute * 60;
 export const Day = Hour * 24;
 export const Week = Day * 7;
 
-export const Format_HHmmss_DDMMYYYY = "HH:mm:ss_DD-MM-YYYY";
-export const Format_YYYYMMDD_HHmmss = "YYYY-MM-DD_HH:mm:ss";
+export const Format_HHmmss_DDMMYYYY = 'HH:mm:ss_DD-MM-YYYY';
+export const Format_YYYYMMDD_HHmmss = 'YYYY-MM-DD_HH:mm:ss';
 
 export type TimerHandler = (...args: any[]) => void;
 
@@ -96,11 +93,9 @@ export function createReadableTimestampObject(pattern: string = Format_HHmmss_DD
 	return timeObj;
 }
 
-export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillis(), timezone?: string) {
+export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillis(), timezone: string = Intl.DateTimeFormat().resolvedOptions().timeZone) {
 	const m = moment.utc(timestamp);
-	if (timezone) {
-		m.utcOffset(timezone);
-	}
+	m.utcOffset(-new Date().getTimezoneOffset());
 	return m.format(pattern);
 }
 
