@@ -49,6 +49,8 @@ export type TypedMap<ValueType> = { [s: string]: ValueType };
 
 export type TypedMapValue<T extends ObjectTS, ValueType> = { [P in keyof T]: ValueType };
 
+export type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>
+
 export type DB_BaseObject = {
 	_id: string;
 }

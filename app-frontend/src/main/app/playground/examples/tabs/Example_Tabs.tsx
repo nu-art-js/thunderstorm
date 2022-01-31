@@ -1,11 +1,8 @@
-import * as React from "react";
-import {
-	GenericTabs
-} from "@nu-art/thunderstorm/app-frontend/components/GenericTabs";
+import * as React from 'react';
 
 export class Example_Tabs extends React.Component<{}> {
 
-	render(){
-		return <GenericTabs/>
+	render() {
+		return '';
 	}
 }
