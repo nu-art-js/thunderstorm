@@ -202,6 +202,11 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		if (!this.xhr.response)
 			throw new BadImplementationException(`xhr didn't return yet`);
 
+		// Chrome bug, if the response header is not present then it throws an error (not really problematic but just annoying)
+		// https://trackjs.com/blog/refused-unsafe-header/
+		if (this.xhr.getAllResponseHeaders().indexOf(headerKey) < 0)
+			return undefined;
+
 		const header = this.xhr.getResponseHeader(headerKey);
 		if (!header)
 			return undefined;
