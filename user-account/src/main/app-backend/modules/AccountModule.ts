@@ -140,7 +140,7 @@ export class AccountsModule_Class
 			if (existAccount)
 				return this.changePassword(request.email, request.password, transaction);
 
-			return this.createAccount(request);
+			return this.createImpl(request, transaction);
 		});
 
 		const session = await this.login(request);
@@ -153,8 +153,7 @@ export class AccountsModule_Class
 		if (password && password_check) {
 			account = await this.createAccount({password, password_check, email});
 			await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
-		}
-		else
+		} else
 			account = await this.createSAML(email);
 
 		return getUIAccount(account);
@@ -182,22 +181,26 @@ export class AccountsModule_Class
 		request.email = request.email.toLowerCase();
 		validate(request.email, validateEmail);
 
-		return this.accounts.runInTransaction(async (transaction) => {
-			let account = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
+		return this.accounts.runInTransaction(async (transaction: FirestoreTransaction) => {
+			const account = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
 			if (account)
 				throw new ApiException(422, "User with email already exists");
 
-			const salt = generateHex(32);
-			account = {
-				_id: generateHex(32),
-				_audit: auditBy(request.email),
-				email: request.email,
-				salt,
-				saltedPassword: hashPasswordWithSalt(salt, request.password),
-			};
-
-			return transaction.insert(this.accounts, account);
+			return this.createImpl(request, transaction)
 		});
+	}
+
+	private createImpl(request: Request_CreateAccount, transaction: FirestoreTransaction) {
+		const salt = generateHex(32);
+		const account = {
+			_id: generateHex(32),
+			_audit: auditBy(request.email),
+			email: request.email,
+			salt,
+			saltedPassword: hashPasswordWithSalt(salt, request.password)
+		};
+
+		return transaction.insert(this.accounts, account);
 	}
 
 	async login(request: Request_LoginAccount): Promise<Response_Auth> {
@@ -253,7 +256,7 @@ export class AccountsModule_Class
 			return transaction.upsert(this.accounts, _account);
 		});
 
-		if(dispatchEvent)
+		if (dispatchEvent)
 			await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(toRet)]);
 
 		return toRet;
