@@ -16,10 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ServerApi} from '@nu-art/thunderstorm/backend';
 import {DB_Asset} from '../..';
 import {Minute, tsValidateAudit, tsValidateExists, tsValidateNumber, tsValidateRegexp, tsValidateTimestamp, TypeValidator} from '@nu-art/ts-common';
-import {ApisParams, BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
+import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
 
 export const validateName = tsValidateRegexp(/^.{3,}$/);
 
@@ -50,10 +49,6 @@ export class AssetsTempModuleBE_Class
 		super('assets-temp', AssetsTempModuleBE_Class.__validator, 'assets-temp');
 	}
 
-	_apis(options?: ApisParams): (ServerApi<any> | undefined)[] {
-
-		return [];
-	}
 }
 
 export const AssetsTempModuleBE = new AssetsTempModuleBE_Class();

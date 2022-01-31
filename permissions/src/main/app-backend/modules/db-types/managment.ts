@@ -69,15 +69,15 @@ export class ProjectDB_Class
 		}
 	}
 
-	apiPatch(pathPart?: string): ServerApi<any> | undefined {
+	apiPatch(): ServerApi<any> | undefined {
 		return;
 	}
 
-	apiUpsert(pathPart?: string): ServerApi<any> | undefined {
+	apiUpsert(): ServerApi<any> | undefined {
 		return;
 	}
 
-	apiDelete(pathPart?: string): ServerApi<any> | undefined {
+	apiDelete(): ServerApi<any> | undefined {
 		return;
 	}
 }
@@ -271,7 +271,7 @@ export class ApiDB_Class
 		});
 	}
 
-	apiUpsert(pathPart?: string): ServerApi<any> | undefined {
+	apiUpsert(): ServerApi<any> | undefined {
 		return;
 	}
 }
