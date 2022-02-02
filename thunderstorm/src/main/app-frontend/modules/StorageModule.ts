@@ -96,6 +96,15 @@ export class StorageModule_Class
 		}
 		return toRet;
 	}
+
+	public deleteAll<T>(query: RegExp) {
+		for (let i = 0; i < localStorage.length; i++) {
+			const key = localStorage.key(i);
+			if (key?.match(query)) {
+				localStorage.removeItem(key)
+			}
+		}
+	}
 }
 
 export const StorageModule = new StorageModule_Class();
