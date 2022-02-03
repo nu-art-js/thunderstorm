@@ -7,7 +7,7 @@ import {createReadStream, promises as fs} from 'fs';
 import {ObjectTS, StringMap} from '../utils/types';
 import {Module} from '../core/module';
 import {Readable} from 'stream';
-import csvParser = require("csv-parser/index");
+import csvParser = require('csv-parser/index');
 
 
 type Config = {
@@ -60,16 +60,16 @@ class CSVModule_Class
 
 	async saveToFile<T>(outputFile: string, items: T[], columnsToProps?: WritePropsMap<T>) {
 		const csv = this.csvExporter.generateCsv(items, true);
-		return fs.writeFile(outputFile, csv, {encoding: "utf8"});
+		return fs.writeFile(outputFile, csv, {encoding: 'utf8'});
 	}
 
 	async readCsvFromFile<T extends Partial<StringMap>>(inputFile: string, columnsToProps?: ReadPropsMap<T>): Promise<T[]> {
-		const stream = createReadStream(inputFile, {encoding: "utf8"});
+		const stream = createReadStream(inputFile, {encoding: 'utf8'});
 		return this.readCsvFromStream(stream, columnsToProps);
 	}
 
 	async readCsvFromBuffer<T extends Partial<StringMap>>(buffer: Buffer, columnsToProps?: ReadPropsMap<T>): Promise<T[]> {
-		const stream: Readable = Readable.from(buffer.toString("utf-8"), {encoding: "utf8"});
+		const stream: Readable = Readable.from(buffer.toString('utf-8'), {encoding: 'utf8'});
 		return this.readCsvFromStream(stream, columnsToProps);
 	}
 
@@ -80,12 +80,12 @@ class CSVModule_Class
 			stream
 				.pipe(csvParser(this.createReadParserOptions(columnsToProps)))
 				.on('data', (instance) => {
-					delete instance["undefined"]
+					delete instance['undefined'];
 					results.push(instance);
 				})
 				.on('error', (err) => reject(err))
 				.on('end', () => resolve(results));
-		})
+		});
 	}
 
 	private createReadParserOptions<T>(columnsToProps?: ReadPropsMap<T>) {
