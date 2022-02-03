@@ -51,6 +51,7 @@ type StaticProps = {
 export type Props_DropDown<ItemType> = StaticProps & {
 	adapter: Adapter
 	placeholder?: string,
+	inputValue?: string,
 
 	onNoMatchingSelectionForString?: (selected?: string) => void
 	onSelected: (selected: ItemType) => void
@@ -189,6 +190,7 @@ export class TS_DropDown<ItemType>
 
 		return <TS_FilterInput<ItemType>
 			key={this.state.id}
+			initialFilterText={this.props.inputValue}
 			placeholder={this.props.placeholder}
 			id={`${this.props.id}-input`}
 			mapper={this.props.filterMapper}
