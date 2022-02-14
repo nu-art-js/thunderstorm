@@ -21,7 +21,7 @@ import {FirestoreCollection,} from './FirestoreCollection';
 import {BadImplementationException, merge, ObjectTS, Subset} from '@nu-art/ts-common';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreInterface} from './FirestoreInterface';
-import { Transaction } from 'firebase-admin/firestore';
+import {Transaction} from 'firebase-admin/firestore';
 
 export class FirestoreTransaction {
 	private transaction: Transaction;
@@ -65,7 +65,7 @@ export class FirestoreTransaction {
 
 	async insert<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type) {
 		const doc = collection.createDocumentReference();
-		await this.transaction.set(doc, instance);
+		await this.transaction.create(doc, instance);
 		return instance;
 	}
 

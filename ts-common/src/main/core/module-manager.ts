@@ -19,14 +19,11 @@
 /**
  * Created by tacb0ss on 08/07/2018.
  */
-import {Module} from "./module";
-import {Dispatcher} from "./dispatcher";
-import {BadImplementationException} from "./exceptions";
-import {Logger} from "./logger/Logger";
-import {
-	addItemToArray,
-	filterDuplicates
-} from "../utils/array-tools";
+import {Module} from './module';
+import {Dispatcher} from './dispatcher';
+import {BadImplementationException} from './exceptions';
+import {Logger} from './logger/Logger';
+import {addItemToArray, filterDuplicates} from '../utils/array-tools';
 
 const _modules: Module[] = [];
 
@@ -45,7 +42,7 @@ export class ModuleManager
 	protected constructor() {
 		super();
 		if (ModuleManager.instance)
-			throw new BadImplementationException("Already have one instance of ModuleManager");
+			throw new BadImplementationException('Already have one instance of ModuleManager');
 
 		ModuleManager.instance = this;
 		Dispatcher.modulesResolver = moduleResolver;
@@ -65,7 +62,7 @@ export class ModuleManager
 			if (!carry.includes(module))
 				addItemToArray(carry, module);
 
-			return carry
+			return carry;
 		}, this.modules);
 		return this;
 	}
@@ -82,12 +79,12 @@ export class ModuleManager
 			module.setManager(this);
 
 			if (this.config)
-			// @ts-ignore
+				// @ts-ignore
 				module.setConfig(this.config[module.getName()]);
 		});
 
 		this.modules.forEach(module => {
-			this.logInfo(`---------  ${module.getName()}  ---------`);
+			this.logDebug(`---------  ${module.getName()}  ---------`);
 			// @ts-ignore
 			module.init();
 			// @ts-ignore

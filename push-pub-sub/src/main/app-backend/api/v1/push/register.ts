@@ -1,27 +1,21 @@
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 
 
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {PushPubSubModule} from "../../../modules/PushPubSubModule";
-import {
-	PubSubRegisterClient,
-	Request_PushRegister
-} from "../../../../index";
+import {HttpMethod} from '@nu-art/thunderstorm';
+import {PushPubSubModule} from '../../../modules/PushPubSubModule';
+import {PubSubRegisterClient, Request_PushRegister} from '../../../../index';
 
 class ServerApi_PushRegister
 	extends ServerApi<PubSubRegisterClient> {
 
 	constructor() {
-		super(HttpMethod.POST, "register");
+		super(HttpMethod.POST, 'register');
+		this.dontPrintResponse();
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_PushRegister) {
 		// const user = await KasperoProxy.validateSession(request);
-		return await PushPubSubModule.register(body, request);
+		await PushPubSubModule.register(body, request);
 	}
 }
 

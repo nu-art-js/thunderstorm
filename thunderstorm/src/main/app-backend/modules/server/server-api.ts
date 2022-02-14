@@ -62,6 +62,8 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>
 	public static isDebug: boolean;
 
 	printResponse: boolean = true;
+	printRequest: boolean = true;
+
 	headersToLog: string[] = [];
 
 	readonly method: HttpMethod;
@@ -114,6 +116,11 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>
 		this.printResponse = false;
 	}
 
+	dontPrintRequest() {
+		// @ts-ignore
+		this.printRequest = false;
+	}
+
 	setMaxResponsePrintSize(printResponseMaxSizeBytes: number) {
 		// @ts-ignore
 		this.printResponse = printResponseMaxSizeBytes > -1;
@@ -149,9 +156,15 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>
 
 		const body: B | string | undefined = req.body;
 		if (body && ((typeof body === 'object')))
-			this.logVerbose(`-- Body (Object): `, body as unknown as object);
+			if (!this.printRequest)
+				this.logVerbose(`-- Body (Object):  - Not Printing --`);
+			else
+				this.logVerbose(`-- Body (Object): `, body as unknown as object);
 		else if (body && (body as string).length)
-			this.logVerbose(`-- Body (String): `, body as unknown as string);
+			if (!this.printRequest)
+				this.logVerbose(`-- Body (String):  - Not Printing --`);
+			else
+				this.logVerbose(`-- Body (String): `, body as unknown as string);
 		else
 			this.logVerbose(`-- No Body`);
 
@@ -344,7 +357,10 @@ export class ApiResponse {
 		if (!headers)
 			return this.api.logVerbose(` -- No response headers`);
 
-		this.api.logVerbose(` -- Response with headers: `, headers);
+		if (!this.api.printResponse)
+			return this.api.logVerbose(` -- Response (Headers): -- Not Printing --`);
+
+		this.api.logVerbose(` -- Response (Headers): `, headers);
 	}
 
 	private printResponse(response?: string | object) {

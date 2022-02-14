@@ -20,7 +20,7 @@
  */
 
 import {Module, ObjectTS} from '@nu-art/ts-common';
-import {DB, ObjectStore, openDb, UpgradeDB} from 'idb';
+import {Cursor, DB, ObjectStore, openDb, UpgradeDB} from 'idb';
 
 type Config = {}
 
@@ -34,6 +34,12 @@ export type DBConfig<T extends ObjectTS, Ks extends keyof T> = {
 };
 
 export type IndexKeys<T extends ObjectTS, Ks extends keyof T> = { [K in Ks]: T[K] };
+
+type IndexDb_Query = {
+	query?: string | number | string[] | number[],
+	indexKey?: string,
+	limit?: number
+};
 
 export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 	private db!: DB;
@@ -81,12 +87,43 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 		return (await this.store()).get(map);
 	}
 
-	public async query(query?: string | number | string[] | number[], indexKey?: string): Promise<T[] | undefined> {
+	public async query(query: IndexDb_Query): Promise<T[] | undefined> {
 		const store = await this.store();
-		if (indexKey)
-			return store.index(indexKey).getAll(query);
+		if (query.indexKey)
+			return store.index(query.indexKey).getAll(query.query, query.limit);
 
-		return store.getAll(query);
+		return store.getAll(query.query, query.limit);
+	}
+
+	public async queryFilter(filter: (item: T) => boolean, query?: IndexDb_Query): Promise<T[]> {
+		const store = await this.store();
+		return this.filterCursor(store, filter, query);
+	}
+
+	private filterCursor(store: ObjectStore<T, Ks>, filter: (item: T) => boolean, query?: IndexDb_Query) {
+		const limit = query?.limit || 0;
+		const matches: T[] = [];
+
+		return new Promise<T[]>((resolve, reject) => {
+			const callback = (cursor?: Cursor<T, any>) => {
+				if (!cursor)
+					return resolve(matches);
+
+				console.log(cursor.value);
+				if (filter(cursor.value))
+					matches.push(cursor.value);
+
+				if (limit > 0 && matches.length >= limit)
+					return resolve(matches);
+
+				cursor.continue();
+			};
+
+			if (query?.indexKey)
+				store.index(query.indexKey).iterateCursor(query.query|| null, callback);
+			else
+				store.iterateCursor(query?.query || null, callback);
+		});
 	}
 
 	public async insert(value: T, _store?: ObjectStore<T, Ks>) {

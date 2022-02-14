@@ -49,6 +49,7 @@ export * from './app-frontend/core/BaseComponentV2';
 export * from './app-frontend/core/UIComponent';
 export * from './app-frontend/core/IndexedDB';
 export * from './app-frontend/core/AppPage';
+export * from './app-frontend/core/AppPageV2';
 export * from './app-frontend/core/AppWrapper';
 export * from './app-frontend/core/ErrorBoundary';
 export * from './app-frontend/components/input/TS_BaseInput';
