@@ -19,12 +19,17 @@
  * limitations under the License.
  */
 
-import {dispatch_onPageTitleChanged} from './AppPageV2';
-import {BaseComponent} from './BaseComponent';
+import {BaseComponentV2} from './BaseComponentV2';
+import {ThunderDispatcher} from './thunder-dispatcher';
 
-// Deprecated use AppPageV2
-export abstract class AppPage<P extends {} = {}, S extends {} = {}>
-	extends BaseComponent<P, S> {
+export interface OnPageTitleChangedListener {
+	__onPageTitleChanged(title: string): void;
+}
+
+export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChangedListener, '__onPageTitleChanged'>('__onPageTitleChanged');
+
+export abstract class AppPageV2<P extends {} = {}, S extends {} = {}>
+	extends BaseComponentV2<P, S> {
 
 	private pageTitle: string | (() => string);
 	private prevTitle!: string;

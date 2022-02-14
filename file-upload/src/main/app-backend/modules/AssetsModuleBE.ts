@@ -267,7 +267,7 @@ export class AssetsModuleBE_Class
 		}
 
 		const finalDbAsset = await this.runInTransaction(async (transaction): Promise<DB_Asset> => {
-			const duplicatedAssets = await this.query({where: {md5Hash: tempMeta.md5Hash}});
+			const duplicatedAssets = await this.query({where: {md5Hash: tempMeta.md5Hash}}, transaction);
 			if (duplicatedAssets.length && duplicatedAssets[0]) {
 				this.logInfo(`${tempMeta.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
 				return {...duplicatedAssets[0], feId: tempMeta.feId};
@@ -275,7 +275,7 @@ export class AssetsModuleBE_Class
 
 			const upsertWrite = await this.upsert_Read(tempMeta, transaction);
 			await AssetsTempModuleBE.deleteUnique(tempMeta._id, transaction);
-			return upsertWrite();
+			return await upsertWrite();
 		});
 
 		return this.notifyFrontend(FileStatus.Completed, finalDbAsset);
@@ -287,6 +287,7 @@ export class AssetsModuleBE_Class
 			await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Error, this, message]);
 		}
 
+		this.logDebug(`notify FE about asset ${feId}: ${status}`);
 		return PushPubSubModule.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: feId || asset.feId}, {status, asset});
 	};
 
