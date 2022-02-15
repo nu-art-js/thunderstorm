@@ -94,7 +94,10 @@ export class Storm
 	}
 
 	private async startServerImpl(onStarted?: () => Promise<void>) {
+		const label = 'Resolving Config';
+		console.time(label)
 		await this.resolveConfig();
+		console.timeEnd(label);
 
 		this.init();
 

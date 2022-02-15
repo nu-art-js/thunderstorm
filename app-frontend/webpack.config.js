@@ -112,6 +112,13 @@ module.exports = (env, argv) => {
 						}
 					}
 				},
+				// {
+				// 	test: /sw\/index.ts$/,
+				// 	include: [swFolder],
+				// 	use: {
+				// 		loader: "ts-loader",
+				// 	}
+				// },
 				{
 					test: /sw\/index.ts$/,
 					include: [swFolder],

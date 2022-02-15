@@ -28,7 +28,8 @@ import {
 } from "@nu-art/ts-common";
 import {
 	WebAPICallResult,
-	WebClient
+	WebClient,
+	WebClientOptions
 } from '@slack/web-api';
 
 interface ChatPostMessageResult
@@ -44,6 +45,7 @@ type ConfigType = {
 	token: string
 	defaultChannel: string
 	throttlingTime?: number
+	slackConfig?: Partial<WebClientOptions>
 };
 
 type _SlackMessage = {
@@ -71,7 +73,12 @@ export class SlackModule_Class
 			return
 			// throw new ImplementationMissingException('Missing config token for SlackModule. Please add it');
 
-		this.web = new WebClient(this.config.token);
+		this.web = new WebClient(
+			this.config.token,
+			{
+				rejectRateLimitedCalls: true,
+				...this.config.slackConfig
+			});
 	}
 
 	public async postMessage(slackMessage: SlackMessage) {
