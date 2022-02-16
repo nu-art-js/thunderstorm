@@ -1,84 +1,99 @@
-/*
- * Thunderstorm is a full web app framework!
- *
- * Typescript & Express backend infrastructure that natively runs on firebase function
- * Typescript & React frontend infrastructure
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+import {_keys, Module, TypedMap} from '@nu-art/ts-common';
 
-/**
- * Created by tacb0ss on 27/07/2018.
- */
-import {Locale, LocaleDef, StringKey} from './types';
-import {ImplementationMissingException, Module} from '@nu-art/ts-common';
-import {format} from 'util';
-import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {StorageKey} from '../StorageModule';
-
-type Config = {
-	defaultLocale: Locale,
-	locales: LocaleDef[],
-};
-
-export interface LanguageChangeListener {
-	__onLanguageChanged(): void;
+export  type Language = {
+	longName?: string
+	shortName: string
+	shortLocale: string
+	longLocale?: string
+	rtl?: boolean
+}
+type Config<O extends TypedMap<string | undefined> = TypedMap<string | undefined>, T extends { [K in keyof O]-?: O[K] } = { [K in keyof O]-?: O[K] }> = {
+	languages: {
+		[k: string]: {
+			language: Language
+			texts: T
+		}
+	}
+	defaultLocal: string
 }
 
-const dispatch_onLanguageChanged = new ThunderDispatcher<LanguageChangeListener, '__onLanguageChanged'>('__onLanguageChanged');
+export class LocaleModule_Class<O extends TypedMap<string | undefined> = TypedMap<string | undefined>, T extends { [K in keyof O]-?: O[K] } = { [K in keyof O]-?: O[K] }>
+	extends Module<Config<O, T>> {
 
-export class LocaleModule_Class
-	extends Module<Config> {
+	private defaultLocale!: T;
+	private activeLocaleTexts!: T;
+	private activeLocale!: string;
 
-	private activeLocale!: LocaleDef;
-	private defaultLocale!: LocaleDef;
-	private selectedLanguage: StorageKey<string> = new StorageKey<string>('locale--selected-language');
+	constructor() {
+		super();
+	}
 
 	protected init() {
-		const defaultLocale = this.selectedLanguage.get() || this.config.defaultLocale;
-		if (!defaultLocale)
-			throw new ImplementationMissingException('MUST set defaultLocale in the config data');
-
-		this.defaultLocale = this.setLanguage(defaultLocale);
+		this.defaultLocale = this.config.languages[this.config.defaultLocal].texts;
+		this.activeLocaleTexts = this.defaultLocale;
+		this.setActiveLocale(this.config.defaultLocal);
 	}
 
-	public setLanguage(locale: Locale) {
-		const localeDef = this.config.locales.find(_locale => _locale.locale === locale);
-		if (!localeDef)
-			throw new ImplementationMissingException(`Unsupported language: ${locale}`);
+	setActiveLocale(locale: string) {
+		const localeTexts = this.config.languages[locale].texts;
+		if (!localeTexts)
+			return;
 
-		this.activeLocale = localeDef;
-		dispatch_onLanguageChanged.dispatchUI([]);
-		this.selectedLanguage.set(localeDef.locale);
-		return localeDef;
+		this.activeLocale = locale;
+		this.setActiveLocaleImpl(localeTexts);
 	}
 
-	public getAvailableLanguages(): LocaleDef[] {
-		return this.config.locales;
+	getActiveLocale() {
+		return this.activeLocale;
 	}
 
-	public get(key: StringKey, ...params: any[]) {
-		let text = this.activeLocale.texts[key];
+	private setActiveLocaleImpl(localeStrings: T) {
+		this.activeLocaleTexts = localeStrings;
 
-		if (!text)
-			text = this.defaultLocale.texts[key];
+	}
 
-		if (!text)
-			return key;
+	public stringify(key: keyof T, previousKeys: (keyof T)[] = []) {
+		return (...params: (string | number)[]) => {
+			let text = this.activeLocaleTexts[key];
 
-		return format(text, ...params);
+			if (!text)
+				text = this.defaultLocale[key];
+
+			if (!text)
+				return key;
+
+			return params.reduce((_toRet: string, param, index) => {
+				let toRet = _toRet;
+				const refs = toRet.match(/@\{(.*?)\}/g);
+				if (refs) {
+					toRet = refs.reduce((previousValue: string, stringKeyRef: string) => {
+						const stringKey = stringKeyRef.match(/@\{(.*?)\}/)?.[1];
+						const nested = this.stringify(stringKey as keyof T, [...previousKeys, key])();
+						return previousValue.replace(stringKeyRef, nested as string);
+					}, _toRet);
+				}
+				return toRet.replace(`\${${index}}`, `${param}`);
+			}, text as string);
+		};
+	}
+
+	getLanguage(locale: string): (Language | undefined) {
+		return this.config.languages[locale]?.language;
+
+	}
+
+	getActiveLanguage() {
+		return this.config.languages[this.activeLocale]?.language;
+	}
+
+	getAllLanguages() {
+		return _keys(this.config.languages)
+			.filter(key => Object.keys(this.config.languages[key].texts).length > 0)
+			.map(key => this.config.languages[key].language);
+	}
+
+	convertNumber(param: any, locale: string) {
+		return undefined;
 	}
 }
 

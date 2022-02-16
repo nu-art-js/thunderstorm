@@ -29,7 +29,6 @@ export * from './app-frontend/modules/dialog/DialogModule';
 export * from './app-frontend/modules/toaster/ToasterModule';
 export * from './app-frontend/modules/tooltip/TooltipModule';
 
-export * from './app-frontend/modules/locale/types';
 export * from './app-frontend/modules/locale/LocaleModule';
 
 export * from './app-frontend/modules/ForceUpgrade';
