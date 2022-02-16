@@ -28,8 +28,8 @@
     "moment": "^2.24.0"
   },
   "devDependencies": {
+    "@types/node": "17.0.4",
     "@typescript-eslint/eslint-plugin": "^5.8.0",
-
     "@nu-art/firebase": "~0.0.1",
     "@nu-art/testelot": "~0.0.1",
     "firebase": "^9.6.1",
