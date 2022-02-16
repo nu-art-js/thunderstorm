@@ -37,6 +37,7 @@ export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
 type Config = {
 	projectId: string
+	canRegister: boolean
 	sessionTTLms: number
 }
 
@@ -173,6 +174,9 @@ export class AccountsModule_Class
 	}
 
 	private createImpl(request: Request_CreateAccount, transaction: FirestoreTransaction) {
+		if (!this.config.canRegister)
+			throw new ApiException(418, 'Registration is disabled!!');
+
 		const salt = generateHex(32);
 		const now = currentTimeMillis();
 		const account = {
