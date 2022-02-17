@@ -172,10 +172,6 @@ export class PushPubSubModule_Class
 		});
 	};
 
-	subscribe = (subscription: BaseSubscriptionData) => {
-		this.subscribeImpl(subscription);
-		return this.register();
-	};
 
 	private subscribeImpl(subscription: BaseSubscriptionData) {
 		if (this.subscriptions.find(d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props)))
@@ -184,17 +180,25 @@ export class PushPubSubModule_Class
 		addItemToArray(this.subscriptions, subscription);
 	}
 
+	subscribe = (subscription: BaseSubscriptionData) => {
+		this.logDebug('subscribe');
+		this.subscribeImpl(subscription);
+		this.register('subscribe');
+	};
+
 	subscribeMulti = (subscriptions: BaseSubscriptionData[]) => {
+		this.logDebug('subscribeMulti');
 		subscriptions.forEach(subscription => this.subscribeImpl(subscription));
-		return this.register();
+		return this.register('subscribeMulti');
 	};
 
 	unsubscribe = (subscription: BaseSubscriptionData) => {
+		this.logDebug('unsubscribe');
 		removeFromArray(this.subscriptions, d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props));
-		return this.register();
+		this.register('unsubscribe');
 	};
 
-	private register = () => {
+	private register = (extra: string) => {
 		if (!this.firebaseToken)
 			return this.logWarning('No Firebase token...');
 
@@ -205,19 +209,16 @@ export class PushPubSubModule_Class
 		};
 
 		this.logDebug(`Subscribing: ${JSON.stringify(body)}`);
-		this.debounce(() => {
-			this.logDebug(`debounce: ${JSON.stringify(body)}`);
 
-			return XhrHttpModule
-				.createRequest<PubSubRegisterClient>(HttpMethod.POST, 'register-pub-sub-tab')
-				.setRelativeUrl('/v1/push/register')
-				.setJsonBody(body)
-				.setOnError('Failed to register for push')
-				.execute((response) => {
-					NotificationsModule.setNotificationList(response);
-					this.logVerbose('Finished register PubSub');
-				});
-		}, 'push-registration', 800);
+		XhrHttpModule
+			.createRequest<PubSubRegisterClient>(HttpMethod.POST, extra + '-pub-sub-tab')
+			.setRelativeUrl('/v1/push/register')
+			.setJsonBody(body)
+			.setOnError('Failed ' + extra + '-pub-sub-tab')
+			.execute((response) => {
+				// NotificationsModule.setNotificationList(response);
+				this.logVerbose('Finished ' + extra + '-pub-sub-tab');
+			});
 
 	};
 }

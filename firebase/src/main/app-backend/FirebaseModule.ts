@@ -133,6 +133,7 @@ export class FirebaseModule_Class
 		if (!config || !config.client_email || !config.private_key)
 			throw new BadImplementationException(`Config for key ${projectId} is not an Admin credentials pattern`);
 
+		this.logInfo(`Creating Firebase session for project id: ${projectId} `, config);
 		session = new FirebaseSession_Admin(projectId, config);
 		this.adminSessions[projectId] = session;
 

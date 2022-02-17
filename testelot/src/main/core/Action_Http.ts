@@ -193,7 +193,7 @@ export class Action_Http<T extends ObjectTS = any>
 		if (status !== expectedStatus || status >= 500 && status < 600) {
 			try {
 				_responseBody = await response.text();
-			} catch (ignore:any) {
+			} catch (ignore: any) {
 				this.logError(ignore);
 			}
 

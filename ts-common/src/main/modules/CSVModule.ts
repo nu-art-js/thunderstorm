@@ -7,7 +7,7 @@ import {createReadStream, promises as fs} from 'fs';
 import {ObjectTS, StringMap} from '../utils/types';
 import {Module} from '../core/module';
 import {Readable} from 'stream';
-import csvParser = require('csv-parser/index');
+import csvParser = require('csv-parser');
 
 
 type Config = {

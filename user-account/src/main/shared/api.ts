@@ -41,6 +41,12 @@ export type Response_Auth = {
 	email: string
 }
 
+export type Request_UpsertAccount = {
+	email: string
+	password: string
+	password_check: string
+}
+
 export type Request_CreateAccount = {
 	email: string
 	password: string
@@ -86,6 +92,7 @@ export type PostAssertBody = {
 
 export type AccountApi_AddNewAccount = ApiWithBody<'/v1/account/add-new-account', Request_AddNewAccount, UI_Account>
 export type AccountApi_Create = ApiWithBody<'/v1/account/create', Request_CreateAccount, Response_Auth>
+export type AccountApi_Upsert = ApiWithBody<'/v1/account/upsert', Request_UpsertAccount, Response_Auth>
 export type AccountApi_Login = ApiWithBody<'/v1/account/login', Request_LoginAccount, Response_Auth>
 export type AccountApi_LoginSAML = ApiWithQuery<"/v1/account/login-saml", Response_LoginSAML, RequestParams_LoginSAML>
 export type AccountApi_ValidateSession = ApiWithQuery<'/v1/account/validate', Response_Validation>

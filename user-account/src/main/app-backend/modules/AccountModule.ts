@@ -19,8 +19,17 @@
 import {__stringify, auditBy, currentTimeMillis, Day, Dispatcher, generateHex, hashPasswordWithSalt, Module, tsValidate} from '@nu-art/ts-common';
 
 
-import {FirebaseModule, FirestoreCollection} from '@nu-art/firebase/backend';
-import {DB_Account, DB_Session, HeaderKey_SessionId, Request_CreateAccount, Request_LoginAccount, Response_Auth, UI_Account} from './_imports';
+import {FirebaseModule, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
+import {
+	DB_Account,
+	DB_Session,
+	HeaderKey_SessionId,
+	Request_CreateAccount,
+	Request_LoginAccount,
+	Request_UpsertAccount,
+	Response_Auth,
+	UI_Account
+} from './_imports';
 import {ApiException, ExpressRequest, HeaderKey, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
 import {tsValidateEmail} from '@nu-art/db-api-generator/backend';
 
@@ -28,6 +37,7 @@ export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
 type Config = {
 	projectId: string
+	canRegister: boolean
 	sessionTTLms: number
 }
 
@@ -107,6 +117,20 @@ export class AccountsModule_Class
 		return session;
 	}
 
+	async upsert(request: Request_UpsertAccount) {
+		const account = await this.accounts.runInTransaction(async (transaction) => {
+			const existAccount = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
+			if (existAccount)
+				return this.changePassword(request.email, request.password, transaction);
+
+			return this.createImpl(request, transaction);
+		});
+
+		const session = await this.login(request);
+		await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
+		return session;
+	}
+
 	async addNewAccount(email: string, password?: string, password_check?: string): Promise<UI_Account> {
 		let account: DB_Account;
 		if (password && password_check) {
@@ -118,29 +142,54 @@ export class AccountsModule_Class
 		return getUIAccount(account);
 	}
 
+	async changePassword(userEmail: string, newPassword: string, outsideTransaction: FirestoreTransaction) {
+		const email = userEmail.toLowerCase();
+		return this.accounts.runInTransaction(async (innerTransaction) => {
+			const transaction = outsideTransaction || innerTransaction;
+			const account = await transaction.queryUnique(this.accounts, {where: {email}});
+			if (!account)
+				throw new ApiException(422, 'User with email does not exist');
+
+			if (!account.saltedPassword || !account.salt)
+				throw new ApiException(401, 'Account login using SAML');
+
+			account.saltedPassword = hashPasswordWithSalt(account.salt, newPassword);
+			account._audit = auditBy(email, 'Changed password');
+
+			return transaction.upsert(this.accounts, account);
+		});
+	}
+
 	async createAccount(request: Request_CreateAccount) {
 		request.email = request.email.toLowerCase();
 		tsValidate(request.email, tsValidateEmail);
 
-		return this.accounts.runInTransaction(async (transaction) => {
-			let account = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
+		return this.accounts.runInTransaction(async (transaction: FirestoreTransaction) => {
+			const account = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
 			if (account)
 				throw new ApiException(422, 'User with email already exists');
 
-			const salt = generateHex(32);
-			const now = currentTimeMillis();
-			account = {
-				_id: generateHex(32),
-				__created: now,
-				__updated: now,
-				_audit: auditBy(request.email),
-				email: request.email,
-				salt,
-				saltedPassword: hashPasswordWithSalt(salt, request.password),
-			};
-
-			return transaction.insert(this.accounts, account);
+			return this.createImpl(request, transaction);
 		});
+	}
+
+	private createImpl(request: Request_CreateAccount, transaction: FirestoreTransaction) {
+		if (!this.config.canRegister)
+			throw new ApiException(418, 'Registration is disabled!!');
+
+		const salt = generateHex(32);
+		const now = currentTimeMillis();
+		const account = {
+			_id: generateHex(32),
+			__created: now,
+			__updated: now,
+			_audit: auditBy(request.email),
+			email: request.email,
+			salt,
+			saltedPassword: hashPasswordWithSalt(salt, request.password)
+		};
+
+		return transaction.insert(this.accounts, account);
 	}
 
 	async login(request: Request_LoginAccount): Promise<Response_Auth> {

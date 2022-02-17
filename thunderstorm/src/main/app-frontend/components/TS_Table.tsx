@@ -55,6 +55,10 @@ export type TableProps<R extends ObjectTS, A extends ObjectTS = never> = Stylabl
 
 export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 	extends React.Component<TableProps<R, A>, any> {
+	static defaultProps = {
+		actionHeaderRenderer: (action: any) => <div>{action}</div>
+	};
+
 	constructor(p: TableProps<R, A>) {
 		super(p);
 	}

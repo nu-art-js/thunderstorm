@@ -310,11 +310,16 @@ export class RouteResolver {
 	readonly rootDir: string;
 	readonly apiFolder: string;
 	private middlewares: ServerApi_Middleware[] = [];
+	private processor?: (api: ServerApi<any>) => void;
 
 	constructor(require: NodeRequire, rootDir: string, apiFolder?: string) {
 		this.require = require;
 		this.rootDir = rootDir;
 		this.apiFolder = apiFolder || '';
+	}
+
+	addProcessor(processor: (api: ServerApi<any>) => void) {
+		this.processor = processor;
 	}
 
 	setMiddlewares(middlewares: ServerApi_Middleware[] = []) {
@@ -375,6 +380,7 @@ export class RouteResolver {
 				if (!api.addMiddlewares)
 					throw new MUSTNeverHappenException(`Missing api.middleware for: ${relativePathToFile}`);
 
+				this.processor?.(api);
 				api.addMiddlewares(...this.middlewares);
 				api.route(this.express, urlPrefix);
 			});
