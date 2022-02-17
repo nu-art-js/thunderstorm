@@ -85,7 +85,8 @@ export type DBApiConfig<Type extends ObjectTS> = {
 export type ApisParams = {
 	pathPart?: string,
 	middleware?: ServerApi_Middleware[]
-	print?: boolean
+	printResponse?: boolean
+	printRequest?: boolean
 };
 
 /**
@@ -652,7 +653,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	apis(options?: ApisParams): ServerApi<any>[] {
 		return filterInstances(this._apis(options)).map(api => {
 			options?.middleware && api.setMiddlewares(...options.middleware);
-			options?.print !== true && api.dontPrintResponse();
+			options?.printResponse !== true && api.dontPrintResponse();
+			options?.printRequest !== true && api.dontPrintRequest();
 			return api;
 		});
 	}

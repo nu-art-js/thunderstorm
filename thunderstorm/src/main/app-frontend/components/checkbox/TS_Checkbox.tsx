@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {BaseComponent} from '../../core/BaseComponent';
 
 export type CheckboxBaseProps = {
 	id?: string
@@ -52,7 +53,7 @@ export const CheckboxRenderer_DefaultSquare = CheckboxRenderer_DefaultBase('1px'
 export const CheckboxRenderer_DefaultCircle = CheckboxRenderer_DefaultBase('50%');
 
 export class TS_Checkbox
-	extends React.Component<Props_Checkbox, State_Checkbox> {
+	extends BaseComponent<Props_Checkbox, State_Checkbox> {
 
 	static defaultProps: Partial<Props_Checkbox> = {
 		renderer: CheckboxRenderer_DefaultSquare
@@ -63,11 +64,8 @@ export class TS_Checkbox
 		this.state = {checked: p.checked};
 	}
 
-	static getDerivedStateFromProps(props: Props_Checkbox, state: State_Checkbox) {
-		if (props.checked === state.checked)
-			return null;
-
-		return {checked: props.checked};
+	protected deriveStateFromProps(nextProps: Props_Checkbox): State_Checkbox | undefined {
+		return {checked: nextProps.checked};
 	}
 
 	render() {

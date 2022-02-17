@@ -20,7 +20,7 @@
  */
 
 import {FirebaseModule} from '@nu-art/firebase/backend';
-import {BeLogged, LogClient_Function, LogClient_Terminal, Module} from '@nu-art/ts-common';
+import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
 import {Firebase_ExpressFunction, FirebaseFunction} from '@nu-art/firebase/backend-functions';
 import {BaseStorm} from './BaseStorm';
 import {HttpServer, RouteResolver} from '../modules/server/HttpServer';
@@ -42,6 +42,7 @@ export class Storm
 	constructor() {
 		super();
 		this.addModules(...modules);
+		this.setMinLevel(LogLevel.Info);
 	}
 
 	init() {
@@ -76,7 +77,7 @@ export class Storm
 		this.functions = [new Firebase_ExpressFunction(HttpServer.express), ...modulesAsFunction];
 
 		this.startServerImpl(onStarted)
-			.then(() => console.log('Server Started!!'))
+			.then(() => this.logInfo('Server Started!!'))
 			.catch(reason => {
 				this.logError('failed to launch server', reason);
 				throw reason;
@@ -93,7 +94,10 @@ export class Storm
 	}
 
 	private async startServerImpl(onStarted?: () => Promise<void>) {
+		const label = 'Resolving Config';
+		console.time(label)
 		await this.resolveConfig();
+		console.timeEnd(label);
 
 		this.init();
 
