@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {AdapterBuilder, Example_NewProps, Props_DropDownOLD, TS_DropDown,} from "@nu-art/thunderstorm/frontend";
+import {AdapterBuilder, Example_NewProps, Props_DropDown, TS_DropDown,} from "@nu-art/thunderstorm/frontend";
 import * as React from "react";
 import {flatPlaguesWithTitles, ItemRenderer_Plague, Plague, plagues, PlagueWithTitle, RendererMap_Plague} from "./consts";
 import {PG_Example} from "../_core/PG_Example";
@@ -73,7 +73,7 @@ class Example_Dropdown_SingleAndMulti
 
 				return <div>{selected.label}</div>;
 			},
-		} as Props_DropDownOLD<any> & { key: string };
+		} as Props_DropDown<any> & { key: string };
 	}
 
 	private complexAdapterProps() {
@@ -100,7 +100,7 @@ class Example_Dropdown_SingleAndMulti
 
 				return <div>{selected.item.label}</div>;
 			},
-		} as Props_DropDownOLD<any> & { key: string }
+		} as Props_DropDown<any> & { key: string }
 	}
 }
 

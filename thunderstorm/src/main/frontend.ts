@@ -59,7 +59,6 @@ export * from './app-frontend/widgets/FieldEditorClick';
 export * from './app-frontend/widgets/FieldEditorWithButtons';
 export * from './app-frontend/components/TS_Table';
 export * from './app-frontend/components/input/TS_FilterInput';
-export * from './app-frontend/components/DropDown';
 export * from './app-frontend/components/dropdown/TS_DropDown';
 
 export * from './app-frontend/components/form/types';
@@ -75,7 +74,6 @@ export * from './app-frontend/components/tree/SimpleTreeNodeRenderer';
 
 export * from './app-frontend/components/tree/MenuComponent';
 
-export * from './app-frontend/components/GenericSelect';
 export * from './app-frontend/components/playground/Playground';
 export * from './app-frontend/components/playground/Example_NewProps';
 
