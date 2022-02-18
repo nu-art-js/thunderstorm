@@ -28,11 +28,68 @@ import {Adapter,} from '../adapter/Adapter';
 import {Stylable} from '../../tools/Stylable';
 import {Overlay} from '../Overlay';
 import {TS_Tree} from '../tree/TS_Tree';
-import {DropDown_headerStyle, DropDown_inputStyle, DropDown_listStyle, InputProps, listContainerStyle, wrapperStyle} from '../DropDown';
 import {UIComponent} from '../../core/UIComponent';
 
+const defaultTitleHeight = '28px';
+const defaultListHeight = '150px';
+
+// export enum OnEnterOptions {
+//     SelectFirstOption= (e:)
+// }
+
+export const DropDown_wrapperStyle: React.CSSProperties = {
+	display: 'inline-block',
+	width: '100%',
+	position: 'relative',
+	boxSizing: 'border-box',
+	borderRadius: 2,
+	border: 'solid 1px',
+};
+
+export const DropDown_headerStyle: React.CSSProperties = {
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent:"space-between",
+	position: 'relative',
+	color: 'black',
+	margin: 6,
+	backgroundColor: 'white',
+	height: defaultTitleHeight,
+};
+
+export const DropDown_inputStyle: React.CSSProperties = {
+	border: 'unset',
+	boxSizing: 'border-box',
+	outline: 'none',
+	// padding: "0 5px",
+};
+
+export const listContainerStyle: React.CSSProperties = {
+	display: 'inline-block',
+	position: 'absolute',
+	zIndex: 10,
+};
+
+export const DropDown_listStyle: React.CSSProperties = {
+	boxSizing: 'border-box',
+	backgroundColor: 'whitesmoke',
+	border: 'solid 1px',
+	borderRadius: 5,
+	display: 'flex',
+	flexFlow: 'column',
+	alignItems: 'stretch',
+	maxHeight: defaultListHeight,
+	overflowX: 'hidden',
+	overflowY: 'auto',
+	position: 'relative',
+	top: 1,
+};
+
+export type InputProps = Stylable & {
+	placeholder?: string
+}
+
 type State<ItemType> = {
-	id: string
 	filteredOptions: ItemType[]
 	adapter: Adapter
 	open: boolean
@@ -42,13 +99,14 @@ type State<ItemType> = {
 }
 
 type StaticProps = {
-	id: string,
+	id?: string,
 	headerStylable: Stylable
+	wrapperStylable: Stylable
 	listStylable: Stylable
 	inputStylable: InputProps
 }
 
-export type Props_DropDown<ItemType> = StaticProps & {
+export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	adapter: Adapter
 	placeholder?: string,
 	inputValue?: string,
@@ -74,6 +132,7 @@ export class TS_DropDown<ItemType>
 
 	static defaultProps: Partial<StaticProps> = {
 		id: generateHex(8),
+		wrapperStylable: {style: DropDown_wrapperStyle},
 		headerStylable: {style: DropDown_headerStyle},
 		listStylable: {style: DropDown_listStyle},
 		inputStylable: {style: DropDown_inputStyle}
@@ -89,7 +148,6 @@ export class TS_DropDown<ItemType>
 	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
 		const newAdapter = TS_DropDown.cloneAdapter(nextProps);
 		return {
-			id: nextProps.id,
 			adapter: newAdapter,
 			filteredOptions: newAdapter.data,
 			selected: nextProps.selected,
@@ -121,7 +179,7 @@ export class TS_DropDown<ItemType>
 		return (
 			<Overlay showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
 				<KeyboardListener onKeyboardEventListener={this.keyEventHandler}>
-					<div id={this.props.id} style={wrapperStyle}>
+					<div id={this.props.id} style={DropDown_wrapperStyle}>
 						{this.renderHeader()}
 						{this.renderTree()}
 					</div>
@@ -182,14 +240,11 @@ export class TS_DropDown<ItemType>
 
 	private renderSelectedOrFilterInput = () => {
 		if (!this.state.open || !this.props.filterMapper) {
-			return (
-				<div className={'match_width'}>
-					{this.renderSelectedItem(this.state.selected)}
-				</div>);
+			return this.renderSelectedItem(this.state.selected);
 		}
 
 		return <TS_FilterInput<ItemType>
-			key={this.state.id}
+			key={this.props.id}
 			initialFilterText={this.props.inputValue}
 			placeholder={this.props.placeholder}
 			id={`${this.props.id}-input`}
@@ -219,7 +274,7 @@ export class TS_DropDown<ItemType>
 			return this.props.selectedItemRenderer(selected);
 
 		if (selected === undefined)
-			return <div>{this.props.inputStylable.placeholder}</div>;
+			return <div id={"place holder"}>{this.props.inputStylable?.placeholder || ''}</div>;
 
 		const Renderer = this.props.adapter.treeNodeRenderer;
 		const node = {
@@ -237,7 +292,7 @@ export class TS_DropDown<ItemType>
 			focused: false,
 			selected: true
 		};
-		return <Renderer item={selected} node={node}/>;
+		return <div id={"renderer"}><Renderer item={selected} node={node}/></div>;
 	};
 
 

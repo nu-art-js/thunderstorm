@@ -230,8 +230,8 @@ abstract class BaseAdapterBuilder<Data> {
 		const _Renderer: _BaseNodeRenderer<any> = this.resolveRenderer(props.item.type);
 		return (
 			<div className="ll_h_c clickable"
-			     id={props.node.path}
-			     onClick={props.node.expandToggler}>
+					 id={props.node.path}
+					 onClick={props.node.expandToggler}>
 
 				<this.expandCollapseRenderer {...props}/>
 				<_Renderer item={this.multiRenderer ? props.item.item : props.item} node={props.node}/>
@@ -412,3 +412,12 @@ class _AdapterBuilder {
 export function AdapterBuilder() {
 	return new _AdapterBuilder();
 }
+
+export function SimpleListAdapter<T>(options: T[], renderer: (node: NodeRendererProps<T>) => React.ReactElement) {
+	return AdapterBuilder()
+		.list()
+		.singleRender(renderer)
+		.setData(options)
+		.build();
+}
+

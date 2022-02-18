@@ -43,7 +43,6 @@ import {
 } from './examples/list/Example_NestedList_MultiType';
 import {Example_List_All} from "./examples/list/Example_List_All";
 import {Example_Tree_SingleType} from './examples/tree/Example_Tree_SingleType';
-import {OstudioEx} from "./examples/dropdown/OstudioEx";
 import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
 import {Example_FilterInput} from "./examples/Example_FilterInput";
 import {Example_Uploader} from "./examples/Example_Uploader";
@@ -171,7 +170,6 @@ export class Page_Playground
 			{renderer: Example_Tabs, name: "GenericTabs",},
 			{renderer: Example_GenericSelect, name: "GenericSelect",},
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring"},
-			{renderer: OstudioEx, name: 'stam'},
 
 			{renderer: Example_SingleCheckbox, name: 'Single Checkbox'},
 			{renderer: Example_CheckboxField, name: 'Checkbox fields'},
