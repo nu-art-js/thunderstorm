@@ -10,8 +10,6 @@
     ],
     "predeploy": [
       "rm ./app-backend/package-lock.json",
-      "npm --prefix ./app-backend install",
-      "npm --prefix ./app-backend run build"
     ]
   },
   "hosting": {
