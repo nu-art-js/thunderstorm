@@ -47,8 +47,6 @@ import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
 import {Example_FilterInput} from "./examples/Example_FilterInput";
 import {Example_Uploader} from "./examples/Example_Uploader";
 import {Example_TSInput} from "./examples/Example_TSInput";
-import {Example_SingleCheckbox} from './examples/checkbox/Example_SingleCheckbox';
-import {Example_CheckboxField} from './examples/checkbox/Example_CheckboxField';
 import {Example_PermissionsComponent} from "./examples/Example_PermissionsComponent";
 import {SP_Example_Tree_SingleType} from "./examples/new-props-examples/tree/SP_Example_Tree_SingleType";
 import {SP_Example_NestedList_SingleType} from "./examples/new-props-examples/list/SP_Example_NestedList_SingleType";
@@ -171,8 +169,6 @@ export class Page_Playground
 			{renderer: Example_GenericSelect, name: "GenericSelect",},
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring"},
 
-			{renderer: Example_SingleCheckbox, name: 'Single Checkbox'},
-			{renderer: Example_CheckboxField, name: 'Checkbox fields'},
 			{renderer: Example_PermissionsComponent, name: 'Permissions Component'},
 			{renderer: Example_Analytics, name: 'Analytics'},
 			{renderer: Example_Scatter, name: 'Scatter Plot'},

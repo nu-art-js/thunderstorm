@@ -67,7 +67,6 @@ export * from './app-frontend/components/form/Form';
 export * from './app-frontend/components/tree/MultiTypeAdaptor';
 export * from './app-frontend/components/adapter/Adapter';
 export * from './app-frontend/components/adapter/BaseRenderer';
-export * from './app-frontend/components/tree/Tree';
 export * from './app-frontend/components/tree/TS_Tree';
 export * from './app-frontend/components/tree/types';
 export * from './app-frontend/components/tree/SimpleTreeNodeRenderer';
@@ -78,8 +77,6 @@ export * from './app-frontend/components/playground/Playground';
 export * from './app-frontend/components/playground/Example_NewProps';
 
 export * from './app-frontend/components/checkbox/TS_Checkbox';
-export * from './app-frontend/components/checkbox-OLD/TS_CheckboxField-OLD';
-export * from './app-frontend/components/checkbox-OLD/TS_Checkbox-OLD';
 
 export * from './app-frontend/modules/component-loader/ReactEntryComponentInjector';
 export * from './app-frontend/modules/component-loader/entry-component-loading-module';

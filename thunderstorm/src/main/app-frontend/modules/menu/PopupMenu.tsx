@@ -3,8 +3,8 @@ import {CSSProperties} from 'react';
 import {Menu_Model, MenuListener, MenuModule} from './MenuModule';
 import {BaseComponent} from '../../core/BaseComponent';
 import {stopPropagation} from '../../utils/tools';
-import {Tree} from '../../components/tree/Tree';
 import {generateHex} from '@nu-art/ts-common';
+import {TS_Tree} from '../../components/tree/TS_Tree';
 
 export type MenuPosition =
 	{ left: number, top: number }
@@ -104,7 +104,7 @@ export class PopupMenu
 		return <div style={{position: 'absolute'}}>
 			<div id="overlay" ref={this.overlayRef} style={overlayStyle}>
 				<div style={this.style(element.pos, element.css)}>
-					<Tree
+					<TS_Tree
 						id={generateHex(8)}
 						adapter={element.adapter}
 						onNodeClicked={element.onNodeClicked}

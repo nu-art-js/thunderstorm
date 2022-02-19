@@ -63,6 +63,7 @@ export class Playground
 						close: this.props.iconClose,
 						open: this.props.iconOpen
 					}}
+					filterMapper={option => ([option.name])}
 					onSelected={(screen: PlaygroundScreen) => {
 						this.setState({selectedScreen: screen});
 						BrowserHistoryModule.addQueryParam(PLAYGROUND, screen.name);

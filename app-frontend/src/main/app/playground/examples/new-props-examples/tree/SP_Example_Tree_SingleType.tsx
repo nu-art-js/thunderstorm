@@ -2,10 +2,10 @@ import * as React from "react";
 import {Component} from "react";
 import {
 	AdapterBuilder,
-	BaseTreeProps,
 	Example_NewProps,
+	Props_Tree,
 	ToastModule,
-	Tree
+    TS_Tree,
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
@@ -104,7 +104,7 @@ export class SP_Example_Tree_SingleType
 				<div onClick={() => this.addItem('Second')}>Add Second</div>
 				<div onClick={() => this.addItem('Third')}>Add Third</div>
 				<div onClick={() => this.addItem('Forth')}>Add Forth</div>
-				<Example_NewProps name={"Tree"} renderer={Tree} data={[this.simpleAdapterProps(), this.complexAdapterProps()]}/>
+				<Example_NewProps name={"Tree"} renderer={TS_Tree} data={[this.simpleAdapterProps(), this.complexAdapterProps()]}/>
 			</div>
 		</div>
 	}
@@ -126,7 +126,7 @@ export class SP_Example_Tree_SingleType
 			onNodeClicked: (path: string, item: any) => {
 				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)
 			}
-		} as BaseTreeProps & { key: string };
+		} as Props_Tree & { key: string };
 	}
 
 	private complexAdapterProps() {
@@ -141,7 +141,7 @@ export class SP_Example_Tree_SingleType
 			onNodeClicked: (path: string, item: any) => {
 				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)
 			}
-		} as BaseTreeProps & { key: string };
+		} as Props_Tree & { key: string };
 	}
 }
 
