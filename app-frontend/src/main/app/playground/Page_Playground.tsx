@@ -21,9 +21,6 @@ import {Playground, PlaygroundScreen} from "@nu-art/thunderstorm/frontend";
 import {Page_ApiGen} from "../pages/Page_ApiGen";
 import {Hello} from "../Hello";
 import {Example_ApiCustomError} from './examples/Example_ApiCustomError';
-import {Example_Tabs2} from "./examples/tabs/Example_Tabs2";
-import {Example_GenericSelect} from "./examples/_to-be-removed/Example_GenericSelect";
-import {Example_Tabs} from "./examples/tabs/Example_Tabs";
 import {Example_Dialogs} from './examples/Example_Dialogs';
 import {Example_Toaster} from './examples/Example_Toaster';
 import {TreeRefactorPage} from "./examples/_to-be-removed/TreeRefactorPage";
@@ -164,9 +161,6 @@ export class Page_Playground
 			{renderer: Hello, name: "Live docs",},
 			{renderer: Example_TriggerPush, name: "Trigger Push"},
 			{renderer: Example_ApiCustomError, name: "Custom error"},
-			{renderer: Example_Tabs2, name: "Tabs",},
-			{renderer: Example_Tabs, name: "GenericTabs",},
-			{renderer: Example_GenericSelect, name: "GenericSelect",},
 			{renderer: TreeRefactorPage, name: "Page for Tree refactoring"},
 
 			{renderer: Example_PermissionsComponent, name: 'Permissions Component'},
