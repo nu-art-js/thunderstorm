@@ -27,11 +27,11 @@
   },
   "dependencies": {
     "moment": "^2.24.0",
-    "node-forge": "^0.10.0",
+    "node-forge": "^1.2.1",
     "export-to-csv": "^0.2.1"
   },
   "devDependencies": {
-    "@types/node-forge": "^0.9.5",
+    "@types/node-forge": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^5.8.0",
     "csv-parser": "^2.3.3",
     "eslint": "^6.8.0",

@@ -1,6 +1,6 @@
 /*
- * Storm contains a list of utility functions.. this project
- * might be broken down into more smaller projects in the future.
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,4 +17,4 @@
  * limitations under the License.
  */
 
-export * from "./redis/RedisModule";
+export * from "./mongo/MongoDBModule";
