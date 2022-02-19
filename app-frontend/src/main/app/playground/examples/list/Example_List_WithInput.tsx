@@ -22,8 +22,8 @@ import {
 	Adapter,
 	AdapterBuilder,
 	ToastModule,
-	Tree,
-	TS_Input
+	TS_Input,
+    TS_Tree
 } from "@nu-art/thunderstorm/frontend";
 import {__stringify} from "@nu-art/ts-common";
 
@@ -85,7 +85,7 @@ export class Example_List_WithInput
 		return <div>
 			<div>
 				<h2>Here is a tree with one renderer Type</h2>
-				<Tree
+				<TS_Tree
 					adapter={adapter}
 					onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>

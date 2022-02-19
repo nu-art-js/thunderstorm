@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import {Adapter, BaseComponent, NodeRendererProps, Tree, TreeNode,} from "@nu-art/thunderstorm/frontend";
+import {Adapter, BaseComponent, NodeRendererProps, TS_Tree, TreeNode,} from "@nu-art/thunderstorm/frontend";
 import {PlaygroundExample_BodyStyle, PlaygroundExample_ResultStyle} from "../consts";
 import {PG_Example} from "../_core/PG_Example";
 
@@ -51,13 +51,11 @@ class Example_Tree_Data
 		adapter.hideRoot = true;
 
 		return <div {...PlaygroundExample_BodyStyle} style={{minWidth: 180}}>
-			<Tree
+			<TS_Tree
 				id={name}
 				adapter={adapter}
 				onNodeFocused={(path: string) => this.setState({actionMessage: `on focused: ${path}`})}
 				onNodeClicked={(path: string) => this.setState({actionMessage: `on clicked: ${path}`})}
-				onFocus={() => console.log("Focused")}
-				onBlur={() => console.log("Blurred")}
 			/>
 			<div {...PlaygroundExample_ResultStyle}>{this.state.actionMessage}</div>
 		</div>

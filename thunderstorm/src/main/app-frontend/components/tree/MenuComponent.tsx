@@ -24,7 +24,7 @@ import * as React from 'react';
 import {generateHex} from '@nu-art/ts-common';
 import {BaseComponent} from '../../core/BaseComponent';
 import {Adapter} from '../adapter/Adapter';
-import {Tree} from './Tree';
+import {TS_Tree} from './TS_Tree';
 
 export type MenuComponentProps = {
 	adapter: Adapter
@@ -44,7 +44,7 @@ export class MenuComponent
 	}
 
 	render() {
-		return <Tree
+		return <TS_Tree
 			id={this.id}
 			adapter={this.props.adapter}
 			onNodeClicked={this.props.onNodeClicked}
