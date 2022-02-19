@@ -9,7 +9,7 @@
       "node_modules"
     ],
     "predeploy": [
-      "rm ./app-backend/package-lock.json",
+      "rm ./app-backend/package-lock.json"
     ]
   },
   "hosting": {
