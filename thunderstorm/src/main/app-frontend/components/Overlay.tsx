@@ -38,7 +38,6 @@ const overlayStyle = (zIndex: number): CSSProperties => ({
 });
 const childrenStyle = (zIndex: number) => ({
 	zIndex,
-	width:"100%",
 	display: 'inline-block'
 });
 

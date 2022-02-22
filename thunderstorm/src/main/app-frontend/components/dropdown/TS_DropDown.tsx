@@ -49,10 +49,10 @@ export const DropDown_wrapperStyle: React.CSSProperties = {
 export const DropDown_headerStyle: React.CSSProperties = {
 	display: 'flex',
 	alignItems: 'center',
-	justifyContent:"space-between",
+	justifyContent: 'space-between',
 	position: 'relative',
 	color: 'black',
-	margin: 6,
+	margin: 3,
 	backgroundColor: 'white',
 	height: defaultTitleHeight,
 };
@@ -179,7 +179,7 @@ export class TS_DropDown<ItemType>
 		return (
 			<Overlay showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
 				<KeyboardListener onKeyboardEventListener={this.keyEventHandler}>
-					<div id={this.props.id} style={DropDown_wrapperStyle}>
+					<div id={this.props.id} className={this.props.wrapperStylable?.className} style={{...DropDown_wrapperStyle,...this.props.wrapperStylable?.style}}>
 						{this.renderHeader()}
 						{this.renderTree()}
 					</div>
@@ -274,7 +274,7 @@ export class TS_DropDown<ItemType>
 			return this.props.selectedItemRenderer(selected);
 
 		if (selected === undefined)
-			return <div id={"place holder"}>{this.props.inputStylable?.placeholder || ''}</div>;
+			return <div id={'place holder'}>{this.props.inputStylable?.placeholder || ''}</div>;
 
 		const Renderer = this.props.adapter.treeNodeRenderer;
 		const node = {
@@ -292,7 +292,7 @@ export class TS_DropDown<ItemType>
 			focused: false,
 			selected: true
 		};
-		return <div id={"renderer"}><Renderer item={selected} node={node}/></div>;
+		return <div id={'renderer'}><Renderer item={selected} node={node}/></div>;
 	};
 
 

@@ -78,6 +78,10 @@ export abstract class BaseComponentV2<P = any, S = any>
 		return this.createInitialState(nextProps);
 	}
 
+	protected updateState() {
+		this._deriveStateFromProps(this.props);
+	}
+
 	protected async deriveStateFromProps(nextProps: P): Promise<S> {
 		return this.createInitialState(nextProps);
 	}
