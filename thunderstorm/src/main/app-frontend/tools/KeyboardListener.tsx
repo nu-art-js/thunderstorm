@@ -17,10 +17,10 @@
  */
 
 import * as React from 'react';
+import {Stylable} from './Stylable';
 
-export type KeyboardListenerProps = {
+export type KeyboardListenerProps = Stylable & {
 	onKeyboardEventListener: (e: React.KeyboardEvent) => void
-	className?: string
 	onFocus?: () => void
 	onBlur?: () => void
 	id?: string
@@ -69,6 +69,8 @@ export class KeyboardListener<P extends KeyboardListenerProps>
 				this.node = node;
 				this.forceUpdate();
 			}}
+			className={this.props.className}
+			style={this.props.style}
 			tabIndex={1}
 			onFocus={this.onFocus}
 			onBlur={this.onBlur}>
