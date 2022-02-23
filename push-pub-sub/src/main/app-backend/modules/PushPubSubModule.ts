@@ -26,7 +26,6 @@ import {
 	filterDuplicates,
 	generateHex,
 	Hour,
-	ImplementationMissingException,
 	Module,
 	Subset,
     batchActionParallel
@@ -87,15 +86,17 @@ export class PushPubSubModule_Class
 	async register(body: Request_PushRegister, request: ExpressRequest): Promise<DB_Notifications[]> {
 		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync([request]);
 		const userId: string | undefined = resp.find(e => e.key === "AccountsModule")?.data?._id || resp.find(e => e.key === "RemoteProxy")?.data;
-		if (!userId)
-			throw new ImplementationMissingException("Missing user from accounts Module");
+		// if (!userId)
+		// 	throw new ImplementationMissingException("Missing user from accounts Module");
 
 		const session: DB_PushSession = {
 			firebaseToken: body.firebaseToken,
 			pushSessionId: body.pushSessionId,
-			timestamp: currentTimeMillies(),
-			userId
+			timestamp: currentTimeMillies()
 		};
+
+		if(userId)
+			session.userId = userId;
 
 		const subscriptions: DB_PushKeys[] = body.subscriptions.map((s): DB_PushKeys => {
 			const sub: DB_PushKeys = {
