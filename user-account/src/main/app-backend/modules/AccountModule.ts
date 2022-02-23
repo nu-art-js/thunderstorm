@@ -159,10 +159,9 @@ export class AccountsModule_Class
 		return getUIAccount(account);
 	}
 
-	async changePassword(userEmail: string, newPassword: string, outsideTransaction: FirestoreTransaction) {
+	async changePassword(userEmail: string, newPassword: string, _transaction?: FirestoreTransaction) {
 		const email = userEmail.toLowerCase();
-		return this.accounts.runInTransaction(async (innerTransaction) => {
-			const transaction = outsideTransaction || innerTransaction;
+		const processor = async (transaction: FirestoreTransaction) => {
 			const account = await transaction.queryUnique(this.accounts, {where: {email}});
 			if (!account)
 				throw new ApiException(422, "User with email does not exist");
@@ -174,7 +173,12 @@ export class AccountsModule_Class
 			account._audit = auditBy(email, 'Changed password');
 
 			return transaction.upsert(this.accounts, account);
-		});
+		};
+
+		if(_transaction)
+			return processor(_transaction)
+
+		return this.accounts.runInTransaction(processor);
 	}
 
 	async createAccount(request: Request_CreateAccount) {
@@ -298,7 +302,7 @@ export class AccountsModule_Class
 		return delta > this.config.sessionTTLms || delta < 0;
 	};
 
-	private upsertSession = async (userId: string): Promise<Response_Auth> => {
+	public upsertSession = async (userId: string): Promise<Response_Auth> => {
 		let session = await this.sessions.queryUnique({where: {userId}});
 		if (!session || this.TTLExpired(session)) {
 			session = {
