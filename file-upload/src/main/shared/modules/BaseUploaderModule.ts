@@ -16,24 +16,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	__stringify,
-	_keys,
-	BadImplementationException,
-	Dispatcher,
-	generateHex,
-	Minute,
-	Module,
-	Queue,
-    ObjectTS
-} from "@nu-art/ts-common";
-import {
-	BaseHttpModule_Class,
-	BaseHttpRequest,
-	ErrorResponse,
-	HttpMethod,
-	TS_Progress
-} from "@nu-art/thunderstorm";
+import {__stringify, _keys, BadImplementationException, Dispatcher, generateHex, Minute, Module, Queue} from '@nu-art/ts-common';
+import {BaseHttpModule_Class, BaseHttpRequest, ErrorResponse, HttpMethod, TS_Progress} from '@nu-art/thunderstorm';
 
 import {
 	Api_GetUploadUrl,
@@ -50,9 +34,9 @@ import {
 	RequestKey_UploadFile,
 	RequestKey_UploadUrl,
 	TempSecureUrl
-} from "../../shared/types";
-import {OnPushMessageReceived} from "@nu-art/push-pub-sub/frontend";
-import {DB_Notifications} from "@nu-art/push-pub-sub";
+} from '../../shared/types';
+import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
+import {DB_Notifications} from '@nu-art/push-pub-sub';
 
 
 export type FilesToUpload = Request_Uploader & {
@@ -60,22 +44,24 @@ export type FilesToUpload = Request_Uploader & {
 	file: any
 }
 
-type Config = {
+export type UploaderConfig = {
+	manualProcessTriggering: boolean
 	uploadQueueParallelCount?: number
 }
 
-export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class, CustomConfig extends ObjectTS = {}>
-	extends Module<Config & CustomConfig>
+export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class, Config extends UploaderConfig = UploaderConfig>
+	extends Module<Config>
 	implements OnPushMessageReceived<Push_FileUploaded> {
 
 	protected files: { [id: string]: FileInfo } = {};
-	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(1);
+	private readonly uploadQueue: Queue = new Queue('File Uploader').setParallelCount(1);
 	protected readonly dispatch_fileStatusChange = new Dispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 	private httpModule: HttpModule;
 
 	protected constructor(httpModule: HttpModule) {
 		super();
 		this.httpModule = httpModule;
+		this.setDefaultConfig({manualProcessTriggering: false} as Partial<Config>);
 	}
 
 	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
@@ -84,11 +70,11 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 
 		const data = notification.data;
 		if (!data)
-			return this.logError("file upload push without data");
+			return this.logError('file upload push without data');
 
 		const feId = data.asset.feId;
 		if (!feId)
-			return this.logError("file upload push without feId");
+			return this.logError('file upload push without feId');
 
 		this.setFileInfo(feId, data);
 	}
@@ -185,6 +171,8 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 				//TODO: Probably need to set a timer here in case we dont get a push back (contingency)
 			}, () => {
 				this.setFileInfo(feId, {status: FileStatus.WaitingForProcessing});
+				if (this.config.manualProcessTriggering)
+					this.processAssetManually(feId);
 			}, error => {
 				this.setFileInfo(feId, {
 					messageStatus: __stringify(error),
@@ -228,7 +216,7 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 			.setRelativeUrl('/v1/upload/process-asset-manually');
 
 		if (feId)
-			request.setUrlParam("feId", feId);
+			request.setUrlParam('feId', feId);
 
 		request.execute();
 	};

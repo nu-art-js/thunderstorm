@@ -19,5 +19,5 @@
 
 export * from "./app-frontend/types"
 export * from "./app-frontend/consts"
-export * from "./app-frontend/BaseDB_ApiGeneratorCaller"
-export * from "./app-frontend/BaseDB_ApiGeneratorCallerV2"
+export * from "./app-frontend/modules/BaseDB_ApiGeneratorCaller"
+export * from "./app-frontend/modules/BaseDB_ApiGeneratorCallerV2"

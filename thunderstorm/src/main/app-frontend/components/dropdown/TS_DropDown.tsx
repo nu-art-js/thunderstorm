@@ -178,11 +178,9 @@ export class TS_DropDown<ItemType>
 	render() {
 		return (
 			<Overlay showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
-				<KeyboardListener onKeyboardEventListener={this.keyEventHandler}>
-					<div id={this.props.id} className={this.props.wrapperStylable?.className} style={{...DropDown_wrapperStyle,...this.props.wrapperStylable?.style}}>
-						{this.renderHeader()}
-						{this.renderTree()}
-					</div>
+				<KeyboardListener onKeyboardEventListener={this.keyEventHandler} {...this.props.wrapperStylable}>
+					{this.renderHeader()}
+					{this.renderTree()}
 				</KeyboardListener>
 			</Overlay>
 		);

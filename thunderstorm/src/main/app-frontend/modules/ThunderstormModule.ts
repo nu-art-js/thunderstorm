@@ -6,7 +6,8 @@ type Config = {
 }
 
 type FileDownloadProps = {
-	content: Blob | string
+	url?: string,
+	content?: Blob | string
 	fileName: string
 	mimeType?: string
 	charset?: string
@@ -83,13 +84,17 @@ class ThunderstormModule_Class
 			return;
 
 		const element = document.createElement('a');
-		let content: string;
-		if (typeof props.content === 'string')
-			content = encodeURIComponent(props.content);
-		else
-			content = URL.createObjectURL(props.content);
+		if (props.content) {
+			let content: string;
+			if (typeof props.content === 'string')
+				content = encodeURIComponent(props.content);
+			else
+				content = URL.createObjectURL(props.content);
+			element.setAttribute('href', `data:${props.mimeType || 'text/text'};charset=${props.charset || 'utf-8'},${content}`);
+		} else {
+			element.setAttribute('href', props.url as string);
+		}
 
-		element.setAttribute('href', `data:${props.mimeType || 'text/text'};charset=${props.charset || 'utf-8'},${content}`);
 		element.setAttribute('download', `${props.fileName}`);
 		element.click();
 	}

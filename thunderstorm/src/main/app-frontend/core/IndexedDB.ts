@@ -120,7 +120,7 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 			};
 
 			if (query?.indexKey)
-				store.index(query.indexKey).iterateCursor(query.query|| null, callback);
+				store.index(query.indexKey).iterateCursor(query.query || null, callback);
 			else
 				store.iterateCursor(query?.query || null, callback);
 		});
@@ -151,6 +151,11 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 		return result;
 	}
 
+	public async deleteAll(): Promise<void> {
+		const store = (await this.store(true));
+		await store.clear();
+	}
+
 	public async delete(key: IndexKeys<T, Ks>): Promise<T | undefined> {
 		const keys = this.config.uniqueKeys.map(k => key[k]);
 		const store = (await this.store(true));
@@ -159,6 +164,7 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 		await store.delete(keys);
 		return item;
 	}
+
 }
 
 export class IndexedDBModule_Class

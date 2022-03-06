@@ -18,6 +18,7 @@
 
 import * as React from 'react';
 import {Stylable} from './Stylable';
+import {DropDown_wrapperStyle} from '../components/dropdown/TS_DropDown';
 
 export type KeyboardListenerProps = Stylable & {
 	onKeyboardEventListener: (e: React.KeyboardEvent) => void
@@ -70,7 +71,7 @@ export class KeyboardListener<P extends KeyboardListenerProps>
 				this.forceUpdate();
 			}}
 			className={this.props.className}
-			style={this.props.style}
+			style={{...DropDown_wrapperStyle, ...this.props.style}}
 			tabIndex={1}
 			onFocus={this.onFocus}
 			onBlur={this.onBlur}>
