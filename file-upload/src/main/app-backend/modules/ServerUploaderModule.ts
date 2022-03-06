@@ -20,23 +20,25 @@
 import {
 	BaseUploaderFile,
 	TempSecureUrl,
-    Request_Uploader
-} from "../../shared/types";
+	Request_Uploader
+} from '../../shared/types';
 import {
-	BaseUploaderModule_Class,
-} from "../../shared/modules/BaseUploaderModule";
+	BaseUploaderModule_Class, UploaderConfig,
+} from '../../shared/modules/BaseUploaderModule';
 import {
 	Axios_RequestConfig,
 	AxiosHttpModule,
 	AxiosHttpModule_Class
-} from "@nu-art/thunderstorm/backend";
+} from '@nu-art/thunderstorm/backend';
 
 export type ServerFilesToUpload = Request_Uploader & {
 	file: Buffer
 }
 
+type Config = UploaderConfig & { requestConfig: Axios_RequestConfig };
+
 export class ServerUploaderModule_Class
-	extends BaseUploaderModule_Class<AxiosHttpModule_Class, { requestConfig: Axios_RequestConfig }> {
+	extends BaseUploaderModule_Class<AxiosHttpModule_Class, Config> {
 
 	constructor() {
 		super(AxiosHttpModule);

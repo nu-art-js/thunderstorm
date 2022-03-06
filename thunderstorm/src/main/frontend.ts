@@ -38,6 +38,7 @@ export * from './app-frontend/modules/ConnectivityModule';
 export * from './app-frontend/modules/routing/route';
 export * from './app-frontend/modules/routing/RoutingModule';
 
+export * from './app-frontend/modules/WindowModule';
 export * from './app-frontend/modules/ResourcesModule';
 export * from './app-frontend/modules/HistoryModule';
 export * from './app-frontend/modules/ThunderstormModule';
@@ -61,6 +62,7 @@ export * from './app-frontend/components/TS_Table';
 export * from './app-frontend/components/input/TS_FilterInput';
 export * from './app-frontend/components/dropdown/TS_DropDown';
 
+export * from './app-frontend/components/HeightBounder';
 export * from './app-frontend/components/form/types';
 export * from './app-frontend/components/form/Form';
 

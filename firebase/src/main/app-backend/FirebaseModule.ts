@@ -126,14 +126,14 @@ export class FirebaseModule_Class
 		if (!config)
 			return this.createLocalAdminSession();
 
-		this.logInfo(`Creating Firebase session for project id: ${projectId}`);
+		// this.logInfo(`Creating Firebase session for project id: ${projectId}`);
 		if (typeof config === 'string')
 			config = JSON.parse(readFileSync(config, 'utf8')) as JWTInput;
 
 		if (!config || !config.client_email || !config.private_key)
 			throw new BadImplementationException(`Config for key ${projectId} is not an Admin credentials pattern`);
 
-		this.logInfo(`Creating Firebase session for project id: ${projectId} `, config);
+		// this.logInfo(`Creating Firebase session for project id: ${projectId} `, config);
 		session = new FirebaseSession_Admin(projectId, config);
 		this.adminSessions[projectId] = session;
 

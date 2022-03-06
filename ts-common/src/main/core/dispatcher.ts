@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {FunctionKeys, ReturnPromiseType} from "../utils/types";
+import {FunctionKeys, ReturnPromiseType} from '../utils/types';
 
 export type ParamResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? Parameters<T[K]> : never
 export type ReturnTypeResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? ReturnPromiseType<T[K]> : never

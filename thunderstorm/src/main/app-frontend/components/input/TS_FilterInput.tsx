@@ -65,7 +65,7 @@ export class TS_FilterInput<T>
 		this.filter = nextProps.filter;
 
 		if (!this.filter)
-			this.filter = new Filter();
+			this.filter = new Filter().setRegexp(nextProps.regexp || true);
 
 		if (this.props.initialFilterText !== nextProps.initialFilterText) {
 			this.filter.setFilter(nextProps.initialFilterText || '');
