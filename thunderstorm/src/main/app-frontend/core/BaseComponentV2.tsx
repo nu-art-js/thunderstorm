@@ -64,6 +64,7 @@ export abstract class BaseComponentV2<P = any, S = any>
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps: P) {
+		console.log('UNSAFE_componentWillReceiveProps');
 		const state = this._deriveStateFromProps(nextProps);
 		if (state)
 			this.setState(state);

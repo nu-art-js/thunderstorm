@@ -12,7 +12,7 @@ export type CheckboxRenderingProps = CheckboxBaseProps & {
 	onClick?: (e: React.MouseEvent<any>) => void
 }
 type Props_Checkbox = CheckboxBaseProps & {
-	onCheck: (checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void
+	onCheck?: (checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void
 	renderer: (props: CheckboxRenderingProps) => React.ReactNode
 }
 
