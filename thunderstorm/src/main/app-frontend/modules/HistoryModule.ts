@@ -152,6 +152,14 @@ export class BrowserHistoryModule_Class
 	getHistory() {
 		return this.history;
 	}
+
+	getQueryParameter(name: string) {
+		return BrowserHistoryModule.getQueryParams()[name];
+	}
+
+	getCurrentUrl() {
+		return BrowserHistoryModule.getCurrent().pathname;
+	}
 }
 
 export const BrowserHistoryModule = new BrowserHistoryModule_Class();

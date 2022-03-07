@@ -41,12 +41,11 @@ export type Props_FilterInput<T> = Stylable & {
 	handleKeyEvent?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 }
 
-type State = {}
+type State = { filter: Filter }
 
-export class TS_FilterInput<T>
+// WIP
+export class TS_FilterInputV2<T>
 	extends BaseComponent<Props_FilterInput<T>, State> {
-
-	private filter!: Filter;
 
 	static defaultProps: Partial<Props_FilterInput<any>> = {
 		id: generateHex(16),
@@ -61,35 +60,28 @@ export class TS_FilterInput<T>
 
 	protected deriveStateFromProps(nextProps: Props_FilterInput<T>): State | undefined {
 		let evaluate = nextProps.forceFilter || false;
-		// @ts-ignore
-		this.filter = nextProps.filter;
-
-		if (!this.filter) {
-			this.filter = new Filter().setRegexp(nextProps.regexp || true);
-			this.filter.setFilter(nextProps.initialFilterText || '');
-			if (this.props?.initialFilterText !== nextProps.initialFilterText)
-				evaluate = true;
-		}
+		const filter: Filter = this.props.filter !== nextProps.filter && nextProps.filter || this.state.filter || new Filter().setRegexp(nextProps.regexp || true);
+		const state: State = {filter};
 
 		if (this.props.initialFilterText !== nextProps.initialFilterText) {
-			this.filter.setFilter(nextProps.initialFilterText || '');
+			filter.setFilter(nextProps.initialFilterText || '');
 			evaluate = true;
 		}
 
 		if (this.props.regexp !== nextProps.regexp) {
-			this.filter.setRegexp(nextProps.regexp || true);
+			filter.setRegexp(nextProps.regexp || true);
 			evaluate = true;
 		}
 
 		if (evaluate)
-			this.callOnChange?.(nextProps.list);
+			this.callOnChange?.();
 
-		return;
+		return state;
 	}
 
 	callOnChange = (list: T[] = this.props.list) => {
-		const filteredOptions = this.filter.filter(list, this.props.mapper);
-		this.props.onChange(filteredOptions, this.filter.getFilter(), this.props.id);
+		const filteredOptions = this.state.filter.filter(list, this.props.mapper);
+		this.props.onChange(filteredOptions, this.state.filter.getFilter(), this.props.id);
 	};
 
 	render() {
@@ -100,7 +92,7 @@ export class TS_FilterInput<T>
 				id={id}
 				value={this.props.initialFilterText}
 				onChange={(filterText) => {
-					this.filter.setFilter(filterText);
+					this.state.filter.setFilter(filterText);
 					this.callOnChange();
 				}}
 				focus={focus}
