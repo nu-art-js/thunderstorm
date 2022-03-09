@@ -16,12 +16,11 @@
  * limitations under the License.
  */
 
-import {batchAction, currentTimeMillis, filterInstances, generateHex} from "@nu-art/ts-common";
+import {batchAction, currentTimeMillis, filterInstances, generateHex, PreDBObject} from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB, ApiPermissionsDB, DomainPermissionsDB, ProjectPermissionsDB} from "../modules/db-types/managment";
 import {GroupPermissionsDB, UserPermissionsDB} from "../modules/db-types/assign";
 import {PermissionsAssert} from "../modules/permissions-assert";
 import {DB_PermissionsGroup, User_Group} from "../..";
-import {PreDBObject} from "@nu-art/db-api-generator";
 
 function makeAlphaBetIdForTestOnly(length: number) {
 	let result = '';

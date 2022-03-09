@@ -19,10 +19,10 @@
 
 import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
 import {ApiTypeBinder, QueryParams} from '@nu-art/thunderstorm';
-import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUniuqe, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef, PreDBObject} from '..';
+import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUniuqe, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from '..';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
-import {addItemToArray, DB_BaseObject, DB_Object} from '@nu-art/ts-common';
+import {addItemToArray, DB_BaseObject, DB_Object, PreDBObject} from '@nu-art/ts-common';
 
 export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
 	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? '/' + pathSuffix : ''}`;

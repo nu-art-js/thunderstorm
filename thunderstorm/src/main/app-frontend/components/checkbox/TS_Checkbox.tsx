@@ -39,10 +39,8 @@ const CheckboxRenderer_DefaultBase = (borderRadius: string) => (props: CheckboxR
 		boxShadow: '0px 0 1px 0px #867979',
 	};
 
-	return <div className="ll_h_c">
-		<div style={boxStyle}
-				 id={props.id}
-				 onClick={props.onClick}>
+	return <div className="ll_h_c" onClick={props.onClick}>
+		<div style={boxStyle} id={props.id}>
 			<div style={innerStyle}/>
 		</div>
 		{props.label && <div style={{marginInlineStart: 8, marginTop: 1}}>{props.label}</div>}

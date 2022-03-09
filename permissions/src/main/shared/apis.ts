@@ -17,10 +17,9 @@
  */
 
 import {ApiWithBody, ApiWithQuery} from "@nu-art/thunderstorm";
-import {StringMap} from "@nu-art/ts-common";
+import {PreDBObject, StringMap} from "@nu-art/ts-common";
 import {DB_PermissionProject} from "./manager-types";
 import {User_Group} from "./assign-types";
-import {PreDBObject} from "@nu-art/db-api-generator";
 
 
 export type UserUrlsPermissions = {
