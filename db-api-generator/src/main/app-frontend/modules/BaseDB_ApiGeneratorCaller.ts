@@ -26,12 +26,11 @@ import {
 	ApiBinder_DBUpsert,
 	DefaultApiDefs,
 	GenericApiDef,
-	PreDBObject
 } from '../../index';
-import {DB_Object, FirestoreQuery} from '@nu-art/firebase';
+import {FirestoreQuery} from '@nu-art/firebase';
 import {ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 
-import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray} from '@nu-art/ts-common';
+import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray, DB_Object, PreDBObject} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
 
@@ -42,8 +41,7 @@ export type BaseApiConfig = {
 
 export type ApiCallerEventType = [SingleApiEvent, string, boolean] | [MultiApiEvent, string[], boolean];
 
-export abstract class
-BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config extends BaseApiConfig = BaseApiConfig>
+export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config extends BaseApiConfig = BaseApiConfig>
 	extends Module<BaseApiConfig> {
 
 	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {

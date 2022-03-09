@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {DB_Object} from "@nu-art/firebase";
+import {DB_Object} from "@nu-art/ts-common";
 import {
 	assert,
 	BadImplementationException,

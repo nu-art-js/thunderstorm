@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Clause_Where, DB_Object, FilterKeys, FirestoreQuery,} from '@nu-art/firebase';
+import {Clause_Where, FilterKeys, FirestoreQuery,} from '@nu-art/firebase';
 import {
 	__stringify,
 	_keys,
@@ -38,7 +38,9 @@ import {
 	tsValidateRegexp,
 	tsValidateTimestamp,
 	ValidationException,
-	ValidatorTypeResolver
+	ValidatorTypeResolver,
+    DB_Object,
+    PreDBObject
 } from '@nu-art/ts-common';
 import {ServerApi_Delete, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert} from './apis';
 import {
@@ -50,7 +52,7 @@ import {
 	ServerApi_Middleware
 } from '@nu-art/thunderstorm/backend';
 import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
-import {BadInputErrorBody, ErrorKey_BadInput, PreDBObject} from '../shared/types';
+import {BadInputErrorBody, ErrorKey_BadInput} from '../shared/types';
 
 const idLength = 32;
 export const tsValidateId = (length: number, mandatory: boolean = true) => tsValidateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);

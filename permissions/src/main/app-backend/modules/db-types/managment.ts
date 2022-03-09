@@ -34,9 +34,8 @@ import {
 	DB_PermissionDomain,
 	DB_PermissionProject,
 	Request_CreateGroup,
-	Request_UpdateApiPermissions
 } from '../_imports';
-import {auditBy, filterDuplicates, MUSTNeverHappenException, tsValidateArray, tsValidateRange, tsValidateRegexp, TypeValidator} from '@nu-art/ts-common';
+import {auditBy, filterDuplicates, MUSTNeverHappenException, PreDBObject, tsValidateArray, tsValidateRange, tsValidateRegexp, TypeValidator} from '@nu-art/ts-common';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {GroupPermissionsDB} from './assign';
 import {Clause_Where} from '@nu-art/firebase';
@@ -263,7 +262,7 @@ export class ApiDB_Class
 	registerApis(projectId: string, routes: string[]) {
 		return this.runInTransaction(async (transaction: FirestoreTransaction) => {
 			const existingProjectApis = await ApiPermissionsDB.query({where: {projectId: projectId}});
-			const apisToAdd: Request_UpdateApiPermissions[] = routes
+			const apisToAdd: PreDBObject<DB_PermissionApi>[] = routes
 				.filter(path => !existingProjectApis.find(api => api.path === path))
 				.map(path => ({path, projectId: projectId}));
 

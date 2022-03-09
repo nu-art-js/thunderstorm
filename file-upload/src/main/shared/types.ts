@@ -18,7 +18,7 @@
  */
 
 import {ApiWithBody, ApiWithQuery, BaseHttpRequest} from "@nu-art/thunderstorm";
-import {DB_Object} from "@nu-art/firebase";
+import {DB_Object} from "@nu-art/ts-common";
 import {
 	AuditBy,
 	ObjectTS

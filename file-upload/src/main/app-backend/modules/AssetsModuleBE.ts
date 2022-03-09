@@ -28,6 +28,7 @@ import {
 	ImplementationMissingException,
 	MB,
 	Minute,
+	PreDBObject,
 	ServerErrorSeverity,
 	ThisShouldNotHappenException,
 	TypedMap
@@ -42,7 +43,6 @@ import {FileExtension, MimeType} from 'file-type/core';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {BaseDB_ApiGenerator, DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {OnAssetUploaded} from './AssetBucketListener';
-import {PreDBObject} from '@nu-art/db-api-generator';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {

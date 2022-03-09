@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-import {DB_Object} from "@nu-art/firebase";
 import {assert, generateHex} from "@nu-art/ts-common";
 import {
 	__custom,

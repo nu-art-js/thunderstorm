@@ -17,10 +17,8 @@
  * limitations under the License.
  */
 import {FirestoreQuery} from "@nu-art/firebase";
-import {DB_BaseObject, DB_Object, PartialProperties} from "@nu-art/ts-common";
+import {DB_BaseObject, DB_Object, PartialProperties, PreDBObject} from "@nu-art/ts-common";
 import {ApiWithBody, ApiWithQuery, HttpMethod,} from "@nu-art/thunderstorm";
-
-export type PreDBObject<T extends DB_Object> = PartialProperties<T, keyof DB_Object>
 
 export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
 	Upsert: {

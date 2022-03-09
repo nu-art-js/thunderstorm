@@ -38,14 +38,8 @@ export type FirebaseConfig = {
 	messagingSenderId: string
 }
 
-export type DB_Object = {
-	_id: string;
-	__created: number;
-	__updated: number;
-}
 
 type Comparator = 'in' | 'array-contains' | 'array-contains-any' | '>' | '>=' | '<' | '<=' | '==';
-export type DB_RequestObject = Partial<DB_Object>
 
 export type QueryComparator<T> =
 	{ $ac: T extends (infer I)[] ? I : never } |

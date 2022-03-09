@@ -16,14 +16,13 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, StringMap} from "@nu-art/ts-common";
+import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDBObject, StringMap} from "@nu-art/ts-common";
 import {DB_PermissionProject, PredefinedGroup, PredefinedUser, Request_RegisterProject, Response_UsersCFsByShareGroups, UserUrlsPermissions} from "./_imports";
 import {PermissionsAssert} from "./permissions-assert";
 import {ApiPermissionsDB, ProjectPermissionsDB} from "./db-types/managment";
 import {HttpServer} from "@nu-art/thunderstorm/backend";
 import {GroupPermissionsDB, UserPermissionsDB} from "./db-types/assign";
 import {AccountModule} from "@nu-art/user-account/backend";
-import {PreDBObject} from "@nu-art/db-api-generator";
 
 type Config = {
 	project: PreDBObject<DB_PermissionProject> & DB_BaseObject

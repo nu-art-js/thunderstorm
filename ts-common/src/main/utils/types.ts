@@ -55,6 +55,7 @@ export type DB_BaseObject = {
 	_id: string;
 }
 export type DB_Object = DB_BaseObject & {
+	_v?: string
 	__created: number;
 	__updated: number;
 }
