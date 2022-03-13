@@ -29,8 +29,10 @@ import {
 	testNumber2,
 	testNumber3,
 	testString1,
-	testString2, testString3,
-	testString4
+	testString2,
+	testString3,
+	testString4,
+	testString5
 } from "../_core/consts";
 import {FB_Type, Query_TestCase} from "../_core/types";
 
@@ -139,6 +141,12 @@ const queryTests: QueryGeneral_TestCase[] = [
 		orderBy: [{key: "stringValue", order: "desc"}],
 		invertSort: false,
 		expected: [testInstance5, testInstance4, testInstance3]
+	},
+	{
+		label: `Query ARRAY EQUAL`,
+		where: {stringArray: {"$eq": testInstance1.stringArray}},
+		orderBy: [{key: "stringValue", order: "desc"}],
+		expected: [testInstance1]
 	},
 	{
 		label: "Query SELECT string prop",

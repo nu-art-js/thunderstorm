@@ -57,7 +57,7 @@ export type QueryComparator<T> =
 	{ $gte: number } |
 	{ $lt: number } |
 	{ $lte: number } |
-	{ $eq: number } |
+	{ $eq: T } |
 	{ $neq: T } ;
 
 export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = {
