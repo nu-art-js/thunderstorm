@@ -284,7 +284,7 @@ export class AssetsModuleBE_Class
 	private notifyFrontend = async (status: FileStatus, asset: DB_Asset, feId?: string) => {
 		if (status !== FileStatus.Completed && status !== FileStatus.Processing) {
 			const message = `Error while processing asset: ${status}\n Failed on \n  Asset: ${asset.feId}\n    Key: ${asset.key}\n   Type: ${asset.mimeType}\n   File: ${asset.name}`;
-			await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Error, this, message]);
+			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Error, this, message);
 		}
 
 		this.logDebug(`notify FE about asset ${feId}: ${status}`);

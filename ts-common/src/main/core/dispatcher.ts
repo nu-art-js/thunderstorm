@@ -36,7 +36,7 @@ export class Dispatcher<T,
 		this.filter = (listener: any) => !!listener[this.method];
 	}
 
-	public dispatchModule(p: P): R[] {
+	public dispatchModule(...p: P): R[] {
 		const listeners = Dispatcher.modulesResolver();
 		return listeners.filter(this.filter).map((listener: T) => {
 			// @ts-ignore
@@ -44,7 +44,7 @@ export class Dispatcher<T,
 		});
 	}
 
-	public async dispatchModuleAsync(p: P): Promise<R[]> {
+	public async dispatchModuleAsync(...p: P): Promise<R[]> {
 		const listeners = Dispatcher.modulesResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			// @ts-ignore
@@ -52,5 +52,3 @@ export class Dispatcher<T,
 		}));
 	}
 }
-
-

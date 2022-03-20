@@ -159,13 +159,13 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 	public getItem = (id?: string): DBType | undefined => id ? this.items[id] : undefined;
 
 	private dispatchSingle = (event: SingleApiEvent, itemId: string, success = true) => {
-		this.defaultDispatcher?.dispatchModule([event, itemId, success]);
-		this.defaultDispatcher?.dispatchUI([event, itemId, success]);
+		this.defaultDispatcher?.dispatchModule(event, itemId, success);
+		this.defaultDispatcher?.dispatchUI(event, itemId, success);
 	};
 
 	private dispatchMulti = (event: MultiApiEvent, itemId: string[], success = true) => {
-		this.defaultDispatcher?.dispatchModule([event, itemId, success]);
-		this.defaultDispatcher?.dispatchUI([event, itemId, success]);
+		this.defaultDispatcher?.dispatchModule(event, itemId, success);
+		this.defaultDispatcher?.dispatchUI(event, itemId, success);
 	};
 
 	protected async onEntryDeleted(item: DBType, requestDaTS_FilterInputta?: string): Promise<void> {

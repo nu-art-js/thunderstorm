@@ -40,8 +40,8 @@ export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?)
 };
 export const SuccessHandler_Toast: RequestSuccessHandler = (request) => request.successMessage && ToastModule.toastSuccess(request.successMessage);
 
-export const ErrorHandler_Dispatch: RequestErrorHandler<any> = (request) => dispatch_requestCompleted.dispatchUI([request.key, false, request.requestData]);
-export const SuccessHandler_Dispatch: RequestSuccessHandler = (request) => dispatch_requestCompleted.dispatchUI([request.key, true, request.requestData]);
+export const ErrorHandler_Dispatch: RequestErrorHandler<any> = (request) => dispatch_requestCompleted.dispatchUI(request.key, false, request.requestData);
+export const SuccessHandler_Dispatch: RequestSuccessHandler = (request) => dispatch_requestCompleted.dispatchUI(request.key, true, request.requestData);
 
 const modules: Module[] = [
 	ThunderstormModule,

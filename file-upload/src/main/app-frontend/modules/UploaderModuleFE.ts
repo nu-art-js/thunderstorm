@@ -44,7 +44,7 @@ export class UploaderFEModule_Class
 	}
 
 	protected dispatchFileStatusChange(id: string) {
-		this.dispatch_fileStatusChange.dispatchUI([id]);
+		this.dispatch_fileStatusChange.dispatchUI(id);
 	}
 
 	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {

@@ -64,7 +64,7 @@ export abstract class AppPageV2<P extends {} = {}, S extends {} = {}>
 		const newTitle = this.resolveTitle();
 		document.title = newTitle;
 		this.logDebug(`Mounting page: ${newTitle}`);
-		dispatch_onPageTitleChanged.dispatchUI([document.title]);
+		dispatch_onPageTitleChanged.dispatchUI(document.title);
 	};
 
 	private resolveTitle = () => typeof this.pageTitle === 'function' ? this.pageTitle() : this.pageTitle;

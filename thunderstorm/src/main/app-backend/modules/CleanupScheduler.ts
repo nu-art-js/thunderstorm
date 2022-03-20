@@ -29,7 +29,7 @@ export class CleanupScheduler_Class
 
 	onScheduledEvent = async (): Promise<any> => {
 		const cleanupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('cleanup-status', ['moduleKey']);
-		const cleanups = dispatch_onCleanupSchedulerAct.dispatchModule([]);
+		const cleanups = dispatch_onCleanupSchedulerAct.dispatchModule();
 		await Promise.all(cleanups.map(async cleanupItem => {
 			const doc = await cleanupStatusCollection.queryUnique({where: {moduleKey: cleanupItem.moduleKey}});
 			if (doc && doc.timestamp + cleanupItem.interval > currentTimeMillis())

@@ -59,7 +59,7 @@ export class PermissionsGroupModule_Class
 
 	protected async onQueryReturned(response: DB_PermissionsGroup[]): Promise<void> {
 		this.groups = response;
-		dispatch_onPermissionsGroupsLoaded.dispatchUI([]);
+		dispatch_onPermissionsGroupsLoaded.dispatchUI();
 	}
 
 	getGroups() {

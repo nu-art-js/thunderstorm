@@ -39,7 +39,7 @@ class ServerApi_SendReport
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_BugReport) {
-		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync([request]);
+		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync(request);
 		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data?.email || resp.find(e => e.key === 'RemoteProxy')?.data;
 
 		return await BugReportModule.saveFile(body, userId);

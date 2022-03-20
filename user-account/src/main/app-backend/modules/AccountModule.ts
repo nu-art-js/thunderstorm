@@ -113,7 +113,7 @@ export class AccountsModule_Class
 		const account = await this.createAccount(request);
 
 		const session = await this.login(request);
-		await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
+		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
 		return session;
 	}
 
@@ -127,7 +127,7 @@ export class AccountsModule_Class
 		});
 
 		const session = await this.login(request);
-		await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
+		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
 		return session;
 	}
 
@@ -135,7 +135,7 @@ export class AccountsModule_Class
 		let account: DB_Account;
 		if (password && password_check) {
 			account = await this.createAccount({password, password_check, email});
-			await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
 		} else
 			account = await this.createSAML(email);
 
@@ -212,7 +212,7 @@ export class AccountsModule_Class
 
 		const session = await this.upsertSession(account._id);
 
-		await dispatch_onUserLogin.dispatchModuleAsync([getUIAccount(account)]);
+		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
 		return session;
 	}
 
@@ -221,7 +221,7 @@ export class AccountsModule_Class
 		const account = await this.createSAML(_email);
 
 		const session = await this.upsertSession(account._id);
-		await dispatch_onUserLogin.dispatchModuleAsync([getUIAccount(account)]);
+		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
 		return session;
 	}
 
@@ -249,7 +249,7 @@ export class AccountsModule_Class
 		});
 
 		if (dispatchEvent)
-			await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(toRet)]);
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(toRet));
 
 		return toRet;
 	}
