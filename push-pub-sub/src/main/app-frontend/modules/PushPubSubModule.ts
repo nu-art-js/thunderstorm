@@ -168,7 +168,7 @@ export class PushPubSubModule_Class
 		const arr: DB_Notifications[] = JSON.parse(data.messages);
 		arr.forEach(s => {
 			s.persistent && NotificationsModule.addNotification(s);
-			this.dispatch_pushMessage.dispatchModule([s]);
+			this.dispatch_pushMessage.dispatchModule(s);
 		});
 	};
 

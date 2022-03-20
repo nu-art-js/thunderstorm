@@ -49,7 +49,7 @@ class ForceUpgrade_Class
 			.createRequest<ApiBinder_AssertAppVersion>(HttpMethod.GET, RequestKey_AssertAppVersion)
 			.setRelativeUrl(this.config.assertVersionUrl)
 			.execute((response) => {
-				dispatch_onUpgradeRequired.dispatchModule([response]);
+				dispatch_onUpgradeRequired.dispatchModule(response);
 			});
 	};
 }

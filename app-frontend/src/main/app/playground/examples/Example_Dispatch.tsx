@@ -42,7 +42,7 @@ export class Example_Dispatch
 	uiClickHandler = () => {
 		console.log("changing component 2 color...");
 		setTimeout(() => {
-			this.uiDispatcher.dispatchUI([]);
+			this.uiDispatcher.dispatchUI();
 		}, Second)
 	};
 

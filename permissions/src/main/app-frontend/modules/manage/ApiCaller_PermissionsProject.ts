@@ -62,7 +62,7 @@ export class PermissionsProjectModule_Class
 			return toRet.concat(project.customKeys || []);
 		}, [] as string[]);
 
-		dispatch_onPermissionsProjectsLoaded.dispatchUI([]);
+		dispatch_onPermissionsProjectsLoaded.dispatchUI();
 	}
 
 	fetchProjects() {

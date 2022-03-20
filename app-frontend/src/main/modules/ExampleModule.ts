@@ -49,8 +49,8 @@ export const RequestKey_TestApi = "TestApi";
 export const exampleDispatcher = new ThunderDispatcher<TestDispatch, 'testDispatch'>('testDispatch');
 
 export const dispatchAll = () => {
-	exampleDispatcher.dispatchUI([]);
-	exampleDispatcher.dispatchModule([]);
+	exampleDispatcher.dispatchUI();
+	exampleDispatcher.dispatchModule();
 };
 
 const mySubscriptions: BaseSubscriptionData[] = [{

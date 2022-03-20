@@ -29,17 +29,17 @@ export class NotificationsModule_Class
 
 	setNotificationList = (notifications: DB_Notifications[]) => {
 		this.notifications = notifications;
-		dispatch_NotificationsUpdated.dispatchUI([]);
+		dispatch_NotificationsUpdated.dispatchUI();
 	};
 
 	addNotification(newNotification: DB_Notifications) {
 		this.notifications.push(newNotification);
-		dispatch_NotificationsUpdated.dispatchUI([]);
+		dispatch_NotificationsUpdated.dispatchUI();
 	}
 
 	removeNotification(notification: DB_Notifications) {
 		removeItemFromArray(this.notifications, notification);
-		dispatch_NotificationsUpdated.dispatchUI([]);
+		dispatch_NotificationsUpdated.dispatchUI();
 		return notification._id;
 	}
 
@@ -65,7 +65,7 @@ export class NotificationsModule_Class
 			.setOnError('Something went wrong while reading your notification')
 			.setTimeout(Minute)
 			.execute(() => {
-				dispatch_NotificationsUpdated.dispatchUI([]);
+				dispatch_NotificationsUpdated.dispatchUI();
 			});
 	};
 

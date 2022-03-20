@@ -201,11 +201,11 @@ export class ToastModule_Class
 
 	hideToast = (toast?: Toast_Model) => {
 		// in the future we can add more than one toast and manage a stack of them!!
-		dispatch_showToast.dispatchUI([]);
+		dispatch_showToast.dispatchUI();
 	};
 
 	private toastImpl(toast: Toast_Model) {
-		dispatch_showToast.dispatchUI([toast]);
+		dispatch_showToast.dispatchUI(toast);
 	}
 }
 

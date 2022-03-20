@@ -107,7 +107,7 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 	}
 
 	protected dispatchFileStatusChange(id: string) {
-		this.dispatch_fileStatusChange.dispatchModule([id]);
+		this.dispatch_fileStatusChange.dispatchModule(id);
 	}
 
 	uploadImpl(files: FilesToUpload[]): BaseUploaderFile[] {

@@ -48,10 +48,10 @@ export class TooltipModule_Class
 		if (!tooltip.location && e)
 			tooltip.location = {x: e.pageX + 10, y: e.pageY + 15};
 
-		dispatch_showTooltip.dispatchUI([tooltip]);
+		dispatch_showTooltip.dispatchUI(tooltip);
 	};
 
-	hide = () => dispatch_showTooltip.dispatchUI([]);
+	hide = () => dispatch_showTooltip.dispatchUI();
 }
 
 export const TooltipModule = new TooltipModule_Class();

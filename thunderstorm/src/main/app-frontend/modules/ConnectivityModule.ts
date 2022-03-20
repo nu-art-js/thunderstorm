@@ -25,8 +25,8 @@ class ConnectivityModule_Class
 
 	handleConnectionChange = () => {
 		this.connected = this.getConnectivityStatus();
-		this.dispatch_onConnectivityChange.dispatchModule([]);
-		this.dispatch_onConnectivityChange.dispatchUI([]);
+		this.dispatch_onConnectivityChange.dispatchModule();
+		this.dispatch_onConnectivityChange.dispatchUI();
 	};
 
 	private getConnectivityStatus = () => navigator.onLine;

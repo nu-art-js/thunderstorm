@@ -58,11 +58,11 @@ export class DialogModule_Class
 	}
 
 	public close = () => {
-		dispatch_showDialog.dispatchUI([]);
+		dispatch_showDialog.dispatchUI();
 	};
 
 	public show = (params: Dialog_Model) => {
-		dispatch_showDialog.dispatchUI([params]);
+		dispatch_showDialog.dispatchUI(params);
 	};
 }
 

@@ -34,10 +34,10 @@ export class MenuModule_Class
 	private hideMenu = new ThunderDispatcher<MenuListener, '__onMenuHide'>('__onMenuHide');
 
 	show = (model: Menu_Model) => {
-		this.showMenu.dispatchUI([model]);
+		this.showMenu.dispatchUI(model);
 	};
 
-	hide = (id: string) => this.hideMenu.dispatchUI([id]);
+	hide = (id: string) => this.hideMenu.dispatchUI(id);
 }
 
 export const MenuModule = new MenuModule_Class();

@@ -203,13 +203,13 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	};
 
 	private dispatchSingle = (event: SingleApiEvent, item: DBType) => {
-		this.defaultDispatcher?.dispatchModule([event, item]);
-		this.defaultDispatcher?.dispatchUI([event, item]);
+		this.defaultDispatcher?.dispatchModule(event, item);
+		this.defaultDispatcher?.dispatchUI(event, item);
 	};
 
 	private dispatchMulti = (event: MultiApiEvent, items: DBType[]) => {
-		this.defaultDispatcher?.dispatchModule([event, items]);
-		this.defaultDispatcher?.dispatchUI([event, items]);
+		this.defaultDispatcher?.dispatchModule(event, items);
+		this.defaultDispatcher?.dispatchUI(event, items);
 	};
 
 	protected async onEntryDeleted(item: DBType, requestData?: string): Promise<void> {

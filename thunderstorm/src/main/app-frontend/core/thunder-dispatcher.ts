@@ -36,7 +36,7 @@ export class ThunderDispatcher<T,
 		super(method);
 	}
 
-	public dispatchUI(p: P): R[] {
+	public dispatchUI(...p: P): R[] {
 		const listeners = ThunderDispatcher.listenersResolver();
 		return listeners.filter(this.filter).map((listener: T) => {
 			// @ts-ignore
@@ -44,7 +44,7 @@ export class ThunderDispatcher<T,
 		});
 	}
 
-	public async dispatchUIAsync(p: P): Promise<R[]> {
+	public async dispatchUIAsync(...p: P): Promise<R[]> {
 		const listeners = ThunderDispatcher.listenersResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			// @ts-ignore
@@ -52,13 +52,13 @@ export class ThunderDispatcher<T,
 		}));
 	}
 
-	public dispatchAll(p: P): R[] {
-		const moduleResponses = this.dispatchModule(p);
-		const uiResponses = this.dispatchUI(p);
+	public dispatchAll(...p: P): R[] {
+		const moduleResponses = this.dispatchModule(...p);
+		const uiResponses = this.dispatchUI(...p);
 		return [...moduleResponses, ...uiResponses];
 	}
 
-	public async dispatchAllAsync(p: P): Promise<R[]> {
+	public async dispatchAllAsync(...p: P): Promise<R[]> {
 		const listenersUI = ThunderDispatcher.listenersResolver();
 		const listenersModules = Dispatcher.modulesResolver();
 

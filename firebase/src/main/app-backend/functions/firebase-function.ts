@@ -295,7 +295,7 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 						'\n' + `File changed ${object.name}` + '\n with attributes: ' + __stringify(context) + '\n' + __stringify(e);
 					this.logError(_message);
 					try {
-						await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
+						await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, _message);
 					} catch (_e: any) {
 						this.logError('Error while handing bucket listener error', _e);
 					}
@@ -330,7 +330,7 @@ export abstract class Firebase_PubSubFunction<T>
 				'\n' + ` to topic ${this.topic}` + '\n with attributes: ' + __stringify(originalMessage.attributes) + '\n' + __stringify(e);
 			this.logError(_message);
 			try {
-				await dispatch_onServerError.dispatchModuleAsync([ServerErrorSeverity.Critical, this, _message]);
+				await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, _message);
 			} catch (_e: any) {
 				this.logError('Error while handing pubsub error', _e);
 			}

@@ -39,8 +39,8 @@ export class StorageModule_Class
 
 	private handleStorageEvent = (e: StorageEvent) => {
 		const dispatcher = new ThunderDispatcher<StorageKeyEvent, '__onStorageKeyEvent'>('__onStorageKeyEvent');
-		dispatcher.dispatchUI([e]);
-		dispatcher.dispatchModule([e]);
+		dispatcher.dispatchUI(e);
+		dispatcher.dispatchModule(e);
 	};
 
 	getStorage = (persist: boolean) => persist ? localStorage : sessionStorage;

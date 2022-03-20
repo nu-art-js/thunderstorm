@@ -38,7 +38,7 @@ export class WindowModule_Class
 	}
 
 	private onWindowResized = () => {
-		dispatch_WindowResized.dispatchUI([]);
+		dispatch_WindowResized.dispatchUI();
 	};
 }
 
