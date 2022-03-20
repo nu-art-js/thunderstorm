@@ -1,4 +1,5 @@
 import {Module} from '@nu-art/ts-common';
+import {ToastModule} from './toaster/ToasterModule';
 
 type Config = {
 	appName: string
@@ -68,6 +69,11 @@ class ThunderstormModule_Class
 		}
 
 		themeTag.setAttribute('content', themeColor);
+	}
+
+	async copyToClipboard(toCopy: string) {
+		await navigator.clipboard.writeText(toCopy);
+		ToastModule.toastInfo(`Copied to Clipboard:\n"${toCopy}"`);
 	}
 
 	getAppName() {

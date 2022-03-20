@@ -63,6 +63,4 @@ export * from './validator/validator';
 export * from './consts/consts';
 
 export * from './modules/CliParamsModule';
-
-
-
+export * from './modules/csv-serializer';

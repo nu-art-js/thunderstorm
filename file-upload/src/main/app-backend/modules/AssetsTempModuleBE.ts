@@ -40,13 +40,13 @@ export const _assetValidator: TypeValidator<DB_Asset> = {
 export class AssetsTempModuleBE_Class
 	extends BaseDB_ApiGenerator<DB_Asset> {
 
-	static __validator: TypeValidator<DB_Asset> = {
+	static _validator: TypeValidator<DB_Asset> = {
 		..._assetValidator,
 		timestamp: tsValidateTimestamp(Minute),
 	};
 
 	constructor() {
-		super('assets-temp', AssetsTempModuleBE_Class.__validator, 'assets-temp');
+		super('assets-temp', AssetsTempModuleBE_Class._validator, 'assets-temp');
 	}
 
 }

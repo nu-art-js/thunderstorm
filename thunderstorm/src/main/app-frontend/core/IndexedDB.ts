@@ -35,7 +35,7 @@ export type DBConfig<T extends ObjectTS, Ks extends keyof T> = {
 
 export type IndexKeys<T extends ObjectTS, Ks extends keyof T> = { [K in Ks]: T[K] };
 
-type IndexDb_Query = {
+export type IndexDb_Query = {
 	query?: string | number | string[] | number[],
 	indexKey?: string,
 	limit?: number
@@ -109,7 +109,6 @@ export class IndexedDB<T extends ObjectTS, Ks extends keyof T> {
 				if (!cursor)
 					return resolve(matches);
 
-				console.log(cursor.value);
 				if (filter(cursor.value))
 					matches.push(cursor.value);
 
