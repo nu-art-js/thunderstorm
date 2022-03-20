@@ -24,6 +24,7 @@ import {HTMLProps} from 'react';
 import {Stylable} from '../tools/Stylable';
 import React = require('react');
 
+export type TableHeaders<T extends ObjectTS> = (keyof T)[]
 export type HeaderRenderer<T extends ObjectTS> = {
 	[P in keyof Partial<T>]: (columnKey: P) => React.ReactNode
 };

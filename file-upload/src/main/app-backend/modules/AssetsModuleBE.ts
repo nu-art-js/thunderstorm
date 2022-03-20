@@ -110,7 +110,7 @@ export class AssetsModuleBE_Class
 	}
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
-		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, chunk => AssetsModuleBE.query({where: {_id: {$in: chunk}}}));
+		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, async chunk => await AssetsModuleBE.query({where: {_id: {$in: chunk}}}));
 		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)));
 		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()));
 

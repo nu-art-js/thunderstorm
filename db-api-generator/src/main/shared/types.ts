@@ -16,39 +16,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {FirestoreQuery} from "@nu-art/firebase";
-import {DB_BaseObject, DB_Object, PartialProperties, PreDBObject} from "@nu-art/ts-common";
-import {ApiWithBody, ApiWithQuery, HttpMethod,} from "@nu-art/thunderstorm";
+import {FirestoreQuery} from '@nu-art/firebase';
+import {DB_BaseObject, DB_Object, PreDBObject} from '@nu-art/ts-common';
+import {ApiWithBody, ApiWithQuery, HttpMethod,} from '@nu-art/thunderstorm';
 
 export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
 	Upsert: {
 		method: HttpMethod.POST,
-		key: "upsert",
-		suffix: "upsert"
+		key: 'upsert',
+		suffix: 'upsert'
 	},
 	Patch: {
 		method: HttpMethod.POST,
-		key: "patch",
-		suffix: "patch"
+		key: 'patch',
+		suffix: 'patch'
 	},
 	Delete: {
 		method: HttpMethod.GET, // delete doesn't works, so we changed it to get
-		key: "delete",
-		suffix: "delete"
+		key: 'delete',
+		suffix: 'delete'
 	},
 	Unique: {
 		method: HttpMethod.GET,
-		key: "unique",
-		suffix: "unique"
+		key: 'unique',
+		suffix: 'unique'
 	},
 	Query: {
 		method: HttpMethod.POST,
-		key: "query",
-		suffix: "query"
+		key: 'query',
+		suffix: 'query'
 	},
 };
 
-export const ErrorKey_BadInput = "bad-input";
+export const ErrorKey_BadInput = 'bad-input';
 
 export type BadInputErrorBody = { path: string, input?: string };
 

@@ -26,6 +26,7 @@ import {
 	batchAction,
 	currentTimeMillis,
 	Day,
+	DB_Object,
 	filterDuplicates,
 	filterInstances,
 	generateHex,
@@ -33,14 +34,13 @@ import {
 	merge,
 	Module,
 	ObjectTS,
+	PreDBObject,
 	ThisShouldNotHappenException,
 	tsValidate,
 	tsValidateRegexp,
 	tsValidateTimestamp,
 	ValidationException,
-	ValidatorTypeResolver,
-    DB_Object,
-    PreDBObject
+	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {ServerApi_Delete, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert} from './apis';
 import {
@@ -62,6 +62,7 @@ export const tsValidateBucketUrl = (mandatory?: boolean) => tsValidateRegexp(
 	/gs?:\/\/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
 export const tsValidateGeneralUrl = (mandatory?: boolean) => tsValidateRegexp(
 	/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
+export const tsValidateVersion = tsValidateRegexp(/\d{1,3}\.\d{1,3}\.\d{1,3}/);
 export const tsValidateUniqueId = tsValidateId(idLength);
 export const tsValidateOptionalId = tsValidateId(idLength, false);
 export const tsValidateStringWithDashes = tsValidateRegexp(/^[A-Za-z-]+$/);
@@ -81,6 +82,7 @@ export type DBApiConfig<Type extends ObjectTS> = {
 	lockKeys: (keyof Type)[]
 	collectionName: string
 	itemName: string
+	versions: string[]
 	externalFilterKeys: FilterKeys<Type>
 }
 
@@ -104,14 +106,16 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	private validator: ValidatorTypeResolver<DBType>;
 	static __validator = {
 		_id: tsValidateUniqueId,
+		_v: tsValidateVersion,
 		__created: tsValidateTimestamp(),
 		__updated: tsValidateTimestamp(),
 	};
 
-	protected constructor(collectionName: string, validator: ValidatorTypeResolver<DBType>, itemName: string) {
+
+	protected constructor(collectionName: string, validator: ValidatorTypeResolver<DBType>, itemName: string, versions = ['1.0.0']) {
 		super();
 		// @ts-ignore
-		this.setDefaultConfig({itemName, collectionName, externalFilterKeys: ['_id'], lockKeys: ['_id', '__created', '__updated']});
+		this.setDefaultConfig({itemName, collectionName, externalFilterKeys: ['_id'], lockKeys: ['_id', '_v', '__created', '__updated'], versions});
 		this.validator = validator;
 	}
 
@@ -272,6 +276,29 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return [];
 	}
 
+	private async _preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
+		await this.upgradeInstances([dbInstance]);
+		await this.preUpsertProcessing(transaction, dbInstance, request);
+	}
+
+	protected async upgradeInstances(dbInstances: DBType[]) {
+		dbInstances.map(async dbInstance => {
+			const instanceVersion = dbInstance._v;
+			const currentVersion = this.config.versions[0];
+			if (instanceVersion !== currentVersion)
+				try {
+					await this.upgradeInstance(dbInstance, currentVersion);
+				} catch (e: any) {
+					throw new ApiException(422, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`, e.message);
+				}
+
+			dbInstance._v = currentVersion;
+		});
+	}
+
+	protected upgradeInstance(dbInstance: DBType, toVersion: string) {
+	}
+
 	/**
 	 * Override this method to customize the assertions that should be done before the insertion of the document to the DB.
 	 *
@@ -330,7 +357,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	// };
 
 	async createImpl_Read(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
-		await this.preUpsertProcessing(transaction, instance, request);
+		await this._preUpsertProcessing(transaction, instance, request);
 		await this.validateImpl(instance);
 		await this.assertUniqueness(transaction, instance, request);
 		return async () => transaction.insert(this.collection, instance);
@@ -446,7 +473,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	}
 
 	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
-		await this.preUpsertProcessing(transaction, dbInstance, request);
+		await this._preUpsertProcessing(transaction, dbInstance, request);
 		await this.validateImpl(dbInstance);
 		await this.assertUniqueness(transaction, dbInstance, request);
 		return transaction.upsert_Read(this.collection, dbInstance);
@@ -555,6 +582,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		if (!dbItem)
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique query: ${JSON.stringify(where)}`);
 
+		await this.upgradeInstances([dbItem]);
 		return dbItem;
 	}
 
@@ -568,10 +596,14 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of an array of documents.
 	 */
 	async query(query: FirestoreQuery<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+		let items;
 		if (transaction)
-			return await transaction.query(this.collection, query);
+			items = await transaction.query(this.collection, query);
 		else
-			return await this.collection.query(query);
+			items = await this.collection.query(query);
+
+		await this.upgradeInstances(items);
+		return items;
 	}
 
 	/**
