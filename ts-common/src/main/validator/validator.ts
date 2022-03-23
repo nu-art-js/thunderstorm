@@ -60,7 +60,7 @@ export class ValidationException
 	}
 }
 
-const assertMandatory = (mandatory: boolean, path: string, input?: any) => {
+export const assertValidateMandatoryProperty = (mandatory: boolean, path: string, input?: any) => {
 	if (input !== undefined && input !== null)
 		return;
 
@@ -70,13 +70,13 @@ const assertMandatory = (mandatory: boolean, path: string, input?: any) => {
 
 export const tsValidateExists = (mandatory = true): Validator<any> => {
 	return (path: string, input?: any) => {
-		assertMandatory(mandatory, path, input);
+		assertValidateMandatoryProperty(mandatory, path, input);
 	};
 };
 
 export const tsValidateObjectValues = <V, T = { [k: string]: V }>(validator: ValidatorTypeResolver<V>, mandatory = true): Validator<T> =>
 	(path: string, input?: T) => {
-		assertMandatory(mandatory, path, input);
+		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
 
@@ -97,7 +97,7 @@ export const tsValidateObjectValues = <V, T = { [k: string]: V }>(validator: Val
 
 export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true): Validator<I[]> =>
 	(path, input?: I[]) => {
-		assertMandatory(mandatory, path, input);
+		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
 
@@ -109,7 +109,7 @@ export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: Va
 
 export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<string> => {
 	return (path: string, input?: string) => {
-		assertMandatory(mandatory, path, input);
+		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
 
@@ -122,7 +122,7 @@ export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<st
 
 export const tsValidateNumber = (mandatory = true): Validator<number> => {
 	return (path: string, input?: number) => {
-		assertMandatory(mandatory, path, input);
+		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
 
@@ -136,7 +136,7 @@ export const tsValidateNumber = (mandatory = true): Validator<number> => {
 
 export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 	return (path: string, input?: boolean) => {
-		assertMandatory(mandatory, path, input);
+		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
 
@@ -150,7 +150,7 @@ export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 
 export const tsValidateValue = (values: string[], mandatory = true): Validator<string> => {
 	return (path: string, input?: string) => {
-		assertMandatory(mandatory, path, input);
+		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
 
@@ -163,7 +163,7 @@ export const tsValidateValue = (values: string[], mandatory = true): Validator<s
 
 export const tsValidateRange = (ranges: [number, number][], mandatory = true): Validator<number> => {
 	return (path: string, input?: number) => {
-		assertMandatory(mandatory, path, input);
+		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
 
@@ -220,7 +220,7 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 
 export const tsValidateTimestamp = (interval?: number, mandatory = true): Validator<number> => {
 	return (path: string, input?: number) => {
-		assertMandatory(mandatory, path, input);
+		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
 
