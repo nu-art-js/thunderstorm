@@ -23,4 +23,4 @@ import {scenarioRemoveData} from "./test/remove-data";
 
 export const testDatabase = __scenario("test-database");
 testDatabase.add(scenarioAddData);
-// testDatabase.add(scenarioRemoveData)
+testDatabase.add(scenarioRemoveData)

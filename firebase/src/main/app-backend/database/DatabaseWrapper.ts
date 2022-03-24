@@ -30,6 +30,7 @@ import {
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
 import { getDatabase } from 'firebase-admin/database'
+import {DataSnapshot} from "@firebase/database-types";
 
 export class DatabaseWrapper
 	extends FirebaseBaseWrapper {
@@ -106,7 +107,7 @@ export class DatabaseWrapper
 		return this.delete(path, assertionRegexp);
 	}
 
-	public async delete<T>(path: string, assertionRegexp: string = "^/.*?/.*") {
+	public async delete<T>(path: string, assertionRegexp: string = "^/.*?/.*"): Promise<T | undefined> {
 		if (!path)
 			throw new BadImplementationException(`Falsy value, path: '${path}'`);
 
@@ -114,7 +115,19 @@ export class DatabaseWrapper
 			throw new BadImplementationException(`path: '${path}'  does not match assertion: '${assertionRegexp}'`);
 
 		try {
-			return await this.database.ref(path).remove();
+			return new Promise<T>(async (resolve,reject) => {
+				let val: T;
+				await this.database.ref(path).transaction(
+					(a: any) => {
+						val = a;
+						return null;
+					},
+					(a: Error | null, b: boolean, c: DataSnapshot | null) => {
+						resolve(val)
+					}
+				)
+				reject()
+			})
 		} catch (e) {
 			throw new BadImplementationException(`Error while removing path: ${path}`, e);
 		}

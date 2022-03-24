@@ -46,6 +46,12 @@ const removeLowerNode = () => myDb.processDirty('Remove a lower node only delete
 	assert("Values don't match", val, compareVal);
 });
 
+const removeAndReturn = () => myDb.processDirty('Check return value on delete', async db => {
+	await db.set(objectModel.path, objectModel.value);
+	const returnValue = await db.delete(objectModel.path);
+	assert("Return value doesn't match the deleted one", returnValue, objectModel.value);
+});
+
 const removeFail = (model: ModelFail) => myDb.processDirty(model.label, async db => {
 	await db.delete(model.path as string);
 }).expectToFail(BadImplementationException, e => e.message.startsWith(model.errorMessage));
@@ -88,7 +94,8 @@ const objectModel: { path: string; label: string; value: { a?: number; b: string
 };
 
 export const scenarioRemoveData = __scenario("Remove data");
-scenarioRemoveData.add(removeData());
-scenarioRemoveData.add(removeHigherNode());
-scenarioRemoveData.add(removeLowerNode());
-models.forEach(m => scenarioRemoveData.add(removeFail(m)));
+// scenarioRemoveData.add(removeData());
+// scenarioRemoveData.add(removeHigherNode());
+// scenarioRemoveData.add(removeLowerNode());
+// models.forEach(m => scenarioRemoveData.add(removeFail(m)));
+scenarioRemoveData.add(removeAndReturn());
