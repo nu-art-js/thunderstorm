@@ -121,7 +121,14 @@ export class DatabaseWrapper
 						val = a;
 						return null;
 					},
-					(a: Error | null, b: boolean, c: Firebase_DataSnapshot | null) => {
+					(error: Error | null, committed: boolean, snapshot: Firebase_DataSnapshot | null) => {
+						if(error)
+							return reject();
+
+						// Transaction aborted with return undefined
+						if(!committed)
+							return reject()
+
 						resolve(val)
 					}
 				)
