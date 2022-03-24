@@ -128,7 +128,7 @@ export class FirestoreTransaction {
 	}
 
 	async delete<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
-		await (await this.delete_Read(collection, ourQuery))()
+		return (await this.delete_Read(collection, ourQuery))()
 	}
 
 	async delete_Read<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
