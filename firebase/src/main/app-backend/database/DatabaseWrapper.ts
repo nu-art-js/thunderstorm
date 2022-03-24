@@ -18,9 +18,9 @@
 
 // import {FirestoreCollection} from "./FirestoreCollection";
 import {
-	FirebaseListener,
 	Firebase_DataSnapshot,
-	Firebase_DB
+	Firebase_DB,
+	FirebaseListener
 } from "./types";
 import {
 	BadImplementationException,
@@ -29,8 +29,7 @@ import {
 } from "@nu-art/ts-common";
 import {FirebaseSession} from "../auth/firebase-session";
 import {FirebaseBaseWrapper} from "../auth/FirebaseBaseWrapper";
-import { getDatabase } from 'firebase-admin/database'
-import {DataSnapshot} from "@firebase/database-types";
+import {getDatabase} from 'firebase-admin/database'
 
 export class DatabaseWrapper
 	extends FirebaseBaseWrapper {
@@ -115,14 +114,14 @@ export class DatabaseWrapper
 			throw new BadImplementationException(`path: '${path}'  does not match assertion: '${assertionRegexp}'`);
 
 		try {
-			return new Promise<T>(async (resolve,reject) => {
+			return new Promise<T>(async (resolve, reject) => {
 				let val: T;
 				await this.database.ref(path).transaction(
 					(a: any) => {
 						val = a;
 						return null;
 					},
-					(a: Error | null, b: boolean, c: DataSnapshot | null) => {
+					(a: Error | null, b: boolean, c: Firebase_DataSnapshot | null) => {
 						resolve(val)
 					}
 				)
