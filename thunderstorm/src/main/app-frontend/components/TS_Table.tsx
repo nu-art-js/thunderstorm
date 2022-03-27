@@ -24,37 +24,30 @@ import {HTMLProps} from 'react';
 import {Stylable} from '../tools/Stylable';
 import React = require('react');
 
-export type TableHeaders<T extends ObjectTS> = (keyof T)[]
-export type HeaderRenderer<T extends ObjectTS> = {
-	[P in keyof Partial<T>]: (columnKey: P) => React.ReactNode
+export type TableHeaders<R extends ObjectTS, A extends string = never> = ((keyof R) | A)[]
+
+export type HeaderRenderer<R extends ObjectTS, A extends string = never> = {
+	[P in ((keyof Partial<R>) | A)]: (columnKey: keyof R | A) => React.ReactNode
 };
 
-export type ActionItemRenderer<R extends ObjectTS, K> = (rowIndex: number, rowItem: R, actionKey: K) => React.ReactNode;
-export type ActionsRenderer<R extends ObjectTS, A extends ObjectTS> = {
-	[K in keyof A]: ActionItemRenderer<R, K>
+export type CellRenderer<R extends ObjectTS, A extends string = never> = (prop: keyof R | A, item: R, index: number) => React.ReactNode;
+export type RowRenderer<R extends ObjectTS, A extends string = never> = {
+	[P in ((keyof Partial<R>) | A)]: CellRenderer<R, A>
 };
 
-export type CellRenderer<R extends ObjectTS, K extends keyof R = keyof R, V extends R[K] = R[K]> = (prop: K, item: R, index: number, value: V) => React.ReactNode;
-export type RowRenderer<R extends ObjectTS> = {
-	[K in keyof Partial<R>]: CellRenderer<R, K, R[K]>
-};
-
-export type TableProps<R extends ObjectTS, A extends ObjectTS = never> = Stylable & {
+export type TableProps<R extends ObjectTS, A extends string = never> = Stylable & {
 	id: string,
-	header: (keyof R)[],
+	header: TableHeaders<R, A>,
 	rows: R[],
-	headerRenderer?: ((columnKey: keyof R) => React.ReactNode) | HeaderRenderer<R>,
-	cellRenderer: CellRenderer<R, keyof R, R[keyof R]> | RowRenderer<R>
-	actions?: (keyof A)[],
-	actionHeaderRenderer?: ((columnKey: keyof A) => React.ReactNode) | HeaderRenderer<A>,
-	actionsRenderer?: ActionsRenderer<R, A> | ActionItemRenderer<R, keyof A>
+	headerRenderer?: ((columnKey: ((keyof R) | A)) => React.ReactNode) | HeaderRenderer<R, A>,
+	cellRenderer: CellRenderer<R, A> | RowRenderer<R, A>
 	table?: HTMLProps<HTMLTableElement> | (() => HTMLProps<HTMLTableElement>)
 	body?: HTMLProps<HTMLTableSectionElement> | (() => HTMLProps<HTMLTableSectionElement>)
 	tr?: HTMLProps<HTMLTableRowElement> | ((row: R | undefined, rowIndex: number) => HTMLProps<HTMLTableRowElement>)
 	td?: HTMLProps<HTMLTableDataCellElement> | ((row: R | undefined, rowIndex: number, columnKey: keyof R | keyof A) => HTMLProps<HTMLTableDataCellElement>)
 };
 
-export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
+export class TS_Table<R extends ObjectTS, A extends string = never>
 	extends React.Component<TableProps<R, A>, any> {
 	static defaultProps = {
 		actionHeaderRenderer: (action: any) => <div>{action}</div>
@@ -77,65 +70,38 @@ export class TS_Table<R extends ObjectTS, A extends ObjectTS = never>
 		if (!this.props.headerRenderer)
 			return;
 
-		let renderers: HeaderRenderer<R>;
+		let renderers: HeaderRenderer<R, A>;
 		if (typeof this.props.headerRenderer === 'object')
 			renderers = this.props.headerRenderer;
 		else
 			renderers = this.props.header.reduce((toRet, headerProp) => {
 				toRet[headerProp] = this.props.headerRenderer as ((columnKey: keyof R) => React.ReactNode);
 				return toRet;
-			}, {} as HeaderRenderer<R>);
-
-		let actionsHeaderRenderers: HeaderRenderer<A>;
-		if (typeof this.props.actionHeaderRenderer === 'object')
-			actionsHeaderRenderers = this.props.actionHeaderRenderer;
-		else
-			actionsHeaderRenderers = (this.props.actions || []).reduce((toRet, headerProp) => {
-				toRet[headerProp] = this.props.actionHeaderRenderer as ((columnKey: keyof A) => React.ReactNode);
-				return toRet;
-			}, {} as HeaderRenderer<A>);
+			}, {} as HeaderRenderer<R, A>);
 
 		return (
 			<tr key={`${this.props.id}-0`} {...(typeof this.props.tr === 'function' ? this.props.tr(undefined, -1) : this.props.tr)}>
 				{this.props.header.map((header, index) => <td
 					key={`${this.props.id}-${index}`} {...(typeof this.props.td === 'function' ? this.props.td(undefined, -1, header) : this.props.td)}>{renderers[header](header)}</td>)}
-				{this.props.actions?.map((action, index) => <td
-					key={`${this.props.id}-${this.props.header.length + index}`} {...(typeof this.props.td === 'function' ? this.props.td(undefined, -1, action) : this.props.td)}>{actionsHeaderRenderers[action](action)}</td>)}
 			</tr>
 		);
 	}
 
 	private renderTableBody() {
-		let renderers: RowRenderer<R>;
+		let renderers: RowRenderer<R, A>;
 		if (typeof this.props.cellRenderer === 'object')
 			renderers = this.props.cellRenderer;
 		else
 			renderers = this.props.header.reduce((toRet, headerProp) => {
-				toRet[headerProp] = this.props.cellRenderer as CellRenderer<R>;
+				toRet[headerProp] = this.props.cellRenderer as CellRenderer<R, A>;
 				return toRet;
-			}, {} as RowRenderer<R>);
-
-		let actionsRenderers: ActionsRenderer<R, A> | undefined;
-		if (typeof this.props.actionsRenderer === 'object')
-			actionsRenderers = this.props.actionsRenderer;
-		else
-			actionsRenderers = this.props.actions?.reduce((toRet, actionKey) => {
-				toRet[actionKey] = this.props.actionsRenderer as ActionItemRenderer<R, keyof A>;
-				return toRet;
-			}, {} as ActionsRenderer<R, A>);
-
+			}, {} as RowRenderer<R, A>);
 
 		return this.props.rows.map((row, rowIndex) => (
 			<tr key={`${this.props.id}-${rowIndex}`} {...(typeof this.props.tr === 'function' ? this.props.tr(row, rowIndex) : this.props.tr)}>
 				{this.props.header.map((header, columnIndex) => {
 					return <td key={`${this.props.id}-${columnIndex}`} {...(typeof this.props.td === 'function' ? this.props.td(row, rowIndex, header) : this.props.td)}>
-						{renderers[header](this.props.header[columnIndex], row, rowIndex, row[header])}
-					</td>;
-				})}
-				{this.props.actions?.map((actionKey, index) => {
-					return <td
-						key={`${this.props.id}-${this.props.header.length + index}`} {...(typeof this.props.td === 'function' ? this.props.td(row, rowIndex, actionKey) : this.props.td)}>
-						{actionsRenderers?.[actionKey](rowIndex, row, actionKey)}
+						{renderers[header](header, row, rowIndex)}
 					</td>;
 				})}
 			</tr>
