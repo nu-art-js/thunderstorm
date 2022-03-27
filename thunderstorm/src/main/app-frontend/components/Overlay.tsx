@@ -39,7 +39,6 @@ const overlayStyle = (zIndex: number): CSSProperties => ({
 
 const childrenStyle = (zIndex: number) => ({
 	zIndex,
-	display: 'inline-block'
 });
 
 export class Overlay
