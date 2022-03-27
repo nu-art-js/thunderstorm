@@ -28,7 +28,7 @@ import {Adapter,} from '../adapter/Adapter';
 import {Stylable} from '../../tools/Stylable';
 import {Overlay} from '../Overlay';
 import {TS_Tree} from '../tree/TS_Tree';
-import {UIComponent} from '../../core/UIComponent';
+import {BaseComponent} from '../../core/BaseComponent';
 
 const defaultTitleHeight = '28px';
 const defaultListHeight = '150px';
@@ -111,7 +111,7 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	placeholder?: string,
 	inputValue?: string,
 
-	onNoMatchingSelectionForString?: (selected?: string) => void
+	onNoMatchingSelectionForString?: (filterText: string, matchingItems: ItemType[], e: React.KeyboardEvent) => void
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
 
@@ -128,7 +128,7 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 }
 
 export class TS_DropDown<ItemType>
-	extends UIComponent<Props_DropDown<ItemType>, State<ItemType>> {
+	extends BaseComponent<Props_DropDown<ItemType>, State<ItemType>> {
 
 	static defaultProps: Partial<StaticProps> = {
 		id: generateHex(8),
@@ -222,11 +222,14 @@ export class TS_DropDown<ItemType>
 				return state;
 			});
 
-		if (e.key === 'Enter')
-			if (this.state.filterText)
-				return this.props.onNoMatchingSelectionForString?.(this.state.filterText);
-			else
-				return this.onSelected(this.filteredOptions[0]);
+		if (e.key === 'Enter') {
+			e.persist();
+			const filterText = this.state.filterText;
+			if (filterText) {
+				this.setState({open: false}, () => this.props.onNoMatchingSelectionForString?.(filterText, this.filteredOptions, e));
+			} else
+				this.onSelected(this.filteredOptions[0]);
+		}
 
 		if (e.key === 'Escape')
 			return this.setState({open: false});

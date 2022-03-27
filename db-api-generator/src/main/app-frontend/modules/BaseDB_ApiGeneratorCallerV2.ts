@@ -27,6 +27,7 @@ import {DBConfig, IndexDb_Query, IndexedDB, IndexedDBModule, IndexKeys, StorageK
 import {compare, DB_BaseObject, DB_Object, Module, PartialProperties, PreDBObject} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
+import React = require('react');
 
 export type BaseApiConfigV2<DBType extends DB_Object, Ks extends keyof DBType = '_id'> = {
 	relativeUrl: string
@@ -47,12 +48,13 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return XhrHttpModule.handleRequestFailure(request, resError);
 	};
 
-	private defaultDispatcher?: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
+	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
 
-	constructor(config: PartialProperties<Config, 'dbConfig'>) {
+	protected constructor(config: PartialProperties<Config, 'dbConfig'>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
 		super();
+		this.defaultDispatcher = defaultDispatcher;
 		if (!config.dbConfig)
 			config.dbConfig = {
 				version: 1,
@@ -64,14 +66,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.setDefaultConfig(config as Config);
 		this.db = IndexedDBModule.getOrCreate(this.config.dbConfig);
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
-	}
-
-	getDefaultDispatcher() {
-		return this.defaultDispatcher;
-	}
-
-	setDefaultDispatcher(defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
-		this.defaultDispatcher = defaultDispatcher;
 	}
 
 	protected createRequest<Binder extends ApiTypeBinder<any, any, any, any, any>,
@@ -100,6 +94,23 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	protected onError(request: BaseHttpRequest<any>, resError?: ErrorResponse<any>): boolean {
 		return false;
 	}
+
+	registerComponent = (action: (params: ApiCallerEventTypeV2<DBType>) => Promise<void>) => {
+		React.useEffect(() => {
+			const listener = {
+				[this.defaultDispatcher.method]: async (params: ApiCallerEventTypeV2<DBType>) => {
+					await action(params);
+				}
+			};
+
+			//@ts-ignore
+			Thunder.getInstance().addUIListener(listener);
+			return () => {
+				//@ts-ignore
+				Thunder.getInstance().removeUIListener(listener);
+			};
+		}, []);
+	};
 
 	syncDB = (responseHandler?: ((response: DBType[]) => Promise<void> | void)) => {
 		// locally indexing and sorting is not working????
@@ -131,6 +142,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 					return responseHandler(response);
 			});
 	};
+
 
 	query = (query?: FirestoreQuery<DBType>, responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
 		let _query = query;
