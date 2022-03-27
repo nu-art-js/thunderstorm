@@ -58,7 +58,7 @@ export class TS_Table<R extends ObjectTS, A extends string = never>
 	}
 
 	render() {
-		return <table {...(typeof this.props.table === 'function' ? this.props.table() : this.props.table)}>
+		return <table style={{width:'100%'}} {...(typeof this.props.table === 'function' ? this.props.table() : this.props.table)}>
 			<tbody {...(typeof this.props.body === 'function' ? this.props.body() : this.props.body)}>
 			{this.renderTableHeader()}
 			{this.renderTableBody()}
