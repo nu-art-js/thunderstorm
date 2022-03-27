@@ -40,6 +40,10 @@ export class Replacer
 		// this.setMinLevel(LogLevel.Error);
 	}
 
+	getInput() {
+		return this.input;
+	}
+
 	setInput(input: ObjectTS, aliases: KeyValue[] = []) {
 		this.input = input;
 		this.aliases = aliases;
