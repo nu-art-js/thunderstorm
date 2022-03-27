@@ -22,12 +22,22 @@
 import {ApiTypeBinder, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from '@nu-art/thunderstorm';
 import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from '../../index';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
-import {DBConfig, IndexDb_Query, IndexedDB, IndexedDBModule, IndexKeys, StorageKey, ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {
+	DBConfig,
+	HOOK_useEffect,
+	IndexDb_Query,
+	IndexedDB,
+	IndexedDBModule,
+	IndexKeys,
+	StorageKey,
+	Thunder,
+	ThunderDispatcher,
+	XhrHttpModule
+} from '@nu-art/thunderstorm/frontend';
 
 import {compare, DB_BaseObject, DB_Object, Module, PartialProperties, PreDBObject} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
-import React = require('react');
 
 export type BaseApiConfigV2<DBType extends DB_Object, Ks extends keyof DBType = '_id'> = {
 	relativeUrl: string
@@ -96,12 +106,13 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	}
 
 	registerComponent = (action: (params: ApiCallerEventTypeV2<DBType>) => Promise<void>) => {
-		React.useEffect(() => {
+		HOOK_useEffect(() => {
 			const listener = {
-				[this.defaultDispatcher.method]: async (params: ApiCallerEventTypeV2<DBType>) => {
+				[this.defaultDispatcher.method]: async (...params: ApiCallerEventTypeV2<DBType>) => {
 					await action(params);
 				}
 			};
+
 
 			//@ts-ignore
 			Thunder.getInstance().addUIListener(listener);

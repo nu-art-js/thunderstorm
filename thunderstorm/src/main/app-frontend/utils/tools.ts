@@ -62,11 +62,11 @@ export function HOOK_useEffect<S>(effect: EffectCallback, deps?: DependencyList)
 	return React.useEffect(effect, deps);
 }
 
-export const HOOK_useEffectAsync = (action: () => Promise<void>, destructor?: () => void) => {
+export const HOOK_useEffectAsync = (action: () => Promise<void>, deps?: DependencyList, destructor?: () => void) => {
 	React.useEffect(() => {
 		(action)();
 		return destructor;
-	});
+	},deps);
 };
 
 
