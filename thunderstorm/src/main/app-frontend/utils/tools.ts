@@ -22,6 +22,7 @@
 import {Browser} from '../../shared/consts';
 import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
 import * as React from 'react';
+import {DependencyList, Dispatch, EffectCallback, SetStateAction} from 'react';
 
 export function browserType(): Browser {
 	if (navigator?.vendor.includes('Google')) {
@@ -48,6 +49,25 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 
 	return new File([u8arr], fileName, {type: mimeType});
 }
+
+export function HOOK(fc: React.FC, props?: any) {
+	return fc(props);
+}
+
+export function HOOK_useState<S>(initialState: S | (() => S)): [S, Dispatch<SetStateAction<S>>] {
+	return React.useState(initialState);
+}
+
+export function HOOK_useEffect<S>(effect: EffectCallback, deps?: DependencyList): void {
+	return React.useEffect(effect, deps);
+}
+
+export const HOOK_useEffectAsync = (action: () => Promise<void>, destructor?: () => void) => {
+	React.useEffect(() => {
+		(action)();
+		return destructor;
+	});
+};
 
 
 export const stopPropagation = (e: MouseEvent | React.MouseEvent | KeyboardEvent | React.KeyboardEvent) => {
