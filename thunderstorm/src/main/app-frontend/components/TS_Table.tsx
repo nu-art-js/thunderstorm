@@ -30,9 +30,9 @@ export type HeaderRenderer<R extends ObjectTS, A extends string = never> = {
 	[P in ((keyof Partial<R>) | A)]: (columnKey: keyof R | A) => React.ReactNode
 };
 
-export type CellRenderer<R extends ObjectTS, A extends string = never> = (prop: keyof R | A, item: R, index: number) => React.ReactNode;
+export type CellRenderer<R extends ObjectTS, A extends string = never, P extends keyof R | A = keyof R | A> = (prop: P, item: R, index: number) => React.ReactNode;
 export type RowRenderer<R extends ObjectTS, A extends string = never> = {
-	[P in ((keyof Partial<R>) | A)]: CellRenderer<R, A>
+	[P in ((keyof Partial<R>) | A)]: CellRenderer<R, A, P>
 };
 
 export type TableProps<R extends ObjectTS, A extends string = never> = Stylable & {
@@ -44,7 +44,7 @@ export type TableProps<R extends ObjectTS, A extends string = never> = Stylable 
 	table?: HTMLProps<HTMLTableElement> | (() => HTMLProps<HTMLTableElement>)
 	body?: HTMLProps<HTMLTableSectionElement> | (() => HTMLProps<HTMLTableSectionElement>)
 	tr?: HTMLProps<HTMLTableRowElement> | ((row: R | undefined, rowIndex: number) => HTMLProps<HTMLTableRowElement>)
-	td?: HTMLProps<HTMLTableDataCellElement> | ((row: R | undefined, rowIndex: number, columnKey: keyof R | keyof A) => HTMLProps<HTMLTableDataCellElement>)
+	td?: HTMLProps<HTMLTableDataCellElement> | ((row: R | undefined, rowIndex: number, columnKey: keyof R | A) => HTMLProps<HTMLTableDataCellElement>)
 };
 
 export class TS_Table<R extends ObjectTS, A extends string = never>
@@ -101,7 +101,7 @@ export class TS_Table<R extends ObjectTS, A extends string = never>
 			<tr key={`${this.props.id}-${rowIndex}`} {...(typeof this.props.tr === 'function' ? this.props.tr(row, rowIndex) : this.props.tr)}>
 				{this.props.header.map((header, columnIndex) => {
 					return <td key={`${this.props.id}-${columnIndex}`} {...(typeof this.props.td === 'function' ? this.props.td(row, rowIndex, header) : this.props.td)}>
-						{renderers[header](header, row, rowIndex)}
+						{renderers[header](header as any, row, rowIndex)}
 					</td>;
 				})}
 			</tr>
