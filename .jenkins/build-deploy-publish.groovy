@@ -21,6 +21,8 @@ class Pipeline_Build
 	@Override
 	protected void init() {
 //		setRequiredCredentials(Cred_ServiceAccount)
+		getModule(SlackModule.class).setTeam("nu-art")
+
 		declareEnv("dev", "thunderstorm-dev")
 		declareEnv("staging", "thunderstorm-staging")
 		declareEnv("prod", "nu-art-thunderstorm")
@@ -43,6 +45,10 @@ class Pipeline_Build
 		}
 
 		super.postInit()
+	}
+
+	void pipeline() {
+
 	}
 
 	@Override
