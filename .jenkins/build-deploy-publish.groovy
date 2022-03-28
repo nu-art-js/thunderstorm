@@ -47,10 +47,6 @@ class Pipeline_Build
 		super.postInit()
 	}
 
-	void pipeline() {
-
-	}
-
 	@Override
 	protected void _test() {
 	}
