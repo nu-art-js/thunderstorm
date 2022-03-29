@@ -23,10 +23,10 @@ import * as React from 'react';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 
 export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key>
+export type TS_InputNumberProps<Key extends string | number> = TS_BaseInputProps<Key> & { value?: number, onChange: (value: number, id: Key) => void }
 
 export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
-
 
 	render() {
 		return <input
@@ -57,4 +57,16 @@ export class TS_Input<Key extends string = string>
 			type={this.props.type}
 		/>;
 	}
+}
+
+export class TS_InputNumber<Key extends string = string>
+	extends TS_BaseInput<Key, TS_InputNumberProps<Key>, HTMLInputElement> {
+
+	render() {
+		return <TS_Input
+			{...this.props}
+			onChange={(value, id) => this.props.onChange?.(+(value || 0), id)}
+		/>;
+	}
+
 }
