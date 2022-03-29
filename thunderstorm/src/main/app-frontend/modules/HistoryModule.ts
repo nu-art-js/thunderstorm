@@ -138,7 +138,7 @@ export class BrowserHistoryModule_Class
 	private updateQueryParams(encodedQueryParams: QueryParams) {
 		const data = this.createHistoryDataFromQueryParams(encodedQueryParams);
 
-		this.push(data);
+		this.replace(data);
 	}
 
 	getOrigin() {
