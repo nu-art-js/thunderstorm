@@ -20,42 +20,75 @@
  */
 
 .ts-tabs {
-  width: 100%;
-  justify-content: flex-start;
-  height: 40px;
 
-  .ts-tabs__tab {
+  //Dimensions
+  width: 100%;
+  min-height: 200px;
+  box-sizing: border-box;
+
+  //Display
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+
+  //General Children Settings
+  * {
+    box-sizing: border-box;
+  }
+
+  //Children
+  .ts-tabs__tabs-header {
     //Dimensions
-    flex-grow: 1;
-    max-width: 100px;
-    height: 100%;
+    height: 40px;
+    width: 100%;
 
     //Display
     display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    cursor: pointer;
+    justify-content: flex-start;
+    //Children
+    .ts-tabs__tab {
+      //Dimensions
+      flex-grow: 1;
+      max-width: 100px;
+      height: 100%;
 
-    //Colors
-    background-color: #ccc;
-    color: black;
+      //Display
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
 
-    //Border
-    border: 1px solid black;
-
-    &.ts-tabs__focused {
-      background-color: #bbb;
-    }
-
-    &:not(:first-child) {
-      border-left: none;
-    }
-
-    &:hover {
-      transform: scale(1.1);
+      //Animations
       transition: transform 50ms linear;
-      border-left: 1px solid red;
+
+      //Colors
+      background-color: #ccc;
+      color: black;
+
+      //Border
+      border: 1px solid #808080;
+
+      //Pseudos
+      &.ts-tabs__focused {
+        background-color: #bbb;
+      }
+      &:hover {
+        background-color: #bbb;
+      }
     }
+  }
+
+  .ts-tabs__content {
+    //Dimensions
+    width: 100%;
+    flex-grow: 1;
+
+    //Display:
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #ccc;
+    border: 2px solid #808080;
   }
 }
