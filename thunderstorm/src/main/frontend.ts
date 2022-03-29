@@ -63,6 +63,7 @@ export * from './app-frontend/components/TS_Tabs';
 export * from './app-frontend/components/input/TS_FilterInput';
 export * from './app-frontend/components/dropdown/TS_DropDown';
 
+export * from './app-frontend/components/Layouts';
 export * from './app-frontend/components/HeightBounder';
 export * from './app-frontend/components/form/types';
 export * from './app-frontend/components/form/Form';
