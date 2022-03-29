@@ -53,8 +53,6 @@ console.log('PAH');
 console.log('ZEVEL2');
 
 
-
-
 export class TS_Tabs
 	extends BaseComponent<Props, State> {
 
