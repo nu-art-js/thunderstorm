@@ -75,7 +75,7 @@
     "imagemin": "^6.1.0",
     "mini-css-extract-plugin": "^2.4.5",
     "module-alias": "^2.2.0",
-    "node-sass": "^7.0.0",
+    "sass": "^1.49.9",
     "qs": "^6.6.0",
     "react-chartjs-2": "^2.11.1",
     "react-color": "^2.14.1",

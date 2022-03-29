@@ -88,13 +88,16 @@ module.exports = (env, argv) => {
 			},
 			alias: {
 				"@modules": path.resolve(__dirname, "src/main/modules"),
+				"@consts": path.resolve(__dirname, "src/main/app/consts"),
+				"@pages": path.resolve(__dirname, "src/main/app/pages"),
+				"@renderers": path.resolve(__dirname, "src/main/app/renderers"),
+				"@components": path.resolve(__dirname, "src/main/app/components"),
+				"@dialog": path.resolve(__dirname, "src/main/app/dialogs"),
 				"@styles": path.resolve(__dirname, "src/main/res/styles"),
 				"@res": path.resolve(__dirname, "src/main/res"),
-				"@consts": path.resolve(__dirname, "src/main/app/consts"),
 				"@form": path.resolve(__dirname, "src/main/app/form"),
 				"@page": path.resolve(__dirname, "src/main/app/pages"),
 				"@component": path.resolve(__dirname, "src/main/app/components"),
-				"@dialog": path.resolve(__dirname, "src/main/app/dialogs"),
 				"@renderer": path.resolve(__dirname, "src/main/app/renderers"),
 			},
 			extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
@@ -112,13 +115,6 @@ module.exports = (env, argv) => {
 						}
 					}
 				},
-				// {
-				// 	test: /sw\/index.ts$/,
-				// 	include: [swFolder],
-				// 	use: {
-				// 		loader: "ts-loader",
-				// 	}
-				// },
 				{
 					test: /sw\/index.ts$/,
 					include: [swFolder],
@@ -146,6 +142,10 @@ module.exports = (env, argv) => {
 				{
 					test: /\.json$/,
 					exclude: /node_modules/,
+				},
+				{
+					test: /\.[ot]tf$/,
+					type: "asset/resource",
 				},
 				{
 					test: /\.(jpe?g|png|gif|ico|svg)$/i,
