@@ -20,7 +20,7 @@
  */
 
 import {Browser} from '../../shared/consts';
-import {BadImplementationException, ImplementationMissingException} from '@nu-art/ts-common';
+import {BadImplementationException, filterInstances, ImplementationMissingException} from '@nu-art/ts-common';
 import * as React from 'react';
 import {DependencyList, Dispatch, EffectCallback, SetStateAction} from 'react';
 
@@ -50,6 +50,10 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 	return new File([u8arr], fileName, {type: mimeType});
 }
 
+export function _className(...classes: (string | undefined)[]) {
+	return filterInstances(classes).join(' ');
+}
+
 export function HOOK(fc: React.FC, props?: any) {
 	return fc(props);
 }
@@ -66,7 +70,7 @@ export const HOOK_useEffectAsync = (action: () => Promise<void>, deps?: Dependen
 	React.useEffect(() => {
 		(action)();
 		return destructor;
-	},deps);
+	}, deps);
 };
 
 
