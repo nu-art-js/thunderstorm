@@ -29,7 +29,7 @@ export type TabContent = React.ReactNode | (() => React.ReactNode);
 export type TabTitle = TabContent | string;
 export type _Tab = { title: TabTitle, content: TabContent };
 export type Tab = _Tab & { uid: string };
-type Props = {
+export type Props_Tabs = {
 	id?: string
 	tabs: Tab[]
 	containerStyle?: React.CSSProperties
@@ -47,25 +47,20 @@ type State = {
 
 const DefaultHeaderStyle = {width: 120, height: 20};
 const ParamKey_SelectedTab = 'selected-tab';
-console.log('PAH');
-// @ts-ignore
-// (async () => await )().then(console.log).catch(console.error);
-console.log('ZEVEL2');
-
 
 export class TS_Tabs
-	extends BaseComponent<Props, State> {
+	extends BaseComponent<Props_Tabs, State> {
 
 	static defaultProps = {
 		tabStylable: {style: DefaultHeaderStyle},
 		selectedTabStylable: {style: {...DefaultHeaderStyle, fontWeight: 600}}
 	};
 
-	constructor(p: Props) {
+	constructor(p: Props_Tabs) {
 		super(p);
 	}
 
-	protected deriveStateFromProps(nextProps: Props): State {
+	protected deriveStateFromProps(nextProps: Props_Tabs): State {
 		const selectedTab = BaseComponent.getQueryParameter(ParamKey_SelectedTab);
 
 		return {
@@ -112,7 +107,7 @@ export class TS_Tabs
 					{tabs.map(tab => {
 						const style = {...this.props.tabStyle, ...this.state.focused === tab.uid ? this.props.selectedTabStyle : undefined};
 						const tabClasses = _className('ts-tabs__tab', this.state.focused === tab.uid ? 'ts-tabs__focused' : undefined);
-						return <div id={tab.uid} className={tabClasses} style={style} onClick={this.selectOnClick}>{getTitle(tab)}</div>;
+						return <div key={tab.uid} id={tab.uid} className={tabClasses} style={style} onClick={this.selectOnClick}>{getTitle(tab)}</div>;
 					})}
 				</div>
 				<div className={'ts-tabs__content'} style={this.props.contentStyle}>
@@ -122,4 +117,3 @@ export class TS_Tabs
 		);
 	}
 }
-
