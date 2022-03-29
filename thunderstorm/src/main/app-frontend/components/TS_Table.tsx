@@ -24,28 +24,26 @@ import {HTMLProps} from 'react';
 import {Stylable} from '../tools/Stylable';
 import React = require('react');
 
-export type TableHeaders<R extends ObjectTS, A extends string = never> = ((keyof R) | A)[]
-
-export type HeaderRenderer<R extends ObjectTS, A extends string = never> = {
-	[P in ((keyof Partial<R>) | A)]: (columnKey: keyof R | A) => React.ReactNode
+export type TableHeaders<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = P[];
+export type HeaderRenderer<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
+	[C in P]?: (columnKey: C) => React.ReactNode;
+};
+export type CellRenderer<R extends ObjectTS, A extends string = never, P extends keyof R | A = ((keyof R) | A)> = (prop: P, item: R, index: number) => React.ReactNode;
+export type RowRenderer<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
+	[C in P]?: CellRenderer<R, A, C>;
+};
+export type TableProps<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = Stylable & {
+	id: string;
+	header: TableHeaders<R, A, P>;
+	rows: R[];
+	headerRenderer?: ((columnKey: P) => React.ReactNode) | HeaderRenderer<R, A, P>;
+	cellRenderer: CellRenderer<R, A, P> | RowRenderer<R, A, P>;
+	table?: HTMLProps<HTMLTableElement> | (() => HTMLProps<HTMLTableElement>);
+	body?: HTMLProps<HTMLTableSectionElement> | (() => HTMLProps<HTMLTableSectionElement>);
+	tr?: HTMLProps<HTMLTableRowElement> | ((row: R | undefined, rowIndex: number) => HTMLProps<HTMLTableRowElement>);
+	td?: HTMLProps<HTMLTableDataCellElement> | ((row: R | undefined, rowIndex: number, columnKey: P) => HTMLProps<HTMLTableDataCellElement>);
 };
 
-export type CellRenderer<R extends ObjectTS, A extends string = never, P extends keyof R | A = keyof R | A> = (prop: P, item: R, index: number) => React.ReactNode;
-export type RowRenderer<R extends ObjectTS, A extends string = never> = {
-	[P in ((keyof Partial<R>) | A)]: CellRenderer<R, A, P>
-};
-
-export type TableProps<R extends ObjectTS, A extends string = never> = Stylable & {
-	id: string,
-	header: TableHeaders<R, A>,
-	rows: R[],
-	headerRenderer?: ((columnKey: ((keyof R) | A)) => React.ReactNode) | HeaderRenderer<R, A>,
-	cellRenderer: CellRenderer<R, A> | RowRenderer<R, A>
-	table?: HTMLProps<HTMLTableElement> | (() => HTMLProps<HTMLTableElement>)
-	body?: HTMLProps<HTMLTableSectionElement> | (() => HTMLProps<HTMLTableSectionElement>)
-	tr?: HTMLProps<HTMLTableRowElement> | ((row: R | undefined, rowIndex: number) => HTMLProps<HTMLTableRowElement>)
-	td?: HTMLProps<HTMLTableDataCellElement> | ((row: R | undefined, rowIndex: number, columnKey: keyof R | A) => HTMLProps<HTMLTableDataCellElement>)
-};
 
 export class TS_Table<R extends ObjectTS, A extends string = never>
 	extends React.Component<TableProps<R, A>, any> {
@@ -82,7 +80,7 @@ export class TS_Table<R extends ObjectTS, A extends string = never>
 		return (
 			<tr key={`${this.props.id}-0`} {...(typeof this.props.tr === 'function' ? this.props.tr(undefined, -1) : this.props.tr)}>
 				{this.props.header.map((header, index) => <td
-					key={`${this.props.id}-${index}`} {...(typeof this.props.td === 'function' ? this.props.td(undefined, -1, header) : this.props.td)}>{renderers[header](header)}</td>)}
+					key={`${this.props.id}-${index}`} {...(typeof this.props.td === 'function' ? this.props.td(undefined, -1, header) : this.props.td)}>{renderers[header]?.(header as any)}</td>)}
 			</tr>
 		);
 	}
@@ -101,7 +99,7 @@ export class TS_Table<R extends ObjectTS, A extends string = never>
 			<tr key={`${this.props.id}-${rowIndex}`} {...(typeof this.props.tr === 'function' ? this.props.tr(row, rowIndex) : this.props.tr)}>
 				{this.props.header.map((header, columnIndex) => {
 					return <td key={`${this.props.id}-${columnIndex}`} {...(typeof this.props.td === 'function' ? this.props.td(row, rowIndex, header) : this.props.td)}>
-						{renderers[header](header as any, row, rowIndex)}
+						{renderers[header]?.(header as any, row, rowIndex)}
 					</td>;
 				})}
 			</tr>
