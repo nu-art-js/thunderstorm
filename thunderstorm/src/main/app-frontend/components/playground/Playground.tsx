@@ -24,6 +24,7 @@ import {BrowserHistoryModule} from '../../modules/HistoryModule';
 import {Example_NewProps} from './Example_NewProps';
 import {TS_DropDown} from '../dropdown/TS_DropDown';
 import {SimpleListAdapter} from '../adapter/Adapter';
+import {HeightBounder} from '../HeightBounder';
 
 const PLAYGROUND = 'playground';
 
@@ -56,27 +57,29 @@ export class Playground
 
 	render() {
 
-		return <div className={'ll_v_l match_height match_width'}>
-			<div style={{width: 250, display: 'inline-block'}}>
-				<TS_DropDown<PlaygroundScreen>
-					caret={{
-						close: this.props.iconClose,
-						open: this.props.iconOpen
-					}}
-					filterMapper={option => ([option.name])}
-					onSelected={(screen: PlaygroundScreen) => {
-						this.setState({selectedScreen: screen});
-						BrowserHistoryModule.addQueryParam(PLAYGROUND, screen.name);
-					}}
-					selected={this.state.selectedScreen}
-					adapter={SimpleListAdapter(this.props.screens, (props) => {
-						return <div style={{background: props.node.focused ? '#afafaf' : 'unset'}}>
-							<div style={{padding: 8,}}>{props.item.name}</div>
-						</div>;
-					})}/>
-			</div>
-			<div style={{borderStyle: 'double', display: 'inline-block', padding: '12px', marginTop: '12px'}}>{this.renderPlayground()}</div>
-		</div>;
+		return <HeightBounder>
+			<div className={'ll_v_l match_height match_width'}>
+				<div style={{width: 250, display: 'inline-block'}}>
+					<TS_DropDown<PlaygroundScreen>
+						caret={{
+							close: this.props.iconClose,
+							open: this.props.iconOpen
+						}}
+						filterMapper={option => ([option.name])}
+						onSelected={(screen: PlaygroundScreen) => {
+							this.setState({selectedScreen: screen});
+							BrowserHistoryModule.addQueryParam(PLAYGROUND, screen.name);
+						}}
+						selected={this.state.selectedScreen}
+						adapter={SimpleListAdapter(this.props.screens, (props) => {
+							return <div style={{background: props.node.focused ? '#afafaf' : 'unset'}}>
+								<div style={{padding: 8,}}>{props.item.name}</div>
+							</div>;
+						})}/>
+				</div>
+				<div style={{borderStyle: 'double', display: 'inline-block',boxSizing:'border-box'}}>{this.renderPlayground()}</div>
+			</div>;
+		</HeightBounder>
 	}
 
 	private renderPlayground() {
