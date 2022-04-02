@@ -84,6 +84,7 @@ export type DBApiConfig<Type extends ObjectTS> = {
 	lockKeys: (keyof Type)[]
 	collectionName: string
 	itemName: string
+	maxChunkSize: number
 	versions: string[]
 	externalFilterKeys: FilterKeys<Type>
 }
@@ -298,6 +299,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
+
 	protected upgradeInstance(dbInstance: DBType, toVersion: string) {
 	}
 
@@ -342,6 +344,42 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	// @ts-ignore
 	private async deleteCollection() {
 		await this.collection.deleteAll();
+	}
+
+	async promoteCollection() {
+		// read chunks of ${maxChunkSize} documents that are not of the latest collection version..
+		// run them via upsert, which should convert/upgrade them to the latest version
+		// if timeout should kick in.. run the api again and this will continue the promotion on the rest of the documents
+		// TODO validate
+		this.logDebug(`Promoting '${this.config.collectionName}' to version: ${this.config.versions[0]}`);
+		let page = 0;
+		const itemsCount = this.config.maxChunkSize || 100;
+		let iteration = 0;
+		while (iteration < 5) {
+
+			try {
+
+				const itemsToSyncQuery: FirestoreQuery<DB_Object> = {
+					where: {
+						_v: {$neq: this.config.versions[0]},
+					},
+					limit: {page, itemsCount}
+				};
+
+				const items = await this.query(itemsToSyncQuery as FirestoreQuery<DBType>);
+				this.logInfo(`Page: ${page} Found: ${items.length} - first: ${items?.[0]?.__updated}   last: ${items?.[items.length - 1]?.__updated}`);
+				await this.upsertAll(items);
+
+				if (items.length < itemsCount)
+					break;
+
+				page++;
+			} catch (e) {
+				break;
+			}
+
+			iteration++;
+		}
 	}
 
 	/**
