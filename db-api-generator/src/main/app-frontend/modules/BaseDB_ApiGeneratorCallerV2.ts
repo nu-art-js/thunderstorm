@@ -105,7 +105,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return false;
 	}
 
-	registerComponent = (action: (params: ApiCallerEventTypeV2<DBType>) => Promise<void>) => {
+	registerComponent = (action: (...params: ApiCallerEventTypeV2<DBType>) => Promise<void>) => {
 		HOOK_useEffect(() => {
 			const listener = {
 				[this.defaultDispatcher.method]: action
