@@ -35,7 +35,7 @@ import {
 	XhrHttpModule
 } from '@nu-art/thunderstorm/frontend';
 
-import {compare, DB_BaseObject, DB_Object, Module, PartialProperties, PreDBObject} from '@nu-art/ts-common';
+import {DB_BaseObject, DB_Object, Module, PartialProperties, PreDBObject} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
 
@@ -250,9 +250,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	}
 
 	protected async onEntryUpdated(original: DBType, item: DBType, requestData?: string): Promise<void> {
-		if (!compare(item, original))
-			this.logWarning('Hmmmm.. queried value not what was expected!');
-
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item, requestData);
 	}
 
