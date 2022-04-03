@@ -118,7 +118,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 				//@ts-ignore
 				Thunder.getInstance().removeUIListener(listener);
 			};
-		}, []);
+		});
 	};
 
 	syncDB = (responseHandler?: ((response: DBType[]) => Promise<void> | void)) => {
