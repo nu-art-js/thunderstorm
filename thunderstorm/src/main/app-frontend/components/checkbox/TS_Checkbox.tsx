@@ -1,69 +1,29 @@
 import * as React from 'react';
 import {BaseComponent} from '../../core/BaseComponent';
+import {_className} from '../../utils/tools';
+import './TS_Checkbox.scss';
 
-export type CheckboxBaseProps = {
+export type Props_Checkbox = {
 	id?: string
 	disabled?: boolean
-	checked: boolean
-	label?: string
-}
-
-export type CheckboxRenderingProps = CheckboxBaseProps & {
-	onClick?: (e: React.MouseEvent<any>) => void
-}
-type Props_Checkbox = CheckboxBaseProps & {
+	rounded?: boolean
+	checked?: boolean
 	onCheck?: (checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void
-	renderer: (props: CheckboxRenderingProps) => React.ReactNode
 }
 
 type State_Checkbox = {
 	checked: boolean
 }
 
-const CheckboxRenderer_DefaultBase = (borderRadius: string) => (props: CheckboxRenderingProps) => {
-	const innerStyle: React.CSSProperties = {
-		width: 18,
-		height: 18,
-		borderRadius,
-		boxSizing: 'border-box'
-	};
-
-	if (props.checked) {
-		innerStyle.background = '#4fa7ff';
-		innerStyle.border = `.5px white solid`;
-	}
-
-	const boxStyle = {
-		borderRadius,
-		border: '1px solid #68678d50',
-		boxShadow: '0px 0 1px 0px #867979',
-	};
-
-	return <div className="ll_h_c" onClick={props.onClick}>
-		<div style={boxStyle} id={props.id}>
-			<div style={innerStyle}/>
-		</div>
-		{props.label && <div style={{marginInlineStart: 8, marginTop: 1}}>{props.label}</div>}
-	</div>;
-};
-
-export const CheckboxRenderer_DefaultSquare = CheckboxRenderer_DefaultBase('1px');
-export const CheckboxRenderer_DefaultCircle = CheckboxRenderer_DefaultBase('50%');
-
 export class TS_Checkbox
 	extends BaseComponent<Props_Checkbox, State_Checkbox> {
 
-	static defaultProps: Partial<Props_Checkbox> = {
-		renderer: CheckboxRenderer_DefaultSquare
-	};
-
 	constructor(p: Props_Checkbox) {
 		super(p);
-		this.state = {checked: p.checked};
 	}
 
 	protected deriveStateFromProps(nextProps: Props_Checkbox): State_Checkbox | undefined {
-		return {checked: nextProps.checked};
+		return {checked: nextProps.checked || false};
 	}
 
 	render() {
@@ -71,17 +31,14 @@ export class TS_Checkbox
 		if (!this.props.disabled)
 			onClick = this.props.onCheck;
 
-
-		const props: CheckboxRenderingProps = {
-			id: this.props.id,
-			onClick: onClick ? (e) => onClick?.(!this.props.checked, e) : undefined,
-			checked: this.state.checked,
-			disabled: this.props.disabled,
-			label: this.props.label
-		};
-
-		return this.props.renderer(props);
+		const className = _className('ts-checkbox', this.props.disabled && 'ts-checkbox__disabled', this.props.checked && 'ts-checkbox__checked',this.props.rounded && 'ts-checkbox__rounded');
+		const innerClassName = _className('ts-checkbox__inner', this.props.disabled && 'ts-checkbox__disabled', this.props.checked && 'ts-checkbox__checked',this.props.rounded && 'ts-checkbox__rounded');
+		return <div
+			id={this.props.id}
+			className={className}
+			onClick={!this.props.disabled ? (e) => onClick?.(!this.props.checked, e) : undefined}>
+			<div className={innerClassName}/>
+		</div>;
 	}
-
 }
 

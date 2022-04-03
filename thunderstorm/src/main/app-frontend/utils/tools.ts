@@ -50,8 +50,8 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 	return new File([u8arr], fileName, {type: mimeType});
 }
 
-export function _className(...classes: (string | undefined)[]) {
-	return filterInstances(classes).join(' ');
+export function _className(...classes: (string | boolean | undefined)[]) {
+	return filterInstances(classes.filter(c=>!!c)).join(' ');
 }
 
 export function HOOK(fc: React.FC, props?: any) {
