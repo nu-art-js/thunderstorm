@@ -21,8 +21,9 @@
 
 import {ObjectTS} from '@nu-art/ts-common';
 import {HTMLProps} from 'react';
-import {Stylable} from '../tools/Stylable';
+import {Stylable} from '../../tools/Stylable';
 import React = require('react');
+import {_className} from '../../utils/tools';
 
 export type TableHeaders<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = P[];
 export type HeaderRenderer<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
@@ -33,15 +34,17 @@ export type RowRenderer<R extends ObjectTS, A extends string = never, P extends 
 	[C in P]?: CellRenderer<R, A, C>;
 };
 export type TableProps<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = Stylable & {
-	id: string;
+	id?: string;
 	header: TableHeaders<R, A, P>;
 	rows: R[];
 	headerRenderer?: ((columnKey: P) => React.ReactNode) | HeaderRenderer<R, A, P>;
 	cellRenderer: CellRenderer<R, A, P> | RowRenderer<R, A, P>;
 	table?: HTMLProps<HTMLTableElement> | (() => HTMLProps<HTMLTableElement>);
+	head?: HTMLProps<HTMLTableSectionElement> | (() => HTMLProps<HTMLTableSectionElement>);
 	body?: HTMLProps<HTMLTableSectionElement> | (() => HTMLProps<HTMLTableSectionElement>);
 	tr?: HTMLProps<HTMLTableRowElement> | ((row: R | undefined, rowIndex: number) => HTMLProps<HTMLTableRowElement>);
-	td?: HTMLProps<HTMLTableDataCellElement> | ((row: R | undefined, rowIndex: number, columnKey: P) => HTMLProps<HTMLTableDataCellElement>);
+	td?: HTMLProps<HTMLTableDataCellElement> | ((row: R, rowIndex: number, columnKey: P) => HTMLProps<HTMLTableDataCellElement>);
+	th?: HTMLProps<HTMLTableHeaderCellElement> | ((columnKey: P) => HTMLProps<HTMLTableHeaderCellElement>);
 };
 
 
@@ -56,12 +59,19 @@ export class TS_Table<R extends ObjectTS, A extends string = never>
 	}
 
 	render() {
-		return <table style={{width:'100%'}} {...(typeof this.props.table === 'function' ? this.props.table() : this.props.table)}>
-			<tbody {...(typeof this.props.body === 'function' ? this.props.body() : this.props.body)}>
-			{this.renderTableHeader()}
-			{this.renderTableBody()}
-			</tbody>
-		</table>;
+		const tableProps = typeof this.props.table === 'function' ? this.props.table() : this.props.table;
+		const tableBodyProps = typeof this.props.body === 'function' ? this.props.body() : this.props.body;
+		const tableHeadProps = typeof this.props.head === 'function' ? this.props.head() : this.props.head;
+
+		return (
+			<table id={this.props.id} {...tableProps} className={_className('ts-table', tableProps?.className)}>
+				<thead {...tableHeadProps} className={_className('ts-table__head', tableHeadProps?.className)}>
+				{this.renderTableHeader()}
+				</thead>
+				<tbody {...tableBodyProps} className={_className('ts-table__body', tableBodyProps?.className)}>
+				{this.renderTableBody()}
+				</tbody>
+			</table>);
 	}
 
 	private renderTableHeader() {
@@ -77,10 +87,21 @@ export class TS_Table<R extends ObjectTS, A extends string = never>
 				return toRet;
 			}, {} as HeaderRenderer<R, A>);
 
+		const tablePropsTR = typeof this.props.tr === 'function' ? this.props.tr(undefined, -1) : this.props.tr;
+		const classNameTR = _className('ts-table__tr', tablePropsTR?.className);
+
 		return (
-			<tr key={`${this.props.id}-0`} {...(typeof this.props.tr === 'function' ? this.props.tr(undefined, -1) : this.props.tr)}>
-				{this.props.header.map((header, index) => <td
-					key={`${this.props.id}-${index}`} {...(typeof this.props.td === 'function' ? this.props.td(undefined, -1, header) : this.props.td)}>{renderers[header]?.(header as any)}</td>)}
+			<tr key={`${this.props.id}-0`} {...tablePropsTR} className={classNameTR}>
+
+				{this.props.header.map((header, index) => {
+					const tablePropsTH = typeof this.props.th === 'function' ? this.props.th(header) : this.props.th;
+					const classNameTH = _className('ts-table__th', tablePropsTH?.className);
+
+					return <th key={`${this.props.id}-${index}`} {...tablePropsTH} className={classNameTH}>
+						{renderers[header]?.(header as any)}
+					</th>;
+				})}
+
 			</tr>
 		);
 	}
@@ -95,14 +116,23 @@ export class TS_Table<R extends ObjectTS, A extends string = never>
 				return toRet;
 			}, {} as RowRenderer<R, A>);
 
-		return this.props.rows.map((row, rowIndex) => (
-			<tr key={`${this.props.id}-${rowIndex}`} {...(typeof this.props.tr === 'function' ? this.props.tr(row, rowIndex) : this.props.tr)}>
-				{this.props.header.map((header, columnIndex) => {
-					return <td key={`${this.props.id}-${columnIndex}`} {...(typeof this.props.td === 'function' ? this.props.td(row, rowIndex, header) : this.props.td)}>
-						{renderers[header]?.(header as any, row, rowIndex)}
-					</td>;
-				})}
-			</tr>
-		));
+		return this.props.rows.map((row, rowIndex) => {
+			const tablePropsTR = typeof this.props.tr === 'function' ? this.props.tr(row, rowIndex) : this.props.tr;
+			const classNameTR = _className('ts-table__tr', tablePropsTR?.className);
+
+			return (
+				<tr key={`${this.props.id}-${rowIndex}`} {...tablePropsTR} className={classNameTR}>
+					{this.props.header.map((header, columnIndex) => {
+						const tablePropsTD = typeof this.props.td === 'function' ? this.props.td(row, rowIndex, header) : this.props.td;
+						const classNameTD = _className('ts-table__td', tablePropsTD?.className);
+
+						return <td
+							key={`${this.props.id}-${columnIndex}`} {...tablePropsTD} className={classNameTD}>
+							{renderers[header]?.(header as any, row, rowIndex)}
+						</td>;
+					})}
+				</tr>
+			);
+		});
 	}
 }
