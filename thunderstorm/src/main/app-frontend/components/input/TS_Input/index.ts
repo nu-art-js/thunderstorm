@@ -1,4 +1,4 @@
-/*!
+/*
  * Thunderstorm is a full web app framework!
  *
  * Typescript & Express backend infrastructure that natively runs on firebase function
@@ -19,39 +19,4 @@
  * limitations under the License.
  */
 
-.ts-table {
-  //Dimensions
-  width: 100%;
-  min-height: 200px;
-
-  //Border
-  border: 3px solid black;
-  border-spacing: 0;
-  //Children
-  .ts-table__head {
-    background: #ccc;
-
-    .ts-table__tr {
-      border-bottom: 3px solid black;
-      .ts-table__th {
-        border: 2px solid black;
-
-      }
-    }
-  }
-
-  .ts-table__body {
-    background: #ddd;
-
-    .ts-table__tr {
-      cursor: pointer;
-
-      &:hover {
-        background:#ccc;
-      }
-      .ts-table__td {
-        border: 2px solid black;
-      }
-    }
-  }
-}
+export * from './TS_Input';

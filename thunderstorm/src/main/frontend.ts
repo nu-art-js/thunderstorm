@@ -54,7 +54,7 @@ export * from './app-frontend/core/AppWrapper';
 export * from './app-frontend/core/ErrorBoundary';
 export * from './app-frontend/components/input/TS_BaseInput';
 export * from './app-frontend/components/input/TS_TextArea';
-export * from './app-frontend/components/input/TS_Input';
+export * from './app-frontend/components/input/TS_Input/TS_Input';
 export * from './app-frontend/widgets/FieldEditor';
 export * from './app-frontend/widgets/FieldEditorClick';
 export * from './app-frontend/widgets/FieldEditorWithButtons';

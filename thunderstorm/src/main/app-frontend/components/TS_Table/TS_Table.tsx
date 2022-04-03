@@ -24,6 +24,7 @@ import {HTMLProps} from 'react';
 import {Stylable} from '../../tools/Stylable';
 import React = require('react');
 import {_className} from '../../utils/tools';
+import './TS_Table.scss';
 
 export type TableHeaders<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = P[];
 export type HeaderRenderer<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
@@ -136,3 +137,4 @@ export class TS_Table<R extends ObjectTS, A extends string = never>
 		});
 	}
 }
+
