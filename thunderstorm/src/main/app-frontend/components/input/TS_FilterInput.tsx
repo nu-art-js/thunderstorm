@@ -22,7 +22,7 @@
 import * as React from 'react';
 import {KeyboardEvent} from 'react';
 import {Filter} from '@nu-art/ts-common/utils/filter-tools';
-import {TS_Input} from './TS_Input';
+import {TS_Input} from './TS_Input/TS_Input';
 import {Stylable} from '../../tools/Stylable';
 import {generateHex} from '@nu-art/ts-common';
 import {BaseComponent} from '../../core/BaseComponent';

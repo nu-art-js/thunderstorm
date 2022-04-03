@@ -2,7 +2,7 @@ import * as React from 'react';
 import {HTMLProps, ReactNode} from 'react';
 import {StorageKey} from '../modules/StorageModule';
 import {BaseComponent} from '../core/BaseComponent';
-import {TS_Input, TS_InputProps} from '../components/input/TS_Input';
+import {TS_Input, TS_InputProps} from '../components/input/TS_Input/TS_Input';
 import {TS_TextArea} from '../components/input/TS_TextArea';
 import {InputType} from '../components/input/TS_BaseInput';
 

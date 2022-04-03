@@ -19,39 +19,22 @@
  * limitations under the License.
  */
 
-.ts-table {
+.ts-input {
   //Dimensions
   width: 100%;
-  min-height: 200px;
+  max-width: 300px;
+  min-width: 200px;
+  min-height: 40px;
+  padding-inline: 10px;
+
+  //Font
+  font-size: 20px;
 
   //Border
-  border: 3px solid black;
-  border-spacing: 0;
-  //Children
-  .ts-table__head {
-    background: #ccc;
+  border: 1px solid black;
+  border-radius: 4px;
 
-    .ts-table__tr {
-      border-bottom: 3px solid black;
-      .ts-table__th {
-        border: 2px solid black;
-
-      }
-    }
-  }
-
-  .ts-table__body {
-    background: #ddd;
-
-    .ts-table__tr {
-      cursor: pointer;
-
-      &:hover {
-        background:#ccc;
-      }
-      .ts-table__td {
-        border: 2px solid black;
-      }
-    }
+  &:focus-visible {
+    outline: 3px solid #3ca0c6;
   }
 }

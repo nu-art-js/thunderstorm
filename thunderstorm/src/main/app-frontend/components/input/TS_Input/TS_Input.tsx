@@ -20,7 +20,9 @@
  */
 
 import * as React from 'react';
-import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
+import {TS_BaseInput, TS_BaseInputProps} from '../TS_BaseInput';
+import './TS_Input.scss';
+import {_className} from '../../../utils/tools';
 
 export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key>
 export type TS_InputNumberProps<Key extends string | number> = TS_BaseInputProps<Key> & { value: number, onChange: (value: number, id: Key) => void }
@@ -46,7 +48,7 @@ export class TS_Input<Key extends string = string>
 			name={this.props.name || this.props.id}
 			key={this.props.id}
 			id={this.props.id}
-			className={this.props.className}
+			className={this.props.className || 'ts-input'}
 			style={this.props.style}
 			value={this.state.value}
 			placeholder={this.props.placeholder}
