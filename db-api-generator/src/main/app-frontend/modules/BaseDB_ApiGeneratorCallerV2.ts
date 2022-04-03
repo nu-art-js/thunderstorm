@@ -108,9 +108,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	registerComponent = (action: (params: ApiCallerEventTypeV2<DBType>) => Promise<void>) => {
 		HOOK_useEffect(() => {
 			const listener = {
-				[this.defaultDispatcher.method]: async (...params: ApiCallerEventTypeV2<DBType>) => {
-					await action(params);
-				}
+				[this.defaultDispatcher.method]: action
 			};
 
 
@@ -140,7 +138,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
 		this.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Upsert, toUpsert, requestData)
 			.execute(async (response) => {
-				await this.onEntryUpdated({...toUpsert, _id: response._id} as unknown as DBType, response, requestData);
+				await this.onEntryUpdated(toUpsert as unknown as DBType, response, requestData);
 				if (responseHandler)
 					return responseHandler(response);
 			});
@@ -255,7 +253,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		if (!compare(item, original))
 			this.logWarning('Hmmmm.. queried value not what was expected!');
 
-		return this.onEntryUpdatedImpl(EventType_Update, item, requestData);
+		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item, requestData);
 	}
 
 	protected async onEntryPatched(item: DBType, requestData?: string): Promise<void> {
