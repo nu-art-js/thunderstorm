@@ -24,6 +24,7 @@ import {css} from 'emotion';
 import {flatPlaguesWithTitles, Plague, RendererMap_Plague} from './consts';
 import {PlaygroundExample_BodyStyle, PlaygroundExample_HeaderStyle} from '../consts';
 import {PG_Example} from '../_core/PG_Example';
+import {Filter} from "@nu-art/ts-common";
 
 
 export class Example_Dropdown_MultiType
@@ -90,14 +91,14 @@ export class Example_Dropdown_MultiType
 				inputStylable={inputStylable}
 				inputEventHandler={(_state, e) => {
 					if (e.key === 'Enter') {
-						const newOption = _state.filteredOptions ? _state.filteredOptions[1] : _state.selected;
+						const newOption = _state.selected;
 						_state.selected = newOption;
 						_state.open = false;
 						newOption && this.onSelected(newOption);
 					}
 					return _state;
 				}}
-				filterMapper={(item) => [(item).item.label.toLowerCase()]}
+				filter={new Filter<TreeItem<Plague>>(item => ([item.item.label.toLowerCase()]))}
 				selected={flatPlaguesWithTitles[2]}
 				caret={caret}
 				headerStylable={headerStylable}

@@ -37,16 +37,6 @@ const fieldStyle = css({
 	                       width: "220px",
                        })
 
-
-const inputStyle = css({
-	                       backgroundColor: "inherit",
-	                       paddingLeft: "10px",
-	                       width: "87%",
-	                       color: `${COLORS.blueGrey()}`,
-	                       outline: "none"
-                       });
-
-
 const renderer = (icon: React.ReactNode, props: Form_FieldProps<Request_CreateAccount, any>) => {
 	const field = props.field;
 	return <div className={`ll_h_c ${fieldStyle}`}>
