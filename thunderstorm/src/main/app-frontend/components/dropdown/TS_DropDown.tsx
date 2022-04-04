@@ -20,8 +20,7 @@
  */
 
 import * as React from 'react';
-import {TS_FilterInput} from '../input/TS_FilterInput';
-import {generateHex} from '@nu-art/ts-common';
+import {Filter, generateHex} from '@nu-art/ts-common';
 import {KeyboardListener} from '../../tools/KeyboardListener';
 import {stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
@@ -29,6 +28,7 @@ import {Stylable} from '../../tools/Stylable';
 import {Overlay} from '../Overlay';
 import {TS_Tree} from '../tree/TS_Tree';
 import {BaseComponent} from '../../core/BaseComponent';
+import {TS_Input} from '../input/TS_Input';
 
 const defaultTitleHeight = '28px';
 const defaultListHeight = '150px';
@@ -90,8 +90,6 @@ export type InputProps = Stylable & {
 }
 
 type State<ItemType> = {
-	filteredOptions: ItemType[]
-	adapter: Adapter
 	open: boolean
 	selected?: ItemType
 	hover?: ItemType
@@ -115,7 +113,7 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
 
-	filterMapper?: (item: ItemType) => string[]
+	filter?: Filter<ItemType>
 
 	inputEventHandler?: (state: State<ItemType>, e: React.KeyboardEvent) => State<ItemType>
 	selectedItemRenderer?: (props?: ItemType) => React.ReactNode
@@ -123,7 +121,7 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 		open: React.ReactNode,
 		close: React.ReactNode,
 	},
-	autocomplete?: boolean
+	showNothingWithoutFilterText?: boolean
 	disabled?: boolean
 }
 
@@ -140,24 +138,16 @@ export class TS_DropDown<ItemType>
 
 	private filteredOptions: ItemType[] = [];
 
-
 	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
 	}
 
 	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
-		const newAdapter = TS_DropDown.cloneAdapter(nextProps);
 		return {
-			adapter: newAdapter,
-			filteredOptions: newAdapter.data,
 			selected: nextProps.selected,
 			open: this.state?.open || false
 		};
 	}
-
-	private static cloneAdapter = (nextProps: Props_DropDown<any>) => {
-		return nextProps.adapter.clone(new Adapter(nextProps.autocomplete && nextProps.filterMapper ? [] : nextProps.adapter.data));
-	};
 
 	toggleList = (e: React.MouseEvent) => {
 		if (this.props.disabled)
@@ -203,10 +193,9 @@ export class TS_DropDown<ItemType>
 		if (!this.state.open)
 			return;
 
-		if (this.props.autocomplete && !this.state.filterText?.length)
+		if (this.props.showNothingWithoutFilterText && !this.state.filterText?.length)
 			return;
 
-		this.props.adapter.data = this.state.filteredOptions;
 
 		return <div style={listContainerStyle}>
 			<div {...this.props.listStylable}>
@@ -237,37 +226,6 @@ export class TS_DropDown<ItemType>
 		if (e.key === 'ArrowDown') {
 			return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
 		}
-	};
-
-	private renderSelectedOrFilterInput = () => {
-		if (!this.state.open || !this.props.filterMapper) {
-			return this.renderSelectedItem(this.state.selected);
-		}
-
-		return <TS_FilterInput<ItemType>
-			key={this.props.id}
-			initialFilterText={this.props.inputValue}
-			placeholder={this.props.placeholder}
-			id={`${this.props.id}-input`}
-			mapper={this.props.filterMapper}
-			list={this.props.adapter.data}
-			onChange={(filteredOptions: ItemType[], filterBy) => {
-				this.setState(state => {
-					state.adapter.data = this.props.autocomplete && this.props.filterMapper && !filterBy.length ? [] : filteredOptions;
-
-					// console.log(`filter: ${this.props.id} (${filterBy}) -> ${__stringify(filteredOptions)}`);
-					// console.log(`state.adapter.data: ${__stringify(state.adapter.data)}`);
-					this.filteredOptions = filteredOptions;
-					return {
-						adapter: state.adapter,
-						filterText: filterBy,
-					};
-				});
-			}}
-			handleKeyEvent={this.keyEventHandler}
-			focus={true}
-			{...this.props.inputStylable}
-		/>;
 	};
 
 	private renderSelectedItem = (selected?: ItemType) => {
@@ -309,20 +267,45 @@ export class TS_DropDown<ItemType>
 	private renderTreeImpl = () => {
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const id = `${this.props.id}-tree`;
-		if ((!this.props.filterMapper || !this.props.autocomplete || this.state.filterText?.length) && this.state.adapter.data.length === 0)
+		const filter = this.props.filter;
+		let renderingAdapter = this.props.adapter;
+		if (filter) {
+			this.filteredOptions = filter.filter(this.props.adapter.data, this.state.filterText || '');
+			renderingAdapter = this.props.adapter.clone(new Adapter(this.filteredOptions));
+		}
+
+		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && renderingAdapter.data.length === 0)
 			return <div style={{textAlign: 'center', opacity: 0.5}}>No options</div>;
 
 		return <TS_Tree
 			id={id}
 			key={id}
-			adapter={this.state.adapter}
+			adapter={renderingAdapter}
 			indentPx={0}
 			selectedItem={this.state.selected}
 			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
 			// keyEventHandler={treeKeyEventHandler}
 		/>;
 	};
+
+	private renderSelectedOrFilterInput = () => {
+		if (!this.state.open || !this.props.filter) {
+			return this.renderSelectedItem(this.state.selected);
+		}
+
+		return <TS_Input
+			type="text"
+			id={this.props.id || generateHex(16)}
+			value={this.props.inputValue}
+			onChange={(filterText) => this.setState({filterText})}
+			focus={true}
+			placeholder={this.props.placeholder}
+			handleKeyEvent={this.keyEventHandler}
+			{...this.props.inputStylable}
+		/>;
+	};
 }
+
 
 // const treeKeyEventHandlerResolver = (id: string) => {
 // 	return (e: React.KeyboardEvent, node?: HTMLDivElement) => {
