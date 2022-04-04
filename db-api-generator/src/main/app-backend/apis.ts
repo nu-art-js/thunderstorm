@@ -21,7 +21,7 @@
 
 import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
 import {ApiTypeBinder, QueryParams} from '@nu-art/thunderstorm';
-import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUniuqe, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from '..';
+import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUnique, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from '..';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {addItemToArray, DB_BaseObject, DB_Object, PreDBObject} from '@nu-art/ts-common';
@@ -84,7 +84,7 @@ export class ServerApi_Patch<DBType extends DB_Object>
 }
 
 export class ServerApi_Unique<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBUniuqe<DBType>> {
+	extends GenericServerApi<DBType, ApiBinder_DBUnique<DBType>> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
 		super(dbModule, DefaultApiDefs.Unique, pathPart);
