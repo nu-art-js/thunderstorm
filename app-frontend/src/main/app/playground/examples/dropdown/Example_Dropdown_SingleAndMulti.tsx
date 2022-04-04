@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {AdapterBuilder, Example_NewProps, Props_DropDown, TS_DropDown,} from '@nu-art/thunderstorm/frontend';
+import {AdapterBuilder, Example_NewProps, Props_DropDown, SimpleListAdapter, TS_DropDown,} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import {flatPlaguesWithTitles, ItemRenderer_Plague, Plague, plagues, PlagueWithTitle, RendererMap_Plague} from './consts';
 import {PG_Example} from '../_core/PG_Example';
@@ -55,11 +55,7 @@ class Example_Dropdown_SingleAndMulti
 		return {
 			id: 'simple',
 			key: 'simple',
-			adapter: AdapterBuilder()
-				.list()
-				.singleRender(ItemRenderer_Plague)
-				.setData(plagues)
-				.build(),
+			adapter: SimpleListAdapter(plagues, (item) => <ItemRenderer_Plague {...item}/>),
 			selected: this.state.instance['prop1'],
 			onSelected: (item: Plague) => {
 				console.log(`Simple Selected: ${item.label}`);

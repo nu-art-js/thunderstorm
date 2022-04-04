@@ -1,13 +1,7 @@
-import * as React from "react";
-import {Component} from "react";
-import {
-	AdapterBuilder,
-	Example_NewProps,
-	MenuComponent,
-	MenuComponentProps,
-	ToastModule
-} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
+import * as React from 'react';
+import {Component} from 'react';
+import {Example_NewProps, MenuComponent, MenuComponentProps, SimpleListAdapter, ToastModule} from '@nu-art/thunderstorm/frontend';
+import {__stringify} from '@nu-art/ts-common';
 
 export class SP_Example_List_SingleType
 	extends Component<{}> {
@@ -24,37 +18,29 @@ export class SP_Example_List_SingleType
 		return <div>
 			<div>
 				<h2>Here is a simple list with one Item Type</h2>
-				<Example_NewProps name={"MenuComponent"} renderer={MenuComponent} data={[this.simpleAdapterProps(), this.complexAdapterProps()]}/>
+				<Example_NewProps name={'MenuComponent'} renderer={MenuComponent} data={[this.simpleAdapterProps(), this.complexAdapterProps()]}/>
 			</div>
-		</div>
+		</div>;
 	}
 
 	private simpleAdapterProps() {
 		return {
-			id: "simple",
-			key: "simple",
-			adapter: AdapterBuilder()
-				.list()
-				.singleRender((props: { item: string }) => <div>{props.item}</div>)
-				.setData(this.data)
-				.build(),
+			id: 'simple',
+			key: 'simple',
+			adapter: SimpleListAdapter(this.data, (props: { item: string }) => <div>{props.item}</div>),
 			onNodeClicked: (path: string, item: any) => {
-				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)
+				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`);
 			}
 		} as MenuComponentProps & { key: string };
 	}
 
 	private complexAdapterProps() {
 		return {
-			id: "complex",
-			key: "complex",
-			adapter: AdapterBuilder()
-				.list()
-				.singleRender((props: { item: string }) => <div>{props.item}</div>)
-				.setData(this.complexData)
-				.build(),
+			id: 'complex',
+			key: 'complex',
+			adapter: SimpleListAdapter(this.complexData, (props: { item: string }) => <div>{props.item}</div>),
 			onNodeClicked: (path: string, item: any) => {
-				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)
+				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`);
 			}
 		} as MenuComponentProps & { key: string };
 	}

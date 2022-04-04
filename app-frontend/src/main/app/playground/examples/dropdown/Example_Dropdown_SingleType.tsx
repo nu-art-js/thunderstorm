@@ -1,19 +1,19 @@
-import * as React from "react";
-import {ICONS} from "@res/icons";
+import * as React from 'react';
+import {ICONS} from '@res/icons';
 import {
 	Adapter,
-	AdapterBuilder,
 	BaseComponent,
 	BaseNodeRenderer,
 	DropDown_headerStyle,
 	DropDown_inputStyle,
+	SimpleListAdapter,
 	TS_Checkbox,
 	TS_DropDown
-} from "@nu-art/thunderstorm/frontend";
-import {optionRendererStyle, Plague, plagues} from "./consts";
-import {PlaygroundExample_BodyStyle, PlaygroundExample_ResultStyle} from "../consts";
-import {PG_Example} from "../_core/PG_Example";
-import {Filter} from "@nu-art/ts-common";
+} from '@nu-art/thunderstorm/frontend';
+import {optionRendererStyle, Plague, plagues} from './consts';
+import {PlaygroundExample_BodyStyle, PlaygroundExample_ResultStyle} from '../consts';
+import {PG_Example} from '../_core/PG_Example';
+import {Filter} from '@nu-art/ts-common';
 
 
 type State = {
@@ -30,7 +30,7 @@ class Example_Dropdown_SingleType
 		this.state = {
 			autoComplete: false,
 			filter: true
-		}
+		};
 	}
 
 	onSelected = (plague: Plague) => {
@@ -43,17 +43,17 @@ class Example_Dropdown_SingleType
 				{this.renderConfigPanel()}
 				{this.renderDropDown()}
 			</div>
-			<div {...PlaygroundExample_ResultStyle}>{this.state?.selected ? `You chose: ${this.state.selected.value}` : "You didn't choose yet"}</div>
-		</div>
+			<div {...PlaygroundExample_ResultStyle}>{this.state?.selected ? `You chose: ${this.state.selected.value}` : 'You didn\'t choose yet'}</div>
+		</div>;
 	}
 
 	private renderDropDown() {
 		const valueRenderer = (selected?: Plague) => {
-			const style: React.CSSProperties = {boxSizing: "border-box", height: "100%", width: "100%", padding: "4px 7px"};
+			const style: React.CSSProperties = {boxSizing: 'border-box', height: '100%', width: '100%', padding: '4px 7px'};
 			if (!selected)
-				return
+				return;
 			// return <div style={style}>CHOOSE</div>
-			return <div style={{...style, color: "red"}}>{selected.label}</div>;
+			return <div style={{...style, color: 'red'}}>{selected.label}</div>;
 		};
 
 		const inputStylable = {
@@ -62,16 +62,11 @@ class Example_Dropdown_SingleType
 			placeholder: this.state.selected?.label
 		};
 
-		const simpleAdapter: Adapter = AdapterBuilder()
-			.list()
-			.singleRender(ItemRenderer)
-			.setData(plagues)
-			.build();
-
+		const simpleAdapter: Adapter = SimpleListAdapter(plagues, (item) => <ItemRenderer {...item}/>);
 		const caret = {
 			open: this.caretItem(ICONS.arrowOpen(undefined, 11)),
 			close: this.caretItem(ICONS.arrowClose(undefined, 11))
-		}
+		};
 
 		return <div className="ll_v_l" style={{marginLeft: 8}}>
 			<TS_DropDown
@@ -114,11 +109,11 @@ export class ItemRenderer
 		return (
 			<div className="ll_h_c clickable match_width"
 					 id={this.props.node.path}
-					 style={(this.props.node.focused || this.props.node.selected) ? {backgroundColor: "white"} : {}}>
+					 style={(this.props.node.focused || this.props.node.selected) ? {backgroundColor: 'white'} : {}}>
 
 				<div className={optionRendererStyle(this.props.node.selected)}>
-					<div className={`ll_h_c match_width`} style={{justifyContent: "space-between"}}>
-						<div style={this.props.node.focused ? {fontWeight: "bold"} : {}}>{item.label}</div>
+					<div className={`ll_h_c match_width`} style={{justifyContent: 'space-between'}}>
+						<div style={this.props.node.focused ? {fontWeight: 'bold'} : {}}>{item.label}</div>
 						{this.props.node.selected && <img src={require('@res/icons/icon__check.svg')} width={12}/>}
 					</div>
 				</div>
@@ -127,11 +122,11 @@ export class ItemRenderer
 	}
 }
 
-const name = "Dropdown - Single Type";
+const name = 'Dropdown - Single Type';
 
 export function Playground_DropdownSingleType() {
 	return {
-		renderer: ()=><PG_Example name={name}> <Example_Dropdown_SingleType/> </PG_Example>,
+		renderer: () => <PG_Example name={name}> <Example_Dropdown_SingleType/> </PG_Example>,
 		name
 	};
 }
