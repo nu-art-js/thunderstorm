@@ -31,8 +31,12 @@ export class TS_Checkbox
 		if (!this.props.disabled)
 			onClick = this.props.onCheck;
 
-		const className = _className('ts-checkbox', this.props.disabled && 'ts-checkbox__disabled', this.props.checked && 'ts-checkbox__checked',this.props.rounded && 'ts-checkbox__rounded');
-		const innerClassName = _className('ts-checkbox__inner', this.props.disabled && 'ts-checkbox__disabled', this.props.checked && 'ts-checkbox__checked',this.props.rounded && 'ts-checkbox__rounded');
+		const checkedClass = this.props.checked && 'ts-checkbox__checked' || 'ts-checkbox__unchecked';
+		const disabledClass = this.props.disabled && 'ts-checkbox__disabled';
+		const roundedClass = this.props.rounded && 'ts-checkbox__rounded';
+		const className = _className('ts-checkbox', disabledClass, checkedClass, roundedClass);
+		const innerClassName = _className('ts-checkbox__inner', disabledClass, checkedClass, roundedClass);
+
 		return <div
 			id={this.props.id}
 			className={className}

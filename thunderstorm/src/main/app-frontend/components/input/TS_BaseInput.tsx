@@ -20,13 +20,13 @@
  */
 
 import * as React from 'react';
-import {ChangeEvent, KeyboardEvent} from 'react';
-import {Stylable} from '../../tools/Stylable';
+import {ChangeEvent, CSSProperties, KeyboardEvent} from 'react';
 
 export type InputType = 'text' | 'number' | 'password';
 
-export type TS_BaseInputProps<Key> = Stylable & {
+export type TS_BaseInputProps<Key> = {
 	type: InputType
+	style?: CSSProperties
 	id: Key
 	onChange?: (value: string, id: Key) => void
 	onAccept?: () => void

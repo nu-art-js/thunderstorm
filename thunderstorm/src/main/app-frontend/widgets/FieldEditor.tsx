@@ -3,7 +3,7 @@ import {HTMLProps, ReactNode} from 'react';
 import {StorageKey} from '../modules/StorageModule';
 import {BaseComponent} from '../core/BaseComponent';
 import {TS_Input, TS_InputProps} from '../components/input/TS_Input/TS_Input';
-import {TS_TextArea} from '../components/input/TS_TextArea';
+import {TS_TextArea} from '../components/input/TS_TextArea/TS_TextArea';
 import {InputType} from '../components/input/TS_BaseInput';
 
 export type FieldEditorInputProps<K extends string | number> = Omit<TS_InputProps<K>, 'onChange' | 'value' | 'onAccept' | 'type' | 'id'>

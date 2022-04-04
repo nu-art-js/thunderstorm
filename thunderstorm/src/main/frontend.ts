@@ -53,14 +53,13 @@ export * from './app-frontend/core/AppPageV2';
 export * from './app-frontend/core/AppWrapper';
 export * from './app-frontend/core/ErrorBoundary';
 export * from './app-frontend/components/input/TS_BaseInput';
-export * from './app-frontend/components/input/TS_TextArea';
+export * from './app-frontend/components/input/TS_TextArea/TS_TextArea';
 export * from './app-frontend/components/input/TS_Input/TS_Input';
 export * from './app-frontend/widgets/FieldEditor';
 export * from './app-frontend/widgets/FieldEditorClick';
 export * from './app-frontend/widgets/FieldEditorWithButtons';
 export * from './app-frontend/components/TS_Table/TS_Table';
 export * from './app-frontend/components/TS_Tabs';
-export * from './app-frontend/components/input/TS_FilterInput';
 export * from './app-frontend/components/dropdown/TS_DropDown';
 
 export * from './app-frontend/components/Layouts';
@@ -80,7 +79,7 @@ export * from './app-frontend/components/tree/MenuComponent';
 export * from './app-frontend/components/playground/Playground';
 export * from './app-frontend/components/playground/Example_NewProps';
 
-export * from './app-frontend/components/checkbox/TS_Checkbox';
+export * from './app-frontend/components/TS_Checkbox/TS_Checkbox';
 
 export * from './app-frontend/modules/component-loader/ReactEntryComponentInjector';
 export * from './app-frontend/modules/component-loader/entry-component-loading-module';

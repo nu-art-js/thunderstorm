@@ -20,7 +20,8 @@
  */
 
 import * as React from 'react';
-import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
+import {TS_BaseInput, TS_BaseInputProps} from '../TS_BaseInput';
+import './TS_TextArea.scss';
 
 export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key>
 
@@ -44,7 +45,7 @@ export class TS_TextArea<Key extends string>
 			name={this.props.name || this.props.id}
 			key={this.props.id}
 			id={this.props.id}
-			className={this.props.className}
+			className={'ts-textarea'}
 			style={this.props.style}
 			value={this.state.value}
 			placeholder={this.props.placeholder}
@@ -55,4 +56,5 @@ export class TS_TextArea<Key extends string>
 		/>;
 	}
 }
+
 

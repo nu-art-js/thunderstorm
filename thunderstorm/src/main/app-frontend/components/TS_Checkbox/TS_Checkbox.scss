@@ -19,21 +19,32 @@
  * limitations under the License.
  */
 
-.ts-input {
-  //Dimensions
-  width: 100%;
-  min-width: 50px;
-  padding-block: 4px;
-  padding-inline: 10px;
+.ts-checkbox {
+  border: 1px solid #68678d50;
+  box-shadow: 0 0 1px 0 #867979;
 
-  //Font
-  font-size: 1rem;
+  &.ts-checkbox__rounded {
+    border-radius: 50%;
+  }
 
-  //Border
-  border: 1px solid black;
-  border-radius: 4px;
+  & .ts-checkbox__disabled {
+    // ...
+  }
 
-  &:focus-visible {
-    outline: 1px solid #3ca0c6;
+  .ts-checkbox__inner {
+    width: 18px;
+    height: 18px;
+
+    &.ts-checkbox__rounded {
+      border-radius: 50%;
+    }
+
+    &.ts-checkbox__checked {
+      background: #4fa7ff;
+      border: .5px white solid;
+    }
+
+    &.ts-checkbox__unchecked {
+    }
   }
 }

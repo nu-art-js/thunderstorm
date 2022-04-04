@@ -16,13 +16,12 @@
  * limitations under the License.
  */
 
-export class Filter {
-	private _filter = "";
+export class Filter<T> {
 	private regexp = true;
+	private readonly mapper: (item: T) => string[];
 
-	setFilter(filter: string) {
-		this._filter = filter;
-		return this;
+	constructor(mapper: (item: T) => string[]) {
+		this.mapper = mapper;
 	}
 
 	setRegexp(regexp: boolean) {
@@ -30,15 +29,11 @@ export class Filter {
 		return this;
 	}
 
-	getFilter() {
-		return this._filter;
-	}
-
-	filter<T>(items: T[], filter: (item: T) => string[]): T[] {
-		const filterAsRegexp = this.prepareFilter();
+	filter(items: T[], filterText: string): T[] {
+		const filterAsRegexp = this.prepareFilter(filterText);
 
 		return items.filter((item) => {
-			const keysToFilter = filter(item);
+			const keysToFilter = this.mapper(item);
 			for (const key of keysToFilter) {
 				if (key.toLowerCase().match(filterAsRegexp))
 					return true;
@@ -48,18 +43,16 @@ export class Filter {
 		});
 	}
 
-	private prepareFilter() {
-		let filter = this._filter;
-		filter = filter.trim();
+	private prepareFilter(filter?: string) {
+		filter = (filter || '').trim();
 		filter = filter.toLowerCase();
-		filter = filter.replace(/\s+/, " ");
+		filter = filter.replace(/\s+/, ' ');
 		if (this.regexp) {
-			filter = filter.replace(new RegExp("(.)", "g"), ".*?$1");
+			filter = filter.replace(new RegExp('(.)', 'g'), '.*?$1');
 		} else {
 			filter = `.*?${filter}`;
 		}
-		filter.length === 0 ? filter = ".*?" : filter += ".*";
-
+		filter.length === 0 ? filter = '.*?' : filter += '.*';
 
 		return new RegExp(filter);
 	}

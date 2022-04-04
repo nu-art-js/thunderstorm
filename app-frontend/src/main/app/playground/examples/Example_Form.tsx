@@ -55,7 +55,6 @@ const renderer = (icon: React.ReactNode, props: Form_FieldProps<Request_CreateAc
 			id={props.key}
 			value={props.value}
 			type={field.type}
-			className={inputStyle}
 			placeholder={field?.hint}
 			onChange={props.onChange}
 			onAccept={props.onAccept}
