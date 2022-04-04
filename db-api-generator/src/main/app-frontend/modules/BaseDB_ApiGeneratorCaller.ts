@@ -24,7 +24,7 @@ import {
 	ApiBinder_DBDelete,
 	ApiBinder_DBPatch,
 	ApiBinder_DBQuery,
-	ApiBinder_DBUniuqe,
+	ApiBinder_DBUnique,
 	ApiBinder_DBUpsert,
 	DefaultApiDefs,
 	GenericApiDef,
@@ -127,9 +127,9 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 	};
 
 
-	unique = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUniuqe<DBType>> => {
+	unique = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUnique<DBType>> => {
 		return this
-			.createRequest<ApiBinder_DBUniuqe<DBType>>(DefaultApiDefs.Unique, undefined, requestData)
+			.createRequest<ApiBinder_DBUnique<DBType>>(DefaultApiDefs.Unique, undefined, requestData)
 			.setUrlParams({_id})
 			.execute(async response => {
 				await this.onGotUnique(response, requestData);
