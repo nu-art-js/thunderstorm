@@ -41,7 +41,6 @@ import {
 import {Example_List_All} from './examples/list/Example_List_All';
 import {Example_Tree_SingleType} from './examples/tree/Example_Tree_SingleType';
 import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
-import {Example_FilterInput} from './examples/Example_FilterInput';
 import {Example_Uploader} from './examples/Example_Uploader';
 import {Example_TSInput} from './examples/Example_TSInput';
 import {Example_PermissionsComponent} from './examples/Example_PermissionsComponent';
@@ -124,7 +123,6 @@ export class Page_Playground
 
 			// DROPDOWNS
 			Playground_DropdownSingleAndMulti(),
-			{renderer: Example_FilterInput, name: 'FilterInput Examples'},
 			{renderer: Example_AllDropDowns, name: 'ALL DropDown Examples'},
 			Playground_DropdownSingleType(),
 			Playground_DropdownMultiType(),

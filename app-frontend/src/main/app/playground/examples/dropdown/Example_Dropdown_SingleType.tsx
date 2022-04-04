@@ -5,7 +5,6 @@ import {
 	AdapterBuilder,
 	BaseComponent,
 	BaseNodeRenderer,
-	CheckboxRenderer_DefaultCircle,
 	DropDown_headerStyle,
 	DropDown_inputStyle,
 	TS_Checkbox,
@@ -14,6 +13,7 @@ import {
 import {optionRendererStyle, Plague, plagues} from "./consts";
 import {PlaygroundExample_BodyStyle, PlaygroundExample_ResultStyle} from "../consts";
 import {PG_Example} from "../_core/PG_Example";
+import {Filter} from "@nu-art/ts-common";
 
 
 type State = {
@@ -80,10 +80,9 @@ class Example_Dropdown_SingleType
 				onSelected={this.onSelected}
 				selectedItemRenderer={valueRenderer}
 				inputStylable={inputStylable}
-				filterMapper={this.state.filter ? (item) => [item.label.toLowerCase()] : undefined}
+				filter={new Filter<Plague>(item => ([item.label.toLowerCase()]))}
 				caret={caret}
 				headerStylable={{style: DropDown_headerStyle}}
-				autocomplete={this.state.autoComplete}
 			/>
 		</div>;
 	}
@@ -91,14 +90,11 @@ class Example_Dropdown_SingleType
 	private renderConfigPanel() {
 		return <div className="ll_v_l">
 			<TS_Checkbox
-				label={"Auto Complete"}
 				checked={this.state.autoComplete}
 				onCheck={(autoComplete: boolean) => this.setState({autoComplete})}/>
 
 			<TS_Checkbox
-				label={"With Filter"}
 				checked={this.state.filter}
-				renderer={CheckboxRenderer_DefaultCircle}
 				onCheck={(filter: boolean) => this.setState({filter})}/>
 		</div>;
 	}
