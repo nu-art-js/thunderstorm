@@ -90,6 +90,7 @@ export type InputProps = Stylable & {
 }
 
 type State<ItemType> = {
+	adapter: Adapter<ItemType>
 	open: boolean
 	selected?: ItemType
 	hover?: ItemType
@@ -105,7 +106,7 @@ type StaticProps = {
 }
 
 export type Props_DropDown<ItemType> = Partial<StaticProps> & {
-	adapter: Adapter
+	adapter: Adapter<ItemType>
 	placeholder?: string,
 	inputValue?: string,
 
@@ -136,14 +137,13 @@ export class TS_DropDown<ItemType>
 		inputStylable: {style: DropDown_inputStyle}
 	};
 
-	private filteredOptions: ItemType[] = [];
-
 	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
 	}
 
 	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
 		return {
+			adapter: nextProps.adapter.clone(new Adapter<ItemType>([])),
 			selected: nextProps.selected,
 			open: this.state?.open || false
 		};
@@ -215,9 +215,9 @@ export class TS_DropDown<ItemType>
 			e.persist();
 			const filterText = this.state.filterText;
 			if (filterText) {
-				this.setState({open: false}, () => this.props.onNoMatchingSelectionForString?.(filterText, this.filteredOptions, e));
+				this.setState({open: false}, () => this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e));
 			} else
-				this.onSelected(this.filteredOptions[0]);
+				this.onSelected(this.state.adapter.data[0]);
 		}
 
 		if (e.key === 'Escape')
@@ -268,19 +268,17 @@ export class TS_DropDown<ItemType>
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const id = `${this.props.id}-tree`;
 		const filter = this.props.filter;
-		let renderingAdapter = this.props.adapter;
 		if (filter) {
-			this.filteredOptions = filter.filter(this.props.adapter.data, this.state.filterText || '');
-			renderingAdapter = this.props.adapter.clone(new Adapter(this.filteredOptions));
+			this.state.adapter.data = filter.filter(this.props.adapter.data, this.state.filterText || '');
 		}
 
-		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && renderingAdapter.data.length === 0)
+		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0)
 			return <div style={{textAlign: 'center', opacity: 0.5}}>No options</div>;
 
 		return <TS_Tree
 			id={id}
 			key={id}
-			adapter={renderingAdapter}
+			adapter={this.state.adapter}
 			indentPx={0}
 			selectedItem={this.state.selected}
 			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
@@ -295,10 +293,12 @@ export class TS_DropDown<ItemType>
 
 		return <TS_Input
 			type="text"
+			autocomplete={false}
 			id={this.props.id || generateHex(16)}
 			value={this.props.inputValue}
 			onChange={(filterText) => this.setState({filterText})}
 			focus={true}
+			style={{width: '100%'}}
 			placeholder={this.props.placeholder}
 			handleKeyEvent={this.keyEventHandler}
 			{...this.props.inputStylable}
