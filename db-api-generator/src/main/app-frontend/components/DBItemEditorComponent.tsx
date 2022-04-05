@@ -21,40 +21,54 @@
 
 import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, EventType_MultiUpdate, EventType_Query, EventType_Update} from '../../frontend';
 import {ComponentAsync, IndexKeys} from '@nu-art/thunderstorm/frontend';
-import {_keys, compare, DB_Object} from '@nu-art/ts-common';
+import {_keys, compare, DB_Object, RequireOnlyOne} from '@nu-art/ts-common';
 import * as React from 'react';
 
 export type State_DBItemEditorComponentV2<ItemType> = {
-	item?: Partial<ItemType>
+	item: Partial<ItemType>
 };
 
-export type Props_DBItemEditorComponentV2<ItemType extends DB_Object, Ks extends keyof ItemType = '_id'> = {
+export type Props_DBItemEditorComponentV2<ItemType extends DB_Object, Ks extends keyof ItemType = '_id'> = RequireOnlyOne<{
+	item: Partial<ItemType>
 	keys: IndexKeys<ItemType, Ks>,
+}> & {
 	onChange?: ((item: Partial<ItemType> & DB_Object, key: keyof ItemType) => void)
 	moduleFE: BaseDB_ApiGeneratorCallerV2<ItemType, Ks>
 };
 
-export abstract class Component_DBItemEditorV2<ItemType extends DB_Object,
+export abstract class DBItemEditorComponent<ItemType extends DB_Object,
 	Ks extends keyof ItemType = '_id',
-	P extends Props_DBItemEditorComponentV2<ItemType, Ks> = Props_DBItemEditorComponentV2<ItemType, Ks>,
-	S extends State_DBItemEditorComponentV2<ItemType> = State_DBItemEditorComponentV2<ItemType>>
+	Props extends any = {},
+	State extends any = {},
+	P extends Props_DBItemEditorComponentV2<ItemType, Ks> & Props = Props_DBItemEditorComponentV2<ItemType, Ks> & Props,
+	S extends State_DBItemEditorComponentV2<ItemType> & State = State_DBItemEditorComponentV2<ItemType> & State>
 	extends ComponentAsync<P, S> {
 
 	constructor(props: P) {
 		super(props);
 		// this.logDebug('constructor', props.keys);
 		// @ts-ignore
-		this[props.moduleFE.getDefaultDispatcher().method] = this.__onItemUpdated;
+		this[props.moduleFE.defaultDispatcher.method] = this.__onItemUpdated;
 	}
 
 	protected async deriveStateFromProps(nextProps: P): Promise<S> {
-		let item;
-		try {
-			item = nextProps.keys && await nextProps.moduleFE.uniqueQueryCache(nextProps.keys);
-		} catch (e: any) {
-			this.logWarning(`error getting item from cache: `, e);
-		}
-		return {item: item || this.createEmptyItem()} as S;
+		let item = nextProps.item;
+
+		if (!item)
+			try {
+				item = nextProps.keys && await nextProps.moduleFE.uniqueQueryCache(nextProps.keys);
+			} catch (e: any) {
+				this.logWarning(`error getting item from cache: `, e);
+			}
+
+		if (!item)
+			item = this.createEmptyItem();
+
+		return {item} as S;
+	}
+
+	protected createInitialState(nextProps: P) {
+		return {item: this.createEmptyItem()} as S;
 	}
 
 	protected query(keys: IndexKeys<ItemType, Ks>) {
@@ -77,8 +91,7 @@ export abstract class Component_DBItemEditorV2<ItemType extends DB_Object,
 		if (params[0] === EventType_MultiUpdate || params[0] === EventType_Query)
 			return;
 
-
-		if (_keys(this.props.keys).find(key => this.state.item?.[key] && this.state.item?.[key] !== (params[1] as ItemType)?.[key]))
+		if (this.props.keys && _keys(this.props.keys).find(key => this.state.item?.[key] && this.state.item?.[key] !== (params[1] as ItemType)?.[key]))
 			return;
 
 		if (params[0] === EventType_Update) {
@@ -101,6 +114,6 @@ export abstract class Component_DBItemEditorV2<ItemType extends DB_Object,
 		this.props.onChange?.(item as Partial<ItemType> & DB_Object, key);
 	};
 
-	abstract renderItem(item?: Partial<ItemType>): React.ReactNode;
+	abstract renderItem(item: Partial<ItemType>): React.ReactNode;
 }
 

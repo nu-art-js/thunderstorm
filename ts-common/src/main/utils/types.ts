@@ -33,6 +33,21 @@ export type RequireOptionals<T extends ObjectTS, Keys extends OptionalKeys<T> = 
 export type RequireOneOptional<T extends ObjectTS, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
 	& { [K in Keys]-?: Required<Pick<T, K>> & Partial<Record<Exclude<Keys, K>, undefined>> }[Keys]
 
+export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
+	Pick<T, Exclude<keyof T, Keys>>
+	& {
+	[K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>
+}[Keys]
+
+export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
+	Pick<T, Exclude<keyof T, Keys>>
+	& {
+	[K in Keys]-?:
+	Required<Pick<T, K>>
+	& Partial<Record<Exclude<Keys, K>, undefined>>
+}[Keys]
+
+
 export type Constructor<T> = new (...args: any) => T
 export type ArrayType<T extends any[]> = T extends (infer I)[] ? I : never;
 

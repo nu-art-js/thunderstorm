@@ -33,7 +33,7 @@ import {
 import {AppPage, IndexKeys, RoutingModule, stopPropagation} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
-import {Props_DBItemEditorComponentV2} from './Component_DBItemEditorV2';
+import {Props_DBItemEditorComponentV2} from './DBItemEditorComponent';
 
 export type Props_DBItemEditorPageV2<ItemType extends DB_Object, Ks extends keyof ItemType = '_id'> = {
 	keys: Ks[]
@@ -54,7 +54,7 @@ export type State_DBItemEditorPageV2<ItemType extends DB_Object, Ks extends keyo
 	item?: ItemType
 }
 
-export abstract class Page_DBItemEditorV2<ItemType extends DB_Object,
+export abstract class DBItemEditorPage<ItemType extends DB_Object,
 	Ks extends keyof ItemType = '_id',
 	S extends State_DBItemEditorPageV2<ItemType, Ks> = State_DBItemEditorPageV2<ItemType, Ks>,
 	P extends Props_DBItemEditorPageV2<ItemType, Ks> = Props_DBItemEditorPageV2<ItemType, Ks>>
@@ -82,7 +82,7 @@ export abstract class Page_DBItemEditorV2<ItemType extends DB_Object,
 	}
 
 	protected async resolveState(nextProps: P) {
-		const keys = this.resolveKeys(nextProps, (key: Ks) => Page_DBItemEditorV2.getQueryParameter(key as string));
+		const keys = this.resolveKeys(nextProps, (key: Ks) => DBItemEditorPage.getQueryParameter(key as string));
 		let item: DB_Object | undefined;
 		try {
 			item = await this.props.moduleFE.uniqueQueryCache(keys);

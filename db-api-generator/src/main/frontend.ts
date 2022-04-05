@@ -21,5 +21,8 @@
 
 export * from "./app-frontend/types"
 export * from "./app-frontend/consts"
+export * from "./app-frontend/components/DBItemEditorComponent"
+export * from "./app-frontend/components/DBItemEditorPage"
+export * from "./app-frontend/components/DBListViewPage"
 export * from "./app-frontend/modules/BaseDB_ApiGeneratorCaller"
 export * from "./app-frontend/modules/BaseDB_ApiGeneratorCallerV2"
