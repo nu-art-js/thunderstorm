@@ -145,7 +145,8 @@ export class TS_DropDown<ItemType>
 		return {
 			adapter: nextProps.adapter.clone(new Adapter<ItemType>([])),
 			selected: nextProps.selected,
-			open: this.state?.open || false
+			open: this.state?.open || false,
+			filterText:nextProps.inputValue
 		};
 	}
 
