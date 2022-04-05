@@ -23,7 +23,7 @@ import * as React from 'react';
 // noinspection TypeScriptPreferShortImport
 import {Dialog_Model, DialogButton_Builder, DialogListener, DialogModule} from './DialogModule';
 // noinspection TypeScriptPreferShortImport
-import {BaseComponent} from '../../core/BaseComponent';
+import {ComponentSync} from '../../core/ComponentSync';
 import {stopPropagation} from '../../utils/tools';
 import {Properties} from '../../components/types';
 
@@ -118,7 +118,7 @@ type Props = {}
 type State = { model?: Dialog_Model };
 
 export class Dialog
-	extends BaseComponent<Props, State>
+	extends ComponentSync<Props, State>
 	implements DialogListener {
 
 

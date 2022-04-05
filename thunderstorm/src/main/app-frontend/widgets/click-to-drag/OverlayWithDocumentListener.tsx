@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {BaseComponent} from '../../core/BaseComponent';
+import {ComponentSync} from '../../core/ComponentSync';
 
 type State = {};
 type Props = {
@@ -9,7 +9,7 @@ type Props = {
 };
 
 export class OverlayWithDocumentListener
-	extends BaseComponent<Props, State> {
+	extends ComponentSync<Props, State> {
 
 	constructor(props: Props) {
 		super(props);

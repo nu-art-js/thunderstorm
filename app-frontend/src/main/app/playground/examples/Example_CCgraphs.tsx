@@ -18,7 +18,7 @@
  */
 
 import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
+import {ComponentSync} from "@nu-art/thunderstorm/app-frontend/core/ComponentSync";
 import Example_LineGraph, {D3ChartData} from "./d3components/Example_LineGraph";
 import Example_TableGraph, {TableData} from "./d3components/Example_TableGraph";
 
@@ -34,7 +34,7 @@ export type Props = {
 }
 
 export class Example_CCgraphs
-	extends BaseComponent<Props, { data: D3ChartData[], tableData: TableData[] }> {
+	extends ComponentSync<Props, { data: D3ChartData[], tableData: TableData[] }> {
 
 	constructor(props: Props) {
 		super(props);

@@ -1,5 +1,5 @@
 import {Dialog_Builder} from "@nu-art/thunderstorm/app-frontend/modules/dialog/DialogModule";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
+import {ComponentSync} from "@nu-art/thunderstorm/app-frontend/core/ComponentSync";
 import * as React from "react";
 
 
@@ -8,7 +8,7 @@ type Props = {
 }
 
 export class Dialog_JiraOpened
-	extends BaseComponent<Props, {}> {
+	extends ComponentSync<Props, {}> {
 
 
 	constructor(props:Props) {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {HTMLProps, ReactNode} from 'react';
 import {EditorType, FieldEditor, FieldEditorInputProps} from './FieldEditor';
-import {BaseComponent} from '../core/BaseComponent';
+import {ComponentSync} from '../core/ComponentSync';
 import {StorageKey} from '../modules/StorageModule';
 import {InputType} from '../components/input/TS_BaseInput';
 
@@ -22,7 +22,7 @@ export type FieldEditorClickProps = {
 };
 
 export class FieldEditorClick
-	extends BaseComponent<FieldEditorClickProps, State> {
+	extends ComponentSync<FieldEditorClickProps, State> {
 
 	private createStorageKey() {
 		return new StorageKey<string>(`editable-label-controller-${this.props.id}`);

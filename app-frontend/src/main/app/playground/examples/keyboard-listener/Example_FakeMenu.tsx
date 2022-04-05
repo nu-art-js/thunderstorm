@@ -19,7 +19,7 @@
 // import * as React from "react";
 // import {
 // 	RendererMap,
-// 	BaseComponent,
+// 	ComponentSync,
 // 	ItemToRender,
 // 	MultiTypeAdapter,
 // 	stopPropagation,
@@ -32,7 +32,7 @@
 //
 //
 // export class Example_FakeMenu
-// 	extends BaseComponent<{}> {
+// 	extends ComponentSync<{}> {
 //
 // 	state = {actionMessage: "No action yet"};
 //

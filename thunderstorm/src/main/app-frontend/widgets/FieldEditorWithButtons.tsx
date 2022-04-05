@@ -2,7 +2,7 @@ import * as React from 'react';
 import {HTMLProps} from 'react';
 import {FieldEditor, FieldEditorInputProps} from './FieldEditor';
 import {StorageKey} from '../modules/StorageModule';
-import {BaseComponent} from '../core/BaseComponent';
+import {ComponentSync} from '../core/ComponentSync';
 import {InputType} from '../components/input/TS_BaseInput';
 
 type State = {
@@ -20,7 +20,7 @@ type Props = {
 };
 
 export class FieldEditorWithButtons
-	extends BaseComponent<Props, State> {
+	extends ComponentSync<Props, State> {
 
 	private createStorageKey() {
 		return new StorageKey<string>(`editable-label-controller-${this.props.id}`);

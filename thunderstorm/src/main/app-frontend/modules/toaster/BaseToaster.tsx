@@ -23,7 +23,7 @@ import * as React from 'react';
 // noinspection TypeScriptPreferShortImport
 import {Toast_Model, ToastListener, ToastModule} from './ToasterModule';
 // noinspection TypeScriptPreferShortImport
-import {BaseComponent} from '../../core/BaseComponent';
+import {ComponentSync} from '../../core/ComponentSync';
 
 type State = { model?: Toast_Model };
 
@@ -32,7 +32,7 @@ export type ToastProps = {
 }
 
 export abstract class BaseToaster
-	extends BaseComponent<ToastProps, State>
+	extends ComponentSync<ToastProps, State>
 	implements ToastListener {
 
 	protected constructor(props: ToastProps) {

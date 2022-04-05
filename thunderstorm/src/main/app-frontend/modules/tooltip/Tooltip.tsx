@@ -22,7 +22,7 @@
 import * as React from 'react';
 import {CSSProperties} from 'react';
 import {Tooltip_Model, TooltipListener, TooltipModule} from './TooltipModule';
-import {BaseComponent} from '../../core/BaseComponent';
+import {ComponentSync} from '../../core/ComponentSync';
 import {_setTimeout} from '@nu-art/ts-common';
 
 type State = { model?: Tooltip_Model };
@@ -38,7 +38,7 @@ export const TooltipDefaultStyle: CSSProperties = {
 };
 
 export class Tooltip
-	extends BaseComponent<{}, State>
+	extends ComponentSync<{}, State>
 	implements TooltipListener {
 
 	private ref?: HTMLDivElement | null;

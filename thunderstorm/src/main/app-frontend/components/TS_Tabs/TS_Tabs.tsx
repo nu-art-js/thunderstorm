@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {BaseComponent} from '../../core/BaseComponent';
+import {ComponentSync} from '../../core/ComponentSync';
 import {BrowserHistoryModule} from '../../modules/HistoryModule';
 import {_className, stopPropagation} from '../../utils/tools';
 import './TS_Tabs.scss';
@@ -49,7 +49,7 @@ const DefaultHeaderStyle = {width: 120, height: 20};
 const ParamKey_SelectedTab = 'selected-tab';
 
 export class TS_Tabs
-	extends BaseComponent<Props_Tabs, State> {
+	extends ComponentSync<Props_Tabs, State> {
 
 	static defaultProps = {
 		tabStylable: {style: DefaultHeaderStyle},
@@ -61,7 +61,7 @@ export class TS_Tabs
 	}
 
 	protected deriveStateFromProps(nextProps: Props_Tabs): State {
-		const selectedTab = BaseComponent.getQueryParameter(ParamKey_SelectedTab);
+		const selectedTab = ComponentSync.getQueryParameter(ParamKey_SelectedTab);
 
 		return {
 			tabs: nextProps.tabs,

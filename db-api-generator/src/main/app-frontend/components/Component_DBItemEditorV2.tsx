@@ -20,7 +20,7 @@
  */
 
 import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, EventType_MultiUpdate, EventType_Query, EventType_Update} from '../../frontend';
-import {BaseComponentV2, IndexKeys} from '@nu-art/thunderstorm/frontend';
+import {ComponentAsync, IndexKeys} from '@nu-art/thunderstorm/frontend';
 import {_keys, compare, DB_Object} from '@nu-art/ts-common';
 import * as React from 'react';
 
@@ -38,7 +38,7 @@ export abstract class Component_DBItemEditorV2<ItemType extends DB_Object,
 	Ks extends keyof ItemType = '_id',
 	P extends Props_DBItemEditorComponentV2<ItemType, Ks> = Props_DBItemEditorComponentV2<ItemType, Ks>,
 	S extends State_DBItemEditorComponentV2<ItemType> = State_DBItemEditorComponentV2<ItemType>>
-	extends BaseComponentV2<P, S> {
+	extends ComponentAsync<P, S> {
 
 	constructor(props: P) {
 		super(props);

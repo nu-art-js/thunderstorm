@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {BaseComponent} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend';
 import {_setTimeout, Second} from '@nu-art/ts-common';
 import {ExampleModule} from '@modules/ExampleModule';
 import {NotificationsModule, OnNotificationsUpdated, PushPubSubModule} from '@nu-art/push-pub-sub/frontend';
@@ -28,7 +28,7 @@ export type State = {
 }
 
 export class Example_TriggerPush
-	extends BaseComponent<{}, State>
+	extends ComponentSync<{}, State>
 	implements OnNotificationsUpdated {
 
 	constructor(props: {}) {

@@ -23,7 +23,7 @@ import {
 	RequestKey_PostApi,
 } from "@modules/ExampleModule";
 import {
-	BaseComponent,
+	ComponentSync,
 	ForceUpgrade
 } from "@nu-art/thunderstorm/frontend";
 import {LiveDoc} from "@nu-art/live-docs/frontend";
@@ -31,7 +31,7 @@ import {AdminBR} from "@nu-art/bug-report/frontend";
 import {OnRequestListener} from "@nu-art/thunderstorm";
 
 export class Hello
-	extends BaseComponent<{}, { label: string }>
+	extends ComponentSync<{}, { label: string }>
 	implements OnRequestListener {
 
 	constructor(props: any) {

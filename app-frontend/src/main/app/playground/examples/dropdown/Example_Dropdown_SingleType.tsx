@@ -2,7 +2,7 @@ import * as React from 'react';
 import {ICONS} from '@res/icons';
 import {
 	Adapter,
-	BaseComponent,
+	ComponentSync,
 	BaseNodeRenderer,
 	DropDown_headerStyle,
 	DropDown_inputStyle,
@@ -23,7 +23,7 @@ type State = {
 };
 
 class Example_Dropdown_SingleType
-	extends BaseComponent<{}, State> {
+	extends ComponentSync<{}, State> {
 
 	constructor(p: {}) {
 		super(p);

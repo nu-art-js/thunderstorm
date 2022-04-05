@@ -20,11 +20,11 @@
  */
 
 import {dispatch_onPageTitleChanged} from './AppPageV2';
-import {BaseComponent} from './BaseComponent';
+import {ComponentSync} from './ComponentSync';
 
 // Deprecated use AppPageV2
 export abstract class AppPage<P extends {} = {}, S extends {} = {}>
-	extends BaseComponent<P, S> {
+	extends ComponentSync<P, S> {
 
 	private pageTitle: string | (() => string);
 	private prevTitle!: string;

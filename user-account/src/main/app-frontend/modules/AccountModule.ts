@@ -18,7 +18,7 @@
  */
 
 import {Module, Second} from "@nu-art/ts-common";
-import {BaseComponent, BrowserHistoryModule, StorageKey, ThunderDispatcher, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
+import {ComponentSync, BrowserHistoryModule, StorageKey, ThunderDispatcher, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
 import {
 	AccountApi_Create,
 	AccountApi_ListAccounts,
@@ -100,8 +100,8 @@ export class AccountModule_Class
 		XhrHttpModule.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
 		// XhrHttpModule.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
-		const email = BaseComponent.getQueryParameter(QueryParam_Email);
-		const sessionId = BaseComponent.getQueryParameter(QueryParam_SessionId);
+		const email = ComponentSync.getQueryParameter(QueryParam_Email);
+		const sessionId = ComponentSync.getQueryParameter(QueryParam_SessionId);
 
 		if (email && sessionId) {
 			StorageKey_SessionId.set(sessionId);

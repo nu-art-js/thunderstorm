@@ -1,12 +1,12 @@
 import * as React from 'react';
 import {HTMLAttributes} from 'react';
-import {BaseComponent} from '../core/BaseComponent';
+import {ComponentSync} from '../core/ComponentSync';
 import {OnWindowResized} from '../modules/WindowModule';
 
 type BounderProps = HTMLAttributes<HTMLDivElement>;
 
 export class HeightBounder
-	extends BaseComponent<BounderProps>
+	extends ComponentSync<BounderProps>
 	implements OnWindowResized {
 
 	private ref?: HTMLDivElement;

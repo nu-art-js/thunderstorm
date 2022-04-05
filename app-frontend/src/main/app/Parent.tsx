@@ -17,10 +17,10 @@
  */
 
 import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/frontend";
+import {ComponentSync} from "@nu-art/thunderstorm/frontend";
 
 export class Parent
-	extends BaseComponent {
+	extends ComponentSync {
 
 	constructor(props: any) {
 		super(props);

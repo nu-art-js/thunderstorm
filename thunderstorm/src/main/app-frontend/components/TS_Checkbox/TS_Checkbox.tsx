@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {BaseComponent} from '../../core/BaseComponent';
+import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
 import './TS_Checkbox.scss';
 
@@ -16,7 +16,7 @@ type State_Checkbox = {
 }
 
 export class TS_Checkbox
-	extends BaseComponent<Props_Checkbox, State_Checkbox> {
+	extends ComponentSync<Props_Checkbox, State_Checkbox> {
 
 	constructor(p: Props_Checkbox) {
 		super(p);
@@ -45,4 +45,3 @@ export class TS_Checkbox
 		</div>;
 	}
 }
-

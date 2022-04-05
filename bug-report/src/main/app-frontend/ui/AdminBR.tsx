@@ -22,13 +22,13 @@ import {
 	AdminBRModule,
 	RequestKey_GetLog
 } from "../modules/AdminBRModule";
-import {BaseComponent,} from "@nu-art/thunderstorm/frontend";
+import {ComponentSync,} from "@nu-art/thunderstorm/frontend";
 import {DB_BugReport} from "../../shared/api";
 import {__stringify} from "@nu-art/ts-common";
 import {OnRequestListener} from "@nu-art/thunderstorm";
 
 export class AdminBR
-	extends BaseComponent
+	extends ComponentSync
 	implements OnRequestListener {
 
 	render() {
