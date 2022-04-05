@@ -38,7 +38,10 @@ export type Props_DBItemListV2<ItemType extends DB_Object> = {
 
 export type State_DBItemListV2<ItemType extends DB_Object> = { items?: ItemType[] };
 
-export abstract class Page_DBItemListV2<ItemType extends DB_Object, S extends State_DBItemListV2<ItemType> = State_DBItemListV2<ItemType>, P extends Props_DBItemListV2<ItemType> = Props_DBItemListV2<ItemType>>
+export abstract class DBListViewPage<ItemType extends DB_Object,
+	State extends any = {}, Props extends any = {},
+	S extends State_DBItemListV2<ItemType> & State = State_DBItemListV2<ItemType> & State,
+	P extends Props_DBItemListV2<ItemType> & Props = Props_DBItemListV2<ItemType> & Props>
 	extends AppPage<P, S> {
 
 	constructor(p: P) {
@@ -48,6 +51,7 @@ export abstract class Page_DBItemListV2<ItemType extends DB_Object, S extends St
 		this[p.moduleFE.getDefaultDispatcher().method] = this.__onItemUpdated;
 	}
 
+	// @Deprecated
 	private _BC_onItemUpdatedV1 = (...params: ApiCallerEventType): void => {
 		if (params[0] !== 'query')
 			return;

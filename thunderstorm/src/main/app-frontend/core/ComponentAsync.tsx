@@ -29,10 +29,14 @@ import {ResourcesModule} from '../modules/ResourcesModule';
 import {BrowserHistoryModule} from '../modules/HistoryModule';
 import {Thunder} from './Thunder';
 
-export abstract class ComponentAsync<P = any, S = any>
-	extends React.Component<P, S> {
+export type BaseAsyncState = {
+	error?: Error
+}
 
-	private stateKeysToUpdate?: (keyof S)[];
+export abstract class ComponentAsync<P extends any = {}, S extends any = {}, State extends BaseAsyncState & S = BaseAsyncState & S>
+	extends React.Component<P, State> {
+
+	private stateKeysToUpdate?: (keyof State)[];
 	private logger: Logger;
 	protected mounted = false;
 
@@ -58,44 +62,55 @@ export abstract class ComponentAsync<P = any, S = any>
 		};
 
 		this._deriveStateFromProps.bind(this);
+
 		const state = this._deriveStateFromProps(props);
 		if (state)
 			this.state = state;
 	}
 
+	private lastProps!: P;
+
 	UNSAFE_componentWillReceiveProps(nextProps: P) {
-		console.log('UNSAFE_componentWillReceiveProps');
+		console.log(`UNSAFE_componentWillReceiveProps: ${this.lastProps === nextProps ? '' : 'NOT '} "Same instance"`);
 		const state = this._deriveStateFromProps(nextProps);
 		if (state)
 			this.setState(state);
+
+		this.lastProps = nextProps;
 	}
 
-	private _deriveStateFromProps(nextProps: P): S | undefined {
+	private _deriveStateFromProps(nextProps: P): State | undefined {
 		this.deriveStateFromProps(nextProps)
-			.then((state) => this.setState(state, () => {
-			}))
-			.catch(e => this.logError(`error`, e));
+			.then((state) => {
+				this.setState(state, () => {
+				});
+			})
+			.catch(e => {
+				this.logError(`error`, e);
+				this.setState({error: e});
+			});
 
-		return this.createInitialState(nextProps);
+		const state = this.createInitialState(nextProps);
+		return state;
 	}
 
 	protected updateState() {
 		this._deriveStateFromProps(this.props);
 	}
 
-	protected async deriveStateFromProps(nextProps: P): Promise<S> {
+	protected async deriveStateFromProps(nextProps: P): Promise<State> {
 		return this.createInitialState(nextProps);
 	}
 
 	protected createInitialState(nextProps: P) {
-		return {} as S;
+		return {} as State;
 	}
 
-	setStateKeysToUpdate(stateKeysToUpdate?: (keyof S)[]) {
+	setStateKeysToUpdate(stateKeysToUpdate?: (keyof State)[]) {
 		this.stateKeysToUpdate = stateKeysToUpdate;
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
+	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<State>, nextContext: any): boolean {
 		if (!this.stateKeysToUpdate)
 			return true;
 
