@@ -47,8 +47,11 @@ export abstract class DBItemEditorComponent<ItemType extends DB_Object,
 	constructor(props: P) {
 		super(props);
 		// this.logDebug('constructor', props.keys);
+		this.__onItemUpdated.bind(this);
 		// @ts-ignore
 		this[props.moduleFE.defaultDispatcher.method] = this.__onItemUpdated;
+		// @ts-ignore
+		// this[props.moduleFE.defaultDispatcher.method].bind(this);
 	}
 
 	protected async deriveStateFromProps(nextProps: P): Promise<S> {
@@ -87,7 +90,7 @@ export abstract class DBItemEditorComponent<ItemType extends DB_Object,
 		this.props.moduleFE.upsert(item as ItemType, (updatedItem) => this.props.onChange?.(updatedItem, key));
 	}
 
-	private __onItemUpdated = (...params: ApiCallerEventTypeV2<ItemType>): void => {
+	protected __onItemUpdated(...params: ApiCallerEventTypeV2<ItemType>): void {
 		if (params[0] === EventType_MultiUpdate || params[0] === EventType_Query)
 			return;
 
@@ -99,8 +102,7 @@ export abstract class DBItemEditorComponent<ItemType extends DB_Object,
 			this.setState({item: (params[1] as ItemType)} as unknown as S);
 			return;
 		}
-
-	};
+	}
 
 	protected setPropValue = <K extends keyof ItemType>(key: K, value: Partial<ItemType[K]>) => {
 		const item = this.state.item;
