@@ -17,7 +17,7 @@
  */
 
 import {
-	BaseComponent,
+	ComponentSync,
 	ThunderDispatcher
 } from "@nu-art/thunderstorm/frontend";
 import * as React from "react";
@@ -27,7 +27,7 @@ import {Test} from "@modules/TestModule";
 import {TestDispatch} from "@app/app-shared";
 
 export class Example_Dispatch
-	extends BaseComponent
+	extends ComponentSync
 	implements TestDispatch {
 	uiDispatcher = new ThunderDispatcher<TestDispatch, 'testDispatch'>('testDispatch');
 
@@ -69,7 +69,7 @@ export class Example_Dispatch
 }
 
 class SecondComponent
-	extends BaseComponent<{}, { color: string }>
+	extends ComponentSync<{}, { color: string }>
 	implements TestDispatch {
 
 	state = {

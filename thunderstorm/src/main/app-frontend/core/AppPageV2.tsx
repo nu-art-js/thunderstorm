@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {BaseComponentV2} from './BaseComponentV2';
+import {ComponentAsync} from './ComponentAsync';
 import {ThunderDispatcher} from './thunder-dispatcher';
 
 export interface OnPageTitleChangedListener {
@@ -29,7 +29,7 @@ export interface OnPageTitleChangedListener {
 export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChangedListener, '__onPageTitleChanged'>('__onPageTitleChanged');
 
 export abstract class AppPageV2<P extends {} = {}, S extends {} = {}>
-	extends BaseComponentV2<P, S> {
+	extends ComponentAsync<P, S> {
 
 	private pageTitle: string | (() => string);
 	private prevTitle!: string;

@@ -17,14 +17,14 @@
  */
 
 import * as React from 'react';
-import {BaseComponent, Dialog, PopupMenu, RoutingModule, Toaster, WrapperProps} from "@nu-art/thunderstorm/frontend";
+import {ComponentSync, Dialog, PopupMenu, RoutingModule, Toaster, WrapperProps} from "@nu-art/thunderstorm/frontend";
 
 import {VersionOnScreen} from './components/VersionOnScreen';
 import {AccountModule, OnLoginStatusUpdated} from "@nu-art/user-account/frontend";
 import {registerRoutes} from "./Routes";
 
 export class App
-	extends BaseComponent<WrapperProps>
+	extends ComponentSync<WrapperProps>
 	implements OnLoginStatusUpdated {
 
 	public static dropBlocker<T>(ev: React.DragEvent<T>) {

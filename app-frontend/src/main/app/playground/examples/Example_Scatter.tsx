@@ -1,5 +1,5 @@
 import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
+import {ComponentSync} from "@nu-art/thunderstorm/app-frontend/core/ComponentSync";
 import {scaleLinear} from "d3-scale";
 import AxisLeft from "./d3components/Example_AxisX";
 import AxisBottom from "./d3components/Example_AxisBottom.";
@@ -11,7 +11,7 @@ export type Coordinates = {
 }
 
 export class Example_Scatter
-	extends BaseComponent<{}, { data: Coordinates[] }> {
+	extends ComponentSync<{}, { data: Coordinates[] }> {
 
 	constructor(props: {}) {
 		super(props);

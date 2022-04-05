@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseComponent} from "@nu-art/thunderstorm/frontend";
+import {ComponentSync} from "@nu-art/thunderstorm/frontend";
 import * as React from "react";
 import {LiveDocsModule} from "../modules/LiveDocsModule";
 
@@ -33,7 +33,7 @@ type Props = {
 
 
 const showLiveDoc = (e: React.MouseEvent) => {
-	const docKey = BaseComponent.getElementId(e);
+	const docKey = ComponentSync.getElementId(e);
 	LiveDocsModule.showLiveDoc(docKey);
 };
 

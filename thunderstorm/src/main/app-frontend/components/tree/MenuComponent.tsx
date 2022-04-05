@@ -22,7 +22,7 @@
 
 import * as React from 'react';
 import {generateHex} from '@nu-art/ts-common';
-import {BaseComponent} from '../../core/BaseComponent';
+import {ComponentSync} from '../../core/ComponentSync';
 import {Adapter} from '../adapter/Adapter';
 import {TS_Tree} from './TS_Tree';
 
@@ -35,7 +35,7 @@ export type MenuComponentProps = {
 }
 
 export class MenuComponent
-	extends BaseComponent<MenuComponentProps> {
+	extends ComponentSync<MenuComponentProps> {
 	private readonly id: string;
 
 	constructor(props: MenuComponentProps) {

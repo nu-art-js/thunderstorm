@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {CSSProperties} from 'react';
 import {Menu_Model, MenuListener, MenuModule} from './MenuModule';
-import {BaseComponent} from '../../core/BaseComponent';
+import {ComponentSync} from '../../core/ComponentSync';
 import {stopPropagation} from '../../utils/tools';
 import {generateHex} from '@nu-art/ts-common';
 import {TS_Tree} from '../../components/tree/TS_Tree';
@@ -41,7 +41,7 @@ const overlayStyle: CSSProperties = {
 };
 
 export class PopupMenu
-	extends BaseComponent<{}, State>
+	extends ComponentSync<{}, State>
 	implements MenuListener {
 
 	overlayRef = React.createRef<HTMLDivElement>();

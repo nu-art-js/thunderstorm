@@ -17,11 +17,11 @@
  */
 
 import * as React from "react";
-import {BaseComponent, RoutingModule} from "@nu-art/thunderstorm/frontend";
+import {ComponentSync, RoutingModule} from "@nu-art/thunderstorm/frontend";
 import {Parent} from "./Parent";
 
 export class Child2
-	extends BaseComponent {
+	extends ComponentSync {
 
 	constructor(props: any) {
 		super(props);

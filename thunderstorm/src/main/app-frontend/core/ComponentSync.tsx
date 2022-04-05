@@ -24,16 +24,18 @@
  */
 import * as React from 'react';
 
-import {Logger, LogLevel, LogParam} from '@nu-art/ts-common';
+import {_clearTimeout, _setTimeout, Logger, LogLevel, LogParam, TimerHandler} from '@nu-art/ts-common';
+import {StorageModule} from '../modules/StorageModule';
 import {ResourcesModule} from '../modules/ResourcesModule';
 import {BrowserHistoryModule} from '../modules/HistoryModule';
 import {Thunder} from './Thunder';
 
-export abstract class BaseComponentV2<P = any, S = any>
+export class ComponentSync<P = any, S = any>
 	extends React.Component<P, S> {
 
 	private stateKeysToUpdate?: (keyof S)[];
 	private logger: Logger;
+	private timeoutMap: { [k: string]: number } = {};
 	protected mounted = false;
 
 	constructor(props: P) {
@@ -57,38 +59,35 @@ export abstract class BaseComponentV2<P = any, S = any>
 			this.mounted = false;
 		};
 
-		this._deriveStateFromProps.bind(this);
-		const state = this._deriveStateFromProps(props);
+		this.deriveStateFromProps.bind(this);
+		const state = this.deriveStateFromProps(props);
 		if (state)
 			this.state = state;
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps: P) {
-		console.log('UNSAFE_componentWillReceiveProps');
-		const state = this._deriveStateFromProps(nextProps);
+		const state = this.deriveStateFromProps(nextProps);
 		if (state)
 			this.setState(state);
 	}
 
-	private _deriveStateFromProps(nextProps: P): S | undefined {
-		this.deriveStateFromProps(nextProps)
-			.then((state) => this.setState(state, () => {
-			}))
-			.catch(e => this.logError(`error`, e));
-
-		return this.createInitialState(nextProps);
+	protected deriveStateFromProps(nextProps: P): S | undefined {
+		return undefined;
 	}
 
-	protected updateState() {
-		this._deriveStateFromProps(this.props);
+
+	debounce(handler: TimerHandler, key: string, ms = 0) {
+		_clearTimeout(this.timeoutMap[key]);
+		this.timeoutMap[key] = _setTimeout(handler, ms);
 	}
 
-	protected async deriveStateFromProps(nextProps: P): Promise<S> {
-		return this.createInitialState(nextProps);
-	}
-
-	protected createInitialState(nextProps: P) {
-		return {} as S;
+	throttle(handler: TimerHandler, key: string, ms = 0) {
+		if (this.timeoutMap[key])
+			return;
+		this.timeoutMap[key] = _setTimeout(() => {
+			handler();
+			delete this.timeoutMap[key];
+		}, ms);
 	}
 
 	setStateKeysToUpdate(stateKeysToUpdate?: (keyof S)[]) {
@@ -128,6 +127,14 @@ export abstract class BaseComponentV2<P = any, S = any>
 
 	private logImpl(level: LogLevel, bold: boolean, toLog: LogParam[]): void {
 		this.logger.log(level, bold, toLog);
+	}
+
+	static store(key: string, value: string | object): void {
+		StorageModule.set(key, value);
+	}
+
+	static load(key: string, defaultValue: string | number | object | undefined): string | number | object | null {
+		return StorageModule.get(key, defaultValue);
 	}
 
 	static getElementId(e: React.BaseSyntheticEvent) {

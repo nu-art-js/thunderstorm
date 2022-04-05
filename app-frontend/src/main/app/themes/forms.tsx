@@ -18,7 +18,7 @@
 
 import * as React from "react";
 import {
-	BaseComponent,
+	ComponentSync,
 	Component_Form,
 	FormProps,
 	ToastModule
@@ -36,7 +36,7 @@ type State<T extends ObjectTS> = {
 export type ConfirmationForm<T extends ObjectTS> = FormProps<T> & { onCancel: () => void }
 
 class ConfirmationFormWrapper<T extends ObjectTS>
-	extends BaseComponent<ConfirmationForm<T>, State<T>> {
+	extends ComponentSync<ConfirmationForm<T>, State<T>> {
 
 	constructor(p: ConfirmationForm<T>) {
 		super(p);

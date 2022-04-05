@@ -17,7 +17,7 @@
  */
 
 import * as React from "react";
-import {Adapter, BaseComponent, NodeRendererProps, TS_Tree, TreeNode,} from "@nu-art/thunderstorm/frontend";
+import {Adapter, ComponentSync, NodeRendererProps, TS_Tree, TreeNode,} from "@nu-art/thunderstorm/frontend";
 import {PlaygroundExample_BodyStyle, PlaygroundExample_ResultStyle} from "../consts";
 import {PG_Example} from "../_core/PG_Example";
 
@@ -25,7 +25,7 @@ type State = { focused?: string, actionMessage: string };
 export type Element = { label: string, action?: () => void }
 
 class Example_Tree_Data
-	extends BaseComponent<{}, State> {
+	extends ComponentSync<{}, State> {
 
 	state = {actionMessage: "No action yet"};
 	private elements: { [key: string]: Element | object } = {

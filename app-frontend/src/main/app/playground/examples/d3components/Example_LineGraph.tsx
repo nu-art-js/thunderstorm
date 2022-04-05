@@ -1,6 +1,6 @@
 import * as React from "react";
 import {ReactNode} from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
+import {ComponentSync} from "@nu-art/thunderstorm/app-frontend/core/ComponentSync";
 import {
 	ScaleLinear,
 	scaleLinear
@@ -41,7 +41,7 @@ export type Props = {
 }
 
 export class Example_LineGraph
-	extends BaseComponent<Props, { page: number, index: number }> {
+	extends ComponentSync<Props, { page: number, index: number }> {
 
 	constructor(props: Props) {
 		super(props);

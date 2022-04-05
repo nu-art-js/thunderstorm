@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {HTMLProps, ReactNode} from 'react';
 import {StorageKey} from '../modules/StorageModule';
-import {BaseComponent} from '../core/BaseComponent';
+import {ComponentSync} from '../core/ComponentSync';
 import {TS_Input, TS_InputProps} from '../components/input/TS_Input/TS_Input';
 import {TS_TextArea} from '../components/input/TS_TextArea/TS_TextArea';
 import {InputType} from '../components/input/TS_BaseInput';
@@ -24,7 +24,7 @@ export type FieldEditorProps = {
 };
 
 export class FieldEditor
-	extends BaseComponent<FieldEditorProps> {
+	extends ComponentSync<FieldEditorProps> {
 
 	constructor(props: FieldEditorProps) {
 		super(props);

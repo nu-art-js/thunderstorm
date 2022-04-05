@@ -27,7 +27,7 @@ import {Adapter,} from '../adapter/Adapter';
 import {Stylable} from '../../tools/Stylable';
 import {Overlay} from '../Overlay';
 import {TS_Tree} from '../tree/TS_Tree';
-import {BaseComponent} from '../../core/BaseComponent';
+import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../input/TS_Input';
 
 const defaultTitleHeight = '28px';
@@ -127,7 +127,7 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 }
 
 export class TS_DropDown<ItemType>
-	extends BaseComponent<Props_DropDown<ItemType>, State<ItemType>> {
+	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
 
 	static defaultProps: Partial<StaticProps> = {
 		id: generateHex(8),

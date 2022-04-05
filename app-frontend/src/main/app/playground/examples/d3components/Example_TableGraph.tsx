@@ -19,7 +19,7 @@
 
 import * as React from "react";
 import {ReactNode} from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
+import {ComponentSync} from "@nu-art/thunderstorm/app-frontend/core/ComponentSync";
 import {scaleLinear} from "d3-scale";
 import {
 	AxesLabels,
@@ -43,7 +43,7 @@ type Props = {
 
 
 export class Example_TableGraph
-	extends BaseComponent<Props, {}> {
+	extends ComponentSync<Props, {}> {
 
 	constructor(props: Props) {
 		super(props);

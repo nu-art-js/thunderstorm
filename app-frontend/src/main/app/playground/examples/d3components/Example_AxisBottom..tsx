@@ -18,7 +18,7 @@
  */
 
 import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/frontend";
+import {ComponentSync} from "@nu-art/thunderstorm/frontend";
 import {ScaleLinear} from "d3-scale";
 import {ReactNode} from "react";
 
@@ -37,7 +37,7 @@ type Props = {
 }
 
 export class AxisBottom
-	extends BaseComponent<Props, {}> {
+	extends ComponentSync<Props, {}> {
 
 	constructor(props: Props) {
 		super(props);

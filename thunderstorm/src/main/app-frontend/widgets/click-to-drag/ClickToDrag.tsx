@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {BaseComponent} from '../../core/BaseComponent';
+import {ComponentSync} from '../../core/ComponentSync';
 import {OverlayWithDocumentListener} from './OverlayWithDocumentListener';
 
 type Props = {
@@ -13,7 +13,7 @@ type State = {
 };
 
 export class ClickToDrag
-	extends BaseComponent<Props, State> {
+	extends ComponentSync<Props, State> {
 
 	constructor(props: Props) {
 		super(props);
