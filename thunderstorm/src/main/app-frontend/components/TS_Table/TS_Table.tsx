@@ -34,7 +34,7 @@ export type CellRenderer<R extends ObjectTS, A extends string = never, P extends
 export type RowRenderer<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
 	[C in P]?: CellRenderer<R, A, C>;
 };
-export type TableProps<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = Stylable & {
+export type Props_Table<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = Stylable & {
 	id?: string;
 	header: TableHeaders<R, A, P>;
 	rows: R[];
@@ -50,12 +50,12 @@ export type TableProps<R extends ObjectTS, A extends string = never, P extends (
 
 
 export class TS_Table<R extends ObjectTS, A extends string = never>
-	extends React.Component<TableProps<R, A>, any> {
+	extends React.Component<Props_Table<R, A>, any> {
 	static defaultProps = {
 		actionHeaderRenderer: (action: any) => <div>{action}</div>
 	};
 
-	constructor(p: TableProps<R, A>) {
+	constructor(p: Props_Table<R, A>) {
 		super(p);
 	}
 
