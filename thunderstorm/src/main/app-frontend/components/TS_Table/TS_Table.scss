@@ -44,11 +44,6 @@
     background: #ddd;
 
     .ts-table__tr {
-      cursor: pointer;
-
-      &:hover {
-        background:#ccc;
-      }
       .ts-table__td {
         border: 2px solid black;
       }
