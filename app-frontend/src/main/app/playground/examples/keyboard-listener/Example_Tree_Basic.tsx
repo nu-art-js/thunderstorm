@@ -16,18 +16,18 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {AdapterBuilder, BaseNodeRenderer, NodeRendererProps, TS_Tree,} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
-import {PlaygroundExample_ResultStyle} from "../consts";
-import {PG_Example} from "../_core/PG_Example";
+import * as React from 'react';
+import {Adapter, BaseNodeRenderer, NodeRendererProps, SimpleTreeAdapter, TS_Tree,} from '@nu-art/thunderstorm/frontend';
+import {__stringify} from '@nu-art/ts-common';
+import {PlaygroundExample_ResultStyle} from '../consts';
+import {PG_Example} from '../_core/PG_Example';
 
 type State = { focused?: string, actionMessage: string };
 
 class Example_Tree_Basic
 	extends React.Component<{}, State> {
 
-	state = {actionMessage: "No action yet"};
+	state = {actionMessage: 'No action yet'};
 	private elements = {
 		First: {
 			label: 'First element',
@@ -44,18 +44,13 @@ class Example_Tree_Basic
 			other: 'Other element',
 		},
 		Forth: {
-			label: "Forth element",
+			label: 'Forth element',
 			other: 'Other element',
 		}
 	};
 
 	render() {
-		const adapter = AdapterBuilder()
-			.tree()
-			.singleRender(Example_NodeRenderer)
-			.setData(this.elements)
-			.build();
-
+		const adapter: Adapter = SimpleTreeAdapter(this.elements, (item) => <Example_NodeRenderer {...item}/>);
 		adapter.hideRoot = true;
 
 
@@ -69,12 +64,12 @@ class Example_Tree_Basic
 				// onBlur={() => console.log("Blurred")}
 			/>
 			<div {...PlaygroundExample_ResultStyle}>{this.state.actionMessage}</div>
-		</>
+		</>;
 	}
 }
 
 class ItemRenderer
-	extends BaseNodeRenderer<any>{
+	extends BaseNodeRenderer<any> {
 
 	constructor(props: NodeRendererProps) {
 		super(props);
@@ -85,9 +80,9 @@ class ItemRenderer
 
 		return <div
 			id={this.props.node.path}
-			className='clickable'
+			className="clickable"
 			onClick={this.props.node.onClick}
-			style={{backgroundColor: moreProps.focusedColor, userSelect: "none"}}>{`${value}`}</div>
+			style={{backgroundColor: moreProps.focusedColor, userSelect: 'none'}}>{`${value}`}</div>;
 
 	}
 }
@@ -96,7 +91,7 @@ class ItemRenderer0
 	extends ItemRenderer {
 
 	render() {
-		return this.renderItem({focusedColor: this.props.node.focused ? "red" : "salmon"});
+		return this.renderItem({focusedColor: this.props.node.focused ? 'red' : 'salmon'});
 	}
 }
 
@@ -104,7 +99,7 @@ class ItemRenderer1
 	extends ItemRenderer {
 
 	render() {
-		return this.renderItem({focusedColor: this.props.node.focused ? "lime" : "cyan"});
+		return this.renderItem({focusedColor: this.props.node.focused ? 'lime' : 'cyan'});
 	}
 }
 
@@ -112,7 +107,7 @@ class ItemRenderer2
 	extends ItemRenderer {
 
 	render() {
-		return this.renderItem({focusedColor: this.props.node.focused ? "lightblue" : "magenta"});
+		return this.renderItem({focusedColor: this.props.node.focused ? 'lightblue' : 'magenta'});
 	}
 }
 
@@ -132,22 +127,22 @@ class Example_NodeRenderer
 	private renderItems() {
 		const Renderer = this.getRendererType();
 
-		return <Renderer item={this.props.item} node={this.props.node}/>
+		return <Renderer item={this.props.item} node={this.props.node}/>;
 	}
 
 	private getRendererType() {
-		if (typeof this.props.item === "number")
+		if (typeof this.props.item === 'number')
 			return ItemRenderer2;
 
-		return this.props.node.propKey === "other" ? ItemRenderer1 : ItemRenderer0;
+		return this.props.node.propKey === 'other' ? ItemRenderer1 : ItemRenderer0;
 	}
 }
 
-const name = "Tree - Basic";
+const name = 'Tree - Basic';
 
 export function Playground_Tree_Basic() {
 	return {
-		renderer: ()=><PG_Example name={name}> <Example_Tree_Basic/> </PG_Example>,
+		renderer: () => <PG_Example name={name}> <Example_Tree_Basic/> </PG_Example>,
 		name
 	};
 }
