@@ -30,10 +30,16 @@ export const QueryParam_SessionId = HeaderKey_SessionId;
 export const QueryParam_RedirectUrl = "redirectUrl";
 export const HeaderKey_CurrentPage = "current-page";
 
+export enum FrontType {
+	Web = "Web",
+	App = "App"
+}
+
 export type DB_Session = {
 	userId: string
 	sessionId: string
 	timestamp: number
+	frontType?: FrontType
 }
 
 export type Response_Auth = {
@@ -63,6 +69,7 @@ export type Request_AddNewAccount = {
 export type Request_LoginAccount = {
 	email: string
 	password: string
+	frontType?: FrontType
 }
 
 export type Request_ValidateSession = {

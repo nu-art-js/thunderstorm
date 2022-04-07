@@ -37,6 +37,7 @@ import {
 import {
 	DB_Account,
 	DB_Session,
+	FrontType,
 	HeaderKey_SessionId,
 	Request_CreateAccount,
 	Request_LoginAccount,
@@ -56,7 +57,7 @@ export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
 type Config = {
 	projectId: string
-	sessionTTLms: number
+	sessionTTLms: {web: number, app: number}
 }
 
 export const Collection_Sessions = "user-account--sessions";
@@ -83,7 +84,7 @@ export class AccountsModule_Class
 	implements QueryRequestInfo {
 	constructor() {
 		super();
-		this.setDefaultConfig({sessionTTLms: Day});
+		this.setDefaultConfig({sessionTTLms: {web: Day, app: Day}});
 	}
 
 	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; }> {
@@ -225,7 +226,7 @@ export class AccountsModule_Class
 			await this.accounts.upsert(account);
 		}
 
-		const session = await this.upsertSession(account._id);
+		const session = await this.upsertSession(account._id, request.frontType);
 
 		await dispatch_onUserLogin.dispatchModuleAsync([getUIAccount(account)]);
 		return session;
@@ -299,10 +300,15 @@ export class AccountsModule_Class
 
 	private TTLExpired = (session: DB_Session) => {
 		const delta = currentTimeMillies() - session.timestamp;
-		return delta > this.config.sessionTTLms || delta < 0;
+		let sessionTTLms = this.config.sessionTTLms.web;
+
+		if (session.frontType === FrontType.App)
+			sessionTTLms = this.config.sessionTTLms.app;
+
+		return delta > sessionTTLms || delta < 0;
 	};
 
-	public upsertSession = async (userId: string): Promise<Response_Auth> => {
+	public upsertSession = async (userId: string, frontType?: FrontType): Promise<Response_Auth> => {
 		let session = await this.sessions.queryUnique({where: {userId}});
 		if (!session || this.TTLExpired(session)) {
 			session = {
@@ -310,6 +316,10 @@ export class AccountsModule_Class
 				timestamp: currentTimeMillies(),
 				userId
 			};
+
+			if (frontType)
+				session.frontType = frontType;
+
 			await this.sessions.upsert(session);
 		}
 

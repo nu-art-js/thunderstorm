@@ -62,7 +62,7 @@ type InputField = {
 
 type Form<T> = { [K in keyof T]: InputField }
 
-const form: Form<Request_LoginAccount> = {
+const form: Form<Omit<Request_LoginAccount, "frontType">> = {
 	email: {
 		type: "text",
 		hint: "email",
@@ -107,7 +107,7 @@ export class Component_Login
 		</>;
 	}
 
-	private onValueChanged = (value: string, id: keyof Request_LoginAccount) => {
+	private onValueChanged = (value: string, id: keyof Omit<Request_LoginAccount, "frontType">) => {
 		this.setState(state => {
 			state.data[id] = value;
 			return state;
