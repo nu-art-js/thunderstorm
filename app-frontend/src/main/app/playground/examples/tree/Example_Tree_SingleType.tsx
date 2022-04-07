@@ -1,7 +1,7 @@
-import * as React from "react";
-import {Component} from "react";
-import {Adapter, AdapterBuilder, ToastModule, TS_Tree} from "@nu-art/thunderstorm/frontend";
-import {__stringify, deepClone} from "@nu-art/ts-common";
+import * as React from 'react';
+import {Component} from 'react';
+import {Adapter, SimpleTreeAdapter, ToastModule, TS_Tree} from '@nu-art/thunderstorm/frontend';
+import {__stringify, deepClone} from '@nu-art/ts-common';
 
 type Type = {
 	label: string | number
@@ -45,19 +45,14 @@ export class Example_Tree_SingleType
 				other: 'Other element',
 			},
 			Forth: {
-				label: "Forth element",
+				label: 'Forth element',
 				other: 'Other element',
 			}
 		};
 	}
 
 	render() {
-		const adapter: Adapter = AdapterBuilder()
-			.tree()
-			.singleRender((props: { item: Type }) => <div>{props.item}</div>)
-			.setData(this.data)
-			.build();
-
+		const adapter: Adapter = SimpleTreeAdapter(this.data, (props: { item: Type }) => <div>{props.item}</div>);
 		// adapter.adjust = adapter.adjustNodes("data")
 		return <div>
 			<div>
@@ -70,7 +65,7 @@ export class Example_Tree_SingleType
 					adapter={adapter}
 					onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
-		</div>
+		</div>;
 	}
 
 	private addItem = (path: string) => {

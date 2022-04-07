@@ -413,6 +413,14 @@ export function AdapterBuilder() {
 	return new _AdapterBuilder();
 }
 
+export function SimpleTreeAdapter<T>(options: TreeData<T>, renderer: (node: NodeRendererProps<T>) => React.ReactElement) {
+	return AdapterBuilder()
+		.tree()
+		.singleRender(renderer)
+		.setData(options)
+		.build();
+}
+
 export function SimpleListAdapter<T>(options: T[], renderer: (node: NodeRendererProps<T>) => React.ReactElement) {
 	return AdapterBuilder()
 		.list()
