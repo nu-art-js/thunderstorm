@@ -31,8 +31,8 @@ export const QueryParam_RedirectUrl = "redirectUrl";
 export const HeaderKey_CurrentPage = "current-page";
 
 export enum FrontType {
-	Web = "Web",
-	App = "App"
+	Web = "web",
+	App = "app"
 }
 
 export type DB_Session = {
