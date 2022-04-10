@@ -47,11 +47,11 @@ export abstract class DBItemEditorComponent<ItemType extends DB_Object,
 	constructor(props: P) {
 		super(props);
 		// this.logDebug('constructor', props.keys);
-		this.__onItemUpdated.bind(this);
+		// this.__onItemUpdated.bind(this);
 		// @ts-ignore
 		this[props.moduleFE.defaultDispatcher.method] = this.__onItemUpdated;
 		// @ts-ignore
-		// this[props.moduleFE.defaultDispatcher.method].bind(this);
+		this[props.moduleFE.defaultDispatcher.method].bind(this);
 	}
 
 	protected async deriveStateFromProps(nextProps: P): Promise<S> {

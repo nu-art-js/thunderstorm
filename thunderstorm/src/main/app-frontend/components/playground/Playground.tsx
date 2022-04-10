@@ -24,7 +24,6 @@ import {BrowserHistoryModule} from '../../modules/HistoryModule';
 import {Example_NewProps} from './Example_NewProps';
 import {TS_DropDown} from '../dropdown/TS_DropDown';
 import {SimpleListAdapter} from '../adapter/Adapter';
-import {HeightBounder} from '../HeightBounder';
 import {Filter} from '@nu-art/ts-common';
 
 const PLAYGROUND = 'playground';
@@ -58,8 +57,7 @@ export class Playground
 
 	render() {
 
-		return <HeightBounder>
-			<div className={'ll_v_l match_height match_width'}>
+		return <div className={'ll_v_l match_height match_width'}>
 				<div style={{width: 250, display: 'inline-block'}}>
 					<TS_DropDown<PlaygroundScreen>
 						caret={{
@@ -79,9 +77,7 @@ export class Playground
 						})}/>
 				</div>
 				<div style={{borderStyle: 'double', display: 'inline-block', boxSizing: 'border-box'}}>{this.renderPlayground()}</div>
-			</div>
-			;
-		</HeightBounder>;
+			</div>;
 	}
 
 	private renderPlayground() {
