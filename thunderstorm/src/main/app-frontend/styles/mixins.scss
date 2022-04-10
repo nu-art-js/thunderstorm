@@ -1,0 +1,20 @@
+@mixin icon-size($width, $height: $width) {
+  width: $width;
+  height: $height;
+}
+
+@mixin icon-style($color, $hoverColor:$color, $selectedColor:$color, $mouseDownColor:$selectedColor, $disabledColor:$color) {
+  display: inline-block;
+  background: $color;
+  &:hover {
+    background: $hoverColor;
+  }
+  &:active {
+    background: $mouseDownColor;
+  }
+}
+
+@mixin icon-url($icon) {
+  -webkit-mask-image: url($icon);
+  mask-image: url($icon);
+}
