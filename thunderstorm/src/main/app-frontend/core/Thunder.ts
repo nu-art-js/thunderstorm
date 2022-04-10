@@ -31,7 +31,8 @@ import {StorageModule} from '../modules/StorageModule';
 import {ResourcesModule} from '../modules/ResourcesModule';
 import {ThunderDispatcher} from './thunder-dispatcher';
 import {
-	OnRequestListener, RequestErrorHandler, RequestSuccessHandler} from '../../shared/request-types';
+	OnRequestListener, RequestErrorHandler, RequestSuccessHandler
+} from '../../shared/request-types';
 import {ThunderstormModule} from '../modules/ThunderstormModule';
 
 export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?) => {
