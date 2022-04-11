@@ -35,6 +35,9 @@ import {
 } from '../../shared/request-types';
 import {ThunderstormModule} from '../modules/ThunderstormModule';
 
+import '../styles/impl/basic.scss';
+import '../styles/impl/icons.scss';
+
 export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?) => {
 	const errorMessage = request.errorMessage || resError?.debugMessage;
 	return errorMessage && ToastModule.toastError(errorMessage);
