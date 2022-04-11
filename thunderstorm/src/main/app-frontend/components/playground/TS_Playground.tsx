@@ -26,7 +26,7 @@ import {TS_DropDown} from '../dropdown/TS_DropDown';
 import {SimpleListAdapter} from '../adapter/Adapter';
 import {Filter} from '@nu-art/ts-common';
 
-const PLAYGROUND = 'playground';
+const TS_Playground = 'playground';
 
 export type PlaygroundProps = {
 	selectStyle: any
@@ -50,7 +50,7 @@ export class Playground
 
 	constructor(props: PlaygroundProps) {
 		super(props);
-		const queryParam = BrowserHistoryModule.getQueryParams()[PLAYGROUND];
+		const queryParam = BrowserHistoryModule.getQueryParams()[TS_Playground];
 		const screen = this.props.screens.find(s => s.name === queryParam);
 		this.state = {selectedScreen: screen};
 	}
@@ -58,26 +58,24 @@ export class Playground
 	render() {
 
 		return <div className={'ll_v_l match_height match_width'}>
-				<div style={{width: 250, display: 'inline-block'}}>
-					<TS_DropDown<PlaygroundScreen>
-						caret={{
-							close: this.props.iconClose,
-							open: this.props.iconOpen
-						}}
-						filter={new Filter(option => ([option.name]))}
-						onSelected={(screen: PlaygroundScreen) => {
-							this.setState({selectedScreen: screen});
-							BrowserHistoryModule.addQueryParam(PLAYGROUND, screen.name);
-						}}
-						selected={this.state.selectedScreen}
-						adapter={SimpleListAdapter(this.props.screens, (props) => {
-							return <div style={{background: props.node.focused ? '#afafaf' : 'unset'}}>
-								<div style={{padding: 8,}}>{props.item.name}</div>
-							</div>;
-						})}/>
-				</div>
-				<div style={{borderStyle: 'double', display: 'inline-block', boxSizing: 'border-box'}}>{this.renderPlayground()}</div>
-			</div>;
+			<div style={{width: 250, display: 'inline-block'}}>
+				<TS_DropDown<PlaygroundScreen>
+					caret={{
+						close: this.props.iconClose,
+						open: this.props.iconOpen
+					}}
+					filter={new Filter(option => ([option.name]))}
+					onSelected={(screen: PlaygroundScreen) => {
+						this.setState({selectedScreen: screen});
+						BrowserHistoryModule.addQueryParam(TS_Playground, screen.name);
+					}}
+					selected={this.state.selectedScreen}
+					adapter={SimpleListAdapter(this.props.screens, (props) => {
+						return <div className="ts-playground__item">{props.item.name}</div>;
+					})}/>
+			</div>
+			<div style={{borderStyle: 'double', display: 'inline-block', boxSizing: 'border-box'}}>{this.renderPlayground()}</div>
+		</div>;
 	}
 
 	private renderPlayground() {

@@ -20,19 +20,19 @@
  */
 
 import * as React from 'react';
-import {CSSProperties} from 'react';
 import {TreeNode, TreeNodeExpandState,} from './types';
 import {Adapter} from '../adapter/Adapter';
 import {_BaseNodeRenderer} from '../adapter/BaseRenderer';
 import {UIComponent} from '../../core/UIComponent';
+import {_className} from '../../utils/tools';
+import {Fragment} from 'react';
+import './TS_Tree.scss';
 
 export type Props_Tree = {
 	id: string
 	onNodeFocused?: (path: string, item: any) => void;
 	onNodeClicked?: (path: string, item: any) => void;
 	expanded?: TreeNodeExpandState
-	childrenContainerStyle?: (level: number, parentNodeRef: HTMLDivElement, containerRef: HTMLDivElement, parentRef?: HTMLDivElement) => CSSProperties
-	indentPx: number;
 	checkExpanded: (expanded: TreeNodeExpandState, path: string) => boolean | undefined
 	selectedItem?: any
 	adapter: Adapter
@@ -40,7 +40,6 @@ export type Props_Tree = {
 
 type State_Tree = {
 	expanded: TreeNodeExpandState
-	focused?: string
 	selectedItem?: any
 	adapter: Adapter
 }
@@ -52,13 +51,11 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	extends UIComponent<P, State_Tree> {
 
 	static defaultProps: Partial<Props_Tree> = {
-		indentPx: 20,
 		checkExpanded: (expanded: TreeNodeExpandState, path: string) => expanded[path]
 	};
 
 	protected containerRefs: { [k: string]: HTMLDivElement } = {};
 	protected rendererRefs: { [k: string]: HTMLDivElement } = {};
-	protected renderedElements: string[] = [];
 
 	constructor(props: P) {
 		super(props);
@@ -72,28 +69,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		};
 	}
 
-	// componentDidMount(): void {
-	// 	this.renderedElementsInit();
-	// }
-	//
-	// renderedElementsInit = () => {
-	// 	const keys = Object.keys(this.state.expanded);
-	// 	this.renderedElements = keys.reduce((toRet, key) => {
-	// 		if (this.state.expanded[key])
-	// 			return toRet;
-	//
-	// 		this.state.adapter.hideRoot && removeItemFromArray(toRet, '/');
-	//
-	// 		keys.forEach(el => {
-	// 			if (el.startsWith(key) && el !== key)
-	// 				removeItemFromArray(toRet, el);
-	// 		});
-	// 		return toRet;
-	// 	}, keys);
-	// };
-
 	render() {
-		return this.renderNode(this.state.adapter.data, '', '', 1);
+		return <div className="ts-tree">
+			{this.renderNode(this.state.adapter.data, '', '', 1)}
+		</div>;
 	}
 
 	private renderNode = (_data: any, key: string, _path: string, level: number) => {
@@ -107,21 +86,23 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		if (nodePath.endsWith('_children/'))
 			expanded = true;
 
+
 		let renderChildren = expanded;
 
 		if (typeof data !== 'object')
 			renderChildren = false;
 
 		if (renderChildren)
+
 			filteredKeys = this.state.adapter.getFilteredChildren(_data);
 
 		const nodeRefResolver = this.nodeResolver(nodePath, renderChildren, filteredKeys);
 		const containerRefResolver = this.resolveContainer(nodePath, renderChildren, filteredKeys);
 
-		return <div key={nodePath} ref={nodeRefResolver}>
-			{this.renderItem(data, nodePath, key, expanded)}
+		return <Fragment key={nodePath}>
+			{this.renderItem(data, nodePath, key, nodeRefResolver, expanded)}
 			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
-		</div>;
+		</Fragment>;
 	};
 
 	private nodeResolver(nodePath: string, renderChildren: boolean, filteredKeys: any[]) {
@@ -153,50 +134,33 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const containerRef: HTMLDivElement = this.containerRefs[nodePath];
 
 		return (
-			<div
-				style={this.getChildrenContainerStyle(level, this.rendererRefs[nodePath], containerRef, this.containerRefs[_path])}
-				ref={containerRefResolver}>
+			<div className="ts-tree__children-container" ref={containerRefResolver}>
 				{containerRef && filteredKeys.map(
 					(childKey) => this.renderNode(data[childKey], childKey, nodePath + (adjustedNode.deltaPath ? adjustedNode.deltaPath + '/' : ''), level + 1))}
 			</div>);
 	}
 
-	private renderItem(item: any, path: string, key: string, expanded?: boolean) {
+	private renderItem(item: any, path: string, key: string, nodeRefResolver: (_ref: HTMLDivElement) => void, expanded?: boolean) {
 		if (this.state.adapter.hideRoot && path.length === 1)
 			return null;
 
 		const TreeNodeRenderer: _BaseNodeRenderer<any> = this.state.adapter.treeNodeRenderer;
 		// console.log("isParent: ", this.state.adapter.isParent(item));
+		const isParent = this.state.adapter.isParent(item);
 		const node: TreeNode = {
 			adapter: this.state.adapter,
 			propKey: key,
 			path,
 			item,
-			expandToggler: this.state.adapter.isParent(item) ? this.toggleExpandState : ignoreToggler,
+			expandToggler: isParent ? this.toggleExpandState : ignoreToggler,
 			onClick: this.onNodeClicked,
-			onFocus: this.onNodeFocused,
 			expanded: !!expanded,
-			focused: path === this.state.focused,
 			selected: item === this.props.selectedItem
 		};
-		return <div onMouseEnter={() => this.setState({focused: node.path})} onMouseLeave={() => this.setState({focused: ''})}><TreeNodeRenderer item={item}
-																																																																						 node={node}/>
+
+		return <div className={_className('ts-tree__node', isParent && 'ts-tree__parent-node')} ref={nodeRefResolver}>
+			<TreeNodeRenderer item={item} node={node}/>
 		</div>;
-	}
-
-	private getChildrenContainerStyle = (level: number, parentNodeRef: HTMLDivElement, containerRef?: HTMLDivElement, parentContainerRef?: HTMLDivElement): CSSProperties => {
-		if (!containerRef)
-			return {};
-
-		if (this.props.childrenContainerStyle)
-			return this.props.childrenContainerStyle(level, parentNodeRef, containerRef, parentContainerRef);
-
-		return {marginLeft: this.props.indentPx};
-	};
-
-	private setFocusedNode(path: string) {
-		this.rendererRefs[path].scrollIntoView({block: 'nearest'});
-		this.setState({focused: path});
 	}
 
 	getItemByPath(path: string) {
@@ -239,24 +203,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		else
 			delete treeExpandedState[path];
 
-		this.setState({focused: path});
 		this.forceUpdate();
 	};
 
-	private onNodeFocused = (e: React.MouseEvent): void => {
-		// This is an assumption that we should document somewhere
-		const path = e.currentTarget.id;
-		const item = this.getItemByPath(path);
-
-		this.props.onNodeFocused && this.props.onNodeFocused(path, item);
-		if (this.state.focused === path)
-			return;
-
-		this.setFocusedNode(path);
-	};
-
 	private onNodeClicked = (e: React.MouseEvent): void => {
-		this.onNodeFocused(e);
 		// This is an assumption that we should document somewhere
 		const path = e.currentTarget.id;
 		const item = this.getItemByPath(path);

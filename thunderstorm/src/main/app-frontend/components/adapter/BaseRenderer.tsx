@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {TreeNode} from '../tree/types';
+import {TreeNode} from '../TS_Tree/types';
 
 
 export type ItemRendererProps<Item extends any = any> = { item: Item }

@@ -33,8 +33,6 @@ export type TreeNode = {
 	adapter: Adapter
 	expandToggler: (e: React.MouseEvent, expand?: boolean) => void
 	onClick: (e: React.MouseEvent) => void
-	onFocus: (e: React.MouseEvent) => void
 	expanded: boolean
-	focused: boolean
 	selected: boolean
 };
