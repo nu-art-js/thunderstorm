@@ -22,9 +22,9 @@
 import {ObjectTS} from '@nu-art/ts-common';
 import {HTMLProps} from 'react';
 import {Stylable} from '../../tools/Stylable';
-import React = require('react');
 import {_className} from '../../utils/tools';
 import './TS_Table.scss';
+import React = require('react');
 
 export type TableHeaders<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = P[];
 export type HeaderRenderer<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
@@ -46,6 +46,7 @@ export type Props_Table<R extends ObjectTS, A extends string = never, P extends 
 	tr?: HTMLProps<HTMLTableRowElement> | ((row: R | undefined, rowIndex: number) => HTMLProps<HTMLTableRowElement>);
 	td?: HTMLProps<HTMLTableDataCellElement> | ((row: R, rowIndex: number, columnKey: P) => HTMLProps<HTMLTableDataCellElement>);
 	th?: HTMLProps<HTMLTableHeaderCellElement> | ((columnKey: P) => HTMLProps<HTMLTableHeaderCellElement>);
+	bodyRowOnContextMenu?: (e:  React.MouseEvent<HTMLTableRowElement, MouseEvent>) => void;
 };
 
 
@@ -122,7 +123,8 @@ export class TS_Table<R extends ObjectTS, A extends string = never>
 			const classNameTR = _className('ts-table__tr', tablePropsTR?.className);
 
 			return (
-				<tr key={`${this.props.id}-${rowIndex}`} {...tablePropsTR} className={classNameTR}>
+				<tr key={`${this.props.id}-${rowIndex}`} {...tablePropsTR} className={classNameTR}
+						onContextMenu={this.props.bodyRowOnContextMenu? this.props.bodyRowOnContextMenu: (e)=>{}}>
 					{this.props.header.map((header, columnIndex) => {
 						const tablePropsTD = typeof this.props.td === 'function' ? this.props.td(row, rowIndex, header) : this.props.td;
 						const classNameTD = _className('ts-table__td', tablePropsTD?.className);
