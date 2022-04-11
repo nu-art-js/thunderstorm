@@ -37,9 +37,11 @@ export class TS_TextArea<Key extends string>
 				this.ref = input;
 				this.props.focus && this.ref.focus();
 			}}
-			onBlur={() => {
+			onBlur={(event) => {
 				this.ref = undefined;
-				this.props.onBlur?.();
+				const value = event.target.value;
+				this.setState({value});
+				this.props.onBlur?.(value, event);
 			}}
 			disabled={this.props.enable === false}
 			name={this.props.name || this.props.id}
@@ -56,5 +58,3 @@ export class TS_TextArea<Key extends string>
 		/>;
 	}
 }
-
-
