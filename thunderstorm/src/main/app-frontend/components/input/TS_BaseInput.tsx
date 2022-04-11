@@ -27,7 +27,7 @@ export type InputType = 'text' | 'number' | 'password';
 export type TS_BaseInputProps<Key> = {
 	type: InputType
 	style?: CSSProperties
-	id: Key
+	id?: Key
 	onChange?: (value: string, id: Key) => void
 	onAccept?: (value: string, event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 	onCancel?: () => void

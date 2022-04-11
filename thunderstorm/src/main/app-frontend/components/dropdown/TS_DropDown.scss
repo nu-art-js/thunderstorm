@@ -18,6 +18,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use "../../styles/declaration/basic" as *;
 
-@forward "./app-frontend/components/Layouts/Layouts_";
-@forward "./app-frontend/styles/declaration/mixins";
+.ts-dropdown {
+  @extend %match_parent;
+
+  .ts-dropdown__header {
+    @extend %match_parent;
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #4fa7ff;
+
+    & > input {
+      @extend %match_parent;
+      background-color: transparent;
+      border: none;
+
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    .ts-dropdown__placeholder {
+      font-size: 50px;
+      min-height: 40px;
+
+    }
+  }
+}

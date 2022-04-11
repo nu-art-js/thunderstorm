@@ -19,5 +19,14 @@
  * limitations under the License.
  */
 
-@forward "./app-frontend/components/Layouts/Layouts_";
-@forward "./app-frontend/styles/declaration/mixins";
+.icon--default {
+  width: 24px;
+  height: 24px;
+  background: black;
+  mask-size: cover;
+  mask-repeat: no-repeat;
+
+  -webkit-mask-size: cover;
+  -webkit-mask-repeat: no-repeat;
+}
+

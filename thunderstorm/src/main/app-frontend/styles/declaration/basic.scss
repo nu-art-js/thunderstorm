@@ -1,0 +1,67 @@
+//@use "node_modules/@nu-art/thunderstorm/styles" as *;
+
+%match_height {
+  height: 100%
+}
+
+%match_width {
+  width: 100%
+}
+
+%match_parent {
+  @extend %match_height;
+  @extend %match_width;
+}
+
+%flex__stretch {
+  place-items: stretch;
+}
+
+%flex__space-between {
+  justify-content: space-between;
+}
+
+%flex__grow {
+  flex-grow: 1;
+  flex-basis: 0;
+}
+
+%center_h {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+%center_v {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+%center {
+  margin: 0 auto;
+}
+
+%clickable {
+  cursor: pointer
+}
+
+%right {
+  right: 0;
+}
+
+%bottom {
+  bottom: 0;
+}
+
+%left {
+  left: 0;
+}
+
+%top {
+  top: 0;
+}
+
+%center_children {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

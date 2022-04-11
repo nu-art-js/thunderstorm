@@ -20,8 +20,7 @@
  */
 
 import * as React from 'react';
-import {Filter, generateHex} from '@nu-art/ts-common';
-import {KeyboardListener} from '../../tools/KeyboardListener';
+import {Filter} from '@nu-art/ts-common';
 import {stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {Stylable} from '../../tools/Stylable';
@@ -29,6 +28,7 @@ import {Overlay} from '../Overlay';
 import {TS_Tree} from '../tree/TS_Tree';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../input/TS_Input';
+import './TS_DropDown.scss';
 
 const defaultTitleHeight = '28px';
 const defaultListHeight = '150px';
@@ -98,11 +98,14 @@ type State<ItemType> = {
 }
 
 type StaticProps = {
-	id?: string,
 	headerStylable: Stylable
 	wrapperStylable: Stylable
 	listStylable: Stylable
 	inputStylable: InputProps
+	caret: {
+		open: React.ReactNode,
+		close: React.ReactNode,
+	},
 }
 
 export type Props_DropDown<ItemType> = Partial<StaticProps> & {
@@ -118,10 +121,6 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 
 	inputEventHandler?: (state: State<ItemType>, e: React.KeyboardEvent) => State<ItemType>
 	selectedItemRenderer?: (props?: ItemType) => React.ReactNode
-	caret?: {
-		open: React.ReactNode,
-		close: React.ReactNode,
-	},
 	showNothingWithoutFilterText?: boolean
 	disabled?: boolean
 }
@@ -129,13 +128,13 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
 
-	static defaultProps: Partial<StaticProps> = {
-		id: generateHex(8),
-		wrapperStylable: {style: DropDown_wrapperStyle},
-		headerStylable: {style: DropDown_headerStyle},
-		listStylable: {style: DropDown_listStyle},
-		inputStylable: {style: DropDown_inputStyle}
+	static defaultProps: Partial<Props_DropDown<any>> = {
+		wrapperStylable: {style: {/*DropDown_wrapperStyle*/}},
+		headerStylable: {style: {/*DropDown_headerStyle*/}},
+		listStylable: {style: {/*DropDown_listStyle*/}},
+		inputStylable: {style: {/*DropDown_inputStyle*/}}
 	};
+
 
 	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
@@ -146,7 +145,7 @@ export class TS_DropDown<ItemType>
 			adapter: nextProps.adapter.clone(new Adapter<ItemType>([])),
 			selected: nextProps.selected,
 			open: this.state?.open || false,
-			filterText:nextProps.inputValue
+			filterText: nextProps.inputValue
 		};
 	}
 
@@ -166,26 +165,38 @@ export class TS_DropDown<ItemType>
 		}, () => this.props.onSelected(item));
 	};
 
+
 	render() {
 		return (
-			<Overlay showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
-				<KeyboardListener onKeyboardEventListener={this.keyEventHandler} {...this.props.wrapperStylable}>
+			<div className="ts-dropdown"
+					 ref={(node: HTMLDivElement) => {
+						 if (this.node)
+							 return;
+
+						 this.node = node;
+						 this.forceUpdate();
+
+					 }}
+					 tabIndex={1}
+					 onFocus={this.addKeyboardListener}
+					 onBlur={this.removeKeyboardListener}
+			>
+				<Overlay showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
 					{this.renderHeader()}
 					{this.renderTree()}
-				</KeyboardListener>
-			</Overlay>
+				</Overlay>
+			</div>
 		);
 	}
 
 	private renderHeader = () => {
 		return (
 			<div
-				id={`${this.props.id}-header`}
-				onClick={this.toggleList}
-				{...this.props.headerStylable}>
+				className="ts-dropdown__header"
+				onClick={this.toggleList}>
 
 				{this.renderSelectedOrFilterInput()}
-				{this.renderCaret()}
+				{this.state.open && this.props.caret ? this.props.caret?.close : this.props.caret?.open}
 			</div>);
 	};
 
@@ -224,17 +235,18 @@ export class TS_DropDown<ItemType>
 		if (e.key === 'Escape')
 			return this.setState({open: false});
 
-		if (e.key === 'ArrowDown') {
-			return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
-		}
+		// if (e.key === 'ArrowDown') {
+		// 	return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
+		// }
 	};
+
 
 	private renderSelectedItem = (selected?: ItemType) => {
 		if (this.props.selectedItemRenderer)
 			return this.props.selectedItemRenderer(selected);
 
 		if (selected === undefined)
-			return <div id={'place holder'}>{this.props.inputStylable?.placeholder || ''}</div>;
+			return <div className="ts-dropdown__placeholder">{this.props.placeholder || ''}</div>;
 
 		const Renderer = this.props.adapter.treeNodeRenderer;
 		const node = {
@@ -252,22 +264,12 @@ export class TS_DropDown<ItemType>
 			focused: false,
 			selected: true
 		};
-		return <div id={'renderer'}><Renderer item={selected} node={node}/></div>;
-	};
-
-
-	private renderCaret = () => {
-		const caret = this.props.caret;
-		if (!caret)
-			return;
-
-		return this.state.open ? caret.close : caret.open;
+		return <Renderer item={selected} node={node}/>;
 	};
 
 
 	private renderTreeImpl = () => {
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
-		const id = `${this.props.id}-tree`;
 		const filter = this.props.filter;
 		if (filter) {
 			this.state.adapter.data = filter.filter(this.props.adapter.data, this.state.filterText || '');
@@ -277,8 +279,6 @@ export class TS_DropDown<ItemType>
 			return <div style={{textAlign: 'center', opacity: 0.5}}>No options</div>;
 
 		return <TS_Tree
-			id={id}
-			key={id}
 			adapter={this.state.adapter}
 			indentPx={0}
 			selectedItem={this.state.selected}
@@ -295,7 +295,6 @@ export class TS_DropDown<ItemType>
 		return <TS_Input
 			type="text"
 			autocomplete={false}
-			id={this.props.id || generateHex(16)}
 			value={this.props.inputValue}
 			onChange={(filterText) => this.setState({filterText})}
 			focus={true}
@@ -305,6 +304,28 @@ export class TS_DropDown<ItemType>
 			{...this.props.inputStylable}
 		/>;
 	};
+
+
+	// TODO: THIS IS ALL DUPLICATE SHIT... DELETE ONCE TREE CAN PROPAGATE THE KEYBOARD EVENTS
+	private node?: HTMLDivElement;
+
+	private addKeyboardListener = () => {
+		const onKeyboardEventListener = this.keyEventHandler;
+		if (!onKeyboardEventListener)
+			return;
+
+		this.node?.addEventListener('keydown', this.keyboardEventHandler);
+	};
+
+	private removeKeyboardListener = () => {
+		const onKeyboardEventListener = this.keyEventHandler;
+		if (!onKeyboardEventListener)
+			return;
+
+		this.node?.removeEventListener('keydown', this.keyboardEventHandler);
+	};
+
+	keyboardEventHandler = (e: KeyboardEvent) => this.node && this.keyEventHandler(e as unknown as React.KeyboardEvent);
 }
 
 
@@ -314,3 +335,6 @@ export class TS_DropDown<ItemType>
 // 			document.getElementById(`${id}-input`)?.focus();
 // 	};
 // };
+
+
+
