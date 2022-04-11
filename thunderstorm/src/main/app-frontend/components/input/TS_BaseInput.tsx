@@ -29,9 +29,9 @@ export type TS_BaseInputProps<Key> = {
 	style?: CSSProperties
 	id: Key
 	onChange?: (value: string, id: Key) => void
-	onAccept?: () => void
+	onAccept?: (value: string, event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 	onCancel?: () => void
-	onBlur?: () => void
+	onBlur?: (value: string, event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 	placeholder?: string
 	enable?: boolean
 	name?: string
@@ -84,7 +84,9 @@ export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInpu
 
 	handleKeyEvent = (ev: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		if (this.props.onAccept && ev.key === 'Enter' && !ev.shiftKey && !ev.altKey && !ev.ctrlKey && !ev.metaKey) {
-			this.props.onAccept();
+			const value = ev.currentTarget.value;
+
+			this.props.onAccept(value, ev);
 			ev.stopPropagation();
 		}
 
