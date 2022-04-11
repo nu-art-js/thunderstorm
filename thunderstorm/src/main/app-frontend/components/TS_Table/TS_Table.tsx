@@ -46,7 +46,6 @@ export type Props_Table<R extends ObjectTS, A extends string = never, P extends 
 	tr?: HTMLProps<HTMLTableRowElement> | ((row: R | undefined, rowIndex: number) => HTMLProps<HTMLTableRowElement>);
 	td?: HTMLProps<HTMLTableDataCellElement> | ((row: R, rowIndex: number, columnKey: P) => HTMLProps<HTMLTableDataCellElement>);
 	th?: HTMLProps<HTMLTableHeaderCellElement> | ((columnKey: P) => HTMLProps<HTMLTableHeaderCellElement>);
-	bodyRowOnContextMenu?: (e:  React.MouseEvent<HTMLTableRowElement, MouseEvent>) => void;
 };
 
 
@@ -123,8 +122,7 @@ export class TS_Table<R extends ObjectTS, A extends string = never>
 			const classNameTR = _className('ts-table__tr', tablePropsTR?.className);
 
 			return (
-				<tr key={`${this.props.id}-${rowIndex}`} {...tablePropsTR} className={classNameTR}
-						onContextMenu={this.props.bodyRowOnContextMenu? this.props.bodyRowOnContextMenu: (e)=>{}}>
+				<tr key={`${this.props.id}-${rowIndex}`} {...tablePropsTR} className={classNameTR}>
 					{this.props.header.map((header, columnIndex) => {
 						const tablePropsTD = typeof this.props.td === 'function' ? this.props.td(row, rowIndex, header) : this.props.td;
 						const classNameTD = _className('ts-table__td', tablePropsTD?.className);
