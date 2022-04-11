@@ -25,7 +25,7 @@ import {KeyboardListener} from '../../tools/KeyboardListener';
 import {stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {Stylable} from '../../tools/Stylable';
-import {Overlay} from '../Overlay';
+import {Overlay} from '../Overlay/Overlay';
 import {TS_Tree} from '../tree/TS_Tree';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../input/TS_Input';
