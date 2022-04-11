@@ -25,7 +25,7 @@ import {stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {Stylable} from '../../tools/Stylable';
 import {Overlay} from '../Overlay/Overlay';
-import {TS_Tree} from '../tree/TS_Tree';
+import {TS_Tree} from '../TS_Tree/TS_Tree';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../input/TS_Input';
 import './TS_DropDown.scss';
@@ -209,18 +209,27 @@ export class TS_DropDown<ItemType>
 			return;
 
 
-		return <div style={listContainerStyle}>
-			<div {...this.props.listStylable}>
-				{this.renderTreeImpl()}
-			</div>
-		</div>;
+		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
+		const filter = this.props.filter;
+		if (filter) {
+			this.state.adapter.data = filter.filter(this.props.adapter.data, this.state.filterText || '');
+		}
+
+		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0)
+			return <div className="ts-dropdown__empty" style={{textAlign: 'center', opacity: 0.5}}>No options</div>;
+
+		return <TS_Tree
+			adapter={this.state.adapter}
+			selectedItem={this.state.selected}
+			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
+			// keyEventHandler={treeKeyEventHandler}
+		/>;
 	};
 
 	private keyEventHandler = (e: React.KeyboardEvent) => {
 		if (this.props.inputEventHandler)
 			return this.setState(() => {
-				const state = this.props.inputEventHandler ? this.props.inputEventHandler(this.state, e) : this.state;
-				return state;
+				return this.props.inputEventHandler ? this.props.inputEventHandler(this.state, e) : this.state;
 			});
 
 		if (e.key === 'Enter') {
@@ -267,25 +276,6 @@ export class TS_DropDown<ItemType>
 		return <Renderer item={selected} node={node}/>;
 	};
 
-
-	private renderTreeImpl = () => {
-		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
-		const filter = this.props.filter;
-		if (filter) {
-			this.state.adapter.data = filter.filter(this.props.adapter.data, this.state.filterText || '');
-		}
-
-		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0)
-			return <div style={{textAlign: 'center', opacity: 0.5}}>No options</div>;
-
-		return <TS_Tree
-			adapter={this.state.adapter}
-			indentPx={0}
-			selectedItem={this.state.selected}
-			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
-			// keyEventHandler={treeKeyEventHandler}
-		/>;
-	};
 
 	private renderSelectedOrFilterInput = () => {
 		if (!this.state.open || !this.props.filter) {

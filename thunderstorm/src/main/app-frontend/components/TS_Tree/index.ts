@@ -19,35 +19,6 @@
  * limitations under the License.
  */
 
-
-import * as React from 'react';
-import {generateHex} from '@nu-art/ts-common';
-import {ComponentSync} from '../../core/ComponentSync';
-import {Adapter} from '../adapter/Adapter';
-import {TS_Tree} from './TS_Tree';
-
-export type MenuComponentProps = {
-	adapter: Adapter
-	childrenContainerStyle?: any
-	onNodeClicked?: (path: string, item: any) => void
-	onNodeDoubleClicked?: Function // TODO: Need to handle this
-	id?: string
-}
-
-export class MenuComponent
-	extends ComponentSync<MenuComponentProps> {
-	private readonly id: string;
-
-	constructor(props: MenuComponentProps) {
-		super(props);
-		this.id = this.props.id || generateHex(8);
-	}
-
-	render() {
-		return <TS_Tree
-			id={this.id}
-			adapter={this.props.adapter}
-			onNodeClicked={this.props.onNodeClicked}
-		/>;
-	}
-}
+export * from './SimpleTreeNodeRenderer';
+export * from './types';
+export * from './TS_Tree';

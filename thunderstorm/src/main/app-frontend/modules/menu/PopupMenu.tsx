@@ -4,7 +4,7 @@ import {Menu_Model, MenuListener, MenuModule} from './MenuModule';
 import {ComponentSync} from '../../core/ComponentSync';
 import {stopPropagation} from '../../utils/tools';
 import {generateHex} from '@nu-art/ts-common';
-import {TS_Tree} from '../../components/tree/TS_Tree';
+import {TS_Tree} from '../../components/TS_Tree/TS_Tree';
 
 export type MenuPosition =
 	{ left: number, top: number }
@@ -108,7 +108,6 @@ export class PopupMenu
 						id={generateHex(8)}
 						adapter={element.adapter}
 						onNodeClicked={element.onNodeClicked}
-						indentPx={0}
 					/>
 				</div>
 			</div>

@@ -22,9 +22,9 @@
 import * as React from 'react';
 import {ComponentType} from 'react';
 import {_keys, BadImplementationException, ObjectTS,} from '@nu-art/ts-common';
-import {SimpleTreeNodeRenderer} from '../tree/SimpleTreeNodeRenderer';
+import {SimpleTreeNodeRenderer} from '../TS_Tree/SimpleTreeNodeRenderer';
 import {_BaseNodeRenderer, BaseRendererMap, NodeRendererProps, TreeRendererMap,} from './BaseRenderer';
-import {TreeNode} from '../tree/types';
+import {TreeNode} from '../TS_Tree/types';
 
 
 // export type TreeItem<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {

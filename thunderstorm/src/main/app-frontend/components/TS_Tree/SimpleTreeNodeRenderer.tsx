@@ -52,7 +52,7 @@ export class SimpleTreeNodeRenderer
 				id={this.props.node.path}
 				className="clickable"
 				onClick={this.props.node.onClick}
-				style={{backgroundColor: this.props.node.focused ? 'red' : 'salmon', userSelect: 'none'}}>
+				style={{userSelect: 'none'}}>
 
 				<SimpleNodeRenderer {...this.props}/>
 			</div>

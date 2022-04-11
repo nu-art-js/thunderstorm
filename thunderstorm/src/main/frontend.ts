@@ -67,16 +67,11 @@ export * from './app-frontend/components/HeightBounder';
 export * from './app-frontend/components/form/types';
 export * from './app-frontend/components/form/Form';
 
-export * from './app-frontend/components/tree/MultiTypeAdaptor';
 export * from './app-frontend/components/adapter/Adapter';
 export * from './app-frontend/components/adapter/BaseRenderer';
-export * from './app-frontend/components/tree/TS_Tree';
-export * from './app-frontend/components/tree/types';
-export * from './app-frontend/components/tree/SimpleTreeNodeRenderer';
+export * from './app-frontend/components/TS_Tree/TS_Tree';
 
-export * from './app-frontend/components/tree/MenuComponent';
-
-export * from './app-frontend/components/playground/Playground';
+export * from './app-frontend/components/playground/TS_Playground';
 export * from './app-frontend/components/playground/Example_NewProps';
 
 export * from './app-frontend/components/TS_Checkbox/TS_Checkbox';
