@@ -1,10 +1,11 @@
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {Menu_Model, MenuListener, MenuModule} from './MenuModule';
-import {ComponentSync} from '../../core/ComponentSync';
-import {stopPropagation} from '../../utils/tools';
 import {generateHex} from '@nu-art/ts-common';
-import {TS_Tree} from '../../components/TS_Tree/TS_Tree';
+import {Menu_Model, MenuListener, MenuModule} from '../MenuModule';
+import {ComponentSync} from '../../../core/ComponentSync';
+import {stopPropagation} from '../../../utils/tools';
+import {TS_Tree} from '../../../components/TS_Tree';
+import './TS_PopupMenu.scss';
 
 export type MenuPosition =
 	{ left: number, top: number }
@@ -40,7 +41,7 @@ const overlayStyle: CSSProperties = {
 	zIndex: 3333
 };
 
-export class PopupMenu
+export class TS_PopupMenu
 	extends ComponentSync<{}, State>
 	implements MenuListener {
 
@@ -102,8 +103,8 @@ export class PopupMenu
 			return null;
 //tree instead of menu component
 		return <div style={{position: 'absolute'}}>
-			<div id="overlay" ref={this.overlayRef} style={overlayStyle}>
-				<div style={this.style(element.pos, element.css)}>
+			<div className={'overlay'} ref={this.overlayRef} style={overlayStyle}>
+				<div className={'popup-menu'} >
 					<TS_Tree
 						id={generateHex(8)}
 						adapter={element.adapter}
