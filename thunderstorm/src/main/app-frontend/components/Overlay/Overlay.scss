@@ -21,6 +21,7 @@
 
 .overlay-child {
   z-index: 20;
+  position: relative;
 }
 
 .overlay {
@@ -30,6 +31,4 @@
   left: 0;
   right: 0;
   bottom: 0;
-
-
 }

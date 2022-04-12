@@ -29,6 +29,7 @@ type Props<P> = {
 	showToggle?: boolean
 };
 
+
 type State = { index: number };
 type InferProps<T> = T extends React.ComponentType<infer P> ? P : 'blah blah';
 
