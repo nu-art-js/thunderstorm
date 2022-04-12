@@ -35,6 +35,7 @@ export class MenuModule_Class
 
 	show = (model: Menu_Model) => {
 		this.showMenu.dispatchUI(model);
+		console.log("pop! come on! pop!")
 	};
 
 	hide = (id: string) => this.hideMenu.dispatchUI(id);

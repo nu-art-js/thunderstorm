@@ -24,8 +24,8 @@ import {Filter} from '@nu-art/ts-common';
 import {stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {Stylable} from '../../tools/Stylable';
-import {Overlay} from '../Overlay/Overlay';
-import {TS_Tree} from '../TS_Tree/TS_Tree';
+import {TS_Overlay} from '../TS_Overlay';
+import {TS_Tree} from '../TS_Tree';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../input/TS_Input';
 import './TS_DropDown.scss';
@@ -181,12 +181,12 @@ export class TS_DropDown<ItemType>
 					 onFocus={this.addKeyboardListener}
 					 onBlur={this.removeKeyboardListener}
 			>
-				<Overlay showOverlay={this.state.open} onClickOverlay={() => {
+				<TS_Overlay showOverlay={this.state.open} onClickOverlay={() => {
 					this.setState({open: false});
 				}}>
 					{this.renderHeader()}
 					{this.renderTree()}
-				</Overlay>
+				</TS_Overlay>
 			</div>
 		);
 	}
