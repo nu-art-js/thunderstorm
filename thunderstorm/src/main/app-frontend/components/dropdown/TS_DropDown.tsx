@@ -181,7 +181,9 @@ export class TS_DropDown<ItemType>
 					 onFocus={this.addKeyboardListener}
 					 onBlur={this.removeKeyboardListener}
 			>
-				<Overlay showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
+				<Overlay showOverlay={this.state.open} onClickOverlay={() => {
+					this.setState({open: false});
+				}}>
 					{this.renderHeader()}
 					{this.renderTree()}
 				</Overlay>
@@ -199,7 +201,6 @@ export class TS_DropDown<ItemType>
 				{this.state.open && this.props.caret ? this.props.caret?.close : this.props.caret?.open}
 			</div>);
 	};
-
 
 	private renderTree = () => {
 		if (!this.state.open)
