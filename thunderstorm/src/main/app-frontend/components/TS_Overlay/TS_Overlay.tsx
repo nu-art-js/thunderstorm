@@ -1,4 +1,4 @@
-/*!
+/*
  * Thunderstorm is a full web app framework!
  *
  * Typescript & Express backend infrastructure that natively runs on firebase function
@@ -18,37 +18,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.ts-popup-menu {
-  .overlay {
-    background: #00000020;
-  }
-  .overlay-child {
-    position: absolute;
-  }
-  .popup-menu {
-    z-index: 1001;
-    cursor: default;
-    position: fixed;
-  }
-}
-.popup-menu {
-  width: 225px;
-  overflow-x: hidden;
-  overflow-y: scroll;
-  max-height: 60vh;
-  border-radius: 2px;
-  box-shadow: 1px 1px 4px 0 rgba(0, 0, 0, 0.3);
-  border: solid 1px transparent;
-  background-color: white;
-  position: absolute;
 
-}
+import * as React from 'react';
+import './TS_Overlay.scss';
 
-//.overlay {
-//  z-index: 10;
-//  position: fixed;
-//  top: 0;
-//  left: 0;
-//  right: 0;
-//  bottom: 0;
-//}
+type Props = {
+	showOverlay: boolean
+	onClickOverlay: (event: React.MouseEvent<HTMLDivElement>) => void
+};
+
+export class TS_Overlay
+	extends React.Component<Props> {
+
+	render() {
+		if (!this.props.showOverlay)
+			return this.props.children;
+
+		return <>
+			<div className={'overlay'} onClick={event => this.props.onClickOverlay(event)}/>
+			<div className={'overlay-child'}>
+				{this.props.children}
+			</div>
+		</>;
+	}
+}

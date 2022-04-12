@@ -58,7 +58,7 @@ export * from './app-frontend/components/input/TS_Input/TS_Input';
 export * from './app-frontend/widgets/FieldEditor';
 export * from './app-frontend/widgets/FieldEditorClick';
 export * from './app-frontend/widgets/FieldEditorWithButtons';
-export * from './app-frontend/components/TS_Table/TS_Table';
+export * from './app-frontend/components/TS_Table';
 export * from './app-frontend/components/TS_Tabs';
 export * from './app-frontend/components/dropdown/TS_DropDown';
 
@@ -66,6 +66,7 @@ export * from './app-frontend/components/Layouts';
 export * from './app-frontend/components/HeightBounder';
 export * from './app-frontend/components/form/types';
 export * from './app-frontend/components/form/Form';
+export * from './app-frontend/components/TS_Overlay';
 
 export * from './app-frontend/components/adapter/Adapter';
 export * from './app-frontend/components/adapter/BaseRenderer';

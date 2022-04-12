@@ -1,11 +1,11 @@
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {generateHex} from '@nu-art/ts-common';
-import {Menu_Model, MenuListener, MenuModule} from '../MenuModule';
+import {Menu_Model, MenuListener} from '../MenuModule';
 import {ComponentSync} from '../../../core/ComponentSync';
-import {stopPropagation} from '../../../utils/tools';
-import {TS_Tree} from '../../../components/TS_Tree';
 import './TS_PopupMenu.scss';
+import {TS_Overlay} from '../../../components/TS_Overlay';
+import {TS_Tree} from '../../../components/TS_Tree';
+import {generateHex} from '@nu-art/ts-common';
 
 export type MenuPosition =
 	{ left: number, top: number }
@@ -22,32 +22,35 @@ const defaultStyle: CSSProperties = {
 	boxShadow: '1px 1px 4px 0 rgba(0, 0, 0, 0.3)',
 	border: 'solid 1px transparent',
 	backgroundColor: '#fff',
-	position: 'absolute'
 };
 
 type State = {
-	element?: Menu_Model
+	element?: Menu_Model,
+	open: boolean
 }
+type Prop = {}
 
-const overlayStyle: CSSProperties = {
-	cursor: 'default',
-	position: 'fixed',
-	top: 0,
-	left: 0,
-	bottom: 0,
-	right: 0,
-	height: '100vh',
-	width: '100vw',
-	zIndex: 3333
-};
 
-export class TS_PopupMenu
-	extends ComponentSync<{}, State>
+// const overlayStyle: CSSProperties = {
+// 	cursor: 'default',
+// 	position: 'fixed',
+// 	top: 0,
+// 	left: 0,
+// 	bottom: 0,
+// 	right: 0,
+// 	height: '100vh',
+// 	width: '100vw',
+// 	zIndex: 3333
+// };
+
+export default class TS_PopupMenu
+	extends ComponentSync<Prop, State>
 	implements MenuListener {
 
-	overlayRef = React.createRef<HTMLDivElement>();
-
-	__onMenuDisplay = (element: Menu_Model) => this.setState({element});
+	__onMenuDisplay = (element: Menu_Model) => {
+		this.setState({element, open: !!element});
+		console.log('pop! pop! pop!');
+	};
 
 	__onMenuHide = (id: string) => {
 		const element = this.state.element;
@@ -57,71 +60,39 @@ export class TS_PopupMenu
 		this.setState({element: undefined});
 	};
 
-	componentDidMount(): void {
-		this.eventListenersEffect();
-	}
-
-	componentDidUpdate(): void {
-		this.eventListenersEffect();
-	}
-
-	componentWillUnmount(): void {
-		const current = this.overlayRef.current;
-		if (current) {
-			current.removeEventListener('mousedown', this.stopClickCascading, false);
-			current.removeEventListener('mouseup', this.closeMenu, false);
-		}
-	}
-
-	stopClickCascading = (e: MouseEvent) => {
-		if (this.overlayRef.current === e.target)
-			stopPropagation(e);
-	};
-
-	closeMenu = (e: MouseEvent) => {
-		if (e.button === 3)
-			return;
-
-		if (this.overlayRef.current !== e.target)
-			return;
-
-		stopPropagation(e);
-		const id = this.state?.element?.id;
-		id && MenuModule.hide(id);
-		this.setState({element: undefined});
-	};
-
 	style = (pos: MenuPosition, css?: CSSProperties): CSSProperties => ({
 		...defaultStyle,
 		...css,
 		...pos
 	});
 
+
+	protected deriveStateFromProps(nextProps: Prop): State {
+		return {open: false};
+	}
+
 	render() {
-		const element = this.state?.element;
-		if (!element)
+		const element = this.state.element;
+		if (!element) {
+			console.log('Missing PopupMenu datamodel!');
 			return null;
+		}
+
+		if (!this.state.open)
+			return '';
+		console.log('got here!');
+
 //tree instead of menu component
-		return <div style={{position: 'absolute'}}>
-			<div className={'overlay'} ref={this.overlayRef} style={overlayStyle}>
-				<div className={'popup-menu'} >
+		return <div className="ts-popup-menu">
+			<TS_Overlay showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
+				<div className={'popup-menu'} style={this.style(element.pos, element.css)}>
 					<TS_Tree
 						id={generateHex(8)}
 						adapter={element.adapter}
 						onNodeClicked={element.onNodeClicked}
 					/>
 				</div>
-			</div>
+			</TS_Overlay>
 		</div>;
 	}
-
-
-	private eventListenersEffect = () => {
-		const _current = this.overlayRef.current;
-		if (!_current)
-			return;
-
-		// _current.addEventListener("mousedown", this.stopClickCascading, false);
-		_current.addEventListener('mousedown', this.closeMenu, false);
-	};
 }
