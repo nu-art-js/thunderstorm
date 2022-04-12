@@ -24,7 +24,7 @@
  */
 import * as React from 'react';
 
-import {_clearTimeout, _setTimeout, Logger, LogLevel, LogParam, TimerHandler} from '@nu-art/ts-common';
+import {_clearTimeout, _setTimeout, ImplementationMissingException, Logger, LogLevel, LogParam, TimerHandler} from '@nu-art/ts-common';
 import {StorageModule} from '../modules/StorageModule';
 import {ResourcesModule} from '../modules/ResourcesModule';
 import {BrowserHistoryModule} from '../modules/HistoryModule';
@@ -72,7 +72,7 @@ export class ComponentSync<P = any, S = any>
 	}
 
 	protected deriveStateFromProps(nextProps: P): S | undefined {
-		return undefined;
+		throw new ImplementationMissingException("You must override deriveStateFromProps inside a ComponentSync! See ");
 	}
 
 
