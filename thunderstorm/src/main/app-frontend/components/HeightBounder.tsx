@@ -15,8 +15,8 @@ export class HeightBounder
 		this.forceUpdate();
 	}
 
-	constructor(props: BounderProps) {
-		super(props);
+	protected deriveStateFromProps(nextProps: BounderProps): any {
+		return {};
 	}
 
 	render() {
