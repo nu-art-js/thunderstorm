@@ -35,13 +35,13 @@ export abstract class BaseToaster
 	extends ComponentSync<ToastProps, State>
 	implements ToastListener {
 
-	protected constructor(props: ToastProps) {
-		super(props);
-		this.state = {};
+	protected deriveStateFromProps(nextProps: ToastProps): State | undefined {
+		return {model: this.state?.model};
 	}
 
 	__showToast = (model?: Toast_Model): void => {
 		this.setState({model});
+
 		if (!model)
 			return;
 
