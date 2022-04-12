@@ -22,27 +22,62 @@
 
 .ts-dropdown {
   @extend %match_parent;
+  position: relative;
 
+  //Children - header
   .ts-dropdown__header {
     @extend %match_parent;
+    height: 40px;
     background: white;
     border-radius: 5px;
     border: 1px solid #4fa7ff;
 
-    & > input {
+    .ts-input {
       @extend %match_parent;
       background-color: transparent;
       border: none;
-
+      padding-block: 0;
       &:focus-visible {
         outline: none;
       }
     }
 
     .ts-dropdown__placeholder {
-      font-size: 50px;
-      min-height: 40px;
+      @extend %match_parent;
+      font-size: 16px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding-inline: 4px;
+    }
+  }
 
+  //Children - items
+  .ts-tree {
+    //Dimensions
+    width: 100%;
+    min-height: 10px;
+    padding-top: 3px;
+
+    //Colors
+    background: white;
+
+    //Position
+    position: absolute;
+    top: calc(100% - 3px);
+    z-index: -1;
+    overflow: hidden;
+
+    //Border
+    border: 1px solid #4fa7ff;
+    border-radius: 0 0 5px 5px;
+
+    .ts-tree__children-container {
+      margin: 0;
+
+      .ts-tree__node {
+        padding: 5px;
+      }
     }
   }
 }

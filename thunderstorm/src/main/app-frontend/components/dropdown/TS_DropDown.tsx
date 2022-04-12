@@ -274,7 +274,7 @@ export class TS_DropDown<ItemType>
 			focused: false,
 			selected: true
 		};
-		return <Renderer item={selected} node={node}/>;
+		return <div className={'ts-dropdown__placeholder'}><Renderer item={selected} node={node}/></div>;
 	};
 
 
@@ -290,7 +290,7 @@ export class TS_DropDown<ItemType>
 			onChange={(filterText) => this.setState({filterText})}
 			focus={true}
 			style={{width: '100%'}}
-			placeholder={this.props.placeholder}
+			placeholder= {'Search'}//{this.props.placeholder}
 			handleKeyEvent={this.keyEventHandler}
 			{...this.props.inputStylable}
 		/>;
