@@ -4,7 +4,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {Menu_Model, MenuBuilder, MenuListener, resolveRealPosition} from './MenuModule';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {Adapter} from '../../components/adapter/Adapter';
-import {MenuPosition} from './PopupMenu';
+import {MenuPosition} from './TS_PopupMenu';
 
 type Props = {
 	id: string

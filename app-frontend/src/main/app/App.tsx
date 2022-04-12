@@ -17,11 +17,12 @@
  */
 
 import * as React from 'react';
-import {ComponentSync, Dialog, PopupMenu, RoutingModule, Toaster, WrapperProps} from "@nu-art/thunderstorm/frontend";
+import {ComponentSync, Dialog, RoutingModule, Toaster, WrapperProps} from '@nu-art/thunderstorm/frontend';
 
 import {VersionOnScreen} from './components/VersionOnScreen';
-import {AccountModule, OnLoginStatusUpdated} from "@nu-art/user-account/frontend";
-import {registerRoutes} from "./Routes";
+import {AccountModule, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
+import {registerRoutes} from './Routes';
+import {TS_PopupMenu} from '@nu-art/thunderstorm/app-frontend/modules/menu/TS_PopupMenu';
 
 export class App
 	extends ComponentSync<WrapperProps>
@@ -34,20 +35,20 @@ export class App
 
 	__onLoginStatusUpdated = () => {
 		const status = AccountModule.getLoggedStatus();
-		console.log('status update', status); 
-	}
+		console.log('status update', status);
+	};
 
 	render() {
 		registerRoutes();
 		return (
 			<div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
 				{/*<BugReport>*/}
-					{RoutingModule.getRoutesMap()}
+				{RoutingModule.getRoutesMap()}
 				{/*</BugReport>*/}
 				<VersionOnScreen/>
 				<Dialog/>
 				<Toaster/>
-				<PopupMenu/>
+				<TS_PopupMenu/>
 			</div>);
 	}
 }

@@ -1,4 +1,4 @@
-/*!
+/*
  * Thunderstorm is a full web app framework!
  *
  * Typescript & Express backend infrastructure that natively runs on firebase function
@@ -19,15 +19,4 @@
  * limitations under the License.
  */
 
-.overlay-child {
-  z-index: 20;
-}
-
-.overlay {
-  z-index: 10;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-}
+export * from './TS_PopupMenu';
