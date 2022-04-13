@@ -25,7 +25,7 @@ const defaultStyle: CSSProperties = {
 };
 
 type State = {
-	element?: Menu_Model,
+	menuModel?: Menu_Model,
 	open: boolean
 }
 type Prop = {}
@@ -48,16 +48,16 @@ export default class TS_PopupMenu
 	implements MenuListener {
 
 	__onMenuDisplay = (element: Menu_Model) => {
-		this.setState({element, open: !!element});
+		this.setState({menuModel: element, open: !!element});
 		console.log('pop! pop! pop!');
 	};
 
 	__onMenuHide = (id: string) => {
-		const element = this.state.element;
+		const element = this.state.menuModel;
 		if (!element || element.id !== id)
 			return;
 
-		this.setState({element: undefined});
+		this.setState({menuModel: undefined});
 	};
 
 	style = (pos: MenuPosition, css?: CSSProperties): CSSProperties => ({
@@ -72,24 +72,23 @@ export default class TS_PopupMenu
 	}
 
 	render() {
-		const element = this.state.element;
-		if (!element) {
+		const menuModel = this.state.menuModel;
+		if (!menuModel) {
 			console.log('Missing PopupMenu datamodel!');
 			return null;
 		}
 
 		if (!this.state.open)
 			return '';
-		console.log('got here!');
 
 //tree instead of menu component
 		return <div className="ts-popup-menu">
 			<TS_Overlay showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
-				<div className={'popup-menu'} style={this.style(element.pos, element.css)}>
+				<div className={'popup-menu'} style={this.style(menuModel.pos, menuModel.css)}>
 					<TS_Tree
 						id={generateHex(8)}
-						adapter={element.adapter}
-						onNodeClicked={element.onNodeClicked}
+						adapter={menuModel.adapter}
+						onNodeClicked={menuModel.onNodeClicked}
 					/>
 				</div>
 			</TS_Overlay>
