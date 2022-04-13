@@ -1,9 +1,9 @@
-import * as React from "react";
-import {ComponentSync} from "@nu-art/thunderstorm/app-frontend/core/ComponentSync";
-import {scaleLinear} from "d3-scale";
-import AxisLeft from "./d3components/Example_AxisX";
-import AxisBottom from "./d3components/Example_AxisBottom.";
-import {TS_Input} from "@nu-art/thunderstorm/frontend";
+import * as React from 'react';
+import {ComponentSync} from '@nu-art/thunderstorm/app-frontend/core/ComponentSync';
+import {scaleLinear} from 'd3-scale';
+import AxisLeft from './d3components/Example_AxisX';
+import AxisBottom from './d3components/Example_AxisBottom.';
+import {TS_Input} from '@nu-art/thunderstorm/frontend';
 
 export type Coordinates = {
 	x: number,
@@ -13,6 +13,10 @@ export type Coordinates = {
 export class Example_Scatter
 	extends ComponentSync<{}, { data: Coordinates[] }> {
 
+	protected deriveStateFromProps(nextProps: {}): { data: Coordinates[] } {
+		return {data: [{x: 5, y: 5}]};
+	}
+
 	constructor(props: {}) {
 		super(props);
 		this.state = {
@@ -20,7 +24,7 @@ export class Example_Scatter
 		};
 	}
 
-	private minAndMax = () => this.extent(this.state.data)
+	private minAndMax = () => this.extent(this.state.data);
 
 	private circles = () => this.state.data.map((d, i) => (
 		<circle
@@ -28,7 +32,7 @@ export class Example_Scatter
 			r={5}
 			cx={this.xScale()(d.x)}
 			cy={this.yScale()(d.y)}
-			style={{fill: "lightblue"}}
+			style={{fill: 'lightblue'}}
 		/>
 	));
 
@@ -76,7 +80,7 @@ export class Example_Scatter
 		.range([this.height, 0]);
 
 	updateData = (newData: Coordinates) => {
-		console.log('updating...')
+		console.log('updating...');
 		this.setState((state) => {
 			state.data.push(newData);
 			return state;
@@ -85,8 +89,8 @@ export class Example_Scatter
 
 	render() {
 		return <div>
-			<TS_Input onChange={(x) => this.x = parseInt(x)} type='text' id={'x'} placeholder={'type x value'}/>
-			<TS_Input onChange={(y) => this.y = parseInt(y)} type='text' id={'y'} placeholder={'type y value'}/>
+			<TS_Input onChange={(x) => this.x = parseInt(x)} type="text" id={'x'} placeholder={'type x value'}/>
+			<TS_Input onChange={(y) => this.y = parseInt(y)} type="text" id={'y'} placeholder={'type y value'}/>
 			<button onClick={() => this.updateData({x: this.x, y: this.y})}>plot</button>
 			<h1>Scatter plot using React + D3</h1>
 			<svg width={this.w} height={this.h}>

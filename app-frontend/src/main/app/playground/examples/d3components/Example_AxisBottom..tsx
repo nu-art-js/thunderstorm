@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {ComponentSync} from "@nu-art/thunderstorm/frontend";
-import {ScaleLinear} from "d3-scale";
-import {ReactNode} from "react";
+import * as React from 'react';
+import {ReactNode} from 'react';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {ScaleLinear} from 'd3-scale';
 
 type Props = {
 	xScale: ScaleLinear<number, number, any>,
@@ -39,17 +39,17 @@ type Props = {
 export class AxisBottom
 	extends ComponentSync<Props, {}> {
 
-	constructor(props: Props) {
-		super(props);
+	protected deriveStateFromProps(nextProps: Props): {} {
+		return {};
 	}
 
 	calculateTicksByFreq = () => {
 		if (!this.props.axisPoint)
 			return this.props.xScale.ticks(this.props.viewBox);
 		let i = 0;
-		let currentValue = this.props.axisPoint
-		if(this.props.shiftData)
-			currentValue += this.props.frequency
+		let currentValue = this.props.axisPoint;
+		if (this.props.shiftData)
+			currentValue += this.props.frequency;
 		const tickValues = [];
 		while (i < this.props.viewBox) {
 			tickValues.push(currentValue);
@@ -57,7 +57,7 @@ export class AxisBottom
 			i += 1;
 		}
 		console.log('these are the ticks', tickValues);
-		return tickValues
+		return tickValues;
 	};
 
 	axisBottom = () => {
@@ -65,7 +65,7 @@ export class AxisBottom
 		return this.calculateTicksByFreq().map((d, i) => (
 			<svg className="x-tick" key={i} style={{overflow: 'visible'}}>
 				<line
-					style={{stroke: "#e4e5eb"}}
+					style={{stroke: '#e4e5eb'}}
 					y1={0}
 					y2={this.props.height}
 					x1={this.props.xScale(d)}
@@ -73,11 +73,11 @@ export class AxisBottom
 				/>
 				{!!this.props.borderBoxValues && <svg style={{overflow: 'visible'}}>
 					<text x={this.props.xScale(d)}
-					      y={this.props.height + 15}
-					      dominantBaseline={"middle"}
-					      textAnchor={"middle"}>{this.props.borderBoxValues && this.props.borderBoxValues[i]}</text>
+								y={this.props.height + 15}
+								dominantBaseline={'middle'}
+								textAnchor={'middle'}>{this.props.borderBoxValues && this.props.borderBoxValues[i]}</text>
 					<line
-						style={{stroke: "#a6aab2"}}
+						style={{stroke: '#a6aab2'}}
 						y1={this.props.height + 30}
 						y2={this.props.height + 30}
 						x1={this.props.xScale(this.props.axisPoint || 0)}
@@ -85,7 +85,7 @@ export class AxisBottom
 					/>
 				</svg>}
 				<text
-					style={{textAnchor: "middle", fontSize: 12}}
+					style={{textAnchor: 'middle', fontSize: 12}}
 					dy=".71em"
 					x={this.props.xScale(d + 1)}
 					y={this.props.height + textPaddingY}
@@ -98,7 +98,7 @@ export class AxisBottom
 
 	axisLine = () => {
 		return <line
-			style={{stroke: "#a6aab2"}}
+			style={{stroke: '#a6aab2'}}
 			y1={0}
 			y2={this.props.borderBoxValues ? this.props.height + 30 : this.props.height}
 			x1={this.props.xScale(this.props.axisPoint || 0)}

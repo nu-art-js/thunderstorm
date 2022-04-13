@@ -16,18 +16,9 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	ComponentSync,
-	Component_Form,
-	FormProps,
-	ToastModule
-} from "@nu-art/thunderstorm/frontend";
-import {
-	deepClone,
-	ObjectTS,
-	tsValidateObject
-} from "@nu-art/ts-common";
+import * as React from 'react';
+import {Component_Form, ComponentSync, FormProps, ToastModule} from '@nu-art/thunderstorm/frontend';
+import {deepClone, ObjectTS, tsValidateObject} from '@nu-art/ts-common';
 
 type State<T extends ObjectTS> = {
 	value: Partial<T>,
@@ -38,32 +29,28 @@ export type ConfirmationForm<T extends ObjectTS> = FormProps<T> & { onCancel: ()
 class ConfirmationFormWrapper<T extends ObjectTS>
 	extends ComponentSync<ConfirmationForm<T>, State<T>> {
 
-	constructor(p: ConfirmationForm<T>) {
-		super(p);
-		this.state = {
-			value: deepClone(this.props.value || {}),
-			showErrors: false
-		}
+	protected deriveStateFromProps(nextProps: ConfirmationForm<T>): State<T> {
+		return {value: deepClone(this.props.value || {}), showErrors: false};
 	}
 
 	render() {
 		return <div>
 			<Component_Form {...this.props} value={this.state.value} onAccept={this.onAccept} showErrors={this.state.showErrors}/>
 
-			<div className={"ll_h_c"} style={{marginTop: "10px"}}>
+			<div className={'ll_h_c'} style={{marginTop: '10px'}}>
 				<div onClick={this.onAccept}>Accept</div>
 				<div onClick={this.props.onCancel}>Cancel</div>
 			</div>
-		</div>
+		</div>;
 	}
 
 	onAccept = () => {
 		try {
 			const value = this.state.value as T;
 			this.props.validator && tsValidateObject(value, this.props.validator);
-			this.props.onAccept(value)
-		} catch (e:any) {
-			this.setState({showErrors: true})
+			this.props.onAccept(value);
+		} catch (e: any) {
+			this.setState({showErrors: true});
 			ToastModule.toastError(e.message);
 		}
 
@@ -72,5 +59,5 @@ class ConfirmationFormWrapper<T extends ObjectTS>
 }
 
 export function renderForm<T extends ObjectTS>(props: ConfirmationForm<T>) {
-	return <ConfirmationFormWrapper {...props}/>
+	return <ConfirmationFormWrapper {...props}/>;
 }
