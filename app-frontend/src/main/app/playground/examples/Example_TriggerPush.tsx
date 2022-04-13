@@ -31,11 +31,8 @@ export class Example_TriggerPush
 	extends ComponentSync<{}, State>
 	implements OnNotificationsUpdated {
 
-	constructor(props: {}) {
-		super(props);
-		this.state = {
-			notifications: []
-		};
+	protected deriveStateFromProps(nextProps: {}): State {
+		return {notifications: []};
 	}
 
 	__onNotificationsUpdated(): void {
