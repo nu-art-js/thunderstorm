@@ -16,37 +16,34 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	ExampleModule,
-	RequestKey_GetApi,
-	RequestKey_PostApi,
-} from "@modules/ExampleModule";
-import {
-	ComponentSync,
-	ForceUpgrade
-} from "@nu-art/thunderstorm/frontend";
-import {LiveDoc} from "@nu-art/live-docs/frontend";
-import {AdminBR} from "@nu-art/bug-report/frontend";
-import {OnRequestListener} from "@nu-art/thunderstorm";
+import * as React from 'react';
+import {ExampleModule, RequestKey_GetApi, RequestKey_PostApi,} from '@modules/ExampleModule';
+import {ComponentSync, ForceUpgrade} from '@nu-art/thunderstorm/frontend';
+import {LiveDoc} from '@nu-art/live-docs/frontend';
+import {AdminBR} from '@nu-art/bug-report/frontend';
+import {OnRequestListener} from '@nu-art/thunderstorm';
 
 export class Hello
 	extends ComponentSync<{}, { label: string }>
 	implements OnRequestListener {
 
+	protected deriveStateFromProps(nextProps: {}): { label: string; } {
+		return {label: this.state?.label};
+	}
+
 	constructor(props: any) {
 		super(props);
 		this.state = {
-			label: "Hello World"
+			label: 'Hello World'
 		};
 	}
 
 	render() {
 		return <>
 			<div className="ll_h_c"><h1 onClick={ExampleModule.getMessageFromServer1}>{this.state.label}</h1><LiveDoc docKey="one-mouse-click"/></div>
-			<div className="ll_h_c"><h1 onClick={() => console.log("onclick")} onDoubleClick={ExampleModule.getMessageFromServer2}>Double click me</h1><LiveDoc
+			<div className="ll_h_c"><h1 onClick={() => console.log('onclick')} onDoubleClick={ExampleModule.getMessageFromServer2}>Double click me</h1><LiveDoc
 				docKey="double-mouse-click"/></div>
-			<div className="ll_h_c"><h1 onClick={() => console.log("onClick")} onDoubleClick={() => console.log("onDoubleClick")}>Click OR Double Click</h1></div>
+			<div className="ll_h_c"><h1 onClick={() => console.log('onClick')} onDoubleClick={() => console.log('onDoubleClick')}>Click OR Double Click</h1></div>
 			<div className="ll_h_c"><h1 onClick={ForceUpgrade.compareVersion}>Assert version</h1><LiveDoc docKey="assert-version"/></div>
 			<div>
 				<AdminBR/>

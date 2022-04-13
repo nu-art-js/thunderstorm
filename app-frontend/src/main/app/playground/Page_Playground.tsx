@@ -30,25 +30,12 @@ import {Example_Form} from './examples/Example_Form';
 import {Example_TriggerPush} from './examples/Example_TriggerPush';
 import {Example_AllDropDowns} from './examples/dropdown/Example_AllDropDowns';
 import {Playground_DropdownSingleAndMulti} from './examples/dropdown/Example_Dropdown_SingleAndMulti';
-import {Example_List_SingleType} from './examples/list/Example_List_SingleType';
-import {Example_List_MultiType} from './examples/list/Example_List_MultiType';
-import {Example_NestedList_SingleType} from './examples/list/Example_NestedList_SingleType';
-import {
-	Example_NestedList_MultiType,
-	Example_NestedList_MultiType_Object,
-	Example_NestedList_MultiType_Object_Dynamic
-} from './examples/list/Example_NestedList_MultiType';
-import {Example_List_All} from './examples/list/Example_List_All';
 import {Example_Tree_SingleType} from './examples/tree/Example_Tree_SingleType';
 import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
 import {Example_Uploader} from './examples/Example_Uploader';
 import {Example_TSInput} from './examples/Example_TSInput';
 import {Example_PermissionsComponent} from './examples/Example_PermissionsComponent';
 import {SP_Example_Tree_SingleType} from './examples/new-props-examples/tree/SP_Example_Tree_SingleType';
-import {SP_Example_NestedList_SingleType} from './examples/new-props-examples/list/SP_Example_NestedList_SingleType';
-import {SP_Example_List_MultiType} from './examples/new-props-examples/list/SP_Example_List_MultiType';
-import {SP_Example_List_SingleType} from './examples/new-props-examples/list/SP_Example_List_SingleType';
-import {SP_Example_NestedList_MultiType} from './examples/new-props-examples/list/SP_Example_NestedList_MultiType';
 import {Example_Analytics} from './examples/Example_Analytics';
 import Example_Scatter from './examples/Example_Scatter';
 import {Example_TSTextArea} from './examples/Example_TSTextArea';
@@ -61,6 +48,19 @@ import {Playground_Tree_Data} from './examples/keyboard-listener/Example_Tree_Da
 import {Playground_Tree_Basic} from './examples/keyboard-listener/Example_Tree_Basic';
 import {Playground_Tree_MultiType} from './examples/keyboard-listener/Example_Tree_MultiType';
 import {PgDev_Tabs} from './new-examples/PgDev_Tabs';
+import {SP_Example_List_MultiType} from '../../../../build/app/playground/examples/new-props-examples/list/SP_Example_List_MultiType';
+import {SP_Example_NestedList_SingleType} from '../../../../build/app/playground/examples/new-props-examples/list/SP_Example_NestedList_SingleType';
+import {SP_Example_NestedList_MultiType} from '../../../../build/app/playground/examples/new-props-examples/list/SP_Example_NestedList_MultiType';
+import {SP_Example_List_SingleType} from '../../../../build/app/playground/examples/new-props-examples/list/SP_Example_List_SingleType';
+import {Example_NestedList_SingleType} from '../../../../build/app/playground/examples/list/Example_NestedList_SingleType';
+import {
+	Example_NestedList_MultiType,
+	Example_NestedList_MultiType_Object,
+	Example_NestedList_MultiType_Object_Dynamic
+} from '../../../../build/app/playground/examples/list/Example_NestedList_MultiType';
+import {Example_List_All} from '../../../../build/app/playground/examples/list/Example_List_All';
+import {Example_List_MultiType} from '../../../../build/app/playground/examples/list/Example_List_MultiType';
+import {Example_List_SingleType} from '../../../../build/app/playground/examples/list/Example_List_SingleType';
 
 export const selectStyles = {
 	container: (provided: any) => ({
