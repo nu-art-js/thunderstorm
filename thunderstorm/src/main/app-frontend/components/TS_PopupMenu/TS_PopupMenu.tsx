@@ -1,10 +1,10 @@
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {Menu_Model, MenuListener} from '../MenuModule';
-import {ComponentSync} from '../../../core/ComponentSync';
+import {Menu_Model, MenuListener} from '../../modules/menu/MenuModule';
+import {ComponentSync} from '../../core/ComponentSync';
 import './TS_PopupMenu.scss';
-import {TS_Overlay} from '../../../components/TS_Overlay';
-import {TS_Tree} from '../../../components/TS_Tree';
+import {TS_Overlay} from '../TS_Overlay';
+import {TS_Tree} from '../TS_Tree';
 import {generateHex} from '@nu-art/ts-common';
 
 export type MenuPosition =
@@ -43,7 +43,7 @@ type Prop = {}
 // 	zIndex: 3333
 // };
 
-export default class TS_PopupMenu
+export class TS_PopupMenu
 	extends ComponentSync<Prop, State>
 	implements MenuListener {
 

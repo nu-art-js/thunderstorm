@@ -38,7 +38,6 @@ export class SimpleTreeNodeRenderer
 
 		return <div
 			className={`clickable`}
-			id={this.props.node.path}
 			onClick={this.props.node.expandToggler}
 			style={{width: '15px'}}>
 			{toDisplay}
@@ -48,14 +47,7 @@ export class SimpleTreeNodeRenderer
 	protected renderItem(item: any): React.ReactNode {
 		return (<div className="ll_h_c">
 			{this.renderCollapse()}
-			<div
-				id={this.props.node.path}
-				className="clickable"
-				onClick={this.props.node.onClick}
-				style={{userSelect: 'none'}}>
-
-				<SimpleNodeRenderer {...this.props}/>
-			</div>
+			<SimpleNodeRenderer {...this.props}/>
 		</div>);
 	}
 }
@@ -74,6 +66,6 @@ export class SimpleNodeRenderer
 		else
 			label = '';
 
-		return (this.props.node.propKey || 'root') + label;
+		return ('propKey' || 'root') + label;
 	}
 }

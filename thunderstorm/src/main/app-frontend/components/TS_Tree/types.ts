@@ -27,12 +27,8 @@ export type NodeExpandCondition = (key: string, value: any, level: number, path:
 export type TreeNodeExpandState = { [path: string]: true | undefined };
 
 export type TreeNode = {
-	propKey: string
-	path: string
 	item: any
 	adapter: Adapter
 	expandToggler: (e: React.MouseEvent, expand?: boolean) => void
-	onClick: (e: React.MouseEvent) => void
 	expanded: boolean
-	selected: boolean
 };

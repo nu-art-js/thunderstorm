@@ -24,13 +24,13 @@
  */
 import * as React from 'react';
 
-import {_clearTimeout, _setTimeout, ImplementationMissingException, Logger, LogLevel, LogParam, TimerHandler} from '@nu-art/ts-common';
+import {_clearTimeout, _setTimeout, Logger, LogLevel, LogParam, TimerHandler} from '@nu-art/ts-common';
 import {StorageModule} from '../modules/StorageModule';
 import {ResourcesModule} from '../modules/ResourcesModule';
 import {BrowserHistoryModule} from '../modules/HistoryModule';
 import {Thunder} from './Thunder';
 
-export class ComponentSync<P = any, S = any>
+export abstract class ComponentSync<P = any, S = any>
 	extends React.Component<P, S> {
 
 	private stateKeysToUpdate?: (keyof S)[];
@@ -71,9 +71,7 @@ export class ComponentSync<P = any, S = any>
 			this.setState(state);
 	}
 
-	protected deriveStateFromProps(nextProps: P): S | undefined {
-		throw new ImplementationMissingException("You must override deriveStateFromProps inside a ComponentSync! See ");
-	}
+	protected abstract deriveStateFromProps(nextProps: P): S | undefined;
 
 
 	debounce(handler: TimerHandler, key: string, ms = 0) {

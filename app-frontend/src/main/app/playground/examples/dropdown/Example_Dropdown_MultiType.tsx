@@ -24,7 +24,7 @@ import {css} from 'emotion';
 import {flatPlaguesWithTitles, Plague, RendererMap_Plague} from './consts';
 import {PlaygroundExample_BodyStyle, PlaygroundExample_HeaderStyle} from '../consts';
 import {PG_Example} from '../_core/PG_Example';
-import {Filter} from "@nu-art/ts-common";
+import {Filter} from '@nu-art/ts-common';
 
 
 export class Example_Dropdown_MultiType
@@ -42,7 +42,6 @@ export class Example_Dropdown_MultiType
 			.list()
 			.multiRender(RendererMap_Plague)
 			.setData(flatPlaguesWithTitles)
-			.noGeneralOnClick()
 			.build();
 
 		const inputStylable = {

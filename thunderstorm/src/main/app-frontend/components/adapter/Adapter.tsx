@@ -230,7 +230,6 @@ abstract class BaseAdapterBuilder<Data> {
 		const _Renderer: _BaseNodeRenderer<any> = this.resolveRenderer(props.item.type);
 		return (
 			<div className="ll_h_c clickable"
-					 id={props.node.path}
 					 onClick={props.node.expandToggler}>
 
 				<this.expandCollapseRenderer {...props}/>
@@ -253,9 +252,7 @@ class ListSingleAdapterBuilder<ItemType extends any = any>
 		this.renderer = renderer;
 		this.treeNodeRenderer = (props: NodeRendererProps<ItemType>) => {
 			const _Renderer = this.resolveRenderer();
-			return <div id={props.node.path} onClick={props.node.onClick}>
-				<_Renderer item={props.item} node={props.node}/>
-			</div>;
+			return <_Renderer item={props.item} node={props.node}/>;
 		};
 
 	}
@@ -268,9 +265,7 @@ class ListSingleAdapterBuilder<ItemType extends any = any>
 		this.childrenKey = '_children';
 		this.treeNodeRenderer = (props: NodeRendererProps<ItemType>) => {
 			const _Renderer = this.renderer;
-			return <div id={props.node.path} onClick={props.node.onClick}>
-				<_Renderer {...props}/>
-			</div>;
+			return <_Renderer {...props}/>;
 		};
 
 		return this as ListSingleAdapterBuilder<NestedListData<ItemType>>;
@@ -301,13 +296,8 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 		this.childrenKey = '_children';
 
 		this.treeNodeRenderer = (props: NodeRendererProps<TreeItem<any>>) => {
-			if (props.node.propKey === '_children')
-				return null;
-
 			const _Renderer: _BaseNodeRenderer<any> = this.resolveRenderer(props.item.type);
-			return <div id={props.node.path} onClick={props.node.onClick}>
-				<_Renderer item={props.item.item} node={props.node}/>
-			</div>;
+			return <_Renderer item={props.item.item} node={props.node}/>;
 		};
 	}
 
@@ -325,20 +315,6 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 	tree() {
 		this.treeNodeRenderer = this.defaultTreeNodeRenderer;
 		this.hideRoot = false;
-		return this as unknown as MultiTypeAdapterBuilder<Rm, DataType>;
-	}
-
-	// TO REMOVE
-	noGeneralOnClick(): MultiTypeAdapterBuilder<Rm, DataType> {
-		this.treeNodeRenderer = (props: NodeRendererProps<TreeItem<any>>) => {
-			if (props.node.propKey === '_children')
-				return null;
-
-			const _Renderer: _BaseNodeRenderer<any> = this.rendererMap[props.item.type];
-			return <div id={props.node.path}>
-				<_Renderer item={props.item.item} node={props.node}/>
-			</div>;
-		};
 		return this as unknown as MultiTypeAdapterBuilder<Rm, DataType>;
 	}
 

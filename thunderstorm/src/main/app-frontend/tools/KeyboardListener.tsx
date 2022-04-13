@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import {Stylable} from './Stylable';
-import {DropDown_wrapperStyle} from '../components/dropdown/TS_DropDown';
+import {DropDown_wrapperStyle} from '../components/TS_Dropdown/TS_DropDown';
 
 export type KeyboardListenerProps = Stylable & {
 	onKeyboardEventListener: (e: React.KeyboardEvent) => void

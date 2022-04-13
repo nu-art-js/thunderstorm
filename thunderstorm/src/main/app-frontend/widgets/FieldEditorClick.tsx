@@ -28,9 +28,8 @@ export class FieldEditorClick
 		return new StorageKey<string>(`editable-label-controller-${this.props.id}`);
 	}
 
-	constructor(props: FieldEditorClickProps) {
-		super(props);
-		this.state = {
+	protected deriveStateFromProps(nextProps: FieldEditorClickProps) {
+		return {
 			storageKey: this.createStorageKey(),
 			isEditing: false,
 		};

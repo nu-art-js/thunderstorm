@@ -21,13 +21,13 @@
 
 import * as React from 'react';
 // noinspection TypeScriptPreferShortImport
-import {Dialog_Model, DialogButton_Builder, DialogListener, DialogModule} from './DialogModule';
+import {Dialog_Model, DialogButton_Builder, DialogListener, DialogModule} from '../modules/dialog/DialogModule';
 // noinspection TypeScriptPreferShortImport
-import {ComponentSync} from '../../core/ComponentSync';
-import {stopPropagation} from '../../utils/tools';
-import {Properties} from '../../components/types';
+import {ComponentSync} from '../core/ComponentSync';
+import {stopPropagation} from '../utils/tools';
+import {CSSProperties} from 'react';
 
-const modalOverlay: Properties = {
+const modalOverlay: CSSProperties = {
 	position: 'fixed',
 	top: 0,
 	left: 0,
@@ -38,7 +38,7 @@ const modalOverlay: Properties = {
 	justifyContent: 'center'
 };
 
-const defaultDialogStyle: Properties = {
+const defaultDialogStyle: CSSProperties = {
 	borderRadius: '4px',
 	boxShadow: '0px 2px 5px 0 rgba(0, 0, 0, 0.28)',
 	backgroundColor: '#ffffff',
@@ -51,13 +51,13 @@ const defaultDialogStyle: Properties = {
 	// transform: "translate(-50%, -50%)"
 };
 
-const defaultContentStyle: Properties = {
+const defaultContentStyle: CSSProperties = {
 	// display: "inline-block",
 	padding: '24px 18px 0',
 };
 
 
-const defaultButtonStyle: Properties = {
+const defaultButtonStyle: CSSProperties = {
 	borderRadius: '4px',
 	color: 'white',
 	fontSize: '11px',
@@ -68,11 +68,11 @@ const defaultButtonStyle: Properties = {
 	width: '68px'
 };
 
-const defaultSubmitStyle: Properties = {
+const defaultSubmitStyle: CSSProperties = {
 	backgroundColor: '#00b5ff'
 };
 
-const defaultCancelStyle: Properties = {
+const defaultCancelStyle: CSSProperties = {
 	backgroundColor: '#d9d9d9'
 };
 
@@ -121,10 +121,8 @@ export class Dialog
 	extends ComponentSync<Props, State>
 	implements DialogListener {
 
-
-	constructor(props: Props) {
-		super(props);
-		this.state = {};
+	protected deriveStateFromProps(nextProps: Props): State | undefined {
+		return {};
 	}
 
 	static closeWithEsc(e: any) {

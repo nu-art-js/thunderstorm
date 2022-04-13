@@ -21,7 +21,6 @@
 
 import * as React from 'react';
 import {EntryComponentLoadingModule} from './entry-component-loading-module';
-import {ComponentSync} from '../../core/ComponentSync';
 // noinspection TypeScriptPreferShortImport
 import {OnRequestListener} from '../../../shared/request-types';
 
@@ -38,7 +37,7 @@ type State = {
 }
 
 export class ReactEntryComponentInjector
-	extends ComponentSync<Props, State>
+	extends React.Component<Props, State>
 	implements OnRequestListener {
 
 	private myRef: React.RefObject<HTMLDivElement> = React.createRef();

@@ -1,10 +1,9 @@
 import * as React from 'react';
 import {CSSProperties, ReactNode} from 'react';
-import {ComponentSync} from '../../core/ComponentSync';
 import {Menu_Model, MenuBuilder, MenuListener, resolveRealPosition} from './MenuModule';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {Adapter} from '../../components/adapter/Adapter';
-import {MenuPosition} from './TS_PopupMenu';
+import {MenuPosition} from '../../components/TS_PopupMenu';
 
 type Props = {
 	id: string
@@ -16,7 +15,7 @@ type Props = {
 }
 
 export class MenuAndButton
-	extends ComponentSync<Props, { isOpen: boolean, over: boolean }>
+	extends React.Component<Props, { isOpen: boolean, over: boolean }>
 	implements MenuListener {
 
 	ref = React.createRef<HTMLImageElement>();

@@ -1,5 +1,5 @@
 import {generateHex, Module} from '@nu-art/ts-common';
-import {MenuPosition} from './TS_PopupMenu';
+import {MenuPosition} from '../../components/TS_PopupMenu';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {_GenericRenderer, Adapter,} from '../../components/adapter/Adapter';
 import {BaseRendererMap} from '../../components/adapter/BaseRenderer';

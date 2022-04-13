@@ -26,11 +26,9 @@ export class FieldEditorWithButtons
 		return new StorageKey<string>(`editable-label-controller-${this.props.id}`);
 	}
 
-	constructor(props: Props) {
-		super(props);
-		const storage = this.createStorageKey();
-		this.state = {
-			storageKey: storage,
+	protected deriveStateFromProps(nextProps: Props) {
+		return {
+			storageKey: this.createStorageKey(),
 			isEditing: false,
 		};
 	}

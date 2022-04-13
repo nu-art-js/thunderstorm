@@ -16,6 +16,10 @@ export class OverlayWithDocumentListener
 		this.state = {};
 	}
 
+	protected deriveStateFromProps(nextProps: Props) {
+		return {};
+	}
+
 	onMouseMove = (e: MouseEvent) => {
 		if (this.props.documentOnMouseMove) {
 			this.props.documentOnMouseMove(e);

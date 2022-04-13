@@ -52,39 +52,41 @@ export * from './app-frontend/core/AppPage';
 export * from './app-frontend/core/AppPageV2';
 export * from './app-frontend/core/AppWrapper';
 export * from './app-frontend/core/ErrorBoundary';
-export * from './app-frontend/components/input/TS_BaseInput';
-export * from './app-frontend/components/input/TS_TextArea/TS_TextArea';
-export * from './app-frontend/components/input/TS_Input/TS_Input';
 export * from './app-frontend/widgets/FieldEditor';
 export * from './app-frontend/widgets/FieldEditorClick';
 export * from './app-frontend/widgets/FieldEditorWithButtons';
+
+export * from './app-frontend/components/input/TS_BaseInput';
+export * from './app-frontend/components/input/TS_TextArea/TS_TextArea';
+export * from './app-frontend/components/input/TS_Input/TS_Input';
+export * from './app-frontend/components/TS_PopupMenu';
 export * from './app-frontend/components/TS_Table';
 export * from './app-frontend/components/TS_Tabs';
-export * from './app-frontend/components/dropdown/TS_DropDown';
+export * from './app-frontend/components/TS_Dropdown';
+export * from './app-frontend/components/TS_Overlay';
+export * from './app-frontend/components/TS_Tree';
+export * from './app-frontend/components/TS_Checkbox';
+export * from './app-frontend/components/TS_PopupMenu';
+export * from './app-frontend/components/playground/TS_Playground';
 
 export * from './app-frontend/components/Layouts';
 export * from './app-frontend/components/HeightBounder';
 export * from './app-frontend/components/form/types';
 export * from './app-frontend/components/form/Form';
-export * from './app-frontend/components/TS_Overlay';
 
 export * from './app-frontend/components/adapter/Adapter';
 export * from './app-frontend/components/adapter/BaseRenderer';
-export * from './app-frontend/components/TS_Tree/TS_Tree';
 
-export * from './app-frontend/components/playground/TS_Playground';
 export * from './app-frontend/components/playground/Example_NewProps';
 
-export * from './app-frontend/components/TS_Checkbox/TS_Checkbox';
 
 export * from './app-frontend/modules/component-loader/ReactEntryComponentInjector';
 export * from './app-frontend/modules/component-loader/entry-component-loading-module';
 
 export * from './app-frontend/modules/tooltip/Tooltip';
 export * from './app-frontend/modules/menu/MenuAndButton';
-export * from './app-frontend/modules/menu/TS_PopupMenu/';
 export * from './app-frontend/modules/toaster/Toaster';
-export * from './app-frontend/modules/dialog/Dialog';
+export * from './app-frontend/_to-refactor/Dialog';
 
 export * from './app-frontend/tools/KeyboardListener';
 export * from './app-frontend/tools/Stylable';

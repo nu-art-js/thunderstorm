@@ -66,6 +66,10 @@ export class Tooltip
 		this.state = {};
 	}
 
+	protected deriveStateFromProps(nextProps: {}): State | undefined {
+		return {};
+	}
+
 	render() {
 		const {model} = this.state;
 		if (!model || !model.content)
