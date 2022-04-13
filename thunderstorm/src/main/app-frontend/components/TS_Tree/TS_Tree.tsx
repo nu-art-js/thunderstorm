@@ -20,12 +20,12 @@
  */
 
 import * as React from 'react';
+import {FocusEvent, Fragment} from 'react';
 import {TreeNode, TreeNodeExpandState,} from './types';
 import {Adapter} from '../adapter/Adapter';
 import {_BaseNodeRenderer} from '../adapter/BaseRenderer';
 import {UIComponent} from '../../core/UIComponent';
 import {_className} from '../../utils/tools';
-import {Fragment} from 'react';
 import './TS_Tree.scss';
 
 export type Props_Tree = {
@@ -70,7 +70,12 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	}
 
 	render() {
-		return <div className="ts-tree">
+		const onFocus = (e: FocusEvent<any>) => {
+			const path = e.target.getAttribute('data-path');
+			this.props.onNodeClicked && this.props.onNodeClicked(path, TS_Tree.resolveItemFromPath(this.state.adapter.data, path));
+			console.log(path);
+		};
+		return <div className="ts-tree" onFocus={onFocus}>
 			{this.renderNode(this.state.adapter.data, '', '', 1)}
 		</div>;
 	}
@@ -127,6 +132,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		};
 	}
 
+
 	private renderChildren(data: any, nodePath: string, _path: string, level: number, filteredKeys: any[], renderChildren: boolean, adjustedNode: { data: object; deltaPath?: string }, containerRefResolver: (_ref: HTMLDivElement) => void) {
 		if (!(filteredKeys.length > 0 && renderChildren))
 			return;
@@ -147,18 +153,19 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const TreeNodeRenderer: _BaseNodeRenderer<any> = this.state.adapter.treeNodeRenderer;
 		// console.log("isParent: ", this.state.adapter.isParent(item));
 		const isParent = this.state.adapter.isParent(item);
+		const isSelected = item === this.props.selectedItem;
 		const node: TreeNode = {
 			adapter: this.state.adapter,
-			propKey: key,
-			path,
 			item,
 			expandToggler: isParent ? this.toggleExpandState : ignoreToggler,
-			onClick: this.onNodeClicked,
 			expanded: !!expanded,
-			selected: item === this.props.selectedItem
 		};
 
-		return <div className={_className('ts-tree__node', isParent && 'ts-tree__parent-node')} ref={nodeRefResolver}>
+		if (this.state.adapter.childrenKey === key)
+			return null;
+
+		const className = _className('ts-tree__node', isParent && 'ts-tree__parent-node', isSelected && 'ts-tree__selected-node');
+		return <div tabIndex={1} data-path={path} className={className} ref={nodeRefResolver}>
 			<TreeNodeRenderer item={item} node={node}/>
 		</div>;
 	}
@@ -204,14 +211,6 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			delete treeExpandedState[path];
 
 		this.forceUpdate();
-	};
-
-	private onNodeClicked = (e: React.MouseEvent): void => {
-		// This is an assumption that we should document somewhere
-		const path = e.currentTarget.id;
-		const item = this.getItemByPath(path);
-
-		this.props.onNodeClicked && this.props.onNodeClicked(path, item);
 	};
 }
 

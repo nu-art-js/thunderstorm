@@ -35,6 +35,10 @@ export class FieldEditor
 		}
 	}
 
+	protected deriveStateFromProps(nextProps: FieldEditorProps): any {
+		return {};
+	}
+
 	onChange = (value: string) => {
 		// this.logDebug(`input onChange: ${value}`);
 		this.props.storageKey.set(value);

@@ -18,8 +18,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import * as React from 'react';
-
-export type Properties = React.CSSProperties
-export type Color = Properties['color'];
+export * from './TS_DropDown';

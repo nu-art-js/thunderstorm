@@ -81,7 +81,6 @@ class Example_Dropdown_SingleAndMulti
 				.list()
 				.multiRender(RendererMap_Plague)
 				.setData(flatPlaguesWithTitles)
-				.noGeneralOnClick()
 				.build(),
 			selected: this.state.instance['prop2'],
 			onSelected: (item: PlagueWithTitle) => {

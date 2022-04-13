@@ -23,15 +23,15 @@ import * as React from 'react';
 import {Module} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {Stylable, StylableBuilder} from '../../tools/Stylable';
-import {Color, Properties} from '../../components/types';
+import {CSSProperties} from 'react';
 
 export type Dialog_Model = Stylable & {
 	zIndex: number,
 	title?: React.ReactNode,
 	content: React.ReactNode,
 	buttons: DialogButtonModel[],
-	overlayColor?: Color,
-	actionsStyle?: Properties,
+	overlayColor?: CSSProperties['color'],
+	actionsStyle?: CSSProperties,
 	allowIndirectClosing?: boolean,
 }
 
@@ -108,9 +108,9 @@ export class Dialog_Builder
 
 	title!: React.ReactNode;
 	buttons: DialogButtonModel[] = [];
-	overlayColor: Color = 'rgba(29, 29, 48, 0.6)';
+	overlayColor: CSSProperties['color'] = 'rgba(29, 29, 48, 0.6)';
 	allowIndirectClosing: boolean = false;
-	actionsStyle: Properties = {};
+	actionsStyle: CSSProperties = {};
 
 	constructor(content: React.ReactNode) {
 		super();
@@ -122,12 +122,12 @@ export class Dialog_Builder
 		return this;
 	}
 
-	setOverlayColor(overlayColor: Color) {
+	setOverlayColor(overlayColor: CSSProperties['color']) {
 		this.overlayColor = overlayColor;
 		return this;
 	}
 
-	setActionsStyle(actionsStyle: Properties) {
+	setActionsStyle(actionsStyle: CSSProperties) {
 		this.actionsStyle = actionsStyle;
 		return this;
 	}

@@ -17,12 +17,11 @@
  */
 
 import * as React from 'react';
-import {ComponentSync, Dialog, RoutingModule, Toaster, WrapperProps} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, Dialog, RoutingModule, Toaster, TS_PopupMenu, WrapperProps} from '@nu-art/thunderstorm/frontend';
 
-import {VersionOnScreen} from './components/VersionOnScreen';
+import {VersionOnScreen} from '@components/VersionOnScreen';
 import {AccountModule, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
 import {registerRoutes} from './Routes';
-import {TS_PopupMenu} from '@nu-art/thunderstorm/app-frontend/modules/menu/TS_PopupMenu';
 
 export class App
 	extends ComponentSync<WrapperProps>
@@ -31,6 +30,10 @@ export class App
 	public static dropBlocker<T>(ev: React.DragEvent<T>) {
 		ev.preventDefault();
 		ev.stopPropagation();
+	}
+
+	protected deriveStateFromProps(nextProps: WrapperProps) {
+		return {};
 	}
 
 	__onLoginStatusUpdated = () => {
