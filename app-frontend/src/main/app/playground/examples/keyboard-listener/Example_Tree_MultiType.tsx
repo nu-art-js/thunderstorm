@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {AdapterBuilder, BaseNodeRenderer, TreeData_MultiType, TreeItem, TreeRendererMap, TS_Tree} from "@nu-art/thunderstorm/frontend";
-import {PlaygroundExample_ResultStyle} from "../consts";
-import {PG_Example} from "../_core/PG_Example";
-import {optionRendererStyle} from "../dropdown/consts";
+import * as React from 'react';
+import {AdapterBuilder, BaseNodeRenderer, TreeData_MultiType, TreeItem, TreeRendererMap, TS_Tree} from '@nu-art/thunderstorm/frontend';
+import {PlaygroundExample_ResultStyle} from '../consts';
+import {PG_Example} from '../_core/PG_Example';
 
 type State = { focused?: string, actionMessage: string };
 
@@ -42,16 +41,8 @@ export class ItemRenderer_Cat
 
 	renderItem(item: Cat) {
 		return (
-			<div className="ll_h_c clickable match_width"
-					 id={this.props.node.path}
-					 onClick={this.props.node.onClick}
-					 style={(this.props.node.focused) ? {backgroundColor: "lightgreen"} : {}}>
-
-				<div className={optionRendererStyle(this.props.node.selected)}>
-					<div className={`ll_h_c match_width`} style={{justifyContent: "space-between"}}>
-						{item.name}
-					</div>
-				</div>
+			<div className={`ll_h_c match_width`} style={{justifyContent: 'space-between'}}>
+				{item.name}
 			</div>
 		);
 	}
@@ -62,16 +53,8 @@ export class ItemRenderer_Person
 
 	renderItem(item: Person) {
 		return (
-			<div className="ll_h_c clickable match_width"
-					 id={this.props.node.path}
-					 onClick={this.props.node.onClick}
-					 style={(this.props.node.focused) ? {backgroundColor: "lightblue"} : {}}>
-
-				<div className={optionRendererStyle(this.props.node.selected)}>
-					<div className={`ll_h_c match_width`} style={{justifyContent: "space-between"}}>
-						{item.name} {item.lastName}
-					</div>
-				</div>
+			<div className={`ll_h_c match_width`} style={{justifyContent: 'space-between'}}>
+				{item.name} {item.lastName}
 			</div>
 		);
 	}
@@ -82,12 +65,8 @@ export class ItemRenderer_Title
 
 	renderItem(item: string) {
 		return (
-			<div className="ll_h_c clickable match_width">
-				<div className={optionRendererStyle(this.props.node.selected)}>
-					<div className={`ll_h_c match_width`} style={{justifyContent: "space-between"}}>
-						<div style={{fontWeight: "bold", fontSize: 24}}>{item}</div>
-					</div>
-				</div>
+			<div className={`ll_h_c match_width`} style={{justifyContent: 'space-between'}}>
+				<div style={{fontWeight: 'bold', fontSize: 24}}>{item}</div>
 			</div>
 		);
 	}
@@ -105,31 +84,31 @@ const ItemsRendererMap: TreeRendererMap = {
 	title: ItemRenderer_Title
 };
 
-const CAT_Mulan: TreeItem<Cat> = {type: "cat", item: {name: "Mulan"}};
+const CAT_Mulan: TreeItem<Cat> = {type: 'cat', item: {name: 'Mulan'}};
 
-const CAT_Lili = {type: "cat", item: {name: "Lili"}};
+const CAT_Lili = {type: 'cat', item: {name: 'Lili'}};
 
 const PERSON_Adam: TreeItem<Person | Cat> = {
-	type: "person",
-	item: {name: "Adam", lastName: "van der Kruk"},
+	type: 'person',
+	item: {name: 'Adam', lastName: 'van der Kruk'},
 	_children: [CAT_Lili, CAT_Mulan]
 };
 const PERSON_Alan: TreeItem<Person | Cat> = {
-	type: "person",
-	item: {name: "Alan", lastName: "stronzo"},
+	type: 'person',
+	item: {name: 'Alan', lastName: 'stronzo'},
 	_children: [CAT_Lili, CAT_Mulan]
 };
 
 class Example_Tree_MultiType
 	extends React.Component<{}, State> {
 
-	state = {actionMessage: "No action yet"};
+	state = {actionMessage: 'No action yet'};
 
 
 	private elements: TreeData_MultiType<typeof ItemsRendererMap> = {
-		type: "title",
-		item: "People",
-		_children: [PERSON_Adam,PERSON_Alan]
+		type: 'title',
+		item: 'People',
+		_children: [PERSON_Adam, PERSON_Alan]
 	};
 
 	render() {
@@ -149,11 +128,11 @@ class Example_Tree_MultiType
 				// onBlur={() => console.log("Blurred")}
 			/>
 			<div {...PlaygroundExample_ResultStyle}>{this.state.actionMessage}</div>
-		</>
+		</>;
 	}
 }
 
-const name = "Tree - MultiType";
+const name = 'Tree - MultiType';
 
 export function Playground_Tree_MultiType() {
 	return {
