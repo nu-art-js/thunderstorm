@@ -43,7 +43,8 @@ import {
 	Request_LoginAccount,
 	Request_UpsertAccount,
 	Response_Auth,
-	UI_Account
+	UI_Account,
+	UI_Session
 } from "./_imports";
 import {
 	ApiException,
@@ -127,6 +128,20 @@ export class AccountsModule_Class
 		return this.accounts.queryUnique({where: {email}});
 	}
 
+	async querySessions(_email: string): Promise<UI_Session[] | undefined> {
+		const account = await this.getSession(_email);
+		if (!account)
+			return;
+
+		const sessions = await this.sessions.query({select: ["userId", "timestamp", "frontType"], where: {userId: account._id}});
+		return sessions.map((session: DB_Session) => {
+			return {
+				...session,
+				isExpired: this.TTLExpired(session)
+			}
+		});
+	}
+
 	async create(request: Request_CreateAccount) {
 		const account = await this.createAccount(request);
 
@@ -206,6 +221,11 @@ export class AccountsModule_Class
 		};
 
 		return transaction.insert(this.accounts, account);
+	}
+
+	async logout(sessionId: string) {
+		const query = {where: {sessionId}};
+		await this.sessions.deleteUnique(query);
 	}
 
 	async login(request: Request_LoginAccount): Promise<Response_Auth> {

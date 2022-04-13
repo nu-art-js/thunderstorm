@@ -84,6 +84,13 @@ export type Response_Validation = UI_Account
 
 export type UI_Account = { email: string; _id: string }
 
+export type UI_Session = {
+	userId: string
+	timestamp: number
+	isExpired: boolean
+	frontType?: FrontType
+}
+
 export type Response_ListAccounts = {
 	accounts: UI_Account[]
 };
@@ -101,6 +108,7 @@ export type AccountApi_AddNewAccount = ApiWithBody<'/v1/account/add-new-account'
 export type AccountApi_Create = ApiWithBody<'/v1/account/create', Request_CreateAccount, Response_Auth>
 export type AccountApi_Upsert = ApiWithBody<'/v1/account/upsert', Request_UpsertAccount, Response_Auth>
 export type AccountApi_Login = ApiWithBody<'/v1/account/login', Request_LoginAccount, Response_Auth>
+export type AccountApi_Logout = ApiWithBody<'/v1/account/logout', {}, void>
 export type AccountApi_LoginSAML = ApiWithQuery<"/v1/account/login-saml", Response_LoginSAML, RequestParams_LoginSAML>
 export type AccountApi_ValidateSession = ApiWithQuery<'/v1/account/validate', Response_Validation>
 export type AccountApi_AssertLoginSAML = ApiWithBody<"/v1/account/assert", PostAssertBody, void>
