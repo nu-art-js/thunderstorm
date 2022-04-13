@@ -79,9 +79,7 @@ class ItemRenderer
 		const value = __stringify(this.props.item);
 
 		return <div
-			id={this.props.node.path}
 			className="clickable"
-			onClick={this.props.node.onClick}
 			style={{backgroundColor: moreProps.focusedColor, userSelect: 'none'}}>{`${value}`}</div>;
 
 	}
@@ -91,7 +89,7 @@ class ItemRenderer0
 	extends ItemRenderer {
 
 	render() {
-		return this.renderItem({focusedColor: this.props.node.focused ? 'red' : 'salmon'});
+		return this.renderItem({focusedColor: 'red'});
 	}
 }
 
@@ -99,7 +97,7 @@ class ItemRenderer1
 	extends ItemRenderer {
 
 	render() {
-		return this.renderItem({focusedColor: this.props.node.focused ? 'lime' : 'cyan'});
+		return this.renderItem({focusedColor: 'lime'});
 	}
 }
 
@@ -107,7 +105,7 @@ class ItemRenderer2
 	extends ItemRenderer {
 
 	render() {
-		return this.renderItem({focusedColor: this.props.node.focused ? 'lightblue' : 'magenta'});
+		return this.renderItem({focusedColor: 'lightblue'});
 	}
 }
 
@@ -134,7 +132,8 @@ class Example_NodeRenderer
 		if (typeof this.props.item === 'number')
 			return ItemRenderer2;
 
-		return this.props.node.propKey === 'other' ? ItemRenderer1 : ItemRenderer0;
+		return this.props.item === 'other' ? ItemRenderer1 : ItemRenderer0;
+		// return this.props.node.propKey === 'other' ? ItemRenderer1 : ItemRenderer0;
 	}
 }
 
