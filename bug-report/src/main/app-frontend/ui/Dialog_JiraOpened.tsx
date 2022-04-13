@@ -16,7 +16,7 @@ export class Dialog_JiraOpened
 
 	public static show(url: string) {
 		new Dialog_Builder(<Dialog_JiraOpened url={url}/>)
-			.setAllowIndirectClosing(true)
+			.setcloseOverlayOnClick(true)
 			.show();
 	}
 

@@ -22,24 +22,13 @@
 import * as React from 'react';
 import {Module} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {Stylable, StylableBuilder} from '../../tools/Stylable';
-import {CSSProperties} from 'react';
+import {Stylable} from '../../tools/Stylable';
 
 export type Dialog_Model = Stylable & {
-	zIndex: number,
-	title?: React.ReactNode,
 	content: React.ReactNode,
-	buttons: DialogButtonModel[],
-	overlayColor?: CSSProperties['color'],
-	actionsStyle?: CSSProperties,
-	allowIndirectClosing?: boolean,
+	closeOverlayOnClick?: boolean,
 }
 
-export type DialogButtonModel = Stylable & {
-	content: React.ReactNode;
-	associatedKeys: string[];
-	action: () => void;
-}
 
 export interface DialogListener {
 	__showDialog(dialogModel?: Dialog_Model): void;
@@ -61,112 +50,10 @@ export class DialogModule_Class
 		dispatch_showDialog.dispatchUI();
 	};
 
-	public show = (params: Dialog_Model) => {
-		dispatch_showDialog.dispatchUI(params);
+	public show = (content: React.ReactNode, closeOverlayOnClick = false) => {
+		dispatch_showDialog.dispatchUI({content, closeOverlayOnClick});
 	};
 }
 
-
-export class DialogButton_Builder
-	extends StylableBuilder {
-
-	content!: React.ReactNode;
-	action!: () => void;
-	associatedKeys: string[] = [];
-
-
-	setContent(content: React.ReactNode) {
-		this.content = content;
-		return this;
-	}
-
-	setAction(action: () => void) {
-		this.action = action;
-		return this;
-	}
-
-	setAssociatedKeys(associatedKeys: string[]) {
-		this.associatedKeys = associatedKeys;
-		return this;
-	}
-
-	build(): DialogButtonModel {
-		return {
-			style: this.style,
-			className: this.className,
-			content: this.content,
-			action: this.action,
-			associatedKeys: this.associatedKeys,
-		};
-	}
-}
-
-export class Dialog_Builder
-	extends StylableBuilder {
-	content: React.ReactNode;
-	zIndex: number = 100;
-
-	title!: React.ReactNode;
-	buttons: DialogButtonModel[] = [];
-	overlayColor: CSSProperties['color'] = 'rgba(29, 29, 48, 0.6)';
-	allowIndirectClosing: boolean = false;
-	actionsStyle: CSSProperties = {};
-
-	constructor(content: React.ReactNode) {
-		super();
-		this.content = content;
-	}
-
-	setAllowIndirectClosing(allowIndirectClosing: boolean) {
-		this.allowIndirectClosing = allowIndirectClosing;
-		return this;
-	}
-
-	setOverlayColor(overlayColor: CSSProperties['color']) {
-		this.overlayColor = overlayColor;
-		return this;
-	}
-
-	setActionsStyle(actionsStyle: CSSProperties) {
-		this.actionsStyle = actionsStyle;
-		return this;
-	}
-
-	setTitle(title: React.ReactNode) {
-		this.title = title;
-		return this;
-	}
-
-	setButtons(...buttons: DialogButtonModel[]) {
-		this.buttons = buttons;
-		return this;
-	}
-
-	addButton(button: DialogButtonModel) {
-		this.buttons = [...this.buttons, button];
-		return this;
-	}
-
-	setZIndex(zIndex: number = 100) {
-		this.zIndex = zIndex;
-		return this;
-	}
-
-	show() {
-		const model: Dialog_Model = {
-			style: this.style,
-			className: this.className,
-			buttons: this.buttons,
-			allowIndirectClosing: this.allowIndirectClosing,
-			content: this.content,
-			title: this.title,
-			zIndex: this.zIndex,
-			overlayColor: this.overlayColor,
-			actionsStyle: this.actionsStyle
-		};
-
-		DialogModule.show(model);
-	}
-}
 
 export const DialogModule = new DialogModule_Class();
