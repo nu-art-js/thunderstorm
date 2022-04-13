@@ -48,19 +48,7 @@ import {Playground_Tree_Data} from './examples/keyboard-listener/Example_Tree_Da
 import {Playground_Tree_Basic} from './examples/keyboard-listener/Example_Tree_Basic';
 import {Playground_Tree_MultiType} from './examples/keyboard-listener/Example_Tree_MultiType';
 import {PgDev_Tabs} from './new-examples/PgDev_Tabs';
-import {SP_Example_List_MultiType} from '../../../../build/app/playground/examples/new-props-examples/list/SP_Example_List_MultiType';
-import {SP_Example_NestedList_SingleType} from '../../../../build/app/playground/examples/new-props-examples/list/SP_Example_NestedList_SingleType';
-import {SP_Example_NestedList_MultiType} from '../../../../build/app/playground/examples/new-props-examples/list/SP_Example_NestedList_MultiType';
-import {SP_Example_List_SingleType} from '../../../../build/app/playground/examples/new-props-examples/list/SP_Example_List_SingleType';
-import {Example_NestedList_SingleType} from '../../../../build/app/playground/examples/list/Example_NestedList_SingleType';
-import {
-	Example_NestedList_MultiType,
-	Example_NestedList_MultiType_Object,
-	Example_NestedList_MultiType_Object_Dynamic
-} from '../../../../build/app/playground/examples/list/Example_NestedList_MultiType';
-import {Example_List_All} from '../../../../build/app/playground/examples/list/Example_List_All';
-import {Example_List_MultiType} from '../../../../build/app/playground/examples/list/Example_List_MultiType';
-import {Example_List_SingleType} from '../../../../build/app/playground/examples/list/Example_List_SingleType';
+
 
 export const selectStyles = {
 	container: (provided: any) => ({
@@ -130,10 +118,10 @@ export class Page_Playground
 			// SWITCH PROPS
 			// TREES / LISTS
 			{renderer: SP_Example_Tree_SingleType, name: 'SP_Example_Tree_SingleType',},
-			{renderer: SP_Example_List_MultiType, name: 'SP_Example_List_MultiType',},
-			{renderer: SP_Example_List_SingleType, name: 'SP_Example_List_SingleType',},
-			{renderer: SP_Example_NestedList_SingleType, name: 'SP_Example_NestedList_SingleType',},
-			{renderer: SP_Example_NestedList_MultiType, name: 'SP_Example_NestedList_MultiType',},
+			// {renderer: SP_Example_List_MultiType, name: 'SP_Example_List_MultiType',},
+			// {renderer: SP_Example_List_SingleType, name: 'SP_Example_List_SingleType',},
+			// {renderer: SP_Example_NestedList_SingleType, name: 'SP_Example_NestedList_SingleType',},
+			// {renderer: SP_Example_NestedList_MultiType, name: 'SP_Example_NestedList_MultiType',},
 
 			// TREES / LISTS
 			Playground_Tree_Data(),
@@ -141,14 +129,14 @@ export class Page_Playground
 			Playground_Tree_MultiType(),
 			{renderer: Example_Tree_SingleType, name: 'Tree_SingleType',},
 			{renderer: Example_Tree_MultiType, name: 'Tree_MultiType',},
-			{renderer: Example_List_SingleType, name: 'List_SingleType_Menu',},
-			{renderer: Example_NestedList_SingleType, name: 'List_SingleType_NestedMenu',},
-			{renderer: Example_List_MultiType, name: 'List_MultiType_Menu',},
-			{renderer: Example_NestedList_MultiType, name: 'NestedList_MultiType',},
+			// {renderer: Example_List_SingleType, name: 'List_SingleType_Menu',},
+			// {renderer: Example_NestedList_SingleType, name: 'List_SingleType_NestedMenu',},
+			// {renderer: Example_List_MultiType, name: 'List_MultiType_Menu',},
+			// {renderer: Example_NestedList_MultiType, name: 'NestedList_MultiType',},
 			{renderer: Example_List_WithInput, name: 'Example_List_WithInput',},
-			{renderer: Example_NestedList_MultiType_Object, name: 'NestedList_MultiType_Object',},
-			{renderer: Example_NestedList_MultiType_Object_Dynamic, name: 'NestedList_MultiType_Object_Dynamic',},
-			{renderer: Example_List_All, name: 'Example_List_All',},
+			// {renderer: Example_NestedList_MultiType_Object, name: 'NestedList_MultiType_Object',},
+			// {renderer: Example_NestedList_MultiType_Object_Dynamic, name: 'NestedList_MultiType_Object_Dynamic',},
+			// {renderer: Example_List_All, name: 'Example_List_All',},
 
 			{renderer: Example_Uploader, name: 'File Uploader',},
 

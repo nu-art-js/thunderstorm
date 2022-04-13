@@ -2,15 +2,15 @@ import * as React from 'react';
 import {ICONS} from '@res/icons';
 import {
 	Adapter,
-	ComponentSync,
 	BaseNodeRenderer,
+	ComponentSync,
 	DropDown_headerStyle,
 	DropDown_inputStyle,
 	SimpleListAdapter,
 	TS_Checkbox,
 	TS_DropDown
 } from '@nu-art/thunderstorm/frontend';
-import {optionRendererStyle, Plague, plagues} from './consts';
+import {Plague, plagues} from './consts';
 import {PlaygroundExample_BodyStyle, PlaygroundExample_ResultStyle} from '../consts';
 import {PG_Example} from '../_core/PG_Example';
 import {Filter} from '@nu-art/ts-common';
@@ -25,12 +25,8 @@ type State = {
 class Example_Dropdown_SingleType
 	extends ComponentSync<{}, State> {
 
-	constructor(p: {}) {
-		super(p);
-		this.state = {
-			autoComplete: false,
-			filter: true
-		};
+	protected deriveStateFromProps(nextProps: {}): State {
+		return {autoComplete: false, filter: true};
 	}
 
 	onSelected = (plague: Plague) => {
@@ -75,7 +71,7 @@ class Example_Dropdown_SingleType
 				onSelected={this.onSelected}
 				selectedItemRenderer={valueRenderer}
 				inputStylable={inputStylable}
-				filter={new Filter<Plague>(item => ([item.label.toLowerCase()]))}
+				filter={new Filter<Plague>((item: any) => ([item.label.toLowerCase()]))}
 				caret={caret}
 				headerStylable={{style: DropDown_headerStyle}}
 			/>
@@ -107,14 +103,12 @@ export class ItemRenderer
 
 	renderItem(item: Plague) {
 		return (
-			<div className="ll_h_c clickable match_width"
-					 id={this.props.node.path}
-					 style={(this.props.node.focused || this.props.node.selected) ? {backgroundColor: 'white'} : {}}>
+			<div className="ll_h_c clickable match_width">
 
-				<div className={optionRendererStyle(this.props.node.selected)}>
+				<div>
 					<div className={`ll_h_c match_width`} style={{justifyContent: 'space-between'}}>
-						<div style={this.props.node.focused ? {fontWeight: 'bold'} : {}}>{item.label}</div>
-						{this.props.node.selected && <img src={require('@res/icons/icon__check.svg')} width={12}/>}
+						<div>{item.label}</div>
+						{/*{this.props.node.selected && <img src={require('@res/icons/icon__check.svg')} width={12}/>}*/}
 					</div>
 				</div>
 			</div>
