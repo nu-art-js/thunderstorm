@@ -38,7 +38,6 @@ export class SimpleTreeNodeRenderer
 
 		return <div
 			className={`clickable`}
-			onClick={this.props.node.expandToggler}
 			style={{width: '15px'}}>
 			{toDisplay}
 		</div>;

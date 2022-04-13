@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {FocusEvent, Fragment} from 'react';
+import {Fragment} from 'react';
 import {TreeNode, TreeNodeExpandState,} from './types';
 import {Adapter} from '../adapter/Adapter';
 import {_BaseNodeRenderer} from '../adapter/BaseRenderer';
@@ -35,12 +35,13 @@ export type Props_Tree = {
 	expanded?: TreeNodeExpandState
 	checkExpanded: (expanded: TreeNodeExpandState, path: string) => boolean | undefined
 	selectedItem?: any
+	selectedPath?: string
 	adapter: Adapter
 }
 
 type State_Tree = {
 	expanded: TreeNodeExpandState
-	selectedItem?: any
+	selected: { path?: string, item?: any }
 	adapter: Adapter
 }
 
@@ -65,20 +66,17 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		return {
 			adapter: nextProps.adapter,
 			expanded: (this.props.id !== nextProps.id ? nextProps.expanded : this.state?.expanded) || {'/': true},
-			selectedItem: nextProps.selectedItem
+			selected: {path: nextProps.selectedPath, item: nextProps.selectedItem}
 		};
 	}
 
-	render() {
-		const onFocus = (e: FocusEvent<any>) => {
-			const path = e.target.getAttribute('data-path');
-			this.props.onNodeClicked && this.props.onNodeClicked(path, TS_Tree.resolveItemFromPath(this.state.adapter.data, path));
-			console.log(path);
-		};
-		return <div className="ts-tree" onFocus={onFocus}>
-			{this.renderNode(this.state.adapter.data, '', '', 1)}
-		</div>;
-	}
+	private onNodeClicked = (e: React.MouseEvent) => {
+		const path = e.currentTarget.getAttribute('data-path');
+		if (!path)
+			return this.logError('No Path for tree node:', e);
+
+		this.props.onNodeClicked && this.props.onNodeClicked(path, TS_Tree.resolveItemFromPath(this.state.adapter.data, path));
+	};
 
 	private renderNode = (_data: any, key: string, _path: string, level: number) => {
 		const nodePath = `${_path}${key}/`;
@@ -153,7 +151,12 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const TreeNodeRenderer: _BaseNodeRenderer<any> = this.state.adapter.treeNodeRenderer;
 		// console.log("isParent: ", this.state.adapter.isParent(item));
 		const isParent = this.state.adapter.isParent(item);
-		const isSelected = item === this.props.selectedItem;
+		const isSelected = path === this.state.selected.path || item === this.state.selected.item;
+		if (isSelected) {
+			this.state.selected.path = path;
+			this.state.selected.item = item;
+		}
+
 		const node: TreeNode = {
 			adapter: this.state.adapter,
 			item,
@@ -165,8 +168,14 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			return null;
 
 		const className = _className('ts-tree__node', isParent && 'ts-tree__parent-node', isSelected && 'ts-tree__selected-node');
-		return <div tabIndex={1} data-path={path} className={className} ref={nodeRefResolver}>
+		return <div tabIndex={1} data-path={path} className={className} ref={nodeRefResolver} onClick={this.onNodeClicked}>
 			<TreeNodeRenderer item={item} node={node}/>
+		</div>;
+	}
+
+	render() {
+		return <div className="ts-tree">
+			{this.renderNode(this.state.adapter.data, '', '', 1)}
 		</div>;
 	}
 
@@ -193,7 +202,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		return item;
 	}
 
-	private toggleExpandState = (e: React.MouseEvent, _expanded?: boolean): void => this.expandOrCollapse(e.currentTarget.id, _expanded);
+	private toggleExpandState = (e: React.MouseEvent, _expanded?: boolean): void => this.expandOrCollapse(this.resolveTreeNode(e.currentTarget), _expanded);
 
 	private expandOrCollapse = (path: string, forceExpandState?: boolean): void => {
 		if (path === '/' && this.state.adapter.hideRoot && forceExpandState === false)
@@ -212,6 +221,18 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 
 		this.forceUpdate();
 	};
+
+	private resolveTreeNode(currentTarget?: Element): string {
+		if (!currentTarget) {
+			this.logError('Could not find node!!');
+			return '';
+		}
+
+		if (!currentTarget.getAttribute('data-path'))
+			return this.resolveTreeNode(currentTarget.parentElement || undefined);
+
+		return currentTarget.getAttribute('data-path') || '';
+	}
 }
 
 

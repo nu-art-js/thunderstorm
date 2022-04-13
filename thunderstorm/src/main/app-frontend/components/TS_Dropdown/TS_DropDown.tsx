@@ -159,6 +159,7 @@ export class TS_DropDown<ItemType>
 	};
 
 	onSelected = (item: ItemType) => {
+		console.log(item);
 		this.setState({
 			open: false,
 			selected: item
@@ -181,10 +182,8 @@ export class TS_DropDown<ItemType>
 					 onFocus={this.addKeyboardListener}
 					 onBlur={this.removeKeyboardListener}
 			>
-				<TS_Overlay showOverlay={this.state.open} onClickOverlay={() => {
-					this.setState({open: false});
-				}}>
-					{this.renderHeader()}
+				{this.renderHeader()}
+				<TS_Overlay showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
 					{this.renderTree()}
 				</TS_Overlay>
 			</div>
@@ -204,10 +203,10 @@ export class TS_DropDown<ItemType>
 
 	private renderTree = () => {
 		if (!this.state.open)
-			return;
+			return '';
 
 		if (this.props.showNothingWithoutFilterText && !this.state.filterText?.length)
-			return;
+			return '';
 
 
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
@@ -290,7 +289,7 @@ export class TS_DropDown<ItemType>
 			onChange={(filterText) => this.setState({filterText})}
 			focus={true}
 			style={{width: '100%'}}
-			placeholder= {'Search'}//{this.props.placeholder}
+			placeholder={'Search'}//{this.props.placeholder}
 			handleKeyEvent={this.keyEventHandler}
 			{...this.props.inputStylable}
 		/>;
