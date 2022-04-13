@@ -131,7 +131,7 @@ export class Dialog
 	}
 
 	__showDialog = (model?: Dialog_Model): void => {
-		if (model && model.allowIndirectClosing)
+		if (model && model.closeOverlayOnClick)
 			addEventListener('keydown', Dialog.closeWithEsc);
 		else
 			removeEventListener('keydown', Dialog.closeWithEsc);
@@ -198,7 +198,7 @@ export class Dialog
 
 	private onOverlayClicked = (e: React.MouseEvent) => {
 		stopPropagation(e);
-		if (this.state.model && !this.state.model.allowIndirectClosing)
+		if (this.state.model && !this.state.model.closeOverlayOnClick)
 			return;
 
 		DialogModule.close();

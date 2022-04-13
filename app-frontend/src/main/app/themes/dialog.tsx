@@ -28,7 +28,7 @@ export const noButton = () => {
 	new Dialog_Builder("No Buttons!")
 		.setTitle("Look Mom")
 		.setStyle({width: "300px"})
-		.setAllowIndirectClosing(true)
+		.setcloseOverlayOnClick(true)
 		.show();
 };
 
@@ -38,7 +38,7 @@ export const showDefaultInfoModalExample = () => {
 	new Dialog_Builder(content)
 		.setTitle(title)
 		.setStyle({width: "300px"})
-		.setAllowIndirectClosing(true)
+		.setcloseOverlayOnClick(true)
 		.addButton(DialogButton_Cancel(DialogModule.close))
 		.show();
 };
