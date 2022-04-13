@@ -16,15 +16,15 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {ComponentSync, RoutingModule} from "@nu-art/thunderstorm/frontend";
-import {Parent} from "./Parent";
+import * as React from 'react';
+import {ComponentSync, RoutingModule} from '@nu-art/thunderstorm/frontend';
+import {Parent} from './Parent';
 
 export class Child2
 	extends ComponentSync {
 
-	constructor(props: any) {
-		super(props);
+	protected deriveStateFromProps(nextProps: any) {
+		return {};
 	}
 
 	render() {

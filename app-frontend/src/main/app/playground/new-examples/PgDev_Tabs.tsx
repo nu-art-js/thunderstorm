@@ -30,6 +30,10 @@ class Pg_Component
 		super(p, PgDev_Tabs.name);
 	}
 
+	protected deriveStateFromProps(nextProps: {}) {
+		return {};
+	}
+
 	render() {
 		return <TS_Tabs tabs={tabs}/>;
 	}

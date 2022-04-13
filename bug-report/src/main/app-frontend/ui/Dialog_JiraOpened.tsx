@@ -1,6 +1,6 @@
-import {Dialog_Builder} from "@nu-art/thunderstorm/app-frontend/modules/dialog/DialogModule";
-import {ComponentSync} from "@nu-art/thunderstorm/app-frontend/core/ComponentSync";
-import * as React from "react";
+import {Dialog_Builder} from '@nu-art/thunderstorm/app-frontend/modules/dialog/DialogModule';
+import {ComponentSync} from '@nu-art/thunderstorm/app-frontend/core/ComponentSync';
+import * as React from 'react';
 
 
 type Props = {
@@ -10,9 +10,8 @@ type Props = {
 export class Dialog_JiraOpened
 	extends ComponentSync<Props, {}> {
 
-
-	constructor(props:Props) {
-		super(props);
+	protected deriveStateFromProps(nextProps: Props) {
+		return {};
 	}
 
 	public static show(url: string) {
@@ -42,7 +41,7 @@ export class Dialog_JiraOpened
 							borderRadius: 16,
 							fontSize: '14px',
 							color: 'darkslategray',
-							position: "absolute",
+							position: 'absolute',
 							right: '35%'
 						}}
 						onClick={() => this.redirectToJira()}>

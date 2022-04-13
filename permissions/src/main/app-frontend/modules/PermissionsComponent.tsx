@@ -1,9 +1,6 @@
-import * as React from "react";
-import {ComponentSync} from "@nu-art/thunderstorm/frontend";
-import {
-	OnPermissionsChanged,
-	PermissionsFE
-} from "./PermissionsModuleFE";
+import * as React from 'react';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {OnPermissionsChanged, PermissionsFE} from './PermissionsModuleFE';
 
 type Props = {
 	url: string
@@ -14,6 +11,10 @@ type Props = {
 export class PermissionsComponent
 	extends ComponentSync<Props>
 	implements OnPermissionsChanged {
+
+	protected deriveStateFromProps(nextProps: Props) {
+		return {...nextProps};
+	}
 
 	__onPermissionsChanged() {
 		this.forceUpdate();

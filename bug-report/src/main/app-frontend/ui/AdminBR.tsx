@@ -17,19 +17,20 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	AdminBRModule,
-	RequestKey_GetLog
-} from "../modules/AdminBRModule";
-import {ComponentSync,} from "@nu-art/thunderstorm/frontend";
-import {DB_BugReport} from "../../shared/api";
-import {__stringify} from "@nu-art/ts-common";
-import {OnRequestListener} from "@nu-art/thunderstorm";
+import * as React from 'react';
+import {AdminBRModule, RequestKey_GetLog} from '../modules/AdminBRModule';
+import {ComponentSync,} from '@nu-art/thunderstorm/frontend';
+import {DB_BugReport} from '../../shared/api';
+import {__stringify} from '@nu-art/ts-common';
+import {OnRequestListener} from '@nu-art/thunderstorm';
 
 export class AdminBR
 	extends ComponentSync
 	implements OnRequestListener {
+
+	protected deriveStateFromProps(nextProps: any) {
+		return {...nextProps};
+	}
 
 	render() {
 		const logs = AdminBRModule.getLogs();
@@ -37,17 +38,17 @@ export class AdminBR
 			<div>
 				<button onClick={AdminBRModule.retrieveLogs}>click to display logs</button>
 				<div>
-					<table style={{width: "100%"}}>{logs.map(this.createRow)}</table>
+					<table style={{width: '100%'}}>{logs.map(this.createRow)}</table>
 				</div>
 			</div>
 		);
 	}
 
 	private createRow = (report: DB_BugReport) => <tr>
-		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>{report.description}</td>
-		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>{report.reports[0].path}</td>
-		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>{__stringify(report.tickets)}</td>
-		<td style={{padding: "15px", textAlign: "left", border: "1px solid #ddd", fontSize: "15px"}}>
+		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>{report.description}</td>
+		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>{report.reports[0].path}</td>
+		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>{__stringify(report.tickets)}</td>
+		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>
 			<button onClick={() => AdminBRModule.downloadMultiLogs(report.reports)}>download</button>
 		</td>
 	</tr>;
