@@ -20,39 +20,18 @@
  */
 
 import * as React from 'react';
-import {Module} from '@nu-art/ts-common';
-import {ThunderDispatcher} from '../../core/thunder-dispatcher';
+import {HTMLProps} from 'react';
+import {_className} from '../../utils/tools';
 
-export type Dialog_Model = {
-	content: React.ReactNode,
-	closeOverlayOnClick: () => boolean,
+export type Props_Button = HTMLProps<HTMLDivElement> & {
+	disabled?: boolean,
+	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
-
-export interface DialogListener {
-	__showDialog(dialogModel?: Dialog_Model): void;
-}
-
-const dispatch_showDialog = new ThunderDispatcher<DialogListener, '__showDialog'>('__showDialog');
-
-export class DialogModule_Class
-	extends Module<{}> {
-
-	constructor() {
-		super();
-	}
-
-	protected init(): void {
-	}
-
-	public close = () => {
-		dispatch_showDialog.dispatchUI();
-	};
-
-	public show = (content: React.ReactNode, closeOverlayOnClick = () => true) => {
-		dispatch_showDialog.dispatchUI({content, closeOverlayOnClick});
-	};
-}
-
-
-export const DialogModule = new DialogModule_Class();
+export const TS_Button = (props: Props_Button) => {
+	return <div
+		{...props}
+		className={_className('ts-button', props.className, props.disabled && 'ts-button__disabled')}
+		onClick={props.disabled ? props.onDisabledClick : props.onClick}
+	>{props.children}</div>;
+};
