@@ -1,5 +1,4 @@
 import * as React from 'react';
-import {CSSProperties} from 'react';
 import {Menu_Model, MenuListener} from '../../modules/menu/MenuModule';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_PopupMenu.scss';

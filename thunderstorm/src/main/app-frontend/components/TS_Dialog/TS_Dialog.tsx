@@ -26,6 +26,7 @@ import {stopPropagation} from '../../utils/tools';
 import {Dialog_Model, DialogListener, DialogModule} from '../../modules/dialog/DialogModule';
 import './TS_Dialog.scss';
 
+
 type Props = {}
 
 type State = { model?: Dialog_Model };
@@ -52,12 +53,11 @@ export class TS_Dialog
 		return (
 			<div className="ts-dialog">
 				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked}>
-					<div>{model.content}</div>
+					{model.content}
 				</TS_Overlay>
 			</div>
 		);
 	}
-
 
 	private onOverlayClicked = (e: React.MouseEvent) => {
 		stopPropagation(e);

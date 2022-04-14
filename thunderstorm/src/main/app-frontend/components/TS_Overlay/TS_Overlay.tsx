@@ -23,6 +23,7 @@ import * as React from 'react';
 import './TS_Overlay.scss';
 
 type Props = {
+	flat?: boolean
 	showOverlay: boolean
 	onClickOverlay: (event: React.MouseEvent<HTMLDivElement>) => void
 };
@@ -34,11 +35,19 @@ export class TS_Overlay
 		if (!this.props.showOverlay)
 			return this.props.children;
 
+		if (!this.props.flat)
+			return <div className={'ts-overlay'} onClick={event => this.props.onClickOverlay(event)}>
+				<div className={'ts-overlay__child'}>
+					{this.props.children}
+				</div>
+			</div>;
+
 		return <>
 			<div className={'ts-overlay'} onClick={event => this.props.onClickOverlay(event)}/>
 			<div className={'ts-overlay__child'}>
 				{this.props.children}
 			</div>
 		</>;
+
 	}
 }
