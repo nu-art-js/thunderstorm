@@ -57,8 +57,8 @@ export * from './app-frontend/widgets/FieldEditorClick';
 export * from './app-frontend/widgets/FieldEditorWithButtons';
 
 export * from './app-frontend/components/input/TS_BaseInput';
-export * from './app-frontend/components/input/TS_TextArea/TS_TextArea';
-export * from './app-frontend/components/input/TS_Input/TS_Input';
+export * from './app-frontend/components/input/TS_TextArea';
+export * from './app-frontend/components/input/TS_Input';
 export * from './app-frontend/components/TS_PopupMenu';
 export * from './app-frontend/components/TS_Table';
 export * from './app-frontend/components/TS_Tabs';
@@ -67,8 +67,8 @@ export * from './app-frontend/components/TS_Overlay';
 export * from './app-frontend/components/TS_Tree';
 export * from './app-frontend/components/TS_Checkbox';
 export * from './app-frontend/components/TS_PopupMenu';
-export * from './app-frontend/components/playground/TS_Playground';
-export * from './app-frontend/components/TS_Dialog/TS_Dialog';
+export * from './app-frontend/components/TS_Playground';
+export * from './app-frontend/components/TS_Dialog';
 
 export * from './app-frontend/components/Layouts';
 export * from './app-frontend/components/HeightBounder';
@@ -77,9 +77,6 @@ export * from './app-frontend/components/form/Form';
 
 export * from './app-frontend/components/adapter/Adapter';
 export * from './app-frontend/components/adapter/BaseRenderer';
-
-export * from './app-frontend/components/playground/Example_NewProps';
-
 
 export * from './app-frontend/modules/component-loader/ReactEntryComponentInjector';
 export * from './app-frontend/modules/component-loader/entry-component-loading-module';
