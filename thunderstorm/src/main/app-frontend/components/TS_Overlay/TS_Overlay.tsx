@@ -21,6 +21,7 @@
 
 import * as React from 'react';
 import './TS_Overlay.scss';
+import {stopPropagation} from '../../utils/tools';
 
 type Props = {
 	flat?: boolean
@@ -35,7 +36,7 @@ export class TS_Overlay
 		if (!this.props.showOverlay)
 			return this.props.children;
 
-		const overlayChild = <div className="ts-overlay__child">{this.props.children}</div>;
+		const overlayChild = <div className="ts-overlay__child" onClick={stopPropagation}>{this.props.children}</div>;
 		return <>
 			<div className="ts-overlay" onClick={event => this.props.onClickOverlay(event)}>
 				{!this.props.flat && overlayChild}

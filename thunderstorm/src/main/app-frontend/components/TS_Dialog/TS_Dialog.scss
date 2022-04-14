@@ -24,15 +24,15 @@
 
 .ts-dialog {
   .ts-overlay {
+    @extend %match_parent;
+    @extend %ll_h_c;
     z-index: 100;
     background: #00000020;
+    justify-content: center;
+    align-items: center;
   }
 
   .ts-overlay__child {
-    @extend %match_parent;
-    @extend %ll_h_c;
-    justify-content: center;
-    align-items: center;
     z-index: 101;
   }
 }
