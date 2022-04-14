@@ -35,18 +35,12 @@ export class TS_Overlay
 		if (!this.props.showOverlay)
 			return this.props.children;
 
-		if (!this.props.flat)
-			return <div className={'ts-overlay'} onClick={event => this.props.onClickOverlay(event)}>
-				<div className={'ts-overlay__child'}>
-					{this.props.children}
-				</div>
-			</div>;
-
+		const overlayChild = <div className="ts-overlay__child">{this.props.children}</div>;
 		return <>
-			<div className={'ts-overlay'} onClick={event => this.props.onClickOverlay(event)}/>
-			<div className={'ts-overlay__child'}>
-				{this.props.children}
+			<div className="ts-overlay" onClick={event => this.props.onClickOverlay(event)}>
+				{!this.props.flat && overlayChild}
 			</div>
+			{this.props.flat && overlayChild}
 		</>;
 
 	}
