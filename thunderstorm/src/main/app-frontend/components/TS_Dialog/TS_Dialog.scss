@@ -19,6 +19,9 @@
  * limitations under the License.
  */
 
+@use "../Layouts/Layouts_" as *;
+@use "../../styles/declaration/basic" as *;
+
 .ts-dialog {
   .ts-overlay {
     z-index: 100;
@@ -26,7 +29,10 @@
   }
 
   .ts-overlay__child {
+    @extend %match_parent;
+    @extend %ll_h_c;
+    justify-content: center;
+    align-items: center;
     z-index: 101;
-    position: absolute;
   }
 }

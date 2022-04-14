@@ -78,7 +78,7 @@ export class MenuAndButton
 		if (!this.ref.current)
 			throw new BadImplementationException('Could not find image reference');
 
-		new MenuBuilder(this.props.adapter, this.props.resolvePosition ? this.props.resolvePosition(this.ref.current) : resolveRealPosition(this.ref.current), this.props.css && this.props.css)
+		new MenuBuilder(this.props.adapter, this.props.resolvePosition ? this.props.resolvePosition(this.ref.current) : resolveRealPosition(this.ref.current))
 			.setId(this.props.id)
 			.show();
 	};

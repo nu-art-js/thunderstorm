@@ -183,7 +183,7 @@ export class TS_DropDown<ItemType>
 					 onBlur={this.removeKeyboardListener}
 			>
 				{this.renderHeader()}
-				<TS_Overlay showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
+				<TS_Overlay flat={true} showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
 					{this.renderTree()}
 				</TS_Overlay>
 			</div>
