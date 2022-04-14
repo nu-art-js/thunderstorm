@@ -39,11 +39,9 @@ export class TS_Dialog
 		return {};
 	}
 
-
 	__showDialog = (model?: Dialog_Model): void => {
 		this.setState({model});
 	};
-
 
 	render() {
 		const model = this.state.model;
