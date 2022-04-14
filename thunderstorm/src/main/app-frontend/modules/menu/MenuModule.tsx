@@ -1,16 +1,12 @@
 import {generateHex, Module} from '@nu-art/ts-common';
 import {MenuPosition} from '../../components/TS_PopupMenu';
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {_GenericRenderer, Adapter,} from '../../components/adapter/Adapter';
-import {BaseRendererMap} from '../../components/adapter/BaseRenderer';
-import {CSSProperties} from 'react';
+import {Adapter,} from '../../components/adapter/Adapter';
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 	const pos = button.getBoundingClientRect();
 	return {top: pos.top + button.offsetHeight, left: pos.left};
 };
-
-export type _Menu<Rm extends BaseRendererMap<any>> = _GenericRenderer<Rm>
 
 export type Menu_Model = {
 	id: string
@@ -18,7 +14,6 @@ export type Menu_Model = {
 	pos: MenuPosition,
 	onNodeClicked?: (path: string, item: any) => void
 	onNodeDoubleClicked?: Function,
-	css?: CSSProperties
 };
 
 export interface MenuListener {
@@ -35,7 +30,7 @@ export class MenuModule_Class
 
 	show = (model: Menu_Model) => {
 		this.showMenu.dispatchUI(model);
-		console.log("pop! come on! pop!")
+		console.log('pop! come on! pop!');
 	};
 
 	hide = (id: string) => this.hideMenu.dispatchUI(id);
@@ -46,16 +41,14 @@ export const MenuModule = new MenuModule_Class();
 export class MenuBuilder {
 	private readonly adapter: Adapter;
 	private readonly position: MenuPosition;
-	private readonly cssContainer?: CSSProperties;
 	private id: string = generateHex(8);
 	private onNodeClicked?: (path: string, item: any) => void;
 	private onNodeDoubleClicked?: Function;
 
 
-	constructor(menu: Adapter, position: MenuPosition, cssContainer?: CSSProperties) {
+	constructor(menu: Adapter, position: MenuPosition) {
 		this.adapter = menu;
 		this.position = position;
-		this.cssContainer = cssContainer;
 	}
 
 	show() {
@@ -65,7 +58,6 @@ export class MenuBuilder {
 			pos: this.position,
 			onNodeClicked: this.onNodeClicked,
 			onNodeDoubleClicked: this.onNodeDoubleClicked,
-			css: this.cssContainer
 		};
 
 		MenuModule.show(model);

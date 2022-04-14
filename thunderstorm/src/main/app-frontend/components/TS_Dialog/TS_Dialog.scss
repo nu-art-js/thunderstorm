@@ -20,8 +20,13 @@
  */
 
 .ts-dialog {
-
   .ts-overlay {
+    z-index: 100;
+    background: #00000020;
+  }
 
+  .ts-overlay__child {
+    z-index: 101;
+    position: absolute;
   }
 }
