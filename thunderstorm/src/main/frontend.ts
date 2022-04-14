@@ -69,6 +69,7 @@ export * from './app-frontend/components/TS_Checkbox';
 export * from './app-frontend/components/TS_PopupMenu';
 export * from './app-frontend/components/TS_Playground';
 export * from './app-frontend/components/TS_Dialog';
+export * from './app-frontend/components/TS_Button';
 
 export * from './app-frontend/components/Layouts';
 export * from './app-frontend/components/HeightBounder';

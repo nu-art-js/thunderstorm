@@ -22,6 +22,7 @@
 import * as React from 'react';
 import {HTMLProps} from 'react';
 import {_className} from '../../utils/tools';
+import './TS_Button.scss';
 
 export type Props_Button = HTMLProps<HTMLDivElement> & {
 	disabled?: boolean,
