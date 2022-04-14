@@ -26,8 +26,6 @@ import {LL_V_L} from '../Layouts';
 import {stopPropagation} from '../../utils/tools';
 import {Dialog_Model, DialogListener, DialogModule} from '../../modules/dialog/DialogModule';
 
-// 	position: 'fixed',
-
 type Props = {}
 
 type State = { model?: Dialog_Model };
@@ -40,17 +38,7 @@ export class TS_Dialog
 		return {};
 	}
 
-	static closeWithEsc(e: any) {
-		if (e.keyCode === 27)
-			DialogModule.close();
-	}
-
 	__showDialog = (model?: Dialog_Model): void => {
-		if (model && model.closeOverlayOnClick)
-			addEventListener('keydown', TS_Dialog.closeWithEsc);
-		else
-			removeEventListener('keydown', TS_Dialog.closeWithEsc);
-
 		this.setState({model});
 	};
 
@@ -67,7 +55,7 @@ export class TS_Dialog
 
 	private onOverlayClicked = (e: React.MouseEvent) => {
 		stopPropagation(e);
-		if (!this.state.model?.closeOverlayOnClick)
+		if (!this.state.model?.closeOverlayOnClick())
 			return;
 
 		DialogModule.close();
