@@ -13,16 +13,16 @@ export type MenuPosition =
 	| { right: number, top: number }
 	| { right: number, bottom: number };
 
-const defaultStyle: CSSProperties = {
-	width: 225,
-	overflowX: 'hidden',
-	overflowY: 'scroll',
-	maxHeight: '60vh',
-	borderRadius: 2,
-	boxShadow: '1px 1px 4px 0 rgba(0, 0, 0, 0.3)',
-	border: 'solid 1px transparent',
-	backgroundColor: '#fff',
-};
+// const defaultStyle: CSSProperties = {
+// 	width: 225,
+// 	overflowX: 'hidden',
+// 	overflowY: 'scroll',
+// 	maxHeight: '60vh',
+// 	borderRadius: 2,
+// 	boxShadow: '1px 1px 4px 0 rgba(0, 0, 0, 0.3)',
+// 	border: 'solid 1px transparent',
+// 	backgroundColor: '#fff',
+// };
 
 type State = {
 	menuModel?: Menu_Model,
@@ -61,7 +61,7 @@ export class TS_PopupMenu
 	};
 
 	style = (pos: MenuPosition, css?: CSSProperties): CSSProperties => ({
-		...defaultStyle,
+		// ...defaultStyle,
 		...css,
 		...pos
 	});
