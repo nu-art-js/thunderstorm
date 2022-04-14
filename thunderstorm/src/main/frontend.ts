@@ -56,9 +56,7 @@ export * from './app-frontend/widgets/FieldEditor';
 export * from './app-frontend/widgets/FieldEditorClick';
 export * from './app-frontend/widgets/FieldEditorWithButtons';
 
-export * from './app-frontend/components/input/TS_BaseInput';
-export * from './app-frontend/components/input/TS_TextArea';
-export * from './app-frontend/components/input/TS_Input';
+export * from './app-frontend/components/TS_Input';
 export * from './app-frontend/components/TS_PopupMenu';
 export * from './app-frontend/components/TS_Table';
 export * from './app-frontend/components/TS_Tabs';

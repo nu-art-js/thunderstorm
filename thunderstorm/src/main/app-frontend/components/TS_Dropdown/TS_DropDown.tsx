@@ -27,7 +27,7 @@ import {Stylable} from '../../tools/Stylable';
 import {TS_Overlay} from '../TS_Overlay';
 import {TS_Tree} from '../TS_Tree';
 import {ComponentSync} from '../../core/ComponentSync';
-import {TS_Input} from '../input/TS_Input';
+import {TS_Input} from '../TS_Input/TS_Input';
 import './TS_DropDown.scss';
 
 const defaultTitleHeight = '28px';

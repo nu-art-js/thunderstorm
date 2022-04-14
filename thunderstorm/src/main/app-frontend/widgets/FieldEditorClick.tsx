@@ -3,7 +3,7 @@ import {HTMLProps, ReactNode} from 'react';
 import {EditorType, FieldEditor, FieldEditorInputProps} from './FieldEditor';
 import {ComponentSync} from '../core/ComponentSync';
 import {StorageKey} from '../modules/StorageModule';
-import {InputType} from '../components/input/TS_BaseInput';
+import {InputType} from '../components/TS_Input/TS_BaseInput';
 
 type State = {
 	isEditing: boolean;
