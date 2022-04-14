@@ -19,3 +19,4 @@
  * limitations under the License.
  */
 
+export * from './TS_Dialog';
