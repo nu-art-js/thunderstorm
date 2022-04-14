@@ -24,6 +24,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Overlay} from '../TS_Overlay';
 import {stopPropagation} from '../../utils/tools';
 import {Dialog_Model, DialogListener, DialogModule} from '../../modules/dialog/DialogModule';
+import './TS_Dialog.scss';
 
 type Props = {}
 
@@ -37,9 +38,11 @@ export class TS_Dialog
 		return {};
 	}
 
+
 	__showDialog = (model?: Dialog_Model): void => {
 		this.setState({model});
 	};
+
 
 	render() {
 		const model = this.state.model;
@@ -49,7 +52,7 @@ export class TS_Dialog
 		return (
 			<div className="ts-dialog">
 				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked}>
-					{model.content}
+					<div>{model.content}</div>
 				</TS_Overlay>
 			</div>
 		);
