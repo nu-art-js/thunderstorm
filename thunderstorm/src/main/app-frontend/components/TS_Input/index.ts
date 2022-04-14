@@ -19,4 +19,6 @@
  * limitations under the License.
  */
 
+export * from './TS_BaseInput';
+export * from './TS_TextArea';
 export * from './TS_Input';

@@ -20,16 +20,17 @@
  */
 
 import * as React from 'react';
-import {TS_BaseInput, TS_BaseInputProps} from '../TS_BaseInput';
-import './TS_TextArea.scss';
+import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
+import './TS_Input.scss';
 
-export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key>
+export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key>
 
-export class TS_TextArea<Key extends string>
-	extends TS_BaseInput<Key, TS_TextAreaProps<Key>, HTMLTextAreaElement> {
+export class TS_Input<Key extends string = string>
+	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
 
 	render() {
-		return <textarea
+		return <input
+			autoFocus={this.props.focus}
 			ref={input => {
 				if (this.ref || !input)
 					return;
@@ -47,7 +48,7 @@ export class TS_TextArea<Key extends string>
 			name={this.props.name || this.props.id}
 			key={this.props.id}
 			id={this.props.id}
-			className={'ts-textarea'}
+			className={'ts-input'}
 			style={this.props.style}
 			value={this.state.value}
 			placeholder={this.props.placeholder}
@@ -55,6 +56,7 @@ export class TS_TextArea<Key extends string>
 			onKeyPress={this.props.handleKeyEvent || this.handleKeyEvent}
 			autoComplete={this.props.autocomplete ? 'on' : 'off'}
 			spellCheck={this.props.spellCheck}
+			type={this.props.type}
 		/>;
 	}
 }
