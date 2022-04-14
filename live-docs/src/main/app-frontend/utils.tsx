@@ -17,21 +17,9 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	Dialog_Builder,
-	DialogButton_Cancel,
-	DialogButton_Save,
-	DialogModule,
-	ToastBuilder,
-	ToastModule,
-	TS_TextArea
-} from "@nu-art/thunderstorm/frontend";
-import {
-	LiveDocActionResolver,
-	LiveDocsModule
-} from "./modules/LiveDocsModule";
-import {Request_UpdateDocument} from "../shared/types";
+import * as React from 'react';
+import {ToastBuilder} from '@nu-art/thunderstorm/frontend';
+import {LiveDocActionResolver, LiveDocsModule} from './modules/LiveDocsModule';
 
 const resolver: LiveDocActionResolver = (docKey: string) => {
 	const doc = LiveDocsModule.get(docKey);
@@ -45,30 +33,30 @@ export function setDefaultLiveDocEditor() {
 }
 
 export const showEditModalExample = (docKey: string) => {
-	const title = "Default Edit modal";
+	// const title = "Default Edit modal";
+	//
+	// const doc = LiveDocsModule.get(docKey);
+	//
+	// const originalDoc = doc.document;
+	// const content = <TS_TextArea id={`livedoc-${docKey}`} type="text" style={{height: "110px", margin: "8px", width: "100%", outline: "none"}}
+	//                              value={doc.document}
+	//                              onChange={(value: string) => {
+	// 	                             doc.document = value;
+	// 	                             ToastModule.toastInfo(doc.document);
+	//                              }}/>;
 
-	const doc = LiveDocsModule.get(docKey);
-
-	const originalDoc = doc.document;
-	const content = <TS_TextArea id={`livedoc-${docKey}`} type="text" style={{height: "110px", margin: "8px", width: "100%", outline: "none"}}
-	                             value={doc.document}
-	                             onChange={(value: string) => {
-		                             doc.document = value;
-		                             ToastModule.toastInfo(doc.document);
-	                             }}/>;
-
-	new Dialog_Builder(content)
-		.setTitle(title)
-		.setStyle({maxWidth: "400px", width: "350px", height: "220px"})
-		.addButton(DialogButton_Cancel(() => {
-			doc.document = originalDoc;
-			DialogModule.close();
-		}))
-		.addButton(DialogButton_Save(() => {
-			const liveDoc: Request_UpdateDocument = {key: docKey, document: doc.document};
-			LiveDocsModule.update(liveDoc);
-			DialogModule.close();
-		}))
-		.setOverlayColor("rgba(102, 255, 255, 0.4)")
-		.show();
+	// new Dialog_Builder(content)
+	// 	.setTitle(title)
+	// 	.setStyle({maxWidth: "400px", width: "350px", height: "220px"})
+	// 	.addButton(DialogButton_Cancel(() => {
+	// 		doc.document = originalDoc;
+	// 		DialogModule.close();
+	// 	}))
+	// 	.addButton(DialogButton_Save(() => {
+	// 		const liveDoc: Request_UpdateDocument = {key: docKey, document: doc.document};
+	// 		LiveDocsModule.update(liveDoc);
+	// 		DialogModule.close();
+	// 	}))
+	// 	.setOverlayColor("rgba(102, 255, 255, 0.4)")
+	// 	.show();
 };

@@ -56,4 +56,5 @@ export class DialogModule_Class
 }
 
 
+
 export const DialogModule = new DialogModule_Class();
