@@ -22,7 +22,6 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Overlay} from '../TS_Overlay';
-import {LL_V_L} from '../Layouts';
 import {stopPropagation} from '../../utils/tools';
 import {Dialog_Model, DialogListener, DialogModule} from '../../modules/dialog/DialogModule';
 
@@ -43,12 +42,16 @@ export class TS_Dialog
 	};
 
 	render() {
+		const model = this.state.model;
+		if (!model)
+			return '';
+
 		return (
-			<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked}>
-				<LL_V_L onClick={stopPropagation}>
-					{this.props.children}
-				</LL_V_L>
-			</TS_Overlay>
+			<div className="ts-dialog">
+				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked}>
+					{model.content}
+				</TS_Overlay>
+			</div>
 		);
 	}
 

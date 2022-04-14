@@ -19,18 +19,21 @@
  * limitations under the License.
  */
 .ts-popup-menu {
-  .overlay {
+  .ts-overlay {
     background: #00000020;
   }
-  .overlay-child {
+
+  .ts-overlay__child {
     position: absolute;
   }
+
   .popup-menu {
     z-index: 1001;
     cursor: default;
     position: fixed;
   }
 }
+
 .popup-menu {
   width: 225px;
   overflow-x: hidden;
@@ -41,14 +44,4 @@
   border: solid 1px transparent;
   background-color: white;
   position: absolute;
-
 }
-
-//.overlay {
-//  z-index: 10;
-//  position: fixed;
-//  top: 0;
-//  left: 0;
-//  right: 0;
-//  bottom: 0;
-//}

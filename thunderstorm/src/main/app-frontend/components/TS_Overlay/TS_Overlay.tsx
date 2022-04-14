@@ -35,8 +35,8 @@ export class TS_Overlay
 			return this.props.children;
 
 		return <>
-			<div className={'overlay'} onClick={event => this.props.onClickOverlay(event)}/>
-			<div className={'overlay-child'}>
+			<div className={'ts-overlay'} onClick={event => this.props.onClickOverlay(event)}/>
+			<div className={'ts-overlay__child'}>
 				{this.props.children}
 			</div>
 		</>;
