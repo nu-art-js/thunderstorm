@@ -42,6 +42,5 @@ export class TS_Overlay
 			</div>
 			{this.props.flat && overlayChild}
 		</>;
-
 	}
 }
