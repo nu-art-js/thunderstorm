@@ -22,12 +22,17 @@
 .ts-drag-and-drop {
   padding: 10px;
   display: flex;
+
   align-items: center;
   justify-content: center;
   width: 500px;
   height: 500px;
   border-radius: 40px !important;
   background-color: #fff;
+  > *{
+    flex-grow: 1;
+    height:100%
+  }
 
   .ts-drag-and-drop__idle {
     border: 2px dashed #ccc;
