@@ -20,10 +20,10 @@
  */
 
 import * as React from 'react';
-// noinspection TypeScriptPreferShortImport
-import {Toast_Model, ToastListener, ToastModule} from './ToasterModule';
-// noinspection TypeScriptPreferShortImport
 import {ComponentSync} from '../../core/ComponentSync';
+import {Toast_Model, ToastListener, ToastModule} from '../../modules/toaster/ToasterModule';
+import {_className} from '../../utils/tools';
+import './TS_Toaster.scss';
 
 type State = { model?: Toast_Model };
 
@@ -31,7 +31,7 @@ export type ToastProps = {
 	id?: string
 }
 
-export abstract class BaseToaster
+export class TS_Toaster
 	extends ComponentSync<ToastProps, State>
 	implements ToastListener {
 
@@ -49,7 +49,7 @@ export abstract class BaseToaster
 		if (duration <= 0)
 			return;
 
-		this.debounce(() => ToastModule.hideToast(model), 'closing_action', duration);
+		setTimeout(() => ToastModule.hideToast(model), duration);
 	};
 
 	render() {
@@ -60,19 +60,11 @@ export abstract class BaseToaster
 		return this.renderToaster(toast);
 	}
 
-	renderActions = (toast: Toast_Model) => {
-		if (!toast.actions || toast.actions.length === 0)
-			return <button onClick={() => ToastModule.hideToast(toast)}>X</button>;
-
-		return <div className={'ll_v_l'}>{React.Children.map(toast.actions, (action, idx) =>
-			React.cloneElement(action, {key: idx})
-		)}</div>;
-	};
-
-	protected abstract renderToaster(toast: Toast_Model): React.ReactNode ;
+	protected renderToaster(toast: Toast_Model): React.ReactNode {
+		return (
+			<div className={_className('ts-toaster', toast.className)}>
+				{toast.content}
+			</div>
+		);
+	}
 }
-
-
-
-
-
