@@ -69,7 +69,8 @@ export * from './app-frontend/components/TS_Playground';
 export * from './app-frontend/components/TS_Dialog';
 export * from './app-frontend/components/TS_Button';
 export * from './app-frontend/components/TS_Toaster';
-export * from './app-frontend/components/TS_DragAndDrop';
+// export * from './app-frontend/components/TS_DragAndDrop';
+export * from './app-frontend/components/TS_Workspace';
 
 export * from './app-frontend/components/Layouts';
 export * from './app-frontend/components/HeightBounder';
