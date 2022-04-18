@@ -46,9 +46,9 @@ export class FieldEditor
 	};
 
 	private renderInput = (value: string) => {
-		return (
-			<TS_Input<string>
-				{...this.props.inputProps}
+		// @ts-ignore
+		return (<TS_Input
+				{...(this.props.inputProps as TS_InputProps<any>)}
 				focus={true}
 				id={this.props.id}
 				type={this.props.type}
@@ -60,8 +60,8 @@ export class FieldEditor
 	};
 
 	renderArea = (value: string) => {
-		return (
-			<TS_TextArea<string>
+		// @ts-ignore
+		return (<TS_TextArea
 				{...this.props.inputProps}
 				focus={true}
 				id={this.props.id}

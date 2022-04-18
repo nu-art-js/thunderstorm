@@ -23,7 +23,7 @@ import * as React from 'react';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 import './TS_TextArea.scss';
 
-export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key>
+export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement>
 
 export class TS_TextArea<Key extends string>
 	extends TS_BaseInput<Key, TS_TextAreaProps<Key>, HTMLTextAreaElement> {
