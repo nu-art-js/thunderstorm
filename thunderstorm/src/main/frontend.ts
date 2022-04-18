@@ -68,6 +68,7 @@ export * from './app-frontend/components/TS_PopupMenu';
 export * from './app-frontend/components/TS_Playground';
 export * from './app-frontend/components/TS_Dialog';
 export * from './app-frontend/components/TS_Button';
+export * from './app-frontend/components/TS_Toaster';
 
 export * from './app-frontend/components/Layouts';
 export * from './app-frontend/components/HeightBounder';
@@ -82,7 +83,6 @@ export * from './app-frontend/modules/component-loader/entry-component-loading-m
 
 export * from './app-frontend/modules/tooltip/Tooltip';
 export * from './app-frontend/modules/menu/MenuAndButton';
-export * from './app-frontend/modules/toaster/Toaster';
 
 export * from './app-frontend/tools/KeyboardListener';
 export * from './app-frontend/tools/Stylable';
