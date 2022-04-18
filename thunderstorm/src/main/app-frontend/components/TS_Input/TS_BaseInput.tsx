@@ -20,11 +20,12 @@
  */
 
 import * as React from 'react';
-import {ChangeEvent, CSSProperties, KeyboardEvent} from 'react';
+import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
+import {Omit} from 'react-router';
 
 export type InputType = 'text' | 'number' | 'password';
 
-export type TS_BaseInputProps<Key> = {
+export type TS_BaseInputProps<Key, Element> = Omit<HTMLProps<Element>, 'onChange' | 'onBlur'> & {
 	type: InputType
 	style?: CSSProperties
 	id?: Key
@@ -49,7 +50,7 @@ type InputState = {
 	value?: string
 }
 
-export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInputProps<Key>, Input = HTMLInputElement | HTMLTextAreaElement>
+export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInputProps<Key, Input>, Input = HTMLInputElement | HTMLTextAreaElement>
 	extends React.Component<Props, InputState> {
 
 	protected ref?: HTMLInputElement | HTMLTextAreaElement;
@@ -60,14 +61,14 @@ export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInpu
 		this.state = TS_BaseInput.getInitialState(props);
 	}
 
-	static getDerivedStateFromProps(props: TS_BaseInputProps<any>, state: InputState) {
+	static getDerivedStateFromProps(props: TS_BaseInputProps<any, any>, state: InputState) {
 		if (props.id === state.id && state.name === props.name && state.initialValue === props.value)
 			return {value: state.value};
 
 		return TS_BaseInput.getInitialState(props);
 	}
 
-	private static getInitialState(props: TS_BaseInputProps<any>) {
+	private static getInitialState(props: TS_BaseInputProps<any, any>) {
 		return {
 			id: props.id,
 			name: props.name,
