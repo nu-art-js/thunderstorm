@@ -24,7 +24,7 @@
  */
 import * as React from 'react';
 
-import {_clearTimeout, _setTimeout, Logger, LogLevel, LogParam, TimerHandler} from '@nu-art/ts-common';
+import {_clearTimeout, _keys, _setTimeout, _sortArray, Logger, LogLevel, LogParam, TimerHandler} from '@nu-art/ts-common';
 import {StorageModule} from '../modules/StorageModule';
 import {ResourcesModule} from '../modules/ResourcesModule';
 import {BrowserHistoryModule} from '../modules/HistoryModule';
@@ -33,7 +33,6 @@ import {Thunder} from './Thunder';
 export abstract class ComponentSync<P = any, S = any>
 	extends React.Component<P, S> {
 
-	private stateKeysToUpdate?: (keyof S)[];
 	private logger: Logger;
 	private timeoutMap: { [k: string]: number } = {};
 	protected mounted = false;
@@ -66,6 +65,10 @@ export abstract class ComponentSync<P = any, S = any>
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps: P) {
+		if (!this.shouldComponentUpdate(nextProps, this.state, undefined)) return;
+
+		this.logWarning('UNSAFE_componentWillReceiveProps');
+
 		const state = this.deriveStateFromProps(nextProps);
 		if (state)
 			this.setState(state);
@@ -88,15 +91,28 @@ export abstract class ComponentSync<P = any, S = any>
 		}, ms);
 	}
 
-	setStateKeysToUpdate(stateKeysToUpdate?: (keyof S)[]) {
-		this.stateKeysToUpdate = stateKeysToUpdate;
-	}
 
 	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
-		if (!this.stateKeysToUpdate)
-			return true;
+		const shouldRender = () => {
+			const propKeys = _sortArray(_keys(this.props));
+			const nextPropsKeys = _sortArray(_keys(nextProps));
+			const stateKeys = _sortArray(_keys(this.state));
+			const nextStateKeys = _sortArray(_keys(nextState));
 
-		return this.stateKeysToUpdate.find(key => this.state[key] !== nextState[key]) !== undefined;
+
+			if (propKeys.length !== nextPropsKeys.length) return true;
+			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]])) return true;
+
+			if (stateKeys.length !== nextStateKeys.length) return true;
+			if (stateKeys.some((key, i) => stateKeys[i] !== nextStateKeys[i] || this.state[stateKeys[i]] !== nextState[nextStateKeys[i]])) return true;
+			return false;
+		};
+
+		if (shouldRender()) {
+			this.logInfo('shouldComponentUpdate = true');
+			return true;
+		}
+		return false;
 	}
 
 	protected logVerbose(...toLog: LogParam[]): void {

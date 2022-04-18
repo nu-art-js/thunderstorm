@@ -24,7 +24,7 @@
  */
 import * as React from 'react';
 
-import {Logger, LogLevel, LogParam} from '@nu-art/ts-common';
+import {_keys, _sortArray, Logger, LogLevel, LogParam} from '@nu-art/ts-common';
 import {ResourcesModule} from '../modules/ResourcesModule';
 import {BrowserHistoryModule} from '../modules/HistoryModule';
 import {Thunder} from './Thunder';
@@ -36,7 +36,6 @@ export type BaseAsyncState = {
 export abstract class ComponentAsync<P extends any = {}, S extends any = {}, State extends BaseAsyncState & S = BaseAsyncState & S>
 	extends React.Component<P, State> {
 
-	private stateKeysToUpdate?: (keyof State)[];
 	private logger: Logger;
 	protected mounted = false;
 
@@ -68,15 +67,11 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 			this.state = state;
 	}
 
-	private lastProps!: P;
-
 	UNSAFE_componentWillReceiveProps(nextProps: P) {
-		console.log(`UNSAFE_componentWillReceiveProps: ${this.lastProps === nextProps ? '' : 'NOT '} "Same instance"`);
+		if (!this.shouldComponentUpdate(nextProps, this.state, undefined)) return;
 		const state = this._deriveStateFromProps(nextProps);
 		if (state)
 			this.setState(state);
-
-		this.lastProps = nextProps;
 	}
 
 	private _deriveStateFromProps(nextProps: P): State | undefined {
@@ -90,8 +85,8 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 				this.setState({error: e});
 			});
 
-		const state = this.createInitialState(nextProps);
-		return state;
+		const _state = this.createInitialState(nextProps);
+		return _state;
 	}
 
 	protected updateState() {
@@ -106,15 +101,27 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 		return {} as State;
 	}
 
-	setStateKeysToUpdate(stateKeysToUpdate?: (keyof State)[]) {
-		this.stateKeysToUpdate = stateKeysToUpdate;
-	}
-
 	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<State>, nextContext: any): boolean {
-		if (!this.stateKeysToUpdate)
-			return true;
+		const shouldRender = () => {
+			const propKeys = _sortArray(_keys(this.props));
+			const nextPropsKeys = _sortArray(_keys(nextProps));
+			const stateKeys = _sortArray(_keys(this.state));
+			const nextStateKeys = _sortArray(_keys(nextState));
 
-		return this.stateKeysToUpdate.find(key => this.state[key] !== nextState[key]) !== undefined;
+
+			if (propKeys.length !== nextPropsKeys.length) return true;
+			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]])) return true;
+
+			if (stateKeys.length !== nextStateKeys.length) return true;
+			if (stateKeys.some((key, i) => stateKeys[i] !== nextStateKeys[i] || this.state[stateKeys[i]] !== nextState[nextStateKeys[i]])) return true;
+			return false;
+		};
+
+		if (shouldRender()) {
+			this.logInfo('shouldComponentUpdate = true');
+			return true;
+		}
+		return false;
 	}
 
 	protected logVerbose(...toLog: LogParam[]): void {
