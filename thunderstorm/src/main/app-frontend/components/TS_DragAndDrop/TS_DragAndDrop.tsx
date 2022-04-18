@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
+import './TS_DragAndDrop.scss';
 
 type DND_State =
 	'Idle' |
