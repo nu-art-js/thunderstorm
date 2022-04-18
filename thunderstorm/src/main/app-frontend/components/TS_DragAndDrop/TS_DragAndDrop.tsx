@@ -121,11 +121,10 @@ export class TS_DragAndDrop
 			ev.dataTransfer.clearData();
 		}
 	};
-
 	render() {
 		return (
 			<div id={this.props && this.props.id}
-					 className={`ts-drag-and-drop__${DND_Styles[this.state.dndState]}`}
+					 className={`ts-drag-and-drop ts-drag-and-drop__${DND_Styles[this.state.dndState]}`}
 					 onDrop={this.onDrop}
 					 onDragOver={this.onDragOver}
 					 onDragLeave={this.onDragLeave}
