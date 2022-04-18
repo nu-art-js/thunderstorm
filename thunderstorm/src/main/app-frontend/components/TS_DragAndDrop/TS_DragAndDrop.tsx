@@ -121,15 +121,18 @@ export class TS_DragAndDrop
 			ev.dataTransfer.clearData();
 		}
 	};
+
 	render() {
 		return (
-			<div id={this.props && this.props.id}
-					 className={`ts-drag-and-drop ts-drag-and-drop__${DND_Styles[this.state.dndState]}`}
-					 onDrop={this.onDrop}
-					 onDragOver={this.onDragOver}
-					 onDragLeave={this.onDragLeave}
-					 onClick={() => (this.inputRef.current && this.inputRef.current.click())}>
-				<input id="fileInput" type="file" ref={this.inputRef} hidden={true} multiple onChange={this.onSelect}/>
+			<div className={'ts-drag-and-drop'} id={this.props?.id}>
+				<div
+					className={`ts-drag-and-drop__${DND_Styles[this.state.dndState]}`}
+					onDrop={this.onDrop}
+					onDragOver={this.onDragOver}
+					onDragLeave={this.onDragLeave}
+					onClick={() => (this.inputRef.current && this.inputRef.current.click())}>
+					<input id="fileInput" type="file" ref={this.inputRef} hidden={true} multiple onChange={this.onSelect}/>
+				</div>
 			</div>
 		);
 	}
