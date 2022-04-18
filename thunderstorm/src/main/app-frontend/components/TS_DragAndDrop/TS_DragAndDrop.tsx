@@ -24,7 +24,7 @@ export type DND_File = {
 export type Props_DragAndDrop = {
 	id?: string,
 	validate: ((files: File[]) => DND_File[]);
-	onChange: (files: DND_File[]) => void
+	onChange: (files: File[]) => void
 }
 
 type State = {
@@ -89,7 +89,7 @@ export class TS_DragAndDrop
 
 		const files = this.props.validate(_files);
 
-		this.props.onChange(files);
+		this.props.onChange(files.map(file => file.file));
 
 		this.setState({dndState: 'Idle'});
 
