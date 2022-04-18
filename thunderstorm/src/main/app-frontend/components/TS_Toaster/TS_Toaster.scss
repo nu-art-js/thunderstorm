@@ -28,4 +28,17 @@
   display: inline-block;
   right: auto;
   margin: 16px;
+  background-color: #e8e8e8;
+
+  .info {
+    background-color: #49addb;
+  }
+
+  .success {
+    background-color: #2ee06f;
+  }
+
+  .error {
+    background-color: #ff4436;
+  }
 }

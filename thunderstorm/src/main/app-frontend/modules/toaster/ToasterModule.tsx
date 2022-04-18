@@ -20,30 +20,15 @@
  */
 
 import * as React from 'react';
-import {addAllItemToArray, Module, Second} from '@nu-art/ts-common';
+import {Module, Second} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
 import {ThunderDispatcher} from '../../core/thunder-dispatcher';
 import {Stylable, StylableBuilder} from '../../tools/Stylable';
-import {CSSProperties} from 'react';
-
-export enum ToastType {
-	'success',
-	'error',
-	'info'
-}
-
-type PositionVertical = 'bottom' | 'top';
-type PositionHorizontal = 'left' | 'right' | 'center';
+import {TS_ToastBase} from '../../components/TS_Toaster';
 
 export type Toast_Model = Stylable & {
 	duration: number;
-	bgColor: CSSProperties['color'];
-	type: ToastType;
-	positionVertical?: PositionVertical;
-	positionHorizontal?: PositionHorizontal;
-
 	content: React.ReactNode;
-	actions: React.ReactElement[];
 }
 
 export interface ToastListener {
@@ -55,26 +40,11 @@ const Interval_DefaultToast = 6 * Second;
 export class ToastBuilder
 	extends StylableBuilder {
 
-	private bgColor: CSSProperties['color'] = '#eeffef';
 	private duration: number = Interval_DefaultToast;
-	private type: ToastType = ToastType.info;
-	private positionVertical: PositionVertical = 'top';
-	private positionHorizontal: PositionHorizontal = 'center';
-	private actions: React.ReactElement[] = [];
 	private content: React.ReactNode = 'NO CONTENT';
-
-	setType(type: ToastType) {
-		this.type = type;
-		return this;
-	}
 
 	setContent(content: React.ReactNode) {
 		this.content = content;
-		return this;
-	}
-
-	setBackground(bgColor: CSSProperties['color']) {
-		this.bgColor = bgColor;
 		return this;
 	}
 
@@ -83,37 +53,10 @@ export class ToastBuilder
 		return this;
 	}
 
-	setActions(actions: React.ReactElement[]) {
-		this.actions = actions || [];
-		return this;
-	}
-
-	addActions(...actions: React.ReactElement[]) {
-		addAllItemToArray(this.actions, actions);
-		return this;
-	}
-
-	setVerticalPosition(positionVertical: PositionVertical) {
-		this.positionVertical = positionVertical;
-		return this;
-	}
-
-	setHorizontalPosition(positionHorizontal: PositionHorizontal) {
-		this.positionHorizontal = positionHorizontal;
-		return this;
-	}
-
 	show() {
 		const toast: Toast_Model = {
 			duration: this.duration,
-			type: this.type,
-			content: this.content,
-			positionVertical: this.positionVertical,
-			positionHorizontal: this.positionHorizontal,
-			actions: this.actions,
-			bgColor: this.bgColor,
-			className: this.className,
-			style: this.style,
+			content: this.content
 		};
 
 		// @ts-ignore
@@ -135,44 +78,25 @@ export class ToastModule_Class
 	protected init(): void {
 	}
 
-	public toastError(errorMessage: React.ReactNode, interval: number = Interval_DefaultToast) {
-		this.toast(errorMessage, ToastType.error, interval);
+	public toastError(errorMessage: string, interval: number = Interval_DefaultToast) {
+		this.toast(TS_ToastBase({text: errorMessage, toastType: 'error'}), interval);
 	}
 
-	public toastSuccess(successMessage: React.ReactNode, interval: number = Interval_DefaultToast) {
-		this.toast(successMessage, ToastType.success, interval);
+	public toastSuccess(successMessage: string, interval: number = Interval_DefaultToast) {
+		this.toast(TS_ToastBase({text: successMessage, toastType: 'success'}), interval);
 	}
 
-	public toastInfo(infoMessage: React.ReactNode, interval: number = Interval_DefaultToast) {
-		this.toast(infoMessage, ToastType.info, interval);
+	public toastInfo(infoMessage: string, interval: number = Interval_DefaultToast) {
+		this.toast(TS_ToastBase({text: infoMessage, toastType: 'info'}), interval);
 	}
 
-	private toast(_message: React.ReactNode, type: ToastType, interval: number = Interval_DefaultToast) {
-		let color: CSSProperties['color'];
-		switch (type) {
-			case ToastType.success:
-				color = '#2ee06f';
-				break;
-
-			case ToastType.error:
-				color = '#ff4436';
-				break;
-
-			case ToastType.info:
-				color = '#49addb';
-				break;
-
-			default:
-				color = '#e8e8e8';
-				break;
-		}
-
+	private toast(_message: React.ReactNode, interval: number = Interval_DefaultToast) {
 		let content = _message;
 		if (typeof _message === 'string')
 			content = ToastModule.adjustStringMessage(_message);
 
 		// console.log("_message:", _message)
-		this.DefaultBuilder.setContent(content).setDuration(interval).setBackground(color).setType(type).show();
+		this.DefaultBuilder.setContent(content).setDuration(interval).show();
 	}
 
 	adjustStringMessage = (_message: string) => {
