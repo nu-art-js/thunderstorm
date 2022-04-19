@@ -74,8 +74,8 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const path = e.currentTarget.getAttribute('data-path');
 		if (!path)
 			return this.logError('No Path for tree node:', e);
-
-		this.props.onNodeClicked && this.props.onNodeClicked(path, TS_Tree.resolveItemFromPath(this.state.adapter.data, path));
+		//FIXME: consider typing the return from resolveItemFromPath instead of limiting the return to just the item
+		this.props.onNodeClicked && this.props.onNodeClicked(path, TS_Tree.resolveItemFromPath(this.state.adapter.data, path).item);
 	};
 
 	private renderNode = (_data: any, key: string, _path: string, level: number) => {
