@@ -67,3 +67,9 @@ export class TooltipModule_Class
 }
 
 export const TooltipModule = new TooltipModule_Class();
+export const ShowTooltip = (content: React.ReactNode, duration = -1) => {
+	return {
+		onMouseEnter: (e: React.MouseEvent<any>) => TooltipModule.show(content, e, duration),
+		onMouseLeave: (e: React.MouseEvent<any>) => TooltipModule.hide()
+	};
+};

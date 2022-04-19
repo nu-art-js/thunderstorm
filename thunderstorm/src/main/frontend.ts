@@ -75,6 +75,7 @@ export * from './app-frontend/components/TS_Tooltip';
 
 export * from './app-frontend/components/Layouts';
 export * from './app-frontend/components/HeightBounder';
+
 export * from './app-frontend/components/form/types';
 export * from './app-frontend/components/form/Form';
 
@@ -84,7 +85,6 @@ export * from './app-frontend/components/adapter/BaseRenderer';
 export * from './app-frontend/modules/component-loader/ReactEntryComponentInjector';
 export * from './app-frontend/modules/component-loader/entry-component-loading-module';
 
-export * from './app-frontend/components/TS_Tooltip/TS_Tooltip';
 export * from './app-frontend/_to-refactor/MenuAndButton';
 
 export * from './app-frontend/utils/tools';
