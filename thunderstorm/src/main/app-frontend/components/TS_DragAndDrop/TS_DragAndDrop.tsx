@@ -104,7 +104,7 @@ export class TS_DragAndDrop
 
 	onDragEnter = (ev: React.DragEvent<HTMLDivElement>): void => {
 		ev.preventDefault();
-		this.setState({dndState: 'Dragginggs'});
+		this.setState({dndState: 'Dragging'});
 	};
 
 	onDragOver = (ev: React.DragEvent<HTMLDivElement>): void => {
