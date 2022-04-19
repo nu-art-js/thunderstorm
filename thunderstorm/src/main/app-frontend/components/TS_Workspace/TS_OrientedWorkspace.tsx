@@ -134,7 +134,6 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 	}
 }
 
-
 export class TS_HorizontalWorkspace extends TS_OrientedWorkspace {
 	static defaultProps = {
 		firstEdge: 'left',
