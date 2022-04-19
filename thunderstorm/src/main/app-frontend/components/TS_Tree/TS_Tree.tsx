@@ -103,7 +103,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const containerRefResolver = this.resolveContainer(nodePath, renderChildren, filteredKeys);
 
 		return <Fragment key={nodePath}>
-			{this.renderItem(data, nodePath, key, nodeRefResolver, expanded)}
+			{this.renderItem(data, nodePath, key, nodeRefResolver,level, expanded)}
 			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
 		</Fragment>;
 	};
@@ -144,7 +144,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			</div>);
 	}
 
-	private renderItem(item: any, path: string, key: string, nodeRefResolver: (_ref: HTMLDivElement) => void, expanded?: boolean) {
+	private renderItem(item: any, path: string, key: string, nodeRefResolver: (_ref: HTMLDivElement) => void, level:number, expanded?: boolean) {
 		if (this.state.adapter.hideRoot && path.length === 1)
 			return null;
 
@@ -157,6 +157,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			this.state.selected.item = item;
 		}
 
+
 		const node: TreeNode = {
 			adapter: this.state.adapter,
 			item,
@@ -167,7 +168,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		if (this.state.adapter.childrenKey === key)
 			return null;
 
-		const className = _className('ts-tree__node', isParent && 'ts-tree__parent-node', isSelected && 'ts-tree__selected-node');
+		const className = _className('ts-tree__node', isParent && 'ts-tree__parent-node', isSelected && 'ts-tree__selected-node',`depth-${level}`);
 		return <div tabIndex={1} data-path={path} className={className} ref={nodeRefResolver} onClick={this.onNodeClicked}>
 			<TreeNodeRenderer item={item} node={node}/>
 		</div>;
@@ -175,9 +176,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 
 	render() {
 		return <div className="ts-tree">
-			{this.renderNode(this.state.adapter.data, '', '', 1)}
+			{this.renderNode(this.state.adapter.data, '', '', (this.state.adapter.hideRoot ? -1 : 0))}
 		</div>;
 	}
+
 
 	getItemByPath(path: string) {
 		return TS_Tree.resolveItemFromPath(this.state.adapter.data, path);

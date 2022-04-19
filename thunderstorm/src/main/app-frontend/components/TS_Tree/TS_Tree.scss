@@ -18,6 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+@use '../../styles/declaration/mixins' as *;
 
 .ts-tree {
   .ts-tree__children-container {
@@ -25,7 +26,8 @@
   }
 
   .ts-tree__node {
-
+    @include spaces(12);
+    padding: 4px 0;
     * {
       font-size: 18px;
 
@@ -38,9 +40,5 @@
 
   .ts-tree__parent-node {
 
-  }
-
-  .ts-tree__children-container {
-    margin-left: 12px;
   }
 }

@@ -18,3 +18,13 @@
   -webkit-mask-image: url($icon);
   mask-image: url($icon);
 }
+
+@mixin spaces($depths, $depth-padding:15,$class-prefix:'depth') {
+  $depth-unit: 'px';
+  @for $i from 1 through $depths {
+    $val: $depth-padding * $i;
+    &.#{$class-prefix}-#{$i} {
+      padding-left: #{$val}#{$depth-unit};
+    }
+  }
+}
