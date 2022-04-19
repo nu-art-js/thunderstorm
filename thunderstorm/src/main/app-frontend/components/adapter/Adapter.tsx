@@ -170,7 +170,6 @@ abstract class BaseAdapterBuilder<Data> {
 	multiRenderer = false;
 	expandCollapseRenderer: ComponentType<NodeRendererProps>;
 
-
 	protected filter = <K extends any>(obj: K, key: keyof K) => true;
 	childrenKey?: string;
 
@@ -287,7 +286,7 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 	extends BaseAdapterBuilder<DataType> {
 
 	readonly rendererMap: Rm;
-	private hideRoot = true;
+	private _hideRoot = true;
 
 	constructor(rendererMap: Rm) {
 		super();
@@ -314,13 +313,18 @@ class MultiTypeAdapterBuilder<Rm extends TreeRendererMap, DataType>
 
 	tree() {
 		this.treeNodeRenderer = this.defaultTreeNodeRenderer;
-		this.hideRoot = false;
+		this._hideRoot = false;
 		return this as unknown as MultiTypeAdapterBuilder<Rm, DataType>;
+	}
+
+	hideRoot() {
+		this._hideRoot = true;
+		return this;
 	}
 
 	build() {
 		const adapter = new Adapter(this.data);
-		adapter.hideRoot = this.hideRoot;
+		adapter.hideRoot = this._hideRoot;
 		adapter.treeNodeRenderer = this.treeNodeRenderer;
 		adapter.childrenKey = this.childrenKey;
 		return adapter;
@@ -332,6 +336,7 @@ class TreeSingleAdapterBuilder<RenderItemType extends any = any>
 	extends BaseAdapterBuilder<AdapterData<TreeData<RenderItemType>>> {
 
 	readonly renderer: _BaseNodeRenderer<RenderItemType>;
+	private _hideRoot = false;
 
 	constructor(renderer: _BaseNodeRenderer<RenderItemType>) {
 		super();
@@ -343,10 +348,15 @@ class TreeSingleAdapterBuilder<RenderItemType extends any = any>
 		return this.renderer;
 	}
 
+	hideRoot() {
+		this._hideRoot = true;
+		return this;
+	}
+
 	build() {
 		const adapter = new Adapter(this.data);
 		adapter.treeNodeRenderer = this.treeNodeRenderer;
-
+		adapter.hideRoot = this._hideRoot;
 		return adapter;
 	}
 }
