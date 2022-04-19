@@ -7,14 +7,14 @@ import './TS_Workspace.scss';
 import {PanelConfig, Props_BasePanel, Props_PanelParent} from './types';
 
 
-export abstract class PanelBaseSync<Config, State, ExtraProps = {}>
+export abstract class PanelBaseSync<Config, State={}, ExtraProps = {}>
 	extends ComponentSync<Props_BasePanel<Config> & ExtraProps, State> {
 	protected deriveStateFromProps(nextProps: Props_BasePanel<Config>): BaseAsyncState & State {
 		return {} as State;
 	}
 }
 
-export abstract class PanelBaseAsync<Config, State, ExtraProps = {}>
+export abstract class PanelBaseAsync<Config, State={}, ExtraProps = {}>
 	extends ComponentAsync<Props_BasePanel<Config> & ExtraProps, State> {
 	protected async deriveStateFromProps(nextProps: Props_BasePanel<Config>): Promise<BaseAsyncState & State> {
 		return {} as State;
