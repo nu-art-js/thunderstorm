@@ -24,6 +24,14 @@
   @extend %flex__space-between;
 }
 
+.flex__justify-center {
+  @extend %flex__justify-center;
+}
+
+.flex__space-evenly {
+  @extend %flex__space-evenly;
+}
+
 .flex__grow {
   @extend %flex__grow;
 }
@@ -64,3 +72,6 @@
   @extend %center_children;
 }
 
+.unselectable {
+  @extend %unselectable;
+}
