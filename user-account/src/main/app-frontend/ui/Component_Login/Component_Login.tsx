@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of 
- * your server apis, and restrict users by giving them access levels
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -18,30 +17,28 @@
  */
 
 import * as React from 'react';
-import {_keys, addItemToArray} from '@nu-art/ts-common';
-import {AccountModule} from '../modules/AccountModule';
-import {Request_CreateAccount} from '../../shared/api';
+import {_keys} from '@nu-art/ts-common';
+import {AccountModule} from '../../modules/AccountModule';
+import {Request_LoginAccount} from '../../../shared/api';
+import './Component_Login.scss';
 import {LL_V_C, ToastModule, TS_Button, TS_Input} from '@nu-art/thunderstorm/frontend';
 
 type State<T> = {
 	data: Partial<T>
 }
-type Props<T> = {
-	validate?: (data: Partial<T>) => string | undefined
-}
+
+type Props = {}
 
 type InputField = {
-	type: 'text' | 'number' | 'password'
 	label: string
-	className?: string
-	hint?: string
+	hint: string
+	type: 'text' | 'number' | 'password'
 }
 
 type Form<T> = { [K in keyof T]: InputField }
 
-const form: Form<Request_CreateAccount> = {
+const form: Form<Request_LoginAccount> = {
 	email: {
-		className: '',
 		type: 'text',
 		hint: 'email',
 		label: 'Email',
@@ -50,19 +47,14 @@ const form: Form<Request_CreateAccount> = {
 		type: 'password',
 		hint: '****',
 		label: 'Password',
-	},
-	password_check: {
-		type: 'password',
-		hint: '****',
-		label: 'Password Check',
-	},
+	}
 };
 
-export class Component_Register
-	extends React.Component<Props<Request_CreateAccount>, State<Request_CreateAccount>> {
+export class Component_Login
+	extends React.Component<Props, State<Request_LoginAccount>> {
 
 	state = {
-		data: {} as Partial<Request_CreateAccount>,
+		data: {} as Partial<Request_LoginAccount>,
 	};
 
 	render() {
@@ -72,39 +64,40 @@ export class Component_Register
 					const field = form[key];
 					return <TS_Input
 						id={key}
+						key={key}
 						value={data[key]}
 						type={field.type}
-						placeholder={field?.hint}
+						placeholder={field.hint}
 						onChange={this.onValueChanged}
-						onAccept={this.registerClicked}
+						onAccept={this.loginClicked}
 					/>;
 				}
 			)}
-			<TS_Button onClick={this.registerClicked} className={`clickable ts-account__action-button`}>Register</TS_Button>
+			<TS_Button onClick={this.loginClicked} className={`clickable ts-account__action-button`}>Login</TS_Button>
 		</LL_V_C>;
 	}
 
-	private onValueChanged = (value: string, id: keyof Request_CreateAccount) => {
+	private onValueChanged = (value: string, id: keyof Request_LoginAccount) => {
 		this.setState(state => {
 			state.data[id] = value;
 			return state;
 		});
 	};
 
-	private registerClicked = () => {
-		const data: Partial<Request_CreateAccount> = this.state.data;
+	private loginClicked = () => {
+		const data: Partial<Request_LoginAccount> = this.state.data;
 		const errors = _keys(form).map(key => {
 			const field = form[key];
 			return data[key] ? undefined : `  * missing ${field.label}`;
 		}).filter(error => !!error);
 
-		const validateError = this.props.validate && this.props.validate(data);
-		if (validateError)
-			addItemToArray(errors, validateError);
+		// const validateError = this.props.validate(data);
+		// if (validateError)
+		// 	addItemToArray(errors, validateError);
 
 		if (errors.length > 0)
 			return ToastModule.toastError(`Wrong input:\n${errors.join('\n')}`);
 
-		AccountModule.create(this.state.data as Request_CreateAccount);
+		AccountModule.login(this.state.data as Request_LoginAccount);
 	};
 }

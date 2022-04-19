@@ -17,8 +17,16 @@
   place-items: stretch;
 }
 
+%flex__justify-center {
+  justify-content: center;
+}
+
 %flex__space-between {
   justify-content: space-between;
+}
+
+%flex__space-evenly {
+  justify-content: space-evenly;
 }
 
 %flex__grow {
@@ -48,6 +56,7 @@
   right: 0;
 
 }
+
 %bottom {
   bottom: 0;
 }
@@ -64,4 +73,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+%unselectable {
+  //Make text and image unselectable
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+/Edge */
+  user-select: none; /* Standard */
 }
