@@ -1,5 +1,5 @@
 import {Module} from '@nu-art/ts-common';
-import {ToastModule} from './toaster/ToasterModule';
+import {ToastModule} from '../component-modules/ToasterModule';
 
 type Config = {
 	appName: string

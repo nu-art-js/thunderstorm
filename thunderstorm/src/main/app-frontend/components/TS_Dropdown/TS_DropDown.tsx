@@ -23,11 +23,10 @@ import * as React from 'react';
 import {Filter} from '@nu-art/ts-common';
 import {stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
-import {Stylable} from '../../tools/Stylable';
 import {TS_Overlay} from '../TS_Overlay';
 import {TS_Tree} from '../TS_Tree';
 import {ComponentSync} from '../../core/ComponentSync';
-import {TS_Input} from '../TS_Input/TS_Input';
+import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 
 const defaultTitleHeight = '28px';
@@ -85,7 +84,7 @@ export const DropDown_listStyle: React.CSSProperties = {
 	top: 1,
 };
 
-export type InputProps = Stylable & {
+export type InputProps = {
 	placeholder?: string
 }
 
@@ -98,9 +97,6 @@ type State<ItemType> = {
 }
 
 type StaticProps = {
-	headerStylable: Stylable
-	wrapperStylable: Stylable
-	listStylable: Stylable
 	inputStylable: InputProps
 	caret: {
 		open: React.ReactNode,
@@ -127,14 +123,6 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
-
-	static defaultProps: Partial<Props_DropDown<any>> = {
-		wrapperStylable: {style: {/*DropDown_wrapperStyle*/}},
-		headerStylable: {style: {/*DropDown_headerStyle*/}},
-		listStylable: {style: {/*DropDown_listStyle*/}},
-		inputStylable: {style: {/*DropDown_inputStyle*/}}
-	};
-
 
 	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
@@ -267,8 +255,6 @@ export class TS_DropDown<ItemType>
 			},
 			onClick: (e: React.MouseEvent) => {
 			},
-			onFocus: (e: React.MouseEvent) => {
-			},
 			expanded: true,
 			focused: false,
 			selected: true
@@ -317,14 +303,3 @@ export class TS_DropDown<ItemType>
 
 	keyboardEventHandler = (e: KeyboardEvent) => this.node && this.keyEventHandler(e as unknown as React.KeyboardEvent);
 }
-
-
-// const treeKeyEventHandlerResolver = (id: string) => {
-// 	return (e: React.KeyboardEvent, node?: HTMLDivElement) => {
-// 		if (!["Escape", "ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp", "Enter"].includes(e.key))
-// 			document.getElementById(`${id}-input`)?.focus();
-// 	};
-// };
-
-
-

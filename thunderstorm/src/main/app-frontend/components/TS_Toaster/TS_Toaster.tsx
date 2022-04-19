@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
-import {Toast_Model, ToastListener, ToastModule} from '../../modules/toaster/ToasterModule';
+import {Toast_Model, ToastListener, ToastModule} from '../../component-modules/ToasterModule';
 import {_className} from '../../utils/tools';
 import './TS_Toaster.scss';
 
@@ -62,7 +62,7 @@ export class TS_Toaster
 
 	protected renderToaster(toast: Toast_Model): React.ReactNode {
 		return (
-			<div className={_className('ts-toaster', toast.className)}>
+			<div className="ts-toaster">
 				{toast.content}
 			</div>
 		);

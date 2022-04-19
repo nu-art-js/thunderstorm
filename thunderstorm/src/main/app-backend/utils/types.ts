@@ -22,6 +22,7 @@
 
 import * as express from 'express';
 import {Dispatcher} from '@nu-art/ts-common';
+import {CoreOptions, UriOptions} from 'request';
 
 export type Express = express.Express
 export type ExpressRouter = express.Router
@@ -33,4 +34,5 @@ export interface QueryRequestInfo {
 	__queryRequestInfo(request: ExpressRequest): Promise<{ key: string, data: any }>;
 }
 
+export type RequestOptions = CoreOptions & UriOptions
 export const dispatch_queryRequestInfo = new Dispatcher<QueryRequestInfo, '__queryRequestInfo'>('__queryRequestInfo');

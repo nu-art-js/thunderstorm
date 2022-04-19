@@ -19,46 +19,40 @@
  * limitations under the License.
  */
 
-import {CSSProperties} from 'react';
+import * as React from 'react';
+import {Module} from '@nu-art/ts-common';
+import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
-export type  Stylable = {
-	style?: CSSProperties
-	className?: string
+export type Dialog_Model = {
+	content: React.ReactNode,
+	closeOverlayOnClick: () => boolean,
 }
 
-export class StylableBuilder {
-	style?: CSSProperties;
-	className?: string;
 
-	setStyle(style: CSSProperties) {
-		this.style = style;
-		return this;
-	}
-
-	clearInlineStyle() {
-		this.style = {};
-		return this;
-	}
-
-	addStyle(style: CSSProperties) {
-		if (!this.style)
-			return this.setStyle(style);
-
-		this.style = {...this.style, ...style};
-		return this;
-	}
-
-	setClassName(className: string) {
-		this.className = className;
-		return this;
-	}
-
-	build() {
-		const styleable: Stylable = {
-			style: this.style,
-			className: this.className
-		};
-
-		return styleable;
-	}
+export interface DialogListener {
+	__showDialog(dialogModel?: Dialog_Model): void;
 }
+
+const dispatch_showDialog = new ThunderDispatcher<DialogListener, '__showDialog'>('__showDialog');
+
+export class DialogModule_Class
+	extends Module<{}> {
+
+	constructor() {
+		super();
+	}
+
+	protected init(): void {
+	}
+
+	public close = () => {
+		dispatch_showDialog.dispatchUI();
+	};
+
+	public show = (content: React.ReactNode, closeOverlayOnClick = () => true) => {
+		dispatch_showDialog.dispatchUI({content, closeOverlayOnClick});
+	};
+}
+
+
+export const DialogModule = new DialogModule_Class();

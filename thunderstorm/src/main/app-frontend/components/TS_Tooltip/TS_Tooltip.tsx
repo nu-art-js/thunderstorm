@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {Tooltip_Model, TooltipListener, TooltipModule} from '../../modules/tooltip/TooltipModule';
+import {Tooltip_Model, TooltipListener, TooltipModule} from '../../component-modules/TooltipModule';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_setTimeout} from '@nu-art/ts-common';
 import './TS_Tooltip.scss';
@@ -81,7 +81,7 @@ export class TS_Tooltip
 			}}
 			className={'ts-tooltip'}
 			id={'tooltip'}
-			style={{...(model.style), ...positionStyle}}>
+			style={{...positionStyle}}>
 			{typeof model.content === 'string' ? <div dangerouslySetInnerHTML={{__html: model.content}}/> : model.content}
 		</div>;
 	}

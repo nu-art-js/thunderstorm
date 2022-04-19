@@ -24,12 +24,12 @@ export * from './app-frontend/core/thunder-dispatcher';
 
 export * from './app-frontend/modules/http/XhrHttpModule';
 
-export * from './app-frontend/modules/menu/MenuModule';
-export * from './app-frontend/modules/dialog/DialogModule';
-export * from './app-frontend/modules/toaster/ToasterModule';
-export * from './app-frontend/modules/tooltip/TooltipModule';
+export * from './app-frontend/component-modules/MenuModule';
+export * from './app-frontend/component-modules/DialogModule';
+export * from './app-frontend/component-modules/ToasterModule';
+export * from './app-frontend/component-modules/TooltipModule';
 
-export * from './app-frontend/modules/locale/LocaleModule';
+export * from './app-frontend/modules/LocaleModule';
 
 export * from './app-frontend/modules/ForceUpgrade';
 export * from './app-frontend/modules/StorageModule';
@@ -85,9 +85,6 @@ export * from './app-frontend/modules/component-loader/ReactEntryComponentInject
 export * from './app-frontend/modules/component-loader/entry-component-loading-module';
 
 export * from './app-frontend/components/TS_Tooltip/TS_Tooltip';
-export * from './app-frontend/modules/menu/MenuAndButton';
-
-export * from './app-frontend/tools/KeyboardListener';
-export * from './app-frontend/tools/Stylable';
+export * from './app-frontend/_to-refactor/MenuAndButton';
 
 export * from './app-frontend/utils/tools';
