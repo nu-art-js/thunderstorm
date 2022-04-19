@@ -25,7 +25,7 @@ export type DND_File = {
 export type Props_DragAndDrop = {
 	id?: string,
 	validate: ((files: File[]) => DND_File[]);
-	onChange: (files: File[]) => void
+	onChange: (acceptedFiles: File[], rejectedFiles: File[]) => void
 }
 
 type State = {
@@ -87,13 +87,24 @@ export class TS_DragAndDrop
 	};
 
 	updateFileArray = (_files: File[]) => {
-
 		const files = this.props.validate(_files);
+		const acceptedFiles = files.filter(file => file.accepted).map(file => file.file);
+		const rejectedFiles = files.filter(file => !file.accepted).map(file => file.file);
 
-		this.props.onChange(files.map(file => file.file));
+		let resultState: DND_State = 'PartialNegative';
 
-		this.setState({dndState: 'Idle'});
+		if (acceptedFiles.length === 0)
+			resultState = 'Negative'; // all files rejected
+		else if (rejectedFiles.length === 0)
+			resultState = 'Positive'; // all files accepted
 
+		this.props.onChange(acceptedFiles, rejectedFiles);
+		this.setState({dndState: resultState});
+	};
+
+	onDragEnter = (ev: React.DragEvent<HTMLDivElement>): void => {
+		ev.preventDefault();
+		this.setState({dndState: 'Dragginggs'});
 	};
 
 	onDragOver = (ev: React.DragEvent<HTMLDivElement>): void => {
@@ -103,7 +114,7 @@ export class TS_DragAndDrop
 		if (this.state.dndState !== 'Idle')
 			return;
 
-		const dndState = (ev.dataTransfer.items && ev.dataTransfer.items.length > 0) ? 'Positive' : 'Negative';
+		const dndState = (ev.dataTransfer.items && ev.dataTransfer.items.length > 0) ? 'Dragging' : 'Negative';
 		this.setState({dndState});
 	};
 
@@ -128,6 +139,7 @@ export class TS_DragAndDrop
 				<div
 					className={`ts-drag-and-drop__${DND_Styles[this.state.dndState]}`}
 					onDrop={this.onDrop}
+					onDragEnter={this.onDragEnter}
 					onDragOver={this.onDragOver}
 					onDragLeave={this.onDragLeave}
 					onClick={() => (this.inputRef.current && this.inputRef.current.click())}>
