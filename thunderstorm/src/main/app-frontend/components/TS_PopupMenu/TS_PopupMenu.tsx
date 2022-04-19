@@ -64,24 +64,17 @@ export class TS_PopupMenu
 	private setBounds() {
 		if (!this.ref || !this.state.menuModel || !this.state.menuModel.pos)
 			return;
-		const boundingClientRect = this.ref.getBoundingClientRect();
 
+		const boundingClientRect = this.ref.getBoundingClientRect();
 		let left: number = boundingClientRect.left;
 		let top: number = boundingClientRect.top;
 
 		if (boundingClientRect.right > (window.innerWidth - this.minimumMargin))
 			left = window.innerWidth - boundingClientRect.width - this.minimumMargin;
 
-
-		// not working?!
-		if (boundingClientRect.bottom > (window.innerHeight - this.minimumMargin)) {
+		if (boundingClientRect.bottom > (window.innerHeight - this.minimumMargin))
 			top = window.innerHeight - boundingClientRect.height - this.minimumMargin;
-		}
 
-		console.log('CHECK', boundingClientRect);
-
-
-		console.log(top, left);
 		if (this.state.menuModel)
 			this.state.menuModel.pos = {left: left, top: top};
 		else return;
@@ -122,5 +115,4 @@ export class TS_PopupMenu
 			</TS_Overlay>
 		</div>;
 	}
-
 }
