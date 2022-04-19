@@ -1,11 +1,10 @@
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
 import * as React from 'react';
-import { BaseAsyncState, ComponentAsync } from '../../core/ComponentAsync';
-import { ComponentSync } from '../../core/ComponentSync';
+import {BaseAsyncState, ComponentAsync} from '../../core/ComponentAsync';
+import {ComponentSync} from '../../core/ComponentSync';
 import './TS_Workspace.scss';
 import {PanelConfig, Props_BasePanel, Props_PanelParent} from './types';
-
 
 
 export abstract class PanelBaseSync<Config, State, ExtraProps = {}>

@@ -4,6 +4,7 @@ import * as React from 'react';
 import {Props_BasePanel, Props_OrientedWorkspace, Props_PanelParent} from './types';
 import {PanelParentSync} from './TS_Workspace';
 import {BaseAsyncState} from '../../core/ComponentAsync';
+import {Fragment} from 'react';
 
 type State = {
 	factors: number[];
@@ -95,7 +96,6 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 	};
 
 
-
 	//Gets called whenever dragging stops
 	onDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
 		// WorkspaceModuleFE.setWorkspacePanelSizes(this.state.page, panelSizes);
@@ -108,28 +108,27 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 	render() {
 		const panels = this.props.config.panels;
 		return (
-			<div ref={_ref => {
+			<div key="kakey" ref={_ref => {
 				if (this.ref || !_ref)
 					return;
 
 				this.ref = _ref;
 				this.setState(this.calcFactors(this.props as any));
 			}} className={`ts-workspace__${this.props.orientation}`}>
-				{panels.map((panel, i) => <>
-					<div key={i} className={'ts-workspace__panel'}
+				{panels.map((panel, i) => <Fragment key={i}>
+					<div className={'ts-workspace__panel'}
 							 style={{[this.props.dimensionProp]: ((this.state.factors[i]) * 100) + '%'}}
 							 draggable={false}>
 						{this.renderPanel(panel)}
 					</div>
 					{i !== (panels.length - 1) &&
-						<div key={`ts-workspace__separator-${i}`}
-								 className={`ts-workspace__separator`}
+						<div className={`ts-workspace__separator`}
 								 draggable={true}
 								 tabIndex={1}
 								 onDragStart={this.onDragStart}
 								 onDrag={(e) => this.separatorOnDrag(e, i, i + 1)}
 								 onDragEnd={(e) => this.onDragEnd(e)}/>}
-				</>)}
+				</Fragment>)}
 			</div>
 		);
 	}
