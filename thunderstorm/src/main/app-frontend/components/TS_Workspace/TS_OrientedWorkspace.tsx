@@ -1,10 +1,10 @@
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
 import * as React from 'react';
+import {Fragment} from 'react';
 import {Props_BasePanel, Props_OrientedWorkspace, Props_PanelParent} from './types';
 import {PanelParentSync} from './TS_Workspace';
 import {BaseAsyncState} from '../../core/ComponentAsync';
-import {Fragment} from 'react';
 
 type State = {
 	factors: number[];
@@ -108,7 +108,7 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 	render() {
 		const panels = this.props.config.panels;
 		return (
-			<div key="kakey" ref={_ref => {
+			<div ref={_ref => {
 				if (this.ref || !_ref)
 					return;
 
