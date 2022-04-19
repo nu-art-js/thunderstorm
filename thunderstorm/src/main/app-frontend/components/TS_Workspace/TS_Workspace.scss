@@ -1,5 +1,8 @@
 @mixin separator ($dir) {
   background: #eeeeee;
+  position: relative;
+  z-index: 1000;
+
   @if $dir == 'horizontal' {
     width: 5px;
     height: 100%;

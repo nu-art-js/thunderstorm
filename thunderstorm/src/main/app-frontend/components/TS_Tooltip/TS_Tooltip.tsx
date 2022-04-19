@@ -18,26 +18,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
-import {CSSProperties} from 'react';
-import {Tooltip_Model, TooltipListener, TooltipModule} from './TooltipModule';
+import {Tooltip_Model, TooltipListener, TooltipModule} from '../../modules/tooltip/TooltipModule';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_setTimeout} from '@nu-art/ts-common';
+import './TS_Tooltip.scss';
 
 type State = { model?: Tooltip_Model };
 
-export const TooltipDefaultStyle: CSSProperties = {
-	backgroundColor: '#f9f9f9',
-	borderRadius: '3px',
-	boxShadow: '0 0 4px 0 #00000066',
-	color: '#333435',
-	fontSize: '13px',
-	padding: '1px 3px',
-	position: 'fixed',
-};
-
-export class Tooltip
+export class TS_Tooltip
 	extends ComponentSync<{}, State>
 	implements TooltipListener {
 
@@ -83,13 +72,16 @@ export class Tooltip
 			top: `${top - height}px`,
 			left: `${left}px`
 		};
-		return <div ref={(ref) => {
-			if (this.ref)
-				return;
-
-			this.ref = ref;
-			this.forceUpdate();
-		}} id={'tooltip'} style={{...(model.style || TooltipDefaultStyle), ...positionStyle}}>
+		return <div
+			ref={(ref) => {
+				if (this.ref)
+					return;
+				this.ref = ref;
+				this.forceUpdate();
+			}}
+			className={'ts-tooltip'}
+			id={'tooltip'}
+			style={{...(model.style), ...positionStyle}}>
 			{typeof model.content === 'string' ? <div dangerouslySetInnerHTML={{__html: model.content}}/> : model.content}
 		</div>;
 	}
