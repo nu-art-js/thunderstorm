@@ -21,12 +21,10 @@
 
 import * as React from 'react';
 import {Module, Second} from '@nu-art/ts-common';
-// noinspection TypeScriptPreferShortImport
-import {ThunderDispatcher} from '../../core/thunder-dispatcher';
-import {Stylable, StylableBuilder} from '../../tools/Stylable';
-import {TS_ToastBase} from '../../components/TS_Toaster';
+import {ThunderDispatcher} from '../core/thunder-dispatcher';
+import {TS_ToastBase} from '../components/TS_Toaster';
 
-export type Toast_Model = Stylable & {
+export type Toast_Model = {
 	duration: number;
 	content: React.ReactNode;
 }
@@ -37,8 +35,7 @@ export interface ToastListener {
 
 const Interval_DefaultToast = 6 * Second;
 
-export class ToastBuilder
-	extends StylableBuilder {
+export class ToastBuilder {
 
 	private duration: number = Interval_DefaultToast;
 	private content: React.ReactNode = 'NO CONTENT';

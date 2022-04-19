@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Menu_Model, MenuListener} from '../../modules/menu/MenuModule';
+import {Menu_Model, MenuListener} from '../../component-modules/MenuModule';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_PopupMenu.scss';
 import {TS_Overlay} from '../TS_Overlay';

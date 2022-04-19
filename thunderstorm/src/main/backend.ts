@@ -36,4 +36,3 @@ export * from './app-backend/utils/LogClient_File';
 export * from './app-backend/utils/file';
 export * from './app-backend/exceptions';
 export * from './app-backend/core/Storm';
-export * from './app-frontend/types/request';

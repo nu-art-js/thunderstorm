@@ -21,7 +21,6 @@
 
 import {ObjectTS} from '@nu-art/ts-common';
 import {HTMLProps} from 'react';
-import {Stylable} from '../../tools/Stylable';
 import {_className} from '../../utils/tools';
 import './TS_Table.scss';
 import React = require('react');
@@ -34,7 +33,7 @@ export type CellRenderer<R extends ObjectTS, A extends string = never, P extends
 export type RowRenderer<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
 	[C in P]?: CellRenderer<R, A, C>;
 };
-export type Props_Table<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = Stylable & {
+export type Props_Table<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
 	id?: string;
 	header: TableHeaders<R, A, P>;
 	rows: R[];

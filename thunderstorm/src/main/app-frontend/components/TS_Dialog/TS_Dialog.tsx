@@ -23,7 +23,7 @@ import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Overlay} from '../TS_Overlay';
 import {stopPropagation} from '../../utils/tools';
-import {Dialog_Model, DialogListener, DialogModule} from '../../modules/dialog/DialogModule';
+import {Dialog_Model, DialogListener, DialogModule} from '../../component-modules/DialogModule';
 import './TS_Dialog.scss';
 
 
