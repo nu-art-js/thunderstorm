@@ -77,8 +77,6 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 		this.state.factors[firstPanelIndex] = firstPanelFactor;
 		this.state.factors[secondPanelIndex] = sum - firstPanelFactor;
 
-		const sumOfFactors = this.state.factors.reduce((a, b) => a + b, 0);
-		console.log(sumOfFactors);
 		this.forceUpdate();
 	};
 
@@ -95,6 +93,8 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 		this.firstPanelBounds = e.currentTarget.previousElementSibling?.getBoundingClientRect() as DOMRect;
 		this.secondPanelBounds = e.currentTarget.nextElementSibling?.getBoundingClientRect() as DOMRect;
 	};
+
+
 
 	//Gets called whenever dragging stops
 	onDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
@@ -125,6 +125,7 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 						<div key={`ts-workspace__separator-${i}`}
 								 className={`ts-workspace__separator`}
 								 draggable={true}
+								 tabIndex={1}
 								 onDragStart={this.onDragStart}
 								 onDrag={(e) => this.separatorOnDrag(e, i, i + 1)}
 								 onDragEnd={(e) => this.onDragEnd(e)}/>}
