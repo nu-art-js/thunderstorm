@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {Menu_Model, MenuListener} from '../../component-modules/MenuModule';
 import {ComponentSync} from '../../core/ComponentSync';
-import './TS_PopupMenu.scss';
+import './TS_PopupMenuOverlay.scss';
 import {TS_Overlay} from '../TS_Overlay';
 import {TS_Tree} from '../TS_Tree';
 import {generateHex} from '@nu-art/ts-common';
@@ -18,7 +18,7 @@ type State = {
 }
 type Prop = {}
 
-export class TS_PopupMenu
+export class TS_PopupMenuOverlay
 	extends ComponentSync<Prop, State>
 	implements MenuListener {
 

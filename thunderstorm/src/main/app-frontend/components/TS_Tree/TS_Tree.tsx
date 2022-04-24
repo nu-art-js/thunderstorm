@@ -75,7 +75,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		if (!path)
 			return this.logError('No Path for tree node:', e);
 		//FIXME: consider typing the return from resolveItemFromPath instead of limiting the return to just the item
-		this.props.onNodeClicked && this.props.onNodeClicked(path, TS_Tree.resolveItemFromPath(this.state.adapter.data, path).item);
+		this.props.onNodeClicked?.(path, TS_Tree.resolveItemFromPath(this.state.adapter.data, path));
 	};
 
 	private renderNode = (_data: any, key: string, _path: string, level: number) => {
@@ -103,7 +103,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const containerRefResolver = this.resolveContainer(nodePath, renderChildren, filteredKeys);
 
 		return <Fragment key={nodePath}>
-			{this.renderItem(data, nodePath, key, nodeRefResolver,level, expanded)}
+			{this.renderItem(data, nodePath, key, nodeRefResolver, level, expanded)}
 			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
 		</Fragment>;
 	};
@@ -144,7 +144,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			</div>);
 	}
 
-	private renderItem(item: any, path: string, key: string, nodeRefResolver: (_ref: HTMLDivElement) => void, level:number, expanded?: boolean) {
+	private renderItem(item: any, path: string, key: string, nodeRefResolver: (_ref: HTMLDivElement) => void, level: number, expanded?: boolean) {
 		if (this.state.adapter.hideRoot && path.length === 1)
 			return null;
 
@@ -168,7 +168,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		if (this.state.adapter.childrenKey === key)
 			return null;
 
-		const className = _className('ts-tree__node', isParent && 'ts-tree__parent-node', isSelected && 'ts-tree__selected-node',`depth-${level}`);
+		const className = _className('ts-tree__node', isParent && 'ts-tree__parent-node', isSelected && 'ts-tree__selected-node', `depth-${level}`);
 		return <div tabIndex={1} data-path={path} className={className} ref={nodeRefResolver} onClick={this.onNodeClicked}>
 			<TreeNodeRenderer item={item} node={node}/>
 		</div>;

@@ -72,6 +72,7 @@ export * from './app-frontend/components/TS_Toaster';
 export * from './app-frontend/components/TS_DragAndDrop';
 export * from './app-frontend/components/TS_Workspace';
 export * from './app-frontend/components/TS_Tooltip';
+export * from './app-frontend/components/TS_MemoryMonitor';
 
 export * from './app-frontend/components/Layouts';
 export * from './app-frontend/components/HeightBounder';

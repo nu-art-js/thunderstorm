@@ -23,16 +23,34 @@
 @use "../../styles/declaration/basic" as *;
 
 .ts-dialog {
-  .ts-overlay {
-    @extend %match_parent;
-    @extend %ll_h_c;
-    z-index: 100;
-    background: #00000020;
-    justify-content: center;
-    align-items: center;
+  @extend %ll_v_c;
+  padding: 12px;
+  background: white;
+  border-radius: 8px;
+  width: 500px;
+  height: 300px;
+  user-select: none;
+
+  .ts-dialog__title {
+    width: 100%;
+    font-size: 1.5rem;
+    text-align: center;
   }
 
-  .ts-overlay__child {
-    z-index: 101;
+  .ts-dialog__body {
+    width: 100%;
+    background: #49addb;
+    text-align: start;
+    flex-grow: 1;
+    font-size: 1rem;
+    margin-inline: 26px;
+    margin-block: 12px;
+    justify-content: flex-start;
+  }
+
+  .ts-dialog__buttons {
+    justify-content: flex-end;
+    align-self: flex-end;
+    margin-inline: 24px;
   }
 }
