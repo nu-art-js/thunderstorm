@@ -1,3 +1,6 @@
+@use 'sass:math';
+@use 'sass:list';
+
 @mixin icon-size($width, $height: $width) {
   width: $width;
   height: $height;
@@ -27,4 +30,15 @@
       padding-left: #{$val}#{$depth-unit};
     }
   }
+}
+
+@function buildPalette($baseColor,$steps:7) {
+  $colorsList: ();
+  @for $i from 0 through $steps {
+    $base: $steps+1;
+    $lightness: math.percentage(math.div($i, $base));
+    $newColor: scale-color($baseColor, $lightness: $lightness);
+    $colorsList: list.append($colorsList, #{$newColor});
+  }
+  @return $colorsList
 }
