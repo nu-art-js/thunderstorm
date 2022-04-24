@@ -32,6 +32,7 @@ export type Props_Tree = {
 	id: string
 	onNodeFocused?: (path: string, item: any) => void;
 	onNodeClicked?: (path: string, item: any) => void;
+	onContextMenuClicked?: (e: React.MouseEvent, path: string, item: any) => void;
 	expanded?: TreeNodeExpandState
 	checkExpanded: (expanded: TreeNodeExpandState, path: string) => boolean | undefined
 	selectedItem?: any
@@ -76,6 +77,14 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			return this.logError('No Path for tree node:', e);
 		//FIXME: consider typing the return from resolveItemFromPath instead of limiting the return to just the item
 		this.props.onNodeClicked?.(path, TS_Tree.resolveItemFromPath(this.state.adapter.data, path));
+	};
+
+	private onContextMenuClicked = (e: React.MouseEvent) => {
+		const path = e.currentTarget.getAttribute('data-path');
+		if (!path)
+			return this.logError('No Path for tree node:', e);
+		//FIXME: consider typing the return from resolveItemFromPath instead of limiting the return to just the item
+		this.props.onContextMenuClicked?.(e, path, TS_Tree.resolveItemFromPath(this.state.adapter.data, path));
 	};
 
 	private renderNode = (_data: any, key: string, _path: string, level: number) => {
@@ -169,7 +178,8 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			return null;
 
 		const className = _className('ts-tree__node', isParent && 'ts-tree__parent-node', isSelected && 'ts-tree__selected-node', `depth-${level}`);
-		return <div tabIndex={1} data-path={path} className={className} ref={nodeRefResolver} onClick={this.onNodeClicked}>
+		return <div tabIndex={1} data-path={path} className={className} ref={nodeRefResolver} onClick={this.onNodeClicked}
+								onContextMenu={this.onContextMenuClicked}>
 			<TreeNodeRenderer item={item} node={node}/>
 		</div>;
 	}
