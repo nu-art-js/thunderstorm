@@ -21,50 +21,48 @@
 
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
-import {Toast_Model, ToastListener, ToastModule} from '../../component-modules/ToasterModule';
-import {_className} from '../../utils/tools';
-import './TS_Toaster.scss';
+import {TS_Overlay} from '../TS_Overlay';
+import {stopPropagation} from '../../utils/tools';
+import {Dialog_Model, DialogListener, DialogModule} from '../../component-modules/DialogModule';
+import './TS_DialogOverlay.scss';
 
-type State = { model?: Toast_Model };
 
-export type ToastProps = {
-	id?: string
-}
+type Props = {}
 
-export class TS_Toaster
-	extends ComponentSync<ToastProps, State>
-	implements ToastListener {
+type State = { model?: Dialog_Model };
 
-	protected deriveStateFromProps(nextProps: ToastProps): State | undefined {
-		return {model: this.state?.model};
+export class TS_DialogOverlay
+	extends ComponentSync<Props, State>
+	implements DialogListener {
+
+	protected deriveStateFromProps(nextProps: Props): State {
+		return {};
 	}
 
-	__showToast = (model?: Toast_Model): void => {
+	__showDialog = (model?: Dialog_Model): void => {
 		this.setState({model});
-
-		if (!model)
-			return;
-
-		const duration = model.duration;
-		if (duration <= 0)
-			return;
-
-		setTimeout(() => ToastModule.hideToast(model), duration);
 	};
 
 	render() {
-		const toast = this.state.model;
-		if (!toast?.content)
-			return null;
+		const model = this.state.model;
+		if (!model)
+			return '';
 
-		return this.renderToaster(toast);
-	}
-
-	protected renderToaster(toast: Toast_Model): React.ReactNode {
 		return (
-			<div className="ts-toaster">
-				{toast.content}
+			<div className="ts-dialog__overlay">
+				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked}>
+					{model.content}
+				</TS_Overlay>
 			</div>
 		);
 	}
+
+
+	private onOverlayClicked = (e: React.MouseEvent) => {
+		stopPropagation(e);
+		if (!this.state.model?.closeOverlayOnClick())
+			return;
+
+		DialogModule.close();
+	};
 }

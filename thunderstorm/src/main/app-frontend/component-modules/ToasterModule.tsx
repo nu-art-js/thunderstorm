@@ -22,7 +22,7 @@
 import * as React from 'react';
 import {Module, Second} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
-import {TS_ToastBase} from '../components/TS_Toaster';
+import {TS_Toast} from '../components/TS_Toaster';
 
 export type Toast_Model = {
 	duration: number;
@@ -76,15 +76,15 @@ export class ToastModule_Class
 	}
 
 	public toastError(errorMessage: string, interval: number = Interval_DefaultToast) {
-		this.toast(TS_ToastBase({text: errorMessage, toastType: 'error'}), interval);
+		this.toast(TS_Toast({text: errorMessage, toastType: 'error'}), interval);
 	}
 
 	public toastSuccess(successMessage: string, interval: number = Interval_DefaultToast) {
-		this.toast(TS_ToastBase({text: successMessage, toastType: 'success'}), interval);
+		this.toast(TS_Toast({text: successMessage, toastType: 'success'}), interval);
 	}
 
 	public toastInfo(infoMessage: string, interval: number = Interval_DefaultToast) {
-		this.toast(TS_ToastBase({text: infoMessage, toastType: 'info'}), interval);
+		this.toast(TS_Toast({text: infoMessage, toastType: 'info'}), interval);
 	}
 
 	private toast(_message: React.ReactNode, interval: number = Interval_DefaultToast) {

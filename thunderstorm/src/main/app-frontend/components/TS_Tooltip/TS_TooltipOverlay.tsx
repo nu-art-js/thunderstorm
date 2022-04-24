@@ -22,11 +22,11 @@ import * as React from 'react';
 import {Tooltip_Model, TooltipListener, TooltipModule} from '../../component-modules/TooltipModule';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_setTimeout} from '@nu-art/ts-common';
-import './TS_Tooltip.scss';
+import './TS_TooltipOverlay.scss';
 
 type State = { model?: Tooltip_Model };
 
-export class TS_Tooltip
+export class TS_TooltipOverlay
 	extends ComponentSync<{}, State>
 	implements TooltipListener {
 

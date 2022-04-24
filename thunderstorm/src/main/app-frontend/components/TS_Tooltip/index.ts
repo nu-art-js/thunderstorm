@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_Tooltip';
+export * from './TS_TooltipOverlay';

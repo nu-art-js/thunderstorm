@@ -20,48 +20,64 @@
  */
 
 import * as React from 'react';
+import {DialogModule} from '../../component-modules/DialogModule';
 import {ComponentSync} from '../../core/ComponentSync';
-import {TS_Overlay} from '../TS_Overlay';
-import {stopPropagation} from '../../utils/tools';
-import {Dialog_Model, DialogListener, DialogModule} from '../../component-modules/DialogModule';
+import {_className} from '../../utils/tools';
+import {LL_H_C} from '../Layouts';
+import {TS_Button} from '../TS_Button';
 import './TS_Dialog.scss';
 
+export type DialogButtonModelV2 = {
+	content: React.ReactNode;
+	associatedKeys: string[];
+	action: () => void;
+}
+type Props<P> = P & { className?: string }
+type State<S> = S & { inProgress: boolean }
 
-type Props = {}
+export abstract class TS_Dialog<P, S = {}>
+	extends ComponentSync<Props<P>, State<S>> {
 
-type State = { model?: Dialog_Model };
-
-export class TS_Dialog
-	extends ComponentSync<Props, State>
-	implements DialogListener {
-
-	protected deriveStateFromProps(nextProps: Props): State {
-		return {};
+	protected constructor(p: Props<P>) {
+		super(p);
 	}
 
-	__showDialog = (model?: Dialog_Model): void => {
-		this.setState({model});
-	};
+	protected deriveStateFromProps(nextProps: Props<P>) {
+		return {inProgress: this.state?.inProgress || false} as unknown as State<S>;
+	}
 
 	render() {
-		const model = this.state.model;
-		if (!model)
-			return '';
-
-		return (
-			<div className="ts-dialog">
-				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked}>
-					{model.content}
-				</TS_Overlay>
-			</div>
-		);
+		return <div className="ts-dialog">
+			{this.renderDialog()}
+		</div>;
 	}
 
-	private onOverlayClicked = (e: React.MouseEvent) => {
-		stopPropagation(e);
-		if (!this.state.model?.closeOverlayOnClick())
+	protected abstract renderDialog(): React.ReactNode;
+
+	protected renderButtons(...buttons: DialogButtonModelV2[]): React.ReactNode {
+		return <LL_H_C
+			className={_className('ts-dialog__buttons', this.props.className)}
+			ref={(instance: HTMLDivElement) => instance?.focus()}
+			tabIndex={-1}
+			onKeyDown={event => {
+				const action = buttons.find(b => b.associatedKeys.includes(event.key))?.action;
+				action && this.buttonAction(action);
+			}}>
+			{buttons.map((button, idx) => <TS_Button key={idx} onClick={(e) => this.buttonAction(button.action)}>{button.content}</TS_Button>)}
+		</LL_H_C>;
+	}
+
+	protected buttonAction(action: () => void) {
+		if (this.state.inProgress)
 			return;
 
+		action();
+	}
+
+	protected dismissDialog = () => {
 		DialogModule.close();
+	};
+
+	protected ignore = () => {
 	};
 }

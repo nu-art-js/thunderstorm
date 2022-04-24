@@ -1,4 +1,4 @@
-/*
+/*!
  * Thunderstorm is a full web app framework!
  *
  * Typescript & Express backend infrastructure that natively runs on firebase function
@@ -19,5 +19,20 @@
  * limitations under the License.
  */
 
-export * from './TS_ToastOverlay';
-export * from './TS_Toast';
+@use "../Layouts/Layouts_" as *;
+@use "../../styles/declaration/basic" as *;
+
+.ts-dialog__overlay {
+  .ts-overlay {
+    @extend %match_parent;
+    @extend %ll_h_c;
+    z-index: 100;
+    background: #00000020;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .ts-overlay__child {
+    z-index: 101;
+  }
+}
