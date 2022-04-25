@@ -111,8 +111,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const nodeRefResolver = this.nodeResolver(nodePath, renderChildren, filteredKeys);
 		const containerRefResolver = this.resolveContainer(nodePath, renderChildren, filteredKeys);
 
+		const isSelected = _data === this.state.selected.item;
+
 		return <Fragment key={nodePath}>
-			{this.renderItem(data, nodePath, key, nodeRefResolver, level, expanded)}
+			{this.renderItem(data, nodePath, key, nodeRefResolver, level, isSelected, expanded)}
 			{this.renderChildren(data, nodePath, _path, level, filteredKeys, renderChildren, adjustedNode, containerRefResolver)}
 		</Fragment>;
 	};
@@ -153,19 +155,13 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			</div>);
 	}
 
-	private renderItem(item: any, path: string, key: string, nodeRefResolver: (_ref: HTMLDivElement) => void, level: number, expanded?: boolean) {
+	private renderItem(item: any, path: string, key: string, nodeRefResolver: (_ref: HTMLDivElement) => void, level: number, isSelected: boolean, expanded?: boolean) {
 		if (this.state.adapter.hideRoot && path.length === 1)
 			return null;
 
 		const TreeNodeRenderer: _BaseNodeRenderer<any> = this.state.adapter.treeNodeRenderer;
 		// console.log("isParent: ", this.state.adapter.isParent(item));
 		const isParent = this.state.adapter.isParent(item);
-		const isSelected = path === this.state.selected.path || item === this.state.selected.item;
-		if (isSelected) {
-			this.state.selected.path = path;
-			this.state.selected.item = item;
-		}
-
 
 		const node: TreeNode = {
 			adapter: this.state.adapter,
