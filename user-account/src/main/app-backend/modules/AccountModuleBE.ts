@@ -60,7 +60,7 @@ function getUIAccount(account: DB_Account): UI_Account {
 	return {email, _id};
 }
 
-export class AccountsModule_Class
+export class AccountsModuleBE_Class
 	extends Module<Config>
 	implements QueryRequestInfo {
 	constructor() {
@@ -308,4 +308,4 @@ export class AccountsModule_Class
 }
 
 
-export const AccountModule = new AccountsModule_Class();
+export const AccountModuleBE = new AccountsModuleBE_Class();

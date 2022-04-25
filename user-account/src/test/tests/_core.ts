@@ -18,11 +18,11 @@
  */
 
 import {__custom} from "@nu-art/testelot";
-import {AccountModule} from "../_main";
+import {AccountModuleBE} from "../_main";
 
 export function cleanup() {
 	return __custom(async () => {
-		const _AccountModule = AccountModule;
+		const _AccountModule = AccountModuleBE;
 		// @ts-ignore
 		for (const firestoreCollection of [_AccountModule.accounts, _AccountModule.sessions]) {
 			await firestoreCollection.deleteAll();

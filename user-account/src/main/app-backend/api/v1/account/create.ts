@@ -24,7 +24,7 @@ import {
 
 
 import {
-	AccountModule,
+	AccountModuleBE,
 	AccountApi_Create,
 	Request_CreateAccount
 } from "./_imports";
@@ -42,7 +42,7 @@ class ServerApi_Account_Create
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_CreateAccount) {
 		this.assertProperty(body, ["password", "email"]);
 
-		return AccountModule.create(body);
+		return AccountModuleBE.create(body);
 	}
 }
 

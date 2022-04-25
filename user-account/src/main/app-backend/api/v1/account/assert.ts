@@ -22,7 +22,7 @@ import {ApiException, ApiResponse, ExpressRequest, ServerApi} from "@nu-art/thun
 import {__stringify} from "@nu-art/ts-common";
 import {
 	AccountApi_AssertLoginSAML,
-	AccountModule,
+	AccountModuleBE,
 	PostAssertBody,
 	QueryParam_Email,
 	QueryParam_RedirectUrl,
@@ -50,7 +50,7 @@ class AssertSamlToken
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
 
 			const userEmail = data.userId;
-			const {sessionId: userToken} = await AccountModule.loginSAML(userEmail);
+			const {sessionId: userToken} = await AccountModuleBE.loginSAML(userEmail);
 
 			let redirectUrl = data.loginContext[QueryParam_RedirectUrl];
 

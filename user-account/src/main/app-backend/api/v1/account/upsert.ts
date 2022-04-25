@@ -1,5 +1,5 @@
 import {ApiResponse, ExpressRequest, RemoteProxy, ServerApi} from '@nu-art/thunderstorm/backend';
-import {AccountApi_Upsert, AccountModule, Request_UpsertAccount} from './_imports';
+import {AccountApi_Upsert, AccountModuleBE, Request_UpsertAccount} from './_imports';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {tsValidateExists} from '@nu-art/ts-common';
 
@@ -14,7 +14,7 @@ class ServerApi_Account_Upsert
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UpsertAccount) {
-		return AccountModule.upsert(body);
+		return AccountModuleBE.upsert(body);
 	}
 }
 

@@ -25,7 +25,7 @@ import {
 	testLoginWithWrongUser,
 	testSuccessfulLogin
 } from "./tests/create-user";
-import {AccountModule} from "./_main";
+import {AccountModuleBE} from "./_main";
 import {__scenario} from "@nu-art/testelot";
 import {FirebaseModule} from "@nu-art/firebase/backend";
 
@@ -39,7 +39,7 @@ mainScenario.add(testBadSessionID());
 
 module.exports = new StormTester()
 	.addModules(FirebaseModule)
-	.addModules(AccountModule)
+	.addModules(AccountModuleBE)
 	.setScenario(mainScenario)
 	.build();
 

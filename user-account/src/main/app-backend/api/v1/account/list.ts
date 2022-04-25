@@ -24,7 +24,7 @@ import {
 } from "@nu-art/thunderstorm/backend";
 import {
 	AccountApi_ListAccounts,
-	AccountModule,
+	AccountModuleBE,
     UI_Account
 } from "./_imports";
 import {HttpMethod} from "@nu-art/thunderstorm";
@@ -38,7 +38,7 @@ class ListAccounts
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		const accounts: UI_Account[] = await AccountModule.listUsers();
+		const accounts: UI_Account[] = await AccountModuleBE.listUsers();
 		return {accounts}
 	}
 }
