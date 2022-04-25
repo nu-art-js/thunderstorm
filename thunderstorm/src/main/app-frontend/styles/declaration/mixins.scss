@@ -34,9 +34,8 @@
 
 @function buildPalette($baseColor,$steps:7) {
   $colorsList: ();
-  @for $i from 0 through $steps {
-    $base: $steps+1;
-    $lightness: math.percentage(math.div($i, $base));
+  @for $i from 0 to $steps {
+    $lightness: math.percentage(math.div($i, $steps));
     $newColor: scale-color($baseColor, $lightness: $lightness);
     $colorsList: list.append($colorsList, #{$newColor});
   }
