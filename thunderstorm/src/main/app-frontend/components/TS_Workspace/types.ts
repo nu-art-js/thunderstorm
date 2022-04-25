@@ -1,7 +1,8 @@
 import * as React from 'react';
 import {DB_Object, TypedMap} from '@nu-art/ts-common';
 
-export type Props_BasePanel<Config> = {
+export type Props_ConfigChanged = { onConfigChanged: () => void };
+export type Props_BasePanel<Config> = Props_ConfigChanged & {
 	config: Config
 	renderers: TypedMap<React.ElementType>
 }
