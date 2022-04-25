@@ -1,10 +1,11 @@
 import * as React from 'react';
-import {Menu_Model, MenuListener} from '../../component-modules/MenuModule';
+import {Menu_Model, MenuListener, MenuModule} from '../../component-modules/MenuModule';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_PopupMenuOverlay.scss';
 import {TS_Overlay} from '../TS_Overlay';
 import {TS_Tree} from '../TS_Tree';
 import {generateHex} from '@nu-art/ts-common';
+import {OnWindowResized} from '../../modules/WindowModule';
 
 export type MenuPosition =
 	{ left: number, top: number }
@@ -20,12 +21,20 @@ type Prop = {}
 
 export class TS_PopupMenuOverlay
 	extends ComponentSync<Prop, State>
-	implements MenuListener {
+	implements MenuListener, OnWindowResized {
+
+	__onWindowResized(): void {
+		this.ref = undefined;
+		if (this.state.menuModel)
+			MenuModule.hide(this.state.menuModel.id);
+	}
 
 	private ref?: HTMLDivElement;
 	private minimumMargin: number = 5;
+	private currentPos?: MenuPosition;
 
 	__onMenuDisplay = (element: Menu_Model) => {
+		this.currentPos = element.pos;
 		this.setState({menuModel: element, open: !!element});
 	};
 
@@ -35,6 +44,7 @@ export class TS_PopupMenuOverlay
 			return;
 
 		this.ref = undefined;
+		this.currentPos = undefined;
 		this.setState({menuModel: undefined});
 	};
 
@@ -50,22 +60,33 @@ export class TS_PopupMenuOverlay
 	};
 
 	isInBounds() {
+		console.log('1', this.ref);
 		if (!this.ref)
 			return;
 
 		const boundingClientRect = this.ref.getBoundingClientRect();
 
-		return !(boundingClientRect.top < this.minimumMargin ||
-			boundingClientRect.left < this.minimumMargin ||
-			boundingClientRect.right > (window.innerWidth - this.minimumMargin) ||
-			boundingClientRect.bottom > (window.innerHeight - this.minimumMargin));
+		return this.isThisInBounds(
+			boundingClientRect.left,
+			boundingClientRect.top,
+			boundingClientRect.right,
+			boundingClientRect.bottom);
+	}
+
+	private isThisInBounds(left: number, top: number, right: number, bottom: number): boolean {
+		return !(top < this.minimumMargin ||
+			left < this.minimumMargin ||
+			right > (window.innerWidth - this.minimumMargin) ||
+			bottom > (window.innerHeight - this.minimumMargin));
 	}
 
 	private setBounds() {
 		if (!this.ref || !this.state.menuModel || !this.state.menuModel.pos)
 			return;
-
+		console.log('3', 'setting bounds');
 		const boundingClientRect = this.ref.getBoundingClientRect();
+		console.log('4', boundingClientRect);
+		console.log('5', this.currentPos);
 		let left: number = boundingClientRect.left;
 		let top: number = boundingClientRect.top;
 
@@ -75,9 +96,9 @@ export class TS_PopupMenuOverlay
 		if (boundingClientRect.bottom > (window.innerHeight - this.minimumMargin))
 			top = window.innerHeight - boundingClientRect.height - this.minimumMargin;
 
-		if (this.state.menuModel)
-			this.state.menuModel.pos = {left: left, top: top};
-		else return;
+		this.currentPos = {left: left, top: top};
+		console.log('6', this.currentPos);
+
 		this.forceUpdate();
 	}
 
@@ -91,14 +112,12 @@ export class TS_PopupMenuOverlay
 		if (!this.state.open)
 			return '';
 
-
-//tree instead of menu component
 		return <div className="ts-popup-menu">
 			<TS_Overlay showOverlay={this.state.open} onClickOverlay={() => {
 				this.setState({open: false});
 				this.ref = undefined;
 			}}>
-				<div className="ts-popup-menu__menu" style={menuModel.pos}
+				<div className="ts-popup-menu__menu" style={this.currentPos}
 						 ref={_ref => {
 							 if (this.ref || !_ref)
 								 return;
