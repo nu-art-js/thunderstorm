@@ -97,10 +97,14 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 
 
 	//Gets called whenever dragging stops
-	onDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
-		// WorkspaceModuleFE.setWorkspacePanelSizes(this.state.page, panelSizes);
+	onDragEnd = (e: React.DragEvent<HTMLDivElement>, firstPanelIndex: number, secondPanelIndex: number) => {
+		//Set config panels factors
+		this.props.config.panels[firstPanelIndex].factor = this.state.factors[firstPanelIndex];
+		this.props.config.panels[secondPanelIndex].factor = this.state.factors[secondPanelIndex];
+		//Init vars
 		this.dragStart = 0;
 		this.state.factors.forEach((factor, i) => this.props.config.panels[i].factor = factor);
+		this.props.onConfigChanged()
 	};
 
 
@@ -127,7 +131,7 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 								 tabIndex={1}
 								 onDragStart={this.onDragStart}
 								 onDrag={(e) => this.separatorOnDrag(e, i, i + 1)}
-								 onDragEnd={(e) => this.onDragEnd(e)}/>}
+								 onDragEnd={(e) => this.onDragEnd(e,i,i+1)}/>}
 				</Fragment>)}
 			</div>
 		);
