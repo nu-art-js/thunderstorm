@@ -38,5 +38,21 @@
     box-shadow: 1px 1px 4px 0 rgba(0, 0, 0, 0.3);
     border: solid 1px transparent;
     background-color: white;
+
+    .ts-tree {
+      .ts-tree__children-container {
+      }
+
+      .ts-tree__node {
+        padding-inline: 10px;
+
+        &:hover {
+          background: cornsilk;
+        }
+      }
+
+      .ts-tree__parent-node {
+      }
+    }
   }
 }
