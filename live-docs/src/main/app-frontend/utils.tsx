@@ -17,15 +17,16 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
+// import * as React from 'react';
 import {ToastBuilder} from '@nu-art/thunderstorm/frontend';
 import {LiveDocActionResolver, LiveDocsModule} from './modules/LiveDocsModule';
 
 const resolver: LiveDocActionResolver = (docKey: string) => {
 	const doc = LiveDocsModule.get(docKey);
 
-	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${docKey}` : doc.document).setActions(
-		[<button style={{marginRight: 8}} onClick={() => showEditModalExample(docKey)}>Edit</button>]);
+	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${docKey}` : doc.document);
+	// .setActions(
+	// 	[<button style={{marginRight: 8}} onClick={() => showEditModalExample(docKey)}>Edit</button>]);
 };
 
 export function setDefaultLiveDocEditor() {
