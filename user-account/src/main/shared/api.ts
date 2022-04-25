@@ -1,5 +1,5 @@
 /*
- * Permissions management system, define access level for each of 
+ * Permissions management system, define access level for each of
  * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
@@ -51,6 +51,7 @@ export type Request_UpsertAccount = {
 	email: string
 	password: string
 	password_check: string
+	frontType?: FrontType
 }
 
 export type Request_CreateAccount = {
@@ -106,7 +107,7 @@ export type PostAssertBody = {
 
 export type AccountApi_AddNewAccount = ApiWithBody<'/v1/account/add-new-account', Request_AddNewAccount, UI_Account>
 export type AccountApi_Create = ApiWithBody<'/v1/account/create', Request_CreateAccount, Response_Auth>
-export type AccountApi_Upsert = ApiWithBody<'/v1/account/upsert', Request_UpsertAccount, Response_Auth>
+export type AccountApi_Upsert = ApiWithBody<'/v1/account/upsert', Request_UpsertAccount, UI_Account>
 export type AccountApi_Login = ApiWithBody<'/v1/account/login', Request_LoginAccount, Response_Auth>
 export type AccountApi_Logout = ApiWithBody<'/v1/account/logout', {}, void>
 export type AccountApi_LoginSAML = ApiWithQuery<"/v1/account/login-saml", Response_LoginSAML, RequestParams_LoginSAML>

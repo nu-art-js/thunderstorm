@@ -151,17 +151,19 @@ export class AccountsModule_Class
 	}
 
 	async upsert(request: Request_UpsertAccount) {
+		let callback: (() => Promise<void[]>) = () => Promise.resolve([])
 		const account = await this.accounts.runInTransaction(async (transaction) => {
 			const existAccount = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
 			if (existAccount)
 				return this.changePassword(request.email, request.password, transaction);
 
+			callback = async () => dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
 			return this.createImpl(request, transaction);
 		});
 
-		const session = await this.login(request);
-		await dispatch_onNewUserRegistered.dispatchModuleAsync([getUIAccount(account)]);
-		return session;
+		await this.loginValidate(request,false);
+		await callback()
+		return getUIAccount(account);
 	}
 
 	async addNewAccount(email: string, password?: string, password_check?: string): Promise<UI_Account> {
@@ -229,6 +231,10 @@ export class AccountsModule_Class
 	}
 
 	async login(request: Request_LoginAccount): Promise<Response_Auth> {
+		return await (this.loginValidate(request) as Promise<Response_Auth>);
+	}
+
+	private async loginValidate(request: Request_LoginAccount, doCreateSession: boolean = true): Promise<Response_Auth | undefined> {
 		request.email = request.email.toLowerCase();
 		const query = {where: {email: request.email}};
 		const account = await this.accounts.queryUnique(query);
@@ -246,7 +252,9 @@ export class AccountsModule_Class
 			await this.accounts.upsert(account);
 		}
 
-		const session = await this.upsertSession(account._id, request.frontType);
+		let session: Response_Auth | undefined
+		if(doCreateSession)
+			session = await this.upsertSession(account._id, request.frontType);
 
 		await dispatch_onUserLogin.dispatchModuleAsync([getUIAccount(account)]);
 		return session;
