@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-import {AccountModule} from "../modules/AccountModule";
+import {AccountModuleFE} from '../modules/AccountModuleFE';
 
 export const Frontend_ModulePack_Users = [
-	AccountModule,
+	AccountModuleFE,
 ];
 
-export * from "../modules/AccountModule"
+export * from '../modules/AccountModuleFE';
 

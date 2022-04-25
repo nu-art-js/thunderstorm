@@ -23,7 +23,7 @@ import {
     __custom
 } from "@nu-art/testelot";
 import {
-	AccountModule,
+	AccountModuleBE,
 	DB_Account
 } from "../_main";
 import {cleanup} from "./_core";
@@ -36,7 +36,7 @@ export function createUser() {
 	const scenario = __scenario("Create-User");
 	scenario.add(cleanup());
 	scenario.add(__custom(async () => {
-		return await AccountModule.createAccount({email: "test-account1@gmail.com", password: "pah", password_check: "pah"});
+		return await AccountModuleBE.createAccount({email: "test-account1@gmail.com", password: "pah", password_check: "pah"});
 	}).setWriteKey(userContextKey1));
 	return scenario;
 }
@@ -44,8 +44,8 @@ export function createUser() {
 export function testSuccessfulLogin() {
 	const scenario = __scenario("successful login");
 	scenario.add(__custom(async () => {
-		const responseAuth = await AccountModule.login({email: "test-account1@gmail.com", password: "pah"});
-		await AccountModule.validateSessionId(responseAuth.sessionId);
+		const responseAuth = await AccountModuleBE.login({email: "test-account1@gmail.com", password: "pah"});
+		await AccountModuleBE.validateSessionId(responseAuth.sessionId);
 	}).setReadKey(userContextKey1));
 	return scenario;
 }
@@ -53,7 +53,7 @@ export function testSuccessfulLogin() {
 export function testLoginWithWrongPass() {
 	const scenario = __scenario("wrong pass");
 	scenario.add(__custom(async () => {
-		await AccountModule.login({email: "test-account1@gmail.com", password: "wrong"});
+		await AccountModuleBE.login({email: "test-account1@gmail.com", password: "wrong"});
 	}).setReadKey(userContextKey1).expectToFail(ApiException));
 	return scenario;
 }
@@ -61,7 +61,7 @@ export function testLoginWithWrongPass() {
 export function testLoginWithWrongUser() {
 	const scenario = __scenario("wrong user");
 	scenario.add(__custom(async () => {
-		await AccountModule.login({email: "wrong@gmail.com", password: "pah"});
+		await AccountModuleBE.login({email: "wrong@gmail.com", password: "pah"});
 	}).setReadKey(userContextKey1).expectToFail(ApiException));
 	return scenario;
 }
@@ -69,7 +69,7 @@ export function testLoginWithWrongUser() {
 export function testBadSessionID() {
 	const scenario = __scenario("bad session id");
 	scenario.add(__custom(async () => {
-		await AccountModule.validateSessionId("1234");
+		await AccountModuleBE.validateSessionId("1234");
 	}).setReadKey(userContextKey1).expectToFail(ApiException));
 	return scenario;
 }

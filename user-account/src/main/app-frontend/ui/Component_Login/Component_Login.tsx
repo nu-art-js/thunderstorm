@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import {_keys} from '@nu-art/ts-common';
-import {AccountModule} from '../../modules/AccountModule';
+import {AccountModuleFE} from '../../modules/AccountModuleFE';
 import {Request_LoginAccount} from '../../../shared/api';
 import './Component_Login.scss';
 import {LL_V_C, ToastModule, TS_Button, TS_Input} from '@nu-art/thunderstorm/frontend';
@@ -60,11 +60,11 @@ export class Component_Login
 	render() {
 		const data = this.state.data;
 		return <LL_V_C className="ts-account__authenticate">
-			{_keys(form).map(key => {
+			{_keys(form).map((key, i) => {
 					const field = form[key];
 					return <TS_Input
+						key={i}
 						id={key}
-						key={key}
 						value={data[key]}
 						type={field.type}
 						placeholder={field.hint}
@@ -98,6 +98,6 @@ export class Component_Login
 		if (errors.length > 0)
 			return ToastModule.toastError(`Wrong input:\n${errors.join('\n')}`);
 
-		AccountModule.login(this.state.data as Request_LoginAccount);
+		AccountModuleFE.login(this.state.data as Request_LoginAccount);
 	};
 }

@@ -66,7 +66,7 @@ export interface OnAccountsLoaded {
 const dispatch_onAccountsLoaded = new ThunderDispatcher<OnAccountsLoaded, "__onAccountsLoaded">("__onAccountsLoaded");
 const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, "__onLoginStatusUpdated">("__onLoginStatusUpdated");
 
-export class AccountModule_Class
+export class AccountModuleFE_Class
 	extends Module<Config> {
 
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
@@ -201,8 +201,7 @@ export class AccountModule_Class
 				this.accounts = res.accounts.filter(account => account._id);
 				dispatch_onAccountsLoaded.dispatchUI();
 			});
-
 	}
 }
 
-export const AccountModule = new AccountModule_Class();
+export const AccountModuleFE = new AccountModuleFE_Class();

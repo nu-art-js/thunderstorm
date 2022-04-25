@@ -19,7 +19,7 @@
 
 import * as React from 'react';
 import {_keys, addItemToArray} from '@nu-art/ts-common';
-import {AccountModule} from '../modules/AccountModule';
+import {AccountModuleFE} from '../modules/AccountModuleFE';
 import {Request_CreateAccount} from '../../shared/api';
 import {LL_V_C, ToastModule, TS_Button, TS_Input} from '@nu-art/thunderstorm/frontend';
 
@@ -68,9 +68,10 @@ export class Component_Register
 	render() {
 		const data = this.state.data;
 		return <LL_V_C className="ts-account__authenticate">
-			{_keys(form).map(key => {
+			{_keys(form).map((key, i) => {
 					const field = form[key];
 					return <TS_Input
+						key={i}
 						id={key}
 						value={data[key]}
 						type={field.type}
@@ -105,6 +106,6 @@ export class Component_Register
 		if (errors.length > 0)
 			return ToastModule.toastError(`Wrong input:\n${errors.join('\n')}`);
 
-		AccountModule.create(this.state.data as Request_CreateAccount);
+		AccountModuleFE.create(this.state.data as Request_CreateAccount);
 	};
 }
