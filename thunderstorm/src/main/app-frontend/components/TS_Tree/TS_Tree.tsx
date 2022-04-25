@@ -66,7 +66,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	protected deriveStateFromProps(nextProps: P) {
 		return {
 			adapter: nextProps.adapter,
-			expanded: (this.props.id !== nextProps.id ? nextProps.expanded : this.state?.expanded) || {'/': true},
+			expanded: nextProps.expanded || this.state?.expanded || {'/': true},
 			selected: {path: nextProps.selectedPath, item: nextProps.selectedItem}
 		};
 	}
