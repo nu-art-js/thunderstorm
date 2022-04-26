@@ -39,7 +39,6 @@ import {
 	PreDBObject,
 	ThisShouldNotHappenException,
 	tsValidate,
-	tsValidateRegexp,
 	tsValidateTimestamp,
 	ValidationException,
 	ValidatorTypeResolver
@@ -55,26 +54,7 @@ import {
 } from '@nu-art/thunderstorm/backend';
 import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
 import {BadInputErrorBody, ErrorKey_BadInput} from '../shared/types';
-
-const idLength = 32;
-export const tsValidateId = (length: number, mandatory: boolean = true) => tsValidateRegexp(new RegExp(`^[0-9a-f]{${length}}$`), mandatory);
-export const tsValidateEmail = tsValidateRegexp(
-	/[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/);
-export const tsValidateBucketUrl = (mandatory?: boolean) => tsValidateRegexp(
-	/gs?:\/\/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
-export const tsValidateGeneralUrl = (mandatory?: boolean) => tsValidateRegexp(
-	/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
-export const tsValidateVersion = tsValidateRegexp(/\d{1,3}\.\d{1,3}\.\d{1,3}/);
-export const tsValidateUniqueId = tsValidateId(idLength);
-export const tsValidateOptionalId = tsValidateId(idLength, false);
-export const tsValidateStringWithDashes = tsValidateRegexp(/^[A-Za-z-]+$/);
-export const tsValidateStringAndNumbersWithDashes = tsValidateRegexp(/^[0-9A-Za-z-]+$/);
-export const tsValidator_JavaObjectMemberName = tsValidateRegexp(/^[a-z][a-zA-Z0-9]+$/);
-export const tsValidateNameWithDashesAndDots = tsValidateRegexp(/^[a-z-.]+$/);
-export const tsValidator_LowercaseStringWithDashes = tsValidateRegexp(/^[a-z-.]+$/);
-export const tsValidator_LowerUpperStringWithSpaces = tsValidateRegexp(/^[A-Za-z ]+$/);
-export const tsValidator_LowerUpperStringWithDashesAndUnderscore = tsValidateRegexp(/^[A-Za-z-_]+$/);
-export const tsValidator_InternationalPhoneNumber = tsValidateRegexp(/^\+(?:[0-9] ?){6,14}[0-9]$/);
+import {dbIdLength, tsValidateUniqueId, tsValidateVersion} from '../shared/validators';
 
 
 export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
@@ -439,7 +419,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	}
 
 	protected generateId() {
-		return generateHex(idLength);
+		return generateHex(dbIdLength);
 	}
 
 	/**
