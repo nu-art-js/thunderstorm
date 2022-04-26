@@ -38,7 +38,7 @@ export class TS_Overlay
 
 		const overlayChild = <div className="ts-overlay__child" onClick={stopPropagation}>{this.props.children}</div>;
 		return <>
-			<div className="ts-overlay" onClick={event => this.props.onClickOverlay(event)}>
+			<div className="ts-overlay" onClick={event => this.props.onClickOverlay(event)} onContextMenu={stopPropagation}>
 				{!this.props.flat && overlayChild}
 			</div>
 			{this.props.flat && overlayChild}
