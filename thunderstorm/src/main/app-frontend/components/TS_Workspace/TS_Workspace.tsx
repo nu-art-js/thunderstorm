@@ -1,23 +1,42 @@
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
+import {compare} from '@nu-art/ts-common';
 import * as React from 'react';
 import {BaseAsyncState, ComponentAsync} from '../../core/ComponentAsync';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_Workspace.scss';
 import {PanelConfig, Props_BasePanel, Props_PanelParent} from './types';
 
+type State_WorkspacePanel<State, Config> = BaseAsyncState & State & {
+	config: Config
+}
 
 export abstract class PanelBaseSync<Config, State = {}, ExtraProps = {}>
-	extends ComponentSync<Props_BasePanel<Config> & ExtraProps, State> {
-	protected deriveStateFromProps(nextProps: Props_BasePanel<Config>): BaseAsyncState & State {
-		return {} as State;
+	extends ComponentSync<Props_BasePanel<Config> & ExtraProps, State_WorkspacePanel<State, Config>> {
+
+	protected deriveStateFromProps(nextProps: Props_BasePanel<Config>): State_WorkspacePanel<State, Config> {
+		return {config: nextProps.config} as State_WorkspacePanel<State, Config>;
+	}
+
+	shouldComponentUpdate(nextProps: Readonly<Props_BasePanel<Config> & ExtraProps>, nextState: Readonly<State_WorkspacePanel<State, Config>>, nextContext: any): boolean {
+		if (super.shouldComponentUpdate(nextProps, nextState, nextContext))
+			return true;
+
+		return !compare(nextState.config, nextProps.config as Config);
 	}
 }
 
 export abstract class PanelBaseAsync<Config, State = {}, ExtraProps = {}>
-	extends ComponentAsync<Props_BasePanel<Config> & ExtraProps, State> {
-	protected async deriveStateFromProps(nextProps: Props_BasePanel<Config>): Promise<BaseAsyncState & State> {
-		return {} as State;
+	extends ComponentAsync<Props_BasePanel<Config> & ExtraProps, State_WorkspacePanel<State, Config>> {
+	protected async deriveStateFromProps(nextProps: Props_BasePanel<Config>): Promise<State_WorkspacePanel<State, Config>> {
+		return {config: nextProps.config} as State_WorkspacePanel<State, Config>;
+	}
+
+	shouldComponentUpdate(nextProps: Readonly<Props_BasePanel<Config> & ExtraProps>, nextState: Readonly<State_WorkspacePanel<State, Config>>, nextContext: any): boolean {
+		if (super.shouldComponentUpdate(nextProps, nextState, nextContext))
+			return true;
+
+		return !compare(nextState.config, nextProps.config as Config);
 	}
 }
 
