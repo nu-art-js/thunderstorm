@@ -40,9 +40,7 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 			factors = factors.map(f => f * containerFactor);
 		}
 
-		const sumOfFactors = factors.reduce((a, b) => a + b, 0);
-		console.log(sumOfFactors);
-
+		// const sumOfFactors = factors.reduce((a, b) => a + b, 0);
 		return {factors};
 	}
 
