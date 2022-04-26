@@ -48,9 +48,15 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 
 //On drag logic for separator
 	separatorOnDrag = (e: React.DragEvent<HTMLDivElement>, firstPanelIndex: number, secondPanelIndex: number) => {
+		const firstPanel = this.props.config.panels[firstPanelIndex];
+		const secondPanel = this.props.config.panels[secondPanelIndex];
+		const statePanelsFactors = this.state.factors;
+
 		//Gather data
 		const delta = e[this.props.mousePos] - this.dragStart;
 		const parentSize = e.currentTarget.parentElement?.[this.props.dimensionClientProp] as number;
+
+		const separatorSize = e.currentTarget?.[this.props.dimensionClientProp] as number;
 
 		//Calculate new heights
 		const firstPanelDimension = this.firstPanelBounds[this.props.secondEdge] - this.firstPanelBounds[this.props.firstEdge];
@@ -59,8 +65,8 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 		let firstPanelSize = firstPanelDimension + delta;
 		let secondPanelSize = secondPanelDimension - delta;
 
-		const minFirstPanel = this.props.config.panels[firstPanelIndex].min || 100;
-		const minSecondPanel = this.props.config.panels[secondPanelIndex].min || 100;
+		const minFirstPanel = firstPanel.min || 100;
+		const minSecondPanel = secondPanel.min || 100;
 
 		if (firstPanelDimension + delta < minFirstPanel) {
 			firstPanelSize = minFirstPanel;
@@ -73,10 +79,16 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 		}
 
 		const firstPanelFactor = firstPanelSize / parentSize;
-		const sum = this.state.factors[firstPanelIndex] + this.state.factors[secondPanelIndex];
+		const sum = statePanelsFactors[firstPanelIndex] + statePanelsFactors[secondPanelIndex];
 
-		this.state.factors[firstPanelIndex] = firstPanelFactor;
-		this.state.factors[secondPanelIndex] = sum - firstPanelFactor;
+		statePanelsFactors[firstPanelIndex] = firstPanelFactor;
+		statePanelsFactors[secondPanelIndex] = sum - firstPanelFactor;
+
+		//Set config panels factors
+		const originalFactorSum = firstPanel.factor + secondPanel.factor;
+
+		firstPanel.factor = (firstPanelSize + separatorSize / 2) / parentSize;
+		secondPanel.factor = originalFactorSum - firstPanel.factor;
 
 		this.forceUpdate();
 	};
@@ -98,13 +110,9 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 
 	//Gets called whenever dragging stops
 	onDragEnd = (e: React.DragEvent<HTMLDivElement>, firstPanelIndex: number, secondPanelIndex: number) => {
-		//Set config panels factors
-		this.props.config.panels[firstPanelIndex].factor = this.state.factors[firstPanelIndex];
-		this.props.config.panels[secondPanelIndex].factor = this.state.factors[secondPanelIndex];
 		//Init vars
 		this.dragStart = 0;
-		this.state.factors.forEach((factor, i) => this.props.config.panels[i].factor = factor);
-		this.props.onConfigChanged()
+		this.props.onConfigChanged();
 	};
 
 
@@ -131,7 +139,7 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 								 tabIndex={1}
 								 onDragStart={this.onDragStart}
 								 onDrag={(e) => this.separatorOnDrag(e, i, i + 1)}
-								 onDragEnd={(e) => this.onDragEnd(e,i,i+1)}/>}
+								 onDragEnd={(e) => this.onDragEnd(e, i, i + 1)}/>}
 				</Fragment>)}
 			</div>
 		);
