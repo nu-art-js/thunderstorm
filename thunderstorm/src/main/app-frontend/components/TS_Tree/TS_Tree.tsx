@@ -35,6 +35,7 @@ export type Props_Tree = {
 	onContextMenuClicked?: (e: React.MouseEvent, path: string, item: any) => void;
 	expanded?: TreeNodeExpandState
 	checkExpanded: (expanded: TreeNodeExpandState, path: string) => boolean | undefined
+	className?: string
 	selectedItem?: any
 	selectedPath?: string
 	adapter: Adapter
@@ -141,7 +142,6 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		};
 	}
 
-
 	private renderChildren(data: any, nodePath: string, _path: string, level: number, filteredKeys: any[], renderChildren: boolean, adjustedNode: { data: object; deltaPath?: string }, containerRefResolver: (_ref: HTMLDivElement) => void) {
 		if (!(filteredKeys.length > 0 && renderChildren))
 			return;
@@ -181,7 +181,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	}
 
 	render() {
-		return <div className="ts-tree">
+		return <div className={_className('ts-tree', this.props.className)}>
 			{this.renderNode(this.state.adapter.data, '', '', (this.state.adapter.hideRoot ? -1 : 0))}
 		</div>;
 	}
