@@ -17,14 +17,6 @@
  */
 
 import {
-	BaseDB_ApiGenerator,
-	tsValidateNameWithDashesAndDots,
-	tsValidateOptionalId,
-	tsValidateStringWithDashes,
-	tsValidateUniqueId
-} from '@nu-art/db-api-generator/backend';
-
-import {
 	CollectionName_Api,
 	CollectionName_Domain,
 	CollectionName_Level,
@@ -35,13 +27,29 @@ import {
 	DB_PermissionProject,
 	Request_CreateGroup,
 } from '../_imports';
-import {auditBy, filterDuplicates, MUSTNeverHappenException, PreDBObject, tsValidateArray, tsValidateRange, tsValidateRegexp, TypeValidator} from '@nu-art/ts-common';
+import {
+	auditBy,
+	filterDuplicates,
+	MUSTNeverHappenException,
+	PreDBObject,
+	tsValidateArray,
+	tsValidateRange,
+	tsValidateRegexp,
+	TypeValidator
+} from '@nu-art/ts-common';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {GroupPermissionsDB} from './assign';
 import {Clause_Where} from '@nu-art/firebase';
 import {ApiException} from '@nu-art/thunderstorm/app-backend/exceptions';
 import {ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
-import {AccountModule} from '@nu-art/user-account/app-backend/modules/AccountModule';
+import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/app-backend/BaseDB_ApiGenerator';
+import {AccountModuleBE} from '@nu-art/user-account/app-backend/modules/AccountModuleBE';
+import {
+	tsValidateNameWithDashesAndDots,
+	tsValidateOptionalId,
+	tsValidateStringWithDashes,
+	tsValidateUniqueId
+} from '@nu-art/db-api-generator/shared/validators';
 
 const validateProjectId = tsValidateRegexp(/^[a-z-]{3,20}$/);
 export const validateProjectName = tsValidateRegexp(/^[A-Za-z- ]{3,20}$/);
@@ -63,7 +71,7 @@ export class ProjectDB_Class
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 	}
@@ -112,7 +120,7 @@ export class DomainDB_Class
 		await ProjectPermissionsDB.queryUnique({_id: dbInstance.projectId});
 
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 	}
@@ -144,7 +152,7 @@ export class LevelDB_Class
 		await DomainPermissionsDB.queryUnique({_id: dbInstance.domainId});
 
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 	}
@@ -243,7 +251,7 @@ export class ApiDB_Class
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionApi, request?: ExpressRequest) {
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 

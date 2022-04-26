@@ -22,7 +22,7 @@ import {PermissionsAssert} from "./permissions-assert";
 import {ApiPermissionsDB, ProjectPermissionsDB} from "./db-types/managment";
 import {HttpServer} from "@nu-art/thunderstorm/backend";
 import {GroupPermissionsDB, UserPermissionsDB} from "./db-types/assign";
-import {AccountModule} from "@nu-art/user-account/backend";
+import {AccountModuleBE} from '@nu-art/user-account/app-backend/modules/AccountModuleBE';
 
 type Config = {
 	project: PreDBObject<DB_PermissionProject> & DB_BaseObject
@@ -72,7 +72,7 @@ export class PermissionsModule_Class
 	async getUsersCFsByShareGroups(usersEmails: string[], groupsIds: string[]): Promise<Response_UsersCFsByShareGroups> {
 		const toRet: Response_UsersCFsByShareGroups = {};
 		await Promise.all(usersEmails.map(async email => {
-			const account = await AccountModule.getUser(email);
+			const account = await AccountModuleBE.getUser(email);
 			if (!account)
 				return;
 

@@ -24,11 +24,9 @@ import {
 	DB_PermissionsGroup,
 	DB_PermissionsUser,
 	PredefinedGroup
-} from "../_imports";
-import {BaseDB_ApiGenerator, tsValidateStringAndNumbersWithDashes, tsValidateUniqueId} from "@nu-art/db-api-generator/backend";
-import {AccountModule, OnNewUserRegistered, OnUserLogin} from "@nu-art/user-account/backend";
-import {Clause_Where} from "@nu-art/firebase";
-import {ApiException, ExpressRequest} from "@nu-art/thunderstorm/backend";
+} from '../_imports';
+import {Clause_Where} from '@nu-art/firebase';
+import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 
 import {
 	_keys,
@@ -43,11 +41,14 @@ import {
 	tsValidateObjectValues,
 	tsValidateRegexp,
 	TypeValidator,
-} from "@nu-art/ts-common";
-import {AccessLevelPermissionsDB} from "./managment";
-import {FirestoreTransaction} from "@nu-art/firebase/backend";
-import {PermissionsShare} from "../permissions-share";
-import {UI_Account} from "@nu-art/user-account";
+} from '@nu-art/ts-common';
+import {AccessLevelPermissionsDB} from './managment';
+import {FirestoreTransaction} from '@nu-art/firebase/backend';
+import {PermissionsShare} from '../permissions-share';
+import {UI_Account} from '@nu-art/user-account';
+import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/app-backend/BaseDB_ApiGenerator';
+import {tsValidateStringAndNumbersWithDashes, tsValidateUniqueId} from '@nu-art/db-api-generator/shared/validators';
+import {AccountModuleBE, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/app-backend/modules/AccountModuleBE';
 
 const validateUserUuid = tsValidateRegexp(/^.{0,50}$/);
 const validateGroupLabel = tsValidateRegexp(/^[A-Za-z-\._ ]+$/);
@@ -74,7 +75,7 @@ export class GroupsDB_Class
 	};
 
 	constructor() {
-		super(CollectionName_Groups, GroupsDB_Class._validator, "group");
+		super(CollectionName_Groups, GroupsDB_Class._validator, 'group');
 		this.setLockKeys(['__accessLevels']);
 	}
 
@@ -131,7 +132,7 @@ export class GroupsDB_Class
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup, request?: ExpressRequest) {
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 
@@ -187,13 +188,13 @@ export class UsersDB_Class
 	};
 
 	constructor() {
-		super(CollectionName_Users, UsersDB_Class._validator, "user");
-		this.setLockKeys(["accountId"]);
+		super(CollectionName_Users, UsersDB_Class._validator, 'user');
+		this.setLockKeys(['accountId']);
 	}
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser, request?: ExpressRequest): Promise<void> {
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 
@@ -248,7 +249,7 @@ export class UsersDB_Class
 	async insertIfNotExist(email: string) {
 		return this.runInTransaction(async (transaction) => {
 
-			const account = await AccountModule.getUser(email);
+			const account = await AccountModuleBE.getUser(email);
 			if (!account)
 				throw new ApiException(404, `user not found for email ${email}`);
 
@@ -263,14 +264,14 @@ export class UsersDB_Class
 	async assignAppPermissions(assignAppPermissionsObj: AssignAppPermissions, request?: ExpressRequest) {
 		const sharedUserIds = assignAppPermissionsObj.sharedUserIds || [];
 		if (!sharedUserIds.length)
-			throw new BadImplementationException("SharedUserIds is missing");
+			throw new BadImplementationException('SharedUserIds is missing');
 
 		const groupId = GroupPermissionsDB.getPredefinedGroupId(assignAppPermissionsObj.projectId, assignAppPermissionsObj.group._id);
 		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId,
 			{groupId, customField: assignAppPermissionsObj.customField});
 
 		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
-			throw new BadImplementationException("Group to must be a part of the groups to removed array");
+			throw new BadImplementationException('Group to must be a part of the groups to removed array');
 
 		await this.runInTransaction(async (transaction) => {
 			const users = await batchAction(sharedUserIds, 10, (chunked) => {

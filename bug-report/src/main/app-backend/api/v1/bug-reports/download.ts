@@ -28,7 +28,7 @@ import {
 	Paths
 } from "./_imports";
 
-// import {AccountModule} from "@nu-art/user-account/backend";
+// import {AccountModuleBE} from "@nu-art/user-account/backend";
 
 class ServerApi_DownloadLogs
 	extends ServerApi_Post<ApiPostPath> {
@@ -38,7 +38,7 @@ class ServerApi_DownloadLogs
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Paths) {
-		// const email = await AccountModule.validateSession(request);
+		// const email = await AccountModuleBE.validateSession(request);
 		return AdminBRModule.downloadFiles(body);
 	}
 }
