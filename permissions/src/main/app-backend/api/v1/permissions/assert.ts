@@ -16,31 +16,23 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 
 
-import {AccountModule} from "@nu-art/user-account/backend";
-import {
-	PermissionsApi_AssertUserAccess,
-	Request_AssertApiForUser
-} from "./_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {PermissionsAssert} from "../../../modules/permissions-assert";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {AccountModuleBE} from '@nu-art/user-account/backend';
+import {PermissionsApi_AssertUserAccess, PermissionsAssert, Request_AssertApiForUser} from './_imports';
+import {HttpMethod} from '@nu-art/thunderstorm';
 
 class ServerApi_AssertPermissions
 	extends ServerApi<PermissionsApi_AssertUserAccess> {
 
 	constructor() {
-		super(HttpMethod.POST, "assert-user-access");
+		super(HttpMethod.POST, 'assert-user-access');
 		this.dontPrintResponse();
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_AssertApiForUser) {
-		const account = await AccountModule.validateSession(request);
+		const account = await AccountModuleBE.validateSession(request);
 		await PermissionsAssert.assertUserPermissions(body.projectId, body.path, account._id, body.requestCustomField);
 		return {userId: account.email};
 	}

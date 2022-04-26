@@ -29,7 +29,7 @@ import {
 	Request_BugReport
 } from "./_imports";
 
-// import {AccountModule} from "@nu-art/user-account/backend";
+// import {AccountModuleBE} from "@nu-art/user-account/backend";
 
 class ServerApi_SendReport
 	extends ServerApi_Post<ApiBugReport> {

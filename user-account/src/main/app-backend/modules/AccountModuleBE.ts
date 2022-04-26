@@ -31,7 +31,7 @@ import {
 	UI_Account
 } from './_imports';
 import {ApiException, ExpressRequest, HeaderKey, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
-import {tsValidateEmail} from '@nu-art/db-api-generator/backend';
+import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 

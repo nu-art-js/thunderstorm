@@ -22,8 +22,8 @@ import {Base_AccessLevels, DB_PermissionAccessLevel, DB_PermissionApi, DB_Permis
 import {AccessLevelPermissionsDB, ApiPermissionsDB} from './db-types/managment';
 import {GroupPermissionsDB, UserPermissionsDB} from './db-types/assign';
 import {HttpMethod} from '@nu-art/thunderstorm';
-import {AccountModule} from '@nu-art/user-account/backend';
 import {PermissionsModule} from './PermissionsModule';
+import {AccountModuleBE} from '@nu-art/user-account/backend';
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
 export type GroupPairWithBaseLevelsObj = { accessLevels: Base_AccessLevels[], customFields: StringMap[] };
@@ -39,7 +39,7 @@ export class PermissionsAssert_Class
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
 		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
 
-			const account = await AccountModule.validateSession(req);
+			const account = await AccountModuleBE.validateSession(req);
 			return this.assertUserPermissions(projectId, data.url, account._id, customFields);
 		})(req, data);
 	};

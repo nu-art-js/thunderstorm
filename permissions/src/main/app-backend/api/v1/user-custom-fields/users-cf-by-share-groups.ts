@@ -17,29 +17,21 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
-import {
-	PermissionsApi_UsersCFsByShareGroups,
-	Request_UsersCFsByShareGroups,
-	PermissionsModule
-} from "../permissions/_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {AccountModule} from "@nu-art/user-account/backend";
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {PermissionsApi_UsersCFsByShareGroups, PermissionsModule, Request_UsersCFsByShareGroups} from '../permissions/_imports';
+import {HttpMethod} from '@nu-art/thunderstorm';
+import {AccountModuleBE} from '@nu-art/user-account/backend';
 
 class ServerApi_UsersCFsByShareGroups
 	extends ServerApi<PermissionsApi_UsersCFsByShareGroups> {
 
 	constructor() {
-		super(HttpMethod.POST, "users-cf-by-share-groups");
+		super(HttpMethod.POST, 'users-cf-by-share-groups');
 		this.dontPrintResponse();
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UsersCFsByShareGroups) {
-		await AccountModule.validateSession(request);
+		await AccountModuleBE.validateSession(request);
 		return PermissionsModule.getUsersCFsByShareGroups(body.usersEmails, body.groupsIds);
 	}
 }

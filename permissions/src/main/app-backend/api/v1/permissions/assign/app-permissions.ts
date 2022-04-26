@@ -19,7 +19,7 @@
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {PermissionsApi_AssignAppPermissions, Request_AssignAppPermissions, UserPermissionsDB,} from '../_imports';
 import {HttpMethod, QueryParams} from '@nu-art/thunderstorm';
-import {AccountModule} from '@nu-art/user-account/app-backend/modules/AccountModule';
+import {AccountModuleBE} from '@nu-art/user-account/backend';
 
 
 class ServerApi_UserUrlsPermissions
@@ -33,7 +33,7 @@ class ServerApi_UserUrlsPermissions
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: Request_AssignAppPermissions) {
 		// TODO add to the request body the api that wants to use this feature.. in order to assert user permissions to perform an action
 		// TODO and save our ass from a potential application security bugs
-		const account = await AccountModule.validateSession(request);
+		const account = await AccountModuleBE.validateSession(request);
 
 		let assignAppPermissions;
 		if (body.appAccountId)
