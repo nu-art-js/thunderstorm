@@ -30,6 +30,7 @@ import {ResourcesModule} from '../modules/ResourcesModule';
 import {BrowserHistoryModule} from '../modules/HistoryModule';
 import {Thunder} from './Thunder';
 
+
 export abstract class ComponentSync<P = any, S = any>
 	extends React.Component<P, S> {
 
@@ -40,6 +41,12 @@ export abstract class ComponentSync<P = any, S = any>
 	constructor(props: P) {
 		super(props);
 		this.logger = new Logger(this.constructor.name);
+
+		const __render = this.render?.bind(this);
+		this.render = () => {
+			this.logInfo('rendering');
+			return __render();
+		};
 
 		const __componentDidMount = this.componentDidMount?.bind(this);
 		this.componentDidMount = () => {
@@ -65,9 +72,11 @@ export abstract class ComponentSync<P = any, S = any>
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps: P) {
-		if (!this.shouldComponentUpdate(nextProps, this.state, undefined)) return;
+		if (!this.shouldComponentUpdate(nextProps, this.state, undefined))
+			return;
 
-		this.logWarning('UNSAFE_componentWillReceiveProps');
+		if (this.state) //skip the first time when the component MUST update
+			this.logInfo('deriving state from new props...');
 
 		const state = this.deriveStateFromProps(nextProps);
 		if (state)
@@ -75,7 +84,6 @@ export abstract class ComponentSync<P = any, S = any>
 	}
 
 	protected abstract deriveStateFromProps(nextProps: P): S | undefined;
-
 
 	debounce(handler: TimerHandler, key: string, ms = 0) {
 		_clearTimeout(this.timeoutMap[key]);
@@ -91,14 +99,12 @@ export abstract class ComponentSync<P = any, S = any>
 		}, ms);
 	}
 
-
 	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<S>, nextContext: any): boolean {
 		const shouldRender = () => {
 			const propKeys = _sortArray(_keys(this.props));
 			const nextPropsKeys = _sortArray(_keys(nextProps));
 			const stateKeys = _sortArray(_keys(this.state));
 			const nextStateKeys = _sortArray(_keys(nextState));
-
 
 			if (propKeys.length !== nextPropsKeys.length) return true;
 			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]])) return true;
@@ -108,11 +114,7 @@ export abstract class ComponentSync<P = any, S = any>
 			return false;
 		};
 
-		if (shouldRender()) {
-			this.logInfo('shouldComponentUpdate = true');
-			return true;
-		}
-		return false;
+		return shouldRender();
 	}
 
 	protected logVerbose(...toLog: LogParam[]): void {

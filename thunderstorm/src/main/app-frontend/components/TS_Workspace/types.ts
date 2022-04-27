@@ -1,15 +1,24 @@
 import * as React from 'react';
 import {DB_Object, TypedMap} from '@nu-art/ts-common';
+import {BaseAsyncState} from '../../core/ComponentAsync';
+
 
 export type Props_ConfigChanged = { onConfigChanged: () => void };
-export type Props_BasePanel<Config> = Props_ConfigChanged & {
+export type Props_WorkspacePanel<Config, Props = {}> = Props & Props_ConfigChanged & {
 	config: Config
 	renderers: TypedMap<React.ElementType>
 }
 
-export type Props_PanelParent = {
+export type State_WorkspacePanel<Config, State = {}> = BaseAsyncState & State & {
+	config: Config
+}
+
+export type Config_PanelParent<ChildConfig = {}> = ChildConfig & {
 	panels: PanelConfig[]
 }
+
+export type State_WorkspaceParentPanel<Config, State = {}> = State_WorkspacePanel<Config_PanelParent<Config>, State>
+export type Props_WorkspaceParentPanel<Config, Props = {}> = Props_WorkspacePanel<Config_PanelParent<Config>, Props>
 
 export type Props_OrientedWorkspace = {
 	firstEdge: 'top' | 'left';
