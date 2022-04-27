@@ -2,28 +2,28 @@
 *	When given panel contents and a page, displays content in resizable panels.*/
 import * as React from 'react';
 import {Fragment} from 'react';
-import {Props_BasePanel, Props_OrientedWorkspace, Props_PanelParent} from './types';
+import {Config_PanelParent, Props_OrientedWorkspace, Props_WorkspaceParentPanel, State_WorkspaceParentPanel} from './types';
 import {PanelParentSync} from './TS_Workspace';
-import {BaseAsyncState} from '../../core/ComponentAsync';
+
 
 type State = {
 	factors: number[];
 }
 
-
-export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_OrientedWorkspace> {
+export class TS_OrientedWorkspace
+	extends PanelParentSync<{}, State, Props_OrientedWorkspace> {
 
 	private dragStart: number = 0;
 	private firstPanelBounds!: DOMRect;
 	private secondPanelBounds!: DOMRect;
 	private ref?: HTMLDivElement;
 
-	protected deriveStateFromProps(nextProps: Props_BasePanel<Props_OrientedWorkspace & Props_PanelParent>): BaseAsyncState & State {
+	protected deriveStateFromProps(nextProps: Props_WorkspaceParentPanel<Config_PanelParent, Props_OrientedWorkspace>): State_WorkspaceParentPanel<{}, State> {
 		this.ref = undefined;
-		return {factors: []};
+		return {...super.deriveStateFromProps(nextProps), factors: []};
 	}
 
-	private calcFactors(nextProps: Props_BasePanel<Props_OrientedWorkspace & Props_PanelParent>) {
+	private calcFactors(nextProps: Props_WorkspaceParentPanel<Config_PanelParent, Props_OrientedWorkspace>) {
 		let factors = nextProps.config.panels.map(p => p.factor);
 		const current = this.ref;
 		if (current) {
@@ -91,7 +91,6 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 		this.forceUpdate();
 	};
 
-
 	//Gets called whenever dragging starts
 	onDragStart = (e: React.DragEvent<HTMLDivElement>) => {
 		//Set new empty image as the ghost image, position far offscreen
@@ -105,14 +104,12 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 		this.secondPanelBounds = e.currentTarget.nextElementSibling?.getBoundingClientRect() as DOMRect;
 	};
 
-
 	//Gets called whenever dragging stops
 	onDragEnd = (e: React.DragEvent<HTMLDivElement>, firstPanelIndex: number, secondPanelIndex: number) => {
 		//Init vars
 		this.dragStart = 0;
 		this.props.onConfigChanged();
 	};
-
 
 	//Main Render
 	render() {
@@ -144,7 +141,8 @@ export class TS_OrientedWorkspace extends PanelParentSync<{}, State, Props_Orien
 	}
 }
 
-export class TS_HorizontalWorkspace extends TS_OrientedWorkspace {
+export class TS_HorizontalWorkspace
+	extends TS_OrientedWorkspace {
 	static defaultProps = {
 		firstEdge: 'left',
 		secondEdge: 'right',
@@ -155,7 +153,8 @@ export class TS_HorizontalWorkspace extends TS_OrientedWorkspace {
 	};
 }
 
-export class TS_VerticalWorkspace extends TS_OrientedWorkspace {
+export class TS_VerticalWorkspace
+	extends TS_OrientedWorkspace {
 	static defaultProps = {
 		firstEdge: 'top',
 		secondEdge: 'bottom',

@@ -2,23 +2,20 @@
 *	When given panel contents and a page, displays content in resizable panels.*/
 import {compare} from '@nu-art/ts-common';
 import * as React from 'react';
-import {BaseAsyncState, ComponentAsync} from '../../core/ComponentAsync';
+import {ComponentAsync} from '../../core/ComponentAsync';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_Workspace.scss';
-import {PanelConfig, Props_BasePanel, Props_PanelParent} from './types';
+import {PanelConfig, Props_WorkspacePanel, Config_PanelParent, State_WorkspacePanel} from './types';
 
-type State_WorkspacePanel<State, Config> = BaseAsyncState & State & {
-	config: Config
-}
 
-export abstract class PanelBaseSync<Config, State = {}, ExtraProps = {}>
-	extends ComponentSync<Props_BasePanel<Config> & ExtraProps, State_WorkspacePanel<State, Config>> {
+export abstract class PanelBaseSync<Config, State = {}, Props = {}>
+	extends ComponentSync<Props_WorkspacePanel<Config, Props> & Props, State_WorkspacePanel<Config, State>> {
 
-	protected deriveStateFromProps(nextProps: Props_BasePanel<Config>): State_WorkspacePanel<State, Config> {
-		return {config: nextProps.config} as State_WorkspacePanel<State, Config>;
+	protected deriveStateFromProps(nextProps: Props_WorkspacePanel<Config, Props>): State_WorkspacePanel<Config, State> {
+		return {config: nextProps.config} as State_WorkspacePanel<Config, State>;
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<Props_BasePanel<Config> & ExtraProps>, nextState: Readonly<State_WorkspacePanel<State, Config>>, nextContext: any): boolean {
+	shouldComponentUpdate(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>, nextState: Readonly<State_WorkspacePanel<Config, State>>, nextContext: any): boolean {
 		if (super.shouldComponentUpdate(nextProps, nextState, nextContext))
 			return true;
 
@@ -26,13 +23,14 @@ export abstract class PanelBaseSync<Config, State = {}, ExtraProps = {}>
 	}
 }
 
-export abstract class PanelBaseAsync<Config, State = {}, ExtraProps = {}>
-	extends ComponentAsync<Props_BasePanel<Config> & ExtraProps, State_WorkspacePanel<State, Config>> {
-	protected async deriveStateFromProps(nextProps: Props_BasePanel<Config>): Promise<State_WorkspacePanel<State, Config>> {
-		return {config: nextProps.config} as State_WorkspacePanel<State, Config>;
+export abstract class PanelBaseAsync<Config, State = {}, Props = {}>
+	extends ComponentAsync<Props_WorkspacePanel<Config, Props>, State_WorkspacePanel<Config, State>> {
+
+	protected async deriveStateFromProps(nextProps: Props_WorkspacePanel<Config, Props>): Promise<State_WorkspacePanel<Config, State>> {
+		return {config: nextProps.config} as State_WorkspacePanel<Config, State>;
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<Props_BasePanel<Config> & ExtraProps>, nextState: Readonly<State_WorkspacePanel<State, Config>>, nextContext: any): boolean {
+	shouldComponentUpdate(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>, nextState: Readonly<State_WorkspacePanel<Config, State>>, nextContext: any): boolean {
 		if (super.shouldComponentUpdate(nextProps, nextState, nextContext))
 			return true;
 
@@ -40,8 +38,8 @@ export abstract class PanelBaseAsync<Config, State = {}, ExtraProps = {}>
 	}
 }
 
-export abstract class PanelParentSync<Props = {}, State = {}, ExtraProps = {}>
-	extends PanelBaseSync<Props & Props_PanelParent, State, ExtraProps> {
+export abstract class PanelParentSync<Config = {}, State = {}, Props = {}>
+	extends PanelBaseSync<Config_PanelParent<Config>, State, Props> {
 
 	renderPanel(panel: PanelConfig) {
 		const PanelRenderer = this.props.renderers[panel.key];
@@ -49,8 +47,8 @@ export abstract class PanelParentSync<Props = {}, State = {}, ExtraProps = {}>
 	}
 }
 
-export abstract class PanelParentAsync<Props = {}, State = {}, ExtraProps = {}>
-	extends PanelBaseAsync<Props & Props_PanelParent, State, ExtraProps> {
+export abstract class PanelParentAsync<Config = {}, State = {}, Props = {}>
+	extends PanelBaseAsync<Config_PanelParent<Config>, State, Props> {
 
 	renderPanel(panel: PanelConfig) {
 		const PanelRenderer = this.props.renderers[panel.key];
@@ -60,7 +58,8 @@ export abstract class PanelParentAsync<Props = {}, State = {}, ExtraProps = {}>
 	}
 }
 
-export class TS_Workspace extends PanelParentSync<Props_PanelParent> {
+export class TS_Workspace
+	extends PanelParentSync<Config_PanelParent> {
 	static defaultProps = {
 		onConfigChanged: () => {
 		}

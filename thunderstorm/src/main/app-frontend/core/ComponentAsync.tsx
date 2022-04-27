@@ -43,6 +43,12 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 		super(props);
 		this.logger = new Logger(this.constructor.name);
 
+		const __render = this.render?.bind(this);
+		this.render = () => {
+			this.logInfo('rendering');
+			return __render();
+		};
+
 		const __componentDidMount = this.componentDidMount?.bind(this);
 		this.componentDidMount = () => {
 			// @ts-ignore
@@ -68,7 +74,12 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps: P) {
-		if (!this.shouldComponentUpdate(nextProps, this.state, undefined)) return;
+		if (!this.shouldComponentUpdate(nextProps, this.state, undefined))
+			return;
+
+		if (this.state) //skip the first time when the component MUST update
+			this.logInfo('deriving state from new props...');
+
 		const state = this._deriveStateFromProps(nextProps);
 		if (state)
 			this.setState(state);
@@ -117,11 +128,7 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 			return false;
 		};
 
-		if (shouldRender()) {
-			this.logInfo('shouldComponentUpdate = true');
-			return true;
-		}
-		return false;
+		return shouldRender();
 	}
 
 	protected logVerbose(...toLog: LogParam[]): void {
