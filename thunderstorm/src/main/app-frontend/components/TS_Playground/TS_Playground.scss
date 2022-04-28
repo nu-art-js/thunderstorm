@@ -18,11 +18,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+.ts-playground {
+  flex-grow: 1;
+  border-style: double;
+  display: inline-block;
+  box-sizing: border-box;
+  width: 100%;
 
-.ts-playground__item {
-  background: unset;
+  .ts-playground__item {
+    background: unset;
 
-  &:focus {
-    background: #afafaf;
+    &:focus {
+      background: #afafaf;
+    }
   }
 }

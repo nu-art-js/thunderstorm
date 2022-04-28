@@ -25,6 +25,7 @@ import {Example_NewProps} from './Example_NewProps';
 import {TS_DropDown} from '../TS_Dropdown/TS_DropDown';
 import {SimpleListAdapter} from '../adapter/Adapter';
 import {Filter} from '@nu-art/ts-common';
+import './TS_Playground.scss';
 
 const TS_Playground = 'playground';
 
@@ -74,7 +75,7 @@ export class Playground
 						return <div className="ts-playground__item">{props.item.name}</div>;
 					})}/>
 			</div>
-			<div style={{borderStyle: 'double', display: 'inline-block', boxSizing: 'border-box'}}>{this.renderPlayground()}</div>
+			<div className={'ts-playground'}>{this.renderPlayground()}</div>
 		</div>;
 	}
 
