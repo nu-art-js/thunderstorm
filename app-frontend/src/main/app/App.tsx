@@ -17,10 +17,10 @@
  */
 
 import * as React from 'react';
-import {ComponentSync, Dialog, RoutingModule, Toaster, TS_PopupMenu, WrapperProps} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, Dialog, RoutingModule, TS_PopupMenuOverlay, TS_ToastOverlay, WrapperProps} from '@nu-art/thunderstorm/frontend';
 
 import {VersionOnScreen} from '@components/VersionOnScreen';
-import {AccountModule, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
+import {AccountModuleFE, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
 import {registerRoutes} from './Routes';
 
 export class App
@@ -37,7 +37,7 @@ export class App
 	}
 
 	__onLoginStatusUpdated = () => {
-		const status = AccountModule.getLoggedStatus();
+		const status = AccountModuleFE.getLoggedStatus();
 		console.log('status update', status);
 	};
 
@@ -50,8 +50,8 @@ export class App
 				{/*</BugReport>*/}
 				<VersionOnScreen/>
 				<Dialog/>
-				<Toaster/>
-				<TS_PopupMenu/>
+				<TS_ToastOverlay/>
+				<TS_PopupMenuOverlay/>
 			</div>);
 	}
 }

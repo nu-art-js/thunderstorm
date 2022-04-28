@@ -16,16 +16,8 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	ToastBuilder,
-	ToastModule
-} from "@nu-art/thunderstorm/frontend";
-import {
-	ErrorToast,
-	InfoToast,
-	SuccessToast
-} from "../../themes/toaster";
+import * as React from 'react';
+import {ToastModule} from '@nu-art/thunderstorm/frontend';
 
 
 export class Example_Toaster
@@ -39,30 +31,30 @@ export class Example_Toaster
 	}
 
 	showAppToasterSuccessExample = () => {
-		ToastModule.toastSuccess("Simple success message");
+		ToastModule.toastSuccess('Simple success message');
 	};
 
 	showAppToasterErrorExample = () => {
-		ToastModule.toastError("Simple error message");
+		ToastModule.toastError('Simple error message');
 	};
 
 	showAppToasterInfoExample = () => {
-		ToastModule.toastInfo("Simple info message");
+		ToastModule.toastInfo('Simple info message');
 	};
 
 	showAppToasterCustomInfoExample = () => {
-		InfoToast("Custom info message closes in 3 sec", 3000)
+		ToastModule.toastInfo('Simple info message', 3000);
 	};
 	showAppToasterCustomErrorExample = () => {
-		ErrorToast("Custom Error message closes in 8 sec", 8000)
+		ToastModule.toastError('Custom Error message closes in 8 sec', 8000);
 	};
 	showAppToasterCustomSuccessExample = () => {
-		SuccessToast("Custom Success message closes time by thunde default")
+		ToastModule.toastSuccess('Custom Success message closes time by thunder default');
 	};
 
-	showAppToasterLiveDocsExample = () => {
-		new ToastBuilder().setContent("kaki").setActions([<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>edit</button>]).show();
-	};
+	// showAppToasterLiveDocsExample = () => {
+	// 	new ToastBuilder().setContent("kaki").setActions([<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>edit</button>]).show();
+	// };
 
 	render() {
 		return <>
@@ -70,7 +62,7 @@ export class Example_Toaster
 				<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Default Success Example</button>
 				<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Default Failure Example</button>
 				<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Default Info Example</button>
-				<button style={{marginRight: 8}} onClick={this.showAppToasterLiveDocsExample}>Toaster Default Live Docs Example</button>
+				{/*<button style={{marginRight: 8}} onClick={this.showAppToasterLiveDocsExample}>Toaster Default Live Docs Example</button>*/}
 			</div>
 			<hr/>
 			<div>
