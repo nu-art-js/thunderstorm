@@ -94,7 +94,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		__updated: tsValidateTimestamp(),
 	};
 
-
 	protected constructor(collectionName: string, validator: ValidatorTypeResolver<DBType>, itemName: string, versions = ['1.0.0']) {
 		super();
 		// @ts-ignore
@@ -233,6 +232,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		try {
 			await tsValidate(instance, this.validator);
 		} catch (e: any) {
+			this.logError(`error validating id: ${instance._id}`);
 			this.onValidationError(e);
 		}
 	}
@@ -278,7 +278,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			dbInstance._v = currentVersion;
 		});
 	}
-
 
 	protected upgradeInstance(dbInstance: DBType, toVersion: string) {
 	}
@@ -465,7 +464,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 		return this.collection.runInTransaction(processor);
 	}
-
 
 	protected async upsertAllImpl_Read(instances: PreDBObject<DBType>[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]> {
 		const actions = [] as Promise<() => Promise<DBType>>[];
