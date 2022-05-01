@@ -38,7 +38,7 @@ export class Processor<T, K extends FunctionKeys<T>> {
 		return this.filterModules().filter(this.filter).map(processor);
 	}
 
-	public async processModulesAsync<R>(processor: (item: T) => R): Promise<R[]> {
+	public async processModulesAsync<R>(processor: (item: T) => Promise<R>): Promise<R[]> {
 		return Promise.all(this.filterModules().map(processor));
 	}
 
