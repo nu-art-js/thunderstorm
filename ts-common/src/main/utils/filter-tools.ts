@@ -19,6 +19,8 @@
 export class Filter<T> {
 	private regexp = true;
 	private readonly mapper: (item: T) => string[];
+	private originFilterText?: string;
+	private _filter!: RegExp;
 
 	constructor(mapper: (item: T) => string[]) {
 		this.mapper = mapper;
@@ -26,24 +28,34 @@ export class Filter<T> {
 
 	setRegexp(regexp: boolean) {
 		this.regexp = regexp;
+		delete this.originFilterText;
 		return this;
 	}
 
-	filter(items: T[], filterText: string): T[] {
-		const filterAsRegexp = this.prepareFilter(filterText);
-
-		return items.filter((item) => {
-			const keysToFilter = this.mapper(item);
-			for (const key of keysToFilter) {
-				if (key.toLowerCase().match(filterAsRegexp))
-					return true;
-			}
-
-			return false;
-		});
+	filterItem(item: T, filterText: string): boolean {
+		this.prepareFilter(filterText);
+		return this.filterImpl(item);
 	}
 
-	private prepareFilter(filter?: string) {
+	filter(items: T[], filterText: string): T[] {
+		this.prepareFilter(filterText);
+		return items.filter(this.filterImpl);
+	}
+
+	filterImpl = (item: T) => {
+		const keysToFilter = this.mapper(item);
+		for (const key of keysToFilter) {
+			if (key.toLowerCase().match(this._filter))
+				return true;
+		}
+
+		return false;
+	};
+
+	prepareFilter(filter?: string) {
+		if (this.originFilterText === filter)
+			return this._filter;
+
 		filter = (filter || '').trim();
 		filter = filter.toLowerCase();
 		filter = filter.replace(/\s+/, ' ');
@@ -54,6 +66,7 @@ export class Filter<T> {
 		}
 		filter.length === 0 ? filter = '.*?' : filter += '.*';
 
-		return new RegExp(filter);
+		this.originFilterText = filter;
+		this._filter = new RegExp(filter);
 	}
 }

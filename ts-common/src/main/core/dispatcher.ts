@@ -18,13 +18,11 @@
 
 import {FunctionKeys, ReturnPromiseType} from '../utils/types';
 
+
 export type ParamResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? Parameters<T[K]> : never
 export type ReturnTypeResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? ReturnPromiseType<T[K]> : never
 
-export class Dispatcher<T,
-	K extends FunctionKeys<T>,
-	P extends ParamResolver<T, K> = ParamResolver<T, K>,
-	R extends ReturnTypeResolver<T, K> = ReturnTypeResolver<T, K>> {
+export class Processor<T, K extends FunctionKeys<T>> {
 
 	static modulesResolver: () => any[];
 
@@ -36,19 +34,41 @@ export class Dispatcher<T,
 		this.filter = (listener: any) => !!listener[this.method];
 	}
 
-	public dispatchModule(...p: P): R[] {
+	public processModules<R>(processor: (item: T) => R): R[] {
+		return this.filterModules().filter(this.filter).map(processor);
+	}
+
+	public async processModulesAsync<R>(processor: (item: T) => R): Promise<R[]> {
+		return Promise.all(this.filterModules().map(processor));
+	}
+
+	filterModules() {
 		const listeners = Dispatcher.modulesResolver();
-		return listeners.filter(this.filter).map((listener: T) => {
+		return listeners.filter(this.filter);
+	}
+}
+
+export class Dispatcher<T,
+	K extends FunctionKeys<T>,
+	P extends ParamResolver<T, K> = ParamResolver<T, K>,
+	R extends ReturnTypeResolver<T, K> = ReturnTypeResolver<T, K>>
+	extends Processor<T, K> {
+
+	constructor(method: K) {
+		super(method);
+	}
+
+	public dispatchModule(...p: P): R[] {
+		return this.processModules((listener: T) => {
 			// @ts-ignore
 			return (listener[this.method])(...p);
 		});
 	}
 
 	public async dispatchModuleAsync(...p: P): Promise<R[]> {
-		const listeners = Dispatcher.modulesResolver();
-		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
+		return this.processModulesAsync<R>((listener: T) => {
 			// @ts-ignore
 			return listener[this.method](...p);
-		}));
+		});
 	}
 }
