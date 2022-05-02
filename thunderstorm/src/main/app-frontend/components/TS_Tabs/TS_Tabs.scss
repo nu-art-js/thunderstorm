@@ -48,8 +48,8 @@
     //Children
     .ts-tabs__tab {
       //Dimensions
-      flex-grow: 1;
-      max-width: 100px;
+      padding-inline: 12px;
+      min-width: 100px;
       height: 100%;
 
       //Display
@@ -73,6 +73,7 @@
       &.ts-tabs__focused {
         background-color: #bbb;
       }
+
       &:hover {
         background-color: #bbb;
       }

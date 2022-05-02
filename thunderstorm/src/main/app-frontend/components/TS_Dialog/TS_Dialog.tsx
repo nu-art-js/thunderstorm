@@ -47,7 +47,7 @@ export abstract class TS_Dialog<P, S = {}>
 	}
 
 	render() {
-		return <div className="ts-dialog">
+		return <div className={_className('ts-dialog', this.props.className)}>
 			{this.renderDialog()}
 		</div>;
 	}
@@ -56,7 +56,7 @@ export abstract class TS_Dialog<P, S = {}>
 
 	protected renderButtons(...buttons: DialogButtonModelV2[]): React.ReactNode {
 		return <LL_H_C
-			className={_className('ts-dialog__buttons', this.props.className)}
+			className="ts-dialog__buttons"
 			ref={(instance: HTMLDivElement) => instance?.focus()}
 			tabIndex={-1}
 			onKeyDown={event => {
