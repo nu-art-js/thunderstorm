@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@app/app-shared": "file:.dependencies/app-shared",
+    "@grpc/proto-loader": "0.6.9",
     "@nu-art/bug-report": "file:.dependencies/bug-report",
     "@nu-art/jira": "file:.dependencies/jira",
     "@nu-art/db-api-generator": "file:.dependencies/db-api-generator",

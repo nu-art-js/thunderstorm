@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@google-cloud/pubsub": "^2.0.0",
+    "@grpc/proto-loader": "0.6.9",
     "@nu-art/ts-common": "~0.0.1",
     "@nu-art/db-api-generator": "~0.0.1",
     "@nu-art/firebase": "~0.0.1",
