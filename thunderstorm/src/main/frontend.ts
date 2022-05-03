@@ -20,6 +20,7 @@
  */
 
 export * from "./app-frontend/core/Thunder";
+export * from "./app-frontend/core/AbstractThunder";
 export * from "./app-frontend/core/thunder-dispatcher";
 
 export * from "./app-frontend/modules/http/XhrHttpModule"

@@ -27,24 +27,22 @@ import {
 import {
 	BeLogged,
 	LogClient_Browser,
-	Module,
-	ModuleManager,
-	removeItemFromArray
+	Module
 } from "@nu-art/ts-common";
 import {XhrHttpModule} from "../modules/http/XhrHttpModule";
 import {ToastModule} from "../modules/toaster/ToasterModule";
-import {DialogModule} from "../modules/dialog/DialogModule";
 import {RoutingModule} from "../modules/routing/RoutingModule";
 import {BrowserHistoryModule} from "../modules/HistoryModule";
 import {StorageModule} from "../modules/StorageModule";
 import {ResourcesModule} from "../modules/ResourcesModule";
-import {ThunderDispatcher} from "./thunder-dispatcher";
 import {
-	OnRequestListener,
 	RequestErrorHandler,
 	RequestSuccessHandler
 } from "../../shared/request-types";
-import {ThunderstormModule} from "../modules/ThunderstormModule";
+import {
+	AbstractThunder,
+	dispatch_requestCompleted
+} from "./AbstractThunder";
 
 export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?) => {
 	const errorMessage = request.errorMessage || resError?.debugMessage;
@@ -56,33 +54,23 @@ export const ErrorHandler_Dispatch: RequestErrorHandler<any> = (request) => disp
 export const SuccessHandler_Dispatch: RequestSuccessHandler = (request) => dispatch_requestCompleted.dispatchUI([request.key, true, request.requestData]);
 
 const modules: Module[] = [
-	ThunderstormModule,
 	XhrHttpModule,
-
-	ToastModule,
-	DialogModule,
-
 
 	RoutingModule,
 	BrowserHistoryModule,
 
 	StorageModule,
 	ResourcesModule
-
 ];
 
 export class Thunder
-	extends ModuleManager {
+	extends AbstractThunder {
 
 	private mainApp!: React.ElementType<WrapperProps>;
-	private listeners: any[] = [];
 
 	constructor() {
 		super();
 		this.addModules(...modules);
-		this._DEBUG_FLAG.enable(false);
-		// @ts-ignore
-		ThunderDispatcher.listenersResolver = () => this.listeners;
 	}
 
 	static getInstance(): Thunder {
@@ -97,19 +85,12 @@ export class Thunder
 		XhrHttpModule.setErrorHandlers([ErrorHandler_Toast, ErrorHandler_Dispatch]);
 		XhrHttpModule.setSuccessHandlers([SuccessHandler_Toast, SuccessHandler_Dispatch]);
 
-		renderApp();
 		return this;
 	}
 
-	protected addUIListener(listener: any): void {
-		this.logInfo(`Register UI listener: ${listener}`);
-		this.listeners.push(listener);
-	}
-
-	protected removeUIListener(listener: any): void {
-		this.logInfo(`Unregister UI listener: ${listener}`);
-		removeItemFromArray(this.listeners, listener);
-	}
+	protected renderApp = (): void => {
+		renderApp();
+	};
 
 	public setMainApp(mainApp: React.ElementType<WrapperProps>): Thunder {
 		this.mainApp = mainApp;
@@ -119,11 +100,5 @@ export class Thunder
 	public getMainApp(): React.ElementType<WrapperProps> {
 		return this.mainApp;
 	}
-
-	public build(onStarted?: () => void) {
-		super.build()
-		onStarted?.();
-	}
 }
 
-export const dispatch_requestCompleted = new ThunderDispatcher<OnRequestListener, "__onRequestCompleted">("__onRequestCompleted");
