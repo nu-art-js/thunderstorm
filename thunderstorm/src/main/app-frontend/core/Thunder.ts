@@ -43,6 +43,8 @@ import {
 	AbstractThunder,
 	dispatch_requestCompleted
 } from "./AbstractThunder";
+import {ThunderstormModule} from "../modules/ThunderstormModule";
+import {DialogModule} from "../modules/dialog/DialogModule";
 
 export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?) => {
 	const errorMessage = request.errorMessage || resError?.debugMessage;
@@ -54,10 +56,14 @@ export const ErrorHandler_Dispatch: RequestErrorHandler<any> = (request) => disp
 export const SuccessHandler_Dispatch: RequestSuccessHandler = (request) => dispatch_requestCompleted.dispatchUI([request.key, true, request.requestData]);
 
 const modules: Module[] = [
+	ThunderstormModule,
 	XhrHttpModule,
 
 	RoutingModule,
 	BrowserHistoryModule,
+
+	ToastModule,
+	DialogModule,
 
 	StorageModule,
 	ResourcesModule

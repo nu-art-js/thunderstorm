@@ -22,22 +22,11 @@
 import {
 	BeLogged,
 	LogClient_Browser,
-	Module,
 	ModuleManager,
 	removeItemFromArray
 } from "@nu-art/ts-common";
-import {ToastModule} from "../modules/toaster/ToasterModule";
-import {DialogModule} from "../modules/dialog/DialogModule";
 import {ThunderDispatcher} from "./thunder-dispatcher";
 import {OnRequestListener} from "../../shared/request-types";
-import {ThunderstormModule} from "../modules/ThunderstormModule";
-
-const modules: Module[] = [
-	ThunderstormModule,
-
-	ToastModule,
-	DialogModule
-];
 
 export class AbstractThunder
 	extends ModuleManager {
@@ -46,7 +35,6 @@ export class AbstractThunder
 
 	constructor() {
 		super();
-		this.addModules(...modules);
 		this._DEBUG_FLAG.enable(false);
 		// @ts-ignore
 		ThunderDispatcher.listenersResolver = () => this.listeners;
