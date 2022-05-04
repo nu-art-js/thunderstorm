@@ -44,7 +44,7 @@ export class AbstractThunder
 
 	protected listeners: any[] = [];
 
-	protected constructor() {
+	constructor() {
 		super();
 		this.addModules(...modules);
 		this._DEBUG_FLAG.enable(false);
