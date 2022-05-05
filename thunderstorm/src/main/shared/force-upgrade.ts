@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {ApiWithQuery} from './types';
+import {QueryApi} from './types';
 
 export const HeaderKey_AppVersion = 'x-app-version';
 export const HeaderKey_BrowserType = 'x-browser-type';
@@ -30,4 +30,4 @@ export type UpgradeRequired = {
 	app: boolean
 };
 
-export type ApiBinder_AssertAppVersion = ApiWithQuery<string, UpgradeRequired>;
+export type ApiBinder_AssertAppVersion = QueryApi<string, UpgradeRequired>;

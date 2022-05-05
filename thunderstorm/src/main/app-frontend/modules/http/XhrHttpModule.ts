@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {ApiTypeBinder, ErrorResponse, HttpMethod} from '../../../shared/types';
+import {TypedApi, ErrorResponse, HttpMethod} from '../../../shared/types';
 
 import {BadImplementationException} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
@@ -41,7 +41,7 @@ export class XhrHttpModule_Class
 		this.origin = origin;
 	}
 
-	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<Binder> {
+	createRequest<Binder extends TypedApi<any, any, any, any>>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<Binder> {
 		return new XhrHttpRequest<Binder>(key, data, this.shouldCompress())
 			.setOrigin(this.origin)
 			.setMethod(method)
@@ -56,7 +56,7 @@ export class XhrHttpModule_Class
 
 export const XhrHttpModule = new XhrHttpModule_Class();
 
-class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
+class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 	extends BaseHttpRequest<Binder> {
 
 	private readonly xhr?: XMLHttpRequest;

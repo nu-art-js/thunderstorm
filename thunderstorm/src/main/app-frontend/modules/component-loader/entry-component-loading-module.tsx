@@ -18,14 +18,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ApiWithQuery, HttpMethod, TS_Progress} from '../../../index';
+import {QueryApi, HttpMethod, TS_Progress} from '../../../index';
 
 import {Module} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
 import {XhrHttpModule} from '../http/XhrHttpModule';
 import {BrowserHistoryModule} from '../HistoryModule';
 
-type ScriptLoaderBinder = ApiWithQuery<string, string>
+type ScriptLoaderBinder = QueryApi<string, string>
 
 export class PageLoadingModule_Class
 	extends Module<{}> {

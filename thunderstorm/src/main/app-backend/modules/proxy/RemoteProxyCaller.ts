@@ -20,7 +20,7 @@
  */
 import {__stringify, ImplementationMissingException, Module,} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {ApiWithBody, ApiWithQuery, ErrorResponse, QueryParams} from '../../../shared/types';
+import {BodyApi, QueryApi, ErrorResponse, QueryParams} from '../../../shared/types';
 import {promisifyRequest} from '../../utils/promisify-request';
 import {ApiException} from '../../exceptions';
 import {RequestOptions} from '../../../backend';
@@ -56,7 +56,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 			this.config.proxyHeaderName = 'x-proxy';
 	}
 
-	protected executeGetRequest = async <Binder extends ApiWithQuery<any, any, any>, U = Binder['url'], R = Binder['response'], P extends QueryParams = Binder['params']>(url: U, _params: P, _headers?: { [key: string]: string }): Promise<R> => {
+	protected executeGetRequest = async <Binder extends QueryApi<any, any, any>, U = Binder['url'], R = Binder['response'], P extends QueryParams = Binder['params']>(url: U, _params: P, _headers?: { [key: string]: string }): Promise<R> => {
 		const params = _params && Object.keys(_params).map((key) => {
 			return `${key}=${_params[key]}`;
 		});
@@ -80,7 +80,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 	};
 
 
-	protected executePostRequest = async <Binder extends ApiWithBody<U, R, B>, U extends string = Binder['url'], R = Binder['response'], B = Binder['body']>(url: U, body: B, _headers?: { [key: string]: string }): Promise<R> => {
+	protected executePostRequest = async <Binder extends BodyApi<U, R, B>, U extends string = Binder['url'], R = Binder['response'], B = Binder['body']>(url: U, body: B, _headers?: { [key: string]: string }): Promise<R> => {
 		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,

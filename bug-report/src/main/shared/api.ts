@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiWithBody, ApiWithQuery} from "@nu-art/thunderstorm";
+import {BodyApi, QueryApi} from "@nu-art/thunderstorm";
 import { DB_Object } from "@nu-art/ts-common";
 import {Auditable} from "@nu-art/ts-common";
 import {TicketDetails} from "../app-backend/modules/BugReportModule";
@@ -65,6 +65,6 @@ export type SecuredUrl = {
 	publicUrl: string
 }
 
-export type ApiGetLog = ApiWithQuery<string, DB_BugReport[]>
-export type ApiPostPath = ApiWithBody<'/v1/bug-reports/download-logs', Paths, SecuredUrl>
-export type ApiBugReport = ApiWithBody<'/v1/bug-reports/report', Request_BugReport, TicketDetails[]>
+export type ApiGetLog = QueryApi<string, DB_BugReport[]>
+export type ApiPostPath = BodyApi<'/v1/bug-reports/download-logs', Paths, SecuredUrl>
+export type ApiBugReport = BodyApi<'/v1/bug-reports/report', Request_BugReport, TicketDetails[]>

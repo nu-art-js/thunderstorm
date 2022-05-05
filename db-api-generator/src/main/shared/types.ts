@@ -20,7 +20,7 @@
  */
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject, DB_Object, PreDBObject} from '@nu-art/ts-common';
-import {ApiWithBody, ApiWithQuery, HttpMethod,} from '@nu-art/thunderstorm';
+import {BodyApi, QueryApi, HttpMethod,} from '@nu-art/thunderstorm';
 
 export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
 	Upsert: {
@@ -56,9 +56,9 @@ export type BadInputErrorBody = { path: string, input?: string };
 
 export type GenericApiDef = { method: HttpMethod, key: string, suffix?: string };
 
-export type ApiBinder_DBUpsert<DBType extends DB_Object, RequestType extends PreDBObject<DBType> = PreDBObject<DBType>> = ApiWithBody<string, RequestType, DBType>;
-export type ApiBinder_DBDelete<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;
-export type ApiBinder_DBUnique<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;
-export type ApiBinder_DBPatch<DBType extends DB_Object> = ApiWithBody<string, Partial<DBType> & DB_BaseObject, DBType>;
-export type ApiBinder_DBQuery<DBType extends DB_Object> = ApiWithBody<string, FirestoreQuery<DBType>, DBType[]>;
+export type ApiBinder_DBUpsert<DBType extends DB_Object, RequestType extends PreDBObject<DBType> = PreDBObject<DBType>> = BodyApi<string, RequestType, DBType>;
+export type ApiBinder_DBDelete<DBType extends DB_Object> = QueryApi<string, DBType, DB_BaseObject>;
+export type ApiBinder_DBUnique<DBType extends DB_Object> = QueryApi<string, DBType, DB_BaseObject>;
+export type ApiBinder_DBPatch<DBType extends DB_Object> = BodyApi<string, Partial<DBType> & DB_BaseObject, DBType>;
+export type ApiBinder_DBQuery<DBType extends DB_Object> = BodyApi<string, FirestoreQuery<DBType>, DBType[]>;
 

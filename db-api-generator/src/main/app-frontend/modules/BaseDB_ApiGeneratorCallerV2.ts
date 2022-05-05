@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {ApiTypeBinder, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from '@nu-art/thunderstorm';
+import {TypedApi, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from '@nu-art/thunderstorm';
 import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from '../../index';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {
@@ -78,7 +78,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
 	}
 
-	protected createRequest<Binder extends ApiTypeBinder<any, any, any, any, any>,
+	protected createRequest<Binder extends TypedApi<any, any, any, any, any>,
 		U extends string = Binder['url'],
 		R = Binder['response'],
 		B = Binder['body'],
