@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ApiWithBody, ApiWithQuery} from "@nu-art/thunderstorm";
+import {BodyApi, QueryApi} from "@nu-art/thunderstorm";
 import {ApiResponse, ExpressRequest, RemoteProxy, ServerApi_Get, ServerApi_Post} from "@nu-art/thunderstorm/backend";
 import {PermissionsAssert} from "@nu-art/permissions/backend";
 
@@ -24,7 +24,7 @@ const PROP_A = "a";
 const PROP_E = "e";
 
 type Assert1_Params = { a: string, c: string, e: string };
-type AssertTest1 = ApiWithQuery<string, string, Assert1_Params>
+type AssertTest1 = QueryApi<string, string, Assert1_Params>
 
 
 export const Middleware__Assert_AE = PermissionsAssert.Middleware([PROP_A, PROP_E]);
@@ -46,7 +46,7 @@ class ServerApi_TestMiddleware1
 }
 
 type Assert2_Body = { a: string, b: number, c: string };
-type AssertTest2 = ApiWithBody<"/v1/test/permission", Assert2_Body, string>
+type AssertTest2 = BodyApi<"/v1/test/permission", Assert2_Body, string>
 
 class ServerApi_TestMiddleware2
 	extends ServerApi_Post<AssertTest2> {

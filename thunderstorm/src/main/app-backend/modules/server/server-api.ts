@@ -41,7 +41,7 @@ import {parse} from 'url';
 import {HttpServer, ServerApi_Middleware} from './HttpServer';
 import {IncomingHttpHeaders} from 'http';
 // noinspection TypeScriptPreferShortImport
-import {ApiTypeBinder, ApiWithBody, ApiWithQuery, HttpMethod, QueryParams} from '../../../shared/types';
+import {TypedApi, BodyApi, QueryApi, HttpMethod, QueryParams} from '../../../shared/types';
 import {assertProperty} from '../../utils/to-be-removed';
 import {ApiException,} from '../../exceptions';
 import {ExpressRequest, ExpressResponse, ExpressRouter} from '../../utils/types';
@@ -57,7 +57,7 @@ export type HttpRequestData = {
 }
 
 
-export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>, R = Binder['response'], B = Binder['body'], P extends QueryParams | {} = Binder['params']>
+export abstract class ServerApi<Binder extends TypedApi<any, any, any, any>, R = Binder['response'], B = Binder['body'], P extends QueryParams | {} = Binder['params']>
 	extends Logger {
 	public static isDebug: boolean;
 
@@ -269,7 +269,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<any, any, any, any>
 	protected abstract process(request: ExpressRequest, response: ApiResponse, queryParams: P, body: B): Promise<R>;
 }
 
-export abstract class ServerApi_Get<Binder extends ApiWithQuery<any, any, any>, U extends string = Binder['url'], R = Binder['response'], P extends QueryParams | {} = Binder['params']>
+export abstract class ServerApi_Get<Binder extends QueryApi<any, any, any>, U extends string = Binder['url'], R = Binder['response'], P extends QueryParams | {} = Binder['params']>
 	extends ServerApi<Binder, R, void, P> {
 
 	protected constructor(apiName: string) {
@@ -277,7 +277,7 @@ export abstract class ServerApi_Get<Binder extends ApiWithQuery<any, any, any>, 
 	}
 }
 
-export abstract class ServerApi_Post<Binder extends ApiWithBody<any, any, any>, U extends string = Binder['url'], R = Binder['response'], B = Binder['body']>
+export abstract class ServerApi_Post<Binder extends BodyApi<any, any, any>, U extends string = Binder['url'], R = Binder['response'], B = Binder['body']>
 	extends ServerApi<Binder, R, B, QueryParams> {
 
 	protected constructor(apiName: string) {
@@ -285,7 +285,7 @@ export abstract class ServerApi_Post<Binder extends ApiWithBody<any, any, any>, 
 	}
 }
 
-export class ServerApi_Proxy<Binder extends ApiTypeBinder<any, any, any, any>, R = Binder['response'], B = Binder['body'], P extends QueryParams | {} = Binder['params']>
+export class ServerApi_Proxy<Binder extends TypedApi<any, any, any, any>, R = Binder['response'], B = Binder['body'], P extends QueryParams | {} = Binder['params']>
 	extends ServerApi<Binder> {
 	private readonly api: ServerApi<Binder>;
 

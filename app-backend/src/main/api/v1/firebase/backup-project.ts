@@ -23,7 +23,7 @@ import {
 
 import {
 	HttpMethod,
-	ApiWithQuery
+	QueryApi
 } from "@nu-art/thunderstorm";
 
 // import {ProjectFirestoreBackup} from "@nu-art/firebase/backend-firestore-backup";
@@ -31,7 +31,7 @@ import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 
 class ServerApi_RegisterExternalProject
-	extends ServerApi<ApiWithQuery<string, void>> {
+	extends ServerApi<QueryApi<string, void>> {
 
 	constructor() {
 		super(HttpMethod.GET, "backup-project");

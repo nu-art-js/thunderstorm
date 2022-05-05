@@ -23,7 +23,7 @@ import {
 
 import {
 	HttpMethod,
-	ApiWithQuery
+	QueryApi
 } from "@nu-art/thunderstorm";
 
 import {FirebaseProjectCollections} from "@nu-art/firebase";
@@ -32,7 +32,7 @@ import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 
 class ServerApi_RegisterExternalProject
-	extends ServerApi<ApiWithQuery<string, { list: FirebaseProjectCollections[] }>> {
+	extends ServerApi<QueryApi<string, { list: FirebaseProjectCollections[] }>> {
 
 	constructor() {
 		super(HttpMethod.GET, "list-firebase-collections");

@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {ApiTypeBinder, ErrorResponse, HttpMethod} from './types';
+import {TypedApi, ErrorResponse, HttpMethod} from './types';
 
 import {addItemToArray, BadImplementationException, Module, removeItemFromArray,} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
@@ -32,7 +32,7 @@ type HttpConfig = {
 	timeout?: number
 	compress?: boolean
 }
-export type DeriveRealBinder<Binder> = Binder extends ApiTypeBinder<infer U, infer R, infer B, infer P> ? ApiTypeBinder<U, R, B, P> : void;
+export type DeriveRealBinder<Binder> = Binder extends TypedApi<infer U, infer R, infer B, infer P> ? TypedApi<U, R, B, P> : void;
 
 export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfig>
 	extends Module<Config> {
@@ -93,7 +93,7 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		}, {} as { [k: string]: string | string[] });
 	}
 
-	abstract createRequest<Binder extends ApiTypeBinder<any, any, any, any> = ApiTypeBinder<string, void, void, {}>>(method: HttpMethod, key: string, data?: any): BaseHttpRequest<DeriveRealBinder<Binder>, any>
+	abstract createRequest<Binder extends TypedApi<any, any, any, any> = TypedApi<string, void, void, {}>>(method: HttpMethod, key: string, data?: any): BaseHttpRequest<DeriveRealBinder<Binder>, any>
 
 	processDefaultResponseHandlers = (httpRequest: BaseHttpRequest<any>) => {
 		let resolved = false;

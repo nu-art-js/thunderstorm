@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiWithBody, ApiWithQuery, BaseHttpRequest} from "@nu-art/thunderstorm";
+import {BodyApi, QueryApi, BaseHttpRequest} from "@nu-art/thunderstorm";
 import {DB_Object} from "@nu-art/ts-common";
 import {
 	AuditBy,
@@ -95,5 +95,5 @@ export type TempSecureUrl = {
 	asset: DB_Asset
 }
 
-export type Api_GetUploadUrl = ApiWithBody<"/v1/upload/get-url", BaseUploaderFile[], TempSecureUrl[]>
-export type Api_ProcessAssetManually = ApiWithQuery<'/v1/upload/process-asset-manually', void, { feId: string }>
+export type Api_GetUploadUrl = BodyApi<"/v1/upload/get-url", BaseUploaderFile[], TempSecureUrl[]>
+export type Api_ProcessAssetManually = QueryApi<'/v1/upload/process-asset-manually', void, { feId: string }>

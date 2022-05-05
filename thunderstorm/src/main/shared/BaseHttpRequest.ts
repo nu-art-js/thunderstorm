@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 import {_keys, _setTimeout, BadImplementationException, ObjectTS} from '@nu-art/ts-common';
-import {ApiTypeBinder, ErrorResponse, HttpMethod, QueryParams} from './types';
+import {TypedApi, ErrorResponse, HttpMethod, QueryParams} from './types';
 import {HttpException, RequestErrorHandler, RequestSuccessHandler, TS_Progress} from './request-types';
 
-export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>,
+export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any>,
 	U extends string = Binder['url'],
 	R extends any = Binder['response'],
 	B extends any = Binder['body'],

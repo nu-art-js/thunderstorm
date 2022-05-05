@@ -21,6 +21,7 @@
 
 import {ObjectTS} from '@nu-art/ts-common';
 
+
 export enum HttpMethod {
 	ALL = 'all',
 	POST = 'post',
@@ -32,17 +33,30 @@ export enum HttpMethod {
 	HEAD = 'head',
 }
 
-export type QueryParams = { [key: string]: string | undefined; };
+export type HttpMethod_Query = 'get' | 'delete'
+export type HttpMethod_Body = 'post' | 'put' | 'patch'
+export type HttpMethod_Empty = 'options' | 'head'
 
-export type ApiTypeBinder<U extends string, R extends any, B, P extends QueryParams | {}, E extends any = any> = {
-	url: U
-	response: R
-	body: B
-	params: P
-	errors: E
-};
-export type ApiWithBody<U extends string, B, R, E extends any = any> = ApiTypeBinder<U, R, B, {}, E>;
-export type ApiWithQuery<U extends string, R extends any, P extends QueryParams | {} = {}, E extends any = any> = ApiTypeBinder<U, R, void, P, E>;
+export type _METHODS = HttpMethod_Query | HttpMethod_Body | HttpMethod_Empty
+
+export type QueryParams = { [key: string]: string | number | undefined; };
+
+export type TypedApi<M extends _METHODS, R, B, P extends QueryParams> = {
+	M: M,
+	R: R,
+	B: B,
+	P: P,
+}
+
+export type BodyApi<R, B, M extends HttpMethod_Body = HttpMethod.POST, P extends QueryParams = never> = TypedApi<M, R, B, P>
+export type QueryApi<R, P extends QueryParams, M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P>
+export type EmptyApi<R, M extends HttpMethod_Empty, P extends QueryParams = never, B = never> = TypedApi<M, R, B, P>
+
+export type ApiDef<API extends TypedApi<any, any, any, any>> = {
+	method: API['M'],
+	baseUrl?: string
+	path: string
+}
 
 export type ErrorBody<E extends ObjectTS | void = void> = {
 	type: string
@@ -53,3 +67,4 @@ export type  ErrorResponse<E extends ObjectTS | void = void> = {
 	debugMessage?: string
 	error?: ErrorBody<E>
 }
+

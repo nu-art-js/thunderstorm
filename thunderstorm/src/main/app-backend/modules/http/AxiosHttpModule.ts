@@ -20,7 +20,7 @@
  */
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
-import {ApiTypeBinder, ErrorResponse, HttpMethod} from '../../../shared/types';
+import {TypedApi, ErrorResponse, HttpMethod} from '../../../shared/types';
 import {BadImplementationException, StringMap,} from '@nu-art/ts-common';
 import {BaseHttpRequest} from '../../../shared/BaseHttpRequest';
 import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
@@ -38,7 +38,7 @@ export class AxiosHttpModule_Class
 			this.origin = origin;
 	}
 
-	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): AxiosHttpRequest<Binder> {
+	createRequest<Binder extends TypedApi<any, any, any, any>>(method: HttpMethod, key: string, data?: string): AxiosHttpRequest<Binder> {
 		return new AxiosHttpRequest<Binder>(key, data, this.shouldCompress())
 			.setOrigin(this.origin)
 			.setMethod(method)
@@ -74,7 +74,7 @@ export class AxiosHttpModule_Class
 
 export const AxiosHttpModule = new AxiosHttpModule_Class();
 
-class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
+class AxiosHttpRequest<Binder extends TypedApi<any, any, any, any>>
 	extends BaseHttpRequest<Binder> {
 	private response?: Axios_Response<Binder['response']>;
 	private cancelSignal: Axios_CancelTokenSource;
