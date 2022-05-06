@@ -46,6 +46,7 @@ export class XhrHttpModule_Class
 		return new XhrHttpRequest<API>(apiDef.path, data, this.shouldCompress())
 			.setMethod(apiDef.method)
 			.setOrigin(apiDef.baseUrl || this.origin)
+			.setRelativeUrl(`${apiDef.pathPrefix || ''}/${apiDef.path}`)
 			.setTimeout(this.timeout)
 			.addHeaders(this.getDefaultHeaders())
 			.setHandleRequestSuccess(this.handleRequestSuccess)

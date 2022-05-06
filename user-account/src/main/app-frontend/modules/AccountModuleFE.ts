@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-import {Module, Second} from "@nu-art/ts-common";
-import {ComponentSync, BrowserHistoryModule, StorageKey, ThunderDispatcher, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
+import {Module, Second} from '@nu-art/ts-common';
+import {BrowserHistoryModule, ComponentSync, StorageKey, ThunderDispatcher, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 import {
-	AccountApi_Create,
-	AccountApi_ListAccounts,
-	AccountApi_Login,
-	AccountApi_LoginSAML,
-	AccountApi_ValidateSession,
+	ApiDef_UserAccount_Create,
+	ApiDef_UserAccount_ListAccounts,
+	ApiDef_UserAccount_Login,
+	ApiDef_UserAccount_LoginSAML,
+	ApiDef_UserAccount_ValidateSession,
 	HeaderKey_SessionId,
 	QueryParam_Email,
 	QueryParam_SessionId,
@@ -35,17 +35,16 @@ import {
 	Response_ListAccounts,
 	Response_LoginSAML,
 	UI_Account
-} from "../../shared/api";
-import {HttpMethod} from "@nu-art/thunderstorm";
+} from '../../shared/api';
+
 
 export const StorageKey_SessionId: StorageKey<string> = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
 export const StorageKey_UserEmail: StorageKey<string> = new StorageKey<string>(`storage-${QueryParam_Email}`);
 
-
-export const RequestKey_AccountCreate = "account-create";
-export const RequestKey_AccountLogin = "account-login";
-export const RequestKey_AccountLoginSAML = "account-login-saml";
-export const RequestKey_ValidateSession = "account-validate";
+export const RequestKey_AccountCreate = 'account-create';
+export const RequestKey_AccountLogin = 'account-login';
+export const RequestKey_AccountLoginSAML = 'account-login-saml';
+export const RequestKey_ValidateSession = 'account-validate';
 
 export interface OnLoginStatusUpdated {
 	__onLoginStatusUpdated: () => void;
@@ -63,8 +62,8 @@ export interface OnAccountsLoaded {
 	__onAccountsLoaded: () => void;
 }
 
-const dispatch_onAccountsLoaded = new ThunderDispatcher<OnAccountsLoaded, "__onAccountsLoaded">("__onAccountsLoaded");
-const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, "__onLoginStatusUpdated">("__onLoginStatusUpdated");
+const dispatch_onAccountsLoaded = new ThunderDispatcher<OnAccountsLoaded, '__onAccountsLoaded'>('__onAccountsLoaded');
+const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
 
 export class AccountModuleFE_Class
 	extends Module<Config> {
@@ -95,13 +94,12 @@ export class AccountModuleFE_Class
 		dispatch_onLoginStatusChanged.dispatchModule();
 	};
 
-
 	protected init(): void {
 		XhrHttpModule.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
 		// XhrHttpModule.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
-		const email = ComponentSync.getQueryParameter(QueryParam_Email);
-		const sessionId = ComponentSync.getQueryParameter(QueryParam_SessionId);
+		const email = `${ComponentSync.getQueryParameter(QueryParam_Email)}`;
+		const sessionId = `${ComponentSync.getQueryParameter(QueryParam_SessionId)}`;
 
 		if (email && sessionId) {
 			StorageKey_SessionId.set(sessionId);
@@ -114,17 +112,17 @@ export class AccountModuleFE_Class
 		if (StorageKey_SessionId.get())
 			return this.validateToken();
 
-		this.logDebug("login out user.... ");
-		this.setLoggedStatus(LoggedStatus.LOGGED_OUT)
+		this.logDebug('login out user.... ');
+		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	}
 
 	public create(request: Request_CreateAccount) {
 		XhrHttpModule
-			.createRequest<AccountApi_Create>(HttpMethod.POST, RequestKey_AccountCreate)
-			.setRelativeUrl("/v1/account/create")
+			.createRequest(ApiDef_UserAccount_Create)
+			.setRelativeUrl('/v1/account/create')
 			.setJsonBody(request)
 			.setLabel(`User register...`)
-			.setOnError("Error registering user")
+			.setOnError('Error registering user')
 			.execute(async (response: Response_Auth) => {
 				this.setLoginInfo(response);
 			});
@@ -132,11 +130,11 @@ export class AccountModuleFE_Class
 
 	public login(request: Request_LoginAccount) {
 		XhrHttpModule
-			.createRequest<AccountApi_Login>(HttpMethod.POST, RequestKey_AccountLogin)
-			.setRelativeUrl("/v1/account/login")
+			.createRequest(ApiDef_UserAccount_Login)
+			.setRelativeUrl('/v1/account/login')
 			.setJsonBody(request)
 			.setLabel(`User login with password...`)
-			.setOnError("Error login user")
+			.setOnError('Error login user')
 			.execute(async (response: Response_Auth) => {
 				this.setLoginInfo(response);
 			});
@@ -150,8 +148,8 @@ export class AccountModuleFE_Class
 
 	public loginSAML(request: RequestParams_LoginSAML) {
 		XhrHttpModule
-			.createRequest<AccountApi_LoginSAML>(HttpMethod.GET, RequestKey_AccountLoginSAML)
-			.setRelativeUrl("/v1/account/login-saml")
+			.createRequest(ApiDef_UserAccount_LoginSAML)
+			.setRelativeUrl('/v1/account/login-saml')
 			.setUrlParams(request)
 			.setLabel(`User login SAML...`)
 			.setOnError('Error login user')
@@ -165,16 +163,15 @@ export class AccountModuleFE_Class
 
 	private validateToken = () => {
 		XhrHttpModule
-			.createRequest<AccountApi_ValidateSession>(HttpMethod.GET, RequestKey_ValidateSession)
+			.createRequest(ApiDef_UserAccount_ValidateSession)
 			.setLabel(`Validate token...`)
-			.setRelativeUrl("/v1/account/validate")
+			.setRelativeUrl('/v1/account/validate')
 			.setOnError((request, resError) => {
 				if (request.getStatus() === 0) {
-					ToastModule.toastError("Cannot reach Server... trying in 30 sec");
+					ToastModule.toastError('Cannot reach Server... trying in 30 sec');
 					setTimeout(() => this.validateToken(), 30 * Second);
 					return;
 				}
-
 
 				StorageKey_SessionId.delete();
 				return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
@@ -194,14 +191,14 @@ export class AccountModuleFE_Class
 
 	listUsers = () => {
 		XhrHttpModule
-			.createRequest<AccountApi_ListAccounts>(HttpMethod.GET, RequestKey_ValidateSession)
+			.createRequest(ApiDef_UserAccount_ListAccounts)
 			.setLabel(`Fetching users...`)
-			.setRelativeUrl("/v1/account/query")
+			.setRelativeUrl('/v1/account/query')
 			.execute(async (res: Response_ListAccounts) => {
 				this.accounts = res.accounts.filter(account => account._id);
 				dispatch_onAccountsLoaded.dispatchUI();
 			});
-	}
+	};
 }
 
 export const AccountModuleFE = new AccountModuleFE_Class();

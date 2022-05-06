@@ -154,6 +154,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 			throw new BadImplementationException('if you want to use relative urls, you need to set an origin');
 
 		this.url = this.origin + relativeUrl;
+		this.url.replace(/\/\//g, '/');
 		return this;
 	}
 
