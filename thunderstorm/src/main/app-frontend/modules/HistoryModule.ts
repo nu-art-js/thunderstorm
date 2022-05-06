@@ -82,7 +82,7 @@ export class BrowserHistoryModule_Class
 	getQueryParams() {
 		const params = this.getEncodedQueryParams();
 		_keys(params).forEach(key => {
-			const value = params[key];
+			const value = `${params[key]}`;
 			if (!value) {
 				delete params[key];
 				return;

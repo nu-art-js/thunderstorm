@@ -21,11 +21,10 @@
 
 import {Dispatcher, Module} from '@nu-art/ts-common';
 import {XhrHttpModule} from './http/XhrHttpModule';
-import {ApiBinder_AssertAppVersion, HeaderKey_AppVersion, HeaderKey_BrowserType, UpgradeRequired} from '../../shared/force-upgrade';
-import {HttpMethod} from '../../shared/types';
+import {ApiDef_AssertAppVersion, HeaderKey_AppVersion, HeaderKey_BrowserType, UpgradeRequired} from '../../shared/force-upgrade';
 import {browserType} from '../utils/tools';
 
-export const RequestKey_AssertAppVersion = 'assert-app-version';
+
 type Config = {
 	assertVersionUrl: string
 }
@@ -46,7 +45,7 @@ class ForceUpgrade_Class
 
 	compareVersion = () => {
 		XhrHttpModule
-			.createRequest<ApiBinder_AssertAppVersion>(HttpMethod.GET, RequestKey_AssertAppVersion)
+			.createRequest(ApiDef_AssertAppVersion)
 			.setRelativeUrl(this.config.assertVersionUrl)
 			.execute((response) => {
 				dispatch_onUpgradeRequired.dispatchModule(response);

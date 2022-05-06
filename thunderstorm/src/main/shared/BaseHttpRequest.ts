@@ -18,16 +18,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {_keys, _setTimeout, BadImplementationException, ObjectTS} from '@nu-art/ts-common';
-import {TypedApi, ErrorResponse, HttpMethod, QueryParams} from './types';
+import {_keys, _setTimeout, BadImplementationException} from '@nu-art/ts-common';
+import {ErrorResponse, HttpMethod, TypedApi} from './types';
 import {HttpException, RequestErrorHandler, RequestSuccessHandler, TS_Progress} from './request-types';
 
-export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any>,
-	U extends string = Binder['url'],
-	R extends any = Binder['response'],
-	B extends any = Binder['body'],
-	P extends QueryParams = Binder['params'],
-	E extends ObjectTS = Binder['errors']> {
+
+export type ErrorType = any
+
+export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> {
 
 	key: string;
 	requestData!: any;
@@ -38,16 +36,16 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 	protected headers: { [s: string]: string[] } = {};
 	protected method: HttpMethod = HttpMethod.GET;
 	protected timeout: number = 10000;
-	protected body!: B;
+	protected body!: API['B'];
 	protected url!: string;
-	protected params: { [K in keyof P]?: P[K] } = {};
+	protected params: { [K in keyof API['P']]?: API['P'][K] } = {};
 	protected responseType!: string;
 
 	protected label!: string;
 	protected onProgressListener!: (ev: TS_Progress) => void;
 	protected handleRequestSuccess!: RequestSuccessHandler;
-	protected handleRequestFailure!: RequestErrorHandler<E>;
-	protected onError?: RequestErrorHandler<E>;
+	protected handleRequestFailure!: RequestErrorHandler<ErrorType>;
+	protected onError?: RequestErrorHandler<ErrorType>;
 	protected aborted: boolean = false;
 	protected compress: boolean;
 	private defaultResponseHandler?: (request: BaseHttpRequest<any>) => boolean;
@@ -63,7 +61,7 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return this;
 	}
 
-	setHandleRequestFailure(handleRequestFailure: RequestErrorHandler<E>) {
+	setHandleRequestFailure(handleRequestFailure: RequestErrorHandler<ErrorType>) {
 		this.handleRequestFailure = handleRequestFailure;
 		return this;
 	}
@@ -85,7 +83,7 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return this;
 	}
 
-	setOnError(errorMessage: string | RequestErrorHandler<E>) {
+	setOnError(errorMessage: string | RequestErrorHandler<ErrorType>) {
 		if (typeof errorMessage === 'string') {
 			// @ts-ignore
 			// noinspection JSConstantReassignment
@@ -128,7 +126,7 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return this;
 	}
 
-	public setUrlParams(params: P) {
+	public setUrlParams(params: API['P']) {
 		if (!params)
 			return this;
 
@@ -140,7 +138,7 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return this;
 	}
 
-	setUrlParam<K extends keyof P = keyof P>(key: K, value: P[K]) {
+	setUrlParam<K extends keyof API['P'] = keyof API['P']>(key: K, value: API['P'][K]) {
 		delete this.params[key];
 		this.params[key] = value;
 		return this;
@@ -151,7 +149,7 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return this;
 	}
 
-	public setRelativeUrl(relativeUrl: U) {
+	public setRelativeUrl(relativeUrl: string) {
 		if (!this.origin)
 			throw new BadImplementationException('if you want to use relative urls, you need to set an origin');
 
@@ -208,13 +206,13 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return this;
 	}
 
-	setJsonBody(bodyObject: B, compress?: boolean) {
+	setJsonBody(bodyObject: API['B'], compress?: boolean) {
 		this.setHeader('content-type', 'application/json');
 		this.setBody(this.prepareJsonBody(bodyObject), compress);
 		return this;
 	}
 
-	protected prepareJsonBody(bodyObject: B): any {
+	protected prepareJsonBody(bodyObject: API['B']): any {
 		return bodyObject;
 	}
 
@@ -227,12 +225,12 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return this;
 	}
 
-	asJson(): R {
+	asJson(): API['R'] {
 		const response = this.getResponse();
 		if (!response)
 			throw new BadImplementationException('No xhr.response...');
 
-		return JSON.parse(response as unknown as string) as R;
+		return JSON.parse(response as unknown as string) as API['R'];
 	}
 
 	asText() {
@@ -243,9 +241,9 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return response;
 	}
 
-	protected resolveResponse(): R {
+	protected resolveResponse(): API['R'] {
 		const rawResponse = this.getResponse();
-		let response: R = undefined as unknown as R;
+		let response: API['R'] = undefined as unknown as API['R'];
 		if (rawResponse) {
 			try {
 				response = rawResponse && this.asJson();
@@ -268,7 +266,7 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return statusCode >= 200 && statusCode < 300;
 	}
 
-	async executeSync(): Promise<R> {
+	async executeSync(): Promise<API['R']> {
 		await this.executeImpl();
 		if (this.aborted)
 			throw new HttpException(this.getStatus(), this.url);// should be status 0
@@ -285,7 +283,7 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return this.resolveResponse();
 	}
 
-	execute(responseHandler?: (response: R, data?: string) => Promise<void> | void) {
+	execute(responseHandler?: (response: API['R'], data?: string) => Promise<void> | void) {
 		const toCall = async (resolve: (value?: unknown) => void, reject: (reason?: any) => void) => {
 			await this.executeImpl();
 			if (this.aborted)
@@ -312,16 +310,15 @@ export abstract class BaseHttpRequest<Binder extends TypedApi<any, any, any, any
 		return this;
 	}
 
-	protected abstract getResponse(): R
+	protected abstract getResponse(): API['R']
 
-	abstract getErrorResponse(): ErrorResponse<E>
+	abstract getErrorResponse(): ErrorResponse<ErrorType>
 
 	protected abstract abortImpl(): void
 
 	abstract getStatus(): number;
 
 	abstract getResponseHeader(headerKey: string): string | string[] | undefined;
-
 
 	abort() {
 		this.aborted = true;

@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {TypedApi, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from '@nu-art/thunderstorm';
-import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from '../../index';
+import {ApiDef, BaseHttpRequest, ErrorResponse, RequestErrorHandler, TypedApi} from '@nu-art/thunderstorm';
+import {ApiGen_ApiDefs, TypedApi_Delete, TypedApi_Patch, TypedApi_Query, TypedApi_Upsert} from '../../index';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {
 	DBConfig,
@@ -39,12 +39,12 @@ import {DB_BaseObject, DB_Object, Module, PartialProperties, PreDBObject} from '
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
 
+
 export type BaseApiConfigV2<DBType extends DB_Object, Ks extends keyof DBType = '_id'> = {
 	relativeUrl: string
 	key: string
 	dbConfig: DBConfig<DBType, Ks>
 }
-
 
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
 
@@ -78,14 +78,9 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
 	}
 
-	protected createRequest<Binder extends TypedApi<any, any, any, any, any>,
-		U extends string = Binder['url'],
-		R = Binder['response'],
-		B = Binder['body'],
-		P extends QueryParams = Binder['params']>(apiDef: GenericApiDef, body?: B, requestData?: string): BaseHttpRequest<Binder> {
-
-		const request = XhrHttpModule.createRequest<Binder>(apiDef.method, requestData || `request-api--${this.config.key}-${apiDef.key}`)
-			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? '/' + apiDef.suffix : ''}`)
+	protected createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<any>, body?: API['B'], requestData?: string): BaseHttpRequest<API> {
+		const request = XhrHttpModule.createRequest<API>(apiDef.method, requestData || `request-api--${this.config.key}-${apiDef.path}`)
+			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.path ? '/' + apiDef.path : ''}`)
 			.setOnError(this.errorHandler) as BaseHttpRequest<any>;
 
 		if (body)
@@ -98,7 +93,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return request;
 	}
 
-	protected timeoutHandler(apiDef: GenericApiDef): number | void {
+	protected timeoutHandler(apiDef: ApiDef<any>): number | void {
 	}
 
 	protected onError(request: BaseHttpRequest<any>, resError?: ErrorResponse<any>): boolean {
@@ -110,7 +105,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			const listener = {
 				[this.defaultDispatcher.method]: action
 			};
-
 
 			//@ts-ignore
 			Thunder.getInstance().addUIListener(listener);
@@ -135,16 +129,16 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		});
 	};
 
-	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
-		this.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Upsert, toUpsert, requestData)
+	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Upsert<DBType>> =>
+		this.createRequest<TypedApi_Upsert<DBType>>(ApiGen_ApiDefs.Upsert, toUpsert, requestData)
 			.execute(async (response) => {
 				await this.onEntryUpdated(toUpsert as unknown as DBType, response, requestData);
 				if (responseHandler)
 					return responseHandler(response);
 			});
 
-	patch = (toUpdate: Partial<DBType> & DB_BaseObject, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBPatch<DBType>> => {
-		return this.createRequest<ApiBinder_DBPatch<DBType>>(DefaultApiDefs.Patch, toUpdate, requestData)
+	patch = (toUpdate: Partial<DBType> & DB_BaseObject, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Patch<DBType>> => {
+		return this.createRequest<TypedApi_Patch<DBType>>(ApiGen_ApiDefs.Patch, toUpdate, requestData)
 			.execute(async response => {
 				await this.onEntryPatched(response, requestData);
 				if (responseHandler)
@@ -152,14 +146,13 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			});
 	};
 
-
-	query = (query?: FirestoreQuery<DBType>, responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
+	query = (query?: FirestoreQuery<DBType>, responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Query<DBType>> => {
 		let _query = query;
 		if (!_query)
 			_query = {} as FirestoreQuery<DBType>;
 
 		return this
-			.createRequest<ApiBinder_DBQuery<DBType>>(DefaultApiDefs.Query, _query, requestData)
+			.createRequest<TypedApi_Query<DBType>>(ApiGen_ApiDefs.Query, _query, requestData)
 			.execute(async response => {
 				await this.onQueryReturned(response, requestData);
 				if (responseHandler)
@@ -167,15 +160,14 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			});
 	};
 
-
-	unique = (keys: IndexKeys<DBType, Ks>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
+	unique = (keys: IndexKeys<DBType, Ks>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Query<DBType>> => {
 		const query: FirestoreQuery<DBType> = {
 			where: keys as Clause_Where<DBType>,
 			limit: 1
 		};
 
 		return this
-			.createRequest<ApiBinder_DBQuery<DBType>>(DefaultApiDefs.Query, query, requestData)
+			.createRequest<TypedApi_Query<DBType>>(ApiGen_ApiDefs.Query, query, requestData)
 			.execute(async response => {
 				await this.onGotUnique(response[0], requestData);
 				if (responseHandler)
@@ -183,9 +175,9 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			});
 	};
 
-	delete = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBDelete<DBType>> => {
+	delete = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Delete<DBType>> => {
 		return this
-			.createRequest<ApiBinder_DBDelete<DBType>>(DefaultApiDefs.Delete, undefined, requestData)
+			.createRequest<TypedApi_Delete<DBType>>(ApiGen_ApiDefs.Delete, undefined, requestData)
 			.setUrlParams({_id})
 			.setOnError(async request => {
 				if (request.getStatus() === 404) {

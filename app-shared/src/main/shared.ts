@@ -46,8 +46,8 @@ export interface TestDispatch {
 
 export type ExampleApiCustomError = BodyApi<"/v1/sample/custom-error", void, void, CustomError1 | CustomError2>
 export type ExampleApiPostType = BodyApi<"/v1/sample/another-endpoint", CommonBodyReq, string>
-export type ExampleApiGetType = QueryApi<string, string>
-export type ExampleApiTest = QueryApi<string, string>
+export type ExampleApiGetType = QueryApi< string>
+export type ExampleApiTest = QueryApi< string>
 export type ExampleTestPush = QueryApi<"/v1/sample/push-test", string>
 
 export type ExampleGetMax = QueryApi<"/v1/sample/get-max", { n: number }>

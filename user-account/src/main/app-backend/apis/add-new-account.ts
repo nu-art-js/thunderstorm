@@ -17,28 +17,21 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
-import {
-	AccountModuleBE,
-	Request_AddNewAccount,
-	AccountApi_AddNewAccount
-} from "../api/v1/account/_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {AccountModuleBE, ApiDef_UserAccount_AddNewAccount, Request_AddNewAccount} from '../api/v1/account/_imports';
+import {ApiResolver} from '@nu-art/thunderstorm';
+
 
 export class ServerApi_Account_AddNewAccount
-	extends ServerApi<AccountApi_AddNewAccount> {
+	extends ServerApi<ApiResolver<typeof ApiDef_UserAccount_AddNewAccount>> {
 
 	constructor() {
-		super(HttpMethod.POST, "add-new-account");
+		super(ApiDef_UserAccount_AddNewAccount);
 		this.dontPrintResponse();
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_AddNewAccount) {
-		this.assertProperty(body, ["email"]);
+		this.assertProperty(body, ['email']);
 
 		return AccountModuleBE.addNewAccount(body.email, body.password, body.password_check);
 	}

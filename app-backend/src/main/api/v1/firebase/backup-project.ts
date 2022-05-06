@@ -31,7 +31,7 @@ import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 
 class ServerApi_RegisterExternalProject
-	extends ServerApi<QueryApi<string, void>> {
+	extends ServerApi<QueryApi< void>> {
 
 	constructor() {
 		super(HttpMethod.GET, "backup-project");

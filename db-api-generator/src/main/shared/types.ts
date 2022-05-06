@@ -20,45 +20,45 @@
  */
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject, DB_Object, PreDBObject} from '@nu-art/ts-common';
-import {BodyApi, QueryApi, HttpMethod,} from '@nu-art/thunderstorm';
+import {BodyApi, QueryApi, HttpMethod, ApiDef,} from '@nu-art/thunderstorm';
 
-export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
-	Upsert: {
-		method: HttpMethod.POST,
-		key: 'upsert',
-		suffix: 'upsert'
-	},
-	Patch: {
-		method: HttpMethod.POST,
-		key: 'patch',
-		suffix: 'patch'
-	},
-	Delete: {
-		method: HttpMethod.GET, // delete doesn't works, so we changed it to get
-		key: 'delete',
-		suffix: 'delete'
-	},
-	Unique: {
-		method: HttpMethod.GET,
-		key: 'unique',
-		suffix: 'unique'
-	},
-	Query: {
-		method: HttpMethod.POST,
-		key: 'query',
-		suffix: 'query'
-	},
+
+export const ApiDef_Upsert: ApiDef<TypedApi_Upsert<any>> = {
+	method: HttpMethod.POST,
+	path: 'upsert',
+};
+export const ApiDef_Patch: ApiDef<TypedApi_Patch<any>> = {
+	method: HttpMethod.POST,
+	path: 'patch',
+};
+export const ApiDef_Delete: ApiDef<TypedApi_Delete<any>> = {
+	method: HttpMethod.GET,
+	path: 'delete',
+};
+export const ApiDef_UniqueQuery: ApiDef<TypedApi_UniqueQuery<any>> = {
+	method: HttpMethod.GET,
+	path: 'upsert',
+};
+export const ApiDef_Query: ApiDef<TypedApi_Upsert<any>> = {
+	method: HttpMethod.POST,
+	path: 'query',
+};
+
+export const ApiGen_ApiDefs = {
+	Query: ApiDef_Query,
+	Upsert: ApiDef_Upsert,
+	Patch: ApiDef_Patch,
+	Delete: ApiDef_Delete,
+	UniqueQuery: ApiDef_UniqueQuery,
 };
 
 export const ErrorKey_BadInput = 'bad-input';
 
 export type BadInputErrorBody = { path: string, input?: string };
 
-export type GenericApiDef = { method: HttpMethod, key: string, suffix?: string };
-
-export type ApiBinder_DBUpsert<DBType extends DB_Object, RequestType extends PreDBObject<DBType> = PreDBObject<DBType>> = BodyApi<string, RequestType, DBType>;
-export type ApiBinder_DBDelete<DBType extends DB_Object> = QueryApi<string, DBType, DB_BaseObject>;
-export type ApiBinder_DBUnique<DBType extends DB_Object> = QueryApi<string, DBType, DB_BaseObject>;
-export type ApiBinder_DBPatch<DBType extends DB_Object> = BodyApi<string, Partial<DBType> & DB_BaseObject, DBType>;
-export type ApiBinder_DBQuery<DBType extends DB_Object> = BodyApi<string, FirestoreQuery<DBType>, DBType[]>;
+export type TypedApi_Upsert<DBType extends DB_Object, RequestType extends PreDBObject<DBType> = PreDBObject<DBType>> = BodyApi<DBType, RequestType>;
+export type TypedApi_Delete<DBType extends DB_Object> = QueryApi<DBType, DB_BaseObject>;
+export type TypedApi_UniqueQuery<DBType extends DB_Object> = QueryApi<DBType, DB_BaseObject>;
+export type TypedApi_Patch<DBType extends DB_Object> = BodyApi<DBType, Partial<DBType> & DB_BaseObject>;
+export type TypedApi_Query<DBType extends DB_Object> = BodyApi<DBType[], FirestoreQuery<DBType>>;
 

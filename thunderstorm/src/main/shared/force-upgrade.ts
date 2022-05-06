@@ -19,7 +19,8 @@
  * limitations under the License.
  */
 
-import {QueryApi} from './types';
+import {ApiDef, HttpMethod, QueryApi} from './types';
+
 
 export const HeaderKey_AppVersion = 'x-app-version';
 export const HeaderKey_BrowserType = 'x-browser-type';
@@ -30,4 +31,7 @@ export type UpgradeRequired = {
 	app: boolean
 };
 
-export type ApiBinder_AssertAppVersion = QueryApi<string, UpgradeRequired>;
+export const ApiDef_AssertAppVersion: ApiDef<QueryApi<UpgradeRequired>> = {
+	method: HttpMethod.GET,
+	path: 'assert-app-version',
+};

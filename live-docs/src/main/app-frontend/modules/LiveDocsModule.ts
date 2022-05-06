@@ -17,16 +17,16 @@
  * limitations under the License.
  */
 
-import {Module} from "@nu-art/ts-common";
-import {ToastBuilder, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
-import {DB_Document, Request_UpdateDocument} from "../../shared/types";
-import {ApiGetLiveDoc, ApiHistoryLiveDocs, apiPatchLiveDocs} from "../../shared/api";
-import {setDefaultLiveDocEditor} from "../utils";
-import {HttpMethod} from "@nu-art/thunderstorm";
+import {Module} from '@nu-art/ts-common';
+import {ToastBuilder, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {DB_Document, Request_UpdateDocument} from '../../shared/types';
+import {setDefaultLiveDocEditor} from '../utils';
+import {ApiDef_LiveDoc_Get, ApiDef_LiveDoc_History, ApiDef_LiveDoc_Upsert} from '../../shared/api';
 
-export const RequestKey_FetchDoc = "FetchDoc";
-export const RequestKey_UpdateDoc = "UpdateDoc";
 
+export const RequestKey_FetchDoc = 'FetchDoc';
+export const RequestKey_UpdateDoc = 'UpdateDoc';
+export const RequestKey_UpdatePointer = 'UpdatePointer';
 
 export type LiveDocActionResolver = (docKey: string) => ToastBuilder;
 
@@ -45,7 +45,7 @@ export class LiveDocsModule_Class
 	}
 
 	protected init(): void {
-		setDefaultLiveDocEditor()
+		setDefaultLiveDocEditor();
 	}
 
 	get(key: string) {
@@ -65,12 +65,12 @@ export class LiveDocsModule_Class
 		if (doc)
 			this._showDocImpl(docKey, doc);
 		else
-			ToastModule.toastInfo("Loading...");
+			ToastModule.toastInfo('Loading...');
 
 		XhrHttpModule
-			.createRequest<ApiGetLiveDoc>(HttpMethod.GET, RequestKey_FetchDoc, docKey)
+			.createRequest(ApiDef_LiveDoc_Get, `${RequestKey_FetchDoc}-${docKey}`)
 			.setUrlParams({key: docKey})
-			.setRelativeUrl("/v1/live-docs/get")
+			.setRelativeUrl('/v1/live-docs/get')
 			.setLabel(`Fetch live-docs for key: ${docKey}`)
 			.setOnError(`Error fetching live-docs for key: ${docKey}`)
 			.execute(async (_response) => {
@@ -89,19 +89,19 @@ export class LiveDocsModule_Class
 		const docKey = liveDoc.key;
 
 		XhrHttpModule
-			.createRequest<apiPatchLiveDocs>(HttpMethod.POST, RequestKey_UpdateDoc, docKey)
+			.createRequest(ApiDef_LiveDoc_Upsert, `${RequestKey_UpdateDoc}-${docKey}`)
 			.setJsonBody(liveDoc)
-			.setRelativeUrl("/v1/live-docs/update")
+			.setRelativeUrl('/v1/live-docs/update')
 			.setLabel(`Update live-docs with key: ${docKey}`)
 			.setOnError(`Error updating live-docs for key: ${docKey}`)
 			.execute(async () => this.showLiveDoc(docKey));
 	}
 
-	changeHistory(docKey: string, change: "undo" | "redo") {
+	changeHistory(docKey: string, change: 'undo' | 'redo') {
 		XhrHttpModule
-			.createRequest<ApiHistoryLiveDocs>(HttpMethod.POST, RequestKey_UpdateDoc, docKey)
-			.setJsonBody({key: docKey, change: change})
-			.setRelativeUrl("/v1/live-docs/change-history")
+			.createRequest(ApiDef_LiveDoc_History, `${RequestKey_UpdatePointer}-${docKey}`)
+			.setUrlParams({key: docKey, change: change})
+			.setRelativeUrl('/v1/live-docs/change-history')
 			.setLabel(`${change} live-docs history with key: ${docKey}`)
 			.setOnError(`Error ${change} live-docs history for key: ${docKey}`)
 			.execute(async () => this.showLiveDoc(docKey));

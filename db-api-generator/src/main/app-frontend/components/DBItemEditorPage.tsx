@@ -35,6 +35,7 @@ import {DB_Object, TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
 import {Props_DBItemEditorComponentV2} from './DBItemEditorComponent';
 
+
 export type Props_DBItemEditorPageV2<ItemType extends DB_Object, Ks extends keyof ItemType = '_id'> = {
 	keys: Ks[]
 	pageTitle: string
@@ -92,7 +93,7 @@ export abstract class DBItemEditorPage<ItemType extends DB_Object,
 		return {keys, item: item || {}} as S;
 	}
 
-	private resolveKeys(props: P, resolver: (key: Ks) => string | undefined) {
+	private resolveKeys(props: P, resolver: (key: Ks) => string | number | undefined) {
 		return props.keys.reduce((toRet, key) => {
 			const value = resolver(key);
 			if (value)
@@ -182,7 +183,6 @@ export abstract class DBItemEditorPage<ItemType extends DB_Object,
 
 		return this.renderEditor();
 	}
-
 
 	renderEditor() {
 		const ItemEditor = this.props.itemEditor;

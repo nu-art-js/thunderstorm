@@ -18,17 +18,20 @@
  */
 
 import {
+	ApiDef,
 	BodyApi,
+	HttpMethod,
 	QueryApi
-} from "@nu-art/thunderstorm";
+} from '@nu-art/thunderstorm';
 
-export const HeaderKey_SessionId = "x-session-id";
-export const HeaderKey_Email = "x-email";
 
-export const QueryParam_Email = "userEmail";
+export const HeaderKey_SessionId = 'x-session-id';
+export const HeaderKey_Email = 'x-email';
+
+export const QueryParam_Email = 'userEmail';
 export const QueryParam_SessionId = HeaderKey_SessionId;
-export const QueryParam_RedirectUrl = "redirectUrl";
-export const HeaderKey_CurrentPage = "current-page";
+export const QueryParam_RedirectUrl = 'redirectUrl';
+export const HeaderKey_CurrentPage = 'current-page';
 
 export type DB_Session = {
 	userId: string
@@ -90,12 +93,43 @@ export type PostAssertBody = {
 	RelayState: string
 };
 
-export type AccountApi_AddNewAccount = BodyApi<'/v1/account/add-new-account', Request_AddNewAccount, UI_Account>
-export type AccountApi_Create = BodyApi<'/v1/account/create', Request_CreateAccount, Response_Auth>
-export type AccountApi_Upsert = BodyApi<'/v1/account/upsert', Request_UpsertAccount, Response_Auth>
-export type AccountApi_Login = BodyApi<'/v1/account/login', Request_LoginAccount, Response_Auth>
-export type AccountApi_LoginSAML = QueryApi<"/v1/account/login-saml", Response_LoginSAML, RequestParams_LoginSAML>
-export type AccountApi_ValidateSession = QueryApi<'/v1/account/validate', Response_Validation>
-export type AccountApi_AssertLoginSAML = BodyApi<"/v1/account/assert", PostAssertBody, void>
-
-export type AccountApi_ListAccounts = QueryApi<'/v1/account/query', Response_ListAccounts>
+export const ApiDef_UserAccount_AddNewAccount: ApiDef<BodyApi<UI_Account, Request_AddNewAccount>> = {//'/v1/account/add-new-account'
+	method: HttpMethod.POST,
+	pathPrefix: '/v1/account',
+	path: 'add-new-account'
+};
+export const ApiDef_UserAccount_Create: ApiDef<BodyApi<Response_Auth, Request_CreateAccount>> = {//'/v1/account/create'
+	method: HttpMethod.POST,
+	pathPrefix: '/v1/account',
+	path: 'create'
+};
+export const ApiDef_UserAccount_Upsert: ApiDef<BodyApi<Response_Auth, Request_UpsertAccount>> = {//'/v1/account/upsert'
+	method: HttpMethod.POST,
+	pathPrefix: '/v1/account',
+	path: 'upsert'
+};
+export const ApiDef_UserAccount_Login: ApiDef<BodyApi<Response_Auth, Request_LoginAccount>> = {//'/v1/account/login'
+	method: HttpMethod.POST,
+	pathPrefix: '/v1/account',
+	path: 'login'
+};
+export const ApiDef_UserAccount_LoginSAML: ApiDef<QueryApi<Response_LoginSAML, RequestParams_LoginSAML>> = {//"/v1/account/login-saml"
+	method: HttpMethod.GET,
+	pathPrefix: '/v1/account',
+	path: 'login-saml'
+};
+export const ApiDef_UserAccount_ValidateSession: ApiDef<QueryApi<Response_Validation>> = {//'/v1/account/validate'
+	method: HttpMethod.GET,
+	pathPrefix: '/v1/account',
+	path: 'validate'
+};
+export const ApiDef_UserAccount_AssertLoginSAML: ApiDef<BodyApi<void, PostAssertBody>> = {//"/v1/account/assert"
+	method: HttpMethod.POST,
+	pathPrefix: '/v1/account',
+	path: 'assert'
+};
+export const ApiDef_UserAccount_ListAccounts: ApiDef<QueryApi<Response_ListAccounts>> = {//'/v1/account/query'
+	method: HttpMethod.GET,
+	pathPrefix: '/v1/account',
+	path: 'query'
+};

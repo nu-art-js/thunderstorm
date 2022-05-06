@@ -20,12 +20,12 @@
  */
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
-import {TypedApi, ErrorResponse, HttpMethod} from '../../../shared/types';
+import {ApiDef, ErrorResponse, TypedApi} from '../../../shared/types';
 import {BadImplementationException, StringMap,} from '@nu-art/ts-common';
-import {BaseHttpRequest} from '../../../shared/BaseHttpRequest';
+import {BaseHttpRequest, ErrorType} from '../../../shared/BaseHttpRequest';
 import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
 import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
-import * as fs from 'fs';
+
 
 export class AxiosHttpModule_Class
 	extends BaseHttpModule_Class {
@@ -38,10 +38,10 @@ export class AxiosHttpModule_Class
 			this.origin = origin;
 	}
 
-	createRequest<Binder extends TypedApi<any, any, any, any>>(method: HttpMethod, key: string, data?: string): AxiosHttpRequest<Binder> {
-		return new AxiosHttpRequest<Binder>(key, data, this.shouldCompress())
+	createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<API>, data?: string): AxiosHttpRequest<API> {
+		return new AxiosHttpRequest<API>(apiDef.path, data, this.shouldCompress())
 			.setOrigin(this.origin)
-			.setMethod(method)
+			.setMethod(apiDef.method)
 			.setTimeout(this.timeout)
 			.addHeaders(this.getDefaultHeaders())
 			.setHandleRequestSuccess(this.handleRequestSuccess)
@@ -55,28 +55,26 @@ export class AxiosHttpModule_Class
 		return this;
 	}
 
-	async downloadFile(url: string, outputFile: string, key = `Download file: ${url}`) {
-		const downloadRequest = await this.createRequest(HttpMethod.GET, key)
-			.setResponseType('arraybuffer')
-			.setUrl(url);
-
-
-		const downloadResponse = await downloadRequest.executeSync();
-		const outputFolder = outputFile.substring(0, outputFile.lastIndexOf('/'));
-		if (!fs.existsSync(outputFolder))
-			fs.mkdirSync(outputFolder);
-
-		fs.writeFileSync(outputFile, downloadResponse);
-		return outputFile;
-	}
-
+	// async downloadFile(url: string, outputFile: string, key = `Download file: ${url}`) {
+	// 	const downloadRequest = await this.createRequest(HttpMethod.GET, key)
+	// 		.setResponseType('arraybuffer')
+	// 		.setUrl(url);
+	//
+	// 	const downloadResponse = await downloadRequest.executeSync();
+	// 	const outputFolder = outputFile.substring(0, outputFile.lastIndexOf('/'));
+	// 	if (!fs.existsSync(outputFolder))
+	// 		fs.mkdirSync(outputFolder);
+	//
+	// 	fs.writeFileSync(outputFile, downloadResponse);
+	// 	return outputFile;
+	// }
 }
 
 export const AxiosHttpModule = new AxiosHttpModule_Class();
 
-class AxiosHttpRequest<Binder extends TypedApi<any, any, any, any>>
-	extends BaseHttpRequest<Binder> {
-	private response?: Axios_Response<Binder['response']>;
+class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
+	extends BaseHttpRequest<API> {
+	private response?: Axios_Response<API['R']>;
 	private cancelSignal: Axios_CancelTokenSource;
 	protected status?: number;
 	private requestOption: Axios_RequestConfig = {};
@@ -107,7 +105,7 @@ class AxiosHttpRequest<Binder extends TypedApi<any, any, any, any>>
 		this.cancelSignal.cancel(`Request with key: '${this.key}' aborted by the user.`);
 	}
 
-	getErrorResponse(): ErrorResponse<Binder['errors']> {
+	getErrorResponse(): ErrorResponse<ErrorType> {
 		return {debugMessage: this.getResponse()};
 	}
 

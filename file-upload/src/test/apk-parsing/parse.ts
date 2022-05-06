@@ -17,26 +17,27 @@
  * limitations under the License.
  */
 
-import * as fs from "fs";
-import {__custom} from "@nu-art/testelot";
+import * as fs from 'fs';
+import {__custom} from '@nu-art/testelot';
 import {
 	FileWrapper,
 	FirebaseModule
-} from "@nu-art/firebase/backend";
+} from '@nu-art/firebase/backend';
 import {
 	assert,
 	BadImplementationException
-} from "@nu-art/ts-common";
+} from '@nu-art/ts-common';
 
-const PkgReader = require("isomorphic-apk-reader");
-const ApkPath = 'files-temp/kaspero.apk';
+
+const PkgReader = require('isomorphic-apk-reader');
+const ApkPath = 'files-temp/pah.apk';
 
 async function parseApkImpl(file: FileWrapper) {
 	const buffer = await file.read();
 	const metadata = await file.getMetadata();
 // @ts-ignore
 	const mediaLink = metadata.mediaLink;
-	console.log(metadata, mediaLink)
+	console.log(metadata, mediaLink);
 	console.log(`File read ${file.path}`);
 	// const fileName = './temp.apk';
 	// @ts-ignore
@@ -47,19 +48,19 @@ async function parseApkImpl(file: FileWrapper) {
 	try {
 		manifest = await new Promise((res, rej) => {
 			const callback = async (err: any, _manifest: any) => {
-				console.log(err,_manifest)
-				return err ? rej(err) : res(_manifest)
+				console.log(err, _manifest);
+				return err ? rej(err) : res(_manifest);
 			};
 			new PkgReader(fileName, 'apk').parse(callback);
 		});
-	} catch (e:any) {
-		throw new BadImplementationException('Failed to parse manifest', e)
+	} catch (e: any) {
+		throw new BadImplementationException('Failed to parse manifest', e);
 	} finally {
 		console.log(`Cleaup`);
 		// await fs.promises.unlink(fileName);
 	}
 	console.log(`Manifest`, manifest);
-	return manifest
+	return manifest;
 }
 
 export const parseApk = __custom(async () => {
@@ -67,5 +68,5 @@ export const parseApk = __custom(async () => {
 	const file = await bucket.getFile(ApkPath);
 
 	const resp = await parseApkImpl(file);
-	assert('It returned an actual manifest', !!resp, true)
+	assert('It returned an actual manifest', !!resp, true);
 }).setLabel('Parse Apk');

@@ -18,14 +18,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {QueryApi, HttpMethod, TS_Progress} from '../../../index';
+import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '../../../index';
 
 import {Module} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
 import {XhrHttpModule} from '../http/XhrHttpModule';
 import {BrowserHistoryModule} from '../HistoryModule';
 
-type ScriptLoaderBinder = QueryApi<string, string>
+
+type ScriptLoaderBinder = QueryApi<string>
 
 export class PageLoadingModule_Class
 	extends Module<{}> {
@@ -33,9 +34,13 @@ export class PageLoadingModule_Class
 	private readonly injected: { [src: string]: HTMLScriptElement } = {};
 
 	loadScript(src: string, progressListener: (progress: number) => void) {
+		const apiDef: ApiDef<ScriptLoaderBinder> = {
+			method: HttpMethod.GET,
+			baseUrl: BrowserHistoryModule.getOrigin(),
+			path: src
+		};
 		XhrHttpModule
-			.createRequest<ScriptLoaderBinder>(HttpMethod.GET, src)
-			.setUrl(`${BrowserHistoryModule.getOrigin()}/${src}`)
+			.createRequest<ScriptLoaderBinder>(apiDef)
 			.setOnProgressListener((ev: TS_Progress) => {
 				const progress = ev.loaded / ev.total;
 				progressListener(progress);

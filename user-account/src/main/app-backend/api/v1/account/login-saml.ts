@@ -17,30 +17,23 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ServerApi_Get
-} from "@nu-art/thunderstorm/backend";
+import {ApiResponse, ExpressRequest, ServerApi_Get} from '@nu-art/thunderstorm/backend';
 
+import {ApiDef_UserAccount_LoginSAML, RequestParams_LoginSAML, SamlModule} from './_imports';
+import {ApiResolver} from '@nu-art/thunderstorm';
 
-import {
-	AccountApi_LoginSAML,
-	RequestParams_LoginSAML,
-	SamlModule
-} from "./_imports";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_Account_LoginSAML
-	extends ServerApi_Get<AccountApi_LoginSAML> {
+	extends ServerApi_Get<ApiResolver<typeof ApiDef_UserAccount_LoginSAML>> {
 
 	constructor() {
-		super("login-saml");
+		super(ApiDef_UserAccount_LoginSAML);
 		this.dontPrintResponse();
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: RequestParams_LoginSAML, body: void) {
 		const loginUrl = await SamlModule.loginRequest(queryParams);
-		return {loginUrl}
+		return {loginUrl};
 	}
 }
 

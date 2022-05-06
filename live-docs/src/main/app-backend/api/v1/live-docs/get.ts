@@ -17,31 +17,21 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ServerApi_Get,
-    ExpressRequest
-} from "@nu-art/thunderstorm/backend";
+import {ApiResolver} from '@nu-art/thunderstorm';
+import {ApiResponse, ExpressRequest, ServerApi_Get} from '@nu-art/thunderstorm/backend';
+import {ApiDef_LiveDoc_Get, LiveDocReqParams, LiveDocsModule} from './_imports';
 
-
-import {
-	ApiGetLiveDoc,
-	LiveDocReqParams,
-	LiveDocsModule
-} from "./_imports";
 
 class ServerApi_LiveDoc_Get
-	extends ServerApi_Get<ApiGetLiveDoc> {
+	extends ServerApi_Get<ApiResolver<typeof ApiDef_LiveDoc_Get>> {
 
 	constructor() {
-		super("get");
+		super(ApiDef_LiveDoc_Get);
 		this.dontPrintResponse();
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: LiveDocReqParams, body: void) {
-		// await KasperoProxy.assertPermissions(request, "Read Live-Doc", PermissionCategory_LiveDoc, PermissionAccessLevel_LiveDoc.Read);
-
-		this.assertProperty(queryParams, "key");
+		this.assertProperty(queryParams, 'key');
 
 		return LiveDocsModule.getLiveDoc(queryParams.key);
 	}

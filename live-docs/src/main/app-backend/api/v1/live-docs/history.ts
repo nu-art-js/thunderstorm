@@ -17,35 +17,20 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ServerApi,
-} from "@nu-art/thunderstorm/backend";
+import {ApiResponse, ExpressRequest, ServerApi,} from '@nu-art/thunderstorm/backend';
+import {ApiDef_LiveDoc_History, LiveDocHistoryReqParams, LiveDocsModule} from './_imports';
+import {ApiResolver} from '@nu-art/thunderstorm';
 
-
-import {auditBy,} from "@nu-art/ts-common";
-import {
-	ApiHistoryLiveDocs,
-	LiveDocHistoryReqParams,
-	LiveDocsModule
-} from "./_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_LiveDoc_ChangeHistory
-	extends ServerApi<ApiHistoryLiveDocs> {
+	extends ServerApi<ApiResolver<typeof ApiDef_LiveDoc_History>> {
 
 	constructor() {
-		super(HttpMethod.POST, "change-history");
+		super(ApiDef_LiveDoc_History);
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: LiveDocHistoryReqParams) {
-		// const user = await KasperoProxy.assertPermissions(request, "Re-Write Live-Doc history", PermissionCategory_LiveDoc,
-		//                                                   PermissionAccessLevel_LiveDoc.ReWriteHistory);
-
-		this.assertProperty(body, ["key", "change"]);
-
-		await LiveDocsModule.changeHistory(auditBy("user.userId"), body.key, body.change);
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: LiveDocHistoryReqParams, body: never) {
+		await LiveDocsModule.changeHistory(queryParams.key, queryParams.change, request);
 	}
 }
 

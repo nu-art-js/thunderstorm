@@ -19,22 +19,15 @@
  * limitations under the License.
  */
 
-import {TypedApi, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from '@nu-art/thunderstorm';
-import {
-	ApiBinder_DBDelete,
-	ApiBinder_DBPatch,
-	ApiBinder_DBQuery,
-	ApiBinder_DBUnique,
-	ApiBinder_DBUpsert,
-	DefaultApiDefs,
-	GenericApiDef,
-} from '../../index';
+import {ApiDef, BaseHttpRequest, ErrorResponse, RequestErrorHandler, TypedApi} from '@nu-art/thunderstorm';
+import {ApiGen_ApiDefs, TypedApi_Delete, TypedApi_Patch, TypedApi_Query, TypedApi_UniqueQuery, TypedApi_Upsert,} from '../../index';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 
-import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray, DB_Object, PreDBObject} from '@nu-art/ts-common';
+import {_keys, addItemToArray, compare, DB_BaseObject, DB_Object, Module, PreDBObject, removeItemFromArray} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
+
 
 export type BaseApiConfig = {
 	relativeUrl: string
@@ -68,14 +61,10 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		this.defaultDispatcher = defaultDispatcher;
 	}
 
-	protected createRequest<Binder extends TypedApi<any, any, any, any>,
-		U extends string = Binder['url'],
-		R = Binder['response'],
-		B = Binder['body'],
-		P extends QueryParams = Binder['params']>(apiDef: GenericApiDef, body?: B, requestData?: string): BaseHttpRequest<Binder> {
+	protected createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<any>, body?: API['B'], requestData?: string): BaseHttpRequest<API> {
 
-		const request = XhrHttpModule.createRequest<Binder>(apiDef.method, requestData || `request-api--${this.config.key}-${apiDef.key}`)
-			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? '/' + apiDef.suffix : ''}`)
+		const request = XhrHttpModule.createRequest<API>(apiDef.method, requestData || `request-api--${this.config.key}-${apiDef.path}`)
+			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.path ? '/' + apiDef.path : ''}`)
 			.setOnError(this.errorHandler) as BaseHttpRequest<any>;
 
 		if (body)
@@ -88,23 +77,23 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		return request;
 	}
 
-	protected timeoutHandler(apiDef: GenericApiDef): number | void {
+	protected timeoutHandler(apiDef: ApiDef<any>): number | void {
 	}
 
 	protected onError(request: BaseHttpRequest<any>, resError?: ErrorResponse<any>): boolean {
 		return false;
 	}
 
-	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
-		this.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Upsert, toUpsert, requestData)
+	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Upsert<DBType>> =>
+		this.createRequest<TypedApi_Upsert<DBType>>(ApiGen_ApiDefs.Upsert, toUpsert, requestData)
 			.execute(async (response) => {
 				await this.onEntryUpdated({...toUpsert, _id: response._id} as unknown as DBType, response, requestData);
 				if (responseHandler)
 					return responseHandler(response);
 			});
 
-	patch = (toUpdate: Partial<DBType> & DB_BaseObject, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBPatch<DBType>> => {
-		return this.createRequest<ApiBinder_DBPatch<DBType>>(DefaultApiDefs.Patch, toUpdate, requestData)
+	patch = (toUpdate: Partial<DBType> & DB_BaseObject, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Patch<DBType>> => {
+		return this.createRequest<TypedApi_Patch<DBType>>(ApiGen_ApiDefs.Patch, toUpdate, requestData)
 			.execute(async response => {
 				await this.onEntryPatched(response, requestData);
 				if (responseHandler)
@@ -112,13 +101,13 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			});
 	};
 
-	query = (query?: FirestoreQuery<DBType>, responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
+	query = (query?: FirestoreQuery<DBType>, responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Query<DBType>> => {
 		let _query = query;
 		if (!_query)
 			_query = {} as FirestoreQuery<DBType>;
 
 		return this
-			.createRequest<ApiBinder_DBQuery<DBType>>(DefaultApiDefs.Query, _query, requestData)
+			.createRequest<TypedApi_Query<DBType>>(ApiGen_ApiDefs.Query, _query, requestData)
 			.execute(async response => {
 				await this.onQueryReturned(response, requestData);
 				if (responseHandler)
@@ -126,10 +115,9 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			});
 	};
 
-
-	unique = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUnique<DBType>> => {
+	unique = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_UniqueQuery<DBType>> => {
 		return this
-			.createRequest<ApiBinder_DBUnique<DBType>>(DefaultApiDefs.Unique, undefined, requestData)
+			.createRequest<TypedApi_UniqueQuery<DBType>>(ApiGen_ApiDefs.UniqueQuery, undefined, requestData)
 			.setUrlParams({_id})
 			.execute(async response => {
 				await this.onGotUnique(response, requestData);
@@ -138,9 +126,9 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			});
 	};
 
-	delete = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBDelete<DBType>> => {
+	delete = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Delete<DBType>> => {
 		return this
-			.createRequest<ApiBinder_DBDelete<DBType>>(DefaultApiDefs.Delete, undefined, requestData)
+			.createRequest<TypedApi_Delete<DBType>>(ApiGen_ApiDefs.Delete, undefined, requestData)
 			.setUrlParams({_id})
 			.setOnError(() => this.dispatchSingle(EventType_Delete, _id, false))
 			.execute(async response => {
@@ -149,7 +137,6 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 					return responseHandler(response);
 			});
 	};
-
 
 	private ids: string[] = [];
 	private items: { [k: string]: DBType } = {};

@@ -14,7 +14,6 @@ class ServerApi_PushRegister
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_PushRegister) {
-		// const user = await KasperoProxy.validateSession(request);
 		await PushPubSubModule.register(body, request);
 	}
 }

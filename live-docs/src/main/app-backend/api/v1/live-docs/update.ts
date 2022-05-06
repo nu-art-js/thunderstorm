@@ -17,35 +17,21 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ServerApi,
-} from "@nu-art/thunderstorm/backend";
+import {ApiResponse, ExpressRequest, ServerApi,} from '@nu-art/thunderstorm/backend';
+import {ApiResolver} from '@nu-art/thunderstorm';
 
+import {ApiDef_LiveDoc_Upsert, LiveDocsModule, Request_UpdateDocument} from './_imports';
 
-import {auditBy,} from "@nu-art/ts-common";
-import {HttpMethod} from "@nu-art/thunderstorm";
-
-import {
-	apiPatchLiveDocs,
-	LiveDocsModule,
-	Request_UpdateDocument
-} from "./_imports";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_LiveDoc_Update
-	extends ServerApi<apiPatchLiveDocs> {
+	extends ServerApi<ApiResolver<typeof ApiDef_LiveDoc_Upsert>> {
 
 	constructor() {
-		super(HttpMethod.POST, "update");
+		super(ApiDef_LiveDoc_Upsert);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UpdateDocument) {
-		// const user = await KasperoProxy.assertPermissions(request, "Update Live-Doc history", PermissionCategory_LiveDoc, PermissionAccessLevel_LiveDoc.Read);
-
-		this.assertProperty(body, ["key", "document"]);
-
-		await LiveDocsModule.updateLiveDoc(auditBy("user.userId"), body);
+		await LiveDocsModule.updateLiveDoc(body, request);
 	}
 }
 
