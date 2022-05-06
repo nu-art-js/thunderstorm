@@ -17,27 +17,27 @@
  * limitations under the License.
  */
 
-import {ApiException, ApiResponse, ExpressRequest, ServerApi} from "@nu-art/thunderstorm/backend";
+import {ApiException, ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 
-import {__stringify} from "@nu-art/ts-common";
+import {__stringify} from '@nu-art/ts-common';
 import {
-	AccountApi_AssertLoginSAML,
 	AccountModuleBE,
+	ApiDef_UserAccount_AssertLoginSAML,
 	PostAssertBody,
 	QueryParam_Email,
 	QueryParam_RedirectUrl,
 	QueryParam_SessionId,
 	RequestBody_SamlAssertOptions,
 	SamlModule
-} from "./_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
+} from './_imports';
+import {ApiResolver} from '@nu-art/thunderstorm';
 
 
 class AssertSamlToken
-	extends ServerApi<AccountApi_AssertLoginSAML> {
+	extends ServerApi<ApiResolver<typeof ApiDef_UserAccount_AssertLoginSAML>> {
 
 	constructor() {
-		super(HttpMethod.POST, "assert");
+		super(ApiDef_UserAccount_AssertLoginSAML);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PostAssertBody) {
@@ -54,8 +54,8 @@ class AssertSamlToken
 
 			let redirectUrl = data.loginContext[QueryParam_RedirectUrl];
 
-			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_SessionId.toUpperCase(), "g"), userToken);
-			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), "g"), userEmail);
+			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_SessionId.toUpperCase(), 'g'), userToken);
+			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), 'g'), userEmail);
 
 			return await response.redirect(302, redirectUrl);
 		} catch (error: any) {

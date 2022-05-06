@@ -17,29 +17,21 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
-import {
-	AccountApi_ListAccounts,
-	AccountModuleBE,
-    UI_Account
-} from "./_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {AccountModuleBE, ApiDef_UserAccount_ListAccounts, UI_Account} from './_imports';
+import {ApiResolver} from '@nu-art/thunderstorm';
 
 
 class ListAccounts
-	extends ServerApi<AccountApi_ListAccounts> {
+	extends ServerApi<ApiResolver<typeof ApiDef_UserAccount_ListAccounts>> {
 
 	constructor() {
-		super(HttpMethod.GET, "query");
+		super(ApiDef_UserAccount_ListAccounts);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
 		const accounts: UI_Account[] = await AccountModuleBE.listUsers();
-		return {accounts}
+		return {accounts};
 	}
 }
 

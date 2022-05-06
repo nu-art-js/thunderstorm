@@ -17,30 +17,22 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
+import {ApiResolver} from '@nu-art/thunderstorm';
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 
+import {AccountModuleBE, ApiDef_UserAccount_Create, Request_CreateAccount} from './_imports';
 
-import {
-	AccountModuleBE,
-	AccountApi_Create,
-	Request_CreateAccount
-} from "./_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_Account_Create
-	extends ServerApi<AccountApi_Create> {
+	extends ServerApi<ApiResolver<typeof ApiDef_UserAccount_Create>> {
 
 	constructor() {
-		super(HttpMethod.POST, "create");
+		super(ApiDef_UserAccount_Create);
 		this.dontPrintResponse();
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_CreateAccount) {
-		this.assertProperty(body, ["password", "email"]);
+		this.assertProperty(body, ['password', 'email']);
 
 		return AccountModuleBE.create(body);
 	}

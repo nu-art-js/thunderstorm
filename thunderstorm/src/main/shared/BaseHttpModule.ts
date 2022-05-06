@@ -19,13 +19,14 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {TypedApi, ErrorResponse, HttpMethod} from './types';
+import {ApiDef, ErrorResponse, TypedApi} from './types';
 
 import {addItemToArray, BadImplementationException, Module, removeItemFromArray,} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
 import {RequestErrorHandler, RequestSuccessHandler, ResponseHandler} from './request-types';
 // noinspection TypeScriptPreferShortImport
 import {BaseHttpRequest} from './BaseHttpRequest';
+
 
 type HttpConfig = {
 	origin?: string
@@ -93,7 +94,7 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 		}, {} as { [k: string]: string | string[] });
 	}
 
-	abstract createRequest<Binder extends TypedApi<any, any, any, any> = TypedApi<string, void, void, {}>>(method: HttpMethod, key: string, data?: any): BaseHttpRequest<DeriveRealBinder<Binder>, any>
+	abstract createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<API>, data?: any): BaseHttpRequest<API>
 
 	processDefaultResponseHandlers = (httpRequest: BaseHttpRequest<any>) => {
 		let resolved = false;

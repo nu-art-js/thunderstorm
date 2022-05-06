@@ -19,15 +19,16 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {TypedApi, ErrorResponse, HttpMethod} from '../../../shared/types';
+import {ApiDef, ErrorResponse, TypedApi} from '../../../shared/types';
 
 import {BadImplementationException} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
 import {HttpException} from '../../../shared/request-types';
 // noinspection TypeScriptPreferShortImport
-import {BaseHttpRequest} from '../../../shared/BaseHttpRequest';
+import {BaseHttpRequest, ErrorType} from '../../../shared/BaseHttpRequest';
 import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
 import {gzipSync} from 'zlib';
+
 
 export class XhrHttpModule_Class
 	extends BaseHttpModule_Class {
@@ -41,10 +42,10 @@ export class XhrHttpModule_Class
 		this.origin = origin;
 	}
 
-	createRequest<Binder extends TypedApi<any, any, any, any>>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<Binder> {
-		return new XhrHttpRequest<Binder>(key, data, this.shouldCompress())
-			.setOrigin(this.origin)
-			.setMethod(method)
+	createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<API>, data?: string): XhrHttpRequest<API> {
+		return new XhrHttpRequest<API>(apiDef.path, data, this.shouldCompress())
+			.setMethod(apiDef.method)
+			.setOrigin(apiDef.baseUrl || this.origin)
 			.setTimeout(this.timeout)
 			.addHeaders(this.getDefaultHeaders())
 			.setHandleRequestSuccess(this.handleRequestSuccess)
@@ -86,12 +87,12 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 		this.xhr?.abort();
 	}
 
-	getErrorResponse(): ErrorResponse<Binder['errors']> {
+	getErrorResponse(): ErrorResponse<ErrorType> {
 		const rawResponse = this.getResponse();
-		let response = undefined as unknown as ErrorResponse<Binder['errors']>;
+		let response = undefined as unknown as ErrorResponse<ErrorType>;
 		if (rawResponse) {
 			try {
-				response = rawResponse && this.asJson() as unknown as ErrorResponse<Binder['errors']>;
+				response = rawResponse && this.asJson() as unknown as ErrorResponse<ErrorType>;
 			} catch (e: any) {
 				response = {debugMessage: rawResponse};
 			}

@@ -19,19 +19,18 @@
  * limitations under the License.
  */
 
-
-import {ApiBinder_AssertAppVersion, HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent} from '../../../../../shared/force-upgrade';
+import {ApiDef_AssertAppVersion, HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent} from '../../../../../shared/force-upgrade';
 import {ApiResponse, ServerApi} from '../../../../modules/server/server-api';
-import {HttpMethod} from '../../../../../shared/types';
+import {ApiResolver, HttpMethod} from '../../../../../shared/types';
 import {ForceUpgrade,} from '../../../../modules/ForceUpgrade';
 import {ExpressRequest} from '../../../../utils/types';
 
 
 class ServerApi_AssertAppVersion
-	extends ServerApi<ApiBinder_AssertAppVersion> {
+	extends ServerApi<ApiResolver<typeof ApiDef_AssertAppVersion>> {
 
 	constructor() {
-		super(HttpMethod.GET, 'assert');
+		super({method: HttpMethod.GET, path: 'assert'});
 		this.addHeaderToLog(HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent);
 	}
 

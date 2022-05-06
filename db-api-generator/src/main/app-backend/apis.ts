@@ -20,24 +20,25 @@
  */
 
 import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
-import {TypedApi, QueryParams} from '@nu-art/thunderstorm';
-import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUnique, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from '..';
+import {ApiDef, TypedApi} from '@nu-art/thunderstorm';
+import {TypedApi_Delete, TypedApi_Patch, TypedApi_Query, TypedApi_UniqueQuery, TypedApi_Upsert, ApiGen_ApiDefs} from '..';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {addItemToArray, DB_BaseObject, DB_Object, PreDBObject} from '@nu-art/ts-common';
+
 
 export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
 	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? '/' + pathSuffix : ''}`;
 }
 
-export abstract class GenericServerApi<DBType extends DB_Object, Binder extends TypedApi<string, any, any, any>, PostProcessor = never, R = Binder['response'], B = Binder['body'], P extends QueryParams | {} = Binder['params']>
-	extends ServerApi<Binder> {
+export abstract class GenericServerApi<DBType extends DB_Object, API extends TypedApi<any, any, any, any>, PostProcessor = never>
+	extends ServerApi<API> {
 
 	protected readonly dbModule: BaseDB_ApiGenerator<DBType>;
 	protected readonly postProcessors: PostProcessor[] = [];
 
-	protected constructor(dbModule: BaseDB_ApiGenerator<DBType>, def: GenericApiDef, pathPart?: string) {
-		super(def.method, resolveUrlPart(dbModule, pathPart, def.suffix));
+	protected constructor(dbModule: BaseDB_ApiGenerator<DBType>, def: ApiDef<any>, pathPart?: string) {
+		super(def.method, resolveUrlPart(dbModule, pathPart, def.path));
 		this.dbModule = dbModule;
 	}
 
@@ -56,10 +57,10 @@ export abstract class GenericServerApi<DBType extends DB_Object, Binder extends 
 }
 
 export class ServerApi_Upsert<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBUpsert<DBType>, (item: DBType) => DBType> {
+	extends GenericServerApi<DBType, TypedApi_Upsert<DBType>, (item: DBType) => DBType> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
-		super(dbModule, DefaultApiDefs.Upsert, pathPart);
+		super(dbModule, ApiGen_ApiDefs.Upsert, pathPart);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PreDBObject<DBType>) {
@@ -72,10 +73,10 @@ export class ServerApi_Upsert<DBType extends DB_Object>
 }
 
 export class ServerApi_Patch<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBPatch<DBType>> {
+	extends GenericServerApi<DBType, TypedApi_Patch<DBType>> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
-		super(dbModule, DefaultApiDefs.Patch, pathPart);
+		super(dbModule, ApiGen_ApiDefs.Patch, pathPart);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: DBType): Promise<DBType> {
@@ -84,10 +85,10 @@ export class ServerApi_Patch<DBType extends DB_Object>
 }
 
 export class ServerApi_Unique<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBUnique<DBType>> {
+	extends GenericServerApi<DBType, TypedApi_UniqueQuery<DBType>> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
-		super(dbModule, DefaultApiDefs.Unique, pathPart);
+		super(dbModule, ApiGen_ApiDefs.UniqueQuery, pathPart);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DB_BaseObject, body: void): Promise<DBType> {
@@ -96,10 +97,10 @@ export class ServerApi_Unique<DBType extends DB_Object>
 }
 
 export class ServerApi_Query<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBQuery<DBType>, () => Promise<Partial<DBType>[]>> {
+	extends GenericServerApi<DBType, TypedApi_Query<DBType>, () => Promise<Partial<DBType>[]>> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
-		super(dbModule, DefaultApiDefs.Query, pathPart);
+		super(dbModule, ApiGen_ApiDefs.Query, pathPart);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, query: FirestoreQuery<DBType>): Promise<DBType[]> {
@@ -108,10 +109,10 @@ export class ServerApi_Query<DBType extends DB_Object>
 }
 
 export class ServerApi_Delete<DBType extends DB_Object>
-	extends GenericServerApi<DBType, ApiBinder_DBDelete<DBType>> {
+	extends GenericServerApi<DBType, TypedApi_Delete<DBType>> {
 
 	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
-		super(dbModule, DefaultApiDefs.Delete, pathPart);
+		super(dbModule, ApiGen_ApiDefs.Delete, pathPart);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DB_Object, body: void) {

@@ -12,7 +12,6 @@ class ServerApi_PushRead
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_ReadPush) {
-		// const user = await KasperoProxy.validateSession(request);
 	}
 }
 

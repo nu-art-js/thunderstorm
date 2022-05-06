@@ -41,11 +41,12 @@ import {parse} from 'url';
 import {HttpServer, ServerApi_Middleware} from './HttpServer';
 import {IncomingHttpHeaders} from 'http';
 // noinspection TypeScriptPreferShortImport
-import {TypedApi, BodyApi, QueryApi, HttpMethod, QueryParams} from '../../../shared/types';
+import {TypedApi, BodyApi, QueryApi, HttpMethod, QueryParams, ApiDef} from '../../../shared/types';
 import {assertProperty} from '../../utils/to-be-removed';
 import {ApiException,} from '../../exceptions';
 import {ExpressRequest, ExpressResponse, ExpressRouter} from '../../utils/types';
 import {RemoteProxy} from '../proxy/RemoteProxy';
+
 
 export type HttpRequestData = {
 	originalUrl: string
@@ -56,8 +57,7 @@ export type HttpRequestData = {
 	method: HttpMethod
 }
 
-
-export abstract class ServerApi<Binder extends TypedApi<any, any, any, any>, R = Binder['response'], B = Binder['body'], P extends QueryParams | {} = Binder['params']>
+export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	extends Logger {
 	public static isDebug: boolean;
 
@@ -66,19 +66,18 @@ export abstract class ServerApi<Binder extends TypedApi<any, any, any, any>, R =
 
 	headersToLog: string[] = [];
 
-	readonly method: HttpMethod;
 	private url!: string;
-	readonly relativePath: string;
 	private middlewares?: ServerApi_Middleware[];
-	private bodyValidator?: ValidatorTypeResolver<B>;
-	private queryValidator?: ValidatorTypeResolver<P>;
+	private bodyValidator?: ValidatorTypeResolver<API['B']>;
+	private queryValidator?: ValidatorTypeResolver<API['P']>;
+	readonly apiDef: ApiDef<API>;
+	// readonly method: HttpMethod;
+	// readonly relativePath: string;
 
-	protected constructor(method: HttpMethod, relativePath: string, tag?: string) {
-		super(tag || relativePath);
+	protected constructor(apiDef: ApiDef<API>, tag?: string) {
+		super(tag || `${(apiDef.baseUrl || '')}${apiDef.path}`);
 		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
-
-		this.method = method;
-		this.relativePath = `${relativePath}`;
+		this.apiDef = apiDef;
 	}
 
 	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
@@ -95,16 +94,16 @@ export abstract class ServerApi<Binder extends TypedApi<any, any, any, any>, R =
 		this.headersToLog.push(...headersToLog);
 	}
 
-	setBodyValidator(bodyValidator: ValidatorTypeResolver<B>) {
+	setBodyValidator(bodyValidator: ValidatorTypeResolver<API['B']>) {
 		this.bodyValidator = bodyValidator;
 	}
 
-	setQueryValidator(queryValidator: ValidatorTypeResolver<P>) {
+	setQueryValidator(queryValidator: ValidatorTypeResolver<API['P']>) {
 		this.queryValidator = queryValidator;
 	}
 
-	asProxy(): ServerApi<Binder, R, B, P> {
-		return new ServerApi_Proxy<Binder, R, B, P>(this);
+	asProxy(): ServerApi<API> {
+		return new ServerApi_Proxy<API>(this);
 	}
 
 	getUrl() {
@@ -127,9 +126,9 @@ export abstract class ServerApi<Binder extends TypedApi<any, any, any, any>, R =
 	}
 
 	public route(router: ExpressRouter, prefixUrl: string) {
-		const fullPath = `${prefixUrl ? prefixUrl : ''}/${this.relativePath}`;
+		const fullPath = `${prefixUrl ? prefixUrl : ''}/${this.apiDef.path}`;
 		this.setTag(fullPath);
-		router[this.method](fullPath, this.call);
+		router[this.apiDef.method](fullPath, this.call);
 		this.url = `${HttpServer.getBaseUrl()}${fullPath}`;
 	}
 
@@ -148,13 +147,13 @@ export abstract class ServerApi<Binder extends TypedApi<any, any, any, any>, R =
 			this.logDebug(`-- Headers: `, headers);
 		}
 
-		const reqQuery: P = parse(req.url, true).query as P;
+		const reqQuery = parse(req.url, true).query as API['P'];
 		if (reqQuery && typeof reqQuery === 'object' && Object.keys(reqQuery as QueryParams).length)
 			this.logVerbose(`-- Url Params: `, reqQuery);
 		else
 			this.logVerbose(`-- No Params`);
 
-		const body: B | string | undefined = req.body;
+		const body: API['B'] | string | undefined = req.body;
 		if (body && ((typeof body === 'object')))
 			if (!this.printRequest)
 				this.logVerbose(`-- Body (Object):  - Not Printing --`);
@@ -169,22 +168,22 @@ export abstract class ServerApi<Binder extends TypedApi<any, any, any, any>, R =
 			this.logVerbose(`-- No Body`);
 
 		const requestData: HttpRequestData = {
-			method: this.method,
+			method: this.apiDef.method,
 			originalUrl: req.path,
 			headers: req.headers,
 			url: req.url,
 			query: reqQuery,
-			body: body as B,
+			body: body as API['B'],
 		};
 
 		try {
-			this.bodyValidator && tsValidate<B>(body as B, this.bodyValidator);
-			this.queryValidator && tsValidate<P>(reqQuery, this.queryValidator);
+			this.bodyValidator && tsValidate<API['B']>(body as API['B'], this.bodyValidator);
+			this.queryValidator && tsValidate<API['P']>(reqQuery, this.queryValidator);
 
 			if (this.middlewares)
 				await Promise.all(this.middlewares.map(m => m(req, requestData)));
 
-			const toReturn: unknown = await this.process(req, response, reqQuery, body as B);
+			const toReturn: unknown = await this.process(req, response, reqQuery, body as API['B']);
 			if (response.isConsumed())
 				return;
 
@@ -266,48 +265,49 @@ export abstract class ServerApi<Binder extends TypedApi<any, any, any, any>, R =
 		}
 	};
 
-	protected abstract process(request: ExpressRequest, response: ApiResponse, queryParams: P, body: B): Promise<R>;
+	protected abstract process(request: ExpressRequest, response: ApiResponse, queryParams: API['P'], body: API['B']): Promise<API['R']>;
 }
 
-export abstract class ServerApi_Get<Binder extends QueryApi<any, any, any>, U extends string = Binder['url'], R = Binder['response'], P extends QueryParams | {} = Binder['params']>
-	extends ServerApi<Binder, R, void, P> {
+export abstract class ServerApi_Get<API extends QueryApi<any, any, any>>
+	extends ServerApi<API> {
 
-	protected constructor(apiName: string) {
-		super(HttpMethod.GET, apiName);
+	protected constructor(apiDef: ApiDef<API>) {
+		super(apiDef);
 	}
 }
 
-export abstract class ServerApi_Post<Binder extends BodyApi<any, any, any>, U extends string = Binder['url'], R = Binder['response'], B = Binder['body']>
-	extends ServerApi<Binder, R, B, QueryParams> {
+export abstract class ServerApi_Post<API extends BodyApi<any, any, any>>
+	extends ServerApi<API> {
 
-	protected constructor(apiName: string) {
-		super(HttpMethod.POST, apiName);
+	protected constructor(apiDef: ApiDef<API>) {
+		super(apiDef);
 	}
 }
 
-export class ServerApi_Proxy<Binder extends TypedApi<any, any, any, any>, R = Binder['response'], B = Binder['body'], P extends QueryParams | {} = Binder['params']>
-	extends ServerApi<Binder> {
-	private readonly api: ServerApi<Binder>;
+export class ServerApi_Proxy<API extends TypedApi<any, any, any, any>>
+	extends ServerApi<API> {
+	private readonly api: ServerApi<API>;
 
-	public constructor(api: ServerApi<Binder>) {
-		super(api.method, `${api.relativePath}/proxy`);
+	public constructor(api: ServerApi<API>) {
+		// super(api.method, `${api.relativePath}/proxy`);
+		super({...api.apiDef, path: `${api.apiDef.path}/proxy`});
 		this.api = api;
 		this.setMiddlewares(RemoteProxy.Middleware);
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: P, body: B): Promise<R> {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: API['P'], body: API['B']): Promise<API['R']> {
 		// @ts-ignore
 		return this.api.process(request, response, queryParams, body);
 	}
 }
 
-export class ServerApi_Redirect
+export class ServerApi_Redirect<API extends TypedApi<any, any, any, any>>
 	extends ServerApi<any> {
 	private readonly responseCode: number;
 	private readonly redirectUrl: string;
 
-	public constructor(apiName: string, responseCode: number, redirectUrl: string) {
-		super(HttpMethod.ALL, apiName);
+	public constructor(apiDef: ApiDef<API>, responseCode: number, redirectUrl: string) {
+		super(apiDef);
 		this.responseCode = responseCode;
 		this.redirectUrl = redirectUrl;
 	}
@@ -323,7 +323,7 @@ export class ApiResponse {
 	private readonly res: ExpressResponse;
 	private consumed: boolean = false;
 
-	constructor(api: ServerApi<any, any, any, any>, res: ExpressResponse) {
+	constructor(api: ServerApi<any>, res: ExpressResponse) {
 		this.api = api;
 		this.res = res;
 	}
@@ -395,7 +395,6 @@ export class ApiResponse {
 	json(responseCode: number, response?: object | string, _headers?: any) {
 		this._json(responseCode, response, _headers);
 	}
-
 
 	private _json(responseCode: number, response?: object | string, _headers?: any) {
 		const headers = (_headers || {});

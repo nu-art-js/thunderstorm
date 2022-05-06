@@ -49,14 +49,17 @@ export type TypedApi<M extends _METHODS, R, B, P extends QueryParams> = {
 }
 
 export type BodyApi<R, B, M extends HttpMethod_Body = HttpMethod.POST, P extends QueryParams = never> = TypedApi<M, R, B, P>
-export type QueryApi<R, P extends QueryParams, M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P>
+export type QueryApi<R, P extends QueryParams = QueryParams, M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P>
 export type EmptyApi<R, M extends HttpMethod_Empty, P extends QueryParams = never, B = never> = TypedApi<M, R, B, P>
 
 export type ApiDef<API extends TypedApi<any, any, any, any>> = {
 	method: API['M'],
 	baseUrl?: string
+	pathPrefix?: string
 	path: string
 }
+
+export type ApiResolver<K> = K extends ApiDef<infer API> ? API : never
 
 export type ErrorBody<E extends ObjectTS | void = void> = {
 	type: string

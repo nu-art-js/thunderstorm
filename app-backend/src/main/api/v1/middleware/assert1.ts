@@ -24,7 +24,7 @@ const PROP_A = "a";
 const PROP_E = "e";
 
 type Assert1_Params = { a: string, c: string, e: string };
-type AssertTest1 = QueryApi<string, string, Assert1_Params>
+type AssertTest1 = QueryApi< Assert1_Params>
 
 
 export const Middleware__Assert_AE = PermissionsAssert.Middleware([PROP_A, PROP_E]);

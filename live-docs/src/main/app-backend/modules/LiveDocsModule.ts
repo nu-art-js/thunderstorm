@@ -16,28 +16,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	addItemToArrayAtIndex,
-	AuditBy,
-	Module,
-	removeItemFromArray,
-    BadImplementationException
-} from "@nu-art/ts-common";
+import {addItemToArrayAtIndex, auditBy, BadImplementationException, Module, removeItemFromArray} from '@nu-art/ts-common';
 
-import {
-	DB_Document,
-	DB_DocumentHistory,
-	Request_UpdateDocument,
-} from "../../shared/types";
+import {DB_Document, DB_DocumentHistory, Request_UpdateDocument,} from '../../shared/types';
 
-import {
-	FirebaseModule,
-	FirestoreCollection
-} from "@nu-art/firebase/backend";
+import {FirebaseModule, FirestoreCollection} from '@nu-art/firebase/backend';
 
-import {ApiException} from "@nu-art/thunderstorm/backend";
+import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 
-export const CollectionName_LiveDocs = "live-docs";
+
+export const CollectionName_LiveDocs = 'live-docs';
 
 type Config = {
 	projectId: string
@@ -53,58 +41,58 @@ export class LiveDocsModule_Class
 	}
 
 	protected init(): void {
-		this.setDefaultConfig({projectId: process.env.GCLOUD_PROJECT || ""});
+		this.setDefaultConfig({projectId: process.env.GCLOUD_PROJECT || ''});
 		const firestore = FirebaseModule.createAdminSession(this.config.projectId).getFirestore();
-		this.livedocs = firestore.getCollection<DB_DocumentHistory>(CollectionName_LiveDocs, ["key"]);
+		this.livedocs = firestore.getCollection<DB_DocumentHistory>(CollectionName_LiveDocs, ['key']);
 	}
 
-	async changeHistory(audit: AuditBy, key: string, change: "redo" | "undo") {
+	async changeHistory(key: string, change: 'redo' | 'undo', request: ExpressRequest) {
 		await this.livedocs.runInTransaction(async (transaction) => {
 			const docsHistory = await transaction.queryUnique(this.livedocs, {where: {key}});
-			if(!docsHistory)
+			if (!docsHistory)
 				throw new BadImplementationException(`Cannot change history of an non-existing doc with key: ${key}`);
 
 			switch (change) {
-				case "redo":
+				case 'redo':
 					if (docsHistory.index === 0)
-						throw new ApiException(402, "Nothing to redo anymore");
+						throw new ApiException(402, 'Nothing to redo anymore');
 
 					docsHistory.index--;
 					break;
 
-				case "undo":
+				case 'undo':
 					if (docsHistory.index === docsHistory.docs.length - 1)
-						throw new ApiException(402, "Nothing to undo anymore");
+						throw new ApiException(402, 'Nothing to undo anymore');
 
 					docsHistory.index++;
 					break;
 			}
 
-			docsHistory._audit = audit;
-			await transaction.upsert(this.livedocs,docsHistory);
-		})
+			docsHistory._audit = auditBy('temp-no-user');
+			await transaction.upsert(this.livedocs, docsHistory);
+		});
 
 	}
 
-	async updateLiveDoc(audit: AuditBy, document: Request_UpdateDocument) {
+	async updateLiveDoc(document: Request_UpdateDocument, request: ExpressRequest) {
 		const liveDocHistory: DB_DocumentHistory = await this.getLiveDocHistory(document.key);
 		const docDB: DB_Document = {
 			...document,
-			_audit: audit
+			_audit: auditBy('user.userId')
 		};
 
 		if (!liveDocHistory.index)
 			liveDocHistory.index = 0;
 
 		if (!liveDocHistory.docs) {
-			this.logDebug("no history array.. creating a new one");
+			this.logDebug('no history array.. creating a new one');
 			liveDocHistory.docs = [];
 		}
 
 		if (liveDocHistory.index > liveDocHistory.docs.length) {
 			liveDocHistory.index = liveDocHistory.docs.length - 1;
 			if (liveDocHistory.index < 0)
-				liveDocHistory.index = 0
+				liveDocHistory.index = 0;
 		}
 
 		if (liveDocHistory.index > 0) {
@@ -130,7 +118,7 @@ export class LiveDocsModule_Class
 	async getLiveDoc(key: string): Promise<DB_Document> {
 		const liveDocHistory = await this.getLiveDocHistory(key);
 		let liveDoc: DB_Document = {
-			document: ""
+			document: ''
 		};
 
 		if (liveDocHistory.docs && liveDocHistory.docs.length > 0 && liveDocHistory.docs[liveDocHistory.index]) {

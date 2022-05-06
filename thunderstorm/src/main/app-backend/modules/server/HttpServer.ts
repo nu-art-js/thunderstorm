@@ -36,6 +36,7 @@ import * as express from 'express';
 import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse} from '../../utils/types';
 import {DefaultApiErrorMessageComposer} from './server-errors';
 
+
 const ALL_Methods: string[] = [
 	'GET',
 	'PUT',
@@ -47,7 +48,6 @@ const ALL_Methods: string[] = [
 const DefaultHeaders: string[] = [
 	'content-type',
 	'content-encoding',];
-
 
 type ConfigType = {
 	port: number;
@@ -190,7 +190,6 @@ export class HttpServer_Class
 		let cert = ssl.cert;
 		if (!ssl.cert.startsWith('-----BEGIN'))
 			cert = fs.readFileSync(ssl.cert, 'utf8');
-
 
 		const options = {
 			key: key,
@@ -341,13 +340,11 @@ export class RouteResolver {
 			if (file.endsWith('.d.ts'))
 				return;
 
-
 			if (!file.endsWith('.js'))
 				return;
 
 			if (file.startsWith('_'))
 				return;
-
 
 			const relativePathToFile = `.${workingDir.replace(this.rootDir, '')}/${file}`;
 			if (file.startsWith('&')) {
@@ -365,7 +362,7 @@ export class RouteResolver {
 				return;
 			}
 
-			let content: ServerApi<any, any, any> | ServerApi<any, any, any>[];
+			let content: ServerApi<any> | ServerApi<any>[];
 			try {
 				content = this.require(relativePathToFile);
 			} catch (e: any) {

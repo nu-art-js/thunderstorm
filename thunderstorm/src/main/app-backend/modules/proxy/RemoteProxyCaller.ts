@@ -20,10 +20,11 @@
  */
 import {__stringify, ImplementationMissingException, Module,} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {BodyApi, QueryApi, ErrorResponse, QueryParams} from '../../../shared/types';
+import {BodyApi, QueryApi, ErrorResponse} from '../../../shared/types';
 import {promisifyRequest} from '../../utils/promisify-request';
 import {ApiException} from '../../exceptions';
 import {RequestOptions} from '../../../backend';
+
 
 export type RemoteServerConfig = {
 	secretHeaderName: string
@@ -56,7 +57,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 			this.config.proxyHeaderName = 'x-proxy';
 	}
 
-	protected executeGetRequest = async <Binder extends QueryApi<any, any, any>, U = Binder['url'], R = Binder['response'], P extends QueryParams = Binder['params']>(url: U, _params: P, _headers?: { [key: string]: string }): Promise<R> => {
+	protected executeGetRequest = async <API extends QueryApi<any, any, any>>(url: string, _params: API['P'], _headers?: { [key: string]: string }): Promise<API['R']> => {
 		const params = _params && Object.keys(_params).map((key) => {
 			return `${key}=${_params[key]}`;
 		});
@@ -76,11 +77,10 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 			json: true
 		};
 
-		return await this.executeRequest<R>(proxyRequest);
+		return await this.executeRequest<API['R']>(proxyRequest);
 	};
 
-
-	protected executePostRequest = async <Binder extends BodyApi<U, R, B>, U extends string = Binder['url'], R = Binder['response'], B = Binder['body']>(url: U, body: B, _headers?: { [key: string]: string }): Promise<R> => {
+	protected executePostRequest = async <API extends BodyApi<any, any, any>>(url: string, body: API['B'], _headers?: { [key: string]: string }): Promise<API['R']> => {
 		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,
@@ -94,7 +94,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 			method: 'POST'
 		};
 
-		return this.executeRequest<R>(proxyRequest);
+		return this.executeRequest<API['R']>(proxyRequest);
 	};
 
 	private executeRequest = async <ResponseType>(proxyRequest: RequestOptions): Promise<ResponseType> => {

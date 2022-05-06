@@ -17,23 +17,17 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {
-	AccountApi_ValidateSession,
-	AccountModuleBE
-} from "./_imports";
+import {ApiResolver} from '@nu-art/thunderstorm';
+import {AccountModuleBE, ApiDef_UserAccount_ValidateSession} from './_imports';
+
 
 class ValidateToken
-	extends ServerApi<AccountApi_ValidateSession> {
+	extends ServerApi<ApiResolver<typeof ApiDef_UserAccount_ValidateSession>> {
 
 	constructor() {
-		super(HttpMethod.GET, "validate");
+		super(ApiDef_UserAccount_ValidateSession);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
