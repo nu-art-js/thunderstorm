@@ -17,11 +17,12 @@
  * limitations under the License.
  */
 
-import {Module} from '@nu-art/ts-common';
+import {Module, ObjectTS} from '@nu-art/ts-common';
 import {ToastBuilder, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
-import {DB_Document, Request_UpdateDocument} from '../../shared/types';
+import {DB_Document, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument} from '../../shared/types';
 import {setDefaultLiveDocEditor} from '../utils';
-import {ApiDef_LiveDoc_Get, ApiDef_LiveDoc_History, ApiDef_LiveDoc_Upsert} from '../../shared/api';
+import {ApiDef_LiveDoc_Get, ApiDef_LiveDoc_History, ApiDef_LiveDoc_Upsert, ApiStruct_LiveDoc} from '../../shared/api';
+import {ApiDefCaller} from '@nu-art/thunderstorm';
 
 
 export const RequestKey_FetchDoc = 'FetchDoc';
@@ -31,10 +32,17 @@ export const RequestKey_UpdatePointer = 'UpdatePointer';
 export type LiveDocActionResolver = (docKey: string) => ToastBuilder;
 
 export class LiveDocsModule_Class
-	extends Module {
+	extends Module
+	implements ApiDefCaller<ApiStruct_LiveDoc> {
 
 	private docs: { [key: string]: DB_Document } = {};
 	private toasterResolver!: LiveDocActionResolver;
+
+	v1 = {
+		get: this.showLiveDoc,
+		upsert: this.update,
+		history: this.changeHistory
+	};
 
 	set showDocImpl(value: (docKey: string, doc: DB_Document) => void) {
 		this._showDocImpl = value;
@@ -60,7 +68,8 @@ export class LiveDocsModule_Class
 		this.toasterResolver(docKey).show();
 	};
 
-	public showLiveDoc(docKey: string) {
+	private showLiveDoc(params: LiveDocReqParams): void {
+		const docKey = params.key;
 		const doc = this.docs[docKey];
 		if (doc)
 			this._showDocImpl(docKey, doc);
@@ -69,7 +78,7 @@ export class LiveDocsModule_Class
 
 		XhrHttpModule
 			.createRequest(ApiDef_LiveDoc_Get, `${RequestKey_FetchDoc}-${docKey}`)
-			.setUrlParams({key: docKey})
+			.setUrlParams(params)
 			.setRelativeUrl('/v1/live-docs/get')
 			.setLabel(`Fetch live-docs for key: ${docKey}`)
 			.setOnError(`Error fetching live-docs for key: ${docKey}`)
@@ -85,7 +94,7 @@ export class LiveDocsModule_Class
 			});
 	}
 
-	update(liveDoc: Request_UpdateDocument) {
+	private update(liveDoc: Request_UpdateDocument) {
 		const docKey = liveDoc.key;
 
 		XhrHttpModule
@@ -94,17 +103,18 @@ export class LiveDocsModule_Class
 			.setRelativeUrl('/v1/live-docs/update')
 			.setLabel(`Update live-docs with key: ${docKey}`)
 			.setOnError(`Error updating live-docs for key: ${docKey}`)
-			.execute(async () => this.showLiveDoc(docKey));
+			.execute(async () => this.showLiveDoc(liveDoc));
 	}
 
-	changeHistory(docKey: string, change: 'undo' | 'redo') {
+	private changeHistory(params: LiveDocHistoryReqParams) {
+		const {key, change} = params;
 		XhrHttpModule
-			.createRequest(ApiDef_LiveDoc_History, `${RequestKey_UpdatePointer}-${docKey}`)
-			.setUrlParams({key: docKey, change: change})
+			.createRequest(ApiDef_LiveDoc_History, `${RequestKey_UpdatePointer}-${key}`)
+			.setUrlParams(params)
 			.setRelativeUrl('/v1/live-docs/change-history')
-			.setLabel(`${change} live-docs history with key: ${docKey}`)
-			.setOnError(`Error ${change} live-docs history for key: ${docKey}`)
-			.execute(async () => this.showLiveDoc(docKey));
+			.setLabel(`${change} live-docs history with key: ${key}`)
+			.setOnError(`Error ${change} live-docs history for key: ${key}`)
+			.execute(async () => this.showLiveDoc(params));
 	}
 }
 

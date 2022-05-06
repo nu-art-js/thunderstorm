@@ -37,11 +37,9 @@ export type HttpMethod_Query = 'get' | 'delete'
 export type HttpMethod_Body = 'post' | 'put' | 'patch'
 export type HttpMethod_Empty = 'options' | 'head'
 
-export type _METHODS = HttpMethod_Query | HttpMethod_Body | HttpMethod_Empty
-
 export type QueryParams = { [key: string]: string | number | undefined; };
 
-export type TypedApi<M extends _METHODS, R, B, P extends QueryParams> = {
+export type TypedApi<M extends string, R, B, P extends QueryParams> = {
 	M: M,
 	R: R,
 	B: B,
@@ -71,3 +69,11 @@ export type  ErrorResponse<E extends ObjectTS | void = void> = {
 	error?: ErrorBody<E>
 }
 
+export type ApiDefCaller<K> = K extends ObjectTS ? ApiRouter<K> | ApiCaller<K> :
+	ApiCaller<K>;
+
+export type ApiCaller<API> = API extends QueryApi<any, any, any> ? (query: API['P']) => void | Promise<API['R']> :
+	API extends BodyApi<any, any, any> ? (body: API['B']) => void | Promise<API['R']> :
+		API extends TypedApi<any, any, any, any> ? (body: API['B'], query: API['P']) => void | Promise<API['R']> : never;
+
+export type ApiRouter<T extends ObjectTS> = { [P in keyof T]: ApiDefCaller<T[P]> };

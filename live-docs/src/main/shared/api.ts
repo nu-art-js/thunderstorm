@@ -21,17 +21,26 @@ import {ApiDef, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {DB_Document, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument} from './types';
 
 
-export const ApiDef_LiveDoc_Get: ApiDef<QueryApi<DB_Document, LiveDocReqParams>> = {
+export type ApiStruct_LiveDoc = {
+	v1: {
+		get: QueryApi<DB_Document, LiveDocReqParams>,
+		history: QueryApi<void, LiveDocHistoryReqParams>,
+		upsert: BodyApi<void, Request_UpdateDocument>,
+	}
+}
+
+export const ApiDef_LiveDoc_Get: ApiDef<ApiStruct_LiveDoc['v1']['get']> = {
 	method: HttpMethod.GET,
 	path: 'unique'
 };
 
-export const ApiDef_LiveDoc_History: ApiDef<QueryApi<void, LiveDocHistoryReqParams>> = {
+export const ApiDef_LiveDoc_History: ApiDef<ApiStruct_LiveDoc['v1']['history']> = {
 	method: HttpMethod.GET,
 	path: 'change-history'
 };
 
-export const ApiDef_LiveDoc_Upsert: ApiDef<BodyApi<void, Request_UpdateDocument>> = {
+export const ApiDef_LiveDoc_Upsert: ApiDef<ApiStruct_LiveDoc['v1']['upsert']> = {
 	method: HttpMethod.POST,
 	path: 'upsert'
 };
+
