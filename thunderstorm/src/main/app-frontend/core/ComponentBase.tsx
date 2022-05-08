@@ -124,7 +124,9 @@ export abstract class BaseComponent<P = any, State = any>
 		};
 
 		const shouldRender = _shouldRender();
-		if (shouldRender)
+		if (!shouldRender)
+			this.logDebug('component won\'t update');
+		else
 			this.logDebug('component should update');
 
 		return shouldRender;

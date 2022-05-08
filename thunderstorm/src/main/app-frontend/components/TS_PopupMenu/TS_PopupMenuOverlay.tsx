@@ -6,6 +6,7 @@ import {TS_Overlay} from '../TS_Overlay';
 import {TS_Tree} from '../TS_Tree';
 import {generateHex} from '@nu-art/ts-common';
 import {OnWindowResized} from '../../modules/WindowModule';
+import {stopPropagation} from '../../utils/tools';
 
 
 export type MenuPosition =
@@ -108,7 +109,8 @@ export class TS_PopupMenuOverlay
 			return '';
 
 		return <div className="ts-popup-menu">
-			<TS_Overlay showOverlay={this.state.open} onClickOverlay={() => {
+			<TS_Overlay showOverlay={this.state.open} onClickOverlay={(e) => {
+				stopPropagation(e);
 				this.setState({open: false});
 				this.ref = undefined;
 			}}>

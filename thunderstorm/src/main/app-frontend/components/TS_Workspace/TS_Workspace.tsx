@@ -12,7 +12,7 @@ export abstract class PanelBaseSync<Config, State = {}, Props = {}>
 	extends ComponentSync<Props_WorkspacePanel<Config, Props> & Props, State_WorkspacePanel<Config, State>> {
 
 	protected deriveStateFromProps(nextProps: Props_WorkspacePanel<Config, Props>): State_WorkspacePanel<Config, State> {
-		return {config: nextProps.config} as State_WorkspacePanel<Config, State>;
+		return {config: {...nextProps.config}} as State_WorkspacePanel<Config, State>;
 	}
 
 	shouldComponentUpdate(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>, nextState: Readonly<State_WorkspacePanel<Config, State>>, nextContext: any): boolean {
@@ -27,7 +27,7 @@ export abstract class PanelBaseAsync<Config, State = {}, Props = {}>
 	extends ComponentAsync<Props_WorkspacePanel<Config, Props>, State_WorkspacePanel<Config, State>> {
 
 	protected async deriveStateFromProps(nextProps: Props_WorkspacePanel<Config, Props>): Promise<State_WorkspacePanel<Config, State>> {
-		return {config: nextProps.config} as State_WorkspacePanel<Config, State>;
+		return {config: {...nextProps.config}} as State_WorkspacePanel<Config, State>;
 	}
 
 	shouldComponentUpdate(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>, nextState: Readonly<State_WorkspacePanel<Config, State>>, nextContext: any): boolean {
