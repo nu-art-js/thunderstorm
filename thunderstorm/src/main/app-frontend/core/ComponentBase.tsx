@@ -90,7 +90,7 @@ export abstract class BaseComponent<P = any, State = any>
 
 	protected abstract _deriveStateFromProps(nextProps: P): State | undefined ;
 
-	protected updateState() {
+	protected reDeriveState() {
 		this._deriveStateFromProps(this.props);
 	}
 
