@@ -16,16 +16,17 @@
  * limitations under the License.
  */
 
-import {Stylable} from "@nu-art/thunderstorm/frontend";
+import {Stylable} from '@nu-art/thunderstorm/frontend';
 
-const paddingGroup = "8px 0px 8px 0px"
-const padding = "8px 8px 8px 8px"
-const marginHorizontal = "0px 8px 0px 8px";
-const marginVertical = "8px 0px 8px 0px";
-const border = "1px solid #68678d50";
+const paddingGroup = '8px 0px 8px 0px';
+const padding = '8px 8px 8px 8px';
+const marginHorizontal = '0px 8px 0px 8px';
+const marginVertical = '8px 0px 8px 0px';
+const border = '1px solid #68678d50';
 
-export const PlaygroundExample_HeaderStyle: Stylable = {style: {fontSize: 20, marginBottom: 8}}
-export const PlaygroundExample_BodyStyle: Stylable = {className: "ll_v_c"}
-export const PlaygroundExample_ResultStyle: Stylable = {style: {fontSize: 18, marginTop: 8}}
-export const PlaygroundExample_GroupStyle: Stylable = {className: 'll_h_t match_width', style: {padding:paddingGroup, margin:marginVertical, justifyContent: "space-around", border}}
-export const PlaygroundExample_ExampleStyle: Stylable = {style: {padding, margin: marginHorizontal, border}}
+//todo DELETE THIS FILE, REPLACE ALL WITH SCSS CLASSES
+export const PlaygroundExample_HeaderStyle: Stylable = {style: {fontSize: 20, marginBottom: 8}};
+export const PlaygroundExample_BodyStyle: Stylable = {className: 'll_v_c'};
+export const PlaygroundExample_ResultStyle: Stylable = {style: {fontSize: 18, marginTop: 8}};
+export const PlaygroundExample_GroupStyle: Stylable = {className: 'll_h_t match_width', style: {padding: paddingGroup, margin: marginVertical, justifyContent: 'space-around', border}};
+export const PlaygroundExample_ExampleStyle: Stylable = {style: {padding, margin: marginHorizontal, border}};

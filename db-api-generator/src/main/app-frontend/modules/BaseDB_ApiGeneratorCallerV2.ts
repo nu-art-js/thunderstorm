@@ -213,6 +213,11 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return (await this.db.query({query, indexKey})) || [];
 	}
 
+	/**
+	 * Iterates over all DB objects in the related collection.
+	 * @param filter boolean returning function, to determine which objects to return.
+	 * @param query
+	 */
 	public async queryFilter(filter: (item: DBType) => boolean, query?: IndexDb_Query): Promise<DBType[]> {
 		return await this.db.queryFilter(filter, query);
 	}
