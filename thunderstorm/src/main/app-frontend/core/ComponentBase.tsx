@@ -34,13 +34,14 @@ import {Thunder} from './Thunder';
 export abstract class BaseComponent<P = any, State = any>
 	extends React.Component<P, State> {
 
-	private logger: Logger;
+	protected readonly logger: Logger;
 	private timeoutMap: { [k: string]: number } = {};
 	protected mounted = false;
 
 	constructor(props: P) {
 		super(props);
 		this.logger = new Logger(this.constructor.name);
+		this.logger.setMinLevel(LogLevel.Info);
 
 		const __render = this.render?.bind(this);
 		this.render = () => {
