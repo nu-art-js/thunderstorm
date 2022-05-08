@@ -43,6 +43,7 @@ export abstract class BaseComponent<P = any, State = any>
 		this.logger = new Logger(this.constructor.name);
 		this.logger.setMinLevel(LogLevel.Info);
 
+		this._constructor();
 		const __render = this.render?.bind(this);
 		this.render = () => {
 			this.logVerbose('rendering');
@@ -70,6 +71,9 @@ export abstract class BaseComponent<P = any, State = any>
 		const state = this._deriveStateFromProps(props);
 		if (state)
 			this.state = state;
+	}
+
+	_constructor() {
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps: P) {
