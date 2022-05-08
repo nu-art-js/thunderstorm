@@ -249,7 +249,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return this.onEntryUpdatedImpl(EventType_Create, item, requestData);
 	}
 
-	protected async onEntryUpdated(original: DBType, item: DBType, requestData?: string): Promise<void> {
+	protected async onEntryUpdated(original: PreDBObject<DBType>, item: DBType, requestData?: string): Promise<void> {
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item, requestData);
 	}
 
