@@ -114,6 +114,7 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	selected?: ItemType
 
 	filter?: Filter<ItemType>
+	tabIndex?: number;
 
 	inputEventHandler?: (state: State<ItemType>, e: React.KeyboardEvent) => State<ItemType>
 	selectedItemRenderer?: (props?: ItemType) => React.ReactNode
@@ -166,7 +167,7 @@ export class TS_DropDown<ItemType>
 						 this.forceUpdate();
 
 					 }}
-					 tabIndex={1}
+					 tabIndex={this.props.tabIndex}
 					 onFocus={this.addKeyboardListener}
 					 onBlur={this.removeKeyboardListener}
 			>
