@@ -41,6 +41,7 @@ export type TS_BaseInputProps<Key, Element> = Omit<HTMLProps<Element>, 'onChange
 	focus?: boolean
 	spellCheck?: boolean
 	autocomplete?: boolean
+	innerRef?: React.RefObject<any>;
 }
 
 type InputState = {

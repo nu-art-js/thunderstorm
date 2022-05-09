@@ -115,6 +115,7 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 
 	filter?: Filter<ItemType>
 	tabIndex?: number;
+	innerRef?: React.RefObject<any>
 
 	inputEventHandler?: (state: State<ItemType>, e: React.KeyboardEvent) => State<ItemType>
 	selectedItemRenderer?: (props?: ItemType) => React.ReactNode
@@ -159,14 +160,15 @@ export class TS_DropDown<ItemType>
 	render() {
 		return (
 			<div className="ts-dropdown"
-					 ref={(node: HTMLDivElement) => {
-						 if (this.node)
-							 return;
-
-						 this.node = node;
-						 this.forceUpdate();
-
-					 }}
+				// ref={(node: HTMLDivElement) => {
+				//  if (this.node)
+				// 	 return;
+				//
+				//  this.node = node;
+				//  this.forceUpdate();
+				//
+				// }}
+					 ref={this.props.innerRef}
 					 tabIndex={this.props.tabIndex}
 					 onFocus={this.addKeyboardListener}
 					 onBlur={this.removeKeyboardListener}
