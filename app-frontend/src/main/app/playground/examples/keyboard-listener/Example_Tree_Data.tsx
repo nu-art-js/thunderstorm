@@ -18,7 +18,6 @@
 
 import * as React from 'react';
 import {Adapter, ComponentSync, LL_V_C, NodeRendererProps, TreeNode, TS_Tree,} from '@nu-art/thunderstorm/frontend';
-import {PG_Example} from '../_core/PG_Example';
 
 
 type State = { focused?: string, actionMessage: string };
@@ -55,7 +54,6 @@ class Example_Tree_Data
 
 		return <LL_V_C style={{minWidth: 180}}>
 			<TS_Tree
-				id={name}
 				adapter={adapter}
 				onNodeFocused={(path: string) => this.setState({actionMessage: `on focused: ${path}`})}
 				onNodeClicked={(path: string) => this.setState({actionMessage: `on clicked: ${path}`})}
@@ -143,11 +141,4 @@ class Example_ColorfulNodeRenderer
 	}
 }
 
-const name = 'Tree - Data';
-
-export function Playground_Tree_Data() {
-	return {
-		renderer: () => <PG_Example name={name}> <Example_Tree_Data/> </PG_Example>,
-		name
-	};
-}
+export const Playground_Tree_Data = {name:'Tree - Data',renderer:Example_Tree_Data}

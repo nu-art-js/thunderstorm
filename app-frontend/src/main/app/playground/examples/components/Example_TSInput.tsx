@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * A typescript & react boilerplate with api call example
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -20,8 +19,8 @@
 import * as React from "react";
 import {
 	Example_NewProps,
-	TS_TextAreaProps,
-	TS_TextArea
+	TS_Input,
+	TS_InputProps
 } from "@nu-art/thunderstorm/frontend";
 
 type TestType = {
@@ -31,7 +30,7 @@ type TestType = {
 	prop4?: string,
 }
 
-export class Example_TSTextArea
+class Example_TSInput_Renderer
 	extends React.Component<{}, { instance: TestType }> {
 
 	constructor(props: {}) {
@@ -43,13 +42,13 @@ export class Example_TSTextArea
 		const props1 = this.props1();
 		const props2 = this.props2();
 		return <>
-			<Example_NewProps name={"TS Text Area"} renderer={TS_TextArea} data={[props1, props2]}/>
+			<Example_NewProps name={"TS Input"} renderer={TS_Input} data={[props1, props2]}/>
 		</>
 	}
 
-	private props1(): TS_TextAreaProps<any> {
+	private props1(): TS_InputProps<any> {
 		const placeholder = "prop1";
-		const prop: TS_TextAreaProps<"prop1"> = {
+		const prop: TS_InputProps<"prop1"> = {
 			type: "text",
 			id: "prop1",
 			name: placeholder,
@@ -64,9 +63,9 @@ export class Example_TSTextArea
 		return prop;
 	}
 
-	private props2(): TS_TextAreaProps<any> {
+	private props2(): TS_InputProps<any> {
 		const placeholder = "prop2";
-		const prop: TS_TextAreaProps<"prop2"> = {
+		const prop: TS_InputProps<"prop2"> = {
 			type: "text",
 			id: "prop2",
 			name: placeholder,
@@ -81,3 +80,5 @@ export class Example_TSTextArea
 		return prop;
 	}
 }
+
+export const Example_TSInput = {renderer: Example_TSInput_Renderer, name: 'TSInput Example'}

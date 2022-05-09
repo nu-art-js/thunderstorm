@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {PermissionsComponent} from "@nu-art/permissions/frontend";
 
-export class Example_PermissionsComponent
+export class Example_PermissionsComponent_Renderer
 	extends React.Component {
 
 	render() {
@@ -13,5 +13,6 @@ export class Example_PermissionsComponent
 			<div>Example_PermissionsComponent</div>
 		</PermissionsComponent>;
 	}
-
 }
+
+export const Example_PermissionsComponent = {renderer: Example_PermissionsComponent_Renderer, name: 'Permissions Component'};

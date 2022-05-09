@@ -2,7 +2,6 @@ import * as React from 'react';
 import {ICONS} from '@res/icons';
 import {Adapter, BaseNodeRenderer, ComponentSync, LL_V_C, SimpleListAdapter, TS_Checkbox, TS_DropDown} from '@nu-art/thunderstorm/frontend';
 import {Plague, plagues} from './consts';
-import {PG_Example} from '../_core/PG_Example';
 import {Filter} from '@nu-art/ts-common';
 
 
@@ -97,11 +96,4 @@ export class ItemRenderer
 	}
 }
 
-const name = 'Dropdown - Single Type';
-
-export function Playground_DropdownSingleType() {
-	return {
-		renderer: () => <PG_Example name={name}> <Example_Dropdown_SingleType/> </PG_Example>,
-		name
-	};
-}
+export const Playground_DropdownSingleType = {name: 'Dropdown - Single Type',renderer: Example_Dropdown_SingleType}

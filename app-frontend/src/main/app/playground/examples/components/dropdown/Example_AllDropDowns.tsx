@@ -32,14 +32,12 @@ export type Node = {
 	selected?: boolean,
 }
 
-
 export type Props = {
 	item: Plague,
 	node: Node
 }
 
-
-export class Example_AllDropDowns
+export class Example_AllDropDowns_Renderer
 	extends React.Component<{}, { _selected: string }> {
 	constructor(props: {}) {
 		super(props);
@@ -51,13 +49,15 @@ export class Example_AllDropDowns
 		return <>
 			<h1>dropdowns</h1>
 			<div className={'ll_h_t match_width'} style={{justifyContent: 'space-around', height: 100}}>
-				{Playground_DropdownSingleAndMulti().renderer()}
-				{Playground_DropdownSingleType().renderer()}
-				{Playground_DropdownMultiType().renderer()}
+				{Playground_DropdownSingleAndMulti.renderer}
+				{Playground_DropdownSingleType.renderer}
+				{Playground_DropdownMultiType.renderer}
 			</div>
 		</>;
 	}
 }
+
+export const Example_AllDropDowns = {renderer: Example_AllDropDowns_Renderer, name: 'ALL DropDown Examples'}
 
 export class _ItemRenderer
 	extends React.Component<Props> {

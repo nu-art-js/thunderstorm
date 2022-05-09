@@ -10,7 +10,7 @@ export type Coordinates = {
 	y: number
 }
 
-export class Example_Scatter
+export class Example_Scatter_Renderer
 	extends ComponentSync<{}, { data: Coordinates[] }> {
 
 	protected deriveStateFromProps(nextProps: {}): { data: Coordinates[] } {
@@ -105,5 +105,4 @@ export class Example_Scatter
 
 }
 
-
-export default Example_Scatter;
+export const Example_Scatter = {renderer: Example_Scatter_Renderer, name: 'Scatter Plot'};
