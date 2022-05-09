@@ -29,6 +29,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 
+
 const defaultTitleHeight = '28px';
 const defaultListHeight = '150px';
 
@@ -97,7 +98,6 @@ type State<ItemType> = {
 }
 
 type StaticProps = {
-	inputStylable: InputProps
 	caret: {
 		open: React.ReactNode,
 		close: React.ReactNode,
@@ -156,7 +156,6 @@ export class TS_DropDown<ItemType>
 		}, () => this.props.onSelected(item));
 	};
 
-
 	render() {
 		return (
 			<div className="ts-dropdown"
@@ -199,7 +198,6 @@ export class TS_DropDown<ItemType>
 		if (this.props.showNothingWithoutFilterText && !this.state.filterText?.length)
 			return '';
 
-
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const filter = this.props.filter;
 		if (filter) {
@@ -240,7 +238,6 @@ export class TS_DropDown<ItemType>
 		// }
 	};
 
-
 	private renderSelectedItem = (selected?: ItemType) => {
 		if (this.props.selectedItemRenderer)
 			return this.props.selectedItemRenderer(selected);
@@ -265,7 +262,6 @@ export class TS_DropDown<ItemType>
 		return <div className={'ts-dropdown__placeholder'}><Renderer item={selected} node={node}/></div>;
 	};
 
-
 	private renderSelectedOrFilterInput = () => {
 		if (!this.state.open || !this.props.filter) {
 			return this.renderSelectedItem(this.state.selected);
@@ -280,10 +276,8 @@ export class TS_DropDown<ItemType>
 			style={{width: '100%'}}
 			placeholder={'Search'}//{this.props.placeholder}
 			handleKeyEvent={this.keyEventHandler}
-			{...this.props.inputStylable}
 		/>;
 	};
-
 
 	// TODO: THIS IS ALL DUPLICATE SHIT... DELETE ONCE TREE CAN PROPAGATE THE KEYBOARD EVENTS
 	private node?: HTMLDivElement;

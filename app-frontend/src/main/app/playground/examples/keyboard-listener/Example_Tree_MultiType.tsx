@@ -18,7 +18,6 @@
 
 import * as React from 'react';
 import {AdapterBuilder, BaseNodeRenderer, TreeData_MultiType, TreeItem, TreeRendererMap, TS_Tree} from '@nu-art/thunderstorm/frontend';
-import {PlaygroundExample_ResultStyle} from '../consts';
 import {PG_Example} from '../_core/PG_Example';
 
 type State = { focused?: string, actionMessage: string };
@@ -127,7 +126,7 @@ class Example_Tree_MultiType
 				// onFocus={() => console.log("Focused")}
 				// onBlur={() => console.log("Blurred")}
 			/>
-			<div {...PlaygroundExample_ResultStyle}>{this.state.actionMessage}</div>
+			<div className="ts-playground__results">{this.state.actionMessage}</div>
 		</>;
 	}
 }

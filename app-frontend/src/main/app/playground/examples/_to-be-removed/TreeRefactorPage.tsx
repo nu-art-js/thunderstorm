@@ -16,27 +16,28 @@
  * limitations under the License.
  */
 
-import * as React from "react";
+import * as React from 'react';
 // import {Example_FakeMenu} from "../keyboard-listener/Example_FakeMenu";
-import {PlaygroundExample_GroupStyle} from "../consts";
-import {Playground_DropdownSingleAndMulti} from "../dropdown/Example_Dropdown_SingleAndMulti";
-import {Playground_DropdownMultiType} from "../dropdown/Example_Dropdown_MultiType";
-import {Playground_DropdownSingleType} from "../dropdown/Example_Dropdown_SingleType";
-import {Playground_Tree_Data} from "../keyboard-listener/Example_Tree_Data";
-import {Playground_Tree_Basic} from "../keyboard-listener/Example_Tree_Basic";
-import {Playground_Tree_MultiType} from "../keyboard-listener/Example_Tree_MultiType";
+import {Playground_DropdownSingleAndMulti} from '../dropdown/Example_Dropdown_SingleAndMulti';
+import {Playground_DropdownMultiType} from '../dropdown/Example_Dropdown_MultiType';
+import {Playground_DropdownSingleType} from '../dropdown/Example_Dropdown_SingleType';
+import {Playground_Tree_Data} from '../keyboard-listener/Example_Tree_Data';
+import {Playground_Tree_Basic} from '../keyboard-listener/Example_Tree_Basic';
+import {Playground_Tree_MultiType} from '../keyboard-listener/Example_Tree_MultiType';
+import {LL_H_T} from '@nu-art/thunderstorm/frontend';
+
 
 export const TreeRefactorPage = () => (<>
-	<div className="ll_v_l" style={{width: "100%", height: "100%"}}>
-		<div {...PlaygroundExample_GroupStyle}>
-				{Playground_DropdownSingleAndMulti().renderer()}
-				{Playground_DropdownSingleType().renderer()}
-				{Playground_DropdownMultiType().renderer()}
-		</div>
-		<div {...PlaygroundExample_GroupStyle}>
-				{Playground_Tree_Data().renderer()}
-				{Playground_Tree_Basic().renderer()}
-				{Playground_Tree_MultiType().renderer()}
-		</div>
+	<div className="ll_v_l" style={{width: '100%', height: '100%'}}>
+		<LL_H_T className="ts-playground__group-example">
+			{Playground_DropdownSingleAndMulti().renderer()}
+			{Playground_DropdownSingleType().renderer()}
+			{Playground_DropdownMultiType().renderer()}
+		</LL_H_T>
+		<LL_H_T className="ts-playground__group-example">
+			{Playground_Tree_Data().renderer()}
+			{Playground_Tree_Basic().renderer()}
+			{Playground_Tree_MultiType().renderer()}
+		</LL_H_T>
 	</div>
 </>);

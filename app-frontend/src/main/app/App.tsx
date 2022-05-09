@@ -17,11 +17,12 @@
  */
 
 import * as React from 'react';
-import {ComponentSync, Dialog, RoutingModule, TS_PopupMenuOverlay, TS_ToastOverlay, WrapperProps} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, RoutingModule, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay, WrapperProps} from '@nu-art/thunderstorm/frontend';
 
 import {VersionOnScreen} from '@components/VersionOnScreen';
 import {AccountModuleFE, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
 import {registerRoutes} from './Routes';
+
 
 export class App
 	extends ComponentSync<WrapperProps>
@@ -49,7 +50,7 @@ export class App
 				{RoutingModule.getRoutesMap()}
 				{/*</BugReport>*/}
 				<VersionOnScreen/>
-				<Dialog/>
+				<TS_DialogOverlay/>
 				<TS_ToastOverlay/>
 				<TS_PopupMenuOverlay/>
 			</div>);

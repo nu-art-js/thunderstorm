@@ -1,17 +1,7 @@
 import * as React from 'react';
 import {ICONS} from '@res/icons';
-import {
-	Adapter,
-	BaseNodeRenderer,
-	ComponentSync,
-	DropDown_headerStyle,
-	DropDown_inputStyle,
-	SimpleListAdapter,
-	TS_Checkbox,
-	TS_DropDown
-} from '@nu-art/thunderstorm/frontend';
+import {Adapter, BaseNodeRenderer, ComponentSync, LL_V_C, SimpleListAdapter, TS_Checkbox, TS_DropDown} from '@nu-art/thunderstorm/frontend';
 import {Plague, plagues} from './consts';
-import {PlaygroundExample_BodyStyle, PlaygroundExample_ResultStyle} from '../consts';
 import {PG_Example} from '../_core/PG_Example';
 import {Filter} from '@nu-art/ts-common';
 
@@ -34,13 +24,13 @@ class Example_Dropdown_SingleType
 	};
 
 	render() {
-		return <div {...PlaygroundExample_BodyStyle}>
+		return <LL_V_C>
 			<div className="ll_h_t" style={{marginBottom: 8}}>
 				{this.renderConfigPanel()}
 				{this.renderDropDown()}
 			</div>
-			<div {...PlaygroundExample_ResultStyle}>{this.state?.selected ? `You chose: ${this.state.selected.value}` : 'You didn\'t choose yet'}</div>
-		</div>;
+			<div className="ts-playground__results">{this.state?.selected ? `You chose: ${this.state.selected.value}` : 'You didn\'t choose yet'}</div>
+		</LL_V_C>;
 	}
 
 	private renderDropDown() {
@@ -50,12 +40,6 @@ class Example_Dropdown_SingleType
 				return;
 			// return <div style={style}>CHOOSE</div>
 			return <div style={{...style, color: 'red'}}>{selected.label}</div>;
-		};
-
-		const inputStylable = {
-			// className: inputClassName,
-			style: DropDown_inputStyle,
-			placeholder: this.state.selected?.label
 		};
 
 		const simpleAdapter: Adapter = SimpleListAdapter(plagues, (item) => <ItemRenderer {...item}/>);
@@ -70,10 +54,8 @@ class Example_Dropdown_SingleType
 				adapter={simpleAdapter}
 				onSelected={this.onSelected}
 				selectedItemRenderer={valueRenderer}
-				inputStylable={inputStylable}
 				filter={new Filter<Plague>((item: any) => ([item.label.toLowerCase()]))}
 				caret={caret}
-				headerStylable={{style: DropDown_headerStyle}}
 			/>
 		</div>;
 	}
@@ -96,7 +78,6 @@ class Example_Dropdown_SingleType
 		</div>;
 	}
 }
-
 
 export class ItemRenderer
 	extends BaseNodeRenderer<Plague> {
