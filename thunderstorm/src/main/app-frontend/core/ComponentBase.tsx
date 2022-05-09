@@ -24,10 +24,7 @@
  */
 import * as React from 'react';
 
-import {_clearTimeout, _keys, _setTimeout, _sortArray, Logger, LogLevel, LogParam, TimerHandler, EmptyObject} from '@nu-art/ts-common';
-import {StorageModule} from '../modules/StorageModule';
-import {ResourcesModule} from '../modules/ResourcesModule';
-import {BrowserHistoryModule} from '../modules/HistoryModule';
+import {_clearTimeout, _keys, _setTimeout, _sortArray, EmptyObject, Logger, LogLevel, LogParam, TimerHandler} from '@nu-art/ts-common';
 import {Thunder} from './Thunder';
 
 
@@ -158,37 +155,6 @@ export abstract class BaseComponent<P = any, State = any>
 
 	private logImpl(level: LogLevel, bold: boolean, toLog: LogParam[]): void {
 		this.logger.log(level, bold, toLog);
-	}
-
-	static store(key: string, value: string | object): void {
-		StorageModule.set(key, value);
-	}
-
-	static load(key: string, defaultValue: string | number | object | undefined): string | number | object | null {
-		return StorageModule.get(key, defaultValue);
-	}
-
-	static getElementId(e: React.BaseSyntheticEvent) {
-		return (e.currentTarget as HTMLElement).id;
-	}
-
-	static getImageUrl(_relativePath: string) {
-		let relativePath = _relativePath;
-		if (!relativePath)
-			return '';
-
-		if (relativePath.indexOf('.') === -1)
-			relativePath += '.png';
-
-		return ResourcesModule.getImageUrl(relativePath);
-	}
-
-	static getQueryParameter(name: string) {
-		return BrowserHistoryModule.getQueryParams()[name];
-	}
-
-	static getUrl() {
-		return BrowserHistoryModule.getCurrent().pathname;
 	}
 
 	toString() {
