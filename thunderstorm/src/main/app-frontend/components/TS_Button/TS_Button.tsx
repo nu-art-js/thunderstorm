@@ -26,8 +26,9 @@ import {LL_V_C} from '../Layouts';
 import './TS_Button.scss';
 
 export type Props_Button = HTMLProps<HTMLDivElement> & {
-	disabled?: boolean,
-	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => void
+	disabled?: boolean;
+	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+	innerRef?: React.RefObject<any>;
 }
 
 export const TS_Button = (props: Props_Button) => {

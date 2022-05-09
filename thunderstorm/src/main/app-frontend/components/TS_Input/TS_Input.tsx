@@ -28,7 +28,6 @@ export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, 
 export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
 	render() {
-		console.log(this.props.ref)
 		return <input
 			autoFocus={this.props.focus}
 			ref={this.props.innerRef}
