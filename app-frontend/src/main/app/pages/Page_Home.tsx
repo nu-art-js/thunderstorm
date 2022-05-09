@@ -50,7 +50,7 @@ export class Page_Home
 
 	render() {
 		return <>
-			<Hello/>
+			<Hello.renderer/>
 			<button style={{marginRight: 8}} onClick={this.callServerApi_CustomError}>Server API - Custom Error</button>
 		</>;
 	}

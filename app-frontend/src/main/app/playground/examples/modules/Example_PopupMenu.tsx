@@ -17,8 +17,8 @@
  */
 
 import * as React from 'react';
-import './PopupMenuExperience.scss';
 import {LL_V_L, Menu_Model, MenuModule, ShowTooltip, SimpleListAdapter} from '@nu-art/thunderstorm/frontend';
+// import './PopupMenuExperience.scss'; add this back when moving scss files on build
 
 const what_is_love: Menu_Model = {
 	id: 'what-id-huh',
