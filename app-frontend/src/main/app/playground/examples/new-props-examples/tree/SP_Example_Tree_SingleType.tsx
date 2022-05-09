@@ -8,7 +8,7 @@ type Type = {
 	other: string
 };
 
-export class SP_Example_Tree_SingleType
+class SP_Example_Tree_SingleType_Renderer
 	extends Component<{}> {
 	private data: any;
 	private complexData: any;
@@ -130,6 +130,8 @@ export class SP_Example_Tree_SingleType
 		} as Props_Tree & { key: string };
 	}
 }
+
+export const SP_Example_Tree_SingleType = {renderer: SP_Example_Tree_SingleType_Renderer, name: 'SP_Example_Tree_SingleType'}
 
 
 

@@ -20,7 +20,6 @@
 import {AdapterBuilder, Example_NewProps, Props_DropDown, SimpleListAdapter, TS_DropDown,} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import {flatPlaguesWithTitles, ItemRenderer_Plague, Plague, plagues, PlagueWithTitle, RendererMap_Plague} from './consts';
-import {PG_Example} from '../_core/PG_Example';
 import {Filter} from '@nu-art/ts-common';
 
 export type TestType = {
@@ -100,12 +99,4 @@ class Example_Dropdown_SingleAndMulti
 	}
 }
 
-
-const name = 'Dropdown - Single & Multi';
-
-export function Playground_DropdownSingleAndMulti() {
-	return {
-		renderer: () => <PG_Example name={name}> <Example_Dropdown_SingleAndMulti/> </PG_Example>,
-		name
-	};
-}
+export const Playground_DropdownSingleAndMulti = {name:'Dropdown - Single & Multi',renderer: Example_Dropdown_SingleAndMulti}

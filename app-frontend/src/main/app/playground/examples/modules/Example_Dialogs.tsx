@@ -20,7 +20,7 @@ import * as React from 'react';
 import {ToastModule} from '@nu-art/thunderstorm/frontend';
 
 
-export class Example_Dialogs
+class Example_Dialogs_Renderer
 	extends React.Component {
 	constructor(props: {}) {
 		super(props);
@@ -50,3 +50,5 @@ export class Example_Dialogs
 		</>;
 	}
 }
+
+export const Example_Dialogs = {renderer: Example_Dialogs_Renderer, name: 'Dialog Examples'};

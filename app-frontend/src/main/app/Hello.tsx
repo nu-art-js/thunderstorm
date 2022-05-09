@@ -23,7 +23,7 @@ import {LiveDoc} from '@nu-art/live-docs/frontend';
 import {AdminBR} from '@nu-art/bug-report/frontend';
 import {OnRequestListener} from '@nu-art/thunderstorm';
 
-export class Hello
+export class Hello_Renderer
 	extends ComponentSync<{}, { label: string }>
 	implements OnRequestListener {
 
@@ -65,3 +65,5 @@ export class Hello
 		}
 	};
 }
+
+export const Hello = {renderer: Hello_Renderer, name: 'Hello'};

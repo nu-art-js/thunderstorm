@@ -21,7 +21,6 @@ import {AdapterBuilder, LL_V_C, TreeItem, TS_DropDown} from '@nu-art/thunderstor
 import * as React from 'react';
 import {ICONS} from '@res/icons';
 import {flatPlaguesWithTitles, Plague, RendererMap_Plague} from './consts';
-import {PG_Example} from '../_core/PG_Example';
 import {Filter} from '@nu-art/ts-common';
 
 
@@ -80,11 +79,4 @@ export class Example_Dropdown_MultiType
 	}
 }
 
-const name = 'Dropdown - Multi Type';
-
-export function Playground_DropdownMultiType() {
-	return {
-		renderer: () => <PG_Example name={name}> <Example_Dropdown_MultiType/> </PG_Example>,
-		name
-	};
-}
+export const Playground_DropdownMultiType ={name:'Dropdown - Multi Type',renderer:Example_Dropdown_MultiType}

@@ -20,7 +20,7 @@ import * as React from 'react';
 import {ToastModule} from '@nu-art/thunderstorm/frontend';
 
 
-export class Example_Toaster
+class Example_Toaster_Renderer
 	extends React.Component {
 	constructor(props: {}) {
 		super(props);
@@ -74,9 +74,4 @@ export class Example_Toaster
 	}
 }
 
-// const elementById = document.getElementById("toasters.js");
-// if (elementById)
-// 	ReactDOM.render(
-// 		<Example_Toaster/>,
-// 		elementById
-// 	);
+export const Example_Toaster = {renderer: Example_Toaster_Renderer, name: 'Toaster Examples'};

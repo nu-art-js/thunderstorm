@@ -21,33 +21,34 @@ import {PlaygroundScreen, TS_Playground} from '@nu-art/thunderstorm/frontend';
 import {Page_ApiGen} from '../pages/Page_ApiGen';
 import {Hello} from '../Hello';
 import {Example_ApiCustomError} from './examples/Example_ApiCustomError';
-import {Example_Dialogs} from './examples/Example_Dialogs';
-import {Example_Toaster} from './examples/Example_Toaster';
+import {Example_Dialogs} from './examples/modules/Example_Dialogs';
+import {Example_Toaster} from './examples/modules/Example_Toaster';
 import {TreeRefactorPage} from './examples/_to-be-removed/TreeRefactorPage';
 import {ICONS} from '@res/icons';
 import {COLORS} from '@res/colors';
 import {Example_Form} from './examples/Example_Form';
 import {Example_TriggerPush} from './examples/Example_TriggerPush';
-import {Example_AllDropDowns} from './examples/dropdown/Example_AllDropDowns';
-import {Playground_DropdownSingleAndMulti} from './examples/dropdown/Example_Dropdown_SingleAndMulti';
+import {Example_AllDropDowns} from './examples/components/dropdown/Example_AllDropDowns';
+import {Playground_DropdownSingleAndMulti} from './examples/components/dropdown/Example_Dropdown_SingleAndMulti';
 import {Example_Tree_SingleType} from './examples/tree/Example_Tree_SingleType';
 import {Example_List_WithInput} from './examples/list/Example_List_WithInput';
 import {Example_Uploader} from './examples/Example_Uploader';
-import {Example_TSInput} from './examples/Example_TSInput';
+import {Example_TSInput} from './examples/components/Example_TSInput';
 import {Example_PermissionsComponent} from './examples/Example_PermissionsComponent';
 import {SP_Example_Tree_SingleType} from './examples/new-props-examples/tree/SP_Example_Tree_SingleType';
 import {Example_Analytics} from './examples/Example_Analytics';
-import Example_Scatter from './examples/Example_Scatter';
-import {Example_TSTextArea} from './examples/Example_TSTextArea';
-import Example_CCgraphs from './examples/Example_CCgraphs';
+import {Example_Scatter} from './examples/Example_Scatter';
+import {Example_TSTextArea} from './examples/components/Example_TSTextArea';
+import {Example_CCgraphs} from './examples/Example_CCgraphs';
 import {Example_FieldEditorClick} from './examples/Example_FieldEditorClick';
 import {Example_Tree_MultiType} from './examples/tree/Example_Tree_MultiType';
-import {Playground_DropdownSingleType} from './examples/dropdown/Example_Dropdown_SingleType';
-import {Playground_DropdownMultiType} from './examples/dropdown/Example_Dropdown_MultiType';
+import {Playground_DropdownSingleType} from './examples/components/dropdown/Example_Dropdown_SingleType';
+import {Playground_DropdownMultiType} from './examples/components/dropdown/Example_Dropdown_MultiType';
 import {Playground_Tree_Data} from './examples/keyboard-listener/Example_Tree_Data';
 import {Playground_Tree_Basic} from './examples/keyboard-listener/Example_Tree_Basic';
 import {Playground_Tree_MultiType} from './examples/keyboard-listener/Example_Tree_MultiType';
-import {PgDev_Tabs} from './new-examples/PgDev_Tabs';
+import {PgDev_Tabs} from './examples/components/PgDev_Tabs';
+import {Example_PopupMenu} from './examples/modules/Example_PopupMenu';
 
 
 export class Page_Playground
@@ -69,57 +70,57 @@ export class Page_Playground
 
 	getScreens(): PlaygroundScreen[] {
 		return [
-			// Inputs
-			{renderer: Example_TSInput, name: 'TSInput Example'},
-			{renderer: Example_TSTextArea, name: 'TSTextArea Example'},
-			{renderer: Example_FieldEditorClick, name: 'FieldEditorClick Example'},
 
-			// DROPDOWNS
-			Playground_DropdownSingleAndMulti(),
-			{renderer: Example_AllDropDowns, name: 'ALL DropDown Examples'},
-			Playground_DropdownSingleType(),
-			Playground_DropdownMultiType(),
+			////Components
+			// Inputs
+			Example_TSInput,
+			Example_TSTextArea,
+			Example_FieldEditorClick,
+			// Dropdowns
+			Example_AllDropDowns,
+			Playground_DropdownSingleAndMulti,
+			Playground_DropdownSingleType,
+			Playground_DropdownMultiType,
+			//Misc
+			PgDev_Tabs,
+
+			////Modules
+			Example_PopupMenu,
 
 			// SWITCH PROPS
 			// TREES / LISTS
-			{renderer: SP_Example_Tree_SingleType, name: 'SP_Example_Tree_SingleType',},
-			// {renderer: SP_Example_List_MultiType, name: 'SP_Example_List_MultiType',},
-			// {renderer: SP_Example_List_SingleType, name: 'SP_Example_List_SingleType',},
-			// {renderer: SP_Example_NestedList_SingleType, name: 'SP_Example_NestedList_SingleType',},
-			// {renderer: SP_Example_NestedList_MultiType, name: 'SP_Example_NestedList_MultiType',},
+			SP_Example_Tree_SingleType,
+			Playground_Tree_Data,
+			Playground_Tree_Basic,
+			Playground_Tree_MultiType,
+			Example_Tree_SingleType,
+			Example_Tree_MultiType,
+			TreeRefactorPage,
+			Example_List_WithInput,
+			Example_Uploader,
+			Example_Form,
+			Hello,
+			Example_Dialogs,
+			Example_Toaster,
+			Page_ApiGen,
+			Example_TriggerPush,
+			Example_ApiCustomError,
+			Example_PermissionsComponent,
+			Example_Analytics,
+			Example_Scatter,
+			Example_CCgraphs
 
-			// TREES / LISTS
-			Playground_Tree_Data(),
-			Playground_Tree_Basic(),
-			Playground_Tree_MultiType(),
-			{renderer: Example_Tree_SingleType, name: 'Tree_SingleType',},
-			{renderer: Example_Tree_MultiType, name: 'Tree_MultiType',},
+			// {renderer: Example_NestedList_MultiType_Object, name: 'NestedList_MultiType_Object',},
+			// {renderer: Example_NestedList_MultiType_Object_Dynamic, name: 'NestedList_MultiType_Object_Dynamic',},
+			// {renderer: Example_List_All, name: 'Example_List_All',},
 			// {renderer: Example_List_SingleType, name: 'List_SingleType_Menu',},
 			// {renderer: Example_NestedList_SingleType, name: 'List_SingleType_NestedMenu',},
 			// {renderer: Example_List_MultiType, name: 'List_MultiType_Menu',},
 			// {renderer: Example_NestedList_MultiType, name: 'NestedList_MultiType',},
-			{renderer: Example_List_WithInput, name: 'Example_List_WithInput',},
-			// {renderer: Example_NestedList_MultiType_Object, name: 'NestedList_MultiType_Object',},
-			// {renderer: Example_NestedList_MultiType_Object_Dynamic, name: 'NestedList_MultiType_Object_Dynamic',},
-			// {renderer: Example_List_All, name: 'Example_List_All',},
-
-			{renderer: Example_Uploader, name: 'File Uploader',},
-
-			{renderer: Example_Form, name: 'Form - Register',},
-			{renderer: Hello, name: 'Hello',},
-			{renderer: Example_Dialogs, name: 'Dialog Examples',},
-			{renderer: Example_Toaster, name: 'Toaster Examples',},
-			{renderer: Page_ApiGen, name: 'Api Generator',},
-			{renderer: Hello, name: 'Live docs',},
-			{renderer: Example_TriggerPush, name: 'Trigger Push'},
-			{renderer: Example_ApiCustomError, name: 'Custom error'},
-			{renderer: TreeRefactorPage, name: 'Page for Tree refactoring'},
-
-			{renderer: Example_PermissionsComponent, name: 'Permissions Component'},
-			{renderer: Example_Analytics, name: 'Analytics'},
-			{renderer: Example_Scatter, name: 'Scatter Plot'},
-			{renderer: Example_CCgraphs, name: 'CC Graphs'},
-			PgDev_Tabs
+			// {renderer: SP_Example_List_MultiType, name: 'SP_Example_List_MultiType',},
+			// {renderer: SP_Example_List_SingleType, name: 'SP_Example_List_SingleType',},
+			// {renderer: SP_Example_NestedList_SingleType, name: 'SP_Example_NestedList_SingleType',},
+			// {renderer: SP_Example_NestedList_MultiType, name: 'SP_Example_NestedList_MultiType',},
 		];
 	}
 }

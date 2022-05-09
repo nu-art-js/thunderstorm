@@ -1,4 +1,4 @@
-/*
+/*!
  * A typescript & react boilerplate with api call example
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
@@ -16,29 +16,10 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-import {ExampleModule} from '@modules/ExampleModule';
-
-class Example_ApiCustomError_Renderer
-	extends React.Component {
-
-	constructor(props: {}) {
-		super(props);
-
-		this.state = {
-			formFields: {},
-		};
-	}
-
-	callServerApi_CustomError = () => {
-		ExampleModule.callCustomErrorApi();
-	};
-
-	render() {
-		return <>
-			<button style={{marginRight: 8}} onClick={this.callServerApi_CustomError}>Server API - Custom Error</button>
-		</>;
-	}
+.popup-button{
+  width: 100px;
+  height: 40px;
+  margin-block: 10px;
+  background-color: fuchsia;
+  font-weight: 850;
 }
-
-export const Example_ApiCustomError = {renderer: Example_ApiCustomError_Renderer, name: 'Custom error'};
