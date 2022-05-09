@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-import {Module, Second} from "@nu-art/ts-common";
-import {ComponentSync, BrowserHistoryModule, StorageKey, ThunderDispatcher, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
+import {Module, Second} from '@nu-art/ts-common';
+import {BrowserHistoryModule, getQueryParameter, StorageKey, ThunderDispatcher, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 import {
 	AccountApi_Create,
 	AccountApi_ListAccounts,
@@ -35,8 +35,9 @@ import {
 	Response_ListAccounts,
 	Response_LoginSAML,
 	UI_Account
-} from "../../shared/api";
-import {HttpMethod} from "@nu-art/thunderstorm";
+} from '../../shared/api';
+import {HttpMethod} from '@nu-art/thunderstorm';
+
 
 export const StorageKey_SessionId: StorageKey<string> = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
 export const StorageKey_UserEmail: StorageKey<string> = new StorageKey<string>(`storage-${QueryParam_Email}`);
@@ -100,8 +101,8 @@ export class AccountModuleFE_Class
 		XhrHttpModule.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
 		// XhrHttpModule.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
-		const email = ComponentSync.getQueryParameter(QueryParam_Email);
-		const sessionId = ComponentSync.getQueryParameter(QueryParam_SessionId);
+		const email = getQueryParameter(QueryParam_Email);
+		const sessionId = getQueryParameter(QueryParam_SessionId);
 
 		if (email && sessionId) {
 			StorageKey_SessionId.set(sessionId);

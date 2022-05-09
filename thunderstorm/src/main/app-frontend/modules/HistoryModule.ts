@@ -162,4 +162,12 @@ export class BrowserHistoryModule_Class
 	}
 }
 
+export function getCurrentUrl() {
+	return BrowserHistoryModule.getCurrentUrl();
+}
+
+export function getQueryParameter(name: string) {
+	return BrowserHistoryModule.getQueryParameter(name);
+}
+
 export const BrowserHistoryModule = new BrowserHistoryModule_Class();

@@ -30,7 +30,7 @@ import {
 	EventType_Query,
 	EventType_Unique
 } from '../../frontend';
-import {AppPage, IndexKeys, RoutingModule, stopPropagation} from '@nu-art/thunderstorm/frontend';
+import {AppPage, getQueryParameter, IndexKeys, RoutingModule, stopPropagation} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
 import {Props_DBItemEditorComponentV2} from './DBItemEditorComponent';
@@ -82,7 +82,7 @@ export abstract class DBItemEditorPage<ItemType extends DB_Object,
 	}
 
 	protected async resolveState(nextProps: P) {
-		const keys = this.resolveKeys(nextProps, (key: Ks) => DBItemEditorPage.getQueryParameter(key as string));
+		const keys = this.resolveKeys(nextProps, (key: Ks) => getQueryParameter(key as string));
 		let item: DB_Object | undefined;
 		try {
 			item = await this.props.moduleFE.uniqueQueryCache(keys);
