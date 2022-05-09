@@ -65,9 +65,9 @@ const PageLinkKeys = [
 
 export const registerRoutes = () => {
 	RoutingModule.clearRoutes();
-	RoutingModule.addRoute(Route_ApiGen, "/api-gen", Page_ApiGen).setLabel("Api Generator");
-	RoutingModule.addRoute(Route_Dialog, "/dialog", Example_Dialogs).setLabel("Dialog Examples");
-	RoutingModule.addRoute(Route_Toaster, "/toaster", Example_Toaster).setLabel("Toaster Examples");
+	RoutingModule.addRoute(Route_ApiGen, "/api-gen", Page_ApiGen.renderer).setLabel("Api Generator");
+	RoutingModule.addRoute(Route_Dialog, "/dialog", Example_Dialogs.renderer).setLabel("Dialog Examples");
+	RoutingModule.addRoute(Route_Toaster, "/toaster", Example_Toaster.renderer).setLabel("Toaster Examples");
 	RoutingModule.addRoute(Route_Login, "/login", Component_Login).setLabel("Login");
 	RoutingModule.addRoute(Route_Dispatch, "/dispatch", Example_Dispatch).setLabel("dispatch");
 	RoutingModule.addRoute(Route_Home, "/", Page_Home).setLabel("Home").setExact(false);
