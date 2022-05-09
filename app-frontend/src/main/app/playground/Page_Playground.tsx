@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {Playground, PlaygroundScreen} from '@nu-art/thunderstorm/frontend';
+import {PlaygroundScreen, TS_Playground} from '@nu-art/thunderstorm/frontend';
 import {Page_ApiGen} from '../pages/Page_ApiGen';
 import {Hello} from '../Hello';
 import {Example_ApiCustomError} from './examples/Example_ApiCustomError';
@@ -50,40 +50,6 @@ import {Playground_Tree_MultiType} from './examples/keyboard-listener/Example_Tr
 import {PgDev_Tabs} from './new-examples/PgDev_Tabs';
 
 
-export const selectStyles = {
-	container: (provided: any) => ({
-		...provided,
-		width: 240,
-		fontSize: 13,
-		outline: 'none'
-	}),
-	control: () => ({
-		border: '1px solid',
-		color: COLORS.blueGrey,
-		display: 'flex',
-		height: 32,
-		fontSize: 13,
-		outline: 'none'
-	}),
-	singleValue: (provided: any) => ({
-		...provided,
-		color: COLORS.blueGrey,
-		fontWeight: 500
-	}),
-	input: (provided: any) => ({
-		...provided,
-		color: '#fff'
-	}),
-	option: (provided: any, state: any) => ({
-		...provided,
-		backgroundColor: 'unset',
-		color: COLORS.blueGrey,
-		':hover': {
-			backgroundColor: COLORS.veryLightPink
-		}
-	}),
-};
-
 export class Page_Playground
 	extends React.Component<{}> {
 
@@ -94,8 +60,7 @@ export class Page_Playground
 
 	render() {
 		const screens = this.getScreens();
-		return <Playground
-			selectStyle={selectStyles}
+		return <TS_Playground
 			iconClose={ICONS.arrowClose(COLORS.veryLightPink())}
 			iconOpen={ICONS.arrowOpen(COLORS.veryLightPink())}
 			screens={screens}

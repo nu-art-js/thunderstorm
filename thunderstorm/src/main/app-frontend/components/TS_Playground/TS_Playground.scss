@@ -19,17 +19,51 @@
  * limitations under the License.
  */
 .ts-playground {
-  flex-grow: 1;
-  border-style: double;
-  display: inline-block;
-  box-sizing: border-box;
   width: 100%;
+  height: 100%;
 
-  .ts-playground__item {
-    background: unset;
+  .ts-playground__selector {
+    width: 250px;
+  }
 
-    &:focus {
-      background: #afafaf;
+  .ts-playground__container {
+    width: 100%;
+    flex-grow: 1;
+    border-style: double;
+    display: inline-block;
+    box-sizing: border-box;
+
+    .ts-playground__item {
+      background: unset;
+
+      &:focus {
+        background: #afafaf;
+      }
+    }
+
+    .ts-playground__header {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .ts-playground__group-example {
+      width: 100%;
+      padding-block: 8px;
+      margin-block: 8px;
+      justify-content: space-around;
+      border: 1px solid #68678d50;
+    }
+
+    .ts-playground__example {
+      border: 1px solid #68678d50;
+      padding: 8px;
+      margin-inline: 8px;
+    }
+
+    .ts-playground__results {
+      font-size: 18px;
+      margin-top: 8px;
     }
   }
+
 }

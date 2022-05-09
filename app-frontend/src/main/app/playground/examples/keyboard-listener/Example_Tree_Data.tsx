@@ -17,9 +17,9 @@
  */
 
 import * as React from 'react';
-import {Adapter, ComponentSync, NodeRendererProps, TreeNode, TS_Tree,} from '@nu-art/thunderstorm/frontend';
-import {PlaygroundExample_BodyStyle, PlaygroundExample_ResultStyle} from '../consts';
+import {Adapter, ComponentSync, LL_V_C, NodeRendererProps, TreeNode, TS_Tree,} from '@nu-art/thunderstorm/frontend';
 import {PG_Example} from '../_core/PG_Example';
+
 
 type State = { focused?: string, actionMessage: string };
 export type Element = { label: string, action?: () => void }
@@ -53,15 +53,15 @@ class Example_Tree_Data
 		const adapter = new Adapter(this.elements).setTreeNodeRenderer(Example_ColorfulNodeRenderer);
 		adapter.hideRoot = true;
 
-		return <div {...PlaygroundExample_BodyStyle} style={{minWidth: 180}}>
+		return <LL_V_C style={{minWidth: 180}}>
 			<TS_Tree
 				id={name}
 				adapter={adapter}
 				onNodeFocused={(path: string) => this.setState({actionMessage: `on focused: ${path}`})}
 				onNodeClicked={(path: string) => this.setState({actionMessage: `on clicked: ${path}`})}
 			/>
-			<div {...PlaygroundExample_ResultStyle}>{this.state.actionMessage}</div>
-		</div>;
+			<div className="ts-playground__results">{this.state.actionMessage}</div>
+		</LL_V_C>;
 	}
 }
 

@@ -16,14 +16,10 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {Hello} from "../Hello";
-import {
-	showAppConfirmationDialogExample,
-	showDefaultInfoModalExample,
-} from "../themes/dialog";
-import {ToastModule} from "@nu-art/thunderstorm/frontend";
-import {ExampleModule} from "@modules/ExampleModule";
+import * as React from 'react';
+import {Hello} from '../Hello';
+import {ToastModule} from '@nu-art/thunderstorm/frontend';
+import {ExampleModule} from '@modules/ExampleModule';
 
 
 export class Page_Home
@@ -36,24 +32,16 @@ export class Page_Home
 		};
 	}
 
-	showDefaultInfoModalExample = () => {
-		showDefaultInfoModalExample()
-	};
-
-	showAppConfirmationDialogExample = () => {
-		showAppConfirmationDialogExample()
-	};
-
 	showAppToasterSuccessExample = () => {
-		ToastModule.toastSuccess("Simple success message");
+		ToastModule.toastSuccess('Simple success message');
 	};
 
 	showAppToasterErrorExample = () => {
-		ToastModule.toastError("Simple error message");
+		ToastModule.toastError('Simple error message');
 	};
 
 	showAppToasterInfoExample = () => {
-		ToastModule.toastInfo("Simple info message");
+		ToastModule.toastInfo('Simple info message');
 	};
 
 	callServerApi_CustomError = () => {

@@ -17,12 +17,10 @@
  * limitations under the License.
  */
 
-import {AdapterBuilder, DropDown_headerStyle, DropDown_inputStyle, DropDown_listStyle, TreeItem, TS_DropDown} from '@nu-art/thunderstorm/frontend';
+import {AdapterBuilder, LL_V_C, TreeItem, TS_DropDown} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import {ICONS} from '@res/icons';
-import {css} from 'emotion';
 import {flatPlaguesWithTitles, Plague, RendererMap_Plague} from './consts';
-import {PlaygroundExample_BodyStyle, PlaygroundExample_HeaderStyle} from '../consts';
 import {PG_Example} from '../_core/PG_Example';
 import {Filter} from '@nu-art/ts-common';
 
@@ -44,42 +42,19 @@ export class Example_Dropdown_MultiType
 			.setData(flatPlaguesWithTitles)
 			.build();
 
-		const inputStylable = {
-			className: css(
-				{
-					backgroundColor: 'lime',
-					fontSize: 13,
-					'::placeholder': {
-						color: 'red',
-					}
-				}),
-			style: {...DropDown_inputStyle, padding: '0 20px'},
-			placeholder: this.state?._selected?.label
-		};
-
 		const valueRenderer = (selected?: TreeItem<Plague>) => {
 			const style: React.CSSProperties = {backgroundColor: 'lime', boxSizing: 'border-box', height: '100%', width: '100%', padding: '4px 7px'};
 			if (selected)
 				return <div style={{...style, color: 'red'}}>{selected?.item.label}</div>;
 			return <div style={style}>CHOOSE</div>;
 		};
-		const headerStylable = {style: {...DropDown_headerStyle, border: 'solid 2px red', borderRadius: '5px 5px 0px 0px'}};
-		const listStylable = {
-			style: {
-				...DropDown_listStyle,
-				border: 'solid 2px red',
-				borderRadius: '0px 0px 5px 5px',
-				borderTop: 'none',
-				top: 0,
-				maxHeight: 90
-			}
-		};
+
 		const caretItem = <div style={{backgroundColor: 'lime', paddingRight: 8}}>
 			<div style={{marginTop: 3}}>{ICONS.arrowOpen(undefined, 11)}</div>
 		</div>;
 		const caret = {open: caretItem, close: caretItem};
-		return <div {...PlaygroundExample_BodyStyle}>
-			<div {...PlaygroundExample_HeaderStyle}>Multiple renderers, flat list</div>
+		return <LL_V_C>
+			<div className="ts-playground__header">Multiple renderers, flat list</div>
 			<h4>Filter, 1 caret, default value,</h4>
 			<h4>all renderers & custom inline style</h4>
 			<h4>multiple renderers, flat list</h4>
@@ -87,7 +62,6 @@ export class Example_Dropdown_MultiType
 				adapter={adapter}
 				onSelected={this.onSelected}
 				selectedItemRenderer={valueRenderer}
-				inputStylable={inputStylable}
 				inputEventHandler={(_state, e) => {
 					if (e.key === 'Enter') {
 						const newOption = _state.selected;
@@ -100,14 +74,11 @@ export class Example_Dropdown_MultiType
 				filter={new Filter<TreeItem<Plague>>(item => ([item.item.label.toLowerCase()]))}
 				selected={flatPlaguesWithTitles[2]}
 				caret={caret}
-				headerStylable={headerStylable}
-				listStylable={listStylable}
 			/>
 			<h4>{this.state?._selected ? `You chose ${this.state._selected.value}` : 'You didn\'t choose yet'}</h4>
-		</div>;
+		</LL_V_C>;
 	}
 }
-
 
 const name = 'Dropdown - Multi Type';
 

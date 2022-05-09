@@ -16,13 +16,8 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	noButton,
-	showAppConfirmationDialogExample,
-	showDefaultInfoModalExample
-} from "../../themes/dialog";
-import {ToastModule} from "@nu-art/thunderstorm/frontend";
+import * as React from 'react';
+import {ToastModule} from '@nu-art/thunderstorm/frontend';
 
 
 export class Example_Dialogs
@@ -35,32 +30,20 @@ export class Example_Dialogs
 		};
 	}
 
-	showDefaultInfoModalExample = () => {
-		showDefaultInfoModalExample()
-	};
-
-	showAppConfirmationDialogExample = () => {
-		showAppConfirmationDialogExample()
-	};
-
 	showAppToasterSuccessExample = () => {
-		ToastModule.toastSuccess("Simple success message");
+		ToastModule.toastSuccess('Simple success message');
 	};
 
 	showAppToasterErrorExample = () => {
-		ToastModule.toastError("Simple error message");
+		ToastModule.toastError('Simple error message');
 	};
 
 	showAppToasterInfoExample = () => {
-		ToastModule.toastInfo("Simple info message");
+		ToastModule.toastInfo('Simple info message');
 	};
 
 	render() {
 		return <>
-			<button style={{marginRight: 8}} onClick={noButton}>No Button</button>
-			<button style={{marginRight: 8}} onClick={this.showDefaultInfoModalExample}>Default Dialog Example</button>
-			<button style={{marginRight: 8}} onClick={this.showAppConfirmationDialogExample}>Custom Dialog Example</button>
-
 			<button style={{marginRight: 8}} onClick={this.showAppToasterSuccessExample}>Toaster Default Success Example</button>
 			<button style={{marginRight: 8}} onClick={this.showAppToasterErrorExample}>Toaster Default Failure Example</button>
 			<button style={{marginRight: 8}} onClick={this.showAppToasterInfoExample}>Toaster Default Info Example</button>
