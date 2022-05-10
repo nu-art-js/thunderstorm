@@ -25,6 +25,7 @@ import {_keys, BadImplementationException, ObjectTS,} from '@nu-art/ts-common';
 import {SimpleTreeNodeRenderer} from '../TS_Tree/SimpleTreeNodeRenderer';
 import {_BaseNodeRenderer, BaseRendererMap, NodeRendererProps, TreeRendererMap,} from './BaseRenderer';
 import {TreeNode} from '../TS_Tree/types';
+import {_className} from '../../utils/tools';
 
 
 // export type TreeItem<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
@@ -222,7 +223,8 @@ abstract class BaseAdapterBuilder<Data> {
 			return '';
 		}
 
-		return (<div style={{minWidth: 12}}>{resolveSymbol()}</div>);
+		const className = _className('node-icon', props.node.expanded ? 'expanded' : undefined);
+		return <div className={className} style={{minWidth: '12px'}}>{resolveSymbol()}</div>;
 	};
 
 	protected defaultTreeNodeRenderer = (props: NodeRendererProps) => {
