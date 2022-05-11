@@ -22,7 +22,7 @@
 import * as React from 'react';
 import {BrowserHistoryModule} from '../../modules/HistoryModule';
 import {Example_NewProps} from './Example_NewProps';
-import {TS_DropDown} from '../TS_Dropdown/TS_DropDown';
+import {TS_DropDown} from '../TS_Dropdown';
 import {SimpleListAdapter} from '../adapter/Adapter';
 import {Filter} from '@nu-art/ts-common';
 import './TS_Playground.scss';

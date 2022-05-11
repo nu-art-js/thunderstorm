@@ -105,7 +105,7 @@ export class TS_Tabs
 				<div className="ts-tabs__tabs-header" style={this.props.tabsHeaderStyle}>
 					{tabs.map(tab => {
 						const style = {...this.props.tabStyle, ...this.state.focused === tab.uid ? this.props.selectedTabStyle : undefined};
-						const tabClasses = _className('ts-tabs__tab', this.state.focused === tab.uid ? 'ts-tabs__focused' : undefined);
+						const tabClasses = _className('ts-tabs__tab','unselectable', this.state.focused === tab.uid ? 'ts-tabs__focused' : undefined);
 						return <div key={tab.uid} id={tab.uid} className={tabClasses} style={style} onClick={this.selectOnClick}>{getTitle(tab)}</div>;
 					})}
 				</div>
