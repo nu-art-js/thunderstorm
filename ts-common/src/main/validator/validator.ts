@@ -80,7 +80,6 @@ export const tsValidateObjectValues = <V, T = { [k: string]: V }>(validator: Val
 		if (!input)
 			return;
 
-
 		for (const key of _keys(input)) {
 			const inputValue = input[key];
 			if (typeof inputValue === 'object') {
@@ -176,8 +175,7 @@ export const tsValidateRange = (ranges: [number, number][], mandatory = true): V
 	};
 };
 
-
-export const tsValidate = <T extends any>(instance: T, _validator: ValidatorTypeResolver<T>, path = '', mandatory: boolean | Partial<T> = {}) => {
+export const tsValidate = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, path = '', mandatory: boolean | Partial<T> = {}) => {
 	if (!_validator)
 		return;
 
@@ -216,7 +214,6 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 		tsValidate(value, validator, `${path}/${key}`);
 	}
 };
-
 
 export const tsValidateTimestamp = (interval?: number, mandatory = true): Validator<number> => {
 	return (path: string, input?: number) => {
