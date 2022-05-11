@@ -111,7 +111,6 @@ export abstract class BaseComponent<P = any, State = any>
 			const nextPropsKeys = _sortArray(_keys(nextProps || EmptyObject));
 			const stateKeys = _sortArray(_keys(this.state || EmptyObject));
 			const nextStateKeys = _sortArray(_keys(nextState || EmptyObject));
-
 			if (propKeys.length !== nextPropsKeys.length) return true;
 			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]])) return true;
 
