@@ -137,6 +137,11 @@ export async function batchActionParallel<T extends any = any, R extends any = a
 	return toRet;
 }
 
+/**
+ * Returns a flat array from an array of arrays.
+ * @param arr An array that is potentially a matrix
+ * @param result A flat array of single values
+ */
 export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
 	for (let i = 0, length = arr.length; i < length; i++) {
 		const value = arr[i];

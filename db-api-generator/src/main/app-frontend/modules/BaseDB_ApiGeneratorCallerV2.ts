@@ -127,10 +127,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 		// this.query({where: {__updated: {$gte: this.lastSync.get(0)}}, orderBy: [{key: "__updated", order: "desc"}]}, (items) => {
 		this.query({where: {}}, (items) => {
-			if (!items.length)
-				return;
-
-			this.lastSync.set(items[0].__updated);
+			if (items.length)
+				this.lastSync.set(items[0].__updated);
 			return responseHandler?.(items);
 		});
 	};
