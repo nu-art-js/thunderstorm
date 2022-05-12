@@ -132,7 +132,12 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			return responseHandler?.(items);
 		});
 	};
-
+	/**
+	 * Create or update, depending if unique key exists.
+	 * @param toUpsert Object to create or update.
+	 * @param responseHandler Callback post operation.
+	 * @param requestData
+	 */
 	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
 		this.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Upsert, toUpsert, requestData)
 			.execute(async (response) => {
