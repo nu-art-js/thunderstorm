@@ -44,3 +44,7 @@ export function stringFormat(input: string, params: string[] = []) {
 	}, input || '') || input;
 }
 
+export function capitalizeFirstLetter(value: string) {
+	return value.charAt(0).toUpperCase() + value.substr(1).toLowerCase();
+}
+
