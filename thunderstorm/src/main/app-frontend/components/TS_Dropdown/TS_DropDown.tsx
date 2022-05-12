@@ -28,6 +28,7 @@ import {TS_Tree} from '../TS_Tree';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
+import {CSSProperties} from 'react';
 
 
 const defaultTitleHeight = '28px';
@@ -95,6 +96,7 @@ type State<ItemType> = {
 	selected?: ItemType
 	hover?: ItemType
 	filterText?: string
+	dropDownRef: React.RefObject<HTMLDivElement>;
 }
 
 type StaticProps = {
@@ -131,11 +133,13 @@ export class TS_DropDown<ItemType>
 	}
 
 	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
+		const ref = this.props.innerRef || this.state?.dropDownRef || React.createRef<HTMLDivElement>();
 		return {
 			adapter: nextProps.adapter.clone(new Adapter<ItemType>([])),
 			selected: nextProps.selected,
 			open: this.state?.open || false,
-			filterText: nextProps.inputValue
+			filterText: nextProps.inputValue,
+			dropDownRef: ref
 		};
 	}
 
@@ -167,7 +171,7 @@ export class TS_DropDown<ItemType>
 				//  this.forceUpdate();
 				//
 				// }}
-					 ref={this.props.innerRef}
+					 ref={this.state.dropDownRef}
 					 tabIndex={this.props.tabIndex}
 					 onFocus={this.addKeyboardListener}
 					 onBlur={this.removeKeyboardListener}
@@ -207,10 +211,19 @@ export class TS_DropDown<ItemType>
 		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0)
 			return <div className="ts-dropdown__empty" style={{textAlign: 'center', opacity: 0.5}}>No options</div>;
 
+		const style: CSSProperties = {};
+		if (this.state?.dropDownRef.current) {
+			const bottom = this.state.dropDownRef.current?.getBoundingClientRect().bottom;
+			style.maxHeight = window.innerHeight - bottom - 20;
+			style.overflowY = 'auto';
+		}
+
 		return <TS_Tree
 			adapter={this.state.adapter}
 			selectedItem={this.state.selected}
 			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
+			className={'ts-dropdown__items'}
+			treeContainerStyle={style}
 			// keyEventHandler={treeKeyEventHandler}
 		/>;
 	};
