@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {Fragment} from 'react';
+import {CSSProperties, Fragment} from 'react';
 import {TreeNode, TreeNodeExpandState,} from './types';
 import {Adapter} from '../adapter/Adapter';
 import {_BaseNodeRenderer} from '../adapter/BaseRenderer';
@@ -36,6 +36,7 @@ export type Props_Tree = {
 	expanded?: TreeNodeExpandState
 	checkExpanded: (expanded: TreeNodeExpandState, path: string) => boolean | undefined
 	className?: string
+	treeContainerStyle?:CSSProperties
 	selectedItem?: any
 	selectedPath?: string
 	adapter: Adapter
@@ -181,7 +182,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	}
 
 	render() {
-		return <div className={_className('ts-tree', this.props.className)}>
+		return <div className={_className('ts-tree', this.props.className)} style={this.props.treeContainerStyle}>
 			{this.renderNode(this.state.adapter.data, '', '', (this.state.adapter.hideRoot ? -1 : 0))}
 		</div>;
 	}
