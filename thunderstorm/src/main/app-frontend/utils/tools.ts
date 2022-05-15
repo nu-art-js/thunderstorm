@@ -73,7 +73,10 @@ export const HOOK_useEffectAsync = (action: () => Promise<void>, deps?: Dependen
 	}, deps);
 };
 
-
+/**
+ * Prevents default behaviour and stops propagation
+ * @param e MouseEvent | React.MouseEvent | KeyboardEvent | React.KeyboardEvent
+ */
 export const stopPropagation = (e: MouseEvent | React.MouseEvent | KeyboardEvent | React.KeyboardEvent) => {
 	e.preventDefault();
 	e.stopPropagation();
