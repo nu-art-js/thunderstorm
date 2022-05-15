@@ -36,6 +36,7 @@ import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArr
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
 
+
 export type BaseApiConfig = {
 	relativeUrl: string
 	key: string
@@ -45,6 +46,7 @@ export type ApiCallerEventType = [SingleApiEvent, string, boolean] | [MultiApiEv
 
 export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config extends BaseApiConfig = BaseApiConfig>
 	extends Module<BaseApiConfig> {
+	readonly version = 'v1';
 
 	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
 		if (this.onError(request, resError))
@@ -126,7 +128,6 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			});
 	};
 
-
 	unique = (_id: string, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUnique<DBType>> => {
 		return this
 			.createRequest<ApiBinder_DBUnique<DBType>>(DefaultApiDefs.Unique, undefined, requestData)
@@ -149,7 +150,6 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 					return responseHandler(response);
 			});
 	};
-
 
 	private ids: string[] = [];
 	private items: { [k: string]: DBType } = {};
