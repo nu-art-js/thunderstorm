@@ -39,17 +39,18 @@ import {DB_BaseObject, DB_Object, Module, PartialProperties, PreDBObject} from '
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
 
+
 export type BaseApiConfigV2<DBType extends DB_Object, Ks extends keyof DBType = '_id'> = {
 	relativeUrl: string
 	key: string
 	dbConfig: DBConfig<DBType, Ks>
 }
 
-
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
 
 export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends BaseApiConfigV2<DBType, Ks> = BaseApiConfigV2<DBType, Ks>>
 	extends Module<Config> {
+	readonly version = 'v2';
 
 	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
 		if (this.onError(request, resError))
@@ -108,7 +109,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 				[this.defaultDispatcher.method]: action
 			};
 
-
 			//@ts-ignore
 			Thunder.getInstance().addUIListener(listener);
 			return () => {
@@ -158,7 +158,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			});
 	};
 
-
 	query = (query?: FirestoreQuery<DBType>, responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
 		let _query = query;
 		if (!_query)
@@ -173,7 +172,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 					return responseHandler(response);
 			});
 	};
-
 
 	unique = (keys: IndexKeys<DBType, Ks>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
 		const query: FirestoreQuery<DBType> = {

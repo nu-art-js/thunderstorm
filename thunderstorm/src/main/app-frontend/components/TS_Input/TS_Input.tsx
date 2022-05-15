@@ -23,8 +23,17 @@ import * as React from 'react';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 import './TS_Input.scss';
 
+
 export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, HTMLInputElement>
 
+/**
+ * A better way to capture user input
+ *
+ * <code>
+ * 		<input className="ts-input"/>
+ * </code>
+ *
+ */
 export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
 	render() {
