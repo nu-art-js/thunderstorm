@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {assert} from "@nu-art/ts-common";
+import {__scenario} from '@nu-art/testelot';
+import {assert} from '@nu-art/ts-common';
 import {
 	testCollection,
 	testInstance1,
@@ -29,12 +29,9 @@ import {
 	testString1,
 	testString3,
 	testString4
-} from "../_core/consts";
-import {FirestoreQuery} from "../../../_main";
-import {
-	FB_Type,
-	Query_TestCase,
-} from "../_core/types";
+} from '../_core/consts';
+import {FirestoreQuery} from '../../../_main';
+import {FB_Type, Query_TestCase,} from '../_core/types';
 
 type QueryUnique_TestCase = Query_TestCase<FB_Type>
 
@@ -50,7 +47,7 @@ function queryUnique(label: string, expected: Partial<FB_Type>, query: Firestore
 	// const label1 = `${label}\\n - Query: ${JSON.stringify(query)}`;
 	return testCollection.processDirty(label, async (collection) => {
 		const item = await collection.queryUnique(query);
-		assert("Objects do not match", expected, item);
+		assert('Objects do not match', expected, item);
 	});
 }
 
@@ -58,39 +55,39 @@ function queryUnique(label: string, expected: Partial<FB_Type>, query: Firestore
 const queryTests: QueryUnique_TestCase[] = [
 	{
 		insert: allItems,
-		label: "Unique Query - number",
+		label: 'Unique Query - number',
 		where: {numeric: testNumber2},
 		expected: testInstance2
 	},
 	{
-		label: "Unique Query - string",
+		label: 'Unique Query - string',
 		where: {stringValue: testString3},
 		expected: testInstance3
 	},
 	{
-		label: "Unique Query - boolean",
+		label: 'Unique Query - boolean',
 		where: {booleanValue: testInstance4.booleanValue},
 		expected: testInstance4
 	},
 	{
-		label: "Unique Query - boolean & string",
+		label: 'Unique Query - boolean & string',
 		where: {booleanValue: testInstance4.booleanValue, stringValue: testString4},
 		expected: testInstance4
 	},
 	{
 		insert: [testInstance1, testInstance1],
-		label: "Query Limit 1",
+		label: 'Query Limit 1',
 		where: {stringValue: testString1},
 		limit: 1,
 		expected: testInstance1
 	},
 ];
 
-export const scenarioQueryUnique = __scenario("Query Unique");
+export const scenarioQueryUnique = __scenario('Query Unique');
 for (const queryTest of queryTests) {
 	const instances = queryTest.insert;
 	if (instances)
-		scenarioQueryUnique.add(testCollection.processClean("Populate db with items", async (collection) => {
+		scenarioQueryUnique.add(testCollection.processClean('Populate db with items', async (collection) => {
 			await collection.insertAll(instances);
 		}));
 

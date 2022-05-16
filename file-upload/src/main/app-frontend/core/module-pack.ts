@@ -16,10 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {UploaderModule} from "../modules/UploaderModule";
+import {UploaderModuleFE} from "../modules/UploaderModuleFE";
 import {Frontend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/frontend";
 
 export const Frontend_ModulePack_Uploader = [
 	...Frontend_ModulePack_PushPubSub,
-	UploaderModule
+	UploaderModuleFE
 ];

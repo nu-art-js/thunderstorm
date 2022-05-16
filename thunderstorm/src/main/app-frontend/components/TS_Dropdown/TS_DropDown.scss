@@ -1,0 +1,83 @@
+/*!
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use "../../styles/declaration/basic" as *;
+
+.ts-dropdown {
+  @extend %match_parent;
+  position: relative;
+
+  //Children - header
+  .ts-dropdown__header {
+    @extend %match_parent;
+    height: 40px;
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #4fa7ff;
+
+    .ts-input {
+      @extend %match_parent;
+      background-color: transparent;
+      border: none;
+      padding-block: 0;
+
+      &:focus-visible {
+        outline: none;
+      }
+    }
+
+    .ts-dropdown__placeholder {
+      @extend %match_parent;
+      font-size: 16px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding-inline: 4px;
+    }
+  }
+
+  //Children - items
+  .ts-tree {
+    //Dimensions
+    width: 100%;
+    min-height: 10px;
+    padding-top: 3px;
+
+    //Colors
+    background: white;
+
+    //Position
+    position: absolute;
+    top: calc(100% - 3px);
+    z-index: -1;
+    overflow: hidden;
+
+    //Border
+    border: 1px solid #4fa7ff;
+    border-radius: 0 0 5px 5px;
+
+    .ts-tree__children-container {
+      margin: 0;
+      .ts-tree__node {
+        padding: 5px;
+      }
+    }
+  }
+}

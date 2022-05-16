@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {LogClient_BaseRotate} from "@nu-art/ts-common";
-import * as fs from "fs";
-import {WriteStream} from "fs";
+import {LogClient_BaseRotate} from '@nu-art/ts-common';
+import * as fs from 'fs';
+import {WriteStream} from 'fs';
 
 
 export class LogClient_File

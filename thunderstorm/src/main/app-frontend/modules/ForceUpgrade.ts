@@ -19,21 +19,13 @@
  * limitations under the License.
  */
 
-import {
-	Module,
-	Dispatcher
-} from "@nu-art/ts-common";
-import {XhrHttpModule} from "./http/XhrHttpModule";
-import {
-	ApiBinder_AssertAppVersion,
-	HeaderKey_AppVersion,
-	HeaderKey_BrowserType,
-	UpgradeRequired
-} from "../../shared/force-upgrade";
-import {HttpMethod} from "../../shared/types";
-import {browserType} from "../utils/tools";
+import {Dispatcher, Module} from '@nu-art/ts-common';
+import {XhrHttpModule} from './http/XhrHttpModule';
+import {ApiBinder_AssertAppVersion, HeaderKey_AppVersion, HeaderKey_BrowserType, UpgradeRequired} from '../../shared/force-upgrade';
+import {HttpMethod} from '../../shared/types';
+import {browserType} from '../utils/tools';
 
-export const RequestKey_AssertAppVersion = "assert-app-version";
+export const RequestKey_AssertAppVersion = 'assert-app-version';
 type Config = {
 	assertVersionUrl: string
 }
@@ -42,7 +34,7 @@ export interface OnUpgradeRequired {
 	__onUpgradeRequired(response: UpgradeRequired): void;
 }
 
-const dispatch_onUpgradeRequired = new Dispatcher<OnUpgradeRequired, "__onUpgradeRequired">("__onUpgradeRequired");
+const dispatch_onUpgradeRequired = new Dispatcher<OnUpgradeRequired, '__onUpgradeRequired'>('__onUpgradeRequired');
 
 class ForceUpgrade_Class
 	extends Module<Config> {
@@ -56,8 +48,8 @@ class ForceUpgrade_Class
 		XhrHttpModule
 			.createRequest<ApiBinder_AssertAppVersion>(HttpMethod.GET, RequestKey_AssertAppVersion)
 			.setRelativeUrl(this.config.assertVersionUrl)
-			.execute((response: UpgradeRequired) => {
-				dispatch_onUpgradeRequired.dispatchModule([response]);
+			.execute((response) => {
+				dispatch_onUpgradeRequired.dispatchModule(response);
 			});
 	};
 }

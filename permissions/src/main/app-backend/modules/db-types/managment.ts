@@ -17,18 +17,6 @@
  */
 
 import {
-	BaseDB_ApiGenerator,
-	ServerApi_Delete,
-	ServerApi_Query,
-	ServerApi_Unique,
-	ServerApi_Update,
-	validateNameWithDashesAndDots,
-	validateOptionalId,
-	validateStringWithDashes,
-	validateUniqueId
-} from "@nu-art/db-api-generator/backend";
-
-import {
 	CollectionName_Api,
 	CollectionName_Domain,
 	CollectionName_Level,
@@ -38,34 +26,39 @@ import {
 	DB_PermissionDomain,
 	DB_PermissionProject,
 	Request_CreateGroup,
-	Request_UpdateApiPermissions
-} from "../_imports";
+} from '../_imports';
 import {
 	auditBy,
 	filterDuplicates,
 	MUSTNeverHappenException,
-	TypeValidator,
-	validateArray,
-	validateRange,
-	validateRegexp
-} from "@nu-art/ts-common";
-import {FirestoreTransaction} from "@nu-art/firebase/backend";
-import {GroupPermissionsDB} from "./assign";
-import {Clause_Where} from "@nu-art/firebase";
-import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
+	PreDBObject,
+	tsValidateArray,
+	tsValidateRange,
+	tsValidateRegexp,
+	TypeValidator
+} from '@nu-art/ts-common';
+import {FirestoreTransaction} from '@nu-art/firebase/backend';
+import {GroupPermissionsDB} from './assign';
+import {Clause_Where} from '@nu-art/firebase';
+import {ApiException} from '@nu-art/thunderstorm/app-backend/exceptions';
+import {ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/app-backend/BaseDB_ApiGenerator';
+import {AccountModuleBE} from '@nu-art/user-account/app-backend/modules/AccountModuleBE';
 import {
-	ExpressRequest,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
-import {AccountModule} from "@nu-art/user-account/app-backend/modules/AccountModule";
+	tsValidateNameWithDashesAndDots,
+	tsValidateOptionalId,
+	tsValidateStringWithDashes,
+	tsValidateUniqueId
+} from '@nu-art/db-api-generator/shared/validators';
 
-const validateProjectId = validateRegexp(/^[a-z-]{3,20}$/);
-export const validateProjectName = validateRegexp(/^[A-Za-z- ]{3,20}$/);
-export const validateStringWithDashesAndSlash = validateRegexp(/^[0-9A-Za-z-/]+$/);
+const validateProjectId = tsValidateRegexp(/^[a-z-]{3,20}$/);
+export const validateProjectName = tsValidateRegexp(/^[A-Za-z- ]{3,20}$/);
+export const tsValidateStringWithDashesAndSlash = tsValidateRegexp(/^[0-9A-Za-z-/]+$/);
 
 export class ProjectDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionProject> {
 	static _validator: TypeValidator<DB_PermissionProject> = {
+		...BaseDB_ApiGenerator.__validator,
 		_id: validateProjectId,
 		name: validateProjectName,
 		customKeys: undefined,
@@ -73,22 +66,26 @@ export class ProjectDB_Class
 	};
 
 	constructor() {
-		super(CollectionName_Projects, ProjectDB_Class._validator, "project");
+		super(CollectionName_Projects, ProjectDB_Class._validator, 'project');
 	}
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 	}
 
-	apis(pathPart?: string): ServerApi<any>[] {
-		return [
-			// new ServerApi_Delete(this, pathPart),
-			new ServerApi_Query(this, pathPart),
-			new ServerApi_Unique(this, pathPart),
-		];
+	apiPatch(): ServerApi<any> | undefined {
+		return;
+	}
+
+	apiUpsert(): ServerApi<any> | undefined {
+		return;
+	}
+
+	apiDelete(): ServerApi<any> | undefined {
+		return;
 	}
 }
 
@@ -96,14 +93,15 @@ export class ProjectDB_Class
 export class DomainDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionDomain> {
 	static _validator: TypeValidator<DB_PermissionDomain> = {
-		_id: validateOptionalId,
+		...BaseDB_ApiGenerator.__validator,
+		_id: tsValidateOptionalId,
 		projectId: validateProjectId,
-		namespace: validateNameWithDashesAndDots,
+		namespace: tsValidateNameWithDashesAndDots,
 		_audit: undefined
 	};
 
 	constructor() {
-		super(CollectionName_Domain, DomainDB_Class._validator, "domain");
+		super(CollectionName_Domain, DomainDB_Class._validator, 'domain');
 		this.setLockKeys(['projectId']);
 	}
 
@@ -114,11 +112,15 @@ export class DomainDB_Class
 		}
 	}
 
+	internalFilter(item: DB_PermissionDomain) {
+		return [{namespace: item.namespace, projectId: item.projectId}];
+	}
+
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain, request?: ExpressRequest) {
 		await ProjectPermissionsDB.queryUnique({_id: dbInstance.projectId});
 
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 	}
@@ -128,15 +130,16 @@ export class DomainDB_Class
 export class LevelDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionAccessLevel> {
 	static _validator: TypeValidator<DB_PermissionAccessLevel> = {
-		_id: validateOptionalId,
-		domainId: validateUniqueId,
-		name: validateStringWithDashes,
-		value: validateRange([[0, 1000]]),
+		...BaseDB_ApiGenerator.__validator,
+		_id: tsValidateOptionalId,
+		domainId: tsValidateUniqueId,
+		name: tsValidateStringWithDashes,
+		value: tsValidateRange([[0, 1000]]),
 		_audit: undefined
 	};
 
 	constructor() {
-		super(CollectionName_Level, LevelDB_Class._validator, "level");
+		super(CollectionName_Level, LevelDB_Class._validator, 'level');
 		this.setLockKeys(['domainId']);
 	}
 
@@ -149,7 +152,7 @@ export class LevelDB_Class
 		await DomainPermissionsDB.queryUnique({_id: dbInstance.domainId});
 
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 	}
@@ -162,11 +165,11 @@ export class LevelDB_Class
 			const callbackfn = (group: Request_CreateGroup) => {
 				const index = group.accessLevelIds?.indexOf(dbInstance._id);
 				if (index === undefined)
-					throw new MUSTNeverHappenException("Query said it does exists!!");
+					throw new MUSTNeverHappenException('Query said it does exists!!');
 
 				const accessLevel = group.__accessLevels?.[index];
 				if (accessLevel === undefined)
-					throw new MUSTNeverHappenException("Query said it does exists!!");
+					throw new MUSTNeverHappenException('Query said it does exists!!');
 
 				accessLevel.value = dbInstance.value;
 			};
@@ -220,18 +223,20 @@ export class ApiDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionApi> {
 
 	static _validator: TypeValidator<DB_PermissionApi> = {
-		_id: validateOptionalId,
+		...BaseDB_ApiGenerator.__validator,
+
+		_id: tsValidateOptionalId,
 		projectId: validateProjectId,
-		path: validateStringWithDashesAndSlash,
-		accessLevelIds: validateArray(validateUniqueId, false),
+		path: tsValidateStringWithDashesAndSlash,
+		accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
 		_audit: undefined,
 		deprecated: undefined,
 		onlyForApplication: undefined
 	};
 
 	constructor() {
-		super(CollectionName_Api, ApiDB_Class._validator, "api");
-		this.setLockKeys(['projectId', "path"]);
+		super(CollectionName_Api, ApiDB_Class._validator, 'api');
+		this.setLockKeys(['projectId', 'path']);
 	}
 
 	protected externalFilter(item: DB_PermissionApi): Clause_Where<DB_PermissionApi> {
@@ -246,7 +251,7 @@ export class ApiDB_Class
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionApi, request?: ExpressRequest) {
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 
@@ -265,7 +270,7 @@ export class ApiDB_Class
 	registerApis(projectId: string, routes: string[]) {
 		return this.runInTransaction(async (transaction: FirestoreTransaction) => {
 			const existingProjectApis = await ApiPermissionsDB.query({where: {projectId: projectId}});
-			const apisToAdd: Request_UpdateApiPermissions[] = routes
+			const apisToAdd: PreDBObject<DB_PermissionApi>[] = routes
 				.filter(path => !existingProjectApis.find(api => api.path === path))
 				.map(path => ({path, projectId: projectId}));
 
@@ -273,13 +278,8 @@ export class ApiDB_Class
 		});
 	}
 
-	apis(pathPart?: string): ServerApi<any>[] {
-		return [
-			new ServerApi_Delete(this, pathPart),
-			new ServerApi_Query(this, pathPart),
-			new ServerApi_Unique(this, pathPart),
-			new ServerApi_Update(this, pathPart),
-		];
+	apiUpsert(): ServerApi<any> | undefined {
+		return;
 	}
 }
 

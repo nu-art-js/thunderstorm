@@ -39,7 +39,7 @@ export function addAllItemToArray<T>(array: T[], items: T[]) {
 }
 
 export function addItemToArray<T>(array: T[], item: T) {
-	array.push(item)
+	array.push(item);
 	return array;
 }
 
@@ -63,6 +63,10 @@ export async function filterAsync<T>(arr: T[], filter: (parameter: T) => Promise
 	return arr.filter((item, index) => boolArray[index]);
 }
 
+export function findDuplicates<T>(array1: T[], array2: T[]): T[] {
+	return array1.filter(val => array2.indexOf(val) !== -1);
+}
+
 export function filterDuplicates<T>(array: T[]): T[] {
 	return Array.from(new Set(array));
 }
@@ -71,18 +75,29 @@ export function filterInstances<T>(array: (T | undefined | null | void)[]): T[] 
 	return array.filter(item => !!item) as T[];
 }
 
-export function arrayToMap<T extends object>(array: T[], getKey: (item: T) => string, map?: { [k: string]: T }): { [k: string]: T } {
-	return array.reduce((toRet, element) => {
-		toRet[getKey(element)] = element;
+export function arrayToMap<T>(array: T[], getKey: (item: T, index: number) => string | number, map?: { [k: string]: T }): { [k: string]: T } {
+	return array.reduce((toRet, element, index) => {
+		toRet[getKey(element, index)] = element;
 		return toRet;
 	}, map || {});
 }
 
-// updateProperty<T extends object>(map: { [k: string]: T }, getKey: (element: T) => string, elements: T[]) {
+// updateProperty<T extends ObjectTS>(map: { [k: string]: T }, getKey: (element: T) => string, elements: T[]) {
 // }
 
 
-export function sortArray<T>(array: T[], map: (item: T) => any, invert = false) {
+export function _sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
+	const compareFn = (a: T, b: T) => {
+		const _a = map(a);
+		const _b = map(b);
+		return (_a < _b ? -1 : (_a === _b ? 0 : 1)) * (invert ? -1 : 1);
+	};
+
+	return array.sort(compareFn);
+}
+
+export function sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
+	console.log('sortArray is deprecated and inverted... please use _sortArray');
 	const compareFn = (a: T, b: T) => {
 		const _a = map(a);
 		const _b = map(b);
@@ -122,6 +137,11 @@ export async function batchActionParallel<T extends any = any, R extends any = a
 	return toRet;
 }
 
+/**
+ * Returns a flat array from an array of arrays.
+ * @param arr An array that is potentially a matrix
+ * @param result A flat array of single values
+ */
 export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
 	for (let i = 0, length = arr.length; i < length; i++) {
 		const value = arr[i];
@@ -132,4 +152,4 @@ export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
 		}
 	}
 	return result;
-};
+}

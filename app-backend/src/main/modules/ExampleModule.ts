@@ -18,13 +18,13 @@
 import {
 	Dispatcher,
 	Module
-} from "@nu-art/ts-common";
-import {TestDispatch} from "@app/app-shared";
+} from '@nu-art/ts-common';
+import {TestDispatch} from '@app/app-shared';
 import {
 	FirebaseModule,
 	FirestoreCollection
-} from "@nu-art/firebase/backend";
-import {QueryRequestInfo} from "@nu-art/thunderstorm/backend";
+} from '@nu-art/firebase/backend';
+import {QueryRequestInfo} from '@nu-art/thunderstorm/backend';
 
 type Config = {
 	options: string[],
@@ -47,7 +47,7 @@ class ExampleModule_Class
 	}
 
 	async getDispatchNumber() {
-		await this.dispatcher.dispatchModuleAsync([]);
+		await this.dispatcher.dispatchModuleAsync();
 		return this.config.dispatchNum;
 	}
 }
@@ -60,7 +60,7 @@ class DispatchModule_Class
 
 	protected init(): void {
 		const firestore = FirebaseModule.createAdminSession().getFirestore();
-		this.numbers = firestore.getCollection<{ n: number }>('test-dispatcher', ["n"]);
+		this.numbers = firestore.getCollection<{ n: number }>('test-dispatcher', ['n']);
 	}
 
 	testDispatch = async () => {

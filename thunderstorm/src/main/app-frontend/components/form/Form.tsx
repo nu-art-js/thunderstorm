@@ -19,19 +19,11 @@
  * limitations under the License.
  */
 
-import {
-	Form,
-	Form_FieldProps,
-	FormRenderer
-} from "./types";
-import * as React from "react";
-import {
-	_keys,
-	ObjectTS,
-	TypeValidator
-} from "@nu-art/ts-common";
+import {Form, Form_FieldProps, FormRenderer} from './types';
+import * as React from 'react';
+import {_keys, ObjectTS, TypeValidator} from '@nu-art/ts-common';
 
-export type FormProps<T extends object = object> = {
+export type FormProps<T extends ObjectTS = object> = {
 	form: Form<T>,
 	renderer: FormRenderer<T>,
 	value: Partial<T>,
@@ -40,18 +32,18 @@ export type FormProps<T extends object = object> = {
 	onAccept: (value: T) => void;
 }
 
-type Props<T extends object = object> = FormProps<T> & {
+type Props<T extends ObjectTS = object> = FormProps<T> & {
 	showErrors: boolean
 }
 
-type State<T extends object = object> = { value: Partial<T> };
+type State<T extends ObjectTS = object> = { value: Partial<T> };
 
 export class Component_Form<T extends ObjectTS = ObjectTS>
 	extends React.Component<Props<T>, State<T>> {
 
 	constructor(p: Props<T>) {
 		super(p);
-		this.state = {value: p.value}
+		this.state = {value: p.value};
 	}
 
 	render() {
@@ -60,7 +52,7 @@ export class Component_Form<T extends ObjectTS = ObjectTS>
 			<div className={`ll_v_c ${this.props.className}`} style={{justifyContent: 'space-evenly'}}>
 				{_keys(this.props.form).map(key => this.renderField(data, key))}
 			</div>
-		)
+		);
 	}
 
 	private renderField(data: Partial<T>, key: keyof T) {
@@ -82,7 +74,7 @@ export class Component_Form<T extends ObjectTS = ObjectTS>
 	private onValueChanged = (value: any, id: keyof T) => {
 		this.setState(state => {
 			state.value[id] = value;
-			return state
+			return state;
 		});
 	};
 }

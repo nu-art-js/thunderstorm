@@ -17,19 +17,15 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	Example_NewProps,
-	FieldEditorClick,
-	FieldEditorClickProps
-} from "@nu-art/thunderstorm/frontend";
+import * as React from 'react';
+import {Example_NewProps, FieldEditorClick, FieldEditorClickProps} from '@nu-art/thunderstorm/frontend';
 
 type TestType = {
 	prop1?: string,
 	prop2?: string,
 }
 
-export class Example_FieldEditorClick
+class Example_FieldEditorClick_Renderer
 	extends React.Component<{}, { instance: TestType }> {
 
 	constructor(props: {}) {
@@ -53,12 +49,13 @@ export class Example_FieldEditorClick
 	private props1(): FieldEditorClickProps {
 		return {
 			id: "prop1",
+			type: "text",
 			onAccept: (value: string) => {
 				this.setState(state => ({
 					instance: {...state.instance, ['prop1']: value}
 				}));
 			},
-			labelStyle: {height: 20, width: 170},
+			labelProps: {style: {height: 20, width: 170}},
 			value: this.state.instance.prop1
 		};
 	}
@@ -66,13 +63,16 @@ export class Example_FieldEditorClick
 	private props2(): FieldEditorClickProps {
 		return {
 			id: "prop2",
+			type: "text",
 			onAccept: (value: string) => {
 				this.setState(state => ({
 					instance: {...state.instance, ['prop2']: value}
 				}));
 			},
-			labelStyle: {height: 20, width: 170},
+			labelProps: {style: {height: 20, width: 170}},
 			value: this.state.instance.prop2
 		};
 	}
 }
+
+export const Example_FieldEditorClick = {renderer: Example_FieldEditorClick_Renderer, name: 'FieldEditorClick Example'}

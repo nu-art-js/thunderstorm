@@ -26,7 +26,7 @@ import {
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {
 	AccountApi_ValidateSession,
-	AccountModule
+	AccountModuleBE
 } from "./_imports";
 
 class ValidateToken
@@ -37,7 +37,7 @@ class ValidateToken
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		const {email, _id} = await AccountModule.validateSession(request);
+		const {email, _id} = await AccountModuleBE.validateSession(request);
 		return {email, _id};
 	}
 }

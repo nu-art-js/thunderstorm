@@ -18,9 +18,9 @@
 
 import {
 	TestSuit,
-	validateArray,
-	validateExists,
-	validateRegexp
+	tsValidateArray,
+	tsValidateExists,
+	tsValidateRegexp
 } from "../_main";
 import {ValidatorTest} from "./test";
 import {validatorProcessor} from "./_common";
@@ -37,14 +37,14 @@ export const testSuit_objectWithArrayValidator: TestSuit<ValidatorTest<ObjectWit
 	processor: validatorProcessor,
 	models: [
 		{expected: "pass", input: {instance: objectWithArray0, validator: {prop1: undefined}}},
-		{expected: "pass", input: {instance: objectWithArray0, validator: {prop1: validateExists(false)}}},
-		{expected: "fail", input: {instance: objectWithArray0, validator: {prop1: validateExists(true)}}},
-		{expected: "pass", input: {instance: objectWithArray0, validator: {prop1: validateArray(validateRegexp(/Adam/), false)}}},
-		{expected: "pass", input: {instance: objectWithArray1, validator: {prop1: validateArray(validateRegexp(/Adam/))}}},
-		{expected: "pass", input: {instance: objectWithArray1, validator: {prop1: validateArray(validateRegexp(/pah/))}}},
-		{expected: "pass", input: {instance: objectWithArray2, validator: {prop1: validateArray(validateRegexp(/Adam/))}}},
-		{expected: "fail", input: {instance: objectWithArray2, validator: {prop1: validateArray(validateRegexp(/pah/))}}},
-		{expected: "pass", input: {instance: objectWithArray3, validator: {prop1: validateArray(validateRegexp(/Adam|Yair/))}}},
-		{expected: "fail", input: {instance: objectWithArray3, validator: {prop1: validateArray(validateRegexp(/pah/))}}},
+		{expected: "pass", input: {instance: objectWithArray0, validator: {prop1: tsValidateExists(false)}}},
+		{expected: "fail", input: {instance: objectWithArray0, validator: {prop1: tsValidateExists(true)}}},
+		{expected: "pass", input: {instance: objectWithArray0, validator: {prop1: tsValidateArray(tsValidateRegexp(/Adam/), false)}}},
+		{expected: "pass", input: {instance: objectWithArray1, validator: {prop1: tsValidateArray(tsValidateRegexp(/Adam/))}}},
+		{expected: "pass", input: {instance: objectWithArray1, validator: {prop1: tsValidateArray(tsValidateRegexp(/pah/))}}},
+		{expected: "pass", input: {instance: objectWithArray2, validator: {prop1: tsValidateArray(tsValidateRegexp(/Adam/))}}},
+		{expected: "fail", input: {instance: objectWithArray2, validator: {prop1: tsValidateArray(tsValidateRegexp(/pah/))}}},
+		{expected: "pass", input: {instance: objectWithArray3, validator: {prop1: tsValidateArray(tsValidateRegexp(/Adam|Yair/))}}},
+		{expected: "fail", input: {instance: objectWithArray3, validator: {prop1: tsValidateArray(tsValidateRegexp(/pah/))}}},
 	]
 };

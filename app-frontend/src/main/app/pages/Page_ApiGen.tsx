@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {ApiCaller_PermissionsProject} from "@nu-art/permissions/frontend";
+import * as React from 'react';
+import {ApiCaller_PermissionsProject} from '@nu-art/permissions/frontend';
 
-
-export class Page_ApiGen
+class Page_ApiGen_Renderer
 	extends React.Component {
 	constructor(props: {}) {
 		super(props);
@@ -40,3 +39,5 @@ export class Page_ApiGen
 		</>;
 	}
 }
+
+export const Page_ApiGen = {renderer: Page_ApiGen_Renderer, name: 'Api Generator'};

@@ -17,7 +17,7 @@
 //  */
 //
 // import * as React from "react";
-// import {BaseComponent} from "@nu-art/thunderstorm/frontend";
+// import {ComponentSync} from "@nu-art/thunderstorm/frontend";
 // import {_keys} from "@nu-art/ts-common";
 // import {
 // 	KeyboardListener,
@@ -29,7 +29,7 @@
 // export type Element = {label: string, action?: ()=>void}
 //
 // export class Example_KeyboardOnTree1
-// 	extends BaseComponent<{}, State> {
+// 	extends ComponentSync<{}, State> {
 //
 // 	private myListenerKey = "myDiv";
 // 	private node: any = null;

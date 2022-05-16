@@ -17,48 +17,42 @@
  */
 
 import * as React from 'react';
-import {
-	BaseComponent,
-	Dialog,
-	PopupMenu,
-	RoutingModule,
-	Toaster,
-	WrapperProps
-} from "@nu-art/thunderstorm/frontend";
+import {ComponentSync, RoutingModule, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay, WrapperProps} from '@nu-art/thunderstorm/frontend';
 
-import {VersionOnScreen} from './components/VersionOnScreen';
-import {
-	AccountModule,
-	OnLoginStatusUpdated
-} from "@nu-art/user-account/frontend";
-import {registerRoutes} from "./Routes";
-import {BugReport} from '@nu-art/bug-report/frontend';
+import {VersionOnScreen} from '@components/VersionOnScreen';
+import {AccountModuleFE, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
+import {registerRoutes} from './Routes';
+
 
 export class App
-	extends BaseComponent<WrapperProps>
+	extends ComponentSync<WrapperProps>
 	implements OnLoginStatusUpdated {
 
 	public static dropBlocker<T>(ev: React.DragEvent<T>) {
 		ev.preventDefault();
 		ev.stopPropagation();
-	};
+	}
 
-	onLoginStatusUpdated = () => {
-		const status = AccountModule.getLoggedStatus();
-		console.log('status update', status); 
+	protected deriveStateFromProps(nextProps: WrapperProps) {
+		return {};
+	}
+
+	__onLoginStatusUpdated = () => {
+		const status = AccountModuleFE.getLoggedStatus();
+		console.log('status update', status);
 	};
 
 	render() {
 		registerRoutes();
 		return (
 			<div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
-				<BugReport>
-					{RoutingModule.getRoutesMap()}
-				</BugReport>
+				{/*<BugReport>*/}
+				{RoutingModule.getRoutesMap()}
+				{/*</BugReport>*/}
 				<VersionOnScreen/>
-				<Dialog/>
-				<Toaster/>
-				<PopupMenu/>
+				<TS_DialogOverlay/>
+				<TS_ToastOverlay/>
+				<TS_PopupMenuOverlay/>
 			</div>);
 	}
 }

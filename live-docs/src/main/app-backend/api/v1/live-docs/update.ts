@@ -27,14 +27,14 @@ import {auditBy,} from "@nu-art/ts-common";
 import {HttpMethod} from "@nu-art/thunderstorm";
 
 import {
-	ApiUpdateLiveDocs,
+	apiPatchLiveDocs,
 	LiveDocsModule,
 	Request_UpdateDocument
 } from "./_imports";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 
 class ServerApi_LiveDoc_Update
-	extends ServerApi<ApiUpdateLiveDocs> {
+	extends ServerApi<apiPatchLiveDocs> {
 
 	constructor() {
 		super(HttpMethod.POST, "update");

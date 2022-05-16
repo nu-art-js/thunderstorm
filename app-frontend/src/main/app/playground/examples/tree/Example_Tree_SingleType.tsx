@@ -1,20 +1,16 @@
-import * as React from "react";
-import {Component} from "react";
-import {
-	Adapter,
-	AdapterBuilder,
-	ToastModule,
-	Tree
-} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
+import * as React from 'react';
+import {Component} from 'react';
+import {Adapter, SimpleTreeAdapter, ToastModule, TS_Tree} from '@nu-art/thunderstorm/frontend';
+import {__stringify, deepClone} from '@nu-art/ts-common';
 
 type Type = {
 	label: string | number
 	other: string
 };
 
-export class Example_Tree_SingleType
+class Example_Tree_SingleType_Renderer
 	extends Component<{}> {
+	static index = 0;
 	private data: any;
 
 	constructor(props: {}) {
@@ -33,15 +29,9 @@ export class Example_Tree_SingleType
 
 					label: 'Second element',
 					other: 'Other element',
-					zevel: {
-						data: {
-							label: 'Second element',
-							other: 'Other element',
-						},
-					}
 				},
 				data: {
-					data: {
+					ashpa: {
 						label: 'Second element',
 						other: 'Other element',
 					},
@@ -55,19 +45,15 @@ export class Example_Tree_SingleType
 				other: 'Other element',
 			},
 			Forth: {
-				label: "Forth element",
+				label: 'Forth element',
 				other: 'Other element',
 			}
 		};
 	}
 
 	render() {
-		const adapter: Adapter = AdapterBuilder()
-			.tree()
-			.singleRender((props: { item: Type }) => <div>{props.item}</div>)
-			.setData(this.data)
-			.build();
-
+		const adapter: Adapter = SimpleTreeAdapter(this.data, (props: { item: Type }) => <div>{props.item}</div>);
+		// adapter.adjust = adapter.adjustNodes("data")
 		return <div>
 			<div>
 				<h2>Here is a tree with one renderer Type</h2>
@@ -75,17 +61,17 @@ export class Example_Tree_SingleType
 				<div onClick={() => this.addItem('Second')}>Add Second</div>
 				<div onClick={() => this.addItem('Third')}>Add Third</div>
 				<div onClick={() => this.addItem('Forth')}>Add Forth</div>
-				<Tree
+				<TS_Tree
 					adapter={adapter}
 					onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
-		</div>
+		</div>;
 	}
 
 	private addItem = (path: string) => {
-		this.data[`${path}_copy`] = this.data[path];
+		this.data[`${path}_${Example_Tree_SingleType_Renderer.index++}`] = deepClone(this.data[path]);
 		this.forceUpdate();
 	};
 }
 
-
+export const Example_Tree_SingleType = {renderer: Example_Tree_SingleType_Renderer, name: 'Tree_SingleType'};

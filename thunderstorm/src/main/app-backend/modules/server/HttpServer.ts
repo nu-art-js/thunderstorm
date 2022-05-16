@@ -25,29 +25,16 @@
 
 import * as compression from 'compression';
 
-import {Server} from "http";
-import {Socket} from "net";
-import * as fs from "fs";
-import {
-	addAllItemToArray,
-	addItemToArray,
-	LogLevel,
-	Module
-} from "@nu-art/ts-common";
-import {
-	HttpRequestData,
-	ServerApi
-} from "./server-api";
-import {ApiException} from "../../exceptions";
-import * as express from "express";
+import {Server} from 'http';
+import {Socket} from 'net';
+import * as fs from 'fs';
+import {addAllItemToArray, addItemToArray, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {HttpRequestData, ServerApi} from './server-api';
+import {ApiException} from '../../exceptions';
+import * as express from 'express';
 
-import {
-	Express,
-	ExpressRequest,
-	ExpressRequestHandler,
-	ExpressResponse
-} from "../../utils/types";
-import {DefaultApiErrorMessageComposer} from "./server-errors";
+import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse} from '../../utils/types';
+import {DefaultApiErrorMessageComposer} from './server-errors';
 
 const ALL_Methods: string[] = [
 	'GET',
@@ -94,7 +81,7 @@ export class HttpServer_Class
 	private socketId: number = 0;
 
 	constructor() {
-		super("http-server");
+		super('http-server');
 		this.express = express();
 	}
 
@@ -116,18 +103,18 @@ export class HttpServer_Class
 	}
 
 	protected async init() {
-		this.setMinLevel(ServerApi.isDebug? LogLevel.Verbose:LogLevel.Info)
+		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
 		const baseUrl = this.config.baseUrl;
 		if (baseUrl) {
-			if (baseUrl.endsWith("/"))
+			if (baseUrl.endsWith('/'))
 				this.config.baseUrl = baseUrl.substring(0, baseUrl.length - 1);
 
-			this.config.baseUrl = baseUrl.replace(/\/\//g, "/");
+			this.config.baseUrl = baseUrl.replace(/\/\//g, '/');
 		}
 
 		this.express.use((req, res, next) => {
 			if (req)
-				req.url = req.url.replace(/\/\//g, "/");
+				req.url = req.url.replace(/\/\//g, '/');
 
 			next();
 		});
@@ -153,7 +140,7 @@ export class HttpServer_Class
 			if (!origin)
 				return;
 
-			if (typeof origin === "string")
+			if (typeof origin === 'string')
 				_origin = origin;
 			else
 				_origin = origin[0];
@@ -165,7 +152,7 @@ export class HttpServer_Class
 				return _origin;
 		};
 
-		this.express.all("*", (req: ExpressRequest, res: ExpressResponse, next: express.NextFunction) => {
+		this.express.all('*', (req: ExpressRequest, res: ExpressResponse, next: express.NextFunction) => {
 			let origin = req.headers.origin;
 			if (origin) {
 				origin = resolveCorsOrigin(origin);
@@ -173,13 +160,13 @@ export class HttpServer_Class
 					this.logWarning(`CORS issue!!!\n Origin: '${req.headers.origin}' does not exists in config: ${JSON.stringify(cors.origins)}`);
 			}
 
-			res.header('Access-Control-Allow-Origin', origin || "N/A");
-			res.header('Access-Control-Allow-Methods', (cors.methods || ALL_Methods).join(","));
-			res.header('Access-Control-Allow-Headers', cors.headers.join(","));
+			res.header('Access-Control-Allow-Origin', origin || 'N/A');
+			res.header('Access-Control-Allow-Methods', (cors.methods || ALL_Methods).join(','));
+			res.header('Access-Control-Allow-Headers', cors.headers.join(','));
 
 			next();
 		});
-		this.express.options("*", (req: ExpressRequest, res: ExpressResponse) => {
+		this.express.options('*', (req: ExpressRequest, res: ExpressResponse) => {
 			res.end();
 		});
 	}
@@ -191,18 +178,18 @@ export class HttpServer_Class
 	private createServer(): Server {
 		const ssl = this.config.ssl;
 		if (!ssl) {
-			this.logDebug("starting HTTP server");
+			this.logDebug('starting HTTP server');
 			return require('http').createServer(this.express);
 		}
 
-		this.logDebug("starting HTTPS server");
+		this.logDebug('starting HTTPS server');
 		let key = ssl.key;
-		if (!ssl.key.startsWith("-----BEGIN"))
-			key = fs.readFileSync(ssl.key, "utf8");
+		if (!ssl.key.startsWith('-----BEGIN'))
+			key = fs.readFileSync(ssl.key, 'utf8');
 
 		let cert = ssl.cert;
-		if (!ssl.cert.startsWith("-----BEGIN"))
-			cert = fs.readFileSync(ssl.cert, "utf8");
+		if (!ssl.cert.startsWith('-----BEGIN'))
+			cert = fs.readFileSync(ssl.cert, 'utf8');
 
 
 		const options = {
@@ -293,10 +280,10 @@ export class HttpServer_Class
 
 		const resolveRoutes = (stack: any[]): any[] => {
 			return stack.map((layer: any) => {
-				if (layer.route && typeof layer.route.path === "string") {
+				if (layer.route && typeof layer.route.path === 'string') {
 					let methods = Object.keys(layer.route.methods);
 					if (methods.length > 20)
-						methods = ["ALL"];
+						methods = ['ALL'];
 
 					return {methods: methods, path: layer.route.path};
 				}
@@ -323,20 +310,25 @@ export class RouteResolver {
 	readonly rootDir: string;
 	readonly apiFolder: string;
 	private middlewares: ServerApi_Middleware[] = [];
+	private processor?: (api: ServerApi<any>) => void;
 
 	constructor(require: NodeRequire, rootDir: string, apiFolder?: string) {
 		this.require = require;
 		this.rootDir = rootDir;
-		this.apiFolder = apiFolder || "";
+		this.apiFolder = apiFolder || '';
 	}
 
-	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
+	addProcessor(processor: (api: ServerApi<any>) => void) {
+		this.processor = processor;
+	}
+
+	setMiddlewares(middlewares: ServerApi_Middleware[] = []) {
 		this.middlewares = middlewares;
 		return this;
 	}
 
 	private resolveApi(urlPrefix: string) {
-		this.resolveApiImpl(urlPrefix, this.rootDir + "/" + this.apiFolder)
+		this.resolveApiImpl(urlPrefix, this.rootDir + '/' + this.apiFolder);
 	}
 
 	private resolveApiImpl(urlPrefix: string, workingDir: string) {
@@ -346,21 +338,23 @@ export class RouteResolver {
 				return;
 			}
 
-			if (file.endsWith(".d.ts"))
+			if (file.endsWith('.d.ts'))
 				return;
 
-			if (!file.endsWith(".js"))
+
+			if (!file.endsWith('.js'))
 				return;
 
-			if (file.startsWith("_"))
+			if (file.startsWith('_'))
 				return;
 
-			const relativePathToFile = `.${workingDir.replace(this.rootDir, "")}/${file}`;
-			if (file.startsWith("&")) {
+
+			const relativePathToFile = `.${workingDir.replace(this.rootDir, '')}/${file}`;
+			if (file.startsWith('&')) {
 				let routeResolver: RouteResolver;
 				try {
 					routeResolver = this.require(relativePathToFile);
-				} catch (e) {
+				} catch (e: any) {
 					console.log(`could not reference RouteResolver for: ${workingDir}/${relativePathToFile}`, e);
 					throw e;
 				}
@@ -374,7 +368,7 @@ export class RouteResolver {
 			let content: ServerApi<any, any, any> | ServerApi<any, any, any>[];
 			try {
 				content = this.require(relativePathToFile);
-			} catch (e) {
+			} catch (e: any) {
 				console.log(`could not reference ServerApi for: ${workingDir}/${relativePathToFile}`, e);
 				throw e;
 			}
@@ -383,6 +377,10 @@ export class RouteResolver {
 				content = [content];
 
 			content.forEach(api => {
+				if (!api.addMiddlewares)
+					throw new MUSTNeverHappenException(`Missing api.middleware for: ${relativePathToFile}`);
+
+				this.processor?.(api);
 				api.addMiddlewares(...this.middlewares);
 				api.route(this.express, urlPrefix);
 			});

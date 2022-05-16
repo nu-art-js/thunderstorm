@@ -17,7 +17,7 @@
  */
 
 import {
-	validateRegexp,TestSuit
+	tsValidateRegexp,TestSuit
 } from "../_main";
 import {
 	ValidatorTest,
@@ -33,14 +33,14 @@ export const testSuit_simpleObjectValidator: TestSuit<ValidatorTest<{}>> = {
 	processor: validatorProcessor,
 	models: [
 		{expected: "fail", input: {instance: simpleObject1, validator: {}}},
-		{expected: "fail", input: {instance: simpleObject1, validator: {prop1: validateRegexp(/PaH/)}}},
-		{expected: "pass", input: {instance: simpleObject1, validator: {prop1: validateRegexp(/Adam/)}}},
-		{expected: "fail", input: {instance: {}, validator: {prop1: validateRegexp(/PaH/)}}},
-		{expected: "pass", input: {instance: {}, validator: {prop1: validateRegexp(/PaH/, false)}}},
-		{expected: "fail", input: {instance: simpleObject1, validator: {prop1: validateRegexp(/Adam/), prop2: validateRegexp(/Adam/)}}},
-		{expected: "pass", input: {instance: simpleObject1, validator: {prop1: validateRegexp(/Adam/), prop2: validateRegexp(/Adam/, false)}}},
-		{expected: "fail", input: {instance: simpleObject2, validator: {prop1: validateRegexp(/Adam/), prop2: validateRegexp(/Adam/)}}},
-		{expected: "pass", input: {instance: simpleObject2, validator: {prop1: validateRegexp(/Adam/), prop2: validateRegexp(/Adam/, false)}}},
-		{expected: "pass", input: {instance: simpleObject2, validator: {prop1: validateRegexp(/Adam/), prop2: undefined}}},
+		{expected: "fail", input: {instance: simpleObject1, validator: {prop1: tsValidateRegexp(/PaH/)}}},
+		{expected: "pass", input: {instance: simpleObject1, validator: {prop1: tsValidateRegexp(/Adam/)}}},
+		{expected: "fail", input: {instance: {}, validator: {prop1: tsValidateRegexp(/PaH/)}}},
+		{expected: "pass", input: {instance: {}, validator: {prop1: tsValidateRegexp(/PaH/, false)}}},
+		{expected: "fail", input: {instance: simpleObject1, validator: {prop1: tsValidateRegexp(/Adam/), prop2: tsValidateRegexp(/Adam/)}}},
+		{expected: "pass", input: {instance: simpleObject1, validator: {prop1: tsValidateRegexp(/Adam/), prop2: tsValidateRegexp(/Adam/, false)}}},
+		{expected: "fail", input: {instance: simpleObject2, validator: {prop1: tsValidateRegexp(/Adam/), prop2: tsValidateRegexp(/Adam/)}}},
+		{expected: "pass", input: {instance: simpleObject2, validator: {prop1: tsValidateRegexp(/Adam/), prop2: tsValidateRegexp(/Adam/, false)}}},
+		{expected: "pass", input: {instance: simpleObject2, validator: {prop1: tsValidateRegexp(/Adam/), prop2: undefined}}},
 	]
 };

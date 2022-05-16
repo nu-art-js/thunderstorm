@@ -19,24 +19,12 @@
  * limitations under the License.
  */
 
-import {
-	addItemToArray,
-	BadImplementationException,
-	Module
-} from "@nu-art/ts-common";
-import * as React from "react";
-import {
-	defaultLinkNode,
-	defaultNavLinkNode,
-	defaultRouteNode,
-	RouteParams,
-	RoutePath
-} from "./route";
-import {
-	Redirect,
-	Switch
-} from "react-router-dom";
-import {BrowserHistoryModule} from "../HistoryModule";
+import {_keys, addItemToArray, BadImplementationException, Module} from '@nu-art/ts-common';
+import * as React from 'react';
+import {defaultLinkNode, defaultNavLinkNode, defaultRouteNode, RouteParams, RoutePath} from './route';
+import {Redirect, Switch} from 'react-router-dom';
+import {BrowserHistoryModule} from '../HistoryModule';
+import {QueryParams} from '../../../shared/types';
 
 
 class RoutingModule_Class
@@ -65,7 +53,7 @@ class RoutingModule_Class
 		this.ordinalRoutes.splice(0);
 	}
 
-	addRoute(key: string, route: string, component: React.ComponentClass | string) {
+	addRoute(key: string, route: string, component: React.ComponentClass<any, any> | string) {
 		const previousRoute = this.routes[key];
 		if (previousRoute)
 			throw new BadImplementationException(
@@ -118,6 +106,51 @@ class RoutingModule_Class
 			{(keys || this.ordinalRoutes).map(key => this.createRouteNode(this.getRoute(key)))}
 		</Switch>;
 	}
+
+	getCurrentUrl = () => window.location.href;
+
+	private getEncodedQueryParams = (): QueryParams => {
+		const queryParams: QueryParams = {};
+		let queryAsString = window.location.search;
+		if (!queryAsString || queryAsString.length === 0)
+			return {};
+
+		while (queryAsString.startsWith('?') || queryAsString.startsWith('/?')) {
+			if (queryAsString.startsWith('?'))
+				queryAsString = queryAsString.substring(1);
+			else if (queryAsString.startsWith('/?'))
+				queryAsString = queryAsString.substring(2);
+			else
+				break;
+		}
+
+		const query = queryAsString.split('&');
+		return query.map(param => {
+			const parts = param.split('=');
+			return {key: parts[0], value: parts[1]};
+		}).reduce((toRet, param) => {
+			if (param.key && param.value)
+				toRet[param.key] = param.value;
+
+			return toRet;
+		}, queryParams);
+	};
+
+	getSearch() {
+		const params = this.getEncodedQueryParams();
+		_keys(params).forEach(key => {
+			const value = params[key];
+			if (!value) {
+				delete params[key];
+				return;
+			}
+
+			params[key] = decodeURIComponent(value);
+		});
+		return params;
+	}
+
+	goToUrl = (url: string) => window.location.href = url;
 }
 
 export const RoutingModule = new RoutingModule_Class();

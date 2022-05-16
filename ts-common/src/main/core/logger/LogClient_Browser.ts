@@ -29,11 +29,11 @@ class LogClient_Browser_class
 		let color;
 		switch (level) {
 			case LogLevel.Verbose:
-				color = '#000000';
+				color = '#808080';
 				break;
 
 			case LogLevel.Debug:
-				color = '#0905AD';
+				color = '#6564c9';
 				break;
 
 			case LogLevel.Info:

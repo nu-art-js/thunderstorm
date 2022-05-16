@@ -16,33 +16,16 @@
  * limitations under the License.
  */
 
-import {
-	ImplementationMissingException,
-	Module,
-	StringMap
-} from "@nu-art/ts-common";
-import {
-	DB_PermissionProject,
-	PredefinedGroup,
-	PredefinedUser,
-	Request_RegisterProject,
-	Response_UsersCFsByShareGroups,
-	UserUrlsPermissions
-} from "./_imports";
+import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDBObject, StringMap} from "@nu-art/ts-common";
+import {DB_PermissionProject, PredefinedGroup, PredefinedUser, Request_RegisterProject, Response_UsersCFsByShareGroups, UserUrlsPermissions} from "./_imports";
 import {PermissionsAssert} from "./permissions-assert";
-import {
-	ApiPermissionsDB,
-	ProjectPermissionsDB
-} from "./db-types/managment";
+import {ApiPermissionsDB, ProjectPermissionsDB} from "./db-types/managment";
 import {HttpServer} from "@nu-art/thunderstorm/backend";
-import {
-	GroupPermissionsDB,
-	UserPermissionsDB
-} from "./db-types/assign";
-import {AccountModule} from "@nu-art/user-account/backend";
+import {GroupPermissionsDB, UserPermissionsDB} from "./db-types/assign";
+import {AccountModuleBE} from '@nu-art/user-account/app-backend/modules/AccountModuleBE';
 
 type Config = {
-	project: DB_PermissionProject
+	project: PreDBObject<DB_PermissionProject> & DB_BaseObject
 	predefinedGroups?: PredefinedGroup[],
 	predefinedUser?: PredefinedUser
 }
@@ -76,7 +59,7 @@ export class PermissionsModule_Class
 				try {
 					PermissionsAssert._assertUserPermissionsImpl(apiDetail, projectId, userDetails, requestCustomField);
 					userUrlsPermissions[url] = true;
-				} catch (e) {
+				} catch (e:any) {
 					userUrlsPermissions[url] = false;
 				}
 			} else
@@ -89,7 +72,7 @@ export class PermissionsModule_Class
 	async getUsersCFsByShareGroups(usersEmails: string[], groupsIds: string[]): Promise<Response_UsersCFsByShareGroups> {
 		const toRet: Response_UsersCFsByShareGroups = {};
 		await Promise.all(usersEmails.map(async email => {
-			const account = await AccountModule.getUser(email);
+			const account = await AccountModuleBE.getUser(email);
 			if (!account)
 				return;
 
@@ -139,12 +122,16 @@ export class PermissionsModule_Class
 	async _registerProject(registerProject: Request_RegisterProject) {
 		const project = registerProject.project;
 		await ProjectPermissionsDB.upsert(project);
-		await ApiPermissionsDB.registerApis(project._id, registerProject.routes);
+		const id = project._id;
+		if (!id)
+			throw new BadImplementationException("register project is missing an id");
+
+		await ApiPermissionsDB.registerApis(id, registerProject.routes);
 		const predefinedGroups = registerProject.predefinedGroups;
 		if (!predefinedGroups || predefinedGroups.length === 0)
 			return;
 
-		await GroupPermissionsDB.upsertPredefinedGroups(project._id, project.name, predefinedGroups);
+		await GroupPermissionsDB.upsertPredefinedGroups(id, project.name, predefinedGroups);
 
 		const predefinedUser = registerProject.predefinedUser;
 		if (!predefinedUser)
@@ -162,7 +149,7 @@ export class PermissionsModule_Class
 			}
 
 			return {
-				groupId: GroupPermissionsDB.getPredefinedGroupId(project._id, groupItem._id),
+				groupId: GroupPermissionsDB.getPredefinedGroupId(id, groupItem._id),
 				customField
 			};
 		});

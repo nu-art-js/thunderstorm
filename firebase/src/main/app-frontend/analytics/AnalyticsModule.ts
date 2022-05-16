@@ -16,12 +16,9 @@
  * limitations under the License.
  */
 
-import {
-	ImplementationMissingException,
-	Module
-} from "@nu-art/ts-common";
-import {FirebaseModule} from "../FirebaseModule";
-import {AnalyticsWrapper} from "./AnalyticsWrapper";
+import {ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {FirebaseModule} from '../FirebaseModule';
+import {AnalyticsWrapper} from './AnalyticsWrapper';
 
 class FirebaseAnalyticsModule_Class
 	extends Module {

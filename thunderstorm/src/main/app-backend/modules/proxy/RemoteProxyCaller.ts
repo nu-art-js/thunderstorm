@@ -18,25 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	__stringify,
-	ImplementationMissingException,
-	Module,
-} from "@nu-art/ts-common";
+import {__stringify, ImplementationMissingException, Module,} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {
-	ApiWithBody,
-	ApiWithQuery,
-	DeriveBodyType,
-	DeriveQueryType,
-	DeriveResponseType,
-	DeriveUrlType,
-	ErrorResponse,
-	QueryParams
-} from "../../../shared/types";
-import {promisifyRequest} from "../../utils/promisify-request";
-import {ApiException} from "../../exceptions";
-import {RequestOptions} from "../../../backend";
+import {ApiWithBody, ApiWithQuery, ErrorResponse, QueryParams} from '../../../shared/types';
+import {promisifyRequest} from '../../utils/promisify-request';
+import {ApiException} from '../../exceptions';
+import {RequestOptions} from '../../../backend';
 
 export type RemoteServerConfig = {
 	secretHeaderName: string
@@ -51,16 +38,16 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 
 	protected init(): void {
 		if (!this.config)
-			throw new ImplementationMissingException("MUST specify config for this module!!");
+			throw new ImplementationMissingException('MUST specify config for this module!!');
 
 		if (!this.config.proxyId)
-			throw new ImplementationMissingException("MUST specify the proxyId for the proxy caller!!");
+			throw new ImplementationMissingException('MUST specify the proxyId for the proxy caller!!');
 
 		if (!this.config.url)
-			throw new ImplementationMissingException("MUST specify the url for the remote server!!");
+			throw new ImplementationMissingException('MUST specify the url for the remote server!!');
 
 		if (!this.config.secret)
-			throw new ImplementationMissingException("MUST specify the secret for the remote server!!");
+			throw new ImplementationMissingException('MUST specify the secret for the remote server!!');
 
 		if (!this.config.secretHeaderName)
 			this.config.secretHeaderName = 'x-secret';
@@ -69,14 +56,14 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 			this.config.proxyHeaderName = 'x-proxy';
 	}
 
-	protected executeGetRequest = async <Binder extends ApiWithQuery<U, R, P>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, P extends QueryParams = DeriveQueryType<Binder>>(url: U, _params: P, _headers?: { [key: string]: string }): Promise<R> => {
+	protected executeGetRequest = async <Binder extends ApiWithQuery<any, any, any>, U = Binder['url'], R = Binder['response'], P extends QueryParams = Binder['params']>(url: U, _params: P, _headers?: { [key: string]: string }): Promise<R> => {
 		const params = _params && Object.keys(_params).map((key) => {
 			return `${key}=${_params[key]}`;
 		});
 
-		let urlParams = "";
+		let urlParams = '';
 		if (params && params.length > 0)
-			urlParams = `?${params.join("&")}`;
+			urlParams = `?${params.join('&')}`;
 
 		const proxyRequest: RequestOptions = {
 			headers: {
@@ -92,7 +79,8 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 		return await this.executeRequest<R>(proxyRequest);
 	};
 
-	protected executePostRequest = async <Binder extends ApiWithBody<U, R, B>, U extends string = DeriveUrlType<Binder>, R = DeriveResponseType<Binder>, B = DeriveBodyType<Binder>>(url: U, body: B, _headers?: { [key: string]: string }): Promise<R> => {
+
+	protected executePostRequest = async <Binder extends ApiWithBody<U, R, B>, U extends string = Binder['url'], R = Binder['response'], B = Binder['body']>(url: U, body: B, _headers?: { [key: string]: string }): Promise<R> => {
 		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,
@@ -115,10 +103,9 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 			delete proxyRequest.headers[this.config.secretHeaderName];
 
 		if (response.statusCode !== 200) {
-			let errorResponse: ErrorResponse<any>;
-			errorResponse = response.body;
+			const errorResponse: ErrorResponse<any> = response.body;
 			if (!errorResponse)
-				throw new ApiException(500, `Extraneous error ${__stringify(response)}, Proxy Request: ${__stringify(proxyRequest, true)}`)
+				throw new ApiException(500, `Extraneous error ${__stringify(response)}, Proxy Request: ${__stringify(proxyRequest, true)}`);
 
 			const e = new ApiException<any>(response.statusCode, `Redirect proxy error: ${errorResponse.debugMessage} \n Proxy Request: ${__stringify(proxyRequest, true)}`);
 			if (errorResponse.error)

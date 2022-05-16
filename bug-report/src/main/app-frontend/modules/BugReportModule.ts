@@ -17,24 +17,12 @@
  * limitations under the License.
  */
 
-import {
-	addItemToArray,
-	BeLogged,
-	LogClient_MemBuffer,
-	LogLevel,
-	LogLevelOrdinal,
-	Module
-} from "@nu-art/ts-common";
-import {XhrHttpModule} from "@nu-art/thunderstorm/frontend";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {
-	ApiBugReport,
-	Platform_Jira,
-	Request_BugReport
-} from "../../shared/api";
-import {Dialog_JiraOpened} from "../ui/Dialog_JiraOpened";
+import {addItemToArray, BeLogged, LogClient_MemBuffer, LogLevel, LogLevelOrdinal, Module} from '@nu-art/ts-common';
+import {XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {HttpMethod} from '@nu-art/thunderstorm';
+import {ApiBugReport, Request_BugReport} from '../../shared/api';
 
-export const RequestKey_BugReportApi = "BugReport";
+export const RequestKey_BugReportApi = 'BugReport';
 
 export class BugReportModule_Class
 	extends Module {
@@ -43,8 +31,8 @@ export class BugReportModule_Class
 
 	constructor() {
 		super();
-		addItemToArray(this.reports, new LogClient_MemBuffer("default"));
-		addItemToArray(this.reports, new LogClient_MemBuffer("info")
+		addItemToArray(this.reports, new LogClient_MemBuffer('default'));
+		addItemToArray(this.reports, new LogClient_MemBuffer('info')
 			.setFilter(level => LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(LogLevel.Info)));
 	}
 
@@ -63,12 +51,12 @@ export class BugReportModule_Class
 		XhrHttpModule
 			.createRequest<ApiBugReport>(HttpMethod.POST, RequestKey_BugReportApi)
 			.setJsonBody(body)
-			.setRelativeUrl("/v1/bug-reports/report")
+			.setRelativeUrl('/v1/bug-reports/report')
 			.setOnError(() => this.logWarning(`Error updating the report`))
 			.execute((response) => {
-				const jiraTicket = response.find(ticket => ticket.platform === Platform_Jira);
-				if(jiraTicket)
-					Dialog_JiraOpened.show(jiraTicket.issueId)
+				// const jiraTicket = response.find(ticket => ticket.platform === Platform_Jira);
+				// if(jiraTicket)
+				// 	Dialog_JiraOpened.show(jiraTicket.issueId)
 			});
 	};
 }

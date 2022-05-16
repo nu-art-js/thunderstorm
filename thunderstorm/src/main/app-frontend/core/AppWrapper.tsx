@@ -23,9 +23,9 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {Router} from 'react-router-dom';
 // noinspection TypeScriptPreferShortImport`
-import {BrowserHistoryModule} from "../modules/HistoryModule";
-import {Thunder} from "./Thunder";
-import {ImplementationMissingException} from "@nu-art/ts-common";
+import {BrowserHistoryModule} from '../modules/HistoryModule';
+import {Thunder} from './Thunder';
+import {ImplementationMissingException} from '@nu-art/ts-common';
 
 
 export type WrapperProps = {}
@@ -33,15 +33,15 @@ export const AppWrapper = (props: WrapperProps) => {
 
 	const MainApp = Thunder.getInstance().getMainApp();
 	if (!MainApp)
-		throw new ImplementationMissingException("mainApp was not specified!!");
+		throw new ImplementationMissingException('mainApp was not specified!!');
 
 	return (
 		<Router history={BrowserHistoryModule.getHistory()}>
 			<MainApp/>
-		</Router>)
+		</Router>);
 };
 
-export function renderApp(appId: string = "app") {
+export function renderApp(appId: string = 'root') {
 	ReactDOM.render(
 		<AppWrapper/>,
 		document.getElementById(appId)

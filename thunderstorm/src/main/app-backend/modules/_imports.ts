@@ -19,17 +19,17 @@
  * limitations under the License.
  */
 
-export * from "./server/server-api";
-export * from "./server/HttpServer";
+export * from './server/server-api';
+export * from './server/HttpServer';
 
-export * from "./proxy/RemoteProxyCaller";
-export * from "./proxy/RemoteProxy";
+export * from './proxy/RemoteProxyCaller';
+export * from './proxy/RemoteProxy';
 
-export * from "../exceptions";
-export * from "../utils/promisify-request";
-export * from "../utils/to-be-removed";
+export * from '../exceptions';
+export * from '../utils/promisify-request';
+export * from '../utils/to-be-removed';
 
-export * from "./CleanupScheduler";
-export * from "./FirestoreBackupScheduler";
+export * from './CleanupScheduler';
+export * from './FirestoreBackupScheduler';
 
-export * from "../../index";
+export * from '../../index';

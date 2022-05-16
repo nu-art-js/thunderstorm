@@ -17,17 +17,13 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {ReactNode} from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
-import {scaleLinear} from "d3-scale";
-import {
-	AxesLabels,
-	Coordinates,
-	D3ChartData
-} from "./Example_LineGraph";
-import AxisLeft from "./Example_AxisX";
-import AxisBottom from "./Example_AxisBottom.";
+import * as React from 'react';
+import {ReactNode} from 'react';
+import {ComponentSync} from '@nu-art/thunderstorm/app-frontend/core/ComponentSync';
+import {scaleLinear} from 'd3-scale';
+import {AxesLabels, Coordinates, D3ChartData} from './Example_LineGraph';
+import AxisLeft from './Example_AxisX';
+import AxisBottom from './Example_AxisBottom.';
 
 export type TableData = D3ChartData & {
 	icon?: ReactNode
@@ -43,10 +39,10 @@ type Props = {
 
 
 export class Example_TableGraph
-	extends BaseComponent<Props, {}> {
+	extends ComponentSync<Props, {}> {
 
-	constructor(props: Props) {
-		super(props);
+	protected deriveStateFromProps(nextProps: Props): {} {
+		return {};
 	}
 
 	w = 600;
@@ -104,11 +100,11 @@ export class Example_TableGraph
 
 	plots = (data: Coordinates[], color: string, icon?: ReactNode) =>
 		data.map((d, i) =>
-			         <svg
-				         key={i}
-				         x={this.xScale()(d.x)}
-				         y={this.yScale()(d.y) + this.midY() / 2}
-				         style={{overflow: 'visible'}}>{icon}</svg>);
+			<svg
+				key={i}
+				x={this.xScale()(d.x)}
+				y={this.yScale()(d.y) + this.midY() / 2}
+				style={{overflow: 'visible'}}>{icon}</svg>);
 
 
 	render() {
@@ -116,17 +112,17 @@ export class Example_TableGraph
 			<svg width={this.w} height={this.h} style={{float: 'left'}}>
 				<g transform={`translate(${this.margin.left},${this.margin.top})`}>
 					<AxisLeft yScale={this.yScale()}
-					          width={this.xScale()(this.props.xDomain ? this.props.xDomain + 1 : 8)}
-					          ticks={this.minAndMax().maxY + 1}
-					          tickValues={this.props.axesLabels.y}
-					          placeInMiddle={true}
-					          tickLines={true}/>
+										width={this.xScale()(this.props.xDomain ? this.props.xDomain + 1 : 8)}
+										ticks={this.minAndMax().maxY + 1}
+										tickValues={this.props.axesLabels.y}
+										placeInMiddle={true}
+										tickLines={true}/>
 					<AxisBottom xScale={this.xScale()}
-					            frequency={this.props.frequency}
-					            height={this.height}
-					            tickValues={this.props.axesLabels?.x}
-					            axisPoint={0}
-					            viewBox={7}/>
+											frequency={this.props.frequency}
+											height={this.height}
+											tickValues={this.props.axesLabels?.x}
+											axisPoint={0}
+											viewBox={7}/>
 					{this.props.data.map(_data => this.plots(_data.data, _data.color, _data.icon))}
 				</g>
 			</svg>

@@ -19,14 +19,16 @@
  * limitations under the License.
  */
 
-import {
-	Dispatcher,
-	FunctionKeys,
-	ReturnPromiseType
-} from "@nu-art/ts-common";
+import {Dispatcher, FunctionKeys, ParamResolver, ReturnTypeResolver} from '@nu-art/ts-common';
 
-export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>>
-	extends Dispatcher<T, K> {
+
+// type ValidKeyResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? K : never
+
+export class ThunderDispatcher<T,
+	K extends FunctionKeys<T>,
+	P extends ParamResolver<T, K> = ParamResolver<T, K>,
+	R extends ReturnTypeResolver<T, K> = ReturnTypeResolver<T, K>>
+	extends Dispatcher<T, K, P, R> {
 
 	static readonly listenersResolver: () => any[];
 
@@ -34,32 +36,35 @@ export class ThunderDispatcher<T extends object, K extends FunctionKeys<T>>
 		super(method);
 	}
 
-	public dispatchUI(p: Parameters<T[K]>): ReturnPromiseType<T[K]>[] {
+	public dispatchUI(...p: P): R[] {
 		const listeners = ThunderDispatcher.listenersResolver();
-		return listeners.filter(this.filter).map((listener: T) => listener[this.method](...p));
+		return listeners.filter(this.filter).map((listener: T) => {
+			// @ts-ignore
+			return listener[this.method](...p);
+		});
 	}
 
-	public async dispatchUIAsync(p: Parameters<T[K]>): Promise<ReturnPromiseType<T[K]>[]> {
+	public async dispatchUIAsync(...p: P): Promise<R[]> {
 		const listeners = ThunderDispatcher.listenersResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
-			const params: any = p;
-			return listener[this.method](...params);
+			// @ts-ignore
+			return listener[this.method](...p);
 		}));
 	}
 
-	public dispatchAll(p: Parameters<T[K]>): ReturnPromiseType<T[K]>[] {
-		const moduleResponses = this.dispatchModule(p)
-		const uiResponses = this.dispatchUI(p);
-		return [...moduleResponses,...uiResponses]
+	public dispatchAll(...p: P): R[] {
+		const moduleResponses = this.dispatchModule(...p);
+		const uiResponses = this.dispatchUI(...p);
+		return [...moduleResponses, ...uiResponses];
 	}
 
-	public async dispatchAllAsync(p: Parameters<T[K]>): Promise<ReturnPromiseType<T[K]>[]> {
+	public async dispatchAllAsync(...p: P): Promise<R[]> {
 		const listenersUI = ThunderDispatcher.listenersResolver();
 		const listenersModules = Dispatcher.modulesResolver();
 
 		return Promise.all(listenersUI.concat(listenersModules).filter(this.filter).map(async (listener: T) => {
-			const params: any = p;
-			return listener[this.method](...params);
+			// @ts-ignore
+			return listener[this.method](...p);
 		}));
 	}
 }

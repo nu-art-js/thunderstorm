@@ -198,7 +198,7 @@ async function isAssignUsersPermissions(data: ConfigDB, assignUserObj: AssignUse
 		if (assignUserObj.runTwice) {
 			await UserPermissionsDB.assignAppPermissions(assignAppPermissionsObj);
 		}
-	} catch (e) {
+	} catch (e:any) {
 		return false;
 	}
 

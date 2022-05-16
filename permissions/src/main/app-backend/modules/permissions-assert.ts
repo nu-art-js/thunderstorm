@@ -16,39 +16,14 @@
  * limitations under the License.
  */
 
-import {
-	_keys,
-	BadImplementationException,
-	batchActionParallel,
-	filterDuplicates,
-	Module,
-	StringMap
-} from "@nu-art/ts-common";
-import {
-	ApiException,
-	ExpressRequest,
-	HttpRequestData,
-	ServerApi_Middleware
-} from "@nu-art/thunderstorm/backend";
-import {
-	Base_AccessLevels,
-	DB_PermissionAccessLevel,
-	DB_PermissionApi,
-	DB_PermissionsGroup,
-	DB_PermissionsUser,
-	User_Group
-} from "../..";
-import {
-	AccessLevelPermissionsDB,
-	ApiPermissionsDB
-} from "./db-types/managment";
-import {
-	GroupPermissionsDB,
-	UserPermissionsDB
-} from "./db-types/assign";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {AccountModule} from "@nu-art/user-account/backend";
-import {PermissionsModule} from "./PermissionsModule";
+import {_keys, BadImplementationException, batchActionParallel, filterDuplicates, Module, StringMap} from '@nu-art/ts-common';
+import {ApiException, ExpressRequest, HttpRequestData, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
+import {Base_AccessLevels, DB_PermissionAccessLevel, DB_PermissionApi, DB_PermissionsGroup, DB_PermissionsUser, User_Group} from '../..';
+import {AccessLevelPermissionsDB, ApiPermissionsDB} from './db-types/managment';
+import {GroupPermissionsDB, UserPermissionsDB} from './db-types/assign';
+import {HttpMethod} from '@nu-art/thunderstorm';
+import {PermissionsModule} from './PermissionsModule';
+import {AccountModuleBE} from '@nu-art/user-account/backend';
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
 export type GroupPairWithBaseLevelsObj = { accessLevels: Base_AccessLevels[], customFields: StringMap[] };
@@ -61,10 +36,10 @@ type Config = {
 export class PermissionsAssert_Class
 	extends Module<Config> {
 
-	readonly Middleware = (keys: string[]): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
+	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
 		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
 
-			const account = await AccountModule.validateSession(req);
+			const account = await AccountModuleBE.validateSession(req);
 			return this.assertUserPermissions(projectId, data.url, account._id, customFields);
 		})(req, data);
 	};
@@ -93,7 +68,7 @@ export class PermissionsAssert_Class
 			if (oElement === undefined || oElement === null)
 				return;
 
-			if (typeof oElement !== "string")
+			if (typeof oElement !== 'string')
 				return;
 
 			customFields[key] = oElement;
@@ -151,7 +126,7 @@ export class PermissionsAssert_Class
 		}
 
 		if (!groupMatch) {
-			throw new ApiException(403, "Action Forbidden");
+			throw new ApiException(403, 'Action Forbidden');
 		}
 	}
 
@@ -184,7 +159,7 @@ export class PermissionsAssert_Class
 		groups.forEach(group => {
 			const existUserGroupItem = userGroups.find(groupItem => groupItem.groupId === group._id);
 			if (!existUserGroupItem)
-				throw new BadImplementationException("You are missing group in your code implementation");
+				throw new BadImplementationException('You are missing group in your code implementation');
 
 			userGroups.forEach((userGroup) => {
 				if (userGroup.groupId === group._id) {
@@ -221,8 +196,8 @@ export class PermissionsAssert_Class
 					apiDb,
 					requestPermissions
 				});
-			}catch (e) {
-				return
+			} catch (e: any) {
+				return;
 			}
 		}));
 	}
@@ -289,7 +264,7 @@ export class PermissionsAssert_Class
 
 	private getRegEx(value: string) {
 		if (!value)
-			return new RegExp(`^${value}$`, "g");
+			return new RegExp(`^${value}$`, 'g');
 
 		let regExValue = value;
 		const startRegEx = '^';
@@ -300,7 +275,7 @@ export class PermissionsAssert_Class
 		if (value[value.length - 1] !== endRegEx)
 			regExValue = regExValue + endRegEx;
 
-		return new RegExp(regExValue, "g");
+		return new RegExp(regExValue, 'g');
 	}
 }
 

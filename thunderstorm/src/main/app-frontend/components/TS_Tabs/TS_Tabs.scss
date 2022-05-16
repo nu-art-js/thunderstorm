@@ -1,0 +1,95 @@
+/*!
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.ts-tabs {
+
+  //Dimensions
+  width: 100%;
+  min-height: 200px;
+  box-sizing: border-box;
+
+  //Display
+  display: flex;
+  flex-flow: column;
+  justify-content: flex-start;
+
+  //General Children Settings
+  * {
+    box-sizing: border-box;
+  }
+
+  //Children
+  .ts-tabs__tabs-header {
+    //Dimensions
+    height: 40px;
+    width: 100%;
+
+    //Display
+    display: flex;
+    justify-content: flex-start;
+    //Children
+    .ts-tabs__tab {
+      //Dimensions
+      padding-inline: 12px;
+      min-width: 100px;
+      height: 100%;
+
+      //Display
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+
+      //Animations
+      transition: transform 50ms linear;
+
+      //Colors
+      background-color: #ccc;
+      color: black;
+
+      //Border
+      border: 1px solid #808080;
+
+      //Pseudos
+      &.ts-tabs__focused {
+        background-color: #bbb;
+      }
+
+      &:hover {
+        background-color: #bbb;
+      }
+    }
+  }
+
+  .ts-tabs__content {
+    //Dimensions
+    width: 100%;
+    flex-grow: 1;
+
+    //Display:
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #ccc;
+    border: 2px solid #808080;
+  }
+}

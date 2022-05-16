@@ -61,7 +61,7 @@ export class PermissionsApiModule_Class
 			apiArray.push(api);
 		});
 		this.apis = newApis;
-		dispatch_onPermissionsApisLoaded.dispatchUI([]);
+		dispatch_onPermissionsApisLoaded.dispatchUI();
 	}
 
 	getApis(projectId: string): DB_PermissionApi[] {

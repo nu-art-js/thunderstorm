@@ -17,30 +17,19 @@
  * limitations under the License.
  */
 
-import {Logger} from "@nu-art/ts-common";
-import {
-	FirebaseType_Analytics,
-	FirebaseType_CallOptions,
-	FirebaseType_EventNameString
-} from "./types";
-// tslint:disable:no-import-side-effect
-import {
-	CustomParams,
-	logEvent,
-	setAnalyticsCollectionEnabled,
-	setCurrentScreen,
-	setUserId,
-	setUserProperties
-} from "firebase/analytics";
+import {Logger} from '@nu-art/ts-common';
+import {FirebaseType_Analytics, FirebaseType_CallOptions, FirebaseType_EventNameString} from './types';
+import {CustomParams, getAnalytics, logEvent, setAnalyticsCollectionEnabled, setCurrentScreen, setUserId, setUserProperties,} from 'firebase/analytics';
+import {FirebaseApp} from 'firebase/app';
 
 export class AnalyticsWrapper
 	extends Logger {
 
 	private readonly analytics: FirebaseType_Analytics;
 
-	constructor(analytics: FirebaseType_Analytics) {
+	constructor(app: FirebaseApp) {
 		super();
-		this.analytics = analytics;
+		this.analytics = getAnalytics(app);
 	}
 
 	setUserId(userId: string, options?: FirebaseType_CallOptions) {

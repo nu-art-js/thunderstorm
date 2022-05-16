@@ -75,7 +75,7 @@ export function _logger_getPrefix(level: LogLevel) {
 
 export const DefaultLogPrefixComposer: LogPrefixComposer = (tag: string, level: LogLevel): string => {
 	_logger_finalDate.setTime(Date.now() - _logger_timezoneOffset);
-	const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substr(0, 23);
+	const date = _logger_finalDate.toISOString().replace(/T/, '_').replace(/Z/, '').substring(0, 23);
 	return `  ${date} ${_logger_getPrefix(level)} ${tag}:  `;
 };
 

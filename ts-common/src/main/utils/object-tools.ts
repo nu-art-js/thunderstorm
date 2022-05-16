@@ -16,10 +16,7 @@
  * limitations under the License.
  */
 
-import {
-	AssertionException,
-	BadImplementationException
-} from "../index";
+import {AssertionException, BadImplementationException, ObjectTS} from "../index";
 
 
 export function deepClone<T>(obj: T): T {
@@ -36,11 +33,11 @@ export function _keys<T extends { [k: string]: any }, K extends keyof T>(instanc
 	return Object.keys(instance) as K[];
 }
 
-export function _values<T extends object = object>(object: T): (T[keyof T])[] {
+export function _values<T extends ObjectTS = ObjectTS>(object: T): (T[keyof T])[] {
 	return Object.values(object) as (T[keyof T])[]
 }
 
-export function _setTypedProp<T extends object>(instance: T, key: keyof T, value: T[keyof T]) {
+export function _setTypedProp<T extends ObjectTS>(instance: T, key: keyof T, value: T[keyof T]) {
 	instance[key] = value;
 }
 
@@ -48,7 +45,7 @@ export function cloneArr<T>(value: T[]): T[] {
 	return value.map(a => deepClone(a));
 }
 
-export function cloneObj<T extends object>(obj: T): T {
+export function cloneObj<T extends ObjectTS>(obj: T): T {
 	return _keys(obj).reduce(<K extends keyof T>(carry: T, key: K) => {
 		carry[key] = deepClone(obj[key]);
 		return carry

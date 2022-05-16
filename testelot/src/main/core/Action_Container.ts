@@ -19,16 +19,9 @@
 /**
  * Created by TacB0sS on 3/18/17.
  */
-import {
-	Action,
-	ErrorPolicy,
-	Status
-} from "./Action";
+import {Action, ErrorPolicy, Status} from './Action';
 
-import {
-	ContextKey,
-	TypedHashMap
-} from "./ContainerContext";
+import {ContextKey, TypedHashMap} from './ContainerContext';
 
 export abstract class Action_Container
 	extends Action {
@@ -108,7 +101,6 @@ export abstract class Action_Container
 			if (action.status !== Status.Error)
 				continue;
 
-			// noinspection FallThroughInSwitchStatementJS
 			switch (action.policy) {
 				case ErrorPolicy.ContinueOnError:
 					continue;
@@ -117,6 +109,7 @@ export abstract class Action_Container
 					this.setErrorPolicy(ErrorPolicy.SkipOnError);
 					this.setStatus(Status.Error);
 
+				// eslint-disable-next-line no-fallthrough
 				case ErrorPolicy.SkipOnError:
 					this.setStatus(Status.Skipped);
 					break;

@@ -9,22 +9,16 @@
       "node_modules"
     ],
     "predeploy": [
-      "echo \"Trying to deploy DEV env... Failing\" && exit 2"
+      "rm ./app-backend/package-lock.json"
     ]
   },
-  "emulators": {
-    "ui": {
-      "enabled": true,
-      "port": "5555"
-    },
-    "pubsub": {
-      "port": "5004"
-    },
-    "functions": {
-      "port": "5002"
-    },
-    "firestore": {
-      "port": "5003"
-    }
+  "hosting": {
+    "public": "app-frontend/dist",
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
   }
 }

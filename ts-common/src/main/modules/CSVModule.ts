@@ -2,17 +2,12 @@
  * Created by tacb0ss on 07/05/2018.
  */
 
-import {
-	ExportToCsv,
-	Options
-} from 'export-to-csv';
-import {
-	createReadStream,
-	promises as fs
-} from 'fs';
-import csvParser = require("csv-parser/index");
-import { ObjectTS, StringMap } from '../utils/types';
-import { Module } from '../core/module';
+import {ExportToCsv, Options} from 'export-to-csv';
+import {createReadStream, promises as fs} from 'fs';
+import {ObjectTS, StringMap} from '../utils/types';
+import {Module} from '../core/module';
+import {Readable} from 'stream';
+import csvParser = require('csv-parser');
 
 
 type Config = {
@@ -65,22 +60,32 @@ class CSVModule_Class
 
 	async saveToFile<T>(outputFile: string, items: T[], columnsToProps?: WritePropsMap<T>) {
 		const csv = this.csvExporter.generateCsv(items, true);
-		return fs.writeFile(outputFile, csv, {encoding: "utf8"});
+		return fs.writeFile(outputFile, csv, {encoding: 'utf8'});
 	}
 
-	async readCsv<T extends Partial<StringMap>>(inputFile: string, columnsToProps?: ReadPropsMap<T>): Promise<T[]> {
+	async readCsvFromFile<T extends Partial<StringMap>>(inputFile: string, columnsToProps?: ReadPropsMap<T>): Promise<T[]> {
+		const stream = createReadStream(inputFile, {encoding: 'utf8'});
+		return this.readCsvFromStream(stream, columnsToProps);
+	}
+
+	async readCsvFromBuffer<T extends Partial<StringMap>>(buffer: Buffer, columnsToProps?: ReadPropsMap<T>): Promise<T[]> {
+		const stream: Readable = Readable.from(buffer.toString('utf-8'), {encoding: 'utf8'});
+		return this.readCsvFromStream(stream, columnsToProps);
+	}
+
+	async readCsvFromStream<T extends Partial<StringMap>>(stream: Readable, columnsToProps?: ReadPropsMap<T>): Promise<T[]> {
 		return new Promise<T[]>((resolve, reject) => {
 			const results: T[] = [];
 
-			createReadStream(inputFile, {encoding: "utf8"})
+			stream
 				.pipe(csvParser(this.createReadParserOptions(columnsToProps)))
 				.on('data', (instance) => {
-					delete instance["undefined"]
+					delete instance['undefined'];
 					results.push(instance);
 				})
 				.on('error', (err) => reject(err))
 				.on('end', () => resolve(results));
-		})
+		});
 	}
 
 	private createReadParserOptions<T>(columnsToProps?: ReadPropsMap<T>) {

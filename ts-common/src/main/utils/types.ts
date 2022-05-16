@@ -24,19 +24,35 @@ export type Subset<T> = {
 	[P in keyof T]: T[P];
 };
 
-export type OptionalKeys<T extends object> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
-export type MandatoryKeys<T extends object, V extends any = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
+export type OptionalKeys<T extends ObjectTS> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
+export type MandatoryKeys<T extends ObjectTS, V extends any = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
 
-export type RequireOptionals<T extends object, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
+export type RequireOptionals<T extends ObjectTS, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
 	& { [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>> }[Keys]
 
-export type RequireOneOptional<T extends object, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
+export type RequireOneOptional<T extends ObjectTS, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
 	& { [K in Keys]-?: Required<Pick<T, K>> & Partial<Record<Exclude<Keys, K>, undefined>> }[Keys]
+
+export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
+	Pick<T, Exclude<keyof T, Keys>>
+	& {
+	[K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>>
+}[Keys]
+
+export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
+	Pick<T, Exclude<keyof T, Keys>>
+	& {
+	[K in Keys]-?:
+	Required<Pick<T, K>>
+	& Partial<Record<Exclude<Keys, K>, undefined>>
+}[Keys]
+
 
 export type Constructor<T> = new (...args: any) => T
 export type ArrayType<T extends any[]> = T extends (infer I)[] ? I : never;
 
 export type PartialProperties<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
+export type KeyValue = { key: string, value: string };
 
 export type Identity = { id: string };
 
@@ -46,7 +62,22 @@ export type ObjectTS = { [s: string]: any };
 
 export type TypedMap<ValueType> = { [s: string]: ValueType };
 
-export type DB_Object = { _id: string }
+export type TypedMapValue<T extends ObjectTS, ValueType> = { [P in keyof T]: ValueType };
+
+export type AtLeast<T, K extends keyof T> = Partial<T> & Pick<T, K>
+
+export type DB_BaseObject = {
+	_id: string;
+}
+export type DB_Object = DB_BaseObject & {
+	_v?: string
+	__created: number;
+	__updated: number;
+}
+
+export type PreDBObject<T extends DB_Object> = PartialProperties<T, keyof DB_Object>;
+export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
+export type Draftable = { _isDraft: boolean };
 
 export type Auditable = {
 	_audit?: AuditBy;
@@ -64,7 +95,7 @@ export type Timestamp = {
 	timezone?: string;
 };
 
-export type FunctionKeys<T> = { [K in keyof T]: T[K] extends Function ? K : never }[keyof T];
+export type FunctionKeys<T> = { [K in keyof T]: T[K] extends (...args: any) => any ? K : never }[keyof T];
 
 export const Void = (() => {
 })();

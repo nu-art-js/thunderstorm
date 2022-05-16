@@ -16,78 +16,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	__stringify,
-	BadImplementationException,
-	Dispatcher,
-	generateHex,
-	Minute,
-	Module,
-	Queue
-} from "@nu-art/ts-common";
-import {
-	BaseHttpModule_Class,
-	BaseHttpRequest,
-	ErrorResponse,
-	HttpMethod,
-	TS_Progress
-} from "@nu-art/thunderstorm";
+import {__stringify, _keys, BadImplementationException, Dispatcher, generateHex, Minute, Module, Queue} from '@nu-art/ts-common';
+import {BaseHttpModule_Class, BaseHttpRequest, ErrorResponse, HttpMethod, TS_Progress} from '@nu-art/thunderstorm';
 
 import {
 	Api_GetUploadUrl,
+	Api_ProcessAssetManually,
 	BaseUploaderFile,
-	DB_Temp_File,
+	FileInfo,
+	FileStatus,
+	FileUploadResult,
+	OnFileStatusChanged,
+	Push_FileUploaded,
+	PushKey_FileUploaded,
 	Request_Uploader,
+	RequestKey_ProcessAssetManually,
+	RequestKey_UploadFile,
+	RequestKey_UploadUrl,
 	TempSecureUrl
-} from "../../shared/types";
+} from '../../shared/types';
+import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
+import {DB_Notifications} from '@nu-art/push-pub-sub';
 
-const RequestKey_UploadUrl = 'get-upload-url';
-const RequestKey_UploadFile = 'upload-file';
-
-export enum FileStatus {
-	ObtainingUrl   = "ObtainingUrl",
-	UrlObtained    = "UrlObtained",
-	UploadingFile  = "UploadingFile",
-	// I can assume that in between I upload and I get
-	// the push I'm processing the file in the be
-	PostProcessing = "PostProcessing",
-	Completed      = "Completed",
-	Error          = "Error"
-}
-
-export type FileInfo = {
-	status: FileStatus
-	messageStatus?: string
-	progress?: number
-	name: string
-	request?: BaseHttpRequest<any>
-	file?: any
-	tempDoc?: DB_Temp_File
-};
-
-export interface OnFileStatusChanged {
-	__onFileStatusChanged: (id?: string) => void
-}
 
 export type FilesToUpload = Request_Uploader & {
 	// Unfortunately be doesnt know File and File doesnt map to ArrayBuffer
 	file: any
 }
 
-type Config = {
+export type UploaderConfig = {
+	manualProcessTriggering: boolean
 	uploadQueueParallelCount?: number
 }
 
-export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class, CustomConfig extends object = {}>
-	extends Module<Config & CustomConfig> {
+export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class, Config extends UploaderConfig = UploaderConfig>
+	extends Module<Config>
+	implements OnPushMessageReceived<Push_FileUploaded> {
+
 	protected files: { [id: string]: FileInfo } = {};
-	private readonly uploadQueue: Queue = new Queue("File Uploader").setParallelCount(2);
+	private readonly uploadQueue: Queue = new Queue('File Uploader').setParallelCount(1);
 	protected readonly dispatch_fileStatusChange = new Dispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 	private httpModule: HttpModule;
 
 	protected constructor(httpModule: HttpModule) {
 		super();
 		this.httpModule = httpModule;
+		this.setDefaultConfig({manualProcessTriggering: false} as Partial<Config>);
+	}
+
+	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
+		if (notification.pushKey !== PushKey_FileUploaded)
+			return;
+
+		const data = notification.data;
+		if (!data)
+			return this.logError('file upload push without data');
+
+		const feId = data.asset.feId;
+		if (!feId)
+			return this.logError('file upload push without feId');
+
+		this.setFileInfo(feId, data);
 	}
 
 	init() {
@@ -101,20 +90,24 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 		return this.files[id] && this.files[id][key];
 	}
 
-	getFullFileInfo(id: string): FileInfo | undefined {
+	getFullFileInfo(id?: string): FileInfo | undefined {
+		if (!id)
+			return undefined;
+
 		return this.files[id];
 	}
 
-	protected setFileInfo<K extends keyof FileInfo>(id: string, key: K, value: FileInfo[K]) {
-		if (!this.files[id])
-			throw new BadImplementationException(`Trying to set ${key} for non existent file with id: ${id}`);
+	protected setFileInfo<K extends keyof FileInfo>(feId: string, values: Partial<FileInfo>) {
+		const fileInfo = this.files[feId];
+		if (!fileInfo)
+			return this.logError(`file upload push received, but no file info exists for ${feId}`);
 
-		this.files[id][key] = value;
-		this.dispatchFileStatusChange(id);
+		_keys(values).forEach(key => fileInfo[key] = values[key]);
+		this.dispatchFileStatusChange(feId);
 	}
 
-	protected dispatchFileStatusChange(id?: string) {
-		this.dispatch_fileStatusChange.dispatchModule([id]);
+	protected dispatchFileStatusChange(id: string) {
+		this.dispatch_fileStatusChange.dispatchModule(id);
 	}
 
 	uploadImpl(files: FilesToUpload[]): BaseUploaderFile[] {
@@ -142,17 +135,19 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 
 		this
 			.httpModule
-			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl)
+			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl, body.map(file => file.feId))
 			.setRelativeUrl('/v1/upload/get-url')
 			.setJsonBody(body)
 			.setOnError((request: BaseHttpRequest<any>, resError?: ErrorResponse) => {
 				body.forEach(f => {
-					this.setFileInfo(f.feId, "messageStatus", __stringify(resError?.debugMessage));
-					this.setFileInfo(f.feId, "status", FileStatus.Error);
+					this.setFileInfo(f.feId, {
+						messageStatus: __stringify(resError?.debugMessage),
+						status: FileStatus.Error
+					});
 				});
 			})
 			.execute(async (response: TempSecureUrl[]) => {
-				body.forEach(f => this.setFileInfo(f.feId, "status", FileStatus.UrlObtained));
+				body.forEach(f => this.setFileInfo(f.feId, {status: FileStatus.UrlObtained}));
 				if (!response)
 					return;
 
@@ -168,42 +163,62 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 		await this.subscribeToPush(response);
 
 		response.forEach(r => {
-			const feId = r.tempDoc.feId;
+			const feId = r.asset.feId;
 			this.uploadQueue.addItem(async () => {
 				await this.uploadFile(r);
 				delete this.files[feId].file;
-				this.setFileInfo(feId, "progress", undefined);
+				this.setFileInfo(feId, {progress: 0});
 				//TODO: Probably need to set a timer here in case we dont get a push back (contingency)
 			}, () => {
-				this.setFileInfo(feId, "status", FileStatus.PostProcessing);
+				this.setFileInfo(feId, {status: FileStatus.WaitingForProcessing});
+				if (this.config.manualProcessTriggering)
+					this.processAssetManually(feId);
 			}, error => {
-				this.setFileInfo(feId, "status", FileStatus.Error);
-				this.setFileInfo(feId, "messageStatus", __stringify(error));
+				this.setFileInfo(feId, {
+					messageStatus: __stringify(error),
+					status: FileStatus.Error
+				});
 			});
 		});
 	};
 
+
 	private uploadFile = async (response: TempSecureUrl) => {
-		const feId = response.tempDoc.feId;
-		this.setFileInfo(feId, "status", FileStatus.UploadingFile);
-		this.setFileInfo(feId, "tempDoc", response.tempDoc);
+		const feId = response.asset.feId;
+		this.setFileInfo(feId, {
+			status: FileStatus.UploadingFile,
+			asset: response.asset
+		});
+
 		const fileInfo = this.files[feId];
 		if (!fileInfo)
-			throw new BadImplementationException(`Missing file with id ${feId} and name: ${response.tempDoc.name}`);
+			throw new BadImplementationException(`Missing file with id ${feId} and name: ${response.asset.name}`);
 
 		const request = this
 			.httpModule
-			.createRequest(HttpMethod.PUT, RequestKey_UploadFile)
+			.createRequest(HttpMethod.PUT, RequestKey_UploadFile, feId)
 			.setUrl(response.secureUrl)
-			.setHeader('Content-Type', response.tempDoc.mimeType)
+			.setHeader('Content-Type', response.asset.mimeType)
 			.setTimeout(20 * Minute)
 			.setBody(fileInfo.file)
 			.setOnProgressListener((ev: TS_Progress) => {
-				this.setFileInfo(feId, "progress", ev.loaded / ev.total);
+				this.setFileInfo(feId, {progress: ev.loaded / ev.total});
 			});
 
-		this.setFileInfo(feId, "request", request);
+		fileInfo.request = request;
 		await request.executeSync();
+	};
+
+	processAssetManually = (feId?: string) => {
+		const request = this
+			.httpModule
+			.createRequest<Api_ProcessAssetManually>(HttpMethod.GET, RequestKey_ProcessAssetManually, feId)
+			.setRelativeUrl('/v1/upload/process-asset-manually');
+
+		if (feId)
+			request.setUrlParam('feId', feId);
+
+		request.execute();
 	};
 }
 

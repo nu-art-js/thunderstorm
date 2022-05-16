@@ -20,7 +20,7 @@ import {
 	Auditable,
 	StringMap
 } from "@nu-art/ts-common";
-import {DB_Object} from "@nu-art/firebase";
+import {DB_Object} from "@nu-art/ts-common";
 
 export type Base_AccessLevels = {
 	domainId: string,

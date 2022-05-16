@@ -19,19 +19,15 @@
  * limitations under the License.
  */
 
-import {HttpRequestData} from "./server-api";
-import {ApiException} from "../../exceptions";
-import {HttpErrorHandler} from "./HttpServer";
-import {
-	__stringify,
-	_keys,
-	StringMap
-} from "@nu-art/ts-common";
+import {HttpRequestData} from './server-api';
+import {ApiException} from '../../exceptions';
+import {HttpErrorHandler} from './HttpServer';
+import {__stringify, _keys, StringMap} from '@nu-art/ts-common';
 
 
 export type AppPropsResolver = (requestData: HttpRequestData) => Promise<StringMap>;
 const _propsResolver: AppPropsResolver = async () => {
-	return {} as StringMap
+	return {} as StringMap;
 };
 
 export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], propsResolver: AppPropsResolver = _propsResolver): HttpErrorHandler {
@@ -39,13 +35,13 @@ export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], p
 		const {headers, query, url, body} = requestData;
 
 		const props = await propsResolver(requestData);
-		console.log("props: ", props);
-		let slackMessage = "";
-		slackMessage += `${error ? error.responseCode : "000"} - ${url}   \n\n`;
+		console.log('props: ', props);
+		let slackMessage = '';
+		slackMessage += `${error ? error.responseCode : '000'} - ${url}   \n\n`;
 
 		const propsAsString = _keys(props).reduce((toRet, key) => {
 			return `${toRet}    ${key}: ${props[key]}\n`;
-		}, "");
+		}, '');
 
 		if (props && Object.keys(props).length > 0)
 			slackMessage += `App Data:\n${propsAsString}\n`;
@@ -54,13 +50,13 @@ export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], p
 			const cause = error.cause || error;
 			if (cause && cause.stack) {
 				slackMessage += `${cause.stack
-				                        .replace(/\/srv\/dist\//g, '@')
-				                        .replace(/\/srv\/node_modules/g, '')
-				                        .replace(/\\n/g, `\n`)
-				                        .replace(/\\"/g, `"`)
-				                        .replace(/\\t/g, '')
-				                        .replace(/\/@nu-art/g, '')}\n`;
-				slackMessage += "--------------------------------------------------------------------------------------\n";
+					.replace(/\/srv\/dist\//g, '@')
+					.replace(/\/srv\/node_modules/g, '')
+					.replace(/\\n/g, `\n`)
+					.replace(/\\"/g, `"`)
+					.replace(/\\t/g, '')
+					.replace(/\/@nu-art/g, '')}\n`;
+				slackMessage += '--------------------------------------------------------------------------------------\n';
 			}
 		}
 
@@ -74,21 +70,21 @@ export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], p
 		if (_headers && Object.keys(_headers).length > 0)
 			slackMessage += `Headers: ${__stringify(_headers)}\n`;
 		else
-			slackMessage += "Headers: -- No Included Headers --\n";
+			slackMessage += 'Headers: -- No Included Headers --\n';
 
 		if (query) {
 			if (query && Object.keys(query).length > 0)
 				slackMessage += `Query: ${__stringify(query, true)}\n`;
 			else
-				slackMessage += "Query: -- No Query --\n";
+				slackMessage += 'Query: -- No Query --\n';
 		}
 
 		if (body) {
 			if (body && Object.keys(body).length > 0)
 				slackMessage += `Body: ${__stringify(body)}\n`;
 			else
-				slackMessage += "Body: -- No Body --\n";
+				slackMessage += 'Body: -- No Body --\n';
 		}
-		return slackMessage
-	}
-};
+		return slackMessage;
+	};
+}

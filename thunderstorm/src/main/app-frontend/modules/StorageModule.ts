@@ -22,14 +22,11 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {
-	merge,
-	Module
-} from "@nu-art/ts-common";
-import {ThunderDispatcher} from "../core/thunder-dispatcher";
+import {merge, Module, ObjectTS} from '@nu-art/ts-common';
+import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
 export interface StorageKeyEvent {
-	__onStorageKeyEvent(event: StorageEvent): void
+	__onStorageKeyEvent(event: StorageEvent): void;
 }
 
 export class StorageModule_Class
@@ -42,8 +39,8 @@ export class StorageModule_Class
 
 	private handleStorageEvent = (e: StorageEvent) => {
 		const dispatcher = new ThunderDispatcher<StorageKeyEvent, '__onStorageKeyEvent'>('__onStorageKeyEvent');
-		dispatcher.dispatchUI([e]);
-		dispatcher.dispatchModule([e]);
+		dispatcher.dispatchUI(e);
+		dispatcher.dispatchModule(e);
 	};
 
 	getStorage = (persist: boolean) => persist ? localStorage : sessionStorage;
@@ -73,7 +70,10 @@ export class StorageModule_Class
 		value = this.getStorage(persist).getItem(key);
 		// this.logDebug(`get: ${key} = ${value}`)
 		if (!value)
-			return defaultValue || null;
+			if (defaultValue === null || defaultValue === undefined)
+				return null;
+			else
+				return defaultValue;
 
 		return this.cache[key] = JSON.parse(value);
 	}
@@ -89,12 +89,22 @@ export class StorageModule_Class
 					try {
 						const exp = JSON.parse(item);
 						toRet.push(exp);
-					} catch (e) {
+					} catch (e: any) {
+						this.logError(e);
 					}
 				}
 			}
 		}
 		return toRet;
+	}
+
+	public deleteAll<T>(query: RegExp) {
+		for (let i = 0; i < localStorage.length; i++) {
+			const key = localStorage.key(i);
+			if (key?.match(query)) {
+				localStorage.removeItem(key)
+			}
+		}
 	}
 }
 
@@ -115,7 +125,7 @@ export class StorageKey<ValueType = string | number | object> {
 		return StorageModule.get(this.key, defaultValue, this.persist) as unknown as ValueType;
 	}
 
-	patch(value: ValueType extends object ? Partial<ValueType> : ValueType) {
+	patch(value: ValueType extends ObjectTS ? Partial<ValueType> : ValueType) {
 		const previousValue = this.get();
 		const mergedValue = merge(previousValue, value);
 		this.set(mergedValue);

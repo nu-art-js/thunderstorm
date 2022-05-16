@@ -18,5 +18,33 @@
 
 export function padNumber(num: number | string, length: number): string {
 	const _num = num.toString();
-	return _num.length < length ? padNumber("0" + _num, length) : _num;
+	return _num.length < length ? padNumber('0' + _num, length) : _num;
 }
+
+export function stringToHashCode(stringToHash: string) {
+	let hash = 0;
+	if (stringToHash.length === 0)
+		return hash;
+
+	for (let i = 0; i < stringToHash.length; i++) {
+		hash = ((hash << 5) - hash) + stringToHash.charCodeAt(i);
+		hash = hash & hash; // Convert to 32bit integer
+	}
+
+	return hash;
+}
+
+export function escape_RegExp(string: string) {
+	return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+export function stringFormat(input: string, params: string[] = []) {
+	return params?.reduce((toRet: string, param, index) => {
+		return toRet.replace(new RegExp(`\\{${index}\\}`, 'g'), param);
+	}, input || '') || input;
+}
+
+export function capitalizeFirstLetter(value: string) {
+	return value.charAt(0).toUpperCase() + value.substr(1).toLowerCase();
+}
+

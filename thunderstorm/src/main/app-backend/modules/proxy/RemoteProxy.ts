@@ -18,22 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	ImplementationMissingException,
-	Module,
-	ObjectTS
-} from "@nu-art/ts-common";
+import {ImplementationMissingException, Module, ObjectTS} from '@nu-art/ts-common';
 
-import {
-	HeaderKey,
-	ServerApi_Middleware
-} from "../server/HttpServer";
-import {ApiException} from "../../exceptions";
-import {HttpRequestData} from "../server/server-api";
-import {
-	ExpressRequest,
-	QueryRequestInfo
-} from "../../utils/types";
+import {HeaderKey, ServerApi_Middleware} from '../server/HttpServer';
+import {ApiException} from '../../exceptions';
+import {HttpRequestData} from '../server/server-api';
+import {ExpressRequest, QueryRequestInfo} from '../../utils/types';
 
 type ProxyConfig = {
 	extras?: ObjectTS
@@ -56,7 +46,8 @@ export class RemoteProxy_Class<Config extends RemoteProxyConfig>
 		let data: string | undefined;
 		try {
 			data = this.proxyHeader.get(request);
-		} catch (e) {
+		} catch (e: any) {
+			this.logError(e);
 		}
 		return {
 			key: this.getName(),
@@ -72,7 +63,7 @@ export class RemoteProxy_Class<Config extends RemoteProxyConfig>
 
 	protected init(): void {
 		if (!this.config)
-			throw new ImplementationMissingException("MUST specify config for this module!!");
+			throw new ImplementationMissingException('MUST specify config for this module!!');
 
 		if (!this.config.secretHeaderName)
 			this.config.secretHeaderName = 'x-secret';
@@ -86,7 +77,7 @@ export class RemoteProxy_Class<Config extends RemoteProxyConfig>
 
 	assertSecret(request: ExpressRequest) {
 		if (!this.secretHeader || !this.proxyHeader)
-			throw new ImplementationMissingException("MUST add RemoteProxy to your module list!!!");
+			throw new ImplementationMissingException('MUST add RemoteProxy to your module list!!!');
 
 		const secret = this.secretHeader.get(request);
 		const proxyId = this.proxyHeader.get(request);

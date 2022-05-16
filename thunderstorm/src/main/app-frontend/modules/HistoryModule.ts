@@ -22,17 +22,11 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {
-	_keys,
-	Module,
-} from "@nu-art/ts-common";
-import {
-	createBrowserHistory,
-	History,
-	LocationDescriptorObject
-} from "history";
-import {QueryParams} from "../../index";
+import {_keys, Module,} from '@nu-art/ts-common';
+import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
+import {QueryParams} from '../../index';
 
+// move all the shit from here to the Routing module
 export class BrowserHistoryModule_Class
 	extends Module {
 	private readonly history: History<any>;
@@ -51,7 +45,7 @@ export class BrowserHistoryModule_Class
 	}
 
 	private composeQuery(queryParams: QueryParams) {
-		const queryAsString = _keys(queryParams).map((key) => `${key}=${queryParams[key]}`).join("&");
+		const queryAsString = _keys(queryParams).map((key) => `${key}=${queryParams[key]}`).join('&');
 		if (queryAsString.length === 0)
 			return undefined;
 
@@ -64,18 +58,18 @@ export class BrowserHistoryModule_Class
 		if (!queryAsString || queryAsString.length === 0)
 			return {};
 
-		while (true) {
-			if (queryAsString.startsWith("?"))
+		while (queryAsString.startsWith('?') || queryAsString.startsWith('/?')) {
+			if (queryAsString.startsWith('?'))
 				queryAsString = queryAsString.substring(1);
-			else if (queryAsString.startsWith("/?"))
-				queryAsString = queryAsString.substring(1);
+			else if (queryAsString.startsWith('/?'))
+				queryAsString = queryAsString.substring(2);
 			else
 				break;
 		}
 
-		const query = queryAsString.split("&");
+		const query = queryAsString.split('&');
 		return query.map(param => {
-			const parts = param.split("=");
+			const parts = param.split('=');
 			return {key: parts[0], value: parts[1]};
 		}).reduce((toRet, param) => {
 			if (param.key && param.value)
@@ -136,15 +130,15 @@ export class BrowserHistoryModule_Class
 
 	private createHistoryDataFromQueryParams(encodedQueryParams?: QueryParams, pathname: string = window.location.pathname) {
 		return {
-			pathname: !pathname.endsWith("/") ? pathname : pathname.substring(0, pathname.length - 1),
-			search: !encodedQueryParams ? "" : this.composeQuery(encodedQueryParams)
+			pathname: !pathname.endsWith('/') ? pathname : pathname.substring(0, pathname.length - 1),
+			search: !encodedQueryParams ? '' : this.composeQuery(encodedQueryParams)
 		};
 	}
 
 	private updateQueryParams(encodedQueryParams: QueryParams) {
 		const data = this.createHistoryDataFromQueryParams(encodedQueryParams);
 
-		this.push(data);
+		this.replace(data);
 	}
 
 	getOrigin() {
@@ -158,6 +152,22 @@ export class BrowserHistoryModule_Class
 	getHistory() {
 		return this.history;
 	}
+
+	getQueryParameter(name: string) {
+		return BrowserHistoryModule.getQueryParams()[name];
+	}
+
+	getCurrentUrl() {
+		return BrowserHistoryModule.getCurrent().pathname;
+	}
+}
+
+export function getCurrentUrl() {
+	return BrowserHistoryModule.getCurrentUrl();
+}
+
+export function getQueryParameter(name: string) {
+	return BrowserHistoryModule.getQueryParameter(name);
 }
 
 export const BrowserHistoryModule = new BrowserHistoryModule_Class();

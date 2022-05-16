@@ -22,7 +22,7 @@ import {
 	ServerApi
 } from "@nu-art/thunderstorm/backend";
 import {
-	AccountModule,
+	AccountModuleBE,
 	Request_AddNewAccount,
 	AccountApi_AddNewAccount
 } from "../api/v1/account/_imports";
@@ -40,6 +40,6 @@ export class ServerApi_Account_AddNewAccount
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_AddNewAccount) {
 		this.assertProperty(body, ["email"]);
 
-		return AccountModule.addNewAccount(body.email, body.password, body.password_check);
+		return AccountModuleBE.addNewAccount(body.email, body.password, body.password_check);
 	}
 }

@@ -1,0 +1,30 @@
+{
+  "functions": {
+    "source": "app-backend",
+    "ignore": [
+      "src",
+      ".config",
+      "dist-test",
+      "deploy.js",
+      "node_modules"
+    ],
+    "predeploy": [
+      "echo \"Trying to deploy LOCAL env... Failing\" && exit 2"
+    ]
+  },
+  "emulators": {
+    "ui": {
+      "enabled": true,
+      "port": "5555"
+    },
+    "pubsub": {
+      "port": "5004"
+    },
+    "functions": {
+      "port": "5000"
+    },
+    "firestore": {
+      "port": "5003"
+    }
+  }
+}

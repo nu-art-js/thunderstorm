@@ -1,6 +1,8 @@
 /*
- * Permissions management system, define access level for each of 
- * your server apis, and restrict users by giving them access levels
+ * Database API Generator is a utility library for Thunderstorm.
+ *
+ * Given proper configurations it will dynamically generate APIs to your Firestore
+ * collections, will assert uniqueness and restrict deletion... and more
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,50 +18,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DB_Object} from "@nu-art/firebase";
-import {
-	ApiWithBody,
-	ApiWithQuery,
-	HttpMethod,
-} from "@nu-art/thunderstorm";
+import {FirestoreQuery} from '@nu-art/firebase';
+import {DB_BaseObject, DB_Object, PreDBObject} from '@nu-art/ts-common';
+import {ApiWithBody, ApiWithQuery, HttpMethod,} from '@nu-art/thunderstorm';
 
 export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
-	Create: {
+	Upsert: {
 		method: HttpMethod.POST,
-		key: "create",
-		suffix: "create"
+		key: 'upsert',
+		suffix: 'upsert'
 	},
-	Update: {
+	Patch: {
 		method: HttpMethod.POST,
-		key: "update",
-		suffix: "update"
+		key: 'patch',
+		suffix: 'patch'
 	},
 	Delete: {
 		method: HttpMethod.GET, // delete doesn't works, so we changed it to get
-		key: "delete",
-		suffix: "delete"
+		key: 'delete',
+		suffix: 'delete'
 	},
 	Unique: {
 		method: HttpMethod.GET,
-		key: "unique",
-		suffix: "unique"
+		key: 'unique',
+		suffix: 'unique'
 	},
 	Query: {
 		method: HttpMethod.POST,
-		key: "query",
-		suffix: "query"
+		key: 'query',
+		suffix: 'query'
 	},
 };
 
-export const ErrorKey_BadInput = "bad-input";
+export const ErrorKey_BadInput = 'bad-input';
 
 export type BadInputErrorBody = { path: string, input?: string };
 
 export type GenericApiDef = { method: HttpMethod, key: string, suffix?: string };
 
-export type ApiBinder_DBCreate<DBType extends DB_Object, RequestType extends Omit<DBType, "_id"> = Omit<DBType, "_id">> = ApiWithBody<string, RequestType, DBType>;
-export type ApiBinder_DBDelete<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_Object>;
-export type ApiBinder_DBUniuqe<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_Object>;
-export type ApiBinder_DBUpdate<DBType extends DB_Object> = ApiWithBody<string, DBType, DBType>;
-export type ApiBinder_DBQuery<DBType extends DB_Object> = ApiWithBody<string, Partial<DBType>, DBType[]>;
+export type ApiBinder_DBUpsert<DBType extends DB_Object, RequestType extends PreDBObject<DBType> = PreDBObject<DBType>> = ApiWithBody<string, RequestType, DBType>;
+export type ApiBinder_DBDelete<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;
+export type ApiBinder_DBUnique<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;
+export type ApiBinder_DBPatch<DBType extends DB_Object> = ApiWithBody<string, Partial<DBType> & DB_BaseObject, DBType>;
+export type ApiBinder_DBQuery<DBType extends DB_Object> = ApiWithBody<string, FirestoreQuery<DBType>, DBType[]>;
 

@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from "./test-backend/StormTester";
+export * from './test-backend/StormTester';

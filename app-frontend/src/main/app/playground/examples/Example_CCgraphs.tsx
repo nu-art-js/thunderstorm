@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
-import Example_LineGraph, {D3ChartData} from "./d3components/Example_LineGraph";
-import Example_TableGraph, {TableData} from "./d3components/Example_TableGraph";
+import * as React from 'react';
+import {ComponentSync} from '@nu-art/thunderstorm/app-frontend/core/ComponentSync';
+import Example_LineGraph, {D3ChartData} from './d3components/Example_LineGraph';
+import Example_TableGraph, {TableData} from './d3components/Example_TableGraph';
 
 export type Coordinates = {
 	x: number,
@@ -33,25 +33,30 @@ export type Props = {
 	baseValue?: baseValue[]
 }
 
-export class Example_CCgraphs
-	extends BaseComponent<Props, { data: D3ChartData[], tableData: TableData[] }> {
+export class Example_CCgraphs_Renderer
+	extends ComponentSync<Props, { data: D3ChartData[], tableData: TableData[] }> {
 
-	constructor(props: Props) {
-		super(props);
-		this.state = {
+	protected deriveStateFromProps(nextProps: Props): { data: D3ChartData[]; tableData: TableData[]; } {
+		return {
 			data: [{
 				label: 'line 1',
-				data: [{x: 1609545600000, y: 100}, {x: 1609632000000, y: 79}, {x: 1609718400000, y: 98}, {x: 1609804800000, y: 99}, {x: 1609891200000, y: 78}, {x: 1610064000000, y: 101}, {x: 1610236800000, y: 99},
+				data: [{x: 1609545600000, y: 100}, {x: 1609632000000, y: 79}, {x: 1609718400000, y: 98}, {x: 1609804800000, y: 99}, {
+					x: 1609891200000,
+					y: 78
+				}, {x: 1610064000000, y: 101}, {x: 1610236800000, y: 99},
 					{x: 1610323200000, y: 88}, {x: 1610496000000, y: 92}, {x: 1610755200000, y: 95}],
 				color: '#b596b7',
 				baseValue: 95
 			}
-			, {
-				label: 'line 2',
-				data: [{x: 1609545600000, y: 88}, {x: 1609632000000, y: 72}, {x: 1609718400000, y: 71}, {x: 1609804800000, y: 84}, {x: 1609891200000, y: 90}, {x: 1610064000000, y: 81}],
-				color: '#92c0c0',
-				baseValue: 88
-			}
+				, {
+					label: 'line 2',
+					data: [{x: 1609545600000, y: 88}, {x: 1609632000000, y: 72}, {x: 1609718400000, y: 71}, {x: 1609804800000, y: 84}, {
+						x: 1609891200000,
+						y: 90
+					}, {x: 1610064000000, y: 81}],
+					color: '#92c0c0',
+					baseValue: 88
+				}
 			],
 			tableData: [{
 				label: 'x',
@@ -88,7 +93,7 @@ export class Example_CCgraphs
 		});
 	};
 
-	private axesLabelsX = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+	private axesLabelsX = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 	render() {
 		return <div>
@@ -117,4 +122,4 @@ export class Example_CCgraphs
 }
 
 
-export default Example_CCgraphs;
+export const Example_CCgraphs = {renderer: Example_CCgraphs_Renderer, name: 'CC Graphs'};

@@ -24,7 +24,7 @@ import {
 	generateHex,
 	ThisShouldNotHappenException
 } from "@nu-art/ts-common";
-import {AccountModule} from "@nu-art/user-account/backend";
+import {AccountModuleBE} from "@nu-art/user-account/backend";
 
 
 const apiPath = 'v1/assert/something';
@@ -369,8 +369,8 @@ export function checkInsertUserIfNotExist() {
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
 
-		await AccountModule.loginSAML(userUuid1);
-		const account = await AccountModule.getUser(userUuid1);
+		await AccountModuleBE.loginSAML(userUuid1);
+		const account = await AccountModuleBE.getUser(userUuid1);
 		if (!account)
 			throw new ThisShouldNotHappenException("Created a user and now cannot query for it...");
 
@@ -384,7 +384,7 @@ export function checkInsertUserIfNotExistByExistUser() {
 	const scenario = __scenario("Check insertIfNotExist function by exist user");
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		await AccountModule.loginSAML(userUuid1);
+		await AccountModuleBE.loginSAML(userUuid1);
 		await UserPermissionsDB.upsert({accountId: userUuid1, groups: [], _id: uniqId1});
 		await UserPermissionsDB.insertIfNotExist(userUuid1);
 		await UserPermissionsDB.queryUnique({accountId: userUuid1});

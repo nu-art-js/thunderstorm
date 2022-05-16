@@ -17,14 +17,11 @@
  * limitations under the License.
  */
 
-import {simpleTypeCollection} from "../_core/consts";
-import {__scenario} from "@nu-art/testelot";
-import {
-	BadImplementationException,
-	generateHex
-} from "@nu-art/ts-common";
+import {simpleTypeCollection} from '../_core/consts';
+import {__scenario} from '@nu-art/testelot';
+import {BadImplementationException, generateHex} from '@nu-art/ts-common';
 
-export const scenarioCollectionDeleteInTransaction = __scenario("Delete In Transaction");
+export const scenarioCollectionDeleteInTransaction = __scenario('Delete In Transaction');
 const deleteId = generateHex(8);
 const n = 600;
 
@@ -43,7 +40,7 @@ scenarioCollectionDeleteInTransaction.add(simpleTypeCollection.processClean(`Add
 	// console.log(`Inserted ${n} elements....`);
 }));
 
-scenarioCollectionDeleteInTransaction.add(simpleTypeCollection.processDirty("Trying to Delete Elements", async (collection) => {
+scenarioCollectionDeleteInTransaction.add(simpleTypeCollection.processDirty('Trying to Delete Elements', async (collection) => {
 	// console.log('Deleting a ton of documents');
 	await collection.runInTransaction(transaction => {
 		return transaction.delete(collection, {where: {deleteId: deleteId}});
@@ -51,4 +48,4 @@ scenarioCollectionDeleteInTransaction.add(simpleTypeCollection.processDirty("Try
 	// console.log('Deleted a ton of documents');
 
 	// assert("Expected db to be empty", (await collection.getAll()).length, 0);
-}).expectToFail(BadImplementationException,(e: Error) => e.message.toLowerCase().startsWith("trying to delete")));
+}).expectToFail(BadImplementationException, (e: Error) => e.message.toLowerCase().startsWith('trying to delete')));

@@ -18,57 +18,87 @@
 
 const path = require('path');
 const HtmlWebPackPlugin = require("html-webpack-plugin");
-const WebpackMd5Hash = require('webpack-md5-hash');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const WriteFilePlugin = require('write-file-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const {WebpackManifestPlugin} = require("webpack-manifest-plugin");
 const packageJson = require('./package.json');
 const webpack = require("webpack");
 const sourcePath = path.join(__dirname, './src');
 const swFolder = path.join(__dirname, './src/sw/');
-const swConfig = path.join(__dirname, './src/sw/tsconfig.json');
 const mainFolder = path.join(__dirname, './src/main/');
 const mainConfig = path.join(__dirname, './src/main/tsconfig.json');
 
 module.exports = (env, argv) => {
-
+	env = env.dev ? "dev" : "prod"
 	const envConfig = require(`./_config/${env}`);
-
-	console.log("env: " + env);
-	console.log("argv: " + JSON.stringify(argv));
-	console.log("argv.mode: " + argv.mode);
-	const outputFolder = path.resolve(__dirname, `dist/${envConfig.outputFolder()}`);
+	const outputFolder = path.resolve(__dirname, `dist`);
+	const swChunkName = 'pubsub-sw';
 
 	return {
 		context: sourcePath,
+		target: ["web", "es2017"],
 		entry: {
 			main: './main/index.tsx',
-			ts_service_worker: './sw/index.ts',
+			[swChunkName]: './sw/index.ts',
 		},
 		output: {
 			path: outputFolder,
 			filename: '[name].js',
 			publicPath: '/',
+			clean: true
+		},
+		optimization: {
+			moduleIds: 'deterministic',
+			// minimize: false,
+			splitChunks: {
+				cacheGroups: {
+					defaultVendors: {
+						chunks(chunk) {
+							return chunk.name !== swChunkName;
+						},
+						test: /[\\/]node_modules[\\/]/,
+						name: 'vendors',
+					},
+				},
+			},
 		},
 		devtool: "source-map",
 
 		devServer: {
 			historyApiFallback: true,
 			compress: true,
-			https: !argv.ssl ? undefined : envConfig.getDevServerSSL(),
+			static: outputFolder,
+			server: {type: "https", options: envConfig.getDevServerSSL()},
 			port: envConfig.getHostingPort(),
 		},
 
 		resolve: {
+			fallback: {
+				"fs": false,
+				"tls": false,
+				"net": false,
+				"path": false,
+				"buffer": require.resolve("buffer/"),
+				"zlib": require.resolve("browserify-zlib"),
+				"util": require.resolve("util/"),
+				"http": false,
+				"https": false,
+				"stream": require.resolve("stream-browserify"),
+				"crypto": require.resolve("crypto-browserify"),
+			},
 			alias: {
 				"@modules": path.resolve(__dirname, "src/main/modules"),
-				"@consts": path.resolve(__dirname, "src/main/consts"),
-				"@components": path.resolve(__dirname, "src/main/components"),
-				"@renderers": path.resolve(__dirname, "src/main/renderers"),
-				"@shared": path.resolve(__dirname, "src/main/app-shared"),
+				"@consts": path.resolve(__dirname, "src/main/app/consts"),
+				"@pages": path.resolve(__dirname, "src/main/app/pages"),
+				"@renderers": path.resolve(__dirname, "src/main/app/renderers"),
+				"@components": path.resolve(__dirname, "src/main/app/components"),
+				"@dialog": path.resolve(__dirname, "src/main/app/dialogs"),
 				"@styles": path.resolve(__dirname, "src/main/res/styles"),
 				"@res": path.resolve(__dirname, "src/main/res"),
-				// "@utils": path.resolve(__dirname, "src/main/utils")
+				"@form": path.resolve(__dirname, "src/main/app/form"),
+				"@page": path.resolve(__dirname, "src/main/app/pages"),
+				"@component": path.resolve(__dirname, "src/main/app/components"),
+				"@renderer": path.resolve(__dirname, "src/main/app/renderers"),
 			},
 			extensions: ['.js', '.jsx', '.json', '.ts', '.tsx']
 		},
@@ -76,31 +106,26 @@ module.exports = (env, argv) => {
 		module: {
 			rules: [
 				{
-					test: /sw\/.+\.ts$/,
-					include: [swFolder],
-					exclude: [/node_modules/],
+					test: /main\/.+\.tsx?$/,
+					include: [mainFolder],
 					use: {
-						loader: "awesome-typescript-loader",
+						loader: "ts-loader",
 						options: {
-							configFileName: swConfig,
-							transpileOnly: true,
-							useCache: true
+							configFile: mainConfig
 						}
 					}
 				},
 				{
-					test: /main\/.+\.tsx?$/,
-					include: [mainFolder],
-					exclude: [/node_modules/],
-					use: {
-						loader: "ts-loader",
-						options: {
-							configFile: mainConfig,
-							transpileOnly: true
-						}
-					}
+					test: /sw\/index.ts$/,
+					include: [swFolder],
+					loader: "ts-loader",
 				},
-				{enforce: "pre", test: /\.js$/, loader: "source-map-loader", exclude: [/node_modules/, /dist/, /build/, /__test__/]},
+				{
+					loader: "source-map-loader",
+					enforce: "pre",
+					test: /\.js$/,
+					exclude: [/node_modules/, /dist/, /build/, /__test__/]
+				},
 				{
 					test: /\.[ot]tf$/,
 					use: [
@@ -119,34 +144,22 @@ module.exports = (env, argv) => {
 					exclude: /node_modules/,
 				},
 				{
+					test: /\.[ot]tf$/,
+					type: "asset/resource",
+				},
+				{
 					test: /\.(jpe?g|png|gif|ico|svg)$/i,
-					use: [
-						{
-							loader: 'file-loader',
-							options: {
-								name: '[name].[ext]'
-							}
-						},
-					]
+					type: 'asset/resource'
 				},
 				{
 					test: /\.s?[c|a]ss$/,
 					use: [
 						'style-loader',
 						MiniCssExtractPlugin.loader,
-						{
-							loader: 'css-loader',
-							options: {minimize: envConfig.cssMinify(), importLoaders: 2}
-						},
-						{
-							loader: 'postcss-loader',
-							options: {
-								plugins: () => [
-									require('autoprefixer')
-								],
-							}
-						},
-						'sass-loader'
+						// Translates CSS into CommonJS
+						"css-loader",
+						// Compiles Sass to CSS
+						"sass-loader",
 					]
 				}
 			]
@@ -158,7 +171,7 @@ module.exports = (env, argv) => {
 					'appVersion': `"${packageJson.version}"`
 				}
 			}),
-			new CleanWebpackPlugin(outputFolder),
+			new CleanWebpackPlugin({cleanStaleWebpackAssets: false}),
 			new MiniCssExtractPlugin({
 				filename: 'main/res/styles.[contenthash].css',
 			}),
@@ -168,12 +181,9 @@ module.exports = (env, argv) => {
 				template: "./main/index.ejs",
 				filename: "./index.html",
 				minify: envConfig.htmlMinificationOptions(),
-				excludeChunks: ['ts_service_worker']
+				excludeChunks: [swChunkName]
 			}),
-			// new WebpackMd5Hash(),
-			envConfig.getPrettifierPlugin(),
-			new WriteFilePlugin(),
+			new WebpackManifestPlugin()
 		].filter(plugin => plugin),
-
-	};
+	}
 };
