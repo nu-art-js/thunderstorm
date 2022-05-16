@@ -106,6 +106,10 @@ export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: Va
 		}
 	};
 
+export const tsValidateMD5 = (mandatory = true): Validator<string> => {
+	return tsValidateRegexp(/[a-zA-Z\d]{32}/, mandatory);
+};
+
 export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<string> => {
 	return (path: string, input?: string) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
