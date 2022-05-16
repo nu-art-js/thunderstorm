@@ -25,12 +25,12 @@ import {ModuleManager} from "./module-manager";
 import {BadImplementationException} from "./exceptions";
 import {merge} from "../utils/merge-tools";
 import {Logger} from "./logger/Logger";
+import {ValidatorTypeResolver} from "../validator/validator";
 import {
 	_clearTimeout,
 	_setTimeout,
-	TimerHandler,
-	ValidatorTypeResolver
-} from "..";
+	TimerHandler
+} from "../utils/date-time-tools";
 
 export abstract class Module<Config = any>
 	extends Logger {
