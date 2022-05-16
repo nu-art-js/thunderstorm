@@ -27,6 +27,7 @@ import {LL_H_C} from '../Layouts';
 import {TS_Button} from '../TS_Button';
 import './TS_Dialog.scss';
 
+
 export type DialogButtonModelV2 = {
 	content: React.ReactNode;
 	associatedKeys: string[];
@@ -57,7 +58,6 @@ export abstract class TS_Dialog<P, S = {}>
 	protected renderButtons(...buttons: DialogButtonModelV2[]): React.ReactNode {
 		return <LL_H_C
 			className="ts-dialog__buttons"
-			ref={(instance: HTMLDivElement) => instance?.focus()}
 			tabIndex={-1}
 			onKeyDown={event => {
 				const action = buttons.find(b => b.associatedKeys.includes(event.key))?.action;
