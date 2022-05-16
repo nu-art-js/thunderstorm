@@ -4,7 +4,7 @@ import './_Layouts.scss';
 import {_className} from '../../utils/tools';
 
 
-export type LinearLayoutProps = HTMLProps<HTMLDivElement> & { ref?: React.Ref<any> };
+export type LinearLayoutProps = HTMLProps<HTMLDivElement> & { ref?: React.Ref<any>, innerRef?: React.Ref<HTMLDivElement> };
 
 class LinearLayout
 	extends React.Component<LinearLayoutProps> {
@@ -16,10 +16,13 @@ class LinearLayout
 	}
 
 	render() {
+		const {innerRef, ...props} = this.props;
+
 		return <div
-			{...this.props}
-			className={_className(this.layoutClass, this.props.className)}>
-			{this.props.children}
+			{...props}
+			ref={innerRef}
+			className={_className(this.layoutClass, props.className)}>
+			{props.children}
 		</div>;
 	}
 }
