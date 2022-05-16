@@ -1,25 +1,74 @@
-import {HTMLProps} from 'react';
 import * as React from 'react';
+import {HTMLProps} from 'react';
 import './_Layouts.scss';
 import {_className} from '../../utils/tools';
 
-type LinearLayoutProps = HTMLProps<HTMLDivElement> & { innerRef?: React.RefObject<any>};
 
-const LinearLayout = ((className: string, props: LinearLayoutProps) => {
-	const _props = {...props}
-	delete _props.innerRef;
-	return <div
-		{..._props}
-		ref={props.innerRef}
-		className={_className(className, _props.className)}>
-		{_props.children}
-	</div>;
-});
+export type LinearLayoutProps = HTMLProps<HTMLDivElement> & { ref?: React.Ref<any> };
 
-export const LL_V_L = (props: LinearLayoutProps) => LinearLayout('ll_v_l', props);
-export const LL_V_C = (props: LinearLayoutProps) => LinearLayout('ll_v_c', props);
-export const LL_V_R = (props: LinearLayoutProps) => LinearLayout('ll_v_r', props);
-export const LL_H_T = (props: LinearLayoutProps) => LinearLayout('ll_h_t', props);
-export const LL_H_C = (props: LinearLayoutProps) => LinearLayout('ll_h_c', props);
-export const LL_H_B = (props: LinearLayoutProps) => LinearLayout('ll_h_b', props);
-export const LL_VH_C = (props: LinearLayoutProps) => LinearLayout('ll_v_c match_height flex__justify-center', props);
+class LinearLayout
+	extends React.Component<LinearLayoutProps> {
+	private layoutClass: string;
+
+	constructor(props: LinearLayoutProps, layoutClass: string) {
+		super(props);
+		this.layoutClass = layoutClass;
+	}
+
+	render() {
+		return <div
+			{...this.props}
+			className={_className(this.layoutClass, this.props.className)}>
+			{this.props.children}
+		</div>;
+	}
+}
+
+export class LL_V_L
+	extends LinearLayout {
+	constructor(props: LinearLayoutProps) {
+		super(props, 'll_v_l');
+	}
+}
+
+export class LL_V_C
+	extends LinearLayout {
+	constructor(props: LinearLayoutProps) {
+		super(props, 'll_v_c');
+	}
+}
+
+export class LL_V_R
+	extends LinearLayout {
+	constructor(props: LinearLayoutProps) {
+		super(props, 'll_v_r');
+	}
+}
+
+export class LL_H_T
+	extends LinearLayout {
+	constructor(props: LinearLayoutProps) {
+		super(props, 'll_h_t');
+	}
+}
+
+export class LL_H_C
+	extends LinearLayout {
+	constructor(props: LinearLayoutProps) {
+		super(props, 'll_h_c');
+	}
+}
+
+export class LL_H_B
+	extends LinearLayout {
+	constructor(props: LinearLayoutProps) {
+		super(props, 'll_h_b');
+	}
+}
+
+export class LL_VH_C
+	extends LinearLayout {
+	constructor(props: LinearLayoutProps) {
+		super(props, 'll_v_c match_height flex__justify-center');
+	}
+}
