@@ -34,6 +34,10 @@ class CliParamsModule_Class
 
 	private paramsValue: TypedMap<string | string[] | undefined> = {};
 
+	constructor() {
+		super("CliParamsModule", "CliParamsModule_Class");
+	}
+
 	init() {
 		this.config.params.forEach((param) => this.paramsValue[param.keyName] = this.getParam<any>(param));
 		this.printHowTo(this.config.params);
