@@ -17,27 +17,11 @@
  * limitations under the License.
  */
 
-import {
-	addItemToArray,
-	auditBy,
-	filterInstances,
-	generateHex,
-	Module,
-	padNumber
-} from "@nu-art/ts-common";
+import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex, Module, padNumber} from "@nu-art/ts-common";
 
-import {
-	FirebaseModule,
-	FirestoreCollection,
-	StorageWrapper
-} from "@nu-art/firebase/backend";
+import {FirebaseModule, FirestoreCollection, StorageWrapper} from "@nu-art/firebase/backend";
 
-import {
-	BugReport,
-	DB_BugReport,
-	ReportLogFile,
-	Request_BugReport
-} from "../..";
+import {BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from "../..";
 
 import * as JSZip from "jszip";
 
@@ -90,8 +74,12 @@ export class BugReportModule_Class
 		const _id = generateHex(16);
 		const logs: ReportLogFile[] = await Promise.all(bugReport.reports.map(report => this.saveLog(report, _id)));
 
+		const now = currentTimeMillis();
 		const instance: DB_BugReport = {
 			_id,
+			__created: now,
+			__updated: now,
+
 			subject: bugReport.subject,
 			description: bugReport.description,
 			reports: logs,

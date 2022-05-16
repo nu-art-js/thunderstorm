@@ -16,28 +16,15 @@
  * limitations under the License.
  */
 
-import {
-	BadImplementationException,
-	batchAction,
-	generateHex,
-	Subset
-} from "@nu-art/ts-common";
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentSnapshot
-} from "./types";
-import {
-	Clause_Select,
-	Clause_Where,
-	FilterKeys,
-	FirestoreQuery
-} from "../../shared/types";
-import {FirestoreWrapper} from "./FirestoreWrapper";
-import {FirestoreInterface} from "./FirestoreInterface";
-import {FirestoreTransaction} from "./FirestoreTransaction";
-import admin = require("firebase-admin");
+import {BadImplementationException, batchAction, generateHex, ObjectTS, Subset} from '@nu-art/ts-common';
+import {FirestoreType_Collection, FirestoreType_DocumentSnapshot} from './types';
+import {Clause_Select, Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
+import {FirestoreWrapper} from './FirestoreWrapper';
+import {FirestoreInterface} from './FirestoreInterface';
+import {FirestoreTransaction} from './FirestoreTransaction';
+import {Transaction} from 'firebase-admin/firestore';
 
-export class FirestoreCollection<Type extends object> {
+export class FirestoreCollection<Type extends ObjectTS> {
 	readonly name: string;
 	readonly wrapper: FirestoreWrapper;
 	readonly collection: FirestoreType_Collection;
@@ -50,19 +37,19 @@ export class FirestoreCollection<Type extends object> {
 	constructor(name: string, wrapper: FirestoreWrapper, externalFilterKeys?: FilterKeys<Type>) {
 		this.name = name;
 		this.wrapper = wrapper;
-		if(!/[a-z-]{3,}/.test(name))
-			console.log("Please follow name pattern for collections /[a-z-]{3,}/")
+		if (!/[a-z-]{3,}/.test(name))
+			console.log('Please follow name pattern for collections /[a-z-]{3,}/');
 
 		this.collection = wrapper.firestore.collection(name);
 		this.externalUniqueFilter = (instance: Type) => {
 			if (!externalFilterKeys)
-				throw new BadImplementationException("In order to use a unique query your collection MUST have a unique filter");
+				throw new BadImplementationException('In order to use a unique query your collection MUST have a unique filter');
 
 			return externalFilterKeys.reduce((where, key: keyof Type) => {
 				// @ts-ignore
 				where[key] = instance[key];
 				return where;
-			}, {} as Clause_Where<Type>)
+			}, {} as Clause_Where<Type>);
 		};
 	}
 
@@ -81,7 +68,7 @@ export class FirestoreCollection<Type extends object> {
 		if (!doc)
 			return;
 
-		return doc.data() as Type
+		return doc.data() as Type;
 	}
 
 	async insert(instance: Type): Promise<Type> {
@@ -90,7 +77,7 @@ export class FirestoreCollection<Type extends object> {
 	}
 
 	async insertAll(instances: Type[]) {
-		return Promise.all(instances.map(instance => this.insert(instance)));
+		return await Promise.all(instances.map(instance => this.insert(instance)));
 	}
 
 	async query(ourQuery: FirestoreQuery<Type>): Promise<Type[]> {
@@ -98,7 +85,7 @@ export class FirestoreCollection<Type extends object> {
 	}
 
 	async upsert(instance: Type): Promise<Type> {
-		return this.runInTransaction((transaction) => transaction.upsert(this, instance))
+		return this.runInTransaction((transaction) => transaction.upsert(this, instance));
 	}
 
 	async upsertAll(instances: Type[]) {
@@ -110,11 +97,11 @@ export class FirestoreCollection<Type extends object> {
 	}
 
 	async deleteItem(instance: Type): Promise<Type | undefined> {
-		return this.runInTransaction((transaction) => transaction.deleteItem(this, instance))
+		return this.runInTransaction((transaction) => transaction.deleteItem(this, instance));
 	}
 
 	async deleteUnique(query: FirestoreQuery<Type>): Promise<Type | undefined> {
-		return this.runInTransaction((transaction) => transaction.deleteUnique(this, query))
+		return this.runInTransaction((transaction) => transaction.deleteUnique(this, query));
 	}
 
 	async delete(query: FirestoreQuery<Type>) {
@@ -127,7 +114,7 @@ export class FirestoreCollection<Type extends object> {
 			const initialValue = this.wrapper.firestore.batch();
 			// @ts-ignore
 			await temp.reduce((batch, val) => batch.delete(val.ref), initialValue).commit();
-		})
+		});
 	}
 
 	async deleteAll() {
@@ -142,7 +129,7 @@ export class FirestoreCollection<Type extends object> {
 
 	async runInTransaction<ReturnType>(processor: (transaction: FirestoreTransaction) => Promise<ReturnType>): Promise<ReturnType> {
 		const firestore = this.wrapper.firestore;
-		return firestore.runTransaction<ReturnType>(async (transaction: admin.firestore.Transaction) => {
+		return firestore.runTransaction<ReturnType>(async (transaction: Transaction) => {
 			return processor(new FirestoreTransaction(transaction));
 		});
 	}

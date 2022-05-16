@@ -19,23 +19,12 @@
  * limitations under the License.
  */
 
-import {FirebaseModule} from "@nu-art/firebase/backend";
-import {
-	BeLogged,
-	LogClient_Function,
-	LogClient_Terminal,
-	Module
-} from "@nu-art/ts-common";
-import {
-	Firebase_ExpressFunction,
-	FirebaseFunction
-} from '@nu-art/firebase/backend-functions';
-import {BaseStorm} from "./BaseStorm";
-import {
-	HttpServer,
-	RouteResolver
-} from "../modules/server/HttpServer";
-import {ServerApi} from "../modules/server/server-api";
+import {FirebaseModule} from '@nu-art/firebase/backend';
+import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
+import {Firebase_ExpressFunction, FirebaseFunction} from '@nu-art/firebase/backend-functions';
+import {BaseStorm} from './BaseStorm';
+import {HttpServer, RouteResolver} from '../modules/server/HttpServer';
+import {ServerApi} from '../modules/server/server-api';
 
 
 const modules: Module[] = [
@@ -53,6 +42,7 @@ export class Storm
 	constructor() {
 		super();
 		this.addModules(...modules);
+		this.setMinLevel(LogLevel.Info);
 	}
 
 	init() {
@@ -61,8 +51,9 @@ export class Storm
 
 		super.init();
 
-		HttpServer.resolveApi(this.routeResolver, !process.env.GCLOUD_PROJECT ? this.initialPath : "");
-		HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? this.initialPath : "");
+		HttpServer.resolveApi(this.routeResolver, !process.env.GCLOUD_PROJECT ? this.initialPath : '');
+		if (this.config.printApis)
+			HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? this.initialPath : '');
 		return this;
 	}
 
@@ -77,16 +68,20 @@ export class Storm
 	}
 
 	startServer(onStarted?: () => Promise<void>) {
-		const modulesAsFunction: FirebaseFunction[] = this.modules.filter((module: Module): module is FirebaseFunction => module instanceof FirebaseFunction);
+		const modulesAsFunction: FirebaseFunction[] = this.modules.filter((module: Module): module is FirebaseFunction => {
+			const b = module instanceof FirebaseFunction;
+			// console.log(`${module.getName()} function ${b}`)
+			return b;
+		});
 
 		this.functions = [new Firebase_ExpressFunction(HttpServer.express), ...modulesAsFunction];
 
 		this.startServerImpl(onStarted)
-		    .then(() => console.log("Server Started!!"))
-		    .catch(reason => {
-			    this.logError("failed to launch server", reason);
-			    throw reason;
-		    });
+			.then(() => this.logInfo('Server Started!!'))
+			.catch(reason => {
+				this.logError('failed to launch server', reason);
+				throw reason;
+			});
 
 		return this.functions.reduce((toRet, _function) => {
 			toRet[_function.getName()] = _function.getFunction();
@@ -99,7 +94,10 @@ export class Storm
 	}
 
 	private async startServerImpl(onStarted?: () => Promise<void>) {
+		const label = 'Resolving Config';
+		console.time(label)
 		await this.resolveConfig();
+		console.timeEnd(label);
 
 		this.init();
 

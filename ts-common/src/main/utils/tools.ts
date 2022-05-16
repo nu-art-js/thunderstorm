@@ -16,19 +16,20 @@
  * limitations under the License.
  */
 
-import {_keys} from "./object-tools";
-import {ObjectTS} from "./types";
+import {_keys} from './object-tools';
+import {ObjectTS} from './types';
+
 
 export function regexpCase(value: string, reg: string) {
 	return value.match(new RegExp(reg)) || {input: undefined};
 }
 
 export function createFilterPattern(rawFilter?: string) {
-	let filter = rawFilter || "";
+	let filter = rawFilter || '';
 	filter = filter.trim();
-	filter = filter.replace(/\s+/, " ");
-	filter = filter.replace(new RegExp("(.)", "g"), ".*?$1");
-	filter.length === 0 ? filter = ".*?" : filter += ".*";
+	filter = filter.replace(/\s+/, ' ');
+	filter = filter.replace(new RegExp('(.)', 'g'), '.*?$1');
+	filter.length === 0 ? filter = '.*?' : filter += '.*';
 	return filter;
 }
 
@@ -48,3 +49,6 @@ export function __stringify<T>(obj: T, pretty?: boolean | (keyof T)[]): string {
 
 	return JSON.stringify(obj);
 }
+
+export const EmptyObject = Object.freeze({});
+export const EmptyArray = Object.freeze([]);

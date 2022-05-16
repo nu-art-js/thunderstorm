@@ -16,10 +16,9 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {saveAndDeleteFilesTest} from "./tests/add-files";
-import {makeFilesPublicTest} from "./tests/test-public";
+import {__scenario} from '@nu-art/testelot';
+import {makeFilesPublicTest} from './tests/test-public';
 
-export const testStorage = __scenario("test-storage");
+export const testStorage = __scenario('test-storage');
 testStorage.add(makeFilesPublicTest());
 // testStorage.add(saveAndDeleteFilesTest());

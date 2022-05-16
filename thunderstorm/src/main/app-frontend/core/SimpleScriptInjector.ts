@@ -38,8 +38,8 @@ export class SimpleScriptInjector
 			return;
 		}
 
-		const script: HTMLScriptElement = document.createElement("script");
-		script.type = "text/javascript";
+		const script: HTMLScriptElement = document.createElement('script');
+		script.type = 'text/javascript';
 		script.src = this.props.src;
 		script.async = true;
 		script.id = this.props.src;
@@ -49,6 +49,6 @@ export class SimpleScriptInjector
 	}
 
 	render() {
-		return "";
+		return '';
 	}
 }

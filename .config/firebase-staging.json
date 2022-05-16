@@ -9,13 +9,11 @@
       "node_modules"
     ],
     "predeploy": [
-      "rm ./app-backend/package-lock.json",
-      "npm --prefix ./app-backend install",
-      "npm --prefix ./app-backend run build"
+      "rm ./app-backend/package-lock.json"
     ]
   },
   "hosting": {
-    "public": "app-frontend/dist/dev",
+    "public": "app-frontend/dist",
     "rewrites": [
       {
         "source": "**",

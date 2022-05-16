@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import { Analytics,EventNameString,AnalyticsCallOptions } from "firebase/analytics"
+import {Analytics, AnalyticsCallOptions, EventNameString} from 'firebase/analytics';
 
 export type FirebaseType_Analytics = Analytics
 export type FirebaseType_CallOptions = AnalyticsCallOptions

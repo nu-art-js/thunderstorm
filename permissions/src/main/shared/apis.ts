@@ -16,11 +16,8 @@
  * limitations under the License.
  */
 
-import {
-	ApiWithBody,
-	ApiWithQuery
-} from "@nu-art/thunderstorm";
-import {StringMap} from "@nu-art/ts-common";
+import {ApiWithBody, ApiWithQuery} from "@nu-art/thunderstorm";
+import {PreDBObject, StringMap} from "@nu-art/ts-common";
 import {DB_PermissionProject} from "./manager-types";
 import {User_Group} from "./assign-types";
 
@@ -64,14 +61,14 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 	appAccountId?: string
 }
 
-export type AssignAppPermissions = Request_AssignAppPermissions & {granterUserId: string};
+export type AssignAppPermissions = Request_AssignAppPermissions & { granterUserId: string };
 
 export type PredefinedGroup = { _id: string, key: string, label: string, customKeys?: string[] };
 
 export type PredefinedUser = { accountId: string, _id: string, groups: PredefinedGroup[] };
 
 export type Request_RegisterProject = {
-	project: DB_PermissionProject,
+	project: PreDBObject<DB_PermissionProject>,
 	routes: string[];
 	predefinedGroups?: PredefinedGroup[]
 	predefinedUser?: PredefinedUser

@@ -19,43 +19,48 @@
  * limitations under the License.
  */
 
-import {BaseComponent} from "./BaseComponent";
-import {ThunderDispatcher} from "./thunder-dispatcher";
+import {dispatch_onPageTitleChanged} from './AppPageV2';
+import {ComponentSync} from './ComponentSync';
 
-export interface OnPageTitleChangedListener {
-	onPageTitleChanged(title: string): void;
-}
+// Deprecated use AppPageV2
+export abstract class AppPage<P extends {} = {}, S extends {} = {}>
+	extends ComponentSync<P, S> {
 
-export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChangedListener, "onPageTitleChanged">("onPageTitleChanged");
-
-
-export abstract class AppPage<P, S>
-	extends BaseComponent<P, S> {
-
-	private pageTitle: string;
+	private pageTitle: string | (() => string);
 	private prevTitle!: string;
-	private mounted: boolean = false;
 
-	protected constructor(p: P, pageTitle?: string) {
+	protected constructor(p: P, pageTitle?: string | (() => string)) {
 		super(p);
 		this.pageTitle = pageTitle || document.title;
+		const _componentDidMount = this.componentDidMount?.bind(this);
+		this.componentDidMount = () => {
+			_componentDidMount?.();
+
+			this.prevTitle = document.title;
+			this.updateTitle();
+		};
+
+		const _componentWillUnmount = this.componentWillUnmount?.bind(this);
+		this.componentWillUnmount = () => {
+			_componentWillUnmount?.();
+
+			document.title = this.prevTitle;
+		};
 	}
 
-	setPageTitle(pageTitle: string) {
+	setPageTitle(pageTitle: string | (() => string)) {
 		this.pageTitle = pageTitle;
 		if (this.mounted)
-			document.title = this.pageTitle;
+			this.updateTitle();
 	}
 
-	componentDidMount() {
-		this.logDebug(`Mounting page: ${this.pageTitle}`);
-		this.prevTitle = document.title;
-		document.title = this.pageTitle;
-		this.mounted = true;
-	}
 
-	componentWillUnmount() {
-		document.title = this.prevTitle;
-		super.componentWillUnmount?.();
-	}
+	protected updateTitle = () => {
+		const newTitle = this.resolveTitle();
+		document.title = newTitle;
+		this.logDebug(`Mounting page: ${newTitle}`);
+		dispatch_onPageTitleChanged.dispatchUI(document.title);
+	};
+
+	private resolveTitle = () => typeof this.pageTitle === 'function' ? this.pageTitle() : this.pageTitle;
 }

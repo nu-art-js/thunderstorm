@@ -22,13 +22,14 @@
  */
 
 import {
-	currentTimeMillies,
+	currentTimeMillis,
 	Minute,
 	Module
 } from "@nu-art/ts-common";
 import {
 	WebAPICallResult,
-	WebClient
+	WebClient,
+	WebClientOptions
 } from '@slack/web-api';
 
 interface ChatPostMessageResult
@@ -44,6 +45,7 @@ type ConfigType = {
 	token: string
 	defaultChannel: string
 	throttlingTime?: number
+	slackConfig?: Partial<WebClientOptions>
 };
 
 type _SlackMessage = {
@@ -71,26 +73,31 @@ export class SlackModule_Class
 			return
 			// throw new ImplementationMissingException('Missing config token for SlackModule. Please add it');
 
-		this.web = new WebClient(this.config.token);
+		this.web = new WebClient(
+			this.config.token,
+			{
+				rejectRateLimitedCalls: true,
+				...this.config.slackConfig
+			});
 	}
 
 	public async postMessage(slackMessage: SlackMessage) {
 		const parameters: SlackMessage = typeof slackMessage === 'string' ? {text: slackMessage, channel: this.config.defaultChannel} : slackMessage;
 
 		const time = this.messageMap[parameters.text];
-		if (time && currentTimeMillies() - time < (this.config.throttlingTime || Minute))
+		if (time && currentTimeMillis() - time < (this.config.throttlingTime || Minute))
 			return;
 
 		try {
 			return await this.postMessageImpl(parameters);
-		} catch (e) {
+		} catch (e:any) {
 			this.logError(`Error while sending a message to channel: ${parameters.channel}`, e);
 		}
 	}
 
 	private async postMessageImpl(message: _SlackMessage) {
 		const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
-		this.messageMap[message.text] = currentTimeMillies();
+		this.messageMap[message.text] = currentTimeMillis();
 
 		this.logDebug(
 			`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);

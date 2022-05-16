@@ -18,4 +18,5 @@
  */
 
 export * from "./app-frontend/core/module-pack";
-export * from "./app-frontend/modules/UploaderModule";
+export * from "./app-frontend/modules/UploaderModuleFE";
+export * from "./app-frontend/modules/AssetsModuleFE";

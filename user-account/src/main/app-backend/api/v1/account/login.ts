@@ -24,7 +24,7 @@ import {
 
 
 import {
-	AccountModule,
+	AccountModuleBE,
 	AccountApi_Login,
 	Request_LoginAccount
 } from "./_imports";
@@ -41,7 +41,7 @@ class ServerApi_Account_Login
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_LoginAccount) {
 		this.assertProperty(body, ["email", "password"]);
 
-		return AccountModule.login(body);
+		return AccountModuleBE.login(body);
 	}
 }
 

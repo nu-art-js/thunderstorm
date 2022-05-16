@@ -16,23 +16,25 @@
  * limitations under the License.
  */
 
-import {
-	BaseComponent,
-	ThunderDispatcher
-} from "@nu-art/thunderstorm/frontend";
-import * as React from "react";
-import {Second} from "@nu-art/ts-common";
-import {ExampleModule} from "@modules/ExampleModule";
-import {Test} from "@modules/TestModule";
-import {TestDispatch} from "@app/app-shared";
+import {ComponentSync, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import * as React from 'react';
+import {ExampleModule} from '@modules/ExampleModule';
+import {Second} from '@nu-art/ts-common';
+import {Test} from '@modules/TestModule';
+import {TestDispatch} from '@app/app-shared';
 
 export class Example_Dispatch
-	extends BaseComponent
+	extends ComponentSync
 	implements TestDispatch {
+
+	protected deriveStateFromProps(nextProps: any) {
+		return {};
+	}
+
 	uiDispatcher = new ThunderDispatcher<TestDispatch, 'testDispatch'>('testDispatch');
 
 	componentDidMount(): void {
-		ExampleModule.fetchMax()
+		ExampleModule.fetchMax();
 	}
 
 	testDispatch = () => {
@@ -40,10 +42,10 @@ export class Example_Dispatch
 	};
 
 	uiClickHandler = () => {
-		console.log("changing component 2 color...");
+		console.log('changing component 2 color...');
 		setTimeout(() => {
-			this.uiDispatcher.dispatchUI([]);
-		}, Second)
+			this.uiDispatcher.dispatchUI();
+		}, Second);
 	};
 
 
@@ -69,11 +71,11 @@ export class Example_Dispatch
 }
 
 class SecondComponent
-	extends BaseComponent<{}, { color: string }>
+	extends ComponentSync<{}, { color: string }>
 	implements TestDispatch {
 
-	state = {
-		color: '#ffc0cb'
+	protected deriveStateFromProps(nextProps: {}): { color: string; } {
+		return {color: '#ffc0cb'};
 	}
 
 	testDispatch = () => {

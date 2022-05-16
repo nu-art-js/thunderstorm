@@ -41,7 +41,7 @@ class ServerApi_RegisterExternalProject
 		this.logInfo("backup started");
 		// try {
 		// 	await ProjectFirestoreBackup.backupProject("backend");
-		// } catch (e) {
+		// } catch (e:any) {
 		// 	this.logError("backup error", e);
 		// 	console.log(e);
 		// }

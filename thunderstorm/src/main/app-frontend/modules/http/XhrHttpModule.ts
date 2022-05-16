@@ -19,23 +19,15 @@
  * limitations under the License.
  */
 // noinspection TypeScriptPreferShortImport
-import {
-	ApiTypeBinder,
-	DeriveErrorType,
-	ErrorResponse,
-	HttpMethod
-} from "../../../shared/types";
+import {ApiTypeBinder, ErrorResponse, HttpMethod} from '../../../shared/types';
 
-import {BadImplementationException} from "@nu-art/ts-common";
-import {gzip} from "zlib";
+import {BadImplementationException} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {HttpException} from "../../../shared/request-types";
+import {HttpException} from '../../../shared/request-types';
 // noinspection TypeScriptPreferShortImport
-import {BaseHttpRequest} from "../../../shared/BaseHttpRequest";
-import {
-	BaseHttpModule_Class,
-	DeriveRealBinder
-} from "../../../shared/BaseHttpModule";
+import {BaseHttpRequest} from '../../../shared/BaseHttpRequest';
+import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
+import {gzipSync} from 'zlib';
 
 export class XhrHttpModule_Class
 	extends BaseHttpModule_Class {
@@ -44,13 +36,13 @@ export class XhrHttpModule_Class
 		super.init();
 		const origin = this.config.origin;
 		if (!origin)
-			throw new BadImplementationException("Did you forget to set the origin config key for the HttpModule?");
+			throw new BadImplementationException('Did you forget to set the origin config key for the HttpModule?');
 
 		this.origin = origin;
 	}
 
-	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<DeriveRealBinder<Binder>> {
-		return new XhrHttpRequest<DeriveRealBinder<Binder>>(key, data, this.shouldCompress())
+	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<Binder> {
+		return new XhrHttpRequest<Binder>(key, data, this.shouldCompress())
 			.setOrigin(this.origin)
 			.setMethod(method)
 			.setTimeout(this.timeout)
@@ -77,7 +69,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	getStatus(): number {
 		const xhr = this.xhr;
 		if (!xhr)
-			throw new BadImplementationException("No xhr object!");
+			throw new BadImplementationException('No xhr object!');
 
 		return xhr.status;
 	}
@@ -85,7 +77,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 	protected getResponse() {
 		const xhr = this.xhr;
 		if (!xhr)
-			throw new BadImplementationException("No xhr object!");
+			throw new BadImplementationException('No xhr object!');
 
 		return xhr.response;
 	}
@@ -94,13 +86,13 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		this.xhr?.abort();
 	}
 
-	getErrorResponse(): ErrorResponse<DeriveErrorType<Binder>> {
+	getErrorResponse(): ErrorResponse<Binder['errors']> {
 		const rawResponse = this.getResponse();
-		let response = undefined as unknown as ErrorResponse<DeriveErrorType<Binder>>;
+		let response = undefined as unknown as ErrorResponse<Binder['errors']>;
 		if (rawResponse) {
 			try {
-				response = rawResponse && this.asJson() as unknown as ErrorResponse<DeriveErrorType<Binder>>;
-			} catch (e) {
+				response = rawResponse && this.asJson() as unknown as ErrorResponse<Binder['errors']>;
+			} catch (e: any) {
 				response = {debugMessage: rawResponse};
 			}
 		}
@@ -157,9 +149,9 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 				// HttpModule.logVerbose("onabort");
 			};
 
-			let nextOperator = "?";
-			if (this.url.indexOf("?") !== -1) {
-				nextOperator = "&";
+			let nextOperator = '?';
+			if (this.url.indexOf('?') !== -1) {
+				nextOperator = '&';
 			}
 
 			const fullUrl = Object.keys(this.params).reduce((url: string, paramKey: string) => {
@@ -168,7 +160,7 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 					return url;
 
 				const toRet = `${url}${nextOperator}${paramKey}=${encodeURIComponent(param)}`;
-				nextOperator = "&";
+				nextOperator = '&';
 				return toRet;
 			}, this.url);
 
@@ -180,28 +172,32 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			this.xhr.timeout = this.timeout;
 
 			Object.keys(this.headers).forEach((key) => {
-				xhr.setRequestHeader(key, this.headers[key].join("; "));
+				xhr.setRequestHeader(key, this.headers[key].join('; '));
 			});
 
-			const body = this.body;
-			if (typeof body === "string" && this.compress)
-				return gzip(body, (error: Error | null, result: Buffer) => {
-					if (error)
-						return reject(error);
+			let body: any = this.body;
+			if (typeof body === 'string' && this.compress)
+				try {
+					body = gzipSync(this.body);
+				} catch (error) {
+					return reject(error);
+				}
 
-					xhr.send(result);
-				});
-
-			this.xhr.send(body as BodyInit);
+			return this.xhr.send(body);
 		});
 	}
 
 	getResponseHeader(headerKey: string): string | string[] | undefined {
 		if (!this.xhr)
-			throw new BadImplementationException("No xhr object!");
+			throw new BadImplementationException('No xhr object!');
 
 		if (!this.xhr.response)
 			throw new BadImplementationException(`xhr didn't return yet`);
+
+		// Chrome bug, if the response header is not present then it throws an error (not really problematic but just annoying)
+		// https://trackjs.com/blog/refused-unsafe-header/
+		if (this.xhr.getAllResponseHeaders().indexOf(headerKey) < 0)
+			return undefined;
 
 		const header = this.xhr.getResponseHeader(headerKey);
 		if (!header)
@@ -210,3 +206,4 @@ class XhrHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 		return header;
 	}
 }
+

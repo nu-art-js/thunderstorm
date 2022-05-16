@@ -20,28 +20,18 @@
  */
 
 
-import {
-	ApiBinder_AssertAppVersion,
-	HeaderKey_AppVersion,
-	HeaderKey_BrowserType,
-	HeaderKey_UserAgent
-} from "../../../../../shared/force-upgrade";
-import {
-	ServerApi,
-	ApiResponse
-} from "../../../../modules/server/server-api";
-import {HttpMethod} from "../../../../../shared/types";
-import {
-	ForceUpgrade,
-} from "../../../../modules/ForceUpgrade";
-import {ExpressRequest} from "../../../../utils/types";
+import {ApiBinder_AssertAppVersion, HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent} from '../../../../../shared/force-upgrade';
+import {ApiResponse, ServerApi} from '../../../../modules/server/server-api';
+import {HttpMethod} from '../../../../../shared/types';
+import {ForceUpgrade,} from '../../../../modules/ForceUpgrade';
+import {ExpressRequest} from '../../../../utils/types';
 
 
 class ServerApi_AssertAppVersion
 	extends ServerApi<ApiBinder_AssertAppVersion> {
 
 	constructor() {
-		super(HttpMethod.GET, "assert");
+		super(HttpMethod.GET, 'assert');
 		this.addHeaderToLog(HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent);
 	}
 

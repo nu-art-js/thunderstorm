@@ -20,9 +20,9 @@ import {
 	ValidatorTest,
 } from "./test";
 import {
-	validateRange,
-	validateRegexp,
-	validateValue,
+	tsValidateRange,
+	tsValidateRegexp,
+	tsValidateValue,
 	TestSuit
 } from "../_main";
 import {validatorProcessor} from "./_common";
@@ -45,27 +45,27 @@ export const testSuit_nestedObjectValidator: TestSuit<ValidatorTest<NestedObject
 	label: "Object Validator - Nested Object",
 	processor: validatorProcessor,
 	models: [{expected: "fail", input: {instance: nestedObject1, validator: {}}},
-		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: validateRegexp(/PaH/)}}},
-		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: validateRegexp(/Adam/)}}},
-		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: validateRegexp(/Adam/)}}},
-		{expected: "fail", input: {instance: nestedObject2, validator: {prop1: validateRegexp(/Adam/)}}},
-		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: validateRegexp(/Adam/), prop2: {}}}},
-		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: validateRegexp(/Adam/), prop2: {prop3: validateValue(["zevel"])}}}},
-		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: validateRegexp(/Adam/), prop2: {prop3: validateValue(["pah"])}}}},
+		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: tsValidateRegexp(/PaH/)}}},
+		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: tsValidateRegexp(/Adam/)}}},
+		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: tsValidateRegexp(/Adam/)}}},
+		{expected: "fail", input: {instance: nestedObject2, validator: {prop1: tsValidateRegexp(/Adam/)}}},
+		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: tsValidateRegexp(/Adam/), prop2: {}}}},
+		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: tsValidateRegexp(/Adam/), prop2: {prop3: tsValidateValue(["zevel"])}}}},
+		{expected: "fail", input: {instance: nestedObject1, validator: {prop1: tsValidateRegexp(/Adam/), prop2: {prop3: tsValidateValue(["pah"])}}}},
 		{
 			expected: "fail", input: {
 				instance: nestedObject1, validator: {
-					prop1: validateRegexp(/Adam/), prop2: {prop3: validateValue(["pah", "zevel"]), prop4: validateRange([[10, 30]])}
+					prop1: tsValidateRegexp(/Adam/), prop2: {prop3: tsValidateValue(["pah", "zevel"]), prop4: tsValidateRange([[10, 30]])}
 				}
 			}
 		},
 		{
 			expected: "pass", input: {
 				instance: nestedObject1, validator: {
-					prop1: validateRegexp(/Adam/), prop2: {prop3: validateValue(["pah", "zevel"]), prop4: validateRange([[10, 80000]])}
+					prop1: tsValidateRegexp(/Adam/), prop2: {prop3: tsValidateValue(["pah", "zevel"]), prop4: tsValidateRange([[10, 80000]])}
 				}
 			}
 		},
-		{expected: "pass", input: {instance: nestedObject3, validator: {prop1: validateRegexp(/Adam/)}}},
+		{expected: "pass", input: {instance: nestedObject3, validator: {prop1: tsValidateRegexp(/Adam/)}}},
 	]
 };

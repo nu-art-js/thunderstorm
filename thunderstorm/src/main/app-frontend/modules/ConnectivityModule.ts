@@ -1,8 +1,8 @@
-import {Module} from "@nu-art/ts-common";
-import {ThunderDispatcher} from "../core/thunder-dispatcher";
+import {Module} from '@nu-art/ts-common';
+import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
 export interface OnConnectivityChange {
-	__onConnectivityChange(): void
+	__onConnectivityChange(): void;
 }
 
 class ConnectivityModule_Class
@@ -25,8 +25,8 @@ class ConnectivityModule_Class
 
 	handleConnectionChange = () => {
 		this.connected = this.getConnectivityStatus();
-		this.dispatch_onConnectivityChange.dispatchModule([]);
-		this.dispatch_onConnectivityChange.dispatchUI([])
+		this.dispatch_onConnectivityChange.dispatchModule();
+		this.dispatch_onConnectivityChange.dispatchUI();
 	};
 
 	private getConnectivityStatus = () => navigator.onLine;

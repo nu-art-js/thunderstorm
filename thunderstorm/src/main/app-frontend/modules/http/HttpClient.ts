@@ -19,19 +19,9 @@
  * limitations under the License.
  */
 
-import {
-	__stringify,
-	StringMap
-} from "@nu-art/ts-common";
-import {
-	ErrorResponse,
-	HttpMethod
-} from "../../..";
-import {
-	ApiException,
-	promisifyRequest,
-	RequestOptions
-} from "../../../backend";
+import {__stringify, StringMap} from '@nu-art/ts-common';
+import {ErrorResponse, HttpMethod} from '../../..';
+import {ApiException, promisifyRequest, RequestOptions} from '../../../backend';
 
 export const createFormData = (filename: string, buffer: Buffer) => ({file: {value: buffer, options: {filename}}});
 
@@ -45,7 +35,7 @@ export class HttpClient {
 	}
 
 	setDefaultHeaders(defaultHeaders: Headers) {
-		this.defaultHeaders = defaultHeaders
+		this.defaultHeaders = defaultHeaders;
 	}
 
 	form(path: string, buffer: Buffer, headers?: Headers) {
@@ -61,9 +51,9 @@ export class HttpClient {
 	get(path: string, _params?: StringMap, headers?: Headers) {
 		let url = `${this.baseUrl}${path}`;
 
-		let nextOperator = "?";
-		if (url.indexOf("?") !== -1)
-			nextOperator = "&";
+		let nextOperator = '?';
+		if (url.indexOf('?') !== -1)
+			nextOperator = '&';
 
 		if (_params)
 			url = Object.keys(_params).reduce((fullUrl: string, paramKey: string) => {
@@ -72,7 +62,7 @@ export class HttpClient {
 					return url;
 
 				const temp = `${fullUrl}${nextOperator}${paramKey}=${encodeURIComponent(param)}`;
-				nextOperator = "&";
+				nextOperator = '&';
 				return temp;
 			}, url);
 

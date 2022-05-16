@@ -28,6 +28,9 @@ export const config = {
 	ExampleModule: {
 		remoteUrl: "/v1/sample/endpoint-example"
 	},
+	ForceUpgrade: {
+		assertVersionUrl: "/v1/version/assert"
+	},
 	FirebaseModule: {
 		local: {
 			apiKey: "AIzaSyD2xhGl4-gq3L_rknxoYF0KZLvedrFWQbg",
@@ -42,25 +45,5 @@ export const config = {
 	},
 	PushPubSubModule: {
 		publicKeyBase64: 'BBsKBw0R-mITlCSAOtCiHCLvKl-EetCmt5JKMg8L8ev1GqBEpDryum8ve3htIlbN3cjV1MLDFQnk0a8Wfks7cFk'
-	},
-	ForceUpgrade: {
-		assertVersionUrl: "/v1/version/assert"
-	},
-	LocaleModule: {
-		defaultLocale: "en",
-		locales: [
-			{
-				locale: "en",
-				label: "Language_English",
-				icon: "languages/en",
-				texts: require(`./res/localization/en`)
-			},
-			{
-				locale: "nl",
-				label: "Language_Dutch",
-				icon: "languages/nl",
-				texts: require(`./res/localization/nl`)
-			}
-		]
 	}
 };

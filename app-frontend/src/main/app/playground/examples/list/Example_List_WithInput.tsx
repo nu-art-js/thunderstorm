@@ -16,16 +16,10 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {Component} from "react";
-import {
-	Adapter,
-	AdapterBuilder,
-	ToastModule,
-	Tree,
-	TS_Input
-} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
+import * as React from 'react';
+import {Component} from 'react';
+import {Adapter, SimpleListAdapter, ToastModule, TS_Input, TS_Tree} from '@nu-art/thunderstorm/frontend';
+import {__stringify} from '@nu-art/ts-common';
 
 type Keys = 'first' | 'second'
 
@@ -38,7 +32,7 @@ type State = {
 	[K in Keys]: string
 }
 
-export class Example_List_WithInput
+class Example_List_WithInput_Renderer
 	extends Component<{}, State> {
 	private readonly data: Type[];
 
@@ -48,49 +42,45 @@ export class Example_List_WithInput
 		this.data = [{
 			placeHolder: 'Choose...',
 			value: 'first',
-		}, {
-			placeHolder: 'Choose also...',
-			value: 'second',
-		}]
-		;
+		},
+			{
+				placeHolder: 'Choose also...',
+				value: 'second',
+			}];
 	}
 
 	render() {
-		const adapter: Adapter = AdapterBuilder()
-			.list()
-			.singleRender((props: { item: Type }) => {
-				if (typeof props.item !== 'object')
-					return null;
+		const adapter: Adapter = SimpleListAdapter(this.data, (props: { item: Type }) => {
+			if (typeof props.item !== 'object')
+				return <></>;
 
-				return <div>
-					<TS_Input
-						id="test"
-						type={"text"}
-						focus={true}
-						placeholder={props.item.placeHolder}
-						value={this.state[props.item.value]}
-						onChange={value => {
-							const key: "first" | "second" = props.item.value;
-							// @ts-ignore
-							this.setState({[key]: value});
-							return console.log(value);
-						}}
-					/>
-					<div>{props.item.value}</div>
-				</div>;
-			})
-			.setData(this.data)
-			.build();
+			return <div>
+				<TS_Input
+					id="test"
+					type={'text'}
+					focus={true}
+					placeholder={props.item.placeHolder}
+					value={this.state[props.item.value]}
+					onChange={value => {
+						const key: 'first' | 'second' = props.item.value;
+						// @ts-ignore
+						this.setState({[key]: value});
+						return console.log(value);
+					}}
+				/>
+				<div>{props.item.value}</div>
+			</div>;
+		});
 
 		return <div>
 			<div>
 				<h2>Here is a tree with one renderer Type</h2>
-				<Tree
+				<TS_Tree
 					adapter={adapter}
 					onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
-		</div>
+		</div>;
 	}
 }
 
-
+export const Example_List_WithInput = {renderer: Example_List_WithInput_Renderer, name: 'Example_List_WithInput',};

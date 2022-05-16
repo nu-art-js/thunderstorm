@@ -33,4 +33,4 @@ export const LogLevelOrdinal = [
 ];
 
 export type LogPrefixComposer = (tag: string, level: LogLevel) => string;
-export type LogParam = string | number | object | any[] | Error | undefined | null
+export type LogParam = string | boolean | number | object | any[] | Error | undefined | null

@@ -19,8 +19,9 @@
  * limitations under the License.
  */
 
-import {ErrorResponse} from "./types";
-import {BaseHttpRequest} from "./BaseHttpRequest";
+import {ErrorResponse} from './types';
+import {BaseHttpRequest} from './BaseHttpRequest';
+import {ObjectTS} from '@nu-art/ts-common';
 
 export class HttpException
 	extends Error {
@@ -37,9 +38,9 @@ export type TS_Progress = {
 }
 
 export interface OnRequestListener {
-	__onRequestCompleted: (key: string, success: boolean, requestData?: string) => void;
+	__onRequestCompleted: (key: string, success: boolean, requestData?: any) => void;
 }
 
-export type RequestErrorHandler<E extends void | object> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<E>) => void;
+export type RequestErrorHandler<E extends ObjectTS> = (request: BaseHttpRequest<any, any, any, any, any>, resError?: ErrorResponse<E>) => void;
 export type RequestSuccessHandler = (request: BaseHttpRequest<any>) => void;
 export type ResponseHandler = (request: BaseHttpRequest<any>) => boolean;

@@ -30,4 +30,4 @@ import {
 
 export type ApiGetLiveDoc = ApiWithQuery<'/v1/live-docs/get', DB_Document, LiveDocReqParams>
 export type ApiHistoryLiveDocs = ApiWithBody<'/v1/live-docs/change-history', LiveDocHistoryReqParams, void>
-export type ApiUpdateLiveDocs = ApiWithBody<'/v1/live-docs/update', Request_UpdateDocument, void>
+export type apiPatchLiveDocs = ApiWithBody<'/v1/live-docs/update', Request_UpdateDocument, void>

@@ -19,26 +19,22 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	NavLink,
-	Link,
-	Route
-} from "react-router-dom";
-import {ReactEntryComponentInjector} from "../component-loader/ReactEntryComponentInjector";
+import * as React from 'react';
+import {Link, NavLink, Route} from 'react-router-dom';
+import {ReactEntryComponentInjector} from '../component-loader/ReactEntryComponentInjector';
 
 export type RouteParams = { [key: string]: string | number | (() => string | number) }
 
 export class RoutePath {
-	readonly key: string;
-	readonly path: string;
-	readonly exact: boolean = false;
-	readonly component: React.ComponentClass | string;
+	key: string;
+	path: string;
+	exact: boolean = false;
+	component: React.ComponentClass | string;
 
-	readonly logMessage?: string;
-	readonly label?: React.ElementType | string;
-	readonly visible: () => boolean = () => !!this.label;
-	readonly enabled?: () => boolean;
+	logMessage?: string;
+	label?: React.ElementType | string;
+	visible: () => boolean = () => !!this.label;
+	enabled?: () => boolean;
 
 	constructor(key: string, route: string, component: React.ComponentClass | string) {
 		this.key = key;
@@ -83,12 +79,12 @@ export class RoutePath {
 	}
 
 	static composeStringQuery(params?: RouteParams) {
-		let paramsAsString = "";
+		let paramsAsString = '';
 
 		if (params)
 			paramsAsString = Object.keys(params).reduce((toRet, key) => {
 				let param = params[key];
-				if (typeof param === "function")
+				if (typeof param === 'function')
 					param = param();
 
 				return `${toRet}&${key}=${param}`;
@@ -112,8 +108,8 @@ export const defaultLinkNode = (route: RoutePath, node?: React.ReactNode): React
 };
 
 export const defaultRouteNode = (route: RoutePath): React.ReactElement => {
-	if (typeof route.component === "string")
+	if (typeof route.component === 'string')
 		return <ReactEntryComponentInjector src={route.component}/>;
 
-	return <Route exact={route.exact} key={route.key} path={route.path} component={route.component} />;
+	return <Route exact={route.exact} key={route.key} path={route.path} component={route.component}/>;
 };

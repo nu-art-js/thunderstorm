@@ -15,14 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	DatabaseWrapper,
-	FirebaseModule
-} from "../../_main";
-import {
-	__custom,
-	ErrorPolicy
-} from "@nu-art/testelot";
+import {DatabaseWrapper, FirebaseModule} from '../../_main';
+import {__custom, ErrorPolicy} from '@nu-art/testelot';
 
 export class FirebaseDatabaseTester {
 
@@ -42,7 +36,7 @@ export class FirebaseDatabaseTester {
 				await db.delete('/', '/');
 				config && await db.set('/_config', config);
 			}
-			return processor(db)
+			return processor(db);
 		}).setLabel(label);
 	}
 }

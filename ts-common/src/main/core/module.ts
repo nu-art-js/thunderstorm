@@ -66,7 +66,7 @@ export abstract class Module<Config = any>
 	// 			try {
 	// 				await handler(..._args);
 	// 				resolve();
-	// 			} catch (e) {
+	// 			} catch (e:any) {
 	// 				reject(e);
 	// 			}
 	// 		}, ms) as unknown as number;

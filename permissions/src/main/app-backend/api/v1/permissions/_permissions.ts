@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
-import {RouteResolver} from "@nu-art/thunderstorm/backend";
+import {RouteResolver} from '@nu-art/thunderstorm/backend';
 
-module.exports = new RouteResolver(require, __dirname);
+const routeResolver: RouteResolver = new RouteResolver(require, __dirname);
+module.exports = routeResolver;

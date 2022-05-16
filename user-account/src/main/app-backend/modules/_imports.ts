@@ -17,10 +17,9 @@
  * limitations under the License.
  */
 
-import {AuditBy} from "@nu-art/ts-common";
-import { DB_Object } from "@nu-art/firebase";
+import {AuditBy, DB_Object} from '@nu-art/ts-common';
 
-export * from "../../index";
+export * from '../../index';
 
 export type RequestBody_SamlAssertOptions = {
 	request_body: {

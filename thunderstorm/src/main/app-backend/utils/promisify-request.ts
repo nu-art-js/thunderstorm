@@ -19,11 +19,11 @@
  * limitations under the License.
  */
 
-import * as _request from "request";
-import {Response} from "request";
-import {ApiException} from "../exceptions";
-import {__stringify} from "@nu-art/ts-common";
-import {RequestOptions} from "../../backend";
+import * as _request from 'request';
+import {Response} from 'request';
+import {ApiException} from '../exceptions';
+import {__stringify} from '@nu-art/ts-common';
+import {RequestOptions} from '../../backend';
 
 export async function promisifyRequest(request: RequestOptions, throwException: boolean = true): Promise<Response> {
 	return new Promise<Response>((resolve, rejected) => {

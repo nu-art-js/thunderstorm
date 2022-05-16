@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {FirestoreQuery} from "../../../_main";
+import {FirestoreQuery} from '../../../_main';
 
 export type FB_ArrayType = {
 	key: string
@@ -36,13 +36,13 @@ export type FB_Type = {
 	nestedObject?: { one: FB_ArrayType, two: FB_ArrayType }
 }
 
-export type Query_TestCase<T extends object, E extends T | T[] = T> = FirestoreQuery<T> & {
+export type Query_TestCase<T extends ObjectTS, E extends T | T[] = T> = FirestoreQuery<T> & {
 	insert?: T[]
 	label: string,
 	expected: E extends T ? Partial<T> : Partial<T>[]
 }
 
-export type Patch_TestCase<T extends object> = {
+export type Patch_TestCase<T extends ObjectTS> = {
 	insert: T,
 	override: T,
 	query: FirestoreQuery<T>

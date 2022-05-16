@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-import {AccountModule} from "../modules/AccountModule";
+import {AccountModuleBE} from "../modules/AccountModuleBE";
 
 export const Backend_ModulePack_Users = [
-	AccountModule,
+	AccountModuleBE,
 ];
 
-export * from "../modules/AccountModule";
+export * from "../modules/AccountModuleBE";
 export * from "../modules/SamlModule";
 

@@ -16,11 +16,15 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/frontend";
+import * as React from 'react';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend';
 
 export class Parent
-	extends BaseComponent {
+	extends ComponentSync {
+
+	protected deriveStateFromProps(nextProps: any) {
+		return {};
+	}
 
 	constructor(props: any) {
 		super(props);

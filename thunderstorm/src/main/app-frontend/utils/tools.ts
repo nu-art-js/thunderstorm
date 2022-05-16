@@ -19,19 +19,17 @@
  * limitations under the License.
  */
 
-import {Browser} from "../../shared/consts";
-import {
-	BadImplementationException,
-	ImplementationMissingException
-} from "@nu-art/ts-common";
-import * as React from "react";
+import {Browser} from '../../shared/consts';
+import {BadImplementationException, filterInstances, ImplementationMissingException} from '@nu-art/ts-common';
+import * as React from 'react';
+import {DependencyList, Dispatch, EffectCallback, SetStateAction} from 'react';
 
 export function browserType(): Browser {
-	if (navigator?.vendor.includes("Google")) {
+	if (navigator?.vendor.includes('Google')) {
 		return 'chrome';
 	}
 
-	throw new BadImplementationException("No matching browser detected");
+	throw new BadImplementationException('No matching browser detected');
 }
 
 export function convertBase64ToFile(fileName: string, base64: string, _mimeType?: string) {
@@ -39,7 +37,7 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 	const match = arr[0].match(/:(.*?);/);
 	const mimeType = (match && match[1]) || (_mimeType && _mimeType);
 	if (!mimeType)
-		throw new ImplementationMissingException("Could not extract mime type from data...");
+		throw new ImplementationMissingException('Could not extract mime type from data...');
 
 	const bstr = atob(arr[1]);
 	let n = bstr.length;
@@ -52,7 +50,33 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 	return new File([u8arr], fileName, {type: mimeType});
 }
 
+export function _className(...classes: (string | boolean | undefined)[]) {
+	return filterInstances(classes.filter(c=>!!c)).join(' ');
+}
 
+export function HOOK(fc: React.FC, props?: any) {
+	return fc(props);
+}
+
+export function HOOK_useState<S>(initialState: S | (() => S)): [S, Dispatch<SetStateAction<S>>] {
+	return React.useState(initialState);
+}
+
+export function HOOK_useEffect<S>(effect: EffectCallback, deps?: DependencyList): void {
+	return React.useEffect(effect, deps);
+}
+
+export const HOOK_useEffectAsync = (action: () => Promise<void>, deps?: DependencyList, destructor?: () => void) => {
+	React.useEffect(() => {
+		(action)();
+		return destructor;
+	}, deps);
+};
+
+/**
+ * Prevents default behaviour and stops propagation
+ * @param e MouseEvent | React.MouseEvent | KeyboardEvent | React.KeyboardEvent
+ */
 export const stopPropagation = (e: MouseEvent | React.MouseEvent | KeyboardEvent | React.KeyboardEvent) => {
 	e.preventDefault();
 	e.stopPropagation();

@@ -16,25 +16,22 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {myDb} from "../_core/database-wrapper";
-import {
-	assert,
-	BadImplementationException
-} from "@nu-art/ts-common";
+import {__scenario} from '@nu-art/testelot';
+import {myDb} from '../_core/database-wrapper';
+import {assert, BadImplementationException} from '@nu-art/ts-common';
 
 const removeData = () => myDb.processDirty('Removing a node', async db => {
 	await db.set(objectModel.path, objectModel.value);
 	await db.delete(objectModel.path);
 	const nullVal = await db.get(objectModel.path);
-	assert("Values don't match", nullVal, undefined);
+	assert('Values don\'t match', nullVal, undefined);
 });
 
 const removeHigherNode = () => myDb.processDirty('Remove a higher node deleted data under it', async db => {
 	await db.set(objectModel.path, objectModel.value);
 	await db.delete(basePath, basePath);
 	const nullVal = await db.get(objectModel.path);
-	assert("Values don't match", nullVal, undefined);
+	assert('Values don\'t match', nullVal, undefined);
 });
 
 const removeLowerNode = () => myDb.processDirty('Remove a lower node only deleted the lower part of it', async db => {
@@ -43,7 +40,7 @@ const removeLowerNode = () => myDb.processDirty('Remove a lower node only delete
 	const val = await db.get(objectModel.path);
 	const compareVal = objectModel.value;
 	delete compareVal.a;
-	assert("Values don't match", val, compareVal);
+	assert('Values don\'t match', val, compareVal);
 });
 
 const removeFail = (model: ModelFail) => myDb.processDirty(model.label, async db => {
@@ -87,7 +84,7 @@ const objectModel: { path: string; label: string; value: { a?: number; b: string
 	label: 'Removing a node'
 };
 
-export const scenarioRemoveData = __scenario("Remove data");
+export const scenarioRemoveData = __scenario('Remove data');
 scenarioRemoveData.add(removeData());
 scenarioRemoveData.add(removeHigherNode());
 scenarioRemoveData.add(removeLowerNode());

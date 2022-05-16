@@ -1,20 +1,14 @@
-import * as React from "react";
-import {Component} from "react";
-import {
-	AdapterBuilder,
-	BaseTreeProps,
-	Example_NewProps,
-	ToastModule,
-	Tree
-} from "@nu-art/thunderstorm/frontend";
-import {__stringify} from "@nu-art/ts-common";
+import * as React from 'react';
+import {Component} from 'react';
+import {Example_NewProps, Props_Tree, SimpleTreeAdapter, ToastModule, TS_Tree,} from '@nu-art/thunderstorm/frontend';
+import {__stringify} from '@nu-art/ts-common';
 
 type Type = {
 	label: string | number
 	other: string
 };
 
-export class SP_Example_Tree_SingleType
+class SP_Example_Tree_SingleType_Renderer
 	extends Component<{}> {
 	private data: any;
 	private complexData: any;
@@ -57,7 +51,7 @@ export class SP_Example_Tree_SingleType
 				other: 'Other element',
 			},
 			Forth: {
-				label: "Forth element",
+				label: 'Forth element',
 				other: 'Other element',
 			}
 		};
@@ -104,9 +98,9 @@ export class SP_Example_Tree_SingleType
 				<div onClick={() => this.addItem('Second')}>Add Second</div>
 				<div onClick={() => this.addItem('Third')}>Add Third</div>
 				<div onClick={() => this.addItem('Forth')}>Add Forth</div>
-				<Example_NewProps name={"Tree"} renderer={Tree} data={[this.simpleAdapterProps(), this.complexAdapterProps()]}/>
+				<Example_NewProps name={'Tree'} renderer={TS_Tree} data={[this.simpleAdapterProps(), this.complexAdapterProps()]}/>
 			</div>
-		</div>
+		</div>;
 	}
 
 	private addItem = (path: string) => {
@@ -116,34 +110,28 @@ export class SP_Example_Tree_SingleType
 
 	private simpleAdapterProps() {
 		return {
-			id: "simple",
-			key: "simple",
-			adapter: AdapterBuilder()
-				.tree()
-				.singleRender((props: { item: Type }) => <div>{props.item}</div>)
-				.setData(this.data)
-				.build(),
+			id: 'simple',
+			key: 'simple',
+			adapter: SimpleTreeAdapter(this.data, (props: { item: Type }) => <div>{props.item}</div>),
 			onNodeClicked: (path: string, item: any) => {
-				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)
+				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`);
 			}
-		} as BaseTreeProps & { key: string };
+		} as Props_Tree & { key: string };
 	}
 
 	private complexAdapterProps() {
 		return {
-			id: "simple",
-			key: "simple",
-			adapter: AdapterBuilder()
-				.tree()
-				.singleRender((props: { item: Type }) => <div>{props.item}</div>)
-				.setData(this.complexData)
-				.build(),
+			id: 'simple',
+			key: 'simple',
+			adapter: SimpleTreeAdapter(this.complexData, (props: { item: Type }) => <div>{props.item}</div>),
 			onNodeClicked: (path: string, item: any) => {
-				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)
+				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`);
 			}
-		} as BaseTreeProps & { key: string };
+		} as Props_Tree & { key: string };
 	}
 }
+
+export const SP_Example_Tree_SingleType = {renderer: SP_Example_Tree_SingleType_Renderer, name: 'SP_Example_Tree_SingleType'}
 
 
 

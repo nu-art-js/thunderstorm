@@ -1,13 +1,10 @@
-import * as React from "react";
-import {ReactNode} from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/app-frontend/core/BaseComponent";
-import {
-	ScaleLinear,
-	scaleLinear
-} from "d3-scale";
-import AxisLeft from "./Example_AxisX";
-import AxisBottom from "./Example_AxisBottom.";
-import {deepClone} from "@nu-art/ts-common";
+import * as React from 'react';
+import {ReactNode} from 'react';
+import {ComponentSync} from '@nu-art/thunderstorm/app-frontend/core/ComponentSync';
+import {ScaleLinear, scaleLinear} from 'd3-scale';
+import AxisLeft from './Example_AxisX';
+import AxisBottom from './Example_AxisBottom.';
+import {deepClone} from '@nu-art/ts-common';
 
 export type Coordinates = {
 	x: number,
@@ -41,17 +38,13 @@ export type Props = {
 }
 
 export class Example_LineGraph
-	extends BaseComponent<Props, { page: number, index: number }> {
-
-	constructor(props: Props) {
-		super(props);
-		this.state = {
+	extends ComponentSync<Props, { page: number, index: number }> {
+	protected deriveStateFromProps(nextProps: Props): { page: number; index: number; } | undefined {
+		return {
 			page: 0,
 			index: 0
 		};
-
 	}
-
 
 	private minAndMax = () => {
 		let arrayOfProps: Coordinates[] = [];
@@ -61,14 +54,17 @@ export class Example_LineGraph
 		return this.extent(arrayOfProps);
 	};
 
-	private dataPoints = (data: Coordinates[], color: string) => data.map((d, i) => this.props.renderPoints ? this.props.renderPoints({x: this.xScale()(d.x), y: this.yScale()(d.y)}) :
+	private dataPoints = (data: Coordinates[], color: string) => data.map((d, i) => this.props.renderPoints ? this.props.renderPoints({
+			x: this.xScale()(d.x),
+			y: this.yScale()(d.y)
+		}) :
 		(<circle onMouseEnter={(e) => {
 			}}
-		         key={i}
-		         r={5}
-		         cx={this.xScale()(d.x + this.props.frequency)}
-		         cy={this.yScale()(d.y)}
-		         style={{fill: color}}
+						 key={i}
+						 r={5}
+						 cx={this.xScale()(d.x + this.props.frequency)}
+						 cy={this.yScale()(d.y)}
+						 style={{fill: color}}
 			/>
 		));
 
@@ -77,17 +73,19 @@ export class Example_LineGraph
 		if (data.length > 1)
 			for (let i = 0; i < data.length - 1; i++) {
 				this.props.renderLines ? lineArray.push(
-					this.props.renderLines({x: this.xScale()(data[i].x + this.props.frequency), y: this.yScale()(data[i].y)},
-					                       {x: this.xScale()(data[i].x + this.props.frequency), y: this.yScale()(data[i].y)})) :
-					lineArray.push(<line key={i} x1={this.xScale()(data[i].x + this.props.frequency)} x2={this.xScale()(data[i + 1].x + this.props.frequency)} y1={this.yScale()(data[i].y)}
-					                     y2={this.yScale()(data[i + 1].y)}
-					                     strokeWidth={3} stroke={color}/>);
+						this.props.renderLines({x: this.xScale()(data[i].x + this.props.frequency), y: this.yScale()(data[i].y)},
+							{x: this.xScale()(data[i].x + this.props.frequency), y: this.yScale()(data[i].y)})) :
+					lineArray.push(<line key={i} x1={this.xScale()(data[i].x + this.props.frequency)} x2={this.xScale()(data[i + 1].x + this.props.frequency)}
+															 y1={this.yScale()(data[i].y)}
+															 y2={this.yScale()(data[i + 1].y)}
+															 strokeWidth={3} stroke={color}/>);
 			}
 		return lineArray;
 	};
 
 	private baseLine = (baseValue: number, color: string) => <line x1={this.xScale()(this.minAndMax().minX)} x2={this.width} y1={this.yScale()(baseValue)}
-	                                                               y2={this.yScale()(baseValue)} strokeWidth={3} stroke={color} strokeDasharray={4} opacity={0.5}/>;
+																																 y2={this.yScale()(baseValue)} strokeWidth={3} stroke={color} strokeDasharray={4}
+																																 opacity={0.5}/>;
 
 	w = 600;
 	h = 300;
@@ -160,15 +158,15 @@ export class Example_LineGraph
 						axisPoint={this.xScale()(this.minAndMax().minX)}/>
 					{this.props.renderBottomAxis ? this.props.renderBottomAxis(this.xScale(), this.height) :
 						<AxisBottom xScale={this.xScale()}
-						            height={this.height}
-						            width={this.width + 100}
-						            tickValues={this.props.axesLabels?.x}
-						            borderBoxValues={this.props.borderBoxValues}
-						            paginated={true}
-						            frequency={this.props.frequency}
-						            axisPoint={this.minAndMax().minX}
-						            viewBox={this.props.xDomain}
-						            shiftData={true}/>
+												height={this.height}
+												width={this.width + 100}
+												tickValues={this.props.axesLabels?.x}
+												borderBoxValues={this.props.borderBoxValues}
+												paginated={true}
+												frequency={this.props.frequency}
+												axisPoint={this.minAndMax().minX}
+												viewBox={this.props.xDomain}
+												shiftData={true}/>
 					} {this.props.data.map(_data => this.lines(_data.color, this.batchAllData(_data.data)[this.state.page]))}
 					{this.props.data.map(_data => this.dataPoints(this.batchAllData(_data.data)[this.state.page], _data.color))}
 					{this.props.data.map(_data => _data.baseValue && this.baseLine(_data.baseValue, _data.color))}

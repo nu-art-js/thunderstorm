@@ -1,4 +1,3 @@
-
 /*
  * A typescript & react boilerplate with api call example
  *
@@ -17,10 +16,10 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {ExampleModule} from "@modules/ExampleModule";
+import * as React from 'react';
+import {ExampleModule} from '@modules/ExampleModule';
 
-export class Example_ApiCustomError
+class Example_ApiCustomError_Renderer
 	extends React.Component {
 
 	constructor(props: {}) {
@@ -41,3 +40,5 @@ export class Example_ApiCustomError
 		</>;
 	}
 }
+
+export const Example_ApiCustomError = {renderer: Example_ApiCustomError_Renderer, name: 'Custom error'};

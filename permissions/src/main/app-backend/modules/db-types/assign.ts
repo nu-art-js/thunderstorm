@@ -24,22 +24,9 @@ import {
 	DB_PermissionsGroup,
 	DB_PermissionsUser,
 	PredefinedGroup
-} from "../_imports";
-import {
-	BaseDB_ApiGenerator,
-	validateStringAndNumbersWithDashes,
-	validateUniqueId
-} from "@nu-art/db-api-generator/backend";
-import {
-	AccountModule,
-	OnNewUserRegistered,
-	OnUserLogin
-} from "@nu-art/user-account/backend";
-import {Clause_Where} from "@nu-art/firebase";
-import {
-	ApiException,
-	ExpressRequest
-} from "@nu-art/thunderstorm/backend";
+} from '../_imports';
+import {Clause_Where} from '@nu-art/firebase';
+import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 
 import {
 	_keys,
@@ -50,19 +37,22 @@ import {
 	filterDuplicates,
 	filterInstances,
 	removeItemFromArray,
+	tsValidateArray,
+	tsValidateObjectValues,
+	tsValidateRegexp,
 	TypeValidator,
-	validateArray,
-	validateObjectValues,
-	validateRegexp,
-} from "@nu-art/ts-common";
-import {AccessLevelPermissionsDB} from "./managment";
-import {FirestoreTransaction} from "@nu-art/firebase/backend";
-import {PermissionsShare} from "../permissions-share";
-import {UI_Account} from "@nu-art/user-account";
+} from '@nu-art/ts-common';
+import {AccessLevelPermissionsDB} from './managment';
+import {FirestoreTransaction} from '@nu-art/firebase/backend';
+import {PermissionsShare} from '../permissions-share';
+import {UI_Account} from '@nu-art/user-account';
+import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/app-backend/BaseDB_ApiGenerator';
+import {tsValidateStringAndNumbersWithDashes, tsValidateUniqueId} from '@nu-art/db-api-generator/shared/validators';
+import {AccountModuleBE, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/app-backend/modules/AccountModuleBE';
 
-const validateUserUuid = validateRegexp(/^.{0,50}$/);
-const validateGroupLabel = validateRegexp(/^[A-Za-z-\._ ]+$/);
-const validateCustomFieldValues = validateRegexp(/^.{0,500}$/);
+const validateUserUuid = tsValidateRegexp(/^.{0,50}$/);
+const validateGroupLabel = tsValidateRegexp(/^[A-Za-z-\._ ]+$/);
+const validateCustomFieldValues = tsValidateRegexp(/^.{0,500}$/);
 
 function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 	const domainIds = levels.map(level => level.domainId);
@@ -74,17 +64,18 @@ function checkDuplicateLevelsDomain(levels: DB_PermissionAccessLevel[]) {
 export class GroupsDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionsGroup> {
 	static _validator: TypeValidator<DB_PermissionsGroup> = {
-		_id: validateStringAndNumbersWithDashes,
+		...BaseDB_ApiGenerator.__validator,
+		_id: tsValidateStringAndNumbersWithDashes,
 		label: validateGroupLabel,
 		tags: undefined,
-		accessLevelIds: validateArray(validateUniqueId, false),
-		customFields: validateArray(validateObjectValues<string>(validateCustomFieldValues), false),
+		accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
+		customFields: tsValidateArray(tsValidateObjectValues<string>(validateCustomFieldValues), false),
 		__accessLevels: undefined,
 		_audit: undefined
 	};
 
 	constructor() {
-		super(CollectionName_Groups, GroupsDB_Class._validator, "group");
+		super(CollectionName_Groups, GroupsDB_Class._validator, 'group');
 		this.setLockKeys(['__accessLevels']);
 	}
 
@@ -141,7 +132,7 @@ export class GroupsDB_Class
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionsGroup, request?: ExpressRequest) {
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 
@@ -164,7 +155,10 @@ export class GroupsDB_Class
 
 	upsertPredefinedGroups(projectId: string, projectName: string, predefinedGroups: PredefinedGroup[]) {
 		return this.runInTransaction(async (transaction) => {
-			const _groups = predefinedGroups.map(group => ({_id: this.getPredefinedGroupId(projectId, group._id), label: `${projectName}--${group.key}-${group.label}`}));
+			const _groups = predefinedGroups.map(group => ({
+				_id: this.getPredefinedGroupId(projectId, group._id),
+				label: `${projectName}--${group.key}-${group.label}`
+			}));
 
 			const dbGroups = filterInstances(await batchAction(_groups.map(group => group._id), 10, (chunk) => {
 				return transaction.query(this.collection, {where: {_id: {$in: chunk}}});
@@ -182,21 +176,25 @@ export class UsersDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionsUser>
 	implements OnNewUserRegistered, OnUserLogin {
 	static _validator: TypeValidator<DB_PermissionsUser> = {
+		...BaseDB_ApiGenerator.__validator,
 		_id: undefined,
 		accountId: validateUserUuid,
-		groups: validateArray({groupId: validateStringAndNumbersWithDashes, customField: validateObjectValues<string>(validateCustomFieldValues, false)}, false),
-		__groupIds: validateArray(validateStringAndNumbersWithDashes, false),
+		groups: tsValidateArray({
+			groupId: tsValidateStringAndNumbersWithDashes,
+			customField: tsValidateObjectValues<string>(validateCustomFieldValues, false)
+		}, false),
+		__groupIds: tsValidateArray(tsValidateStringAndNumbersWithDashes, false),
 		_audit: undefined
 	};
 
 	constructor() {
-		super(CollectionName_Users, UsersDB_Class._validator, "user");
-		this.setLockKeys(["accountId"]);
+		super(CollectionName_Users, UsersDB_Class._validator, 'user');
+		this.setLockKeys(['accountId']);
 	}
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionsUser, request?: ExpressRequest): Promise<void> {
 		if (request) {
-			const account = await AccountModule.validateSession(request);
+			const account = await AccountModuleBE.validateSession(request);
 			dbInstance._audit = auditBy(account.email);
 		}
 
@@ -251,7 +249,7 @@ export class UsersDB_Class
 	async insertIfNotExist(email: string) {
 		return this.runInTransaction(async (transaction) => {
 
-			const account = await AccountModule.getUser(email);
+			const account = await AccountModuleBE.getUser(email);
 			if (!account)
 				throw new ApiException(404, `user not found for email ${email}`);
 
@@ -266,14 +264,14 @@ export class UsersDB_Class
 	async assignAppPermissions(assignAppPermissionsObj: AssignAppPermissions, request?: ExpressRequest) {
 		const sharedUserIds = assignAppPermissionsObj.sharedUserIds || [];
 		if (!sharedUserIds.length)
-			throw new BadImplementationException("SharedUserIds is missing");
+			throw new BadImplementationException('SharedUserIds is missing');
 
 		const groupId = GroupPermissionsDB.getPredefinedGroupId(assignAppPermissionsObj.projectId, assignAppPermissionsObj.group._id);
 		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId,
-		                                                       {groupId, customField: assignAppPermissionsObj.customField});
+			{groupId, customField: assignAppPermissionsObj.customField});
 
 		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
-			throw new BadImplementationException("Group to must be a part of the groups to removed array");
+			throw new BadImplementationException('Group to must be a part of the groups to removed array');
 
 		await this.runInTransaction(async (transaction) => {
 			const users = await batchAction(sharedUserIds, 10, (chunked) => {

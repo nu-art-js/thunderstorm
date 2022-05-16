@@ -33,7 +33,7 @@ class ServerApi_PushTest
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-		await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'}, true);
+		await PushPubSubModule.pushToKey('key', {a: 'prop'}, {some: 'more', data: 'here'});
 		// await PushPubSubModule.pushToUser('9226fa2e4c128b84fd46526ca6ee926c', 'key', {a: 'prop'}, {some: 'more', data: 'here'}, true);
 		return "push succeeded!";
 	}

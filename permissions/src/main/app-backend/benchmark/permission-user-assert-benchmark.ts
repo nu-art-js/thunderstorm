@@ -16,26 +16,11 @@
  * limitations under the License.
  */
 
-import {
-	generateHex,
-	currentTimeMillies
-} from "@nu-art/ts-common";
-import {
-	AccessLevelPermissionsDB,
-	ApiPermissionsDB,
-	DomainPermissionsDB,
-	ProjectPermissionsDB
-} from "../modules/db-types/managment";
-import {
-	GroupPermissionsDB,
-	UserPermissionsDB
-} from "../modules/db-types/assign";
+import {batchAction, currentTimeMillis, filterInstances, generateHex, PreDBObject} from "@nu-art/ts-common";
+import {AccessLevelPermissionsDB, ApiPermissionsDB, DomainPermissionsDB, ProjectPermissionsDB} from "../modules/db-types/managment";
+import {GroupPermissionsDB, UserPermissionsDB} from "../modules/db-types/assign";
 import {PermissionsAssert} from "../modules/permissions-assert";
-import {
-	DB_PermissionsGroup,
-	User_Group
-} from "../..";
-import {FirestoreTransaction} from "@nu-art/firebase/backend";
+import {DB_PermissionsGroup, User_Group} from "../..";
 
 function makeAlphaBetIdForTestOnly(length: number) {
 	let result = '';
@@ -65,30 +50,23 @@ export async function testUserPermissionsTime() {
 	await ApiPermissionsDB.upsert({projectId: projectId, _id: apiId, path: apiPath, accessLevelIds: [permissionId]});
 
 	const groupIdArray: User_Group[] = [];
-	const dbInstances: DB_PermissionsGroup[] = [];
+	const dbInstances: PreDBObject<DB_PermissionsGroup>[] = [];
 	for (let counter = 0; counter < 100; counter++) {
 		const groupId = generateHex(32);
 		const baseAccessLevel = {domainId: accessLevel.domainId, value: accessLevel.value};
 		dbInstances.push({
-			                 _id: groupId,
-			                 accessLevelIds: [accessLevel._id],
-			                 __accessLevels: [baseAccessLevel],
-			                 customFields: [customField],
-			                 label: `group-${makeAlphaBetIdForTestOnly(5)}`
-		                 });
+			_id: groupId,
+			accessLevelIds: [accessLevel._id],
+			__accessLevels: [baseAccessLevel],
+			customFields: [customField],
+			label: `group-${makeAlphaBetIdForTestOnly(5)}`
+		});
 		groupIdArray.push({groupId, customField: {test: "test"}});
 	}
 
 	console.log('dbInstances ready to upsert');
 
-	// @ts-ignore
-	const collection = GroupPermissionsDB.collection;
-	await collection.runInTransaction(async (transaction: FirestoreTransaction) => {
-
-		// @ts-ignore
-		await Promise.all(dbInstances.map(dbInstance => GroupPermissionsDB.assertUniqueness(transaction, dbInstance)));
-		return transaction.upsertAll(collection, dbInstances);
-	});
+	await GroupPermissionsDB.upsertAll(dbInstances);
 
 	await UserPermissionsDB.upsert({_id: userId, accountId: userUuid, groups: groupIdArray});
 
@@ -100,11 +78,7 @@ export async function testUserPermissionsTime() {
 
 	// ----deletes db documents---
 	await UserPermissionsDB.delete({where: {_id: userId}});
-	for (let counter = 0; counter < 10; counter++) {
-		const startIndex = counter * 10;
-		const subDbInstances = dbInstances.slice(startIndex, startIndex + 10);
-		await GroupPermissionsDB.delete({where: {_id: {$in: subDbInstances.map(e => e._id)}}});
-	}
+	await batchAction(filterInstances(dbInstances.map(i => i._id)), 10, chunk => GroupPermissionsDB.delete({where: {_id: {$in: chunk}}}))
 	await AccessLevelPermissionsDB.delete({where: {_id: permissionId}});
 	await DomainPermissionsDB.delete({where: {_id: domainId}});
 	await ApiPermissionsDB.delete({where: {_id: apiId}});
@@ -112,9 +86,9 @@ export async function testUserPermissionsTime() {
 }
 
 async function runAssertion(projectId: string, apiPath: string, userUuid: string, customField: { UnitId: string }) {
-	const start = currentTimeMillies();
+	const start = currentTimeMillis();
 	await PermissionsAssert.assertUserPermissions(projectId, apiPath, userUuid, customField);
-	const runTime = currentTimeMillies() - start;
+	const runTime = currentTimeMillis() - start;
 	console.log(`Call to assertion took ${runTime}ms`);
 	return runTime;
 }

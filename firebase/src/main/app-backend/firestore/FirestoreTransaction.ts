@@ -16,50 +16,46 @@
  * limitations under the License.
  */
 
-import * as admin from "firebase-admin";
-import {FirestoreType_DocumentSnapshot} from "./types";
-import {FirestoreCollection,} from "./FirestoreCollection";
-import {
-	BadImplementationException,
-	merge,
-	Subset
-} from "@nu-art/ts-common";
-import {FirestoreQuery} from "../../shared/types";
-import {FirestoreInterface} from "./FirestoreInterface";
+import {FirestoreType_DocumentSnapshot} from './types';
+import {FirestoreCollection,} from './FirestoreCollection';
+import {BadImplementationException, merge, ObjectTS, Subset} from '@nu-art/ts-common';
+import {FirestoreQuery} from '../../shared/types';
+import {FirestoreInterface} from './FirestoreInterface';
+import {Transaction} from 'firebase-admin/firestore';
 
 export class FirestoreTransaction {
-	private transaction: admin.firestore.Transaction;
+	private transaction: Transaction;
 
-	constructor(transaction: admin.firestore.Transaction) {
+	constructor(transaction: Transaction) {
 		this.transaction = transaction;
 	}
 
-	private async _query<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot[]> {
+	private async _query<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot[]> {
 		const query = FirestoreInterface.buildQuery(collection, ourQuery);
 		return (await this.transaction.get(query)).docs;
 	}
 
-	private async _queryUnique<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
+	private async _queryUnique<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
 		const results: FirestoreType_DocumentSnapshot[] = await this._query(collection, ourQuery);
 		return FirestoreInterface.assertUniqueDocument(results, ourQuery, collection.name);
 	}
 
-	private async _queryItem<Type extends object>(collection: FirestoreCollection<Type>, instance: Subset<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
+	private async _queryItem<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Subset<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
 		const ourQuery = FirestoreInterface.buildUniqueQuery(collection, instance);
 		const results: FirestoreType_DocumentSnapshot[] = await this._query(collection, ourQuery);
 		return FirestoreInterface.assertUniqueDocument(results, ourQuery, collection.name);
 	}
 
-	async query<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<Type[]> {
+	async query<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<Type[]> {
 		return (await this._query(collection, ourQuery)).map(result => result.data() as Type);
 	}
 
-	async queryItem<Type extends object>(collection: FirestoreCollection<Type>, instance: Type): Promise<Type | undefined> {
+	async queryItem<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type): Promise<Type | undefined> {
 		const ourQuery = FirestoreInterface.buildUniqueQuery(collection, instance);
 		return this.queryUnique(collection, ourQuery);
 	}
 
-	async queryUnique<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<Type | undefined> {
+	async queryUnique<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<Type | undefined> {
 		const doc = await this._queryUnique(collection, ourQuery);
 		if (!doc)
 			return;
@@ -67,55 +63,55 @@ export class FirestoreTransaction {
 		return doc.data() as Type;
 	}
 
-	async insert<Type extends object>(collection: FirestoreCollection<Type>, instance: Type) {
+	async insert<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type) {
 		const doc = collection.createDocumentReference();
-		await this.transaction.set(doc, instance);
+		await this.transaction.create(doc, instance);
 		return instance;
 	}
 
-	async insertAll<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]) {
-		return Promise.all(instances.map(instance => this.insert(collection, instance)));
+	async insertAll<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instances: Type[]) {
+		return await Promise.all(instances.map(instance => this.insert(collection, instance)));
 	}
 
 //------------------------
-	async upsert<Type extends object>(collection: FirestoreCollection<Type>, instance: Type) {
+	async upsert<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type) {
 		return (await this.upsert_Read(collection, instance))();
 	}
 
-	async upsert_Read<Type extends object>(collection: FirestoreCollection<Type>, instance: Type) {
+	async upsert_Read<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type) {
 		const ref = await this.getOrCreateDocument(collection, instance);
 
 		return async () => {
 			await this.transaction.set(ref, instance);
 			return instance;
-		}
+		};
 	}
 
-	private async getOrCreateDocument<Type extends object>(collection: FirestoreCollection<Type>, instance: Type) {
+	private async getOrCreateDocument<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type) {
 		let ref = (await this._queryItem(collection, instance))?.ref;
 		if (!ref)
 			ref = collection.createDocumentReference();
 		return ref;
 	}
 
-	async upsertAll<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<Type[]> {
+	async upsertAll<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<Type[]> {
 		if (instances.length > 500)
 			throw new BadImplementationException('Firestore transaction supports maximum 500 at a time');
 
 		return (await this.upsertAll_Read(collection, instances))();
 	}
 
-	async upsertAll_Read<Type extends object>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<() => Promise<Type[]>> {
+	async upsertAll_Read<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<() => Promise<Type[]>> {
 		const writes = await Promise.all(instances.map(async instance => this.upsert_Read(collection, instance)));
 
 		return async () => Promise.all(writes.map(async _write => _write()));
 	}
 
-	async patch<Type extends object>(collection: FirestoreCollection<Type>, instance: Subset<Type>) {
+	async patch<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Subset<Type>) {
 		return (await this.patch_Read(collection, instance))();
 	}
 
-	async patch_Read<Type extends object>(collection: FirestoreCollection<Type>, instance: Subset<Type>) {
+	async patch_Read<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Subset<Type>) {
 		const doc = await this._queryItem(collection, instance);
 		if (!doc)
 			throw new BadImplementationException(`Patching a non existent doc for query ${FirestoreInterface.buildUniqueQuery(collection, instance)}`);
@@ -124,14 +120,14 @@ export class FirestoreTransaction {
 			const patchedInstance = merge(await doc.data() as Type, instance);
 			this.transaction.set(doc.ref, patchedInstance);
 			return patchedInstance;
-		}
+		};
 	}
 
-	async delete<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
-		await (await this.delete_Read(collection, ourQuery))()
+	async delete<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
+		await (await this.delete_Read(collection, ourQuery))();
 	}
 
-	async delete_Read<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
+	async delete_Read<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
 		const docs = await this._query(collection, ourQuery);
 
 		if (docs.length > 500)
@@ -141,14 +137,14 @@ export class FirestoreTransaction {
 			const toReturn = docs.map(doc => doc.data() as Type);
 			await Promise.all(docs.map(async (doc) => this.transaction.delete(doc.ref)));
 			return toReturn;
-		}
+		};
 	}
 
-	async deleteItem<Type extends object>(collection: FirestoreCollection<Type>, instance: Type) {
-		return this.deleteUnique(collection, FirestoreInterface.buildUniqueQuery(collection, instance))
+	async deleteItem<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type) {
+		return this.deleteUnique(collection, FirestoreInterface.buildUniqueQuery(collection, instance));
 	}
 
-	async deleteUnique<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<Type | undefined> {
+	async deleteUnique<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<Type | undefined> {
 		const write = await this.deleteUnique_Read(collection, ourQuery);
 		if (!write)
 			return;
@@ -156,7 +152,7 @@ export class FirestoreTransaction {
 		return write();
 	}
 
-	async deleteUnique_Read<Type extends object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<undefined | (() => Promise<Type>)> {
+	async deleteUnique_Read<Type extends ObjectTS>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<undefined | (() => Promise<Type>)> {
 		const doc = (await this._queryUnique(collection, ourQuery));
 		if (!doc)
 			return;
@@ -166,6 +162,6 @@ export class FirestoreTransaction {
 			await this.transaction.delete(doc.ref);
 
 			return result;
-		}
+		};
 	}
 }

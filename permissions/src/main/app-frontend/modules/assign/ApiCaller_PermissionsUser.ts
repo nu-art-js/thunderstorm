@@ -52,7 +52,7 @@ export class PermissionsUserModule_Class
 
 	protected async onQueryReturned(response: DB_PermissionsUser[]): Promise<void> {
 		this.users = response;
-		dispatch_onPermissionsUsersLoaded.dispatchUI([]);
+		dispatch_onPermissionsUsersLoaded.dispatchUI();
 	}
 
 	getUserByAccountId(accountId: string) {

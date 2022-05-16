@@ -15,24 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	BadImplementationException,
-	Exception,
-	Module
-} from "@nu-art/ts-common";
+import {BadImplementationException, Exception, Module} from "@nu-art/ts-common";
 import * as jwt from "jsonwebtoken";
-import {
-	Octokit,
-	RestEndpointMethodTypes
-} from '@octokit/rest';
-import {
-	OctokitResponse, ReposGetContentResponseData
-} from "@octokit/types"
+import {Octokit, RestEndpointMethodTypes} from '@octokit/rest';
+import {OctokitResponse, ReposGetContentResponseData} from "@octokit/types"
 import * as path from "path";
-import {
-	ExpressRequest,
-	promisifyRequest
-} from "@nu-art/thunderstorm/backend";
+import {ExpressRequest, promisifyRequest} from "@nu-art/thunderstorm/backend";
 
 type Config = {
 	appId: string
@@ -58,7 +46,7 @@ export class GithubModule_Class
 				auth: auth
 			});
 		return client;
-	};
+	}
 
 	private async createClientWithJWT() {
 		const ts = Math.floor(Date.now() / 1000.0);
@@ -126,7 +114,7 @@ export class GithubModule_Class
 					path: filePath,
 					ref: branch
 				});
-		} catch (error) {
+		} catch (error: any) {
 			this.logError(error);
 			if (error.status === 403 && error.errors && error.errors.length === 1 &&
 				error.errors[0].code === 'too_large') {
@@ -180,7 +168,7 @@ export class GithubModule_Class
 				ref: branch
 			};
 			parentDirectoryResponse = await client.repos.getContent(request);
-		} catch (error) {
+		} catch (error: any) {
 			throw new Exception(`Failed to fetch parent directory contents of file ${filePath}`, error);
 		}
 
@@ -241,14 +229,14 @@ export class GithubModule_Class
 					per_page: 100
 				}
 			);
-		} catch (error) {
+		} catch (error: any) {
 			this.logError(error);
 			throw new Exception(`Failed to list ${repo} branches`);
 		}
 
 		// Response includes (besides branch name) extra information about the branch.
 		return branches;
-	};
+	}
 
 	async getArchiveUrl(repo: string, branch: string) {
 		const token = await this.getGithubInstallationToken();
@@ -285,13 +273,11 @@ export class GithubModule_Class
 	 *
 	 * This API has an upper limit of 1,000 files for a directory.
 	 */
-	async listDirectoryContents(repo: string, branch: string, _path: string): Promise<ReposGetContentResponseData| undefined> {
+	async listDirectoryContents(repo: string, branch: string, _path: string): Promise<ReposGetContentResponseData | undefined> {
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
-		let response: RestEndpointMethodTypes["repos"]["getContent"]["response"];
-
-		response = await client.repos.getContent(
+		const response: RestEndpointMethodTypes["repos"]["getContent"]["response"] = await client.repos.getContent(
 			{
 				owner: this.config.gitOwner,
 				repo,

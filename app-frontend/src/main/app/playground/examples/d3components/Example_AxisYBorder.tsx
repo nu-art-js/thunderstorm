@@ -1,6 +1,6 @@
-import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/frontend";
-import {ScaleLinear} from "d3-scale";
+import * as React from 'react';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {ScaleLinear} from 'd3-scale';
 
 type Props = {
 	xScale: ScaleLinear<number, number, any>,
@@ -11,10 +11,10 @@ type Props = {
 }
 
 export class AxisYBorder
-	extends BaseComponent<Props, {}> {
+	extends ComponentSync<Props, {}> {
 
-	constructor(props: Props) {
-		super(props);
+	protected deriveStateFromProps(nextProps: Props): {} | undefined {
+		return {};
 	}
 
 	axisBottom = () => {
@@ -23,14 +23,14 @@ export class AxisYBorder
 		const axis = this.props.xScale.ticks(this.props.ticks).map((d, i) => (
 			<g className="x-tick" key={i}>
 				<line
-					style={{stroke: "#e4e5eb"}}
+					style={{stroke: '#e4e5eb'}}
 					y1={0}
 					y2={i === 1 ? this.props.height : 0}
 					x1={this.props.xScale(d)}
 					x2={this.props.xScale(d)}
 				/>
 				<text
-					style={{textAnchor: "middle", fontSize: 12}}
+					style={{textAnchor: 'middle', fontSize: 12}}
 					dy=".71em"
 					x={this.props.placeInMiddle ? this.props.xScale(d) + ((this.props.xScale(this.props.xScale.ticks(this.props.ticks)[i + 1]) - this.props.xScale(d)) / 2) : this.props.xScale(d)}
 					y={this.props.height + textPaddingY}

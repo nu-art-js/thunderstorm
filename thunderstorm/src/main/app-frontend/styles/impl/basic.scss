@@ -1,0 +1,77 @@
+@use '../declaration/basic' as *;
+// TODO - need to move Styled layout to infra.. and remove from here and from components/layouts
+
+/**
+ * Dimension shit
+ */
+.match_height {
+  @extend %match_height;
+}
+
+.match_width {
+  @extend %match_width;
+}
+
+.match_parent {
+  @extend %match_parent;
+}
+
+.flex__stretch {
+  @extend %flex__stretch;
+}
+
+.flex__space-between {
+  @extend %flex__space-between;
+}
+
+.flex__justify-center {
+  @extend %flex__justify-center;
+}
+
+.flex__space-evenly {
+  @extend %flex__space-evenly;
+}
+
+.flex__grow {
+  @extend %flex__grow;
+}
+
+.center_h {
+  @extend %center_h;
+}
+
+.center_v {
+  @extend %center_v;
+}
+
+.center {
+  @extend %center;
+}
+
+.clickable {
+  @extend %clickable;
+}
+
+.right {
+  @extend %right;
+}
+
+.bottom {
+  @extend %bottom;
+}
+
+.left {
+  @extend %left;
+}
+
+.top {
+  @extend %top;
+}
+
+.center_children {
+  @extend %center_children;
+}
+
+.unselectable {
+  @extend %unselectable;
+}

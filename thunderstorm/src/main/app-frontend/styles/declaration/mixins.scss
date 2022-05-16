@@ -1,0 +1,43 @@
+@use 'sass:math';
+@use 'sass:list';
+
+@mixin icon-size($width, $height: $width) {
+  width: $width;
+  height: $height;
+}
+
+@mixin icon-style($color, $hoverColor:$color, $selectedColor:$color, $mouseDownColor:$selectedColor, $disabledColor:$color) {
+  display: inline-block;
+  background: $color;
+  &:hover {
+    background: $hoverColor;
+  }
+  &:active {
+    background: $mouseDownColor;
+  }
+}
+
+@mixin icon-url($icon) {
+  -webkit-mask-image: url($icon);
+  mask-image: url($icon);
+}
+
+@mixin spaces($depths, $depth-padding:15,$class-prefix:'depth') {
+  $depth-unit: 'px';
+  @for $i from 1 through $depths {
+    $val: $depth-padding * $i;
+    &.#{$class-prefix}-#{$i} {
+      padding-left: #{$val}#{$depth-unit};
+    }
+  }
+}
+
+@function buildPalette($baseColor,$steps:7) {
+  $colorsList: ();
+  @for $i from 0 to $steps {
+    $lightness: math.percentage(math.div($i, $steps));
+    $newColor: scale-color($baseColor, $lightness: $lightness);
+    $colorsList: list.append($colorsList, #{$newColor});
+  }
+  @return $colorsList
+}

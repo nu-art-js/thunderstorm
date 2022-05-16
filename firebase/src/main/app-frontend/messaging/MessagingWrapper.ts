@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-import {Logger} from "@nu-art/ts-common";
-import {FirebaseType_Messaging, FirebaseType_Unsubscribe} from "./types";
-import {getToken, GetTokenOptions, MessagePayload, NextFn, Observer, onMessage} from "firebase/messaging";
+import {Logger} from '@nu-art/ts-common';
+import {FirebaseType_Messaging, FirebaseType_Unsubscribe} from './types';
+import {deleteToken, getMessaging, getToken, GetTokenOptions, MessagePayload, NextFn, Observer, onMessage} from 'firebase/messaging';
+import {FirebaseApp} from 'firebase/app';
 
 export class MessagingWrapper
 	extends Logger {
@@ -27,17 +28,25 @@ export class MessagingWrapper
 	private callback?: NextFn<MessagePayload> | Observer<MessagePayload>;
 	private token?: string;
 
-	constructor(messaging: FirebaseType_Messaging) {
+	constructor(app: FirebaseApp) {
 		super();
-		this.messaging = messaging;
+		this.messaging = getMessaging(app);
 	}
 
 	async getToken(options?: GetTokenOptions): Promise<string> {
-		this.token = await getToken(this.messaging,options);
+		this.token = await getToken(this.messaging, options);
+
 		if (this.callback)
-			onMessage(this.messaging, this.callback);
+			this.onMessage(this.callback);
 
 		return this.token;
+	}
+
+	async deleteToken() {
+		this.logVerbose('Deleting firebase messaging token');
+		await deleteToken(this.messaging);
+
+		delete this.token;
 	}
 
 	onMessage(callback: NextFn<MessagePayload> | Observer<MessagePayload>): FirebaseType_Unsubscribe | void {

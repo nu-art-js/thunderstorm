@@ -19,26 +19,17 @@
 /**
  * Created by TacB0sS on 3/18/17.
  */
-import {
-	currentTimeMillies,
-	generateUUID,
-	Logger,
-	timeout,
-	Void,
-	Constructor,
-	isErrorOfType,
-	__stringify
-} from "@nu-art/ts-common";
+import {__stringify, Constructor, currentTimeMillis, generateUUID, isErrorOfType, Logger, timeout, Void} from "@nu-art/ts-common";
 import {ContextKey} from "./ContainerContext";
 import {Reporter} from "./Reporter";
 import {TestException} from "./TestException";
 
 export enum Status {
-	Ready   = "Ready",
+	Ready = "Ready",
 	Running = "Running",
 	Skipped = "Skipped",
 	Success = "Success",
-	Error   = "Error"
+	Error = "Error"
 }
 
 export const enum ErrorPolicy {
@@ -60,7 +51,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 	readonly uuid: string = generateUUID();
 	protected writeKey!: ContextKey<ReturnValue>;
 	private readKey!: ContextKey<ParamValue>;
-	private parent!: Action<any>;
+	private parent!: Action;
 	protected reporter!: Reporter;
 
 	private label?: string | ((param?: ParamValue) => string) = "Unnamed Action";
@@ -168,7 +159,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 	}
 
 	private async _execute() {
-		this._started = currentTimeMillies();
+		this._started = currentTimeMillis();
 
 		let label: string | undefined;
 		let err;
@@ -191,7 +182,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 
 				label && this.reporter.logVerbose(`skipped: ${label}`);
 				this.reporter.onActionEnded(this);
-				this._ended = currentTimeMillies();
+				this._ended = currentTimeMillis();
 				return;
 			}
 
@@ -207,7 +198,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 			this.setStatus(Status.Running);
 
 			retValue = await this.execute((param || Void) as ParamValue);
-		} catch (e) {
+		} catch (e: any) {
 			err = this.shouldFailCondition?.(e) ? undefined : e;
 		} finally {
 			if (this.status !== Status.Skipped) {
@@ -234,7 +225,7 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 		if (this.postExecutionDelay > 0)
 			await timeout(this.postExecutionDelay);
 
-		this._ended = currentTimeMillies();
+		this._ended = currentTimeMillis();
 	}
 
 	setStatus(status: Status) {

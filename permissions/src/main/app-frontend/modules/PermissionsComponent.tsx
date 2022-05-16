@@ -1,9 +1,5 @@
-import * as React from "react";
-import {BaseComponent} from "@nu-art/thunderstorm/frontend";
-import {
-	OnPermissionsChanged,
-	PermissionsFE
-} from "./PermissionsModuleFE";
+import * as React from 'react';
+import {OnPermissionsChanged, PermissionsFE} from './PermissionsModuleFE';
 
 type Props = {
 	url: string
@@ -12,7 +8,7 @@ type Props = {
 }
 
 export class PermissionsComponent
-	extends BaseComponent<Props>
+	extends React.Component<Props>
 	implements OnPermissionsChanged {
 
 	__onPermissionsChanged() {

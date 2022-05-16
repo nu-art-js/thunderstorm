@@ -24,7 +24,7 @@ import {PushPubSubModule} from "../main/app-backend/modules/PushPubSubModule";
 import {
 	assert,
 	compare,
-	currentTimeMillies,
+	currentTimeMillis,
 	generateHex,
 	Hour
 } from "@nu-art/ts-common";
@@ -89,12 +89,12 @@ const cleaup = __custom(async () => PushPubSubModule.scheduledCleanup()).setLabe
 
 const check = __custom(async () => {
 	// @ts-ignore
-	const docs = await PushPubSubModule.pushSessions.query({where: {timestamp: {$lt: currentTimeMillies() - Hour}}});
+	const docs = await PushPubSubModule.pushSessions.query({where: {timestamp: {$lt: currentTimeMillis() - Hour}}});
 	assert(`There shouldn't be any docs`, docs.length, 0);
 }).setLabel('Checking clean');
 
 scenarioCleanup.add(processClean);
-scenarioCleanup.add(populate(currentTimeMillies() - 2 * Hour));
-scenarioCleanup.add(populate(currentTimeMillies() + 2 * Hour));
+scenarioCleanup.add(populate(currentTimeMillis() - 2 * Hour));
+scenarioCleanup.add(populate(currentTimeMillis() + 2 * Hour));
 scenarioCleanup.add(cleaup);
 scenarioCleanup.add(check);

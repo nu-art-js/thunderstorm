@@ -1,7 +1,9 @@
 import * as React from 'react';
-import {FieldEditor} from "./FieldEditor";
-import {BaseComponent} from '../core/BaseComponent';
+import {HTMLProps, ReactNode} from 'react';
+import {EditorType, FieldEditor, FieldEditorInputProps} from './FieldEditor';
+import {ComponentSync} from '../core/ComponentSync';
 import {StorageKey} from '../modules/StorageModule';
+import {InputType} from '../components/TS_Input/TS_BaseInput';
 
 type State = {
 	isEditing: boolean;
@@ -9,32 +11,40 @@ type State = {
 };
 
 export type FieldEditorClickProps = {
-	inputStyle?: React.CSSProperties;
-	labelStyle?: React.CSSProperties
-	placeholder?: string;
+	clicks?: 1 | 2
+	inputProps?: FieldEditorInputProps<any>;
+	labelProps?: HTMLProps<HTMLDivElement> | ((value: string) => ReactNode)
+	editorType?: EditorType
+	type: InputType;
 	id: string;
 	onAccept: (value: string) => void;
 	value?: string;
 };
 
 export class FieldEditorClick
-	extends BaseComponent<FieldEditorClickProps, State> {
+	extends ComponentSync<FieldEditorClickProps, State> {
 
 	private createStorageKey() {
 		return new StorageKey<string>(`editable-label-controller-${this.props.id}`);
 	}
 
-	constructor(props: FieldEditorClickProps) {
-		super(props);
-		this.state = {
+	protected deriveStateFromProps(nextProps: FieldEditorClickProps) {
+		return {
 			storageKey: this.createStorageKey(),
 			isEditing: false,
 		};
 	}
 
 	componentDidUpdate(prevProps: Readonly<FieldEditorClickProps>, prevState: Readonly<State>) {
-		if (prevProps.id !== this.props.id)
-			this.setState({storageKey: this.createStorageKey()});
+		let storageKey = prevState.storageKey;
+		if (prevProps.id !== this.props.id) {
+			storageKey = this.createStorageKey();
+			this.setState({storageKey: storageKey});
+		}
+
+		const prevValue = storageKey.get();
+		if (!prevValue)
+			storageKey.set(this.props.value || '');
 	}
 
 	private handleSave = () => {
@@ -43,13 +53,17 @@ export class FieldEditorClick
 	};
 
 	private startEdit = () => {
-		addEventListener("keydown", this.keyPressed);
+		if (this.state.isEditing)
+			return;
+
+		addEventListener('keydown', this.keyPressed);
 		this.state.storageKey.set(this.props.value || '');
 		this.setState({isEditing: true});
 	};
 
 	private endEdit = () => {
-		removeEventListener("keydown", this.keyPressed);
+		removeEventListener('keydown', this.keyPressed);
+		this.logDebug('endEdit');
 		this.state.storageKey.delete();
 		this.setState({isEditing: false});
 	};
@@ -60,22 +74,23 @@ export class FieldEditorClick
 	};
 
 	render() {
-		const {inputStyle, labelStyle} = this.props;
 		return (
-			<div className={`ll_h_c`}
-			     onDoubleClick={this.startEdit}
-			     onBlur={() => this.handleSave()}
-			>
+			<div style={{width: '100%'}}
+					 onClick={this.props.clicks === 1 ? this.startEdit : undefined}
+					 onDoubleClick={this.props.clicks === undefined || this.props.clicks === 2 ? this.startEdit : undefined}
+					 onBlur={() => this.handleSave()}
+					 {...this.props.labelProps}>
 				<FieldEditor
+					id={this.props.id}
+					type={this.props.type}
+					editorType={this.props.editorType}
 					isEditing={this.state.isEditing}
-					inputStyle={inputStyle}
-					labelStyle={labelStyle}
+					inputProps={this.props.inputProps}
+					labelProps={this.props.labelProps}
 					onCancel={this.endEdit}
 					onAccept={this.handleSave}
 					storageKey={this.state.storageKey}
 					value={this.props.value}
-					placeholder={this.props.placeholder}
-					id={this.props.id}
 				/>
 			</div>
 		);

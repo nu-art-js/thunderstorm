@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {TreeNode} from "../tree/types";
+import * as React from 'react';
+import {TreeNode} from '../TS_Tree/types';
 
 
 export type ItemRendererProps<Item extends any = any> = { item: Item }
@@ -54,6 +54,5 @@ export type BaseRendererMap<R extends React.ComponentType<any>> = {
 	[k: string]: R
 }
 
-export type ItemRendererMap = BaseRendererMap<_BaseItemRenderer<any>>;
 export type TreeRendererMap = BaseRendererMap<_BaseNodeRenderer<any>>;
 

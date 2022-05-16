@@ -16,29 +16,21 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi
-} from "@nu-art/thunderstorm/backend";
-import {
-	PermissionsApi_UserUrlsPermissions,
-	Request_UserUrlsPermissions
-} from "./_imports";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {AccountModule} from "@nu-art/user-account/backend";
-import {PermissionsModule} from "../../../modules/PermissionsModule";
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {PermissionsApi_UserUrlsPermissions, PermissionsModule, Request_UserUrlsPermissions} from './_imports';
+import {HttpMethod} from '@nu-art/thunderstorm';
+import {AccountModuleBE} from '@nu-art/user-account/backend';
 
 class ServerApi_UserUrlsPermissions
 	extends ServerApi<PermissionsApi_UserUrlsPermissions> {
 
 	constructor() {
-		super(HttpMethod.POST, "user-urls-permissions");
+		super(HttpMethod.POST, 'user-urls-permissions');
 		this.dontPrintResponse();
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UserUrlsPermissions) {
-		const account = await AccountModule.validateSession(request);
+		const account = await AccountModuleBE.validateSession(request);
 		return PermissionsModule.getUserUrlsPermissions(body.projectId, body.urls, account._id, body.requestCustomField);
 	}
 }

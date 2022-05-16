@@ -29,26 +29,28 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "~0.0.1"
+    "@nu-art/ts-common": "~0.0.1",
+    "@slack/web-api": "^5.1.0"
+  },
+  "peerDependencies": {
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1",
+    "react-router-dom": "^5.1.2"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.8.0",
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/storage": "^5.0.0",
     "@nu-art/testelot": "~0.0.1",
     "@nu-art/thunderstorm": "~0.0.1",
     "@slack/events-api": "^2.3.0",
-    "@slack/web-api": "^5.1.0",
-    "@types/mongodb": "3.1.22",
-    "@types/redis": "^2.8.10",
     "firebase": "^9.6.1",
     "firebase-admin": "^10.0.1",
     "firebase-functions": "^3.16.0",
     "fs": "0.0.1-security",
     "google-auth-library": "^6.0.6",
     "moment": "^2.24.0",
-    "mongodb": "3.2.2",
-    "redis": "^2.8.0",
     "request": "^2.88.0",
-    "typescript": "~4.1.0"
+    "typescript": "^4.5.0"
   }
 }

@@ -75,9 +75,9 @@ function buildJQL(query: JiraQuery) {
 		return `${key}${operator}${queryValue}`;
 	});
 	return params.join(" and ");
-};
+}
 
 export const JiraUtils = {
 	createText,
 	buildJQL,
-};
+}

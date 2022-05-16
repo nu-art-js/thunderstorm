@@ -38,7 +38,7 @@ export class PermissionsTagsModule_Class
 
 	protected async onQueryReturned(response: DB_GroupTags[]): Promise<void> {
 		this.tags = response;
-		dispatch_onPermissionsTagsLoaded.dispatchUI([]);
+		dispatch_onPermissionsTagsLoaded.dispatchUI();
 	}
 
 

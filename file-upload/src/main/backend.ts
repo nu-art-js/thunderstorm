@@ -19,7 +19,7 @@
 
 export * from "./app-backend/core/module-pack";
 
-export * from "./app-backend/modules/UploaderModule";
-export * from "./app-backend/modules/BucketListener";
-export * from "./app-backend/modules/UploaderTempFileModule";
+export * from "./app-backend/modules/AssetsModuleBE";
+export * from "./app-backend/modules/AssetBucketListener";
+export * from "./app-backend/modules/AssetsTempModuleBE";
 export * from "./app-backend/modules/ServerUploaderModule";

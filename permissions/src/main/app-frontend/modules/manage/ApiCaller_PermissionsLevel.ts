@@ -61,7 +61,7 @@ export class PermissionsAccessLevelModule_Class
 			this.levels[level.domainId] = levelArray
 		});
 
-		dispatch_onPermissionsLevelsLoaded.dispatchUI([]);
+		dispatch_onPermissionsLevelsLoaded.dispatchUI();
 	}
 
 	getLevels(domainId: string): DB_PermissionAccessLevel[] {

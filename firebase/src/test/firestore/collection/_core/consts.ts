@@ -16,22 +16,18 @@
  * limitations under the License.
  */
 
-import {FirestoreCollection_Tester} from "./collection-wrapper";
-import {
-	FB_ArrayType,
-	FB_Type,
-	SimpleType
-} from "./types";
+import {FirestoreCollection_Tester} from './collection-wrapper';
+import {FB_ArrayType, FB_Type, SimpleType} from './types';
 
-export const testString1 = "string-1";
-export const testString2 = "string-2";
-export const testString3 = "string-3";
-export const testString4 = "string-4";
-export const testString5 = "string-5";
-export const testString6 = "string-6";
-export const testString7 = "string-7";
-export const testString8 = "string-8";
-export const testString9 = "string-9";
+export const testString1 = 'string-1';
+export const testString2 = 'string-2';
+export const testString3 = 'string-3';
+export const testString4 = 'string-4';
+export const testString5 = 'string-5';
+export const testString6 = 'string-6';
+export const testString7 = 'string-7';
+export const testString8 = 'string-8';
+export const testString9 = 'string-9';
 
 export const testNumber1 = 11;
 export const testNumber2 = 22;
@@ -43,10 +39,10 @@ export const testNumber7 = 77;
 export const testNumber8 = 88;
 export const testNumber9 = 99;
 
-export const testCollection = new FirestoreCollection_Tester<FB_Type>("test-collection");
-export const testCollectionWithUnique = new FirestoreCollection_Tester<FB_Type>("test-collection-unique", ["numeric"]);
-export const simpleTypeCollection = new FirestoreCollection_Tester<SimpleType>("test-collection-label");
-export const simpleTypeCollectionUpsert = new FirestoreCollection_Tester<SimpleType>("test-collection-upsert", ["label"]);
+export const testCollection = new FirestoreCollection_Tester<FB_Type>('test-collection');
+export const testCollectionWithUnique = new FirestoreCollection_Tester<FB_Type>('test-collection-unique', ['numeric']);
+export const simpleTypeCollection = new FirestoreCollection_Tester<SimpleType>('test-collection-label');
+export const simpleTypeCollectionUpsert = new FirestoreCollection_Tester<SimpleType>('test-collection-upsert', ['label']);
 
 export const testItem1: FB_ArrayType = {key: testString1, value: testNumber1};
 export const testItem2: FB_ArrayType = {key: testString2, value: testNumber2};

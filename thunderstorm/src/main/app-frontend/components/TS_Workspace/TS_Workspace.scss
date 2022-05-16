@@ -1,0 +1,66 @@
+@mixin separator ($dir) {
+  background: #eeeeee;
+  position: relative;
+
+  @if $dir == 'horizontal' {
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    border-right: 1px solid black;
+  }
+  @if $dir == 'vertical' {
+    width: 100%;
+    height: 5px;
+    cursor: row-resize;
+    border-bottom: 1px solid black;
+  }
+}
+
+@mixin tsWorkspace ($dir) {
+  width: 100%;
+  height: 100%;
+  display: flex;
+
+  @if $dir == 'horizontal' {
+    & > .ts-workspace__separator {
+      @include separator($dir);
+    }
+    & > .ts-workspace__panel {
+      width: 33%;
+      height: 100%;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      //Apply right padding to left and middle panels for scrollbar
+      &.left, &.middle {
+        padding-right: 5px;
+      }
+    }
+  }
+  @if $dir == 'vertical' {
+    & > .ts-workspace__separator {
+      @include separator($dir);
+    }
+    flex-direction: column;
+    & > .ts-workspace__panel {
+      width: 100%;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+    }
+  }
+}
+
+.ts-workspace {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .ts-workspace__vertical {
+    @include tsWorkspace('vertical')
+  }
+  .ts-workspace__horizontal {
+    @include tsWorkspace('horizontal')
+  }
+}
