@@ -43,9 +43,9 @@ export abstract class Module<Config = any>
 	protected timeoutMap: { [k: string]: number } = {};
 
 	// noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
-	constructor(tag?: string) {
+	constructor(tag?: string, name?: string) {
 		super(tag);
-		this.name = this.constructor["name"];
+		this.name = name || this.constructor["name"];
 		if (!this.name.endsWith("_Class"))
 			throw new BadImplementationException(`Module class MUST end with '_Class' e.g. MyModule_Class, check class named: ${this.name}`);
 
