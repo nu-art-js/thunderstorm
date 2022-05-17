@@ -22,8 +22,6 @@
 import {ThunderDispatcher} from "./thunder-dispatcher";
 import {OnRequestListener} from "../../shared/request-types";
 import {ModuleManager} from "@nu-art/ts-common/core/module-manager";
-import {BeLogged} from "@nu-art/ts-common/core/logger/BeLogged";
-import {LogClient_Browser} from "@nu-art/ts-common/core/logger/LogClient_Browser";
 import {removeItemFromArray} from "@nu-art/ts-common/utils/array-tools";
 
 export class AbstractThunder
@@ -43,8 +41,6 @@ export class AbstractThunder
 	}
 
 	init() {
-		BeLogged.addClient(LogClient_Browser);
-
 		super.init();
 
 		this.renderApp();
