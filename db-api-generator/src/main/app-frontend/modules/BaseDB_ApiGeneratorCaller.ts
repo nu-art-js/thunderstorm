@@ -32,7 +32,7 @@ import {
 import {FirestoreQuery} from '@nu-art/firebase';
 import {ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 
-import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray, DB_Object, PreDBObject} from '@nu-art/ts-common';
+import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray, DB_Object, PreDB} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
 
@@ -97,7 +97,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		return false;
 	}
 
-	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
+	upsert = (toUpsert: PreDB<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
 		this.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Upsert, toUpsert, requestData)
 			.execute(async (response) => {
 				await this.onEntryUpdated({...toUpsert, _id: response._id} as unknown as DBType, response, requestData);

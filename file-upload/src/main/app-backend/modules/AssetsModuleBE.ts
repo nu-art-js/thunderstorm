@@ -28,7 +28,7 @@ import {
 	ImplementationMissingException,
 	MB,
 	Minute,
-	PreDBObject,
+	PreDB,
 	ServerErrorSeverity,
 	ThisShouldNotHappenException,
 	TypedMap
@@ -176,7 +176,7 @@ export class AssetsModuleBE_Class
 
 			const _id = generateHex(32);
 			const path = `${this.config.path}/${_id}`;
-			const dbAsset: PreDBObject<DB_Asset> = {
+			const dbAsset: PreDB<DB_Asset> = {
 				timestamp: currentTimeMillis(),
 				_id,
 				feId: _file.feId,

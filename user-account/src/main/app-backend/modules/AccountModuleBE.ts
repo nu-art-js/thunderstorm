@@ -18,7 +18,6 @@
  */
 import {__stringify, auditBy, currentTimeMillis, Day, Dispatcher, generateHex, hashPasswordWithSalt, Module, tsValidate} from '@nu-art/ts-common';
 
-
 import {FirebaseModule, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {
 	DB_Account,
@@ -32,6 +31,7 @@ import {
 } from './_imports';
 import {ApiException, ExpressRequest, HeaderKey, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
 import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
+
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
@@ -229,7 +229,7 @@ export class AccountModuleBE_Class
 		const _email = __email.toLowerCase();
 		const query = {where: {email: _email}};
 		let dispatchEvent = false;
-		const toRet = await this.accounts.runInTransaction<DB_Account>(async (transaction) => {
+		const toRet = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
 			const account = await transaction.queryUnique(this.accounts, query);
 			if (account?._id)
 				return account;
@@ -306,6 +306,5 @@ export class AccountModuleBE_Class
 	};
 
 }
-
 
 export const AccountModuleBE = new AccountModuleBE_Class();
