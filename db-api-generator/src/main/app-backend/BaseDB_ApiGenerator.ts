@@ -36,7 +36,7 @@ import {
 	merge,
 	Module,
 	ObjectTS,
-	PreDBObject,
+	PreDB,
 	ThisShouldNotHappenException,
 	tsValidate,
 	tsValidateTimestamp,
@@ -392,7 +392,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was upserted.
 	 */
-	async upsert(instance: PreDBObject<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+	async upsert(instance: PreDB<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
 		const processor = async (_transaction: FirestoreTransaction) => {
 			return (await this.upsert_Read(instance, _transaction, request))();
 		};
@@ -403,7 +403,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.collection.runInTransaction(processor);
 	}
 
-	async upsert_Read(instance: PreDBObject<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
+	async upsert_Read(instance: PreDB<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		const timestamp = currentTimeMillis();
 
 		if (this.config.externalFilterKeys[0] === '_id' && instance._id === undefined)
@@ -430,8 +430,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of an array of documents that were upserted.
 	 */
-	async upsertAll_Batched(instances: PreDBObject<DBType>[], request?: ExpressRequest): Promise<DBType[]> {
-		return batchAction(instances, 500, async (chunked: PreDBObject<DBType>[]) => this.upsertAll(chunked, undefined, request));
+	async upsertAll_Batched(instances: PreDB<DBType>[], request?: ExpressRequest): Promise<DBType[]> {
+		return batchAction(instances, 500, async (chunked: PreDB<DBType>[]) => this.upsertAll(chunked, undefined, request));
 	}
 
 	/**
@@ -446,7 +446,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the array of documents that were upserted.
 	 */
-	async upsertAll(instances: PreDBObject<DBType>[], transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]> {
+	async upsertAll(instances: PreDB<DBType>[], transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]> {
 		if (instances.length > 500) {
 			if (transaction)
 				throw new BadImplementationException('Firestore transaction supports maximum 500 at a time');
@@ -465,10 +465,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.collection.runInTransaction(processor);
 	}
 
-	protected async upsertAllImpl_Read(instances: PreDBObject<DBType>[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]> {
+	protected async upsertAllImpl_Read(instances: PreDB<DBType>[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]> {
 		const actions = [] as Promise<() => Promise<DBType>>[];
 
-		instances.reduce((carry, instance: PreDBObject<DBType>) => {
+		instances.reduce((carry, instance: PreDB<DBType>) => {
 			addItemToArray(carry, this.upsert_Read(instance, transaction, request));
 			return carry;
 		}, actions);

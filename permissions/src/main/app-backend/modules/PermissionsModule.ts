@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDBObject, StringMap} from "@nu-art/ts-common";
+import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from "@nu-art/ts-common";
 import {DB_PermissionProject, PredefinedGroup, PredefinedUser, Request_RegisterProject, Response_UsersCFsByShareGroups, UserUrlsPermissions} from "./_imports";
 import {PermissionsAssert} from "./permissions-assert";
 import {ApiPermissionsDB, ProjectPermissionsDB} from "./db-types/managment";
@@ -25,7 +25,7 @@ import {GroupPermissionsDB, UserPermissionsDB} from "./db-types/assign";
 import {AccountModuleBE} from '@nu-art/user-account/app-backend/modules/AccountModuleBE';
 
 type Config = {
-	project: PreDBObject<DB_PermissionProject> & DB_BaseObject
+	project: PreDB<DB_PermissionProject> & DB_BaseObject
 	predefinedGroups?: PredefinedGroup[],
 	predefinedUser?: PredefinedUser
 }

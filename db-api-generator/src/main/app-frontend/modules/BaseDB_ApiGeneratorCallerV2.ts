@@ -35,7 +35,7 @@ import {
 	XhrHttpModule
 } from '@nu-art/thunderstorm/frontend';
 
-import {DB_BaseObject, DB_Object, Module, PartialProperties, PreDBObject} from '@nu-art/ts-common';
+import {DB_BaseObject, DB_Object, Module, PartialProperties, PreDB} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
 
@@ -135,7 +135,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	 * @param responseHandler Callback post operation.
 	 * @param requestData
 	 */
-	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
+	upsert = (toUpsert: PreDB<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
 		this.createUpsertRequest(requestData)
 			.setJsonBody(toUpsert)
 			.execute(async (response) => {
@@ -261,7 +261,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return this.onEntryUpdatedImpl(EventType_Create, item, requestData);
 	}
 
-	protected async onEntryUpdated(original: PreDBObject<DBType>, item: DBType, requestData?: string): Promise<void> {
+	protected async onEntryUpdated(original: PreDB<DBType>, item: DBType, requestData?: string): Promise<void> {
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item, requestData);
 	}
 

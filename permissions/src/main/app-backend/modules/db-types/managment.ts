@@ -31,7 +31,7 @@ import {
 	auditBy,
 	filterDuplicates,
 	MUSTNeverHappenException,
-	PreDBObject,
+	PreDB,
 	tsValidateArray,
 	tsValidateRange,
 	tsValidateRegexp,
@@ -270,7 +270,7 @@ export class ApiDB_Class
 	registerApis(projectId: string, routes: string[]) {
 		return this.runInTransaction(async (transaction: FirestoreTransaction) => {
 			const existingProjectApis = await ApiPermissionsDB.query({where: {projectId: projectId}});
-			const apisToAdd: PreDBObject<DB_PermissionApi>[] = routes
+			const apisToAdd: PreDB<DB_PermissionApi>[] = routes
 				.filter(path => !existingProjectApis.find(api => api.path === path))
 				.map(path => ({path, projectId: projectId}));
 

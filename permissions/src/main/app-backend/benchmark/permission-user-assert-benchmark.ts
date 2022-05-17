@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {batchAction, currentTimeMillis, filterInstances, generateHex, PreDBObject} from "@nu-art/ts-common";
+import {batchAction, currentTimeMillis, filterInstances, generateHex, PreDB} from "@nu-art/ts-common";
 import {AccessLevelPermissionsDB, ApiPermissionsDB, DomainPermissionsDB, ProjectPermissionsDB} from "../modules/db-types/managment";
 import {GroupPermissionsDB, UserPermissionsDB} from "../modules/db-types/assign";
 import {PermissionsAssert} from "../modules/permissions-assert";
@@ -50,7 +50,7 @@ export async function testUserPermissionsTime() {
 	await ApiPermissionsDB.upsert({projectId: projectId, _id: apiId, path: apiPath, accessLevelIds: [permissionId]});
 
 	const groupIdArray: User_Group[] = [];
-	const dbInstances: PreDBObject<DB_PermissionsGroup>[] = [];
+	const dbInstances: PreDB<DB_PermissionsGroup>[] = [];
 	for (let counter = 0; counter < 100; counter++) {
 		const groupId = generateHex(32);
 		const baseAccessLevel = {domainId: accessLevel.domainId, value: accessLevel.value};

@@ -17,7 +17,7 @@
  */
 
 import {ApiWithBody, ApiWithQuery} from "@nu-art/thunderstorm";
-import {PreDBObject, StringMap} from "@nu-art/ts-common";
+import {PreDB, StringMap} from "@nu-art/ts-common";
 import {DB_PermissionProject} from "./manager-types";
 import {User_Group} from "./assign-types";
 
@@ -68,7 +68,7 @@ export type PredefinedGroup = { _id: string, key: string, label: string, customK
 export type PredefinedUser = { accountId: string, _id: string, groups: PredefinedGroup[] };
 
 export type Request_RegisterProject = {
-	project: PreDBObject<DB_PermissionProject>,
+	project: PreDB<DB_PermissionProject>,
 	routes: string[];
 	predefinedGroups?: PredefinedGroup[]
 	predefinedUser?: PredefinedUser
