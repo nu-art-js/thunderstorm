@@ -37,6 +37,11 @@ export type Props_Tabs = {
 	tabsHeaderStyle?: React.CSSProperties
 	selectedTabStyle?: React.CSSProperties
 	contentStyle?: React.CSSProperties
+	/**
+	 * Called only after clicking on a tab. Not called when a default first tab is selected during render.
+	 * @param selected id of the selected tab.
+	 */
+	onSelected?: (selectedTabId: string) => void
 }
 
 type TabToRender = { [K in keyof _Tab]: React.ReactNode } & { uid: string };
@@ -77,6 +82,7 @@ export class TS_Tabs
 
 		BrowserHistoryModule.addQueryParam(ParamKey_SelectedTab, id);
 		this.setState({focused: id});
+		this.props.onSelected?.(id);
 	};
 
 	render() {
@@ -105,7 +111,7 @@ export class TS_Tabs
 				<div className="ts-tabs__tabs-header" style={this.props.tabsHeaderStyle}>
 					{tabs.map(tab => {
 						const style = {...this.props.tabStyle, ...this.state.focused === tab.uid ? this.props.selectedTabStyle : undefined};
-						const tabClasses = _className('ts-tabs__tab','unselectable', this.state.focused === tab.uid ? 'ts-tabs__focused' : undefined);
+						const tabClasses = _className('ts-tabs__tab', 'unselectable', this.state.focused === tab.uid ? 'ts-tabs__focused' : undefined);
 						return <div key={tab.uid} id={tab.uid} className={tabClasses} style={style} onClick={this.selectOnClick}>{getTitle(tab)}</div>;
 					})}
 				</div>

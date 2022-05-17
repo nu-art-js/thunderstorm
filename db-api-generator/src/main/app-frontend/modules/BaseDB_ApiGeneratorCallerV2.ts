@@ -130,7 +130,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		});
 	};
 	/**
-	 * Create or update, depending if unique key exists.
+	 * Create or update, depending on existence of its unique key.
 	 * @param toUpsert Object to create or update.
 	 * @param responseHandler Callback post operation.
 	 * @param requestData
