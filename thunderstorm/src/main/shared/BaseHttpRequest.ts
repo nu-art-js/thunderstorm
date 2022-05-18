@@ -54,11 +54,15 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 	private defaultResponseHandler?: (request: BaseHttpRequest<any>) => boolean;
 	private logger?: Logger;
 
-	constructor(requestKey: string, requestData?: any, logger?: Logger) {
-		this.logger = logger;
+	constructor(requestKey: string, requestData?: any) {
 		this.key = requestKey;
 		this.requestData = requestData;
 		this.compress = false;
+	}
+
+	setLogger(logger?: Logger) {
+		this.logger = logger;
+		return this;
 	}
 
 	setHandleRequestSuccess(handleRequestSuccess: RequestSuccessHandler) {
