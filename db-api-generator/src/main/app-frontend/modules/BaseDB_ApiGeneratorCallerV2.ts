@@ -20,7 +20,7 @@
  */
 
 import {ApiTypeBinder, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from '@nu-art/thunderstorm';
-import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from '../../index';
+import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUpsert, ApiBinder_DBUpsertAll, DefaultApiDefs, GenericApiDef} from '../../index';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {
 	DBConfig,
@@ -37,7 +37,7 @@ import {
 
 import {DB_BaseObject, DB_Object, Module, PartialProperties, PreDB} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
-import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
+import {EventType_Create, EventType_Delete, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update, EventType_UpsertAll} from '../consts';
 
 
 export type BaseApiConfigV2<DBType extends DB_Object, Ks extends keyof DBType = '_id'> = {
@@ -88,7 +88,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			.setRelativeUrl(`${this.config.relativeUrl}${apiDef.suffix ? '/' + apiDef.suffix : ''}`)
 			.setOnError(this.errorHandler) as BaseHttpRequest<any>;
 
-
 		const timeout = this.timeoutHandler(apiDef);
 		if (timeout)
 			request.setTimeout(timeout);
@@ -129,6 +128,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			return responseHandler?.(items);
 		});
 	};
+
 	/**
 	 * Create or update, depending on existence of its unique key.
 	 * @param toUpsert Object to create or update.
@@ -140,6 +140,15 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			.setJsonBody(toUpsert)
 			.execute(async (response) => {
 				await this.onEntryUpdated(toUpsert as unknown as DBType, response, requestData);
+				if (responseHandler)
+					return responseHandler(response);
+			});
+
+	upsertAll = (toUpsert: PreDB<DBType>[], responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsertAll<DBType>> =>
+		this.createRequest<ApiBinder_DBUpsertAll<DBType>>(DefaultApiDefs.UpsertAll, requestData)
+			.setJsonBody(toUpsert)
+			.execute(async (response) => {
+				await this.onEntriesUpdated(response);
 				if (responseHandler)
 					return responseHandler(response);
 			});
@@ -254,7 +263,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 	protected async onEntriesUpdated(items: DBType[], requestData?: string): Promise<void> {
 		await this.db.upsertAll(items);
-		this.dispatchMulti(EventType_MultiUpdate, items.map(item => item));
+		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	}
 
 	protected async onEntryCreated(item: DBType, requestData?: string): Promise<void> {

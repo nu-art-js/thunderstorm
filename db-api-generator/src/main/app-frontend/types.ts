@@ -19,5 +19,5 @@
  * limitations under the License.
  */
 
-export type SingleApiEvent = "create" | "update" | "unique" | "delete" | "patch"
-export type MultiApiEvent = "query" | "multi-update"
+export type SingleApiEvent = 'create' | 'update' | 'unique' | 'delete' | 'patch'
+export type MultiApiEvent = 'query' | 'upsert-all'

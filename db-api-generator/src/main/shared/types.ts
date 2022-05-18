@@ -22,7 +22,13 @@ import {FirestoreQuery} from '@nu-art/firebase';
 import {DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';
 import {ApiWithBody, ApiWithQuery, HttpMethod,} from '@nu-art/thunderstorm';
 
+
 export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
+	UpsertAll: {
+		method: HttpMethod.POST,
+		key: 'upsert-all',
+		suffix: 'upsert-all'
+	},
 	Upsert: {
 		method: HttpMethod.POST,
 		key: 'upsert',
@@ -56,7 +62,8 @@ export type BadInputErrorBody = { path: string, input?: string };
 
 export type GenericApiDef = { method: HttpMethod, key: string, suffix?: string };
 
-export type ApiBinder_DBUpsert<DBType extends DB_Object, RequestType extends PreDB<DBType> = PreDB<DBType>> = ApiWithBody<string, RequestType, DBType>;
+export type ApiBinder_DBUpsertAll<DBType extends DB_Object> = ApiWithBody<string, PreDB<DBType>[], DBType[]>;
+export type ApiBinder_DBUpsert<DBType extends DB_Object> = ApiWithBody<string, PreDB<DBType>, DBType>;
 export type ApiBinder_DBDelete<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;
 export type ApiBinder_DBUnique<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;
 export type ApiBinder_DBPatch<DBType extends DB_Object> = ApiWithBody<string, Partial<DBType> & DB_BaseObject, DBType>;
