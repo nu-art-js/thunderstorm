@@ -21,10 +21,20 @@
 
 import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
 import {ApiTypeBinder, QueryParams} from '@nu-art/thunderstorm';
-import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUnique, ApiBinder_DBUpsert, DefaultApiDefs, GenericApiDef} from '..';
+import {
+	ApiBinder_DBDelete,
+	ApiBinder_DBPatch,
+	ApiBinder_DBQuery,
+	ApiBinder_DBUnique,
+	ApiBinder_DBUpsert,
+	ApiBinder_DBUpsertAll,
+	DefaultApiDefs,
+	GenericApiDef
+} from '..';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {addItemToArray, DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';
+
 
 export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
 	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? '/' + pathSuffix : ''}`;
@@ -68,6 +78,18 @@ export class ServerApi_Upsert<DBType extends DB_Object>
 			toRet = await postProcessor(toRet);
 		}
 		return toRet;
+	}
+}
+
+export class ServerApi_UpsertAll<DBType extends DB_Object>
+	extends GenericServerApi<DBType, ApiBinder_DBUpsertAll<DBType>, (item: DBType) => DBType> {
+
+	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
+		super(dbModule, DefaultApiDefs.UpsertAll, pathPart);
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PreDB<DBType>[]) {
+		return await this.dbModule.upsertAll(body, undefined, request);
 	}
 }
 

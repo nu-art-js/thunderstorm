@@ -19,10 +19,11 @@
  * limitations under the License.
  */
 
-import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, EventType_MultiUpdate, EventType_Query, EventType_Update} from '../../frontend';
+import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, EventType_Query, EventType_Update, EventType_UpsertAll} from '../../frontend';
 import {ComponentAsync, IndexKeys} from '@nu-art/thunderstorm/frontend';
 import {_keys, compare, DB_Object, RequireOnlyOne} from '@nu-art/ts-common';
 import * as React from 'react';
+
 
 export type State_DBItemEditorComponentV2<ItemType> = {
 	item: Partial<ItemType>
@@ -91,7 +92,7 @@ export abstract class DBItemEditorComponent<ItemType extends DB_Object,
 	}
 
 	protected __onItemUpdated(...params: ApiCallerEventTypeV2<ItemType>): void {
-		if (params[0] === EventType_MultiUpdate || params[0] === EventType_Query)
+		if (params[0] === EventType_UpsertAll || params[0] === EventType_Query)
 			return;
 
 		if (this.props.keys && _keys(this.props.keys).find(key => this.state.item?.[key] && this.state.item?.[key] !== (params[1] as ItemType)?.[key]))

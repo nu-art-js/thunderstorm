@@ -43,7 +43,7 @@ import {
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {ServerApi_Delete, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert} from './apis';
+import {ServerApi_Delete, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert, ServerApi_UpsertAll} from './apis';
 import {
 	ApiException,
 	ExpressRequest,
@@ -664,8 +664,12 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	apiUpsert(pathPart?: string): ServerApi<any> | ServerApi<any> | undefined {
+	apiUpsert(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Upsert(this, pathPart);
+	}
+
+	apiUpsertAll(pathPart?: string): ServerApi<any> | undefined {
+		return new ServerApi_UpsertAll(this, pathPart);
 	}
 
 	apiQuery(pathPart?: string): ServerApi<any> | undefined {
@@ -687,6 +691,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	_apis(options?: ApisParams): (ServerApi<any> | undefined)[] {
 		return [
 			this.apiUpsert(options?.pathPart),
+			this.apiUpsertAll(options?.pathPart),
 			this.apiQuery(options?.pathPart),
 			this.apiQueryUnique(options?.pathPart),
 			this.apiPatch(options?.pathPart),
