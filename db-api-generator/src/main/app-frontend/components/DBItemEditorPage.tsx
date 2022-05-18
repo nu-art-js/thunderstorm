@@ -26,14 +26,15 @@ import {
 	BaseDB_ApiGeneratorCallerV2,
 	EventType_Create,
 	EventType_Delete,
-	EventType_MultiUpdate,
 	EventType_Query,
-	EventType_Unique
+	EventType_Unique,
+	EventType_UpsertAll
 } from '../../frontend';
 import {AppPage, getQueryParameter, IndexKeys, RoutingModule, stopPropagation} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
 import {Props_DBItemEditorComponentV2} from './DBItemEditorComponent';
+
 
 export type Props_DBItemEditorPageV2<ItemType extends DB_Object, Ks extends keyof ItemType = '_id'> = {
 	keys: Ks[]
@@ -138,7 +139,7 @@ export abstract class DBItemEditorPage<ItemType extends DB_Object,
 	}
 
 	private __onItemUpdated = (...params: ApiCallerEventTypeV2<ItemType>): void => {
-		if (params[0] === EventType_MultiUpdate || params[0] === EventType_Query)
+		if (params[0] === EventType_UpsertAll || params[0] === EventType_Query)
 			return;
 
 		if (this.props.keys.find(key => (params[1] as ItemType)[key] !== this.state.keys[key]))
@@ -182,7 +183,6 @@ export abstract class DBItemEditorPage<ItemType extends DB_Object,
 
 		return this.renderEditor();
 	}
-
 
 	renderEditor() {
 		const ItemEditor = this.props.itemEditor;

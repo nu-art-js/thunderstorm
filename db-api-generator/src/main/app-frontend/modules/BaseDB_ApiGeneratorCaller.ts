@@ -26,15 +26,16 @@ import {
 	ApiBinder_DBQuery,
 	ApiBinder_DBUnique,
 	ApiBinder_DBUpsert,
+	ApiBinder_DBUpsertAll,
 	DefaultApiDefs,
 	GenericApiDef,
 } from '../../index';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 
-import {_keys, addItemToArray, compare, DB_BaseObject, Module, removeItemFromArray, DB_Object, PreDB} from '@nu-art/ts-common';
+import {_keys, addItemToArray, DB_BaseObject, DB_Object, Module, PreDB, removeItemFromArray} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
-import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
+import {EventType_Create, EventType_Delete, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update, EventType_UpsertAll} from '../consts';
 
 
 export type BaseApiConfig = {
@@ -101,6 +102,14 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		this.createRequest<ApiBinder_DBUpsert<DBType>>(DefaultApiDefs.Upsert, toUpsert, requestData)
 			.execute(async (response) => {
 				await this.onEntryUpdated({...toUpsert, _id: response._id} as unknown as DBType, response, requestData);
+				if (responseHandler)
+					return responseHandler(response);
+			});
+
+	upsertAll = (toUpsert: PreDB<DBType>[], responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsertAll<DBType>> =>
+		this.createRequest<ApiBinder_DBUpsertAll<DBType>>(DefaultApiDefs.UpsertAll, toUpsert, requestData)
+			.execute(async (response) => {
+				await this.onEntriesUpdated(response);
 				if (responseHandler)
 					return responseHandler(response);
 			});
@@ -185,7 +194,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			this.items[item._id] = item;
 		});
 
-		this.dispatchMulti(EventType_MultiUpdate, items.map(item => item._id));
+		this.dispatchMulti(EventType_UpsertAll, items.map(item => item._id));
 	}
 
 	protected async onEntryCreated(item: DBType, requestData?: string): Promise<void> {
@@ -193,9 +202,10 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 	}
 
 	protected async onEntryUpdated(original: DBType, item: DBType, requestData?: string): Promise<void> {
-		if (!compare(item, original))
-			this.logWarning('Hmmmm.. queried value not what was expected!');
+		return this.onEntryUpdatedImpl(EventType_Update, item, requestData);
+	}
 
+	protected async onEntrysUpdated(original: DBType, item: DBType, requestData?: string): Promise<void> {
 		return this.onEntryUpdatedImpl(EventType_Update, item, requestData);
 	}
 

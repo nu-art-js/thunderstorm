@@ -19,8 +19,7 @@
  * limitations under the License.
  */
 
-
-export const EventType_MultiUpdate = 'multi-update';
+export const EventType_UpsertAll = 'upsert-all';
 export const EventType_Create = 'create';
 export const EventType_Update = 'update';
 export const EventType_Patch = 'patch';

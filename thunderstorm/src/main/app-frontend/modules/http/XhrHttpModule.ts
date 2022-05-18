@@ -29,6 +29,7 @@ import {BaseHttpRequest} from '../../../shared/BaseHttpRequest';
 import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
 import {gzipSync} from 'zlib';
 
+
 export class XhrHttpModule_Class
 	extends BaseHttpModule_Class {
 
@@ -42,7 +43,9 @@ export class XhrHttpModule_Class
 	}
 
 	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): XhrHttpRequest<Binder> {
+
 		return new XhrHttpRequest<Binder>(key, data, this.shouldCompress())
+			.setLogger(this)
 			.setOrigin(this.origin)
 			.setMethod(method)
 			.setTimeout(this.timeout)

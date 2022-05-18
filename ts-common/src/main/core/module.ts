@@ -20,36 +20,33 @@
  * Created by tacb0ss on 08/07/2018.
  */
 
+import {ModuleManager} from './module-manager';
+import {BadImplementationException} from './exceptions';
+import {merge} from '../utils/merge-tools';
+import {Logger} from './logger/Logger';
+import {_clearTimeout, _setTimeout, LogLevel, TimerHandler, ValidatorTypeResolver} from '..';
 
-import {ModuleManager} from "./module-manager";
-import {BadImplementationException} from "./exceptions";
-import {merge} from "../utils/merge-tools";
-import {Logger} from "./logger/Logger";
-import {
-	_clearTimeout,
-	_setTimeout,
-	TimerHandler,
-	ValidatorTypeResolver
-} from "..";
 
-export abstract class Module<Config = any>
+type _FinalConfig<Config = any> = Config & { minLogLevel?: LogLevel };
+
+export abstract class Module<Config = any, FinalConfig extends _FinalConfig<Config> = _FinalConfig<Config>>
 	extends Logger {
 
 	private name: string;
 	protected readonly manager!: ModuleManager;
 	protected readonly initiated = false;
-	protected readonly config: Config = {} as Config;
-	protected readonly configValidator?: ValidatorTypeResolver<Config>;
+	protected readonly config: FinalConfig = {} as FinalConfig;
+	protected readonly configValidator?: ValidatorTypeResolver<FinalConfig>;
 	protected timeoutMap: { [k: string]: number } = {};
 
 	// noinspection TypeScriptAbstractClassConstructorCanBeMadeProtected
 	constructor(tag?: string) {
 		super(tag);
-		this.name = this.constructor["name"];
-		if (!this.name.endsWith("_Class"))
-			throw new BadImplementationException("Module class MUST end with '_Class' e.g. MyModule_Class");
+		this.name = this.constructor['name'];
+		if (!this.name.endsWith('_Class'))
+			throw new BadImplementationException('Module class MUST end with \'_Class\' e.g. MyModule_Class');
 
-		this.name = this.name.replace("_Class", "");
+		this.name = this.name.replace('_Class', '');
 	}
 
 	public debounce(handler: TimerHandler, key: string, ms = 0) {
@@ -82,12 +79,12 @@ export abstract class Module<Config = any>
 		}, ms);
 	}
 
-	public setConfigValidator(validator: ValidatorTypeResolver<Config>) {
+	public setConfigValidator(validator: ValidatorTypeResolver<FinalConfig>) {
 		// @ts-ignore
 		this.configValidator = validator;
 	}
 
-	public setDefaultConfig(config: Partial<Config>) {
+	public setDefaultConfig(config: Partial<FinalConfig>) {
 		// @ts-ignore
 		this.config = config;
 	}
@@ -100,9 +97,10 @@ export abstract class Module<Config = any>
 		this.name = name;
 	}
 
-	private setConfig(config: Config): void {
+	private setConfig(config: FinalConfig): void {
 		// @ts-ignore
 		this.config = this.config ? merge(this.config, config || {}) : config;
+		this.config.minLogLevel && this.setMinLevel(this.config.minLogLevel);
 	}
 
 	private setManager(manager: ModuleManager): void {

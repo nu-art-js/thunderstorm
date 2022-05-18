@@ -4,7 +4,7 @@
  * Typescript & Express backend infrastructure that natively runs on firebase function
  * Typescript & React frontend infrastructure
  *
- * Copyright (C) 2020 Alan Ben
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
 import {ApiTypeBinder, ErrorResponse, HttpMethod} from '../../../shared/types';
@@ -26,6 +27,7 @@ import {BaseHttpRequest} from '../../../shared/BaseHttpRequest';
 import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
 import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
 import * as fs from 'fs';
+
 
 export class AxiosHttpModule_Class
 	extends BaseHttpModule_Class {
@@ -40,6 +42,7 @@ export class AxiosHttpModule_Class
 
 	createRequest<Binder extends ApiTypeBinder<any, any, any, any>>(method: HttpMethod, key: string, data?: string): AxiosHttpRequest<Binder> {
 		return new AxiosHttpRequest<Binder>(key, data, this.shouldCompress())
+			.setLogger(this)
 			.setOrigin(this.origin)
 			.setMethod(method)
 			.setTimeout(this.timeout)
@@ -59,7 +62,6 @@ export class AxiosHttpModule_Class
 		const downloadRequest = await this.createRequest(HttpMethod.GET, key)
 			.setResponseType('arraybuffer')
 			.setUrl(url);
-
 
 		const downloadResponse = await downloadRequest.executeSync();
 		const outputFolder = outputFile.substring(0, outputFile.lastIndexOf('/'));
