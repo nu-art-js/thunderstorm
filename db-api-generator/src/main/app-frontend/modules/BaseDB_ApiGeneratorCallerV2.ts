@@ -117,7 +117,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		});
 	};
 
-	syncDB = (responseHandler?: ((response: DBType[]) => Promise<void> | void)) => {
+	syncDB = (responseHandler?: ((response: DBType[]) => Promise<void> | void), dispatch = true) => {
 		// locally indexing and sorting is not working????
 		// {where: {__updated: {$gte: this.lastSync.get(0)}}, orderBy: [{key: "__updated", order: "desc"}]}
 
@@ -126,7 +126,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			if (items.length)
 				this.lastSync.set(items[0].__updated);
 			return responseHandler?.(items);
-		});
+		}, 'sync-db', dispatch);
 	};
 
 	/**
@@ -167,7 +167,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			});
 	};
 
-	query = (query?: FirestoreQuery<DBType>, responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
+	query = (query?: FirestoreQuery<DBType>, responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string, dispatch = true): BaseHttpRequest<ApiBinder_DBQuery<DBType>> => {
 		let _query = query;
 		if (!_query)
 			_query = {} as FirestoreQuery<DBType>;
@@ -176,7 +176,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			.createRequest<ApiBinder_DBQuery<DBType>>(DefaultApiDefs.Query, requestData)
 			.setJsonBody(_query)
 			.execute(async response => {
-				await this.onQueryReturned(response, requestData);
+				await this.onQueryReturned(response, requestData, dispatch);
 				if (responseHandler)
 					return responseHandler(response);
 			});
@@ -289,8 +289,9 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return this.onEntryUpdatedImpl(EventType_Unique, item, requestData);
 	}
 
-	protected async onQueryReturned(items: DBType[], requestData?: string): Promise<void> {
+	protected async onQueryReturned(items: DBType[], requestData?: string, dispatch = true): Promise<void> {
 		await this.db.upsertAll(items);
-		this.dispatchMulti(EventType_Query, items);
+		if (dispatch)
+			this.dispatchMulti(EventType_Query, items);
 	}
 }
