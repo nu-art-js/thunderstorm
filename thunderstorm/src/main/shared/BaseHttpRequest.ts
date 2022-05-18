@@ -18,9 +18,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {_keys, _setTimeout, BadImplementationException, ObjectTS} from '@nu-art/ts-common';
+import {_keys, _setTimeout, BadImplementationException, Logger, ObjectTS} from '@nu-art/ts-common';
 import {ApiTypeBinder, ErrorResponse, HttpMethod, QueryParams} from './types';
 import {HttpException, RequestErrorHandler, RequestSuccessHandler, TS_Progress} from './request-types';
+
 
 export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>,
 	U extends string = Binder['url'],
@@ -51,11 +52,17 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 	protected aborted: boolean = false;
 	protected compress: boolean;
 	private defaultResponseHandler?: (request: BaseHttpRequest<any>) => boolean;
+	private logger?: Logger;
 
 	constructor(requestKey: string, requestData?: any) {
 		this.key = requestKey;
 		this.requestData = requestData;
 		this.compress = false;
+	}
+
+	setLogger(logger?: Logger) {
+		this.logger = logger;
+		return this;
 	}
 
 	setHandleRequestSuccess(handleRequestSuccess: RequestSuccessHandler) {
@@ -306,8 +313,8 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 		_setTimeout(() => {
 			const label = this.label || `http request: ${this.key} ${this.requestData}`;
 			new Promise(toCall)
-				.then(() => console.log(`Async call completed: ${label} ${this.requestData}`))
-				.catch(reason => console.warn(`Async call error: ${label} ${this.requestData}`, reason));
+				.then(() => this.logger?.logVerbose(`Async call completed: ${label} ${this.requestData || ''}`))
+				.catch(reason => this.logger?.logWarning(`Async call error: ${label} ${this.requestData || ''}`, reason));
 		});
 		return this;
 	}
@@ -321,7 +328,6 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 	abstract getStatus(): number;
 
 	abstract getResponseHeader(headerKey: string): string | string[] | undefined;
-
 
 	abort() {
 		this.aborted = true;
