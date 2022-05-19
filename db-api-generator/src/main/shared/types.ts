@@ -39,6 +39,11 @@ export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
 		key: 'patch',
 		suffix: 'patch'
 	},
+	DeleteAll: {
+		method: HttpMethod.POST,
+		key: 'delete-all',
+		suffix: 'delete-all'
+	},
 	Delete: {
 		method: HttpMethod.GET, // delete doesn't works, so we changed it to get
 		key: 'delete',
@@ -62,6 +67,7 @@ export type BadInputErrorBody = { path: string, input?: string };
 
 export type GenericApiDef = { method: HttpMethod, key: string, suffix?: string };
 
+export type ApiBinder_DBDeleteAll<DBType> = ApiWithQuery<string, void>;
 export type ApiBinder_DBUpsertAll<DBType extends DB_Object> = ApiWithBody<string, PreDB<DBType>[], DBType[]>;
 export type ApiBinder_DBUpsert<DBType extends DB_Object> = ApiWithBody<string, PreDB<DBType>, DBType>;
 export type ApiBinder_DBDelete<DBType extends DB_Object> = ApiWithQuery<string, DBType, DB_BaseObject>;

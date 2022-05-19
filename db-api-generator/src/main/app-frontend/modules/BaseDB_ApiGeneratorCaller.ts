@@ -22,6 +22,7 @@
 import {ApiTypeBinder, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from '@nu-art/thunderstorm';
 import {
 	ApiBinder_DBDelete,
+	ApiBinder_DBDeleteAll,
 	ApiBinder_DBPatch,
 	ApiBinder_DBQuery,
 	ApiBinder_DBUnique,
@@ -145,6 +146,15 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 				await this.onGotUnique(response, requestData);
 				if (responseHandler)
 					return responseHandler(response);
+			});
+	};
+
+	deleteAll = (responseHandler?: (() => Promise<void>) | void): BaseHttpRequest<ApiBinder_DBDeleteAll<DBType>> => {
+		return this
+			.createRequest<ApiBinder_DBDeleteAll<DBType>>(DefaultApiDefs.DeleteAll)
+			.execute(async () => {
+				if (responseHandler)
+					return responseHandler();
 			});
 	};
 
