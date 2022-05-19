@@ -27,13 +27,14 @@ import {
 	dispatch_onServerError,
 	ImplementationMissingException,
 	Module,
-	ObjectTS,
 	ServerErrorSeverity,
-	StringMap
+	StringMap,
+	TS_Object
 } from '@nu-art/ts-common';
 import {ObjectMetadata} from 'firebase-functions/lib/providers/storage';
 import {Message} from 'firebase-functions/lib/providers/pubsub';
 import {DocumentSnapshot} from 'firebase-admin/firestore';
+
 
 const functions = require('firebase-functions');
 
@@ -178,7 +179,7 @@ export type FirestoreConfigs = {
 }
 
 //TODO: I would like to add a type for the params..
-export abstract class FirestoreFunctionModule<DataType extends ObjectTS, ConfigType extends FirestoreConfigs = FirestoreConfigs>
+export abstract class FirestoreFunctionModule<DataType extends TS_Object, ConfigType extends FirestoreConfigs = FirestoreConfigs>
 	extends FirebaseFunction<ConfigType> {
 
 	private readonly collectionName: string;

@@ -35,9 +35,9 @@ import {
 	isErrorOfType,
 	merge,
 	Module,
-	ObjectTS,
 	PreDB,
 	ThisShouldNotHappenException,
+	TS_Object,
 	tsValidate,
 	tsValidateTimestamp,
 	ValidationException,
@@ -59,7 +59,7 @@ import {dbIdLength, tsValidateUniqueId, tsValidateVersion} from '../shared/valid
 
 export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
 
-export type DBApiConfig<Type extends ObjectTS> = {
+export type DBApiConfig<Type extends TS_Object> = {
 	projectId?: string,
 	lockKeys: (keyof Type)[]
 	collectionName: string
@@ -722,6 +722,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	}
 
 	deleteAll(request: ExpressRequest) {
-		return this.delete({where:{}});
+		return this.delete({where: {}});
 	}
 }

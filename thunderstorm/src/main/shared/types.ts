@@ -19,7 +19,8 @@
  * limitations under the License.
  */
 
-import {ObjectTS} from '@nu-art/ts-common';
+import {TS_Object} from '@nu-art/ts-common';
+
 
 export enum HttpMethod {
 	ALL = 'all',
@@ -44,12 +45,12 @@ export type ApiTypeBinder<U extends string, R extends any, B, P extends QueryPar
 export type ApiWithBody<U extends string, B, R, E extends any = any> = ApiTypeBinder<U, R, B, {}, E>;
 export type ApiWithQuery<U extends string, R extends any, P extends QueryParams | {} = {}, E extends any = any> = ApiTypeBinder<U, R, void, P, E>;
 
-export type ErrorBody<E extends ObjectTS | void = void> = {
+export type ErrorBody<E extends TS_Object | void = void> = {
 	type: string
 	body: E
 };
 
-export type  ErrorResponse<E extends ObjectTS | void = void> = {
+export type  ErrorResponse<E extends TS_Object | void = void> = {
 	debugMessage?: string
 	error?: ErrorBody<E>
 }

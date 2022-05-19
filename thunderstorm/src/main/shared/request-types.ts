@@ -21,7 +21,8 @@
 
 import {ErrorResponse} from './types';
 import {BaseHttpRequest} from './BaseHttpRequest';
-import {ObjectTS} from '@nu-art/ts-common';
+import {TS_Object} from '@nu-art/ts-common';
+
 
 export class HttpException
 	extends Error {
@@ -41,6 +42,6 @@ export interface OnRequestListener {
 	__onRequestCompleted: (key: string, success: boolean, requestData?: any) => void;
 }
 
-export type RequestErrorHandler<E extends ObjectTS> = (request: BaseHttpRequest<any, any, any, any, any>, resError?: ErrorResponse<E>) => void;
+export type RequestErrorHandler<E extends TS_Object> = (request: BaseHttpRequest<any, any, any, any, any>, resError?: ErrorResponse<E>) => void;
 export type RequestSuccessHandler = (request: BaseHttpRequest<any>) => void;
 export type ResponseHandler = (request: BaseHttpRequest<any>) => boolean;

@@ -1,3 +1,24 @@
+/*
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import {
 	__stringify,
 	_logger_logException,
@@ -5,8 +26,8 @@ import {
 	dispatch_onServerError,
 	Dispatcher,
 	filterInstances,
-	ObjectTS,
-	ServerErrorSeverity
+	ServerErrorSeverity,
+	TS_Object
 } from '@nu-art/ts-common';
 import {FirebaseScheduledFunction} from '@nu-art/firebase/app-backend/functions/firebase-function';
 import {FirebaseModule} from '@nu-art/firebase/app-backend/FirebaseModule';
@@ -14,11 +35,12 @@ import {ActDetailsDoc,} from './CleanupScheduler';
 import {FirestoreCollection} from '@nu-art/firebase/app-backend/firestore/FirestoreCollection';
 import {FirestoreQuery} from '@nu-art/firebase';
 
+
 export type BackupDoc = ActDetailsDoc & {
 	backupPath: string,
 }
 
-export type FirestoreBackupDetails<T extends ObjectTS> = {
+export type FirestoreBackupDetails<T extends TS_Object> = {
 	moduleKey: string,
 	interval: number,
 	keepInterval?: number,
