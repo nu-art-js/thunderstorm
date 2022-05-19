@@ -22,7 +22,7 @@
 import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
 import {ApiTypeBinder, QueryParams} from '@nu-art/thunderstorm';
 import {
-	ApiBinder_DBDelete,
+	ApiBinder_DBDelete, ApiBinder_DBDeleteAll,
 	ApiBinder_DBPatch,
 	ApiBinder_DBQuery,
 	ApiBinder_DBUnique,
@@ -126,6 +126,18 @@ export class ServerApi_Query<DBType extends DB_Object>
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, query: FirestoreQuery<DBType>): Promise<DBType[]> {
 		return this.dbModule.query(query, undefined, request);
+	}
+}
+
+export class ServerApi_DeleteAll<DBType extends DB_Object>
+	extends GenericServerApi<DBType, ApiBinder_DBDeleteAll<DBType>> {
+
+	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
+		super(dbModule, DefaultApiDefs.DeleteAll, pathPart);
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DB_Object, body: void) {
+		return this.dbModule.deleteAll(request);
 	}
 }
 
