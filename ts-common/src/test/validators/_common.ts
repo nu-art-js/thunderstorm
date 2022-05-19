@@ -16,14 +16,15 @@
  * limitations under the License.
  */
 
-import {tsValidate} from "../_main";
-import {ValidatorTestInput} from "./test";
+import {ObjectTS, tsValidate} from '../_main';
+import {ValidatorTestInput} from './test';
+
 
 export const validatorProcessor = async <T extends ObjectTS>(model: ValidatorTestInput<T>) => {
 	try {
 		await tsValidate(model.instance, model.validator);
-		return "pass";
-	} catch (e:any) {
-		return "fail";
+		return 'pass';
+	} catch (e: any) {
+		return 'fail';
 	}
 };
