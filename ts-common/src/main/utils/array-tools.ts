@@ -82,9 +82,8 @@ export function arrayToMap<T>(array: T[], getKey: (item: T, index: number) => st
 	}, map || {});
 }
 
-// updateProperty<T extends ObjectTS>(map: { [k: string]: T }, getKey: (element: T) => string, elements: T[]) {
+// updateProperty<T extends TS_Object>(map: { [k: string]: T }, getKey: (element: T) => string, elements: T[]) {
 // }
-
 
 export function _sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
 	const compareFn = (a: T, b: T) => {

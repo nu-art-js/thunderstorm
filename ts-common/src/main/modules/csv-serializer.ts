@@ -16,9 +16,10 @@
  * limitations under the License.
  */
 
-import {ObjectTS} from '../utils/types';
+import {TS_Object} from '../utils/types';
 
-export type CSVProps<T extends ObjectTS = ObjectTS> = {
+
+export type CSVProps<T extends TS_Object = TS_Object> = {
 	decimalSeparator?: string,
 	withHeaders?: boolean,
 	fieldWrapper?: string,
@@ -28,7 +29,7 @@ export type CSVProps<T extends ObjectTS = ObjectTS> = {
 	columns: (keyof T)[]
 }
 
-export function csvSerializer<T extends ObjectTS = ObjectTS>(items: T[], _csvProps: CSVProps<T>) {
+export function csvSerializer<T extends TS_Object = TS_Object>(items: T[], _csvProps: CSVProps<T>) {
 	const csvProps: Required<CSVProps<T>> = {
 		decimalSeparator: '.',
 		withHeaders: true,

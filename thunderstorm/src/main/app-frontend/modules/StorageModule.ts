@@ -22,8 +22,9 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {merge, Module, ObjectTS} from '@nu-art/ts-common';
+import {merge, Module, TS_Object} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
+
 
 export interface StorageKeyEvent {
 	__onStorageKeyEvent(event: StorageEvent): void;
@@ -102,7 +103,7 @@ export class StorageModule_Class
 		for (let i = 0; i < localStorage.length; i++) {
 			const key = localStorage.key(i);
 			if (key?.match(query)) {
-				localStorage.removeItem(key)
+				localStorage.removeItem(key);
 			}
 		}
 	}
@@ -125,7 +126,7 @@ export class StorageKey<ValueType = string | number | object> {
 		return StorageModule.get(this.key, defaultValue, this.persist) as unknown as ValueType;
 	}
 
-	patch(value: ValueType extends ObjectTS ? Partial<ValueType> : ValueType) {
+	patch(value: ValueType extends TS_Object ? Partial<ValueType> : ValueType) {
 		const previousValue = this.get();
 		const mergedValue = merge(previousValue, value);
 		this.set(mergedValue);

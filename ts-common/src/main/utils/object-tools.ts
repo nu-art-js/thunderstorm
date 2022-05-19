@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {AssertionException, BadImplementationException, ObjectTS} from "../index";
+import {AssertionException, BadImplementationException, TS_Object} from '../index';
 
 
 export function deepClone<T>(obj: T): T {
@@ -33,11 +33,11 @@ export function _keys<T extends { [k: string]: any }, K extends keyof T>(instanc
 	return Object.keys(instance) as K[];
 }
 
-export function _values<T extends ObjectTS = ObjectTS>(object: T): (T[keyof T])[] {
-	return Object.values(object) as (T[keyof T])[]
+export function _values<T extends TS_Object = TS_Object>(object: T): (T[keyof T])[] {
+	return Object.values(object) as (T[keyof T])[];
 }
 
-export function _setTypedProp<T extends ObjectTS>(instance: T, key: keyof T, value: T[keyof T]) {
+export function _setTypedProp<T extends TS_Object>(instance: T, key: keyof T, value: T[keyof T]) {
 	instance[key] = value;
 }
 
@@ -45,11 +45,11 @@ export function cloneArr<T>(value: T[]): T[] {
 	return value.map(a => deepClone(a));
 }
 
-export function cloneObj<T extends ObjectTS>(obj: T): T {
+export function cloneObj<T extends TS_Object>(obj: T): T {
 	return _keys(obj).reduce(<K extends keyof T>(carry: T, key: K) => {
 		carry[key] = deepClone(obj[key]);
-		return carry
-	}, {} as T)
+		return carry;
+	}, {} as T);
 }
 
 export function compare<T extends any>(one?: T, two?: T, keys?: (keyof T)[]): boolean {
@@ -71,10 +71,10 @@ export function compare<T extends any>(one?: T, two?: T, keys?: (keyof T)[]): bo
 	if (one === null || two === null)
 		return false;
 
-	if (typeofOne === "function")
-		throw new BadImplementationException("This compare meant to compare two POJOs.. nothing more");
+	if (typeofOne === 'function')
+		throw new BadImplementationException('This compare meant to compare two POJOs.. nothing more');
 
-	if (typeofOne !== "object")
+	if (typeofOne !== 'object')
 		return one === two;
 
 	if (Array.isArray(one) && Array.isArray(two)) {

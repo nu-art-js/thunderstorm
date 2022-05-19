@@ -18,12 +18,12 @@
 
 import {FilterKeys, FirebaseModule, FirestoreCollection} from '../../../_main';
 import {__custom, ErrorPolicy} from '@nu-art/testelot';
-import {ObjectTS} from '@nu-art/ts-common';
+import {TS_Object} from '@nu-art/ts-common';
 
-export class FirestoreCollection_Tester<DBType extends ObjectTS> {
+
+export class FirestoreCollection_Tester<DBType extends TS_Object> {
 	private collectionName: string;
 	private externalUniqueFilter?: FilterKeys<DBType>;
-
 
 	constructor(collectionName: string, externalUniqueFilter?: FilterKeys<DBType>) {
 		this.collectionName = collectionName;

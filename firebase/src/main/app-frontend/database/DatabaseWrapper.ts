@@ -16,10 +16,11 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, Logger, ObjectTS} from '@nu-art/ts-common';
+import {BadImplementationException, Logger, TS_Object} from '@nu-art/ts-common';
 import {FirebaseType_DB} from './types';
 import {getDatabase, onValue, ref, remove, set, update} from 'firebase/database';
 import {FirebaseApp} from 'firebase/app';
+
 
 export class DatabaseWrapper
 	extends Logger {
@@ -31,9 +32,8 @@ export class DatabaseWrapper
 		this.database = getDatabase(app);
 	}
 
-
 	public async get<T>(path: string): Promise<T | null> {
-		return new Promise<T | null>( (resolve, reject) => {
+		return new Promise<T | null>((resolve, reject) => {
 			onValue(this.getRef(path), snapshot => {
 				resolve(snapshot.val() as T);
 			}, (error: Error) => {
@@ -61,12 +61,12 @@ export class DatabaseWrapper
 	}
 
 	/** @deprecated */
-	public async update<T extends ObjectTS>(path: string, value: T) {
+	public async update<T extends TS_Object>(path: string, value: T) {
 		this.logWarning('update will be deprecated!! please use patch');
 		return this.patch(path, value);
 	}
 
-	public async patch<T extends ObjectTS>(path: string, value: T) {
+	public async patch<T extends TS_Object>(path: string, value: T) {
 		try {
 			await update(this.getRef(path), value);
 		} catch (e: any) {
