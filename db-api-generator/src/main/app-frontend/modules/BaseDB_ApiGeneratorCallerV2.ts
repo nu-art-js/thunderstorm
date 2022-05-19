@@ -20,7 +20,16 @@
  */
 
 import {ApiTypeBinder, BaseHttpRequest, ErrorResponse, QueryParams, RequestErrorHandler} from '@nu-art/thunderstorm';
-import {ApiBinder_DBDelete, ApiBinder_DBPatch, ApiBinder_DBQuery, ApiBinder_DBUpsert, ApiBinder_DBUpsertAll, DefaultApiDefs, GenericApiDef} from '../../index';
+import {
+	ApiBinder_DBDelete,
+	ApiBinder_DBDeleteAll,
+	ApiBinder_DBPatch,
+	ApiBinder_DBQuery,
+	ApiBinder_DBUpsert,
+	ApiBinder_DBUpsertAll,
+	DefaultApiDefs,
+	GenericApiDef
+} from '../../index';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {
 	DBConfig,
@@ -195,6 +204,16 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 				await this.onGotUnique(response[0], requestData);
 				if (responseHandler)
 					return responseHandler(response[0]);
+			});
+	};
+
+	deleteAll = (responseHandler?: (() => Promise<void>) | void): BaseHttpRequest<ApiBinder_DBDeleteAll<DBType>> => {
+		return this
+			.createRequest<ApiBinder_DBDeleteAll<DBType>>(DefaultApiDefs.DeleteAll)
+			.execute(async () => {
+				await this.db.deleteAll(); // does not work
+				if (responseHandler)
+					return responseHandler();
 			});
 	};
 

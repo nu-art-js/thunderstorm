@@ -43,7 +43,7 @@ import {
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {ServerApi_Delete, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert, ServerApi_UpsertAll} from './apis';
+import {ServerApi_Delete, ServerApi_DeleteAll, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert, ServerApi_UpsertAll} from './apis';
 import {
 	ApiException,
 	ExpressRequest,
@@ -684,6 +684,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return new ServerApi_Patch(this, pathPart);
 	}
 
+	apiDeleteAll(pathPart?: string): ServerApi<any> | undefined {
+		return new ServerApi_DeleteAll(this, pathPart);
+	}
+
 	apiDelete(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Delete(this, pathPart);
 	}
@@ -695,6 +699,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			this.apiQuery(options?.pathPart),
 			this.apiQueryUnique(options?.pathPart),
 			this.apiPatch(options?.pathPart),
+			this.apiDeleteAll(options?.pathPart),
 			this.apiDelete(options?.pathPart),
 		];
 	}
@@ -714,5 +719,9 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			options?.printRequest !== true && api.dontPrintRequest();
 			return api;
 		});
+	}
+
+	deleteAll(request: ExpressRequest) {
+		return this.delete({where:{}});
 	}
 }
