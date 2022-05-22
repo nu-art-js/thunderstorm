@@ -20,23 +20,22 @@
  */
 
 import {DatabaseWrapper, FirebaseModule} from '@nu-art/firebase/backend';
-import {merge, ModuleManager,
-	ObjectTS
-} from '@nu-art/ts-common';
+import {merge, ModuleManager, TS_Object} from '@nu-art/ts-common';
+
 
 export abstract class BaseStorm
 	extends ModuleManager {
 
 	protected envKey: string = 'dev';
-	private override: ObjectTS = {};
+	private override: TS_Object = {};
 
 	setEnvironment(envKey: string) {
 		this.envKey = envKey;
 		return this;
 	}
 
-	setOverride(override: ObjectTS) {
-		this.override = override
+	setOverride(override: TS_Object) {
+		this.override = override;
 	}
 
 	protected resolveConfig = async () => {

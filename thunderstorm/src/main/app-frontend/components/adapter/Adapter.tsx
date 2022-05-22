@@ -21,12 +21,11 @@
 
 import * as React from 'react';
 import {ComponentType} from 'react';
-import {_keys, BadImplementationException, ObjectTS,} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, TS_Object,} from '@nu-art/ts-common';
 import {SimpleTreeNodeRenderer} from '../TS_Tree/SimpleTreeNodeRenderer';
 import {_BaseNodeRenderer, BaseRendererMap, NodeRendererProps, TreeRendererMap,} from './BaseRenderer';
 import {TreeNode} from '../TS_Tree/types';
 import {_className} from '../../utils/tools';
-
 
 // export type TreeItem<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
 // 	item: Item
@@ -77,7 +76,6 @@ export type TreeData_MultiType<Rm extends BaseRendererMap<any>, I extends InferI
 	TreeItem<I>
 	| TreeData<TreeItem<I>>
 
-
 type AdapterData<D> = D | (() => D);
 
 export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> = React.ComponentType<T>> {
@@ -108,7 +106,7 @@ export class BaseAdapter<T extends any = any, R extends React.ComponentType<T> =
 	};
 
 	// this can be gone.. and builders must use the new filterChildren
-	getFilteredChildren<K extends ObjectTS>(obj: K): (keyof K)[] | [] {
+	getFilteredChildren<K extends TS_Object>(obj: K): (keyof K)[] | [] {
 		if (obj === undefined || obj === null)
 			return [];
 
@@ -192,7 +190,6 @@ abstract class BaseAdapterBuilder<Data> {
 		this.expandCollapseRenderer = expandCollapseRenderer;
 		return this;
 	}
-
 
 	// Utility - move to builder
 	setChildrenKey = (childrenKey: string) => {
@@ -375,7 +372,6 @@ class ListAdapterBuilder {
 }
 
 class TreeAdapterBuilder {
-
 
 	singleRender<Item>(renderer: _BaseNodeRenderer<Item>) {
 		return new TreeSingleAdapterBuilder<Item>(renderer);

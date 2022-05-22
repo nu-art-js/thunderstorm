@@ -16,7 +16,8 @@
  * limitations under the License.
  */
 
-import {MandatoryKeys, ObjectTS, RequireOptionals} from '@nu-art/ts-common';
+import {MandatoryKeys, RequireOptionals, TS_Object} from '@nu-art/ts-common';
+
 
 export type Firebase_Message = {
 	token?: string,
@@ -37,7 +38,6 @@ export type FirebaseConfig = {
 	storageBucket?: string,
 	messagingSenderId: string
 }
-
 
 type Comparator = 'in' | 'array-contains' | 'array-contains-any' | '>' | '>=' | '<' | '<=' | '==';
 
@@ -66,15 +66,15 @@ export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = 
 	$neq: '!=',
 };
 
-export type FilterKeys<T extends ObjectTS> = MandatoryKeys<T, string | number>[];
+export type FilterKeys<T extends TS_Object> = MandatoryKeys<T, string | number>[];
 export type FirestoreType_OrderByDirection = 'desc' | 'asc';
-export type WhereValue<Value> = QueryComparator<Value> | (Value extends ObjectTS ? Clause_Where<Value> : Value | [Value]);
-export type Clause_Where<T extends ObjectTS> = { [P in keyof T]?: WhereValue<T[P]> }
-export type Clause_OrderBy<T extends ObjectTS> = [{ key: keyof T, order: FirestoreType_OrderByDirection }];
-export type Clause_Select<T extends ObjectTS, K extends keyof T = keyof T> = K[];
+export type WhereValue<Value> = QueryComparator<Value> | (Value extends TS_Object ? Clause_Where<Value> : Value | [Value]);
+export type Clause_Where<T extends TS_Object> = { [P in keyof T]?: WhereValue<T[P]> }
+export type Clause_OrderBy<T extends TS_Object> = [{ key: keyof T, order: FirestoreType_OrderByDirection }];
+export type Clause_Select<T extends TS_Object, K extends keyof T = keyof T> = K[];
 
-export type FirestoreQuery<T extends ObjectTS> = RequireOptionals<FirestoreQueryImpl<T>>
-export type FirestoreQueryImpl<T extends ObjectTS> = {
+export type FirestoreQuery<T extends TS_Object> = RequireOptionals<FirestoreQueryImpl<T>>
+export type FirestoreQueryImpl<T extends TS_Object> = {
 	select?: Clause_Select<T>
 	orderBy?: Clause_OrderBy<T>
 	where?: Clause_Where<T>

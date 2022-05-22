@@ -18,10 +18,11 @@
 
 // import {FirestoreCollection} from "./FirestoreCollection";
 import {Firebase_DataSnapshot, Firebase_DB, FirebaseListener} from './types';
-import {BadImplementationException, calculateJsonSizeMb, ObjectTS} from '@nu-art/ts-common';
+import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@nu-art/ts-common';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getDatabase} from 'firebase-admin/database';
+
 
 export class DatabaseWrapper
 	extends FirebaseBaseWrapper {
@@ -69,7 +70,7 @@ export class DatabaseWrapper
 		}
 	}
 
-	public async uploadByChunks(parentPath: string, data: ObjectTS, maxSizeMB: number = 3, itemsToRef: Promise<any>[] = []) {
+	public async uploadByChunks(parentPath: string, data: TS_Object, maxSizeMB: number = 3, itemsToRef: Promise<any>[] = []) {
 		for (const key in data) {
 			const node = `${parentPath}/${key}`;
 			if (calculateJsonSizeMb(data[key]) < maxSizeMB)

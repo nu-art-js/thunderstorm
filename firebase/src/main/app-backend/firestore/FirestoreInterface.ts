@@ -19,12 +19,13 @@
 import {ComparatorMap, FirestoreQuery} from '../..';
 import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from './types';
 import {FirestoreCollection} from './FirestoreCollection';
-import {__stringify, _keys, BadImplementationException, ImplementationMissingException, ObjectTS} from '@nu-art/ts-common';
+import {__stringify, _keys, BadImplementationException, ImplementationMissingException, TS_Object} from '@nu-art/ts-common';
 import {Query} from 'firebase-admin/firestore';
+
 
 export class FirestoreInterface {
 
-	static buildQuery<Type extends ObjectTS>(collection: FirestoreCollection<Type>, query?: FirestoreQuery<Type>) {
+	static buildQuery<Type extends TS_Object>(collection: FirestoreCollection<Type>, query?: FirestoreQuery<Type>) {
 		try {
 			let myQuery: FirestoreType_Query = collection.collection;
 			if (query && query.select)
@@ -100,7 +101,6 @@ export class FirestoreInterface {
 					if (page > 0)
 						myQuery = myQuery.offset(query.limit.itemsCount * page + 1);
 
-
 					myQuery = myQuery.limit(query.limit.itemsCount);
 				}
 
@@ -136,7 +136,7 @@ export class FirestoreInterface {
 		return results[0];
 	}
 
-	static buildUniqueQuery<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type): FirestoreQuery<Type> {
+	static buildUniqueQuery<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type): FirestoreQuery<Type> {
 		_keys(instance).forEach((key) => {
 			if (instance[key] === undefined || instance[key] === null) {
 				throw new BadImplementationException(
