@@ -30,6 +30,18 @@ export type Props_Button = LinearLayoutProps & {
 	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
+/**
+ * A button made simpler
+ *
+ *
+ * <b>SCSS:</b>
+ * ```scss
+ * .ts-button {
+ *   .ts-button__disabled {
+ *   }
+ * }
+ * ```
+ */
 export const TS_Button = (props: Props_Button) => {
 	return <LL_V_C
 		{...props}

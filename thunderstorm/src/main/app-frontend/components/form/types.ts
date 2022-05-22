@@ -20,7 +20,8 @@
  */
 
 import * as React from 'react';
-import {ObjectTS, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {TS_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
+
 
 export type InputField<T, K extends keyof T = keyof T> = {
 	type: 'text' | 'number' | 'password'
@@ -29,10 +30,10 @@ export type InputField<T, K extends keyof T = keyof T> = {
 	hint?: string
 }
 
-export type Form<T extends ObjectTS> = { [K in keyof T]: InputField<T, K> }
-export type FormRenderer<T extends ObjectTS> = { [K in keyof T]: (value: Form_FieldProps<T, K>) => React.ReactNode }
+export type Form<T extends TS_Object> = { [K in keyof T]: InputField<T, K> }
+export type FormRenderer<T extends TS_Object> = { [K in keyof T]: (value: Form_FieldProps<T, K>) => React.ReactNode }
 
-export type Form_FieldProps<T extends ObjectTS = ObjectTS, K extends keyof T = keyof T> = {
+export type Form_FieldProps<T extends TS_Object = TS_Object, K extends keyof T = keyof T> = {
 	key: K
 	showErrors: boolean
 	field: InputField<T, K>

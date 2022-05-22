@@ -17,7 +17,7 @@
  */
 
 import {_keys} from './object-tools';
-import {ObjectTS} from './types';
+import {TS_Object} from './types';
 
 
 export function regexpCase(value: string, reg: string) {
@@ -33,7 +33,7 @@ export function createFilterPattern(rawFilter?: string) {
 	return filter;
 }
 
-export function calculateJsonSizeMb(data: ObjectTS) {
+export function calculateJsonSizeMb(data: TS_Object) {
 	const number = JSON.stringify(data).length / 1024 / 1024;
 	return Math.round(number * 100) / 100;
 }

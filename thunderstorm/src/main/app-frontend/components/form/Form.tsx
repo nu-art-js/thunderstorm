@@ -21,9 +21,10 @@
 
 import {Form, Form_FieldProps, FormRenderer} from './types';
 import * as React from 'react';
-import {_keys, ObjectTS, TypeValidator} from '@nu-art/ts-common';
+import {_keys, TS_Object, TypeValidator} from '@nu-art/ts-common';
 
-export type FormProps<T extends ObjectTS = object> = {
+
+export type FormProps<T extends TS_Object = object> = {
 	form: Form<T>,
 	renderer: FormRenderer<T>,
 	value: Partial<T>,
@@ -32,13 +33,13 @@ export type FormProps<T extends ObjectTS = object> = {
 	onAccept: (value: T) => void;
 }
 
-type Props<T extends ObjectTS = object> = FormProps<T> & {
+type Props<T extends TS_Object = object> = FormProps<T> & {
 	showErrors: boolean
 }
 
-type State<T extends ObjectTS = object> = { value: Partial<T> };
+type State<T extends TS_Object = object> = { value: Partial<T> };
 
-export class Component_Form<T extends ObjectTS = ObjectTS>
+export class Component_Form<T extends TS_Object = TS_Object>
 	extends React.Component<Props<T>, State<T>> {
 
 	constructor(p: Props<T>) {

@@ -19,7 +19,7 @@
 import {BadImplementationException, CustomException} from '../core/exceptions';
 import {__stringify,} from '../utils/tools';
 import {_keys} from '../utils/object-tools';
-import {ArrayType, AuditBy, ObjectTS, RangeTimestamp} from '../utils/types';
+import {ArrayType, AuditBy, RangeTimestamp, TS_Object} from '../utils/types';
 import {currentTimeMillis} from '..';
 
 /*
@@ -42,11 +42,11 @@ import {currentTimeMillis} from '..';
  */
 export type ValidatorTypeResolver<K> =
 	K extends any[] ? Validator<K> :
-		K extends ObjectTS ? TypeValidator<K> | Validator<K> :
+		K extends TS_Object ? TypeValidator<K> | Validator<K> :
 			Validator<K>;
 
 export type Validator<P> = undefined | ((path: string, p?: P) => void);
-export type TypeValidator<T extends ObjectTS> = { [P in keyof T]: ValidatorTypeResolver<T[P]> };
+export type TypeValidator<T extends TS_Object> = { [P in keyof T]: ValidatorTypeResolver<T[P]> };
 
 export class ValidationException
 	extends CustomException {

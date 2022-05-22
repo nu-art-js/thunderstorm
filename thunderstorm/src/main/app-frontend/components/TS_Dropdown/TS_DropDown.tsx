@@ -20,6 +20,7 @@
  */
 
 import * as React from 'react';
+import {CSSProperties} from 'react';
 import {Filter} from '@nu-art/ts-common';
 import {stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
@@ -28,7 +29,6 @@ import {TS_Tree} from '../TS_Tree';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
-import {CSSProperties} from 'react';
 
 
 const defaultTitleHeight = '28px';
@@ -205,7 +205,11 @@ export class TS_DropDown<ItemType>
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const filter = this.props.filter;
 		if (filter) {
-			this.state.adapter.data = filter.filter(this.props.adapter.data, this.state.filterText || '');
+			try {
+				this.state.adapter.data = filter.filter(this.props.adapter.data, this.state.filterText || '');
+			} catch (e) {
+				this.state.adapter.data = this.props.adapter.data;
+			}
 		}
 
 		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0)

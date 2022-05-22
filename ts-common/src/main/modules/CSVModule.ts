@@ -1,10 +1,28 @@
+/*
+ * ts-common is the basic building blocks of our typescript projects
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /**
  * Created by tacb0ss on 07/05/2018.
  */
 
 import {ExportToCsv, Options} from 'export-to-csv';
 import {createReadStream, promises as fs} from 'fs';
-import {ObjectTS, StringMap} from '../utils/types';
+import {StringMap, TS_Object} from '../utils/types';
 import {Module} from '../core/module';
 import {Readable} from 'stream';
 import csvParser = require('csv-parser');
@@ -28,10 +46,10 @@ const DefaultConfig = {
 	}
 };
 
-export type ReadPropsMap<K extends ObjectTS = ObjectTS> = {
+export type ReadPropsMap<K extends TS_Object = TS_Object> = {
 	[s: string]: keyof K;
 };
-export type WritePropsMap<K extends ObjectTS = ObjectTS> = {
+export type WritePropsMap<K extends TS_Object = TS_Object> = {
 	[P in keyof K]: string;
 };
 
@@ -96,6 +114,5 @@ class CSVModule_Class
 		};
 	}
 }
-
 
 export const CSVModule = new CSVModule_Class();

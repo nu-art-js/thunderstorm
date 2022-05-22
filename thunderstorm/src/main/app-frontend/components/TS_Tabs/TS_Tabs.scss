@@ -41,6 +41,7 @@
     //Dimensions
     height: 40px;
     width: 100%;
+    flex-shrink: 0;
 
     //Display
     display: flex;
@@ -88,8 +89,9 @@
     //Display:
     display: flex;
     justify-content: center;
-    align-items: center;
     background: #ccc;
     border: 2px solid #808080;
+
+    overflow-y: auto;
   }
 }
