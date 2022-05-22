@@ -53,6 +53,23 @@ type State = {
 const DefaultHeaderStyle = {width: 120, height: 20};
 const ParamKey_SelectedTab = 'selected-tab';
 
+/**
+ * Tabs made easy
+ *
+ *
+ * <b>SCSS:</b>
+ * ```scss
+ * .ts-tabs {
+ *   .ts-tabs__tabs-header {
+ *     .ts-tabs__tab {}
+ *     .ts-tabs__focused {}
+ *     .unselectable {}
+ *   }
+ *
+ *   .ts-tabs__content {}
+ * }
+ * ```
+ */
 export class TS_Tabs
 	extends ComponentSync<Props_Tabs, State> {
 
