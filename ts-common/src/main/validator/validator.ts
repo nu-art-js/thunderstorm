@@ -113,7 +113,7 @@ export const tsValidateMD5 = (mandatory = true): Validator<string> => {
 export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<string> => {
 	return (path: string, input?: string) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
-		if (!input)
+		if (input === undefined)
 			return;
 
 		if (regexp.test(input))
@@ -126,7 +126,7 @@ export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<st
 export const tsValidateNumber = (mandatory = true): Validator<number> => {
 	return (path: string, input?: number) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
-		if (!input)
+		if (input === undefined)
 			return;
 
 		// noinspection SuspiciousTypeOfGuard
@@ -140,7 +140,7 @@ export const tsValidateNumber = (mandatory = true): Validator<number> => {
 export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 	return (path: string, input?: boolean) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
-		if (!input)
+		if (input === undefined)
 			return;
 
 		// noinspection SuspiciousTypeOfGuard
@@ -222,7 +222,7 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 export const tsValidateTimestamp = (interval?: number, mandatory = true): Validator<number> => {
 	return (path: string, input?: number) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
-		if (!input)
+		if (input === undefined)
 			return;
 
 		const now = currentTimeMillis();
