@@ -25,6 +25,7 @@ import {testSuit_nestedObjectValidator} from "./nested-object";
 import {testSuit_objectWithArrayValidator} from "./object-with-array";
 import {testSuit_nestedObjectWithArrayValidator} from "./nested-object-with-array";
 import {testSuit_dynamicPropsObjectValidator} from "./dynamic-props-object";
+import {testSuit_values} from './values';
 
 export type ValidatorTestInput<T> = {
 	instance: T;
@@ -39,4 +40,5 @@ export const testSuits_validator = [
 	testSuit_nestedObjectValidator,
 	testSuit_objectWithArrayValidator,
 	testSuit_nestedObjectWithArrayValidator,
+	testSuit_values,
 ];
