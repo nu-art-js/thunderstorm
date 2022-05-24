@@ -28,6 +28,7 @@ import {UIComponent} from '../../core/UIComponent';
 import {_className} from '../../utils/tools';
 import './TS_Tree.scss';
 
+
 export type Props_Tree = {
 	id: string
 	onNodeFocused?: (path: string, item: any) => void;
@@ -36,7 +37,7 @@ export type Props_Tree = {
 	expanded?: TreeNodeExpandState
 	checkExpanded: (expanded: TreeNodeExpandState, path: string) => boolean | undefined
 	className?: string
-	treeContainerStyle?:CSSProperties
+	treeContainerStyle?: CSSProperties
 	selectedItem?: any
 	selectedPath?: string
 	adapter: Adapter
@@ -99,7 +100,6 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		let expanded = !!this.props.checkExpanded(this.state.expanded, nodePath);
 		if (nodePath.endsWith('_children/'))
 			expanded = true;
-
 
 		let renderChildren = expanded;
 
@@ -166,6 +166,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 
 		const node: TreeNode = {
 			adapter: this.state.adapter,
+			propKey: key,
 			item,
 			expandToggler: isParent ? this.toggleExpandState : ignoreToggler,
 			expanded: !!expanded,
@@ -186,7 +187,6 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 			{this.renderNode(this.state.adapter.data, '', '', (this.state.adapter.hideRoot ? -1 : 0))}
 		</div>;
 	}
-
 
 	getItemByPath(path: string) {
 		return TS_Tree.resolveItemFromPath(this.state.adapter.data, path);
