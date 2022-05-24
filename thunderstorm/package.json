@@ -20,8 +20,9 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "./dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "build": "tsc"
   },

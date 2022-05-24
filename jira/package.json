@@ -15,8 +15,8 @@
   },
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "./dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "dependencies": {
     "@nu-art/ts-common": "~0.0.1",
     "@nu-art/thunderstorm": "~0.0.1",

@@ -185,7 +185,12 @@ export class HttpServer_Class
 	}
 
 	public printRoutes(prefix: string): void {
+		if(!ServerApi.isDebug)
+			return;
+
+		console.time('Printing Routes')
 		this.routes.forEach(route => this.logDebug(`${JSON.stringify(route.methods)} ${prefix}${route.path}`));
+		console.timeEnd('Printing Routes')
 	}
 
 	private createServer(): Server {
@@ -286,6 +291,7 @@ export class HttpServer_Class
 	}
 
 	public resolveApi(routeResolver: RouteResolver, urlPrefix: string) {
+		console.time('Resolving Apis')
 		// @ts-ignore
 		routeResolver.express = this.express;
 		// @ts-ignore
@@ -313,7 +319,7 @@ export class HttpServer_Class
 			addAllItemToArray(toRet, toAdd);
 			return toRet;
 		}, [] as HttpRoute[]);
-
+		console.timeEnd('Resolving Apis')
 	}
 }
 
