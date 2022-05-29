@@ -27,7 +27,7 @@
   //Children - header
   .ts-dropdown__header {
     @extend %match_parent;
-    height: 40px;
+    height: 30px;
     background: white;
     border-radius: 5px;
     border: 1px solid #4fa7ff;
@@ -75,6 +75,7 @@
 
     .ts-tree__children-container {
       margin: 0;
+
       .ts-tree__node {
         padding: 5px;
       }
