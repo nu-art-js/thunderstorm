@@ -49,6 +49,9 @@ import {Playground_Tree_Basic} from './examples/keyboard-listener/Example_Tree_B
 import {Playground_Tree_MultiType} from './examples/keyboard-listener/Example_Tree_MultiType';
 import {PgDev_Tabs} from './examples/components/PgDev_Tabs';
 import {Example_PopupMenu} from './examples/modules/Example_PopupMenu';
+import {PgDev_Loader} from './examples/components/PgDev_Loader/PgDev_Loader';
+import {PgDev_WorkspaceTest} from './examples/components/PgDev_WorkspaceTest/PgDev_WorkspaceTest';
+import {PgDev_Toaster} from './examples/components/PgInfra_Toaster';
 
 
 export class Page_Playground
@@ -83,9 +86,12 @@ export class Page_Playground
 			Playground_DropdownMultiType,
 			//Misc
 			PgDev_Tabs,
+			PgDev_Loader,
+			PgDev_WorkspaceTest,
 
 			////Modules
 			Example_PopupMenu,
+			PgDev_Toaster,
 
 			// SWITCH PROPS
 			// TREES / LISTS
