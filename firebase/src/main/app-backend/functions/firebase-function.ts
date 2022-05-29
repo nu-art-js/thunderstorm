@@ -310,7 +310,7 @@ export type FirebaseEventContext = EventContext;
 
 export type TopicMessage = { data: string, attributes: StringMap };
 
-export abstract class Firebase_PubSubFunction<T>
+export abstract class Firebase_PubSubFunction<T extends TS_Object>
 	extends FirebaseFunction {
 
 	private function!: CloudFunction<ObjectMetadata>;
