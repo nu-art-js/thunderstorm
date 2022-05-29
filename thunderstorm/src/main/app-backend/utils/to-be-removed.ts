@@ -30,7 +30,7 @@ export const assertProperty = <T extends TS_Object, K extends keyof T = keyof T>
 	const _key: K = key;
 	const value = instance[_key];
 	if (!value)
-		throw new ApiException(statusCode, `Missing <strong>${key}</strong>`);
+		throw new ApiException(statusCode, `Missing <strong>${String(key)}</strong>`);
 
 	if (!check)
 		return;

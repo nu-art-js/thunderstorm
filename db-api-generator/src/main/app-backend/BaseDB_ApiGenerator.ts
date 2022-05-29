@@ -213,7 +213,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 			const query = uniqueQueries[idx];
 			const message = _keys(query).reduce((carry, key) => {
-				return carry + '\n' + `${key}: ${query[key]}`;
+				return carry + '\n' + `${String(key)}: ${query[key]}`;
 			}, `${this.config.itemName} uniqueness violation. There is already a document with`);
 
 			this.logWarning(message);
@@ -643,7 +643,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			// If the caller has specified props to be changed, make sure the don't conflict with the lockKeys.
 			const wrongKey = propsToPatch?.find(prop => this.config.lockKeys.includes(prop));
 			if (wrongKey)
-				throw new BadImplementationException(`Key ${wrongKey} is part of the 'lockKeys' and cannot be updated.`);
+				throw new BadImplementationException(`Key ${String(wrongKey)} is part of the 'lockKeys' and cannot be updated.`);
 
 			// If the caller has not specified props, we remove the keys from the caller's instance
 			// before merging with the original dbInstance.

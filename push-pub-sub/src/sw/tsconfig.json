@@ -1,3 +1,6 @@
 {
-  "extends": "../../../dev-tools/typescript/tsconfig-lib-sw.json"
+  "extends": "../../../dev-tools/typescript/tsconfig-lib-sw.json",
+  "compilerOptions": {
+    "skipLibCheck": true
+  }
 }

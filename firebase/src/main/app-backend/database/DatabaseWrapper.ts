@@ -62,7 +62,7 @@ export class DatabaseWrapper
 		}
 	}
 
-	public async set<T>(path: string, value: T) {
+	public async set<T extends TS_Object>(path: string, value: T) {
 		try {
 			return await this.database.ref(path).set(value);
 		} catch (e: any) {
@@ -80,12 +80,12 @@ export class DatabaseWrapper
 		}
 	}
 
-	public async update<T>(path: string, value: T) {
+	public async update<T extends TS_Object>(path: string, value: T) {
 		this.logWarning('update will be deprecated!! please use patch');
 		return this.patch(path, value);
 	}
 
-	public async patch<T>(path: string, value: T) {
+	public async patch<T extends TS_Object>(path: string, value: T) {
 		try {
 			return await this.database.ref(path).update(value);
 		} catch (e: any) {
@@ -94,12 +94,12 @@ export class DatabaseWrapper
 		}
 	}
 
-	public async remove<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+	public async remove<T extends TS_Object>(path: string, assertionRegexp: string = '^/.*?/.*') {
 		this.logWarning('remove will be deprecated!! please use delete');
 		return this.delete(path, assertionRegexp);
 	}
 
-	public async delete<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+	public async delete<T extends TS_Object>(path: string, assertionRegexp: string = '^/.*?/.*') {
 		if (!path)
 			throw new BadImplementationException(`Falsy value, path: '${path}'`);
 

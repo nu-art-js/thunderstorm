@@ -87,10 +87,10 @@ export const tsValidateObjectValues = <V, T = { [k: string]: V }>(validator: Val
 				if (!objectValidator)
 					return;
 
-				return objectValidator(`${path}/${key}`, inputValue as unknown as { [k: string]: V });
+				return objectValidator(`${path}/${String(key)}`, inputValue as unknown as { [k: string]: V });
 			}
 
-			tsValidate(inputValue as unknown as V, validator, `${path}/${key}`);
+			tsValidate(inputValue as unknown as V, validator, `${path}/${String(key)}`);
 		}
 	};
 
