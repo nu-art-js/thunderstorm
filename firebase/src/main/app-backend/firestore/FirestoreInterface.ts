@@ -140,7 +140,7 @@ export class FirestoreInterface {
 		_keys(instance).forEach((key) => {
 			if (instance[key] === undefined || instance[key] === null) {
 				throw new BadImplementationException(
-					`No where properties are allowed to be null or undefined.\nWhile querying collection '${collection.name}' we found property '${key}' to be '${instance[key]}'`);
+					`No where properties are allowed to be null or undefined.\nWhile querying collection '${collection.name}' we found property '${key as string}' to be '${instance[key]}'`);
 			}
 		});
 
