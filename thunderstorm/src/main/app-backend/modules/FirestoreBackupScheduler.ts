@@ -52,8 +52,7 @@ export interface OnFirestoreBackupSchedulerAct {
 	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<any>[];
 }
 
-const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, '__onFirestoreBackupSchedulerAct'>(
-	'__onFirestoreBackupSchedulerAct');
+const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, '__onFirestoreBackupSchedulerAct'>('__onFirestoreBackupSchedulerAct');
 
 export class FirestoreBackupScheduler_Class
 	extends FirebaseScheduledFunction {
@@ -64,8 +63,9 @@ export class FirestoreBackupScheduler_Class
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
-		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<BackupDoc>('firestore-backup-status',
-			['moduleKey', 'timestamp']);
+		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore()
+			.getCollection<BackupDoc>('firestore-backup-status', ['moduleKey', 'timestamp']);
+
 		const backups: FirestoreBackupDetails<any>[] = [];
 		filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule()).forEach(backupArray => {
 			backups.push(...backupArray);
