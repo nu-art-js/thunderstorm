@@ -26,6 +26,8 @@ import {
 	dispatch_onServerError,
 	Dispatcher,
 	filterInstances,
+	Format_YYYYMMDD_HHmmss,
+	formatTimestamp,
 	ServerErrorSeverity,
 	TS_Object
 } from '@nu-art/ts-common';
@@ -42,8 +44,8 @@ export type BackupDoc = ActDetailsDoc & {
 
 export type FirestoreBackupDetails<T extends TS_Object> = {
 	moduleKey: string,
-	interval: number,
-	keepInterval?: number,
+	interval: number, // how often to run
+	keepInterval?: number, // how long to keep
 	collection: FirestoreCollection<T>,
 	backupQuery: FirestoreQuery<T>
 }
@@ -63,6 +65,8 @@ export class FirestoreBackupScheduler_Class
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
+		this.logInfoBold('Running function FirestoreBackupScheduler');
+
 		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore()
 			.getCollection<BackupDoc>('firestore-backup-status', ['moduleKey', 'timestamp']);
 
@@ -71,7 +75,7 @@ export class FirestoreBackupScheduler_Class
 			backups.push(...backupArray);
 		});
 
-		const bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
+		const bucket = await FirebaseModule.createAdminSession().getStorage().getMainBucket();
 		await Promise.all(backups.map(async (backupItem) => {
 			const query: FirestoreQuery<BackupDoc> = {
 				where: {moduleKey: backupItem.moduleKey},
@@ -80,23 +84,28 @@ export class FirestoreBackupScheduler_Class
 			};
 			const docs = await backupStatusCollection.query(query);
 			const latestDoc = docs[0];
-			if (latestDoc && latestDoc.timestamp + backupItem.interval > currentTimeMillis())
-				return;
+			const nowMs = currentTimeMillis();
+			if (latestDoc && latestDoc.timestamp + backupItem.interval > nowMs)
+				return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
 
-			const backupPath = `backup/firestore/${backupItem.moduleKey}/${currentTimeMillis()}.json`;
+			const fileName = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
+			const backupPath = `backup/firestore/${backupItem.moduleKey}/${fileName}.json`;
 			try {
 				const toBackupData = await backupItem.collection.query(backupItem.backupQuery);
 				await (await bucket.getFile(backupPath)).write(toBackupData);
-				await backupStatusCollection.upsert({timestamp: currentTimeMillis(), moduleKey: backupItem.moduleKey, backupPath});
-
+				this.logInfoBold('Upserted Backup for ' + backupItem.moduleKey);
+				await backupStatusCollection.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath});
+				this.logInfoBold('Upserted BackupStatus for ' + backupItem.moduleKey); // happened 30 seconds later
 				const keepInterval = backupItem.keepInterval;
 				if (keepInterval) {
-					const queryOld = {where: {moduleKey: backupItem.moduleKey, timestamp: {$lt: currentTimeMillis() - keepInterval}}};
+					this.logInfoBold('Querying for items to delete for ' + backupItem.moduleKey);
+					const queryOld = {where: {moduleKey: backupItem.moduleKey, timestamp: {$lt: nowMs - keepInterval}}};
 					const oldDocs = await backupStatusCollection.query(queryOld);
+					this.logInfoBold('Received items to delete total: ' + oldDocs.length);
 					await Promise.all(oldDocs.map(async oldDoc => {
 						await (await bucket.getFile(oldDoc.backupPath)).delete();
 					}));
-
+					this.logInfoBold('Successfully deleted items for ' + backupItem.moduleKey);
 					await backupStatusCollection.delete(queryOld);
 				}
 
