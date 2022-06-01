@@ -77,7 +77,7 @@ export abstract class FirebaseFunction<Config = any>
 			try {
 				await toExecute();
 			} catch (e: any) {
-				console.error('Error running function: ', e);
+				await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, e.message);
 			}
 		}
 
@@ -120,6 +120,7 @@ export class Firebase_ExpressFunction
 		return this.function = functions.runWith(Firebase_ExpressFunction.config).https.onRequest((req: Request, res: Response) => {
 			if (this.isReady)
 				return realFunction(req, res);
+
 			return new Promise((resolve) => {
 				addItemToArray(this.toBeExecuted, () => realFunction(req, res));
 				this.toBeResolved = resolve;

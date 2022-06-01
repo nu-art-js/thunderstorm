@@ -33,6 +33,7 @@ import {JiraBugReportIntegrator} from '@nu-art/bug-report/app-backend/modules/Ji
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
 import {PubsubExample} from '@modules/PubsubExample';
 
+
 const packageJson = require('./package.json');
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 
@@ -65,3 +66,11 @@ const _exports = new Storm()
 BugReportModule.addTicketCreator(JiraBugReportIntegrator.openTicket);
 
 module.exports = _exports;
+
+// type TypedMap<CloudFunction<any>>
+//
+// module.exports = {
+// 	scheduler: functions.pubsub.schedule(this.schedule).onRun(async () => {
+// 		return this.handleCallback(() => this._onScheduledEvent());
+// 	})
+// }
