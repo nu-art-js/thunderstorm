@@ -142,6 +142,6 @@ class WorkspaceTest
 			</div>
 		</div>;
 	}
-};
+}
 
 export const PgDev_WorkspaceTest = {name: 'Workspace Test', renderer: WorkspaceTest};
