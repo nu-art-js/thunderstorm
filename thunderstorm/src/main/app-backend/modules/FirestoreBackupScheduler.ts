@@ -93,20 +93,28 @@ export class FirestoreBackupScheduler_Class
 			try {
 				const toBackupData = await backupItem.collection.query(backupItem.backupQuery);
 				await (await bucket.getFile(backupPath)).write(toBackupData);
-				this.logInfoBold('Upserted Backup for ' + backupItem.moduleKey);
+
+				this.logInfoBold('Upserting Backup for ' + backupItem.moduleKey);
 				await backupStatusCollection.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath});
-				this.logInfoBold('Upserted BackupStatus for ' + backupItem.moduleKey); // happened 30 seconds later
+
+				this.logInfoBold('Upserting BackupStatus for ' + backupItem.moduleKey); // happened 30 seconds later
 				const keepInterval = backupItem.keepInterval;
 				if (keepInterval) {
 					this.logInfoBold('Querying for items to delete for ' + backupItem.moduleKey);
 					const queryOld = {where: {moduleKey: backupItem.moduleKey, timestamp: {$lt: nowMs - keepInterval}}};
 					const oldDocs = await backupStatusCollection.query(queryOld);
+
 					this.logInfoBold('Received items to delete total: ' + oldDocs.length);
 					await Promise.all(oldDocs.map(async oldDoc => {
-						await (await bucket.getFile(oldDoc.backupPath)).delete();
+						try {
+							await (await bucket.getFile(oldDoc.backupPath)).delete();
+							await backupStatusCollection.deleteItem(oldDoc);
+						} catch (e: any) {
+							this.logError('error deleting file: ', oldDoc, e);
+						}
 					}));
+
 					this.logInfoBold('Successfully deleted items for ' + backupItem.moduleKey);
-					await backupStatusCollection.delete(queryOld);
 				}
 
 			} catch (e: any) {
