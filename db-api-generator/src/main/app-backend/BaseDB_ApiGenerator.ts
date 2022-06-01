@@ -110,7 +110,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			backupQuery: this.resolveBackupQuery(),
 			collection: this.collection,
 			keepInterval: 7 * Day,
-			interval: Day,
+			minTimeThreshold: Day,
 			moduleKey: this.config.collectionName
 		}];
 	}
