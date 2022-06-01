@@ -44,7 +44,7 @@ export type BackupDoc = ActDetailsDoc & {
 
 export type FirestoreBackupDetails<T extends TS_Object> = {
 	moduleKey: string,
-	interval: number, // how often to run
+	minTimeThreshold: number, // minimum time to pass before another backup can occur.
 	keepInterval?: number, // how long to keep
 	collection: FirestoreCollection<T>,
 	backupQuery: FirestoreQuery<T>
@@ -85,7 +85,7 @@ export class FirestoreBackupScheduler_Class
 			const docs = await backupStatusCollection.query(query);
 			const latestDoc = docs[0];
 			const nowMs = currentTimeMillis();
-			if (latestDoc && latestDoc.timestamp + backupItem.interval > nowMs)
+			if (latestDoc && latestDoc.timestamp + backupItem.minTimeThreshold > nowMs)
 				return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
 
 			const fileName = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
