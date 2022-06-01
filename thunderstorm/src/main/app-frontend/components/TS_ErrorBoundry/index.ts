@@ -1,5 +1,8 @@
 /*
- * A typescript & react boilerplate with api call example
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,26 +19,4 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-import {LL_V_C, TS_ErrorBoundry} from '@nu-art/thunderstorm/frontend';
-
-
-export class PG_Example
-	extends React.Component<{ name: string }> {
-
-	constructor(p: { name: string }) {
-		super(p);
-	}
-
-	render() {
-		return (
-			<LL_V_C className="ts-playground__group-example">
-				<div className="ts-playground__header">{this.props.name}</div>
-				<TS_ErrorBoundry>
-					{this.props.children}
-				</TS_ErrorBoundry>
-			</LL_V_C>
-		);
-	}
-}
-
+export * from './TS_ErrorBoundry';

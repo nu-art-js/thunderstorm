@@ -19,11 +19,15 @@
  * limitations under the License.
  */
 import * as React from 'react';
+import {ReactNode} from 'react';
+import './TS_ErrorBoundry.scss';
+
 
 type State = {
 	error?: Error,
 	errorInfo?: React.ErrorInfo
 }
+
 const style: React.CSSProperties = {
 	cursor: 'pointer',
 	display: 'flex',
@@ -39,10 +43,15 @@ const style: React.CSSProperties = {
 	borderRadius: '50%'
 };
 
-export class ErrorBoundary
-	extends React.Component<{}, State> {
+type Props = {
+	onError?: (e: any) => void,
+	renderer?: (e: any) => ReactNode
+};
 
-	constructor(props: {}) {
+export class TS_ErrorBoundry
+	extends React.Component<Props, State> {
+
+	constructor(props: Props) {
 		super(props);
 		this.state = {};
 	}
@@ -56,22 +65,28 @@ export class ErrorBoundary
 	}
 
 	render() {
-		if (this.state.error) {
-			return (<div style={{position: 'relative'}}>
-					<div style={{paddingBottom: 50}}>
-						<div style={{fontSize: 20, marginBottom: 8}}>Something went wrong...</div>
-						<div style={{fontSize: 16, marginBottom: 8}}>{this.state.error.toString()}</div>
-						<details style={{whiteSpace: 'pre-wrap'}}>
-							{this.state.errorInfo?.componentStack}
-						</details>
-					</div>
-					<div className="match_height match_width">
-						<button style={style} onClick={() => this.setState({error: undefined})}>Reload!</button>
-					</div>
-				</div>
-			);
-		}
+		if (!this.state.error)
+			return this.props.children;
 
-		return this.props.children;
+		if (this.props.renderer)
+			return this.props.renderer(this.state.error);
+
+		return (<div style={{position: 'relative'}}>
+				<div style={{paddingBottom: 50}}>
+					<div style={{fontSize: 20, marginBottom: 8}}>Something went wrong...</div>
+					<div style={{fontSize: 16, marginBottom: 8}}>{this.state.error.toString()}</div>
+					<details style={{whiteSpace: 'pre-wrap'}}>
+						{this.state.errorInfo?.componentStack}
+					</details>
+				</div>
+				<div className="match_height match_width">
+					<button style={style} onClick={() => {
+						this.props.onError?.(this.state.error);
+						this.props.onError || this.setState({error: undefined});
+					}}>Reload!
+					</button>
+				</div>
+			</div>
+		);
 	}
 }
