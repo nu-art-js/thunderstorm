@@ -46,7 +46,6 @@ export * from './app-frontend/modules/ThunderstormModule';
 export * from './app-frontend/core/SimpleScriptInjector';
 export * from './app-frontend/core/ComponentSync';
 export * from './app-frontend/core/ComponentAsync';
-export * from './app-frontend/core/UIComponent';
 export * from './app-frontend/core/IndexedDB';
 export * from './app-frontend/core/AppPage';
 export * from './app-frontend/core/AppPageV2';

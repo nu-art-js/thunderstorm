@@ -51,7 +51,7 @@ export class Replacer
 		return this;
 	}
 
-	public replace(_content: string, runtime?: TS_Object) {
+	public replace(_content = '', runtime?: TS_Object) {
 		let content = this.replaceLoops(_content, runtime);
 		content = this.replaceParams(content, runtime);
 
@@ -61,7 +61,7 @@ export class Replacer
 		return content;
 	}
 
-	private replaceParams(content: string, runtime?: TS_Object) {
+	private replaceParams(content = '', runtime?: TS_Object) {
 		const matches = content.match(Replacer.Regexp_paramGroup);
 		return matches?.reduce((toRet, match) => {
 			const param = match.match(Replacer.Regexp_param)?.[1];
@@ -77,7 +77,7 @@ export class Replacer
 		return toRet.replace(new RegExp(`\\$\\{${escape_RegExp(param)}\\}`, 'g'), value);
 	}
 
-	private replaceLoops(content: string, runtime?: TS_Object) {
+	private replaceLoops(content = '', runtime?: TS_Object) {
 		const matches = content.match(Replacer.Regexp_forLoopGroupStart);
 		return matches?.reduce((toRet, match) => {
 			const varsMatch = match.match(Replacer.Regexp_forLoopParam) as RegExpMatchArray;
@@ -132,7 +132,8 @@ export class Replacer
 		let value: any;
 		try {
 			if (runtime)
-				value = parts.reduce((value, key) => value[key], runtime);
+				value = parts.reduce((value, key) => value?.[key], runtime);
+
 			if (value === undefined)
 				value = parts.reduce((value, key) => value[key], this.input);
 		} catch (e: any) {

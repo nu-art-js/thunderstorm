@@ -24,9 +24,9 @@ import {CSSProperties, Fragment} from 'react';
 import {TreeNode, TreeNodeExpandState,} from './types';
 import {Adapter} from '../adapter/Adapter';
 import {_BaseNodeRenderer} from '../adapter/BaseRenderer';
-import {UIComponent} from '../../core/UIComponent';
 import {_className} from '../../utils/tools';
 import './TS_Tree.scss';
+import {ComponentSync} from '../../core/ComponentSync';
 
 
 export type Props_Tree = {
@@ -53,7 +53,7 @@ const ignoreToggler = (): void => {
 };
 
 export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = State_Tree>
-	extends UIComponent<P, State_Tree> {
+	extends ComponentSync<P, State_Tree> {
 
 	static defaultProps: Partial<Props_Tree> = {
 		checkExpanded: (expanded: TreeNodeExpandState, path: string) => expanded[path]
