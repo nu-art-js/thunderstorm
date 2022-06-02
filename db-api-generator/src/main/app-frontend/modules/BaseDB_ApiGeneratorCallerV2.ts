@@ -134,6 +134,14 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		}, 'sync-db', dispatch);
 	};
 
+
+	/**
+	 * Clear the last syncDB time stamp
+	 */
+	clearLastSync = (): void => {
+		this.lastSync.delete();
+	};
+
 	/**
 	 * Create or update, depending on existence of its unique key.
 	 * @param toUpsert Object to create or update.
