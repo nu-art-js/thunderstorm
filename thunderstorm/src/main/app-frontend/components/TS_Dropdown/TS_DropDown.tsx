@@ -224,9 +224,7 @@ export class TS_DropDown<ItemType>
 			style.maxHeight = bottomDelta;
 
 			if(bottomDelta < 300) {
-				console.log('here')
 				const maxHeight = 300;
-				console.log(bottomDelta-maxHeight)
 				style.maxHeight = maxHeight;
 				style.transform = `translateY(${bottomDelta - maxHeight}px)`;
 			}
