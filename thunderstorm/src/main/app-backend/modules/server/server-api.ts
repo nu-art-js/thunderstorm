@@ -56,7 +56,7 @@ import {
 	QueryParams
 } from "../../../shared/types";
 import {assertProperty} from "../../utils/to-be-removed";
-import {ApiException,} from "../../exceptions";
+import {ApiException} from "../../exceptions";
 import {
 	ExpressRequest,
 	ExpressResponse,
@@ -87,6 +87,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 	private middlewares?: ServerApi_Middleware[];
 	private bodyValidator?: ValidatorTypeResolver<B>;
 	private queryValidator?: ValidatorTypeResolver<P>;
+	private sideEffects: (() => Promise<any>)[] = [];
 
 	protected constructor(method: HttpMethod, relativePath: string, tag?: string) {
 		super(tag || relativePath);
@@ -94,6 +95,11 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 
 		this.method = method;
 		this.relativePath = `${relativePath}`;
+	}
+
+	addSideEffect(sideEffect: () => Promise<any>) {
+		this.sideEffects.push(sideEffect);
+		return this;
 	}
 
 	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
@@ -139,11 +145,16 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 	public route(router: ExpressRouter, prefixUrl: string) {
 		const fullPath = `${prefixUrl ? prefixUrl : ""}/${this.relativePath}`;
 		this.setTag(fullPath);
-		router[this.method](fullPath, this.call);
+		router[this.method](fullPath, this.callWrapper);
 		this.url = `${HttpServer.getBaseUrl()}${fullPath}`;
 	}
 
 	assertProperty = assertProperty;
+
+	callWrapper = async (req: ExpressRequest, res: ExpressResponse) => {
+		await this.call(req, res)
+		await Promise.all(this.sideEffects.map(sideEffect => sideEffect()))
+	}
 
 	call = async (req: ExpressRequest, res: ExpressResponse) => {
 		const response: ApiResponse = new ApiResponse(this, res);
@@ -178,7 +189,7 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 			headers: req.headers,
 			url: req.url,
 			query: reqQuery,
-			body: body as B,
+			body: body as B
 		};
 
 		try {
@@ -259,7 +270,9 @@ export abstract class ServerApi<Binder extends ApiTypeBinder<string, R, B, P>, R
 
 			const message = await HttpServer.errorMessageComposer(requestData, apiException);
 			try {
-				await dispatch_onServerError.dispatchModuleAsync([severity, HttpServer, message]);
+				await dispatch_onServerError.dispatchModuleAsync([severity,
+				                                                  HttpServer,
+				                                                  message]);
 			} catch (e) {
 				this.logError("Error while handing server error", e);
 			}
