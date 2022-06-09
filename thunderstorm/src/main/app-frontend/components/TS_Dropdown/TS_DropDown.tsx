@@ -218,8 +218,16 @@ export class TS_DropDown<ItemType>
 		const style: CSSProperties = {};
 		if (this.state?.dropDownRef.current) {
 			const bottom = this.state.dropDownRef.current?.getBoundingClientRect().bottom;
-			style.maxHeight = window.innerHeight - bottom - 20;
+			const bottomDelta = window.innerHeight - bottom - 20;
+
 			style.overflowY = 'auto';
+			style.maxHeight = bottomDelta;
+
+			if(bottomDelta < 300) {
+				const maxHeight = 300;
+				style.maxHeight = maxHeight;
+				style.transform = `translateY(${bottomDelta - maxHeight}px)`;
+			}
 		}
 
 		return <TS_Tree
