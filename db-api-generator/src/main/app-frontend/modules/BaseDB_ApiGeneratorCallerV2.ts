@@ -148,9 +148,10 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	 * @param responseHandler Callback post operation.
 	 * @param requestData
 	 */
-	upsert = (toUpsert: PreDB<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
+	upsert = (toUpsert: PreDB<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), errorHandler?:RequestErrorHandler, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
 		this.createUpsertRequest(requestData)
 			.setJsonBody(toUpsert)
+			.setOnError(errorHandler)
 			.execute(async (response) => {
 				await this.onEntryUpdated(toUpsert as unknown as DBType, response, requestData);
 				if (responseHandler)
