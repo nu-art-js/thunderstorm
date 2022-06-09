@@ -92,7 +92,9 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 		return this;
 	}
 
-	setOnError(errorMessage: string | RequestErrorHandler<E>) {
+	setOnError(errorMessage?: string | RequestErrorHandler<E>) {
+		if (!errorMessage)
+			return this;
 		if (typeof errorMessage === 'string') {
 			// @ts-ignore
 			// noinspection JSConstantReassignment

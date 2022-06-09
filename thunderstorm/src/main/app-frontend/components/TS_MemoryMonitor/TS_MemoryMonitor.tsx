@@ -18,6 +18,10 @@
 import * as React from 'react';
 import './TS_MemoryMonitor.scss';
 
+type Props = {
+	labelResolver: (buildMode: string, version: string) => string;
+}
+
 class MemoryMonitor
 	extends React.Component<any, any> {
 	private id!: any;
@@ -34,7 +38,6 @@ class MemoryMonitor
 	}
 
 	render() {
-
 		// @ts-ignore
 		const mem: ChromeMem = window.performance.memory;
 		if (!mem)
@@ -44,10 +47,19 @@ class MemoryMonitor
 	}
 }
 
-export const TS_MemoryMonitor = () => {
-	return <div className="ts-memory-monitor">
-		<div className="ts-memory-monitor__version">{`${process.env.appEnv}-${process.env.appVersion}`}</div>
-		<MemoryMonitor/>
-	</div>;
-};
+export class TS_MemoryMonitor
+	extends React.Component<Props> {
+	static defaultProps: Props = {
+		labelResolver: (buildMode: string, version: string) => {
+			return `${process.env.appEnv}-${process.env.appVersion}`;
+		}
+	};
+
+	render() {
+		return <div className="ts-memory-monitor">
+			<div className="ts-memory-monitor__version">{this.props.labelResolver(process.env.appEnv!, process.env.appVersion!)}</div>
+			<MemoryMonitor/>
+		</div>;
+	}
+}
 
