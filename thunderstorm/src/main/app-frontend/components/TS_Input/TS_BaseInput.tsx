@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
-import {Omit} from 'react-router';
+
 
 export type InputType = 'text' | 'number' | 'password';
 
