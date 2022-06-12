@@ -19,13 +19,13 @@
  * limitations under the License.
  */
 
-import {Module, TS_Object} from '@nu-art/ts-common';
+import {DB_Object, Module} from '@nu-art/ts-common';
 import {Cursor, DB, ObjectStore, openDb, UpgradeDB} from 'idb';
 
 
 type Config = {}
 
-export type DBConfig<T extends TS_Object, Ks extends keyof T> = {
+export type DBConfig<T extends DB_Object, Ks extends keyof T> = {
 	name: string
 	version?: number
 	autoIncrement?: boolean,
@@ -34,7 +34,7 @@ export type DBConfig<T extends TS_Object, Ks extends keyof T> = {
 	upgradeProcessor?: (db: UpgradeDB) => void
 };
 
-export type IndexKeys<T extends TS_Object, Ks extends keyof T> = { [K in Ks]: T[K] };
+export type IndexKeys<T extends DB_Object, Ks extends keyof T> = { [K in Ks]: T[K] };
 
 export type IndexDb_Query = {
 	query?: string | number | string[] | number[],
@@ -42,7 +42,7 @@ export type IndexDb_Query = {
 	limit?: number
 };
 
-export class IndexedDB<T extends TS_Object, Ks extends keyof T> {
+export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 	private db!: DB;
 	private config: DBConfig<T, Ks>;
 
@@ -170,7 +170,7 @@ export class IndexedDBModule_Class
 
 	dbs: { [collection: string]: IndexedDB<any, any> } = {};
 
-	getOrCreate<T extends TS_Object, Ks extends keyof T>(config: DBConfig<T, Ks>): IndexedDB<T, Ks> {
+	getOrCreate<T extends DB_Object, Ks extends keyof T>(config: DBConfig<T, Ks>): IndexedDB<T, Ks> {
 		return this.dbs[config.name] || (this.dbs[config.name] = new IndexedDB<T, Ks>(config));
 	}
 }
