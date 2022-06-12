@@ -19,35 +19,43 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {Tooltip_Model, TooltipListener, TooltipModule} from '../../component-modules/TooltipModule';
+import {Tooltip_Model, TooltipListener} from '../../component-modules/TooltipModule';
 import {ComponentSync} from '../../core/ComponentSync';
-import {_setTimeout} from '@nu-art/ts-common';
 import './TS_TooltipOverlay.scss';
 
-type State = { model?: Tooltip_Model };
+type State = {
+	model?: Tooltip_Model,
+};
 
 export class TS_TooltipOverlay
 	extends ComponentSync<{}, State>
 	implements TooltipListener {
 
 	private ref?: HTMLDivElement | null;
-	private timeoutInterval?: number;
+	// private timeoutInterval?: number;
+	private timeout: NodeJS.Timeout|undefined = undefined;
 
 	__showTooltip = (model?: Tooltip_Model) => {
-		this.setState(() => ({model}));
-		if (!model) {
-			this.ref = null;
-			return;
+		//Clear timeout if one exists
+		if (this.timeout)
+			clearTimeout(this.timeout);
+
+		//If exited tooltip but waiting for content hover
+		if(!model && this.state?.model?.allowContentHover) {
+			this.timeout = setTimeout(()=>{
+				this.setState(() => ({model}));
+			},this.state.model.duration)
+		} else {
+			this.setState(() => ({model}));
+			if (!model) {
+				this.ref = null;
+				return;
+			}
+			const duration = model.duration;
+			if (duration <= 0)
+				return;
 		}
-
-		const duration = model.duration;
-		if (duration <= 0)
-			return;
-
-		if (this.timeoutInterval)
-			clearTimeout(this.timeoutInterval);
-
-		this.timeoutInterval = _setTimeout(TooltipModule.hide, duration, model);
+		// this.timeoutInterval = _setTimeout(TooltipModule.hide, duration, model);
 	};
 
 	constructor(props: {}) {
@@ -57,6 +65,21 @@ export class TS_TooltipOverlay
 
 	protected deriveStateFromProps(nextProps: {}): State | undefined {
 		return {};
+	}
+
+	private onContentMouseEnter = () => {
+		if(!this.state.model?.allowContentHover)
+			return;
+
+		//Clear the timeout to stop hiding the content
+		if(this.timeout)
+			clearTimeout(this.timeout)
+	}
+
+	private onContentMouseLeave = () => {
+		this.timeout = setTimeout(()=>{
+			this.setState(() => ({model:undefined}));
+		},this.state.model?.duration)
 	}
 
 	render() {
@@ -72,7 +95,10 @@ export class TS_TooltipOverlay
 			top: `${top - height}px`,
 			left: `${left}px`
 		};
+
 		return <div
+			onMouseEnter={this.onContentMouseEnter}
+			onMouseLeave={this.onContentMouseLeave}
 			ref={(ref) => {
 				if (this.ref)
 					return;
