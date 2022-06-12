@@ -1,0 +1,16 @@
+@startuml
+participant Account_FE
+participant Users_FE
+participant Account_BE
+participant Users_BE
+
+Account_FE -> Account_BE: Register\n(email & password)
+Account_BE --> Users_BE: dispatch\n"On Account Created"
+Users_BE -> Users_BE: Create User document\nfor new account.
+Account_BE -> Account_FE: (200 OK) sessionId
+Account_FE --> Users_FE: dispatch\n"On Login"
+Users_FE -> Users_BE: Fetch user by sessionId
+Users_BE <-> Account_BE: validate session and get account _id
+Users_BE -> Users_BE: query DB_User with _id
+Users_BE-> Users_FE: DB_User
+@enduml

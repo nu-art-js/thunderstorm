@@ -134,21 +134,13 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		}, 'sync-db', dispatch);
 	};
 
-
-	/**
-	 * Clear the last syncDB time stamp
-	 */
-	clearLastSync = (): void => {
-		this.lastSync.delete();
-	};
-
 	/**
 	 * Create or update, depending on existence of its unique key.
 	 * @param toUpsert Object to create or update.
 	 * @param responseHandler Callback post operation.
 	 * @param requestData
 	 */
-	upsert = (toUpsert: PreDB<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), errorHandler?:RequestErrorHandler, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
+	upsert = (toUpsert: PreDB<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), errorHandler?: RequestErrorHandler, requestData?: string): BaseHttpRequest<ApiBinder_DBUpsert<DBType>> =>
 		this.createUpsertRequest(requestData)
 			.setJsonBody(toUpsert)
 			.setOnError(errorHandler)
@@ -245,8 +237,11 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 	public getUniqueId = (item: DBType) => item._id;
 
-	public async clearCache() {
-		return await this.db.deleteAll();
+	public async clearCache(sync = true) {
+		this.lastSync.delete();
+		await this.db.deleteAll();
+		if (sync)
+			this.syncDB();
 	}
 
 	public async queryCache(query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> {
