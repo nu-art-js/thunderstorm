@@ -153,7 +153,6 @@ export class TS_DropDown<ItemType>
 	};
 
 	onSelected = (item: ItemType) => {
-		console.log(item);
 		this.setState({
 			open: false,
 			selected: item

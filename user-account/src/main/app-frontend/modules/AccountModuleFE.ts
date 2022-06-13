@@ -63,7 +63,7 @@ export interface OnAccountsLoaded {
 }
 
 const dispatch_onAccountsLoaded = new ThunderDispatcher<OnAccountsLoaded, '__onAccountsLoaded'>('__onAccountsLoaded');
-const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
+export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
 
 export class AccountModuleFE_Class
 	extends Module<Config> {
@@ -145,6 +145,10 @@ export class AccountModuleFE_Class
 		StorageKey_UserEmail.set(response.email);
 		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	}
+
+	public getSessionId = (): string => {
+		return this.isStatus(LoggedStatus.LOGGED_IN) ? StorageKey_SessionId.get() : '';
+	};
 
 	public loginSAML(request: RequestParams_LoginSAML) {
 		XhrHttpModule
