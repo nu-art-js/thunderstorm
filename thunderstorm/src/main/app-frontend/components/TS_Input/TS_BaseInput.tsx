@@ -37,10 +37,10 @@ export type TS_BaseInputProps<Key, Element> = Omit<HTMLProps<Element>, 'onChange
 	enable?: boolean
 	name?: string
 	value?: string
-	handleKeyEvent?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+	onKeyPress?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 	focus?: boolean
 	spellCheck?: boolean
-	autocomplete?: boolean
+	autoComplete?: boolean
 	innerRef?: React.RefObject<any>;
 }
 
@@ -84,7 +84,7 @@ export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInpu
 		this.props.onChange?.(value, event.target.id as Key);
 	};
 
-	handleKeyEvent = (ev: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+	onKeyPress = (ev: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		if (this.props.onAccept && ev.key === 'Enter' && !ev.shiftKey && !ev.altKey && !ev.ctrlKey && !ev.metaKey) {
 			const value = ev.currentTarget.value;
 

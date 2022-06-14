@@ -34,38 +34,28 @@ export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, 
  * </code>
  *
  */
+
 export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
 	render() {
+		const {onAccept,focus,...props} = this.props;
+
 		return <input
-			autoFocus={this.props.focus}
-			ref={this.props.innerRef}
-			// ref={input => {
-			// 	if (this.ref || !input)
-			// 		return;
-			//
-			// 	this.ref = input;
-			// 	this.props.focus && this.ref.focus();
-			// }}
+			{...props}
+			autoFocus={focus}
+			ref={props.innerRef}
 			onBlur={(event) => {
-				// this.ref = undefined;
 				const value = event.target.value;
 				this.setState({value});
-				this.props.onBlur?.(value, event);
+				props.onBlur?.(value, event);
 			}}
-			disabled={this.props.enable === false}
-			name={this.props.name || this.props.id}
-			key={this.props.id}
-			id={this.props.id}
+			disabled={props.enable === false}
+			name={props.name || props.id}
 			className={'ts-input'}
-			style={this.props.style}
 			value={this.state.value}
-			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
-			onKeyPress={this.props.handleKeyEvent || this.handleKeyEvent}
-			autoComplete={this.props.autocomplete ? 'on' : 'off'}
-			spellCheck={this.props.spellCheck}
-			type={this.props.type}
+			onKeyPress={props.onKeyPress || this.onKeyPress}
+			autoComplete={props.autoComplete ? 'on' : 'off'}
 		/>;
 	}
 }

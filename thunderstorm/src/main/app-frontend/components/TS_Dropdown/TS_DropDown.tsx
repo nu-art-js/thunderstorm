@@ -201,6 +201,7 @@ export class TS_DropDown<ItemType>
 		if (this.props.showNothingWithoutFilterText && !this.state.filterText?.length)
 			return '';
 
+		let className = 'ts-dropdown__items';
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const filter = this.props.filter;
 		if (filter) {
@@ -212,28 +213,30 @@ export class TS_DropDown<ItemType>
 		}
 
 		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0)
-			return <div className="ts-dropdown__empty" style={{textAlign: 'center', opacity: 0.5}}>No options</div>;
+			return <div className="ts-dropdown__empty" style={{textAlign: 'center'}}>No options</div>;
 
 		const style: CSSProperties = {};
 		if (this.state?.dropDownRef.current) {
 			const bottom = this.state.dropDownRef.current?.getBoundingClientRect().bottom;
+			const height = this.state.dropDownRef.current?.getBoundingClientRect().height;
 			const bottomDelta = window.innerHeight - bottom - 20;
 
 			style.overflowY = 'auto';
 			style.maxHeight = bottomDelta;
 
-			if(bottomDelta < 300) {
-				const maxHeight = 300;
-				style.maxHeight = maxHeight;
-				style.transform = `translateY(${bottomDelta - maxHeight}px)`;
+			if(bottomDelta < 100) {
+				style.maxHeight = undefined;
+				style.transform = `translateY(calc(-100% - ${height}px))`;
+				className += ' inverted'
 			}
 		}
+
 
 		return <TS_Tree
 			adapter={this.state.adapter}
 			selectedItem={this.state.selected}
 			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
-			className={'ts-dropdown__items'}
+			className={className}
 			treeContainerStyle={style}
 			// keyEventHandler={treeKeyEventHandler}
 		/>;
@@ -293,13 +296,12 @@ export class TS_DropDown<ItemType>
 
 		return <TS_Input
 			type="text"
-			autocomplete={false}
 			value={this.props.inputValue}
 			onChange={(filterText) => this.setState({filterText})}
 			focus={true}
 			style={{width: '100%'}}
 			placeholder={'Search'}//{this.props.placeholder}
-			handleKeyEvent={this.keyEventHandler}
+			onKeyPress={this.keyEventHandler}
 		/>;
 	};
 
