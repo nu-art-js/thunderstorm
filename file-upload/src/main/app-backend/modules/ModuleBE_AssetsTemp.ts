@@ -20,7 +20,7 @@ import {DB_Asset, DBDef_TempAssets} from '../..';
 import {BaseDB_ApiGenerator, getModuleBEConfig} from '@nu-art/db-api-generator/backend';
 
 
-export class AssetsTempModuleBE_Class
+export class ModuleBE_AssetsTemp_Class
 	extends BaseDB_ApiGenerator<DB_Asset> {
 
 	constructor() {
@@ -28,7 +28,7 @@ export class AssetsTempModuleBE_Class
 	}
 }
 
-export const AssetsTempModuleBE = new AssetsTempModuleBE_Class();
+export const ModuleBE_AssetsTemp = new ModuleBE_AssetsTemp_Class();
 
 
 

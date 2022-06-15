@@ -16,10 +16,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {UploaderModuleFE} from "../modules/UploaderModuleFE";
-import {Frontend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/frontend";
+import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader';
+import {Frontend_ModulePack_PushPubSub} from '@nu-art/push-pub-sub/frontend';
+import {ModuleFE_Assets} from '../modules/ModuleFE_Assets';
+
 
 export const Frontend_ModulePack_Uploader = [
 	...Frontend_ModulePack_PushPubSub,
-	UploaderModuleFE
+	ModuleFE_Assets,
+	ModuleFE_AssetUploader,
 ];

@@ -28,7 +28,7 @@ export type ServerFilesToUpload = Request_Uploader & {
 
 type Config = UploaderConfig & { requestConfig: Axios_RequestConfig };
 
-export class ServerUploaderModule_Class
+export class ModuleBE_AssetUploader_Class
 	extends BaseUploaderModule_Class<AxiosHttpModule_Class, Config> {
 
 	constructor() {
@@ -50,7 +50,7 @@ export class ServerUploaderModule_Class
 	}
 }
 
-export const ServerUploaderModule = new ServerUploaderModule_Class();
+export const ModuleBE_AssetUploader = new ModuleBE_AssetUploader_Class();
 
 
 

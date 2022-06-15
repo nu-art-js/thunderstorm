@@ -1,7 +1,7 @@
-import {ApiCallerEventType, BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventType, BaseDB_ApiGeneratorCaller, getModuleFEConfig} from '@nu-art/db-api-generator/frontend';
 
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
-import {DB_Asset} from '../../shared';
+import {DB_Asset, DBDef_Assets} from '../../shared';
 
 
 export interface OnAssetsUpdated {
@@ -10,13 +10,13 @@ export interface OnAssetsUpdated {
 
 export const dispatch_onAssetsListChanged = new ThunderDispatcher<OnAssetsUpdated, '__onAssetsUpdated'>('__onAssetsUpdated');
 
-export class AssetsModuleFE_Class
+export class ModuleFE_Assets_Class
 	extends BaseDB_ApiGeneratorCaller<DB_Asset> {
 
 	constructor() {
-		super({key: 'assets', relativeUrl: '/v1/assets'});
+		super(getModuleFEConfig(DBDef_Assets));
 		this.setDefaultDispatcher(dispatch_onAssetsListChanged);
 	}
 }
 
-export const AssetsModuleFE = new AssetsModuleFE_Class();
+export const ModuleFE_Assets = new ModuleFE_Assets_Class();

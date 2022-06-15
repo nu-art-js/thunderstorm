@@ -17,17 +17,10 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi_Post
-} from "@nu-art/thunderstorm/backend";
-import {
-	Api_GetUploadUrl,
-	BaseUploaderFile
-} from "../../../../shared/types";
-import {QueryParams} from "@nu-art/thunderstorm";
-import {AssetsModuleBE} from "../../../modules/AssetsModuleBE";
+import {ApiResponse, ExpressRequest, ServerApi_Post} from '@nu-art/thunderstorm/backend';
+import {Api_GetUploadUrl, BaseUploaderFile} from '../../../../shared';
+import {QueryParams} from '@nu-art/thunderstorm';
+import {ModuleBE_Assets} from '../../../modules/ModuleBE_Assets';
 
 
 class ServerApi_GetUploadUrl
@@ -37,7 +30,7 @@ class ServerApi_GetUploadUrl
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: BaseUploaderFile[]) {
-		return AssetsModuleBE.getUrl(body);
+		return ModuleBE_Assets.getUrl(body);
 	}
 }
 
