@@ -17,22 +17,14 @@
  * limitations under the License.
  */
 
-import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../modules/assignment';
-import {PermissionsModule} from '../modules/PermissionsModule';
-import {PermissionsAssert} from '../modules/permissions-assert';
+import {Auditable, DB_Object} from '@nu-art/ts-common';
 
 
-export const Backend_ModulePack_Permissions = [
-	ModuleBE_PermissionProject,
-	ModuleBE_PermissionDomain,
-	ModuleBE_PermissionAccessLevel,
-	ModuleBE_PermissionApi,
-	ModuleBE_PermissionGroup,
-	ModuleBE_PermissionUser,
-	PermissionsAssert,
-	PermissionsModule,
-];
+export type DB_PermissionApi = DB_Object & Auditable & {
+	projectId: string
+	path: string
+	accessLevelIds?: string[],
+	deprecated?: boolean,
+	onlyForApplication?: boolean
+}
 
-export * from '../modules/permissions-assert';
-export * from '../modules/PermissionsModule';

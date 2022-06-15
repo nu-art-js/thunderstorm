@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -15,29 +16,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {currentTimeMillis, generateHex, StringMap} from '@nu-art/ts-common';
 import {
-	currentTimeMillis,
-	generateHex,
-	StringMap
-} from "@nu-art/ts-common";
-import {
-	ProjectPermissionsDB,
-	DomainPermissionsDB,
-	AccessLevelPermissionsDB,
-	ApiPermissionsDB,
-	User_Group,
-	DB_PermissionsGroup,
-    UserPermissionsDB,
-    PermissionsAssert,
-    GroupPermissionsDB
-} from "../_main";
-import { FirestoreTransaction } from "@nu-art/firebase/backend";
-import { cleanup } from "./_core";
-import {
-	__custom,
-	__scenario
-} from "@nu-art/testelot";
-import { ApiException } from "@nu-art/thunderstorm/backend";
+	DB_PermissionGroup,
+	ModuleBE_PermissionAccessLevel,
+	ModuleBE_PermissionApi,
+	ModuleBE_PermissionDomain,
+	ModuleBE_PermissionGroup,
+	ModuleBE_PermissionProject,
+	ModuleBE_PermissionUser,
+	PermissionsAssert,
+	User_Group
+} from '../_main';
+import {FirestoreTransaction} from '@nu-art/firebase/backend';
+import {cleanup} from './_core';
+import {__custom, __scenario} from '@nu-art/testelot';
+import {ApiException} from '@nu-art/thunderstorm/backend';
+
 
 function makeAlphaBetIdForTestOnly(length: number) {
 	let result = '';
@@ -51,7 +46,7 @@ function makeAlphaBetIdForTestOnly(length: number) {
 }
 
 export async function testUserPermissions(groupCustomFields: StringMap[], extraGroupCustomField: StringMap, requestCustomField: StringMap) {
-	console.log("---￿Inside of permissions test---");
+	console.log('---￿Inside of permissions test---');
 	const projectId = 'project-test-ten';
 	const apiId = generateHex(32);
 	const userId = generateHex(32);
@@ -60,40 +55,40 @@ export async function testUserPermissions(groupCustomFields: StringMap[], extraG
 	const permissionId = generateHex(32);
 	const domainId = generateHex(32);
 	const permissionValue = 50;
-	await ProjectPermissionsDB.upsert({_id: projectId, name: 'project test'});
-	await DomainPermissionsDB.upsert({_id: domainId, projectId: projectId, namespace: 'domain-test'});
-	const accessLevel = await AccessLevelPermissionsDB.upsert({_id: permissionId, name: 'test-permission', domainId, value: permissionValue});
-	await ApiPermissionsDB.upsert({projectId: projectId, _id: apiId, path: apiPath, accessLevelIds: [permissionId]});
+	await ModuleBE_PermissionProject.upsert({_id: projectId, name: 'project test'});
+	await ModuleBE_PermissionDomain.upsert({_id: domainId, projectId: projectId, namespace: 'domain-test'});
+	const accessLevel = await ModuleBE_PermissionAccessLevel.upsert({_id: permissionId, name: 'test-permission', domainId, value: permissionValue});
+	await ModuleBE_PermissionApi.upsert({projectId: projectId, _id: apiId, path: apiPath, accessLevelIds: [permissionId]});
 
 	const groupIdArray: User_Group[] = [];
-	const dbInstances: DB_PermissionsGroup[] = [];
+	const dbInstances: DB_PermissionGroup[] = [];
 	for (let counter = 0; counter < 11; counter++) {
 		const groupId = generateHex(32);
 		const baseAccessLevel = {domainId: accessLevel.domainId, value: accessLevel.value};
 		dbInstances.push({
-			                 _id: groupId,
-			                 accessLevelIds: [accessLevel._id],
-			                 __accessLevels: [baseAccessLevel],
-			                 customFields: groupCustomFields,
-			                 label: `group-${makeAlphaBetIdForTestOnly(5)}`
-		                 });
+			_id: groupId,
+			accessLevelIds: [accessLevel._id],
+			__accessLevels: [baseAccessLevel],
+			customFields: groupCustomFields,
+			label: `group-${makeAlphaBetIdForTestOnly(5)}`
+		});
 		groupIdArray.push({groupId, customField: extraGroupCustomField});
 	}
 
 	console.log('Groups dbInstances ready to upsert');
 
 	// @ts-ignore
-	const collection = GroupPermissionsDB.collection;
+	const collection = ModuleBE_PermissionGroup.collection;
 	await collection.runInTransaction(async (transaction: FirestoreTransaction) => {
 
 		// @ts-ignore
-		await Promise.all(dbInstances.map(dbInstance => GroupPermissionsDB.assertUniqueness(transaction, dbInstance)));
+		await Promise.all(dbInstances.map(dbInstance => ModuleBE_PermissionGroup.assertUniqueness(transaction, dbInstance)));
 		return transaction.upsertAll(collection, dbInstances);
 	});
 
 	console.log('Groups dbInstances upserted successfully');
 
-	await UserPermissionsDB.upsert({_id: userId, accountId: userUuid, groups: groupIdArray});
+	await ModuleBE_PermissionUser.upsert({_id: userId, accountId: userUuid, groups: groupIdArray});
 
 	await runAssertion(projectId, apiPath, userUuid, requestCustomField);
 
@@ -108,60 +103,60 @@ async function runAssertion(projectId: string, apiPath: string, userUuid: string
 }
 
 export function testFullAssertUserPermissionsWithExtraGroupCFCovered() {
-	const scenario = __scenario("Test full assert user permissions");
+	const scenario = __scenario('Test full assert user permissions');
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		const requestCustomField = {UnitId: 'eq3', testOne: "test-one", testTwo: "test-two"};
-		const groupCustomFields = [{UnitId: 'eq1', testOne: "test-one"}];
-		const extraGroupCustomField = {UnitId: 'eq[1-3]', testOne: "test-one", testTwo: "test-two"};
+		const requestCustomField = {UnitId: 'eq3', testOne: 'test-one', testTwo: 'test-two'};
+		const groupCustomFields = [{UnitId: 'eq1', testOne: 'test-one'}];
+		const extraGroupCustomField = {UnitId: 'eq[1-3]', testOne: 'test-one', testTwo: 'test-two'};
 		await testUserPermissions(groupCustomFields, extraGroupCustomField, requestCustomField);
 	}).setLabel('Test full assert user permissions passed successfully'));
 	return scenario;
 }
 
 export function testFullAssertUserPermissionsWithEmptyUserCFsArrayAndEmptyRequestCFObj() {
-	const scenario = __scenario("Test full assert user permissions");
+	const scenario = __scenario('Test full assert user permissions');
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
 		const requestCustomField: StringMap = {};
 		const groupCustomFields: StringMap[] = [];
-		const extraGroupCustomField = {UnitId: 'eq[1-3]', testOne: "test-one", testTwo: "test-two"};
+		const extraGroupCustomField = {UnitId: 'eq[1-3]', testOne: 'test-one', testTwo: 'test-two'};
 		await testUserPermissions(groupCustomFields, extraGroupCustomField, requestCustomField);
-	}).setLabel("Test full assert user permissions with empty user CF's array and empty request CF Obj - passed successfully"));
+	}).setLabel('Test full assert user permissions with empty user CF\'s array and empty request CF Obj - passed successfully'));
 	return scenario;
 }
 
 export function expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered() {
-	const scenario = __scenario("Test full assert user permissions");
+	const scenario = __scenario('Test full assert user permissions');
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		const requestCustomField = {UnitId: 'eq3', testOne: "test-one", testTwo: "test-two"};
-		const groupCustomFields = [{UnitId: 'eq1', testOne: "test-one"}];
-		const extraGroupCustomField = {testOne: "test-one", testTwo: "test-two"};
+		const requestCustomField = {UnitId: 'eq3', testOne: 'test-one', testTwo: 'test-two'};
+		const groupCustomFields = [{UnitId: 'eq1', testOne: 'test-one'}];
+		const extraGroupCustomField = {testOne: 'test-one', testTwo: 'test-two'};
 		await testUserPermissions(groupCustomFields, extraGroupCustomField, requestCustomField);
 	}).setLabel('Test full assert user permissions with non group CF covered').expectToFail(ApiException));
 	return scenario;
 }
 
 export function expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCovered() {
-	const scenario = __scenario("Test full assert user permissions");
+	const scenario = __scenario('Test full assert user permissions');
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		const requestCustomField = {UnitId: 'eq1', testOne: "test-one", testTwo: "test-two"};
-		const groupCustomFields = [{UnitId: 'eq1', testOne: "test-one"}];
-		const extraGroupCustomField = {UnitId: 'eq4', testOne: "test-one", testTwo: "test-two"};
+		const requestCustomField = {UnitId: 'eq1', testOne: 'test-one', testTwo: 'test-two'};
+		const groupCustomFields = [{UnitId: 'eq1', testOne: 'test-one'}];
+		const extraGroupCustomField = {UnitId: 'eq4', testOne: 'test-one', testTwo: 'test-two'};
 		await testUserPermissions(groupCustomFields, extraGroupCustomField, requestCustomField);
 	}).setLabel('Test full assert user permissions with non group CF value covered').expectToFail(ApiException));
 	return scenario;
 }
 
 export function expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered() {
-	const scenario = __scenario("Test full assert user permissions");
+	const scenario = __scenario('Test full assert user permissions');
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		const requestCustomField = {UnitId: 'eq1', testOne: "test-one", testTwo: "test-two"};
-		const groupCustomFields = [{UnitId: 'eq1', testOne: "test-one"}];
-		const extraGroupCustomField = {UnitId: 'eq[2-4]', testOne: "test-one", testTwo: "test-two"};
+		const requestCustomField = {UnitId: 'eq1', testOne: 'test-one', testTwo: 'test-two'};
+		const groupCustomFields = [{UnitId: 'eq1', testOne: 'test-one'}];
+		const extraGroupCustomField = {UnitId: 'eq[2-4]', testOne: 'test-one', testTwo: 'test-two'};
 		await testUserPermissions(groupCustomFields, extraGroupCustomField, requestCustomField);
 	}).setLabel('Test full assert user permissions with non group CF regEx value covered').expectToFail(ApiException));
 	return scenario;

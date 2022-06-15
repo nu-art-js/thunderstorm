@@ -17,39 +17,19 @@
  * limitations under the License.
  */
 
-import {
-	__custom,
-	__scenario,
-	ContextKey,
-	TestException
-} from "@nu-art/testelot";
-import {
-	cleanup,
-	ConfigDB,
-	setupDatabase,
-	testConfig1,
-	testLevel1
-} from "./_core";
-import {
-	compare,
-	generateHex,
-	StringMap
-} from "@nu-art/ts-common";
-import {
-	UserPermissionsDB,
-	GroupPermissionsDB,
-	AccessLevelPermissionsDB,
-	AssignAppPermissions,
-	PredefinedGroup
-} from "../_main";
+import {__custom, __scenario, ContextKey, TestException} from '@nu-art/testelot';
+import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1} from './_core';
+import {compare, generateHex, StringMap} from '@nu-art/ts-common';
+import {AssignAppPermissions, ModuleBE_PermissionAccessLevel, ModuleBE_PermissionGroup, ModuleBE_PermissionUser, PredefinedGroup} from '../_main';
 
-const contextKey2 = new ContextKey<ConfigDB>("config-2");
-export const Permissions_WorkspaceOwner = {_id: "workspace-owner", key: "Workspace", label: "Owner"}
-export const Permissions_WorkspaceEditor = {_id: "workspace-editor", key: "Workspace", label: "Editor"}
-export const Permissions_WorkspaceViewer = {_id: "workspace-viewer", key: "Workspace", label: "Viewer"}
+
+const contextKey2 = new ContextKey<ConfigDB>('config-2');
+export const Permissions_WorkspaceOwner = {_id: 'workspace-owner', key: 'Workspace', label: 'Owner'};
+export const Permissions_WorkspaceEditor = {_id: 'workspace-editor', key: 'Workspace', label: 'Editor'};
+export const Permissions_WorkspaceViewer = {_id: 'workspace-viewer', key: 'Workspace', label: 'Viewer'};
 export const PermissionWorkspaceGroups = [Permissions_WorkspaceOwner,
-                                          Permissions_WorkspaceEditor,
-                                          Permissions_WorkspaceViewer]
+	Permissions_WorkspaceEditor,
+	Permissions_WorkspaceViewer];
 
 type AssignUserModels = {
 	granterUserCF: StringMap,
@@ -62,93 +42,96 @@ type AssignUserModels = {
 }
 
 const assignUserModels: AssignUserModels[] = [{
-	granterUserCF: {workspace: "workspace1"},
-	givenGroupCF: {workspace: "workspace1"},
+	granterUserCF: {workspace: 'workspace1'},
+	givenGroupCF: {workspace: 'workspace1'},
 	givenGroup: Permissions_WorkspaceOwner,
 	granterUserGroup: Permissions_WorkspaceOwner,
-	label: "Granter & given group with the same level and customField",
+	label: 'Granter & given group with the same level and customField',
 	expected: true
 }, {
-	granterUserCF: {workspace: "workspace1"},
-	givenGroupCF: {workspace: "workspace1"},
+	granterUserCF: {workspace: 'workspace1'},
+	givenGroupCF: {workspace: 'workspace1'},
 	givenGroup: Permissions_WorkspaceOwner,
 	granterUserGroup: Permissions_WorkspaceOwner,
-	label: "Granter & given group with the same level and customField, but twice, the second one not insert to db",
+	label: 'Granter & given group with the same level and customField, but twice, the second one not insert to db',
 	expected: true,
 	runTwice: true
 }, {
-	granterUserCF: {workspace: "workspace1"},
-	givenGroupCF: {workspace: "workspace1"},
+	granterUserCF: {workspace: 'workspace1'},
+	givenGroupCF: {workspace: 'workspace1'},
 	givenGroup: Permissions_WorkspaceEditor,
 	granterUserGroup: Permissions_WorkspaceOwner,
-	label: "Granter with higher permissions than given group",
+	label: 'Granter with higher permissions than given group',
 	expected: true
 }, {
-	granterUserCF: {workspace: "workspace1"},
-	givenGroupCF: {workspace: "workspace1"},
+	granterUserCF: {workspace: 'workspace1'},
+	givenGroupCF: {workspace: 'workspace1'},
 	givenGroup: Permissions_WorkspaceOwner,
 	granterUserGroup: Permissions_WorkspaceEditor,
-	label: "Granter with lower permissions than given group",
+	label: 'Granter with lower permissions than given group',
 	expected: false
 }, {
-	granterUserCF: {workspace: "workspace1"},
-	givenGroupCF: {workspace: "workspace2"},
+	granterUserCF: {workspace: 'workspace1'},
+	givenGroupCF: {workspace: 'workspace2'},
 	givenGroup: Permissions_WorkspaceOwner,
 	granterUserGroup: Permissions_WorkspaceOwner,
-	label: "Granter & given group with the same level different customField",
+	label: 'Granter & given group with the same level different customField',
 	expected: false
 }, {
-	granterUserCF: {workspace: "workspace1"},
-	givenGroupCF: {workspace: "workspace1", test: "test"},
+	granterUserCF: {workspace: 'workspace1'},
+	givenGroupCF: {workspace: 'workspace1', test: 'test'},
 	givenGroup: Permissions_WorkspaceOwner,
 	granterUserGroup: Permissions_WorkspaceOwner,
-	label: "Granter & given group with the same level different given group customField",
+	label: 'Granter & given group with the same level different given group customField',
 	expected: false
 }, {
-	granterUserCF: {workspace: "workspace[1-2]", test: "test"},
-	givenGroupCF: {workspace: "workspace1"},
+	granterUserCF: {workspace: 'workspace[1-2]', test: 'test'},
+	givenGroupCF: {workspace: 'workspace1'},
 	givenGroup: Permissions_WorkspaceOwner,
 	granterUserGroup: Permissions_WorkspaceOwner,
-	label: "Granter & given group with the same level and covered granter customField",
+	label: 'Granter & given group with the same level and covered granter customField',
 	expected: true
 }, {
 	granterUserCF: {},
-	givenGroupCF: {workspace: "workspace1"},
+	givenGroupCF: {workspace: 'workspace1'},
 	givenGroup: Permissions_WorkspaceOwner,
 	granterUserGroup: Permissions_WorkspaceOwner,
-	label: "Granter & given group with the same level and empty granter customField",
+	label: 'Granter & given group with the same level and empty granter customField',
 	expected: false
 }, {
-	granterUserCF: {productId: ".*"},
-	givenGroupCF: {productId: "123456"},
+	granterUserCF: {productId: '.*'},
+	givenGroupCF: {productId: '123456'},
 	givenGroup: Permissions_WorkspaceOwner,
 	granterUserGroup: Permissions_WorkspaceOwner,
-	label: "Granter & given group with the same level and '.*' granter Rex. customField",
+	label: 'Granter & given group with the same level and \'.*\' granter Rex. customField',
 	expected: true
 }, {
 	granterUserCF: {},
 	givenGroupCF: {},
 	givenGroup: Permissions_WorkspaceOwner,
 	granterUserGroup: Permissions_WorkspaceOwner,
-	label: "Granter & given group with the same level and same empty customField, expect to fail cause for assign user permissions: request must have custom fields restriction!",
+	label: 'Granter & given group with the same level and same empty customField, expect to fail cause for assign user permissions: request must have custom fields restriction!',
 	expected: false
 }];
 
 async function setPredefinedGroupsPermissions(data: ConfigDB) {
 	const project = data.project;
 	const domain = data.domain;
-	await GroupPermissionsDB.upsertPredefinedGroups(project._id, project.name, PermissionWorkspaceGroups);
-	const ownerLevel = await AccessLevelPermissionsDB.upsert({value: 1000, name: "teat-owner-level", domainId: domain._id});
-	const editorLevel = await AccessLevelPermissionsDB.upsert({value: 500, name: "teat-editor-level", domainId: domain._id});
-	const viewerLevel = await AccessLevelPermissionsDB.upsert({value: 200, name: "teat-viewer-level", domainId: domain._id});
-	const ownerGroup = await GroupPermissionsDB.queryUnique({_id: GroupPermissionsDB.getPredefinedGroupId(project._id, Permissions_WorkspaceOwner._id)});
-	const editorGroup = await GroupPermissionsDB.queryUnique({_id: GroupPermissionsDB.getPredefinedGroupId(project._id, Permissions_WorkspaceEditor._id)});
-	const viewerGroup = await GroupPermissionsDB.queryUnique({_id: GroupPermissionsDB.getPredefinedGroupId(project._id, Permissions_WorkspaceViewer._id)});
-	await GroupPermissionsDB.upsertAll([{...ownerGroup, accessLevelIds: [ownerLevel._id]}, {...editorGroup, accessLevelIds: [editorLevel._id]}, {...viewerGroup, accessLevelIds: [viewerLevel._id]}]);
+	await ModuleBE_PermissionGroup.upsertPredefinedGroups(project._id, project.name, PermissionWorkspaceGroups);
+	const ownerLevel = await ModuleBE_PermissionAccessLevel.upsert({value: 1000, name: 'teat-owner-level', domainId: domain._id});
+	const editorLevel = await ModuleBE_PermissionAccessLevel.upsert({value: 500, name: 'teat-editor-level', domainId: domain._id});
+	const viewerLevel = await ModuleBE_PermissionAccessLevel.upsert({value: 200, name: 'teat-viewer-level', domainId: domain._id});
+	const ownerGroup = await ModuleBE_PermissionGroup.queryUnique({_id: ModuleBE_PermissionGroup.getPredefinedGroupId(project._id, Permissions_WorkspaceOwner._id)});
+	const editorGroup = await ModuleBE_PermissionGroup.queryUnique({_id: ModuleBE_PermissionGroup.getPredefinedGroupId(project._id, Permissions_WorkspaceEditor._id)});
+	const viewerGroup = await ModuleBE_PermissionGroup.queryUnique({_id: ModuleBE_PermissionGroup.getPredefinedGroupId(project._id, Permissions_WorkspaceViewer._id)});
+	await ModuleBE_PermissionGroup.upsertAll([{...ownerGroup, accessLevelIds: [ownerLevel._id]}, {...editorGroup, accessLevelIds: [editorLevel._id]}, {
+		...viewerGroup,
+		accessLevelIds: [viewerLevel._id]
+	}]);
 }
 
 export function assignUserPermissionsTests() {
-	const scenario = __scenario("Assign user permissions");
+	const scenario = __scenario('Assign user permissions');
 	let satisfy;
 	let oneTimeFlag = true;
 	scenario.add(cleanup());
@@ -168,7 +151,6 @@ export function assignUserPermissionsTests() {
 	return scenario;
 }
 
-
 async function isAssignUsersPermissions(data: ConfigDB, assignUserObj: AssignUserModels) {
 	let satisfy = true;
 	const project = data.project;
@@ -178,10 +160,15 @@ async function isAssignUsersPermissions(data: ConfigDB, assignUserObj: AssignUse
 		usersObjects.push({accountId: generateHex(32), groups: []});
 	}
 
-	const users = await UserPermissionsDB.upsertAll(usersObjects);
+	const users = await ModuleBE_PermissionUser.upsertAll(usersObjects);
 	const usersAccountIds = users.map(userItem => userItem.accountId);
-	const granterUser = await UserPermissionsDB.upsert({accountId: generateHex(32),
-		                                                   groups: [{groupId: GroupPermissionsDB.getPredefinedGroupId(project._id, assignUserObj.granterUserGroup._id), customField: assignUserObj.granterUserCF}]});
+	const granterUser = await ModuleBE_PermissionUser.upsert({
+		accountId: generateHex(32),
+		groups: [{
+			groupId: ModuleBE_PermissionGroup.getPredefinedGroupId(project._id, assignUserObj.granterUserGroup._id),
+			customField: assignUserObj.granterUserCF
+		}]
+	});
 
 	const assignAppPermissionsObj: AssignAppPermissions = {
 		projectId: project._id,
@@ -194,15 +181,15 @@ async function isAssignUsersPermissions(data: ConfigDB, assignUserObj: AssignUse
 	};
 
 	try {
-		await UserPermissionsDB.assignAppPermissions(assignAppPermissionsObj);
+		await ModuleBE_PermissionUser.assignAppPermissions(assignAppPermissionsObj);
 		if (assignUserObj.runTwice) {
-			await UserPermissionsDB.assignAppPermissions(assignAppPermissionsObj);
+			await ModuleBE_PermissionUser.assignAppPermissions(assignAppPermissionsObj);
 		}
-	} catch (e:any) {
+	} catch (e: any) {
 		return false;
 	}
 
-	const assignedUsers = await UserPermissionsDB.query({where: {accountId: {$in: usersAccountIds}}});
+	const assignedUsers = await ModuleBE_PermissionUser.query({where: {accountId: {$in: usersAccountIds}}});
 
 	if (assignedUsers.length !== assignUserNumbers)
 		satisfy = false;

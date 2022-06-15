@@ -16,22 +16,11 @@
  * limitations under the License.
  */
 
-import {DB_PermissionProject} from './types';
-import {DBDef} from '@nu-art/db-api-generator';
-import { validateProjectId, validateProjectName } from '../validators';
-import { CollectionName_Projects } from '../../app-backend/modules/_imports';
+import {Auditable, DB_Object} from '@nu-art/ts-common';
 
 
-const Validator_PermissionProjects = {
-	_id: validateProjectId,
-	name: validateProjectName,
-	customKeys: undefined,
-	_audit: undefined
+export type DB_PermissionAccessLevel = DB_Object & Auditable & {
+	domainId: string
+	name: string
+	value: number
 }
-
-export const DBDef_PermissionProjects: DBDef<DB_PermissionProject> = {
-	validator: Validator_PermissionProjects,
-	dbName: CollectionName_Projects,
-	entityName: 'project',
-	relativeUrl: '/v1/projects',
-};

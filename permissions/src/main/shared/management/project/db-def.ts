@@ -17,21 +17,21 @@
  * limitations under the License.
  */
 
-import {DBDef, tsValidateNameWithDashesAndDots, tsValidateOptionalId} from '@nu-art/db-api-generator';
-import {CollectionName_Domain} from '../../app-backend/modules/_imports';
-import {validateProjectId} from '../validators';
-import {DB_PermissionDomain} from './types';
+import {DBDef} from '@nu-art/db-api-generator';
+import {validateProjectId, validateProjectName} from '../../validators';
+import {DB_PermissionProject} from './types';
 
-const Validator_PermissionDomain = {
-	_id: tsValidateOptionalId,
-	projectId: validateProjectId,
-	namespace: tsValidateNameWithDashesAndDots,
+
+const Validator_PermissionProjects = {
+	_id: validateProjectId,
+	name: validateProjectName,
+	customKeys: undefined,
 	_audit: undefined
 };
 
-export const DBDef_PermissionDomain: DBDef<DB_PermissionDomain> = {
-	validator: Validator_PermissionDomain,
-	dbName: CollectionName_Domain,
-	entityName: 'domain',
-	relativeUrl: '/v1/domains',
+export const DBDef_PermissionProjects: DBDef<DB_PermissionProject> = {
+	validator: Validator_PermissionProjects,
+	dbName: 'permissions--project',
+	entityName: 'project',
+	relativeUrl: '/v1/permissions/manage/projects',
 };

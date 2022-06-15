@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,18 +17,7 @@
  * limitations under the License.
  */
 
-export * from "../../shared/apis";
-export * from "../../shared/manager-types";
-export * from "../../shared/assign-types";
-
-export const CollectionName_Users = "permissions--user";
-export const CollectionName_Groups = "permissions--group";
-
-export const CollectionName_Projects = "permissions--project";
-export const CollectionName_Domain = "permissions--domain";
-export const CollectionName_Level = "permissions--level";
-export const CollectionName_Api = "permissions--api";
-
-
-
-
+export * from './domain';
+export * from './project';
+export * from './access-level';
+export * from './api';

@@ -19,8 +19,11 @@
  * limitations under the License.
  */
 
-import {Module} from '@nu-art/ts-common';
+import {BadImplementationException, Module} from '@nu-art/ts-common';
 import {ToastModule} from '../component-modules/ToasterModule';
+import {composeURL} from './HistoryModule';
+import {QueryParams} from '../../shared/types';
+import {base64ToBlob} from '../utils/tools';
 
 
 type Config = {
@@ -28,7 +31,7 @@ type Config = {
 	themeColor: string
 }
 
-type FileDownloadProps = {
+export type FileDownloadProps = {
 	url?: string,
 	content?: Blob | string
 	fileName: string
@@ -94,17 +97,39 @@ class ThunderstormModule_Class
 	}
 
 	async copyToClipboard(toCopy: string) {
-		await navigator.clipboard.writeText(toCopy);
-		ToastModule.toastInfo(`Copied to Clipboard:\n"${toCopy}"`);
+		try {
+			await navigator.clipboard.writeText(toCopy);
+			ToastModule.toastInfo(`Copied to Clipboard:\n"${toCopy}"`);
+		} catch (e) {
+			ToastModule.toastError(`Failed to copy to Clipboard:\n"${toCopy}"`);
+		}
+	}
+
+	async writeToClipboard(imageAsBase64: string, contentType = 'image/png') {
+		try {
+			// const clipboardItem = new ClipboardItem({'image/png': imageAsBase64});
+			const clipboardItem = new ClipboardItem({contentType: await base64ToBlob(imageAsBase64)});
+			await navigator.clipboard.write([clipboardItem]);
+
+			// TODO: Render Blob in toast
+			ToastModule.toastInfo(`Copied image Clipboard`);
+		} catch (error) {
+			ToastModule.toastError(`Failed to copy image to Clipboard`);
+		}
 	}
 
 	getAppName() {
 		return this.config.appName;
 	}
 
-	openNewTab(url: string, newTab = false) {
-		if (window)
-			window.open(url, newTab ? '' : '_blank');
+	openNewTab(url: string | { url: string, params?: QueryParams }, newTab = false) {
+		if (!window)
+			throw new BadImplementationException('no window in vm context');
+
+		if (typeof url === 'string')
+			url = {url};
+
+		window.open(composeURL(url.url, url.params), newTab ? '' : '_blank');
 	}
 
 	downloadFile(props: FileDownloadProps) {

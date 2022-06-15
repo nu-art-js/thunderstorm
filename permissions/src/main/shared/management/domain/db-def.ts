@@ -17,22 +17,21 @@
  * limitations under the License.
  */
 
-import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../modules/assignment';
-import {PermissionsModule} from '../modules/PermissionsModule';
-import {PermissionsAssert} from '../modules/permissions-assert';
+import {DBDef, tsValidateNameWithDashesAndDots, tsValidateOptionalId} from '@nu-art/db-api-generator';
+import {validateProjectId} from '../../validators';
+import {DB_PermissionDomain} from './types';
 
 
-export const Backend_ModulePack_Permissions = [
-	ModuleBE_PermissionProject,
-	ModuleBE_PermissionDomain,
-	ModuleBE_PermissionAccessLevel,
-	ModuleBE_PermissionApi,
-	ModuleBE_PermissionGroup,
-	ModuleBE_PermissionUser,
-	PermissionsAssert,
-	PermissionsModule,
-];
+const Validator_PermissionDomain = {
+	_id: tsValidateOptionalId,
+	projectId: validateProjectId,
+	namespace: tsValidateNameWithDashesAndDots,
+	_audit: undefined
+};
 
-export * from '../modules/permissions-assert';
-export * from '../modules/PermissionsModule';
+export const DBDef_PermissionDomain: DBDef<DB_PermissionDomain> = {
+	validator: Validator_PermissionDomain,
+	dbName: 'permissions--domain',
+	entityName: 'domain',
+	relativeUrl: '/v1/permissions/manage/domains',
+};

@@ -1,5 +1,6 @@
 /*
- * User secured registration and login management system..
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,6 +18,7 @@
  */
 
 import {Auditable, DB_Object} from '@nu-art/ts-common';
+
 
 export type DB_PermissionProject = DB_Object & Auditable & {
 	name: string,
