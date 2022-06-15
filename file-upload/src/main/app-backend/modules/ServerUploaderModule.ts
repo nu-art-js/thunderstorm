@@ -17,19 +17,10 @@
  * limitations under the License.
  */
 
-import {
-	BaseUploaderFile,
-	TempSecureUrl,
-	Request_Uploader
-} from '../../shared/types';
-import {
-	BaseUploaderModule_Class, UploaderConfig,
-} from '../../shared/modules/BaseUploaderModule';
-import {
-	Axios_RequestConfig,
-	AxiosHttpModule,
-	AxiosHttpModule_Class
-} from '@nu-art/thunderstorm/backend';
+import {BaseUploaderModule_Class, UploaderConfig,} from '../../shared/modules/BaseUploaderModule';
+import {Axios_RequestConfig, AxiosHttpModule, AxiosHttpModule_Class} from '@nu-art/thunderstorm/backend';
+import {BaseUploaderFile, Request_Uploader, TempSecureUrl} from '../shared';
+
 
 export type ServerFilesToUpload = Request_Uploader & {
 	file: Buffer
@@ -58,7 +49,6 @@ export class ServerUploaderModule_Class
 		// We said timeout
 	}
 }
-
 
 export const ServerUploaderModule = new ServerUploaderModule_Class();
 

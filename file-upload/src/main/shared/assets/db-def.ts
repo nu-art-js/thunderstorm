@@ -18,10 +18,11 @@
  */
 
 import {DBDef, tsValidateStringAndNumbersWithDashes} from '@nu-art/db-api-generator';
-import {tsValidateAudit, tsValidateExists, tsValidateNumber} from '@nu-art/ts-common';
-import {validateName} from '../../app-backend/modules/AssetsTempModuleBE';
+import {Minute, tsValidateAudit, tsValidateExists, tsValidateNumber, tsValidateRegexp, tsValidateTimestamp} from '@nu-art/ts-common';
 import {DB_Asset} from './types';
 
+
+export const validateName = tsValidateRegexp(/^.{3,}$/);
 
 const Validator_Asset = {
 	_id: tsValidateStringAndNumbersWithDashes,
@@ -43,4 +44,16 @@ export const DBDef_Assets: DBDef<DB_Asset> = {
 	dbName: 'assets',
 	entityName: 'asset',
 	relativeUrl: '/v1/assets',
+};
+
+export const Validator_TempAsset = {
+	...Validator_Asset,
+	timestamp: tsValidateTimestamp(Minute)
+};
+
+export const DBDef_TempAssets: DBDef<DB_Asset> = {
+	validator: Validator_TempAsset,
+	dbName: 'assets-temp',
+	entityName: 'temp-asset',
+	relativeUrl: '',
 };

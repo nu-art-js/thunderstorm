@@ -16,39 +16,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DB_Asset} from '../..';
-import {Minute, tsValidateAudit, tsValidateExists, tsValidateNumber, tsValidateRegexp, tsValidateTimestamp, TypeValidator} from '@nu-art/ts-common';
-import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
+import {DB_Asset, DBDef_TempAssets} from '../..';
+import {BaseDB_ApiGenerator, getModuleBEConfig} from '@nu-art/db-api-generator/backend';
 
-export const validateName = tsValidateRegexp(/^.{3,}$/);
-
-export const _assetValidator: TypeValidator<DB_Asset> = {
-	...BaseDB_ApiGenerator.__validator,
-	timestamp: tsValidateNumber(),
-	name: validateName,
-	ext: tsValidateExists(true),
-	md5Hash: tsValidateExists(false),
-	feId: tsValidateExists(true),
-	mimeType: tsValidateExists(true),
-	key: tsValidateExists(true),
-	path: tsValidateExists(true),
-	_audit: tsValidateAudit(),
-	bucketName: tsValidateExists(true),
-	public: undefined
-};
 
 export class AssetsTempModuleBE_Class
 	extends BaseDB_ApiGenerator<DB_Asset> {
 
-	static _validator: TypeValidator<DB_Asset> = {
-		..._assetValidator,
-		timestamp: tsValidateTimestamp(Minute),
-	};
-
 	constructor() {
-		super('assets-temp', AssetsTempModuleBE_Class._validator, 'assets-temp');
+		super(getModuleBEConfig(DBDef_TempAssets));
 	}
-
 }
 
 export const AssetsTempModuleBE = new AssetsTempModuleBE_Class();
