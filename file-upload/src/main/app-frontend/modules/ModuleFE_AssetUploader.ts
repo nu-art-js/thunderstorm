@@ -16,13 +16,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ThunderDispatcher, XhrHttpModule, XhrHttpModule_Class} from "@nu-art/thunderstorm/frontend";
-import {BaseUploaderFile, FileStatus, FileUploadResult, OnFileStatusChanged, PushKey_FileUploaded, TempSecureUrl} from "../../shared/types";
-import {PushPubSubModule} from "@nu-art/push-pub-sub/frontend";
-import {BaseUploaderModule_Class} from "../../shared/modules/BaseUploaderModule";
-import {DB_Notifications} from "@nu-art/push-pub-sub";
+import {ThunderDispatcher, XhrHttpModule, XhrHttpModule_Class} from '@nu-art/thunderstorm/frontend';
+import {BaseUploaderFile, FileStatus, FileUploadResult, OnFileStatusChanged, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
+import {PushPubSubModule} from '@nu-art/push-pub-sub/frontend';
+import {BaseUploaderModule_Class} from '../../shared/modules/BaseUploaderModule';
+import {DB_Notifications} from '@nu-art/push-pub-sub';
 
-export class UploaderFEModule_Class
+
+export class ModuleFE_AssetUploader_Class
 	extends BaseUploaderModule_Class<XhrHttpModule_Class> {
 
 	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
@@ -53,10 +54,9 @@ export class UploaderFEModule_Class
 
 	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
 		super.__onMessageReceived(notification);
-		if (notification.data?.status === FileStatus.Completed || notification.data?.status?.startsWith("Error"))
+		if (notification.data?.status === FileStatus.Completed || notification.data?.status?.startsWith('Error'))
 			PushPubSubModule.unsubscribe({pushKey: PushKey_FileUploaded, props: notification.props});
 	}
 }
 
-
-export const UploaderModuleFE = new UploaderFEModule_Class();
+export const ModuleFE_AssetUploader = new ModuleFE_AssetUploader_Class();

@@ -34,7 +34,7 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {FileWrapper, FirebaseModule, FirebaseType_Metadata, FirestoreTransaction, StorageWrapper} from '@nu-art/firebase/backend';
-import {AssetsTempModuleBE} from './AssetsTempModuleBE';
+import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
 import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {fromBuffer} from 'file-type';
@@ -90,7 +90,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 	return metadata.size >= minSizeInBytes && metadata.size <= maxSizeInBytes;
 };
 
-export class AssetsModuleBE_Class
+export class ModuleBE_Assets_Class
 	extends BaseDB_ApiGenerator<DB_Asset, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
@@ -110,7 +110,7 @@ export class AssetsModuleBE_Class
 	}
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
-		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, async chunk => await AssetsModuleBE.query({where: {_id: {$in: chunk}}}));
+		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, async chunk => await ModuleBE_Assets.query({where: {_id: {$in: chunk}}}));
 		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)));
 		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()));
 
@@ -149,7 +149,7 @@ export class AssetsModuleBE_Class
 		};
 	}
 
-	private cleanup = async (interval = Hour, module: BaseDB_ApiGenerator<DB_Asset> = AssetsTempModuleBE) => {
+	private cleanup = async (interval = Hour, module: BaseDB_ApiGenerator<DB_Asset> = ModuleBE_AssetsTemp) => {
 		const entries: DB_Asset[] = await module.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);
@@ -192,7 +192,7 @@ export class AssetsModuleBE_Class
 			if (_file.public)
 				dbAsset.public = _file.public;
 
-			const dbTempMeta = await AssetsTempModuleBE.upsert(dbAsset);
+			const dbTempMeta = await ModuleBE_AssetsTemp.upsert(dbAsset);
 			const fileWrapper = await bucket.getFile(dbTempMeta.path);
 			const url = await fileWrapper.getWriteSecuredUrl(_file.mimeType, Hour);
 			return {
@@ -207,7 +207,7 @@ export class AssetsModuleBE_Class
 		if (feId)
 			query = {where: {feId}};
 
-		const unprocessedFiles: DB_Asset[] = await AssetsTempModuleBE.query(query);
+		const unprocessedFiles: DB_Asset[] = await ModuleBE_AssetsTemp.query(query);
 		return Promise.all(unprocessedFiles.map(asset => this.__processAsset(asset.path)));
 	};
 
@@ -216,7 +216,7 @@ export class AssetsModuleBE_Class
 			throw new ThisShouldNotHappenException('Missing file path');
 
 		this.logInfo(`Looking for file with path: ${filePath}`);
-		const tempMeta = await AssetsTempModuleBE.queryUnique({path: filePath});
+		const tempMeta = await ModuleBE_AssetsTemp.queryUnique({path: filePath});
 		if (!tempMeta)
 			throw new ThisShouldNotHappenException(`Could not find meta for file with path: ${filePath}`);
 
@@ -274,7 +274,7 @@ export class AssetsModuleBE_Class
 			}
 
 			const upsertWrite = await this.upsert_Read(tempMeta, transaction);
-			await AssetsTempModuleBE.deleteUnique(tempMeta._id, transaction);
+			await ModuleBE_AssetsTemp.deleteUnique(tempMeta._id, transaction);
 			return await upsertWrite();
 		});
 
@@ -293,7 +293,7 @@ export class AssetsModuleBE_Class
 
 }
 
-export const AssetsModuleBE = new AssetsModuleBE_Class();
+export const ModuleBE_Assets = new ModuleBE_Assets_Class();
 
 
 
