@@ -34,15 +34,15 @@ import {
 	TypedMap
 } from '@nu-art/ts-common';
 import {FileWrapper, FirebaseModule, FirebaseType_Metadata, FirestoreTransaction, StorageWrapper} from '@nu-art/firebase/backend';
-import {BaseUploaderFile, DB_Asset, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl,} from '../../shared/types';
-import {_assetValidator, AssetsTempModuleBE} from './AssetsTempModuleBE';
+import {AssetsTempModuleBE} from './AssetsTempModuleBE';
 import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
 import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {fromBuffer} from 'file-type';
 import {FileExtension, MimeType} from 'file-type/core';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
-import {BaseDB_ApiGenerator, DBApiConfig} from '@nu-art/db-api-generator/backend';
+import {BaseDB_ApiGenerator, DBApiConfig, getModuleBEConfig} from '@nu-art/db-api-generator/backend';
 import {OnAssetUploaded} from './AssetBucketListener';
+import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -95,7 +95,7 @@ export class AssetsModuleBE_Class
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {
-		super('assets', _assetValidator, 'assets');
+		super(getModuleBEConfig(DBDef_Assets));
 		this.setDefaultConfig({...this.config, path: 'assets'});
 	}
 
