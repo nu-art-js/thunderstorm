@@ -1,5 +1,6 @@
 /*
- * User secured registration and login management system..
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -18,6 +19,10 @@
 
 import {tsValidateRegexp} from '@nu-art/ts-common';
 
+
 export const validateProjectId = tsValidateRegexp(/^[a-z-]{3,20}$/);
 export const tsValidateStringWithDashesAndSlash = tsValidateRegexp(/^[0-9A-Za-z-/]+$/);
 export const validateProjectName = tsValidateRegexp(/^[A-Za-z- ]{3,20}$/);
+export const validateUserUuid = tsValidateRegexp(/^.{0,50}$/);
+export const validateGroupLabel = tsValidateRegexp(/^[A-Za-z-\._ ]+$/);
+export const validateCustomFieldValues = tsValidateRegexp(/^.{0,500}$/);

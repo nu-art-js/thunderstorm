@@ -17,22 +17,25 @@
  * limitations under the License.
  */
 
-import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../modules/assignment';
-import {PermissionsModule} from '../modules/PermissionsModule';
-import {PermissionsAssert} from '../modules/permissions-assert';
+import {DBDef, tsValidateOptionalId, tsValidateUniqueId} from '@nu-art/db-api-generator';
+import {tsValidateArray} from '@nu-art/ts-common';
+import {tsValidateStringWithDashesAndSlash, validateProjectId} from '../../validators';
+import {DB_PermissionApi} from './types';
 
 
-export const Backend_ModulePack_Permissions = [
-	ModuleBE_PermissionProject,
-	ModuleBE_PermissionDomain,
-	ModuleBE_PermissionAccessLevel,
-	ModuleBE_PermissionApi,
-	ModuleBE_PermissionGroup,
-	ModuleBE_PermissionUser,
-	PermissionsAssert,
-	PermissionsModule,
-];
+const Validator_PermissionApi = {
+	_id: tsValidateOptionalId,
+	projectId: validateProjectId,
+	path: tsValidateStringWithDashesAndSlash,
+	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
+	_audit: undefined,
+	deprecated: undefined,
+	onlyForApplication: undefined
+};
 
-export * from '../modules/permissions-assert';
-export * from '../modules/PermissionsModule';
+export const DBDef_PermissionApi: DBDef<DB_PermissionApi> = {
+	validator: Validator_PermissionApi,
+	dbName: 'permissions--api',
+	entityName: 'api',
+	relativeUrl: '/v1/permissions/manage/apis',
+};

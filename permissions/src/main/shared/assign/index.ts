@@ -17,22 +17,5 @@
  * limitations under the License.
  */
 
-import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../modules/assignment';
-import {PermissionsModule} from '../modules/PermissionsModule';
-import {PermissionsAssert} from '../modules/permissions-assert';
-
-
-export const Backend_ModulePack_Permissions = [
-	ModuleBE_PermissionProject,
-	ModuleBE_PermissionDomain,
-	ModuleBE_PermissionAccessLevel,
-	ModuleBE_PermissionApi,
-	ModuleBE_PermissionGroup,
-	ModuleBE_PermissionUser,
-	PermissionsAssert,
-	PermissionsModule,
-];
-
-export * from '../modules/permissions-assert';
-export * from '../modules/PermissionsModule';
+export * from './user';
+export * from './group';

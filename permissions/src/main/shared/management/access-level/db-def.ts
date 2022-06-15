@@ -17,22 +17,22 @@
  * limitations under the License.
  */
 
-import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../modules/assignment';
-import {PermissionsModule} from '../modules/PermissionsModule';
-import {PermissionsAssert} from '../modules/permissions-assert';
+import {DBDef, tsValidateOptionalId, tsValidateStringWithDashes, tsValidateUniqueId} from '@nu-art/db-api-generator';
+import {tsValidateRange} from '@nu-art/ts-common';
+import {DB_PermissionAccessLevel} from './types';
 
 
-export const Backend_ModulePack_Permissions = [
-	ModuleBE_PermissionProject,
-	ModuleBE_PermissionDomain,
-	ModuleBE_PermissionAccessLevel,
-	ModuleBE_PermissionApi,
-	ModuleBE_PermissionGroup,
-	ModuleBE_PermissionUser,
-	PermissionsAssert,
-	PermissionsModule,
-];
+const Validator_PermissionAccessLevel = {
+	_id: tsValidateOptionalId,
+	domainId: tsValidateUniqueId,
+	name: tsValidateStringWithDashes,
+	value: tsValidateRange([[0, 1000]]),
+	_audit: undefined
+};
 
-export * from '../modules/permissions-assert';
-export * from '../modules/PermissionsModule';
+export const DBDef_PermissionAccessLevel: DBDef<DB_PermissionAccessLevel> = {
+	validator: Validator_PermissionAccessLevel,
+	dbName: 'permissions--level',
+	entityName: 'level',
+	relativeUrl: '/v1/permissions/manage/levels',
+};

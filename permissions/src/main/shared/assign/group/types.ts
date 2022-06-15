@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,19 +17,12 @@
  * limitations under the License.
  */
 
-import {
-	Auditable,
-	StringMap
-} from "@nu-art/ts-common";
-import {DB_Object} from "@nu-art/ts-common";
+import {Auditable, DB_Object, StringMap} from '@nu-art/ts-common';
+
 
 export type Base_AccessLevels = {
 	domainId: string,
 	value: number
-}
-
-export type DB_GroupTags = DB_Object & {
-	label: string
 }
 
 export type Request_CreateGroup = {
@@ -39,17 +33,5 @@ export type Request_CreateGroup = {
 	customFields?: StringMap[]
 };
 
-export type DB_PermissionsGroup = DB_Object & Request_CreateGroup & Auditable;
+export type DB_PermissionGroup = DB_Object & Request_CreateGroup & Auditable;
 
-export type User_Group = {
-	groupId: string,
-	customField?: StringMap
-}
-
-export type Request_CreateUser = {
-	accountId: string,
-	groups?: User_Group[],
-	__groupIds?: string[]
-};
-
-export type DB_PermissionsUser = DB_Object & Request_CreateUser & Auditable

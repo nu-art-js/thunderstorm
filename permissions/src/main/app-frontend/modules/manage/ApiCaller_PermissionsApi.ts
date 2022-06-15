@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,24 +17,24 @@
  * limitations under the License.
  */
 
-import {DB_PermissionApi} from "../../../index";
-import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
-import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
-import {TypedMap} from "@nu-art/ts-common";
+import {BaseDB_ApiGeneratorCaller, getModuleFEConfig} from '@nu-art/db-api-generator/frontend';
+import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {TypedMap} from '@nu-art/ts-common';
+import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
 
 
 export interface OnPermissionsApisLoaded {
 	__onPermissionsApisLoaded: () => void;
 }
 
-const dispatch_onPermissionsApisLoaded = new ThunderDispatcher<OnPermissionsApisLoaded, "__onPermissionsApisLoaded">("__onPermissionsApisLoaded");
+const dispatch_onPermissionsApisLoaded = new ThunderDispatcher<OnPermissionsApisLoaded, '__onPermissionsApisLoaded'>('__onPermissionsApisLoaded');
 
 export class PermissionsApiModule_Class
 	extends BaseDB_ApiGeneratorCaller<DB_PermissionApi> {
 	private apis: TypedMap<DB_PermissionApi[]> = {};
 
 	constructor() {
-		super({key: "level", relativeUrl: "/v1/permissions/manage/api"});
+		super(getModuleFEConfig(DBDef_PermissionApi));
 	}
 
 	protected init(): void {
@@ -67,7 +68,6 @@ export class PermissionsApiModule_Class
 	getApis(projectId: string): DB_PermissionApi[] {
 		return this.apis[projectId] || [];
 	}
-
 
 }
 
