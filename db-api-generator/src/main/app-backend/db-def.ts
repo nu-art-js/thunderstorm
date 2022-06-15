@@ -19,11 +19,25 @@
  * limitations under the License.
  */
 
-export * from "./app-frontend/types"
-export * from "./app-frontend/consts"
-export * from './app-frontend/db-def';
-export * from "./app-frontend/components/DBItemEditorComponent"
-export * from "./app-frontend/components/DBItemEditorPage"
-export * from "./app-frontend/components/DBListViewPage"
-export * from "./app-frontend/modules/BaseDB_ApiGeneratorCaller"
-export * from "./app-frontend/modules/BaseDB_ApiGeneratorCallerV2"
+import { DBDef } from "..";
+import {DB_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
+import { BaseDB_ApiGenerator } from "./BaseDB_ApiGenerator";
+
+export type DBApiBEConfig<DBType extends DB_Object, Ks extends keyof DBType = '_id'> = {
+	collectionName: string;
+	validator: ValidatorTypeResolver<DBType>;
+	itemName: string;
+	versions: string[];
+}
+
+export const getModuleBEConfig = <T extends DB_Object>(dbDef: DBDef<T>): DBApiBEConfig<T> => {
+	return {
+		collectionName: dbDef.dbName,
+		validator: {
+			...dbDef.validator,
+			...BaseDB_ApiGenerator.__validator,
+		} as ValidatorTypeResolver<T>,
+		itemName: dbDef.entityName,
+		versions: dbDef.versions || ['1.0.0'],
+	}
+}

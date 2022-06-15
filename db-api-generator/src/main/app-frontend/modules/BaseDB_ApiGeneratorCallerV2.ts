@@ -32,7 +32,6 @@ import {
 } from '../../index';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {
-	DBConfig,
 	HOOK_useEffect,
 	IndexDb_Query,
 	IndexedDB,
@@ -47,17 +46,12 @@ import {
 import {DB_BaseObject, DB_Object, Module, PartialProperties, PreDB} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update, EventType_UpsertAll} from '../consts';
+import { DBApiFEConfig } from '../db-def';
 
-
-export type BaseApiConfigV2<DBType extends DB_Object, Ks extends keyof DBType = '_id'> = {
-	relativeUrl: string
-	key: string
-	dbConfig: DBConfig<DBType, Ks>
-}
 
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
 
-export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends BaseApiConfigV2<DBType, Ks> = BaseApiConfigV2<DBType, Ks>>
+export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config> {
 	readonly version = 'v2';
 

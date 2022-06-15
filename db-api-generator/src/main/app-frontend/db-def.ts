@@ -19,11 +19,24 @@
  * limitations under the License.
  */
 
-export * from "./app-frontend/types"
-export * from "./app-frontend/consts"
-export * from './app-frontend/db-def';
-export * from "./app-frontend/components/DBItemEditorComponent"
-export * from "./app-frontend/components/DBItemEditorPage"
-export * from "./app-frontend/components/DBListViewPage"
-export * from "./app-frontend/modules/BaseDB_ApiGeneratorCaller"
-export * from "./app-frontend/modules/BaseDB_ApiGeneratorCallerV2"
+import { DBConfig } from '@nu-art/thunderstorm/frontend';
+import {DB_Object} from '@nu-art/ts-common';
+import {DBDef} from '../shared/db-def';
+
+export type DBApiFEConfig<DBType extends DB_Object, Ks extends keyof DBType = '_id'> = {
+	relativeUrl: string
+	key: string
+	dbConfig: DBConfig<DBType, Ks>
+}
+
+export const getModuleFEConfig = <T extends DB_Object>(dbDef: DBDef<T>): DBApiFEConfig<T> => {
+	return {
+		relativeUrl: dbDef.relativeUrl,
+		key: dbDef.dbName,
+		dbConfig: {
+			version: 1,
+			name: dbDef.dbName,
+			uniqueKeys: ['_id']
+		},
+	};
+};

@@ -20,23 +20,12 @@ import {
 	CollectionName_Api,
 	CollectionName_Domain,
 	CollectionName_Level,
-	CollectionName_Projects,
 	DB_PermissionAccessLevel,
 	DB_PermissionApi,
 	DB_PermissionDomain,
-	DB_PermissionProject,
 	Request_CreateGroup,
 } from '../_imports';
-import {
-	auditBy,
-	filterDuplicates,
-	MUSTNeverHappenException,
-	PreDB,
-	tsValidateArray,
-	tsValidateRange,
-	tsValidateRegexp,
-	TypeValidator
-} from '@nu-art/ts-common';
+import {auditBy, filterDuplicates, MUSTNeverHappenException, PreDB, tsValidateArray, tsValidateRange, TypeValidator} from '@nu-art/ts-common';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {GroupPermissionsDB} from './assign';
 import {Clause_Where} from '@nu-art/firebase';
@@ -50,23 +39,15 @@ import {
 	tsValidateStringWithDashes,
 	tsValidateUniqueId
 } from '@nu-art/db-api-generator/shared/validators';
-
-const validateProjectId = tsValidateRegexp(/^[a-z-]{3,20}$/);
-export const validateProjectName = tsValidateRegexp(/^[A-Za-z- ]{3,20}$/);
-export const tsValidateStringWithDashesAndSlash = tsValidateRegexp(/^[0-9A-Za-z-/]+$/);
+import {DB_PermissionProject, DBDef_PermissionProjects} from '../../../shared/projects';
+import { getModuleBEConfig } from '@nu-art/db-api-generator/app-backend/db-def';
+import {DBDef_PermissionDomain} from '../../../shared/domains';
 
 export class ProjectDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionProject> {
-	static _validator: TypeValidator<DB_PermissionProject> = {
-		...BaseDB_ApiGenerator.__validator,
-		_id: validateProjectId,
-		name: validateProjectName,
-		customKeys: undefined,
-		_audit: undefined
-	};
 
 	constructor() {
-		super(CollectionName_Projects, ProjectDB_Class._validator, 'project');
+		super(getModuleBEConfig(DBDef_PermissionProjects));
 	}
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {
@@ -92,16 +73,9 @@ export class ProjectDB_Class
 
 export class DomainDB_Class
 	extends BaseDB_ApiGenerator<DB_PermissionDomain> {
-	static _validator: TypeValidator<DB_PermissionDomain> = {
-		...BaseDB_ApiGenerator.__validator,
-		_id: tsValidateOptionalId,
-		projectId: validateProjectId,
-		namespace: tsValidateNameWithDashesAndDots,
-		_audit: undefined
-	};
 
 	constructor() {
-		super(CollectionName_Domain, DomainDB_Class._validator, 'domain');
+		super(getModuleBEConfig(DBDef_PermissionDomain));
 		this.setLockKeys(['projectId']);
 	}
 

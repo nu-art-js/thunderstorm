@@ -21,17 +21,6 @@ import {
 } from '@nu-art/ts-common';
 import {Auditable} from '@nu-art/ts-common';
 
-export type DB_PermissionDomain = DB_Object & Auditable & {
-	projectId: string
-	namespace: string
-};
-
-export type DB_PermissionProject = DB_Object & Auditable & {
-	name: string,
-	customKeys?: string[]
-}
-
-
 export type DB_PermissionAccessLevel = DB_Object & Auditable & {
 	domainId: string
 	name: string

@@ -1,8 +1,5 @@
 /*
- * Database API Generator is a utility library for Thunderstorm.
- *
- * Given proper configurations it will dynamically generate APIs to your Firestore
- * collections, will assert uniqueness and restrict deletion... and more
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,6 +16,8 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/apis"
-export * from "./app-backend/BaseDB_ApiGenerator"
-export * from './app-backend/db-def';
+import {tsValidateRegexp} from '@nu-art/ts-common';
+
+export const validateProjectId = tsValidateRegexp(/^[a-z-]{3,20}$/);
+export const tsValidateStringWithDashesAndSlash = tsValidateRegexp(/^[0-9A-Za-z-/]+$/);
+export const validateProjectName = tsValidateRegexp(/^[A-Za-z- ]{3,20}$/);
