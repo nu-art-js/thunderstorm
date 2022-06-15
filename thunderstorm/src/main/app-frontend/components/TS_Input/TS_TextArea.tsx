@@ -53,7 +53,7 @@ export class TS_TextArea<Key extends string>
 			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
 			onKeyPress={this.props.onKeyPress || this.onKeyPress}
-			autoComplete={this.props.autocomplete ? 'on' : 'off'}
+			autoComplete={this.props.autoComplete ? 'on' : 'off'}
 			spellCheck={this.props.spellCheck}
 		/>;
 	}
