@@ -55,6 +55,7 @@ import {
 import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
 import {BadInputErrorBody, ErrorKey_BadInput} from '../shared/types';
 import {dbIdLength, tsValidateUniqueId, tsValidateVersion} from '../shared/validators';
+import {DBApiBEConfig} from './db-def';
 
 
 export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
@@ -87,18 +88,19 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
-	static __validator = {
+	static __validator: ValidatorTypeResolver<DB_Object> = {
 		_id: tsValidateUniqueId,
 		_v: tsValidateVersion,
 		__created: tsValidateTimestamp(),
 		__updated: tsValidateTimestamp(),
 	};
 
-	protected constructor(collectionName: string, validator: ValidatorTypeResolver<DBType>, itemName: string, versions = ['1.0.0']) {
+	protected constructor(config: DBApiBEConfig<DBType>) {
 		super();
+		const preConfig = {...config, externalFilterKeys: ['_id'], lockKeys: ['_id', '_v', '__created', '__updated']};
 		// @ts-ignore
-		this.setDefaultConfig({itemName, collectionName, externalFilterKeys: ['_id'], lockKeys: ['_id', '_v', '__created', '__updated'], versions});
-		this.validator = validator;
+		this.setDefaultConfig(preConfig);
+		this.validator = config.validator;
 	}
 
 	setValidator(validator: ValidatorTypeResolver<DBType>) {

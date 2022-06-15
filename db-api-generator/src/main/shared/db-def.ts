@@ -19,11 +19,15 @@
  * limitations under the License.
  */
 
-export * from "./app-frontend/types"
-export * from "./app-frontend/consts"
-export * from './app-frontend/db-def';
-export * from "./app-frontend/components/DBItemEditorComponent"
-export * from "./app-frontend/components/DBItemEditorPage"
-export * from "./app-frontend/components/DBListViewPage"
-export * from "./app-frontend/modules/BaseDB_ApiGeneratorCaller"
-export * from "./app-frontend/modules/BaseDB_ApiGeneratorCallerV2"
+import {DB_Object, OmitDBObject, ValidatorTypeResolver} from '@nu-art/ts-common';
+
+/**
+ * @field version - First item in the array is current version, Must pass all past versions with the current, default version is 1.0.0
+ */
+export type DBDef<T extends DB_Object> = {
+	validator: ValidatorTypeResolver<OmitDBObject<T>>;
+	dbName: string;
+	entityName: string;
+	versions?: string[];
+	relativeUrl: string;
+}

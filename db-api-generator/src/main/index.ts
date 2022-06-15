@@ -21,3 +21,4 @@
 
 export * from './shared/types';
 export * from './shared/validators';
+export * from './shared/db-def';
