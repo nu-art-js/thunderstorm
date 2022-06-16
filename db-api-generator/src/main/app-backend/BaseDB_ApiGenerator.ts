@@ -37,7 +37,6 @@ import {
 	Module,
 	PreDB,
 	ThisShouldNotHappenException,
-	TS_Object,
 	tsValidate,
 	tsValidateTimestamp,
 	ValidationException,
@@ -55,19 +54,16 @@ import {
 import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
 import {BadInputErrorBody, ErrorKey_BadInput} from '../shared/types';
 import {dbIdLength, tsValidateUniqueId, tsValidateVersion} from '../shared/validators';
+import {Const_LockKeys, DBApiBEConfig, getModuleBEConfig} from './db-def';
+import {DBDef} from '../shared/db-def';
 
 
 export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
-
-export type DBApiConfig<Type extends TS_Object> = {
+export type BaseDBApiConfig = {
 	projectId?: string,
-	lockKeys: (keyof Type)[]
-	collectionName: string
-	itemName: string
 	maxChunkSize: number
-	versions: string[]
-	externalFilterKeys: FilterKeys<Type>
 }
+export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfig<Type>
 
 export type ApisParams = {
 	pathPart?: string,
@@ -87,18 +83,21 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
-	static __validator = {
+	static __validator: ValidatorTypeResolver<DB_Object> = {
 		_id: tsValidateUniqueId,
 		_v: tsValidateVersion,
 		__created: tsValidateTimestamp(),
 		__updated: tsValidateTimestamp(),
 	};
 
-	protected constructor(collectionName: string, validator: ValidatorTypeResolver<DBType>, itemName: string, versions = ['1.0.0']) {
+	protected constructor(dbDef: DBDef<DBType, any>, appConfig?: BaseDBApiConfig) {
 		super();
+		const config = getModuleBEConfig(dbDef);
+
+		const preConfig = {...config, ...appConfig};
 		// @ts-ignore
-		this.setDefaultConfig({itemName, collectionName, externalFilterKeys: ['_id'], lockKeys: ['_id', '_v', '__created', '__updated'], versions});
-		this.validator = validator;
+		this.setDefaultConfig(preConfig);
+		this.validator = config.validator;
 	}
 
 	setValidator(validator: ValidatorTypeResolver<DBType>) {
@@ -156,7 +155,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		if (this.initiated)
 			throw new BadImplementationException('You can only update the \'lockKeys\' before the module was initialized.. preferably from its constructor');
 
-		return this.config.lockKeys = filterDuplicates([...keys, '_id']);
+		return this.config.lockKeys = filterDuplicates([...keys, ...Const_LockKeys]);
 	}
 
 	getCollectionName() {
@@ -173,7 +172,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	init() {
 		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
-		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys);
+		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys as FilterKeys<DBType>);
 	}
 
 	private async assertExternalQueryUnique(instance: DBType, transaction: FirestoreTransaction): Promise<DBType> {
@@ -279,7 +278,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	protected upgradeInstance(dbInstance: DBType, toVersion: string) {
+	protected async upgradeInstance(dbInstance: DBType, toVersion: string): Promise<void> {
 	}
 
 	/**

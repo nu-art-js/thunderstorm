@@ -17,19 +17,10 @@
  * limitations under the License.
  */
 
-import {
-	BaseUploaderFile,
-	TempSecureUrl,
-	Request_Uploader
-} from '../../shared/types';
-import {
-	BaseUploaderModule_Class, UploaderConfig,
-} from '../../shared/modules/BaseUploaderModule';
-import {
-	Axios_RequestConfig,
-	AxiosHttpModule,
-	AxiosHttpModule_Class
-} from '@nu-art/thunderstorm/backend';
+import {ModuleBase_AssetUploader, UploaderConfig,} from '../../shared/modules/ModuleBase_AssetUploader';
+import {Axios_RequestConfig, AxiosHttpModule, AxiosHttpModule_Class} from '@nu-art/thunderstorm/backend';
+import {BaseUploaderFile, Request_Uploader, TempSecureUrl} from '../shared';
+
 
 export type ServerFilesToUpload = Request_Uploader & {
 	file: Buffer
@@ -37,8 +28,8 @@ export type ServerFilesToUpload = Request_Uploader & {
 
 type Config = UploaderConfig & { requestConfig: Axios_RequestConfig };
 
-export class ServerUploaderModule_Class
-	extends BaseUploaderModule_Class<AxiosHttpModule_Class, Config> {
+export class ModuleBE_AssetUploader_Class
+	extends ModuleBase_AssetUploader<AxiosHttpModule_Class, Config> {
 
 	constructor() {
 		super(AxiosHttpModule);
@@ -59,8 +50,7 @@ export class ServerUploaderModule_Class
 	}
 }
 
-
-export const ServerUploaderModule = new ServerUploaderModule_Class();
+export const ModuleBE_AssetUploader = new ModuleBE_AssetUploader_Class();
 
 
 

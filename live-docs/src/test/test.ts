@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Live-Docs will allow you to add and edit tool-tips from within your app...
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,23 +16,21 @@
  * limitations under the License.
  */
 
-import {StormTester} from "@nu-art/thunderstorm/backend-test";
-import {__scenario} from "@nu-art/testelot";
-import {
-	add_Get_Update_Undo_Redo_Doc,
-	getNoneExistingDoc
-} from "./tests/live-doc";
-import {Backend_ModulePack_LiveDocs} from "./_main";
-import { FirebaseModule } from "@nu-art/firebase/backend";
+import {StormTester} from '@nu-art/thunderstorm/backend-test';
+import {__scenario} from '@nu-art/testelot';
+import {add_Get_Update_Undo_Redo_Doc, getNoneExistingDoc} from './tests/live-doc';
+import {ModulePack_Backend_LiveDocs} from './_main';
+import {FirebaseModule} from '@nu-art/firebase/backend';
 
-export const mainScenario = __scenario("Live-docs testing");
+
+export const mainScenario = __scenario('Live-docs testing');
 
 mainScenario.add(getNoneExistingDoc())
 	.add(add_Get_Update_Undo_Redo_Doc());
 
 module.exports = new StormTester()
 	.addModules(FirebaseModule)
-	.addModules(...Backend_ModulePack_LiveDocs)
+	.addModules(...ModulePack_Backend_LiveDocs)
 	.setScenario(mainScenario)
 	.build();
 

@@ -23,6 +23,7 @@ import {DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';
 import {ApiWithBody, ApiWithQuery, HttpMethod,} from '@nu-art/thunderstorm';
 
 
+
 export const DefaultApiDefs: { [k: string]: GenericApiDef; } = {
 	UpsertAll: {
 		method: HttpMethod.POST,

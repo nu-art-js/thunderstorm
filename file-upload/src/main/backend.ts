@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/core/module-pack";
+export * from './app-backend/core/module-pack';
 
-export * from "./app-backend/modules/AssetsModuleBE";
-export * from "./app-backend/modules/AssetBucketListener";
-export * from "./app-backend/modules/AssetsTempModuleBE";
-export * from "./app-backend/modules/ServerUploaderModule";
+export * from './app-backend/modules/ModuleBE_Assets';
+export * from './app-backend/modules/AssetBucketListener';
+export * from './app-backend/modules/ModuleBE_AssetsTemp';
+export * from './app-backend/modules/ModuleBE_AssetUploader';

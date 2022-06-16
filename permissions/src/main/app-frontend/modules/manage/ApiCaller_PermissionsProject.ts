@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,14 +17,14 @@
  * limitations under the License.
  */
 
-import {DB_PermissionProject} from "../../../index";
-import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
-import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
+import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
+import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {DB_PermissionProject, DBDef_PermissionProjects} from '../../shared';
+
 
 export interface OnPermissionsProjectsLoaded {
 	__onPermissionsProjectsLoaded: () => void;
 }
-
 
 const dispatch_onPermissionsProjectsLoaded = new ThunderDispatcher<OnPermissionsProjectsLoaded, '__onPermissionsProjectsLoaded'>(
 	'__onPermissionsProjectsLoaded');
@@ -33,9 +34,8 @@ export class PermissionsProjectModule_Class
 	private projects: DB_PermissionProject[] = [];
 	private projectsCustomKeys: string[] = [];
 
-
 	constructor() {
-		super({key: "project", relativeUrl: "/v1/permissions/manage/project"});
+		super(DBDef_PermissionProjects);
 	}
 
 	protected init(): void {

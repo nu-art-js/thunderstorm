@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,13 +17,14 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from "@nu-art/ts-common";
-import {DB_PermissionProject, PredefinedGroup, PredefinedUser, Request_RegisterProject, Response_UsersCFsByShareGroups, UserUrlsPermissions} from "./_imports";
-import {PermissionsAssert} from "./permissions-assert";
-import {ApiPermissionsDB, ProjectPermissionsDB} from "./db-types/managment";
-import {HttpServer} from "@nu-art/thunderstorm/backend";
-import {GroupPermissionsDB, UserPermissionsDB} from "./db-types/assign";
+import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from '@nu-art/ts-common';
+import {PermissionsAssert} from './permissions-assert';
+import {HttpServer} from '@nu-art/thunderstorm/backend';
 import {AccountModuleBE} from '@nu-art/user-account/app-backend/modules/AccountModuleBE';
+import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from './assignment';
+import {ModuleBE_PermissionApi, ModuleBE_PermissionProject} from './management';
+import {DB_PermissionProject, PredefinedGroup, PredefinedUser, Request_RegisterProject, Response_UsersCFsByShareGroups, UserUrlsPermissions} from '../shared';
+
 
 type Config = {
 	project: PreDB<DB_PermissionProject> & DB_BaseObject
@@ -39,7 +41,7 @@ export class PermissionsModule_Class
 
 	protected init(): void {
 		if (!this.config)
-			throw new ImplementationMissingException("MUST set config with project identity!!");
+			throw new ImplementationMissingException('MUST set config with project identity!!');
 	}
 
 	getProjectIdentity = () => this.config.project;
@@ -59,7 +61,7 @@ export class PermissionsModule_Class
 				try {
 					PermissionsAssert._assertUserPermissionsImpl(apiDetail, projectId, userDetails, requestCustomField);
 					userUrlsPermissions[url] = true;
-				} catch (e:any) {
+				} catch (e: any) {
 					userUrlsPermissions[url] = false;
 				}
 			} else
@@ -83,7 +85,7 @@ export class PermissionsModule_Class
 	}
 
 	async getUserCFsByShareGroups(userId: string, groupsIds: string[]): Promise<StringMap[]> {
-		const user = await UserPermissionsDB.queryUnique({accountId: userId});
+		const user = await ModuleBE_PermissionUser.queryUnique({accountId: userId});
 		const userCFs: StringMap[] = [];
 		if (!user.groups)
 			return userCFs;
@@ -103,7 +105,7 @@ export class PermissionsModule_Class
 
 	async registerProject() {
 		const routes: string[] = HttpServer.getRoutes().reduce((carry: string[], httpRoute) => {
-			if (httpRoute.path !== "*")
+			if (httpRoute.path !== '*')
 				carry.push(httpRoute.path);
 
 			return carry;
@@ -121,17 +123,17 @@ export class PermissionsModule_Class
 
 	async _registerProject(registerProject: Request_RegisterProject) {
 		const project = registerProject.project;
-		await ProjectPermissionsDB.upsert(project);
+		await ModuleBE_PermissionProject.upsert(project);
 		const id = project._id;
 		if (!id)
-			throw new BadImplementationException("register project is missing an id");
+			throw new BadImplementationException('register project is missing an id');
 
-		await ApiPermissionsDB.registerApis(id, registerProject.routes);
+		await ModuleBE_PermissionApi.registerApis(id, registerProject.routes);
 		const predefinedGroups = registerProject.predefinedGroups;
 		if (!predefinedGroups || predefinedGroups.length === 0)
 			return;
 
-		await GroupPermissionsDB.upsertPredefinedGroups(id, project.name, predefinedGroups);
+		await ModuleBE_PermissionGroup.upsertPredefinedGroups(id, project.name, predefinedGroups);
 
 		const predefinedUser = registerProject.predefinedUser;
 		if (!predefinedUser)
@@ -139,9 +141,9 @@ export class PermissionsModule_Class
 
 		const groupsUser = predefinedUser.groups.map(groupItem => {
 			const customField: StringMap = {};
-			const allRegEx = ".*";
+			const allRegEx = '.*';
 			if (!groupItem.customKeys || !groupItem.customKeys.length)
-				customField["_id"] = allRegEx;
+				customField['_id'] = allRegEx;
 			else {
 				groupItem.customKeys.forEach((customKey) => {
 					customField[customKey] = allRegEx;
@@ -149,11 +151,11 @@ export class PermissionsModule_Class
 			}
 
 			return {
-				groupId: GroupPermissionsDB.getPredefinedGroupId(id, groupItem._id),
+				groupId: ModuleBE_PermissionGroup.getPredefinedGroupId(id, groupItem._id),
 				customField
 			};
 		});
-		await UserPermissionsDB.upsert({...predefinedUser, groups: groupsUser});
+		await ModuleBE_PermissionUser.upsert({...predefinedUser, groups: groupsUser});
 	}
 }
 

@@ -22,7 +22,8 @@
 import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
 import {ApiTypeBinder, QueryParams} from '@nu-art/thunderstorm';
 import {
-	ApiBinder_DBDelete, ApiBinder_DBDeleteAll,
+	ApiBinder_DBDelete,
+	ApiBinder_DBDeleteAll,
 	ApiBinder_DBPatch,
 	ApiBinder_DBQuery,
 	ApiBinder_DBUnique,
@@ -36,7 +37,7 @@ import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backe
 import {addItemToArray, DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';
 
 
-export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
+export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any, any>, pathPart?: string, pathSuffix?: string) {
 	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? '/' + pathSuffix : ''}`;
 }
 

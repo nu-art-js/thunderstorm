@@ -21,6 +21,7 @@
 
 export * from "./app-frontend/types"
 export * from "./app-frontend/consts"
+export * from './app-frontend/db-def';
 export * from "./app-frontend/components/DBItemEditorComponent"
 export * from "./app-frontend/components/DBItemEditorPage"
 export * from "./app-frontend/components/DBListViewPage"

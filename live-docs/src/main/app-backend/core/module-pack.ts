@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Live-Docs will allow you to add and edit tool-tips from within your app...
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,11 +16,12 @@
  * limitations under the License.
  */
 
-import {LiveDocsModule} from "../modules/LiveDocsModule";
+import {LiveDocsModule} from '../modules/LiveDocsModule';
 
-export const Backend_ModulePack_LiveDocs = [
+
+export const ModulePack_Backend_LiveDocs = [
 	LiveDocsModule,
 ];
 
-export * from "../modules/LiveDocsModule"
+export * from '../modules/LiveDocsModule';
 
