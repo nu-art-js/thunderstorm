@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {ApiWithBody, ApiWithQuery, BaseHttpRequest} from '@nu-art/thunderstorm';
-import {AuditBy, DB_Object, TS_Object} from '@nu-art/ts-common';
+import {ApiWithBody, ApiWithQuery} from '@nu-art/thunderstorm';
 import {MessageType} from '@nu-art/push-pub-sub';
+import {BaseUploaderFile, DB_Asset, TempSecureUrl} from './assets';
 
 
 export const RequestKey_UploadUrl = 'get-upload-url';
@@ -47,50 +47,11 @@ export enum FileStatus {
 	Error = 'Error'
 }
 
-export type FileInfo = {
-	status: FileStatus
-	messageStatus?: string
-	progress?: number
-	name: string
-	request?: BaseHttpRequest<any>
-	file?: any
-	asset?: DB_Asset
-};
-
 export interface OnFileStatusChanged {
 	__onFileStatusChanged: (id: string) => void;
 }
 
-export type Request_Uploader = {
-	name: string
-	mimeType: string
-	key?: string
-	public?: boolean
-	metadata?: TS_Object
-}
-
-export type BaseUploaderFile = Request_Uploader & {
-	feId: string
-};
-
-export type DB_Asset = DB_Object & BaseUploaderFile & Required<Pick<BaseUploaderFile, 'key'>> & {
-	timestamp: number
-	ext: string
-	md5Hash?: string
-	path: string
-	_audit: AuditBy
-	bucketName: string
-	signedUrl?: {
-		url: string,
-		validUntil: number
-	}
-}
 export type Request_GetUploadUrl = BaseUploaderFile[]
-
-export type TempSecureUrl = {
-	secureUrl: string
-	asset: DB_Asset
-}
 
 export type Api_GetUploadUrl = ApiWithBody<'/v1/upload/get-url', BaseUploaderFile[], TempSecureUrl[]>
 export type Api_ProcessAssetManually = ApiWithQuery<'/v1/upload/process-asset-manually', void, { feId: string }>

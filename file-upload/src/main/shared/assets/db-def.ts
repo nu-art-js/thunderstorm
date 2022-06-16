@@ -16,14 +16,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DB_Asset} from '../..';
-import {Minute, tsValidateAudit, tsValidateExists, tsValidateNumber, tsValidateRegexp, tsValidateTimestamp, TypeValidator} from '@nu-art/ts-common';
-import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
+
+import {DBDef, tsValidateStringAndNumbersWithDashes} from '@nu-art/db-api-generator';
+import {Minute, tsValidateAudit, tsValidateExists, tsValidateNumber, tsValidateRegexp, tsValidateTimestamp} from '@nu-art/ts-common';
+import {DB_Asset} from './types';
+
 
 export const validateName = tsValidateRegexp(/^.{3,}$/);
 
-export const _assetValidator: TypeValidator<DB_Asset> = {
-	...BaseDB_ApiGenerator.__validator,
+const Validator_Asset = {
+	_id: tsValidateStringAndNumbersWithDashes,
 	timestamp: tsValidateNumber(),
 	name: validateName,
 	ext: tsValidateExists(true),
@@ -37,22 +39,21 @@ export const _assetValidator: TypeValidator<DB_Asset> = {
 	public: undefined
 };
 
-export class AssetsTempModuleBE_Class
-	extends BaseDB_ApiGenerator<DB_Asset> {
+export const DBDef_Assets: DBDef<DB_Asset> = {
+	validator: Validator_Asset,
+	dbName: 'assets',
+	entityName: 'asset',
+	relativeUrl: '/v1/assets',
+};
 
-	static _validator: TypeValidator<DB_Asset> = {
-		..._assetValidator,
-		timestamp: tsValidateTimestamp(Minute),
-	};
+export const Validator_TempAsset = {
+	...Validator_Asset,
+	timestamp: tsValidateTimestamp(Minute)
+};
 
-	constructor() {
-		super('assets-temp', AssetsTempModuleBE_Class._validator, 'assets-temp');
-	}
-
-}
-
-export const AssetsTempModuleBE = new AssetsTempModuleBE_Class();
-
-
-
-
+export const DBDef_TempAssets: DBDef<DB_Asset> = {
+	validator: Validator_TempAsset,
+	dbName: 'assets-temp',
+	entityName: 'temp-asset',
+	relativeUrl: '',
+};

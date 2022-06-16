@@ -27,12 +27,12 @@ import {
 	ApiBinder_DBQuery,
 	ApiBinder_DBUpsert,
 	ApiBinder_DBUpsertAll,
+	DBDef,
 	DefaultApiDefs,
 	GenericApiDef
 } from '../../index';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {
-	DBConfig,
 	HOOK_useEffect,
 	IndexDb_Query,
 	IndexedDB,
@@ -44,20 +44,15 @@ import {
 	XhrHttpModule
 } from '@nu-art/thunderstorm/frontend';
 
-import {DB_BaseObject, DB_Object, Module, PartialProperties, PreDB} from '@nu-art/ts-common';
+import {DB_BaseObject, DB_Object, Module, PreDB} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update, EventType_UpsertAll} from '../consts';
+import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 
-
-export type BaseApiConfigV2<DBType extends DB_Object, Ks extends keyof DBType = '_id'> = {
-	relativeUrl: string
-	key: string
-	dbConfig: DBConfig<DBType, Ks>
-}
 
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
 
-export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends BaseApiConfigV2<DBType, Ks> = BaseApiConfigV2<DBType, Ks>>
+export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config> {
 	readonly version = 'v2';
 
@@ -72,17 +67,10 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
 
-	protected constructor(config: PartialProperties<Config, 'dbConfig'>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
+	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
 		super();
+		const config = getModuleFEConfig(dbDef);
 		this.defaultDispatcher = defaultDispatcher;
-		if (!config.dbConfig)
-			config.dbConfig = {
-				version: 1,
-				name: config.key,
-				autoIncrement: false,
-				uniqueKeys: ['_id'] as Ks[]
-			};
-
 		this.setDefaultConfig(config as Config);
 		this.db = IndexedDBModule.getOrCreate(this.config.dbConfig);
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);

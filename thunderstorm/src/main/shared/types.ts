@@ -19,8 +19,10 @@
  * limitations under the License.
  */
 
-import {TS_Object} from '@nu-art/ts-common';
+import {DB_Object, TS_Object} from '@nu-art/ts-common';
 
+
+export type DBIndex<T extends DB_Object> = { id: string, keys: keyof T | (keyof T)[], params?: { multiEntry: boolean, unique: boolean } };
 
 export enum HttpMethod {
 	ALL = 'all',

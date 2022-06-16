@@ -34,7 +34,7 @@ import {
 	RequestKey_UploadFile,
 	RequestKey_UploadUrl,
 	TempSecureUrl
-} from '../../shared/types';
+} from '../../shared';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
 import {DB_Notifications} from '@nu-art/push-pub-sub';
 
@@ -49,7 +49,7 @@ export type UploaderConfig = {
 	uploadQueueParallelCount?: number
 }
 
-export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class, Config extends UploaderConfig = UploaderConfig>
+export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule_Class, Config extends UploaderConfig = UploaderConfig>
 	extends Module<Config>
 	implements OnPushMessageReceived<Push_FileUploaded> {
 
@@ -181,7 +181,6 @@ export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule
 			});
 		});
 	};
-
 
 	private uploadFile = async (response: TempSecureUrl) => {
 		const feId = response.asset.feId;

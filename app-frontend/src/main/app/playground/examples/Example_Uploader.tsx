@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {UploaderModuleFE} from '@nu-art/file-upload/frontend';
+import {ModuleFE_AssetUploader} from '@nu-art/file-upload/frontend';
 import * as React from 'react';
 
 
@@ -29,7 +29,7 @@ export class Example_Uploader_Renderer
 
 	onSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = e.target.files;
-		files && UploaderModuleFE.upload(Object.values(files), 'default', true);
+		files && ModuleFE_AssetUploader.upload(Object.values(files), 'default', true);
 	};
 
 	render() {

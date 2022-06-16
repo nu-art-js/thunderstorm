@@ -17,8 +17,9 @@
  * limitations under the License.
  */
 
-import {GithubModule} from "../modules/GithubModule";
+import {GithubModule} from '../modules/GithubModule';
 
-export const Backend_ModulePack_Github = [
+
+export const ModulePack_Backend_Github = [
 	GithubModule
 ];

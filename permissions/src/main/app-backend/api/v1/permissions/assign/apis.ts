@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,17 +17,14 @@
  * limitations under the License.
  */
 
-import {
-	UserPermissionsDB,
-	GroupPermissionsDB
-} from "../_imports";
-import {addAllItemToArray} from "@nu-art/ts-common";
-import {ServerApi} from "@nu-art/thunderstorm/backend";
+import {addAllItemToArray} from '@nu-art/ts-common';
+import {ServerApi} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../../../../modules/assignment';
 
 
 const assignmentApis: ServerApi<any>[] = [];
 
-addAllItemToArray(assignmentApis, GroupPermissionsDB.apis());
-addAllItemToArray(assignmentApis, UserPermissionsDB.apis());
+addAllItemToArray(assignmentApis, ModuleBE_PermissionGroup.apis());
+addAllItemToArray(assignmentApis, ModuleBE_PermissionUser.apis());
 
 module.exports = assignmentApis;

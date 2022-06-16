@@ -21,12 +21,12 @@ import './res/styles/styles.scss';
 
 import {App} from './app/App';
 import {ForceUpgrade, Thunder, ToastBuilder} from '@nu-art/thunderstorm/frontend';
-import {Frontend_ModulePack_LiveDocs, LiveDocsModule} from '@nu-art/live-docs/frontend';
+import {LiveDocsModule, ModulePack_Frontend_LiveDocs} from '@nu-art/live-docs/frontend';
 import {ExampleModule} from '@modules/ExampleModule';
-import {Frontend_ModulePack_PushPubSub} from '@nu-art/push-pub-sub/frontend';
+import {ModulePack_Frontend_PushPubSub} from '@nu-art/push-pub-sub/frontend';
 import {BugReportModule} from '@nu-art/bug-report/frontend';
 import {Module} from '@nu-art/ts-common';
-import {Frontend_ModulePack_Uploader} from '@nu-art/file-upload/frontend';
+import {ModulePack_Frontend_Uploader} from '@nu-art/file-upload/frontend';
 import {PermissionsFE} from '@nu-art/permissions/frontend';
 
 
@@ -39,9 +39,9 @@ PermissionsFE.setDefaultConfig({projectId: 'thunderstorm-staging'});
 
 new Thunder()
 	.setConfig(require('./config').config)
-	.addModules(...Frontend_ModulePack_PushPubSub)
-	.addModules(...Frontend_ModulePack_LiveDocs)
-	.addModules(...Frontend_ModulePack_Uploader)
+	.addModules(...ModulePack_Frontend_PushPubSub)
+	.addModules(...ModulePack_Frontend_LiveDocs)
+	.addModules(...ModulePack_Frontend_Uploader)
 	.addModules(...modules)
 	.setMainApp(App)
 	.build();

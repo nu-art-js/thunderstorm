@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * A generic push pub sub infra for webapps
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,15 +16,16 @@
  * limitations under the License.
  */
 
-import {PushPubSubModule} from "../modules/PushPubSubModule";
-import {FirebaseModule} from "@nu-art/firebase/frontend";
-import {NotificationsModule} from "../modules/NotificationModule";
+import {PushPubSubModule} from '../modules/PushPubSubModule';
+import {FirebaseModule} from '@nu-art/firebase/frontend';
+import {NotificationsModule} from '../modules/NotificationModule';
 
-export const Frontend_ModulePack_PushPubSub = [
+
+export const ModulePack_Frontend_PushPubSub = [
 	FirebaseModule,
 	PushPubSubModule,
 	NotificationsModule
 ];
 
-export * from "../modules/PushPubSubModule";
-export * from "../modules/NotificationModule";
+export * from '../modules/PushPubSubModule';
+export * from '../modules/NotificationModule';

@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,31 +17,20 @@
  * limitations under the License.
  */
 
-import {
-	__scenario,
-	ContextKey,
-    __custom
-} from "@nu-art/testelot";
-import {
-	cleanup,
-	ConfigDB,
-	setupDatabase,
-	testConfig1,
-	testLevel1,
-	testLevel2
-} from "./_core";
-import {AccessLevelPermissionsDB} from "../_main";
+import {__custom, __scenario, ContextKey} from '@nu-art/testelot';
+import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1, testLevel2} from './_core';
+import {ModuleBE_PermissionAccessLevel} from '../_main';
 
-const contextKey = new ContextKey<ConfigDB>("config-1");
 
+const contextKey = new ContextKey<ConfigDB>('config-1');
 
 export function createTwoAccessLevels() {
-	const scenario = __scenario("Create two access levels");
+	const scenario = __scenario('Create two access levels');
 	scenario.add(cleanup());
 	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey));
 	scenario.add(__custom(async (action, data) => {
-		await AccessLevelPermissionsDB.upsert({...testLevel2, domainId: data.domain._id});
-	}).setReadKey(contextKey).setLabel("Add second access level"));
+		await ModuleBE_PermissionAccessLevel.upsert({...testLevel2, domainId: data.domain._id});
+	}).setReadKey(contextKey).setLabel('Add second access level'));
 	return scenario;
 }
 

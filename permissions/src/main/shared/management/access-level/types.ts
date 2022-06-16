@@ -1,5 +1,5 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,20 +16,7 @@
  * limitations under the License.
  */
 
-import {
-	DB_Object,
-} from '@nu-art/ts-common';
-import {Auditable} from '@nu-art/ts-common';
-
-export type DB_PermissionDomain = DB_Object & Auditable & {
-	projectId: string
-	namespace: string
-};
-
-export type DB_PermissionProject = DB_Object & Auditable & {
-	name: string,
-	customKeys?: string[]
-}
+import {Auditable, DB_Object} from '@nu-art/ts-common';
 
 
 export type DB_PermissionAccessLevel = DB_Object & Auditable & {
@@ -37,13 +24,3 @@ export type DB_PermissionAccessLevel = DB_Object & Auditable & {
 	name: string
 	value: number
 }
-
-
-export type DB_PermissionApi = DB_Object & Auditable & {
-	projectId: string
-	path: string
-	accessLevelIds?: string[],
-	deprecated?: boolean,
-	onlyForApplication?: boolean
-}
-
