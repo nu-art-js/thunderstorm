@@ -19,15 +19,24 @@
  * limitations under the License.
  */
 
+import {DBIndex} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, OmitDBObject, ValidatorTypeResolver} from '@nu-art/ts-common';
+
+
+export type Default_UniqueKey = '_id';
+export const Const_UniqueKey = '_id';
 
 /**
  * @field version - First item in the array is current version, Must pass all past versions with the current, default version is 1.0.0
  */
-export type DBDef<T extends DB_Object> = {
+export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> = {
 	validator: ValidatorTypeResolver<OmitDBObject<T>>;
 	dbName: string;
 	entityName: string;
-	versions?: string[];
 	relativeUrl: string;
+
+	lockKeys?: (keyof T)[] // fallback to uniqueKeys, default ["_id"]
+	uniqueKeys?: Ks[] // default ["_id"]
+	versions?: string[]; // default ["1.0.0"]
+	indices?: DBIndex<T>[]
 }

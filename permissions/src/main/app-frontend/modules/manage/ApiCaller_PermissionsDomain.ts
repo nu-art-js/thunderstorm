@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiCallerEventType, BaseDB_ApiGeneratorCaller, getModuleFEConfig} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventType, BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionDomain, DBDef_PermissionDomain} from '../../shared';
 
@@ -32,7 +32,7 @@ export class PermissionsDomainModule_Class
 	extends BaseDB_ApiGeneratorCaller<DB_PermissionDomain> {
 
 	constructor() {
-		super(getModuleFEConfig(DBDef_PermissionDomain));
+		super(DBDef_PermissionDomain);
 		this.setDefaultDispatcher(dispatch_onPermissionsDomainsLoaded);
 	}
 

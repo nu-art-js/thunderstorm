@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGenerator, getModuleBEConfig} from '@nu-art/db-api-generator/backend';
+import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {auditBy, filterDuplicates, PreDB} from '@nu-art/ts-common';
@@ -32,7 +32,7 @@ export class ModuleBE_PermissionApi_Class
 	extends BaseDB_ApiGenerator<DB_PermissionApi> {
 
 	constructor() {
-		super(getModuleBEConfig(DBDef_PermissionApi));
+		super(DBDef_PermissionApi);
 		this.setLockKeys(['projectId', 'path']);
 	}
 

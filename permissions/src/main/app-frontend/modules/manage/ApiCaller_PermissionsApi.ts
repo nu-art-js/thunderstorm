@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGeneratorCaller, getModuleFEConfig} from '@nu-art/db-api-generator/frontend';
+import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {TypedMap} from '@nu-art/ts-common';
 import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
@@ -34,7 +34,7 @@ export class PermissionsApiModule_Class
 	private apis: TypedMap<DB_PermissionApi[]> = {};
 
 	constructor() {
-		super(getModuleFEConfig(DBDef_PermissionApi));
+		super(DBDef_PermissionApi);
 	}
 
 	protected init(): void {

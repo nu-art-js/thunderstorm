@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 import {DB_PermissionGroup, DBDef_PermissionGroup} from '../../../index';
-import {BaseDB_ApiGeneratorCaller, getModuleFEConfig} from '@nu-art/db-api-generator/frontend';
+import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
 
@@ -32,7 +32,7 @@ export class PermissionsGroupModule_Class
 	private groups: DB_PermissionGroup[] = [];
 
 	constructor() {
-		super(getModuleFEConfig(DBDef_PermissionGroup));
+		super(DBDef_PermissionGroup);
 	}
 
 	protected init(): void {

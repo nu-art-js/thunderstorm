@@ -25,12 +25,13 @@ import {Cursor, DB, ObjectStore, openDb, UpgradeDB} from 'idb';
 
 type Config = {}
 
+export type DBIndex<T extends DB_Object> = { id: string, keys: keyof T | (keyof T)[], params?: { multiEntry: boolean, unique: boolean } };
 export type DBConfig<T extends DB_Object, Ks extends keyof T> = {
 	name: string
 	version?: number
 	autoIncrement?: boolean,
 	uniqueKeys: Ks[]
-	indices?: { id: string, keys: keyof T | (keyof T)[], params?: { multiEntry: boolean, unique: boolean } }[]
+	indices?: DBIndex<T>[]
 	upgradeProcessor?: (db: UpgradeDB) => void
 };
 

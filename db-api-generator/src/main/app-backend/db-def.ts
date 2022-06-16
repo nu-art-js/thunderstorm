@@ -19,13 +19,18 @@
  * limitations under the License.
  */
 
-import { DBDef } from "..";
+import {Const_UniqueKey, DBDef, Default_UniqueKey} from '..';
 import {DB_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
-import { BaseDB_ApiGenerator } from "./BaseDB_ApiGenerator";
+import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
 
-export type DBApiBEConfig<DBType extends DB_Object, Ks extends keyof DBType = '_id'> = {
+
+export const Const_LockKeys: (keyof DB_Object)[] = [Const_UniqueKey, '_v', '__created', '__updated'];
+
+export type DBApiBEConfig<DBType extends DB_Object, Ks extends keyof DBType = Default_UniqueKey> = {
 	collectionName: string;
 	validator: ValidatorTypeResolver<DBType>;
+	externalFilterKeys: Ks[]
+	lockKeys: (keyof DBType)[]
 	itemName: string;
 	versions: string[];
 }
@@ -37,7 +42,9 @@ export const getModuleBEConfig = <T extends DB_Object>(dbDef: DBDef<T>): DBApiBE
 			...dbDef.validator,
 			...BaseDB_ApiGenerator.__validator,
 		} as ValidatorTypeResolver<T>,
+		externalFilterKeys: dbDef.uniqueKeys || [Const_UniqueKey],
+		lockKeys: dbDef.lockKeys || dbDef.uniqueKeys || [...Const_LockKeys],
 		itemName: dbDef.entityName,
 		versions: dbDef.versions || ['1.0.0'],
-	}
-}
+	};
+};
