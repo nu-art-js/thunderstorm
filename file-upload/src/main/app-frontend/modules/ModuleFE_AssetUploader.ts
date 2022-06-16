@@ -19,12 +19,12 @@
 import {ThunderDispatcher, XhrHttpModule, XhrHttpModule_Class} from '@nu-art/thunderstorm/frontend';
 import {BaseUploaderFile, FileStatus, FileUploadResult, OnFileStatusChanged, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
 import {PushPubSubModule} from '@nu-art/push-pub-sub/frontend';
-import {BaseUploaderModule_Class} from '../../shared/modules/BaseUploaderModule';
+import {ModuleBase_AssetUploader} from '../../shared/modules/ModuleBase_AssetUploader';
 import {DB_Notifications} from '@nu-art/push-pub-sub';
 
 
 export class ModuleFE_AssetUploader_Class
-	extends BaseUploaderModule_Class<XhrHttpModule_Class> {
+	extends ModuleBase_AssetUploader<XhrHttpModule_Class> {
 
 	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 

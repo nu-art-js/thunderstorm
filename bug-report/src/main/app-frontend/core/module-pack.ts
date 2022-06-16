@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Allow the user to file a bug  report directly from your app
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,14 +16,15 @@
  * limitations under the License.
  */
 
-import {BugReportModule} from "../modules/BugReportModule";
-import {AdminBRModule} from "../modules/AdminBRModule";
+import {BugReportModule} from '../modules/BugReportModule';
+import {AdminBRModule} from '../modules/AdminBRModule';
 
-export const Frontend_ModulePack_BugReport = [
+
+export const ModulePack_Frontend_BugReport = [
 	BugReportModule,
 	AdminBRModule
 ];
 
-export * from "../modules/AdminBRModule"
-export * from "../modules/BugReportModule"
+export * from '../modules/AdminBRModule';
+export * from '../modules/BugReportModule';
 

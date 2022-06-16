@@ -23,7 +23,7 @@ import {PermissionsModule} from '../modules/PermissionsModule';
 import {PermissionsAssert} from '../modules/permissions-assert';
 
 
-export const Backend_ModulePack_Permissions = [
+export const ModulePack_Backend_Permissions = [
 	ModuleBE_PermissionProject,
 	ModuleBE_PermissionDomain,
 	ModuleBE_PermissionAccessLevel,

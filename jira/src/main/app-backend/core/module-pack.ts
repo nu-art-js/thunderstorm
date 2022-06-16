@@ -17,8 +17,9 @@
  * limitations under the License.
  */
 
-import {JiraModule} from "../..";
+import {JiraModule} from '../..';
 
-export const Backend_ModulePack_Jira = [
+
+export const ModulePack_Backend_Jira = [
 	JiraModule
 ];

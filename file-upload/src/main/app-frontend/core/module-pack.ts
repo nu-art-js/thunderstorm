@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader';
-import {Frontend_ModulePack_PushPubSub} from '@nu-art/push-pub-sub/frontend';
+import {ModulePack_Frontend_PushPubSub} from '@nu-art/push-pub-sub/frontend';
 import {ModuleFE_Assets} from '../modules/ModuleFE_Assets';
 
 
-export const Frontend_ModulePack_Uploader = [
-	...Frontend_ModulePack_PushPubSub,
+export const ModulePack_Frontend_Uploader = [
+	...ModulePack_Frontend_PushPubSub,
 	ModuleFE_Assets,
 	ModuleFE_AssetUploader,
 ];

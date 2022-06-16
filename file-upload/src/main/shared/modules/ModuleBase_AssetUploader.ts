@@ -49,7 +49,7 @@ export type UploaderConfig = {
 	uploadQueueParallelCount?: number
 }
 
-export abstract class BaseUploaderModule_Class<HttpModule extends BaseHttpModule_Class, Config extends UploaderConfig = UploaderConfig>
+export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule_Class, Config extends UploaderConfig = UploaderConfig>
 	extends Module<Config>
 	implements OnPushMessageReceived<Push_FileUploaded> {
 
