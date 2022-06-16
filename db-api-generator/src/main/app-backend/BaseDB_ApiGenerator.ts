@@ -278,7 +278,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	protected upgradeInstance(dbInstance: DBType, toVersion: string) {
+	protected async upgradeInstance(dbInstance: DBType, toVersion: string): Promise<void> {
 	}
 
 	/**
