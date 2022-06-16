@@ -28,6 +28,7 @@ import {
 	ApiBinder_DBUnique,
 	ApiBinder_DBUpsert,
 	ApiBinder_DBUpsertAll,
+	DBDef,
 	DefaultApiDefs,
 	GenericApiDef,
 } from '../../index';
@@ -37,6 +38,7 @@ import {ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 import {_keys, addItemToArray, DB_BaseObject, DB_Object, Module, PreDB, removeItemFromArray} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update, EventType_UpsertAll} from '../consts';
+import {getModuleFEConfig} from '../db-def';
 
 
 export type BaseApiConfig = {
@@ -59,8 +61,10 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 
 	private defaultDispatcher?: ThunderDispatcher<any, string, ApiCallerEventType>;
 
-	constructor(config: BaseApiConfig) {
+	constructor(dbDef: DBDef<DBType>) {
 		super();
+		const config = getModuleFEConfig(dbDef);
+
 		this.setDefaultConfig(config);
 	}
 

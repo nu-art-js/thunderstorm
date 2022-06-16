@@ -40,7 +40,7 @@ import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thu
 import {fromBuffer} from 'file-type';
 import {FileExtension, MimeType} from 'file-type/core';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
-import {BaseDB_ApiGenerator, DBApiConfig, getModuleBEConfig} from '@nu-art/db-api-generator/backend';
+import {BaseDB_ApiGenerator, DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {OnAssetUploaded} from './AssetBucketListener';
 import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
 
@@ -95,7 +95,7 @@ export class ModuleBE_Assets_Class
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {
-		super(getModuleBEConfig(DBDef_Assets));
+		super(DBDef_Assets);
 		this.setDefaultConfig({...this.config, path: 'assets'});
 	}
 

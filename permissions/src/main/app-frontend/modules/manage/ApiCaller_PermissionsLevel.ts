@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGeneratorCaller, getModuleFEConfig} from '@nu-art/db-api-generator/frontend';
+import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel} from '../../shared';
 
@@ -33,7 +33,7 @@ export class PermissionsAccessLevelModule_Class
 	private levels: { [k: string]: DB_PermissionAccessLevel[] } = {};
 
 	constructor() {
-		super(getModuleFEConfig(DBDef_PermissionAccessLevel));
+		super(DBDef_PermissionAccessLevel);
 	}
 
 	protected init(): void {

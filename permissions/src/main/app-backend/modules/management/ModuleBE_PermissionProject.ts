@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGenerator, getModuleBEConfig} from '@nu-art/db-api-generator/backend';
+import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {auditBy} from '@nu-art/ts-common';
@@ -29,7 +29,7 @@ export class ModuleBE_PermissionProject_Class
 	extends BaseDB_ApiGenerator<DB_PermissionProject> {
 
 	constructor() {
-		super(getModuleBEConfig(DBDef_PermissionProjects));
+		super(DBDef_PermissionProjects);
 	}
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {

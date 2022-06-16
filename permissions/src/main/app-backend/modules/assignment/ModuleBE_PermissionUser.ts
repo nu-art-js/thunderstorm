@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGenerator, getModuleBEConfig} from '@nu-art/db-api-generator/backend';
+import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {_keys, auditBy, BadImplementationException, batchAction, compare, filterDuplicates} from '@nu-art/ts-common';
@@ -34,7 +34,7 @@ export class ModuleBE_PermissionUser_Class
 	implements OnNewUserRegistered, OnUserLogin {
 
 	constructor() {
-		super(getModuleBEConfig(DBDef_PermissionUser));
+		super(DBDef_PermissionUser);
 		this.setLockKeys(['accountId']);
 	}
 
