@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DBIndex} from '@nu-art/thunderstorm/frontend';
+import {DBIndex} from '@nu-art/thunderstorm';
 import {DB_Object, OmitDBObject, ValidatorTypeResolver} from '@nu-art/ts-common';
 
 
