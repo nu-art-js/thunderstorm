@@ -21,11 +21,11 @@
 
 import {DB_Object, Module} from '@nu-art/ts-common';
 import {Cursor, DB, ObjectStore, openDb, UpgradeDB} from 'idb';
+import {DBIndex} from '../../shared/types';
 
 
 type Config = {}
 
-export type DBIndex<T extends DB_Object> = { id: string, keys: keyof T | (keyof T)[], params?: { multiEntry: boolean, unique: boolean } };
 export type DBConfig<T extends DB_Object, Ks extends keyof T> = {
 	name: string
 	version?: number
