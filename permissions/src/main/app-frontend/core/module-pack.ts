@@ -25,7 +25,7 @@ import {ApiCaller_PermissionsAccessLevel} from '../modules/manage/ApiCaller_Perm
 import {ApiCaller_PermissionsApi} from '../modules/manage/ApiCaller_PermissionsApi';
 
 
-export const Frontend_ModulePack_Permissions = [
+export const ModulePack_Frontend_Permissions = [
 	ApiCaller_PermissionsUser,
 	ApiCaller_PermissionsGroup,
 	ApiCaller_PermissionsProject,

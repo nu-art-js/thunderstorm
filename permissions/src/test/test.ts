@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,10 +17,10 @@
  * limitations under the License.
  */
 
-import {Backend_ModulePack_Permissions} from "../main/backend";
-import {StormTester} from "@nu-art/thunderstorm/backend-test";
-import {__scenario} from "@nu-art/testelot";
-import {createTwoAccessLevels} from "./tests/create-project";
+import {ModulePack_Backend_Permissions} from '../main/backend';
+import {StormTester} from '@nu-art/thunderstorm/backend-test';
+import {__scenario} from '@nu-art/testelot';
+import {createTwoAccessLevels} from './tests/create-project';
 import {
 	checkAccessLevelsPropertyOfGroup,
 	checkCreateUserWithEmptyGroups,
@@ -31,6 +32,7 @@ import {
 	checkInsertUserIfNotExistByExistUser,
 	checkPatchOfGroupAccessLevelsProperty,
 	checkPatchOfGroupAccessLevelsPropertyToHigherValue,
+	checkUpdatedUserGroups,
 	checkUpdateOfGroupAccessLevelsProperty,
 	checkUpdateOfGroupAccessLevelsPropertyToHigherValue,
 	createApi,
@@ -45,33 +47,27 @@ import {
 	failedCreateGroupWithDuplicateAccessLevel,
 	failedCreateTwoGroupsWithSameName,
 	failedCreateUserWithDuplicateGroups,
+	failedCreateUserWithDuplicateGroupsButOneUndefinedCFAndOtherEmptyObj,
+	failedDeleteGroupAssociatedToUser,
 	failToCreateGroupWithIllegalCustomField,
 	tryDeleteAccessLevelAssociatedWithApi,
 	tryDeleteAccessLevelAssociatedWithGroup,
-	tryDeleteDomainAssociatedWithAccessLevel,
-	checkUpdatedUserGroups,
-	failedDeleteGroupAssociatedToUser,
-	failedCreateUserWithDuplicateGroupsButOneUndefinedCFAndOtherEmptyObj
-} from "./tests/permissions-manage";
-import {
-	permissionsAssertDoesCustomFieldsSatisfiesTests,
-	permissionsAssertIsLevelsMatchTests
-} from "./tests/permissions-assert";
-import { FirebaseModule } from "@nu-art/firebase/backend";
-import { AccountModule } from "@nu-art/user-account/backend";
-import {
-	assignUserPermissionsTests
-} from "./tests/assign-permissions";
+	tryDeleteDomainAssociatedWithAccessLevel
+} from './tests/permissions-manage';
+import {permissionsAssertDoesCustomFieldsSatisfiesTests, permissionsAssertIsLevelsMatchTests} from './tests/permissions-assert';
+import {FirebaseModule} from '@nu-art/firebase/backend';
+import {AccountModule} from '@nu-art/user-account/backend';
+import {assignUserPermissionsTests} from './tests/assign-permissions';
 import {
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered,
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered,
 	expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCovered,
 	testFullAssertUserPermissionsWithEmptyUserCFsArrayAndEmptyRequestCFObj,
 	testFullAssertUserPermissionsWithExtraGroupCFCovered
-} from "./tests/full-permission-user-assert";
+} from './tests/full-permission-user-assert';
 
 
-export const mainScenario = __scenario("Permissions");
+export const mainScenario = __scenario('Permissions');
 
 mainScenario.add(createUser());
 mainScenario.add(createUserWithGroups());
@@ -122,11 +118,10 @@ mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFCovered(
 mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCovered());
 mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered());
 
-
 module.exports = new StormTester()
 	.addModules(FirebaseModule)
 	.addModules(AccountModule)
-	.addModules(...Backend_ModulePack_Permissions)
+	.addModules(...ModulePack_Backend_Permissions)
 	.setScenario(mainScenario)
 	.build();
 

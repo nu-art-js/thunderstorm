@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseUploaderModule_Class, UploaderConfig,} from '../../shared/modules/BaseUploaderModule';
+import {ModuleBase_AssetUploader, UploaderConfig,} from '../../shared/modules/ModuleBase_AssetUploader';
 import {Axios_RequestConfig, AxiosHttpModule, AxiosHttpModule_Class} from '@nu-art/thunderstorm/backend';
 import {BaseUploaderFile, Request_Uploader, TempSecureUrl} from '../shared';
 
@@ -29,7 +29,7 @@ export type ServerFilesToUpload = Request_Uploader & {
 type Config = UploaderConfig & { requestConfig: Axios_RequestConfig };
 
 export class ModuleBE_AssetUploader_Class
-	extends BaseUploaderModule_Class<AxiosHttpModule_Class, Config> {
+	extends ModuleBase_AssetUploader<AxiosHttpModule_Class, Config> {
 
 	constructor() {
 		super(AxiosHttpModule);
