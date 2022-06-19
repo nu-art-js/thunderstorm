@@ -38,7 +38,6 @@ import {
 	PreDB,
 	ThisShouldNotHappenException,
 	tsValidate,
-	tsValidateTimestamp,
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
@@ -53,7 +52,7 @@ import {
 } from '@nu-art/thunderstorm/backend';
 import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
 import {BadInputErrorBody, ErrorKey_BadInput} from '../shared/types';
-import {dbIdLength, tsValidateUniqueId, tsValidateVersion} from '../shared/validators';
+import {dbIdLength} from '../shared/validators';
 import {Const_LockKeys, DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
 
@@ -83,12 +82,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
-	static __validator: ValidatorTypeResolver<DB_Object> = {
-		_id: tsValidateUniqueId,
-		_v: tsValidateVersion,
-		__created: tsValidateTimestamp(),
-		__updated: tsValidateTimestamp(),
-	};
 
 	protected constructor(dbDef: DBDef<DBType, any>, appConfig?: BaseDBApiConfig) {
 		super();
