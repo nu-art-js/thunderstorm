@@ -49,7 +49,7 @@ export class TooltipModule_Class
 	 * @param duration - Duration of time before content disappears on mouse leave, defaults to -1
 	 * @param allowContentHover
 	 */
-	show = (content: React.ReactNode, e: React.MouseEvent, duration = -1, allowContentHover=false) => {
+	show = (content: React.ReactNode, e: React.MouseEvent, duration = -1, allowContentHover = false) => {
 		const model: Tooltip_Model = {
 			content,
 			location: {x: e.pageX + 10, y: e.pageY + 15},
@@ -67,7 +67,7 @@ export class TooltipModule_Class
 	 * @param duration - Duration of time before content disappears on mouse leave, defaults to -1
 	 * @param allowContentHover
 	 */
-	showAt = (content: React.ReactNode, x: number, y: number, duration = -1, allowContentHover=false) => {
+	showAt = (content: React.ReactNode, x: number, y: number, duration = -1, allowContentHover = false) => {
 		const model: Tooltip_Model = {
 			content,
 			location: {x, y},
@@ -92,6 +92,18 @@ export const TooltipModule = new TooltipModule_Class();
 export const ShowTooltip = (content: React.ReactNode, duration = -1, allowContentHover = false) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<any>) => TooltipModule.show(content, e, duration, allowContentHover),
+		onMouseLeave: (e: React.MouseEvent<any>) => TooltipModule.hide(),
+	};
+};
+
+export const ShowTooltipAtTop = (content: React.ReactNode, duration = -1, allowContentHover = false) => {
+	return {
+		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+			const data = e.currentTarget.getBoundingClientRect();
+			const x = (data.right + data.x) / 2;
+			const y = data.top - 10;
+			TooltipModule.showAt(content, x, y, duration, allowContentHover);
+		},
 		onMouseLeave: (e: React.MouseEvent<any>) => TooltipModule.hide(),
 	};
 };
