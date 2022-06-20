@@ -82,25 +82,11 @@ export function arrayToMap<T>(array: T[], getKey: (item: T, index: number) => st
 	}, map || {});
 }
 
-// updateProperty<T extends TS_Object>(map: { [k: string]: T }, getKey: (element: T) => string, elements: T[]) {
-// }
-
-export function _sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
+export function sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
 	const compareFn = (a: T, b: T) => {
 		const _a = map(a);
 		const _b = map(b);
 		return (_a < _b ? -1 : (_a === _b ? 0 : 1)) * (invert ? -1 : 1);
-	};
-
-	return array.sort(compareFn);
-}
-
-export function sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
-	console.log('sortArray is deprecated and inverted... please use _sortArray');
-	const compareFn = (a: T, b: T) => {
-		const _a = map(a);
-		const _b = map(b);
-		return (_a > _b ? -1 : (_a === _b ? 0 : 1)) * (invert ? -1 : 1);
 	};
 
 	return array.sort(compareFn);

@@ -24,21 +24,33 @@ import {ValidationException} from '../validator/validator';
 
 export class Replacer
 	extends Logger {
+	private strictMode = true;
 	private static RuntimeParam = '__runtime';
 	private static Indicator_RuntimeParam = '__';
 
-	private static Regexp_paramGroup = /\$\{(.*?)\}/g;
-	private static Regexp_param = /\$\{(.*?)\}/;
+	private static Regexp_paramGroup = /\$\{(\{?.*?\}?)\}/g;
+	private static Regexp_param = /\$\{(\{?.*?\}?)\}/;
 
 	private static Regexp_forLoopGroupStart = /\{\{foreach (.*?) in (.*?)\}\}/g;
 	private static Regexp_forLoopParam = /\{\{foreach (.*?) in (.*?)\}\}/;
 
 	private input: TS_Object = {};
 	private aliases: KeyValue[] = [];
+	private fallbackReplacer?: Replacer;
 
 	constructor() {
 		super();
 		// this.setMinLevel(LogLevel.Error);
+	}
+
+	setFallbackReplacer(fallbackReplacer?: Replacer) {
+		this.fallbackReplacer = fallbackReplacer;
+		return this;
+	}
+
+	setNotStrict() {
+		this.strictMode = false;
+		return this;
 	}
 
 	getInput() {
@@ -68,13 +80,17 @@ export class Replacer
 			if (param === undefined)
 				return toRet;
 
-			return this.replaceParam(param, toRet, runtime);
+			const value = this.resolveParam(param, toRet, runtime);
+			return toRet.replace(new RegExp(`\\$\\{${escape_RegExp(param)}\\}`, 'g'), value);
 		}, content) || content;
 	}
 
-	private replaceParam(param: string, toRet: string, runtime?: TS_Object) {
+	private resolveParam(param: string, toRet: string, runtime?: TS_Object): string {
 		const value = this.resolveParamValue(param, runtime);
-		return toRet.replace(new RegExp(`\\$\\{${escape_RegExp(param)}\\}`, 'g'), value);
+		if (this.fallbackReplacer && (value === undefined || value === ''))
+			return this.fallbackReplacer.resolveParam(param, toRet, runtime);
+
+		return value;
 	}
 
 	private replaceLoops(content = '', runtime?: TS_Object) {
@@ -140,9 +156,11 @@ export class Replacer
 			this.logWarning('input', this.input);
 			throw new ValidationException(`Error while resolving runtime variable for parts ${param}`, param, this.input, e);
 		}
+
 		if (value === undefined) {
 			this.logWarning('input', this.input);
-			throw new ValidationException(`Cannot resolve runtime variable for parts ${param}`, param, this.input);
+			if (this.strictMode)
+				throw new ValidationException(`Cannot resolve runtime variable for parts ${param}`, param, this.input);
 		}
 
 		return value;
