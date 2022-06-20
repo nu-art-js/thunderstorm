@@ -24,6 +24,7 @@ import {DB_PermissionUser} from './types';
 
 
 const Validator_PermissionUser = {
+	_id: undefined,
 	accountId: validateUserUuid,
 	groups: tsValidateArray({
 		groupId: tsValidateStringAndNumbersWithDashes,
