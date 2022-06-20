@@ -24,7 +24,7 @@
  */
 import * as React from 'react';
 
-import {_clearTimeout, _keys, _setTimeout, _sortArray, EmptyObject, Logger, LogLevel, LogParam, TimerHandler} from '@nu-art/ts-common';
+import {_clearTimeout, _keys, _setTimeout, EmptyObject, Logger, LogLevel, LogParam, sortArray, TimerHandler} from '@nu-art/ts-common';
 import {Thunder} from './Thunder';
 
 
@@ -107,10 +107,10 @@ export abstract class BaseComponent<P = any, State = any>
 
 	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<State>, nextContext: any): boolean {
 		const _shouldRender = () => {
-			const propKeys = _sortArray(_keys(this.props || EmptyObject));
-			const nextPropsKeys = _sortArray(_keys(nextProps || EmptyObject));
-			const stateKeys = _sortArray(_keys(this.state || EmptyObject));
-			const nextStateKeys = _sortArray(_keys(nextState || EmptyObject));
+			const propKeys = sortArray(_keys(this.props || EmptyObject));
+			const nextPropsKeys = sortArray(_keys(nextProps || EmptyObject));
+			const stateKeys = sortArray(_keys(this.state || EmptyObject));
+			const nextStateKeys = sortArray(_keys(nextState || EmptyObject));
 			if (propKeys.length !== nextPropsKeys.length) return true;
 			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]])) return true;
 
