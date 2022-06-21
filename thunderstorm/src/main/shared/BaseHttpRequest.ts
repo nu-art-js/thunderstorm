@@ -52,7 +52,7 @@ export abstract class BaseHttpRequest<Binder extends ApiTypeBinder<any, any, any
 	protected aborted: boolean = false;
 	protected compress: boolean;
 	private defaultResponseHandler?: (request: BaseHttpRequest<any>) => boolean;
-	private logger?: Logger;
+	protected logger?: Logger;
 
 	constructor(requestKey: string, requestData?: any) {
 		this.key = requestKey;

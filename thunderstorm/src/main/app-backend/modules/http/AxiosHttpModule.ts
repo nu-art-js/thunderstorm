@@ -138,6 +138,7 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 			// TODO set progress listener
 			// this.xhr.upload.onprogress = this.onProgressListener;
 			const body = this.body;
+
 			if (body)
 				this.addHeader('Content-Length', `${body.length}`);
 			// TODO add zipping of body
@@ -171,6 +172,8 @@ class AxiosHttpRequest<Binder extends ApiTypeBinder<any, any, any, any>>
 
 			if (this.responseType)
 				options.responseType = this.responseType as Axios_ResponseType;
+
+			this.logger?.logDebug(options);
 
 			try {
 				this.response = await axios.request(options);
