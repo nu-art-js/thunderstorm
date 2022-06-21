@@ -114,7 +114,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 // this.setExternalUniqueKeys(["accessLevelIds"]);
 
 	/**
-	 * Sets the external unique keys. External keys are the attributes of a document that must be unique inside the
+	 * Sets the external unique keys. External keys are the attributes of a documen@returnt that must be unique inside the
 	 * collection. Default is `_id`.
 	 *
 	 * @remarks
@@ -257,9 +257,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	}
 
 	protected async upgradeInstances(dbInstances: DBType[]) {
-		dbInstances.map(async dbInstance => {
+		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];
+
 			if (instanceVersion !== currentVersion)
 				try {
 					await this.upgradeInstance(dbInstance, currentVersion);
@@ -268,7 +269,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 				}
 
 			dbInstance._v = currentVersion;
-		});
+		}));
 	}
 
 	protected async upgradeInstance(dbInstance: DBType, toVersion: string): Promise<void> {

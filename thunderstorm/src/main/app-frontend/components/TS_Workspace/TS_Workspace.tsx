@@ -52,6 +52,7 @@ export abstract class PanelParentAsync<Config = {}, State = {}, Props = {}>
 
 	renderPanel(panel: PanelConfig) {
 		const PanelRenderer = this.props.renderers[panel.key];
+
 		if (!PanelRenderer)
 			return `NO RENDERER DEFINED FOR KEY: ${panel.key}`;
 		return <PanelRenderer config={panel.data} renderers={this.props.renderers}/>;
