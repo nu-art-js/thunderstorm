@@ -121,7 +121,7 @@ export class PushPubSubModule_Class
 					return compare(x, _notification.props) || _notification.userId;
 				});
 
-			const userNotifications: DB_Notifications[] = await transaction.query(this.notifications, {where: {userId}});
+			const userNotifications: DB_Notifications[] = userId ? await transaction.query(this.notifications, {where: {userId}}) : [];
 			const notifications = userNotifications.concat(subscriptionNotifications);
 			const writePush = await transaction.upsert_Read(this.pushSessions, session);
 
