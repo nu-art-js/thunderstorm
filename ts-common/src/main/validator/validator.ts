@@ -94,8 +94,8 @@ export const tsValidateObjectValues = <V, T = { [k: string]: V }>(validator: Val
 		}
 	};
 
-export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true): Validator<I[]> =>
-	(path, input?: I[]) => {
+export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true): Validator<I[]> => {
+	return (path, input?: I[]) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
@@ -105,6 +105,27 @@ export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: Va
 			tsValidate(_input[i], validator, `${path}/${i}`);
 		}
 	};
+};
+
+export const tsValidateString = (length: number = -1, mandatory = true): Validator<string> => {
+	return (path, input?: string) => {
+		assertValidateMandatoryProperty(mandatory, path, input);
+		if (!input)
+			return;
+
+		// noinspection SuspiciousTypeOfGuard
+		if (typeof input !== 'string')
+			throw new ValidationException(`input is not a string`, path, input);
+
+		if (length === -1)
+			return;
+
+		if (input.length <= length)
+			return;
+
+		throw new ValidationException(`input is longer than ${length}`, path, input);
+	};
+};
 
 export const tsValidateMD5 = (mandatory = true): Validator<string> => {
 	return tsValidateRegexp(/[a-zA-Z\d]{32}/, mandatory);
