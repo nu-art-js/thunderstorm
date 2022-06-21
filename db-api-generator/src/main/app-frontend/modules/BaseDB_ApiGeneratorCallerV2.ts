@@ -119,7 +119,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			if (items.length)
 				this.lastSync.set(items[0].__updated);
 			return responseHandler?.(items);
-		}, 'sync-db', dispatch);
+		}, `sync-db--${this.config.key}`, dispatch);
 	};
 
 	/**
