@@ -21,7 +21,6 @@
 
 import {Dispatcher, FunctionKeys, ParamResolver, ReturnTypeResolver} from '@nu-art/ts-common';
 
-
 // type ValidKeyResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? K : never
 
 export class ThunderDispatcher<T,
@@ -32,11 +31,22 @@ export class ThunderDispatcher<T,
 
 	static readonly listenersResolver: () => any[];
 
-	constructor(method: K) {
+	private cache?: P;
+	private allowCache: boolean;
+
+	constructor(method: K, allowCache = false) {
 		super(method);
+		this.allowCache = allowCache;
+	}
+
+	getCachedData() {
+		return this.cache;
 	}
 
 	public dispatchUI(...p: P): R[] {
+		if (this.allowCache)
+			this.cache = p;
+
 		const listeners = ThunderDispatcher.listenersResolver();
 		return listeners.filter(this.filter).map((listener: T) => {
 			// @ts-ignore
@@ -45,6 +55,9 @@ export class ThunderDispatcher<T,
 	}
 
 	public async dispatchUIAsync(...p: P): Promise<R[]> {
+		if (this.allowCache)
+			this.cache = p;
+
 		const listeners = ThunderDispatcher.listenersResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			// @ts-ignore
