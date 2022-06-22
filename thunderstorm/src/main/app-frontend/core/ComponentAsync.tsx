@@ -26,6 +26,7 @@ import {BaseComponent} from './ComponentBase';
 
 
 export type BaseAsyncState = {
+	isLoading?: boolean,
 	error?: Error
 }
 
