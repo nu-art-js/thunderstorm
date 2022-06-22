@@ -52,7 +52,7 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 	}
 
 	protected createInitialState(nextProps: P) {
-		return {} as State;
+		return {isLoading: true} as State;
 	}
 }
 
