@@ -22,10 +22,16 @@ import * as React from 'react';
 import {Tooltip_Model, TooltipListener} from '../../component-modules/TooltipModule';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_TooltipOverlay.scss';
+import {_className} from '../../utils/tools';
 
 type State = {
 	model?: Tooltip_Model,
 };
+
+type posStyle = {
+	top?: number | string;
+	left?: number | string;
+}
 
 export class TS_TooltipOverlay
 	extends ComponentSync<{}, State>
@@ -33,7 +39,7 @@ export class TS_TooltipOverlay
 
 	private ref?: HTMLDivElement | null;
 	// private timeoutInterval?: number;
-	private timeout: NodeJS.Timeout|undefined = undefined;
+	private timeout: NodeJS.Timeout | undefined = undefined;
 
 	__showTooltip = (model?: Tooltip_Model) => {
 		//Clear timeout if one exists
@@ -41,10 +47,11 @@ export class TS_TooltipOverlay
 			clearTimeout(this.timeout);
 
 		//If exited tooltip but waiting for content hover
-		if(!model && this.state?.model?.allowContentHover) {
-			this.timeout = setTimeout(()=>{
+		if (!model && this.state?.model?.allowContentHover) {
+			this.ref = null;
+			this.timeout = setTimeout(() => {
 				this.setState(() => ({model}));
-			},this.state.model.duration)
+			}, this.state.model.duration);
 		} else {
 			this.setState(() => ({model}));
 			if (!model) {
@@ -68,19 +75,50 @@ export class TS_TooltipOverlay
 	}
 
 	private onContentMouseEnter = () => {
-		if(!this.state.model?.allowContentHover)
+		if (!this.state.model?.allowContentHover)
 			return;
 
 		//Clear the timeout to stop hiding the content
-		if(this.timeout)
-			clearTimeout(this.timeout)
-	}
+		if (this.timeout)
+			clearTimeout(this.timeout);
+	};
 
 	private onContentMouseLeave = () => {
-		this.timeout = setTimeout(()=>{
-			this.setState(() => ({model:undefined}));
-		},this.state.model?.duration)
-	}
+		this.ref = null;
+		this.timeout = setTimeout(() => {
+			this.setState(() => ({model: undefined}));
+		}, this.state.model?.duration);
+	};
+
+	private keepInViewStyle = () => {
+		if (!this.ref)
+			return;
+		const pos = this.ref?.getBoundingClientRect();
+		const viewPortWidth = window.innerWidth;
+		const contentWidth = pos.right - pos.left;
+		const viewPortHeight = window.innerHeight;
+		const contentHeight = pos.bottom - pos.top;
+
+		const style: posStyle = {};
+
+		//Check overflowing right
+		if (pos.right > (viewPortWidth - 20))
+			style.left = viewPortWidth - contentWidth - 20;
+
+		//Check overflowing left
+		if (pos.left < 20)
+			style.left = 20;
+
+		//Check overflowing top
+		if (pos.top < 20)
+			style.top = 20;
+
+		//Check overflowing bottom
+		if (pos.bottom > (viewPortHeight - 20))
+			style.top = viewPortHeight - contentHeight - 20;
+
+		return style;
+	};
 
 	render() {
 		const {model} = this.state;
@@ -91,11 +129,15 @@ export class TS_TooltipOverlay
 		const left = model.location && model.location.x || 0;
 
 		const height = (this.ref?.getBoundingClientRect().height || 0) / 2;
-		const positionStyle = {
+		let positionStyle: posStyle = {
 			top: `${top - height}px`,
 			left: `${left}px`
 		};
 
+		if (this.ref)
+			positionStyle = {...positionStyle, ...this.keepInViewStyle()};
+
+		const className = _className('ts-tooltip',model.alignment);
 		return <div
 			onMouseEnter={this.onContentMouseEnter}
 			onMouseLeave={this.onContentMouseLeave}
@@ -105,7 +147,7 @@ export class TS_TooltipOverlay
 				this.ref = ref;
 				this.forceUpdate();
 			}}
-			className={'ts-tooltip'}
+			className={className}
 			id={'tooltip'}
 			style={{...positionStyle}}>
 			{typeof model.content === 'string' ? <div dangerouslySetInnerHTML={{__html: model.content}}/> : model.content}

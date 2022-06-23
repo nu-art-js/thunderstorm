@@ -27,4 +27,8 @@
   font-size: 13px;
   padding: 1px 3px;
   position: fixed;
+
+  &.top {
+    transform: translateY(-50%);
+  }
 }
