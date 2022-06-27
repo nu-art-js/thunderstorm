@@ -101,7 +101,7 @@ export class TS_TooltipOverlay
 
 		const style: posStyle = {};
 
-		//Check overflowing right
+		// Check overflowing right
 		if (pos.right > (viewPortWidth - 20))
 			style.left = viewPortWidth - contentWidth - 20;
 

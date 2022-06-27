@@ -22,14 +22,13 @@
 import * as React from 'react';
 import {CSSProperties} from 'react';
 import {Filter} from '@nu-art/ts-common';
-import {stopPropagation} from '../../utils/tools';
+import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
 import {TS_Tree} from '../TS_Tree';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
-
 
 const defaultTitleHeight = '28px';
 const defaultListHeight = '150px';
@@ -160,8 +159,9 @@ export class TS_DropDown<ItemType>
 	};
 
 	render() {
+		const className = _className("ts-dropdown",this.props.disabled?'disabled':undefined)
 		return (
-			<div className="ts-dropdown"
+			<div className={className}
 				// ref={(node: HTMLDivElement) => {
 				//  if (this.node)
 				// 	 return;
