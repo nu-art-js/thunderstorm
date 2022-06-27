@@ -100,4 +100,8 @@
       max-height: 200px;
     }
   }
+
+  &.disabled {
+    cursor: not-allowed;
+  }
 }

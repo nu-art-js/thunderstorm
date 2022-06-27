@@ -20,6 +20,7 @@
  */
 
 import * as React from 'react';
+import { _className } from '../../utils/tools';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 import './TS_Input.scss';
 
@@ -34,7 +35,6 @@ export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, 
  * </code>
  *
  */
-
 export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
 	render() {
@@ -49,9 +49,8 @@ export class TS_Input<Key extends string = string>
 				this.setState({value});
 				props.onBlur?.(value, event);
 			}}
-			disabled={props.enable === false}
 			name={props.name || props.id}
-			className={'ts-input'}
+			className={_className('ts-input',props.disabled?'disabled':undefined)}
 			value={this.state.value}
 			onChange={this.changeValue}
 			onKeyPress={props.onKeyPress || this.onKeyPress}

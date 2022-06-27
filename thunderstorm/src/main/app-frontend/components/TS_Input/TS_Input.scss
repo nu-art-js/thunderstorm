@@ -36,4 +36,8 @@
   &:focus-visible {
     outline: 1px solid #3ca0c6;
   }
+
+  &.disabled {
+    cursor: not-allowed;
+  }
 }
