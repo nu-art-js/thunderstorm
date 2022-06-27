@@ -36,7 +36,7 @@ import {Message} from 'firebase-functions/lib/providers/pubsub';
 import {DocumentSnapshot} from 'firebase-admin/firestore';
 
 
-const functions = require('firebase-functions/v2');
+const functions = require('firebase-functions');
 
 export interface FirebaseFunctionInterface {
 	getFunction(): HttpsFunction;
