@@ -47,7 +47,7 @@ export class StorageModule_Class
 	getStorage = (persist: boolean) => persist ? localStorage : sessionStorage;
 
 	set(key: string, value: string | number | object, persist: boolean = true) {
-		if (!value)
+		if (value === undefined)
 			return this.delete(key);
 
 		this.cache[key] = value;
