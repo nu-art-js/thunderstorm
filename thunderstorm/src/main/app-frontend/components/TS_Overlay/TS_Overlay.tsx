@@ -43,11 +43,11 @@ export class TS_Overlay
 				className="ts-overlay"
 				onClick={this.props.onClickOverlay}
 				onContextMenu={this.props.onClickOverlay}
-				onMouseMove={stopPropagation}
-				onMouseOver={stopPropagation}
-				onMouseEnter={stopPropagation}
-				onMouseLeave={stopPropagation}
-				onMouseOut={stopPropagation}
+				onMouseMove={e => e.stopPropagation()}
+				onMouseOver={e => e.stopPropagation()}
+				onMouseEnter={e => e.stopPropagation()}
+				onMouseLeave={e => e.stopPropagation()}
+				onMouseOut={e => e.stopPropagation()}
 			>
 				{!this.props.flat && overlayChild}
 			</div>

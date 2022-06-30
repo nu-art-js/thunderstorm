@@ -137,6 +137,7 @@ export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<st
 		if (input === undefined)
 			return;
 
+		// console.log({path, input, regexp});
 		if (regexp.test(input))
 			return;
 

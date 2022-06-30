@@ -24,6 +24,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 import './TS_TooltipOverlay.scss';
 import {_className} from '../../utils/tools';
 
+
 type State = {
 	model?: Tooltip_Model,
 };
@@ -137,7 +138,7 @@ export class TS_TooltipOverlay
 		if (this.ref)
 			positionStyle = {...positionStyle, ...this.keepInViewStyle()};
 
-		const className = _className('ts-tooltip',model.alignment);
+		const className = _className('ts-tooltip', model.alignment);
 		return <div
 			onMouseEnter={this.onContentMouseEnter}
 			onMouseLeave={this.onContentMouseLeave}
