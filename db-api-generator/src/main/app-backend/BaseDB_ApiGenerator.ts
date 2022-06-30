@@ -260,14 +260,13 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];
-
-			if (instanceVersion !== currentVersion)
+			
+			if (instanceVersion !== undefined && instanceVersion !== currentVersion)
 				try {
 					await this.upgradeInstance(dbInstance, currentVersion);
 				} catch (e: any) {
-					throw new ApiException(422, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`, e.message);
+					throw new ApiException(500, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`, e.message);
 				}
-
 			dbInstance._v = currentVersion;
 		}));
 	}
