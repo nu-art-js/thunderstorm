@@ -57,6 +57,7 @@ export class TS_DialogOverlay
 				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked}>
 					{this.state.models.map((model,i)=>{
 						if(i===this.state.models.length-1)
+							//This model content is wrapped in a div to keep the React hierarchy. if you remove it, the model stack won't work.
 							return <div>{model.content}</div>;
 
 						return <div style={{visibility:'hidden', height:0}}>{model.content}</div>
@@ -69,7 +70,6 @@ export class TS_DialogOverlay
 
 	private onOverlayClicked = (e: React.MouseEvent) => {
 		stopPropagation(e);
-		console.log(this.state.models[0].closeOverlayOnClick())
 		//Exit if click should not close this current dialog
 		if (!this.state.models[0].closeOverlayOnClick())
 			return;
