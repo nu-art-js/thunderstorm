@@ -17,7 +17,6 @@
  */
 
 import {Logger} from '../core/logger/Logger';
-import {escape_RegExp} from '../utils/string-tools';
 import {KeyValue, TS_Object} from '../utils/types';
 import {ValidationException} from '../validator/validator';
 
@@ -76,12 +75,15 @@ export class Replacer
 	private replaceParams(content = '', runtime?: TS_Object) {
 		const matches = content.match(Replacer.Regexp_paramGroup);
 		return matches?.reduce((toRet, match) => {
-			const param = match.match(Replacer.Regexp_param)?.[1];
+			let param = match;
+			while (Replacer.Regexp_param.test(param))
+				param = param.match(Replacer.Regexp_param)?.[1]!;
+
 			if (param === undefined)
 				return toRet;
 
 			const value = this.resolveParam(param, toRet, runtime);
-			return toRet.replace(new RegExp(`\\$\\{${escape_RegExp(param)}\\}`, 'g'), value);
+			return toRet.replace(match, value);
 		}, content) || content;
 	}
 

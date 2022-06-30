@@ -71,8 +71,8 @@ export function filterDuplicates<T>(array: T[]): T[] {
 	return Array.from(new Set(array));
 }
 
-export function filterInstances<T>(array: (T | undefined | null | void)[]): T[] {
-	return array.filter(item => !!item) as T[];
+export function filterInstances<T>(array?: (T | undefined | null | void)[]): T[] {
+	return (array?.filter(item => !!item) || []) as T[];
 }
 
 export function arrayToMap<T>(array: T[], getKey: (item: T, index: number) => string | number, map?: { [k: string]: T }): { [k: string]: T } {
