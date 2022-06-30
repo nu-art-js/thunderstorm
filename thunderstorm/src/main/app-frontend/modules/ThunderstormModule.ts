@@ -31,6 +31,8 @@ type Config = {
 	themeColor: string
 }
 
+export type UrlTarget = '_blank' | '_self' | '_parent' | '_top' | string;
+
 export type FileDownloadProps = {
 	url?: string,
 	content?: Blob | string
@@ -122,14 +124,16 @@ class ThunderstormModule_Class
 		return this.config.appName;
 	}
 
-	openNewTab(url: string | { url: string, params?: QueryParams }, newTab = false) {
+	openUrl(url: string | { url: string, params?: QueryParams }, target?: UrlTarget) {
 		if (!window)
 			throw new BadImplementationException('no window in vm context');
 
-		if (typeof url === 'string')
-			url = {url};
+		let urlObj = url;
 
-		window.open(composeURL(url.url, url.params), newTab ? '' : '_blank');
+		if (typeof urlObj === 'string')
+			urlObj = {url: urlObj};
+
+		window.open(composeURL(urlObj.url, urlObj.params), target || '_self');
 	}
 
 	downloadFile(props: FileDownloadProps) {
