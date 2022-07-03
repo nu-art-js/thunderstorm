@@ -19,8 +19,10 @@
  * limitations under the License.
  */
 
-import {ObjectTS} from '@nu-art/ts-common';
+import {DB_Object, TS_Object} from '@nu-art/ts-common';
 
+
+export type DBIndex<T extends DB_Object> = { id: string, keys: keyof T | (keyof T)[], params?: { multiEntry: boolean, unique: boolean } };
 
 export enum HttpMethod {
 	ALL = 'all',
@@ -52,28 +54,28 @@ export type EmptyApi<R, M extends HttpMethod_Empty, P extends QueryParams = neve
 
 export type ApiDef<API extends TypedApi<any, any, any, any>> = {
 	method: API['M'],
+	fullUrl?: string
 	baseUrl?: string
-	pathPrefix?: string
 	path: string
 }
 
 export type ApiResolver<K> = K extends ApiDef<infer API> ? API : never
 
-export type ErrorBody<E extends ObjectTS | void = void> = {
+export type ErrorBody<E extends TS_Object | void = void> = {
 	type: string
 	body: E
 };
 
-export type  ErrorResponse<E extends ObjectTS | void = void> = {
+export type  ErrorResponse<E extends TS_Object | void = void> = {
 	debugMessage?: string
 	error?: ErrorBody<E>
 }
 
-export type ApiDefCaller<K> = K extends ObjectTS ? ApiRouter<K> | ApiCaller<K> :
+export type ApiDefCaller<K> = K extends TS_Object ? ApiRouter<K> | ApiCaller<K> :
 	ApiCaller<K>;
 
 export type ApiCaller<API> = API extends QueryApi<any, any, any> ? (query: API['P']) => void | Promise<API['R']> :
 	API extends BodyApi<any, any, any> ? (body: API['B']) => void | Promise<API['R']> :
 		API extends TypedApi<any, any, any, any> ? (body: API['B'], query: API['P']) => void | Promise<API['R']> : never;
 
-export type ApiRouter<T extends ObjectTS> = { [P in keyof T]: ApiDefCaller<T[P]> };
+export type ApiRouter<T extends TS_Object> = { [P in keyof T]: ApiDefCaller<T[P]> };

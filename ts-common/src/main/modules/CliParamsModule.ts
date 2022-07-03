@@ -1,16 +1,25 @@
-import {Module} from "../core/module";
-import {
-	TypedMap,
-	ObjectTS
-} from "../utils/types";
-import {
-	BadImplementationException,
-	ImplementationMissingException
-} from "../core/exceptions";
-import {
-	filterInstances,
-	flatArray
-} from "..";
+/*
+ * ts-common is the basic building blocks of our typescript projects
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {Module} from '../core/module';
+import {TS_Object, TypedMap} from '../utils/types';
+import {BadImplementationException, ImplementationMissingException} from '../core/exceptions';
+import {filterInstances, flatArray} from '..';
 
 
 export type CliParam<K, T extends string | string[] = string> = {
@@ -42,7 +51,7 @@ class CliParamsModule_Class
 
 	getParam<T extends string | string[]>(param: CliParam<string, T>, args: string[] = process.argv.slice(2, process.argv.length)) {
 		if (!this.config.params.find(_param => _param.keyName === param.keyName))
-			throw new BadImplementationException("Requested not existing param");
+			throw new BadImplementationException('Requested not existing param');
 
 		let value: T | undefined = this.extractParam(param, args) as T;
 		if (!value)
@@ -57,9 +66,9 @@ class CliParamsModule_Class
 	private extractParam<T extends string | string[]>(param: CliParam<string, T>, argv: string[]) {
 		if (param.isArray)
 			return param.keys.reduce((values: string[], key) => {
-				values.push(...filterInstances(argv.map(arg => arg.match(new RegExp(`${key}=(.*)`))?.[1])))
+				values.push(...filterInstances(argv.map(arg => arg.match(new RegExp(`${key}=(.*)`))?.[1])));
 				return values;
-			}, [])
+			}, []);
 
 		const find = param.keys.map(key => argv.map(arg => arg.match(new RegExp(`${key}=(.*)`))?.[1]));
 		return flatArray(find).find(k => k);
@@ -69,17 +78,17 @@ class CliParamsModule_Class
 		const missingParams = params.filter((param) => !this.paramsValue[param.keyName] && !param.optional);
 		const foundParams = params.filter((param) => this.paramsValue[param.keyName]);
 
-		this.printFoundArgs("Found Args", foundParams, this.paramsValue);
+		this.printFoundArgs('Found Args', foundParams, this.paramsValue);
 		if (missingParams.length === 0)
 			return;
 
-		this.printFoundArgs("Missing Args", missingParams, this.paramsValue);
-		throw new ImplementationMissingException("Missing cli params")
-	}
+		this.printFoundArgs('Missing Args', missingParams, this.paramsValue);
+		throw new ImplementationMissingException('Missing cli params');
+	};
 
-	private printFoundArgs(title: string, params: Param[], foundArgs: ObjectTS) {
+	private printFoundArgs(title: string, params: Param[], foundArgs: TS_Object) {
 		if (params.length)
-			return
+			return;
 
 		this.logInfoBold(`  ${title}:`);
 		params.forEach((param) => this.logInfo(`    ${param.keys[0]}=${foundArgs[param.keyName] || `<${param.name}>`}`));
@@ -87,7 +96,7 @@ class CliParamsModule_Class
 
 	getParams = () => {
 		return this.paramsValue;
-	}
+	};
 }
 
 export const CliParamsModule = new CliParamsModule_Class();

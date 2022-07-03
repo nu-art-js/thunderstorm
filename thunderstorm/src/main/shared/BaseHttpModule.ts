@@ -140,9 +140,9 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 	handleRequestSuccess: RequestSuccessHandler = (request: BaseHttpRequest<any>) => {
 		const feMessage = request.getSuccessMessage();
 
-		this.logInfo(`Http request for key '${request.key}' completed`);
+		this.logDebug(`Http request for key '${request.key}' completed`);
 		if (feMessage)
-			this.logInfo(` + FE message:  ${feMessage}`);
+			this.logDebug(` + FE message:  ${feMessage}`);
 
 		for (const successHandler of this.defaultSuccessHandlers) {
 			successHandler(request);

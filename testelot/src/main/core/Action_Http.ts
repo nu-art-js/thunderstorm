@@ -19,9 +19,10 @@
 /**
  * Created by TacB0sS on 3/18/17.
  */
-import {Exception, ImplementationMissingException, ObjectTS, regexpCase,} from '@nu-art/ts-common';
+import {Exception, ImplementationMissingException, regexpCase, TS_Object,} from '@nu-art/ts-common';
 import {Action} from './Action';
 import * as fetch from 'node-fetch';
+
 
 export enum HttpMethod {
 	ALL = 'all',
@@ -34,7 +35,7 @@ export enum HttpMethod {
 	HEAD = 'head',
 }
 
-export class Action_Http<T extends ObjectTS = any>
+export class Action_Http<T extends TS_Object = any>
 	extends Action {
 
 	private readonly headers: { [key: string]: string | ((action: Action<any>) => string) } = {};
@@ -48,7 +49,6 @@ export class Action_Http<T extends ObjectTS = any>
 	private responseStatus: number = 200;
 	private responseProcessor?: (response: any) => any;
 	static global_resolveResponseBody: (action: Action<any>, response: fetch.Response) => Promise<any>;
-
 
 	protected constructor(method: HttpMethod) {
 		super(Action_Http);
@@ -104,7 +104,6 @@ export class Action_Http<T extends ObjectTS = any>
 
 		return this.url + `${this.toUrlParams()}`;
 	}
-
 
 	private toUrlParams() {
 		if (!this.params)

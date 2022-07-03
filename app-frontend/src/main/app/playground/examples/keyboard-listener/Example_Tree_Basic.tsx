@@ -19,8 +19,7 @@
 import * as React from 'react';
 import {Adapter, BaseNodeRenderer, NodeRendererProps, SimpleTreeAdapter, TS_Tree,} from '@nu-art/thunderstorm/frontend';
 import {__stringify} from '@nu-art/ts-common';
-import {PlaygroundExample_ResultStyle} from '../consts';
-import {PG_Example} from '../_core/PG_Example';
+
 
 type State = { focused?: string, actionMessage: string };
 
@@ -56,14 +55,13 @@ class Example_Tree_Basic
 
 		return <>
 			<TS_Tree
-				id={name}
 				adapter={adapter}
 				onNodeFocused={(path: string) => this.setState({actionMessage: `on focused: ${path}`})}
 				onNodeClicked={(path: string) => this.setState({actionMessage: `on clicked: ${path}`})}
 				// onFocus={() => console.log("Focused")}
 				// onBlur={() => console.log("Blurred")}
 			/>
-			<div {...PlaygroundExample_ResultStyle}>{this.state.actionMessage}</div>
+			<div className="ts-playground__results">{this.state.actionMessage}</div>
 		</>;
 	}
 }
@@ -137,11 +135,4 @@ class Example_NodeRenderer
 	}
 }
 
-const name = 'Tree - Basic';
-
-export function Playground_Tree_Basic() {
-	return {
-		renderer: () => <PG_Example name={name}> <Example_Tree_Basic/> </PG_Example>,
-		name
-	};
-}
+export const Playground_Tree_Basic = {name: 'Tree - Basic', renderer: Example_Tree_Basic};

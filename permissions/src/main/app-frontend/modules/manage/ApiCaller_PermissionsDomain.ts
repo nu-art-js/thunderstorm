@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,9 +17,10 @@
  * limitations under the License.
  */
 
-import {DB_PermissionDomain} from '../../../index';
 import {ApiCallerEventType, BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {DB_PermissionDomain, DBDef_PermissionDomain} from '../../shared';
+
 
 export interface OnPermissionsDomainsLoaded {
 	__onPermissionsDomainsLoaded: (...params: ApiCallerEventType) => void;
@@ -30,7 +32,7 @@ export class PermissionsDomainModule_Class
 	extends BaseDB_ApiGeneratorCaller<DB_PermissionDomain> {
 
 	constructor() {
-		super({key: 'domain', relativeUrl: '/v1/permissions/manage/domain'});
+		super(DBDef_PermissionDomain);
 		this.setDefaultDispatcher(dispatch_onPermissionsDomainsLoaded);
 	}
 

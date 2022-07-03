@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,23 +17,22 @@
  * limitations under the License.
  */
 
-import {AccessLevelPermissionsDB, ApiPermissionsDB, DomainPermissionsDB, ProjectPermissionsDB} from '../modules/db-types/managment';
-import {GroupPermissionsDB, UserPermissionsDB} from '../modules/db-types/assign';
-import {PermissionsAssert} from '../modules/permissions-assert';
+import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
+import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../modules/assignment';
 import {PermissionsModule} from '../modules/PermissionsModule';
+import {PermissionsAssert} from '../modules/permissions-assert';
 
-export const Backend_ModulePack_Permissions = [
-	ProjectPermissionsDB,
-	DomainPermissionsDB,
-	AccessLevelPermissionsDB,
-	ApiPermissionsDB,
-	GroupPermissionsDB,
-	UserPermissionsDB,
+
+export const ModulePack_Backend_Permissions = [
+	ModuleBE_PermissionProject,
+	ModuleBE_PermissionDomain,
+	ModuleBE_PermissionAccessLevel,
+	ModuleBE_PermissionApi,
+	ModuleBE_PermissionGroup,
+	ModuleBE_PermissionUser,
 	PermissionsAssert,
 	PermissionsModule,
 ];
 
-export * from '../modules/db-types/managment';
-export * from '../modules/db-types/assign';
 export * from '../modules/permissions-assert';
 export * from '../modules/PermissionsModule';

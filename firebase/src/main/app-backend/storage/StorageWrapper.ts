@@ -23,6 +23,7 @@ import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getStorage} from 'firebase-admin/storage';
 
+
 export class StorageWrapper
 	extends FirebaseBaseWrapper {
 
@@ -32,6 +33,11 @@ export class StorageWrapper
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
 		this.storage = getStorage(firebaseSession.app);
+	}
+
+	async getMainBucket(): Promise<BucketWrapper> {
+		// @ts-ignore
+		return new BucketWrapper('admin', await this.storage.bucket(), this);
 	}
 
 	async getOrCreateBucket(bucketName?: string): Promise<BucketWrapper> {
@@ -48,7 +54,11 @@ export class StorageWrapper
 	}
 
 	async getFile(pathToRemoteFile: string, bucketName?: string) {
-		const bucket = await this.getOrCreateBucket(bucketName);
+		let bucket;
+		if (!bucketName)
+			bucket = await this.getMainBucket();
+		else
+			bucket = await this.getOrCreateBucket(bucketName);
 		return bucket.getFile(pathToRemoteFile);
 	}
 }
@@ -130,7 +140,6 @@ export class FileWrapper {
 		};
 		return this.getSignedUrl(options);
 	}
-
 
 	async exists(): Promise<boolean> {
 		return (await this.file.exists())[0];

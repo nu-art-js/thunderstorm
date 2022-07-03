@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {ErrorBoundary} from "@nu-art/thunderstorm/frontend";
-import {PlaygroundExample_BodyStyle, PlaygroundExample_ExampleStyle, PlaygroundExample_HeaderStyle} from "../consts";
+import * as React from 'react';
+import {LL_V_C, TS_ErrorBoundry} from '@nu-art/thunderstorm/frontend';
+
 
 export class PG_Example
 	extends React.Component<{ name: string }> {
@@ -29,13 +29,13 @@ export class PG_Example
 
 	render() {
 		return (
-			<div {...PlaygroundExample_BodyStyle} {...PlaygroundExample_ExampleStyle}>
-				<div {...PlaygroundExample_HeaderStyle}>{this.props.name}</div>
-				<ErrorBoundary>
+			<LL_V_C className="ts-playground__group-example">
+				<div className="ts-playground__header">{this.props.name}</div>
+				<TS_ErrorBoundry>
 					{this.props.children}
-				</ErrorBoundary>
-			</div>
-		)
+				</TS_ErrorBoundry>
+			</LL_V_C>
+		);
 	}
 }
 

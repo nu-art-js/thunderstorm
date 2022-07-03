@@ -20,13 +20,14 @@
  */
 
 import * as React from 'react';
-import {Fragment} from 'react';
+import {CSSProperties, Fragment} from 'react';
 import {TreeNode, TreeNodeExpandState,} from './types';
 import {Adapter} from '../adapter/Adapter';
 import {_BaseNodeRenderer} from '../adapter/BaseRenderer';
-import {UIComponent} from '../../core/UIComponent';
 import {_className} from '../../utils/tools';
 import './TS_Tree.scss';
+import {ComponentSync} from '../../core/ComponentSync';
+
 
 export type Props_Tree = {
 	id: string
@@ -36,6 +37,7 @@ export type Props_Tree = {
 	expanded?: TreeNodeExpandState
 	checkExpanded: (expanded: TreeNodeExpandState, path: string) => boolean | undefined
 	className?: string
+	treeContainerStyle?: CSSProperties
 	selectedItem?: any
 	selectedPath?: string
 	adapter: Adapter
@@ -51,7 +53,7 @@ const ignoreToggler = (): void => {
 };
 
 export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = State_Tree>
-	extends UIComponent<P, State_Tree> {
+	extends ComponentSync<P, State_Tree> {
 
 	static defaultProps: Partial<Props_Tree> = {
 		checkExpanded: (expanded: TreeNodeExpandState, path: string) => expanded[path]
@@ -98,7 +100,6 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		let expanded = !!this.props.checkExpanded(this.state.expanded, nodePath);
 		if (nodePath.endsWith('_children/'))
 			expanded = true;
-
 
 		let renderChildren = expanded;
 
@@ -165,6 +166,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 
 		const node: TreeNode = {
 			adapter: this.state.adapter,
+			propKey: key,
 			item,
 			expandToggler: isParent ? this.toggleExpandState : ignoreToggler,
 			expanded: !!expanded,
@@ -181,11 +183,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 	}
 
 	render() {
-		return <div className={_className('ts-tree', this.props.className)}>
+		return <div className={_className('ts-tree', this.props.className)} style={this.props.treeContainerStyle}>
 			{this.renderNode(this.state.adapter.data, '', '', (this.state.adapter.hideRoot ? -1 : 0))}
 		</div>;
 	}
-
 
 	getItemByPath(path: string) {
 		return TS_Tree.resolveItemFromPath(this.state.adapter.data, path);

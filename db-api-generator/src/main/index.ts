@@ -19,5 +19,4 @@
  * limitations under the License.
  */
 
-export * from './shared/types';
-export * from './shared/validators';
+export * from './shared';

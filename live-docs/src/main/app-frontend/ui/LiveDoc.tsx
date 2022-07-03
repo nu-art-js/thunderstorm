@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {ComponentSync} from "@nu-art/thunderstorm/frontend";
-import * as React from "react";
-import {LiveDocsModule} from "../modules/LiveDocsModule";
+import * as React from 'react';
+import {LiveDocsModule} from '../modules/LiveDocsModule';
+
 
 type State = {
 	edit?: boolean
@@ -31,9 +31,8 @@ type Props = {
 	duration?: number;
 }
 
-
 const showLiveDoc = (e: React.MouseEvent) => {
-	const docKey = ComponentSync.getElementId(e);
+	const docKey = (e.currentTarget as HTMLElement).id;
 	LiveDocsModule.showLiveDoc(docKey);
 };
 
@@ -41,7 +40,7 @@ export class LiveDoc
 	extends React.Component<Props, State> {
 
 	static defaultProps = {
-		component: "?"
+		component: '?'
 	};
 
 	constructor(props: Props) {
@@ -49,13 +48,12 @@ export class LiveDoc
 		this.state = {};
 	}
 
-
 	render() {
 		const Component = this.props.component;
 
 		return (
-			<div className={`clickable`} id={this.props.docKey} style={{display: "inline-block"}} onClick={showLiveDoc}>
-				{Component || "Click Here"}
+			<div className={`clickable`} id={this.props.docKey} style={{display: 'inline-block'}} onClick={showLiveDoc}>
+				{Component || 'Click Here'}
 			</div>
 		);
 	}

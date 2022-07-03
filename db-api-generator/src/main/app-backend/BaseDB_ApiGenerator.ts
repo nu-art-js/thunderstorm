@@ -35,15 +35,13 @@ import {
 	isErrorOfType,
 	merge,
 	Module,
-	ObjectTS,
-	PreDBObject,
+	PreDB,
 	ThisShouldNotHappenException,
 	tsValidate,
-	tsValidateTimestamp,
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {ServerApi_Delete, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert} from './apis';
+import {ServerApi_Delete, ServerApi_DeleteAll, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert, ServerApi_UpsertAll} from './apis';
 import {
 	ApiException,
 	ExpressRequest,
@@ -54,20 +52,17 @@ import {
 } from '@nu-art/thunderstorm/backend';
 import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
 import {BadInputErrorBody, ErrorKey_BadInput} from '../shared/types';
-import {dbIdLength, tsValidateUniqueId, tsValidateVersion} from '../shared/validators';
+import {dbIdLength} from '../shared/validators';
+import {Const_LockKeys, DBApiBEConfig, getModuleBEConfig} from './db-def';
+import {DBDef} from '../shared/db-def';
 
 
 export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
-
-export type DBApiConfig<Type extends ObjectTS> = {
+export type BaseDBApiConfig = {
 	projectId?: string,
-	lockKeys: (keyof Type)[]
-	collectionName: string
-	itemName: string
 	maxChunkSize: number
-	versions: string[]
-	externalFilterKeys: FilterKeys<Type>
 }
+export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfig<Type>
 
 export type ApisParams = {
 	pathPart?: string,
@@ -87,18 +82,15 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
-	static __validator = {
-		_id: tsValidateUniqueId,
-		_v: tsValidateVersion,
-		__created: tsValidateTimestamp(),
-		__updated: tsValidateTimestamp(),
-	};
 
-	protected constructor(collectionName: string, validator: ValidatorTypeResolver<DBType>, itemName: string, versions = ['1.0.0']) {
+	protected constructor(dbDef: DBDef<DBType, any>, appConfig?: BaseDBApiConfig) {
 		super();
+		const config = getModuleBEConfig(dbDef);
+
+		const preConfig = {...config, ...appConfig};
 		// @ts-ignore
-		this.setDefaultConfig({itemName, collectionName, externalFilterKeys: ['_id'], lockKeys: ['_id', '_v', '__created', '__updated'], versions});
-		this.validator = validator;
+		this.setDefaultConfig(preConfig);
+		this.validator = config.validator;
 	}
 
 	setValidator(validator: ValidatorTypeResolver<DBType>) {
@@ -110,7 +102,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			backupQuery: this.resolveBackupQuery(),
 			collection: this.collection,
 			keepInterval: 7 * Day,
-			interval: Day,
+			minTimeThreshold: Day,
 			moduleKey: this.config.collectionName
 		}];
 	}
@@ -122,7 +114,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 // this.setExternalUniqueKeys(["accessLevelIds"]);
 
 	/**
-	 * Sets the external unique keys. External keys are the attributes of a document that must be unique inside the
+	 * Sets the external unique keys. External keys are the attributes of a documen@returnt that must be unique inside the
 	 * collection. Default is `_id`.
 	 *
 	 * @remarks
@@ -156,7 +148,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		if (this.initiated)
 			throw new BadImplementationException('You can only update the \'lockKeys\' before the module was initialized.. preferably from its constructor');
 
-		return this.config.lockKeys = filterDuplicates([...keys, '_id']);
+		return this.config.lockKeys = filterDuplicates([...keys, ...Const_LockKeys]);
 	}
 
 	getCollectionName() {
@@ -173,7 +165,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	init() {
 		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
-		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys);
+		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys as FilterKeys<DBType>);
 	}
 
 	private async assertExternalQueryUnique(instance: DBType, transaction: FirestoreTransaction): Promise<DBType> {
@@ -213,7 +205,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 			const query = uniqueQueries[idx];
 			const message = _keys(query).reduce((carry, key) => {
-				return carry + '\n' + `${key}: ${query[key]}`;
+				return carry + '\n' + `${String(key)}: ${query[key]}`;
 			}, `${this.config.itemName} uniqueness violation. There is already a document with`);
 
 			this.logWarning(message);
@@ -265,21 +257,21 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	}
 
 	protected async upgradeInstances(dbInstances: DBType[]) {
-		dbInstances.map(async dbInstance => {
+		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];
-			if (instanceVersion !== currentVersion)
+			
+			if (instanceVersion !== undefined && instanceVersion !== currentVersion)
 				try {
 					await this.upgradeInstance(dbInstance, currentVersion);
 				} catch (e: any) {
-					throw new ApiException(422, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`, e.message);
+					throw new ApiException(500, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`, e.message);
 				}
-
 			dbInstance._v = currentVersion;
-		});
+		}));
 	}
 
-	protected upgradeInstance(dbInstance: DBType, toVersion: string) {
+	protected async upgradeInstance(dbInstance: DBType, toVersion: string): Promise<void> {
 	}
 
 	/**
@@ -392,7 +384,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the document that was upserted.
 	 */
-	async upsert(instance: PreDBObject<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+	async upsert(instance: PreDB<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
 		const processor = async (_transaction: FirestoreTransaction) => {
 			return (await this.upsert_Read(instance, _transaction, request))();
 		};
@@ -403,7 +395,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.collection.runInTransaction(processor);
 	}
 
-	async upsert_Read(instance: PreDBObject<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
+	async upsert_Read(instance: PreDB<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		const timestamp = currentTimeMillis();
 
 		if (this.config.externalFilterKeys[0] === '_id' && instance._id === undefined)
@@ -430,8 +422,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of an array of documents that were upserted.
 	 */
-	async upsertAll_Batched(instances: PreDBObject<DBType>[], request?: ExpressRequest): Promise<DBType[]> {
-		return batchAction(instances, 500, async (chunked: PreDBObject<DBType>[]) => this.upsertAll(chunked, undefined, request));
+	async upsertAll_Batched(instances: PreDB<DBType>[], request?: ExpressRequest): Promise<DBType[]> {
+		return batchAction(instances, 500, async (chunked: PreDB<DBType>[]) => this.upsertAll(chunked, undefined, request));
 	}
 
 	/**
@@ -446,7 +438,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the array of documents that were upserted.
 	 */
-	async upsertAll(instances: PreDBObject<DBType>[], transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]> {
+	async upsertAll(instances: PreDB<DBType>[], transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]> {
 		if (instances.length > 500) {
 			if (transaction)
 				throw new BadImplementationException('Firestore transaction supports maximum 500 at a time');
@@ -465,10 +457,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.collection.runInTransaction(processor);
 	}
 
-	protected async upsertAllImpl_Read(instances: PreDBObject<DBType>[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]> {
+	protected async upsertAllImpl_Read(instances: PreDB<DBType>[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]> {
 		const actions = [] as Promise<() => Promise<DBType>>[];
 
-		instances.reduce((carry, instance: PreDBObject<DBType>) => {
+		instances.reduce((carry, instance: PreDB<DBType>) => {
 			addItemToArray(carry, this.upsert_Read(instance, transaction, request));
 			return carry;
 		}, actions);
@@ -643,7 +635,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			// If the caller has specified props to be changed, make sure the don't conflict with the lockKeys.
 			const wrongKey = propsToPatch?.find(prop => this.config.lockKeys.includes(prop));
 			if (wrongKey)
-				throw new BadImplementationException(`Key ${wrongKey} is part of the 'lockKeys' and cannot be updated.`);
+				throw new BadImplementationException(`Key ${String(wrongKey)} is part of the 'lockKeys' and cannot be updated.`);
 
 			// If the caller has not specified props, we remove the keys from the caller's instance
 			// before merging with the original dbInstance.
@@ -664,8 +656,12 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	apiUpsert(pathPart?: string): ServerApi<any> | ServerApi<any> | undefined {
+	apiUpsert(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Upsert(this, pathPart);
+	}
+
+	apiUpsertAll(pathPart?: string): ServerApi<any> | undefined {
+		return new ServerApi_UpsertAll(this, pathPart);
 	}
 
 	apiQuery(pathPart?: string): ServerApi<any> | undefined {
@@ -680,6 +676,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return new ServerApi_Patch(this, pathPart);
 	}
 
+	apiDeleteAll(pathPart?: string): ServerApi<any> | undefined {
+		return new ServerApi_DeleteAll(this, pathPart);
+	}
+
 	apiDelete(pathPart?: string): ServerApi<any> | undefined {
 		return new ServerApi_Delete(this, pathPart);
 	}
@@ -687,9 +687,11 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	_apis(options?: ApisParams): (ServerApi<any> | undefined)[] {
 		return [
 			this.apiUpsert(options?.pathPart),
+			this.apiUpsertAll(options?.pathPart),
 			this.apiQuery(options?.pathPart),
 			this.apiQueryUnique(options?.pathPart),
 			this.apiPatch(options?.pathPart),
+			this.apiDeleteAll(options?.pathPart),
 			this.apiDelete(options?.pathPart),
 		];
 	}
@@ -709,5 +711,9 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			options?.printRequest !== true && api.dontPrintRequest();
 			return api;
 		});
+	}
+
+	deleteAll(request: ExpressRequest) {
+		return this.delete({where: {}});
 	}
 }

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
+import {ModuleBE_Assets} from '../../modules/ModuleBE_Assets';
 
-import {AssetsModuleBE} from "../../modules/AssetsModuleBE";
 
-module.exports = AssetsModuleBE.apis();
+module.exports = ModuleBE_Assets.apis();

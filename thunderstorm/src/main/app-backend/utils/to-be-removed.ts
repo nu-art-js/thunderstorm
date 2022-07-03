@@ -19,17 +19,18 @@
  * limitations under the License.
  */
 
-import {ObjectTS} from '@nu-art/ts-common';
+import {TS_Object} from '@nu-art/ts-common';
 import {ApiException} from '../exceptions';
 
-export const assertProperty = <T extends ObjectTS, K extends keyof T = keyof T>(instance: T, key: K | K[], statusCode: number = 400, check?: string | ((propValue: T[K]) => void)): void => {
+
+export const assertProperty = <T extends TS_Object, K extends keyof T = keyof T>(instance: T, key: K | K[], statusCode: number = 400, check?: string | ((propValue: T[K]) => void)): void => {
 	if (Array.isArray(key))
 		return key.forEach(k => assertProperty(instance, k, statusCode, check));
 
 	const _key: K = key;
 	const value = instance[_key];
 	if (!value)
-		throw new ApiException(statusCode, `Missing <strong>${key}</strong>`);
+		throw new ApiException(statusCode, `Missing <strong>${String(key)}</strong>`);
 
 	if (!check)
 		return;

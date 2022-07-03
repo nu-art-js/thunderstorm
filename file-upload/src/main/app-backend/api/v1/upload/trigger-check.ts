@@ -17,13 +17,9 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi_Get
-} from "@nu-art/thunderstorm/backend";
-import {AssetsModuleBE} from "../../../modules/AssetsModuleBE";
-import {Api_ProcessAssetManually} from "../../../../shared/types";
+import {ApiResponse, ExpressRequest, ServerApi_Get} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_Assets} from '../../../modules/ModuleBE_Assets';
+import {Api_ProcessAssetManually} from '../../../../shared/types';
 
 
 class ServerApi_ProcessAssetManually
@@ -33,9 +29,9 @@ class ServerApi_ProcessAssetManually
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: { feId: string }) {
-		console.log("query", JSON.stringify(request.query));
-		console.log("body", JSON.stringify(request.body));
-		await AssetsModuleBE.processAssetManually(queryParams.feId);
+		console.log('query', JSON.stringify(request.query));
+		console.log('body', JSON.stringify(request.body));
+		await ModuleBE_Assets.processAssetManually(queryParams.feId);
 	}
 }
 

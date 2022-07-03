@@ -17,19 +17,15 @@
  * limitations under the License.
  */
 
-import * as React from "react";
-import {
-	Example_NewProps,
-	FieldEditorClick,
-	FieldEditorClickProps
-} from "@nu-art/thunderstorm/frontend";
+import * as React from 'react';
+import {Example_NewProps, FieldEditorClick, FieldEditorClickProps} from '@nu-art/thunderstorm/frontend';
 
 type TestType = {
 	prop1?: string,
 	prop2?: string,
 }
 
-export class Example_FieldEditorClick
+class Example_FieldEditorClick_Renderer
 	extends React.Component<{}, { instance: TestType }> {
 
 	constructor(props: {}) {
@@ -78,3 +74,5 @@ export class Example_FieldEditorClick
 		};
 	}
 }
+
+export const Example_FieldEditorClick = {renderer: Example_FieldEditorClick_Renderer, name: 'FieldEditorClick Example'}

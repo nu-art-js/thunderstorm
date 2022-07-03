@@ -1,7 +1,7 @@
 import {ToastModule} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 
-export class Example_Analytics
+export class Example_Analytics_Render
 	extends React.Component {
 
 	render() {
@@ -9,9 +9,9 @@ export class Example_Analytics
 			Click to add event
 		</div>;
 	}
-
 	addEvent = () => {
 		ToastModule.toastInfo('No Analytics set up yet');
 	};
-
 }
+
+export const Example_Analytics = {renderer: Example_Analytics_Render, name: 'Analytics'};

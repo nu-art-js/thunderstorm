@@ -16,31 +16,38 @@
  * limitations under the License.
  */
 
-import {_keys} from "./object-tools";
-import {ObjectTS} from "./types";
+import {_keys} from './object-tools';
+import {TS_Object} from './types';
+
 
 export function regexpCase(value: string, reg: string) {
 	return value.match(new RegExp(reg)) || {input: undefined};
 }
 
 export function createFilterPattern(rawFilter?: string) {
-	let filter = rawFilter || "";
+	let filter = rawFilter || '';
 	filter = filter.trim();
-	filter = filter.replace(/\s+/, " ");
-	filter = filter.replace(new RegExp("(.)", "g"), ".*?$1");
-	filter.length === 0 ? filter = ".*?" : filter += ".*";
+	filter = filter.replace(/\s+/, ' ');
+	filter = filter.replace(new RegExp('(.)', 'g'), '.*?$1');
+	filter.length === 0 ? filter = '.*?' : filter += '.*';
 	return filter;
 }
 
-export function calculateJsonSizeMb(data: ObjectTS) {
+export function calculateJsonSizeMb(data: TS_Object) {
 	const number = JSON.stringify(data).length / 1024 / 1024;
 	return Math.round(number * 100) / 100;
 }
 
-export function __stringify<T>(obj: T, pretty?: boolean | (keyof T)[]): string {
+export function __stringify<T extends object | string>(obj?: T, pretty?: boolean | (keyof T)[]): string {
+	if (!obj)
+		return '';
+
+	if (typeof obj === 'string')
+		return obj;
+
 	if (Array.isArray(pretty))
-		return `${_keys(obj).reduce((carry: string, key: keyof T, idx: number) => {
-			return carry + `  ${key}: ${__stringify(obj[key], pretty.includes(key))}${idx !== _keys(obj).length - 1 && ',\n'}`;
+		return `${_keys(obj as object).reduce((carry: string, key: keyof T, idx: number) => {
+			return carry + `  ${String(key)}: ${__stringify(obj[key] as unknown as object, pretty.includes(key))}${idx !== _keys(obj).length - 1 && ',\n'}`;
 		}, `{\n`)}\n}`;
 
 	if (pretty)
@@ -48,3 +55,6 @@ export function __stringify<T>(obj: T, pretty?: boolean | (keyof T)[]): string {
 
 	return JSON.stringify(obj);
 }
+
+export const EmptyObject = Object.freeze({});
+export const EmptyArray = Object.freeze([]);

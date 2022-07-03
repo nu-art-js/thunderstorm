@@ -20,7 +20,7 @@
  */
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
-import {BrowserHistoryModule} from '../../modules/HistoryModule';
+import {BrowserHistoryModule, getQueryParameter} from '../../modules/HistoryModule';
 import {_className, stopPropagation} from '../../utils/tools';
 import './TS_Tabs.scss';
 
@@ -37,6 +37,11 @@ export type Props_Tabs = {
 	tabsHeaderStyle?: React.CSSProperties
 	selectedTabStyle?: React.CSSProperties
 	contentStyle?: React.CSSProperties
+	/**
+	 * Called only after clicking on a tab. Not called when a default first tab is selected during render.
+	 * @param selected id of the selected tab.
+	 */
+	onSelected?: (selectedTabId: string) => void
 }
 
 type TabToRender = { [K in keyof _Tab]: React.ReactNode } & { uid: string };
@@ -48,6 +53,23 @@ type State = {
 const DefaultHeaderStyle = {width: 120, height: 20};
 const ParamKey_SelectedTab = 'selected-tab';
 
+/**
+ * Tabs made easy
+ *
+ *
+ * <b>SCSS:</b>
+ * ```scss
+ * .ts-tabs {
+ *   .ts-tabs__tabs-header {
+ *     .ts-tabs__tab {}
+ *     .ts-tabs__focused {}
+ *     .unselectable {}
+ *   }
+ *
+ *   .ts-tabs__content {}
+ * }
+ * ```
+ */
 export class TS_Tabs
 	extends ComponentSync<Props_Tabs, State> {
 
@@ -61,14 +83,13 @@ export class TS_Tabs
 	}
 
 	protected deriveStateFromProps(nextProps: Props_Tabs): State {
-		const selectedTab = ComponentSync.getQueryParameter(ParamKey_SelectedTab);
+		const selectedTab = getQueryParameter(ParamKey_SelectedTab);
 
 		return {
 			tabs: nextProps.tabs,
 			focused: (selectedTab && nextProps.tabs.find(t => t.uid === selectedTab)?.uid) || this.state?.focused || nextProps.tabs[0]?.uid
 		};
 	}
-
 
 	selectOnClick = (e: React.MouseEvent) => {
 		stopPropagation(e);
@@ -78,6 +99,7 @@ export class TS_Tabs
 
 		BrowserHistoryModule.addQueryParam(ParamKey_SelectedTab, id);
 		this.setState({focused: id});
+		this.props.onSelected?.(id);
 	};
 
 	render() {
@@ -103,14 +125,14 @@ export class TS_Tabs
 
 		return (
 			<div className="ts-tabs" style={this.props.containerStyle}>
-				<div className='ts-tabs__tabs-header' style={this.props.tabsHeaderStyle}>
+				<div className="ts-tabs__tabs-header" style={this.props.tabsHeaderStyle}>
 					{tabs.map(tab => {
 						const style = {...this.props.tabStyle, ...this.state.focused === tab.uid ? this.props.selectedTabStyle : undefined};
-						const tabClasses = _className('ts-tabs__tab', this.state.focused === tab.uid ? 'ts-tabs__focused' : undefined);
+						const tabClasses = _className('ts-tabs__tab', 'unselectable', this.state.focused === tab.uid ? 'ts-tabs__focused' : undefined);
 						return <div key={tab.uid} id={tab.uid} className={tabClasses} style={style} onClick={this.selectOnClick}>{getTitle(tab)}</div>;
 					})}
 				</div>
-				<div className='ts-tabs__content' style={this.props.contentStyle}>
+				<div className="ts-tabs__content" style={this.props.contentStyle}>
 					{getContent(tabs.find(tab => tab.uid === this.state.focused))}
 				</div>
 			</div>

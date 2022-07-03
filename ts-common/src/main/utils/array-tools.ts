@@ -71,8 +71,8 @@ export function filterDuplicates<T>(array: T[]): T[] {
 	return Array.from(new Set(array));
 }
 
-export function filterInstances<T>(array: (T | undefined | null | void)[]): T[] {
-	return array.filter(item => !!item) as T[];
+export function filterInstances<T>(array?: (T | undefined | null | void)[]): T[] {
+	return (array?.filter(item => !!item) || []) as T[];
 }
 
 export function arrayToMap<T>(array: T[], getKey: (item: T, index: number) => string | number, map?: { [k: string]: T }): { [k: string]: T } {
@@ -82,26 +82,11 @@ export function arrayToMap<T>(array: T[], getKey: (item: T, index: number) => st
 	}, map || {});
 }
 
-// updateProperty<T extends ObjectTS>(map: { [k: string]: T }, getKey: (element: T) => string, elements: T[]) {
-// }
-
-
-export function _sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
+export function sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
 	const compareFn = (a: T, b: T) => {
 		const _a = map(a);
 		const _b = map(b);
 		return (_a < _b ? -1 : (_a === _b ? 0 : 1)) * (invert ? -1 : 1);
-	};
-
-	return array.sort(compareFn);
-}
-
-export function sortArray<T>(array: T[], map: (item: T) => any = i => i, invert = false) {
-	console.log('sortArray is deprecated and inverted... please use _sortArray');
-	const compareFn = (a: T, b: T) => {
-		const _a = map(a);
-		const _b = map(b);
-		return (_a > _b ? -1 : (_a === _b ? 0 : 1)) * (invert ? -1 : 1);
 	};
 
 	return array.sort(compareFn);
@@ -137,6 +122,11 @@ export async function batchActionParallel<T extends any = any, R extends any = a
 	return toRet;
 }
 
+/**
+ * Returns a flat array from an array of arrays.
+ * @param arr An array that is potentially a matrix
+ * @param result A flat array of single values
+ */
 export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
 	for (let i = 0, length = arr.length; i < length; i++) {
 		const value = arr[i];

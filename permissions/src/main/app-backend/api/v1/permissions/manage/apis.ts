@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,21 +17,16 @@
  * limitations under the License.
  */
 
-import {
-	ApiPermissionsDB,
-	DomainPermissionsDB,
-	AccessLevelPermissionsDB,
-	ProjectPermissionsDB
-} from "../_imports";
-import {addAllItemToArray} from "@nu-art/ts-common";
-import {ServerApi} from "@nu-art/thunderstorm/backend";
+import {addAllItemToArray} from '@nu-art/ts-common';
+import {ServerApi} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../../../../modules/management';
 
 
 const managementApis: ServerApi<any>[] = [];
 
-addAllItemToArray(managementApis, ProjectPermissionsDB.apis());
-addAllItemToArray(managementApis, DomainPermissionsDB.apis());
-addAllItemToArray(managementApis, AccessLevelPermissionsDB.apis());
-addAllItemToArray(managementApis, ApiPermissionsDB.apis());
+addAllItemToArray(managementApis, ModuleBE_PermissionProject.apis());
+addAllItemToArray(managementApis, ModuleBE_PermissionDomain.apis());
+addAllItemToArray(managementApis, ModuleBE_PermissionAccessLevel.apis());
+addAllItemToArray(managementApis, ModuleBE_PermissionApi.apis());
 
 module.exports = managementApis;

@@ -18,15 +18,16 @@
 
 import * as React from 'react';
 import {Component_Form, ComponentSync, FormProps, ToastModule} from '@nu-art/thunderstorm/frontend';
-import {deepClone, ObjectTS, tsValidateObject} from '@nu-art/ts-common';
+import {deepClone, TS_Object, tsValidateObject} from '@nu-art/ts-common';
 
-type State<T extends ObjectTS> = {
+
+type State<T extends TS_Object> = {
 	value: Partial<T>,
 	showErrors: boolean
 };
-export type ConfirmationForm<T extends ObjectTS> = FormProps<T> & { onCancel: () => void }
+export type ConfirmationForm<T extends TS_Object> = FormProps<T> & { onCancel: () => void }
 
-class ConfirmationFormWrapper<T extends ObjectTS>
+class ConfirmationFormWrapper<T extends TS_Object>
 	extends ComponentSync<ConfirmationForm<T>, State<T>> {
 
 	protected deriveStateFromProps(nextProps: ConfirmationForm<T>): State<T> {
@@ -58,6 +59,6 @@ class ConfirmationFormWrapper<T extends ObjectTS>
 	};
 }
 
-export function renderForm<T extends ObjectTS>(props: ConfirmationForm<T>) {
+export function renderForm<T extends TS_Object>(props: ConfirmationForm<T>) {
 	return <ConfirmationFormWrapper {...props}/>;
 }

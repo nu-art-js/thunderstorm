@@ -20,8 +20,9 @@
  */
 
 import * as React from 'react';
+import {CSSProperties} from 'react';
 import {Filter} from '@nu-art/ts-common';
-import {stopPropagation} from '../../utils/tools';
+import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
 import {TS_Tree} from '../TS_Tree';
@@ -94,10 +95,10 @@ type State<ItemType> = {
 	selected?: ItemType
 	hover?: ItemType
 	filterText?: string
+	dropDownRef: React.RefObject<HTMLDivElement>;
 }
 
 type StaticProps = {
-	inputStylable: InputProps
 	caret: {
 		open: React.ReactNode,
 		close: React.ReactNode,
@@ -114,6 +115,8 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	selected?: ItemType
 
 	filter?: Filter<ItemType>
+	tabIndex?: number;
+	innerRef?: React.RefObject<any>
 
 	inputEventHandler?: (state: State<ItemType>, e: React.KeyboardEvent) => State<ItemType>
 	selectedItemRenderer?: (props?: ItemType) => React.ReactNode
@@ -129,11 +132,13 @@ export class TS_DropDown<ItemType>
 	}
 
 	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
+		const ref = this.props.innerRef || this.state?.dropDownRef || React.createRef<HTMLDivElement>();
 		return {
 			adapter: nextProps.adapter.clone(new Adapter<ItemType>([])),
 			selected: nextProps.selected,
 			open: this.state?.open || false,
-			filterText: nextProps.inputValue
+			filterText: nextProps.inputValue,
+			dropDownRef: ref
 		};
 	}
 
@@ -147,26 +152,26 @@ export class TS_DropDown<ItemType>
 	};
 
 	onSelected = (item: ItemType) => {
-		console.log(item);
 		this.setState({
 			open: false,
 			selected: item
 		}, () => this.props.onSelected(item));
 	};
 
-
 	render() {
+		const className = _className("ts-dropdown",this.props.disabled?'disabled':undefined)
 		return (
-			<div className="ts-dropdown"
-					 ref={(node: HTMLDivElement) => {
-						 if (this.node)
-							 return;
-
-						 this.node = node;
-						 this.forceUpdate();
-
-					 }}
-					 tabIndex={1}
+			<div className={className}
+				// ref={(node: HTMLDivElement) => {
+				//  if (this.node)
+				// 	 return;
+				//
+				//  this.node = node;
+				//  this.forceUpdate();
+				//
+				// }}
+					 ref={this.state.dropDownRef}
+					 tabIndex={this.props.tabIndex}
 					 onFocus={this.addKeyboardListener}
 					 onBlur={this.removeKeyboardListener}
 			>
@@ -196,20 +201,43 @@ export class TS_DropDown<ItemType>
 		if (this.props.showNothingWithoutFilterText && !this.state.filterText?.length)
 			return '';
 
-
+		let className = 'ts-dropdown__items';
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const filter = this.props.filter;
 		if (filter) {
-			this.state.adapter.data = filter.filter(this.props.adapter.data, this.state.filterText || '');
+			try {
+				this.state.adapter.data = filter.filter(this.props.adapter.data, this.state.filterText || '');
+			} catch (e) {
+				this.state.adapter.data = this.props.adapter.data;
+			}
 		}
 
 		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0)
-			return <div className="ts-dropdown__empty" style={{textAlign: 'center', opacity: 0.5}}>No options</div>;
+			return <div className="ts-dropdown__empty" style={{textAlign: 'center'}}>No options</div>;
+
+		const style: CSSProperties = {};
+		if (this.state?.dropDownRef.current) {
+			const bottom = this.state.dropDownRef.current?.getBoundingClientRect().bottom;
+			const height = this.state.dropDownRef.current?.getBoundingClientRect().height;
+			const bottomDelta = window.innerHeight - bottom - 20;
+
+			style.overflowY = 'auto';
+			style.maxHeight = bottomDelta;
+
+			if(bottomDelta < 100) {
+				style.maxHeight = undefined;
+				style.transform = `translateY(calc(-100% - ${height}px))`;
+				className += ' inverted'
+			}
+		}
+
 
 		return <TS_Tree
 			adapter={this.state.adapter}
 			selectedItem={this.state.selected}
 			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
+			className={className}
+			treeContainerStyle={style}
 			// keyEventHandler={treeKeyEventHandler}
 		/>;
 	};
@@ -237,7 +265,6 @@ export class TS_DropDown<ItemType>
 		// }
 	};
 
-
 	private renderSelectedItem = (selected?: ItemType) => {
 		if (this.props.selectedItemRenderer)
 			return this.props.selectedItemRenderer(selected);
@@ -262,7 +289,6 @@ export class TS_DropDown<ItemType>
 		return <div className={'ts-dropdown__placeholder'}><Renderer item={selected} node={node}/></div>;
 	};
 
-
 	private renderSelectedOrFilterInput = () => {
 		if (!this.state.open || !this.props.filter) {
 			return this.renderSelectedItem(this.state.selected);
@@ -270,17 +296,14 @@ export class TS_DropDown<ItemType>
 
 		return <TS_Input
 			type="text"
-			autocomplete={false}
 			value={this.props.inputValue}
 			onChange={(filterText) => this.setState({filterText})}
 			focus={true}
 			style={{width: '100%'}}
 			placeholder={'Search'}//{this.props.placeholder}
-			handleKeyEvent={this.keyEventHandler}
-			{...this.props.inputStylable}
+			onKeyPress={this.keyEventHandler}
 		/>;
 	};
-
 
 	// TODO: THIS IS ALL DUPLICATE SHIT... DELETE ONCE TREE CAN PROPAGATE THE KEYBOARD EVENTS
 	private node?: HTMLDivElement;

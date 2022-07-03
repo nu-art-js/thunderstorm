@@ -22,15 +22,14 @@
 import * as React from 'react';
 import {BrowserHistoryModule} from '../../modules/HistoryModule';
 import {Example_NewProps} from './Example_NewProps';
-import {TS_DropDown} from '../TS_Dropdown/TS_DropDown';
+import {TS_DropDown} from '../TS_Dropdown';
 import {SimpleListAdapter} from '../adapter/Adapter';
 import {Filter} from '@nu-art/ts-common';
 import './TS_Playground.scss';
+import {LL_V_L} from '../Layouts';
 
-const TS_Playground = 'playground';
 
 export type PlaygroundProps = {
-	selectStyle: any
 	iconClose?: React.ReactNode
 	iconOpen?: React.ReactNode
 	screens: PlaygroundScreen[]
@@ -45,21 +44,21 @@ export type PlaygroundScreen<T extends any = any> = {
 	renderer: React.ComponentType<T>
 	data?: T[]
 }
+const QueryKey_SelectedPlayground = 'playground';
 
-export class Playground
+export class TS_Playground
 	extends React.Component<PlaygroundProps, State> {
 
 	constructor(props: PlaygroundProps) {
 		super(props);
-		const queryParam = BrowserHistoryModule.getQueryParams()[TS_Playground];
+		const queryParam = BrowserHistoryModule.getQueryParams()[QueryKey_SelectedPlayground];
 		const screen = this.props.screens.find(s => s.name === queryParam);
 		this.state = {selectedScreen: screen};
 	}
 
 	render() {
-
-		return <div className={'ll_v_l match_height match_width'}>
-			<div style={{width: 250, display: 'inline-block'}}>
+		return <LL_V_L className="ts-playground">
+			<div className="ts-playground__selector">
 				<TS_DropDown<PlaygroundScreen>
 					caret={{
 						close: this.props.iconClose,
@@ -68,15 +67,15 @@ export class Playground
 					filter={new Filter(option => ([option.name]))}
 					onSelected={(screen: PlaygroundScreen) => {
 						this.setState({selectedScreen: screen});
-						BrowserHistoryModule.addQueryParam(TS_Playground, screen.name);
+						BrowserHistoryModule.addQueryParam(QueryKey_SelectedPlayground, screen.name);
 					}}
 					selected={this.state.selectedScreen}
 					adapter={SimpleListAdapter(this.props.screens, (props) => {
 						return <div className="ts-playground__item">{props.item.name}</div>;
 					})}/>
 			</div>
-			<div className={'ts-playground'}>{this.renderPlayground()}</div>
-		</div>;
+			<div className="ts-playground__container">{this.renderPlayground()}</div>
+		</LL_V_L>;
 	}
 
 	private renderPlayground() {

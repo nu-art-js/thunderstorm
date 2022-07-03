@@ -4,7 +4,7 @@
  * Typescript & Express backend infrastructure that natively runs on firebase function
  * Typescript & React frontend infrastructure
  *
- * Copyright (C) 2020 Alan Ben
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
 import {ApiDef, ErrorResponse, TypedApi} from '../../../shared/types';
@@ -25,6 +26,7 @@ import {BadImplementationException, StringMap,} from '@nu-art/ts-common';
 import {BaseHttpRequest, ErrorType} from '../../../shared/BaseHttpRequest';
 import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
 import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
+
 
 
 export class AxiosHttpModule_Class
@@ -40,6 +42,7 @@ export class AxiosHttpModule_Class
 
 	createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<API>, data?: string): AxiosHttpRequest<API> {
 		return new AxiosHttpRequest<API>(apiDef.path, data, this.shouldCompress())
+			.setLogger(this)
 			.setOrigin(this.origin)
 			.setMethod(apiDef.method)
 			.setTimeout(this.timeout)
@@ -134,6 +137,7 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 			// TODO set progress listener
 			// this.xhr.upload.onprogress = this.onProgressListener;
 			const body = this.body;
+
 			if (body)
 				this.addHeader('Content-Length', `${body.length}`);
 			// TODO add zipping of body
@@ -167,6 +171,8 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 
 			if (this.responseType)
 				options.responseType = this.responseType as Axios_ResponseType;
+
+			this.logger?.logDebug(options);
 
 			try {
 				this.response = await axios.request(options);

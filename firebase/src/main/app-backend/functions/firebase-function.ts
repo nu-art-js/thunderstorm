@@ -27,13 +27,14 @@ import {
 	dispatch_onServerError,
 	ImplementationMissingException,
 	Module,
-	ObjectTS,
 	ServerErrorSeverity,
-	StringMap
+	StringMap,
+	TS_Object
 } from '@nu-art/ts-common';
 import {ObjectMetadata} from 'firebase-functions/lib/providers/storage';
 import {Message} from 'firebase-functions/lib/providers/pubsub';
 import {DocumentSnapshot} from 'firebase-admin/firestore';
+
 
 const functions = require('firebase-functions');
 
@@ -76,7 +77,7 @@ export abstract class FirebaseFunction<Config = any>
 			try {
 				await toExecute();
 			} catch (e: any) {
-				console.error('Error running function: ', e);
+				await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, e.message);
 			}
 		}
 
@@ -119,6 +120,7 @@ export class Firebase_ExpressFunction
 		return this.function = functions.runWith(Firebase_ExpressFunction.config).https.onRequest((req: Request, res: Response) => {
 			if (this.isReady)
 				return realFunction(req, res);
+
 			return new Promise((resolve) => {
 				addItemToArray(this.toBeExecuted, () => realFunction(req, res));
 				this.toBeResolved = resolve;
@@ -178,7 +180,7 @@ export type FirestoreConfigs = {
 }
 
 //TODO: I would like to add a type for the params..
-export abstract class FirestoreFunctionModule<DataType extends ObjectTS, ConfigType extends FirestoreConfigs = FirestoreConfigs>
+export abstract class FirestoreFunctionModule<DataType extends TS_Object, ConfigType extends FirestoreConfigs = FirestoreConfigs>
 	extends FirebaseFunction<ConfigType> {
 
 	private readonly collectionName: string;
@@ -309,7 +311,7 @@ export type FirebaseEventContext = EventContext;
 
 export type TopicMessage = { data: string, attributes: StringMap };
 
-export abstract class Firebase_PubSubFunction<T>
+export abstract class Firebase_PubSubFunction<T extends TS_Object>
 	extends FirebaseFunction {
 
 	private function!: CloudFunction<ObjectMetadata>;

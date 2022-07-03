@@ -26,11 +26,11 @@ import {
 	BaseDB_ApiGeneratorCallerV2,
 	EventType_Create,
 	EventType_Delete,
-	EventType_MultiUpdate,
 	EventType_Query,
-	EventType_Unique
+	EventType_Unique,
+	EventType_UpsertAll
 } from '../../frontend';
-import {AppPage, IndexKeys, RoutingModule, stopPropagation} from '@nu-art/thunderstorm/frontend';
+import {AppPage, getQueryParameter, IndexKeys, RoutingModule, stopPropagation} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
 import {Props_DBItemEditorComponentV2} from './DBItemEditorComponent';
@@ -83,7 +83,7 @@ export abstract class DBItemEditorPage<ItemType extends DB_Object,
 	}
 
 	protected async resolveState(nextProps: P) {
-		const keys = this.resolveKeys(nextProps, (key: Ks) => DBItemEditorPage.getQueryParameter(key as string));
+		const keys = this.resolveKeys(nextProps, (key: Ks) => getQueryParameter(key as string));
 		let item: DB_Object | undefined;
 		try {
 			item = await this.props.moduleFE.uniqueQueryCache(keys);
@@ -139,7 +139,7 @@ export abstract class DBItemEditorPage<ItemType extends DB_Object,
 	}
 
 	private __onItemUpdated = (...params: ApiCallerEventTypeV2<ItemType>): void => {
-		if (params[0] === EventType_MultiUpdate || params[0] === EventType_Query)
+		if (params[0] === EventType_UpsertAll || params[0] === EventType_Query)
 			return;
 
 		if (this.props.keys.find(key => (params[1] as ItemType)[key] !== this.state.keys[key]))

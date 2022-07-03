@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,47 +17,48 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
-import {DB_PermissionsUser} from "../../../index";
-import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
+import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
+import {DB_PermissionUser, DBDef_PermissionUser} from '../../../index';
+import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+
 
 export interface OnPermissionsUsersLoaded {
 	__onPermissionsUsersLoaded: () => void;
 }
 
-const dispatch_onPermissionsUsersLoaded = new ThunderDispatcher<OnPermissionsUsersLoaded, "__onPermissionsUsersLoaded">("__onPermissionsUsersLoaded");
+const dispatch_onPermissionsUsersLoaded = new ThunderDispatcher<OnPermissionsUsersLoaded, '__onPermissionsUsersLoaded'>('__onPermissionsUsersLoaded');
 
 export class PermissionsUserModule_Class
-	extends BaseDB_ApiGeneratorCaller<DB_PermissionsUser> {
-	private users: DB_PermissionsUser[] = [];
+	extends BaseDB_ApiGeneratorCaller<DB_PermissionUser> {
+	private users: DB_PermissionUser[] = [];
 
 	constructor() {
-		super({key: "user", relativeUrl: "/v1/permissions/assign/user"});
+		super(DBDef_PermissionUser);
 	}
 
 	protected init(): void {
 	}
 
-	protected async onEntryCreated(response: DB_PermissionsUser): Promise<void> {
+	protected async onEntryCreated(response: DB_PermissionUser): Promise<void> {
 	}
 
-	protected async onEntryDeleted(response: DB_PermissionsUser): Promise<void> {
+	protected async onEntryDeleted(response: DB_PermissionUser): Promise<void> {
 	}
 
-	protected async onEntryUpdated(response: DB_PermissionsUser): Promise<void> {
+	protected async onEntryUpdated(response: DB_PermissionUser): Promise<void> {
 		this.query();
 	}
 
-	protected async onGotUnique(response: DB_PermissionsUser): Promise<void> {
+	protected async onGotUnique(response: DB_PermissionUser): Promise<void> {
 	}
 
-	protected async onQueryReturned(response: DB_PermissionsUser[]): Promise<void> {
+	protected async onQueryReturned(response: DB_PermissionUser[]): Promise<void> {
 		this.users = response;
 		dispatch_onPermissionsUsersLoaded.dispatchUI();
 	}
 
 	getUserByAccountId(accountId: string) {
-		return this.users.filter(user=>user.accountId).find(user => user.accountId === accountId);
+		return this.users.filter(user => user.accountId).find(user => user.accountId === accountId);
 	}
 
 	getUsers() {

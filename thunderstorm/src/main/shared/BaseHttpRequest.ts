@@ -18,7 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {_keys, _setTimeout, BadImplementationException} from '@nu-art/ts-common';
+import {_keys, _setTimeout, BadImplementationException, Logger} from '@nu-art/ts-common';
 import {ErrorResponse, HttpMethod, TypedApi} from './types';
 import {HttpException, RequestErrorHandler, RequestSuccessHandler, TS_Progress} from './request-types';
 
@@ -49,11 +49,17 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	protected aborted: boolean = false;
 	protected compress: boolean;
 	private defaultResponseHandler?: (request: BaseHttpRequest<any>) => boolean;
+	protected logger?: Logger;
 
 	constructor(requestKey: string, requestData?: any) {
 		this.key = requestKey;
 		this.requestData = requestData;
 		this.compress = false;
+	}
+
+	setLogger(logger?: Logger) {
+		this.logger = logger;
+		return this;
 	}
 
 	setHandleRequestSuccess(handleRequestSuccess: RequestSuccessHandler) {
@@ -83,7 +89,9 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	}
 
-	setOnError(errorMessage: string | RequestErrorHandler<ErrorType>) {
+	setOnError(errorMessage?: string | RequestErrorHandler<ErrorType>) {
+		if (!errorMessage)
+			return this;
 		if (typeof errorMessage === 'string') {
 			// @ts-ignore
 			// noinspection JSConstantReassignment
@@ -305,8 +313,8 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		_setTimeout(() => {
 			const label = this.label || `http request: ${this.key} ${this.requestData}`;
 			new Promise(toCall)
-				.then(() => console.log(`Async call completed: ${label} ${this.requestData}`))
-				.catch(reason => console.warn(`Async call error: ${label} ${this.requestData}`, reason));
+				.then(() => this.logger?.logVerbose(`Async call completed: ${label} ${this.requestData || ''}`))
+				.catch(reason => this.logger?.logWarning(`Async call error: ${label} ${this.requestData || ''}`, reason));
 		});
 		return this;
 	}
