@@ -29,9 +29,11 @@ type State = {
 	model?: Tooltip_Model,
 };
 
-type posStyle = {
+type PosStyle = {
 	top?: number | string;
 	left?: number | string;
+	bottom?: number | string;
+	right?: number | string;
 }
 
 export class TS_TooltipOverlay
@@ -100,7 +102,7 @@ export class TS_TooltipOverlay
 		const viewPortHeight = window.innerHeight;
 		const contentHeight = pos.bottom - pos.top;
 
-		const style: posStyle = {};
+		const style: PosStyle = {};
 
 		// Check overflowing right
 		if (pos.right > (viewPortWidth - 20))
@@ -121,19 +123,38 @@ export class TS_TooltipOverlay
 		return style;
 	};
 
+	private getPosObject = (model: Tooltip_Model): PosStyle => {
+		const top = model.location && model.location.y || 0;
+		const left = model.location && model.location.x || 0;
+		// const bottom = model.location && (window.innerHeight - model.location.y || 0);
+		const right = model.location && (window.innerWidth - model.location.x || 0);
+		const height = (this.ref?.getBoundingClientRect().height || 0) / 2;
+
+		if (model.alignment === 'right' || model.alignment === 'top')
+			return {
+				top: `${top - height}px`,
+				left: `${left}px`,
+				right: 'unset',
+				bottom: 'unset'
+			};
+
+		if (model.alignment === 'left')
+			return {
+				top: `${top - height}px`,
+				right: `${right}px`,
+				left: 'unset',
+				bottom: 'unset'
+			};
+
+		return {};
+	};
+
 	render() {
 		const {model} = this.state;
 		if (!model || !model.content)
 			return null;
 
-		const top = model.location && model.location.y || 0;
-		const left = model.location && model.location.x || 0;
-
-		const height = (this.ref?.getBoundingClientRect().height || 0) / 2;
-		let positionStyle: posStyle = {
-			top: `${top - height}px`,
-			left: `${left}px`
-		};
+		let positionStyle = this.getPosObject(model);
 
 		if (this.ref)
 			positionStyle = {...positionStyle, ...this.keepInViewStyle()};
