@@ -19,24 +19,16 @@
 // tslint:disable:no-import-side-effect
 import './res/styles/styles.scss';
 
-import * as React from 'react';
-import {App} from "./app/App";
-import {
-	ForceUpgrade,
-	Thunder,
-	ToastBuilder
-} from "@nu-art/thunderstorm/frontend";
-import {
-	Frontend_ModulePack_LiveDocs,
-	LiveDocsModule,
-	showEditModalExample
-} from "@nu-art/live-docs/frontend";
-import {ExampleModule} from "@modules/ExampleModule";
-import {Frontend_ModulePack_PushPubSub} from "@nu-art/push-pub-sub/frontend";
-import {BugReportModule} from "@nu-art/bug-report/frontend";
+import {App} from './app/App';
+import {ForceUpgrade, Thunder, ToastBuilder} from '@nu-art/thunderstorm/frontend';
+import {LiveDocsModule, ModulePack_Frontend_LiveDocs} from '@nu-art/live-docs/frontend';
+import {ExampleModule} from '@modules/ExampleModule';
+import {ModulePack_Frontend_PushPubSub} from '@nu-art/push-pub-sub/frontend';
+import {BugReportModule} from '@nu-art/bug-report/frontend';
 import {Module} from '@nu-art/ts-common';
-import {Frontend_ModulePack_Uploader} from "@nu-art/file-upload/frontend";
+import {ModulePack_Frontend_Uploader} from '@nu-art/file-upload/frontend';
 import {PermissionsFE} from '@nu-art/permissions/frontend';
+
 
 const modules: Module[] = [
 	ForceUpgrade,
@@ -46,10 +38,10 @@ const modules: Module[] = [
 PermissionsFE.setDefaultConfig({projectId: 'thunderstorm-staging'});
 
 new Thunder()
-	.setConfig(require("./config").config)
-	.addModules(...Frontend_ModulePack_PushPubSub)
-	.addModules(...Frontend_ModulePack_LiveDocs)
-	.addModules(...Frontend_ModulePack_Uploader)
+	.setConfig(require('./config').config)
+	.addModules(...ModulePack_Frontend_PushPubSub)
+	.addModules(...ModulePack_Frontend_LiveDocs)
+	.addModules(...ModulePack_Frontend_Uploader)
 	.addModules(...modules)
 	.setMainApp(App)
 	.build();
@@ -57,6 +49,5 @@ new Thunder()
 LiveDocsModule.setActionsResolver((docKey: string) => {
 	const doc = LiveDocsModule.get(docKey);
 
-	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${docKey}` : doc.document).setActions(
-		[<button style={{marginRight: 8}} onClick={() => showEditModalExample(docKey)}>Edit for me</button>]);
+	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${docKey}` : doc.document);
 });

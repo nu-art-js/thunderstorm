@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Live-Docs will allow you to add and edit tool-tips from within your app...
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -26,21 +25,21 @@ export type ApiStruct_LiveDoc = {
 		get: QueryApi<DB_Document, LiveDocReqParams>,
 		history: QueryApi<void, LiveDocHistoryReqParams>,
 		upsert: BodyApi<void, Request_UpdateDocument>,
-	}
+	},
 }
 
 export const ApiDef_LiveDoc_Get: ApiDef<ApiStruct_LiveDoc['v1']['get']> = {
 	method: HttpMethod.GET,
-	path: 'unique'
+	path: 'v1/live-docs/unique'
 };
 
 export const ApiDef_LiveDoc_History: ApiDef<ApiStruct_LiveDoc['v1']['history']> = {
 	method: HttpMethod.GET,
-	path: 'change-history'
+	path: 'v1/live-docs/change-history'
 };
 
 export const ApiDef_LiveDoc_Upsert: ApiDef<ApiStruct_LiveDoc['v1']['upsert']> = {
 	method: HttpMethod.POST,
-	path: 'upsert'
+	path: 'v1/live-docs/upsert'
 };
 

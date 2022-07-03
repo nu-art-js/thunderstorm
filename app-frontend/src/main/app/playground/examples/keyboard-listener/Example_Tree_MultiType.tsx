@@ -18,8 +18,6 @@
 
 import * as React from 'react';
 import {AdapterBuilder, BaseNodeRenderer, TreeData_MultiType, TreeItem, TreeRendererMap, TS_Tree} from '@nu-art/thunderstorm/frontend';
-import {PlaygroundExample_ResultStyle} from '../consts';
-import {PG_Example} from '../_core/PG_Example';
 
 type State = { focused?: string, actionMessage: string };
 
@@ -120,23 +118,15 @@ class Example_Tree_MultiType
 
 		return <>
 			<TS_Tree
-				id={name}
 				adapter={adapter}
 				onNodeFocused={(path: string) => this.setState({actionMessage: `on focused: ${path}`})}
 				onNodeClicked={(path: string) => this.setState({actionMessage: `on clicked: ${path}`})}
 				// onFocus={() => console.log("Focused")}
 				// onBlur={() => console.log("Blurred")}
 			/>
-			<div {...PlaygroundExample_ResultStyle}>{this.state.actionMessage}</div>
+			<div className="ts-playground__results">{this.state.actionMessage}</div>
 		</>;
 	}
 }
 
-const name = 'Tree - MultiType';
-
-export function Playground_Tree_MultiType() {
-	return {
-		renderer: () => <PG_Example name={name}> <Example_Tree_MultiType/> </PG_Example>,
-		name
-	};
-}
+export const Playground_Tree_MultiType = {name: 'Tree - MultiType', renderer: Example_Tree_MultiType};

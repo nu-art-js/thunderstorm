@@ -19,10 +19,11 @@
  * limitations under the License.
  */
 
-import {CustomException, ObjectTS,} from '@nu-art/ts-common';
+import {CustomException, TS_Object,} from '@nu-art/ts-common';
 import {ErrorBody, ErrorResponse} from '../index';
 
-export class ApiException<E extends ObjectTS | void = void>
+
+export class ApiException<E extends TS_Object | void = void>
 	extends CustomException {
 
 	public readonly responseBody: ErrorResponse<E> = {};

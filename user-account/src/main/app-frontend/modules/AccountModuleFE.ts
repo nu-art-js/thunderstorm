@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of 
- * your server apis, and restrict users by giving them access levels
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -18,7 +17,7 @@
  */
 
 import {Module, Second} from '@nu-art/ts-common';
-import {BrowserHistoryModule, ComponentSync, StorageKey, ThunderDispatcher, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {BrowserHistoryModule, getQueryParameter, StorageKey, ThunderDispatcher, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 import {
 	ApiDef_UserAccount_Create,
 	ApiDef_UserAccount_ListAccounts,
@@ -63,7 +62,7 @@ export interface OnAccountsLoaded {
 }
 
 const dispatch_onAccountsLoaded = new ThunderDispatcher<OnAccountsLoaded, '__onAccountsLoaded'>('__onAccountsLoaded');
-const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
+export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
 
 export class AccountModuleFE_Class
 	extends Module<Config> {
@@ -98,8 +97,8 @@ export class AccountModuleFE_Class
 		XhrHttpModule.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
 		// XhrHttpModule.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
-		const email = `${ComponentSync.getQueryParameter(QueryParam_Email)}`;
-		const sessionId = `${ComponentSync.getQueryParameter(QueryParam_SessionId)}`;
+		const email = getQueryParameter(QueryParam_Email);
+		const sessionId = getQueryParameter(QueryParam_SessionId);
 
 		if (email && sessionId) {
 			StorageKey_SessionId.set(sessionId);
@@ -145,6 +144,10 @@ export class AccountModuleFE_Class
 		StorageKey_UserEmail.set(response.email);
 		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	}
+
+	public getSessionId = (): string => {
+		return this.isStatus(LoggedStatus.LOGGED_IN) ? StorageKey_SessionId.get() : '';
+	};
 
 	public loginSAML(request: RequestParams_LoginSAML) {
 		XhrHttpModule

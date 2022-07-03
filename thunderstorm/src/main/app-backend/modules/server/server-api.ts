@@ -41,7 +41,7 @@ import {parse} from 'url';
 import {HttpServer, ServerApi_Middleware} from './HttpServer';
 import {IncomingHttpHeaders} from 'http';
 // noinspection TypeScriptPreferShortImport
-import {TypedApi, BodyApi, QueryApi, HttpMethod, QueryParams, ApiDef} from '../../../shared/types';
+import {ApiDef, BodyApi, HttpMethod, QueryApi, QueryParams, TypedApi} from '../../../shared/types';
 import {assertProperty} from '../../utils/to-be-removed';
 import {ApiException,} from '../../exceptions';
 import {ExpressRequest, ExpressResponse, ExpressRouter} from '../../utils/types';
@@ -75,7 +75,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	// readonly relativePath: string;
 
 	protected constructor(apiDef: ApiDef<API>, tag?: string) {
-		super(tag || `${(apiDef.baseUrl || '')}${apiDef.path}`);
+		super(tag || apiDef.path);
 		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
 		this.apiDef = apiDef;
 	}

@@ -29,29 +29,39 @@ import './TS_DialogOverlay.scss';
 
 type Props = {}
 
-type State = { model?: Dialog_Model };
+type State = { models: Dialog_Model[] };
 
 export class TS_DialogOverlay
 	extends ComponentSync<Props, State>
 	implements DialogListener {
 
 	protected deriveStateFromProps(nextProps: Props): State {
-		return {};
+		return {models:[]};
 	}
 
 	__showDialog = (model?: Dialog_Model): void => {
-		this.setState({model});
+		if(!model) {
+			this.state.models.pop();
+		} else {
+			this.state.models.push(model);
+		}
+		this.forceUpdate();
 	};
 
 	render() {
-		const model = this.state.model;
-		if (!model)
+		if (!this.state.models.length)
 			return '';
 
 		return (
 			<div className="ts-dialog__overlay">
 				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked}>
-					{model.content}
+					{this.state.models.map((model,i)=>{
+						if(i===this.state.models.length-1)
+							//This model content is wrapped in a div to keep the React hierarchy. if you remove it, the model stack won't work.
+							return <div>{model.content}</div>;
+
+						return <div style={{visibility:'hidden', height:0}}>{model.content}</div>
+					})}
 				</TS_Overlay>
 			</div>
 		);
@@ -60,9 +70,16 @@ export class TS_DialogOverlay
 
 	private onOverlayClicked = (e: React.MouseEvent) => {
 		stopPropagation(e);
-		if (!this.state.model?.closeOverlayOnClick())
+		//Exit if click should not close this current dialog
+		if (!this.state.models[0].closeOverlayOnClick())
 			return;
 
-		DialogModule.close();
+		//Close there is only one dialog
+		if(this.state.models.length === 1)
+			return DialogModule.close();
+
+		//Close only this dialog if more than one
+		this.state.models.pop();
+		this.forceUpdate();
 	};
 }

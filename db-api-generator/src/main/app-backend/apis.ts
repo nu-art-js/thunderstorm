@@ -21,13 +21,22 @@
 
 import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
 import {ApiDef, TypedApi} from '@nu-art/thunderstorm';
-import {TypedApi_Delete, TypedApi_Patch, TypedApi_Query, TypedApi_UniqueQuery, TypedApi_Upsert, ApiGen_ApiDefs} from '..';
+import {
+	ApiGen_ApiDefs,
+	TypedApi_Delete,
+	TypedApi_DeleteAll,
+	TypedApi_Patch,
+	TypedApi_Query,
+	TypedApi_UniqueQuery,
+	TypedApi_Upsert,
+	TypedApi_UpsertAll
+} from '..';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
-import {addItemToArray, DB_BaseObject, DB_Object, PreDBObject} from '@nu-art/ts-common';
+import {addItemToArray, DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';
 
 
-export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any>, pathPart?: string, pathSuffix?: string) {
+export function resolveUrlPart(dbModule: BaseDB_ApiGenerator<any, any>, pathPart?: string, pathSuffix?: string) {
 	return `${!pathPart ? dbModule.getItemName() : pathPart}${pathSuffix ? '/' + pathSuffix : ''}`;
 }
 
@@ -63,12 +72,24 @@ export class ServerApi_Upsert<DBType extends DB_Object>
 		super(dbModule, ApiGen_ApiDefs.Upsert, pathPart);
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PreDBObject<DBType>) {
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PreDB<DBType>) {
 		let toRet = await this.dbModule.upsert(body, undefined, request);
 		for (const postProcessor of this.postProcessors) {
 			toRet = await postProcessor(toRet);
 		}
 		return toRet;
+	}
+}
+
+export class ServerApi_UpsertAll<DBType extends DB_Object>
+	extends GenericServerApi<DBType, TypedApi_UpsertAll<DBType>, (item: DBType) => DBType> {
+
+	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
+		super(dbModule, ApiGen_ApiDefs.UpsertAll, pathPart);
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PreDB<DBType>[]) {
+		return await this.dbModule.upsertAll(body, undefined, request);
 	}
 }
 
@@ -105,6 +126,18 @@ export class ServerApi_Query<DBType extends DB_Object>
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, query: FirestoreQuery<DBType>): Promise<DBType[]> {
 		return this.dbModule.query(query, undefined, request);
+	}
+}
+
+export class ServerApi_DeleteAll<DBType extends DB_Object>
+	extends GenericServerApi<DBType, TypedApi_DeleteAll<DBType>> {
+
+	constructor(dbModule: BaseDB_ApiGenerator<DBType>, pathPart?: string) {
+		super(dbModule, ApiGen_ApiDefs.DeleteAll, pathPart);
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: DB_Object, body: void) {
+		return this.dbModule.deleteAll(request);
 	}
 }
 

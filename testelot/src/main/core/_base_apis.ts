@@ -16,12 +16,13 @@
  * limitations under the License.
  */
 
-import {LogLevel, ObjectTS} from '@nu-art/ts-common';
+import {LogLevel, TS_Object} from '@nu-art/ts-common';
 
 import {Action_Custom, Action_Http, Action_Log, Action_Sleep, ContextKey, HttpMethod, Scenario, TestException,} from '../index';
 
 import {Reporter} from './Reporter';
 import * as objectHash from 'object-hash';
+
 
 export function __log(logMessage: string, level: LogLevel = LogLevel.Verbose): Action_Log {
 	// @ts-ignore
@@ -33,7 +34,7 @@ export function __sleep(sleepMs: number): Action_Sleep {
 	return new Action_Sleep(sleepMs);
 }
 
-export function __http<T extends ObjectTS = any>(method: HttpMethod): Action_Http {
+export function __http<T extends TS_Object = any>(method: HttpMethod): Action_Http {
 	// @ts-ignore
 	return new Action_Http<T>(method);
 }

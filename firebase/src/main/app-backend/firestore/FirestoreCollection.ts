@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, batchAction, generateHex, ObjectTS, Subset} from '@nu-art/ts-common';
+import {BadImplementationException, batchAction, generateHex, Subset, TS_Object} from '@nu-art/ts-common';
 import {FirestoreType_Collection, FirestoreType_DocumentSnapshot} from './types';
 import {Clause_Select, Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapper} from './FirestoreWrapper';
@@ -24,7 +24,8 @@ import {FirestoreInterface} from './FirestoreInterface';
 import {FirestoreTransaction} from './FirestoreTransaction';
 import {Transaction} from 'firebase-admin/firestore';
 
-export class FirestoreCollection<Type extends ObjectTS> {
+
+export class FirestoreCollection<Type extends TS_Object> {
 	readonly name: string;
 	readonly wrapper: FirestoreWrapper;
 	readonly collection: FirestoreType_Collection;
@@ -121,7 +122,6 @@ export class FirestoreCollection<Type extends ObjectTS> {
 		const docRefs = await this._query();
 		return this.deleteBatch(docRefs);
 	}
-
 
 	async getAll(select?: Clause_Select<Type>): Promise<Type[]> {
 		return this.query({select} as FirestoreQuery<Type>);

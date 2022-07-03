@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,23 +17,23 @@
  * limitations under the License.
  */
 
-import {DB_PermissionAccessLevel} from "../../../index";
-import {BaseDB_ApiGeneratorCaller} from "@nu-art/db-api-generator/frontend";
-import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
+import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
+import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel} from '../../shared';
 
 
 export interface OnPermissionsLevelsLoaded {
 	__onPermissionsLevelsLoaded: () => void;
 }
 
-const dispatch_onPermissionsLevelsLoaded = new ThunderDispatcher<OnPermissionsLevelsLoaded, "__onPermissionsLevelsLoaded">("__onPermissionsLevelsLoaded");
+const dispatch_onPermissionsLevelsLoaded = new ThunderDispatcher<OnPermissionsLevelsLoaded, '__onPermissionsLevelsLoaded'>('__onPermissionsLevelsLoaded');
 
 export class PermissionsAccessLevelModule_Class
 	extends BaseDB_ApiGeneratorCaller<DB_PermissionAccessLevel> {
 	private levels: { [k: string]: DB_PermissionAccessLevel[] } = {};
 
 	constructor() {
-		super({key: "level", relativeUrl: "/v1/permissions/manage/level"});
+		super(DBDef_PermissionAccessLevel);
 	}
 
 	protected init(): void {
@@ -58,7 +59,7 @@ export class PermissionsAccessLevelModule_Class
 		response.forEach(level => {
 			const levelArray = this.levels[level.domainId] || [];
 			levelArray.push(level);
-			this.levels[level.domainId] = levelArray
+			this.levels[level.domainId] = levelArray;
 		});
 
 		dispatch_onPermissionsLevelsLoaded.dispatchUI();

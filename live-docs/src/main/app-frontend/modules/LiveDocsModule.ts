@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Live-Docs will allow you to add and edit tool-tips from within your app...
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,12 +16,12 @@
  * limitations under the License.
  */
 
-import {Module, ObjectTS} from '@nu-art/ts-common';
+import {Module} from '@nu-art/ts-common';
 import {ToastBuilder, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 import {DB_Document, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument} from '../../shared/types';
 import {setDefaultLiveDocEditor} from '../utils';
 import {ApiDef_LiveDoc_Get, ApiDef_LiveDoc_History, ApiDef_LiveDoc_Upsert, ApiStruct_LiveDoc} from '../../shared/api';
-import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {ApiDef, ApiDefCaller, TypedApi} from '@nu-art/thunderstorm';
 
 
 export const RequestKey_FetchDoc = 'FetchDoc';
@@ -30,6 +29,26 @@ export const RequestKey_UpdateDoc = 'UpdateDoc';
 export const RequestKey_UpdatePointer = 'UpdatePointer';
 
 export type LiveDocActionResolver = (docKey: string) => ToastBuilder;
+
+function createApiFe(apiDef: ApiDef<TypedApi<any, any, any, any>>) {
+	return XhrHttpModule
+		.createRequest(apiDef)
+		.setUrlParams(params)
+		.setRelativeUrl('/v1/live-docs/get')
+		.setLabel(`Fetch live-docs for key: ${docKey}`)
+		.setOnError(`Error fetching live-docs for key: ${docKey}`)
+		.execute(async (_response) => {
+			const response = _response as DB_Document;
+
+			const _doc = this.docs[docKey];
+			if (_doc && response.document === _doc.document)
+				return;
+
+			this.docs[docKey] = response;
+			this._showDocImpl(docKey, this.docs[docKey]);
+		});
+
+}
 
 export class LiveDocsModule_Class
 	extends Module
@@ -39,9 +58,14 @@ export class LiveDocsModule_Class
 	private toasterResolver!: LiveDocActionResolver;
 
 	v1 = {
-		get: this.showLiveDoc,
+		get: createApiFe(ApiDef_LiveDoc_Get),
+		// get: this.showLiveDoc,
 		upsert: this.update,
 		history: this.changeHistory
+	};
+
+	v2 = {
+		upsert: this.update,
 	};
 
 	set showDocImpl(value: (docKey: string, doc: DB_Document) => void) {

@@ -24,12 +24,17 @@ import {BadImplementationException, filterInstances, ImplementationMissingExcept
 import * as React from 'react';
 import {DependencyList, Dispatch, EffectCallback, SetStateAction} from 'react';
 
+
 export function browserType(): Browser {
 	if (navigator?.vendor.includes('Google')) {
 		return 'chrome';
 	}
 
 	throw new BadImplementationException('No matching browser detected');
+}
+
+export async function base64ToBlob(imageAsBase64: string) {
+	return (await fetch(imageAsBase64)).blob();
 }
 
 export function convertBase64ToFile(fileName: string, base64: string, _mimeType?: string) {
@@ -51,7 +56,7 @@ export function convertBase64ToFile(fileName: string, base64: string, _mimeType?
 }
 
 export function _className(...classes: (string | boolean | undefined)[]) {
-	return filterInstances(classes.filter(c=>!!c)).join(' ');
+	return filterInstances(classes.filter(c => !!c)).join(' ');
 }
 
 export function HOOK(fc: React.FC, props?: any) {
@@ -73,7 +78,10 @@ export const HOOK_useEffectAsync = (action: () => Promise<void>, deps?: Dependen
 	}, deps);
 };
 
-
+/**
+ * Prevents default behaviour and stops propagation
+ * @param e MouseEvent | React.MouseEvent | KeyboardEvent | React.KeyboardEvent
+ */
 export const stopPropagation = (e: MouseEvent | React.MouseEvent | KeyboardEvent | React.KeyboardEvent) => {
 	e.preventDefault();
 	e.stopPropagation();

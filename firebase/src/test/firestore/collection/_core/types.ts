@@ -18,6 +18,7 @@
 
 import {FirestoreQuery} from '../../../_main';
 
+
 export type FB_ArrayType = {
 	key: string
 	value: number
@@ -36,13 +37,13 @@ export type FB_Type = {
 	nestedObject?: { one: FB_ArrayType, two: FB_ArrayType }
 }
 
-export type Query_TestCase<T extends ObjectTS, E extends T | T[] = T> = FirestoreQuery<T> & {
+export type Query_TestCase<T extends TS_Object, E extends T | T[] = T> = FirestoreQuery<T> & {
 	insert?: T[]
 	label: string,
 	expected: E extends T ? Partial<T> : Partial<T>[]
 }
 
-export type Patch_TestCase<T extends ObjectTS> = {
+export type Patch_TestCase<T extends TS_Object> = {
 	insert: T,
 	override: T,
 	query: FirestoreQuery<T>

@@ -21,17 +21,18 @@ import 'module-alias/register';
 import {AxiosHttpModule, ForceUpgrade, RouteResolver, Storm} from '@nu-art/thunderstorm/backend';
 import {Environment} from './config';
 import {DispatchModule, ExampleModule} from '@modules/ExampleModule';
-import {Backend_ModulePack_LiveDocs} from '@nu-art/live-docs/backend';
+import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs/backend';
 import {Module} from '@nu-art/ts-common';
-import {Backend_ModulePack_Permissions} from '@nu-art/permissions/backend';
-import {Backend_ModulePack_BugReport, BugReportModule} from '@nu-art/bug-report/backend';
+import {ModulePack_Backend_Permissions} from '@nu-art/permissions/backend';
+import {BugReportModule, ModulePack_Backend_BugReport} from '@nu-art/bug-report/backend';
 import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
 import {Slack_ServerApiError, SlackModule} from '@nu-art/storm/slack';
-import {Backend_ModulePack_Uploader,} from '@nu-art/file-upload/backend';
+import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload/backend';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {JiraBugReportIntegrator} from '@nu-art/bug-report/app-backend/modules/JiraBugReportIntegrator';
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
 import {PubsubExample} from '@modules/PubsubExample';
+
 
 const packageJson = require('./package.json');
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
@@ -52,10 +53,10 @@ AxiosHttpModule.setDefaultConfig({origin: 'https://us-central1-thunderstorm-stag
 
 Firebase_ExpressFunction.setConfig({memory: '1GB', timeoutSeconds: 540});
 const _exports = new Storm()
-	.addModules(...Backend_ModulePack_BugReport)
-	.addModules(...Backend_ModulePack_LiveDocs)
-	.addModules(...Backend_ModulePack_Permissions)
-	.addModules(...Backend_ModulePack_Uploader)
+	.addModules(...ModulePack_Backend_BugReport)
+	.addModules(...ModulePack_Backend_LiveDocs)
+	.addModules(...ModulePack_Backend_Permissions)
+	.addModules(...ModulePack_Backend_Uploader)
 	.addModules(...modules)
 	.setInitialRouteResolver(new RouteResolver(require, __dirname, 'api'))
 	.setInitialRoutePath('/api')
@@ -65,3 +66,11 @@ const _exports = new Storm()
 BugReportModule.addTicketCreator(JiraBugReportIntegrator.openTicket);
 
 module.exports = _exports;
+
+// type TypedMap<CloudFunction<any>>
+//
+// module.exports = {
+// 	scheduler: functions.pubsub.schedule(this.schedule).onRun(async () => {
+// 		return this.handleCallback(() => this._onScheduledEvent());
+// 	})
+// }

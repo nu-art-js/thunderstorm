@@ -23,17 +23,19 @@ import * as React from 'react';
 import {Module} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
+
 export type Dialog_Model = {
 	content: React.ReactNode,
 	closeOverlayOnClick: () => boolean,
 }
-
 
 export interface DialogListener {
 	__showDialog(dialogModel?: Dialog_Model): void;
 }
 
 const dispatch_showDialog = new ThunderDispatcher<DialogListener, '__showDialog'>('__showDialog');
+
+const defaultCloseCallback = () => true;
 
 export class DialogModule_Class
 	extends Module<{}> {
@@ -49,10 +51,9 @@ export class DialogModule_Class
 		dispatch_showDialog.dispatchUI();
 	};
 
-	public show = (content: React.ReactNode, closeOverlayOnClick = () => true) => {
+	public show = (content: React.ReactNode, closeOverlayOnClick = defaultCloseCallback) => {
 		dispatch_showDialog.dispatchUI({content, closeOverlayOnClick});
 	};
 }
-
 
 export const DialogModule = new DialogModule_Class();

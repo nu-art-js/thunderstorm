@@ -116,6 +116,10 @@ export class Thunder
 		super.build();
 		onStarted?.();
 	}
+
+	public getConfig() {
+		return this.config;
+	}
 }
 
 export const dispatch_requestCompleted = new ThunderDispatcher<OnRequestListener, '__onRequestCompleted'>('__onRequestCompleted');

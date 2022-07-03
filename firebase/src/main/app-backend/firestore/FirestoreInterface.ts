@@ -16,15 +16,16 @@
  * limitations under the License.
  */
 
-import {ComparatorMap, FirestoreQuery} from '../..';
+import {ComparatorMap, FirestoreQuery, QueryComparator} from '../..';
 import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from './types';
 import {FirestoreCollection} from './FirestoreCollection';
-import {__stringify, _keys, BadImplementationException, ImplementationMissingException, ObjectTS} from '@nu-art/ts-common';
+import {__stringify, _keys, BadImplementationException, ImplementationMissingException, TS_Object} from '@nu-art/ts-common';
 import {Query} from 'firebase-admin/firestore';
+
 
 export class FirestoreInterface {
 
-	static buildQuery<Type extends ObjectTS>(collection: FirestoreCollection<Type>, query?: FirestoreQuery<Type>) {
+	static buildQuery<Type extends TS_Object>(collection: FirestoreCollection<Type>, query?: FirestoreQuery<Type>) {
 		try {
 			let myQuery: FirestoreType_Query = collection.collection;
 			if (query && query.select)
@@ -54,17 +55,16 @@ export class FirestoreInterface {
 						}
 
 						if (this.isQueryObject(_whereValue)) {
-							// @ts-ignore
-							const comparator = ComparatorMap[Object.keys(_whereValue)[0]];
-							const value = Object.values(_whereValue)[0];
-							if (!comparator || !value)
-								console.log(`query: ${JSON.stringify(query)}`);
+							const comparatorKey = Object.keys(_whereValue)[0] as keyof QueryComparator<any>;
 
+							const comparator = ComparatorMap[comparatorKey];
 							if (!comparator)
-								throw new ImplementationMissingException(`could not find comparator for: ${Object.keys(_whereValue)[0]}`);
+								throw new ImplementationMissingException(`could not find comparator for: ${comparatorKey} in query: ${JSON.stringify(query)}`);
 
-							if (!value)
-								throw new ImplementationMissingException(`value: ${Object.keys(_whereValue)[0]}`);
+							const value = _whereValue[comparatorKey];
+							if (value === undefined)
+								throw new ImplementationMissingException(`no value: ${comparatorKey} in query: ${JSON.stringify(query)}`);
+
 							return _query.where(whereKey, comparator, value);
 						}
 
@@ -100,7 +100,6 @@ export class FirestoreInterface {
 					if (page > 0)
 						myQuery = myQuery.offset(query.limit.itemsCount * page + 1);
 
-
 					myQuery = myQuery.limit(query.limit.itemsCount);
 				}
 
@@ -113,17 +112,18 @@ export class FirestoreInterface {
 	}
 
 	private static isQueryObject(whereValue: any) {
-		return typeof whereValue === 'object' && Object.keys(whereValue).length === 1 && (
-			whereValue['$ac'] ||
-			whereValue['$aca'] ||
-			whereValue['$in'] ||
-			whereValue['$nin'] ||
-			whereValue['$gt'] ||
-			whereValue['$gte'] ||
-			whereValue['$lt'] ||
-			whereValue['$lte'] ||
-			whereValue['$neq'] ||
-			whereValue['$eq']);
+		const keys = Object.keys(whereValue);
+		return typeof whereValue === 'object' && keys.length === 1 && (
+			whereValue['$ac'] !== undefined ||
+			whereValue['$aca'] !== undefined ||
+			whereValue['$in'] !== undefined ||
+			whereValue['$nin'] !== undefined ||
+			whereValue['$gt'] !== undefined ||
+			whereValue['$gte'] !== undefined ||
+			whereValue['$lt'] !== undefined ||
+			whereValue['$lte'] !== undefined ||
+			whereValue['$neq'] !== undefined ||
+			whereValue['$eq'] !== undefined);
 	}
 
 	static assertUniqueDocument(results: FirestoreType_DocumentSnapshot[], query: FirestoreQuery<any>, collectionName: string): (FirestoreType_DocumentSnapshot | undefined) {
@@ -136,11 +136,11 @@ export class FirestoreInterface {
 		return results[0];
 	}
 
-	static buildUniqueQuery<Type extends ObjectTS>(collection: FirestoreCollection<Type>, instance: Type): FirestoreQuery<Type> {
+	static buildUniqueQuery<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type): FirestoreQuery<Type> {
 		_keys(instance).forEach((key) => {
 			if (instance[key] === undefined || instance[key] === null) {
 				throw new BadImplementationException(
-					`No where properties are allowed to be null or undefined.\nWhile querying collection '${collection.name}' we found property '${key}' to be '${instance[key]}'`);
+					`No where properties are allowed to be null or undefined.\nWhile querying collection '${collection.name}' we found property '${String(key)}' to be '${instance[key]}'`);
 			}
 		});
 

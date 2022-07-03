@@ -32,7 +32,7 @@ type State = {
 	[K in Keys]: string
 }
 
-export class Example_List_WithInput
+class Example_List_WithInput_Renderer
 	extends Component<{}, State> {
 	private readonly data: Type[];
 
@@ -83,4 +83,4 @@ export class Example_List_WithInput
 	}
 }
 
-
+export const Example_List_WithInput = {renderer: Example_List_WithInput_Renderer, name: 'Example_List_WithInput',};

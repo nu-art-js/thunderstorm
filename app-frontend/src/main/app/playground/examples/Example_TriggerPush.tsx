@@ -27,7 +27,7 @@ export type State = {
 	notifications: DB_Notifications[]
 }
 
-export class Example_TriggerPush
+class Example_TriggerPush_Renderer
 	extends ComponentSync<{}, State>
 	implements OnNotificationsUpdated {
 
@@ -67,3 +67,5 @@ export class Example_TriggerPush
 		PushPubSubModule.subscribeMulti(mySubscriptions);
 	}
 }
+
+export const Example_TriggerPush = {renderer: Example_TriggerPush_Renderer, name: 'Trigger Push'};

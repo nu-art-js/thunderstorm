@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * A generic push pub sub infra for webapps
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,9 +16,10 @@
  * limitations under the License.
  */
 
-import {PushPubSubModule} from "../modules/PushPubSubModule";
+import {PushPubSubModule} from '../modules/PushPubSubModule';
 
-export const Backend_ModulePack_PushPubSub = [PushPubSubModule,];
 
-export * from "../modules/PushPubSubModule";
-export * from "../modules/PushKey";
+export const ModulePack_Backend_PushPubSub = [PushPubSubModule,];
+
+export * from '../modules/PushPubSubModule';
+export * from '../modules/PushKey';

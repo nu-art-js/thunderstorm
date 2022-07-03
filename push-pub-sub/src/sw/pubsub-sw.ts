@@ -1,5 +1,5 @@
 /*
- * A typescript & react boilerplate with api call example
+ * A generic push pub sub infra for webapps
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,14 +17,13 @@
  */
 importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js');
-
 import {initializeApp} from 'firebase/app';
 import {getMessaging, onBackgroundMessage} from 'firebase/messaging/sw';
 import {BeLogged, LogClient_Browser, Logger} from '@nu-art/ts-common';
 
+
 export class FCMServiceWorker
 	extends Logger {
-
 
 	init(firebaseConfig: any) {
 		this.logInfo('INIT');

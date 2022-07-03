@@ -6,6 +6,8 @@ import {TS_Overlay} from '../TS_Overlay';
 import {TS_Tree} from '../TS_Tree';
 import {generateHex} from '@nu-art/ts-common';
 import {OnWindowResized} from '../../modules/WindowModule';
+import {stopPropagation} from '../../utils/tools';
+
 
 export type MenuPosition =
 	{ left: number, top: number }
@@ -60,7 +62,6 @@ export class TS_PopupMenuOverlay
 	};
 
 	isInBounds() {
-		console.log('1', this.ref);
 		if (!this.ref)
 			return;
 
@@ -83,10 +84,7 @@ export class TS_PopupMenuOverlay
 	private setBounds() {
 		if (!this.ref || !this.state.menuModel || !this.state.menuModel.pos)
 			return;
-		console.log('3', 'setting bounds');
 		const boundingClientRect = this.ref.getBoundingClientRect();
-		console.log('4', boundingClientRect);
-		console.log('5', this.currentPos);
 		let left: number = boundingClientRect.left;
 		let top: number = boundingClientRect.top;
 
@@ -97,7 +95,6 @@ export class TS_PopupMenuOverlay
 			top = window.innerHeight - boundingClientRect.height - this.minimumMargin;
 
 		this.currentPos = {left: left, top: top};
-		console.log('6', this.currentPos);
 
 		this.forceUpdate();
 	}
@@ -105,7 +102,6 @@ export class TS_PopupMenuOverlay
 	render() {
 		const menuModel = this.state.menuModel;
 		if (!menuModel) {
-			console.log('Missing PopupMenu datamodel!');
 			return null;
 		}
 
@@ -113,7 +109,8 @@ export class TS_PopupMenuOverlay
 			return '';
 
 		return <div className="ts-popup-menu">
-			<TS_Overlay showOverlay={this.state.open} onClickOverlay={() => {
+			<TS_Overlay showOverlay={this.state.open} onClickOverlay={(e) => {
+				stopPropagation(e);
 				this.setState({open: false});
 				this.ref = undefined;
 			}}>

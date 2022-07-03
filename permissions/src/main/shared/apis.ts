@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,10 +17,10 @@
  * limitations under the License.
  */
 
-import {BodyApi, QueryApi} from "@nu-art/thunderstorm";
-import {PreDBObject, StringMap} from "@nu-art/ts-common";
-import {DB_PermissionProject} from "./manager-types";
-import {User_Group} from "./assign-types";
+import {BodyApi, QueryApi} from '@nu-art/thunderstorm';
+import {PreDB, StringMap} from '@nu-art/ts-common';
+import {User_Group} from './assign';
+import {DB_PermissionProject} from './management';
 
 
 export type UserUrlsPermissions = {
@@ -68,7 +69,7 @@ export type PredefinedGroup = { _id: string, key: string, label: string, customK
 export type PredefinedUser = { accountId: string, _id: string, groups: PredefinedGroup[] };
 
 export type Request_RegisterProject = {
-	project: PreDBObject<DB_PermissionProject>,
+	project: PreDB<DB_PermissionProject>,
 	routes: string[];
 	predefinedGroups?: PredefinedGroup[]
 	predefinedUser?: PredefinedUser
@@ -78,17 +79,16 @@ export type Response_User = {
 	userId: string;
 };
 
-export type PermissionsApi_AssignAppPermissions = BodyApi<"/v1/permissions/assign/app-permissions", Request_AssignAppPermissions, void>;
-export type PermissionsApi_ShareWithUser = BodyApi<"/v1/permissions/share-with-user", Request_AssignAppPermissions, void>;
-export type PermissionsApi_VerifyPermissionsGrantingAllowed = BodyApi<"/v1/permissions/verify-permissions-granting-allowed", User_Group, void>;
+export type PermissionsApi_AssignAppPermissions = BodyApi<'/v1/permissions/assign/app-permissions', Request_AssignAppPermissions, void>;
+export type PermissionsApi_ShareWithUser = BodyApi<'/v1/permissions/share-with-user', Request_AssignAppPermissions, void>;
+export type PermissionsApi_VerifyPermissionsGrantingAllowed = BodyApi<'/v1/permissions/verify-permissions-granting-allowed', User_Group, void>;
 
-export type PermissionsApi_AssertUserAccess = BodyApi<"/v1/permissions/assert-user-access", Request_AssertApiForUser, Response_User>;
-export type PermissionsApi_UserUrlsPermissions = BodyApi<"/v1/permissions/user-urls-permissions", Request_UserUrlsPermissions, UserUrlsPermissions>;
-export type PermissionsApi_UserCFsByShareGroups = BodyApi<"/v1/user-custom-fields/user-cf-by-share-groups", Request_UserCFsByShareGroups, StringMap[]>;
-export type PermissionsApi_UsersCFsByShareGroups = BodyApi<"/v1/user-custom-fields/users-cf-by-share-groups", Request_UsersCFsByShareGroups, Response_UsersCFsByShareGroups>;
+export type PermissionsApi_AssertUserAccess = BodyApi<'/v1/permissions/assert-user-access', Request_AssertApiForUser, Response_User>;
+export type PermissionsApi_UserUrlsPermissions = BodyApi<'/v1/permissions/user-urls-permissions', Request_UserUrlsPermissions, UserUrlsPermissions>;
+export type PermissionsApi_UserCFsByShareGroups = BodyApi<'/v1/user-custom-fields/user-cf-by-share-groups', Request_UserCFsByShareGroups, StringMap[]>;
+export type PermissionsApi_UsersCFsByShareGroups = BodyApi<'/v1/user-custom-fields/users-cf-by-share-groups', Request_UsersCFsByShareGroups, Response_UsersCFsByShareGroups>;
 
-
-export type PermissionsApi_RegisterExternalProject = BodyApi<"/v1/register/register-external-project", Request_RegisterProject, void>;
-export type PermissionsApi_RegisterProject = QueryApi<"/v1/register/register-project", void>;
-export type PermissionsApi_TestPermissions = QueryApi<"/test/test-permissions", void>;
+export type PermissionsApi_RegisterExternalProject = BodyApi<'/v1/register/register-external-project', Request_RegisterProject, void>;
+export type PermissionsApi_RegisterProject = QueryApi<'/v1/register/register-project', void>;
+export type PermissionsApi_TestPermissions = QueryApi<'/test/test-permissions', void>;
 

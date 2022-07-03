@@ -33,7 +33,7 @@ export type Props = {
 	baseValue?: baseValue[]
 }
 
-export class Example_CCgraphs
+export class Example_CCgraphs_Renderer
 	extends ComponentSync<Props, { data: D3ChartData[], tableData: TableData[] }> {
 
 	protected deriveStateFromProps(nextProps: Props): { data: D3ChartData[]; tableData: TableData[]; } {
@@ -122,4 +122,4 @@ export class Example_CCgraphs
 }
 
 
-export default Example_CCgraphs;
+export const Example_CCgraphs = {renderer: Example_CCgraphs_Renderer, name: 'CC Graphs'};

@@ -20,43 +20,41 @@
  */
 
 import * as React from 'react';
+import { _className } from '../../utils/tools';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 import './TS_Input.scss';
 
+
 export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, HTMLInputElement>
 
+/**
+ * A better way to capture user input
+ *
+ * <code>
+ * 		<input className="ts-input"/>
+ * </code>
+ *
+ */
 export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
-
 	render() {
-		return <input
-			autoFocus={this.props.focus}
-			ref={input => {
-				if (this.ref || !input)
-					return;
+		const {onAccept,focus,...props} = this.props;
 
-				this.ref = input;
-				this.props.focus && this.ref.focus();
-			}}
+		return <input
+			{...props}
+			autoFocus={focus}
+			ref={props.innerRef}
 			onBlur={(event) => {
-				this.ref = undefined;
 				const value = event.target.value;
 				this.setState({value});
-				this.props.onBlur?.(value, event);
+				props.onBlur?.(value, event);
 			}}
-			disabled={this.props.enable === false}
-			name={this.props.name || this.props.id}
-			key={this.props.id}
-			id={this.props.id}
-			className={'ts-input'}
-			style={this.props.style}
+			name={props.name || props.id}
+			className={_className('ts-input',props.disabled?'disabled':undefined)}
 			value={this.state.value}
-			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
-			onKeyPress={this.props.handleKeyEvent || this.handleKeyEvent}
-			autoComplete={this.props.autocomplete ? 'on' : 'off'}
-			spellCheck={this.props.spellCheck}
-			type={this.props.type}
+			onKeyPress={props.onKeyPress || this.onKeyPress}
+			autoComplete={props.autoComplete ? 'on' : 'off'}
 		/>;
 	}
 }

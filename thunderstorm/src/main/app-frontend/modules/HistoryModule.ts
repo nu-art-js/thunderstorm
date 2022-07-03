@@ -94,16 +94,7 @@ export class BrowserHistoryModule_Class
 	}
 
 	setQuery(queryParams: QueryParams) {
-		const encodedQueryParams = {...queryParams};
-		_keys(encodedQueryParams).forEach(key => {
-			const value = encodedQueryParams[key];
-			if (!value) {
-				delete encodedQueryParams[key];
-				return;
-			}
-
-			encodedQueryParams[key] = encodeURIComponent(value);
-		});
+		const encodedQueryParams = encodeUrlParams(queryParams);
 
 		this.updateQueryParams(encodedQueryParams);
 	}
@@ -160,6 +151,42 @@ export class BrowserHistoryModule_Class
 	getCurrentUrl() {
 		return BrowserHistoryModule.getCurrent().pathname;
 	}
+}
+
+export function getCurrentUrl() {
+	return BrowserHistoryModule.getCurrentUrl();
+}
+
+export function getQueryParameter(name: string) {
+	return BrowserHistoryModule.getQueryParameter(name);
+}
+
+export function encodeUrlParams(queryParams?: QueryParams) {
+	const encodedQueryParams = {...queryParams};
+	_keys(encodedQueryParams).forEach(key => {
+		const value = encodedQueryParams[key];
+		if (!value) {
+			delete encodedQueryParams[key];
+			return;
+		}
+
+		encodedQueryParams[key] = encodeURIComponent(value);
+	});
+	return encodedQueryParams;
+}
+
+export function composeQuery(queryParams?: QueryParams) {
+	const encodeParams = encodeUrlParams(queryParams);
+	const queryAsString = _keys(encodeParams).map((key) => `${key}=${encodeParams[key]}`).join('&');
+	if (queryAsString.length === 0)
+		return '';
+
+	return queryAsString;
+}
+
+export function composeURL(url: string, queryParams?: QueryParams) {
+	const queryAsString = composeQuery(queryParams);
+	return `${url}${queryAsString.length > 0 ? `?${queryAsString}` : ''}`;
 }
 
 export const BrowserHistoryModule = new BrowserHistoryModule_Class();

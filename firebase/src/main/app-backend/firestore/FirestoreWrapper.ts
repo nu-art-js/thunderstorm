@@ -21,8 +21,9 @@ import {FirestoreType, FirestoreType_Collection,} from './types';
 import {FilterKeys} from '../../shared/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {DB_Object, ObjectTS} from '@nu-art/ts-common';
+import {DB_Object, TS_Object} from '@nu-art/ts-common';
 import {getFirestore} from 'firebase-admin/firestore';
+
 
 export class FirestoreWrapper
 	extends FirebaseBaseWrapper {
@@ -35,7 +36,7 @@ export class FirestoreWrapper
 		this.firestore = getFirestore(firebaseSession.app);
 	}
 
-	public getCollection<Type extends ObjectTS>(name: string, externalFilterKeys?: FilterKeys<Type>): FirestoreCollection<Type> {
+	public getCollection<Type extends TS_Object>(name: string, externalFilterKeys?: FilterKeys<Type>): FirestoreCollection<Type> {
 		const collection = this.collections[name];
 		if (collection)
 			return collection;

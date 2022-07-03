@@ -43,10 +43,19 @@ export class XhrHttpModule_Class
 	}
 
 	createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<API>, data?: string): XhrHttpRequest<API> {
-		return new XhrHttpRequest<API>(apiDef.path, data, this.shouldCompress())
-			.setMethod(apiDef.method)
-			.setOrigin(apiDef.baseUrl || this.origin)
-			.setRelativeUrl(`${apiDef.pathPrefix || ''}/${apiDef.path}`)
+
+		const request = new XhrHttpRequest<API>(apiDef.path, data, this.shouldCompress())
+			.setLogger(this)
+			.setMethod(apiDef.method);
+
+		if (apiDef.fullUrl)
+			request.setUrl(apiDef.fullUrl);
+		else
+			request
+				.setOrigin(this.origin)
+				.setRelativeUrl(apiDef.path);
+
+		return request
 			.setTimeout(this.timeout)
 			.addHeaders(this.getDefaultHeaders())
 			.setHandleRequestSuccess(this.handleRequestSuccess)

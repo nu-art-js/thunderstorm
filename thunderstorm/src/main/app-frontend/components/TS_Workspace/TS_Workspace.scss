@@ -1,6 +1,7 @@
 @mixin separator ($dir) {
   background: #eeeeee;
   position: relative;
+  -webkit-user-drag: element;
 
   @if $dir == 'horizontal' {
     width: 5px;

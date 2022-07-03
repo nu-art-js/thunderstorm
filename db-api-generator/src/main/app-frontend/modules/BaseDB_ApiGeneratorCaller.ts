@@ -20,13 +20,24 @@
  */
 
 import {ApiDef, BaseHttpRequest, ErrorResponse, RequestErrorHandler, TypedApi} from '@nu-art/thunderstorm';
-import {ApiGen_ApiDefs, TypedApi_Delete, TypedApi_Patch, TypedApi_Query, TypedApi_UniqueQuery, TypedApi_Upsert,} from '../../index';
+import {
+	ApiGen_ApiDefs,
+	DBDef,
+	TypedApi_Delete,
+	TypedApi_DeleteAll,
+	TypedApi_Patch,
+	TypedApi_Query,
+	TypedApi_UniqueQuery,
+	TypedApi_Upsert,
+	TypedApi_UpsertAll,
+} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 
-import {_keys, addItemToArray, compare, DB_BaseObject, DB_Object, Module, PreDBObject, removeItemFromArray} from '@nu-art/ts-common';
+import {_keys, addItemToArray, DB_BaseObject, DB_Object, Module, PreDB, removeItemFromArray} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
-import {EventType_Create, EventType_Delete, EventType_MultiUpdate, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update} from '../consts';
+import {EventType_Create, EventType_Delete, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update, EventType_UpsertAll} from '../consts';
+import {getModuleFEConfig} from '../db-def';
 
 
 export type BaseApiConfig = {
@@ -38,6 +49,7 @@ export type ApiCallerEventType = [SingleApiEvent, string, boolean] | [MultiApiEv
 
 export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config extends BaseApiConfig = BaseApiConfig>
 	extends Module<BaseApiConfig> {
+	readonly version = 'v1';
 
 	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
 		if (this.onError(request, resError))
@@ -48,8 +60,10 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 
 	private defaultDispatcher?: ThunderDispatcher<any, string, ApiCallerEventType>;
 
-	constructor(config: BaseApiConfig) {
+	constructor(dbDef: DBDef<DBType>) {
 		super();
+		const config = getModuleFEConfig(dbDef);
+
 		this.setDefaultConfig(config);
 	}
 
@@ -84,10 +98,18 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		return false;
 	}
 
-	upsert = (toUpsert: PreDBObject<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Upsert<DBType>> =>
+	upsert = (toUpsert: PreDB<DBType>, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Upsert<DBType>> =>
 		this.createRequest<TypedApi_Upsert<DBType>>(ApiGen_ApiDefs.Upsert, toUpsert, requestData)
 			.execute(async (response) => {
 				await this.onEntryUpdated({...toUpsert, _id: response._id} as unknown as DBType, response, requestData);
+				if (responseHandler)
+					return responseHandler(response);
+			});
+
+	upsertAll = (toUpsert: PreDB<DBType>[], responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_UpsertAll<DBType>> =>
+		this.createRequest<TypedApi_UpsertAll<DBType>>(ApiGen_ApiDefs.UpsertAll, toUpsert, requestData)
+			.execute(async (response) => {
+				await this.onEntriesUpdated(response);
 				if (responseHandler)
 					return responseHandler(response);
 			});
@@ -123,6 +145,15 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 				await this.onGotUnique(response, requestData);
 				if (responseHandler)
 					return responseHandler(response);
+			});
+	};
+
+	deleteAll = (responseHandler?: (() => Promise<void>) | void): BaseHttpRequest<TypedApi_DeleteAll<DBType>> => {
+		return this
+			.createRequest<TypedApi_DeleteAll<DBType>>(ApiGen_ApiDefs.DeleteAll)
+			.execute(async () => {
+				if (responseHandler)
+					return responseHandler();
 			});
 	};
 
@@ -172,7 +203,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			this.items[item._id] = item;
 		});
 
-		this.dispatchMulti(EventType_MultiUpdate, items.map(item => item._id));
+		this.dispatchMulti(EventType_UpsertAll, items.map(item => item._id));
 	}
 
 	protected async onEntryCreated(item: DBType, requestData?: string): Promise<void> {
@@ -180,9 +211,10 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 	}
 
 	protected async onEntryUpdated(original: DBType, item: DBType, requestData?: string): Promise<void> {
-		if (!compare(item, original))
-			this.logWarning('Hmmmm.. queried value not what was expected!');
+		return this.onEntryUpdatedImpl(EventType_Update, item, requestData);
+	}
 
+	protected async onEntrysUpdated(original: DBType, item: DBType, requestData?: string): Promise<void> {
 		return this.onEntryUpdatedImpl(EventType_Update, item, requestData);
 	}
 

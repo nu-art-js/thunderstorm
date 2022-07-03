@@ -20,16 +20,28 @@
  */
 
 import * as React from 'react';
-import {HTMLProps} from 'react';
 import {_className} from '../../utils/tools';
-import {LL_V_C} from '../Layouts';
+import {LinearLayoutProps, LL_V_C} from '../Layouts';
 import './TS_Button.scss';
 
-export type Props_Button = HTMLProps<HTMLDivElement> & {
-	disabled?: boolean,
-	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => void
+
+export type Props_Button = LinearLayoutProps & {
+	disabled?: boolean;
+	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
+/**
+ * A button made simpler
+ *
+ *
+ * <b>SCSS:</b>
+ * ```scss
+ * .ts-button {
+ *   .ts-button__disabled {
+ *   }
+ * }
+ * ```
+ */
 export const TS_Button = (props: Props_Button) => {
 	return <LL_V_C
 		{...props}

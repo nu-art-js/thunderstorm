@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 import {FirestoreQuery} from '@nu-art/firebase';
-import {DB_BaseObject, DB_Object, PreDBObject} from '@nu-art/ts-common';
-import {BodyApi, QueryApi, HttpMethod, ApiDef,} from '@nu-art/thunderstorm';
+import {DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';
+import {ApiDef, BodyApi, HttpMethod, QueryApi,} from '@nu-art/thunderstorm';
 
 
 export const ApiDef_Upsert: ApiDef<TypedApi_Upsert<any>> = {
@@ -43,20 +43,33 @@ export const ApiDef_Query: ApiDef<TypedApi_Upsert<any>> = {
 	method: HttpMethod.POST,
 	path: 'query',
 };
+export const ApiDef_UpsertAll: ApiDef<TypedApi_UpsertAll<any>> = {
+	method: HttpMethod.POST,
+	path: 'upsert-all',
+};
+export const ApiDef_DeleteAll: ApiDef<TypedApi_DeleteAll<any>> = {
+	method: HttpMethod.GET,
+	path: 'delete-all',
+};
 
 export const ApiGen_ApiDefs = {
 	Query: ApiDef_Query,
-	Upsert: ApiDef_Upsert,
 	Patch: ApiDef_Patch,
+	Upsert: ApiDef_Upsert,
 	Delete: ApiDef_Delete,
 	UniqueQuery: ApiDef_UniqueQuery,
+	UpsertAll: ApiDef_UpsertAll,
+	DeleteAll: ApiDef_DeleteAll,
 };
 
 export const ErrorKey_BadInput = 'bad-input';
 
 export type BadInputErrorBody = { path: string, input?: string };
 
-export type TypedApi_Upsert<DBType extends DB_Object, RequestType extends PreDBObject<DBType> = PreDBObject<DBType>> = BodyApi<DBType, RequestType>;
+export type TypedApi_DeleteAll<DBType> = QueryApi<void>;
+export type TypedApi_UpsertAll<DBType extends DB_Object> = BodyApi<DBType[], PreDB<DBType>[]>;
+
+export type TypedApi_Upsert<DBType extends DB_Object, RequestType extends PreDB<DBType> = PreDB<DBType>> = BodyApi<DBType, RequestType>;
 export type TypedApi_Delete<DBType extends DB_Object> = QueryApi<DBType, DB_BaseObject>;
 export type TypedApi_UniqueQuery<DBType extends DB_Object> = QueryApi<DBType, DB_BaseObject>;
 export type TypedApi_Patch<DBType extends DB_Object> = BodyApi<DBType, Partial<DBType> & DB_BaseObject>;

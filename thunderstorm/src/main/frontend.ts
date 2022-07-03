@@ -46,16 +46,15 @@ export * from './app-frontend/modules/ThunderstormModule';
 export * from './app-frontend/core/SimpleScriptInjector';
 export * from './app-frontend/core/ComponentSync';
 export * from './app-frontend/core/ComponentAsync';
-export * from './app-frontend/core/UIComponent';
 export * from './app-frontend/core/IndexedDB';
 export * from './app-frontend/core/AppPage';
 export * from './app-frontend/core/AppPageV2';
 export * from './app-frontend/core/AppWrapper';
-export * from './app-frontend/core/ErrorBoundary';
 export * from './app-frontend/widgets/FieldEditor';
 export * from './app-frontend/widgets/FieldEditorClick';
 export * from './app-frontend/widgets/FieldEditorWithButtons';
 
+export * from './app-frontend/components/TS_ErrorBoundry';
 export * from './app-frontend/components/TS_Input';
 export * from './app-frontend/components/TS_PopupMenu';
 export * from './app-frontend/components/TS_Table';
@@ -73,6 +72,7 @@ export * from './app-frontend/components/TS_DragAndDrop';
 export * from './app-frontend/components/TS_Workspace';
 export * from './app-frontend/components/TS_Tooltip';
 export * from './app-frontend/components/TS_MemoryMonitor';
+export * from './app-frontend/components/TS_Link';
 
 export * from './app-frontend/components/Layouts';
 export * from './app-frontend/components/HeightBounder';

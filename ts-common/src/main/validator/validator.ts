@@ -19,7 +19,7 @@
 import {BadImplementationException, CustomException} from '../core/exceptions';
 import {__stringify,} from '../utils/tools';
 import {_keys} from '../utils/object-tools';
-import {ArrayType, AuditBy, ObjectTS, RangeTimestamp} from '../utils/types';
+import {ArrayType, AuditBy, RangeTimestamp, TS_Object} from '../utils/types';
 import {currentTimeMillis} from '..';
 
 /*
@@ -42,11 +42,11 @@ import {currentTimeMillis} from '..';
  */
 export type ValidatorTypeResolver<K> =
 	K extends any[] ? Validator<K> :
-		K extends ObjectTS ? TypeValidator<K> | Validator<K> :
+		K extends TS_Object ? TypeValidator<K> | Validator<K> :
 			Validator<K>;
 
 export type Validator<P> = undefined | ((path: string, p?: P) => void);
-export type TypeValidator<T extends ObjectTS> = { [P in keyof T]: ValidatorTypeResolver<T[P]> };
+export type TypeValidator<T extends TS_Object> = { [P in keyof T]: ValidatorTypeResolver<T[P]> };
 
 export class ValidationException
 	extends CustomException {
@@ -80,7 +80,6 @@ export const tsValidateObjectValues = <V, T = { [k: string]: V }>(validator: Val
 		if (!input)
 			return;
 
-
 		for (const key of _keys(input)) {
 			const inputValue = input[key];
 			if (typeof inputValue === 'object') {
@@ -88,15 +87,15 @@ export const tsValidateObjectValues = <V, T = { [k: string]: V }>(validator: Val
 				if (!objectValidator)
 					return;
 
-				return objectValidator(`${path}/${key}`, inputValue as unknown as { [k: string]: V });
+				return objectValidator(`${path}/${String(key)}`, inputValue as unknown as { [k: string]: V });
 			}
 
-			tsValidate(inputValue as unknown as V, validator, `${path}/${key}`);
+			tsValidate(inputValue as unknown as V, validator, `${path}/${String(key)}`);
 		}
 	};
 
-export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true): Validator<I[]> =>
-	(path, input?: I[]) => {
+export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true): Validator<I[]> => {
+	return (path, input?: I[]) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
@@ -106,13 +105,39 @@ export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: Va
 			tsValidate(_input[i], validator, `${path}/${i}`);
 		}
 	};
+};
 
-export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<string> => {
-	return (path: string, input?: string) => {
+export const tsValidateString = (length: number = -1, mandatory = true): Validator<string> => {
+	return (path, input?: string) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
 		if (!input)
 			return;
 
+		// noinspection SuspiciousTypeOfGuard
+		if (typeof input !== 'string')
+			throw new ValidationException(`input is not a string`, path, input);
+
+		if (length === -1)
+			return;
+
+		if (input.length <= length)
+			return;
+
+		throw new ValidationException(`input is longer than ${length}`, path, input);
+	};
+};
+
+export const tsValidateMD5 = (mandatory = true): Validator<string> => {
+	return tsValidateRegexp(/[a-zA-Z\d]{32}/, mandatory);
+};
+
+export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<string> => {
+	return (path: string, input?: string) => {
+		assertValidateMandatoryProperty(mandatory, path, input);
+		if (input === undefined)
+			return;
+
+		// console.log({path, input, regexp});
 		if (regexp.test(input))
 			return;
 
@@ -123,7 +148,7 @@ export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<st
 export const tsValidateNumber = (mandatory = true): Validator<number> => {
 	return (path: string, input?: number) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
-		if (!input)
+		if (input === undefined)
 			return;
 
 		// noinspection SuspiciousTypeOfGuard
@@ -137,7 +162,7 @@ export const tsValidateNumber = (mandatory = true): Validator<number> => {
 export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 	return (path: string, input?: boolean) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
-		if (!input)
+		if (input === undefined)
 			return;
 
 		// noinspection SuspiciousTypeOfGuard
@@ -176,8 +201,7 @@ export const tsValidateRange = (ranges: [number, number][], mandatory = true): V
 	};
 };
 
-
-export const tsValidate = <T extends any>(instance: T, _validator: ValidatorTypeResolver<T>, path = '', mandatory: boolean | Partial<T> = {}) => {
+export const tsValidate = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, path = '', mandatory: boolean | Partial<T> = {}) => {
 	if (!_validator)
 		return;
 
@@ -217,11 +241,10 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 	}
 };
 
-
 export const tsValidateTimestamp = (interval?: number, mandatory = true): Validator<number> => {
 	return (path: string, input?: number) => {
 		assertValidateMandatoryProperty(mandatory, path, input);
-		if (!input)
+		if (input === undefined)
 			return;
 
 		const now = currentTimeMillis();

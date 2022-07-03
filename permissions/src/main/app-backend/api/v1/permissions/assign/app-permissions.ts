@@ -1,5 +1,6 @@
 /*
- * ts-common is the basic building blocks of our typescript projects
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,9 +18,10 @@
  */
 
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
-import {PermissionsApi_AssignAppPermissions, Request_AssignAppPermissions, UserPermissionsDB,} from '../_imports';
 import {HttpMethod, QueryParams} from '@nu-art/thunderstorm';
 import {AccountModuleBE} from '@nu-art/user-account/backend';
+import {PermissionsApi_AssignAppPermissions, Request_AssignAppPermissions} from '../../../../shared';
+import {ModuleBE_PermissionUser} from '../../../../modules/assignment';
 
 
 class ServerApi_UserUrlsPermissions
@@ -43,7 +45,7 @@ class ServerApi_UserUrlsPermissions
 			// when I share with you
 			assignAppPermissions = {...body, granterUserId: account._id, sharedUserIds: body.sharedUserIds};
 
-		await UserPermissionsDB.assignAppPermissions(assignAppPermissions, request);
+		await ModuleBE_PermissionUser.assignAppPermissions(assignAppPermissions, request);
 	}
 }
 

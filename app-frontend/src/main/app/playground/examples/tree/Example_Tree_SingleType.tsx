@@ -8,7 +8,7 @@ type Type = {
 	other: string
 };
 
-export class Example_Tree_SingleType
+class Example_Tree_SingleType_Renderer
 	extends Component<{}> {
 	static index = 0;
 	private data: any;
@@ -69,9 +69,9 @@ export class Example_Tree_SingleType
 	}
 
 	private addItem = (path: string) => {
-		this.data[`${path}_${Example_Tree_SingleType.index++}`] = deepClone(this.data[path]);
+		this.data[`${path}_${Example_Tree_SingleType_Renderer.index++}`] = deepClone(this.data[path]);
 		this.forceUpdate();
 	};
 }
 
-
+export const Example_Tree_SingleType = {renderer: Example_Tree_SingleType_Renderer, name: 'Tree_SingleType'};

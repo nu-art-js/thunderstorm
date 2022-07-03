@@ -18,15 +18,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ImplementationMissingException, Module, ObjectTS} from '@nu-art/ts-common';
+import {ImplementationMissingException, Module, TS_Object} from '@nu-art/ts-common';
 
 import {HeaderKey, ServerApi_Middleware} from '../server/HttpServer';
 import {ApiException} from '../../exceptions';
 import {HttpRequestData} from '../server/server-api';
 import {ExpressRequest, QueryRequestInfo} from '../../utils/types';
 
+
 type ProxyConfig = {
-	extras?: ObjectTS
+	extras?: TS_Object
 	urls: string[],
 	secret: string
 };

@@ -19,21 +19,22 @@
  * limitations under the License.
  */
 
-import {ObjectTS} from '@nu-art/ts-common';
+import {TS_Object} from '@nu-art/ts-common';
 import {HTMLProps} from 'react';
 import {_className} from '../../utils/tools';
 import './TS_Table.scss';
 import React = require('react');
 
-export type TableHeaders<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = P[];
-export type HeaderRenderer<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
+
+export type TableHeaders<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = P[];
+export type HeaderRenderer<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
 	[C in P]?: (columnKey: C) => React.ReactNode;
 };
-export type CellRenderer<R extends ObjectTS, A extends string = never, P extends keyof R | A = ((keyof R) | A)> = (prop: P, item: R, index: number) => React.ReactNode;
-export type RowRenderer<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
+export type CellRenderer<R extends TS_Object, A extends string = never, P extends keyof R | A = ((keyof R) | A)> = (prop: P, item: R, index: number) => React.ReactNode;
+export type RowRenderer<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
 	[C in P]?: CellRenderer<R, A, C>;
 };
-export type Props_Table<R extends ObjectTS, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
+export type Props_Table<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
 	id?: string;
 	header: TableHeaders<R, A, P>;
 	rows: R[];
@@ -47,8 +48,7 @@ export type Props_Table<R extends ObjectTS, A extends string = never, P extends 
 	th?: HTMLProps<HTMLTableHeaderCellElement> | ((columnKey: P) => HTMLProps<HTMLTableHeaderCellElement>);
 };
 
-
-export class TS_Table<R extends ObjectTS, A extends string = never>
+export class TS_Table<R extends TS_Object, A extends string = never>
 	extends React.Component<Props_Table<R, A>, any> {
 	static defaultProps = {
 		actionHeaderRenderer: (action: any) => <div>{action}</div>
