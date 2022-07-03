@@ -22,10 +22,12 @@ import * as React from 'react';
 import {ThunderstormModule, UrlTarget} from '../../modules/ThunderstormModule';
 import './TS_Link.scss';
 import {QueryParams} from '../../../shared/types';
-import {_className} from '../../utils/tools';
+import {_className, stopPropagation} from '../../utils/tools';
+
 
 type Props = {
-	url: string | { url: string, params?: QueryParams }
+	url: string
+	params?: QueryParams
 	target?: UrlTarget;
 	className?: string;
 }
@@ -33,7 +35,8 @@ type Props = {
 export class TS_Link
 	extends React.Component<Props, any> {
 
-	private handleOnClick = () => {
+	private handleOnClick = (e: React.MouseEvent) => {
+		stopPropagation(e);
 		ThunderstormModule.openUrl(this.props.url, this.props.target);
 	};
 
