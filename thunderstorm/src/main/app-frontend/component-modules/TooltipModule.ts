@@ -128,3 +128,16 @@ export const ShowTooltipAtRight = (content: React.ReactNode, duration = -1, allo
 		onMouseLeave: (e: React.MouseEvent<any>) => TooltipModule.hide(),
 	};
 };
+
+export const ShowTooltipAtLeft = (content: React.ReactNode, duration = -1, allowContentHover = false) => {
+	return {
+		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
+			const data = e.currentTarget.getBoundingClientRect();
+			const x = data.left - 25;
+			const y = (data.top + data.bottom) / 2;
+			TooltipModule.showAt(content, x, y, duration, allowContentHover, 'left');
+		},
+		onMouseLeave: (e: React.MouseEvent<any>) => TooltipModule.hide(),
+	};
+};
+
