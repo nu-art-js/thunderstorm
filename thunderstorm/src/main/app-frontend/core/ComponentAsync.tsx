@@ -33,19 +33,32 @@ export type BaseAsyncState = {
 export abstract class ComponentAsync<P extends any = {}, S extends any = {}, State extends BaseAsyncState & S = BaseAsyncState & S>
 	extends BaseComponent<P, State> {
 
+	private derivingState = false;
+	private pendingProps?: P;
+
 	protected _deriveStateFromProps(nextProps: P): State | undefined {
+		if (this.derivingState) {
+			this.pendingProps = nextProps;
+			return;
+		}
+
+		this.pendingProps = undefined;
+		this.derivingState = true;
+
 		this.deriveStateFromProps(nextProps)
-			.then((state) => {
-				this.setState(state, () => {
-				});
-			})
+			.then((state) => this.setState(state, this.reDeriveCompletedCallback))
 			.catch(e => {
 				this.logError(`error`, e);
-				this.setState({error: e});
+				this.setState({error: e}, this.reDeriveCompletedCallback);
 			});
 
 		return this.createInitialState(nextProps);
 	}
+
+	private reDeriveCompletedCallback = () => {
+		this.derivingState = false;
+		this.pendingProps && this._deriveStateFromProps(this.pendingProps);
+	};
 
 	protected async deriveStateFromProps(nextProps: P): Promise<State> {
 		return this.createInitialState(nextProps);
