@@ -24,7 +24,7 @@ export type ApiStruct_LiveDoc = {
 	v1: {
 		get: QueryApi<DB_Document, LiveDocReqParams>,
 		history: QueryApi<void, LiveDocHistoryReqParams>,
-		upsert: BodyApi<void, Request_UpdateDocument>,
+		upsert: BodyApi<DB_Document, Request_UpdateDocument>,
 	},
 }
 
