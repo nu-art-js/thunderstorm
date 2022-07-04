@@ -36,11 +36,11 @@ export class TS_DialogOverlay
 	implements DialogListener {
 
 	protected deriveStateFromProps(nextProps: Props): State {
-		return {models:[]};
+		return {models: []};
 	}
 
 	__showDialog = (model?: Dialog_Model): void => {
-		if(!model) {
+		if (!model) {
 			this.state.models.pop();
 		} else {
 			this.state.models.push(model);
@@ -55,12 +55,12 @@ export class TS_DialogOverlay
 		return (
 			<div className="ts-dialog__overlay">
 				<TS_Overlay showOverlay={true} onClickOverlay={this.onOverlayClicked}>
-					{this.state.models.map((model,i)=>{
-						if(i===this.state.models.length-1)
+					{this.state.models.map((model, i) => {
+						if (i === this.state.models.length - 1)
 							//This model content is wrapped in a div to keep the React hierarchy. if you remove it, the model stack won't work.
-							return <div>{model.content}</div>;
+							return <div key={i}>{model.content}</div>;
 
-						return <div style={{visibility:'hidden', height:0}}>{model.content}</div>
+						return <div key={i} style={{visibility: 'hidden', height: 0}}>{model.content}</div>;
 					})}
 				</TS_Overlay>
 			</div>
@@ -75,7 +75,7 @@ export class TS_DialogOverlay
 			return;
 
 		//Close there is only one dialog
-		if(this.state.models.length === 1)
+		if (this.state.models.length === 1)
 			return DialogModule.close();
 
 		//Close only this dialog if more than one
