@@ -16,19 +16,24 @@
  * limitations under the License.
  */
 
+import {addItemToArray, removeItemFromArray} from '../utils/array-tools';
+import {LogLevel, LogLevelOrdinal} from './logger/types';
 
-import {
-	addItemToArray,
-	removeItemFromArray
-} from "../utils/array-tools";
 
 export class DebugFlag {
 
 	private readonly key: string;
+	private minLogLevel: LogLevel;
 
-	private constructor(key: string) {
+	private constructor(key: string, minLogLevel: LogLevel = LogLevel.Info) {
 		this.key = key;
+		this.minLogLevel = minLogLevel;
+
 		DebugFlags.add(this);
+	}
+
+	setMinLevel(minLogLevel: LogLevel) {
+		this.minLogLevel = minLogLevel;
 	}
 
 	rename(newKey: string) {
@@ -49,6 +54,14 @@ export class DebugFlag {
 			this._disable();
 	}
 
+	isEnabled() {
+		return DebugFlags.instance.ActiveDebugFlags.includes(this.key);
+	}
+
+	canLog(level: LogLevel) {
+		return LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(this.minLogLevel);
+	}
+
 	private _enable() {
 		addItemToArray(DebugFlags.instance.ActiveDebugFlags, this.key);
 	}
@@ -57,9 +70,6 @@ export class DebugFlag {
 		removeItemFromArray(DebugFlags.instance.ActiveDebugFlags, this.key);
 	}
 
-	public isEnabled() {
-		return DebugFlags.instance.ActiveDebugFlags.includes(this.key);
-	}
 }
 
 export class DebugFlags {
@@ -72,9 +82,9 @@ export class DebugFlags {
 	private constructor() {
 	}
 
-	public static createFlag(key: string) {
+	public static createFlag(key: string, minLogLevel = LogLevel.Info) {
 		// @ts-ignore
-		return new DebugFlag(key);
+		return new DebugFlag(key, minLogLevel);
 	}
 
 	static add(flag: DebugFlag) {

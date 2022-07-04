@@ -37,12 +37,13 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 	private pendingProps?: P;
 
 	protected _deriveStateFromProps(nextProps: P): State | undefined {
-		this.logVerbose('Deriving state from props');
 		if (this.derivingState) {
+			this.logVerbose('Scheduling new props', nextProps as {});
 			this.pendingProps = nextProps;
 			return;
 		}
 
+		this.logVerbose('Deriving state from props', nextProps as {});
 		this.pendingProps = undefined;
 		this.derivingState = true;
 
@@ -59,7 +60,7 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 	private reDeriveCompletedCallback = () => {
 		this.derivingState = false;
 		if (this.pendingProps) {
-			this.logVerbose('Pending ReDerive, calling deriveStateFromProps');
+			this.logVerbose('Triggering pending props');
 			this._deriveStateFromProps(this.pendingProps);
 		}
 	};

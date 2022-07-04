@@ -33,7 +33,7 @@ let instances = 0;
 export abstract class BaseComponent<P = any, State = any>
 	extends React.Component<P, State> {
 
-	static Components_MinLogLevel = LogLevel.Info;
+	static MinLogLevel = LogLevel.Info;
 
 	protected readonly logger: Logger;
 	private timeoutMap: { [k: string]: number } = {};
@@ -42,12 +42,13 @@ export abstract class BaseComponent<P = any, State = any>
 	constructor(props: P) {
 		super(props);
 		this.logger = new Logger(this.constructor.name + '-' + (++instances));
-		this.logger.setMinLevel(BaseComponent.Components_MinLogLevel);
+		this.logger.setMinLevel(BaseComponent.MinLogLevel);
+		this.logVerbose('Creating..');
 
 		this._constructor();
 		const __render = this.render?.bind(this);
 		this.render = () => {
-			this.logVerbose('rendering');
+			this.logVerbose('Rendering', this.state);
 			return __render();
 		};
 
@@ -129,9 +130,9 @@ export abstract class BaseComponent<P = any, State = any>
 
 		const shouldRender = _shouldRender();
 		if (!shouldRender)
-			this.logVerbose('component won\'t update');
+			this.logVerbose('component will NOT render');
 		else
-			this.logVerbose('component should update');
+			this.logVerbose('component will render');
 
 		return shouldRender;
 	}
