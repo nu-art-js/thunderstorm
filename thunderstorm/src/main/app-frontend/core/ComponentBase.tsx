@@ -33,6 +33,8 @@ let instances = 0;
 export abstract class BaseComponent<P = any, State = any>
 	extends React.Component<P, State> {
 
+	static Components_MinLogLevel = LogLevel.Info;
+
 	protected readonly logger: Logger;
 	private timeoutMap: { [k: string]: number } = {};
 	protected mounted = false;
@@ -40,7 +42,7 @@ export abstract class BaseComponent<P = any, State = any>
 	constructor(props: P) {
 		super(props);
 		this.logger = new Logger(this.constructor.name + '-' + (++instances));
-		this.logger.setMinLevel(LogLevel.Info);
+		this.logger.setMinLevel(BaseComponent.Components_MinLogLevel);
 
 		this._constructor();
 		const __render = this.render?.bind(this);
@@ -80,7 +82,7 @@ export abstract class BaseComponent<P = any, State = any>
 			return;
 
 		if (this.state) //skip the first time when the component MUST update
-			this.logDebug('deriving state from new props...');
+			this.logDebug('deriving state from new props...', nextProps as {});
 
 		const state = this._deriveStateFromProps(nextProps);
 		if (state)
@@ -90,6 +92,8 @@ export abstract class BaseComponent<P = any, State = any>
 	protected abstract _deriveStateFromProps(nextProps: P): State | undefined ;
 
 	protected reDeriveState() {
+		this.logDebug('reDeriveState called..');
+
 		this._deriveStateFromProps(this.props);
 	}
 
