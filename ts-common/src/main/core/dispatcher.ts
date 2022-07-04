@@ -17,12 +17,14 @@
  */
 
 import {FunctionKeys, ReturnPromiseType} from '../utils/types';
+import {Logger} from './logger/Logger';
 
 
 export type ParamResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? Parameters<T[K]> : never
 export type ReturnTypeResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? ReturnPromiseType<T[K]> : never
 
-export class Processor<T, K extends FunctionKeys<T>> {
+export class Processor<T, K extends FunctionKeys<T>>
+	extends Logger {
 
 	static modulesResolver: () => any[];
 
@@ -30,6 +32,7 @@ export class Processor<T, K extends FunctionKeys<T>> {
 	protected readonly filter: (listener: any) => boolean;
 
 	constructor(method: K) {
+		super(method as string);
 		this.method = method;
 		this.filter = (listener: any) => !!listener[this.method];
 	}

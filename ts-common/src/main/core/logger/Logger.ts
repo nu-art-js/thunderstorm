@@ -16,35 +16,28 @@
  * limitations under the License.
  */
 
-import {
-	DebugFlag,
-	DebugFlags
-} from "../debug-flags";
-import {
-	LogLevel,
-	LogParam,
-	LogLevelOrdinal
-} from "./types";
-import {BeLogged} from "./BeLogged";
+import {DebugFlag, DebugFlags} from '../debug-flags';
+import {LogLevel, LogParam} from './types';
+import {BeLogged} from './BeLogged';
+
 
 export class Logger {
 
-	public static readonly log = new Logger("LOGGER");
+	public static readonly log = new Logger('LOGGER');
 
 	private tag: string;
 	public static defaultFlagState = true;
 	protected readonly _DEBUG_FLAG: DebugFlag;
-	protected minLevel = LogLevel.Verbose;
 
 	public constructor(tag?: string) {
-		this.tag = tag ?? this.constructor["name"];
+		this.tag = tag ?? this.constructor['name'];
 
 		this._DEBUG_FLAG = DebugFlags.createFlag(this.tag);
 		this._DEBUG_FLAG.enable(Logger.defaultFlagState);
 	}
 
 	setMinLevel(minLevel: LogLevel) {
-		this.minLevel = minLevel;
+		this._DEBUG_FLAG.setMinLevel(minLevel);
 	}
 
 	protected setTag(tag: string): void {
@@ -104,6 +97,6 @@ export class Logger {
 		if (!this._DEBUG_FLAG.isEnabled())
 			return;
 
-		return LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(this.minLevel)
+		return this._DEBUG_FLAG.canLog(level);
 	}
 }
