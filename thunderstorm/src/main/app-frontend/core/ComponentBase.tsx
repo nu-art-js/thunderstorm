@@ -28,6 +28,8 @@ import {_clearTimeout, _keys, _setTimeout, EmptyObject, Logger, LogLevel, LogPar
 import {Thunder} from './Thunder';
 
 
+let instances = 0;
+
 export abstract class BaseComponent<P = any, State = any>
 	extends React.Component<P, State> {
 
@@ -37,7 +39,7 @@ export abstract class BaseComponent<P = any, State = any>
 
 	constructor(props: P) {
 		super(props);
-		this.logger = new Logger(this.constructor.name);
+		this.logger = new Logger(this.constructor.name + '-' + (++instances));
 		this.logger.setMinLevel(LogLevel.Info);
 
 		this._constructor();
@@ -92,11 +94,13 @@ export abstract class BaseComponent<P = any, State = any>
 	}
 
 	debounce(handler: TimerHandler, key: string, ms = 0) {
+		this.logWarning('THIS IS LEGACY S***, NEED TO REMOVE');
 		_clearTimeout(this.timeoutMap[key]);
 		this.timeoutMap[key] = _setTimeout(handler, ms);
 	}
 
 	throttle(handler: TimerHandler, key: string, ms = 0) {
+		this.logWarning('THIS IS LEGACY S***, NEED TO REMOVE');
 		if (this.timeoutMap[key])
 			return;
 		this.timeoutMap[key] = _setTimeout(() => {
