@@ -82,7 +82,7 @@ export abstract class BaseComponent<P = any, State = any>
 			return;
 
 		if (this.state) //skip the first time when the component MUST update
-			this.logDebug('deriving state from new props...', nextProps as {});
+			this.logDebug('Received new props, calling deriveStateFromProps', nextProps as {});
 
 		const state = this._deriveStateFromProps(nextProps);
 		if (state)
@@ -129,9 +129,9 @@ export abstract class BaseComponent<P = any, State = any>
 
 		const shouldRender = _shouldRender();
 		if (!shouldRender)
-			this.logDebug('component won\'t update');
+			this.logVerbose('component won\'t update');
 		else
-			this.logDebug('component should update');
+			this.logVerbose('component should update');
 
 		return shouldRender;
 	}
