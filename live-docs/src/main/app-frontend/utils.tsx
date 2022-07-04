@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Live-Docs will allow you to add and edit tool-tips from within your app...
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,19 +18,16 @@
 
 // import * as React from 'react';
 import {ToastBuilder} from '@nu-art/thunderstorm/frontend';
-import {LiveDocActionResolver, LiveDocsModule} from './modules/LiveDocsModule';
+import {LiveDocActionResolver} from './modules/LiveDocsModule';
+import {DB_Document} from '../shared/types';
 
-const resolver: LiveDocActionResolver = (docKey: string) => {
-	const doc = LiveDocsModule.get(docKey);
 
-	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${docKey}` : doc.document);
+export const DefaultLiveDocEditor: LiveDocActionResolver = (doc: DB_Document) => {
+
+	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${doc.document}` : doc.document);
 	// .setActions(
 	// 	[<button style={{marginRight: 8}} onClick={() => showEditModalExample(docKey)}>Edit</button>]);
 };
-
-export function setDefaultLiveDocEditor() {
-	LiveDocsModule.setActionsResolver(resolver);
-}
 
 export const showEditModalExample = (docKey: string) => {
 	// const title = "Default Edit modal";
