@@ -79,7 +79,7 @@ export abstract class BaseComponent<P = any, State = any>
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps: P) {
-		if (!this.shouldComponentUpdate(nextProps, this.state, undefined))
+		if (!this.shouldReDeriveState(nextProps))
 			return;
 
 		if (this.state) //skip the first time when the component MUST update
@@ -114,27 +114,41 @@ export abstract class BaseComponent<P = any, State = any>
 		}, ms);
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<State>, nextContext: any): boolean {
-		const _shouldRender = () => {
+	shouldReDeriveState(nextProps: Readonly<P>): boolean {
+		const _shouldRederive = () => {
 			const propKeys = sortArray(_keys(this.props || EmptyObject));
 			const nextPropsKeys = sortArray(_keys(nextProps || EmptyObject));
-			const stateKeys = sortArray(_keys(this.state || EmptyObject));
-			const nextStateKeys = sortArray(_keys(nextState || EmptyObject));
-			if (propKeys.length !== nextPropsKeys.length) return true;
-			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]])) return true;
+			if (propKeys.length !== nextPropsKeys.length)
+				return true;
 
-			if (stateKeys.length !== nextStateKeys.length) return true;
-			if (stateKeys.some((key, i) => stateKeys[i] !== nextStateKeys[i] || this.state[stateKeys[i]] !== nextState[nextStateKeys[i]])) return true;
+			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]]))
+				return true;
+
 			return false;
 		};
 
-		const shouldRender = _shouldRender();
-		if (!shouldRender)
-			this.logVerbose('component will NOT render');
-		else
-			this.logVerbose('component will render');
+		const willReDerive = _shouldRederive();
+		this.logVerbose(`component will${!willReDerive ? ' NOT' : ''} re-derive State`);
+		return willReDerive;
+	}
 
-		return shouldRender;
+	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<State>, nextContext: any): boolean {
+		// const _shouldRender = () => {
+		// 	const stateKeys = sortArray(_keys(this.state || EmptyObject));
+		// 	const nextStateKeys = sortArray(_keys(nextState || EmptyObject));
+		//
+		// 	if (stateKeys.length !== nextStateKeys.length)
+		// 		return true;
+		// 	if (stateKeys.some((key, i) => stateKeys[i] !== nextStateKeys[i] || this.state[stateKeys[i]] !== nextState[nextStateKeys[i]]))
+		// 		return true;
+		//
+		// 	return false;
+		// };
+
+		const willRender = super.shouldComponentUpdate?.(nextProps, nextState, nextContext) || true;
+		this.logVerbose(`component will${!willRender ? ' NOT' : ''} re-derive State`);
+
+		return willRender;
 	}
 
 	protected logVerbose(...toLog: LogParam[]): void {

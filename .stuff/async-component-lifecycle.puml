@@ -1,0 +1,20 @@
+@startuml
+'left to right direction
+(deriveStateFromProps\n**Async**) as (deriveStateFromProps)
+(reDeriveState)
+(componentWillReceiveProps)
+(Constructor) ----> (deriveStateFromProps): calculate state\n**Async**
+
+(Constructor) ----> (createInitialState): initial state\n**loading: true**
+(createInitialState) -->(render): will render with\n**loading: true**
+(deriveStateFromProps) --> (setState): update initial\nstate
+(setState) --> (shouldComponentUpdate):will render if\nstate changed
+(shouldComponentUpdate) --> (render): yes
+
+(componentWillReceiveProps) ---> (shouldReDeriveState): component got\nnew props
+(shouldReDeriveState) --> (deriveStateFromProps): yes
+
+(reDeriveState) --> (deriveStateFromProps): force re-derive by dev
+Dev --> reDeriveState
+Dev --> setState
+@enduml
