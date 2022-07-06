@@ -23,10 +23,11 @@ import * as React from 'react';
 import {Module} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
+
 type Alignment = 'top' | 'right' | 'bottom' | 'left';
 
 export type  Tooltip_Model = {
-	content: React.ReactNode;
+	content: JSX.Element;
 	location?: {
 		x: number,
 		y: number
@@ -53,17 +54,9 @@ export class TooltipModule_Class
 	 * @param duration - Duration of time before content disappears on mouse leave, defaults to -1
 	 * @param allowContentHover
 	 */
-	show = (content: React.ReactNode, e: React.MouseEvent, alignment: Alignment = 'top', duration = -1, allowContentHover = false) => {
-		const model: Tooltip_Model = {
-			content,
-			location: {x: e.pageX + 10, y: e.pageY + 15},
-			duration: duration,
-			allowContentHover,
-			alignment
-		};
-		dispatch_showTooltip.dispatchUI(model);
+	show = (content: () => JSX.Element, e: React.MouseEvent, alignment: Alignment = 'top', duration = -1, allowContentHover = false) => {
+		this.showAt(content, e.pageX + 10, e.pageY + 15, duration, allowContentHover, alignment);
 	};
-
 
 	/**
 	 * Shows tooltip in specified location
@@ -73,9 +66,11 @@ export class TooltipModule_Class
 	 * @param duration - Duration of time before content disappears on mouse leave, defaults to -1
 	 * @param allowContentHover
 	 */
-	showAt = (content: React.ReactNode, x: number, y: number, duration = -1, allowContentHover = false, alignment: Alignment = 'top') => {
+	showAt = (content: () => JSX.Element, x: number, y: number, duration = -1, allowContentHover = false, alignment: Alignment = 'top') => {
+		const contentToRender = typeof content === 'function' ? content() : content;
+
 		const model: Tooltip_Model = {
-			content,
+			content: contentToRender,
 			location: {x, y},
 			duration: duration,
 			allowContentHover,
@@ -97,14 +92,14 @@ export const TooltipModule = new TooltipModule_Class();
  * @param allowContentHover
  * @constructor
  */
-export const ShowTooltip = (content: React.ReactNode, alignment: Alignment = 'top', duration = -1, allowContentHover = false) => {
+export const ShowTooltip = (content: () => JSX.Element, alignment: Alignment = 'top', duration = -1, allowContentHover = false) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<any>) => TooltipModule.show(content, e, alignment, duration, allowContentHover),
 		onMouseLeave: (e: React.MouseEvent<any>) => TooltipModule.hide(),
 	};
 };
 
-export const ShowTooltipAtTop = (content: React.ReactNode, duration = -1, allowContentHover = false) => {
+export const ShowTooltipAtTop = (content: () => JSX.Element, duration = -1, allowContentHover = false) => {
 
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
@@ -117,7 +112,7 @@ export const ShowTooltipAtTop = (content: React.ReactNode, duration = -1, allowC
 	};
 };
 
-export const ShowTooltipAtRight = (content: React.ReactNode, duration = -1, allowContentHover = false) => {
+export const ShowTooltipAtRight = (content: () => JSX.Element, duration = -1, allowContentHover = false) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const data = e.currentTarget.getBoundingClientRect();
@@ -129,7 +124,7 @@ export const ShowTooltipAtRight = (content: React.ReactNode, duration = -1, allo
 	};
 };
 
-export const ShowTooltipAtLeft = (content: React.ReactNode, duration = -1, allowContentHover = false) => {
+export const ShowTooltipAtLeft = (content: () => JSX.Element, duration = -1, allowContentHover = false) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const data = e.currentTarget.getBoundingClientRect();
