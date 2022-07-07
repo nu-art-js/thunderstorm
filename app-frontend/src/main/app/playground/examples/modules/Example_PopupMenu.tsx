@@ -48,7 +48,7 @@ const PopupMenuExperience: React.FC = () => {
 		}}>popup menu</span>
 		{/*<span className={'popup-button'} onClick={addCategoryOnClick}>dialog add category</span>*/}
 		{/*<span className={'popup-button'} onClick={removeRowOnClick}>dialog remove row</span>*/}
-		<span className={'popup-button'}{...ShowTooltip('bob')}>Tooltip Test</span>
+		<span className={'popup-button'}{...ShowTooltip(() => <div>bob</div>)}>Tooltip Test</span>
 	</LL_V_L>;
 };
 
