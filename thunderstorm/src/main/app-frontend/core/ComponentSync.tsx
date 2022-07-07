@@ -29,6 +29,7 @@ export abstract class ComponentSync<P = any, State = any>
 	extends BaseComponent<P, State> {
 
 	protected _deriveStateFromProps(nextProps: P): State | undefined {
+		this.logVerbose('Deriving state from props');
 		return this.deriveStateFromProps(nextProps);
 	}
 

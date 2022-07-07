@@ -1,3 +1,24 @@
+/*
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
 import {compare} from '@nu-art/ts-common';
@@ -5,7 +26,7 @@ import * as React from 'react';
 import {ComponentAsync} from '../../core/ComponentAsync';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_Workspace.scss';
-import {PanelConfig, Props_WorkspacePanel, Config_PanelParent, State_WorkspacePanel} from './types';
+import {Config_PanelParent, PanelConfig, Props_WorkspacePanel, State_WorkspacePanel} from './types';
 
 
 export abstract class PanelBaseSync<Config, State = {}, Props = {}>
@@ -15,11 +36,8 @@ export abstract class PanelBaseSync<Config, State = {}, Props = {}>
 		return {config: {...nextProps.config}} as State_WorkspacePanel<Config, State>;
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>, nextState: Readonly<State_WorkspacePanel<Config, State>>, nextContext: any): boolean {
-		if (super.shouldComponentUpdate(nextProps, nextState, nextContext))
-			return true;
-
-		return !compare(nextState.config, nextProps.config as Config);
+	shouldReDeriveState(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>): boolean {
+		return !compare(this.state.config, nextProps.config as Config);
 	}
 }
 
@@ -30,11 +48,8 @@ export abstract class PanelBaseAsync<Config, State = {}, Props = {}>
 		return {config: {...nextProps.config}} as State_WorkspacePanel<Config, State>;
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>, nextState: Readonly<State_WorkspacePanel<Config, State>>, nextContext: any): boolean {
-		if (super.shouldComponentUpdate(nextProps, nextState, nextContext))
-			return true;
-
-		return !compare(nextState.config, nextProps.config as Config);
+	shouldReDeriveState(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>): boolean {
+		return !compare(this.state.config, nextProps.config as Config);
 	}
 }
 

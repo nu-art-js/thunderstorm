@@ -28,8 +28,12 @@ import {_clearTimeout, _keys, _setTimeout, EmptyObject, Logger, LogLevel, LogPar
 import {Thunder} from './Thunder';
 
 
+let instances = 0;
+
 export abstract class BaseComponent<P = any, State = any>
 	extends React.Component<P, State> {
+
+	static MinLogLevel = LogLevel.Info;
 
 	protected readonly logger: Logger;
 	private timeoutMap: { [k: string]: number } = {};
@@ -37,13 +41,14 @@ export abstract class BaseComponent<P = any, State = any>
 
 	constructor(props: P) {
 		super(props);
-		this.logger = new Logger(this.constructor.name);
-		this.logger.setMinLevel(LogLevel.Info);
+		this.logger = new Logger(this.constructor.name + '-' + (++instances));
+		this.logger.setMinLevel(BaseComponent.MinLogLevel);
+		this.logVerbose('Creating..');
 
 		this._constructor();
 		const __render = this.render?.bind(this);
 		this.render = () => {
-			this.logVerbose('rendering');
+			this.logVerbose('Rendering', this.state);
 			return __render();
 		};
 
@@ -74,11 +79,11 @@ export abstract class BaseComponent<P = any, State = any>
 	}
 
 	UNSAFE_componentWillReceiveProps(nextProps: P) {
-		if (!this.shouldComponentUpdate(nextProps, this.state, undefined))
+		if (!this.shouldReDeriveState(nextProps))
 			return;
 
 		if (this.state) //skip the first time when the component MUST update
-			this.logDebug('deriving state from new props...');
+			this.logDebug('Received new props, calling deriveStateFromProps', nextProps as {});
 
 		const state = this._deriveStateFromProps(nextProps);
 		if (state)
@@ -88,15 +93,19 @@ export abstract class BaseComponent<P = any, State = any>
 	protected abstract _deriveStateFromProps(nextProps: P): State | undefined ;
 
 	protected reDeriveState() {
+		this.logDebug('reDeriveState called..');
+
 		this._deriveStateFromProps(this.props);
 	}
 
 	debounce(handler: TimerHandler, key: string, ms = 0) {
+		this.logWarning('THIS IS LEGACY S***, NEED TO REMOVE');
 		_clearTimeout(this.timeoutMap[key]);
 		this.timeoutMap[key] = _setTimeout(handler, ms);
 	}
 
 	throttle(handler: TimerHandler, key: string, ms = 0) {
+		this.logWarning('THIS IS LEGACY S***, NEED TO REMOVE');
 		if (this.timeoutMap[key])
 			return;
 		this.timeoutMap[key] = _setTimeout(() => {
@@ -105,27 +114,48 @@ export abstract class BaseComponent<P = any, State = any>
 		}, ms);
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<State>, nextContext: any): boolean {
-		const _shouldRender = () => {
+	shouldReDeriveState(nextProps: Readonly<P>): boolean {
+		const _shouldRederive = () => {
 			const propKeys = sortArray(_keys(this.props || EmptyObject));
 			const nextPropsKeys = sortArray(_keys(nextProps || EmptyObject));
-			const stateKeys = sortArray(_keys(this.state || EmptyObject));
-			const nextStateKeys = sortArray(_keys(nextState || EmptyObject));
-			if (propKeys.length !== nextPropsKeys.length) return true;
-			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]])) return true;
+			if (propKeys.length !== nextPropsKeys.length)
+				return true;
 
-			if (stateKeys.length !== nextStateKeys.length) return true;
-			if (stateKeys.some((key, i) => stateKeys[i] !== nextStateKeys[i] || this.state[stateKeys[i]] !== nextState[nextStateKeys[i]])) return true;
+			this.logVerbose(propKeys);
+			this.logVerbose(this.props);
+			this.logVerbose(nextPropsKeys);
+			this.logVerbose(nextProps);
+
+
+			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]]))
+				return true;
+
 			return false;
 		};
 
-		const shouldRender = _shouldRender();
-		if (!shouldRender)
-			this.logDebug('component won\'t update');
-		else
-			this.logDebug('component should update');
+		const willReDerive = _shouldRederive();
+		this.logVerbose(`component will${!willReDerive ? ' NOT' : ''} re-derive State`);
+		return willReDerive;
+	}
 
-		return shouldRender;
+	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<State>, nextContext: any): boolean {
+		const _shouldRender = () => {
+			const stateKeys = sortArray(_keys(this.state || EmptyObject));
+			const nextStateKeys = sortArray(_keys(nextState || EmptyObject));
+
+			if (stateKeys.length !== nextStateKeys.length)
+				return true;
+			if (stateKeys.some((key, i) => stateKeys[i] !== nextStateKeys[i] || this.state[stateKeys[i]] !== nextState[nextStateKeys[i]]))
+				return true;
+
+			return false;
+		};
+
+		// const willRender = super.shouldComponentUpdate?.(nextProps, nextState, nextContext) || true;
+		const willRender = _shouldRender();
+		this.logVerbose(`component will${!willRender ? ' NOT' : ''} render`);
+
+		return willRender;
 	}
 
 	protected logVerbose(...toLog: LogParam[]): void {
