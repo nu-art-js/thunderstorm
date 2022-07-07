@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Dispatcher, FunctionKeys, ParamResolver, ReturnTypeResolver} from '@nu-art/ts-common';
+import {Dispatcher, FunctionKeys, LogLevel, ParamResolver, ReturnTypeResolver} from '@nu-art/ts-common';
 
 // type ValidKeyResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? K : never
 
@@ -29,6 +29,8 @@ export class ThunderDispatcher<T,
 	R extends ReturnTypeResolver<T, K> = ReturnTypeResolver<T, K>>
 	extends Dispatcher<T, K, P, R> {
 
+	static MinLogLevel = LogLevel.Info;
+
 	static readonly listenersResolver: () => any[];
 
 	private cache?: P;
@@ -37,6 +39,8 @@ export class ThunderDispatcher<T,
 	constructor(method: K, allowCache = false) {
 		super(method);
 		this.allowCache = allowCache;
+		this.setMinLevel(ThunderDispatcher.MinLogLevel);
+
 	}
 
 	getCachedData() {
@@ -47,6 +51,7 @@ export class ThunderDispatcher<T,
 		if (this.allowCache)
 			this.cache = p;
 
+		this.logVerbose('Dispatching (Sync): ', p);
 		const listeners = ThunderDispatcher.listenersResolver();
 		return listeners.filter(this.filter).map((listener: T) => {
 			// @ts-ignore
@@ -58,6 +63,7 @@ export class ThunderDispatcher<T,
 		if (this.allowCache)
 			this.cache = p;
 
+		this.logVerbose('Dispatching (Async): ', p);
 		const listeners = ThunderDispatcher.listenersResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			// @ts-ignore

@@ -16,50 +16,65 @@
  * limitations under the License.
  */
 
-import {
-	LogLevel,
-	LogParam
-} from "./types";
-import {LogClient} from "./LogClient";
+import {LogLevel, LogParam} from './types';
+import {LogClient} from './LogClient';
+import {getLogStyle, LogStyle, TypedMap} from '../..';
+
 
 class LogClient_Browser_class
 	extends LogClient {
 
+	private style: TypedMap<LogStyle> = {
+		base: {
+			'background-color': '#fff',
+			'padding': '2px 0px',
+			'border-radius': '2px',
+		},
+		verbose: {
+			'color': '#808080',
+			'background-color': 'unset'
+		},
+		debug: {
+			'background-color': '#6564c9',
+		},
+		info: {
+			'background-color': '#189702',
+		},
+		warning: {
+			'background-color': '#926E00',
+		},
+		error: {
+			'background-color': '#B40000',
+		}
+	};
+
 	getColor(level: LogLevel, bold: boolean): string {
-		let color;
 		switch (level) {
 			case LogLevel.Verbose:
-				color = '#808080';
-				break;
-
+				return getLogStyle(this.style.base, this.style.verbose);
 			case LogLevel.Debug:
-				color = '#6564c9';
-				break;
-
+				return getLogStyle(this.style.base, this.style.debug);
 			case LogLevel.Info:
-				color = '#189702';
-				break;
-
+				return getLogStyle(this.style.base, this.style.info);
 			case LogLevel.Warning:
-				color = '#926E00';
-				break;
-
+				return getLogStyle(this.style.base, this.style.warning);
 			case LogLevel.Error:
-				color = '#B40000';
-				break;
+				return getLogStyle(this.style.base, this.style.error);
+			default:
+				return getLogStyle({'color': '#000000'});
 		}
-
-		return color || '#000000';
 	}
 
 	protected logMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]): void {
-		const color = this.getColor(level, bold);
 		for (const param of toLog) {
-			if (typeof param === "string") {
-				console.log(`%c${prefix}${param}`, `color: ${color}`);
-				continue
+			if (typeof param === 'string') {
+				console.log(`%c${prefix}${param}`, this.getColor(level, bold));
+				continue;
 			}
-
+			if (typeof param === 'object') {
+				console.log(`%c${prefix}`, this.getColor(level, bold));
+				continue;
+			}
 			console.log(param);
 		}
 	}
