@@ -18,9 +18,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {_keys, _setTimeout, BadImplementationException, Logger} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, Logger} from '@nu-art/ts-common';
 import {ErrorResponse, HttpMethod, TypedApi} from './types';
-import {HttpException, RequestErrorHandler, RequestSuccessHandler, TS_Progress} from './request-types';
+import {HttpException, TS_Progress} from './request-types';
 
 
 export type ErrorType = any
@@ -29,8 +29,6 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 
 	key: string;
 	requestData!: any;
-	errorMessage!: string;
-	successMessage!: string;
 
 	protected origin?: string;
 	protected headers: { [s: string]: string[] } = {};
@@ -41,43 +39,22 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	protected params: { [K in keyof API['P']]?: API['P'][K] } = {};
 	protected responseType!: string;
 
-	protected label!: string;
+	protected label: string;
 	protected onProgressListener!: (ev: TS_Progress) => void;
-	protected handleRequestSuccess!: RequestSuccessHandler;
-	protected handleRequestFailure!: RequestErrorHandler<ErrorType>;
-	protected onError?: RequestErrorHandler<ErrorType>;
 	protected aborted: boolean = false;
 	protected compress: boolean;
-	private defaultResponseHandler?: (request: BaseHttpRequest<any>) => boolean;
 	protected logger?: Logger;
 
 	constructor(requestKey: string, requestData?: any) {
 		this.key = requestKey;
 		this.requestData = requestData;
+		this.label = `http request: ${requestKey}${requestData ? ` ${requestData}` : ''}`;
 		this.compress = false;
 	}
 
 	setLogger(logger?: Logger) {
 		this.logger = logger;
 		return this;
-	}
-
-	setHandleRequestSuccess(handleRequestSuccess: RequestSuccessHandler) {
-		this.handleRequestSuccess = handleRequestSuccess;
-		return this;
-	}
-
-	setHandleRequestFailure(handleRequestFailure: RequestErrorHandler<ErrorType>) {
-		this.handleRequestFailure = handleRequestFailure;
-		return this;
-	}
-
-	getErrorMessage() {
-		return this.errorMessage;
-	}
-
-	getSuccessMessage() {
-		return this.successMessage;
 	}
 
 	getRequestData() {
@@ -89,33 +66,8 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	}
 
-	setOnError(errorMessage?: string | RequestErrorHandler<ErrorType>) {
-		if (!errorMessage)
-			return this;
-		if (typeof errorMessage === 'string') {
-			// @ts-ignore
-			// noinspection JSConstantReassignment
-			this.errorMessage = errorMessage;
-		} else
-			this.onError = errorMessage;
-
-		return this;
-	}
-
-	setOnSuccessMessage(successMessage: string) {
-		// @ts-ignore
-		// noinspection JSConstantReassignment
-		this.successMessage = successMessage;
-		return this;
-	}
-
 	setOnProgressListener(onProgressListener: (ev: TS_Progress) => void) {
 		this.onProgressListener = onProgressListener;
-		return this;
-	}
-
-	setDefaultRequestHandler(processDefaultResponseHandlers: (request: BaseHttpRequest<any>) => boolean) {
-		this.defaultResponseHandler = processDefaultResponseHandlers;
 		return this;
 	}
 
@@ -250,72 +202,40 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return response;
 	}
 
-	protected resolveResponse(): API['R'] {
-		const rawResponse = this.getResponse();
-		let response: API['R'] = undefined as unknown as API['R'];
-		if (rawResponse) {
-			try {
-				response = rawResponse && this.asJson();
-			} catch (e: any) {
-				response = this.asText();
-			}
-		}
-		return response;
-	}
-
-	private handleFailure(reject?: (reason?: any) => void) {
-		const errorResponse = this.getErrorResponse();
-		this.onError?.(this, errorResponse);
-		this.handleRequestFailure(this, errorResponse);
-		reject?.(errorResponse);
-	}
-
-	private isValidStatus() {
-		const statusCode = this.getStatus();
+	isValidStatus(statusCode: number) {
 		return statusCode >= 200 && statusCode < 300;
 	}
 
 	async executeSync(): Promise<API['R']> {
 		await this.executeImpl();
+		const status = this.getStatus();
+
 		if (this.aborted)
-			throw new HttpException(this.getStatus(), this.url);// should be status 0
+			throw new HttpException(status, this.url);// should be status 0
 
-		// run this anyway to have consistent behaviour
-		this.defaultResponseHandler?.(this);
-
-		if (!this.isValidStatus()) {
+		if (!this.isValidStatus(status)) {
 			this.handleFailure();
-			throw new HttpException(this.getStatus(), this.url);
+			throw new HttpException(status, this.url);
 		}
 
-		this.handleRequestSuccess(this);
-		return this.resolveResponse();
+		const response: API['R'] = this.getResponse();
+		if (!response)
+			return response;
+
+		try {
+			return JSON.parse(response as unknown as string) as API['R'];
+		} catch (ignore: any) {
+			return response;
+		}
 	}
 
-	execute(responseHandler?: (response: API['R'], data?: string) => Promise<void> | void) {
-		const toCall = async (resolve: (value?: unknown) => void, reject: (reason?: any) => void) => {
-			await this.executeImpl();
-			if (this.aborted)
-				return resolve();
+	execute(onSuccess: (response: API['R'], data?: string) => Promise<void> | void = () => this.logger?.logVerbose(`Completed: ${this.label}`),
+					onError: (reason: any) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
 
-			if (this.defaultResponseHandler?.(this))
-				return resolve();
+		this.executeSync()
+			.then(onSuccess)
+			.catch(onError);
 
-			if (!this.isValidStatus())
-				return this.handleFailure(reject);
-
-			const response = this.resolveResponse();
-			responseHandler && await responseHandler(response, this.requestData);
-			this.handleRequestSuccess(this);
-			resolve();
-		};
-
-		_setTimeout(() => {
-			const label = this.label || `http request: ${this.key} ${this.requestData}`;
-			new Promise(toCall)
-				.then(() => this.logger?.logVerbose(`Async call completed: ${label} ${this.requestData || ''}`))
-				.catch(reason => this.logger?.logWarning(`Async call error: ${label} ${this.requestData || ''}`, reason));
-		});
 		return this;
 	}
 

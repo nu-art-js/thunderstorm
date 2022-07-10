@@ -17,30 +17,48 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {ToastBuilder, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
-import {DB_Document, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument} from '../../shared/types';
+import {ToastBuilder, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {DB_Document, LiveDocReqParams} from '../../shared/types';
 import {ApiDef_LiveDoc_Get, ApiDef_LiveDoc_History, ApiDef_LiveDoc_Upsert, ApiStruct_LiveDoc} from '../../shared/api';
-import {ApiDef, ApiDefCaller, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDef, ApiDefCaller, BaseHttpRequest, BodyApi, QueryApi} from '@nu-art/thunderstorm';
 import {DefaultLiveDocEditor} from '../utils';
+import {response} from 'express';
 
 
-export type LiveDocActionResolver = (docKey: string) => ToastBuilder;
+export type LiveDocActionResolver = (doc: DB_Document) => ToastBuilder;
 
-function apiWithQuery<T extends QueryApi<any, any, any>>(apiDef: ApiDef<T>, processor?: (response: T['R'], params: T['P']) => Promise<any>) {
+function apiWithQuery<T extends QueryApi<any, any, any>>(apiDef: ApiDef<T>, _processor?: (response: T['R'], params: T['P']) => Promise<any>) {
 	return (params: T['P'], processor?: (response: T['R']) => Promise<any>) => {
-		XhrHttpModule
+		const request: BaseHttpRequest<T> = XhrHttpModule
 			.createRequest(apiDef)
-			.setUrlParams(params)
-			.execute(processor);
+			.setUrlParams(params);
+
+		return {
+			request,
+			execute: () => {
+				request.execute(async (response) => {
+					await processor?.(response);
+					await _processor?.(response, params);
+				});
+			},
+			executeSync: async () => {
+				const response = request.executeSync();
+				await processor?.(response);
+				await _processor?.(response, params);
+			}
+		};
 	};
 }
 
-function apiWithBody<T extends BodyApi<any, any, any>>(apiDef: ApiDef<T>, processor?: (body: T['B'], params: T['P']) => Promise<any>) {
+function apiWithBody<T extends BodyApi<any, any, any>>(apiDef: ApiDef<T>, _processor?: (response: T['R'], body: T['B']) => Promise<any>) {
 	return (body: T['B'], processor?: (response: T['R']) => Promise<any>) => {
 		XhrHttpModule
 			.createRequest(apiDef)
 			.setJsonBody(body)
-			.execute(processor);
+			.execute(async () => {
+				await processor?.(response);
+				await _processor?.(response, body);
+			});
 	};
 }
 
@@ -64,6 +82,7 @@ export class LiveDocsModule_Class
 			return;
 
 		this.docs[params.key] = response;
+		this.toasterResolver(response).show();
 	};
 
 	get(key: string) {
@@ -74,60 +93,35 @@ export class LiveDocsModule_Class
 		this.toasterResolver = resolver;
 	}
 
-	private _showDocImpl = (docKey: string, doc: DB_Document) => {
-		this.toasterResolver(docKey).show();
-	};
-
-	private showLiveDoc(params: LiveDocReqParams): void {
-		const docKey = params.key;
-		const doc = this.docs[docKey];
-		if (doc)
-			this._showDocImpl(docKey, doc);
-		else
-			ToastModule.toastInfo('Loading...');
-
-		XhrHttpModule
-			.createRequest(ApiDef_LiveDoc_Get, `${RequestKey_FetchDoc}-${docKey}`)
-			.setUrlParams(params)
-			.setRelativeUrl('/v1/live-docs/get')
-			.setLabel(`Fetch live-docs for key: ${docKey}`)
-			.setOnError(`Error fetching live-docs for key: ${docKey}`)
-			.execute();
-	}
-
-	private update(liveDoc: Request_UpdateDocument) {
-		const docKey = liveDoc.key;
-
-		XhrHttpModule
-			.createRequest(ApiDef_LiveDoc_Upsert, `${RequestKey_UpdateDoc}-${docKey}`)
-			.setJsonBody(liveDoc)
-			.setRelativeUrl('/v1/live-docs/update')
-			.setLabel(`Update live-docs with key: ${docKey}`)
-			.setOnError(`Error updating live-docs for key: ${docKey}`)
-			.execute(async () => this.showLiveDoc(liveDoc));
-	}
-
-	private changeHistory(params: LiveDocHistoryReqParams) {
-		const {key, change} = params;
-		XhrHttpModule
-			.createRequest(ApiDef_LiveDoc_History, `${RequestKey_UpdatePointer}-${key}`)
-			.setUrlParams(params)
-			.setRelativeUrl('/v1/live-docs/change-history')
-			.setLabel(`${change} live-docs history with key: ${key}`)
-			.setOnError(`Error ${change} live-docs history for key: ${key}`)
-			.execute(async () => this.showLiveDoc(params));
-	}
-
 	v1 = {
 		get: apiWithQuery(ApiDef_LiveDoc_Get, this.onGotDoc),
-		upsert: apiWithBody(ApiDef_LiveDoc_Upsert, this.showLiveDoc),
-		history: this.changeHistory
+		upsert: apiWithBody(ApiDef_LiveDoc_Upsert, this.onGotDoc),
+		history: apiWithQuery(ApiDef_LiveDoc_History, this.onGotDoc)
 	};
-
-	v2 = {
-		upsert: this.update,
-	};
-
 }
 
 export const LiveDocsModule = new LiveDocsModule_Class();
+
+function doublePositiveOnly(x, callback) {
+	const func = this.doublePositiveOnly;
+
+	if (callback === undefined) {
+		return new Promise(function (resolve, reject) {
+			func(x, function (err, result) {
+				err ? reject(err) : resolve(result);
+			});
+		});
+	}
+
+	let error;
+	if (!x)
+		error = new Error('x must be defined');
+	if (typeof x !== 'number')
+		error = new Error('x must be a number');
+	if (x < 0)
+		error = new Error('x must be positive');
+
+	const double = error ? null : x * 2;
+
+	return callback(error, double);
+}
