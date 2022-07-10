@@ -22,42 +22,27 @@ import {DB_Document, LiveDocReqParams} from '../../shared/types';
 import {ApiDef_LiveDoc_Get, ApiDef_LiveDoc_History, ApiDef_LiveDoc_Upsert, ApiStruct_LiveDoc} from '../../shared/api';
 import {ApiDef, ApiDefCaller, BaseHttpRequest, BodyApi, QueryApi} from '@nu-art/thunderstorm';
 import {DefaultLiveDocEditor} from '../utils';
-import {response} from 'express';
 
 
 export type LiveDocActionResolver = (doc: DB_Document) => ToastBuilder;
 
-function apiWithQuery<T extends QueryApi<any, any, any>>(apiDef: ApiDef<T>, _processor?: (response: T['R'], params: T['P']) => Promise<any>) {
-	return (params: T['P']) => {
-		const request: BaseHttpRequest<T> = XhrHttpModule
-			.createRequest(apiDef)
+function apiWithQuery<API extends QueryApi<any, any, any>>(apiDef: ApiDef<API>, onCompleted?: (response: API['R'], params: API['P']) => Promise<any>, onError?: (errorResponse: any, input: API['P'] | API['B']) => Promise<any>) {
+	return (params: API['P']): BaseHttpRequest<API> => {
+		return XhrHttpModule
+			.createRequest<API>(apiDef)
 			.setUrlParams(params)
-			.setOnComplete();
-
-		return {
-			request,
-			execute: () => {
-				request.execute(async (response) => {
-					await _processor?.(response, params);
-				});
-			},
-			executeSync: async () => {
-				const response = request.executeSync();
-				await _processor?.(response, params);
-			}
-		};
+			.setOnError(onError)
+			.setOnCompleted(onCompleted);
 	};
 }
 
-function apiWithBody<T extends BodyApi<any, any, any>>(apiDef: ApiDef<T>, _processor?: (response: T['R'], body: T['B']) => Promise<any>) {
-	return (body: T['B'], processor?: (response: T['R']) => Promise<any>) => {
-		XhrHttpModule
-			.createRequest(apiDef)
-			.setJsonBody(body)
-			.execute(async () => {
-				await _processor?.(response, body);
-				await processor?.(response);
-			});
+function apiWithBody<API extends BodyApi<any, any, any>>(apiDef: ApiDef<API>, onCompleted?: (response: API['R'], body: API['B']) => Promise<any>, onError?: (errorResponse: any, input: API['P'] | API['B']) => Promise<any>) {
+	return (body: API['B']): BaseHttpRequest<API> => {
+		return XhrHttpModule
+			.createRequest<API>(apiDef)
+			.setBodyAsJson(body)
+			.setOnError(onError)
+			.setOnCompleted(onCompleted);
 	};
 }
 

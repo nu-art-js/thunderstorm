@@ -1,7 +1,7 @@
 /*
- * A typescript & react boilerplate with api call example
+ * A generic push pub sub infra for webapps
  *
- * Copyright (C) 2018  Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import {BaseSubscriptionData, DB_Notifications, IFP, ISP, ITP, MessageType, PubS
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {FirebaseModule, MessagingWrapper} from '@nu-art/firebase/frontend';
 import {NotificationsModule} from './NotificationModule';
+
 
 export const Command_SwToApp = 'SwToApp';
 
@@ -172,7 +173,6 @@ export class PushPubSubModule_Class
 		});
 	};
 
-
 	private subscribeImpl(subscription: BaseSubscriptionData) {
 		if (this.subscriptions.find(d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props)))
 			return;
@@ -213,7 +213,7 @@ export class PushPubSubModule_Class
 		XhrHttpModule
 			.createRequest<PubSubRegisterClient>(HttpMethod.POST, extra + '-pub-sub-tab')
 			.setRelativeUrl('/v1/push/register')
-			.setJsonBody(body)
+			.setBodyAsJson(body)
 			.setOnError('Failed ' + extra + '-pub-sub-tab')
 			.execute((response) => {
 				// NotificationsModule.setNotificationList(response);

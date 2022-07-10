@@ -99,7 +99,7 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 		let response = undefined as unknown as ErrorResponse<ErrorType>;
 		if (rawResponse) {
 			try {
-				response = rawResponse && this.asJson() as unknown as ErrorResponse<ErrorType>;
+				response = rawResponse && JSON.parse(rawResponse as unknown as string) as ErrorResponse<ErrorType>;
 			} catch (e: any) {
 				response = {debugMessage: rawResponse};
 			}

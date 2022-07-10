@@ -44,7 +44,8 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	protected aborted: boolean = false;
 	protected compress: boolean;
 	protected logger?: Logger;
-	private onCompleted?: ((response: API['R'], input: (API['P'] | API['B'])) => Promise<any>) | undefined;
+	private onCompleted?: ((response: API['R'], input: (API['P'] | API['B'])) => Promise<any>);
+	private onError?: (errorResponse: HttpException, input: API['P'] | API['B']) => Promise<any>;
 
 	constructor(requestKey: string, requestData?: any) {
 		this.key = requestKey;
@@ -168,14 +169,14 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	}
 
-	setJsonBody(bodyObject: API['B'], compress?: boolean) {
+	protected prepareJsonBody(bodyObject: API['B']): any {
+		return bodyObject;
+	}
+
+	setBodyAsJson(bodyObject: API['B'], compress?: boolean) {
 		this.setHeader('content-type', 'application/json');
 		this.setBody(this.prepareJsonBody(bodyObject), compress);
 		return this;
-	}
-
-	protected prepareJsonBody(bodyObject: API['B']): any {
-		return bodyObject;
 	}
 
 	setBody(bodyAsString: any, _compress?: boolean) {
@@ -187,22 +188,6 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		return this;
 	}
 
-	asJson(): API['R'] {
-		const response = this.getResponse();
-		if (!response)
-			throw new BadImplementationException('No xhr.response...');
-
-		return JSON.parse(response as unknown as string) as API['R'];
-	}
-
-	asText() {
-		const response = this.getResponse();
-		if (!response)
-			throw new BadImplementationException('No xhr object... maybe you didn\'t wait for the request to return??');
-
-		return response;
-	}
-
 	isValidStatus(statusCode: number) {
 		return statusCode >= 200 && statusCode < 300;
 	}
@@ -211,29 +196,37 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		await this.executeImpl();
 		const status = this.getStatus();
 
-		if (this.aborted)
-			throw new HttpException(status, this.url);// should be status 0
+		const requestData = this.params || this.body;
+		if (this.aborted) {
+			const httpException = new HttpException(status, this.url); // should be status 0
+			this.onError?.(httpException, requestData);
+			throw httpException;
+		}
 
 		if (!this.isValidStatus(status)) {
 			const errorResponse = this.getErrorResponse();
-			throw new HttpException(status, this.url, errorResponse);
+			const httpException = new HttpException(status, this.url, errorResponse);
+			this.onError?.(httpException, requestData);
+			throw httpException;
 		}
 
-		const response: API['R'] = this.getResponse();
+		let response: API['R'] = this.getResponse();
 		if (!response) {
-			this.onCompleted?.(response, this.params || this.body);
+			this.onCompleted?.(response, requestData);
 			return response;
 		}
 
 		try {
-			return JSON.parse(response as unknown as string) as API['R'];
+			response = JSON.parse(response as unknown as string) as API['R'];
 		} catch (ignore: any) {
-			return response;
+			//
 		}
+		this.onCompleted?.(response, requestData);
+		return response;
 	}
 
 	execute(onSuccess: (response: API['R'], data?: string) => Promise<void> | void = () => this.logger?.logVerbose(`Completed: ${this.label}`),
-					onError: (reason: any) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
+					onError: (reason: HttpException) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
 
 		this.executeSync()
 			.then(onSuccess)
@@ -244,6 +237,12 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 
 	setOnCompleted(onCompleted?: (response: API['R'], input: API['P'] | API['B']) => Promise<any>) {
 		this.onCompleted = onCompleted;
+		return this;
+	}
+
+	setOnError(onError?: (errorResponse: HttpException, input: API['P'] | API['B']) => Promise<any>) {
+		this.onError = onError;
+		return this;
 	}
 
 	protected abstract getResponse(): API['R']
@@ -261,7 +260,22 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		this.abortImpl();
 	}
 
+	protected composeFullUrl() {
+		let nextOperator = this.url.indexOf('?') === -1 ? '?' : '&';
+		return Object.keys(this.params).reduce((url: string, paramKey: string) => {
+			const param: string | undefined = this.params[paramKey];
+			if (!param)
+				return url;
+
+			const toRet = `${url}${nextOperator}${paramKey}=${encodeURIComponent(param)}`;
+			nextOperator = '&';
+			return toRet;
+		}, this.url);
+
+	}
+
 	protected abstract executeImpl(): Promise<void>
+
 }
 
 

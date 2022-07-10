@@ -20,6 +20,7 @@
  */
 
 import {DB_Object, TS_Object} from '@nu-art/ts-common';
+import {BaseHttpRequest} from './BaseHttpRequest';
 
 
 export type DBIndex<T extends DB_Object> = { id: string, keys: keyof T | (keyof T)[], params?: { multiEntry: boolean, unique: boolean } };
@@ -74,8 +75,9 @@ export type  ErrorResponse<E extends TS_Object | void = void> = {
 export type ApiDefCaller<K> = K extends TS_Object ? ApiRouter<K> | ApiCaller<K> :
 	ApiCaller<K>;
 
-export type ApiCaller<API> = API extends QueryApi<any, any, any> ? (query: API['P'], onSuccess?: (response: API['R']) => any) => void | Promise<API['R']> :
-	API extends BodyApi<any, any, any> ? (body: API['B']) => void | Promise<API['R']> :
-		API extends TypedApi<any, any, any, any> ? (body: API['B'], query: API['P']) => void | Promise<API['R']> : never;
-
 export type ApiRouter<T extends TS_Object> = { [P in keyof T]: ApiDefCaller<T[P]> };
+
+export type ApiCaller<API> =
+	API extends QueryApi<any, any, any> ? (query: API['P']) => BaseHttpRequest<API> :
+		API extends BodyApi<any, any, any> ? (body: API['B']) => BaseHttpRequest<API> :
+			API extends TypedApi<any, any, any, any> ? (body: API['B'], query: API['P']) => BaseHttpRequest<API> : never;

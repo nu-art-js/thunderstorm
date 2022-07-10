@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {__stringify, Module, Second} from "@nu-art/ts-common";
+import {__stringify, Module, Second} from '@nu-art/ts-common';
 
-import {ThunderDispatcher, ToastModule, XhrHttpModule} from "@nu-art/thunderstorm/frontend";
+import {ThunderDispatcher, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 import {
 	CommonBodyReq,
 	CustomError1,
@@ -30,22 +30,23 @@ import {
 	ExampleGetMax,
 	ExampleTestPush,
 	TestDispatch
-} from "@app/app-shared";
-import {ErrorResponse, HttpMethod} from "@nu-art/thunderstorm";
-import {Test} from "@modules/TestModule";
-import {NotificationsModule, OnNotificationsUpdated, OnPushMessageReceived, PushPubSubModule} from "@nu-art/push-pub-sub/frontend";
-import {FirebaseModule} from "@nu-art/firebase/frontend";
-import {BaseSubscriptionData, DB_Notifications} from "@nu-art/push-pub-sub";
+} from '@app/app-shared';
+import {ErrorResponse, HttpMethod} from '@nu-art/thunderstorm';
+import {Test} from '@modules/TestModule';
+import {NotificationsModule, OnNotificationsUpdated, OnPushMessageReceived, PushPubSubModule} from '@nu-art/push-pub-sub/frontend';
+import {FirebaseModule} from '@nu-art/firebase/frontend';
+import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub';
+
 
 type Config = {
 	remoteUrl: string
 }
 
-export const RequestKey_CustomError = "CustomError";
-export const RequestKey_PostApi = "PostApi";
-export const RequestKey_GetApi = "GetApi";
-export const RequestKey_TestPush = "TestPush";
-export const RequestKey_TestApi = "TestApi";
+export const RequestKey_CustomError = 'CustomError';
+export const RequestKey_PostApi = 'PostApi';
+export const RequestKey_GetApi = 'GetApi';
+export const RequestKey_TestPush = 'TestPush';
+export const RequestKey_TestApi = 'TestApi';
 export const exampleDispatcher = new ThunderDispatcher<TestDispatch, 'testDispatch'>('testDispatch');
 
 export const dispatchAll = () => {
@@ -72,7 +73,7 @@ export class ExampleModule_Class
 	private max: number = 0;
 
 	protected init(): void {
-		PushPubSubModule.subscribeMulti(mySubscriptions)
+		PushPubSubModule.subscribeMulti(mySubscriptions);
 		this.runAsync('Async start', this.initAnalytics);
 	}
 
@@ -95,7 +96,7 @@ export class ExampleModule_Class
 	callCustomErrorApi() {
 		XhrHttpModule
 			.createRequest<ExampleApiCustomError>(HttpMethod.POST, RequestKey_CustomError)
-			.setRelativeUrl("/v1/sample/custom-error")
+			.setRelativeUrl('/v1/sample/custom-error')
 			.setOnError((request, resError?: ErrorResponse<CustomError1 | CustomError2>) => {
 				const error = resError?.error;
 				if (!error)
@@ -107,12 +108,12 @@ export class ExampleModule_Class
 
 				let errorBody: CustomError1 | CustomError2 | undefined;
 				switch (errorType) {
-					case "CustomError1":
+					case 'CustomError1':
 						errorBody = error.body as CustomError1;
 						ToastModule.toastError(`${errorBody.prop1}\n${errorBody.prop2}`);
 						break;
 
-					case "CustomError2":
+					case 'CustomError2':
 						errorBody = error.body as CustomError2;
 						ToastModule.toastError(`${errorBody.prop3}\n${errorBody.prop4}`);
 						break;
@@ -121,26 +122,25 @@ export class ExampleModule_Class
 			.setOnSuccessMessage(`Success`)
 			.execute();
 
-
 	}
 
 	public getMessageFromServer1 = () => {
-		this.logInfo("getting label from server");
-		const bodyObject: CommonBodyReq = {message: this.message || "No message"};
+		this.logInfo('getting label from server');
+		const bodyObject: CommonBodyReq = {message: this.message || 'No message'};
 
 		const r = XhrHttpModule
 			.createRequest<ExampleApiPostType>(HttpMethod.POST, RequestKey_PostApi)
-			.setJsonBody(bodyObject)
-			.setRelativeUrl("/v1/sample/another-endpoint")
+			.setBodyAsJson(bodyObject)
+			.setRelativeUrl('/v1/sample/another-endpoint')
 			.setOnError(`Error getting new message from backend`);
 
 		r.execute(this.setMessage);
 
-		this.logInfo("continue... will receive an event once request is completed..");
+		this.logInfo('continue... will receive an event once request is completed..');
 	};
 
 	public getMessageFromServer2 = () => {
-		this.logInfo("getting label from server");
+		this.logInfo('getting label from server');
 
 		const r = XhrHttpModule
 			.createRequest<ExampleApiGetType>(HttpMethod.GET, RequestKey_GetApi)
@@ -149,11 +149,11 @@ export class ExampleModule_Class
 
 		r.execute(this.setMessage);
 
-		this.logInfo("continue... will receive an event once request is completed..");
+		this.logInfo('continue... will receive an event once request is completed..');
 	};
 
 	testPush = () => {
-		this.logInfo("getting label from server");
+		this.logInfo('getting label from server');
 
 		XhrHttpModule
 			.createRequest<ExampleTestPush>(HttpMethod.GET, RequestKey_TestPush)
@@ -163,7 +163,7 @@ export class ExampleModule_Class
 	};
 
 	setMessage = async (_message: unknown) => {
-		const message = _message as string
+		const message = _message as string;
 		this.logInfo(`got message: ${message}`);
 		this.message = message;
 	};
@@ -187,34 +187,34 @@ export class ExampleModule_Class
 	};
 
 	testModDispatcher = () => {
-		console.log("testing the mod dispatcher");
+		console.log('testing the mod dispatcher');
 		setTimeout(() => {
 			Test.setModData();
 		}, 2 * Second);
 	};
 
 	testBackendDispatcher = () => {
-		this.logInfo("passing to server");
+		this.logInfo('passing to server');
 		XhrHttpModule
 			.createRequest<ExampleApiTest>(HttpMethod.GET, RequestKey_TestApi)
-			.setRelativeUrl("/v1/sample/dispatch-endpoint")
+			.setRelativeUrl('/v1/sample/dispatch-endpoint')
 			.setOnError(`Error getting a message from backend`)
 			.execute(async response => {
 				this.fetchMax();
-				console.log("i think i got something...");
+				console.log('i think i got something...');
 				console.log(response);
 				this.api_data = response as string;
 				dispatchAll();
 			});
 
-		this.logInfo("continue... will receive an event once request is completed..");
+		this.logInfo('continue... will receive an event once request is completed..');
 	};
 
 	fetchMax = () => {
 		const r = XhrHttpModule
 			.createRequest<ExampleGetMax>(HttpMethod.GET, RequestKey_TestApi)
-			.setRelativeUrl("/v1/sample/get-max")
-			.setOnError(`Error getting max from backend`)
+			.setRelativeUrl('/v1/sample/get-max')
+			.setOnError(`Error getting max from backend`);
 
 		r.execute(async response => {
 			this.max = (response as { n: number }).n;

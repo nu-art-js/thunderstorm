@@ -119,7 +119,7 @@ export class AccountModuleFE_Class
 		XhrHttpModule
 			.createRequest(ApiDef_UserAccount_Create)
 			.setRelativeUrl('/v1/account/create')
-			.setJsonBody(request)
+			.setBodyAsJson(request)
 			.setLabel(`User register...`)
 			.setOnError('Error registering user')
 			.execute(async (response: Response_Auth) => {
@@ -131,7 +131,7 @@ export class AccountModuleFE_Class
 		XhrHttpModule
 			.createRequest(ApiDef_UserAccount_Login)
 			.setRelativeUrl('/v1/account/login')
-			.setJsonBody(request)
+			.setBodyAsJson(request)
 			.setLabel(`User login with password...`)
 			.setOnError('Error login user')
 			.execute(async (response: Response_Auth) => {

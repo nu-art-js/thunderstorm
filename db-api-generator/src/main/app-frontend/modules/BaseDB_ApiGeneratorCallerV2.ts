@@ -125,7 +125,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 	upsertAll = (toUpsert: PreDB<DBType>[], responseHandler?: ((response: DBType[]) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_UpsertAll<DBType>> =>
 		this.createRequest<TypedApi_UpsertAll<DBType>>(ApiGen_ApiDefs.UpsertAll)
-			.setJsonBody(toUpsert)
+			.setBodyAsJson(toUpsert)
 			.execute(async (response) => {
 				await this.onEntriesUpdated(response);
 				if (responseHandler)
@@ -138,7 +138,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 	patch = (toUpdate: Partial<DBType> & DB_BaseObject, responseHandler?: ((response: DBType) => Promise<void> | void), requestData?: string): BaseHttpRequest<TypedApi_Patch<DBType>> => {
 		return this.createRequest<TypedApi_Patch<DBType>>(ApiGen_ApiDefs.Patch)
-			.setJsonBody(toUpdate)
+			.setBodyAsJson(toUpdate)
 			.execute(async response => {
 				await this.onEntryPatched(response);
 				if (responseHandler)
@@ -153,7 +153,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 		return this
 			.createRequest<TypedApi_Query<DBType>>(ApiGen_ApiDefs.Query)
-			.setJsonBody(_query)
+			.setBodyAsJson(_query)
 			.execute(async response => {
 				await this.onQueryReturned(response, requestData, dispatch);
 				if (responseHandler)
@@ -169,7 +169,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 		return this
 			.createRequest<TypedApi_Query<DBType>>(ApiGen_ApiDefs.Query)
-			.setJsonBody(query)
+			.setBodyAsJson(query)
 			.execute(async response => {
 				await this.onGotUnique(response[0]);
 				if (responseHandler)

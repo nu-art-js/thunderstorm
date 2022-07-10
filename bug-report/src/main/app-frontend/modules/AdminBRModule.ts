@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Allow the user to file a bug  report directly from your app
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,19 +16,14 @@
  * limitations under the License.
  */
 
-import {Module} from "@nu-art/ts-common";
-import {XhrHttpModule} from "@nu-art/thunderstorm/frontend";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {
-	ApiGetLog,
-	ApiPostPath,
-	DB_BugReport,
-	Paths,
-	ReportLogFile
-} from "../../shared/api";
+import {Module} from '@nu-art/ts-common';
+import {XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {HttpMethod} from '@nu-art/thunderstorm';
+import {ApiGetLog, ApiPostPath, DB_BugReport, Paths, ReportLogFile} from '../../shared/api';
 
-export const RequestKey_GetLog = "GetLog";
-export const RequestKey_PostPath = "PostPath";
+
+export const RequestKey_GetLog = 'GetLog';
+export const RequestKey_PostPath = 'PostPath';
 
 export class AdminBRModule_Class
 	extends Module {
@@ -41,34 +35,34 @@ export class AdminBRModule_Class
 	private logs: DB_BugReport[] = [];
 
 	public retrieveLogs = () => {
-		this.logInfo("getting logs from firestore...");
+		this.logInfo('getting logs from firestore...');
 		XhrHttpModule
 			.createRequest<ApiGetLog>(HttpMethod.GET, RequestKey_GetLog)
-			.setRelativeUrl("/v1/bug-reports/get-logs")
+			.setRelativeUrl('/v1/bug-reports/get-logs')
 			.setOnError(`Error getting new message from backend`)
 			.execute(async response => {
-				this.logs = response
+				this.logs = response;
 			});
 
-		this.logInfo("continue... will receive an event once request is completed..");
+		this.logInfo('continue... will receive an event once request is completed..');
 	};
 
 	public downloadLogs = (path: string) => {
-		this.logInfo("downloading the logs to the client..");
+		this.logInfo('downloading the logs to the client..');
 		const bodyObject: Paths = {path: path};
 		XhrHttpModule
 			.createRequest<ApiPostPath>(HttpMethod.POST, RequestKey_PostPath)
-			.setJsonBody(bodyObject)
-			.setRelativeUrl("/v1/bug-reports/download-logs")
+			.setBodyAsJson(bodyObject)
+			.setRelativeUrl('/v1/bug-reports/download-logs')
 			.setOnError(`Error getting new message from backend`)
 			.execute();
 	};
 
 	public downloadMultiLogs = (reports: ReportLogFile[]) => {
-		reports.forEach(report => this.downloadLogs(report.path))
-	}
+		reports.forEach(report => this.downloadLogs(report.path));
+	};
 
-	public getLogs = () => this.logs
+	public getLogs = () => this.logs;
 }
 
 export const AdminBRModule = new AdminBRModule_Class();
