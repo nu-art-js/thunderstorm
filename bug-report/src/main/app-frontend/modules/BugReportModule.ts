@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Allow the user to file a bug  report directly from your app
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -21,6 +20,7 @@ import {addItemToArray, BeLogged, LogClient_MemBuffer, LogLevel, LogLevelOrdinal
 import {XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {ApiBugReport, Request_BugReport} from '../../shared/api';
+
 
 export const RequestKey_BugReportApi = 'BugReport';
 
@@ -50,7 +50,7 @@ export class BugReportModule_Class
 
 		XhrHttpModule
 			.createRequest<ApiBugReport>(HttpMethod.POST, RequestKey_BugReportApi)
-			.setJsonBody(body)
+			.setBodyAsJson(body)
 			.setRelativeUrl('/v1/bug-reports/report')
 			.setOnError(() => this.logWarning(`Error updating the report`))
 			.execute((response) => {

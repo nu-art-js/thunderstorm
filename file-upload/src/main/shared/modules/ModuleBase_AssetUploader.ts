@@ -137,7 +137,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 			.httpModule
 			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl, body.map(file => file.feId))
 			.setRelativeUrl('/v1/upload/get-url')
-			.setJsonBody(body)
+			.setBodyAsJson(body)
 			.setOnError((request: BaseHttpRequest<any>, resError?: ErrorResponse) => {
 				body.forEach(f => {
 					this.setFileInfo(f.feId, {

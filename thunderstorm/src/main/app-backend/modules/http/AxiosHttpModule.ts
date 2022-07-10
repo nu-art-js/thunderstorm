@@ -96,10 +96,6 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 		return this.response?.data;
 	}
 
-	protected resolveResponse() {
-		return this.getResponse();
-	}
-
 	protected abortImpl(): void {
 		this.cancelSignal.cancel(`Request with key: '${this.key}' aborted by the user.`);
 	}
@@ -119,16 +115,7 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 			if (this.aborted)
 				return resolve();
 
-			let nextOperator = this.url.indexOf('?') === -1 ? '?' : '&';
-			const fullUrl = Object.keys(this.params).reduce((url: string, paramKey: string) => {
-				const param: string | undefined = this.params[paramKey];
-				if (!param)
-					return url;
-
-				const toRet = `${url}${nextOperator}${paramKey}=${encodeURIComponent(param)}`;
-				nextOperator = '&';
-				return toRet;
-			}, this.url);
+			const fullUrl = this.composeFullUrl();
 
 			// TODO set progress listener
 			// this.xhr.upload.onprogress = this.onProgressListener;

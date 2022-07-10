@@ -82,7 +82,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			.setOnError(this.errorHandler) as BaseHttpRequest<any>;
 
 		if (body)
-			request.setJsonBody(body);
+			request.setBodyAsJson(body);
 
 		const timeout = this.timeoutHandler(apiDef);
 		if (timeout)
