@@ -23,8 +23,8 @@ import {DB_Document, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDo
 export type ApiStruct_LiveDoc = {
 	v1: {
 		get: QueryApi<DB_Document, LiveDocReqParams>,
-		history: QueryApi<void, LiveDocHistoryReqParams>,
 		upsert: BodyApi<DB_Document, Request_UpdateDocument>,
+		history: QueryApi<DB_Document, LiveDocHistoryReqParams>,
 	},
 }
 
