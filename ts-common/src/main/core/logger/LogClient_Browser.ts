@@ -72,7 +72,7 @@ class LogClient_Browser_class
 				continue;
 			}
 			if (typeof param === 'object') {
-				console.log(`%c${prefix}`, this.getColor(level, bold));
+				console.log(`%c${prefix}`, this.getColor(level, bold), param);
 				continue;
 			}
 			console.log(param);
