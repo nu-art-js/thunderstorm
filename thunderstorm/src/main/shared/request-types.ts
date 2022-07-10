@@ -26,8 +26,15 @@ import {TS_Object} from '@nu-art/ts-common';
 
 export class HttpException
 	extends Error {
-	constructor(responseCode: number, url: string) {
+
+	responseCode: number;
+	errorResponse: any;
+
+	constructor(responseCode: number, url: string, errorResponse?: any) {
 		super(`${responseCode} - ${url}`);
+
+		this.responseCode = responseCode;
+		this.errorResponse = errorResponse;
 	}
 }
 
@@ -42,6 +49,6 @@ export interface OnRequestListener {
 	__onRequestCompleted: (key: string, success: boolean, requestData?: any) => void;
 }
 
-export type RequestErrorHandler<E extends TS_Object=TS_Object> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<E>) => void;
+export type RequestErrorHandler<E extends TS_Object = TS_Object> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<E>) => void;
 export type RequestSuccessHandler = (request: BaseHttpRequest<any>) => void;
 export type ResponseHandler = (request: BaseHttpRequest<any>) => boolean;

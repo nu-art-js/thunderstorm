@@ -122,12 +122,9 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 	}
 
 	handleRequestFailure: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
-		const feError = request.getErrorMessage();
 		const beError = resError?.debugMessage;
 
 		this.logError(`Http request for key '${request.key}' failed...`);
-		if (feError)
-			this.logError(` + FE error:  ${feError}`);
 
 		if (beError)
 			this.logError(` + BE error:  ${beError}`);
@@ -138,11 +135,7 @@ export abstract class BaseHttpModule_Class<Config extends HttpConfig = HttpConfi
 	};
 
 	handleRequestSuccess: RequestSuccessHandler = (request: BaseHttpRequest<any>) => {
-		const feMessage = request.getSuccessMessage();
-
 		this.logDebug(`Http request for key '${request.key}' completed`);
-		if (feMessage)
-			this.logDebug(` + FE message:  ${feMessage}`);
 
 		for (const successHandler of this.defaultSuccessHandlers) {
 			successHandler(request);
