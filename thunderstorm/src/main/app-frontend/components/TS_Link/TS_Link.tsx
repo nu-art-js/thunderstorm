@@ -37,7 +37,7 @@ export class TS_Link
 
 	private handleOnClick = (e: React.MouseEvent) => {
 		stopPropagation(e);
-		ThunderstormModule.openUrl(this.props.url, this.props.target);
+		ThunderstormModule.openUrl({url: this.props.url, params: this.props.params}, this.props.target);
 	};
 
 	render() {
