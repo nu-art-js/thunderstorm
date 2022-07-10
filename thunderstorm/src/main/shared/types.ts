@@ -74,7 +74,7 @@ export type  ErrorResponse<E extends TS_Object | void = void> = {
 export type ApiDefCaller<K> = K extends TS_Object ? ApiRouter<K> | ApiCaller<K> :
 	ApiCaller<K>;
 
-export type ApiCaller<API> = API extends QueryApi<any, any, any> ? (query: API['P']) => void | Promise<API['R']> :
+export type ApiCaller<API> = API extends QueryApi<any, any, any> ? (query: API['P'], onSuccess?: (response: API['R']) => any) => void | Promise<API['R']> :
 	API extends BodyApi<any, any, any> ? (body: API['B']) => void | Promise<API['R']> :
 		API extends TypedApi<any, any, any, any> ? (body: API['B'], query: API['P']) => void | Promise<API['R']> : never;
 

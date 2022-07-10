@@ -30,22 +30,12 @@ import {BrowserHistoryModule} from '../modules/HistoryModule';
 import {StorageModule} from '../modules/StorageModule';
 import {ResourcesModule} from '../modules/ResourcesModule';
 import {ThunderDispatcher} from './thunder-dispatcher';
-import {
-	OnRequestListener, RequestErrorHandler, RequestSuccessHandler
-} from '../../shared/request-types';
+import {OnRequestListener} from '../../shared/request-types';
 import {ThunderstormModule} from '../modules/ThunderstormModule';
 
 import '../styles/impl/basic.scss';
 import '../styles/impl/icons.scss';
 
-export const ErrorHandler_Toast: RequestErrorHandler<any> = (request, resError?) => {
-	const errorMessage = request.errorMessage || resError?.debugMessage;
-	return errorMessage && ToastModule.toastError(errorMessage);
-};
-export const SuccessHandler_Toast: RequestSuccessHandler = (request) => request.successMessage && ToastModule.toastSuccess(request.successMessage);
-
-export const ErrorHandler_Dispatch: RequestErrorHandler<any> = (request) => dispatch_requestCompleted.dispatchUI(request.key, false, request.requestData);
-export const SuccessHandler_Dispatch: RequestSuccessHandler = (request) => dispatch_requestCompleted.dispatchUI(request.key, true, request.requestData);
 
 const modules: Module[] = [
 	ThunderstormModule,
@@ -53,7 +43,6 @@ const modules: Module[] = [
 
 	ToastModule,
 	DialogModule,
-
 
 	RoutingModule,
 	BrowserHistoryModule,
@@ -85,9 +74,6 @@ export class Thunder
 		BeLogged.addClient(LogClient_Browser);
 
 		super.init();
-		// @ts-ignore
-		XhrHttpModule.setErrorHandlers([ErrorHandler_Toast, ErrorHandler_Dispatch]);
-		XhrHttpModule.setSuccessHandlers([SuccessHandler_Toast, SuccessHandler_Dispatch]);
 
 		renderApp();
 		return this;

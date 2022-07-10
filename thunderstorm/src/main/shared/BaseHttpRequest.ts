@@ -44,6 +44,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	protected aborted: boolean = false;
 	protected compress: boolean;
 	protected logger?: Logger;
+	private onCompleted?: ((response: API['R'], input: (API['P'] | API['B'])) => Promise<any>) | undefined;
 
 	constructor(requestKey: string, requestData?: any) {
 		this.key = requestKey;
@@ -214,13 +215,15 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 			throw new HttpException(status, this.url);// should be status 0
 
 		if (!this.isValidStatus(status)) {
-			this.handleFailure();
-			throw new HttpException(status, this.url);
+			const errorResponse = this.getErrorResponse();
+			throw new HttpException(status, this.url, errorResponse);
 		}
 
 		const response: API['R'] = this.getResponse();
-		if (!response)
+		if (!response) {
+			this.onCompleted?.(response, this.params || this.body);
 			return response;
+		}
 
 		try {
 			return JSON.parse(response as unknown as string) as API['R'];
@@ -237,6 +240,10 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 			.catch(onError);
 
 		return this;
+	}
+
+	setOnCompleted(onCompleted?: (response: API['R'], input: API['P'] | API['B']) => Promise<any>) {
+		this.onCompleted = onCompleted;
 	}
 
 	protected abstract getResponse(): API['R']

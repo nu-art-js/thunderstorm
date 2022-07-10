@@ -57,10 +57,7 @@ export class XhrHttpModule_Class
 
 		return request
 			.setTimeout(this.timeout)
-			.addHeaders(this.getDefaultHeaders())
-			.setHandleRequestSuccess(this.handleRequestSuccess)
-			.setHandleRequestFailure(this.handleRequestFailure)
-			.setDefaultRequestHandler(this.processDefaultResponseHandlers);
+			.addHeaders(this.getDefaultHeaders());
 	}
 
 }

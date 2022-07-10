@@ -28,7 +28,6 @@ import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
 import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
 
 
-
 export class AxiosHttpModule_Class
 	extends BaseHttpModule_Class {
 	private requestOption: Axios_RequestConfig = {};
@@ -47,9 +46,6 @@ export class AxiosHttpModule_Class
 			.setMethod(apiDef.method)
 			.setTimeout(this.timeout)
 			.addHeaders(this.getDefaultHeaders())
-			.setHandleRequestSuccess(this.handleRequestSuccess)
-			.setHandleRequestFailure(this.handleRequestFailure)
-			.setDefaultRequestHandler(this.processDefaultResponseHandlers)
 			.setRequestOption(this.requestOption);
 	}
 
