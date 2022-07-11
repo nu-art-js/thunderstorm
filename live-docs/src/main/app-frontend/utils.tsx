@@ -18,7 +18,7 @@
 
 // import * as React from 'react';
 import {ToastBuilder} from '@nu-art/thunderstorm/frontend';
-import {LiveDocActionResolver} from './modules/LiveDocsModule';
+import {LiveDocActionResolver} from './modules/ModuleFE_LiveDocs';
 import {DB_Document} from '../shared/types';
 
 

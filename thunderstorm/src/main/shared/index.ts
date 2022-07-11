@@ -1,5 +1,8 @@
 /*
- * Live-Docs will allow you to add and edit tool-tips from within your app...
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,12 +19,9 @@
  * limitations under the License.
  */
 
-import {ModuleFE_LiveDocs} from '../modules/ModuleFE_LiveDocs';
-
-
-export const ModulePack_Frontend_LiveDocs = [
-	ModuleFE_LiveDocs
-];
-
-export * from '../modules/ModuleFE_LiveDocs';
-
+export * from './types';
+export * from './request-types';
+export * from './force-upgrade';
+export * from './consts';
+export * from './BaseHttpRequest';
+export * from './BaseHttpModule';

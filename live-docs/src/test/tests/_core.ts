@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Live-Docs will allow you to add and edit tool-tips from within your app...
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,23 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+;
+import {__custom} from '@nu-art/testelot';
 
-import {
-	DB_Document,
-	LiveDocsModule
-} from "../_main";
-import {__custom} from "@nu-art/testelot";
 
-export const liveDoc1 :DB_Document= {document: "document - 1"};
-export const liveDoc2 :DB_Document= {document: "document - 2"};
-export const liveDoc3 :DB_Document= {document: "document - 3"};
-
+export const liveDoc1: DB_Document = {document: 'document - 1'};
+export const liveDoc2: DB_Document = {document: 'document - 2'};
+export const liveDoc3: DB_Document = {document: 'document - 3'};
 
 export function cleanup() {
 	return __custom(async () => {
 		// @ts-ignore
-		await LiveDocsModule.livedocs.deleteAll();
-	}).setLabel("Clean up");
+		await ModuleBE_LiveDocs.livedocs.deleteAll();
+	}).setLabel('Clean up');
 }
 
 

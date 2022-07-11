@@ -19,9 +19,4 @@
  * limitations under the License.
  */
 
-export * from './shared/types';
-export * from './shared/request-types';
-export * from './shared/force-upgrade';
-export * from './shared/consts';
-export * from './shared/BaseHttpRequest';
-export * from './shared/BaseHttpModule';
+export * from './shared';

@@ -72,10 +72,10 @@ export type  ErrorResponse<E extends TS_Object | void = void> = {
 	error?: ErrorBody<E>
 }
 
-export type ApiDefCaller<K> = K extends TS_Object ? ApiRouter<K> | ApiCaller<K> :
+export type ApiDefCaller<K> = K extends TS_Object ? ApiCallerRouter<K> | ApiCaller<K> :
 	ApiCaller<K>;
 
-export type ApiRouter<T extends TS_Object> = { [P in keyof T]: ApiDefCaller<T[P]> };
+export type ApiCallerRouter<T extends TS_Object> = { [P in keyof T]: ApiDefCaller<T[P]> };
 
 export type ApiCaller<API> =
 	API extends QueryApi<any, any, any> ? (query: API['P']) => BaseHttpRequest<API> :

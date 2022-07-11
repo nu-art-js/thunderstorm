@@ -17,34 +17,14 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {ToastBuilder, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ToastBuilder} from '@nu-art/thunderstorm/frontend';
 import {DB_Document, LiveDocReqParams} from '../../shared/types';
 import {ApiDef_LiveDoc_Get, ApiDef_LiveDoc_History, ApiDef_LiveDoc_Upsert, ApiStruct_LiveDoc} from '../../shared/api';
-import {ApiDef, ApiDefCaller, BaseHttpRequest, BodyApi, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {DefaultLiveDocEditor} from '../utils';
 
 
 export type LiveDocActionResolver = (doc: DB_Document) => ToastBuilder;
-
-function apiWithQuery<API extends QueryApi<any, any, any>>(apiDef: ApiDef<API>, onCompleted?: (response: API['R'], params: API['P']) => Promise<any>, onError?: (errorResponse: any, input: API['P'] | API['B']) => Promise<any>) {
-	return (params: API['P']): BaseHttpRequest<API> => {
-		return XhrHttpModule
-			.createRequest<API>(apiDef)
-			.setUrlParams(params)
-			.setOnError(onError)
-			.setOnCompleted(onCompleted);
-	};
-}
-
-function apiWithBody<API extends BodyApi<any, any, any>>(apiDef: ApiDef<API>, onCompleted?: (response: API['R'], body: API['B']) => Promise<any>, onError?: (errorResponse: any, input: API['P'] | API['B']) => Promise<any>) {
-	return (body: API['B']): BaseHttpRequest<API> => {
-		return XhrHttpModule
-			.createRequest<API>(apiDef)
-			.setBodyAsJson(body)
-			.setOnError(onError)
-			.setOnCompleted(onCompleted);
-	};
-}
 
 export class LiveDocsModule_Class
 	extends Module
@@ -80,8 +60,8 @@ export class LiveDocsModule_Class
 	v1 = {
 		get: apiWithQuery(ApiDef_LiveDoc_Get, this.onGotDoc),
 		upsert: apiWithBody(ApiDef_LiveDoc_Upsert, this.onGotDoc),
-		history: apiWithQuery(ApiDef_LiveDoc_History, this.onGotDoc)
+		history: apiWithQuery(ApiDef_LiveDoc_History, this.onGotDoc),
 	};
 }
 
-export const LiveDocsModule = new LiveDocsModule_Class();
+export const ModuleFE_LiveDocs = new LiveDocsModule_Class();
