@@ -37,6 +37,7 @@ export type Props_Tabs = {
 	tabsHeaderStyle?: React.CSSProperties
 	selectedTabStyle?: React.CSSProperties
 	contentStyle?: React.CSSProperties
+	tabsHeaderClass?: string;
 	/**
 	 * Called only after clicking on a tab. Not called when a default first tab is selected during render.
 	 * @param selected id of the selected tab.
@@ -123,9 +124,11 @@ export class TS_Tabs
 			return tab.content;
 		};
 
+		const headerClass = _className('ts-tabs__tabs-header', this.props.tabsHeaderClass);
+
 		return (
 			<div className="ts-tabs" style={this.props.containerStyle}>
-				<div className="ts-tabs__tabs-header" style={this.props.tabsHeaderStyle}>
+				<div className={headerClass} style={this.props.tabsHeaderStyle}>
 					{tabs.map(tab => {
 						const style = {...this.props.tabStyle, ...this.state.focused === tab.uid ? this.props.selectedTabStyle : undefined};
 						const tabClasses = _className('ts-tabs__tab', 'unselectable', this.state.focused === tab.uid ? 'ts-tabs__focused' : undefined);
