@@ -95,7 +95,7 @@ export class Storm
 
 	private async startServerImpl(onStarted?: () => Promise<void>) {
 		const label = 'Resolving Config';
-		console.time(label)
+		console.time(label);
 		await this.resolveConfig();
 		console.timeEnd(label);
 
@@ -106,5 +106,13 @@ export class Storm
 		onStarted && await onStarted();
 
 		return functions;
+	}
+
+	static getInstance(): Storm {
+		return Storm.instance as Storm;
+	}
+
+	public getConfig() {
+		return this.config;
 	}
 }
