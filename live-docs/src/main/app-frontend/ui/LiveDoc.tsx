@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Live-Docs will allow you to add and edit tool-tips from within your app...
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,8 +16,7 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-import {LiveDocsModule} from '../modules/LiveDocsModule';
+cs} from '../modules/ModuleFE_LiveDocs';
 
 
 type State = {
@@ -33,7 +31,7 @@ type Props = {
 
 const showLiveDoc = (e: React.MouseEvent) => {
 	const docKey = (e.currentTarget as HTMLElement).id;
-	LiveDocsModule.showLiveDoc(docKey);
+	ModuleFE_LiveDocs.showLiveDoc(docKey);
 };
 
 export class LiveDoc

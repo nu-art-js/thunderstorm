@@ -19,10 +19,12 @@
  * limitations under the License.
  */
 
-
 import * as express from 'express';
-import {Dispatcher} from '@nu-art/ts-common';
+import {Dispatcher, TS_Object} from '@nu-art/ts-common';
 import {CoreOptions, UriOptions} from 'request';
+import {BodyApi, QueryApi, TypedApi} from '../../shared/types';
+import {ServerApi, ServerApi_Get, ServerApi_Post} from '../modules/server/server-api';
+
 
 export type Express = express.Express
 export type ExpressRouter = express.Router
@@ -36,3 +38,13 @@ export interface QueryRequestInfo {
 
 export type RequestOptions = CoreOptions & UriOptions
 export const dispatch_queryRequestInfo = new Dispatcher<QueryRequestInfo, '__queryRequestInfo'>('__queryRequestInfo');
+
+export type ApiDefServer<K> = K extends TS_Object ? ApiServerRouter<K> | ApiServer<K> :
+	ApiServer<K>;
+
+export type ApiServerRouter<T extends TS_Object> = { [P in keyof T]: ApiDefServer<T[P]> };
+
+export type ApiServer<API> =
+	API extends QueryApi<any, any, any> ? ServerApi_Get<API> :
+		API extends BodyApi<any, any, any> ? ServerApi_Post<API> :
+			API extends TypedApi<any, any, any, any> ? ServerApi<API> : never;

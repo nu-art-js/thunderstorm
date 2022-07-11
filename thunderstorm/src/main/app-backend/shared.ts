@@ -1,6 +1,8 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,6 +19,4 @@
  * limitations under the License.
  */
 
-import {RouteResolver} from "@nu-art/thunderstorm/backend";
-
-module.exports = new RouteResolver(require, __dirname);
+export * from '../shared';

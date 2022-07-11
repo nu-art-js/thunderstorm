@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Live-Docs will allow you to add and edit tool-tips from within your app...
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,13 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {addItemToArrayAtIndex, auditBy, BadImplementationException, Module, removeItemFromArray} from '@nu-art/ts-common';
 
-import {DB_Document, DB_DocumentHistory, Request_UpdateDocument,} from '../../shared/types';
+import {DB_Document, DB_DocumentHistory, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument,} from '../../shared/types';
 
 import {FirebaseModule, FirestoreCollection} from '@nu-art/firebase/backend';
 
-import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {ApiDefServer, ApiException, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {ApiDef_LiveDoc_Get, ApiDef_LiveDoc_History, ApiDef_LiveDoc_Upsert, ApiStruct_LiveDoc} from '../../shared/api';
 
 
 export const CollectionName_LiveDocs = 'live-docs';
@@ -32,7 +33,8 @@ type Config = {
 }
 
 export class LiveDocsModule_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements ApiDefServer<ApiStruct_LiveDoc> {
 
 	private livedocs!: FirestoreCollection<DB_DocumentHistory>;
 
@@ -46,13 +48,14 @@ export class LiveDocsModule_Class
 		this.livedocs = firestore.getCollection<DB_DocumentHistory>(CollectionName_LiveDocs, ['key']);
 	}
 
-	async changeHistory(key: string, change: 'redo' | 'undo', request: ExpressRequest) {
-		await this.livedocs.runInTransaction(async (transaction) => {
+	async changeHistory(params: LiveDocHistoryReqParams) {
+		const key = params.key;
+		return await this.livedocs.runInTransaction(async (transaction) => {
 			const docsHistory = await transaction.queryUnique(this.livedocs, {where: {key}});
 			if (!docsHistory)
 				throw new BadImplementationException(`Cannot change history of an non-existing doc with key: ${key}`);
 
-			switch (change) {
+			switch (params.change) {
 				case 'redo':
 					if (docsHistory.index === 0)
 						throw new ApiException(402, 'Nothing to redo anymore');
@@ -70,11 +73,11 @@ export class LiveDocsModule_Class
 
 			docsHistory._audit = auditBy('temp-no-user');
 			await transaction.upsert(this.livedocs, docsHistory);
+			return docsHistory.docs[docsHistory.index];
 		});
-
 	}
 
-	async updateLiveDoc(document: Request_UpdateDocument, request: ExpressRequest) {
+	async updateLiveDoc(document: Request_UpdateDocument) {
 		const liveDocHistory: DB_DocumentHistory = await this.getLiveDocHistory(document.key);
 		const docDB: DB_Document = {
 			...document,
@@ -108,6 +111,7 @@ export class LiveDocsModule_Class
 			removeItemFromArray(liveDocHistory.docs, liveDocHistory.docs[liveDocHistory.docs.length - 1]);
 
 		await this.livedocs.upsert(liveDocHistory);
+		return docDB;
 	}
 
 	private async getLiveDocHistory(docKey: string): Promise<DB_DocumentHistory> {
@@ -115,8 +119,8 @@ export class LiveDocsModule_Class
 		return docFromDB || {docs: [], key: docKey, index: 0};
 	}
 
-	async getLiveDoc(key: string): Promise<DB_Document> {
-		const liveDocHistory = await this.getLiveDocHistory(key);
+	async getLiveDoc(params: LiveDocReqParams): Promise<DB_Document> {
+		const liveDocHistory = await this.getLiveDocHistory(params.key);
 		let liveDoc: DB_Document = {
 			document: ''
 		};
@@ -130,6 +134,12 @@ export class LiveDocsModule_Class
 
 		return liveDoc;
 	}
+
+	v1 = {
+		get: createQueryServerApi(ApiDef_LiveDoc_Get, this.getLiveDoc),
+		upsert: createBodyServerApi(ApiDef_LiveDoc_Upsert, this.updateLiveDoc),
+		history: createQueryServerApi(ApiDef_LiveDoc_History, this.changeHistory),
+	};
 }
 
-export const LiveDocsModule = new LiveDocsModule_Class();
+export const ModuleBE_LiveDocs = new LiveDocsModule_Class();
