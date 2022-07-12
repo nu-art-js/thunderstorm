@@ -72,12 +72,15 @@ export type  ErrorResponse<E extends TS_Object | void = void> = {
 	error?: ErrorBody<E>
 }
 
-export type ApiDefCaller<K> = K extends TS_Object ? ApiCallerRouter<K> | ApiCaller<K> :
-	ApiCaller<K>;
+export type ApiDefCaller<K> = K extends TypedApi<any, any, any, any> ? ApiCaller<K> : ApiCallerRouter<K>;
 
 export type ApiCallerRouter<T extends TS_Object> = { [P in keyof T]: ApiDefCaller<T[P]> };
 
+export type ApiCaller_Query<API extends QueryApi<any, any, any>> = (query: API['P']) => BaseHttpRequest<API>;
+export type ApiCaller_Body<API extends BodyApi<any, any, any>> = (body: API['B']) => BaseHttpRequest<API>;
+export type ApiCaller_Any<API extends TypedApi<any, any, any, any>> = (body: API['B'], query: API['P']) => BaseHttpRequest<API>;
+
 export type ApiCaller<API> =
-	API extends QueryApi<any, any, any> ? (query: API['P']) => BaseHttpRequest<API> :
-		API extends BodyApi<any, any, any> ? (body: API['B']) => BaseHttpRequest<API> :
-			API extends TypedApi<any, any, any, any> ? (body: API['B'], query: API['P']) => BaseHttpRequest<API> : never;
+	API extends QueryApi<any, any, any> ? ApiCaller_Query<API> :
+		API extends BodyApi<any, any, any> ? ApiCaller_Body<API> :
+			API extends TypedApi<any, any, any, any> ? ApiCaller_Any<API> : never;

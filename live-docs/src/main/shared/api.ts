@@ -42,4 +42,3 @@ export const ApiDef_LiveDoc_Upsert: ApiDef<ApiStruct_LiveDoc['v1']['upsert']> = 
 	method: HttpMethod.POST,
 	path: 'v1/live-docs/upsert'
 };
-
