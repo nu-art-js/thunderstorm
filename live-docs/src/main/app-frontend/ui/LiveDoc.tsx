@@ -16,7 +16,8 @@
  * limitations under the License.
  */
 
-cs} from '../modules/ModuleFE_LiveDocs';
+import * as React from 'react';
+import {ModuleFE_LiveDocs} from '../modules/ModuleFE_LiveDocs';
 
 
 type State = {
@@ -30,8 +31,8 @@ type Props = {
 }
 
 const showLiveDoc = (e: React.MouseEvent) => {
-	const docKey = (e.currentTarget as HTMLElement).id;
-	ModuleFE_LiveDocs.showLiveDoc(docKey);
+	const key = (e.currentTarget as HTMLElement).id;
+	ModuleFE_LiveDocs.v1.get({key}).execute();
 };
 
 export class LiveDoc

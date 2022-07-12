@@ -19,20 +19,10 @@
  * limitations under the License.
  */
 
-import {ApiDef, BaseHttpRequest, ErrorResponse, RequestErrorHandler, TypedApi} from '@nu-art/thunderstorm';
-import {
-	ApiGen_ApiDefs,
-	DBDef,
-	TypedApi_Delete,
-	TypedApi_DeleteAll,
-	TypedApi_Patch,
-	TypedApi_Query,
-	TypedApi_UniqueQuery,
-	TypedApi_Upsert,
-	TypedApi_UpsertAll,
-} from '../shared';
+import {ApiDef, ApiDefCaller, ErrorResponse, RequestErrorHandler, TypedApi} from '@nu-art/thunderstorm';
+import {ApiStruct_DBApiGen, DBApiDefGenerator, DBApiGen_ApiDef, DBDef,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
-import {ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 
 import {_keys, addItemToArray, DB_BaseObject, DB_Object, Module, PreDB, removeItemFromArray} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
@@ -48,7 +38,9 @@ export type BaseApiConfig = {
 export type ApiCallerEventType = [SingleApiEvent, string, boolean] | [MultiApiEvent, string[], boolean];
 
 export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config extends BaseApiConfig = BaseApiConfig>
-	extends Module<BaseApiConfig> {
+	extends Module<BaseApiConfig>
+	implements ApiDefCaller<ApiStruct_DBApiGen<DBType>> {
+
 	readonly version = 'v1';
 
 	private readonly errorHandler: RequestErrorHandler<any> = (request: BaseHttpRequest<any>, resError?: ErrorResponse<any>) => {
@@ -59,12 +51,26 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 	};
 
 	private defaultDispatcher?: ThunderDispatcher<any, string, ApiCallerEventType>;
+	private apiDef: DBApiGen_ApiDef<ApiStruct_DBApiGen<DBType>>;
+
+	readonly v1: ApiDefCaller<ApiStruct_DBApiGen<DBType>>['v1'];
 
 	constructor(dbDef: DBDef<DBType>) {
 		super();
 		const config = getModuleFEConfig(dbDef);
 
 		this.setDefaultConfig(config);
+		this.apiDef = DBApiDefGenerator<DBType>(dbDef.relativeUrl);
+
+		this.v1 = {
+			query: apiWithBody(this.apiDef.v1.query),
+			queryUnique: apiWithQuery(this.apiDef.v1.queryUnique),
+			upsert: apiWithBody(this.apiDef.v1.upsert),
+			upsertAll: apiWithBody(this.apiDef.v1.upsertAll),
+			patch: apiWithBody(this.apiDef.v1.patch),
+			delete: apiWithQuery(this.apiDef.v1.delete),
+			deleteAll: apiWithQuery(this.apiDef.v1.deleteAll),
+		};
 	}
 
 	getDefaultDispatcher() {

@@ -19,6 +19,6 @@
  * limitations under the License.
  */
 
-export * from './types';
+export * from './api';
 export * from './validators';
 export * from './db-def';
