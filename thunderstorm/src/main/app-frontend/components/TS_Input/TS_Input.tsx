@@ -20,10 +20,10 @@
  */
 
 import * as React from 'react';
+import {KeyboardEvent} from 'react';
 import {_className} from '../../utils/tools';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 import './TS_Input.scss';
-import {KeyboardEvent} from 'react';
 
 
 export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, HTMLInputElement>
@@ -40,6 +40,9 @@ export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
 
 	onKeyPress = (ev: KeyboardEvent<HTMLInputElement>) => {
+		if (ev.shiftKey || ev.altKey || ev.ctrlKey || ev.metaKey)
+			return;
+
 		//If the key was 'Enter'
 		if (ev.key === 'Enter' && this.props.onAccept) {
 			ev.persist();
