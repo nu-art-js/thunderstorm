@@ -20,9 +20,10 @@
  */
 
 import * as React from 'react';
-import { _className } from '../../utils/tools';
+import {_className} from '../../utils/tools';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 import './TS_Input.scss';
+import {KeyboardEvent} from 'react';
 
 
 export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, HTMLInputElement>
@@ -37,8 +38,29 @@ export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, 
  */
 export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
+
+	onKeyPress = (ev: KeyboardEvent<HTMLInputElement>) => {
+		//If the key was 'Enter'
+		if (ev.key === 'Enter' && this.props.onAccept) {
+			ev.persist();
+			const value = ev.currentTarget.value;
+
+			if (this.props.blurOnAccept)
+				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
+				ev.target.blur();
+
+			this.props.onAccept(value, ev);
+			ev.stopPropagation();
+		}
+		//If the key was 'Esc'
+		if (ev.key === 'Escape' && this.props.onCancel) {
+			this.props.onCancel();
+			ev.stopPropagation();
+		}
+	};
+
 	render() {
-		const {onAccept,focus,...props} = this.props;
+		const {onAccept, focus, blurOnAccept, ...props} = this.props;
 
 		return <input
 			{...props}
@@ -50,7 +72,7 @@ export class TS_Input<Key extends string = string>
 				props.onBlur?.(value, event);
 			}}
 			name={props.name || props.id}
-			className={_className('ts-input',props.disabled?'disabled':undefined)}
+			className={_className('ts-input', props.disabled ? 'disabled' : undefined)}
 			value={this.state.value}
 			onChange={this.changeValue}
 			onKeyPress={props.onKeyPress || this.onKeyPress}

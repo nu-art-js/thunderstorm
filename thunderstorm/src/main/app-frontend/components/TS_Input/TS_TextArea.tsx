@@ -22,11 +22,31 @@
 import * as React from 'react';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 import './TS_TextArea.scss';
+import {KeyboardEvent} from 'react';
 
 export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement>
 
 export class TS_TextArea<Key extends string>
 	extends TS_BaseInput<Key, TS_TextAreaProps<Key>, HTMLTextAreaElement> {
+
+	onKeyPress = (ev: KeyboardEvent<HTMLTextAreaElement>) => {
+		if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey) && this.props.onAccept) {
+			ev.persist();
+			const value = ev.currentTarget.value;
+
+			if (this.props.blurOnAccept)
+				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
+				ev.target.blur();
+
+			this.props.onAccept(value, ev);
+			ev.stopPropagation();
+		}
+
+		if (ev.key === 'Escape' && this.props.onCancel) {
+			this.props.onCancel();
+			ev.stopPropagation();
+		}
+	};
 
 	render() {
 		return <textarea
