@@ -76,7 +76,7 @@ export class TS_Input<Key extends string = string>
 			}}
 			name={props.name || props.id}
 			className={_className('ts-input', props.disabled ? 'disabled' : undefined)}
-			value={this.state.value}
+			value={this.props.value}
 			onChange={this.changeValue}
 			onKeyPress={props.onKeyPress || this.onKeyPress}
 			autoComplete={props.autoComplete ? 'on' : 'off'}

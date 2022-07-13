@@ -76,7 +76,7 @@ export class TS_TextArea<Key extends string>
 			id={this.props.id}
 			className={'ts-textarea'}
 			style={this.props.style}
-			value={this.state.value}
+			value={this.props.value}
 			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
 			onKeyPress={this.props.onKeyPress || this.onKeyPress}
