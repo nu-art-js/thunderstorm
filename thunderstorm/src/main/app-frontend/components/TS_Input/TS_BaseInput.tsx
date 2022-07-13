@@ -21,6 +21,7 @@
 
 import * as React from 'react';
 import {ChangeEvent, CSSProperties, HTMLProps, KeyboardEvent} from 'react';
+import {ComponentSync} from '../../core/ComponentSync';
 
 
 export type InputType = 'text' | 'number' | 'password';
@@ -36,7 +37,6 @@ export type TS_BaseInputProps<Key, Element> = Omit<HTMLProps<Element>, 'onChange
 	onBlur?: (value: string, event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 	placeholder?: string
 	enable?: boolean
-	name?: string
 	value?: string
 	onKeyPress?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 	focus?: boolean
@@ -45,43 +45,21 @@ export type TS_BaseInputProps<Key, Element> = Omit<HTMLProps<Element>, 'onChange
 	innerRef?: React.RefObject<any>;
 }
 
-type InputState = {
-	id: string,
-	name?: string,
-	initialValue?: string
-	value?: string
-}
+type InputState = {}
 
 export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInputProps<Key, Input>, Input = HTMLInputElement | HTMLTextAreaElement>
-	extends React.Component<Props, InputState> {
+	extends ComponentSync<Props, InputState> {
 
 	protected ref?: HTMLInputElement | HTMLTextAreaElement;
 
-	constructor(props: Props) {
-		super(props);
-
-		this.state = TS_BaseInput.getInitialState(props);
-	}
-
-	static getDerivedStateFromProps(props: TS_BaseInputProps<any, any>, state: InputState) {
-		if (props.id === state.id && state.name === props.name && state.initialValue === props.value)
-			return {value: state.value};
-
-		return TS_BaseInput.getInitialState(props);
-	}
-
-	private static getInitialState(props: TS_BaseInputProps<any, any>) {
+	protected deriveStateFromProps(nextProps: Props): InputState | undefined {
 		return {
-			id: props.id,
-			name: props.name,
-			initialValue: props.value,
-			value: props.value || ''
+			value: nextProps.value || ''
 		};
 	}
 
 	changeValue = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
 		const value = event.target.value;
-		this.setState({value});
 		this.props.onChange?.(value, event.target.id as Key);
 	};
 }
