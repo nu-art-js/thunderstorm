@@ -90,6 +90,9 @@ export class ServerApi_UpsertAll<DBType extends DB_Object>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PreDB<DBType>[]) {
+		if (body.length === 0)
+			return [];
+
 		return await this.dbModule.upsertAll(body, undefined, request);
 	}
 }
