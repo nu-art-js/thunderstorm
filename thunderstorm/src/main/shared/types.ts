@@ -42,16 +42,26 @@ export type HttpMethod_Empty = 'options' | 'head'
 
 export type QueryParams = { [key: string]: string | number | undefined; };
 
-export type TypedApi<M extends string, R, B, P extends QueryParams> = {
+/**
+ * P - Params
+ * B - Body
+ * R - Response
+ * M - Method
+ * IP - Input Params
+ * IB - Input Body
+ */
+export type TypedApi<M extends string, R, B, P extends QueryParams, IB = B, IP = P> = {
 	M: M,
 	R: R,
 	B: B,
 	P: P,
+	IP: IP,
+	IB: IB
 }
 
-export type BodyApi<R, B, M extends HttpMethod_Body = HttpMethod.POST, P extends QueryParams = never> = TypedApi<M, R, B, P>
-export type QueryApi<R, P extends QueryParams = QueryParams, M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P>
-export type EmptyApi<R, M extends HttpMethod_Empty, P extends QueryParams = never, B = never> = TypedApi<M, R, B, P>
+export type BodyApi<R, B, IB = B, M extends HttpMethod_Body = HttpMethod.POST, P extends QueryParams = never> = TypedApi<M, R, B, P, IB, P>
+export type QueryApi<R, P extends QueryParams = QueryParams, IP = P, M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P, B, IP>
+export type EmptyApi<R, M extends HttpMethod_Empty, P extends QueryParams = never, B = never> = TypedApi<M, R, B, P, B, P>
 
 export type ApiDef<API extends TypedApi<any, any, any, any>> = {
 	method: API['M'],
@@ -76,9 +86,9 @@ export type ApiDefCaller<K> = K extends TypedApi<any, any, any, any> ? ApiCaller
 
 export type ApiCallerRouter<T extends TS_Object> = { [P in keyof T]: ApiDefCaller<T[P]> };
 
-export type ApiCaller_Query<API extends QueryApi<any, any, any>> = (query: API['P']) => BaseHttpRequest<API>;
-export type ApiCaller_Body<API extends BodyApi<any, any, any>> = (body: API['B']) => BaseHttpRequest<API>;
-export type ApiCaller_Any<API extends TypedApi<any, any, any, any>> = (body: API['B'], query: API['P']) => BaseHttpRequest<API>;
+export type ApiCaller_Query<API extends QueryApi<any, any, any>> = API['IP'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IP']) => BaseHttpRequest<API>;
+export type ApiCaller_Body<API extends BodyApi<any, any, any>> = API['IB'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IB']) => BaseHttpRequest<API>;
+export type ApiCaller_Any<API extends TypedApi<any, any, any, any>> = (body: API['IB'], query: API['IP']) => BaseHttpRequest<API>;
 
 export type ApiCaller<API> =
 	API extends QueryApi<any, any, any> ? ApiCaller_Query<API> :

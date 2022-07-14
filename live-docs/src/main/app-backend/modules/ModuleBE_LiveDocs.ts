@@ -32,11 +32,17 @@ type Config = {
 	projectId: string
 }
 
-export class LiveDocsModule_Class
+export class ModuleBE_LiveDocs_Class
 	extends Module<Config>
 	implements ApiDefServer<ApiStruct_LiveDoc> {
 
 	private livedocs!: FirestoreCollection<DB_DocumentHistory>;
+
+	v1 = {
+		get: createQueryServerApi(ApiDef_LiveDoc_Get, this.getLiveDoc),
+		upsert: createBodyServerApi(ApiDef_LiveDoc_Upsert, this.updateLiveDoc),
+		history: createQueryServerApi(ApiDef_LiveDoc_History, this.changeHistory),
+	};
 
 	constructor() {
 		super();
@@ -135,11 +141,6 @@ export class LiveDocsModule_Class
 		return liveDoc;
 	}
 
-	v1 = {
-		get: createQueryServerApi(ApiDef_LiveDoc_Get, this.getLiveDoc),
-		upsert: createBodyServerApi(ApiDef_LiveDoc_Upsert, this.updateLiveDoc),
-		history: createQueryServerApi(ApiDef_LiveDoc_History, this.changeHistory),
-	};
 }
 
-export const ModuleBE_LiveDocs = new LiveDocsModule_Class();
+export const ModuleBE_LiveDocs = new ModuleBE_LiveDocs_Class();

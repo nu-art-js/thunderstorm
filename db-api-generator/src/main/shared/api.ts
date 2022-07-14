@@ -32,17 +32,28 @@ import {DB_BaseObject, DB_Object, PreDB, TS_Object} from '@nu-art/ts-common';
  * upsert: BodyApi<DBType, PreDB<DBType>>,
  * patch: BodyApi<DBType, PreDB<DBType>>
  *
- * but something about the type resultion goes wrong and instead of seeing Type<GenericType>, it resolves to Type> which makes no sense
+ * but something about the type resolution goes wrong and instead of seeing Type<GenericType>, it resolves to Type> which makes no sense
  */
-
 export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 	v1: {
 		query: BodyApi<DBType[], FirestoreQuery<DBType>>,
-		queryUnique: QueryApi<DBType, DB_BaseObject>,
-
+		queryUnique: QueryApi<DBType, DB_BaseObject, string>,
 		upsert: BodyApi<DBType, [PreDB<DBType>]>,
 		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
 		patch: BodyApi<DBType, [PreDB<DBType>]>
+		delete: QueryApi<DBType, DB_BaseObject>,
+		deleteAll: QueryApi<void>
+	},
+}
+
+export type ApiStruct_DBApiGenIDB<DBType extends DB_Object> = {
+	v1: {
+		sync: BodyApi<DBType[], FirestoreQuery<DBType>, undefined>,
+		query: BodyApi<DBType[], FirestoreQuery<DBType>>,
+		queryUnique: QueryApi<DBType, DB_BaseObject, string>,
+		upsert: BodyApi<DBType, [PreDB<DBType>]>,
+		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
+		patch: BodyApi<DBType, [DBType]>
 		delete: QueryApi<DBType, DB_BaseObject>,
 		deleteAll: QueryApi<void>
 	},
@@ -55,6 +66,21 @@ export type DBApiGen_ApiRouter<T extends TS_Object> = { [P in keyof T]: DBApiGen
 export const DBApiDefGenerator = <DBType extends DB_Object>(path: string): DBApiGen_ApiDef<ApiStruct_DBApiGen<DBType>> => {
 	return {
 		v1: {
+			query: {method: HttpMethod.POST, path: `v1/${path}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `v1/${path}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `v1/${path}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `v1/${path}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `v1/${path}/patch`},
+			delete: {method: HttpMethod.GET, path: `v1/${path}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `v1/${path}/delete-all`},
+		}
+	};
+};
+
+export const DBApiDefGeneratorIDB = <DBType extends DB_Object>(path: string): DBApiGen_ApiDef<ApiStruct_DBApiGenIDB<DBType>> => {
+	return {
+		v1: {
+			sync: {method: HttpMethod.POST, path: `v1/${path}/query`},
 			query: {method: HttpMethod.POST, path: `v1/${path}/query`},
 			queryUnique: {method: HttpMethod.GET, path: `v1/${path}/query-unique`},
 			upsert: {method: HttpMethod.POST, path: `v1/${path}/upsert`},
