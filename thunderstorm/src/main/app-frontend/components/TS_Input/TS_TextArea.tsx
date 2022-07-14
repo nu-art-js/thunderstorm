@@ -39,9 +39,8 @@ export class TS_TextArea<Key extends string>
 				ev.persist();
 				const value = ev.currentTarget.value;
 
-				if (this.props.blurOnAccept)
-					//@ts-ignore - despite what typescript says, ev.target does have a blur function.
-					ev.target.blur();
+				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
+				ev.target.blur();
 
 				this.props.onAccept(value, ev);
 				ev.stopPropagation();
@@ -76,7 +75,7 @@ export class TS_TextArea<Key extends string>
 			id={this.props.id}
 			className={'ts-textarea'}
 			style={this.props.style}
-			value={this.props.value}
+			value={this.state.value}
 			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
 			onKeyPress={this.props.onKeyPress || this.onKeyPress}
