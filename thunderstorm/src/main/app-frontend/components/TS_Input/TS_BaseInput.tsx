@@ -31,7 +31,6 @@ export type TS_BaseInputProps<Key, Element> = Omit<HTMLProps<Element>, 'onChange
 	id?: Key
 	onChange?: (value: string, id: Key) => void
 	onAccept?: (value: string, event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
-	blurOnAccept?: boolean;
 	onCancel?: () => void
 	onBlur?: (value: string, event: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 	placeholder?: string

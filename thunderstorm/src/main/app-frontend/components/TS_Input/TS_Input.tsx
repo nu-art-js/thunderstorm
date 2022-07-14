@@ -48,13 +48,13 @@ export class TS_Input<Key extends string = string>
 			ev.persist();
 			const value = ev.currentTarget.value;
 
-			if (this.props.blurOnAccept)
-				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
-				ev.target.blur();
+			//@ts-ignore - despite what typescript says, ev.target does have a blur function.
+			ev.target.blur();
 
 			this.props.onAccept(value, ev);
 			ev.stopPropagation();
 		}
+
 		//If the key was 'Esc'
 		if (ev.key === 'Escape' && this.props.onCancel) {
 			this.props.onCancel();
@@ -63,7 +63,7 @@ export class TS_Input<Key extends string = string>
 	};
 
 	render() {
-		const {onAccept, focus, blurOnAccept, ...props} = this.props;
+		const {onAccept, focus, ...props} = this.props;
 
 		return <input
 			{...props}
@@ -76,7 +76,7 @@ export class TS_Input<Key extends string = string>
 			}}
 			name={props.name || props.id}
 			className={_className('ts-input', props.disabled ? 'disabled' : undefined)}
-			value={this.props.value}
+			value={this.state.value}
 			onChange={this.changeValue}
 			onKeyPress={props.onKeyPress || this.onKeyPress}
 			autoComplete={props.autoComplete ? 'on' : 'off'}
