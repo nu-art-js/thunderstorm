@@ -26,7 +26,7 @@ import {DefaultLiveDocEditor} from '../utils';
 
 export type LiveDocActionResolver = (doc: DB_Document) => ToastBuilder;
 
-export class LiveDocsModule_Class
+export class ModuleFE_LiveDocs_Class
 	extends Module
 	implements ApiDefCaller<ApiStruct_LiveDoc> {
 
@@ -64,4 +64,4 @@ export class LiveDocsModule_Class
 	};
 }
 
-export const ModuleFE_LiveDocs = new LiveDocsModule_Class();
+export const ModuleFE_LiveDocs = new ModuleFE_LiveDocs_Class();

@@ -43,7 +43,10 @@ import {
 } from '@nu-art/ts-common';
 import {ServerApi_Delete, ServerApi_DeleteAll, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert, ServerApi_UpsertAll} from './apis';
 import {
+	ApiDefServer,
 	ApiException,
+	createBodyServerApi,
+	createQueryServerApi,
 	ExpressRequest,
 	FirestoreBackupDetails,
 	OnFirestoreBackupSchedulerAct,
@@ -55,6 +58,7 @@ import {BadInputErrorBody, ErrorKey_BadInput} from '../shared/types';
 import {dbIdLength} from '../shared/validators';
 import {Const_LockKeys, DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
+import {ApiStruct_DBApiGen, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB} from '../shared';
 
 
 export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
@@ -78,10 +82,11 @@ export type ApisParams = {
  */
 export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>>
 	extends Module<ConfigType>
-	implements OnFirestoreBackupSchedulerAct {
+	implements OnFirestoreBackupSchedulerAct, ApiDefServer<ApiStruct_DBApiGen<DBType>> {
 
 	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
+	protected v1: ApiDefServer<ApiStruct_DBApiGenIDB<DBType>>['v1'];
 
 	protected constructor(dbDef: DBDef<DBType, any>, appConfig?: BaseDBApiConfig) {
 		super();
@@ -91,6 +96,54 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		// @ts-ignore
 		this.setDefaultConfig(preConfig);
 		this.validator = config.validator;
+		const apiDef = DBApiDefGeneratorIDB<DBType>(dbDef.relativeUrl);
+		this.v1 = {
+			query: createBodyServerApi(apiDef.v1.query, this._query),
+			sync: undefined,
+			queryUnique: createQueryServerApi(apiDef.v1.queryUnique, this._queryUnique),
+			upsert: createBodyServerApi(apiDef.v1.upsert, this._upsert),
+			upsertAll: createBodyServerApi(apiDef.v1.upsertAll, this._upsertAll),
+			patch: createBodyServerApi(apiDef.v1.patch, this._patch),
+			delete: createQueryServerApi(apiDef.v1.delete, this._deleteUnique),
+			deleteAll: createQueryServerApi(apiDef.v1.deleteAll, this._deleteAll),
+		};
+	}
+
+	/**
+	 * Executed during the initialization of the module.
+	 * The collection reference is set in this method.
+	 */
+	init() {
+		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
+		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys as FilterKeys<DBType>);
+	}
+
+	private async _upsert(instance: [PreDB<DBType>], request?: ExpressRequest) {
+		return this.upsert(instance[0], undefined, request);
+	}
+
+	private async _upsertAll(instances: PreDB<DBType>[], request?: ExpressRequest) {
+		return this.upsertAll(instances, undefined, request);
+	}
+
+	private async _deleteAll(ignore?: {}, request?: ExpressRequest) {
+		return this.deleteAll(request);
+	}
+
+	private async _patch(instance: [DBType], request?: ExpressRequest) {
+		return this.patch(instance[0], undefined, request);
+	}
+
+	private async _deleteUnique(id: { _id: string }, request?: ExpressRequest): Promise<DBType> {
+		return this.deleteUnique(id._id, undefined, request);
+	}
+
+	private async _query(query: FirestoreQuery<DBType>, request?: ExpressRequest) {
+		return this.query(query, undefined, request);
+	}
+
+	private async _queryUnique(where: { _id: string }, request?: ExpressRequest) {
+		return this.queryUnique(where as Clause_Where<DBType>, undefined, request);
 	}
 
 	setValidator(validator: ValidatorTypeResolver<DBType>) {
@@ -157,15 +210,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	getItemName() {
 		return this.config.itemName;
-	}
-
-	/**
-	 * Executed during the initialization of the module.
-	 * The collection reference is set in this method.
-	 */
-	init() {
-		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
-		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys as FilterKeys<DBType>);
 	}
 
 	private async assertExternalQueryUnique(instance: DBType, transaction: FirestoreTransaction): Promise<DBType> {
@@ -260,7 +304,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];
-			
+
 			if (instanceVersion !== undefined && instanceVersion !== currentVersion)
 				try {
 					await this.upgradeInstance(dbInstance, currentVersion);
@@ -713,7 +757,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		});
 	}
 
-	deleteAll(request: ExpressRequest) {
+	deleteAll(request?: ExpressRequest) {
 		return this.delete({where: {}});
 	}
 }

@@ -21,16 +21,6 @@
 
 import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
 import {ApiDef, TypedApi} from '@nu-art/thunderstorm';
-import {
-	ApiGen_ApiDefs,
-	TypedApi_Delete,
-	TypedApi_DeleteAll,
-	TypedApi_Patch,
-	TypedApi_Query,
-	TypedApi_UniqueQuery,
-	TypedApi_Upsert,
-	TypedApi_UpsertAll
-} from '..';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {addItemToArray, DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';

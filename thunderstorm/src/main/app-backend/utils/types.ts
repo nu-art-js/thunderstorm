@@ -39,7 +39,7 @@ export interface QueryRequestInfo {
 export type RequestOptions = CoreOptions & UriOptions
 export const dispatch_queryRequestInfo = new Dispatcher<QueryRequestInfo, '__queryRequestInfo'>('__queryRequestInfo');
 
-export type ApiDefServer<K> = K extends TypedApi<any, any, any, any> ? ApiServer<K> : ApiServerRouter<K>;
+export type ApiDefServer<K> = K extends TypedApi<any, any, any, any> ? ApiServer<K> | undefined : ApiServerRouter<K>;
 
 export type ApiServerRouter<T extends TS_Object> = { [P in keyof T]: ApiDefServer<T[P]> };
 
