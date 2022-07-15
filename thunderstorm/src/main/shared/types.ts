@@ -40,6 +40,8 @@ export type HttpMethod_Query = 'get' | 'delete'
 export type HttpMethod_Body = 'post' | 'put' | 'patch'
 export type HttpMethod_Empty = 'options' | 'head'
 
+export type IndexKeys<T extends DB_Object, Ks extends keyof T> = { [K in Ks]: T[K] };
+
 export type QueryParams = { [key: string]: string | number | undefined; };
 
 /**
@@ -81,6 +83,10 @@ export type  ErrorResponse<E extends TS_Object | void = void> = {
 	debugMessage?: string
 	error?: ErrorBody<E>
 }
+
+export type ApiDefResolver<K> = K extends TypedApi<any, any, any, any> ? ApiDef<K> : ApiDefRouter<K>;
+
+export type ApiDefRouter<T extends TS_Object> = { [P in keyof T]: ApiDefResolver<T[P]> };
 
 export type ApiDefCaller<K> = K extends TypedApi<any, any, any, any> ? ApiCaller<K> : ApiCallerRouter<K>;
 

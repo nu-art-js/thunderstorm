@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of 
- * your server apis, and restrict users by giving them access levels
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,12 +16,7 @@
  * limitations under the License.
  */
 
-import {
-	ApiDef,
-	BodyApi,
-	HttpMethod,
-	QueryApi
-} from '@nu-art/thunderstorm';
+import {ApiDef, ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 
 
 export const HeaderKey_SessionId = 'x-session-id';
@@ -93,11 +87,19 @@ export type PostAssertBody = {
 	RelayState: string
 };
 
-export const ApiDef_UserAccount_AddNewAccount: ApiDef<BodyApi<UI_Account, Request_AddNewAccount>> = {//'/v1/account/add-new-account'
-	method: HttpMethod.POST,
-	pathPrefix: '/v1/account',
-	path: 'add-new-account'
+export type ApiStruct_UserAccount = {
+	v1: {
+		addNew: BodyApi<UI_Account, Request_AddNewAccount>
+
+	},
+}
+
+export const ApiDef_LiveDoc: ApiDefResolver<ApiStruct_UserAccount> = {
+	v1: {
+		addNew: {method: HttpMethod.POST, path: '/v1/account/add-new'},
+	}
 };
+
 export const ApiDef_UserAccount_Create: ApiDef<BodyApi<Response_Auth, Request_CreateAccount>> = {//'/v1/account/create'
 	method: HttpMethod.POST,
 	pathPrefix: '/v1/account',

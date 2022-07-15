@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ApiDef, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {DB_Document, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument} from './types';
 
 
@@ -28,17 +28,10 @@ export type ApiStruct_LiveDoc = {
 	},
 }
 
-export const ApiDef_LiveDoc_Get: ApiDef<ApiStruct_LiveDoc['v1']['get']> = {
-	method: HttpMethod.GET,
-	path: 'v1/live-docs/unique'
-};
-
-export const ApiDef_LiveDoc_History: ApiDef<ApiStruct_LiveDoc['v1']['history']> = {
-	method: HttpMethod.GET,
-	path: 'v1/live-docs/change-history'
-};
-
-export const ApiDef_LiveDoc_Upsert: ApiDef<ApiStruct_LiveDoc['v1']['upsert']> = {
-	method: HttpMethod.POST,
-	path: 'v1/live-docs/upsert'
+export const ApiDef_LiveDoc: ApiDefResolver<ApiStruct_LiveDoc> = {
+	v1: {
+		get: {method: HttpMethod.GET, path: 'v1/live-docs/unique'},
+		upsert: {method: HttpMethod.POST, path: 'v1/live-docs/upsert'},
+		history: {method: HttpMethod.GET, path: 'v1/live-docs/change-history'}
+	}
 };

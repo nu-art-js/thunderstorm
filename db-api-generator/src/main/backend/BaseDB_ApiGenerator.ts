@@ -30,7 +30,6 @@ import {
 	Day,
 	DB_Object,
 	filterDuplicates,
-	filterInstances,
 	generateHex,
 	isErrorOfType,
 	merge,
@@ -41,27 +40,26 @@ import {
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {ServerApi_Delete, ServerApi_DeleteAll, ServerApi_Patch, ServerApi_Query, ServerApi_Unique, ServerApi_Upsert, ServerApi_UpsertAll} from './apis';
+
+import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
 import {
 	ApiDefServer,
 	ApiException,
+	ApiModule,
 	createBodyServerApi,
 	createQueryServerApi,
 	ExpressRequest,
 	FirestoreBackupDetails,
 	OnFirestoreBackupSchedulerAct,
-	ServerApi,
 	ServerApi_Middleware
 } from '@nu-art/thunderstorm/backend';
 import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
-import {BadInputErrorBody, ErrorKey_BadInput} from '../shared/types';
 import {dbIdLength} from '../shared/validators';
 import {Const_LockKeys, DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
-import {ApiStruct_DBApiGen, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB} from '../shared';
+import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB} from '../shared';
 
 
-export type CustomUniquenessAssertion<Type extends DB_Object> = (transaction: FirestoreTransaction, dbInstance: Type) => Promise<void>;
 export type BaseDBApiConfig = {
 	projectId?: string,
 	maxChunkSize: number
@@ -80,13 +78,14 @@ export type ApisParams = {
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>>
+export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
 	extends Module<ConfigType>
-	implements OnFirestoreBackupSchedulerAct, ApiDefServer<ApiStruct_DBApiGen<DBType>> {
+	implements OnFirestoreBackupSchedulerAct, ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>, ApiModule {
 
 	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
-	protected v1: ApiDefServer<ApiStruct_DBApiGenIDB<DBType>>['v1'];
+
+	v1: ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 
 	protected constructor(dbDef: DBDef<DBType, any>, appConfig?: BaseDBApiConfig) {
 		super();
@@ -96,7 +95,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		// @ts-ignore
 		this.setDefaultConfig(preConfig);
 		this.validator = config.validator;
-		const apiDef = DBApiDefGeneratorIDB<DBType>(dbDef.relativeUrl);
+		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef.relativeUrl);
 		this.v1 = {
 			query: createBodyServerApi(apiDef.v1.query, this._query),
 			sync: undefined,
@@ -109,6 +108,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		};
 	}
 
+	useRoutes() {
+		return this.v1;
+	}
+
 	/**
 	 * Executed during the initialization of the module.
 	 * The collection reference is set in this method.
@@ -118,8 +121,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys as FilterKeys<DBType>);
 	}
 
-	private async _upsert(instance: [PreDB<DBType>], request?: ExpressRequest) {
-		return this.upsert(instance[0], undefined, request);
+	private async _upsert(instance: PreDB<DBType>, request?: ExpressRequest) {
+		return this.upsert(instance, undefined, request);
 	}
 
 	private async _upsertAll(instances: PreDB<DBType>[], request?: ExpressRequest) {
@@ -130,8 +133,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.deleteAll(request);
 	}
 
-	private async _patch(instance: [DBType], request?: ExpressRequest) {
-		return this.patch(instance[0], undefined, request);
+	private async _patch(instance: IndexKeys<DBType, Ks> & Partial<DBType>, request?: ExpressRequest) {
+		return this.patch(instance, undefined, request);
 	}
 
 	private async _deleteUnique(id: { _id: string }, request?: ExpressRequest): Promise<DBType> {
@@ -142,7 +145,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return this.query(query, undefined, request);
 	}
 
-	private async _queryUnique(where: { _id: string }, request?: ExpressRequest) {
+	private async _queryUnique(where: QueryParams, request?: ExpressRequest) {
 		return this.queryUnique(where as Clause_Where<DBType>, undefined, request);
 	}
 
@@ -280,8 +283,9 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 		const error = isErrorOfType(e, ValidationException);
 		if (error) {
-			const errorBody = {type: ErrorKey_BadInput, body: {path: error.path, input: error.input}};
-			throw new ApiException<BadInputErrorBody>(400, error.message).setErrorBody(errorBody);
+			// TODO fix after resolving the error handling
+			const errorBody = {type: 'bad-input', body: {path: error.path, input: error.input}};
+			throw new ApiException(400, error.message).setErrorBody(errorBody as any);
 		}
 	}
 
@@ -673,9 +677,9 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @returns
 	 * A promise of the patched document.
 	 */
-	async patch(instance: DBType, propsToPatch?: (keyof DBType)[], request?: ExpressRequest): Promise<DBType> {
+	async patch(instance: IndexKeys<DBType, Ks> & Partial<DBType>, propsToPatch?: (keyof DBType)[], request?: ExpressRequest): Promise<DBType> {
 		return this.collection.runInTransaction(async (transaction) => {
-			const dbInstance: DBType = await this.assertExternalQueryUnique(instance, transaction);
+			const dbInstance: DBType = await this.assertExternalQueryUnique(instance as DBType, transaction);
 			// If the caller has specified props to be changed, make sure the don't conflict with the lockKeys.
 			const wrongKey = propsToPatch?.find(prop => this.config.lockKeys.includes(prop));
 			if (wrongKey)
@@ -697,63 +701,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			await this.assertUniqueness(transaction, mergedObject, request);
 
 			return this.upsertImpl(transaction, mergedObject, request);
-		});
-	}
-
-	apiUpsert(pathPart?: string): ServerApi<any> | undefined {
-		return new ServerApi_Upsert(this, pathPart);
-	}
-
-	apiUpsertAll(pathPart?: string): ServerApi<any> | undefined {
-		return new ServerApi_UpsertAll(this, pathPart);
-	}
-
-	apiQuery(pathPart?: string): ServerApi<any> | undefined {
-		return new ServerApi_Query(this, pathPart);
-	}
-
-	apiQueryUnique(pathPart?: string): ServerApi<any> | undefined {
-		return new ServerApi_Unique(this, pathPart);
-	}
-
-	apiPatch(pathPart?: string): ServerApi<any> | undefined {
-		return new ServerApi_Patch(this, pathPart);
-	}
-
-	apiDeleteAll(pathPart?: string): ServerApi<any> | undefined {
-		return new ServerApi_DeleteAll(this, pathPart);
-	}
-
-	apiDelete(pathPart?: string): ServerApi<any> | undefined {
-		return new ServerApi_Delete(this, pathPart);
-	}
-
-	_apis(options?: ApisParams): (ServerApi<any> | undefined)[] {
-		return [
-			this.apiUpsert(options?.pathPart),
-			this.apiUpsertAll(options?.pathPart),
-			this.apiQuery(options?.pathPart),
-			this.apiQueryUnique(options?.pathPart),
-			this.apiPatch(options?.pathPart),
-			this.apiDeleteAll(options?.pathPart),
-			this.apiDelete(options?.pathPart),
-		];
-	}
-
-	/**
-	 * Override this method, to control which server api endpoints are created automatically.
-	 *
-	 * @param options - The path part.
-	 *
-	 * @returns
-	 * An array of api endpoints.
-	 */
-	apis(options?: ApisParams): ServerApi<any>[] {
-		return filterInstances(this._apis(options)).map(api => {
-			options?.middleware && api.setMiddlewares(...options.middleware);
-			options?.printResponse !== true && api.dontPrintResponse();
-			options?.printRequest !== true && api.dontPrintRequest();
-			return api;
 		});
 	}
 

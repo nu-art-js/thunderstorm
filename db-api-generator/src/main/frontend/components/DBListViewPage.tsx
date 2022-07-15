@@ -20,9 +20,11 @@
  */
 
 import {ApiCallerEventType, BaseDB_ApiGeneratorCaller, BaseDB_ApiGeneratorCallerV2} from '../../frontend';
-import {AppPage, IndexKeys, RoutingModule} from '@nu-art/thunderstorm/frontend';
 import {DB_Object} from '@nu-art/ts-common';
 import * as React from 'react';
+import {AppPage, RoutingModule} from '@nu-art/thunderstorm/frontend';
+import {IndexKeys} from '@nu-art/thunderstorm';
+
 
 export type Props_DBItemListV2<ItemType extends DB_Object> = {
 	pageTitle: string | (() => string)
@@ -34,7 +36,6 @@ export type Props_DBItemListV2<ItemType extends DB_Object> = {
 	moduleFE: BaseDB_ApiGeneratorCallerV2<ItemType>
 	_BC_Modules?: BaseDB_ApiGeneratorCaller<any, any>[]
 }
-
 
 export type State_DBItemListV2<ItemType extends DB_Object> = { items?: ItemType[] };
 
@@ -69,7 +70,7 @@ export abstract class DBListViewPage<ItemType extends DB_Object,
 	}
 
 	protected query(keys: IndexKeys<ItemType, any>) {
-		this.props.moduleFE.unique(keys);
+		this.props.moduleFE.v1.queryUnique(keys).execute();
 	}
 
 	protected async resolveState(nextProps: P) {
@@ -85,7 +86,7 @@ export abstract class DBListViewPage<ItemType extends DB_Object,
 			if (module.getItems()?.length)
 				return;
 
-			module.query();
+			module.v1.query({}).execute();
 		});
 	}
 

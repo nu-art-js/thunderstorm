@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 
-import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {ApiDefCaller, IndexKeys, QueryParams} from '@nu-art/thunderstorm';
 import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
-import {apiWithBody, apiWithQuery, IndexDb_Query, IndexedDB, IndexedDBModule, IndexKeys, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, IndexDb_Query, IndexedDB, IndexedDBModule, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
 import {DB_Object, Module, PreDB} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
@@ -35,14 +35,14 @@ export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DB
 
 export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config>
-	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType>> {
+	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>> {
 
 	readonly version = 'v2';
 
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
-	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType>>['v1'];
+	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
 		super();
@@ -51,22 +51,33 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.setDefaultConfig(config as Config);
 		this.db = IndexedDBModule.getOrCreate(this.config.dbConfig);
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
-		const apiDef = DBApiDefGeneratorIDB<DBType>(dbDef.relativeUrl);
+		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef.relativeUrl);
 
 		const _query = apiWithBody(apiDef.v1.query, this.onQueryReturned);
 		const sync = apiWithBody(apiDef.v1.query, this.onSyncCompleted);
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
+		const upsert = apiWithBody(apiDef.v1.upsert, this.onEntryUpdated);
+		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
+
 		this.v1 = {
 			sync: () => sync({where: {__updated: {$gte: this.lastSync.get(0)}}}),
 			query: (query?: FirestoreQuery<DBType>) => _query(query || {where: {}}),
-			queryUnique: (_id: string) => queryUnique({_id}),
-			upsert: apiWithBody(apiDef.v1.upsert, this.onEntryUpdated),
+			// @ts-ignore
+			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
+				return queryUnique(typeof uniqueKeys === 'string' ? {_id: uniqueKeys} : uniqueKeys as unknown as QueryParams);
+			},
+			// @ts-ignore
+			upsert: (toUpsert: PreDB<DBType>) => {
+				return upsert(toUpsert);
+			},
 			upsertAll: apiWithBody(apiDef.v1.upsertAll, this.onEntriesUpdated),
-			patch: apiWithBody(apiDef.v1.patch, this.onEntryPatched),
+			// @ts-ignore
+			patch: (toPatch: IndexKeys<DBType, Ks> & Partial<DBType>) => {
+				return patch(toPatch);
+			},
 			delete: apiWithQuery(apiDef.v1.delete, this.onEntryDeleted),
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
 		};
-
 	}
 
 	onSyncCompleted = async (items: DBType[]) => {
@@ -125,12 +136,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	}
 
-	protected async onEntryCreated(item: DBType): Promise<void> {
-		return this.onEntryUpdatedImpl(EventType_Create, item);
-	}
-
-	protected async onEntryUpdated(item: DBType, original: [PreDB<DBType>]): Promise<void> {
-		return this.onEntryUpdatedImpl(original[0]._id ? EventType_Update : EventType_Create, item);
+	protected async onEntryUpdated(item: DBType, original: PreDB<DBType>): Promise<void> {
+		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
 	}
 
 	protected async onEntryPatched(item: DBType): Promise<void> {
