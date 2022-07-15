@@ -101,8 +101,8 @@ export class AccountModuleFE_Class
 		const sessionId = getQueryParameter(QueryParam_SessionId);
 
 		if (email && sessionId) {
-			StorageKey_SessionId.set(sessionId);
-			StorageKey_UserEmail.set(email);
+			StorageKey_SessionId.set(String(sessionId));
+			StorageKey_UserEmail.set(String(email));
 
 			BrowserHistoryModule.removeQueryParam(QueryParam_Email);
 			BrowserHistoryModule.removeQueryParam(QueryParam_SessionId);

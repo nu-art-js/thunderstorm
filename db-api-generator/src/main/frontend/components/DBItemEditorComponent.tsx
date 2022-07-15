@@ -20,9 +20,10 @@
  */
 
 import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, EventType_Query, EventType_Update, EventType_UpsertAll} from '../../frontend';
-import {ComponentAsync, IndexKeys} from '@nu-art/thunderstorm/frontend';
+import {IndexKeys} from '@nu-art/thunderstorm';
 import {_keys, compare, DB_Object, RequireOnlyOne} from '@nu-art/ts-common';
 import * as React from 'react';
+import {ComponentAsync} from '@nu-art/thunderstorm/frontend';
 
 
 export type State_DBItemEditorComponentV2<ItemType> = {
@@ -76,7 +77,7 @@ export abstract class DBItemEditorComponent<ItemType extends DB_Object,
 	}
 
 	protected query(keys: IndexKeys<ItemType, Ks>) {
-		this.props.moduleFE.unique(keys);
+		this.props.moduleFE.v1.queryUnique(keys);
 	}
 
 	public createEmptyItem(): Partial<ItemType> {
@@ -88,7 +89,7 @@ export abstract class DBItemEditorComponent<ItemType extends DB_Object,
 	}
 
 	protected save(item: Partial<ItemType>, key: keyof ItemType) {
-		this.props.moduleFE.upsert(item as ItemType, (updatedItem) => this.props.onChange?.(updatedItem, key));
+		this.props.moduleFE.v1.upsert(item as ItemType).execute((updatedItem) => this.props.onChange?.(updatedItem, key));
 	}
 
 	protected __onItemUpdated(...params: ApiCallerEventTypeV2<ItemType>): void {

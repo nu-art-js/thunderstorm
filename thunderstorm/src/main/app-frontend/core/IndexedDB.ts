@@ -21,7 +21,7 @@
 
 import {DB_Object, Module} from '@nu-art/ts-common';
 import {Cursor, DB, ObjectStore, openDb, UpgradeDB} from 'idb';
-import {DBIndex} from '../../shared/types';
+import {DBIndex, IndexKeys} from '../../shared';
 
 
 type Config = {}
@@ -34,8 +34,6 @@ export type DBConfig<T extends DB_Object, Ks extends keyof T> = {
 	indices?: DBIndex<T>[]
 	upgradeProcessor?: (db: UpgradeDB) => void
 };
-
-export type IndexKeys<T extends DB_Object, Ks extends keyof T> = { [K in Ks]: T[K] };
 
 export type IndexDb_Query = {
 	query?: string | number | string[] | number[],

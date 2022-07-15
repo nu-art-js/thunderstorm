@@ -20,8 +20,8 @@
  */
 
 import {FirestoreQuery} from '@nu-art/firebase';
-import {ApiDef, BodyApi, HttpMethod, QueryApi, TypedApi} from '@nu-art/thunderstorm';
-import {DB_BaseObject, DB_Object, PreDB, TS_Object} from '@nu-art/ts-common';
+import {ApiDefResolver, BodyApi, HttpMethod, IndexKeys, QueryApi, QueryParams} from '@nu-art/thunderstorm';
+import {DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';
 
 
 /**
@@ -36,7 +36,7 @@ import {DB_BaseObject, DB_Object, PreDB, TS_Object} from '@nu-art/ts-common';
  */
 export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 	v1: {
-		query: BodyApi<DBType[], FirestoreQuery<DBType>>,
+		query: BodyApi<DBType[], FirestoreQuery<DBType>, FirestoreQuery<DBType> | undefined | {}>,
 		queryUnique: QueryApi<DBType, DB_BaseObject, string>,
 		upsert: BodyApi<DBType, [PreDB<DBType>]>,
 		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
@@ -46,24 +46,20 @@ export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 	},
 }
 
-export type ApiStruct_DBApiGenIDB<DBType extends DB_Object> = {
+export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBType> = {
 	v1: {
 		sync: BodyApi<DBType[], FirestoreQuery<DBType>, undefined>,
 		query: BodyApi<DBType[], FirestoreQuery<DBType>>,
-		queryUnique: QueryApi<DBType, DB_BaseObject, string>,
-		upsert: BodyApi<DBType, [PreDB<DBType>]>,
+		queryUnique: QueryApi<DBType, QueryParams, string | IndexKeys<DBType, Ks>>,
+		upsert: BodyApi<DBType, PreDB<DBType>>,
 		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
-		patch: BodyApi<DBType, [DBType]>
+		patch: BodyApi<DBType, IndexKeys<DBType, Ks> & Partial<DBType>>
 		delete: QueryApi<DBType, DB_BaseObject>,
 		deleteAll: QueryApi<void>
 	},
 }
 
-export type DBApiGen_ApiDef<K> = K extends TypedApi<any, any, any, any> ? ApiDef<K> : DBApiGen_ApiRouter<K>;
-
-export type DBApiGen_ApiRouter<T extends TS_Object> = { [P in keyof T]: DBApiGen_ApiDef<T[P]> };
-
-export const DBApiDefGenerator = <DBType extends DB_Object>(path: string): DBApiGen_ApiDef<ApiStruct_DBApiGen<DBType>> => {
+export const DBApiDefGenerator = <DBType extends DB_Object>(path: string): ApiDefResolver<ApiStruct_DBApiGen<DBType>> => {
 	return {
 		v1: {
 			query: {method: HttpMethod.POST, path: `v1/${path}/query`},
@@ -77,7 +73,7 @@ export const DBApiDefGenerator = <DBType extends DB_Object>(path: string): DBApi
 	};
 };
 
-export const DBApiDefGeneratorIDB = <DBType extends DB_Object>(path: string): DBApiGen_ApiDef<ApiStruct_DBApiGenIDB<DBType>> => {
+export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof DBType>(path: string): ApiDefResolver<ApiStruct_DBApiGenIDB<DBType, Ks>> => {
 	return {
 		v1: {
 			sync: {method: HttpMethod.POST, path: `v1/${path}/query`},

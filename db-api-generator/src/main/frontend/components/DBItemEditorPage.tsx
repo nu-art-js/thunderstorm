@@ -30,10 +30,11 @@ import {
 	EventType_Unique,
 	EventType_UpsertAll
 } from '../../frontend';
-import {AppPage, getQueryParameter, IndexKeys, RoutingModule, stopPropagation} from '@nu-art/thunderstorm/frontend';
+import {AppPage, getQueryParameter, RoutingModule, stopPropagation} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
 import {Props_DBItemEditorComponentV2} from './DBItemEditorComponent';
+import {IndexKeys} from '@nu-art/thunderstorm';
 
 
 export type Props_DBItemEditorPageV2<ItemType extends DB_Object, Ks extends keyof ItemType = '_id'> = {
@@ -110,7 +111,7 @@ export abstract class DBItemEditorPage<ItemType extends DB_Object,
 	};
 
 	protected saveImpl = (item?: Partial<ItemType>) => {
-		this.props.moduleFE.upsert((item || this.state.item) as ItemType);
+		this.props.moduleFE.v1.upsert((item || this.state.item) as ItemType).execute();
 	};
 
 	componentWillUnmount() {
@@ -134,7 +135,7 @@ export abstract class DBItemEditorPage<ItemType extends DB_Object,
 			if (module.getItems()?.length)
 				return;
 
-			module.query();
+			module.v1.query({}).execute();
 		});
 	}
 

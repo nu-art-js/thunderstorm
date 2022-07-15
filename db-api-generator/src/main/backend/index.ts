@@ -19,6 +19,5 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/apis"
-export * from "./app-backend/BaseDB_ApiGenerator"
-export * from './app-backend/db-def';
+export * from './BaseDB_ApiGenerator';
+export * from './db-def';
