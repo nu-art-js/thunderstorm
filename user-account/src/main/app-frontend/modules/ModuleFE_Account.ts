@@ -17,24 +17,28 @@
  */
 
 import {Module, Second} from '@nu-art/ts-common';
-import {BrowserHistoryModule, getQueryParameter, StorageKey, ThunderDispatcher, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 import {
-	ApiDef_UserAccount_Create,
-	ApiDef_UserAccount_ListAccounts,
-	ApiDef_UserAccount_Login,
-	ApiDef_UserAccount_LoginSAML,
-	ApiDef_UserAccount_ValidateSession,
+	apiWithBody,
+	apiWithQuery,
+	BrowserHistoryModule,
+	getQueryParameter,
+	StorageKey,
+	ThunderDispatcher,
+	ToastModule,
+	XhrHttpModule
+} from '@nu-art/thunderstorm/frontend';
+import {
+	ApiDef_UserAccountFE,
+	ApiStruct_UserAccountFE,
 	HeaderKey_SessionId,
 	QueryParam_Email,
 	QueryParam_SessionId,
-	Request_CreateAccount,
-	Request_LoginAccount,
-	RequestParams_LoginSAML,
 	Response_Auth,
 	Response_ListAccounts,
 	Response_LoginSAML,
 	UI_Account
 } from '../../shared/api';
+import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 
 
 export const StorageKey_SessionId: StorageKey<string> = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
@@ -65,13 +69,24 @@ const dispatch_onAccountsLoaded = new ThunderDispatcher<OnAccountsLoaded, '__onA
 export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
 
 export class AccountModuleFE_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements ApiDefCaller<ApiStruct_UserAccountFE> {
 
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	private accounts: UI_Account[] = [];
+	readonly v1: ApiDefCaller<ApiStruct_UserAccountFE>['v1'];
 
 	constructor() {
 		super();
+
+		const validateSession = apiWithQuery(ApiDef_UserAccountFE.v1.validateSession, this.onSessionValidated, this.onSessionValidationError);
+		this.v1 = {
+			create: apiWithBody(ApiDef_UserAccountFE.v1.create, this.setLoginInfo),
+			login: apiWithBody(ApiDef_UserAccountFE.v1.login, this.setLoginInfo),
+			loginSaml: apiWithQuery(ApiDef_UserAccountFE.v1.loginSaml, this.onLoginCompletedSAML),
+			validateSession: () => validateSession({}),
+			query: apiWithQuery(ApiDef_UserAccountFE.v1.query, this.onAccountsQueryCompleted),
+		};
 	}
 
 	getAccounts() {
@@ -108,80 +123,45 @@ export class AccountModuleFE_Class
 			BrowserHistoryModule.removeQueryParam(QueryParam_SessionId);
 		}
 
-		if (StorageKey_SessionId.get())
-			return this.validateToken();
+		if (StorageKey_SessionId.get()) {
+			this.v1.validateSession().execute();
+			return;
+		}
 
 		this.logDebug('login out user.... ');
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	}
 
-	public create(request: Request_CreateAccount) {
-		XhrHttpModule
-			.createRequest(ApiDef_UserAccount_Create)
-			.setRelativeUrl('/v1/account/create')
-			.setBodyAsJson(request)
-			.setLabel(`User register...`)
-			.setOnError('Error registering user')
-			.execute(async (response: Response_Auth) => {
-				this.setLoginInfo(response);
-			});
-	}
-
-	public login(request: Request_LoginAccount) {
-		XhrHttpModule
-			.createRequest(ApiDef_UserAccount_Login)
-			.setRelativeUrl('/v1/account/login')
-			.setBodyAsJson(request)
-			.setLabel(`User login with password...`)
-			.setOnError('Error login user')
-			.execute(async (response: Response_Auth) => {
-				this.setLoginInfo(response);
-			});
-	}
-
-	private setLoginInfo(response: Response_Auth) {
+	private setLoginInfo = async (response: Response_Auth) => {
 		StorageKey_SessionId.set(response.sessionId);
 		StorageKey_UserEmail.set(response.email);
 		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
-	}
+	};
 
 	public getSessionId = (): string => {
 		return this.isStatus(LoggedStatus.LOGGED_IN) ? StorageKey_SessionId.get() : '';
 	};
 
-	public loginSAML(request: RequestParams_LoginSAML) {
-		XhrHttpModule
-			.createRequest(ApiDef_UserAccount_LoginSAML)
-			.setRelativeUrl('/v1/account/login-saml')
-			.setUrlParams(request)
-			.setLabel(`User login SAML...`)
-			.setOnError('Error login user')
-			.execute(async (response: Response_LoginSAML) => {
-				if (!response.loginUrl)
-					return;
+	private onLoginCompletedSAML = async (response: Response_LoginSAML) => {
+		if (!response.loginUrl)
+			return;
 
-				window.location.href = response.loginUrl;
-			});
-	}
+		window.location.href = response.loginUrl;
+	};
 
-	private validateToken = () => {
-		XhrHttpModule
-			.createRequest(ApiDef_UserAccount_ValidateSession)
-			.setLabel(`Validate token...`)
-			.setRelativeUrl('/v1/account/validate')
-			.setOnError((request, resError) => {
-				if (request.getStatus() === 0) {
-					ToastModule.toastError('Cannot reach Server... trying in 30 sec');
-					setTimeout(() => this.validateToken(), 30 * Second);
-					return;
-				}
+	private onSessionValidated = async () => {
+		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+	};
 
-				StorageKey_SessionId.delete();
-				return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
-			})
-			.execute(async () => {
-				this.setLoggedStatus(LoggedStatus.LOGGED_IN);
-			});
+	private onSessionValidationError = async (response: any, body: any, request: BaseHttpRequest<ApiStruct_UserAccountFE['v1']['validateSession']>) => {
+		if (request.getStatus() === 0) {
+			ToastModule.toastError('Cannot reach Server... trying in 30 sec');
+			setTimeout(() => this.v1.validateSession().execute(), 30 * Second);
+			return;
+		}
+
+		StorageKey_SessionId.delete();
+		return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	};
 
 	logout = (url?: string) => {
@@ -192,16 +172,10 @@ export class AccountModuleFE_Class
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	};
 
-	listUsers = () => {
-		XhrHttpModule
-			.createRequest(ApiDef_UserAccount_ListAccounts)
-			.setLabel(`Fetching users...`)
-			.setRelativeUrl('/v1/account/query')
-			.execute(async (res: Response_ListAccounts) => {
-				this.accounts = res.accounts.filter(account => account._id);
-				dispatch_onAccountsLoaded.dispatchUI();
-			});
+	private onAccountsQueryCompleted = async (res: Response_ListAccounts) => {
+		this.accounts = res.accounts.filter(account => account._id);
+		dispatch_onAccountsLoaded.dispatchUI();
 	};
 }
 
-export const AccountModuleFE = new AccountModuleFE_Class();
+export const ModuleFE_Account = new AccountModuleFE_Class();

@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of 
- * your server apis, and restrict users by giving them access levels
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,5 +18,5 @@
 
 export * from './app-backend/core/module-pack';
 export * from './app-backend/apis/add-new-account';
-export * from './app-backend/modules/AccountModuleBE';
+export * from './app-backend/modules/ModuleBE_Account';
 

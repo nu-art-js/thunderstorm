@@ -19,7 +19,7 @@
 import {Module} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery, ToastBuilder} from '@nu-art/thunderstorm/frontend';
 import {DB_Document, LiveDocReqParams} from '../../shared/types';
-import {ApiDef_LiveDoc_Get, ApiDef_LiveDoc_History, ApiDef_LiveDoc_Upsert, ApiStruct_LiveDoc} from '../../shared/api';
+import {ApiDef_LiveDoc, ApiStruct_LiveDoc} from '../../shared/api';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {DefaultLiveDocEditor} from '../utils';
 
@@ -58,9 +58,9 @@ export class ModuleFE_LiveDocs_Class
 	}
 
 	v1 = {
-		get: apiWithQuery(ApiDef_LiveDoc_Get, this.onGotDoc),
-		upsert: apiWithBody(ApiDef_LiveDoc_Upsert, this.onGotDoc),
-		history: apiWithQuery(ApiDef_LiveDoc_History, this.onGotDoc),
+		get: apiWithQuery(ApiDef_LiveDoc.v1.get, this.onGotDoc),
+		upsert: apiWithBody(ApiDef_LiveDoc.v1.upsert, this.onGotDoc),
+		history: apiWithQuery(ApiDef_LiveDoc.v1.history, this.onGotDoc),
 	};
 }
 
