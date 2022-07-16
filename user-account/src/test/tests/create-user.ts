@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,59 +16,52 @@
  * limitations under the License.
  */
 
-import {
-	__scenario,
-	ContextKey,
-    __custom
-} from "@nu-art/testelot";
-import {
-	AccountModuleBE,
-	DB_Account
-} from "../_main";
-import {cleanup} from "./_core";
-import {isErrorOfType} from "@nu-art/ts-common";
-import {ApiException} from "@nu-art/thunderstorm/app-backend/exceptions";
+import {__custom, __scenario, ContextKey} from '@nu-art/testelot';
+import {DB_Account, ModuleBE_Account} from '../_main';
+import {cleanup} from './_core';
+import {ApiException} from '@nu-art/thunderstorm/app-backend/exceptions';
 
-const userContextKey1 = new ContextKey<DB_Account>("user-1");
+
+const userContextKey1 = new ContextKey<DB_Account>('user-1');
 
 export function createUser() {
-	const scenario = __scenario("Create-User");
+	const scenario = __scenario('Create-User');
 	scenario.add(cleanup());
 	scenario.add(__custom(async () => {
-		return await AccountModuleBE.createAccount({email: "test-account1@gmail.com", password: "pah", password_check: "pah"});
+		return await ModuleBE_Account.createAccount({email: 'test-account1@gmail.com', password: 'pah', password_check: 'pah'});
 	}).setWriteKey(userContextKey1));
 	return scenario;
 }
 
 export function testSuccessfulLogin() {
-	const scenario = __scenario("successful login");
+	const scenario = __scenario('successful login');
 	scenario.add(__custom(async () => {
-		const responseAuth = await AccountModuleBE.login({email: "test-account1@gmail.com", password: "pah"});
-		await AccountModuleBE.validateSessionId(responseAuth.sessionId);
+		const responseAuth = await ModuleBE_Account.login({email: 'test-account1@gmail.com', password: 'pah'});
+		await ModuleBE_Account.validateSessionId(responseAuth.sessionId);
 	}).setReadKey(userContextKey1));
 	return scenario;
 }
 
 export function testLoginWithWrongPass() {
-	const scenario = __scenario("wrong pass");
+	const scenario = __scenario('wrong pass');
 	scenario.add(__custom(async () => {
-		await AccountModuleBE.login({email: "test-account1@gmail.com", password: "wrong"});
+		await ModuleBE_Account.login({email: 'test-account1@gmail.com', password: 'wrong'});
 	}).setReadKey(userContextKey1).expectToFail(ApiException));
 	return scenario;
 }
 
 export function testLoginWithWrongUser() {
-	const scenario = __scenario("wrong user");
+	const scenario = __scenario('wrong user');
 	scenario.add(__custom(async () => {
-		await AccountModuleBE.login({email: "wrong@gmail.com", password: "pah"});
+		await ModuleBE_Account.login({email: 'wrong@gmail.com', password: 'pah'});
 	}).setReadKey(userContextKey1).expectToFail(ApiException));
 	return scenario;
 }
 
 export function testBadSessionID() {
-	const scenario = __scenario("bad session id");
+	const scenario = __scenario('bad session id');
 	scenario.add(__custom(async () => {
-		await AccountModuleBE.validateSessionId("1234");
+		await ModuleBE_Account.validateSessionId('1234');
 	}).setReadKey(userContextKey1).expectToFail(ApiException));
 	return scenario;
 }

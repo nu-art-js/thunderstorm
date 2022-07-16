@@ -18,10 +18,11 @@
 
 import * as React from 'react';
 import {_keys} from '@nu-art/ts-common';
-import {AccountModuleFE} from '../../modules/AccountModuleFE';
+import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
 import {Request_LoginAccount} from '../../../shared/api';
 import './Component_Login.scss';
 import {LL_V_C, ToastModule, TS_Button, TS_Input} from '@nu-art/thunderstorm/frontend';
+
 
 type State<T> = {
 	data: Partial<T>
@@ -98,6 +99,6 @@ export class Component_Login
 		if (errors.length > 0)
 			return ToastModule.toastError(`Wrong input:\n${errors.join('\n')}`);
 
-		AccountModuleFE.login(this.state.data as Request_LoginAccount);
+		ModuleFE_Account.login(this.state.data as Request_LoginAccount);
 	};
 }

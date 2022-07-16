@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of 
- * your server apis, and restrict users by giving them access levels
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,15 +16,16 @@
  * limitations under the License.
  */
 
-import {__custom} from "@nu-art/testelot";
-import {AccountModuleBE} from "../_main";
+import {__custom} from '@nu-art/testelot';
+import {ModuleBE_Account} from '../_main';
+
 
 export function cleanup() {
 	return __custom(async () => {
-		const _AccountModule = AccountModuleBE;
+		const _AccountModule = ModuleBE_Account;
 		// @ts-ignore
 		for (const firestoreCollection of [_AccountModule.accounts, _AccountModule.sessions]) {
 			await firestoreCollection.deleteAll();
 		}
-	}).setLabel("Clean up");
+	}).setLabel('Clean up');
 }

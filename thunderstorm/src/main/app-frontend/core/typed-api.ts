@@ -23,7 +23,9 @@ import {ApiDef, BaseHttpRequest, BodyApi, QueryApi} from '../shared';
 import {XhrHttpModule} from '../modules/http/XhrHttpModule';
 
 
-export function apiWithQuery<API extends QueryApi<any, any, any>>(apiDef: ApiDef<API>, onCompleted?: (response: API['R'], params: API['P']) => Promise<any>, onError?: (errorResponse: any, input: API['P'] | API['B']) => Promise<any>) {
+export function apiWithQuery<API extends QueryApi<any, any>>(apiDef: ApiDef<API>,
+																														 onCompleted?: (response: API['R'], params: API['P'], request: BaseHttpRequest<API>) => Promise<any>,
+																														 onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
 	return (params: API['P']): BaseHttpRequest<API> => {
 		return XhrHttpModule
 			.createRequest<API>(apiDef)
@@ -33,7 +35,9 @@ export function apiWithQuery<API extends QueryApi<any, any, any>>(apiDef: ApiDef
 	};
 }
 
-export function apiWithBody<API extends BodyApi<any, any, any>>(apiDef: ApiDef<API>, onCompleted?: (response: API['R'], body: API['B']) => Promise<any>, onError?: (errorResponse: any, input: API['P'] | API['B']) => Promise<any>) {
+export function apiWithBody<API extends BodyApi<any, any>>(apiDef: ApiDef<API>,
+																													 onCompleted?: (response: API['R'], body: API['B'], request: BaseHttpRequest<API>) => Promise<any>,
+																													 onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
 	return (body: API['B']): BaseHttpRequest<API> => {
 		return XhrHttpModule
 			.createRequest<API>(apiDef)

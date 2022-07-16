@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of 
- * your server apis, and restrict users by giving them access levels
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,9 +18,10 @@
 
 import * as React from 'react';
 import {_keys, addItemToArray} from '@nu-art/ts-common';
-import {AccountModuleFE} from '../modules/AccountModuleFE';
+import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 import {Request_CreateAccount} from '../../shared/api';
 import {LL_V_C, ToastModule, TS_Button, TS_Input} from '@nu-art/thunderstorm/frontend';
+
 
 type State<T> = {
 	data: Partial<T>
@@ -106,6 +106,6 @@ export class Component_Register
 		if (errors.length > 0)
 			return ToastModule.toastError(`Wrong input:\n${errors.join('\n')}`);
 
-		AccountModuleFE.create(this.state.data as Request_CreateAccount);
+		ModuleFE_Account.create(this.state.data as Request_CreateAccount);
 	};
 }

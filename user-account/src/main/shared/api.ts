@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ApiDef, ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi, QueryParams} from '@nu-art/thunderstorm';
 
 
 export const HeaderKey_SessionId = 'x-session-id';
@@ -62,15 +62,9 @@ export type Request_LoginAccount = {
 	password: string
 }
 
-export type Request_ValidateSession = {
-	sessionId: string
-}
-
 export type Response_LoginSAML = {
 	loginUrl: string
 };
-
-export type Response_Validation = UI_Account
 
 export type UI_Account = { email: string; _id: string }
 
@@ -87,51 +81,59 @@ export type PostAssertBody = {
 	RelayState: string
 };
 
-export type ApiStruct_UserAccount = {
+type TypedApi_LoginSaml = QueryApi<Response_LoginSAML, RequestParams_LoginSAML>;
+export type ApiStruct_UserAccountFE = {
 	v1: {
-		addNew: BodyApi<UI_Account, Request_AddNewAccount>
+		create: BodyApi<Response_Auth, Request_CreateAccount>
+		login: BodyApi<Response_Auth, Request_LoginAccount>
+		loginSaml: TypedApi_LoginSaml
+		validateSession: QueryApi<UI_Account, QueryParams, undefined>
+		query: QueryApi<Response_ListAccounts>
 
 	},
 }
 
-export const ApiDef_LiveDoc: ApiDefResolver<ApiStruct_UserAccount> = {
+export type ApiStruct_UserAccountBE = {
 	v1: {
-		addNew: {method: HttpMethod.POST, path: '/v1/account/add-new'},
+		// addNew: BodyApi<UI_Account, Request_AddNewAccount>
+		upsert: BodyApi<Response_Auth, Request_UpsertAccount>
+		create: BodyApi<Response_Auth, Request_CreateAccount>
+		login: BodyApi<Response_Auth, Request_LoginAccount>
+		validateSession: QueryApi<UI_Account, QueryParams, undefined>
+		query: QueryApi<Response_ListAccounts>
+	}
+}
+
+export type ApiStruct_SAML_BE = {
+	v1: {
+		loginSaml: TypedApi_LoginSaml
+		assertSAML: BodyApi<void, PostAssertBody>
+	}
+}
+
+export const ApiDef_UserAccountFE: ApiDefResolver<ApiStruct_UserAccountFE> = {
+	v1: {
+		loginSaml: {method: HttpMethod.GET, path: '/v1/account/login-saml'},
+		create: {method: HttpMethod.POST, path: '/v1/account/create'},
+		login: {method: HttpMethod.POST, path: '/v1/account/login'},
+		validateSession: {method: HttpMethod.GET, path: '/v1/account/validate'},
+		query: {method: HttpMethod.GET, path: '/v1/account/query'},
 	}
 };
 
-export const ApiDef_UserAccount_Create: ApiDef<BodyApi<Response_Auth, Request_CreateAccount>> = {//'/v1/account/create'
-	method: HttpMethod.POST,
-	pathPrefix: '/v1/account',
-	path: 'create'
+export const ApiDef_UserAccountBE: ApiDefResolver<ApiStruct_UserAccountBE> = {
+	v1: {
+		create: {method: HttpMethod.POST, path: '/v1/account/create'},
+		login: {method: HttpMethod.POST, path: '/v1/account/login'},
+		validateSession: {method: HttpMethod.GET, path: '/v1/account/validate'},
+		query: {method: HttpMethod.GET, path: '/v1/account/query'},
+		addNew: {method: HttpMethod.POST, path: '/v1/account/add-new'},
+		upsert: {method: HttpMethod.POST, path: '/v1/account/upsert'},
+	}
 };
-export const ApiDef_UserAccount_Upsert: ApiDef<BodyApi<Response_Auth, Request_UpsertAccount>> = {//'/v1/account/upsert'
-	method: HttpMethod.POST,
-	pathPrefix: '/v1/account',
-	path: 'upsert'
-};
-export const ApiDef_UserAccount_Login: ApiDef<BodyApi<Response_Auth, Request_LoginAccount>> = {//'/v1/account/login'
-	method: HttpMethod.POST,
-	pathPrefix: '/v1/account',
-	path: 'login'
-};
-export const ApiDef_UserAccount_LoginSAML: ApiDef<QueryApi<Response_LoginSAML, RequestParams_LoginSAML>> = {//"/v1/account/login-saml"
-	method: HttpMethod.GET,
-	pathPrefix: '/v1/account',
-	path: 'login-saml'
-};
-export const ApiDef_UserAccount_ValidateSession: ApiDef<QueryApi<Response_Validation>> = {//'/v1/account/validate'
-	method: HttpMethod.GET,
-	pathPrefix: '/v1/account',
-	path: 'validate'
-};
-export const ApiDef_UserAccount_AssertLoginSAML: ApiDef<BodyApi<void, PostAssertBody>> = {//"/v1/account/assert"
-	method: HttpMethod.POST,
-	pathPrefix: '/v1/account',
-	path: 'assert'
-};
-export const ApiDef_UserAccount_ListAccounts: ApiDef<QueryApi<Response_ListAccounts>> = {//'/v1/account/query'
-	method: HttpMethod.GET,
-	pathPrefix: '/v1/account',
-	path: 'query'
+export const ApiDef_SAML_BE: ApiDefResolver<ApiStruct_SAML_BE> = {
+	v1: {
+		loginSaml: {method: HttpMethod.GET, path: '/v1/account/login-saml'},
+		assertSAML: {method: HttpMethod.POST, path: '/v1/account/assert'},
+	}
 };

@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,10 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, auditBy, currentTimeMillis, Day, Dispatcher, generateHex, hashPasswordWithSalt, Module, tsValidate} from '@nu-art/ts-common';
+import {
+	__stringify,
+	auditBy,
+	currentTimeMillis,
+	Day,
+	Dispatcher,
+	generateHex,
+	hashPasswordWithSalt,
+	Module,
+	MUSTNeverHappenException,
+	tsValidate
+} from '@nu-art/ts-common';
 
 import {FirebaseModule, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {
+	ApiDef_UserAccountBE,
+	ApiStruct_UserAccountBE,
 	DB_Account,
 	DB_Session,
 	HeaderKey_SessionId,
@@ -29,8 +41,18 @@ import {
 	Response_Auth,
 	UI_Account
 } from './_imports';
-import {ApiException, ExpressRequest, HeaderKey, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
+import {
+	ApiDefServer,
+	ApiException,
+	ApiModule,
+	createBodyServerApi,
+	createQueryServerApi,
+	ExpressRequest,
+	HeaderKey,
+	QueryRequestInfo
+} from '@nu-art/thunderstorm/backend';
 import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
+import {QueryParams} from '@nu-art/thunderstorm';
 
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
@@ -62,16 +84,30 @@ function getUIAccount(account: DB_Account): UI_Account {
 
 export class AccountModuleBE_Class
 	extends Module<Config>
-	implements QueryRequestInfo {
+	implements QueryRequestInfo, ApiDefServer<ApiStruct_UserAccountBE>, ApiModule {
+
+	readonly v1: ApiDefServer<ApiStruct_UserAccountBE>['v1'];
+
 	constructor() {
 		super();
 		this.setDefaultConfig({sessionTTLms: Day});
+		this.v1 = {
+			create: createBodyServerApi(ApiDef_UserAccountBE.v1.create, this.create),
+			login: createBodyServerApi(ApiDef_UserAccountBE.v1.login, this.login),
+			validateSession: createQueryServerApi(ApiDef_UserAccountBE.v1.validateSession, this.validateSession),
+			query: createQueryServerApi(ApiDef_UserAccountBE.v1.query, this.listUsers),
+			upsert: createBodyServerApi(ApiDef_UserAccountBE.v1.upsert, this.upsert),
+		};
+	}
+
+	useRoutes() {
+		return this.v1;
 	}
 
 	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; }> {
 		let data: UI_Account | undefined;
 		try {
-			data = await this.validateSession(request);
+			data = await this.validateSession({}, request);
 		} catch (e: any) {
 			this.logError(e);
 		}
@@ -96,8 +132,8 @@ export class AccountModuleBE_Class
 		return this.accounts.queryUnique({where: {email}, select: ['email', '_id']});
 	}
 
-	async listUsers() {
-		return this.accounts.getAll(['_id', 'email']) as Promise<{ email: string, _id: string }[]>;
+	async listUsers(params: QueryParams) {
+		return {accounts: (await this.accounts.getAll(['_id', 'email'])) as { email: string, _id: string }[]};
 	}
 
 	async listSessions() {
@@ -109,7 +145,7 @@ export class AccountModuleBE_Class
 		return this.accounts.queryUnique({where: {email}});
 	}
 
-	async create(request: Request_CreateAccount) {
+	private async create(request: Request_CreateAccount) {
 		const account = await this.createAccount(request);
 
 		const session = await this.login(request);
@@ -117,7 +153,7 @@ export class AccountModuleBE_Class
 		return session;
 	}
 
-	async upsert(request: Request_UpsertAccount) {
+	private async upsert(request: Request_UpsertAccount) {
 		const account = await this.accounts.runInTransaction(async (transaction) => {
 			const existAccount = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
 			if (existAccount)
@@ -131,16 +167,16 @@ export class AccountModuleBE_Class
 		return session;
 	}
 
-	async addNewAccount(email: string, password?: string, password_check?: string): Promise<UI_Account> {
-		let account: DB_Account;
-		if (password && password_check) {
-			account = await this.createAccount({password, password_check, email});
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
-		} else
-			account = await this.createSAML(email);
-
-		return getUIAccount(account);
-	}
+	// async addNewAccount(email: string, password?: string, password_check?: string): Promise<UI_Account> {
+	// 	let account: DB_Account;
+	// 	if (password && password_check) {
+	// 		account = await this.createAccount({password, password_check, email});
+	// 		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
+	// 	} else
+	// 		account = await this.createSAML(email);
+	//
+	// 	return getUIAccount(account);
+	// }
 
 	async changePassword(userEmail: string, newPassword: string, outsideTransaction: FirestoreTransaction) {
 		const email = userEmail.toLowerCase();
@@ -210,51 +246,15 @@ export class AccountModuleBE_Class
 			await this.accounts.upsert(account);
 		}
 
-		const session = await this.upsertSession(account._id);
+		const session = await this.upsertSession(account);
 
 		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
 		return session;
 	}
 
-	async loginSAML(__email: string): Promise<Response_Auth> {
-		const _email = __email.toLowerCase();
-		const account = await this.createSAML(_email);
-
-		const session = await this.upsertSession(account._id);
-		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
-		return session;
-	}
-
-	private async createSAML(__email: string) {
-		const _email = __email.toLowerCase();
-		const query = {where: {email: _email}};
-		let dispatchEvent = false;
-		const toRet = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
-			const account = await transaction.queryUnique(this.accounts, query);
-			if (account?._id)
-				return account;
-
-			const now = currentTimeMillis();
-			const _account: DB_Account = {
-				_id: generateHex(32),
-				__created: now,
-				__updated: now,
-				_audit: auditBy(_email),
-				email: _email,
-				...account
-			};
-
-			dispatchEvent = true;
-			return transaction.upsert(this.accounts, _account);
-		});
-
-		if (dispatchEvent)
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(toRet));
-
-		return toRet;
-	}
-
-	async validateSession(request: ExpressRequest): Promise<UI_Account> {
+	async validateSession(params: QueryParams, request?: ExpressRequest): Promise<UI_Account> {
+		if (!request)
+			throw new MUSTNeverHappenException('must have a request when calling this function..');
 		const sessionId = Header_SessionId.get(request);
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
@@ -290,21 +290,22 @@ export class AccountModuleBE_Class
 		return delta > this.config.sessionTTLms || delta < 0;
 	};
 
-	private upsertSession = async (userId: string): Promise<Response_Auth> => {
-		let session = await this.sessions.queryUnique({where: {userId}});
+	upsertSession = async (account: DB_Account): Promise<Response_Auth> => {
+		let session = await this.sessions.queryUnique({where: {userId: account._id}});
 		if (!session || this.TTLExpired(session)) {
 			session = {
 				sessionId: generateHex(64),
 				timestamp: currentTimeMillis(),
-				userId
+				userId: account._id
 			};
 			await this.sessions.upsert(session);
 		}
 
-		const account = await this.getUserEmailFromSession(session);
-		return {sessionId: session.sessionId, email: account.email};
+		const uiAccount = await this.getUserEmailFromSession(session);
+		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
+		return {sessionId: session.sessionId, email: uiAccount.email};
 	};
 
 }
 
-export const AccountModuleBE = new AccountModuleBE_Class();
+export const ModuleBE_Account = new AccountModuleBE_Class();
