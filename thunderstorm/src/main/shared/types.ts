@@ -84,13 +84,11 @@ export type  ErrorResponse<E extends TS_Object | void = void> = {
 	error?: ErrorBody<E>
 }
 
-export type ApiDefResolver<K> = K extends TypedApi<any, any, any, any> ? ApiDef<K> : ApiDefRouter<K>;
+export type ApiDefResolver<API_Struct> = API_Struct extends TypedApi<any, any, any, any> ? ApiDef<API_Struct> : API_Struct extends TS_Object ? ApiDefRouter<API_Struct> : never;
+export type ApiDefRouter<API_Struct extends TS_Object> = { [P in keyof API_Struct]: ApiDefResolver<API_Struct[P]> };
 
-export type ApiDefRouter<T extends TS_Object> = { [P in keyof T]: ApiDefResolver<T[P]> };
-
-export type ApiDefCaller<K> = K extends TypedApi<any, any, any, any> ? ApiCaller<K> : ApiCallerRouter<K>;
-
-export type ApiCallerRouter<T extends TS_Object> = { [P in keyof T]: ApiDefCaller<T[P]> };
+export type ApiDefCaller<API_Struct> = API_Struct extends TypedApi<any, any, any, any> ? ApiCaller<API_Struct> : API_Struct extends TS_Object ? ApiCallerRouter<API_Struct> : never;
+export type ApiCallerRouter<API_Struct extends TS_Object> = { [P in keyof API_Struct]: ApiDefCaller<API_Struct[P]> };
 
 export type ApiCaller_Query<API extends QueryApi<any, any, any>> = API['IP'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IP']) => BaseHttpRequest<API>;
 export type ApiCaller_Body<API extends BodyApi<any, any, any>> = API['IB'] extends undefined ? () => BaseHttpRequest<API> : (query: API['IB']) => BaseHttpRequest<API>;

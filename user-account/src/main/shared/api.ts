@@ -82,6 +82,7 @@ export type PostAssertBody = {
 };
 
 type TypedApi_LoginSaml = QueryApi<Response_LoginSAML, RequestParams_LoginSAML>;
+
 export type ApiStruct_UserAccountFE = {
 	v1: {
 		create: BodyApi<Response_Auth, Request_CreateAccount>
@@ -89,7 +90,6 @@ export type ApiStruct_UserAccountFE = {
 		loginSaml: TypedApi_LoginSaml
 		validateSession: QueryApi<UI_Account, QueryParams, undefined>
 		query: QueryApi<Response_ListAccounts>
-
 	},
 }
 
@@ -127,7 +127,6 @@ export const ApiDef_UserAccountBE: ApiDefResolver<ApiStruct_UserAccountBE> = {
 		login: {method: HttpMethod.POST, path: '/v1/account/login'},
 		validateSession: {method: HttpMethod.GET, path: '/v1/account/validate'},
 		query: {method: HttpMethod.GET, path: '/v1/account/query'},
-		addNew: {method: HttpMethod.POST, path: '/v1/account/add-new'},
 		upsert: {method: HttpMethod.POST, path: '/v1/account/upsert'},
 	}
 };

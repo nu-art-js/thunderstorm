@@ -17,11 +17,10 @@
  */
 
 import {IdentityProvider, IdentityProviderOptions, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
-import {__stringify, auditBy, currentTimeMillis, generateHex, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {__stringify, ImplementationMissingException, Module} from '@nu-art/ts-common';
 import {
 	ApiDef_SAML_BE,
 	ApiStruct_SAML_BE,
-	DB_Account,
 	PostAssertBody,
 	QueryParam_Email,
 	QueryParam_RedirectUrl,
@@ -32,7 +31,7 @@ import {
 	Response_LoginSAML
 } from './_imports';
 import {ApiDefServer, ApiException, ApiModule, ApiResponse, createQueryServerApi, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
-import {dispatch_onNewUserRegistered, ModuleBE_Account} from './ModuleBE_Account';
+import {ModuleBE_Account} from './ModuleBE_Account';
 
 
 type SamlConfig = {
@@ -108,7 +107,7 @@ export class ModuleBE_SAML_Class
 		const _email = __email.toLowerCase();
 		const account = await this.createSAML(_email);
 
-		return await ModuleBE_Account.upsertSession(account._id);
+		return await ModuleBE_Account.upsertSession(account);
 	}
 
 	async assertSaml(request_body: PostAssertBody) {
@@ -132,31 +131,7 @@ export class ModuleBE_SAML_Class
 
 	private async createSAML(__email: string) {
 		const _email = __email.toLowerCase();
-		const query = {where: {email: _email}};
-		let dispatchEvent = false;
-		const toRet = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
-			const account = await transaction.queryUnique(this.accounts, query);
-			if (account?._id)
-				return account;
-
-			const now = currentTimeMillis();
-			const _account: DB_Account = {
-				_id: generateHex(32),
-				__created: now,
-				__updated: now,
-				_audit: auditBy(_email),
-				email: _email,
-				...account
-			};
-
-			dispatchEvent = true;
-			return transaction.upsert(this.accounts, _account);
-		});
-
-		if (dispatchEvent)
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(toRet);
-
-		return toRet;
+		return ModuleBE_Account.getOrCreate({where: {email: _email}});
 	}
 
 	loginRequest = async (loginContext: RequestParams_LoginSAML, request?: ExpressRequest) => {
