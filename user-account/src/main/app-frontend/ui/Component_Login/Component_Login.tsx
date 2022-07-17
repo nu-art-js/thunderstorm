@@ -99,6 +99,6 @@ export class Component_Login
 		if (errors.length > 0)
 			return ToastModule.toastError(`Wrong input:\n${errors.join('\n')}`);
 
-		ModuleFE_Account.login(this.state.data as Request_LoginAccount);
+		ModuleFE_Account.v1.login(this.state.data as Request_LoginAccount).execute();
 	};
 }

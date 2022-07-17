@@ -106,6 +106,6 @@ export class Component_Register
 		if (errors.length > 0)
 			return ToastModule.toastError(`Wrong input:\n${errors.join('\n')}`);
 
-		ModuleFE_Account.create(this.state.data as Request_CreateAccount);
+		ModuleFE_Account.v1.create(this.state.data as Request_CreateAccount).execute();
 	};
 }
