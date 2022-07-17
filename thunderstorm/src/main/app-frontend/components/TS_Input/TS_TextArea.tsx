@@ -35,15 +35,17 @@ export class TS_TextArea<Key extends string>
 			return;
 
 		if (ev.ctrlKey || ev.metaKey) {
-			if (ev.key === 'Enter' && this.props.onAccept) {
+			if (ev.key === 'Enter') {
 				ev.persist();
 				const value = ev.currentTarget.value;
 
 				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
 				ev.target.blur();
 
-				this.props.onAccept(value, ev);
-				ev.stopPropagation();
+				if (this.props.onAccept) {
+					this.props.onAccept(value, ev);
+					ev.stopPropagation();
+				}
 			}
 			return;
 		}
@@ -55,7 +57,10 @@ export class TS_TextArea<Key extends string>
 	};
 
 	render() {
+		const {onAccept, focus, ...props} = this.props;
+
 		return <textarea
+			{...props}
 			ref={input => {
 				if (this.ref || !input)
 					return;

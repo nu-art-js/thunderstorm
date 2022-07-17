@@ -50,6 +50,7 @@ export type Props_Table<R extends TS_Object, A extends string = never, P extends
 
 export class TS_Table<R extends TS_Object, A extends string = never>
 	extends React.Component<Props_Table<R, A>, any> {
+
 	static defaultProps = {
 		actionHeaderRenderer: (action: any) => <div>{action}</div>
 	};
