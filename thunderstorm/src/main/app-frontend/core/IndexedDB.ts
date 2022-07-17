@@ -213,8 +213,8 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 			);
 		});
 	}
-	
-	public async queryMap<Type>(mapper: (item: T) => Type, filter?: (item: T) => boolean, query?: IndexDb_Query): Promise<Type[]> {
+
+	public async WIP_queryMap<Type>(mapper: (item: T) => Type, filter?: (item: T) => boolean, query?: IndexDb_Query): Promise<Type[]> {
 		const limit = query?.limit || 0;
 		const cursorRequest = await this.getCursor(query);
 		const matches: Type[] = [];
