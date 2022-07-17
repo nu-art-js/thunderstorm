@@ -249,9 +249,9 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return this.db.queryFind(filter);
 	}
 
-	public async queryMap<Type>(mapper: (item: DBType) => Type, filter?: (item: DBType) => boolean, query?: IndexDb_Query): Promise<Type[]> {
-		return this.db.queryMap(mapper, filter, query);
-	}
+	// public async queryMap<Type>(mapper: (item: DBType) => Type, filter?: (item: DBType) => boolean, query?: IndexDb_Query): Promise<Type[]> {
+	// 	return this.db.queryMap(mapper, filter, query);
+	// }
 
 	public uniqueQueryCache = async (_key?: string | IndexKeys<DBType, Ks>): Promise<DBType | undefined> => {
 		if (_key === undefined)
