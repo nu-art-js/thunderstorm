@@ -37,7 +37,7 @@ export type TS_BaseInputProps<Key, Element> = Omit<HTMLProps<Element>, 'onChange
 	enable?: boolean
 	name?: string
 	value?: string
-	onKeyPress?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+	onKeyDown?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 	focus?: boolean
 	spellCheck?: boolean
 	autoComplete?: boolean

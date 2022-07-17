@@ -30,7 +30,7 @@ export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement>
 export class TS_TextArea<Key extends string>
 	extends TS_BaseInput<Key, TS_TextAreaProps<Key>, HTMLTextAreaElement> {
 
-	onKeyPress = (ev: KeyboardEvent<HTMLTextAreaElement>) => {
+	onKeyDown = (ev: KeyboardEvent<HTMLTextAreaElement>) => {
 		if (ev.shiftKey || ev.altKey)
 			return;
 
@@ -78,7 +78,7 @@ export class TS_TextArea<Key extends string>
 			value={this.state.value}
 			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
-			onKeyPress={this.props.onKeyPress || this.onKeyPress}
+			onKeyDown={this.props.onKeyDown || this.onKeyDown}
 			autoComplete={this.props.autoComplete ? 'on' : 'off'}
 			spellCheck={this.props.spellCheck}
 		/>;

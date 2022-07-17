@@ -39,10 +39,9 @@ export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, 
 export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
 
-	onKeyPress = (ev: KeyboardEvent<HTMLInputElement>) => {
+	onKeyDown = (ev: KeyboardEvent<HTMLInputElement>) => {
 		if (ev.shiftKey || ev.altKey || ev.ctrlKey || ev.metaKey)
 			return;
-
 		//If the key was 'Enter'
 		if (ev.key === 'Enter' && this.props.onAccept) {
 			ev.persist();
@@ -78,7 +77,7 @@ export class TS_Input<Key extends string = string>
 			className={_className('ts-input', props.disabled ? 'disabled' : undefined)}
 			value={this.state.value}
 			onChange={this.changeValue}
-			onKeyPress={props.onKeyPress || this.onKeyPress}
+			onKeyDown={props.onKeyDown || this.onKeyDown}
 			autoComplete={props.autoComplete ? 'on' : 'off'}
 		/>;
 	}
