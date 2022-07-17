@@ -43,15 +43,17 @@ export class TS_Input<Key extends string = string>
 		if (ev.shiftKey || ev.altKey || ev.ctrlKey || ev.metaKey)
 			return;
 		//If the key was 'Enter'
-		if (ev.key === 'Enter' && this.props.onAccept) {
+		if (ev.key === 'Enter') {
 			ev.persist();
 			const value = ev.currentTarget.value;
 
 			//@ts-ignore - despite what typescript says, ev.target does have a blur function.
 			ev.target.blur();
 
-			this.props.onAccept(value, ev);
-			ev.stopPropagation();
+			if (this.props.onAccept) {
+				this.props.onAccept(value, ev);
+				ev.stopPropagation();
+			}
 		}
 
 		//If the key was 'Esc'

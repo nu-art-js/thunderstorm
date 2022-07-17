@@ -23,11 +23,12 @@ import {ThunderstormModule, UrlTarget} from '../../modules/ThunderstormModule';
 import './TS_Link.scss';
 import {QueryParams} from '../../../shared/types';
 import {_className, stopPropagation} from '../../utils/tools';
+import {_keys, TypedMap} from '@nu-art/ts-common';
 
 
 type Props = {
 	url: string
-	params?: QueryParams
+	params?: TypedMap<(() => string) | string | undefined>
 	target?: UrlTarget;
 	className?: string;
 }
@@ -37,7 +38,20 @@ export class TS_Link
 
 	private handleOnClick = (e: React.MouseEvent) => {
 		stopPropagation(e);
-		ThunderstormModule.openUrl({url: this.props.url, params: this.props.params}, this.props.target);
+		const _params = this.props.params || {};
+		const params = _keys(_params).reduce((toRet, key) => {
+			const param = _params[key];
+			if (typeof param === 'function') {
+				const value = param?.();
+				if (value)
+					toRet[key] = value;
+			} else
+				toRet[key] = param;
+
+			return toRet;
+		}, {} as QueryParams);
+
+		ThunderstormModule.openUrl({url: this.props.url, params}, this.props.target);
 	};
 
 	render() {
