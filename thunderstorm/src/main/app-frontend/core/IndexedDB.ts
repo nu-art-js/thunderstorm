@@ -166,12 +166,12 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		});
 	}
 
-	public async insert(value: T, _store?: IDBObjectStore) {
+	public async insert(value: T, _store?: IDBObjectStore): Promise<T> {
 		const store = await this.store(true, _store);
 		const request = store.add(value);
 		return new Promise((resolve, reject) => {
 			request.onerror = () => reject(new Error(`Error inserting item in DB - ${this.config.name}`));
-			request.onsuccess = () => resolve(request.result);
+			request.onsuccess = () => resolve(request.result as unknown as T);
 		});
 	}
 
@@ -183,12 +183,12 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		}
 	}
 
-	public async upsert(value: T, _store?: IDBObjectStore) {
+	public async upsert(value: T, _store?: IDBObjectStore): Promise<T> {
 		const store = await this.store(true, _store);
 		const request = store.put(value);
 		return new Promise((resolve, reject) => {
 			request.onerror = () => reject(new Error(`Error upserting item in DB - ${this.config.name}`));
-			request.onsuccess = () => resolve(request.result);
+			request.onsuccess = () => resolve(request.result as unknown as T);
 		});
 	}
 
