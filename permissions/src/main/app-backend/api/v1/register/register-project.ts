@@ -30,7 +30,7 @@ import {
 } from "../permissions/_imports";
 import {HttpMethod} from "@nu-art/thunderstorm";
 import {ExpressRequest} from "@nu-art/thunderstorm/backend";
-import {PermissionsModule} from "../../../modules/PermissionsModule";
+import {ModuleBE_Permissions} from "../../../modules/ModuleBE_Permissions";
 
 
 class ServerApi_RegisterExternalProject
@@ -42,7 +42,7 @@ class ServerApi_RegisterExternalProject
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_RegisterProject): Promise<void> {
 		RemoteProxy.assertSecret(request);
-		await PermissionsModule._registerProject(body);
+		await ModuleBE_Permissions._registerProject(body);
 	}
 }
 
@@ -55,7 +55,7 @@ class ServerApi_RegisterProject
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void): Promise<void> {
 		// RemoteProxy.assertSecret(request);
-		await PermissionsModule.registerProject();
+		await ModuleBE_Permissions.registerProject();
 	}
 }
 

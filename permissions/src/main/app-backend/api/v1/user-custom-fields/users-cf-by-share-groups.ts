@@ -18,7 +18,7 @@
  */
 
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
-import {PermissionsApi_UsersCFsByShareGroups, PermissionsModule, Request_UsersCFsByShareGroups} from '../permissions/_imports';
+import {PermissionsApi_UsersCFsByShareGroups, ModuleBE_Permissions, Request_UsersCFsByShareGroups} from '../permissions/_imports';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {AccountModuleBE} from '@nu-art/user-account/backend';
 
@@ -32,7 +32,7 @@ class ServerApi_UsersCFsByShareGroups
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UsersCFsByShareGroups) {
 		await AccountModuleBE.validateSession(request);
-		return PermissionsModule.getUsersCFsByShareGroups(body.usersEmails, body.groupsIds);
+		return ModuleBE_Permissions.getUsersCFsByShareGroups(body.usersEmails, body.groupsIds);
 	}
 }
 

@@ -39,6 +39,11 @@ export interface QueryRequestInfo {
 export type RequestOptions = CoreOptions & UriOptions
 export const dispatch_queryRequestInfo = new Dispatcher<QueryRequestInfo, '__queryRequestInfo'>('__queryRequestInfo');
 
+/**
+ * 	useRoutes() {
+ * 		return this.v1;
+ * 	}
+ */
 export type ApiModule = {
 	useRoutes: () => ApiServerRouter<any> | ApiServerRouter<any>[] | ApiServer<any> | ApiServer<any>[]
 }
