@@ -25,6 +25,13 @@ import {DBIndex} from '../../shared/types';
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
 const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
+export type ReduceFunction<ItemType, ReturnType> = (
+	accumulator: ReturnType,
+	arrayItem: ItemType,
+	index?: number,
+	array?: ItemType[]
+) => ReturnType
+
 type Config = {}
 
 export type DBConfig<T extends DB_Object, Ks extends keyof T> = {
@@ -247,8 +254,16 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		});
 	}
 
-	public async queryReduce() {
+	public async queryReduce<ReturnType>(reducer: ReduceFunction<T, ReturnType>, initialValue: ReturnType, filter?: (item: T) => boolean, query?: IndexDb_Query) {
+		let acc = initialValue;
+		const alwaysTrue = () => true;
+		const _filter = filter || alwaysTrue;
+		const matches: T[] = await this.queryFilter(_filter, query);
 
+		return new Promise<ReturnType>((resolve, reject) => {
+			matches.forEach((item, index) => acc = reducer(acc, item, index, matches));
+			resolve(acc);
+		});
 	}
 
 	// ######################### Data deletion functions #########################
