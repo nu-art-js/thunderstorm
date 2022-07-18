@@ -16,12 +16,31 @@
  * limitations under the License.
  */
 
-import {addItemToArray, compare, generateHex, ImplementationMissingException, Module, removeFromArray, StringMap} from '@nu-art/ts-common';
-import {StorageKey, ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
-import {BaseSubscriptionData, DB_Notifications, IFP, ISP, ITP, MessageType, PubSubRegisterClient, Request_PushRegister, SubscribeProps} from '../../index';
-import {HttpMethod} from '@nu-art/thunderstorm';
+import {
+	addItemToArray,
+	compare,
+	generateHex,
+	ImplementationMissingException,
+	Module,
+	removeFromArray,
+	StringMap,
+	ThisShouldNotHappenException
+} from '@nu-art/ts-common';
+import {apiWithBody, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {
+	ApiDef_PushMessages,
+	ApiStruct_PushMessages,
+	BaseSubscriptionData,
+	DB_Notifications,
+	IFP,
+	ISP,
+	ITP,
+	MessageType,
+	Request_PushRegister,
+	SubscribeProps
+} from '../../index';
+import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {FirebaseModule, MessagingWrapper} from '@nu-art/firebase/frontend';
-import {NotificationsModule} from './NotificationModule';
 
 
 export const Command_SwToApp = 'SwToApp';
@@ -52,13 +71,16 @@ export const pushSessionIdKey = 'x-push-session-id';
 const pushSessionId = new StorageKey<string>(pushSessionIdKey, false);
 
 export class PushPubSubModule_Class
-	extends Module<PushPubSubConfig> {
+	extends Module<PushPubSubConfig>
+	implements ApiDefCaller<ApiStruct_PushMessages> {
 
 	private subscriptions: BaseSubscriptionData[] = [];
 	private firebaseToken?: string;
 	private messaging!: MessagingWrapper;
 
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, '__onMessageReceived'>('__onMessageReceived');
+
+	readonly v1: ApiDefCaller<ApiStruct_PushMessages>['v1'];
 
 	private readonly pushSessionId: string;
 	protected timeout: number = 800;
@@ -67,6 +89,33 @@ export class PushPubSubModule_Class
 		super();
 		window.name = window.name || generateHex(32);
 		this.pushSessionId = pushSessionId.set(window.name);
+		const register = apiWithBody(ApiDef_PushMessages.v1.register);
+		this.v1 = {
+			register: (subscription: BaseSubscriptionData) => {
+				this.subscribeImpl(subscription);
+				return register(this.composeRegisterRequest());
+			},
+			unregister: (subscription: BaseSubscriptionData) => {
+				removeFromArray(this.subscriptions, d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props));
+				return register(this.composeRegisterRequest());
+			},
+			registerAll: (subscriptions: BaseSubscriptionData[]) => {
+				subscriptions.forEach(subscription => this.subscribeImpl(subscription));
+				return register(this.composeRegisterRequest());
+			}
+		};
+	}
+
+	private composeRegisterRequest() {
+		if (!this.firebaseToken)
+			throw new ThisShouldNotHappenException('Firebase token not found');
+
+		const body: Request_PushRegister = {
+			firebaseToken: this.firebaseToken,
+			pushSessionId: this.getPushSessionId(),
+			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
+		};
+		return body;
 	}
 
 	init() {
@@ -168,7 +217,6 @@ export class PushPubSubModule_Class
 		this.logInfo('process message', data);
 		const arr: DB_Notifications[] = JSON.parse(data.messages);
 		arr.forEach(s => {
-			s.persistent && NotificationsModule.addNotification(s);
 			this.dispatch_pushMessage.dispatchModule(s);
 		});
 	};
@@ -179,48 +227,6 @@ export class PushPubSubModule_Class
 
 		addItemToArray(this.subscriptions, subscription);
 	}
-
-	subscribe = (subscription: BaseSubscriptionData) => {
-		this.logDebug('subscribe');
-		this.subscribeImpl(subscription);
-		this.register('subscribe');
-	};
-
-	subscribeMulti = (subscriptions: BaseSubscriptionData[]) => {
-		this.logDebug('subscribeMulti');
-		subscriptions.forEach(subscription => this.subscribeImpl(subscription));
-		return this.register('subscribeMulti');
-	};
-
-	unsubscribe = (subscription: BaseSubscriptionData) => {
-		this.logDebug('unsubscribe');
-		removeFromArray(this.subscriptions, d => d.pushKey === subscription.pushKey && compare(subscription.props, d.props));
-		this.register('unsubscribe');
-	};
-
-	private register = (extra: string) => {
-		if (!this.firebaseToken)
-			return this.logWarning('No Firebase token...');
-
-		const body: Request_PushRegister = {
-			firebaseToken: this.firebaseToken,
-			pushSessionId: this.getPushSessionId(),
-			subscriptions: this.subscriptions.map(({pushKey, props}) => ({pushKey, props}))
-		};
-
-		this.logDebug(`Subscribing: ${JSON.stringify(body)}`);
-
-		XhrHttpModule
-			.createRequest<PubSubRegisterClient>(HttpMethod.POST, extra + '-pub-sub-tab')
-			.setRelativeUrl('/v1/push/register')
-			.setBodyAsJson(body)
-			.setOnError('Failed ' + extra + '-pub-sub-tab')
-			.execute((response) => {
-				// NotificationsModule.setNotificationList(response);
-				this.logVerbose('Finished ' + extra + '-pub-sub-tab');
-			});
-
-	};
 }
 
-export const PushPubSubModule = new PushPubSubModule_Class();
+export const ModuleFE_PushPubSub = new PushPubSubModule_Class();

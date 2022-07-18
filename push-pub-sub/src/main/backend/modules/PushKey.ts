@@ -16,16 +16,20 @@
  * limitations under the License.
  */
 
-import {PushPubSubModule} from '../modules/PushPubSubModule';
-import {FirebaseModule} from '@nu-art/firebase/frontend';
-import {NotificationsModule} from '../modules/NotificationModule';
+import {TS_Object} from '@nu-art/ts-common';
+import {SubscribeProps} from '../../shared';
+import {ModuleBE_PushPubSub} from './ModuleBE_PushPubSub';
 
 
-export const ModulePack_Frontend_PushPubSub = [
-	FirebaseModule,
-	PushPubSubModule,
-	NotificationsModule
-];
+export class PushKey<K extends string, P extends SubscribeProps, D extends TS_Object> {
 
-export * from '../modules/PushPubSubModule';
-export * from '../modules/NotificationModule';
+	private readonly key: K;
+
+	constructor(key: K) {
+		this.key = key;
+	}
+
+	async push(data: D, props?: P) {
+		return ModuleBE_PushPubSub.pushToKey(this.key, props, data);
+	}
+}

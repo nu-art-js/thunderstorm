@@ -16,4 +16,5 @@
  * limitations under the License.
  */
 
-export * from './shared';
+export * from './modules/ModuleFE_PushPubSub';
+export * from './core/module-pack';

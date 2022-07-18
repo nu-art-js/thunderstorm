@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * A generic push pub sub infra for webapps
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -17,16 +16,17 @@
  * limitations under the License.
  */
 
-import {__scenario} from "@nu-art/testelot";
-import {Tester} from "./_core/Tester";
-import {FirebaseModule} from "@nu-art/firebase/backend";
-import {PushPubSubModule} from "../main/app-backend/modules/PushPubSubModule";
-import {scenarioCleanup} from "./cleaup";
+import {__scenario} from '@nu-art/testelot';
+import {Tester} from './_core/Tester';
+import {FirebaseModule} from '@nu-art/firebase/backend';
+import {ModuleBE_PushPubSub} from '../main/backend/modules/ModuleBE_PushPubSub';
+import {scenarioCleanup} from './cleaup';
 
-const mainScenario = __scenario("Push Pub Sub Test");
+
+const mainScenario = __scenario('Push Pub Sub Test');
 mainScenario.add(scenarioCleanup);
 
 module.exports = new Tester()
-	.addModules(FirebaseModule, PushPubSubModule)
+	.addModules(FirebaseModule, ModuleBE_PushPubSub)
 	.setScenario(mainScenario)
 	.build();

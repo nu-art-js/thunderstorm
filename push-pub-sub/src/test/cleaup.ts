@@ -1,5 +1,5 @@
 /*
- * Firebase is a simpler Typescript wrapper to all of firebase services.
+ * A generic push pub sub infra for webapps
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,30 +16,15 @@
  * limitations under the License.
  */
 
-import {
-	__custom,
-	__scenario
-} from "@nu-art/testelot";
-import {PushPubSubModule} from "../main/app-backend/modules/PushPubSubModule";
-import {
-	assert,
-	compare,
-	currentTimeMillis,
-	generateHex,
-	Hour
-} from "@nu-art/ts-common";
-import {
-	DB_PushKeys,
-	DB_PushSession,
-	Request_PushRegister
-} from "../main";
-import {
-	FirestoreCollection,
-	FirestoreTransaction
-} from "@nu-art/firebase/backend";
+import {__custom, __scenario} from '@nu-art/testelot';
+import {ModuleBE_PushPubSub} from '../main/backend/modules/ModuleBE_PushPubSub';
+import {assert, compare, currentTimeMillis, generateHex, Hour} from '@nu-art/ts-common';
+import {DB_PushKeys, DB_PushSession, Request_PushRegister} from '../main';
+import {FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
+
 
 const arrayOf2 = Array(2).fill(0);
-export const scenarioCleanup = __scenario("Scheduled Cleaup");
+export const scenarioCleanup = __scenario('Scheduled Cleaup');
 
 const testRegister = async function (request: Request_PushRegister, timestamp: number) {
 	const session: DB_PushSession = {
@@ -50,7 +35,7 @@ const testRegister = async function (request: Request_PushRegister, timestamp: n
 	};
 
 	// @ts-ignore
-	await PushPubSubModule.pushSessions.upsert(session);
+	await ModuleBE_PushPubSub.pushSessions.upsert(session);
 
 	const subscriptions = request.subscriptions.map((s): DB_PushKeys => ({
 		pushSessionId: request.pushSessionId,
@@ -59,7 +44,7 @@ const testRegister = async function (request: Request_PushRegister, timestamp: n
 	}));
 
 	// @ts-ignore
-	const pushKeysCollection: FirestoreCollection<DB_PushKeys> = PushPubSubModule.pushKeys;
+	const pushKeysCollection: FirestoreCollection<DB_PushKeys> = ModuleBE_PushPubSub.pushKeys;
 
 	return pushKeysCollection.runInTransaction(async (transaction: FirestoreTransaction) => {
 		const data = await transaction.query(pushKeysCollection, {where: {pushSessionId: request.pushSessionId}});
@@ -70,7 +55,7 @@ const testRegister = async function (request: Request_PushRegister, timestamp: n
 
 const processClean = __custom(async () => {
 	// @ts-ignore
-	const asyncs = [PushPubSubModule.pushKeys.deleteAll(), PushPubSubModule.pushSessions.deleteAll()];
+	const asyncs = [ModuleBE_PushPubSub.pushKeys.deleteAll(), ModuleBE_PushPubSub.pushSessions.deleteAll()];
 	return Promise.all(asyncs);
 }).setLabel('Start Clean');
 
@@ -85,11 +70,11 @@ const populate = (timestamp: number) => __custom(async () => {
 	}
 }).setLabel('Populate');
 
-const cleaup = __custom(async () => PushPubSubModule.scheduledCleanup()).setLabel('Cleaning up');
+const cleaup = __custom(async () => ModuleBE_PushPubSub.scheduledCleanup()).setLabel('Cleaning up');
 
 const check = __custom(async () => {
 	// @ts-ignore
-	const docs = await PushPubSubModule.pushSessions.query({where: {timestamp: {$lt: currentTimeMillis() - Hour}}});
+	const docs = await ModuleBE_PushPubSub.pushSessions.query({where: {timestamp: {$lt: currentTimeMillis() - Hour}}});
 	assert(`There shouldn't be any docs`, docs.length, 0);
 }).setLabel('Checking clean');
 

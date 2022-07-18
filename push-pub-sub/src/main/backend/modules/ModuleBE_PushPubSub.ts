@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * A generic push pub sub infra for webapps
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -39,8 +38,21 @@ import {
 	PushMessagesWrapper
 } from '@nu-art/firebase/backend';
 // noinspection TypeScriptPreferShortImport
-import {DB_Notifications, DB_PushKeys, DB_PushSession, IFP, ISP, ITP, MessageType, Request_PushRegister, SubscribeProps} from '../../index';
-import {dispatch_queryRequestInfo, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {
+	ApiDef_PushMessages,
+	ApiStruct_PushMessages,
+	DB_Notifications,
+	DB_PushKeys,
+	DB_PushSession,
+	IFP,
+	ISP,
+	ITP,
+	MessageType,
+	Request_PushRegister,
+	SubscribeProps
+} from '../../index';
+import {ApiDefServer, ApiModule, createBodyServerApi, dispatch_queryRequestInfo, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+
 
 type Config = {
 	notificationsCleanupTime?: number
@@ -53,11 +65,27 @@ type TempMessages = {
 
 export class PushPubSubModule_Class
 	extends Module<Config>
-	implements OnCleanupSchedulerAct {
+	implements OnCleanupSchedulerAct, ApiDefServer<ApiStruct_PushMessages>, ApiModule {
 
 	private pushSessions!: FirestoreCollection<DB_PushSession>;
 	private pushKeys!: FirestoreCollection<DB_PushKeys>;
 	private messaging!: PushMessagesWrapper;
+	readonly v1: ApiDefServer<ApiStruct_PushMessages>['v1'];
+
+	constructor() {
+		super();
+
+		this.v1 = {
+			register: createBodyServerApi(ApiDef_PushMessages.v1.register, this.register),
+			unregister: createBodyServerApi(ApiDef_PushMessages.v1.unregister, this.register),
+			registerAll: createBodyServerApi(ApiDef_PushMessages.v1.registerAll, this.register)
+		};
+	}
+
+	useRoutes() {
+		return this.v1;
+
+	}
 
 	protected init(): void {
 		const session = FirebaseModule.createAdminSession();
@@ -170,7 +198,6 @@ export class PushPubSubModule_Class
 
 			carry[session.firebaseToken] = [notification];
 
-
 			return carry;
 		}, {} as TempMessages);
 
@@ -261,4 +288,4 @@ export class PushPubSubModule_Class
 	}
 }
 
-export const PushPubSubModule = new PushPubSubModule_Class();
+export const ModuleBE_PushPubSub = new PushPubSubModule_Class();

@@ -32,9 +32,16 @@ export class ModuleFE_LiveDocs_Class
 
 	private docs: { [key: string]: DB_Document } = {};
 	private toasterResolver: LiveDocActionResolver = DefaultLiveDocEditor;
+	readonly v1: ApiDefCaller<ApiStruct_LiveDoc>['v1'];
 
 	constructor() {
 		super();
+
+		this.v1 = {
+			get: apiWithQuery(ApiDef_LiveDoc.v1.get, this.onGotDoc),
+			upsert: apiWithBody(ApiDef_LiveDoc.v1.upsert, this.onGotDoc),
+			history: apiWithQuery(ApiDef_LiveDoc.v1.history, this.onGotDoc),
+		};
 	}
 
 	protected init(): void {
@@ -57,11 +64,6 @@ export class ModuleFE_LiveDocs_Class
 		this.toasterResolver = resolver;
 	}
 
-	v1 = {
-		get: apiWithQuery(ApiDef_LiveDoc.v1.get, this.onGotDoc),
-		upsert: apiWithBody(ApiDef_LiveDoc.v1.upsert, this.onGotDoc),
-		history: apiWithQuery(ApiDef_LiveDoc.v1.history, this.onGotDoc),
-	};
 }
 
 export const ModuleFE_LiveDocs = new ModuleFE_LiveDocs_Class();

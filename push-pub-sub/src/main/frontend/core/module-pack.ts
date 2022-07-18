@@ -16,4 +16,13 @@
  * limitations under the License.
  */
 
-export * from './shared';
+import {ModuleFE_PushPubSub} from '../modules/ModuleFE_PushPubSub';
+import {FirebaseModule} from '@nu-art/firebase/frontend';
+
+
+export const ModulePack_Frontend_PushPubSub = [
+	FirebaseModule,
+	ModuleFE_PushPubSub,
+];
+
+export * from '../modules/ModuleFE_PushPubSub';
