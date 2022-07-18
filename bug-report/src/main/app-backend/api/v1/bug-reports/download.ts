@@ -38,7 +38,7 @@ class ServerApi_DownloadLogs
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Paths) {
-		// const email = await AccountModuleBE.validateSession(request);
+		// const email = await ModuleBE_Account.validateSession({},request);
 		return AdminBRModule.downloadFiles(body);
 	}
 }

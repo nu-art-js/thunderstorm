@@ -47,7 +47,7 @@ export class ModuleBE_PermissionAccessLevel_Class
 		await ModuleBE_PermissionDomain.queryUnique({_id: dbInstance.domainId});
 
 		if (request) {
-			const account = await AccountModuleBE.validateSession(request);
+			const account = await ModuleBE_Account.validateSession({},request);
 			dbInstance._audit = auditBy(account.email);
 		}
 	}

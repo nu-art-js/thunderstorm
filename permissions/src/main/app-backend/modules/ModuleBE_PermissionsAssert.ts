@@ -18,7 +18,16 @@
  */
 
 import {_keys, BadImplementationException, batchActionParallel, filterDuplicates, Module, StringMap} from '@nu-art/ts-common';
-import {ApiDefServer, ApiException, ApiModule, createBodyServerApi, ExpressRequest, HttpRequestData, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
+import {
+	ApiDefServer,
+	ApiException,
+	ApiModule,
+	ApiResponse,
+	ExpressRequest,
+	HttpRequestData,
+	ServerApi,
+	ServerApi_Middleware
+} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_PermissionsAssert,
 	ApiStruct_PermissionsAssert,
@@ -27,14 +36,14 @@ import {
 	DB_PermissionApi,
 	DB_PermissionGroup,
 	DB_PermissionUser,
+	Request_AssertApiForUser,
 	User_Group
 } from '../..';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {ModuleBE_Permissions} from './ModuleBE_Permissions';
-import {AccountModuleBE} from '@nu-art/user-account/backend';
+import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from './assignment';
 import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi} from './management';
-
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
 export type GroupPairWithBaseLevelsObj = { accessLevels: Base_AccessLevels[], customFields: StringMap[] };
@@ -44,12 +53,26 @@ type Config = {
 	strictMode?: boolean
 }
 
+class AssertPermissionsProcessor
+	extends ServerApi<ApiStruct_PermissionsAssert['v1']['assertUserPermissions']> {
+
+	constructor() {
+		super(ApiDef_PermissionsAssert.v1.assertUserPermissions);
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_AssertApiForUser) {
+		const account = await ModuleBE_Account.validateSession({}, request);
+		await ModuleBE_PermissionsAssert.assertUserPermissions(body.projectId, body.path, account._id, body.requestCustomField);
+		return {userId: account.email};
+	}
+}
+
 export class ModuleBE_PermissionsAssert_Class
 	extends Module<Config> implements ApiDefServer<ApiStruct_PermissionsAssert>, ApiModule {
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
 		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
 
-			const account = await AccountModuleBE.validateSession(req);
+			const account = await ModuleBE_Account.validateSession({}, req);
 			return this.assertUserPermissions(projectId, data.url, account._id, customFields);
 		})(req, data);
 	};
@@ -93,7 +116,8 @@ export class ModuleBE_PermissionsAssert_Class
 	constructor() {
 		super();
 		this.v1 = {
-			assertUserPermissions: createBodyServerApi(ApiDef_PermissionsAssert.v1.assertUserPermissions, this.assertUserPermissions),
+			assertUserPermissions: new AssertPermissionsProcessor(),
+			// assertUserPermissions: createBodyServerApi(ApiDef_PermissionsAssert.v1.assertUserPermissions, this.assertUserPermissions),
 		};
 	}
 
