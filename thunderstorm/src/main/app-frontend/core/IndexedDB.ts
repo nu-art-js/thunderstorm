@@ -19,10 +19,11 @@
  * limitations under the License.
  */
 
-import {DB_Object, Module} from '@nu-art/ts-common';
-import {Cursor, DB, ObjectStore, openDb, UpgradeDB} from 'idb';
-import {DBIndex, IndexKeys} from '../../shared';
+import {DB_Object, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {DBIndex} from '../../shared/types';
 
+//@ts-ignore - set IDBAPI as indexedDB regardless of browser
+const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
 type Config = {}
 
@@ -32,8 +33,10 @@ export type DBConfig<T extends DB_Object, Ks extends keyof T> = {
 	autoIncrement?: boolean,
 	uniqueKeys: Ks[]
 	indices?: DBIndex<T>[]
-	upgradeProcessor?: (db: UpgradeDB) => void
+	upgradeProcessor?: (db: IDBDatabase) => void
 };
+
+export type IndexKeys<T extends DB_Object, Ks extends keyof T> = { [K in Ks]: T[K] };
 
 export type IndexDb_Query = {
 	query?: string | number | string[] | number[],
@@ -42,13 +45,13 @@ export type IndexDb_Query = {
 };
 
 export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
-	private db!: DB;
+	private db!: IDBDatabase;
 	private config: DBConfig<T, Ks>;
 
 	constructor(config: DBConfig<T, Ks>) {
 		this.config = {
 			...config,
-			upgradeProcessor: (db: UpgradeDB) => {
+			upgradeProcessor: (db: IDBDatabase) => {
 				if (!db.objectStoreNames.contains(this.config.name)) {
 					const store = db.createObjectStore(this.config.name, {autoIncrement: config.autoIncrement, keyPath: config.uniqueKeys as unknown as string[]});
 					this.config.indices?.forEach(index => store.createIndex(index.id, index.keys as string | string[], {
@@ -64,89 +67,191 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		};
 	}
 
-	async open() {
-		this.db = await openDb(this.config.name, this.config.version, this.config.upgradeProcessor);
-		return this;
+	open(): Promise<IDBDatabase> {
+		return new Promise((resolve, reject) => {
+			if (!IDBAPI)
+				reject(new Error('Error - current browser does not support IndexedDB'));
+
+			const request = IDBAPI.open(this.config.name);
+			request.onupgradeneeded = () => {
+				const db = request.result;
+				this.config.upgradeProcessor?.(db);
+			};
+			request.onsuccess = (event) => {
+				this.db = request.result;
+				resolve(this.db);
+			};
+			request.onerror = (event) => {
+				reject(new Error(`Error opening IDB - ${this.config.name}`));
+			};
+		});
 	}
 
-	public readonly store = async (write = false, store?: ObjectStore<T, Ks>) => {
+	public readonly store = async (write = false, store?: IDBObjectStore) => {
 		if (store)
 			return store;
 
 		if (!this.db)
 			await this.open();
 
-		return this.db.transaction(this.config.name, write ? 'readwrite' : 'readonly').objectStore<T, Ks>(this.config.name);
+		return this.db.transaction(this.config.name, write ? 'readwrite' : 'readonly').objectStore(this.config.name);
 	};
+
+	private getCursor = async (query?: IndexDb_Query): Promise<IDBRequest<IDBCursorWithValue | null>> => {
+		const store = await this.store();
+
+		let cursorRequest: IDBRequest<IDBCursorWithValue | null>;
+
+		if (query?.indexKey) {
+			const idbIndex = store.index(query.indexKey);
+			if (!idbIndex) throw new MUSTNeverHappenException('Could not find index for the given indexKey');
+			cursorRequest = idbIndex.openCursor();
+		} else
+			cursorRequest = store.openCursor();
+
+		return cursorRequest;
+	};
+
+	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: T) => void,
+													 endCallback: () => void, limiterCallback?: () => boolean) => {
+		cursorRequest.onsuccess = (event) => {
+			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
+
+			//If reached the end or reached limit, call endCallback
+			if (!cursor || limiterCallback?.())
+				return endCallback();
+
+			//run value through the value callback
+			perValueCallback(cursor.value);
+
+			//Continue to next value
+			cursor.continue();
+		};
+	};
+
+	// ######################### Data insertion functions #########################
+
+	public async insert(value: T, _store?: IDBObjectStore): Promise<T> {
+		const store = await this.store(true, _store);
+		const request = store.add(value);
+		return new Promise((resolve, reject) => {
+			request.onerror = () => reject(new Error(`Error inserting item in DB - ${this.config.name}`));
+			request.onsuccess = () => resolve(request.result as unknown as T);
+		});
+	}
+
+	public async insertAll(values: T[], _store?: IDBObjectStore) {
+		const store = await this.store(true, _store);
+
+		for (const value of values) {
+			await this.insert(value, store);
+		}
+	}
+
+	public async upsert(value: T, _store?: IDBObjectStore): Promise<T> {
+		const store = await this.store(true, _store);
+		const request = store.put(value);
+		return new Promise((resolve, reject) => {
+			request.onerror = () => reject(new Error(`Error upserting item in DB - ${this.config.name}`));
+			request.onsuccess = () => resolve(request.result as unknown as T);
+		});
+	}
+
+	public async upsertAll(values: T[], _store?: IDBObjectStore) {
+		const store = (await this.store(true, _store));
+		for (const value of values) {
+			await this.upsert(value, store);
+		}
+	}
+
+	// ######################### Data collection functions #########################
 
 	public async get(key: IndexKeys<T, Ks>): Promise<T | undefined> {
 		const map = this.config.uniqueKeys.map(k => key[k]);
-		// @ts-ignore
-		return (await this.store()).get(map);
+		const request = (await this.store()).get(map);
+
+		return new Promise((resolve, reject) => {
+			request.onerror = () => reject(new Error(`Error getting item from DB - ${this.config.name}`));
+
+			request.onsuccess = () => resolve(request.result);
+		});
 	}
 
 	public async query(query: IndexDb_Query): Promise<T[] | undefined> {
 		const store = await this.store();
-		if (query.indexKey)
-			return store.index(query.indexKey).getAll(query.query, query.limit);
 
-		return store.getAll(query.query, query.limit);
-	}
+		return new Promise((resolve, reject) => {
+			let request: IDBRequest;
 
-	public async queryFilter(filter: (item: T) => boolean, query?: IndexDb_Query): Promise<T[]> {
-		const store = await this.store();
-		return this.filterCursor(store, filter, query);
-	}
+			if (query.indexKey)
+				request = store.index(query.indexKey).getAll(query.query, query.limit);
 
-	private filterCursor(store: ObjectStore<T, Ks>, filter: (item: T) => boolean, query?: IndexDb_Query) {
-		const limit = query?.limit || 0;
-		const matches: T[] = [];
+			request = store.getAll(query.query, query.limit);
 
-		return new Promise<T[]>((resolve, reject) => {
-			const callback = (cursor?: Cursor<T, any>) => {
-				if (!cursor)
-					return resolve(matches);
-
-				if (filter(cursor.value))
-					matches.push(cursor.value);
-
-				if (limit > 0 && matches.length >= limit)
-					return resolve(matches);
-
-				cursor.continue();
+			request.onsuccess = () => {
+				resolve(request.result);
 			};
-
-			if (query?.indexKey)
-				store.index(query.indexKey).iterateCursor(query.query || null, callback);
-			else
-				store.iterateCursor(query?.query || null, callback);
+			request.onerror = () => {
+				reject(new Error(`Error querying DB - ${this.config.name}`));
+			};
 		});
 	}
 
-	public async insert(value: T, _store?: ObjectStore<T, Ks>) {
-		return (await this.store(true, _store)).add(value);
+	public async queryFilter(filter: (item: T) => boolean, query?: IndexDb_Query): Promise<T[]> {
+		const limit = query?.limit || 0;
+		const cursorRequest = await this.getCursor(query);
+		const matches: T[] = [];
+
+		return new Promise<T[]>((resolve, reject) => {
+			this.cursorHandler(cursorRequest,
+				(value) => {
+					if (filter(value))
+						matches.push(value);
+				},
+				() => resolve(matches),
+				() => limit > 0 && matches.length >= limit
+			);
+		});
 	}
 
-	public async insertAll(values: T[], _store?: ObjectStore<T, Ks>) {
-		const store = (await this.store(true, _store));
-		const result = [];
-		for (const value of values) {
-			result.push(await this.insert(value, store));
-		}
+	public async WIP_queryMap<Type>(mapper: (item: T) => Type, filter?: (item: T) => boolean, query?: IndexDb_Query): Promise<Type[]> {
+		const limit = query?.limit || 0;
+		const cursorRequest = await this.getCursor(query);
+		const matches: Type[] = [];
+
+		return new Promise<Type[]>((resolve, reject) => {
+			this.cursorHandler(cursorRequest,
+				(item) => {
+					if (filter ? filter(item) : true)
+						matches.push(mapper(item));
+				},
+				() => resolve(matches),
+				() => limit > 0 && matches.length >= limit
+			);
+		});
 	}
 
-	public async upsert(value: T, _store?: ObjectStore<T, Ks>) {
-		return (await this.store(true, _store)).put(value);
+	public async queryFind(filter: (item: T) => boolean): Promise<T | undefined> {
+		let match: T | undefined = undefined;
+		const cursorRequest = await this.getCursor();
+
+		return new Promise<T | undefined>((resolve, reject) => {
+			this.cursorHandler(cursorRequest,
+				(value) => {
+					if (filter(value))
+						match = value;
+				},
+				() => resolve(match),
+				() => !!match
+			);
+		});
 	}
 
-	public async upsertAll(values: T[], _store?: ObjectStore<T, Ks>) {
-		const store = (await this.store(true, _store));
-		const result = [];
-		for (const value of values) {
-			result.push(await this.upsert(value, store));
-		}
-		return result;
+	public async queryReduce() {
+
 	}
+
+	// ######################### Data deletion functions #########################
 
 	public async deleteAll(): Promise<void> {
 		const store = (await this.store(true));
@@ -155,13 +260,22 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 	public async delete(key: IndexKeys<T, Ks>): Promise<T | undefined> {
 		const keys = this.config.uniqueKeys.map(k => key[k]);
-		const store = (await this.store(true));
-		// @ts-ignore
-		const item = await store.get(keys);
-		await store.delete(keys);
-		return item;
-	}
+		const store = await this.store(true);
 
+		return new Promise((resolve, reject) => {
+			const itemRequest = store.get(keys);
+
+			itemRequest.onerror = () => reject(new Error(`Error getting item in DB - ${this.config.name}`));
+
+			itemRequest.onsuccess = () => {
+				const deleteRequest = store.delete(keys);
+
+				deleteRequest.onerror = () => reject(new Error(`Error deleting item in DB - ${this.config.name}`));
+
+				deleteRequest.onsuccess = () => resolve(itemRequest.result);
+			};
+		});
+	}
 }
 
 export class IndexedDBModule_Class
