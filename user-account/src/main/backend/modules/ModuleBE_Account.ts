@@ -255,6 +255,7 @@ export class AccountModuleBE_Class
 	async validateSession(params: QueryParams, request?: ExpressRequest): Promise<UI_Account> {
 		if (!request)
 			throw new MUSTNeverHappenException('must have a request when calling this function..');
+
 		const sessionId = Header_SessionId.get(request);
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
@@ -262,7 +263,10 @@ export class AccountModuleBE_Class
 		return this.validateSessionId(sessionId);
 	}
 
-	async validateSessionId(sessionId: string) {
+	async validateSessionId(sessionId: any) {
+		if (typeof sessionId !== 'string')
+			throw new ApiException(401, `Invalid session id: ${sessionId}`);
+
 		const query = {where: {sessionId}};
 
 		const session = await this.sessions.queryUnique(query);
