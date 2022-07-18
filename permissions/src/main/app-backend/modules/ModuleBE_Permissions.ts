@@ -18,12 +18,32 @@
  */
 
 import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from '@nu-art/ts-common';
-import {PermissionsAssert} from './permissions-assert';
-import {HttpServer} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
+import {
+	ApiDefServer,
+	ApiModule,
+	ApiResponse,
+	createBodyServerApi,
+	createQueryServerApi,
+	ExpressRequest,
+	HttpServer,
+	ServerApi
+} from '@nu-art/thunderstorm/backend';
 import {AccountModuleBE} from '@nu-art/user-account/app-backend/modules/AccountModuleBE';
 import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from './assignment';
 import {ModuleBE_PermissionApi, ModuleBE_PermissionProject} from './management';
-import {DB_PermissionProject, PredefinedGroup, PredefinedUser, Request_RegisterProject, Response_UsersCFsByShareGroups, UserUrlsPermissions} from '../shared';
+import {
+	ApiDef_Permissions,
+	ApiStruct_Permissions,
+	DB_PermissionProject,
+	PredefinedGroup,
+	PredefinedUser,
+	Request_RegisterProject, Request_UserCFsByShareGroups,
+	Request_UserUrlsPermissions,
+	Response_UsersCFsByShareGroups,
+	UserUrlsPermissions
+} from '../shared';
+import {Request_UsersCFsByShareGroups} from '../../../../dist';
 
 
 type Config = {
@@ -32,11 +52,51 @@ type Config = {
 	predefinedUser?: PredefinedUser
 }
 
-export class PermissionsModule_Class
-	extends Module<Config> {
+class UserUrlsPermissionsProcessor
+	extends ServerApi<ApiStruct_Permissions['v1']['getUserUrlsPermissions']> {
+
+	constructor() {
+		super(ApiDef_Permissions.v1.getUserUrlsPermissions);
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UserUrlsPermissions) {
+		const account = await AccountModuleBE.validateSession(request);
+		return await ModuleBE_Permissions.getUserUrlsPermissions(body.projectId, body.urls, account._id, body.requestCustomField);
+	}
+}
+
+class UserCFsByShareGroupsProcessor
+	extends ServerApi<ApiStruct_Permissions['v1']['getUserCFsByShareGroups']> {
+
+	constructor() {
+		super(ApiDef_Permissions.v1.getUserCFsByShareGroups);
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: Request_UserCFsByShareGroups){
+		const account = await AccountModuleBE.validateSession(request);
+		return ModuleBE_Permissions.getUserCFsByShareGroups(account._id, body.groupsIds);
+	}
+}
+
+export class ModuleBE_Permissions_Class
+	extends Module<Config> implements ApiDefServer<ApiStruct_Permissions>, ApiModule {
+	readonly v1: ApiDefServer<ApiStruct_Permissions>['v1'];
 
 	constructor() {
 		super();
+		this.v1 = {
+			getUserUrlsPermissions: new UserUrlsPermissionsProcessor(),
+			// getUserUrlsPermissions: createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions),
+			getUserCFsByShareGroups: new UserCFsByShareGroupsProcessor(),
+			// getUserCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUserCFsByShareGroups, this.getUserCFsByShareGroups),
+			getUsersCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups),
+			_registerProject: createBodyServerApi(ApiDef_Permissions.v1._registerProject, this._registerProject),
+			registerProject: createQueryServerApi(ApiDef_Permissions.v1.registerProject, this.registerProject),
+		};
+	}
+
+	useRoutes() {
+		return this.v1;
 	}
 
 	protected init(): void {
@@ -50,8 +110,8 @@ export class PermissionsModule_Class
 		const urls = Object.keys(urlsMap);
 		const [userDetails, apiDetails] = await Promise.all(
 			[
-				PermissionsAssert.getUserDetails(userId),
-				PermissionsAssert.getApisDetails(urls, projectId)
+				ModuleBE_PermissionsAssert.getUserDetails(userId),
+				ModuleBE_PermissionsAssert.getApisDetails(urls, projectId)
 			]
 		);
 
@@ -59,7 +119,7 @@ export class PermissionsModule_Class
 			const apiDetail = apiDetails[i];
 			if (apiDetail) {
 				try {
-					PermissionsAssert._assertUserPermissionsImpl(apiDetail, projectId, userDetails, requestCustomField);
+					ModuleBE_PermissionsAssert._assertUserPermissionsImpl(apiDetail, projectId, userDetails, requestCustomField);
 					userUrlsPermissions[url] = true;
 				} catch (e: any) {
 					userUrlsPermissions[url] = false;
@@ -112,7 +172,7 @@ export class PermissionsModule_Class
 		}, []);
 
 		const projectRoutes = {
-			project: PermissionsModule.getProjectIdentity(),
+			project: ModuleBE_Permissions.getProjectIdentity(),
 			routes,
 			predefinedGroups: this.config.predefinedGroups,
 			predefinedUser: this.config.predefinedUser
@@ -159,4 +219,4 @@ export class PermissionsModule_Class
 	}
 }
 
-export const PermissionsModule = new PermissionsModule_Class();
+export const ModuleBE_Permissions = new ModuleBE_Permissions_Class();

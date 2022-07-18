@@ -19,8 +19,8 @@
 
 import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
 import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../modules/assignment';
-import {PermissionsModule} from '../modules/PermissionsModule';
-import {PermissionsAssert} from '../modules/permissions-assert';
+import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions';
+import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert';
 
 
 export const ModulePack_Backend_Permissions = [
@@ -30,9 +30,9 @@ export const ModulePack_Backend_Permissions = [
 	ModuleBE_PermissionApi,
 	ModuleBE_PermissionGroup,
 	ModuleBE_PermissionUser,
-	PermissionsAssert,
-	PermissionsModule,
+	ModuleBE_PermissionsAssert,
+	ModuleBE_Permissions,
 ];
 
-export * from '../modules/permissions-assert';
-export * from '../modules/PermissionsModule';
+export * from '../modules/ModuleBE_PermissionsAssert';
+export * from '../modules/ModuleBE_Permissions';

@@ -26,7 +26,7 @@ import {
 	testLevel2
 } from "./_core";
 import {
-	PermissionsAssert,
+	ModuleBE_PermissionsAssert,
 	RequestPairWithLevelsObj,
 	GroupPairWithBaseLevelsObj
 } from "../_main";
@@ -62,7 +62,7 @@ type CustomFieldModel = {
 	expected: boolean
 }
 
-const models: PermissionsAssert[] = [
+const models: ModuleBE_PermissionsAssert[] = [
 	{
 		label: "Check basic permissions with a higher group level object",
 		group: groupPairWithHigherLevelsObj,
@@ -155,7 +155,7 @@ export function permissionsAssertIsLevelsMatchTests() {
 	let satisfy;
 	for (const model of models) {
 		scenario.add(__custom(async () => {
-			satisfy = await PermissionsAssert.isMatchWithLevelsObj(model.group, model.request);
+			satisfy = await ModuleBE_PermissionsAssert.isMatchWithLevelsObj(model.group, model.request);
 			if (satisfy !== model.expected)
 				throw new TestException(`Expect permissions levels is match to be ${model.expected}, but you got ${!model.expected}`);
 		}).setLabel(model.label));
@@ -169,7 +169,7 @@ export function permissionsAssertDoesCustomFieldsSatisfiesTests() {
 	let satisfy;
 	for (const model of customFieldsModels) {
 		scenario.add(__custom(async () => {
-			satisfy = await PermissionsAssert.doesCustomFieldsSatisfies(model.group, model.request);
+			satisfy = await ModuleBE_PermissionsAssert.doesCustomFieldsSatisfies(model.group, model.request);
 			if (satisfy !== model.expected)
 				throw new TestException(`Expect permissions levels doesCustomFieldsSatisfies to be ${model.expected}, but you got ${!model.expected}`);
 		}).setLabel(model.label));
