@@ -63,7 +63,7 @@ type ConfigType = {
 
 export type HttpErrorHandler = (requestData: HttpRequestData, error: ApiException) => Promise<string>;
 
-export type ServerApi_Middleware = (request: ExpressRequest, data: HttpRequestData) => Promise<void>
+export type ServerApi_Middleware<T extends any = void> = (request: ExpressRequest, response: ExpressResponse, data: HttpRequestData) => T | Promise<T>
 
 type HttpRoute = {
 	methods: string[]

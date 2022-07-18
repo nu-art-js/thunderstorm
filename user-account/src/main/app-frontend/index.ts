@@ -16,5 +16,7 @@
  * limitations under the License.
  */
 
-export * from './app-backend/core/module-pack';
-export * from './app-backend/modules/ModuleBE_Account';
+export * from './core/module-pack';
+export * from './ui/Component_Login/Component_Login';
+export * from './ui/Component_Register';
+export * from './modules/ModuleFE_Account';

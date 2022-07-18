@@ -71,6 +71,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	private bodyValidator?: ValidatorTypeResolver<API['B']>;
 	private queryValidator?: ValidatorTypeResolver<API['P']>;
 	readonly apiDef: ApiDef<API>;
+	protected middlewareResults!: any[];
 	// readonly method: HttpMethod;
 	// readonly relativePath: string;
 
@@ -80,12 +81,12 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 		this.apiDef = apiDef;
 	}
 
-	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
+	setMiddlewares(...middlewares: ServerApi_Middleware<any>[]) {
 		this.middlewares = middlewares;
 		return this;
 	}
 
-	addMiddlewares(...middlewares: ServerApi_Middleware[]) {
+	addMiddlewares(...middlewares: ServerApi_Middleware<any>[]) {
 		this.middlewares = [...(this.middlewares || []), ...middlewares];
 		return this;
 	}
@@ -181,7 +182,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			this.queryValidator && tsValidate<API['P']>(reqQuery, this.queryValidator);
 
 			if (this.middlewares)
-				await Promise.all(this.middlewares.map(m => m(req, requestData)));
+				this.middlewareResults = await Promise.all(this.middlewares.map(m => m(req, res, requestData)));
 
 			const toReturn: unknown = await this.process(req, response, reqQuery, body as API['B']);
 			if (response.isConsumed())

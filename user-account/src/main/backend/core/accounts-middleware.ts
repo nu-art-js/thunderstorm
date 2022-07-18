@@ -16,6 +16,12 @@
  * limitations under the License.
  */
 
-export * from '../main/backend/modules/_imports';
-export * from '../main/backend';
-export * from '../main/index';
+import {ExpressRequest, ExpressResponse, HttpRequestData, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_Account} from '../modules/ModuleBE_Account';
+import {HeaderKey_SessionId, UI_Account} from '../../shared/api';
+
+
+export const AccountsMiddleware: ServerApi_Middleware<UI_Account> = async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
+	const sessionId = data.headers[HeaderKey_SessionId];
+	return await ModuleBE_Account.validateSessionId(sessionId);
+};

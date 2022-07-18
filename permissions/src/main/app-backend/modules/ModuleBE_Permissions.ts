@@ -19,7 +19,17 @@
 
 import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {ApiDefServer, ApiModule, ApiResponse, createQueryServerApi, ExpressRequest, HttpServer, RemoteProxy, ServerApi} from '@nu-art/thunderstorm/backend';
+import {
+	ApiDefServer,
+	ApiModule,
+	ApiResponse,
+	createBodyServerApi,
+	createQueryServerApi,
+	ExpressRequest,
+	HttpServer,
+	RemoteProxy,
+	ServerApi
+} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from './assignment';
 import {ModuleBE_PermissionApi, ModuleBE_PermissionProject} from './management';
 import {
@@ -35,7 +45,8 @@ import {
 	Response_UsersCFsByShareGroups,
 	UserUrlsPermissions
 } from '../shared';
-import {ModuleBE_Account} from '@nu-art/user-account/app-backend/modules/ModuleBE_Account';
+import {AccountsMiddleware, ModuleBE_Account} from '@nu-art/user-account/backend';
+import {UI_Account} from '@nu-art/user-account';
 
 
 type Config = {
@@ -110,14 +121,15 @@ class RegisterExternalProjectProcessor
 // }
 
 export class ModuleBE_Permissions_Class
-	extends Module<Config> implements ApiDefServer<ApiStruct_Permissions>, ApiModule {
+	extends Module<Config>
+	implements ApiDefServer<ApiStruct_Permissions>, ApiModule {
 	readonly v1: ApiDefServer<ApiStruct_Permissions>['v1'];
 
 	constructor() {
 		super();
 		this.v1 = {
-			getUserUrlsPermissions: new UserUrlsPermissionsProcessor(),
-			// getUserUrlsPermissions: createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions),
+			// getUserUrlsPermissions: new UserUrlsPermissionsProcessor(),
+			getUserUrlsPermissions: createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, AccountsMiddleware),
 			getUserCFsByShareGroups: new UserCFsByShareGroupsProcessor(),
 			// getUserCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUserCFsByShareGroups, this.getUserCFsByShareGroups),
 			getUsersCFsByShareGroups: new UsersCFssByShareGroupsProcessor(),
@@ -140,7 +152,14 @@ export class ModuleBE_Permissions_Class
 
 	getProjectIdentity = () => this.config.project;
 
-	async getUserUrlsPermissions(projectId: string, urlsMap: UserUrlsPermissions, userId: string, requestCustomField: StringMap) {
+	async getUserUrlsPermissions(body: Request_UserUrlsPermissions, middleware: [UI_Account]) {
+		const account = middleware[0];
+
+		const projectId: string = body.projectId;
+		const urlsMap: UserUrlsPermissions = body.urls;
+		const userId: string = account._id;
+		const requestCustomField: StringMap = body.requestCustomField;
+
 		const urls = Object.keys(urlsMap);
 		const [userDetails, apiDetails] = await Promise.all(
 			[
