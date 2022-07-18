@@ -16,20 +16,5 @@
  * limitations under the License.
  */
 
-import {TS_Object} from '@nu-art/ts-common';
-import {PushPubSubModule} from './PushPubSubModule';
-import {SubscribeProps} from './_imports';
-
-
-export class PushKey<K extends string, P extends SubscribeProps, D extends TS_Object> {
-
-	private readonly key: K;
-
-	constructor(key: K) {
-		this.key = key;
-	}
-
-	async push(data: D, props?: P) {
-		return PushPubSubModule.pushToKey(this.key, props, data);
-	}
-}
+export * from './api';
+export * from './types';

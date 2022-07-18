@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-import {PushPubSubModule} from '../modules/PushPubSubModule';
+import {ModuleBE_PushPubSub} from '../modules/ModuleBE_PushPubSub';
 
 
-export const ModulePack_Backend_PushPubSub = [PushPubSubModule,];
+export const ModulePack_Backend_PushPubSub = [ModuleBE_PushPubSub,];
 
-export * from '../modules/PushPubSubModule';
+export * from '../modules/ModuleBE_PushPubSub';
 export * from '../modules/PushKey';

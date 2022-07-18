@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-export * from './shared';
+export * from './core/module-pack';
