@@ -37,7 +37,7 @@ export type TS_BaseInputProps<Key, Element> = Omit<HTMLProps<Element>, 'onChange
 	enable?: boolean
 	name?: string
 	value?: string
-	onKeyPress?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
+	onKeyDown?: (e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void
 	focus?: boolean
 	spellCheck?: boolean
 	autoComplete?: boolean
@@ -82,19 +82,5 @@ export abstract class TS_BaseInput<Key extends string, Props extends TS_BaseInpu
 		const value = event.target.value;
 		this.setState({value});
 		this.props.onChange?.(value, event.target.id as Key);
-	};
-
-	onKeyPress = (ev: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-		if (this.props.onAccept && ev.key === 'Enter' && !ev.shiftKey && !ev.altKey && !ev.ctrlKey && !ev.metaKey) {
-			const value = ev.currentTarget.value;
-
-			this.props.onAccept(value, ev);
-			ev.stopPropagation();
-		}
-
-		if (this.props.onCancel && ev.key === 'Escape' && !ev.shiftKey && !ev.altKey && !ev.ctrlKey && !ev.metaKey) {
-			this.props.onCancel();
-			ev.stopPropagation();
-		}
 	};
 }

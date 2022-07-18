@@ -20,16 +20,47 @@
  */
 
 import * as React from 'react';
+import {KeyboardEvent} from 'react';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 import './TS_TextArea.scss';
+
 
 export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement>
 
 export class TS_TextArea<Key extends string>
 	extends TS_BaseInput<Key, TS_TextAreaProps<Key>, HTMLTextAreaElement> {
 
+	onKeyDown = (ev: KeyboardEvent<HTMLTextAreaElement>) => {
+		if (ev.shiftKey || ev.altKey)
+			return;
+
+		if (ev.ctrlKey || ev.metaKey) {
+			if (ev.key === 'Enter') {
+				ev.persist();
+				const value = ev.currentTarget.value;
+
+				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
+				ev.target.blur();
+
+				if (this.props.onAccept) {
+					this.props.onAccept(value, ev);
+					ev.stopPropagation();
+				}
+			}
+			return;
+		}
+
+		if (ev.key === 'Escape' && this.props.onCancel) {
+			this.props.onCancel();
+			ev.stopPropagation();
+		}
+	};
+
 	render() {
+		const {onAccept, focus, ...props} = this.props;
+
 		return <textarea
+			{...props}
 			ref={input => {
 				if (this.ref || !input)
 					return;
@@ -52,7 +83,7 @@ export class TS_TextArea<Key extends string>
 			value={this.state.value}
 			placeholder={this.props.placeholder}
 			onChange={this.changeValue}
-			onKeyPress={this.props.onKeyPress || this.onKeyPress}
+			onKeyDown={this.props.onKeyDown || this.onKeyDown}
 			autoComplete={this.props.autoComplete ? 'on' : 'off'}
 			spellCheck={this.props.spellCheck}
 		/>;
