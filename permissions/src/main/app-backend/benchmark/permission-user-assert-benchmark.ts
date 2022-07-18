@@ -18,7 +18,7 @@
  */
 
 import {batchAction, currentTimeMillis, filterInstances, generateHex, PreDB} from '@nu-art/ts-common';
-import {PermissionsAssert} from '../modules/permissions-assert';
+import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert';
 import {DB_PermissionGroup, User_Group} from '../..';
 import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
 import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../modules/assignment';
@@ -88,7 +88,7 @@ export async function testUserPermissionsTime() {
 
 async function runAssertion(projectId: string, apiPath: string, userUuid: string, customField: { UnitId: string }) {
 	const start = currentTimeMillis();
-	await PermissionsAssert.assertUserPermissions(projectId, apiPath, userUuid, customField);
+	await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, apiPath, userUuid, customField);
 	const runTime = currentTimeMillis() - start;
 	console.log(`Call to assertion took ${runTime}ms`);
 	return runTime;

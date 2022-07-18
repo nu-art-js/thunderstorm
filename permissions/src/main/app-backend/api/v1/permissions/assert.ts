@@ -19,9 +19,9 @@
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 
 
-import {AccountModuleBE} from '@nu-art/user-account/backend';
-import {PermissionsApi_AssertUserAccess, PermissionsAssert, Request_AssertApiForUser} from './_imports';
+import {ModuleBE_PermissionsAssert, PermissionsApi_AssertUserAccess, Request_AssertApiForUser} from './_imports';
 import {HttpMethod} from '@nu-art/thunderstorm';
+import {ModuleBE_Account} from '@nu-art/user-account/app-backend/modules/ModuleBE_Account';
 
 class ServerApi_AssertPermissions
 	extends ServerApi<PermissionsApi_AssertUserAccess> {
@@ -32,8 +32,8 @@ class ServerApi_AssertPermissions
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_AssertApiForUser) {
-		const account = await AccountModuleBE.validateSession(request);
-		await PermissionsAssert.assertUserPermissions(body.projectId, body.path, account._id, body.requestCustomField);
+		const account = await ModuleBE_Account.validateSession({}, request);
+		await ModuleBE_PermissionsAssert.assertUserPermissions(body.projectId, body.path, account._id, body.requestCustomField);
 		return {userId: account.email};
 	}
 }

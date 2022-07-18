@@ -19,28 +19,44 @@
 
 import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {ApiDefServer, ApiException, ApiModule, createBodyServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {_keys, auditBy, BadImplementationException, batchAction, compare, filterDuplicates} from '@nu-art/ts-common';
-import {AccountModuleBE, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {Clause_Where} from '@nu-art/firebase';
 import {PermissionsShare} from '../permissions-share';
-import {AssignAppPermissions, DB_PermissionUser, DBDef_PermissionUser} from '../../shared';
+import {
+	ApiDef_PermissionUser,
+	ApiStruct_PermissionsUser,
+	AssignAppPermissions,
+	DB_PermissionUser,
+	DBDef_PermissionUser,
+	Request_AssignAppPermissions
+} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 
 
 export class ModuleBE_PermissionUser_Class
 	extends BaseDB_ApiGenerator<DB_PermissionUser>
-	implements OnNewUserRegistered, OnUserLogin {
+	implements OnNewUserRegistered, OnUserLogin, ApiDefServer<ApiStruct_PermissionsUser>, ApiModule {
+
+	readonly v1: ApiDefServer<ApiStruct_PermissionsUser>['v1'];
 
 	constructor() {
 		super(DBDef_PermissionUser);
 		this.setLockKeys(['accountId']);
+		this.v1 = {
+			assignAppPermissions: createBodyServerApi(ApiDef_PermissionUser.v1.assignAppPermissions, this.assignAppPermissions),
+		};
+	}
+
+	useRoutes() {
+		return this.v1;
 	}
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionUser, request?: ExpressRequest): Promise<void> {
 		if (request) {
-			const account = await AccountModuleBE.validateSession(request);
+			const account = await ModuleBE_Account.validateSession({}, request);
 			dbInstance._audit = auditBy(account.email);
 		}
 
@@ -68,7 +84,6 @@ export class ModuleBE_PermissionUser_Class
 				}
 			});
 		});
-
 	}
 
 	protected internalFilter(item: DB_PermissionUser): Clause_Where<DB_PermissionUser>[] {
@@ -95,7 +110,7 @@ export class ModuleBE_PermissionUser_Class
 	async insertIfNotExist(email: string) {
 		return this.runInTransaction(async (transaction) => {
 
-			const account = await AccountModuleBE.getUser(email);
+			const account = await ModuleBE_Account.getUser(email);
 			if (!account)
 				throw new ApiException(404, `user not found for email ${email}`);
 
@@ -107,7 +122,16 @@ export class ModuleBE_PermissionUser_Class
 		});
 	}
 
-	async assignAppPermissions(assignAppPermissionsObj: AssignAppPermissions, request?: ExpressRequest) {
+	async assignAppPermissions(body: Request_AssignAppPermissions, request?: ExpressRequest) {
+		const account = await ModuleBE_Account.validateSession({}, request);
+
+		let assignAppPermissionsObj: AssignAppPermissions;
+		if (body.appAccountId)
+			// when creating project
+			assignAppPermissionsObj = {...body, granterUserId: body.appAccountId, sharedUserIds: [account._id]};
+		else
+			// when I share with you
+			assignAppPermissionsObj = {...body, granterUserId: account._id, sharedUserIds: body.sharedUserIds};
 		const sharedUserIds = assignAppPermissionsObj.sharedUserIds || [];
 		if (!sharedUserIds.length)
 			throw new BadImplementationException('SharedUserIds is missing');
