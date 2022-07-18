@@ -3,15 +3,15 @@ import {
 	User_Group
 } from "../..";
 import {
-	PermissionsAssert
-} from "./permissions-assert";
+	ModuleBE_PermissionsAssert
+} from "./ModuleBE_PermissionsAssert";
 
 
 export class PermissionsShare_Class
 	extends Module {
 
 	async verifyPermissionGrantingAllowed(granterUserId: string, shareGroup: User_Group) {
-		await PermissionsAssert.assertUserSharingGroup(granterUserId, shareGroup);
+		await ModuleBE_PermissionsAssert.assertUserSharingGroup(granterUserId, shareGroup);
 	}
 
 }

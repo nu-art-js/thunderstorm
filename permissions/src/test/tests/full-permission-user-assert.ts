@@ -25,7 +25,7 @@ import {
 	ModuleBE_PermissionGroup,
 	ModuleBE_PermissionProject,
 	ModuleBE_PermissionUser,
-	PermissionsAssert,
+	ModuleBE_PermissionsAssert,
 	User_Group
 } from '../_main';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
@@ -96,7 +96,7 @@ export async function testUserPermissions(groupCustomFields: StringMap[], extraG
 
 async function runAssertion(projectId: string, apiPath: string, userUuid: string, customField: StringMap) {
 	const start = currentTimeMillis();
-	await PermissionsAssert.assertUserPermissions(projectId, apiPath, userUuid, customField);
+	await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, apiPath, userUuid, customField);
 	const runTime = currentTimeMillis() - start;
 	console.log(`Call to assertion took ${runTime}ms`);
 	return runTime;
