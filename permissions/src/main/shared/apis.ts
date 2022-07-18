@@ -77,19 +77,6 @@ export type Request_RegisterProject = {
 export type Response_User = {
 	userId: string;
 };
-//
-// export type PermissionsApi_AssignAppPermissions = BodyApi<'/v1/permissions/assign/app-permissions', Request_AssignAppPermissions, void>;
-// export type PermissionsApi_ShareWithUser = BodyApi<'/v1/permissions/share-with-user', Request_AssignAppPermissions, void>;
-// export type PermissionsApi_VerifyPermissionsGrantingAllowed = BodyApi<'/v1/permissions/verify-permissions-granting-allowed', User_Group, void>;
-
-// export type PermissionsApi_AssertUserAccess = BodyApi<'/v1/permissions/assert-user-access', Request_AssertApiForUser, Response_User>;
-// export type PermissionsApi_UserUrlsPermissions = BodyApi<'/v1/permissions/user-urls-permissions', Request_UserUrlsPermissions, UserUrlsPermissions>;
-// export type PermissionsApi_UserCFsByShareGroups = BodyApi<'/v1/user-custom-fields/user-cf-by-share-groups', Request_UserCFsByShareGroups, StringMap[]>;
-// export type PermissionsApi_UsersCFsByShareGroups = BodyApi<'/v1/user-custom-fields/users-cf-by-share-groups', Request_UsersCFsByShareGroups, Response_UsersCFsByShareGroups>;
-
-// export type PermissionsApi_RegisterExternalProject = BodyApi<'/v1/register/register-external-project', Request_RegisterProject, void>;
-// export type PermissionsApi_RegisterProject = QueryApi<'/v1/register/register-project', void>;
-// export type PermissionsApi_TestPermissions = QueryApi<'/test/test-permissions', void>;
 
 //ModuleBE_PermissionUser
 export type ApiStruct_PermissionsUser = {
@@ -121,7 +108,7 @@ export type ApiStruct_Permissions = {
 		getUserUrlsPermissions: BodyApi<UserUrlsPermissions, Request_UserUrlsPermissions>;
 		getUserCFsByShareGroups: BodyApi<StringMap[], Request_UserCFsByShareGroups>;
 		getUsersCFsByShareGroups: BodyApi<Response_UsersCFsByShareGroups, Request_UsersCFsByShareGroups>;
-		_registerProject: BodyApi<void, Request_RegisterProject>;
+		registerExternalProject: BodyApi<void, Request_RegisterProject>;
 		registerProject: QueryApi<void>;
 	}
 }
@@ -130,7 +117,7 @@ export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
 		getUserUrlsPermissions: {method: HttpMethod.POST, path: '/v1/permissions/user-urls-permissions'},
 		getUserCFsByShareGroups: {method: HttpMethod.POST, path: '/v1/user-custom-fields/user-cf-by-share-groups'},
 		getUsersCFsByShareGroups: {method: HttpMethod.POST, path: '/v1/user-custom-fields/users-cf-by-share-groups'},
-		_registerProject: {method: HttpMethod.POST, path: '/v1/register/register-external-project'},
+		registerExternalProject: {method: HttpMethod.POST, path: '/v1/register/register-external-project'},
 		registerProject: {method: HttpMethod.GET, path: '/v1/register/register-project'}
 	}
 };

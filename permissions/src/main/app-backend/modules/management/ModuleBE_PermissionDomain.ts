@@ -50,7 +50,7 @@ export class ModuleBE_PermissionDomain_Class
 		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId});
 
 		if (request) {
-			const account = await AccountModuleBE.validateSession(request);
+			const account = await ModuleBE_Account.validateSession({},request);
 			dbInstance._audit = auditBy(account.email);
 		}
 	}

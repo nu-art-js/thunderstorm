@@ -21,7 +21,7 @@ import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {auditBy, batchAction, filterDuplicates, filterInstances, removeItemFromArray} from '@nu-art/ts-common';
-import {AccountModuleBE} from '@nu-art/user-account/backend';
+import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {DB_PermissionGroup, DBDef_PermissionGroup, PredefinedGroup} from '../../shared';
 import {Clause_Where} from '@nu-art/firebase';
 import {checkDuplicateLevelsDomain, ModuleBE_PermissionAccessLevel} from '../management';
@@ -89,7 +89,7 @@ export class ModuleBE_PermissionGroup_Class
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionGroup, request?: ExpressRequest) {
 		if (request) {
-			const account = await AccountModuleBE.validateSession(request);
+			const account = await ModuleBE_Account.validateSession({},request);
 			dbInstance._audit = auditBy(account.email);
 		}
 

@@ -48,7 +48,7 @@ export class ModuleBE_PermissionApi_Class
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionApi, request?: ExpressRequest) {
 		if (request) {
-			const account = await AccountModuleBE.validateSession(request);
+			const account = await ModuleBE_Account.validateSession({},request);
 			dbInstance._audit = auditBy(account.email);
 		}
 
