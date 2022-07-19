@@ -24,6 +24,7 @@ import {
 	ApiModule,
 	ApiResponse,
 	ExpressRequest,
+	ExpressResponse,
 	HttpRequestData,
 	ServerApi,
 	ServerApi_Middleware
@@ -44,6 +45,7 @@ import {ModuleBE_Permissions} from './ModuleBE_Permissions';
 import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from './assignment';
 import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi} from './management';
+
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
 export type GroupPairWithBaseLevelsObj = { accessLevels: Base_AccessLevels[], customFields: StringMap[] };
@@ -68,15 +70,16 @@ class AssertPermissionsProcessor
 }
 
 export class ModuleBE_PermissionsAssert_Class
-	extends Module<Config> implements ApiDefServer<ApiStruct_PermissionsAssert>, ApiModule {
-	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
+	extends Module<Config>
+	implements ApiDefServer<ApiStruct_PermissionsAssert>, ApiModule {
+	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
 		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
 
-			const account = await ModuleBE_Account.validateSession({}, req);
+			const account = await ({}, req);
 			return this.assertUserPermissions(projectId, data.url, account._id, customFields);
-		})(req, data);
+		})(req, res ,data);
 	};
-
+	ModuleBE_Account.validateSession
 	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
 		const customFields: StringMap = {};
 		let object: { [k: string]: any };
@@ -124,7 +127,6 @@ export class ModuleBE_PermissionsAssert_Class
 	useRoutes() {
 		return this.v1;
 	}
-
 
 	async assertUserPermissions(projectId: string, path: string, userId: string, requestCustomField: StringMap) {
 		const [apiDetails, userDetails] = await Promise.all(
