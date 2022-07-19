@@ -21,7 +21,7 @@ import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {auditBy} from '@nu-art/ts-common';
-import {AccountModuleBE} from '@nu-art/user-account/backend';
+import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {DB_PermissionProject, DBDef_PermissionProjects} from '../../shared';
 
 
@@ -34,7 +34,7 @@ export class ModuleBE_PermissionProject_Class
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {
 		if (request) {
-			const account = await ModuleBE_Account.validateSession({},request);
+			const account = await ModuleBE_Account.validateSession({}, request);
 			dbInstance._audit = auditBy(account.email);
 		}
 	}
