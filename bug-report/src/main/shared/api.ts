@@ -64,9 +64,9 @@ export type SecuredUrl = {
 	publicUrl: string
 }
 
-export type ApiGetLog = QueryApi<DB_BugReport[]>
-export type ApiPostPath = BodyApi<'/v1/bug-reports/download-logs', Paths, SecuredUrl>
-export type ApiBugReport = BodyApi<'/v1/bug-reports/report', Request_BugReport, TicketDetails[]>
+// export type ApiGetLog = QueryApi<DB_BugReport[]>
+// export type ApiPostPath = BodyApi<'/v1/bug-reports/download-logs', Paths, SecuredUrl>
+// export type ApiBugReport = BodyApi<'/v1/bug-reports/report', Request_BugReport, TicketDetails[]>
 
 export type ApiStruct_AdminBugReport = {
 	v1: {

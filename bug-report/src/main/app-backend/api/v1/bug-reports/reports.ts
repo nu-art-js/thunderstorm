@@ -17,25 +17,14 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	dispatch_queryRequestInfo,
-	ExpressRequest,
-	ServerApi_Post,
-} from "@nu-art/thunderstorm/backend";
-import {
-	ApiBugReport,
-	BugReportModule,
-	Request_BugReport
-} from "./_imports";
-
-// import {AccountModuleBE} from "@nu-art/user-account/backend";
+import {ApiResponse, dispatch_queryRequestInfo, ExpressRequest, ServerApi_Post,} from '@nu-art/thunderstorm/backend';
+import {ApiDef_BugReport, ApiStruct_BugReport, BugReportModule, Request_BugReport} from './_imports';
 
 class ServerApi_SendReport
-	extends ServerApi_Post<ApiBugReport> {
+	extends ServerApi_Post<ApiStruct_BugReport['v1']['sendBugReport']> {
 
 	constructor() {
-		super("report");
+		super(ApiDef_BugReport.v1.sendBugReport);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_BugReport) {

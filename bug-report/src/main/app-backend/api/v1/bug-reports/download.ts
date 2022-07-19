@@ -17,24 +17,16 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi_Post
-} from "@nu-art/thunderstorm/backend";
-import {
-	AdminBRModule,
-	ApiPostPath,
-	Paths
-} from "./_imports";
+import {ApiResponse, ExpressRequest, ServerApi_Post} from '@nu-art/thunderstorm/backend';
+import {AdminBRModule, ApiDef_AdminBugReport, ApiStruct_AdminBugReport, Paths} from './_imports';
 
 // import {AccountModuleBE} from "@nu-art/user-account/backend";
 
 class ServerApi_DownloadLogs
-	extends ServerApi_Post<ApiPostPath> {
+	extends ServerApi_Post<ApiStruct_AdminBugReport['v1']['downloadLogs']> {
 
 	constructor() {
-		super("download-logs");
+		super(ApiDef_AdminBugReport.v1.downloadLogs);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Paths) {
