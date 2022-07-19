@@ -70,7 +70,7 @@ export type PushPubSubConfig = {
 export const pushSessionIdKey = 'x-push-session-id';
 const pushSessionId = new StorageKey<string>(pushSessionIdKey, false);
 
-export class ModuleBE_PushPubSub_Class
+export class ModuleFE_PushPubSub_Class
 	extends Module<PushPubSubConfig>
 	implements ApiDefCaller<ApiStruct_PushMessages> {
 
@@ -229,4 +229,4 @@ export class ModuleBE_PushPubSub_Class
 	}
 }
 
-export const ModuleFE_PushPubSub = new ModuleBE_PushPubSub_Class();
+export const ModuleFE_PushPubSub = new ModuleFE_PushPubSub_Class();
