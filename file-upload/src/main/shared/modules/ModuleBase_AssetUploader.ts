@@ -16,12 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, _keys, BadImplementationException, Dispatcher, generateHex, Minute, Module, Queue} from '@nu-art/ts-common';
-import {BaseHttpModule_Class, BaseHttpRequest, ErrorResponse, HttpMethod, TS_Progress} from '@nu-art/thunderstorm';
+import {__stringify, _keys, BadImplementationException, Dispatcher, generateHex, Module, Queue} from '@nu-art/ts-common';
+import {ApiDefCaller, BaseHttpModule_Class} from '@nu-art/thunderstorm';
 
 import {
-	Api_GetUploadUrl,
-	Api_ProcessAssetManually,
+	ApiDef_AssetUploader,
+	ApiStruct_AssetUploader,
 	BaseUploaderFile,
 	FileInfo,
 	FileStatus,
@@ -30,13 +30,11 @@ import {
 	Push_FileUploaded,
 	PushKey_FileUploaded,
 	Request_Uploader,
-	RequestKey_ProcessAssetManually,
-	RequestKey_UploadFile,
-	RequestKey_UploadUrl,
 	TempSecureUrl
 } from '../../shared';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
 import {DB_Notifications} from '@nu-art/push-pub-sub';
+import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 
 
 export type FilesToUpload = Request_Uploader & {
@@ -56,12 +54,19 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 	protected files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue('File Uploader').setParallelCount(1);
 	protected readonly dispatch_fileStatusChange = new Dispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
-	private httpModule: HttpModule;
+	// private httpModule: HttpModule;
+	readonly v1: ApiDefCaller<ApiStruct_AssetUploader>['v1'];
+
 
 	protected constructor(httpModule: HttpModule) {
 		super();
-		this.httpModule = httpModule;
+		// this.httpModule = httpModule;
 		this.setDefaultConfig({manualProcessTriggering: false} as Partial<Config>);
+		this.v1 = {
+			uploadUrl: apiWithBody(ApiDef_AssetUploader.v1.uploadUrl),
+			uploadFile: apiWithBody(ApiDef_AssetUploader.v1.uploadFile),
+			processAssetManually: apiWithQuery(ApiDef_AssetUploader.v1.processAssetManually),
+		};
 	}
 
 	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
@@ -133,19 +138,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 			return fileInfo;
 		});
 
-		this
-			.httpModule
-			.createRequest<Api_GetUploadUrl>(HttpMethod.POST, RequestKey_UploadUrl, body.map(file => file.feId))
-			.setRelativeUrl('/v1/upload/get-url')
-			.setBodyAsJson(body)
-			.setOnError((request: BaseHttpRequest<any>, resError?: ErrorResponse) => {
-				body.forEach(f => {
-					this.setFileInfo(f.feId, {
-						messageStatus: __stringify(resError?.debugMessage),
-						status: FileStatus.Error
-					});
-				});
-			})
+		this.v1.uploadUrl(body)
 			.execute(async (response: TempSecureUrl[]) => {
 				body.forEach(f => this.setFileInfo(f.feId, {status: FileStatus.UrlObtained}));
 				if (!response)
@@ -193,26 +186,30 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${feId} and name: ${response.asset.name}`);
 
-		const request = this
-			.httpModule
-			.createRequest(HttpMethod.PUT, RequestKey_UploadFile, feId)
-			.setUrl(response.secureUrl)
-			.setHeader('Content-Type', response.asset.mimeType)
-			.setTimeout(20 * Minute)
-			.setBody(fileInfo.file)
-			.setOnProgressListener((ev: TS_Progress) => {
-				this.setFileInfo(feId, {progress: ev.loaded / ev.total});
-			});
+		const request = this.v1.uploadFile(fileInfo.file, undefined as never)
+			.setUrl(response.secureUrl);
+		// const request = this
+		// 	.httpModule
+		// 	.createRequest(HttpMethod.PUT, RequestKey_UploadFile, feId)
+		// 	.setUrl(response.secureUrl)
+		// 	.setHeader('Content-Type', response.asset.mimeType)
+		// 	.setTimeout(20 * Minute)
+		// 	.setBody(fileInfo.file)
+		// 	.setOnProgressListener((ev: TS_Progress) => {
+		// 		this.setFileInfo(feId, {progress: ev.loaded / ev.total});
+		// 	});
 
 		fileInfo.request = request;
 		await request.executeSync();
 	};
 
 	processAssetManually = (feId?: string) => {
-		const request = this
-			.httpModule
-			.createRequest<Api_ProcessAssetManually>(HttpMethod.GET, RequestKey_ProcessAssetManually, feId)
-			.setRelativeUrl('/v1/upload/process-asset-manually');
+		const request = this.v1.processAssetManually({feId});
+
+		// const request = this
+		// 	.httpModule
+		// 	.createRequest<Api_ProcessAssetManually>(HttpMethod.GET, RequestKey_ProcessAssetManually, feId)
+		// 	.setRelativeUrl('/v1/upload/process-asset-manually');
 
 		if (feId)
 			request.setUrlParam('feId', feId);

@@ -60,3 +60,5 @@ export type TempSecureUrl = {
 	secureUrl: string
 	asset: DB_Asset
 }
+
+export type FileUploadResult = { status: FileStatus, asset: DB_Asset };

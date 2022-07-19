@@ -18,8 +18,7 @@
  */
 
 import {_setTimeout, ImplementationMissingException, Module, Second, StringMap} from '@nu-art/ts-common';
-import {ThunderDispatcher,} from '@nu-art/thunderstorm/app-frontend/core/thunder-dispatcher';
-import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ThunderDispatcher,} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, HttpException} from '@nu-art/thunderstorm';
 import {ApiDef_Permissions, ApiStruct_Permissions, UserUrlsPermissions} from '../..';
 

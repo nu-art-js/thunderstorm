@@ -19,13 +19,13 @@
 
 import {ApiResponse, ExpressRequest, ServerApi_Get} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_Assets} from '../../../modules/ModuleBE_Assets';
-import {Api_ProcessAssetManually} from '../../../../shared/types';
+import {ApiDef_AssetUploader, ApiStruct_AssetUploader} from '../../../../shared';
 
 
 class ServerApi_ProcessAssetManually
-	extends ServerApi_Get<Api_ProcessAssetManually> {
+	extends ServerApi_Get<ApiStruct_AssetUploader['v1']['processAssetManually']> {
 	constructor() {
-		super('process-asset-manually');
+		super(ApiDef_AssetUploader.v1.processAssetManually);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: { feId: string }) {
