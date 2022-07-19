@@ -22,7 +22,16 @@
 import {ApiDefCaller, IndexKeys, QueryParams} from '@nu-art/thunderstorm';
 import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
-import {apiWithBody, apiWithQuery, IndexDb_Query, IndexedDB, IndexedDBModule, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {
+	apiWithBody,
+	apiWithQuery,
+	IndexDb_Query,
+	IndexedDB,
+	IndexedDBModule,
+	ReduceFunction,
+	StorageKey,
+	ThunderDispatcher
+} from '@nu-art/thunderstorm/frontend';
 
 import {DB_Object, Module, PreDB} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
@@ -100,12 +109,52 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	}
 
 	/**
-	 * Iterates over all DB objects in the related collection.
-	 * @param filter boolean returning function, to determine which objects to return.
-	 * @param query
+	 * Iterates over all DB objects in the related collection, and returns all the items that pass the filter
+	 *
+	 * @param {function} filter - Boolean returning function, to determine which objects to return.
+	 * @param {Object} [query] - A query object
+	 *
+	 * @return Array of items or empty array
 	 */
 	public async queryFilter(filter: (item: DBType) => boolean, query?: IndexDb_Query): Promise<DBType[]> {
 		return await this.db.queryFilter(filter, query);
+	}
+
+	/**
+	 * Iterates over all DB objects in the related collection, and returns the first item that passes the filter
+	 *
+	 * @param {function} filter - Boolean returning function, to determine which object to return.
+	 *
+	 * @return a single item or undefined
+	 */
+	public async queryFind(filter: (item: DBType) => boolean) {
+		return this.db.queryFind(filter);
+	}
+
+	/**
+	 * Iterates over all DB objects in the related collection, and returns an array of items based on the mapper.
+	 *
+	 * @param {function} mapper - Function that returns data to map for the object
+	 * @param {function} [filter] - Boolean returning function, to determine which item to map.
+	 * @param {Object} [query] - A query object
+	 *
+	 * @return An array of mapped items
+	 */
+	public async queryMap<MapType>(mapper: (item: DBType) => MapType, filter?: (item: DBType) => boolean, query?: IndexDb_Query) {
+		return this.db.WIP_queryMap(mapper, filter, query);
+	}
+
+	/**
+	 * iterates over all DB objects in the related collection, and reduces them to a single value based on the reducer.
+	 * @param {function} reducer - Function that determines who to reduce the array.
+	 * @param {*} initialValue - An initial value for the reducer
+	 * @param {function} [filter] - Function that determines which DB objects to reduce.
+	 * @param {Object} [query] - A query Object.
+	 *
+	 * @return a single reduced value.
+	 */
+	public async queryReduce<ReturnType>(reducer: ReduceFunction<DBType, ReturnType>, initialValue: ReturnType, filter?: (item: DBType) => boolean, query?: IndexDb_Query) {
+		return this.db.queryReduce(reducer, initialValue, filter, query);
 	}
 
 	public uniqueQueryCache = async (_key?: string | IndexKeys<DBType, Ks>): Promise<DBType | undefined> => {
