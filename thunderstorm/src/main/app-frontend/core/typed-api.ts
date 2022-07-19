@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {ApiDef, BaseHttpRequest, BodyApi, QueryApi} from '../shared';
+import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, QueryApi} from '../shared';
 import {XhrHttpModule} from '../modules/http/XhrHttpModule';
 
 
@@ -35,9 +35,9 @@ export function apiWithQuery<API extends QueryApi<any, any>>(apiDef: ApiDef<API>
 	};
 }
 
-export function apiWithBody<API extends BodyApi<any, any>>(apiDef: ApiDef<API>,
-																													 onCompleted?: (response: API['R'], body: API['B'], request: BaseHttpRequest<API>) => Promise<any>,
-																													 onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
+export function apiWithBody<API extends BodyApi<any, any, any, HttpMethod_Body>>(apiDef: ApiDef<API>,
+																																								 onCompleted?: (response: API['R'], body: API['B'], request: BaseHttpRequest<API>) => Promise<any>,
+																																								 onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
 	return (body: API['B']): BaseHttpRequest<API> => {
 		return XhrHttpModule
 			.createRequest<API>(apiDef)
