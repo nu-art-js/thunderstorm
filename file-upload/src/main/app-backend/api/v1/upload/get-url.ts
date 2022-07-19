@@ -18,15 +18,15 @@
  */
 
 import {ApiResponse, ExpressRequest, ServerApi_Post} from '@nu-art/thunderstorm/backend';
-import {Api_GetUploadUrl, BaseUploaderFile} from '../../../../shared';
+import {ApiDef_AssetUploader, ApiStruct_AssetUploader, BaseUploaderFile} from '../../../../shared';
 import {QueryParams} from '@nu-art/thunderstorm';
 import {ModuleBE_Assets} from '../../../modules/ModuleBE_Assets';
 
 
 class ServerApi_GetUploadUrl
-	extends ServerApi_Post<Api_GetUploadUrl> {
+	extends ServerApi_Post<ApiStruct_AssetUploader['v1']['uploadUrl']> {
 	constructor() {
-		super('get-url');
+		super(ApiDef_AssetUploader.v1.uploadUrl);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: BaseUploaderFile[]) {

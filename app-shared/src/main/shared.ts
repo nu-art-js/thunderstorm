@@ -20,7 +20,7 @@
 import {
 	BodyApi,
 	QueryApi
-} from "@nu-art/thunderstorm";
+} from '@nu-art/thunderstorm';
 
 export type CommonBodyReq = {
 	message: string
@@ -44,15 +44,15 @@ export interface TestDispatch {
 	testDispatch: () => void;
 }
 
-export type ExampleApiCustomError = BodyApi<"/v1/sample/custom-error", void, void, CustomError1 | CustomError2>
-export type ExampleApiPostType = BodyApi<"/v1/sample/another-endpoint", CommonBodyReq, string>
-export type ExampleApiGetType = QueryApi< string>
-export type ExampleApiTest = QueryApi< string>
-export type ExampleTestPush = QueryApi<"/v1/sample/push-test", string>
+export type ExampleApiCustomError = BodyApi<'/v1/sample/custom-error', void, void, 'post', CustomError1 | CustomError2>
+export type ExampleApiPostType = BodyApi<'/v1/sample/another-endpoint', CommonBodyReq, string>
+export type ExampleApiGetType = QueryApi<string>
+export type ExampleApiTest = QueryApi<string>
+export type ExampleTestPush = QueryApi<'/v1/sample/push-test', any, string>
 
-export type ExampleGetMax = QueryApi<"/v1/sample/get-max", { n: number }>
-export type ExampleSetMax = BodyApi<"/v1/sample/set-max", { n: number }, void>
-export type ApiType_GetWithoutParams = QueryApi<"/v1/sample/get-without-params-endpoint", string>
-export type ApiType_ApiGetWithParams = QueryApi<"/v1/sample/get-with-params-endpoint", string, ParamsToGet>
-export type ApiType_ApiPostWithoutResponse = BodyApi<"/v1/sample/post-without-body-endpoint", CommonBodyReq, void>
-export type ApiType_ApiPostWithResponse = BodyApi<"/v1/sample/post-with-body-endpoint", CommonBodyReq, string>
+export type ExampleGetMax = QueryApi<'/v1/sample/get-max', { n: number }>
+export type ExampleSetMax = BodyApi<'/v1/sample/set-max', { n: number }, void>
+export type ApiType_GetWithoutParams = QueryApi<'/v1/sample/get-without-params-endpoint', any, string>
+export type ApiType_ApiGetWithParams = QueryApi<'/v1/sample/get-with-params-endpoint', any, string, 'get', ParamsToGet>
+export type ApiType_ApiPostWithoutResponse = BodyApi<'/v1/sample/post-without-body-endpoint', CommonBodyReq, void>
+export type ApiType_ApiPostWithResponse = BodyApi<'/v1/sample/post-with-body-endpoint', CommonBodyReq, string>
