@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {PushPubSubModule} from "@nu-art/push-pub-sub/backend";
+import {ModuleBE_PushPubSub} from "@nu-art/push-pub-sub/backend";
 import {FirestoreFunctionModule} from "@nu-art/firebase/backend-functions";
 
 export class CollectionChangedListener_Class
@@ -29,7 +29,7 @@ export class CollectionChangedListener_Class
 
 	async processChanges(params: { [p: string]: any }, previousValue?: object, newValue?: object): Promise<any> {
 		this.logInfo(`Doing nothing...${previousValue}, ${newValue}`);
-		await PushPubSubModule.pushToKey('collection_test', {id: 'collection_test1'}, {a: 'b', b: 1});
+		await ModuleBE_PushPubSub.pushToKey('collection_test', {id: 'collection_test1'}, {a: 'b', b: 1});
 	}
 }
 
