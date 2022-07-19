@@ -70,7 +70,7 @@ export type PushPubSubConfig = {
 export const pushSessionIdKey = 'x-push-session-id';
 const pushSessionId = new StorageKey<string>(pushSessionIdKey, false);
 
-export class PushPubSubModule_Class
+export class ModuleBE_PushPubSub_Class
 	extends Module<PushPubSubConfig>
 	implements ApiDefCaller<ApiStruct_PushMessages> {
 
@@ -123,7 +123,7 @@ export class PushPubSubModule_Class
 			return;
 
 		if (!this.config?.publicKeyBase64)
-			throw new ImplementationMissingException(`PushPubSubModule config is missing the publicKeyBase64`);
+			throw new ImplementationMissingException(`ModuleFE_PushPubSub config is missing the publicKeyBase64`);
 
 		this.initApp();
 	}
@@ -229,4 +229,4 @@ export class PushPubSubModule_Class
 	}
 }
 
-export const ModuleFE_PushPubSub = new PushPubSubModule_Class();
+export const ModuleFE_PushPubSub = new ModuleBE_PushPubSub_Class();

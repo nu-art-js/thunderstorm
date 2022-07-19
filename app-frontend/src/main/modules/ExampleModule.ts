@@ -33,7 +33,7 @@ import {
 } from '@app/app-shared';
 import {ErrorResponse, HttpMethod} from '@nu-art/thunderstorm';
 import {Test} from '@modules/TestModule';
-import {NotificationsModule, OnNotificationsUpdated, OnPushMessageReceived, PushPubSubModule} from '@nu-art/push-pub-sub/frontend';
+import {NotificationsModule, OnNotificationsUpdated, OnPushMessageReceived, ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/frontend';
 import {FirebaseModule} from '@nu-art/firebase/frontend';
 import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub';
 
@@ -73,7 +73,7 @@ export class ExampleModule_Class
 	private max: number = 0;
 
 	protected init(): void {
-		PushPubSubModule.subscribeMulti(mySubscriptions);
+		ModuleBE_PushPubSub.subscribeMulti(mySubscriptions);
 		this.runAsync('Async start', this.initAnalytics);
 	}
 
