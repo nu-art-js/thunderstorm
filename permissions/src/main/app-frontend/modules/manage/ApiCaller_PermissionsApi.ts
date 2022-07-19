@@ -41,15 +41,15 @@ export class PermissionsApiModule_Class
 	}
 
 	protected async onEntryCreated(response: DB_PermissionApi): Promise<void> {
-		this.query();
+		this.v1.query({where: {}});
 	}
 
 	protected async onEntryDeleted(response: DB_PermissionApi): Promise<void> {
-		this.query();
+		this.v1.query({where: {}});
 	}
 
 	protected async onEntryUpdated(response: DB_PermissionApi): Promise<void> {
-		this.query();
+		this.v1.query({where: {}});
 	}
 
 	protected async onGotUnique(response: DB_PermissionApi): Promise<void> {
