@@ -19,7 +19,7 @@
 import {ThunderDispatcher, XhrHttpModule, XhrHttpModule_Class} from '@nu-art/thunderstorm/frontend';
 import {BaseUploaderFile, FileStatus, FileUploadResult, OnFileStatusChanged, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
 import {ModuleBase_AssetUploader} from '../../shared/modules/ModuleBase_AssetUploader';
-import {DB_Notifications} from '@nu-art/push-pub-sub';
+import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub';
 import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub/frontend/modules/ModuleFE_PushPubSub';
 
 
@@ -49,13 +49,14 @@ export class ModuleFE_AssetUploader_Class
 	}
 
 	protected async subscribeToPush(toSubscribe: TempSecureUrl[]): Promise<void> {
-		return ModuleFE_PushPubSub.subscribeMulti(toSubscribe.map(r => ({pushKey: PushKey_FileUploaded, props: {feId: r.asset.feId}})));
+		const subscriptions: BaseSubscriptionData[] = toSubscribe.map<BaseSubscriptionData>(r => ({pushKey: PushKey_FileUploaded, props: {feId: r.asset.feId}}));
+		await ModuleFE_PushPubSub.v1.registerAll(subscriptions).executeSync();
 	}
 
 	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
 		super.__onMessageReceived(notification);
 		if (notification.data?.status === FileStatus.Completed || notification.data?.status?.startsWith('Error'))
-			ModuleFE_PushPubSub.unsubscribe({pushKey: PushKey_FileUploaded, props: notification.props});
+			ModuleFE_PushPubSub.v1.unregister({pushKey: PushKey_FileUploaded, props: notification.props});
 	}
 }
 
