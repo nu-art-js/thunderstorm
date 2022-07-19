@@ -55,7 +55,7 @@ type Config = {
 	strictMode?: boolean
 }
 
-class AssertPermissionsProcessor
+class ServerApi_AssertPermissions
 	extends ServerApi<ApiStruct_PermissionsAssert['v1']['assertUserPermissions']> {
 
 	constructor() {
@@ -75,12 +75,12 @@ export class ModuleBE_PermissionsAssert_Class
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
 		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
 
-			const account = await ({}, req);
+			const account = await ModuleBE_Account.validateSession({}, req);
 			return this.assertUserPermissions(projectId, data.url, account._id, customFields);
-		})(req, res ,data);
+		})(req, res, data);
 	};
-	ModuleBE_Account.validateSession
-	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async (req: ExpressRequest, data: HttpRequestData) => {
+
+	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
 		const customFields: StringMap = {};
 		let object: { [k: string]: any };
 		switch (data.method) {
@@ -119,7 +119,7 @@ export class ModuleBE_PermissionsAssert_Class
 	constructor() {
 		super();
 		this.v1 = {
-			assertUserPermissions: new AssertPermissionsProcessor(),
+			assertUserPermissions: new ServerApi_AssertPermissions(),
 			// assertUserPermissions: createBodyServerApi(ApiDef_PermissionsAssert.v1.assertUserPermissions, this.assertUserPermissions),
 		};
 	}
