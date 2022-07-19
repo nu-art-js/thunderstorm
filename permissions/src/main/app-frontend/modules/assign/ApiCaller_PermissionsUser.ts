@@ -46,7 +46,7 @@ export class PermissionsUserModule_Class
 	}
 
 	protected async onEntryUpdated(response: DB_PermissionUser): Promise<void> {
-		this.query();
+		this.v1.query({where: {}});
 	}
 
 	protected async onGotUnique(response: DB_PermissionUser): Promise<void> {

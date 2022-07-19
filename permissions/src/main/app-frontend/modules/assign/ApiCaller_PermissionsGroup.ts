@@ -40,15 +40,15 @@ export class PermissionsGroupModule_Class
 	}
 
 	protected async onEntryCreated(response: DB_PermissionGroup): Promise<void> {
-		this.query();
+		this.v1.query({where: {}});
 	}
 
 	protected async onEntryDeleted(response: DB_PermissionGroup): Promise<void> {
-		this.query();
+		this.v1.query({where: {}});
 	}
 
 	protected async onEntryUpdated(response: DB_PermissionGroup): Promise<void> {
-		this.query();
+		this.v1.query({where: {}});
 	}
 
 	protected async onGotUnique(response: DB_PermissionGroup): Promise<void> {

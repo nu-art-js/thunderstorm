@@ -85,7 +85,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
 
-	v1: ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
+	readonly v1: ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 
 	protected constructor(dbDef: DBDef<DBType, any>, appConfig?: BaseDBApiConfig) {
 		super();

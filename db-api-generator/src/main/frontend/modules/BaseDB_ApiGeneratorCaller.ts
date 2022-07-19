@@ -71,6 +71,10 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		return this.defaultDispatcher;
 	}
 
+	setDefaultDispatcher(defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType>) {
+		this.defaultDispatcher = defaultDispatcher;
+	}
+
 	private ids: string[] = [];
 	private items: { [k: string]: DBType } = {};
 

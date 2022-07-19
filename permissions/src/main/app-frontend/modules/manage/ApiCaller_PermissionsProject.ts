@@ -42,15 +42,15 @@ export class PermissionsProjectModule_Class
 	}
 
 	protected async onEntryCreated(response: DB_PermissionProject): Promise<void> {
-		this.query();
+		this.v1.query({where: {}});
 	}
 
 	protected async onEntryDeleted(response: DB_PermissionProject): Promise<void> {
-		this.query();
+		this.v1.query({where: {}});
 	}
 
 	protected async onEntryUpdated(response: DB_PermissionProject): Promise<void> {
-		this.query();
+		this.v1.query({where: {}});
 	}
 
 	protected async onGotUnique(response: DB_PermissionProject): Promise<void> {
@@ -66,7 +66,7 @@ export class PermissionsProjectModule_Class
 	}
 
 	fetchProjects() {
-		this.query();
+		this.v1.query({where: {}});
 		return this.projects;
 	}
 
