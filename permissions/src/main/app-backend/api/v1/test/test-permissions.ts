@@ -16,23 +16,16 @@
  * limitations under the License.
  */
 
-import {
-	ServerApi,
-	ApiResponse
-} from "@nu-art/thunderstorm/backend";
+import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 
-
-import {HttpMethod} from "@nu-art/thunderstorm";
-
-import { PermissionsApi_TestPermissions } from "../permissions/_imports";
-import {testUserPermissionsTime} from "./_imports";
-import {ExpressRequest} from "@nu-art/thunderstorm/backend";
+import {ApiDef_TestPermissions, ApiStruct_TestPermissions} from '../permissions/_imports';
+import {testUserPermissionsTime} from './_imports';
 
 class ServerApi_TestPermissions
-	extends ServerApi<PermissionsApi_TestPermissions> {
+	extends ServerApi<ApiStruct_TestPermissions['v1']['test']> {
 
 	constructor() {
-		super(HttpMethod.GET, "test-permissions");
+		super(ApiDef_TestPermissions.v1.test);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void): Promise<void> {

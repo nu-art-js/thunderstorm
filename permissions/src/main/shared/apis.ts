@@ -121,3 +121,15 @@ export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
 		registerProject: {method: HttpMethod.GET, path: '/v1/register/register-project'}
 	}
 };
+
+//FIXME: I have no idea what i'm doing here
+export type ApiStruct_TestPermissions = {
+	v1: {
+		test: QueryApi<void>
+	}
+}
+export const ApiDef_TestPermissions: ApiDefResolver<ApiStruct_TestPermissions> = {
+	v1: {
+		test: {method: HttpMethod.GET, path: '/v1/permissions-test/test'}
+	}
+};
