@@ -40,18 +40,18 @@ export class ModuleBE_PermissionUser_Class
 	extends BaseDB_ApiGenerator<DB_PermissionUser>
 	implements OnNewUserRegistered, OnUserLogin, ApiDefServer<ApiStruct_PermissionsUser>, ApiModule {
 
-	readonly v1: ApiDefServer<ApiStruct_PermissionsUser>['v1'];
+	readonly pah: ApiDefServer<ApiStruct_PermissionsUser>['pah'];
 
 	constructor() {
 		super(DBDef_PermissionUser);
 		this.setLockKeys(['accountId']);
-		this.v1 = {
-			assignAppPermissions: createBodyServerApi(ApiDef_PermissionUser.v1.assignAppPermissions, this.assignAppPermissions),
+		this.pah = {
+			assignAppPermissions: createBodyServerApi(ApiDef_PermissionUser.pah.assignAppPermissions, this.assignAppPermissions),
 		};
 	}
 
 	useRoutes() {
-		return this.v1;
+		return {...this.v1, ...this.pah};
 	}
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionUser, request?: ExpressRequest): Promise<void> {

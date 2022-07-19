@@ -80,13 +80,13 @@ export type Response_User = {
 
 //ModuleBE_PermissionUser
 export type ApiStruct_PermissionsUser = {
-	v1: {
+	pah: {
 		assignAppPermissions: BodyApi<void, Request_AssignAppPermissions>;
 	}
 }
 export const ApiDef_PermissionUser: ApiDefResolver<ApiStruct_PermissionsUser> = {
-	v1: {
-		assignAppPermissions: {method: HttpMethod.POST, path: '/v1/permissions/assign/app-permissions'}
+	pah: {
+		assignAppPermissions: {method: HttpMethod.POST, path: '/pah/permissions/assign/app-permissions'}
 	}
 };
 
