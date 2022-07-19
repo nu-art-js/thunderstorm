@@ -33,7 +33,7 @@ import {
 	ReportLogFile,
 	Request_BugReport
 } from "../..";
-import {TicketDetails} from "./BugReportModule";
+import {TicketDetails} from "./ModuleBE_BugReport";
 
 type Config = {
 	jiraProject: JiraProject

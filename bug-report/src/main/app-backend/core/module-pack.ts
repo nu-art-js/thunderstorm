@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BugReportModule} from '../modules/BugReportModule';
+import {ModuleBE_BugReport} from '../modules/ModuleBE_BugReport';
 import {AdminBRModule} from '../modules/AdminBRModule';
 import {JiraBugReportIntegrator} from '../modules/JiraBugReportIntegrator';
 import {JiraModule} from '@nu-art/jira';
@@ -25,7 +25,7 @@ import {SlackModule} from '@nu-art/storm/slack';
 
 
 export const ModulePack_Backend_BugReport = [
-	BugReportModule,
+	ModuleBE_BugReport,
 	AdminBRModule,
 	JiraBugReportIntegrator,
 	JiraModule,
