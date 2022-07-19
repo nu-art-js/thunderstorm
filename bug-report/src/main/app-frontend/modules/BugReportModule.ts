@@ -17,9 +17,10 @@
  */
 
 import {addItemToArray, BeLogged, LogClient_MemBuffer, LogLevel, LogLevelOrdinal, Module} from '@nu-art/ts-common';
-import {XhrHttpModule} from '@nu-art/thunderstorm/frontend';
-import {HttpMethod} from '@nu-art/thunderstorm';
-import {ApiBugReport, Request_BugReport} from '../../shared/api';
+import {apiWithBody} from '@nu-art/thunderstorm/frontend';
+import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {ApiDef_BugReport, ApiStruct_BugReport} from '../../shared/api';
+import {TicketDetails} from '../../backend';
 
 
 export const RequestKey_BugReportApi = 'BugReport';
@@ -28,36 +29,26 @@ export class BugReportModule_Class
 	extends Module {
 
 	private readonly reports: LogClient_MemBuffer[] = [];
+	readonly v1: ApiDefCaller<ApiStruct_BugReport>['v1'];
 
 	constructor() {
 		super();
 		addItemToArray(this.reports, new LogClient_MemBuffer('default'));
 		addItemToArray(this.reports, new LogClient_MemBuffer('info')
 			.setFilter(level => LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(LogLevel.Info)));
+		this.v1 = {
+			sendBugReport: apiWithBody(ApiDef_BugReport.v1.sendBugReport, this.sendBugReportCallback),
+		};
 	}
 
 	protected init(): void {
 		this.reports.forEach(report => BeLogged.addClient(report));
 	}
 
-	sendBugReport = (subject: string, description: string, platforms?: string[]) => {
-		const body: Request_BugReport = {
-			subject,
-			description,
-			reports: this.reports.map(report => ({log: report.buffers, name: report.name})),
-			platforms
-		};
-
-		XhrHttpModule
-			.createRequest<ApiBugReport>(HttpMethod.POST, RequestKey_BugReportApi)
-			.setBodyAsJson(body)
-			.setRelativeUrl('/v1/bug-reports/report')
-			.setOnError(() => this.logWarning(`Error updating the report`))
-			.execute((response) => {
-				// const jiraTicket = response.find(ticket => ticket.platform === Platform_Jira);
-				// if(jiraTicket)
-				// 	Dialog_JiraOpened.show(jiraTicket.issueId)
-			});
+	private sendBugReportCallback = async (response: TicketDetails[]) => {
+		// const jiraTicket = response.find(ticket => ticket.platform === Platform_Jira);
+		// if(jiraTicket)
+		// 	Dialog_JiraOpened.show(jiraTicket.issueId)
 	};
 }
 

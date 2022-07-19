@@ -68,14 +68,26 @@ export type ApiGetLog = QueryApi<DB_BugReport[]>
 export type ApiPostPath = BodyApi<'/v1/bug-reports/download-logs', Paths, SecuredUrl>
 export type ApiBugReport = BodyApi<'/v1/bug-reports/report', Request_BugReport, TicketDetails[]>
 
-export type ApiStruct_BugReport = {
+export type ApiStruct_AdminBugReport = {
 	v1: {
 		downloadLogs: BodyApi<SecuredUrl, Paths>;
-		// retrieveLogs:;
+		retrieveLogs: QueryApi<DB_BugReport[]>;
+	}
+}
+export const ApiDef_AdminBugReport: ApiDefResolver<ApiStruct_AdminBugReport> = {
+	v1: {
+		downloadLogs: {method: HttpMethod.POST, path: '/v1/bug-reports/download-logs'},
+		retrieveLogs: {method: HttpMethod.GET, path: '/v1/bug-reports/get-logs'},
+	}
+};
+
+export type ApiStruct_BugReport = {
+	v1: {
+		sendBugReport: BodyApi<TicketDetails[], Request_BugReport>
 	}
 }
 export const ApiDef_BugReport: ApiDefResolver<ApiStruct_BugReport> = {
 	v1: {
-		downloadLogs: {method: HttpMethod.POST, path: '/v1/bug-reports/download-logs'}
+		sendBugReport: {method: HttpMethod.POST, path: '/v1/bug-reports/report'}
 	}
 };

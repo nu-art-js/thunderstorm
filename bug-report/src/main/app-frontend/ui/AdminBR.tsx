@@ -36,7 +36,7 @@ export class AdminBR
 		const logs = AdminBRModule.getLogs();
 		return (
 			<div>
-				<button onClick={AdminBRModule.retrieveLogs}>click to display logs</button>
+				<button onClick={() => AdminBRModule.v1.retrieveLogs({}).execute()}>click to display logs</button>
 				<div>
 					<table style={{width: '100%'}}>{logs.map(this.createRow)}</table>
 				</div>
