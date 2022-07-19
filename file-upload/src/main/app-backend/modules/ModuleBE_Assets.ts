@@ -35,7 +35,7 @@ import {
 } from '@nu-art/ts-common';
 import {FileWrapper, FirebaseModule, FirebaseType_Metadata, FirestoreTransaction, StorageWrapper} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
-import {PushPubSubModule} from '@nu-art/push-pub-sub/backend';
+import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {fromBuffer} from 'file-type';
 import {FileExtension, MimeType} from 'file-type/core';
@@ -288,7 +288,7 @@ export class ModuleBE_Assets_Class
 		}
 
 		this.logDebug(`notify FE about asset ${feId}: ${status}`);
-		return PushPubSubModule.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: feId || asset.feId}, {status, asset});
+		return ModuleBE_PushPubSub.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: feId || asset.feId}, {status, asset});
 	};
 
 }

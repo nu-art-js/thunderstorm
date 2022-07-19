@@ -63,7 +63,7 @@ type TempMessages = {
 	[token: string]: DB_Notifications[]
 };
 
-export class PushPubSubModule_Class
+export class ModuleBE_PushPubSub_Class
 	extends Module<Config>
 	implements OnCleanupSchedulerAct, ApiDefServer<ApiStruct_PushMessages>, ApiModule {
 
@@ -288,4 +288,4 @@ export class PushPubSubModule_Class
 	}
 }
 
-export const ModuleBE_PushPubSub = new PushPubSubModule_Class();
+export const ModuleBE_PushPubSub = new ModuleBE_PushPubSub_Class();

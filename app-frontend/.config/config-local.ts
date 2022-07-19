@@ -44,7 +44,7 @@ export const config = {
 			measurementId: "G-PSCS2QH5YV"
 		}
 	},
-	PushPubSubModule: {
+	ModuleBE_PushPubSub: {
 		publicKeyBase64: 'BBsKBw0R-mITlCSAOtCiHCLvKl-EetCmt5JKMg8L8ev1GqBEpDryum8ve3htIlbN3cjV1MLDFQnk0a8Wfks7cFk'
 	}
 };
