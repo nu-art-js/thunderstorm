@@ -17,9 +17,9 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {apiWithBody, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
-import {ApiDefCaller, HttpMethod} from '@nu-art/thunderstorm';
-import {ApiDef_BugReport, ApiGetLog, ApiPostPath, ApiStruct_BugReport, DB_BugReport, Paths, ReportLogFile} from '../../shared/api';
+import {apiWithBody, apiWithQuery} from '@nu-art/thunderstorm/frontend';
+import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {ApiDef_AdminBugReport, ApiStruct_AdminBugReport, DB_BugReport, ReportLogFile} from '../../shared/api';
 
 
 export const RequestKey_GetLog = 'GetLog';
@@ -27,29 +27,30 @@ export const RequestKey_PostPath = 'PostPath';
 
 export class AdminBRModule_Class
 	extends Module {
-	readonly v1: ApiDefCaller<ApiStruct_BugReport>['v1'];
+	readonly v1: ApiDefCaller<ApiStruct_AdminBugReport>['v1'];
 
 	constructor() {
 		super();
 		this.v1 = {
-			downloadLogs: apiWithBody(ApiDef_BugReport.v1.downloadLogs),
+			downloadLogs: apiWithBody(ApiDef_AdminBugReport.v1.downloadLogs),
+			retrieveLogs: apiWithQuery(ApiDef_AdminBugReport.v1.retrieveLogs),
 		};
 	}
 
 	private logs: DB_BugReport[] = [];
 
-	public retrieveLogs = () => {
-		this.logInfo('getting logs from firestore...');
-		XhrHttpModule
-			.createRequest<ApiGetLog>(HttpMethod.GET, RequestKey_GetLog)
-			.setRelativeUrl('/v1/bug-reports/get-logs')
-			.setOnError(`Error getting new message from backend`)
-			.execute(async response => {
-				this.logs = response;
-			});
-
-		this.logInfo('continue... will receive an event once request is completed..');
-	};
+	// public retrieveLogs = () => {
+	// 	this.logInfo('getting logs from firestore...');
+	// 	XhrHttpModule
+	// 		.createRequest<ApiGetLog>(HttpMethod.GET, RequestKey_GetLog)
+	// 		.setRelativeUrl('/v1/bug-reports/get-logs')
+	// 		.setOnError(`Error getting new message from backend`)
+	// 		.execute(async response => {
+	// 			this.logs = response;
+	// 		});
+	//
+	// 	this.logInfo('continue... will receive an event once request is completed..');
+	// };
 
 	// public downloadLogs = (path: string) => {
 	// 	this.logInfo('downloading the logs to the client..');
