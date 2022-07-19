@@ -38,7 +38,7 @@ import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 
 
 export type FilesToUpload = Request_Uploader & {
-	// Unfortunately be doesnt know File and File doesnt map to ArrayBuffer
+	// Unfortunately be doesn't know File and File doesn't map to ArrayBuffer
 	file: any
 }
 
