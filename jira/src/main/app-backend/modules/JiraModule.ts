@@ -16,33 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-	BadImplementationException,
-	generateHex,
-	ImplementationMissingException,
-	Module,
-	TypedMap
-} from "@nu-art/ts-common";
-import {
-	ApiException,
-	AxiosHttpModule,
-	promisifyRequest
-} from "@nu-art/thunderstorm/backend";
-import {HttpMethod} from "@nu-art/thunderstorm";
-import {
-	CoreOptions,
-	Headers,
-	Response,
-	UriOptions
-} from 'request';
-import {
-	JiraIssueText,
-	JiraUtils
-} from "./utils";
-import {
-	JiraVersion,
-	JiraVersion_Create
-} from "../../shared/version";
+import {BadImplementationException, ImplementationMissingException, Module, TypedMap} from '@nu-art/ts-common';
+import {ApiException, promisifyRequest} from '@nu-art/thunderstorm/backend';
+import {HttpMethod} from '@nu-art/thunderstorm';
+import {CoreOptions, Headers, Response, UriOptions} from 'request';
+import {JiraIssueText, JiraUtils} from './utils';
+import {JiraVersion, JiraVersion_Create} from '../../shared/version';
 
 type Config = {
 	auth: JiraAuth
@@ -69,14 +48,14 @@ type JiraMark = {
 }
 
 type JiraContent = {
-	type: "paragraph" | string
+	type: 'paragraph' | string
 	text?: string
 	marks?: JiraMark[]
 	content?: JiraContent[]
 }
 
 type JiraDescription = string | {
-	type: "doc" | string
+	type: 'doc' | string
 	version: number
 	content: JiraContent[]
 }
@@ -153,7 +132,7 @@ export class JiraModule_Class
 
 	protected init(): void {
 		if (!this.config.baseUrl)
-			throw new ImplementationMissingException("Missing Jira baseUrl for JiraModule, please add the key baseUrl to the config");
+			throw new ImplementationMissingException('Missing Jira baseUrl for JiraModule, please add the key baseUrl to the config');
 
 		this.restUrl = this.config.baseUrl + '/rest/api/3';
 		console.log(this.restUrl);
@@ -222,7 +201,7 @@ export class JiraModule_Class
 		},
 		comment: this.comment,
 		create: async (project: JiraProject, issueType: IssueType, summary: string, descriptions: JiraIssueText[], label: string[]): Promise<ResponsePostIssue> => {
-			const issue = await this.executePostRequest<ResponsePostIssue, Pick<JiraIssue, "fields">>('/issue', {
+			const issue = await this.executePostRequest<ResponsePostIssue, Pick<JiraIssue, 'fields'>>('/issue', {
 				fields: {
 					project,
 					issuetype: issueType,
@@ -277,7 +256,7 @@ export class JiraModule_Class
 		return this.executeRequest(request);
 	};
 
-	private async executePostRequest<Res, Req>(url: string, body: Req, label?:string[]) {
+	private async executePostRequest<Res, Req>(url: string, body: Req, label?: string[]) {
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
 			uri: `${this.restUrl}${url}`,
@@ -299,18 +278,18 @@ export class JiraModule_Class
 		return this.executeRequest(request);
 	}
 
-	async executeGetRequestNew<T>(url: string, _params?: { [k: string]: string }): Promise<T> {
-		if (!this.restUrl)
-			throw new ImplementationMissingException('Need a baseUrl');
-
-		return AxiosHttpModule
-			.createRequest(HttpMethod.GET, generateHex(8))
-			.setOrigin(this.restUrl)
-			.setUrl(url)
-			.setUrlParams(_params)
-			.setHeaders(this.headersJson)
-			.executeSync();
-	}
+	// async executeGetRequestNew<T>(url: string, _params?: { [k: string]: string }): Promise<T> {
+	// 	if (!this.restUrl)
+	// 		throw new ImplementationMissingException('Need a baseUrl');
+	//
+	// 	return AxiosHttpModule
+	// 		.createRequest(HttpMethod.GET, generateHex(8))
+	// 		.setOrigin(this.restUrl)
+	// 		.setUrl(url)
+	// 		.setUrlParams(_params)
+	// 		.setHeaders(this.headersJson)
+	// 		.executeSync();
+	// }
 
 	private handleResponse<T>(response: Response) {
 		if (`${response.statusCode}`[0] !== '2')
@@ -324,9 +303,9 @@ export class JiraModule_Class
 			return `${key}=${_params[key]}`;
 		});
 
-		let urlParams = "";
+		let urlParams = '';
 		if (params && params.length > 0)
-			urlParams = `?${params.join("&")}`;
+			urlParams = `?${params.join('&')}`;
 
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
