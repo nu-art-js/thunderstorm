@@ -24,7 +24,7 @@ import {FirebaseModule, FirestoreCollection, StorageWrapper} from '@nu-art/fireb
 import {ApiDef_BugReport, ApiStruct_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../..';
 
 import * as JSZip from 'jszip';
-import {ApiResponse, dispatch_queryRequestInfo, ExpressRequest, ServerApi_Post} from '@nu-art/thunderstorm/backend';
+import {ApiDefServer, ApiResponse, dispatch_queryRequestInfo, ExpressRequest, ServerApi_Post} from '@nu-art/thunderstorm/backend';
 
 export type TicketDetails = {
 	platform: string
@@ -57,6 +57,14 @@ export class ModuleBE_BugReport_Class
 	private bugReport!: FirestoreCollection<DB_BugReport>;
 	private storage!: StorageWrapper;
 	private ticketCreatorApis: TicketCreatorApi[] = [];
+	readonly v1: ApiDefServer<ApiStruct_BugReport>['v1'];
+
+	constructor() {
+		super();
+		this.v1 = {
+			sendBugReport: new ServerApi_SendReport(),
+		}
+	}
 
 	protected init(): void {
 		const sessionAdmin = FirebaseModule.createAdminSession();
