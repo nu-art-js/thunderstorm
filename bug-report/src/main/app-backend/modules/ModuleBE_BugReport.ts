@@ -47,11 +47,11 @@ class ServerApi_SendReport
 		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync(request);
 		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data?.email || resp.find(e => e.key === 'RemoteProxy')?.data;
 
-		return await BugReportModule.saveFile(body, userId);
+		return await ModuleBE_BugReport.saveFile(body, userId);
 	}
 }
 
-export class BugReportModule_Class
+export class ModuleBE_BugReport_Class
 	extends Module<Config> {
 
 	private bugReport!: FirestoreCollection<DB_BugReport>;
@@ -112,5 +112,5 @@ export class BugReportModule_Class
 	};
 }
 
-export const BugReportModule = new BugReportModule_Class();
+export const ModuleBE_BugReport = new ModuleBE_BugReport_Class();
 

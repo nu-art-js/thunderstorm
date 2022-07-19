@@ -27,7 +27,7 @@ import {
 	ReportLogFile,
 	Request_BugReport
 } from "../..";
-import {TicketDetails} from "./BugReportModule";
+import {TicketDetails} from "./ModuleBE_BugReport";
 import {SlackModule} from "@nu-art/storm/slack";
 
 type Config = {

@@ -18,5 +18,5 @@
  */
 
 export * from "../../../../shared/api";
-export * from "../../../modules/BugReportModule";
+export * from "../../../modules/ModuleBE_BugReport";
 export * from "../../../modules/AdminBRModule"
