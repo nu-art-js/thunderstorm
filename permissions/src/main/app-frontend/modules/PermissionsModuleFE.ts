@@ -18,10 +18,10 @@
  */
 
 import {_setTimeout, ImplementationMissingException, Module, Second, StringMap} from '@nu-art/ts-common';
-import {ThunderDispatcher} from '@nu-art/thunderstorm/app-frontend/core/thunder-dispatcher';
-import {XhrHttpModule} from '@nu-art/thunderstorm/frontend';
-import {HttpMethod} from '@nu-art/thunderstorm';
-import {PermissionsApi_UserUrlsPermissions, UserUrlsPermissions} from '../..';
+import {ThunderDispatcher,} from '@nu-art/thunderstorm/app-frontend/core/thunder-dispatcher';
+import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
+import {ApiDefCaller, HttpException} from '@nu-art/thunderstorm';
+import {ApiDef_Permissions, ApiStruct_Permissions, UserUrlsPermissions} from '../..';
 
 
 export type PermissionsModuleFEConfig = {
@@ -46,6 +46,20 @@ export class PermissionsModuleFE_Class
 	private requestCustomField: StringMap = {};
 	private debounceTime = 100;
 	private retryCounter = 0;
+	readonly v1: ApiDefCaller<ApiStruct_Permissions>['v1'];
+
+	constructor() {
+		super();
+
+		this.v1 = {
+			getUserUrlsPermissions: apiWithBody(ApiDef_Permissions.v1.getUserUrlsPermissions),
+			getUserCFsByShareGroups: apiWithBody(ApiDef_Permissions.v1.getUserCFsByShareGroups),
+			getUsersCFsByShareGroups: apiWithBody(ApiDef_Permissions.v1.getUsersCFsByShareGroups),
+			registerExternalProject: apiWithBody(ApiDef_Permissions.v1.registerExternalProject),
+			registerProject: apiWithQuery(ApiDef_Permissions.v1.registerProject),
+		};
+	}
+
 
 	setDebounceTime(time: number) {
 		this.debounceTime = time;
@@ -80,15 +94,6 @@ export class PermissionsModuleFE_Class
 		return undefined;
 	}
 
-	registerProject(onCompleted?: () => void) {
-		XhrHttpModule
-			.createRequest<any>(HttpMethod.GET, 'register-project')
-			.setRelativeUrl(`/v1/permissions/register-project`)
-			.setLabel(`Getting user urls permissions`)
-			.setOnError(() => this.logWarning(`Failed to register project`))
-			.execute(onCompleted);
-	}
-
 	private setPermissions = () => {
 		if (!this.config || !this.config.projectId)
 			throw new ImplementationMissingException('need to set up a project id config');
@@ -98,32 +103,31 @@ export class PermissionsModuleFE_Class
 			this.loadingUrls.forEach(url => {
 				urls[url] = false;
 			});
-			XhrHttpModule
-				.createRequest<PermissionsApi_UserUrlsPermissions>(HttpMethod.POST, 'user-urls-permissions')
-				.setRelativeUrl(`/v1/permissions/user-urls-permissions`)
-				// .setOnError(`Failed to get user urls permissions`)
-				.setLabel(`Getting user urls permissions`)
-				.setBodyAsJson({
-					projectId: this.config.projectId,
-					urls: urls,
-					requestCustomField: this.requestCustomField
-				})
-				.setOnError(() => {
+			const query = {
+				projectId: this.config.projectId,
+				urls: urls,
+				requestCustomField: this.requestCustomField
+			};
+			this.v1.getUserUrlsPermissions(query).execute(
+				//On Success
+				async (response: UserUrlsPermissions, data?: (string | undefined)) => {
+					this.retryCounter = 0;
+					Object.keys(response).forEach(url => {
+						this.loadingUrls.delete(url);
+						this.userUrlsPermissions[url] = response[url];
+					});
+					dispatch_onPermissionsChanged.dispatchUI();
+				},
+				//On Error
+				(reason: HttpException) => {
 					this.logWarning(`Failed to get user urls permissions`);
 					if (this.retryCounter < 5) {
 						this.retryCounter++;
 						return _setTimeout(this.setPermissions, 5 * Second);
 					}
 					dispatch_onPermissionsFailed.dispatchModule();
-				})
-				.execute(async (userUrlsPermissions: UserUrlsPermissions) => {
-					this.retryCounter = 0;
-					Object.keys(userUrlsPermissions).forEach(url => {
-						this.loadingUrls.delete(url);
-						this.userUrlsPermissions[url] = userUrlsPermissions[url];
-					});
-					dispatch_onPermissionsChanged.dispatchUI();
-				});
+				}
+			);
 		}, 'get-permissions', this.debounceTime);
 	};
 
