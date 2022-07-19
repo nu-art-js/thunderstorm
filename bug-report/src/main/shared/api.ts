@@ -17,18 +17,17 @@
  * limitations under the License.
  */
 
-import {BodyApi, QueryApi} from "@nu-art/thunderstorm";
-import { DB_Object } from "@nu-art/ts-common";
-import {Auditable} from "@nu-art/ts-common";
-import {TicketDetails} from "../app-backend/modules/BugReportModule";
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+import {Auditable, DB_Object} from '@nu-art/ts-common';
+import {TicketDetails} from '../app-backend/modules/BugReportModule';
 
 export type BugReport = {
 	name: string
 	log: string[]
 }
 
-export const Platform_Jira = "jira";
-export const Platform_Slack = "slack";
+export const Platform_Jira = 'jira';
+export const Platform_Slack = 'slack';
 
 export type Request_BugReport = {
 	subject: string
@@ -65,6 +64,18 @@ export type SecuredUrl = {
 	publicUrl: string
 }
 
-export type ApiGetLog = QueryApi< DB_BugReport[]>
+export type ApiGetLog = QueryApi<DB_BugReport[]>
 export type ApiPostPath = BodyApi<'/v1/bug-reports/download-logs', Paths, SecuredUrl>
 export type ApiBugReport = BodyApi<'/v1/bug-reports/report', Request_BugReport, TicketDetails[]>
+
+export type ApiStruct_BugReport = {
+	v1: {
+		downloadLogs: BodyApi<SecuredUrl, Paths>;
+		// retrieveLogs:;
+	}
+}
+export const ApiDef_BugReport: ApiDefResolver<ApiStruct_BugReport> = {
+	v1: {
+		downloadLogs: {method: HttpMethod.POST, path: '/v1/bug-reports/download-logs'}
+	}
+};
