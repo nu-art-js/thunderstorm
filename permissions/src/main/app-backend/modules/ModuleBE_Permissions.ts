@@ -27,7 +27,6 @@ import {
 	createQueryServerApi,
 	ExpressRequest,
 	HttpServer,
-	RemoteProxy,
 	ServerApi
 } from '@nu-art/thunderstorm/backend';
 import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from './assignment';
@@ -47,7 +46,7 @@ import {
 } from '../shared';
 import {AccountsMiddleware, ModuleBE_Account} from '@nu-art/user-account/backend';
 import {UI_Account} from '@nu-art/user-account';
-
+import {AssertSecretMiddleware} from '@nu-art/thunderstorm/app-backend/modules/proxy/assert-secret-middleware';
 
 type Config = {
 	project: PreDB<DB_PermissionProject> & DB_BaseObject
@@ -55,20 +54,7 @@ type Config = {
 	predefinedUser?: PredefinedUser
 }
 
-class UserUrlsPermissionsProcessor
-	extends ServerApi<ApiStruct_Permissions['v1']['getUserUrlsPermissions']> {
-
-	constructor() {
-		super(ApiDef_Permissions.v1.getUserUrlsPermissions);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_UserUrlsPermissions) {
-		const account = await ModuleBE_Account.validateSession({}, request);
-		return await ModuleBE_Permissions.getUserUrlsPermissions(body.projectId, body.urls, account._id, body.requestCustomField);
-	}
-}
-
-class UserCFsByShareGroupsProcessor
+class ServerApi_UserCFsByShareGroups
 	extends ServerApi<ApiStruct_Permissions['v1']['getUserCFsByShareGroups']> {
 
 	constructor() {
@@ -81,42 +67,16 @@ class UserCFsByShareGroupsProcessor
 	}
 }
 
-class UsersCFssByShareGroupsProcessor
-	extends ServerApi<ApiStruct_Permissions['v1']['getUsersCFsByShareGroups']> {
-
-	constructor() {
-		super(ApiDef_Permissions.v1.getUsersCFsByShareGroups);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: Request_UsersCFsByShareGroups) {
-		await ModuleBE_Account.validateSession({}, request);
-		return ModuleBE_Permissions.getUsersCFsByShareGroups(body.usersEmails, body.groupsIds);
-	}
-}
-
-class RegisterExternalProjectProcessor
-	extends ServerApi<ApiStruct_Permissions['v1']['registerExternalProject']> {
-
-	constructor() {
-		super(ApiDef_Permissions.v1.registerExternalProject);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: Request_RegisterProject) {
-		RemoteProxy.assertSecret(request);
-		await ModuleBE_Permissions._registerProject(body);
-	}
-}
-
-// class RegisterProjectProcessor
-// 	extends ServerApi<ApiStruct_Permissions['v1']['registerProject']> {
+// class ServerApi_RegisterExternalProject
+// 	extends ServerApi<ApiStruct_Permissions['v1']['registerExternalProject']> {
 //
 // 	constructor() {
-// 		super(ApiDef_Permissions.v1.registerProject);
+// 		super(ApiDef_Permissions.v1.registerExternalProject);
 // 	}
 //
 // 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: Request_RegisterProject) {
-// 		// RemoteProxy.assertSecret(request);
-// 		await ModuleBE_Permissions.registerProject();
+// 		RemoteProxy.assertSecret(request);
+// 		await ModuleBE_Permissions._registerProject(body);
 // 	}
 // }
 
@@ -130,13 +90,11 @@ export class ModuleBE_Permissions_Class
 		this.v1 = {
 			// getUserUrlsPermissions: new UserUrlsPermissionsProcessor(),
 			getUserUrlsPermissions: createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, AccountsMiddleware),
-			getUserCFsByShareGroups: new UserCFsByShareGroupsProcessor(),
+			getUserCFsByShareGroups: new ServerApi_UserCFsByShareGroups(),
 			// getUserCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUserCFsByShareGroups, this.getUserCFsByShareGroups),
-			getUsersCFsByShareGroups: new UsersCFssByShareGroupsProcessor(),
-			// getUsersCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups),
-			registerExternalProject: new RegisterExternalProjectProcessor(),
-			// registerExternalProject: createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject),
-			// registerProject: new RegisterProjectProcessor(),
+			getUsersCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups, AccountsMiddleware),
+			// registerExternalProject: new ServerApi_RegisterExternalProject(),
+			registerExternalProject: createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
 			registerProject: createQueryServerApi(ApiDef_Permissions.v1.registerProject, this.registerProject),
 		};
 	}
@@ -184,7 +142,9 @@ export class ModuleBE_Permissions_Class
 		}, {});
 	}
 
-	async getUsersCFsByShareGroups(usersEmails: string[], groupsIds: string[]): Promise<Response_UsersCFsByShareGroups> {
+	async getUsersCFsByShareGroups(body: Request_UsersCFsByShareGroups): Promise<Response_UsersCFsByShareGroups> {
+		const usersEmails = body.usersEmails;
+		const groupsIds = body.groupsIds;
 		const toRet: Response_UsersCFsByShareGroups = {};
 		await Promise.all(usersEmails.map(async email => {
 			const account = await ModuleBE_Account.getUser(email);
