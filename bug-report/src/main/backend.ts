@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-export * from "./app-backend/core/module-pack";
+export * from './app-backend/core/module-pack';
 
-export * from "./app-backend/modules/AdminBRModule";
-export * from "./app-backend/modules/ModuleBE_BugReport";
-export * from "./app-backend/modules/JiraBugReportIntegrator";
-export * from "./app-backend/modules/SlackBugReportIntegrator";
+export * from './app-backend/modules/ModuleBE_AdminBR';
+export * from './app-backend/modules/ModuleBE_BugReport';
+export * from './app-backend/modules/JiraBugReportIntegrator';
+export * from './app-backend/modules/SlackBugReportIntegrator';

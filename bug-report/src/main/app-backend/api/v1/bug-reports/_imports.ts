@@ -17,6 +17,6 @@
  * limitations under the License.
  */
 
-export * from "../../../../shared/api";
-export * from "../../../modules/ModuleBE_BugReport";
-export * from "../../../modules/AdminBRModule"
+export * from '../../../../shared/api';
+export * from '../../../modules/ModuleBE_BugReport';
+export * from '../../../modules/ModuleBE_AdminBR';
