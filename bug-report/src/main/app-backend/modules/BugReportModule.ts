@@ -17,13 +17,14 @@
  * limitations under the License.
  */
 
-import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex, Module, padNumber} from "@nu-art/ts-common";
+import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex, Module, padNumber} from '@nu-art/ts-common';
 
-import {FirebaseModule, FirestoreCollection, StorageWrapper} from "@nu-art/firebase/backend";
+import {FirebaseModule, FirestoreCollection, StorageWrapper} from '@nu-art/firebase/backend';
 
-import {BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from "../..";
+import {ApiDef_BugReport, ApiStruct_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../..';
 
-import * as JSZip from "jszip";
+import * as JSZip from 'jszip';
+import {ApiResponse, dispatch_queryRequestInfo, ExpressRequest, ServerApi_Post} from '@nu-art/thunderstorm/backend';
 
 export type TicketDetails = {
 	platform: string
@@ -35,6 +36,21 @@ type Config = {
 }
 type TicketCreatorApi = (bugReport: Request_BugReport, logs: ReportLogFile[], email?: string) => Promise<TicketDetails | undefined>;
 
+class ServerApi_SendReport
+	extends ServerApi_Post<ApiStruct_BugReport['v1']['sendBugReport']> {
+
+	constructor() {
+		super(ApiDef_BugReport.v1.sendBugReport);
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_BugReport) {
+		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync(request);
+		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data?.email || resp.find(e => e.key === 'RemoteProxy')?.data;
+
+		return await BugReportModule.saveFile(body, userId);
+	}
+}
+
 export class BugReportModule_Class
 	extends Module<Config> {
 
@@ -45,7 +61,7 @@ export class BugReportModule_Class
 	protected init(): void {
 		const sessionAdmin = FirebaseModule.createAdminSession();
 		const firestore = sessionAdmin.getFirestore();
-		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ["_id"]);
+		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
 		this.storage = sessionAdmin.getStorage();
 	}
 
@@ -58,7 +74,7 @@ export class BugReportModule_Class
 
 		report.log.forEach((message, i) => zip.file(`${report.name}_${padNumber(i, 2)}.txt`, message));
 
-		const buffer = await zip.generateAsync({type: "nodebuffer"});
+		const buffer = await zip.generateAsync({type: 'nodebuffer'});
 		const bucket = await this.storage.getOrCreateBucket(this.config?.bucket);
 		const fileName = `${id}-${report.name}.zip`;
 		const file = await bucket.getFile(fileName);
@@ -83,14 +99,14 @@ export class BugReportModule_Class
 			subject: bugReport.subject,
 			description: bugReport.description,
 			reports: logs,
-			_audit: auditBy(email || "bug-report"),
+			_audit: auditBy(email || 'bug-report'),
 		};
 
 		if (this.config?.bucket)
 			instance.bucket = this.config.bucket;
 
 		const tickets = await Promise.all(this.ticketCreatorApis.map(api => api(bugReport, logs, email)));
-		instance.tickets = filterInstances(tickets)
+		instance.tickets = filterInstances(tickets);
 		await this.bugReport.insert(instance);
 		return instance.tickets;
 	};

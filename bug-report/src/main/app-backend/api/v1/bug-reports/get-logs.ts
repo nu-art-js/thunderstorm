@@ -17,21 +17,14 @@
  * limitations under the License.
  */
 
-import {
-	ApiResponse,
-	ExpressRequest,
-	ServerApi_Get,
-} from "@nu-art/thunderstorm/backend";
-import {
-	AdminBRModule,
-	ApiGetLog
-} from "./_imports";
+import {ApiResponse, ExpressRequest, ServerApi_Get,} from '@nu-art/thunderstorm/backend';
+import {AdminBRModule, ApiDef_AdminBugReport, ApiStruct_AdminBugReport} from './_imports';
 
 class ServerApi_GetReport
-	extends ServerApi_Get<ApiGetLog> {
+	extends ServerApi_Get<ApiStruct_AdminBugReport['v1']['retrieveLogs']> {
 
 	constructor() {
-		super("get-logs");
+		super(ApiDef_AdminBugReport.v1.retrieveLogs);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
