@@ -68,7 +68,7 @@ export interface OnAccountsLoaded {
 const dispatch_onAccountsLoaded = new ThunderDispatcher<OnAccountsLoaded, '__onAccountsLoaded'>('__onAccountsLoaded');
 export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
 
-export class AccountModuleFE_Class
+export class ModuleFE_Account_Class
 	extends Module<Config>
 	implements ApiDefCaller<ApiStruct_UserAccountFE> {
 
@@ -178,4 +178,4 @@ export class AccountModuleFE_Class
 	};
 }
 
-export const ModuleFE_Account = new AccountModuleFE_Class();
+export const ModuleFE_Account = new ModuleFE_Account_Class();
