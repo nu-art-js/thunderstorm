@@ -20,8 +20,8 @@
 import './res/styles/styles.scss';
 
 import {App} from './app/App';
-import {ForceUpgrade, Thunder, ToastBuilder} from '@nu-art/thunderstorm/frontend';
-import {LiveDocsModule, ModulePack_Frontend_LiveDocs} from '@nu-art/live-docs/frontend';
+import {ForceUpgrade, Thunder} from '@nu-art/thunderstorm/frontend';
+import {ModulePack_Frontend_LiveDocs} from '@nu-art/live-docs/frontend';
 import {ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Frontend_PushPubSub} from '@nu-art/push-pub-sub/frontend';
 import {BugReportModule} from '@nu-art/bug-report/frontend';
@@ -45,9 +45,3 @@ new Thunder()
 	.addModules(...modules)
 	.setMainApp(App)
 	.build();
-
-LiveDocsModule.setActionsResolver((docKey: string) => {
-	const doc = LiveDocsModule.get(docKey);
-
-	return new ToastBuilder().setContent(doc.document.length === 0 ? `No Content for document with key: ${docKey}` : doc.document);
-});

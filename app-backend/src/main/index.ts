@@ -24,7 +24,7 @@ import {DispatchModule, ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs/backend';
 import {Module} from '@nu-art/ts-common';
 import {ModulePack_Backend_Permissions} from '@nu-art/permissions/backend';
-import {BugReportModule, ModulePack_Backend_BugReport} from '@nu-art/bug-report/backend';
+import {ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {Slack_ServerApiError, SlackModule} from '@nu-art/storm/slack';
 import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload/backend';
@@ -63,7 +63,7 @@ const _exports = new Storm()
 	.setEnvironment(Environment.name)
 	.build();
 
-BugReportModule.addTicketCreator(JiraBugReportIntegrator.openTicket);
+ModuleBE_BugReport.addTicketCreator(JiraBugReportIntegrator.openTicket);
 
 module.exports = _exports;
 
