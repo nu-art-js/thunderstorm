@@ -18,24 +18,14 @@
 
 import {__stringify, Module, Second} from '@nu-art/ts-common';
 
-import {ThunderDispatcher, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
-import {
-	CommonBodyReq,
-	CustomError1,
-	CustomError2,
-	ExampleApiCustomError,
-	ExampleApiGetType,
-	ExampleApiPostType,
-	ExampleApiTest,
-	ExampleGetMax,
-	ExampleTestPush,
-	TestDispatch
-} from '@app/app-shared';
-import {ErrorResponse, HttpMethod} from '@nu-art/thunderstorm';
+import {apiWithBody, apiWithQuery, ThunderDispatcher, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {ApiStruct_Examples, CommonBodyReq, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
+import {ApiDef, ApiDefCaller, ErrorResponse, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {Test} from '@modules/TestModule';
-import {NotificationsModule, OnNotificationsUpdated, OnPushMessageReceived, ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/frontend';
+import {ModuleFE_PushPubSub, OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
 import {FirebaseModule} from '@nu-art/firebase/frontend';
 import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub';
+import {ApiDef_Examples} from '@app/app-shared/shared';
 
 
 type Config = {
@@ -62,18 +52,36 @@ const mySubscriptions: BaseSubscriptionData[] = [{
 	props: {id: 'test1'}
 }];
 
+
 export class ExampleModule_Class
 	extends Module<Config>
-	implements OnPushMessageReceived, OnNotificationsUpdated {
-
+	implements OnPushMessageReceived {
+	readonly v1: ApiDefCaller<ApiStruct_Examples>['v1'];
 	private message!: string;
 
 	data: string[] = [];
 	api_data: string = 'hi my name is';
 	private max: number = 0;
 
+	constructor() {
+		super();
+		this.v1 = {
+			getMax: apiWithQuery(ApiDef_Examples.v1.getMax),
+			setMax: apiWithBody(ApiDef_Examples.v1.setMax),
+			anotherEndpoint: apiWithBody(ApiDef_Examples.v1.anotherEndpoint),
+			customError: apiWithBody(ApiDef_Examples.v1.customError),
+			dispatchEndpoint: apiWithQuery(ApiDef_Examples.v1.dispatchEndpoint),
+			endpoint: apiWithQuery(ApiDef_Examples.v1.endpoint),
+			testPush: apiWithQuery(ApiDef_Examples.v1.testPush),
+			getWithoutParam: apiWithQuery(ApiDef_Examples.v1.getWithoutParam),
+			getWithParams: apiWithQuery(ApiDef_Examples.v1.getWithParams),
+			postWithoutResponse: apiWithBody(ApiDef_Examples.v1.postWithoutResponse),
+			postWithResponse: apiWithBody(ApiDef_Examples.v1.postWithResponse),
+		};
+	}
+
 	protected init(): void {
-		ModuleBE_PushPubSub.subscribeMulti(mySubscriptions);
+		ModuleFE_PushPubSub.v1.registerAll(mySubscriptions).execute();
 		this.runAsync('Async start', this.initAnalytics);
 	}
 
@@ -89,63 +97,45 @@ export class ExampleModule_Class
 		this.logInfo('payload received in module', message, notification);
 	}
 
-	__onNotificationsUpdated(): void {
-		this.logInfo('these are the notifications you actually care about:', NotificationsModule.getNotifications());
-	}
-
 	callCustomErrorApi() {
-		XhrHttpModule
-			.createRequest<ExampleApiCustomError>(HttpMethod.POST, RequestKey_CustomError)
-			.setRelativeUrl('/v1/sample/custom-error')
-			.setOnError((request, resError?: ErrorResponse<CustomError1 | CustomError2>) => {
-				const error = resError?.error;
-				if (!error)
-					return;
+		this.v1.customError().execute(undefined, (request, resError?: ErrorResponse<CustomError1 | CustomError2>) => {
+			const error = resError?.error;
+			if (!error)
+				return;
 
-				const errorType = error.type;
-				if (!errorType)
-					return;
+			const errorType = error.type;
+			if (!errorType)
+				return;
 
-				let errorBody: CustomError1 | CustomError2 | undefined;
-				switch (errorType) {
-					case 'CustomError1':
-						errorBody = error.body as CustomError1;
-						ToastModule.toastError(`${errorBody.prop1}\n${errorBody.prop2}`);
-						break;
+			let errorBody: CustomError1 | CustomError2 | undefined;
+			switch (errorType) {
+				case 'CustomError1':
+					errorBody = error.body as CustomError1;
+					ToastModule.toastError(`${errorBody.prop1}\n${errorBody.prop2}`);
+					break;
 
-					case 'CustomError2':
-						errorBody = error.body as CustomError2;
-						ToastModule.toastError(`${errorBody.prop3}\n${errorBody.prop4}`);
-						break;
-				}
-			})
-			.setOnSuccessMessage(`Success`)
-			.execute();
-
+				case 'CustomError2':
+					errorBody = error.body as CustomError2;
+					ToastModule.toastError(`${errorBody.prop3}\n${errorBody.prop4}`);
+					break;
+			}
+		});
 	}
 
 	public getMessageFromServer1 = () => {
 		this.logInfo('getting label from server');
 		const bodyObject: CommonBodyReq = {message: this.message || 'No message'};
-
-		const r = XhrHttpModule
-			.createRequest<ExampleApiPostType>(HttpMethod.POST, RequestKey_PostApi)
-			.setBodyAsJson(bodyObject)
-			.setRelativeUrl('/v1/sample/another-endpoint')
-			.setOnError(`Error getting new message from backend`);
-
-		r.execute(this.setMessage);
-
+		this.v1.anotherEndpoint(bodyObject).execute(this.setMessage);
 		this.logInfo('continue... will receive an event once request is completed..');
 	};
 
 	public getMessageFromServer2 = () => {
 		this.logInfo('getting label from server');
-
+		type DynamicApiStructExample = QueryApi<any, {}, void>;
+		const dynamicApiExample: ApiDef<DynamicApiStructExample> = {method: HttpMethod.GET, path: this.config.remoteUrl};
 		const r = XhrHttpModule
-			.createRequest<ExampleApiGetType>(HttpMethod.GET, RequestKey_GetApi)
-			.setRelativeUrl(this.config.remoteUrl)
-			.setOnError(`Error getting new message from backend`);
+			.createRequest(dynamicApiExample, RequestKey_GetApi)
+			.setRelativeUrl(this.config.remoteUrl);
 
 		r.execute(this.setMessage);
 
@@ -154,12 +144,7 @@ export class ExampleModule_Class
 
 	testPush = () => {
 		this.logInfo('getting label from server');
-
-		XhrHttpModule
-			.createRequest<ExampleTestPush>(HttpMethod.GET, RequestKey_TestPush)
-			.setRelativeUrl('/v1/sample/push-test')
-			.setOnError(`Error testing push message pub sub`)
-			.execute();
+		this.v1.testPush({}).execute();
 	};
 
 	setMessage = async (_message: unknown) => {
@@ -195,28 +180,18 @@ export class ExampleModule_Class
 
 	testBackendDispatcher = () => {
 		this.logInfo('passing to server');
-		XhrHttpModule
-			.createRequest<ExampleApiTest>(HttpMethod.GET, RequestKey_TestApi)
-			.setRelativeUrl('/v1/sample/dispatch-endpoint')
-			.setOnError(`Error getting a message from backend`)
-			.execute(async response => {
-				this.fetchMax();
-				console.log('i think i got something...');
-				console.log(response);
-				this.api_data = response as string;
-				dispatchAll();
-			});
-
+		this.v1.dispatchEndpoint({}).execute(async (response) => {
+			this.fetchMax();
+			console.log('i think i got something...');
+			console.log(response);
+			this.api_data = response as string;
+			dispatchAll();
+		});
 		this.logInfo('continue... will receive an event once request is completed..');
 	};
 
 	fetchMax = () => {
-		const r = XhrHttpModule
-			.createRequest<ExampleGetMax>(HttpMethod.GET, RequestKey_TestApi)
-			.setRelativeUrl('/v1/sample/get-max')
-			.setOnError(`Error getting max from backend`);
-
-		r.execute(async response => {
+		this.v1.getMax({}).execute(async response => {
 			this.max = (response as { n: number }).n;
 			dispatchAll();
 		});

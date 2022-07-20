@@ -20,8 +20,8 @@ import * as React from 'react';
 import {ComponentSync, RoutingModule, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay, WrapperProps} from '@nu-art/thunderstorm/frontend';
 
 import {VersionOnScreen} from '@components/VersionOnScreen';
-import {AccountModuleFE, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
 import {registerRoutes} from './Routes';
+import {ModuleFE_Account, OnLoginStatusUpdated} from '@nu-art/user-account/app-frontend';
 
 
 export class App
@@ -38,7 +38,7 @@ export class App
 	}
 
 	__onLoginStatusUpdated = () => {
-		const status = AccountModuleFE.getLoggedStatus();
+		const status = ModuleFE_Account.getLoggedStatus();
 		console.log('status update', status);
 	};
 

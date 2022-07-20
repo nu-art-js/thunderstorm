@@ -17,10 +17,7 @@
  * limitations under the License.
  */
 
-import {
-	BodyApi,
-	QueryApi
-} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 
 export type CommonBodyReq = {
 	message: string
@@ -44,15 +41,54 @@ export interface TestDispatch {
 	testDispatch: () => void;
 }
 
-export type ExampleApiCustomError = BodyApi<'/v1/sample/custom-error', void, void, 'post', CustomError1 | CustomError2>
-export type ExampleApiPostType = BodyApi<'/v1/sample/another-endpoint', CommonBodyReq, string>
 export type ExampleApiGetType = QueryApi<string>
-export type ExampleApiTest = QueryApi<string>
-export type ExampleTestPush = QueryApi<'/v1/sample/push-test', any, string>
 
-export type ExampleGetMax = QueryApi<'/v1/sample/get-max', { n: number }>
-export type ExampleSetMax = BodyApi<'/v1/sample/set-max', { n: number }, void>
 export type ApiType_GetWithoutParams = QueryApi<'/v1/sample/get-without-params-endpoint', any, string>
 export type ApiType_ApiGetWithParams = QueryApi<'/v1/sample/get-with-params-endpoint', any, string, 'get', ParamsToGet>
 export type ApiType_ApiPostWithoutResponse = BodyApi<'/v1/sample/post-without-body-endpoint', CommonBodyReq, void>
 export type ApiType_ApiPostWithResponse = BodyApi<'/v1/sample/post-with-body-endpoint', CommonBodyReq, string>
+
+
+export type ApiStruct_Examples = {
+	v1: {
+		setMax: BodyApi<void, { n: number }>;
+		getMax: QueryApi<{ n: number }>;
+		anotherEndpoint: BodyApi<{ message: string }, CommonBodyReq>;
+		customError: BodyApi<void, void>;
+		dispatchEndpoint: QueryApi<string>;
+		endpoint: QueryApi<string>;
+		testPush: QueryApi<string, any>;
+		getWithoutParam: QueryApi<string, any>;
+		getWithParams: QueryApi<string, any>;
+		postWithoutResponse: BodyApi<void, CommonBodyReq>;
+		postWithResponse: BodyApi<string, CommonBodyReq>;
+	}
+}
+export const ApiDef_Examples: ApiDefResolver<ApiStruct_Examples> = {
+	v1: {
+		getMax: {method: HttpMethod.GET, path: '/v1/sample/get-max'},
+		setMax: {method: HttpMethod.POST, path: '/v1/sample/set-max'},
+		anotherEndpoint: {method: HttpMethod.POST, path: '/v1/sample/another-endpoint'},
+		customError: {method: HttpMethod.POST, path: '/v1/sample/custom-error'},
+		dispatchEndpoint: {method: HttpMethod.GET, path: '/v1/sample/dispatch-endpoint'},
+		endpoint: {method: HttpMethod.GET, path: '/v1/sample/endpoint-example'},
+		testPush: {method: HttpMethod.GET, path: '/v1/sample/push-test'},
+		getWithoutParam: {method: HttpMethod.GET, path: '/v1/sample/get-without-params-endpoint'},
+		getWithParams: {method: HttpMethod.GET, path: '/v1/sample/get-with-params-endpoint'},
+		postWithoutResponse: {method: HttpMethod.POST, path: '/v1/sample/post-without-body-endpoint'},
+		postWithResponse: {method: HttpMethod.POST, path: '/v1/sample/post-with-body-endpoint'},
+	}
+};
+
+export type ApiStruct_PermissionAssertTest = {
+	v1: {
+		test1: QueryApi<{ a: string, c: string, e: string }>
+		test2: BodyApi<string, { a: string, b: number, c: string }>
+	}
+}
+export const ApiDef_PermissionAssertTest: ApiDefResolver<ApiStruct_PermissionAssertTest> = {
+	v1: {
+		test1: {method: HttpMethod.GET, path: ''},
+		test2: {method: HttpMethod.POST, path: '/v1/test/permission'},
+	}
+};

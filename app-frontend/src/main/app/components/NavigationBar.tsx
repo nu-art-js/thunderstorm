@@ -15,15 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as React from "react";
-import {RoutingModule} from "@nu-art/thunderstorm/frontend";
-import {Page_Home} from "../pages/Page_Home";
-import {css} from "emotion";
-import {Component_Login} from "@nu-art/user-account/frontend";
-import {Page_ApiGen} from "../pages/Page_ApiGen";
-import { Example_Dialogs } from "../playground/examples/modules/Example_Dialogs";
-import { Example_Toaster } from "../playground/examples/modules/Example_Toaster";
-import { Example_Dispatch } from "../playground/examples/Example_Dispatch";
+import * as React from 'react';
+import {RoutingModule} from '@nu-art/thunderstorm/frontend';
+import {Page_Home} from '../pages/Page_Home';
+import {css} from 'emotion';
+import {Page_ApiGen} from '../pages/Page_ApiGen';
+import {Example_Dialogs} from '../playground/examples/modules/Example_Dialogs';
+import {Example_Toaster} from '../playground/examples/modules/Example_Toaster';
+import {Example_Dispatch} from '../playground/examples/Example_Dispatch';
+import {Component_Login} from '@nu-art/user-account/app-frontend';
 
 const fixedMenu = css`
   position: fixed;
@@ -31,9 +31,10 @@ const fixedMenu = css`
   width: 100%;
   z-index: 100;
   background-color: rgba(220, 220, 220, 1);
+
   .menu {
     display: flex;
-    padding-top: 15px
+    padding-top: 15px;
     padding-bottom: 15px;
     min-width: 230px;
     min-height: 50px;
@@ -41,18 +42,19 @@ const fixedMenu = css`
     margin: auto;
     align-items: center;
     justify-content: space-evenly;
+
     .a {
-      text-decoration: none,
-      color: #333,
+      text-decoration: none;
+      color: #333;
     }
   }
 `;
-export const Route_ApiGen = "api-generation";
-export const Route_Dialog = "dialog";
-export const Route_Toaster = "toaster";
-export const Route_Login = "login";
-export const Route_Home = "home";
-export const Route_Dispatch = "test";
+export const Route_ApiGen = 'api-generation';
+export const Route_Dialog = 'dialog';
+export const Route_Toaster = 'toaster';
+export const Route_Login = 'login';
+export const Route_Home = 'home';
+export const Route_Dispatch = 'test';
 
 const PageLinkKeys = [
 	Route_Home,
@@ -65,12 +67,12 @@ const PageLinkKeys = [
 
 export const registerRoutes = () => {
 	RoutingModule.clearRoutes();
-	RoutingModule.addRoute(Route_ApiGen, "/api-gen", Page_ApiGen.renderer).setLabel("Api Generator");
-	RoutingModule.addRoute(Route_Dialog, "/dialog", Example_Dialogs.renderer).setLabel("Dialog Examples");
-	RoutingModule.addRoute(Route_Toaster, "/toaster", Example_Toaster.renderer).setLabel("Toaster Examples");
-	RoutingModule.addRoute(Route_Login, "/login", Component_Login).setLabel("Login");
-	RoutingModule.addRoute(Route_Dispatch, "/dispatch", Example_Dispatch).setLabel("dispatch");
-	RoutingModule.addRoute(Route_Home, "/", Page_Home).setLabel("Home").setExact(false);
+	RoutingModule.addRoute(Route_ApiGen, '/api-gen', Page_ApiGen.renderer).setLabel('Api Generator');
+	RoutingModule.addRoute(Route_Dialog, '/dialog', Example_Dialogs.renderer).setLabel('Dialog Examples');
+	RoutingModule.addRoute(Route_Toaster, '/toaster', Example_Toaster.renderer).setLabel('Toaster Examples');
+	RoutingModule.addRoute(Route_Login, '/login', Component_Login).setLabel('Login');
+	RoutingModule.addRoute(Route_Dispatch, '/dispatch', Example_Dispatch).setLabel('dispatch');
+	RoutingModule.addRoute(Route_Home, '/', Page_Home).setLabel('Home').setExact(false);
 };
 
 let menuRef: HTMLDivElement;
@@ -97,12 +99,12 @@ export class NavigationBar
 
 			{this.renderRoutes()}
 
-		</div>
+		</div>;
 	}
 
 	renderRoutes = () => {
 		if (!menuRef)
-			return "";
+			return '';
 
 		return <div style={{padding: menuRef.clientHeight}}>{RoutingModule.getRoutesMap()}</div>;
 	};
