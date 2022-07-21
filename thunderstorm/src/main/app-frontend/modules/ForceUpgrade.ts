@@ -21,8 +21,19 @@
 
 import {Dispatcher, Module} from '@nu-art/ts-common';
 import {XhrHttpModule} from './http/XhrHttpModule';
-import {ApiDef_AssertAppVersion, HeaderKey_AppVersion, HeaderKey_BrowserType, UpgradeRequired} from '../../shared/force-upgrade';
+import {
+	ApiDef,
+	ApiDef_ForceUpgrade,
+	ApiDefCaller,
+	ApiStruct_ForceUpgrade,
+	HeaderKey_AppVersion,
+	HeaderKey_BrowserType,
+	HttpMethod,
+	QueryApi,
+	UpgradeRequired
+} from '../../shared';
 import {browserType} from '../utils/tools';
+import {apiWithQuery} from '../core/typed-api';
 
 
 type Config = {
@@ -36,7 +47,16 @@ export interface OnUpgradeRequired {
 const dispatch_onUpgradeRequired = new Dispatcher<OnUpgradeRequired, '__onUpgradeRequired'>('__onUpgradeRequired');
 
 class ForceUpgrade_Class
-	extends Module<Config> {
+	extends Module<Config>
+	implements ApiDefCaller<ApiStruct_ForceUpgrade> {
+	readonly v1: ApiDefCaller<ApiStruct_ForceUpgrade>['v1'];
+
+	constructor() {
+		super();
+		this.v1 = {
+			assertAppVersion: apiWithQuery(ApiDef_ForceUpgrade.v1.assertAppVersion)
+		};
+	}
 
 	protected init(): void {
 		XhrHttpModule.addDefaultHeader(HeaderKey_AppVersion, `${process.env.appVersion}`);
@@ -44,8 +64,14 @@ class ForceUpgrade_Class
 	}
 
 	compareVersion = () => {
+		const def: ApiDef<QueryApi<UpgradeRequired>> =
+			{method: HttpMethod.GET, path: this.config.assertVersionUrl};
+
+		// this.v1.assertAppVersion({}).execute((response) => {
+		// 	dispatch_onUpgradeRequired.dispatchModule(response);
+		// });
 		XhrHttpModule
-			.createRequest(ApiDef_AssertAppVersion)
+			.createRequest(def)
 			.setRelativeUrl(this.config.assertVersionUrl)
 			.execute((response) => {
 				dispatch_onUpgradeRequired.dispatchModule(response);

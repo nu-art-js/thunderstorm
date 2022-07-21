@@ -88,10 +88,8 @@ export class ModuleBE_Permissions_Class
 	constructor() {
 		super();
 		this.v1 = {
-			// getUserUrlsPermissions: new UserUrlsPermissionsProcessor(),
 			getUserUrlsPermissions: createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, AccountsMiddleware),
 			getUserCFsByShareGroups: new ServerApi_UserCFsByShareGroups(),
-			// getUserCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUserCFsByShareGroups, this.getUserCFsByShareGroups),
 			getUsersCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups, AccountsMiddleware),
 			// registerExternalProject: new ServerApi_RegisterExternalProject(),
 			registerExternalProject: createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
