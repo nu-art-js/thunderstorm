@@ -23,8 +23,9 @@ import {FirebaseModule} from '@nu-art/firebase/backend';
 import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
 import {Firebase_ExpressFunction, FirebaseFunction} from '@nu-art/firebase/backend-functions';
 import {BaseStorm} from './BaseStorm';
-import {HttpServer, RouteResolver} from '../modules/server/HttpServer';
+import {HttpServer} from '../modules/server/HttpServer';
 import {ServerApi} from '../modules/server/server-api';
+import {RouteResolver, RouteResolver_DirPath, RouteResolver_ModulePath} from '../modules/server/route-resolvers';
 
 
 const modules: Module[] = [
@@ -50,8 +51,15 @@ export class Storm
 		ServerApi.isDebug = !!this.config.isDebug;
 
 		super.init();
+		if (this.routeResolver instanceof RouteResolver_DirPath) {
+			//@ts-ignore
+			this.routeResolver.resolveApi(!process.env.GCLOUD_PROJECT ? this.initialPath : '');
+		}
 
-		HttpServer.resolveApi(this.routeResolver, !process.env.GCLOUD_PROJECT ? this.initialPath : '');
+		if (this.routeResolver instanceof RouteResolver_ModulePath) {
+			this.routeResolver.resolveApi(!process.env.GCLOUD_PROJECT ? this.initialPath : '');
+		}
+
 		if (this.config.printApis)
 			HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? this.initialPath : '');
 		return this;

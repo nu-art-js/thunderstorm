@@ -26,6 +26,7 @@ export * from './modules/FirestoreBackupScheduler';
 export * from './modules/server/server-errors';
 export * from './modules/server/server-api';
 export * from './modules/server/HttpServer';
+export * from './modules/server/route-resolvers';
 export * from './modules/http/AxiosHttpModule';
 export * from './modules/http/types';
 export * from './modules/ForceUpgrade';

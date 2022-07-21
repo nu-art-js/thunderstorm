@@ -19,6 +19,10 @@
  * limitations under the License.
  */
 
-import {RouteResolver_DirPath} from '../../../../modules/server/route-resolvers';
+import {RouteResolver_DirPath} from './RouteResolver_DirPath';
+import {RouteResolver_ModulePath} from './RouteResolver_ModulePath';
 
-module.exports = new RouteResolver_DirPath(require, __dirname);
+export * from './RouteResolver_DirPath';
+export * from './RouteResolver_ModulePath';
+
+export type RouteResolver = RouteResolver_DirPath | RouteResolver_ModulePath;
