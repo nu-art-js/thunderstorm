@@ -1,0 +1,30 @@
+@startuml
+participant IDB as "IndexDB"
+participant STR as "Local Storage"
+participant FE as "Module FE"
+participant REST as "REST"
+participant BE as "Module BE"
+participant FS as "Firestore"
+participant FB as "Firebase"
+
+== Upsert in BE ==
+BE <- : perform a change
+BE -> FS: make a change in DB
+BE -> FB: set **lastUpdatedBE**
+
+== Check if Sync Needed ==
+FE -> BE: request **lastUpdatedBE**
+BE <-> FB: fetch **lastUpdatedBE**
+BE -> FE: **lastUpdatedBE**
+FE -> FE: if (**lastUpdatedBE** > **lastUpdatedFE** ) trigger sync
+
+== Sync ==
+FE <-> STR: get **lastUpdatedFE**
+FE -> BE: get all new data\nafter **lastUpdatedFE**
+BE <-> FS: Fetch all new data
+BE -> FE: return new Data
+FE -> IDB: upsert new data + delete deleted documents
+FE -> STR: set **lastUpdatedFE**
+
+
+@enduml

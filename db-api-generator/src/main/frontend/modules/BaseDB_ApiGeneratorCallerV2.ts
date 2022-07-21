@@ -51,7 +51,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
-	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
+	readonly v1;
 
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
 		super();
@@ -86,7 +86,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			},
 			delete: apiWithQuery(apiDef.v1.delete, this.onEntryDeleted),
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
-		};
+		} as ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 	}
 
 	onSyncCompleted = async (items: DBType[]) => {
