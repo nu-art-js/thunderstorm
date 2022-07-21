@@ -25,6 +25,7 @@ import {BadImplementationException} from './exceptions';
 import {Logger} from './logger/Logger';
 import {addItemToArray, filterDuplicates} from '../utils/array-tools';
 
+
 const _modules: Module[] = [];
 
 export function moduleResolver() {
@@ -48,7 +49,7 @@ export class ModuleManager
 		Dispatcher.modulesResolver = moduleResolver;
 	}
 
-	filterModules<T>(filter: (module: any) => boolean) {
+	filterModules<T>(filter: (module: Module) => boolean) {
 		return this.modules.filter(filter) as unknown as T[];
 	}
 
