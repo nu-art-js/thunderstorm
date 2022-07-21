@@ -45,7 +45,7 @@ export const dispatch_queryRequestInfo = new Dispatcher<QueryRequestInfo, '__que
  * 	}
  */
 export type ApiModule = {
-	useRoutes: () => ApiServerRouter<any> | ApiServerRouter<any>[] | ApiServer<any> | ApiServer<any>[]
+	useRoutes: () => ApiServerRouter<any> | ApiServer<any>
 }
 
 export type ApiDefServer<K> = ApiModule & K extends TypedApi<any, any, any, any> ? ApiServer<K> | undefined : ApiServerRouter<K>;

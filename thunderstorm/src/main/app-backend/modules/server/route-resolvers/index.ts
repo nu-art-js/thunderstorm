@@ -19,22 +19,10 @@
  * limitations under the License.
  */
 
-export * from './modules/proxy/RemoteProxyCaller';
-export * from './modules/proxy/RemoteProxy';
-export * from './modules/CleanupScheduler';
-export * from './modules/FirestoreBackupScheduler';
-export * from './modules/server/server-errors';
-export * from './modules/server/server-api';
-export * from './modules/server/HttpServer';
-export * from './modules/server/route-resolvers';
-export * from './modules/http/AxiosHttpModule';
-export * from './modules/http/types';
-export * from './modules/ForceUpgrade';
-export * from './utils/promisify-request';
-export * from './utils/to-be-removed';
-export * from './utils/types';
-export * from './utils/LogClient_File';
-export * from './utils/file';
-export * from './exceptions';
-export * from './core/Storm';
-export * from './core/typed-api';
+import {RouteResolver_DirPath} from './RouteResolver_DirPath';
+import {RouteResolver_ModulePath} from './RouteResolver_ModulePath';
+
+export * from './RouteResolver_DirPath';
+export * from './RouteResolver_ModulePath';
+
+export type RouteResolver = RouteResolver_DirPath | RouteResolver_ModulePath;
