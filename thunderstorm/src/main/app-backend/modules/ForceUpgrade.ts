@@ -23,9 +23,17 @@ import {__stringify, BadImplementationException, compareVersions, Implementation
 import {HeaderKey, ServerApi_Middleware} from './server/HttpServer';
 
 import {ApiException} from '../exceptions';
-import {HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent, UpgradeRequired} from '../../shared/force-upgrade';
-import {Browser} from '../../shared/consts';
-import {ExpressRequest} from '../utils/types';
+import {
+	ApiDef_ForceUpgrade,
+	ApiStruct_ForceUpgrade,
+	Browser,
+	HeaderKey_AppVersion,
+	HeaderKey_BrowserType,
+	HeaderKey_UserAgent,
+	UpgradeRequired
+} from '../../shared';
+import {ApiDefServer, ApiModule, ExpressRequest} from '../utils/types';
+import {createQueryServerApi} from '../core/typed-api';
 
 type VersionConfig = {
 	regexp: {
@@ -46,11 +54,28 @@ const DefaultRegexps: { [k in Browser]: string } = {
 };
 
 class ForceUpgrade_Class
-	extends Module<VersionConfig> {
-
+	extends Module<VersionConfig>
+	implements ApiDefServer<ApiStruct_ForceUpgrade>, ApiModule {
+	readonly v1: ApiDefServer<ApiStruct_ForceUpgrade>['v1'];
 	static readonly Middleware: ServerApi_Middleware = async (request: ExpressRequest) => ForceUpgrade.assertVersion(request);
 
-	compareVersion(request: ExpressRequest): UpgradeRequired {
+	constructor() {
+		super();
+		this.v1 = {
+			assertAppVersion: createQueryServerApi(ApiDef_ForceUpgrade.v1.assertAppVersion, async (params, middlewares, request) => {
+				return this.compareVersion(request);
+			}),
+		};
+	}
+
+	useRoutes() {
+		return this.v1;
+	}
+
+	compareVersion(request?: ExpressRequest): UpgradeRequired {
+		if (!request)
+			throw new BadImplementationException(`Request is missing`);
+
 		const appVersion = Header_AppVersion.get(request);
 		const userAgentString = Header_UserAgent.get(request);
 		const browserType: Browser = Header_BrowserType.get(request) as Browser;
