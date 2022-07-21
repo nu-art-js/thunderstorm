@@ -17,6 +17,6 @@
  * limitations under the License.
  */
 
-export * from "./app-frontend/core/module-pack";
-// export * from "./app-frontend/ui/BugReport"
-export * from "./app-frontend/ui/AdminBR"
+export * from './app-frontend/core/module-pack';
+// export * from "./frontend/ui/BugReport"
+export * from './app-frontend/ui/AdminBR';

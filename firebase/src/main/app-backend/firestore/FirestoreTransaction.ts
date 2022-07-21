@@ -129,6 +129,7 @@ export class FirestoreTransaction {
 	}
 
 	async delete_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
+		console.log('Im HERE');
 		const docs = await this._query(collection, ourQuery);
 
 		if (docs.length > 500)
@@ -136,7 +137,11 @@ export class FirestoreTransaction {
 
 		return async () => {
 			const toReturn = docs.map(doc => doc.data() as Type);
-			await Promise.all(docs.map(async (doc) => this.transaction.delete(doc.ref)));
+			await Promise.all(docs.map(async (doc, i) => {
+				const data = {...toReturn[i], __deleted: true};
+				this.transaction.set(doc.ref, data);
+				// this.transaction.delete(doc.ref);
+			}));
 			return toReturn;
 		};
 	}
@@ -159,9 +164,10 @@ export class FirestoreTransaction {
 			return;
 
 		return async () => {
-			const result = doc.data() as Type;
-			await this.transaction.delete(doc.ref);
-
+			let result = doc.data() as Type;
+			result = {...result, __deleted: true};
+			await this.transaction.set(doc.ref, result);
+			// await this.transaction.delete(doc.ref);
 			return result;
 		};
 	}

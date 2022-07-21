@@ -18,7 +18,7 @@
 //
 // import {BodyApi, QueryApi} from '@nu-art/thunderstorm';
 // import {ApiResponse, ExpressRequest, RemoteProxy, ServerApi_Get, ServerApi_Post} from '@nu-art/thunderstorm/backend';
-// import {ModuleBE_PermissionsAssert} from '@nu-art/permissions/app-backend/modules/ModuleBE_PermissionsAssert';
+// import {ModuleBE_PermissionsAssert} from '@nu-art/permissions/backend/modules/ModuleBE_PermissionsAssert';
 //
 // const PROP_A = 'a';
 // const PROP_E = 'e';

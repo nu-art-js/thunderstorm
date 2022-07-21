@@ -17,15 +17,9 @@
  * limitations under the License.
  */
 
-import {ApiDefResolver, BodyApi, QueryApi} from '@nu-art/thunderstorm';
 import {MessageType} from '@nu-art/push-pub-sub';
-import {BaseUploaderFile, FileUploadResult, TempSecureUrl} from '.';
-import {HttpMethod} from '@nu-art/testelot';
+import {FileUploadResult} from '.';
 
-
-export const RequestKey_UploadUrl = 'get-upload-url';
-export const RequestKey_UploadFile = 'upload-file';
-export const RequestKey_ProcessAssetManually = 'process-asset-manually';
 export const PushKey_FileUploaded = 'file-uploaded';
 
 export type Push_FileUploaded = MessageType<'file-uploaded', { feId: string }, FileUploadResult>;
@@ -50,24 +44,3 @@ export enum FileStatus {
 export interface OnFileStatusChanged {
 	__onFileStatusChanged: (id: string) => void;
 }
-
-export type Request_GetUploadUrl = BaseUploaderFile[]
-
-// export type Api_GetUploadUrl = BodyApi<'/v1/upload/get-url', BaseUploaderFile[], TempSecureUrl[]>
-// export type Api_ProcessAssetManually = QueryApi<'/v1/upload/process-asset-manually', void, { feId: string }>
-
-export type ApiStruct_AssetUploader = {
-	v1: {
-		uploadUrl: BodyApi<TempSecureUrl[], BaseUploaderFile[]>,
-		uploadFile: BodyApi<FileUploadResult, any, any, 'put'>,
-		processAssetManually: QueryApi<void, { feId?: string }>,
-	}
-}
-
-export const ApiDef_AssetUploader: ApiDefResolver<ApiStruct_AssetUploader> = {
-	v1: {
-		uploadUrl: {method: HttpMethod.POST, path: '/v1/upload/get-url'},
-		uploadFile: {method: HttpMethod.PUT, path: ''},
-		processAssetManually: {method: HttpMethod.GET, path: '/v1/upload/process-asset-manually'},
-	}
-};

@@ -18,7 +18,7 @@
 
 export * from './app-backend/auth/firebase-session';
 export * from './app-backend/auth/FirebaseSession_Admin';
-// export * from "./app-backend/auth/FirebaseSession_UserPassword";
+// export * from "./backend/auth/FirebaseSession_UserPassword";
 export * from './app-backend/FirebaseModule';
 export * from './app-backend/firestore/FirestoreInterface';
 export * from './app-backend/firestore/FirestoreCollection';

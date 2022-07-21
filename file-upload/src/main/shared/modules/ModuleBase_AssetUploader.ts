@@ -20,7 +20,6 @@ import {__stringify, _keys, BadImplementationException, Dispatcher, generateHex,
 import {ApiDefCaller, BaseHttpModule_Class} from '@nu-art/thunderstorm';
 
 import {
-	ApiDef_AssetUploader,
 	ApiStruct_AssetUploader,
 	BaseUploaderFile,
 	FileInfo,
@@ -34,7 +33,6 @@ import {
 } from '../../shared';
 import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
 import {DB_Notifications} from '@nu-art/push-pub-sub';
-import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 
 
 export type FilesToUpload = Request_Uploader & {
@@ -51,22 +49,16 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 	extends Module<Config>
 	implements OnPushMessageReceived<Push_FileUploaded> {
 
+	protected vv1!: ApiDefCaller<ApiStruct_AssetUploader>['vv1'];
+
 	protected files: { [id: string]: FileInfo } = {};
 	private readonly uploadQueue: Queue = new Queue('File Uploader').setParallelCount(1);
 	protected readonly dispatch_fileStatusChange = new Dispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
-	// private httpModule: HttpModule;
-	readonly v1: ApiDefCaller<ApiStruct_AssetUploader>['v1'];
 
 
-	protected constructor(httpModule: HttpModule) {
+	protected constructor() {
 		super();
-		// this.httpModule = httpModule;
 		this.setDefaultConfig({manualProcessTriggering: false} as Partial<Config>);
-		this.v1 = {
-			uploadUrl: apiWithBody(ApiDef_AssetUploader.v1.uploadUrl),
-			uploadFile: apiWithBody(ApiDef_AssetUploader.v1.uploadFile),
-			processAssetManually: apiWithQuery(ApiDef_AssetUploader.v1.processAssetManually),
-		};
 	}
 
 	__onMessageReceived(notification: DB_Notifications<FileUploadResult>): void {
@@ -138,7 +130,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 			return fileInfo;
 		});
 
-		this.v1.uploadUrl(body)
+		this.vv1.getUploadUrl?.(body)
 			.execute(async (response: TempSecureUrl[]) => {
 				body.forEach(f => this.setFileInfo(f.feId, {status: FileStatus.UrlObtained}));
 				if (!response)
@@ -186,7 +178,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 		if (!fileInfo)
 			throw new BadImplementationException(`Missing file with id ${feId} and name: ${response.asset.name}`);
 
-		const request = this.v1.uploadFile(fileInfo.file, undefined as never)
+		const request = this.vv1.uploadFile(fileInfo.file, undefined as never)
 			.setUrl(response.secureUrl);
 		// const request = this
 		// 	.httpModule
@@ -204,7 +196,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 	};
 
 	processAssetManually = (feId?: string) => {
-		const request = this.v1.processAssetManually({feId});
+		const request = this.vv1.processAssetManually({feId});
 
 		// const request = this
 		// 	.httpModule
