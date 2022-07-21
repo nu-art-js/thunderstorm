@@ -28,7 +28,7 @@ import * as compression from 'compression';
 import {Server} from 'http';
 import {Socket} from 'net';
 import * as fs from 'fs';
-import {addAllItemToArray, addItemToArray, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {addAllItemToArray, addItemToArray, LogLevel, Module} from '@nu-art/ts-common';
 import {HttpRequestData, ServerApi} from './server-api';
 import {ApiException} from '../../exceptions';
 import * as express from 'express';
@@ -83,6 +83,7 @@ export class HttpServer_Class
 	constructor() {
 		super('http-server');
 		this.express = express();
+		this.logInfoBold('IM HERE');
 	}
 
 	setErrorMessageComposer(errorMessageComposer: HttpErrorHandler) {
@@ -271,119 +272,31 @@ export class HttpServer_Class
 		});
 	}
 
-	public resolveApi(routeResolver: RouteResolver, urlPrefix: string) {
-		// @ts-ignore
-		routeResolver.express = this.express;
-		// @ts-ignore
-		routeResolver.resolveApi(urlPrefix, routeResolver.rootDir + urlPrefix);
-
-		const resolveRoutes = (stack: any[]): any[] => {
-			return stack.map((layer: any) => {
+	public resolveRoutes = (stack: any[]) => {
+		const resolveStack = (_stack: any[]): any[] => {
+			return _stack.map((layer: any) => {
 				if (layer.route && typeof layer.route.path === 'string') {
 					let methods = Object.keys(layer.route.methods);
 					if (methods.length > 20)
 						methods = ['ALL'];
-
 					return {methods: methods, path: layer.route.path};
 				}
 
 				if (layer.name === 'router')
-					return resolveRoutes(layer.handle.stack);
+					return resolveStack(layer.handle.stack);
 
 			}).filter(route => route);
 		};
 
-		const routes: (HttpRoute | HttpRoute[])[] = resolveRoutes(this.express._router.stack);
+		const routes: (HttpRoute | HttpRoute[])[] = resolveStack(stack);
 		this.routes = routes.reduce((toRet: HttpRoute[], route) => {
 			const toAdd: HttpRoute[] = Array.isArray(route) ? route : [route];
 			addAllItemToArray(toRet, toAdd);
 			return toRet;
 		}, [] as HttpRoute[]);
-
-	}
+	};
 }
 
-export class RouteResolver {
-	readonly express!: express.Express;
-	readonly require: NodeRequire;
-	readonly rootDir: string;
-	readonly apiFolder: string;
-	private middlewares: ServerApi_Middleware[] = [];
-	private processor?: (api: ServerApi<any>) => void;
-
-	constructor(require: NodeRequire, rootDir: string, apiFolder?: string) {
-		this.require = require;
-		this.rootDir = rootDir;
-		this.apiFolder = apiFolder || '';
-	}
-
-	addProcessor(processor: (api: ServerApi<any>) => void) {
-		this.processor = processor;
-	}
-
-	setMiddlewares(middlewares: ServerApi_Middleware[] = []) {
-		this.middlewares = middlewares;
-		return this;
-	}
-
-	private resolveApi(urlPrefix: string) {
-		this.resolveApiImpl(urlPrefix, this.rootDir + '/' + this.apiFolder);
-	}
-
-	private resolveApiImpl(urlPrefix: string, workingDir: string) {
-		fs.readdirSync(workingDir).forEach((file: string) => {
-			if (fs.statSync(`${workingDir}/${file}`).isDirectory()) {
-				this.resolveApiImpl(`${urlPrefix}/${file}`, `${workingDir}/${file}`);
-				return;
-			}
-
-			if (file.endsWith('.d.ts'))
-				return;
-
-			if (!file.endsWith('.js'))
-				return;
-
-			if (file.startsWith('_'))
-				return;
-
-			const relativePathToFile = `.${workingDir.replace(this.rootDir, '')}/${file}`;
-			if (file.startsWith('&')) {
-				let routeResolver: RouteResolver;
-				try {
-					routeResolver = this.require(relativePathToFile);
-				} catch (e: any) {
-					console.log(`could not reference RouteResolver for: ${workingDir}/${relativePathToFile}`, e);
-					throw e;
-				}
-
-				// @ts-ignore
-				routeResolver.express = this.express;
-				routeResolver.resolveApi(urlPrefix);
-				return;
-			}
-
-			let content: ServerApi<any> | ServerApi<any>[];
-			try {
-				content = this.require(relativePathToFile);
-			} catch (e: any) {
-				console.log(`could not reference ServerApi for: ${workingDir}/${relativePathToFile}`, e);
-				throw e;
-			}
-
-			if (!Array.isArray(content))
-				content = [content];
-
-			content.forEach(api => {
-				if (!api.addMiddlewares)
-					throw new MUSTNeverHappenException(`Missing api.middleware for: ${relativePathToFile}`);
-
-				this.processor?.(api);
-				api.addMiddlewares(...this.middlewares);
-				api.route(this.express, urlPrefix);
-			});
-		});
-	}
-}
 
 export const HttpServer = new HttpServer_Class();
 
