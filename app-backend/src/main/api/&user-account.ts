@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@nu-art/user-account/app-backend/api/_user-account");
+module.exports = require('@nu-art/user-account/backend/api/_user-account');

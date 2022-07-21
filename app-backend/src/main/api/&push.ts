@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@nu-art/push-pub-sub/app-backend/api/_push");
+module.exports = require('@nu-art/push-pub-sub/backend/api/_push');

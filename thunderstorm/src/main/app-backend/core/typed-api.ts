@@ -20,8 +20,8 @@
  */
 
 import {filterInstances} from '@nu-art/ts-common';
-import {ApiResponse, ServerApi_Get, ServerApi_Middleware, ServerApi_Post} from '../../backend';
-import {ApiDef, BodyApi, QueryApi} from '../shared';
+import {ApiResponse, AxiosHttpModule, ServerApi_Get, ServerApi_Middleware, ServerApi_Post} from '../../backend';
+import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, QueryApi} from '../shared';
 import {ExpressRequest} from '../utils/types';
 
 
@@ -60,6 +60,31 @@ export function createQueryServerApi<API extends QueryApi<any, any, any>, T1 = u
 export function createBodyServerApi<API extends BodyApi<any, any, any>, T1 = unknown, T2 = unknown, T3 = unknown, T4 = unknown, T5 = unknown, T6 = unknown>(apiDef: ApiDef<API>, action: (body: API['B'], middlewares: NarrowArray<T1, T2, T3, T4, T5, T6>, request?: ExpressRequest) => Promise<API['R']>, middleware1?: ServerApi_Middleware<T1>, middleware2?: ServerApi_Middleware<T2>, middleware3?: ServerApi_Middleware<T3>, middleware4?: ServerApi_Middleware<T4>, middleware5?: ServerApi_Middleware<T5>, middleware6?: ServerApi_Middleware<T6>) {
 	return new _ServerBodyApi<API>(apiDef, action).setMiddlewares(...filterInstances([middleware1, middleware2, middleware3, middleware4, middleware5, middleware6]));
 }
+
+export function apiWithQueryAxios<API extends QueryApi<any, any>>(apiDef: ApiDef<API>,
+																																	onCompleted?: (response: API['R'], params: API['P'], request: BaseHttpRequest<API>) => Promise<any>,
+																																	onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
+	return (params: API['P']): BaseHttpRequest<API> => {
+		return AxiosHttpModule
+			.createRequest<API>(apiDef)
+			.setUrlParams(params)
+			.setOnError(onError)
+			.setOnCompleted(onCompleted);
+	};
+}
+
+export function apiWithBodyAxios<API extends BodyApi<any, any, any, HttpMethod_Body>>(apiDef: ApiDef<API>,
+																																											onCompleted?: (response: API['R'], body: API['B'], request: BaseHttpRequest<API>) => Promise<any>,
+																																											onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>) {
+	return (body: API['B']): BaseHttpRequest<API> => {
+		return AxiosHttpModule
+			.createRequest<API>(apiDef)
+			.setBodyAsJson(body)
+			.setOnError(onError)
+			.setOnCompleted(onCompleted);
+	};
+}
+
 
 type ValidReturnValue = string | number | object;
 

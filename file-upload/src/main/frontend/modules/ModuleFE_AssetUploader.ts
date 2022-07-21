@@ -16,20 +16,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ThunderDispatcher, XhrHttpModule, XhrHttpModule_Class} from '@nu-art/thunderstorm/frontend';
-import {BaseUploaderFile, FileStatus, FileUploadResult, OnFileStatusChanged, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
+import {apiWithBody, apiWithQuery, ThunderDispatcher, XhrHttpModule_Class} from '@nu-art/thunderstorm/frontend';
+import {
+	ApiDef_AssetUploader,
+	ApiStruct_AssetUploader,
+	BaseUploaderFile,
+	FileStatus,
+	FileUploadResult,
+	OnFileStatusChanged,
+	PushKey_FileUploaded,
+	TempSecureUrl
+} from '../../shared';
 import {ModuleBase_AssetUploader} from '../../shared/modules/ModuleBase_AssetUploader';
 import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub';
 import {ModuleFE_PushPubSub} from '@nu-art/push-pub-sub/frontend/modules/ModuleFE_PushPubSub';
+import {ApiDefCaller} from '@nu-art/thunderstorm';
 
 
 export class ModuleFE_AssetUploader_Class
 	extends ModuleBase_AssetUploader<XhrHttpModule_Class> {
 
 	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
+	readonly vv1: ApiDefCaller<ApiStruct_AssetUploader>['vv1'];
 
 	constructor() {
-		super(XhrHttpModule);
+		super();
+		this.vv1 = {
+			uploadFile: apiWithBody(ApiDef_AssetUploader.vv1.uploadFile),
+			getUploadUrl: apiWithBody(ApiDef_AssetUploader.vv1.getUploadUrl),
+			processAssetManually: apiWithQuery(ApiDef_AssetUploader.vv1.processAssetManually),
+		};
 	}
 
 	upload(files: File[], key?: string, _public?: boolean): BaseUploaderFile[] {

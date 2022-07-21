@@ -93,7 +93,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 export class ModuleBE_Assets_Class
 	extends BaseDB_ApiGenerator<DB_Asset, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
-
+	
 	constructor() {
 		super(DBDef_Assets);
 		this.setDefaultConfig({...this.config, path: 'assets'});

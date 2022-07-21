@@ -17,6 +17,6 @@
  * limitations under the License.
  */
 
-export * from './app-frontend/core/module-pack';
-export * from './app-frontend/modules/ModuleFE_AssetUploader';
-export * from './app-frontend/modules/ModuleFE_Assets';
+export * from './core/module-pack';
+export * from './modules/ModuleFE_Assets';
+export * from './modules/ModuleFE_AssetUploader';
