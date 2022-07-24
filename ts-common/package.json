@@ -23,7 +23,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "typedocs": "typedoc --options typedoc.json"
   },
   "dependencies": {
     "moment": "^2.24.0",
@@ -36,7 +37,8 @@
     "csv-parser": "^2.3.3",
     "eslint": "^6.8.0",
     "ts-node": "^8.6.2",
-    "typescript": "^4.5.0"
+    "typescript": "^4.5.0",
+    "typedoc": "^0.22"
   },
   "_moduleAliases": {
     "@main": "dist/main/ts",
