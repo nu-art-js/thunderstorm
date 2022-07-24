@@ -33,7 +33,6 @@ export class HeaderKey {
 	}
 
 	get(request: ExpressRequest) {
-		console.log(request);
 		const value = request.header(this.key);
 		if (!value)
 			throw new ApiException(this.responseCode, `Missing expected header: ${this.key}`);

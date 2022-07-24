@@ -20,14 +20,50 @@
  */
 
 // noinspection TypeScriptPreferShortImport
-import {Constructor} from "../utils/types";
+import {Constructor} from '../utils/types';
 
+
+/**
+ * # <ins>isErrorOfType</ins>
+ *
+ * A function that checks if an error is of a certain type.
+ *
+ * @param e The error
+ * @param _exceptionType The exception class to compare to
+ *
+ * @returns
+ * - T - The error as the type checked if the error was of that type.
+ * - undefined - otherwise.
+ *
+ * #### <ins>Usage:</ins>
+ * ```js
+ * try {
+ *   ...
+ * } catch(e: Error) {
+ *   if(isErrorOfType(e,ThisShouldNotHappenException)) {
+ *     e = new ThisShouldNotHappenException("this should not have happened",e);
+ *     ...
+ *   }
+ * }
+ * ```
+ */
 export function isErrorOfType<T extends Error>(e: Error, _exceptionType: Constructor<T>): T | undefined {
 	const _e = e as any;
 	if (_e.isInstanceOf && _e.isInstanceOf(_exceptionType))
 		return e as T;
 }
 
+/**
+ * # CustomException
+ *
+ * ### <ins>Intro</ins>
+ * An abstract class defining the structure of custom exceptions.<br>
+ * This class extends the java-script native Error object.<br>
+ * In addition to collecting the error, this class also collects a message and the exception type, for better
+ * error handling.<br>
+ *
+ * @category - Exceptions
+ */
 export abstract class CustomException
 	extends Error {
 
@@ -44,10 +80,15 @@ export abstract class CustomException
 		this.exceptionType = exceptionType.name;
 		this.isInstanceOf = (_exceptionType: Function): boolean => {
 			return this.exceptionType === _exceptionType.name;
-		}
+		};
 	}
 }
 
+/**
+ * # <ins>Exception</ins>
+ * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "Exception",
+ * @category - Exceptions
+ */
 export class Exception
 	extends CustomException {
 
@@ -56,6 +97,11 @@ export class Exception
 	}
 }
 
+/**
+ * # <ins>BadImplementationException</ins>
+ * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "BadImplementationException",
+ * @category - Exceptions
+ */
 export class BadImplementationException
 	extends CustomException {
 
@@ -64,6 +110,11 @@ export class BadImplementationException
 	}
 }
 
+/**
+ * # <ins>ImplementationMissingException</ins>
+ * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "ImplementationMissingException",
+ * @category - Exceptions
+ */
 export class ImplementationMissingException
 	extends CustomException {
 
@@ -72,6 +123,11 @@ export class ImplementationMissingException
 	}
 }
 
+/**
+ * # <ins>MUSTNeverHappenException</ins>
+ * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "MUSTNeverHappenException",
+ * @category - Exceptions
+ */
 export class MUSTNeverHappenException
 	extends CustomException {
 
@@ -80,6 +136,11 @@ export class MUSTNeverHappenException
 	}
 }
 
+/**
+ * # <ins>NotImplementedYetException</ins>
+ * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "NotImplementedYetException",
+ * @category - Exceptions
+ */
 export class NotImplementedYetException
 	extends CustomException {
 
@@ -88,6 +149,11 @@ export class NotImplementedYetException
 	}
 }
 
+/**
+ * # <ins>ThisShouldNotHappenException</ins>
+ * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "ThisShouldNotHappenException",
+ * @category - Exceptions
+ */
 export class ThisShouldNotHappenException
 	extends CustomException {
 
@@ -96,6 +162,11 @@ export class ThisShouldNotHappenException
 	}
 }
 
+/**
+ * # <ins>DontCallthisException</ins>
+ * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "DontCallthisException",
+ * @category - Exceptions
+ */
 export class DontCallthisException
 	extends CustomException {
 
@@ -104,6 +175,11 @@ export class DontCallthisException
 	}
 }
 
+/**
+ * # <ins>WhoCallthisException</ins>
+ * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "WhoCallthisException",
+ * @category - Exceptions
+ */
 export class WhoCallthisException
 	extends CustomException {
 
@@ -112,6 +188,11 @@ export class WhoCallthisException
 	}
 }
 
+/**
+ * # <ins>AssertionException</ins>
+ * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "AssertionException",
+ * @category - Exceptions
+ */
 export class AssertionException
 	extends CustomException {
 
