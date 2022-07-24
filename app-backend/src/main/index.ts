@@ -18,7 +18,7 @@
 
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register';
-import {AxiosHttpModule, ForceUpgrade, RouteResolver_DirPath, Storm} from '@nu-art/thunderstorm/backend';
+import {AxiosHttpModule, ForceUpgrade, HttpServer, RouteResolver_ModulePath, Storm} from '@nu-art/thunderstorm/backend';
 import {Environment} from './config';
 import {DispatchModule, ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs/backend';
@@ -58,8 +58,7 @@ const _exports = new Storm()
 	.addModules(...ModulePack_Backend_Permissions)
 	.addModules(...ModulePack_Backend_Uploader)
 	.addModules(...modules)
-	.setInitialRouteResolver(new RouteResolver_DirPath(require, __dirname, 'api'))
-	.setInitialRoutePath('/api')
+	.setInitialRouteResolver(new RouteResolver_ModulePath(HttpServer.express, __dirname))
 	.setEnvironment(Environment.name)
 	.build();
 

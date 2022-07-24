@@ -42,8 +42,7 @@ const Validator_Asset = {
 export const DBDef_Assets: DBDef<DB_Asset> = {
 	validator: Validator_Asset,
 	dbName: 'assets',
-	entityName: 'asset',
-	relativeUrl: 'v1/assets',
+	entityName: 'assets',
 };
 
 export const Validator_TempAsset = {
@@ -54,6 +53,5 @@ export const Validator_TempAsset = {
 export const DBDef_TempAssets: DBDef<DB_Asset> = {
 	validator: Validator_TempAsset,
 	dbName: 'assets-temp',
-	entityName: 'temp-asset',
-	relativeUrl: '',
+	entityName: 'assets-temp',
 };

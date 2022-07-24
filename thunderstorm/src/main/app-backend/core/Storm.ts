@@ -22,7 +22,7 @@
 import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
 import {Firebase_ExpressFunction, FirebaseFunction} from '@nu-art/firebase/backend-functions';
 import {BaseStorm} from './BaseStorm';
-import {RouteResolver} from '../modules/server/route-resolvers';
+import {HttpRoute, RouteResolver} from '../modules/server/route-resolvers';
 import {HttpServer} from '../modules/server/HttpServer';
 import {FirebaseModule} from '@nu-art/firebase/backend';
 import {ServerApi} from '../modules/server/server-api';
@@ -81,6 +81,10 @@ export class Storm
 			toRet[_function.getName()] = _function.getFunction();
 			return toRet;
 		}, {});
+	}
+
+	getRoutes(): HttpRoute[] {
+		return this.routeResolver.resolveRoutes();
 	}
 
 	build(onStarted?: () => Promise<void>) {

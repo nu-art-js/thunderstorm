@@ -27,7 +27,7 @@ import {_values, addAllItemToArray, Logger, LogLevel, MUSTNeverHappenException} 
 import {ApiModule, ApiServerRouter} from '../../../utils/api-caller-types';
 
 
-type HttpRoute = {
+export type HttpRoute = {
 	methods: string[]
 	path: string
 }
@@ -41,11 +41,11 @@ export class RouteResolver_ModulePath
 	constructor(express: Express, initialPath: string) {
 		super();
 		this.express = express;
-		this.initialPath = initialPath;
+		this.initialPath = !process.env.GCLOUD_PROJECT ? initialPath : '';
 		this.setMinLevel(LogLevel.Debug);
 	}
 
-	public resolveApi(urlPrefix: string = !process.env.GCLOUD_PROJECT ? this.initialPath : '') {
+	public resolveApi() {
 		const modules: ApiModule[] = Storm.getInstance().filterModules(module => !!(module as unknown as ApiModule).useRoutes);
 
 		//Filter Api modules
@@ -69,18 +69,18 @@ export class RouteResolver_ModulePath
 				throw new MUSTNeverHappenException(`Missing api.middleware for`);
 
 			api.addMiddlewares(...this.middlewares);
-			api.route(this.express, urlPrefix);
+			api.route(this.express, this.initialPath);
 		});
 
 	}
 
-	public printRoutes(urlPrefix: string = !process.env.GCLOUD_PROJECT ? this.initialPath : ''): void {
+	public printRoutes(): void {
 		const routes = this.resolveRoutes();
 		console.log(routes);
-		routes.forEach(route => this.logInfo(`${JSON.stringify(route.methods)} ${urlPrefix}${route.path}`));
+		routes.forEach(route => this.logInfo(`${JSON.stringify(route.methods)} ${this.initialPath}${route.path}`));
 	}
 
-	private resolveRoutes = () => {
+	public resolveRoutes = () => {
 		const resolveStack = (_stack: any[]): any[] => {
 			return _stack.map((layer: any) => {
 				if (layer.route && typeof layer.route.path === 'string') {

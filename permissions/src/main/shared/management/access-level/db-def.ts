@@ -33,6 +33,5 @@ const Validator_PermissionAccessLevel = {
 export const DBDef_PermissionAccessLevel: DBDef<DB_PermissionAccessLevel> = {
 	validator: Validator_PermissionAccessLevel,
 	dbName: 'permissions--level',
-	entityName: 'level',
-	relativeUrl: 'v1/permissions/manage/levels',
+	entityName: 'permissions--level',
 };
