@@ -180,10 +180,10 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.dispatchSingle(EventType_Delete, item);
 	}
 
-	protected async onEntriesUpdated(items: DBType[]): Promise<void> {
+	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
 		await this.db.upsertAll(items);
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
-	}
+	};
 
 	protected async onEntryUpdated(item: DBType, original: PreDB<DBType>): Promise<void> {
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
