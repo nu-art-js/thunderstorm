@@ -86,6 +86,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			},
 			delete: apiWithQuery(apiDef.v1.delete, this.onEntryDeleted),
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
+			getDBLastUpdated: apiWithQuery(apiDef.v1.getDBLastUpdated),
 		} as ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 	}
 
@@ -103,6 +104,33 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		if (sync)
 			this.v1.sync().execute();
 	}
+
+	public syncCollection = async () => {
+		const DBLsatUpdated = await this.v1.getDBLastUpdated({}).executeSync();
+		const IDBLastUpdated = await this.getIDBLastUpdated();
+
+		//If DB contains information that isn't in the IDB
+		if (DBLsatUpdated > IDBLastUpdated) {
+			//Get all the items with a lastUpdated after the IDB last updated
+			const newItems = await this.v1.query({where: {__updated: {$gt: IDBLastUpdated}}}).executeSync();
+			newItems.forEach(item => {
+				//Delete item from IDB if marked deleted in DB
+				if (item.__deleted) {
+					return this.db.delete(item);
+				}
+
+				//Upsert the item otherwise
+				this.db.upsert(item);
+			});
+		}
+	};
+
+	public async getIDBLastUpdated() {
+		const collection = await this.queryCache();
+		let IDBLastUpdated = 0;
+		collection.forEach((item) => IDBLastUpdated = (IDBLastUpdated > item.__updated ? IDBLastUpdated : item.__updated));
+		return IDBLastUpdated;
+	};
 
 	public async queryCache(query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> {
 		return (await this.db.query({query, indexKey})) || [];
