@@ -18,7 +18,7 @@
 
 import {FirestoreType_DocumentSnapshot} from './types';
 import {FirestoreCollection,} from './FirestoreCollection';
-import {BadImplementationException, merge, Subset, TS_Object} from '@nu-art/ts-common';
+import {BadImplementationException, merge, Subset, TS_Object, _keys, KeysToKeepOnDelete, DB_Object} from '@nu-art/ts-common';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreInterface} from './FirestoreInterface';
 import {Transaction} from 'firebase-admin/firestore';
@@ -138,7 +138,12 @@ export class FirestoreTransaction {
 		return async () => {
 			const toReturn = docs.map(doc => doc.data() as Type);
 			await Promise.all(docs.map(async (doc, i) => {
-				const data = {...toReturn[i], __deleted: true};
+				const data = {__deleted: true};
+				_keys(toReturn[i]).forEach(key => {
+					if (KeysToKeepOnDelete.includes(key as keyof DB_Object))
+						//@ts-ignore
+						data[key] = toReturn[i][key];
+				});
 				this.transaction.set(doc.ref, data);
 				// this.transaction.delete(doc.ref);
 			}));
@@ -164,11 +169,16 @@ export class FirestoreTransaction {
 			return;
 
 		return async () => {
-			let result = doc.data() as Type;
-			result = {...result, __deleted: true};
+			const data = doc.data() as Type;
+			const result = {__deleted: true};
+			_keys(data).forEach(key => {
+				if (KeysToKeepOnDelete.includes(key as keyof DB_Object))
+					//@ts-ignore
+					result[key] = data[key];
+			});
 			await this.transaction.set(doc.ref, result);
 			// await this.transaction.delete(doc.ref);
-			return result;
+			return result as unknown as Type;
 		};
 	}
 }
