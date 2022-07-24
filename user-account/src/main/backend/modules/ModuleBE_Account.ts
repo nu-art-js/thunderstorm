@@ -263,7 +263,7 @@ export class AccountModuleBE_Class
 		return this.validateSessionId(sessionId);
 	};
 
-	async validateSessionId(sessionId: any) {
+	validateSessionId = async (sessionId: any) => {
 		if (typeof sessionId !== 'string')
 			throw new ApiException(401, `Invalid session id: ${sessionId}`);
 
@@ -277,7 +277,7 @@ export class AccountModuleBE_Class
 			throw new ApiException(401, 'Session timed out');
 
 		return await this.getUserEmailFromSession(session);
-	}
+	};
 
 	private async getUserEmailFromSession(session: DB_Session) {
 		const account = await this.accounts.queryUnique({where: {_id: session.userId}});
