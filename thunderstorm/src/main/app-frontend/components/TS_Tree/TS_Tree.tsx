@@ -21,12 +21,12 @@
 
 import * as React from 'react';
 import {CSSProperties, Fragment} from 'react';
-import {TreeNode, TreeNodeExpandState,} from './types';
-import {Adapter} from '../adapter/Adapter';
+import {Adapter, TreeNode} from '../adapter/Adapter';
 import {_BaseNodeRenderer} from '../adapter/BaseRenderer';
 import {_className} from '../../utils/tools';
 import './TS_Tree.scss';
 import {ComponentSync} from '../../core/ComponentSync';
+import {TreeNodeExpandState} from './types';
 
 
 export type Props_Tree = {

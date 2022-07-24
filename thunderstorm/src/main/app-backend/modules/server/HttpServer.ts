@@ -28,13 +28,13 @@ import * as compression from 'compression';
 import {Server} from 'http';
 import {Socket} from 'net';
 import * as fs from 'fs';
-import {addAllItemToArray, addItemToArray, LogLevel, Module} from '@nu-art/ts-common';
-import {HttpRequestData, ServerApi} from './server-api';
-import {ApiException} from '../../exceptions';
+import {addItemToArray, LogLevel, Module} from '@nu-art/ts-common';
 import * as express from 'express';
 
-import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse} from '../../utils/types';
+import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, HttpErrorHandler} from '../../utils/types';
 import {DefaultApiErrorMessageComposer} from './server-errors';
+import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@nu-art/firebase/backend';
+import {ServerApi} from './server-api';
 
 
 const ALL_Methods: string[] = [
@@ -61,29 +61,23 @@ type ConfigType = {
 	bodyParserLimit: number | string
 };
 
-export type HttpErrorHandler = (requestData: HttpRequestData, error: ApiException) => Promise<string>;
-
-export type ServerApi_Middleware<T extends any = void> = (request: ExpressRequest, response: ExpressResponse, data: HttpRequestData) => T | Promise<T>
-
-type HttpRoute = {
-	methods: string[]
-	path: string
-}
-
 export class HttpServer_Class
-	extends Module<ConfigType> {
+	extends Module<ConfigType>
+	implements TBR_ExpressFunctionInterface {
 
 	private static readonly expressMiddleware: ExpressRequestHandler[] = [];
 	errorMessageComposer: HttpErrorHandler = DefaultApiErrorMessageComposer();
 	readonly express: Express;
 	private server!: Server;
-	private routes!: HttpRoute[];
 	private socketId: number = 0;
 
 	constructor() {
 		super('http-server');
 		this.express = express();
-		this.logInfoBold('IM HERE');
+	}
+
+	getExpressFunction() {
+		return new Firebase_ExpressFunction(HttpServer.express);
 	}
 
 	setErrorMessageComposer(errorMessageComposer: HttpErrorHandler) {
@@ -93,10 +87,6 @@ export class HttpServer_Class
 	static addMiddleware(middleware: ExpressRequestHandler) {
 		HttpServer_Class.expressMiddleware.push(middleware);
 		return this;
-	}
-
-	getRoutes() {
-		return this.routes;
 	}
 
 	getBaseUrl() {
@@ -170,10 +160,6 @@ export class HttpServer_Class
 		this.express.options('*', (req: ExpressRequest, res: ExpressResponse) => {
 			res.end();
 		});
-	}
-
-	public printRoutes(prefix: string): void {
-		this.routes.forEach(route => this.logDebug(`${JSON.stringify(route.methods)} ${prefix}${route.path}`));
 	}
 
 	private createServer(): Server {
@@ -271,49 +257,7 @@ export class HttpServer_Class
 			});
 		});
 	}
-
-	public resolveRoutes = (stack: any[]) => {
-		const resolveStack = (_stack: any[]): any[] => {
-			return _stack.map((layer: any) => {
-				if (layer.route && typeof layer.route.path === 'string') {
-					let methods = Object.keys(layer.route.methods);
-					if (methods.length > 20)
-						methods = ['ALL'];
-					return {methods: methods, path: layer.route.path};
-				}
-
-				if (layer.name === 'router')
-					return resolveStack(layer.handle.stack);
-
-			}).filter(route => route);
-		};
-
-		const routes: (HttpRoute | HttpRoute[])[] = resolveStack(stack);
-		this.routes = routes.reduce((toRet: HttpRoute[], route) => {
-			const toAdd: HttpRoute[] = Array.isArray(route) ? route : [route];
-			addAllItemToArray(toRet, toAdd);
-			return toRet;
-		}, [] as HttpRoute[]);
-	};
 }
-
 
 export const HttpServer = new HttpServer_Class();
 
-export class HeaderKey {
-	private readonly key: string;
-	private readonly responseCode: number;
-
-	constructor(key: string, responseCode: number = 400) {
-		this.key = key;
-		this.responseCode = responseCode;
-	}
-
-	get(request: ExpressRequest) {
-		const value = request.header(this.key);
-		if (!value)
-			throw new ApiException(this.responseCode, `Missing expected header: ${this.key}`);
-
-		return value;
-	}
-}

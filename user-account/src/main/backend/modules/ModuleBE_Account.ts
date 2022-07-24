@@ -145,15 +145,15 @@ export class AccountModuleBE_Class
 		return this.accounts.queryUnique({where: {email}});
 	}
 
-	private async create(request: Request_CreateAccount) {
+	private create = async (request: Request_CreateAccount) => {
 		const account = await this.createAccount(request);
 
 		const session = await this.login(request);
 		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
 		return session;
-	}
+	};
 
-	private async upsert(request: Request_UpsertAccount) {
+	private upsert = async (request: Request_UpsertAccount) => {
 		const account = await this.accounts.runInTransaction(async (transaction) => {
 			const existAccount = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
 			if (existAccount)
@@ -165,7 +165,7 @@ export class AccountModuleBE_Class
 		const session = await this.login(request);
 		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
 		return session;
-	}
+	};
 
 	// async addNewAccount(email: string, password?: string, password_check?: string): Promise<UI_Account> {
 	// 	let account: DB_Account;
@@ -196,7 +196,7 @@ export class AccountModuleBE_Class
 		});
 	}
 
-	async createAccount(request: Request_CreateAccount) {
+	createAccount = async (request: Request_CreateAccount) => {
 		request.email = request.email.toLowerCase();
 		tsValidate(request.email, tsValidateEmail);
 
@@ -207,9 +207,9 @@ export class AccountModuleBE_Class
 
 			return this.createImpl(request, transaction);
 		});
-	}
+	};
 
-	private createImpl(request: Request_CreateAccount, transaction: FirestoreTransaction) {
+	private createImpl = (request: Request_CreateAccount, transaction: FirestoreTransaction) => {
 		if (!this.config.canRegister)
 			throw new ApiException(418, 'Registration is disabled!!');
 
@@ -226,9 +226,9 @@ export class AccountModuleBE_Class
 		};
 
 		return transaction.insert(this.accounts, account);
-	}
+	};
 
-	async login(request: Request_LoginAccount): Promise<Response_Auth> {
+	login = async (request: Request_LoginAccount): Promise<Response_Auth> => {
 		request.email = request.email.toLowerCase();
 		const query = {where: {email: request.email}};
 		const account = await this.accounts.queryUnique(query);
@@ -250,9 +250,9 @@ export class AccountModuleBE_Class
 
 		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
 		return session;
-	}
+	};
 
-	async validateSession(params: QueryParams, request?: ExpressRequest): Promise<UI_Account> {
+	validateSession = async (params: QueryParams, request?: ExpressRequest): Promise<UI_Account> => {
 		if (!request)
 			throw new MUSTNeverHappenException('must have a request when calling this function..');
 
@@ -261,7 +261,7 @@ export class AccountModuleBE_Class
 			throw new ApiException(404, 'Missing sessionId');
 
 		return this.validateSessionId(sessionId);
-	}
+	};
 
 	async validateSessionId(sessionId: any) {
 		if (typeof sessionId !== 'string')
@@ -310,7 +310,7 @@ export class AccountModuleBE_Class
 		return {sessionId: session.sessionId, email: uiAccount.email};
 	};
 
-	async getOrCreate(query: { where: { email: string } }) {
+	getOrCreate = async (query: { where: { email: string } }) => {
 		let dispatchEvent = false;
 
 		const dbAccount = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
@@ -336,7 +336,7 @@ export class AccountModuleBE_Class
 			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
 
 		return dbAccount;
-	}
+	};
 }
 
 export const ModuleBE_Account = new AccountModuleBE_Class();

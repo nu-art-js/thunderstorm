@@ -20,21 +20,34 @@
  */
 
 import {Express} from 'express';
-import {ApiModule, ApiServerRouter} from '../../../utils/types';
-import {ServerApi_Middleware} from '../HttpServer';
+import {ServerApi_Middleware} from '../../../utils/types';
 import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
-import {MUSTNeverHappenException, _values} from '@nu-art/ts-common';
+import {_values, addAllItemToArray, Logger, LogLevel, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {ApiModule, ApiServerRouter} from '../../../utils/api-caller-types';
 
-export class RouteResolver_ModulePath {
+
+type HttpRoute = {
+	methods: string[]
+	path: string
+}
+
+export class RouteResolver_ModulePath
+	extends Logger {
 	readonly express: Express;
 	private middlewares: ServerApi_Middleware[] = [];
+	private initialPath: string;
 
-	constructor(express: Express) {
+	constructor(express: Express, initialPath: string) {
+		super();
 		this.express = express;
+		this.initialPath = initialPath;
+		this.setMinLevel(LogLevel.Debug);
 	}
 
-	public resolveApi(urlPrefix: string, modules: ApiModule[] = Storm.getInstance().filterModules(module => !!(module as unknown as ApiModule).useRoutes)) {
+	public resolveApi(urlPrefix: string = !process.env.GCLOUD_PROJECT ? this.initialPath : '') {
+		const modules: ApiModule[] = Storm.getInstance().filterModules(module => !!(module as unknown as ApiModule).useRoutes);
+
 		//Filter Api modules
 		const callbackfn = (acc: ServerApi<any>[], item?: ApiServerRouter<any> | ServerApi<any>) => {
 			if (item instanceof ServerApi) {
@@ -50,6 +63,7 @@ export class RouteResolver_ModulePath {
 		};
 
 		const routes = modules.map(m => m.useRoutes()).reduce<ServerApi<any>[]>(callbackfn, []);
+		// console.log(routes);
 		routes.forEach(api => {
 			if (!api.addMiddlewares)
 				throw new MUSTNeverHappenException(`Missing api.middleware for`);
@@ -59,5 +73,35 @@ export class RouteResolver_ModulePath {
 		});
 
 	}
+
+	public printRoutes(urlPrefix: string = !process.env.GCLOUD_PROJECT ? this.initialPath : ''): void {
+		const routes = this.resolveRoutes();
+		console.log(routes);
+		routes.forEach(route => this.logInfo(`${JSON.stringify(route.methods)} ${urlPrefix}${route.path}`));
+	}
+
+	private resolveRoutes = () => {
+		const resolveStack = (_stack: any[]): any[] => {
+			return _stack.map((layer: any) => {
+				if (layer.route && typeof layer.route.path === 'string') {
+					let methods = Object.keys(layer.route.methods);
+					if (methods.length > 20)
+						methods = ['ALL'];
+					return {methods: methods, path: layer.route.path};
+				}
+
+				if (layer.name === 'router')
+					return resolveStack(layer.handle.stack);
+
+			}).filter(route => route);
+		};
+
+		const routes: (HttpRoute | HttpRoute[])[] = resolveStack(this.express._router.stack);
+		return routes.reduce((toRet: HttpRoute[], route) => {
+			const toAdd: HttpRoute[] = Array.isArray(route) ? route : [route];
+			addAllItemToArray(toRet, toAdd);
+			return toRet;
+		}, [] as HttpRoute[]);
+	};
 
 }

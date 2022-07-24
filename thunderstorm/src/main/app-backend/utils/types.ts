@@ -20,10 +20,11 @@
  */
 
 import * as express from 'express';
-import {Dispatcher, TS_Object} from '@nu-art/ts-common';
+import {Dispatcher} from '@nu-art/ts-common';
 import {CoreOptions, UriOptions} from 'request';
-import {BodyApi, QueryApi, TypedApi} from '../../shared/types';
-import {ServerApi, ServerApi_Get, ServerApi_Post} from '../modules/server/server-api';
+import {ApiException} from '../exceptions';
+import {IncomingHttpHeaders} from 'http';
+import {HttpMethod} from '../../shared';
 
 
 export type Express = express.Express
@@ -39,20 +40,14 @@ export interface QueryRequestInfo {
 export type RequestOptions = CoreOptions & UriOptions
 export const dispatch_queryRequestInfo = new Dispatcher<QueryRequestInfo, '__queryRequestInfo'>('__queryRequestInfo');
 
-/**
- * 	useRoutes() {
- * 		return this.v1;
- * 	}
- */
-export type ApiModule = {
-	useRoutes: () => ApiServerRouter<any> | ApiServer<any>
+export type ServerApi_Middleware<T extends any = void> = (request: ExpressRequest, response: ExpressResponse, data: HttpRequestData) => T | Promise<T>
+export type HttpErrorHandler = (requestData: HttpRequestData, error: ApiException) => Promise<string>;
+
+export type HttpRequestData = {
+	originalUrl: string
+	headers: IncomingHttpHeaders
+	url: string
+	query: any
+	body: any
+	method: HttpMethod
 }
-
-export type ApiDefServer<K> = ApiModule & K extends TypedApi<any, any, any, any> ? ApiServer<K> | undefined : ApiServerRouter<K>;
-
-export type ApiServerRouter<T extends TS_Object> = { [P in keyof T]: ApiDefServer<T[P]> };
-
-export type ApiServer<API> =
-	API extends QueryApi<any, any, any> ? ServerApi_Get<API> :
-		API extends BodyApi<any, any, any> ? ServerApi_Post<API> :
-			API extends TypedApi<any, any, any, any> ? ServerApi<API> : never;

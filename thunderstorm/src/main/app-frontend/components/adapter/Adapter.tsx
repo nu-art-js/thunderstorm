@@ -24,7 +24,6 @@ import {ComponentType} from 'react';
 import {_keys, BadImplementationException, TS_Object,} from '@nu-art/ts-common';
 import {SimpleTreeNodeRenderer} from '../TS_Tree/SimpleTreeNodeRenderer';
 import {_BaseNodeRenderer, BaseRendererMap, NodeRendererProps, TreeRendererMap,} from './BaseRenderer';
-import {TreeNode} from '../TS_Tree/types';
 import {_className} from '../../utils/tools';
 
 // export type TreeItem<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = {
@@ -36,6 +35,13 @@ import {_className} from '../../utils/tools';
 // export type ItemToRender<Rm extends BaseRendererMap<any>, K extends keyof Rm = keyof Rm, Item = InferItemType<Rm[K]>> = TreeItem<Rm, K> & {
 // 	_children?: ItemToRender<Rm>[]
 // }
+export type TreeNode = {
+	propKey: string
+	item: any
+	adapter: Adapter
+	expandToggler: (e: React.MouseEvent, expand?: boolean) => void
+	expanded: boolean,
+};
 
 // Simple LIST is an array of item of type T
 export type ListData<I> = I[];

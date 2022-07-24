@@ -22,6 +22,7 @@
 import {FirestoreQuery} from '@nu-art/firebase';
 import {ApiDefResolver, BodyApi, HttpMethod, IndexKeys, QueryApi, QueryParams} from '@nu-art/thunderstorm';
 import {DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';
+import {DBDef} from './db-def';
 
 
 /**
@@ -59,31 +60,31 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 	},
 }
 
-export const DBApiDefGenerator = <DBType extends DB_Object>(path: string): ApiDefResolver<ApiStruct_DBApiGen<DBType>> => {
+export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType, '_id'>): ApiDefResolver<ApiStruct_DBApiGen<DBType>> => {
 	return {
 		v1: {
-			query: {method: HttpMethod.POST, path: `v1/${path}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${path}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${path}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${path}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${path}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${path}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${path}/delete-all`},
+			query: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/patch`},
+			delete: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete-all`},
 		}
 	};
 };
 
-export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof DBType>(path: string): ApiDefResolver<ApiStruct_DBApiGenIDB<DBType, Ks>> => {
+export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof DBType>(dbDef: DBDef<DBType, Ks>): ApiDefResolver<ApiStruct_DBApiGenIDB<DBType, Ks>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `v1/${path}/query`},
-			query: {method: HttpMethod.POST, path: `v1/${path}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${path}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${path}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${path}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${path}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${path}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${path}/delete-all`},
+			sync: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
+			query: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/patch`},
+			delete: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete-all`},
 		}
 	};
 };

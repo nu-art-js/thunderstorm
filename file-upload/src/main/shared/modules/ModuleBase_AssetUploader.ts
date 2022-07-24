@@ -55,7 +55,6 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 	private readonly uploadQueue: Queue = new Queue('File Uploader').setParallelCount(1);
 	protected readonly dispatch_fileStatusChange = new Dispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 
-
 	protected constructor() {
 		super();
 		this.setDefaultConfig({manualProcessTriggering: false} as Partial<Config>);
@@ -201,7 +200,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 		// const request = this
 		// 	.httpModule
 		// 	.createRequest<Api_ProcessAssetManually>(HttpMethod.GET, RequestKey_ProcessAssetManually, feId)
-		// 	.setRelativeUrl('/v1/upload/process-asset-manually');
+		// 	.setRelativeUrl('v1/upload/process-asset-manually');
 
 		if (feId)
 			request.setUrlParam('feId', feId);

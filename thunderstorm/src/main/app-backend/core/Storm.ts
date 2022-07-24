@@ -19,13 +19,13 @@
  * limitations under the License.
  */
 
-import {FirebaseModule} from '@nu-art/firebase/backend';
 import {BeLogged, LogClient_Function, LogClient_Terminal, LogLevel, Module} from '@nu-art/ts-common';
 import {Firebase_ExpressFunction, FirebaseFunction} from '@nu-art/firebase/backend-functions';
 import {BaseStorm} from './BaseStorm';
+import {RouteResolver} from '../modules/server/route-resolvers';
 import {HttpServer} from '../modules/server/HttpServer';
+import {FirebaseModule} from '@nu-art/firebase/backend';
 import {ServerApi} from '../modules/server/server-api';
-import {RouteResolver, RouteResolver_DirPath, RouteResolver_ModulePath} from '../modules/server/route-resolvers';
 
 
 const modules: Module[] = [
@@ -33,11 +33,10 @@ const modules: Module[] = [
 	FirebaseModule,
 ];
 
-
 export class Storm
 	extends BaseStorm {
+
 	private routeResolver!: RouteResolver;
-	private initialPath!: string;
 	private functions: any[] = [];
 
 	constructor() {
@@ -51,27 +50,14 @@ export class Storm
 		ServerApi.isDebug = !!this.config.isDebug;
 
 		super.init();
-		if (this.routeResolver instanceof RouteResolver_DirPath) {
-			//@ts-ignore
-			this.routeResolver.resolveApi(!process.env.GCLOUD_PROJECT ? this.initialPath : '');
-		}
+		this.routeResolver.resolveApi();
+		this.routeResolver.printRoutes();
 
-		if (this.routeResolver instanceof RouteResolver_ModulePath) {
-			this.routeResolver.resolveApi(!process.env.GCLOUD_PROJECT ? this.initialPath : '');
-		}
-
-		if (this.config.printApis)
-			HttpServer.printRoutes(process.env.GCLOUD_PROJECT ? this.initialPath : '');
 		return this;
 	}
 
 	setInitialRouteResolver(routeResolver: RouteResolver) {
 		this.routeResolver = routeResolver;
-		return this;
-	}
-
-	setInitialRoutePath(initialPath: string) {
-		this.initialPath = initialPath;
 		return this;
 	}
 

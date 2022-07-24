@@ -19,29 +19,29 @@
 
 export const config = {
 	XhrHttpModule: {
-		origin: "http://localhost:5000/thunderstorm-staging/us-central1/api",
+		origin: 'http://localhost:5000/thunderstorm-staging/us-central1/api',
 		timeout: 30000,
 		compress: true
 	},
 	frontend: {
-		origin: "http://localhost:5001",
+		origin: 'http://localhost:5001',
 	},
 	ExampleModule: {
-		remoteUrl: "/v1/sample/endpoint-example"
+		remoteUrl: 'v1/sample/endpoint-example'
 	},
 	ForceUpgrade: {
-		assertVersionUrl: "/v1/version/assert"
+		assertVersionUrl: 'v1/version/assert'
 	},
 	FirebaseModule: {
 		local: {
-			apiKey: "AIzaSyD2xhGl4-gq3L_rknxoYF0KZLvedrFWQbg",
-			authDomain: "thunderstorm-staging.firebaseapp.com",
-			databaseURL: "https://thunderstorm-staging.firebaseio.com",
-			projectId: "thunderstorm-staging",
-			storageBucket: "thunderstorm-staging.appspot.com",
-			messagingSenderId: "387990980732",
-			appId: "1:387990980732:web:62ce3fe05f0fc852faa1f9",
-			measurementId: "G-PSCS2QH5YV"
+			apiKey: 'AIzaSyD2xhGl4-gq3L_rknxoYF0KZLvedrFWQbg',
+			authDomain: 'thunderstorm-staging.firebaseapp.com',
+			databaseURL: 'https://thunderstorm-staging.firebaseio.com',
+			projectId: 'thunderstorm-staging',
+			storageBucket: 'thunderstorm-staging.appspot.com',
+			messagingSenderId: '387990980732',
+			appId: '1:387990980732:web:62ce3fe05f0fc852faa1f9',
+			measurementId: 'G-PSCS2QH5YV'
 		}
 	},
 	ModuleBE_PushPubSub: {

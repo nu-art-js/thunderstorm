@@ -60,7 +60,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.setDefaultConfig(config as Config);
 		this.db = IndexedDBModule.getOrCreate(this.config.dbConfig);
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
-		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef.relativeUrl);
+		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 
 		const _query = apiWithBody(apiDef.v1.query, this.onQueryReturned);
 		const sync = apiWithBody(apiDef.v1.query, this.onSyncCompleted);

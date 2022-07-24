@@ -19,7 +19,25 @@
  * limitations under the License.
  */
 
-export type NodeExpandCondition = (key: string, value: any, level: number, path: string) => boolean | undefined;
+import {TS_Object} from '@nu-art/ts-common';
+import {BodyApi, QueryApi, TypedApi} from '../../shared';
+import {ServerApi, ServerApi_Get, ServerApi_Post} from '../modules/server/server-api';
 
-export type TreeNodeExpandState = { [path: string]: true | undefined };
 
+/**
+ * 	useRoutes() {
+ * 		return this.v1;
+ * 	}
+ */
+export type ApiModule = {
+	useRoutes: () => ApiServerRouter<any> | ApiServer<any>
+}
+
+export type ApiDefServer<K> = ApiModule & K extends TypedApi<any, any, any, any> ? ApiServer<K> | undefined : ApiServerRouter<K>;
+
+export type ApiServerRouter<T extends TS_Object> = { [P in keyof T]: ApiDefServer<T[P]> };
+
+export type ApiServer<API> =
+	API extends QueryApi<any, any, any> ? ServerApi_Get<API> :
+		API extends BodyApi<any, any, any> ? ServerApi_Post<API> :
+			API extends TypedApi<any, any, any, any> ? ServerApi<API> : never;

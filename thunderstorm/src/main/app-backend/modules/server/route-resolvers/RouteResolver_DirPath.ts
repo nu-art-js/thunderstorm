@@ -21,21 +21,25 @@
 
 import {ServerApi} from '../server-api';
 import * as fs from 'fs';
-import {ServerApi_Middleware} from '../HttpServer';
 import * as express from 'express';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
+import {ServerApi_Middleware} from '../../../utils/types';
+
 
 export class RouteResolver_DirPath {
 	readonly express!: express.Express;
 	readonly require: NodeRequire;
 	readonly rootDir: string;
 	readonly apiFolder: string;
+	readonly initialPath: string;
+
 	private middlewares: ServerApi_Middleware[] = [];
 	private processor?: (api: ServerApi<any>) => void;
 
-	constructor(require: NodeRequire, rootDir: string, apiFolder?: string) {
+	constructor(require: NodeRequire, rootDir: string, initialPath: string, apiFolder?: string) {
 		this.require = require;
 		this.rootDir = rootDir;
+		this.initialPath = initialPath;
 		this.apiFolder = apiFolder || '';
 	}
 
@@ -48,7 +52,7 @@ export class RouteResolver_DirPath {
 		return this;
 	}
 
-	private resolveApi(urlPrefix: string) {
+	resolveApi(urlPrefix: string = !process.env.GCLOUD_PROJECT ? this.initialPath : '') {
 		this.resolveApiImpl(urlPrefix, this.rootDir + '/' + this.apiFolder);
 	}
 

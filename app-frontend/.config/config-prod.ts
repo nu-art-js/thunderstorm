@@ -19,29 +19,29 @@
 
 export const config = {
 	XhrHttpModule: {
-		origin: "https://us-central1-nu-art-thunderstorm.cloudfunctions.net/api",
+		origin: 'https://us-central1-nu-art-thunderstorm.cloudfunctions.net/api',
 		timeout: 10000,
 		compress: false
 	},
 	frontend: {
-		origin: "https://nu-art-thunderstorm.firebaseapp.com",
+		origin: 'https://nu-art-thunderstorm.firebaseapp.com',
 	},
 	ExampleModule: {
-		remoteUrl: "/v1/sample/endpoint-example"
+		remoteUrl: 'v1/sample/endpoint-example'
 	},
 	ForceUpgrade: {
-		assertVersionUrl: "/v1/version/assert"
+		assertVersionUrl: 'v1/version/assert'
 	},
 	FirebaseModule: {
 		local: {
-			apiKey: "AIzaSyCoQjoQibuydMi1ejlpobfgHOI7WMf11P8",
-			authDomain: "nu-art-thunderstorm.firebaseapp.com",
-			databaseURL: "https://nu-art-thunderstorm.firebaseio.com",
-			projectId: "nu-art-thunderstorm",
-			storageBucket: "nu-art-thunderstorm.appspot.com",
-			messagingSenderId: "992823653177",
-			appId: "1:992823653177:web:e289e37f159c1b56de6ee8",
-			measurementId: "G-CBR3QM4STY"
+			apiKey: 'AIzaSyCoQjoQibuydMi1ejlpobfgHOI7WMf11P8',
+			authDomain: 'nu-art-thunderstorm.firebaseapp.com',
+			databaseURL: 'https://nu-art-thunderstorm.firebaseio.com',
+			projectId: 'nu-art-thunderstorm',
+			storageBucket: 'nu-art-thunderstorm.appspot.com',
+			messagingSenderId: '992823653177',
+			appId: '1:992823653177:web:e289e37f159c1b56de6ee8',
+			measurementId: 'G-CBR3QM4STY'
 		}
 	},
 	ModuleBE_PushPubSub: {

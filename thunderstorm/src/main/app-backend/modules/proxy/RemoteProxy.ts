@@ -20,10 +20,11 @@
  */
 import {ImplementationMissingException, Module, TS_Object} from '@nu-art/ts-common';
 
-import {HeaderKey, ServerApi_Middleware} from '../server/HttpServer';
 import {ApiException} from '../../exceptions';
-import {HttpRequestData} from '../server/server-api';
-import {ExpressRequest, QueryRequestInfo} from '../../utils/types';
+import {ApiResponse, ServerApi} from '../server/server-api';
+import {ExpressRequest, HttpRequestData, QueryRequestInfo, ServerApi_Middleware} from '../../utils/types';
+import {HeaderKey} from '../server/HeaderKey';
+import {TypedApi} from '../../../shared';
 
 
 type ProxyConfig = {
@@ -106,6 +107,27 @@ export class RemoteProxy_Class<Config extends RemoteProxyConfig>
 
 	async processApi(request: ExpressRequest, requestData: HttpRequestData) {
 		return this.assertSecret(request);
+	}
+
+	asProxy<API extends TypedApi<any, any, any, any>>(serverApi: ServerApi<API>) {
+		return new ServerApi_Proxy<API>(serverApi);
+	}
+}
+
+export class ServerApi_Proxy<API extends TypedApi<any, any, any, any>>
+	extends ServerApi<API> {
+	private readonly api: ServerApi<API>;
+
+	public constructor(api: ServerApi<API>) {
+		// super(api.method, `${api.relativePath}/proxy`);
+		super({...api.apiDef, path: `${api.apiDef.path}/proxy`});
+		this.api = api;
+		this.setMiddlewares(RemoteProxy.Middleware);
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: API['P'], body: API['B']): Promise<API['R']> {
+		// @ts-ignore
+		return this.api.process(request, response, queryParams, body);
 	}
 }
 

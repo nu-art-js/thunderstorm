@@ -25,14 +25,12 @@ import {Const_UniqueKey, DBDef, Default_UniqueKey} from '../shared/db-def';
 
 
 export type DBApiFEConfig<DBType extends DB_Object, Ks extends keyof DBType = Default_UniqueKey> = {
-	relativeUrl: string
 	key: string
 	dbConfig: DBConfig<DBType, Ks>
 }
 
 export const getModuleFEConfig = <T extends DB_Object, Ks extends keyof T = Default_UniqueKey>(dbDef: DBDef<T, Ks>): DBApiFEConfig<T, Ks> => {
 	return {
-		relativeUrl: dbDef.relativeUrl,
 		key: dbDef.dbName,
 		dbConfig: {
 			version: 1,

@@ -95,7 +95,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		// @ts-ignore
 		this.setDefaultConfig(preConfig);
 		this.validator = config.validator;
-		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef.relativeUrl);
+		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 		this.v1 = {
 			query: createBodyServerApi(apiDef.v1.query, this._query),
 			sync: undefined,
@@ -121,33 +121,19 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys as FilterKeys<DBType>);
 	}
 
-	private async _upsert(instance: PreDB<DBType>, request?: ExpressRequest) {
-		return this.upsert(instance, undefined, request);
-	}
+	private _upsert = async (instance: PreDB<DBType>, request?: ExpressRequest) => this.upsert(instance, undefined, request);
 
-	private async _upsertAll(instances: PreDB<DBType>[], request?: ExpressRequest) {
-		return this.upsertAll(instances, undefined, request);
-	}
+	private _upsertAll = async (instances: PreDB<DBType>[], request?: ExpressRequest) => this.upsertAll(instances, undefined, request);
 
-	private async _deleteAll(ignore?: {}, request?: ExpressRequest) {
-		return this.deleteAll(request);
-	}
+	private _deleteAll = async (ignore?: {}, request?: ExpressRequest) => this.deleteAll(request);
 
-	private async _patch(instance: IndexKeys<DBType, Ks> & Partial<DBType>, request?: ExpressRequest) {
-		return this.patch(instance, undefined, request);
-	}
+	private _patch = async (instance: IndexKeys<DBType, Ks> & Partial<DBType>, request?: ExpressRequest) => this.patch(instance, undefined, request);
 
-	private async _deleteUnique(id: { _id: string }, request?: ExpressRequest): Promise<DBType> {
-		return this.deleteUnique(id._id, undefined, request);
-	}
+	private _deleteUnique = async (id: { _id: string }, request?: ExpressRequest): Promise<DBType> => this.deleteUnique(id._id, undefined, request);
 
-	private async _query(query: FirestoreQuery<DBType>, request?: ExpressRequest) {
-		return this.query(query, undefined, request);
-	}
+	private _query = async (query: FirestoreQuery<DBType>, request?: ExpressRequest) => this.query(query, undefined, request);
 
-	private async _queryUnique(where: QueryParams, request?: ExpressRequest) {
-		return this.queryUnique(where as Clause_Where<DBType>, undefined, request);
-	}
+	private _queryUnique = async (where: QueryParams, request?: ExpressRequest) => this.queryUnique(where as Clause_Where<DBType>, undefined, request);
 
 	setValidator(validator: ValidatorTypeResolver<DBType>) {
 		this.validator = validator;
