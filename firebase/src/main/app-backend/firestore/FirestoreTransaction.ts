@@ -163,7 +163,7 @@ export class FirestoreTransaction {
 		return write();
 	}
 
-	async deleteUnique_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<undefined | (() => Promise<Type>)> {
+	async deleteUnique_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>, uniqueKeys?: string[]): Promise<undefined | (() => Promise<Type>)> {
 		const doc = (await this._queryUnique(collection, ourQuery));
 		if (!doc)
 			return;
@@ -171,11 +171,21 @@ export class FirestoreTransaction {
 		return async () => {
 			const data = doc.data() as Type;
 			const result = {__deleted: true};
+			console.log('HERE!');
+			console.log('UKeys:', uniqueKeys);
 			_keys(data).forEach(key => {
 				if (KeysToKeepOnDelete.includes(key as keyof DB_Object))
 					//@ts-ignore
 					result[key] = data[key];
 			});
+			if (uniqueKeys) {
+				uniqueKeys.forEach(key => {
+					console.log(data[key]);
+					//@ts-ignore
+					result[key] = data[key];
+				});
+			}
+			console.log('Result:', result);
 			await this.transaction.set(doc.ref, result);
 			// await this.transaction.delete(doc.ref);
 			return result as unknown as Type;

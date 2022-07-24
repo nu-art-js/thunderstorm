@@ -56,7 +56,8 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
 		patch: BodyApi<DBType, IndexKeys<DBType, Ks> & Partial<DBType>>
 		delete: QueryApi<DBType, DB_BaseObject>,
-		deleteAll: QueryApi<void>
+		deleteAll: QueryApi<void>,
+		getDBLastUpdated: QueryApi<number>,
 	},
 }
 
@@ -85,6 +86,7 @@ export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof 
 			patch: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/patch`},
 			delete: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete-all`},
+			getDBLastUpdated: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/get-db-last-updated`}
 		}
 	};
 };

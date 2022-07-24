@@ -105,6 +105,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			patch: createBodyServerApi(apiDef.v1.patch, this._patch),
 			delete: createQueryServerApi(apiDef.v1.delete, this._deleteUnique),
 			deleteAll: createQueryServerApi(apiDef.v1.deleteAll, this._deleteAll),
+			getDBLastUpdated: createQueryServerApi(apiDef.v1.getDBLastUpdated, this._getDBLastUpdated)
 		};
 	}
 
@@ -134,6 +135,8 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	private _query = async (query: FirestoreQuery<DBType>, request?: ExpressRequest) => this.query(query, undefined, request);
 
 	private _queryUnique = async (where: QueryParams, request?: ExpressRequest) => this.queryUnique(where as Clause_Where<DBType>, undefined, request);
+
+	private _getDBLastUpdated = async () => this.getDBLastUpdated();
 
 	setValidator(validator: ValidatorTypeResolver<DBType>) {
 		this.validator = validator;
@@ -307,6 +310,11 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	protected async upgradeInstance(dbInstance: DBType, toVersion: string): Promise<void> {
 	}
+
+	private getDBLastUpdated = async () => {
+		//FIXME: change this to actual collection "lastUpdated" number
+		return 0;
+	};
 
 	/**
 	 * Override this method to customize the assertions that should be done before the insertion of the document to the DB.
@@ -585,7 +593,9 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of the document that was deleted.
 	 */
 	private async deleteImpl_Read(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest): Promise<() => Promise<DBType>> {
-		const write = await transaction.deleteUnique_Read(this.collection, ourQuery);
+		this.logDebug('HERE FUNCTION');
+		const uniqueKeys = this.config.externalFilterKeys;
+		const write = await transaction.deleteUnique_Read(this.collection, ourQuery, uniqueKeys);
 		if (!write)
 			throw new ThisShouldNotHappenException(`I just checked that I had an instance for query: ${__stringify(ourQuery)}`);
 
