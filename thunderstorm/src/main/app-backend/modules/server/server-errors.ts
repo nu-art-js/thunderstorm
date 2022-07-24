@@ -19,10 +19,9 @@
  * limitations under the License.
  */
 
-import {HttpRequestData} from './server-api';
 import {ApiException} from '../../exceptions';
-import {HttpErrorHandler} from './HttpServer';
 import {__stringify, _keys, StringMap} from '@nu-art/ts-common';
+import {HttpErrorHandler, HttpRequestData} from '../../utils/types';
 
 
 export type AppPropsResolver = (requestData: HttpRequestData) => Promise<StringMap>;

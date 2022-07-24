@@ -1,5 +1,8 @@
 /*
- * A typescript & react boilerplate with api call example
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,22 +19,17 @@
  * limitations under the License.
  */
 
-import * as React from 'react';
-import {PermissionsComponent} from '@nu-art/permissions/frontend';
+import {FirebaseModule} from '@nu-art/firebase/backend';
+import {Module} from '@nu-art/ts-common';
+import {HttpServer} from '../modules/server/HttpServer';
+import {Storm} from './Storm';
 
 
-export class Example_PermissionsComponent_Renderer
-	extends React.Component {
+const modules: Module[] = [
+	HttpServer,
+	FirebaseModule,
+];
 
-	render() {
-		return <PermissionsComponent
-			url={'v1/test/api'}
-			fallback={() => <div>not allowed</div>}
-			loadingComponent={() => <>Its loading</>}
-		>
-			<div>Example_PermissionsComponent</div>
-		</PermissionsComponent>;
-	}
+export function createStorm() {
+	return new Storm().addModules(...modules);
 }
-
-export const Example_PermissionsComponent = {renderer: Example_PermissionsComponent_Renderer, name: 'Permissions Component'};

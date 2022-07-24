@@ -43,7 +43,7 @@ export class AdminBRModule_Class
 	// 	this.logInfo('getting logs from firestore...');
 	// 	XhrHttpModule
 	// 		.createRequest<ApiGetLog>(HttpMethod.GET, RequestKey_GetLog)
-	// 		.setRelativeUrl('/v1/bug-reports/get-logs')
+	// 		.setRelativeUrl('v1/bug-reports/get-logs')
 	// 		.setOnError(`Error getting new message from backend`)
 	// 		.execute(async response => {
 	// 			this.logs = response;
@@ -58,7 +58,7 @@ export class AdminBRModule_Class
 	// 	XhrHttpModule
 	// 		.createRequest<ApiPostPath>(HttpMethod.POST, RequestKey_PostPath)
 	// 		.setBodyAsJson(bodyObject)
-	// 		.setRelativeUrl('/v1/bug-reports/download-logs')
+	// 		.setRelativeUrl('v1/bug-reports/download-logs')
 	// 		.setOnError(`Error getting new message from backend`)
 	// 		.execute();
 	// };

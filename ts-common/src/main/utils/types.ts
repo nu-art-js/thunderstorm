@@ -112,3 +112,13 @@ export type RangeTimestamp = {
 	min: number;
 	max: number;
 };
+
+export type ValidReturnValue = string | number | object;
+
+export type NarrowArray<Default, T1, T2, T3, T4, T5, T6> =
+	T6 extends ValidReturnValue ? [T1, T2, T3, T4, T5, T6] :
+		T5 extends ValidReturnValue ? [T1, T2, T3, T4, T5] :
+			T4 extends ValidReturnValue ? [T1, T2, T3, T4] :
+				T3 extends ValidReturnValue ? [T1, T2, T3] :
+					T2 extends ValidReturnValue ? [T1, T2] :
+						T1 extends ValidReturnValue ? [T1] : Default

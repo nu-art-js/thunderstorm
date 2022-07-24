@@ -28,6 +28,7 @@ export abstract class BaseStorm
 
 	protected envKey: string = 'dev';
 	private override: TS_Object = {};
+	readonly isDebug = false;
 
 	setEnvironment(envKey: string) {
 		this.envKey = envKey;

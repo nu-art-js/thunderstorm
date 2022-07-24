@@ -37,5 +37,5 @@ export const DBDef_PermissionGroup: DBDef<DB_PermissionGroup> = {
 	validator: Validator_PermissionGroup,
 	dbName: 'permissions--group',
 	entityName: 'group',
-	relativeUrl: '/v1/permissions/assign/groups',
+	relativeUrl: 'v1/permissions/assign/groups',
 };

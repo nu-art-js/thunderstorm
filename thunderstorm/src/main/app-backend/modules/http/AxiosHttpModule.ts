@@ -21,10 +21,8 @@
 
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
-import {ApiDef, ErrorResponse, TypedApi} from '../../../shared/types';
+import {ApiDef, BaseHttpModule_Class, BaseHttpRequest, ErrorResponse, ErrorType, TypedApi} from '../../../shared';
 import {BadImplementationException, StringMap,} from '@nu-art/ts-common';
-import {BaseHttpRequest, ErrorType} from '../../../shared/BaseHttpRequest';
-import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
 import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
 
 
@@ -34,9 +32,14 @@ export class AxiosHttpModule_Class
 
 	init() {
 		super.init();
-		const origin = this.config.origin;
-		if (origin)
-			this.origin = origin;
+		let origin = this.config.origin;
+		if (!origin)
+			return;
+
+		if (origin?.endsWith('/'))
+			origin = origin.substring(0, origin.length - 1);
+
+		this.origin = origin;
 	}
 
 	createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<API>, data?: string): AxiosHttpRequest<API> {

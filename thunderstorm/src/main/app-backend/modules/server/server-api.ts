@@ -38,24 +38,13 @@ import {
 
 import {Stream} from 'stream';
 import {parse} from 'url';
-import {HttpServer, ServerApi_Middleware} from './HttpServer';
-import {IncomingHttpHeaders} from 'http';
+import {HttpServer} from './HttpServer';
 // noinspection TypeScriptPreferShortImport
-import {ApiDef, BodyApi, HttpMethod, QueryApi, QueryParams, TypedApi} from '../../../shared/types';
+import {ApiDef, BodyApi, QueryApi, QueryParams, TypedApi} from '../../../shared';
 import {assertProperty} from '../../utils/to-be-removed';
 import {ApiException,} from '../../exceptions';
-import {ExpressRequest, ExpressResponse, ExpressRouter} from '../../utils/types';
-import {RemoteProxy} from '../proxy/RemoteProxy';
+import {ExpressRequest, ExpressResponse, ExpressRouter, HttpRequestData, ServerApi_Middleware} from '../../utils/types';
 
-
-export type HttpRequestData = {
-	originalUrl: string
-	headers: IncomingHttpHeaders
-	url: string
-	query: any
-	body: any
-	method: HttpMethod
-}
 
 export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	extends Logger {
@@ -101,10 +90,6 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 
 	setQueryValidator(queryValidator: ValidatorTypeResolver<API['P']>) {
 		this.queryValidator = queryValidator;
-	}
-
-	asProxy(): ServerApi<API> {
-		return new ServerApi_Proxy<API>(this);
 	}
 
 	getUrl() {
@@ -285,23 +270,6 @@ export abstract class ServerApi_Post<API extends BodyApi<any, any, any>>
 	}
 }
 
-export class ServerApi_Proxy<API extends TypedApi<any, any, any, any>>
-	extends ServerApi<API> {
-	private readonly api: ServerApi<API>;
-
-	public constructor(api: ServerApi<API>) {
-		// super(api.method, `${api.relativePath}/proxy`);
-		super({...api.apiDef, path: `${api.apiDef.path}/proxy`});
-		this.api = api;
-		this.setMiddlewares(RemoteProxy.Middleware);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: API['P'], body: API['B']): Promise<API['R']> {
-		// @ts-ignore
-		return this.api.process(request, response, queryParams, body);
-	}
-}
-
 export class ServerApi_Redirect<API extends TypedApi<any, any, any, any>>
 	extends ServerApi<any> {
 	private readonly responseCode: number;
@@ -316,6 +284,34 @@ export class ServerApi_Redirect<API extends TypedApi<any, any, any, any>>
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: any): Promise<void> {
 		const query = queryParams ? _keys<QueryParams, string>(queryParams).reduce((c: string, k: string) => c + '&' + k + '=' + queryParams[k], '?') : '';
 		response.redirect(this.responseCode, `${HttpServer.getBaseUrl()}${this.redirectUrl}${query}`);
+	}
+}
+
+export class _ServerQueryApi<API extends QueryApi<any, any, any>>
+	extends ServerApi_Get<API> {
+	private readonly action: (params: API['P'], middleware: any, request?: ExpressRequest) => Promise<API['R']>;
+
+	constructor(apiDef: ApiDef<API>, action: (params: API['P'], middleware: any, request?: ExpressRequest) => Promise<API['R']>) {
+		super(apiDef);
+		this.action = action;
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: API['P']): Promise<API['R']> {
+		return this.action(queryParams, this.middlewareResults || request, request);
+	}
+}
+
+export class _ServerBodyApi<API extends BodyApi<any, any, any>>
+	extends ServerApi_Post<API> {
+	private readonly action: (body: API['B'], middleware: any, request?: ExpressRequest) => Promise<API['R']>;
+
+	constructor(apiDef: ApiDef<API>, action: (params: API['B'], middleware: any, request?: ExpressRequest) => Promise<API['R']>) {
+		super(apiDef);
+		this.action = action;
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: API['B']): Promise<API['R']> {
+		return this.action(body, this.middlewareResults || request, request);
 	}
 }
 

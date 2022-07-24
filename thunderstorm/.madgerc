@@ -1,0 +1,10 @@
+{
+	"fontSize": "10px",
+	"graphVizOptions": {
+		"G": {
+			"rankdir": "LR"
+		}
+	},
+	"baseDir": "aaa",
+	"exclude": "dist"
+}

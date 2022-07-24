@@ -52,7 +52,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		const config = getModuleFEConfig(dbDef);
 
 		this.setDefaultConfig(config);
-		const apiDef = DBApiDefGenerator<DBType>(dbDef.relativeUrl);
+		const apiDef = DBApiDefGenerator<DBType>(dbDef);
 
 		const query = apiWithBody(apiDef.v1.query, this.onQueryReturned);
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);

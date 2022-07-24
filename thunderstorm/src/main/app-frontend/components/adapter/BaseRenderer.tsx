@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {TreeNode} from '../TS_Tree/types';
+import {TreeNode} from './Adapter';
 
 
 export type ItemRendererProps<Item extends any = any> = { item: Item }
@@ -48,7 +48,6 @@ export abstract class BaseNodeRenderer<ItemType, S extends {} = {}>
 
 	protected abstract renderItem(item: ItemType): React.ReactNode;
 }
-
 
 export type BaseRendererMap<R extends React.ComponentType<any>> = {
 	[k: string]: R

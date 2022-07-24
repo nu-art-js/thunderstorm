@@ -38,6 +38,10 @@ import {DocumentSnapshot} from 'firebase-admin/firestore';
 
 const functions = require('firebase-functions');
 
+export interface TBR_ExpressFunctionInterface {
+	getExpressFunction(): Firebase_ExpressFunction;
+}
+
 export interface FirebaseFunctionInterface {
 	getFunction(): HttpsFunction;
 

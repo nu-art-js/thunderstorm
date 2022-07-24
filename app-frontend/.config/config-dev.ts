@@ -27,10 +27,10 @@ export const config = {
 		origin: 'https://thunderstorm-dev.firebaseapp.com',
 	},
 	ExampleModule: {
-		remoteUrl: '/v1/sample/endpoint-example'
+		remoteUrl: 'v1/sample/endpoint-example'
 	},
 	ForceUpgrade: {
-		assertVersionUrl: '/v1/version/assert'
+		assertVersionUrl: 'v1/version/assert'
 	},
 	FirebaseModule: {
 		local: {

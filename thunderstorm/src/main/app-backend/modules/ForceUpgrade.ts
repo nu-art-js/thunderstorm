@@ -20,7 +20,6 @@
  */
 
 import {__stringify, BadImplementationException, compareVersions, ImplementationMissingException, Module} from '@nu-art/ts-common';
-import {HeaderKey, ServerApi_Middleware} from './server/HttpServer';
 
 import {ApiException} from '../exceptions';
 import {
@@ -32,8 +31,11 @@ import {
 	HeaderKey_UserAgent,
 	UpgradeRequired
 } from '../../shared';
-import {ApiDefServer, ApiModule, ExpressRequest} from '../utils/types';
+import {ExpressRequest, ServerApi_Middleware} from '../utils/types';
 import {createQueryServerApi} from '../core/typed-api';
+import {HeaderKey} from './server/HeaderKey';
+import {ApiDefServer, ApiModule} from '../utils/api-caller-types';
+
 
 type VersionConfig = {
 	regexp: {

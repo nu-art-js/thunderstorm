@@ -98,7 +98,7 @@ export type ApiStruct_PermissionsAssert = {
 }
 export const ApiDef_PermissionsAssert: ApiDefResolver<ApiStruct_PermissionsAssert> = {
 	v1: {
-		assertUserPermissions: {method: HttpMethod.POST, path: '/v1/permissions/assert-user-access'}
+		assertUserPermissions: {method: HttpMethod.POST, path: 'v1/permissions/assert-user-access'}
 	}
 };
 
@@ -114,11 +114,11 @@ export type ApiStruct_Permissions = {
 }
 export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
 	v1: {
-		getUserUrlsPermissions: {method: HttpMethod.POST, path: '/v1/permissions/user-urls-permissions'},
-		getUserCFsByShareGroups: {method: HttpMethod.POST, path: '/v1/user-custom-fields/user-cf-by-share-groups'},
-		getUsersCFsByShareGroups: {method: HttpMethod.POST, path: '/v1/user-custom-fields/users-cf-by-share-groups'},
-		registerExternalProject: {method: HttpMethod.POST, path: '/v1/register/register-external-project'},
-		registerProject: {method: HttpMethod.GET, path: '/v1/register/register-project'}
+		getUserUrlsPermissions: {method: HttpMethod.POST, path: 'v1/permissions/user-urls-permissions'},
+		getUserCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/user-cf-by-share-groups'},
+		getUsersCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/users-cf-by-share-groups'},
+		registerExternalProject: {method: HttpMethod.POST, path: 'v1/register/register-external-project'},
+		registerProject: {method: HttpMethod.GET, path: 'v1/register/register-project'}
 	}
 };
 
@@ -130,6 +130,6 @@ export type ApiStruct_TestPermissions = {
 }
 export const ApiDef_TestPermissions: ApiDefResolver<ApiStruct_TestPermissions> = {
 	v1: {
-		test: {method: HttpMethod.GET, path: '/v1/permissions-test/test'}
+		test: {method: HttpMethod.GET, path: 'v1/permissions-test/test'}
 	}
 };

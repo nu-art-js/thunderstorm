@@ -43,7 +43,7 @@ export const DBDef_Assets: DBDef<DB_Asset> = {
 	validator: Validator_Asset,
 	dbName: 'assets',
 	entityName: 'asset',
-	relativeUrl: '/v1/assets',
+	relativeUrl: 'v1/assets',
 };
 
 export const Validator_TempAsset = {

@@ -24,8 +24,8 @@ import {
 	ModuleBE_PermissionDomain,
 	ModuleBE_PermissionGroup,
 	ModuleBE_PermissionProject,
-	ModuleBE_PermissionUser,
 	ModuleBE_PermissionsAssert,
+	ModuleBE_PermissionUser,
 	User_Group
 } from '../_main';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
@@ -50,7 +50,7 @@ export async function testUserPermissions(groupCustomFields: StringMap[], extraG
 	const projectId = 'project-test-ten';
 	const apiId = generateHex(32);
 	const userId = generateHex(32);
-	const apiPath = '/v1/test/test-it10';
+	const apiPath = 'v1/test/test-it10';
 	const userUuid = 'test10@intuitionrobotics.com';
 	const permissionId = generateHex(32);
 	const domainId = generateHex(32);

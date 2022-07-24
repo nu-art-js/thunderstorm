@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-module.exports = require("@nu-art/thunderstorm/app-backend/api/v1/utils/version/_assert");
+module.exports = require('@nu-art/thunderstorm/app-backend/apiv1/utils/version/_assert');

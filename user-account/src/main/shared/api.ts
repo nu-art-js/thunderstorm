@@ -113,26 +113,26 @@ export type ApiStruct_SAML_BE = {
 
 export const ApiDef_UserAccountFE: ApiDefResolver<ApiStruct_UserAccountFE> = {
 	v1: {
-		loginSaml: {method: HttpMethod.GET, path: '/v1/account/login-saml'},
-		create: {method: HttpMethod.POST, path: '/v1/account/create'},
-		login: {method: HttpMethod.POST, path: '/v1/account/login'},
-		validateSession: {method: HttpMethod.GET, path: '/v1/account/validate'},
-		query: {method: HttpMethod.GET, path: '/v1/account/query'},
+		loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'},
+		create: {method: HttpMethod.POST, path: 'v1/account/create'},
+		login: {method: HttpMethod.POST, path: 'v1/account/login'},
+		validateSession: {method: HttpMethod.GET, path: 'v1/account/validate'},
+		query: {method: HttpMethod.GET, path: 'v1/account/query'},
 	}
 };
 
 export const ApiDef_UserAccountBE: ApiDefResolver<ApiStruct_UserAccountBE> = {
 	v1: {
-		create: {method: HttpMethod.POST, path: '/v1/account/create'},
-		login: {method: HttpMethod.POST, path: '/v1/account/login'},
-		validateSession: {method: HttpMethod.GET, path: '/v1/account/validate'},
-		query: {method: HttpMethod.GET, path: '/v1/account/query'},
-		upsert: {method: HttpMethod.POST, path: '/v1/account/upsert'},
+		create: {method: HttpMethod.POST, path: 'v1/account/create'},
+		login: {method: HttpMethod.POST, path: 'v1/account/login'},
+		validateSession: {method: HttpMethod.GET, path: 'v1/account/validate'},
+		query: {method: HttpMethod.GET, path: 'v1/account/query'},
+		upsert: {method: HttpMethod.POST, path: 'v1/account/upsert'},
 	}
 };
 export const ApiDef_SAML_BE: ApiDefResolver<ApiStruct_SAML_BE> = {
 	v1: {
-		loginSaml: {method: HttpMethod.GET, path: '/v1/account/login-saml'},
-		assertSAML: {method: HttpMethod.POST, path: '/v1/account/assert'},
+		loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'},
+		assertSAML: {method: HttpMethod.POST, path: 'v1/account/assert'},
 	}
 };

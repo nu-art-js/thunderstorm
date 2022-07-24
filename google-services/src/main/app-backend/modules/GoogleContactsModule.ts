@@ -17,9 +17,10 @@
  * limitations under the License.
  */
 
-import {ImplementationMissingException, Module} from "@nu-art/ts-common";
-import {people_v1} from "googleapis";
-import {AuthModule} from "./AuthModule";
+import {ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {people_v1} from 'googleapis';
+import {AuthModule} from './AuthModule';
+
 
 export const standardProperties = [
 	'addresses',
@@ -51,7 +52,7 @@ export class GoogleContactsModule_Class
 	extends Module<Config> {
 
 	constructor() {
-		super("GoogleContactsModule");
+		super('GoogleContactsModule');
 	}
 
 	protected init(): void {
@@ -72,7 +73,7 @@ export class GoogleContactsModule_Class
 
 	public list = async (userEmail: string, pageToken?: string, authKey?: string) => {
 		const query: people_v1.Params$Resource$People$Connections$List = {
-			// Only valid resourceName according to https://developers.google.com/people/api/rest/v1/people.connections/list
+			// Only valid resourceName according to https://developers.google.com/people/api/restv1/people.connections/list
 			pageToken,
 			resourceName: 'people/me',
 			pageSize: 1000,
@@ -110,9 +111,9 @@ export class GoogleContactsModule_Class
 	private createContactApi = (userEmail: string, authKey?: string) => {
 		const finalAuthKey = authKey || this.config.authKey;
 		if (!finalAuthKey)
-			throw new ImplementationMissingException("missing authkey for google contacts api")
+			throw new ImplementationMissingException('missing authkey for google contacts api');
 
-		const auth = AuthModule.getAuth(finalAuthKey, ['https://www.googleapis.com/auth/contacts'], "v1", {subject: userEmail});
+		const auth = AuthModule.getAuth(finalAuthKey, ['https://www.googleapis.com/auth/contacts'], 'v1', {subject: userEmail});
 		return new people_v1.People(auth);
 	};
 }

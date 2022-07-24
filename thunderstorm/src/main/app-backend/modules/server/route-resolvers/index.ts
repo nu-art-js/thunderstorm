@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 
-import {RouteResolver_DirPath} from './RouteResolver_DirPath';
-import {RouteResolver_ModulePath} from './RouteResolver_ModulePath';
-
 export * from './RouteResolver_DirPath';
 export * from './RouteResolver_ModulePath';
 
-export type RouteResolver = RouteResolver_DirPath | RouteResolver_ModulePath;
+export type RouteResolver = {
+	resolveApi: (urlPrefix?: string) => void
+	printRoutes: (urlPrefix?: string) => void
+}

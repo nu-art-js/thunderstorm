@@ -40,7 +40,7 @@ export async function testUserPermissionsTime() {
 	const projectId = 'project-test-ten';
 	const apiId = generateHex(32);
 	const userId = generateHex(32);
-	const apiPath = '/v1/test/test-it10';
+	const apiPath = 'v1/test/test-it10';
 	const userUuid = 'test10@intuitionrobotics.com';
 	const permissionId = generateHex(32);
 	const domainId = generateHex(32);

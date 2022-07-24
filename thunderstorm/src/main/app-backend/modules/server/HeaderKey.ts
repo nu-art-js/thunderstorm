@@ -19,7 +19,24 @@
  * limitations under the License.
  */
 
-export type NodeExpandCondition = (key: string, value: any, level: number, path: string) => boolean | undefined;
+import {ExpressRequest} from '../../utils/types';
+import {ApiException} from '../../exceptions';
 
-export type TreeNodeExpandState = { [path: string]: true | undefined };
 
+export class HeaderKey {
+	private readonly key: string;
+	private readonly responseCode: number;
+
+	constructor(key: string, responseCode: number = 400) {
+		this.key = key;
+		this.responseCode = responseCode;
+	}
+
+	get(request: ExpressRequest) {
+		const value = request.header(this.key);
+		if (!value)
+			throw new ApiException(this.responseCode, `Missing expected header: ${this.key}`);
+
+		return value;
+	}
+}

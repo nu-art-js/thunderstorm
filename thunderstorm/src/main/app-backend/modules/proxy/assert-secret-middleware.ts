@@ -1,5 +1,8 @@
 /*
- * User secured registration and login management system..
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,7 +19,9 @@
  * limitations under the License.
  */
 
-import {ExpressRequest, ExpressResponse, HttpRequestData, RemoteProxy, ServerApi_Middleware} from '../../../backend';
+import {ExpressRequest, ExpressResponse, HttpRequestData, ServerApi_Middleware} from '../../utils/types';
+import {RemoteProxy} from './RemoteProxy';
+
 
 export const AssertSecretMiddleware: ServerApi_Middleware = async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
 	RemoteProxy.assertSecret(req);

@@ -33,7 +33,6 @@ export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> =
 	validator: ValidatorTypeResolver<OmitDBObject<T>>;
 	dbName: string;
 	entityName: string;
-	relativeUrl: string;
 
 	lockKeys?: (keyof T)[] // fallback to uniqueKeys, default ["_id"]
 	uniqueKeys?: Ks[] // default ["_id"]

@@ -38,5 +38,5 @@ export const DBDef_PermissionUser: DBDef<DB_PermissionUser> = {
 	validator: Validator_PermissionUser,
 	dbName: 'permissions--user',
 	entityName: 'user',
-	relativeUrl: '/v1/permissions/assign/users',
+	relativeUrl: 'v1/permissions/assign/users',
 };

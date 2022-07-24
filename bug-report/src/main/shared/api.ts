@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * Allow the user to file a bug  report directly from your app
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -20,6 +19,7 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {Auditable, DB_Object} from '@nu-art/ts-common';
 import {TicketDetails} from '../app-backend/modules/ModuleBE_BugReport';
+
 
 export type BugReport = {
 	name: string
@@ -65,8 +65,8 @@ export type SecuredUrl = {
 }
 
 // export type ApiGetLog = QueryApi<DB_BugReport[]>
-// export type ApiPostPath = BodyApi<'/v1/bug-reports/download-logs', Paths, SecuredUrl>
-// export type ApiBugReport = BodyApi<'/v1/bug-reports/report', Request_BugReport, TicketDetails[]>
+// export type ApiPostPath = BodyApi<'v1/bug-reports/download-logs', Paths, SecuredUrl>
+// export type ApiBugReport = BodyApi<'v1/bug-reports/report', Request_BugReport, TicketDetails[]>
 
 export type ApiStruct_AdminBugReport = {
 	v1: {
@@ -76,8 +76,8 @@ export type ApiStruct_AdminBugReport = {
 }
 export const ApiDef_AdminBugReport: ApiDefResolver<ApiStruct_AdminBugReport> = {
 	v1: {
-		downloadLogs: {method: HttpMethod.POST, path: '/v1/bug-reports/download-logs'},
-		retrieveLogs: {method: HttpMethod.GET, path: '/v1/bug-reports/get-logs'},
+		downloadLogs: {method: HttpMethod.POST, path: 'v1/bug-reports/download-logs'},
+		retrieveLogs: {method: HttpMethod.GET, path: 'v1/bug-reports/get-logs'},
 	}
 };
 
@@ -88,6 +88,6 @@ export type ApiStruct_BugReport = {
 }
 export const ApiDef_BugReport: ApiDefResolver<ApiStruct_BugReport> = {
 	v1: {
-		sendBugReport: {method: HttpMethod.POST, path: '/v1/bug-reports/report'}
+		sendBugReport: {method: HttpMethod.POST, path: 'v1/bug-reports/report'}
 	}
 };
