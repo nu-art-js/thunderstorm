@@ -19,16 +19,7 @@
 
 import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {
-	ApiDefServer,
-	ApiModule,
-	ApiResponse,
-	createBodyServerApi,
-	createQueryServerApi,
-	ExpressRequest,
-	HttpServer,
-	ServerApi
-} from '@nu-art/thunderstorm/backend';
+import {ApiDefServer, ApiModule, ApiResponse, createBodyServerApi, createQueryServerApi, ExpressRequest, ServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from './assignment';
 import {ModuleBE_PermissionApi, ModuleBE_PermissionProject} from './management';
 import {
@@ -175,7 +166,7 @@ export class ModuleBE_Permissions_Class
 	}
 
 	async registerProject() {
-		const routes: string[] = HttpServer.getRoutes().reduce((carry: string[], httpRoute) => {
+		const routes: string[] = Storm.getInstance().getRoutes().reduce((carry: string[], httpRoute) => {
 			if (httpRoute.path !== '*')
 				carry.push(httpRoute.path);
 

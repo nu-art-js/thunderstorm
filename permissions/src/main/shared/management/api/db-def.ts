@@ -36,6 +36,5 @@ const Validator_PermissionApi = {
 export const DBDef_PermissionApi: DBDef<DB_PermissionApi> = {
 	validator: Validator_PermissionApi,
 	dbName: 'permissions--api',
-	entityName: 'api',
-	relativeUrl: 'v1/permissions/manage/apis',
+	entityName: 'permissions--api',
 };

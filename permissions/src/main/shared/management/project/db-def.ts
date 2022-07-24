@@ -32,6 +32,5 @@ const Validator_PermissionProjects = {
 export const DBDef_PermissionProjects: DBDef<DB_PermissionProject> = {
 	validator: Validator_PermissionProjects,
 	dbName: 'permissions--project',
-	entityName: 'project',
-	relativeUrl: 'v1/permissions/manage/projects',
+	entityName: 'permissions--project',
 };

@@ -32,6 +32,5 @@ const Validator_PermissionDomain = {
 export const DBDef_PermissionDomain: DBDef<DB_PermissionDomain> = {
 	validator: Validator_PermissionDomain,
 	dbName: 'permissions--domain',
-	entityName: 'domain',
-	relativeUrl: 'v1/permissions/manage/domains',
+	entityName: 'permissions--domain',
 };
