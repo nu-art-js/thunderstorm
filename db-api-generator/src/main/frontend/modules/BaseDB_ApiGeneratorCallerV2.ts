@@ -175,23 +175,23 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.defaultDispatcher?.dispatchUI(event, items);
 	};
 
-	protected async onEntryDeleted(item: DBType): Promise<void> {
+	protected onEntryDeleted = async (item: DBType): Promise<void> => {
 		await this.db.delete(item);
 		this.dispatchSingle(EventType_Delete, item);
-	}
+	};
 
 	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
 		await this.db.upsertAll(items);
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
-	protected async onEntryUpdated(item: DBType, original: PreDB<DBType>): Promise<void> {
+	protected onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
-	}
+	};
 
-	protected async onEntryPatched(item: DBType): Promise<void> {
+	protected onEntryPatched = async (item: DBType): Promise<void> => {
 		return this.onEntryUpdatedImpl(EventType_Patch, item);
-	}
+	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
 		if (item)
@@ -200,12 +200,12 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.dispatchSingle(event, item);
 	}
 
-	protected async onGotUnique(item: DBType): Promise<void> {
+	protected onGotUnique = async (item: DBType): Promise<void> => {
 		return this.onEntryUpdatedImpl(EventType_Unique, item);
-	}
+	};
 
-	protected async onQueryReturned(items: DBType[]): Promise<void> {
+	protected onQueryReturned = async (items: DBType[]): Promise<void> => {
 		await this.db.upsertAll(items);
 		this.dispatchMulti(EventType_Query, items);
-	}
+	};
 }
