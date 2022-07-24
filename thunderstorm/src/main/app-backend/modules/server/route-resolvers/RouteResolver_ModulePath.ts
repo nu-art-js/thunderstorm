@@ -77,7 +77,10 @@ export class RouteResolver_ModulePath
 	public printRoutes(): void {
 		const routes = this.resolveRoutes();
 		console.log(routes);
-		routes.forEach(route => this.logInfo(`${JSON.stringify(route.methods)} ${this.initialPath}${route.path}`));
+		routes.forEach(route => {
+			const methodString = JSON.stringify(route.methods).padEnd(11, ' ');
+			return this.logInfo(`${methodString} ${this.initialPath}${route.path}`);
+		});
 	}
 
 	public resolveRoutes = () => {
