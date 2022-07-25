@@ -93,6 +93,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		const config = getModuleBEConfig(dbDef);
 
 		const preConfig = {...config, ...appConfig};
+
 		// @ts-ignore
 		this.setDefaultConfig(preConfig);
 		this.validator = config.validator;
@@ -575,16 +576,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		if (!dbInstance)
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
-		const write = await this.deleteImpl_Read(transaction, ourQuery, request);
-		return async () => {
-			if (!write)
-				return dbInstance;
-
-			// Here can do both read an write!
-			await this.assertDeletion(transaction, dbInstance, request);
-
-			return write();
-		};
+		return await this.deleteImpl_Read(transaction, ourQuery, request);
 	}
 
 	/**
@@ -598,14 +590,30 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of the document that was deleted.
 	 */
 	private async deleteImpl_Read(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest): Promise<() => Promise<DBType>> {
-		this.logDebug('HERE FUNCTION');
-		const uniqueKeys = this.config.externalFilterKeys;
-		const write = await transaction.deleteUnique_Read(this.collection, ourQuery, uniqueKeys);
+		const item = await transaction.queryUnique(this.collection, ourQuery);
+		if (!item)
+			throw new ApiException(404, `no item to delete found for query: ${JSON.stringify(ourQuery)}`);
+
+		const deletedItem = this.prepareItemToDelete(item);
+
+		const write = await transaction.upsert_Read(this.collection, deletedItem);
 		if (!write)
 			throw new ThisShouldNotHappenException(`I just checked that I had an instance for query: ${__stringify(ourQuery)}`);
 
 		return write;
 	}
+
+	private prepareItemToDelete = (item: DBType) => {
+		if (item.__deleted)
+			throw new ApiException(422, `item for query was already deleted: ${item._id}`);
+
+		const {_id, __updated, __created, _v} = item;
+		const deletedItem = {_id, __updated, __created, _v, __deleted: true};
+		this.config.externalFilterKeys.forEach(key => {
+			deletedItem[key] = item[key];
+		});
+		return deletedItem as DBType;
+	};
 
 	/**
 	 * Calls the `delete` method of the module's collection.
@@ -614,10 +622,13 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @param request - The request in order to possibly obtain more info.
 	 */
 	async delete(query: FirestoreQuery<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+		const items = await this.query(query);
+		const itemsToDelete = items.map(this.prepareItemToDelete);
+
 		if (transaction)
-			return await transaction.delete(this.collection, query);
+			return await transaction.upsertAll(this.collection, itemsToDelete);
 		else
-			return await this.collection.delete(query);
+			return await this.collection.upsertAll(itemsToDelete);
 	}
 
 	/**
@@ -701,7 +712,9 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			await tsValidate(mergedObject, this.validator);
 			await this.assertUniqueness(transaction, mergedObject, request);
 
-			return this.upsertImpl(transaction, mergedObject, request);
+			const item = await this.upsertImpl(transaction, mergedObject, request);
+			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, item.__updated);
+			return item;
 		});
 	}
 
