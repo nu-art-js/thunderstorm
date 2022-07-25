@@ -58,6 +58,7 @@ import {dbIdLength} from '../shared/validators';
 import {Const_LockKeys, DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
 import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB} from '../shared';
+import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
 
 
 export type BaseDBApiConfig = {
@@ -431,10 +432,14 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			return (await this.upsert_Read(instance, _transaction, request))();
 		};
 
+		let item: DBType;
 		if (transaction)
-			return processor(transaction);
+			item = await processor(transaction);
+		else
+			item = await this.collection.runInTransaction(processor);
 
-		return this.collection.runInTransaction(processor);
+		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, item.__updated);
+		return item;
 	}
 
 	async upsert_Read(instance: PreDB<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
