@@ -70,7 +70,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
 
 		this.v1 = {
-			sync: () => sync({where: {__updated: {$gte: this.lastSync.get(0)}}}),
+			sync: () => sync({where: {__updated: {$gte: this.lastSync.get(0)}}, orderBy: [{key: '__updated', order: 'desc'}]}),
+
 			query: (query?: FirestoreQuery<DBType>) => _query(query || {where: {}}),
 			// @ts-ignore
 			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
@@ -100,7 +101,16 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	};
 
 	onSyncCompleted = async (items: DBType[]) => {
-		await this.db.upsertAll(items);
+		items.forEach(item => {
+			//Delete item from IDB if marked deleted in DB
+			if (item.__deleted) {
+				return this.db.delete(item);
+			}
+
+			//Upsert the item otherwise
+			this.db.upsert(item);
+		});
+
 		if (items.length)
 			this.lastSync.set(items[0].__updated);
 
@@ -112,33 +122,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		await this.db.deleteAll();
 		if (sync)
 			this.v1.sync().execute();
-	}
-
-	public syncCollection = async () => {
-		const DBLsatUpdated = await this.v1.getDBLastUpdated({}).executeSync();
-		const IDBLastUpdated = await this.getIDBLastUpdated();
-
-		//If DB contains information that isn't in the IDB
-		if (DBLsatUpdated > IDBLastUpdated) {
-			//Get all the items with a lastUpdated after the IDB last updated
-			const newItems = await this.v1.query({where: {__updated: {$gt: IDBLastUpdated}}}).executeSync();
-			newItems.forEach(item => {
-				//Delete item from IDB if marked deleted in DB
-				if (item.__deleted) {
-					return this.db.delete(item);
-				}
-
-				//Upsert the item otherwise
-				this.db.upsert(item);
-			});
-		}
-	};
-
-	public async getIDBLastUpdated() {
-		const collection = await this.queryCache();
-		let IDBLastUpdated = 0;
-		collection.forEach((item) => IDBLastUpdated = (IDBLastUpdated > item.__updated ? IDBLastUpdated : item.__updated));
-		return IDBLastUpdated;
 	}
 
 	public async queryCache(query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> {
@@ -242,6 +225,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	};
 
 	protected onQueryReturned = async (items: DBType[]): Promise<void> => {
+
 		await this.db.upsertAll(items);
 		this.dispatchMulti(EventType_Query, items);
 	};
