@@ -43,6 +43,12 @@ import {SyncIfNeeded} from './ModuleFE_SyncManager';
 
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
 
+enum SyncStatus {
+	OutOfSync,
+	Syncing,
+	Synced
+}
+
 export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>, SyncIfNeeded {
@@ -53,6 +59,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
 	readonly v1;
+	private syncStatus: SyncStatus = SyncStatus.OutOfSync;
 
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
 		super();
@@ -94,11 +101,23 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 	__syncIfNeeded = async (syncData: DBSyncData[]) => {
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
-		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0))
+		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0)) {
 			return;
+		}
 
+		this.setSyncStatus(SyncStatus.Syncing);
 		await this.v1.sync().executeSync();
+		this.setSyncStatus(SyncStatus.Synced);
 	};
+
+	private setSyncStatus(status: SyncStatus) {
+		this.logDebug(`Sync status updated: ${this.syncStatus} => ${status}`);
+		this.syncStatus = status;
+	}
+
+	getSyncStatus() {
+		return this.syncStatus;
+	}
 
 	onSyncCompleted = async (items: DBType[]) => {
 		items.forEach(item => {
