@@ -20,7 +20,7 @@
  */
 
 import {ApiDefCaller, IndexKeys, QueryParams} from '@nu-art/thunderstorm';
-import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef,} from '../shared';
+import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {
 	apiWithBody,
@@ -38,13 +38,14 @@ import {MultiApiEvent, SingleApiEvent} from '../types';
 import {EventType_Create, EventType_Delete, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update, EventType_UpsertAll} from '../consts';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
+import {SyncIfNeeded} from './ModuleFE_SyncManager';
 
 
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
 
 export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config>
-	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>> {
+	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>, SyncIfNeeded {
 
 	readonly version = 'v2';
 
@@ -90,6 +91,14 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		} as ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 	}
 
+	__syncIfNeeded = async (syncData: DBSyncData[]) => {
+		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
+		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0))
+			return;
+
+		await this.v1.sync().executeSync();
+	};
+
 	onSyncCompleted = async (items: DBType[]) => {
 		await this.db.upsertAll(items);
 		if (items.length)
@@ -130,7 +139,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		let IDBLastUpdated = 0;
 		collection.forEach((item) => IDBLastUpdated = (IDBLastUpdated > item.__updated ? IDBLastUpdated : item.__updated));
 		return IDBLastUpdated;
-	};
+	}
 
 	public async queryCache(query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> {
 		return (await this.db.query({query, indexKey})) || [];

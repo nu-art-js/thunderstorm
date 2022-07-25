@@ -90,3 +90,17 @@ export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof 
 		}
 	};
 };
+
+export type DBSyncData = { name: string, lastUpdated: number };
+export type Response_DBSyncData = { syncData: DBSyncData[] };
+export type ApiStruct_SyncManager = {
+	v1: {
+		checkSync: QueryApi<Response_DBSyncData>
+	},
+}
+
+export const ApiDef_SyncManager: ApiDefResolver<ApiStruct_SyncManager> = {
+	v1: {
+		checkSync: {method: HttpMethod.GET, path: 'v1/db-api/sync-all'},
+	}
+};
