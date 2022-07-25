@@ -179,7 +179,6 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 		return new Promise((resolve, reject) => {
 			request.onerror = () => reject(new Error(`Error getting item from DB - ${this.config.name}`));
-
 			request.onsuccess = () => resolve(request.result);
 		});
 	}
@@ -192,8 +191,8 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 			if (query.indexKey)
 				request = store.index(query.indexKey).getAll(query.query, query.limit);
-
-			request = store.getAll(query.query, query.limit);
+			else
+				request = store.getAll(query.query, query.limit);
 
 			request.onsuccess = () => {
 				resolve(request.result);

@@ -31,29 +31,30 @@ export class TS_TextArea<Key extends string>
 	extends TS_BaseInput<Key, TS_TextAreaProps<Key>, HTMLTextAreaElement> {
 
 	onKeyDown = (ev: KeyboardEvent<HTMLTextAreaElement>) => {
-		if (ev.shiftKey || ev.altKey)
-			return;
+		if (!(ev.shiftKey || ev.altKey)) {
+			if (ev.ctrlKey || ev.metaKey) {
+				if (ev.key === 'Enter') {
+					ev.persist();
+					const value = ev.currentTarget.value;
 
-		if (ev.ctrlKey || ev.metaKey) {
-			if (ev.key === 'Enter') {
-				ev.persist();
-				const value = ev.currentTarget.value;
+					//@ts-ignore - despite what typescript says, ev.target does have a blur function.
+					ev.target.blur();
 
-				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
-				ev.target.blur();
-
-				if (this.props.onAccept) {
-					this.props.onAccept(value, ev);
-					ev.stopPropagation();
+					if (this.props.onAccept) {
+						this.props.onAccept(value, ev);
+						ev.stopPropagation();
+					}
 				}
+				return;
 			}
-			return;
+
+			if (ev.key === 'Escape' && this.props.onCancel) {
+				this.props.onCancel();
+				ev.stopPropagation();
+			}
 		}
 
-		if (ev.key === 'Escape' && this.props.onCancel) {
-			this.props.onCancel();
-			ev.stopPropagation();
-		}
+		this.props.onKeyDown?.(ev);
 	};
 
 	render() {
