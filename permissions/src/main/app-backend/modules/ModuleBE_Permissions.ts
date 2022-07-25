@@ -35,9 +35,10 @@ import {
 	Response_UsersCFsByShareGroups,
 	UserUrlsPermissions
 } from '../shared';
-import {AccountsMiddleware, ModuleBE_Account} from '@nu-art/user-account/backend';
+import {Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
 import {UI_Account} from '@nu-art/user-account';
 import {AssertSecretMiddleware} from '@nu-art/thunderstorm/app-backend/modules/proxy/assert-secret-middleware';
+
 
 type Config = {
 	project: PreDB<DB_PermissionProject> & DB_BaseObject
@@ -79,9 +80,9 @@ export class ModuleBE_Permissions_Class
 	constructor() {
 		super();
 		this.v1 = {
-			getUserUrlsPermissions: createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, AccountsMiddleware),
+			getUserUrlsPermissions: createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, Middleware_ValidateSession),
 			getUserCFsByShareGroups: new ServerApi_UserCFsByShareGroups(),
-			getUsersCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups, AccountsMiddleware),
+			getUsersCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups, Middleware_ValidateSession),
 			// registerExternalProject: new ServerApi_RegisterExternalProject(),
 			registerExternalProject: createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
 			registerProject: createQueryServerApi(ApiDef_Permissions.v1.registerProject, this.registerProject),

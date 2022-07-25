@@ -52,7 +52,7 @@ export type QueryParams = { [key: string]: string | number | undefined; };
  * IP - Input Params
  * IB - Input Body
  */
-export type TypedApi<M extends string, R, B, P extends QueryParams, IB = B, IP = P> = {
+export type TypedApi<M extends string, R, B, P extends QueryParams | undefined, IB = B, IP = P> = {
 	M: M,
 	R: R,
 	B: B,
@@ -62,7 +62,7 @@ export type TypedApi<M extends string, R, B, P extends QueryParams, IB = B, IP =
 }
 
 export type BodyApi<R, B, IB = B, M extends HttpMethod_Body = HttpMethod.POST, P extends QueryParams = never> = TypedApi<M, R, B, P, IB, P>
-export type QueryApi<R, P extends QueryParams = QueryParams, IP = P, M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P, B, IP>
+export type QueryApi<R, P extends QueryParams | undefined = QueryParams, IP = P, M extends HttpMethod_Query = HttpMethod.GET, B = never> = TypedApi<M, R, B, P, B, IP>
 export type EmptyApi<R, M extends HttpMethod_Empty, P extends QueryParams = never, B = never> = TypedApi<M, R, B, P, B, P>
 
 export type ApiDef<API extends TypedApi<any, any, any, any>> = {

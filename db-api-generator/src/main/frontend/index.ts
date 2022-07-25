@@ -25,5 +25,6 @@ export * from './db-def';
 export * from './components/DBItemEditorComponent';
 export * from './components/DBItemEditorPage';
 export * from './components/DBListViewPage';
+export * from './modules/ModuleFE_SyncManager';
 export * from './modules/BaseDB_ApiGeneratorCaller';
 export * from './modules/BaseDB_ApiGeneratorCallerV2';

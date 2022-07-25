@@ -21,7 +21,7 @@ import {ModuleBE_Account} from '../modules/ModuleBE_Account';
 import {HeaderKey_SessionId, UI_Account} from '../../shared/api';
 
 
-export const AccountsMiddleware: ServerApi_Middleware<UI_Account> = async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
+export const Middleware_ValidateSession: ServerApi_Middleware<UI_Account> = async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
 	const sessionId = data.headers[HeaderKey_SessionId];
 	return await ModuleBE_Account.validateSessionId(sessionId);
 };
