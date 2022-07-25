@@ -38,6 +38,7 @@ import {
 	IndexedDB,
 	IndexedDBModule,
 	IndexKeys,
+	ReduceFunction,
 	StorageKey,
 	Thunder,
 	ThunderDispatcher,
@@ -242,8 +243,20 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	 * @param query
 	 */
 	public async queryFilter(filter: (item: DBType) => boolean, query?: IndexDb_Query): Promise<DBType[]> {
-		return await this.db.queryFilter(filter, query);
+		return this.db.queryFilter(filter, query);
 	}
+
+	public async queryFind(filter: (item: DBType) => boolean): Promise<DBType | undefined> {
+		return this.db.queryFind(filter);
+	}
+
+	public async queryReduce<ReturnType>(reducer: ReduceFunction<DBType, ReturnType>, initialValue: ReturnType, filter?: (item: DBType) => boolean): Promise<ReturnType> {
+		return this.db.queryReduce(reducer, initialValue, filter);
+	}
+
+	// public async queryMap<Type>(mapper: (item: DBType) => Type, filter?: (item: DBType) => boolean, query?: IndexDb_Query): Promise<Type[]> {
+	// 	return this.db.queryMap(mapper, filter, query);
+	// }
 
 	public uniqueQueryCache = async (_key?: string | IndexKeys<DBType, Ks>): Promise<DBType | undefined> => {
 		if (_key === undefined)
