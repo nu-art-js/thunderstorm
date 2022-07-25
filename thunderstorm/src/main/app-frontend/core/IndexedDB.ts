@@ -19,11 +19,18 @@
  * limitations under the License.
  */
 
-import {DB_Object, Module} from '@nu-art/ts-common';
+import {DB_Object, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {DBIndex} from '../../shared/types';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
 const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
+
+export type ReduceFunction<ItemType, ReturnType> = (
+	accumulator: ReturnType,
+	arrayItem: ItemType,
+	index?: number,
+	array?: ItemType[]
+) => ReturnType
 
 type Config = {}
 
@@ -69,6 +76,9 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 	open(): Promise<IDBDatabase> {
 		return new Promise((resolve, reject) => {
+			if (!IDBAPI)
+				reject(new Error('Error - current browser does not support IndexedDB'));
+
 			const request = IDBAPI.open(this.config.name);
 			request.onupgradeneeded = () => {
 				const db = request.result;
@@ -94,76 +104,39 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		return this.db.transaction(this.config.name, write ? 'readwrite' : 'readonly').objectStore(this.config.name);
 	};
 
-	public async get(key: IndexKeys<T, Ks>): Promise<T | undefined> {
-		const map = this.config.uniqueKeys.map(k => key[k]);
-		const request = (await this.store()).get(map);
-
-		return new Promise((resolve, reject) => {
-			request.onerror = () => reject(new Error(`Error getting item from DB - ${this.config.name}`));
-			request.onsuccess = () => resolve(request.result);
-		});
-	}
-
-	public async query(query: IndexDb_Query): Promise<T[] | undefined> {
+	private getCursor = async (query?: IndexDb_Query): Promise<IDBRequest<IDBCursorWithValue | null>> => {
 		const store = await this.store();
 
-		return new Promise((resolve, reject) => {
-			let request: IDBRequest;
+		let cursorRequest: IDBRequest<IDBCursorWithValue | null>;
 
-			if (query.indexKey)
-				request = store.index(query.indexKey).getAll(query.query, query.limit);
-			else
-				request = store.getAll(query.query, query.limit);
+		if (query?.indexKey) {
+			const idbIndex = store.index(query.indexKey);
+			if (!idbIndex) throw new MUSTNeverHappenException('Could not find index for the given indexKey');
+			cursorRequest = idbIndex.openCursor();
+		} else
+			cursorRequest = store.openCursor();
 
-			request.onsuccess = () => {
-				resolve(request.result);
-			};
-			request.onerror = () => {
-				reject(new Error(`Error querying DB - ${this.config.name}`));
-			};
-		});
-	}
+		return cursorRequest;
+	};
 
-	public async queryFilter(filter: (item: T) => boolean, query?: IndexDb_Query): Promise<T[]> {
-		const store = await this.store();
-		return this.filterCursor(store, filter, query);
-	}
+	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: T) => void,
+													 endCallback: () => void, limiterCallback?: () => boolean) => {
+		cursorRequest.onsuccess = (event) => {
+			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
 
-	private async filterCursor(store: IDBObjectStore, filter: (item: T) => boolean, query?: IndexDb_Query) {
-		const limit = query?.limit || 0;
-		const matches: T[] = [];
+			//If reached the end or reached limit, call endCallback
+			if (!cursor || limiterCallback?.())
+				return endCallback();
 
-		return new Promise<T[]>((resolve, reject) => {
-			let cursorRequest: IDBRequest;
+			//run value through the value callback
+			perValueCallback(cursor.value);
 
-			if (query?.indexKey)
-				cursorRequest = store.index(query.indexKey).openCursor();
-			else
-				cursorRequest = store.openCursor();
+			//Continue to next value
+			cursor.continue();
+		};
+	};
 
-			cursorRequest.onerror = () => {
-				reject(new Error(`Error opening cursor in DB - ${this.config.name}`));
-			};
-
-			cursorRequest.onsuccess = (event) => {
-				const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
-
-				//If reached the end, resolve with matches
-				if (!cursor)
-					return resolve(matches);
-
-				//If value passes the filter, add it to matches
-				if (filter(cursor.value))
-					matches.push(cursor.value);
-
-				//If reached search limit, resolve with matches
-				if (limit > 0 && matches.length >= limit)
-					return resolve(matches);
-
-				cursor.continue();
-			};
-		});
-	}
+	// ######################### Data insertion functions #########################
 
 	public async insert(value: T, _store?: IDBObjectStore): Promise<T> {
 		const store = await this.store(true, _store);
@@ -197,6 +170,102 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 			await this.upsert(value, store);
 		}
 	}
+
+	// ######################### Data collection functions #########################
+
+	public async get(key: IndexKeys<T, Ks>): Promise<T | undefined> {
+		const map = this.config.uniqueKeys.map(k => key[k]);
+		const request = (await this.store()).get(map);
+
+		return new Promise((resolve, reject) => {
+			request.onerror = () => reject(new Error(`Error getting item from DB - ${this.config.name}`));
+			request.onsuccess = () => resolve(request.result);
+		});
+	}
+
+	public async query(query: IndexDb_Query): Promise<T[] | undefined> {
+		const store = await this.store();
+
+		return new Promise((resolve, reject) => {
+			let request: IDBRequest;
+
+			if (query.indexKey)
+				request = store.index(query.indexKey).getAll(query.query, query.limit);
+			else
+				request = store.getAll(query.query, query.limit);
+
+			request.onsuccess = () => {
+				resolve(request.result);
+			};
+			request.onerror = () => {
+				reject(new Error(`Error querying DB - ${this.config.name}`));
+			};
+		});
+	}
+
+	public async queryFilter(filter: (item: T) => boolean, query?: IndexDb_Query): Promise<T[]> {
+		const limit = query?.limit || 0;
+		const cursorRequest = await this.getCursor(query);
+		const matches: T[] = [];
+
+		return new Promise<T[]>((resolve, reject) => {
+			this.cursorHandler(cursorRequest,
+				(value) => {
+					if (filter(value))
+						matches.push(value);
+				},
+				() => resolve(matches),
+				() => limit > 0 && matches.length >= limit
+			);
+		});
+	}
+
+	public async WIP_queryMap<Type>(mapper: (item: T) => Type, filter?: (item: T) => boolean, query?: IndexDb_Query): Promise<Type[]> {
+		const limit = query?.limit || 0;
+		const cursorRequest = await this.getCursor(query);
+		const matches: Type[] = [];
+
+		return new Promise<Type[]>((resolve, reject) => {
+			this.cursorHandler(cursorRequest,
+				(item) => {
+					if (filter ? filter(item) : true)
+						matches.push(mapper(item));
+				},
+				() => resolve(matches),
+				() => limit > 0 && matches.length >= limit
+			);
+		});
+	}
+
+	public async queryFind(filter: (item: T) => boolean): Promise<T | undefined> {
+		let match: T | undefined = undefined;
+		const cursorRequest = await this.getCursor();
+
+		return new Promise<T | undefined>((resolve, reject) => {
+			this.cursorHandler(cursorRequest,
+				(value) => {
+					if (filter(value))
+						match = value;
+				},
+				() => resolve(match),
+				() => !!match
+			);
+		});
+	}
+
+	public async queryReduce<ReturnType>(reducer: ReduceFunction<T, ReturnType>, initialValue: ReturnType, filter?: (item: T) => boolean, query?: IndexDb_Query) {
+		let acc = initialValue;
+		const alwaysTrue = () => true;
+		const _filter = filter || alwaysTrue;
+		const matches: T[] = await this.queryFilter(_filter, query);
+
+		return new Promise<ReturnType>((resolve, reject) => {
+			matches.forEach((item, index) => acc = reducer(acc, item, index, matches));
+			resolve(acc);
+		});
+	}
+
+	// ######################### Data deletion functions #########################
 
 	public async deleteAll(): Promise<void> {
 		const store = (await this.store(true));
