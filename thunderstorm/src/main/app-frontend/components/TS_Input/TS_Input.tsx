@@ -40,27 +40,27 @@ export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
 
 	onKeyDown = (ev: KeyboardEvent<HTMLInputElement>) => {
-		if (ev.shiftKey || ev.altKey || ev.ctrlKey || ev.metaKey)
-			return;
-		//If the key was 'Enter'
-		if (ev.key === 'Enter') {
-			ev.persist();
-			const value = ev.currentTarget.value;
+		if (!(ev.shiftKey || ev.altKey || ev.ctrlKey || ev.metaKey)) {
+			if (ev.key === 'Enter') {
+				ev.persist();
+				const value = ev.currentTarget.value;
 
-			//@ts-ignore - despite what typescript says, ev.target does have a blur function.
-			ev.target.blur();
+				//@ts-ignore - despite what typescript says, ev.target does have a blur function.
+				ev.target.blur();
 
-			if (this.props.onAccept) {
-				this.props.onAccept(value, ev);
+				if (this.props.onAccept) {
+					this.props.onAccept(value, ev);
+					ev.stopPropagation();
+				}
+			}
+
+			if (ev.key === 'Escape' && this.props.onCancel) {
+				this.props.onCancel();
 				ev.stopPropagation();
 			}
 		}
 
-		//If the key was 'Esc'
-		if (ev.key === 'Escape' && this.props.onCancel) {
-			this.props.onCancel();
-			ev.stopPropagation();
-		}
+		this.props.onKeyDown?.(ev);
 	};
 
 	render() {
@@ -79,7 +79,7 @@ export class TS_Input<Key extends string = string>
 			className={_className('ts-input', props.disabled ? 'disabled' : undefined)}
 			value={this.state.value}
 			onChange={this.changeValue}
-			onKeyDown={props.onKeyDown || this.onKeyDown}
+			onKeyDown={this.onKeyDown}
 			autoComplete={props.autoComplete ? 'on' : 'off'}
 		/>;
 	}

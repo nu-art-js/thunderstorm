@@ -66,6 +66,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		super(props);
 	}
 
+	shouldComponentUpdate(nextProps: Readonly<P>, nextState: Readonly<State_Tree>, nextContext: any): boolean {
+		return true;
+	}
+
 	protected deriveStateFromProps(nextProps: P) {
 		return {
 			adapter: nextProps.adapter,
