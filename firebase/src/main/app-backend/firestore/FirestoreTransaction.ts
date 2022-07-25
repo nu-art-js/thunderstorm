@@ -18,7 +18,7 @@
 
 import {FirestoreType_DocumentSnapshot} from './types';
 import {FirestoreCollection,} from './FirestoreCollection';
-import {BadImplementationException, merge, Subset, TS_Object, _keys, KeysToKeepOnDelete, DB_Object} from '@nu-art/ts-common';
+import {BadImplementationException, merge, Subset, TS_Object} from '@nu-art/ts-common';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreInterface} from './FirestoreInterface';
 import {Transaction} from 'firebase-admin/firestore';
@@ -129,7 +129,6 @@ export class FirestoreTransaction {
 	}
 
 	async delete_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
-		console.log('Im HERE');
 		const docs = await this._query(collection, ourQuery);
 
 		if (docs.length > 500)
@@ -137,16 +136,7 @@ export class FirestoreTransaction {
 
 		return async () => {
 			const toReturn = docs.map(doc => doc.data() as Type);
-			await Promise.all(docs.map(async (doc, i) => {
-				const data = {__deleted: true};
-				_keys(toReturn[i]).forEach(key => {
-					if (KeysToKeepOnDelete.includes(key as keyof DB_Object))
-						//@ts-ignore
-						data[key] = toReturn[i][key];
-				});
-				this.transaction.set(doc.ref, data);
-				// this.transaction.delete(doc.ref);
-			}));
+			await Promise.all(docs.map(async (doc) => this.transaction.delete(doc.ref)));
 			return toReturn;
 		};
 	}
@@ -163,32 +153,16 @@ export class FirestoreTransaction {
 		return write();
 	}
 
-	async deleteUnique_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>, uniqueKeys?: string[]): Promise<undefined | (() => Promise<Type>)> {
+	async deleteUnique_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<undefined | (() => Promise<Type>)> {
 		const doc = (await this._queryUnique(collection, ourQuery));
 		if (!doc)
 			return;
 
 		return async () => {
-			const data = doc.data() as Type;
-			const result = {__deleted: true};
-			console.log('HERE!');
-			console.log('UKeys:', uniqueKeys);
-			_keys(data).forEach(key => {
-				if (KeysToKeepOnDelete.includes(key as keyof DB_Object))
-					//@ts-ignore
-					result[key] = data[key];
-			});
-			if (uniqueKeys) {
-				uniqueKeys.forEach(key => {
-					console.log(data[key]);
-					//@ts-ignore
-					result[key] = data[key];
-				});
-			}
-			console.log('Result:', result);
-			await this.transaction.set(doc.ref, result);
-			// await this.transaction.delete(doc.ref);
-			return result as unknown as Type;
+			const result = doc.data() as Type;
+			await this.transaction.delete(doc.ref);
+
+			return result;
 		};
 	}
 }
