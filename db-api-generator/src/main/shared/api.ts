@@ -95,7 +95,7 @@ export type DBSyncData = { name: string, lastUpdated: number };
 export type Response_DBSyncData = { syncData: DBSyncData[] };
 export type ApiStruct_SyncManager = {
 	v1: {
-		checkSync: QueryApi<Response_DBSyncData>
+		checkSync: QueryApi<Response_DBSyncData, undefined>
 	},
 }
 

@@ -20,4 +20,5 @@
  */
 
 export * from './BaseDB_ApiGenerator';
+export * from './ModuleBE_SyncManager';
 export * from './db-def';

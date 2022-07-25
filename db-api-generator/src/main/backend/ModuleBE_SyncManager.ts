@@ -21,8 +21,7 @@
 
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapper, FirebaseModule} from '@nu-art/firebase/backend';
-import {QueryParams} from '@nu-art/thunderstorm';
-import {ApiServerRouter, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {ApiModule, ApiServerRouter, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {_keys, DB_Object, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiDef_SyncManager, ApiStruct_SyncManager, DBSyncData} from '../shared';
 import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
@@ -33,7 +32,7 @@ type Type_SyncData = TypedMap<LastUpdated>
 
 export class ModuleBE_SyncManager_Class
 	extends Module
-	implements ApiServerRouter<ApiStruct_SyncManager> {
+	implements ApiServerRouter<ApiStruct_SyncManager>, ApiModule {
 
 	readonly v1;
 	private database!: DatabaseWrapper;
@@ -46,18 +45,22 @@ export class ModuleBE_SyncManager_Class
 		};
 	}
 
+	useRoutes() {
+		return this.v1;
+	}
+
 	init() {
 		this.database = FirebaseModule.createAdminSession().getDatabase();
 		this.dbModules = this.manager.filterModules(module => module instanceof BaseDB_ApiGenerator);
 	}
 
-	private fetchDBSyncData = async (_: QueryParams, request: ExpressRequest) => {
+	private fetchDBSyncData = async (_: undefined, request: ExpressRequest) => {
 		const pathToSyncData = `/state/${this.getName()}/syncData`;
 
 		const fbSyncData = await this.database.get<Type_SyncData>(pathToSyncData) || {};
 		const missingModules = this.dbModules.filter(dbModule => !fbSyncData[dbModule.getCollectionName()]);
 		if (missingModules.length) {
-			this.logWarning(`Syncing missing modules: `, missingModules);
+			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.getCollectionName()));
 
 			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'asc'}]};
 			const newestItems = (await Promise.all(missingModules.map(missingModule => missingModule.query(query))));
