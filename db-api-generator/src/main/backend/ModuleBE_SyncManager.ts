@@ -19,11 +19,13 @@
  * limitations under the License.
  */
 
+import {FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapper, FirebaseModule} from '@nu-art/firebase/backend';
 import {QueryParams} from '@nu-art/thunderstorm';
 import {ApiServerRouter, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {_keys, Module, TypedMap} from '@nu-art/ts-common';
+import {_keys, DB_Object, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiDef_SyncManager, ApiStruct_SyncManager, DBSyncData} from '../shared';
+import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
 
 
 type LastUpdated = { lastUpdated: number };
@@ -35,6 +37,7 @@ export class ModuleBE_SyncManager_Class
 
 	readonly v1;
 	private database!: DatabaseWrapper;
+	private dbModules!: BaseDB_ApiGenerator<DB_Object>[];
 
 	constructor() {
 		super();
@@ -45,10 +48,24 @@ export class ModuleBE_SyncManager_Class
 
 	init() {
 		this.database = FirebaseModule.createAdminSession().getDatabase();
+		this.dbModules = this.manager.filterModules(module => module instanceof BaseDB_ApiGenerator);
 	}
 
 	private fetchDBSyncData = async (_: QueryParams, request: ExpressRequest) => {
-		const fbSyncData = await this.database.get<Type_SyncData>(`/state/${this.getName()}/syncData`) || {};
+		const pathToSyncData = `/state/${this.getName()}/syncData`;
+
+		const fbSyncData = await this.database.get<Type_SyncData>(pathToSyncData) || {};
+		const missingModules = this.dbModules.filter(dbModule => !fbSyncData[dbModule.getCollectionName()]);
+		if (missingModules.length) {
+			this.logWarning(`Syncing missing modules: `, missingModules);
+
+			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'asc'}]};
+			const newestItems = (await Promise.all(missingModules.map(missingModule => missingModule.query(query))));
+			newestItems.forEach((item, index) => fbSyncData[missingModules[index].getCollectionName()] = {lastUpdated: item[0]?.__updated || 0});
+
+			await this.database.set<Type_SyncData>(pathToSyncData, fbSyncData);
+		}
+
 		const syncData = _keys(fbSyncData).reduce<DBSyncData[]>((response, dbName) => {
 			response.push({name: String(dbName), lastUpdated: fbSyncData[dbName].lastUpdated});
 			return response;
