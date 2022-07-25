@@ -30,64 +30,6 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 
-const defaultTitleHeight = '28px';
-const defaultListHeight = '150px';
-
-// export enum OnEnterOptions {
-//     SelectFirstOption= (e:)
-// }
-
-export const DropDown_wrapperStyle: React.CSSProperties = {
-	display: 'inline-block',
-	width: '100%',
-	position: 'relative',
-	boxSizing: 'border-box',
-	borderRadius: 2,
-	border: 'solid 1px',
-};
-
-export const DropDown_headerStyle: React.CSSProperties = {
-	display: 'flex',
-	alignItems: 'center',
-	justifyContent: 'space-between',
-	position: 'relative',
-	color: 'black',
-	margin: 3,
-	backgroundColor: 'white',
-	height: defaultTitleHeight,
-};
-
-export const DropDown_inputStyle: React.CSSProperties = {
-	border: 'unset',
-	boxSizing: 'border-box',
-	outline: 'none',
-	// padding: "0 5px",
-};
-
-export const listContainerStyle: React.CSSProperties = {
-	display: 'inline-block',
-	position: 'absolute',
-	zIndex: 10,
-};
-
-export const DropDown_listStyle: React.CSSProperties = {
-	boxSizing: 'border-box',
-	backgroundColor: 'whitesmoke',
-	border: 'solid 1px',
-	borderRadius: 5,
-	display: 'flex',
-	flexFlow: 'column',
-	alignItems: 'stretch',
-	maxHeight: defaultListHeight,
-	overflowX: 'hidden',
-	overflowY: 'auto',
-	position: 'relative',
-	top: 1,
-};
-
-export type InputProps = {
-	placeholder?: string
-}
 
 type State<ItemType> = {
 	adapter: Adapter<ItemType>
@@ -131,6 +73,10 @@ export class TS_DropDown<ItemType>
 		super(props);
 	}
 
+	shouldComponentUpdate(nextProps: Readonly<Props_DropDown<ItemType>>, nextState: Readonly<State<ItemType>>, nextContext: any): boolean {
+		return true;
+	}
+
 	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
 		const ref = this.props.innerRef || this.state?.dropDownRef || React.createRef<HTMLDivElement>();
 		return {
@@ -159,17 +105,9 @@ export class TS_DropDown<ItemType>
 	};
 
 	render() {
-		const className = _className("ts-dropdown",this.props.disabled?'disabled':undefined)
+		const className = _className('ts-dropdown', this.props.disabled ? 'disabled' : undefined);
 		return (
 			<div className={className}
-				// ref={(node: HTMLDivElement) => {
-				//  if (this.node)
-				// 	 return;
-				//
-				//  this.node = node;
-				//  this.forceUpdate();
-				//
-				// }}
 					 ref={this.state.dropDownRef}
 					 tabIndex={this.props.tabIndex}
 					 onFocus={this.addKeyboardListener}
@@ -224,13 +162,12 @@ export class TS_DropDown<ItemType>
 			style.overflowY = 'auto';
 			style.maxHeight = bottomDelta;
 
-			if(bottomDelta < 100) {
+			if (bottomDelta < 100) {
 				style.maxHeight = undefined;
 				style.transform = `translateY(calc(-100% - ${height}px))`;
-				className += ' inverted'
+				className += ' inverted';
 			}
 		}
-
 
 		return <TS_Tree
 			adapter={this.state.adapter}
@@ -300,8 +237,16 @@ export class TS_DropDown<ItemType>
 			onChange={(filterText) => this.setState({filterText})}
 			focus={true}
 			style={{width: '100%'}}
-			placeholder={'Search'}//{this.props.placeholder}
-			onKeyPress={this.keyEventHandler}
+			placeholder={this.props.placeholder || ''}
+			onAccept={(value, ev) => {
+				const filterText = this.state.filterText;
+				if (filterText) {
+					this.setState({open: false}, () => this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, ev));
+				} else
+					this.onSelected(this.state.adapter.data[0]);
+			}}
+			onCancel={() => this.setState({open: false})}
+			onKeyDown={this.keyEventHandler}
 		/>;
 	};
 
