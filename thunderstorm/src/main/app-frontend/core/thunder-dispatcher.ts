@@ -51,7 +51,7 @@ export class ThunderDispatcher<T,
 		if (this.allowCache)
 			this.cache = p;
 
-		this.logVerbose('Dispatching (Sync): ', p);
+		this.logDebug('Dispatching (Sync): ', p);
 		const listeners = ThunderDispatcher.listenersResolver();
 		return listeners.filter(this.filter).map((listener: T) => {
 			// @ts-ignore
@@ -63,7 +63,7 @@ export class ThunderDispatcher<T,
 		if (this.allowCache)
 			this.cache = p;
 
-		this.logVerbose('Dispatching (Async): ', p);
+		this.logDebug('Dispatching (Async): ', p);
 		const listeners = ThunderDispatcher.listenersResolver();
 		return Promise.all(listeners.filter(this.filter).map(async (listener: T) => {
 			// @ts-ignore
