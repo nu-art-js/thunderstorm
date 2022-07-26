@@ -120,15 +120,14 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	}
 
 	onSyncCompleted = async (items: DBType[]) => {
-		items.forEach(item => {
-			//Delete item from IDB if marked deleted in DB
+		for (const item of items) {
 			if (item.__deleted) {
-				return this.db.delete(item);
+				return await this.db.delete(item);
 			}
 
 			//Upsert the item otherwise
-			this.db.upsert(item);
-		});
+			await this.db.upsert(item);
+		}
 
 		if (items.length)
 			this.lastSync.set(items[0].__updated);
