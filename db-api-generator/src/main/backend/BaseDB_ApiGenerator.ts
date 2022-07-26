@@ -499,10 +499,20 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			return Promise.all(writes.map(write => write()));
 		};
 
+		let itemsToRet: DBType[];
 		if (transaction)
-			return processor(transaction);
+			itemsToRet = await processor(transaction);
+		else
+			itemsToRet = await this.collection.runInTransaction(processor);
+		const item = itemsToRet.reduce<DBType | undefined>((toRet, current) => {
+			if (!toRet || current.__updated > toRet.__updated)
+				return current;
+			return toRet;
+		}, undefined);
+		if (item)
+			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, item.__updated);
+		return itemsToRet;
 
-		return this.collection.runInTransaction(processor);
 	}
 
 	protected async upsertAllImpl_Read(instances: PreDB<DBType>[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]> {
@@ -625,10 +635,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		const items = await this.query(query);
 		const itemsToDelete = items.map(this.prepareItemToDelete);
 
-		if (transaction)
-			return await transaction.upsertAll(this.collection, itemsToDelete);
-		else
-			return await this.collection.upsertAll(itemsToDelete);
+		return this.upsertAll(itemsToDelete, transaction, request);
 	}
 
 	/**
