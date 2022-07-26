@@ -136,6 +136,7 @@ export class StorageKey<ValueType = string | number | object> {
 	set(value: ValueType) {
 		// @ts-ignore
 		StorageModule.set(this.key, value, this.persist);
+		// console.log('StorageKey', this.key);
 		return value;
 	}
 

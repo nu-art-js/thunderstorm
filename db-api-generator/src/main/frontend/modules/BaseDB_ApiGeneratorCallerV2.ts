@@ -122,7 +122,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	onSyncCompleted = async (items: DBType[]) => {
 		for (const item of items) {
 			if (item.__deleted) {
-				return await this.db.delete(item);
+				await this.db.delete(item);
+				continue;
 			}
 
 			//Upsert the item otherwise
