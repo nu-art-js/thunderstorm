@@ -208,7 +208,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		if (!this.isValidStatus(status)) {
 			const errorResponse = this.getErrorResponse();
 			const httpException = new HttpException(status, this.url, errorResponse);
-			this.onError?.(httpException, requestData, this);
+			await this.onError?.(httpException, requestData, this);
 			throw httpException;
 		}
 
