@@ -60,8 +60,8 @@ export abstract class SmartComponent<P extends any = {}, State extends any = {},
 			const __callback = this[module.defaultDispatcher.method]?.bind(this);
 			// @ts-ignore
 			this[module.defaultDispatcher.method] = (...params: ApiCallerEventTypeV2<any>) => {
-				__callback?.(...params);
 				this.onSyncEvent(module, ...params);
+				__callback?.(...params);
 			};
 		});
 

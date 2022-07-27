@@ -85,6 +85,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
+	private deletedValidator: ValidatorTypeResolver<DBType>;
 
 	readonly v1: ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 
@@ -97,6 +98,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		// @ts-ignore
 		this.setDefaultConfig(preConfig);
 		this.validator = config.validator;
+		this.deletedValidator = {...DB_Object_validator} as ValidatorTypeResolver<DBType>;
+		// @ts-ignore
+		config.externalFilterKeys.forEach(key => this.deletedValidator[key] = this.validator[key]);
+
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 		this.v1 = {
 			query: createBodyServerApi(apiDef.v1.query, this._query),
@@ -260,7 +265,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	public async validateImpl(instance: DBType) {
 		try {
-			await tsValidate(instance, instance.__deleted ? DB_Object_validator : this.validator);
+			await tsValidate(instance, instance.__deleted ? this.deletedValidator : this.validator);
 		} catch (e: any) {
 			this.logError(`error validating id: ${instance._id}`);
 			this.onValidationError(e);
