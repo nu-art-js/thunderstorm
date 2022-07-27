@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {_values, TypedMap, compare, DB_Object} from '@nu-art/ts-common';
-import {BaseDB_ApiGeneratorCallerV2, SyncStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
+import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, SyncStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
 import {ComponentAsync, Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
 
@@ -41,22 +41,36 @@ export abstract class SmartComponent<P extends any = {}, State extends any = {},
 	readonly moduleSyncStatuses: TypedMap<SyncStatus> = {};
 	protected componentPhase: ComponentStatus = ComponentStatus.Loading;
 
+	private onSyncEvent =
+		function (...params: ApiCallerEventTypeV2<any>) {
+			//Define logic for change in module sync status
+			if (params[0] === EventType_Sync) {
+				//@ts-ignore
+				this.moduleSyncStatuses[module.getName()] = module.getSyncStatus();
+				//@ts-ignore
+				this.componentPhase = this.deriveComponentPhase();
+				//@ts-ignore
+				if (this.componentPhase !== ComponentStatus.Synced)
+					//@ts-ignore
+					return this.forceUpdate();
+				//@ts-ignore
+				this.reDeriveState();
+			}
+		}.bind(this);
+
 	constructor(p: Props) {
 		super(p);
 
 		this.props.modules.forEach(module => {
 			//@ts-ignore
-			this[module.defaultDispatcher.method] = (...params: ApiCallerEventTypeV2<any>) => {
-				//Define logic for change in module sync status
-				if (params[0] === EventType_Sync) {
-					this.moduleSyncStatuses[module.getName()] = module.getSyncStatus();
-					this.componentPhase = this.deriveComponentPhase();
-					if (this.componentPhase !== ComponentStatus.Synced)
-						return this.forceUpdate();
-
-					this.reDeriveState();
-				}
+			const __callback = this[module.defaultDispatcher.method]?.bind(this);
+			this.componentDidMount = () => {
+				__componentDidMount?.();
+				this.mounted = true;
 			};
+
+			this[module.defaultDispatcher.method] = this.onSyncEvent;
+
 		});
 
 		this.componentPhase = this.deriveComponentPhase(true);
