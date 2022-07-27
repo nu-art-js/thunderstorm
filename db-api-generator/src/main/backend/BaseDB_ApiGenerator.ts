@@ -54,7 +54,7 @@ import {
 	ServerApi_Middleware
 } from '@nu-art/thunderstorm/backend';
 import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
-import {dbIdLength} from '../shared/validators';
+import {DB_Object_validator, dbIdLength} from '../shared/validators';
 import {Const_LockKeys, DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
 import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB} from '../shared';
@@ -260,7 +260,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	public async validateImpl(instance: DBType) {
 		try {
-			await tsValidate(instance, this.validator);
+			await tsValidate(instance, instance.__deleted ? DB_Object_validator : this.validator);
 		} catch (e: any) {
 			this.logError(`error validating id: ${instance._id}`);
 			this.onValidationError(e);
