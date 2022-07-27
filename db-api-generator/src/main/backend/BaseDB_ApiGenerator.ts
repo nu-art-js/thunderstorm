@@ -633,9 +633,14 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	async delete(query: FirestoreQuery<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
 		const items = await this.query(query);
-		const itemsToDelete = items.map(this.prepareItemToDelete);
-
-		return this.upsertAll(itemsToDelete, transaction, request);
+		const itemsToDelete = items.reduce<DBType[]>((toRet, item) => {
+			if (!item.__deleted)
+				toRet.push(this.prepareItemToDelete(item));
+			return toRet;
+		}, []);
+		if (itemsToDelete.length)
+			return this.upsertAll(itemsToDelete, transaction, request);
+		return itemsToDelete;
 	}
 
 	/**

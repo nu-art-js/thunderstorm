@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, tsValidateRegexp, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {DB_Object, tsValidateBoolean, tsValidateRegexp, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
 
 
 export const dbIdLength = 32;
@@ -48,5 +48,6 @@ export const DB_Object_validator: ValidatorTypeResolver<DB_Object> = {
 	_v: tsValidateVersion,
 	__created: tsValidateTimestamp(),
 	__updated: tsValidateTimestamp(),
+	__deleted: tsValidateBoolean(false),
 };
 
