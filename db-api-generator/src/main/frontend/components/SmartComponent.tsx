@@ -61,9 +61,6 @@ export abstract class SmartComponent<P extends any = {}, State extends any = {},
 				__callback?.(...params);
 				this.onSyncEvent(module, ...params);
 			};
-
-			this[module.defaultDispatcher.method] = this.onSyncEvent;
-
 		});
 
 		this.componentPhase = this.deriveComponentPhase(true);
