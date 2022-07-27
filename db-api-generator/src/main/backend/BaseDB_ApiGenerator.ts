@@ -721,7 +721,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			mergedObject.__created = mergedObject.__created || currentTimeMillis();
 			mergedObject.__updated = currentTimeMillis();
 
-			await tsValidate(mergedObject, this.validator);
 			await this.assertUniqueness(transaction, mergedObject, request);
 
 			const item = await this.upsertImpl(transaction, mergedObject, request);
