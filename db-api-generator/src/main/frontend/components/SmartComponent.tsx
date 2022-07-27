@@ -1,8 +1,8 @@
 /*
- * Thunderstorm is a full web app framework!
+ * Database API Generator is a utility library for Thunderstorm.
  *
- * Typescript & Express backend infrastructure that natively runs on firebase function
- * Typescript & React frontend infrastructure
+ * Given proper configurations it will dynamically generate APIs to your Firestore
+ * collections, will assert uniqueness and restrict deletion... and more
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -20,10 +20,11 @@
  */
 
 import * as React from 'react';
-import {_values, TypedMap, compare, DB_Object} from '@nu-art/ts-common';
+import {compare, DB_Object} from '@nu-art/ts-common';
 import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, SyncStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
 import {ComponentAsync, Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
+
 
 export enum ComponentStatus {
 	Loading,
@@ -38,35 +39,27 @@ export type Props_SmartComponent = {
 export abstract class SmartComponent<P extends any = {}, State extends any = {}, Props extends Props_SmartComponent & P = Props_SmartComponent & P>
 	extends ComponentAsync<Props, State> {
 
-	readonly moduleSyncStatuses: TypedMap<SyncStatus> = {};
 	protected componentPhase: ComponentStatus = ComponentStatus.Loading;
 
-	private onSyncEvent =
-		function (...params: ApiCallerEventTypeV2<any>) {
-			//Define logic for change in module sync status
-			if (params[0] === EventType_Sync) {
-				//@ts-ignore
-				this.moduleSyncStatuses[module.getName()] = module.getSyncStatus();
-				//@ts-ignore
-				this.componentPhase = this.deriveComponentPhase();
-				//@ts-ignore
-				if (this.componentPhase !== ComponentStatus.Synced)
-					//@ts-ignore
-					return this.forceUpdate();
-				//@ts-ignore
-				this.reDeriveState();
-			}
-		}.bind(this);
+	private onSyncEvent = (module: BaseDB_ApiGeneratorCallerV2<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
+		//Define logic for change in module sync status
+		if (params[0] === EventType_Sync) {
+			this.componentPhase = this.deriveComponentPhase();
+			if (this.componentPhase !== ComponentStatus.Synced)
+				return this.forceUpdate();
+
+			this.reDeriveState();
+		}
+	};
 
 	constructor(p: Props) {
 		super(p);
 
 		this.props.modules.forEach(module => {
-			//@ts-ignore
 			const __callback = this[module.defaultDispatcher.method]?.bind(this);
-			this.componentDidMount = () => {
-				__componentDidMount?.();
-				this.mounted = true;
+			this[module.defaultDispatcher.method] = (...params: ApiCallerEventTypeV2<any>) => {
+				__callback?.(...params);
+				this.onSyncEvent(module, ...params);
 			};
 
 			this[module.defaultDispatcher.method] = this.onSyncEvent;
@@ -76,14 +69,9 @@ export abstract class SmartComponent<P extends any = {}, State extends any = {},
 		this.componentPhase = this.deriveComponentPhase(true);
 	}
 
-	private deriveComponentPhase(queryModuleStatuses: boolean = false) {
+	private deriveComponentPhase() {
+		const moduleStatuses = this.props.modules.forEach(module.getSyncStatus);
 
-		if (queryModuleStatuses) {
-			this.props.modules.forEach(module => {
-				this.moduleSyncStatuses[module.getName()] = module.getSyncStatus();
-			});
-		}
-		const moduleStatuses = _values(this.moduleSyncStatuses);
 		//If all of the modules are outOfSync
 		if (moduleStatuses.every(status => status === SyncStatus.OutOfSync))
 			return ComponentStatus.Loading;
