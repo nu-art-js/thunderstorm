@@ -58,6 +58,11 @@ export enum SyncStatus {
 	Synced
 }
 
+export enum DataStatus {
+	NoData,
+	containsData,
+}
+
 export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>, SyncIfNeeded {
@@ -154,6 +159,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	public async clearCache(sync = true) {
 		this.lastSync.delete();
 		await this.db.deleteAll();
+		this.setSyncStatus(SyncStatus.OutOfSync);
 		if (sync)
 			this.v1.sync().execute();
 	}
