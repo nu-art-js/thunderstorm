@@ -35,7 +35,16 @@ import {
 
 import {DB_Object, Module, PreDB} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
-import {EventType_Create, EventType_Delete, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update, EventType_UpsertAll} from '../consts';
+import {
+	EventType_Create,
+	EventType_Delete,
+	EventType_Patch,
+	EventType_Query,
+	EventType_Sync,
+	EventType_Unique,
+	EventType_Update,
+	EventType_UpsertAll
+} from '../consts';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
@@ -43,7 +52,7 @@ import {SyncIfNeeded} from './ModuleFE_SyncManager';
 
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
 
-enum SyncStatus {
+export enum SyncStatus {
 	OutOfSync,
 	Syncing,
 	Synced
@@ -77,7 +86,10 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
 
 		this.v1 = {
-			sync: () => sync({where: {__updated: {$gte: this.lastSync.get(0)}}, orderBy: [{key: '__updated', order: 'desc'}]}),
+			sync: () => {
+				this.setSyncStatus(SyncStatus.Syncing);
+				return sync({where: {__updated: {$gte: this.lastSync.get(0)}}, orderBy: [{key: '__updated', order: 'desc'}]});
+			},
 
 			query: (query?: FirestoreQuery<DBType>) => _query(query || {where: {}}),
 			// @ts-ignore
@@ -102,6 +114,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	__syncIfNeeded = async (syncData: DBSyncData[]) => {
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
 		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0)) {
+			this.setSyncStatus(SyncStatus.Synced);
 			return;
 		}
 
@@ -113,6 +126,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	private setSyncStatus(status: SyncStatus) {
 		this.logDebug(`Sync status updated: ${this.syncStatus} => ${status}`);
 		this.syncStatus = status;
+		this.OnSyncStatusChanged();
 	}
 
 	getSyncStatus() {
@@ -133,6 +147,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		if (items.length)
 			this.lastSync.set(items[0].__updated);
 
+		this.setSyncStatus(SyncStatus.Synced);
 		this.dispatchMulti(EventType_Query, items);
 	};
 
@@ -212,6 +227,10 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	private dispatchMulti = (event: MultiApiEvent, items: DBType[]) => {
 		this.defaultDispatcher?.dispatchModule(event, items);
 		this.defaultDispatcher?.dispatchUI(event, items);
+	};
+
+	protected OnSyncStatusChanged = () => {
+		this.dispatchMulti(EventType_Sync, []);
 	};
 
 	protected onEntryDeleted = async (item: DBType): Promise<void> => {
