@@ -56,18 +56,20 @@ export abstract class SmartComponent<P extends any = {}, State extends any = {},
 		super(p);
 
 		this.props.modules.forEach(module => {
+			// @ts-ignore
 			const __callback = this[module.defaultDispatcher.method]?.bind(this);
+			// @ts-ignore
 			this[module.defaultDispatcher.method] = (...params: ApiCallerEventTypeV2<any>) => {
 				__callback?.(...params);
 				this.onSyncEvent(module, ...params);
 			};
 		});
 
-		this.componentPhase = this.deriveComponentPhase(true);
+		this.componentPhase = this.deriveComponentPhase();
 	}
 
 	private deriveComponentPhase() {
-		const moduleStatuses = this.props.modules.forEach(module.getSyncStatus);
+		const moduleStatuses = this.props.modules.map(module => module.getSyncStatus());
 
 		//If all of the modules are outOfSync
 		if (moduleStatuses.every(status => status === SyncStatus.OutOfSync))
