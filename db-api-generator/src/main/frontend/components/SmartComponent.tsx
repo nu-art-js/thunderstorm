@@ -20,9 +20,9 @@
  */
 
 import * as React from 'react';
-import {_values, TypedMap} from '@nu-art/ts-common';
+import {_values, TypedMap, compare, DB_Object} from '@nu-art/ts-common';
 import {BaseDB_ApiGeneratorCallerV2, SyncStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
-import {ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend';
+import {ComponentAsync, Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
 
 export enum ComponentStatus {
@@ -31,10 +31,8 @@ export enum ComponentStatus {
 	Synced,
 }
 
-type Module = BaseDB_ApiGeneratorCallerV2<any>
-
-type Props_SmartComponent = {
-	modules: Module[];
+export type Props_SmartComponent = {
+	modules: BaseDB_ApiGeneratorCallerV2<DB_Object, any>[];
 }
 
 export abstract class SmartComponent<P extends any = {}, State extends any = {}, Props extends Props_SmartComponent & P = Props_SmartComponent & P>
@@ -43,7 +41,7 @@ export abstract class SmartComponent<P extends any = {}, State extends any = {},
 	readonly moduleSyncStatuses: TypedMap<SyncStatus> = {};
 	protected componentPhase: ComponentStatus = ComponentStatus.Loading;
 
-	protected constructor(p: Props) {
+	constructor(p: Props) {
 		super(p);
 
 		this.props.modules.forEach(module => {
@@ -96,5 +94,17 @@ export abstract class SmartComponent<P extends any = {}, State extends any = {},
 			return <div className={'loader-container'}><TS_Loader/></div>;
 
 		return this._render();
+	}
+}
+
+export abstract class SmartPanel<Config, State = {}, Props = {}>
+	extends SmartComponent<Props_WorkspacePanel<Config, Props>, State_WorkspacePanel<Config, State>> {
+
+	protected async deriveStateFromProps(nextProps: Props_WorkspacePanel<Config, Props>): Promise<State_WorkspacePanel<Config, State>> {
+		return {config: {...nextProps.config}} as State_WorkspacePanel<Config, State>;
+	}
+
+	shouldReDeriveState(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>): boolean {
+		return !compare(this.state.config, nextProps.config as Config);
 	}
 }
