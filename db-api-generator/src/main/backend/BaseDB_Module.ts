@@ -129,7 +129,7 @@ export abstract class BaseDB_Module<DBType extends DB_Object, ConfigType extends
 				throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
 			await this.canDeleteDocument(transaction, [doc.get()]);
-			const item = await doc.delete();
+			const item = await doc.delete(transaction.transaction);
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, [item], this.config.uniqueKeys, transaction);
 			return item;
 		});
