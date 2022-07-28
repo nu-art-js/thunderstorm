@@ -74,7 +74,7 @@ export class ModuleBE_SyncManager_Class
 
 	init() {
 		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
-		this.collection = firestore.getCollection<DeletedDBItem>('__deleted__', this.config.uniqueKeys);
+		this.collection = firestore.getCollection<DeletedDBItem>('__deleted__docs', this.config.uniqueKeys);
 
 		this.database = FirebaseModule.createAdminSession().getDatabase();
 		this.dbModules = this.manager.filterModules(module => module instanceof BaseDB_Module);
