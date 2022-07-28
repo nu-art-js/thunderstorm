@@ -168,7 +168,7 @@ export class FirestoreTransaction {
 
 	async newQueryUnique<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type> | undefined> {
 		const doc = await this._queryUnique(collection, ourQuery) as FirestoreType_DocumentSnapshot<Type>;
-		if (!doc)
+		if (!doc || !doc.exists)
 			return;
 
 		return new DocWrapper<Type>(collection.wrapper, doc);
@@ -176,8 +176,7 @@ export class FirestoreTransaction {
 
 	async newQuery<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type>[]> {
 		const docs = await this._query(collection, ourQuery) as FirestoreType_DocumentSnapshot<Type>[];
-		return docs.map(doc => new DocWrapper<Type>(collection.wrapper, doc));
+		return docs.filter(doc => doc.exists).map(doc => new DocWrapper<Type>(collection.wrapper, doc));
 	}
-
 }
 

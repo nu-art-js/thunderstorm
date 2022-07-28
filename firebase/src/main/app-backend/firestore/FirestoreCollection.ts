@@ -150,7 +150,7 @@ export class FirestoreCollection<Type extends TS_Object> {
 
 	async newQueryUnique(ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type> | undefined> {
 		const doc = await this._queryUnique(ourQuery) as FirestoreType_DocumentSnapshot<Type>;
-		if (!doc)
+		if (!doc || !doc.exists)
 			return;
 
 		return new DocWrapper<Type>(this.wrapper, doc);
@@ -158,7 +158,7 @@ export class FirestoreCollection<Type extends TS_Object> {
 
 	async newQuery(ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type>[]> {
 		const docs = await this._query(ourQuery) as FirestoreType_DocumentSnapshot<Type>[];
-		return docs.map(doc => new DocWrapper<Type>(this.wrapper, doc));
+		return docs.filter(doc => doc.exists).map(doc => new DocWrapper<Type>(this.wrapper, doc));
 	}
 }
 
@@ -171,29 +171,27 @@ export class DocWrapper<T extends TS_Object> {
 		this.doc = doc;
 	}
 
-	runInTransaction<R>(processor: (transaction: Transaction) => Promise<R>) {
+	async runInTransaction<R>(processor: (transaction: Transaction) => Promise<R>) {
 		const firestore = this.wrapper.firestore;
 		return firestore.runTransaction(processor);
 	}
 
-	async delete(transaction?: Transaction): Promise<T> {
+	delete = async (transaction?: Transaction): Promise<T> => {
 		if (!transaction)
 			return this.runInTransaction(this.delete);
 
 		const item = this.doc.data();
 		transaction.delete(this.doc.ref);
 		return item;
-	}
+	};
 
-	get() {
-		return this.doc.data();
-	}
+	get = () => this.doc.data();
 
-	async set(instance: T, transaction?: Transaction): Promise<T> {
+	set = async (instance: T, transaction?: Transaction): Promise<T> => {
 		if (!transaction)
 			return this.runInTransaction((transaction) => this.set(instance, transaction));
 
 		transaction.set(this.doc.ref, instance);
 		return instance;
-	}
+	};
 }
