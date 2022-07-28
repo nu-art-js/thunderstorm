@@ -77,7 +77,7 @@ export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType,
 export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof DBType>(dbDef: DBDef<DBType, Ks>): ApiDefResolver<ApiStruct_DBApiGenIDB<DBType, Ks>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
+			sync: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/sync`},
 			query: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
 			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/query-unique`},
 			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert`},

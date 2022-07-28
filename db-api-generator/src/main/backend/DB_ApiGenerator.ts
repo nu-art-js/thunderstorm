@@ -33,7 +33,7 @@ import {BaseDB_Module, DBApiConfig} from './BaseDB_Module';
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export class DB_ApiGenerator<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
+export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
 	extends Module
 	implements ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>, ApiModule {
 
@@ -90,6 +90,7 @@ export class DB_ApiGenerator<DBType extends DB_Object, ConfigType extends DBApiC
 
 }
 
+export const DB_ApiGenerator = DB_ApiGenerator_Class;
 export const createApisForDBModule = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>(dbModule: BaseDB_Module<DBType, ConfigType, Ks>) => {
-	return new DB_ApiGenerator<DBType, ConfigType, Ks>(dbModule);
+	return new DB_ApiGenerator_Class<DBType, ConfigType, Ks>(dbModule);
 };
