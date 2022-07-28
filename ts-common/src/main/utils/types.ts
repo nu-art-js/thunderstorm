@@ -72,10 +72,9 @@ export type DB_Object = DB_BaseObject & {
 	_v?: string
 	__created: number;
 	__updated: number;
-	__deleted?: boolean;
 }
 
-export const KeysToKeepOnDelete: (keyof DB_Object)[] = ['_id', '_v', '__created', '__updated', '__deleted'];
+export const KeysToKeepOnDelete: (keyof DB_Object)[] = ['_id', '_v', '__created', '__updated'];
 
 export type PreDB<T extends DB_Object> = PartialProperties<T, keyof DB_Object>;
 export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;

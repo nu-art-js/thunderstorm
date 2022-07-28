@@ -20,7 +20,7 @@
 import {__custom, __scenario, ContextKey, TestException} from '@nu-art/testelot';
 import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1} from './_core';
 import {compare, generateHex, StringMap} from '@nu-art/ts-common';
-import {AssignAppPermissions, ModuleBE_PermissionAccessLevel, ModuleBE_PermissionGroup, ModuleBE_PermissionUser, PredefinedGroup} from '../_main';
+import {AssignAppPermissions, ModuleBE_PermissionAccessLevel, ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB, PredefinedGroup} from '../_main';
 
 
 const contextKey2 = new ContextKey<ConfigDB>('config-2');

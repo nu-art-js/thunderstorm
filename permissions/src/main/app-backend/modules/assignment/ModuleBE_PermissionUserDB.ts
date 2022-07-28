@@ -17,41 +17,24 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
+import {BaseDB_Module} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ApiDefServer, ApiException, ApiModule, createBodyServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {_keys, auditBy, BadImplementationException, batchAction, compare, filterDuplicates} from '@nu-art/ts-common';
 import {ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {Clause_Where} from '@nu-art/firebase';
 import {PermissionsShare} from '../permissions-share';
-import {
-	ApiDef_PermissionUser,
-	ApiStruct_PermissionsUser,
-	AssignAppPermissions,
-	DB_PermissionUser,
-	DBDef_PermissionUser,
-	Request_AssignAppPermissions
-} from '../../shared';
+import {AssignAppPermissions, DB_PermissionUser, DBDef_PermissionUser, Request_AssignAppPermissions} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 
 
-export class ModuleBE_PermissionUser_Class
-	extends BaseDB_ApiGenerator<DB_PermissionUser>
-	implements OnNewUserRegistered, OnUserLogin, ApiDefServer<ApiStruct_PermissionsUser>, ApiModule {
-
-	readonly pah: ApiDefServer<ApiStruct_PermissionsUser>['pah'];
+export class ModuleBE_PermissionUserDB_Class
+	extends BaseDB_Module<DB_PermissionUser>
+	implements OnNewUserRegistered, OnUserLogin {
 
 	constructor() {
 		super(DBDef_PermissionUser);
-		this.setLockKeys(['accountId']);
-		this.pah = {
-			assignAppPermissions: createBodyServerApi(ApiDef_PermissionUser.pah.assignAppPermissions, this.assignAppPermissions),
-		};
-	}
-
-	useRoutes() {
-		return {...this.v1, ...this.pah};
 	}
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionUser, request?: ExpressRequest): Promise<void> {
@@ -180,4 +163,4 @@ export class ModuleBE_PermissionUser_Class
 	}
 }
 
-export const ModuleBE_PermissionUser = new ModuleBE_PermissionUser_Class();
+export const ModuleBE_PermissionUserDB = new ModuleBE_PermissionUserDB_Class();

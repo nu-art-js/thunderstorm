@@ -49,7 +49,7 @@ export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 
 export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBType> = {
 	v1: {
-		sync: BodyApi<DBType[], FirestoreQuery<DBType>, undefined>,
+		sync: BodyApi<Response_DBSync<DBType>, FirestoreQuery<DBType>, undefined>,
 		query: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		queryUnique: QueryApi<DBType, QueryParams, string | IndexKeys<DBType, Ks>>,
 		upsert: BodyApi<DBType, PreDB<DBType>>,
@@ -57,7 +57,6 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 		patch: BodyApi<DBType, IndexKeys<DBType, Ks> & Partial<DBType>>
 		delete: QueryApi<DBType, DB_BaseObject>,
 		deleteAll: QueryApi<DBType[]>,
-		getDBLastUpdated: QueryApi<number>,
 	},
 }
 
@@ -86,13 +85,13 @@ export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof 
 			patch: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/patch`},
 			delete: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete-all`},
-			getDBLastUpdated: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/get-db-last-updated`}
 		}
 	};
 };
 
 export type DBSyncData = { name: string, lastUpdated: number };
 export type Response_DBSyncData = { syncData: DBSyncData[] };
+export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[], toDelete: DB_Object[] };
 export type ApiStruct_SyncManager = {
 	v1: {
 		checkSync: QueryApi<Response_DBSyncData, undefined>

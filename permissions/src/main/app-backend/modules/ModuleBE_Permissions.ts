@@ -20,7 +20,7 @@
 import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
 import {ApiDefServer, ApiModule, ApiResponse, createBodyServerApi, createQueryServerApi, ExpressRequest, ServerApi, Storm} from '@nu-art/thunderstorm/backend';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from './assignment';
+import {ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from './assignment';
 import {ModuleBE_PermissionApi, ModuleBE_PermissionProject} from './management';
 import {
 	ApiDef_Permissions,
@@ -148,7 +148,7 @@ export class ModuleBE_Permissions_Class
 	}
 
 	async getUserCFsByShareGroups(userId: string, groupsIds: string[]): Promise<StringMap[]> {
-		const user = await ModuleBE_PermissionUser.queryUnique({accountId: userId});
+		const user = await ModuleBE_PermissionUserDB.queryUnique({accountId: userId});
 		const userCFs: StringMap[] = [];
 		if (!user.groups)
 			return userCFs;
@@ -218,7 +218,7 @@ export class ModuleBE_Permissions_Class
 				customField
 			};
 		});
-		await ModuleBE_PermissionUser.upsert({...predefinedUser, groups: groupsUser});
+		await ModuleBE_PermissionUserDB.upsert({...predefinedUser, groups: groupsUser});
 	}
 }
 

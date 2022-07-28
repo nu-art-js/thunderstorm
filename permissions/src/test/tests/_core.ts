@@ -26,7 +26,7 @@ import {
 	ModuleBE_PermissionDomain,
 	ModuleBE_PermissionGroup,
 	ModuleBE_PermissionProject,
-	ModuleBE_PermissionUser
+	ModuleBE_PermissionUserDB
 } from '../_main';
 import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
 import {__custom} from '@nu-art/testelot';

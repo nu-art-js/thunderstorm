@@ -19,7 +19,7 @@
 
 import {__custom, __scenario, ContextKey, TestException} from '@nu-art/testelot';
 import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1, testLevel2} from './_core';
-import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../_main';
+import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from '../_main';
 import {ApiException} from '@nu-art/thunderstorm/backend';
 import {generateHex, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {AccountModuleBE} from '@nu-art/user-account/backend';

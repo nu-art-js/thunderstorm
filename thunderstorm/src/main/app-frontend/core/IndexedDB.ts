@@ -267,12 +267,16 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 	// ######################### Data deletion functions #########################
 
-	public async deleteAll(): Promise<void> {
+	public async deleteDB(): Promise<void> {
 		const store = (await this.store(true));
 		await store.clear();
 	}
 
-	public async delete(key: IndexKeys<T, Ks>): Promise<T | undefined> {
+	public async deleteAll(keys: IndexKeys<T, Ks>[]): Promise<T[]> {
+		return await Promise.all(keys.map(key => this.delete(key)));
+	}
+
+	public async delete(key: IndexKeys<T, Ks>): Promise<T> {
 		const keys = this.config.uniqueKeys.map(k => key[k]);
 		const store = await this.store(true);
 

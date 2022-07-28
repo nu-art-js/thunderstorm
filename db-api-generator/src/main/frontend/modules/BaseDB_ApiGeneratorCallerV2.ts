@@ -20,7 +20,7 @@
  */
 
 import {ApiDefCaller, IndexKeys, QueryParams} from '@nu-art/thunderstorm';
-import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData,} from '../shared';
+import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response_DBSync,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {
 	apiWithBody,
@@ -85,7 +85,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 
 		const _query = apiWithBody(apiDef.v1.query, this.onQueryReturned);
-		const sync = apiWithBody(apiDef.v1.query, this.onSyncCompleted);
+		const sync = apiWithBody(apiDef.v1.sync, this.onSyncCompleted);
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
 		const upsert = apiWithBody(apiDef.v1.upsert, this.onEntryUpdated);
 		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
@@ -93,7 +93,12 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.v1 = {
 			sync: () => {
 				this.setSyncStatus(SyncStatus.Syncing);
-				return sync({where: {__updated: {$gte: this.lastSync.get(0)}}, orderBy: [{key: '__updated', order: 'desc'}]});
+				const query: FirestoreQuery<DBType> = {
+					withDeleted: true,
+					where: {__updated: {$gte: this.lastSync.get(0)}},
+					orderBy: [{key: '__updated', order: 'desc'}],
+				};
+				return sync(query);
 			},
 
 			query: (query?: FirestoreQuery<DBType>) => _query(query || {where: {}}),
@@ -112,7 +117,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			},
 			delete: apiWithQuery(apiDef.v1.delete, this.onEntryDeleted),
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
-			getDBLastUpdated: apiWithQuery(apiDef.v1.getDBLastUpdated),
 		} as ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 	}
 
@@ -138,31 +142,29 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return this.syncStatus;
 	}
 
-	onSyncCompleted = async (items: DBType[]) => {
+	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
 		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
-		await this.updateIDB(items);
-
-		if (items.length)
-			this.lastSync.set(items[0].__updated);
+		await this.syncIndexDb(syncData.toUpdate, syncData.toDelete);
 
 		this.setSyncStatus(SyncStatus.Synced);
-		this.dispatchMulti(EventType_Query, items);
+		this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
 
-	private async updateIDB(items: DBType[]) {
-		for (const item of items) {
-			if (item.__deleted) {
-				await this.db.delete(item);
-				continue;
-			}
+	private async syncIndexDb(toUpdate: DBType[], toDelete: DB_Object[] = []) {
+		await this.db.upsertAll(toUpdate);
+		await this.db.deleteAll(toDelete as DBType[]);
 
-			await this.db.upsert(item);
-		}
+		let latest = -1;
+		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
+		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
+
+		if (latest !== -1)
+			this.lastSync.set(latest);
 	}
 
 	public async clearCache(sync = true) {
 		this.lastSync.delete();
-		await this.db.deleteAll();
+		await this.db.deleteDB();
 		this.setSyncStatus(SyncStatus.OutOfSync);
 		if (sync)
 			this.v1.sync().execute();
@@ -244,12 +246,12 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	};
 
 	protected onEntryDeleted = async (item: DBType): Promise<void> => {
-		await this.updateIDB([item]);
+		await this.syncIndexDb([], [item]);
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
 	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
-		await this.updateIDB(items);
+		await this.syncIndexDb(items);
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
@@ -262,7 +264,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
-		await this.updateIDB([item]);
+		await this.syncIndexDb([item]);
 		this.dispatchSingle(event, item);
 	}
 
@@ -271,7 +273,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	};
 
 	protected onQueryReturned = async (items: DBType[]): Promise<void> => {
-		await this.updateIDB(items);
+		await this.syncIndexDb(items);
 		this.dispatchMulti(EventType_Query, items);
 	};
 }

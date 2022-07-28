@@ -17,7 +17,7 @@
  */
 
 import {FirestoreType_DocumentSnapshot} from './types';
-import {FirestoreCollection,} from './FirestoreCollection';
+import {DocWrapper, FirestoreCollection,} from './FirestoreCollection';
 import {BadImplementationException, merge, Subset, TS_Object} from '@nu-art/ts-common';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreInterface} from './FirestoreInterface';
@@ -25,7 +25,7 @@ import {Transaction} from 'firebase-admin/firestore';
 
 
 export class FirestoreTransaction {
-	private transaction: Transaction;
+	transaction: Transaction;
 
 	constructor(transaction: Transaction) {
 		this.transaction = transaction;
@@ -33,7 +33,7 @@ export class FirestoreTransaction {
 
 	private async _query<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot[]> {
 		const query = FirestoreInterface.buildQuery(collection, ourQuery);
-		return (await this.transaction.get(query)).docs;
+		return (await this.transaction.get(query)).docs as FirestoreType_DocumentSnapshot[];
 	}
 
 	private async _queryUnique<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
@@ -125,7 +125,7 @@ export class FirestoreTransaction {
 	}
 
 	async delete<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
-		await (await this.delete_Read(collection, ourQuery))();
+		return await (await this.delete_Read(collection, ourQuery))();
 	}
 
 	async delete_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>) {
@@ -165,4 +165,19 @@ export class FirestoreTransaction {
 			return result;
 		};
 	}
+
+	async newQueryUnique<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type> | undefined> {
+		const doc = await this._queryUnique(collection, ourQuery) as FirestoreType_DocumentSnapshot<Type>;
+		if (!doc)
+			return;
+
+		return new DocWrapper<Type>(collection.wrapper, doc);
+	}
+
+	async newQuery<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type>[]> {
+		const docs = await this._query(collection, ourQuery) as FirestoreType_DocumentSnapshot<Type>[];
+		return docs.map(doc => new DocWrapper<Type>(collection.wrapper, doc));
+	}
+
 }
+

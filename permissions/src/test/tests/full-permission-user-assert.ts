@@ -25,7 +25,7 @@ import {
 	ModuleBE_PermissionGroup,
 	ModuleBE_PermissionProject,
 	ModuleBE_PermissionsAssert,
-	ModuleBE_PermissionUser,
+	ModuleBE_PermissionUserDB,
 	User_Group
 } from '../_main';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
