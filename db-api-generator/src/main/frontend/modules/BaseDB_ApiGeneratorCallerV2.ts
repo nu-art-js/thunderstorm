@@ -84,7 +84,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 
-		const _query = apiWithBody(apiDef.v1.query, this.onQueryReturned);
+		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
 		const sync = apiWithBody(apiDef.v1.sync, this.onSyncCompleted);
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
 		const upsert = apiWithBody(apiDef.v1.upsert, this.onEntryUpdated);
@@ -272,8 +272,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return this.onEntryUpdatedImpl(EventType_Unique, item);
 	};
 
-	protected onQueryReturned = async (items: DBType[]): Promise<void> => {
-		await this.syncIndexDb(items);
-		this.dispatchMulti(EventType_Query, items);
+	protected onQueryReturned = async (toUpdate: DBType[], toDelete: DB_Object[] = []): Promise<void> => {
+		await this.syncIndexDb(toUpdate, toDelete);
+		this.dispatchMulti(EventType_Query, toUpdate);
 	};
 }
