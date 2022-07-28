@@ -19,6 +19,7 @@
  * limitations under the License.
  */
 
-export * from './BaseDB_ApiGenerator';
+export * from './DB_ApiGenerator';
+export * from './BaseDB_Module';
 export * from './ModuleBE_SyncManager';
 export * from './db-def';

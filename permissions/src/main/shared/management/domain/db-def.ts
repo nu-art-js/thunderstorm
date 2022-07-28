@@ -33,4 +33,5 @@ export const DBDef_PermissionDomain: DBDef<DB_PermissionDomain> = {
 	validator: Validator_PermissionDomain,
 	dbName: 'permissions--domain',
 	entityName: 'permissions--domain',
+	lockKeys: ['projectId']
 };

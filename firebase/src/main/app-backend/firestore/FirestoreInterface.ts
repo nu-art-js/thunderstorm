@@ -64,7 +64,7 @@ export class FirestoreInterface {
 							const value = _whereValue[comparatorKey];
 							if (value === undefined)
 								throw new ImplementationMissingException(`no value: ${comparatorKey} in query: ${JSON.stringify(query)}`);
-
+							
 							return _query.where(whereKey, comparator, value);
 						}
 

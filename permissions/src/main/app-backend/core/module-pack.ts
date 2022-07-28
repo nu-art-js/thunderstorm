@@ -18,18 +18,19 @@
  */
 
 import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../modules/assignment';
+import {ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from '../modules/assignment';
 import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions';
 import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert';
+import {createApisForDBModule} from '@nu-art/db-api-generator/backend';
 
 
 export const ModulePack_Backend_Permissions = [
-	ModuleBE_PermissionProject,
-	ModuleBE_PermissionDomain,
-	ModuleBE_PermissionAccessLevel,
-	ModuleBE_PermissionApi,
-	ModuleBE_PermissionGroup,
-	ModuleBE_PermissionUser,
+	ModuleBE_PermissionProject, createApisForDBModule(ModuleBE_PermissionProject),
+	ModuleBE_PermissionDomain, createApisForDBModule(ModuleBE_PermissionDomain),
+	ModuleBE_PermissionAccessLevel, createApisForDBModule(ModuleBE_PermissionAccessLevel),
+	ModuleBE_PermissionApi, createApisForDBModule(ModuleBE_PermissionApi),
+	ModuleBE_PermissionGroup, createApisForDBModule(ModuleBE_PermissionGroup),
+	ModuleBE_PermissionUserDB,
 	ModuleBE_PermissionsAssert,
 	ModuleBE_Permissions,
 ];

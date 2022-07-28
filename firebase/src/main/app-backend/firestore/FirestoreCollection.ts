@@ -35,7 +35,7 @@ export class FirestoreCollection<Type extends TS_Object> {
 	 */
 	readonly externalUniqueFilter: ((object: Subset<Type>) => Clause_Where<Type>);
 
-	constructor(name: string, wrapper: FirestoreWrapper, externalFilterKeys?: FilterKeys<Type>) {
+	constructor(name: string, wrapper: FirestoreWrapper, uniqueKeys?: FilterKeys<Type>) {
 		this.name = name;
 		this.wrapper = wrapper;
 		if (!/[a-z-]{3,}/.test(name))
@@ -43,10 +43,10 @@ export class FirestoreCollection<Type extends TS_Object> {
 
 		this.collection = wrapper.firestore.collection(name);
 		this.externalUniqueFilter = (instance: Type) => {
-			if (!externalFilterKeys)
+			if (!uniqueKeys)
 				throw new BadImplementationException('In order to use a unique query your collection MUST have a unique filter');
 
-			return externalFilterKeys.reduce((where, key: keyof Type) => {
+			return uniqueKeys.reduce((where, key: keyof Type) => {
 				// @ts-ignore
 				where[key] = instance[key];
 				return where;
@@ -56,7 +56,7 @@ export class FirestoreCollection<Type extends TS_Object> {
 
 	private async _query(ourQuery?: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot[]> {
 		const myQuery = FirestoreInterface.buildQuery(this, ourQuery);
-		return (await myQuery.get()).docs;
+		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot[];
 	}
 
 	private async _queryUnique(ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
@@ -111,10 +111,17 @@ export class FirestoreCollection<Type extends TS_Object> {
 	}
 
 	private async deleteBatch(docRefs: FirestoreType_DocumentSnapshot[]) {
-		await batchAction(docRefs, 200, async (temp) => {
-			const initialValue = this.wrapper.firestore.batch();
+		return await batchAction(docRefs, 200, async (chunk) => {
+			const batch = this.wrapper.firestore.batch();
+			const toRet: Type[] = [];
+
 			// @ts-ignore
-			await temp.reduce((batch, val) => batch.delete(val.ref), initialValue).commit();
+			await chunk.reduce((_batch, val) => {
+				toRet.push(val.data as unknown as Type);
+				return _batch.delete(val.ref);
+			}, batch).commit();
+
+			return toRet;
 		});
 	}
 
@@ -141,4 +148,52 @@ export class FirestoreCollection<Type extends TS_Object> {
 
 	getUniqueFilter = () => this.externalUniqueFilter;
 
+	async newQueryUnique(ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type> | undefined> {
+		const doc = await this._queryUnique(ourQuery) as FirestoreType_DocumentSnapshot<Type>;
+		if (!doc)
+			return;
+
+		return new DocWrapper<Type>(this.wrapper, doc);
+	}
+
+	async newQuery(ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type>[]> {
+		const docs = await this._query(ourQuery) as FirestoreType_DocumentSnapshot<Type>[];
+		return docs.map(doc => new DocWrapper<Type>(this.wrapper, doc));
+	}
+}
+
+export class DocWrapper<T extends TS_Object> {
+	wrapper: FirestoreWrapper;
+	doc: FirestoreType_DocumentSnapshot<T>;
+
+	constructor(wrapper: FirestoreWrapper, doc: FirestoreType_DocumentSnapshot<T>) {
+		this.wrapper = wrapper;
+		this.doc = doc;
+	}
+
+	runInTransaction<R>(processor: (transaction: Transaction) => Promise<R>) {
+		const firestore = this.wrapper.firestore;
+		return firestore.runTransaction(processor);
+	}
+
+	async delete(transaction?: Transaction): Promise<T> {
+		if (!transaction)
+			return this.runInTransaction(this.delete);
+
+		const item = this.doc.data();
+		transaction.delete(this.doc.ref);
+		return item;
+	}
+
+	get() {
+		return this.doc.data();
+	}
+
+	async set(instance: T, transaction?: Transaction): Promise<T> {
+		if (!transaction)
+			return this.runInTransaction((transaction) => this.set(instance, transaction));
+
+		transaction.set(this.doc.ref, instance);
+		return instance;
+	}
 }
