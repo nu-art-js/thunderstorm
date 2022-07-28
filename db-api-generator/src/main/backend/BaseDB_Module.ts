@@ -139,10 +139,11 @@ export abstract class BaseDB_Module<DBType extends DB_Object, ConfigType extends
 	 * Calls the `delete` method of the module's collection.
 	 *
 	 * @param deleteQuery - The query to be executed for the deletion.
+	 * @param toReturn
 	 */
-	async delete(deleteQuery: FirestoreQuery<DBType>) {
-		return this.runInTransaction(async transaction => {
-			const docs = await transaction.newQuery(this.collection, deleteQuery);
+	async delete(deleteQuery: FirestoreQuery<DBType>, toReturn: DBType[] = []) {
+		toReturn.push(...await this.runInTransaction(async transaction => {
+			const docs = await transaction.newQuery(this.collection, {...deleteQuery, limit: deleteQuery.limit || 500});
 			const items = docs.map(doc => doc.get());
 			await this.canDeleteDocument(transaction, items);
 
@@ -150,7 +151,12 @@ export abstract class BaseDB_Module<DBType extends DB_Object, ConfigType extends
 
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, items, this.config.uniqueKeys, transaction);
 			return items;
-		});
+		}));
+
+		if (toReturn.length === 500)
+			await this.delete(deleteQuery, toReturn);
+
+		return toReturn;
 	}
 
 	async querySync(syncQuery: FirestoreQuery<DBType>): Promise<Response_DBSync<DBType>> {
