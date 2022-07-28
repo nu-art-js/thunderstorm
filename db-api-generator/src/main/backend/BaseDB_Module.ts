@@ -143,7 +143,7 @@ export abstract class BaseDB_Module<DBType extends DB_Object, ConfigType extends
 	 */
 	async delete(deleteQuery: FirestoreQuery<DBType>, toReturn: DBType[] = []) {
 		toReturn.push(...await this.runInTransaction(async transaction => {
-			const docs = await transaction.newQuery(this.collection, {...deleteQuery, limit: deleteQuery.limit || 500});
+			const docs = await transaction.newQuery(this.collection, {...deleteQuery, limit: deleteQuery.limit || 250});
 			const items = docs.map(doc => doc.get());
 			await this.canDeleteDocument(transaction, items);
 
