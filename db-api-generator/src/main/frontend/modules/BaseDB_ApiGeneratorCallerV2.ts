@@ -139,15 +139,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	}
 
 	onSyncCompleted = async (items: DBType[]) => {
-		for (const item of items) {
-			if (item.__deleted) {
-				await this.db.delete(item);
-				continue;
-			}
-
-			//Upsert the item otherwise
-			await this.db.upsert(item);
-		}
+		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
+		await this.updateIDB(items);
 
 		if (items.length)
 			this.lastSync.set(items[0].__updated);
@@ -155,6 +148,17 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.setSyncStatus(SyncStatus.Synced);
 		this.dispatchMulti(EventType_Query, items);
 	};
+
+	private async updateIDB(items: DBType[]) {
+		for (const item of items) {
+			if (item.__deleted) {
+				await this.db.delete(item);
+				continue;
+			}
+
+			await this.db.upsert(item);
+		}
+	}
 
 	public async clearCache(sync = true) {
 		this.lastSync.delete();
@@ -240,12 +244,12 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	};
 
 	protected onEntryDeleted = async (item: DBType): Promise<void> => {
-		await this.db.delete(item);
+		await this.updateIDB([item]);
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
 	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
-		await this.db.upsertAll(items);
+		await this.updateIDB(items);
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
@@ -258,9 +262,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
-		if (item)
-			await this.db.upsert(item);
-
+		await this.updateIDB([item]);
 		this.dispatchSingle(event, item);
 	}
 
@@ -269,8 +271,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	};
 
 	protected onQueryReturned = async (items: DBType[]): Promise<void> => {
-
-		await this.db.upsertAll(items);
+		await this.updateIDB(items);
 		this.dispatchMulti(EventType_Query, items);
 	};
 }
