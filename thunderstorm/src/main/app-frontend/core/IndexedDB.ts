@@ -272,11 +272,11 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		await store.clear();
 	}
 
-	public async deleteAll(keys: IndexKeys<T, Ks>[]): Promise<T[]> {
+	public async deleteAll(keys: (IndexKeys<T, Ks> | T)[]): Promise<T[]> {
 		return await Promise.all(keys.map(key => this.delete(key)));
 	}
 
-	public async delete(key: IndexKeys<T, Ks>): Promise<T> {
+	public async delete(key: (IndexKeys<T, Ks> | T)): Promise<T> {
 		const keys = this.config.uniqueKeys.map(k => key[k]);
 		const store = await this.store(true);
 
@@ -286,6 +286,10 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 			itemRequest.onerror = () => reject(new Error(`Error getting item in DB - ${this.config.name}`));
 
 			itemRequest.onsuccess = () => {
+				// @ts-ignore
+				if (key.__updated !== undefined && itemRequest.result.__updated >= key.__updated)
+					return resolve(itemRequest.result);
+
 				const deleteRequest = store.delete(keys);
 
 				deleteRequest.onerror = () => reject(new Error(`Error deleting item in DB - ${this.config.name}`));
