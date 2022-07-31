@@ -145,11 +145,11 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			if (!operation) {
 				this.operations[id] = {running: {request, requestType}};
 				// @ts-ignore
-				this.logInfo(`pre-executing operation(${requestType}) for ${id}: ${item.label}`);
+				// this.logInfo(`pre-executing operation(${requestType}) for ${id}: ${item.label}`);
 
 				return _execute((r) => {
 					// @ts-ignore
-					this.logInfo(`executing operation(${requestType}) for ${id}: ${item.label}`);
+					// this.logInfo(`executing operation(${requestType}) for ${id}: ${item.label}`);
 					const pending = this.operations[id].pending;
 					delete this.operations[id];
 					if (!pending)
@@ -168,11 +168,11 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 			if (runningRequestType === 'upsert' || runningRequestType === 'patch') {
 				if (operation.pending) { // @ts-ignore
-					this.logInfo(`canceling pending operation(${operation.pending.requestType}) for ${id}`);
+					// this.logInfo(`canceling pending operation(${operation.pending.requestType}) for ${id}`);
 				}
 
 				// @ts-ignore
-				this.logInfo(`scheduling pending operation(${requestType}) for ${id}: ${item.label}`);
+				// this.logInfo(`scheduling pending operation(${requestType}) for ${id}: ${item.label}`);
 				operation.pending = {request, requestType, onSuccess, onError};
 				operation.running.request.setOnCompleted(undefined);
 			}

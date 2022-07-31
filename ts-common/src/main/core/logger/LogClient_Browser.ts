@@ -26,7 +26,7 @@ class LogClient_Browser_class
 
 	private style: TypedMap<LogStyle> = {
 		base: {
-			'background-color': '#fff',
+			// 'background-color': '#fff',
 			'padding': '2px 0px',
 			'border-radius': '2px',
 		},
