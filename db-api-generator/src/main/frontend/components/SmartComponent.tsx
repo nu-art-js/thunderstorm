@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {compare, DB_Object} from '@nu-art/ts-common';
-import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, SyncStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
+import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, DataStatus, SyncStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
 import {Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
 import {BaseComponent} from '@nu-art/thunderstorm/app-frontend/core/ComponentBase';
@@ -118,28 +118,35 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	}
 
 	private deriveComponentPhase() {
-		if (!this.canBeRendered(this.state))
-			return ComponentStatus.Loading;
+		const moduleStatuses = this.props.modules.map(module => ({syncStatus: module.getSyncStatus(), dataStatus: module.getDataStatus()}));
+		const canBeRendered = this.canBeRendered();
 
-		const moduleStatuses = this.props.modules.map(module => module.getSyncStatus());
-		//If all of the modules are outOfSync
-		if (moduleStatuses.every(status => status === SyncStatus.OutOfSync))
-			return ComponentStatus.Loading;
-
-		//If all of the modules are synced
-		if (moduleStatuses.every(status => status === SyncStatus.Synced))
+		//If all Modules are synced
+		if (moduleStatuses.every(status => status.syncStatus === SyncStatus.idle && status.dataStatus === DataStatus.containsData))
 			return ComponentStatus.Synced;
 
-		//Some of the components are in sync process
-		//If component is already out of load phase
-		if (this.componentPhase === ComponentStatus.Syncing || this.componentPhase === ComponentStatus.Synced)
-			return ComponentStatus.Syncing;
+		//If all modules are synced or in process of being synced, and pass the "canBeRendered" check
+		if (this.props.modules.every(module => {
+			return canBeRendered[module.getName()]();
+		})) {
+			return ComponentStatus.Synced;
+		}
 
 		//Return loading
 		return ComponentStatus.Loading;
+
+		// //If all of the modules are outOfSync
+		// if (moduleStatuses.every(status => status === SyncStatus.OutOfSync))
+		// 	return ComponentStatus.Loading;
+		//
+		//
+		// //Some of the components are in sync process
+		// //If component is already out of load phase
+		// if (this.componentPhase === ComponentStatus.Syncing || this.componentPhase === ComponentStatus.Synced)
+		// 	return ComponentStatus.Syncing;
 	}
 
-	protected abstract canBeRendered(state: State): boolean
+	protected abstract canBeRendered(): { [k: string]: () => boolean }
 
 	// ######################### Render #########################
 

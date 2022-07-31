@@ -53,9 +53,9 @@ import {SyncIfNeeded} from './ModuleFE_SyncManager';
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
 
 export enum SyncStatus {
-	OutOfSync,
-	Syncing,
-	Synced
+	idle,
+	read,
+	write
 }
 
 export enum DataStatus {
@@ -85,7 +85,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
 	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
-	private syncStatus: SyncStatus = SyncStatus.OutOfSync;
+	private syncStatus: SyncStatus;
+	private dataStatus: DataStatus;
 	private operations: TypedMap<Pah> = {};
 
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
@@ -103,10 +104,14 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		const upsert = apiWithBody(apiDef.v1.upsert, this.onEntryUpdated);
 		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
 
+		//Set Statuses
+		this.syncStatus = SyncStatus.idle;
+		this.dataStatus = DataStatus.NoData;
+
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		this.v1 = {
 			sync: () => {
-				this.setSyncStatus(SyncStatus.Syncing);
+				this.setSyncStatus(SyncStatus.read);
 				const query: FirestoreQuery<DBType> = {
 					where: {__updated: {$gt: this.lastSync.get(0)}},
 					orderBy: [{key: '__updated', order: 'desc'}],
@@ -193,13 +198,15 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	__syncIfNeeded = async (syncData: DBSyncData[]) => {
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
 		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0)) {
-			this.setSyncStatus(SyncStatus.Synced);
+			this.setDataStatus(DataStatus.containsData);
+			this.setSyncStatus(SyncStatus.idle);
 			return;
 		}
 
-		this.setSyncStatus(SyncStatus.Syncing);
+		this.setSyncStatus(SyncStatus.read);
 		await this.v1.sync().executeSync();
-		this.setSyncStatus(SyncStatus.Synced);
+		this.setDataStatus(DataStatus.containsData);
+		this.setSyncStatus(SyncStatus.idle);
 	};
 
 	private setSyncStatus(status: SyncStatus) {
@@ -212,11 +219,20 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return this.syncStatus;
 	}
 
+	private setDataStatus(status: DataStatus) {
+		this.logDebug(`Data status updated: ${this.dataStatus} => ${status}`);
+		this.dataStatus = status;
+	}
+
+	getDataStatus() {
+		return this.dataStatus;
+	}
+
 	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
 		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
 		await this.syncIndexDb(syncData.toUpdate, syncData.toDelete);
 
-		this.setSyncStatus(SyncStatus.Synced);
+		this.setSyncStatus(SyncStatus.idle);
 		this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
 
@@ -235,7 +251,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	public async clearCache(sync = true) {
 		this.lastSync.delete();
 		await this.db.deleteDB();
-		this.setSyncStatus(SyncStatus.OutOfSync);
+		this.setSyncStatus(SyncStatus.idle);
+		this.setDataStatus(DataStatus.NoData);
 		if (sync)
 			this.v1.sync().execute();
 	}
