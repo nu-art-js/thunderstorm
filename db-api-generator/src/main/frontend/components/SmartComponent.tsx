@@ -118,6 +118,9 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	}
 
 	private deriveComponentPhase() {
+		if (!this.canBeRendered(this.state))
+			return ComponentStatus.Loading;
+
 		const moduleStatuses = this.props.modules.map(module => module.getSyncStatus());
 		//If all of the modules are outOfSync
 		if (moduleStatuses.every(status => status === SyncStatus.OutOfSync))
@@ -135,6 +138,8 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		//Return loading
 		return ComponentStatus.Loading;
 	}
+
+	protected abstract canBeRendered(state: State): boolean
 
 	// ######################### Render #########################
 

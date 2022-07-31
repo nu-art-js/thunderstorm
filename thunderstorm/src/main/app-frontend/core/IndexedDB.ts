@@ -287,7 +287,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 			itemRequest.onsuccess = () => {
 				// @ts-ignore
-				if (key.__updated !== undefined && itemRequest.result.__updated >= key.__updated)
+				if (key.__updated !== undefined && itemRequest.result?.__updated >= key.__updated)
 					return resolve(itemRequest.result);
 
 				const deleteRequest = store.delete(keys);
