@@ -108,7 +108,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			sync: () => {
 				this.setSyncStatus(SyncStatus.Syncing);
 				const query: FirestoreQuery<DBType> = {
-					withDeleted: true,
 					where: {__updated: {$gt: this.lastSync.get(0)}},
 					orderBy: [{key: '__updated', order: 'desc'}],
 				};
