@@ -37,11 +37,12 @@ import {DBDef} from './db-def';
  */
 export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 	v1: {
+		sync: BodyApi<DBType[], FirestoreQuery<DBType>, undefined>,
 		query: BodyApi<DBType[], FirestoreQuery<DBType>, FirestoreQuery<DBType> | undefined | {}>,
 		queryUnique: QueryApi<DBType, DB_BaseObject, string>,
-		upsert: BodyApi<DBType, [PreDB<DBType>]>,
+		upsert: BodyApi<DBType, PreDB<DBType>>,
 		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
-		patch: BodyApi<DBType, [PreDB<DBType>]>
+		patch: BodyApi<DBType, PreDB<DBType>>
 		delete: QueryApi<DBType, DB_BaseObject>,
 		deleteAll: QueryApi<void>
 	},
@@ -63,6 +64,7 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType, '_id'>): ApiDefResolver<ApiStruct_DBApiGen<DBType>> => {
 	return {
 		v1: {
+			sync: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
 			query: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
 			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/query-unique`},
 			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert`},

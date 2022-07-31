@@ -153,7 +153,7 @@ export abstract class BaseDB_Module<DBType extends DB_Object, ConfigType extends
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, items, this.config.uniqueKeys, transaction);
 			return items;
 		}));
-		this.logInfoBold(`deleting ${toReturn.length} things`);
+
 		if (toReturn.length !== 0 && toReturn.length % limit === 0)
 			await this.delete(deleteQuery, toReturn);
 

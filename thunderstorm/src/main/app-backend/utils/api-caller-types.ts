@@ -30,7 +30,7 @@ import {ServerApi, ServerApi_Get, ServerApi_Post} from '../modules/server/server
  * 	}
  */
 export type ApiModule = {
-	useRoutes: () => ApiServerRouter<any> | ApiServer<any>
+	useRoutes: () => ApiServerRouter<any>
 }
 
 export type ApiDefServer<K> = ApiModule & K extends TypedApi<any, any, any, any> ? ApiServer<K> | undefined : ApiServerRouter<K>;

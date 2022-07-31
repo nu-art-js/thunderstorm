@@ -57,6 +57,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		const query = apiWithBody(apiDef.v1.query, this.onQueryReturned);
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
 		this.v1 = {
+			sync: () => query({} as FirestoreQuery<DBType>),
 			query: (body?: FirestoreQuery<DBType> | undefined | {}) => query((body || {}) as FirestoreQuery<DBType>),
 			queryUnique: (_id) => queryUnique({_id}),
 			upsert: apiWithBody(apiDef.v1.upsert, this.onEntryUpdated),
