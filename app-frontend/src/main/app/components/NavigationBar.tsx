@@ -23,7 +23,7 @@ import {Page_ApiGen} from '../pages/Page_ApiGen';
 import {Example_Dialogs} from '../playground/examples/modules/Example_Dialogs';
 import {Example_Toaster} from '../playground/examples/modules/Example_Toaster';
 import {Example_Dispatch} from '../playground/examples/Example_Dispatch';
-import {Component_Login} from '@nu-art/user-account/app-frontend';
+import {Component_Login} from '@nu-art/user-account/frontend';
 
 const fixedMenu = css`
   position: fixed;
