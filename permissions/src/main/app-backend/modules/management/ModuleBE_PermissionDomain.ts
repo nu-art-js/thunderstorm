@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
+import {BaseDB_Module} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {auditBy} from '@nu-art/ts-common';
@@ -28,11 +28,10 @@ import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 
 
 export class ModuleBE_PermissionDomain_Class
-	extends BaseDB_ApiGenerator<DB_PermissionDomain> {
+	extends BaseDB_Module<DB_PermissionDomain> {
 
 	constructor() {
 		super(DBDef_PermissionDomain);
-		this.setLockKeys(['projectId']);
 	}
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {

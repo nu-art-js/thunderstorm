@@ -78,6 +78,7 @@ export type FirestoreQueryImpl<T extends TS_Object> = {
 	select?: Clause_Select<T>
 	orderBy?: Clause_OrderBy<T>
 	where?: Clause_Where<T>
+	withDeleted?: boolean
 	limit?: number | { page?: number, itemsCount: number }
 }
 

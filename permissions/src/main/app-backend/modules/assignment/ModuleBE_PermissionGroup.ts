@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {auditBy, batchAction, filterDuplicates, filterInstances, removeItemFromArray} from '@nu-art/ts-common';
@@ -25,15 +24,15 @@ import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {DB_PermissionGroup, DBDef_PermissionGroup, PredefinedGroup} from '../../shared';
 import {Clause_Where} from '@nu-art/firebase';
 import {checkDuplicateLevelsDomain, ModuleBE_PermissionAccessLevel} from '../management';
-import {ModuleBE_PermissionUser} from './ModuleBE_PermissionUser';
+import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
+import {BaseDB_Module} from '@nu-art/db-api-generator/backend/BaseDB_Module';
 
 
 export class ModuleBE_PermissionGroup_Class
-	extends BaseDB_ApiGenerator<DB_PermissionGroup> {
+	extends BaseDB_Module<DB_PermissionGroup> {
 
 	constructor() {
 		super(DBDef_PermissionGroup);
-		this.setLockKeys(['__accessLevels']);
 	}
 
 	protected externalFilter(item: DB_PermissionGroup): Clause_Where<DB_PermissionGroup> {
@@ -47,7 +46,7 @@ export class ModuleBE_PermissionGroup_Class
 	}
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionGroup): Promise<void> {
-		const groups = await ModuleBE_PermissionUser.collection.query({where: {__groupIds: {$ac: dbInstance._id}}});
+		const groups = await ModuleBE_PermissionUserDB.collection.query({where: {__groupIds: {$ac: dbInstance._id}}});
 
 		if (groups.length) {
 			throw new ApiException(403, 'You trying delete group that associated with users, you need delete this group from users first');
@@ -89,7 +88,7 @@ export class ModuleBE_PermissionGroup_Class
 
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionGroup, request?: ExpressRequest) {
 		if (request) {
-			const account = await ModuleBE_Account.validateSession({},request);
+			const account = await ModuleBE_Account.validateSession({}, request);
 			dbInstance._audit = auditBy(account.email);
 		}
 

@@ -37,4 +37,5 @@ export const DBDef_PermissionApi: DBDef<DB_PermissionApi> = {
 	validator: Validator_PermissionApi,
 	dbName: 'permissions--api',
 	entityName: 'permissions--api',
+	lockKeys: ['projectId', 'path']
 };

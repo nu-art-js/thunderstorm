@@ -38,4 +38,5 @@ export const DBDef_PermissionUser: DBDef<DB_PermissionUser> = {
 	validator: Validator_PermissionUser,
 	dbName: 'permissions--user',
 	entityName: 'permissions--user',
+	lockKeys: ['accountId']
 };

@@ -43,7 +43,7 @@ import {
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {ModuleBE_Permissions} from './ModuleBE_Permissions';
 import {ModuleBE_Account} from '@nu-art/user-account/backend';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from './assignment';
+import {ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from './assignment';
 import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi} from './management';
 
 
@@ -181,7 +181,7 @@ export class ModuleBE_PermissionsAssert_Class
 	}
 
 	async getUserDetails(uuid: string): Promise<{ user: DB_PermissionUser, userGroups: DB_PermissionGroup[] }> {
-		const user = await ModuleBE_PermissionUser.queryUnique({accountId: uuid});
+		const user = await ModuleBE_PermissionUserDB.queryUnique({accountId: uuid});
 		const userGroups = user.groups || [];
 		const groups: DB_PermissionGroup[] = await batchActionParallel(userGroups.map(userGroup => userGroup.groupId), 10, subGroupIds => ModuleBE_PermissionGroup.query({where: {_id: {$in: subGroupIds}}}));
 

@@ -34,4 +34,5 @@ export const DBDef_PermissionAccessLevel: DBDef<DB_PermissionAccessLevel> = {
 	validator: Validator_PermissionAccessLevel,
 	dbName: 'permissions--level',
 	entityName: 'permissions--level',
+	lockKeys: ['domainId']
 };

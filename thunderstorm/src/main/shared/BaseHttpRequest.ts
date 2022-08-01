@@ -201,20 +201,20 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		const requestData = this.params || this.body;
 		if (this.aborted) {
 			const httpException = new HttpException(status, this.url); // should be status 0
-			this.onError?.(httpException, requestData, this);
+			await this.onError?.(httpException, requestData, this);
 			throw httpException;
 		}
 
 		if (!this.isValidStatus(status)) {
 			const errorResponse = this.getErrorResponse();
 			const httpException = new HttpException(status, this.url, errorResponse);
-			this.onError?.(httpException, requestData, this);
+			await this.onError?.(httpException, requestData, this);
 			throw httpException;
 		}
 
 		let response: API['R'] = this.getResponse();
 		if (!response) {
-			this.onCompleted?.(response, requestData, this);
+			await this.onCompleted?.(response, requestData, this);
 			return response;
 		}
 
@@ -223,7 +223,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		} catch (ignore: any) {
 			//
 		}
-		this.onCompleted?.(response, requestData, this);
+		await this.onCompleted?.(response, requestData, this);
 		return response;
 	}
 

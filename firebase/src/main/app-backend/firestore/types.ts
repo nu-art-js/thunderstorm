@@ -18,8 +18,9 @@
 
 import * as firestore from 'firebase-admin/firestore';
 
+
 export type FirestoreType_Collection = firestore.CollectionReference;
-export type FirestoreType_DocumentSnapshot = firestore.QueryDocumentSnapshot;
+export type FirestoreType_DocumentSnapshot<T = firestore.DocumentData> = firestore.QueryDocumentSnapshot<T>;
 export type FirestoreType_Query = firestore.Query;
 export type FirestoreType_DocumentReference = firestore.DocumentReference;
 export type FirestoreType = firestore.Firestore;

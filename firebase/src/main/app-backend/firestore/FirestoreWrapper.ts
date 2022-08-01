@@ -36,12 +36,12 @@ export class FirestoreWrapper
 		this.firestore = getFirestore(firebaseSession.app);
 	}
 
-	public getCollection<Type extends TS_Object>(name: string, externalFilterKeys?: FilterKeys<Type>): FirestoreCollection<Type> {
+	public getCollection<Type extends TS_Object>(name: string, uniqueKeys?: FilterKeys<Type>): FirestoreCollection<Type> {
 		const collection = this.collections[name];
 		if (collection)
 			return collection;
 
-		return this.collections[name] = new FirestoreCollection<Type>(name, this, externalFilterKeys);
+		return this.collections[name] = new FirestoreCollection<Type>(name, this, uniqueKeys);
 	}
 
 	public listen<Type extends DB_Object>(collection: FirestoreCollection<Type>, doc: string) {
