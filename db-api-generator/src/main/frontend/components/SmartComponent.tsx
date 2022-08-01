@@ -34,7 +34,7 @@ export enum ComponentStatus {
 }
 
 export type Props_SmartComponent = {
-	modules: BaseDB_ApiGeneratorCallerV2<DB_Object, any>[];
+	modules?: BaseDB_ApiGeneratorCallerV2<DB_Object, any>[];
 }
 
 export type State_SmartComponent = {
@@ -54,7 +54,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	constructor(p: Props) {
 		super(p);
 
-		this.props.modules.forEach(module => {
+		this.props.modules?.forEach(module => {
 			// @ts-ignore
 			const __callback = this[module.defaultDispatcher.method]?.bind(this);
 			// @ts-ignore
@@ -118,15 +118,16 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	}
 
 	private deriveComponentPhase() {
-		const moduleStatuses = this.props.modules.map(module => ({syncStatus: module.getSyncStatus(), dataStatus: module.getDataStatus()}));
+		const moduleStatuses = this.props.modules?.map(module => ({syncStatus: module.getSyncStatus(), dataStatus: module.getDataStatus()}));
 		const canBeRendered = this.canBeRendered();
 
 		//If all Modules are synced
-		if (moduleStatuses.every(status => status.syncStatus === SyncStatus.idle && status.dataStatus === DataStatus.containsData))
+
+		if (moduleStatuses && moduleStatuses.every(status => status.syncStatus === SyncStatus.idle && status.dataStatus === DataStatus.containsData))
 			return ComponentStatus.Synced;
 
 		//If all modules are synced or in process of being synced, and pass the "canBeRendered" check
-		if (this.props.modules.every(module => {
+		if (this.props.modules?.every(module => {
 			return canBeRendered[module.getName()]();
 		})) {
 			return ComponentStatus.Synced;
