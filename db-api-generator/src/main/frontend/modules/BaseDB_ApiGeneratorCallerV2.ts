@@ -107,7 +107,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 		//Set Statuses
 		this.syncStatus = SyncStatus.idle;
-		this.dataStatus = DataStatus.NoData;
+		this.dataStatus = this.lastSync.get(0) !== 0 ? DataStatus.containsData : DataStatus.NoData;
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore
