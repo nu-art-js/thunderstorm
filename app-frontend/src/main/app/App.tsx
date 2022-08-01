@@ -21,7 +21,7 @@ import {ComponentSync, RoutingModule, TS_DialogOverlay, TS_PopupMenuOverlay, TS_
 
 import {VersionOnScreen} from '@components/VersionOnScreen';
 import {registerRoutes} from './Routes';
-import {ModuleFE_Account, OnLoginStatusUpdated} from '@nu-art/user-account/app-frontend';
+import {ModuleFE_Account, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
 
 
 export class App
