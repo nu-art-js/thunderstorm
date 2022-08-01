@@ -38,7 +38,7 @@ export type Props_SmartComponent = {
 }
 
 export type State_SmartComponent = {
-	isLoading?: boolean;
+	componentPhase: ComponentStatus;
 	error?: Error
 }
 
@@ -69,27 +69,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	// ######################### Life Cycle #########################
 
-	protected _deriveStateFromProps(nextProps: P): State | undefined {
-		if (this.derivingState) {
-			this.logVerbose('Scheduling new props', nextProps as {});
-			this.pendingProps = nextProps;
-			return;
-		}
-
-		this.logVerbose('Deriving state from props', nextProps as {});
-		this.pendingProps = undefined;
-		this.derivingState = true;
-
-		this.deriveStateFromProps(nextProps)
-			.then((state) => this.setState(state, this.reDeriveCompletedCallback))
-			.catch(e => {
-				this.logError(`error`, e);
-				this.setState({error: e}, this.reDeriveCompletedCallback);
-			});
-
-		return this.createInitialState(nextProps);
-	}
-
 	private onSyncEvent = (module: BaseDB_ApiGeneratorCallerV2<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
 		//Define logic for change in module sync status
 		if (params[0] === EventType_Sync) {
@@ -101,22 +80,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		}
 	};
 
-	private reDeriveCompletedCallback = () => {
-		this.derivingState = false;
-		if (this.pendingProps) {
-			this.logVerbose('Triggering pending props');
-			this._deriveStateFromProps(this.pendingProps);
-		}
-	};
-
-	protected async deriveStateFromProps(nextProps: P): Promise<State> {
-		return this.createInitialState(nextProps);
-	}
-
-	protected createInitialState(nextProps: P) {
-		return {isLoading: true} as State;
-	}
-
 	private deriveComponentPhase() {
 		const moduleStatuses = this.props.modules.map(module => ({syncStatus: module.getSyncStatus(), dataStatus: module.getDataStatus()}));
 		const canBeRendered = this.canBeRendered();
@@ -126,9 +89,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 			return ComponentStatus.Synced;
 
 		//If all modules are synced or in process of being synced, and pass the "canBeRendered" check
-		if (this.props.modules.every(module => {
-			return canBeRendered[module.getName()]();
-		})) {
+		if (this.props.modules.every(module => canBeRendered[module.getName()]())) {
 			return ComponentStatus.Synced;
 		}
 
@@ -148,6 +109,45 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	protected abstract canBeRendered(): { [k: string]: () => boolean }
 
+	protected _deriveStateFromProps(nextProps: P): State | undefined {
+		if (this.derivingState) {
+			this.logVerbose('Scheduling new props', nextProps as {});
+			this.pendingProps = nextProps;
+			return;
+		}
+
+		this.logVerbose('Deriving state from props', nextProps as {});
+		this.pendingProps = undefined;
+		this.derivingState = true;
+
+		const componentPhase = this.deriveComponentPhase();
+		if (componentPhase !== ComponentStatus.Loading)
+			this.deriveStateFromProps(nextProps)
+				.then((state) => this.setState(state, this.reDeriveCompletedCallback))
+				.catch(e => {
+					this.logError(`error`, e);
+					this.setState({error: e}, this.reDeriveCompletedCallback);
+				});
+
+		return this.createInitialState(nextProps);
+	}
+
+	private reDeriveCompletedCallback = () => {
+		this.derivingState = false;
+		if (this.pendingProps) {
+			this.logVerbose('Triggering pending props');
+			this._deriveStateFromProps(this.pendingProps);
+		}
+	};
+
+	protected async deriveStateFromProps(nextProps: P): Promise<State> {
+		return this.createInitialState(nextProps);
+	}
+
+	protected createInitialState(nextProps: P) {
+		return {componentPhase: ComponentStatus.Loading} as State;
+	}
+
 	// ######################### Render #########################
 
 	protected abstract _render(): JSX.Element
@@ -163,8 +163,9 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 export abstract class SmartPanel<Config, State = {}, Props = {}>
 	extends SmartComponent<Props_WorkspacePanel<Config, Props>, State_WorkspacePanel<Config, State>> {
 
-	protected async deriveStateFromProps(nextProps: Props_WorkspacePanel<Config, Props>): Promise<State_WorkspacePanel<Config, State>> {
-		return {config: {...nextProps.config}} as State_WorkspacePanel<Config, State>;
+	protected async deriveStateFromProps(nextProps: Props_WorkspacePanel<Config, Props>) {
+		const state = (await super.deriveStateFromProps(nextProps)) as State_SmartComponent;
+		return {...state, config: {...nextProps.config}} as State_WorkspacePanel<Config, State> & State_SmartComponent;
 	}
 
 	shouldReDeriveState(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>): boolean {

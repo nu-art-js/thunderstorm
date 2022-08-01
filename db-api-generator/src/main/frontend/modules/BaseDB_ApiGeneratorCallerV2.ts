@@ -84,7 +84,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
-	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
+	// @ts-ignore
+	readonly v1;
 	private syncStatus: SyncStatus;
 	private dataStatus: DataStatus;
 	private operations: TypedMap<Pah> = {};
@@ -120,7 +121,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			},
 
 			query: (query?: FirestoreQuery<DBType>) => _query(query || {where: {}}),
-			// @ts-ignore
 			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
 				return queryUnique(typeof uniqueKeys === 'string' ? {_id: uniqueKeys} : uniqueKeys as unknown as QueryParams);
 			},
@@ -128,14 +128,14 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
 			},
 			upsertAll: apiWithBody(apiDef.v1.upsertAll, this.onEntriesUpdated),
-			patch: (toPatch: IndexKeys<DBType, Ks> & Partial<DBType>) => {
-				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch), 'patch');
+			patch: (toPatch: Partial<DBType>) => {
+				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch as IndexKeys<DBType, Ks> & Partial<DBType>), 'patch');
 			},
 			delete: (item: DB_BaseObject) => {
 				return this.updatePending(item, _delete(item), 'delete');
 			},
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
-		} as ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
+		};
 	}
 
 	private updatePending<API extends TypedApi<any, any, any, any>>(item: DB_BaseObject, request: BaseHttpRequest<API>, requestType: RequestType) {
