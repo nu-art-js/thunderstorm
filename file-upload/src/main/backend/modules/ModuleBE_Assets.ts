@@ -40,9 +40,9 @@ import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thu
 import {fromBuffer} from 'file-type';
 import {FileExtension, MimeType} from 'file-type/core';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
-import {BaseDB_ApiGenerator, DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {OnAssetUploaded} from './AssetBucketListener';
 import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
+import {BaseDB_Module, DBApiConfig} from '@nu-art/db-api-generator/backend';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -91,7 +91,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 };
 
 export class ModuleBE_Assets_Class
-	extends BaseDB_ApiGenerator<DB_Asset, MyConfig>
+	extends BaseDB_Module<DB_Asset, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {
@@ -149,7 +149,7 @@ export class ModuleBE_Assets_Class
 		};
 	}
 
-	private cleanup = async (interval = Hour, module: BaseDB_ApiGenerator<DB_Asset> = ModuleBE_AssetsTemp) => {
+	private cleanup = async (interval = Hour, module: BaseDB_Module<DB_Asset> = ModuleBE_AssetsTemp) => {
 		const entries: DB_Asset[] = await module.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);
@@ -274,7 +274,7 @@ export class ModuleBE_Assets_Class
 			}
 
 			const upsertWrite = await this.upsert_Read(tempMeta, transaction);
-			await ModuleBE_AssetsTemp.deleteUnique(tempMeta._id, transaction);
+			await ModuleBE_AssetsTemp.deleteUnique(tempMeta._id);
 			return await upsertWrite();
 		});
 

@@ -28,7 +28,7 @@ export const Const_LockKeys: (keyof DB_Object)[] = [Const_UniqueKey, '_v', '__cr
 export type DBApiBEConfig<DBType extends DB_Object, Ks extends keyof DBType = Default_UniqueKey> = {
 	collectionName: string;
 	validator: ValidatorTypeResolver<DBType>;
-	externalFilterKeys: Ks[]
+	uniqueKeys: Ks[]
 	lockKeys: (keyof DBType)[]
 	itemName: string;
 	versions: string[];
@@ -41,7 +41,7 @@ export const getModuleBEConfig = <T extends DB_Object>(dbDef: DBDef<T>): DBApiBE
 			...DB_Object_validator,
 			...dbDef.validator,
 		} as ValidatorTypeResolver<T>,
-		externalFilterKeys: dbDef.uniqueKeys || [Const_UniqueKey],
+		uniqueKeys: dbDef.uniqueKeys || [Const_UniqueKey],
 		lockKeys: dbDef.lockKeys || dbDef.uniqueKeys || [...Const_LockKeys],
 		itemName: dbDef.entityName,
 		versions: dbDef.versions || ['1.0.0'],

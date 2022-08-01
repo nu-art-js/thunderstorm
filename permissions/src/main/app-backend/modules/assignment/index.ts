@@ -17,5 +17,5 @@
  * limitations under the License.
  */
 
-export * from './ModuleBE_PermissionUser';
+export * from './ModuleBE_PermissionUserDB';
 export * from './ModuleBE_PermissionGroup';

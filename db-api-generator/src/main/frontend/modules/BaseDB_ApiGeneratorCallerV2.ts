@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {ApiDefCaller, IndexKeys, QueryParams} from '@nu-art/thunderstorm';
-import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData,} from '../shared';
+import {ApiDefCaller, BaseHttpRequest, HttpException, IndexKeys, QueryParams, TypedApi} from '@nu-art/thunderstorm';
+import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response_DBSync,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {
 	apiWithBody,
@@ -33,15 +33,47 @@ import {
 	ThunderDispatcher
 } from '@nu-art/thunderstorm/frontend';
 
-import {DB_Object, Module, PreDB} from '@nu-art/ts-common';
+import {BadImplementationException, DB_BaseObject, DB_Object, Module, PreDB, TypedMap} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
-import {EventType_Create, EventType_Delete, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update, EventType_UpsertAll} from '../consts';
+import {
+	EventType_Create,
+	EventType_Delete,
+	EventType_Patch,
+	EventType_Query,
+	EventType_Sync,
+	EventType_Unique,
+	EventType_Update,
+	EventType_UpsertAll
+} from '../consts';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
 
 
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
+
+export enum SyncStatus {
+	idle,
+	read,
+	write
+}
+
+export enum DataStatus {
+	NoData,
+	containsData,
+}
+
+type RequestType = 'upsert' | 'patch' | 'delete';
+type Pending = {
+	requestType: RequestType;
+	request: BaseHttpRequest<any>
+	onSuccess?: (response: any, data?: string) => Promise<void> | void,
+	onError?: (reason: HttpException) => any
+};
+type Pah = {
+	running: Pending,
+	pending?: Pending
+}
 
 export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config>
@@ -52,7 +84,10 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
-	readonly v1;
+	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
+	private syncStatus: SyncStatus;
+	private dataStatus: DataStatus;
+	private operations: TypedMap<Pah> = {};
 
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
 		super();
@@ -63,63 +98,161 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 
-		const _query = apiWithBody(apiDef.v1.query, this.onQueryReturned);
-		const sync = apiWithBody(apiDef.v1.query, this.onSyncCompleted);
+		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
+		const sync = apiWithBody(apiDef.v1.sync, this.onSyncCompleted);
 		const queryUnique = apiWithQuery(apiDef.v1.queryUnique, this.onGotUnique);
 		const upsert = apiWithBody(apiDef.v1.upsert, this.onEntryUpdated);
 		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
 
+		//Set Statuses
+		this.syncStatus = SyncStatus.idle;
+		this.dataStatus = DataStatus.NoData;
+
+		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		this.v1 = {
-			sync: () => sync({where: {__updated: {$gte: this.lastSync.get(0)}}, orderBy: [{key: '__updated', order: 'desc'}]}),
+			sync: () => {
+				this.setSyncStatus(SyncStatus.read);
+				const query: FirestoreQuery<DBType> = {
+					where: {__updated: {$gt: this.lastSync.get(0)}},
+					orderBy: [{key: '__updated', order: 'desc'}],
+				};
+				return sync(query);
+			},
 
 			query: (query?: FirestoreQuery<DBType>) => _query(query || {where: {}}),
 			// @ts-ignore
 			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
 				return queryUnique(typeof uniqueKeys === 'string' ? {_id: uniqueKeys} : uniqueKeys as unknown as QueryParams);
 			},
-			// @ts-ignore
 			upsert: (toUpsert: PreDB<DBType>) => {
-				return upsert(toUpsert);
+				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
 			},
 			upsertAll: apiWithBody(apiDef.v1.upsertAll, this.onEntriesUpdated),
-			// @ts-ignore
 			patch: (toPatch: IndexKeys<DBType, Ks> & Partial<DBType>) => {
-				return patch(toPatch);
+				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch), 'patch');
 			},
-			delete: apiWithQuery(apiDef.v1.delete, this.onEntryDeleted),
+			delete: (item: DB_BaseObject) => {
+				return this.updatePending(item, _delete(item), 'delete');
+			},
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
-			getDBLastUpdated: apiWithQuery(apiDef.v1.getDBLastUpdated),
 		} as ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
+	}
+
+	private updatePending<API extends TypedApi<any, any, any, any>>(item: DB_BaseObject, request: BaseHttpRequest<API>, requestType: RequestType) {
+		const id = item._id;
+		if (id === undefined)
+			return request;
+
+		const _execute = request.execute.bind(request);
+		request.execute = (onSuccess, onError) => {
+			const operation = this.operations[id];
+
+			if (!operation) {
+				this.operations[id] = {running: {request, requestType}};
+				// @ts-ignore
+				// this.logInfo(`pre-executing operation(${requestType}) for ${id}: ${item.label}`);
+
+				return _execute((r) => {
+					// @ts-ignore
+					// this.logInfo(`executing operation(${requestType}) for ${id}: ${item.label}`);
+					const pending = this.operations[id].pending;
+					delete this.operations[id];
+					if (!pending)
+						return onSuccess?.(r);
+
+					pending.request.execute(pending.onSuccess, pending.onError);
+				}, onError);
+			}
+
+			const runningRequestType = operation.running.requestType;
+			const pendingRequestType = operation.pending?.requestType;
+
+			if (runningRequestType === 'delete' || pendingRequestType === 'delete') {
+				throw new BadImplementationException(`Item with id: ${id} is marked for deletion`);
+			}
+
+			if (runningRequestType === 'upsert' || runningRequestType === 'patch') {
+				if (operation.pending) { // @ts-ignore
+					// this.logInfo(`canceling pending operation(${operation.pending.requestType}) for ${id}`);
+				}
+
+				// @ts-ignore
+				// this.logInfo(`scheduling pending operation(${requestType}) for ${id}: ${item.label}`);
+				operation.pending = {request, requestType, onSuccess, onError};
+				operation.running.request.setOnCompleted(undefined);
+			}
+
+			return request;
+		};
+
+		// request.executeSync = async () => {
+		// 	const operation = this.operations[id];
+		// 	if (!operation) {
+		// 		this.operations[id] = {running: {request, requestType}};
+		// 		return request.executeSync();
+		// 	}
+		// };
+		return request;
 	}
 
 	__syncIfNeeded = async (syncData: DBSyncData[]) => {
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
-		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0))
+		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0)) {
+			this.setDataStatus(DataStatus.containsData);
+			this.setSyncStatus(SyncStatus.idle);
 			return;
+		}
 
+		this.setSyncStatus(SyncStatus.read);
 		await this.v1.sync().executeSync();
+		this.setDataStatus(DataStatus.containsData);
+		this.setSyncStatus(SyncStatus.idle);
 	};
 
-	onSyncCompleted = async (items: DBType[]) => {
-		items.forEach(item => {
-			//Delete item from IDB if marked deleted in DB
-			if (item.__deleted) {
-				return this.db.delete(item);
-			}
+	private setSyncStatus(status: SyncStatus) {
+		this.logDebug(`Sync status updated: ${this.syncStatus} => ${status}`);
+		this.syncStatus = status;
+		this.OnSyncStatusChanged();
+	}
 
-			//Upsert the item otherwise
-			this.db.upsert(item);
-		});
+	getSyncStatus() {
+		return this.syncStatus;
+	}
 
-		if (items.length)
-			this.lastSync.set(items[0].__updated);
+	private setDataStatus(status: DataStatus) {
+		this.logDebug(`Data status updated: ${this.dataStatus} => ${status}`);
+		this.dataStatus = status;
+	}
 
-		this.dispatchMulti(EventType_Query, items);
+	getDataStatus() {
+		return this.dataStatus;
+	}
+
+	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
+		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
+		await this.syncIndexDb(syncData.toUpdate, syncData.toDelete);
+
+		this.setSyncStatus(SyncStatus.idle);
+		this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
+
+	private async syncIndexDb(toUpdate: DBType[], toDelete: DB_Object[] = []) {
+		await this.db.upsertAll(toUpdate);
+		await this.db.deleteAll(toDelete as DBType[]);
+
+		let latest = -1;
+		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
+		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
+
+		if (latest !== -1)
+			this.lastSync.set(latest);
+	}
 
 	public async clearCache(sync = true) {
 		this.lastSync.delete();
-		await this.db.deleteAll();
+		await this.db.deleteDB();
+		this.setSyncStatus(SyncStatus.idle);
+		this.setDataStatus(DataStatus.NoData);
 		if (sync)
 			this.v1.sync().execute();
 	}
@@ -195,13 +328,17 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.defaultDispatcher?.dispatchUI(event, items);
 	};
 
+	protected OnSyncStatusChanged = () => {
+		this.dispatchMulti(EventType_Sync, []);
+	};
+
 	protected onEntryDeleted = async (item: DBType): Promise<void> => {
-		await this.db.delete(item);
+		await this.syncIndexDb([], [item]);
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
 	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
-		await this.db.upsertAll(items);
+		await this.syncIndexDb(items);
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
@@ -214,9 +351,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
-		if (item)
-			await this.db.upsert(item);
-
+		await this.syncIndexDb([item]);
 		this.dispatchSingle(event, item);
 	}
 
@@ -224,9 +359,9 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		return this.onEntryUpdatedImpl(EventType_Unique, item);
 	};
 
-	protected onQueryReturned = async (items: DBType[]): Promise<void> => {
-
-		await this.db.upsertAll(items);
-		this.dispatchMulti(EventType_Query, items);
+	protected onQueryReturned = async (toUpdate: DBType[], toDelete: DB_Object[] = []): Promise<void> => {
+		await this.syncIndexDb(toUpdate, toDelete);
+		this.dispatchMulti(EventType_Query, toUpdate);
 	};
+
 }

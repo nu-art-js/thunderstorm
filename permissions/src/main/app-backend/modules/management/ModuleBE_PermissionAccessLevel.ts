@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGenerator} from '@nu-art/db-api-generator/backend';
+import {BaseDB_Module} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {auditBy, filterDuplicates, MUSTNeverHappenException} from '@nu-art/ts-common';
@@ -30,12 +30,11 @@ import {ModuleBE_PermissionGroup} from '../assignment';
 
 
 export class ModuleBE_PermissionAccessLevel_Class
-	extends BaseDB_ApiGenerator<DB_PermissionAccessLevel> {
+	extends BaseDB_Module<DB_PermissionAccessLevel> {
 
 	constructor() {
 		// super(CollectionName_Level, LevelDB_Class._validator, 'level');
 		super(DBDef_PermissionAccessLevel);
-		this.setLockKeys(['domainId']);
 	}
 
 	protected internalFilter(item: DB_PermissionAccessLevel): Clause_Where<DB_PermissionAccessLevel>[] {

@@ -26,7 +26,7 @@ class LogClient_Browser_class
 
 	private style: TypedMap<LogStyle> = {
 		base: {
-			'background-color': '#fff',
+			// 'background-color': '#fff',
 			'padding': '2px 0px',
 			'border-radius': '2px',
 		},
@@ -35,16 +35,16 @@ class LogClient_Browser_class
 			'background-color': 'unset'
 		},
 		debug: {
-			'background-color': '#6564c9',
+			'color': '#6564c9',
 		},
 		info: {
-			'background-color': '#189702',
+			'color': '#189702',
 		},
 		warning: {
-			'background-color': '#926E00',
+			'color': '#926E00',
 		},
 		error: {
-			'background-color': '#B40000',
+			'color': '#B40000',
 		}
 	};
 

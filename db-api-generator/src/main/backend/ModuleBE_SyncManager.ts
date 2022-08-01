@@ -20,23 +20,46 @@
  */
 
 import {FirestoreQuery} from '@nu-art/firebase';
-import {DatabaseWrapper, FirebaseModule} from '@nu-art/firebase/backend';
+import {DatabaseWrapper, FirebaseModule, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiModule, ApiServerRouter, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {_keys, DB_Object, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiDef_SyncManager, ApiStruct_SyncManager, DBSyncData} from '../shared';
-import {BaseDB_ApiGenerator} from './BaseDB_ApiGenerator';
+import {BaseDB_Module} from './BaseDB_Module';
 
 
 type LastUpdated = { lastUpdated: number };
 type Type_SyncData = TypedMap<LastUpdated>
+type DeletedDBItem = DB_Object & { __collectionName: string }
 
 export class ModuleBE_SyncManager_Class
 	extends Module
 	implements ApiServerRouter<ApiStruct_SyncManager>, ApiModule {
 
+	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): DeletedDBItem => {
+		const {_id, __updated, __created, _v} = item;
+		const deletedItem: DeletedDBItem = {_id, __updated, __created, _v, __collectionName: collectionName};
+		uniqueKeys.forEach(key => {
+			// @ts-ignore
+			deletedItem[key] = item[key];
+		});
+		return deletedItem;
+	};
+
+	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction: FirestoreTransaction) {
+		const toInsert = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
+		await transaction.insertAll(this.collection, toInsert);
+	}
+
+	queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>, transaction: FirestoreTransaction): Promise<DeletedDBItem[]> {
+		const finalQuery: FirestoreQuery<DeletedDBItem> = {...query, where: {...query.where, __collectionName: collectionName}};
+		return transaction.query(this.collection, finalQuery);
+	}
+
 	readonly v1;
+	public collection!: FirestoreCollection<DeletedDBItem>;
+
 	private database!: DatabaseWrapper;
-	private dbModules!: BaseDB_ApiGenerator<DB_Object>[];
+	private dbModules!: BaseDB_Module<DB_Object>[];
 
 	constructor() {
 		super();
@@ -50,8 +73,11 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	init() {
+		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
+		this.collection = firestore.getCollection<DeletedDBItem>('__deleted__docs', this.config.uniqueKeys);
+
 		this.database = FirebaseModule.createAdminSession().getDatabase();
-		this.dbModules = this.manager.filterModules(module => module instanceof BaseDB_ApiGenerator);
+		this.dbModules = this.manager.filterModules(module => module instanceof BaseDB_Module);
 	}
 
 	private fetchDBSyncData = async (_: undefined, request: ExpressRequest) => {

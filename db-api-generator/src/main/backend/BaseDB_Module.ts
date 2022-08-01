@@ -29,36 +29,24 @@ import {
 	currentTimeMillis,
 	Day,
 	DB_Object,
-	filterDuplicates,
 	generateHex,
 	isErrorOfType,
 	merge,
 	Module,
 	PreDB,
-	ThisShouldNotHappenException,
 	tsValidate,
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 
-import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
-import {
-	ApiDefServer,
-	ApiException,
-	ApiModule,
-	createBodyServerApi,
-	createQueryServerApi,
-	ExpressRequest,
-	FirestoreBackupDetails,
-	OnFirestoreBackupSchedulerAct,
-	ServerApi_Middleware
-} from '@nu-art/thunderstorm/backend';
+import {IndexKeys} from '@nu-art/thunderstorm';
+import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
 import {dbIdLength} from '../shared/validators';
-import {Const_LockKeys, DBApiBEConfig, getModuleBEConfig} from './db-def';
+import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
-import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB} from '../shared';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
+import {Response_DBSync} from '../shared';
 
 
 export type BaseDBApiConfig = {
@@ -67,52 +55,29 @@ export type BaseDBApiConfig = {
 }
 export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfig<Type>
 
-export type ApisParams = {
-	pathPart?: string,
-	middleware?: ServerApi_Middleware[]
-	printResponse?: boolean
-	printRequest?: boolean
-};
-
 /**
  * An abstract base class used for implementing CRUD operations on a specific collection.
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
+export abstract class BaseDB_Module<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
 	extends Module<ConfigType>
-	implements OnFirestoreBackupSchedulerAct, ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>, ApiModule {
+	implements OnFirestoreBackupSchedulerAct {
 
 	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
-
-	readonly v1: ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
+	readonly dbDef: DBDef<DBType, any>;
 
 	protected constructor(dbDef: DBDef<DBType, any>, appConfig?: BaseDBApiConfig) {
 		super();
+
 		const config = getModuleBEConfig(dbDef);
 
 		const preConfig = {...config, ...appConfig};
-
 		// @ts-ignore
 		this.setDefaultConfig(preConfig);
 		this.validator = config.validator;
-		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
-		this.v1 = {
-			query: createBodyServerApi(apiDef.v1.query, this._query),
-			sync: undefined,
-			queryUnique: createQueryServerApi(apiDef.v1.queryUnique, this._queryUnique),
-			upsert: createBodyServerApi(apiDef.v1.upsert, this._upsert),
-			upsertAll: createBodyServerApi(apiDef.v1.upsertAll, this._upsertAll),
-			patch: createBodyServerApi(apiDef.v1.patch, this._patch),
-			delete: createQueryServerApi(apiDef.v1.delete, this._deleteUnique),
-			deleteAll: createQueryServerApi(apiDef.v1.deleteAll, this._deleteAll),
-			getDBLastUpdated: createQueryServerApi(apiDef.v1.getDBLastUpdated, this._getDBLastUpdated)
-		};
-	}
-
-	useRoutes() {
-		return this.v1;
+		this.dbDef = dbDef;
 	}
 
 	/**
@@ -121,27 +86,15 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 */
 	init() {
 		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
-		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.externalFilterKeys as FilterKeys<DBType>);
+		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.uniqueKeys as FilterKeys<DBType>);
 	}
 
-	private _upsert = async (instance: PreDB<DBType>, request?: ExpressRequest) => this.upsert(instance, undefined, request);
+	getCollectionName() {
+		return this.config.collectionName;
+	}
 
-	private _upsertAll = async (instances: PreDB<DBType>[], request?: ExpressRequest) => this.upsertAll(instances, undefined, request);
-
-	private _deleteAll = async (ignore?: {}, request?: ExpressRequest) => this.deleteAll(request);
-
-	private _patch = async (instance: IndexKeys<DBType, Ks> & Partial<DBType>, request?: ExpressRequest) => this.patch(instance, undefined, request);
-
-	private _deleteUnique = async (id: { _id: string }, request?: ExpressRequest): Promise<DBType> => this.deleteUnique(id._id, undefined, request);
-
-	private _query = async (query: FirestoreQuery<DBType>, request?: ExpressRequest) => this.query(query, undefined, request);
-
-	private _queryUnique = async (where: QueryParams, request?: ExpressRequest) => this.queryUnique(where as Clause_Where<DBType>, undefined, request);
-
-	private _getDBLastUpdated = async () => this.getDBLastUpdated();
-
-	setValidator(validator: ValidatorTypeResolver<DBType>) {
-		this.validator = validator;
+	getItemName() {
+		return this.config.itemName;
 	}
 
 	__onFirestoreBackupSchedulerAct(): FirestoreBackupDetails<DBType>[] {
@@ -158,53 +111,78 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		return {where: {}};
 	}
 
-// this.setExternalUniqueKeys(["accessLevelIds"]);
-
 	/**
-	 * Sets the external unique keys. External keys are the attributes of a documen@returnt that must be unique inside the
-	 * collection. Default is `_id`.
+	 * Deletes a unique document based on its `_id`. Uses a transaction, after deletion assertions occur.
 	 *
-	 * @remarks
-	 * You can only update the external unique keys before the module is initialized, preferably from its constructor.
+	 * @param _id - The _id of the object to be deleted.
+	 * @param request - The request in order to possibly obtain more info.
 	 *
-	 * @param keys - The external unique keys.
+	 * @throws `ApiException` when the document doesn't exist in the collection.
 	 *
 	 * @returns
-	 * The external filter keys.
+	 * A promise of the document that was deleted.
 	 */
-	protected setExternalUniqueKeys(keys: FilterKeys<DBType>) {
-		if (this.initiated)
-			throw new BadImplementationException('You can only update the \'externalUniqueKeys\' before the module was initialized.. preferably from its constructor');
+	async deleteUnique(_id: string): Promise<DBType> {
+		return this.runInTransaction(async transaction => {
+			const doc = await transaction.newQueryUnique(this.collection, {where: {_id} as Clause_Where<DBType>});
+			if (!doc)
+				throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
-		return this.config.externalFilterKeys = keys;
+			await this.canDeleteDocument(transaction, [doc.get()]);
+			const item = await doc.delete(transaction.transaction);
+			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, [item], this.config.uniqueKeys, transaction);
+			return item;
+		});
 	}
 
 	/**
-	 * Sets the lock keys. Lock keys are the attributes of a document that must not be changed during a patch.
-	 * Thr property `_id` is always part of the lock keys.
+	 * Calls the `delete` method of the module's collection.
 	 *
-	 * @remarks
-	 * You can only update the lock keys before the module is initialized, preferably from its constructor.
-	 *
-	 * @param keys - The lock keys.
-	 *
-	 * @returns
-	 * The lock keys.
+	 * @param deleteQuery - The query to be executed for the deletion.
+	 * @param toReturn
 	 */
-	protected setLockKeys(keys: (keyof DBType)[]) {
-		if (this.initiated)
-			throw new BadImplementationException('You can only update the \'lockKeys\' before the module was initialized.. preferably from its constructor');
+	async delete(deleteQuery: FirestoreQuery<DBType>, toReturn: DBType[] = []) {
+		const limit = 250;
+		toReturn.push(...await this.runInTransaction(async transaction => {
+			const docs = await transaction.newQuery(this.collection, {...deleteQuery, limit: deleteQuery.limit || limit});
+			const items = docs.map(doc => doc.get());
+			await this.canDeleteDocument(transaction, items);
 
-		return this.config.lockKeys = filterDuplicates([...keys, ...Const_LockKeys]);
+			await Promise.all(docs.map(async (doc) => doc.delete(transaction.transaction)));
+
+			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, items, this.config.uniqueKeys, transaction);
+			return items;
+		}));
+
+		if (toReturn.length !== 0 && toReturn.length % limit === 0)
+			await this.delete(deleteQuery, toReturn);
+
+		return toReturn;
 	}
 
-	getCollectionName() {
-		return this.config.collectionName;
+	async querySync(syncQuery: FirestoreQuery<DBType>): Promise<Response_DBSync<DBType>> {
+		return this.runInTransaction(async transaction => {
+			const items = await transaction.query(this.collection, syncQuery);
+			const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>, transaction);
+
+			await this.upgradeInstances(items);
+			return {toUpdate: items, toDelete: deletedItems};
+		});
 	}
 
-	getItemName() {
-		return this.config.itemName;
+	deleteAll() {
+		return this.delete({where: {}});
 	}
+
+	/*
+	 * TO BE MOVED ABOVE THIS COMMENT
+	 *
+	 *
+	 *  -- Everything under this comment should be revised and move up --
+	 *
+	 *
+	 * TO BE MOVED ABOVE THIS COMMENT
+	 */
 
 	private async assertExternalQueryUnique(instance: DBType, transaction: FirestoreTransaction): Promise<DBType> {
 		const dbInstance: DBType | undefined = await transaction.queryItem(this.collection, instance);
@@ -235,10 +213,10 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 
 		for (const idx in dbInstances) {
 			const dbInstance = dbInstances[idx];
-			// this.logInfo(`keys: ${__stringify(this.config.externalFilterKeys)}`)
+			// this.logInfo(`keys: ${__stringify(this.config.uniqueKeys)}`)
 			// this.logInfo(`pre instance: ${__stringify(dbInstance)}`)
 			// this.logInfo(`new instance: ${__stringify(instance)}`)
-			if (!dbInstance || !this.config.externalFilterKeys.find((key: keyof DBType) => dbInstance[key] !== instance[key]))
+			if (!dbInstance || !this.config.uniqueKeys.find((key: keyof DBType) => dbInstance[key] !== instance[key]))
 				continue;
 
 			const query = uniqueQueries[idx];
@@ -313,11 +291,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	protected async upgradeInstance(dbInstance: DBType, toVersion: string): Promise<void> {
 	}
 
-	private getDBLastUpdated = async () => {
-		//FIXME: change this to actual collection "lastUpdated" number
-		return 0;
-	};
-
 	/**
 	 * Override this method to customize the assertions that should be done before the insertion of the document to the DB.
 	 *
@@ -335,13 +308,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * @param transaction - The transaction object
 	 * @param dbInstance - The DB entry that is going to be deleted.
 	 */
-	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
-		return (await this.assertDeletion_Read(transaction, dbInstance, request))();
-	}
-
-	protected async assertDeletion_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => void> {
-		return async () => {
-		};
+	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstance: DBType[]) {
 	}
 
 	/**
@@ -446,7 +413,7 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	async upsert_Read(instance: PreDB<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		const timestamp = currentTimeMillis();
 
-		if (this.config.externalFilterKeys[0] === '_id' && instance._id === undefined)
+		if (this.config.uniqueKeys[0] === '_id' && instance._id === undefined)
 			return this.createImpl_Read(transaction, {...instance, _id: this.generateId(), __created: timestamp, __updated: timestamp} as unknown as DBType, request);
 
 		return this.upsertImpl_Read(transaction, {
@@ -487,6 +454,9 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 	 * A promise of the array of documents that were upserted.
 	 */
 	async upsertAll(instances: PreDB<DBType>[], transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]> {
+		if (instances.length === 0)
+			return [];
+
 		if (instances.length > 500) {
 			if (transaction)
 				throw new BadImplementationException('Firestore transaction supports maximum 500 at a time');
@@ -499,10 +469,16 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			return Promise.all(writes.map(write => write()));
 		};
 
+		let itemsToRet: DBType[];
 		if (transaction)
-			return processor(transaction);
+			itemsToRet = await processor(transaction);
+		else
+			itemsToRet = await this.collection.runInTransaction(processor);
 
-		return this.collection.runInTransaction(processor);
+		const latest = itemsToRet.reduce((toRet, current) => Math.max(toRet, current.__updated), itemsToRet[0].__updated);
+		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, latest);
+		return itemsToRet;
+
 	}
 
 	protected async upsertAllImpl_Read(instances: PreDB<DBType>[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]> {
@@ -535,100 +511,6 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 		await this.validateImpl(dbInstance);
 		await this.assertUniqueness(transaction, dbInstance, request);
 		return transaction.upsert_Read(this.collection, dbInstance);
-	}
-
-	/**
-	 * Deletes a unique document based on its `_id`. Uses a transaction, after deletion assertions occur.
-	 *
-	 * @param _id - The _id of the object to be deleted.
-	 * @param transaction
-	 * @param request - The request in order to possibly obtain more info.
-	 *
-	 * @throws `ApiException` when the document doesn't exist in the collection.
-	 *
-	 * @returns
-	 * A promise of the document that was deleted.
-	 */
-	async deleteUnique(_id: string, transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType> {
-		if (!_id)
-			throw new BadImplementationException(`No _id for deletion provided.`);
-
-		const processor = async (_transaction: FirestoreTransaction) => {
-			const write = await this.deleteUnique_Read(_id, _transaction, request);
-			if (!write)
-				throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
-
-			return write();
-		};
-
-		if (transaction)
-			return processor(transaction);
-
-		return this.collection.runInTransaction(processor);
-	}
-
-	async deleteUnique_Read(_id: string, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
-		if (!_id)
-			throw new BadImplementationException(`No _id for deletion provided.`);
-
-		const ourQuery = {where: {_id} as Clause_Where<DBType>};
-		const dbInstance = await transaction.queryUnique(this.collection, ourQuery);
-		if (!dbInstance)
-			throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
-
-		return await this.deleteImpl_Read(transaction, ourQuery, request);
-	}
-
-	/**
-	 * Uses the `transaction` to delete a unique document, querying with the `ourQuery`.
-	 *
-	 * @param transaction - The transaction object.
-	 * @param ourQuery - The query to be used for the deletion.
-	 * @param request - The request in order to possibly obtain more info.
-	 *
-	 * @returns
-	 * A promise of the document that was deleted.
-	 */
-	private async deleteImpl_Read(transaction: FirestoreTransaction, ourQuery: { where: Clause_Where<DBType> }, request?: ExpressRequest): Promise<() => Promise<DBType>> {
-		const item = await transaction.queryUnique(this.collection, ourQuery);
-		if (!item)
-			throw new ApiException(404, `no item to delete found for query: ${JSON.stringify(ourQuery)}`);
-
-		const deletedItem = this.prepareItemToDelete(item);
-
-		const write = await transaction.upsert_Read(this.collection, deletedItem);
-		if (!write)
-			throw new ThisShouldNotHappenException(`I just checked that I had an instance for query: ${__stringify(ourQuery)}`);
-
-		return write;
-	}
-
-	private prepareItemToDelete = (item: DBType) => {
-		if (item.__deleted)
-			throw new ApiException(422, `item for query was already deleted: ${item._id}`);
-
-		const {_id, __updated, __created, _v} = item;
-		const deletedItem = {_id, __updated, __created, _v, __deleted: true};
-		this.config.externalFilterKeys.forEach(key => {
-			deletedItem[key] = item[key];
-		});
-		return deletedItem as DBType;
-	};
-
-	/**
-	 * Calls the `delete` method of the module's collection.
-	 *
-	 * @param query - The query to be executed for the deletion.
-	 * @param request - The request in order to possibly obtain more info.
-	 */
-	async delete(query: FirestoreQuery<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
-		const items = await this.query(query);
-		const itemsToDelete = items.map(this.prepareItemToDelete);
-
-		if (transaction)
-			return await transaction.upsertAll(this.collection, itemsToDelete);
-		else
-			return await this.collection.upsertAll(itemsToDelete);
 	}
 
 	/**
@@ -709,16 +591,11 @@ export abstract class BaseDB_ApiGenerator<DBType extends DB_Object, ConfigType e
 			mergedObject.__created = mergedObject.__created || currentTimeMillis();
 			mergedObject.__updated = currentTimeMillis();
 
-			await tsValidate(mergedObject, this.validator);
 			await this.assertUniqueness(transaction, mergedObject, request);
 
 			const item = await this.upsertImpl(transaction, mergedObject, request);
 			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, item.__updated);
 			return item;
 		});
-	}
-
-	deleteAll(request?: ExpressRequest) {
-		return this.delete({where: {}});
 	}
 }

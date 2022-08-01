@@ -21,7 +21,7 @@ import {batchAction, currentTimeMillis, filterInstances, generateHex, PreDB} fro
 import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert';
 import {DB_PermissionGroup, User_Group} from '../..';
 import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUser} from '../modules/assignment';
+import {ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from '../modules/assignment';
 
 
 function makeAlphaBetIdForTestOnly(length: number) {
@@ -70,7 +70,7 @@ export async function testUserPermissionsTime() {
 
 	await ModuleBE_PermissionGroup.upsertAll(dbInstances);
 
-	await ModuleBE_PermissionUser.upsert({_id: userId, accountId: userUuid, groups: groupIdArray});
+	await ModuleBE_PermissionUserDB.upsert({_id: userId, accountId: userUuid, groups: groupIdArray});
 
 	const tests = new Array<number>().fill(0, 0, 50);
 	const durations: number[] = await Promise.all(tests.map(test => runAssertion(projectId, apiPath, userUuid, customField)));
@@ -78,7 +78,7 @@ export async function testUserPermissionsTime() {
 	console.log(`Call to assertion on ${tests.length} call took on agerage ${sum / tests.length}ms`);
 
 	// ----deletes db documents---
-	await ModuleBE_PermissionUser.delete({where: {_id: userId}});
+	await ModuleBE_PermissionUserDB.delete({where: {_id: userId}});
 	await batchAction(filterInstances(dbInstances.map(i => i._id)), 10, chunk => ModuleBE_PermissionGroup.delete({where: {_id: {$in: chunk}}}));
 	await ModuleBE_PermissionAccessLevel.delete({where: {_id: permissionId}});
 	await ModuleBE_PermissionDomain.delete({where: {_id: domainId}});
