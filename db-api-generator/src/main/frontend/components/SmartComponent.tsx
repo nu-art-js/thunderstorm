@@ -24,7 +24,7 @@ import {compare, DB_Object, LogLevel} from '@nu-art/ts-common';
 import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, DataStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
 import {Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
-import {BaseComponent} from '@nu-art/thunderstorm/app-frontend/core/ComponentBase';
+import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
 
 
 export enum ComponentStatus {

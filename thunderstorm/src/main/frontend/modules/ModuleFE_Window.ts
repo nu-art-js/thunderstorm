@@ -19,22 +19,28 @@
  * limitations under the License.
  */
 
-import {BeLogged, Logger, padNumber} from '@nu-art/ts-common';
-import {LogClient_File} from '../../main/frontend/utils/LogClient_File';
+import {Module,} from '@nu-art/ts-common';
+import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
+type Config = {}
 
-BeLogged.addClient(new LogClient_File('logger', '../.trash/logger-test', 10, 1024).setRotationListener(() => {
-	console.log(`Rotating buffer`);
-}));
-
-class TestLogger
-	extends Logger {
-
-	writeLogs() {
-		for (let i = 0; i < 1000; i++) {
-			this.logDebug(`This is a test line ${padNumber(i, 5)}`);
-		}
-	}
+export interface OnWindowResized {
+	__onWindowResized(): void;
 }
 
-new TestLogger().writeLogs();
+const dispatch_WindowResized = new ThunderDispatcher<OnWindowResized, '__onWindowResized'>('__onWindowResized');
+
+export class ModuleFE_Window_Class
+	extends Module<Config> {
+
+	protected init(): void {
+		window.addEventListener('resize', this.onWindowResized);
+	}
+
+	private onWindowResized = () => {
+		dispatch_WindowResized.dispatchUI();
+	};
+}
+
+export const ModuleFE_Window = new ModuleFE_Window_Class();
+

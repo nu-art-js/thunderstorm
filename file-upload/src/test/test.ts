@@ -17,17 +17,15 @@
  * limitations under the License.
  */
 
-import {
-	__custom,
-	__scenario
-} from "@nu-art/testelot";
-import {FirebaseModule} from "@nu-art/firebase/backend";
-import {MyTester} from "./core";
-import {AxiosHttpModule} from "@nu-art/thunderstorm/app-backend/modules/http/AxiosHttpModule";
-import {HttpMethod} from "@nu-art/thunderstorm";
+import {__custom, __scenario} from '@nu-art/testelot';
+import {FirebaseModule} from '@nu-art/firebase/backend';
+import {MyTester} from './core';
+import {AxiosHttpModule} from '@nu-art/thunderstorm/frontend/modules/http/AxiosHttpModule';
+import {HttpMethod} from '@nu-art/thunderstorm';
+
 
 AxiosHttpModule.setDefaultConfig({origin: 'sjdfojds'});
-const mainScenario = __scenario("File Uploading Testing");
+const mainScenario = __scenario('File Uploading Testing');
 const googleCall = __custom(async () => {
 	try {
 		await AxiosHttpModule
@@ -40,7 +38,7 @@ const googleCall = __custom(async () => {
 			.executeSync();
 		console.log('works');
 
-	} catch (e:any) {
+	} catch (e: any) {
 		console.log('breaks');
 		console.log(e);
 	}
