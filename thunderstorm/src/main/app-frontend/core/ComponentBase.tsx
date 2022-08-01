@@ -90,12 +90,12 @@ export abstract class BaseComponent<P = any, State = any>
 			this.setState(state);
 	}
 
-	protected abstract _deriveStateFromProps(nextProps: P): State | undefined ;
+	protected abstract _deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined ;
 
-	protected reDeriveState() {
-		this.logDebug('reDeriveState called..');
+	protected reDeriveState(state?: Partial<State>) {
+		this.logDebug('reDeriveState called..', state);
 
-		this._deriveStateFromProps(this.props);
+		this._deriveStateFromProps(this.props, {...this.state, ...state});
 	}
 
 	debounce(handler: TimerHandler, key: string, ms = 0) {
@@ -125,7 +125,6 @@ export abstract class BaseComponent<P = any, State = any>
 			this.logVerbose(this.props);
 			this.logVerbose(nextPropsKeys);
 			this.logVerbose(nextProps);
-
 
 			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]]))
 				return true;

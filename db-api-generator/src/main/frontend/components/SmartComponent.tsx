@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {compare, DB_Object, LogLevel} from '@nu-art/ts-common';
-import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, DataStatus, SyncStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
+import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, DataStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
 import {Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
 import {BaseComponent} from '@nu-art/thunderstorm/app-frontend/core/ComponentBase';
@@ -47,8 +47,12 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	State extends State_SmartComponent & S = State_SmartComponent & S>
 	extends BaseComponent<Props, State> {
 
+	// static defaultProps = {
+	// 	modules: []
+	// };
+
 	private derivingState = false;
-	private pendingProps?: P;
+	private pendingProps?: Props;
 
 	constructor(p: Props) {
 		super(p);
@@ -73,67 +77,36 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		}
 	};
 
-	private deriveComponentPhase() {
-		const moduleStatuses = this.props.modules.map(module => ({syncStatus: module.getSyncStatus(), dataStatus: module.getDataStatus()}));
-		const canBeRendered = this.canBeRendered();
+	protected _deriveStateFromProps(nextProps: Props, state: State = this.createInitialState(nextProps)): State | undefined {
+		const isReady = this.props.modules.every(module => module.getDataStatus() === DataStatus.containsData);
+		if (!isReady)
+			return this.createInitialState(nextProps);
 
-		//If all Modules are synced
-		if (moduleStatuses.every(status => status.syncStatus === SyncStatus.idle && status.dataStatus === DataStatus.containsData))
-			return ComponentStatus.Synced;
-
-		//If all modules are synced or in process of being synced, and pass the "canBeRendered" check
-		if (this.props.modules.every(module => canBeRendered[module.getName()]())) {
-			return ComponentStatus.Synced;
+		if (this.derivingState) {
+			this.logVerbose('Scheduling new props', nextProps as {});
+			this.pendingProps = nextProps;
+			return;
 		}
 
-		//Return loading
-		return ComponentStatus.Loading;
+		this.logVerbose('Will deriving state from props', nextProps as {});
+		this.pendingProps = undefined;
+		this.derivingState = true;
 
-		// //If all of the modules are outOfSync
-		// if (moduleStatuses.every(status => status === SyncStatus.OutOfSync))
-		// 	return ComponentStatus.Loading;
-		//
-		//
-		// //Some of the components are in sync process
-		// //If component is already out of load phase
-		// if (this.componentPhase === ComponentStatus.Syncing || this.componentPhase === ComponentStatus.Synced)
-		// 	return ComponentStatus.Syncing;
-	}
+		this.deriveStateFromProps(nextProps, {...state, componentPhase: ComponentStatus.Synced})
+			.then((state) => {
+				if (this.pendingProps)
+					return this.reDeriveCompletedCallback();
 
-	protected abstract canBeRendered(): { [k: string]: () => boolean }
+				if (state)
+					this.setState(state, this.reDeriveCompletedCallback);
 
-	protected _deriveStateFromProps(nextProps: P): State | undefined {
-		const componentPhase = this.deriveComponentPhase();
-		this.logDebug(`_deriveStateFromProps: ${componentPhase}`);
+			})
+			.catch(e => {
+				this.logError(`error`, e);
+				this.setState({error: e}, this.reDeriveCompletedCallback);
+			});
 
-		if (componentPhase === ComponentStatus.Synced) {
-			if (this.derivingState) {
-				this.logVerbose('Scheduling new props', nextProps as {});
-				this.pendingProps = nextProps;
-				return;
-			}
-
-			this.logVerbose('Will deriving state from props', nextProps as {});
-			this.pendingProps = undefined;
-			this.derivingState = true;
-
-			this.deriveStateFromProps(nextProps)
-				.then((state) => {
-					state.componentPhase = componentPhase;
-					if (this.pendingProps)
-						return this.reDeriveCompletedCallback();
-
-					return this.setState(state, this.reDeriveCompletedCallback);
-				})
-				.catch(e => {
-					this.logError(`error`, e);
-					this.setState({error: e}, this.reDeriveCompletedCallback);
-				});
-		}
-
-		const state = this.createInitialState(nextProps);
-		state.componentPhase = componentPhase;
-		return state;
+		return this.createInitialState(nextProps);
 	}
 
 	private reDeriveCompletedCallback = () => {
@@ -144,11 +117,9 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		}
 	};
 
-	protected async deriveStateFromProps(nextProps: P): Promise<State> {
-		return this.createInitialState(nextProps);
-	}
+	protected abstract deriveStateFromProps(nextProps: Props, state?: Partial<S> & State_SmartComponent): Promise<State>;
 
-	protected createInitialState(nextProps: P) {
+	protected createInitialState(nextProps: Props) {
 		return {componentPhase: ComponentStatus.Loading} as State;
 	}
 
@@ -167,9 +138,8 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 export abstract class SmartPanel<Config, State = {}, Props = {}>
 	extends SmartComponent<Props_WorkspacePanel<Config, Props>, State_WorkspacePanel<Config, State>> {
 
-	protected async deriveStateFromProps(nextProps: Props_WorkspacePanel<Config, Props>) {
-		const state = (await super.deriveStateFromProps(nextProps)) as State_SmartComponent;
-		return {...state, config: {...nextProps.config}} as State_WorkspacePanel<Config, State> & State_SmartComponent;
+	protected createInitialState(nextProps: Props_WorkspacePanel<Config, Props>) {
+		return {componentPhase: ComponentStatus.Loading, config: {...nextProps.config}} as State_WorkspacePanel<Config, State> & State_SmartComponent;
 	}
 
 	shouldReDeriveState(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>): boolean {
