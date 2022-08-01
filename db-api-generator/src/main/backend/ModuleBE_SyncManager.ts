@@ -22,7 +22,7 @@
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapper, FirebaseModule, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiModule, ApiServerRouter, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {_keys, DB_Object, Module, TypedMap} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, DB_Object, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiDef_SyncManager, ApiStruct_SyncManager, DBSyncData} from '../shared';
 import {BaseDB_Module} from './BaseDB_Module';
 
@@ -47,6 +47,8 @@ export class ModuleBE_SyncManager_Class
 
 	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction: FirestoreTransaction) {
 		const toInsert = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
+		const now = currentTimeMillis();
+		toInsert.forEach(item => item.__updated = now);
 		await transaction.insertAll(this.collection, toInsert);
 	}
 
