@@ -85,7 +85,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
 	// @ts-ignore
-	readonly v1;
+	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 	private syncStatus: SyncStatus;
 	private dataStatus: DataStatus;
 	private operations: TypedMap<Pah> = {};
@@ -110,6 +110,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		this.dataStatus = DataStatus.NoData;
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
+		// @ts-ignore
 		this.v1 = {
 			sync: () => {
 				this.setSyncStatus(SyncStatus.read);
@@ -121,13 +122,16 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			},
 
 			query: (query?: FirestoreQuery<DBType>) => _query(query || {where: {}}),
+			// @ts-ignore
 			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
 				return queryUnique(typeof uniqueKeys === 'string' ? {_id: uniqueKeys} : uniqueKeys as unknown as QueryParams);
 			},
+			// @ts-ignore
 			upsert: (toUpsert: PreDB<DBType>) => {
 				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
 			},
 			upsertAll: apiWithBody(apiDef.v1.upsertAll, this.onEntriesUpdated),
+			// @ts-ignore
 			patch: (toPatch: Partial<DBType>) => {
 				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch as IndexKeys<DBType, Ks> & Partial<DBType>), 'patch');
 			},
