@@ -57,7 +57,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	constructor(p: Props) {
 		super(p);
 		this.logger.setMinLevel(LogLevel.Verbose);
-		this.props.modules.forEach(module => {
+		this.props.modules?.forEach(module => {
 			// @ts-ignore
 			const __callback = this[module.defaultDispatcher.method]?.bind(this);
 			// @ts-ignore
