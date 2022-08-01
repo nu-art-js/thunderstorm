@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {compare, DB_Object} from '@nu-art/ts-common';
+import {compare, DB_Object, LogLevel} from '@nu-art/ts-common';
 import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, DataStatus, SyncStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
 import {Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
@@ -47,13 +47,12 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	State extends State_SmartComponent & S = State_SmartComponent & S>
 	extends BaseComponent<Props, State> {
 
-	protected componentPhase: ComponentStatus = ComponentStatus.Loading;
 	private derivingState = false;
 	private pendingProps?: P;
 
 	constructor(p: Props) {
 		super(p);
-
+		this.logger.setMinLevel(LogLevel.Verbose);
 		this.props.modules.forEach(module => {
 			// @ts-ignore
 			const __callback = this[module.defaultDispatcher.method]?.bind(this);
@@ -64,7 +63,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 			};
 		});
 
-		this.componentPhase = this.deriveComponentPhase();
 	}
 
 	// ######################### Life Cycle #########################
@@ -72,10 +70,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	private onSyncEvent = (module: BaseDB_ApiGeneratorCallerV2<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
 		//Define logic for change in module sync status
 		if (params[0] === EventType_Sync) {
-			this.componentPhase = this.deriveComponentPhase();
-			if (this.componentPhase !== ComponentStatus.Synced)
-				return this.forceUpdate();
-
 			this.reDeriveState();
 		}
 	};
@@ -116,18 +110,16 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 			return;
 		}
 
-		this.logVerbose('Deriving state from props', nextProps as {});
+		this.logVerbose('Will deriving state from props', nextProps as {});
 		this.pendingProps = undefined;
 		this.derivingState = true;
 
-		const componentPhase = this.deriveComponentPhase();
-		if (componentPhase !== ComponentStatus.Loading)
-			this.deriveStateFromProps(nextProps)
-				.then((state) => this.setState(state, this.reDeriveCompletedCallback))
-				.catch(e => {
-					this.logError(`error`, e);
-					this.setState({error: e}, this.reDeriveCompletedCallback);
-				});
+		this.preDeriveStateFromProps(nextProps)
+			.then((state) => this.setState(state, this.reDeriveCompletedCallback))
+			.catch(e => {
+				this.logError(`error`, e);
+				this.setState({error: e}, this.reDeriveCompletedCallback);
+			});
 
 		return this.createInitialState(nextProps);
 	}
@@ -139,6 +131,20 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 			this._deriveStateFromProps(this.pendingProps);
 		}
 	};
+
+	private async preDeriveStateFromProps(nextProps: P): Promise<State> {
+		const componentPhase = this.deriveComponentPhase();
+		this.logDebug(`preDeriveStateFromProps: ${componentPhase}`);
+
+		let state: State;
+		if (componentPhase === ComponentStatus.Synced)
+			state = await this.deriveStateFromProps(nextProps);
+		else
+			state = this.createInitialState(nextProps);
+
+		state.componentPhase = componentPhase;
+		return state;
+	}
 
 	protected async deriveStateFromProps(nextProps: P): Promise<State> {
 		return this.createInitialState(nextProps);
@@ -153,7 +159,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	protected abstract _render(): JSX.Element
 
 	render() {
-		if (this.componentPhase === ComponentStatus.Loading)
+		if (this.state.componentPhase === ComponentStatus.Loading)
 			return <div className={'loader-container'}><TS_Loader/></div>;
 
 		return this._render();
