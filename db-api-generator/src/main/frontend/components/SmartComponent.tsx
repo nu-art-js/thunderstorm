@@ -62,7 +62,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				__callback?.(...params);
 			};
 		});
-
 	}
 
 	// ######################### Life Cycle #########################
@@ -104,24 +103,37 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	protected abstract canBeRendered(): { [k: string]: () => boolean }
 
 	protected _deriveStateFromProps(nextProps: P): State | undefined {
-		if (this.derivingState) {
-			this.logVerbose('Scheduling new props', nextProps as {});
-			this.pendingProps = nextProps;
-			return;
+		const componentPhase = this.deriveComponentPhase();
+		this.logDebug(`_deriveStateFromProps: ${componentPhase}`);
+
+		if (componentPhase === ComponentStatus.Synced) {
+			if (this.derivingState) {
+				this.logVerbose('Scheduling new props', nextProps as {});
+				this.pendingProps = nextProps;
+				return;
+			}
+
+			this.logVerbose('Will deriving state from props', nextProps as {});
+			this.pendingProps = undefined;
+			this.derivingState = true;
+
+			this.deriveStateFromProps(nextProps)
+				.then((state) => {
+					state.componentPhase = componentPhase;
+					if (this.pendingProps)
+						return this.reDeriveCompletedCallback();
+
+					return this.setState(state, this.reDeriveCompletedCallback);
+				})
+				.catch(e => {
+					this.logError(`error`, e);
+					this.setState({error: e}, this.reDeriveCompletedCallback);
+				});
 		}
 
-		this.logVerbose('Will deriving state from props', nextProps as {});
-		this.pendingProps = undefined;
-		this.derivingState = true;
-
-		this.preDeriveStateFromProps(nextProps)
-			.then((state) => this.setState(state, this.reDeriveCompletedCallback))
-			.catch(e => {
-				this.logError(`error`, e);
-				this.setState({error: e}, this.reDeriveCompletedCallback);
-			});
-
-		return this.createInitialState(nextProps);
+		const state = this.createInitialState(nextProps);
+		state.componentPhase = componentPhase;
+		return state;
 	}
 
 	private reDeriveCompletedCallback = () => {
@@ -131,20 +143,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 			this._deriveStateFromProps(this.pendingProps);
 		}
 	};
-
-	private async preDeriveStateFromProps(nextProps: P): Promise<State> {
-		const componentPhase = this.deriveComponentPhase();
-		this.logDebug(`preDeriveStateFromProps: ${componentPhase}`);
-
-		let state: State;
-		if (componentPhase === ComponentStatus.Synced)
-			state = await this.deriveStateFromProps(nextProps);
-		else
-			state = this.createInitialState(nextProps);
-
-		state.componentPhase = componentPhase;
-		return state;
-	}
 
 	protected async deriveStateFromProps(nextProps: P): Promise<State> {
 		return this.createInitialState(nextProps);
@@ -159,7 +157,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	protected abstract _render(): JSX.Element
 
 	render() {
-		if (this.state.componentPhase === ComponentStatus.Loading)
+		if (this.state.componentPhase !== ComponentStatus.Synced)
 			return <div className={'loader-container'}><TS_Loader/></div>;
 
 		return this._render();

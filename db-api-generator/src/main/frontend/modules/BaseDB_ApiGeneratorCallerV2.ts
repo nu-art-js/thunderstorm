@@ -244,6 +244,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
 		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
 
+		this.logWarning(toUpdate);
+		this.logWarning(toDelete);
 		if (latest !== -1)
 			this.lastSync.set(latest);
 	}
