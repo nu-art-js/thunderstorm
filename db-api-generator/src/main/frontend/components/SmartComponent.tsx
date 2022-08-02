@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {compare, DB_Object, LogLevel} from '@nu-art/ts-common';
+import {compare, DB_Object} from '@nu-art/ts-common';
 import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, DataStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
 import {Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
@@ -56,7 +56,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	constructor(p: Props) {
 		super(p);
-		this.logger.setMinLevel(LogLevel.Verbose);
 		this.props.modules?.forEach(module => {
 			// @ts-ignore
 			const __callback = this[module.defaultDispatcher.method]?.bind(this);
@@ -78,7 +77,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	};
 
 	protected _deriveStateFromProps(nextProps: Props, state: State = this.createInitialState(nextProps)): State | undefined {
-		const isReady = this.props.modules.every(module => module.getDataStatus() === DataStatus.containsData);
+		const isReady = this.props.modules?.every(module => module.getDataStatus() === DataStatus.containsData);
 		if (!isReady)
 			return this.createInitialState(nextProps);
 
