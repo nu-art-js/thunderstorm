@@ -1,7 +1,8 @@
 /*
- * Allow the user to file a bug  report directly from your app
+ * Permissions management system, define access level for each of
+ * your server apis, and restrict users by giving them access levels
  *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ * Copyright (C) 2020 Yair bcm
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +15,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */'../main/frontend/modules/JiraModule';
-import {Tester} from './_core/Tester';
-import {issueScenario} from './jira/issue';
+ */
 
+export * from './modules/DialogFlowApi';
+export * from './modules/GoogleCloudModule';
+export * from './modules/GoogleContactsModule';
+export * from './modules/AuthModule';
+export * from './modules/PubSubModule';
 
-const mainScenario = __scenario('Bug Report Testing');
-mainScenario.add(issueScenario);
-
-const email = 'email';
-const key = 'key';
-JiraModule.setDefaultConfig({auth: {email: email, apiKey: key}});
-
-module.exports = new Tester()
-	.addModules(JiraModule)
-	.setScenario(mainScenario)
-	.build();

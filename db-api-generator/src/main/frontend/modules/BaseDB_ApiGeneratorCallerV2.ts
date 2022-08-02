@@ -84,6 +84,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
 	private db: IndexedDB<DBType, Ks>;
 	private lastSync: StorageKey<number>;
+	// @ts-ignore
 	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 	private syncStatus: SyncStatus;
 	private dataStatus: DataStatus;
@@ -106,9 +107,10 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 		//Set Statuses
 		this.syncStatus = SyncStatus.idle;
-		this.dataStatus = DataStatus.NoData;
+		this.dataStatus = this.lastSync.get(0) !== 0 ? DataStatus.containsData : DataStatus.NoData;
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
+		// @ts-ignore
 		this.v1 = {
 			sync: () => {
 				this.setSyncStatus(SyncStatus.read);
@@ -124,18 +126,20 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
 				return queryUnique(typeof uniqueKeys === 'string' ? {_id: uniqueKeys} : uniqueKeys as unknown as QueryParams);
 			},
+			// @ts-ignore
 			upsert: (toUpsert: PreDB<DBType>) => {
 				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
 			},
 			upsertAll: apiWithBody(apiDef.v1.upsertAll, this.onEntriesUpdated),
-			patch: (toPatch: IndexKeys<DBType, Ks> & Partial<DBType>) => {
-				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch), 'patch');
+			// @ts-ignore
+			patch: (toPatch: Partial<DBType>) => {
+				return this.updatePending(toPatch as DB_BaseObject, patch(toPatch as IndexKeys<DBType, Ks> & Partial<DBType>), 'patch');
 			},
 			delete: (item: DB_BaseObject) => {
 				return this.updatePending(item, _delete(item), 'delete');
 			},
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
-		} as ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
+		};
 	}
 
 	private updatePending<API extends TypedApi<any, any, any, any>>(item: DB_BaseObject, request: BaseHttpRequest<API>, requestType: RequestType) {
@@ -244,6 +248,8 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
 		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
 
+		this.logWarning(toUpdate);
+		this.logWarning(toDelete);
 		if (latest !== -1)
 			this.lastSync.set(latest);
 	}
