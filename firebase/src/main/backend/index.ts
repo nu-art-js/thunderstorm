@@ -16,4 +16,17 @@
  * limitations under the License.
  */
 
-export * from './backend/functions/firebase-function';
+export * from './auth/firebase-session';
+export * from './auth/FirebaseSession_Admin';
+export * from './functions/firebase-function';
+export * from './FirebaseModule';
+export * from './firestore/FirestoreInterface';
+export * from './firestore/FirestoreCollection';
+export * from './firestore/FirestoreTransaction';
+export * from './firestore/FirestoreWrapper';
+export * from './firestore/types';
+export * from './database/DatabaseWrapper';
+export * from './storage/types';
+export * from './storage/StorageWrapper';
+export * from './push/PushMessagesWrapper';
+export * from './push/types';
