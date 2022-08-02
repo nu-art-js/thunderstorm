@@ -108,7 +108,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		//Set Statuses
 		this.syncStatus = SyncStatus.idle;
 		this.dataStatus = this.lastSync.get(0) !== 0 ? DataStatus.containsData : DataStatus.NoData;
-
+		
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore
 		this.v1 = {
@@ -209,12 +209,13 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 		this.setSyncStatus(SyncStatus.read);
 		await this.v1.sync().executeSync();
+
 		this.setDataStatus(DataStatus.containsData);
 		this.setSyncStatus(SyncStatus.idle);
 	};
 
 	private setSyncStatus(status: SyncStatus) {
-		this.logDebug(`Sync status updated: ${this.syncStatus} => ${status}`);
+		this.logDebug(`Sync status updated: ${SyncStatus[this.syncStatus]} => ${SyncStatus[status]}`);
 		this.syncStatus = status;
 		this.OnSyncStatusChanged();
 	}
@@ -224,7 +225,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	}
 
 	private setDataStatus(status: DataStatus) {
-		this.logDebug(`Data status updated: ${this.dataStatus} => ${status}`);
+		this.logDebug(`Data status updated: ${DataStatus[this.dataStatus]} => ${DataStatus[status]}`);
 		this.dataStatus = status;
 	}
 
@@ -235,7 +236,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
 		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
 		await this.syncIndexDb(syncData.toUpdate, syncData.toDelete);
-
+		this.setDataStatus(DataStatus.containsData);
 		this.setSyncStatus(SyncStatus.idle);
 		this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
