@@ -75,7 +75,7 @@ class LogClient_Browser_class
 				console.log(`%c${prefix}`, this.getColor(level, bold), param);
 				continue;
 			}
-			console.log(param);
+			console.log(`%c${prefix}`, this.getColor(level, bold), param);
 		}
 	}
 }
