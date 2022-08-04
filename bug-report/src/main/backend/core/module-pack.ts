@@ -14,19 +14,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */'../main/frontend/modules/JiraModule';
-import {Tester} from './_core/Tester';
-import {issueScenario} from './jira/issue';
+ */
+
+import {ModuleBE_BugReport} from '../modules/ModuleBE_BugReport';
+import {ModuleBE_AdminBR} from '../modules/ModuleBE_AdminBR';
+import {JiraBugReportIntegrator} from '../modules/JiraBugReportIntegrator';
+import {JiraModule} from '@nu-art/jira/backend';
+import {SlackBugReportIntegrator} from '../modules/SlackBugReportIntegrator';
+import {SlackModule} from '@nu-art/storm/slack';
 
 
-const mainScenario = __scenario('Bug Report Testing');
-mainScenario.add(issueScenario);
-
-const email = 'email';
-const key = 'key';
-JiraModule.setDefaultConfig({auth: {email: email, apiKey: key}});
-
-module.exports = new Tester()
-	.addModules(JiraModule)
-	.setScenario(mainScenario)
-	.build();
+export const ModulePack_Backend_BugReport = [
+	ModuleBE_BugReport,
+	ModuleBE_AdminBR,
+	JiraBugReportIntegrator,
+	JiraModule,
+	SlackBugReportIntegrator,
+	SlackModule
+];

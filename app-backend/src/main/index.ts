@@ -24,12 +24,11 @@ import {DispatchModule, ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs/backend';
 import {Module} from '@nu-art/ts-common';
 import {ModulePack_Backend_Permissions} from '@nu-art/permissions/backend';
-import {ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report/backend';
+import {JiraBugReportIntegrator, ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {Slack_ServerApiError, SlackModule} from '@nu-art/storm/slack';
 import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload/backend';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
-import {JiraBugReportIntegrator} from '@nu-art/bug-report/app-backend/modules/JiraBugReportIntegrator';
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
 import {PubsubExample} from '@modules/PubsubExample';
 
