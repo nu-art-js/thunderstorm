@@ -34,7 +34,7 @@ export enum ComponentStatus {
 }
 
 export type Props_SmartComponent = {
-	modules: BaseDB_ApiGeneratorCallerV2<DB_Object, any>[];
+	modules?: BaseDB_ApiGeneratorCallerV2<DB_Object, any>[];
 }
 
 export type State_SmartComponent = {
@@ -127,10 +127,14 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	protected abstract _render(): JSX.Element
 
 	render() {
-		if (this.state.componentPhase !== ComponentStatus.Synced)
+		if (this.state.componentPhase === ComponentStatus.Loading)
 			return <div className={'loader-container'}><TS_Loader/></div>;
 
-		return this._render();
+		return <React.Fragment>
+			{this._render()}
+			{this.state.componentPhase === ComponentStatus.Syncing &&
+				<div className={'loader-transparent-container'}><TS_Loader/></div>}
+		</React.Fragment>;
 	}
 }
 
