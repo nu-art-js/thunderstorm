@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * A typescript & react boilerplate with api call example
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -18,9 +17,10 @@
  */
 
 import * as React from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/app-frontend/core/ComponentSync';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend/core/ComponentSync';
 import Example_LineGraph, {D3ChartData} from './d3components/Example_LineGraph';
 import Example_TableGraph, {TableData} from './d3components/Example_TableGraph';
+
 
 export type Coordinates = {
 	x: number,
@@ -120,6 +120,5 @@ export class Example_CCgraphs_Renderer
 		</div>;
 	}
 }
-
 
 export const Example_CCgraphs = {renderer: Example_CCgraphs_Renderer, name: 'CC Graphs'};

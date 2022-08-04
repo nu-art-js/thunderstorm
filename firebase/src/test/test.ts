@@ -19,11 +19,12 @@
 import {FirebaseTester} from './_core/Firebase-Tester';
 import {testCollections} from './firestore/collection/test-collections';
 import {TestModuleThatUsesCollection,} from './firestore/backup/test-project-backup';
-import {FirebaseModule} from '../main/app-backend/FirebaseModule';
+import {FirebaseModule} from '../main/frontend/FirebaseModule';
 import {testStorage} from './firestore/storage/test-storage';
 import {__scenario} from '@nu-art/testelot';
 import {testDatabase} from './database/test-database';
 import {scenarioUpsert} from './firestore/collection/test/upsert';
+
 
 const mainScenario = __scenario('Firebase testing');
 mainScenario.add(testDatabase);

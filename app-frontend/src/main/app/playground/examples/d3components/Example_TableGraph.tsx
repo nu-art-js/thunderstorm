@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * A typescript & react boilerplate with api call example
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,11 +18,12 @@
 
 import * as React from 'react';
 import {ReactNode} from 'react';
-import {ComponentSync} from '@nu-art/thunderstorm/app-frontend/core/ComponentSync';
+import {ComponentSync} from '@nu-art/thunderstorm/frontend/core/ComponentSync';
 import {scaleLinear} from 'd3-scale';
 import {AxesLabels, Coordinates, D3ChartData} from './Example_LineGraph';
 import AxisLeft from './Example_AxisX';
 import AxisBottom from './Example_AxisBottom.';
+
 
 export type TableData = D3ChartData & {
 	icon?: ReactNode
@@ -36,7 +36,6 @@ type Props = {
 	xDomain?: number,
 	frequency: number
 }
-
 
 export class Example_TableGraph
 	extends ComponentSync<Props, {}> {
@@ -106,7 +105,6 @@ export class Example_TableGraph
 				y={this.yScale()(d.y) + this.midY() / 2}
 				style={{overflow: 'visible'}}>{icon}</svg>);
 
-
 	render() {
 		return <>
 			<svg width={this.w} height={this.h} style={{float: 'left'}}>
@@ -130,6 +128,5 @@ export class Example_TableGraph
 	}
 
 }
-
 
 export default Example_TableGraph;

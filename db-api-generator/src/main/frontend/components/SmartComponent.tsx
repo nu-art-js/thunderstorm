@@ -21,10 +21,10 @@
 
 import * as React from 'react';
 import {compare, DB_Object} from '@nu-art/ts-common';
-import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, DataStatus, SyncStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
+import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, DataStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
 import {Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
-import {BaseComponent} from '@nu-art/thunderstorm/app-frontend/core/ComponentBase';
+import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
 
 
 export enum ComponentStatus {
@@ -34,11 +34,11 @@ export enum ComponentStatus {
 }
 
 export type Props_SmartComponent = {
-	modules: BaseDB_ApiGeneratorCallerV2<DB_Object, any>[];
+	modules?: BaseDB_ApiGeneratorCallerV2<DB_Object, any>[];
 }
 
 export type State_SmartComponent = {
-	isLoading?: boolean;
+	componentPhase: ComponentStatus;
 	error?: Error
 }
 
@@ -47,14 +47,16 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	State extends State_SmartComponent & S = State_SmartComponent & S>
 	extends BaseComponent<Props, State> {
 
-	protected componentPhase: ComponentStatus = ComponentStatus.Loading;
+	// static defaultProps = {
+	// 	modules: []
+	// };
+
 	private derivingState = false;
-	private pendingProps?: P;
+	private pendingProps?: Props;
 
 	constructor(p: Props) {
 		super(p);
-
-		this.props.modules.forEach(module => {
+		this.props.modules?.forEach(module => {
 			// @ts-ignore
 			const __callback = this[module.defaultDispatcher.method]?.bind(this);
 			// @ts-ignore
@@ -63,25 +65,46 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				__callback?.(...params);
 			};
 		});
-
-		this.componentPhase = this.deriveComponentPhase();
 	}
 
 	// ######################### Life Cycle #########################
 
-	protected _deriveStateFromProps(nextProps: P): State | undefined {
+	private onSyncEvent = (module: BaseDB_ApiGeneratorCallerV2<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
+		//Define logic for change in module sync status
+		if (params[0] === EventType_Sync) {
+			this.reDeriveState();
+		}
+	};
+
+	protected _deriveStateFromProps(nextProps: Props, state: State = this.createInitialState(nextProps)): State | undefined {
+		let isReady: boolean;
+		if (!this.props.modules || this.props.modules.length === 0)
+			isReady = true;
+		else
+			isReady = this.props.modules?.every(module => module.getDataStatus() === DataStatus.containsData);
+		
+		if (!isReady)
+			return this.createInitialState(nextProps);
+
 		if (this.derivingState) {
 			this.logVerbose('Scheduling new props', nextProps as {});
 			this.pendingProps = nextProps;
 			return;
 		}
 
-		this.logVerbose('Deriving state from props', nextProps as {});
+		this.logVerbose('Will deriving state from props', nextProps as {});
 		this.pendingProps = undefined;
 		this.derivingState = true;
 
-		this.deriveStateFromProps(nextProps)
-			.then((state) => this.setState(state, this.reDeriveCompletedCallback))
+		this.deriveStateFromProps(nextProps, {...state, componentPhase: ComponentStatus.Synced})
+			.then((state) => {
+				if (this.pendingProps)
+					return this.reDeriveCompletedCallback();
+
+				if (state)
+					this.setState(state, this.reDeriveCompletedCallback);
+
+			})
 			.catch(e => {
 				this.logError(`error`, e);
 				this.setState({error: e}, this.reDeriveCompletedCallback);
@@ -89,17 +112,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 		return this.createInitialState(nextProps);
 	}
-
-	private onSyncEvent = (module: BaseDB_ApiGeneratorCallerV2<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
-		//Define logic for change in module sync status
-		if (params[0] === EventType_Sync) {
-			this.componentPhase = this.deriveComponentPhase();
-			if (this.componentPhase !== ComponentStatus.Synced)
-				return this.forceUpdate();
-
-			this.reDeriveState();
-		}
-	};
 
 	private reDeriveCompletedCallback = () => {
 		this.derivingState = false;
@@ -109,62 +121,33 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		}
 	};
 
-	protected async deriveStateFromProps(nextProps: P): Promise<State> {
-		return this.createInitialState(nextProps);
+	protected abstract deriveStateFromProps(nextProps: Props, state?: Partial<S> & State_SmartComponent): Promise<State>;
+
+	protected createInitialState(nextProps: Props) {
+		return {componentPhase: ComponentStatus.Loading} as State;
 	}
-
-	protected createInitialState(nextProps: P) {
-		return {isLoading: true} as State;
-	}
-
-	private deriveComponentPhase() {
-		const moduleStatuses = this.props.modules.map(module => ({syncStatus: module.getSyncStatus(), dataStatus: module.getDataStatus()}));
-		const canBeRendered = this.canBeRendered();
-
-		//If all Modules are synced
-		if (moduleStatuses.every(status => status.syncStatus === SyncStatus.idle && status.dataStatus === DataStatus.containsData))
-			return ComponentStatus.Synced;
-
-		//If all modules are synced or in process of being synced, and pass the "canBeRendered" check
-		if (this.props.modules.every(module => {
-			return canBeRendered[module.getName()]();
-		})) {
-			return ComponentStatus.Synced;
-		}
-
-		//Return loading
-		return ComponentStatus.Loading;
-
-		// //If all of the modules are outOfSync
-		// if (moduleStatuses.every(status => status === SyncStatus.OutOfSync))
-		// 	return ComponentStatus.Loading;
-		//
-		//
-		// //Some of the components are in sync process
-		// //If component is already out of load phase
-		// if (this.componentPhase === ComponentStatus.Syncing || this.componentPhase === ComponentStatus.Synced)
-		// 	return ComponentStatus.Syncing;
-	}
-
-	protected abstract canBeRendered(): { [k: string]: () => boolean }
 
 	// ######################### Render #########################
 
 	protected abstract _render(): JSX.Element
 
 	render() {
-		if (this.componentPhase === ComponentStatus.Loading)
+		if (this.state.componentPhase === ComponentStatus.Loading)
 			return <div className={'loader-container'}><TS_Loader/></div>;
 
-		return this._render();
+		return <React.Fragment>
+			{this._render()}
+			{this.state.componentPhase === ComponentStatus.Syncing &&
+				<div className={'loader-transparent-container'}><TS_Loader/></div>}
+		</React.Fragment>;
 	}
 }
 
 export abstract class SmartPanel<Config, State = {}, Props = {}>
 	extends SmartComponent<Props_WorkspacePanel<Config, Props>, State_WorkspacePanel<Config, State>> {
 
-	protected async deriveStateFromProps(nextProps: Props_WorkspacePanel<Config, Props>): Promise<State_WorkspacePanel<Config, State>> {
-		return {config: {...nextProps.config}} as State_WorkspacePanel<Config, State>;
+	protected createInitialState(nextProps: Props_WorkspacePanel<Config, Props>) {
+		return {componentPhase: ComponentStatus.Loading, config: {...nextProps.config}} as State_WorkspacePanel<Config, State> & State_SmartComponent;
 	}
 
 	shouldReDeriveState(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>): boolean {
