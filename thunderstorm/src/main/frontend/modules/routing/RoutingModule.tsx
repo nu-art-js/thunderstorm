@@ -19,9 +19,9 @@
  * limitations under the License.
  */
 
-import {_keys, addItemToArray, BadImplementationException, Module} from '@nu-art/ts-common';
+import {_keys, addItemToArray, BadImplementationException, composeQueryParams, Module, RouteParams} from '@nu-art/ts-common';
 import * as React from 'react';
-import {defaultLinkNode, defaultNavLinkNode, defaultRouteNode, RouteParams, RoutePath} from './route';
+import {defaultLinkNode, defaultNavLinkNode, defaultRouteNode, RoutePath} from './route';
 import {Redirect, Switch} from 'react-router-dom';
 import {BrowserHistoryModule} from '../HistoryModule';
 import {QueryParams} from '../../../shared/types';
@@ -77,7 +77,7 @@ class RoutingModule_Class
 
 	goToRoute(key: string, params?: RouteParams) {
 		const pathname = this.getPath(key);
-		const search = RoutePath.composeStringQuery(params);
+		const search = composeQueryParams(params);
 
 		BrowserHistoryModule.push({pathname, search});
 	}

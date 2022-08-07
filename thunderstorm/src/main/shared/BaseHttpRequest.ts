@@ -262,20 +262,6 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		this.abortImpl();
 	}
 
-	protected composeFullUrl() {
-		let nextOperator = this.url.indexOf('?') === -1 ? '?' : '&';
-		return Object.keys(this.params).reduce((url: string, paramKey: string) => {
-			const param: string | undefined = this.params[paramKey];
-			if (!param)
-				return url;
-
-			const toRet = `${url}${nextOperator}${paramKey}=${encodeURIComponent(param)}`;
-			nextOperator = '&';
-			return toRet;
-		}, this.url);
-
-	}
-
 	protected abstract executeImpl(): Promise<void>
 
 }

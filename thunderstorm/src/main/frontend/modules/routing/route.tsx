@@ -19,11 +19,11 @@
  * limitations under the License.
  */
 
+import {composeUrl, RouteParams} from '@nu-art/ts-common';
 import * as React from 'react';
 import {Link, NavLink, Route} from 'react-router-dom';
 import {ReactEntryComponentInjector} from '../component-loader/ReactEntryComponentInjector';
 
-export type RouteParams = { [key: string]: string | number | (() => string | number) }
 
 export class RoutePath {
 	key: string;
@@ -73,28 +73,9 @@ export class RoutePath {
 	}
 
 	compose(params?: RouteParams) {
-		const paramsAsString = RoutePath.composeStringQuery(params);
-
-		return this.path + paramsAsString;
+		return composeUrl(this.path, params);
 	}
 
-	static composeStringQuery(params?: RouteParams) {
-		let paramsAsString = '';
-
-		if (params)
-			paramsAsString = Object.keys(params).reduce((toRet, key) => {
-				let param = params[key];
-				if (typeof param === 'function')
-					param = param();
-
-				return `${toRet}&${key}=${param}`;
-			}, paramsAsString);
-
-		if (paramsAsString.length > 0)
-			paramsAsString = `?${paramsAsString.substring(1)}`;
-
-		return paramsAsString;
-	}
 }
 
 const activeStyle = {color: 'blue'};

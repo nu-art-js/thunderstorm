@@ -19,7 +19,7 @@
 /**
  * Created by TacB0sS on 3/18/17.
  */
-import {Exception, ImplementationMissingException, regexpCase, TS_Object,} from '@nu-art/ts-common';
+import {composeUrl, Exception, ImplementationMissingException, regexpCase, RouteParams, TS_Object,} from '@nu-art/ts-common';
 import {Action} from './Action';
 import * as fetch from 'node-fetch';
 
@@ -41,7 +41,7 @@ export class Action_Http<T extends TS_Object = any>
 	private readonly headers: { [key: string]: string | ((action: Action<any>) => string) } = {};
 	private readonly method: HttpMethod;
 
-	private params: any = {};
+	private params: RouteParams = {};
 
 	private url!: string | ((action: Action<any>) => string);
 	private body!: string | object | ((action: Action<any>) => string | object);
@@ -65,7 +65,7 @@ export class Action_Http<T extends TS_Object = any>
 		return this;
 	}
 
-	public setParams(params: object) {
+	public setParams(params: RouteParams) {
 		this.params = params;
 		return this;
 	}
@@ -102,22 +102,7 @@ export class Action_Http<T extends TS_Object = any>
 		if (typeof this.url === 'function')
 			this.url = this.url(this);
 
-		return this.url + `${this.toUrlParams()}`;
-	}
-
-	private toUrlParams() {
-		if (!this.params)
-			return '';
-
-		if (typeof this.params === 'function')
-			this.params = this.params();
-
-		if (Object.keys(this.params).length === 0)
-			return '';
-
-		return `?${Object.keys(this.params).map((key) => {
-			return `${key}=${this.params[key]}`;
-		}).join('&')}`;
+		return composeUrl(this.url, this.params);
 	}
 
 	protected async execute() {
