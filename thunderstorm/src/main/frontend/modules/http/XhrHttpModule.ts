@@ -21,12 +21,10 @@
 // noinspection TypeScriptPreferShortImport
 import {ApiDef, ErrorResponse, TypedApi} from '../../../shared/types';
 
-import {BadImplementationException} from '@nu-art/ts-common';
+import {BadImplementationException, composeUrl} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {HttpException} from '../../../shared/request-types';
+import {BaseHttpModule_Class, BaseHttpRequest, ErrorType, HttpException} from '../../../shared';
 // noinspection TypeScriptPreferShortImport
-import {BaseHttpRequest, ErrorType} from '../../../shared/BaseHttpRequest';
-import {BaseHttpModule_Class} from '../../../shared/BaseHttpModule';
 import {gzipSync} from 'zlib';
 
 
@@ -46,10 +44,11 @@ export class XhrHttpModule_Class
 	}
 
 	createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<API>, data?: string): XhrHttpRequest<API> {
-
 		const request = new XhrHttpRequest<API>(apiDef.path, data, this.shouldCompress())
 			.setLogger(this)
-			.setMethod(apiDef.method);
+			.setMethod(apiDef.method)
+			.setTimeout(this.timeout)
+			.addHeaders(this.getDefaultHeaders());
 
 		if (apiDef.fullUrl)
 			request.setUrl(apiDef.fullUrl);
@@ -58,11 +57,8 @@ export class XhrHttpModule_Class
 				.setOrigin(this.origin)
 				.setRelativeUrl(apiDef.path);
 
-		return request
-			.setTimeout(this.timeout)
-			.addHeaders(this.getDefaultHeaders());
+		return request;
 	}
-
 }
 
 export const XhrHttpModule = new XhrHttpModule_Class();
@@ -160,20 +156,7 @@ class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 				// HttpModule.logVerbose("onabort");
 			};
 
-			let nextOperator = '?';
-			if (this.url.indexOf('?') !== -1) {
-				nextOperator = '&';
-			}
-
-			const fullUrl = Object.keys(this.params).reduce((url: string, paramKey: string) => {
-				const param: string | undefined = this.params[paramKey];
-				if (!param)
-					return url;
-
-				const toRet = `${url}${nextOperator}${paramKey}=${encodeURIComponent(param)}`;
-				nextOperator = '&';
-				return toRet;
-			}, this.url);
+			const fullUrl = composeUrl(this.url, this.params);
 
 			// TODO: investigate which one should work
 			this.xhr.onprogress = this.onProgressListener;
