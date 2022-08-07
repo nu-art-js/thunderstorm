@@ -18,9 +18,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, ImplementationMissingException, Module,} from '@nu-art/ts-common';
+import {__stringify, composeUrl, ImplementationMissingException, Module,} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {BodyApi, QueryApi, ErrorResponse} from '../../../shared/types';
+import {BodyApi, ErrorResponse, QueryApi} from '../../../shared/types';
 import {promisifyRequest} from '../../utils/promisify-request';
 import {ApiException} from '../../exceptions';
 import {RequestOptions} from '../../../backend';
@@ -58,21 +58,13 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 	}
 
 	protected executeGetRequest = async <API extends QueryApi<any, any, any>>(url: string, _params: API['P'], _headers?: { [key: string]: string }): Promise<API['R']> => {
-		const params = _params && Object.keys(_params).map((key) => {
-			return `${key}=${_params[key]}`;
-		});
-
-		let urlParams = '';
-		if (params && params.length > 0)
-			urlParams = `?${params.join('&')}`;
-
 		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,
 				[this.config.secretHeaderName]: this.config.secret,
 				[this.config.proxyHeaderName]: this.config.proxyId,
 			},
-			uri: `${this.config.url}${url}${urlParams}`,
+			uri: `${composeUrl(`${this.config.url}${url}`, _params)}`,
 			method: 'GET',
 			json: true
 		};
@@ -89,7 +81,7 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 				[this.config.proxyHeaderName]: this.config.proxyId,
 			},
 			json: true,
-			uri: `${this.config.url}${url}`,
+			uri: `${composeUrl(`${this.config.url}${url}`)}`,
 			body: body,
 			method: 'POST'
 		};

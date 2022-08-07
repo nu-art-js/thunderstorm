@@ -55,6 +55,7 @@ export * from './utils/array-tools';
 export * from './utils/object-tools';
 export * from './utils/merge-tools';
 export * from './utils/version-tools';
+export * from './utils/query-params';
 export * from './utils/tools';
 export * from './utils/hash-tools';
 export * from './utils/filter-tools';

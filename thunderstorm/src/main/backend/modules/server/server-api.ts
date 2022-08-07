@@ -23,8 +23,8 @@
  * Created by tacb0ss on 11/07/2018.
  */
 import {
-	_keys,
 	BadImplementationException,
+	composeUrl,
 	dispatch_onServerError,
 	isErrorOfType,
 	Logger,
@@ -285,8 +285,8 @@ export class ServerApi_Redirect<API extends TypedApi<any, any, any, any>>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: any): Promise<void> {
-		const query = queryParams ? _keys<QueryParams, string>(queryParams).reduce((c: string, k: string) => c + '&' + k + '=' + queryParams[k], '?') : '';
-		response.redirect(this.responseCode, `${HttpServer.getBaseUrl()}${this.redirectUrl}${query}`);
+		const url = `${composeUrl(`${HttpServer.getBaseUrl()}${this.redirectUrl}`, queryParams)}`;
+		response.redirect(this.responseCode, url);
 	}
 }
 

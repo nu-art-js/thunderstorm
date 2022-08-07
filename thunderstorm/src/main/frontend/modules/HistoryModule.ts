@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {_keys, Module,} from '@nu-art/ts-common';
+import {_keys, composeQueryParams, Module,} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
 import {QueryParams} from '../../index';
 
@@ -45,7 +45,7 @@ export class BrowserHistoryModule_Class
 	}
 
 	private composeQuery(queryParams: QueryParams) {
-		const queryAsString = _keys(queryParams).map((key) => `${key}=${queryParams[key]}`).join('&');
+		const queryAsString = composeQueryParams(queryParams);
 		if (queryAsString.length === 0)
 			return undefined;
 
@@ -176,8 +176,7 @@ export function encodeUrlParams(queryParams?: QueryParams) {
 }
 
 export function composeQuery(queryParams?: QueryParams) {
-	const encodeParams = encodeUrlParams(queryParams);
-	const queryAsString = _keys(encodeParams).map((key) => `${key}=${encodeParams[key]}`).join('&');
+	const queryAsString = composeQueryParams(queryParams);
 	if (queryAsString.length === 0)
 		return '';
 

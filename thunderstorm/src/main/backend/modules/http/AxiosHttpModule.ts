@@ -22,7 +22,7 @@
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
 import {ApiDef, BaseHttpModule_Class, BaseHttpRequest, ErrorResponse, ErrorType, TypedApi} from '../../../shared';
-import {BadImplementationException, StringMap,} from '@nu-art/ts-common';
+import {BadImplementationException, composeUrl, StringMap,} from '@nu-art/ts-common';
 import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
 
 
@@ -43,13 +43,21 @@ export class AxiosHttpModule_Class
 	}
 
 	createRequest<API extends TypedApi<any, any, any, any>>(apiDef: ApiDef<API>, data?: string): AxiosHttpRequest<API> {
-		return new AxiosHttpRequest<API>(apiDef.path, data, this.shouldCompress())
+		const request = new AxiosHttpRequest<API>(apiDef.path, data, this.shouldCompress())
 			.setLogger(this)
-			.setOrigin(this.origin)
 			.setMethod(apiDef.method)
 			.setTimeout(this.timeout)
-			.addHeaders(this.getDefaultHeaders())
-			.setRequestOption(this.requestOption);
+			.setRequestOption(this.requestOption)
+			.addHeaders(this.getDefaultHeaders());
+
+		if (apiDef.fullUrl)
+			request.setUrl(apiDef.fullUrl);
+		else
+			request
+				.setOrigin(this.origin)
+				.setRelativeUrl(apiDef.path);
+
+		return request;
 	}
 
 	setRequestOption(requestOption: Axios_RequestConfig) {
@@ -118,7 +126,7 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 			if (this.aborted)
 				return resolve();
 
-			const fullUrl = this.composeFullUrl();
+			const fullUrl = composeUrl(this.url, this.params);
 
 			// TODO set progress listener
 			// this.xhr.upload.onprogress = this.onProgressListener;
