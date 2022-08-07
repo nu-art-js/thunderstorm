@@ -16,12 +16,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {BadImplementationException, ImplementationMissingException, Module, TypedMap} from '@nu-art/ts-common';
+import {BadImplementationException, composeUrl, ImplementationMissingException, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiException, promisifyRequest} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {CoreOptions, Headers, Response, UriOptions} from 'request';
 import {JiraIssueText, JiraUtils} from './utils';
 import {JiraVersion, JiraVersion_Create} from '../../shared/version';
+
 
 type Config = {
 	auth: JiraAuth
@@ -233,7 +234,6 @@ export class JiraModule_Class
 		return this.executeGetRequest('/issue/createmetadata', {projectKeys: id});
 	};
 
-
 	query = async (query: JiraQuery): Promise<JiraIssue[]> => {
 		return (await this.executeGetRequest<JiraResponse_IssuesQuery>(`/search`, {jql: JiraUtils.buildJQL(query)})).issues;
 	};
@@ -299,17 +299,10 @@ export class JiraModule_Class
 	}
 
 	private async executeGetRequest<T>(url: string, _params?: { [k: string]: string }) {
-		const params = _params && Object.keys(_params).map((key) => {
-			return `${key}=${_params[key]}`;
-		});
-
-		let urlParams = '';
-		if (params && params.length > 0)
-			urlParams = `?${params.join('&')}`;
 
 		const request: UriOptions & CoreOptions = {
 			headers: this.headersJson,
-			uri: `${this.restUrl}${url}${urlParams}`,
+			uri: `${composeUrl(`${this.restUrl}${url}`, _params)}`,
 			method: HttpMethod.GET,
 			json: true
 		};
