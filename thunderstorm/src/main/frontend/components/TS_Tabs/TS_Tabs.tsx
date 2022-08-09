@@ -32,6 +32,7 @@ export type Props_Tabs = {
 	selectedTabUid?: string
 	tabs: Tab[]
 	tabsHeaderClass?: string;
+	tabsContentClass?: string;
 	/**
 	 * Called only after clicking on a tab. Not called when a default first tab is selected during render.
 	 * @param selected id of the selected tab.
@@ -108,7 +109,7 @@ export class TS_Tabs
 		};
 
 		const headerClass = _className('ts-tabs__tabs-header', this.props.tabsHeaderClass);
-
+		const contentClass = _className('ts-tabs__content', this.props.tabsContentClass);
 		return (
 			<div className="ts-tabs">
 				<div className={headerClass}>
@@ -117,7 +118,7 @@ export class TS_Tabs
 						return <div key={tab.uid} id={tab.uid} className={tabClasses} onClick={this.selectOnClick}>{getTitle(tab)}</div>;
 					})}
 				</div>
-				<div className="ts-tabs__content">
+				<div className={contentClass}>
 					{getContent(tabs.find(tab => tab.uid === this.state.focused))}
 				</div>
 			</div>
