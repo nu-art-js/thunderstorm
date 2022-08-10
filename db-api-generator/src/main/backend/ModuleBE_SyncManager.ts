@@ -104,11 +104,8 @@ export class ModuleBE_SyncManager_Class
 		}
 
 		await this.deletedCount.set(newDeletedCount);
-
 		const map = deleted.map(item => item.__collectionName);
-		this.logDebug('deleted items from collections: ', map);
 		const keys = filterDuplicates(map);
-		this.logDebug('deleted items from collections: ', keys);
 
 		await Promise.all(keys.map(key => {
 			const newestDeletedItem = deleted.find(deletedItem => deletedItem.__collectionName === key)!;
