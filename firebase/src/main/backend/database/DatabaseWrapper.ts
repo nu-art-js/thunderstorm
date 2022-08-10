@@ -34,19 +34,19 @@ export class DatabaseWrapper
 		this.database = getDatabase(firebaseSession.app);
 	}
 
-	public async get<T>(path: string, defaultValue?: T): Promise<T | undefined> {
+	public async get<T>(path: string, defaultValue?: T): Promise<T> {
 		const snapshot = await this.database.ref(path).once('value');
 		let toRet = defaultValue;
 		if (snapshot)
-			toRet = snapshot.val() as (T | undefined);
+			toRet = snapshot.val() as T;
 
 		if (!toRet)
 			toRet = defaultValue;
 
-		return toRet;
+		return toRet as T;
 	}
 
-	public listen<T>(path: string, callback: (value: T | undefined) => void): FirebaseListener {
+	public listen<T>(path: string, callback: (value?: T) => void): FirebaseListener {
 		try {
 			return this.database.ref(path).on('value', (snapshot: Firebase_DataSnapshot) => callback(snapshot ? snapshot.val() : undefined));
 		} catch (e: any) {
@@ -85,7 +85,7 @@ export class DatabaseWrapper
 		return this.patch(path, value);
 	}
 
-	public async patch<T>(path: string, value: T) {
+	public async patch<T>(path: string, value: Partial<T>) {
 		try {
 			return await this.database.ref(path).update(value);
 		} catch (e: any) {
@@ -111,5 +111,48 @@ export class DatabaseWrapper
 		} catch (e: any) {
 			throw new BadImplementationException(`Error while removing path: ${path}`, e);
 		}
+	}
+
+	public ref<T>(path: string) {
+		return new FirebaseRef<T>(this, path);
+	}
+}
+
+export class FirebaseRef<T> {
+
+	private readonly db: DatabaseWrapper;
+	private readonly path: string;
+
+	constructor(db: DatabaseWrapper, path: string) {
+		this.db = db;
+		this.path = path;
+	}
+
+	public get(defaultValue?: T) {
+		return this.db.get(this.path, defaultValue);
+	}
+
+	public set(value: T) {
+		return this.db.set<T>(this.path, value);
+	}
+
+	public patch(value: Partial<T>) {
+		return this.db.patch<T>(this.path, value);
+	}
+
+	public delete(assertionRegexp: string = '^/.*?/.*') {
+		return this.db.delete<T>(this.path, assertionRegexp);
+	}
+
+	public listen(callback: (value?: T) => void) {
+		return this.db.listen<T>(this.path, callback);
+	}
+
+	public stopListening<T>(listener: FirebaseListener): void {
+		return this.db.stopListening<T>(this.path, listener);
+	}
+
+	public async uploadByChunks(value: TS_Object, maxSizeMB: number = 3, itemsToRef: Promise<any>[] = []) {
+		return this.db.uploadByChunks(this.path, value, maxSizeMB, itemsToRef);
 	}
 }

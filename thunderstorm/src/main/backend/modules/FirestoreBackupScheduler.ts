@@ -54,6 +54,11 @@ export interface OnFirestoreBackupSchedulerAct {
 	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<any>[];
 }
 
+export interface OnModuleCleanup {
+	__onCleanupInvoked: () => Promise<void>;
+}
+
+const dispatch_onModuleCleanup = new Dispatcher<OnModuleCleanup, '__onCleanupInvoked'>('__onCleanupInvoked');
 const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, '__onFirestoreBackupSchedulerAct'>('__onFirestoreBackupSchedulerAct');
 
 export class FirestoreBackupScheduler_Class
@@ -66,6 +71,17 @@ export class FirestoreBackupScheduler_Class
 
 	onScheduledEvent = async (): Promise<any> => {
 		this.logInfoBold('Running function FirestoreBackupScheduler');
+
+		try {
+			this.logInfo('Cleaning modules...');
+			await dispatch_onModuleCleanup.dispatchModuleAsync();
+			this.logInfo('Cleaned modules!');
+		} catch (e: any) {
+			this.logWarning(`modules cleanup has failed with error`, e);
+			const errorMessage = `modules cleanup has failed with error\nError: ${_logger_logException(e)}`;
+
+			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, errorMessage);
+		}
 
 		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore()
 			.getCollection<BackupDoc>('firestore-backup-status', ['moduleKey', 'timestamp']);
@@ -122,7 +138,6 @@ export class FirestoreBackupScheduler_Class
 				const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backupItem, true)}\nError: ${_logger_logException(e)}`;
 
 				await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, errorMessage);
-
 			}
 		}));
 	};
