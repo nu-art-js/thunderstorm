@@ -91,7 +91,7 @@ export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof 
 	};
 };
 
-export type DBSyncData = { name: string, lastUpdated: number };
+export type DBSyncData = { name: string, lastUpdated: number, oldestDeleted?: number };
 export type Response_DBSyncData = { syncData: DBSyncData[] };
 export type Response_DBSync<DBType extends DB_Object> = { toUpdate: DBType[], toDelete: DB_Object[] };
 export type ApiStruct_SyncManager = {

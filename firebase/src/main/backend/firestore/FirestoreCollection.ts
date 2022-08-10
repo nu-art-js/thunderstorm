@@ -115,9 +115,8 @@ export class FirestoreCollection<Type extends TS_Object> {
 			const batch = this.wrapper.firestore.batch();
 			const toRet: Type[] = [];
 
-			// @ts-ignore
 			await chunk.reduce((_batch, val) => {
-				toRet.push(val.data as unknown as Type);
+				toRet.push(val.data() as unknown as Type);
 				return _batch.delete(val.ref);
 			}, batch).commit();
 

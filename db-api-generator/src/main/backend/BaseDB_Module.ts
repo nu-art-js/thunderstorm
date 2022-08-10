@@ -29,6 +29,8 @@ import {
 	currentTimeMillis,
 	Day,
 	DB_Object,
+	Dispatcher,
+	flatArray,
 	generateHex,
 	isErrorOfType,
 	merge,
@@ -53,6 +55,7 @@ export type BaseDBApiConfig = {
 	projectId?: string,
 	maxChunkSize: number
 }
+
 export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfig<Type>
 
 /**
@@ -64,6 +67,7 @@ export abstract class BaseDB_Module<DBType extends DB_Object, ConfigType extends
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerAct {
 
+	private defaultDispatcher?: Dispatcher<any, string, [DBType[]], string[]>;
 	public collection!: FirestoreCollection<DBType>;
 	private validator: ValidatorTypeResolver<DBType>;
 	readonly dbDef: DBDef<DBType, any>;
@@ -78,6 +82,10 @@ export abstract class BaseDB_Module<DBType extends DB_Object, ConfigType extends
 		this.setDefaultConfig(preConfig);
 		this.validator = config.validator;
 		this.dbDef = dbDef;
+	}
+
+	setDefaultDispatcher(defaultDispatcher?: Dispatcher<any, string, [DBType[]], string[]>) {
+		this.defaultDispatcher = defaultDispatcher;
 	}
 
 	/**
@@ -309,6 +317,9 @@ export abstract class BaseDB_Module<DBType extends DB_Object, ConfigType extends
 	 * @param dbInstance - The DB entry that is going to be deleted.
 	 */
 	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstance: DBType[]) {
+		const results = flatArray<string>(await this.defaultDispatcher?.dispatchModuleAsync(dbInstance) || []);
+		if (results.length)
+			throw new ApiException(409, results.join('\n'));
 	}
 
 	/**
