@@ -21,7 +21,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "launch": "tsc --watch & firebase emulators:start --import=../.trash/data --export-on-exit --inspect-functions",
+    "launch": "tsc --watch & firebase emulators:start --import=../.trash/data --export-on-exit",
     "serve": "cd .. && bash ./build-and-install.sh -lb -nb"
   },
   "dependencies": {
