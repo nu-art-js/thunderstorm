@@ -113,12 +113,26 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		// @ts-ignore
 		this.v1 = {
 			sync: () => {
-				this.setSyncStatus(SyncStatus.read);
 				const query: FirestoreQuery<DBType> = {
 					where: {__updated: {$gt: this.lastSync.get(0)}},
 					orderBy: [{key: '__updated', order: 'desc'}],
 				};
-				return sync(query);
+
+				const syncRequest = sync(query);
+				const _execute = syncRequest.execute.bind(syncRequest);
+				const _executeSync = syncRequest.executeSync.bind(syncRequest);
+
+				syncRequest.execute = (onSuccess, onError) => {
+					this.setSyncStatus(SyncStatus.read);
+					return _execute(onSuccess, onError);
+				};
+
+				syncRequest.executeSync = async () => {
+					this.setSyncStatus(SyncStatus.read);
+					return _executeSync();
+				};
+
+				return syncRequest;
 			},
 
 			query: (query?: FirestoreQuery<DBType>) => _query(query || {where: {}}),
@@ -165,7 +179,10 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 						return onSuccess?.(r);
 
 					pending.request.execute(pending.onSuccess, pending.onError);
-				}, onError);
+				}, (e) => {
+					delete this.operations[id];
+					onError?.(e);
+				});
 			}
 
 			const runningRequestType = operation.running.requestType;
@@ -201,21 +218,25 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 
 	__syncIfNeeded = async (syncData: DBSyncData[]) => {
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
+		if (mySyncData && mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.lastSync.get(0)) {
+			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.lastSync.get(0)}`);
+			await this.clearCache();
+		}
+
 		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0)) {
 			this.setDataStatus(DataStatus.containsData);
 			this.setSyncStatus(SyncStatus.idle);
 			return;
 		}
 
-		this.setSyncStatus(SyncStatus.read);
 		await this.v1.sync().executeSync();
-
-		this.setDataStatus(DataStatus.containsData);
-		this.setSyncStatus(SyncStatus.idle);
 	};
 
 	private setSyncStatus(status: SyncStatus) {
 		this.logDebug(`Sync status updated: ${SyncStatus[this.syncStatus]} => ${SyncStatus[status]}`);
+		if (this.syncStatus === status)
+			return;
+
 		this.syncStatus = status;
 		this.OnSyncStatusChanged();
 	}
