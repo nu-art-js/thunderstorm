@@ -1,5 +1,6 @@
 import * as React from 'react';
-import {ComponentSync, LL_V_L} from '../..';
+import {ComponentSync, LL_V_L, _className} from '../..';
+import './TS_CollapsableContainer.scss';
 
 type Props = {
 	headerRenderer: React.ReactNode | (() => React.ReactNode);
@@ -12,20 +13,27 @@ type State = {
 
 export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 
-	protected deriveStateFromProps(nextProps: Props): State | undefined {
-		return undefined;
+	protected deriveStateFromProps(nextProps: Props): State {
+		return {collapsed: true};
 	}
 
+	private toggleCollapse = () => {
+		this.setState({collapsed: !this.state.collapsed});
+	};
+
 	renderHeader() {
-		return <div className={'ts-collapsable-container__header'}>
+		const className = _className('ts-collapsable-container__header', this.state?.collapsed ? 'collapsed' : undefined);
+		return <div className={className} onClick={this.toggleCollapse}>
+			<span className={'ts-collapsable-container__header__caret'}>{this.state.collapsed ? '+' : '-'}</span>
 			{/*<TS_Icons.arrow className={_className(this.state.collapsed ? 'collapsed' : undefined)}/>*/}
 			{typeof this.props.headerRenderer === 'function' ? this.props.headerRenderer() : this.props.headerRenderer}
 		</div>;
 	}
 
 	renderContainer() {
-		return <div className={'ts-collapsable-container__container'}>
-			{typeof this.props.containerRenderer === 'function' ? this.props.containerRenderer() : this.props.containerRenderer}
+		const className = _className('ts-collapsable-container__container', this.state?.collapsed ? 'collapsed' : undefined);
+		return <div className={className}>
+			{(typeof this.props.containerRenderer === 'function' ? this.props.containerRenderer() : this.props.containerRenderer)}
 		</div>;
 	}
 
