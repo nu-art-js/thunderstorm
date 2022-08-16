@@ -45,8 +45,7 @@ export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 	renderHeader() {
 		const className = _className('ts-collapsable-container__header', this.isCollapsed() ? 'collapsed' : undefined);
 		return <div className={className} onClick={this.toggleCollapse}>
-			<span className={'ts-collapsable-container__header__caret'}>{this.state.collapsed ? '+' : '-'}</span>
-			{/*<TS_Icons.arrow className={_className(this.state.collapsed ? 'collapsed' : undefined)}/>*/}
+			<span className={'ts-collapsable-container__header__caret'}>{this.isCollapsed() ? '+' : '-'}</span>
 			{typeof this.props.headerRenderer === 'function' ? this.props.headerRenderer() : this.props.headerRenderer}
 		</div>;
 	}
