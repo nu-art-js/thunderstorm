@@ -37,11 +37,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
     transition: max-height 200ms linear;
     background: #e5e5e5;
 
     &.collapsed {
+      overflow: hidden;
       max-height: 0px;
     }
   }

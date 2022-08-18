@@ -1,4 +1,4 @@
-import {compare} from '@nu-art/ts-common';
+import {TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
 import {_className, ComponentSync, LL_V_L} from '../..';
 import './TS_CollapsableContainer.scss';
@@ -9,6 +9,7 @@ type Props = {
 	collapsed?: boolean;
 	showCaret?: boolean
 	onCollapseToggle?: (collapseState: boolean) => void;
+	headerStyle?: TypedMap<string>;
 }
 
 type State = {
@@ -32,10 +33,11 @@ export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 	};
 
 	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
-		let res = super.shouldComponentUpdate(nextProps, nextState, nextContext);
-		if (!res)
-			res = !compare(this.props.collapsed, nextProps.collapsed);
-		return res;
+		// let res = super.shouldComponentUpdate(nextProps, nextState, nextContext);
+		// if (!res)
+		// 	res = !compare(this.props.collapsed, nextProps.collapsed);
+		// return res;
+		return true;
 	}
 
 	private isCollapsed() {
@@ -45,7 +47,7 @@ export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 
 	renderHeader() {
 		const className = _className('ts-collapsable-container__header', this.isCollapsed() ? 'collapsed' : undefined);
-		return <div className={className} onClick={this.toggleCollapse}>
+		return <div className={className} onClick={this.toggleCollapse} style={this.props.headerStyle}>
 			{this.props.showCaret !== false && <span className={'ts-collapsable-container__header__caret'}>{this.isCollapsed() ? '+' : '-'}</span>}
 			{typeof this.props.headerRenderer === 'function' ? this.props.headerRenderer() : this.props.headerRenderer}
 		</div>;
