@@ -9,7 +9,8 @@ type Props = {
 	collapsed?: boolean;
 	showCaret?: boolean
 	onCollapseToggle?: (collapseState: boolean) => void;
-	headerStyle?: TypedMap<string>;
+	style?: TypedMap<string>;
+	className?: string;
 }
 
 type State = {
@@ -47,7 +48,7 @@ export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 
 	renderHeader() {
 		const className = _className('ts-collapsable-container__header', this.isCollapsed() ? 'collapsed' : undefined);
-		return <div className={className} onClick={this.toggleCollapse} style={this.props.headerStyle}>
+		return <div className={className} onClick={this.toggleCollapse}>
 			{this.props.showCaret !== false && <span className={'ts-collapsable-container__header__caret'}>{this.isCollapsed() ? '+' : '-'}</span>}
 			{typeof this.props.headerRenderer === 'function' ? this.props.headerRenderer() : this.props.headerRenderer}
 		</div>;
@@ -61,7 +62,8 @@ export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 	}
 
 	render() {
-		return <LL_V_L className={'ts-collapsable-container'}>
+		const className = _className('ts-collapsable-container', this.props.className);
+		return <LL_V_L className={className} style={this.props.style}>
 			{this.renderHeader()}
 			{this.renderContainer()}
 		</LL_V_L>;
