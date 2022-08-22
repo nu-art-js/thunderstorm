@@ -1,0 +1,48 @@
+// ******* How This Works *******
+//The transition property smooths out the change in value over a period of time,
+//but only if the start value and end value are known.
+//Therefore, to make the container grow in size gradually, we will set the max-height, instead of the height,
+//since we can't know for certain what the height is going to be.
+//Make sure when overwriting to set the max-height to something bigger than the content will ever actually be.
+
+.ts-collapsable-container {
+  .ts-collapsable-container__header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    height: 40px;
+    width: 100%;
+    border-bottom: 1px solid black;
+    background: #d0d0d0;
+    box-shadow: inset 0px 0px 25px 10px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+
+    .ts-collapsable-container__header__caret {
+      flex-shrink: 0;
+      width: 20px;
+      margin: 0 5px 0 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font: {
+        size: 16px;
+        weight: bold;
+      }
+    }
+  }
+
+  .ts-collapsable-container__container {
+    width: 100%;
+    max-height: 200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: max-height 200ms linear;
+    background: #e5e5e5;
+
+    &.collapsed {
+      overflow: hidden;
+      max-height: 0px;
+    }
+  }
+}

@@ -74,6 +74,8 @@ export * from './components/TS_Workspace';
 export * from './components/TS_Tooltip';
 export * from './components/TS_MemoryMonitor';
 export * from './components/TS_Link';
+export * from './components/TS_CollapsableContainer';
+export * from './components/TS_Icons';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';
