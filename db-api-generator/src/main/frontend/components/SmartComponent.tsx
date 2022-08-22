@@ -76,13 +76,13 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		}
 	};
 
-	protected _deriveStateFromProps(nextProps: Props, state: State = this.createInitialState(nextProps)): State | undefined {
+	protected _deriveStateFromProps(nextProps: Props, partialState: State = this.createInitialState(nextProps)): State | undefined {
 		let isReady: boolean;
 		if (!this.props.modules || this.props.modules.length === 0)
 			isReady = true;
 		else
 			isReady = this.props.modules?.every(module => module.getDataStatus() === DataStatus.containsData);
-		
+
 		if (!isReady)
 			return this.createInitialState(nextProps);
 
@@ -96,7 +96,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		this.pendingProps = undefined;
 		this.derivingState = true;
 
-		this.deriveStateFromProps(nextProps, {...state, componentPhase: ComponentStatus.Synced})
+		this.deriveStateFromProps(nextProps, {...partialState, componentPhase: ComponentStatus.Synced})
 			.then((state) => {
 				if (this.pendingProps)
 					return this.reDeriveCompletedCallback();
@@ -129,9 +129,9 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	// ######################### Render #########################
 
-	protected abstract _render(): JSX.Element
+	protected abstract _render(): React.ReactNode
 
-	render() {
+	render(): React.ReactNode {
 		if (this.state.componentPhase === ComponentStatus.Loading)
 			return <div className={'loader-container'}><TS_Loader/></div>;
 
