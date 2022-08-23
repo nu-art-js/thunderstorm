@@ -61,7 +61,6 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 	}
 
 	init() {
-		this.dbModule.init();
 	}
 
 	private _deleteAll = async (ignore?: {}) => this.dbModule.deleteAll();
