@@ -82,7 +82,7 @@ function getUIAccount(account: DB_Account): UI_Account {
 	return {email, _id};
 }
 
-export class AccountModuleBE_Class
+export class ModuleBE_Account_Class
 	extends Module<Config>
 	implements QueryRequestInfo, ApiDefServer<ApiStruct_UserAccountBE>, ApiModule {
 
@@ -339,4 +339,4 @@ export class AccountModuleBE_Class
 	};
 }
 
-export const ModuleBE_Account = new AccountModuleBE_Class();
+export const ModuleBE_Account = new ModuleBE_Account_Class();
