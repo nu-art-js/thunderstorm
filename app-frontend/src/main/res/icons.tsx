@@ -1,5 +1,5 @@
-import * as React from "react";
-import {css} from "emotion";
+import * as React from 'react';
+import {HTMLAttributes} from 'react';
 
 export type IconStyle = {
 	color: string;
@@ -7,42 +7,30 @@ export type IconStyle = {
 	height: number;
 }
 
-type Props = {
-	iconStyle: IconStyle
+type IconAttributes = HTMLAttributes<HTMLSpanElement>;
+type Props = IconAttributes & {
 	icon: string
 }
 
 class RenderIcon
 	extends React.Component<Props> {
 	render() {
-		const iconStyle = css`
-		 width: ${this.props.iconStyle.width}px;
-		 height: ${this.props.iconStyle.height}px;
-		 background: ${this.props.iconStyle.color};
-		 -webkit-mask-image: url(${this.props.icon});
-		 mask-image: url(${this.props.icon});
-		 mask-size: cover;
-		 display: inline-block;
-		`;
-
-		return <span className={iconStyle}/>;
+		return <div {...this.props} className={`icon--default ${this.props.className}`}
+								style={{WebkitMaskImage: `url(${this.props.icon})`, maskImage: `url(${this.props.icon})`}}/>;
 	}
 }
-
 
 export type IconData = {
 	ratio: number,
 	value: string
 }
 
-export const iconsRenderer = (key: IconData, color?: string, width: number = 24) => {
-	return <RenderIcon icon={key.value} iconStyle={{color: color || "#000000", height: width * key.ratio, width: width}}/>
+export const iconsRenderer = (key: IconData, props?: IconAttributes) => {
+	return <RenderIcon {...props} icon={key.value}/>;
 };
 
 const arrowClose: IconData = {ratio: 5 / 6,  value: require('@res/icons/icon__arrowClose.svg')};
 const arrowOpen: IconData = {ratio: 5 / 6,  value: require('@res/icons/icon__arrowOpen.svg')};
-const arrowheadFullDown: IconData = {ratio: 24 / 24,  value: require('@res/icons/icon_arrowheadFullDown.svg')};
-const arrowheadFullUp: IconData = {ratio: 24 / 24,  value: require('@res/icons/icon_arrowheadFullUp.svg')};
 const avatar: IconData = {ratio: 14 / 13,  value: require('@res/icons/icon__avatar.svg')};
 const check: IconData = {ratio: 12 / 12,  value: require('@res/icons/icon__check.svg')};
 const close: IconData = {ratio: 10 / 10,  value: require('@res/icons/icon__close.svg')};
@@ -50,18 +38,22 @@ const errorToast: IconData = {ratio: 24 / 26,  value: require('@res/icons/icon__
 const infoToast: IconData = {ratio: 24 / 26,  value: require('@res/icons/icon__infoToast.svg')};
 const lock: IconData = {ratio: 15 / 12,  value: require('@res/icons/icon__lock.svg')};
 const successToast: IconData = {ratio: 24 / 26,  value: require('@res/icons/icon__successToast.svg')};
+const icon_arrowheadFullDown: IconData = {ratio: 24 / 24,  value: require('@res/icons/icon_arrowheadFullDown.svg')};
+const icon_arrowheadFullUp: IconData = {ratio: 24 / 24,  value: require('@res/icons/icon_arrowheadFullUp.svg')};
 
 export const ICONS = {
 
-	arrowheadFullDown: (color?: string, width?: number) => iconsRenderer(arrowheadFullDown, color, width),
-	arrowheadFullUp: (color?: string, width?: number) => iconsRenderer(arrowheadFullUp, color, width),
-	arrowClose: (color?: string, width?: number) => iconsRenderer(arrowClose, color, width),
-	arrowOpen: (color?: string, width?: number) => iconsRenderer(arrowOpen, color, width),
-	avatar: (color?: string, width?: number) => iconsRenderer(avatar, color, width),
-	check: (color?: string, width?: number) => iconsRenderer(check, color, width),
-	close: (color?: string, width?: number) => iconsRenderer(close, color, width),
-	errorToast: (color?: string, width?: number) => iconsRenderer(errorToast, color, width),
-	infoToast: (color?: string, width?: number) => iconsRenderer(infoToast, color, width),
-	lock: (color?: string, width?: number) => iconsRenderer(lock, color, width),
-	successToast: (color?: string, width?: number) => iconsRenderer(successToast, color, width),
+	arrowClose: (props?: IconAttributes) => iconsRenderer(arrowClose, props),
+	arrowOpen: (props?: IconAttributes) => iconsRenderer(arrowOpen, props),
+	avatar: (props?: IconAttributes) => iconsRenderer(avatar, props),
+	check: (props?: IconAttributes) => iconsRenderer(check, props),
+	close: (props?: IconAttributes) => iconsRenderer(close, props),
+	errorToast: (props?: IconAttributes) => iconsRenderer(errorToast, props),
+	infoToast: (props?: IconAttributes) => iconsRenderer(infoToast, props),
+	lock: (props?: IconAttributes) => iconsRenderer(lock, props),
+	successToast: (props?: IconAttributes) => iconsRenderer(successToast, props),
+	icon_arrowheadFullDown: (props?: IconAttributes) => iconsRenderer(icon_arrowheadFullDown, props),
+	icon_arrowheadFullUp: (props?: IconAttributes) => iconsRenderer(icon_arrowheadFullUp, props),
 };
+
+export type IconsType = typeof ICONS

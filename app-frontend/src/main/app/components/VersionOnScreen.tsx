@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 import * as React from "react";
-import { _marginBottom, _marginRight } from "@res/styles";
 
 
 export const VersionOnScreen = () => {
 	return <div className="full_screen">
-		<div className={`bottom right absolute ${_marginRight(10)} ${_marginBottom(10)}`}>{`${process.env.appEnv}-${process.env.appVersion}`}</div>
+		<div className={`bottom right absolute`} style={{right:10, bottom:10}}>{`${process.env.appEnv}-${process.env.appVersion}`}</div>
 	</div>;
 };
