@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseDB_Module} from '@nu-art/db-api-generator/backend';
+import {BaseDB_ModuleBE} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {auditBy} from '@nu-art/ts-common';
@@ -28,7 +28,7 @@ import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 
 
 export class ModuleBE_PermissionDomain_Class
-	extends BaseDB_Module<DB_PermissionDomain> {
+	extends BaseDB_ModuleBE<DB_PermissionDomain> {
 
 	constructor() {
 		super(DBDef_PermissionDomain);

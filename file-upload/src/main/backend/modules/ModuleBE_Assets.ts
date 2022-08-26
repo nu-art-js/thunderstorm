@@ -42,7 +42,7 @@ import {FileExtension, MimeType} from 'file-type/core';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './AssetBucketListener';
 import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
-import {BaseDB_Module, DBApiConfig} from '@nu-art/db-api-generator/backend';
+import {BaseDB_ModuleBE, DBApiConfig} from '@nu-art/db-api-generator/backend';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -91,7 +91,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 };
 
 export class ModuleBE_Assets_Class
-	extends BaseDB_Module<DB_Asset, MyConfig>
+	extends BaseDB_ModuleBE<DB_Asset, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {
@@ -149,7 +149,7 @@ export class ModuleBE_Assets_Class
 		};
 	}
 
-	private cleanup = async (interval = Hour, module: BaseDB_Module<DB_Asset> = ModuleBE_AssetsTemp) => {
+	private cleanup = async (interval = Hour, module: BaseDB_ModuleBE<DB_Asset> = ModuleBE_AssetsTemp) => {
 		const entries: DB_Asset[] = await module.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);

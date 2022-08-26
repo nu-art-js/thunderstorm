@@ -16,30 +16,22 @@
  * limitations under the License.
  */
 
-import {
-	Form,
-	Form_FieldProps,
-	TS_Input,
-	FormRenderer,
-	ToastModule
-} from '@nu-art/thunderstorm/frontend';
+import {Form, Form_FieldProps, FormRenderer, ToastModule, TS_Input} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import {Request_CreateAccount} from '@nu-art/user-account/shared/api';
-import {css} from 'emotion';
 import {COLORS} from '@res/colors';
 import {ICONS} from '@res/icons';
 import {renderForm} from '../../themes/forms';
 import {__stringify} from '@nu-art/ts-common';
 
-const fieldStyle = css({
-	borderBottom: `1px solid ${COLORS.gold()}`,
-	marginBottom: '30px',
-	width: '220px',
-});
 
 const renderer = (icon: React.ReactNode, props: Form_FieldProps<Request_CreateAccount, any>) => {
 	const field = props.field;
-	return <div className={`ll_h_c ${fieldStyle}`}>
+	return <div className={`ll_h_c`} style={{
+		borderBottom: `1px solid ${COLORS.gold()}`,
+		marginBottom: '30px',
+		width: '220px',
+	}}>
 		{icon}
 		<TS_Input
 			id={props.key}
@@ -54,31 +46,28 @@ const renderer = (icon: React.ReactNode, props: Form_FieldProps<Request_CreateAc
 
 const formRenderer: FormRenderer<Request_CreateAccount> = {
 	email: (props: Form_FieldProps<Request_CreateAccount, 'email'>) => {
-		return renderer(ICONS.avatar(COLORS.gold(), 18), props);
+		return renderer(ICONS.avatar(), props);
 	},
 	password: (props: Form_FieldProps<Request_CreateAccount, 'password'>) => {
-		return renderer(ICONS.lock(COLORS.gold(), 18), props);
+		return renderer(ICONS.lock(), props);
 	},
 	password_check: (props: Form_FieldProps<Request_CreateAccount, 'password_check'>) => {
-		return renderer(ICONS.lock(COLORS.gold(), 18), props);
+		return renderer(ICONS.lock(), props);
 	},
 };
 
 const form: Form<Request_CreateAccount> = {
 	email: {
-		className: fieldStyle,
 		type: 'text',
 		hint: 'email',
 		label: 'Email',
 	},
 	password: {
-		className: fieldStyle,
 		type: 'password',
 		hint: '****',
 		label: 'Password',
 	},
 	password_check: {
-		className: fieldStyle,
 		type: 'password',
 		hint: '****',
 		label: 'Password Check',

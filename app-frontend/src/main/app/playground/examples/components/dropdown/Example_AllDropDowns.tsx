@@ -20,7 +20,7 @@
 import * as React from 'react';
 import {ICONS} from '@res/icons';
 import {BaseNodeRenderer,} from '@nu-art/thunderstorm/frontend';
-import {optionRendererStyle, Plague} from './consts';
+import { Plague} from './consts';
 import {Playground_DropdownSingleAndMulti} from './Example_Dropdown_SingleAndMulti';
 import {Playground_DropdownMultiType} from './Example_Dropdown_MultiType';
 import {Playground_DropdownSingleType} from './Example_Dropdown_SingleType';
@@ -71,10 +71,10 @@ export class _ItemRenderer
 				// onClick={(event: React.MouseEvent) => this.props.node.onClick(event)}
 					 style={this.props.node.focused ? {backgroundColor: 'lime'} : {}}>
 
-				<div className={optionRendererStyle(this.props.node.focused)}>
+				<div>
 					<div className={`ll_h_c`} style={{justifyContent: 'space-between'}}>
 						<div>{this.props.item.label}</div>
-						{this.props.node.selected && <div>{ICONS.check(undefined, 14)}</div>}
+						{this.props.node.selected && <div>{ICONS.check(undefined)}</div>}
 					</div>
 				</div>
 			</div>

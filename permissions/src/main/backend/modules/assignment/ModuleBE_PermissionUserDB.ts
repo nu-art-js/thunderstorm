@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {BaseDB_Module} from '@nu-art/db-api-generator/backend';
+import {BaseDB_ModuleBE} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {_keys, auditBy, BadImplementationException, batchAction, compare, filterDuplicates} from '@nu-art/ts-common';
@@ -30,7 +30,7 @@ import {UI_Account} from '@nu-art/user-account';
 
 
 export class ModuleBE_PermissionUserDB_Class
-	extends BaseDB_Module<DB_PermissionUser>
+	extends BaseDB_ModuleBE<DB_PermissionUser>
 	implements OnNewUserRegistered, OnUserLogin {
 
 	constructor() {

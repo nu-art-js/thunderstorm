@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {compare, DB_Object} from '@nu-art/ts-common';
-import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, DataStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
+import {ApiCallerEventTypeV2, BaseDB_ApiCaller, DataStatus} from '../modules/BaseDB_ApiCaller';
 import {Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
 import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
@@ -34,7 +34,7 @@ export enum ComponentStatus {
 }
 
 export type Props_SmartComponent = {
-	modules?: BaseDB_ApiGeneratorCallerV2<DB_Object, any>[];
+	modules?: BaseDB_ApiCaller<DB_Object, any>[];
 }
 
 export type State_SmartComponent = {
@@ -69,7 +69,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	// ######################### Life Cycle #########################
 
-	private onSyncEvent = (module: BaseDB_ApiGeneratorCallerV2<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
+	private onSyncEvent = (module: BaseDB_ApiCaller<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
 		//Define logic for change in module sync status
 		if (params[0] === EventType_Sync) {
 			this.reDeriveState();

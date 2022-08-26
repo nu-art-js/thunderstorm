@@ -49,7 +49,7 @@ export class Example_Dropdown_MultiType
 		};
 
 		const caretItem = <div style={{backgroundColor: 'lime', paddingRight: 8}}>
-			<div style={{marginTop: 3}}>{ICONS.arrowOpen(undefined, 11)}</div>
+			<div style={{marginTop: 3}}>{ICONS.arrowOpen(undefined)}</div>
 		</div>;
 		const caret = {open: caretItem, close: caretItem};
 		return <LL_V_C>

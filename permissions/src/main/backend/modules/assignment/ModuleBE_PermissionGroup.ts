@@ -25,11 +25,11 @@ import {DB_PermissionGroup, DBDef_PermissionGroup, PredefinedGroup} from '../../
 import {Clause_Where} from '@nu-art/firebase';
 import {checkDuplicateLevelsDomain, ModuleBE_PermissionAccessLevel} from '../management';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
-import {BaseDB_Module} from '@nu-art/db-api-generator/backend/BaseDB_Module';
+import {BaseDB_ModuleBE} from '@nu-art/db-api-generator/backend';
 
 
 export class ModuleBE_PermissionGroup_Class
-	extends BaseDB_Module<DB_PermissionGroup> {
+	extends BaseDB_ModuleBE<DB_PermissionGroup> {
 
 	constructor() {
 		super(DBDef_PermissionGroup);

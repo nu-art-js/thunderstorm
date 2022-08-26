@@ -25,7 +25,6 @@ import {Example_Dialogs} from './examples/modules/Example_Dialogs';
 import {Example_Toaster} from './examples/modules/Example_Toaster';
 import {TreeRefactorPage} from './examples/_to-be-removed/TreeRefactorPage';
 import {ICONS} from '@res/icons';
-import {COLORS} from '@res/colors';
 import {Example_Form} from './examples/Example_Form';
 import {Example_TriggerPush} from './examples/Example_TriggerPush';
 import {Example_AllDropDowns} from './examples/components/dropdown/Example_AllDropDowns';
@@ -65,8 +64,8 @@ export class Page_Playground
 	render() {
 		const screens = this.getScreens();
 		return <TS_Playground
-			iconClose={ICONS.arrowClose(COLORS.veryLightPink())}
-			iconOpen={ICONS.arrowOpen(COLORS.veryLightPink())}
+			iconClose={ICONS.arrowClose()}
+			iconOpen={ICONS.arrowOpen()}
 			screens={screens}
 		/>;
 	}

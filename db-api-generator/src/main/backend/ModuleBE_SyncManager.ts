@@ -24,7 +24,7 @@ import {DatabaseWrapper, FirebaseModule, FirebaseRef, FirestoreCollection, Fires
 import {ApiModule, ApiServerRouter, createQueryServerApi, ExpressRequest, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
 import {_keys, currentTimeMillis, DB_Object, filterDuplicates, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiDef_SyncManager, ApiStruct_SyncManager, DBSyncData} from '../shared';
-import {BaseDB_Module} from './BaseDB_Module';
+import {BaseDB_ModuleBE} from './BaseDB_ModuleBE';
 
 
 type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
@@ -42,7 +42,7 @@ export class ModuleBE_SyncManager_Class
 	public collection!: FirestoreCollection<DeletedDBItem>;
 
 	private database!: DatabaseWrapper;
-	private dbModules!: BaseDB_Module<DB_Object>[];
+	private dbModules!: BaseDB_ModuleBE<DB_Object>[];
 	private syncData!: FirebaseRef<Type_SyncData>;
 	private deletedCount!: FirebaseRef<number>;
 
@@ -122,7 +122,7 @@ export class ModuleBE_SyncManager_Class
 		const firestore = FirebaseModule.createAdminSession().getFirestore();
 		this.collection = firestore.getCollection<DeletedDBItem>('__deleted__docs');
 
-		this.dbModules = this.manager.filterModules(module => module instanceof BaseDB_Module);
+		this.dbModules = this.manager.filterModules(module => module instanceof BaseDB_ModuleBE);
 		this.database = FirebaseModule.createAdminSession().getDatabase();
 		this.syncData = this.database.ref<Type_SyncData>(`/state/${this.getName()}/syncData`);
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
