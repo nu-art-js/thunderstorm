@@ -71,7 +71,7 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 		 *
 		 * @return a single item or undefined
 		 */
-		find: async (filter: (item: DBType) => boolean) => this.db.queryFind(filter),
+		find: async (filter: (item: DBType) => boolean) => this.db.cache.find(filter),
 
 		/**
 		 * Iterates over all DB objects in the related collection, and returns an array of items based on the mapper.
@@ -95,7 +95,7 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 		 */
 		reduce: async <ReturnType>(reducer: ReduceFunction<DBType, ReturnType>, initialValue: ReturnType, filter?: (item: DBType) => boolean, query?: IndexDb_Query) => this.db.queryReduce(reducer, initialValue, filter, query),
 
-		queryUnique: async (_key?: string | IndexKeys<DBType, Ks>) => {
+		unique: async (_key?: string | IndexKeys<DBType, Ks>) => {
 			if (_key === undefined)
 				return _key;
 
