@@ -34,6 +34,20 @@ type Config = {
 	retainDeletedCount: number
 }
 
+/**
+ * # ModuleBE_SyncManager
+ *
+ * ## <ins>Description:</ins>
+ * This module manages all the {@link BaseDB_Module} updates and deleted items in order to allow incremental sync of items with clients
+ *
+ * ## <ins>Config:</ins>
+ *
+ * ```json
+ * "ModuleBE_SyncManager" : {
+ *   	retainDeletedCount: 100
+ * }
+ * ```
+ */
 export class ModuleBE_SyncManager_Class
 	extends Module<Config>
 	implements ApiServerRouter<ApiStruct_SyncManager>, ApiModule, OnModuleCleanup {
