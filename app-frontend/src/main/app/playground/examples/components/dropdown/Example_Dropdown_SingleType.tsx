@@ -43,8 +43,8 @@ class Example_Dropdown_SingleType
 
 		const simpleAdapter: Adapter = SimpleListAdapter(plagues, (item) => <ItemRenderer {...item}/>);
 		const caret = {
-			open: this.caretItem(ICONS.arrowOpen(undefined, 11)),
-			close: this.caretItem(ICONS.arrowClose(undefined, 11))
+			open: this.caretItem(ICONS.arrowOpen(undefined)),
+			close: this.caretItem(ICONS.arrowClose(undefined))
 		};
 
 		return <div className="ll_v_l" style={{marginLeft: 8}}>
