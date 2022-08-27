@@ -71,7 +71,7 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 		 *
 		 * @return a single item or undefined
 		 */
-		find: async (filter: (item: DBType) => boolean) => this.db.cache.find(filter),
+		find: async (filter: (item: DBType) => boolean) => this.db.queryFind(filter),
 
 		/**
 		 * Iterates over all DB objects in the related collection, and returns an array of items based on the mapper.
