@@ -82,7 +82,7 @@ export class DatabaseWrapper
 
 	public async update<T>(path: string, value: T) {
 		this.logWarning('update will be deprecated!! please use patch');
-		return this.patch(path, value);
+		return this.patch<T>(path, value);
 	}
 
 	public async patch<T>(path: string, value: Partial<T>) {

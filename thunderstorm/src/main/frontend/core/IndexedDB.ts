@@ -175,7 +175,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 	public async get(key: IndexKeys<T, Ks>): Promise<T | undefined> {
 		const map = this.config.uniqueKeys.map(k => key[k]);
-		const request = (await this.store()).get(map);
+		const request = (await this.store()).get(map as IDBValidKey);
 
 		return new Promise((resolve, reject) => {
 			request.onerror = () => reject(new Error(`Error getting item from DB - ${this.config.name}`));
@@ -298,7 +298,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		const store = await this.store(true);
 
 		return new Promise((resolve, reject) => {
-			const itemRequest = store.get(keys);
+			const itemRequest = store.get(keys as IDBValidKey);
 
 			itemRequest.onerror = () => reject(new Error(`Error getting item in DB - ${this.config.name}`));
 
@@ -310,7 +310,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 					return resolve(itemRequest.result);
 				}
 
-				const deleteRequest = store.delete(keys);
+				const deleteRequest = store.delete(keys as IDBValidKey);
 
 				deleteRequest.onerror = () => reject(new Error(`Error deleting item in DB - ${this.config.name}`));
 
