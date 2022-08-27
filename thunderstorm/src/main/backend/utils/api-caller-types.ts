@@ -33,7 +33,8 @@ export type ApiModule = {
 	useRoutes: () => ApiServerRouter<any>
 }
 
-export type ApiDefServer<K> = ApiModule & K extends TypedApi<any, any, any, any> ? ApiServer<K> | undefined : ApiServerRouter<K>;
+export type ApiDefServer<K> = ApiModule & K extends TypedApi<any, any, any, any> ? ApiServer<K> | undefined :
+	K extends TS_Object ? ApiServerRouter<K> : never;
 
 export type ApiServerRouter<T extends TS_Object> = { [P in keyof T]: ApiDefServer<T[P]> };
 

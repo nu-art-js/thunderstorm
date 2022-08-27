@@ -25,7 +25,7 @@ import {DB_Object, Module, PreDB} from '@nu-art/ts-common';
 import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
 import {ApiDefServer, ApiModule, ApiServerRouter, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB} from '../shared';
-import {BaseDB_Module, DBApiConfig} from './BaseDB_Module';
+import {BaseDB_ModuleBE, DBApiConfig} from './BaseDB_ModuleBE';
 
 
 /**
@@ -38,9 +38,9 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 	implements ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>, ApiModule {
 
 	readonly v1: ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
-	readonly dbModule: BaseDB_Module<DBType, any, Ks>;
+	readonly dbModule: BaseDB_ModuleBE<DBType, any, Ks>;
 
-	constructor(dbModule: BaseDB_Module<DBType, any, Ks>) {
+	constructor(dbModule: BaseDB_ModuleBE<DBType, any, Ks>) {
 		super();
 		this.dbModule = dbModule;
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbModule.dbDef);
@@ -61,7 +61,6 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 	}
 
 	init() {
-		this.dbModule.init();
 	}
 
 	private _deleteAll = async (ignore?: {}) => this.dbModule.deleteAll();
@@ -91,6 +90,6 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 }
 
 export const DB_ApiGenerator = DB_ApiGenerator_Class;
-export const createApisForDBModule = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>(dbModule: BaseDB_Module<DBType, ConfigType, Ks>) => {
+export const createApisForDBModule = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>(dbModule: BaseDB_ModuleBE<DBType, ConfigType, Ks>) => {
 	return new DB_ApiGenerator_Class<DBType, ConfigType, Ks>(dbModule);
 };

@@ -18,7 +18,7 @@
 
 import {BaseNodeRenderer, TreeItem, TreeRendererMap} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
-import {css} from 'emotion';
+
 
 export type Plague = { label: string, value: string }
 
@@ -118,17 +118,6 @@ export const flatPlaguesWithTitles: TreeItem<Plague>[] = [
 ];
 
 
-export const optionRendererStyle = (selected: boolean) => css(
-	{
-		fontSize: '13px',
-		fontWeight: selected ? 500 : 200,
-		color: selected ? '#00b5ff' : '#2f304f',
-		margin: '0 5px',
-		padding: '5px 0',
-		borderBottom: 'solid 1px #d8d8d880',
-		width: '100%'
-	});
-
 
 export class ItemRenderer_Plague
 	extends BaseNodeRenderer<Plague> {
@@ -155,7 +144,7 @@ export class ItemRenderer_PlagueTitle
 	renderItem(item: Plague) {
 		return (
 			<div style={{backgroundColor: 'lightgray'}}>
-				<div className={optionRendererStyle(false)} style={{color: 'yellow'}}>
+				<div style={{color: 'yellow'}}>
 					<div className={`ll_h_c`} style={{justifyContent: 'space-between'}}>
 						<div>{item.label}</div>
 					</div>

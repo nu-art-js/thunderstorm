@@ -22,18 +22,9 @@
 import {ApiDefCaller, BaseHttpRequest, HttpException, IndexKeys, QueryParams, TypedApi} from '@nu-art/thunderstorm';
 import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response_DBSync,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
-import {
-	apiWithBody,
-	apiWithQuery,
-	IndexDb_Query,
-	IndexedDB,
-	IndexedDBModule,
-	ReduceFunction,
-	StorageKey,
-	ThunderDispatcher
-} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
-import {BadImplementationException, DB_BaseObject, DB_Object, Module, PreDB, TypedMap} from '@nu-art/ts-common';
+import {BadImplementationException, DB_BaseObject, DB_Object, PreDB, TypedMap} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {
 	EventType_Create,
@@ -48,6 +39,7 @@ import {
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
+import {BaseDB_ModuleFE} from './BaseDB_ModuleFE';
 
 
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
@@ -70,33 +62,28 @@ type Pending = {
 	onSuccess?: (response: any, data?: string) => Promise<void> | void,
 	onError?: (reason: HttpException) => any
 };
-type Pah = {
+
+type Operation = {
 	running: Pending,
 	pending?: Pending
 }
 
-export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
-	extends Module<Config>
+export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
+	extends BaseDB_ModuleFE<DBType, Ks, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>, SyncIfNeeded {
 
-	readonly version = 'v2';
-
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
-	private db: IndexedDB<DBType, Ks>;
-	private lastSync: StorageKey<number>;
 	// @ts-ignore
 	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 	private syncStatus: SyncStatus;
 	private dataStatus: DataStatus;
-	private operations: TypedMap<Pah> = {};
+	private operations: TypedMap<Operation> = {};
 
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
-		super();
+		super(dbDef);
 		const config = getModuleFEConfig(dbDef);
 		this.defaultDispatcher = defaultDispatcher;
 		this.setDefaultConfig(config as Config);
-		this.db = IndexedDBModule.getOrCreate(this.config.dbConfig);
-		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
@@ -153,6 +140,15 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 				return this.updatePending(item, _delete(item), 'delete');
 			},
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
+		};
+
+		const superClear = this.cache.clear;
+		this.cache.clear = async (reSync = false) => {
+			await superClear();
+			this.setSyncStatus(SyncStatus.idle);
+			this.setDataStatus(DataStatus.NoData);
+			if (reSync)
+				this.v1.sync().execute();
 		};
 	}
 
@@ -220,7 +216,7 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
 		if (mySyncData && mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.lastSync.get(0)) {
 			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.lastSync.get(0)}`);
-			await this.clearCache();
+			await this.cache.clear();
 		}
 
 		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0)) {
@@ -273,76 +269,6 @@ export abstract class BaseDB_ApiGeneratorCallerV2<DBType extends DB_Object, Ks e
 		if (latest !== -1)
 			this.lastSync.set(latest);
 	}
-
-	public async clearCache(sync = true) {
-		this.lastSync.delete();
-		await this.db.deleteDB();
-		this.setSyncStatus(SyncStatus.idle);
-		this.setDataStatus(DataStatus.NoData);
-		if (sync)
-			this.v1.sync().execute();
-	}
-
-	public async queryCache(query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> {
-		return (await this.db.query({query, indexKey})) || [];
-	}
-
-	/**
-	 * Iterates over all DB objects in the related collection, and returns all the items that pass the filter
-	 *
-	 * @param {function} filter - Boolean returning function, to determine which objects to return.
-	 * @param {Object} [query] - A query object
-	 *
-	 * @return Array of items or empty array
-	 */
-	public async queryFilter(filter: (item: DBType) => boolean, query?: IndexDb_Query): Promise<DBType[]> {
-		return await this.db.queryFilter(filter, query);
-	}
-
-	/**
-	 * Iterates over all DB objects in the related collection, and returns the first item that passes the filter
-	 *
-	 * @param {function} filter - Boolean returning function, to determine which object to return.
-	 *
-	 * @return a single item or undefined
-	 */
-	public async queryFind(filter: (item: DBType) => boolean) {
-		return this.db.queryFind(filter);
-	}
-
-	/**
-	 * Iterates over all DB objects in the related collection, and returns an array of items based on the mapper.
-	 *
-	 * @param {function} mapper - Function that returns data to map for the object
-	 * @param {function} [filter] - Boolean returning function, to determine which item to map.
-	 * @param {Object} [query] - A query object
-	 *
-	 * @return An array of mapped items
-	 */
-	public async queryMap<MapType>(mapper: (item: DBType) => MapType, filter?: (item: DBType) => boolean, query?: IndexDb_Query) {
-		return this.db.WIP_queryMap(mapper, filter, query);
-	}
-
-	/**
-	 * iterates over all DB objects in the related collection, and reduces them to a single value based on the reducer.
-	 * @param {function} reducer - Function that determines who to reduce the array.
-	 * @param {*} initialValue - An initial value for the reducer
-	 * @param {function} [filter] - Function that determines which DB objects to reduce.
-	 * @param {Object} [query] - A query Object.
-	 *
-	 * @return a single reduced value.
-	 */
-	public async queryReduce<ReturnType>(reducer: ReduceFunction<DBType, ReturnType>, initialValue: ReturnType, filter?: (item: DBType) => boolean, query?: IndexDb_Query) {
-		return this.db.queryReduce(reducer, initialValue, filter, query);
-	}
-
-	public uniqueQueryCache = async (_key?: string | IndexKeys<DBType, Ks>): Promise<DBType | undefined> => {
-		if (_key === undefined)
-			return _key;
-
-		const key = typeof _key === 'string' ? {_id: _key} as unknown as IndexKeys<DBType, Ks> : _key;
-		return this.db.get(key);
-	};
 
 	private dispatchSingle = (event: SingleApiEvent, item: DBType) => {
 		this.defaultDispatcher?.dispatchModule(event, item);

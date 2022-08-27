@@ -44,7 +44,7 @@ export abstract class Module<Config = any, FinalConfig extends _FinalConfig<Conf
 		super(tag);
 		this.name = this.constructor['name'];
 		if (!this.name.endsWith('_Class'))
-			throw new BadImplementationException('Module class MUST end with \'_Class\' e.g. MyModule_Class');
+			throw new BadImplementationException(`Found module named: ${this.name}, Module class MUST end with '_Class' e.g. MyModule_Class`);
 
 		this.name = this.name.replace('_Class', '');
 	}

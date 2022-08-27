@@ -18,37 +18,12 @@
 import * as React from 'react';
 import {RoutingModule} from '@nu-art/thunderstorm/frontend';
 import {Page_Home} from '../pages/Page_Home';
-import {css} from 'emotion';
 import {Page_ApiGen} from '../pages/Page_ApiGen';
 import {Example_Dialogs} from '../playground/examples/modules/Example_Dialogs';
 import {Example_Toaster} from '../playground/examples/modules/Example_Toaster';
 import {Example_Dispatch} from '../playground/examples/Example_Dispatch';
 import {Component_Login} from '@nu-art/user-account/frontend';
 
-const fixedMenu = css`
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 100;
-  background-color: rgba(220, 220, 220, 1);
-
-  .menu {
-    display: flex;
-    padding-top: 15px;
-    padding-bottom: 15px;
-    min-width: 230px;
-    min-height: 50px;
-    max-width: 950px;
-    margin: auto;
-    align-items: center;
-    justify-content: space-evenly;
-
-    .a {
-      text-decoration: none;
-      color: #333;
-    }
-  }
-`;
 export const Route_ApiGen = 'api-generation';
 export const Route_Dialog = 'dialog';
 export const Route_Toaster = 'toaster';
@@ -84,7 +59,7 @@ export class NavigationBar
 		registerRoutes();
 
 		return <div className="ll_v_l">
-			<div className={fixedMenu} ref={(instance: HTMLDivElement) => {
+			<div ref={(instance: HTMLDivElement) => {
 				if (menuRef)
 					return;
 

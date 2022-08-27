@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {compare, DB_Object} from '@nu-art/ts-common';
-import {ApiCallerEventTypeV2, BaseDB_ApiGeneratorCallerV2, DataStatus} from '../modules/BaseDB_ApiGeneratorCallerV2';
+import {ApiCallerEventTypeV2, BaseDB_ApiCaller, DataStatus} from '../modules/BaseDB_ApiCaller';
 import {Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
 import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
@@ -34,7 +34,7 @@ export enum ComponentStatus {
 }
 
 export type Props_SmartComponent = {
-	modules?: BaseDB_ApiGeneratorCallerV2<DB_Object, any>[];
+	modules?: BaseDB_ApiCaller<DB_Object, any>[];
 }
 
 export type State_SmartComponent = {
@@ -69,20 +69,20 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	// ######################### Life Cycle #########################
 
-	private onSyncEvent = (module: BaseDB_ApiGeneratorCallerV2<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
+	private onSyncEvent = (module: BaseDB_ApiCaller<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
 		//Define logic for change in module sync status
 		if (params[0] === EventType_Sync) {
 			this.reDeriveState();
 		}
 	};
 
-	protected _deriveStateFromProps(nextProps: Props, state: State = this.createInitialState(nextProps)): State | undefined {
+	protected _deriveStateFromProps(nextProps: Props, partialState: State = this.createInitialState(nextProps)): State | undefined {
 		let isReady: boolean;
 		if (!this.props.modules || this.props.modules.length === 0)
 			isReady = true;
 		else
 			isReady = this.props.modules?.every(module => module.getDataStatus() === DataStatus.containsData);
-		
+
 		if (!isReady)
 			return this.createInitialState(nextProps);
 
@@ -96,7 +96,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		this.pendingProps = undefined;
 		this.derivingState = true;
 
-		this.deriveStateFromProps(nextProps, {...state, componentPhase: ComponentStatus.Synced})
+		this.deriveStateFromProps(nextProps, {...partialState, componentPhase: ComponentStatus.Synced})
 			.then((state) => {
 				if (this.pendingProps)
 					return this.reDeriveCompletedCallback();
@@ -129,9 +129,9 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	// ######################### Render #########################
 
-	protected abstract _render(): JSX.Element
+	protected abstract _render(): React.ReactNode
 
-	render() {
+	render(): React.ReactNode {
 		if (this.state.componentPhase === ComponentStatus.Loading)
 			return <div className={'loader-container'}><TS_Loader/></div>;
 

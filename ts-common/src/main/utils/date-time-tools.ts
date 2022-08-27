@@ -19,6 +19,7 @@
 import * as moment from 'moment';
 import {AuditBy, Timestamp} from './types';
 
+
 export const Second = 1000;
 export const Minute = Second * 60;
 export const Hour = Minute * 60;
@@ -93,7 +94,8 @@ export function createReadableTimestampObject(pattern: string = Format_HHmmss_DD
 	return timeObj;
 }
 
-export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillis(), timezone: string = Intl.DateTimeFormat().resolvedOptions().timeZone) {
+export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillis(), timezone: string = Intl.DateTimeFormat()
+	.resolvedOptions().timeZone) {
 	const m = moment.utc(timestamp);
 	m.utcOffset(-new Date().getTimezoneOffset());
 	return m.format(pattern);
@@ -102,3 +104,8 @@ export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timest
 export function parseTimeString(timestamp: string, pattern: string = Format_HHmmss_DDMMYYYY): number {
 	return moment.utc(timestamp, pattern).valueOf();
 }
+
+export function normalizeTimestamp(timestamp: number, pattern: string): number {
+	return parseTimeString(formatTimestamp(pattern, timestamp));
+}
+
