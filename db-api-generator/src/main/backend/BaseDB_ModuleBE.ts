@@ -330,9 +330,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * @returns
 	 * A promise of the result of the `processor`.
 	 */
-	async runInTransaction<ReturnType>(processor: (transaction: FirestoreTransaction) => Promise<ReturnType>): Promise<ReturnType> {
-		return this.collection.runInTransaction(processor);
-	}
+	runInTransaction = async <ReturnType>(processor: (transaction: FirestoreTransaction) => Promise<ReturnType>): Promise<ReturnType> => this.collection.runInTransaction(processor);
 
 	// @ts-ignore
 	private async deleteCollection() {
