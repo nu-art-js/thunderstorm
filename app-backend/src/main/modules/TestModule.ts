@@ -19,7 +19,7 @@ import {
 	generateHex,
 	Module
 } from "@nu-art/ts-common";
-import {FirebaseModule} from "@nu-art/firebase/backend";
+import {ModuleBE_Firebase} from "@nu-art/firebase/backend";
 
 type Type = {
 	id: number
@@ -39,7 +39,7 @@ export class TestModule_Class
 
 	private startTest() {
 		this.runAsync('Running test', async () => {
-			const fs = FirebaseModule.createAdminSession().getFirestore();
+			const fs = ModuleBE_Firebase.createAdminSession().getFirestore();
 			const col = fs.getCollection<Type>(testCollection, ["id"]);
 			await fs.deleteCollection(testCollection);
 

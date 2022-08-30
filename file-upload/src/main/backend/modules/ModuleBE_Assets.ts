@@ -33,7 +33,7 @@ import {
 	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
-import {FileWrapper, FirebaseModule, FirebaseType_Metadata, FirestoreTransaction, StorageWrapper} from '@nu-art/firebase/backend';
+import {FileWrapper, ModuleBE_Firebase, FirebaseType_Metadata, FirestoreTransaction, StorageWrapperBE} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
@@ -99,14 +99,14 @@ export class ModuleBE_Assets_Class
 		this.setDefaultConfig({...this.config, path: 'assets'});
 	}
 
-	private storage!: StorageWrapper;
+	private storage!: StorageWrapperBE;
 
 	mimeTypeValidator: TypedMap<FileValidator> = {};
 	fileValidator: TypedMap<FileTypeValidation> = {};
 
 	init() {
 		super.init();
-		this.storage = FirebaseModule.createAdminSession('file-uploader').getStorage();
+		this.storage = ModuleBE_Firebase.createAdminSession('file-uploader').getStorage();
 	}
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {

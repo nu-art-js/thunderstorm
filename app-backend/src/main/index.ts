@@ -26,7 +26,7 @@ import {Module} from '@nu-art/ts-common';
 import {ModulePack_Backend_Permissions} from '@nu-art/permissions/backend';
 import {JiraBugReportIntegrator, ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {Slack_ServerApiError, SlackModule} from '@nu-art/storm/slack';
+import {Slack_ServerApiError, ModuleBE_Slack} from '@nu-art/storm/slack';
 import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload/backend';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
@@ -40,7 +40,7 @@ const modules: Module[] = [
 	CollectionChangedListener,
 	ExampleModule,
 	ForceUpgrade,
-	SlackModule,
+	ModuleBE_Slack,
 	Slack_ServerApiError,
 	DispatchModule,
 	ModuleBE_PushPubSub,

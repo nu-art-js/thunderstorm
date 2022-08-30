@@ -23,7 +23,7 @@ import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Overlay} from '../TS_Overlay';
 import {stopPropagation} from '../../utils/tools';
-import {Dialog_Model, DialogListener, DialogModule} from '../../component-modules/DialogModule';
+import {Dialog_Model, DialogListener, ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
 import './TS_DialogOverlay.scss';
 
 
@@ -76,7 +76,7 @@ export class TS_DialogOverlay
 
 		//Close there is only one dialog
 		if (this.state.models.length === 1)
-			return DialogModule.close();
+			return ModuleFE_Dialog.close();
 
 		//Close only this dialog if more than one
 		this.state.models.pop();

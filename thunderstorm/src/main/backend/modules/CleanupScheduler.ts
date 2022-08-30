@@ -21,7 +21,7 @@
 
 import {currentTimeMillis, Dispatcher} from '@nu-art/ts-common';
 import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
-import {FirebaseModule} from '@nu-art/firebase/backend/FirebaseModule';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase';
 
 
 export type ActDetailsDoc = {
@@ -50,7 +50,7 @@ export class CleanupScheduler_Class
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
-		const cleanupStatusCollection = FirebaseModule.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('cleanup-status', ['moduleKey']);
+		const cleanupStatusCollection = ModuleBE_Firebase.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('cleanup-status', ['moduleKey']);
 		const cleanups = dispatch_onCleanupSchedulerAct.dispatchModule();
 		await Promise.all(cleanups.map(async cleanupItem => {
 			const doc = await cleanupStatusCollection.queryUnique({where: {moduleKey: cleanupItem.moduleKey}});

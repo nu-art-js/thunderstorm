@@ -19,7 +19,7 @@
 
 import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex, Module, padNumber} from '@nu-art/ts-common';
 
-import {FirebaseModule, FirestoreCollection, StorageWrapper} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase, FirestoreCollection, StorageWrapperBE} from '@nu-art/firebase/backend';
 
 import {ApiDef_BugReport, ApiStruct_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../..';
 
@@ -56,7 +56,7 @@ export class ModuleBE_BugReport_Class
 	implements ApiDefServer<ApiStruct_BugReport>, ApiModule {
 
 	private bugReport!: FirestoreCollection<DB_BugReport>;
-	private storage!: StorageWrapper;
+	private storage!: StorageWrapperBE;
 	private ticketCreatorApis: TicketCreatorApi[] = [];
 	readonly v1: ApiDefServer<ApiStruct_BugReport>['v1'];
 
@@ -72,7 +72,7 @@ export class ModuleBE_BugReport_Class
 	}
 
 	protected init(): void {
-		const sessionAdmin = FirebaseModule.createAdminSession();
+		const sessionAdmin = ModuleBE_Firebase.createAdminSession();
 		const firestore = sessionAdmin.getFirestore();
 		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
 		this.storage = sessionAdmin.getStorage();

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './auth/FirebaseSession';
-export * from './FirebaseModule';
-export * from './analytics/AnalyticsModule';
-export * from './messaging/MessagingWrapper';
+export * from './auth/FirebaseSessionFE';
+export * from './ModuleFE_Firebase';
+export * from './analytics/ModuleFE_Analytics';
+export * from './messaging/MessagingWrapperFE';

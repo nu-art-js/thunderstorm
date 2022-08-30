@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Menu_Model, MenuListener, MenuModule} from '../../component-modules/MenuModule';
+import {Menu_Model, MenuListener, ModuleFE_Menu} from '../../component-modules/ModuleFE_Menu';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_PopupMenuOverlay.scss';
 import {TS_Overlay} from '../TS_Overlay';
@@ -28,7 +28,7 @@ export class TS_PopupMenuOverlay
 	__onWindowResized(): void {
 		this.ref = undefined;
 		if (this.state.menuModel)
-			MenuModule.hide(this.state.menuModel.id);
+			ModuleFE_Menu.hide(this.state.menuModel.id);
 	}
 
 	private ref?: HTMLDivElement;

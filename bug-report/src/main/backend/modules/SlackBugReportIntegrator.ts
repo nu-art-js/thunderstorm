@@ -28,7 +28,7 @@ import {
 	Request_BugReport
 } from "../..";
 import {TicketDetails} from "./ModuleBE_BugReport";
-import {SlackModule} from "@nu-art/storm/slack";
+import {ModuleBE_Slack} from "@nu-art/storm/slack";
 
 type Config = {
 	channel: string
@@ -55,7 +55,8 @@ export class SlackBugReportIntegrator_Class
 			text: description,
 			channel: this.config.channel
 		};
-		await SlackModule.postMessage(slackMessage)
+
+		await ModuleBE_Slack.postMessage(slackMessage)
 		return {platform: Platform_Slack, issueId: generateHex(32)};
 	};
 }

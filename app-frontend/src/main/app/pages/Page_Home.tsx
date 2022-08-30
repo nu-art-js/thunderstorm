@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import {Hello} from '../Hello';
-import {ToastModule} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Toaster} from '@nu-art/thunderstorm/frontend';
 import {ExampleModule} from '@modules/ExampleModule';
 
 
@@ -33,15 +33,15 @@ export class Page_Home
 	}
 
 	showAppToasterSuccessExample = () => {
-		ToastModule.toastSuccess('Simple success message');
+		ModuleFE_Toaster.toastSuccess('Simple success message');
 	};
 
 	showAppToasterErrorExample = () => {
-		ToastModule.toastError('Simple error message');
+		ModuleFE_Toaster.toastError('Simple error message');
 	};
 
 	showAppToasterInfoExample = () => {
-		ToastModule.toastInfo('Simple info message');
+		ModuleFE_Toaster.toastInfo('Simple info message');
 	};
 
 	callServerApi_CustomError = () => {

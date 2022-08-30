@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {Tooltip_Model, TooltipListener} from '../../component-modules/TooltipModule';
+import {Tooltip_Model, TooltipListener} from '../../component-modules/ModuleFE_Tooltip';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_TooltipOverlay.scss';
 import {_className} from '../../utils/tools';

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {HTMLProps, ReactNode} from 'react';
-import {StorageKey} from '../modules/StorageModule';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage';
 import {ComponentSync} from '../core/ComponentSync';
 import {TS_Input, TS_InputProps} from '../components/TS_Input/TS_Input';
 import {TS_TextArea} from '../components/TS_Input/TS_TextArea';

@@ -20,8 +20,8 @@
 import * as fs from "fs";
 import {AppTester} from "@nu-art/testelot";
 import {
-	FirebaseModule,
-	FirebaseModule_Class
+	ModuleBE_Firebase,
+	ModuleBE_Firebase_Class
 } from "@nu-art/firebase/backend";
 import {ImplementationMissingException} from "@nu-art/ts-common";
 
@@ -29,11 +29,11 @@ export class MyTester
 	extends AppTester {
 
 	prepare() {
-		FirebaseModule_Class.localAdminConfigId = "test-permissions";
+		ModuleBE_Firebase_Class.localAdminConfigId = "test-permissions";
 
 		const serviceAccount = this.resolveServiceAccount();
 
-		FirebaseModule.setDefaultConfig({"test-permissions": serviceAccount});
+		ModuleBE_Firebase.setDefaultConfig({"test-permissions": serviceAccount});
 	}
 
 	private resolveServiceAccount() {

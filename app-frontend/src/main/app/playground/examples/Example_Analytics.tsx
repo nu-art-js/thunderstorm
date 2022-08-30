@@ -1,4 +1,4 @@
-import {ToastModule} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Toaster} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 
 export class Example_Analytics_Render
@@ -10,7 +10,7 @@ export class Example_Analytics_Render
 		</div>;
 	}
 	addEvent = () => {
-		ToastModule.toastInfo('No Analytics set up yet');
+		ModuleFE_Toaster.toastInfo('No Analytics set up yet');
 	};
 }
 

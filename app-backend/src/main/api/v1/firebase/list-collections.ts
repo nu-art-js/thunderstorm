@@ -27,7 +27,7 @@
 // } from "@nu-art/thunderstorm";
 //
 // import {FirebaseProjectCollections} from "@nu-art/firebase";
-// import {FirebaseModule} from "@nu-art/firebase/backend";
+// import {ModuleBE_Firebase} from "@nu-art/firebase/backend";
 // import {ExpressRequest} from "@nu-art/thunderstorm/backend";
 //
 //
@@ -39,7 +39,7 @@
 // 	}
 //
 // 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
-// 		return {list: FirebaseModule.listCollectionsInModules()};
+// 		return {list: ModuleBE_Firebase.listCollectionsInModules()};
 // 	}
 // }
 //

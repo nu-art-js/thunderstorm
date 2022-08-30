@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import {Component} from 'react';
-import {Adapter, SimpleListAdapter, ToastModule, TS_Input, TS_Tree} from '@nu-art/thunderstorm/frontend';
+import {Adapter, SimpleListAdapter, ModuleFE_Toaster, TS_Input, TS_Tree} from '@nu-art/thunderstorm/frontend';
 import {__stringify} from '@nu-art/ts-common';
 
 type Keys = 'first' | 'second'
@@ -77,7 +77,7 @@ class Example_List_WithInput_Renderer
 				<h2>Here is a tree with one renderer Type</h2>
 				<TS_Tree
 					adapter={adapter}
-					onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
+					onNodeClicked={(path: string, item: any) => ModuleFE_Toaster.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
 		</div>;
 	}

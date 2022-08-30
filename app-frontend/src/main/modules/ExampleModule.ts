@@ -18,12 +18,12 @@
 
 import {__stringify, Module, Second} from '@nu-art/ts-common';
 
-import {apiWithBody, apiWithQuery, ThunderDispatcher, ToastModule, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ThunderDispatcher, ModuleFE_Toaster, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 import {ApiStruct_Examples, CommonBodyReq, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
 import {ApiDef, ApiDefCaller, ErrorResponse, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {Test} from '@modules/TestModule';
 import {ModuleFE_PushPubSub, OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
-import {FirebaseModule} from '@nu-art/firebase/frontend';
+import {ModuleFE_Firebase} from '@nu-art/firebase/frontend';
 import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub';
 import {ApiDef_Examples} from '@app/app-shared/shared';
 
@@ -86,14 +86,14 @@ export class ExampleModule_Class
 	}
 
 	initAnalytics = async () => {
-		const localSession = await FirebaseModule.createSession();
+		const localSession = await ModuleFE_Firebase.createSession();
 		const analytics = localSession.getAnalytics();
 		analytics.setCurrentScreen('Example Screen');
 	};
 
 	__onMessageReceived(notification: DB_Notifications) {
 		const message = `You got data! pushKey: ${notification.pushKey}, props: ${__stringify(notification.props)} with data: ${__stringify(notification.data)}`;
-		// ToastModule.toastSuccess(message);
+		// ModuleFE_Toaster.toastSuccess(message);
 		this.logInfo('payload received in module', message, notification);
 	}
 
@@ -111,12 +111,12 @@ export class ExampleModule_Class
 			switch (errorType) {
 				case 'CustomError1':
 					errorBody = error.body as CustomError1;
-					ToastModule.toastError(`${errorBody.prop1}\n${errorBody.prop2}`);
+					ModuleFE_Toaster.toastError(`${errorBody.prop1}\n${errorBody.prop2}`);
 					break;
 
 				case 'CustomError2':
 					errorBody = error.body as CustomError2;
-					ToastModule.toastError(`${errorBody.prop3}\n${errorBody.prop4}`);
+					ModuleFE_Toaster.toastError(`${errorBody.prop3}\n${errorBody.prop4}`);
 					break;
 			}
 		});

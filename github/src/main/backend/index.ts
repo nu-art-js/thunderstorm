@@ -1,2 +1,2 @@
 export * from "./core/module-pack";
-export * from "./modules/GithubModule";
+export * from "./modules/ModuleBE_Github";

@@ -22,7 +22,7 @@ import {
 	ServerErrorSeverity,
 	ServerErrorSeverity_Ordinal
 } from "@nu-art/ts-common";
-import {SlackModule} from "../SlackModule";
+import {ModuleBE_Slack} from "../ModuleBE_Slack";
 
 type Config = {
 	exclude: string[]
@@ -49,7 +49,7 @@ export class Slack_ServerApiError_Class
 				return
 		}
 
-		await SlackModule.postMessage(`\`\`\`${message}\`\`\``);
+		await ModuleBE_Slack.postMessage(`\`\`\`${message}\`\`\``);
 	}
 }
 

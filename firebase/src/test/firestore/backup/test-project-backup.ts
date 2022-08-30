@@ -17,7 +17,7 @@
  */
 
 import {__custom, __scenario, Scenario} from '@nu-art/testelot';
-import {FirebaseModule, FirestoreCollection,} from '../../_main';
+import {ModuleBE_Firebase, FirestoreCollection,} from '../../_main';
 import {Module} from '@nu-art/ts-common';
 
 export const testFirestoreBackup: Scenario = __scenario('test-project-backup');
@@ -36,7 +36,7 @@ class TestModuleThatUsesCollection_Class
 	private collection!: FirestoreCollection<any>;
 
 	protected init(): void {
-		this.collection = FirebaseModule.createAdminSession().getFirestore().getCollection('test-collection1');
+		this.collection = ModuleBE_Firebase.createAdminSession().getFirestore().getCollection('test-collection1');
 	}
 
 	async deleteAllDocs() {
