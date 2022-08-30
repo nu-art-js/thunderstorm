@@ -69,7 +69,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 	private defaultDispatcher?: Dispatcher<any, string, [DBType[]], string[]>;
 	public collection!: FirestoreCollection<DBType>;
-	private validator: ValidatorTypeResolver<DBType>;
+	private readonly validator: ValidatorTypeResolver<DBType>;
 	readonly dbDef: DBDef<DBType, any>;
 
 	protected constructor(dbDef: DBDef<DBType, any>, appConfig?: BaseDBApiConfig) {
@@ -123,7 +123,6 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * Deletes a unique document based on its `_id`. Uses a transaction, after deletion assertions occur.
 	 *
 	 * @param _id - The _id of the object to be deleted.
-	 * @param request - The request in order to possibly obtain more info.
 	 *
 	 * @throws `ApiException` when the document doesn't exist in the collection.
 	 *
@@ -209,6 +208,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 *
 	 * @param transaction - The transaction object.
 	 * @param instance - The document for which the uniqueness assertion will occur.
+	 * @param request
 	 */
 	public async assertUniqueness(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest) {
 		const uniqueQueries = this.internalFilter(instance);
@@ -304,6 +304,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 *
 	 * @param transaction - The transaction object.
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
+	 * @param request
 	 */
 	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
 	}
@@ -528,6 +529,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * Queries the database for a specific document in the module's collection.
 	 *
 	 * @param where - The where clause to be used for querying.
+	 * @param transaction
 	 * @param request - The request in order to possibly obtain more info.
 	 *
 	 * @throws `ApiException` if the document is not found.
@@ -553,6 +555,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * Executes the specified query on the module's collection.
 	 *
 	 * @param query - The query to be executed.
+	 * @param transaction
 	 * @param request - The request in order to possibly obtain more info.
 	 *
 	 * @returns
