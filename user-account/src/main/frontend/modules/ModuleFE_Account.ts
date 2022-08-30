@@ -20,11 +20,11 @@ import {Module, Second} from '@nu-art/ts-common';
 import {
 	apiWithBody,
 	apiWithQuery,
-	BrowserHistoryModule,
 	getQueryParameter,
+	ModuleFE_BrowserHistory,
+	ModuleFE_Toaster,
 	StorageKey,
 	ThunderDispatcher,
-	ToastModule,
 	XhrHttpModule
 } from '@nu-art/thunderstorm/frontend';
 import {
@@ -119,8 +119,8 @@ export class ModuleFE_Account_Class
 			StorageKey_SessionId.set(String(sessionId));
 			StorageKey_UserEmail.set(String(email));
 
-			BrowserHistoryModule.removeQueryParam(QueryParam_Email);
-			BrowserHistoryModule.removeQueryParam(QueryParam_SessionId);
+			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_Email);
+			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_SessionId);
 		}
 
 		if (StorageKey_SessionId.get()) {
@@ -155,7 +155,7 @@ export class ModuleFE_Account_Class
 
 	private onSessionValidationError = async (response: any, body: any, request: BaseHttpRequest<ApiStruct_UserAccountFE['v1']['validateSession']>) => {
 		if (request.getStatus() === 0) {
-			ToastModule.toastError('Cannot reach Server... trying in 30 sec');
+			ModuleFE_Toaster.toastError('Cannot reach Server... trying in 30 sec');
 			setTimeout(() => this.v1.validateSession().execute(), 30 * Second);
 			return;
 		}

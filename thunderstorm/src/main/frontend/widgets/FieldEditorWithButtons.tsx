@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {HTMLProps} from 'react';
 import {FieldEditor, FieldEditorInputProps} from './FieldEditor';
-import {StorageKey} from '../modules/StorageModule';
+import {StorageKey} from '../modules/ModuleFE_LocalStorage';
 import {ComponentSync} from '../core/ComponentSync';
 import {InputType} from '../components/TS_Input/TS_BaseInput';
 

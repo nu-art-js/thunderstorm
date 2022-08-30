@@ -26,9 +26,9 @@ import {
 } from '../../shared/api';
 
 import {
-	FirebaseModule,
+	ModuleBE_Firebase,
 	FirestoreCollection,
-	StorageWrapper
+	StorageWrapperBE
 } from '@nu-art/firebase/backend';
 import {ApiDefServer, ApiResponse, ExpressRequest, ServerApi_Get, ServerApi_Post} from '@nu-art/thunderstorm/backend';
 
@@ -66,7 +66,7 @@ export class ModuleBE_AdminBR_Class
 	extends Module<Config> {
 
 	private bugReport!: FirestoreCollection<DB_BugReport>;
-	private storage!: StorageWrapper;
+	private storage!: StorageWrapperBE;
 	readonly v1: ApiDefServer<ApiStruct_AdminBugReport>['v1'];
 
 	constructor() {
@@ -79,7 +79,7 @@ export class ModuleBE_AdminBR_Class
 
 
 	protected init(): void {
-		const sessAdmin = FirebaseModule.createAdminSession();
+		const sessAdmin = ModuleBE_Firebase.createAdminSession();
 		const firestore = sessAdmin.getFirestore();
 		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
 		this.storage = sessAdmin.getStorage();

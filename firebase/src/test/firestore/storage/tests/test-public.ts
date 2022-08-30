@@ -35,7 +35,7 @@
  */
 
 import {__custom, __scenario} from '@nu-art/testelot';
-import {BucketWrapper, FirebaseModule} from '../../../_main';
+import {BucketWrapper, ModuleBE_Firebase} from '../../../_main';
 import {generateHex} from '@nu-art/ts-common';
 
 export function makeFilesPublicTest() {
@@ -48,7 +48,7 @@ export function makeFilesPublicTest() {
 
 
 	scenario.add(__custom(async () => {
-		bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
+		bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getOrCreateBucket();
 	}).setLabel('Create Storage'),);
 
 	scenario.add(__custom(async () => {

@@ -30,12 +30,12 @@ import {
 } from '@nu-art/ts-common';
 
 import {
-	FirebaseModule,
+	ModuleBE_Firebase,
 	FirebaseType_BatchResponse,
 	FirebaseType_Message,
 	FirestoreCollection,
 	FirestoreTransaction,
-	PushMessagesWrapper
+	PushMessagesWrapperBE
 } from '@nu-art/firebase/backend';
 // noinspection TypeScriptPreferShortImport
 import {
@@ -69,7 +69,7 @@ export class ModuleBE_PushPubSub_Class
 
 	private pushSessions!: FirestoreCollection<DB_PushSession>;
 	private pushKeys!: FirestoreCollection<DB_PushKeys>;
-	private messaging!: PushMessagesWrapper;
+	private messaging!: PushMessagesWrapperBE;
 	readonly v1: ApiDefServer<ApiStruct_PushMessages>['v1'];
 
 	constructor() {
@@ -88,7 +88,7 @@ export class ModuleBE_PushPubSub_Class
 	}
 
 	protected init(): void {
-		const session = FirebaseModule.createAdminSession();
+		const session = ModuleBE_Firebase.createAdminSession();
 		const firestore = session.getFirestore();
 
 		this.pushSessions = firestore.getCollection<DB_PushSession>('push-sessions', ['pushSessionId']);

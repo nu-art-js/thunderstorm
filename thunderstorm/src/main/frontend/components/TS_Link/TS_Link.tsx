@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {ThunderstormModule, UrlTarget} from '../../modules/ThunderstormModule';
+import {ModuleFE_Thunderstorm, UrlTarget} from '../../modules/ModuleFE_Thunderstorm';
 import './TS_Link.scss';
 import {QueryParams} from '../../../shared/types';
 import {_className, stopPropagation} from '../../utils/tools';
@@ -51,7 +51,7 @@ export class TS_Link
 			return toRet;
 		}, {} as QueryParams);
 
-		ThunderstormModule.openUrl({url: this.props.url, params}, this.props.target);
+		ModuleFE_Thunderstorm.openUrl({url: this.props.url, params}, this.props.target);
 	};
 
 	render() {

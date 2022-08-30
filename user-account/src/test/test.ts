@@ -20,7 +20,7 @@ import {StormTester} from '@nu-art/thunderstorm/backend-test';
 import {createUser, testBadSessionID, testLoginWithWrongPass, testLoginWithWrongUser, testSuccessfulLogin} from './tests/create-user';
 import {ModuleBE_Account} from './_main';
 import {__scenario} from '@nu-art/testelot';
-import {FirebaseModule} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 
 
 export const mainScenario = __scenario('login');
@@ -32,7 +32,7 @@ mainScenario.add(testLoginWithWrongUser());
 mainScenario.add(testBadSessionID());
 
 module.exports = new StormTester()
-	.addModules(FirebaseModule)
+	.addModules(ModuleBE_Firebase)
 	.addModules(ModuleBE_Account)
 	.setScenario(mainScenario)
 	.build();

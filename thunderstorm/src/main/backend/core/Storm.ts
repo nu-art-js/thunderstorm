@@ -24,13 +24,13 @@ import {Firebase_ExpressFunction, FirebaseFunction} from '@nu-art/firebase/backe
 import {BaseStorm} from './BaseStorm';
 import {HttpRoute, RouteResolver} from '../modules/server/route-resolvers';
 import {HttpServer} from '../modules/server/HttpServer';
-import {FirebaseModule} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {ServerApi} from '../modules/server/server-api';
 
 
 const modules: Module[] = [
 	HttpServer,
-	FirebaseModule,
+	ModuleBE_Firebase,
 ];
 
 export class Storm
@@ -47,11 +47,12 @@ export class Storm
 
 	init() {
 		BeLogged.addClient(process.env.GCLOUD_PROJECT && process.env.FUNCTIONS_EMULATOR ? LogClient_Terminal : LogClient_Function);
-		ServerApi.isDebug = !!this.config.isDebug;
+		ServerApi.isDebug = this.config.isDebug === true;
 
 		super.init();
 		this.routeResolver.resolveApi();
-		this.routeResolver.printRoutes();
+		if (this.config.printRoutes === true)
+			this.routeResolver.printRoutes();
 
 		return this;
 	}

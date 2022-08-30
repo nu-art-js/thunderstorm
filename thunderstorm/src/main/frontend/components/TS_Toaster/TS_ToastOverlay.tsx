@@ -21,8 +21,7 @@
 
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
-import {Toast_Model, ToastListener, ToastModule} from '../../component-modules/ToasterModule';
-import {_className} from '../../utils/tools';
+import {Toast_Model, ToastListener, ModuleFE_Toaster} from '../../component-modules/ModuleFE_Toaster';
 import './TS_ToastOverlay.scss';
 
 type State = { model?: Toast_Model };
@@ -49,7 +48,7 @@ export class TS_ToastOverlay
 		if (duration <= 0)
 			return;
 
-		setTimeout(() => ToastModule.hideToast(model), duration);
+		setTimeout(() => ModuleFE_Toaster.hideToast(model), duration);
 	};
 
 	render() {

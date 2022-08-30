@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DatabaseWrapper, FirebaseModule} from '@nu-art/firebase/backend';
+import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {merge, ModuleManager, TS_Object} from '@nu-art/ts-common';
 
 
@@ -40,7 +40,7 @@ export abstract class BaseStorm
 	}
 
 	protected resolveConfig = async () => {
-		const database: DatabaseWrapper = FirebaseModule.createAdminSession().getDatabase();
+		const database: DatabaseWrapperBE = ModuleBE_Firebase.createAdminSession().getDatabase();
 		let initialized = 0;
 
 		const listener = (resolve: (value: unknown) => void) => (snapshot: any) => {

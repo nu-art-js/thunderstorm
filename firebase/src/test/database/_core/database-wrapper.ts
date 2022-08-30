@@ -15,22 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {DatabaseWrapper, FirebaseModule} from '../../_main';
+import {DatabaseWrapperBE, ModuleBE_Firebase} from '../../_main';
 import {__custom, ErrorPolicy} from '@nu-art/testelot';
 
 export class FirebaseDatabaseTester {
 
-	processDirty(label: string, processor: (db: DatabaseWrapper) => Promise<void>) {
+	processDirty(label: string, processor: (db: DatabaseWrapperBE) => Promise<void>) {
 		return this.process(label, processor, false).setErrorPolicy(ErrorPolicy.ContinueOnError);
 	}
 
-	processClean(label: string, processor: (db: DatabaseWrapper) => Promise<void>) {
+	processClean(label: string, processor: (db: DatabaseWrapperBE) => Promise<void>) {
 		return this.process(label, processor, true).setErrorPolicy(ErrorPolicy.ContinueOnError);
 	}
 
-	private process(label: string, processor: (db: DatabaseWrapper) => Promise<void>, clean: boolean) {
+	private process(label: string, processor: (db: DatabaseWrapperBE) => Promise<void>, clean: boolean) {
 		return __custom(async () => {
-			const db = FirebaseModule.createAdminSession().getDatabase();
+			const db = ModuleBE_Firebase.createAdminSession().getDatabase();
 			if (clean) {
 				const config = await db.get('/_config');
 				await db.delete('/', '/');

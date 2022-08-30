@@ -17,26 +17,26 @@
  * limitations under the License.
  */
 
-import {ApiCaller_PermissionsUser} from '../modules/assign/ApiCaller_PermissionsUser';
-import {ApiCaller_PermissionsGroup} from '../modules/assign/ApiCaller_PermissionsGroup';
-import {ApiCaller_PermissionsProject} from '../modules/manage/ApiCaller_PermissionsProject';
-import {ApiCaller_PermissionsDomain} from '../modules/manage/ApiCaller_PermissionsDomain';
-import {ApiCaller_PermissionsAccessLevel} from '../modules/manage/ApiCaller_PermissionsLevel';
-import {ApiCaller_PermissionsApi} from '../modules/manage/ApiCaller_PermissionsApi';
+import {ModuleFE_PermissionsUser} from '../modules/assign/ModuleFE_PermissionsUser';
+import {ModuleFE_PermissionsGroup} from '../modules/assign/ModuleFE_PermissionsGroup';
+import {ModuleFE_PermissionsProject} from '../modules/manage/ModuleFE_PermissionsProject';
+import {ModuleFE_PermissionsDomain} from '../modules/manage/ModuleFE_PermissionsDomain';
+import {ModuleFE_PermissionsAccessLevel} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
+import {ModuleFE_PermissionsApi} from '../modules/manage/ModuleFE_PermissionsApi';
 
 
 export const ModulePack_Frontend_Permissions = [
-	ApiCaller_PermissionsUser,
-	ApiCaller_PermissionsGroup,
-	ApiCaller_PermissionsProject,
-	ApiCaller_PermissionsDomain,
-	ApiCaller_PermissionsAccessLevel,
-	ApiCaller_PermissionsApi,
+	ModuleFE_PermissionsUser,
+	ModuleFE_PermissionsGroup,
+	ModuleFE_PermissionsProject,
+	ModuleFE_PermissionsDomain,
+	ModuleFE_PermissionsAccessLevel,
+	ModuleFE_PermissionsApi,
 ];
 
-export * from '../modules/assign/ApiCaller_PermissionsUser';
-export * from '../modules/assign/ApiCaller_PermissionsGroup';
-export * from '../modules/manage/ApiCaller_PermissionsProject';
-export * from '../modules/manage/ApiCaller_PermissionsDomain';
-export * from '../modules/manage/ApiCaller_PermissionsLevel';
-export * from '../modules/manage/ApiCaller_PermissionsApi';
+export * from '../modules/assign/ModuleFE_PermissionsUser';
+export * from '../modules/assign/ModuleFE_PermissionsGroup';
+export * from '../modules/manage/ModuleFE_PermissionsProject';
+export * from '../modules/manage/ModuleFE_PermissionsDomain';
+export * from '../modules/manage/ModuleFE_PermissionsAccessLevel';
+export * from '../modules/manage/ModuleFE_PermissionsApi';

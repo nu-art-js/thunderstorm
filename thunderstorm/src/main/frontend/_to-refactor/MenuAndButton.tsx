@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties, ReactNode} from 'react';
-import {Menu_Model, MenuBuilder, MenuListener, resolveRealPosition} from '../component-modules/MenuModule';
+import {Menu_Model, MenuBuilder, MenuListener, resolveRealPosition} from '../component-modules/ModuleFE_Menu';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {Adapter} from '../components/adapter/Adapter';
 import {MenuPosition} from '../components/TS_PopupMenu';

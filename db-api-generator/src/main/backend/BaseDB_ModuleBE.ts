@@ -43,7 +43,7 @@ import {
 
 import {IndexKeys} from '@nu-art/thunderstorm';
 import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
-import {FirebaseModule, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
 import {dbIdLength} from '../shared/validators';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
@@ -93,7 +93,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * The collection reference is set in this method.
 	 */
 	init() {
-		const firestore = FirebaseModule.createAdminSession(this.config?.projectId).getFirestore();
+		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestore();
 		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.uniqueKeys as FilterKeys<DBType>);
 	}
 

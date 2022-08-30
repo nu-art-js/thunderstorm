@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ToastBuilder, ToastModule, TS_Toast} from '@nu-art/thunderstorm/frontend';
+import {ToastBuilder, ModuleFE_Toaster, TS_Toast} from '@nu-art/thunderstorm/frontend';
 
 
 export class PgInfra_Toaster
@@ -31,22 +31,22 @@ export class PgInfra_Toaster
 	}
 
 	showAppToasterSuccessExample = () => {
-		ToastModule.toastSuccess('Simple success message');
+		ModuleFE_Toaster.toastSuccess('Simple success message');
 	};
 
 	showAppToasterErrorExample = () => {
-		ToastModule.toastError('Simple error message');
+		ModuleFE_Toaster.toastError('Simple error message');
 	};
 
 	showAppToasterInfoExample = () => {
-		ToastModule.toastInfo('Simple info message');
+		ModuleFE_Toaster.toastInfo('Simple info message');
 	};
 
 	showAppToasterCustomInfoExample = () => {
-		ToastModule.toastInfo('Custom info message closes in 3 sec', 3000);
+		ModuleFE_Toaster.toastInfo('Custom info message closes in 3 sec', 3000);
 	};
 	showAppToasterCustomErrorExample = () => {
-		ToastModule.toastError('Custom Error message closes in 8 sec', 8000);
+		ModuleFE_Toaster.toastError('Custom Error message closes in 8 sec', 8000);
 	};
 	showAppToasterCustomSuccessExample = () => {
 		new ToastBuilder().setContent(TS_Toast({text: 'is a very nice!', toastType: 'success'})).show();

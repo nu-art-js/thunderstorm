@@ -16,15 +16,15 @@
  * limitations under the License.
  */
 
-import {BugReportModule} from '../modules/BugReportModule';
-import {AdminBRModule} from '../modules/AdminBRModule';
+import {ModuleFE_BugReport} from '../modules/ModuleFE_BugReport';
+import {ModuleFE_BugReportAdmin} from '../modules/ModuleFE_BugReportAdmin';
 
 
 export const ModulePack_Frontend_BugReport = [
-	BugReportModule,
-	AdminBRModule
+	ModuleFE_BugReport,
+	ModuleFE_BugReportAdmin
 ];
 
-export * from '../modules/AdminBRModule';
-export * from '../modules/BugReportModule';
+export * from '../modules/ModuleFE_BugReport';
+export * from '../modules/ModuleFE_BugReportAdmin';
 

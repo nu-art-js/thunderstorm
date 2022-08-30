@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ApiCaller_PermissionsProject} from '@nu-art/permissions/frontend';
+import {ModuleFE_PermissionsProject} from '@nu-art/permissions/frontend';
 
 class Page_ApiGen_Renderer
 	extends React.Component {
@@ -30,7 +30,7 @@ class Page_ApiGen_Renderer
 	}
 
 	callServerApi_CustomError = () => {
-		ApiCaller_PermissionsProject.v1.query({});
+		ModuleFE_PermissionsProject.v1.query({});
 	};
 
 	render() {

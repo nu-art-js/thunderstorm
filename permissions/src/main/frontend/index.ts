@@ -19,4 +19,4 @@
 
 export * from "./core/module-pack"
 export * from "./modules/PermissionsComponent"
-export * from "./modules/PermissionsModuleFE"
+export * from "./modules/ModuleFE_Permissions"
