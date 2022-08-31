@@ -23,7 +23,7 @@ export * from './server/server-api';
 export * from './server/HttpServer';
 
 export * from './proxy/RemoteProxyCaller';
-export * from './proxy/RemoteProxy';
+export * from './proxy/ModuleBE_RemoteProxy';
 
 export * from '../exceptions';
 export * from '../utils/promisify-request';

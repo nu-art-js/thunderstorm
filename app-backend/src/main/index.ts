@@ -18,7 +18,7 @@
 
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register';
-import {AxiosHttpModule, ForceUpgrade, HttpServer, RouteResolver_ModulePath, Storm} from '@nu-art/thunderstorm/backend';
+import {AxiosHttpModule, ModuleBE_ForceUpgrade, HttpServer, RouteResolver_ModulePath, Storm} from '@nu-art/thunderstorm/backend';
 import {Environment} from './config';
 import {DispatchModule, ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs/backend';
@@ -39,7 +39,7 @@ console.log(`Starting server v${packageJson.version} with env: ${Environment.nam
 const modules: Module[] = [
 	CollectionChangedListener,
 	ExampleModule,
-	ForceUpgrade,
+	ModuleBE_ForceUpgrade,
 	ModuleBE_Slack,
 	Slack_ServerApiError,
 	DispatchModule,

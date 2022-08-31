@@ -150,6 +150,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * @param toReturn
 	 */
 	async delete(deleteQuery: FirestoreQuery<DBType>, toReturn: DBType[] = []) {
+		const now = currentTimeMillis();
 		const limit = 250;
 		toReturn.push(...await this.runInTransaction(async transaction => {
 			const docs = await transaction.newQuery(this.collection, {...deleteQuery, limit: deleteQuery.limit || limit});
@@ -165,6 +166,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		if (toReturn.length !== 0 && toReturn.length % limit === 0)
 			await this.delete(deleteQuery, toReturn);
 
+		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
 		return toReturn;
 	}
 
