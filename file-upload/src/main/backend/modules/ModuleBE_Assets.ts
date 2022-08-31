@@ -46,8 +46,10 @@ import {BaseDB_ModuleBE, DBApiConfig} from '@nu-art/db-api-generator/backend';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
+	authKey: string
 	bucketName?: string
-	path: string
+	storagePath: string
+	pathRegexp: string
 }
 
 export type AssetContent = {
@@ -96,7 +98,12 @@ export class ModuleBE_Assets_Class
 
 	constructor() {
 		super(DBDef_Assets);
-		this.setDefaultConfig({...this.config, path: 'assets'});
+		this.setDefaultConfig({
+			...this.config,
+			storagePath: 'assets',
+			pathRegexp: '^assets/.*',
+			authKey: 'file-uploader'
+		});
 	}
 
 	private storage!: StorageWrapperBE;
@@ -106,7 +113,7 @@ export class ModuleBE_Assets_Class
 
 	init() {
 		super.init();
-		this.storage = ModuleBE_Firebase.createAdminSession('file-uploader').getStorage();
+		this.storage = ModuleBE_Firebase.createAdminSession(this.config.authKey).getStorage();
 	}
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
@@ -175,7 +182,7 @@ export class ModuleBE_Assets_Class
 				throw new ImplementationMissingException(`Missing validator for type ${key}`);
 
 			const _id = generateHex(32);
-			const path = `${this.config.path}/${_id}`;
+			const path = `${this.config.storagePath}/${_id}`;
 			const dbAsset: PreDB<DB_Asset> = {
 				timestamp: currentTimeMillis(),
 				_id,
@@ -214,6 +221,9 @@ export class ModuleBE_Assets_Class
 	__processAsset = async (filePath?: string) => {
 		if (!filePath)
 			throw new ThisShouldNotHappenException('Missing file path');
+
+		if (!filePath.match(this.config.pathRegexp))
+			return this.logInfo(`File was added to storage in path: ${filePath}, NOT via file uploader`);
 
 		this.logInfo(`Looking for file with path: ${filePath}`);
 		const tempMeta = await ModuleBE_AssetsTemp.queryUnique({path: filePath});

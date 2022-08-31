@@ -32,6 +32,7 @@ type Config = {
 export class Slack_ServerApiError_Class
 	extends Module<Config>
 	implements OnApplicationError {
+
 	constructor() {
 		super();
 		this.setDefaultConfig({exclude: [], minLevel: ServerErrorSeverity.Info})
