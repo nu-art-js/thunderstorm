@@ -21,7 +21,7 @@
 
 import {IndexKeys} from '@nu-art/thunderstorm';
 import {DBDef,} from '../shared';
-import {IndexDb_Query, IndexedDB, IndexedDBModule, ReduceFunction, StorageKey} from '@nu-art/thunderstorm/frontend';
+import {IndexDb_Query, IndexedDB, ReduceFunction, StorageKey} from '@nu-art/thunderstorm/frontend';
 
 import {DB_Object, Module} from '@nu-art/ts-common';
 
@@ -38,7 +38,7 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 		super();
 		const config = getModuleFEConfig(dbDef);
 		this.setDefaultConfig(config as Config);
-		this.db = IndexedDBModule.getOrCreate(this.config.dbConfig);
+		this.db = IndexedDB.getOrCreate(this.config.dbConfig);
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
 	}
 

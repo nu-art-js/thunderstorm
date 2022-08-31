@@ -55,11 +55,11 @@ const DefaultRegexps: { [k in Browser]: string } = {
 	chrome: 'Chrome/([0-9\.]+)'
 };
 
-class ForceUpgrade_Class
+class ModuleBE_ForceUpgrade_Class
 	extends Module<VersionConfig>
 	implements ApiDefServer<ApiStruct_ForceUpgrade>, ApiModule {
 	readonly v1: ApiDefServer<ApiStruct_ForceUpgrade>['v1'];
-	static readonly Middleware: ServerApi_Middleware = async (request: ExpressRequest) => ForceUpgrade.assertVersion(request);
+	static readonly Middleware: ServerApi_Middleware = async (request: ExpressRequest) => ModuleBE_ForceUpgrade.assertVersion(request);
 
 	constructor() {
 		super();
@@ -111,4 +111,4 @@ class ForceUpgrade_Class
 	}
 }
 
-export const ForceUpgrade = new ForceUpgrade_Class();
+export const ModuleBE_ForceUpgrade = new ModuleBE_ForceUpgrade_Class();

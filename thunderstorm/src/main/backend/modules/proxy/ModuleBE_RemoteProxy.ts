@@ -40,7 +40,7 @@ export type RemoteProxyConfig = {
 	proxyHeaderName?: string
 }
 
-export class RemoteProxy_Class<Config extends RemoteProxyConfig>
+export class ModuleBE_RemoteProxy_Class<Config extends RemoteProxyConfig>
 	extends Module<Config>
 	implements QueryRequestInfo {
 
@@ -58,7 +58,7 @@ export class RemoteProxy_Class<Config extends RemoteProxyConfig>
 	}
 
 	readonly Middleware: ServerApi_Middleware = async (request: ExpressRequest) => {
-		RemoteProxy.assertSecret(request);
+		ModuleBE_RemoteProxy.assertSecret(request);
 	};
 	private secretHeader!: HeaderKey;
 	private proxyHeader!: HeaderKey;
@@ -122,7 +122,7 @@ export class ServerApi_Proxy<API extends TypedApi<any, any, any, any>>
 		// super(api.method, `${api.relativePath}/proxy`);
 		super({...api.apiDef, path: `${api.apiDef.path}/proxy`});
 		this.api = api;
-		this.setMiddlewares(RemoteProxy.Middleware);
+		this.setMiddlewares(ModuleBE_RemoteProxy.Middleware);
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: API['P'], body: API['B']): Promise<API['R']> {
@@ -131,4 +131,4 @@ export class ServerApi_Proxy<API extends TypedApi<any, any, any, any>>
 	}
 }
 
-export const RemoteProxy = new RemoteProxy_Class();
+export const ModuleBE_RemoteProxy = new ModuleBE_RemoteProxy_Class();

@@ -59,6 +59,8 @@ export class Example_NewProps<T, P = InferProps<T>>
 		if (!this.props.showToggle)
 			return;
 
+		// @ts-ignore
+		const renderer = <Renderer {...this.props.data[this.state.index]}/>;
 		return <div>
 			<div onClick={() => {
 				this.setState(state => {
@@ -71,7 +73,7 @@ export class Example_NewProps<T, P = InferProps<T>>
 			}} style={{width: 'fit-content'}}>
 				click to switch
 			</div>
-			<Renderer {...this.props.data[this.state.index]}/>
+			{renderer}
 		</div>;
 	}
 
@@ -80,7 +82,11 @@ export class Example_NewProps<T, P = InferProps<T>>
 			return;
 
 		return <div className="ll_v_l" style={{marginBottom: '20px'}}>
-			{this.props.data.map((_data, index) => <div key={index} style={{marginBottom: '5px'}}><Renderer {..._data}/></div>)}
+			{this.props.data.map((_data, index) => {
+				// @ts-ignore
+				const renderer = <Renderer {..._data}/>;
+				return <div key={index} style={{marginBottom: '5px'}}>{renderer}</div>;
+			})}
 		</div>;
 	}
 }
