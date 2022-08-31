@@ -22,7 +22,7 @@ import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1, testLevel2} f
 import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from '../_main';
 import {ApiException} from '@nu-art/thunderstorm/backend';
 import {generateHex, ThisShouldNotHappenException} from '@nu-art/ts-common';
-import {AccountModuleBE} from '@nu-art/user-account/backend';
+import {ModuleBE_Account} from '@nu-art/user-account/backend';
 
 
 const apiPath = 'v1/assert/something';
@@ -379,8 +379,8 @@ export function checkInsertUserIfNotExist() {
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
 
-		await AccountModuleBE.loginSAML(userUuid1);
-		const account = await AccountModuleBE.getUser(userUuid1);
+		await ModuleBE_Account.loginSAML(userUuid1);
+		const account = await ModuleBE_Account.getUser(userUuid1);
 		if (!account)
 			throw new ThisShouldNotHappenException('Created a user and now cannot query for it...');
 
@@ -394,7 +394,7 @@ export function checkInsertUserIfNotExistByExistUser() {
 	const scenario = __scenario('Check insertIfNotExist function by exist user');
 	scenario.add(cleanup());
 	scenario.add(__custom(async (action, data) => {
-		await AccountModuleBE.loginSAML(userUuid1);
+		await ModuleBE_Account.loginSAML(userUuid1);
 		await ModuleBE_PermissionUser.upsert({accountId: userUuid1, groups: [], _id: uniqId1});
 		await ModuleBE_PermissionUser.insertIfNotExist(userUuid1);
 		await ModuleBE_PermissionUser.queryUnique({accountId: userUuid1});
