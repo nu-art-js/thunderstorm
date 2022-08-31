@@ -150,7 +150,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 */
 	async delete(deleteQuery: FirestoreQuery<DBType>, toReturn: DBType[] = []) {
 		const limit = 250;
-		const now = currentTimeMillis();
+
 		toReturn.push(...await this.runInTransaction(async transaction => {
 			const docs = await transaction.newQuery(this.collection, {...deleteQuery, limit: deleteQuery.limit || limit});
 			const items = docs.map(doc => doc.get());
@@ -159,6 +159,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 			await Promise.all(docs.map(async (doc) => doc.delete(transaction.transaction)));
 
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, items, this.config.uniqueKeys, transaction);
+			const now = currentTimeMillis();
 			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
 			return items;
 		}));
