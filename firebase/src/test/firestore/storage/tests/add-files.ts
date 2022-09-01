@@ -17,7 +17,7 @@
  */
 
 import {__custom, __scenario} from '@nu-art/testelot';
-import {BucketWrapper, FirebaseModule} from '../../../_main';
+import {BucketWrapper, ModuleBE_Firebase} from '../../../_main';
 import {File} from '@google-cloud/storage';
 import {assert} from '@nu-art/ts-common';
 
@@ -34,7 +34,7 @@ export function saveAndDeleteFilesTest() {
 	let bucket: BucketWrapper;
 
 	scenario.add(__custom(async () => {
-		bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
+		bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getOrCreateBucket();
 	}).setLabel('Create Storage'),);
 
 	scenario.add(__custom(async () => {
@@ -76,7 +76,7 @@ export function saveAndDeleteFilesTest() {
 	// You'll need to manually create this bucket in the project to which your service account has access to
 	// const extraBucketName = 'gs://local-ts-testing-alan';
 	// scenario.add(__custom(async () => {
-	// 	const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
+	// 	const bucket2 = await ModuleBE_Firebase.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
 	// 	const file = await bucket.getFile(`${pathToTestFile}-moved-object.txt`);
 	// 	await file.move(bucket2);
 	// 	const exists = await (await bucket2.getFile(`${pathToTestFile}-moved-object.txt`)).exists();
@@ -85,7 +85,7 @@ export function saveAndDeleteFilesTest() {
 	// }).setLabel("Move file to another bucket"));
 	//
 	// scenario.add(__custom(async () => {
-	// 	const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
+	// 	const bucket2 = await ModuleBE_Firebase.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
 	// 	const file = await bucket2.getFile(`${pathToTestFile}-moved-object.txt`);
 	// 	const destination = `${pathToTestFile}-object.txt`;
 	// 	const file2 = await bucket.getFile(destination);
@@ -95,7 +95,7 @@ export function saveAndDeleteFilesTest() {
 	// }).setLabel("Move file to another file"));
 	//
 	// scenario.add(__custom(async () => {
-	// 	const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
+	// 	const bucket2 = await ModuleBE_Firebase.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
 	// 	const file = await bucket.getFile(`${pathToTestFile}-number.txt`);
 	// 	await file.copy(bucket2);
 	// 	const exists = await (await bucket2.getFile(`${pathToTestFile}-number.txt`)).exists();
@@ -104,7 +104,7 @@ export function saveAndDeleteFilesTest() {
 	// }).setLabel("Copy file to another bucket"));
 	//
 	// scenario.add(__custom(async () => {
-	// 	const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
+	// 	const bucket2 = await ModuleBE_Firebase.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
 	// 	const file = await bucket.getFile(`${pathToTestFile}-number.txt`);
 	// 	const destination = `${pathToTestFile}-moved-copied-number.txt`;
 	// 	const file2 = await bucket2.getFile(destination);
@@ -114,7 +114,7 @@ export function saveAndDeleteFilesTest() {
 	// }).setLabel("Copy file to another file"));
 	//
 	// scenario.add(__custom(async () => {
-	// 	const bucket2 = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
+	// 	const bucket2 = await ModuleBE_Firebase.createAdminSession().getStorage().getOrCreateBucket(extraBucketName);
 	// 	return bucket2.deleteFiles(testFolder, (file: File) => file.name.includes(`${pathToTestFile}`));
 	// }).setLabel("delete test files from extra bucket"));
 

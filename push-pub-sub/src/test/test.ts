@@ -18,7 +18,7 @@
 
 import {__scenario} from '@nu-art/testelot';
 import {Tester} from './_core/Tester';
-import {FirebaseModule} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {ModuleBE_PushPubSub} from '../main/backend/modules/ModuleBE_PushPubSub';
 import {scenarioCleanup} from './cleaup';
 
@@ -27,6 +27,6 @@ const mainScenario = __scenario('Push Pub Sub Test');
 mainScenario.add(scenarioCleanup);
 
 module.exports = new Tester()
-	.addModules(FirebaseModule, ModuleBE_PushPubSub)
+	.addModules(ModuleBE_Firebase, ModuleBE_PushPubSub)
 	.setScenario(mainScenario)
 	.build();

@@ -20,7 +20,7 @@
 // import * as React from 'react';
 // import {CSSProperties} from 'react';
 // import {BugReportModule} from '../modules/BugReportModule';
-// import {DialogModule, ToastModule, TS_Input, TS_TextArea} from '@nu-art/thunderstorm/frontend';
+// import {ModuleFE_Dialog, ModuleFE_Toaster, TS_Input, TS_TextArea} from '@nu-art/thunderstorm/frontend';
 // import {generateHex} from '@nu-art/ts-common';
 // import {Platform_Jira, Platform_Slack} from '../../shared/api';
 //
@@ -70,12 +70,12 @@
 //
 // 		const onSubmit = () => {
 // 			if (!this.state.subject)
-// 				return ToastModule.toastError('you must first add a subject');
+// 				return ModuleFE_Toaster.toastError('you must first add a subject');
 // 			if (!this.state.description)
-// 				return ToastModule.toastError('you must first add a description');
+// 				return ModuleFE_Toaster.toastError('you must first add a description');
 // 			BugReportModule.sendBugReport(this.state.subject, this.state.description || '', [Platform_Jira]);
 // 			this.setState({subject: undefined, description: undefined});
-// 			DialogModule.close();
+// 			ModuleFE_Dialog.close();
 // 		};
 //
 // 		const content =
@@ -109,7 +109,7 @@
 // 		// 	.setTitle(title)
 // 		// 	.addButton(DialogButton_Cancel(() => {
 // 		// 		this.setState({description: undefined, subject: undefined});
-// 		// 		DialogModule.close();
+// 		// 		ModuleFE_Dialog.close();
 // 		// 	}))
 // 		// 	.addButton(DialogButton_Submit(() => onSubmit(), 'Submit'))
 // 		// 	.setOverlayColor('rgba(102, 255, 255, 0.4)')
@@ -208,7 +208,7 @@
 // 	new DialogButton_Builder()
 // 		.setStyle({...defaultCancelStyle, ...defaultButtonStyle})
 // 		.setContent(label || 'Cancel')
-// 		.setAction(onSubmit || DialogModule.close);
+// 		.setAction(onSubmit || ModuleFE_Dialog.close);
 //
 // export const DialogButton_Submit = (onSubmit: () => void, label?: React.ReactNode) =>
 // 	new DialogButton_Builder()

@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {Component_Form, ComponentSync, FormProps, ToastModule} from '@nu-art/thunderstorm/frontend';
+import {Component_Form, ComponentSync, FormProps, ModuleFE_Toaster} from '@nu-art/thunderstorm/frontend';
 import {deepClone, TS_Object, tsValidateObject} from '@nu-art/ts-common';
 
 
@@ -52,7 +52,7 @@ class ConfirmationFormWrapper<T extends TS_Object>
 			this.props.onAccept(value);
 		} catch (e: any) {
 			this.setState({showErrors: true});
-			ToastModule.toastError(e.message);
+			ModuleFE_Toaster.toastError(e.message);
 		}
 
 		this.props.onAccept(this.state.value as T);

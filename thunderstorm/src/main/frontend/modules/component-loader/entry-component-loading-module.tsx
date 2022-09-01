@@ -23,7 +23,7 @@ import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '../../../index';
 import {Module} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
 import {XhrHttpModule} from '../http/XhrHttpModule';
-import {BrowserHistoryModule} from '../HistoryModule';
+import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory';
 
 
 type ScriptLoaderBinder = QueryApi<string>
@@ -36,7 +36,7 @@ export class PageLoadingModule_Class
 	loadScript(src: string, progressListener: (progress: number) => void) {
 		const apiDef: ApiDef<ScriptLoaderBinder> = {
 			method: HttpMethod.GET,
-			baseUrl: BrowserHistoryModule.getOrigin(),
+			baseUrl: ModuleFE_BrowserHistory.getOrigin(),
 			path: src
 		};
 		XhrHttpModule

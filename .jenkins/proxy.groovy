@@ -1,6 +1,6 @@
 @Library('dev-tools@pipeline')
 
-import com.nu.art.pipeline.modules.SlackModule
+import com.nu.art.pipeline.modules.ModuleBE_Slack
 import com.nu.art.pipeline.workflow.Pipeline_BaseProxy
 import com.nu.art.pipeline.workflow.Workflow
 
@@ -17,7 +17,7 @@ class Pipeline_ThunderstormProxy
 		declareJob("staging", "thunderstorm--STAGING")
 		declareJob("prod", "thunderstorm--PROD")
 
-		getModule(SlackModule.class).disable()
+		getModule(ModuleBE_Slack.class).disable()
 
 		super.init()
 	}

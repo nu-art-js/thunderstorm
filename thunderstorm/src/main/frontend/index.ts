@@ -24,24 +24,23 @@ export * from './core/thunder-dispatcher';
 
 export * from './modules/http/XhrHttpModule';
 
-export * from './component-modules/MenuModule';
-export * from './component-modules/DialogModule';
-export * from './component-modules/ToasterModule';
-export * from './component-modules/TooltipModule';
+export * from './component-modules/ModuleFE_Menu';
+export * from './component-modules/ModuleFE_Dialog';
+export * from './component-modules/ModuleFE_Toaster';
+export * from './component-modules/ModuleFE_Tooltip';
 
 export * from './modules/ModuleFE_Locale';
 
-export * from './modules/ForceUpgrade';
-export * from './modules/StorageModule';
-export * from './modules/ConnectivityModule';
+export * from './modules/ModuleFE_ForceUpgrade';
+export * from './modules/ModuleFE_LocalStorage';
+export * from './modules/ModuleFE_ConnectivityModule';
 
 export * from './modules/routing/route';
-export * from './modules/routing/RoutingModule';
+export * from './modules/routing/ModuleFE_Routing';
 
 export * from './modules/ModuleFE_Window';
-export * from './modules/ResourcesModule';
-export * from './modules/HistoryModule';
-export * from './modules/ThunderstormModule';
+export * from './modules/ModuleFE_BrowserHistory';
+export * from './modules/ModuleFE_Thunderstorm';
 
 export * from './core/typed-api';
 export * from './core/SimpleScriptInjector';
@@ -76,6 +75,7 @@ export * from './components/TS_MemoryMonitor';
 export * from './components/TS_Link';
 export * from './components/TS_CollapsableContainer';
 export * from './components/TS_Icons';
+export * from './components/TS_ButtonLoader';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';

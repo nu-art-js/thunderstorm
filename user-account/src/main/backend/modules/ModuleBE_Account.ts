@@ -28,7 +28,7 @@ import {
 	tsValidate
 } from '@nu-art/ts-common';
 
-import {FirebaseModule, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {
 	ApiDef_UserAccountBE,
 	ApiStruct_UserAccountBE,
@@ -122,7 +122,7 @@ export class ModuleBE_Account_Class
 	private accounts!: FirestoreCollection<DB_Account>;
 
 	protected init(): void {
-		const firestore = FirebaseModule.createAdminSession(this.config.projectId).getFirestore();
+		const firestore = ModuleBE_Firebase.createAdminSession(this.config.projectId).getFirestore();
 		this.sessions = firestore.getCollection<DB_Session>(Collection_Sessions, ['userId']);
 		this.accounts = firestore.getCollection<DB_Account>(Collection_Accounts, ['email']);
 	}

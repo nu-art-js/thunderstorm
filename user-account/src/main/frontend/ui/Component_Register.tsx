@@ -20,7 +20,7 @@ import * as React from 'react';
 import {_keys, addItemToArray} from '@nu-art/ts-common';
 import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 import {Request_CreateAccount} from '../../shared/api';
-import {LL_V_C, ToastModule, TS_Button, TS_Input} from '@nu-art/thunderstorm/frontend';
+import {LL_V_C, ModuleFE_Toaster, TS_Button, TS_Input} from '@nu-art/thunderstorm/frontend';
 
 
 type State<T> = {
@@ -104,7 +104,7 @@ export class Component_Register
 			addItemToArray(errors, validateError);
 
 		if (errors.length > 0)
-			return ToastModule.toastError(`Wrong input:\n${errors.join('\n')}`);
+			return ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
 
 		ModuleFE_Account.v1.create(this.state.data as Request_CreateAccount).execute();
 	};

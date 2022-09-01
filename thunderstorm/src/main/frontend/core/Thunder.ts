@@ -20,41 +20,38 @@
  */
 
 import * as React from 'react';
-import {renderApp, WrapperProps} from './AppWrapper';
+import {renderApp} from './AppWrapper';
 import {BeLogged, LogClient_Browser, Module, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
 import {XhrHttpModule} from '../modules/http/XhrHttpModule';
-import {ToastModule} from '../component-modules/ToasterModule';
-import {DialogModule} from '../component-modules/DialogModule';
-import {RoutingModule} from '../modules/routing/RoutingModule';
-import {BrowserHistoryModule} from '../modules/HistoryModule';
-import {StorageModule} from '../modules/StorageModule';
-import {ResourcesModule} from '../modules/ResourcesModule';
+import {ModuleFE_Dialog} from '../component-modules/ModuleFE_Dialog';
+import {ModuleFE_Routing} from '../modules/routing/ModuleFE_Routing';
+import {ModuleFE_LocalStorage} from '../modules/ModuleFE_LocalStorage';
 import {ThunderDispatcher} from './thunder-dispatcher';
-import {ThunderstormModule} from '../modules/ThunderstormModule';
+import {ModuleFE_Thunderstorm} from '../modules/ModuleFE_Thunderstorm';
 
 import '../styles/impl/basic.scss';
 import '../styles/impl/icons.scss';
+import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
+import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
 
 
 const modules: Module[] = [
-	ThunderstormModule,
+	ModuleFE_Thunderstorm,
 	XhrHttpModule,
 
-	ToastModule,
-	DialogModule,
+	ModuleFE_Toaster,
+	ModuleFE_Dialog,
 
-	RoutingModule,
-	BrowserHistoryModule,
+	ModuleFE_Routing,
+	ModuleFE_BrowserHistory,
 
-	StorageModule,
-	ResourcesModule
-
+	ModuleFE_LocalStorage,
 ];
 
 export class Thunder
 	extends ModuleManager {
 
-	private mainApp!: React.ElementType<WrapperProps>;
+	private mainApp!: React.ElementType<{}>;
 	private listeners: any[] = [];
 
 	constructor() {
@@ -88,12 +85,12 @@ export class Thunder
 		removeItemFromArray(this.listeners, listener);
 	}
 
-	public setMainApp(mainApp: React.ElementType<WrapperProps>): Thunder {
+	public setMainApp(mainApp: React.ElementType<{}>): Thunder {
 		this.mainApp = mainApp;
 		return this;
 	}
 
-	public getMainApp(): React.ElementType<WrapperProps> {
+	public getMainApp(): React.ElementType<{}> {
 		return this.mainApp;
 	}
 

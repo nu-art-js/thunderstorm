@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {FirebaseModule} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {Module} from '@nu-art/ts-common';
 import {HttpServer} from '../modules/server/HttpServer';
 import {Storm} from './Storm';
@@ -27,7 +27,7 @@ import {Storm} from './Storm';
 
 const modules: Module[] = [
 	HttpServer,
-	FirebaseModule,
+	ModuleBE_Firebase,
 ];
 
 export function createStorm() {

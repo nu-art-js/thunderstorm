@@ -20,7 +20,7 @@
  */
 
 export * from './modules/proxy/RemoteProxyCaller';
-export * from './modules/proxy/RemoteProxy';
+export * from './modules/proxy/ModuleBE_RemoteProxy';
 export * from './modules/CleanupScheduler';
 export * from './modules/FirestoreBackupScheduler';
 export * from './modules/server/server-errors';
@@ -30,7 +30,7 @@ export * from './modules/server/HttpServer';
 export * from './modules/server/route-resolvers';
 export * from './modules/http/AxiosHttpModule';
 export * from './modules/http/types';
-export * from './modules/ForceUpgrade';
+export * from './modules/ModuleBE_ForceUpgrade';
 export * from './utils/api-caller-types';
 export * from './utils/promisify-request';
 export * from './utils/to-be-removed';

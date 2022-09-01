@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {DialogModule} from '../../component-modules/DialogModule';
+import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
 import {LL_H_C} from '../Layouts';
@@ -75,7 +75,7 @@ export abstract class TS_Dialog<P, S = {}>
 	}
 
 	protected dismissDialog = () => {
-		DialogModule.close();
+		ModuleFE_Dialog.close();
 	};
 
 	protected ignore = () => {

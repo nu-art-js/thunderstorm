@@ -20,7 +20,7 @@ import {addItemToArrayAtIndex, auditBy, BadImplementationException, Module, remo
 
 import {DB_Document, DB_DocumentHistory, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument,} from '../../shared/types';
 
-import {FirebaseModule, FirestoreCollection} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase, FirestoreCollection} from '@nu-art/firebase/backend';
 
 import {ApiDefServer, ApiException, ApiModule, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_LiveDoc, ApiStruct_LiveDoc} from '../../shared/api';
@@ -54,7 +54,7 @@ export class ModuleBE_LiveDocs_Class
 
 	protected init(): void {
 		this.setDefaultConfig({projectId: process.env.GCLOUD_PROJECT || ''});
-		const firestore = FirebaseModule.createAdminSession(this.config.projectId).getFirestore();
+		const firestore = ModuleBE_Firebase.createAdminSession(this.config.projectId).getFirestore();
 		this.livedocs = firestore.getCollection<DB_DocumentHistory>(CollectionName_LiveDocs, ['key']);
 	}
 

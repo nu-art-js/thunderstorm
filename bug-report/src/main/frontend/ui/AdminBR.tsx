@@ -18,11 +18,12 @@
  */
 
 import * as React from 'react';
-import {AdminBRModule, RequestKey_GetLog} from '../modules/AdminBRModule';
 import {ComponentSync,} from '@nu-art/thunderstorm/frontend';
 import {DB_BugReport} from '../../shared/api';
 import {__stringify} from '@nu-art/ts-common';
 import {OnRequestListener} from '@nu-art/thunderstorm';
+import {ModuleFE_BugReportAdmin, RequestKey_GetLog} from '../modules/ModuleFE_BugReportAdmin';
+
 
 export class AdminBR
 	extends ComponentSync
@@ -33,10 +34,10 @@ export class AdminBR
 	}
 
 	render() {
-		const logs = AdminBRModule.getLogs();
+		const logs = ModuleFE_BugReportAdmin.getLogs();
 		return (
 			<div>
-				<button onClick={() => AdminBRModule.v1.retrieveLogs({}).execute()}>click to display logs</button>
+				<button onClick={() => ModuleFE_BugReportAdmin.v1.retrieveLogs({}).execute()}>click to display logs</button>
 				<div>
 					<table style={{width: '100%'}}>{logs.map(this.createRow)}</table>
 				</div>
@@ -49,7 +50,7 @@ export class AdminBR
 		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>{report.reports[0].path}</td>
 		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>{__stringify(report.tickets)}</td>
 		<td style={{padding: '15px', textAlign: 'left', border: '1px solid #ddd', fontSize: '15px'}}>
-			<button onClick={() => AdminBRModule.downloadMultiLogs(report.reports)}>download</button>
+			<button onClick={() => ModuleFE_BugReportAdmin.downloadMultiLogs(report.reports)}>download</button>
 		</td>
 	</tr>;
 

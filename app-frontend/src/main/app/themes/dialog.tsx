@@ -21,7 +21,7 @@
 // 	Dialog_Builder,
 // 	DialogButton_Cancel,
 // 	DialogButton_Submit,
-// 	DialogModule,
+// 	ModuleFE_Dialog,
 // } from "@nu-art/thunderstorm/frontend";
 //
 // export const noButton = () => {
@@ -39,7 +39,7 @@
 // 		.setTitle(title)
 // 		.setStyle({width: "300px"})
 // 		.setcloseOverlayOnClick(true)
-// 		.addButton(DialogButton_Cancel(DialogModule.close))
+// 		.addButton(DialogButton_Cancel(ModuleFE_Dialog.close))
 // 		.show();
 // };
 //
@@ -47,7 +47,7 @@
 // 	const title = "App confirmation dialog";
 // 	const onSubmit = () => {
 // 		console.log("You pressed Submit");
-// 		DialogModule.close();
+// 		ModuleFE_Dialog.close();
 // 	};
 //
 // 	const content = (
@@ -59,7 +59,7 @@
 //
 // 	new Dialog_Builder(content)
 // 		.setTitle(title)
-// 		.addButton(DialogButton_Cancel(DialogModule.close))
+// 		.addButton(DialogButton_Cancel(ModuleFE_Dialog.close))
 // 		.addButton(DialogButton_Submit(onSubmit))
 // 		.setOverlayColor("rgba(102, 255, 255, 0.4)")
 // 		.show();

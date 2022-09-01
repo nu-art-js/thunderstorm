@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {Form, Form_FieldProps, FormRenderer, ToastModule, TS_Input} from '@nu-art/thunderstorm/frontend';
+import {Form, Form_FieldProps, FormRenderer, ModuleFE_Toaster, TS_Input} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import {Request_CreateAccount} from '@nu-art/user-account/shared/api';
 import {COLORS} from '@res/colors';
@@ -75,8 +75,8 @@ const form: Form<Request_CreateAccount> = {
 };
 
 const initialValue: Partial<Request_CreateAccount> = {email: 'zevel@ashpa.pah'};
-const onAccept = (value: Request_CreateAccount) => ToastModule.toastInfo(__stringify(value));
-const onCancel = () => ToastModule.toastInfo('CANCELED');
+const onAccept = (value: Request_CreateAccount) => ModuleFE_Toaster.toastInfo(__stringify(value));
+const onCancel = () => ModuleFE_Toaster.toastInfo('CANCELED');
 
 export const Example_Form_Renderer = () => {
 	return renderForm<Request_CreateAccount>({value: initialValue, renderer: formRenderer, form: form, onAccept, onCancel});

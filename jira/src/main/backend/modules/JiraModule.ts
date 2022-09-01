@@ -123,7 +123,7 @@ export type ResponsePostIssue = BaseIssue;
 
 const createFormData = (filename: string, buffer: Buffer) => ({file: {value: buffer, options: {filename}}});
 
-export class JiraModule_Class
+export class ModuleBE_Jira_Class
 	extends Module<Config> {
 	private headersJson!: Headers;
 	private headersForm!: Headers;
@@ -316,5 +316,5 @@ export class JiraModule_Class
 	}
 }
 
-export const JiraModule = new JiraModule_Class();
+export const JiraModule = new ModuleBE_Jira_Class();
 

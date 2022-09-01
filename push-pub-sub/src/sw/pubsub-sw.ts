@@ -28,7 +28,7 @@ export class FCMServiceWorker
 	init(firebaseConfig: any) {
 		this.logInfo('INIT');
 		if (!firebaseConfig)
-			throw new Error('forgot to add FirebaseModule.local to your config');
+			throw new Error('forgot to add ModuleBE_Firebase.local to your config');
 
 		this.logInfo('START');
 		const firebaseApp = initializeApp(firebaseConfig);

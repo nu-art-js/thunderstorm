@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {DB_Object, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {DBIndex} from '../../shared/types';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
@@ -32,7 +32,6 @@ export type ReduceFunction<ItemType, ReturnType> = (
 	array?: ItemType[]
 ) => ReturnType
 
-type Config = {}
 
 export type DBConfig<T extends DB_Object, Ks extends keyof T> = {
 	name: string
@@ -54,6 +53,12 @@ export type IndexDb_Query = {
 export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 	private db!: IDBDatabase;
 	private config: DBConfig<T, Ks>;
+
+	private static dbs: { [collection: string]: IndexedDB<any, any> } = {};
+
+	static getOrCreate<T extends DB_Object, Ks extends keyof T>(config: DBConfig<T, Ks>): IndexedDB<T, Ks> {
+		return this.dbs[config.name] || (this.dbs[config.name] = new IndexedDB<T, Ks>(config));
+	}
 
 	constructor(config: DBConfig<T, Ks>) {
 		this.config = {
@@ -320,14 +325,3 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 	}
 }
 
-export class IndexedDBModule_Class
-	extends Module<Config> {
-
-	dbs: { [collection: string]: IndexedDB<any, any> } = {};
-
-	getOrCreate<T extends DB_Object, Ks extends keyof T>(config: DBConfig<T, Ks>): IndexedDB<T, Ks> {
-		return this.dbs[config.name] || (this.dbs[config.name] = new IndexedDB<T, Ks>(config));
-	}
-}
-
-export const IndexedDBModule = new IndexedDBModule_Class();

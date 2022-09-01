@@ -21,7 +21,7 @@ import * as fs from 'fs';
 import {__custom} from '@nu-art/testelot';
 import {
 	FileWrapper,
-	FirebaseModule
+	ModuleBE_Firebase
 } from '@nu-art/firebase/backend';
 import {
 	assert,
@@ -64,7 +64,7 @@ async function parseApkImpl(file: FileWrapper) {
 }
 
 export const parseApk = __custom(async () => {
-	const bucket = await FirebaseModule.createAdminSession().getStorage().getOrCreateBucket();
+	const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getOrCreateBucket();
 	const file = await bucket.getFile(ApkPath);
 
 	const resp = await parseApkImpl(file);

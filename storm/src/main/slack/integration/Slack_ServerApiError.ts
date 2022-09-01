@@ -22,7 +22,7 @@ import {
 	ServerErrorSeverity,
 	ServerErrorSeverity_Ordinal
 } from "@nu-art/ts-common";
-import {SlackModule} from "../SlackModule";
+import {ModuleBE_Slack} from "../ModuleBE_Slack";
 
 type Config = {
 	exclude: string[]
@@ -32,6 +32,7 @@ type Config = {
 export class Slack_ServerApiError_Class
 	extends Module<Config>
 	implements OnApplicationError {
+
 	constructor() {
 		super();
 		this.setDefaultConfig({exclude: [], minLevel: ServerErrorSeverity.Info})
@@ -49,7 +50,7 @@ export class Slack_ServerApiError_Class
 				return
 		}
 
-		await SlackModule.postMessage(`\`\`\`${message}\`\`\``);
+		await ModuleBE_Slack.postMessage(`\`\`\`${message}\`\`\``);
 	}
 }
 

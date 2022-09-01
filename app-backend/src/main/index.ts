@@ -18,7 +18,7 @@
 
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register';
-import {AxiosHttpModule, ForceUpgrade, HttpServer, RouteResolver_ModulePath, Storm} from '@nu-art/thunderstorm/backend';
+import {AxiosHttpModule, ModuleBE_ForceUpgrade, HttpServer, RouteResolver_ModulePath, Storm} from '@nu-art/thunderstorm/backend';
 import {Environment} from './config';
 import {DispatchModule, ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs/backend';
@@ -26,7 +26,7 @@ import {Module} from '@nu-art/ts-common';
 import {ModulePack_Backend_Permissions} from '@nu-art/permissions/backend';
 import {JiraBugReportIntegrator, ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {Slack_ServerApiError, SlackModule} from '@nu-art/storm/slack';
+import {Slack_ServerApiError, ModuleBE_Slack} from '@nu-art/storm/slack';
 import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload/backend';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
@@ -39,8 +39,8 @@ console.log(`Starting server v${packageJson.version} with env: ${Environment.nam
 const modules: Module[] = [
 	CollectionChangedListener,
 	ExampleModule,
-	ForceUpgrade,
-	SlackModule,
+	ModuleBE_ForceUpgrade,
+	ModuleBE_Slack,
 	Slack_ServerApiError,
 	DispatchModule,
 	ModuleBE_PushPubSub,

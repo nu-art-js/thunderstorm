@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {RoutingModule} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Routing} from '@nu-art/thunderstorm/frontend';
 import {Page_Playground} from './playground/Page_Playground';
 import {Parent} from './Parent';
 import {Child2} from './Child2';
@@ -27,11 +27,11 @@ export const Route_Login = 'login';
 export const Route_Playground = 'playground';
 
 export const registerRoutes = () => {
-	RoutingModule.clearRoutes();
+	ModuleFE_Routing.clearRoutes();
 
 	//home route should be declared last
-	RoutingModule.addRoute('child2', '/parent/child2', Child2).setLabel('Child2');
-	RoutingModule.addRoute('child1', '/parent/child1', Child1).setLabel('Child1');
-	RoutingModule.addRoute('parent', '/parent', Parent);
-	RoutingModule.addRoute(Route_Home, '/', Page_Playground).setLabel('Home').setExact(false);
+	ModuleFE_Routing.addRoute('child2', '/parent/child2', Child2).setLabel('Child2');
+	ModuleFE_Routing.addRoute('child1', '/parent/child1', Child1).setLabel('Child1');
+	ModuleFE_Routing.addRoute('parent', '/parent', Parent);
+	ModuleFE_Routing.addRoute(Route_Home, '/', Page_Playground).setLabel('Home').setExact(false);
 };

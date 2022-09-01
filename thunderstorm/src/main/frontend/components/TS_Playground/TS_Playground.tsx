@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {BrowserHistoryModule} from '../../modules/HistoryModule';
+import {ModuleFE_BrowserHistory} from '../../modules/ModuleFE_BrowserHistory';
 import {Example_NewProps} from './Example_NewProps';
 import {TS_DropDown} from '../TS_Dropdown';
 import {SimpleListAdapter} from '../adapter/Adapter';
@@ -51,7 +51,7 @@ export class TS_Playground
 
 	constructor(props: PlaygroundProps) {
 		super(props);
-		const queryParam = BrowserHistoryModule.getQueryParams()[QueryKey_SelectedPlayground];
+		const queryParam = ModuleFE_BrowserHistory.getQueryParams()[QueryKey_SelectedPlayground];
 		const screen = this.props.screens.find(s => s.name === queryParam);
 		this.state = {selectedScreen: screen};
 	}
@@ -67,7 +67,7 @@ export class TS_Playground
 					filter={new Filter(option => ([option.name]))}
 					onSelected={(screen: PlaygroundScreen) => {
 						this.setState({selectedScreen: screen});
-						BrowserHistoryModule.addQueryParam(QueryKey_SelectedPlayground, screen.name);
+						ModuleFE_BrowserHistory.addQueryParam(QueryKey_SelectedPlayground, screen.name);
 					}}
 					selected={this.state.selectedScreen}
 					adapter={SimpleListAdapter(this.props.screens, (props) => {

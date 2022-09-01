@@ -17,5 +17,5 @@
  * limitations under the License.
  */
 
-export * from './slack/SlackModule';
+export * from './slack/ModuleBE_Slack';
 export * from './slack/integration/Slack_ServerApiError';

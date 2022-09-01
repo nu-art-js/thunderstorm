@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {RoutingModule} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Routing} from '@nu-art/thunderstorm/frontend';
 import {Page_Home} from '../pages/Page_Home';
 import {Page_ApiGen} from '../pages/Page_ApiGen';
 import {Example_Dialogs} from '../playground/examples/modules/Example_Dialogs';
@@ -41,13 +41,13 @@ const PageLinkKeys = [
 ];
 
 export const registerRoutes = () => {
-	RoutingModule.clearRoutes();
-	RoutingModule.addRoute(Route_ApiGen, '/api-gen', Page_ApiGen.renderer).setLabel('Api Generator');
-	RoutingModule.addRoute(Route_Dialog, '/dialog', Example_Dialogs.renderer).setLabel('Dialog Examples');
-	RoutingModule.addRoute(Route_Toaster, '/toaster', Example_Toaster.renderer).setLabel('Toaster Examples');
-	RoutingModule.addRoute(Route_Login, '/login', Component_Login).setLabel('Login');
-	RoutingModule.addRoute(Route_Dispatch, '/dispatch', Example_Dispatch).setLabel('dispatch');
-	RoutingModule.addRoute(Route_Home, '/', Page_Home).setLabel('Home').setExact(false);
+	ModuleFE_Routing.clearRoutes();
+	ModuleFE_Routing.addRoute(Route_ApiGen, '/api-gen', Page_ApiGen.renderer).setLabel('Api Generator');
+	ModuleFE_Routing.addRoute(Route_Dialog, '/dialog', Example_Dialogs.renderer).setLabel('Dialog Examples');
+	ModuleFE_Routing.addRoute(Route_Toaster, '/toaster', Example_Toaster.renderer).setLabel('Toaster Examples');
+	ModuleFE_Routing.addRoute(Route_Login, '/login', Component_Login).setLabel('Login');
+	ModuleFE_Routing.addRoute(Route_Dispatch, '/dispatch', Example_Dispatch).setLabel('dispatch');
+	ModuleFE_Routing.addRoute(Route_Home, '/', Page_Home).setLabel('Home').setExact(false);
 };
 
 let menuRef: HTMLDivElement;
@@ -67,7 +67,7 @@ export class NavigationBar
 				this.forceUpdate();
 			}}>
 				<div className="menu">
-					{RoutingModule.getNavLinks(PageLinkKeys)}
+					{ModuleFE_Routing.getNavLinks(PageLinkKeys)}
 				</div>
 			</div>
 
@@ -81,7 +81,7 @@ export class NavigationBar
 		if (!menuRef)
 			return '';
 
-		return <div style={{padding: menuRef.clientHeight}}>{RoutingModule.getRoutesMap()}</div>;
+		return <div style={{padding: menuRef.clientHeight}}>{ModuleFE_Routing.getRoutesMap()}</div>;
 	};
 }
 

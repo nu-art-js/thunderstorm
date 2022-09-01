@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-export * from './modules/DialogFlowApi';
-export * from './modules/GoogleCloudModule';
-export * from './modules/GoogleContactsModule';
-export * from './modules/AuthModule';
-export * from './modules/PubSubModule';
+export * from './modules/ModuleBE_DialogFlow';
+export * from './modules/ModuleBE_GcpManager';
+export * from './modules/ModuleBE_GoogleContacts';
+export * from './modules/ModuleBE_Auth';
+export * from './modules/ModuleBE_GooglePubSub';
 
