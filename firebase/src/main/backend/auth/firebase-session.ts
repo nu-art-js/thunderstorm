@@ -20,10 +20,10 @@
  * Created by tacb0ss on 25/08/2018.
  */
 import {Logger} from '@nu-art/ts-common';
-import {FirestoreWrapper} from '../firestore/FirestoreWrapper';
-import {DatabaseWrapper} from '../database/DatabaseWrapper';
-import {StorageWrapper} from '../storage/StorageWrapper';
-import {PushMessagesWrapper} from '../push/PushMessagesWrapper';
+import {FirestoreWrapperBE} from '../firestore/FirestoreWrapperBE';
+import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE';
+import {StorageWrapperBE} from '../storage/StorageWrapperBE';
+import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE';
 import {FirebaseConfig} from '../..';
 import { App } from 'firebase-admin/app';
 
@@ -40,10 +40,10 @@ export type Firebase_UserCredential = {
 export abstract class FirebaseSession<Config>
 	extends Logger {
 	app!: App;
-	protected database?: DatabaseWrapper;
-	protected storage?: StorageWrapper;
-	protected firestore?: FirestoreWrapper;
-	protected messaging?: PushMessagesWrapper;
+	protected database?: DatabaseWrapperBE;
+	protected storage?: StorageWrapperBE;
+	protected firestore?: FirestoreWrapperBE;
+	protected messaging?: PushMessagesWrapperBE;
 
 	protected config: Config;
 	protected sessionName: string;
@@ -64,31 +64,31 @@ export abstract class FirebaseSession<Config>
 
 	public abstract connect(): void ;
 
-	public getDatabase(): DatabaseWrapper {
+	public getDatabase(): DatabaseWrapperBE {
 		if (this.database)
 			return this.database;
 
-		return this.database = new DatabaseWrapper(this);
+		return this.database = new DatabaseWrapperBE(this);
 	}
 
-	public getStorage(): StorageWrapper {
+	public getStorage(): StorageWrapperBE {
 		if (this.storage)
 			return this.storage;
 
-		return this.storage = new StorageWrapper(this);
+		return this.storage = new StorageWrapperBE(this);
 	}
 
-	public getFirestore(): FirestoreWrapper {
+	public getFirestore(): FirestoreWrapperBE {
 		if (this.firestore)
 			return this.firestore;
 
-		return this.firestore = new FirestoreWrapper(this);
+		return this.firestore = new FirestoreWrapperBE(this);
 	}
 
-	public getMessaging(): PushMessagesWrapper {
+	public getMessaging(): PushMessagesWrapperBE {
 		if (this.messaging)
 			return this.messaging;
 
-		return this.messaging = new PushMessagesWrapper(this);
+		return this.messaging = new PushMessagesWrapperBE(this);
 	}
 }

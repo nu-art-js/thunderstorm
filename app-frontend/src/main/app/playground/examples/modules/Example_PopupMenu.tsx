@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {LL_V_L, Menu_Model, MenuModule, ShowTooltip, SimpleListAdapter} from '@nu-art/thunderstorm/frontend';
+import {LL_V_L, Menu_Model, ModuleFE_Menu, ShowTooltip, SimpleListAdapter} from '@nu-art/thunderstorm/frontend';
 // import './PopupMenuExperience.scss'; add this back when moving scss files on build
 
 const what_is_love: Menu_Model = {
@@ -28,7 +28,7 @@ const what_is_love: Menu_Model = {
 		left: 200,
 	},
 	onNodeClicked: () => {
-		MenuModule.hide('what-id-huh');
+		ModuleFE_Menu.hide('what-id-huh');
 	}
 };
 
@@ -43,7 +43,7 @@ const PopupMenuExperience: React.FC = () => {
 	// };
 	return <LL_V_L>
 		<span className={'popup-button'} onClick={() => {
-			MenuModule.show(what_is_love);
+			ModuleFE_Menu.show(what_is_love);
 			console.log('what is love');
 		}}>popup menu</span>
 		{/*<span className={'popup-button'} onClick={addCategoryOnClick}>dialog add category</span>*/}

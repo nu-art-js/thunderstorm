@@ -19,7 +19,7 @@
 import {BadImplementationException, batchAction, generateHex, Subset, TS_Object} from '@nu-art/ts-common';
 import {FirestoreType_Collection, FirestoreType_DocumentSnapshot} from './types';
 import {Clause_Select, Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
-import {FirestoreWrapper} from './FirestoreWrapper';
+import {FirestoreWrapperBE} from './FirestoreWrapperBE';
 import {FirestoreInterface} from './FirestoreInterface';
 import {FirestoreTransaction} from './FirestoreTransaction';
 import {Transaction} from 'firebase-admin/firestore';
@@ -27,7 +27,7 @@ import {Transaction} from 'firebase-admin/firestore';
 
 export class FirestoreCollection<Type extends TS_Object> {
 	readonly name: string;
-	readonly wrapper: FirestoreWrapper;
+	readonly wrapper: FirestoreWrapperBE;
 	readonly collection: FirestoreType_Collection;
 
 	/**
@@ -35,7 +35,7 @@ export class FirestoreCollection<Type extends TS_Object> {
 	 */
 	readonly externalUniqueFilter: ((object: Subset<Type>) => Clause_Where<Type>);
 
-	constructor(name: string, wrapper: FirestoreWrapper, uniqueKeys?: FilterKeys<Type>) {
+	constructor(name: string, wrapper: FirestoreWrapperBE, uniqueKeys?: FilterKeys<Type>) {
 		this.name = name;
 		this.wrapper = wrapper;
 		if (!/[a-z-]{3,}/.test(name))
@@ -162,10 +162,10 @@ export class FirestoreCollection<Type extends TS_Object> {
 }
 
 export class DocWrapper<T extends TS_Object> {
-	wrapper: FirestoreWrapper;
+	wrapper: FirestoreWrapperBE;
 	doc: FirestoreType_DocumentSnapshot<T>;
 
-	constructor(wrapper: FirestoreWrapper, doc: FirestoreType_DocumentSnapshot<T>) {
+	constructor(wrapper: FirestoreWrapperBE, doc: FirestoreType_DocumentSnapshot<T>) {
 		this.wrapper = wrapper;
 		this.doc = doc;
 	}

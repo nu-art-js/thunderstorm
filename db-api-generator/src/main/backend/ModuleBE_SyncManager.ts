@@ -20,7 +20,7 @@
  */
 
 import {FirestoreQuery} from '@nu-art/firebase';
-import {DatabaseWrapper, FirebaseModule, FirebaseRef, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
+import {DatabaseWrapperBE, ModuleBE_Firebase, FirebaseRef, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiModule, ApiServerRouter, createQueryServerApi, ExpressRequest, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
 import {_keys, currentTimeMillis, DB_Object, filterDuplicates, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiDef_SyncManager, ApiStruct_SyncManager, DBSyncData} from '../shared';
@@ -55,7 +55,7 @@ export class ModuleBE_SyncManager_Class
 	readonly v1;
 	public collection!: FirestoreCollection<DeletedDBItem>;
 
-	private database!: DatabaseWrapper;
+	private database!: DatabaseWrapperBE;
 	private dbModules!: BaseDB_ModuleBE<DB_Object>[];
 	private syncData!: FirebaseRef<Type_SyncData>;
 	private deletedCount!: FirebaseRef<number>;
@@ -133,11 +133,11 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	init() {
-		const firestore = FirebaseModule.createAdminSession().getFirestore();
+		const firestore = ModuleBE_Firebase.createAdminSession().getFirestore();
 		this.collection = firestore.getCollection<DeletedDBItem>('__deleted__docs');
 
 		this.dbModules = this.manager.filterModules(module => module instanceof BaseDB_ModuleBE);
-		this.database = FirebaseModule.createAdminSession().getDatabase();
+		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
 		this.syncData = this.database.ref<Type_SyncData>(`/state/${this.getName()}/syncData`);
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
 	}

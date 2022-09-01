@@ -18,7 +18,7 @@
  */
 
 import {__custom, __scenario} from '@nu-art/testelot';
-import {FirebaseModule} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {MyTester} from './core';
 import {AxiosHttpModule} from '@nu-art/thunderstorm/frontend/modules/http/AxiosHttpModule';
 import {HttpMethod} from '@nu-art/thunderstorm';
@@ -47,6 +47,6 @@ mainScenario.add(googleCall);
 // mainScenario.add(parseApk);
 
 module.exports = new MyTester()
-	.addModules(FirebaseModule)
+	.addModules(ModuleBE_Firebase)
 	.setScenario(mainScenario)
 	.build();

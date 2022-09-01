@@ -32,7 +32,7 @@ import {
 	TS_Object
 } from '@nu-art/ts-common';
 import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
-import {FirebaseModule} from '@nu-art/firebase/backend/FirebaseModule';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase';
 import {ActDetailsDoc,} from './CleanupScheduler';
 import {FirestoreCollection} from '@nu-art/firebase/backend/firestore/FirestoreCollection';
 import {FirestoreQuery} from '@nu-art/firebase';
@@ -83,7 +83,7 @@ export class FirestoreBackupScheduler_Class
 			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, errorMessage);
 		}
 
-		const backupStatusCollection = FirebaseModule.createAdminSession().getFirestore()
+		const backupStatusCollection = ModuleBE_Firebase.createAdminSession().getFirestore()
 			.getCollection<BackupDoc>('firestore-backup-status', ['moduleKey', 'timestamp']);
 
 		const backups: FirestoreBackupDetails<any>[] = [];
@@ -91,7 +91,7 @@ export class FirestoreBackupScheduler_Class
 			backups.push(...backupArray);
 		});
 
-		const bucket = await FirebaseModule.createAdminSession().getStorage().getMainBucket();
+		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
 		await Promise.all(backups.map(async (backupItem) => {
 			const query: FirestoreQuery<BackupDoc> = {
 				where: {moduleKey: backupItem.moduleKey},

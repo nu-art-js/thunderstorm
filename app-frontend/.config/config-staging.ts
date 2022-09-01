@@ -31,7 +31,7 @@ export const config = {
 	ForceUpgrade: {
 		assertVersionUrl: 'v1/version/assert'
 	},
-	FirebaseModule: {
+	ModuleBE_Firebase: {
 		local: {
 			apiKey: 'AIzaSyD2xhGl4-gq3L_rknxoYF0KZLvedrFWQbg',
 			authDomain: 'thunderstorm-staging.firebaseapp.com',

@@ -40,7 +40,7 @@ import {
 	SubscribeProps
 } from '../../index';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {FirebaseModule, MessagingWrapper} from '@nu-art/firebase/frontend';
+import {ModuleFE_Firebase, MessagingWrapperFE} from '@nu-art/firebase/frontend';
 
 
 export const Command_SwToApp = 'SwToApp';
@@ -76,7 +76,7 @@ export class ModuleFE_PushPubSub_Class
 
 	private subscriptions: BaseSubscriptionData[] = [];
 	private firebaseToken?: string;
-	private messaging!: MessagingWrapper;
+	private messaging!: MessagingWrapperFE;
 
 	private dispatch_pushMessage = new ThunderDispatcher<OnPushMessageReceived<MessageType<any, any, any>>, '__onMessageReceived'>('__onMessageReceived');
 
@@ -154,7 +154,7 @@ export class ModuleFE_PushPubSub_Class
 	initApp = () => {
 		this.runAsync('Initializing Firebase SDK and registering SW', async () => {
 			const registration = await this.registerServiceWorker();
-			const session = await FirebaseModule.createSession();
+			const session = await ModuleFE_Firebase.createSession();
 
 			this.messaging = session.getMessaging();
 			this.messaging.onMessage((payload) => {

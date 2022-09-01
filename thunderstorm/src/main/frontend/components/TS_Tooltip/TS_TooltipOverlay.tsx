@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import {Tooltip_Model, TooltipListener} from '../../component-modules/TooltipModule';
+import {Tooltip_Model, TooltipListener} from '../../component-modules/ModuleFE_Tooltip';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_TooltipOverlay.scss';
 import {_className} from '../../utils/tools';
@@ -65,7 +65,7 @@ export class TS_TooltipOverlay
 			if (duration <= 0)
 				return;
 		}
-		// this.timeoutInterval = _setTimeout(TooltipModule.hide, duration, model);
+		// this.timeoutInterval = _setTimeout(ModuleFE_Tooltip.hide, duration, model);
 	};
 
 	constructor(props: {}) {

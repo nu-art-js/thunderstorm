@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {Adapter, AdapterBuilder, NodeRendererProps, ToastModule, TS_Tree} from '@nu-art/thunderstorm/frontend';
+import {Adapter, AdapterBuilder, NodeRendererProps, ModuleFE_Toaster, TS_Tree} from '@nu-art/thunderstorm/frontend';
 import {__stringify} from '@nu-art/ts-common';
 
 export class Example_Tree_MultiType_Renderer
@@ -38,7 +38,7 @@ export class Example_Tree_MultiType_Renderer
 				<h2>Here is a tree with one renderer Type</h2>
 				<TS_Tree
 					adapter={adapter}
-					onNodeClicked={(path: string, item: any) => ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
+					onNodeClicked={(path: string, item: any) => ModuleFE_Toaster.toastInfo(`clicked on ${path}: ${__stringify(item)}`)}/>
 			</div>
 		</div>;
 	}

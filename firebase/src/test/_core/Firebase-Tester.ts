@@ -19,7 +19,7 @@
 import * as fs from 'fs';
 import {ImplementationMissingException, ModuleManager} from '@nu-art/ts-common';
 import {__scenario, Action, Reporter, Scenario} from '@nu-art/testelot';
-import {FirebaseModule, FirebaseModule_Class} from '../_main';
+import {ModuleBE_Firebase, ModuleBE_Firebase_Class} from '../_main';
 
 export class FirebaseTester
 	extends ModuleManager {
@@ -64,10 +64,10 @@ export class FirebaseTester
 	}
 
 	prepare = () => {
-		FirebaseModule_Class.localAdminConfigId = 'test-permissions';
+		ModuleBE_Firebase_Class.localAdminConfigId = 'test-permissions';
 
 		const serviceAccount = this.resolveServiceAccount();
-		FirebaseModule.setDefaultConfig({'test-permissions': serviceAccount});
+		ModuleBE_Firebase.setDefaultConfig({'test-permissions': serviceAccount});
 	};
 
 	private runTestsImpl = async () => {

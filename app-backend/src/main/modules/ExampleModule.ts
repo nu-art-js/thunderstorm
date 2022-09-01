@@ -17,7 +17,7 @@
  */
 import {Dispatcher, Module, randomObject} from '@nu-art/ts-common';
 import {ApiDef_Examples, ApiStruct_Examples, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
-import {FirebaseModule, FirestoreCollection} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase, FirestoreCollection} from '@nu-art/firebase/backend';
 import {ApiDefServer, ApiException, ApiModule, assertProperty, createBodyServerApi, createQueryServerApi, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 
@@ -113,7 +113,7 @@ class DispatchModule_Class
 
 
 	protected init(): void {
-		const firestore = FirebaseModule.createAdminSession().getFirestore();
+		const firestore = ModuleBE_Firebase.createAdminSession().getFirestore();
 		this.numbers = firestore.getCollection<{ n: number }>('test-dispatcher', ['n']);
 	}
 

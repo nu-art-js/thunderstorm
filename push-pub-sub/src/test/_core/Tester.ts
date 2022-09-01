@@ -28,8 +28,8 @@ import {
 	Scenario
 } from "@nu-art/testelot";
 import {
-	FirebaseModule,
-	FirebaseModule_Class
+	ModuleBE_Firebase,
+	ModuleBE_Firebase_Class
 } from "@nu-art/firebase/backend";
 
 export class Tester
@@ -75,7 +75,7 @@ export class Tester
 	}
 
 	prepare = () => {
-		FirebaseModule_Class.localAdminConfigId = "test-permissions";
+		ModuleBE_Firebase_Class.localAdminConfigId = "test-permissions";
 
 		let pathToServiceAccount = process.env.npm_config_service_account || process.argv.find((arg: string) => arg.startsWith("--service-account="));
 		if (!pathToServiceAccount)
@@ -83,7 +83,7 @@ export class Tester
 
 		pathToServiceAccount = pathToServiceAccount.replace("--service-account=", "");
 		const key = JSON.parse(fs.readFileSync(pathToServiceAccount, "utf8"));
-		FirebaseModule.setDefaultConfig({"test-permissions": key});
+		ModuleBE_Firebase.setDefaultConfig({"test-permissions": key});
 	};
 
 	private runTestsImpl = async () => {

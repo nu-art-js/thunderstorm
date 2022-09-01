@@ -55,7 +55,7 @@ import {
 	tryDeleteDomainAssociatedWithAccessLevel
 } from './tests/permissions-manage';
 import {permissionsAssertDoesCustomFieldsSatisfiesTests, permissionsAssertIsLevelsMatchTests} from './tests/permissions-assert';
-import {FirebaseModule} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {AccountModule} from '@nu-art/user-account/backend';
 import {assignUserPermissionsTests} from './tests/assign-permissions';
 import {
@@ -119,7 +119,7 @@ mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFValueCov
 mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValueCovered());
 
 module.exports = new StormTester()
-	.addModules(FirebaseModule)
+	.addModules(ModuleBE_Firebase)
 	.addModules(AccountModule)
 	.addModules(...ModulePack_Backend_Permissions)
 	.setScenario(mainScenario)

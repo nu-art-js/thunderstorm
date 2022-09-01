@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {OnPermissionsChanged, PermissionsFE} from './PermissionsModuleFE';
+import {OnPermissionsChanged, ModuleFE_Permissions} from './ModuleFE_Permissions';
 
 type Props = {
 	url: string
@@ -17,7 +17,7 @@ export class PermissionsComponent
 
 	render() {
 		const {url} = this.props;
-		const permitted = PermissionsFE.doesUserHavePermissions(url);
+		const permitted = ModuleFE_Permissions.doesUserHavePermissions(url);
 		if (permitted === undefined)
 			return this.props.loadingComponent ? <this.props.loadingComponent/> : null;
 

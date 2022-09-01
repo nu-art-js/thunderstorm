@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {Example_NewProps, Props_Tree, SimpleTreeAdapter, ToastModule, TS_Tree,} from '@nu-art/thunderstorm/frontend';
+import {Example_NewProps, Props_Tree, SimpleTreeAdapter, ModuleFE_Toaster, TS_Tree,} from '@nu-art/thunderstorm/frontend';
 import {__stringify} from '@nu-art/ts-common';
 
 type Type = {
@@ -114,7 +114,7 @@ class SP_Example_Tree_SingleType_Renderer
 			key: 'simple',
 			adapter: SimpleTreeAdapter(this.data, (props: { item: Type }) => <div>{props.item}</div>),
 			onNodeClicked: (path: string, item: any) => {
-				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`);
+				ModuleFE_Toaster.toastInfo(`clicked on ${path}: ${__stringify(item)}`);
 			}
 		} as Props_Tree & { key: string };
 	}
@@ -125,7 +125,7 @@ class SP_Example_Tree_SingleType_Renderer
 			key: 'simple',
 			adapter: SimpleTreeAdapter(this.complexData, (props: { item: Type }) => <div>{props.item}</div>),
 			onNodeClicked: (path: string, item: any) => {
-				ToastModule.toastInfo(`clicked on ${path}: ${__stringify(item)}`);
+				ModuleFE_Toaster.toastInfo(`clicked on ${path}: ${__stringify(item)}`);
 			}
 		} as Props_Tree & { key: string };
 	}

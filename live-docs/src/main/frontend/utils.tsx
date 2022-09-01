@@ -39,7 +39,7 @@ export const showEditModalExample = (docKey: string) => {
 	//                              value={doc.document}
 	//                              onChange={(value: string) => {
 	// 	                             doc.document = value;
-	// 	                             ToastModule.toastInfo(doc.document);
+	// 	                             ModuleFE_Toaster.toastInfo(doc.document);
 	//                              }}/>;
 
 	// new Dialog_Builder(content)
@@ -47,12 +47,12 @@ export const showEditModalExample = (docKey: string) => {
 	// 	.setStyle({maxWidth: "400px", width: "350px", height: "220px"})
 	// 	.addButton(DialogButton_Cancel(() => {
 	// 		doc.document = originalDoc;
-	// 		DialogModule.close();
+	// 		ModuleFE_Dialog.close();
 	// 	}))
 	// 	.addButton(DialogButton_Save(() => {
 	// 		const liveDoc: Request_UpdateDocument = {key: docKey, document: doc.document};
 	// 		LiveDocsModule.update(liveDoc);
-	// 		DialogModule.close();
+	// 		ModuleFE_Dialog.close();
 	// 	}))
 	// 	.setOverlayColor("rgba(102, 255, 255, 0.4)")
 	// 	.show();

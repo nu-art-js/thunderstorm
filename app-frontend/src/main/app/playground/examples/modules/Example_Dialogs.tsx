@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ToastModule} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Toaster} from '@nu-art/thunderstorm/frontend';
 
 
 class Example_Dialogs_Renderer
@@ -31,15 +31,15 @@ class Example_Dialogs_Renderer
 	}
 
 	showAppToasterSuccessExample = () => {
-		ToastModule.toastSuccess('Simple success message');
+		ModuleFE_Toaster.toastSuccess('Simple success message');
 	};
 
 	showAppToasterErrorExample = () => {
-		ToastModule.toastError('Simple error message');
+		ModuleFE_Toaster.toastError('Simple error message');
 	};
 
 	showAppToasterInfoExample = () => {
-		ToastModule.toastInfo('Simple info message');
+		ModuleFE_Toaster.toastInfo('Simple info message');
 	};
 
 	render() {

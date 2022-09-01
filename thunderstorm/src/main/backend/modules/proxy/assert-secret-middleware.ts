@@ -20,9 +20,9 @@
  */
 
 import {ExpressRequest, ExpressResponse, HttpRequestData, ServerApi_Middleware} from '../../utils/types';
-import {RemoteProxy} from './RemoteProxy';
+import {ModuleBE_RemoteProxy} from './ModuleBE_RemoteProxy';
 
 
 export const AssertSecretMiddleware: ServerApi_Middleware = async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
-	RemoteProxy.assertSecret(req);
+	ModuleBE_RemoteProxy.assertSecret(req);
 };

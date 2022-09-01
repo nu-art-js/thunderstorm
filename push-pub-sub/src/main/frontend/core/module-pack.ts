@@ -17,11 +17,11 @@
  */
 
 import {ModuleFE_PushPubSub} from '../modules/ModuleFE_PushPubSub';
-import {FirebaseModule} from '@nu-art/firebase/frontend';
+import {ModuleFE_Firebase} from '@nu-art/firebase/frontend';
 
 
 export const ModulePack_Frontend_PushPubSub = [
-	FirebaseModule,
+	ModuleFE_Firebase,
 	ModuleFE_PushPubSub,
 ];
 

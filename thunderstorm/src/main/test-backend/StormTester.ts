@@ -22,7 +22,7 @@
 import {ImplementationMissingException} from '@nu-art/ts-common';
 import {BaseStorm} from '../backend/core/BaseStorm';
 import * as fs from 'fs';
-import {FirebaseModule, FirebaseModule_Class} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase, ModuleBE_Firebase_Class} from '@nu-art/firebase/backend';
 import {__scenario, Action, Reporter, Scenario} from '@nu-art/testelot';
 
 
@@ -65,7 +65,7 @@ export class StormTester
 	}
 
 	prepare = () => {
-		FirebaseModule_Class.localAdminConfigId = 'test-permissions';
+		ModuleBE_Firebase_Class.localAdminConfigId = 'test-permissions';
 
 		let pathToServiceAccount = process.env.npm_config_service_account || process.argv.find((arg: string) => arg.startsWith('--service-account='));
 		if (!pathToServiceAccount)
@@ -73,7 +73,7 @@ export class StormTester
 
 		pathToServiceAccount = pathToServiceAccount.replace('--service-account=', '');
 		const key = JSON.parse(fs.readFileSync(pathToServiceAccount, 'utf8'));
-		FirebaseModule.setDefaultConfig({'test-permissions': key});
+		ModuleBE_Firebase.setDefaultConfig({'test-permissions': key});
 	};
 
 	runTestsImpl = async () => {

@@ -20,22 +20,22 @@
 import './res/styles/styles.scss';
 
 import {App} from './app/App';
-import {ForceUpgrade, Thunder} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_ForceUpgrade, Thunder} from '@nu-art/thunderstorm/frontend';
 import {ModulePack_Frontend_LiveDocs} from '@nu-art/live-docs/frontend';
 import {ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Frontend_PushPubSub} from '@nu-art/push-pub-sub/frontend';
-import {BugReportModule} from '@nu-art/bug-report/frontend';
+import {ModuleFE_BugReport} from '@nu-art/bug-report/frontend';
 import {Module} from '@nu-art/ts-common';
 import {ModulePack_Frontend_Uploader} from '@nu-art/file-upload/frontend';
-import {PermissionsFE} from '@nu-art/permissions/frontend';
+import {ModuleFE_Permissions} from '@nu-art/permissions/frontend';
 
 
 const modules: Module[] = [
-	ForceUpgrade,
+	ModuleFE_ForceUpgrade,
 	ExampleModule,
-	BugReportModule
+	ModuleFE_BugReport
 ];
-PermissionsFE.setDefaultConfig({projectId: 'thunderstorm-staging'});
+ModuleFE_Permissions.setDefaultConfig({projectId: 'thunderstorm-staging'});
 
 new Thunder()
 	.setConfig(require('./config').config)
