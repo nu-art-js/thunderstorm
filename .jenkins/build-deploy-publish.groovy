@@ -1,6 +1,6 @@
 @Library('dev-tools@pipeline')
 
-import com.nu.art.pipeline.modules.ModuleBE_Slack
+import com.nu.art.pipeline.modules.SlackModule
 import com.nu.art.pipeline.modules.build.BuildModule
 import com.nu.art.pipeline.modules.build.TriggerCause
 import com.nu.art.pipeline.thunderstorm.Pipeline_ThunderstormMain
@@ -15,13 +15,13 @@ class Pipeline_Build
 	public Var_Creds Cred_ServiceAccount = new Var_Creds("string", "", Var_TestingAccount)
 
 	Pipeline_Build() {
-		super("Thunderstorm", "thunderstorm", ModuleBE_Slack.class)
+		super("Thunderstorm", "thunderstorm", SlackModule.class)
 	}
 
 	@Override
 	protected void init() {
 //		setRequiredCredentials(Cred_ServiceAccount)
-		getModule(ModuleBE_Slack.class).setTeam("nu-art")
+		getModule(SlackModule.class).setTeam("nu-art")
 
 		declareEnv("dev", "thunderstorm-dev")
 		declareEnv("staging", "thunderstorm-staging")
