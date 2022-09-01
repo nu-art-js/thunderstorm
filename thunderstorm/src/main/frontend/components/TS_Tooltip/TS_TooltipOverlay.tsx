@@ -65,7 +65,7 @@ export class TS_TooltipOverlay
 			if (duration <= 0)
 				return;
 		}
-		// this.timeoutInterval = _setTimeout(TooltipModule.hide, duration, model);
+		// this.timeoutInterval = _setTimeout(ModuleFE_Tooltip.hide, duration, model);
 	};
 
 	constructor(props: {}) {

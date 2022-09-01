@@ -30,7 +30,8 @@ import {ImplementationMissingException} from '@nu-art/ts-common';
 
 export function renderApp() {
 	const appDiv = document.createElement('div');
-	const body = document.getElementsByName('body')[0];
+	appDiv.classList.add('match_height');
+	const body = document.body;
 	body!.appendChild(appDiv);
 
 	const MainApp = Thunder.getInstance().getMainApp();
