@@ -24,7 +24,6 @@ import {_className} from '../../utils/tools';
 import {LinearLayoutProps, LL_V_C} from '../Layouts';
 import './TS_Button.scss';
 
-
 export type Props_Button = LinearLayoutProps & {
 	disabled?: boolean;
 	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
