@@ -22,28 +22,22 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import {Router} from 'react-router-dom';
-// noinspection TypeScriptPreferShortImport`
 import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
 import {Thunder} from './Thunder';
 import {ImplementationMissingException} from '@nu-art/ts-common';
 
 
 export function renderApp() {
-	const appDiv = document.createElement('div');
-	appDiv.classList.add('match_height');
-	const body = document.body;
-	body!.appendChild(appDiv);
-
 	const MainApp = Thunder.getInstance().getMainApp();
 	if (!MainApp)
 		throw new ImplementationMissingException('mainApp was not specified!!');
 
-	const appJsx = (
-		<Router history={ModuleFE_BrowserHistory.getHistory()}>
-			<MainApp/>
-		</Router>
-	);
+	const appDiv = document.createElement('div');
+	appDiv.classList.add('match_height');
+	document.body.appendChild(appDiv);
 
+	const history = ModuleFE_BrowserHistory.getHistory();
+	const appJsx = <Router history={history}><MainApp/></Router>;
 	ReactDOM.render(
 		appJsx,
 		appDiv
