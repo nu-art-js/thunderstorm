@@ -166,7 +166,7 @@ export class ModuleBE_Permissions_Class
 		return userCFs;
 	}
 
-	async registerProject() {
+	registerProject = async () => {
 		const routes: string[] = Storm.getInstance().getRoutes().reduce((carry: string[], httpRoute) => {
 			if (httpRoute.path !== '*')
 				carry.push(httpRoute.path);
@@ -182,7 +182,7 @@ export class ModuleBE_Permissions_Class
 		};
 
 		return this._registerProject(projectRoutes);
-	}
+	};
 
 	async _registerProject(registerProject: Request_RegisterProject) {
 		const project = registerProject.project;
@@ -193,7 +193,7 @@ export class ModuleBE_Permissions_Class
 
 		await ModuleBE_PermissionApi.registerApis(id, registerProject.routes);
 		const predefinedGroups = registerProject.predefinedGroups;
-		if (!predefinedGroups || predefinedGroups.length === 0)
+		if (!predefinedGroups?.length)
 			return;
 
 		await ModuleBE_PermissionGroup.upsertPredefinedGroups(id, project.name, predefinedGroups);
