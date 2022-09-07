@@ -97,6 +97,14 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.uniqueKeys as FilterKeys<DBType>);
 	}
 
+	createFirebaseRef<T>(relativePath: string) {
+		if (relativePath.startsWith('/'))
+			relativePath = relativePath.substring(1);
+
+		const path = `/state/${this.getName()}/${relativePath}`;
+		return ModuleBE_Firebase.createAdminSession(this.config?.projectId).getDatabase().ref<T>(path);
+	}
+
 	getCollectionName() {
 		return this.config.collectionName;
 	}
