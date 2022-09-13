@@ -64,23 +64,23 @@ export class FirestoreTransaction {
 		return doc.data() as Type;
 	}
 
-	async insert<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type) {
-		const doc = collection.createDocumentReference();
+	async insert<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type, _id?: string) {
+		const doc = collection.createDocumentReference(_id);
 		await this.transaction.create(doc, instance);
 		return instance;
 	}
 
-	async insertAll<Type extends TS_Object>(collection: FirestoreCollection<Type>, instances: Type[]) {
-		return await Promise.all(instances.map(instance => this.insert(collection, instance)));
+	async insertAll<Type extends TS_Object>(collection: FirestoreCollection<Type>, instances: Type[], _ids?: string[]) {
+		return await Promise.all(instances.map((instance, i) => this.insert(collection, instance, _ids?.[i])));
 	}
 
 //------------------------
-	async upsert<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type) {
-		return (await this.upsert_Read(collection, instance))();
+	async upsert<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type, _id?: string) {
+		return (await this.upsert_Read(collection, instance, _id))();
 	}
 
-	async upsert_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type) {
-		const ref = await this.getOrCreateDocument(collection, instance);
+	async upsert_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type, _id?: string) {
+		const ref = await this.getOrCreateDocument(collection, instance, _id);
 
 		return async () => {
 			await this.transaction.set(ref, instance);
@@ -88,22 +88,22 @@ export class FirestoreTransaction {
 		};
 	}
 
-	private async getOrCreateDocument<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type) {
+	private async getOrCreateDocument<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type, _id?: string) {
 		let ref = (await this._queryItem(collection, instance))?.ref;
 		if (!ref)
-			ref = collection.createDocumentReference();
+			ref = collection.createDocumentReference(_id);
 		return ref;
 	}
 
-	async upsertAll<Type extends TS_Object>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<Type[]> {
+	async upsertAll<Type extends TS_Object>(collection: FirestoreCollection<Type>, instances: Type[], _ids?: string[]): Promise<Type[]> {
 		if (instances.length > 500)
 			throw new BadImplementationException('Firestore transaction supports maximum 500 at a time');
 
-		return (await this.upsertAll_Read(collection, instances))();
+		return (await this.upsertAll_Read(collection, instances, _ids))();
 	}
 
-	async upsertAll_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, instances: Type[]): Promise<() => Promise<Type[]>> {
-		const writes = await Promise.all(instances.map(async instance => this.upsert_Read(collection, instance)));
+	async upsertAll_Read<Type extends TS_Object>(collection: FirestoreCollection<Type>, instances: Type[], _ids?: string[]): Promise<() => Promise<Type[]>> {
+		const writes = await Promise.all(instances.map(async (instance, i) => this.upsert_Read(collection, instance, _ids?.[i])));
 
 		return async () => Promise.all(writes.map(async _write => _write()));
 	}

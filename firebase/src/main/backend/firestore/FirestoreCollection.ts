@@ -72,8 +72,8 @@ export class FirestoreCollection<Type extends TS_Object> {
 		return doc.data() as Type;
 	}
 
-	async insert(instance: Type): Promise<Type> {
-		await this.collection.add(instance);
+	async insert(instance: Type, _id?: string): Promise<Type> {
+		await this.createDocumentReference(_id).set(instance)
 		return instance;
 	}
 
@@ -140,8 +140,8 @@ export class FirestoreCollection<Type extends TS_Object> {
 		});
 	}
 
-	createDocumentReference() {
-		const id = generateHex(16);
+	createDocumentReference(_id?: string) {
+		const id = _id || generateHex(16);
 		return this.wrapper.firestore.doc(`${this.name}/${id}`);
 	}
 
