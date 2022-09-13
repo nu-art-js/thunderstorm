@@ -405,7 +405,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		await this._preUpsertProcessing(transaction, instance, request);
 		await this.validateImpl(instance);
 		await this.assertUniqueness(transaction, instance, request);
-		return async () => transaction.insert(this.collection, instance);
+		return async () => transaction.insert(this.collection, instance, instance._id);
 	}
 
 	/**
@@ -431,6 +431,16 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, item.__updated);
 		return item;
+	}
+
+	async insert(instance: PreDB<DBType>) {
+		const timestamp = currentTimeMillis();
+		const toInsert = {...instance, _id: this.generateId(), __created: timestamp, __updated: timestamp} as unknown as DBType;
+		return this.collection.insert(toInsert, toInsert._id);
+	}
+
+	async insertAll(instances: PreDB<DBType>[]) {
+		return Promise.all(instances.map(this.insert));
 	}
 
 	async upsert_Read(instance: PreDB<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
