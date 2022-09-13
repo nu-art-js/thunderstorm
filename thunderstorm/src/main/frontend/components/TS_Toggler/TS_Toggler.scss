@@ -1,0 +1,82 @@
+$disabledColor: #DBDBDB;
+$buttonColor: #00A5F6;
+$borderColor: #8A959B;
+
+.ts-toggler {
+  flex-shrink: 0;
+  gap: 10px;
+
+  .ts-toggler__option {
+    font-size: 14px;
+    color: black;
+    cursor: pointer;
+
+
+    &:first-child {
+      padding-left: 4px;
+      text-align: right;
+    }
+
+    &:last-child {
+      padding-right: 4px;
+      text-align: left;
+    }
+
+    &.active {
+      font-weight: bold;
+      padding: 0;
+    }
+  }
+
+  .ts-toggler__toggler {
+    //Size
+    width: 44px;
+    height: 20px;
+
+    //Position & Display
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+
+    //Border
+    border-radius: 10px;
+    border: 2px solid $borderColor;
+
+    //Button
+    .ts-toggler__toggler-button {
+      background: $buttonColor;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      transition: translate 100ms ease-in-out;
+
+      &.left {
+        translate: -10px;
+      }
+
+      &.right {
+        translate: 10px;
+      }
+    }
+  }
+
+  &.disabled {
+    .ts-toggler__option {
+      color: $disabledColor;
+      cursor: not-allowed;
+    }
+
+    .ts-toggler__toggler {
+      //Border
+      border: 2px solid $disabledColor;
+      cursor: not-allowed;
+
+      //Button
+      .ts-toggler__toggler-button {
+        background: $disabledColor;
+      }
+    }
+  }
+}
