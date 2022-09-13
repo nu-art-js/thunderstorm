@@ -43,7 +43,7 @@ import {
 
 import {IndexKeys} from '@nu-art/thunderstorm';
 import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
-import {ModuleBE_Firebase, FirestoreCollection, FirestoreInterface, FirestoreTransaction,} from '@nu-art/firebase/backend';
+import {FirestoreCollection, FirestoreInterface, FirestoreTransaction, ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {dbIdLength} from '../shared/validators';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
@@ -434,13 +434,14 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	}
 
 	async insert(instance: PreDB<DBType>) {
+
 		const timestamp = currentTimeMillis();
 		const toInsert = {...instance, _id: this.generateId(), __created: timestamp, __updated: timestamp} as unknown as DBType;
 		return this.collection.insert(toInsert, toInsert._id);
 	}
 
 	async insertAll(instances: PreDB<DBType>[]) {
-		return Promise.all(instances.map(this.insert));
+		return Promise.all(instances.map((instance) => this.insert(instance)));
 	}
 
 	async upsert_Read(instance: PreDB<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
