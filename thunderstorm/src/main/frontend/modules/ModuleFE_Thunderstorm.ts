@@ -110,7 +110,9 @@ class ModuleFE_Thunderstorm_Class
 
 	async readFileContent(file: File) {
 		const fullUrl = URL.createObjectURL(file);
-		return XhrHttpModule.createRequest<QueryApi<string>>({method: HttpMethod.GET, fullUrl, path: ''}).executeSync();
+		const content = XhrHttpModule.createRequest<QueryApi<string>>({method: HttpMethod.GET, fullUrl, path: ''}).executeSync();
+		URL.revokeObjectURL(fullUrl);
+		return content;
 	}
 
 	async writeToClipboard(imageAsBase64: string, contentType = 'image/png') {
