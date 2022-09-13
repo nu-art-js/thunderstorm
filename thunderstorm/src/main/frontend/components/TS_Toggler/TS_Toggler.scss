@@ -11,8 +11,20 @@ $borderColor: #8A959B;
     color: black;
     cursor: pointer;
 
+
+    &:first-child {
+      padding-left: 4px;
+      text-align: right;
+    }
+
+    &:last-child {
+      padding-right: 4px;
+      text-align: left;
+    }
+
     &.active {
       font-weight: bold;
+      padding: 0;
     }
   }
 
@@ -51,7 +63,6 @@ $borderColor: #8A959B;
   }
 
   &.disabled {
-
     .ts-toggler__option {
       color: $disabledColor;
       cursor: not-allowed;
