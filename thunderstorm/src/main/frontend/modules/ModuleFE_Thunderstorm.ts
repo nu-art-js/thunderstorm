@@ -22,8 +22,9 @@
 import {BadImplementationException, Module} from '@nu-art/ts-common';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {composeURL} from './ModuleFE_BrowserHistory';
-import {QueryParams} from '../../shared/types';
+import {HttpMethod, QueryApi, QueryParams} from '../../shared/types';
 import {base64ToBlob} from '../utils/tools';
+import {XhrHttpModule} from './http/XhrHttpModule';
 
 
 type Config = {
@@ -105,6 +106,11 @@ class ModuleFE_Thunderstorm_Class
 		} catch (e) {
 			ModuleFE_Toaster.toastError(`Failed to copy to Clipboard:\n"${toCopy}"`);
 		}
+	}
+
+	async readFileContent(file: File) {
+		const fullUrl = URL.createObjectURL(file);
+		return XhrHttpModule.createRequest<QueryApi<string>>({method: HttpMethod.GET, fullUrl, path: ''}).executeSync();
 	}
 
 	async writeToClipboard(imageAsBase64: string, contentType = 'image/png') {
