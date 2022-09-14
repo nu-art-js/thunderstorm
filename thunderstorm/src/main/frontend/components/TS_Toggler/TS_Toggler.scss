@@ -76,6 +76,7 @@ $borderColor: #8A959B;
       //Button
       .ts-toggler__toggler-button {
         background: $disabledColor;
+        translate: 0;
       }
     }
   }
