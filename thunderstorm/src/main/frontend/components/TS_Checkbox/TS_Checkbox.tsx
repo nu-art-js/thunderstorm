@@ -58,7 +58,6 @@ export class TS_Checkbox
 	}
 
 	protected deriveStateFromProps(nextProps: Props_Checkbox): State_Checkbox | undefined {
-		console.log('deriving, checked:', nextProps.checked);
 		return {
 			checked: nextProps.checked !== undefined ? nextProps.checked : (this.state?.checked !== undefined ? this.state.checked : false),
 			disabled: nextProps.disabled,
