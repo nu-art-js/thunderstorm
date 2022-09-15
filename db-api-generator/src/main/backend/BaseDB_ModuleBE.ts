@@ -26,6 +26,7 @@ import {
 	addItemToArray,
 	BadImplementationException,
 	batchAction,
+	compareVersions,
 	currentTimeMillis,
 	Day,
 	DB_Object,
@@ -35,6 +36,7 @@ import {
 	isErrorOfType,
 	merge,
 	Module,
+	MUSTNeverHappenException,
 	PreDB,
 	tsValidate,
 	ValidationException,
@@ -145,8 +147,8 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 			await this.canDeleteDocument(transaction, [doc.get()]);
 			const item = await doc.delete(transaction.transaction);
-			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, [item], this.config.uniqueKeys, transaction);
-			return item;
+			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, [item!], this.config.uniqueKeys, transaction);
+			return item!;
 		});
 	}
 
@@ -168,8 +170,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 			await Promise.all(docs.map(async (doc) => doc.delete(transaction.transaction)));
 
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, items, this.config.uniqueKeys, transaction);
-			const now = currentTimeMillis();
-			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
+			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, currentTimeMillis());
 			return items;
 		}));
 
@@ -223,13 +224,16 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * @param instance - The document for which the uniqueness assertion will occur.
 	 * @param request
 	 */
-	public async assertUniqueness(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest) {
+	public async assertUniqueness(transaction: FirestoreTransaction | undefined, instance: DBType, request?: ExpressRequest) {
 		const uniqueQueries = this.internalFilter(instance);
 		if (uniqueQueries.length === 0)
 			return;
 
 		const dbInstances: (DBType | undefined)[] = await Promise.all(uniqueQueries.map(uniqueQuery => {
-			return transaction.queryUnique(this.collection, {where: uniqueQuery});
+			if (transaction)
+				return transaction.queryUnique(this.collection, {where: uniqueQuery});
+
+			return this.collection.queryUnique({where: uniqueQuery});
 		}));
 
 		for (const idx in dbInstances) {
@@ -289,7 +293,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		return [];
 	}
 
-	private async _preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
+	private async _preUpsertProcessing(transaction: FirestoreTransaction | undefined, dbInstance: DBType, request?: ExpressRequest) {
 		await this.upgradeInstances([dbInstance]);
 		await this.preUpsertProcessing(transaction, dbInstance, request);
 	}
@@ -319,7 +323,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
 	 * @param request
 	 */
-	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest) {
+	protected async preUpsertProcessing(transaction: FirestoreTransaction | undefined, dbInstance: DBType, request?: ExpressRequest) {
 	}
 
 	/**
@@ -402,9 +406,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	// };
 
 	async createImpl_Read(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
-		await this._preUpsertProcessing(transaction, instance, request);
-		await this.validateImpl(instance);
-		await this.assertUniqueness(transaction, instance, request);
+		await this.assertInstance(transaction, instance, request);
 		return async () => transaction.insert(this.collection, instance, instance._id);
 	}
 
@@ -434,9 +436,10 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	}
 
 	async insert(instance: PreDB<DBType>) {
-
 		const timestamp = currentTimeMillis();
 		const toInsert = {...instance, _id: this.generateId(), __created: timestamp, __updated: timestamp} as unknown as DBType;
+		await this.assertInstance(undefined, toInsert);
+
 		return this.collection.insert(toInsert, toInsert._id);
 	}
 
@@ -447,15 +450,16 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	async upsert_Read(instance: PreDB<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		const timestamp = currentTimeMillis();
 
-		if (this.config.uniqueKeys[0] === '_id' && instance._id === undefined)
-			return this.createImpl_Read(transaction, {...instance, _id: this.generateId(), __created: timestamp, __updated: timestamp} as unknown as DBType, request);
+		const dbInstance = {...instance};
+		dbInstance._id = instance._id || this.generateId();
+		dbInstance.__created = instance._id ? instance.__created || timestamp : timestamp;
+		dbInstance.__updated = timestamp;
 
-		return this.upsertImpl_Read(transaction, {
-			...instance,
-			_id: instance._id || this.generateId(),
-			__created: instance.__created || timestamp,
-			__updated: timestamp
-		} as unknown as DBType, request);
+		if (this.config.uniqueKeys[0] === '_id' && instance._id === undefined) {
+			return this.createImpl_Read(transaction, dbInstance as DBType, request);
+		}
+
+		return this.upsertImpl_Read(transaction, dbInstance as DBType, request);
 	}
 
 	protected generateId() {
@@ -515,6 +519,52 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 	}
 
+	protected async upsertReadAll_NEW(instances: PreDB<DBType>[], transaction?: FirestoreTransaction) {
+		return instances.map(instance => this.upsertRead_NEW(instance, transaction));
+	}
+
+	protected async upsertRead_NEW(instance: PreDB<DBType>, transaction?: FirestoreTransaction) {
+		const timestamp = currentTimeMillis();
+		const newId = this.generateId();
+
+		let doc = await this.query_NEW(instance, transaction);
+		if (!doc)
+			doc = this.collection.newDocument({_id: newId, __created: timestamp, __updated: timestamp, _v: this.config.versions[0]});
+
+		const dbInstance = doc.get();
+
+		const toUpsert = {
+			...instance,
+			_id: dbInstance._id,
+			__created: dbInstance.__created,
+			__updated: timestamp
+		} as DBType;
+
+		if (!(this.config.uniqueKeys[0] === '_id' && instance._id === undefined)) {
+			if (instance._id && toUpsert._id !== instance._id)
+				throw new MUSTNeverHappenException(`unique query result did not match supplied item._id to the one in the database: supplied: ${instance._id} <> database: ${dbInstance._id}`);
+		}
+
+		if (dbInstance.__updated > (instance.__updated || 0))
+			throw new ApiException(409, `trying to update object that already has a newer version: ${dbInstance._id}`);
+
+		const dbVersion = dbInstance._v || this.config.versions[0];
+		const providedVersion = instance._v || '1.0.0';
+		if (compareVersions(dbVersion, providedVersion) === -1)
+			throw new ApiException(409, `trying to update object with older version, current: ${dbVersion} already has a newer version: ${providedVersion}`);
+
+		doc.setCache(toUpsert);
+		return doc;
+	}
+
+	private async query_NEW(instance: PreDB<DBType>, transaction?: FirestoreTransaction) {
+		if (transaction)
+			return transaction.newQueryItem(this.collection, instance as DBType);
+		else
+			return this.collection.newQueryItem(instance as DBType);
+
+	}
+
 	protected async upsertAllImpl_Read(instances: PreDB<DBType>[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]> {
 		const actions = [] as Promise<() => Promise<DBType>>[];
 
@@ -541,10 +591,14 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	}
 
 	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
+		await this.assertInstance(transaction, dbInstance, request);
+		return transaction.upsert_Read(this.collection, dbInstance);
+	}
+
+	private async assertInstance(transaction: FirestoreTransaction | undefined, dbInstance: DBType, request?: ExpressRequest) {
 		await this._preUpsertProcessing(transaction, dbInstance, request);
 		await this.validateImpl(dbInstance);
 		await this.assertUniqueness(transaction, dbInstance, request);
-		return transaction.upsert_Read(this.collection, dbInstance);
 	}
 
 	/**
@@ -634,4 +688,5 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 			return item;
 		});
 	}
+
 }

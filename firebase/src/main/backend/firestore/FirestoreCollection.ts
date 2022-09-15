@@ -16,13 +16,14 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, batchAction, generateHex, Subset, TS_Object} from '@nu-art/ts-common';
+import {BadImplementationException, batchAction, DB_Object, generateHex, Subset, TS_Object} from '@nu-art/ts-common';
 import {FirestoreType_Collection, FirestoreType_DocumentSnapshot} from './types';
 import {Clause_Select, Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBE} from './FirestoreWrapperBE';
 import {FirestoreInterface} from './FirestoreInterface';
 import {FirestoreTransaction} from './FirestoreTransaction';
 import {Transaction} from 'firebase-admin/firestore';
+import {DocumentReference} from '@google-cloud/firestore';
 
 
 export class FirestoreCollection<Type extends TS_Object> {
@@ -54,14 +55,14 @@ export class FirestoreCollection<Type extends TS_Object> {
 		};
 	}
 
-	private async _query(ourQuery?: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot[]> {
+	private async _query(ourQuery?: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot<Type>[]> {
 		const myQuery = FirestoreInterface.buildQuery(this, ourQuery);
-		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot[];
+		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot<Type>[];
 	}
 
-	private async _queryUnique(ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
-		const results: FirestoreType_DocumentSnapshot[] = await this._query(ourQuery);
-		return FirestoreInterface.assertUniqueDocument(results, ourQuery, this.name);
+	private async _queryUnique(ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot<Type> | undefined> {
+		const results = await this._query(ourQuery);
+		return FirestoreInterface.assertUniqueDocument<Type>(results, ourQuery, this.name);
 	}
 
 	async queryUnique(ourQuery: FirestoreQuery<Type>): Promise<Type | undefined> {
@@ -73,7 +74,7 @@ export class FirestoreCollection<Type extends TS_Object> {
 	}
 
 	async insert(instance: Type, _id?: string): Promise<Type> {
-		await this.createDocumentReference(_id).set(instance)
+		await this.createDocumentReference(_id).set(instance);
 		return instance;
 	}
 
@@ -142,32 +143,44 @@ export class FirestoreCollection<Type extends TS_Object> {
 
 	createDocumentReference(_id?: string) {
 		const id = _id || generateHex(16);
-		return this.wrapper.firestore.doc(`${this.name}/${id}`);
+		return this.wrapper.firestore.doc(`${this.name}/${id}`) as DocumentReference<Type>;
+	}
+
+	newDocument(dbObject: DB_Object) {
+		return new DocWrapper<Type>(this.wrapper, this.createDocumentReference(dbObject._id), dbObject as unknown as Type);
 	}
 
 	getUniqueFilter = () => this.externalUniqueFilter;
 
-	async newQueryUnique(ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type> | undefined> {
-		const doc = await this._queryUnique(ourQuery) as FirestoreType_DocumentSnapshot<Type>;
+	async newQueryUnique(ourQuery: FirestoreQuery<Type>) {
+		const doc = await this._queryUnique(ourQuery);
 		if (!doc || !doc.exists)
 			return;
 
-		return new DocWrapper<Type>(this.wrapper, doc);
+		return new DocWrapper<Type>(this.wrapper, doc.ref, doc.data());
+	}
+
+	async newQueryItem(item: Type) {
+		// can optimize by accessing the doc ref by explicit path: /${collectionName}/${item._id}
+		const ourQuery = FirestoreInterface.buildUniqueQuery(this, item);
+		return this.newQueryUnique(ourQuery);
 	}
 
 	async newQuery(ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type>[]> {
 		const docs = await this._query(ourQuery) as FirestoreType_DocumentSnapshot<Type>[];
-		return docs.filter(doc => doc.exists).map(doc => new DocWrapper<Type>(this.wrapper, doc));
+		return docs.filter(doc => doc.exists).map(doc => new DocWrapper<Type>(this.wrapper, doc.ref, doc.data()));
 	}
 }
 
 export class DocWrapper<T extends TS_Object> {
 	wrapper: FirestoreWrapperBE;
-	doc: FirestoreType_DocumentSnapshot<T>;
+	cache: T;
+	ref: DocumentReference<T>;
 
-	constructor(wrapper: FirestoreWrapperBE, doc: FirestoreType_DocumentSnapshot<T>) {
+	constructor(wrapper: FirestoreWrapperBE, ref: DocumentReference<T>, cache: T) {
 		this.wrapper = wrapper;
-		this.doc = doc;
+		this.cache = cache;
+		this.ref = ref;
 	}
 
 	async runInTransaction<R>(processor: (transaction: Transaction) => Promise<R>) {
@@ -175,22 +188,33 @@ export class DocWrapper<T extends TS_Object> {
 		return firestore.runTransaction(processor);
 	}
 
-	delete = async (transaction?: Transaction): Promise<T> => {
+	setCache = (cache: T) => this.cache = cache;
+
+	delete = async (transaction?: Transaction): Promise<T | undefined> => {
 		if (!transaction)
 			return this.runInTransaction(this.delete);
 
-		const item = this.doc.data();
-		transaction.delete(this.doc.ref);
+		const item = this.get();
+		transaction.delete(this.ref);
 		return item;
 	};
 
-	get = () => this.doc.data();
+	get = () => {
+		return this.cache;
+	};
+
+	// get = async () => {
+	// 	if (!this.cache)
+	// 		this.cache = (await this.ref.get()).data();
+	//
+	// 	return this.cache;
+	// };
 
 	set = async (instance: T, transaction?: Transaction): Promise<T> => {
 		if (!transaction)
 			return this.runInTransaction((transaction) => this.set(instance, transaction));
 
-		transaction.set(this.doc.ref, instance);
+		transaction.set(this.ref, instance);
 		return instance;
 	};
 }

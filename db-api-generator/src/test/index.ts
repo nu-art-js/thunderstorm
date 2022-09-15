@@ -19,24 +19,26 @@
  * limitations under the License.
  */
 
-import {StormTester} from "@nu-art/thunderstorm/backend-test";
-import {__scenario} from "@nu-art/testelot";
-import { ModuleBE_Firebase } from "@nu-art/firebase/backend";
-import {
-	deleteTest,
-	ExampleModule,
-	patchTest
-} from "./tests/db-api-generator";
-import {upsertAllTest} from "./tests/upsertAll";
+import {StormTester} from '@nu-art/thunderstorm/backend-test';
+import {__scenario} from '@nu-art/testelot';
+import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {upsertTests} from './test-1--db-module/tests/upsert';
+import {ModuleTest_DBModule_Test1} from './test-1--db-module/core/db-module';
+import {ModuleBE_SyncManager} from '../main/backend';
+import {connectFirestoreEmulator, getFirestore} from 'firebase/firestore';
 
-export const mainScenario = __scenario("Tests for base-db-api-generator.");
 
-mainScenario.add(upsertAllTest());
-mainScenario.add(patchTest());
-mainScenario.add(deleteTest());
+export const mainScenario = __scenario('Tests for base-db-api-generator.');
+
+mainScenario.add(upsertTests());
+
+// firebaseApps previously initialized using initializeApp()
+const db = getFirestore();
+connectFirestoreEmulator(db, 'localhost', 8301);
 
 module.exports = new StormTester()
 	.addModules(ModuleBE_Firebase)
-	.addModules(ExampleModule)
+	.addModules(ModuleTest_DBModule_Test1)
+	.addModules(ModuleBE_SyncManager)
 	.setScenario(mainScenario)
 	.build();

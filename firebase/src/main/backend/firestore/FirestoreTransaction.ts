@@ -171,12 +171,18 @@ export class FirestoreTransaction {
 		if (!doc || !doc.exists)
 			return;
 
-		return new DocWrapper<Type>(collection.wrapper, doc);
+		return new DocWrapper<Type>(collection.wrapper, doc.ref, doc.data());
 	}
 
 	async newQuery<Type extends TS_Object>(collection: FirestoreCollection<Type>, ourQuery: FirestoreQuery<Type>): Promise<DocWrapper<Type>[]> {
 		const docs = await this._query(collection, ourQuery) as FirestoreType_DocumentSnapshot<Type>[];
-		return docs.filter(doc => doc.exists).map(doc => new DocWrapper<Type>(collection.wrapper, doc));
+		return docs.filter(doc => doc.exists).map(doc => new DocWrapper<Type>(collection.wrapper, doc.ref, doc.data()));
+	}
+
+	async newQueryItem<Type extends TS_Object>(collection: FirestoreCollection<Type>, item: Type): Promise<DocWrapper<Type>> {
+		// can optimize by accessing the doc ref by explicit path: /${collectionName}/${item._id}
+		const doc = await this._queryItem(collection, item) as FirestoreType_DocumentSnapshot<Type>;
+		return new DocWrapper<Type>(collection.wrapper, doc.ref, doc.data());
 	}
 }
 
