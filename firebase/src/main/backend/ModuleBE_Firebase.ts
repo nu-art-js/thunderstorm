@@ -20,7 +20,7 @@
  * Created by tacb0ss on 25/08/2018.
  */
 
-import {_keys, BadImplementationException, ImplementationMissingException, Module, moduleResolver, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, ImplementationMissingException, Module, moduleResolver} from '@nu-art/ts-common';
 import {FirebaseSession_Admin} from './auth/FirebaseSession_Admin';
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword";
 import {JWTInput} from 'google-auth-library';
@@ -28,6 +28,7 @@ import {readFileSync} from 'fs';
 import {Firebase_UserCredential} from './auth/firebase-session';
 import {FirestoreCollection} from './firestore/FirestoreCollection';
 import {FirebaseProjectCollections} from '../shared/types';
+
 
 type ConfigType = {
 	[s: string]: string | JWTInput | Firebase_UserCredential;
@@ -68,10 +69,10 @@ export class ModuleBE_Firebase_Class
 		if (!projectId)
 			projectId = process.env.GCLOUD_PROJECT;
 
-		if (!projectId)
-			throw new ThisShouldNotHappenException('Could not resolve project id...');
+		// if (!projectId)
+		// 	throw new ThisShouldNotHappenException('Could not resolve project id...');
 
-		return projectId;
+		return projectId || '';
 	}
 
 	protected connect(): Promise<void> {

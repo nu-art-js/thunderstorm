@@ -6,7 +6,11 @@ import {DBType_Test1} from './core/types';
 
 export function cleanup() {
 	return __custom(async () => {
-		await ModuleTest_DBModule_Test1.delete({where: {}});
+		try {
+			await ModuleTest_DBModule_Test1.delete({where: {}});
+		} catch (e: any) {
+			console.log(e);
+		}
 	}).setLabel('Cleaning up examples collection.');
 }
 

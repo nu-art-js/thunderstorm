@@ -37,6 +37,7 @@
     "react-router-dom": "^5.1.2"
   },
   "devDependencies": {
+    "@firebase/testing": "^0.20.11",
     "@typescript-eslint/eslint-plugin": "^5.8.0",
     "@nu-art/firebase": "~0.0.1",
     "@nu-art/testelot": "~0.0.1",
