@@ -71,6 +71,13 @@ export function currentTimeMillis() {
 	return date.getTime();
 }
 
+export function specificTimeTodayMillis(hours: number, minutes: number) {
+	const date = new Date();
+	date.setHours(hours);
+	date.setMinutes(minutes);
+	return date.getTime();
+}
+
 export function currentLocalTimeMillis() {
 	const date = new Date();
 	return date.getTime();
