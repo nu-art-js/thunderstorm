@@ -58,7 +58,7 @@ export class TS_TextArea<Key extends string>
 	};
 
 	render() {
-		const {onAccept, focus, ...props} = this.props;
+		const {onAccept, focus, enable, ...props} = this.props;
 
 		return <textarea
 			{...props}
