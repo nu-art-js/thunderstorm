@@ -35,6 +35,7 @@ export type Props_Checkbox = {
 
 type State_Checkbox = {
 	checked: boolean
+	disabled?: boolean;
 }
 
 /**
@@ -57,16 +58,25 @@ export class TS_Checkbox
 	}
 
 	protected deriveStateFromProps(nextProps: Props_Checkbox): State_Checkbox | undefined {
-		return {checked: nextProps.checked || false};
+		return {
+			checked: nextProps.checked !== undefined ? nextProps.checked : (this.state?.checked !== undefined ? this.state.checked : false),
+			disabled: nextProps.disabled,
+		};
 	}
 
-	render() {
-		let onClick: undefined | ((checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void);
-		if (!this.props.disabled)
-			onClick = this.props.onCheck;
+	private onCheckboxClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+		if (this.state.disabled)
+			return;
 
-		const checkedClass = this.props.checked && 'ts-checkbox__checked' || 'ts-checkbox__unchecked';
-		const disabledClass = this.props.disabled && 'ts-checkbox__disabled';
+		if (this.props.onCheck)
+			this.props.onCheck(this.state.checked, e);
+		else
+			this.setState({checked: !this.state.checked});
+	};
+
+	render() {
+		const checkedClass = this.state.checked && 'ts-checkbox__checked' || 'ts-checkbox__unchecked';
+		const disabledClass = this.state.disabled && 'ts-checkbox__disabled';
 		const roundedClass = this.props.rounded && 'ts-checkbox__rounded';
 		const className = _className('ts-checkbox', disabledClass, checkedClass, roundedClass);
 		const innerClassName = _className('ts-checkbox__inner', disabledClass, checkedClass, roundedClass);
@@ -74,7 +84,7 @@ export class TS_Checkbox
 		return <div
 			id={this.props.id}
 			className={className}
-			onClick={!this.props.disabled ? (e) => onClick?.(!this.props.checked, e) : undefined}>
+			onClick={this.onCheckboxClick}>
 			<div className={innerClassName}/>
 		</div>;
 	}

@@ -14,6 +14,7 @@ type Props<T> = {
 
 type State<T> = {
 	value: T | undefined;
+	disabled?: boolean;
 }
 
 export class TS_Toggler<T extends number | string = number | string>
@@ -26,6 +27,8 @@ export class TS_Toggler<T extends number | string = number | string>
 			state.value = this.props.defaultValue;
 		else
 			state.value = this.props.value || this.state.value;
+
+		state.disabled = nextProps.disabled;
 		return state;
 	}
 
@@ -69,7 +72,7 @@ export class TS_Toggler<T extends number | string = number | string>
 	};
 
 	render() {
-		const className = _className('ts-toggler', this.props.disabled ? 'disabled' : undefined);
+		const className = _className('ts-toggler', this.state.disabled ? 'disabled' : undefined);
 		return <LL_H_C className={className}>
 			{this.renderOption(this.props.options[0])}
 			{this.renderButton()}
