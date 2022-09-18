@@ -33,10 +33,14 @@
   display: inline-block;
   background: $color;
   &:hover {
-    background: $hoverColor;
+    svg path {
+      fill: $hoverColor;
+    }
   }
   &:active {
-    background: $mouseDownColor;
+    svg path {
+      fill: $mouseDownColor;
+    }
   }
 }
 
