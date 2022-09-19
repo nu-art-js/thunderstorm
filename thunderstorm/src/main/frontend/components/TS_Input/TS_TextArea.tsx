@@ -75,7 +75,7 @@ export class TS_TextArea<Key extends string>
 				this.setState({value});
 				this.props.onBlur?.(value, event);
 			}}
-			disabled={this.props.enable === false}
+			disabled={this.props.disabled}
 			name={this.props.name || this.props.id}
 			key={this.props.id}
 			id={this.props.id}
