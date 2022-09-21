@@ -2,15 +2,17 @@ import {TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
 import {_className, ComponentSync, LL_V_L} from '../..';
 import './TS_CollapsableContainer.scss';
+import {ReactNode} from 'react';
 
 type Props = {
-	headerRenderer: React.ReactNode | (() => React.ReactNode);
-	containerRenderer: React.ReactNode | (() => React.ReactNode);
+	headerRenderer: ReactNode | (() => ReactNode);
+	containerRenderer: ReactNode | (() => ReactNode);
 	collapsed?: boolean;
 	showCaret?: boolean
 	onCollapseToggle?: (collapseState: boolean) => void;
 	style?: TypedMap<string>;
 	className?: string;
+	customCaret?: ReactNode | (() => ReactNode)
 }
 
 type State = {
@@ -20,15 +22,16 @@ type State = {
 export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 
 	protected deriveStateFromProps(nextProps: Props): State {
-		return {collapsed: true};
+		return {
+			collapsed: true,
+		};
 	}
 
 	private toggleCollapse = () => {
 		//If component is controlled, return
 		this.props.onCollapseToggle?.(this.isCollapsed());
-		if (this.props.collapsed !== undefined) {
+		if (this.props.collapsed !== undefined)
 			return;
-		}
 
 		this.setState({collapsed: !this.state.collapsed});
 	};
@@ -46,10 +49,26 @@ export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 		return this.props.collapsed !== undefined ? this.props.collapsed : this.state.collapsed;
 	}
 
+	private renderCaret() {
+		if (this.props.showCaret === false)
+			return '';
+		const collapsed = this.isCollapsed();
+		const className = _className('ts-collapsable-container__header__caret', collapsed ? 'collapsed' : undefined);
+
+		if (this.props.customCaret)
+			return <span className={className}>
+			{typeof this.props.customCaret === 'function' ? this.props.customCaret() : this.props.customCaret}
+		</span>;
+
+		return <span className={className}>
+			{this.isCollapsed() ? '+' : '-'}
+		</span>;
+	}
+
 	renderHeader() {
 		const className = _className('ts-collapsable-container__header', this.isCollapsed() ? 'collapsed' : undefined);
 		return <div className={className} onClick={this.toggleCollapse}>
-			{this.props.showCaret !== false && <span className={'ts-collapsable-container__header__caret'}>{this.isCollapsed() ? '+' : '-'}</span>}
+			{this.renderCaret()}
 			{typeof this.props.headerRenderer === 'function' ? this.props.headerRenderer() : this.props.headerRenderer}
 		</div>;
 	}
