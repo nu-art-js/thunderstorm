@@ -121,10 +121,10 @@ export abstract class BaseComponent<P = any, State = any>
 			if (propKeys.length !== nextPropsKeys.length)
 				return true;
 
-			this.logVerbose(propKeys);
-			this.logVerbose(this.props);
-			this.logVerbose(nextPropsKeys);
-			this.logVerbose(nextProps);
+			this.logVerbose('CurrentPropKeys:', propKeys);
+			this.logVerbose('CurrentProps:', this.props);
+			this.logVerbose('NextPropKeys:', nextPropsKeys);
+			this.logVerbose('NextProps:', nextProps);
 
 			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]]))
 				return true;
