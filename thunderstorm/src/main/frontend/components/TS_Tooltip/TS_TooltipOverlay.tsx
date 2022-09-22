@@ -30,10 +30,8 @@ type State = {
 };
 
 type PosStyle = {
-	top?: number | string;
-	left?: number | string;
-	bottom?: number | string;
-	right?: number | string;
+	top: number;
+	left: number;
 }
 
 export class TS_TooltipOverlay
@@ -93,7 +91,7 @@ export class TS_TooltipOverlay
 		}, this.state.model?.duration);
 	};
 
-	private keepInViewStyle = () => {
+	private keepInViewStyle = (style: PosStyle) => {
 		if (!this.ref)
 			return;
 		const pos = this.ref?.getBoundingClientRect();
@@ -102,14 +100,15 @@ export class TS_TooltipOverlay
 		const viewPortHeight = window.innerHeight;
 		const contentHeight = pos.bottom - pos.top;
 
-		const style: PosStyle = {};
+		console.log(Number(style.left));
+		console.log(pos);
 
 		// Check overflowing right
 		if (pos.right > (viewPortWidth - 20))
 			style.left = viewPortWidth - contentWidth - 20;
 
 		//Check overflowing left
-		if (pos.left < 20)
+		if (pos.left < 20 || style.left < 20)
 			style.left = 20;
 
 		//Check overflowing top
@@ -124,29 +123,37 @@ export class TS_TooltipOverlay
 	};
 
 	private getPosObject = (model: Tooltip_Model): PosStyle => {
-		const top = model.location && model.location.y || 0;
-		const left = model.location && model.location.x || 0;
-		// const bottom = model.location && (window.innerHeight - model.location.y || 0);
-		const right = model.location && (window.innerWidth - model.location.x || 0);
-		const height = (this.ref?.getBoundingClientRect().height || 0) / 2;
+		const width = (this.ref?.getBoundingClientRect().width || 0);
+		const height = (this.ref?.getBoundingClientRect().height || 0);
 
-		if (model.alignment === 'right' || model.alignment === 'top')
+		const top = model.location ? model.location.y : 0;
+		const left = model.location ? model.location.x : 0;
+		// const bottom = top + height;
+		// const right = left + width;
+
+		if (model.alignment === 'top')
 			return {
-				top: `${top - height}px`,
-				left: `${left}px`,
-				right: 'unset',
-				bottom: 'unset'
+				top: top - height - 10,
+				left: left + width / 2,
+			};
+
+		if (model.alignment === 'right')
+			return {
+				top: top - height / 2,
+				left: left + 10,
 			};
 
 		if (model.alignment === 'left')
 			return {
-				top: `${top - height}px`,
-				right: `${right}px`,
-				left: 'unset',
-				bottom: 'unset'
+				top: top - height / 2,
+				left: left - width - 10,
 			};
 
-		return {};
+		//Alignment is bottom
+		return {
+			top: top + 10,
+			left: left - width / 2,
+		};
 	};
 
 	render() {
@@ -155,11 +162,10 @@ export class TS_TooltipOverlay
 			return null;
 
 		let positionStyle = this.getPosObject(model);
-
 		if (this.ref)
-			positionStyle = {...positionStyle, ...this.keepInViewStyle()};
+			positionStyle = {...positionStyle, ...this.keepInViewStyle(positionStyle)};
 
-		const className = _className('ts-tooltip', model.alignment);
+		const className = _className('ts-tooltip', `align-${model.alignment}`);
 		return <div
 			onMouseEnter={this.onContentMouseEnter}
 			onMouseLeave={this.onContentMouseLeave}
@@ -171,7 +177,7 @@ export class TS_TooltipOverlay
 			}}
 			className={className}
 			id={'tooltip'}
-			style={{...positionStyle}}>
+			style={{top: `${positionStyle.top}px`, left: `${positionStyle.left}px`}}>
 			{typeof model.content === 'string' ? <div dangerouslySetInnerHTML={{__html: model.content}}/> : model.content}
 		</div>;
 	}
