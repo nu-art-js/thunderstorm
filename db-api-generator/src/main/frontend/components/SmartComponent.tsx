@@ -77,14 +77,19 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	};
 
 	protected _deriveStateFromProps(nextProps: Props, partialState: State = this.createInitialState(nextProps)): State | undefined {
+		const currentState = this.state || partialState;
+
 		let isReady: boolean;
 		if (!this.props.modules || this.props.modules.length === 0)
 			isReady = true;
 		else
 			isReady = this.props.modules?.every(module => module.getDataStatus() === DataStatus.containsData);
 
-		if (!isReady)
-			return this.createInitialState(nextProps);
+		if (!isReady) {
+			const state = this.createInitialState(nextProps);
+			this.logDebug(`Component not ready`, state);
+			return state;
+		}
 
 		if (this.derivingState) {
 			this.logVerbose('Scheduling new props', nextProps as {});
@@ -101,24 +106,26 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				if (this.pendingProps)
 					return this.reDeriveCompletedCallback();
 
+				this.logDebug(`resolved state: `, state);
 				if (state)
 					this.setState(state, this.reDeriveCompletedCallback);
-
 			})
 			.catch(e => {
 				this.logError(`error`, e);
 				this.setState({error: e}, this.reDeriveCompletedCallback);
 			});
 
-		return this.createInitialState(nextProps);
+		this.logDebug(`state: `, currentState);
+		return currentState;
 	}
 
 	private reDeriveCompletedCallback = () => {
 		this.derivingState = false;
-		if (this.pendingProps) {
-			this.logVerbose('Triggering pending props');
-			this._deriveStateFromProps(this.pendingProps);
-		}
+		if (!this.pendingProps)
+			return;
+
+		this.logVerbose('Triggering pending props');
+		this._deriveStateFromProps(this.pendingProps);
 	};
 
 	protected abstract deriveStateFromProps(nextProps: Props, state?: Partial<S> & State_SmartComponent): Promise<State>;
