@@ -44,6 +44,21 @@ export function stringFormat(input: string, params: string[] = []) {
 	}, input || '') || input;
 }
 
+export function replaceStringAt(origin: string, index: number, replacement: string) {
+	if (!origin?.length || !replacement?.length)
+		return origin;
+	return origin.substring(0, index) + replacement + origin.substring(index + replacement.length);
+}
+
+export function capitalizeAllFirstLetters(value: string) {
+	let resultString = value;
+	for (let i = 0; i < resultString.length; i++) {
+		if (i === 0 || i > 0 && resultString[i - 1] === ' ')
+			resultString = replaceStringAt(resultString, i, resultString[i].toUpperCase());
+	}
+	return resultString;
+}
+
 export function capitalizeFirstLetter(value: string) {
 	return value.charAt(0).toUpperCase() + value.substr(1).toLowerCase();
 }
