@@ -22,6 +22,7 @@ import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className, stopPropagation} from '../../utils/tools';
 import './TS_Tabs.scss';
+import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 
 
 export type TabContent = React.ReactNode | (() => React.ReactNode);
@@ -29,7 +30,9 @@ export type TabTitle = TabContent | string;
 export type _Tab = { title: TabTitle, content: TabContent };
 export type Tab = _Tab & { uid: string };
 export type Props_Tabs = {
-	selectedTabUid?: string
+	id?: string
+	persistSelection?: boolean
+	selectedTabId?: string
 	tabs: Tab[]
 	tabsHeaderClass?: string;
 	tabsContentClass?: string;
@@ -43,7 +46,7 @@ export type Props_Tabs = {
 type TabToRender = { [K in keyof _Tab]: React.ReactNode } & { uid: string };
 type State = {
 	tabs: TabToRender[]
-	focused?: string
+	selectedTabId?: string
 }
 
 /**
@@ -55,7 +58,7 @@ type State = {
  * .ts-tabs {
  *   .ts-tabs__tabs-header {
  *     .ts-tabs__tab {}
- *     .ts-tabs__focused {}
+ *     .ts-tabs__focusedTabId {}
  *     .unselectable {}
  *   }
  *
@@ -70,21 +73,34 @@ export class TS_Tabs
 		super(p);
 	}
 
+	private getStorageKey() {
+		if (!this.props.id)
+			return;
+
+		return new StorageKey<string>(`ts-tabs__${this.props.id}`, this.props.persistSelection);
+	}
+
 	protected deriveStateFromProps(nextProps: Props_Tabs): State {
+		const selectedTabId = (nextProps.tabs.find(t => t.uid === this.props.selectedTabId)?.uid)
+			|| this.getStorageKey()?.get('')
+			|| this.state?.selectedTabId
+			|| nextProps.tabs[0]?.uid;
+
 		return {
 			tabs: nextProps.tabs,
-			focused: (nextProps.tabs.find(t => t.uid === this.props.selectedTabUid)?.uid) || this.state?.focused || nextProps.tabs[0]?.uid
+			selectedTabId
 		};
 	}
 
 	selectOnClick = (e: React.MouseEvent) => {
 		stopPropagation(e);
-		const tabUid = e.currentTarget?.id;
-		if (!tabUid)
+		const selectedTabId = e.currentTarget?.id;
+		if (!selectedTabId)
 			return;
 
-		this.setState({focused: tabUid});
-		this.props.onSelected?.(tabUid);
+		this.getStorageKey()?.set(selectedTabId);
+		this.setState({selectedTabId});
+		this.props.onSelected?.(selectedTabId);
 	};
 
 	render() {
@@ -98,6 +114,7 @@ export class TS_Tabs
 
 			return tab.title;
 		};
+
 		const getContent = (tab?: Tab) => {
 			if (!tab)
 				return '';
@@ -110,18 +127,20 @@ export class TS_Tabs
 
 		const headerClass = _className('ts-tabs__tabs-header', this.props.tabsHeaderClass);
 		const contentClass = _className('ts-tabs__content', this.props.tabsContentClass);
+
 		return (
-			<div className="ts-tabs">
+			<div id={this.props.id} className="ts-tabs">
 				<div className={headerClass}>
 					{tabs.map(tab => {
-						const tabClasses = _className('ts-tabs__tab', 'unselectable', this.state.focused === tab.uid ? 'ts-tabs__focused' : undefined);
+						const tabClasses = _className('ts-tabs__tab', 'unselectable', this.state.selectedTabId === tab.uid ? 'ts-tabs__focused' : undefined);
 						return <div key={tab.uid} id={tab.uid} className={tabClasses} onClick={this.selectOnClick}>{getTitle(tab)}</div>;
 					})}
 				</div>
 				<div className={contentClass}>
-					{getContent(tabs.find(tab => tab.uid === this.state.focused))}
+					{getContent(tabs.find(tab => tab.uid === this.state.selectedTabId))}
 				</div>
 			</div>
 		);
 	}
+
 }
