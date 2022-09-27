@@ -46,13 +46,13 @@ const renderer = (icon: React.ReactNode, props: Form_FieldProps<Request_CreateAc
 
 const formRenderer: FormRenderer<Request_CreateAccount> = {
 	email: (props: Form_FieldProps<Request_CreateAccount, 'email'>) => {
-		return renderer(ICONS.avatar(), props);
+		return renderer(<ICONS.avatar/>, props);
 	},
 	password: (props: Form_FieldProps<Request_CreateAccount, 'password'>) => {
-		return renderer(ICONS.lock(), props);
+		return renderer(<ICONS.lock/>, props);
 	},
 	password_check: (props: Form_FieldProps<Request_CreateAccount, 'password_check'>) => {
-		return renderer(ICONS.lock(), props);
+		return renderer(<ICONS.lock/>, props);
 	},
 };
 
