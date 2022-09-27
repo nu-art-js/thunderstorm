@@ -70,7 +70,7 @@ export abstract class BaseComponent<P = any, State = any>
 		};
 
 		this._deriveStateFromProps.bind(this);
-		const state = this._deriveStateFromProps(props);
+		const state = this._deriveStateFromProps(props, this.state);
 		if (state)
 			this.state = state;
 	}
@@ -85,7 +85,7 @@ export abstract class BaseComponent<P = any, State = any>
 		if (this.state) //skip the first time when the component MUST update
 			this.logDebug('Received new props, calling deriveStateFromProps', nextProps as {});
 
-		const state = this._deriveStateFromProps(nextProps);
+		const state = this._deriveStateFromProps(nextProps, {...this.state});
 		if (state)
 			this.setState(state);
 	}
@@ -121,10 +121,10 @@ export abstract class BaseComponent<P = any, State = any>
 			if (propKeys.length !== nextPropsKeys.length)
 				return true;
 
-			this.logVerbose(propKeys);
-			this.logVerbose(this.props);
-			this.logVerbose(nextPropsKeys);
-			this.logVerbose(nextProps);
+			this.logVerbose('CurrentPropKeys:', propKeys);
+			this.logVerbose('CurrentProps:', this.props);
+			this.logVerbose('NextPropKeys:', nextPropsKeys);
+			this.logVerbose('NextProps:', nextProps);
 
 			if (propKeys.some((key, i) => propKeys[i] !== nextPropsKeys[i] || this.props[propKeys[i]] !== nextProps[nextPropsKeys[i]]))
 				return true;

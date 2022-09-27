@@ -24,7 +24,7 @@ import {Module} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
 
-type Alignment = 'top' | 'right' | 'bottom' | 'left';
+export type Alignment = 'top' | 'right' | 'bottom' | 'left';
 
 export type  Tooltip_Model = {
 	content: JSX.Element;

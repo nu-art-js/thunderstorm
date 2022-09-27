@@ -23,6 +23,7 @@ import * as React from 'react';
 import {KeyboardEvent} from 'react';
 import {TS_BaseInput, TS_BaseInputProps} from './TS_BaseInput';
 import './TS_TextArea.scss';
+import {_className} from '../../utils/tools';
 
 
 export type TS_TextAreaProps<Key> = TS_BaseInputProps<Key, HTMLTextAreaElement>
@@ -75,11 +76,11 @@ export class TS_TextArea<Key extends string>
 				this.setState({value});
 				this.props.onBlur?.(value, event);
 			}}
-			disabled={this.props.enable === false}
+			disabled={this.props.disabled}
 			name={this.props.name || this.props.id}
 			key={this.props.id}
 			id={this.props.id}
-			className={'ts-textarea'}
+			className={_className('ts-textarea', this.props.className)}
 			style={this.props.style}
 			value={this.state.value}
 			placeholder={this.props.placeholder}
