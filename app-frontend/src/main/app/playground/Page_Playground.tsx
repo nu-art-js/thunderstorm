@@ -64,8 +64,8 @@ export class Page_Playground
 	render() {
 		const screens = this.getScreens();
 		return <TS_Playground
-			iconClose={ICONS.arrowClose()}
-			iconOpen={ICONS.arrowOpen()}
+			iconClose={<ICONS.arrowClose/>}
+			iconOpen={<ICONS.arrowOpen/>}
 			screens={screens}
 		/>;
 	}
