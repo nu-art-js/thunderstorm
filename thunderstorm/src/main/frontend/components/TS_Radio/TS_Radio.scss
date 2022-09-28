@@ -1,0 +1,68 @@
+.ts-radio {
+  display: flex;
+  height: 40px;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+
+  .ts-radio__container {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+
+    //HTML Input
+    .ts-radio__input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    //Custom Button
+    .ts-radio__button {
+      //Dimensions
+      width: 20px;
+      height: 20px;
+
+      //Border
+      border-radius: 50%;
+
+      //Colors
+      background: #f0f0f0;
+    }
+
+    //Label
+    .ts-radio__label {
+      margin-left: 5px;
+      display: flex;
+      align-items: center;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+
+    }
+
+    &:hover {
+      .ts-radio__button {
+        background: #e0e0e0;
+      }
+    }
+
+    &.checked {
+      .ts-radio__button {
+        background: white;
+        border: 7px solid var(--color__dialog-header-background);
+      }
+    }
+  }
+
+  &.disabled {
+    .ts-radio__button {
+      background: #DBDBDB;
+    }
+
+    .ts-radio__label {
+      color: #DBDBDB;
+    }
+  }
+}
