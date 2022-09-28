@@ -64,6 +64,7 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	selectedItemRenderer?: (props?: ItemType) => React.ReactNode
 	showNothingWithoutFilterText?: boolean
 	disabled?: boolean
+	allowManualSelection?: boolean
 }
 
 export class TS_DropDown<ItemType>
@@ -98,10 +99,11 @@ export class TS_DropDown<ItemType>
 	};
 
 	onSelected = (item: ItemType) => {
-		this.setState({
-			open: false,
-			selected: item
-		}, () => this.props.onSelected(item));
+		const newState: State<ItemType> = {...this.state, open: false};
+		if (!this.props.allowManualSelection)
+			newState.selected = item;
+
+		this.setState({...newState}, () => this.props.onSelected(item));
 	};
 
 	render() {
