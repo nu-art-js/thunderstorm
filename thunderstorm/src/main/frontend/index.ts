@@ -77,6 +77,7 @@ export * from './components/TS_CollapsableContainer';
 export * from './components/TS_Icons';
 export * from './components/TS_ButtonLoader';
 export * from './components/TS_Toggler';
+export * from './components/TS_Radio';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';
