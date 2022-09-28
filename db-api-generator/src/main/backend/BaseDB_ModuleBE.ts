@@ -297,7 +297,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		await this.preUpsertProcessing(transaction, dbInstance, request);
 	}
 
-	protected async upgradeInstances(dbInstances: DBType[]) {
+	async upgradeInstances(dbInstances: DBType[]) {
 		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];

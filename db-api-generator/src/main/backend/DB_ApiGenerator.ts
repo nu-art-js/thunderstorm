@@ -53,6 +53,7 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 			patch: createBodyServerApi(apiDef.v1.patch, this._patch),
 			delete: createQueryServerApi(apiDef.v1.delete, this._deleteUnique),
 			deleteAll: createQueryServerApi(apiDef.v1.deleteAll, this._deleteAll),
+			upgradeCollection: createQueryServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection)
 		};
 	}
 
@@ -64,6 +65,14 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 	}
 
 	private _deleteAll = async (ignore?: {}) => this.dbModule.deleteAll();
+
+	private _upgradeCollection = async () => {
+		// this should be paginated
+		const allItems = (await this.dbModule.query({where: {}})).filter(item => item._v !== this.dbModule.dbDef.versions![0]);
+		await this.dbModule.upgradeInstances(allItems);
+		await this.dbModule.upsertAll(allItems);
+	};
+
 	private _sync = async (query: FirestoreQuery<DBType>) => this.dbModule.querySync(query);
 	private _deleteUnique = async (id: { _id: string }): Promise<DBType> => this.dbModule.deleteUnique(id._id);
 
