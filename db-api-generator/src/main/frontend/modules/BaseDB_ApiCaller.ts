@@ -140,6 +140,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 				return this.updatePending(item, _delete(item), 'delete');
 			},
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
+			upgradeCollection: apiWithQuery(apiDef.v1.upgradeCollection, () => this.v1.sync().executeSync())
 		};
 
 		const superClear = this.cache.clear;

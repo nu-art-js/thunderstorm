@@ -65,6 +65,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			patch: apiWithBody(apiDef.v1.patch, this.onEntryPatched),
 			delete: apiWithQuery(apiDef.v1.delete, this.onEntryDeleted),
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
+			upgradeCollection: apiWithQuery(apiDef.v1.upgradeCollection, () => this.v1.sync().executeSync())
 		};
 	}
 
