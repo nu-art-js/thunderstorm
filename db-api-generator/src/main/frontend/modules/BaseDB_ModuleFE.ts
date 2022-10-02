@@ -45,7 +45,7 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 		this.lastVersion = new StorageKey<string>('last-version--' + this.config.dbConfig.name);
 	}
 
-	init() {
+	protected init() {
 		const previousVersion = this.lastVersion.get();
 		const currentVersion = this.config.versions[0];
 		this.lastVersion.set(currentVersion);
