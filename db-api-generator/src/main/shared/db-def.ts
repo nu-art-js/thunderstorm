@@ -26,6 +26,8 @@ import {DB_Object, OmitDBObject, ValidatorTypeResolver} from '@nu-art/ts-common'
 export type Default_UniqueKey = '_id';
 export const Const_UniqueKey = '_id';
 
+export const DefaultDBVersion = '1.0.0';
+
 /**
  * @field version - First item in the array is current version, Must pass all past versions with the current, default version is 1.0.0
  */
