@@ -68,7 +68,7 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 
 	private _upgradeCollection = async () => {
 		// this should be paginated
-		const allItems = (await this.dbModule.query({where: {}})).filter(item => item._v !== this.dbModule.dbDef.versions![0]);
+		const allItems = (await this.dbModule.collection.query({where: {}})).filter(item => item._v !== this.dbModule.dbDef.versions![0]);
 		await this.dbModule.upgradeInstances(allItems);
 		await this.dbModule.upsertAll(allItems);
 	};
