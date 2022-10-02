@@ -21,17 +21,19 @@
 
 import {DBConfig} from '@nu-art/thunderstorm/frontend';
 import {DB_Object} from '@nu-art/ts-common';
-import {Const_UniqueKey, DBDef, Default_UniqueKey} from '../shared/db-def';
+import {Const_UniqueKey, DBDef, Default_UniqueKey, DefaultDBVersion} from '..';
 
 
 export type DBApiFEConfig<DBType extends DB_Object, Ks extends keyof DBType = Default_UniqueKey> = {
 	key: string
+	versions: string[]
 	dbConfig: DBConfig<DBType, Ks>
 }
 
 export const getModuleFEConfig = <T extends DB_Object, Ks extends keyof T = Default_UniqueKey>(dbDef: DBDef<T, Ks>): DBApiFEConfig<T, Ks> => {
 	return {
 		key: dbDef.dbName,
+		versions: dbDef.versions || [DefaultDBVersion],
 		dbConfig: {
 			version: 1,
 			name: dbDef.dbName,

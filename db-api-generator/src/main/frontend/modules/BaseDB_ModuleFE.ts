@@ -33,23 +33,36 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 
 	protected readonly db: IndexedDB<DBType, Ks>;
 	protected readonly lastSync: StorageKey<number>;
+	protected readonly lastVersion: StorageKey<string>;
 
 	protected constructor(dbDef: DBDef<DBType, Ks>) {
 		super();
 		const config = getModuleFEConfig(dbDef);
 		this.setDefaultConfig(config as Config);
+
 		this.db = IndexedDB.getOrCreate(this.config.dbConfig);
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
+		this.lastVersion = new StorageKey<string>('last-version--' + this.config.dbConfig.name);
+	}
+
+	init() {
+		const previousVersion = this.lastVersion.get();
+		const currentVersion = this.config.versions[0];
+		this.lastVersion.set(currentVersion);
+
+		if (previousVersion === currentVersion)
+			return;
+
+		this.logInfo(`Cleaning up & Sync...`);
+		this.cache.clear(true)
+			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
+			.catch((e) => this.logError(`Cleaning up & Sync: Completed`, e));
 	}
 
 	cache = {
-		clear: async (resync= false) => {
+		clear: async (resync = false) => {
 			this.lastSync.delete();
 			await this.db.deleteDB();
-			// this.setSyncStatus(SyncStatus.idle);
-			// this.setDataStatus(DataStatus.NoData);
-			// if (sync)
-			// 	this.v1.sync().execute();
 		},
 
 		query: async (query?: string | number | string[] | number[], indexKey?: string) => (await this.db.query({query, indexKey})) || [],
