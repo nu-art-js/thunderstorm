@@ -56,7 +56,7 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 		this.logInfo(`Cleaning up & Sync...`);
 		this.cache.clear(true)
 			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
-			.catch((e) => this.logError(`Cleaning up & Sync: Completed`, e));
+			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
 	}
 
 	cache = {
