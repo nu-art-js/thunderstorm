@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Const_UniqueKey, DB_Object_validator, DBDef, Default_UniqueKey} from '..';
+import {Const_UniqueKey, DB_Object_validator, DBDef, Default_UniqueKey, DefaultDBVersion} from '..';
 import {DB_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
 
 
@@ -44,6 +44,6 @@ export const getModuleBEConfig = <T extends DB_Object>(dbDef: DBDef<T>): DBApiBE
 		uniqueKeys: dbDef.uniqueKeys || [Const_UniqueKey],
 		lockKeys: dbDef.lockKeys || dbDef.uniqueKeys || [...Const_LockKeys],
 		itemName: dbDef.entityName,
-		versions: dbDef.versions || ['1.0.0'],
+		versions: dbDef.versions || [DefaultDBVersion],
 	};
 };

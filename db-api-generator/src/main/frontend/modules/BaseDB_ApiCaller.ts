@@ -37,7 +37,7 @@ import {
 	EventType_UpsertAll
 } from '../consts';
 
-import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
+import {DBApiFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
 import {BaseDB_ModuleFE} from './BaseDB_ModuleFE';
 
@@ -81,9 +81,8 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
 		super(dbDef);
-		const config = getModuleFEConfig(dbDef);
+
 		this.defaultDispatcher = defaultDispatcher;
-		this.setDefaultConfig(config as Config);
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
