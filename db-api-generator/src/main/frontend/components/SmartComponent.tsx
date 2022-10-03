@@ -97,7 +97,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 			return;
 		}
 
-		this.logVerbose('Will deriving state from props', nextProps as {});
+		this.logVerbose('Will derive state from props', nextProps as {});
 		this.pendingProps = undefined;
 		this.derivingState = true;
 
