@@ -158,6 +158,8 @@ export abstract class SmartPanel<Config, State = {}, Props = {}>
 	}
 
 	shouldReDeriveState(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>): boolean {
-		return !compare(this.state.config, nextProps.config as Config);
+		const ans = !compare(this.state.config, nextProps.config as Config);
+		this.logDebug('Should ReDerive:', ans);
+		return ans;
 	}
 }
