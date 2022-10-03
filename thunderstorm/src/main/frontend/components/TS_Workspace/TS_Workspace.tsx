@@ -21,7 +21,7 @@
 
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
-import {compare} from '@nu-art/ts-common';
+import {compare, LogLevel} from '@nu-art/ts-common';
 import * as React from 'react';
 import {ComponentAsync} from '../../core/ComponentAsync';
 import {ComponentSync} from '../../core/ComponentSync';
@@ -58,7 +58,18 @@ export abstract class PanelParentSync<Config = {}, State = {}, Props = {}>
 
 	renderPanel(panel: PanelConfig) {
 		const PanelRenderer = this.props.renderers[panel.key];
-		return <PanelRenderer config={panel.data} renderers={this.props.renderers} onConfigChanged={this.props.onConfigChanged}/>;
+		return <PanelRenderer
+			config={panel.data}
+			renderers={this.props.renderers}
+			onConfigChanged={(config: Partial<Config_PanelParent<Config>>) => {
+				console.log('IM HERE');
+				console.log('Config', panel.data);
+				console.log('Delta Config', config);
+				// @ts-ignore
+				panel.data = {...panel.data, ...config};
+				this.props.onConfigChanged({});
+				this.reDeriveState();
+			}}/>;
 	}
 }
 
@@ -76,6 +87,11 @@ export abstract class PanelParentAsync<Config = {}, State = {}, Props = {}>
 
 export class TS_Workspace
 	extends PanelParentSync<Config_PanelParent> {
+
+	_constructor() {
+		this.logger.setMinLevel(LogLevel.Verbose);
+	}
+
 	static defaultProps = {
 		onConfigChanged: () => {
 		}

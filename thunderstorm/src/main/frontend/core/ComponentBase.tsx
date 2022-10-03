@@ -142,6 +142,7 @@ export abstract class BaseComponent<P = any, State = any>
 			const stateKeys = sortArray(_keys(this.state || EmptyObject));
 			const nextStateKeys = sortArray(_keys(nextState || EmptyObject));
 
+			this.logDebug('States Same Instance:', this.state === nextState);
 			if (stateKeys.length !== nextStateKeys.length)
 				return true;
 			if (stateKeys.some((key, i) => stateKeys[i] !== nextStateKeys[i] || this.state[stateKeys[i]] !== nextState[nextStateKeys[i]]))
