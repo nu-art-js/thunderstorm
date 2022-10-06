@@ -61,15 +61,7 @@ export abstract class PanelParentSync<Config = {}, State = {}, Props = {}>
 		return <PanelRenderer
 			config={panel.data}
 			renderers={this.props.renderers}
-			onConfigChanged={(config: Partial<Config_PanelParent<Config>>) => {
-				console.log('IM HERE');
-				console.log('Config', panel.data);
-				console.log('Delta Config', config);
-				// @ts-ignore
-				panel.data = {...panel.data, ...config};
-				this.props.onConfigChanged({});
-				this.reDeriveState();
-			}}/>;
+			onConfigChanged={this.props.onConfigChanged}/>;
 	}
 }
 
