@@ -113,6 +113,5 @@ export function parseTimeString(timestamp: string, pattern: string = Format_HHmm
 }
 
 export function normalizeTimestamp(timestamp: number, pattern: string): number {
-	return parseTimeString(formatTimestamp(pattern, timestamp));
+	return parseTimeString(formatTimestamp(pattern, timestamp), pattern);
 }
-

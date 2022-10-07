@@ -6,8 +6,8 @@ node_modules
 
 # Thunderstorm
 dist
-.dependencies
 dist-test
+docs
 build
 _package.json
 package-lock.json
