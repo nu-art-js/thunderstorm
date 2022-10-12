@@ -37,7 +37,7 @@ export class TS_Toggler<T extends number | string = number | string>
 	}
 
 	private onValueChange = (value: T | undefined) => {
-		const _value = value === this.state.value ? undefined : value;
+		const _value = value === this.state.value && !this.props.alwaysSelected ? undefined : value;
 		this.props.onValueChange?.(_value);
 		this.setState({value: _value});
 		this.reDeriveState();
