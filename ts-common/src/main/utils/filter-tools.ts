@@ -136,6 +136,40 @@ export class Filter<T> {
 		return items.filter(this.filterImpl);
 	}
 
+	filterSort(items: T[], filterText: string): T[] {
+		this.prepareFilter(filterText);
+		const exactMatches: T[] = [];
+		const partialMatches: T[] = [];
+		const regexMatches: T[] = [];
+		const text = filterText.toLowerCase();
+
+		items.forEach(item => {
+			if (!this.filterImpl(item))
+				return;
+
+			const values = this.mapper(item).map(value => value.toLowerCase());
+
+			//Exact Match
+			if (values.includes(text)) {
+				exactMatches.push(item);
+				return;
+			}
+
+			//Substring Match
+			for (const value of values) {
+				if (value.includes(text)) {
+					partialMatches.push(item);
+					return;
+				}
+			}
+			
+			//Regex Match
+			regexMatches.push(item);
+		});
+
+		return [...exactMatches, ...partialMatches, ...regexMatches];
+	}
+
 	/**
 	 * A function return a boolean value as to if any of the item fields passes the Filter._filter</br>
 	 * Regular expression set by the "setRegexp" function.</br>
