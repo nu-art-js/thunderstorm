@@ -10,6 +10,7 @@ type Props<T> = {
 	value?: T;
 	onValueChange?: (value: T | undefined) => void | Promise<void>;
 	disabled?: boolean;
+	alwaysSelected?: boolean;
 }
 
 type State<T> = {
@@ -28,6 +29,9 @@ export class TS_Toggler<T extends number | string = number | string>
 		else
 			state.value = this.props.value || this.state.value;
 
+		if (!state.value && nextProps.alwaysSelected)
+			state.value = nextProps.options[0];
+
 		state.disabled = nextProps.disabled;
 		return state;
 	}
@@ -41,14 +45,14 @@ export class TS_Toggler<T extends number | string = number | string>
 
 	private cycleToggler = () => {
 		const options = this.props.options;
-		if (this.state.value === undefined)
-			this.onValueChange(options[0]);
 
-		if (this.state.value === options[0])
-			this.onValueChange(options[1]);
+		const currentOptionIndex = options.findIndex((value, index) => value === this.state.value);
 
-		if (this.state.value === options[1])
-			this.onValueChange(undefined);
+		const nextValue = options.length - 1 > currentOptionIndex ? options[currentOptionIndex + 1]
+			: this.props.alwaysSelected ? options[0]
+				: undefined;
+
+		this.onValueChange(nextValue);
 	};
 
 	private renderButton = () => {
