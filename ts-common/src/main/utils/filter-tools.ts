@@ -17,6 +17,8 @@
  */
 
 
+import {sortArray} from './array-tools';
+
 /**
  * # Filter
  *
@@ -131,9 +133,32 @@ export class Filter<T> {
 	 * const filteredItems = filter.filter(items,'Adam');
 	 * ```
 	 */
+
 	filter(items: T[], filterText: string): T[] {
 		this.prepareFilter(filterText);
 		return items.filter(this.filterImpl);
+	}
+
+	filterSort(items: T[], filterText: string): T[] {
+		this.prepareFilter(filterText);
+		const text = filterText.toLowerCase();
+
+		const filteredItems = items.filter(this.filterImpl);
+
+		return sortArray(filteredItems, item => {
+			const values = this.mapper(item).map(value => value.toLowerCase());
+			//Exact Match
+			if (values.includes(text)) {
+				return 0;
+			}
+
+			for (const value of values) {
+				if (value.includes(text)) {
+					return 1;
+				}
+			}
+			return 2;
+		});
 	}
 
 	/**
