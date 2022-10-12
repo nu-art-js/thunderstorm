@@ -81,26 +81,30 @@ export class TS_Tabs
 	}
 
 	protected deriveStateFromProps(nextProps: Props_Tabs): State {
-		const selectedTabId = (nextProps.tabs.find(t => t.uid === this.props.selectedTabId)?.uid)
+		const selectedTabId = (nextProps.tabs.find(t => t.uid === nextProps.selectedTabId)?.uid)
 			|| this.getStorageKey()?.get('')
 			|| this.state?.selectedTabId
 			|| nextProps.tabs[0]?.uid;
 
+		console.log('selected tab id', selectedTabId);
 		return {
 			tabs: nextProps.tabs,
 			selectedTabId
 		};
 	}
 
-	selectOnClick = (e: React.MouseEvent) => {
+	selectOnClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, uid: string) => {
 		stopPropagation(e);
-		const selectedTabId = e.currentTarget?.id;
+		const selectedTabId = uid;
 		if (!selectedTabId)
 			return;
 
 		this.getStorageKey()?.set(selectedTabId);
+		if (this.props.onSelected) {
+			this.props.onSelected(selectedTabId);
+			return;
+		}
 		this.setState({selectedTabId});
-		this.props.onSelected?.(selectedTabId);
 	};
 
 	render() {
@@ -133,7 +137,7 @@ export class TS_Tabs
 				<div className={headerClass}>
 					{tabs.map(tab => {
 						const tabClasses = _className('ts-tabs__tab', 'unselectable', this.state.selectedTabId === tab.uid ? 'ts-tabs__focused' : undefined);
-						return <div key={tab.uid} id={tab.uid} className={tabClasses} onClick={this.selectOnClick}>{getTitle(tab)}</div>;
+						return <div key={tab.uid} id={tab.uid} className={tabClasses} onClick={(e) => this.selectOnClick(e, tab.uid)}>{getTitle(tab)}</div>;
 					})}
 				</div>
 				<div className={contentClass}>
