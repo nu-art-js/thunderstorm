@@ -17,6 +17,8 @@
  */
 
 
+import {sortArray} from './array-tools';
+
 /**
  * # Filter
  *
@@ -131,6 +133,7 @@ export class Filter<T> {
 	 * const filteredItems = filter.filter(items,'Adam');
 	 * ```
 	 */
+
 	filter(items: T[], filterText: string): T[] {
 		this.prepareFilter(filterText);
 		return items.filter(this.filterImpl);
@@ -138,36 +141,24 @@ export class Filter<T> {
 
 	filterSort(items: T[], filterText: string): T[] {
 		this.prepareFilter(filterText);
-		const exactMatches: T[] = [];
-		const partialMatches: T[] = [];
-		const regexMatches: T[] = [];
 		const text = filterText.toLowerCase();
 
-		items.forEach(item => {
-			if (!this.filterImpl(item))
-				return;
+		const filteredItems = items.filter(this.filterImpl);
 
+		return sortArray(filteredItems, item => {
 			const values = this.mapper(item).map(value => value.toLowerCase());
-
 			//Exact Match
 			if (values.includes(text)) {
-				exactMatches.push(item);
-				return;
+				return 0;
 			}
 
-			//Substring Match
 			for (const value of values) {
 				if (value.includes(text)) {
-					partialMatches.push(item);
-					return;
+					return 1;
 				}
 			}
-			
-			//Regex Match
-			regexMatches.push(item);
+			return 2;
 		});
-
-		return [...exactMatches, ...partialMatches, ...regexMatches];
 	}
 
 	/**
