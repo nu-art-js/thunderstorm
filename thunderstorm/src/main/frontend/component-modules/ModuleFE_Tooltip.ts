@@ -67,7 +67,6 @@ export class ModuleFE_Tooltip_Class
 	 * @param allowContentHover
 	 */
 	showAt = (content: () => JSX.Element, x: number, y: number, duration = -1, allowContentHover = false, alignment: Alignment = 'top', delay = -1) => {
-		console.log(delay);
 		const _show = () => {
 			const contentToRender = typeof content === 'function' ? content() : content;
 
