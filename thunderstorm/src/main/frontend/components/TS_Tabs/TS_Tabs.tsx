@@ -86,7 +86,6 @@ export class TS_Tabs
 			|| this.state?.selectedTabId
 			|| nextProps.tabs[0]?.uid;
 
-		console.log('selected tab id', selectedTabId);
 		return {
 			tabs: nextProps.tabs,
 			selectedTabId
