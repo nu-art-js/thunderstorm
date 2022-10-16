@@ -34,7 +34,7 @@ export type  Tooltip_Model = {
 	};
 	duration: number;
 	allowContentHover: boolean;
-	alignment?: Alignment
+	alignment?: Alignment;
 };
 
 export interface TooltipListener {
@@ -45,7 +45,7 @@ const dispatch_showTooltip = new ThunderDispatcher<TooltipListener, '__showToolt
 
 export class ModuleFE_Tooltip_Class
 	extends Module<{}> {
-
+	private _delayTimeOut: NodeJS.Timeout | undefined = undefined;
 	/**
 	 * Shows tooltip near position of mouse on entry
 	 * @param content - The content to display
@@ -54,8 +54,8 @@ export class ModuleFE_Tooltip_Class
 	 * @param duration - Duration of time before content disappears on mouse leave, defaults to -1
 	 * @param allowContentHover
 	 */
-	show = (content: () => JSX.Element, e: React.MouseEvent, alignment: Alignment = 'top', duration = -1, allowContentHover = false) => {
-		this.showAt(content, e.pageX + 10, e.pageY + 15, duration, allowContentHover, alignment);
+	show = (content: () => JSX.Element, e: React.MouseEvent, alignment: Alignment = 'top', duration = -1, allowContentHover = false, delay = -1) => {
+		this.showAt(content, e.pageX + 10, e.pageY + 15, duration, allowContentHover, alignment, delay);
 	};
 
 	/**
@@ -66,20 +66,31 @@ export class ModuleFE_Tooltip_Class
 	 * @param duration - Duration of time before content disappears on mouse leave, defaults to -1
 	 * @param allowContentHover
 	 */
-	showAt = (content: () => JSX.Element, x: number, y: number, duration = -1, allowContentHover = false, alignment: Alignment = 'top') => {
-		const contentToRender = typeof content === 'function' ? content() : content;
+	showAt = (content: () => JSX.Element, x: number, y: number, duration = -1, allowContentHover = false, alignment: Alignment = 'top', delay = -1) => {
+		const _show = () => {
+			const contentToRender = typeof content === 'function' ? content() : content;
 
-		const model: Tooltip_Model = {
-			content: contentToRender,
-			location: {x, y},
-			duration: duration,
-			allowContentHover,
-			alignment
+			const model: Tooltip_Model = {
+				content: contentToRender,
+				location: {x, y},
+				duration: duration,
+				allowContentHover,
+				alignment,
+			};
+			dispatch_showTooltip.dispatchUI(model);
 		};
-		dispatch_showTooltip.dispatchUI(model);
+
+		if (delay === -1)
+			_show();
+		else
+			this._delayTimeOut = setTimeout(() => _show(), delay);
+
 	};
 
-	hide = () => dispatch_showTooltip.dispatchUI();
+	hide = () => {
+		clearTimeout(this._delayTimeOut);
+		dispatch_showTooltip.dispatchUI();
+	};
 }
 
 export const ModuleFE_Tooltip = new ModuleFE_Tooltip_Class();
@@ -92,45 +103,45 @@ export const ModuleFE_Tooltip = new ModuleFE_Tooltip_Class();
  * @param allowContentHover
  * @constructor
  */
-export const ShowTooltip = (content: () => JSX.Element, alignment: Alignment = 'top', duration = -1, allowContentHover = false) => {
+export const ShowTooltip = (content: () => JSX.Element, alignment: Alignment = 'top', duration = -1, allowContentHover = false, delay = -1) => {
 	return {
-		onMouseEnter: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.show(content, e, alignment, duration, allowContentHover),
+		onMouseEnter: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.show(content, e, alignment, duration, allowContentHover, delay),
 		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(),
 	};
 };
 
-export const ShowTooltipAtTop = (content: () => JSX.Element, duration = -1, allowContentHover = false) => {
+export const ShowTooltipAtTop = (content: () => JSX.Element, duration = -1, allowContentHover = false, delay = -1) => {
 
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const data = e.currentTarget.getBoundingClientRect();
 			const x = (data.right + data.x) / 2;
 			const y = data.top - 10;
-			ModuleFE_Tooltip.showAt(content, x, y, duration, allowContentHover, 'top');
+			ModuleFE_Tooltip.showAt(content, x, y, duration, allowContentHover, 'top', delay);
 		},
 		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(),
 	};
 };
 
-export const ShowTooltipAtRight = (content: () => JSX.Element, duration = -1, allowContentHover = false) => {
+export const ShowTooltipAtRight = (content: () => JSX.Element, duration = -1, allowContentHover = false, delay = -1) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const data = e.currentTarget.getBoundingClientRect();
 			const x = data.right + 25;
 			const y = (data.top + data.bottom) / 2;
-			ModuleFE_Tooltip.showAt(content, x, y, duration, allowContentHover, 'right');
+			ModuleFE_Tooltip.showAt(content, x, y, duration, allowContentHover, 'right', delay);
 		},
 		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(),
 	};
 };
 
-export const ShowTooltipAtLeft = (content: () => JSX.Element, duration = -1, allowContentHover = false) => {
+export const ShowTooltipAtLeft = (content: () => JSX.Element, duration = -1, allowContentHover = false, delay = -1) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const data = e.currentTarget.getBoundingClientRect();
 			const x = data.left - 25;
 			const y = (data.top + data.bottom) / 2;
-			ModuleFE_Tooltip.showAt(content, x, y, duration, allowContentHover, 'left');
+			ModuleFE_Tooltip.showAt(content, x, y, duration, allowContentHover, 'left', delay);
 		},
 		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(),
 	};

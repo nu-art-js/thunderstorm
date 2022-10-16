@@ -39,9 +39,9 @@
     align-items: center;
     transition: max-height 200ms linear;
     background: #e5e5e5;
-
+    overflow: hidden;
+    
     &.collapsed {
-      overflow: hidden;
       max-height: 0px;
     }
   }
