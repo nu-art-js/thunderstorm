@@ -19,6 +19,7 @@
 import {DB_PermissionGroup, DBDef_PermissionGroup} from '../../../index';
 import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {_EmptyQuery} from '@nu-art/db-api-generator';
 
 
 export interface OnPermissionsGroupsLoaded {
@@ -40,15 +41,15 @@ export class ModuleFE_PermissionsGroup_Class
 	}
 
 	protected async onEntryCreated(response: DB_PermissionGroup): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onEntryDeleted(response: DB_PermissionGroup): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onEntryUpdated(response: DB_PermissionGroup): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onGotUnique(response: DB_PermissionGroup): Promise<void> {

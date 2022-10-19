@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+import {_EmptyQuery} from '@nu-art/db-api-generator';
 import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel} from '../../shared';
@@ -40,15 +41,15 @@ export class ModuleFE_PermissionsAccessLevel_Class
 	}
 
 	protected async onEntryCreated(response: DB_PermissionAccessLevel): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onEntryDeleted(response: DB_PermissionAccessLevel): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onEntryUpdated(response: DB_PermissionAccessLevel): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onGotUnique(response: DB_PermissionAccessLevel): Promise<void> {

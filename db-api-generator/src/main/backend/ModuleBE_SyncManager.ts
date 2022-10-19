@@ -23,7 +23,7 @@ import {FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapperBE, ModuleBE_Firebase, FirebaseRef, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiModule, ApiServerRouter, createQueryServerApi, ExpressRequest, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
 import {_keys, currentTimeMillis, DB_Object, filterDuplicates, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
-import {ApiDef_SyncManager, ApiStruct_SyncManager, DBSyncData} from '../shared';
+import {ApiDef_SyncManager, ApiStruct_SyncManager, DBSyncData, _EmptyQuery} from '../shared';
 import {BaseDB_ModuleBE} from './BaseDB_ModuleBE';
 
 
@@ -99,7 +99,7 @@ export class ModuleBE_SyncManager_Class
 
 		let deletedCount = await this.deletedCount.get();
 		if (deletedCount === undefined) {
-			deletedCount = (await this.collection.query({where: {}})).length;
+			deletedCount = (await this.collection.query(_EmptyQuery)).length;
 			await this.deletedCount.set(deletedCount);
 		}
 
@@ -114,7 +114,7 @@ export class ModuleBE_SyncManager_Class
 		let newDeletedCount = deletedCount - deleted.length;
 		if (deleted.length !== toDeleteCount) {
 			this.logError(`Expected to delete ${toDeleteCount} but actually deleted ${deleted.length}`);
-			newDeletedCount = (await this.collection.query({where: {}})).length;
+			newDeletedCount = (await this.collection.query(_EmptyQuery)).length;
 		}
 
 		await this.deletedCount.set(newDeletedCount);
