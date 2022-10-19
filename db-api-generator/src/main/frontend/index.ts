@@ -27,3 +27,4 @@ export * from './components/SmartPage';
 export * from './modules/ModuleFE_SyncManager';
 export * from './modules/BaseDB_ApiGeneratorCaller';
 export * from './modules/BaseDB_ApiCaller';
+export * from './components/GenericDropDown';

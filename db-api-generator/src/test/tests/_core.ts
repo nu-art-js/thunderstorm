@@ -19,11 +19,11 @@
  * limitations under the License.
  */
 
-import {__custom} from "@nu-art/testelot";
-import {ExampleModule} from "./db-api-generator";
+import {__custom} from '@nu-art/testelot';
+import {ExampleModule} from './db-api-generator';
 
 export function cleanup() {
 	return __custom(async () => {
-		await ExampleModule.delete({where: {}})
-	}).setLabel("Cleaning up examples collection.");
+		await ExampleModule.delete(_EmptyQuery);
+	}).setLabel('Cleaning up examples collection.');
 }

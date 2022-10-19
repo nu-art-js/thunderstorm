@@ -24,6 +24,7 @@ import {ApiDefResolver, BodyApi, HttpMethod, IndexKeys, QueryApi, QueryParams} f
 import {DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';
 import {DBDef} from './db-def';
 
+export const _EmptyQuery = {where: {}};
 
 /**
  * !! Workaround !!

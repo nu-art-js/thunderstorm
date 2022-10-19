@@ -20,6 +20,7 @@
 import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {DB_PermissionUser, DBDef_PermissionUser} from '../../../index';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {_EmptyQuery} from '@nu-art/db-api-generator';
 
 
 export interface OnPermissionsUsersLoaded {
@@ -46,7 +47,7 @@ export class ModuleFE_PermissionsUser_Class
 	}
 
 	protected async onEntryUpdated(response: DB_PermissionUser): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onGotUnique(response: DB_PermissionUser): Promise<void> {
