@@ -116,4 +116,8 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 			return this.db.get(key);
 		}
 	};
+
+	public getCollectionName = () => {
+		return this.config.dbConfig.name;
+	}
 }

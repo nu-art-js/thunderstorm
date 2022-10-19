@@ -48,7 +48,7 @@ import {dbIdLength} from '../shared/validators';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
-import {Response_DBSync} from '../shared';
+import {Response_DBSync, _EmptyQuery} from '../shared';
 
 
 export type BaseDBApiConfig = {
@@ -124,7 +124,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	}
 
 	protected resolveBackupQuery(): FirestoreQuery<DBType> {
-		return {where: {}};
+		return _EmptyQuery;
 	}
 
 	/**
@@ -191,7 +191,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	}
 
 	deleteAll() {
-		return this.delete({where: {}});
+		return this.delete(_EmptyQuery);
 	}
 
 	/*

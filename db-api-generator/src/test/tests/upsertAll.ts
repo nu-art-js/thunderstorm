@@ -19,49 +19,49 @@
  * limitations under the License.
  */
 
-import {assert, generateHex} from "@nu-art/ts-common";
+import {assert, generateHex} from '@nu-art/ts-common';
 import {
 	__custom,
 	__scenario
-} from "@nu-art/testelot";
-import {cleanup} from "./_core";
-import {ExampleModule} from "./db-api-generator";
+} from '@nu-art/testelot';
+import {cleanup} from './_core';
+import {ExampleModule} from './db-api-generator';
 
 const exampleDocument1 = {
-	first: "first",
-	second: "second",
-	third: "third"
+	first: 'first',
+	second: 'second',
+	third: 'third'
 };
 const exampleDocument2 = {
 	_id: generateHex(32),
-	first: "first2",
-	second: "second2",
-	third: "third2"
+	first: 'first2',
+	second: 'second2',
+	third: 'third2'
 };
 const exampleDocument3 = {
-	first: "first3",
-	second: "second3",
-	third: "third3"
+	first: 'first3',
+	second: 'second3',
+	third: 'third3'
 };
 
 export function upsertAllTest() {
-	const scenario = __scenario("UpsertAll");
+	const scenario = __scenario('UpsertAll');
 	scenario.add(cleanup());
 	scenario.add(__custom(async () => {
 		const docs = new Array(10).fill(0).map(() => exampleDocument1);
 		await ExampleModule.upsertAll(docs);
 
-		assert("Expecting 10 docs in the db", (await ExampleModule.query({where: {}})).length, 10);
-	}).setLabel("Upserting 10 docs"));
+		assert('Expecting 10 docs in the db', (await ExampleModule.query(_EmptyQuery)).length, 10);
+	}).setLabel('Upserting 10 docs'));
 
 	scenario.add(cleanup());
 
 	scenario.add(__custom(async () => {
-		const docs = [exampleDocument1, exampleDocument2,exampleDocument3];
+		const docs = [exampleDocument1, exampleDocument2, exampleDocument3];
 		const ret = await ExampleModule.upsertAll(docs);
 
-		assert("Expecting the order of the passed elements to be maintained", ret[1], exampleDocument2);
-	}).setLabel("Upserting ordered"));
+		assert('Expecting the order of the passed elements to be maintained', ret[1], exampleDocument2);
+	}).setLabel('Upserting ordered'));
 
 	// scenario.add(cleanup());
 	//
@@ -69,7 +69,7 @@ export function upsertAllTest() {
 	// 	const docs = new Array(10).fill(0).map(() => exampleDocument1);
 	// 	await ExampleModule.upsertAll(docs);
 	//
-	// 	assert("Expecting 10 docs in the db", (await ExampleModule.query({where: {}})).length, 10);
+	// 	assert("Expecting 10 docs in the db", (await ExampleModule.query(_EmptyQuery)).length, 10);
 	// }).setLabel("Upserting 10 docs"));
 
 	return scenario;

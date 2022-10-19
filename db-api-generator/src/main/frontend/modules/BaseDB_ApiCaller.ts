@@ -20,7 +20,7 @@
  */
 
 import {ApiDefCaller, BaseHttpRequest, HttpException, IndexKeys, QueryParams, TypedApi} from '@nu-art/thunderstorm';
-import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response_DBSync,} from '../shared';
+import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response_DBSync, _EmptyQuery,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
@@ -55,7 +55,6 @@ export enum DataStatus {
 	containsData,
 }
 
-const _EmptyQuery = {where: {}};
 
 type RequestType = 'upsert' | 'patch' | 'delete';
 type Pending = {
@@ -124,7 +123,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 				return syncRequest;
 			},
 
-			query: (query?: FirestoreQuery<DBType>) => _query(query || {where: {}}),
+			query: (query?: FirestoreQuery<DBType>) => _query(query || _EmptyQuery),
 			// @ts-ignore
 			queryUnique: (uniqueKeys: string | IndexKeys<DBType, Ks>) => {
 				return queryUnique(typeof uniqueKeys === 'string' ? {_id: uniqueKeys} : uniqueKeys as unknown as QueryParams);
