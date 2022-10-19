@@ -46,7 +46,7 @@ export class ModuleFE_PermissionsUser_Class
 	}
 
 	protected async onEntryUpdated(response: DB_PermissionUser): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onGotUnique(response: DB_PermissionUser): Promise<void> {

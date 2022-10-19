@@ -42,15 +42,15 @@ export class ModuleFE_PermissionsProject_Class
 	}
 
 	protected async onEntryCreated(response: DB_PermissionProject): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onEntryDeleted(response: DB_PermissionProject): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onEntryUpdated(response: DB_PermissionProject): Promise<void> {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 	}
 
 	protected async onGotUnique(response: DB_PermissionProject): Promise<void> {
@@ -66,7 +66,7 @@ export class ModuleFE_PermissionsProject_Class
 	}
 
 	fetchProjects() {
-		this.v1.query({where: {}});
+		this.v1.query(_EmptyQuery);
 		return this.projects;
 	}
 

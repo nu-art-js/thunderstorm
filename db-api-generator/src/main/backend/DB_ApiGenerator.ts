@@ -24,7 +24,7 @@ import {DB_Object, Module, PreDB} from '@nu-art/ts-common';
 
 import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
 import {ApiDefServer, ApiModule, ApiServerRouter, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB} from '../shared';
+import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, _EmptyQuery} from '../shared';
 import {BaseDB_ModuleBE, DBApiConfig} from './BaseDB_ModuleBE';
 
 
@@ -68,7 +68,7 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 
 	private _upgradeCollection = async () => {
 		// this should be paginated
-		const allItems = (await this.dbModule.collection.query({where: {}})).filter(item => item._v !== this.dbModule.dbDef.versions![0]);
+		const allItems = (await this.dbModule.collection.query(_EmptyQuery)).filter(item => item._v !== this.dbModule.dbDef.versions![0]);
 		await this.dbModule.upgradeInstances(allItems);
 		await this.dbModule.upsertAll(allItems);
 	};
