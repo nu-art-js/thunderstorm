@@ -24,7 +24,7 @@ import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response
 import {FirestoreQuery} from '@nu-art/firebase';
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
-import {BadImplementationException, DB_BaseObject, DB_Object, PreDB, TypedMap} from '@nu-art/ts-common';
+import {BadImplementationException, DB_BaseObject, DB_Object, merge, PreDB, TypedMap} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {
 	EventType_Create,
@@ -54,6 +54,8 @@ export enum DataStatus {
 	NoData,
 	containsData,
 }
+
+const _EmptyQuery = {where: {}};
 
 type RequestType = 'upsert' | 'patch' | 'delete';
 type Pending = {
@@ -98,11 +100,12 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore
 		this.v1 = {
-			sync: () => {
-				const query: FirestoreQuery<DBType> = {
+			sync: (additionalQuery: FirestoreQuery<DBType> = _EmptyQuery) => {
+				const originalSyncQuery = {
 					where: {__updated: {$gt: this.lastSync.get(0)}},
 					orderBy: [{key: '__updated', order: 'desc'}],
 				};
+				const query: FirestoreQuery<DBType> = merge(originalSyncQuery, additionalQuery);
 
 				const syncRequest = sync(query);
 				const _execute = syncRequest.execute.bind(syncRequest);
