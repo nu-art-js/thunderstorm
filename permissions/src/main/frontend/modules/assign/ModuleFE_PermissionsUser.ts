@@ -20,6 +20,7 @@
 import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {DB_PermissionUser, DBDef_PermissionUser} from '../../../index';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {_EmptyQuery} from '@nu-art/db-api-generator';
 
 
 export interface OnPermissionsUsersLoaded {
