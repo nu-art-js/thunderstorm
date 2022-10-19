@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+import {_EmptyQuery} from '@nu-art/db-api-generator';
 import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionProject, DBDef_PermissionProjects} from '../../shared';

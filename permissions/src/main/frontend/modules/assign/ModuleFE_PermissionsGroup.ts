@@ -19,6 +19,7 @@
 import {DB_PermissionGroup, DBDef_PermissionGroup} from '../../../index';
 import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {_EmptyQuery} from '@nu-art/db-api-generator';
 
 
 export interface OnPermissionsGroupsLoaded {
