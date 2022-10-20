@@ -23,6 +23,8 @@ export type PartialProps_GenericDropDown<T> = {
 	queryFilter?: (item: T) => boolean
 	ifNoneShowAll?: boolean
 	sortBy?: (keyof T)[] | ((item: T) => string | number);
+	className?: string;
+	caret?: { open: React.ReactNode, close: React.ReactNode }
 }
 
 export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = {
@@ -38,6 +40,8 @@ export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id
 	queryFilter?: (item: T) => boolean
 	ifNoneShowAll?: boolean
 	sortBy?: (keyof T)[] | ((item: T) => string | number);
+	className?: string;
+	caret?: { open: React.ReactNode, close: React.ReactNode }
 }
 
 type State<T extends DB_Object> = {
@@ -100,6 +104,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 		const adapter = SimpleListAdapter(this.state.items, props => this.props.renderer(props.item));
 
 		return <TS_DropDown<T>
+			className={this.props.className}
 			placeholder={this.props.placeholder || 'Choose one'}
 			inputValue={this.props.inputValue}
 			adapter={adapter}
@@ -107,6 +112,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 			selected={this.state.selected}
 			onNoMatchingSelectionForString={this.props.onNoMatchingSelectionForString}
 			onSelected={this.props.onSelected}
+			caret={this.props.caret}
 		/>;
 	}
 }
