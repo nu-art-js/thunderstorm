@@ -65,6 +65,7 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	showNothingWithoutFilterText?: boolean
 	disabled?: boolean
 	allowManualSelection?: boolean
+	className?: string;
 }
 
 export class TS_DropDown<ItemType>
@@ -107,7 +108,12 @@ export class TS_DropDown<ItemType>
 	};
 
 	render() {
-		const className = _className('ts-dropdown', this.props.disabled ? 'disabled' : undefined);
+		const className = _className(
+			'ts-dropdown',
+			this.props.className,
+			this.state.open ? 'open' : undefined,
+			this.props.disabled ? 'disabled' : undefined,
+		);
 		return (
 			<div className={className}
 					 ref={this.state.dropDownRef}
