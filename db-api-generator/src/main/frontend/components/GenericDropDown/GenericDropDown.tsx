@@ -25,6 +25,7 @@ export type PartialProps_GenericDropDown<T> = {
 	sortBy?: (keyof T)[] | ((item: T) => string | number);
 	className?: string;
 	caret?: { open: React.ReactNode, close: React.ReactNode }
+	boundingParentSelector?: string;
 }
 
 export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = {
@@ -42,6 +43,7 @@ export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id
 	sortBy?: (keyof T)[] | ((item: T) => string | number);
 	className?: string;
 	caret?: { open: React.ReactNode, close: React.ReactNode }
+	boundingParentSelector?: string;
 }
 
 type State<T extends DB_Object> = {
@@ -113,6 +115,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 			onNoMatchingSelectionForString={this.props.onNoMatchingSelectionForString}
 			onSelected={this.props.onSelected}
 			caret={this.props.caret}
+			boundingParentSelector={this.props.boundingParentSelector}
 		/>;
 	}
 }
