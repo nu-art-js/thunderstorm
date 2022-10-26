@@ -24,6 +24,10 @@
   @extend %match_parent;
   position: relative;
 
+  &.open {
+    z-index: 1;
+  }
+
   //Children - header
   .ts-dropdown__header {
     @extend %match_parent;
@@ -31,9 +35,12 @@
     background: white;
     border-radius: 5px;
     border: 1px solid #4fa7ff;
+    display: flex;
 
     .ts-input {
-      @extend %match_parent;
+      @extend %match_height;
+      width: 0;
+      flex-grow: 1;
       min-height: unset;
       background-color: transparent;
       border: none;
@@ -45,7 +52,9 @@
     }
 
     .ts-dropdown__placeholder {
-      @extend %match_parent;
+      @extend %match_height;
+      width: 0;
+      flex-grow: 1;
       font-size: 16px;
       display: flex;
       justify-content: flex-start;

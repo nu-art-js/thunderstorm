@@ -65,6 +65,8 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	showNothingWithoutFilterText?: boolean
 	disabled?: boolean
 	allowManualSelection?: boolean
+	className?: string;
+	boundingParentSelector?: string;
 }
 
 export class TS_DropDown<ItemType>
@@ -89,6 +91,13 @@ export class TS_DropDown<ItemType>
 		};
 	}
 
+	private getBoundingParent() {
+		if (!this.props.boundingParentSelector)
+			return undefined;
+
+		return this.state.dropDownRef.current?.closest(this.props.boundingParentSelector);
+	}
+
 	toggleList = (e: React.MouseEvent) => {
 		if (this.props.disabled)
 			return;
@@ -107,7 +116,12 @@ export class TS_DropDown<ItemType>
 	};
 
 	render() {
-		const className = _className('ts-dropdown', this.props.disabled ? 'disabled' : undefined);
+		const className = _className(
+			'ts-dropdown',
+			this.props.className,
+			this.state.open ? 'open' : undefined,
+			this.props.disabled ? 'disabled' : undefined,
+		);
 		return (
 			<div className={className}
 					 ref={this.state.dropDownRef}
@@ -159,7 +173,13 @@ export class TS_DropDown<ItemType>
 		if (this.state?.dropDownRef.current) {
 			const bottom = this.state.dropDownRef.current?.getBoundingClientRect().bottom;
 			const height = this.state.dropDownRef.current?.getBoundingClientRect().height;
-			const bottomDelta = window.innerHeight - bottom - 20;
+			let bottomDelta = window.innerHeight - bottom - 20;
+
+			//If bounding parent is not the window
+			const boundParent = this.getBoundingParent();
+			if (boundParent) {
+				bottomDelta = boundParent.getBoundingClientRect().bottom - bottom - 20;
+			}
 
 			style.overflowY = 'auto';
 			style.maxHeight = bottomDelta;

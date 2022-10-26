@@ -1,10 +1,10 @@
 import * as React from 'react';
-import {HTMLProps} from 'react';
+import {CSSProperties, HTMLProps} from 'react';
 import './_Layouts.scss';
 import {_className} from '../../utils/tools';
 
 
-export type LinearLayoutProps = HTMLProps<HTMLDivElement> & { ref?: React.Ref<any>, innerRef?: React.Ref<HTMLDivElement> };
+export type LinearLayoutProps = HTMLProps<HTMLDivElement> & { ref?: React.Ref<any>, innerRef?: React.Ref<HTMLDivElement>, style?: CSSProperties };
 
 class LinearLayout
 	extends React.Component<LinearLayoutProps> {
