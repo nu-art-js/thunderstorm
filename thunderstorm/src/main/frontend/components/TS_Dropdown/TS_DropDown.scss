@@ -25,6 +25,7 @@
   position: relative;
   isolation: isolate;
   z-index: 0;
+  flex-shrink: 0;
 
   //Children - header
   .ts-dropdown__header {
