@@ -23,10 +23,8 @@
 .ts-dropdown {
   @extend %match_parent;
   position: relative;
-
-  &.open {
-    z-index: 1;
-  }
+  isolation: isolate;
+  z-index: 0;
 
   //Children - header
   .ts-dropdown__header {
@@ -36,6 +34,7 @@
     border-radius: 5px;
     border: 1px solid #4fa7ff;
     display: flex;
+    z-index: 20 !important;
 
     .ts-input {
       @extend %match_height;
@@ -67,27 +66,32 @@
     background: white;
     border-radius: 0 0 4px 4px;
     border: 1px solid #4fa7ff;
-    top: calc(100% - 3px);
     padding: 5px;
     position: absolute;
     width: 100%;
+    text-align: center;
   }
 
   //Children - items
+  .ts-overlay {
+    z-index: 10 !important;
+  }
+
+  .ts-overlay__child {
+    z-index: 15 !important;
+    position: static;
+  }
+
   .ts-tree {
     //Dimensions
     width: 100%;
     min-height: 10px;
     padding-top: 3px;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     //Colors
     background: white;
-
-    //Position
-    position: absolute;
-    top: calc(100% - 3px);
-    z-index: -1;
-    overflow: hidden;
 
     //Border
     border: 1px solid #4fa7ff;
@@ -102,12 +106,14 @@
     }
 
     &.inverted {
-      top: calc(100% + 3px);
       padding-top: 0;
       padding-bottom: 3px;
       border-radius: 5px 5px 0 0;
-      max-height: 200px;
     }
+  }
+
+  &.open {
+    z-index: 1;
   }
 
   &.disabled {
