@@ -47,6 +47,13 @@ type StaticProps = {
 	},
 }
 
+type DropDownChildrenContainerData = {
+	posX: number;
+	posY: number;
+	maxHeight: number;
+	width: number;
+}
+
 export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	adapter: Adapter<ItemType>
 	placeholder?: string,
@@ -72,6 +79,12 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
 
+	// ######################## Static ########################
+
+	private node?: HTMLDivElement;
+
+	// ######################## Life Cycle ########################
+
 	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
 	}
@@ -90,6 +103,8 @@ export class TS_DropDown<ItemType>
 			dropDownRef: ref
 		};
 	}
+
+	// ######################## Logic ########################
 
 	private getBoundingParent() {
 		if (!this.props.boundingParentSelector)
@@ -115,6 +130,59 @@ export class TS_DropDown<ItemType>
 		this.setState({...newState}, () => this.props.onSelected(item));
 	};
 
+	private keyEventHandler = (e: React.KeyboardEvent) => {
+		if (this.props.inputEventHandler)
+			return this.setState(() => {
+				return this.props.inputEventHandler ? this.props.inputEventHandler(this.state, e) : this.state;
+			});
+
+		if (e.key === 'Enter') {
+			e.persist();
+			const filterText = this.state.filterText;
+			if (filterText) {
+				this.setState({open: false}, () => this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e));
+			} else
+				this.onSelected(this.state.adapter.data[0]);
+		}
+
+		if (e.key === 'Escape')
+			return this.setState({open: false});
+
+		// if (e.key === 'ArrowDown') {
+		// 	return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
+		// }
+	};
+
+	private getChildrenContainerMaxHeight = (dropdownRef: React.RefObject<HTMLDivElement>, dir: 'top' | 'bottom'): number => {
+		const rect = dropdownRef.current?.getBoundingClientRect()!;
+		const boundingParent = this.getBoundingParent();
+		if (boundingParent) {
+			const boundingRect = boundingParent.getBoundingClientRect();
+			return (dir === 'bottom' ? (boundingRect.bottom - rect.bottom - 20) : (rect.top - boundingRect.top - 20));
+		}
+		return (dir === 'bottom' ? (window.innerHeight - rect.bottom - 20) : (rect.top - 20));
+	};
+
+	private getChildrenContainerPosX = (dropdownRef: React.RefObject<HTMLDivElement>): number => {
+		const rect = dropdownRef.current!.getBoundingClientRect();
+		return rect.x;
+	};
+
+	private getChildrenContainerPosY = (dropdownRef: React.RefObject<HTMLDivElement>, dir: 'top' | 'bottom'): number => {
+		const rect = dropdownRef.current!.getBoundingClientRect();
+		if (dir === 'bottom') {
+			return rect.bottom;
+		}
+		return window.innerHeight - rect.top;
+	};
+
+	private getChildrenContainerWidth = (dropdownRef: React.RefObject<HTMLDivElement>): number => {
+		const rect = dropdownRef.current!.getBoundingClientRect();
+		return rect.right - rect.left;
+	};
+
+	// ######################## Render ########################
+
 	render() {
 		const className = _className(
 			'ts-dropdown',
@@ -130,7 +198,7 @@ export class TS_DropDown<ItemType>
 					 onBlur={this.removeKeyboardListener}
 			>
 				{this.renderHeader()}
-				<TS_Overlay flat={true} showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
+				<TS_Overlay flat={false} showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
 					{this.renderTree()}
 				</TS_Overlay>
 			</div>
@@ -166,30 +234,37 @@ export class TS_DropDown<ItemType>
 			}
 		}
 
-		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0)
-			return <div className="ts-dropdown__empty" style={{textAlign: 'center'}}>No options</div>;
-
 		const style: CSSProperties = {};
 		if (this.state?.dropDownRef.current) {
-			const bottom = this.state.dropDownRef.current?.getBoundingClientRect().bottom;
-			const height = this.state.dropDownRef.current?.getBoundingClientRect().height;
-			let bottomDelta = window.innerHeight - bottom - 20;
+			//Get container data
+			const containerData: DropDownChildrenContainerData = {
+				posX: this.getChildrenContainerPosX(this.state.dropDownRef),
+				posY: this.getChildrenContainerPosY(this.state.dropDownRef, 'bottom'),
+				width: this.getChildrenContainerWidth(this.state.dropDownRef),
+				maxHeight: this.getChildrenContainerMaxHeight(this.state.dropDownRef, 'bottom'),
+			};
 
-			//If bounding parent is not the window
-			const boundParent = this.getBoundingParent();
-			if (boundParent) {
-				bottomDelta = boundParent.getBoundingClientRect().bottom - bottom - 20;
-			}
+			//Set initial top
+			style.top = containerData.posY;
 
-			style.overflowY = 'auto';
-			style.maxHeight = bottomDelta;
-
-			if (bottomDelta < 100) {
-				style.maxHeight = undefined;
-				style.transform = `translateY(calc(-100% - ${height}px))`;
+			//If not enough space at the bottom, re-calculate for top display
+			if (containerData.maxHeight < 100) {
+				containerData.maxHeight = this.getChildrenContainerMaxHeight(this.state.dropDownRef, 'top');
+				containerData.posY = this.getChildrenContainerPosY(this.state.dropDownRef, 'top');
 				className += ' inverted';
+				delete style.top;
+				style.bottom = containerData.posY;
 			}
+
+			//Set style attributes
+			style.position = 'absolute';
+			style.left = containerData.posX;
+			style.maxHeight = containerData.maxHeight;
+			style.width = containerData.width;
 		}
+
+		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0)
+			return <div className="ts-dropdown__empty" style={style}>No options</div>;
 
 		return <TS_Tree
 			adapter={this.state.adapter}
@@ -199,29 +274,6 @@ export class TS_DropDown<ItemType>
 			treeContainerStyle={style}
 			// keyEventHandler={treeKeyEventHandler}
 		/>;
-	};
-
-	private keyEventHandler = (e: React.KeyboardEvent) => {
-		if (this.props.inputEventHandler)
-			return this.setState(() => {
-				return this.props.inputEventHandler ? this.props.inputEventHandler(this.state, e) : this.state;
-			});
-
-		if (e.key === 'Enter') {
-			e.persist();
-			const filterText = this.state.filterText;
-			if (filterText) {
-				this.setState({open: false}, () => this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e));
-			} else
-				this.onSelected(this.state.adapter.data[0]);
-		}
-
-		if (e.key === 'Escape')
-			return this.setState({open: false});
-
-		// if (e.key === 'ArrowDown') {
-		// 	return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
-		// }
 	};
 
 	private renderSelectedItem = (selected?: ItemType) => {
@@ -272,8 +324,8 @@ export class TS_DropDown<ItemType>
 		/>;
 	};
 
+	// ######################## To Remove ########################
 	// TODO: THIS IS ALL DUPLICATE SHIT... DELETE ONCE TREE CAN PROPAGATE THE KEYBOARD EVENTS
-	private node?: HTMLDivElement;
 
 	private addKeyboardListener = () => {
 		const onKeyboardEventListener = this.keyEventHandler;
