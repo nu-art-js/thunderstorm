@@ -73,6 +73,10 @@
       border: 1px solid #808080;
 
       //Pseudos
+      &.disabled {
+        background-color: #ccc;
+      }
+
       &.ts-tabs__focused {
         background-color: #bbb;
       }
