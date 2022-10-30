@@ -142,7 +142,6 @@ export class TS_DropDown<ItemType>
 			const filterText = this.state.filterText;
 			if (filterText) {
 				this.setState({open: false}, () => {
-					console.log('ZEVEL');
 					this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e);
 				});
 			} else
