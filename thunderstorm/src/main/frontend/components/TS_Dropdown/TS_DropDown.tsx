@@ -59,13 +59,14 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	placeholder?: string,
 	inputValue?: string,
 
+	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: ItemType[], e: React.KeyboardEvent) => void
 	onSelected: (selected: ItemType) => void
 	selected?: ItemType
 
 	filter?: Filter<ItemType>
 	tabIndex?: number;
-	innerRef?: React.RefObject<any>
+	innerRef?: React.RefObject<any>;
 
 	inputEventHandler?: (state: State<ItemType>, e: React.KeyboardEvent) => State<ItemType>
 	selectedItemRenderer?: (props?: ItemType) => React.ReactNode
@@ -140,7 +141,10 @@ export class TS_DropDown<ItemType>
 			e.persist();
 			const filterText = this.state.filterText;
 			if (filterText) {
-				this.setState({open: false}, () => this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e));
+				this.setState({open: false}, () => {
+					console.log('ZEVEL');
+					this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e);
+				});
 			} else
 				this.onSelected(this.state.adapter.data[0]);
 		}
@@ -263,8 +267,13 @@ export class TS_DropDown<ItemType>
 			style.width = containerData.width;
 		}
 
-		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0)
+		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0) {
+			if (this.props.noOptionsRenderer)
+				return <div className="ts-dropdown__empty" style={style}>
+					{(typeof this.props.noOptionsRenderer === 'function' ? this.props.noOptionsRenderer() : this.props.noOptionsRenderer)}
+				</div>;
 			return <div className="ts-dropdown__empty" style={style}>No options</div>;
+		}
 
 		return <TS_Tree
 			adapter={this.state.adapter}
@@ -312,13 +321,13 @@ export class TS_DropDown<ItemType>
 			focus={true}
 			style={{width: '100%'}}
 			placeholder={this.props.placeholder || ''}
-			onAccept={(value, ev) => {
-				const filterText = this.state.filterText;
-				if (filterText) {
-					this.setState({open: false}, () => this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, ev));
-				} else
-					this.onSelected(this.state.adapter.data[0]);
-			}}
+			// onAccept={(value, ev) => {
+			// 	const filterText = this.state.filterText;
+			// 	if (filterText) {
+			// 		this.setState({open: false}, () => this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, ev));
+			// 	} else
+			// 		this.onSelected(this.state.adapter.data[0]);
+			// }}
 			onCancel={() => this.setState({open: false})}
 			onKeyDown={this.keyEventHandler}
 		/>;
