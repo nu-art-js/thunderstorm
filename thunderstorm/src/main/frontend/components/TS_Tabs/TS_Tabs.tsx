@@ -24,11 +24,13 @@ import {_className, stopPropagation} from '../../utils/tools';
 import './TS_Tabs.scss';
 import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 
+export type Tab = {
+	title: React.ReactNode | (() => React.ReactNode);
+	content: React.ReactNode | (() => React.ReactNode);
+	uid: string;
+	disabled?: boolean
+};
 
-export type TabContent = React.ReactNode | (() => React.ReactNode);
-export type TabTitle = TabContent | string;
-export type _Tab = { title: TabTitle, content: TabContent };
-export type Tab = _Tab & { uid: string };
 export type Props_Tabs = {
 	id?: string
 	persistSelection?: boolean
@@ -43,9 +45,8 @@ export type Props_Tabs = {
 	onSelected?: (selectedTabId: string) => void
 }
 
-type TabToRender = { [K in keyof _Tab]: React.ReactNode } & { uid: string };
 type State = {
-	tabs: TabToRender[]
+	tabs: Tab[]
 	selectedTabId?: string
 }
 
@@ -92,9 +93,12 @@ export class TS_Tabs
 		};
 	}
 
-	selectOnClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, uid: string) => {
+	selectOnClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, tab: Tab) => {
 		stopPropagation(e);
-		const selectedTabId = uid;
+		if (tab.disabled)
+			return;
+		
+		const selectedTabId = tab.uid;
 		if (!selectedTabId)
 			return;
 
@@ -135,8 +139,8 @@ export class TS_Tabs
 			<div id={this.props.id} className="ts-tabs">
 				<div className={headerClass}>
 					{tabs.map(tab => {
-						const tabClasses = _className('ts-tabs__tab', 'unselectable', this.state.selectedTabId === tab.uid ? 'ts-tabs__focused' : undefined);
-						return <div key={tab.uid} id={tab.uid} className={tabClasses} onClick={(e) => this.selectOnClick(e, tab.uid)}>{getTitle(tab)}</div>;
+						const tabClasses = _className('ts-tabs__tab', 'unselectable', this.state.selectedTabId === tab.uid ? 'ts-tabs__focused' : undefined, tab.disabled ? 'disabled' : undefined);
+						return <div key={tab.uid} id={tab.uid} className={tabClasses} onClick={(e) => this.selectOnClick(e, tab)}>{getTitle(tab)}</div>;
 					})}
 				</div>
 				<div className={contentClass}>
