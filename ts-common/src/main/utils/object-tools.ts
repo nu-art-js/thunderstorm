@@ -18,7 +18,6 @@
 
 import {AssertionException, BadImplementationException, TS_Object} from '../index';
 
-
 export function deepClone<T>(obj: T): T {
 	if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'undefined' || obj === null)
 		return obj;
@@ -116,4 +115,20 @@ export function assert<T>(message: string, expected: T, actual: T) {
 	if (!compare(expected, actual))
 		throw new AssertionException(
 			`Assertion Failed:\n  -- ${message}\n  -- Expected: ${JSON.stringify(expected)}\n  --   Actual: ${JSON.stringify(actual)}\n\n`);
+}
+
+export function filterFields<T>(obj: T, keys: keyof T | (keyof T)[]) {
+	if (typeof obj !== 'object' || obj === null) {
+		throw new BadImplementationException('Passed parameter for "obj" must be an object');
+	}
+
+	if (!Array.isArray(keys))
+		keys = [keys as keyof T];
+
+	(keys as (keyof T)[]).forEach(key => {
+		if (obj[key] === undefined)
+			delete obj[key];
+	});
+
+	return obj;
 }
