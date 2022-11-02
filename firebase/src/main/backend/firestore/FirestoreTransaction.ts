@@ -66,7 +66,12 @@ export class FirestoreTransaction {
 
 	async insert<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type, _id?: string) {
 		const doc = collection.createDocumentReference(_id);
-		await this.transaction.create(doc, instance);
+		try {
+			await this.transaction.create(doc, instance);
+		} catch (e: any) {
+			console.error('Failed creating object: ', instance, e);
+			throw e;
+		}
 		return instance;
 	}
 
@@ -83,7 +88,12 @@ export class FirestoreTransaction {
 		const ref = await this.getOrCreateDocument(collection, instance, _id);
 
 		return async () => {
-			await this.transaction.set(ref, instance);
+			try {
+				await this.transaction.set(ref, instance);
+			} catch (e: any) {
+				console.error('Failed creating object: ', instance, e);
+				throw e;
+			}
 			return instance;
 		};
 	}
