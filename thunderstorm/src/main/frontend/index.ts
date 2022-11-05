@@ -94,3 +94,4 @@ export * from './modules/component-loader/entry-component-loading-module';
 export * from './_to-refactor/MenuAndButton';
 
 export * from './utils/tools';
+export * from './utils/EditableItem';

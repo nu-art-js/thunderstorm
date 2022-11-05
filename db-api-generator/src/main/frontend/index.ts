@@ -24,6 +24,7 @@ export * from './consts';
 export * from './db-def';
 export * from './components/SmartComponent';
 export * from './components/SmartPage';
+export * from './utils/EditableDBItem';
 export * from './modules/ModuleFE_SyncManager';
 export * from './modules/BaseDB_ApiGeneratorCaller';
 export * from './modules/BaseDB_ApiCaller';
