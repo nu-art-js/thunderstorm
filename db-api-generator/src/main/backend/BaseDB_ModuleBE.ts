@@ -48,7 +48,7 @@ import {dbIdLength} from '../shared/validators';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
-import {Response_DBSync, _EmptyQuery} from '../shared';
+import {_EmptyQuery, Response_DBSync} from '../shared';
 
 
 export type BaseDBApiConfig = {
@@ -264,7 +264,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		try {
 			await tsValidate(instance, this.validator);
 		} catch (e: any) {
-			this.logError(`error validating id: ${instance._id}`);
+			this.logError(`error validating object:`, instance);
 			this.onValidationError(e);
 		}
 	}
