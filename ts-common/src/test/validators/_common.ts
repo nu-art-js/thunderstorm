@@ -23,7 +23,6 @@ import {ValidatorTestInput} from './test';
 export const validatorProcessor = async <T extends TS_Object>(model: ValidatorTestInput<T>) => {
 	try {
 		const result = tsValidate(model.instance, model.validator);
-		console.log(result);
 		return 'pass';
 	} catch (e: any) {
 		return 'fail';
