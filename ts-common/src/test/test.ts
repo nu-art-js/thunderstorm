@@ -34,11 +34,11 @@ import { testSuit_cliModule } from "./cliModule/test-cliModule";
 // require("./clone/test-clone");
 
 const testSuits: TestSuit<any, any, any>[] = [
-	testSuit_cliModule,
-	testSuit_versionComparison,
-	testSuit_compare,
-	testSuit_newSecret,
-	testSuit_filter,
+	// testSuit_cliModule,
+	// testSuit_versionComparison,
+	// testSuit_compare,
+	// testSuit_newSecret,
+	// testSuit_filter,
 	...testSuits_validator,
 ];
 
