@@ -19,6 +19,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
+import {ReactNode} from 'react';
 import {Example_NewProps} from './Example_NewProps';
 import {SimpleListAdapter} from '../adapter/Adapter';
 import './TS_Playground.scss';
@@ -26,7 +27,6 @@ import {LL_H_C, LL_V_L} from '../Layouts';
 import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 import {TS_Tree} from '../TS_Tree';
 import {_className} from '../../utils/tools';
-import {ReactNode} from 'react';
 
 const selectedPlaygroundStorage = new StorageKey<string>('selected-playground');
 const collapsedPlaygroundStorage = new StorageKey<boolean>('collapsed-playground');
