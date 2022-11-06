@@ -277,7 +277,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		const error = isErrorOfType(e, ValidationException);
 		if (error) {
 			// TODO fix after resolving the error handling
-			const errorBody = {type: 'bad-input', body: {path: error.path, input: error.input}};
+			const errorBody = {type: 'bad-input', body: {result: error.result, input: error.input}};
 			throw new ApiException(400, error.message).setErrorBody(errorBody as any);
 		}
 	}
