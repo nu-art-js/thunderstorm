@@ -187,9 +187,11 @@ export const tsValidateRange = (ranges: [number, number][], mandatory = true): V
 
 export const tsValidate = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, strict = true) => {
 	const results = tsValidateResult(instance, _validator);
-	// console.log(results);
-	if (results && strict)
-		throw new ValidationException(`Error validating object:`, instance, results);
+
+	if (results && strict) {
+		console.error(results);
+		throw new ValidationException(`Error validating object: `, instance, results);
+	}
 
 	return results;
 };
