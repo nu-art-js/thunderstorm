@@ -26,7 +26,7 @@ import './TS_Table.scss';
 import React = require('react');
 
 
-export type TableHeaders<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = P[];
+export type TableHeaders<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = (P | { header: P, widthPx: number })[];
 export type HeaderRenderer<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
 	[C in P]?: (columnKey: C) => React.ReactNode;
 };
@@ -84,7 +84,8 @@ export class TS_Table<R extends TS_Object, A extends string = never>
 			renderers = this.props.headerRenderer;
 		else
 			renderers = this.props.header.reduce((toRet, headerProp) => {
-				toRet[headerProp] = this.props.headerRenderer as ((columnKey: keyof R) => React.ReactNode);
+				const prop = typeof headerProp === 'object' ? headerProp.header : headerProp;
+				toRet[prop] = this.props.headerRenderer as ((columnKey: keyof R) => React.ReactNode);
 				return toRet;
 			}, {} as HeaderRenderer<R, A>);
 
@@ -95,11 +96,15 @@ export class TS_Table<R extends TS_Object, A extends string = never>
 			<tr key={`${this.props.id}-0`} {...tablePropsTR} className={classNameTR}>
 
 				{this.props.header.map((header, index) => {
-					const tablePropsTH = typeof this.props.th === 'function' ? this.props.th(header) : this.props.th;
+					const prop = typeof header === 'object' ? header.header : header;
+					const tablePropsTH = typeof this.props.th === 'function' ? this.props.th(prop) : this.props.th;
 					const classNameTH = _className('ts-table__th', tablePropsTH?.className);
+					const style: { width?: string } = {};
+					if (typeof header === 'object')
+						style.width = `${header.widthPx}px`;
 
-					return <th key={`${this.props.id}-${index}`} {...tablePropsTH} className={classNameTH}>
-						{renderers[header]?.(header as any)}
+					return <th key={`${this.props.id}-${index}`} {...tablePropsTH} className={classNameTH} style={style}>
+						{renderers[prop]?.(prop as any)}
 					</th>;
 				})}
 
@@ -113,7 +118,8 @@ export class TS_Table<R extends TS_Object, A extends string = never>
 			renderers = this.props.cellRenderer;
 		else
 			renderers = this.props.header.reduce((toRet, headerProp) => {
-				toRet[headerProp] = this.props.cellRenderer as CellRenderer<R, A>;
+				const prop = typeof headerProp === 'object' ? headerProp.header : headerProp;
+				toRet[prop] = this.props.cellRenderer as CellRenderer<R, A>;
 				return toRet;
 			}, {} as RowRenderer<R, A>);
 
@@ -124,12 +130,13 @@ export class TS_Table<R extends TS_Object, A extends string = never>
 			return (
 				<tr key={`${this.props.id}-${rowIndex}`} {...tablePropsTR} className={classNameTR}>
 					{this.props.header.map((header, columnIndex) => {
-						const tablePropsTD = typeof this.props.td === 'function' ? this.props.td(row, rowIndex, header) : this.props.td;
+						const prop = typeof header === 'object' ? header.header : header;
+						const tablePropsTD = typeof this.props.td === 'function' ? this.props.td(row, rowIndex, prop) : this.props.td;
 						const classNameTD = _className('ts-table__td', tablePropsTD?.className);
 
 						return <td
 							key={`${this.props.id}-${columnIndex}`} {...tablePropsTD} className={classNameTD}>
-							{renderers[header]?.(header as any, row, rowIndex)}
+							{renderers[prop]?.(prop as any, row, rowIndex)}
 						</td>;
 					})}
 				</tr>
