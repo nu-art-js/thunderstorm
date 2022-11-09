@@ -18,8 +18,8 @@
  */
 
 import {DBDef, tsValidateStringAndNumbersWithDashes} from '@nu-art/db-api-generator';
-import {tsValidateArray, tsValidateObjectValues} from '@nu-art/ts-common';
-import {validateCustomFieldValues, validateUserUuid} from '../../validators';
+import {tsValidateArray} from '@nu-art/ts-common';
+import {validateUserUuid} from '../../validators';
 import {DB_PermissionUser} from './types';
 
 
@@ -28,7 +28,8 @@ const Validator_PermissionUser = {
 	accountId: validateUserUuid,
 	groups: tsValidateArray({
 		groupId: tsValidateStringAndNumbersWithDashes,
-		customField: tsValidateObjectValues<string>(validateCustomFieldValues, false)
+		// customField: tsValidateObjectValues<string>(validateCustomFieldValues, false)
+		customField: undefined
 	}, false),
 	__groupIds: tsValidateArray(tsValidateStringAndNumbersWithDashes, false),
 	_audit: undefined

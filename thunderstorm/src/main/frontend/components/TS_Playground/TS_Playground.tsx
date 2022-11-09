@@ -18,76 +18,91 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import * as React from 'react';
-import {ModuleFE_BrowserHistory} from '../../modules/ModuleFE_BrowserHistory';
+import {ReactNode} from 'react';
 import {Example_NewProps} from './Example_NewProps';
-import {TS_DropDown} from '../TS_Dropdown';
 import {SimpleListAdapter} from '../adapter/Adapter';
-import {Filter} from '@nu-art/ts-common';
 import './TS_Playground.scss';
-import {LL_V_L} from '../Layouts';
+import {LL_H_C, LL_V_L} from '../Layouts';
+import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
+import {TS_Tree} from '../TS_Tree';
+import {_className} from '../../utils/tools';
 
+const selectedPlaygroundStorage = new StorageKey<string>('selected-playground');
+const collapsedPlaygroundStorage = new StorageKey<boolean>('collapsed-playground');
 
 export type PlaygroundProps = {
-	iconClose?: React.ReactNode
-	iconOpen?: React.ReactNode
-	screens: PlaygroundScreen[]
+	screens: PlaygroundScreen[];
+	collapseCaret: (() => React.ReactNode) | ReactNode;
 }
 
 type State = {
 	selectedScreen?: PlaygroundScreen;
+	collapsed: boolean;
 }
 
 export type PlaygroundScreen<T extends any = any> = {
-	name: string
-	renderer: React.ComponentType<T>
-	data?: T[]
+	name: string;
+	renderer: React.ComponentType<T>;
+	data?: T[];
 }
-const QueryKey_SelectedPlayground = 'playground';
+
 
 export class TS_Playground
 	extends React.Component<PlaygroundProps, State> {
 
 	constructor(props: PlaygroundProps) {
 		super(props);
-		const queryParam = ModuleFE_BrowserHistory.getQueryParams()[QueryKey_SelectedPlayground];
-		const screen = this.props.screens.find(s => s.name === queryParam);
-		this.state = {selectedScreen: screen};
+		const selectedPlaygroundKey = selectedPlaygroundStorage.get();
+		this.state = {
+			selectedScreen: this.props.screens.find(s => s.name === selectedPlaygroundKey),
+			collapsed: collapsedPlaygroundStorage.get() ?? false,
+		};
 	}
 
 	render() {
-		return <LL_V_L className="ts-playground">
-			<div className="ts-playground__selector">
-				<TS_DropDown<PlaygroundScreen>
-					caret={{
-						close: this.props.iconClose,
-						open: this.props.iconOpen
-					}}
-					filter={new Filter(option => ([option.name]))}
-					onSelected={(screen: PlaygroundScreen) => {
-						this.setState({selectedScreen: screen});
-						ModuleFE_BrowserHistory.addQueryParam(QueryKey_SelectedPlayground, screen.name);
-					}}
-					selected={this.state.selectedScreen}
-					adapter={SimpleListAdapter(this.props.screens, (props) => {
-						return <div className="ts-playground__item">{props.item.name}</div>;
-					})}/>
-			</div>
+		const adapter = SimpleListAdapter<PlaygroundScreen>(this.props.screens, item => <div className={'ts-playground__item'}>{item.item.name}</div>);
+		const className = _className('ts-playground__selector', this.state.collapsed ? 'ts-playground__selector-collapsed' : undefined);
+
+		return <LL_H_C className="ts-playground">
+			<LL_V_L className={className}>
+				{this.renderHeader()}
+				<TS_Tree
+					adapter={adapter}
+					selectedItem={this.state.selectedScreen}
+					onNodeClicked={(path, item) => {
+						selectedPlaygroundStorage.set(item.name);
+						this.setState({selectedScreen: item});
+					}}/>
+			</LL_V_L>
 			<div className="ts-playground__container">{this.renderPlayground()}</div>
-		</LL_V_L>;
+		</LL_H_C>;
+	}
+
+	private renderHeader() {
+		const caret = typeof this.props.collapseCaret === 'function' ? this.props.collapseCaret() : this.props.collapseCaret;
+		return <LL_H_C className={'ts-playground__selector__header'}>
+			<span className={'header__title'}>Playgrounds</span>
+			<div className={'header__caret'} onClick={() => {
+				const newCollapse = !this.state.collapsed;
+				this.setState({collapsed: newCollapse});
+				collapsedPlaygroundStorage.set(newCollapse);
+			}}>{caret}</div>
+		</LL_H_C>;
 	}
 
 	private renderPlayground() {
 		if (!this.state.selectedScreen)
 			return <div>Select a playground</div>;
 
+		const Renderer = this.state.selectedScreen.renderer;
 		const data = this.state.selectedScreen.data;
+
 		if (!data || data.length === 0)
-			return <this.state.selectedScreen.renderer/>;
+			return <Renderer/>;
 
 		if (data.length === 1)
-			return <this.state.selectedScreen.renderer {...data[0]}/>;
+			return <Renderer {...data[0]}/>;
 
 		return <Example_NewProps name={this.state.selectedScreen.name} data={data} renderer={this.state.selectedScreen.renderer}/>;
 	}

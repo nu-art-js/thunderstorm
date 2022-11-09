@@ -21,7 +21,7 @@ import {
 	CliParamsModule,
 	compare,
 	flatArray,
-	TestModel,
+	TestCase,
 	TestSuit
 } from "../_main";
 import {
@@ -39,7 +39,7 @@ type CliTestInput = {
 	expected?: string[];
 }
 
-type CliModuleTest = TestModel<CliTestInput, "pass" | "fail">;
+type CliModuleTest = TestCase<CliTestInput, "pass" | "fail">;
 
 function generateCliParams(param: CliTestParam<any, any>) {
 	return param.value.map((value: string) => `${param.keys[0]}=${value}`);
