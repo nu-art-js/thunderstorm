@@ -22,14 +22,14 @@ import {
 	TypedMap
 } from "../_main";
 import {
-	TestModel,
+	TestCase,
 	TestSuit
-} from "../../main/testing/test-model";
+} from "../../main/testing/test-case";
 
 
 type FilterKeys = TypedMap<boolean | TypedMap<boolean | TypedMap<boolean>>>
 
-type VersionTest = TestModel<FilterKeys, boolean>;
+type VersionTest = TestCase<FilterKeys, boolean>;
 
 export const testSuit_filter: TestSuit<VersionTest> = {
 	key: 'filters',

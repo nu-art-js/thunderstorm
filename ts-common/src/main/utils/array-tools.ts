@@ -67,8 +67,15 @@ export function findDuplicates<T>(array1: T[], array2: T[]): T[] {
 	return array1.filter(val => array2.indexOf(val) !== -1);
 }
 
-export function filterDuplicates<T>(array: T[]): T[] {
-	return Array.from(new Set(array));
+const defaultMapper: <T extends any>(item: T) => any = (item) => item;
+
+export function filterDuplicates<T>(source: T[], mapper: (item: T) => any = defaultMapper): T[] {
+	if (defaultMapper === mapper)
+		return Array.from(new Set(source));
+
+	const uniqueKeys = Array.from(new Set(source.map(mapper)));
+	return source.filter(item => uniqueKeys.includes(mapper(item)));
+
 }
 
 export function filterInstances<T>(array?: (T | undefined | null | void)[]): T[] {

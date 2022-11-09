@@ -18,7 +18,7 @@
 
 import {
 	compare,
-	TestModel,
+	TestCase,
 	TestSuit
 } from "../_main";
 
@@ -27,7 +27,7 @@ type CompareTestInput = {
 	two: any;
 }
 
-type CompareTest = TestModel<CompareTestInput, "pass" | "fail">;
+type CompareTest = TestCase<CompareTestInput, "pass" | "fail">;
 
 export const testSuit_compare: TestSuit<CompareTest> = {
 	key: "compare",

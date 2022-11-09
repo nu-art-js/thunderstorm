@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 
-import {ValidatorTest,} from "./test";
 import {
 	tsValidateArray,
 	tsValidateRegexp,
@@ -28,14 +27,14 @@ import {
 	objectWithArray2,
 	objectWithArray3
 } from "./object-with-array";
-import {validatorProcessor} from "./_common";
+import {TestCase_Validator, validatorProcessor} from "./_common";
 
 type ObjectWithNestedArray = { prop2: ObjectWithArray }
 const objectWithNestedArray0: ObjectWithNestedArray = {prop2: objectWithArray1};
 const objectWithNestedArray1: ObjectWithNestedArray = {prop2: objectWithArray2};
 const objectWithNestedArray2: ObjectWithNestedArray = {prop2: objectWithArray3};
 
-export const testSuit_nestedObjectWithArrayValidator: TestSuit<ValidatorTest<ObjectWithNestedArray>> = {
+export const testSuit_nestedObjectWithArrayValidator: TestSuit<TestCase_Validator<any>> = {
 	key: "object-validator--nested-object-with-array",
 	label: "Object Validator - Nested Object With Array",
 	processor: validatorProcessor,

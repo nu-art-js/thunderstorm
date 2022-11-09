@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-export * from './testing/test-model';
+export * from './testing/test-case';
 
 export * from './core/module';
 export * from './core/module-manager';

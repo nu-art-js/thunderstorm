@@ -18,9 +18,9 @@
  */
 
 import {DBDef, tsValidateStringAndNumbersWithDashes, tsValidateUniqueId} from '@nu-art/db-api-generator';
-import {tsValidateArray, tsValidateObjectValues} from '@nu-art/ts-common';
+import {tsValidateArray} from '@nu-art/ts-common';
 import {DB_PermissionGroup} from './types';
-import {validateCustomFieldValues, validateGroupLabel} from '../../validators';
+import {validateGroupLabel} from '../../validators';
 
 
 const Validator_PermissionGroup = {
@@ -28,7 +28,8 @@ const Validator_PermissionGroup = {
 	label: validateGroupLabel,
 	tags: undefined,
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
-	customFields: tsValidateArray(tsValidateObjectValues<string>(validateCustomFieldValues), false),
+	// customFields: tsValidateArray(tsValidateObjectValues<string>(validateCustomFieldValues), false),
+	customFields: undefined,
 	__accessLevels: undefined,
 	_audit: undefined
 };
