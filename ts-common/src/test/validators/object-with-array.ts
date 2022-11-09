@@ -16,14 +16,9 @@
  * limitations under the License.
  */
 
-import {
-	TestSuit,
-	tsValidateArray,
-	tsValidateExists,
-	tsValidateRegexp
-} from "../_main";
-import {ValidatorTest} from "./test";
-import {validatorProcessor} from "./_common";
+import {TestSuit, tsValidateArray, tsValidateExists, tsValidateRegexp} from '../_main';
+import {TestCase_Validator, validatorProcessor} from './_common';
+
 
 export type ObjectWithArray = { prop1?: string[] }
 export const objectWithArray0: ObjectWithArray = {};
@@ -31,7 +26,7 @@ export const objectWithArray1: ObjectWithArray = {prop1: []};
 export const objectWithArray2: ObjectWithArray = {prop1: ["Adam"]};
 export const objectWithArray3: ObjectWithArray = {prop1: ["Adam", "Yair"]};
 
-export const testSuit_objectWithArrayValidator: TestSuit<ValidatorTest<ObjectWithArray>> = {
+export const testSuit_objectWithArrayValidator: TestSuit<TestCase_Validator<any>> = {
 	key: "object-validator--object-with-array",
 	label: "Object Validator - Object With Array",
 	processor: validatorProcessor,

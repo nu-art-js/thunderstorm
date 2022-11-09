@@ -19,9 +19,9 @@
 
 import {compareVersions} from "../_main";
 import {
-	TestModel,
+	TestCase,
 	TestSuit
-} from "../../main/testing/test-model";
+} from "../../main/testing/test-case";
 
 
 type VersionTestInput = {
@@ -29,7 +29,7 @@ type VersionTestInput = {
 	two: string;
 }
 
-type VersionTest = TestModel<VersionTestInput, -1 | 0 | 1>;
+type VersionTest = TestCase<VersionTestInput, -1 | 0 | 1>;
 
 export const testSuit_versionComparison: TestSuit<VersionTest> = {
 	key: "version-compare",

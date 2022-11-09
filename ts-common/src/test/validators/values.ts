@@ -17,13 +17,13 @@
  */
 
 import {TestSuit, tsValidateRegexp} from '../_main';
-import {ValidatorTest,} from './test';
-import {validatorProcessor} from './_common';
+import {TestCase_Validator, validatorProcessor} from './_common';
+
 
 const simpleObject1: {} = {prop1: 'Adam'};
 const simpleObject2: {} = {prop1: 'Adam', prop2: undefined};
 
-export const testSuit_values: TestSuit<ValidatorTest<{}>> = {
+export const testSuit_values: TestSuit<TestCase_Validator<{}>> = {
 	key: 'value-validator--plain-value',
 	label: 'Value Validator - Plain Value',
 	processor: validatorProcessor,
