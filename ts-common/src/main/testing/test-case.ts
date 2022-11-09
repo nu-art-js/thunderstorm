@@ -16,22 +16,22 @@
  * limitations under the License.
  */
 
-import {Exception} from "../core/exceptions";
+import {Exception} from '../core/exceptions';
+import {compare} from '../utils/object-tools';
 
 
-type InferInput<Model> = Model extends TestModel<infer I, any> ? I : Model;
-type InferResult<Model> = Model extends TestModel<any, infer R> ? R : void;
-
-export type TestModel<Input, Result = void> = {
+export type TestCase<Input, Result> = {
 	expected?: Result;
 	input: Input;
 }
 
-export type TestSuit<Model extends TestModel<Input, Result>, Input = InferInput<Model>, Result = InferResult<Model>> = {
+export type TestProcessor<T extends TestCase<any, any>> = (input: T['input']) => Promise<T['expected']>;
+
+export type TestSuit<Model extends TestCase<any, any>> = {
 	key: string;
 	label: string;
-	models: TestModel<Input, Result>[];
-	processor: (model: Input) => Promise<Result>;
+	models: Model[];
+	processor: TestProcessor<Model>;
 }
 
 type TestSuitReport = {
@@ -41,13 +41,13 @@ type TestSuitReport = {
 };
 const testResults: { [k: string]: TestSuitReport } = {};
 
-export async function runTestSuits(testSuits: TestSuit<any, any, any>[]) {
+export async function runTestSuits(testSuits: TestSuit<any>[]) {
 	for (const testSuit of testSuits) {
 		await runTestSuit(testSuit);
 	}
 }
 
-export async function runTestSuit<Model extends TestModel<Input, Result>, Input = InferInput<Model>, Result = InferResult<Model>>(testSuit: TestSuit<Model, Input, Result>) {
+export async function runTestSuit<Model extends TestCase<any, any>>(testSuit: TestSuit<Model>) {
 	const report: TestSuitReport = {
 		label: testSuit.label,
 		success: 0,
@@ -58,25 +58,33 @@ export async function runTestSuit<Model extends TestModel<Input, Result>, Input 
 	console.log(` Running: ${testSuit.label}`);
 
 	for (const model of testSuit.models) {
-		const result = await testSuit.processor(model.input);
-		if (model.expected === undefined || model.expected === result) {
-			report.success++;
-			continue;
-		}
+		let result;
+		try {
+			result = undefined;
+			result = await testSuit.processor(model.input);
+			if (model.expected === undefined || compare(model.expected, result)) {
+				report.success++;
+				continue;
+			}
 
-		report.failed.push(
-			new Exception(`Error in test #${testSuit.models.indexOf(model)} input: ${JSON.stringify(
-				model.input)}\n         -- Expected: ${model.expected}\n         --   Actual: ${result}`));
+			report.failed.push(
+				new Exception(`Error in test #${testSuit.models.indexOf(model)} input: ${JSON.stringify(
+					model.input)}\n         -- Expected: ${model.expected}\n         --   Actual: ${typeof result === 'object' ? JSON.stringify(result) : result}`));
+
+		} catch (e: any) {
+			report.failed.push(
+				new Exception(`Error in test #${testSuit.models.indexOf(model)} input: ${JSON.stringify(
+					model.input)}`, e));
+		}
 	}
 }
-
 
 export function assertNoTestErrors() {
 	let totalErrors = 0;
 	console.log();
-	console.log("+-------------------------------+");
-	console.log("|            RESULTS            |");
-	console.log("+-------------------------------+");
+	console.log('+-------------------------------+');
+	console.log('|            RESULTS            |');
+	console.log('+-------------------------------+');
 	Object.keys(testResults).forEach((key, index) => {
 		const result = testResults[key];
 		console.log();
@@ -87,10 +95,13 @@ export function assertNoTestErrors() {
 
 		totalErrors += result.failed.length;
 		console.log(`     Errors: ${result.failed.length}`);
-		result.failed.forEach(error => console.log(`       ${error.message}`));
+		result.failed.forEach(error => {
+			console.log(`       ${error.message}`);
+			if (error.cause)
+				console.log(`         ${error.cause.message}`);
+		});
 	});
 
 	if (totalErrors > 0)
 		process.exit(2);
 }
-

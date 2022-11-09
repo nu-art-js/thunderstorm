@@ -16,19 +16,14 @@
  * limitations under the License.
  */
 
-import {
-	tsValidateRegexp, TestSuit
-} from '../_main';
-import {
-	ValidatorTest,
-} from './test';
-import {validatorProcessor} from './_common';
+import {TestSuit, tsValidateRegexp} from '../_main';
+import {TestCase_Validator, validatorProcessor} from './_common';
 
 
 const simpleObject1: {} = {prop1: 'Adam'};
 const simpleObject2: {} = {prop1: 'Adam', prop2: undefined};
 
-export const testSuit_simpleObjectValidator: TestSuit<ValidatorTest<{}>> = {
+export const testSuit_simpleObjectValidator: TestSuit<TestCase_Validator<{}>> = {
 	key: 'object-validator--simple-object',
 	label: 'Object Validator - Simple Object',
 	processor: validatorProcessor,

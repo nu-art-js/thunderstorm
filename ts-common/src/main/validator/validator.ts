@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, CustomException} from '../core/exceptions';
+import {CustomException} from '../core/exceptions';
 import {__stringify,} from '../utils/tools';
 import {_keys} from '../utils/object-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TS_Object} from '../utils/types';
@@ -196,7 +196,7 @@ export const tsValidate = <T extends any>(instance: T | undefined, _validator: V
 	return results;
 };
 
-export const tsValidateResult = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>) => {
+export const tsValidateResult = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T) => {
 	if (!_validator)
 		return;
 
@@ -208,8 +208,7 @@ export const tsValidateResult = <T extends any>(instance: T | undefined, _valida
 
 	if (typeof validator === 'object') {
 		if (!instance && validator)
-			throw new BadImplementationException(
-				`Unexpect object\nif you want to ignore the validation of this object,\n add the following to your validator:\n {\n  ...\n  zeZevelze: undefined\n  ...\n}\n`);
+			return `Unexpect object\nif you want to ignore the validation of this object,\n add the following to your validator:\n {\n  ...\n  ${String(key)}: undefined\n  ...\n}\n`;
 
 		const __validator = validator as TypeValidator<object>;
 		return tsValidateObject(__validator, instance);
@@ -220,18 +219,18 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 	const validatorKeys = _keys(__validator);
 	const instanceKeys = Object.keys(instance as unknown as object);
 
+	const result: InvalidResultObject<T> = {};
 	for (const key of instanceKeys) {
 		// @ts-ignore
 		if (!validatorKeys.includes(key))
-			throw new BadImplementationException(
-				`Unexpected key '${path}${key}'.\nIf you want to ignore the validation of this property,\n add the following to your validator:\n {\n  ...\n  ${key}: undefined\n  ...\n}\n`);
+			// @ts-ignore
+			result[key as keyof T] = `Unexpected key '${path}${key}'.\nIf you want to ignore the validation of this property,\n add the following to your validator:\n {\n  ...\n  ${key}: undefined\n  ...\n}\n`;
 	}
 
-	const result: InvalidResultObject<T> = {};
 	for (const key of validatorKeys) {
 		const value: T[keyof T] = instance[key];
 		const validator = __validator[key];
-		const propsResult = tsValidateResult(value, validator);
+		const propsResult = tsValidateResult(value, validator, key);
 		if (propsResult && propsResult !== CONST_NO_ERROR)
 			result[key as keyof T] = propsResult;
 	}
