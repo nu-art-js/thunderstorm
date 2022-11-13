@@ -29,7 +29,7 @@ import {
 	currentTimeMillis,
 	Day,
 	DB_Object,
-	Dispatcher,
+	filterInstances,
 	flatArray,
 	generateHex,
 	isErrorOfType,
@@ -45,7 +45,7 @@ import {IndexKeys} from '@nu-art/thunderstorm';
 import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FirestoreCollection, FirestoreInterface, FirestoreTransaction, ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {dbIdLength} from '../shared/validators';
-import {DBApiBEConfig, getModuleBEConfig} from './db-def';
+import {canDeleteDispatcher, DB_EntityDependency, DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
 import {_EmptyQuery, Response_DBSync} from '../shared';
@@ -67,7 +67,6 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerAct {
 
-	private defaultDispatcher?: Dispatcher<any, string, [DBType[]], string[]>;
 	public collection!: FirestoreCollection<DBType>;
 	private readonly validator: ValidatorTypeResolver<DBType>;
 	readonly dbDef: DBDef<DBType, any>;
@@ -84,10 +83,6 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		this.dbDef = dbDef;
 	}
 
-	setDefaultDispatcher(defaultDispatcher?: Dispatcher<any, string, [DBType[]], string[]>) {
-		this.defaultDispatcher = defaultDispatcher;
-	}
-
 	/**
 	 * Executed during the initialization of the module.
 	 * The collection reference is set in this method.
@@ -97,7 +92,8 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		this.collection = firestore.getCollection<DBType>(this.config.collectionName, this.config.uniqueKeys as FilterKeys<DBType>);
 	}
 
-	createFirebaseRef<T>(relativePath: string) {
+	createFirebaseRef<T>(_relativePath: string) {
+		let relativePath = _relativePath;
 		if (relativePath.startsWith('/'))
 			relativePath = relativePath.substring(1);
 
@@ -157,7 +153,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * @param toReturn
 	 */
 	async delete(deleteQuery: FirestoreQuery<DBType>, toReturn: DBType[] = []) {
-		const now = currentTimeMillis();
+		const start = currentTimeMillis();
 		const limit = 250;
 
 		toReturn.push(...await this.runInTransaction(async transaction => {
@@ -176,7 +172,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		if (toReturn.length !== 0 && toReturn.length % limit === 0)
 			await this.delete(deleteQuery, toReturn);
 
-		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
+		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, start);
 		return toReturn;
 	}
 
@@ -192,6 +188,25 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 	deleteAll() {
 		return this.delete(_EmptyQuery);
+	}
+
+	/**
+	 * Override this method to provide actions or assertions to be executed before the deletion happens.
+	 *
+	 * Currently, executed only before `deleteUnique()`.
+	 *
+	 * @param transaction - The transaction object
+	 * @param dbInstances - The DB entry that is going to be deleted.
+	 */
+	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DBType[]) {
+		const dependencies = await this.collectDependencies(dbInstances, transaction);
+		if (dependencies)
+			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({type: 'has-dependencies', body: dependencies});
+	}
+
+	async collectDependencies(dbInstances: DBType[], transaction?: FirestoreTransaction) {
+		const dependencies = filterInstances(flatArray(await canDeleteDispatcher.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction)));
+		return dependencies.length > 0 ? dependencies : undefined;
 	}
 
 	/*
@@ -323,20 +338,6 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * @param request
 	 */
 	protected async preUpsertProcessing(transaction: FirestoreTransaction | undefined, dbInstance: DBType, request?: ExpressRequest) {
-	}
-
-	/**
-	 * Override this method to provide actions or assertions to be executed before the deletion happens.
-	 *
-	 * Currently executed only before `deleteUnique()`.
-	 *
-	 * @param transaction - The transaction object
-	 * @param dbInstance - The DB entry that is going to be deleted.
-	 */
-	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstance: DBType[]) {
-		const results = flatArray<string>(await this.defaultDispatcher?.dispatchModuleAsync(dbInstance) || []);
-		if (results.length)
-			throw new ApiException(409, results.join('\n'));
 	}
 
 	/**

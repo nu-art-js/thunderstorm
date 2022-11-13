@@ -20,7 +20,8 @@
  */
 
 import {Const_UniqueKey, DB_Object_validator, DBDef, Default_UniqueKey, DefaultDBVersion} from '..';
-import {DB_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {DB_Object, Dispatcher, TS_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {FirestoreTransaction} from '@nu-art/firebase/backend';
 
 
 export const Const_LockKeys: (keyof DB_Object)[] = [Const_UniqueKey, '_v', '__created', '__updated'];
@@ -47,3 +48,11 @@ export const getModuleBEConfig = <T extends DB_Object>(dbDef: DBDef<T>): DBApiBE
 		versions: dbDef.versions || [DefaultDBVersion],
 	};
 };
+
+export type DB_EntityDependency<Type extends string = string> = { collectionKey: Type, conflictingIds: string[] };
+
+export type CanDeleteDBEntities<AllTypes extends TS_Object, DeleteType extends string = string, ValidateType extends string = string> = {
+	__canDeleteEntities: <T extends DeleteType>(type: T, items: (AllTypes[T])[], transaction?: FirestoreTransaction) => Promise<DB_EntityDependency<ValidateType>>
+}
+
+export const canDeleteDispatcher = new Dispatcher<CanDeleteDBEntities<any, any>, '__canDeleteEntities'>('__canDeleteEntities');
