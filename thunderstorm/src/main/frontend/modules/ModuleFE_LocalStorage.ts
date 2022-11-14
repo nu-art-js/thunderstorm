@@ -24,6 +24,7 @@
  */
 import {merge, Module, TS_Object} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
+import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 
 
 export interface StorageKeyEvent {
@@ -31,11 +32,16 @@ export interface StorageKeyEvent {
 }
 
 export class StorageModule_Class
-	extends Module {
+	extends Module
+	implements OnClearWebsiteData {
 	private cache: { [s: string]: string | number | object } = {};
 
 	protected init(): void {
 		window.addEventListener('storage', this.handleStorageEvent);
+	}
+
+	async __onClearWebsiteData(resync: boolean) {
+		localStorage.clear();
 	}
 
 	private handleStorageEvent = (e: StorageEvent) => {
