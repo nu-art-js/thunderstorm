@@ -25,6 +25,7 @@ import {composeURL} from './ModuleFE_BrowserHistory';
 import {HttpMethod, QueryApi, QueryParams} from '../../shared/types';
 import {base64ToBlob} from '../utils/tools';
 import {XhrHttpModule} from './http/XhrHttpModule';
+import {dispatch_onClearWebsiteData} from './clearWebsiteDataDispatcher';
 
 
 type Config = {
@@ -97,6 +98,10 @@ class ModuleFE_Thunderstorm_Class
 		}
 
 		themeTag.setAttribute('content', themeColor);
+	}
+
+	clearWebsiteData(resync: boolean = false) {
+		dispatch_onClearWebsiteData.dispatchUI(resync);
 	}
 
 	async copyToClipboard(toCopy: string) {

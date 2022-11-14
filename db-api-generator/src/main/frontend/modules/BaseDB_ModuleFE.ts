@@ -21,7 +21,7 @@
 
 import {IndexKeys} from '@nu-art/thunderstorm';
 import {DBDef,} from '../shared';
-import {IndexDb_Query, IndexedDB, ReduceFunction, StorageKey} from '@nu-art/thunderstorm/frontend';
+import {IndexDb_Query, IndexedDB, ReduceFunction, StorageKey, OnClearWebsiteData} from '@nu-art/thunderstorm/frontend';
 
 import {DB_Object, Module} from '@nu-art/ts-common';
 
@@ -29,7 +29,8 @@ import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 
 
 export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
-	extends Module<Config> {
+	extends Module<Config>
+	implements OnClearWebsiteData {
 
 	protected readonly db: IndexedDB<DBType, Ks>;
 	protected readonly lastSync: StorageKey<number>;
@@ -57,6 +58,10 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 		this.cache.clear(true)
 			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
 			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
+	}
+
+	async __onClearWebsiteData(resync: boolean) {
+		await this.cache.clear(resync);
 	}
 
 	cache = {
@@ -119,5 +124,5 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 
 	public getCollectionName = () => {
 		return this.config.dbConfig.name;
-	}
+	};
 }
