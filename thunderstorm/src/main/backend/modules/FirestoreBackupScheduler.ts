@@ -67,6 +67,7 @@ export class FirestoreBackupScheduler_Class
 	constructor() {
 		super();
 		this.setSchedule('every 24 hours');
+		this.setRuntimeOptions({timeoutSeconds: 300});
 	}
 
 	onScheduledEvent = async (): Promise<any> => {

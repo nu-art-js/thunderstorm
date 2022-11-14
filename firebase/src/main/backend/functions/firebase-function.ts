@@ -219,10 +219,15 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 	private function!: CloudFunction<Change<DataSnapshot>>;
 	private schedule?: string;
 	private runningCondition: (() => Promise<boolean>)[] = [async () => true];
+	private runtimeOptions: RuntimeOptions = {};
 
 	protected constructor(name?: string, tag?: string) {
 		super(tag);
 		name && this.setName(name);
+	}
+
+	protected setRuntimeOptions(runtimeOptions: RuntimeOptions) {
+		this.runtimeOptions = runtimeOptions;
 	}
 
 	addRunningCondition(runningCondition: () => Promise<boolean>) {
@@ -255,7 +260,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>
 		if (this.function)
 			return this.function;
 
-		return this.function = functions.pubsub.schedule(this.schedule).onRun(async () => {
+		return this.function = functions.runWith(this.runtimeOptions).pubsub.schedule(this.schedule).onRun(async () => {
 			return this.handleCallback(() => this._onScheduledEvent());
 		});
 	};
