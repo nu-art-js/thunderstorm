@@ -61,13 +61,13 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 	}
 
 	async __onClearWebsiteData(resync: boolean) {
-		await this.cache.clear(resync);
+		return this.cache.clear(resync);
 	}
 
 	cache = {
 		clear: async (resync = false) => {
 			this.lastSync.delete();
-			await this.db.deleteDB();
+			return this.db.deleteDB();
 		},
 
 		query: async (query?: string | number | string[] | number[], indexKey?: string) => (await this.db.query({query, indexKey})) || [],
