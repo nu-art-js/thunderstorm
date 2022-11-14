@@ -30,7 +30,6 @@ import {
 	Day,
 	DB_Object,
 	filterInstances,
-	flatArray,
 	generateHex,
 	isErrorOfType,
 	merge,
