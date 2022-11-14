@@ -20,7 +20,7 @@
  */
 
 import {ApiException} from '../../exceptions';
-import {__stringify, _keys, StringMap} from '@nu-art/ts-common';
+import {__stringify, _keys, StringMap, isErrorOfType} from '@nu-art/ts-common';
 import {HttpErrorHandler, HttpRequestData} from '../../utils/types';
 
 
@@ -84,6 +84,10 @@ export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], p
 			else
 				slackMessage += 'Body: -- No Body --\n';
 		}
+
+		if (isErrorOfType(error.cause || error, ApiException)?.responseBody)
+			slackMessage += `Error: ${__stringify(isErrorOfType(error.cause || error, ApiException)!.responseBody.error, true)}`;
+
 		return slackMessage;
 	};
 }
