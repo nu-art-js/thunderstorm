@@ -1,0 +1,40 @@
+.ts-notification-overlay {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.ts-notification-container {
+  height: 100%;
+  width: 350px;
+  padding: 30px 25px;
+  justify-content: flex-end;
+
+  .ts-notification {
+    background: #FFFFFF;
+    border: 2px solid #00709f;
+    border-radius: 4px;
+    width: 100%;
+
+    .ts-notification__header {
+      min-height: 50px;
+      justify-content: space-between;
+
+      .ts-notification__title {
+
+      }
+
+      .ts-notification__timestamp {
+
+      }
+    }
+
+    .ts-notification__message {
+
+    }
+  }
+}
+

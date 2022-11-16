@@ -22,6 +22,8 @@ import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@nu-ar
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getDatabase} from 'firebase-admin/database';
+import firebase from 'firebase/compat';
+import TransactionResult = firebase.database.TransactionResult;
 
 
 export class DatabaseWrapperBE
@@ -113,6 +115,10 @@ export class DatabaseWrapperBE
 		}
 	}
 
+	public async transaction<T>(path: string, func: (currentValue: T) => T): Promise<TransactionResult> {
+		return this.database.ref(path).transaction(func);
+	}
+
 	public ref<T>(path: string) {
 		return new FirebaseRef<T>(this, path);
 	}
@@ -150,6 +156,10 @@ export class FirebaseRef<T> {
 
 	public stopListening<T>(listener: FirebaseListener): void {
 		return this.db.stopListening<T>(this.path, listener);
+	}
+
+	public async transaction(func: (currentValue: T) => T) {
+		return this.db.transaction(this.path, func);
 	}
 
 	public async uploadByChunks(value: TS_Object, maxSizeMB: number = 3, itemsToRef: Promise<any>[] = []) {

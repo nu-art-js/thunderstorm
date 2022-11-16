@@ -29,6 +29,7 @@ export * from './component-modules/ModuleFE_Menu';
 export * from './component-modules/ModuleFE_Dialog';
 export * from './component-modules/ModuleFE_Toaster';
 export * from './component-modules/ModuleFE_Tooltip';
+export * from './component-modules/ModuleFE_Notifications';
 
 export * from './modules/ModuleFE_Locale';
 
@@ -79,6 +80,7 @@ export * from './components/TS_Icons';
 export * from './components/TS_ButtonLoader';
 export * from './components/TS_Toggler';
 export * from './components/TS_Radio';
+export * from './components/TS_Notifications';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';
