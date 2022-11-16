@@ -18,12 +18,17 @@ export class OperationLockedException
 export async function lockedOperation<T>(key: string, timeout: number, action: () => Promise<T>, exception: CustomException = new OperationLockedException('This action is already in progress')): Promise<T> {
 	const ref = ModuleBE_Firebase.createAdminSession().getDatabase().ref<number>(`/lock/${key}`);
 	try {
-		if (currentTimeMillis() < await ref.get(0))
-			throw exception;
+		const now = currentTimeMillis();
 
-		ref.set(currentTimeMillis() + timeout);
+		await ref.transaction(currentTimeoutMs => {
+			if (now < currentTimeoutMs)
+				throw exception;
+
+			return now + timeout;
+		});
+
 		return await action();
 	} finally {
-		ref.delete();
+		await ref.delete();
 	}
 }
