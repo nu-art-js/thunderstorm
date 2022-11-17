@@ -70,6 +70,7 @@ export type ApiDef<API extends TypedApi<any, any, any, any>> = {
 	fullUrl?: string
 	baseUrl?: string
 	path: string
+	timeout?: number
 }
 
 export type ApiResolver<K> = K extends ApiDef<infer API> ? API : never
