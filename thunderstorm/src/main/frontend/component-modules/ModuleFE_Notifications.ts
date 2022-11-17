@@ -51,6 +51,7 @@ export class ModuleFE_Notifications_Class
 		if (this.notifications.length > this.maxNotifications)
 			this.notifications.pop();
 
+		this.notificationStorage.set(this.notifications);
 		this.showSingleNotification(id);
 		return id;
 	}
@@ -78,7 +79,7 @@ export class ModuleFE_Notifications_Class
 		if (!notification)
 			return;
 
-		dispatch_showNotifications.dispatchUI({notifications: [notification], closeTimeout: 2 * Second});
+		dispatch_showNotifications.dispatchUI({notifications: [notification], closeTimeout: 5 * Second});
 	}
 
 	showAllNotifications() {
@@ -86,7 +87,9 @@ export class ModuleFE_Notifications_Class
 		dispatch_showNotifications.dispatchUI({notifications, closeTimeout: -1});
 	}
 
-
+	hideAllNotifications() {
+		dispatch_showNotifications.dispatchUI();
+	}
 }
 
 export const ModuleFE_Notifications = new ModuleFE_Notifications_Class();
