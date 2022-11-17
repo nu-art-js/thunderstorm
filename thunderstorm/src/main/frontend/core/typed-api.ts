@@ -34,6 +34,7 @@ export function apiWithQuery<API extends QueryApi<any, any>>(apiDef: ApiDef<API>
 		return XhrHttpModule
 			.createRequest<API>(apiDef)
 			.setUrlParams(params)
+			.setTimeout(apiDef.timeout || 10000)
 			.setOnError(onError)
 			.setOnCompleted(onCompleted);
 	};
@@ -47,6 +48,7 @@ export function apiWithBody<API extends BodyApi<any, any, any, HttpMethod_Body>>
 		return XhrHttpModule
 			.createRequest<API>(apiDef)
 			.setBodyAsJson(body)
+			.setTimeout(apiDef.timeout || 10000)
 			.setOnError(onError)
 			.setOnCompleted(onCompleted);
 	};

@@ -21,8 +21,9 @@
 
 import {FirestoreQuery} from '@nu-art/firebase';
 import {ApiDefResolver, BodyApi, HttpMethod, IndexKeys, QueryApi, QueryParams} from '@nu-art/thunderstorm';
-import {DB_BaseObject, DB_Object, PreDB} from '@nu-art/ts-common';
+import {DB_BaseObject, DB_Object, PreDB, Second} from '@nu-art/ts-common';
 import {DBDef} from './db-def';
+
 
 export const _EmptyQuery = {where: {}};
 
@@ -67,7 +68,7 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType, '_id'>): ApiDefResolver<ApiStruct_DBApiGen<DBType>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
+			sync: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`, timeout: 60 * Second},
 			query: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
 			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/query-unique`},
 			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert`},
