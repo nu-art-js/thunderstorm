@@ -1,13 +1,16 @@
 import {ComponentSync} from '../../core/ComponentSync';
-import {Notification, NotificationListener, Notification_Model} from '../../component-modules/ModuleFE_Notifications';
+import {Notification, Notification_Model, NotificationListener, ModuleFE_Notifications} from '../../component-modules/ModuleFE_Notifications';
 import * as React from 'react';
 import {LL_H_C, LL_V_L} from '../Layouts';
 import {formatTimestamp} from '@nu-art/ts-common';
 import './TS_Notifications.scss';
+import {TS_ComponentTransition} from '../TS_ComponentTransition';
 
 type State = {
 	notifications: Notification[];
 	timeout?: NodeJS.Timeout;
+	timeoutMs?: number;
+	showNotifications: boolean;
 }
 
 export class TS_Notifications
@@ -20,31 +23,29 @@ export class TS_Notifications
 		this.logInfo('Got notifications:', notificationModel?.notifications);
 		//No model - delete state notifications
 		if (!notificationModel) {
-			this.hideNotifications();
+			this.setState({
+				showNotifications: false
+			});
 			return;
 		}
 
 		this.setState({
 			notifications: notificationModel.notifications,
-			timeout: notificationModel.closeTimeout === -1 ? undefined : setTimeout(() => this.hideNotifications(), notificationModel.closeTimeout)
+			timeout: notificationModel.closeTimeout === -1 ? undefined : setTimeout(() => this.setState({showNotifications: false}), notificationModel.closeTimeout),
+			showNotifications: true,
+			timeoutMs: notificationModel.closeTimeout,
 		});
 	}
 
 	protected deriveStateFromProps(nextProps: any): State {
 		return {
+			showNotifications: false,
 			notifications: []
 		};
 	}
 
 	// ######################### Logic #########################
-
-	private hideNotifications() {
-		this.setState({
-			notifications: [],
-			timeout: undefined,
-		});
-	}
-
+	
 	// ######################### Render #########################
 
 	private renderNotification(notification: Notification) {
@@ -57,22 +58,28 @@ export class TS_Notifications
 		</LL_V_L>;
 	}
 
-	private renderTimedNotification() {
-		if (!this.state.timeout)
+	private renderNotifications = () => {
+		if (!this.state.timeoutMs)
 			return '';
 
-		return this.renderNotification(this.state.notifications[0]);
-	}
+		if (this.state.timeoutMs >= 0)
+			this.renderNotification(this.state.notifications[0]);
+
+		return this.state.notifications.map(notification => this.renderNotification(notification));
+	};
 
 	render() {
-		if (!this.state.notifications.length)
-			return '';
-
-		return <div className={'ts-notification-overlay'}>
-			<LL_V_L className={'ts-notification-container'}>
-				{this.renderTimedNotification()}
-
-			</LL_V_L>
-		</div>;
+		return <>
+			{this.state.showNotifications && <div className={'ts-notification-overlay'} onClick={() => ModuleFE_Notifications.hideAllNotifications()}/>}
+			<TS_ComponentTransition
+				trigger={this.state.showNotifications}
+				transitionTimeout={300}
+				// onExitDone={() => this.setState({notifications: []})}
+			>
+				<LL_V_L className={'ts-notification-container'}>
+					{this.renderNotifications()}
+				</LL_V_L>
+			</TS_ComponentTransition>
+		</>;
 	}
 }
