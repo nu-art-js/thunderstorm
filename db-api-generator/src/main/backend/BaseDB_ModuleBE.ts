@@ -31,12 +31,11 @@ import {
 	DB_Object,
 	filterInstances,
 	generateHex,
-	isErrorOfType,
+	InvalidResult,
 	merge,
 	Module,
 	PreDB,
-	tsValidate,
-	ValidationException,
+	tsValidateResult,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 
@@ -276,25 +275,16 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * @throws `ApiException` for bad implementation or invalid input.
 	 */
 	public async validateImpl(instance: DBType) {
-		try {
-			await tsValidate(instance, this.validator);
-		} catch (e: any) {
-			this.logError(`error validating object:`, instance);
-			this.onValidationError(e);
+		const results = await tsValidateResult(instance, this.validator);
+		if (results) {
+			this.onValidationError(instance, results);
 		}
 	}
 
-	protected onValidationError(e: Error) {
-		const badImplementation = isErrorOfType(e, BadImplementationException);
-		if (badImplementation)
-			throw new ApiException(500, badImplementation.message);
-
-		const error = isErrorOfType(e, ValidationException);
-		if (error) {
-			// TODO fix after resolving the error handling
-			const errorBody = {type: 'bad-input', body: {result: error.result, input: error.input}};
-			throw new ApiException(400, error.message).setErrorBody(errorBody as any);
-		}
+	protected onValidationError(instance: DBType, results: InvalidResult<DBType>) {
+		this.logError(`error validating object:`, instance, 'With Error: ', results);
+		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
+		throw new ApiException(400, 'error validating object').setErrorBody(errorBody as any);
 	}
 
 	/**

@@ -44,6 +44,10 @@ export interface OnUpgradeRequired {
 	__onUpgradeRequired(response: UpgradeRequired): void;
 }
 
+export interface OnUpgradeRequired {
+	__onUpgradeRequired(response: UpgradeRequired): void;
+}
+
 const dispatch_onUpgradeRequired = new Dispatcher<OnUpgradeRequired, '__onUpgradeRequired'>('__onUpgradeRequired');
 
 class ModuleFE_ForceUpgrade_Class
@@ -77,6 +81,10 @@ class ModuleFE_ForceUpgrade_Class
 				dispatch_onUpgradeRequired.dispatchModule(response);
 			});
 	};
+
+	async __postInit() {
+
+	}
 }
 
 export const ModuleFE_ForceUpgrade = new ModuleFE_ForceUpgrade_Class();
