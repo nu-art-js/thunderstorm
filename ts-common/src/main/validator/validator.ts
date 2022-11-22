@@ -103,10 +103,12 @@ export const tsValidateExists = (mandatory = true): ValidatorImpl<any> => {
 // 		}
 // 	}];
 
-export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true): Validator<I[]> => {
+export const tsValidateArray = <T extends any[], I = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true, minimumLength: number = 0): Validator<I[]> => {
 	return [tsValidateExists(mandatory), (input?: I[]) => {
 		const results: InvalidResultArray<I>[] = [];
 		const _input = input as unknown as I[];
+		if (_input.length < minimumLength)
+			return 'Array length smaller than minimum defined length';
 		for (let i = 0; i < _input.length; i++) {
 			results[i] = tsValidateResult(_input[i], validator);
 		}
