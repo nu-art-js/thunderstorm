@@ -68,15 +68,15 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType, '_id'>): ApiDefResolver<ApiStruct_DBApiGen<DBType>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`, timeout: 60 * Second},
-			query: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete-all`},
-			upgradeCollection: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/upgrade-collection`},
+			sync: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`, timeout: 60 * Second},
+			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/patch`},
+			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
+			upgradeCollection: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/upgrade-collection`},
 		}
 	};
 };
@@ -84,15 +84,15 @@ export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType,
 export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof DBType>(dbDef: DBDef<DBType, Ks>): ApiDefResolver<ApiStruct_DBApiGenIDB<DBType, Ks>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/sync`},
-			query: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/query`},
-			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/query-unique`},
-			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert`},
-			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/upsert-all`},
-			patch: {method: HttpMethod.POST, path: `v1/${dbDef.entityName}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete`},
-			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/delete-all`},
-			upgradeCollection: {method: HttpMethod.GET, path: `v1/${dbDef.entityName}/upgrade-collection`},
+			sync: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/sync`},
+			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`},
+			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/query-unique`},
+			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
+			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert-all`},
+			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/patch`},
+			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete`},
+			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
+			upgradeCollection: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/upgrade-collection`},
 		}
 	};
 };
