@@ -4,14 +4,6 @@ import * as React from 'react';
 import {BaseDB_ApiCaller, Props_SmartComponent, SmartComponent, State_SmartComponent} from '../..';
 
 
-export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = {
-	placeholder: string;
-	module: BaseDB_ApiCaller<T, Ks>;
-	modules: BaseDB_ApiCaller<DB_Object, any>[];
-	mapper: (item: T) => string[]
-	renderer: (item: T) => React.ReactElement
-}
-
 export type PartialProps_GenericDropDown<T> = {
 	selected?: T | string | (() => Promise<T | undefined>);
 	inputValue?: string;
@@ -26,6 +18,14 @@ export type PartialProps_GenericDropDown<T> = {
 	className?: string;
 	caret?: { open: React.ReactNode, close: React.ReactNode }
 	boundingParentSelector?: string;
+}
+
+export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = PartialProps_GenericDropDown<T> & {
+	placeholder: string;
+	module: BaseDB_ApiCaller<T, Ks>;
+	modules: BaseDB_ApiCaller<DB_Object, any>[];
+	mapper: (item: T) => string[]
+	renderer: (item: T) => React.ReactElement
 }
 
 export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = {
