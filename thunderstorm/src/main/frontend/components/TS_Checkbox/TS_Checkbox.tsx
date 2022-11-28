@@ -22,8 +22,8 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
+import {LL_H_C} from '../Layouts';
 import './TS_Checkbox.scss';
-
 
 export type Props_Checkbox = {
 	id?: string
@@ -75,17 +75,20 @@ export class TS_Checkbox
 	};
 
 	render() {
-		const checkedClass = this.state.checked && 'ts-checkbox__checked' || 'ts-checkbox__unchecked';
-		const disabledClass = this.state.disabled && 'ts-checkbox__disabled';
-		const roundedClass = this.props.rounded && 'ts-checkbox__rounded';
-		const className = _className('ts-checkbox', disabledClass, checkedClass, roundedClass);
-		const innerClassName = _className('ts-checkbox__inner', disabledClass, checkedClass, roundedClass);
+		const checkedClass = this.state.checked && 'ts-checkbox__button__checked' || 'ts-checkbox__button__unchecked';
+		const disabledClass = this.state.disabled && 'ts-checkbox__button__disabled';
+		const roundedClass = this.props.rounded && 'ts-checkbox__button__rounded';
+		const className = _className('ts-checkbox__button', disabledClass, checkedClass, roundedClass);
+		const innerClassName = _className('ts-checkbox__button__inner', disabledClass, checkedClass, roundedClass);
 
-		return <div
-			id={this.props.id}
-			className={className}
-			onClick={this.onCheckboxClick}>
-			<div className={innerClassName}/>
-		</div>;
+		return <LL_H_C className={'ts-checkbox'}>
+			<div
+				id={this.props.id}
+				className={className}
+				onClick={this.onCheckboxClick}>
+				<div className={innerClassName}/>
+			</div>
+			{this.props.children}
+		</LL_H_C>;
 	}
 }
