@@ -4,12 +4,8 @@ import * as React from 'react';
 import {BaseDB_ApiCaller, Props_SmartComponent, SmartComponent, State_SmartComponent} from '../..';
 
 
-export type PartialProps_GenericDropDown<T> = {
-	selected?: T | string | (() => Promise<T | undefined>);
-	inputValue?: string;
+type OptionalProps_GenericDropDown<T> = {
 	placeholder?: string;
-	onSelected: (selected: T) => void;
-	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
 	mapper?: (item: T) => string[]
 	renderer?: (item: T) => React.ReactElement
 	queryFilter?: (item: T) => boolean
@@ -17,10 +13,17 @@ export type PartialProps_GenericDropDown<T> = {
 	sortBy?: (keyof T)[] | ((item: T) => string | number);
 	className?: string;
 	caret?: { open: React.ReactNode, close: React.ReactNode }
-	boundingParentSelector?: string;
 }
 
-export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = PartialProps_GenericDropDown<T> & {
+export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> & {
+	onSelected: (selected: T) => void;
+	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
+	boundingParentSelector?: string;
+	inputValue?: string;
+	selected?: T | string | (() => Promise<T | undefined>);
+}
+
+export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = OptionalProps_GenericDropDown<T> & {
 	placeholder: string;
 	module: BaseDB_ApiCaller<T, Ks>;
 	modules: BaseDB_ApiCaller<DB_Object, any>[];
