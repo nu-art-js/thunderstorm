@@ -20,32 +20,38 @@
  */
 
 .ts-checkbox {
-  border: 1px solid #68678d50;
-  box-shadow: 0 0 1px 0 #867979;
-  padding: 1px;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
 
-  &.ts-checkbox__rounded {
-    border-radius: 50%;
-  }
+  .ts-checkbox__button {
+    border: 1px solid #68678d50;
+    box-shadow: 0 0 1px 0 #867979;
+    padding: 1px;
 
-  & .ts-checkbox__disabled {
-    // ...
-  }
-
-  .ts-checkbox__inner {
-    width: 18px;
-    height: 18px;
-
-    &.ts-checkbox__rounded {
+    &.ts-checkbox__button__rounded {
       border-radius: 50%;
     }
 
-    &.ts-checkbox__checked {
-      background: #4fa7ff;
-      border: .5px white solid;
+    & .ts-checkbox__button__disabled {
+      // ...
     }
 
-    &.ts-checkbox__unchecked {
+    .ts-checkbox__button__inner {
+      width: 18px;
+      height: 18px;
+
+      &.ts-checkbox__button__rounded {
+        border-radius: 50%;
+      }
+
+      &.ts-checkbox__button__checked {
+        background: #4fa7ff;
+        border: .5px white solid;
+      }
+
+      &.ts-checkbox__button__unchecked {
+      }
     }
   }
 }
