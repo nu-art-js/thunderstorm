@@ -231,7 +231,7 @@ export class TS_DropDown<ItemType>
 		const filter = this.props.filter;
 		if (filter) {
 			try {
-				this.state.adapter.data = filter.filter(this.props.adapter.data, this.state.filterText || '');
+				this.state.adapter.data = filter.filterSort(this.props.adapter.data, this.state.filterText || '');
 			} catch (e) {
 				this.state.adapter.data = this.props.adapter.data;
 			}
