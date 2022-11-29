@@ -17,6 +17,12 @@ export class TS_Notifications
 	extends ComponentSync<{}, State>
 	implements NotificationListener {
 
+	// ######################### Static #########################
+
+	private overlayClass: string = 'ts-notification-overlay';
+	private containerClass: string = 'ts-notification-container';
+
+
 	// ######################### Life Cycle #########################
 
 	__showNotifications(notificationModel?: Notification_Model) {
@@ -45,7 +51,15 @@ export class TS_Notifications
 	}
 
 	// ######################### Logic #########################
-	
+
+	private onClickToClose = (e: React.MouseEvent) => {
+		ModuleFE_Notifications.hideAllNotifications();
+		const elements = document.elementsFromPoint(e.clientX, e.clientY);
+		const firstNonNotificationElement = elements.find(item => !item.className.includes(this.overlayClass) && !item.className.includes(this.containerClass));
+		//@ts-ignore
+		firstNonNotificationElement.click();
+	};
+
 	// ######################### Render #########################
 
 	private renderNotification(notification: Notification) {
@@ -70,13 +84,12 @@ export class TS_Notifications
 
 	render() {
 		return <>
-			{this.state.showNotifications && <div className={'ts-notification-overlay'} onClick={() => ModuleFE_Notifications.hideAllNotifications()}/>}
+			{this.state.showNotifications && <div className={'ts-notification-overlay'} onClick={this.onClickToClose}/>}
 			<TS_ComponentTransition
 				trigger={this.state.showNotifications}
 				transitionTimeout={300}
-				// onExitDone={() => this.setState({notifications: []})}
 			>
-				<LL_V_L className={'ts-notification-container'}>
+				<LL_V_L className={'ts-notification-container'} onClick={this.onClickToClose}>
 					{this.renderNotifications()}
 				</LL_V_L>
 			</TS_ComponentTransition>

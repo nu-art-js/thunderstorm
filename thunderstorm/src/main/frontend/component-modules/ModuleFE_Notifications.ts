@@ -37,7 +37,7 @@ export class ModuleFE_Notifications_Class
 		this.maxNotifications = 5;
 	}
 
-	post(notification: Omit<Notification, 'id' | 'timestamp'>): string {
+	post(notification: Omit<Notification, 'id' | 'timestamp'>, timeOutSec?: number): string {
 		const id = generateHex(8);
 		const timestamp = currentTimeMillis();
 		//Push the new notification into the array
@@ -52,7 +52,7 @@ export class ModuleFE_Notifications_Class
 			this.notifications.pop();
 
 		this.notificationStorage.set(this.notifications);
-		this.showSingleNotification(id);
+		this.showSingleNotification(id, timeOutSec);
 		return id;
 	}
 
@@ -74,12 +74,12 @@ export class ModuleFE_Notifications_Class
 		this.notifications = this.notifications.filter(item => item.id !== id);
 	}
 
-	showSingleNotification(id: string) {
+	showSingleNotification(id: string, timeoutSec: number = 5) {
 		const notification = this.notifications.find(item => item.id === id);
 		if (!notification)
 			return;
 
-		dispatch_showNotifications.dispatchUI({notifications: [notification], closeTimeout: 5 * Second});
+		dispatch_showNotifications.dispatchUI({notifications: [notification], closeTimeout: timeoutSec * Second});
 	}
 
 	showAllNotifications() {
