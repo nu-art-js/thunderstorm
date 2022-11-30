@@ -149,7 +149,7 @@ export class TS_DropDown<ItemType>
 		}
 
 		if (e.key === 'Escape')
-			return this.setState({open: false});
+			return this.setState({open: false, filterText: undefined});
 
 		// if (e.key === 'ArrowDown') {
 		// 	return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
@@ -201,7 +201,7 @@ export class TS_DropDown<ItemType>
 					 onBlur={this.removeKeyboardListener}
 			>
 				{this.renderHeader()}
-				<TS_Overlay flat={false} showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false})}>
+				<TS_Overlay flat={false} showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false, filterText: undefined})}>
 					{this.renderTree()}
 				</TS_Overlay>
 			</div>
@@ -327,7 +327,7 @@ export class TS_DropDown<ItemType>
 			// 	} else
 			// 		this.onSelected(this.state.adapter.data[0]);
 			// }}
-			onCancel={() => this.setState({open: false})}
+			onCancel={() => this.setState({open: false, filterText: undefined})}
 			onKeyDown={this.keyEventHandler}
 		/>;
 	};
