@@ -141,7 +141,7 @@ export class TS_DropDown<ItemType>
 			e.persist();
 			const filterText = this.state.filterText;
 			if (filterText) {
-				this.setState({open: false}, () => {
+				this.setState({open: false, filterText: undefined}, () => {
 					this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e);
 				});
 			} else
