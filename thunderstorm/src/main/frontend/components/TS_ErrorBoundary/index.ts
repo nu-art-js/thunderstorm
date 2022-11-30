@@ -1,4 +1,4 @@
-/*!
+/*
  * Thunderstorm is a full web app framework!
  *
  * Typescript & Express backend infrastructure that natively runs on firebase function
@@ -18,8 +18,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@use "../../styles/declaration/basic" as *;
 
-.ts-error-boundary {
-
-}
+export * from './TS_ErrorBoundary';

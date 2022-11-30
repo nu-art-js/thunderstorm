@@ -56,7 +56,7 @@ export * from './widgets/FieldEditor';
 export * from './widgets/FieldEditorClick';
 export * from './widgets/FieldEditorWithButtons';
 
-export * from './components/TS_ErrorBoundry';
+export * from './components/TS_ErrorBoundary';
 export * from './components/TS_Input';
 export * from './components/TS_PopupMenu';
 export * from './components/TS_Table';
