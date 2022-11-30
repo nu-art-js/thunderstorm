@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {LL_V_C, TS_ErrorBoundry} from '@nu-art/thunderstorm/frontend';
+import {LL_V_C, TS_ErrorBoundary} from '@nu-art/thunderstorm/frontend';
 
 
 export class PG_Example
@@ -31,9 +31,9 @@ export class PG_Example
 		return (
 			<LL_V_C className="ts-playground__group-example">
 				<div className="ts-playground__header">{this.props.name}</div>
-				<TS_ErrorBoundry>
+				<TS_ErrorBoundary>
 					{this.props.children}
-				</TS_ErrorBoundry>
+				</TS_ErrorBoundary>
 			</LL_V_C>
 		);
 	}
