@@ -1,4 +1,4 @@
-import {cloneArr, currentTimeMillis, generateHex, Module, Second} from '@nu-art/ts-common';
+import {currentTimeMillis, generateHex, Module, Second} from '@nu-art/ts-common';
 import {StorageKey} from '../modules/ModuleFE_LocalStorage';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 
@@ -26,56 +26,60 @@ const dispatch_showNotifications = new ThunderDispatcher<NotificationListener, '
 export class ModuleFE_Notifications_Class
 	extends Module<{}> {
 
+	readonly maxNotifications: number;
 	private notificationStorage: StorageKey<Notification[]>;
-	private notifications: Notification[];
-	private maxNotifications: number;
 
-	constructor() {
+	constructor(maxNotifications: number = 15) {
 		super();
 		this.notificationStorage = new StorageKey<Notification[]>('notifications');
-		this.notifications = this.notificationStorage.get([]);
-		this.maxNotifications = 5;
+		this.maxNotifications = maxNotifications;
 	}
 
 	post(notification: Omit<Notification, 'id' | 'timestamp'>, timeOutSec?: number): string {
 		const id = generateHex(8);
 		const timestamp = currentTimeMillis();
+		const notifications = this.notificationStorage.get([]);
 		//Push the new notification into the array
-		this.notifications.unshift({
+		notifications.unshift({
 			...notification,
 			id,
 			timestamp,
 		});
 
 		//If length of array is bigger than max, pop last item
-		if (this.notifications.length > this.maxNotifications)
-			this.notifications.pop();
+		if (notifications.length > this.maxNotifications)
+			notifications.pop();
 
-		this.notificationStorage.set(this.notifications);
+		this.notificationStorage.set(notifications);
 		this.showSingleNotification(id, timeOutSec);
 		return id;
 	}
 
 	updatePost(id: string, notification: Partial<Omit<Notification, 'id'>>) {
-		const notificationIndex = this.notifications.findIndex(item => item.id === id);
+		const notifications = this.notificationStorage.get([]);
+		const notificationIndex = notifications.findIndex(item => item.id === id);
 
 		if (notificationIndex === -1) {
 			this.logError(`Could not find notification with id ${id}`);
 			return;
 		}
 
-		this.notifications[notificationIndex] = {
-			...this.notifications[notificationIndex],
+		notifications[notificationIndex] = {
+			...notifications[notificationIndex],
 			...notification,
 		};
+		this.notificationStorage.set(notifications);
+		this.showSingleNotification(notifications[notificationIndex].id);
 	}
 
 	deletePost(id: string) {
-		this.notifications = this.notifications.filter(item => item.id !== id);
+		let notifications = this.notificationStorage.get([]);
+		notifications = notifications.filter(item => item.id !== id);
+		this.notificationStorage.set(notifications);
 	}
 
 	showSingleNotification(id: string, timeoutSec: number = 5) {
-		const notification = this.notifications.find(item => item.id === id);
+		const notification = this.notificationStorage.get([]).find(item => item.id === id);
 		if (!notification)
 			return;
 
@@ -83,7 +87,7 @@ export class ModuleFE_Notifications_Class
 	}
 
 	showAllNotifications() {
-		const notifications = cloneArr(this.notifications);
+		const notifications = this.notificationStorage.get([]);
 		dispatch_showNotifications.dispatchUI({notifications, closeTimeout: -1});
 	}
 
