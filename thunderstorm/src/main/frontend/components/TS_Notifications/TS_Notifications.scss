@@ -8,19 +8,35 @@
 }
 
 .ts-notification-container {
+  isolation: isolate;
+  z-index: 1;
+  width: 350px;
+  height: 100vh;
+  padding: 40px 10px 40px 30px;
+
+  position: fixed;
   top: 0;
   right: 0;
-  position: fixed;
-  height: 100vh;
-  width: 350px;
-  padding: 30px 25px;
-  justify-content: flex-end;
-  transform: translateX(100%);
+
+  flex-direction: column-reverse;
+  justify-content: flex-start;
   gap: 20px;
+  overflow-y: auto;
+  transform: translateX(100%);
+
+  &.list {
+    //noinspection CssInvalidPropertyValue - STFU this works...
+    -webkit-mask-image: linear-gradient(to bottom, transparent 2%, #000000 5%, #000000 95%, transparent 98%);
+    background: linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.2) 20%);
+  }
 
   &.enter,
   &.enter-done {
     transform: translateX(0);
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 
   .ts-notification {
@@ -28,12 +44,12 @@
     border: 2px solid #00709f;
     border-radius: 4px;
     width: 100%;
+    padding: 5px 10px;
 
     .ts-notification__header {
       width: 100%;
       justify-content: space-between;
       align-items: center;
-      padding: 5px 10px;
 
       .ts-notification__title {
         font: {
@@ -42,16 +58,45 @@
         }
       }
 
+      .ts-notification__close {
+        cursor: pointer;
+        background: #FF0000;
+        width: 19px;
+        height: 19px;
+        border-radius: 4px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font: {
+          size: 14px;
+          weight: bold;
+        }
+
+        &:hover {
+          background: #B70000;
+        }
+
+        &:active {
+          background: #AB0000;
+        }
+      }
+    }
+
+    .ts-notification__body {
+      padding: 8px;
+
+      .ts-notification__message {
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+    }
+
+    .ts-notification__footer {
       .ts-notification__timestamp {
         font-size: 12px;
         color: #808080;
       }
-    }
-
-    .ts-notification__message {
-      padding: 10px;
-      font-size: 12px;
-      white-space: pre-wrap;
     }
   }
 }
