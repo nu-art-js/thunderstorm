@@ -7,10 +7,10 @@ export class TS_ButtonLoader
 
 	render() {
 		return <div className="ts-button-loader">
-			<div></div>
-			<div></div>
-			<div></div>
-			<div></div>
+			<div/>
+			<div/>
+			<div/>
+			<div/>
 		</div>;
 	}
 }
