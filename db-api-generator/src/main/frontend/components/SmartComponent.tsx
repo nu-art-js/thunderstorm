@@ -68,7 +68,14 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 		const _render = this.render?.bind(this);
 		this.render = () => {
-			return this.smartRender(_render);
+			if (this.state.componentPhase === ComponentStatus.Loading)
+				return <div className={'loader-container'}><TS_Loader/></div>;
+
+			return <TS_ErrorBoundary onError={this.reDeriveState}>
+				{_render()}
+				{this.state.componentPhase === ComponentStatus.Syncing &&
+					<div className={'loader-transparent-container'}><TS_Loader/></div>}
+			</TS_ErrorBoundary>;
 		};
 	}
 
@@ -140,18 +147,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	}
 
 	// ######################### Render #########################
-
-	protected smartRender() {
-		if (this.state.componentPhase === ComponentStatus.Loading)
-			return <div className={'loader-container'}><TS_Loader/></div>;
-
-		return <TS_ErrorBoundary onError={this.reDeriveState}>
-			{this.render()}
-			{this.state.componentPhase === ComponentStatus.Syncing &&
-				<div className={'loader-transparent-container'}><TS_Loader/></div>}
-		</TS_ErrorBoundary>;
-
-	}
 }
 
 export abstract class SmartPanel<Config, State = {}, Props = {}>
