@@ -104,7 +104,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 		return state;
 	}
 
-	_render() {
+	render() {
 		const filter = new Filter<T>(this.props.mapper);
 		const adapter = SimpleListAdapter(this.state.items, props => this.props.renderer(props.item));
 
