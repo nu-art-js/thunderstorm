@@ -22,7 +22,7 @@
 import * as React from 'react';
 import {compare, DB_Object} from '@nu-art/ts-common';
 import {ApiCallerEventTypeV2, BaseDB_ApiCaller, DataStatus} from '../modules/BaseDB_ApiCaller';
-import {Props_WorkspacePanel, State_WorkspacePanel, TS_Loader} from '@nu-art/thunderstorm/frontend';
+import {Props_WorkspacePanel, State_WorkspacePanel, TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
 import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
 
@@ -65,6 +65,18 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				__callback?.(...params);
 			};
 		});
+
+		const _render = this.render?.bind(this);
+		this.render = () => {
+			if (this.state.componentPhase === ComponentStatus.Loading)
+				return <div className={'loader-container'}><TS_Loader/></div>;
+
+			return <TS_ErrorBoundary onError={this.reDeriveState}>
+				{_render()}
+				{this.state.componentPhase === ComponentStatus.Syncing &&
+					<div className={'loader-transparent-container'}><TS_Loader/></div>}
+			</TS_ErrorBoundary>;
+		};
 	}
 
 	// ######################### Life Cycle #########################
@@ -135,19 +147,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	}
 
 	// ######################### Render #########################
-
-	protected abstract _render(): React.ReactNode
-
-	render(): React.ReactNode {
-		if (this.state.componentPhase === ComponentStatus.Loading)
-			return <div className={'loader-container'}><TS_Loader/></div>;
-
-		return <React.Fragment>
-			{this._render()}
-			{this.state.componentPhase === ComponentStatus.Syncing &&
-				<div className={'loader-transparent-container'}><TS_Loader/></div>}
-		</React.Fragment>;
-	}
 }
 
 export abstract class SmartPanel<Config, State = {}, Props = {}>
