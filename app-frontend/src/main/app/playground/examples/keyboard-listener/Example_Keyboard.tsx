@@ -194,7 +194,7 @@
 // 		this.setState({actionMessage:"You're focused on the component"})
 // 	}
 //
-// 	protected renderContent = () => <div className={'ll_v_c'}>
+// 	renderContent = () => <div className={'ll_v_c'}>
 // 		<div className={'ll_h_c'} style={{border: "3px solid lime", width: "100%", justifyContent: "space-around", marginTop: 8}}>
 // 			{_keys(this.elements).map(el => <h2 key={el}
 // 			                                    id={(el as string)}
