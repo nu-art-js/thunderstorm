@@ -65,6 +65,12 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 	}
 
 	cache = {
+		forEach: async (processor: (item: DBType) => void) => {
+			const allItems = await this.cache.query();
+			allItems.forEach(processor);
+			return allItems;
+		},
+
 		clear: async (resync = false) => {
 			this.lastSync.delete();
 			return this.db.deleteDB();
