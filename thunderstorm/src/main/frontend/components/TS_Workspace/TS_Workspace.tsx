@@ -21,7 +21,7 @@
 
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
-import {compare, LogLevel} from '@nu-art/ts-common';
+import {compare} from '@nu-art/ts-common';
 import * as React from 'react';
 import {ComponentAsync} from '../../core/ComponentAsync';
 import {ComponentSync} from '../../core/ComponentSync';
@@ -81,7 +81,7 @@ export class TS_Workspace
 	extends PanelParentSync<Config_PanelParent> {
 
 	_constructor() {
-		this.logger.setMinLevel(LogLevel.Verbose);
+		// this.logger.setMinLevel(LogLevel.Verbose);
 	}
 
 	static defaultProps = {
