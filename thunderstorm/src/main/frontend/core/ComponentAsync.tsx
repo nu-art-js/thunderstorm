@@ -32,7 +32,6 @@ export type BaseAsyncState = {
 
 export abstract class ComponentAsync<P extends any = {}, S extends any = {}, State extends BaseAsyncState & S = BaseAsyncState & S>
 	extends BaseComponent<P, State> {
-
 	private derivingState = false;
 	private pendingProps?: P;
 
@@ -48,7 +47,12 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 		this.derivingState = true;
 
 		this.deriveStateFromProps(nextProps)
-			.then((state) => this.setState(state, this.reDeriveCompletedCallback))
+			.then((state) => {
+				if (!this.mounted)
+					return this.logWarning('Will not set derived state - Component Unmounted');
+
+				this.setState(state, this.reDeriveCompletedCallback);
+			})
 			.catch(e => {
 				this.logError(`error`, e);
 				this.setState({error: e}, this.reDeriveCompletedCallback);
@@ -59,6 +63,9 @@ export abstract class ComponentAsync<P extends any = {}, S extends any = {}, Sta
 
 	private reDeriveCompletedCallback = () => {
 		this.derivingState = false;
+		if (!this.mounted)
+			return this.logWarning('Will not trigger pending props - Component Unmounted');
+
 		if (this.pendingProps) {
 			this.logVerbose('Triggering pending props');
 			this._deriveStateFromProps(this.pendingProps);
