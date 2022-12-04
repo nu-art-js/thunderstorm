@@ -46,10 +46,12 @@ type Props_Button = LinearLayoutProps & {
  * ```
  */
 export const TS_BusyButton = (props: Props_Button) => {
+	const {isBusy, loadingRenderer, onDisabledClick, ...restOfProps} = props;
+
 	const renderItems = () => {
-		if (props.isBusy) {
-			if (props.loadingRenderer)
-				return typeof props.loadingRenderer === 'function' ? props.loadingRenderer() : props.loadingRenderer;
+		if (isBusy) {
+			if (loadingRenderer)
+				return typeof loadingRenderer === 'function' ? loadingRenderer() : loadingRenderer;
 
 			return <TS_ButtonLoader/>;
 		}
@@ -58,19 +60,19 @@ export const TS_BusyButton = (props: Props_Button) => {
 	};
 
 	const onClick = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (props.isBusy)
+		if (isBusy)
 			return;
 
 		if (props.disabled)
-			return props.onDisabledClick?.(e);
+			return onDisabledClick?.(e);
 
 		return props.onClick?.(e);
 	};
 
-	const className = _className('ts-busy-button', props.className, props.disabled && 'ts-busy-button__disabled', props.isBusy && 'ts-busy-button__loading');
+	const className = _className('ts-busy-button', props.className, props.disabled && 'ts-busy-button__disabled', isBusy && 'ts-busy-button__loading');
 
 	return <LL_H_C
-		{...props}
+		{...restOfProps}
 		className={className}
 		onClick={onClick}
 	>{renderItems()}</LL_H_C>;
