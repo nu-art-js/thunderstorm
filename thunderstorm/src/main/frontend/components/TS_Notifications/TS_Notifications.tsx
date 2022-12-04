@@ -57,7 +57,12 @@ export class TS_Notifications
 	private onClickToClose = (e: React.MouseEvent) => {
 		ModuleFE_Notifications.hideAllNotifications();
 		const elements = document.elementsFromPoint(e.clientX, e.clientY);
-		const firstNonNotificationElement = elements.find(item => !item.className.includes(this.overlayClass) && !item.className.includes(this.containerClass));
+		const firstNonNotificationElement = elements.find(item => {
+			//not always false, svg className is an object
+			if (typeof item.className !== 'string')
+				return false;
+			return item.className && !item.className.includes(this.overlayClass) && !item.className.includes(this.containerClass);
+		});
 		//@ts-ignore
 		firstNonNotificationElement.click();
 	};
