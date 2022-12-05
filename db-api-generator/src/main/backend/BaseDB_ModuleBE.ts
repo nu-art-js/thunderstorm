@@ -536,7 +536,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
 		await this.assertInstance(transaction, dbInstance, request);
-		return transaction.upsert_Read(this.collection, dbInstance);
+		return transaction.upsert_Read(this.collection, dbInstance, dbInstance._id);
 	}
 
 	private async assertInstance(transaction: FirestoreTransaction | undefined, dbInstance: DBType, request?: ExpressRequest) {
