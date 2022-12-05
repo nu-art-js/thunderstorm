@@ -75,6 +75,7 @@ export class ModuleFE_Account_Class
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	private accounts: UI_Account[] = [];
 	readonly v1: ApiDefCaller<ApiStruct_UserAccountFE>['v1'];
+	accountId: string = '';
 
 	constructor() {
 		super();
@@ -149,7 +150,8 @@ export class ModuleFE_Account_Class
 		window.location.href = response.loginUrl;
 	};
 
-	private onSessionValidated = async () => {
+	private onSessionValidated = async (uiAccount: UI_Account) => {
+		this.accountId = uiAccount._id;
 		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	};
 
