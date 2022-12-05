@@ -75,7 +75,7 @@ export class ModuleFE_Account_Class
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	private accounts: UI_Account[] = [];
 	readonly v1: ApiDefCaller<ApiStruct_UserAccountFE>['v1'];
-	accountId: string = '';
+	accountId!: string;
 
 	constructor() {
 		super();
@@ -136,6 +136,7 @@ export class ModuleFE_Account_Class
 	private setLoginInfo = async (response: Response_Auth) => {
 		StorageKey_SessionId.set(response.sessionId);
 		StorageKey_UserEmail.set(response.email);
+		this.accountId = response._id;
 		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	};
 

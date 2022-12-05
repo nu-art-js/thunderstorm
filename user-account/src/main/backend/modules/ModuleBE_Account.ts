@@ -307,7 +307,7 @@ export class ModuleBE_Account_Class
 
 		const uiAccount = await this.getUserEmailFromSession(session);
 		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
-		return {sessionId: session.sessionId, email: uiAccount.email};
+		return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
 	};
 
 	getOrCreate = async (query: { where: { email: string } }) => {

@@ -33,9 +33,8 @@ export type DB_Session = {
 	timestamp: number
 }
 
-export type Response_Auth = {
+export type Response_Auth = UI_Account & {
 	sessionId: string
-	email: string
 }
 
 export type Request_UpsertAccount = {
