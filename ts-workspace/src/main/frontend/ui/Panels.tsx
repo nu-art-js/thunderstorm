@@ -2,6 +2,7 @@ import * as React from 'react';
 import {Config_PanelParent, PanelConfig, Props_WorkspacePanel, State_WorkspacePanel} from './types';
 import {ComponentAsync, ComponentSync} from '@nu-art/thunderstorm/frontend';
 import {compare} from '@nu-art/ts-common';
+import {ComponentStatus, SmartComponent, State_SmartComponent} from '@nu-art/db-api-generator/frontend';
 
 export abstract class PanelBaseSync<Config, State = {}, Props = {}>
 	extends ComponentSync<Props_WorkspacePanel<Config, Props> & Props, State_WorkspacePanel<Config, State>> {
@@ -49,5 +50,19 @@ export abstract class PanelParentAsync<Config = {}, State = {}, Props = {}>
 		if (!PanelRenderer)
 			return `NO RENDERER DEFINED FOR KEY: ${panel.key}`;
 		return <PanelRenderer config={panel.data} renderers={this.props.renderers}/>;
+	}
+}
+
+export abstract class SmartPanel<Config, State = {}, Props = {}>
+	extends SmartComponent<Props_WorkspacePanel<Config, Props>, State_WorkspacePanel<Config, State>> {
+
+	protected createInitialState(nextProps: Props_WorkspacePanel<Config, Props>) {
+		return {componentPhase: ComponentStatus.Loading, config: {...nextProps.config}} as State_WorkspacePanel<Config, State> & State_SmartComponent;
+	}
+
+	shouldReDeriveState(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>): boolean {
+		const ans = !compare(this.state.config, nextProps.config as Config);
+		this.logDebug('Should ReDerive:', ans);
+		return ans;
 	}
 }
