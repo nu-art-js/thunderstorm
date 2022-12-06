@@ -107,7 +107,7 @@ export class TS_OrientedWorkspace
 	onDragEnd = (e: React.DragEvent<HTMLDivElement>, firstPanelIndex: number, secondPanelIndex: number) => {
 		//Init vars
 		this.dragStart = 0;
-		this.props.onConfigChanged(this.props.config);
+		this.props.onConfigChanged();
 	};
 
 	//Main Render

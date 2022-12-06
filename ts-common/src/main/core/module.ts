@@ -86,7 +86,7 @@ export abstract class Module<Config = any, FinalConfig extends _FinalConfig<Conf
 
 	public setDefaultConfig(config: Partial<FinalConfig>) {
 		// @ts-ignore
-		this.config = config;
+		this.config = merge(this.config, config);
 	}
 
 	public getName(): string {
