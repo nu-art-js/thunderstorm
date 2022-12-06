@@ -71,7 +71,6 @@ export * from './components/TS_Dialog';
 export * from './components/TS_Button';
 export * from './components/TS_Toaster';
 export * from './components/TS_DragAndDrop';
-export * from './components/TS_Workspace';
 export * from './components/TS_Tooltip';
 export * from './components/TS_MemoryMonitor';
 export * from './components/TS_Link';
