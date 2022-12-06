@@ -21,31 +21,53 @@
 
 /*	QWorkspaceVertical	- content display and resizing
 *	When given panel contents and a page, displays content in resizable panels.*/
+import {ComponentAsync, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
-import {PanelParentSync} from './Panels';
 import './TS_Workspace.scss';
-import {Config_PanelParent} from './types';
+import {PanelConfig} from './types';
+import {ModuleFE_Workspace} from '../modules/ModuleFE_Workspace';
+import {TypedMap} from '@nu-art/ts-common';
 
+type State = {
+	config: PanelConfig
+}
+
+type Props = {
+	workspaceKey: string;
+	renderers: TypedMap<React.ElementType>
+}
 
 export class TS_Workspace
-	extends PanelParentSync<Config_PanelParent> {
+	extends ComponentAsync<Props, State> {
 
-	_constructor() {
-		// this.logger.setMinLevel(LogLevel.Verbose);
+	// _constructor() {
+	// 	this.logger.setMinLevel(LogLevel.Verbose);
+	// }
+
+	protected async deriveStateFromProps(nextProps: Props) {
+		const config = await ModuleFE_Workspace.getWorkspaceConfigByKey(nextProps.workspaceKey);
+		return {config};
 	}
 
-	static defaultProps = {
-		onConfigChanged: () => {
-		}
+	private onConfigChanged = async () => {
+		const config = this.state.config;
+		await ModuleFE_Workspace.setWorkspaceByKey(this.props.workspaceKey, config);
 	};
 
 	render() {
-		const panels = this.props.config.panels;
-		if (panels.length > 1 || panels.length === 0)
-			return 'ROOT WORKSPACE MUST HAVE ONE AND ONLY ONE PANEL CONFIG';
+		if (!this.state.config)
+			return <div className={'loader-container'}><TS_Loader/></div>;
+
+		const PanelRenderer = this.props.renderers[this.state.config.key];
+		if (!PanelRenderer)
+			return `COULD NOT GET THE WORKSPACE RENDERER FOR KEY ${this.state.config.key}`;
 
 		return <div className="ts-workspace">
-			{this.renderPanel(panels[0])}
+			<PanelRenderer
+				config={this.state.config.data}
+				renderers={this.props.renderers}
+				onConfigChanged={this.onConfigChanged}
+			/>
 		</div>;
 	}
 }

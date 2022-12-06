@@ -3,7 +3,7 @@ import {DB_Object, TypedMap} from '@nu-art/ts-common';
 import {BaseAsyncState} from '@nu-art/thunderstorm/frontend';
 
 
-export type Props_ConfigChanged = { onConfigChanged: (config: any) => void };
+export type Props_ConfigChanged = { onConfigChanged: () => void };
 export type Props_WorkspacePanel<Config, Props = {}> = Props & Props_ConfigChanged & {
 	config: Config
 	renderers: TypedMap<React.ElementType>
