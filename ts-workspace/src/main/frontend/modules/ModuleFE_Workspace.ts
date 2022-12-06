@@ -34,7 +34,7 @@ export const dispatch_onWorkspaceUpdated = new ThunderDispatcher<OnWorkspaceUpda
 
 type Config = DBApiFEConfig<DB_Workspace, 'key' | 'accountId'> & { defaultConfigs: TypedMap<PanelConfig> };
 
-export class ModuleFE_WorkspaceNew_Class
+export class ModuleFE_Workspace_Class
 	extends BaseDB_ApiCaller<DB_Workspace, 'key' | 'accountId', Config> {
 
 	private workspaceSavingRunnableMap: TypedMap<any> = {};
@@ -60,9 +60,15 @@ export class ModuleFE_WorkspaceNew_Class
 	};
 
 	public getWorkspaceConfigByKey = async (key: string): Promise<PanelConfig<any>> => {
+		this.logInfo(`Getting config for key ${key}`);
 		this.assertLoggedInUser();
 		const workspace = await this.getWorkspaceByKey(key);
-		return workspace?.config;
+		const config = workspace?.config || this.config.defaultConfigs[key];
+		this.logInfo('Config:', config);
+		if (!config)
+			throw new BadImplementationException(`Could not find config for key ${key}`);
+
+		return config;
 	};
 
 	private getWorkspaceByKey = async (key: string): Promise<DB_Workspace | undefined> => {
@@ -93,4 +99,4 @@ export class ModuleFE_WorkspaceNew_Class
 	};
 }
 
-export const ModuleFE_Workspace = new ModuleFE_WorkspaceNew_Class();
+export const ModuleFE_Workspace = new ModuleFE_Workspace_Class();
