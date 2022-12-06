@@ -20,9 +20,9 @@
  */
 
 import * as React from 'react';
-import {compare, DB_Object} from '@nu-art/ts-common';
+import {DB_Object} from '@nu-art/ts-common';
 import {ApiCallerEventTypeV2, BaseDB_ApiCaller, DataStatus} from '../modules/BaseDB_ApiCaller';
-import {Props_WorkspacePanel, State_WorkspacePanel, TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend';
+import {TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
 import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
 
@@ -160,19 +160,5 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	protected renderLoader = () => {
 		return <div className={'loader-container'}><TS_Loader/></div>;
-	}
-}
-
-export abstract class SmartPanel<Config, State = {}, Props = {}>
-	extends SmartComponent<Props_WorkspacePanel<Config, Props>, State_WorkspacePanel<Config, State>> {
-
-	protected createInitialState(nextProps: Props_WorkspacePanel<Config, Props>) {
-		return {componentPhase: ComponentStatus.Loading, config: {...nextProps.config}} as State_WorkspacePanel<Config, State> & State_SmartComponent;
-	}
-
-	shouldReDeriveState(nextProps: Readonly<Props_WorkspacePanel<Config, Props>>): boolean {
-		const ans = !compare(this.state.config, nextProps.config as Config);
-		this.logDebug('Should ReDerive:', ans);
-		return ans;
-	}
+	};
 }

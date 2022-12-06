@@ -50,6 +50,7 @@
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/ts-common": "~0.0.1",
     "@nu-art/user-account": "~0.0.1",
+    "@nu-art/ts-workspace": "~0.0.1",
     "@types/chart.js": "^2.9.4",
     "@types/d3-array": "^2.8.0",
     "@types/d3-scale": "^3.2.1",

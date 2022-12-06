@@ -1,12 +1,9 @@
 import {
 	ComponentSync,
-	PanelConfig,
 	SimpleListAdapter,
 	TS_DropDown,
-	TS_HorizontalWorkspace,
-	TS_VerticalWorkspace,
-	TS_Workspace
 } from '@nu-art/thunderstorm/frontend';
+import {PanelConfig, TS_HorizontalWorkspace, TS_VerticalWorkspace, TS_Workspace} from '@nu-art/ts-workspace/frontend';
 import * as React from 'react';
 
 const leftPanel = (props: {}) => <div
@@ -125,8 +122,8 @@ class WorkspaceTest
 	render() {
 		return <div style={{width: '90vw', height: '85vh'}}>
 			<TS_Workspace
-				config={{panels: [this.state.workspace]}}
 				renderers={panelRenderers}
+				workspaceKey={''}
 			/>
 			<div style={{position: 'absolute', top: '100px', left: '20px'}}>
 				<div onClick={() => {
