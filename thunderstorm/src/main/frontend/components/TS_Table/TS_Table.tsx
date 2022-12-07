@@ -99,9 +99,12 @@ export class TS_Table<R extends TS_Object, A extends string = never>
 					const prop = typeof header === 'object' ? header.header : header;
 					const tablePropsTH = typeof this.props.th === 'function' ? this.props.th(prop) : this.props.th;
 					const classNameTH = _className('ts-table__th', tablePropsTH?.className);
-					const style: { width?: string } = {};
-					if (typeof header === 'object')
+					const style: { width?: string, minWidth?: string } = {};
+					if (typeof header === 'object') {
 						style.width = `${header.widthPx}px`;
+						style.minWidth = `${header.widthPx}px`;
+					}
+
 
 					return <th key={`${this.props.id}-${index}`} {...tablePropsTH} className={classNameTH} style={style}>
 						{renderers[prop]?.(prop as any)}
