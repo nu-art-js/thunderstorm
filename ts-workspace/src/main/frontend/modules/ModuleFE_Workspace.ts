@@ -60,11 +60,9 @@ export class ModuleFE_Workspace_Class
 	};
 
 	public getWorkspaceConfigByKey = async (key: string): Promise<PanelConfig<any>> => {
-		this.logInfo(`Getting config for key ${key}`);
 		this.assertLoggedInUser();
 		const workspace = await this.getWorkspaceByKey(key);
 		const config = workspace?.config || this.config.defaultConfigs[key];
-		this.logInfo('Config:', config);
 		if (!config)
 			throw new BadImplementationException(`Could not find config for key ${key}`);
 
