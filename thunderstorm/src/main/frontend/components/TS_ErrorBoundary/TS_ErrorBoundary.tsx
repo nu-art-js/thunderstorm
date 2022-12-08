@@ -22,8 +22,9 @@ import * as React from 'react';
 import {ReactNode} from 'react';
 import './TS_ErrorBoundary.scss';
 import {TS_Button} from '../TS_Button';
-import {LL_H_C, LL_V_L} from '../Layouts';
+import {LL_V_L} from '../Layouts';
 import {Thunder} from '../../core/Thunder';
+import {ComponentSync} from '../../core/ComponentSync';
 
 type State = {
 	error?: Error,
@@ -33,10 +34,11 @@ type State = {
 type Props = {
 	onError?: (e: any) => void,
 	renderer?: (e: any) => ReactNode
+	error?: Error;
 };
 
 export class TS_ErrorBoundary
-	extends React.Component<Props, State> {
+	extends ComponentSync<Props, State> {
 
 	//######################### Static #########################
 
@@ -49,6 +51,10 @@ export class TS_ErrorBoundary
 
 	static getDerivedStateFromError(error: Error) {
 		return {error};
+	}
+
+	protected deriveStateFromProps(nextProps: Props) {
+		return {error: (nextProps.error ? nextProps.error : this.state?.error)};
 	}
 
 	componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -81,16 +87,14 @@ export class TS_ErrorBoundary
 		return <div className={'ts-error-boundary'}>
 			<div className={'ts-error-boundary__pic'}>(ノಠ益ಠ)ノ彡┻━┻</div>
 			<div className={'ts-error-boundary__title'}>{titleMessage}</div>
-			<LL_H_C className={'ts-error-boundary__container'}>
-				<LL_V_L className={'ts-error-boundary__error'}>
-					<div className={'ts-error-boundary__error-title'}>Error Message</div>
-					<div className={'ts-error-boundary__error-message'}>{this.state.error!.toString()}</div>
-				</LL_V_L>
-				<TS_Button
-					className={'ts-error-boundary__button'}
-					onClick={this.onButtonClick}
-				>Reload!</TS_Button>
-			</LL_H_C>
+			<TS_Button
+				className={'ts-error-boundary__button'}
+				onClick={this.onButtonClick}
+			>Reload!</TS_Button>
+			<LL_V_L className={'ts-error-boundary__error'}>
+				<div className={'ts-error-boundary__error-title'}>Error Message</div>
+				<div className={'ts-error-boundary__error-message'}>{this.state.error!.toString()}</div>
+			</LL_V_L>
 			{this.renderErrorDetails()}
 		</div>;
 	};
