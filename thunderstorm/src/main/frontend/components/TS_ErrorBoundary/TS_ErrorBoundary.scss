@@ -54,48 +54,42 @@
     text-shadow: #e0e0e0 1px 1px 0;
   }
 
-  .ts-error-boundary__container {
-    justify-content: space-evenly;
-    width: 100%;
-
-    .ts-error-boundary__error {
-      max-width: 33%;
-
-      .ts-error-boundary__error-title {
-        font: {
-          size: 20px;
-          weight: 500;
-        }
-        text-decoration: underline;
+  .ts-error-boundary__error {
+    .ts-error-boundary__error-title {
+      font: {
+        size: 20px;
+        weight: 500;
       }
-
-      .ts-error-boundary__error-message {
-        white-space: pre-wrap;
-        font: {
-          size: 18px;
-          weight: 500;
-        }
-      }
+      text-decoration: underline;
     }
 
-    .ts-error-boundary__button {
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 50px;
-      padding: 10px 20px;
-      background: #ED2939;
-      color: white;
-      border-radius: 8px;
-
-      &:hover {
-        background: #D71223;
-      }
-
-      &:active {
-        background: #A40C1A;
+    .ts-error-boundary__error-message {
+      white-space: pre-wrap;
+      font: {
+        size: 18px;
+        weight: 500;
       }
     }
   }
+
+  .ts-error-boundary__button {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    padding: 10px 20px;
+    background: #ED2939;
+    color: white;
+    border-radius: 8px;
+
+    &:hover {
+      background: #D71223;
+    }
+
+    &:active {
+      background: #A40C1A;
+    }
+  }
+
 }
