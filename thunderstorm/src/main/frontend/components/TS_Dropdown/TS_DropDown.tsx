@@ -75,7 +75,9 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	allowManualSelection?: boolean
 	className?: string;
 	boundingParentSelector?: string;
+	renderSearch: (dropDown: TS_DropDown<ItemType>) => React.ReactNode
 }
+
 
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
@@ -83,6 +85,29 @@ export class TS_DropDown<ItemType>
 	// ######################## Static ########################
 
 	private node?: HTMLDivElement;
+	static defaultRenderSearch = (dropDown: TS_DropDown<any>) =>
+		<TS_Input
+			type="text"
+			value={dropDown.props.inputValue}
+			onChange={(filterText) => dropDown.setState({filterText})}
+			focus={true}
+			style={{width: '100%'}}
+			placeholder={dropDown.props.placeholder || ''}
+			// onAccept={(value, ev) => {
+			// 	const filterText = dropDown.state.filterText;
+			// 	if (filterText) {
+			// 		dropDown.setState({open: false}, () => dropDown.props.onNoMatchingSelectionForString?.(filterText, dropDown.state.adapter.data, ev));
+			// 	} else
+			// 		dropDown.onSelected(dropDown.state.adapter.data[0]);
+			// }}
+			onCancel={() => dropDown.setState({open: false, filterText: undefined})}
+			onKeyDown={dropDown.keyEventHandler}
+		/>;
+
+	public static defaultProps = {
+		renderSearch: TS_DropDown.defaultRenderSearch
+
+	};
 
 	// ######################## Life Cycle ########################
 
@@ -313,23 +338,7 @@ export class TS_DropDown<ItemType>
 			return this.renderSelectedItem(this.state.selected);
 		}
 
-		return <TS_Input
-			type="text"
-			value={this.props.inputValue}
-			onChange={(filterText) => this.setState({filterText})}
-			focus={true}
-			style={{width: '100%'}}
-			placeholder={this.props.placeholder || ''}
-			// onAccept={(value, ev) => {
-			// 	const filterText = this.state.filterText;
-			// 	if (filterText) {
-			// 		this.setState({open: false}, () => this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, ev));
-			// 	} else
-			// 		this.onSelected(this.state.adapter.data[0]);
-			// }}
-			onCancel={() => this.setState({open: false, filterText: undefined})}
-			onKeyDown={this.keyEventHandler}
-		/>;
+		return this.props.renderSearch(this);
 	};
 
 	// ######################## To Remove ########################

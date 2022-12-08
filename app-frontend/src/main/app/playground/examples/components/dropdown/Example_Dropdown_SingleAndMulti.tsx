@@ -47,6 +47,7 @@ class Example_Dropdown_SingleAndMulti
 	render() {
 		const props1 = this.simpleAdapterProps();
 		const props2 = this.complexAdapterProps();
+		//@ts-ignore //todo fix me
 		return <Example_NewProps renderer={TS_DropDown} data={[props1, props2]}/>;
 	}
 
@@ -69,7 +70,7 @@ class Example_Dropdown_SingleAndMulti
 
 				return <div>{selected.label}</div>;
 			},
-		} as Props_DropDown<any> & { key: string };
+		} as Omit<Props_DropDown<any>, 'renderSearch'> & { key: string };
 	}
 
 	private complexAdapterProps() {
@@ -95,8 +96,8 @@ class Example_Dropdown_SingleAndMulti
 
 				return <div>{selected.item.label}</div>;
 			},
-		} as Props_DropDown<any> & { key: string };
+		} as Omit<Props_DropDown<any>, 'renderSearch'> & { key: string };
 	}
 }
 
-export const Playground_DropdownSingleAndMulti = {name:'Dropdown - Single & Multi',renderer: Example_Dropdown_SingleAndMulti}
+export const Playground_DropdownSingleAndMulti = {name: 'Dropdown - Single & Multi', renderer: Example_Dropdown_SingleAndMulti};
