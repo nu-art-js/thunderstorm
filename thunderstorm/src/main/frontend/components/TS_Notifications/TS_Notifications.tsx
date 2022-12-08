@@ -54,7 +54,7 @@ export class TS_Notifications
 
 	// ######################### Logic #########################
 
-	private onClickToClose = (e: React.MouseEvent) => {
+	private onClickToClose = (e: React.MouseEvent, eventType: 'click' | 'contextmenu') => {
 		ModuleFE_Notifications.hideAllNotifications();
 		const elements = document.elementsFromPoint(e.clientX, e.clientY);
 		const firstNonNotificationElement = elements.find(item => {
@@ -63,8 +63,27 @@ export class TS_Notifications
 				return false;
 			return item.className && !item.className.includes(this.overlayClass) && !item.className.includes(this.containerClass);
 		});
+
+		const ev = new MouseEvent(eventType, {
+			bubbles: true,
+			cancelable: true,
+			view: firstNonNotificationElement!.ownerDocument.defaultView,
+			detail: 1,
+			screenX: e.screenX,
+			screenY: e.screenY,
+			clientX: e.clientX,
+			clientY: e.clientY,
+			ctrlKey: e.ctrlKey,
+			altKey: e.altKey,
+			shiftKey: e.shiftKey,
+			metaKey: e.metaKey,
+			button: e.button,
+			buttons: e.buttons,
+			relatedTarget: firstNonNotificationElement,
+		});
+
 		//@ts-ignore
-		firstNonNotificationElement.click();
+		firstNonNotificationElement.dispatchEvent(ev);
 	};
 
 	private deletePost = (e: React.MouseEvent, id: string) => {
@@ -103,12 +122,13 @@ export class TS_Notifications
 	render() {
 		const className = _className('ts-notification-container', this.state.notifications.length > 1 ? 'list' : undefined);
 		return <>
-			{this.state.showNotifications && <div className={'ts-notification-overlay'} onClick={this.onClickToClose}/>}
+			{this.state.showNotifications &&
+				<div className={'ts-notification-overlay'} onClick={e => this.onClickToClose(e, 'click')} onContextMenu={e => this.onClickToClose(e, 'contextmenu')}/>}
 			<TS_ComponentTransition
 				trigger={this.state.showNotifications}
 				transitionTimeout={300}
 			>
-				<LL_V_L className={className} onClick={this.onClickToClose}>
+				<LL_V_L className={className} onClick={e => this.onClickToClose(e, 'click')} onContextMenu={e => this.onClickToClose(e, 'contextmenu')}>
 					{this.renderNotifications()}
 				</LL_V_L>
 			</TS_ComponentTransition>
