@@ -68,13 +68,20 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 		const _render = this.render?.bind(this);
 		this.render = () => {
-			if (this.state.componentPhase === ComponentStatus.Loading)
-				return this.renderLoader();
 
-			return <TS_ErrorBoundary onError={this.reDeriveState}>
-				{_render()}
-				{this.state.componentPhase === ComponentStatus.Syncing &&
-					<div className={'loader-transparent-container'}><TS_Loader/></div>}
+			const toRet = () => {
+				if (this.state.componentPhase === ComponentStatus.Loading)
+					return this.renderLoader();
+
+				return <>
+					{_render()}
+					{this.state.componentPhase === ComponentStatus.Syncing &&
+						<div className={'loader-transparent-container'}><TS_Loader/></div>}
+				</>;
+			};
+
+			return <TS_ErrorBoundary onError={this.reDeriveState} error={this.state.error}>
+				{toRet()}
 			</TS_ErrorBoundary>;
 		};
 	}
