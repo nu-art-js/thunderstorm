@@ -244,7 +244,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 		const dbInstances: (DBType | undefined)[] = await Promise.all(uniqueQueries.map(uniqueQuery => {
 			if (transaction)
-				return transaction.queryUnique(this.collection, {where: uniqueQuery});
+				return transaction.queryUnique(this.collection, {where: uniqueQuery, limit: 1});
 
 			return this.collection.queryUnique({where: uniqueQuery});
 		}));
