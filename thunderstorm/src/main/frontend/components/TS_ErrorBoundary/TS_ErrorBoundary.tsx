@@ -61,6 +61,10 @@ export class TS_ErrorBoundary
 		this.setState({error, errorInfo});
 	}
 
+	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
+		return true;
+	}
+
 	//######################### Logic #########################
 
 	private onButtonClick = () => {
