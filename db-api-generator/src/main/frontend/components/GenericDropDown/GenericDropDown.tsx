@@ -13,6 +13,7 @@ type OptionalProps_GenericDropDown<T> = {
 	sortBy?: (keyof T)[] | ((item: T) => string | number);
 	className?: string;
 	caret?: { open: React.ReactNode, close: React.ReactNode }
+	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
 }
 
 export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> & {
@@ -32,13 +33,7 @@ export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof
 }
 
 export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = {
-	selected?: T | string | (() => Promise<T | undefined>);
 	placeholder?: string;
-	inputValue?: string;
-	onSelected: (selected: T) => void;
-	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
-	module: BaseDB_ApiCaller<T, Ks>;
-	modules: BaseDB_ApiCaller<DB_Object, any>[];
 	mapper: (item: T) => string[]
 	renderer: (item: T) => React.ReactElement
 	queryFilter?: (item: T) => boolean
@@ -46,6 +41,14 @@ export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id
 	sortBy?: (keyof T)[] | ((item: T) => string | number);
 	className?: string;
 	caret?: { open: React.ReactNode, close: React.ReactNode }
+	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
+
+	selected?: T | string | (() => Promise<T | undefined>);
+	inputValue?: string;
+	onSelected: (selected: T) => void;
+	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
+	module: BaseDB_ApiCaller<T, Ks>;
+	modules: BaseDB_ApiCaller<DB_Object, any>[];
 	boundingParentSelector?: string;
 }
 
@@ -119,6 +122,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 			onSelected={this.props.onSelected}
 			caret={this.props.caret}
 			boundingParentSelector={this.props.boundingParentSelector}
+			renderSearch={this.props.renderSearch}
 		/>;
 	}
 }
