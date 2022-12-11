@@ -82,11 +82,15 @@ export function filterInstances<T>(array?: (T | undefined | null | void)[]): T[]
 	return (array?.filter(item => !!item) || []) as T[];
 }
 
-export function arrayToMap<T>(array: T[], getKey: (item: T, index: number) => string | number, map?: { [k: string]: T }): { [k: string]: T } {
+export function arrayToMap<T>(array: T[], getKey: (item: T, index: number, map: { [k: string]: T }) => string | number, map: { [k: string]: T } = {}): { [k: string]: T } {
+	return reduceToMap<T, T>(array, getKey, item => item, map);
+}
+
+export function reduceToMap<Input, Output = Input>(array: Input[], keyResolver: (item: Input, index: number, map: { [k: string]: Output }) => string | number, mapper: (item: Input, index: number, map: { [k: string]: Output }) => Output, map: { [k: string]: Output } = {}): { [k: string]: Output } {
 	return array.reduce((toRet, element, index) => {
-		toRet[getKey(element, index)] = element;
+		toRet[keyResolver(element, index, toRet)] = mapper(element, index, toRet);
 		return toRet;
-	}, map || {});
+	}, map);
 }
 
 export function sortArray<T>(array: T[], map: keyof T | (keyof T)[] | ((item: T) => any) = i => i, invert = false): T[] {
