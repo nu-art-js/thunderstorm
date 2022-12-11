@@ -82,9 +82,13 @@ export function filterInstances<T>(array?: (T | undefined | null | void)[]): T[]
 	return (array?.filter(item => !!item) || []) as T[];
 }
 
-export function arrayToMap<T, K = T>(array: T[], getKey: (item: T, index: number, map: { [k: string]: K }) => string | number, map: { [k: string]: K } = {}, mapper: (item: T, index: number, map: { [k: string]: K }) => K = item => item as unknown as K): { [k: string]: K } {
+export function arrayToMap<T>(array: T[], getKey: (item: T, index: number, map: { [k: string]: T }) => string | number, map: { [k: string]: T } = {}): { [k: string]: T } {
+	return reduceToMap<T, T>(array, getKey, item => item, map);
+}
+
+export function reduceToMap<Input, Output = Input>(array: Input[], keyResolver: (item: Input, index: number, map: { [k: string]: Output }) => string | number, mapper: (item: Input, index: number, map: { [k: string]: Output }) => Output, map: { [k: string]: Output } = {}): { [k: string]: Output } {
 	return array.reduce((toRet, element, index) => {
-		toRet[getKey(element, index, toRet)] = mapper(element, index, toRet);
+		toRet[keyResolver(element, index, toRet)] = mapper(element, index, toRet);
 		return toRet;
 	}, map);
 }
