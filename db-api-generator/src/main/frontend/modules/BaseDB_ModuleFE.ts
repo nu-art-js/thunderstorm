@@ -21,9 +21,9 @@
 
 import {IndexKeys} from '@nu-art/thunderstorm';
 import {DBDef,} from '../shared';
-import {IndexDb_Query, IndexedDB, ReduceFunction, StorageKey, OnClearWebsiteData} from '@nu-art/thunderstorm/frontend';
+import {IndexDb_Query, IndexedDB, OnClearWebsiteData, ReduceFunction, StorageKey} from '@nu-art/thunderstorm/frontend';
 
-import {arrayToMap, DB_Object, Module, TypedMap, _values} from '@nu-art/ts-common';
+import {_values, arrayToMap, DB_Object, Module, TypedMap} from '@nu-art/ts-common';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 
@@ -33,6 +33,7 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 	implements OnClearWebsiteData {
 
 	protected readonly db: IndexedDB<DBType, Ks>;
+	protected readonly cache: MemCache<DBType, Ks>;
 	protected readonly lastSync: StorageKey<number>;
 	protected readonly lastVersion: StorageKey<string>;
 
@@ -44,6 +45,7 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 		this.db = IndexedDB.getOrCreate(this.config.dbConfig);
 		this.lastSync = new StorageKey<number>('last-sync--' + this.config.dbConfig.name);
 		this.lastVersion = new StorageKey<string>('last-version--' + this.config.dbConfig.name);
+		this.cache = new MemCache<DBType, Ks>(this);
 	}
 
 	protected init() {
@@ -133,10 +135,21 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 	};
 }
 
-class MemCache<DBType extends DB_Object> {
-	private readonly module: BaseDB_ModuleFE<DBType>;
+class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
+
+	constructor(module: BaseDB_ModuleFE<DBType, Ks>, cacheFilter?: (item: DBType) => boolean) {
+		this.module = module;
+		this.setCacheFilter(cacheFilter);
+	}
+
+	setCacheFilter(cacheFilter?: (item: DBType) => boolean) {
+		this.cacheFilter = cacheFilter;
+	}
+
+	private readonly module: BaseDB_ModuleFE<DBType, Ks>;
 
 	private cache: TypedMap<DBType> = {};
+	//@ts-ignore //todo use
 	private cacheFilter?: (item: DBType) => boolean;
 
 	forEach = (processor: (item: DBType) => void) => {
@@ -167,5 +180,13 @@ class MemCache<DBType extends DB_Object> {
 
 	find = (filter: (item: DBType) => boolean) => _values(this.cache).find(filter);
 
-	map = <MapType>(mapper: (item: DBType) => MapType, filter?: (item: DBType) => boolean) => _values(this.cache).map(mapper, filter);
+	map = <MapType>(mapper: (item: DBType) => MapType, filter?: (item: DBType) => boolean) => filter ? _values(this.cache).filter(filter) : _values(this.cache).map(mapper);
+
+	onEntriesDeleted(itemsDeleted: DBType[]) {
+		itemsDeleted.forEach(i => delete this.cache[i._id]);
+	}
+
+	onEntriesUpdated(itemsUpdated: DBType[]) {
+		itemsUpdated.forEach(i => this.cache[i._id] = i);
+	}
 }
