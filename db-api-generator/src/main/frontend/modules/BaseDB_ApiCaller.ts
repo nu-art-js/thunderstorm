@@ -20,7 +20,7 @@
  */
 
 import {ApiDefCaller, BaseHttpRequest, HttpException, IndexKeys, QueryParams, TypedApi} from '@nu-art/thunderstorm';
-import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response_DBSync, _EmptyQuery,} from '../shared';
+import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response_DBSync,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
@@ -29,6 +29,7 @@ import {MultiApiEvent, SingleApiEvent} from '../types';
 import {
 	EventType_Create,
 	EventType_Delete,
+	EventType_DeleteMulti,
 	EventType_Patch,
 	EventType_Query,
 	EventType_Sync,
@@ -256,9 +257,11 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		await this.syncIndexDb(syncData.toUpdate, syncData.toDelete);
 		this.setDataStatus(DataStatus.containsData);
 		this.setSyncStatus(SyncStatus.idle);
-		// this.cache.load();
-		// this.dispatchMulti(EventType_Delete, syncData.toDelete);
-		this.dispatchMulti(EventType_Query, syncData.toUpdate);
+		await this.cache.load();
+		if (syncData.toDelete)
+			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
+		if (syncData.toUpdate)
+			this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
 
 	private async syncIndexDb(toUpdate: DBType[], toDelete: DB_Object[] = []) {
@@ -289,24 +292,29 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 	protected onEntryDeleted = async (item: DBType): Promise<void> => {
 		await this.syncIndexDb([], [item]);
+		this.cache.onEntriesDeleted([item]);
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
 	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
 		await this.syncIndexDb(items);
+		this.cache.onEntriesUpdated(items);
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
 	protected onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
+		this.cache.onEntriesUpdated([item]);
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
 	};
 
 	protected onEntryPatched = async (item: DBType): Promise<void> => {
+		this.cache.onEntriesUpdated([item]);
 		return this.onEntryUpdatedImpl(EventType_Patch, item);
 	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
 		await this.syncIndexDb([item]);
+		this.cache.onEntriesUpdated([item]);
 		this.dispatchSingle(event, item);
 	}
 
