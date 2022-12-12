@@ -20,7 +20,7 @@
  */
 
 import {ApiDefCaller, BaseHttpRequest, HttpException, IndexKeys, QueryParams, TypedApi} from '@nu-art/thunderstorm';
-import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response_DBSync, _EmptyQuery,} from '../shared';
+import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response_DBSync,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
@@ -29,6 +29,7 @@ import {MultiApiEvent, SingleApiEvent} from '../types';
 import {
 	EventType_Create,
 	EventType_Delete,
+	EventType_DeleteMulti,
 	EventType_Patch,
 	EventType_Query,
 	EventType_Sync,
@@ -54,7 +55,6 @@ export enum DataStatus {
 	NoData,
 	containsData,
 }
-
 
 type RequestType = 'upsert' | 'patch' | 'delete';
 type Pending = {
@@ -94,14 +94,14 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 		//Set Statuses
 		this.syncStatus = SyncStatus.idle;
-		this.dataStatus = this.lastSync.get(0) !== 0 ? DataStatus.containsData : DataStatus.NoData;
+		this.dataStatus = this.IDB.getLastSync() !== 0 ? DataStatus.containsData : DataStatus.NoData;
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore
 		this.v1 = {
 			sync: (additionalQuery: FirestoreQuery<DBType> = _EmptyQuery) => {
 				const originalSyncQuery = {
-					where: {__updated: {$gt: this.lastSync.get(0)}},
+					where: {__updated: {$gt: this.IDB.getLastSync()}},
 					orderBy: [{key: '__updated', order: 'desc'}],
 				};
 				const query: FirestoreQuery<DBType> = merge(originalSyncQuery, additionalQuery);
@@ -144,8 +144,8 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 			upgradeCollection: apiWithQuery(apiDef.v1.upgradeCollection, () => this.v1.sync().executeSync())
 		};
 
-		const superClear = this.cache.clear;
-		this.cache.clear = async (reSync = false) => {
+		const superClear = this.IDB.clear;
+		this.IDB.clear = async (reSync = false) => {
 			await superClear();
 			this.setSyncStatus(SyncStatus.idle);
 			this.setDataStatus(DataStatus.NoData);
@@ -216,12 +216,12 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 	__syncIfNeeded = async (syncData: DBSyncData[]) => {
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
-		if (mySyncData && mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.lastSync.get(0)) {
-			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.lastSync.get(0)}`);
-			await this.cache.clear();
+		if (mySyncData && mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.IDB.getLastSync()) {
+			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.IDB.getLastSync()}`);
+			await this.IDB.clear();
 		}
 
-		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0)) {
+		if (mySyncData && mySyncData.lastUpdated <= this.IDB.getLastSync()) {
 			this.setDataStatus(DataStatus.containsData);
 			this.setSyncStatus(SyncStatus.idle);
 			return;
@@ -254,23 +254,15 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
 		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
-		await this.syncIndexDb(syncData.toUpdate, syncData.toDelete);
+		await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
 		this.setDataStatus(DataStatus.containsData);
 		this.setSyncStatus(SyncStatus.idle);
-		this.dispatchMulti(EventType_Query, syncData.toUpdate);
+		await this.cache.load();
+		if (syncData.toDelete)
+			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
+		if (syncData.toUpdate)
+			this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
-
-	private async syncIndexDb(toUpdate: DBType[], toDelete: DB_Object[] = []) {
-		await this.db.upsertAll(toUpdate);
-		await this.db.deleteAll(toDelete as DBType[]);
-
-		let latest = -1;
-		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-
-		if (latest !== -1)
-			this.lastSync.set(latest);
-	}
 
 	private dispatchSingle = (event: SingleApiEvent, item: DBType) => {
 		this.defaultDispatcher?.dispatchModule(event, item);
@@ -287,25 +279,30 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	};
 
 	protected onEntryDeleted = async (item: DBType): Promise<void> => {
-		await this.syncIndexDb([], [item]);
+		await this.IDB.syncIndexDb([], [item]);
+		this.cache.onEntriesDeleted([item]);
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
 	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
-		await this.syncIndexDb(items);
+		await this.IDB.syncIndexDb(items);
+		this.cache.onEntriesUpdated(items);
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
 	protected onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
+		this.cache.onEntriesUpdated([item]);
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
 	};
 
 	protected onEntryPatched = async (item: DBType): Promise<void> => {
+		this.cache.onEntriesUpdated([item]);
 		return this.onEntryUpdatedImpl(EventType_Patch, item);
 	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
-		await this.syncIndexDb([item]);
+		await this.IDB.syncIndexDb([item]);
+		this.cache.onEntriesUpdated([item]);
 		this.dispatchSingle(event, item);
 	}
 
@@ -314,7 +311,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	};
 
 	protected onQueryReturned = async (toUpdate: DBType[], toDelete: DB_Object[] = []): Promise<void> => {
-		await this.syncIndexDb(toUpdate, toDelete);
+		await this.IDB.syncIndexDb(toUpdate, toDelete);
 		this.dispatchMulti(EventType_Query, toUpdate);
 	};
 
