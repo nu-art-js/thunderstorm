@@ -71,7 +71,7 @@ export class ModuleFE_Workspace_Class
 
 	private getWorkspaceByKey = async (key: string): Promise<DB_Workspace | undefined> => {
 		this.assertLoggedInUser();
-		return await this.cache.find(workspace => workspace.key === key && workspace.accountId === this.getCurrentAccountId());
+		return await this.IDB.find(workspace => workspace.key === key && workspace.accountId === this.getCurrentAccountId());
 	};
 
 	public setWorkspaceByKey = async (key: string, config: PanelConfig<any>) => {

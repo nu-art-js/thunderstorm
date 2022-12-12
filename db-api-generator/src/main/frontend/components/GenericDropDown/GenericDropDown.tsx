@@ -69,11 +69,11 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 	protected async deriveStateFromProps(nextProps: Props_SmartComponent & Props_GenericDropDown<T, Ks>, state: (State<T> & State_SmartComponent)) {
 		//If filter exists, get filtered items
 		if (nextProps.queryFilter)
-			state.items = await nextProps.module.cache.filter(nextProps.queryFilter);
+			state.items = await nextProps.module.IDB.filter(nextProps.queryFilter);
 
 		//If filter doesn't exist OR (filter gave 0 results AND ifNoneShowAll condition flagged true)
 		if (!nextProps.queryFilter || (state.items.length === 0 && nextProps.ifNoneShowAll === true))
-			state.items = await nextProps.module.cache.query();
+			state.items = await nextProps.module.IDB.query();
 
 		//Sort Items by sort function or object keys
 		if (typeof nextProps.sortBy === 'function')
@@ -94,7 +94,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 				break;
 
 			case 'string':
-				state.selected = await nextProps.module.cache.unique(selectedItem);
+				state.selected = await nextProps.module.IDB.unique(selectedItem);
 				break;
 
 			case 'function':

@@ -26,5 +26,6 @@ export const EventType_Patch = 'patch';
 export const EventType_Unique = 'unique';
 export const EventType_Query = 'query';
 export const EventType_Delete = 'delete';
+export const EventType_DeleteMulti = 'delete-multi';
 export const EventType_Sync = 'sync';
 

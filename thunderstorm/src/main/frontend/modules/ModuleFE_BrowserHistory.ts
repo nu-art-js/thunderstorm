@@ -161,6 +161,10 @@ export function getQueryParameter(name: string) {
 	return ModuleFE_BrowserHistory.getQueryParameter(name);
 }
 
+export function getUrlQuery() {
+	return ModuleFE_BrowserHistory.getQueryParams();
+}
+
 export function encodeUrlParams(queryParams?: QueryParams) {
 	const encodedQueryParams = {...queryParams};
 	_keys(encodedQueryParams).forEach(key => {
