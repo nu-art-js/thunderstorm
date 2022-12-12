@@ -224,6 +224,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		if (mySyncData && mySyncData.lastUpdated <= this.IDB.getLastSync()) {
 			this.setDataStatus(DataStatus.containsData);
 			this.setSyncStatus(SyncStatus.idle);
+			await this.cache.load();
 			return;
 		}
 
@@ -257,6 +258,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
 		this.setDataStatus(DataStatus.containsData);
 		this.setSyncStatus(SyncStatus.idle);
+
 		await this.cache.load();
 		if (syncData.toDelete)
 			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
