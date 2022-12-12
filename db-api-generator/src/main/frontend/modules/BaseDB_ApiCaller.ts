@@ -144,8 +144,8 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 			upgradeCollection: apiWithQuery(apiDef.v1.upgradeCollection, () => this.v1.sync().executeSync())
 		};
 
-		const superClear = this.cache.clear;
-		this.cache.clear = async (reSync = false) => {
+		const superClear = this.IDB.clear;
+		this.IDB.clear = async (reSync = false) => {
 			await superClear();
 			this.setSyncStatus(SyncStatus.idle);
 			this.setDataStatus(DataStatus.NoData);
@@ -218,7 +218,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
 		if (mySyncData && mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.lastSync.get(0)) {
 			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.lastSync.get(0)}`);
-			await this.cache.clear();
+			await this.IDB.clear();
 		}
 
 		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0)) {

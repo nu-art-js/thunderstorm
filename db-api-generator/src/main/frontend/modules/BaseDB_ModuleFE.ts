@@ -55,18 +55,18 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 			return;
 
 		this.logInfo(`Cleaning up & Sync...`);
-		this.cache.clear(true)
+		this.IDB.clear(true)
 			.then(() => this.logInfo(`Cleaning up & Sync: Completed`))
 			.catch((e) => this.logError(`Cleaning up & Sync: ERROR`, e));
 	}
 
 	async __onClearWebsiteData(resync: boolean) {
-		return this.cache.clear(resync);
+		return this.IDB.clear(resync);
 	}
 
-	cache = {
+	IDB = {
 		forEach: async (processor: (item: DBType) => void) => {
-			const allItems = await this.cache.query();
+			const allItems = await this.IDB.query();
 			allItems.forEach(processor);
 			return allItems;
 		},
