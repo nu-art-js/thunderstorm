@@ -55,7 +55,6 @@ export enum DataStatus {
 	containsData,
 }
 
-
 type RequestType = 'upsert' | 'patch' | 'delete';
 type Pending = {
 	requestType: RequestType;
@@ -257,6 +256,8 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		await this.syncIndexDb(syncData.toUpdate, syncData.toDelete);
 		this.setDataStatus(DataStatus.containsData);
 		this.setSyncStatus(SyncStatus.idle);
+		// this.cache.load();
+		// this.dispatchMulti(EventType_Delete, syncData.toDelete);
 		this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
 
