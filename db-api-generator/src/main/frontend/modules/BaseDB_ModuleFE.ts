@@ -23,7 +23,7 @@ import {IndexKeys} from '@nu-art/thunderstorm';
 import {DBDef,} from '../shared';
 import {IndexDb_Query, IndexedDB, ReduceFunction, StorageKey, OnClearWebsiteData} from '@nu-art/thunderstorm/frontend';
 
-import {DB_Object, Module} from '@nu-art/ts-common';
+import {arrayToMap, DB_Object, Module, TypedMap, _values} from '@nu-art/ts-common';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 
@@ -131,4 +131,41 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 	public getCollectionName = () => {
 		return this.config.dbConfig.name;
 	};
+}
+
+class MemCache<DBType extends DB_Object> {
+	private readonly module: BaseDB_ModuleFE<DBType>;
+
+	private cache: TypedMap<DBType> = {};
+	private cacheFilter?: (item: DBType) => boolean;
+
+	forEach = (processor: (item: DBType) => void) => {
+		_values(this.cache).forEach(processor);
+	};
+
+	clear = () => {
+		this.cache = {};
+	};
+
+	load = async (cacheFilter?: (item: DBType) => boolean) => {
+		this.clear();
+		let allItems;
+		if (cacheFilter)
+			allItems = await this.module.IDB.filter(cacheFilter);
+		else
+			allItems = await this.module.IDB.query();
+
+		this.cacheFilter = cacheFilter;
+		this.cache = arrayToMap(allItems, i => i._id);
+	};
+
+	get(id: string) {
+		return this.cache[id];
+	}
+
+	filter = (filter: (item: DBType) => boolean) => _values(this.cache).filter(filter);
+
+	find = (filter: (item: DBType) => boolean) => _values(this.cache).find(filter);
+
+	map = <MapType>(mapper: (item: DBType) => MapType, filter?: (item: DBType) => boolean) => _values(this.cache).map(mapper, filter);
 }
