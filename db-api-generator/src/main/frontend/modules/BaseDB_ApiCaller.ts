@@ -222,9 +222,9 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		}
 
 		if (mySyncData && mySyncData.lastUpdated <= this.IDB.getLastSync()) {
+			await this.cache.load();
 			this.setDataStatus(DataStatus.containsData);
 			this.setSyncStatus(SyncStatus.idle);
-			await this.cache.load();
 			return;
 		}
 
@@ -256,14 +256,15 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
 		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
 		await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
+		await this.cache.load();
 		this.setDataStatus(DataStatus.containsData);
 		this.setSyncStatus(SyncStatus.idle);
 
-		await this.cache.load();
 		if (syncData.toDelete)
 			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
 		if (syncData.toUpdate)
 			this.dispatchMulti(EventType_Query, syncData.toUpdate);
+
 	};
 
 	private dispatchSingle = (event: SingleApiEvent, item: DBType) => {
