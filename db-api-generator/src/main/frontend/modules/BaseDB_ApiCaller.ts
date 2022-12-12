@@ -94,14 +94,14 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 		//Set Statuses
 		this.syncStatus = SyncStatus.idle;
-		this.dataStatus = this.lastSync.get(0) !== 0 ? DataStatus.containsData : DataStatus.NoData;
+		this.dataStatus = this.IDB.getLastSync() !== 0 ? DataStatus.containsData : DataStatus.NoData;
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore
 		this.v1 = {
 			sync: (additionalQuery: FirestoreQuery<DBType> = _EmptyQuery) => {
 				const originalSyncQuery = {
-					where: {__updated: {$gt: this.lastSync.get(0)}},
+					where: {__updated: {$gt: this.IDB.getLastSync()}},
 					orderBy: [{key: '__updated', order: 'desc'}],
 				};
 				const query: FirestoreQuery<DBType> = merge(originalSyncQuery, additionalQuery);
@@ -216,12 +216,12 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 	__syncIfNeeded = async (syncData: DBSyncData[]) => {
 		const mySyncData = syncData.find(sync => sync.name === this.config.dbConfig.name);
-		if (mySyncData && mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.lastSync.get(0)) {
-			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.lastSync.get(0)}`);
+		if (mySyncData && mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.IDB.getLastSync()) {
+			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.IDB.getLastSync()}`);
 			await this.IDB.clear();
 		}
 
-		if (mySyncData && mySyncData.lastUpdated <= this.lastSync.get(0)) {
+		if (mySyncData && mySyncData.lastUpdated <= this.IDB.getLastSync()) {
 			this.setDataStatus(DataStatus.containsData);
 			this.setSyncStatus(SyncStatus.idle);
 			return;
@@ -254,7 +254,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
 		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
-		await this.syncIndexDb(syncData.toUpdate, syncData.toDelete);
+		await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
 		this.setDataStatus(DataStatus.containsData);
 		this.setSyncStatus(SyncStatus.idle);
 		await this.cache.load();
@@ -263,18 +263,6 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		if (syncData.toUpdate)
 			this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
-
-	private async syncIndexDb(toUpdate: DBType[], toDelete: DB_Object[] = []) {
-		await this.db.upsertAll(toUpdate);
-		await this.db.deleteAll(toDelete as DBType[]);
-
-		let latest = -1;
-		latest = toUpdate.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-		latest = toDelete.reduce((toRet, current) => Math.max(toRet, current.__updated), latest);
-
-		if (latest !== -1)
-			this.lastSync.set(latest);
-	}
 
 	private dispatchSingle = (event: SingleApiEvent, item: DBType) => {
 		this.defaultDispatcher?.dispatchModule(event, item);
@@ -291,13 +279,13 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	};
 
 	protected onEntryDeleted = async (item: DBType): Promise<void> => {
-		await this.syncIndexDb([], [item]);
+		await this.IDB.syncIndexDb([], [item]);
 		this.cache.onEntriesDeleted([item]);
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
 	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
-		await this.syncIndexDb(items);
+		await this.IDB.syncIndexDb(items);
 		this.cache.onEntriesUpdated(items);
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
@@ -313,7 +301,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
-		await this.syncIndexDb([item]);
+		await this.IDB.syncIndexDb([item]);
 		this.cache.onEntriesUpdated([item]);
 		this.dispatchSingle(event, item);
 	}
@@ -323,7 +311,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	};
 
 	protected onQueryReturned = async (toUpdate: DBType[], toDelete: DB_Object[] = []): Promise<void> => {
-		await this.syncIndexDb(toUpdate, toDelete);
+		await this.IDB.syncIndexDb(toUpdate, toDelete);
 		this.dispatchMulti(EventType_Query, toUpdate);
 	};
 
