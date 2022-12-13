@@ -90,6 +90,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	private onSyncEvent = (module: BaseDB_ApiCaller<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
 		//Define logic for change in module sync status
+		this.logInfo(`onSyncEvent: ${module.getCollectionName()} ${params[0]}`);
 		if (params[0] === EventType_Sync) {
 			this.reDeriveState();
 		}
