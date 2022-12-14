@@ -55,7 +55,7 @@ export class ModuleFE_Notifications_Class
 		return id;
 	}
 
-	updatePost(id: string, notification: Partial<Omit<Notification, 'id'>>) {
+	updatePost(id: string, notification: Partial<Omit<Notification, 'id'>>, timeoutSec?: number) {
 		const notifications = this.notificationStorage.get([]);
 		const notificationIndex = notifications.findIndex(item => item.id === id);
 
@@ -69,7 +69,7 @@ export class ModuleFE_Notifications_Class
 			...notification,
 		};
 		this.notificationStorage.set(notifications);
-		this.showSingleNotification(notifications[notificationIndex].id);
+		this.showSingleNotification(notifications[notificationIndex].id, timeoutSec);
 	}
 
 	deletePost(id: string) {

@@ -46,6 +46,7 @@ import {BaseDB_ModuleFE} from './BaseDB_ModuleFE';
 export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
 
 export enum SyncStatus {
+	loading,
 	idle,
 	read,
 	write
@@ -93,8 +94,9 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
 
 		//Set Statuses
-		this.syncStatus = SyncStatus.idle;
-		this.dataStatus = this.IDB.getLastSync() !== 0 ? DataStatus.containsData : DataStatus.NoData;
+		this.syncStatus = SyncStatus.loading;
+		this.dataStatus = DataStatus.NoData;
+		// this.dataStatus = this.IDB.getLastSync() !== 0 ? DataStatus.containsData : DataStatus.NoData;
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
 		// @ts-ignore
@@ -222,9 +224,9 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		}
 
 		if (mySyncData && mySyncData.lastUpdated <= this.IDB.getLastSync()) {
+			await this.cache.load();
 			this.setDataStatus(DataStatus.containsData);
 			this.setSyncStatus(SyncStatus.idle);
-			await this.cache.load();
 			return;
 		}
 
@@ -256,14 +258,15 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
 		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
 		await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
+		await this.cache.load();
 		this.setDataStatus(DataStatus.containsData);
 		this.setSyncStatus(SyncStatus.idle);
 
-		await this.cache.load();
 		if (syncData.toDelete)
 			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
 		if (syncData.toUpdate)
 			this.dispatchMulti(EventType_Query, syncData.toUpdate);
+
 	};
 
 	private dispatchSingle = (event: SingleApiEvent, item: DBType) => {
@@ -282,28 +285,29 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 	protected onEntryDeleted = async (item: DBType): Promise<void> => {
 		await this.IDB.syncIndexDb([], [item]);
+		// @ts-ignore
 		this.cache.onEntriesDeleted([item]);
 		this.dispatchSingle(EventType_Delete, item);
 	};
 
 	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
 		await this.IDB.syncIndexDb(items);
+		// @ts-ignore
 		this.cache.onEntriesUpdated(items);
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
 	protected onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
-		this.cache.onEntriesUpdated([item]);
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
 	};
 
 	protected onEntryPatched = async (item: DBType): Promise<void> => {
-		this.cache.onEntriesUpdated([item]);
 		return this.onEntryUpdatedImpl(EventType_Patch, item);
 	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
 		await this.IDB.syncIndexDb([item]);
+		// @ts-ignore
 		this.cache.onEntriesUpdated([item]);
 		this.dispatchSingle(event, item);
 	}
@@ -314,6 +318,10 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 	protected onQueryReturned = async (toUpdate: DBType[], toDelete: DB_Object[] = []): Promise<void> => {
 		await this.IDB.syncIndexDb(toUpdate, toDelete);
+		// @ts-ignore
+		this.cache.onEntriesUpdated(toUpdate);
+		// @ts-ignore
+		this.cache.onEntriesDeleted(toDelete);
 		this.dispatchMulti(EventType_Query, toUpdate);
 	};
 

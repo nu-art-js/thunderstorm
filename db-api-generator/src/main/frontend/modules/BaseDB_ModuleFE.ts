@@ -167,6 +167,8 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 	private readonly keys: string[];
 
 	private cache: TypedMap<DBType> = {};
+	private cacheByKey: TypedMap<DBType> = {};
+
 	private cacheFilter?: (item: DBType) => boolean;
 
 	constructor(module: BaseDB_ModuleFE<DBType, Ks>, keys: Ks[]) {
@@ -192,39 +194,50 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 			allItems = await this.module.IDB.query();
 
 		this.cache = arrayToMap(allItems, i => i._id);
-		this.cache = arrayToMap(allItems, this.getFullKey, this.cache);
+		if (this.keys.length === 1 && this.keys[0] === '_id')
+			this.cacheByKey = this.cache;
+		else
+			this.cacheByKey = arrayToMap(allItems, this.getFullKey);
 	};
 
-	get(_key?: string | IndexKeys<DBType, Ks>) {
+	unique(_key?: string | IndexKeys<DBType, Ks>) {
 		if (_key === undefined)
 			return _key;
 
-		const fullKey = typeof _key === 'string' ? _key : this.getFullKey(_key);
+		if (typeof _key === 'string') {
+			return this.cache[_key];
+		}
 
-		return this.cache[fullKey];
+		return this.cacheByKey[this.getFullKey(_key)];
 	}
 
 	private getFullKey = (_key: IndexKeys<DBType, Ks>) => {
 		return this.keys.reduce((_fullKey, key) => `${_fullKey}-${_key[key as Ks]}`, '');
 	};
 
+	all = () => {
+		return _values(this.cache);
+	};
+
 	filter = (filter: (item: DBType, index: number, array: DBType[]) => boolean) => {
-		return _values(this.cache).filter(filter);
+		return this.all().filter(filter);
 	};
 
 	find = (filter: (item: DBType, index: number, array: DBType[]) => boolean) => {
-		return _values(this.cache).find(filter);
+		return this.all().find(filter);
 	};
 
 	map = <MapType>(mapper: (item: DBType, index: number, array: DBType[]) => MapType) => {
-		return _values(this.cache).map(mapper);
+		return this.all().map(mapper);
 	};
 
-	onEntriesDeleted(itemsDeleted: DBType[]) {
+	// @ts-ignore
+	private onEntriesDeleted(itemsDeleted: DBType[]) {
 		itemsDeleted.forEach(i => delete this.cache[i._id]);
 	}
 
-	onEntriesUpdated(itemsUpdated: DBType[]) {
+	// @ts-ignore
+	private onEntriesUpdated(itemsUpdated: DBType[]) {
 		this.cache = arrayToMap(itemsUpdated, i => i._id, this.cache);
 	}
 }
