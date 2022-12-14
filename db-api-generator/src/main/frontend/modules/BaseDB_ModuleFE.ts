@@ -23,7 +23,7 @@ import {IndexKeys} from '@nu-art/thunderstorm';
 import {DBDef,} from '../shared';
 import {DBConfig, IndexDb_Query, IndexedDB, OnClearWebsiteData, ReduceFunction, StorageKey} from '@nu-art/thunderstorm/frontend';
 
-import {_values, arrayToMap, DB_Object, Module, TypedMap, Logger} from '@nu-art/ts-common';
+import {dbObjectToId, arrayToMap, DB_Object, Module, TypedMap, Logger} from '@nu-art/ts-common';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 
@@ -166,7 +166,9 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 	private readonly module: BaseDB_ModuleFE<DBType, Ks>;
 	private readonly keys: string[];
 
-	private cache: TypedMap<DBType> = {};
+	_map!: Readonly<TypedMap<DBType>>;
+	_array!: Readonly<DBType[]>;
+
 	private cacheByKey: TypedMap<DBType> = {};
 
 	private cacheFilter?: (item: DBType) => boolean;
@@ -174,14 +176,15 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 	constructor(module: BaseDB_ModuleFE<DBType, Ks>, keys: Ks[]) {
 		this.module = module;
 		this.keys = keys as string[];
+		this.clear();
 	}
 
 	forEach = (processor: (item: DBType) => void) => {
-		_values(this.cache).forEach(processor);
+		this._array.forEach(processor);
 	};
 
 	clear = () => {
-		this.cache = {};
+		this.setCache([]);
 	};
 
 	load = async (cacheFilter?: (item: DBType) => boolean) => {
@@ -193,9 +196,10 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		else
 			allItems = await this.module.IDB.query();
 
-		this.cache = arrayToMap(allItems, i => i._id);
+		this.setCache(allItems);
+
 		if (this.keys.length === 1 && this.keys[0] === '_id')
-			this.cacheByKey = this.cache;
+			this.cacheByKey = this._map;
 		else
 			this.cacheByKey = arrayToMap(allItems, this.getFullKey);
 	};
@@ -205,7 +209,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 			return _key;
 
 		if (typeof _key === 'string') {
-			return this.cache[_key];
+			return this._map[_key];
 		}
 
 		return this.cacheByKey[this.getFullKey(_key)];
@@ -216,28 +220,37 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 	};
 
 	all = () => {
-		return _values(this.cache);
+		return this._array;
 	};
 
-	filter = (filter: (item: DBType, index: number, array: DBType[]) => boolean) => {
+	filter = (filter: (item: DBType, index: number, array: Readonly<DBType[]>) => boolean) => {
 		return this.all().filter(filter);
 	};
 
-	find = (filter: (item: DBType, index: number, array: DBType[]) => boolean) => {
+	find = (filter: (item: DBType, index: number, array: Readonly<DBType[]>) => boolean) => {
 		return this.all().find(filter);
 	};
 
-	map = <MapType>(mapper: (item: DBType, index: number, array: DBType[]) => MapType) => {
+	map = <MapType>(mapper: (item: DBType, index: number, array: Readonly<DBType[]>) => MapType) => {
 		return this.all().map(mapper);
 	};
 
 	// @ts-ignore
 	private onEntriesDeleted(itemsDeleted: DBType[]) {
-		itemsDeleted.forEach(i => delete this.cache[i._id]);
+		const ids = new Set<string>(itemsDeleted.map(dbObjectToId));
+		this.setCache(this.filter(i => !ids.has(i._id)));
 	}
 
 	// @ts-ignore
 	private onEntriesUpdated(itemsUpdated: DBType[]) {
-		this.cache = arrayToMap(itemsUpdated, i => i._id, this.cache);
+		const ids = new Set<string>(itemsUpdated.map(dbObjectToId));
+		const toCache = this.filter(i => !ids.has(i._id));
+		toCache.push(...itemsUpdated);
+		this.setCache(toCache);
+	}
+
+	private setCache(cacheArray: DBType[]) {
+		this._map = Object.freeze({...arrayToMap(cacheArray, dbObjectToId)});
+		this._array = Object.freeze(cacheArray);
 	}
 }
