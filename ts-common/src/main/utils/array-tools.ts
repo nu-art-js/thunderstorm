@@ -73,9 +73,8 @@ export function filterDuplicates<T>(source: T[], mapper: (item: T) => any = defa
 	if (defaultMapper === mapper)
 		return Array.from(new Set(source));
 
-	const uniqueKeys = Array.from(new Set(source.map(mapper)));
-	return source.filter(item => uniqueKeys.includes(mapper(item)));
-
+	const uniqueKeys = new Set(source.map(mapper));
+	return source.filter(item => uniqueKeys.delete(mapper(item)));
 }
 
 export function filterInstances<T>(array?: (T | undefined | null | void)[]): T[] {

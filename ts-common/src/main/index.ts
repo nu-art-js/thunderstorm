@@ -54,6 +54,7 @@ export * from './utils/date-time-tools';
 export * from './utils/array-tools';
 export * from './utils/object-tools';
 export * from './utils/merge-tools';
+export * from './utils/db-object-tools';
 export * from './utils/version-tools';
 export * from './utils/query-params';
 export * from './utils/tools';
