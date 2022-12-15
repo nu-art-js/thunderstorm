@@ -18,6 +18,7 @@
 
 import {AssertionException, BadImplementationException, TS_Object} from '../index';
 
+
 export function deepClone<T>(obj: T): T {
 	if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'undefined' || obj === null)
 		return obj;
@@ -49,6 +50,18 @@ export function cloneObj<T extends TS_Object>(obj: T): T {
 		carry[key] = deepClone(obj[key]);
 		return carry;
 	}, {} as T);
+}
+
+export function partialCompare<T extends any>(one?: T, two?: T, keysToFilterOut?: (keyof T)[]): boolean {
+	one = deepClone(one);
+	two = deepClone(two);
+
+	keysToFilterOut?.forEach(key => {
+		delete one?.[key];
+		delete two?.[key];
+	});
+
+	return compare(one, two);
 }
 
 export function compare<T extends any>(one?: T, two?: T, keys?: (keyof T)[]): boolean {
