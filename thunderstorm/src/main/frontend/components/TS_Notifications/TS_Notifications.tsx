@@ -95,7 +95,7 @@ export class TS_Notifications
 	// ######################### Render #########################
 
 	private renderNotification(notification: Notification) {
-		return <LL_V_L className={'ts-notification'}>
+		return <LL_V_L className={`ts-notification ts-notification__${notification.status}`}>
 			<LL_H_C className={'ts-notification__header'}>
 				<div className={'ts-notification__title'}>{notification.title}</div>
 				<span className={'ts-notification__close'} onClick={(e) => this.deletePost(e, notification.id)}>&#10005;</span>
