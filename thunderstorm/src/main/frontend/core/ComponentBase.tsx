@@ -92,11 +92,11 @@ export abstract class BaseComponent<P = any, State = any>
 
 	protected abstract _deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined ;
 
-	protected reDeriveState(state?: Partial<State>) {
+	protected reDeriveState = (state?: Partial<State>) => {
 		this.logDebug('reDeriveState called..');
 
 		this._deriveStateFromProps(this.props, {...this.state, ...state});
-	}
+	};
 
 	debounce(handler: TimerHandler, key: string, ms = 0) {
 		this.logWarning('THIS IS LEGACY S***, NEED TO REMOVE');
