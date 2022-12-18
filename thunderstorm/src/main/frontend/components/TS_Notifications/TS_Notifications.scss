@@ -98,6 +98,16 @@
         color: #808080;
       }
     }
+
+    //Status
+
+    &.ts-notification__failed {
+      border: 2px solid #ab0000;
+    }
+
+    &.ts-notification__resolved {
+      border: 2px solid #009f40;
+    }
   }
 }
 
