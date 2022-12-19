@@ -46,6 +46,7 @@ export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
 		patch: BodyApi<DBType, PreDB<DBType>>
 		delete: QueryApi<DBType, DB_BaseObject>,
+		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		deleteAll: QueryApi<void>
 		upgradeCollection: QueryApi<void>
 	},
@@ -60,6 +61,7 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 		upsertAll: BodyApi<DBType[], PreDB<DBType>[]>,
 		patch: BodyApi<DBType, IndexKeys<DBType, Ks> & Partial<DBType>>
 		delete: QueryApi<DBType, DB_BaseObject>,
+		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		deleteAll: QueryApi<DBType[]>,
 		upgradeCollection: QueryApi<void>
 	},
@@ -74,7 +76,8 @@ export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType,
 			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
 			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert-all`},
 			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete`},
+			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
+			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
 			upgradeCollection: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/upgrade-collection`},
 		}
@@ -90,7 +93,8 @@ export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof 
 			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
 			upsertAll: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert-all`},
 			patch: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/patch`},
-			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete`},
+			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
+			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
 			upgradeCollection: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/upgrade-collection`},
 		}

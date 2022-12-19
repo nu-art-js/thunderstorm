@@ -132,6 +132,9 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * A promise of the document that was deleted.
 	 */
 	async deleteUnique(_id: string): Promise<DBType> {
+		if (!_id)
+			throw new ApiException(400, 'Cannot delete without id');
+
 		return this.runInTransaction(async transaction => {
 			const doc = await transaction.newQueryUnique(this.collection, {where: {_id} as Clause_Where<DBType>});
 			if (!doc)
