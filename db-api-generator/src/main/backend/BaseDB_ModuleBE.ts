@@ -41,7 +41,7 @@ import {
 
 import {IndexKeys} from '@nu-art/thunderstorm';
 import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
-import {FirestoreCollection, FirestoreInterface, FirestoreTransaction, ModuleBE_Firebase,} from '@nu-art/firebase/backend';
+import {DocWrapper, FirestoreCollection, FirestoreInterface, FirestoreTransaction, ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {dbIdLength} from '../shared/validators';
 import {canDeleteDispatcher, DB_EntityDependency, DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
@@ -64,6 +64,7 @@ export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfi
 export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerAct {
+	private static DeleteHardLimit = 250;
 
 	public collection!: FirestoreCollection<DBType>;
 	private readonly validator: ValidatorTypeResolver<DBType>;
@@ -133,16 +134,45 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 */
 	async deleteUnique(_id: string): Promise<DBType> {
 		return this.runInTransaction(async transaction => {
+			return this._deleteUnique.write(transaction, await this._deleteUnique.read(transaction, _id));
+		});
+	}
+
+	readonly _deleteUnique = Object.freeze({
+		read: async (transaction: FirestoreTransaction, _id: string) => {
+			if (!_id)
+				throw new ApiException(400, 'Cannot delete without id');
+
 			const doc = await transaction.newQueryUnique(this.collection, {where: {_id} as Clause_Where<DBType>});
 			if (!doc)
 				throw new ApiException(404, `Could not find ${this.config.itemName} with unique id: ${_id}`);
 
+			return doc;
+		},
+		write: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
 			await this.canDeleteDocument(transaction, [doc.get()]);
 			const item = await doc.delete(transaction.transaction);
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, [item], this.config.uniqueKeys, transaction);
 			return item;
-		});
-	}
+		}
+	});
+
+	readonly _deleteMulti = Object.freeze({
+		read: async (transaction: FirestoreTransaction, deleteQuery: FirestoreQuery<DBType>) => {
+			return await transaction.newQuery(this.collection, {...deleteQuery, limit: deleteQuery.limit || BaseDB_ModuleBE.DeleteHardLimit});
+		},
+
+		write: async (transaction: FirestoreTransaction, docs: DocWrapper<DBType>[]) => {
+			const items = docs.map(doc => doc.get());
+			await this.canDeleteDocument(transaction, items);
+
+			await Promise.all(docs.map(async (doc) => doc.delete(transaction.transaction)));
+			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, items, this.config.uniqueKeys, transaction);
+			const now = currentTimeMillis();
+			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
+			return items;
+		}
+	});
 
 	/**
 	 * Calls the `delete` method of the module's collection.
@@ -152,22 +182,12 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 */
 	async delete(deleteQuery: FirestoreQuery<DBType>, toReturn: DBType[] = []) {
 		const start = currentTimeMillis();
-		const limit = 250;
 
 		toReturn.push(...await this.runInTransaction(async transaction => {
-			const docs = await transaction.newQuery(this.collection, {...deleteQuery, limit: deleteQuery.limit || limit});
-			const items = docs.map(doc => doc.get());
-			await this.canDeleteDocument(transaction, items);
-
-			await Promise.all(docs.map(async (doc) => doc.delete(transaction.transaction)));
-
-			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, items, this.config.uniqueKeys, transaction);
-			const now = currentTimeMillis();
-			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
-			return items;
+			return this._deleteMulti.write(transaction, await this._deleteMulti.read(transaction, deleteQuery));
 		}));
 
-		if (toReturn.length !== 0 && toReturn.length % limit === 0)
+		if (toReturn.length !== 0 && toReturn.length % BaseDB_ModuleBE.DeleteHardLimit === 0)
 			await this.delete(deleteQuery, toReturn);
 
 		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, start);

@@ -98,7 +98,13 @@ export class TS_Notifications
 		return <LL_V_L className={`ts-notification ts-notification__${notification.status}`}>
 			<LL_H_C className={'ts-notification__header'}>
 				<div className={'ts-notification__title'}>{notification.title}</div>
-				<span className={'ts-notification__close'} onClick={(e) => this.deletePost(e, notification.id)}>&#10005;</span>
+				<span className={'ts-notification__close'} onClick={(e) => {
+					if (notification.status === 'in-progress') {
+						ModuleFE_Notifications.hideAllNotifications();
+						return;
+					}
+					this.deletePost(e, notification.id);
+				}}>&#10005;</span>
 			</LL_H_C>
 			<LL_V_L className={'ts-notification__body'}>
 				<div className={'ts-notification__message'}>{notification.message}</div>

@@ -20,11 +20,11 @@
  */
 
 import {Clause_Where, FirestoreQuery,} from '@nu-art/firebase';
-import {DB_Object, Module, PreDB} from '@nu-art/ts-common';
+import {__stringify, _values, DB_BaseObject, DB_Object, Module, PreDB} from '@nu-art/ts-common';
 
 import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
-import {ApiDefServer, ApiModule, ApiServerRouter, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, _EmptyQuery} from '../shared';
+import {ApiDefServer, ApiException, ApiModule, ApiServerRouter, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB} from '../shared';
 import {BaseDB_ModuleBE, DBApiConfig} from './BaseDB_ModuleBE';
 
 
@@ -52,6 +52,7 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 			upsertAll: createBodyServerApi(apiDef.v1.upsertAll, this._upsertAll),
 			patch: createBodyServerApi(apiDef.v1.patch, this._patch),
 			delete: createQueryServerApi(apiDef.v1.delete, this._deleteUnique),
+			deleteQuery: createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
 			deleteAll: createQueryServerApi(apiDef.v1.deleteAll, this._deleteAll),
 			upgradeCollection: createQueryServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection)
 		};
@@ -74,7 +75,18 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 	};
 
 	private _sync = async (query: FirestoreQuery<DBType>) => this.dbModule.querySync(query);
-	private _deleteUnique = async (id: { _id: string }): Promise<DBType> => this.dbModule.deleteUnique(id._id);
+	private _deleteQuery = async (query: FirestoreQuery<DBType>): Promise<DBType[]> => {
+
+		if (!query.where)
+			throw new ApiException(400, `Cannot delete without a where clause, using query: ${__stringify(query)}`);
+
+		if (_values(query.where).filter(v => v === undefined || v === null).length > 0)
+			throw new ApiException(400, `Cannot delete with property value undefined or null, using query: ${__stringify(query)}`);
+
+		return this.dbModule.delete(query);
+	};
+
+	private _deleteUnique = async (id: DB_BaseObject): Promise<DBType> => this.dbModule.deleteUnique(id._id);
 
 	/*
  * TO BE MOVED ABOVE THIS COMMENT
