@@ -73,7 +73,7 @@ export class FirestoreCollection<Type extends TS_Object> {
 	}
 
 	async insert(instance: Type, _id?: string): Promise<Type> {
-		await this.createDocumentReference(_id).set(instance)
+		await this.createDocumentReference(_id).set(instance);
 		return instance;
 	}
 
@@ -176,8 +176,12 @@ export class DocWrapper<T extends TS_Object> {
 	}
 
 	delete = async (transaction?: Transaction): Promise<T> => {
-		if (!transaction)
+		if (!transaction) {
+			// const item = this.doc.data();   TODO: TBD do we need a create and run in transaction for each delete??
+			// this.doc.ref.delete();
+			// return item;
 			return this.runInTransaction(this.delete);
+		}
 
 		const item = this.doc.data();
 		transaction.delete(this.doc.ref);
