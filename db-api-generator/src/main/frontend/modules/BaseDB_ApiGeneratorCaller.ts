@@ -23,9 +23,18 @@ import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiStruct_DBApiGen, DBApiDefGenerator, DBDef,} from '../shared';
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
-import {_keys, addItemToArray, DB_Object, Module, removeItemFromArray} from '@nu-art/ts-common';
+import {_keys, addItemToArray, DB_Object, Module, removeItemFromArray, dbObjectToId} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
-import {EventType_Create, EventType_Delete, EventType_Patch, EventType_Query, EventType_Unique, EventType_Update, EventType_UpsertAll} from '../consts';
+import {
+	EventType_Create,
+	EventType_Delete,
+	EventType_DeleteMulti,
+	EventType_Patch,
+	EventType_Query,
+	EventType_Unique,
+	EventType_Update,
+	EventType_UpsertAll
+} from '../consts';
 import {getModuleFEConfig} from '../db-def';
 import {FirestoreQuery} from '@nu-art/firebase';
 
@@ -64,7 +73,8 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			upsertAll: apiWithBody(apiDef.v1.upsertAll, this.onEntriesUpdated),
 			patch: apiWithBody(apiDef.v1.patch, this.onEntryPatched),
 			delete: apiWithQuery(apiDef.v1.delete, this.onEntryDeleted),
-			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
+			deleteQuery: apiWithBody(apiDef.v1.deleteQuery, this.onEntriesDeleted),
+			deleteAll: apiWithQuery(apiDef.v1.deleteAll, this.onAllEntriesDeleted),
 			upgradeCollection: apiWithQuery(apiDef.v1.upgradeCollection, () => this.v1.sync().executeSync())
 		};
 	}
@@ -101,6 +111,20 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 		delete this.items[item._id];
 
 		this.dispatchSingle(EventType_Delete, item._id);
+	}
+
+	protected async onAllEntriesDeleted(): Promise<void> {
+		this.items = {};
+	}
+
+	protected async onEntriesDeleted(items: DBType[]): Promise<void> {
+		items.forEach(item => {
+
+			removeItemFromArray(this.ids, item._id);
+			delete this.items[item._id];
+		});
+
+		this.dispatchMulti(EventType_DeleteMulti, items.map(dbObjectToId));
 	}
 
 	protected async onEntriesUpdated(items: DBType[]): Promise<void> {
