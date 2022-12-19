@@ -287,7 +287,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	protected async onEntriesDeleted(items: DBType[]): Promise<void> {
 		await this.IDB.syncIndexDb([], items);
 		// @ts-ignore
-		this.cache.onEntriesDeleted(item);
+		this.cache.onEntriesDeleted(items);
 		this.dispatchMulti(EventType_DeleteMulti, items);
 	}
 
