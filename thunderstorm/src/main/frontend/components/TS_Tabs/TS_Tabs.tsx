@@ -43,6 +43,7 @@ export type Props_Tabs = {
 	 * @param selected id of the selected tab.
 	 */
 	onSelected?: (selectedTabId: string) => void
+	scrollToSelected?: boolean;
 }
 
 type State = {
@@ -74,12 +75,8 @@ export class TS_Tabs
 		super(p);
 	}
 
-	private getStorageKey() {
-		if (!this.props.id)
-			return;
 
-		return new StorageKey<string>(`ts-tabs__${this.props.id}`, this.props.persistSelection);
-	}
+	//######################### Life Cycle #########################
 
 	protected deriveStateFromProps(nextProps: Props_Tabs): State {
 		const selectedTabId = (nextProps.tabs.find(t => t.uid === nextProps.selectedTabId)?.uid)
@@ -93,11 +90,25 @@ export class TS_Tabs
 		};
 	}
 
+	componentDidUpdate(prevProps: Readonly<Props_Tabs>, prevState: Readonly<State>, snapshot?: any) {
+		if (prevProps.scrollToSelected)
+			this.scrollToSelectedTab();
+	}
+
+	//######################### Logic #########################
+
+	private getStorageKey() {
+		if (!this.props.id)
+			return;
+
+		return new StorageKey<string>(`ts-tabs__${this.props.id}`, this.props.persistSelection);
+	}
+
 	selectOnClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>, tab: Tab) => {
 		stopPropagation(e);
 		if (tab.disabled)
 			return;
-		
+
 		const selectedTabId = tab.uid;
 		if (!selectedTabId)
 			return;
@@ -109,6 +120,26 @@ export class TS_Tabs
 		}
 		this.setState({selectedTabId});
 	};
+
+	private scrollToSelectedTab = () => {
+		if (!this.props.selectedTabId)
+			return;
+
+		const selectedTab = document.getElementById(this.props.selectedTabId);
+		if (!selectedTab)
+			return;
+
+		const deltaRight = selectedTab.getBoundingClientRect().right - window.innerWidth;
+		if (deltaRight <= 1)
+			return;
+
+		selectedTab.parentElement?.scroll({
+			left: deltaRight,
+			behavior: 'smooth',
+		});
+	};
+
+	//######################### Render #########################
 
 	render() {
 		const tabs = this.state.tabs;
