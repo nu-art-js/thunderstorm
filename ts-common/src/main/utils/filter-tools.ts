@@ -52,6 +52,21 @@ export class Filter<T> {
 	private originFilterText?: string;
 	private _filter!: RegExp;
 
+	static translateStringToRegexFilter = (filter: string, regexp: boolean): RegExp => {
+		filter = (filter || '').trim();
+		filter = filter.toLowerCase();
+		filter = filter.replace(/\s+/, ' ');
+
+		if (regexp) {
+			filter = filter.replace(new RegExp('(.)', 'g'), '.*?$1');
+		} else {
+			filter = `.*?${filter}`;
+		}
+
+		filter.length === 0 ? filter = '.*?' : filter += '.*';
+		return new RegExp(filter);
+	};
+
 	/**
 	 * Returns an instance of a filter, where the tested fields are the one provided by the mapper.
 	 *
@@ -205,18 +220,8 @@ export class Filter<T> {
 		if (this.originFilterText === filter)
 			return this;
 
-		filter = (filter || '').trim();
-		filter = filter.toLowerCase();
-		filter = filter.replace(/\s+/, ' ');
-		if (this.regexp) {
-			filter = filter.replace(new RegExp('(.)', 'g'), '.*?$1');
-		} else {
-			filter = `.*?${filter}`;
-		}
-		filter.length === 0 ? filter = '.*?' : filter += '.*';
-
+		this._filter = Filter.translateStringToRegexFilter(filter || '', this.regexp);
 		this.originFilterText = filter;
-		this._filter = new RegExp(filter);
 		return this;
 	}
 }
