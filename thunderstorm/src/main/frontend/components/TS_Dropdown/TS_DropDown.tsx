@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {Filter} from '@nu-art/ts-common';
+import {BadImplementationException, Filter} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -32,7 +32,6 @@ import './TS_DropDown.scss';
 
 
 type State<ItemType> = {
-	adapter: Adapter<ItemType>
 	open: boolean
 	selected?: ItemType
 	hover?: ItemType
@@ -55,7 +54,7 @@ type DropDownChildrenContainerData = {
 }
 
 export type Props_DropDown<ItemType> = Partial<StaticProps> & {
-	adapter: Adapter<ItemType>
+	adapter: Adapter<ItemType> | ((filter?: string) => Adapter<ItemType>)
 	placeholder?: string,
 	inputValue?: string,
 
@@ -122,7 +121,6 @@ export class TS_DropDown<ItemType>
 	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
 		const ref = this.props.innerRef || this.state?.dropDownRef || React.createRef<HTMLDivElement>();
 		return {
-			adapter: nextProps.adapter.clone(new Adapter<ItemType>([])),
 			selected: nextProps.selected,
 			open: this.state?.open || false,
 			filterText: nextProps.inputValue,
@@ -149,7 +147,7 @@ export class TS_DropDown<ItemType>
 	};
 
 	onSelected = (item: ItemType) => {
-		const newState: State<ItemType> = {...this.state, open: false};
+		const newState: State<ItemType> = {...this.state, open: false, filterText: undefined};
 		if (!this.props.allowManualSelection)
 			newState.selected = item;
 
@@ -165,12 +163,13 @@ export class TS_DropDown<ItemType>
 		if (e.key === 'Enter') {
 			e.persist();
 			const filterText = this.state.filterText;
+			const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(filterText) : this.props.adapter;
 			if (filterText) {
 				this.setState({open: false, filterText: undefined}, () => {
-					this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e);
+					this.props.onNoMatchingSelectionForString?.(filterText, adapter.data, e);
 				});
 			} else
-				this.onSelected(this.state.adapter.data[0]);
+				this.onSelected(adapter.data[0]);
 		}
 
 		if (e.key === 'Escape')
@@ -254,11 +253,13 @@ export class TS_DropDown<ItemType>
 		let className = 'ts-dropdown__items';
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const filter = this.props.filter;
+		const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(this.state.filterText) : this.props.adapter;
 		if (filter) {
 			try {
-				this.state.adapter.data = filter.filterSort(this.props.adapter.data, this.state.filterText || '');
-			} catch (e) {
-				this.state.adapter.data = this.props.adapter.data;
+				adapter.data = filter.filterSort(adapter.data, this.state.filterText || '');
+			} catch (e: any) {
+				console.log(e);
+				throw new BadImplementationException(e);
 			}
 		}
 
@@ -291,7 +292,7 @@ export class TS_DropDown<ItemType>
 			style.width = containerData.width;
 		}
 
-		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0) {
+		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && adapter.data.length === 0) {
 			if (this.props.noOptionsRenderer)
 				return <div className="ts-dropdown__empty" style={style}>
 					{(typeof this.props.noOptionsRenderer === 'function' ? this.props.noOptionsRenderer() : this.props.noOptionsRenderer)}
@@ -300,7 +301,7 @@ export class TS_DropDown<ItemType>
 		}
 
 		return <TS_Tree
-			adapter={this.state.adapter}
+			adapter={adapter}
 			selectedItem={this.state.selected}
 			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
 			className={className}
@@ -316,12 +317,13 @@ export class TS_DropDown<ItemType>
 		if (selected === undefined)
 			return <div className="ts-dropdown__placeholder">{this.props.placeholder || ''}</div>;
 
-		const Renderer = this.props.adapter.treeNodeRenderer;
+		const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(this.state.filterText) : this.props.adapter;
+		const Renderer = adapter.treeNodeRenderer;
 		const node = {
 			propKey: 'string',
 			path: 'string',
 			item: 'any',
-			adapter: this.props.adapter,
+			adapter: adapter,
 			expandToggler: (e: React.MouseEvent, expxand?: boolean) => {
 			},
 			onClick: (e: React.MouseEvent) => {
