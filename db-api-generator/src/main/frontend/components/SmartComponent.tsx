@@ -125,7 +125,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 			.then((state) => {
 
 				if (this.pendingProps)
-					return this.reDeriveCompletedCallback();
+					return this.reDeriveCompletedCallback(state);
 
 				if (!this.mounted)
 					return this.logWarning('Will not set derived state - Component Unmounted');
@@ -146,7 +146,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		return currentState;
 	}
 
-	private reDeriveCompletedCallback = () => {
+	private reDeriveCompletedCallback = (state?: State) => {
 		this.derivingState = false;
 		if (!this.pendingProps)
 			return;
@@ -155,7 +155,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 			return this.logWarning('Will not trigger pending props - Component Unmounted');
 
 		this.logVerbose('Triggering pending props');
-		this._deriveStateFromProps(this.pendingProps);
+		this._deriveStateFromProps(this.pendingProps, state);
 	};
 
 	protected abstract deriveStateFromProps(nextProps: Props, state?: Partial<S> & State_SmartComponent): Promise<State>;
