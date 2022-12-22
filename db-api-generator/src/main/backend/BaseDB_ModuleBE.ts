@@ -41,7 +41,14 @@ import {
 
 import {IndexKeys} from '@nu-art/thunderstorm';
 import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
-import {DocWrapper, FirestoreCollection, FirestoreInterface, FirestoreTransaction, ModuleBE_Firebase,} from '@nu-art/firebase/backend';
+import {
+	DocWrapper,
+	FirestoreCollection,
+	FirestoreInterface,
+	FirestoreTransaction,
+	FirestoreType_DocumentSnapshot,
+	ModuleBE_Firebase,
+} from '@nu-art/firebase/backend';
 import {dbIdLength} from '../shared/validators';
 import {canDeleteDispatcher, DB_EntityDependency, DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {DBDef} from '../shared/db-def';
@@ -171,6 +178,51 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 			const now = currentTimeMillis();
 			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, now);
 			return items;
+		}
+	});
+
+	readonly _upsertUnique = Object.freeze({
+		read: async (transaction: FirestoreTransaction, instance: PreDB<DBType>) => {
+			if (instance._id) {
+				const doc = (await transaction.newQueryUnique(this.collection, {where: {_id: instance._id}} as FirestoreQuery<DBType>));
+				if (doc)
+					return doc;
+			}
+
+			const timestamp = currentTimeMillis();
+
+			let dbInstance: DBType;
+
+			// PLEASE DO NOT MESS WITH THE UNDER CONDITION!!
+			if (this.config.uniqueKeys[0] === '_id' && instance._id === undefined)
+				dbInstance = {
+					...instance,
+					_id: this.generateId(),
+					__created: timestamp,
+					__updated: timestamp
+				} as unknown as DBType;
+			else
+				dbInstance = {
+					...instance,
+					_id: instance._id || this.generateId(),
+					__created: instance.__created || timestamp,
+					__updated: timestamp
+				} as unknown as DBType;
+
+			const ref = this.collection.createDocumentReference(dbInstance._id);
+			return new DocWrapper<DBType>(this.collection.wrapper, {ref, data: () => dbInstance} as FirestoreType_DocumentSnapshot<DBType>);
+		},
+		assert: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
+			const dbInstance = doc.get();
+			await this._preUpsertProcessing(transaction, dbInstance);
+			await this.validateImpl(dbInstance);
+			await this.assertUniqueness(transaction, dbInstance);
+
+		},
+		write: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
+			const instance = doc.get();
+			doc.set(instance, transaction.transaction);
+			return instance;
 		}
 	});
 
