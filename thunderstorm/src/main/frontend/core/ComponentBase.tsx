@@ -93,7 +93,7 @@ export abstract class BaseComponent<P = any, State = any>
 	protected abstract _deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined ;
 
 	protected reDeriveState = (state?: Partial<State>) => {
-		this.logDebug('reDeriveState called..');
+		this.logVerbose('reDeriveState called..');
 
 		this._deriveStateFromProps(this.props, {...this.state, ...state});
 	};
@@ -142,7 +142,7 @@ export abstract class BaseComponent<P = any, State = any>
 			const stateKeys = sortArray(_keys(this.state || EmptyObject));
 			const nextStateKeys = sortArray(_keys(nextState || EmptyObject));
 
-			this.logDebug('States Same Instance:', this.state === nextState);
+			// this.logDebug('States Same Instance:', this.state === nextState);
 			if (stateKeys.length !== nextStateKeys.length)
 				return true;
 			if (stateKeys.some((key, i) => stateKeys[i] !== nextStateKeys[i] || this.state[stateKeys[i]] !== nextState[nextStateKeys[i]]))

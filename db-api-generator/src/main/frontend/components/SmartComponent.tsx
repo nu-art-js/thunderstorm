@@ -52,7 +52,10 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	// };
 
 	private derivingState = false;
-	private pendingProps?: Props;
+	private pending?: {
+		props: Props,
+		state: State
+	};
 
 	constructor(p: Props) {
 		super(p);
@@ -90,14 +93,14 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	private onSyncEvent = (module: BaseDB_ApiCaller<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
 		//Define logic for change in module sync status
-		this.logInfo(`onSyncEvent: ${module.getCollectionName()} ${params[0]}`);
+		// this.logInfo(`onSyncEvent: ${module.getCollectionName()} ${params[0]}`);
 		if (params[0] === EventType_Sync) {
 			this.reDeriveState();
 		}
 	};
 
 	protected _deriveStateFromProps(nextProps: Props, partialState: State = this.createInitialState(nextProps)): State | undefined {
-		const currentState = this.state || partialState;
+		const currentState = partialState;
 
 		let isReady: boolean;
 		if (!this.props.modules || this.props.modules.length === 0)
@@ -107,24 +110,24 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 		if (!isReady) {
 			const state = this.createInitialState(nextProps);
-			this.logDebug(`Component not ready`, state);
+			this.logVerbose(`Component not ready`, state);
 			return state;
 		}
 
 		if (this.derivingState) {
 			this.logVerbose('Scheduling new props', nextProps as {});
-			this.pendingProps = nextProps;
+			this.pending = {props: nextProps, state: partialState};
 			return;
 		}
 
-		this.logVerbose('Will derive state from props', nextProps as {});
-		this.pendingProps = undefined;
+		this.logDebug('Will derive state from props', nextProps as {});
+		this.pending = undefined;
 		this.derivingState = true;
 
 		this.deriveStateFromProps(nextProps, {...partialState, componentPhase: ComponentStatus.Synced})
 			.then((state) => {
 
-				if (this.pendingProps)
+				if (this.pending)
 					return this.reDeriveCompletedCallback(state);
 
 				if (!this.mounted)
@@ -148,14 +151,14 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	private reDeriveCompletedCallback = (state?: State) => {
 		this.derivingState = false;
-		if (!this.pendingProps)
+		if (!this.pending)
 			return;
 
 		if (!this.mounted)
 			return this.logWarning('Will not trigger pending props - Component Unmounted');
 
 		this.logVerbose('Triggering pending props');
-		this._deriveStateFromProps(this.pendingProps, state);
+		this._deriveStateFromProps(this.pending.props, {...state, ...this.pending.state});
 	};
 
 	protected abstract deriveStateFromProps(nextProps: Props, state?: Partial<S> & State_SmartComponent): Promise<State>;
