@@ -22,10 +22,6 @@ export type DB_Notification = DB_Object & {
 	status: NotificationStatus
 }
 
-export type Notification_Model = {
-	notifications: DB_Notification[];
-}
-
 export interface UI_Notification {
 	postDelayed: (postDelayed: number) => UI_Notification;
 	content: (title: string, message?: string) => UI_Notification;
@@ -36,7 +32,7 @@ export interface UI_Notification {
 }
 
 export interface NotificationListener {
-	__showNotifications(notificationModel?: Notification_Model): void;
+	__showNotifications(notifications: DB_Notification[]): void;
 }
 
 const dispatch_showNotifications = new ThunderDispatcher<NotificationListener, '__showNotifications'>('__showNotifications');
@@ -129,7 +125,7 @@ export class ModuleFE_Notifications_Class
 		else
 			addItemToArrayAtIndex(this.showing, notification, 0);
 
-		dispatch_showNotifications.dispatchUI({notifications: this.showing});
+		dispatch_showNotifications.dispatchUI(this.showing);
 		if (postDelay <= 0)
 			return;
 
@@ -142,7 +138,7 @@ export class ModuleFE_Notifications_Class
 			return;
 
 		removeFromArrayByIndex(this.showing, index);
-		dispatch_showNotifications.dispatchUI({notifications: this.showing});
+		dispatch_showNotifications.dispatchUI(this.showing);
 	}
 
 	private delete(notification: DB_Notification) {
@@ -153,11 +149,11 @@ export class ModuleFE_Notifications_Class
 
 	showAllNotifications() {
 		const notifications = this.notificationStorage.get([]);
-		dispatch_showNotifications.dispatchUI({notifications});
+		dispatch_showNotifications.dispatchUI(notifications);
 	}
 
 	hideAllNotifications() {
-		dispatch_showNotifications.dispatchUI({notifications: []});
+		dispatch_showNotifications.dispatchUI([]);
 	}
 }
 

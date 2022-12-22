@@ -1,5 +1,5 @@
 import {ComponentSync} from '../../core/ComponentSync';
-import {ModuleFE_Notifications, Notification, Notification_Model, NotificationListener} from '../../component-modules/ModuleFE_Notifications';
+import {DB_Notification, ModuleFE_Notifications, NotificationListener} from '../../component-modules/ModuleFE_Notifications';
 import * as React from 'react';
 import {LL_H_C, LL_V_L} from '../Layouts';
 import {formatTimestamp} from '@nu-art/ts-common';
@@ -8,9 +8,7 @@ import {TS_ComponentTransition} from '../TS_ComponentTransition';
 import {_className, stopPropagation} from '../../utils/tools';
 
 type State = {
-	notifications: Notification[];
-	timeoutMs?: number;
-	showNotifications: boolean;
+	notifications: DB_Notification[];
 }
 
 export class TS_Notifications
@@ -21,33 +19,15 @@ export class TS_Notifications
 
 	private overlayClass: string = 'ts-notification-overlay';
 	private containerClass: string = 'ts-notification-container';
-	private timeout: NodeJS.Timeout | undefined = undefined;
-
 
 	// ######################### Life Cycle #########################
 
-	__showNotifications(notificationModel?: Notification_Model) {
-		//No model - delete state notifications
-		if (!notificationModel) {
-			clearTimeout(this.timeout);
-			this.setState({
-				showNotifications: false,
-			});
-			return;
-		}
-
-		if (notificationModel.closeTimeout !== -1)
-			this.timeout = setTimeout(() => this.setState({showNotifications: false}), notificationModel.closeTimeout);
-		this.setState({
-			notifications: notificationModel.notifications,
-			showNotifications: true,
-			timeoutMs: notificationModel.closeTimeout,
-		});
+	__showNotifications(notifications: DB_Notification[]) {
+		this.setState({notifications});
 	}
 
 	protected deriveStateFromProps(nextProps: any): State {
 		return {
-			showNotifications: false,
 			notifications: []
 		};
 	}
@@ -86,16 +66,17 @@ export class TS_Notifications
 		firstNonNotificationElement.dispatchEvent(ev);
 	};
 
-	private deletePost = (e: React.MouseEvent, id: string) => {
+	private deletePost = (e: React.MouseEvent, notification: DB_Notification) => {
 		stopPropagation(e);
-		this.setState({notifications: this.state.notifications.filter(item => item.id !== id)});
-		ModuleFE_Notifications.deletePost(id);
+		ModuleFE_Notifications.create(notification._id).delete();
+		//Next line should be removed when the module dispatches new list after deletion
+		this.setState({notifications: this.state.notifications.filter(item => item._id !== notification._id)});
 	};
 
 	// ######################### Render #########################
 
-	private renderNotification(notification: Notification) {
-		return <LL_V_L className={`ts-notification ts-notification__${notification.status}`} key={notification.id}>
+	private renderNotification(notification: DB_Notification) {
+		return <LL_V_L className={`ts-notification ts-notification__${notification.status}`} key={notification._id}>
 			<LL_H_C className={'ts-notification__header'}>
 				<div className={'ts-notification__title'}>{notification.title}</div>
 				<span className={'ts-notification__close'} onClick={(e) => {
@@ -103,35 +84,33 @@ export class TS_Notifications
 						ModuleFE_Notifications.hideAllNotifications();
 						return;
 					}
-					this.deletePost(e, notification.id);
+					this.deletePost(e, notification);
 				}}>&#10005;</span>
 			</LL_H_C>
 			<LL_V_L className={'ts-notification__body'}>
 				<div className={'ts-notification__message'}>{notification.message}</div>
 			</LL_V_L>
 			<LL_H_C className={'ts-notification__footer'}>
-				<div className={'ts-notification__timestamp'}>{formatTimestamp('DD/M - hh:mm A', notification.timestamp)}</div>
+				<div className={'ts-notification__timestamp'}>{formatTimestamp('DD/M - hh:mm A', notification.__created)}</div>
 			</LL_H_C>
 		</LL_V_L>;
 	}
 
 	private renderNotifications = () => {
-		if (!this.state.timeoutMs)
+		if (!this.state.notifications.length)
 			return '';
-
-		if (this.state.timeoutMs >= 0)
-			this.renderNotification(this.state.notifications[0]);
 
 		return this.state.notifications.map(notification => this.renderNotification(notification));
 	};
 
 	render() {
+		const notificationsToShow = !!this.state.notifications.length;
 		const className = _className('ts-notification-container', this.state.notifications.length > 1 ? 'list' : undefined);
 		return <>
-			{this.state.showNotifications &&
+			{notificationsToShow &&
 				<div className={'ts-notification-overlay'} onClick={e => this.onClickToClose(e, 'click')} onContextMenu={e => this.onClickToClose(e, 'contextmenu')}/>}
 			<TS_ComponentTransition
-				trigger={this.state.showNotifications}
+				trigger={notificationsToShow}
 				transitionTimeout={300}
 			>
 				<LL_V_L className={className} onClick={e => this.onClickToClose(e, 'click')} onContextMenu={e => this.onClickToClose(e, 'contextmenu')}>
