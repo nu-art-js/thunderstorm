@@ -16,8 +16,6 @@
  * limitations under the License.
  */
 
-import {cloneArr} from './object-tools';
-
 export function removeItemFromArray<T>(array: T[], item: T) {
 	const index = array.indexOf(item);
 	return removeFromArrayByIndex(array, index);
@@ -97,7 +95,7 @@ export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<In
 	}, map);
 }
 
-export function sortArray<T>(array: T[] | ReadonlyArray<T>, map: keyof T | (keyof T)[] | ((item: T) => any) = i => i, invert = false): T[] {
+export function sortArray<T>(array: T[], map: keyof T | (keyof T)[] | ((item: T) => any) = i => i, invert = false): T[] {
 	const functionMap = map;
 	if (typeof functionMap === 'function') {
 		const compareFn = (a: T, b: T) => {
@@ -106,12 +104,7 @@ export function sortArray<T>(array: T[] | ReadonlyArray<T>, map: keyof T | (keyo
 			return (_a < _b ? -1 : (_a === _b ? 0 : 1)) * (invert ? -1 : 1);
 		};
 
-		let _array;
-		if ('sort' in array)
-			_array = cloneArr(array as T[]);
-		else
-			_array = array;
-		return (_array as T[]).sort(compareFn);
+		return array.sort(compareFn);
 	}
 
 	let keys: (keyof T)[];
