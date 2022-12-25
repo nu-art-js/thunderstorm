@@ -43,6 +43,7 @@ export class ModuleFE_Notifications_Class
 	readonly maxNotifications: number;
 	private notificationStorage: StorageKey<DB_Notification[]>;
 	private showing: DB_Notification[] = [];
+	private timeouts: { [k: string]: any } = {};
 
 	constructor(maxNotifications: number = 15) {
 		super();
@@ -126,10 +127,16 @@ export class ModuleFE_Notifications_Class
 			addItemToArrayAtIndex(this.showing, notification, 0);
 
 		dispatch_showNotifications.dispatchUI(this.showing);
+		if (this.timeouts[notification._id]) {
+			clearTimeout(this.timeouts[notification._id]);
+			delete this.timeouts[notification._id];
+		}
+
 		if (postDelay <= 0)
 			return;
 
-		setTimeout(() => this.hide(notification), postDelay);
+		const timeoutId = setTimeout(() => this.hide(notification), postDelay);
+		this.timeouts[notification._id] = timeoutId;
 	}
 
 	private hide(notification: DB_Notification) {
