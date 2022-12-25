@@ -98,7 +98,7 @@ export class FirestoreTransaction {
 		};
 	}
 
-	private async getOrCreateDocument<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type, _id?: string) {
+	async getOrCreateDocument<Type extends TS_Object>(collection: FirestoreCollection<Type>, instance: Type, _id?: string) {
 		let ref = (await this._queryItem(collection, instance))?.ref;
 		if (!ref)
 			ref = collection.createDocumentReference(_id);

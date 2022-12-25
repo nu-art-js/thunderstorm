@@ -183,7 +183,7 @@ export class DocWrapper<T extends TS_Object> {
 			return this.runInTransaction(this.delete);
 		}
 
-		const item = this.doc.data();
+		const item = this.get();
 		transaction.delete(this.doc.ref);
 		return item;
 	};
