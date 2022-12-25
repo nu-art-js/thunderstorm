@@ -222,6 +222,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		if (mySyncData && mySyncData.oldestDeleted !== undefined && mySyncData.oldestDeleted > this.IDB.getLastSync()) {
 			this.logWarning('DATA WAS TOO OLD, Cleaning Cache', `${mySyncData.oldestDeleted} > ${this.IDB.getLastSync()}`);
 			await this.IDB.clear();
+			this.cache.clear();
 		}
 
 		if (mySyncData && mySyncData.lastUpdated <= this.IDB.getLastSync()) {

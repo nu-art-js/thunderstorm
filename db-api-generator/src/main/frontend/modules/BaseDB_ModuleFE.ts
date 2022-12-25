@@ -23,7 +23,7 @@ import {IndexKeys} from '@nu-art/thunderstorm';
 import {DBDef,} from '../shared';
 import {DBConfig, IndexDb_Query, IndexedDB, OnClearWebsiteData, ReduceFunction, StorageKey} from '@nu-art/thunderstorm/frontend';
 
-import {arrayToMap, cloneArr, DB_Object, dbObjectToId, Logger, Module, TypedMap} from '@nu-art/ts-common';
+import {arrayToMap, DB_Object, dbObjectToId, Logger, Module, TypedMap} from '@nu-art/ts-common';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 
@@ -217,10 +217,6 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 
 	private getFullKey = (_key: IndexKeys<DBType, Ks>) => {
 		return this.keys.reduce((_fullKey, key) => `${_fullKey}-${_key[key as Ks]}`, '');
-	};
-
-	allMutable = () => {
-		return cloneArr(this._array as DBType[]);
 	};
 
 	all = () => {
