@@ -7,9 +7,9 @@ import './TS_Notifications.scss';
 import {TS_ComponentTransition} from '../TS_ComponentTransition';
 import {_className, stopPropagation} from '../../utils/tools';
 
-
 type State = {
 	notifications: DB_Notification[];
+	showNotifications: boolean;
 }
 
 export class TS_Notifications
@@ -20,17 +20,32 @@ export class TS_Notifications
 
 	private overlayClass: string = 'ts-notification-overlay';
 	private containerClass: string = 'ts-notification-container';
+	private transitionTimeout: number = 300;
+	private timeout: NodeJS.Timeout | undefined = undefined;
 
 	// ######################### Life Cycle #########################
 
 	__showNotifications(notifications: DB_Notification[]) {
-		this.setState({notifications});
-		this.forceUpdate();
+		if (notifications.length === 0) { //If there are no notifications to show
+			//Transition notifications out
+			this.setState({showNotifications: false}, () => {
+				//Get rid of notifications in state after they are out of view
+				this.timeout = setTimeout(() => {
+					this.setState({notifications});
+				}, this.transitionTimeout);
+			});
+
+		} else { //There are notifications to show
+			clearTimeout(this.timeout);
+			this.setState({notifications: [...notifications], showNotifications: true});
+			this.forceUpdate();
+		}
 	}
 
 	protected deriveStateFromProps(nextProps: any): State {
 		return {
-			notifications: []
+			notifications: [],
+			showNotifications: false,
 		};
 	}
 
@@ -101,24 +116,17 @@ export class TS_Notifications
 	private renderNotifications = () => {
 		if (!this.state.notifications.length)
 			return '';
-
 		return this.state.notifications.map(notification => this.renderNotification(notification));
 	};
 
 	render() {
-		const notificationsToShow = !!this.state.notifications.length;
 		const className = _className('ts-notification-container', this.state.notifications.length > 1 ? 'list' : undefined);
-		return <>
-			{notificationsToShow &&
-				<div className={'ts-notification-overlay'} onClick={e => this.onClickToClose(e, 'click')} onContextMenu={e => this.onClickToClose(e, 'contextmenu')}/>}
-			<TS_ComponentTransition
-				trigger={notificationsToShow}
-				transitionTimeout={300}
-			>
+		return <TS_ComponentTransition trigger={this.state.showNotifications} transitionTimeout={this.transitionTimeout}>
+			<div className={'ts-notification-overlay'} onClick={e => this.onClickToClose(e, 'click')} onContextMenu={e => this.onClickToClose(e, 'contextmenu')}>
 				<LL_V_L className={className} onClick={e => this.onClickToClose(e, 'click')} onContextMenu={e => this.onClickToClose(e, 'contextmenu')}>
 					{this.renderNotifications()}
 				</LL_V_L>
-			</TS_ComponentTransition>
-		</>;
+			</div>
+		</TS_ComponentTransition>;
 	}
 }
