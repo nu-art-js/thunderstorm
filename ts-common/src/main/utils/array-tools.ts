@@ -81,12 +81,15 @@ export function filterInstances<T>(array?: (T | undefined | null | void)[]): T[]
 	return (array?.filter(item => !!item) || []) as T[];
 }
 
-export function arrayToMap<T>(array: T[], getKey: (item: T, index: number, map: { [k: string]: T }) => string | number, map: { [k: string]: T } = {}): { [k: string]: T } {
+export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, index: number, map: { [k: string]: T }) => string | number, map: { [k: string]: T } = {}): { [k: string]: T } {
 	return reduceToMap<T, T>(array, getKey, item => item, map);
 }
 
-export function reduceToMap<Input, Output = Input>(array: Input[], keyResolver: (item: Input, index: number, map: { [k: string]: Output }) => string | number, mapper: (item: Input, index: number, map: { [k: string]: Output }) => Output, map: { [k: string]: Output } = {}): { [k: string]: Output } {
-	return array.reduce((toRet, element, index) => {
+export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<Input[]>),
+																									 keyResolver: (item: Input, index: number, map: { [k: string]: Output }) => string | number,
+																									 mapper: (item: Input, index: number, map: { [k: string]: Output }) => Output,
+																									 map: { [k: string]: Output } = {}): { [k: string]: Output } {
+	return (array as (Input[])).reduce((toRet, element, index) => {
 		toRet[keyResolver(element, index, toRet)] = mapper(element, index, toRet);
 		return toRet;
 	}, map);
@@ -100,6 +103,7 @@ export function sortArray<T>(array: T[], map: keyof T | (keyof T)[] | ((item: T)
 			const _b = functionMap(b);
 			return (_a < _b ? -1 : (_a === _b ? 0 : 1)) * (invert ? -1 : 1);
 		};
+
 		return array.sort(compareFn);
 	}
 
@@ -111,7 +115,7 @@ export function sortArray<T>(array: T[], map: keyof T | (keyof T)[] | ((item: T)
 
 	return keys.reduce((array, key) => {
 		return sortArray<T>(array, item => item[key]);
-	}, array);
+	}, array) as T[];
 }
 
 export async function batchAction<T extends any = any, R extends any = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {

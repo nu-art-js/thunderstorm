@@ -23,7 +23,7 @@ import {IndexKeys} from '@nu-art/thunderstorm';
 import {DBDef,} from '../shared';
 import {DBConfig, IndexDb_Query, IndexedDB, OnClearWebsiteData, ReduceFunction, StorageKey} from '@nu-art/thunderstorm/frontend';
 
-import {dbObjectToId, arrayToMap, DB_Object, Module, TypedMap, Logger} from '@nu-art/ts-common';
+import {arrayToMap, DB_Object, dbObjectToId, Logger, Module, TypedMap} from '@nu-art/ts-common';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 
