@@ -7,6 +7,7 @@ import './TS_Notifications.scss';
 import {TS_ComponentTransition} from '../TS_ComponentTransition';
 import {_className, stopPropagation} from '../../utils/tools';
 
+
 type State = {
 	notifications: DB_Notification[];
 }
@@ -24,6 +25,7 @@ export class TS_Notifications
 
 	__showNotifications(notifications: DB_Notification[]) {
 		this.setState({notifications});
+		this.forceUpdate();
 	}
 
 	protected deriveStateFromProps(nextProps: any): State {
