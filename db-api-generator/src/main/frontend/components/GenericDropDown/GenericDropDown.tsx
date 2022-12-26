@@ -1,5 +1,5 @@
 import {ComponentSync, SimpleListAdapter, TS_DropDown} from '@nu-art/thunderstorm/frontend';
-import {cloneArr, DB_Object, Filter, sortArray} from '@nu-art/ts-common';
+import {DB_Object, Filter, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
 import {BaseDB_ApiCaller} from '../..';
 
@@ -74,7 +74,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 
 		//If filter doesn't exist OR (filter gave 0 results AND ifNoneShowAll condition flagged true)
 		if (!nextProps.queryFilter || (state.items.length === 0 && nextProps.ifNoneShowAll === true))
-			state.items = cloneArr(nextProps.module.cache.all() as T[]);
+			state.items = nextProps.module.cache.allMutable();
 
 		//Sort Items by sort function or object keys
 		if (typeof nextProps.sortBy === 'function')
