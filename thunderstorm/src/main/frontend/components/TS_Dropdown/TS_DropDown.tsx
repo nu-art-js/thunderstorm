@@ -264,7 +264,7 @@ export class TS_DropDown<ItemType>
 			}
 		}
 
-		if (!!this.props.limitItems) {
+		if (this.props.limitItems) {
 			adapter.data = adapter.data.slice(0, this.props.limitItems);
 		}
 
