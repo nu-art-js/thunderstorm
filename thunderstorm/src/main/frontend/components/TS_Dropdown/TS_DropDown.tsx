@@ -74,7 +74,8 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	allowManualSelection?: boolean
 	className?: string;
 	boundingParentSelector?: string;
-	renderSearch: (dropDown: TS_DropDown<ItemType>) => React.ReactNode
+	renderSearch: (dropDown: TS_DropDown<ItemType>) => React.ReactNode;
+	limitItems?: number;
 }
 
 
@@ -261,6 +262,10 @@ export class TS_DropDown<ItemType>
 				console.log(e);
 				throw new BadImplementationException(e);
 			}
+		}
+
+		if (!!this.props.limitItems) {
+			adapter.data = adapter.data.slice(0, this.props.limitItems);
 		}
 
 		const style: CSSProperties = {};
