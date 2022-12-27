@@ -14,6 +14,7 @@ type OptionalProps_GenericDropDown<T> = {
 	className?: string;
 	caret?: { open: React.ReactNode, close: React.ReactNode }
 	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
+	limitItems?: number;
 }
 
 export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> & {
@@ -22,6 +23,7 @@ export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> &
 	boundingParentSelector?: string;
 	inputValue?: string;
 	selected?: T | string | (() => T | undefined);
+	limitItems?: number;
 }
 
 export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = OptionalProps_GenericDropDown<T> & {
@@ -50,6 +52,7 @@ export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id
 	module: BaseDB_ApiCaller<T, Ks>;
 	modules: BaseDB_ApiCaller<DB_Object, any>[];
 	boundingParentSelector?: string;
+	limitItems?: number;
 }
 
 type State<T extends DB_Object> = {
@@ -124,6 +127,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 			caret={this.props.caret}
 			boundingParentSelector={this.props.boundingParentSelector}
 			renderSearch={this.props.renderSearch}
+			limitItems={this.props.limitItems}
 		/>;
 	}
 }
