@@ -16,16 +16,25 @@
  * limitations under the License.
  */
 
+/**
+ * Removes given item from array in place
+ */
 export function removeItemFromArray<T>(array: T[], item: T) {
 	const index = array.indexOf(item);
 	return removeFromArrayByIndex(array, index);
 }
 
+/**
+ * Removes the first item answering the condition given from array in place
+ */
 export function removeFromArray<T>(array: T[], item: (_item: T) => boolean) {
 	const index = array.findIndex(item);
 	return removeFromArrayByIndex(array, index);
 }
 
+/**
+ * Removes item from array in place
+ */
 export function removeFromArrayByIndex<T>(array: T[], index: number) {
 	if (index > -1)
 		array.splice(index, 1);
