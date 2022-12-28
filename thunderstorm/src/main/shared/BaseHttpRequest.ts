@@ -198,7 +198,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		await this.executeImpl();
 		const status = this.getStatus();
 
-		const requestData = this.params || this.body;
+		const requestData = this.body || this.params;
 		if (this.aborted) {
 			const httpException = new HttpException(status, this.url); // should be status 0
 			await this.onError?.(httpException, requestData, this);

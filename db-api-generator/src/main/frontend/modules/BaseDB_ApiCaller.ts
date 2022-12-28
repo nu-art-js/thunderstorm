@@ -226,7 +226,9 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		}
 
 		if (mySyncData && mySyncData.lastUpdated <= this.IDB.getLastSync()) {
-			await this.cache.load();
+			if (!this.cache.loaded)
+				await this.cache.load();
+
 			this.setDataStatus(DataStatus.containsData);
 			this.setSyncStatus(SyncStatus.idle);
 			return;
