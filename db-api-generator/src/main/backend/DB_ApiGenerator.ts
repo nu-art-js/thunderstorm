@@ -24,7 +24,7 @@ import {__stringify, _values, DB_BaseObject, DB_Object, Module, PreDB} from '@nu
 
 import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
 import {ApiDefServer, ApiException, ApiModule, ApiServerRouter, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB} from '../shared';
+import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, UpgradeCollectionBody} from '../shared';
 import {BaseDB_ModuleBE, DBApiConfig} from './BaseDB_ModuleBE';
 
 
@@ -54,7 +54,7 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 			delete: createQueryServerApi(apiDef.v1.delete, this._deleteUnique),
 			deleteQuery: createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
 			deleteAll: createQueryServerApi(apiDef.v1.deleteAll, this._deleteAll),
-			upgradeCollection: createQueryServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection)
+			upgradeCollection: createBodyServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection)
 		};
 	}
 
@@ -67,11 +67,14 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 
 	private _deleteAll = async (ignore?: {}) => this.dbModule.deleteAll();
 
-	private _upgradeCollection = async () => {
+	private _upgradeCollection = async (body: UpgradeCollectionBody) => {
+		const forceUpdate = body.forceUpdate || false;
 		// this should be paginated
-		const allItems = (await this.dbModule.collection.query(_EmptyQuery)).filter(item => item._v !== this.dbModule.dbDef.versions![0]);
-		await this.dbModule.upgradeInstances(allItems);
-		await this.dbModule.upsertAll(allItems);
+		let items = (await this.dbModule.collection.query(_EmptyQuery));
+		if (!forceUpdate)
+			items = items.filter(item => item._v !== this.dbModule.dbDef.versions![0]);
+		await this.dbModule.upgradeInstances(items);
+		await this.dbModule.upsertAll(items);
 	};
 
 	private _sync = async (query: FirestoreQuery<DBType>) => this.dbModule.querySync(query);
@@ -87,7 +90,7 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 
 	private _deleteUnique = async (id: DB_BaseObject): Promise<DBType> => this.dbModule.deleteUnique(id._id);
 
-	/*
+	/*›
  * TO BE MOVED ABOVE THIS COMMENT
  *
  *
