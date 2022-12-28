@@ -142,8 +142,8 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 			delete: (item: DB_BaseObject) => {
 				return this.updatePending(item, _delete(item), 'delete');
 			},
-			deleteQuery: apiWithBody(apiDef.v1.deleteQuery,),
-			deleteAll: apiWithQuery(apiDef.v1.deleteAll),
+			deleteQuery: apiWithBody(apiDef.v1.deleteQuery, this.onEntriesDeleted),
+			deleteAll: apiWithQuery(apiDef.v1.deleteAll, () => this.v1.sync().executeSync()),
 			upgradeCollection: apiWithQuery(apiDef.v1.upgradeCollection, () => this.v1.sync().executeSync())
 		};
 
@@ -287,12 +287,12 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 		this.dispatchMulti(EventType_Sync, []);
 	};
 
-	protected async onEntriesDeleted(items: DBType[]): Promise<void> {
+	public onEntriesDeleted = async (items: DBType[]): Promise<void> => {
 		await this.IDB.syncIndexDb([], items);
 		// @ts-ignore
 		this.cache.onEntriesDeleted(items);
 		this.dispatchMulti(EventType_DeleteMulti, items);
-	}
+	};
 
 	protected onEntryDeleted = async (item: DBType): Promise<void> => {
 		await this.IDB.syncIndexDb([], [item]);
