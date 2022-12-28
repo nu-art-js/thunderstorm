@@ -165,6 +165,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 
 	private readonly module: BaseDB_ModuleFE<DBType, Ks>;
 	private readonly keys: string[];
+	loaded: boolean = false;
 
 	_map!: Readonly<TypedMap<DBType>>;
 	_array!: Readonly<DBType[]>;
@@ -188,6 +189,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 	};
 
 	load = async (cacheFilter?: (item: DBType) => boolean) => {
+		this.module.logDebug(`${this.module.getName()} cache is loading`);
 		this.clear();
 		let allItems;
 		this.cacheFilter = cacheFilter;
@@ -202,6 +204,9 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 			this.cacheByKey = this._map;
 		else
 			this.cacheByKey = arrayToMap(allItems, this.getFullKey);
+
+		this.loaded = true;
+		this.module.logDebug(`${this.module.getName()} cache finished loading, count: ${this.all().length}`);
 	};
 
 	unique(_key?: string | IndexKeys<DBType, Ks>) {
