@@ -25,7 +25,7 @@ import {DB_BaseObject, DB_Object, PreDB, Second} from '@nu-art/ts-common';
 import {DBDef} from './db-def';
 
 
-export const _EmptyQuery = {where: {}};
+export const _EmptyQuery = Object.freeze({where: {}});
 
 /**
  * !! Workaround !!
@@ -87,7 +87,7 @@ export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType,
 export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof DBType>(dbDef: DBDef<DBType, Ks>): ApiDefResolver<ApiStruct_DBApiGenIDB<DBType, Ks>> => {
 	return {
 		v1: {
-			sync: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/sync`},
+			sync: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/sync`, timeout: 60 * Second},
 			query: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/query`},
 			queryUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/query-unique`},
 			upsert: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upsert`},
