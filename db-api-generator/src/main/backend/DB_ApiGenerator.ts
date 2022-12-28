@@ -76,7 +76,6 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 
 	private _sync = async (query: FirestoreQuery<DBType>) => this.dbModule.querySync(query);
 	private _deleteQuery = async (query: FirestoreQuery<DBType>): Promise<DBType[]> => {
-
 		if (!query.where)
 			throw new ApiException(400, `Cannot delete without a where clause, using query: ${__stringify(query)}`);
 
