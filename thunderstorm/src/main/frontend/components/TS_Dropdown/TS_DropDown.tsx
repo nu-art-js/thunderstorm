@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {BadImplementationException, Filter} from '@nu-art/ts-common';
+import {BadImplementationException, cloneArr, Filter} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -33,6 +33,7 @@ import './TS_DropDown.scss';
 
 type State<ItemType> = {
 	open: boolean
+	items: ItemType[];
 	selected?: ItemType
 	hover?: ItemType
 	filterText?: string
@@ -45,6 +46,8 @@ type StaticProps = {
 		close: React.ReactNode,
 	},
 }
+
+type InputEvent = React.KeyboardEvent | React.MouseEvent;
 
 type DropDownChildrenContainerData = {
 	posX: number;
@@ -121,7 +124,9 @@ export class TS_DropDown<ItemType>
 
 	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
 		const ref = this.props.innerRef || this.state?.dropDownRef || React.createRef<HTMLDivElement>();
+		const adapter = typeof nextProps.adapter === 'function' ? nextProps.adapter() : nextProps.adapter;
 		return {
+			items: adapter.data,
 			selected: nextProps.selected,
 			open: this.state?.open || false,
 			filterText: nextProps.inputValue,
@@ -138,21 +143,23 @@ export class TS_DropDown<ItemType>
 		return this.state.dropDownRef.current?.closest(this.props.boundingParentSelector);
 	}
 
-	toggleList = (e: React.MouseEvent) => {
+	toggleList = (e?: InputEvent, state: State<ItemType> = {} as State<ItemType>) => {
 		if (this.props.disabled)
 			return;
 
-		stopPropagation(e);
+		if (e)
+			stopPropagation(e);
 
-		this.setState(prevState => ({open: !prevState.open}));
+		this.setState(prevState => ({...state, open: !prevState.open, filterText: undefined}));
 	};
 
-	onSelected = (item: ItemType) => {
-		const newState: State<ItemType> = {...this.state, open: false, filterText: undefined};
+	onSelected = (item: ItemType, e?: InputEvent) => {
+		const newState = {} as State<ItemType>;
 		if (!this.props.allowManualSelection)
 			newState.selected = item;
 
-		this.setState({...newState}, () => this.props.onSelected(item));
+		this.toggleList(e, newState);
+		this.props.onSelected(item);
 	};
 
 	private keyEventHandler = (e: React.KeyboardEvent) => {
@@ -165,16 +172,16 @@ export class TS_DropDown<ItemType>
 			e.persist();
 			const filterText = this.state.filterText;
 			const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(filterText) : this.props.adapter;
+			adapter.data = cloneArr(this.state.items);
 			if (filterText) {
-				this.setState({open: false, filterText: undefined}, () => {
-					this.props.onNoMatchingSelectionForString?.(filterText, adapter.data, e);
-				});
+				this.toggleList(e);
+				this.props.onNoMatchingSelectionForString?.(filterText, adapter.data, e);
 			} else
-				this.onSelected(adapter.data[0]);
+				this.onSelected(adapter.data[0], e);
 		}
 
 		if (e.key === 'Escape')
-			return this.setState({open: false, filterText: undefined});
+			return this.toggleList(e);
 
 		// if (e.key === 'ArrowDown') {
 		// 	return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
@@ -226,7 +233,7 @@ export class TS_DropDown<ItemType>
 					 onBlur={this.removeKeyboardListener}
 			>
 				{this.renderHeader()}
-				<TS_Overlay flat={false} showOverlay={this.state.open} onClickOverlay={() => this.setState({open: false, filterText: undefined})}>
+				<TS_Overlay flat={false} showOverlay={this.state.open} onClickOverlay={this.toggleList}>
 					{this.renderTree()}
 				</TS_Overlay>
 			</div>
@@ -255,9 +262,10 @@ export class TS_DropDown<ItemType>
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const filter = this.props.filter;
 		const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(this.state.filterText) : this.props.adapter;
-		if (filter) {
+		adapter.data = cloneArr(this.state.items);
+		if (filter && this.state.filterText) {
 			try {
-				adapter.data = filter.filterSort(adapter.data, this.state.filterText || '');
+				adapter.data = filter.filterSort(adapter.data, this.state.filterText);
 			} catch (e: any) {
 				console.log(e);
 				throw new BadImplementationException(e);
