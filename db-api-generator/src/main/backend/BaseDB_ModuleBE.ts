@@ -276,7 +276,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 	async collectDependencies(dbInstances: DBType[], transaction?: FirestoreTransaction) {
 		const potentialErrors = await canDeleteDispatcher.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
-		const dependencies = filterInstances(potentialErrors.map(item => item.conflictingIds.length === 0 ? undefined : item));
+		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 		return dependencies.length > 0 ? dependencies : undefined;
 	}
 
