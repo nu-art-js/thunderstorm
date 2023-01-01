@@ -32,7 +32,7 @@ import './TS_DropDown.scss';
 
 
 type State<ItemType> = {
-	open: boolean
+	open?: boolean
 	items: ItemType[];
 	selected?: ItemType
 	hover?: ItemType
@@ -128,7 +128,6 @@ export class TS_DropDown<ItemType>
 		return {
 			items: adapter.data,
 			selected: nextProps.selected,
-			open: this.state?.open || false,
 			filterText: nextProps.inputValue,
 			dropDownRef: ref
 		};
@@ -143,14 +142,14 @@ export class TS_DropDown<ItemType>
 		return this.state.dropDownRef.current?.closest(this.props.boundingParentSelector);
 	}
 
-	toggleList = (e?: InputEvent, state: State<ItemType> = {} as State<ItemType>) => {
+	private closeList = (e?: InputEvent, state: State<ItemType> = {} as State<ItemType>) => {
 		if (this.props.disabled)
 			return;
 
 		if (e)
 			stopPropagation(e);
 
-		this.setState(prevState => ({...state, open: !prevState.open, filterText: undefined}));
+		this.setState({...state, open: false, filterText: undefined});
 	};
 
 	onSelected = (item: ItemType, e?: InputEvent) => {
@@ -158,7 +157,7 @@ export class TS_DropDown<ItemType>
 		if (!this.props.allowManualSelection)
 			newState.selected = item;
 
-		this.toggleList(e, newState);
+		this.closeList(e, newState);
 		this.props.onSelected(item);
 	};
 
@@ -174,14 +173,14 @@ export class TS_DropDown<ItemType>
 			const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(filterText) : this.props.adapter;
 			adapter.data = cloneArr(this.state.items);
 			if (filterText) {
-				this.toggleList(e);
+				this.closeList(e);
 				this.props.onNoMatchingSelectionForString?.(filterText, adapter.data, e);
 			} else
 				this.onSelected(adapter.data[0], e);
 		}
 
 		if (e.key === 'Escape')
-			return this.toggleList(e);
+			return this.closeList(e);
 
 		// if (e.key === 'ArrowDown') {
 		// 	return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
@@ -233,7 +232,7 @@ export class TS_DropDown<ItemType>
 					 onBlur={this.removeKeyboardListener}
 			>
 				{this.renderHeader()}
-				<TS_Overlay flat={false} showOverlay={this.state.open} onClickOverlay={this.toggleList}>
+				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>
 					{this.renderTree()}
 				</TS_Overlay>
 			</div>
@@ -244,7 +243,7 @@ export class TS_DropDown<ItemType>
 		return (
 			<div
 				className="ts-dropdown__header"
-				onClick={this.toggleList}>
+				onClick={(e) => this.state.open ? this.closeList(e) : this.setState({open: true})}>
 
 				{this.renderSelectedOrFilterInput()}
 				{this.state.open && this.props.caret ? this.props.caret?.close : this.props.caret?.open}
