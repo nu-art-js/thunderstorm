@@ -31,6 +31,7 @@ export * from './modules/server/route-resolvers';
 export * from './modules/http/AxiosHttpModule';
 export * from './modules/http/types';
 export * from './modules/ModuleBE_ForceUpgrade';
+export * from './modules/ModuleBE_ServerInfo';
 export * from './utils/api-caller-types';
 export * from './utils/promisify-request';
 export * from './utils/to-be-removed';

@@ -23,5 +23,6 @@ export * from './types';
 export * from './request-types';
 export * from './force-upgrade';
 export * from './consts';
+export * from './api';
 export * from './BaseHttpRequest';
 export * from './BaseHttpModule';
