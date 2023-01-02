@@ -49,7 +49,7 @@ import {Constructor} from '../utils/types';
  */
 export function isErrorOfType<T extends Error>(e: Error, _exceptionType: Constructor<T>): T | undefined {
 	const _e = e as any;
-	if (_e.isInstanceOf && _e.isInstanceOf(_exceptionType))
+	if (_e.isInstanceOf?.(_exceptionType))
 		return e as T;
 }
 
