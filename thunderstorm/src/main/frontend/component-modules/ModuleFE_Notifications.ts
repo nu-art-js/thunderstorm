@@ -90,7 +90,7 @@ export class ModuleFE_Notifications_Class
 				}
 			},
 			show: (postDelay?: number) => {
-				this.show(notification, postDelay || notification.postDelayed);
+				this.showImpl(notification, postDelay || notification.postDelayed);
 			},
 			hide: () => {
 				this.hide(notification);
@@ -117,7 +117,7 @@ export class ModuleFE_Notifications_Class
 		this.notificationStorage.set(notifications);
 	}
 
-	private show(notification: DB_Notification, postDelay: number) {
+	private showImpl(notification: DB_Notification, postDelay: number) {
 		this.upsert(notification);
 
 		const index = this.showing.findIndex(n => n._id === notification._id);
@@ -161,6 +161,19 @@ export class ModuleFE_Notifications_Class
 
 	hideAllNotifications() {
 		dispatch_showNotifications.dispatchUI([]);
+	}
+
+	async show(title: string, content: string, action: () => Promise<any>) {
+		const notification = this.create().content(title, content);
+		try {
+			await notification.execute(action);
+			notification.content(`${title} - Success`).show();
+		} catch (e: any) {
+			this.logError(e);
+			notification.content(`Failed ${title}`, e.message).show();
+			throw e;
+		}
+		return notification;
 	}
 }
 
