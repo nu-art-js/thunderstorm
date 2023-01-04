@@ -181,8 +181,11 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		}
 	});
 
+
 	readonly _upsertUnique = Object.freeze({
 		read: async (transaction: FirestoreTransaction, instance: PreDB<DBType>) => {
+			this.assertObject(instance);
+
 			if (instance._id) {
 				const doc = (await transaction.newQueryUnique(this.collection, {where: {_id: instance._id}} as FirestoreQuery<DBType>));
 				if (doc)
@@ -225,6 +228,11 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 			return instance;
 		}
 	});
+
+	protected assertObject(instance: any) {
+		if (Array.isArray(instance) || typeof instance !== 'object')
+			throw new ApiException(400, `Trying to upsert a ${typeof instance}!`);
+	}
 
 	/**
 	 * Calls the `delete` method of the module's collection.
