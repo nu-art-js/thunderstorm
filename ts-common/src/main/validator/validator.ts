@@ -211,6 +211,8 @@ export const tsValidateResult = <T extends any>(instance: T | undefined, _valida
 	if (typeof validator === 'object') {
 		if (!instance && validator)
 			return `Unexpect object\nif you want to ignore the validation of this object,\n add the following to your validator:\n {\n  ...\n  ${String(key)}: undefined\n  ...\n}\n`;
+		if (typeof instance !== 'object')
+			return `Unexpected instance '${instance}'.\nExpected to receive an object, but received something else.`;
 
 		const __validator = validator as TypeValidator<object>;
 		return tsValidateObject(__validator, instance);

@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, Module} from '@nu-art/ts-common';
+import {BadImplementationException, Module, TypedKeyValue} from '@nu-art/ts-common';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {composeURL} from './ModuleFE_BrowserHistory';
 import {HttpMethod, QueryApi, QueryParams} from '../../shared/types';
@@ -60,7 +60,7 @@ class ModuleFE_Thunderstorm_Class
 		document.title = appName;
 	}
 
-	printDiv(div: HTMLDivElement) {
+	printDiv(div: HTMLDivElement, bodyAttributes?: TypedKeyValue<string, string>[]) {
 		//create, and remove iframe from body dynamically!!
 		const printingIFrame = document.createElement('iframe');
 		printingIFrame.style.width = '0';
@@ -68,10 +68,10 @@ class ModuleFE_Thunderstorm_Class
 		printingIFrame.style.position = 'absolute';
 		const body = document.getElementsByTagName('body')[0];
 		body?.appendChild(printingIFrame);
-		this._populatePrintFrame(printingIFrame, div);
+		this._populatePrintFrame(printingIFrame, div, bodyAttributes);
 	}
 
-	private _populatePrintFrame(printingIFrame: HTMLIFrameElement, div: HTMLDivElement) {
+	private _populatePrintFrame(printingIFrame: HTMLIFrameElement, div: HTMLDivElement, bodyAttributes?: TypedKeyValue<string, string>[]) {
 		const printingContentWindow = printingIFrame.contentWindow;
 		if (!printingContentWindow)
 			return this.logWarning('printingContentWindow is undefined');
@@ -84,6 +84,11 @@ class ModuleFE_Thunderstorm_Class
 		//Grab essential elements
 		const html = printingContentWindow.document.getElementsByTagName('html')?.[0];
 		const body: HTMLBodyElement | null = html.getElementsByTagName('body')?.[0];
+
+		//Add body attributes
+		bodyAttributes?.forEach(att => {
+			body.setAttribute(att.key, att.value);
+		});
 
 		//Clone and append the printed item to the body
 		const toAppend = div.cloneNode(true);

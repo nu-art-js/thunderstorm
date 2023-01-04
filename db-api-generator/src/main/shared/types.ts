@@ -46,6 +46,7 @@ export const DB_Object_Metadata: Metadata<DB_Object> = {
 	__updated: {optional: false, valueType: 'number', description: 'timestamp of last time modified'}
 };
 
+//@ts-ignore
 const pah: Metadata<PAH> = {
 	a: {optional: false, description: 'aaa', valueType: 'string'},
 	b: {optional: true, description: 'aaa', valueType: 'number'},
@@ -59,4 +60,4 @@ const pah: Metadata<PAH> = {
 	e: {optional: true, description: 'harti barti', valueType: 'object', metadata: {ashpa: {optional: false, description: 'aaa', valueType: 'string'}}}
 };
 
-console.log(pah);
+// console.log(pah);
