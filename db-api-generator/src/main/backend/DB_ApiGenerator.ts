@@ -26,6 +26,7 @@ import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
 import {ApiDefServer, ApiException, ApiModule, ApiServerRouter, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, UpgradeCollectionBody} from '../shared';
 import {BaseDB_ModuleBE, DBApiConfig} from './BaseDB_ModuleBE';
+import {DB_Object_Metadata, Metadata} from '../shared/types';
 
 
 /**
@@ -54,7 +55,8 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 			delete: createQueryServerApi(apiDef.v1.delete, this._deleteUnique),
 			deleteQuery: createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
 			deleteAll: createQueryServerApi(apiDef.v1.deleteAll, this._deleteAll),
-			upgradeCollection: createBodyServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection)
+			upgradeCollection: createBodyServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection),
+			metadata: createQueryServerApi(apiDef.v1.metadata, this._metadata),
 		};
 	}
 
@@ -64,6 +66,10 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 
 	init() {
 	}
+
+	private _metadata = async (): Promise<Metadata<DBType>> => {
+		return {...this.dbModule.dbDef.metadata, ...DB_Object_Metadata} as Metadata<DBType> || `not implemented yet for collection '${this.dbModule.dbDef.dbName}'`;
+	};
 
 	private _deleteAll = async (ignore?: {}) => this.dbModule.deleteAll();
 
