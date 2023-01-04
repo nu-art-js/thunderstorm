@@ -68,7 +68,6 @@ class ModuleFE_Thunderstorm_Class
 		printingIFrame.style.position = 'absolute';
 		const body = document.getElementsByTagName('body')[0];
 		body?.appendChild(printingIFrame);
-
 		this._populatePrintFrame(printingIFrame, div);
 	}
 
@@ -77,12 +76,24 @@ class ModuleFE_Thunderstorm_Class
 		if (!printingContentWindow)
 			return this.logWarning('printingContentWindow is undefined');
 
+		//Populate the window document
+		const containerText = '<div style="display: none">printDiv function!</div>';
 		printingContentWindow.document.open();
-		printingContentWindow.document.write(div.innerHTML);
+		printingContentWindow.document.write(containerText);
+
+		//Grab essential elements
 		const html = printingContentWindow.document.getElementsByTagName('html')?.[0];
 		const body: HTMLBodyElement | null = html.getElementsByTagName('body')?.[0];
+
+		//Clone and append the printed item to the body
+		const toAppend = div.cloneNode(true);
+		body.appendChild(toAppend);
+
+		//Copy head content from app to the iframe (for css and metas)
 		html.removeChild(html.getElementsByTagName('head')?.[0]);
 		html?.insertBefore(window.document.getElementsByTagName('head')?.[0]?.cloneNode(true), body);
+
+		//Close document for writing and call the print dialog
 		printingContentWindow.document.close();
 		printingContentWindow.focus();
 		setTimeout(async () => printingContentWindow.print(), 1500);
