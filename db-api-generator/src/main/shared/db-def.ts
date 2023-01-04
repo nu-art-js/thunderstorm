@@ -21,6 +21,7 @@
 
 import {DBIndex} from '@nu-art/thunderstorm';
 import {DB_Object, OmitDBObject, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {Metadata} from './types';
 
 
 export type Default_UniqueKey = '_id';
@@ -39,4 +40,5 @@ export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> =
 	uniqueKeys?: Ks[] // default ["_id"]
 	versions?: string[]; // default ["1.0.0"]
 	indices?: DBIndex<T>[]
+	metadata?: Metadata<T>
 }
