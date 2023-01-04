@@ -40,5 +40,5 @@ export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> =
 	uniqueKeys?: Ks[] // default ["_id"]
 	versions?: string[]; // default ["1.0.0"]
 	indices?: DBIndex<T>[]
-	metadata?: Metadata<T>
+	metadata?: Metadata<OmitDBObject<T>>
 }
