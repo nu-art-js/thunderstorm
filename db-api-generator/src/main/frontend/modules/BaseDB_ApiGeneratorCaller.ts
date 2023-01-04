@@ -23,7 +23,7 @@ import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiStruct_DBApiGen, DBApiDefGenerator, DBDef,} from '../shared';
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
-import {_keys, addItemToArray, DB_Object, Module, removeItemFromArray, dbObjectToId} from '@nu-art/ts-common';
+import {_keys, addItemToArray, DB_Object, dbObjectToId, Module, removeItemFromArray} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {
 	EventType_Create,
@@ -75,7 +75,8 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			delete: apiWithQuery(apiDef.v1.delete, this.onEntryDeleted),
 			deleteQuery: apiWithBody(apiDef.v1.deleteQuery, this.onEntriesDeleted),
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll, this.onAllEntriesDeleted),
-			upgradeCollection: apiWithBody(apiDef.v1.upgradeCollection, () => this.v1.sync().executeSync())
+			upgradeCollection: apiWithBody(apiDef.v1.upgradeCollection, () => this.v1.sync().executeSync()),
+			metadata: apiWithQuery(apiDef.v1.metadata),
 		};
 	}
 

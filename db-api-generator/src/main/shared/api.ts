@@ -23,6 +23,7 @@ import {FirestoreQuery} from '@nu-art/firebase';
 import {ApiDefResolver, BodyApi, HttpMethod, IndexKeys, QueryApi, QueryParams} from '@nu-art/thunderstorm';
 import {DB_BaseObject, DB_Object, PreDB, Second} from '@nu-art/ts-common';
 import {DBDef} from './db-def';
+import {Metadata} from './types';
 
 
 export const _EmptyQuery = Object.freeze({where: {}});
@@ -50,6 +51,7 @@ export type ApiStruct_DBApiGen<DBType extends DB_Object> = {
 		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		deleteAll: QueryApi<void>
 		upgradeCollection: BodyApi<void, UpgradeCollectionBody>,
+		metadata: QueryApi<Metadata<DBType>>,
 	},
 }
 
@@ -65,6 +67,7 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		deleteAll: QueryApi<DBType[]>,
 		upgradeCollection: BodyApi<void, UpgradeCollectionBody>,
+		metadata: QueryApi<Metadata<DBType>>,
 	},
 }
 
@@ -81,6 +84,7 @@ export const DBApiDefGenerator = <DBType extends DB_Object>(dbDef: DBDef<DBType,
 			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
 			upgradeCollection: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upgrade-collection`},
+			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
 		}
 	};
 };
@@ -98,6 +102,7 @@ export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof 
 			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
 			upgradeCollection: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upgrade-collection`},
+			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
 		}
 	};
 };
