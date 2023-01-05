@@ -20,17 +20,24 @@
  */
 
 import * as React from 'react';
+import {ReactNode} from 'react';
 import {_className} from '../../utils/tools';
 import {LinearLayoutProps, LL_H_C} from '../Layouts';
 import './TS_BusyButton.scss';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
-import {ReactNode} from 'react';
+import {ComponentSync} from '../../core/ComponentSync';
+
 
 type Props_Button = LinearLayoutProps & {
 	disabled?: boolean;
-	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
-	isBusy?: boolean;
+	onClick: (e: React.MouseEvent<HTMLDivElement>) => Promise<any>
+	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => Promise<any>;
 	loadingRenderer?: ReactNode | (() => ReactNode);
+}
+
+type State_Button = {
+	isBusy: boolean
+	disabled: boolean;
 }
 
 /**
@@ -45,35 +52,52 @@ type Props_Button = LinearLayoutProps & {
  * }
  * ```
  */
-export const TS_BusyButton = (props: Props_Button) => {
-	const {isBusy, loadingRenderer, onDisabledClick, ...restOfProps} = props;
+export class TS_BusyButton
+	extends ComponentSync<Props_Button, State_Button> {
 
-	const renderItems = () => {
-		if (isBusy) {
+	protected deriveStateFromProps(nextProps: Props_Button): State_Button | undefined {
+		return {
+			disabled: !!nextProps.disabled,
+			isBusy: !!this.state?.isBusy
+		};
+	}
+
+	private renderItems = () => {
+		if (this.state.isBusy) {
+			const loadingRenderer = this.props.loadingRenderer;
 			if (loadingRenderer)
 				return typeof loadingRenderer === 'function' ? loadingRenderer() : loadingRenderer;
 
 			return <TS_ButtonLoader/>;
 		}
-
-		return props.children;
+		return this.props.children;
 	};
 
-	const onClick = (e: React.MouseEvent<HTMLDivElement>) => {
-		if (isBusy)
+	private onClick = (e: React.MouseEvent<HTMLDivElement>) => {
+		if (this.state.isBusy)
 			return;
 
-		if (props.disabled)
-			return onDisabledClick?.(e);
+		if (this.state.disabled && !this.props.onDisabledClick)
+			return;
 
-		return props.onClick?.(e);
+		this.setState({isBusy: true}, async () => {
+			await this.props[this.state.disabled ? 'onDisabledClick' : 'onClick']?.(e);
+
+			if (this.mounted)
+				this.setState({isBusy: false});
+		});
 	};
 
-	const className = _className('ts-busy-button', props.className, props.disabled && 'ts-busy-button__disabled', isBusy && 'ts-busy-button__loading');
+	render() {
+		const {onClick, disabled, loadingRenderer, onDisabledClick, ...restOfProps} = this.props;
 
-	return <LL_H_C
-		{...restOfProps}
-		className={className}
-		onClick={onClick}
-	>{renderItems()}</LL_H_C>;
-};
+		const className = _className('ts-busy-button', this.props.className, !this.state.isBusy && this.state.disabled && 'ts-busy-button__disabled', this.state.isBusy && 'ts-busy-button__loading');
+
+		return <LL_H_C
+			{...restOfProps}
+			className={className}
+			onClick={this.onClick}>
+			{this.renderItems()}
+		</LL_H_C>;
+	}
+}
