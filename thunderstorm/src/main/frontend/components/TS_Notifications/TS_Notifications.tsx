@@ -90,10 +90,15 @@ export class TS_Notifications
 		this.setState({notifications: this.state.notifications.filter(item => item._id !== notification._id)});
 	};
 
+	private onNotificationClick = (e: React.MouseEvent, notification: DB_Notification) => {
+		stopPropagation(e);
+	};
+
 	// ######################### Render #########################
 
 	private renderNotification(notification: DB_Notification) {
-		return <LL_V_L className={`ts-notification ts-notification__${notification.status}`} key={notification._id}>
+		return <LL_V_L className={`ts-notification ts-notification__${notification.status}`} key={notification._id}
+									 onClick={e => this.onNotificationClick(e, notification)}>
 			<LL_H_C className={'ts-notification__header'}>
 				<div className={'ts-notification__title'}>{notification.title}</div>
 				<span className={'ts-notification__close'} onClick={(e) => {
