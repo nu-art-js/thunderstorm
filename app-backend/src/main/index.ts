@@ -18,7 +18,7 @@
 
 // tslint:disable-next-line:no-import-side-effect
 import 'module-alias/register';
-import {AxiosHttpModule, ModuleBE_ForceUpgrade, HttpServer, RouteResolver_ModulePath, Storm} from '@nu-art/thunderstorm/backend';
+import {AxiosHttpModule, HttpServer, ModuleBE_ForceUpgrade, RouteResolver_ModulePath, Storm} from '@nu-art/thunderstorm/backend';
 import {Environment} from './config';
 import {DispatchModule, ExampleModule} from '@modules/ExampleModule';
 import {ModulePack_Backend_LiveDocs} from '@nu-art/live-docs/backend';
@@ -26,7 +26,7 @@ import {Module} from '@nu-art/ts-common';
 import {ModulePack_Backend_Permissions} from '@nu-art/permissions/backend';
 import {JiraBugReportIntegrator, ModuleBE_BugReport, ModulePack_Backend_BugReport} from '@nu-art/bug-report/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {Slack_ServerApiError, ModuleBE_Slack} from '@nu-art/storm/slack';
+import {ModuleBE_Slack, Slack_ServerApiError} from '@nu-art/storm/slack';
 import {ModulePack_Backend_Uploader,} from '@nu-art/file-upload/backend';
 import {Firebase_ExpressFunction} from '@nu-art/firebase/backend-functions';
 import {CollectionChangedListener} from '@modules/CollectionChangedListener';
@@ -34,6 +34,7 @@ import {PubsubExample} from '@modules/PubsubExample';
 
 
 const packageJson = require('./package.json');
+const version = require('./version-app.json');
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
 
 const modules: Module[] = [
@@ -59,6 +60,7 @@ const _exports = new Storm()
 	.addModules(...modules)
 	.setInitialRouteResolver(new RouteResolver_ModulePath(HttpServer.express, __dirname))
 	.setEnvironment(Environment.name)
+	.setVersion(version.version)
 	.build();
 
 ModuleBE_BugReport.addTicketCreator(JiraBugReportIntegrator.openTicket);
