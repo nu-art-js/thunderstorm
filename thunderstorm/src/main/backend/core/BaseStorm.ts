@@ -27,12 +27,26 @@ export abstract class BaseStorm
 	extends ModuleManager {
 
 	protected envKey: string = 'dev';
+	protected version: string = '';
 	private override: TS_Object = {};
 	readonly isDebug = false;
 
 	setEnvironment(envKey: string) {
 		this.envKey = envKey;
 		return this;
+	}
+
+	getEnvironment() {
+		return this.envKey;
+	}
+
+	setVersion(version: string) {
+		this.version = version;
+		return this;
+	}
+
+	getVersion() {
+		return this.version;
 	}
 
 	setOverride(override: TS_Object) {

@@ -23,8 +23,8 @@ export class ModuleBE_ServerInfo_Class
 	}
 
 	private getServerInfo = async (): Promise<Response_ServerInfo> => ({
-		environment: Storm.getInstance().getConfig().envKey,
-		version: process.env.appVersion || ''
+		environment: Storm.getInstance().getEnvironment(),
+		version: ''
 	});
 }
 
