@@ -19,7 +19,7 @@ type Props = {
 }
 
 type State = {
-	value: number;
+	value: number | undefined;
 }
 
 export class TS_Slider
@@ -40,39 +40,49 @@ export class TS_Slider
 	}
 
 	private onValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.valueAsNumber;
+		let value: number | undefined = e.target.valueAsNumber;
+		if (isNaN(value))
+			value = undefined;
 		this.setState({value}, () => {
-			this.props.onValueChanged?.(value);
+			this.props.onValueChanged?.(value ?? this.props.min);
 		});
 	};
 
 	private onMouseUp = (e: React.MouseEvent) => {
-		this.props.onValueSet?.(this.state.value);
+		this.props.onValueSet?.(this.state.value ?? this.props.min);
 	};
 
 	private calculateBGSize = () => {
-		return ((this.state.value - this.props.min) * 100) / (this.props.max - this.props.min);
+		return (((this.state.value ?? this.props.min) - this.props.min) * 100) / (this.props.max - this.props.min);
 	};
 
 	// ######################### Render #########################
 
 	private renderCurrentValue() {
-		return <label className={'ts-slider__current-value'}>{this.state.value}</label>;
+		return <input
+			className={'ts-slider__current-value'}
+			type={'number'}
+			value={this.state.value}
+			onChange={this.onValueChange}
+		/>;
+	}
+
+	private renderSliderInput() {
+		return <input
+			type={'range'}
+			value={this.state.value ?? this.props.min}
+			min={this.props.min}
+			max={this.props.max}
+			onChange={this.onValueChange}
+			onMouseUp={this.onMouseUp}
+			style={{backgroundSize: `${this.calculateBGSize()}% 100%`}}
+		/>;
 	}
 
 	render() {
-		const className = _className('ts-slider__input', this.props.className);
-		return <LL_H_C className={'ts-slider'}>
-			<input
-				type={'range'}
-				value={this.state.value}
-				min={this.props.min}
-				max={this.props.max}
-				className={className}
-				onChange={this.onValueChange}
-				onMouseUp={this.onMouseUp}
-				style={{backgroundSize: `${this.calculateBGSize()}% 100%`}}
-			/>
+		const className = _className('ts-slider', this.props.className);
+		return <LL_H_C className={className}>
+			{this.renderSliderInput()}
 			{this.renderCurrentValue()}
 		</LL_H_C>;
 	}
