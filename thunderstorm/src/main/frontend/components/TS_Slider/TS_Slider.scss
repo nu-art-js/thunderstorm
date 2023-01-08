@@ -2,34 +2,67 @@
   gap: 8px;
 
   .ts-slider__current-value {
-    
+
   }
 
+
   .ts-slider__input {
-    height: 8px;
-    border-radius: 4px;
     //Reset default appearance
     -webkit-appearance: none;
 
-    //background after thumb
-    background-color: grey;
+    //Dimensions
+    height: 8px;
+    min-width: 100px;
+
+    //Border
+    border-radius: 4px;
 
     //Background before thumb
     background-image: linear-gradient(to right, #296EB4, #1789FC);
     background-repeat: no-repeat;
 
-    //Thumb
-    &::-webkit-slider-thumb,
-    &::-moz-range-thumb,
-    &::-ms-thumb {
+    //Background after thumb
+    background-color: grey;
 
-    }
+    //More
+    cursor: pointer;
+
+
+    ////Thumb
+    //&::-webkit-slider-thumb,
+    //&::-moz-range-thumb,
+    //&::-ms-thumb {
+    //  //Reset default appearance
+    //  -webkit-appearance: none;
+    //
+    //  width: 10px;
+    //  aspect-ratio: 1/1;
+    //
+    //  border-radius: 50%;
+    //  background: red;
+    //}
 
     //Track
-    &::-webkit-slider-runnable-track,
-    &::-moz-range-track,
-    &::-ms-track {
-
-    }
+    //&::-webkit-slider-runnable-track,
+    //&::-moz-range-track,
+    //&::-ms-track {
+    //
+    //}
   }
+
+  input[type='range'] {
+
+    &::-webkit-slider-thumb {
+      //Reset default appearance
+      -webkit-appearance: none;
+
+      width: 10px;
+      aspect-ratio: 1/1;
+
+      border-radius: 50%;
+      background: red;
+    }
+
+  }
+
 }
