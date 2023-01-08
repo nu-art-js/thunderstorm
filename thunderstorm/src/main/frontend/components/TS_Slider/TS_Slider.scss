@@ -1,0 +1,35 @@
+.ts-slider {
+  gap: 8px;
+
+  .ts-slider__current-value {
+    
+  }
+
+  .ts-slider__input {
+    height: 8px;
+    border-radius: 4px;
+    //Reset default appearance
+    -webkit-appearance: none;
+
+    //background after thumb
+    background-color: grey;
+
+    //Background before thumb
+    background-image: linear-gradient(to right, #296EB4, #1789FC);
+    background-repeat: no-repeat;
+
+    //Thumb
+    &::-webkit-slider-thumb,
+    &::-moz-range-thumb,
+    &::-ms-thumb {
+
+    }
+
+    //Track
+    &::-webkit-slider-runnable-track,
+    &::-moz-range-track,
+    &::-ms-track {
+
+    }
+  }
+}
