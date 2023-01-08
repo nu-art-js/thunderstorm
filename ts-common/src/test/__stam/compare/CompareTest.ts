@@ -16,78 +16,17 @@
  * limitations under the License.
  */
 
-import {expect} from "chai";
-import {compare} from "../../../main";
+import {expect} from 'chai';
+import {compare} from '../../../main';
+import {TestSuitV2} from '../types';
 
 
- function compareTest() {
-    describe('compare test', () => {
-        for (const testCase of arrayTests) {
-            it(testCase.description, () => {
-                // @ts-ignore
-                expect(compare(testCase.one,testCase.two)).to.eq(testCase.answer)
-            });
-        }
-    });
+export function runTestSuitV2(testSuit: TestSuitV2) {
+	describe(testSuit.label, () => {
+		testSuit.testcases.forEach(testCase => {
+			it(testCase.description, () => {
+				expect(compare(testCase.input.one, testCase.input.two)).to.eq(testCase.answer);
+			});
+		});
+	});
 }
-export{
-     compareTest
-};
-
-const arrayTests=[
-    {
-        description: "compares same int",
-        one: 1,
-        two: 1,
-        answer: true
-    },
-    {
-        description: "compares same string number",
-        one: "1",
-        two: "1",
-        answer: true
-    },
-    {
-        description: "compares different integers",
-        one: 1,
-        two: 2,
-        answer: false
-    },
-    {
-        description: "compares different integers",
-        one: 2,
-        two: 1,
-        answer: false
-    },
-    {
-        description: "compares same val with different type",
-        one: "1",
-        two: 1,
-        answer: false
-    },
-    {
-        description: "compares same val with different type",
-        one: 1,
-        two: "1",
-        answer: false
-    },
-    {
-        description: "compares same string word",
-        one: "test",
-        two: "test",
-        answer: true
-    },
-    {
-        description: "compares different string",
-        one: "test",
-        two: "tesT",
-        answer: false
-    },
-    {
-        description: "compares different string",
-        one: "test",
-        two: "test1",
-        answer: false
-    },
-];
-
