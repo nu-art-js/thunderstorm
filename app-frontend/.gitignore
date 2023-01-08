@@ -12,5 +12,6 @@ build
 _package.json
 package-lock.json
 src/main/config.ts
+src/main/version-app.json
 .awcache
 src/sw/index.js

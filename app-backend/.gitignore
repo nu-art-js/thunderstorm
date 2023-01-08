@@ -16,6 +16,7 @@ config.ts
 # Backend
 .dependencies
 src/main/config.ts
+src/main/version-app.json
 database-debug.log
 firestore-debug.log
 ui-debug.log
