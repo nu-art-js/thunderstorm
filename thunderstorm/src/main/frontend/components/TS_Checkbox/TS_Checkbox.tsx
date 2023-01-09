@@ -31,6 +31,8 @@ export type Props_Checkbox = {
 	rounded?: boolean
 	checked?: boolean
 	onCheck?: (checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void
+	className?: string;
+	icon?: React.ReactNode;
 }
 
 type State_Checkbox = {
@@ -81,12 +83,12 @@ export class TS_Checkbox
 		const className = _className('ts-checkbox__button', disabledClass, checkedClass, roundedClass);
 		const innerClassName = _className('ts-checkbox__button__inner', disabledClass, checkedClass, roundedClass);
 
-		return <LL_H_C className={'ts-checkbox'}>
+		return <LL_H_C className={_className('ts-checkbox', this.props.className)}>
 			<div
 				id={this.props.id}
 				className={className}
 				onClick={this.onCheckboxClick}>
-				<div className={innerClassName}/>
+				{this.props.icon ? this.props.icon : <div className={innerClassName}/>}
 			</div>
 			{this.props.children}
 		</LL_H_C>;
