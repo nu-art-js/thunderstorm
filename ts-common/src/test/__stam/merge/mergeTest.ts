@@ -15,13 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import {expect} from 'chai';
-import {describe} from 'mocha';
-import {TestSuit_ts_compare} from './compareCases';
+import {TestSuit_ts_merge} from './mergeCases';
 
 
-describe('Test', () => {
-	// runTestSuitV2(TestSuit_ts_compare)
-	// runTestSuitV3(TestSuit_ts_merge)
+describe(TestSuit_ts_merge.label, () => {
+	TestSuit_ts_merge.testcases.forEach(testCase => {
+		it(testCase.description, () => {
+			expect(TestSuit_ts_merge.processor(testCase.input)).to.equal(testCase.result);
+		});
+	});
 });
-
