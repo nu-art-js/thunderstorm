@@ -17,16 +17,13 @@
  */
 
 import {expect} from 'chai';
-import {merge} from '../../../main';
-import {TestSuitV3} from '../types';
+import {TestSuit_ts_merge} from './mergeCases';
 
 
-export function runTestSuitV3(testSuit: TestSuitV3) {
-    describe(testSuit.label, () => {
-        testSuit.testcases.forEach(testCase => {
-            it(testCase.description, () => {
-                expect(merge(testCase.input.one, testCase.input.two)).to.deep.equal(testCase.answer);
-            });
-        });
-    });
-}
+describe(TestSuit_ts_merge.label, () => {
+	TestSuit_ts_merge.testcases.forEach(testCase => {
+		it(testCase.description, () => {
+			expect(TestSuit_ts_merge.processor(testCase.input)).to.equal(testCase.result);
+		});
+	});
+});

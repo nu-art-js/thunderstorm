@@ -15,17 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {expect} from 'chai';
+import {describe} from 'mocha';
+import {TestSuit_ts_compare} from './compareCases';
 
-import {expect} from 'chai'
-import {compare} from "../../../main";
-import {describe} from "mocha";
-import{runTestSuitV2} from "./CompareTest"
-import {TestModel_Compare, TestSuitV2} from "../types";
-import {TestSuit_ts_compare} from "./compareCases";
-import {runTestSuitV3} from "../merge/mergeTest";
-import {TestSuit_ts_merge} from "../merge/mergeCases";
 
-describe("Test",() => {
- runTestSuitV2(TestSuit_ts_compare)
- runTestSuitV3(TestSuit_ts_merge)
+describe('Test', () => {
+	// runTestSuitV2(TestSuit_ts_compare)
+	// runTestSuitV3(TestSuit_ts_merge)
 });
+

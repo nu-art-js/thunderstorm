@@ -17,16 +17,14 @@
  */
 
 import {expect} from 'chai';
-import {compare} from '../../../main';
-import {TestSuitV2} from '../types';
+import {TestSuit_ts_compare} from './compareCases';
 
 
-export function runTestSuitV2(testSuit: TestSuitV2) {
-	describe(testSuit.label, () => {
-		testSuit.testcases.forEach(testCase => {
-			it(testCase.description, () => {
-				expect(compare(testCase.input.one, testCase.input.two)).to.eq(testCase.answer);
-			});
+describe(TestSuit_ts_compare.label, () => {
+	TestSuit_ts_compare.testcases.forEach(testCase => {
+		it(testCase.description, () => {
+			expect(TestSuit_ts_compare.processor(testCase.input)).to.eq(testCase.result);
 		});
 	});
-}
+});
+

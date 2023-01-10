@@ -1,10 +1,11 @@
-import {TestModel_Compare, TestSuitV2} from '../types';
+import {TestSuit_TS_Compare} from './types';
+import {compare} from '../../../main';
 
 
-const TestCase_ts_compare: TestModel_Compare[] = [
+const TestCase_ts_compare: TestSuit_TS_Compare['testcases'] = [
 	{
 		description: 'compares same int',
-		answer: true,
+		result: true,
 		input: {
 			one: 1,
 			two: 1
@@ -12,7 +13,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'compares same string number',
-		answer: true,
+		result: true,
 		input: {
 			one: '1',
 			two: '1'
@@ -20,7 +21,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'compares different integers',
-		answer: false,
+		result: false,
 		input: {
 			one: 1,
 			two: 2
@@ -28,7 +29,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'compares different integers',
-		answer: false,
+		result: false,
 		input: {
 			one: 2,
 			two: 1
@@ -36,7 +37,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'compares same val with different type',
-		answer: false,
+		result: false,
 		input: {
 			one: '1',
 			two: 1
@@ -44,7 +45,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'compares same val with different type',
-		answer: false,
+		result: false,
 		input: {
 			one: 1,
 			two: '1'
@@ -52,7 +53,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'compares same string word',
-		answer: true,
+		result: true,
 		input: {
 			one: 'test',
 			two: 'test'
@@ -60,7 +61,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'compares different string',
-		answer: false,
+		result: false,
 		input: {
 			one: 'test1',
 			two: 'test'
@@ -68,7 +69,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'compares different string ',
-		answer: false,
+		result: false,
 		input: {
 			one: 'test',
 			two: 'test1'
@@ -76,7 +77,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'empty arrays',
-		answer: true,
+		result: true,
 		input: {
 			one: [],
 			two: []
@@ -84,63 +85,63 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'same array length 1',
-		answer: true,
+		result: true,
 		input: {
-			one: ["Alon"],
-			two: ["Alon"]
+			one: ['Alon'],
+			two: ['Alon']
 		}
 	},
 	{
 		description: 'same array length 2',
-		answer: true,
+		result: true,
 		input: {
-			one: ["Alon","Ninio"],
-			two: ["Alon","Ninio"]
+			one: ['Alon', 'Ninio'],
+			two: ['Alon', 'Ninio']
 		}
 	},
 	{
 		description: 'array and empty array',
-		answer: false,
+		result: false,
 		input: {
-			one: ["Alon","Ninio"],
+			one: ['Alon', 'Ninio'],
 			two: []
 		}
 	},
 	{
 		description: 'empty array and array',
-		answer: false,
+		result: false,
 		input: {
 			one: [],
-			two: ["Alon","Ninio"]
+			two: ['Alon', 'Ninio']
 		}
 	},
 	{
 		description: 'arrays with different length',
-		answer: false,
+		result: false,
 		input: {
-			one: ["Alon","Ninio"],
-			two: ["Alon"]
+			one: ['Alon', 'Ninio'],
+			two: ['Alon']
 		}
 	},
 	{
 		description: 'arrays with different length',
-		answer: false,
+		result: false,
 		input: {
-			one: ["Alon"],
-			two: ["Alon","Ninio"]
+			one: ['Alon'],
+			two: ['Alon', 'Ninio']
 		}
 	},
 	{
 		description: 'arrays with same elements in different places ',
-		answer: false,
+		result: false,
 		input: {
-			one: ["Alon","Ninio"],
-			two: ["Ninio","Alon"]
+			one: ['Alon', 'Ninio'],
+			two: ['Ninio', 'Alon']
 		}
 	},
 	{
 		description: 'Object with same 1 property ',
-		answer: true,
+		result: true,
 		input: {
 			one: {a: 1},
 			two: {a: 1}
@@ -148,15 +149,15 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'Object with same 2 propertys ',
-		answer: true,
+		result: true,
 		input: {
-			one: {a: 1, b: "2"},
-			two: {a: 1, b: "2"}
+			one: {a: 1, b: '2'},
+			two: {a: 1, b: '2'}
 		}
 	},
 	{
 		description: 'null Objects',
-		answer: true,
+		result: true,
 		input: {
 			one: null,
 			two: null
@@ -164,7 +165,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'null and object',
-		answer: false,
+		result: false,
 		input: {
 			one: null,
 			two: {a: 1}
@@ -172,7 +173,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'null and undefined',
-		answer: false,
+		result: false,
 		input: {
 			one: null,
 			two: undefined
@@ -180,7 +181,7 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	},
 	{
 		description: 'undefined and undefined',
-		answer: true,
+		result: true,
 		input: {
 			one: undefined,
 			two: undefined
@@ -188,7 +189,8 @@ const TestCase_ts_compare: TestModel_Compare[] = [
 	}
 ];
 
-export const TestSuit_ts_compare: TestSuitV2 = {
+export const TestSuit_ts_compare: TestSuit_TS_Compare = {
 	label: 'Compare Test',
-	testcases: TestCase_ts_compare
+	testcases: TestCase_ts_compare,
+	processor: (input) => compare(input.one, input.two)
 };

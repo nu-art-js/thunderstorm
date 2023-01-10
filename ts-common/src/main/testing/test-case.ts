@@ -105,3 +105,15 @@ export function assertNoTestErrors() {
 	if (totalErrors > 0)
 		process.exit(2);
 }
+
+export type TestModel_V2<Input, ExpectedResult> = {
+	description: string
+	result: ExpectedResult,
+	input: Input,
+}
+
+export type TestSuit_V2<Input, ExpectedResult> = {
+	processor: (input: Input) => ExpectedResult
+	testcases: TestModel_V2<Input, ExpectedResult>[]
+	label: string,
+}
