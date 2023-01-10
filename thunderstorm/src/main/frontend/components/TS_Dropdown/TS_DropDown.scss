@@ -83,14 +83,7 @@
     position: static;
   }
 
-  .ts-tree {
-    //Dimensions
-    width: 100%;
-    min-height: 10px;
-    padding-top: 3px;
-    overflow-y: auto;
-    overflow-x: hidden;
-
+  .ts-dropdown__items-container {
     //Colors
     background: white;
 
@@ -98,11 +91,32 @@
     border: 1px solid #4fa7ff;
     border-radius: 0 0 5px 5px;
 
-    .ts-tree__children-container {
-      margin: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
 
-      .ts-tree__node {
-        padding: 5px;
+    .ts-dropdown__unselect-item {
+      width: 100%;
+      padding: 5px;
+      font-size: 18px;
+      border-bottom: 2px dotted black;
+
+      &:hover {
+        background: cornsilk;
+      }
+    }
+
+    .ts-tree {
+      //Dimensions
+      width: 100%;
+      min-height: 10px;
+
+
+      .ts-tree__children-container {
+        margin: 0;
+
+        .ts-tree__node {
+          padding: 5px;
+        }
       }
     }
 
@@ -112,6 +126,7 @@
       border-radius: 5px 5px 0 0;
     }
   }
+
 
   &.open {
     z-index: 1;
