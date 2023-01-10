@@ -3,6 +3,7 @@ import {DB_Object, Filter, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
 import {BaseDB_ApiCaller} from '../..';
 
+type OptionalCanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
 
 type OptionalProps_GenericDropDown<T> = {
 	placeholder?: string;
@@ -18,13 +19,12 @@ type OptionalProps_GenericDropDown<T> = {
 }
 
 export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> & {
-	onSelected: (selected: T) => void;
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
 	boundingParentSelector?: string;
 	inputValue?: string;
 	selected?: T | string | (() => T | undefined);
 	limitItems?: number;
-}
+} & OptionalCanUnselect<T>
 
 export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = OptionalProps_GenericDropDown<T> & {
 	placeholder: string;
@@ -34,7 +34,7 @@ export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof
 	renderer: (item: T) => React.ReactElement
 }
 
-export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = {
+type GenericDropDownProps<T, Ks> = {
 	placeholder?: string;
 	mapper: (item: T) => string[]
 	renderer: (item: T) => React.ReactElement
@@ -47,13 +47,14 @@ export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id
 
 	selected?: T | string | (() => T | undefined);
 	inputValue?: string;
-	onSelected: (selected: T) => void;
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
-	module: BaseDB_ApiCaller<T, Ks>;
+
 	modules: BaseDB_ApiCaller<DB_Object, any>[];
 	boundingParentSelector?: string;
 	limitItems?: number;
-}
+} & OptionalCanUnselect<T>
+
+export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = { module: BaseDB_ApiCaller<T, Ks>; } & GenericDropDownProps<T, Ks>
 
 type State<T extends DB_Object> = {
 	items: T[]
@@ -128,6 +129,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 			boundingParentSelector={this.props.boundingParentSelector}
 			renderSearch={this.props.renderSearch}
 			limitItems={this.props.limitItems}
+			canUnselect={this.props.canUnselect as (typeof this.props.canUnselect extends true ? true : false | undefined)}
 		/>;
 	}
 }

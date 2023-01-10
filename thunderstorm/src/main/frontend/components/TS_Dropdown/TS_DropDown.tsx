@@ -29,7 +29,7 @@ import {TS_Tree} from '../TS_Tree';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
-
+import {LL_V_L} from '../Layouts';
 
 type State<ItemType> = {
 	open?: boolean
@@ -56,16 +56,15 @@ type DropDownChildrenContainerData = {
 	width: number;
 }
 
-export type Props_DropDown<ItemType> = Partial<StaticProps> & {
+type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 	adapter: Adapter<ItemType> | ((filter?: string) => Adapter<ItemType>)
 	placeholder?: string,
-	inputValue?: string,
+	inputValue?: string;
 
 	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: ItemType[], e: React.KeyboardEvent) => void
-	onSelected: (selected: ItemType) => void
-	selected?: ItemType
 
+	selected?: ItemType
 	filter?: Filter<ItemType>
 	tabIndex?: number;
 	innerRef?: React.RefObject<any>;
@@ -81,6 +80,9 @@ export type Props_DropDown<ItemType> = Partial<StaticProps> & {
 	limitItems?: number;
 }
 
+type Props_CanUnselect<ItemType> = { canUnselect: true; onSelected: (selected?: ItemType) => void };
+type Props_CanNotUnselect<ItemType> = { canUnselect?: false; onSelected: (selected: ItemType) => void };
+export type Props_DropDown<ItemType> = (Props_CanUnselect<ItemType> | Props_CanNotUnselect<ItemType>) & Dropdown_Props<ItemType>
 
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
@@ -108,8 +110,7 @@ export class TS_DropDown<ItemType>
 		/>;
 
 	public static defaultProps = {
-		renderSearch: TS_DropDown.defaultRenderSearch
-
+		renderSearch: TS_DropDown.defaultRenderSearch,
 	};
 
 	// ######################## Life Cycle ########################
@@ -152,13 +153,13 @@ export class TS_DropDown<ItemType>
 		this.setState({...state, open: false, filterText: undefined});
 	};
 
-	onSelected = (item: ItemType, e?: InputEvent) => {
+	onSelected = (item?: ItemType, e?: InputEvent) => {
 		const newState = {} as State<ItemType>;
 		if (!this.props.allowManualSelection)
 			newState.selected = item;
 
 		this.closeList(e, newState);
-		this.props.onSelected(item);
+		this.props.onSelected(item as (typeof this.props.canUnselect extends true ? ItemType | undefined : ItemType));
 	};
 
 	private keyEventHandler = (e: React.KeyboardEvent) => {
@@ -257,7 +258,7 @@ export class TS_DropDown<ItemType>
 		if (this.props.showNothingWithoutFilterText && !this.state.filterText?.length)
 			return '';
 
-		let className = 'ts-dropdown__items';
+		let className = 'ts-dropdown__items-container';
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
 		const filter = this.props.filter;
 		const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(this.state.filterText) : this.props.adapter;
@@ -311,15 +312,15 @@ export class TS_DropDown<ItemType>
 				</div>;
 			return <div className="ts-dropdown__empty" style={style}>No options</div>;
 		}
-
-		return <TS_Tree
-			adapter={adapter}
-			selectedItem={this.state.selected}
-			onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
-			className={className}
-			treeContainerStyle={style}
-			// keyEventHandler={treeKeyEventHandler}
-		/>;
+		return <LL_V_L className={className} style={style}>
+			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={() => this.onSelected()}>Unselect</div>}
+			<TS_Tree
+				adapter={adapter}
+				selectedItem={this.state.selected}
+				onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
+				className={'ts-dropdown__items'}
+			/>
+		</LL_V_L>;
 	};
 
 	private renderSelectedItem = (selected?: ItemType) => {
@@ -347,7 +348,7 @@ export class TS_DropDown<ItemType>
 		return <div className={'ts-dropdown__placeholder'}><Renderer item={selected} node={node}/></div>;
 	};
 
-	private renderSelectedOrFilterInput = () => {
+	private renderSelectedOrFilterInput = (): React.ReactNode => {
 		if (!this.state.open || !this.props.filter) {
 			return this.renderSelectedItem(this.state.selected);
 		}
