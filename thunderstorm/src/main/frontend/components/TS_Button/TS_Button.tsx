@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {_className} from '../../utils/tools';
-import {LinearLayoutProps, LL_V_C} from '../Layouts';
+import {LinearLayoutProps} from '../Layouts';
 import './TS_Button.scss';
 
 export type Props_Button = LinearLayoutProps & {
@@ -42,9 +42,9 @@ export type Props_Button = LinearLayoutProps & {
  * ```
  */
 export const TS_Button = (props: Props_Button) => {
-	return <LL_V_C
+	return <div
 		{...props}
 		className={_className('ts-button', props.className, props.disabled && 'ts-button__disabled')}
 		onClick={props.disabled ? props.onDisabledClick : props.onClick}
-	>{props.children}</LL_V_C>;
+	>{props.children}</div>;
 };
