@@ -22,7 +22,6 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
-import {LL_H_C} from '../Layouts';
 import './TS_Checkbox.scss';
 
 export type Props_Checkbox = {
@@ -83,7 +82,7 @@ export class TS_Checkbox
 		const className = _className('ts-checkbox__button', disabledClass, checkedClass, roundedClass);
 		const innerClassName = _className('ts-checkbox__button__inner', disabledClass, checkedClass, roundedClass);
 
-		return <LL_H_C className={_className('ts-checkbox', this.props.className)}>
+		return <div className={_className('ts-checkbox', this.props.className)}>
 			<div
 				id={this.props.id}
 				className={className}
@@ -91,6 +90,6 @@ export class TS_Checkbox
 				{this.props.icon ? this.props.icon : <div className={innerClassName}/>}
 			</div>
 			{this.props.children}
-		</LL_H_C>;
+		</div>;
 	}
 }
