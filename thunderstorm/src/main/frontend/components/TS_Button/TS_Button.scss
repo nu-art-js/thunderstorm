@@ -24,8 +24,7 @@
   border-radius: 6px;
   padding-inline: 12px;
   padding-block: 6px;
-
-  .ts-button__disabled {
-
-  }
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
