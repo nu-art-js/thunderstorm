@@ -19,6 +19,8 @@
 
 import {sortArray} from './array-tools';
 
+const specialChars = ['(', ')', '?', '[', ']', '*', '\\', '/'];
+
 /**
  * # Filter
  *
@@ -52,18 +54,20 @@ export class Filter<T> {
 	private originFilterText?: string;
 	private _filter!: RegExp;
 
+
 	static translateStringToRegexFilter = (filter: string, regexp: boolean): RegExp => {
 		filter = (filter || '').trim();
 		filter = filter.toLowerCase();
 		filter = filter.replace(/\s+/, ' ');
 
 		if (regexp) {
-			filter = filter.replace(new RegExp('(.)', 'g'), '.*?$1');
+			filter = Array.from(filter).map(char => specialChars.includes(char) ? `.*?\\${char}` : `.*?${char}`).join('');
 		} else {
 			filter = `.*?${filter}`;
 		}
 
 		filter.length === 0 ? filter = '.*?' : filter += '.*';
+		console.log(filter);
 		return new RegExp(filter);
 	};
 
