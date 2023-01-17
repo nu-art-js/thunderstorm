@@ -17,14 +17,14 @@
  */
 
 import {expect} from 'chai';
-import {TestSuit_ts_compare} from './testCases';
+import {TestSuit_ts_mergeFail} from "./failedTestCases";
+import {BadImplementationException} from "../../../main";
 
 
-describe(TestSuit_ts_compare.label, () => {
-	TestSuit_ts_compare.testcases.forEach(testCase => {
-		it(testCase.description, () => {
-			expect(TestSuit_ts_compare.processor(testCase.input)).to.eq(testCase.result);
-		});
-	});
+describe(TestSuit_ts_mergeFail.label, () => {
+    TestSuit_ts_mergeFail.testcases.forEach(testCase => {
+        it(testCase.description, () => {
+            expect(() => TestSuit_ts_mergeFail.processor(testCase.input)).to.throw(Error);
+        });
+    });
 });
-

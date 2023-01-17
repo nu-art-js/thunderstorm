@@ -117,3 +117,9 @@ export type TestSuit_V2<Input, ExpectedResult> = {
 	testcases: TestModel_V2<Input, ExpectedResult>[]
 	label: string,
 }
+
+export type TestSuitAsync_V2<Input, ExpectedResult> = {
+	processor: (input: Input) => Promise<ExpectedResult>
+	testcases: TestModel_V2<Input, ExpectedResult>[]
+	label: string,
+}

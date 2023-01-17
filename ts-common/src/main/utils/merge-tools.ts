@@ -18,7 +18,7 @@
 
 import {
 	BadImplementationException,
-	deepClone
+	deepClone, exists
 } from "../index";
 
 export function mergeObject(original: any, override: any) {
@@ -66,11 +66,16 @@ export function mergeArray(original: any[], override: any[]) {
 }
 
 export function merge(original: any, override: any) {
-	if (override === undefined || override === null)
+
+
+	if (!exists(override))
 		return undefined;
 
-	if (override && original && typeof original !== typeof override || (typeof original === "object" && typeof override === 'object' && Array.isArray(original) !== Array.isArray(override)))
-		throw new BadImplementationException(`trying to merge object of different types!! \n Original: ${typeof original}\n Override: ${typeof override}`);
+	if(!exists(original))
+		return  override;
+
+	if (typeof original !== typeof override || (typeof original === "object" && typeof override === 'object' && Array.isArray(original) !== Array.isArray(override)))
+		throw new BadImplementationException(`trying to merge object of different types!! \\n Original: ${typeof original}\\n Override: ${typeof override}`);
 
 	if (Array.isArray(original) && Array.isArray(override))
 		return mergeArray(original, override);

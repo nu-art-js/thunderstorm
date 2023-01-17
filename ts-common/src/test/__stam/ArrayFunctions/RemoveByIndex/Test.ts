@@ -16,15 +16,14 @@
  * limitations under the License.
  */
 
-import {expect} from 'chai';
-import {TestSuit_ts_compare} from './testCases';
 
+import {expect} from "chai";
+import {TestSuit_ts_removeByIndex} from "./testCases";
 
-describe(TestSuit_ts_compare.label, () => {
-	TestSuit_ts_compare.testcases.forEach(testCase => {
-		it(testCase.description, () => {
-			expect(TestSuit_ts_compare.processor(testCase.input)).to.eq(testCase.result);
-		});
-	});
+describe(TestSuit_ts_removeByIndex.label, () => {
+    TestSuit_ts_removeByIndex.testcases.forEach(testCase => {
+        it(testCase.description, () => {
+            expect(TestSuit_ts_removeByIndex.processor(testCase.input)).to.eql(testCase.result);
+        });
+    });
 });
-
