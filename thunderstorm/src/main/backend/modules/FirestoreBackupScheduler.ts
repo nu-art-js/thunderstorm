@@ -28,6 +28,7 @@ import {
 	filterInstances,
 	Format_YYYYMMDD_HHmmss,
 	formatTimestamp,
+	generateHex,
 	ServerErrorSeverity,
 	TS_Object
 } from '@nu-art/ts-common';
@@ -40,6 +41,7 @@ import {FirestoreQuery} from '@nu-art/firebase';
 
 export type BackupDoc = ActDetailsDoc & {
 	backupPath: string,
+	backupId: string,
 }
 
 export type FirestoreBackupDetails<T extends TS_Object> = {
@@ -91,6 +93,8 @@ export class FirestoreBackupScheduler_Class
 		filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule()).forEach(backupArray => {
 			backups.push(...backupArray);
 		});
+		const backupId = generateHex(32);
+		const nowMs = currentTimeMillis();
 
 		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
 		await Promise.all(backups.map(async (backupItem) => {
@@ -101,18 +105,17 @@ export class FirestoreBackupScheduler_Class
 			};
 			const docs = await backupStatusCollection.query(query);
 			const latestDoc = docs[0];
-			const nowMs = currentTimeMillis();
 			if (latestDoc && latestDoc.timestamp + backupItem.minTimeThreshold > nowMs)
 				return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
 
-			const fileName = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
-			const backupPath = `backup/firestore/${backupItem.moduleKey}/${fileName}.json`;
+			const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
+			const backupPath = `backup/firestore/${timeFormat}/${backupItem.moduleKey}.json`;
 			try {
 				const toBackupData = await backupItem.collection.query(backupItem.backupQuery);
 				await (await bucket.getFile(backupPath)).write(toBackupData);
 
 				this.logInfoBold('Upserting Backup for ' + backupItem.moduleKey);
-				await backupStatusCollection.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath});
+				await backupStatusCollection.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath, backupId: backupId});
 
 				this.logInfoBold('Upserting BackupStatus for ' + backupItem.moduleKey); // happened 30 seconds later
 				const keepInterval = backupItem.keepInterval;
