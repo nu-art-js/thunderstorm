@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {exists} from "./tools";
+import {exists} from './tools';
 import {TypedMap} from './types';
 import {_keys} from './object-tools';
 
@@ -94,7 +94,7 @@ const defaultMapper: <T extends any>(item: T) => any = (item) => item;
 
 /**
 remove all duplicates in array
-* */
+ * */
 export function filterDuplicates<T>(source: T[], mapper: (item: T) => any = defaultMapper): T[] {
 	//Test
 	if (defaultMapper === mapper)
@@ -103,6 +103,7 @@ export function filterDuplicates<T>(source: T[], mapper: (item: T) => any = defa
 	const uniqueKeys = new Set(source.map(mapper));
 	return source.filter(item => uniqueKeys.delete(mapper(item)));
 }
+
 /*
 create new function filter falsy and inside same as original,
 after that change filter Instances
@@ -202,9 +203,9 @@ export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
 	return result;
 }
 
-export function groupArrayBy<T extends object>(arr: T[], mapper: (item: T) => string | number) {
-	const map = arr.reduce<TypedMap<T[]>>((agg, item) => {
-		const key = mapper(item);
+export function groupArrayBy<T extends object>(arr: T[], mapper: (item: T, index: number) => string | number) {
+	const map = arr.reduce<TypedMap<T[]>>((agg, item, index) => {
+		const key = mapper(item, index);
 		if (!agg[key])
 			agg[key] = [];
 		agg[key].push(item);
