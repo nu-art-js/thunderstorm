@@ -25,18 +25,16 @@ import {
 	currentTimeMillis,
 	dispatch_onServerError,
 	Dispatcher,
-	filterInstances,
 	Format_YYYYMMDD_HHmmss,
 	formatTimestamp,
 	generateHex,
-	ServerErrorSeverity,
-	TS_Object
+	ServerErrorSeverity
 } from '@nu-art/ts-common';
 import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase';
-import {ActDetailsDoc,} from './CleanupScheduler';
-import {FirestoreCollection} from '@nu-art/firebase/backend/firestore/FirestoreCollection';
+import {ActDetailsDoc,} from '../CleanupScheduler';
 import {FirestoreQuery} from '@nu-art/firebase';
+import {FirestoreBackupDetails, ModuleBE_Backup} from './ModuleBE_Backup';
 
 
 export type BackupDoc = ActDetailsDoc & {
@@ -44,13 +42,6 @@ export type BackupDoc = ActDetailsDoc & {
 	backupId: string,
 }
 
-export type FirestoreBackupDetails<T extends TS_Object> = {
-	moduleKey: string,
-	minTimeThreshold: number, // minimum time to pass before another backup can occur.
-	keepInterval?: number, // how long to keep
-	collection: FirestoreCollection<T>,
-	backupQuery: FirestoreQuery<T>
-}
 
 export interface OnFirestoreBackupSchedulerAct {
 	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<any>[];
@@ -61,7 +52,6 @@ export interface OnModuleCleanup {
 }
 
 const dispatch_onModuleCleanup = new Dispatcher<OnModuleCleanup, '__onCleanupInvoked'>('__onCleanupInvoked');
-const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, '__onFirestoreBackupSchedulerAct'>('__onFirestoreBackupSchedulerAct');
 
 export class FirestoreBackupScheduler_Class
 	extends FirebaseScheduledFunction {
@@ -72,7 +62,7 @@ export class FirestoreBackupScheduler_Class
 		this.setRuntimeOptions({timeoutSeconds: 300});
 	}
 
-	onScheduledEvent = async (): Promise<any> => {
+	onScheduledEvent = async (force?: boolean): Promise<any> => {
 		this.logInfoBold('Running function FirestoreBackupScheduler');
 
 		try {
@@ -86,13 +76,7 @@ export class FirestoreBackupScheduler_Class
 			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, errorMessage);
 		}
 
-		const backupStatusCollection = ModuleBE_Firebase.createAdminSession().getFirestore()
-			.getCollection<BackupDoc>('firestore-backup-status', ['moduleKey', 'timestamp']);
-
-		const backups: FirestoreBackupDetails<any>[] = [];
-		filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule()).forEach(backupArray => {
-			backups.push(...backupArray);
-		});
+		const backups: FirestoreBackupDetails<any>[] = ModuleBE_Backup.getBackupDetails();
 		const backupId = generateHex(32);
 		const nowMs = currentTimeMillis();
 
@@ -103,9 +87,10 @@ export class FirestoreBackupScheduler_Class
 				orderBy: [{key: 'timestamp', order: 'asc'}],
 				limit: 1
 			};
-			const docs = await backupStatusCollection.query(query);
+
+			const docs = await ModuleBE_Backup.query(query);
 			const latestDoc = docs[0];
-			if (latestDoc && latestDoc.timestamp + backupItem.minTimeThreshold > nowMs)
+			if (!force && latestDoc && latestDoc.timestamp + backupItem.minTimeThreshold > nowMs)
 				return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
 
 			const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
@@ -115,20 +100,20 @@ export class FirestoreBackupScheduler_Class
 				await (await bucket.getFile(backupPath)).write(toBackupData);
 
 				this.logInfoBold('Upserting Backup for ' + backupItem.moduleKey);
-				await backupStatusCollection.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath, backupId: backupId});
+				await ModuleBE_Backup.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath, backupId: backupId});
 
 				this.logInfoBold('Upserting BackupStatus for ' + backupItem.moduleKey); // happened 30 seconds later
 				const keepInterval = backupItem.keepInterval;
 				if (keepInterval) {
 					this.logInfoBold('Querying for items to delete for ' + backupItem.moduleKey);
 					const queryOld = {where: {moduleKey: backupItem.moduleKey, timestamp: {$lt: nowMs - keepInterval}}};
-					const oldDocs = await backupStatusCollection.query(queryOld);
+					const oldDocs = await ModuleBE_Backup.query(queryOld);
 
 					this.logInfoBold('Received items to delete total: ' + oldDocs.length);
 					await Promise.all(oldDocs.map(async oldDoc => {
 						try {
 							await (await bucket.getFile(oldDoc.backupPath)).delete();
-							await backupStatusCollection.deleteItem(oldDoc);
+							await ModuleBE_Backup.deleteItem(oldDoc);
 						} catch (e: any) {
 							this.logError('error deleting file: ', oldDoc, e);
 						}
