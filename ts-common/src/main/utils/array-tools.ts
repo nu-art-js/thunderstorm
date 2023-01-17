@@ -17,6 +17,8 @@
  */
 
 import {exists} from "./tools";
+import {TypedMap} from './types';
+import {_keys} from './object-tools';
 
 /**
  * Finds and removes first instance of item from array
@@ -94,6 +96,7 @@ const defaultMapper: <T extends any>(item: T) => any = (item) => item;
 remove all duplicates in array
 * */
 export function filterDuplicates<T>(source: T[], mapper: (item: T) => any = defaultMapper): T[] {
+	//Test
 	if (defaultMapper === mapper)
 		return Array.from(new Set(source));
 
@@ -197,4 +200,16 @@ export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
 		}
 	}
 	return result;
+}
+
+export function groupArrayBy<T extends object>(arr: T[], mapper: (item: T) => string | number) {
+	const map = arr.reduce<TypedMap<T[]>>((agg, item) => {
+		const key = mapper(item);
+		if (!agg[key])
+			agg[key] = [];
+		agg[key].push(item);
+		return agg;
+	}, {});
+
+	return _keys(map).map(key => ({key, values: map[key]}));
 }
