@@ -40,7 +40,7 @@ import {
 } from '@nu-art/ts-common';
 
 import {IndexKeys} from '@nu-art/thunderstorm';
-import {ApiException, ExpressRequest, FirestoreBackupDetails, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {ApiException, ExpressRequest, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {
 	DocWrapper,
 	FirestoreCollection,
@@ -54,6 +54,7 @@ import {canDeleteDispatcher, DB_EntityDependency, DBApiBEConfig, getModuleBEConf
 import {DBDef} from '../shared/db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
 import {_EmptyQuery, Response_DBSync} from '../shared';
+import {FirestoreBackupDetails} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_Backup';
 
 
 export type BaseDBApiConfig = {
