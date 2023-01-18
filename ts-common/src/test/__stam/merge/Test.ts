@@ -17,13 +17,13 @@
  */
 
 import {expect} from 'chai';
-import {TestSuit_ts_merge} from './mergeCases';
+import {TestSuit_ts_merge} from './testCases';
 
 
 describe(TestSuit_ts_merge.label, () => {
 	TestSuit_ts_merge.testcases.forEach(testCase => {
 		it(testCase.description, () => {
-			expect(TestSuit_ts_merge.processor(testCase.input)).to.equal(testCase.result);
+			expect(TestSuit_ts_merge.processor(testCase.input)).deep.equal(testCase.result);
 		});
 	});
 });

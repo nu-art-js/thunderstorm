@@ -30,6 +30,7 @@ export * from '../utils/promisify-request';
 export * from '../utils/to-be-removed';
 
 export * from './CleanupScheduler';
-export * from './FirestoreBackupScheduler';
+export * from './backup/ModuleBE_Backup';
+export * from './backup/FirestoreBackupScheduler';
 
 export * from '../../index';

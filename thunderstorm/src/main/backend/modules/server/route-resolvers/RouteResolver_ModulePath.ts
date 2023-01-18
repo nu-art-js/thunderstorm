@@ -23,7 +23,7 @@ import {Express} from 'express';
 import {ServerApi_Middleware} from '../../../utils/types';
 import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
-import {_values, addAllItemToArray, Logger, LogLevel, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {_values, Logger, LogLevel, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {ApiModule, ApiServerRouter} from '../../../utils/api-caller-types';
 
 
@@ -101,7 +101,9 @@ export class RouteResolver_ModulePath
 		const routes: (HttpRoute | HttpRoute[])[] = resolveStack(this.express._router.stack);
 		return routes.reduce((toRet: HttpRoute[], route) => {
 			const toAdd: HttpRoute[] = Array.isArray(route) ? route : [route];
-			addAllItemToArray(toRet, toAdd);
+			toRet.push(...toAdd);
+			//addAllItemToArray(toRet, toAdd);
+
 			return toRet;
 		}, [] as HttpRoute[]);
 	};

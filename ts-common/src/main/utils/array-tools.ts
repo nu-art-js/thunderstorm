@@ -16,8 +16,14 @@
  * limitations under the License.
  */
 
+import {exists} from './tools';
+import {_keys} from './object-tools';
+import {NestedArrayType} from './types';
+
+
 /**
- * Removes given item from array in place
+ * Finds and removes first instance of item from array
+ * tested V
  */
 export function removeItemFromArray<T>(array: T[], item: T) {
 	const index = array.indexOf(item);
@@ -26,6 +32,7 @@ export function removeItemFromArray<T>(array: T[], item: T) {
 
 /**
  * Removes the first item answering the condition given from array in place
+ * tested V
  */
 export function removeFromArray<T>(array: T[], item: (_item: T) => boolean) {
 	const index = array.findIndex(item);
@@ -33,7 +40,8 @@ export function removeFromArray<T>(array: T[], item: (_item: T) => boolean) {
 }
 
 /**
- * Removes item from array in place
+ * Removes item from array in index
+ * tested V
  */
 export function removeFromArrayByIndex<T>(array: T[], index: number) {
 	if (index > -1)
@@ -42,11 +50,9 @@ export function removeFromArrayByIndex<T>(array: T[], index: number) {
 	return array;
 }
 
-export function addAllItemToArray<T>(array: T[], items: T[]) {
-	array.push(...items);
-	return array;
-}
-
+/**
+ * Deprecated
+ */
 export function addItemToArray<T>(array: T[], item: T) {
 	array.push(item);
 	return array;
@@ -67,18 +73,30 @@ export function toggleElementInArray<T>(array: T[], item: T) {
 	return array;
 }
 
+/**
+ * Removes all items answering the condition given from array in place
+ */
 export async function filterAsync<T>(arr: T[], filter: (parameter: T) => Promise<boolean>): Promise<T[]> {
-	const boolArray = await arr.map(item => filter(item));
+	//const boolArray = await arr.map(item => filter(item)); changed
+	const boolArray = await Promise.all(arr.map(item => filter(item)));
 	return arr.filter((item, index) => boolArray[index]);
 }
 
+/**
+ * builds array that holds all items that are in array1 and array2
+ * problem with objects
+ */
 export function findDuplicates<T>(array1: T[], array2: T[]): T[] {
 	return array1.filter(val => array2.indexOf(val) !== -1);
 }
 
 const defaultMapper: <T extends any>(item: T) => any = (item) => item;
 
+/**
+remove all duplicates in array
+ * */
 export function filterDuplicates<T>(source: T[], mapper: (item: T) => any = defaultMapper): T[] {
+	//Test
 	if (defaultMapper === mapper)
 		return Array.from(new Set(source));
 
@@ -86,7 +104,15 @@ export function filterDuplicates<T>(source: T[], mapper: (item: T) => any = defa
 	return source.filter(item => uniqueKeys.delete(mapper(item)));
 }
 
+/*
+create new function filter falsy and inside same as original,
+after that change filter Instances
+* */
 export function filterInstances<T>(array?: (T | undefined | null | void)[]): T[] {
+	return (array?.filter(item => exists(item)) || []) as T[];
+}
+
+export function filterFalsy<T>(array?: (T | undefined | null | void)[]): T[] {
 	return (array?.filter(item => !!item) || []) as T[];
 }
 
@@ -132,7 +158,8 @@ export async function batchAction<T extends any = any, R extends any = any>(arr:
 	for (let i = 0, j = arr.length; i < j; i += chunk) {
 		const items: R[] | R = await action(arr.slice(i, i + chunk));
 		if (Array.isArray(items))
-			addAllItemToArray(result, items);
+			//addAllItemToArray(result, items);
+			result.push(...items);
 		else
 			addItemToArray(result, items);
 	}
@@ -149,9 +176,11 @@ export async function batchActionParallel<T extends any = any, R extends any = a
 	const results = await Promise.all(promises);
 	for (const items of results) {
 		if (Array.isArray(items))
-			addAllItemToArray(toRet, items);
+			//addAllItemToArray(toRet, items);
+			toRet.push(...items);
 		else
-			addItemToArray(toRet, items);
+			//addItemToArray(toRet, items);
+			toRet.push(items);
 	}
 
 	return toRet;
@@ -162,7 +191,7 @@ export async function batchActionParallel<T extends any = any, R extends any = a
  * @param arr An array that is potentially a matrix
  * @param result A flat array of single values
  */
-export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
+export function flatArray<T extends any[], K = NestedArrayType<T>>(arr: T, result: K[] = []): K[] {
 	for (let i = 0, length = arr.length; i < length; i++) {
 		const value = arr[i];
 		if (Array.isArray(value)) {
@@ -173,3 +202,14 @@ export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
 	}
 	return result;
 }
+
+export function groupArrayBy<T extends object, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): { key: K, values: T[] }[] {
+	const map = arr.reduce<{ [k in K]: T[] }>((agg, item, index) => {
+		const key = mapper(item, index);
+		(agg[key] || (agg[key] = [])).push(item);
+		return agg;
+	}, {} as { [k in K]: T[] });
+
+	return _keys(map).map(key => ({key, values: map[key]}));
+}
+

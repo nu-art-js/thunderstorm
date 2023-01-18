@@ -1,0 +1,9 @@
+@startuml
+participant BackupModule
+database DBs
+database Storage
+-> BackupModule: perform backup
+BackupModule <-> DBs: collect all data
+BackupModule -> Storage: save data into files per collection
+BackupModule -> BackupModule: Delete old backups according to policy
+@enduml

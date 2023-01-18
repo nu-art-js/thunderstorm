@@ -16,3 +16,15 @@ export const ApiDef_ServerInfo: ApiDefResolver<ApiStruct_ServerInfo> = {
 		getServerInfo: {method: HttpMethod.GET, path: 'v1/server-info'}
 	}
 };
+
+export type ApiStruct_Backup = {
+	vv1: {
+		initiateBackup: QueryApi<void>,
+	}
+}
+
+export const ApiDef_Backup: ApiDefResolver<ApiStruct_Backup> = {
+	vv1: {
+		initiateBackup: {method: HttpMethod.GET, path: 'v1/initiate-backup'},
+	}
+};
