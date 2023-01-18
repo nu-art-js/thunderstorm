@@ -19,7 +19,7 @@ export const ApiDef_ServerInfo: ApiDefResolver<ApiStruct_ServerInfo> = {
 
 export type ApiStruct_Backup = {
 	vv1: {
-		initiateBackup: QueryApi<{}>,
+		initiateBackup: QueryApi<void>,
 	}
 }
 
