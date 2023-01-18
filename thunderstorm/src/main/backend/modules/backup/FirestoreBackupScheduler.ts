@@ -20,15 +20,7 @@
  */
 
 import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
-import {ActDetailsDoc,} from '../CleanupScheduler';
 import {FirestoreBackupDetails, ModuleBE_Backup} from './ModuleBE_Backup';
-
-
-export type BackupDoc = ActDetailsDoc & {
-	backupPath: string,
-	backupId: string,
-}
-
 
 export interface OnFirestoreBackupSchedulerAct {
 	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<any>[];
