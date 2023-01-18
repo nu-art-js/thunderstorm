@@ -8,16 +8,18 @@ import {
 	Format_YYYYMMDD_HHmmss,
 	formatTimestamp,
 	generateHex,
+	Minute,
 	Module,
 	ServerErrorSeverity,
 	TS_Object
 } from '@nu-art/ts-common';
 import {ApiDefServer} from '../../utils/api-caller-types';
-import {ApiDef_Backup, ApiStruct_Backup} from '../../../shared';
+import {ApiDef_Backup, ApiStruct_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared';
 import {createQueryServerApi} from '../../core/typed-api';
 import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {BackupDoc, OnFirestoreBackupSchedulerAct, OnModuleCleanup} from './FirestoreBackupScheduler';
+import {OnFirestoreBackupSchedulerAct, OnModuleCleanup} from './FirestoreBackupScheduler';
 import {FilterKeys, FirestoreQuery} from '@nu-art/firebase';
+import {BackupDoc} from '../../../shared/backup-types';
 
 export type FirestoreBackupDetails<T extends TS_Object> = {
 	moduleKey: string,
@@ -40,8 +42,28 @@ class ModuleBE_Backup_Class
 		super();
 		this.vv1 = {
 			initiateBackup: createQueryServerApi(ApiDef_Backup.vv1.initiateBackup, this.initiateBackup),
+			fetchBackupDocks: createQueryServerApi(ApiDef_Backup.vv1.fetchBackupDocks, this.fetchBackupDocks),
 		};
 	}
+
+	fetchBackupDocks = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
+		const backupDocs = await this.query({where: {backupId: body.backupId}});
+		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
+
+		const fetchBackupDocs = await Promise.all(backupDocs.map(async (doc) => {
+			const fileDescriptor = await (await bucket.getFile(doc.backupPath)).getReadSecuredUrl('', 10 * Minute);
+			return {
+				backupId: doc.backupId,
+				moduleKey: doc.moduleKey,
+				signedUrl: fileDescriptor.securedUrl,
+			};
+		}));
+		return {backupDescriptors: fetchBackupDocs};
+	};
+
+	restoreFromBack = async () => {
+
+	};
 
 	protected init(): void {
 		this.collection = this.getBackupStatusCollection();

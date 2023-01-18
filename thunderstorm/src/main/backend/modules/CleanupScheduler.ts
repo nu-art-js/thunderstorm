@@ -22,12 +22,8 @@
 import {currentTimeMillis, Dispatcher} from '@nu-art/ts-common';
 import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase';
+import { ActDetailsDoc } from '../../shared/backup-types';
 
-
-export type ActDetailsDoc = {
-	timestamp: number,
-	moduleKey: string
-}
 
 export type CleanupDetails = {
 	cleanup: () => Promise<void>,
