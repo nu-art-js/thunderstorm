@@ -1,24 +1,3 @@
-/*
- * Thunderstorm is a full web app framework!
- *
- * Typescript & Express backend infrastructure that natively runs on firebase function
- * Typescript & React frontend infrastructure
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 import {
 	__stringify,
 	_logger_logException,
@@ -28,19 +7,17 @@ import {
 	filterInstances,
 	Format_YYYYMMDD_HHmmss,
 	formatTimestamp,
+	generateHex,
+	Module,
 	ServerErrorSeverity,
 	TS_Object
 } from '@nu-art/ts-common';
-import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase';
-import {ActDetailsDoc,} from './CleanupScheduler';
-import {FirestoreCollection} from '@nu-art/firebase/backend/firestore/FirestoreCollection';
-import {FirestoreQuery} from '@nu-art/firebase';
-
-
-export type BackupDoc = ActDetailsDoc & {
-	backupPath: string,
-}
+import {ApiDefServer} from '../../utils/api-caller-types';
+import {ApiDef_Backup, ApiStruct_Backup} from '../../../shared';
+import {createQueryServerApi} from '../../core/typed-api';
+import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {BackupDoc, OnFirestoreBackupSchedulerAct, OnModuleCleanup} from './FirestoreBackupScheduler';
+import {FilterKeys, FirestoreQuery} from '@nu-art/firebase';
 
 export type FirestoreBackupDetails<T extends TS_Object> = {
 	moduleKey: string,
@@ -50,29 +27,38 @@ export type FirestoreBackupDetails<T extends TS_Object> = {
 	backupQuery: FirestoreQuery<T>
 }
 
-export interface OnFirestoreBackupSchedulerAct {
-	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<any>[];
-}
-
-export interface OnModuleCleanup {
-	__onCleanupInvoked: () => Promise<void>;
-}
-
-const dispatch_onModuleCleanup = new Dispatcher<OnModuleCleanup, '__onCleanupInvoked'>('__onCleanupInvoked');
 const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, '__onFirestoreBackupSchedulerAct'>('__onFirestoreBackupSchedulerAct');
+const dispatch_onModuleCleanup = new Dispatcher<OnModuleCleanup, '__onCleanupInvoked'>('__onCleanupInvoked');
 
-export class FirestoreBackupScheduler_Class
-	extends FirebaseScheduledFunction {
+
+class ModuleBE_Backup_Class
+	extends Module<{}> {
+	readonly vv1: ApiDefServer<ApiStruct_Backup>['vv1'];
+	public collection!: FirestoreCollection<BackupDoc>;
 
 	constructor() {
 		super();
-		this.setSchedule('every 24 hours');
-		this.setRuntimeOptions({timeoutSeconds: 300});
+		this.vv1 = {
+			initiateBackup: createQueryServerApi(ApiDef_Backup.vv1.initiateBackup, this.initiateBackup),
+		};
 	}
 
-	onScheduledEvent = async (): Promise<any> => {
-		this.logInfoBold('Running function FirestoreBackupScheduler');
+	protected init(): void {
+		this.collection = this.getBackupStatusCollection();
+	}
 
+	public getBackupStatusCollection = (): FirestoreCollection<BackupDoc> => {
+		return ModuleBE_Firebase.createAdminSession().getFirestore()
+			.getCollection<BackupDoc>('firestore-backup-status', ['moduleKey', 'timestamp'] as FilterKeys<BackupDoc>);
+	};
+
+	public getBackupDetails = (): FirestoreBackupDetails<any>[] => filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule()).reduce<FirestoreBackupDetails<any>[]>((resultBackupArray, currentBackup) => {
+		if (currentBackup)
+			resultBackupArray.push(...currentBackup);
+		return resultBackupArray;
+	}, []);
+
+	initiateBackup = async () => {
 		try {
 			this.logInfo('Cleaning modules...');
 			await dispatch_onModuleCleanup.dispatchModuleAsync();
@@ -84,13 +70,9 @@ export class FirestoreBackupScheduler_Class
 			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, errorMessage);
 		}
 
-		const backupStatusCollection = ModuleBE_Firebase.createAdminSession().getFirestore()
-			.getCollection<BackupDoc>('firestore-backup-status', ['moduleKey', 'timestamp']);
-
-		const backups: FirestoreBackupDetails<any>[] = [];
-		filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule()).forEach(backupArray => {
-			backups.push(...backupArray);
-		});
+		const backups: FirestoreBackupDetails<any>[] = this.getBackupDetails();
+		const backupId = generateHex(32);
+		const nowMs = currentTimeMillis();
 
 		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
 		await Promise.all(backups.map(async (backupItem) => {
@@ -99,33 +81,33 @@ export class FirestoreBackupScheduler_Class
 				orderBy: [{key: 'timestamp', order: 'asc'}],
 				limit: 1
 			};
-			const docs = await backupStatusCollection.query(query);
+
+			const docs = await this.query(query);
 			const latestDoc = docs[0];
-			const nowMs = currentTimeMillis();
 			if (latestDoc && latestDoc.timestamp + backupItem.minTimeThreshold > nowMs)
 				return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
 
-			const fileName = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
-			const backupPath = `backup/firestore/${backupItem.moduleKey}/${fileName}.json`;
+			const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
+			const backupPath = `backup/firestore/${timeFormat}/${backupItem.moduleKey}.json`;
 			try {
 				const toBackupData = await backupItem.collection.query(backupItem.backupQuery);
 				await (await bucket.getFile(backupPath)).write(toBackupData);
 
 				this.logInfoBold('Upserting Backup for ' + backupItem.moduleKey);
-				await backupStatusCollection.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath});
+				await this.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath, backupId: backupId});
 
 				this.logInfoBold('Upserting BackupStatus for ' + backupItem.moduleKey); // happened 30 seconds later
 				const keepInterval = backupItem.keepInterval;
 				if (keepInterval) {
 					this.logInfoBold('Querying for items to delete for ' + backupItem.moduleKey);
 					const queryOld = {where: {moduleKey: backupItem.moduleKey, timestamp: {$lt: nowMs - keepInterval}}};
-					const oldDocs = await backupStatusCollection.query(queryOld);
+					const oldDocs = await this.query(queryOld);
 
 					this.logInfoBold('Received items to delete total: ' + oldDocs.length);
 					await Promise.all(oldDocs.map(async oldDoc => {
 						try {
 							await (await bucket.getFile(oldDoc.backupPath)).delete();
-							await backupStatusCollection.deleteItem(oldDoc);
+							await this.deleteItem(oldDoc);
 						} catch (e: any) {
 							this.logError('error deleting file: ', oldDoc, e);
 						}
@@ -142,6 +124,19 @@ export class FirestoreBackupScheduler_Class
 			}
 		}));
 	};
+
+	query = async (ourQuery: FirestoreQuery<BackupDoc>): Promise<BackupDoc[]> => {
+		return await this.collection.query(ourQuery);
+	};
+
+	upsert = async (instance: BackupDoc): Promise<BackupDoc> => {
+		this.logWarning(instance);
+		return await this.collection.upsert(instance);
+	};
+
+	deleteItem = async (instance: BackupDoc): Promise<BackupDoc | undefined> => {
+		return await this.collection.deleteItem(instance);
+	};
 }
 
-export const FirestoreBackupScheduler = new FirestoreBackupScheduler_Class();
+export const ModuleBE_Backup = new ModuleBE_Backup_Class();

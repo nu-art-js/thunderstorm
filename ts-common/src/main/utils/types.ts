@@ -49,6 +49,9 @@ export type RequireOnlyOne<T, Keys extends keyof T = keyof T> =
 
 export type Constructor<T> = new (...args: any) => T
 export type ArrayType<T extends any[]> = T extends (infer I)[] ? I : never;
+export type NestedArrayType<T extends any[]> =
+	T extends (infer I)[] ? I extends any[] ?
+		NestedArrayType<I> : I : never;
 
 export type PartialProperties<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 
