@@ -13,7 +13,7 @@ import {
 	ServerErrorSeverity,
 	TS_Object
 } from '@nu-art/ts-common';
-import {ApiDefServer} from '../../utils/api-caller-types';
+import {ApiDefServer, ApiModule} from '../../utils/api-caller-types';
 import {ApiDef_Backup, ApiStruct_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared';
 import {createQueryServerApi} from '../../core/typed-api';
 import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
@@ -34,7 +34,8 @@ const dispatch_onModuleCleanup = new Dispatcher<OnModuleCleanup, '__onCleanupInv
 
 
 class ModuleBE_Backup_Class
-	extends Module<{}> {
+	extends Module<{}>
+	implements ApiDefServer<ApiStruct_Backup>, ApiModule {
 	readonly vv1: ApiDefServer<ApiStruct_Backup>['vv1'];
 	public collection!: FirestoreCollection<BackupDoc>;
 
@@ -44,6 +45,10 @@ class ModuleBE_Backup_Class
 			initiateBackup: createQueryServerApi(ApiDef_Backup.vv1.initiateBackup, this.initiateBackup),
 			fetchBackupDocks: createQueryServerApi(ApiDef_Backup.vv1.fetchBackupDocks, this.fetchBackupDocks),
 		};
+	}
+
+	useRoutes() {
+		return this.vv1;
 	}
 
 	fetchBackupDocks = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
