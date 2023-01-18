@@ -32,7 +32,6 @@ export type ReduceFunction<ItemType, ReturnType> = (
 	array?: ItemType[]
 ) => ReturnType
 
-
 export type DBConfig<T extends DB_Object, Ks extends keyof T> = {
 	name: string
 	version?: number
@@ -162,11 +161,16 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 	public async upsert(value: T, _store?: IDBObjectStore): Promise<T> {
 		const store = await this.store(true, _store);
-		const request = store.put(value);
-		return new Promise((resolve, reject) => {
-			request.onerror = () => reject(new Error(`Error upserting item in DB - ${this.config.name}`));
-			request.onsuccess = () => resolve(request.result as unknown as T);
-		});
+		try {
+			const request = store.put(value);
+			return new Promise((resolve, reject) => {
+				request.onerror = () => reject(new Error(`Error upserting item in DB - ${this.config.name}`));
+				request.onsuccess = () => resolve(request.result as unknown as T);
+			});
+		} catch (e: any) {
+			console.log('trying to upsert: ', value);
+			throw e;
+		}
 	}
 
 	public async upsertAll(values: T[], _store?: IDBObjectStore) {

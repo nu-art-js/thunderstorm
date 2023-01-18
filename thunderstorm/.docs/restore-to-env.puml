@@ -1,0 +1,22 @@
+@startuml
+box "Target" #45fe43
+    participant T.BackupModule as "BackupModule"
+    database T.DBs as "DBs"
+end box
+
+box "Origin" #b68eed
+    participant O.BackupModule as "BackupModule"
+    database O.Storage as "Stroage"
+end box
+
+<- O.BackupModule: show list of\ncurrent backups\nand select one
+
+-> T.BackupModule: asking to restore\nwith backup id of\norigin + origin env
+T.BackupModule -> O.BackupModule: api call, get all signed urls for collections backup
+O.BackupModule <-> O.Storage: generate signedUrls
+O.BackupModule -> T.BackupModule: signed Urls + collection name
+T.BackupModule <-> O.Storage: download backup with signUrl
+T.BackupModule -> T.BackupModule: parse data
+T.BackupModule -> T.DBs: ${respective module}.upsert all
+
+@enduml
