@@ -51,7 +51,7 @@ export const testSuit_cliModule: TestSuit<CliModuleTest> = {
 	processor: async (input) => {
 		CliParamsModule.setDefaultConfig({params: [input.param]})
 		// create the cli input
-		const cliInput = flatArray<string>((input.input || [input.param]).map(generateCliParams));
+		const cliInput = flatArray((input.input || [input.param]).map(generateCliParams));
 
 		// resolve the param value
 		const retrievedValue: string | string[] = CliParamsModule.getParam(input.param, cliInput)

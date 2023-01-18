@@ -17,8 +17,9 @@
  */
 
 import {exists} from './tools';
-import {TypedMap} from './types';
 import {_keys} from './object-tools';
+import {NestedArrayType} from './types';
+
 
 /**
  * Finds and removes first instance of item from array
@@ -90,7 +91,6 @@ export function findDuplicates<T>(array1: T[], array2: T[]): T[] {
 }
 
 const defaultMapper: <T extends any>(item: T) => any = (item) => item;
-
 
 /**
 remove all duplicates in array
@@ -191,7 +191,7 @@ export async function batchActionParallel<T extends any = any, R extends any = a
  * @param arr An array that is potentially a matrix
  * @param result A flat array of single values
  */
-export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
+export function flatArray<T extends any[], K = NestedArrayType<T>>(arr: T, result: K[] = []): K[] {
 	for (let i = 0, length = arr.length; i < length; i++) {
 		const value = arr[i];
 		if (Array.isArray(value)) {
@@ -203,14 +203,13 @@ export function flatArray<T>(arr: T[][] | T[], result: T[] = []): T[] {
 	return result;
 }
 
-export function groupArrayBy<T extends object>(arr: T[], mapper: (item: T, index: number) => string | number) {
-	const map = arr.reduce<TypedMap<T[]>>((agg, item, index) => {
+export function groupArrayBy<T extends object, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): { key: K, values: T[] }[] {
+	const map = arr.reduce<{ [k in K]: T[] }>((agg, item, index) => {
 		const key = mapper(item, index);
-		if (!agg[key])
-			agg[key] = [];
-		agg[key].push(item);
+		(agg[key] || (agg[key] = [])).push(item);
 		return agg;
-	}, {});
+	}, {} as { [k in K]: T[] });
 
 	return _keys(map).map(key => ({key, values: map[key]}));
 }
+
