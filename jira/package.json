@@ -21,7 +21,7 @@
     "@nu-art/ts-common": "~0.0.1",
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/firebase": "~0.0.1",
-    "firebase-admin": "^10.0.1",
+    "firebase-admin": "11.5.0",
     "body-parser": "^1.18.3",
     "compression": "^1.7.4",
     "debug": "^3.1.0",
