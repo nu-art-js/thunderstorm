@@ -17,9 +17,10 @@
  */
 
 import {Firebase_StorageFunction} from '@nu-art/firebase/backend-functions';
-import {ObjectMetadata} from 'firebase-functions/lib/providers/storage';
 import {EventContext} from 'firebase-functions';
 import {Dispatcher} from '@nu-art/ts-common';
+import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';
+
 
 export interface OnAssetUploaded {
 	__processAsset(filePath?: string): void;
@@ -27,14 +28,12 @@ export interface OnAssetUploaded {
 
 const dispatcher_onAssetUploaded = new Dispatcher<OnAssetUploaded, '__processAsset'>('__processAsset');
 
-
 export class AssetBucketListener_Class
 	extends Firebase_StorageFunction {
 
 	constructor() {
 		super();
 	}
-
 
 	init() {
 		super.init();
