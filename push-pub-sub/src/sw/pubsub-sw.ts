@@ -19,23 +19,27 @@ importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js')
 importScripts('https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js');
 import {initializeApp} from 'firebase/app';
 import {getMessaging, onBackgroundMessage} from 'firebase/messaging/sw';
-import {BeLogged, LogClient_Browser, Logger} from '@nu-art/ts-common';
+import {BeLogged, LogClient_Browser, Logger, LogLevel} from '@nu-art/ts-common';
 
 
 export class FCMServiceWorker
 	extends Logger {
+	constructor() {
+		super();
+		this.setMinLevel(LogLevel.Debug);
+	}
 
 	init(firebaseConfig: any) {
-		this.logInfo('INIT');
+		this.logVerbose('INIT');
 		if (!firebaseConfig)
 			throw new Error('forgot to add ModuleFE_Firebase.local to your config');
 
-		this.logInfo('START');
+		this.logVerbose('START');
 		const firebaseApp = initializeApp(firebaseConfig);
 		const messaging = getMessaging(firebaseApp);
 
 		onBackgroundMessage(messaging, (payload) => {
-			this.logInfo('[service_worker.js] Received background message ', payload);
+			this.logDebug('[service_worker.js] Received background message ', payload);
 			const message = {
 				command: 'SwToApp',
 				message: payload.data
@@ -50,47 +54,47 @@ export class FCMServiceWorker
 			});
 		});
 
-		this.logInfo('Registering listeners');
+		this.logVerbose('Registering listeners');
 		self.addEventListener('notificationclick', this.onNotificationClicked);
 		self.addEventListener('pushsubscriptionchange', this.onSubscriptionChanged);
 		self.addEventListener('push', this.onPushReceived);
 		self.addEventListener('activate', this.onActivate);
 		self.addEventListener('install', this.onInstall);
-		this.logInfo('SW DONE');
+		this.logVerbose('SW DONE');
 	}
 
 	onPushReceived = (e: any) => {
-		this.logInfo('push in SW', e);
+		this.logDebug('push in SW', e);
 	};
 
 	onActivate = async () => {
-		this.logInfo('Activated SW');
+		this.logVerbose('Activated SW');
 		try {
 			// @ts-ignore
 			await self.clients.claim();
-			this.logInfo('Service Worker activated');
+			this.logDebug('Service Worker activated');
 		} catch (e: any) {
 			this.logError('Error activating service worker', e);
 		}
 	};
 
 	onInstall = async () => {
-		this.logInfo('Installed SW');
+		this.logVerbose('Installed SW');
 		try {
 			// @ts-ignore
 			await self.skipWaiting();
-			this.logInfo('Skipped waiting, now using the new SW');
+			this.logDebug('Skipped waiting, now using the new SW');
 		} catch (e: any) {
 			this.logError('Something wrong while skipping waiting. Service worker not queued', e);
 		}
 	};
 
 	onNotificationClicked = () => {
-		this.logInfo('Notification Clicked in SW');
+		this.logDebug('Notification Clicked in SW');
 	};
 
 	onSubscriptionChanged = () => {
-		this.logInfo('onSubscriptionChanged in SW');
+		this.logDebug('onSubscriptionChanged in SW');
 	};
 }
 
