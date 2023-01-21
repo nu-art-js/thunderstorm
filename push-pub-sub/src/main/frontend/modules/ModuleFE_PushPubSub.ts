@@ -141,7 +141,7 @@ export class ModuleFE_PushPubSub_Class
 		const registration = await navigator.serviceWorker.register(`/${this.config.swFileName || 'pubsub-sw.js'}`);
 		await registration.update();
 		navigator.serviceWorker.oncontrollerchange = () => {
-			this.logInfo('This page is now controlled by:', this.getControlingServiceWorker());
+			this.logDebug('This page is now controlled by:', this.getControlingServiceWorker());
 		};
 
 		navigator.serviceWorker.onmessage = (event: MessageEvent) => {
@@ -169,7 +169,7 @@ export class ModuleFE_PushPubSub_Class
 			this.logDebug('GOT new Token');
 
 			if (this.getControlingServiceWorker()) {
-				this.logInfo(`This page is currently controlled by: `, this.getControlingServiceWorker());
+				this.logDebug(`This page is currently controlled by: `, this.getControlingServiceWorker());
 			}
 		});
 	};
