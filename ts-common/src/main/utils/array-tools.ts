@@ -191,7 +191,7 @@ export async function batchActionParallel<T extends any = any, R extends any = a
  * @param arr An array that is potentially a matrix
  * @param result A flat array of single values
  */
-export function flatArray(arr: T, result: K[] = []): K[] {
+export function flatArray<T extends any[], K = NestedArrayType<T>>(arr: T, result: K[] = []): K[] {
 	for (let i = 0, length = arr.length; i < length; i++) {
 		const value = arr[i];
 		if (Array.isArray(value)) {
