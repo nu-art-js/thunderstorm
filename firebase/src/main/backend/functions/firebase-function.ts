@@ -16,7 +16,6 @@
  * limitations under the License.
  */
 import {Change, CloudFunction, EventContext, HttpsFunction, RuntimeOptions} from 'firebase-functions';
-import {DataSnapshot} from 'firebase-functions/lib/providers/database';
 
 import * as express from 'express';
 import {Request, Response} from 'express';
@@ -31,9 +30,10 @@ import {
 	StringMap,
 	TS_Object
 } from '@nu-art/ts-common';
-import {ObjectMetadata} from 'firebase-functions/lib/providers/storage';
-import {Message} from 'firebase-functions/lib/providers/pubsub';
 import {DocumentSnapshot} from 'firebase-admin/firestore';
+import {DataSnapshot} from 'firebase-functions/lib/common/providers/database';
+import {ObjectMetadata} from 'firebase-functions/v1/storage';
+import {Message} from 'firebase-admin/lib/messaging/messaging-api';
 
 
 const functions = require('firebase-functions');
@@ -355,7 +355,8 @@ export abstract class Firebase_PubSubFunction<T extends TS_Object>
 
 		return this.function = functions.pubsub.topic(this.topic).onPublish(async (message: Message, context: FirebaseEventContext) => {
 			// need to validate etc...
-			const originalMessage: TopicMessage = message.toJSON();
+			// @ts-ignore
+			const originalMessage: TopicMessage = message;
 
 			let data: T | undefined;
 			try {
