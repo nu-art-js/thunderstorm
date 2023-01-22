@@ -23,7 +23,7 @@ import {IndexKeys} from '@nu-art/thunderstorm';
 import {DBDef,} from '../shared';
 import {DBConfig, IndexDb_Query, IndexedDB, OnClearWebsiteData, ReduceFunction, StorageKey} from '@nu-art/thunderstorm/frontend';
 
-import {arrayToMap, cloneArr, DB_Object, dbObjectToId, Logger, Module, TypedMap} from '@nu-art/ts-common';
+import {arrayToMap, cloneArr, DB_Object, dbObjectToId, Logger, Module, TypedMap, sortArray} from '@nu-art/ts-common';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 
@@ -242,6 +242,10 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 
 	map = <MapType>(mapper: (item: DBType, index: number, array: Readonly<DBType[]>) => MapType) => {
 		return this.all().map(mapper);
+	};
+
+	sort = <MapType>(map: keyof DBType | (keyof DBType)[] | ((item: DBType) => any) = i => i, invert = false): DBType[] => {
+		return sortArray(this.allMutable() as DBType[], map, invert);
 	};
 
 	// @ts-ignore

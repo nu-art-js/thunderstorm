@@ -18,14 +18,14 @@
 
 import {
 	BadImplementationException,
-	deepClone, exists
-} from "../index";
+	deepClone,
+	exists
+} from '../index';
+
 
 export function mergeObject(original: any, override: any) {
 	if (original === override) {
-		console.log("Original: " + JSON.stringify(original));
-		console.log("Override: " + JSON.stringify(override));
-		throw new BadImplementationException(`trying to merge same Object instance\n Original: ${typeof original}\n Override: ${typeof override}`);
+		return override;
 	}
 
 	const returnValue = deepClone(original);
@@ -41,9 +41,7 @@ export function mergeObject(original: any, override: any) {
 
 export function mergeArray(original: any[], override: any[]) {
 	if (original === override) {
-		console.log("Original: " + JSON.stringify(original));
-		console.log("Override: " + JSON.stringify(override));
-		throw new BadImplementationException(`trying to merge same Array instance\n Original: ${typeof original}\n Override: ${typeof override}`);
+		return override;
 	}
 
 	// const returnValue = deepClone(original);
@@ -62,26 +60,24 @@ export function mergeArray(original: any[], override: any[]) {
 	// 	});
 	// });
 
-	return override
+	return override;
 }
 
 export function merge(original: any, override: any) {
-
-
 	if (!exists(override))
 		return undefined;
 
-	if(!exists(original))
-		return  override;
+	if (!exists(original))
+		return override;
 
-	if (typeof original !== typeof override || (typeof original === "object" && typeof override === 'object' && Array.isArray(original) !== Array.isArray(override)))
-		throw new BadImplementationException(`trying to merge object of different types!! \\n Original: ${typeof original}\\n Override: ${typeof override}`);
+	if (typeof original !== typeof override || (typeof original === 'object' && typeof override === 'object' && Array.isArray(original) !== Array.isArray(override)))
+		throw new BadImplementationException(`trying to merge object of different types!! \\n Original: ${JSON.stringify(original)}\\n Override: ${JSON.stringify(override)}`);
 
 	if (Array.isArray(original) && Array.isArray(override))
 		return mergeArray(original, override);
 
-	if (typeof original === "object" && typeof override === 'object' && !Array.isArray(original) && !Array.isArray(override))
+	if (typeof original === 'object' && typeof override === 'object' && !Array.isArray(original) && !Array.isArray(override))
 		return mergeObject(original || {}, override);
 
-	return override
+	return override;
 }

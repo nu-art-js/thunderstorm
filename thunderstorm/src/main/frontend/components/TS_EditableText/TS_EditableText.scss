@@ -1,0 +1,51 @@
+.ts-editable-text {
+
+  //What's rendered when not editing
+  .ts-editable-text__text {
+    height: 100%;
+    white-space: pre-wrap;
+  }
+
+  //What's rendered when editing
+  .ts-editable-text__edit-area {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    //The text-area itself
+    .ts-editable-text__edit-area__text-area {
+      flex-grow: 1;
+    }
+
+    //The actions buttons
+    .ts-editable-text__edit-area__buttons {
+      flex-shrink: 0;
+      display: flex;
+      gap: 8px;
+
+      .ts-button {
+        min-width: unset;
+        min-height: unset;
+        padding: 4px 8px;
+        margin: 0;
+        font: {
+          size: 14px;
+          weight: bold;
+        }
+      }
+
+      .ts-editable-text__edit-area__buttons__reset {
+        margin-right: auto;
+      }
+
+      .ts-editable-text__edit-area__buttons__cancel {
+        background-color: #D0312D;
+      }
+
+      .ts-editable-text__edit-area__buttons__save {
+        background-color: #3CB043;
+      }
+    }
+  }
+}
