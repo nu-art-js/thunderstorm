@@ -83,6 +83,7 @@ export * from './components/TS_Notifications';
 export * from './components/TS_ComponentTransition';
 export * from './components/TS_BusyButton';
 export * from './components/TS_Slider';
+export * from './components/TS_EditableText';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';
