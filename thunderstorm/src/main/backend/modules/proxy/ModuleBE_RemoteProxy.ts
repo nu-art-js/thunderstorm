@@ -32,6 +32,7 @@ type ProxyConfig = {
 	urls: string[],
 	secret: string
 };
+
 export type RemoteProxyConfig = {
 	remotes: {
 		[proxyId: string]: ProxyConfig

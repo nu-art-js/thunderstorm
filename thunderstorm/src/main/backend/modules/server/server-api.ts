@@ -300,7 +300,7 @@ export class _ServerQueryApi<API extends QueryApi<any, any, any>>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: API['P']): Promise<API['R']> {
-		return this.action(queryParams, this.middlewareResults.length ? this.middlewareResults : request, request);
+		return this.action(queryParams, this.middlewareResults?.length ? this.middlewareResults : request, request);
 	}
 }
 
@@ -314,7 +314,7 @@ export class _ServerBodyApi<API extends BodyApi<any, any, any>>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: API['B']): Promise<API['R']> {
-		return this.action(body, this.middlewareResults.length ? this.middlewareResults : request, request);
+		return this.action(body, this.middlewareResults?.length ? this.middlewareResults : request, request);
 	}
 }
 
