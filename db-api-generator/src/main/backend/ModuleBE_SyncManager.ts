@@ -69,6 +69,10 @@ export class ModuleBE_SyncManager_Class
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
 
+	useRoutes() {
+		return this.v1;
+	}
+
 	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): DeletedDBItem => {
 		const {_id, __updated, __created, _v} = item;
 		const deletedItem: DeletedDBItem = {_id, __updated, __created, _v, __collectionName: collectionName};
@@ -128,10 +132,6 @@ export class ModuleBE_SyncManager_Class
 			return this.setOldestDeleted(key, newestDeletedItem.__updated);
 		}));
 	};
-
-	useRoutes() {
-		return this.v1;
-	}
 
 	init() {
 		const firestore = ModuleBE_Firebase.createAdminSession().getFirestore();
