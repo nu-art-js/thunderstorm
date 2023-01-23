@@ -9,6 +9,7 @@ type Props = {
 	text: string;
 	onTextSaved?: (text: string) => void;
 	className?: string;
+	disableEdit?: boolean;
 	renderers?: {
 		cancelButton?: React.ReactNode;
 		saveButton?: React.ReactNode;
@@ -36,6 +37,9 @@ export class TS_EditableText
 	// ######################## Logic ########################
 
 	private onEnableEdit = () => {
+		if (this.props.disableEdit)
+			return;
+
 		this.setState({text: this.state.original, isEditing: true});
 	};
 
