@@ -115,6 +115,7 @@ export class TS_PopupMenuOverlay
 				this.ref = undefined;
 			}}>
 				<div className="ts-popup-menu__menu" style={this.currentPos}
+						 id={menuModel.id}
 						 ref={_ref => {
 							 if (this.ref || !_ref)
 								 return;
