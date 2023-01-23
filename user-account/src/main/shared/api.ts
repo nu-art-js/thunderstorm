@@ -17,6 +17,7 @@
  */
 
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi, QueryParams} from '@nu-art/thunderstorm';
+import {Minute} from '@nu-art/ts-common';
 
 
 export const HeaderKey_SessionId = 'x-session-id';
@@ -114,8 +115,8 @@ export const ApiDef_UserAccountFE: ApiDefResolver<ApiStruct_UserAccountFE> = {
 	v1: {
 		loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'},
 		create: {method: HttpMethod.POST, path: 'v1/account/create'},
-		login: {method: HttpMethod.POST, path: 'v1/account/login'},
-		validateSession: {method: HttpMethod.GET, path: 'v1/account/validate'},
+		login: {method: HttpMethod.POST, path: 'v1/account/login', timeout: Minute},
+		validateSession: {method: HttpMethod.GET, path: 'v1/account/validate', timeout: Minute},
 		query: {method: HttpMethod.GET, path: 'v1/account/query'},
 	}
 };
