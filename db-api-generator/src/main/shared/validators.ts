@@ -33,6 +33,7 @@ export const tsValidateGeneralUrl = (mandatory?: boolean) => tsValidateRegexp(
 	/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
 export const tsValidateVersion = tsValidateRegexp(/\d{1,3}\.\d{1,3}\.\d{1,3}/);
 export const tsValidateUniqueId = tsValidateId(dbIdLength);
+
 export const tsValidateOptionalId = tsValidateId(dbIdLength, false);
 export const tsValidateStringWithDashes = tsValidateRegexp(/^[A-Za-z-]+$/);
 export const tsValidateStringAndNumbersWithDashes = tsValidateRegexp(/^[0-9A-Za-z-]+$/);

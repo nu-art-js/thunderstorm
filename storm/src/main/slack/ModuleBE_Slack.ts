@@ -60,7 +60,7 @@ type MessageMap = {
 }
 
 export class ModuleBE_Slack_Class
-	extends Module<ConfigType> {
+	extends Module<ConfigType, any> {
 	private web!: WebClient;
 	private messageMap: MessageMap = {};
 
