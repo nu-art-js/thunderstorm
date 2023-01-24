@@ -30,7 +30,7 @@ export class TS_EditableText
 
 	protected deriveStateFromProps(nextProps: Props) {
 		const state = {...this.state} || {} as State;
-		state.original ||= nextProps.text;
+		state.original = nextProps.text;
 		return state;
 	}
 
