@@ -46,8 +46,8 @@ export type ValidatorTypeResolver<K> =
 			Validator<K>;
 
 type ValidatorImpl<P> = (p?: P) => (InvalidResult<P> | undefined);
-export type Validator<P> = undefined | ValidatorImpl<P> | ValidatorImpl<P>[];
-export type TypeValidator<T extends TS_Object> = { [P in keyof T]: ValidatorTypeResolver<T[P]> };
+export type Validator<P> =  ValidatorImpl<P> | ValidatorImpl<P>[];
+export type TypeValidator<T extends TS_Object> = { [P in keyof T]-?: ValidatorTypeResolver<T[P]> };
 
 export type InvalidResultObject<T extends any> = { [K in keyof T]?: InvalidResult<T[K]> };
 export type InvalidResultArray<T extends any> = InvalidResult<T> | undefined;
@@ -84,6 +84,10 @@ export const tsValidateExists = (mandatory = true): ValidatorImpl<any> => {
 		return CONST_NO_ERROR;
 	};
 };
+
+export const tsValidateMustExist = tsValidateExists();
+export const tsValidateOptional = tsValidateExists(false);
+
 //
 // export const tsValidateObjectValues = <V, T extends { [k: string]: V } = { [k: string]: V }>(validator: ValidatorTypeResolver<V>, mandatory = true): Validator<T> =>
 // 	[tsValidateExists(mandatory), (input?: T) => {
@@ -210,7 +214,7 @@ export const tsValidateResult = <T extends any>(instance: T | undefined, _valida
 
 	if (typeof validator === 'object') {
 		if (!instance && validator)
-			return `Unexpect object\nif you want to ignore the validation of this object,\n add the following to your validator:\n {\n  ...\n  ${String(key)}: undefined\n  ...\n}\n`;
+			return `Unexpected object:\n The key '${String(key)}' wasn't defined in the instance.`;
 		if (typeof instance !== 'object')
 			return `Unexpected instance '${instance}'.\nExpected to receive an object, but received something else.`;
 

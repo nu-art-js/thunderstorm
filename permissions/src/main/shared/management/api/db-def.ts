@@ -17,20 +17,19 @@
  * limitations under the License.
  */
 
-import {DBDef, tsValidateOptionalId, tsValidateUniqueId} from '@nu-art/db-api-generator';
-import {tsValidateArray} from '@nu-art/ts-common';
+import {DBDef, tsValidateUniqueId} from '@nu-art/db-api-generator';
+import {OmitDBObject, tsValidateArray, tsValidateBoolean, tsValidateOptional, TypeValidator} from '@nu-art/ts-common';
 import {tsValidateStringWithDashesAndSlash, validateProjectId} from '../../validators';
 import {DB_PermissionApi} from './types';
 
 
-const Validator_PermissionApi = {
-	_id: tsValidateOptionalId,
+const Validator_PermissionApi: TypeValidator<OmitDBObject<DB_PermissionApi>> = {
 	projectId: validateProjectId,
 	path: tsValidateStringWithDashesAndSlash,
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
-	_audit: undefined,
-	deprecated: undefined,
-	onlyForApplication: undefined
+	_audit: tsValidateOptional,
+	deprecated: tsValidateBoolean(false),
+	onlyForApplication: tsValidateBoolean(false)
 };
 
 export const DBDef_PermissionApi: DBDef<DB_PermissionApi> = {
