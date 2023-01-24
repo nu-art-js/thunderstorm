@@ -18,9 +18,10 @@
 
 import {TestSuit_TS_ArrayFunctionFilterDuplicates, TestSuit_TS_ArrayFunctionRemoveItem} from "../../types";
 import {filterDuplicates} from "../../../../main";
+import {matchesAny} from "typedoc/dist/lib/utils/paths";
 
 
-const TestCase_ts_FilterDuplicates:TestSuit_TS_ArrayFunctionFilterDuplicates<any>['testcases'] =[
+const TestCase_ts_FilterDuplicates:TestSuit_TS_ArrayFunctionFilterDuplicates['testcases'] =[
     {
         description: 'Test 1',
         result: [1,2,3],
@@ -51,6 +52,14 @@ const TestCase_ts_FilterDuplicates:TestSuit_TS_ArrayFunctionFilterDuplicates<any
         input: {
             source: [1,2,{},{}],
             mapper: undefined
+        }
+    },
+    {
+        description: 'Test 5',
+        result: [{a:2},{a:{b:3}},{a:3,b:2}],
+        input: {
+            source: [{a:2},{a:2,b:2},{a:{b:3}},{a:3,b:2}],
+            mapper: (item)=> item.a
         }
     },
 ];
