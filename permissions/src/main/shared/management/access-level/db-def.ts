@@ -17,17 +17,16 @@
  * limitations under the License.
  */
 
-import {DBDef, tsValidateOptionalId, tsValidateStringWithDashes, tsValidateUniqueId} from '@nu-art/db-api-generator';
-import {tsValidateRange} from '@nu-art/ts-common';
+import {DBDef, tsValidateStringWithDashes, tsValidateUniqueId} from '@nu-art/db-api-generator';
+import {OmitDBObject, tsValidateOptional, tsValidateRange, ValidatorTypeResolver} from '@nu-art/ts-common';
 import {DB_PermissionAccessLevel} from './types';
 
 
-const Validator_PermissionAccessLevel = {
-	_id: tsValidateOptionalId,
+const Validator_PermissionAccessLevel: ValidatorTypeResolver<OmitDBObject<DB_PermissionAccessLevel>> = {
 	domainId: tsValidateUniqueId,
 	name: tsValidateStringWithDashes,
 	value: tsValidateRange([[0, 1000]]),
-	_audit: undefined
+	_audit: tsValidateOptional
 };
 
 export const DBDef_PermissionAccessLevel: DBDef<DB_PermissionAccessLevel> = {
