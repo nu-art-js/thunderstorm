@@ -17,15 +17,25 @@
  * limitations under the License.
  */
 
-import {DBDef, tsValidateStringAndNumbersWithDashes} from '@nu-art/db-api-generator';
-import {Minute, tsValidateAudit, tsValidateExists, tsValidateNumber, tsValidateRegexp, tsValidateTimestamp} from '@nu-art/ts-common';
+import {DBDef} from '@nu-art/db-api-generator';
+import {
+	Minute,
+	OmitDBObject,
+	tsValidateAudit,
+	tsValidateBoolean,
+	tsValidateExists,
+	tsValidateNumber,
+	tsValidateOptional,
+	tsValidateRegexp,
+	tsValidateString,
+	tsValidateTimestamp,
+	ValidatorTypeResolver
+} from '@nu-art/ts-common';
 import {DB_Asset} from './types';
-
 
 export const validateName = tsValidateRegexp(/^.{3,}$/);
 
-const Validator_Asset = {
-	_id: tsValidateStringAndNumbersWithDashes,
+const Validator_Asset: ValidatorTypeResolver<OmitDBObject<DB_Asset>> = {
 	timestamp: tsValidateNumber(),
 	name: validateName,
 	ext: tsValidateExists(true),
@@ -36,7 +46,12 @@ const Validator_Asset = {
 	path: tsValidateExists(true),
 	_audit: tsValidateAudit(),
 	bucketName: tsValidateExists(true),
-	public: undefined
+	public: tsValidateBoolean(false),
+	metadata: tsValidateOptional,
+	signedUrl: {
+		url: tsValidateString(),
+		validUntil: tsValidateNumber()
+	}
 };
 
 export const DBDef_Assets: DBDef<DB_Asset> = {
