@@ -16,24 +16,23 @@
  * limitations under the License.
  */
 
-
 import {expect} from "chai";
-import {TestSuit_ts_findDuplicates} from "./testCases";
+import {TestSuit_ts_batchActionParallel} from "./testCases";
 
-//describe(TestSuit_ts_findDuplicates.label, () => {
-//     TestSuit_ts_findDuplicates.testcases.forEach(testCase => {
-//         it(testCase.description, () => {
-//             expect(TestSuit_ts_findDuplicates.processor(testCase.input)).to.eql(testCase.result);
-//         });
-//     });
-// });
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
 
-describe(TestSuit_ts_findDuplicates.label, () => {
-    TestSuit_ts_findDuplicates.testcases.forEach(testCase => {
-        it(testCase.description, () => {
-            const result = TestSuit_ts_findDuplicates.processor(testCase.input);
-            const expected = testCase.result;
-            expect(result).to.eql(expected);
+// Load chai-as-promised support
+chai.use(chaiAsPromised);
+
+
+describe(TestSuit_ts_batchActionParallel.label, () => {
+    TestSuit_ts_batchActionParallel.testcases.forEach(testCase => {
+        it(testCase.description, async () => {
+            const result = await TestSuit_ts_batchActionParallel.processor(testCase.input);
+            const expected = await testCase.result;
+            expect(result).to.deep.equal(expected);
         });
     });
 });
+

@@ -1,33 +1,33 @@
 import {
     TestSuit_TS_ArrayFunctionFilterInstancesOfBoth,
 } from "../../types";
-import {filterInstances, removeItemFromArray} from "../../../../main";
+import {filterFalsy, filterInstances} from "../../../../main";
 
-const TestCase_ts_FilterInstancesA:TestSuit_TS_ArrayFunctionFilterInstancesOfBoth<any>['testcases'] =[
+const TestCase_ts_FilterInstancesB:TestSuit_TS_ArrayFunctionFilterInstancesOfBoth<any>['testcases'] =[
     {
         description: 'Test 1',
-        result: [1,2,3,0],
+        result: [1,2,3],
         input: {
             array: [1,2,3,0,null],
         }
     },
     {
         description: 'Test 2',
-        result: [1,2,3,''],
+        result: [1,2,3],
         input: {
             array: [1,2,3,'',undefined],
         }
     },
     {
         description: 'Test 3',
-        result: [1,2,3,'',{}],
+        result: [1,2,3,{}],
         input: {
             array: [1,2,3,'',undefined,{}],
         }
     },
     {
         description: 'Test 4',
-        result: [1,2,3,'',{},false],
+        result: [1,2,3,{}],
         input: {
             array: [1,2,3,'',undefined,{},false],
         }
@@ -35,8 +35,8 @@ const TestCase_ts_FilterInstancesA:TestSuit_TS_ArrayFunctionFilterInstancesOfBot
 ];
 
 
-export const TestSuit_ts_filterInstancesA: TestSuit_TS_ArrayFunctionFilterInstancesOfBoth= {
-    label: 'filter array of all undefined and null',
-    testcases: TestCase_ts_FilterInstancesA,
-    processor: (input) => filterInstances(input.array)
+export const TestSuit_ts_filterInstancesB: TestSuit_TS_ArrayFunctionFilterInstancesOfBoth= {
+    label: 'filter array of all falsy items',
+    testcases: TestCase_ts_FilterInstancesB,
+    processor: (input) => filterFalsy(input.array)
 };
