@@ -67,7 +67,6 @@ export class Filter<T> {
 		}
 
 		filter.length === 0 ? filter = '.*?' : filter += '.*';
-		console.log(filter);
 		return new RegExp(filter);
 	};
 
