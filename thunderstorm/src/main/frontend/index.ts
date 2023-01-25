@@ -101,3 +101,5 @@ export * from './_to-refactor/MenuAndButton';
 
 export * from './utils/tools';
 export * from './utils/EditableItem';
+
+export * from './behavior-functions';

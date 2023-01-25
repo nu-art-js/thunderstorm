@@ -16,22 +16,21 @@
  * limitations under the License.
  */
 
-
 import {expect} from "chai";
-import {TestSuit_ts_findDuplicates} from "./testCases";
+import {TestSuit_ts_sortArray} from "./testCases";
 
-//describe(TestSuit_ts_findDuplicates.label, () => {
-//     TestSuit_ts_findDuplicates.testcases.forEach(testCase => {
+//describe(TestSuit_ts_sortArray.label, () => {
+//     TestSuit_ts_sortArray.testcases.forEach(testCase => {
 //         it(testCase.description, () => {
-//             expect(TestSuit_ts_findDuplicates.processor(testCase.input)).to.eql(testCase.result);
+//             expect(TestSuit_ts_sortArray.processor(testCase.input)).to.eql(testCase.result);
 //         });
 //     });
 // });
 
-describe(TestSuit_ts_findDuplicates.label, () => {
-    TestSuit_ts_findDuplicates.testcases.forEach(testCase => {
+describe(TestSuit_ts_sortArray.label, () => {
+    TestSuit_ts_sortArray.testcases.forEach(testCase => {
         it(testCase.description, () => {
-            const result = TestSuit_ts_findDuplicates.processor(testCase.input);
+            const result = TestSuit_ts_sortArray.processor(testCase.input);
             const expected = testCase.result;
             expect(result).to.eql(expected);
         });

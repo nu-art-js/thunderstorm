@@ -20,10 +20,24 @@
 import {expect} from "chai";
 import {TestSuit_ts_removeFromArray} from "./testCases";
 
+//describe(TestSuit_ts_removeFromArray.label, () => {
+//     TestSuit_ts_removeFromArray.testcases.forEach(testCase => {
+//         it(testCase.description, () => {
+//             expect(TestSuit_ts_removeFromArray.processor(testCase.input)).to.eql(testCase.result);
+//         });
+//     });
+// });
+
+
 describe(TestSuit_ts_removeFromArray.label, () => {
     TestSuit_ts_removeFromArray.testcases.forEach(testCase => {
         it(testCase.description, () => {
-            expect(TestSuit_ts_removeFromArray.processor(testCase.input)).to.eql(testCase.result);
+            const result = TestSuit_ts_removeFromArray.processor(testCase.input);
+            const expected = testCase.result;
+            expect(result).to.eql(expected);
         });
     });
 });
+
+
+
