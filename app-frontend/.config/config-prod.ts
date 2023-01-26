@@ -32,7 +32,7 @@ export const config = {
 	ForceUpgrade: {
 		assertVersionUrl: 'v1/version/assert'
 	},
-	ModuleBE_Firebase: {
+	ModuleFE_Firebase: {
 		local: {
 			apiKey: 'AIzaSyCoQjoQibuydMi1ejlpobfgHOI7WMf11P8',
 			authDomain: 'nu-art-thunderstorm.firebaseapp.com',
@@ -44,7 +44,7 @@ export const config = {
 			measurementId: 'G-CBR3QM4STY'
 		}
 	},
-	ModuleBE_PushPubSub: {
+	ModuleFE_PushPubSub: {
 		publicKeyBase64: 'BF0GqqEoe1UmqcU-dg3Dse_2ctkaq5uFpFuR6il1U9A3HkvYcL83I8yC_rX-G8mM8M0hnH5TqcSIsHScd4LTS28'
 	}
 };
