@@ -47,6 +47,20 @@ export const tsValidateUnion = <T extends any>(validators: ValidatorTypeResolver
     }];
 };
 
+export const tsValidateUnionV2 = <T extends any>(processor: (input?: T, parentInput?: any) => InvalidResult<T>, mandatory = true): Validator<T> => {
+    return [tsValidateExists(mandatory), processor];
+};
+
+const typeFunc = (type: any) => typeof type;
+type types = ReturnType<typeof typeFunc>;
+type validatorObject<T> = { [k in types]?: ValidatorTypeResolver<T> }
+export const tsValidateUnionV3 = <T extends any>(validatorObject: validatorObject<T>, mandatory = true) => {
+    return [tsValidateExists(mandatory), (input?: T) => {
+        const _type = typeof input;
+        return _keys(validatorObject).includes(_type) ? tsValidateResult(input, validatorObject[_type] as ValidatorTypeResolver<T>) : 'Input does not match any of the possible types';
+    }];
+};
+
 export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayType<T>>(validator: ValidatorTypeResolver<I>, mandatory = true, minimumLength: number = 0): Validator<I[]> => {
     return [tsValidateExists(mandatory), (input?: I[]) => {
         const results: InvalidResultArray<I>[] = [];
