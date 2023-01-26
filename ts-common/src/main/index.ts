@@ -61,7 +61,8 @@ export * from './utils/tools';
 export * from './utils/hash-tools';
 export * from './utils/filter-tools';
 
-export * from './validator/validator';
+export * from './validator/validator-core';
+export * from './validator/type-validators';
 
 export * from './consts/consts';
 
