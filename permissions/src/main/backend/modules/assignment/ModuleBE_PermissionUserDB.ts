@@ -119,7 +119,7 @@ export class ModuleBE_PermissionUserDB_Class
 		if (!sharedUserIds.length)
 			throw new BadImplementationException('SharedUserIds is missing');
 
-		const groupId = ModuleBE_PermissionGroup.getPredefinedGroupId(assignAppPermissionsObj.projectId, assignAppPermissionsObj.group._id);
+		const groupId = assignAppPermissionsObj.group._id;
 		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId,
 			{groupId, customField: assignAppPermissionsObj.customField});
 
@@ -144,7 +144,7 @@ export class ModuleBE_PermissionUserDB_Class
 			const updatedUsers = users.map(user => {
 				const newGroups = (user.groups || [])?.filter(
 					group => !assignAppPermissionsObj.groupsToRemove.find(groupToRemove => {
-						if (ModuleBE_PermissionGroup.getPredefinedGroupId(assignAppPermissionsObj.projectId, groupToRemove._id) !== group.groupId)
+						if (groupToRemove._id !== group.groupId)
 							return false;
 
 						return compare(group.customField, assignAppPermissionsObj.customField, assignAppPermissionsObj.assertKeys);
