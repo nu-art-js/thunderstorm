@@ -105,14 +105,10 @@ export class ModuleBE_PermissionGroup_Class
 		return this.config;
 	}
 
-	getPredefinedGroupId(projectId: string, predefinedGroupId: string) {
-		return `${projectId}--${predefinedGroupId}`;
-	}
-
 	upsertPredefinedGroups(projectId: string, projectName: string, predefinedGroups: PredefinedGroup[]) {
 		return this.runInTransaction(async (transaction) => {
 			const _groups = predefinedGroups.map(group => ({
-				_id: this.getPredefinedGroupId(projectId, group._id),
+				_id: group._id,
 				label: `${projectName}--${group.key}-${group.label}`
 			}));
 

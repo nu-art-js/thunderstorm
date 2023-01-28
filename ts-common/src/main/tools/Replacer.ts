@@ -18,7 +18,7 @@
 
 import {Logger} from '../core/logger/Logger';
 import {KeyValue, TS_Object} from '../utils/types';
-import {ValidationException} from '../validator/validator';
+import {ValidationException} from '../validator/validator-core';
 
 
 export class Replacer
