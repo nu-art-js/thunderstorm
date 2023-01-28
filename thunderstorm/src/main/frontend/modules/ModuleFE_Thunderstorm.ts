@@ -61,6 +61,10 @@ class ModuleFE_Thunderstorm_Class
 	}
 
 	printDiv(div: HTMLDivElement, bodyAttributes?: TypedKeyValue<string, string>[]) {
+		const themeValue = document.body.getAttribute('theme');
+		if (themeValue)
+			(bodyAttributes || (bodyAttributes = [])).push({key: 'theme', value: themeValue});
+
 		//create, and remove iframe from body dynamically!!
 		const printingIFrame = document.createElement('iframe');
 		printingIFrame.style.width = '0';

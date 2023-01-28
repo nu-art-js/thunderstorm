@@ -17,10 +17,11 @@
  * limitations under the License.
  */
 
+import {tsValidateUniqueId} from '@nu-art/db-api-generator';
 import {tsValidateRegexp} from '@nu-art/ts-common';
 
 
-export const validateProjectId = tsValidateRegexp(/^[a-z-]{3,20}$/);
+export const validateProjectId = tsValidateUniqueId;
 export const tsValidateStringWithDashesAndSlash = tsValidateRegexp(/^[0-9A-Za-z-/]+$/);
 export const validateProjectName = tsValidateRegexp(/^[A-Za-z- ]{3,20}$/);
 export const validateUserUuid = tsValidateRegexp(/^.{0,50}$/);
