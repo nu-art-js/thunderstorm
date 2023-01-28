@@ -214,7 +214,7 @@ export class ModuleBE_Permissions_Class
 			}
 
 			return {
-				groupId: ModuleBE_PermissionGroup.getPredefinedGroupId(id, groupItem._id),
+				groupId: groupItem._id,
 				customField
 			};
 		});
