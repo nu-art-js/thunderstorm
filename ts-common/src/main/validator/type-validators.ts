@@ -26,17 +26,20 @@ export const tsValidateDynamicObject = <T extends object>(valuesValidator: Valid
 			        return;
 
 		        const keys = _keys(input) as string[];
-		        return keys.reduce<InvalidResultObject<T>>((res, key) => {
+		        const _result = keys.reduce<InvalidResultObject<T>>((res, key) => {
 			        const _valRes = tsValidateResult(input[key as keyof T], valuesValidator);
 			        const _keyRes = tsValidateResult(key, keysValidator);
 
 			        if (_valRes && _keyRes)
 				        res[key as keyof T] = `Key: ${_keyRes}}\nValue: ${_valRes}` as InvalidResult<T[keyof T]>;
-			        else
-				        _valRes ? res[key as keyof T] = 'Value: ' + _valRes as InvalidResult<T[keyof T]> : res[key as keyof T] = 'Key: ' + _keyRes as InvalidResult<T[keyof T]>;
+			        else if (_valRes)
+				        res[key as keyof T] = 'Value: ' + _valRes as InvalidResult<T[keyof T]>
+			        else if(_keyRes)
+				        res[key as keyof T] = 'Key: ' + _keyRes as InvalidResult<T[keyof T]>;
 
 			        return res;
 		        }, {});
+						return _keys(_result).length ? _result : undefined;
 	        }];
 };
 
