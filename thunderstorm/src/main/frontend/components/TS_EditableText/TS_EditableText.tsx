@@ -90,7 +90,8 @@ class TS_EditableText_Base
 
 	protected handleBlur = (e: React.FocusEvent) => {
 		e.persist();
-		if (this.state.parentRef.current!.contains(e.relatedTarget))
+		//e.relatedTarget can be null if lost focus due to Enter
+		if (e.relatedTarget === null || this.state.parentRef.current === e.relatedTarget || this.state.parentRef.current!.contains(e.relatedTarget))
 			return;
 
 		this.onCancelChanges();
@@ -175,7 +176,12 @@ class TS_EditableText_Input
 	render() {
 		const Renderer = this.state.isEditing ? this.renderInput : this.renderText;
 		const className = _className('ts-editable-text-input', this.props.className);
-		return <div className={className} onBlur={this.handleBlur} tabIndex={1} onClick={this.onGeneralClick} ref={this.state.parentRef}>
+		return <div
+			className={className}
+			tabIndex={1}
+			onBlur={this.handleBlur}
+			onClick={this.onGeneralClick}
+			ref={this.state.parentRef}>
 			<Renderer/>
 		</div>;
 	}
