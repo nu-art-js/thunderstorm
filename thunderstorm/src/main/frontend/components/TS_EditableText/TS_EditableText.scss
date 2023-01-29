@@ -1,54 +1,89 @@
-.ts-editable-text-text-area {
+.ts-editable-text-area,
+.ts-editable-text-input {
+  .ts-button {
+    min-width: unset;
+    min-height: unset;
+    padding: 4px 8px;
+    margin: 0;
+    font: {
+      size: 14px;
+      weight: bold;
+    }
+  }
+
+  .ts-editable-text__buttons__reset {
+    background: #3ca0c6;
+    margin-right: auto;
+  }
+
+  .ts-editable-text__buttons__cancel {
+    background-color: #D0312D;
+  }
+
+  .ts-editable-text__buttons__save {
+    background-color: #3CB043;
+  }
+}
+
+.ts-editable-text-area {
   //What's rendered when not editing
-  .ts-editable-text__text {
+  .ts-editable-text-area__text {
     height: 100%;
     white-space: pre-wrap;
   }
 
   //What's rendered when editing
-  .ts-editable-text__edit-area {
+  .ts-editable-text-area__edit {
     height: 100%;
     display: flex;
     flex-direction: column;
     gap: 8px;
 
     //The text-area itself
-    .ts-editable-text__edit-area__text-area {
+    .ts-editable-text-area__text-area {
       flex-grow: 1;
     }
 
     //The actions buttons
-    .ts-editable-text__edit-area__buttons {
+    .ts-editable-text-area__buttons {
       flex-shrink: 0;
       display: flex;
       gap: 8px;
 
-      .ts-button {
-        min-width: unset;
-        min-height: unset;
-        padding: 4px 8px;
-        margin: 0;
-        font: {
-          size: 14px;
-          weight: bold;
-        }
-      }
-
-      .ts-editable-text__edit-area__buttons__reset {
+      .ts-editable-text__buttons__reset {
+        background: #3ca0c6;
         margin-right: auto;
-      }
-
-      .ts-editable-text__edit-area__buttons__cancel {
-        background-color: #D0312D;
-      }
-
-      .ts-editable-text__edit-area__buttons__save {
-        background-color: #3CB043;
       }
     }
   }
 }
 
 .ts-editable-text-input {
+  .ts-editable-text-input__edit {
+    height: 32px;
+    display: flex;
+    border: 1px solid black;
+    border-radius: 8px;
+    overflow: hidden;
 
+    .ts-editable-text-input__input {
+      border: none;
+      height: 100%;
+      min-height: unset;
+      flex-grow: 1;
+    }
+
+    .ts-editable-text-input__buttons {
+      height: 100%;
+      flex-shrink: 0;
+      width: 60px;
+    }
+
+    .ts-button {
+      height: 100%;
+      flex-shrink: 0;
+      border-radius: 0;
+      width: 30px;
+    }
+  }
 }
