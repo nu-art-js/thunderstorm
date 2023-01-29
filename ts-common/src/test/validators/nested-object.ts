@@ -17,7 +17,7 @@
  */
 
 import {
-	tsValidateRange,
+	tsValidateIsInRange,
 	tsValidateRegexp,
 	tsValidateValue,
 	TestSuit
@@ -53,14 +53,14 @@ export const testSuit_nestedObjectValidator: TestSuit<TestCase_Validator<any>> =
 		{
 			expected: 'fail', input: {
 				instance: nestedObject1, validator: {
-					prop1: tsValidateRegexp(/Adam/), prop2: {prop3: tsValidateValue(['pah', 'zevel']), prop4: tsValidateRange([[10, 30]])}
+					prop1: tsValidateRegexp(/Adam/), prop2: {prop3: tsValidateValue(['pah', 'zevel']), prop4: tsValidateIsInRange([[10, 30]])}
 				}
 			}
 		},
 		{
 			expected: 'pass', input: {
 				instance: nestedObject1, validator: {
-					prop1: tsValidateRegexp(/Adam/), prop2: {prop3: tsValidateValue(['pah', 'zevel']), prop4: tsValidateRange([[10, 80000]])}
+					prop1: tsValidateRegexp(/Adam/), prop2: {prop3: tsValidateValue(['pah', 'zevel']), prop4: tsValidateIsInRange([[10, 80000]])}
 				}
 			}
 		},

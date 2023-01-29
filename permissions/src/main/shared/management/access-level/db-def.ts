@@ -18,15 +18,26 @@
  */
 
 import {DBDef, tsValidateStringWithDashes, tsValidateUniqueId} from '@nu-art/db-api-generator';
-import {OmitDBObject, tsValidateOptional, tsValidateRange, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {
+	OmitDBObject,
+	tsValidateNonMandatoryObject,
+	tsValidateNumber,
+	tsValidateIsInRange,
+	tsValidateString,
+	ValidatorTypeResolver
+} from '@nu-art/ts-common';
 import {DB_PermissionAccessLevel} from './types';
 
 
 const Validator_PermissionAccessLevel: ValidatorTypeResolver<OmitDBObject<DB_PermissionAccessLevel>> = {
 	domainId: tsValidateUniqueId,
 	name: tsValidateStringWithDashes,
-	value: tsValidateRange([[0, 1000]]),
-	_audit: tsValidateOptional
+	value: tsValidateIsInRange([[0, 1000]]),
+	_audit: tsValidateNonMandatoryObject({
+		comment: tsValidateString(-1, false),
+		auditBy: tsValidateString(),
+		auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
+	})
 };
 
 export const DBDef_PermissionAccessLevel: DBDef<DB_PermissionAccessLevel> = {

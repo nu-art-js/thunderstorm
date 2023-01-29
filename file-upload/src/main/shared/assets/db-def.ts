@@ -23,9 +23,10 @@ import {
 	OmitDBObject,
 	tsValidateAudit,
 	tsValidateBoolean,
+	tsValidateDynamicObject,
 	tsValidateExists,
+	tsValidateMustExist,
 	tsValidateNumber,
-	tsValidateOptional,
 	tsValidateRegexp,
 	tsValidateString,
 	tsValidateTimestamp,
@@ -47,7 +48,7 @@ const Validator_Asset: ValidatorTypeResolver<OmitDBObject<DB_Asset>> = {
 	_audit: tsValidateAudit(),
 	bucketName: tsValidateExists(true),
 	public: tsValidateBoolean(false),
-	metadata: tsValidateOptional,
+	metadata: tsValidateDynamicObject(tsValidateMustExist, tsValidateString(), false),
 	signedUrl: {
 		url: tsValidateString(),
 		validUntil: tsValidateNumber()
