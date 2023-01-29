@@ -18,7 +18,15 @@
  */
 
 import {DBDef, tsValidateUniqueId} from '@nu-art/db-api-generator';
-import {OmitDBObject, tsValidateArray, tsValidateBoolean, tsValidateOptional, TypeValidator} from '@nu-art/ts-common';
+import {
+	OmitDBObject,
+	tsValidateArray,
+	tsValidateBoolean,
+	tsValidateNonMandatoryObject,
+	tsValidateNumber,
+	tsValidateString,
+	TypeValidator
+} from '@nu-art/ts-common';
 import {tsValidateStringWithDashesAndSlash, validateProjectId} from '../../validators';
 import {DB_PermissionApi} from './types';
 
@@ -27,7 +35,11 @@ const Validator_PermissionApi: TypeValidator<OmitDBObject<DB_PermissionApi>> = {
 	projectId: validateProjectId,
 	path: tsValidateStringWithDashesAndSlash,
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
-	_audit: tsValidateOptional,
+	_audit: tsValidateNonMandatoryObject({
+		comment: tsValidateString(-1, false),
+		auditBy: tsValidateString(),
+		auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
+	}),
 	deprecated: tsValidateBoolean(false),
 	onlyForApplication: tsValidateBoolean(false)
 };

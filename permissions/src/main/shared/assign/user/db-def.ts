@@ -18,7 +18,15 @@
  */
 
 import {DBDef, tsValidateStringAndNumbersWithDashes} from '@nu-art/db-api-generator';
-import {OmitDBObject, tsValidateArray, tsValidateMustExist, tsValidateOptional, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {
+	OmitDBObject,
+	tsValidateArray,
+	tsValidateDynamicObject,
+	tsValidateNumber,
+	tsValidateString,
+	ValidatorTypeResolver,
+	tsValidateNonMandatoryObject
+} from '@nu-art/ts-common';
 import {validateUserUuid} from '../../validators';
 import {DB_PermissionUser} from './types';
 
@@ -28,10 +36,14 @@ const Validator_PermissionUser: ValidatorTypeResolver<OmitDBObject<DB_Permission
 	groups: tsValidateArray({
 		groupId: tsValidateStringAndNumbersWithDashes,
 		// customField: tsValidateObjectValues<string>(validateCustomFieldValues, false)
-		customField: tsValidateMustExist
+		customField: tsValidateDynamicObject(tsValidateString(), tsValidateString())
 	}, false),
 	__groupIds: tsValidateArray(tsValidateStringAndNumbersWithDashes, false),
-	_audit: tsValidateOptional
+	_audit: tsValidateNonMandatoryObject({
+		comment: tsValidateString(-1, false),
+		auditBy: tsValidateString(),
+		auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
+	})
 };
 
 export const DBDef_PermissionUser: DBDef<DB_PermissionUser> = {
