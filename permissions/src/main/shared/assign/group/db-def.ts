@@ -17,8 +17,20 @@
  * limitations under the License.
  */
 
-import {DBDef, tsValidateUniqueId} from '@nu-art/db-api-generator';
-import {OmitDBObject, tsValidateArray, tsValidateNumber, tsValidateOptional, tsValidateString, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {
+	DBDef,
+	tsValidateUniqueId
+} from '@nu-art/db-api-generator';
+import {
+	OmitDBObject,
+	StringMap,
+	tsValidateArray,
+	tsValidateDynamicObject,
+	tsValidateNonMandatoryObject,
+	tsValidateNumber,
+	tsValidateString,
+	ValidatorTypeResolver
+} from '@nu-art/ts-common';
 import {DB_PermissionGroup} from './types';
 import {validateGroupLabel} from '../../validators';
 
@@ -28,15 +40,13 @@ const Validator_PermissionGroup: ValidatorTypeResolver<OmitDBObject<DB_Permissio
 	tags: tsValidateArray(tsValidateString(), false),
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
 	// customFields: tsValidateArray(tsValidateObjectValues<string>(validateCustomFieldValues), false),
-	customFields: tsValidateOptional,
+	customFields: tsValidateArray(tsValidateDynamicObject<StringMap>(tsValidateString(), tsValidateString()), false),
 	__accessLevels: tsValidateArray({domainId: tsValidateString(), value: tsValidateNumber()}, false),
-	_audit: tsValidateOptional
-
-	// _audit: {
-	// 	comment: tsValidateString(-1, false),
-	// 	auditBy: tsValidateString(),
-	// 	auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
-	// }
+	_audit: tsValidateNonMandatoryObject({
+		comment: tsValidateString(-1, false),
+		auditBy: tsValidateString(),
+		auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
+	})
 };
 
 export const DBDef_PermissionGroup: DBDef<DB_PermissionGroup> = {
