@@ -3,14 +3,18 @@ import {ComponentSync} from '../../core/ComponentSync';
 import './TS_EditableText.scss';
 import {TS_Input, TS_TextArea} from '../TS_Input';
 import {TS_Button} from '../TS_Button';
-import {_className} from '../../utils/tools';
-import {LL_H_C} from '../Layouts';
+import {_className, stopPropagation} from '../../utils/tools';
 
 type Props = {
 	text: string;
-	onTextSaved?: (text: string) => void;
 	className?: string;
-	disableEdit?: boolean;
+
+	editMode?: boolean; //External control for edit mode
+	disableEdit?: boolean; //Blocks edit mode completely
+
+	onTextSaved?: (text: string) => void; //Called when save is clicked
+	onCancel?: () => void; //Called when cancel is clicked or on blur
+
 	renderers?: {
 		cancelButton?: React.ReactNode;
 		saveButton?: React.ReactNode;
@@ -22,6 +26,7 @@ type State = {
 	original: string;
 	text: string;
 	isEditing: boolean;
+	parentRef: React.RefObject<HTMLDivElement>;
 };
 
 class TS_EditableText_Base
@@ -32,13 +37,16 @@ class TS_EditableText_Base
 	protected deriveStateFromProps(nextProps: Props) {
 		const state = {...this.state} || {} as State;
 		state.original = nextProps.text;
+		state.text ||= nextProps.text;
+		state.isEditing = nextProps.editMode ?? false;
+		state.parentRef ||= React.createRef();
 		return state;
 	}
 
 	// ######################## Logic ########################
 
 	protected onEnableEdit = () => {
-		if (this.props.disableEdit)
+		if (this.props.disableEdit || this.props.editMode !== undefined)
 			return;
 
 		this.setState({text: this.state.original, isEditing: true});
@@ -48,27 +56,51 @@ class TS_EditableText_Base
 		this.setState({text});
 	};
 
-	protected onSubmitChanges = () => {
+	protected onSubmitChanges = (e: React.MouseEvent | React.KeyboardEvent) => {
+		stopPropagation(e);
 		const text = this.state.text;
-		this.setState({original: text, isEditing: false});
+		if (!this.props.onTextSaved)
+			this.setState({original: text, isEditing: false});
+
+		this.setState({original: text});
 		this.props.onTextSaved?.(text);
 	};
 
-	protected onCancelChanges = () => {
+	protected onCancelChanges = (e?: React.MouseEvent) => {
+		if (e)
+			stopPropagation(e);
 		const original = this.state.original;
-		this.setState({text: original, isEditing: false});
+		if (!this.props.onCancel)
+			this.setState({text: original, isEditing: false});
+
+		this.setState({text: original});
+		this.props.onCancel?.();
 	};
 
-	protected onResetChanges = () => {
+	protected onResetChanges = (e: React.MouseEvent) => {
+		stopPropagation(e);
 		const original = this.state.original;
 		this.setState({text: original});
+	};
+
+	protected onGeneralClick = (e: React.MouseEvent) => {
+		if (this.state.isEditing)
+			stopPropagation(e);
+	};
+
+	protected handleBlur = (e: React.FocusEvent) => {
+		e.persist();
+		if (this.state.parentRef.current!.contains(e.relatedTarget))
+			return;
+
+		this.onCancelChanges();
 	};
 
 	// ######################## Render ########################
 
 	protected renderText = () => {
 		return <div
-			className={'ts-editable-text-area__text'}
+			className={'ts-editable-text__text'}
 			onClick={this.onEnableEdit}
 		>
 			{this.state.original}
@@ -101,9 +133,10 @@ class TS_EditableText_TextArea
 			<TS_TextArea
 				className={'ts-editable-text-area__text-area'}
 				type={'text'}
+				focus={true}
 				value={this.state.text}
 				onChange={this.onTextChange}
-				onAccept={this.onSubmitChanges}
+				onAccept={(val, e) => this.onSubmitChanges(e)}
 			/>
 			{this.renderButtons()}
 		</div>;
@@ -112,7 +145,7 @@ class TS_EditableText_TextArea
 	render() {
 		const Renderer = this.state.isEditing ? this.renderTextArea : this.renderText;
 		const className = _className('ts-editable-text-area', this.props.className);
-		return <div className={className}>
+		return <div className={className} onBlur={this.handleBlur} tabIndex={1} onClick={this.onGeneralClick} ref={this.state.parentRef}>
 			<Renderer/>
 		</div>;
 	}
@@ -127,21 +160,22 @@ class TS_EditableText_Input
 			<TS_Input
 				className={'ts-editable-text-input__input'}
 				type={'text'}
+				focus={true}
 				value={this.state.text}
 				onChange={this.onTextChange}
-				onAccept={this.onSubmitChanges}
+				onAccept={(val, e) => this.onSubmitChanges(e)}
 			/>
-			<LL_H_C className={'ts-editable-text-input__buttons'}>
+			<div className={'ts-editable-text-input__buttons'}>
 				{this.renderButton.cancel()}
 				{this.renderButton.accept()}
-			</LL_H_C>
+			</div>
 		</div>;
 	};
 
 	render() {
 		const Renderer = this.state.isEditing ? this.renderInput : this.renderText;
 		const className = _className('ts-editable-text-input', this.props.className);
-		return <div className={className}>
+		return <div className={className} onBlur={this.handleBlur} tabIndex={1} onClick={this.onGeneralClick} ref={this.state.parentRef}>
 			<Renderer/>
 		</div>;
 	}
