@@ -18,7 +18,14 @@
  */
 
 import {DBDef} from '@nu-art/db-api-generator';
-import {OmitDBObject, tsValidateArray, tsValidateOptional, tsValidateString, TypeValidator} from '@nu-art/ts-common';
+import {
+	OmitDBObject,
+	tsValidateArray,
+	tsValidateNonMandatoryObject,
+	tsValidateNumber,
+	tsValidateString,
+	TypeValidator
+} from '@nu-art/ts-common';
 import {validateProjectName} from '../../validators';
 import {DB_PermissionProject} from './types';
 
@@ -26,7 +33,11 @@ import {DB_PermissionProject} from './types';
 const Validator_PermissionProjects: TypeValidator<OmitDBObject<DB_PermissionProject>> = {
 	name: validateProjectName,
 	customKeys: tsValidateArray(tsValidateString(), false),
-	_audit: tsValidateOptional
+	_audit: tsValidateNonMandatoryObject({
+		comment: tsValidateString(-1, false),
+		auditBy: tsValidateString(),
+		auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
+	})
 };
 
 export const DBDef_PermissionProjects: DBDef<DB_PermissionProject> = {

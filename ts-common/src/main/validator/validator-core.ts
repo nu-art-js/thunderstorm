@@ -38,13 +38,25 @@ import {TS_Object} from '../utils/types';
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/**
+ * Should be like the following but errors in resolving...
+ *
+ * 	K extends [infer E1] ? [Validator<E1>[]] :
+ * 		K extends [infer E1, infer E2] ? [Validator<E1>,Validator<E2>] :
+ * 			K extends [infer E1, infer E2, infer E3] ? [Validator<E1>,Validator<E2>,Validator<E2>] :
+ * 				K extends [infer E1, infer E2, infer E3, infer E4] ? [Validator<E1>,Validator<E2>,Validator<E2>,Validator<E4>] :
+ */
 export type ValidatorTypeResolver<K> =
-	K extends any[] ? Validator<K> :
-		K extends TS_Object ? TypeValidator<K> | Validator<K> :
-			Validator<K>;
+	K extends [infer E1] ? Validator<K>:
+		K extends [infer E1, infer E2] ? Validator<K>:
+			K extends [infer E1, infer E2, infer E3] ? Validator<K>:
+				K extends [infer E1, infer E2, infer E3, infer E4] ? Validator<K>:
+					K extends any[] ? Validator<K> :
+						K extends TS_Object ? TypeValidator<K> | Validator<K> :
+							Validator<K>;
 
 export type ValidatorImpl<P> = (p?: P) => (InvalidResult<P> | undefined);
-export type Validator<P> =  ValidatorImpl<P> | ValidatorImpl<P>[];
+export type Validator<P> = ValidatorImpl<P> | ValidatorImpl<P>[];
 export type TypeValidator<T extends TS_Object> = { [P in keyof T]-?: ValidatorTypeResolver<T[P]> };
 
 export type InvalidResultObject<T extends any> = { [K in keyof T]?: InvalidResult<T[K]> };
@@ -116,13 +128,14 @@ export const tsValidate = <T extends any>(instance: T | undefined, _validator: V
 	return results;
 };
 
-export const tsValidateResult = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T) => {
+export const tsValidateResult = <T extends any>(instance: T | undefined, _validator: ValidatorTypeResolver<T>, key?: keyof T, parentInstance?: any) => {
 	if (!_validator)
 		return;
 
 	const validator: ValidatorImpl<T>[] | object = typeof _validator === 'function' ? [_validator] : _validator;
 	if (Array.isArray(validator)) {
-		const result = validator.reduce((result, __validator) => result === CONST_NO_ERROR ? result : result || __validator(instance), undefined as InvalidResult<T> | undefined);
+		const result = validator.reduce((result, __validator) => result === CONST_NO_ERROR ? result : result || __validator(instance, parentInstance),
+		                                undefined as InvalidResult<T> | undefined);
 		return result !== CONST_NO_ERROR ? result : undefined;
 	}
 
@@ -152,7 +165,7 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 	for (const key of validatorKeys) {
 		const value: T[keyof T] = instance[key];
 		const validator = __validator[key];
-		const propsResult = tsValidateResult(value, validator, key);
+		const propsResult = tsValidateResult(value, validator, key, instance);
 		if (propsResult && propsResult !== CONST_NO_ERROR)
 			result[key as keyof T] = propsResult;
 	}
