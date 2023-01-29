@@ -1,5 +1,4 @@
-.ts-editable-text {
-
+.ts-editable-text-text-area {
   //What's rendered when not editing
   .ts-editable-text__text {
     height: 100%;
@@ -48,4 +47,8 @@
       }
     }
   }
+}
+
+.ts-editable-text-input {
+
 }
