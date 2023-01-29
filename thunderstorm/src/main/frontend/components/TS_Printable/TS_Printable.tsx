@@ -8,11 +8,12 @@ export class TS_Printable
 	extends React.Component<HTMLProps<HTMLDivElement> & { printable: (ref: HTMLDivElement) => void }> {
 	private ref!: HTMLDivElement;
 
+
 	render() {
 		const {printable, ...props} = this.props;
 
 		return (
-			<div {...props} className={_className('ts-printable', props.className)} ref={((ref) => {
+			<div {...props} className={_className('ts-printable ', props.className)} ref={((ref) => {
 				if (this.ref)
 					return;
 
