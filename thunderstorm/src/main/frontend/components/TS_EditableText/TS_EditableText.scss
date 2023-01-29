@@ -75,6 +75,7 @@
 
     .ts-editable-text-input__buttons {
       height: 100%;
+      display: flex;
       flex-shrink: 0;
       width: 60px;
     }
