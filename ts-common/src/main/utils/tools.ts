@@ -62,6 +62,10 @@ export const EmptyArray = Object.freeze([]);
 export const voidFunction = Object.freeze(async () => {
 });
 
+export const functionThatReturnsFalse = Object.freeze(() => false);
+export const functionThatReturnsTrue = Object.freeze(() => true);
+
+
 export function exists(item: any) {
-	return item!==undefined && item!==null
+	return item !== undefined && item !== null;
 }
