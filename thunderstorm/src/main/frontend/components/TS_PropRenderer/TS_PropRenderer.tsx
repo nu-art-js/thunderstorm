@@ -5,23 +5,26 @@ import {_className} from '../../utils/tools';
 
 type Props = LinearLayoutProps & {
 	label: string,
+	error?: string;
 }
 
 export const TS_PropRenderer_Horizontal = (props: Props) => {
 	const className = _className('ts-prop-renderer', props.className);
-	const {label, ..._props} = props;
+	const {label, error, ..._props} = props;
 	return <LL_H_C {..._props} className={className}>
-		<div className="ts-prop-renderer__label">{label}</div>
+		<div className={'ts-prop-renderer__label'}>{label}</div>
 		{props.children}
+		<div className={'ts-prop-renderer__error'}></div>
 	</LL_H_C>;
 };
 
 export const TS_PropRenderer_Vertical = (props: Props) => {
 	const className = _className('ts-prop-renderer', props.className);
-	const {label, ..._props} = props;
+	const {label, error, ..._props} = props;
 	return <LL_V_L {..._props} className={className}>
-		<div className="ts-prop-renderer__label">{props.label}</div>
+		<div className={'ts-prop-renderer__label'}>{label}</div>
 		{props.children}
+		<div className={'ts-prop-renderer__error'}></div>
 	</LL_V_L>;
 };
 
