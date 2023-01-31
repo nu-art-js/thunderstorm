@@ -248,7 +248,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		return sortArray(this.allMutable() as DBType[], map, invert);
 	};
 
-	arrayToMap(getKey: (item: DBType, index: number, map: { [k: string]: DBType }) => string | number, map: { [k: string]: DBType } = {}): { [k: string]: DBType } {
+	arrayToMap(getKey: (item: DBType, index: number, map: { [k: string]: DBType }) => string | number, map: { [k: string]: DBType } = {}): TypedMap<DBType> {
 		return arrayToMap(this.allMutable(), getKey, map);
 	}
 
