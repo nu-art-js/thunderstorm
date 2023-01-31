@@ -13,6 +13,8 @@ type Props = {
 	style?: TypedMap<string>;
 	className?: string;
 	customCaret?: ReactNode | (() => ReactNode)
+	onMouseEnter?: (e: React.MouseEvent) => void;
+	onMouseLeave?: (e: React.MouseEvent) => void;
 }
 
 type State = {
@@ -82,7 +84,7 @@ export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 
 	render() {
 		const className = _className('ts-collapsable-container', this.props.className);
-		return <LL_V_L className={className} style={this.props.style}>
+		return <LL_V_L className={className} style={this.props.style} onMouseEnter={this.props.onMouseEnter} onMouseLeave={this.props.onMouseLeave}>
 			{this.renderHeader()}
 			{this.renderContainer()}
 		</LL_V_L>;
