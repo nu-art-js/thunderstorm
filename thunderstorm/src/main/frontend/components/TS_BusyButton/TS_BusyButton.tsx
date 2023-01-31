@@ -33,6 +33,7 @@ type Props_Button = LinearLayoutProps & {
 	onClick: (e: React.MouseEvent<HTMLDivElement>) => Promise<any>
 	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => Promise<any>;
 	loadingRenderer?: ReactNode | (() => ReactNode);
+	keepLoaderOnSuccess?: boolean;
 }
 
 type State_Button = {
@@ -55,6 +56,11 @@ type State_Button = {
 export class TS_BusyButton
 	extends ComponentSync<Props_Button, State_Button> {
 
+	static defaultProps: Partial<Props_Button> = {
+		keepLoaderOnSuccess: false,
+		loadingRenderer: <TS_ButtonLoader/>,
+	};
+
 	protected deriveStateFromProps(nextProps: Props_Button): State_Button | undefined {
 		return {
 			disabled: !!nextProps.disabled,
@@ -65,10 +71,7 @@ export class TS_BusyButton
 	private renderItems = () => {
 		if (this.state.isBusy) {
 			const loadingRenderer = this.props.loadingRenderer;
-			if (loadingRenderer)
-				return typeof loadingRenderer === 'function' ? loadingRenderer() : loadingRenderer;
-
-			return <TS_ButtonLoader/>;
+			return typeof loadingRenderer === 'function' ? loadingRenderer() : loadingRenderer;
 		}
 		return this.props.children;
 	};
@@ -81,10 +84,14 @@ export class TS_BusyButton
 			return;
 
 		this.setState({isBusy: true}, async () => {
-			await this.props[this.state.disabled ? 'onDisabledClick' : 'onClick']?.(e);
-
-			if (this.mounted)
-				this.setState({isBusy: false});
+			try {
+				await this.props[this.state.disabled ? 'onDisabledClick' : 'onClick']?.(e);
+				if (!this.props.keepLoaderOnSuccess && this.mounted)
+					this.setState({isBusy: false});
+			} catch (err) {
+				if (this.mounted)
+					this.setState({isBusy: false});
+			}
 		});
 	};
 
