@@ -78,6 +78,7 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 	boundingParentSelector?: string;
 	renderSearch: (dropDown: TS_DropDown<ItemType>) => React.ReactNode;
 	limitItems?: number;
+	onContextMenu?: (e: React.MouseEvent<HTMLInputElement, MouseEvent>) => void;
 }
 
 type Props_CanUnselect<ItemType> = { canUnselect: true; onSelected: (selected?: ItemType) => void };
@@ -345,7 +346,7 @@ export class TS_DropDown<ItemType>
 			focused: false,
 			selected: true
 		};
-		return <div className={'ts-dropdown__placeholder'}><Renderer item={selected} node={node}/></div>;
+		return <div className={'ts-dropdown__placeholder'} onContextMenu={this.props.onContextMenu}><Renderer item={selected} node={node}/></div>;
 	};
 
 	private renderSelectedOrFilterInput = (): React.ReactNode => {
