@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {batchAction, batchActionParallel, reduceToMap, TestSuit_V2, TestSuitAsync_V2} from "../../main";
+import {TestSuit_V2, TestSuitAsync_V2} from "../../main";
 
 export type TestSuit_TS_ArrayFunctionRemoveByIndex<T extends any = any> = TestSuit_V2<{ array: T[], index: number }, T[]>
 
@@ -43,4 +43,6 @@ export type TestSuit_TS_ArrayFunctionBatchAction<T extends any = any, R extends 
 export type TestSuit_TS_ArrayFunctionFlatArray<T extends any = any> = TestSuit_V2<{ arr: T[][] | T[], result: T[] }, T[]>
 
 export type TestSuit_TS_ArrayFunctionGroupArrayBy<T extends object> = TestSuit_V2<{ arr: T[], mapper: (item: T) => string | number }, T[]> //correct?
+
+
 
