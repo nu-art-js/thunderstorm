@@ -66,7 +66,6 @@ export async function testUserPermissionsTime() {
 		groupIdArray.push({groupId, customField: {test: 'test'}});
 	}
 
-	console.log('dbInstances ready to upsert');
 
 	await ModuleBE_PermissionGroup.upsertAll(dbInstances);
 
