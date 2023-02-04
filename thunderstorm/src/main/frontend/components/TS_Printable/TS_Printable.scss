@@ -2,15 +2,23 @@
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 
-  & > * {
+  * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
 
   @media print {
-    .ts-no-print {
+    * {
+      overflow: unset;
+    }
+
+    .ts-print__hide {
       visibility: hidden;
+    }
+
+    .ts-print__gone {
+      display: none;
     }
   }
 }

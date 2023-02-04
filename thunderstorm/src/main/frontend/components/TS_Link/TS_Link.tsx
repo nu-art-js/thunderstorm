@@ -21,9 +21,8 @@
 import * as React from 'react';
 import {ModuleFE_Thunderstorm, UrlTarget} from '../../modules/ModuleFE_Thunderstorm';
 import './TS_Link.scss';
-import {QueryParams} from '../../../shared/types';
 import {_className, stopPropagation} from '../../utils/tools';
-import {_keys, TypedMap} from '@nu-art/ts-common';
+import {TypedMap} from '@nu-art/ts-common';
 
 
 type Props = {
@@ -38,18 +37,7 @@ export class TS_Link
 
 	private handleOnClick = (e: React.MouseEvent) => {
 		stopPropagation(e);
-		const _params = this.props.params || {};
-		const params = _keys(_params).reduce((toRet, key) => {
-			const param = _params[key];
-			if (typeof param === 'function') {
-				const value = param?.();
-				if (value)
-					toRet[key] = value;
-			} else
-				toRet[key] = param;
-
-			return toRet;
-		}, {} as QueryParams);
+		const params = this.props.params || {};
 
 		ModuleFE_Thunderstorm.openUrl({url: this.props.url, params}, this.props.target);
 	};

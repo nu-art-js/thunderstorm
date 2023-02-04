@@ -1,6 +1,8 @@
 import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_DragAndDrop.scss';
+import {LL_VH_C} from '../Layouts';
+
 
 type DND_State =
 	'Idle' |
@@ -14,7 +16,7 @@ const DND_Styles: { [K in DND_State]: string } = {
 	Dragging: 'dragging',
 	Positive: 'positive',
 	Negative: 'negative',
-	PartialNegative: 'partial-negative',
+	PartialNegative: 'partial',
 };
 
 export type DND_File = {
@@ -134,18 +136,23 @@ export class TS_DragAndDrop
 	};
 
 	render() {
+
 		return (
-			<div className={'ts-drag-and-drop'} id={this.props?.id}>
+			<LL_VH_C className={'ts-drag-and-drop'} id={this.props?.id}>
 				<div
-					className={`ts-drag-and-drop__${DND_Styles[this.state.dndState]}`}
+					className={`ts-drag-and-drop__content ts-drag-and-drop__${DND_Styles[this.state.dndState]}`}
 					onDrop={this.onDrop}
 					onDragEnter={this.onDragEnter}
 					onDragOver={this.onDragOver}
 					onDragLeave={this.onDragLeave}
-					onClick={() => (this.inputRef.current && this.inputRef.current.click())}>
-					<input id="fileInput" type="file" ref={this.inputRef} hidden={true} multiple onChange={this.onSelect}/>
+					onClick={this.openFileChooser}>
+					<input className="ts-drag-and-drop__input" id="fileInput" type="file" ref={this.inputRef} hidden={true} multiple onChange={this.onSelect}/>
 				</div>
-			</div>
+			</LL_VH_C>
 		);
 	}
+
+	private openFileChooser = () => {
+		this.inputRef.current && this.inputRef.current.click();
+	};
 }

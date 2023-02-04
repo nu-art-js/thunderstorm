@@ -28,10 +28,6 @@
   .ts-tree__node {
     @include spaces(12);
     padding: 4px 0;
-    * {
-      font-size: 18px;
-
-    }
 
     &:hover {
       background: cornsilk;

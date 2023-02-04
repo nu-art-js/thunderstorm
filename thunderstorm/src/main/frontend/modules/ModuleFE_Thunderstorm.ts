@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, Module, TypedKeyValue} from '@nu-art/ts-common';
+import {BadImplementationException, Module, TypedKeyValue, TypedMap, _keys} from '@nu-art/ts-common';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {composeURL} from './ModuleFE_BrowserHistory';
 import {HttpMethod, QueryApi, QueryParams} from '../../shared/types';
@@ -157,7 +157,7 @@ class ModuleFE_Thunderstorm_Class
 		return this.config.appName;
 	}
 
-	openUrl(url: string | { url: string, params?: QueryParams }, target?: UrlTarget) {
+	openUrl(url: string | { url: string, params?: TypedMap<(() => string) | string | undefined> }, target?: UrlTarget) {
 		if (!window)
 			throw new BadImplementationException('no window in vm context');
 
@@ -166,7 +166,20 @@ class ModuleFE_Thunderstorm_Class
 		if (typeof urlObj === 'string')
 			urlObj = {url: urlObj};
 
-		window.open(composeURL(urlObj.url, urlObj.params), target || '_self');
+		const params = urlObj.params || {};
+		const calculatedParams = _keys(params || {}).reduce((toRet, key) => {
+			const param = params[key];
+			if (typeof param === 'function') {
+				const value = param?.();
+				if (value)
+					toRet[key] = value;
+			} else
+				toRet[key] = param;
+
+			return toRet;
+		}, {} as QueryParams);
+
+		window.open(composeURL(urlObj.url, calculatedParams), target || '_self');
 	}
 
 	downloadFile(props: FileDownloadProps) {
