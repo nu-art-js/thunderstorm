@@ -68,6 +68,8 @@ export class ModuleFE_Tooltip_Class
 	 */
 	showAt = (content: () => JSX.Element, x: number, y: number, duration = -1, allowContentHover = false, alignment: Alignment = 'top', delay = -1) => {
 		const _show = () => {
+			clearTimeout(this._delayTimeOut);
+
 			const contentToRender = typeof content === 'function' ? content() : content;
 
 			const model: Tooltip_Model = {
@@ -80,6 +82,7 @@ export class ModuleFE_Tooltip_Class
 			dispatch_showTooltip.dispatchUI(model);
 		};
 
+		clearTimeout(this._delayTimeOut);
 		if (delay === -1)
 			_show();
 		else
@@ -87,9 +90,12 @@ export class ModuleFE_Tooltip_Class
 
 	};
 
-	hide = () => {
+	hide = (duration = -1) => {
 		clearTimeout(this._delayTimeOut);
-		dispatch_showTooltip.dispatchUI();
+		if (duration === -1)
+			dispatch_showTooltip.dispatchUI();
+		else
+			this._delayTimeOut = setTimeout(() => dispatch_showTooltip.dispatchUI(), duration);
 	};
 }
 
@@ -106,7 +112,7 @@ export const ModuleFE_Tooltip = new ModuleFE_Tooltip_Class();
 export const ShowTooltip = (content: () => JSX.Element, alignment: Alignment = 'top', duration = -1, allowContentHover = false, delay = -1) => {
 	return {
 		onMouseEnter: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.show(content, e, alignment, duration, allowContentHover, delay),
-		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(),
+		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(duration),
 	};
 };
 
@@ -119,7 +125,7 @@ export const ShowTooltipAtTop = (content: () => JSX.Element, duration = -1, allo
 			const y = data.top - 10;
 			ModuleFE_Tooltip.showAt(content, x, y, duration, allowContentHover, 'top', delay);
 		},
-		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(),
+		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(duration),
 	};
 };
 
@@ -131,7 +137,7 @@ export const ShowTooltipAtRight = (content: () => JSX.Element, duration = -1, al
 			const y = (data.top + data.bottom) / 2;
 			ModuleFE_Tooltip.showAt(content, x, y, duration, allowContentHover, 'right', delay);
 		},
-		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(),
+		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(duration),
 	};
 };
 
@@ -143,7 +149,7 @@ export const ShowTooltipAtLeft = (content: () => JSX.Element, duration = -1, all
 			const y = (data.top + data.bottom) / 2;
 			ModuleFE_Tooltip.showAt(content, x, y, duration, allowContentHover, 'left', delay);
 		},
-		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(),
+		onMouseLeave: (e: React.MouseEvent<any>) => ModuleFE_Tooltip.hide(duration),
 	};
 };
 

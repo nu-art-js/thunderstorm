@@ -55,15 +55,9 @@ export class TS_TooltipOverlay
 			}, this.state.model.duration);
 		} else {
 			this.setState(() => ({model}));
-			if (!model) {
+			if (!model)
 				this.ref = null;
-				return;
-			}
-			const duration = model.duration;
-			if (duration <= 0)
-				return;
 		}
-		// this.timeoutInterval = _setTimeout(ModuleFE_Tooltip.hide, duration, model);
 	};
 
 	constructor(props: {}) {
@@ -99,7 +93,7 @@ export class TS_TooltipOverlay
 		const contentWidth = pos.right - pos.left;
 		const viewPortHeight = window.innerHeight;
 		const contentHeight = pos.bottom - pos.top;
-		
+
 		// Check overflowing right
 		if (pos.right > (viewPortWidth - 20))
 			style.left = viewPortWidth - contentWidth - 20;
