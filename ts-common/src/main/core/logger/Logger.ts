@@ -23,8 +23,6 @@ import {BeLogged} from './BeLogged';
 
 export class Logger {
 
-	public static readonly log = new Logger('LOGGER');
-
 	private tag: string;
 	public static defaultFlagState = true;
 	protected readonly _DEBUG_FLAG: DebugFlag;
@@ -100,3 +98,71 @@ export class Logger {
 		return this._DEBUG_FLAG.canLog(level);
 	}
 }
+
+export abstract class StaticLogger {
+
+	protected static readonly _DEBUG_FLAG = DebugFlags.createFlag('StaticLogger');
+	static {
+		StaticLogger._DEBUG_FLAG.enable(Logger.defaultFlagState);
+	}
+
+	static setMinLevel(minLevel: LogLevel) {
+		this._DEBUG_FLAG.setMinLevel(minLevel);
+	}
+
+	public static logVerbose(tag: string, ...toLog: LogParam[]): void {
+		this.log(tag, LogLevel.Verbose, false, toLog);
+	}
+
+	public static logDebug(tag: string, ...toLog: LogParam[]): void {
+		this.log(tag, LogLevel.Debug, false, toLog);
+	}
+
+	public static logInfo(tag: string, ...toLog: LogParam[]): void {
+		this.log(tag, LogLevel.Info, false, toLog);
+	}
+
+	public static logWarning(tag: string, ...toLog: LogParam[]): void {
+		this.log(tag, LogLevel.Warning, false, toLog);
+	}
+
+	public static logError(tag: string, ...toLog: LogParam[]): void {
+		this.log(tag, LogLevel.Error, false, toLog);
+	}
+
+	public static logVerboseBold(tag: string, ...toLog: LogParam[]): void {
+		this.log(tag, LogLevel.Verbose, true, toLog);
+	}
+
+	public static logDebugBold(tag: string, ...toLog: LogParam[]): void {
+		this.log(tag, LogLevel.Debug, true, toLog);
+	}
+
+	public static logInfoBold(tag: string, ...toLog: LogParam[]): void {
+		this.log(tag, LogLevel.Info, true, toLog);
+	}
+
+	public static logWarningBold(tag: string, ...toLog: LogParam[]): void {
+		this.log(tag, LogLevel.Warning, true, toLog);
+	}
+
+	public static logErrorBold(tag: string, ...toLog: LogParam[]): void {
+		this.log(tag, LogLevel.Error, true, toLog);
+	}
+
+	public static log(tag: string, level: LogLevel, bold: boolean, toLog: LogParam[]): void {
+		if (!this.assertCanPrint(level))
+			return;
+
+		// @ts-ignore
+		BeLogged.logImpl(tag, level, bold, toLog);
+	}
+
+	private static assertCanPrint(level: LogLevel) {
+		if (!this._DEBUG_FLAG.isEnabled())
+			return;
+
+		return this._DEBUG_FLAG.canLog(level);
+	}
+}
+

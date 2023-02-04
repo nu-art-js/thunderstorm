@@ -21,3 +21,11 @@
 
 @forward "./frontend/components/Layouts/Layouts_";
 @forward "./frontend/styles/declaration/mixins";
+
+.ts-languages__rtl {
+  direction: rtl;
+}
+
+.ts-languages__ltr {
+  direction: rtl;
+}
