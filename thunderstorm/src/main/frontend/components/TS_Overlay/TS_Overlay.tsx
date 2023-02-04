@@ -37,12 +37,11 @@ export class TS_Overlay
 		if (!this.props.showOverlay)
 			return this.props.children;
 
-		const overlayChild = <div className="ts-overlay__child" onClick={stopPropagation} onContextMenu={stopPropagation}>{this.props.children}</div>;
+		const overlayChild = <div className="ts-overlay__child" onClick={stopPropagation}>{this.props.children}</div>;
 		return <>
 			<div
 				className="ts-overlay"
 				onClick={this.props.onClickOverlay}
-				onContextMenu={this.props.onClickOverlay}
 				onMouseMove={e => e.stopPropagation()}
 				onMouseOver={e => e.stopPropagation()}
 				onMouseEnter={e => e.stopPropagation()}

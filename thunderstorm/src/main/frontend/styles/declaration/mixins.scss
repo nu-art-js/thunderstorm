@@ -29,18 +29,16 @@
   min-height: $height;
 }
 
-@mixin icon-style($color, $hoverColor:$color, $selectedColor:$color, $mouseDownColor:$selectedColor, $disabledColor:$color) {
+@mixin icon-style-v4($color, $hoverColor:$color, $mouseDownColor:$hoverColor, $disabledColor:$color) {
   display: inline-block;
   background: $color;
+
   &:hover {
-    svg path {
-      fill: $hoverColor;
-    }
+    background: $hoverColor;
   }
+
   &:active {
-    svg path {
-      fill: $mouseDownColor;
-    }
+    background: $mouseDownColor;
   }
 }
 

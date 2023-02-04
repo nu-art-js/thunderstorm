@@ -13,7 +13,7 @@ export class TS_Printable
 		const {printable, ...props} = this.props;
 
 		return (
-			<div {...props} className={_className('ts-printable ', props.className)} ref={((ref) => {
+			<div {...props} className={_className('ts-printable', props.className)} ref={((ref) => {
 				if (this.ref)
 					return;
 
