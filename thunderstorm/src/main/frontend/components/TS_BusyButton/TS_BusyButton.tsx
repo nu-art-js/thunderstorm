@@ -96,7 +96,7 @@ export class TS_BusyButton
 	};
 
 	render() {
-		const {onClick, disabled, loadingRenderer, onDisabledClick, ...restOfProps} = this.props;
+		const {onClick, disabled, loadingRenderer, onDisabledClick, keepLoaderOnSuccess, ...restOfProps} = this.props;
 
 		const className = _className('ts-busy-button', this.props.className, !this.state.isBusy && this.state.disabled && 'ts-busy-button__disabled', this.state.isBusy && 'ts-busy-button__loading');
 
