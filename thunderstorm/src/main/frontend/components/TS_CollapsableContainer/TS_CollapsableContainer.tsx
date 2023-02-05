@@ -13,6 +13,7 @@ type Props = {
 	style?: TypedMap<string>;
 	className?: string;
 	customCaret?: ReactNode | (() => ReactNode)
+	flipHeaderOrder?: boolean
 	onMouseEnter?: (e: React.MouseEvent) => void;
 	onMouseLeave?: (e: React.MouseEvent) => void;
 }
@@ -68,7 +69,7 @@ export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 	}
 
 	renderHeader() {
-		const className = _className('ts-collapsable-container__header', this.isCollapsed() ? 'collapsed' : undefined);
+		const className = _className('ts-collapsable-container__header', this.isCollapsed() ? 'collapsed' : undefined, this.props.flipHeaderOrder ? 'flip' : undefined);
 		return <div className={className} onClick={this.toggleCollapse}>
 			{this.renderCaret()}
 			{typeof this.props.headerRenderer === 'function' ? this.props.headerRenderer() : this.props.headerRenderer}
