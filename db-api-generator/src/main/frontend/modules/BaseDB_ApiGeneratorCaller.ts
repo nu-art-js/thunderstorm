@@ -136,7 +136,7 @@ export abstract class BaseDB_ApiGeneratorCaller<DBType extends DB_Object, Config
 			this.items[item._id] = item;
 		});
 
-		this.dispatchMulti(EventType_UpsertAll, items.map(item => item._id));
+		this.dispatchMulti(EventType_UpsertAll, items.map(dbObjectToId));
 	}
 
 	protected async onEntryCreated(item: DBType): Promise<void> {
