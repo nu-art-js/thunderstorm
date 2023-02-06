@@ -154,7 +154,7 @@ export class FirebaseRef<T> {
 		return this.db.listen<T>(this.path, callback);
 	}
 
-	public stopListening<T>(listener: FirebaseListener): void {
+	public stopListening(listener: FirebaseListener): void {
 		return this.db.stopListening<T>(this.path, listener);
 	}
 

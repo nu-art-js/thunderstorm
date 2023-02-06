@@ -1,0 +1,49 @@
+{
+  "database": {
+    "rules": ".firebase_config/database.rules.json"
+  },
+  "firestore": {
+    "rules": ".firebase_config/firestore.rules",
+    "indexes": ".firebase_config/firestore.indexes.json"
+  },
+  "storage": {
+    "rules": ".firebase_config/storage.rules"
+  },
+  "remoteconfig": {
+    "template": ".firebase_config/remoteconfig.template.json"
+  },
+  "functions": {
+    "source": "test",
+    "ignore": [
+      "src",
+      ".config",
+      "dist-test",
+      "deploy.js",
+      "node_modules"
+    ],
+    "predeploy": [
+      "echo \"Trying to deploy LOCAL env... Failing\" && exit 2"
+    ]
+  },
+  "emulators": {
+    "ui": {
+      "enabled": true,
+      "port": "5555"
+    },
+    "functions": {
+      "port": "5000"
+    },
+    "database": {
+      "port": "5002"
+    },
+    "firestore": {
+      "port": "5003"
+    },
+    "pubsub": {
+      "port": "5004"
+    },
+    "storage": {
+      "port": "5005"
+    }
+  }
+}

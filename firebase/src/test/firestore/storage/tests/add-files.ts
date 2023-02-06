@@ -21,6 +21,7 @@ import {BucketWrapper, ModuleBE_Firebase} from '../../../_main';
 import {File} from '@google-cloud/storage';
 import {assert} from '@nu-art/ts-common';
 
+
 const metadata = {
 	my: 'custom',
 	properties: 'go here'
@@ -119,11 +120,13 @@ export function saveAndDeleteFilesTest() {
 	// }).setLabel("delete test files from extra bucket"));
 
 	scenario.add(__custom(async () => {
+		// @ts-ignore
 		return (await bucket.getFile(`${pathToTestFile}-string.txt`)).setMetadata(metadata);
 	}).setLabel('Set metadata for file'));
 
 	scenario.add(__custom(async () => {
 		const meta = await (await bucket.getFile(`${pathToTestFile}-string.txt`)).getMetadata();
+		// @ts-ignore
 		assert('Metadata doesn\'t match expected', metadata, meta.metadata);
 	}).setLabel('Get metadata'));
 
