@@ -121,7 +121,7 @@ export const ShowTooltipAtTop = (content: () => JSX.Element, duration = -1, allo
 	return {
 		onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
 			const data = e.currentTarget.getBoundingClientRect();
-			const x = (data.right + data.x) / 2;
+			const x = data.left + (data.width / 2);
 			const y = data.top - 10;
 			ModuleFE_Tooltip.showAt(content, x, y, duration, allowContentHover, 'top', delay);
 		},

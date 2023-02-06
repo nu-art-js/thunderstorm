@@ -27,6 +27,7 @@ import {_className} from '../../utils/tools';
 
 type State = {
 	model?: Tooltip_Model,
+	ref: React.RefObject<HTMLDivElement>;
 };
 
 type PosStyle = {
@@ -38,7 +39,6 @@ export class TS_TooltipOverlay
 	extends ComponentSync<{}, State>
 	implements TooltipListener {
 
-	private ref?: HTMLDivElement | null;
 	// private timeoutInterval?: number;
 	private timeout: NodeJS.Timeout | undefined = undefined;
 
@@ -49,24 +49,27 @@ export class TS_TooltipOverlay
 
 		//If exited tooltip but waiting for content hover
 		if (!model && this.state?.model?.allowContentHover) {
-			this.ref = null;
 			this.timeout = setTimeout(() => {
 				this.setState(() => ({model}));
 			}, this.state.model.duration);
 		} else {
 			this.setState(() => ({model}));
-			if (!model)
-				this.ref = null;
 		}
 	};
 
-	constructor(props: {}) {
-		super(props);
-		this.state = {};
+	protected deriveStateFromProps(nextProps: {}): State | undefined {
+		return {
+			ref: this.state?.ref || React.createRef(),
+		};
 	}
 
-	protected deriveStateFromProps(nextProps: {}): State | undefined {
-		return {};
+	componentDidUpdate(prevProps: Readonly<{}>, prevState: Readonly<State>, snapshot?: any) {
+		if (!this.state.ref.current)
+			return;
+
+		const positionCorrection = this.calculatePositionCorrection();
+		this.state.ref.current.style.top = `${positionCorrection.top}px`;
+		this.state.ref.current.style.left = `${positionCorrection.left}px`;
 	}
 
 	private onContentMouseEnter = () => {
@@ -79,20 +82,18 @@ export class TS_TooltipOverlay
 	};
 
 	private onContentMouseLeave = () => {
-		this.ref = null;
 		this.timeout = setTimeout(() => {
 			this.setState(() => ({model: undefined}));
 		}, this.state.model?.duration);
 	};
 
-	private keepInViewStyle = (style: PosStyle) => {
-		if (!this.ref)
-			return;
-		const pos = this.ref?.getBoundingClientRect();
+	private calculatePositionCorrection = () => {
+		const pos = this.state.ref.current?.getBoundingClientRect()!;
 		const viewPortWidth = window.innerWidth;
 		const contentWidth = pos.right - pos.left;
 		const viewPortHeight = window.innerHeight;
 		const contentHeight = pos.bottom - pos.top;
+		const style = {} as PosStyle;
 
 		// Check overflowing right
 		if (pos.right > (viewPortWidth - 20))
@@ -114,8 +115,9 @@ export class TS_TooltipOverlay
 	};
 
 	private getPosObject = (model: Tooltip_Model): PosStyle => {
-		const width = (this.ref?.getBoundingClientRect().width || 0);
-		const height = (this.ref?.getBoundingClientRect().height || 0);
+		const element = this.state.ref.current;
+		const width = (element?.getBoundingClientRect().width || 0);
+		const height = (element?.getBoundingClientRect().height || 0);
 
 		const top = model.location ? model.location.y : 0;
 		const left = model.location ? model.location.x : 0;
@@ -125,12 +127,12 @@ export class TS_TooltipOverlay
 		if (model.alignment === 'top')
 			return {
 				top: top - height - 10,
-				left: left + width / 2,
+				left: left + (width / 2),
 			};
 
 		if (model.alignment === 'right')
 			return {
-				top: top - height / 2,
+				top: top - (height / 2),
 				left: left + 10,
 			};
 
@@ -152,20 +154,13 @@ export class TS_TooltipOverlay
 		if (!model || !model.content)
 			return null;
 
-		let positionStyle = this.getPosObject(model);
-		if (this.ref)
-			positionStyle = {...positionStyle, ...this.keepInViewStyle(positionStyle)};
+		const positionStyle = this.getPosObject(model);
 
 		const className = _className('ts-tooltip', `align-${model.alignment}`);
 		return <div
 			onMouseEnter={this.onContentMouseEnter}
 			onMouseLeave={this.onContentMouseLeave}
-			ref={(ref) => {
-				if (this.ref)
-					return;
-				this.ref = ref;
-				this.forceUpdate();
-			}}
+			ref={this.state.ref}
 			className={className}
 			id={'tooltip'}
 			style={{top: `${positionStyle.top}px`, left: `${positionStyle.left}px`}}>
