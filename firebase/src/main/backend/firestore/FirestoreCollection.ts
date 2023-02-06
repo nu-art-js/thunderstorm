@@ -192,7 +192,7 @@ export class DocWrapper<T extends TS_Object> {
 
 	set = async (instance: T, transaction?: Transaction): Promise<T> => {
 		if (!transaction)
-			return this.runInTransaction((transaction) => this.set(instance, transaction));
+			return this.runInTransaction((_transaction) => this.set(instance, _transaction));
 
 		transaction.set(this.doc.ref, instance);
 		return instance;
