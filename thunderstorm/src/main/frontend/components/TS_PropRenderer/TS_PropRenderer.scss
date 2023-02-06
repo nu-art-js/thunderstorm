@@ -1,5 +1,10 @@
 .ts-prop-renderer {
   gap: 8px;
+  width: 100%;
+
+  .ts-prop-renderer__label {
+    width: 100%;
+  }
 }
 
 
