@@ -28,9 +28,10 @@
   font-size: 13px;
   padding: 1px 3px;
   position: fixed;
+  isolation: isolate;
 
   &.align-top {
-    transform: translateX(-50%) translateY(-50%);
+    transform: translateX(-50%) translateY(-100%);
   }
 
   &.align-right {

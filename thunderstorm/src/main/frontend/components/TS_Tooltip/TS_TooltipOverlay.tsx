@@ -68,8 +68,10 @@ export class TS_TooltipOverlay
 			return;
 
 		const positionCorrection = this.calculatePositionCorrection();
-		this.state.ref.current.style.top = `${positionCorrection.top}px`;
-		this.state.ref.current.style.left = `${positionCorrection.left}px`;
+		if (positionCorrection.top)
+			this.state.ref.current.style.top = `${positionCorrection.top}px`;
+		if (positionCorrection.left)
+			this.state.ref.current.style.left = `${positionCorrection.left}px`;
 	}
 
 	private onContentMouseEnter = () => {
