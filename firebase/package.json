@@ -26,7 +26,8 @@
     "**/*"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "mocha ${TESTS_TO_RUN[*]}"
   },
   "dependencies": {
     "@nu-art/ts-common": "~0.0.1",
