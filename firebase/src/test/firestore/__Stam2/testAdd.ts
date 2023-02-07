@@ -1,9 +1,13 @@
 import {merge} from '@nu-art/ts-common';
-import {addData, scenarioSet, scenarioUpdate} from '../../database/test/add-data';
+import {addData, scenarioUpdate} from '../../database/test/add-data';
 import {ModuleBE_Firebase} from '../../../main/backend';
-import {describe} from 'mocha';
+import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
 
+
+admin.initializeApp(functions.config().firebase);
 
 describe('add-data functions check', () => {
 	const db = ModuleBE_Firebase.createAdminSession().getDatabase();
