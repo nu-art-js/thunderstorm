@@ -23,7 +23,7 @@ import {initializeApp} from 'firebase-admin/app';
 import {JWTInput} from 'google-auth-library';
 import {FirebaseSession} from './firebase-session';
 import {getAuth} from 'firebase-admin/auth';
-import { ThisShouldNotHappenException } from '@nu-art/ts-common';
+import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 
 
 export class FirebaseSession_Admin
@@ -48,7 +48,7 @@ export class FirebaseSession_Admin
 	}
 
 	public connect(): void {
-		this.app = initializeApp(this.config);
+		this.app = initializeApp(this.config, this.getProjectId());
 	}
 
 	public getAuth() {
