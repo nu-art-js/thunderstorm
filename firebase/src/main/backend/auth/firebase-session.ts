@@ -25,7 +25,8 @@ import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE';
 import {StorageWrapperBE} from '../storage/StorageWrapperBE';
 import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE';
 import {FirebaseConfig} from '../..';
-import { App } from 'firebase-admin/app';
+import {App} from 'firebase-admin/app';
+
 
 export type Firebase_UserCredential = {
 	config: FirebaseConfig

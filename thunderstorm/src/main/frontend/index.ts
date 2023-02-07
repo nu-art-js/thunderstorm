@@ -31,6 +31,7 @@ export * from './component-modules/ModuleFE_Toaster';
 export * from './component-modules/ModuleFE_Tooltip';
 export * from './component-modules/ModuleFE_Notifications';
 
+export * from './modules/action-processor/ModuleFE_ActionProcessor';
 export * from './modules/ModuleFE_Locale';
 
 export * from './modules/ModuleFE_ForceUpgrade';

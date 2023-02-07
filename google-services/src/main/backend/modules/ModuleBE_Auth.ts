@@ -8,6 +8,7 @@ import {JWTOptions} from 'google-auth-library/build/src/auth/jwtclient';
 import {OAuth2ClientOptions} from 'google-auth-library/build/src/auth/oauth2client';
 import {UserRefreshClientOptions} from 'google-auth-library/build/src/auth/refreshclient';
 
+
 type AuthModuleConfig = {
 	auth: {
 		[k: string]: JWT_Input | string
@@ -18,6 +19,10 @@ export type JWT_Input = JWTInput
 
 export class ModuleBE_Auth_Class
 	extends Module<AuthModuleConfig> {
+	constructor() {
+		super();
+		this.setDefaultConfig({auth: {}});
+	}
 
 	getAuth<T extends Version = 'v2'>(authKey: string, scopes: string[], version: T = 'v2' as T, clientOptions?: JWTOptions | OAuth2ClientOptions | UserRefreshClientOptions) {
 		const authConfig = this.getAuthConfig(authKey);
