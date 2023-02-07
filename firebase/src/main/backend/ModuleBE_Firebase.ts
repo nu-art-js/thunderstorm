@@ -20,120 +20,48 @@
  * Created by tacb0ss on 25/08/2018.
  */
 
-import {_keys, BadImplementationException, ImplementationMissingException, Module, moduleResolver, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {Module} from '@nu-art/ts-common';
 import {FirebaseSession_Admin} from './auth/FirebaseSession_Admin';
 // import {FirebaseSession_UserPassword} from "./auth/FirebaseSession_UserPassword";
-import {JWTInput} from 'google-auth-library';
 import {readFileSync} from 'fs';
-import {Firebase_UserCredential} from './auth/firebase-session';
-import {FirestoreCollection} from './firestore/FirestoreCollection';
-import {FirebaseProjectCollections} from '../shared/types';
+import {ModuleBE_Auth} from '@nu-art/google-services/backend';
 
-type ConfigType = {
-	[s: string]: string | JWTInput | Firebase_UserCredential;
-};
+
+type ConfigType = {};
+const DEFAULT_PROJECT_ID = 'local';
 
 export class ModuleBE_Firebase_Class
 	extends Module<ConfigType> {
 
 	// private readonly tokenSessions: { [s: string]: FirebaseSession_UserPassword; } = {};
 	private readonly adminSessions: { [s: string]: FirebaseSession_Admin; } = {};
-	private localAdmin!: FirebaseSession_Admin;
-	public static localAdminConfigId: string;
-	private localProjectId!: string;
 
 	constructor() {
 		super('firebase');
 	}
 
 	protected init(): void {
-		this.localProjectId = this.deriveLocalProjectId();
 	}
 
-	getLocalProjectId(): string {
-		return this.localProjectId;
-	}
-
-	private deriveLocalProjectId(): string {
-		let projectId;
-		if (ModuleBE_Firebase_Class.localAdminConfigId)
-			if (!this.config[ModuleBE_Firebase_Class.localAdminConfigId])
-				throw new ImplementationMissingException(`Forgot to define a service account for project Id: ${ModuleBE_Firebase_Class.localAdminConfigId}`);
-			else
-				projectId = ModuleBE_Firebase_Class.localAdminConfigId;
-
-		if (!projectId)
-			projectId = process.env.GCP_PROJECT;
-
-		if (!projectId)
-			projectId = process.env.GCLOUD_PROJECT;
-
-		if (!projectId)
-			throw new ThisShouldNotHappenException('Could not resolve project id...');
-
-		return projectId;
-	}
-
-	protected connect(): Promise<void> {
-		return new Promise<void>((resolve) => {
-			resolve();
-		});
-	}
-
-	protected disconnect(): Promise<void> {
-		return new Promise<void>((resolve) => {
-			resolve();
-		});
-	}
-
-	// public async createSessionWithUsernameAndPassword(configId: string) {
-	// 	let session = this.tokenSessions[configId];
-	// 	if (session)
-	// 		return session;
-	//
-	// 	const config = this.getProjectAuth(configId) as Firebase_UserCredential;
-	// 	if (!config || !config.config || !config.credentials || !config.credentials.password || !config.credentials.user)
-	// 		throw new BadImplementationException(`Config for key ${configId} is not a User & Password credentials pattern`);
-	//
-	// 	session = new FirebaseSession_UserPassword(config, configId);
-	// 	this.tokenSessions[configId] = session;
-	//
-	// 	await session.connect();
-	// 	return session;
-	// }
-
-	private createLocalAdminSession() {
-		if (this.localAdmin)
-			return this.localAdmin;
-
-		this.logInfo('Creating local admin session');
-		this.localAdmin = new FirebaseSession_Admin('local-admin');
-		this.localAdmin.connect();
-
-		return this.localAdmin;
-	}
-
-	public createAdminSession(_projectId?: string) {
-		let projectId = _projectId;
-		if (!projectId)
-			projectId = this.localProjectId;
-
+	public createAdminSession(projectId: string = DEFAULT_PROJECT_ID) {
 		let session = this.adminSessions[projectId];
+
 		if (session)
 			return session;
 
-		let config = this.getProjectAuth(projectId) as JWTInput | string;
-		if (!config)
-			return this.createLocalAdminSession();
+		let config;
+		try {
+			config = ModuleBE_Auth.getAuthConfig(projectId);
+		} catch (e: any) {
+			if (projectId !== DEFAULT_PROJECT_ID)
+				throw e;
+		}
 
 		// this.logInfo(`Creating Firebase session for project id: ${projectId}`);
 		if (typeof config === 'string')
-			config = JSON.parse(readFileSync(config, 'utf8')) as JWTInput;
+			config = JSON.parse(readFileSync(config, 'utf8'));
 
-		if (!config || !config.client_email || !config.private_key)
-			throw new BadImplementationException(`Config for key ${projectId} is not an Admin credentials pattern`);
-
-		// this.logInfo(`Creating Firebase session for project id: ${projectId} `, config);
+		this.logInfo(`Creating Firebase session for project id: ${projectId} `, config);
 		session = new FirebaseSession_Admin(projectId, config);
 		this.adminSessions[projectId] = session;
 
@@ -141,31 +69,27 @@ export class ModuleBE_Firebase_Class
 		return session;
 	}
 
-	getProjectAuth(projectId: string) {
-		return this.config?.[projectId];
-	}
-
-	listCollectionsInModules() {
-		const modules: Module[] = moduleResolver();
-
-		const firebaseProjectCollections = modules.reduce((toRet, module) => {
-			const keys = _keys(module);
-			const _collections: FirestoreCollection<any>[] = keys
-				.filter(key => typeof module[key] === 'object' && module[key].constructor?.['name'].startsWith('FirestoreCollection'))
-				.map(key => module[key] as unknown as FirestoreCollection<any>)
-				.filter(collection => collection.wrapper.isAdmin());
-
-			for (const collection of _collections) {
-				const projectId = collection.wrapper.firebaseSession.getProjectId();
-				const collectionName = collection.name;
-				const project = toRet[projectId] || (toRet[projectId] = {projectId: projectId, collections: []});
-				project.collections.push(collectionName);
-			}
-
-			return toRet;
-		}, {} as { [k: string]: FirebaseProjectCollections });
-		return Object.values(firebaseProjectCollections);
-	}
+	// listCollectionsInModules() {
+	// 	const modules: Module[] = moduleResolver();
+	//
+	// 	const firebaseProjectCollections = modules.reduce((toRet, module) => {
+	// 		const keys = _keys(module);
+	// 		const _collections: FirestoreCollection<any>[] = keys
+	// 			.filter(key => typeof module[key] === 'object' && module[key].constructor?.['name'].startsWith('FirestoreCollection'))
+	// 			.map(key => module[key] as unknown as FirestoreCollection<any>)
+	// 			.filter(collection => collection.wrapper.isAdmin());
+	//
+	// 		for (const collection of _collections) {
+	// 			const projectId = collection.wrapper.firebaseSession.getProjectId();
+	// 			const collectionName = collection.name;
+	// 			const project = toRet[projectId] || (toRet[projectId] = {projectId: projectId, collections: []});
+	// 			project.collections.push(collectionName);
+	// 		}
+	//
+	// 		return toRet;
+	// 	}, {} as { [k: string]: FirebaseProjectCollections });
+	// 	return Object.values(firebaseProjectCollections);
+	// }
 
 }
 

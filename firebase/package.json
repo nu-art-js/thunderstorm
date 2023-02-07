@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "~0.0.1",
+    "@nu-art/google-services": "~0.0.1",
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/storage": "^5.0.0",
     "@google-cloud/firestore": "^4.8.1",
