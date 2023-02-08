@@ -102,6 +102,9 @@ export function createReadableTimestampObject(pattern: string = Format_HHmmss_DD
 	return timeObj;
 }
 
+/**
+ * For detailed list of formats visit https://momentjs.com/docs/#/displaying/format/
+ */
 export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillis(), timezone: string = Intl.DateTimeFormat()
 	.resolvedOptions().timeZone) {
 	const m = moment.utc(timestamp);
