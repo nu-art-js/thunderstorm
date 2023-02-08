@@ -19,7 +19,11 @@
  * limitations under the License.
  */
 
-import {Clause_Where, FilterKeys, FirestoreQuery,} from '@nu-art/firebase';
+import {
+	Clause_Where,
+	FilterKeys,
+	FirestoreQuery,
+} from '@nu-art/firebase';
 import {
 	__stringify,
 	_keys,
@@ -36,11 +40,16 @@ import {
 	Module,
 	PreDB,
 	tsValidateResult,
-	ValidatorTypeResolver
+	ValidatorTypeResolver,
+	exists
 } from '@nu-art/ts-common';
 
 import {IndexKeys} from '@nu-art/thunderstorm';
-import {ApiException, ExpressRequest, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {
+	ApiException,
+	ExpressRequest,
+	OnFirestoreBackupSchedulerAct
+} from '@nu-art/thunderstorm/backend';
 import {
 	DocWrapper,
 	FirestoreCollection,
@@ -50,10 +59,18 @@ import {
 	ModuleBE_Firebase,
 } from '@nu-art/firebase/backend';
 import {dbIdLength} from '../shared/validators';
-import {canDeleteDispatcher, DB_EntityDependency, DBApiBEConfig, getModuleBEConfig} from './db-def';
+import {
+	canDeleteDispatcher,
+	DB_EntityDependency,
+	DBApiBEConfig,
+	getModuleBEConfig
+} from './db-def';
 import {DBDef} from '../shared/db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
-import {_EmptyQuery, Response_DBSync} from '../shared';
+import {
+	_EmptyQuery,
+	Response_DBSync
+} from '../shared';
 import {FirestoreBackupDetails} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_Backup';
 
 
@@ -167,7 +184,8 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 	readonly _deleteMulti = Object.freeze({
 		read: async (transaction: FirestoreTransaction, deleteQuery: FirestoreQuery<DBType>) => {
-			return await transaction.newQuery(this.collection, {...deleteQuery, limit: deleteQuery.limit || BaseDB_ModuleBE.DeleteHardLimit});
+			return await transaction.newQuery(this.collection,
+				{...deleteQuery, limit: deleteQuery.limit || BaseDB_ModuleBE.DeleteHardLimit});
 		},
 
 		write: async (transaction: FirestoreTransaction, docs: DocWrapper<DBType>[]) => {
@@ -187,16 +205,26 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		read: async (transaction: FirestoreTransaction, instance: PreDB<DBType>) => {
 			this.assertObject(instance);
 
+			let dbInstance: DBType;
+			let where;
 			if (instance._id) {
-				const doc = (await transaction.newQueryUnique(this.collection, {where: {_id: instance._id}} as FirestoreQuery<DBType>));
+				where = {_id: instance._id!} as Clause_Where<DBType>;
+			} else if ((this.config.uniqueKeys.length > 1 || this.config.uniqueKeys[0] !== '_id') && this.config.uniqueKeys.every(
+				key => exists(instance[key]))) {
+				where = this.config.uniqueKeys.reduce((_where, key) => {
+					// @ts-ignore
+					_where[key] = instance[key];
+					return _where;
+				}, {} as Clause_Where<DBType>);
+			}
+
+			if (where) {
+				const doc = (await transaction.newQueryUnique(this.collection, {where} as FirestoreQuery<DBType>));
 				if (doc)
 					return doc;
 			}
 
 			const timestamp = currentTimeMillis();
-
-			let dbInstance: DBType;
-
 			// PLEASE DO NOT MESS WITH THE UNDER CONDITION!!
 			if (this.config.uniqueKeys[0] === '_id' && instance._id === undefined)
 				dbInstance = {
@@ -214,7 +242,8 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 				} as unknown as DBType;
 
 			const ref = this.collection.createDocumentReference(dbInstance._id);
-			return new DocWrapper<DBType>(this.collection.wrapper, {ref, data: () => dbInstance} as FirestoreType_DocumentSnapshot<DBType>);
+			return new DocWrapper<DBType>(this.collection.wrapper,
+				{ref, data: () => dbInstance} as FirestoreType_DocumentSnapshot<DBType>);
 		},
 		assert: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
 			const dbInstance = doc.get();
@@ -392,7 +421,8 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 				try {
 					await this.upgradeInstance(dbInstance, currentVersion);
 				} catch (e: any) {
-					throw new ApiException(500, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`, e.message);
+					throw new ApiException(500, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`,
+						e.message);
 				}
 			dbInstance._v = currentVersion;
 		}));
@@ -419,7 +449,8 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 * @returns
 	 * A promise of the result of the `processor`.
 	 */
-	runInTransaction = async <ReturnType>(processor: (transaction: FirestoreTransaction) => Promise<ReturnType>): Promise<ReturnType> => this.collection.runInTransaction(processor);
+	runInTransaction = async <ReturnType>(processor: (transaction: FirestoreTransaction) => Promise<ReturnType>): Promise<ReturnType> => this.collection.runInTransaction(
+		processor);
 
 	// @ts-ignore
 	private async deleteCollection() {
