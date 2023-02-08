@@ -19,22 +19,18 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import {initializeApp, ServiceAccount} from 'firebase-admin/app';
+import {initializeApp} from 'firebase-admin/app';
 import {JWTInput} from 'google-auth-library';
 import {FirebaseSession} from './firebase-session';
-import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {getAuth} from 'firebase-admin/auth';
-import {credential} from 'firebase-admin';
+import {ThisShouldNotHappenException} from '@nu-art/ts-common';
+
 
 export class FirebaseSession_Admin
 	extends FirebaseSession<JWTInput & { databaseURL?: string } | undefined> {
 
-	constructor(sessionName: string, config?: JWTInput) {
+	constructor(sessionName: string, config?: any) {
 		super(config, sessionName);
-	}
-
-	public connect(): void {
-		this.app = this.createApp();
 	}
 
 	getProjectId(): string {
@@ -51,15 +47,8 @@ export class FirebaseSession_Admin
 		return this.config.project_id;
 	}
 
-	private createApp() {
-		if (!this.config)
-			return initializeApp();
-
-		const databaseURL = this.config.databaseURL || `https://${this.config.project_id}.firebaseio.com`;
-		return initializeApp({
-			credential: credential.cert(this.config as ServiceAccount),
-			databaseURL: databaseURL
-		}, this.sessionName);
+	public connect(): void {
+		this.app = initializeApp(this.config, this.getProjectId());
 	}
 
 	public getAuth() {
