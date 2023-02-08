@@ -16,12 +16,13 @@
  * limitations under the License.
  */
 
+import {createApisForDBModule} from '@nu-art/db-api-generator/backend/DB_ApiGenerator';
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_Workspace} from '../modules/ModuleBE_Workspace';
 
 
 export const ModulePack_Backend_TSWorkspace: Module[] = [
-	ModuleBE_Workspace,
+	ModuleBE_Workspace, createApisForDBModule(ModuleBE_Workspace),
 ];
 
 export * from '../modules/ModuleBE_Workspace';
