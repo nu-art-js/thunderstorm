@@ -17,7 +17,7 @@
  */
 
 import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, MUSTNeverHappenException, TypedMap} from '@nu-art/ts-common';
+import {_values, BadImplementationException, MUSTNeverHappenException, TypedMap} from '@nu-art/ts-common';
 import {DBApiDefGeneratorIDB} from '@nu-art/db-api-generator/shared';
 import {ApiCallerEventTypeV2, BaseDB_ApiCaller, DBApiFEConfig} from '@nu-art/db-api-generator/frontend';
 import {PanelConfig} from '..';
@@ -37,7 +37,8 @@ type Config = DBApiFEConfig<DB_Workspace, 'key' | 'accountId'> & { defaultConfig
 export class ModuleFE_Workspace_Class
 	extends BaseDB_ApiCaller<DB_Workspace, 'key' | 'accountId', Config> {
 
-	private workspaceSavingRunnableMap: TypedMap<any> = {};
+	private workspacesToUpsert: TypedMap<any> = {};
+	private upsertRunnable: any;
 
 	constructor() {
 		super(DBDef_Workspaces, dispatch_onWorkspaceUpdated);
@@ -75,19 +76,22 @@ export class ModuleFE_Workspace_Class
 	};
 
 	public setWorkspaceByKey = async (key: string, config: PanelConfig<any>) => {
-		if (this.workspaceSavingRunnableMap[key])
-			clearTimeout(this.workspaceSavingRunnableMap[key]);
 		let accountId = this.getCurrentAccountId();
-		this.workspaceSavingRunnableMap[key] = setTimeout(
-			async () => {
-				if (!accountId)
-					accountId = (this.getCurrentAccountId());
-				if (accountId.length < 1)
-					throw new MUSTNeverHappenException('Trying to uspert a workspace, with no account id!');
+		if (!accountId)
+			accountId = (this.getCurrentAccountId());
+		if (accountId.length < 1)
+			throw new MUSTNeverHappenException('Trying to upsert a workspace, with no account id!');
 
-				await this.v1.upsert({key: key, accountId: accountId, config: config}).executeSync();
-			},
-			200);
+		this.workspacesToUpsert[key] = {key: key, accountId: accountId, config: config};
+
+		clearTimeout(this.upsertRunnable);
+
+		this.upsertRunnable = setTimeout(async () => {
+			const values = _values(this.workspacesToUpsert);
+			this.logInfo(values);
+			await this.v1.upsertAll(values).executeSync();
+			this.workspacesToUpsert = {};
+		}, 500);
 	};
 
 	public deleteWorkspaceByKey = async (key: string) => {
