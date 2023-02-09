@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */le} from '../../main/frontend/modules/JiraModule';
-import {assert, generateHex, StringMap} from '@nu-art/ts-common';
+import {assert, generateHex, StaticLogger, StringMap} from '@nu-art/ts-common';
 
 
 const JSZip = require('jszip');
@@ -48,19 +48,19 @@ const attachFile = __custom(async () => {
 
 const getIssueTypes = __custom(async () => {
 	const resp = await JiraModule.getIssueTypes(baseProject.key);
-	console.log(resp);
+	StaticLogger.logInfo(`Response: ${resp}`);
 }).setLabel('Get Issue type');
 
 const addComment = __custom(async () => {
 	const resp = await JiraModule.addCommentRequest(id, 'updating Alan\'s unit comments');
-	console.log(resp);
+	StaticLogger.logInfo(`Response: ${resp}`);
 }).setLabel('Add comment type');
 
 const searchBySummary = __custom(async () => {
 	const map: StringMap = {['cf[10056]']: 'ELQ190112180035'};
 	const resp = await JiraModule.getIssueByCustomField(baseProject.key, map);
 	id = resp.issues[0].key;
-	console.log(id);
+	StaticLogger.logInfo(`ID: ${id}`);
 }).setLabel('search by summary');
 
 const editFixedVersions = __custom(async () => {
@@ -73,7 +73,7 @@ const editFixedVersions = __custom(async () => {
 			],
 	};
 	const resp = await JiraModule.editIssue(id, fixedVersions);
-	console.log(resp);
+	StaticLogger.logInfo(`Response: ${resp}`);
 }).setLabel('edit an issue');
 
 issueScenario.add(searchBySummary);

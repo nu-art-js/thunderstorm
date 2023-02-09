@@ -22,6 +22,7 @@ import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {MyTester} from './core';
 import {AxiosHttpModule} from '@nu-art/thunderstorm/frontend/modules/http/AxiosHttpModule';
 import {HttpMethod} from '@nu-art/thunderstorm';
+import {StaticLogger} from '@nu-art/ts-common';
 
 
 AxiosHttpModule.setDefaultConfig({origin: 'sjdfojds'});
@@ -33,14 +34,14 @@ const googleCall = __custom(async () => {
 			.setUrl('https://google.com/')
 			.setHeaders({'a': 'b'})
 			.setOnError(() => {
-				console.log('something is wrong');
+				StaticLogger.logWarning('something is wrong');
 			})
 			.executeSync();
-		console.log('works');
+		StaticLogger.logInfo('works');
 
 	} catch (e: any) {
-		console.log('breaks');
-		console.log(e);
+		StaticLogger.logError('breaks');
+		StaticLogger.logError(e);
 	}
 }).setLabel('Headers');
 mainScenario.add(googleCall);

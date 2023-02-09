@@ -19,7 +19,7 @@
 import {ComparatorMap, FirestoreQuery, QueryComparator} from '../..';
 import {FirestoreType_DocumentSnapshot, FirestoreType_Query} from './types';
 import {FirestoreCollection} from './FirestoreCollection';
-import {__stringify, _keys, BadImplementationException, ImplementationMissingException, TS_Object} from '@nu-art/ts-common';
+import {__stringify, _keys, BadImplementationException, ImplementationMissingException, TS_Object, StaticLogger} from '@nu-art/ts-common';
 import {Query} from 'firebase-admin/firestore';
 
 
@@ -64,7 +64,7 @@ export class FirestoreInterface {
 							const value = _whereValue[comparatorKey];
 							if (value === undefined)
 								throw new ImplementationMissingException(`no value: ${comparatorKey} in query: ${JSON.stringify(query)}`);
-							
+
 							return _query.where(whereKey, comparator, value);
 						}
 
@@ -105,8 +105,8 @@ export class FirestoreInterface {
 
 			return myQuery as Query;
 		} catch (e) {
-			console.log(e);
-			console.log(JSON.stringify(query));
+			StaticLogger.logError(`Query: ${JSON.stringify(query)}`);
+			StaticLogger.logError(`Error: ${e}`);
 			throw e;
 		}
 	}
