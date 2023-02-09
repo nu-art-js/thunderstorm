@@ -1,0 +1,117 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "books",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "__updated.`$gte`",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__updated",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "categories",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "__updated.`$gte`",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__updated",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "disease-profiles",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "__updated.`$gte`",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__updated",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "disease-values",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "__updated.`$gte`",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__updated",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "excel-migration",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "__updated.`$gte`",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__updated",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "firestore-backup-status",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "moduleKey",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "values",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "__updated.`$gte`",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__updated",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "variables",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "__updated.`$gte`",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__updated",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
