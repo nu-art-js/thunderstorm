@@ -59,7 +59,7 @@ export abstract class BaseStorm
 
 		const listener = (resolve: (value: unknown) => void) => (snapshot: any) => {
 			if (initialized >= 2) {
-				console.log('CONFIGURATION HAS CHANGED... KILLING PROCESS!!!');
+				this.logWarning('CONFIGURATION HAS CHANGED... KILLING PROCESS!!!');
 				process.exit(2);
 			}
 

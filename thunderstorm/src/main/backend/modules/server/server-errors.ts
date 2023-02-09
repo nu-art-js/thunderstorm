@@ -20,7 +20,7 @@
  */
 
 import {ApiException} from '../../exceptions';
-import {__stringify, _keys, StringMap, isErrorOfType} from '@nu-art/ts-common';
+import {__stringify, _keys, StringMap, isErrorOfType, StaticLogger} from '@nu-art/ts-common';
 import {HttpErrorHandler, HttpRequestData} from '../../utils/types';
 
 
@@ -34,7 +34,7 @@ export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], p
 		const {headers, query, url, body} = requestData;
 
 		const props = await propsResolver(requestData);
-		console.log('props: ', props);
+		StaticLogger.logInfo('props: ', props);
 		let slackMessage = '';
 		slackMessage += `${error ? error.responseCode : '000'} - ${url}   \n\n`;
 

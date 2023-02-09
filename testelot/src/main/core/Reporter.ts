@@ -31,7 +31,8 @@ import {
 	_logger_indentNewLineBy,
 	DefaultLogPrefixComposer,
 	LogClient_Terminal,
-	LogParam
+	LogParam,
+	StaticLogger
 
 } from "@nu-art/ts-common";
 
@@ -146,7 +147,7 @@ class ReporterLogClient
 	protected logMessage(level: LogLevel, bold: boolean, prefix: string, toLog: LogParam[]): void {
 		const color = LogClient_Terminal.getColor(level, bold);
 		const paramsAsStrings = _logger_convertLogParamsToStrings(toLog);
-		paramsAsStrings.forEach(str => console.log(_logger_indentNewLineBy(color + prefix, str), NoColor))
+		paramsAsStrings.forEach(str => StaticLogger.logInfo(_logger_indentNewLineBy(color + prefix, str), NoColor))
 	}
 
 	onContainerStarted() {

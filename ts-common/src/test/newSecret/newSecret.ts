@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {generateHex} from "../../main";
+import {generateHex, StaticLogger} from "../../main";
 
 export const testSuit_newSecret = {
 	key: 'New Secret',
@@ -28,7 +28,7 @@ export const testSuit_newSecret = {
 		// const password = 'newPass';ø
 		// const pass = hashPasswordWithSalt(salt, password)
 		// console.log(pass,salt);
-		return console.log(generateHex(256));
+		return StaticLogger.logInfo(generateHex(256));
 	}
 };
 

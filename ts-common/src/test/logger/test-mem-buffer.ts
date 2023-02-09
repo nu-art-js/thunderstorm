@@ -20,11 +20,11 @@ import {
 	BeLogged,
 	LogClient_MemBuffer,
 	Logger,
-	padNumber
+	padNumber, StaticLogger
 } from "../_main";
 
 BeLogged.addClient(new LogClient_MemBuffer("test mem buffer", 10, 1024).setRotationListener(() => {
-	console.log(`Rotating buffer`);
+	StaticLogger.logDebug(`Rotating buffer`);
 }));
 
 class TestLogger

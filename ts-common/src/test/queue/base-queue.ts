@@ -17,7 +17,7 @@
  */
 
 import {
-	Queue,
+	Queue, StaticLogger,
 	timeout
 } from "../_main";
 
@@ -25,9 +25,9 @@ const queue = new Queue("test");
 
 function addItem(key: string, sleepMs: number) {
 	queue.addItem(async () => {
-		console.log(`Start ${key}`);
+		StaticLogger.logInfo(`Start ${key}`);
 		await timeout(sleepMs);
-		console.log(`End ${key}`);
+		StaticLogger.logInfo(`End ${key}`);
 	});
 }
 
@@ -38,6 +38,6 @@ for (let i = 0; i < 20; i += 3) {
 }
 
 queue.setParallelCount(3);
-queue.setOnQueueEmpty(() => console.log("EMPTY EVENT"));
+queue.setOnQueueEmpty(() => StaticLogger.logInfo("EMPTY EVENT"));
 // @ts-ignore
 queue.execute();

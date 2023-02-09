@@ -29,9 +29,9 @@ class ServerApi_TestPermissions
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void): Promise<void> {
-		console.log('Starting test permissions assert');
+		this.logInfo('Starting test permissions assert');
 		await testUserPermissionsTime();
-		console.log('---Finish test permissions assert---');
+		this.logInfo('---Finish test permissions assert---');
 	}
 }
 

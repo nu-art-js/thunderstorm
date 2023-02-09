@@ -22,7 +22,7 @@
 import {ServerApi} from '../server-api';
 import * as fs from 'fs';
 import * as express from 'express';
-import {MUSTNeverHappenException} from '@nu-art/ts-common';
+import {MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
 import {ServerApi_Middleware} from '../../../utils/types';
 
 
@@ -78,7 +78,7 @@ export class RouteResolver_DirPath {
 				try {
 					routeResolver = this.require(relativePathToFile);
 				} catch (e: any) {
-					console.log(`could not reference RouteResolver for: ${workingDir}/${relativePathToFile}`, e);
+					StaticLogger.logError(`could not reference RouteResolver for: ${workingDir}/${relativePathToFile}`, e);
 					throw e;
 				}
 
@@ -92,7 +92,7 @@ export class RouteResolver_DirPath {
 			try {
 				content = this.require(relativePathToFile);
 			} catch (e: any) {
-				console.log(`could not reference ServerApi for: ${workingDir}/${relativePathToFile}`, e);
+				StaticLogger.logError(`could not reference ServerApi for: ${workingDir}/${relativePathToFile}`, e);
 				throw e;
 			}
 
