@@ -18,6 +18,7 @@
 
 
 import {merge} from "../../main/utils/merge-tools";
+import {StaticLogger} from "../../main";
 
 const int = 1;
 const str = 'a';
@@ -32,14 +33,14 @@ const zero = 0;
 const nn = NaN;
 const empStr = '';
 
-// console.log(merge(int,str));
-console.log(merge(o1, o2));
-console.log(merge(o2, o1));
-console.log(merge(o3, o1));
-console.log(merge(nul, o1));
+// StaticLogger.logInfo(merge(int,str));
+StaticLogger.logInfo(merge(o1, o2));
+StaticLogger.logInfo(merge(o2, o1));
+StaticLogger.logInfo(merge(o3, o1));
+StaticLogger.logInfo(merge(nul, o1));
 
 
 const arr = [1, 2];
 const arr2 = arr.map(a => a);
 arr2.push(3);
-console.log(arr, arr2);
+StaticLogger.logInfo(JSON.stringify(arr), arr2);

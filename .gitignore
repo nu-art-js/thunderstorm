@@ -13,6 +13,9 @@ error_message.txt
 .firebase
 firebase.json
 firebase-debug.log
+database-debug.log
+firestore-debug.log
+pubsub-debug.log
 
 *.iml
 **/.DS_Store

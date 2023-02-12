@@ -136,7 +136,7 @@ export class ModuleBE_Jira_Class
 			throw new ImplementationMissingException('Missing Jira baseUrl for JiraModule, please add the key baseUrl to the config');
 
 		this.restUrl = this.config.baseUrl + '/rest/api/3';
-		console.log(this.restUrl);
+		this.logInfo(`Rest URL: ${this.restUrl}`);
 		if (!this.config.auth || !this.config.auth.apiKey || !this.config.auth.email)
 			throw new ImplementationMissingException('Missing auth config variables for JiraModule');
 

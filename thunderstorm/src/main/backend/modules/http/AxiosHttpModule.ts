@@ -22,7 +22,7 @@
 // noinspection TypeScriptPreferShortImport
 import axios from 'axios';
 import {ApiDef, BaseHttpModule_Class, BaseHttpRequest, ErrorResponse, ErrorType, TypedApi} from '../../../shared';
-import {BadImplementationException, composeUrl, StringMap,} from '@nu-art/ts-common';
+import {BadImplementationException, composeUrl, StaticLogger, StringMap,} from '@nu-art/ts-common';
 import {Axios_CancelTokenSource, Axios_Method, Axios_RequestConfig, Axios_Response, Axios_ResponseType} from './types';
 
 
@@ -183,7 +183,7 @@ class AxiosHttpRequest<API extends TypedApi<any, any, any, any>>
 				if (axios.isCancel(e)) {
 					// Should already be set when I abort but just in case its aborted somehow else
 					this.aborted = true;
-					console.log('Api cancelled: ', e.message);
+					StaticLogger.logWarning('Api cancelled: ', e.message);
 				}
 
 				this.response = e.response;

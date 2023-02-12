@@ -19,7 +19,7 @@
 /**
  * Created by TacB0sS on 3/18/17.
  */
-import {__stringify, Constructor, currentTimeMillis, generateUUID, isErrorOfType, Logger, timeout, Void} from "@nu-art/ts-common";
+import {__stringify, Constructor, currentTimeMillis, generateUUID, isErrorOfType, Logger, timeout, Void, StaticLogger} from "@nu-art/ts-common";
 import {ContextKey} from "./ContainerContext";
 import {Reporter} from "./Reporter";
 import {TestException} from "./TestException";
@@ -73,10 +73,10 @@ export abstract class Action<ParamValue extends any = any, ReturnValue extends a
 
 	static resolveTestsToRun() {
 		const strings = process.argv.filter((arg: string) => arg.includes("--test="));
-		console.log(`raw: ${__stringify(strings)}`);
+		StaticLogger.logInfo(`raw: ${__stringify(strings)}`);
 
 		this.testsToRun = strings.map(arg => arg.replace("--test=", ""));
-		console.log(`Tests to run: ${__stringify(this.testsToRun)}`);
+		StaticLogger.logInfo(`Tests to run: ${__stringify(this.testsToRun)}`);
 	}
 
 	expectToFail<T extends Error>(_exceptionType: Constructor<T>, assertFailCondition?: ShouldFailCondition<T>) {

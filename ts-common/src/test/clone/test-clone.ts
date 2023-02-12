@@ -18,6 +18,7 @@
 
 import {deepClone} from "../../main/utils/object-tools";
 import {__stringify} from "../../main/utils/tools";
+import {StaticLogger} from "../../main";
 
 const int = 1;
 const str = 'a';
@@ -34,8 +35,8 @@ const empStr = '';
 
 const cl = deepClone(o2);
 o2.c = 1;
-console.log(o2, cl);
+StaticLogger.logInfo(JSON.stringify(o2), cl);
 
 const nestedCl = deepClone(o3);
 o3.a.b.c.d = 2;
-console.log(__stringify(o3),__stringify(nestedCl));
+StaticLogger.logInfo(__stringify(o3), __stringify(nestedCl));

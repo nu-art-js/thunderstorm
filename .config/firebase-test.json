@@ -13,7 +13,6 @@
     "template": ".firebase_config/remoteconfig.template.json"
   },
   "functions": {
-    "source": "test",
     "ignore": [
       "src",
       ".config",
@@ -26,24 +25,20 @@
     ]
   },
   "emulators": {
-    "ui": {
-      "enabled": true,
-      "port": "5555"
-    },
     "functions": {
-      "port": "5000"
+      "port": "5010"
     },
     "database": {
-      "port": "5002"
+      "port": "5012"
     },
     "firestore": {
-      "port": "5003"
+      "port": "5013"
     },
     "pubsub": {
-      "port": "5004"
+      "port": "5014"
     },
     "storage": {
-      "port": "5005"
+      "port": "5015"
     }
   }
 }
