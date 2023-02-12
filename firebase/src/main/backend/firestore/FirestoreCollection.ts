@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, batchAction, generateHex, Subset, TS_Object} from '@nu-art/ts-common';
+import {BadImplementationException, batchAction, generateHex, StaticLogger, Subset, TS_Object} from '@nu-art/ts-common';
 import {FirestoreType_Collection, FirestoreType_DocumentSnapshot} from './types';
 import {Clause_Select, Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBE} from './FirestoreWrapperBE';
@@ -39,7 +39,7 @@ export class FirestoreCollection<Type extends TS_Object> {
 		this.name = name;
 		this.wrapper = wrapper;
 		if (!/[a-z-]{3,}/.test(name))
-			console.log('Please follow name pattern for collections /[a-z-]{3,}/');
+			StaticLogger.logWarning('Please follow name pattern for collections /[a-z-]{3,}/');
 
 		this.collection = wrapper.firestore.collection(name);
 		this.externalUniqueFilter = (instance: Type) => {

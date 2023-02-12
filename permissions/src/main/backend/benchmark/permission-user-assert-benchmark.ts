@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {batchAction, currentTimeMillis, filterInstances, generateHex, PreDB} from '@nu-art/ts-common';
+import {batchAction, currentTimeMillis, filterInstances, generateHex, PreDB, StaticLogger} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert';
 import {DB_PermissionGroup, User_Group} from '../..';
 import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
@@ -36,7 +36,7 @@ function makeAlphaBetIdForTestOnly(length: number) {
 }
 
 export async function testUserPermissionsTime() {
-	console.log('---￿Inside of permissions test---');
+	StaticLogger.logInfo('---￿Inside of permissions test---');
 	const projectId = 'project-test-ten';
 	const apiId = generateHex(32);
 	const userId = generateHex(32);
@@ -74,7 +74,7 @@ export async function testUserPermissionsTime() {
 	const tests = new Array<number>().fill(0, 0, 50);
 	const durations: number[] = await Promise.all(tests.map(test => runAssertion(projectId, apiPath, userUuid, customField)));
 	const sum = durations.reduce((_sum, val) => _sum + val, 0);
-	console.log(`Call to assertion on ${tests.length} call took on agerage ${sum / tests.length}ms`);
+	StaticLogger.logInfo(`Call to assertion on ${tests.length} call took on agerage ${sum / tests.length}ms`);
 
 	// ----deletes db documents---
 	await ModuleBE_PermissionUserDB.delete({where: {_id: userId}});
@@ -89,6 +89,6 @@ async function runAssertion(projectId: string, apiPath: string, userUuid: string
 	const start = currentTimeMillis();
 	await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, apiPath, userUuid, customField);
 	const runTime = currentTimeMillis() - start;
-	console.log(`Call to assertion took ${runTime}ms`);
+	StaticLogger.logInfo(`Call to assertion took ${runTime}ms`);
 	return runTime;
 }

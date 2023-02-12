@@ -27,6 +27,7 @@ import {testSuit_compare} from './compare/compare';
 import {testSuit_newSecret} from './newSecret/newSecret';
 import {testSuit_filter} from './object/recursive-find-all-true';
 import {testSuit_cliModule} from './cliModule/test-cliModule';
+import {StaticLogger} from "../main";
 
 
 require('./logger/test-logger');
@@ -46,6 +47,6 @@ const testSuits: TestSuit<any>[] = [
 runTestSuits(testSuits)
 	.then(() => assertNoTestErrors())
 	.catch((err) => {
-		console.log('Error running tests', err);
+		StaticLogger.logError('Error running tests', err);
 		process.exit(2);
 	});
