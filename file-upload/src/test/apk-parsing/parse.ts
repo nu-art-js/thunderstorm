@@ -25,8 +25,10 @@ import {
 } from '@nu-art/firebase/backend';
 import {
 	assert,
-	BadImplementationException
+	BadImplementationException,
+	StaticLogger
 } from '@nu-art/ts-common';
+import {read} from "fs";
 
 
 const PkgReader = require('isomorphic-apk-reader');
@@ -37,18 +39,18 @@ async function parseApkImpl(file: FileWrapper) {
 	const metadata = await file.getMetadata();
 // @ts-ignore
 	const mediaLink = metadata.mediaLink;
-	console.log(metadata, mediaLink);
-	console.log(`File read ${file.path}`);
+	StaticLogger.logInfo(`Metadata: ${metadata}, Medialink: ${mediaLink}`);
+	StaticLogger.logInfo(`File read ${file.path}`);
 	// const fileName = './temp.apk';
 	// @ts-ignore
 	const fileName = `gs://${metadata.bucket}/${metadata.name}`;
 	// await fs.promises.writeFile(fileName, buffer);
-	console.log(`File wrote locally ${file.path}`);
+	StaticLogger.logInfo(`File wrote locally ${file.path}`);
 	let manifest;
 	try {
 		manifest = await new Promise((res, rej) => {
 			const callback = async (err: any, _manifest: any) => {
-				console.log(err, _manifest);
+				StaticLogger.logError(err, _manifest);
 				return err ? rej(err) : res(_manifest);
 			};
 			new PkgReader(fileName, 'apk').parse(callback);
@@ -56,10 +58,10 @@ async function parseApkImpl(file: FileWrapper) {
 	} catch (e: any) {
 		throw new BadImplementationException('Failed to parse manifest', e);
 	} finally {
-		console.log(`Cleaup`);
+		StaticLogger.logInfo(`Cleaup`);
 		// await fs.promises.unlink(fileName);
 	}
-	console.log(`Manifest`, manifest);
+	StaticLogger.logInfo(`Manifest: ${manifest}`);
 	return manifest;
 }
 

@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {DB_Object, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
 import {DBIndex} from '../../shared/types';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
@@ -124,7 +124,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 	};
 
 	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: T) => void,
-													 endCallback: () => void, limiterCallback?: () => boolean) => {
+	                         endCallback: () => void, limiterCallback?: () => boolean) => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
 
@@ -168,7 +168,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 				request.onsuccess = () => resolve(request.result as unknown as T);
 			});
 		} catch (e: any) {
-			console.log('trying to upsert: ', value);
+			StaticLogger.logError('trying to upsert: ', value);
 			throw e;
 		}
 	}
