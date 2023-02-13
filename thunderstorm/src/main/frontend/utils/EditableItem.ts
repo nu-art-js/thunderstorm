@@ -10,23 +10,24 @@ export class EditableItem<T> {
 	private readonly saveAction: (item: T) => Promise<void>;
 	private readonly deleteAction: (item: T) => Promise<void>;
 
-	update<K extends keyof T>(key: K, value: T[K] | undefined, upsert = true) {
+	set<K extends keyof T>(key: K, value: T[K] | undefined) {
 		if (value === undefined)
 			delete this.item[key];
 		else {
 			this.item[key] = value;
 		}
-		if (!upsert)
-			return;
+	}
 
+	async update<K extends keyof T>(key: K, value: T[K] | undefined) {
+		this.set(key, value);
 		return this.save();
 	}
 
-	save() {
+	async save() {
 		return this.saveAction(this.item as T);
 	}
 
-	delete<K extends keyof T>() {
+	async delete<K extends keyof T>() {
 		return this.deleteAction(this.item as T);
 	}
 

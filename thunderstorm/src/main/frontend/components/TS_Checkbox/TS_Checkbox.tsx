@@ -24,6 +24,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {_className} from '../../utils/tools';
 import './TS_Checkbox.scss';
 
+
 export type Props_Checkbox = {
 	id?: string
 	disabled?: boolean
@@ -70,7 +71,7 @@ export class TS_Checkbox
 			return;
 
 		if (this.props.onCheck)
-			this.props.onCheck(this.state.checked, e);
+			this.props.onCheck(!this.state.checked, e);
 		else
 			this.setState({checked: !this.state.checked});
 	};
