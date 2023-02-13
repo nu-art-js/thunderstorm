@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {currentTimeMillis, generateHex, StringMap} from '@nu-art/ts-common';
+import {currentTimeMillis, generateHex, StaticLogger, StringMap} from '@nu-art/ts-common';
 import {
 	DB_PermissionGroup,
 	ModuleBE_PermissionAccessLevel,
@@ -46,7 +46,7 @@ function makeAlphaBetIdForTestOnly(length: number) {
 }
 
 export async function testUserPermissions(groupCustomFields: StringMap[], extraGroupCustomField: StringMap, requestCustomField: StringMap) {
-	console.log('---￿Inside of permissions test---');
+	StaticLogger.logInfo('---￿Inside of permissions test---');
 	const projectId = 'project-test-ten';
 	const apiId = generateHex(32);
 	const userId = generateHex(32);
@@ -75,7 +75,7 @@ export async function testUserPermissions(groupCustomFields: StringMap[], extraG
 		groupIdArray.push({groupId, customField: extraGroupCustomField});
 	}
 
-	console.log('Groups dbInstances ready to upsert');
+	StaticLogger.logInfo('Groups dbInstances ready to upsert');
 
 	// @ts-ignore
 	const collection = ModuleBE_PermissionGroup.collection;
@@ -86,7 +86,7 @@ export async function testUserPermissions(groupCustomFields: StringMap[], extraG
 		return transaction.upsertAll(collection, dbInstances);
 	});
 
-	console.log('Groups dbInstances upserted successfully');
+	StaticLogger.logInfo('Groups dbInstances upserted successfully');
 
 	await ModuleBE_PermissionUser.upsert({_id: userId, accountId: userUuid, groups: groupIdArray});
 
@@ -98,7 +98,7 @@ async function runAssertion(projectId: string, apiPath: string, userUuid: string
 	const start = currentTimeMillis();
 	await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, apiPath, userUuid, customField);
 	const runTime = currentTimeMillis() - start;
-	console.log(`Call to assertion took ${runTime}ms`);
+	StaticLogger.logInfo(`Call to assertion took ${runTime}ms`);
 	return runTime;
 }
 

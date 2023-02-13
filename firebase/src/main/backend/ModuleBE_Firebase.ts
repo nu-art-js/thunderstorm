@@ -28,7 +28,7 @@ import {ModuleBE_Auth} from '@nu-art/google-services/backend';
 
 
 type ConfigType = {};
-const DEFAULT_PROJECT_ID = 'local';
+export const FIREBASE_DEFAULT_PROJECT_ID = 'local';
 
 export class ModuleBE_Firebase_Class
 	extends Module<ConfigType> {
@@ -43,7 +43,7 @@ export class ModuleBE_Firebase_Class
 	protected init(): void {
 	}
 
-	public createAdminSession(projectId: string = DEFAULT_PROJECT_ID) {
+	public createAdminSession(projectId: string = FIREBASE_DEFAULT_PROJECT_ID) {
 		let session = this.adminSessions[projectId];
 
 		if (session)
@@ -53,7 +53,7 @@ export class ModuleBE_Firebase_Class
 		try {
 			config = ModuleBE_Auth.getAuthConfig(projectId);
 		} catch (e: any) {
-			if (projectId !== DEFAULT_PROJECT_ID)
+			if (projectId !== FIREBASE_DEFAULT_PROJECT_ID)
 				throw e;
 		}
 

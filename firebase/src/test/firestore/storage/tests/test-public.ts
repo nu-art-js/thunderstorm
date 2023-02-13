@@ -36,7 +36,7 @@
 
 import {__custom, __scenario} from '@nu-art/testelot';
 import {BucketWrapper, ModuleBE_Firebase} from '../../../_main';
-import {generateHex} from '@nu-art/ts-common';
+import {generateHex, StaticLogger} from '@nu-art/ts-common';
 
 export function makeFilesPublicTest() {
 	const scenario = __scenario('Save files and delete them');
@@ -57,7 +57,7 @@ export function makeFilesPublicTest() {
 
 	scenario.add(__custom(async () => {
 		const bucketPath = await bucket.getFile(pathToRemoteFile);
-		console.log(`https://storage.googleapis.com/${bucketPath.bucket.bucketName}/${testFolder}/${pathToRemoteFile}`);
+		StaticLogger.logInfo(`https://storage.googleapis.com/${bucketPath.bucket.bucketName}/${testFolder}/${pathToRemoteFile}`);
 		// console.log(await bucket.getFile(`${pathToTestFile}-string.txt`))
 		return (await bucket.getFile(pathToRemoteFile)).makePublic();
 	}).setLabel('Making path public'));

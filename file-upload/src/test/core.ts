@@ -46,7 +46,6 @@ export class MyTester
 	}
 
 	build(): void {
-		console.log('ciao');
 		super.build()
 	}
 }

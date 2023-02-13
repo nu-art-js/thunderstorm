@@ -228,10 +228,10 @@ export class TS_DropDown<ItemType>
 		);
 		return (
 			<div className={className}
-					 ref={this.state.dropDownRef}
-					 tabIndex={this.props.tabIndex}
-					 onFocus={this.addKeyboardListener}
-					 onBlur={this.removeKeyboardListener}
+			     ref={this.state.dropDownRef}
+			     tabIndex={this.props.tabIndex}
+			     onFocus={this.addKeyboardListener}
+			     onBlur={this.removeKeyboardListener}
 			>
 				{this.renderHeader()}
 				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>
@@ -268,7 +268,7 @@ export class TS_DropDown<ItemType>
 			try {
 				adapter.data = filter.filterSort(adapter.data, this.state.filterText);
 			} catch (e: any) {
-				console.log(e);
+				this.logError(e);
 				throw new BadImplementationException(e);
 			}
 		}

@@ -180,7 +180,7 @@ export class ModuleBE_PushPubSub_Class
 		S extends string = IFP<M>,
 		P extends SubscribeProps = ISP<M>,
 		D = ITP<M>>(user: string, key: string, props?: P, data?: D) {
-		console.log('i am pushing to user...', user, props);
+		this.logInfo('i am pushing to user...', user, props);
 
 		const notification = this.buildNotification(key, data, props, user);
 
@@ -232,9 +232,9 @@ export class ModuleBE_PushPubSub_Class
 		if (messages.length === 0)
 			return;
 
-		console.log('sending a message to \n' + Object.keys(_messages).join('\n'));
+		this.logInfo('sending a message to \n' + Object.keys(_messages).join('\n'));
 		const response: FirebaseType_BatchResponse = await this.messaging.sendAll(messages);
-		console.log('and this is the response: ' + response.responses.map(_response => _response.success));
+		this.logInfo('and this is the response: ' + response.responses.map(_response => _response.success));
 		return {response, messages};
 	};
 

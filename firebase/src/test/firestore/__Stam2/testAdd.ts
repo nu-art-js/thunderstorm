@@ -1,13 +1,18 @@
 import {merge} from '@nu-art/ts-common';
 import {addData, scenarioUpdate} from '../../database/test/add-data';
-import {ModuleBE_Firebase} from '../../../main/backend';
+import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
+import {ModuleBE_Auth} from '@nu-art/google-services/backend';
 
 
-admin.initializeApp(functions.config().firebase);
+const config = {
+	project_id: 'test',
+	databaseURL: 'http://localhost:8102/?ns=quai-md-dev',
+};
+
+//@ts-ignore
+ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
 
 describe('add-data functions check', () => {
 	const db = ModuleBE_Firebase.createAdminSession().getDatabase();
