@@ -131,7 +131,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 		}
 	};
 
-
 	/**
 	 * This function gates the actual deriveStateFromProps from being called when the component
 	 * is waiting for the modules in the "modules" prop to finish syncing.
@@ -145,15 +144,11 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	protected _deriveStateFromProps(nextProps: Props, partialState: State = this.createInitialState(nextProps)): State | undefined {
 		const currentState = partialState;
 
-		let isReady: boolean;
-		if (!this.props.modules || this.props.modules.length === 0)
-			isReady = true;
-		else
-			isReady = this.props.modules?.every(module => module.getDataStatus() === DataStatus.containsData);
+		const unpreparedModules = this.props.modules?.filter(module => module.getDataStatus() !== DataStatus.containsData) || [];
 
-		if (!isReady) {
+		if (unpreparedModules.length > 0) {
 			const state = this.createInitialState(nextProps);
-			this.logVerbose(`Component not ready`, state);
+			this.logVerbose(`Component not ready ${unpreparedModules.map(module => module.getName()).join(', ')}`, state);
 			return state;
 		}
 

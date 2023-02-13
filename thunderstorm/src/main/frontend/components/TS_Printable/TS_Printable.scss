@@ -17,6 +17,18 @@
       visibility: hidden;
     }
 
+    .ts-print__dont-break {
+      page-break-inside: avoid !important;
+    }
+
+    .ts-print__break-before {
+      page-break-before: always !important;
+    }
+
+    .ts-print__break-after {
+      page-break-after: always !important;
+    }
+
     .ts-print__gone {
       display: none;
     }

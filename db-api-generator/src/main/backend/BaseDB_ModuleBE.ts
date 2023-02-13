@@ -200,7 +200,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		}
 	});
 
-
+// THIS IS WIP - NOT GOOD YET
 	readonly _upsertUnique = Object.freeze({
 		read: async (transaction: FirestoreTransaction, instance: PreDB<DBType>) => {
 			this.assertObject(instance);
