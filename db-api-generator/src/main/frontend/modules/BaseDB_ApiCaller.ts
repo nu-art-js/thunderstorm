@@ -24,7 +24,17 @@ import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncD
 import {FirestoreQuery} from '@nu-art/firebase';
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
-import {BadImplementationException, DB_BaseObject, DB_Object, merge, PreDB, TypedMap} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	DB_BaseObject,
+	DB_Object,
+	InvalidResult,
+	merge,
+	PreDB,
+	tsValidateResult,
+	TypedMap,
+	ValidationException
+} from '@nu-art/ts-common';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {
 	EventType_Create,
@@ -132,6 +142,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 			},
 			// @ts-ignore
 			upsert: (toUpsert: PreDB<DBType>) => {
+				this.validateImpl(toUpsert);
 				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
 			},
 			upsertAll: apiWithBody(apiDef.v1.upsertAll, this.onEntriesUpdated),
@@ -155,6 +166,18 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 			if (reSync)
 				this.v1.sync().execute();
 		};
+	}
+
+	public validateImpl(instance: PreDB<DBType>) {
+		const results = tsValidateResult(instance as DBType, this.config.validator);
+		if (results) {
+			this.onValidationError(instance, results);
+		}
+	}
+
+	protected onValidationError(instance: PreDB<DBType>, results: InvalidResult<DBType>) {
+		this.logError(`Error validating object:`, instance, 'With Error: ', results);
+		throw new ValidationException('error validating object', instance, results);
 	}
 
 	private updatePending<API extends TypedApi<any, any, any, any>>(item: DB_BaseObject, request: BaseHttpRequest<API>, requestType: RequestType) {

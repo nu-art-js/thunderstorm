@@ -248,7 +248,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		assert: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
 			const dbInstance = doc.get();
 			await this._preUpsertProcessing(transaction, dbInstance);
-			await this.validateImpl(dbInstance);
+			this.validateImpl(dbInstance);
 			await this.assertUniqueness(transaction, dbInstance);
 
 		},
@@ -384,8 +384,8 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	 *
 	 * @throws `ApiException` for bad implementation or invalid input.
 	 */
-	public async validateImpl(instance: DBType) {
-		const results = await tsValidateResult(instance, this.validator);
+	public validateImpl(instance: DBType) {
+		const results = tsValidateResult(instance, this.validator);
 		if (results) {
 			this.onValidationError(instance, results);
 		}
@@ -653,7 +653,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 	private async assertInstance(transaction: FirestoreTransaction | undefined, dbInstance: DBType, request?: ExpressRequest) {
 		await this._preUpsertProcessing(transaction, dbInstance, request);
-		await this.validateImpl(dbInstance);
+		this.validateImpl(dbInstance);
 		await this.assertUniqueness(transaction, dbInstance, request);
 	}
 
