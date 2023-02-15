@@ -228,10 +228,10 @@ export class TS_DropDown<ItemType>
 		);
 		return (
 			<div className={className}
-			     ref={this.state.dropDownRef}
-			     tabIndex={this.props.tabIndex}
-			     onFocus={this.addKeyboardListener}
-			     onBlur={this.removeKeyboardListener}
+					 ref={this.state.dropDownRef}
+					 tabIndex={this.props.tabIndex}
+					 onFocus={this.addKeyboardListener}
+					 onBlur={this.removeKeyboardListener}
 			>
 				{this.renderHeader()}
 				<TS_Overlay flat={false} showOverlay={!!this.state.open} onClickOverlay={this.closeList}>
@@ -245,7 +245,14 @@ export class TS_DropDown<ItemType>
 		return (
 			<div
 				className="ts-dropdown__header"
-				onClick={(e) => this.state.open ? this.closeList(e) : this.setState({open: true})}>
+				onClick={(e) => {
+					if (this.props.disabled) {
+						stopPropagation(e);
+						return;
+					}
+
+					this.state.open ? this.closeList(e) : this.setState({open: true});
+				}}>
 
 				{this.renderSelectedOrFilterInput()}
 				{this.state.open && this.props.caret ? this.props.caret?.close : this.props.caret?.open}
