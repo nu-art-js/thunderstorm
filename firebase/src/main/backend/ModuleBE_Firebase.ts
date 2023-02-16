@@ -43,27 +43,33 @@ export class ModuleBE_Firebase_Class
 	protected init(): void {
 	}
 
-	public createAdminSession(projectId: string = FIREBASE_DEFAULT_PROJECT_ID) {
-		let session = this.adminSessions[projectId];
-
+	public createAdminSession(authKey: string = FIREBASE_DEFAULT_PROJECT_ID) {
+		let session = this.adminSessions[authKey];
 		if (session)
 			return session;
 
 		let config;
 		try {
-			config = ModuleBE_Auth.getAuthConfig(projectId);
+			config = ModuleBE_Auth.getAuthConfig(authKey);
 		} catch (e: any) {
-			if (projectId !== FIREBASE_DEFAULT_PROJECT_ID)
+			if (authKey !== FIREBASE_DEFAULT_PROJECT_ID)
 				throw e;
 		}
 
-		// this.logInfo(`Creating Firebase session for project id: ${projectId}`);
 		if (typeof config === 'string')
 			config = JSON.parse(readFileSync(config, 'utf8'));
 
-		this.logInfo(`Creating Firebase session for project id: ${projectId} `, config);
-		session = new FirebaseSession_Admin(projectId, config);
-		this.adminSessions[projectId] = session;
+		const appId = config?.project_id || authKey;
+		session = this.adminSessions[appId];
+		if (session) {
+			this.adminSessions[authKey] = session;
+			return session;
+		}
+
+		this.logInfo(`Creating Firebase session for project id: ${authKey} `, config);
+		session = new FirebaseSession_Admin(appId, config);
+		this.adminSessions[authKey] = session;
+		this.adminSessions[session.getProjectId()] = session;
 
 		session.connect();
 		return session;
