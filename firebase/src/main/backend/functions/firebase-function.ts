@@ -37,6 +37,7 @@ import {Message} from 'firebase-admin/lib/messaging/messaging-api';
 
 
 const functions = require('firebase-functions');
+const functionsV2 = require('firebase-functions/v2');
 
 export interface TBR_ExpressFunctionInterface {
 	getExpressFunction(): Firebase_ExpressFunction;
@@ -120,8 +121,8 @@ export class Firebase_ExpressFunction
 		if (this.function)
 			return this.function;
 
-		const realFunction = functions.runWith(Firebase_ExpressFunction.config).https.onRequest(this.express);
-		return this.function = functions.runWith(Firebase_ExpressFunction.config).https.onRequest((req: Request, res: Response) => {
+		const realFunction = functionsV2.runWith(Firebase_ExpressFunction.config).https.onRequest(this.express);
+		return this.function = functionsV2.runWith(Firebase_ExpressFunction.config).https.onRequest((req: Request, res: Response) => {
 			if (this.isReady)
 				return realFunction(req, res);
 

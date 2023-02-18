@@ -1,4 +1,4 @@
-import {__stringify} from '../utils/tools';
+import {__stringify, exists} from '../utils/tools';
 import {
 	InvalidResult,
 	InvalidResultArray,
@@ -10,9 +10,10 @@ import {
 	ValidatorTypeResolver
 } from './validator-core';
 import {currentTimeMillis} from '../utils/date-time-tools';
-import {ArrayType, AuditBy, RangeTimestamp} from '../utils/types';
+import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {filterInstances} from '../utils/array-tools';
 import {_keys} from '../utils/object-tools';
+import {LogLevel} from '../core/logger/types';
 
 
 export const tsValidateDynamicObject = <T extends object>(valuesValidator: ValidatorTypeResolver<T[keyof T]>, keysValidator: ValidatorTypeResolver<string>, mandatory = true) => {
@@ -114,6 +115,18 @@ export const tsValidateNumber = (mandatory = true): Validator<number> => {
 		}];
 };
 
+export const tsValidateEnum = (enumType: TypedMap<number | string>, mandatory = true): Validator<number | string> => {
+	return [tsValidateExists(mandatory),
+		(input?: number | string) => {
+			// @ts-ignore
+			if (exists(enumType[input]))
+				return;
+
+			return `Input is not a valid enum value in ${__stringify(enumType)}`;
+		}];
+};
+
+tsValidateEnum(LogLevel);
 export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 	return [tsValidateExists(mandatory),
 		(input?: boolean) => {
