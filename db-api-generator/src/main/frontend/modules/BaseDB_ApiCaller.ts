@@ -31,6 +31,7 @@ import {
 	InvalidResult,
 	merge,
 	PreDB,
+	StaticLogger,
 	tsValidateResult,
 	TypedMap,
 	ValidationException
@@ -169,7 +170,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	}
 
 	public validateImpl(instance: PreDB<DBType>) {
-		const results = tsValidateResult(instance as DBType, this.config.validator);
+		const results = tsValidateResult(instance as DBType, this.validator);
 		if (results) {
 			this.onValidationError(instance, results);
 		}
@@ -177,7 +178,7 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 	protected onValidationError(instance: PreDB<DBType>, results: InvalidResult<DBType>) {
 		this.logError(`Error validating object:`, instance, 'With Error: ', results);
-		throw new ValidationException('error validating object', instance, results);
+		throw new ValidationException('Error validating object', instance, results);
 	}
 
 	private updatePending<API extends TypedApi<any, any, any, any>>(item: DB_BaseObject, request: BaseHttpRequest<API>, requestType: RequestType) {
@@ -340,6 +341,8 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	};
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
+		this.validateImpl(item);
+		StaticLogger.logInfo('UPDATING');
 		await this.IDB.syncIndexDb([item]);
 		// @ts-ignore
 		this.cache.onEntriesUpdated([item]);
