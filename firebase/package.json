@@ -27,7 +27,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "mocha --exit ./dist-test/test/firestore/__Stam2/testAdd.js"
+    "test": "mocha --exit ./dist-test/test/firestore/insert/Test.js"
   },
   "dependencies": {
     "@nu-art/ts-common": "~0.0.1",
