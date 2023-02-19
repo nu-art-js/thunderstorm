@@ -17,6 +17,5 @@ const TestCase_ts_sortArray: TestSuit_TS_ArrayFunctionSortArray<any>['testcases'
 export const TestSuit_ts_sortArray: TestSuit_TS_ArrayFunctionSortArray = {
     label: 'sorts array',
     testcases: TestCase_ts_sortArray,
-    processor: (input) => sortArray(input.array, input.map, input.invert
-    )
+    processor: (input) => sortArray(input.array, input.map, input.invert)
 };
