@@ -20,7 +20,7 @@ import {__scenario} from '@nu-art/testelot';
 import {myDb} from '../_core/database-wrapper';
 import {assert, merge} from '@nu-art/ts-common';
 
-export type ModelDb = {
+type ModelDb = {
     path: string
     value: any
     label: string

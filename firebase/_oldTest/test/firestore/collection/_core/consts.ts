@@ -18,6 +18,7 @@
 
 import {FirestoreCollection_Tester} from './collection-wrapper';
 import {FB_ArrayType, FB_Type, SimpleType} from './types';
+import {TestModel_V2} from "@nu-art/ts-common";
 
 export const testString1 = 'string-1';
 export const testString2 = 'string-2';
@@ -54,50 +55,58 @@ export const testItem7: FB_ArrayType = {key: testString7, value: testNumber7};
 export const testItem8: FB_ArrayType = {key: testString8, value: testNumber8};
 export const testItem9: FB_ArrayType = {key: testString9, value: testNumber9};
 
+export type testInstance = {
+    stringValue: String,
+    booleanValue: false,
+    numeric: number,
+    stringArray: [],
+    objectArray: [],
+    nestedObject: {}
+};
 
 export const testInstance1: FB_Type = {
-	stringValue: testString1,
-	booleanValue: false,
-	numeric: testNumber1,
-	stringArray: [testString1, testString5],
-	objectArray: [testItem1, testItem2],
-	nestedObject: {one: testItem1, two: testItem2}
+    stringValue: testString1,
+    booleanValue: false,
+    numeric: testNumber1,
+    stringArray: [testString1, testString5],
+    objectArray: [testItem1, testItem2],
+    nestedObject: {one: testItem1, two: testItem2}
 };
 
 export const testInstance2: FB_Type = {
-	stringValue: testString2,
-	booleanValue: false,
-	numeric: testNumber2,
-	stringArray: [testString1, testString2, testString3],
-	objectArray: [testItem1, testItem2, testItem3],
-	nestedObject: {one: testItem2, two: testItem3}
+    stringValue: testString2,
+    booleanValue: false,
+    numeric: testNumber2,
+    stringArray: [testString1, testString2, testString3],
+    objectArray: [testItem1, testItem2, testItem3],
+    nestedObject: {one: testItem2, two: testItem3}
 };
 
 export const testInstance3: FB_Type = {
-	stringValue: testString3,
-	booleanValue: false,
-	numeric: testNumber3,
-	stringArray: [testString2, testString3, testString4, testString5],
-	objectArray: [testItem2, testItem3, testItem4, testItem5],
-	nestedObject: {one: testItem4, two: testItem5}
+    stringValue: testString3,
+    booleanValue: false,
+    numeric: testNumber3,
+    stringArray: [testString2, testString3, testString4, testString5],
+    objectArray: [testItem2, testItem3, testItem4, testItem5],
+    nestedObject: {one: testItem4, two: testItem5}
 };
 
 export const testInstance4: FB_Type = {
-	stringValue: testString4,
-	booleanValue: true,
-	numeric: testNumber4,
-	stringArray: [testString3, testString4, testString5],
-	objectArray: [testItem3, testItem4, testItem5],
-	nestedObject: {one: testItem3, two: testItem4}
+    stringValue: testString4,
+    booleanValue: true,
+    numeric: testNumber4,
+    stringArray: [testString3, testString4, testString5],
+    objectArray: [testItem3, testItem4, testItem5],
+    nestedObject: {one: testItem3, two: testItem4}
 };
 
 export const testInstance5: FB_Type = {
-	stringValue: testString5,
-	booleanValue: false,
-	numeric: testNumber5,
-	stringArray: [testString1, testString2, testString3, testString4, testString5],
-	objectArray: [testItem1, testItem2, testItem3, testItem4, testItem5],
-	nestedObject: {one: testItem2, two: testItem4}
+    stringValue: testString5,
+    booleanValue: false,
+    numeric: testNumber5,
+    stringArray: [testString1, testString2, testString3, testString4, testString5],
+    objectArray: [testItem1, testItem2, testItem3, testItem4, testItem5],
+    nestedObject: {one: testItem2, two: testItem4}
 };
 
 
