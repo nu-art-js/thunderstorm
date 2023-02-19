@@ -3,6 +3,7 @@ import {DB_Object, Filter, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
 import {BaseDB_ApiCaller} from '../..';
 
+
 type OptionalCanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
 
 type OptionalProps_GenericDropDown<T> = {
@@ -16,10 +17,11 @@ type OptionalProps_GenericDropDown<T> = {
 	caret?: { open: React.ReactNode, close: React.ReactNode }
 	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
 	limitItems?: number;
+	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
 }
 
 export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> & {
-	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
+	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => any;
 	boundingParentSelector?: string;
 	inputValue?: string;
 	selected?: T | string | (() => T | undefined);
@@ -47,7 +49,7 @@ type GenericDropDownProps<T, Ks> = {
 
 	selected?: T | string | (() => T | undefined);
 	inputValue?: string;
-	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
+	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => any;
 
 	modules: BaseDB_ApiCaller<DB_Object, any>[];
 	boundingParentSelector?: string;
