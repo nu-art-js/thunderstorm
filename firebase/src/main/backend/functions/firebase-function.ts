@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Change, CloudFunction, EventContext, HttpsFunction, RuntimeOptions} from 'firebase-functions';
+import {Change, CloudFunction, EventContext, RuntimeOptions} from 'firebase-functions';
 
 import * as express from 'express';
-import {Request, Response} from 'express';
+import {Response} from 'express';
 import {
 	__stringify,
 	addItemToArray,
@@ -34,10 +34,17 @@ import {DocumentSnapshot} from 'firebase-admin/firestore';
 import {DataSnapshot} from 'firebase-functions/lib/common/providers/database';
 import {ObjectMetadata} from 'firebase-functions/v1/storage';
 import {Message} from 'firebase-admin/lib/messaging/messaging-api';
+import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
+import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';
 
+
+export interface Request
+	extends express.Request {
+	/** The wire format representation of the request body. */
+	rawBody: Buffer;
+}
 
 const functions = require('firebase-functions');
-const functionsV2 = require('firebase-functions/v2');
 
 export interface TBR_ExpressFunctionInterface {
 	getExpressFunction(): Firebase_ExpressFunction;
@@ -94,11 +101,11 @@ export class Firebase_ExpressFunction
 	implements FirebaseFunctionInterface {
 	private readonly express: express.Express;
 	private function!: HttpsFunction;
-	private toBeExecuted: (() => Promise<any>)[] = [];
+	private toBeExecuted: (() => void | Promise<void>)[] = [];
 	private isReady: boolean = false;
 	private toBeResolved!: (value?: (PromiseLike<any>)) => void;
 	private name: string = 'api';
-	static config: RuntimeOptions = {};
+	static config: HttpsOptions = {};
 
 	constructor(_express: express.Express) {
 		this.express = _express;
@@ -109,7 +116,7 @@ export class Firebase_ExpressFunction
 		return this;
 	}
 
-	static setConfig(config: RuntimeOptions) {
+	static setConfig(config: HttpsOptions) {
 		this.config = config;
 	}
 
@@ -121,8 +128,8 @@ export class Firebase_ExpressFunction
 		if (this.function)
 			return this.function;
 
-		const realFunction = functionsV2.runWith(Firebase_ExpressFunction.config).https.onRequest(this.express);
-		return this.function = functionsV2.runWith(Firebase_ExpressFunction.config).https.onRequest((req: Request, res: Response) => {
+		const realFunction: HttpsFunction = onRequest(Firebase_ExpressFunction.config, this.express);
+		return this.function = onRequest(Firebase_ExpressFunction.config, (req: Request, res: Response) => {
 			if (this.isReady)
 				return realFunction(req, res);
 
