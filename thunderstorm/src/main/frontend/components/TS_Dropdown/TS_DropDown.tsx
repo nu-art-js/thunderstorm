@@ -31,6 +31,7 @@ import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
 
+
 type State<ItemType> = {
 	open?: boolean
 	items: ItemType[];
@@ -62,7 +63,7 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 	inputValue?: string;
 
 	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
-	onNoMatchingSelectionForString?: (filterText: string, matchingItems: ItemType[], e: React.KeyboardEvent) => void
+	onNoMatchingSelectionForString?: (filterText: string, matchingItems: ItemType[], e: React.KeyboardEvent) => any
 
 	selected?: ItemType
 	filter?: Filter<ItemType>
@@ -320,6 +321,7 @@ export class TS_DropDown<ItemType>
 				</div>;
 			return <div className="ts-dropdown__empty" style={style}>No options</div>;
 		}
+
 		return <LL_V_L className={className} style={style}>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={() => this.onSelected()}>Unselect</div>}
 			<TS_Tree

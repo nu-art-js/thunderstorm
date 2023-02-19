@@ -51,7 +51,7 @@ const modules: Module[] = [
 
 AxiosHttpModule.setDefaultConfig({origin: 'https://us-central1-thunderstorm-staging.cloudfunctions.net/api/'});
 
-Firebase_ExpressFunction.setConfig({memory: '1GB', timeoutSeconds: 540});
+Firebase_ExpressFunction.setConfig({memory: '1GiB', timeoutSeconds: 540});
 const _exports = new Storm()
 	.addModules(...ModulePack_Backend_BugReport)
 	.addModules(...ModulePack_Backend_LiveDocs)
