@@ -19,11 +19,19 @@
 import {__scenario, Scenario} from '@nu-art/testelot';
 import {assert, BadImplementationException, sortArray} from '@nu-art/ts-common';
 import {FirestoreCollection} from '../../../_main';
-import {testCollection, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../_core/consts';
+import {
+	testCollection,
+	testInstance1,
+	testInstance2,
+	testInstance3,
+	testInstance4,
+	testInstance5
+} from '../_core/consts';
 import {FB_Type} from '../_core/types';
 
 
 function testInsert(scenario: Scenario, processor: (collection: FirestoreCollection<FB_Type>, ...items: FB_Type[]) => Promise<any>) {
+
 	scenario.add(testCollection.processClean('Insert and query - one item', async (collection) => {
 		await processor(collection, testInstance1);
 
