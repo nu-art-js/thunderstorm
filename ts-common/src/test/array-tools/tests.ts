@@ -29,7 +29,7 @@ export const arrayToolsTests = {
 	flatArray: () => testSuiteTester(TestSuite_flatArray),
 };
 
-export function runAllTests() {
+export function runAllArrayToolsTests() {
 	arrayToolsTests.arrayToMap();
 	arrayToolsTests.removeItemFromArray();
 	arrayToolsTests.removeFromArray();

@@ -1,8 +1,13 @@
-import {TestSuit_TS_Compare} from './types';
-import {compare} from '../../main';
+import {expect} from 'chai';
+import {compare, TestSuite} from '../../_main';
 
+type Input<T = any> = {
+	one: any
+	two: any
+}
+const emptyObj = {};
 
-const TestCase_ts_compare: TestSuit_TS_Compare['testcases'] = [
+const TestCase_compare: TestSuite<Input, any> ['testcases'] = [
 	{
 		description: 'compares same int',
 		result: true,
@@ -189,8 +194,12 @@ const TestCase_ts_compare: TestSuit_TS_Compare['testcases'] = [
 	}
 ];
 
-export const TestSuit_ts_compare: TestSuit_TS_Compare = {
-	label: 'Compare Test',
-	testcases: TestCase_ts_compare,
-	processor: (input) => compare(input.one, input.two)
+export const TestSuite_compare: TestSuite<Input, any> = {
+	label: 'compare',
+	testcases: TestCase_compare,
+	processor: async (testCase) => {
+		const result = compare(testCase.input.one, testCase.input.two);
+		const expected = testCase.result;
+		expect(result).to.deep.equals(expected);
+	}
 };
