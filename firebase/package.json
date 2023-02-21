@@ -47,7 +47,6 @@
     "firebase": "9.16.0",
     "firebase-admin": "11.5.0",
     "firebase-functions": "^4.2.0",
-    "@nu-art/testelot": "~0.0.1",
     "@types/compression": "^1.0.1",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",

@@ -16,8 +16,6 @@
  * limitations under the License.
  */
 
-export * from './testing/test-case';
-
 export * from './core/module';
 export * from './core/module-manager';
 export * from './core/application';

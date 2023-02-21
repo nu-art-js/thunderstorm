@@ -1,5 +1,5 @@
 /*
- * Testelot is a typescript scenario composing framework
+ * ts-common is the basic building blocks of our typescript projects
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,20 +16,22 @@
  * limitations under the License.
  */
 
-/**
- * Created by TacB0sS on 3/18/17.
- */
-import {Action_Container} from "./Action_Container";
 
-export class Scenario
-	extends Action_Container {
+export type Types<Input, Result> = {
+	expected?: Result;
+	input: Input;
+}
 
-	protected constructor() {
-		super(Scenario);
-	}
+export type TestModel<Input, ExpectedResult> = {
+	description: string
+	result: ExpectedResult,
+	input: Input,
+}
 
-	public run = async () => {
-		// @ts-ignore
-		await this._execute();
-	};
+export type TestProcessor<Input, ExpectedResult> = (input: TestModel<Input, ExpectedResult>) => void | Promise<void>;
+
+export type TestSuite<Input, ExpectedResult> = {
+	processor: TestProcessor<Input, ExpectedResult>;
+	testcases: TestModel<Input, ExpectedResult>[];
+	label: string,
 }
