@@ -16,4 +16,5 @@
  * limitations under the License.
  */
 
-export * from "../main"
+export * from '../main';
+export * from '../main/test-index';

@@ -30,81 +30,8 @@ export type TestModel<Input, ExpectedResult> = {
 
 export type TestProcessor<Input, ExpectedResult> = (input: TestModel<Input, ExpectedResult>) => void | Promise<void>;
 
-export type TestSuit<Input, ExpectedResult> = {
+export type TestSuite<Input, ExpectedResult> = {
 	processor: TestProcessor<Input, ExpectedResult>;
 	testcases: TestModel<Input, ExpectedResult>[];
 	label: string,
 }
-
-// type TestSuitReport = {
-// 	label: string;
-// 	success: number;
-// 	failed: Exception[];
-// };
-
-// const testResults: { [k: string]: TestSuitReport } = {};
-
-// export async function runTestSuits(testSuits: TestSuit<any>[]) {
-// 	for (const testSuit of testSuits) {
-// 		await runTestSuit(testSuit);
-// 	}
-// }
-
-// export async function runTestSuit<Model extends TestCase<any, any>>(testSuit: TestSuit<Model>) {
-// 	const report: TestSuitReport = {
-// 		label: testSuit.label,
-// 		success: 0,
-// 		failed: []
-// 	};
-//
-// 	testResults[testSuit.key] = report;
-// 	console.log(` Running: ${testSuit.label}`);
-//
-// 	for (const model of testSuit.models) {
-// 		let result;
-// 		try {
-// 			result = undefined;
-// 			result = await testSuit.processor(model.input);
-// 			if (model.expected === undefined || compare(model.expected, result)) {
-// 				report.success++;
-// 				continue;
-// 			}
-//
-// 			report.failed.push(
-// 				new Exception(`Error in test #${testSuit.models.indexOf(model)} input: ${JSON.stringify(
-// 					model.input)}\n         -- Expected: ${model.expected}\n         --   Actual: ${typeof result === 'object' ? JSON.stringify(result) : result}`));
-//
-// 		} catch (e: any) {
-// 			report.failed.push(
-// 				new Exception(`Error in test #${testSuit.models.indexOf(model)} input: ${JSON.stringify(
-// 					model.input)}`, e));
-// 		}
-// 	}
-// }
-
-// export function assertNoTestErrors() {
-// 	let totalErrors = 0;
-// 	console.log();
-// 	console.log('+-------------------------------+');
-// 	console.log('|            RESULTS            |');
-// 	console.log('+-------------------------------+');
-// 	Object.keys(testResults).forEach((key, index) => {
-// 		const result = testResults[key];
-// 		console.log();
-// 		console.log(` + ${result.label}`);
-// 		console.log(`     Success: ${result.success}`);
-// 		if (result.failed.length === 0)
-// 			return;
-//
-// 		totalErrors += result.failed.length;
-// 		console.log(`     Errors: ${result.failed.length}`);
-// 		result.failed.forEach(error => {
-// 			console.log(`       ${error.message}`);
-// 			if (error.cause)
-// 				console.log(`         ${error.cause.message}`);
-// 		});
-// 	});
-//
-// 	if (totalErrors > 0)
-// 		process.exit(2);
-// }

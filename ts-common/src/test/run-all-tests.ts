@@ -1,2 +1,3 @@
-import './ArrayToMap/Test';
-import './compare/Test';
+import {arrayToolsTests} from './cases-array-tools/ArrayToMap/tests';
+
+arrayToolsTests.arrayToMap();
