@@ -33,10 +33,8 @@ export const TestSuite_reduceToMap: TestSuite<Input, any> = {
 	label: 'reduceToMap',
 	testcases: TestCase_reduceToMap,
 	processor: async (testCase) => {
-		it(testCase.description, () => {
-			const result = reduceToMap(testCase.input.array, testCase.input.keyResolver, testCase.input.mapper, testCase.input.map || {});
-			const expected = testCase.result;
-			expect(result).to.deep.equals(expected);
-		});
+		const result = reduceToMap(testCase.input.array, testCase.input.keyResolver, testCase.input.mapper, testCase.input.map || {});
+		const expected = testCase.result;
+		expect(result).to.deep.equals(expected);
 	}
 };
