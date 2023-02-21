@@ -21,8 +21,8 @@ import {TS_Object} from '@nu-art/ts-common';
 
 
 export class FirestoreCollection_Tester<DBType extends TS_Object> {
-	private collectionName: string;
-	private externalUniqueFilter?: FilterKeys<DBType>;
+	readonly collectionName: string;
+	readonly externalUniqueFilter?: FilterKeys<DBType>;
 
 	constructor(collectionName: string, externalUniqueFilter?: FilterKeys<DBType>) {
 		this.collectionName = collectionName;
