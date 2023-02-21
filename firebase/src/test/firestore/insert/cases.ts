@@ -1,56 +1,53 @@
-import {compare, TestSuitAsync_V2} from '@nu-art/ts-common';
+import {cloneObj, compare, TestSuit_V3} from '@nu-art/ts-common';
+import {expect} from 'chai';
 import {FirestoreCollection, ModuleBE_Firebase} from '../../../main/backend';
 import {testInstance1, testString1} from '../_core/consts';
+import {FB_Type} from '../_core/types';
 
 
 type Input = {
 	collectionName: string,
-	value: any
-	check: (collection: FirestoreCollection<any>) => Promise<boolean>
+	value: FB_Type;
+	check: (collection: FirestoreCollection<any>, expectedItem: FB_Type) => Promise<void>
 }
-type TestSuit_TS_FB_insert = TestSuitAsync_V2<Input, any>
-export const TestCase_ts_FB_insert: TestSuit_TS_FB_insert ['testcases'] = [
+
+
+export const TestCase_ts_FB_insert: TestSuit_V3<Input, FB_Type> ['testcases'] = [
 	{
-		description: 'Insert and query - one item',
-		result: true,
+		description: 'Insert one item and find in getAll[0]',
+		result: testInstance1,
 		input: {
 			collectionName: 'zevel',
 			value: testInstance1,
-			check: async (collection: FirestoreCollection<any>) => {
+			check: async (collection, expectedItem) => {
 				const items = await collection.getAll();
-				if (items.length !== 1)
-					throw new Error('blah');
-
-				// assert('Expected only one item', items.length, 1);
-				// assert('Inserted object and queried object don\'t match', items[0], testInstance1);
-
-				return compare([testInstance1], items);
+				expect(items.length).to.eql(1);
+				expect(items[0]).to.eql(expectedItem);
 			}
 		}
 	},
 	{
-		description: 'Insert and query unique - one item',
-		result: true,
+		description: 'Insert one item and find with queryUnique',
+		result: testInstance1,
 		input: {
 			collectionName: 'zevel',
 			value: testInstance1,
-			check: async (collection: FirestoreCollection<any>) => {
+			check: async (collection, expectedItem) => {
 				const item = await collection.queryUnique({where: {stringValue: testString1}});
-
-				return compare(testInstance1, item);
+				expect(item).to.eql(expectedItem);
 			}
 		}
 	}
 ];
 
-export const TestSuit_ts_FB_insert: TestSuit_TS_FB_insert = {
-	label: 'Insert into FIRESTORE',
+export const TestSuit_ts_FB_insert: TestSuit_V3<Input, any> = {
+	label: 'Firestore insertion tests',
 	testcases: TestCase_ts_FB_insert,
-	processor: async (input) => {
+	processor: async (testCase) => {
 		const firestore = ModuleBE_Firebase.createAdminSession().getFirestore();
-		const collection = firestore.getCollection(input.collectionName);
+		const collection = firestore.getCollection(testCase.input.collectionName);
 		await collection.deleteAll();
-		await collection.insert(input.value);
-		return await input.check(collection);
+		await collection.insert(testCase.input.value);
+		await testCase.input.check(collection, testCase.result);
 	}
 };
