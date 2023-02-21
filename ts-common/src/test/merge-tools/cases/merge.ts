@@ -219,6 +219,6 @@ export const TestSuite_mergeFail: TestSuite<Input, any> = {
 	label: 'merge failure',
 	testcases: TestCase_mergeFail,
 	processor: async (testCase) => {
-		expect(() => merge(testCase.input.one, testCase.input.two)).to.throw;
+		expect(() => merge(testCase.input.one, testCase.input.two)).to.throw();
 	}
 };
