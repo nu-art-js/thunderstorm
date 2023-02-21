@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {FirestoreCollection, ModuleBE_Firebase} from '../../main/backend';
 import {testInstance1, testInstance2, testInstance3, testInstance4, testInstance5, testString1} from './_core/consts';
 import {FB_Type} from './_core/types';
-import {TestSuit, expectFailAsync} from '@nu-art/ts-common/test-index';
+import {TestSuite, expectFailAsync} from '@nu-art/ts-common/test-index';
 import {compare, sortArray} from '@nu-art/ts-common';
 
 type Input = {
@@ -10,7 +10,7 @@ type Input = {
 	check: (collection: FirestoreCollection<any>, expectedItem?: FB_Type | FB_Type[]) => Promise<void>
 }
 
-type Test = TestSuit<Input, FB_Type | FB_Type[] | undefined>;
+type Test = TestSuite<Input, FB_Type | FB_Type[] | undefined>;
 
 export const TestCases_FB_Insert: Test['testcases'] = [
 	{
