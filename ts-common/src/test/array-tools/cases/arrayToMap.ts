@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {arrayToMap, TestSuite } from '../../_main';
+import {arrayToMap, TestSuite} from '../../_main';
 
 type Input<T = any> = {
 	array: T[]
@@ -30,10 +30,8 @@ export const TestSuite_arrayToMap: TestSuite<Input, any> = {
 	label: 'arrayToMap',
 	testcases: TestCase_arrayToMap,
 	processor: async (testCase) => {
-		it(testCase.description, () => {
-			const result = arrayToMap(testCase.input.array, testCase.input.getKey, testCase.input.map ?? {});
-			const expected = testCase.result;
-			expect(result).to.eql(expected);
-		});
+		const result = arrayToMap(testCase.input.array, testCase.input.getKey, testCase.input.map ?? {});
+		const expected = testCase.result;
+		expect(result).to.eql(expected);
 	}
 };
