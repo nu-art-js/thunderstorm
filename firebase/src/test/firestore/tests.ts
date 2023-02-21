@@ -1,7 +1,7 @@
-import {TestSuit_ts_FB_insert} from './insert/cases';
-import {testSuitTester} from '@nu-art/ts-common/testing/consts';
+import {TestSuit_FB_Insert} from './insert';
+import {testSuitTester} from '@nu-art/ts-common/test-index';
 
 
 export const firestoreTests = {
-	insert: () => testSuitTester(TestSuit_ts_FB_insert),
+	insert: () => testSuitTester(TestSuit_FB_Insert),
 };
