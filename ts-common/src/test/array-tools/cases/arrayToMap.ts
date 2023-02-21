@@ -27,7 +27,7 @@ const TestCase_arrayToMap: TestSuite<Input, any> ['testcases'] = [
 ];
 
 export const TestSuite_arrayToMap: TestSuite<Input, any> = {
-	label: '',
+	label: 'arrayToMap',
 	testcases: TestCase_arrayToMap,
 	processor: async (testCase) => {
 		it(testCase.description, () => {

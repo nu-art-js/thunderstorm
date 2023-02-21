@@ -1,3 +1,3 @@
-import {arrayToolsTests} from './cases-array-tools/ArrayToMap/tests';
+import {runAllTests} from './array-tools/tests';
 
-arrayToolsTests.arrayToMap();
+runAllTests();
