@@ -1,2 +1,3 @@
-import './ArrayToMap/Test';
-import './compare/Test';
+import {runAllTests} from './array-tools/tests';
+
+runAllTests();

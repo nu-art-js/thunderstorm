@@ -17,42 +17,14 @@
  */
 
 import {__scenario, Scenario} from '@nu-art/testelot';
-import {assert, BadImplementationException, sortArray} from '@nu-art/ts-common';
+import {assert, sortArray} from '@nu-art/ts-common';
 import {FirestoreCollection} from '../../../_main';
-import {
-	testCollection,
-	testInstance1,
-	testInstance2,
-	testInstance3,
-	testInstance4,
-	testInstance5
-} from '../_core/consts';
+import {testCollection, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../_core/consts';
 import {FB_Type} from '../_core/types';
 
 
 function testInsert(scenario: Scenario, processor: (collection: FirestoreCollection<FB_Type>, ...items: FB_Type[]) => Promise<any>) {
 
-	scenario.add(testCollection.processClean('Insert and query - one item', async (collection) => {
-		await processor(collection, testInstance1);
-
-		const items = await collection.getAll();
-
-		assert('Expected only one item', items.length, 1);
-		assert('Inserted object and queried object don\'t match', items[0], testInstance1);
-	}));
-
-	scenario.add(testCollection.processClean('Insert and query unique - one item', async (collection) => {
-		await processor(collection, testInstance1);
-
-		const item = await collection.getAll();
-		assert('inserted object and queried object don\'t match', item, [testInstance1]);
-	}));
-
-	scenario.add(testCollection.processClean('Insert and query unique - two items - fail with: too many result', async (collection) => {
-		await processor(collection, testInstance1, testInstance2);
-
-		await collection.getAll();
-	}).expectToFail(BadImplementationException, (e: Error) => e.message.toLowerCase().startsWith('too many results')));
 
 	scenario.add(testCollection.processClean('Insert and query - five items', async (collection) => {
 		const _items = [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5];

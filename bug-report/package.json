@@ -35,7 +35,6 @@
     "@nu-art/ts-common": "~0.0.1",
     "@nu-art/firebase": "~0.0.1",
     "@nu-art/storm": "~0.0.1",
-    "@nu-art/testelot": "~0.0.1",
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/user-account": "~0.0.1",
     "@nu-art/jira": "~0.0.1",
