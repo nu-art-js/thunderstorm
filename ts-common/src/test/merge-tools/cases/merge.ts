@@ -1,6 +1,5 @@
 import {expect} from 'chai';
 import {merge, TestSuite} from '../../_main';
-import {TestSuit_TS_Merge} from '../../merge/types';
 
 type Input<T = any> = {
 	one: any
@@ -124,7 +123,7 @@ export const TestSuite_merge: TestSuite<Input, any> = {
 	}
 };
 
-const TestCase_mergeFail: TestSuit_TS_Merge['testcases'] = [
+const TestCase_mergeFail: TestSuite<Input, any>['testcases'] = [
 	{
 		description: 'merge array with obj expected fail',
 		result: 'Error',
