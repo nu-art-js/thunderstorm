@@ -2,7 +2,7 @@ import {TestSuite} from './types';
 import {expect} from 'chai';
 import {voidFunction} from '..';
 
-export const testSuitTester = <Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>) => {
+export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>) => {
 	describe(testSuit.label, () => {
 		testSuit.testcases.forEach(testCase => {
 			it(testCase.description,  () => testSuit.processor(testCase));
