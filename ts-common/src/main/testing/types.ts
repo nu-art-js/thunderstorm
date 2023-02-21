@@ -17,7 +17,7 @@
  */
 
 
-export type TestCase<Input, Result> = {
+export type Types<Input, Result> = {
 	expected?: Result;
 	input: Input;
 }
