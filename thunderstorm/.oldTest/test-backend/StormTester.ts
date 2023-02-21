@@ -20,7 +20,7 @@
  */
 
 import {ImplementationMissingException} from '@nu-art/ts-common';
-import {BaseStorm} from '../backend/core/BaseStorm';
+import {BaseStorm} from '../../src/main/backend/core/BaseStorm';
 import {__scenario, Reporter, Scenario} from '@nu-art/testelot';
 
 
