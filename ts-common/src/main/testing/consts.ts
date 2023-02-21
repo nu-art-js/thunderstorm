@@ -5,7 +5,7 @@ import {voidFunction} from '..';
 export const testSuitTester = <Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>) => {
 	describe(testSuit.label, () => {
 		testSuit.testcases.forEach(testCase => {
-			it(testCase.description, async () => testSuit.processor(testCase));
+			it(testCase.description,  () => testSuit.processor(testCase));
 		});
 	});
 };
