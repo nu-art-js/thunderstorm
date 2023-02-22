@@ -10,5 +10,7 @@ const config = {
 
 ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
 
+firestoreTests.query();
 firestoreTests.insert();
+firestoreTests.queryUnique();
 

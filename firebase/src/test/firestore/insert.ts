@@ -2,14 +2,15 @@ import {expect} from 'chai';
 import {FirestoreCollection, ModuleBE_Firebase} from '../../main/backend';
 import {testInstance1, testInstance2, testInstance3, testInstance4, testInstance5, testString1} from './_core/consts';
 import {FB_Type} from './_core/types';
-import {TestSuit, expectFailAsync} from '@nu-art/ts-common/test-index';
+import {TestSuite, expectFailAsync} from '@nu-art/ts-common/test-index';
+import {compare, sortArray} from '@nu-art/ts-common';
 
 type Input = {
 	value: FB_Type[];
 	check: (collection: FirestoreCollection<any>, expectedItem?: FB_Type | FB_Type[]) => Promise<void>
 }
 
-type Test = TestSuit<Input, FB_Type | FB_Type[] | undefined>;
+type Test = TestSuite<Input, FB_Type | FB_Type[] | undefined>;
 
 export const TestCases_FB_Insert: Test['testcases'] = [
 	{
@@ -51,8 +52,25 @@ export const TestCases_FB_Insert: Test['testcases'] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				const ids = (await collection.getAll() as FB_Type[]).map(i => i.numeric);
-				(expectedResult as unknown as FB_Type[]).forEach(res => expect(ids).to.include(res.numeric));
+				let items = await collection.getAll() as FB_Type[];
+				expect(items.length).to.eql(5);
+				items = sortArray(items, item => item.numeric);
+				(expectedResult as FB_Type[]).forEach((res, i) => {
+					const index = items.findIndex(item => item.numeric === res.numeric);
+					expect(index).to.eql(i);
+				});
+			}
+		}
+	},
+	{
+		description: 'Insert & Query - two same items',
+		result: undefined,
+		input: {
+			value: [testInstance1, testInstance1],
+			check: async (collection) => {
+				const items = await collection.getAll();
+				expect(items.length).to.eql(2);
+				expect(compare(items[0], items[1])).to.eql(true);
 			}
 		}
 	}
