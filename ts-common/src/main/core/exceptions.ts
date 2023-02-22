@@ -48,9 +48,9 @@ import {Constructor} from '../utils/types';
  * ```
  */
 export function isErrorOfType<T extends Error>(e: Error, _exceptionType: Constructor<T>): T | undefined {
-	const _e = e as any;
-	if (_e.isInstanceOf?.(_exceptionType))
-		return e as T;
+    const _e = e as any;
+    if (_e.isInstanceOf?.(_exceptionType))
+        return e as T;
 }
 
 /**
@@ -62,141 +62,141 @@ export function isErrorOfType<T extends Error>(e: Error, _exceptionType: Constru
  * In addition to collecting the error, this class also collects a message and the exception type, for better
  * error handling.<br>
  *
- * @category - Exceptions
+ * @category Exceptions
  */
 export abstract class CustomException
-	extends Error {
+    extends Error {
 
-	public exceptionType: string;
+    public exceptionType: string;
 
-	public isInstanceOf: (_exceptionType: Function) => boolean;
-	public cause?: Error;
+    public isInstanceOf: (_exceptionType: Function) => boolean;
+    public cause?: Error;
 
-	protected constructor(exceptionType: Function, message: string, cause?: Error) {
-		super(message);
-		this.message = message;
-		this.stack = (new Error(message)).stack;
-		this.cause = cause;
-		this.exceptionType = exceptionType.name;
-		this.isInstanceOf = (_exceptionType: Function): boolean => {
-			return this.exceptionType === _exceptionType.name;
-		};
-	}
+    protected constructor(exceptionType: Function, message: string, cause?: Error) {
+        super(message);
+        this.message = message;
+        this.stack = (new Error(message)).stack;
+        this.cause = cause;
+        this.exceptionType = exceptionType.name;
+        this.isInstanceOf = (_exceptionType: Function): boolean => {
+            return this.exceptionType === _exceptionType.name;
+        };
+    }
 }
 
 /**
  * # <ins>Exception</ins>
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "Exception",
- * @category - Exceptions
+ * @category Exceptions
  */
 export class Exception
-	extends CustomException {
+    extends CustomException {
 
-	constructor(message: string, cause?: Error) {
-		super(Exception, message, cause);
-	}
+    constructor(message: string, cause?: Error) {
+        super(Exception, message, cause);
+    }
 }
 
 /**
  * # <ins>BadImplementationException</ins>
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "BadImplementationException",
- * @category - Exceptions
+ * @category Exceptions
  */
 export class BadImplementationException
-	extends CustomException {
+    extends CustomException {
 
-	constructor(message: string, cause?: Error) {
-		super(BadImplementationException, message, cause);
-	}
+    constructor(message: string, cause?: Error) {
+        super(BadImplementationException, message, cause);
+    }
 }
 
 /**
  * # <ins>ImplementationMissingException</ins>
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "ImplementationMissingException",
- * @category - Exceptions
+ * @category Exceptions
  */
 export class ImplementationMissingException
-	extends CustomException {
+    extends CustomException {
 
-	constructor(message: string, cause?: Error) {
-		super(ImplementationMissingException, message, cause);
-	}
+    constructor(message: string, cause?: Error) {
+        super(ImplementationMissingException, message, cause);
+    }
 }
 
 /**
  * # <ins>MUSTNeverHappenException</ins>
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "MUSTNeverHappenException",
- * @category - Exceptions
+ * @category Exceptions
  */
 export class MUSTNeverHappenException
-	extends CustomException {
+    extends CustomException {
 
-	constructor(message: string, cause?: Error) {
-		super(MUSTNeverHappenException, message, cause);
-	}
+    constructor(message: string, cause?: Error) {
+        super(MUSTNeverHappenException, message, cause);
+    }
 }
 
 /**
  * # <ins>NotImplementedYetException</ins>
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "NotImplementedYetException",
- * @category - Exceptions
+ * @category Exceptions
  */
 export class NotImplementedYetException
-	extends CustomException {
+    extends CustomException {
 
-	constructor(message: string, cause?: Error) {
-		super(NotImplementedYetException, message, cause);
-	}
+    constructor(message: string, cause?: Error) {
+        super(NotImplementedYetException, message, cause);
+    }
 }
 
 /**
  * # <ins>ThisShouldNotHappenException</ins>
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "ThisShouldNotHappenException",
- * @category - Exceptions
+ * @category Exceptions
  */
 export class ThisShouldNotHappenException
-	extends CustomException {
+    extends CustomException {
 
-	constructor(message: string, cause?: Error) {
-		super(ThisShouldNotHappenException, message, cause);
-	}
+    constructor(message: string, cause?: Error) {
+        super(ThisShouldNotHappenException, message, cause);
+    }
 }
 
 /**
  * # <ins>DontCallthisException</ins>
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "DontCallthisException",
- * @category - Exceptions
+ * @category Exceptions
  */
 export class DontCallthisException
-	extends CustomException {
+    extends CustomException {
 
-	constructor(message: string, cause?: Error) {
-		super(DontCallthisException, message, cause);
-	}
+    constructor(message: string, cause?: Error) {
+        super(DontCallthisException, message, cause);
+    }
 }
 
 /**
  * # <ins>WhoCallthisException</ins>
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "WhoCallthisException",
- * @category - Exceptions
+ * @category Exceptions
  */
 export class WhoCallthisException
-	extends CustomException {
+    extends CustomException {
 
-	constructor(message: string, cause?: Error) {
-		super(WhoCallthisException, message, cause);
-	}
+    constructor(message: string, cause?: Error) {
+        super(WhoCallthisException, message, cause);
+    }
 }
 
 /**
  * # <ins>AssertionException</ins>
  * This class inherits {@link CustomException} and functions like it, after setting the exceptionType property as "AssertionException",
- * @category - Exceptions
+ * @category Exceptions
  */
 export class AssertionException
-	extends CustomException {
+    extends CustomException {
 
-	constructor(message: string, cause?: Error) {
-		super(AssertionException, message, cause);
-	}
+    constructor(message: string, cause?: Error) {
+        super(AssertionException, message, cause);
+    }
 }

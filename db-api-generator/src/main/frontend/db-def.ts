@@ -32,13 +32,14 @@ export type DBApiFEConfig<DBType extends DB_Object, Ks extends keyof DBType = De
 }
 
 export const getModuleFEConfig = <T extends DB_Object, Ks extends keyof T = Default_UniqueKey>(dbDef: DBDef<T, Ks>): DBApiFEConfig<T, Ks> => {
+	//FE validator ignores any props that are defined in dbdef.generatedProps
 	const validator = ([...dbDef.generatedProps || [], ...KeysOfDB_Object] as (keyof T)[]).reduce((_validator, prop) => {
 		{ // @ts-ignore
 			_validator[prop] = tsValidateOptional;
 		}
 		return _validator
 	}, dbDef.validator as ValidatorTypeResolver<T>)
-	
+
 	return {
 		key: dbDef.dbName,
 		versions: dbDef.versions || [DefaultDBVersion],

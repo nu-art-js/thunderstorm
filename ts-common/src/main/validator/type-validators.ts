@@ -87,6 +87,7 @@ export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayT
 			return filterInstances(results).length !== 0 ? results : undefined;
 		}];
 };
+
 export const tsValidateString = (length: number = -1, mandatory = true): Validator<string> => {
 	return [tsValidateExists(mandatory),
 		(input?: string) => {
@@ -103,6 +104,8 @@ export const tsValidateString = (length: number = -1, mandatory = true): Validat
 			return `input is longer than ${length}`;
 		}];
 };
+
+export const tsValidator_nonMandatoryString = tsValidateString(-1, false);
 
 export const tsValidateNumber = (mandatory = true): Validator<number> => {
 	return [tsValidateExists(mandatory),
@@ -213,3 +216,4 @@ export const tsValidateNonMandatoryObject = <T>(validator: ValidatorTypeResolver
 	return [tsValidateExists(false),
 		(input?: T) => tsValidateResult(input, validator)];
 };
+

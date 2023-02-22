@@ -31,62 +31,78 @@ import {FirebaseApp, initializeApp} from 'firebase/app';
 // import auth = firebase.auth;
 
 export class FirebaseSessionFE
-	extends Logger {
-	app!: FirebaseApp;
+    extends Logger {
+    app!: FirebaseApp;
 
-	protected config: FirebaseConfig;
-	protected sessionName: string;
-	protected messaging?: MessagingWrapperFE;
-	protected analytics?: AnalyticsWrapperFE;
-	protected database?: DatabaseWrapperFE;
+    protected config: FirebaseConfig;
+    protected sessionName: string;
+    protected messaging?: MessagingWrapperFE;
+    protected analytics?: AnalyticsWrapperFE;
+    protected database?: DatabaseWrapperFE;
 
-	constructor(sessionName: string, config: FirebaseConfig) {
-		super(`firebase: ${sessionName}`);
-		this.sessionName = sessionName;
-		this.config = config;
-	}
+    constructor(sessionName: string, config: FirebaseConfig) {
+        super(`firebase: ${sessionName}`);
+        this.sessionName = sessionName;
+        this.config = config;
+    }
 
-	public connect(): void {
-		this.app = initializeApp(this.config, this.sessionName);
-	}
+    public connect(): void {
+        this.app = initializeApp(this.config, this.sessionName);
+    }
 
-	getMessaging() {
-		if (this.messaging)
-			return this.messaging;
+    /**
+     * Returns an instance of the MessagingWrapperFE class if it exists, or creates and returns a new instance if it does not
+     */
+    getMessaging() {
+        if (this.messaging)
+            return this.messaging;
 
-		return this.messaging = new MessagingWrapperFE(this.app);
-	}
+        return this.messaging = new MessagingWrapperFE(this.app);
+    }
 
-	getAnalytics() {
-		if (this.analytics)
-			return this.analytics;
+    /**
+     * Returns an instance of the AnalyticsWrapperFE class if it exists, or creates and returns a new instance if it does not
+     */
+    getAnalytics() {
+        if (this.analytics)
+            return this.analytics;
 
-		return this.analytics = new AnalyticsWrapperFE(this.app);
-	}
+        return this.analytics = new AnalyticsWrapperFE(this.app);
+    }
 
-	getDatabase() {
-		if (this.database)
-			return this.database;
+    /**
+     * Returns an instance of the DatabaseWrapperFE class if it exists, or creates and returns a new instance if it does not
+     */
+    getDatabase() {
+        if (this.database)
+            return this.database;
 
-		return this.database = new DatabaseWrapperFE(this.app);
-	}
+        return this.database = new DatabaseWrapperFE(this.app);
+    }
 
-	async signInWithToken(token: string) {
-		return signInWithCustomToken(getAuth(this.app), token);
-	}
+    /**
+     * Authenticates the user with the given token
+     * @param token
+     */
+    async signInWithToken(token: string) {
+        return signInWithCustomToken(getAuth(this.app), token);
+    }
 
-	async signOut() {
-		return signOut(getAuth(this.app));
-	}
+    /**
+     * Signs out the currently authenticated user
+     */
+    async signOut() {
+        return signOut(getAuth(this.app));
+    }
 
-	getProjectId(): string {
-		if (!this.config)
-			throw new ThisShouldNotHappenException('Missing config. Probably init not resolved yet!');
+    getProjectId(): string {
+        if (!this.config)
+            throw new ThisShouldNotHappenException('Missing config. Probably init not resolved yet!');
 
-		if (!this.config.projectId)
-			throw new ThisShouldNotHappenException('Could not deduce project id from session config.. if you need the functionality.. add it to the config!!');
+        if (!this.config.projectId)
+            throw new ThisShouldNotHappenException('Could not deduce project id from session config.. if you need the functionality.. add it to the config!!');
 
-		return this.config.projectId;
-	}
+        return this.config.projectId;
+    }
 }
 

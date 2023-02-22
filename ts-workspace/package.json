@@ -27,7 +27,6 @@
     "@typescript-eslint/eslint-plugin": "^5.8.0",
     "@nu-art/firebase": "~0.0.1",
     "@nu-art/storm": "~0.0.1",
-    "@nu-art/testelot": "~0.0.1",
     "@nu-art/thunderstorm": "~0.0.1",
     "@nu-art/user-account": "~0.0.1",
     "@nu-art/db-api-generator": "~0.0.1",

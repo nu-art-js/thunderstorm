@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, tsValidateRegexp, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {DB_Object, tsValidateArray, tsValidateRegexp, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
 
 
 export const dbIdLength = 32;
@@ -33,6 +33,7 @@ export const tsValidateGeneralUrl = (mandatory?: boolean) => tsValidateRegexp(
 	/[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,4}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/, mandatory);
 export const tsValidateVersion = tsValidateRegexp(/\d{1,3}\.\d{1,3}\.\d{1,3}/);
 export const tsValidateUniqueId = tsValidateId(dbIdLength);
+export const tsValidator_arrayOfUniqueIds = tsValidateArray(tsValidateUniqueId);
 
 export const tsValidateOptionalId = tsValidateId(dbIdLength, false);
 export const tsValidateStringWithDashes = tsValidateRegexp(/^[A-Za-z-]+$/);

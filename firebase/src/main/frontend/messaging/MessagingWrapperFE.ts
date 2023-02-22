@@ -18,42 +18,60 @@
 
 import {Logger} from '@nu-art/ts-common';
 import {FirebaseType_Messaging, FirebaseType_Unsubscribe} from './types';
-import {deleteToken, getMessaging, getToken, GetTokenOptions, MessagePayload, NextFn, Observer, onMessage} from 'firebase/messaging';
+import {
+    deleteToken,
+    getMessaging,
+    getToken,
+    GetTokenOptions,
+    MessagePayload,
+    NextFn,
+    Observer,
+    onMessage
+} from 'firebase/messaging';
 import {FirebaseApp} from 'firebase/app';
 
+/**
+ Firebase Messaging wrapper
+ */
 export class MessagingWrapperFE
-	extends Logger {
+    extends Logger {
 
-	private readonly messaging: FirebaseType_Messaging;
-	private callback?: NextFn<MessagePayload> | Observer<MessagePayload>;
-	private token?: string;
+    private readonly messaging: FirebaseType_Messaging;
+    private callback?: NextFn<MessagePayload> | Observer<MessagePayload>;
+    private token?: string;
 
-	constructor(app: FirebaseApp) {
-		super();
-		this.messaging = getMessaging(app);
-	}
+    /**
+     * Constructor for the MessagingWrapperFE class
+     * @param app
+     */
+    constructor(app: FirebaseApp) {
+        super();
+        this.messaging = getMessaging(app);
+    }
 
-	async getToken(options?: GetTokenOptions): Promise<string> {
-		this.token = await getToken(this.messaging, options);
+    async getToken(options?: GetTokenOptions): Promise<string> {
+        this.token = await getToken(this.messaging, options);
 
-		if (this.callback)
-			this.onMessage(this.callback);
+        if (this.callback)
+            this.onMessage(this.callback);
 
-		return this.token;
-	}
+        return this.token;
+    }
 
-	async deleteToken() {
-		this.logVerbose('Deleting firebase messaging token');
-		await deleteToken(this.messaging);
+    /**
+     Deletes the current Firebase Messaging token for the client
+     */
+    async deleteToken() {
+        this.logVerbose('Deleting firebase messaging token');
+        await deleteToken(this.messaging);
 
-		delete this.token;
-	}
+        delete this.token;
+    }
 
-	onMessage(callback: NextFn<MessagePayload> | Observer<MessagePayload>): FirebaseType_Unsubscribe | void {
-		this.callback = callback;
-		if (!this.token)
-			return;
-
-		return onMessage(this.messaging, callback);
-	}
+    onMessage(callback: NextFn<MessagePayload> | Observer<MessagePayload>): FirebaseType_Unsubscribe | void {
+        this.callback = callback;
+        if (!this.token)
+            return;
+        return onMessage(this.messaging, callback);
+    }
 }
