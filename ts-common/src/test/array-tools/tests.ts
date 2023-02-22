@@ -12,6 +12,7 @@ import {TestSuite_filterAsync} from './cases/filterAsync';
 import {TestSuite_filterDuplicates} from './cases/filterDuplicates';
 import {TestSuite_findDuplicates} from './cases/findDuplicates';
 import {TestSuite_flatArray} from './cases/flatArray';
+import {TestSuite_sortArray} from './cases/sortArray';
 
 export const arrayToolsTests = {
 	arrayToMap: () => testSuiteTester(TestSuite_arrayToMap),
@@ -27,6 +28,7 @@ export const arrayToolsTests = {
 	filterDuplicates: () => testSuiteTester(TestSuite_filterDuplicates),
 	findDuplicates: () => testSuiteTester(TestSuite_findDuplicates),
 	flatArray: () => testSuiteTester(TestSuite_flatArray),
+	sortArray: () => testSuiteTester(TestSuite_sortArray),
 };
 
 export function runAllArrayToolsTests() {
@@ -43,4 +45,5 @@ export function runAllArrayToolsTests() {
 	arrayToolsTests.filterDuplicates();
 	arrayToolsTests.findDuplicates();
 	arrayToolsTests.flatArray();
+	arrayToolsTests.sortArray();
 }
