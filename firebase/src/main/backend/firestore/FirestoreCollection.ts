@@ -24,7 +24,9 @@ import {FirestoreInterface} from './FirestoreInterface';
 import {FirestoreTransaction} from './FirestoreTransaction';
 import {Transaction} from 'firebase-admin/firestore';
 
-
+/**
+ * FirestoreCollection is a class for handling Firestore collections. It takes in the name, FirestoreWrapperBE instance, and uniqueKeys as parameters.
+ */
 export class FirestoreCollection<Type extends TS_Object> {
     readonly name: string;
     readonly wrapper: FirestoreWrapperBE;
@@ -35,35 +37,56 @@ export class FirestoreCollection<Type extends TS_Object> {
      */
     readonly externalUniqueFilter: ((object: Subset<Type>) => Clause_Where<Type>);
 
+    /**
+     * @param name
+     * @param wrapper
+     * @param uniqueKeys
+     */
     constructor(name: string, wrapper: FirestoreWrapperBE, uniqueKeys?: FilterKeys<Type>) {
         this.name = name;
         this.wrapper = wrapper;
         if (!/[a-z-]{3,}/.test(name))
             StaticLogger.logWarning('Please follow name pattern for collections /[a-z-]{3,}/');
-
         this.collection = wrapper.firestore.collection(name);
         this.externalUniqueFilter = (instance: Type) => {
             if (!uniqueKeys)
                 throw new BadImplementationException('In order to use a unique query your collection MUST have a unique filter');
 
             return uniqueKeys.reduce((where, key: keyof Type) => {
-                // @ts-ignore
                 where[key] = instance[key];
                 return where;
             }, {} as Clause_Where<Type>);
         };
     }
 
+    /**
+     Executes a Firestore query on the collection.
+     @param ourQuery - The query to execute.
+     @returns A Promise that resolves to an array of FirestoreType_DocumentSnapshot objects.
+     @private
+     */
     private async _query(ourQuery?: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot[]> {
         const myQuery = FirestoreInterface.buildQuery(this, ourQuery);
         return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot[];
     }
 
+    /**
+
+     Executes a unique Firestore query on the collection.
+     @param ourQuery - The query to execute.
+     @returns A Promise that resolves to a single FirestoreType_DocumentSnapshot object, or undefined if no match is found.
+     @private
+     */
     private async _queryUnique(ourQuery: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot | undefined> {
         const results: FirestoreType_DocumentSnapshot[] = await this._query(ourQuery);
         return FirestoreInterface.assertUniqueDocument(results, ourQuery, this.name);
     }
 
+    /**
+     Executes a unique Firestore query on the collection and returns the matching object.
+     @param ourQuery - The query to execute.
+     @returns A Promise that resolves to the matching object, or undefined if no match is found.
+     */
     async queryUnique(ourQuery: FirestoreQuery<Type>): Promise<Type | undefined> {
         const doc = await this._queryUnique(ourQuery);
         if (!doc)
