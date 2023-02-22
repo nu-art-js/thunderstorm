@@ -2,10 +2,15 @@ import {TestSuite} from './types';
 import {expect} from 'chai';
 import {voidFunction} from '..';
 
-export const testSuitTester = <Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>) => {
+export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>) => {
 	describe(testSuit.label, () => {
+		//Run pre-process
+		if (testSuit.preProcessor) {
+			it(`${testSuit.label} - Preprocessing`, testSuit.preProcessor);
+		}
+
 		testSuit.testcases.forEach(testCase => {
-			it(testCase.description, async () => testSuit.processor(testCase));
+			it(testCase.description,  () => testSuit.processor(testCase));
 		});
 	});
 };

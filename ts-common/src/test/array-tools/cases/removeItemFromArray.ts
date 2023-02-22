@@ -104,10 +104,8 @@ export const TestSuite_removeItemFromArray: TestSuite<Input, any> = {
 	label: 'removeItemFromArray',
 	testcases: TestCase_removeItemFromArray,
 	processor: async (testCase) => {
-		it(testCase.description, () => {
-			const result = removeItemFromArray(testCase.input.array, testCase.input.item);
-			const expected = testCase.result;
-			expect(result).to.eql(expected);
-		});
+		const result = removeItemFromArray(testCase.input.array, testCase.input.item);
+		const expected = testCase.result;
+		expect(result).to.eql(expected);
 	}
 };

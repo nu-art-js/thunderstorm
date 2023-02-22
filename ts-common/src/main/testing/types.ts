@@ -31,6 +31,7 @@ export type TestModel<Input, ExpectedResult> = {
 export type TestProcessor<Input, ExpectedResult> = (input: TestModel<Input, ExpectedResult>) => void | Promise<void>;
 
 export type TestSuite<Input, ExpectedResult> = {
+	preProcessor?: () => (void | Promise<void>);
 	processor: TestProcessor<Input, ExpectedResult>;
 	testcases: TestModel<Input, ExpectedResult>[];
 	label: string,
