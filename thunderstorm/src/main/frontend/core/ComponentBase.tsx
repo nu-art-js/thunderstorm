@@ -57,8 +57,8 @@ export abstract class BaseComponent<P = any, State = any>
 			// @ts-ignore
 			Thunder.getInstance().addUIListener(this);
 
-			__componentDidMount?.();
 			this.mounted = true;
+			__componentDidMount?.();
 		};
 
 		const __componentWillUnmount = this.componentWillUnmount?.bind(this);
