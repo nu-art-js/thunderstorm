@@ -30,7 +30,8 @@
   "dependencies": {
     "export-to-csv": "^0.2.1",
     "moment": "^2.24.0",
-    "node-forge": "^1.2.1"
+    "node-forge": "^1.2.1",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.4",
