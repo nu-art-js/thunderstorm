@@ -217,3 +217,6 @@ export const tsValidateNonMandatoryObject = <T>(validator: ValidatorTypeResolver
 		(input?: T) => tsValidateResult(input, validator)];
 };
 
+const validateColorValue = tsValidateRegexp(/^#(?:[0-9a-fA-F]{3}){1,2}$/);
+export const tsValidator_color = {value: validateColorValue};
+
