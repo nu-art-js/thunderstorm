@@ -1,14 +1,5 @@
 import {__stringify, exists} from '../utils/tools';
-import {
-	InvalidResult,
-	InvalidResultArray,
-	InvalidResultObject,
-	tsValidate,
-	tsValidateExists,
-	tsValidateResult,
-	Validator,
-	ValidatorTypeResolver
-} from './validator-core';
+import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
 import {currentTimeMillis} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {filterInstances} from '../utils/array-tools';
@@ -207,7 +198,7 @@ export const tsValidateTimestamp = (interval?: number, mandatory = true): Valida
 
 export const tsValidateAudit = (range?: RangeTimestamp) => {
 	return (audit?: AuditBy) => {
-		return tsValidate(audit?.auditAt?.timestamp, tsValidateIsInRange([[0,
+		return tsValidateResult(audit?.auditAt?.timestamp, tsValidateIsInRange([[0,
 			Number.MAX_VALUE]]));
 	};
 };
