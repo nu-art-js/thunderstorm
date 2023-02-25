@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+import {tsValidateCustom} from '..';
 import {CustomException} from '../core/exceptions';
 import {_keys} from '../utils/object-tools';
 import {TS_Object} from '../utils/types';
@@ -47,10 +48,10 @@ import {TS_Object} from '../utils/types';
  * 				K extends [infer E1, infer E2, infer E3, infer E4] ? [Validator<E1>,Validator<E2>,Validator<E2>,Validator<E4>] :
  */
 export type ValidatorTypeResolver<K> =
-	K extends [infer E1] ? Validator<K>:
-		K extends [infer E1, infer E2] ? Validator<K>:
-			K extends [infer E1, infer E2, infer E3] ? Validator<K>:
-				K extends [infer E1, infer E2, infer E3, infer E4] ? Validator<K>:
+	K extends [infer E1] ? Validator<K> :
+		K extends [infer E1, infer E2] ? Validator<K> :
+			K extends [infer E1, infer E2, infer E3] ? Validator<K> :
+				K extends [infer E1, infer E2, infer E3, infer E4] ? Validator<K> :
 					K extends any[] ? Validator<K> :
 						K extends TS_Object ? TypeValidator<K> | Validator<K> :
 							Validator<K>;
@@ -135,7 +136,7 @@ export const tsValidateResult = <T extends any>(instance: T | undefined, _valida
 	const validator: ValidatorImpl<T>[] | object = typeof _validator === 'function' ? [_validator] : _validator;
 	if (Array.isArray(validator)) {
 		const result = validator.reduce((result, __validator) => result === CONST_NO_ERROR ? result : result || __validator(instance, parentInstance),
-		                                undefined as InvalidResult<T> | undefined);
+			undefined as InvalidResult<T> | undefined);
 		return result !== CONST_NO_ERROR ? result : undefined;
 	}
 
@@ -174,4 +175,10 @@ export const tsValidateObject = <T>(__validator: TypeValidator<object>, instance
 		return;
 
 	return result;
+};
+
+export const tsValidator_valueByKey = <T extends any>(validatorObject: { [k: string]: ValidatorTypeResolver<any> }) => {
+	return tsValidateCustom((value?, parentObject?) => {
+		return tsValidateResult(value!, validatorObject[parentObject!.type]);
+	}) as ValidatorTypeResolver<T>;
 };

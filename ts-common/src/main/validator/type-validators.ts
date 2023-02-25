@@ -1,14 +1,5 @@
 import {__stringify, exists} from '../utils/tools';
-import {
-	InvalidResult,
-	InvalidResultArray,
-	InvalidResultObject,
-	tsValidate,
-	tsValidateExists,
-	tsValidateResult,
-	Validator,
-	ValidatorTypeResolver
-} from './validator-core';
+import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
 import {currentTimeMillis} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {filterInstances} from '../utils/array-tools';
@@ -87,6 +78,7 @@ export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayT
 			return filterInstances(results).length !== 0 ? results : undefined;
 		}];
 };
+
 export const tsValidateString = (length: number = -1, mandatory = true): Validator<string> => {
 	return [tsValidateExists(mandatory),
 		(input?: string) => {
@@ -103,6 +95,8 @@ export const tsValidateString = (length: number = -1, mandatory = true): Validat
 			return `input is longer than ${length}`;
 		}];
 };
+
+export const tsValidator_nonMandatoryString = tsValidateString(-1, false);
 
 export const tsValidateNumber = (mandatory = true): Validator<number> => {
 	return [tsValidateExists(mandatory),
@@ -213,3 +207,7 @@ export const tsValidateNonMandatoryObject = <T>(validator: ValidatorTypeResolver
 	return [tsValidateExists(false),
 		(input?: T) => tsValidateResult(input, validator)];
 };
+
+const validateColorValue = tsValidateRegexp(/^#(?:[0-9a-fA-F]{3}){1,2}$/);
+export const tsValidator_color = {value: validateColorValue};
+

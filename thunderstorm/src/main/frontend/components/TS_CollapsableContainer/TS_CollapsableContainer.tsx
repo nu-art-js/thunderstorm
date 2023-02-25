@@ -6,10 +6,11 @@ import {ReactNode} from 'react';
 
 type Props = {
 	headerRenderer: ReactNode | (() => ReactNode);
-	containerRenderer: ReactNode | ((contentRef: React.RefObject<any>) => ReactNode);
+	containerRenderer: ReactNode | (() => ReactNode);
 	collapsed?: boolean;
 	showCaret?: boolean
 	onCollapseToggle?: (collapseState: boolean) => void;
+	maxHeight?: number;
 	style?: TypedMap<string>;
 	className?: string;
 	customCaret?: ReactNode | (() => ReactNode)
@@ -62,10 +63,11 @@ export class TS_CollapsableContainer
 	private setContainerHeight = () => {
 		if (!this.state.containerRef.current)
 			return;
+		
 		const currentContent = this.state.contentRef.current;
 		const maxHeight = this.state.collapsed
 			? 0
-			: currentContent ? currentContent.getBoundingClientRect().height : 200;
+			: this.props.maxHeight ? this.props.maxHeight : currentContent.getBoundingClientRect().height;
 		this.state.containerRef.current.style.maxHeight = `${maxHeight}px`;
 	};
 
@@ -112,7 +114,9 @@ export class TS_CollapsableContainer
 	renderContainer() {
 		const className = _className('ts-collapsable-container__container', this.isCollapsed() ? 'collapsed' : undefined);
 		return <div className={className} ref={this.state.containerRef}>
-			{(typeof this.props.containerRenderer === 'function' ? this.props.containerRenderer(this.state.contentRef) : this.props.containerRenderer)}
+			<div ref={this.state.contentRef} style={{width: '100%'}}>
+				{(typeof this.props.containerRenderer === 'function' ? this.props.containerRenderer() : this.props.containerRenderer)}
+			</div>
 		</div>;
 	}
 

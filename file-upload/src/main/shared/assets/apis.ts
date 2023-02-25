@@ -1,6 +1,6 @@
 import {BaseUploaderFile, FileUploadResult, TempSecureUrl} from './types';
-import {HttpMethod} from '@nu-art/testelot';
-import {ApiDefResolver, BodyApi, QueryApi} from '@nu-art/thunderstorm';
+import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
+
 
 
 export type ApiStruct_AssetUploader = {
