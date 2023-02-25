@@ -204,7 +204,7 @@ export const tsValidateTimestamp = (interval?: number, mandatory = true): Valida
 
 export const tsValidateAudit = (range?: RangeTimestamp) => {
 	return (audit?: AuditBy) => {
-		return tsValidate(audit?.auditAt?.timestamp, tsValidateIsInRange([[0,
+		return tsValidateResult(audit?.auditAt?.timestamp, tsValidateIsInRange([[0,
 			Number.MAX_VALUE]]));
 	};
 };

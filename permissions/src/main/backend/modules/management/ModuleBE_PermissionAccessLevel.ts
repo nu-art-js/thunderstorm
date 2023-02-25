@@ -42,7 +42,7 @@ export class ModuleBE_PermissionAccessLevel_Class
 		return [{domainId, name}, {domainId, value}];
 	}
 
-	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, request?: ExpressRequest) {
+	protected async preUpsertProcessing(dbInstance: DB_PermissionAccessLevel, t?: FirestoreTransaction, request?: ExpressRequest) {
 		await ModuleBE_PermissionDomain.queryUnique({_id: dbInstance.domainId});
 
 		if (request) {
@@ -71,7 +71,7 @@ export class ModuleBE_PermissionAccessLevel_Class
 			const asyncs = [];
 			asyncs.push(...groups.map(async group => {
 				await ModuleBE_PermissionGroup.validateImpl(group);
-				await ModuleBE_PermissionGroup.assertUniqueness(transaction, group);
+				await ModuleBE_PermissionGroup.assertUniqueness(group, transaction);
 				callbackfn(group);
 			}));
 
