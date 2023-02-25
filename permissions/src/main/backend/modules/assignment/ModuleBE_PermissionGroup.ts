@@ -86,7 +86,7 @@ export class ModuleBE_PermissionGroup_Class
         }
     }
 
-    protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionGroup, request?: ExpressRequest) {
+    protected async preUpsertProcessing(dbInstance: DB_PermissionGroup, t?: FirestoreTransaction, request?: ExpressRequest) {
         if (request) {
             const account = await ModuleBE_Account.validateSession({}, request);
             dbInstance._audit = auditBy(account.email);
