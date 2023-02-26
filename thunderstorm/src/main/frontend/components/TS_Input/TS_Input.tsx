@@ -41,7 +41,7 @@ export type TS_InputProps<Key extends string | number> = TS_BaseInputProps<Key, 
 export class TS_Input<Key extends string = string>
 	extends TS_BaseInput<Key, TS_InputProps<Key>, HTMLInputElement> {
 	static defaultProps = {
-		forceAcceptKeys: ['ctrlKey', 'metaKey']
+		forceAcceptKeys: ['ctrlKey', 'metaKey'] as MetaKeys[]
 	};
 
 	onKeyDown = (ev: KeyboardEvent<HTMLInputElement>) => {
