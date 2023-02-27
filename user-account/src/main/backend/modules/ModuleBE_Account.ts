@@ -28,7 +28,7 @@ import {
 	tsValidate
 } from '@nu-art/ts-common';
 
-import {ModuleBE_Firebase, FirestoreCollection, FirestoreTransaction} from '@nu-art/firebase/backend';
+import {FirestoreCollection, FirestoreTransaction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {
 	ApiDef_UserAccountBE,
 	ApiStruct_UserAccountBE,
@@ -50,7 +50,7 @@ import {
 	ExpressRequest,
 	HeaderKey,
 	QueryRequestInfo,
-    ServerApi
+	ServerApi
 } from '@nu-art/thunderstorm/backend';
 import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
 import {QueryParams} from '@nu-art/thunderstorm';
@@ -92,6 +92,7 @@ export class ModuleBE_Account_Class
 	constructor() {
 		super();
 		this.setDefaultConfig({sessionTTLms: Day});
+
 		this.v1 = {
 			create: createBodyServerApi(ApiDef_UserAccountBE.v1.create, this.create),
 			login: createBodyServerApi(ApiDef_UserAccountBE.v1.login, this.login),
