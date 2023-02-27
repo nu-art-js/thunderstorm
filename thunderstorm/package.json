@@ -26,8 +26,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/firebase": "~0.0.1",
-    "@nu-art/ts-common": "~0.0.1",
+    "@nu-art/firebase": "../firebase",
+    "@nu-art/ts-common": "../ts-common",
     "abort-controller": "^3.0.0",
     "util": "^0.12.4",
     "axios": "^0.21.0",

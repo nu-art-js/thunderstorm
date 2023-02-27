@@ -51,7 +51,15 @@ import {
 	Request_PushRegister,
 	SubscribeProps
 } from '../../index';
-import {ApiDefServer, ApiModule, createBodyServerApi, dispatch_queryRequestInfo, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {
+	ApiDefServer,
+	ApiModule,
+	createBodyServerApi,
+	dispatch_queryRequestInfo,
+	ExpressRequest,
+	OnCleanupSchedulerAct,
+	ServerApi
+} from '@nu-art/thunderstorm/backend';
 
 
 type Config = {
@@ -83,7 +91,11 @@ export class ModuleBE_PushPubSub_Class
 	}
 
 	useRoutes() {
-		return this.v1;
+		return [
+			this.v1.register,
+			this.v1.unregister,
+			this.v1.registerAll,
+		] as ServerApi<any>[];
 
 	}
 

@@ -18,7 +18,7 @@
  */
 
 import {DB_ApiGenerator} from '@nu-art/db-api-generator/backend';
-import {ApiDefServer, ApiModule, createBodyServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {ApiDefServer, ApiModule, createBodyServerApi, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_PermissionUser, ApiStruct_PermissionsUser, DB_PermissionUser, Request_AssignAppPermissions} from '../../shared';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
 
@@ -37,7 +37,7 @@ export class ModuleBE_PermissionUserAPI_Class
 	}
 
 	useRoutes() {
-		return {...this.v1, ...this.pah};
+		return [...super.useRoutes(), this.pah.assignAppPermissions] as ServerApi<any>[];
 	}
 
 	async assignAppPermissions(body: Request_AssignAppPermissions, request?: ExpressRequest) {

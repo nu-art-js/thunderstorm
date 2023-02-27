@@ -18,8 +18,18 @@
 import {Dispatcher, Module, randomObject} from '@nu-art/ts-common';
 import {ApiDef_Examples, ApiStruct_Examples, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
 import {ModuleBE_Firebase, FirestoreCollection} from '@nu-art/firebase/backend';
-import {ApiDefServer, ApiException, ApiModule, assertProperty, createBodyServerApi, createQueryServerApi, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
+import {
+	ApiDefServer,
+	ApiException,
+	ApiModule,
+	assertProperty,
+	createBodyServerApi,
+	createQueryServerApi,
+	QueryRequestInfo,
+	ServerApi
+} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
+
 
 type Config = {
 	options: string[],
@@ -87,7 +97,19 @@ class ExampleModule_Class
 	}
 
 	useRoutes() {
-		return this.v1;
+		return [
+			this.v1.getMax,
+			this.v1.setMax,
+			this.v1.anotherEndpoint,
+			this.v1.customError,
+			this.v1.dispatchEndpoint,
+			this.v1.endpoint,
+			this.v1.testPush,
+			this.v1.getWithoutParam,
+			this.v1.getWithParams,
+			this.v1.postWithoutResponse,
+			this.v1.postWithResponse,
+		] as ServerApi<any>[];
 	}
 
 	async __queryRequestInfo(): Promise<{ key: string; data: any }> {
@@ -110,7 +132,6 @@ class DispatchModule_Class
 	extends Module<Config>
 	implements TestDispatch {
 	private numbers!: FirestoreCollection<{ n: number }>;
-
 
 	protected init(): void {
 		const firestore = ModuleBE_Firebase.createAdminSession().getFirestore();

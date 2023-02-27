@@ -18,10 +18,13 @@
     "type": "git",
     "url": "git+ssh://git@github.com:nu-art-js/ts-common.git"
   },
+  "files": [
+    "dist"
+  ],
   "license": "Apache-2.0",
   "author": "TacB0sS",
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "typedocs": "typedoc --options typedoc.json",
