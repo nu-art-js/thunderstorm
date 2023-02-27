@@ -122,6 +122,6 @@ const randomMessages = [
 	'You haven\'t gotten an error in a while, so here!',
 	'You really screwed up this time!',
 	'User Error - it\'s not our fault!',
-	'This component doesn\'t feel like working...',
-	'This component is having a bad day',
+	'This shared-components doesn\'t feel like working...',
+	'This shared-components is having a bad day',
 ];
