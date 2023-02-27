@@ -21,8 +21,8 @@
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.8.0",
-    "@nu-art/thunderstorm": "~0.0.1",
-    "@nu-art/ts-common": "~0.0.1",
+    "@nu-art/thunderstorm": "../thunderstorm/dist",
+    "@nu-art/ts-common": "../ts-common/dist",
     "typescript": "^4.5.0"
   }
 }

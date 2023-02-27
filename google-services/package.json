@@ -31,7 +31,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "~0.0.1",
+    "@nu-art/ts-common": "../ts-common/dist",
     "@google-cloud/pubsub": "3.3.0",
     "google-auth-library": "^6.0.6",
     "googleapis": "^55.0.0"

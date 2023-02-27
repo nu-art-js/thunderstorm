@@ -41,6 +41,7 @@
     "@nu-art/user-account": "file:.dependencies/user-account",
     "@slack/web-api": "^5.8.1",
     "body-parser": "^1.18.3",
+    "file-type": "^16.3.0",
     "compression": "^1.7.4",
     "debug": "^3.1.0",
     "express": "^4.16.3",
