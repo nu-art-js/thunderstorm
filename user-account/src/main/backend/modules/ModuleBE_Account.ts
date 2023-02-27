@@ -50,10 +50,10 @@ import {
 	ExpressRequest,
 	HeaderKey,
 	QueryRequestInfo,
-    ServerApi
+	ServerApi
 } from '@nu-art/thunderstorm/backend';
 import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
-import {QueryParams} from '@nu-art/thunderstorm';
+import {QueryApi, QueryParams, TypedApi} from '@nu-art/thunderstorm';
 
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
@@ -92,6 +92,7 @@ export class ModuleBE_Account_Class
 	constructor() {
 		super();
 		this.setDefaultConfig({sessionTTLms: Day});
+
 		this.v1 = {
 			create: createBodyServerApi(ApiDef_UserAccountBE.v1.create, this.create),
 			login: createBodyServerApi(ApiDef_UserAccountBE.v1.login, this.login),
