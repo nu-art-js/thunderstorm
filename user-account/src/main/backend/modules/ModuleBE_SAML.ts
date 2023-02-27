@@ -90,7 +90,11 @@ export class ModuleBE_SAML_Class
 	}
 
 	useRoutes() {
-		return this.v1;
+		return [
+			this.v1.loginSaml,
+			this.v1.assertSAML,
+		] as ServerApi<any>[];
+
 	}
 
 	protected init(): void {

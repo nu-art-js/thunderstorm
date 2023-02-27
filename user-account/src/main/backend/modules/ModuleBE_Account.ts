@@ -49,7 +49,8 @@ import {
 	createQueryServerApi,
 	ExpressRequest,
 	HeaderKey,
-	QueryRequestInfo
+	QueryRequestInfo,
+    ServerApi
 } from '@nu-art/thunderstorm/backend';
 import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
 import {QueryParams} from '@nu-art/thunderstorm';
@@ -101,7 +102,13 @@ export class ModuleBE_Account_Class
 	}
 
 	useRoutes() {
-		return this.v1;
+		return [
+			this.v1.create,
+			this.v1.login,
+			this.v1.validateSession,
+			this.v1.query,
+			this.v1.upsert,
+		] as ServerApi<any>[];
 	}
 
 	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; }> {
