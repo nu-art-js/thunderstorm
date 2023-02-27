@@ -3,6 +3,7 @@ import {ApiDefServer, ApiModule} from '../utils/api-caller-types';
 import {createQueryServerApi} from '../core/typed-api';
 import {Storm} from '../core/Storm';
 import {ApiDef_ServerInfo, ApiStruct_ServerInfo, Response_ServerInfo} from '../../shared';
+import { ServerApi } from './_imports';
 
 type Config = {};
 
@@ -19,7 +20,7 @@ export class ModuleBE_ServerInfo_Class
 	}
 
 	useRoutes() {
-		return this.v1;
+		return [this.v1.getServerInfo ] as ServerApi<any>[];
 	}
 
 	private getServerInfo = async (): Promise<Response_ServerInfo> => ({

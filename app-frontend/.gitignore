@@ -5,6 +5,7 @@
 node_modules
 
 # Thunderstorm
+.dependencies
 dist
 dist-test
 docs

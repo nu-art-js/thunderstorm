@@ -125,7 +125,7 @@ export class ModuleBE_PermissionsAssert_Class
 	}
 
 	useRoutes() {
-		return this.v1;
+		return [this.v1.assertUserPermissions] as ServerApi<any>[];
 	}
 
 	async assertUserPermissions(projectId: string, path: string, userId: string, requestCustomField: StringMap) {

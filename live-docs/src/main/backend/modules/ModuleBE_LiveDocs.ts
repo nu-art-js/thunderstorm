@@ -22,7 +22,7 @@ import {DB_Document, DB_DocumentHistory, LiveDocHistoryReqParams, LiveDocReqPara
 
 import {ModuleBE_Firebase, FirestoreCollection} from '@nu-art/firebase/backend';
 
-import {ApiDefServer, ApiException, ApiModule, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {ApiDefServer, ApiException, ApiModule, createBodyServerApi, createQueryServerApi, ServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_LiveDoc, ApiStruct_LiveDoc} from '../../shared/api';
 
 
@@ -45,7 +45,11 @@ export class ModuleBE_LiveDocs_Class
 	};
 
 	useRoutes() {
-		return this.v1;
+		return [
+			this.v1.get,
+			this.v1.upsert,
+			this.v1.history,
+		] as ServerApi<any>[];
 	}
 
 	constructor() {

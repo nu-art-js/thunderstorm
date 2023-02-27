@@ -23,7 +23,7 @@ import {Clause_Where, FirestoreQuery,} from '@nu-art/firebase';
 import {__stringify, _values, DB_BaseObject, DB_Object, Module, PreDB} from '@nu-art/ts-common';
 
 import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
-import {ApiDefServer, ApiException, ApiModule, ApiServerRouter, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {ApiDefServer, ApiException, ApiModule, createBodyServerApi, createQueryServerApi, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, UpgradeCollectionBody} from '../shared';
 import {BaseDB_ModuleBE, DBApiConfig} from './BaseDB_ModuleBE';
 import {DB_Object_Metadata, Metadata} from '../shared/types';
@@ -42,7 +42,7 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 	readonly dbModule: BaseDB_ModuleBE<DBType, any, Ks>;
 
 	constructor(dbModule: BaseDB_ModuleBE<DBType, any, Ks>) {
-		super();
+		super(dbModule.getName());
 		this.dbModule = dbModule;
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbModule.dbDef);
 		this.v1 = {
@@ -60,8 +60,20 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 		};
 	}
 
-	useRoutes(): ApiServerRouter<any> {
-		return this.v1;
+	useRoutes() {
+		return [
+			this.v1.query,
+			this.v1.sync,
+			this.v1.queryUnique,
+			this.v1.upsert,
+			this.v1.upsertAll,
+			this.v1.patch,
+			this.v1.delete,
+			this.v1.deleteQuery,
+			this.v1.deleteAll,
+			this.v1.upgradeCollection,
+			this.v1.metadata,
+		] as ServerApi<any>[];
 	}
 
 	init() {
