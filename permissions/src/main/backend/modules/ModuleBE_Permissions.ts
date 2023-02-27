@@ -83,14 +83,20 @@ export class ModuleBE_Permissions_Class
 			getUserUrlsPermissions: createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, Middleware_ValidateSession),
 			getUserCFsByShareGroups: new ServerApi_UserCFsByShareGroups(),
 			getUsersCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups, Middleware_ValidateSession),
-			// registerExternalProject: new ServerApi_RegisterExternalProject(),
 			registerExternalProject: createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
 			registerProject: createQueryServerApi(ApiDef_Permissions.v1.registerProject, this.registerProject),
+			// registerExternalProject: new ServerApi_RegisterExternalProject(),
 		};
 	}
 
 	useRoutes() {
-		return this.v1;
+		return [
+			this.v1.getUserUrlsPermissions ,
+			this.v1.getUserCFsByShareGroups ,
+			this.v1.getUsersCFsByShareGroups ,
+			this.v1.registerExternalProject ,
+			this.v1.registerProject as ServerApi<any>,
+		] as ServerApi<any>[];
 	}
 
 	protected init(): void {

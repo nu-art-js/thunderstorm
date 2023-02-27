@@ -51,7 +51,7 @@ export class ModuleBE_ActionProcessor_Class
 	};
 
 	useRoutes() {
-		return this.vv1;
+		return [this.vv1.execute, this.vv1.list];
 	}
 }
 

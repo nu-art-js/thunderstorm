@@ -20,6 +20,8 @@ import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {OnFirestoreBackupSchedulerAct, OnModuleCleanup} from './FirestoreBackupScheduler';
 import {FilterKeys, FirestoreQuery} from '@nu-art/firebase';
 import {BackupDoc} from '../../../shared/backup-types';
+import {ServerApi} from '../server/server-api';
+
 
 export type FirestoreBackupDetails<T extends TS_Object> = {
 	moduleKey: string,
@@ -31,7 +33,6 @@ export type FirestoreBackupDetails<T extends TS_Object> = {
 
 const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, '__onFirestoreBackupSchedulerAct'>('__onFirestoreBackupSchedulerAct');
 const dispatch_onModuleCleanup = new Dispatcher<OnModuleCleanup, '__onCleanupInvoked'>('__onCleanupInvoked');
-
 
 class ModuleBE_Backup_Class
 	extends Module<{}>
@@ -48,7 +49,10 @@ class ModuleBE_Backup_Class
 	}
 
 	useRoutes() {
-		return this.vv1;
+		return [
+			this.vv1.initiateBackup,
+			this.vv1.fetchBackupDocks,
+		] as ServerApi<any>[];
 	}
 
 	fetchBackupDocks = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
@@ -79,11 +83,12 @@ class ModuleBE_Backup_Class
 			.getCollection<BackupDoc>('firestore-backup-status', ['moduleKey', 'timestamp'] as FilterKeys<BackupDoc>);
 	};
 
-	public getBackupDetails = (): FirestoreBackupDetails<any>[] => filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule()).reduce<FirestoreBackupDetails<any>[]>((resultBackupArray, currentBackup) => {
-		if (currentBackup)
-			resultBackupArray.push(...currentBackup);
-		return resultBackupArray;
-	}, []);
+	public getBackupDetails = (): FirestoreBackupDetails<any>[] => filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule())
+		.reduce<FirestoreBackupDetails<any>[]>((resultBackupArray, currentBackup) => {
+			if (currentBackup)
+				resultBackupArray.push(...currentBackup);
+			return resultBackupArray;
+		}, []);
 
 	initiateBackup = async () => {
 		try {

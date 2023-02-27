@@ -24,7 +24,7 @@ import {ModuleBE_Firebase, FirestoreCollection, StorageWrapperBE} from '@nu-art/
 import {ApiDef_BugReport, ApiStruct_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../..';
 
 import * as JSZip from 'jszip';
-import {ApiDefServer, ApiModule, ApiResponse, dispatch_queryRequestInfo, ExpressRequest, ServerApi_Post} from '@nu-art/thunderstorm/backend';
+import {ApiDefServer, ApiModule, ApiResponse, dispatch_queryRequestInfo, ExpressRequest, ServerApi, ServerApi_Post} from '@nu-art/thunderstorm/backend';
 
 export type TicketDetails = {
 	platform: string
@@ -68,7 +68,7 @@ export class ModuleBE_BugReport_Class
 	}
 
 	useRoutes() {
-		return this.v1;
+		return [this.v1.sendBugReport as ServerApi<any>];
 	}
 
 	protected init(): void {

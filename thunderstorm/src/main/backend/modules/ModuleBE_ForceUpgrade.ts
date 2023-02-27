@@ -35,6 +35,7 @@ import {ExpressRequest, ServerApi_Middleware} from '../utils/types';
 import {createQueryServerApi} from '../core/typed-api';
 import {HeaderKey} from './server/HeaderKey';
 import {ApiDefServer, ApiModule} from '../utils/api-caller-types';
+import {ServerApi} from './_imports';
 
 
 type VersionConfig = {
@@ -71,7 +72,7 @@ class ModuleBE_ForceUpgrade_Class
 	}
 
 	useRoutes() {
-		return this.v1;
+		return [this.v1.assertAppVersion] as ServerApi<any>[];
 	}
 
 	compareVersion(request?: ExpressRequest): UpgradeRequired {
