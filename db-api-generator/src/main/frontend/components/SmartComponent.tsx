@@ -47,13 +47,13 @@ export type State_SmartComponent = {
  * ## The new way to render things in React
  * ## <ins>Intro:</ins>
  *
- * This component is an async extension on TS BaseComponent.
- * The smart component provides its deriveStateFromProps a previous state, to be able to calculate the new state based
+ * This shared-components is an async extension on TS BaseComponent.
+ * The smart shared-components provides its deriveStateFromProps a previous state, to be able to calculate the new state based
  * on previous data, as well as new props.
- * If provided a "modules" prop, the component will render a loader while waiting for the modules in the prop to finish their
+ * If provided a "modules" prop, the shared-components will render a loader while waiting for the modules in the prop to finish their
  * sync cycle and be ready, e.g:
  *
- * This component will wait for both the values and the references modules to finish sync before loading its own content.
+ * This shared-components will wait for both the values and the references modules to finish sync before loading its own content.
  * ```js
  * static defaultProps = {
  *   modules: [ModuleFE_Values, ModuleFE_References]
@@ -84,11 +84,11 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	 *
 	 * 1. Creates and binds a listener function for each module provided in the "modules" prop.
 	 * 		This function waits for a sync event and calls the reDeriveState function.
-	 * 	 	only when all modules are ready will the component phase change to synced and will render actual content.
+	 * 	 	only when all modules are ready will the shared-components phase change to synced and will render actual content.
 	 *
 	 * 2. Binds extending class render function and overwrites it to be able to:
-	 * 		2.1. wrap the content in a TS_ErrorBoundary to contain and display crashes in the component.
-	 * 		2.2. render whatever the "renderLoader" function returns while the component is not synced.
+	 * 		2.1. wrap the content in a TS_ErrorBoundary to contain and display crashes in the shared-components.
+	 * 		2.2. render whatever the "renderLoader" function returns while the shared-components is not synced.
 	 */
 	constructor(p: Props) {
 		super(p);
@@ -132,7 +132,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	};
 
 	/**
-	 * This function gates the actual deriveStateFromProps from being called when the component
+	 * This function gates the actual deriveStateFromProps from being called when the shared-components
 	 * is waiting for the modules in the "modules" prop to finish syncing.
 	 *
 	 * After deriveStateFromProps is called, will check to see if more pending props exist and if so will reDerive again
