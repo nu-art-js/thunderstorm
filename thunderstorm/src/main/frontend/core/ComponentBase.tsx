@@ -82,7 +82,7 @@ export abstract class BaseComponent<P = any, State = any>
 		if (!this.shouldReDeriveState(nextProps))
 			return;
 
-		if (this.state) //skip the first time when the component MUST update
+		if (this.state) //skip the first time when the shared-components MUST update
 			this.logDebug('Received new props, calling deriveStateFromProps', nextProps as {});
 
 		const state = this._deriveStateFromProps(nextProps, {...this.state});
