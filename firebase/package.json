@@ -31,8 +31,8 @@
     "test": "ts-mocha --exit -p src/test/tsconfig.json src/test/run-all-tests.ts"
   },
   "dependencies": {
-    "@nu-art/ts-common": "~0.0.1",
-    "@nu-art/google-services": "~0.0.1",
+    "@nu-art/ts-common": "../ts-common/dist",
+    "@nu-art/google-services": "../google-services/dist",
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/storage": "^5.0.0",
     "@google-cloud/firestore": "^4.8.1",

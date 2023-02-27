@@ -18,8 +18,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "dependencies": {
-    "@nu-art/thunderstorm": "~0.0.1",
-    "@nu-art/ts-common": "~0.0.1",
+    "@nu-art/thunderstorm": "../thunderstorm/dist",
+    "@nu-art/ts-common": "../ts-common/dist",
     "@octokit/plugin-paginate-rest": "2.2.1",
     "@octokit/rest": "18.0.9",
     "jsonwebtoken": "^9.0.0"

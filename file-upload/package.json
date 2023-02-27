@@ -29,11 +29,11 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/db-api-generator": "~0.0.1",
-    "@nu-art/firebase": "~0.0.1",
-    "@nu-art/push-pub-sub": "~0.0.1",
-    "@nu-art/thunderstorm": "~0.0.1",
-    "@nu-art/ts-common": "~0.0.1",
+    "@nu-art/db-api-generator": "../db-api-generator/dist",
+    "@nu-art/firebase": "../firebase/dist",
+    "@nu-art/push-pub-sub": "../push-pub-sub/dist",
+    "@nu-art/thunderstorm": "../thunderstorm/dist",
+    "@nu-art/ts-common": "../ts-common/dist",
     "file-type": "^16.3.0"
   },
   "devDependencies": {
