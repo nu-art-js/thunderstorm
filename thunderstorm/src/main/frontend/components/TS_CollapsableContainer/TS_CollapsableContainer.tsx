@@ -72,7 +72,7 @@ export class TS_CollapsableContainer
 	};
 
 	private toggleCollapse = () => {
-		//If component is controlled, return
+		//If shared-components is controlled, return
 		this.props.onCollapseToggle?.(this.isCollapsed());
 		if (this.props.collapsed !== undefined)
 			return;
