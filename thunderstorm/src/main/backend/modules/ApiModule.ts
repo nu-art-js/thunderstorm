@@ -19,4 +19,4 @@ export class ApiModule_Class
 
 export const ApiModule = new ApiModule_Class();
 
-export const addRoutes: (apis: ServerApi<any>[]) => void = ApiModule.addRoutes;
+export const addRoutes: (apis: ServerApi<any>[]) => void = (apis: ServerApi<any>[]) => ApiModule.addRoutes(apis);
