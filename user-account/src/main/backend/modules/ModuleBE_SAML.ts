@@ -30,7 +30,7 @@ import {
 	Response_Auth,
 	Response_LoginSAML
 } from './_imports';
-import {ApiDefServer, ApiException, ApiModule, ApiResponse, createQueryServerApi, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, ApiException, ApiResponse, createQueryServerApi, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_Account} from './ModuleBE_Account';
 
 
@@ -74,27 +74,16 @@ class AssertSamlToken
 }
 
 export class ModuleBE_SAML_Class
-	extends Module<SamlConfig>
-	implements ApiDefServer<ApiStruct_SAML_BE>, ApiModule {
+	extends Module<SamlConfig> {
 
 	public identityProvider!: IdentityProvider;
-	readonly v1: ApiDefServer<ApiStruct_SAML_BE>['v1'];
 
 	constructor() {
 		super();
-
-		this.v1 = {
-			loginSaml: createQueryServerApi(ApiDef_SAML_BE.v1.loginSaml, this.loginRequest),
-			assertSAML: new AssertSamlToken(),
-		};
-	}
-
-	useRoutes() {
-		return [
-			this.v1.loginSaml,
-			this.v1.assertSAML,
-		] as ServerApi<any>[];
-
+		addRoutes([
+			createQueryServerApi(ApiDef_SAML_BE.v1.loginSaml, this.loginRequest),
+			new AssertSamlToken()
+		]);
 	}
 
 	protected init(): void {

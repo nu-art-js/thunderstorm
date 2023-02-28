@@ -24,7 +24,7 @@ import {ServerApi_Middleware} from '../../../utils/types';
 import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
 import {Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {ApiModule} from '../../../utils/api-caller-types';
+import {ApiModule_Class} from '../../ApiModule';
 
 
 export type HttpRoute = {
@@ -46,13 +46,13 @@ export class RouteResolver_ModulePath
 	}
 
 	public resolveApi() {
-		const modules: (Module & ApiModule)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ApiModule).useRoutes);
+		const modules: (Module | ApiModule_Class)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ApiModule_Class).useRoutes);
 
 		//Filter Api modules
 		const routes: ServerApi<any>[] = [];
 		for (const module of modules) {
 			this.logInfo(module.getName());
-			const _routes = module.useRoutes();
+			const _routes = (module as unknown as ApiModule_Class).useRoutes();
 			routes.push(..._routes);
 		}
 
@@ -64,7 +64,6 @@ export class RouteResolver_ModulePath
 			api.addMiddlewares(...this.middlewares);
 			api.route(this.express, this.initialPath);
 		});
-
 	}
 
 	public printRoutes(): void {

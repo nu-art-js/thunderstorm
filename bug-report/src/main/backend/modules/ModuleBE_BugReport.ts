@@ -19,12 +19,12 @@
 
 import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex, Module, padNumber} from '@nu-art/ts-common';
 
-import {ModuleBE_Firebase, FirestoreCollection, StorageWrapperBE} from '@nu-art/firebase/backend';
+import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
 
 import {ApiDef_BugReport, ApiStruct_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../..';
 
 import * as JSZip from 'jszip';
-import {ApiDefServer, ApiModule, ApiResponse, dispatch_queryRequestInfo, ExpressRequest, ServerApi, ServerApi_Post} from '@nu-art/thunderstorm/backend';
+import {addRoutes, ApiResponse, dispatch_queryRequestInfo, ExpressRequest, ServerApi_Post} from '@nu-art/thunderstorm/backend';
 
 export type TicketDetails = {
 	platform: string
@@ -52,23 +52,15 @@ class ServerApi_SendReport
 }
 
 export class ModuleBE_BugReport_Class
-	extends Module<Config>
-	implements ApiDefServer<ApiStruct_BugReport>, ApiModule {
+	extends Module<Config> {
 
 	private bugReport!: FirestoreCollection<DB_BugReport>;
 	private storage!: StorageWrapperBE;
 	private ticketCreatorApis: TicketCreatorApi[] = [];
-	readonly v1: ApiDefServer<ApiStruct_BugReport>['v1'];
 
 	constructor() {
 		super();
-		this.v1 = {
-			sendBugReport: new ServerApi_SendReport(),
-		};
-	}
-
-	useRoutes() {
-		return [this.v1.sendBugReport as ServerApi<any>];
+		addRoutes([new ServerApi_SendReport()]);
 	}
 
 	protected init(): void {

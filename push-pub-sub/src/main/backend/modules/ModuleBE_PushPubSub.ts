@@ -30,17 +30,16 @@ import {
 } from '@nu-art/ts-common';
 
 import {
-	ModuleBE_Firebase,
 	FirebaseType_BatchResponse,
 	FirebaseType_Message,
 	FirestoreCollection,
 	FirestoreTransaction,
+	ModuleBE_Firebase,
 	PushMessagesWrapperBE
 } from '@nu-art/firebase/backend';
 // noinspection TypeScriptPreferShortImport
 import {
 	ApiDef_PushMessages,
-	ApiStruct_PushMessages,
 	DB_Notifications,
 	DB_PushKeys,
 	DB_PushSession,
@@ -51,15 +50,7 @@ import {
 	Request_PushRegister,
 	SubscribeProps
 } from '../../index';
-import {
-	ApiDefServer,
-	ApiModule,
-	createBodyServerApi,
-	dispatch_queryRequestInfo,
-	ExpressRequest,
-	OnCleanupSchedulerAct,
-	ServerApi
-} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, dispatch_queryRequestInfo, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 
 
 type Config = {
@@ -73,30 +64,19 @@ type TempMessages = {
 
 export class ModuleBE_PushPubSub_Class
 	extends Module<Config>
-	implements OnCleanupSchedulerAct, ApiDefServer<ApiStruct_PushMessages>, ApiModule {
+	implements OnCleanupSchedulerAct {
 
 	private pushSessions!: FirestoreCollection<DB_PushSession>;
 	private pushKeys!: FirestoreCollection<DB_PushKeys>;
 	private messaging!: PushMessagesWrapperBE;
-	readonly v1: ApiDefServer<ApiStruct_PushMessages>['v1'];
 
 	constructor() {
 		super();
-
-		this.v1 = {
-			register: createBodyServerApi(ApiDef_PushMessages.v1.register, this.register),
-			unregister: createBodyServerApi(ApiDef_PushMessages.v1.unregister, this.register),
-			registerAll: createBodyServerApi(ApiDef_PushMessages.v1.registerAll, this.register)
-		};
-	}
-
-	useRoutes() {
-		return [
-			this.v1.register,
-			this.v1.unregister,
-			this.v1.registerAll,
-		] as ServerApi<any>[];
-
+		addRoutes([
+			createBodyServerApi(ApiDef_PushMessages.v1.register, this.register),
+			createBodyServerApi(ApiDef_PushMessages.v1.unregister, this.register),
+			createBodyServerApi(ApiDef_PushMessages.v1.registerAll, this.register)
+		]);
 	}
 
 	protected init(): void {

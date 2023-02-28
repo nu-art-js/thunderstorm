@@ -18,19 +18,10 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {
-	ApiDef_AdminBugReport,
-	ApiStruct_AdminBugReport,
-	DB_BugReport,
-	Paths
-} from '../../shared/api';
+import {ApiDef_AdminBugReport, ApiStruct_AdminBugReport, DB_BugReport, Paths} from '../../shared/api';
 
-import {
-	ModuleBE_Firebase,
-	FirestoreCollection,
-	StorageWrapperBE
-} from '@nu-art/firebase/backend';
-import {ApiDefServer, ApiResponse, ExpressRequest, ServerApi_Get, ServerApi_Post} from '@nu-art/thunderstorm/backend';
+import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
+import {addRoutes, ApiResponse, ExpressRequest, ServerApi_Get, ServerApi_Post} from '@nu-art/thunderstorm/backend';
 
 type Config = {
 	projectId: string
@@ -67,16 +58,14 @@ export class ModuleBE_AdminBR_Class
 
 	private bugReport!: FirestoreCollection<DB_BugReport>;
 	private storage!: StorageWrapperBE;
-	readonly v1: ApiDefServer<ApiStruct_AdminBugReport>['v1'];
 
 	constructor() {
 		super();
-		this.v1 = {
-			downloadLogs: new ServerApi_DownloadLogs(),
-			retrieveLogs: new ServerApi_GetReport(),
-		};
+		addRoutes([
+			new ServerApi_DownloadLogs(),
+			new ServerApi_GetReport()
+		]);
 	}
-
 
 	protected init(): void {
 		const sessAdmin = ModuleBE_Firebase.createAdminSession();
