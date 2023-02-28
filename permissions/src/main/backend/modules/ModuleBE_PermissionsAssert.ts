@@ -19,9 +19,8 @@
 
 import {_keys, BadImplementationException, batchActionParallel, filterDuplicates, Module, StringMap} from '@nu-art/ts-common';
 import {
-	ApiDefServer,
+	addRoutes,
 	ApiException,
-	ApiModule,
 	ApiResponse,
 	ExpressRequest,
 	ExpressResponse,
@@ -70,8 +69,7 @@ class ServerApi_AssertPermissions
 }
 
 export class ModuleBE_PermissionsAssert_Class
-	extends Module<Config>
-	implements ApiDefServer<ApiStruct_PermissionsAssert>, ApiModule {
+	extends Module<Config> {
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
 		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
 
@@ -114,18 +112,10 @@ export class ModuleBE_PermissionsAssert_Class
 		await action(projectId, customFields);
 	};
 
-	readonly v1: ApiDefServer<ApiStruct_PermissionsAssert>['v1'];
 
 	constructor() {
 		super();
-		this.v1 = {
-			assertUserPermissions: new ServerApi_AssertPermissions(),
-			// assertUserPermissions: createBodyServerApi(ApiDef_PermissionsAssert.v1.assertUserPermissions, this.assertUserPermissions),
-		};
-	}
-
-	useRoutes() {
-		return [this.v1.assertUserPermissions] as ServerApi<any>[];
+		addRoutes([new ServerApi_AssertPermissions()]);
 	}
 
 	async assertUserPermissions(projectId: string, path: string, userId: string, requestCustomField: StringMap) {

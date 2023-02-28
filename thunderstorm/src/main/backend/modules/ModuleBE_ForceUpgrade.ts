@@ -22,20 +22,11 @@
 import {__stringify, BadImplementationException, compareVersions, ImplementationMissingException, Module} from '@nu-art/ts-common';
 
 import {ApiException} from '../exceptions';
-import {
-	ApiDef_ForceUpgrade,
-	ApiStruct_ForceUpgrade,
-	Browser,
-	HeaderKey_AppVersion,
-	HeaderKey_BrowserType,
-	HeaderKey_UserAgent,
-	UpgradeRequired
-} from '../../shared';
+import {ApiDef_ForceUpgrade, Browser, HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent, UpgradeRequired} from '../../shared';
 import {ExpressRequest, ServerApi_Middleware} from '../utils/types';
 import {createQueryServerApi} from '../core/typed-api';
 import {HeaderKey} from './server/HeaderKey';
-import {ApiDefServer, ApiModule} from '../utils/api-caller-types';
-import {ServerApi} from './_imports';
+import {addRoutes} from './ApiModule';
 
 
 type VersionConfig = {
@@ -57,22 +48,14 @@ const DefaultRegexps: { [k in Browser]: string } = {
 };
 
 class ModuleBE_ForceUpgrade_Class
-	extends Module<VersionConfig>
-	implements ApiDefServer<ApiStruct_ForceUpgrade>, ApiModule {
-	readonly v1: ApiDefServer<ApiStruct_ForceUpgrade>['v1'];
+	extends Module<VersionConfig> {
 	static readonly Middleware: ServerApi_Middleware = async (request: ExpressRequest) => ModuleBE_ForceUpgrade.assertVersion(request);
 
 	constructor() {
 		super();
-		this.v1 = {
-			assertAppVersion: createQueryServerApi(ApiDef_ForceUpgrade.v1.assertAppVersion, async (params, middlewares, request) => {
-				return this.compareVersion(request);
-			}),
-		};
-	}
-
-	useRoutes() {
-		return [this.v1.assertAppVersion] as ServerApi<any>[];
+		addRoutes([createQueryServerApi(ApiDef_ForceUpgrade.v1.assertAppVersion, async (params, middlewares, request) => {
+			return this.compareVersion(request);
+		})]);
 	}
 
 	compareVersion(request?: ExpressRequest): UpgradeRequired {

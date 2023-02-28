@@ -31,7 +31,6 @@ import {
 import {FirestoreCollection, FirestoreTransaction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {
 	ApiDef_UserAccountBE,
-	ApiStruct_UserAccountBE,
 	DB_Account,
 	DB_Session,
 	HeaderKey_SessionId,
@@ -41,17 +40,7 @@ import {
 	Response_Auth,
 	UI_Account
 } from './_imports';
-import {
-	ApiDefServer,
-	ApiException,
-	ApiModule,
-	createBodyServerApi,
-	createQueryServerApi,
-	ExpressRequest,
-	HeaderKey,
-	QueryRequestInfo,
-	ServerApi
-} from '@nu-art/thunderstorm/backend';
+import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, ExpressRequest, HeaderKey, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
 import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
 import {QueryParams} from '@nu-art/thunderstorm';
 
@@ -85,31 +74,20 @@ function getUIAccount(account: DB_Account): UI_Account {
 
 export class ModuleBE_Account_Class
 	extends Module<Config>
-	implements QueryRequestInfo, ApiDefServer<ApiStruct_UserAccountBE>, ApiModule {
+	implements QueryRequestInfo {
 
-	readonly v1: ApiDefServer<ApiStruct_UserAccountBE>['v1'];
 
 	constructor() {
 		super();
 		this.setDefaultConfig({sessionTTLms: Day});
 
-		this.v1 = {
-			create: createBodyServerApi(ApiDef_UserAccountBE.v1.create, this.create),
-			login: createBodyServerApi(ApiDef_UserAccountBE.v1.login, this.login),
-			validateSession: createQueryServerApi(ApiDef_UserAccountBE.v1.validateSession, this.validateSession),
-			query: createQueryServerApi(ApiDef_UserAccountBE.v1.query, this.listUsers),
-			upsert: createBodyServerApi(ApiDef_UserAccountBE.v1.upsert, this.upsert),
-		};
-	}
-
-	useRoutes() {
-		return [
-			this.v1.create,
-			this.v1.login,
-			this.v1.validateSession,
-			this.v1.query,
-			this.v1.upsert,
-		] as ServerApi<any>[];
+		addRoutes([
+			createBodyServerApi(ApiDef_UserAccountBE.v1.create, this.create),
+			createBodyServerApi(ApiDef_UserAccountBE.v1.login, this.login),
+			createQueryServerApi(ApiDef_UserAccountBE.v1.validateSession, this.validateSession),
+			createQueryServerApi(ApiDef_UserAccountBE.v1.query, this.listUsers),
+			createBodyServerApi(ApiDef_UserAccountBE.v1.upsert, this.upsert)
+		]);
 	}
 
 	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; }> {
