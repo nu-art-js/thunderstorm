@@ -58,11 +58,14 @@ export class ModuleBE_SyncManager_Class
 	private dbModules!: BaseDB_ModuleBE<DB_Object>[];
 	private syncData!: FirebaseRef<Type_SyncData>;
 	private deletedCount!: FirebaseRef<number>;
+	public checkSyncApi;
 
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
-		addRoutes([createQueryServerApi(ApiDef_SyncManager.v1.checkSync, this.fetchDBSyncData)]);
+		this.checkSyncApi = createQueryServerApi(ApiDef_SyncManager.v1.checkSync, this.fetchDBSyncData);
+
+		addRoutes([this.checkSyncApi]);
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
 
