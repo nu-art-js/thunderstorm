@@ -4,9 +4,12 @@ import {MUSTNeverHappenException} from '@nu-art/ts-common';
 
 export class ApiModule_Class
 	extends Module {
-	private routes: ServerApi<any>[] = [];
+	private routes!: ServerApi<any>[];
 
 	addRoutes(apis: ServerApi<any>[]) {
+		if (!this.routes)
+			this.routes = [];
+
 		apis.forEach(api => {
 			if (this.routes.find(_api => _api.apiDef.path === api.apiDef.path))
 				throw new MUSTNeverHappenException(`There is more than one API with the path '${api.apiDef.path}'!!!`);
