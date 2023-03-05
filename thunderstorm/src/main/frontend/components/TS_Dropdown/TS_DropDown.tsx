@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {BadImplementationException, cloneArr, Filter} from '@nu-art/ts-common';
+import {BadImplementationException, Filter} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -34,7 +34,7 @@ import {LL_V_L} from '../Layouts';
 
 type State<ItemType> = {
 	open?: boolean
-	items: ItemType[];
+	adapter: Adapter<ItemType>;
 	selected?: ItemType
 	hover?: ItemType
 	filterText?: string
@@ -96,7 +96,7 @@ export class TS_DropDown<ItemType>
 		<TS_Input
 			type="text"
 			value={dropDown.props.inputValue}
-			onChange={(filterText) => dropDown.setState({filterText})}
+			onChange={(filterText) => dropDown.reDeriveState({filterText})}
 			focus={true}
 			style={{width: '100%'}}
 			placeholder={dropDown.props.placeholder || ''}
@@ -107,7 +107,7 @@ export class TS_DropDown<ItemType>
 			// 	} else
 			// 		dropDown.onSelected(dropDown.state.adapter.data[0]);
 			// }}
-			onCancel={() => dropDown.setState({open: false, filterText: undefined})}
+			onCancel={() => dropDown.reDeriveState({open: false, filterText: undefined})}
 			onKeyDown={dropDown.keyEventHandler}
 		/>;
 
@@ -121,19 +121,23 @@ export class TS_DropDown<ItemType>
 		super(props);
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<Props_DropDown<ItemType>>, nextState: Readonly<State<ItemType>>, nextContext: any): boolean {
-		return true;
-	}
+	// shouldComponentUpdate(nextProps: Readonly<Props_DropDown<ItemType>>, nextState: Readonly<State<ItemType>>, nextContext: any): boolean {
+	// 	return true;
+	// }
 
-	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
-		const ref = this.props.innerRef || this.state?.dropDownRef || React.createRef<HTMLDivElement>();
-		const adapter = typeof nextProps.adapter === 'function' ? nextProps.adapter() : nextProps.adapter;
-		return {
-			items: adapter.data,
-			selected: nextProps.selected,
-			filterText: nextProps.inputValue,
-			dropDownRef: ref
-		};
+	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>, state?: Partial<State<ItemType>>): State<ItemType> | undefined {
+		const nextState: State<ItemType> = this.state ? {...this.state} : {} as State<ItemType>;
+		const nextAdapter = typeof nextProps.adapter === 'function' ? nextProps.adapter(state?.filterText) : nextProps.adapter;
+		const prevAdapter = typeof this.props.adapter === 'function' ? this.props.adapter(state?.filterText) : this.props.adapter;
+		nextState.selected = nextProps.selected;
+		nextState.filterText = nextProps.inputValue;
+		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
+
+		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText && state.filterText !== nextState.filterText)) {
+			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
+		}
+
+		return {...nextState, ...state, adapter: nextState.adapter};
 	}
 
 	// ######################## Logic ########################
@@ -173,13 +177,11 @@ export class TS_DropDown<ItemType>
 		if (e.key === 'Enter') {
 			e.persist();
 			const filterText = this.state.filterText;
-			const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(filterText) : this.props.adapter;
-			adapter.data = cloneArr(this.state.items);
 			if (filterText) {
 				this.closeList(e);
-				this.props.onNoMatchingSelectionForString?.(filterText, adapter.data, e);
+				this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e);
 			} else
-				this.onSelected(adapter.data[0], e);
+				this.onSelected(this.state.adapter.data[0], e);
 		}
 
 		if (e.key === 'Escape')
@@ -189,6 +191,23 @@ export class TS_DropDown<ItemType>
 		// 	return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
 		// }
 	};
+
+	private createAdapter(adapterToClone: Adapter<ItemType>, limit?: number, filterText?: string): Adapter<ItemType> {
+		const filter = this.props.filter;
+		adapterToClone.data = limit ? adapterToClone.data.slice(0, limit) : adapterToClone.data;
+		if (filter && filterText) {
+			try {
+				const data = filter.filterSort(adapterToClone.data, filterText);
+				const newAdapter = adapterToClone.clone(new Adapter<ItemType>(data));
+				newAdapter.data = data;
+				return newAdapter;
+			} catch (e: any) {
+				this.logError(e);
+				throw new BadImplementationException(e);
+			}
+		}
+		return adapterToClone;
+	}
 
 	private getChildrenContainerMaxHeight = (dropdownRef: React.RefObject<HTMLDivElement>, dir: 'top' | 'bottom'): number => {
 		const rect = dropdownRef.current?.getBoundingClientRect()!;
@@ -251,7 +270,6 @@ export class TS_DropDown<ItemType>
 						stopPropagation(e);
 						return;
 					}
-
 					this.state.open ? this.closeList(e) : this.setState({open: true});
 				}}>
 
@@ -269,21 +287,6 @@ export class TS_DropDown<ItemType>
 
 		let className = 'ts-dropdown__items-container';
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
-		const filter = this.props.filter;
-		const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(this.state.filterText) : this.props.adapter;
-		adapter.data = cloneArr(this.state.items);
-		if (filter && this.state.filterText) {
-			try {
-				adapter.data = filter.filterSort(adapter.data, this.state.filterText);
-			} catch (e: any) {
-				this.logError(e);
-				throw new BadImplementationException(e);
-			}
-		}
-
-		if (this.props.limitItems) {
-			adapter.data = adapter.data.slice(0, this.props.limitItems);
-		}
 
 		const style: CSSProperties = {};
 		if (this.state?.dropDownRef.current) {
@@ -314,7 +317,7 @@ export class TS_DropDown<ItemType>
 			style.width = containerData.width;
 		}
 
-		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && adapter.data.length === 0) {
+		if ((!this.props.filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0) {
 			if (this.props.noOptionsRenderer)
 				return <div className="ts-dropdown__empty" style={style}>
 					{(typeof this.props.noOptionsRenderer === 'function' ? this.props.noOptionsRenderer() : this.props.noOptionsRenderer)}
@@ -325,7 +328,7 @@ export class TS_DropDown<ItemType>
 		return <LL_V_L className={className} style={style}>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={() => this.onSelected()}>Unselect</div>}
 			<TS_Tree
-				adapter={adapter}
+				adapter={this.state.adapter}
 				selectedItem={this.state.selected}
 				onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
 				className={'ts-dropdown__items'}
