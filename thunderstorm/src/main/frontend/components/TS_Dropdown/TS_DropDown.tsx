@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {BadImplementationException, Filter, clamp} from '@nu-art/ts-common';
+import {BadImplementationException, Filter, clamp, LogLevel} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -117,6 +117,10 @@ export class TS_DropDown<ItemType>
 
 	// ######################## Life Cycle ########################
 
+	_constructor() {
+		this.logger.setMinLevel(LogLevel.Verbose);
+	}
+
 	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
 	}
@@ -139,9 +143,12 @@ export class TS_DropDown<ItemType>
 		}
 
 		return {
-			...nextState,
-			...state,
+			open: state?.open,
 			adapter: nextState.adapter,
+			selected: nextState.selected,
+			hover: state?.hover,
+			filterText: state?.filterText,
+			dropDownRef: nextState.dropDownRef,
 			focusedItem: nextState.focusedItem,
 		};
 	}
@@ -155,23 +162,19 @@ export class TS_DropDown<ItemType>
 		return this.state.dropDownRef.current?.closest(this.props.boundingParentSelector);
 	}
 
-	private closeList = (e?: InputEvent, state: State<ItemType> = {} as State<ItemType>) => {
+	private closeList = (e?: InputEvent, selectedItem?: ItemType, action?: () => (void | Promise<void>)) => {
 		if (this.props.disabled)
 			return;
 
 		if (e)
 			stopPropagation(e);
 
-		this.reDeriveState({...state, open: false, filterText: undefined, focusedItem: undefined});
+		this.setState({open: false, filterText: undefined, focusedItem: undefined, selected: selectedItem}, action);
 	};
 
 	onSelected = (item?: ItemType, e?: InputEvent) => {
-		const newState = {} as State<ItemType>;
-		if (!this.props.allowManualSelection)
-			newState.selected = item;
-
-		this.closeList(e, newState);
-		this.props.onSelected(item as (typeof this.props.canUnselect extends true ? ItemType | undefined : ItemType));
+		this.closeList(e, item,
+			() => this.props.onSelected(item as (typeof this.props.canUnselect extends true ? ItemType | undefined : ItemType)));
 	};
 
 	private inputKeyEventHandler = (e: React.KeyboardEvent) => {
@@ -191,6 +194,7 @@ export class TS_DropDown<ItemType>
 				this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e);
 			} else
 				this.onSelected(this.state.adapter.data[0], e);
+
 		}
 
 		if (e.key === 'Escape')
