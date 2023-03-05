@@ -38,6 +38,7 @@ type State<ItemType> = {
 	hover?: ItemType
 	filterText?: string
 	dropDownRef: React.RefObject<HTMLDivElement>;
+	treeContainerRef: React.RefObject<HTMLDivElement>;
 	focusedItem?: ItemType;
 }
 
@@ -116,7 +117,7 @@ export class TS_DropDown<ItemType>
 	};
 
 	// ######################## Life Cycle ########################
-	
+
 	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
 	}
@@ -132,6 +133,7 @@ export class TS_DropDown<ItemType>
 		nextState.selected = nextProps.selected;
 		nextState.filterText ??= nextProps.inputValue;
 		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
+		nextState.treeContainerRef = state?.treeContainerRef ?? React.createRef();
 
 		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText)) {
 			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
@@ -146,6 +148,7 @@ export class TS_DropDown<ItemType>
 			filterText: state?.filterText,
 			dropDownRef: nextState.dropDownRef,
 			focusedItem: nextState.focusedItem,
+			treeContainerRef: nextState.treeContainerRef,
 		};
 	}
 
@@ -336,13 +339,15 @@ export class TS_DropDown<ItemType>
 			return <div className="ts-dropdown__empty" style={style}>No options</div>;
 		}
 
-		return <LL_V_L className={className} style={style}>
+		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={() => this.onSelected()}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
 				onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
 				className={'ts-dropdown__items'}
+				scrollSelectedIntoView={true}
+				containerRef={this.state.treeContainerRef}
 			/>
 		</LL_V_L>;
 	};
