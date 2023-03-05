@@ -28,11 +28,13 @@ import {BaseComponent} from './ComponentBase';
 export abstract class ComponentSync<P = any, State = any>
 	extends BaseComponent<P, State> {
 
-	protected _deriveStateFromProps(nextProps: P): State | undefined {
+	protected _deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined {
 		this.logVerbose('Deriving state from props');
-		return this.deriveStateFromProps(nextProps);
+		const _state = this.deriveStateFromProps(nextProps, state);
+		this.mounted && _state && this.setState(_state);
+		return _state;
 	}
 
-	protected abstract deriveStateFromProps(nextProps: P): State | undefined;
+	protected abstract deriveStateFromProps(nextProps: P, state?: Partial<State>): State | undefined;
 }
 
