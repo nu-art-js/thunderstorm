@@ -20,3 +20,5 @@ export const roundNumber = (number: number, digits: number) => {
 	const multiple = Math.pow(10, digits);
 	return Math.round(number * multiple) / multiple;
 };
+
+export const clamp = (min: number, num: number, max: number) => Math.min(Math.max(num, min), max);
