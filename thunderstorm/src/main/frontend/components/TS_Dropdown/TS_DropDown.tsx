@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {BadImplementationException, Filter} from '@nu-art/ts-common';
+import {BadImplementationException, Filter, clamp} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -31,7 +31,6 @@ import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
 
-
 type State<ItemType> = {
 	open?: boolean
 	adapter: Adapter<ItemType>;
@@ -39,6 +38,7 @@ type State<ItemType> = {
 	hover?: ItemType
 	filterText?: string
 	dropDownRef: React.RefObject<HTMLDivElement>;
+	focusedItem?: ItemType;
 }
 
 type StaticProps = {
@@ -108,7 +108,7 @@ export class TS_DropDown<ItemType>
 			// 		dropDown.onSelected(dropDown.state.adapter.data[0]);
 			// }}
 			onCancel={() => dropDown.reDeriveState({open: false, filterText: undefined})}
-			onKeyDown={dropDown.keyEventHandler}
+			onKeyDown={dropDown.inputKeyEventHandler}
 		/>;
 
 	public static defaultProps = {
@@ -130,14 +130,20 @@ export class TS_DropDown<ItemType>
 		const nextAdapter = typeof nextProps.adapter === 'function' ? nextProps.adapter(state?.filterText) : nextProps.adapter;
 		const prevAdapter = typeof this.props.adapter === 'function' ? this.props.adapter(state?.filterText) : this.props.adapter;
 		nextState.selected = nextProps.selected;
-		nextState.filterText = nextProps.inputValue;
+		nextState.filterText ??= nextProps.inputValue;
 		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
 
-		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText && state.filterText !== nextState.filterText)) {
+		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText)) {
 			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
+			nextState.focusedItem = undefined;
 		}
 
-		return {...nextState, ...state, adapter: nextState.adapter};
+		return {
+			...nextState,
+			...state,
+			adapter: nextState.adapter,
+			focusedItem: nextState.focusedItem,
+		};
 	}
 
 	// ######################## Logic ########################
@@ -156,7 +162,7 @@ export class TS_DropDown<ItemType>
 		if (e)
 			stopPropagation(e);
 
-		this.setState({...state, open: false, filterText: undefined});
+		this.reDeriveState({...state, open: false, filterText: undefined, focusedItem: undefined});
 	};
 
 	onSelected = (item?: ItemType, e?: InputEvent) => {
@@ -168,7 +174,7 @@ export class TS_DropDown<ItemType>
 		this.props.onSelected(item as (typeof this.props.canUnselect extends true ? ItemType | undefined : ItemType));
 	};
 
-	private keyEventHandler = (e: React.KeyboardEvent) => {
+	private inputKeyEventHandler = (e: React.KeyboardEvent) => {
 		if (this.props.inputEventHandler)
 			return this.setState(() => {
 				return this.props.inputEventHandler ? this.props.inputEventHandler(this.state, e) : this.state;
@@ -176,6 +182,9 @@ export class TS_DropDown<ItemType>
 
 		if (e.key === 'Enter') {
 			e.persist();
+			if (this.state.focusedItem) {
+				return this.onSelected(this.state.focusedItem);
+			}
 			const filterText = this.state.filterText;
 			if (filterText) {
 				this.closeList(e);
@@ -187,9 +196,11 @@ export class TS_DropDown<ItemType>
 		if (e.key === 'Escape')
 			return this.closeList(e);
 
-		// if (e.key === 'ArrowDown') {
-		// 	return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
-		// }
+		if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+			let index = this.state.focusedItem ? this.state.adapter.data.indexOf(this.state.focusedItem) + (e.key === 'ArrowDown' ? 1 : -1) : 0;
+			index = clamp(0, index, this.state.adapter.data.length - 1);
+			this.setState({focusedItem: this.state.adapter.data[index]});
+		}
 	};
 
 	private createAdapter(adapterToClone: Adapter<ItemType>, limit?: number, filterText?: string): Adapter<ItemType> {
@@ -329,7 +340,7 @@ export class TS_DropDown<ItemType>
 			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={() => this.onSelected()}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
-				selectedItem={this.state.selected}
+				selectedItem={this.state.focusedItem}
 				onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
 				className={'ts-dropdown__items'}
 			/>
@@ -373,7 +384,7 @@ export class TS_DropDown<ItemType>
 	// TODO: THIS IS ALL DUPLICATE SHIT... DELETE ONCE TREE CAN PROPAGATE THE KEYBOARD EVENTS
 
 	private addKeyboardListener = () => {
-		const onKeyboardEventListener = this.keyEventHandler;
+		const onKeyboardEventListener = this.inputKeyEventHandler;
 		if (!onKeyboardEventListener)
 			return;
 
@@ -381,12 +392,12 @@ export class TS_DropDown<ItemType>
 	};
 
 	private removeKeyboardListener = () => {
-		const onKeyboardEventListener = this.keyEventHandler;
+		const onKeyboardEventListener = this.inputKeyEventHandler;
 		if (!onKeyboardEventListener)
 			return;
 
 		this.node?.removeEventListener('keydown', this.keyboardEventHandler);
 	};
 
-	keyboardEventHandler = (e: KeyboardEvent) => this.node && this.keyEventHandler(e as unknown as React.KeyboardEvent);
+	keyboardEventHandler = (e: KeyboardEvent) => this.node && this.inputKeyEventHandler(e as unknown as React.KeyboardEvent);
 }
