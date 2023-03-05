@@ -48,6 +48,8 @@ const DefaultConfig = {
 export type ReadOptions<T extends Partial<StringMap> = {}> = {
 	columnsToProps?: ReadPropsMap<T>,
 	mapValues?: (header: string, value: string, index: number) => any,
+	quote?: string,
+	headers?: string[]
 }
 export type ReadPropsMap<K extends TS_Object = TS_Object> = {
 	[s: string]: keyof K;
@@ -118,6 +120,8 @@ class CSVModule_Class
 				const mapValues = readOptions.mapValues?.(args.header, args.value, args.index);
 				return mapValues ?? args.value;
 			},
+			quote: readOptions.quote || '"',
+			headers: readOptions.headers
 		};
 	}
 }
