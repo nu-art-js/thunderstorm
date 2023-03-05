@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {BadImplementationException, Filter, clamp, LogLevel} from '@nu-art/ts-common';
+import {BadImplementationException, clamp, Filter} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -116,11 +116,7 @@ export class TS_DropDown<ItemType>
 	};
 
 	// ######################## Life Cycle ########################
-
-	_constructor() {
-		this.logger.setMinLevel(LogLevel.Verbose);
-	}
-
+	
 	constructor(props: Props_DropDown<ItemType>) {
 		super(props);
 	}
