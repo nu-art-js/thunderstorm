@@ -45,7 +45,10 @@ const DefaultConfig = {
 		useKeysAsHeaders: true,
 	}
 };
-
+export type ReadOptions<T extends Partial<StringMap> = {}> = {
+	columnsToProps?: ReadPropsMap<T>,
+	mapValues?: (header: string, value: string, index: number) => any,
+}
 export type ReadPropsMap<K extends TS_Object = TS_Object> = {
 	[s: string]: keyof K;
 };
@@ -81,22 +84,22 @@ class CSVModule_Class
 		return fs.writeFile(outputFile, csv, {encoding: 'utf8'});
 	}
 
-	async readCsvFromFile<T extends Partial<StringMap>>(inputFile: string, columnsToProps?: ReadPropsMap<T>): Promise<T[]> {
+	async readCsvFromFile<T extends Partial<StringMap>>(inputFile: string, readOptions?: ReadOptions): Promise<T[]> {
 		const stream = createReadStream(inputFile, {encoding: 'utf8'});
-		return this.readCsvFromStream(stream, columnsToProps);
+		return this.readCsvFromStream(stream, readOptions);
 	}
 
-	async readCsvFromBuffer<T extends Partial<StringMap>>(buffer: Buffer, columnsToProps?: ReadPropsMap<T>): Promise<T[]> {
+	async readCsvFromBuffer<T extends Partial<StringMap>>(buffer: Buffer, readOptions?: ReadOptions): Promise<T[]> {
 		const stream: Readable = Readable.from(buffer.toString('utf-8'), {encoding: 'utf8'});
-		return this.readCsvFromStream(stream, columnsToProps);
+		return this.readCsvFromStream(stream, readOptions);
 	}
 
-	async readCsvFromStream<T extends Partial<StringMap>>(stream: Readable, columnsToProps?: ReadPropsMap<T>): Promise<T[]> {
+	async readCsvFromStream<T extends Partial<StringMap>>(stream: Readable, readOptions: ReadOptions = {}): Promise<T[]> {
 		return new Promise<T[]>((resolve, reject) => {
 			const results: T[] = [];
 
 			stream
-				.pipe(csvParser(this.createReadParserOptions(columnsToProps)))
+				.pipe(csvParser(this.createReadParserOptions(readOptions)))
 				.on('data', (instance) => {
 					delete instance['undefined'];
 					results.push(instance);
@@ -106,11 +109,15 @@ class CSVModule_Class
 		});
 	}
 
-	private createReadParserOptions<T extends TS_Object>(columnsToProps?: ReadPropsMap<T>) {
+	private createReadParserOptions<T extends TS_Object>(readOptions: ReadOptions) {
 		return {
 			mapHeaders: (args: { header: string }) => {
-				return columnsToProps?.[args.header] as string || args.header;
-			}
+				return readOptions.columnsToProps?.[args.header] ?? args.header;
+			},
+			mapValues: (args: { header: string, index: number, value: string }) => {
+				const mapValues = readOptions.mapValues?.(args.header, args.value, args.index);
+				return mapValues ?? args.value;
+			},
 		};
 	}
 }
