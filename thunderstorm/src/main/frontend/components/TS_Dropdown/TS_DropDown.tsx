@@ -31,6 +31,7 @@ import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
 
+
 type State<ItemType> = {
 	open?: boolean
 	adapter: Adapter<ItemType>;
@@ -161,14 +162,19 @@ export class TS_DropDown<ItemType>
 		return this.state.dropDownRef.current?.closest(this.props.boundingParentSelector);
 	}
 
-	private closeList = (e?: InputEvent, selectedItem?: ItemType, action?: () => (void | Promise<void>)) => {
+	private closeList = (e?: InputEvent, selectedItem?: ItemType | null, action?: () => (void | Promise<void>)) => {
 		if (this.props.disabled)
 			return;
 
 		if (e)
 			stopPropagation(e);
 
-		this.setState({open: false, filterText: undefined, focusedItem: undefined, selected: selectedItem}, action);
+		this.setState({
+			open: false,
+			filterText: undefined,
+			focusedItem: undefined,
+			selected: selectedItem === null ? undefined : selectedItem || this.state.selected
+		}, action);
 	};
 
 	onSelected = (item?: ItemType, e?: InputEvent) => {
@@ -340,7 +346,7 @@ export class TS_DropDown<ItemType>
 		}
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
-			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={() => this.onSelected()}>Unselect</div>}
+			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={(e) => this.closeList(e,null)}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
