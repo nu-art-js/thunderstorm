@@ -34,6 +34,7 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 	readonly validator: ValidatorTypeResolver<DBType>;
 	readonly cache: MemCache<DBType, Ks>;
 	readonly IDB: IDBCache<DBType, Ks>;
+	readonly dbDef: DBDef<DBType, Ks>;
 
 	protected constructor(dbDef: DBDef<DBType, Ks>) {
 		super();
@@ -43,6 +44,7 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 
 		this.cache = new MemCache<DBType, Ks>(this, config.dbConfig.uniqueKeys);
 		this.IDB = new IDBCache<DBType, Ks>(config.dbConfig, config.versions[0]);
+		this.dbDef = dbDef;
 	}
 
 	protected init() {
