@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {BadImplementationException, clamp, Filter} from '@nu-art/ts-common';
+import {clamp, Filter} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -213,25 +213,23 @@ export class TS_DropDown<ItemType>
 	};
 
 	private createAdapter(adapterToClone: Adapter<ItemType>, limit?: number, filterText?: string): Adapter<ItemType> {
-		const filter = this.props.filter;
-		let data = adapterToClone.data;
-		if (filter && filterText) {
-			try {
-				data = filter.filterSort(data, filterText);
-				data = limit ? data.slice(0, limit) : data;
-				const adapter = adapterToClone.clone(new Adapter<ItemType>(data));
-				adapter.data = data;
-				return adapter;
-			} catch (e: any) {
-				this.logError(e);
-				throw new BadImplementationException(e);
-			}
-		} else {
-			data = limit ? data.slice(0, limit) : data;
-			adapterToClone.data = data;
-		}
+		//If no change to data
+		if (!(filterText && this.props.filter) && !limit)
+			return adapterToClone;
 
-		return adapterToClone;
+		let data = adapterToClone.data;
+
+		//If filtering
+		if (filterText && this.props.filter)
+			data = this.props.filter.filterSort(data, filterText);
+
+		//If limiting
+		if (limit)
+			data = limit ? data.slice(0, limit) : data;
+
+		const adapter = adapterToClone.clone(new Adapter<ItemType>(data));
+		adapter.data = data;
+		return adapter;
 	}
 
 	private getChildrenContainerMaxHeight = (dropdownRef: React.RefObject<HTMLDivElement>, dir: 'top' | 'bottom'): number => {
