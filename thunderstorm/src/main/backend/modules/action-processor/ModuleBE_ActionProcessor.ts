@@ -1,14 +1,16 @@
-import {_keys, _logger_logException, dispatch_onServerError, Logger, LogLevel, Module, ServerErrorSeverity, TypedMap} from '@nu-art/ts-common';
+import {_keys, _logger_logException, dispatch_onServerError, Logger, LogLevel, Module, ServerErrorSeverity, TypedMap, _values} from '@nu-art/ts-common';
 // import {ApiDefServer} from '../../utils/api-caller-types';
-import {ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
+import {ActionMetaData, ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ApiModule';
 import {ActionDeclaration} from './types';
+
 
 export class ModuleBE_ActionProcessor_Class
 	extends Module {
 
 	private readonly actionMap: TypedMap<(data: any) => Promise<any>> = {};
+	private readonly actionMetaData: TypedMap<ActionMetaData> = {};
 
 	constructor() {
 		super();
@@ -19,6 +21,7 @@ export class ModuleBE_ActionProcessor_Class
 
 	readonly registerAction = (rad: ActionDeclaration, logger: Logger) => {
 		this.actionMap[rad.key] = (data: any) => rad.processor(logger || this, data);
+		this.actionMetaData[rad.key] = {key: rad.key, description: rad.description, group: rad.group};
 	};
 
 	private refactor = async (action: Request_ActionToProcess) => {
@@ -42,7 +45,7 @@ export class ModuleBE_ActionProcessor_Class
 	};
 
 	private list = async () => {
-		return {items: _keys(this.actionMap) as string[]};
+		return _values(this.actionMetaData);
 	};
 
 }

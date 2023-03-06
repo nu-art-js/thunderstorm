@@ -2,10 +2,11 @@ import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '../types';
 
 
 export type Request_ActionToProcess = { key: string, data?: any };
+export type ActionMetaData = { key: string, description: string, group: string };
 export type ApiStruct_ActionProcessing = {
 	vv1: {
 		execute: BodyApi<void, Request_ActionToProcess>
-		list: QueryApi<{ items: string[] }>
+		list: QueryApi<ActionMetaData[]>
 	}
 }
 
