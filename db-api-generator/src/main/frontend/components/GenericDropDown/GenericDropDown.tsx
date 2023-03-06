@@ -1,4 +1,4 @@
-import {ComponentSync, SimpleListAdapter, TS_DropDown} from '@nu-art/thunderstorm/frontend';
+import {Adapter, ComponentSync, SimpleListAdapter, TS_DropDown} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, Filter, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
 import {BaseDB_ApiCaller} from '../..';
@@ -61,6 +61,8 @@ export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id
 type State<T extends DB_Object> = {
 	items: T[]
 	selected?: T
+	filter: Filter<T>;
+	adapter: Adapter<T>;
 }
 
 // const defaultQueryFilter = () => true;
@@ -68,62 +70,56 @@ type State<T extends DB_Object> = {
 export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 	extends ComponentSync<Props_GenericDropDown<T, Ks>, State<T>> {
 
-	constructor(props: Props_GenericDropDown<T, Ks>) {
-		super(props);
-	}
-
 	protected deriveStateFromProps(nextProps: Props_GenericDropDown<T, Ks>): State<T> {
+		console.log('REDERIVE');
 		const state = {} as State<T>;
-		//If filter exists, get filtered items
-		if (nextProps.queryFilter)
-			state.items = nextProps.module.cache.filter(nextProps.queryFilter);
+		const items = nextProps.module.cache.allMutable();
 
-		//If filter doesn't exist OR (filter gave 0 results AND ifNoneShowAll condition flagged true)
-		if (!nextProps.queryFilter || (state.items.length === 0 && nextProps.ifNoneShowAll === true))
-			state.items = nextProps.module.cache.allMutable();
+		if (!nextProps.queryFilter)
+			state.items = items;
+		else {
+			state.items = items.filter(nextProps.queryFilter);
+			if (state.items.length === 0 && nextProps.ifNoneShowAll === true)
+				state.items = items;
+		}
 
 		//Sort Items by sort function or object keys
-		if (typeof nextProps.sortBy === 'function')
-			state.items = sortArray(state.items, nextProps.sortBy);
-		else
-			state.items = nextProps.sortBy?.reduce((toRet, sortKey) => {
-				return sortArray(toRet, item => item[sortKey]);
-			}, state.items) || state.items;
+		if (nextProps.sortBy) {
+			if (typeof nextProps.sortBy === 'function')
+				state.items = sortArray(state.items, nextProps.sortBy);
+			else
+				state.items = nextProps.sortBy?.reduce((toRet, sortKey) => {
+					return sortArray(toRet, item => item[sortKey]);
+				}, state.items) || state.items;
+		}
 
 		//Set selected item
-		const selectedItem = nextProps.selected;
-		switch (typeof selectedItem) {
-			case 'object':
-				if (!Array.isArray(selectedItem)) {
-					state.selected = selectedItem;
-					break;
-				}
-				break;
-
-			case 'string':
-				state.selected = nextProps.module.cache.unique(selectedItem);
-				break;
-
-			case 'function':
-				state.selected = selectedItem();
-				break;
-
-			case 'undefined':
-				state.selected = undefined;
-		}
+		state.selected = this.getSelected(nextProps.module, nextProps.selected);
+		state.filter = new Filter<T>(nextProps.mapper);
+		state.adapter = SimpleListAdapter(state.items, props => nextProps.renderer(props.item));
 		return state;
 	}
 
-	render() {
-		const filter = new Filter<T>(this.props.mapper);
-		const adapter = SimpleListAdapter(this.state.items, props => this.props.renderer(props.item));
+	private getSelected(module: BaseDB_ApiCaller<T, Ks>, selectMethod?: T | string | (() => T | undefined)) {
+		switch (typeof selectMethod) {
+			case 'string':
+				return module.cache.unique(selectMethod);
+			case 'function':
+				return selectMethod();
+			case 'object':
+				if (!Array.isArray(selectMethod))
+					return selectMethod;
+		}
+		return undefined;
+	}
 
+	render() {
 		return <TS_DropDown<T>
 			className={this.props.className}
 			placeholder={this.props.placeholder || 'Choose one'}
 			inputValue={this.props.inputValue}
-			adapter={adapter}
-			filter={filter}
+			adapter={this.state.adapter}
+			filter={this.state.filter}
 			selected={this.state.selected}
 			onNoMatchingSelectionForString={this.props.onNoMatchingSelectionForString}
 			onSelected={this.props.onSelected}
