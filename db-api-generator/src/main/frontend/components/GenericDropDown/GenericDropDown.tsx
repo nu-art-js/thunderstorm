@@ -71,7 +71,6 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 	extends ComponentSync<Props_GenericDropDown<T, Ks>, State<T>> {
 
 	protected deriveStateFromProps(nextProps: Props_GenericDropDown<T, Ks>): State<T> {
-		console.log('REDERIVE');
 		const state = {} as State<T>;
 		const items = nextProps.module.cache.allMutable();
 
