@@ -214,16 +214,23 @@ export class TS_DropDown<ItemType>
 
 	private createAdapter(adapterToClone: Adapter<ItemType>, limit?: number, filterText?: string): Adapter<ItemType> {
 		const filter = this.props.filter;
+		let data = adapterToClone.data;
 		if (filter && filterText) {
 			try {
-				let data = filter.filterSort(adapterToClone.data, filterText);
+				data = filter.filterSort(data, filterText);
 				data = limit ? data.slice(0, limit) : data;
-				return adapterToClone.clone(new Adapter<ItemType>(data));
+				const adapter = adapterToClone.clone(new Adapter<ItemType>(data));
+				adapter.data = data;
+				return adapter;
 			} catch (e: any) {
 				this.logError(e);
 				throw new BadImplementationException(e);
 			}
+		} else {
+			data = limit ? data.slice(0, limit) : data;
+			adapterToClone.data = data;
 		}
+
 		return adapterToClone;
 	}
 
