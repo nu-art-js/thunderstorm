@@ -218,9 +218,7 @@ export class TS_DropDown<ItemType>
 			try {
 				let data = filter.filterSort(adapterToClone.data, filterText);
 				data = limit ? data.slice(0, limit) : data;
-				const newAdapter = adapterToClone.clone(new Adapter<ItemType>(data));
-				newAdapter.data = data;
-				return newAdapter;
+				return adapterToClone.clone(new Adapter<ItemType>(data));
 			} catch (e: any) {
 				this.logError(e);
 				throw new BadImplementationException(e);
