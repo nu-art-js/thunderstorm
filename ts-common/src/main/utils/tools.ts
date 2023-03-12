@@ -67,8 +67,6 @@ export const functionThatReturnsTrue = Object.freeze(() => true);
 
 export const resolveContent = <T extends any = any>(content: T | (() => T)) => typeof content === 'function' ? (content as () => T)() : content as T;
 
-export const sleep = async (ms: number) => new Promise(r => setTimeout(r, ms));
-
 export function exists(item: any) {
 	return item !== undefined && item !== null;
 }
