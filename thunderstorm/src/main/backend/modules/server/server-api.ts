@@ -31,9 +31,10 @@ import {
 	LogLevel,
 	MUSTNeverHappenException,
 	ServerErrorSeverity,
-	tsValidate,
+	tsValidate, TypedMap,
 	ValidationException,
-	ValidatorTypeResolver
+	ValidatorTypeResolver,
+    _keys
 } from '@nu-art/ts-common';
 
 import {Stream} from 'stream';
@@ -414,9 +415,12 @@ export class ApiResponse {
 		this.res.end(typeof response !== 'string' ? JSON.stringify(response, null, 2) : response);
 	}
 
-	redirect(responseCode: number, url: string) {
+	redirect(responseCode: number, url: string,headers: TypedMap<string> = {}) {
 		this.consume();
-
+		_keys(headers).reduce((res,headerKey)=>{
+			res.setHeader((headerKey as string) ,headers[headerKey]);
+			return res;
+		},this.res)
 		this.res.redirect(responseCode, url);
 	}
 
