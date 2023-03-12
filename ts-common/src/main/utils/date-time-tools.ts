@@ -36,6 +36,8 @@ export async function timeout(sleepMs: number) {
 	return new Promise(resolve => setTimeout(resolve, sleepMs, undefined));
 }
 
+export const sleep = timeout;
+
 export function _setTimeout(handler: TimerHandler, sleepMs = 0, ...args: any[]): number {
 	return setTimeout(handler, sleepMs, ...args) as unknown as number;
 }

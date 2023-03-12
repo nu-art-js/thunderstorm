@@ -34,6 +34,7 @@ type Props_Button = LinearLayoutProps & {
 	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => Promise<any>;
 	loadingRenderer?: ReactNode | (() => ReactNode);
 	keepLoaderOnSuccess?: boolean;
+	innerRef: React.RefObject<HTMLDivElement>;
 }
 
 type State_Button = {
