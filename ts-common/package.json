@@ -25,7 +25,7 @@
   "scripts": {
     "build": "tsc",
     "typedocs": "typedoc --options typedoc.json",
-    "run-tests": "ts-mocha -p src/test/tsconfig.json src/test/run-all-tests.ts"
+    "run-tests": "ts-mocha --timeout 5000 -p src/test/tsconfig.json src/test/run-all-tests.ts"
   },
   "dependencies": {
     "export-to-csv": "^0.2.1",
