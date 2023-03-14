@@ -195,8 +195,7 @@ export class TS_DropDown<ItemType>
 			}
 			const filterText = this.state.filterText;
 			if (filterText) {
-				this.closeList(e);
-				this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e);
+				this.closeList(e, null, () => this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e));
 			} else
 				this.onSelected(this.state.adapter.data[0], e);
 
