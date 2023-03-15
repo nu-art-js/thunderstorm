@@ -18,13 +18,13 @@
 
 import {__stringify, Module, Second} from '@nu-art/ts-common';
 
-import {apiWithBody, apiWithQuery, ThunderDispatcher, ModuleFE_Toaster, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ModuleFE_Toaster, ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
 import {ApiStruct_Examples, CommonBodyReq, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
 import {ApiDef, ApiDefCaller, ErrorResponse, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {Test} from '@modules/TestModule';
-import {ModuleFE_PushPubSub, OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
+import {OnPushMessageReceived} from '@nu-art/push-pub-sub/frontend';
 import {ModuleFE_Firebase} from '@nu-art/firebase/frontend';
-import {BaseSubscriptionData, DB_Notifications} from '@nu-art/push-pub-sub';
+import {DB_Notifications} from '@nu-art/push-pub-sub';
 import {ApiDef_Examples} from '@app/app-shared/shared';
 
 
@@ -44,13 +44,13 @@ export const dispatchAll = () => {
 	exampleDispatcher.dispatchModule();
 };
 
-const mySubscriptions: BaseSubscriptionData[] = [{
-	pushKey: 'key',
-	props: {a: 'prop'}
-}, {
-	pushKey: 'test',
-	props: {id: 'test1'}
-}];
+// const mySubscriptions: BaseSubscriptionData[] = [{
+// 	pushKey: 'key',
+// 	props: {a: 'prop'}
+// }, {
+// 	pushKey: 'test',
+// 	props: {id: 'test1'}
+// }];
 
 
 export class ExampleModule_Class
@@ -81,7 +81,7 @@ export class ExampleModule_Class
 	}
 
 	protected init(): void {
-		ModuleFE_PushPubSub.v1.registerAll(mySubscriptions).execute();
+		// ModuleFE_PushPubSub.v1.registerAll(mySubscriptions).execute();
 		this.runAsync('Async start', this.initAnalytics);
 	}
 
