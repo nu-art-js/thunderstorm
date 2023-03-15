@@ -17,7 +17,7 @@
  */
 
 import * as React from 'react';
-import {ComponentSync, ModuleFE_Routing, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay } from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Routing, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay} from '@nu-art/thunderstorm/frontend';
 
 import {VersionOnScreen} from '@components/VersionOnScreen';
 import {registerRoutes} from './Routes';
@@ -25,7 +25,7 @@ import {ModuleFE_Account, OnLoginStatusUpdated} from '@nu-art/user-account/front
 
 
 export class App
-	extends ComponentSync
+	extends React.Component
 	implements OnLoginStatusUpdated {
 
 	public static dropBlocker<T>(ev: React.DragEvent<T>) {
@@ -43,9 +43,9 @@ export class App
 	};
 
 	render() {
+		console.log('IM HERE')
 		registerRoutes();
-		return (
-			<div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
+		return <div onDrop={App.dropBlocker} onDragOver={App.dropBlocker}>
 				{/*<BugReport>*/}
 				{ModuleFE_Routing.getRoutesMap()}
 				{/*</BugReport>*/}
@@ -53,7 +53,7 @@ export class App
 				<TS_DialogOverlay/>
 				<TS_ToastOverlay/>
 				<TS_PopupMenuOverlay/>
-			</div>);
+			</div>;
 	}
 }
 
