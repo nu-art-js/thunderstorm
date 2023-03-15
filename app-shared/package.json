@@ -1,6 +1,6 @@
 {
   "name": "@app/app-shared",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "app-shared",
   "keywords": [
     "TacB0sS",
@@ -13,16 +13,18 @@
   "author": "TacB0sS",
   "main": "index.js",
   "types": "index.d.ts",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
   "files": [
     "**/*"
   ],
   "scripts": {
     "build": "tsc"
   },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.8.0",
-    "@nu-art/thunderstorm": "../thunderstorm/dist",
-    "@nu-art/ts-common": "../ts-common/dist",
-    "typescript": "^4.5.0"
+  "dependencies": {
+    "@nu-art/thunderstorm": "1.0.0",
+    "@nu-art/ts-common": "1.0.0"
   }
 }
