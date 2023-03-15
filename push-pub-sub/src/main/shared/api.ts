@@ -33,8 +33,8 @@ export type ApiStruct_PushMessages = {
 
 export const ApiDef_PushMessages: ApiDefResolver<ApiStruct_PushMessages> = {
 	v1: {
-		unregister: {method: HttpMethod.POST, path: 'v1/push-messages/register'},
+		unregister: {method: HttpMethod.POST, path: 'v1/push-messages/unregister'},
 		register: {method: HttpMethod.POST, path: 'v1/push-messages/register'},
-		registerAll: {method: HttpMethod.POST, path: 'v1/push-messages/register'}
+		registerAll: {method: HttpMethod.POST, path: 'v1/push-messages/register-all'}
 	}
 };

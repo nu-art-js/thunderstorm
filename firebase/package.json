@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/firebase",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Storm - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",
@@ -18,6 +18,10 @@
     "type": "git",
     "url": "git+ssh://git@github.com:nu-art-js/firebase.git"
   },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
   "license": "Apache-2.0",
   "author": "TacB0sS",
   "main": "index.js",
@@ -31,8 +35,8 @@
     "test": "ts-mocha --exit -p src/test/tsconfig.json src/test/run-all-tests.ts"
   },
   "dependencies": {
-    "@nu-art/ts-common": "../ts-common/dist",
-    "@nu-art/google-services": "../google-services/dist",
+    "@nu-art/ts-common": "1.0.0",
+    "@nu-art/google-services": "1.0.0",
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/storage": "^5.0.0",
     "@google-cloud/firestore": "^4.8.1",
@@ -40,22 +44,14 @@
     "firebase": "9.16.0",
     "firebase-admin": "11.5.0",
     "firebase-functions": "^4.2.0",
-    "google-auth-library": "^6.0.6"
+    "google-auth-library": "^6.0.6",
+    "fs": "0.0.1-security"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.8.0",
-    "firebase": "9.16.0",
-    "firebase-admin": "11.5.0",
-    "firebase-functions": "^4.2.0",
     "@types/compression": "^1.0.1",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "@types/express": "^4.17.2",
-    "fs": "0.0.1-security",
-    "ts-mocha": "^10.0.0",
-    "ts-node": "^8.6.2",
-    "typescript": "^4.5.0",
-    "mocha": "^10.2.0",
-    "chai": "^4.3.7"
+    "teeny-request": "~7.2.0"
   }
 }

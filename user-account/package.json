@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/user-account",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "User Account",
   "keywords": [
     "TacB0sS",
@@ -18,6 +18,10 @@
   "bugs": {
     "url": "https://github.com/nu-art-js/user-account/issues"
   },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com:nu-art-js/user-account.git"
@@ -30,31 +34,26 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "../ts-common/dist",
+    "@nu-art/ts-common": "1.0.0",
+    "@nu-art/db-api-generator": "1.0.0",
+    "@nu-art/firebase": "1.0.0",
+    "@nu-art/storm": "1.0.0",
+    "@nu-art/thunderstorm": "1.0.0",
     "moment": "^2.24.0",
     "saml2-js": "^4.0.1",
-    "xmlbuilder": "^15.1.1"
-  },
-  "devDependencies": {
-    "@nu-art/db-api-generator": "../db-api-generator/dist",
-    "@nu-art/firebase": "../firebase/dist",
-    "@nu-art/storm": "../strom/dist",
-    "@nu-art/thunderstorm": "../thunderstorm/dist",
-    "@types/express": "^4.16.1",
-    "@types/history": "^4.7.2",
-    "@types/react": "^16.8.7",
-    "@types/request": "^2.48.1",
-    "@types/saml2-js": "^1.6.8",
-    "@typescript-eslint/eslint-plugin": "^5.8.0",
+    "xmlbuilder": "^15.1.1",
     "express": "^4.16.4",
     "firebase": "9.16.0",
     "firebase-admin": "11.5.0",
     "firebase-functions": "^4.2.0",
     "react": "^16.8.1",
-    "request": "^2.88.0",
-    "ts-node": "^8.6.2",
-    "tslint": "^5.16.0",
-    "typescript": "^4.5.0",
-    "use-strict": "^1.0.1"
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.16.1",
+    "@types/history": "^4.7.2",
+    "@types/react": "^16.8.7",
+    "@types/request": "^2.48.1",
+    "@types/saml2-js": "^1.6.8"
   }
 }
