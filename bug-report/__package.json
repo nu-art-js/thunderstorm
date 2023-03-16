@@ -43,8 +43,8 @@
     "moment": "^2.24.0",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
-    "react": "^16.8.1",
-    "react-dom": "^16.8.1",
+    "react": "$REACT_PKG_VERSION",
+    "react-dom": "$REACT_DOM_PKG_VERSION",
     "react-router-dom": "^5.1.2"
   },
   "devDependencies": {

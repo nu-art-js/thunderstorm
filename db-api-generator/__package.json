@@ -45,8 +45,8 @@
     "module-alias": "^2.2.0",
     "qs": "^6.6.0",
     "request": "^2.88.0",
-    "react": "^16.8.1",
-    "react-dom": "^16.8.1",
+    "react": "$REACT_PKG_VERSION",
+    "react-dom": "$REACT_DOM_PKG_VERSION",
     "react-router-dom": "^5.1.2"
   },
   "devDependencies": {

@@ -46,7 +46,7 @@
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
-    "react": "^16.8.1",
+    "react": "$REACT_PKG_VERSION",
     "request": "^2.88.0"
   },
   "devDependencies": {
