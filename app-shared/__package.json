@@ -1,6 +1,6 @@
 {
   "name": "@app/app-shared",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$APP_VERSION",
   "description": "app-shared",
   "keywords": [
     "TacB0sS",

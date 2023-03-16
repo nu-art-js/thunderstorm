@@ -1,6 +1,6 @@
 {
   "name": "app-backend",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$APP_VERSION",
   "description": "Backend hello world",
   "keywords": [
     "TacB0sS",
@@ -25,7 +25,7 @@
     "serve": "cd .. && bash ./build-and-install.sh -lb -nb"
   },
   "dependencies": {
-    "@app/app-shared": "$THUNDERSTORM_SDK_VERSION",
+    "@app/app-shared": "$APP_VERSION",
     "@nu-art/bug-report": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/jira": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/db-api-generator": "$THUNDERSTORM_SDK_VERSION",
@@ -39,9 +39,9 @@
     "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/user-account": "$THUNDERSTORM_SDK_VERSION",
-    "firebase": "$PKG_VERSION_FIREBASE",
-    "firebase-admin": "$PKG_VERSION_FIREBASE_ADMIN",
-    "firebase-functions": "$PKG_VERSION_FIREBASE_FUNCTIONS",
+    "firebase": "$FIREBASE_PKG_VERSION",
+    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
     "firebase-functions-test": "^0.1.6",
     "@slack/web-api": "^5.8.1",
     "body-parser": "^1.18.3",

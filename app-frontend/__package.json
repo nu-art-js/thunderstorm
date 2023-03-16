@@ -1,6 +1,6 @@
 {
   "name": "app-frontend",
-  "version": "$THUNDERSTORM_SDK_VERSION",
+  "version": "$APP_VERSION",
   "description": "Frontend hello world with Thunder",
   "keywords": [
     "TacB0sS",
@@ -37,8 +37,8 @@
     "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/user-account": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/ts-workspace": "$THUNDERSTORM_SDK_VERSION",
-    "@app/app-shared": "$THUNDERSTORM_SDK_VERSION",
-    "firebase": "$PKG_VERSION_FIREBASE",
+    "@app/app-shared": "$APP_VERSION",
+    "firebase": "$FIREBASE_PKG_VERSION",
     "clean-html": "^1.5.0",
     "file-loader": "^6.2.0",
     "mic-recorder-to-mp3": "^2.2.2",
