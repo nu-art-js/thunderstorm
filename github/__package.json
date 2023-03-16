@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/github",
-  "version": "1.0.0",
+  "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "Github api Module",
   "keywords": [
     "TacB0sS",
@@ -22,8 +22,8 @@
   "main": "index.js",
   "types": "index.d.ts",
   "dependencies": {
-    "@nu-art/thunderstorm": "1.0.0",
-    "@nu-art/ts-common": "1.0.0",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
     "@octokit/plugin-paginate-rest": "2.2.1",
     "@octokit/rest": "18.0.9",
     "@octokit/types": "^5.5.0",

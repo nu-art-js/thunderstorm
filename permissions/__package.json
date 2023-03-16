@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/permissions",
-  "version": "1.0.0",
+  "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "Permissions",
   "keywords": [
     "TacB0sS",
@@ -35,18 +35,18 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "1.0.0",
-    "@nu-art/db-api-generator": "1.0.0",
-    "@nu-art/firebase": "1.0.0",
-    "@nu-art/storm": "1.0.0",
-    "@nu-art/thunderstorm": "1.0.0",
-    "@nu-art/user-account": "1.0.0",
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/db-api-generator": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/firebase": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/storm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/user-account": "$THUNDERSTORM_SDK_VERSION",
     "moment": "^2.24.0",
     "saml2-js": "^4.0.1",
     "express": "^4.16.4",
-    "firebase": "9.16.0",
-    "firebase-admin": "11.5.0",
-    "firebase-functions": "^4.2.0",
+    "firebase": "$FIREBASE_PKG_VERSION",
+    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
     "react": "^16.8.1",
     "request": "^2.88.0"
   },
