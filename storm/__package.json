@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/storm",
-  "version": "1.0.0",
+  "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "Storm - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",
@@ -33,8 +33,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "1.0.0",
-    "@nu-art/thunderstorm": "1.0.0",
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
     "@slack/web-api": "^5.1.0",
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
@@ -42,9 +42,9 @@
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/storage": "^5.0.0",
     "@slack/events-api": "^2.3.0",
-    "firebase": "9.16.0",
-    "firebase-admin": "11.5.0",
-    "firebase-functions": "^4.2.0",
+    "firebase": "$FIREBASE_PKG_VERSION",
+    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
     "fs": "0.0.1-security",
     "google-auth-library": "^6.0.6",
     "moment": "^2.24.0",

@@ -1,6 +1,6 @@
 {
   "name": "@app/app-shared",
-  "version": "1.0.0",
+  "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "app-shared",
   "keywords": [
     "TacB0sS",
@@ -24,7 +24,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/thunderstorm": "1.0.0",
-    "@nu-art/ts-common": "1.0.0"
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION"
   }
 }
