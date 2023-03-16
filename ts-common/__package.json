@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/ts-common",
-  "version": "1.0.0",
+  "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "js and ts infra",
   "keywords": [
     "TacB0sS",

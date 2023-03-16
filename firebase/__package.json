@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/firebase",
-  "version": "1.0.0",
+  "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "Storm - Express & Typescript based backend framework",
   "keywords": [
     "TacB0sS",
@@ -35,15 +35,15 @@
     "test": "ts-mocha --exit -p src/test/tsconfig.json src/test/run-all-tests.ts"
   },
   "dependencies": {
-    "@nu-art/ts-common": "1.0.0",
-    "@nu-art/google-services": "1.0.0",
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/google-services": "$THUNDERSTORM_SDK_VERSION",
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/storage": "^5.0.0",
     "@google-cloud/firestore": "^4.8.1",
     "express": "^4.17.1",
-    "firebase": "9.16.0",
-    "firebase-admin": "11.5.0",
-    "firebase-functions": "^4.2.0",
+    "firebase": "$PKG_VERSION_FIREBASE",
+    "firebase-admin": "$PKG_VERSION_FIREBASE_ADMIN",
+    "firebase-functions": "$PKG_VERSION_FIREBASE_FUNCTIONS",
     "google-auth-library": "^6.0.6",
     "fs": "0.0.1-security"
   },
