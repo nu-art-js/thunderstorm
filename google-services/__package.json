@@ -1,6 +1,6 @@
 {
   "name": "@nu-art/google-services",
-  "version": "1.0.0",
+  "version": "$THUNDERSTORM_SDK_VERSION",
   "description": "google-services",
   "keywords": [
     "TacB0sS",
@@ -35,7 +35,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/ts-common": "1.0.0",
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
     "@google-cloud/pubsub": "3.3.0",
     "google-auth-library": "^6.0.6",
     "googleapis": "^55.0.0"
