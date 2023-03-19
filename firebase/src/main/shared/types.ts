@@ -18,7 +18,10 @@
 
 import {MandatoryKeys, RequireOptionals, TS_Object} from '@nu-art/ts-common';
 
-
+/**
+ * Test test
+ * token: pah
+ */
 export type Firebase_Message = {
 	token?: string,
 	topic?: string,
@@ -68,7 +71,9 @@ export const ComparatorMap: { [k in keyof QueryComparator<any>]: Comparator } = 
 
 export type FilterKeys<T extends TS_Object> = MandatoryKeys<T, string | number>[];
 export type FirestoreType_OrderByDirection = 'desc' | 'asc';
-export type WhereValue<Value> = QueryComparator<Value> | (Value extends TS_Object ? Clause_Where<Value> : Value | [Value]);
+export type WhereValue<Value> =
+	QueryComparator<Value>
+	| (Value extends TS_Object ? Clause_Where<Value> : Value | [Value]);
 export type Clause_Where<T extends TS_Object> = { [P in keyof T]?: WhereValue<T[P]> }
 export type Clause_OrderBy<T extends TS_Object> = [{ key: keyof T, order: FirestoreType_OrderByDirection }];
 export type Clause_Select<T extends TS_Object, K extends keyof T = keyof T> = K[];

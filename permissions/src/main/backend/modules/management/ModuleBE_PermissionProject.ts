@@ -32,7 +32,7 @@ export class ModuleBE_PermissionProject_Class
 		super(DBDef_PermissionProjects);
 	}
 
-	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionProject, request?: ExpressRequest): Promise<void> {
+	protected async preUpsertProcessing(dbInstance: DB_PermissionProject, t?: FirestoreTransaction, request?: ExpressRequest): Promise<void> {
 		if (request) {
 			const account = await ModuleBE_Account.validateSession({}, request);
 			dbInstance._audit = auditBy(account.email);

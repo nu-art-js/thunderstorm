@@ -19,17 +19,28 @@
 import {FirebaseSession} from './firebase-session';
 import {Logger} from '@nu-art/ts-common';
 
+/**
+ * base wrapper
+ */
 export abstract class FirebaseBaseWrapper
-	extends Logger {
+    extends Logger {
 
-	public readonly firebaseSession: FirebaseSession<any>;
+    public readonly firebaseSession: FirebaseSession<any>;
 
-	protected constructor(firebaseSession: FirebaseSession<any>) {
-		super();
-		this.firebaseSession = firebaseSession;
-	}
+    /**
+     * Constructor that takes a FirebaseSession object and assigns it to this.firebaseSession.
+     * @param firebaseSession
+     * @protected
+     */
+    protected constructor(firebaseSession: FirebaseSession<any>) {
+        super();
+        this.firebaseSession = firebaseSession;
+    }
 
-	isAdmin() {
-		return this.firebaseSession.isAdmin();
-	}
+    /**
+     * Returns true if the user associated with this FirebaseSession is an admin, false otherwise.
+     */
+    isAdmin() {
+        return this.firebaseSession.isAdmin();
+    }
 }

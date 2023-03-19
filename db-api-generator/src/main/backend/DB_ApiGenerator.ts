@@ -23,8 +23,8 @@ import {Clause_Where, FirestoreQuery,} from '@nu-art/firebase';
 import {__stringify, _values, DB_BaseObject, DB_Object, Module, PreDB} from '@nu-art/ts-common';
 
 import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
-import {ApiDefServer, ApiException, ApiModule, ApiServerRouter, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, UpgradeCollectionBody} from '../shared';
+import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {_EmptyQuery, DBApiDefGeneratorIDB, UpgradeCollectionBody} from '../shared';
 import {BaseDB_ModuleBE, DBApiConfig} from './BaseDB_ModuleBE';
 import {DB_Object_Metadata, Metadata} from '../shared/types';
 
@@ -35,33 +35,27 @@ import {DB_Object_Metadata, Metadata} from '../shared/types';
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
 export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
-	extends Module
-	implements ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>, ApiModule {
+	extends Module {
 
-	readonly v1: ApiDefServer<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 	readonly dbModule: BaseDB_ModuleBE<DBType, any, Ks>;
 
 	constructor(dbModule: BaseDB_ModuleBE<DBType, any, Ks>) {
-		super();
+		super(dbModule.getName());
 		this.dbModule = dbModule;
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbModule.dbDef);
-		this.v1 = {
-			query: createBodyServerApi(apiDef.v1.query, this._query),
-			sync: createBodyServerApi(apiDef.v1.sync, this._sync),
-			queryUnique: createQueryServerApi(apiDef.v1.queryUnique, this._queryUnique),
-			upsert: createBodyServerApi(apiDef.v1.upsert, this._upsert),
-			upsertAll: createBodyServerApi(apiDef.v1.upsertAll, this._upsertAll),
-			patch: createBodyServerApi(apiDef.v1.patch, this._patch),
-			delete: createQueryServerApi(apiDef.v1.delete, this._deleteUnique),
-			deleteQuery: createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
-			deleteAll: createQueryServerApi(apiDef.v1.deleteAll, this._deleteAll),
-			upgradeCollection: createBodyServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection),
-			metadata: createQueryServerApi(apiDef.v1.metadata, this._metadata),
-		};
-	}
-
-	useRoutes(): ApiServerRouter<any> {
-		return this.v1;
+		addRoutes([
+			createBodyServerApi(apiDef.v1.query, this._query),
+			createBodyServerApi(apiDef.v1.sync, this._sync),
+			createQueryServerApi(apiDef.v1.queryUnique, this._queryUnique),
+			createBodyServerApi(apiDef.v1.upsert, this._upsert),
+			createBodyServerApi(apiDef.v1.upsertAll, this._upsertAll),
+			createBodyServerApi(apiDef.v1.patch, this._patch),
+			createQueryServerApi(apiDef.v1.delete, this._deleteUnique),
+			createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
+			createQueryServerApi(apiDef.v1.deleteAll, this._deleteAll),
+			createBodyServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection),
+			createQueryServerApi(apiDef.v1.metadata, this._metadata)
+		]);
 	}
 
 	init() {

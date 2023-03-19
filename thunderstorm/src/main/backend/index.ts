@@ -22,6 +22,7 @@
 export * from './modules/proxy/RemoteProxyCaller';
 export * from './modules/proxy/ModuleBE_RemoteProxy';
 export * from './modules/CleanupScheduler';
+export * from './modules/ApiModule';
 export * from './modules/action-processor/ModuleBE_ActionProcessor';
 export * from './modules/action-processor/types';
 export * from './modules/backup/ModuleBE_Backup';
@@ -35,7 +36,7 @@ export * from './modules/http/AxiosHttpModule';
 export * from './modules/http/types';
 export * from './modules/ModuleBE_ForceUpgrade';
 export * from './modules/ModuleBE_ServerInfo';
-export * from './utils/api-caller-types';
+// export * from './utils/api-caller-types';
 export * from './utils/promisify-request';
 export * from './utils/to-be-removed';
 export * from './utils/types';

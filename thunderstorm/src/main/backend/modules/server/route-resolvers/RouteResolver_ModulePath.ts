@@ -23,8 +23,8 @@ import {Express} from 'express';
 import {ServerApi_Middleware} from '../../../utils/types';
 import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
-import {_values, Logger, LogLevel, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {ApiModule, ApiServerRouter} from '../../../utils/api-caller-types';
+import {Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {ApiModule_Class} from '../../ApiModule';
 
 
 export type HttpRoute = {
@@ -46,23 +46,16 @@ export class RouteResolver_ModulePath
 	}
 
 	public resolveApi() {
-		const modules: ApiModule[] = Storm.getInstance().filterModules(module => !!(module as unknown as ApiModule).useRoutes);
+		const modules: (Module | ApiModule_Class)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ApiModule_Class).useRoutes);
 
 		//Filter Api modules
-		const callbackfn = (acc: ServerApi<any>[], item?: ApiServerRouter<any> | ServerApi<any>) => {
-			if (item instanceof ServerApi) {
-				acc.push(item);
-				return acc;
-			}
+		const routes: ServerApi<any>[] = [];
+		for (const module of modules) {
+			this.logInfo(module.getName());
+			const _routes = (module as unknown as ApiModule_Class).useRoutes();
+			routes.push(..._routes);
+		}
 
-			if (!item)
-				return acc;
-
-			_values(item).reduce(callbackfn, acc);
-			return acc;
-		};
-
-		const routes = modules.map(m => m.useRoutes()).reduce<ServerApi<any>[]>(callbackfn, []);
 		// console.log(routes);
 		routes.forEach(api => {
 			if (!api.addMiddlewares)
@@ -71,7 +64,6 @@ export class RouteResolver_ModulePath
 			api.addMiddlewares(...this.middlewares);
 			api.route(this.express, this.initialPath);
 		});
-
 	}
 
 	public printRoutes(): void {

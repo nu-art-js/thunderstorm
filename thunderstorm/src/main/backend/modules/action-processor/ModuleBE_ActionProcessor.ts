@@ -1,29 +1,27 @@
-import {dispatch_onServerError, Logger, LogLevel, Module, ServerErrorSeverity, TypedMap, _keys, _logger_logException} from '@nu-art/ts-common';
-import {ApiDefServer, ApiModule} from '../../utils/api-caller-types';
-import {ApiDef_ActionProcessing, ApiStruct_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
+import {_keys, _logger_logException, dispatch_onServerError, Logger, LogLevel, Module, ServerErrorSeverity, TypedMap, _values} from '@nu-art/ts-common';
+// import {ApiDefServer} from '../../utils/api-caller-types';
+import {ActionMetaData, ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
+import {addRoutes} from '../ApiModule';
 import {ActionDeclaration} from './types';
 
 
 export class ModuleBE_ActionProcessor_Class
-	extends Module
-	implements ApiDefServer<ApiStruct_ActionProcessing>, ApiModule {
-	readonly vv1;
+	extends Module {
 
 	private readonly actionMap: TypedMap<(data: any) => Promise<any>> = {};
+	private readonly actionMetaData: TypedMap<ActionMetaData> = {};
 
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Verbose);
 
-		this.vv1 = {
-			execute: createBodyServerApi(ApiDef_ActionProcessing.vv1.execute, this.refactor),
-			list: createQueryServerApi(ApiDef_ActionProcessing.vv1.list, this.list),
-		};
+		addRoutes([createBodyServerApi(ApiDef_ActionProcessing.vv1.execute, this.refactor), createQueryServerApi(ApiDef_ActionProcessing.vv1.list, this.list)]);
 	}
 
 	readonly registerAction = (rad: ActionDeclaration, logger: Logger) => {
 		this.actionMap[rad.key] = (data: any) => rad.processor(logger || this, data);
+		this.actionMetaData[rad.key] = {key: rad.key, description: rad.description, group: rad.group};
 	};
 
 	private refactor = async (action: Request_ActionToProcess) => {
@@ -47,13 +45,9 @@ export class ModuleBE_ActionProcessor_Class
 	};
 
 	private list = async () => {
-		return {items: _keys(this.actionMap) as string[]};
+		return _values(this.actionMetaData);
 	};
 
-	useRoutes() {
-		return this.vv1;
-	}
 }
 
 export const ModuleBE_ActionProcessor = new ModuleBE_ActionProcessor_Class();
-

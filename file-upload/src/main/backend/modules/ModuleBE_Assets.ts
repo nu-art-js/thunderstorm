@@ -38,7 +38,7 @@ import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {fromBuffer} from 'file-type';
-import {FileExtension, MimeType} from 'file-type/core';
+import {FileExtension, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './AssetBucketListener';
 import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';

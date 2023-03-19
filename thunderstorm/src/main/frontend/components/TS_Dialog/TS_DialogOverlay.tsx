@@ -60,7 +60,7 @@ export class TS_DialogOverlay
 							//This model content is wrapped in a div to keep the React hierarchy. if you remove it, the model stack won't work.
 							return <div key={i}>{model.content}</div>;
 
-						return <div key={i} style={{visibility: 'hidden', height: 0}}>{model.content}</div>;
+						return <div key={i} style={{display: 'none', height: 0}}>{model.content}</div>;
 					})}
 				</TS_Overlay>
 			</div>

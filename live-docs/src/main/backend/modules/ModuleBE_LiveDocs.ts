@@ -20,10 +20,10 @@ import {addItemToArrayAtIndex, auditBy, BadImplementationException, Module, remo
 
 import {DB_Document, DB_DocumentHistory, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument,} from '../../shared/types';
 
-import {ModuleBE_Firebase, FirestoreCollection} from '@nu-art/firebase/backend';
+import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 
-import {ApiDefServer, ApiException, ApiModule, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
-import {ApiDef_LiveDoc, ApiStruct_LiveDoc} from '../../shared/api';
+import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {ApiDef_LiveDoc} from '../../shared/api';
 
 
 export const CollectionName_LiveDocs = 'live-docs';
@@ -33,23 +33,17 @@ type Config = {
 }
 
 export class ModuleBE_LiveDocs_Class
-	extends Module<Config>
-	implements ApiDefServer<ApiStruct_LiveDoc>, ApiModule {
+	extends Module<Config> {
 
 	private livedocs!: FirestoreCollection<DB_DocumentHistory>;
 
-	v1 = {
-		get: createQueryServerApi(ApiDef_LiveDoc.v1.get, this.getLiveDoc),
-		upsert: createBodyServerApi(ApiDef_LiveDoc.v1.upsert, this.updateLiveDoc),
-		history: createQueryServerApi(ApiDef_LiveDoc.v1.history, this.changeHistory),
-	};
-
-	useRoutes() {
-		return this.v1;
-	}
-
 	constructor() {
 		super();
+		addRoutes([
+			createQueryServerApi(ApiDef_LiveDoc.v1.get, this.getLiveDoc),
+			createBodyServerApi(ApiDef_LiveDoc.v1.upsert, this.updateLiveDoc),
+			createQueryServerApi(ApiDef_LiveDoc.v1.history, this.changeHistory)
+		]);
 	}
 
 	protected init(): void {

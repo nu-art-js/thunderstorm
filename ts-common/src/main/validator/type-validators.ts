@@ -1,18 +1,10 @@
-import {__stringify} from '../utils/tools';
-import {
-	InvalidResult,
-	InvalidResultArray,
-	InvalidResultObject,
-	tsValidate,
-	tsValidateExists,
-	tsValidateResult,
-	Validator,
-	ValidatorTypeResolver
-} from './validator-core';
+import {__stringify, exists} from '../utils/tools';
+import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
 import {currentTimeMillis} from '../utils/date-time-tools';
-import {ArrayType, AuditBy, RangeTimestamp} from '../utils/types';
+import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {filterInstances} from '../utils/array-tools';
 import {_keys} from '../utils/object-tools';
+import {LogLevel} from '../core/logger/types';
 
 
 export const tsValidateDynamicObject = <T extends object>(valuesValidator: ValidatorTypeResolver<T[keyof T]>, keysValidator: ValidatorTypeResolver<string>, mandatory = true) => {
@@ -86,6 +78,7 @@ export const tsValidateArray = <T extends any[], I extends ArrayType<T> = ArrayT
 			return filterInstances(results).length !== 0 ? results : undefined;
 		}];
 };
+
 export const tsValidateString = (length: number = -1, mandatory = true): Validator<string> => {
 	return [tsValidateExists(mandatory),
 		(input?: string) => {
@@ -103,6 +96,8 @@ export const tsValidateString = (length: number = -1, mandatory = true): Validat
 		}];
 };
 
+export const tsValidator_nonMandatoryString = tsValidateString(-1, false);
+
 export const tsValidateNumber = (mandatory = true): Validator<number> => {
 	return [tsValidateExists(mandatory),
 		(input?: number) => {
@@ -114,6 +109,18 @@ export const tsValidateNumber = (mandatory = true): Validator<number> => {
 		}];
 };
 
+export const tsValidateEnum = (enumType: TypedMap<number | string>, mandatory = true): Validator<number | string> => {
+	return [tsValidateExists(mandatory),
+		(input?: number | string) => {
+			// @ts-ignore
+			if (exists(enumType[input]))
+				return;
+
+			return `Input is not a valid enum value in ${__stringify(enumType)}`;
+		}];
+};
+
+tsValidateEnum(LogLevel);
 export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 	return [tsValidateExists(mandatory),
 		(input?: boolean) => {
@@ -191,7 +198,7 @@ export const tsValidateTimestamp = (interval?: number, mandatory = true): Valida
 
 export const tsValidateAudit = (range?: RangeTimestamp) => {
 	return (audit?: AuditBy) => {
-		return tsValidate(audit?.auditAt?.timestamp, tsValidateIsInRange([[0,
+		return tsValidateResult(audit?.auditAt?.timestamp, tsValidateIsInRange([[0,
 			Number.MAX_VALUE]]));
 	};
 };
@@ -200,3 +207,7 @@ export const tsValidateNonMandatoryObject = <T>(validator: ValidatorTypeResolver
 	return [tsValidateExists(false),
 		(input?: T) => tsValidateResult(input, validator)];
 };
+
+const validateColorValue = tsValidateRegexp(/^#(?:[0-9a-fA-F]{3}){1,2}$/);
+export const tsValidator_color = {value: validateColorValue};
+

@@ -19,36 +19,80 @@
  * limitations under the License.
  */
 
-@use "../Layouts/Layouts_" as *;
-@use "../../styles/declaration/basic" as *;
-
 .ts-dialog {
-  @extend %ll_v_c;
-  padding: 12px;
-  background: white;
-  border-radius: 8px;
-  width: 500px;
-  height: 300px;
+  //Dimensions
+  width: 600px;
+  min-height: 200px;
+  padding: 0;
+  margin: 0;
 
-  .ts-dialog__title {
+  //Positioning
+  justify-content: space-between;
+
+  //Design
+  background: white;
+  overflow: hidden;
+  border-radius: 8px;
+  outline: none !important;
+
+  .ts-dialog__header {
+    //Dimensions
     width: 100%;
-    font-size: 1.5rem;
-    text-align: center;
+    height: 50px;
+    padding: 0 16px;
+
+    //Positioning
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    //Color
+    background: #808080;
+
+    //Font
+    font: {
+      size: 20px;
+      weight: bold;
+    }
+
+    .header__title {
+      font: {
+        size: inherit;
+        weight: inherit;
+      }
+      color: white;
+    }
   }
 
-  .ts-dialog__body {
-    width: 100%;
-    text-align: start;
+  .ts-dialog__main {
     flex-grow: 1;
-    font-size: 1rem;
-    margin-inline: 26px;
-    margin-block: 12px;
-    justify-content: flex-start;
+    width: 100%;
   }
 
   .ts-dialog__buttons {
-    justify-content: flex-end;
-    align-self: flex-end;
-    margin-inline: 24px;
+    //Dimensions
+    width: 100%;
+    height: 50px;
+    flex-shrink: 0;
+    padding: 0 16px;
+    margin: 0;
+
+    //Positioning
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+
+    .ts-dialog__buttons__left,
+    .ts-dialog__buttons__right {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ts-button {
+      margin: 0;
+    }
   }
 }

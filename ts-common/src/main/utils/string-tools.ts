@@ -97,3 +97,7 @@ export function levenshteinDistance(str1: string, str2: string): number {
 	//Distance between the strings should be at bottom right corner of the matrix
 	return matrix[str1.length][str2.length];
 }
+
+export function normalizeString(string: string): string {
+	return string.replace(/–/g, '-').replace(/\n/g, '').replace(/\s+/g, ' ').replace(/’/g, '\'').trim();
+}

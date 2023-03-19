@@ -45,7 +45,7 @@ export class ModuleBE_PermissionDomain_Class
 		return [{namespace: item.namespace, projectId: item.projectId}];
 	}
 
-	protected async preUpsertProcessing(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain, request?: ExpressRequest) {
+	protected async preUpsertProcessing(dbInstance: DB_PermissionDomain, t?: FirestoreTransaction, request?: ExpressRequest) {
 		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId});
 
 		if (request) {

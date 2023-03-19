@@ -25,7 +25,7 @@
 // import {Platform_Jira, Platform_Slack} from '../../shared/api';
 //
 // type Props = {
-// 	component?: React.ReactNode
+// 	shared-components?: React.ReactNode
 // }
 // const style: React.CSSProperties = {
 // 	cursor: 'pointer',
@@ -136,7 +136,7 @@
 // 				{this.props.children}
 // 				<div
 // 					onClick={this.showAppConfirmationDialogExample}>
-// 					{this.props.component ||
+// 					{this.props.shared-components ||
 // 						<button style={style}>+</button>}
 // 				</div>
 // 			</>
