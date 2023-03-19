@@ -1,6 +1,6 @@
 {
   "name": "app-frontend",
-  "version": "0.0.0",
+  "version": "$APP_VERSION",
   "description": "Frontend hello world with Thunder",
   "keywords": [
     "TacB0sS",
@@ -26,21 +26,23 @@
     "launch": "webpack-dev-server --open --mode development --env dev true"
   },
   "dependencies": {
+    "@nu-art/bug-report": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/db-api-generator": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/file-upload": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/firebase": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/live-docs": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/permissions": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/push-pub-sub": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/user-account": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-workspace": "$THUNDERSTORM_SDK_VERSION",
+    "@app/app-shared": "$APP_VERSION",
+    "firebase": "$FIREBASE_PKG_VERSION",
     "clean-html": "^1.5.0",
     "file-loader": "^6.2.0",
-    "firebase": "9.16.0",
     "mic-recorder-to-mp3": "^2.2.2",
-    "moment": "^2.29.4"
-  },
-  "devDependencies": {
-    "@types/chart.js": "^2.9.4",
-    "@types/d3-array": "^2.8.0",
-    "@types/d3-scale": "^3.2.1",
-    "@types/history": "^4.7.2",
-    "@types/qs": "^6.5.2",
-    "@types/react": "^16.8.7",
-    "@types/react-router-dom": "^5.1.3",
-    "@typescript-eslint/eslint-plugin": "^5.8.0",
+    "moment": "^2.29.4",
     "autoprefixer": "^9.1.5",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
@@ -49,18 +51,6 @@
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^10.0.0",
     "crypto-browserify": "^3.12.0",
-    "@app/app-shared": "../app-shared/dist",
-    "@nu-art/bug-report": "../bug-report/dist",
-    "@nu-art/db-api-generator": "../db-api-generator/dist",
-    "@nu-art/file-upload": "../file-upload/dist",
-    "@nu-art/firebase": "../firebase/dist",
-    "@nu-art/live-docs": "../live-docs/dist",
-    "@nu-art/permissions": "../permissions/dist",
-    "@nu-art/push-pub-sub": "../push-pub-sub/dist",
-    "@nu-art/thunderstorm": "../thunderstorm/dist",
-    "@nu-art/ts-common": "../ts-common/dist",
-    "@nu-art/user-account": "../user-account/dist",
-    "@nu-art/ts-workspace": "../ts-workspace/dist",
     "css-loader": "^6.5.1",
     "csstype": "^3.0.0",
     "d3-array": "^2.8.0",
@@ -93,5 +83,14 @@
     "webpack-dev-server": "^4.5.0",
     "webpack-manifest-plugin": "^4.0.2",
     "write-file-webpack-plugin": "^4.5.1"
+  },
+  "devDependencies": {
+    "@types/chart.js": "^2.9.4",
+    "@types/d3-array": "^2.8.0",
+    "@types/d3-scale": "^3.2.1",
+    "@types/history": "^4.7.2",
+    "@types/qs": "^6.5.2",
+    "@types/react": "^16.8.7",
+    "@types/react-router-dom": "^5.1.3"
   }
 }
