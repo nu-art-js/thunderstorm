@@ -10,6 +10,6 @@ dist-test
 docs
 build
 docs
-_package.json
+package.json
 package-lock.json
 config.ts

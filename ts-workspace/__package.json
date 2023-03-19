@@ -1,0 +1,49 @@
+{
+  "name": "@nu-art/ts-workspace",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "description": "TS Workspace",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "live-docs",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/firebase": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/storm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/user-account": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/db-api-generator": "$THUNDERSTORM_SDK_VERSION",
+    "moment": "^2.24.0",
+    "express": "^4.16.4",
+    "firebase": "$FIREBASE_PKG_VERSION",
+    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
+    "module-alias": "^2.2.0",
+    "react": "$REACT_PKG_VERSION",
+    "react-dom": "$REACT_DOM_PKG_VERSION",
+    "react-router-dom": "$REACT_ROUTER_DOM_PKG_VERSION",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.16.1",
+    "@types/history": "^4.7.2",
+    "@types/react": "^16.8.7",
+    "@types/request": "^2.48.1"
+  }
+}
