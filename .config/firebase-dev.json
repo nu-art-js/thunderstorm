@@ -7,9 +7,6 @@
       "dist-test",
       "deploy.js",
       "node_modules"
-    ],
-    "predeploy": [
-      "rm ./app-backend/package-lock.json"
     ]
   },
   "hosting": {
