@@ -86,3 +86,14 @@ export const stopPropagation = (e: MouseEvent | React.MouseEvent | KeyboardEvent
 	e.preventDefault();
 	e.stopPropagation();
 };
+
+type MouseClickActions = {
+	left?: () => void,
+	middle?: () => void,
+	right?: () => void,
+}
+
+export const mouseEventHandler = (e: React.MouseEvent | MouseEvent, actions: MouseClickActions) => {
+	const key: keyof MouseClickActions = e.button === 0 ? 'left' : (e.button === 1 ? 'middle' : 'right');
+	return actions[key]?.();
+};

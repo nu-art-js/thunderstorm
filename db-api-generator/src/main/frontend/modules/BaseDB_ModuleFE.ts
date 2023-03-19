@@ -23,7 +23,7 @@ import {IndexKeys} from '@nu-art/thunderstorm';
 import {DBDef,} from '../shared';
 import {DBConfig, IndexDb_Query, IndexedDB, OnClearWebsiteData, ReduceFunction, StorageKey} from '@nu-art/thunderstorm/frontend';
 
-import {arrayToMap, cloneArr, DB_Object, dbObjectToId, Logger, Module, sortArray, TypedMap} from '@nu-art/ts-common';
+import {arrayToMap, cloneArr, DB_Object, dbObjectToId, Logger, Module, sortArray, TypedMap, ValidatorTypeResolver} from '@nu-art/ts-common';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 
@@ -31,17 +31,20 @@ import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config>
 	implements OnClearWebsiteData {
-
+	readonly validator: ValidatorTypeResolver<DBType>;
 	readonly cache: MemCache<DBType, Ks>;
 	readonly IDB: IDBCache<DBType, Ks>;
+	readonly dbDef: DBDef<DBType, Ks>;
 
 	protected constructor(dbDef: DBDef<DBType, Ks>) {
 		super();
 		const config = getModuleFEConfig(dbDef);
+		this.validator = config.validator;
 		this.setDefaultConfig(config as Config);
 
 		this.cache = new MemCache<DBType, Ks>(this, config.dbConfig.uniqueKeys);
 		this.IDB = new IDBCache<DBType, Ks>(config.dbConfig, config.versions[0]);
+		this.dbDef = dbDef;
 	}
 
 	protected init() {

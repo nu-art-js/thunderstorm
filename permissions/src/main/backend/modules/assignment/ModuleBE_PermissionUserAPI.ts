@@ -18,26 +18,19 @@
  */
 
 import {DB_ApiGenerator} from '@nu-art/db-api-generator/backend';
-import {ApiDefServer, ApiModule, createBodyServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {ApiDef_PermissionUser, ApiStruct_PermissionsUser, DB_PermissionUser, Request_AssignAppPermissions} from '../../shared';
+import {addRoutes, createBodyServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {ApiDef_PermissionUser, DB_PermissionUser, Request_AssignAppPermissions} from '../../shared';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
 
 
 export class ModuleBE_PermissionUserAPI_Class
-	extends DB_ApiGenerator<DB_PermissionUser>
-	implements ApiDefServer<ApiStruct_PermissionsUser>, ApiModule {
-
-	readonly pah: ApiDefServer<ApiStruct_PermissionsUser>['pah'];
+	extends DB_ApiGenerator<DB_PermissionUser> {
 
 	constructor() {
 		super(ModuleBE_PermissionUserDB);
-		this.pah = {
-			assignAppPermissions: createBodyServerApi(ApiDef_PermissionUser.pah.assignAppPermissions, this.assignAppPermissions),
-		};
-	}
-
-	useRoutes() {
-		return {...this.v1, ...this.pah};
+		addRoutes([
+			createBodyServerApi(ApiDef_PermissionUser.pah.assignAppPermissions, this.assignAppPermissions)
+		]);
 	}
 
 	async assignAppPermissions(body: Request_AssignAppPermissions, request?: ExpressRequest) {

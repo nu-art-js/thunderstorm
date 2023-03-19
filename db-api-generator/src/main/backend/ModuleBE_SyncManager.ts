@@ -21,9 +21,9 @@
 
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapperBE, FirebaseRef, FirestoreCollection, FirestoreTransaction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {ApiModule, ApiServerRouter, createQueryServerApi, ExpressRequest, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createQueryServerApi, ExpressRequest, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
 import {_keys, currentTimeMillis, DB_Object, filterDuplicates, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
-import {_EmptyQuery, ApiDef_SyncManager, ApiStruct_SyncManager, DBSyncData} from '../shared';
+import {_EmptyQuery, ApiDef_SyncManager, DBSyncData} from '../shared';
 import {BaseDB_ModuleBE} from './BaseDB_ModuleBE';
 
 
@@ -50,27 +50,23 @@ type Config = {
  */
 export class ModuleBE_SyncManager_Class
 	extends Module<Config>
-	implements ApiServerRouter<ApiStruct_SyncManager>, ApiModule, OnModuleCleanup {
+	implements OnModuleCleanup {
 
-	readonly v1;
 	public collection!: FirestoreCollection<DeletedDBItem>;
 
 	private database!: DatabaseWrapperBE;
 	private dbModules!: BaseDB_ModuleBE<DB_Object>[];
 	private syncData!: FirebaseRef<Type_SyncData>;
 	private deletedCount!: FirebaseRef<number>;
+	public checkSyncApi;
 
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Debug);
-		this.v1 = {
-			checkSync: createQueryServerApi(ApiDef_SyncManager.v1.checkSync, this.fetchDBSyncData)
-		};
-		this.setDefaultConfig({retainDeletedCount: 1000});
-	}
+		this.checkSyncApi = createQueryServerApi(ApiDef_SyncManager.v1.checkSync, this.fetchDBSyncData);
 
-	useRoutes() {
-		return this.v1;
+		addRoutes([this.checkSyncApi]);
+		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
 
 	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): DeletedDBItem => {

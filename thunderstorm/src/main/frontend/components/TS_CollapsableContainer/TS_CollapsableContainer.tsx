@@ -10,6 +10,7 @@ type Props = {
 	collapsed?: boolean;
 	showCaret?: boolean
 	onCollapseToggle?: (collapseState: boolean) => void;
+	maxHeight?: number;
 	style?: TypedMap<string>;
 	className?: string;
 	customCaret?: ReactNode | (() => ReactNode)
@@ -20,25 +21,35 @@ type Props = {
 
 type State = {
 	collapsed: boolean;
+	contentRef: React.RefObject<any>;
+	containerRef: React.RefObject<HTMLDivElement>;
 }
 
-export class TS_CollapsableContainer extends ComponentSync<Props, State> {
+export class TS_CollapsableContainer
+	extends ComponentSync<Props, State> {
+
+	//######################### Life Cycle #########################
 
 	protected deriveStateFromProps(nextProps: Props): State {
-		return {
-			collapsed: true,
-		};
+		const state = this.state ? {...this.state} : {} as State;
+		state.collapsed = nextProps.collapsed ?? this.state?.collapsed ?? true;
+		state.contentRef ??= React.createRef();
+		state.containerRef ??= React.createRef();
+		return state;
 	}
 
-	private toggleCollapse = () => {
-		//If component is controlled, return
-		this.props.onCollapseToggle?.(this.isCollapsed());
-		if (this.props.collapsed !== undefined)
-			return;
+	componentDidUpdate(prevProps: Readonly<Props>, prevState: Readonly<State>, snapshot?: any) {
+		this.setContainerHeight();
+	}
 
-		this.setState({collapsed: !this.state.collapsed});
-	};
+	componentDidMount() {
+		if (this.state.collapsed)
+			this.setContainerHeight();
+		else
+			setTimeout(() => this.setContainerHeight(), 10);
+	}
 
+	//TODO: check if this is still supposed to be here
 	shouldComponentUpdate(nextProps: Readonly<Props>, nextState: Readonly<State>, nextContext: any): boolean {
 		// let res = super.shouldComponentUpdate(nextProps, nextState, nextContext);
 		// if (!res)
@@ -47,10 +58,34 @@ export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 		return true;
 	}
 
+	//######################### Logic #########################
+
+	private setContainerHeight = () => {
+		if (!this.state.containerRef.current)
+			return;
+		
+		const currentContent = this.state.contentRef.current;
+		const maxHeight = this.state.collapsed
+			? 0
+			: this.props.maxHeight ? this.props.maxHeight : currentContent.getBoundingClientRect().height;
+		this.state.containerRef.current.style.maxHeight = `${maxHeight}px`;
+	};
+
+	private toggleCollapse = () => {
+		//If shared-components is controlled, return
+		this.props.onCollapseToggle?.(this.isCollapsed());
+		if (this.props.collapsed !== undefined)
+			return;
+
+		this.setState({collapsed: !this.state.collapsed});
+	};
+
 	private isCollapsed() {
 		//Return the collapse from props if controlled, otherwise state
 		return this.props.collapsed !== undefined ? this.props.collapsed : this.state.collapsed;
 	}
+
+	//######################### Render #########################
 
 	private renderCaret() {
 		if (this.props.showCaret === false)
@@ -78,8 +113,10 @@ export class TS_CollapsableContainer extends ComponentSync<Props, State> {
 
 	renderContainer() {
 		const className = _className('ts-collapsable-container__container', this.isCollapsed() ? 'collapsed' : undefined);
-		return <div className={className}>
-			{(typeof this.props.containerRenderer === 'function' ? this.props.containerRenderer() : this.props.containerRenderer)}
+		return <div className={className} ref={this.state.containerRef}>
+			<div ref={this.state.contentRef} style={{width: '100%'}}>
+				{(typeof this.props.containerRenderer === 'function' ? this.props.containerRenderer() : this.props.containerRenderer)}
+			</div>
 		</div>;
 	}
 

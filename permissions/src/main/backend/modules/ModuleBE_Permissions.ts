@@ -19,7 +19,7 @@
 
 import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {ApiDefServer, ApiModule, ApiResponse, createBodyServerApi, createQueryServerApi, ExpressRequest, ServerApi, Storm} from '@nu-art/thunderstorm/backend';
+import {addRoutes, ApiResponse, createBodyServerApi, createQueryServerApi, ExpressRequest, ServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from './assignment';
 import {ModuleBE_PermissionApi, ModuleBE_PermissionProject} from './management';
 import {
@@ -73,24 +73,17 @@ class ServerApi_UserCFsByShareGroups
 // }
 
 export class ModuleBE_Permissions_Class
-	extends Module<Config>
-	implements ApiDefServer<ApiStruct_Permissions>, ApiModule {
-	readonly v1: ApiDefServer<ApiStruct_Permissions>['v1'];
+	extends Module<Config> {
 
 	constructor() {
 		super();
-		this.v1 = {
-			getUserUrlsPermissions: createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, Middleware_ValidateSession),
-			getUserCFsByShareGroups: new ServerApi_UserCFsByShareGroups(),
-			getUsersCFsByShareGroups: createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups, Middleware_ValidateSession),
-			// registerExternalProject: new ServerApi_RegisterExternalProject(),
-			registerExternalProject: createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
-			registerProject: createQueryServerApi(ApiDef_Permissions.v1.registerProject, this.registerProject),
-		};
-	}
-
-	useRoutes() {
-		return this.v1;
+		addRoutes([
+			createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, Middleware_ValidateSession),
+			new ServerApi_UserCFsByShareGroups(),
+			createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups, Middleware_ValidateSession),
+			createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
+			createQueryServerApi(ApiDef_Permissions.v1.registerProject, this.registerProject)
+		]);
 	}
 
 	protected init(): void {

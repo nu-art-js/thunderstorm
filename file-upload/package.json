@@ -29,11 +29,11 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@nu-art/db-api-generator": "~0.0.1",
-    "@nu-art/firebase": "~0.0.1",
-    "@nu-art/push-pub-sub": "~0.0.1",
-    "@nu-art/thunderstorm": "~0.0.1",
-    "@nu-art/ts-common": "~0.0.1",
+    "@nu-art/db-api-generator": "../db-api-generator/dist",
+    "@nu-art/firebase": "../firebase/dist",
+    "@nu-art/push-pub-sub": "../push-pub-sub/dist",
+    "@nu-art/thunderstorm": "../thunderstorm/dist",
+    "@nu-art/ts-common": "../ts-common/dist",
     "file-type": "^16.3.0"
   },
   "devDependencies": {
@@ -42,10 +42,8 @@
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/storage": "^5.14.5",
     "@google-cloud/firestore": "^5.0.0",
-    "@nu-art/testelot": "~0.0.1",
     "@types/compression": "^1.0.1",
     "@types/express": "^4.17.2",
-    "isomorphic-apk-reader": "^1.1.24",
     "jszip": "^3.2.2",
     "express": "^4.17.1",
     "firebase": "9.16.0",

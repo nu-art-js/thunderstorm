@@ -26,6 +26,7 @@ import './TS_Table.scss';
 import React = require('react');
 
 
+export type Header<T extends TableHeaders<any>> = T extends TableHeaders<infer R, infer A, infer P> ? P | { header: P, widthPx: number } : never;
 export type TableHeaders<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = (P | { header: P, widthPx: number })[];
 export type HeaderRenderer<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
 	[C in P]?: (columnKey: C) => React.ReactNode;
@@ -104,7 +105,6 @@ export class TS_Table<R extends TS_Object, A extends string = never>
 						style.width = `${header.widthPx}px`;
 						style.minWidth = `${header.widthPx}px`;
 					}
-
 
 					return <th key={`${this.props.id}-${index}`} {...tablePropsTH} className={classNameTH} style={style}>
 						{renderers[prop]?.(prop as any)}

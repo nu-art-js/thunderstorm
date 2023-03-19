@@ -61,7 +61,7 @@ class SmartDialog<T extends DB_Object, Ks extends keyof T = '_id'>
 
 	render() {
 		return (
-			<LL_V_L className="ts-dialog">
+			<LL_V_L className="ts-dialog-2">
 				{this.renderTitle()}
 				{this.renderBody()}
 				<LL_H_C className="ts-dialog__buttons-container">

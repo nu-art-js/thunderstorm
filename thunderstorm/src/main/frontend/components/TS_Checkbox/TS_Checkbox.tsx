@@ -83,14 +83,13 @@ export class TS_Checkbox
 		const className = _className('ts-checkbox__button', disabledClass, checkedClass, roundedClass);
 		const innerClassName = _className('ts-checkbox__button__inner', disabledClass, checkedClass, roundedClass);
 
-		return <div className={_className('ts-checkbox', this.props.className)}>
+		return <div className={_className('ts-checkbox', this.props.className)} onClick={this.onCheckboxClick}>
 			<div
 				id={this.props.id}
-				className={className}
-				onClick={this.onCheckboxClick}>
+				className={className}>
 				{this.props.icon ? this.props.icon : <div className={innerClassName}/>}
 			</div>
-			{this.props.children}
+			{this.props.children && <div className="ts-checkbox__content">{this.props.children}</div>}
 		</div>;
 	}
 }

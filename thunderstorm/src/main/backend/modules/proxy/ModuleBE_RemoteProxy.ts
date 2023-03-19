@@ -100,7 +100,7 @@ export class ModuleBE_RemoteProxy_Class<Config extends RemoteProxyConfig>
 			throw new ApiException(403, `Secret does not match for proxyId: ${proxyId}`);
 
 		const requestUrl = request.path;
-		if (!expectedSecret.urls || !expectedSecret.urls.includes(requestUrl))
+		if (!expectedSecret.urls?.find(urlPattern => requestUrl.match(urlPattern)))
 			throw new ApiException(403, `Requested url '${requestUrl}' is not allowed from proxyId: ${proxyId}`);
 
 		return expectedSecret.extras;

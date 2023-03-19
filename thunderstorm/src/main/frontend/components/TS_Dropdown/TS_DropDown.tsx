@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {BadImplementationException, cloneArr, Filter} from '@nu-art/ts-common';
+import {clamp, Filter} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -31,13 +31,16 @@ import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
 
+
 type State<ItemType> = {
 	open?: boolean
-	items: ItemType[];
+	adapter: Adapter<ItemType>;
 	selected?: ItemType
 	hover?: ItemType
 	filterText?: string
 	dropDownRef: React.RefObject<HTMLDivElement>;
+	treeContainerRef: React.RefObject<HTMLDivElement>;
+	focusedItem?: ItemType;
 }
 
 type StaticProps = {
@@ -62,7 +65,7 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 	inputValue?: string;
 
 	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
-	onNoMatchingSelectionForString?: (filterText: string, matchingItems: ItemType[], e: React.KeyboardEvent) => void
+	onNoMatchingSelectionForString?: (filterText: string, matchingItems: ItemType[], e: React.KeyboardEvent) => any
 
 	selected?: ItemType
 	filter?: Filter<ItemType>
@@ -95,7 +98,7 @@ export class TS_DropDown<ItemType>
 		<TS_Input
 			type="text"
 			value={dropDown.props.inputValue}
-			onChange={(filterText) => dropDown.setState({filterText})}
+			onChange={(filterText) => dropDown.reDeriveState({filterText})}
 			focus={true}
 			style={{width: '100%'}}
 			placeholder={dropDown.props.placeholder || ''}
@@ -106,8 +109,8 @@ export class TS_DropDown<ItemType>
 			// 	} else
 			// 		dropDown.onSelected(dropDown.state.adapter.data[0]);
 			// }}
-			onCancel={() => dropDown.setState({open: false, filterText: undefined})}
-			onKeyDown={dropDown.keyEventHandler}
+			onCancel={() => dropDown.reDeriveState({open: false, filterText: undefined})}
+			onKeyDown={dropDown.inputKeyEventHandler}
 		/>;
 
 	public static defaultProps = {
@@ -120,18 +123,33 @@ export class TS_DropDown<ItemType>
 		super(props);
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<Props_DropDown<ItemType>>, nextState: Readonly<State<ItemType>>, nextContext: any): boolean {
-		return true;
-	}
+	// shouldComponentUpdate(nextProps: Readonly<Props_DropDown<ItemType>>, nextState: Readonly<State<ItemType>>, nextContext: any): boolean {
+	// 	return true;
+	// }
 
-	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>): State<ItemType> | undefined {
-		const ref = this.props.innerRef || this.state?.dropDownRef || React.createRef<HTMLDivElement>();
-		const adapter = typeof nextProps.adapter === 'function' ? nextProps.adapter() : nextProps.adapter;
+	protected deriveStateFromProps(nextProps: Props_DropDown<ItemType>, state?: Partial<State<ItemType>>): State<ItemType> | undefined {
+		const nextState: State<ItemType> = this.state ? {...this.state} : {} as State<ItemType>;
+		const nextAdapter = typeof nextProps.adapter === 'function' ? nextProps.adapter(state?.filterText) : nextProps.adapter;
+		const prevAdapter = typeof this.props.adapter === 'function' ? this.props.adapter(state?.filterText) : this.props.adapter;
+		nextState.selected = nextProps.selected;
+		nextState.filterText ??= nextProps.inputValue;
+		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
+		nextState.treeContainerRef = state?.treeContainerRef ?? React.createRef();
+
+		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText)) {
+			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
+			nextState.focusedItem = undefined;
+		}
+
 		return {
-			items: adapter.data,
-			selected: nextProps.selected,
-			filterText: nextProps.inputValue,
-			dropDownRef: ref
+			open: state?.open,
+			adapter: nextState.adapter,
+			selected: nextState.selected,
+			hover: state?.hover,
+			filterText: state?.filterText,
+			dropDownRef: nextState.dropDownRef,
+			focusedItem: nextState.focusedItem,
+			treeContainerRef: nextState.treeContainerRef,
 		};
 	}
 
@@ -144,26 +162,27 @@ export class TS_DropDown<ItemType>
 		return this.state.dropDownRef.current?.closest(this.props.boundingParentSelector);
 	}
 
-	private closeList = (e?: InputEvent, state: State<ItemType> = {} as State<ItemType>) => {
+	private closeList = (e?: InputEvent, selectedItem?: ItemType | null, action?: () => (void | Promise<void>)) => {
 		if (this.props.disabled)
 			return;
 
 		if (e)
 			stopPropagation(e);
 
-		this.setState({...state, open: false, filterText: undefined});
+		this.setState({
+			open: false,
+			filterText: undefined,
+			focusedItem: undefined,
+			selected: selectedItem === null ? undefined : selectedItem || this.state.selected
+		}, action);
 	};
 
 	onSelected = (item?: ItemType, e?: InputEvent) => {
-		const newState = {} as State<ItemType>;
-		if (!this.props.allowManualSelection)
-			newState.selected = item;
-
-		this.closeList(e, newState);
-		this.props.onSelected(item as (typeof this.props.canUnselect extends true ? ItemType | undefined : ItemType));
+		this.closeList(e, item,
+			() => this.props.onSelected(item as (typeof this.props.canUnselect extends true ? ItemType | undefined : ItemType)));
 	};
 
-	private keyEventHandler = (e: React.KeyboardEvent) => {
+	private inputKeyEventHandler = (e: React.KeyboardEvent) => {
 		if (this.props.inputEventHandler)
 			return this.setState(() => {
 				return this.props.inputEventHandler ? this.props.inputEventHandler(this.state, e) : this.state;
@@ -171,23 +190,46 @@ export class TS_DropDown<ItemType>
 
 		if (e.key === 'Enter') {
 			e.persist();
+			if (this.state.focusedItem) {
+				return this.onSelected(this.state.focusedItem);
+			}
 			const filterText = this.state.filterText;
-			const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(filterText) : this.props.adapter;
-			adapter.data = cloneArr(this.state.items);
 			if (filterText) {
-				this.closeList(e);
-				this.props.onNoMatchingSelectionForString?.(filterText, adapter.data, e);
+				this.closeList(e, null, () => this.props.onNoMatchingSelectionForString?.(filterText, this.state.adapter.data, e));
 			} else
-				this.onSelected(adapter.data[0], e);
+				this.onSelected(this.state.adapter.data[0], e);
+
 		}
 
 		if (e.key === 'Escape')
 			return this.closeList(e);
 
-		// if (e.key === 'ArrowDown') {
-		// 	return document.getElementById(`${this.props.id}-tree-listener`)?.focus();
-		// }
+		if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+			let index = this.state.focusedItem ? this.state.adapter.data.indexOf(this.state.focusedItem) + (e.key === 'ArrowDown' ? 1 : -1) : 0;
+			index = clamp(0, index, this.state.adapter.data.length - 1);
+			this.setState({focusedItem: this.state.adapter.data[index]});
+		}
 	};
+
+	private createAdapter(adapterToClone: Adapter<ItemType>, limit?: number, filterText?: string): Adapter<ItemType> {
+		//If no change to data
+		if (!(filterText && this.props.filter) && !limit)
+			return adapterToClone;
+
+		let data = adapterToClone.data;
+
+		//If filtering
+		if (filterText && this.props.filter)
+			data = this.props.filter.filterSort(data, filterText);
+
+		//If limiting
+		if (limit)
+			data = limit ? data.slice(0, limit) : data;
+
+		const adapter = adapterToClone.clone(new Adapter<ItemType>(data));
+		adapter.data = data;
+		return adapter;
+	}
 
 	private getChildrenContainerMaxHeight = (dropdownRef: React.RefObject<HTMLDivElement>, dir: 'top' | 'bottom'): number => {
 		const rect = dropdownRef.current?.getBoundingClientRect()!;
@@ -250,7 +292,6 @@ export class TS_DropDown<ItemType>
 						stopPropagation(e);
 						return;
 					}
-
 					this.state.open ? this.closeList(e) : this.setState({open: true});
 				}}>
 
@@ -268,21 +309,6 @@ export class TS_DropDown<ItemType>
 
 		let className = 'ts-dropdown__items-container';
 		// const treeKeyEventHandler = treeKeyEventHandlerResolver(this.props.id);
-		const filter = this.props.filter;
-		const adapter = typeof this.props.adapter === 'function' ? this.props.adapter(this.state.filterText) : this.props.adapter;
-		adapter.data = cloneArr(this.state.items);
-		if (filter && this.state.filterText) {
-			try {
-				adapter.data = filter.filterSort(adapter.data, this.state.filterText);
-			} catch (e: any) {
-				this.logError(e);
-				throw new BadImplementationException(e);
-			}
-		}
-
-		if (this.props.limitItems) {
-			adapter.data = adapter.data.slice(0, this.props.limitItems);
-		}
 
 		const style: CSSProperties = {};
 		if (this.state?.dropDownRef.current) {
@@ -313,20 +339,23 @@ export class TS_DropDown<ItemType>
 			style.width = containerData.width;
 		}
 
-		if ((!filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && adapter.data.length === 0) {
+		if ((!this.props.filter || !this.props.showNothingWithoutFilterText || this.state.filterText?.length) && this.state.adapter.data.length === 0) {
 			if (this.props.noOptionsRenderer)
 				return <div className="ts-dropdown__empty" style={style}>
 					{(typeof this.props.noOptionsRenderer === 'function' ? this.props.noOptionsRenderer() : this.props.noOptionsRenderer)}
 				</div>;
 			return <div className="ts-dropdown__empty" style={style}>No options</div>;
 		}
-		return <LL_V_L className={className} style={style}>
-			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={() => this.onSelected()}>Unselect</div>}
+
+		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
+			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={(e) => this.closeList(e, null)}>Unselect</div>}
 			<TS_Tree
-				adapter={adapter}
-				selectedItem={this.state.selected}
+				adapter={this.state.adapter}
+				selectedItem={this.state.focusedItem}
 				onNodeClicked={(path: string, item: ItemType) => this.onSelected(item)}
 				className={'ts-dropdown__items'}
+				scrollSelectedIntoView={true}
+				containerRef={this.state.treeContainerRef}
 			/>
 		</LL_V_L>;
 	};
@@ -368,7 +397,7 @@ export class TS_DropDown<ItemType>
 	// TODO: THIS IS ALL DUPLICATE SHIT... DELETE ONCE TREE CAN PROPAGATE THE KEYBOARD EVENTS
 
 	private addKeyboardListener = () => {
-		const onKeyboardEventListener = this.keyEventHandler;
+		const onKeyboardEventListener = this.inputKeyEventHandler;
 		if (!onKeyboardEventListener)
 			return;
 
@@ -376,12 +405,12 @@ export class TS_DropDown<ItemType>
 	};
 
 	private removeKeyboardListener = () => {
-		const onKeyboardEventListener = this.keyEventHandler;
+		const onKeyboardEventListener = this.inputKeyEventHandler;
 		if (!onKeyboardEventListener)
 			return;
 
 		this.node?.removeEventListener('keydown', this.keyboardEventHandler);
 	};
 
-	keyboardEventHandler = (e: KeyboardEvent) => this.node && this.keyEventHandler(e as unknown as React.KeyboardEvent);
+	keyboardEventHandler = (e: KeyboardEvent) => this.node && this.inputKeyEventHandler(e as unknown as React.KeyboardEvent);
 }

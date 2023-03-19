@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {Module, Second} from '@nu-art/ts-common';
+import {currentTimeMillis, Day, Hour, Module, Second} from '@nu-art/ts-common';
 import {
 	apiWithBody,
 	apiWithQuery,
@@ -41,8 +41,9 @@ import {
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 
 
-export const StorageKey_SessionId: StorageKey<string> = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
-export const StorageKey_UserEmail: StorageKey<string> = new StorageKey<string>(`storage-${QueryParam_Email}`);
+export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
+export const StorageKey_SessionTimeoutTimestamp = new StorageKey<number>(`storage-accounts__session-timeout`);
+export const StorageKey_UserEmail = new StorageKey<string>(`storage-${QueryParam_Email}`);
 
 export const RequestKey_AccountCreate = 'account-create';
 export const RequestKey_AccountLogin = 'account-login';
@@ -56,6 +57,7 @@ export interface OnLoginStatusUpdated {
 export enum LoggedStatus {
 	VALIDATING,
 	LOGGED_OUT,
+	SESSION_TIMEOUT,
 	LOGGED_IN
 }
 
@@ -104,6 +106,9 @@ export class ModuleFE_Account_Class
 
 		const pervStatus = this.status;
 		this.status = newStatus;
+		if (newStatus === LoggedStatus.LOGGED_IN || newStatus === LoggedStatus.LOGGED_OUT)
+			StorageKey_SessionTimeoutTimestamp.delete();
+
 		this.logInfo(`Login status changes: ${LoggedStatus[pervStatus]} => ${LoggedStatus[newStatus]}`);
 		dispatch_onLoginStatusChanged.dispatchUI();
 		dispatch_onLoginStatusChanged.dispatchModule();
@@ -128,6 +133,10 @@ export class ModuleFE_Account_Class
 			this.v1.validateSession().execute();
 			return;
 		}
+
+		const now = currentTimeMillis();
+		if (now - StorageKey_SessionTimeoutTimestamp.get(now + Day) < Hour)
+			return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 
 		this.logDebug('login out user.... ');
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
@@ -164,7 +173,8 @@ export class ModuleFE_Account_Class
 		}
 
 		StorageKey_SessionId.delete();
-		return this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+		StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
+		return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 	};
 
 	logout = (url?: string) => {

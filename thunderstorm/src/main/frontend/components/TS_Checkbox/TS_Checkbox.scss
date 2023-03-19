@@ -25,6 +25,10 @@
   align-items: center;
   gap: 10px;
 
+  .ts-checkbox__content {
+    margin-inline-start: 8px;
+  }
+
   .ts-checkbox__button {
     border: 1px solid #68678d50;
     box-shadow: 0 0 1px 0 #867979;
