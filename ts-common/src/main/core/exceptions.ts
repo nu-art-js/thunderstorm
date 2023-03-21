@@ -20,7 +20,7 @@
  */
 
 // noinspection TypeScriptPreferShortImport
-import {Constructor} from '../utils/types';
+import {Constructor, UniqueId} from '../utils/types';
 
 
 /**
@@ -159,6 +159,30 @@ export class ThisShouldNotHappenException
 
     constructor(message: string, cause?: Error) {
         super(ThisShouldNotHappenException, message, cause);
+    }
+}
+
+export type DependencyConflicts = {
+    collectionKey: string;
+    conflictingIds: UniqueId[];
+}
+
+/**
+ * #<ins>EntityHasDependencies</ins>
+ * This class inherits {@link CustomException} and represents an error of a entity trying to be deleted that has dependencies
+ * @category Exceptions
+ */
+export class HasDependenciesException extends CustomException{
+
+    public body?: DependencyConflicts[];
+    public entityName?: string;
+    public responseCode?: number
+
+    constructor(debugMessage: string, body?: DependencyConflicts[], entityName? : UniqueId, e?: Error) {
+        super(HasDependenciesException,debugMessage, e);
+
+        this.body = body;
+        this.entityName = entityName;
     }
 }
 
