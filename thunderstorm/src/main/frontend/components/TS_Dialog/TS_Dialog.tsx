@@ -4,7 +4,7 @@ import {BadImplementationException, TypedMap} from '@nu-art/ts-common';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_BusyButton} from '../TS_BusyButton';
 import {TS_Button} from '../TS_Button';
-import {LL_V_L, ModuleFE_Dialog, TS_ErrorBoundary} from '../..';
+import {_className, LL_V_L, ModuleFE_Dialog, TS_ErrorBoundary} from '../..';
 
 /**
  * ###DialogButton
@@ -124,6 +124,7 @@ export abstract class TS_Dialog<P, S extends State_TSDialog>
 	// ######################## Abstract ########################
 
 	protected abstract dialogId: string;
+	protected className?: string;
 	protected abstract dialogLeftButtons: () => (DialogButton[] | undefined);
 	protected abstract dialogRightButtons: () => (DialogButton[] | undefined);
 	protected abstract dialogHeader: () => React.ReactNode;
@@ -162,7 +163,7 @@ export abstract class TS_Dialog<P, S extends State_TSDialog>
 
 	render() {
 		return <TS_ErrorBoundary>
-			<LL_V_L className={'ts-dialog'} id={this.dialogId} tabIndex={-1} onKeyDown={this.dialogKeyEventHandler}>
+			<LL_V_L className={_className('ts-dialog', this.className)} id={this.dialogId} tabIndex={-1} onKeyDown={this.dialogKeyEventHandler}>
 				{this.renderHeader()}
 				{this.renderMain()}
 				{this.renderButtons()}
