@@ -15,3 +15,6 @@ packages:
   - bug-report
   - github
   - file-upload
+  - app-shared
+  - app-frontend
+  - app-backend
