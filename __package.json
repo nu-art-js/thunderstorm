@@ -1,0 +1,35 @@
+{
+  "name": "thunderstorm",
+  "version": "1.0.0",
+  "main": "./dist/index.js",
+  "types": "dist/index.d.ts",
+  "author": "TacB0sS",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "typedoc": "^0.23.26",
+    "typedoc-theme-yaf": "^0.0.3",
+    "eslint": "^8.36.0",
+    "typescript": "^4.9.5",
+    "mocha": "^10.2.0",
+    "ts-mocha": "^10.0.0",
+    "ts-node": "^8.6.2",
+    "chai-as-promised": "^7.1.1",
+    "chai": "^4.3.7",
+    "use-strict": "^1.0.1",
+    "@types/node": "^16.18.16",
+    "@typescript-eslint/eslint-plugin": "^5.55.0",
+    "@typescript-eslint/parser": "^5.55.0",
+    "@types/chai": "^4.3.4",
+    "@types/chai-as-promised": "^7.1.5",
+    "@types/mocha": "^10.0.1"
+  },
+  "engines": {
+    "node": "16"
+  }
+}
