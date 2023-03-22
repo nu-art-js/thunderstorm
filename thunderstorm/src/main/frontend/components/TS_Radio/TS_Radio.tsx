@@ -56,7 +56,7 @@ export class TS_Radio<ItemType>
 	};
 
 	private renderRadioLabel = (value: ItemType) => {
-		return <span className={'ts-radio__label'}>{value}</span>;
+		return <span className={'ts-radio__label'}>{String(value)}</span>;
 	};
 
 	private renderRadioButton = (value: ItemType) => {

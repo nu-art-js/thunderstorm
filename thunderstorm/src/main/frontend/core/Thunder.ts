@@ -51,7 +51,8 @@ const modules: Module[] = [
 export class Thunder
 	extends ModuleManager {
 
-	private mainApp!: React.ElementType<{}>;
+	private mainApp?: React.ElementType<{}>;
+	private routes?: React.ElementType<{}>;
 	private listeners: any[] = [];
 
 	constructor() {
@@ -90,8 +91,17 @@ export class Thunder
 		return this;
 	}
 
-	public getMainApp(): React.ElementType<{}> {
+	public getMainApp(): React.ElementType<{}> | undefined {
 		return this.mainApp;
+	}
+
+	public setRoutes(routes: React.ElementType<{}>) {
+		this.routes = routes;
+		return this;
+	}
+
+	public getRoutes(): React.ElementType<{}> | undefined {
+		return this.routes;
 	}
 
 	public build(onStarted?: () => void) {

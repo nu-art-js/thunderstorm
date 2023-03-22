@@ -20,26 +20,36 @@
  */
 
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import {Router} from 'react-router-dom';
-import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
+import {BrowserRouter} from 'react-router-dom';
 import {Thunder} from './Thunder';
 import {ImplementationMissingException} from '@nu-art/ts-common';
-
+import {createRoot} from 'react-dom/client';
+import {Router} from 'react-router-dom';
 
 export function renderApp() {
-	const MainApp = Thunder.getInstance().getMainApp();
-	if (!MainApp)
-		throw new ImplementationMissingException('mainApp was not specified!!');
+	const mainApp = Thunder.getInstance().getMainApp();
+	const routes = Thunder.getInstance().getRoutes();
+	if (!mainApp && !routes)
+		throw new ImplementationMissingException('One must be defined: MainApp, Routes');
 
-	const appDiv = document.createElement('div');
-	appDiv.classList.add('match_height');
-	document.body.appendChild(appDiv);
+	//Create DOM root
+	const root = document.createElement('div');
+	root.setAttribute('id', 'root');
+	root.setAttribute('class', 'match_parent');
+	document.body.appendChild(root);
 
-	const history = ModuleFE_BrowserHistory.getHistory();
-	const appJsx = <Router history={history}><MainApp/></Router>;
-	ReactDOM.render(
-		appJsx,
-		appDiv
-	);
+	//Connect React Root
+	const appRoot = createRoot(root);
+
+	const MainApp = mainApp as React.ElementType<{}>;
+	appRoot.render(<Router><MainApp/></Router>);
+
+	if (routes) {
+		console.log('Rendering Routes');
+		const Routes = routes as React.ElementType<{}>;
+		appRoot.render(<BrowserRouter><Routes/></BrowserRouter>);
+	} else {
+		console.log('Rendering Main App');
+		appRoot.render(<MainApp/>);
+	}
 }

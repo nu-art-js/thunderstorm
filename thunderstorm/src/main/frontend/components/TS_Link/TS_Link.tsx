@@ -25,12 +25,12 @@ import {_className, stopPropagation} from '../../utils/tools';
 import {TypedMap} from '@nu-art/ts-common';
 
 
-type Props = {
+type Props = React.PropsWithChildren<{
 	url: string
 	params?: TypedMap<(() => string) | string | undefined>
 	target?: UrlTarget;
 	className?: string;
-}
+}>;
 
 export class TS_Link
 	extends React.Component<Props, any> {

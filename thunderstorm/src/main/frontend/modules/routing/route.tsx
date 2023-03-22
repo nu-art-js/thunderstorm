@@ -21,6 +21,7 @@
 
 import {composeUrl, RouteParams} from '@nu-art/ts-common';
 import * as React from 'react';
+import {ReactNode} from 'react';
 import {Link, NavLink, Route} from 'react-router-dom';
 import {ReactEntryComponentInjector} from '../component-loader/ReactEntryComponentInjector';
 
@@ -78,19 +79,25 @@ export class RoutePath {
 
 }
 
-const activeStyle = {color: 'blue'};
+const activeStyle = (props: { isActive: boolean, isPending: boolean }) => ({color: props.isActive ? 'blue' : ''});
 
 export const defaultNavLinkNode = (route: RoutePath): React.ReactElement => {
-	return <NavLink key={route.key} to={route.path} activeStyle={activeStyle}>{route.label}</NavLink>;
+	return <NavLink key={route.key} to={route.path} style={activeStyle}>{route.label as ReactNode}</NavLink>;
 };
 
 export const defaultLinkNode = (route: RoutePath, node?: React.ReactNode): React.ReactElement => {
-	return <Link key={route.key} to={route.path}>{node || route.label || route.key}</Link>;
+	return <Link key={route.key} to={route.path}>{(node || route.label || route.key) as ReactNode}</Link>;
 };
 
 export const defaultRouteNode = (route: RoutePath): React.ReactElement => {
 	if (typeof route.component === 'string')
 		return <ReactEntryComponentInjector src={route.component}/>;
 
-	return <Route exact={route.exact} key={route.key} path={route.path} component={route.component}/>;
+	const Component = route.component;
+	return <Route
+		// exact={route.exact}
+		key={route.key}
+		path={route.path}
+		element={<Component/>}
+	/>;
 };
