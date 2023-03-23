@@ -28,18 +28,24 @@ import {ImplementationMissingException} from '@nu-art/ts-common';
 
 
 export function renderApp() {
-	const MainApp = Thunder.getInstance().getMainApp();
-	if (!MainApp)
-		throw new ImplementationMissingException('mainApp was not specified!!');
+	const appJsx = Thunder.getInstance().renderApp();
+	if (!appJsx)
+		throw new ImplementationMissingException('appJsx was not specified!!');
 
 	const appDiv = document.createElement('div');
 	appDiv.classList.add('match_height');
 	document.body.appendChild(appDiv);
 
+	ReactDOM.render(appJsx, appDiv);
+}
+
+export function appWithRoutes(props: { element: React.ElementType<{}> }) {
+	const MainApp = props.element;
 	const history = ModuleFE_BrowserHistory.getHistory();
-	const appJsx = <Router history={history}><MainApp/></Router>;
-	ReactDOM.render(
-		appJsx,
-		appDiv
-	);
+	return <Router history={history}><MainApp/></Router>;
+}
+
+export function appWithJSX(props: { element: React.ElementType<{}> }) {
+	const MainApp = props.element;
+	return <MainApp/>;
 }

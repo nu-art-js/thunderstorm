@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {renderApp} from './AppWrapper';
+import {renderApp, appWithRoutes} from './AppWrapper';
 import {BeLogged, LogClient_Browser, Module, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
 import {XhrHttpModule} from '../modules/http/XhrHttpModule';
 import {ModuleFE_Dialog} from '../component-modules/ModuleFE_Dialog';
@@ -53,6 +53,8 @@ export class Thunder
 
 	private mainApp!: React.ElementType<{}>;
 	private listeners: any[] = [];
+	private renderFunc!: (props: any) => React.ReactElement;
+	private props!: any;
 
 	constructor() {
 		super();
@@ -85,13 +87,18 @@ export class Thunder
 		removeItemFromArray(this.listeners, listener);
 	}
 
-	public setMainApp(mainApp: React.ElementType<{}>): Thunder {
-		this.mainApp = mainApp;
-		return this;
+	setRenderApp<T extends any>(renderFunc: (props: T) => React.ReactElement, props: T) {
+		this.renderFunc = renderFunc;
+		this.props = props;
 	}
 
-	public getMainApp(): React.ElementType<{}> {
-		return this.mainApp;
+	renderApp() {
+		return this.renderFunc?.(this.props);
+	}
+
+	public setMainApp(mainApp: React.ElementType<{}>): Thunder {
+		this.setRenderApp(appWithRoutes, {element: mainApp});
+		return this;
 	}
 
 	public build(onStarted?: () => void) {
