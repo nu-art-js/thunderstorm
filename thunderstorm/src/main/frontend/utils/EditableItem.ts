@@ -1,8 +1,8 @@
 export class EditableItem<T> {
 	item: Partial<T>;
-	onCompleted?: () => any | Promise<any>;
+	onCompleted?: (err?: Error) => any | Promise<any>;
 
-	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>, onCompleted?: () => any | Promise<any>) {
+	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>, onCompleted?: (err?: Error) => any | Promise<any>) {
 		this.item = item;
 		this.saveAction = saveAction;
 		this.deleteAction = deleteAction;
@@ -20,14 +20,24 @@ export class EditableItem<T> {
 		}
 	}
 
-	async update<K extends keyof T>(key: K, value: T[K] | undefined) {
-		this.set(key, value);
+	async update<K extends keyof T>(key: K, value: ((item?: T[K]) => T[K]) | T[K] | undefined) {
+		let finalValue;
+		if (typeof value === 'function') { // @ts-ignore
+			finalValue = value(this.item[key]);
+		} else
+			finalValue = value;
+
+		this.set(key, finalValue);
 		return this.save();
 	}
 
 	async save() {
-		await this.saveAction(this.item as T);
-		await this.onCompleted?.();
+		try {
+			await this.saveAction(this.item as T);
+			await this.onCompleted?.();
+		} catch (e: any) {
+			await this.onCompleted?.(e);
+		}
 	}
 
 	clone(): EditableItem<T> {
