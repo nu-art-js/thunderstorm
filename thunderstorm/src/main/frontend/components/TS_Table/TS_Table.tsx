@@ -26,8 +26,8 @@ import './TS_Table.scss';
 import React = require('react');
 
 
-export type Header<T extends TableHeaders<any>> = T extends TableHeaders<infer R, infer A, infer P> ? P | { header: P, widthPx: number } : never;
-export type TableHeaders<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = (P | { header: P, widthPx: number })[];
+export type Header<T extends TableHeaders<any>> = T extends TableHeaders<infer R, infer A, infer P> ? P | { header: P, className?: string, widthPx?: number | string } : never;
+export type TableHeaders<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = (P | { header: P, className?: string, widthPx?: number | string })[];
 export type HeaderRenderer<R extends TS_Object, A extends string = never, P extends ((keyof R) | A) = ((keyof R) | A)> = {
 	[C in P]?: (columnKey: C) => React.ReactNode;
 };
@@ -99,11 +99,13 @@ export class TS_Table<R extends TS_Object, A extends string = never>
 				{this.props.header.map((header, index) => {
 					const prop = typeof header === 'object' ? header.header : header;
 					const tablePropsTH = typeof this.props.th === 'function' ? this.props.th(prop) : this.props.th;
-					const classNameTH = _className('ts-table__th', tablePropsTH?.className);
+					let classNameTH = _className('ts-table__th', tablePropsTH?.className);
 					const style: { width?: string, minWidth?: string } = {};
 					if (typeof header === 'object') {
-						style.width = `${header.widthPx}px`;
-						style.minWidth = `${header.widthPx}px`;
+						const width = typeof header.widthPx === 'number' ? `${header.widthPx}px` : header.widthPx;
+						classNameTH = _className('ts-table__th', tablePropsTH?.className, header.className);
+						style.width = width;
+						style.minWidth = typeof header.widthPx === 'number' ? width : '';
 					}
 
 					return <th key={`${this.props.id}-${index}`} {...tablePropsTH} className={classNameTH} style={style}>
@@ -135,10 +137,18 @@ export class TS_Table<R extends TS_Object, A extends string = never>
 					{this.props.header.map((header, columnIndex) => {
 						const prop = typeof header === 'object' ? header.header : header;
 						const tablePropsTD = typeof this.props.td === 'function' ? this.props.td(row, rowIndex, prop) : this.props.td;
-						const classNameTD = _className('ts-table__td', tablePropsTD?.className);
+						let classNameTD = _className('ts-table__td', tablePropsTD?.className);
+						const style: { width?: string, minWidth?: string } = {};
+
+						if (!this.props.headerRenderer && typeof header === 'object' && rowIndex === 0) {
+							const width = typeof header.widthPx === 'number' ? `${header.widthPx}px` : header.widthPx;
+							style.width = width;
+							classNameTD = _className('ts-table__td', tablePropsTD?.className, header.className);
+							style.minWidth = typeof header.widthPx === 'number' ? width : '';
+						}
 
 						return <td
-							key={`${this.props.id}-${columnIndex}`} {...tablePropsTD} className={classNameTD}>
+							key={`${this.props.id}-${columnIndex}`} {...tablePropsTD} className={classNameTD} style={style}>
 							{renderers[prop]?.(prop as any, row, rowIndex)}
 						</td>;
 					})}

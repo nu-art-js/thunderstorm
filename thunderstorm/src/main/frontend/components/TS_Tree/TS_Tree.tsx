@@ -172,6 +172,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		return item;
 	}
 
+
 	private toggleExpandState = (e: React.MouseEvent, _expanded?: boolean): void => this.expandOrCollapse(this.resolveTreeNode(e.currentTarget), _expanded);
 
 	private expandOrCollapse = (path: string, forceExpandState?: boolean): void => {
