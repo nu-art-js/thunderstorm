@@ -51,7 +51,6 @@ const modules: Module[] = [
 export class Thunder
 	extends ModuleManager {
 
-	private mainApp!: React.ElementType<{}>;
 	private listeners: any[] = [];
 	private renderFunc!: (props: any) => React.ReactElement;
 	private props!: any;
