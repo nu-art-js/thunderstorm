@@ -20,29 +20,32 @@
  */
 
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import {Router} from 'react-router-dom';
-import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
+import {BrowserRouter} from 'react-router-dom';
 import {Thunder} from './Thunder';
 import {ImplementationMissingException} from '@nu-art/ts-common';
+import * as RDC from 'react-dom/client';
 
 
 export function renderApp() {
 	const appJsx = Thunder.getInstance().renderApp();
 	if (!appJsx)
-		throw new ImplementationMissingException('appJsx was not specified!!');
+		throw new ImplementationMissingException('Could not get app from Thunder!');
 
-	const appDiv = document.createElement('div');
-	appDiv.classList.add('match_height');
-	document.body.appendChild(appDiv);
+	//Set root div and its attributes
+	const rootDiv = document.createElement('div');
+	rootDiv.classList.add('match_parent');
+	rootDiv.setAttribute('id', 'root');
+	document.body.appendChild(rootDiv);
 
-	ReactDOM.render(appJsx, appDiv);
+	//Set app root
+	const root = RDC.createRoot(rootDiv);
+	root.render(appJsx);
 }
 
 export function appWithRoutes(props: { element: React.ElementType<{}> }) {
 	const MainApp = props.element;
-	const history = ModuleFE_BrowserHistory.getHistory();
-	return <Router history={history}><MainApp/></Router>;
+	// const history = ModuleFE_BrowserHistory.getHistory();
+	return <BrowserRouter><MainApp/></BrowserRouter>;
 }
 
 export function appWithJSX(props: { element: React.ElementType<{}> }) {

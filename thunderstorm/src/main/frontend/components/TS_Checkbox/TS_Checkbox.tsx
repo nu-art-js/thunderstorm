@@ -25,7 +25,7 @@ import {_className} from '../../utils/tools';
 import './TS_Checkbox.scss';
 
 
-export type Props_Checkbox = {
+export type Props_Checkbox = React.PropsWithChildren<{
 	id?: string
 	disabled?: boolean
 	rounded?: boolean
@@ -33,7 +33,7 @@ export type Props_Checkbox = {
 	onCheck?: (checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void
 	className?: string;
 	icon?: React.ReactNode;
-}
+}>;
 
 type State_Checkbox = {
 	checked: boolean

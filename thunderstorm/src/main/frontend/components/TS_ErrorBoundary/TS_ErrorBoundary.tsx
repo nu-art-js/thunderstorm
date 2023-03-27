@@ -31,11 +31,11 @@ type State = {
 	errorInfo?: React.ErrorInfo
 }
 
-type Props = {
+type Props = React.PropsWithChildren<{
 	onError?: (e: any) => void,
 	renderer?: (e: any) => ReactNode
 	error?: Error;
-};
+}>;
 
 export class TS_ErrorBoundary
 	extends ComponentSync<Props, State> {
