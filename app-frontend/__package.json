@@ -68,7 +68,7 @@
     "react-router-dom": "$REACT_ROUTER_DOM_PKG_VERSION",
     "react-chartjs-2": "^2.11.1",
     "react-color": "^2.14.1",
-    "sass": "^1.49.9",b
+    "sass": "^1.49.9",
     "sass-loader": "^12.4.0",
     "source-map-loader": "^0.2.4",
     "stream-browserify": "^3.0.0",
