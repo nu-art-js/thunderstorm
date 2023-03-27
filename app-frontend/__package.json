@@ -63,13 +63,12 @@
     "mini-css-extract-plugin": "^2.4.5",
     "module-alias": "^2.2.0",
     "qs": "^6.6.0",
-    "react": "^16.8.1",
+    "react": "$REACT_PKG_VERSION",
+    "react-dom": "$REACT_DOM_PKG_VERSION",
+    "react-router-dom": "$REACT_ROUTER_DOM_PKG_VERSION",
     "react-chartjs-2": "^2.11.1",
     "react-color": "^2.14.1",
-    "react-dom": "^16.8.1",
-    "react-hot-loader": "^4.3.11",
-    "react-router-dom": "^5.1.2",
-    "sass": "^1.49.9",
+    "sass": "^1.49.9",b
     "sass-loader": "^12.4.0",
     "source-map-loader": "^0.2.4",
     "stream-browserify": "^3.0.0",
@@ -85,12 +84,12 @@
     "write-file-webpack-plugin": "^4.5.1"
   },
   "devDependencies": {
+    "@types/react": "$REACT_TYPES_VERSION",
+    "@types/react-router-dom": "$REACT_ROUTER_DOM_TYPES_VERSION",
     "@types/chart.js": "^2.9.4",
     "@types/d3-array": "^2.8.0",
     "@types/d3-scale": "^3.2.1",
     "@types/history": "^4.7.2",
-    "@types/qs": "^6.5.2",
-    "@types/react": "^16.8.7",
-    "@types/react-router-dom": "^5.1.3"
+    "@types/qs": "^6.5.2"
   }
 }

@@ -21,7 +21,7 @@ import {LL_V_C, TS_ErrorBoundary} from '@nu-art/thunderstorm/frontend';
 
 
 export class PG_Example
-	extends React.Component<{ name: string }> {
+	extends React.Component<React.PropsWithChildren<{ name: string }>> {
 
 	constructor(p: { name: string }) {
 		super(p);
