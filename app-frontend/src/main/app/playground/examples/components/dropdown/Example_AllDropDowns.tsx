@@ -49,9 +49,9 @@ export class Example_AllDropDowns_Renderer
 		return <>
 			<h1>dropdowns</h1>
 			<div className={'ll_h_t match_width'} style={{justifyContent: 'space-around', height: 100}}>
-				{Playground_DropdownSingleAndMulti.renderer}
-				{Playground_DropdownSingleType.renderer}
-				{Playground_DropdownMultiType.renderer}
+				<Playground_DropdownSingleAndMulti.renderer/>
+				<Playground_DropdownSingleType.renderer/>
+				<Playground_DropdownMultiType.renderer/>
 			</div>
 		</>;
 	}
