@@ -28,14 +28,14 @@ import {LL_H_T} from '@nu-art/thunderstorm/frontend';
 const TreeRefactorPage_Renderer = () => (<>
 	<div className="ll_v_l" style={{width: '100%', height: '100%'}}>
 		<LL_H_T className="ts-playground__group-example">
-			{Playground_DropdownSingleAndMulti.renderer}
-			{Playground_DropdownSingleType.renderer}
-			{Playground_DropdownMultiType.renderer}
+			<Playground_DropdownSingleAndMulti.renderer/>
+			<Playground_DropdownSingleType.renderer/>
+			<Playground_DropdownMultiType.renderer/>
 		</LL_H_T>
 		<LL_H_T className="ts-playground__group-example">
-			{Playground_Tree_Data.renderer}
-			{Playground_Tree_Basic.renderer}
-			{Playground_Tree_MultiType.renderer}
+			<Playground_Tree_Data.renderer/>
+			<Playground_Tree_Basic.renderer/>
+			<Playground_Tree_MultiType.renderer/>
 		</LL_H_T>
 	</div>
 </>);

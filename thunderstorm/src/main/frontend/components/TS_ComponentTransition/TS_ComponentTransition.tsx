@@ -5,7 +5,7 @@ import {_className} from '../../utils/tools';
 
 type TransitionPhase = 'mount' | 'enter' | 'enter-done' | 'exit' | 'exit-done' | 'unmount';
 
-type Props = {
+type Props = React.PropsWithChildren<{
 	trigger: boolean;
 	mountTimeout?: number;
 	unmountTimeout?: number;
@@ -13,7 +13,7 @@ type Props = {
 	transitionPrefix?: string;
 	onEnterDone?: () => void;
 	onExitDone?: () => void;
-}
+}>;
 
 type State = {
 	transitionPhase: TransitionPhase;

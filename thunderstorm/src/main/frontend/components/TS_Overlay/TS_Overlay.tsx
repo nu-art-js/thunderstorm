@@ -24,11 +24,11 @@ import './TS_Overlay.scss';
 import {stopPropagation} from '../../utils/tools';
 
 
-type Props = {
+type Props = React.PropsWithChildren<{
 	flat?: boolean
 	showOverlay: boolean
 	onClickOverlay: (event: React.MouseEvent<HTMLDivElement>) => void
-};
+}>;
 
 export class TS_Overlay
 	extends React.Component<Props> {
