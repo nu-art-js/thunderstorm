@@ -22,9 +22,9 @@
 import {_keys, addItemToArray, BadImplementationException, composeQueryParams, Module, RouteParams} from '@nu-art/ts-common';
 import * as React from 'react';
 import {defaultLinkNode, defaultNavLinkNode, defaultRouteNode, RoutePath} from './route';
-import {Redirect, Switch} from 'react-router-dom';
 import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory';
 import {QueryParams} from '../../../shared/types';
+import {Navigate, Routes} from 'react-router-dom';
 
 
 class ModuleFE_Routing_Class
@@ -83,7 +83,7 @@ class ModuleFE_Routing_Class
 	}
 
 	redirect(key: string) {
-		return <Redirect to={ModuleFE_Routing.getPath(key)}/>;
+		return <Navigate to={ModuleFE_Routing.getPath(key)}/>;
 	}
 
 	getMyRouteKey = () => Object.keys(this.routes).find(key => this.routes[key].path === ModuleFE_BrowserHistory.getCurrent().pathname);
@@ -102,9 +102,9 @@ class ModuleFE_Routing_Class
 	}
 
 	getRoutesMap(keys?: string[]) {
-		return <Switch>
+		return <Routes>
 			{(keys || this.ordinalRoutes).map(key => this.createRouteNode(this.getRoute(key)))}
-		</Switch>;
+		</Routes>;
 	}
 
 	getCurrentUrl = () => window.location.href;

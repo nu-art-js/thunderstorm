@@ -75,7 +75,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		const previousVersion = this.lastVersion.get();
 		this.lastVersion.set(currentVersion);
 
-		if (previousVersion === currentVersion)
+		if (!previousVersion || previousVersion === currentVersion)
 			return;
 
 		this.logInfo(`Cleaning up & Sync...`);
