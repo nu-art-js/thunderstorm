@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {BrowserRouter} from 'react-router-dom';
+import {BrowserRouter, MemoryRouter} from 'react-router-dom';
 import {Thunder} from './Thunder';
 import {ImplementationMissingException} from '@nu-art/ts-common';
 import * as RDC from 'react-dom/client';
@@ -42,10 +42,14 @@ export function renderApp() {
 	root.render(appJsx);
 }
 
-export function appWithRoutes(props: { element: React.ElementType<{}> }) {
+export function appWithBrowserRouter(props: { element: React.ElementType<{}> }) {
 	const MainApp = props.element;
-	// const history = ModuleFE_BrowserHistory.getHistory();
 	return <BrowserRouter><MainApp/></BrowserRouter>;
+}
+
+export function appWithMemoryRouter(props: { element: React.ElementType<{}> }) {
+	const MainApp = props.element;
+	return <MemoryRouter><MainApp/></MemoryRouter>;
 }
 
 export function appWithJSX(props: { element: React.ElementType<{}> }) {
