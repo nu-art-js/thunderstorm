@@ -24,6 +24,7 @@ import {BrowserRouter, MemoryRouter} from 'react-router-dom';
 import {Thunder} from './Thunder';
 import {ImplementationMissingException} from '@nu-art/ts-common';
 import * as RDC from 'react-dom/client';
+import {ThunderAppWrapperProps} from './types';
 
 
 export function renderApp() {
@@ -42,17 +43,17 @@ export function renderApp() {
 	root.render(appJsx);
 }
 
-export function appWithBrowserRouter(props: { element: React.ElementType<{}> }) {
+export function appWithBrowserRouter(props: ThunderAppWrapperProps) {
 	const MainApp = props.element;
 	return <BrowserRouter><MainApp/></BrowserRouter>;
 }
 
-export function appWithMemoryRouter(props: { element: React.ElementType<{}> }) {
+export function appWithMemoryRouter(props: ThunderAppWrapperProps) {
 	const MainApp = props.element;
 	return <MemoryRouter><MainApp/></MemoryRouter>;
 }
 
-export function appWithJSX(props: { element: React.ElementType<{}> }) {
+export function appWithJSX(props: ThunderAppWrapperProps) {
 	const MainApp = props.element;
 	return <MainApp/>;
 }
