@@ -426,7 +426,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	}
 
 	/**
-	 * A wrapper of the collections's `runInTransaction`.
+	 * A wrapper of the collections' `runInTransaction`.
 	 *
 	 * @param processor - The transaction's processor.
 	 *

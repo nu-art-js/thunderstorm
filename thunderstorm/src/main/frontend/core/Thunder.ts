@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {renderApp, appWithRoutes} from './AppWrapper';
+import {appWithJSX, renderApp} from './AppWrapper';
 import {BeLogged, LogClient_Browser, Module, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
 import {XhrHttpModule} from '../modules/http/XhrHttpModule';
 import {ModuleFE_Dialog} from '../component-modules/ModuleFE_Dialog';
@@ -33,7 +33,7 @@ import '../styles/impl/basic.scss';
 import '../styles/impl/icons.scss';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
-
+import {ThunderAppWrapperProps} from './types';
 
 const modules: Module[] = [
 	ModuleFE_Thunderstorm,
@@ -52,8 +52,8 @@ export class Thunder
 	extends ModuleManager {
 
 	private listeners: any[] = [];
-	private renderFunc!: (props: any) => React.ReactElement;
-	private props!: any;
+	private renderFunc!: (props: ThunderAppWrapperProps) => React.ReactElement;
+	private mainApp!: React.ElementType<{}>;
 
 	constructor() {
 		super();
@@ -86,17 +86,18 @@ export class Thunder
 		removeItemFromArray(this.listeners, listener);
 	}
 
-	setRenderApp<T extends any>(renderFunc: (props: T) => React.ReactElement, props: T) {
-		this.renderFunc = renderFunc;
-		this.props = props;
-	}
-
 	renderApp() {
-		return this.renderFunc?.(this.props);
+		return this.renderFunc?.({element: this.mainApp});
 	}
 
-	public setMainApp(mainApp: React.ElementType<{}>): Thunder {
-		this.setRenderApp(appWithRoutes, {element: mainApp});
+	/**
+	 * Set up the entry point for the app.
+	 * @param mainApp - The entry point into the application, what will be rendered directly under root (usually App.tsx)
+	 * @param renderFunc - The app wrapper, which will usually provide a router. by default is "appWithJSX" which will just return the app
+	 */
+	public setMainApp(mainApp: React.ElementType<{}>, renderFunc: (props: ThunderAppWrapperProps) => React.ReactElement = appWithJSX): Thunder {
+		this.mainApp = mainApp;
+		this.renderFunc = renderFunc;
 		return this;
 	}
 
