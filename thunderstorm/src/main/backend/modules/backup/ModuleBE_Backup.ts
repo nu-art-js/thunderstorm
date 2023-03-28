@@ -33,8 +33,12 @@ export type FirestoreBackupDetails<T extends TS_Object> = {
 const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, '__onFirestoreBackupSchedulerAct'>('__onFirestoreBackupSchedulerAct');
 const dispatch_onModuleCleanup = new Dispatcher<OnModuleCleanup, '__onCleanupInvoked'>('__onCleanupInvoked');
 
+type Config = {
+	excludedCollectionNames?: string[]
+}
+
 class ModuleBE_Backup_Class
-	extends Module<{}> {
+	extends Module<Config> {
 	public collection!: FirestoreCollection<BackupDoc>;
 
 	constructor() {
@@ -42,6 +46,13 @@ class ModuleBE_Backup_Class
 		addRoutes([createQueryServerApi(ApiDef_Backup.vv1.initiateBackup, this.initiateBackup), createQueryServerApi(ApiDef_Backup.vv1.fetchBackupDocks, this.fetchBackupDocks)]);
 	}
 
+	protected init(): void {
+		this.collection = this.getBackupStatusCollection();
+	}
+
+	/**
+	 * @param body - needs to contain backupId with the key to fetch.
+	 */
 	fetchBackupDocks = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
 		const backupDocs = await this.query({where: {backupId: body.backupId}});
 		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
@@ -57,23 +68,21 @@ class ModuleBE_Backup_Class
 		return {backupDescriptors: fetchBackupDocs};
 	};
 
-	restoreFromBack = async () => {
-
-	};
-
-	protected init(): void {
-		this.collection = this.getBackupStatusCollection();
-	}
-
 	public getBackupStatusCollection = (): FirestoreCollection<BackupDoc> => {
 		return ModuleBE_Firebase.createAdminSession().getFirestore()
 			.getCollection<BackupDoc>('firestore-backup-status', ['moduleKey', 'timestamp'] as FilterKeys<BackupDoc>);
 	};
 
+	/**
+	 * Get metadata objects per each collection module that needs to be backed up.
+	 */
 	public getBackupDetails = (): FirestoreBackupDetails<any>[] => filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule())
 		.reduce<FirestoreBackupDetails<any>[]>((resultBackupArray, currentBackup) => {
-			if (currentBackup)
-				resultBackupArray.push(...currentBackup);
+
+			const backupsToAdd = currentBackup?.filter(backup => !this.config.excludedCollectionNames?.includes(backup.moduleKey));
+
+			if (backupsToAdd)
+				resultBackupArray.push(...backupsToAdd);
 			return resultBackupArray;
 		}, []);
 
