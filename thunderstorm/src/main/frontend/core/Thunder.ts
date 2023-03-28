@@ -20,8 +20,8 @@
  */
 
 import * as React from 'react';
-import {renderApp, appWithRoutes} from './AppWrapper';
-import {BeLogged, LogClient_Browser, Module, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
+import {appWithBrowserRouter, appWithJSX, appWithMemoryRouter, renderApp} from './AppWrapper';
+import {BadImplementationException, BeLogged, LogClient_Browser, Module, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
 import {XhrHttpModule} from '../modules/http/XhrHttpModule';
 import {ModuleFE_Dialog} from '../component-modules/ModuleFE_Dialog';
 import {ModuleFE_Routing} from '../modules/routing/ModuleFE_Routing';
@@ -34,6 +34,7 @@ import '../styles/impl/icons.scss';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
 
+type RouterType = 'none' | 'browser' | 'memory';
 
 const modules: Module[] = [
 	ModuleFE_Thunderstorm,
@@ -95,8 +96,28 @@ export class Thunder
 		return this.renderFunc?.(this.props);
 	}
 
-	public setMainApp(mainApp: React.ElementType<{}>): Thunder {
-		this.setRenderApp(appWithRoutes, {element: mainApp});
+	/**
+	 * Set up the entry point for the app.
+	 * @param mainApp - The entry point into the application, what will be rendered directly under root (usually App.tsx)
+	 * @param routerType - The type of [react-router-v6] router to use. 'none' by default, user should specify which router to use
+	 */
+	public setMainApp(mainApp: React.ElementType<{}>, routerType: RouterType = 'none'): Thunder {
+		switch (routerType) {
+			case 'none':
+				this.setRenderApp(appWithJSX, {element: mainApp});
+				break;
+
+			case 'browser':
+				this.setRenderApp(appWithBrowserRouter, {element: mainApp});
+				break;
+
+			case 'memory':
+				this.setRenderApp(appWithMemoryRouter, {element: mainApp});
+				break;
+
+			default:
+				throw new BadImplementationException(`Invalid router type ${routerType}`);
+		}
 		return this;
 	}
 
