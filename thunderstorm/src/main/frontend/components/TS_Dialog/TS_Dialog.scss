@@ -79,16 +79,33 @@
     margin: 0;
 
     //Positioning
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
+    display: grid;
+    column-gap: 8px;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-areas: "left center right";
 
     .ts-dialog__buttons__left,
+    .ts-dialog__buttons__center,
     .ts-dialog__buttons__right {
       height: 100%;
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .ts-dialog__buttons__left {
+      justify-content: flex-start;
+      grid-area: left
+    }
+
+    .ts-dialog__buttons__center {
+      justify-content: center;
+      grid-area: center;
+    }
+
+    .ts-dialog__buttons__right {
+      justify-content: flex-end;
+      grid-area: right;
     }
 
     .ts-button {

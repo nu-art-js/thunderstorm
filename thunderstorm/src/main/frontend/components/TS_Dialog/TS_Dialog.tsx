@@ -170,9 +170,9 @@ export abstract class TS_Dialog<P, S extends State_TSDialog>
 
 	private dialogButtons = () => {
 		const buttons = this.buttons();
-		if (!_values(buttons).every(arr => !arr || !arr.length))
+		if (_values(buttons).every(arr => !arr || !arr.length))
 			return undefined;
-
+		
 		return <div className={'ts-dialog__buttons'}>
 			{buttons.left && <div className={'ts-dialog__buttons__left'}>{this._buttonsCreator(buttons.left)}</div>}
 			{buttons.center && <div className={'ts-dialog__buttons__center'}>{this._buttonsCreator(buttons.center)}</div>}
