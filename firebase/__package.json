@@ -48,6 +48,7 @@
     "fs": "0.0.1-security"
   },
   "devDependencies": {
+    "@types/qs": "6.9.7",
     "@types/compression": "^1.0.1",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
