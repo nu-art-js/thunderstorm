@@ -46,7 +46,7 @@
     "moment": "^2.24.0",
     "saml2-js": "^4.0.1",
     "xmlbuilder": "^15.1.1",
-    "express": "^4.16.4",
+    "express": "^4.18.2",^4.16.4",
     "request": "^2.88.0"
   },
   "devDependencies": {
