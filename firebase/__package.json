@@ -45,15 +45,17 @@
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
     "google-auth-library": "^6.0.6",
-    "fs": "0.0.1-security",
-    "@types/express-serve-static-core": "4.17.5"
+    "fs": "0.0.1-security"
   },
   "devDependencies": {
     "@types/qs": "6.9.7",
     "@types/compression": "^1.0.1",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
-    "teeny-request": "~7.2.0",
-    "@types/express": "^4.17.17"
+    "teeny-request": "~7.2.0"
+  },
+  "resolutions": {
+    "@types/express-serve-static-core": "4.17.20",
+    "@types/express": "4.17.2"
   }
 }
