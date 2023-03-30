@@ -16,6 +16,7 @@ firebase-debug.log
 database-debug.log
 firestore-debug.log
 pubsub-debug.log
+package.json
 
 node_modules
 pnpm-lock.yaml
