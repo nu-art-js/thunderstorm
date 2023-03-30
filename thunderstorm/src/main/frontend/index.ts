@@ -40,6 +40,9 @@ export * from './modules/ModuleFE_ConnectivityModule';
 
 export * from './modules/routing/route';
 export * from './modules/routing/ModuleFE_Routing';
+export * from './modules/routing/ModuleFE_RoutingV2';
+export * from './modules/routing/types';
+export * from './modules/routing/LocationChangeListener';
 
 export * from './modules/ModuleFE_Window';
 export * from './modules/ModuleFE_BrowserHistory';

@@ -36,7 +36,7 @@ export function browserType(): Browser {
 export async function base64ToBlob(imageAsBase64: string) {
 	return (await fetch(imageAsBase64)).blob();
 }
-
+//data:image/jpeg;base64,<!-- Base64 data -->
 export function convertBase64ToFile(fileName: string, base64: string, _mimeType?: string) {
 	const arr = base64.split(',');
 	const match = arr[0].match(/:(.*?);/);

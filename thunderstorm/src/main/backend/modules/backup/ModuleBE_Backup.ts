@@ -4,7 +4,7 @@ import {
 	currentTimeMillis,
 	dispatch_onServerError,
 	Dispatcher,
-	filterInstances,
+	flatArray,
 	Format_YYYYMMDD_HHmmss,
 	formatTimestamp,
 	generateHex,
@@ -43,7 +43,7 @@ class ModuleBE_Backup_Class
 
 	constructor() {
 		super();
-		addRoutes([createQueryServerApi(ApiDef_Backup.vv1.initiateBackup, this.initiateBackup), createQueryServerApi(ApiDef_Backup.vv1.fetchBackupDocks, this.fetchBackupDocks)]);
+		addRoutes([createQueryServerApi(ApiDef_Backup.vv1.initiateBackup, this.initiateBackup), createQueryServerApi(ApiDef_Backup.vv1.fetchBackupDocs, this.fetchBackupDocs)]);
 	}
 
 	protected init(): void {
@@ -53,7 +53,7 @@ class ModuleBE_Backup_Class
 	/**
 	 * @param body - needs to contain backupId with the key to fetch.
 	 */
-	fetchBackupDocks = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
+	fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
 		const backupDocs = await this.query({where: {backupId: body.backupId}});
 		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
 
@@ -76,17 +76,28 @@ class ModuleBE_Backup_Class
 	/**
 	 * Get metadata objects per each collection module that needs to be backed up.
 	 */
-	public getBackupDetails = (): FirestoreBackupDetails<any>[] => filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule())
-		.reduce<FirestoreBackupDetails<any>[]>((resultBackupArray, currentBackup) => {
+	public getBackupDetails = (): FirestoreBackupDetails<any>[] => {
+		return flatArray(dispatch_onFirestoreBackupSchedulerAct.dispatchModule())
+			.reduce<FirestoreBackupDetails<any>[]>((resultBackupArray, currentBackup) => {
 
-			const backupsToAdd = currentBackup?.filter(backup => !this.config.excludedCollectionNames?.includes(backup.moduleKey));
+				if (!currentBackup)
+					return resultBackupArray;
 
-			if (backupsToAdd)
-				resultBackupArray.push(...backupsToAdd);
-			return resultBackupArray;
-		}, []);
+				if (this.config.excludedCollectionNames?.includes(currentBackup.moduleKey)) {
+					this.logWarningBold(`Skipping module ${currentBackup.moduleKey} since it's in the exclusion list.`);
+					return resultBackupArray;
+				}
+
+				resultBackupArray.push(currentBackup);
+
+				return resultBackupArray;
+			}, []);
+	};
 
 	initiateBackup = async () => {
+		if (this.config.excludedCollectionNames)
+			this.logInfo(`Found excluded modules list: ${this.config.excludedCollectionNames}`);
+
 		try {
 			this.logInfo('Cleaning modules...');
 			await dispatch_onModuleCleanup.dispatchModuleAsync();
@@ -99,6 +110,13 @@ class ModuleBE_Backup_Class
 		}
 
 		const backups: FirestoreBackupDetails<any>[] = this.getBackupDetails();
+		// this.logInfoBold('-------------------------------------------------------------------------------------------------------');
+		// this.logInfoBold('-------------------------------------- Received Backup Details: ---------------------------------------');
+		// this.logInfoBold('-------------------------------------------------------------------------------------------------------');
+		// this.logInfoBold(typeof backups);
+		// this.logInfoBold(Array.isArray(backups));
+		// this.logInfoBold(backups.length);
+		// this.logInfoBold('-------------------------------------------------------------------------------------------------------');
 		const backupId = generateHex(32);
 		const nowMs = currentTimeMillis();
 
