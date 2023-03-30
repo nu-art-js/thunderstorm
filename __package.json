@@ -23,12 +23,12 @@
     "chai": "^4.3.7",
     "use-strict": "^1.0.1",
     "@types/estree": "^1.0.0",
-    "@types/node": "^16.18.16",
+    "@types/node": "^18.15.0",
     "@types/chai": "^4.3.4",
     "@types/chai-as-promised": "^7.1.5",
     "@types/mocha": "^10.0.1"
   },
   "engines": {
-    "node": "16"
+    "node": "18"
   }
 }
