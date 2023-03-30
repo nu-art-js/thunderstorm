@@ -34,6 +34,7 @@ import '../styles/impl/icons.scss';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
 import {ThunderAppWrapperProps} from './types';
+import {ModuleFE_RoutingV2} from '../modules/routing/ModuleFE_RoutingV2';
 
 const modules: Module[] = [
 	ModuleFE_Thunderstorm,
@@ -43,6 +44,7 @@ const modules: Module[] = [
 	ModuleFE_Dialog,
 
 	ModuleFE_Routing,
+	ModuleFE_RoutingV2,
 	ModuleFE_BrowserHistory,
 
 	ModuleFE_LocalStorage,

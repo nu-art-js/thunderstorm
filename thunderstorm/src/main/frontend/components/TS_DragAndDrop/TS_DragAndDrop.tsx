@@ -24,11 +24,11 @@ export type DND_File = {
 	accepted: boolean
 }
 
-export type Props_DragAndDrop = {
+export type Props_DragAndDrop = React.PropsWithChildren<{
 	id?: string,
 	validate: ((files: File[]) => DND_File[]);
 	onChange: (acceptedFiles: File[], rejectedFiles: File[]) => void
-}
+}>
 
 type State = {
 	dndState: DND_State;
