@@ -348,7 +348,7 @@ export class TS_DropDown<ItemType>
 		}
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
-			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={(e) => this.closeList(e, null)}>Unselect</div>}
+			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
