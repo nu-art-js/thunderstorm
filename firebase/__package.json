@@ -40,7 +40,7 @@
     "@google-cloud/common": "^3.0.0",
     "@google-cloud/storage": "^5.0.0",
     "@google-cloud/firestore": "^4.8.1",
-    "express": "^4.18.2",^4.17.1",
+    "express": "^4.18.2",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
@@ -52,6 +52,7 @@
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
     "@types/express": "^4.17.2",
-    "teeny-request": "~7.2.0"
+    "teeny-request": "~7.2.0",
+    "@types/express-serve-static-core": "^4.17.33"
   }
 }
