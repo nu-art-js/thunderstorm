@@ -23,11 +23,13 @@
     "chai": "^4.3.7",
     "use-strict": "^1.0.1",
     "@types/estree": "^1.0.0",
-    "@types/node": "^18.15.0",
+    "@types/node": "$NODE_TYPES_VERSION",
     "@types/chai": "^4.3.4",
     "@types/chai-as-promised": "^7.1.5",
     "@types/mocha": "^10.0.1",
-    "@types/express-serve-static-core": "4.17.5"
+    "@types/qs": "$QS_TYPES_VERSION",
+    "@types/express": "$EXPRESS_TYPES_VERSION",
+    "@types/express-serve-static-core": "$EXPRESS_SERVE_STATIC_CORE_TYPES_VERSION"
   },
   "engines": {
     "node": "18"

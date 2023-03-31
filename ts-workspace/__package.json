@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@types/react": "$REACT_TYPES_VERSION",
-    "@types/express": "^4.17.17",
+    "@types/express": "$EXPRESS_TYPES_VERSION",
     "@types/history": "^4.7.2",
     "@types/request": "^2.48.1"
   }
