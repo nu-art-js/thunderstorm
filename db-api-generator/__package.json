@@ -55,7 +55,6 @@
     "@types/compression": "^1.7.0",
     "@types/express": "$EXPRESS_TYPES_VERSION",
     "@types/history": "^4.7.2",
-    "@types/qs": "$QS_TYPES_VERSION",
     "@types/request": "^2.48.1",
     "compression": "^1.7.4"
   }

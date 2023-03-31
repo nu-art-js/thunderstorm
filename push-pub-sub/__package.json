@@ -35,7 +35,6 @@
     "moment": "^2.24.0"
   },
   "devDependencies": {
-    "@types/node": "$NODE_TYPES_VERSION",
-    "@types/express-serve-static-core": "$EXPRESS_SERVE_STATIC_CORE_TYPES_VERSION"
+    "@types/node": "$NODE_TYPES_VERSION"
   }
 }
