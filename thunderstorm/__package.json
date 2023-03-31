@@ -60,9 +60,9 @@
     "@types/react-router": "$REACT_ROUTER_TYPES_VERSION",
     "@types/react-router-dom": "$REACT_ROUTER_DOM_TYPES_VERSION",
     "@types/compression": "^1.7.0",
-    "@types/express": "^4.17.17",
+    "@types/express": "$EXPRESS_TYPES_VERSION",
     "@types/history": "^4.7.2",
-    "@types/qs": "^6.5.2",
+    "@types/qs": "$QS_TYPES_VERSION",
     "@types/request": "^2.48.1",
     "@types/chrome": "^0.0.202"
   }
