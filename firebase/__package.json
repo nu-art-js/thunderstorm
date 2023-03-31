@@ -51,9 +51,7 @@
     "@types/compression": "^1.0.1",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
-    "teeny-request": "~7.2.0"
-  },
-  "resolutions": {
+    "teeny-request": "~7.2.0",
     "@firebase/auth": "$FIREBASE_AUTH_PKG_VERSION",
     "@firebase/app": "0.9.5"
   }
