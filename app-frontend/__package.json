@@ -89,6 +89,6 @@
     "@types/chart.js": "^2.9.4",
     "@types/d3-array": "^2.8.0",
     "@types/d3-scale": "^3.2.1",
-    "@types/history": "^4.7.2",
+    "@types/history": "^4.7.2"
   }
 }
