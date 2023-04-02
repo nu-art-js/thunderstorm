@@ -15,6 +15,7 @@ import {_className, LL_V_L, ModuleFE_Dialog, TS_ErrorBoundary} from '../..';
 export type DialogButton = {
 	content: React.ReactNode;
 	onClick?: () => void | Promise<void>;
+	onDisabledClick?: (e: React.MouseEvent) => any;
 	className?: string;
 	associatedKeys?: string[];
 	disabled?: boolean;
@@ -126,6 +127,7 @@ export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDial
 			innerRef={ref}
 			onClick={async () => await button.onClick?.()}
 			disabled={button.disabled}
+			onDisabledClick={button.onDisabledClick}
 			key={`button-${index}`}
 		>{button.content}</TS_BusyButton>;
 	};
@@ -135,6 +137,7 @@ export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDial
 			className={button.className}
 			ref={ref}
 			onClick={button.onClick}
+			onDisabledClick={button.onDisabledClick}
 			disabled={button.disabled}
 			key={`button-${index}`}
 		>{button.content}</TS_Button>;
