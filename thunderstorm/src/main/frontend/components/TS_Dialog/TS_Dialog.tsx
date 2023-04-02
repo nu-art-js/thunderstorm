@@ -1,10 +1,11 @@
 import * as React from 'react';
 import './TS_Dialog.scss';
-import {BadImplementationException, filterInstances, flatArray, TypedMap, _keys, _values} from '@nu-art/ts-common';
+import {BadImplementationException, filterInstances, flatArray, TypedMap, _values} from '@nu-art/ts-common';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_BusyButton} from '../TS_BusyButton';
 import {TS_Button} from '../TS_Button';
 import {_className, LL_V_L, ModuleFE_Dialog, TS_ErrorBoundary} from '../..';
+
 
 /**
  * ###DialogButton
@@ -34,24 +35,27 @@ export type State_TSDialog = {
 };
 
 /**
+ * Base Props for TS_Dialog
+ */
+export type Props_TSDialog = {
+	dialogId: string;
+	className?: string;
+};
+
+/**
  * ##TS_Dialog
  *
  * This class defines the logic and render behavior for dialogs in the system.
  * Any dialog class in the system is meant to inherit this class to utilize its features.
  */
-export abstract class TS_Dialog<P, S extends State_TSDialog>
+export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDialog>
 	extends ComponentSync<P, S> {
-
-	// ######################## Abstract ########################
-
-	protected abstract dialogId: string;
-	protected className?: string;
 
 	// ######################## Life Cycle ########################
 
 	componentDidMount() {
 		this._keyActionMapCreator();
-		const dialog = document.getElementById(this.dialogId);
+		const dialog = document.getElementById(this.props.dialogId);
 		dialog?.focus();
 		this.forceUpdate();
 	}
@@ -172,7 +176,7 @@ export abstract class TS_Dialog<P, S extends State_TSDialog>
 		const buttons = this.buttons();
 		if (_values(buttons).every(arr => !arr || !arr.length))
 			return undefined;
-		
+
 		return <div className={'ts-dialog__buttons'}>
 			{buttons.left && <div className={'ts-dialog__buttons__left'}>{this._buttonsCreator(buttons.left)}</div>}
 			{buttons.center && <div className={'ts-dialog__buttons__center'}>{this._buttonsCreator(buttons.center)}</div>}
@@ -188,7 +192,7 @@ export abstract class TS_Dialog<P, S extends State_TSDialog>
 
 	render() {
 		return <TS_ErrorBoundary>
-			<LL_V_L className={_className('ts-dialog', this.className)} id={this.dialogId} tabIndex={-1} onKeyDown={this.dialogKeyEventHandler}>
+			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1} onKeyDown={this.dialogKeyEventHandler}>
 				{this.dialogHeader()}
 				{this.dialogBody()}
 				{this.dialogButtons()}
