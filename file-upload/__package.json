@@ -42,7 +42,7 @@
     "@google-cloud/storage": "^5.14.5",
     "@google-cloud/firestore": "^5.0.0",
     "jszip": "^3.2.2",
-    "express": "^4.18.2",
+    "express": "$EXPRESS_PKG_VERSION",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
