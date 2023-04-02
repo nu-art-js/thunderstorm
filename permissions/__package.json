@@ -47,7 +47,7 @@
     "react": "$REACT_PKG_VERSION",
     "moment": "^2.24.0",
     "saml2-js": "^4.0.1",
-    "express": "^4.18.2",
+    "express": "$EXPRESS_PKG_VERSION",
     "request": "^2.88.0"
   },
   "devDependencies": {
