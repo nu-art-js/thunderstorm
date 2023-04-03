@@ -94,7 +94,9 @@ class ModuleFE_RoutingV2_Class
 
 			//Init children obj if undefined
 			if (!parentRoute.children)
-				parentRoute.children = {};
+				parentRoute.children = {
+					'*': {key: `${parentRoute.key}-any`, relativePath: '*', element: () => this.createNavigate(parentRoute.key)},
+				};
 
 			//Set route in parent route
 			parentRoute.children[relativePath] = {
@@ -139,7 +141,7 @@ class ModuleFE_RoutingV2_Class
 		}
 
 		return <Route path={resolveRelativePath(route.relativePath)} {...element}>
-			{..._values(route.children).map(child => this.generateRoute(child))}
+			{..._values(route.children).sort((a, b) => a.relativePath === '*' ? 1 : -1).map(child => this.generateRoute(child))}
 		</Route>;
 	};
 
