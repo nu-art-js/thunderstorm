@@ -24,7 +24,18 @@
  */
 import * as React from 'react';
 
-import {_clearTimeout, _keys, _setTimeout, EmptyObject, Logger, LogLevel, LogParam, sortArray, TimerHandler} from '@nu-art/ts-common';
+import {
+	_clearTimeout,
+	_keys,
+	_setTimeout,
+	EmptyObject,
+	ImplementationMissingException,
+	Logger,
+	LogLevel,
+	LogParam,
+	sortArray,
+	TimerHandler
+} from '@nu-art/ts-common';
 import {Thunder} from './Thunder';
 
 
@@ -47,6 +58,8 @@ export abstract class BaseComponent<P = any, State = any>
 
 		this._constructor();
 		const __render = this.render?.bind(this);
+		if (!__render)
+			throw new ImplementationMissingException('Every UI Component must have a render function. Did you forget to add a render function?');
 		this.render = () => {
 			this.logVerbose('Rendering', this.state);
 			return __render();
