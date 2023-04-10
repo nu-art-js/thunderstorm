@@ -21,15 +21,15 @@ EXPRESS_TYPES_VERSION="^4.17.17"
 EXPRESS_SERVE_STATIC_CORE_TYPES_VERSION="^4.17.0"
 
 projectLibs=(
-  app-shared
+#  app-shared
 )
 
 backendApps=(
-  app-backend
+#  app-backend
 )
 
 frontendApps=(
-  app-frontend
+#  app-frontend
 )
 
 testServiceAccount=../.trash/test-account.json
