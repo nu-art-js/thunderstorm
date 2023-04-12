@@ -33,8 +33,5 @@
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "moment": "^2.24.0"
-  },
-  "devDependencies": {
-    "@types/node": "$NODE_TYPES_VERSION"
   }
 }
