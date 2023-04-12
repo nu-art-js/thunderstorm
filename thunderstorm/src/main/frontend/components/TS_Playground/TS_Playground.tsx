@@ -27,6 +27,8 @@ import {LL_H_C, LL_V_L} from '../Layouts';
 import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 import {TS_Tree} from '../TS_Tree';
 import {_className} from '../../utils/tools';
+import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
+
 
 const selectedPlaygroundStorage = new StorageKey<string>('selected-playground');
 const collapsedPlaygroundStorage = new StorageKey<boolean>('collapsed-playground');
@@ -46,7 +48,6 @@ export type PlaygroundScreen<T extends any = any> = {
 	renderer: React.ComponentType<T>;
 	data?: T[];
 }
-
 
 export class TS_Playground
 	extends React.Component<PlaygroundProps, State> {
@@ -75,7 +76,9 @@ export class TS_Playground
 						this.setState({selectedScreen: item});
 					}}/>
 			</LL_V_L>
-			<div className="ts-playground__container">{this.renderPlayground()}</div>
+			<TS_ErrorBoundary>
+				<div className="ts-playground__container">{this.renderPlayground()}</div>
+			</TS_ErrorBoundary>
 		</LL_H_C>;
 	}
 

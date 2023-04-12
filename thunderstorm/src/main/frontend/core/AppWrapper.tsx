@@ -25,6 +25,16 @@ import {Thunder} from './Thunder';
 import {ImplementationMissingException} from '@nu-art/ts-common';
 import * as RDC from 'react-dom/client';
 import {ThunderAppWrapperProps} from './types';
+import {
+	ComponentSync,
+	ModuleFE_RoutingV2,
+	stopPropagation,
+	TS_DialogOverlay, TS_MemoryMonitor, TS_Notifications,
+	TS_PopupMenuOverlay,
+	TS_ToastOverlay,
+	TS_TooltipOverlay
+} from '../../../../dist/frontend';
+import {TS_Route} from '../modules/routing/types';
 
 
 export function renderApp() {
@@ -56,4 +66,37 @@ export function appWithMemoryRouter(props: ThunderAppWrapperProps) {
 export function appWithJSX(props: ThunderAppWrapperProps) {
 	const MainApp = props.element;
 	return <MainApp/>;
+}
+
+export function appWithRoutes(rootRoute: TS_Route) {
+	return <App rootRoute={rootRoute}/>;
+}
+
+class App
+	extends ComponentSync<{ rootRoute: TS_Route }> {
+
+	public static blockEvent<T>(ev: React.DragEvent<T>) {
+		ev.preventDefault();
+		ev.stopPropagation();
+	}
+
+	protected deriveStateFromProps(nextProps: {}) {
+		return {};
+	}
+
+	render() {
+		// @ts-ignore
+		const blockRightClick = !Thunder.getInstance().config.isDebug;
+
+		return (
+			<div id="app" onDrop={stopPropagation} onDragOver={stopPropagation} onContextMenu={blockRightClick ? stopPropagation : undefined}>
+				{ModuleFE_RoutingV2.generateRoutes(this.props.rootRoute)}
+				<TS_DialogOverlay/>
+				<TS_PopupMenuOverlay/>
+				<TS_TooltipOverlay/>
+				<TS_ToastOverlay/>
+				<TS_Notifications/>
+				<TS_MemoryMonitor/>
+			</div>);
+	}
 }

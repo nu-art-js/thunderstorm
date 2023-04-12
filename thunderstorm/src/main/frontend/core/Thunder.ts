@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {appWithJSX, renderApp} from './AppWrapper';
+import {appWithJSX, appWithRoutes, renderApp} from './AppWrapper';
 import {BeLogged, LogClient_Browser, Module, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
 import {XhrHttpModule} from '../modules/http/XhrHttpModule';
 import {ModuleFE_Dialog} from '../component-modules/ModuleFE_Dialog';
@@ -35,6 +35,8 @@ import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
 import {ThunderAppWrapperProps} from './types';
 import {ModuleFE_RoutingV2} from '../modules/routing/ModuleFE_RoutingV2';
+import {TS_Route} from '../modules/routing/types';
+
 
 const modules: Module[] = [
 	ModuleFE_Thunderstorm,
@@ -103,6 +105,11 @@ export class Thunder
 		return this;
 	}
 
+	setRouteApp(rootRoute: TS_Route) {
+		this.setMainApp(appWithRoutes(rootRoute));
+		return this;
+	}
+
 	public build(onStarted?: () => void) {
 		super.build();
 		onStarted?.();
@@ -112,3 +119,5 @@ export class Thunder
 		return this.config;
 	}
 }
+
+

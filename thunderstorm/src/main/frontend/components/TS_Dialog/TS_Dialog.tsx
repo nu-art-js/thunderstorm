@@ -49,7 +49,7 @@ export type Props_TSDialog = {
  * This class defines the logic and render behavior for dialogs in the system.
  * Any dialog class in the system is meant to inherit this class to utilize its features.
  */
-export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDialog>
+export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDialog = State_TSDialog>
 	extends ComponentSync<P, S> {
 
 	// ######################## Life Cycle ########################
@@ -98,6 +98,10 @@ export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDial
 		});
 	};
 
+	protected deriveStateFromProps(nextProps: P, state?: Partial<S>): S {
+		return {} as S;
+	}
+
 	private dialogKeyEventHandler = (e: React.KeyboardEvent) => {
 		e.persist();
 
@@ -119,28 +123,6 @@ export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDial
 				return (button.renderer ?? TS_Dialog.normalButton)(button, i, ref);
 			})}
 		</>;
-	};
-
-	static busyButton = (button: DialogButton, index: number, ref?: React.RefObject<any>) => {
-		return <TS_BusyButton
-			className={button.className}
-			innerRef={ref}
-			onClick={async () => await button.onClick?.()}
-			disabled={button.disabled}
-			onDisabledClick={button.onDisabledClick}
-			key={`button-${index}`}
-		>{button.content}</TS_BusyButton>;
-	};
-
-	static normalButton = (button: DialogButton, index: number, ref?: React.RefObject<any>) => {
-		return <TS_Button
-			className={button.className}
-			ref={ref}
-			onClick={button.onClick}
-			onDisabledClick={button.onDisabledClick}
-			disabled={button.disabled}
-			key={`button-${index}`}
-		>{button.content}</TS_Button>;
 	};
 
 	protected closeDialog = () => {
@@ -191,6 +173,15 @@ export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDial
 		return {};
 	};
 
+	protected performAction = (action: () => Promise<void>) => {
+		this.setState({dialogIsBusy: true}, async () => {
+			await action();
+
+			if (this.mounted)
+				this.setState({dialogIsBusy: false});
+		});
+	};
+
 	// ######################## Render ########################
 
 	render() {
@@ -202,4 +193,32 @@ export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDial
 			</LL_V_L>
 		</TS_ErrorBoundary>;
 	}
+
+	static busyButton = (button: DialogButton, index: number, ref?: React.RefObject<any>) => {
+		return <TS_BusyButton
+			className={button.className}
+			innerRef={ref}
+			onClick={async () => await button.onClick?.()}
+			disabled={button.disabled}
+			onDisabledClick={button.onDisabledClick}
+			key={`button-${index}`}
+		>{button.content}</TS_BusyButton>;
+	};
+
+	static normalButton = (button: DialogButton, index: number, ref?: React.RefObject<any>) => {
+		return <TS_Button
+			className={button.className}
+			ref={ref}
+			onClick={button.onClick}
+			onDisabledClick={button.onDisabledClick}
+			disabled={button.disabled}
+			key={`button-${index}`}
+		>{button.content}</TS_Button>;
+	};
+
+	static Button_Cancel = {
+		content: 'Cancel',
+		onClick: ModuleFE_Dialog.close,
+		associatedKeys: ['Escape']
+	};
 }
