@@ -48,7 +48,7 @@ export class ModuleFE_SyncManager_Class
 		};
 	}
 
-	private onReceivedSyncData = async (response: Response_DBSyncData) => {
+	public onReceivedSyncData = async (response: Response_DBSyncData) => {
 		await dispatch_syncIfNeeded.dispatchModuleAsync(response.syncData);
 		dispatch_onSyncCompleted.dispatchModule();
 	};
