@@ -19,6 +19,8 @@
  * limitations under the License.
  */
 
+import exp = require('constants');
+
 export * from './core/Thunder';
 export * from './core/thunder-dispatcher';
 
@@ -91,6 +93,7 @@ export * from './components/TS_Slider';
 export * from './components/TS_EditableText';
 export * from './components/TS_PropRenderer';
 export * from './components/TS_Form';
+export * from './components/TS_VirtualizedList';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';
