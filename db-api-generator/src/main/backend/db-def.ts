@@ -20,7 +20,7 @@
  */
 
 import {Const_UniqueKey, DB_Object_validator, DBDef, Default_UniqueKey, DefaultDBVersion} from '..';
-import {DB_Object, Dispatcher, TS_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {DB_Object, Dispatcher, exists, KeysOfDB_Object, TS_Object, tsValidateResult, ValidatorTypeResolver} from '@nu-art/ts-common';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 
 
@@ -36,12 +36,20 @@ export type DBApiBEConfig<DBType extends DB_Object, Ks extends keyof DBType = De
 }
 
 export const getModuleBEConfig = <T extends DB_Object>(dbDef: DBDef<T>): DBApiBEConfig<T> => {
+	const dbDefValidator = typeof dbDef.validator === 'function' ?
+		[((instance: T) => {
+			const dbObjectOnly = KeysOfDB_Object.reduce<DB_Object>((objectToRet, key) => {
+				if (exists(instance[key]))  // @ts-ignore
+					objectToRet[key] = instance[key];
+
+				return objectToRet;
+			}, {} as DB_Object);
+			return tsValidateResult(dbObjectOnly, DB_Object_validator);
+		}), dbDef.validator] :
+		{...DB_Object_validator, ...dbDef.validator};
 	return {
 		collectionName: dbDef.dbName,
-		validator: {
-			...DB_Object_validator,
-			...dbDef.validator,
-		} as ValidatorTypeResolver<T>,
+		validator: dbDefValidator as ValidatorTypeResolver<T>,
 		uniqueKeys: dbDef.uniqueKeys || [Const_UniqueKey],
 		lockKeys: dbDef.lockKeys || dbDef.uniqueKeys || [...Const_LockKeys],
 		itemName: dbDef.entityName,
