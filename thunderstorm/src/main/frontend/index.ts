@@ -19,8 +19,6 @@
  * limitations under the License.
  */
 
-import exp = require('constants');
-
 export * from './core/Thunder';
 export * from './core/thunder-dispatcher';
 
