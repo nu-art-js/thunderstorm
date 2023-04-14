@@ -2,8 +2,9 @@ import * as React from 'react';
 import {FixedSizeList as List} from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
+
 type Props = {
-	listToRender: React.ReactNode[],
+	listToRender: JSX.Element[],
 	height?: number | string,
 	className?: string,
 	width?: number,
@@ -11,8 +12,7 @@ type Props = {
 	selectedItem?: number
 };
 
-
-const VirtualizedList = ({height, width, listToRender, itemHeight, selectedItem, className}: Props) => {
+export const VirtualizedList = ({height, width, listToRender, itemHeight, selectedItem, className}: Props) => {
 	const listRef = React.useRef<any>();
 
 	React.useEffect(() => {
@@ -22,12 +22,7 @@ const VirtualizedList = ({height, width, listToRender, itemHeight, selectedItem,
 	}, [selectedItem, listToRender]);
 
 	function ItemWrapper({index, style}: { index: number, style: any }) {
-		return (
-			<div style={style}>
-				{listToRender[index]}
-			</div>
-		);
-
+		return listToRender[index];
 	}
 
 	return (
@@ -44,7 +39,6 @@ const VirtualizedList = ({height, width, listToRender, itemHeight, selectedItem,
 		</List>
 	);
 };
-
 
 export const TS_VirtualizedList = (props: Props) => {
 	return (

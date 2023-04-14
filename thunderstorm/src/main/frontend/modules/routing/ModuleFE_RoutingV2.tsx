@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Navigate, NavigateFunction, Route, Routes} from 'react-router-dom';
+import {BrowserRouter, Navigate, NavigateFunction, Route, Routes} from 'react-router-dom';
 import {TS_Route} from './types';
 import {BadImplementationException, composeUrl, Module, removeItemFromArray} from '@nu-art/ts-common';
 import {LocationChangeListener} from './LocationChangeListener';
@@ -18,17 +18,27 @@ class ModuleFE_RoutingV2_Class
 	// ######################## Public Functions ########################
 
 	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: P) {
-		this.navigate(composeUrl(this.routesMap[route.key].fullPath, params));
+		const routesMapByKeyElement = this.routesMapByKey[route.key];
+		try {
+			const url = composeUrl(routesMapByKeyElement.fullPath, params);
+			if (window.location.href === url)
+				return this.logWarning(`attempting to set same route: ${url}`);
+
+			this.navigate(url);
+		} catch (e: any) {
+			this.logError(`cannot resolve route for route: `, route, e);
+			throw e;
+		}
 	}
 
 	generateRoutes(rootRoute: TS_Route) {
 		const element = this.routeBuilder(rootRoute);
-		return <>
+		return <BrowserRouter>
 			<LocationChangeListener/>
 			<Routes>
 				{element}
 			</Routes>
-		</>;
+		</BrowserRouter>;
 	}
 
 	private routeBuilder = (route: TS_Route<any>, _path: string = '') => {
