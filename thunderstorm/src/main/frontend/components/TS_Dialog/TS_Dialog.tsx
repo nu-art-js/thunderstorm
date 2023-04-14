@@ -218,7 +218,7 @@ export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDial
 
 	static Button_Cancel = {
 		content: 'Cancel',
-		onClick: ModuleFE_Dialog.close,
+		onClick: () => ModuleFE_Dialog.close(),
 		associatedKeys: ['Escape']
 	};
 }

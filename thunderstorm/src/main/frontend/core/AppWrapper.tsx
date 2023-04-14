@@ -25,16 +25,16 @@ import {Thunder} from './Thunder';
 import {ImplementationMissingException} from '@nu-art/ts-common';
 import * as RDC from 'react-dom/client';
 import {ThunderAppWrapperProps} from './types';
-import {
-	ComponentSync,
-	ModuleFE_RoutingV2,
-	stopPropagation,
-	TS_DialogOverlay, TS_MemoryMonitor, TS_Notifications,
-	TS_PopupMenuOverlay,
-	TS_ToastOverlay,
-	TS_TooltipOverlay
-} from '../../../../dist/frontend';
 import {TS_Route} from '../modules/routing/types';
+import {ComponentSync} from './ComponentSync';
+import {stopPropagation} from '../utils/tools';
+import {ModuleFE_RoutingV2} from '../modules/routing/ModuleFE_RoutingV2';
+import {TS_DialogOverlay} from '../components/TS_Dialog';
+import {TS_PopupMenuOverlay} from '../components/TS_PopupMenu';
+import {TS_TooltipOverlay} from '../components/TS_Tooltip';
+import {TS_ToastOverlay} from '../components/TS_Toaster';
+import {TS_Notifications} from '../components/TS_Notifications';
+import {TS_MemoryMonitor} from '../components/TS_MemoryMonitor';
 
 
 export function renderApp() {
@@ -63,16 +63,12 @@ export function appWithMemoryRouter(props: ThunderAppWrapperProps) {
 	return <MemoryRouter><MainApp/></MemoryRouter>;
 }
 
-export function appWithJSX(props: ThunderAppWrapperProps) {
+export function appWithJSX(props: ThunderAppWrapperProps<any>) {
 	const MainApp = props.element;
-	return <MainApp/>;
+	return <MainApp {...props.props}/>;
 }
 
-export function appWithRoutes(rootRoute: TS_Route) {
-	return <App rootRoute={rootRoute}/>;
-}
-
-class App
+export class ThunderstormApp
 	extends ComponentSync<{ rootRoute: TS_Route }> {
 
 	public static blockEvent<T>(ev: React.DragEvent<T>) {

@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import { ThunderDispatcher } from '@nu-art/thunderstorm/frontend';
-import {SmartComponent} from './SmartComponent';
+import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {Props_SmartComponent, SmartComponent, State_SmartComponent} from './SmartComponent';
 
 
 export interface OnPageTitleChangedListener {
@@ -29,15 +29,13 @@ export interface OnPageTitleChangedListener {
 
 export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChangedListener, '__onPageTitleChanged'>('__onPageTitleChanged');
 
-export abstract class SmartPage<P extends {} = {}, S extends {} = {}>
+export abstract class SmartPage<P extends { pageTitle?: string | ((state: State_SmartComponent & S) => string) } = {}, S extends {} = {}>
 	extends SmartComponent<P, S> {
 
-	private pageTitle: string | (() => string);
 	private prevTitle!: string;
 
-	protected constructor(p: P, pageTitle?: string | (() => string)) {
+	constructor(p: P) {
 		super(p);
-		this.pageTitle = pageTitle || document.title;
 		const _componentDidMount = this.componentDidMount?.bind(this);
 		this.componentDidMount = () => {
 			_componentDidMount?.();
@@ -54,12 +52,9 @@ export abstract class SmartPage<P extends {} = {}, S extends {} = {}>
 		};
 	}
 
-	setPageTitle(pageTitle: string | (() => string)) {
-		this.pageTitle = pageTitle;
-		if (this.mounted)
-			this.updateTitle();
+	protected async deriveStateFromProps(nextProps: Props_SmartComponent & P, state?: Partial<S> & State_SmartComponent): Promise<State_SmartComponent & S> {
+		return state as State_SmartComponent & S;
 	}
-
 
 	protected updateTitle = () => {
 		const newTitle = this.resolveTitle();
@@ -68,5 +63,10 @@ export abstract class SmartPage<P extends {} = {}, S extends {} = {}>
 		dispatch_onPageTitleChanged.dispatchUI(document.title);
 	};
 
-	private resolveTitle = () => typeof this.pageTitle === 'function' ? this.pageTitle() : this.pageTitle;
+	private resolveTitle = (): string => {
+		const pageTitle = this.props.pageTitle;
+		if (!pageTitle)
+			return '';
+		return typeof pageTitle === 'function' ? pageTitle(this.state) : pageTitle;
+	};
 }
