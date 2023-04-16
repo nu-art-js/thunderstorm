@@ -15,7 +15,6 @@ export const LocationChangeListener = () => {
 	const location = useLocation();
 	const navigate = useNavigate();
 	useEffect(() => {
-		console.log(location);
 		dispatch_onLocationChanged.dispatchUI(location.pathname);
 	}, [location]);
 	ModuleFE_RoutingV2.setNavigate(navigate);
