@@ -28,15 +28,13 @@ import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 import {TS_Tree} from '../TS_Tree';
 import {_className} from '../../utils/tools';
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
+import {TS_Route} from '../../modules/routing/types';
 
 
 const selectedPlaygroundStorage = new StorageKey<string>('selected-playground');
 const collapsedPlaygroundStorage = new StorageKey<boolean>('collapsed-playground');
 
-export type PlaygroundProps = {
-	screens: PlaygroundScreen[];
-	collapseCaret: (() => React.ReactNode) | ReactNode;
-}
+export type PlaygroundProps = {}
 
 type State = {
 	selectedScreen?: PlaygroundScreen;
@@ -51,18 +49,22 @@ export type PlaygroundScreen<T extends any = any> = {
 
 export class TS_Playground
 	extends React.Component<PlaygroundProps, State> {
+	static Route: TS_Route<{}> = {path: 'playground', key: 'playground', Component: this,};
+
+	static screens: PlaygroundScreen[];
+	static collapseCaret: (() => React.ReactNode) | ReactNode;
 
 	constructor(props: PlaygroundProps) {
 		super(props);
 		const selectedPlaygroundKey = selectedPlaygroundStorage.get();
 		this.state = {
-			selectedScreen: this.props.screens.find(s => s.name === selectedPlaygroundKey),
+			selectedScreen: TS_Playground.screens.find(s => s.name === selectedPlaygroundKey),
 			collapsed: collapsedPlaygroundStorage.get() ?? false,
 		};
 	}
 
 	render() {
-		const adapter = SimpleListAdapter<PlaygroundScreen>(this.props.screens, item => <div className={'ts-playground__item'}>{item.item.name}</div>);
+		const adapter = SimpleListAdapter<PlaygroundScreen>(TS_Playground.screens, item => <div className={'ts-playground__item'}>{item.item.name}</div>);
 		const className = _className('ts-playground__selector', this.state.collapsed ? 'ts-playground__selector-collapsed' : undefined);
 
 		return <LL_H_C className="ts-playground">
@@ -83,7 +85,7 @@ export class TS_Playground
 	}
 
 	private renderHeader() {
-		const caret = typeof this.props.collapseCaret === 'function' ? this.props.collapseCaret() : this.props.collapseCaret;
+		const caret = typeof TS_Playground.collapseCaret === 'function' ? TS_Playground.collapseCaret() : TS_Playground.collapseCaret;
 		return <LL_H_C className={'ts-playground__selector__header'}>
 			<span className={'header__title'}>Playgrounds</span>
 			<div className={'header__caret'} onClick={() => {

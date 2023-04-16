@@ -29,7 +29,9 @@ export interface OnPageTitleChangedListener {
 
 export const dispatch_onPageTitleChanged = new ThunderDispatcher<OnPageTitleChangedListener, '__onPageTitleChanged'>('__onPageTitleChanged');
 
-export abstract class SmartPage<P extends { pageTitle?: string | ((state: State_SmartComponent & S) => string) } = {}, S extends {} = {}>
+export type Props_SmartPage<S extends {} = {}> = Props_SmartComponent & { pageTitle?: string | ((state: State_SmartComponent & S) => string) };
+
+export abstract class SmartPage<P extends Props_SmartPage<S> = {}, S extends {} = {}>
 	extends SmartComponent<P, S> {
 
 	private prevTitle!: string;
