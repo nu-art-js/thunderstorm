@@ -17,7 +17,9 @@
  */
 import {
 	__stringify,
+	_keys,
 	auditBy,
+	BadImplementationException,
 	currentTimeMillis,
 	Day,
 	Dispatcher,
@@ -25,6 +27,7 @@ import {
 	hashPasswordWithSalt,
 	Module,
 	MUSTNeverHappenException,
+	TS_Object,
 	tsValidate
 } from '@nu-art/ts-common';
 
@@ -43,6 +46,7 @@ import {
 import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, ExpressRequest, HeaderKey, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
 import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
 import {QueryParams} from '@nu-art/thunderstorm';
+import {gzipSync, unzipSync} from 'zlib';
 
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
@@ -65,6 +69,12 @@ export interface OnUserLogin {
 }
 
 const dispatch_onUserLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
+
+export interface CollectSessionData {
+	__collectSessionData(accountId: string): TS_Object;
+}
+
+const dispatch_CollectSessionData = new Dispatcher<CollectSessionData, '__collectSessionData'>('__collectSessionData');
 export const dispatch_onNewUserRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
 
 function getUIAccount(account: DB_Account): UI_Account {
@@ -74,8 +84,7 @@ function getUIAccount(account: DB_Account): UI_Account {
 
 export class ModuleBE_Account_Class
 	extends Module<Config>
-	implements QueryRequestInfo {
-
+	implements QueryRequestInfo, CollectSessionData {
 
 	constructor() {
 		super();
@@ -88,6 +97,13 @@ export class ModuleBE_Account_Class
 			createQueryServerApi(ApiDef_UserAccountBE.v1.query, this.listUsers),
 			createBodyServerApi(ApiDef_UserAccountBE.v1.upsert, this.upsert)
 		]);
+	}
+
+	async __collectSessionData(accountId: string) {
+		return {
+			timestamp: currentTimeMillis(),
+			userId: accountId
+		};
 	}
 
 	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; }> {
@@ -283,11 +299,25 @@ export class ModuleBE_Account_Class
 	upsertSession = async (account: DB_Account): Promise<Response_Auth> => {
 		let session = await this.sessions.queryUnique({where: {userId: account._id}});
 		if (!session || this.TTLExpired(session)) {
+			const sessionData = (await dispatch_CollectSessionData.dispatchModuleAsync(account._id))
+				.reduce((sessionData, moduleSessionData) => {
+					_keys(moduleSessionData).forEach(key => {
+						if (sessionData[key])
+							throw new BadImplementationException(`Error while building session data.. duplicated keys: ${key}\none: ${__stringify(sessionData, true)}\ntwo: ${__stringify(moduleSessionData, true)}`);
+
+						sessionData[key] = moduleSessionData[key];
+					});
+					return sessionData;
+				}, {} as { [key: string]: TS_Object });
+
+			const sessionDataAsString = await ModuleBE_Account_Class.encodeSessionData(sessionData);
+
 			session = {
-				sessionId: generateHex(64),
-				timestamp: currentTimeMillis(),
-				userId: account._id
+				userId: account._id,
+				sessionId: sessionDataAsString,
+				timestamp: currentTimeMillis()
 			};
+
 			await this.sessions.upsert(session);
 		}
 
@@ -295,6 +325,14 @@ export class ModuleBE_Account_Class
 		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
 		return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
 	};
+
+	static async encodeSessionData(sessionData: TS_Object) {
+		return btoa((await gzipSync(Buffer.from(__stringify(sessionData), 'utf8'))).toString('utf8'));
+	}
+
+	static async decodeSessionData(sessionData: string): Promise<TS_Object> {
+		return JSON.parse((await unzipSync(Buffer.from(sessionData, 'utf8'))).toString('utf8'));
+	}
 
 	getOrCreate = async (query: { where: { email: string } }) => {
 		let dispatchEvent = false;
