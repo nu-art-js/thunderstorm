@@ -331,7 +331,11 @@ export class ModuleBE_Account_Class
 	}
 
 	static async decodeSessionData(sessionData: string): Promise<TS_Object> {
-		return JSON.parse((await unzipSync(Buffer.from(sessionData, 'utf8'))).toString('utf8'));
+		try {
+			return JSON.parse((await unzipSync(Buffer.from(sessionData, 'utf8'))).toString('utf8'));
+		} catch (e: any) {
+			throw new ApiException(403, 'Cannot parse session data', e);
+		}
 	}
 
 	getOrCreate = async (query: { where: { email: string } }) => {
