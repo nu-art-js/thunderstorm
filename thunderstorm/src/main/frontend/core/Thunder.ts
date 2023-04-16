@@ -20,7 +20,7 @@
  */
 
 import * as React from 'react';
-import {appWithJSX, renderApp} from './AppWrapper';
+import {appWithJSX, renderApp, ThunderstormApp} from './AppWrapper';
 import {BeLogged, LogClient_Browser, Module, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
 import {XhrHttpModule} from '../modules/http/XhrHttpModule';
 import {ModuleFE_Dialog} from '../component-modules/ModuleFE_Dialog';
@@ -35,6 +35,8 @@ import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
 import {ThunderAppWrapperProps} from './types';
 import {ModuleFE_RoutingV2} from '../modules/routing/ModuleFE_RoutingV2';
+import {TS_Route} from '../modules/routing/types';
+
 
 const modules: Module[] = [
 	ModuleFE_Thunderstorm,
@@ -55,7 +57,7 @@ export class Thunder
 
 	private listeners: any[] = [];
 	private renderFunc!: (props: ThunderAppWrapperProps) => React.ReactElement;
-	private mainApp!: React.ElementType<{}>;
+	private props!: ThunderAppWrapperProps<any>;
 
 	constructor() {
 		super();
@@ -89,17 +91,27 @@ export class Thunder
 	}
 
 	renderApp() {
-		return this.renderFunc?.({element: this.mainApp});
+		return this.renderFunc?.(this.props);
 	}
 
 	/**
 	 * Set up the entry point for the app.
 	 * @param mainApp - The entry point into the application, what will be rendered directly under root (usually App.tsx)
+	 * @param props - The props to go with the supplied main app
 	 * @param renderFunc - The app wrapper, which will usually provide a router. by default is "appWithJSX" which will just return the app
 	 */
-	public setMainApp(mainApp: React.ElementType<{}>, renderFunc: (props: ThunderAppWrapperProps) => React.ReactElement = appWithJSX): Thunder {
-		this.mainApp = mainApp;
+	public setMainApp<P extends {}>(mainApp: React.ElementType<P>, props: P = {} as P, renderFunc: (props: ThunderAppWrapperProps) => React.ReactElement = appWithJSX): Thunder {
+		this.props = {
+			element: mainApp,
+			props: props
+		};
+
 		this.renderFunc = renderFunc;
+		return this;
+	}
+
+	setRouteApp(rootRoute: TS_Route) {
+		this.setMainApp(ThunderstormApp, {rootRoute});
 		return this;
 	}
 
@@ -112,3 +124,5 @@ export class Thunder
 		return this.config;
 	}
 }
+
+

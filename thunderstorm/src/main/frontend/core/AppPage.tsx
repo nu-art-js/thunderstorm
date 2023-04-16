@@ -23,15 +23,13 @@ import {dispatch_onPageTitleChanged} from './AppPageV2';
 import {ComponentSync} from './ComponentSync';
 
 // Deprecated use AppPageV2
-export abstract class AppPage<P extends {} = {}, S extends {} = {}>
+export abstract class AppPage<P extends { pageTitle?: string | ((state: S) => string) } = {}, S extends {} = {}>
 	extends ComponentSync<P, S> {
 
-	private pageTitle: string | (() => string);
 	private prevTitle!: string;
 
-	protected constructor(p: P, pageTitle?: string | (() => string)) {
+	protected constructor(p: P) {
 		super(p);
-		this.pageTitle = pageTitle || document.title;
 		const _componentDidMount = this.componentDidMount?.bind(this);
 		this.componentDidMount = () => {
 			_componentDidMount?.();
@@ -48,13 +46,6 @@ export abstract class AppPage<P extends {} = {}, S extends {} = {}>
 		};
 	}
 
-	setPageTitle(pageTitle: string | (() => string)) {
-		this.pageTitle = pageTitle;
-		if (this.mounted)
-			this.updateTitle();
-	}
-
-
 	protected updateTitle = () => {
 		const newTitle = this.resolveTitle();
 		document.title = newTitle;
@@ -62,5 +53,10 @@ export abstract class AppPage<P extends {} = {}, S extends {} = {}>
 		dispatch_onPageTitleChanged.dispatchUI(document.title);
 	};
 
-	private resolveTitle = () => typeof this.pageTitle === 'function' ? this.pageTitle() : this.pageTitle;
+	private resolveTitle = (): string => {
+		const pageTitle = this.props.pageTitle;
+		if (!pageTitle)
+			return '';
+		return typeof pageTitle === 'function' ? pageTitle(this.state) : pageTitle;
+	};
 }
