@@ -22,7 +22,9 @@ export const VirtualizedList = ({height, width, listToRender, itemHeight, select
 	}, [selectedItem, listToRender]);
 
 	function ItemWrapper({index, style}: { index: number, style: any }) {
-		return listToRender[index];
+		return <div style={style}>
+			{listToRender[index]}
+		</div>;
 	}
 
 	return (
