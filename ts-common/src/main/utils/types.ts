@@ -129,3 +129,9 @@ export type NarrowArray<Default, T1, T2, T3, T4, T5, T6> =
 				T3 extends ValidReturnValue ? [T1, T2, T3] :
 					T2 extends ValidReturnValue ? [T1, T2] :
 						T1 extends ValidReturnValue ? [T1] : Default
+
+export type MergeTypes<T extends unknown[]> =
+	T extends [a: infer A, ...rest: infer R] ? A & MergeTypes<R> : {};
+
+export type UnionToIntersection<U> =
+	(U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never
