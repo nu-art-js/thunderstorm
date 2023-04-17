@@ -29,6 +29,9 @@ import {TS_Tree} from '../TS_Tree';
 import {_className} from '../../utils/tools';
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
 import {TS_Route} from '../../modules/routing/types';
+import {TS_NavLink} from '../../modules/routing/ModuleFE_RoutingV2';
+import {md5} from '@nu-art/ts-common';
+import {Outlet} from 'react-router-dom';
 
 
 const selectedPlaygroundStorage = new StorageKey<string>('selected-playground');
@@ -49,10 +52,20 @@ export type PlaygroundScreen<T extends any = any> = {
 
 export class TS_Playground
 	extends React.Component<PlaygroundProps, State> {
-	static Route: TS_Route<{}> = {path: 'playground', key: 'playground', Component: this,};
 
 	static screens: PlaygroundScreen[];
 	static collapseCaret: (() => React.ReactNode) | ReactNode;
+
+	static Route(): TS_Route<{}> {
+		return {
+			path: 'playground',
+			key: 'playground',
+			Component: this,
+			children: TS_Playground.screens.map(screen => {
+				return {key: screen.name, path: md5(screen.name), Component: screen.renderer as React.ComponentClass};
+			})
+		};
+	}
 
 	constructor(props: PlaygroundProps) {
 		super(props);
@@ -64,22 +77,21 @@ export class TS_Playground
 	}
 
 	render() {
-		const adapter = SimpleListAdapter<PlaygroundScreen>(TS_Playground.screens, item => <div className={'ts-playground__item'}>{item.item.name}</div>);
+		const adapter = SimpleListAdapter<PlaygroundScreen>(TS_Playground.screens, item => <TS_NavLink
+			route={TS_Playground.Route().children!.find(i => i.key === item.item.name)!}
+			className={({isActive, isPending}) => _className('ts-playground__nav-item', isActive ? 'selected' : undefined)}
+		>
+			{item.item.name}
+		</TS_NavLink>);
 		const className = _className('ts-playground__selector', this.state.collapsed ? 'ts-playground__selector-collapsed' : undefined);
 
 		return <LL_H_C className="ts-playground">
 			<LL_V_L className={className}>
 				{this.renderHeader()}
-				<TS_Tree
-					adapter={adapter}
-					selectedItem={this.state.selectedScreen}
-					onNodeClicked={(path, item) => {
-						selectedPlaygroundStorage.set(item.name);
-						this.setState({selectedScreen: item});
-					}}/>
+				<TS_Tree adapter={adapter}/>
 			</LL_V_L>
 			<TS_ErrorBoundary>
-				<div className="ts-playground__container">{this.renderPlayground()}</div>
+				<div className="ts-playground__container"><Outlet/></div>
 			</TS_ErrorBoundary>
 		</LL_H_C>;
 	}
@@ -96,7 +108,7 @@ export class TS_Playground
 		</LL_H_C>;
 	}
 
-	private renderPlayground() {
+	renderPlayground() {
 		if (!this.state.selectedScreen)
 			return <div>Select a playground</div>;
 
