@@ -70,11 +70,12 @@ export interface OnUserLogin {
 
 const dispatch_onUserLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
 
-export interface CollectSessionData {
-	__collectSessionData(accountId: string): TS_Object;
+export interface CollectSessionData<R extends TS_Object> {
+	__collectSessionData(accountId: string): Promise<R>;
 }
 
-const dispatch_CollectSessionData = new Dispatcher<CollectSessionData, '__collectSessionData'>('__collectSessionData');
+type CSD = CollectSessionData<{}>;
+const dispatch_CollectSessionData = new Dispatcher<CSD, '__collectSessionData'>('__collectSessionData');
 export const dispatch_onNewUserRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
 
 function getUIAccount(account: DB_Account): UI_Account {
@@ -84,7 +85,7 @@ function getUIAccount(account: DB_Account): UI_Account {
 
 export class ModuleBE_Account_Class
 	extends Module<Config>
-	implements QueryRequestInfo, CollectSessionData {
+	implements QueryRequestInfo, CollectSessionData<any> {
 
 	constructor() {
 		super();
@@ -303,7 +304,7 @@ export class ModuleBE_Account_Class
 				.reduce((sessionData, moduleSessionData) => {
 					_keys(moduleSessionData).forEach(key => {
 						if (sessionData[key])
-							throw new BadImplementationException(`Error while building session data.. duplicated keys: ${key}\none: ${__stringify(sessionData, true)}\ntwo: ${__stringify(moduleSessionData, true)}`);
+							throw new BadImplementationException(`Error while building session data.. duplicated keys: ${key as string}\none: ${__stringify(sessionData, true)}\ntwo: ${__stringify(moduleSessionData, true)}`);
 
 						sessionData[key] = moduleSessionData[key];
 					});
@@ -327,44 +328,47 @@ export class ModuleBE_Account_Class
 	};
 
 	static async encodeSessionData(sessionData: TS_Object) {
-		return btoa((await gzipSync(Buffer.from(__stringify(sessionData), 'utf8'))).toString('utf8'));
+		return (await gzipSync(Buffer.from(__stringify(sessionData), 'utf8'))).toString('base64');
 	}
 
-	static async decodeSessionData(sessionData: string): Promise<TS_Object> {
+	static decodeSessionData<T1 extends CSD, T2 extends CSD, T3 extends CSD, T4 extends CSD, >(request: ExpressRequest, module: T1, module2?: T2, module3?: T3, module4?: T4): ReturnType<T1['__collectSessionData']> & ReturnType<T2['__collectSessionData']> & ReturnType<T3['__collectSessionData']> & ReturnType<T4['__collectSessionData']> {
+		const sessionData = Header_SessionId.get(request);
 		try {
-			return JSON.parse((await unzipSync(Buffer.from(sessionData, 'utf8'))).toString('utf8'));
-		} catch (e: any) {
-			throw new ApiException(403, 'Cannot parse session data', e);
-		}
+		return JSON.parse((unzipSync(Buffer.from(sessionData, 'base64'))).toString('utf8'));
 	}
 
-	getOrCreate = async (query: { where: { email: string } }) => {
-		let dispatchEvent = false;
+	catch(e: any) {
+		throw new ApiException(403, 'Cannot parse session data', e);
+	}
+}
 
-		const dbAccount = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
-			const account = await transaction.queryUnique(this.accounts, query);
-			if (account?._id)
-				return account;
+getOrCreate = async (query: { where: { email: string } }) => {
+	let dispatchEvent = false;
 
-			const now = currentTimeMillis();
-			const _account: DB_Account = {
-				_id: generateHex(32),
-				__created: now,
-				__updated: now,
-				_audit: auditBy(query.where.email),
-				email: query.where.email,
-				...account
-			};
+	const dbAccount = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
+		const account = await transaction.queryUnique(this.accounts, query);
+		if (account?._id)
+			return account;
 
-			dispatchEvent = true;
-			return transaction.upsert(this.accounts, _account);
-		});
+		const now = currentTimeMillis();
+		const _account: DB_Account = {
+			_id: generateHex(32),
+			__created: now,
+			__updated: now,
+			_audit: auditBy(query.where.email),
+			email: query.where.email,
+			...account
+		};
 
-		if (dispatchEvent)
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
+		dispatchEvent = true;
+		return transaction.upsert(this.accounts, _account);
+	});
 
-		return dbAccount;
-	};
+	if (dispatchEvent)
+		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
+
+	return dbAccount;
+};
 }
 
 export const ModuleBE_Account = new ModuleBE_Account_Class();
