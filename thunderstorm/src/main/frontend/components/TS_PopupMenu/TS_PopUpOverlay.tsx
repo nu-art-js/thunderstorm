@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {MenuPosition, ModuleFE_PopUp, PopUp_Model_Content, PopUpListener} from '../../component-modules/ModuleFE_PopUp';
 import {ComponentSync} from '../../core/ComponentSync';
-import './TS_PopupMenuOverlay.scss';
+import './TS_PopUpOverlay.scss';
 import {TS_Overlay} from '../TS_Overlay';
 import {OnWindowResized} from '../../modules/ModuleFE_Window';
 import {stopPropagation} from '../../utils/tools';
