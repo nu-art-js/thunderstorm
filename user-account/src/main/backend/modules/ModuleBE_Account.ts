@@ -24,7 +24,7 @@ import {
 	Day,
 	Dispatcher,
 	generateHex,
-	hashPasswordWithSalt,
+	hashPasswordWithSalt, MergeTypes,
 	Module,
 	MUSTNeverHappenException,
 	TS_Object,
@@ -47,7 +47,6 @@ import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, Expr
 import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
 import {QueryParams} from '@nu-art/thunderstorm';
 import {gzipSync, unzipSync} from 'zlib';
-
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
@@ -74,8 +73,14 @@ export interface CollectSessionData<R extends TS_Object> {
 	__collectSessionData(accountId: string): Promise<R>;
 }
 
-type CSD = CollectSessionData<{}>;
-const dispatch_CollectSessionData = new Dispatcher<CSD, '__collectSessionData'>('__collectSessionData');
+type MapTypes<T extends CollectSessionData<any>[]> =
+	T extends [a: CollectSessionData<infer A>, ...rest: infer R] ?
+		R extends CollectSessionData<any>[] ?
+			[A, ... MapTypes<R>]:
+			[]:
+		[];
+
+const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<{}>, '__collectSessionData'>('__collectSessionData');
 export const dispatch_onNewUserRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
 
 function getUIAccount(account: DB_Account): UI_Account {
@@ -331,7 +336,7 @@ export class ModuleBE_Account_Class
 		return (await gzipSync(Buffer.from(__stringify(sessionData), 'utf8'))).toString('base64');
 	}
 
-	static decodeSessionData<T1 extends CSD, T2 extends CSD, T3 extends CSD, T4 extends CSD, >(request: ExpressRequest, module: T1, module2?: T2, module3?: T3, module4?: T4): ReturnType<T1['__collectSessionData']> & ReturnType<T2['__collectSessionData']> & ReturnType<T3['__collectSessionData']> & ReturnType<T4['__collectSessionData']> {
+	static decodeSessionData<T1 extends CollectSessionData<{}>, T2 extends CollectSessionData<{}>[]>(request: ExpressRequest, module: T1, ...modules: T2): Awaited<ReturnType<T1['__collectSessionData']>> & MergeTypes<MapTypes<T2>> {
 		const sessionData = Header_SessionId.get(request);
 		try {
 		return JSON.parse((unzipSync(Buffer.from(sessionData, 'base64'))).toString('utf8'));
