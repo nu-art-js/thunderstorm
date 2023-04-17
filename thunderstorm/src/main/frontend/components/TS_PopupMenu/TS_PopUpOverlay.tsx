@@ -1,53 +1,44 @@
 import * as React from 'react';
-import {Menu_Model, MenuListener, ModuleFE_Menu} from '../../component-modules/ModuleFE_Menu';
+import {MenuPosition, ModuleFE_PopUp, PopUp_Model_Content, PopUpListener} from '../../component-modules/ModuleFE_PopUp';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_PopupMenuOverlay.scss';
 import {TS_Overlay} from '../TS_Overlay';
-import {TS_Tree} from '../TS_Tree';
-import {generateHex} from '@nu-art/ts-common';
 import {OnWindowResized} from '../../modules/ModuleFE_Window';
 import {stopPropagation} from '../../utils/tools';
 
-
-export type MenuPosition =
-	{ left: number, top: number }
-	| { left: number, bottom: number }
-	| { right: number, top: number }
-	| { right: number, bottom: number };
-
 type State = {
-	menuModel?: Menu_Model,
+	model?: PopUp_Model_Content,
 	open: boolean
 }
 type Prop = {}
 
-export class TS_PopupMenuOverlay
+export class TS_PopUpOverlay
 	extends ComponentSync<Prop, State>
-	implements MenuListener, OnWindowResized {
+	implements PopUpListener, OnWindowResized {
 
 	__onWindowResized(): void {
 		this.ref = undefined;
-		if (this.state.menuModel)
-			ModuleFE_Menu.hide(this.state.menuModel.id);
+		if (this.state.model)
+			ModuleFE_PopUp.hide(this.state.model.id);
 	}
 
 	private ref?: HTMLDivElement;
 	private minimumMargin: number = 5;
 	private currentPos?: MenuPosition;
 
-	__onMenuDisplay = (element: Menu_Model) => {
-		this.currentPos = element.pos;
-		this.setState({menuModel: element, open: !!element});
+	__onPopUpDisplay = (model: PopUp_Model_Content) => {
+		this.currentPos = model.pos;
+		this.setState({model, open: !!model});
 	};
 
-	__onMenuHide = (id: string) => {
-		const element = this.state.menuModel;
+	__onPopUpHide = (id: string) => {
+		const element = this.state.model;
 		if (!element || element.id !== id)
 			return;
 
 		this.ref = undefined;
 		this.currentPos = undefined;
-		this.setState({menuModel: undefined});
+		this.setState({model: undefined});
 	};
 
 	protected deriveStateFromProps(nextProps: Prop): State {
@@ -82,7 +73,7 @@ export class TS_PopupMenuOverlay
 	}
 
 	private setBounds() {
-		if (!this.ref || !this.state.menuModel || !this.state.menuModel.pos)
+		if (!this.ref || !this.state.model || !this.state.model.pos)
 			return;
 		const boundingClientRect = this.ref.getBoundingClientRect();
 		let left: number = boundingClientRect.left;
@@ -100,22 +91,19 @@ export class TS_PopupMenuOverlay
 	}
 
 	render() {
-		const menuModel = this.state.menuModel;
-		if (!menuModel) {
-			return null;
-		}
+		const {model, open} = this.state;
 
-		if (!this.state.open)
+		if (!model || !open)
 			return '';
 
-		return <div className="ts-popup-menu">
-			<TS_Overlay showOverlay={this.state.open} onClickOverlay={(e) => {
+		return <div className="ts-popup">
+			<TS_Overlay showOverlay={open} onClickOverlay={(e) => {
 				stopPropagation(e);
 				this.setState({open: false});
 				this.ref = undefined;
 			}}>
-				<div className="ts-popup-menu__menu" style={this.currentPos}
-						 id={menuModel.id}
+				<div className="ts-popup__content" style={this.currentPos}
+						 id={model.id}
 						 ref={_ref => {
 							 if (this.ref || !_ref)
 								 return;
@@ -123,11 +111,7 @@ export class TS_PopupMenuOverlay
 							 this.ref = _ref;
 							 setTimeout(this.correctPositionIfOutOfBounds);
 						 }}>
-					<TS_Tree
-						id={generateHex(8)}
-						adapter={menuModel.adapter}
-						onNodeClicked={menuModel.onNodeClicked}
-					/>
+					{model.content}
 				</div>
 			</TS_Overlay>
 		</div>;

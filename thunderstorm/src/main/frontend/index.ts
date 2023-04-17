@@ -25,7 +25,7 @@ export * from './core/thunder-dispatcher';
 export * from './modules/http/XhrHttpModule';
 export * from './modules/clearWebsiteDataDispatcher';
 
-export * from './component-modules/ModuleFE_Menu';
+export * from './component-modules/ModuleFE_PopUp';
 export * from './component-modules/ModuleFE_Dialog';
 export * from './component-modules/ModuleFE_Toaster';
 export * from './component-modules/ModuleFE_Tooltip';

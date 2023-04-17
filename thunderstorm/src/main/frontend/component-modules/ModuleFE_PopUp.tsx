@@ -19,44 +19,73 @@
  * limitations under the License.
  */
 
+import * as React from 'react';
 import {generateHex, Module} from '@nu-art/ts-common';
-import {MenuPosition} from '../components/TS_PopupMenu';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
-import {Adapter,} from '../components/adapter/Adapter';
+import {Adapter} from '../components/adapter/Adapter';
+import {TS_Tree} from '../components/TS_Tree';
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 	const pos = button.getBoundingClientRect();
 	return {top: pos.top + button.offsetHeight, left: pos.left};
 };
 
-export type Menu_Model = {
+export type MenuPosition =
+	{ left: number, top: number }
+	| { left: number, bottom: number }
+	| { right: number, top: number }
+	| { right: number, bottom: number };
+
+type PopUp_Model = {
 	id: string
-	adapter: Adapter,
 	pos: MenuPosition,
-	onNodeClicked?: (path: string, item: any) => void
-	onNodeDoubleClicked?: Function,
 };
 
-export interface MenuListener {
-	__onMenuDisplay: (menu: Menu_Model) => void;
-	__onMenuHide: (id: string) => void;
+export type PopUp_Model_Menu = PopUp_Model & {
+	adapter: Adapter,
+	onNodeClicked?: (path: string, item: any) => void
+	onNodeDoubleClicked?: Function,
+}
+
+export type PopUp_Model_Content = PopUp_Model & {
+	content: React.ReactNode;
+}
+
+export interface PopUpListener {
+	__onPopUpDisplay: (content: PopUp_Model_Content) => void;
+	__onPopUpHide: (id: string) => void;
 }
 
 
-export class ModuleFE_Menu_Class
+export class ModuleFE_PopUp_Class
 	extends Module<{}> {
 
-	private showMenu = new ThunderDispatcher<MenuListener, '__onMenuDisplay'>('__onMenuDisplay');
-	private hideMenu = new ThunderDispatcher<MenuListener, '__onMenuHide'>('__onMenuHide');
+	private showPopUp = new ThunderDispatcher<PopUpListener, '__onPopUpDisplay'>('__onPopUpDisplay');
+	private hidePopUp = new ThunderDispatcher<PopUpListener, '__onPopUpHide'>('__onPopUpHide');
 
-	show = (model: Menu_Model) => {
-		this.showMenu.dispatchUI(model);
+	showMenu = (model: PopUp_Model_Menu) => {
+		const content: React.ReactNode = <TS_Tree
+			className={'ts-popup__content__menu'}
+			id={generateHex(8)}
+			adapter={model.adapter}
+			onNodeClicked={model.onNodeClicked}
+		/>;
+
+		this.showContent({
+			id: model.id,
+			pos: model.pos,
+			content
+		});
 	};
 
-	hide = (id: string) => this.hideMenu.dispatchUI(id);
+	showContent = (content: PopUp_Model_Content) => {
+		this.showPopUp.dispatchUI(content);
+	};
+
+	hide = (id: string) => this.hidePopUp.dispatchUI(id);
 }
 
-export const ModuleFE_Menu = new ModuleFE_Menu_Class();
+export const ModuleFE_PopUp = new ModuleFE_PopUp_Class();
 
 export class MenuBuilder {
 	private readonly adapter: Adapter;
@@ -72,7 +101,7 @@ export class MenuBuilder {
 	}
 
 	show() {
-		const model: Menu_Model = {
+		const model: PopUp_Model_Menu = {
 			id: this.id,
 			adapter: this.adapter,
 			pos: this.position,
@@ -80,7 +109,7 @@ export class MenuBuilder {
 			onNodeDoubleClicked: this.onNodeDoubleClicked,
 		};
 
-		ModuleFE_Menu.show(model);
+		ModuleFE_PopUp.showMenu(model);
 	}
 
 	setId(id: string) {
