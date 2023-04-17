@@ -58,6 +58,9 @@ export function _clearInterval(handlerId?: number) {
 	return clearInterval(handlerId as unknown as ReturnType<typeof setInterval>);
 }
 
+/**
+ * @param comment @deprecated
+ */
 export function auditBy(user: string, comment?: string, timestamp: number = currentTimeMillis()): AuditBy {
 	const _auditBy: AuditBy = {
 		auditBy: user,
