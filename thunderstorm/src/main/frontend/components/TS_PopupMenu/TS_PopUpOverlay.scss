@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-.ts-popup-menu {
+.ts-popup {
   .ts-overlay {
     z-index: 300;
     background: #00000020;
@@ -29,7 +29,7 @@
     position: absolute;
   }
 
-  .ts-popup-menu__menu {
+  .ts-popup__content {
     z-index: 301;
     cursor: default;
     position: fixed;
@@ -42,10 +42,7 @@
     border: solid 1px transparent;
     background-color: white;
 
-    .ts-tree {
-      .ts-tree__children-container {
-      }
-
+    .ts-popup__content__menu {
       .ts-tree__node {
         padding-inline: 10px;
         white-space: nowrap;
@@ -53,9 +50,6 @@
         &:hover {
           background: cornsilk;
         }
-      }
-
-      .ts-tree__parent-node {
       }
     }
   }
