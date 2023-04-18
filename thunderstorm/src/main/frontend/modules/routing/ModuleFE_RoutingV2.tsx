@@ -1,165 +1,112 @@
 import * as React from 'react';
-import {Navigate, Route, Routes} from 'react-router-dom';
-import {TS_Route, TS_RouteTreeNode} from './types';
-import {_values, BadImplementationException, Module, removeFromArrayByIndex, sortArray} from '@nu-art/ts-common';
+import {BrowserRouter, Navigate, NavigateFunction, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
+import {TS_Route} from './types';
+import {BadImplementationException, composeUrl, Module, removeItemFromArray} from '@nu-art/ts-common';
 import {LocationChangeListener} from './LocationChangeListener';
+import {QueryParams} from '../../../shared';
+import {mouseEventHandler} from '../../utils/tools';
 
-const indexIdentifier = '__index__';
-const rootIdentifier = '__root__';
 
 class ModuleFE_RoutingV2_Class
 	extends Module<{}> {
 
 	// ######################## Inner Data ########################
 
-	private routes: TS_Route[] = [];
-	private routesTree: TS_RouteTreeNode = {} as TS_RouteTreeNode;
-
-	// ######################## Inner Functions ########################
-
-	private getParentRoute = (path: string): TS_RouteTreeNode | undefined => {
-		const routeSteps = this.resolveRouteSteps(path);
-		removeFromArrayByIndex(routeSteps, routeSteps.length - 1); //Remove last step (which is the routes own relative node)
-		let parentRoute: TS_RouteTreeNode | undefined = this.routesTree;
-		routeSteps.slice(1).forEach(step => parentRoute = parentRoute?.children?.[step]);
-		return parentRoute;
-	};
-
-	private resolveRouteSteps = (path: string) => {
-		const steps = path.split('/');
-		steps[0] = rootIdentifier;
-		return steps;
-	};
-
-	private setRootRoute = (root: TS_Route) => {
-		this.routesTree = {relativePath: rootIdentifier, element: root.element, key: root.key};
-	};
-
-	private validateRoute = (route: TS_Route) => {
-		//If the route path does not start with /
-		if (!route.path.startsWith('/'))
-			throw new BadImplementationException(`Route path must start with "/" (forward slash): ${route.path}`);
-
-		const parentRoute = this.getParentRoute(route.path);
-
-		//If the route does not have a parent and isn't a root route
-		if (!parentRoute)
-			throw new BadImplementationException(`Non root route with no parent: ${route.path}`);
-
-		const steps = this.resolveRouteSteps(route.path);
-		const relativePath = steps[steps.length - 1];
-
-		//If the route already exists
-		if (parentRoute.children?.[relativePath])
-			throw new BadImplementationException(`Duplicate route ${route.path}`);
-
-		if (route.fallback && parentRoute.children?.[indexIdentifier])
-			throw new BadImplementationException(`Route ${parentRoute.relativePath} has more than one child defined as a fallback`);
-	};
+	private routesMapByKey: { [key: string]: { route: TS_Route, fullPath: string } } = {};
+	private routesMapByPath: { [fullPath: string]: TS_Route } = {};
+	private navigate!: NavigateFunction;
 
 	// ######################## Public Functions ########################
 
-	setRoutes = (routes: TS_Route[]) => {
-		this.routes = routes;
-		const root = this.routes.find(item => item.path === '/');
-		if (!root)
-			throw new BadImplementationException('Must provide a root route with path /');
+	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: P) {
+		const routesMapByKeyElement = this.routesMapByKey[route.key];
+		try {
+			const url = composeUrl(routesMapByKeyElement.fullPath, params);
+			if (window.location.href === url)
+				return this.logWarning(`attempting to set same route: ${url}`);
 
-		this.routes.forEach(route => {
-			if (route.path.endsWith('/') && route !== root)
-				route.path = route.path.substring(0, route.path.length - 1);
-		});
-	};
+			this.navigate(url);
+		} catch (e: any) {
+			this.logError(`cannot resolve route for route: `, route, e);
+			throw e;
+		}
+	}
 
-	generateRoutes = () => {
-		this.generateRoutesTree(this.routes);
-		return <>
+	generateRoutes(rootRoute: TS_Route) {
+		const element = this.routeBuilder(rootRoute);
+		return <BrowserRouter>
 			<LocationChangeListener/>
 			<Routes>
-				{this.generateRoute(this.routesTree)}
+				{element}
 			</Routes>
-		</>;
-	};
+		</BrowserRouter>;
+	}
 
-	generateRoutesTree = (routes: TS_Route[]) => {
-		routes = sortArray(this.routes, route => route.path);
-		routes.forEach(route => {
-			if (route.path === '/')
-				return this.setRootRoute(route);
+	private routeBuilder = (route: TS_Route<any>, _path: string = '') => {
+		const path = `${_path}/`;
+		this.routesMapByKey[route.key] = {route, fullPath: _path};
+		this.routesMapByPath[_path] = route;
 
-			this.validateRoute(route);
-			const parentRoute = this.getParentRoute(route.path)!;
-			const steps = this.resolveRouteSteps(route.path);
-			const relativePath = steps[steps.length - 1];
+		const routes = route.children || [];
+		const indicesRoutes = routes?.filter(route => route.index);
+		if (indicesRoutes && indicesRoutes.length > 1)
+			throw new BadImplementationException(`more than one index route found in ${path}: ${indicesRoutes.map(r => r.key).join(', ')}`);
 
-			//Init children obj if undefined
-			if (!parentRoute.children)
-				parentRoute.children = {
-					'*': {key: `${parentRoute.key}-any`, relativePath: '*', element: () => this.createNavigate(parentRoute.key)},
-				};
+		const indexRoute = indicesRoutes?.[0];
+		if (indexRoute)
+			console.log(`index: ${path}${indexRoute.path}`);
 
-			//Set route in parent route
-			parentRoute.children[relativePath] = {
-				relativePath,
-				key: route.key,
-				element: route.element,
-			};
+		if (route.fallback)
+			console.log(`fallback: ${path}`);
 
-			//Set parent route index if is fallback
-			if (route.fallback) {
-				parentRoute.children[indexIdentifier] = {
-					relativePath: indexIdentifier,
-					key: route.key + '-index',
-					element: () => this.createNavigate(route.key),
-				};
+		let _indexRoute;
+		if (indexRoute)
+			if (indexRoute.path)
+				_indexRoute = <Route index element={<Navigate to={`${path}${indexRoute.path}`}/>}/>;
+			else {
+				_indexRoute = <Route index Component={indexRoute.Component} element={indexRoute.element}/>;
+				removeItemFromArray(routes, indexRoute);
 			}
-		});
-	};
 
-	generateRoute = (route: TS_RouteTreeNode) => {
-		const resolveRelativePath = (relativePath: string) => {
-			switch (relativePath) {
-				case indexIdentifier:
-					return undefined;
-				case rootIdentifier:
-					return '/';
-				default:
-					return relativePath;
-			}
-		};
-
-		const isIndex = route.relativePath === indexIdentifier;
-		const Element = route.element!;
-		const element = (route.element ? {element: <Element/>} : {});
-
-		if (isIndex) {
-			return <Route index {...element}/>;
-		}
-
-		if (!route.children) {
-			return <Route path={resolveRelativePath(route.relativePath)} {...element}/>;
-		}
-
-		return <Route path={resolveRelativePath(route.relativePath)} {...element}>
-			{..._values(route.children).sort((a, b) => a.relativePath === '*' ? 1 : -1).map(child => this.generateRoute(child))}
+		return <Route key={route.key} path={route.path} Component={route.Component} element={route.element}>
+			{_indexRoute}
+			{route.children?.map(route => this.routeBuilder(route, `${path}${route.path}`))}
+			{route.fallback && <Route path="*" element={<Navigate to={path}/>}/>}
 		</Route>;
 	};
 
-	createNavigate(routeKey: string) {
-		const route = this.getRouteByKey(routeKey);
-		if (!route)
-			throw new BadImplementationException(`No route found for key ${routeKey}`);
-		return <Navigate to={route.path}/>;
+	getRouteByKey(routeKey: string): TS_Route | undefined {
+		return this.routesMapByKey[routeKey]?.route;
 	}
 
-	getRouteByKey(routeKey: string): TS_Route | undefined {
-		return this.routes.find(route => route.key === routeKey);
+	getFullPath(routeKey: string): string | undefined {
+		return this.routesMapByKey[routeKey]?.fullPath;
 	}
 
 	getCurrentRouteKey() {
-		const path = window.location.pathname;
-		return this.routes.find(route => route.path === path)?.key;
+		return this.routesMapByPath[window.location.pathname];
+	}
+
+	setNavigate(navigate: NavigateFunction) {
+		this.navigate = navigate;
 	}
 }
+
+export const TS_NavLink = (props: { route: TS_Route } & Partial<NavLinkProps>) => {
+	const {route, children, ..._props} = props;
+
+	const fullPath = ModuleFE_RoutingV2.getFullPath(route.key);
+	if (!fullPath)
+		throw new BadImplementationException(`Route with key ${route.key} is not defined in routing module`);
+
+	return <NavLink
+		{..._props}
+		to={fullPath}
+		key={route.key}
+		onMouseUp={e => mouseEventHandler(e, {
+			middle: () => window.open(fullPath, '_blank'),
+		})}
+	>{children}</NavLink>;
+};
 
 export const ModuleFE_RoutingV2 = new ModuleFE_RoutingV2_Class();
