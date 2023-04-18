@@ -25,7 +25,7 @@ export * from './core/thunder-dispatcher';
 export * from './modules/http/XhrHttpModule';
 export * from './modules/clearWebsiteDataDispatcher';
 
-export * from './component-modules/ModuleFE_Menu';
+export * from './component-modules/ModuleFE_PopUp';
 export * from './component-modules/ModuleFE_Dialog';
 export * from './component-modules/ModuleFE_Toaster';
 export * from './component-modules/ModuleFE_Tooltip';
@@ -92,6 +92,7 @@ export * from './components/TS_EditableText';
 export * from './components/TS_PropRenderer';
 export * from './components/TS_Form';
 export * from './components/TS_VirtualizedList';
+export * from './components/TS_ProgressBar';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';

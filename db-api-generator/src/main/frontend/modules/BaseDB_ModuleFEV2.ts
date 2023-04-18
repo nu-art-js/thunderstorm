@@ -214,7 +214,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		this.module.logDebug(`${this.module.getName()} cache finished loading, count: ${this.all().length}`);
 	};
 
-	unique(_key?: string | IndexKeys<DBType, Ks>) {
+	unique(_key?: string | IndexKeys<DBType, Ks>): Readonly<DBType> | undefined {
 		if (_key === undefined)
 			return _key;
 
@@ -229,27 +229,27 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		return this.keys.reduce((_fullKey, key) => `${_fullKey}-${_key[key as Ks]}`, '');
 	};
 
-	all = () => {
+	all = (): Readonly<Readonly<DBType>[]> => {
 		return this._array;
 	};
 
-	allMutable = () => {
+	allMutable = (): Readonly<DBType>[] => {
 		return [...this._array];
 	};
 
-	filter = (filter: (item: Readonly<DBType>, index: number, array: Readonly<DBType[]>) => boolean) => {
+	filter = (filter: (item: Readonly<DBType>, index: number, array: Readonly<DBType[]>) => boolean): Readonly<DBType>[] => {
 		return this.all().filter(filter);
 	};
 
-	find = (filter: (item: Readonly<DBType>, index: number, array: Readonly<DBType[]>) => boolean) => {
+	find = (filter: (item: Readonly<DBType>, index: number, array: Readonly<DBType[]>) => boolean): Readonly<DBType> | undefined => {
 		return this.all().find(filter);
 	};
 
-	map = <MapType>(mapper: (item: Readonly<DBType>, index: number, array: Readonly<DBType[]>) => MapType) => {
+	map = <MapType>(mapper: (item: Readonly<DBType>, index: number, array: Readonly<DBType[]>) => MapType): MapType[] => {
 		return this.all().map(mapper);
 	};
 
-	sort = <MapType>(map: keyof DBType | (keyof DBType)[] | ((item: Readonly<DBType>) => any) = i => i, invert = false) => {
+	sort = <MapType>(map: keyof DBType | (keyof DBType)[] | ((item: Readonly<DBType>) => any) = i => i, invert = false): Readonly<DBType>[] => {
 		return sortArray(this.allMutable(), map, invert);
 	};
 

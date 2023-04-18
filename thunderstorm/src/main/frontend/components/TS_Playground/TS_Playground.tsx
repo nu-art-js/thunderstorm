@@ -53,11 +53,16 @@ export type PlaygroundScreen<T extends any = any> = {
 export class TS_Playground
 	extends React.Component<PlaygroundProps, State> {
 
+
+	static Route: TS_Route;
 	static screens: PlaygroundScreen[];
 	static collapseCaret: (() => React.ReactNode) | ReactNode;
 
-	static Route(): TS_Route<{}> {
-		return {
+	static createRoute(screens: PlaygroundScreen[], collapseCaret: (() => React.ReactNode) | ReactNode): TS_Route {
+		this.screens = screens;
+		this.collapseCaret = collapseCaret;
+
+		return this.Route = {
 			path: 'playground',
 			key: 'playground',
 			Component: this,
@@ -78,7 +83,7 @@ export class TS_Playground
 
 	render() {
 		const adapter = SimpleListAdapter<PlaygroundScreen>(TS_Playground.screens, item => <TS_NavLink
-			route={TS_Playground.Route().children!.find(i => i.key === item.item.name)!}
+			route={TS_Playground.Route.children!.find(i => i.key === item.item.name)!}
 			className={({isActive, isPending}) => _className('ts-playground__nav-item', isActive ? 'selected' : undefined)}
 		>
 			{item.item.name}
