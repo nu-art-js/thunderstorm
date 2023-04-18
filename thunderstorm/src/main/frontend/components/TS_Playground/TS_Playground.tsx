@@ -27,14 +27,17 @@ import {LL_H_C, LL_V_L} from '../Layouts';
 import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 import {TS_Tree} from '../TS_Tree';
 import {_className} from '../../utils/tools';
+import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
+import {TS_Route} from '../../modules/routing/types';
+import {TS_NavLink} from '../../modules/routing/ModuleFE_RoutingV2';
+import {md5} from '@nu-art/ts-common';
+import {Outlet} from 'react-router-dom';
+
 
 const selectedPlaygroundStorage = new StorageKey<string>('selected-playground');
 const collapsedPlaygroundStorage = new StorageKey<boolean>('collapsed-playground');
 
-export type PlaygroundProps = {
-	screens: PlaygroundScreen[];
-	collapseCaret: (() => React.ReactNode) | ReactNode;
-}
+export type PlaygroundProps = {}
 
 type State = {
 	selectedScreen?: PlaygroundScreen;
@@ -47,12 +50,10 @@ export type PlaygroundScreen<T extends any = any> = {
 	data?: T[];
 }
 
-
 export class TS_Playground
 	extends React.Component<PlaygroundProps, State> {
 
-<<<<<<< Updated upstream
-=======
+
 	static Route: TS_Route;
 	static screens: PlaygroundScreen[];
 	static collapseCaret: (() => React.ReactNode) | ReactNode;
@@ -71,46 +72,37 @@ export class TS_Playground
 		};
 	}
 
->>>>>>> Stashed changes
 	constructor(props: PlaygroundProps) {
 		super(props);
 		const selectedPlaygroundKey = selectedPlaygroundStorage.get();
 		this.state = {
-			selectedScreen: this.props.screens.find(s => s.name === selectedPlaygroundKey),
+			selectedScreen: TS_Playground.screens.find(s => s.name === selectedPlaygroundKey),
 			collapsed: collapsedPlaygroundStorage.get() ?? false,
 		};
 	}
 
 	render() {
-<<<<<<< Updated upstream
-		const adapter = SimpleListAdapter<PlaygroundScreen>(this.props.screens, item => <div className={'ts-playground__item'}>{item.item.name}</div>);
-=======
 		const adapter = SimpleListAdapter<PlaygroundScreen>(TS_Playground.screens, item => <TS_NavLink
 			route={TS_Playground.Route.children!.find(i => i.key === item.item.name)!}
 			className={({isActive, isPending}) => _className('ts-playground__nav-item', isActive ? 'selected' : undefined)}
 		>
 			{item.item.name}
 		</TS_NavLink>);
->>>>>>> Stashed changes
 		const className = _className('ts-playground__selector', this.state.collapsed ? 'ts-playground__selector-collapsed' : undefined);
 
 		return <LL_H_C className="ts-playground">
 			<LL_V_L className={className}>
 				{this.renderHeader()}
-				<TS_Tree
-					adapter={adapter}
-					selectedItem={this.state.selectedScreen}
-					onNodeClicked={(path, item) => {
-						selectedPlaygroundStorage.set(item.name);
-						this.setState({selectedScreen: item});
-					}}/>
+				<TS_Tree adapter={adapter}/>
 			</LL_V_L>
-			<div className="ts-playground__container">{this.renderPlayground()}</div>
+			<TS_ErrorBoundary>
+				<div className="ts-playground__container"><Outlet/></div>
+			</TS_ErrorBoundary>
 		</LL_H_C>;
 	}
 
 	private renderHeader() {
-		const caret = typeof this.props.collapseCaret === 'function' ? this.props.collapseCaret() : this.props.collapseCaret;
+		const caret = typeof TS_Playground.collapseCaret === 'function' ? TS_Playground.collapseCaret() : TS_Playground.collapseCaret;
 		return <LL_H_C className={'ts-playground__selector__header'}>
 			<span className={'header__title'}>Playgrounds</span>
 			<div className={'header__caret'} onClick={() => {
@@ -121,7 +113,7 @@ export class TS_Playground
 		</LL_H_C>;
 	}
 
-	private renderPlayground() {
+	renderPlayground() {
 		if (!this.state.selectedScreen)
 			return <div>Select a playground</div>;
 

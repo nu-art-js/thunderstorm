@@ -40,6 +40,7 @@ export type Props_Tree = {
 	className?: string
 	treeContainerStyle?: CSSProperties
 	selectedItem?: any
+	isSelected?: (item: any) => boolean
 	selectedPath?: string
 	adapter: Adapter
 
@@ -50,7 +51,8 @@ export type Props_Tree = {
 
 type State_Tree = {
 	expanded: TreeNodeExpandState
-	selected: { path?: string, item?: any }
+	isSelected?: (item: any) => boolean
+	selected: { path?: string, item?: (item: any) => boolean }
 	adapter: Adapter
 }
 
@@ -83,7 +85,11 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		return {
 			adapter: nextProps.adapter,
 			expanded: nextProps.expanded || this.state?.expanded || {'/': true},
-			selected: {path: nextProps.selectedPath, item: nextProps.selectedItem}
+			isSelected: nextProps.isSelected,
+			selected: {
+				path: nextProps.selectedPath,
+				item: nextProps.selectedItem
+			}
 		};
 	}
 
@@ -172,7 +178,6 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		return item;
 	}
 
-
 	private toggleExpandState = (e: React.MouseEvent, _expanded?: boolean): void => this.expandOrCollapse(this.resolveTreeNode(e.currentTarget), _expanded);
 
 	private expandOrCollapse = (path: string, forceExpandState?: boolean): void => {
@@ -230,7 +235,7 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		const nodeRefResolver = this.nodeResolver(nodePath, renderChildren, filteredKeys);
 		const containerRefResolver = this.resolveContainer(nodePath, renderChildren, filteredKeys);
 
-		const isSelected = _data === this.state.selected.item;
+		const isSelected = this.state.isSelected?.(_data) || _data === this.state.selected.item;
 
 		return <Fragment key={nodePath}>
 			{this.renderItem(data, nodePath, key, nodeRefResolver, level, isSelected, expanded)}
@@ -238,7 +243,10 @@ export class TS_Tree<P extends Props_Tree = Props_Tree, S extends State_Tree = S
 		</Fragment>;
 	};
 
-	private renderChildren(data: any, nodePath: string, _path: string, level: number, filteredKeys: any[], renderChildren: boolean, adjustedNode: { data: object; deltaPath?: string }, containerRefResolver: (_ref: HTMLDivElement) => void) {
+	private renderChildren(data: any, nodePath: string, _path: string, level: number, filteredKeys: any[], renderChildren: boolean, adjustedNode: {
+		data: object;
+		deltaPath?: string
+	}, containerRefResolver: (_ref: HTMLDivElement) => void) {
 		if (!(filteredKeys.length > 0 && renderChildren))
 			return;
 

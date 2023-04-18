@@ -22,9 +22,8 @@ import * as React from 'react';
 import {ReactNode} from 'react';
 import './TS_ErrorBoundary.scss';
 import {TS_Button} from '../TS_Button';
-import {LL_V_L} from '../Layouts';
-import {Thunder} from '../../core/Thunder';
 import {ComponentSync} from '../../core/ComponentSync';
+
 
 type State = {
 	error?: Error,
@@ -76,30 +75,30 @@ export class TS_ErrorBoundary
 
 	//######################### Render #########################
 
-	private renderErrorDetails = () => {
-		const env = Thunder.getInstance().getConfig().label;
-		if (env !== 'LOCAL' && env !== 'DEV')
-			return '';
-
-		return <details style={{whiteSpace: 'pre-wrap'}}>
-			{this.state.errorInfo?.componentStack}
-		</details>;
-	};
+	// private renderErrorDetails = () => {
+	// 	const env = Thunder.getInstance().getConfig().label;
+	// 	if (env !== 'LOCAL' && env !== 'DEV')
+	// 		return '';
+	//
+	// 	return <details style={{whiteSpace: 'pre-wrap'}}>
+	// 		{this.state.errorInfo?.componentStack}
+	// 	</details>;
+	// };
 
 	private defaultRenderer = () => {
 		const titleMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)];
 		return <div className={'ts-error-boundary'}>
-			<div className={'ts-error-boundary__pic'}>(ノಠ益ಠ)ノ彡┻━┻</div>
+			<div className={'ts-error-boundary__pic'}>(ノಠ益ಠノ)</div>
 			<div className={'ts-error-boundary__title'}>{titleMessage}</div>
 			<TS_Button
 				className={'ts-error-boundary__button'}
 				onClick={this.onButtonClick}
 			>Reload!</TS_Button>
-			<LL_V_L className={'ts-error-boundary__error'}>
-				<div className={'ts-error-boundary__error-title'}>Error Message</div>
-				<div className={'ts-error-boundary__error-message'}>{this.state.error!.toString()}</div>
-			</LL_V_L>
-			{this.renderErrorDetails()}
+			{/*<LL_V_L className={'ts-error-boundary__error'}>*/}
+			{/*	<div className={'ts-error-boundary__error-title'}>Error Message</div>*/}
+			{/*	<div className={'ts-error-boundary__error-message'}>{this.state.error!.toString()}</div>*/}
+			{/*</LL_V_L>*/}
+			{/*{this.renderErrorDetails()}*/}
 		</div>;
 	};
 
@@ -115,13 +114,7 @@ export class TS_ErrorBoundary
 }
 
 const randomMessages = [
-	'Now that\'s what i call an error!',
 	'Jeepers Creepers! An error!',
-	'Congratulations, it\'s an error!',
-	'You\'ve got error!',
-	'You haven\'t gotten an error in a while, so here!',
-	'You really screwed up this time!',
-	'User Error - it\'s not our fault!',
-	'This shared-components doesn\'t feel like working...',
-	'This shared-components is having a bad day',
+	'Something went wrong.. we\'re on it!',
+	'This component is having a bad day',
 ];

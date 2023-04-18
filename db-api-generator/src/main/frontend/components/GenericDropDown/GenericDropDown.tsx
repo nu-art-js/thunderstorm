@@ -2,9 +2,11 @@ import {Adapter, ComponentSync, SimpleListAdapter, TS_DropDown} from '@nu-art/th
 import {DB_Object, Filter, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
 import {BaseDB_ApiCaller} from '../..';
+import {BaseDB_ApiCallerV2} from '../../modules/BaseDB_ApiCallerV2';
 
 
 type OptionalCanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
+type ApiCaller<T extends DB_Object, Ks extends keyof T = '_id'> = BaseDB_ApiCaller<T, Ks> | BaseDB_ApiCallerV2<T, Ks>;
 
 type OptionalProps_GenericDropDown<T> = {
 	placeholder?: string;
@@ -30,7 +32,7 @@ export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> &
 
 export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = OptionalProps_GenericDropDown<T> & {
 	placeholder: string;
-	module: BaseDB_ApiCaller<T, Ks>;
+	module: ApiCaller<T, Ks>;
 	modules: BaseDB_ApiCaller<DB_Object, any>[];
 	mapper: (item: T) => string[]
 	renderer: (item: T) => React.ReactElement
@@ -56,7 +58,9 @@ type GenericDropDownProps<T, Ks> = {
 	limitItems?: number;
 } & OptionalCanUnselect<T>
 
-export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = { module: BaseDB_ApiCaller<T, Ks>; } & GenericDropDownProps<T, Ks>
+export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> =
+	{ module: ApiCaller<T, Ks>; }
+	& GenericDropDownProps<T, Ks>
 
 type State<T extends DB_Object> = {
 	items: T[]
@@ -99,7 +103,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 		return state;
 	}
 
-	private getSelected(module: BaseDB_ApiCaller<T, Ks>, selectMethod?: T | string | (() => T | undefined)) {
+	private getSelected(module: ApiCaller<T, Ks>, selectMethod?: T | string | (() => T | undefined)) {
 		switch (typeof selectMethod) {
 			case 'string':
 				return module.cache.unique(selectMethod);

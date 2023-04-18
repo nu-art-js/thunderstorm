@@ -52,7 +52,9 @@
     "csstype": "^3.0.0",
     "history": "^4.9.0",
     "moment": "^2.24.0",
-    "qs": "^6.6.0"
+    "qs": "^6.6.0",
+    "react-window": "^1.8.8",
+    "react-virtualized-auto-sizer": "^1.0.12"
   },
   "devDependencies": {
     "@types/react": "$REACT_TYPES_VERSION",
@@ -63,6 +65,8 @@
     "@types/express": "$EXPRESS_TYPES_VERSION",
     "@types/history": "^4.7.2",
     "@types/request": "^2.48.1",
-    "@types/chrome": "^0.0.202"
+    "@types/chrome": "^0.0.202",
+    "@types/react-window": "^1.8.5",
+    "@types/react-virtualized-auto-sizer": "^1.0.1"
   }
 }

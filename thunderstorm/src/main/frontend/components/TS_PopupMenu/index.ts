@@ -19,4 +19,4 @@
  * limitations under the License.
  */
 
-export * from './TS_PopupMenuOverlay';
+export * from './TS_PopUpOverlay';

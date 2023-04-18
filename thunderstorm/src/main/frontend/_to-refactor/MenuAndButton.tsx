@@ -21,10 +21,9 @@
 
 import * as React from 'react';
 import {CSSProperties, ReactNode} from 'react';
-import {Menu_Model, MenuBuilder, MenuListener, resolveRealPosition} from '../component-modules/ModuleFE_Menu';
+import {MenuBuilder, MenuPosition, PopUp_Model_Content, PopUpListener, resolveRealPosition} from '../component-modules/ModuleFE_PopUp';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {Adapter} from '../components/adapter/Adapter';
-import {MenuPosition} from '../components/TS_PopupMenu';
 
 type Props = {
 	id: string
@@ -38,7 +37,7 @@ type Props = {
 
 export class MenuAndButton
 	extends React.Component<Props, { isOpen: boolean, over: boolean }>
-	implements MenuListener {
+	implements PopUpListener {
 
 	ref = React.createRef<HTMLImageElement>();
 
@@ -47,14 +46,14 @@ export class MenuAndButton
 		over: false
 	};
 
-	__onMenuHide = (id: string) => {
+	__onPopUpHide = (id: string) => {
 		if (this.props.id !== id)
 			return;
 
 		this.setState({isOpen: false});
 	};
 
-	__onMenuDisplay = (menu: Menu_Model) => {
+	__onPopUpDisplay = (menu: PopUp_Model_Content) => {
 		if (this.props.id !== menu.id)
 			return;
 
