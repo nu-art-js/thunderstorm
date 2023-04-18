@@ -39,6 +39,7 @@ import {
 	UI_Account
 } from '../../shared/api';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
+import {ungzip} from 'pako';
 
 
 export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
@@ -86,6 +87,7 @@ export class ModuleFE_Account_Class
 		this.v1 = {
 			create: apiWithBody(ApiDef_UserAccountFE.v1.create, this.setLoginInfo),
 			login: apiWithBody(ApiDef_UserAccountFE.v1.login, this.setLoginInfo),
+			logout: apiWithQuery(ApiDef_UserAccountFE.v1.logout),
 			loginSaml: apiWithQuery(ApiDef_UserAccountFE.v1.loginSaml, this.onLoginCompletedSAML),
 			validateSession: () => validateSession({}),
 			query: apiWithQuery(ApiDef_UserAccountFE.v1.query, this.onAccountsQueryCompleted),
@@ -153,6 +155,11 @@ export class ModuleFE_Account_Class
 		return this.isStatus(LoggedStatus.LOGGED_IN) ? StorageKey_SessionId.get() : '';
 	};
 
+	public decodeSessionData = () => {
+		const sessionData = this.getSessionId();
+		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(sessionData), c => c.charCodeAt(0)))));
+	}
+
 	private onLoginCompletedSAML = async (response: Response_LoginSAML) => {
 		if (!response.loginUrl)
 			return;
@@ -178,6 +185,7 @@ export class ModuleFE_Account_Class
 	};
 
 	logout = (url?: string) => {
+		this.v1.logout({}).execute();
 		StorageKey_SessionId.delete();
 		if (url)
 			return window.location.href = url;

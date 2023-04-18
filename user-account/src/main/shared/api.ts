@@ -87,6 +87,7 @@ export type ApiStruct_UserAccountFE = {
 	v1: {
 		create: BodyApi<Response_Auth, Request_CreateAccount>
 		login: BodyApi<Response_Auth, Request_LoginAccount>
+		logout: QueryApi<{}, {}>
 		loginSaml: TypedApi_LoginSaml
 		validateSession: QueryApi<UI_Account, QueryParams, undefined>
 		query: QueryApi<Response_ListAccounts>
@@ -99,6 +100,7 @@ export type ApiStruct_UserAccountBE = {
 		upsert: BodyApi<Response_Auth, Request_UpsertAccount>
 		create: BodyApi<Response_Auth, Request_CreateAccount>
 		login: BodyApi<Response_Auth, Request_LoginAccount>
+		logout: QueryApi<void, {}>
 		validateSession: QueryApi<UI_Account, QueryParams, undefined>
 		query: QueryApi<Response_ListAccounts>
 	}
@@ -116,6 +118,7 @@ export const ApiDef_UserAccountFE: ApiDefResolver<ApiStruct_UserAccountFE> = {
 		loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'},
 		create: {method: HttpMethod.POST, path: 'v1/account/create'},
 		login: {method: HttpMethod.POST, path: 'v1/account/login', timeout: Minute},
+		logout: {method: HttpMethod.GET, path: 'v1/account/logout'},
 		validateSession: {method: HttpMethod.GET, path: 'v1/account/validate', timeout: Minute},
 		query: {method: HttpMethod.GET, path: 'v1/account/query'},
 	}
@@ -125,6 +128,7 @@ export const ApiDef_UserAccountBE: ApiDefResolver<ApiStruct_UserAccountBE> = {
 	v1: {
 		create: {method: HttpMethod.POST, path: 'v1/account/create'},
 		login: {method: HttpMethod.POST, path: 'v1/account/login'},
+		logout: {method: HttpMethod.GET, path: 'v1/account/logout'},
 		validateSession: {method: HttpMethod.GET, path: 'v1/account/validate'},
 		query: {method: HttpMethod.GET, path: 'v1/account/query'},
 		upsert: {method: HttpMethod.POST, path: 'v1/account/upsert'},
