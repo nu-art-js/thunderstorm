@@ -51,6 +51,27 @@ export type PlaygroundScreen<T extends any = any> = {
 export class TS_Playground
 	extends React.Component<PlaygroundProps, State> {
 
+<<<<<<< Updated upstream
+=======
+	static Route: TS_Route;
+	static screens: PlaygroundScreen[];
+	static collapseCaret: (() => React.ReactNode) | ReactNode;
+
+	static createRoute(screens: PlaygroundScreen[], collapseCaret: (() => React.ReactNode) | ReactNode): TS_Route {
+		this.screens = screens;
+		this.collapseCaret = collapseCaret;
+
+		return this.Route = {
+			path: 'playground',
+			key: 'playground',
+			Component: this,
+			children: TS_Playground.screens.map(screen => {
+				return {key: screen.name, path: md5(screen.name), Component: screen.renderer as React.ComponentClass};
+			})
+		};
+	}
+
+>>>>>>> Stashed changes
 	constructor(props: PlaygroundProps) {
 		super(props);
 		const selectedPlaygroundKey = selectedPlaygroundStorage.get();
@@ -61,7 +82,16 @@ export class TS_Playground
 	}
 
 	render() {
+<<<<<<< Updated upstream
 		const adapter = SimpleListAdapter<PlaygroundScreen>(this.props.screens, item => <div className={'ts-playground__item'}>{item.item.name}</div>);
+=======
+		const adapter = SimpleListAdapter<PlaygroundScreen>(TS_Playground.screens, item => <TS_NavLink
+			route={TS_Playground.Route.children!.find(i => i.key === item.item.name)!}
+			className={({isActive, isPending}) => _className('ts-playground__nav-item', isActive ? 'selected' : undefined)}
+		>
+			{item.item.name}
+		</TS_NavLink>);
+>>>>>>> Stashed changes
 		const className = _className('ts-playground__selector', this.state.collapsed ? 'ts-playground__selector-collapsed' : undefined);
 
 		return <LL_H_C className="ts-playground">
