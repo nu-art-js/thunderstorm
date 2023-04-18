@@ -47,13 +47,15 @@
     "saml2-js": "^4.0.1",
     "xmlbuilder": "^15.1.1",
     "express": "$EXPRESS_PKG_VERSION",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "pako": "^2.1.0"
   },
   "devDependencies": {
     "@types/react": "$REACT_TYPES_VERSION",
     "@types/express": "$EXPRESS_TYPES_VERSION",
     "@types/history": "^4.7.2",
     "@types/request": "^2.48.1",
-    "@types/saml2-js": "^1.6.8"
+    "@types/saml2-js": "^1.6.8",
+    "@types/pako": "^2.0.0"
   }
 }

@@ -24,9 +24,11 @@ import {
 	Day,
 	Dispatcher,
 	generateHex,
-	hashPasswordWithSalt, MergeTypes,
+	hashPasswordWithSalt,
+	MergeTypes,
 	Module,
 	MUSTNeverHappenException,
+	NonEmptyArray,
 	TS_Object,
 	tsValidate
 } from '@nu-art/ts-common';
@@ -76,8 +78,8 @@ export interface CollectSessionData<R extends TS_Object> {
 type MapTypes<T extends CollectSessionData<any>[]> =
 	T extends [a: CollectSessionData<infer A>, ...rest: infer R] ?
 		R extends CollectSessionData<any>[] ?
-			[A, ... MapTypes<R>]:
-			[]:
+			[A, ...MapTypes<R>] :
+			[] :
 		[];
 
 const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<{}>, '__collectSessionData'>('__collectSessionData');
@@ -99,6 +101,7 @@ export class ModuleBE_Account_Class
 		addRoutes([
 			createBodyServerApi(ApiDef_UserAccountBE.v1.create, this.create),
 			createBodyServerApi(ApiDef_UserAccountBE.v1.login, this.login),
+			createQueryServerApi(ApiDef_UserAccountBE.v1.logout, this.logout),
 			createQueryServerApi(ApiDef_UserAccountBE.v1.validateSession, this.validateSession),
 			createQueryServerApi(ApiDef_UserAccountBE.v1.query, this.listUsers),
 			createBodyServerApi(ApiDef_UserAccountBE.v1.upsert, this.upsert)
@@ -156,8 +159,8 @@ export class ModuleBE_Account_Class
 	private create = async (request: Request_CreateAccount) => {
 		const account = await this.createAccount(request);
 
-		const session = await this.login(request);
 		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
+		const session = await this.login(request);
 		return session;
 	};
 
@@ -260,6 +263,14 @@ export class ModuleBE_Account_Class
 		return session;
 	};
 
+	logout = async (queryParams: QueryParams, request: ExpressRequest) => {
+		const sessionId = Header_SessionId.get(request);
+		if (!sessionId)
+			throw new ApiException(404, 'Missing sessionId');
+
+		await this.sessions.deleteUnique({where:{sessionId}});
+	}
+
 	validateSession = async (params: QueryParams, request?: ExpressRequest): Promise<UI_Account> => {
 		if (!request)
 			throw new MUSTNeverHappenException('must have a request when calling this function..');
@@ -336,44 +347,45 @@ export class ModuleBE_Account_Class
 		return (await gzipSync(Buffer.from(__stringify(sessionData), 'utf8'))).toString('base64');
 	}
 
-	static decodeSessionData<T1 extends CollectSessionData<{}>, T2 extends CollectSessionData<{}>[]>(request: ExpressRequest, module: T1, ...modules: T2): Awaited<ReturnType<T1['__collectSessionData']>> & MergeTypes<MapTypes<T2>> {
+	/**
+	 * @param modules - A list of modules that implement CollectSessionData, defines the decoded object's type
+	 */
+	static decodeSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(request: ExpressRequest, ...modules: T): MergeTypes<MapTypes<T>> {
 		const sessionData = Header_SessionId.get(request);
 		try {
-		return JSON.parse((unzipSync(Buffer.from(sessionData, 'base64'))).toString('utf8'));
+			return JSON.parse((unzipSync(Buffer.from(sessionData, 'base64'))).toString('utf8'));
+		} catch (e: any) {
+			throw new ApiException(403, 'Cannot parse session data', e);
+		}
 	}
 
-	catch(e: any) {
-		throw new ApiException(403, 'Cannot parse session data', e);
-	}
-}
+	getOrCreate = async (query: { where: { email: string } }) => {
+		let dispatchEvent = false;
 
-getOrCreate = async (query: { where: { email: string } }) => {
-	let dispatchEvent = false;
+		const dbAccount = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
+			const account = await transaction.queryUnique(this.accounts, query);
+			if (account?._id)
+				return account;
 
-	const dbAccount = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
-		const account = await transaction.queryUnique(this.accounts, query);
-		if (account?._id)
-			return account;
+			const now = currentTimeMillis();
+			const _account: DB_Account = {
+				_id: generateHex(32),
+				__created: now,
+				__updated: now,
+				_audit: auditBy(query.where.email),
+				email: query.where.email,
+				...account
+			};
 
-		const now = currentTimeMillis();
-		const _account: DB_Account = {
-			_id: generateHex(32),
-			__created: now,
-			__updated: now,
-			_audit: auditBy(query.where.email),
-			email: query.where.email,
-			...account
-		};
+			dispatchEvent = true;
+			return transaction.upsert(this.accounts, _account);
+		});
 
-		dispatchEvent = true;
-		return transaction.upsert(this.accounts, _account);
-	});
+		if (dispatchEvent)
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
 
-	if (dispatchEvent)
-		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
-
-	return dbAccount;
-};
+		return dbAccount;
+	};
 }
 
 export const ModuleBE_Account = new ModuleBE_Account_Class();
