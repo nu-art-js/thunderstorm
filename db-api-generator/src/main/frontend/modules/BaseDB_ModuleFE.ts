@@ -212,7 +212,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		this.module.logDebug(`${this.module.getName()} cache finished loading, count: ${this.all().length}`);
 	};
 
-	unique(_key?: string | IndexKeys<DBType, Ks>) {
+	unique(_key?: string | IndexKeys<DBType, Ks>): DBType | undefined {
 		if (_key === undefined)
 			return _key;
 

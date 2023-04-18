@@ -1,0 +1,14 @@
+$color1: #1DB0FF;
+$color2: #FFFFFF;
+
+.ts-progress-bar {
+  width: 400px;
+  height: 10px;
+  border: 2px solid $color1;
+  border-radius: 4px;
+
+  .ts-progress-bar__inner {
+    height: 100%;
+    background: repeating-linear-gradient(120deg, $color1 0%, $color1 5%, $color2 5%, $color2 10%);
+  }
+}
