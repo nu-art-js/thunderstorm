@@ -92,6 +92,7 @@ export * from './components/TS_EditableText';
 export * from './components/TS_PropRenderer';
 export * from './components/TS_Form';
 export * from './components/TS_VirtualizedList';
+export * from './components/TS_ProgressBar';
 
 export * from './components/Layouts';
 export * from './components/HeightBounder';
