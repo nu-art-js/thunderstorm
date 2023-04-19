@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
+import {CustomException, DB_Object, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
 import {DBIndex} from '../../shared/types';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
@@ -293,9 +293,18 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 	// ######################### Data deletion functions #########################
 
-	public async deleteDB(): Promise<void> {
+	public async clearDB(): Promise<void> {
 		const store = (await this.store(true));
 		await store.clear();
+	}
+
+	public async deleteDB(): Promise<void> {
+		if (this.db)
+			this.db.close();
+		const DBDeleteRequest = await IDBAPI.deleteDatabase(this.db.name);
+		DBDeleteRequest.onerror = (event) => {
+			StaticLogger.logError(`Error deleting database: ${this.db.name}`);
+		};
 	}
 
 	public async deleteAll(keys: (IndexKeys<T, Ks> | T)[]): Promise<T[]> {
