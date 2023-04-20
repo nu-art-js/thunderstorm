@@ -124,7 +124,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 	};
 
 	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: T) => void,
-	                         endCallback: () => void, limiterCallback?: () => boolean) => {
+													 endCallback: () => void, limiterCallback?: () => boolean) => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
 
@@ -293,9 +293,18 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 	// ######################### Data deletion functions #########################
 
-	public async deleteDB(): Promise<void> {
+	public async clearDB(): Promise<void> {
 		const store = (await this.store(true));
 		await store.clear();
+	}
+
+	public async deleteDB(): Promise<void> {
+		if (this.db)
+			this.db.close();
+		const DBDeleteRequest = await IDBAPI.deleteDatabase(this.db.name);
+		DBDeleteRequest.onerror = (event) => {
+			StaticLogger.logError(`Error deleting database: ${this.db.name}`);
+		};
 	}
 
 	public async deleteAll(keys: (IndexKeys<T, Ks> | T)[]): Promise<T[]> {
