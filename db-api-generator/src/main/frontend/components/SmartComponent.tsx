@@ -22,7 +22,7 @@
 import * as React from 'react';
 import {DB_Object} from '@nu-art/ts-common';
 import {ApiCallerEventTypeV2, BaseDB_ApiCaller, DataStatus} from '../modules/BaseDB_ApiCaller';
-import {TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend';
+import {TS_ErrorBoundary, TS_Loader, TS_ProgressBar, TS_ProgressBar_Type} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
 import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
 
@@ -35,11 +35,13 @@ export enum ComponentStatus {
 
 export type Props_SmartComponent = {
 	modules?: BaseDB_ApiCaller<DB_Object, any>[];
+	progressLoader?: TS_ProgressBar_Type
 }
 
 export type State_SmartComponent = {
 	componentPhase: ComponentStatus;
 	error?: Error
+	loadedModulesCount: number;
 }
 
 /**
@@ -127,7 +129,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	private onSyncEvent = (module: BaseDB_ApiCaller<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
 		this.logVerbose(`onSyncEvent: ${module.getCollectionName()} ${params[0]}`);
 		if (params[0] === EventType_Sync) {
-			this.reDeriveState();
+			this.props.progressLoader ? this.forceUpdate(this.reDeriveState) : this.reDeriveState();
 		}
 	};
 
@@ -208,7 +210,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	};
 
 	protected createInitialState(nextProps: Props) {
-		return {componentPhase: ComponentStatus.Loading} as State;
+		return {componentPhase: ComponentStatus.Loading, loadedModulesCount: 0} as State;
 	}
 
 	// ######################### Abstract #########################
@@ -218,6 +220,10 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	// ######################### Render #########################
 
 	protected renderLoader = () => {
-		return <div className={'loader-container'}><TS_Loader/></div>;
+		if (!this.props.progressLoader)
+			return <div className={'loader-container'}><TS_Loader/></div>;
+
+		const loadedModules = (this.props.modules ?? []).filter(module => module.getDataStatus() === DataStatus.containsData).length;
+		return <TS_ProgressBar type={this.props.progressLoader} ratio={loadedModules / (this.props.modules?.length || 1)}/>;
 	};
 }
