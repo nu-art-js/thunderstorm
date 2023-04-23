@@ -78,7 +78,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		};
 	}
 
-	open(): Promise<IDBDatabase> {
+	async open(): Promise<IDBDatabase> {
 		return new Promise((resolve, reject) => {
 			if (!IDBAPI)
 				reject(new Error('Error - current browser does not support IndexedDB'));
@@ -88,10 +88,13 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 				const db = request.result;
 				this.config.upgradeProcessor?.(db);
 			};
+
 			request.onsuccess = (event) => {
+				console.log(`${this.config.name} - IDB result`, request.result);
 				this.db = request.result;
 				resolve(this.db);
 			};
+
 			request.onerror = (event) => {
 				reject(new Error(`Error opening IDB - ${this.config.name}`));
 			};
