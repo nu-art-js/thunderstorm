@@ -93,6 +93,11 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 
 	clear = async (resync = false) => {
 		this.lastSync.delete();
+		return this.db.clearDB();
+	};
+
+	delete = async (resync = false) => {
+		this.lastSync.delete();
 		return this.db.deleteDB();
 	};
 
