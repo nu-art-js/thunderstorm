@@ -90,7 +90,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 			};
 
 			request.onsuccess = (event) => {
-				console.log(`${this.config.name} - IDB result`, request.result);
+				// console.log(`${this.config.name} - IDB result`, request.result);
 				this.db = request.result;
 				resolve(this.db);
 			};
