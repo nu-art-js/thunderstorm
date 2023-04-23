@@ -93,7 +93,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 
 	clear = async (resync = false) => {
 		this.lastSync.delete();
-		return this.db.deleteDB();
+		return this.db.clearDB();
 	};
 
 	query = async (query?: string | number | string[] | number[], indexKey?: string) => (await this.db.query({query, indexKey})) || [];
