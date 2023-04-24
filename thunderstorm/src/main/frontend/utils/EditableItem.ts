@@ -48,7 +48,7 @@ export class EditableItem<T> {
 		return this.deleteAction(this.item as T);
 	}
 
-	editProp<K extends keyof T>(key: K, defaultValue: NonNullable<T[K]>) {
-		return new EditableItem<NonNullable<T[K]>>(this.item[key] || (this.item[key] = defaultValue), async (item: T[K]) => this.update(key, item), () => this.delete());
+	editProp<K extends keyof T>(key: K, defaultValue: Partial<NonNullable<T[K]>>) {
+		return new EditableItem<NonNullable<T[K]>>(this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>), async (item: T[K]) => this.update(key, item), () => this.delete());
 	}
 }
