@@ -20,11 +20,13 @@
  */
 
 import * as React from 'react';
-import {DB_Object} from '@nu-art/ts-common';
-import {ApiCallerEventTypeV2, BaseDB_ApiCaller, DataStatus} from '../modules/BaseDB_ApiCaller';
 import {TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {EventType_Sync} from '../consts';
 import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
+import {ApiCallerEventTypeV2} from '../modules/types';
+import {DataStatus} from '../modules/consts';
+import {BaseDB_ApiCallerV2} from '../modules/BaseDB_ApiCallerV2';
+import {BaseDB_ApiCaller} from '../modules/BaseDB_ApiCaller';
 
 
 export enum ComponentStatus {
@@ -33,8 +35,9 @@ export enum ComponentStatus {
 	Synced,
 }
 
+type ApiCaller = BaseDB_ApiCaller<any, any> | BaseDB_ApiCallerV2<any, any>;
 export type Props_SmartComponent = {
-	modules?: BaseDB_ApiCaller<DB_Object, any>[];
+	modules?: (ApiCaller)[];
 }
 
 export type State_SmartComponent = {
@@ -124,7 +127,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	// ######################### Life Cycle #########################
 
-	private onSyncEvent = (module: BaseDB_ApiCaller<DB_Object, any>, ...params: ApiCallerEventTypeV2<any>) => {
+	private onSyncEvent = (module: ApiCaller, ...params: ApiCallerEventTypeV2<any>) => {
 		this.logVerbose(`onSyncEvent: ${module.getCollectionName()} ${params[0]}`);
 		if (params[0] === EventType_Sync) {
 			this.reDeriveState();
