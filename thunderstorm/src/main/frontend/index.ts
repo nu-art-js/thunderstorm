@@ -83,6 +83,7 @@ export * from './components/TS_CollapsableContainer';
 export * from './components/TS_Icons';
 export * from './components/TS_ButtonLoader';
 export * from './components/TS_Toggler';
+export * from './components/TS_Space';
 export * from './components/TS_Radio';
 export * from './components/TS_Notifications';
 export * from './components/TS_ComponentTransition';

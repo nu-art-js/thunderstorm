@@ -9,7 +9,7 @@ type ApiCaller<T extends DB_Object, Ks extends keyof T = '_id'> = BaseDB_ApiCall
 export class EditableDBItem<T extends DB_Object, Ks extends keyof T = '_id'>
 	extends EditableItem<T> {
 
-	constructor(item: T, module: ApiCaller<T, Ks>, onCompleted?: (err?: Error) => any | Promise<any>) {
+	constructor(item: Partial<T>, module: ApiCaller<T, Ks>, onCompleted?: (err?: Error) => any | Promise<any>) {
 		super(item, (_item) => module.v1.upsert(_item).executeSync(), (_item) => module.v1.delete(_item).executeSync(), onCompleted);
 	}
 

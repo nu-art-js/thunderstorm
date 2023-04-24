@@ -1,0 +1,37 @@
+.editor-page {
+
+  .items-list {
+    width: 300px;
+
+    .list-item {
+      padding: 4px;
+      padding-block: 8px;
+
+      &:hover {
+        background: cornsilk;
+      }
+    }
+
+    .list-item__selected {
+      background: aquamarine;
+
+      &:hover {
+        background: #b6d58c;
+      }
+    }
+  }
+
+  .ts-space {
+    height: 100%;
+    background: var(--separator-color);
+  }
+
+  .item-editor {
+    div[data-lastpass-icon-root] {
+      display: none;
+    }
+
+    flex-grow: 1;
+    gap: 12px;
+  }
+}
