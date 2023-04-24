@@ -81,7 +81,7 @@ export type DB_Object = DB_BaseObject & {
 
 export type UniqueId = string;
 
-export type PreDB<T extends DB_Object> = PartialProperties<T, keyof DB_Object>;
+export type PreDB<T extends DB_Object, K extends keyof T = never> = PartialProperties<T, keyof DB_Object | K>;
 export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
 export type Draftable = { _isDraft: boolean };
 
@@ -94,6 +94,10 @@ export type AuditBy = {
 	auditBy: string;
 	auditAt: Timestamp;
 };
+
+export type AuditableV2 = {
+	_auditorId: string;
+}
 
 export type Timestamp = {
 	timestamp: number;
