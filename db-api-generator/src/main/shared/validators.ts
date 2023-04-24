@@ -20,6 +20,7 @@
  */
 
 import {AuditableV2, DB_Object, tsValidateArray, tsValidateRegexp, tsValidateString, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {tsValidate_OptionalArray} from '@nu-art/ts-common/validator/validators';
 
 
 export const dbIdLength = 32;
@@ -34,6 +35,8 @@ export const tsValidateGeneralUrl = (mandatory?: boolean) => tsValidateRegexp(
 export const tsValidateVersion = tsValidateRegexp(/\d{1,3}\.\d{1,3}\.\d{1,3}/);
 export const tsValidateUniqueId = tsValidateId(dbIdLength);
 export const tsValidator_arrayOfUniqueIds = tsValidateArray(tsValidateUniqueId);
+export const tsValidate_optionalArrayOfUniqueIds = tsValidate_OptionalArray(tsValidateUniqueId);
+
 
 export const tsValidateOptionalId = tsValidateId(dbIdLength, false);
 export const tsValidateStringWithDashes = tsValidateRegexp(/^[A-Za-z-]+$/);

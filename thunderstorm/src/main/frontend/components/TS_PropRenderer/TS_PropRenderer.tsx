@@ -14,7 +14,7 @@ const TS_PropRenderer_Horizontal = (props: Props) => {
 	return <LL_H_C {..._props} className={className}>
 		<div className={'ts-prop-renderer__label'}>{typeof label === 'function' ? label() : label}</div>
 		{props.children}
-		<div className={'ts-prop-renderer__error'}></div>
+		{/*<div className={'ts-prop-renderer__error'}>{props.error}</div>*/}
 	</LL_H_C>;
 };
 
@@ -24,7 +24,7 @@ const TS_PropRenderer_Vertical = (props: Props) => {
 	return <LL_V_L {..._props} className={className}>
 		<div className={'ts-prop-renderer__label'}>{typeof label === 'function' ? label() : label}</div>
 		{props.children}
-		<div className={'ts-prop-renderer__error'}></div>
+		{/*<div className={'ts-prop-renderer__error'}>{props.error}</div>*/}
 	</LL_V_L>;
 };
 

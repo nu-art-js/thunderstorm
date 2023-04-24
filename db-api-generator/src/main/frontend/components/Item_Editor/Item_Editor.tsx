@@ -45,7 +45,7 @@ export class Item_Editor<Item, State extends {} = {}>
 }
 
 // type K = DB_Object &{ pah:{zevel:string[],zevel2:string,ashpa:{zevel3:string}[]}}
-// class KEditor extends DBItem_Editor<K> {
+// class KEditor extends Item_Editor<K> {
 // 	func() {
 // 		this.props.editable.editProp("pah",{}).editProp("ashpa", []).update(0,{zevel3:""})
 // 	}
