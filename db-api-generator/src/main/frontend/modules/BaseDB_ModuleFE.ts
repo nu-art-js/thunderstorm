@@ -101,7 +101,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		return this.db.deleteDB();
 	};
 
-	query = async (query?: string | number | string[] | number[], indexKey?: string) => (await this.db.query({query, indexKey})) || [];
+	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> => (await this.db.query({query, indexKey})) || [];
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns all the items that pass the filter
@@ -111,7 +111,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return Array of items or empty array
 	 */
-	filter = async (filter: (item: DBType) => boolean, query?: IndexDb_Query) => this.db.queryFilter(filter, query);
+	filter = async (filter: (item: DBType) => boolean, query?: IndexDb_Query): Promise<DBType[]> => this.db.queryFilter(filter, query);
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns the first item that passes the filter
@@ -120,7 +120,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return a single item or undefined
 	 */
-	find = async (filter: (item: DBType) => boolean) => this.db.queryFind(filter);
+	find = async (filter: (item: DBType) => boolean): Promise<DBType | undefined> => this.db.queryFind(filter);
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns an array of items based on the mapper.
@@ -131,7 +131,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return An array of mapped items
 	 */
-	map = async <MapType>(mapper: (item: DBType) => MapType, filter?: (item: DBType) => boolean, query?: IndexDb_Query) => this.db.WIP_queryMap(mapper, filter, query);
+	map = async <MapType>(mapper: (item: DBType) => MapType, filter?: (item: DBType) => boolean, query?: IndexDb_Query): Promise<MapType[]> => this.db.WIP_queryMap(mapper, filter, query);
 
 	/**
 	 * iterates over all DB objects in the related collection, and reduces them to a single value based on the reducer.
@@ -142,9 +142,9 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return a single reduced value.
 	 */
-	reduce = async <ReturnType>(reducer: ReduceFunction<DBType, ReturnType>, initialValue: ReturnType, filter?: (item: DBType) => boolean, query?: IndexDb_Query) => this.db.queryReduce(reducer, initialValue, filter, query);
+	reduce = async <ReturnType>(reducer: ReduceFunction<DBType, ReturnType>, initialValue: ReturnType, filter?: (item: DBType) => boolean, query?: IndexDb_Query): Promise<ReturnType> => this.db.queryReduce(reducer, initialValue, filter, query);
 
-	unique = async (_key?: string | IndexKeys<DBType, Ks>) => {
+	unique = async (_key?: string | IndexKeys<DBType, Ks>): Promise<DBType | undefined> => {
 		if (_key === undefined)
 			return _key;
 

@@ -96,9 +96,6 @@ export const tsValidateExists = (mandatory = true): ValidatorImpl<any> => {
 	};
 };
 
-export const tsValidateMustExist = tsValidateExists();
-export const tsValidateOptional = tsValidateExists(false);
-
 //
 // export const tsValidateObjectValues = <V, T extends { [k: string]: V } = { [k: string]: V }>(validator: ValidatorTypeResolver<V>, mandatory = true): Validator<T> =>
 // 	[tsValidateExists(mandatory), (input?: T) => {
