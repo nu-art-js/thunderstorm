@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component} from 'react';
-import {EditableItem, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {EditableItem, TS_Checkbox, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 
 
 type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : never
@@ -9,6 +9,7 @@ type InputProps<Value, Ex> = {
 	disabled?: boolean,
 	className?: string,
 	onBlur?: (value: string) => void,
+	onCheck?: (value: boolean) => void,
 	readProcessor?: (value: Value) => Ex
 	writeProcessor?: (value: Ex) => Value
 };
@@ -66,6 +67,38 @@ export class Item_Editor<Item, State extends {} = {}>
 											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(+value as Ex) || value as unknown as Item[K]);
 										}}
 										{...restProps}/>
+				</TS_PropRenderer.Horizontal>;
+			}
+		};
+	};
+
+	inputBoolean = <K extends keyof Item, Ex extends boolean | undefined = boolean | undefined>(prop: AssetValueType<Item, K, Ex>, inputProps?: InputProps<Item[K], Ex>) => {
+		const value = this.props.editable.item[prop] as boolean | undefined;
+		return {
+			vertical: (label: string, props?: { className: string }) => {
+				const {readProcessor, writeProcessor, onCheck, ...restProps} = inputProps || {};
+				return <TS_PropRenderer.Vertical label={label} {...props}>
+						<TS_Checkbox
+							checked={readProcessor?.(value as unknown as Item[K]) || value}
+							onCheck={value =>{
+								onCheck ? onCheck(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+								this.forceUpdate()
+							}}
+							{...restProps}
+						/>
+				</TS_PropRenderer.Vertical>;
+			},
+			horizontal: (label: string, props?: { className: string }) => {
+				const {readProcessor, writeProcessor, onCheck, ...restProps} = inputProps || {};
+				return <TS_PropRenderer.Horizontal label={label} {...props}>
+					<TS_Checkbox
+						checked={readProcessor?.(value as unknown as Item[K]) || value}
+						onCheck={value =>{
+							onCheck ? onCheck(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+							this.forceUpdate()
+						}}
+						{...restProps}
+					/>
 				</TS_PropRenderer.Horizontal>;
 			}
 		};
