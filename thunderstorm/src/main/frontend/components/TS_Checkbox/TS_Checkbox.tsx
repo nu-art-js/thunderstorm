@@ -59,21 +59,17 @@ export class TS_Checkbox
 		super(p);
 	}
 
-	protected deriveStateFromProps(nextProps: Props_Checkbox): State_Checkbox | undefined {
-		return {
-			checked: nextProps.checked !== undefined ? nextProps.checked : (this.state?.checked !== undefined ? this.state.checked : false),
-			disabled: nextProps.disabled,
-		};
+	protected deriveStateFromProps(nextProps: Props_Checkbox, state = {} as State_Checkbox): State_Checkbox | undefined {
+		state.checked = nextProps.checked ?? false;
+		state.disabled = nextProps.disabled;
+		return state;
 	}
 
 	private onCheckboxClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 		if (this.state.disabled)
 			return;
 
-		if (this.props.onCheck)
-			this.props.onCheck(!this.state.checked, e);
-		else
-			this.setState({checked: !this.state.checked});
+		this.props.onCheck?.(!this.state.checked, e);
 	};
 
 	render() {

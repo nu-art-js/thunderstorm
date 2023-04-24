@@ -52,21 +52,9 @@ import {
 import {DBApiFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
 import {BaseDB_ModuleFEV2} from './BaseDB_ModuleFEV2';
+import {ApiCallerEventTypeV2} from './types';
+import {DataStatus, SyncStatus} from './consts';
 
-
-export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
-
-export enum SyncStatus {
-	loading,
-	idle,
-	read,
-	write
-}
-
-export enum DataStatus {
-	NoData,
-	containsData,
-}
 
 type RequestType = 'upsert' | 'patch' | 'delete';
 type Pending = {

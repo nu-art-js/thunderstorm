@@ -24,6 +24,7 @@ import {_className} from '../../utils/tools';
 import {LinearLayoutProps} from '../Layouts';
 import './TS_Button.scss';
 
+
 export type Props_Button = LinearLayoutProps & {
 	disabled?: boolean;
 	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
@@ -42,9 +43,10 @@ export type Props_Button = LinearLayoutProps & {
  * ```
  */
 export const TS_Button = (props: Props_Button) => {
+	const {onDisabledClick, ...rest} = props;
 	return <div
-		{...props}
+		{...rest}
 		className={_className('ts-button', props.className, props.disabled && 'ts-button__disabled')}
-		onClick={props.disabled ? props.onDisabledClick : props.onClick}
+		onClick={props.disabled ? onDisabledClick : props.onClick}
 	>{props.children}</div>;
 };
