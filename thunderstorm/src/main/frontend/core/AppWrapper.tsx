@@ -22,7 +22,7 @@
 import * as React from 'react';
 import {BrowserRouter, MemoryRouter} from 'react-router-dom';
 import {Thunder} from './Thunder';
-import {ImplementationMissingException} from '@nu-art/ts-common';
+import {generateUUID, ImplementationMissingException} from '@nu-art/ts-common';
 import * as RDC from 'react-dom/client';
 import {ThunderAppWrapperProps} from './types';
 import {TS_Route} from '../modules/routing/types';
@@ -69,11 +69,17 @@ export function appWithJSX(props: ThunderAppWrapperProps<any>) {
 }
 
 export class ThunderstormApp
-	extends ComponentSync<{ rootRoute: TS_Route }> {
+	extends ComponentSync<{ rootRoute: TS_Route, additionalOverlays?: React.ElementType[] }> {
 
 	public static blockEvent<T>(ev: React.DragEvent<T>) {
 		ev.preventDefault();
 		ev.stopPropagation();
+	}
+
+	public getAdditionalOverlayRenderer(overlay: React.ElementType) {
+		const Renderer = overlay;
+
+		return <Renderer key={generateUUID()}/>;
 	}
 
 	protected deriveStateFromProps(nextProps: {}) {
@@ -93,6 +99,7 @@ export class ThunderstormApp
 				<TS_ToastOverlay/>
 				<TS_Notifications/>
 				<TS_MemoryMonitor/>
+				{this.props.additionalOverlays?.map(Overlay => this.getAdditionalOverlayRenderer(Overlay))}
 			</div>);
 	}
 }
