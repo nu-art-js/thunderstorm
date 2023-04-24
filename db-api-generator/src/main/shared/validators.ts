@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, tsValidateArray, tsValidateRegexp, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {AuditableV2, DB_Object, tsValidateArray, tsValidateRegexp, tsValidateString, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
 
 
 export const dbIdLength = 32;
@@ -44,6 +44,8 @@ export const tsValidator_LowercaseStringWithDashes = tsValidateRegexp(/^[a-z-.]+
 export const tsValidator_LowerUpperStringWithSpaces = tsValidateRegexp(/^[A-Za-z ]+$/);
 export const tsValidator_LowerUpperStringWithDashesAndUnderscore = tsValidateRegexp(/^[A-Za-z-_]+$/);
 export const tsValidator_InternationalPhoneNumber = tsValidateRegexp(/^\+(?:[0-9] ?){6,14}[0-9]$/);
+
+export const tsValidator_AuditableV2: ValidatorTypeResolver<AuditableV2> = {_auditorId: tsValidateString()};
 
 export const DB_Object_validator: ValidatorTypeResolver<DB_Object> = {
 	_id: tsValidateUniqueId,
