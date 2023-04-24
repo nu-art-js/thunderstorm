@@ -5,7 +5,7 @@ import {EditableItem, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/fron
 
 type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : never
 
-type InputProps<Value, Ex extends string | undefined = string | undefined> = {
+type InputProps<Value, Ex> = {
 	disabled?: boolean,
 	className?: string,
 	onBlur?: (value: string) => void,
@@ -42,6 +42,35 @@ export class Item_Editor<Item, State extends {} = {}>
 			}
 		};
 	};
+
+	inputNumber = <K extends keyof Item, Ex extends number | undefined = number | undefined>(prop: AssetValueType<Item, K, Ex>, inputProps?: InputProps<Item[K], Ex>) => {
+		const value = this.props.editable.item[prop] as number | undefined;
+		return {
+			vertical: (label: string, props?: { className: string }) => {
+				const {readProcessor, writeProcessor, onBlur, ...restProps} = inputProps || {};
+				return <TS_PropRenderer.Vertical label={label} {...props}>
+					<TS_Input type="number"
+										value={String(readProcessor?.(value as unknown as Item[K]) || value)}
+										onBlur={value => {
+											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(+value as Ex) || value as unknown as Item[K]);
+										}}
+										{...restProps}/>
+				</TS_PropRenderer.Vertical>;
+			},
+			horizontal: (label: string, props?: { className: string }) => {
+				const {readProcessor, writeProcessor, onBlur, ...restProps} = inputProps || {};
+				return <TS_PropRenderer.Horizontal label={label} {...props}>
+					<TS_Input type="number"
+										value={String(readProcessor?.(value as unknown as Item[K]) || value)}
+										onBlur={value => {
+											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(+value as Ex) || value as unknown as Item[K]);
+										}}
+										{...restProps}/>
+				</TS_PropRenderer.Horizontal>;
+			}
+		};
+	};
+
 }
 
 // type K = DB_Object &{ pah:{zevel:string[],zevel2:string,ashpa:{zevel3:string}[]}}
