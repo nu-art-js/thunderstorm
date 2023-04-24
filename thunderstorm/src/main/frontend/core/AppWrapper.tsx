@@ -69,7 +69,7 @@ export function appWithJSX(props: ThunderAppWrapperProps<any>) {
 }
 
 export class ThunderstormApp
-	extends ComponentSync<{ rootRoute: TS_Route }> {
+	extends ComponentSync<{ rootRoute: TS_Route, additionalOverlays?: React.ReactNode[] }> {
 
 	public static blockEvent<T>(ev: React.DragEvent<T>) {
 		ev.preventDefault();
@@ -93,6 +93,7 @@ export class ThunderstormApp
 				<TS_ToastOverlay/>
 				<TS_Notifications/>
 				<TS_MemoryMonitor/>
+				{this.props.additionalOverlays?.map(Overlay => Overlay)}
 			</div>);
 	}
 }
