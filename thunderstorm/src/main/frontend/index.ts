@@ -47,6 +47,7 @@ export * from './modules/routing/LocationChangeListener';
 export * from './modules/ModuleFE_Window';
 export * from './modules/ModuleFE_BrowserHistory';
 export * from './modules/ModuleFE_Thunderstorm';
+export * from './modules/ModuleFE_WindowMessenger';
 
 export * from './core/typed-api';
 export * from './core/SimpleScriptInjector';

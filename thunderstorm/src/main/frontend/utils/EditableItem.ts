@@ -1,16 +1,14 @@
 export class EditableItem<T> {
 	item: Partial<T>;
-	onCompleted?: (err?: Error) => any | Promise<any>;
 
-	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>, onCompleted?: (err?: Error) => any | Promise<any>) {
+	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>) {
 		this.item = item;
 		this.saveAction = saveAction;
 		this.deleteAction = deleteAction;
-		this.onCompleted = onCompleted;
 	}
 
-	private readonly saveAction: (item: T) => Promise<T>;
-	private readonly deleteAction: (item: T) => Promise<void>;
+	protected readonly saveAction: (item: T) => Promise<T>;
+	protected readonly deleteAction: (item: T) => Promise<void>;
 
 	set<K extends keyof T>(key: K, value: T[K] | undefined) {
 		if (value === undefined)
@@ -32,16 +30,11 @@ export class EditableItem<T> {
 	}
 
 	async save() {
-		try {
-			await this.saveAction(this.item as T);
-			await this.onCompleted?.();
-		} catch (e: any) {
-			await this.onCompleted?.(e);
-		}
+		return this.saveAction(this.item as T);
 	}
 
 	clone(): EditableItem<T> {
-		return new EditableItem<T>(this.item, this.saveAction, this.deleteAction, this.onCompleted);
+		return new EditableItem<T>(this.item, this.saveAction, this.deleteAction);
 	}
 
 	async delete<K extends keyof T>() {
