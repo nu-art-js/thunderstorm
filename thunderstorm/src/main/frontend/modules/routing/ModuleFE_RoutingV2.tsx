@@ -19,9 +19,9 @@ class ModuleFE_RoutingV2_Class
 	// ######################## Public Functions ########################
 
 	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: P) {
-		const routesMapByKeyElement = this.routesMapByKey[route.key];
+		const fullPath = this.getFullPath(route.key);
 		try {
-			const url = composeUrl(routesMapByKeyElement.fullPath, params);
+			const url = composeUrl(fullPath, params);
 			if (window.location.href === url)
 				return this.logWarning(`attempting to set same route: ${url}`);
 
@@ -79,8 +79,12 @@ class ModuleFE_RoutingV2_Class
 		return this.routesMapByKey[routeKey]?.route;
 	}
 
-	getFullPath(routeKey: string): string | undefined {
-		return this.routesMapByKey[routeKey]?.fullPath;
+	getFullPath(routeKey: string): string {
+		const route = this.routesMapByKey[routeKey];
+		if (!route)
+			throw new BadImplementationException(`Cannot find full path for route key: ${routeKey}`);
+
+		return route.fullPath;
 	}
 
 	getCurrentRouteKey() {

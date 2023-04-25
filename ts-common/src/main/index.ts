@@ -61,6 +61,7 @@ export * from './utils/filter-tools';
 export * from './utils/ui-tools';
 
 export * from './validator/validator-core';
+export * from './validator/validators';
 export * from './validator/type-validators';
 
 export * from './consts/consts';
