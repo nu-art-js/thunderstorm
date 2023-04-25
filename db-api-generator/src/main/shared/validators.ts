@@ -19,7 +19,8 @@
  * limitations under the License.
  */
 
-import {DB_Object, tsValidateArray, tsValidateRegexp, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {AuditableV2, DB_Object, tsValidateArray, tsValidateRegexp, tsValidateString, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {tsValidate_OptionalArray} from '@nu-art/ts-common/validator/validators';
 
 
 export const dbIdLength = 32;
@@ -34,6 +35,8 @@ export const tsValidateGeneralUrl = (mandatory?: boolean) => tsValidateRegexp(
 export const tsValidateVersion = tsValidateRegexp(/\d{1,3}\.\d{1,3}\.\d{1,3}/);
 export const tsValidateUniqueId = tsValidateId(dbIdLength);
 export const tsValidator_arrayOfUniqueIds = tsValidateArray(tsValidateUniqueId);
+export const tsValidate_optionalArrayOfUniqueIds = tsValidate_OptionalArray(tsValidateUniqueId);
+
 
 export const tsValidateOptionalId = tsValidateId(dbIdLength, false);
 export const tsValidateStringWithDashes = tsValidateRegexp(/^[A-Za-z-]+$/);
@@ -44,6 +47,8 @@ export const tsValidator_LowercaseStringWithDashes = tsValidateRegexp(/^[a-z-.]+
 export const tsValidator_LowerUpperStringWithSpaces = tsValidateRegexp(/^[A-Za-z ]+$/);
 export const tsValidator_LowerUpperStringWithDashesAndUnderscore = tsValidateRegexp(/^[A-Za-z-_]+$/);
 export const tsValidator_InternationalPhoneNumber = tsValidateRegexp(/^\+(?:[0-9] ?){6,14}[0-9]$/);
+
+export const tsValidator_AuditableV2: ValidatorTypeResolver<AuditableV2> = {_auditorId: tsValidateString()};
 
 export const DB_Object_validator: ValidatorTypeResolver<DB_Object> = {
 	_id: tsValidateUniqueId,

@@ -52,21 +52,9 @@ import {
 import {DBApiFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
 import {BaseDB_ModuleFE} from './BaseDB_ModuleFE';
+import {ApiCallerEventTypeV2} from './types';
+import {DataStatus, SyncStatus} from './consts';
 
-
-export type ApiCallerEventTypeV2<DBType extends DB_Object> = [SingleApiEvent, DBType] | [MultiApiEvent, DBType[]];
-
-export enum SyncStatus {
-	loading,
-	idle,
-	read,
-	write
-}
-
-export enum DataStatus {
-	NoData,
-	containsData,
-}
 
 type RequestType = 'upsert' | 'patch' | 'delete';
 type Pending = {
@@ -294,7 +282,6 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
 		if (syncData.toUpdate)
 			this.dispatchMulti(EventType_Query, syncData.toUpdate);
-
 	};
 
 	private dispatchSingle = (event: SingleApiEvent, item: DBType) => {
