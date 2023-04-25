@@ -1,5 +1,5 @@
 import {EditableItem} from '@nu-art/thunderstorm/frontend';
-import {DB_Object} from '@nu-art/ts-common';
+import {DB_Object, PreDB} from '@nu-art/ts-common';
 import {BaseDB_ApiCaller} from '../modules/BaseDB_ApiCaller';
 import {BaseDB_ApiCallerV2} from '../modules/BaseDB_ApiCallerV2';
 
@@ -9,8 +9,19 @@ type ApiCaller<T extends DB_Object, Ks extends keyof T = '_id'> = BaseDB_ApiCall
 export class EditableDBItem<T extends DB_Object, Ks extends keyof T = '_id'>
 	extends EditableItem<T> {
 
-	constructor(item: Partial<T>, module: ApiCaller<T, Ks>, onCompleted?: (err?: Error) => any | Promise<any>) {
-		super(item, (_item) => module.v1.upsert(_item).executeSync(), (_item) => module.v1.delete(_item).executeSync(), onCompleted);
+	constructor(item: Partial<T>, module: ApiCaller<T, Ks>, onCompleted?: (item: T) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
+		super(item, EditableDBItem.save(module, onCompleted, onError), (_item) => module.v1.delete(_item).executeSync());
+	}
+
+	private static save<T extends DB_Object, Ks extends keyof T = '_id'>(module: ApiCaller<T, Ks>, onCompleted?: (item: T) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
+		return async (_item: PreDB<T>) => {
+			try {
+				const dbItem: T = await module.v1.upsert(_item).executeSync();
+				await onCompleted?.(dbItem);
+			} catch (e: any) {
+				await onError?.(e);
+			}
+		};
 	}
 
 	clone(): EditableDBItem<T> {
