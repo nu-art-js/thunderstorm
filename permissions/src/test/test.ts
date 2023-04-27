@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ModulePack_Backend_Permissions} from '../main/backend';
+import {ModulePack_Backend_Permissions, ModulePack_PermissionsBE} from '../main/backend';
 import {StormTester} from '@nu-art/thunderstorm/backend-test';
 import {__scenario} from '@nu-art/testelot';
 import {createTwoAccessLevels} from './tests/create-project';
@@ -121,7 +121,7 @@ mainScenario.add(expectToFailTestFullAssertUserPermissionsWithNonGroupCFRegValue
 module.exports = new StormTester()
 	.addModules(ModuleBE_Firebase)
 	.addModules(AccountModule)
-	.addModules(...ModulePack_Backend_Permissions)
+	.addModules(...ModulePack_PermissionsBE)
 	.setScenario(mainScenario)
 	.build();
 
