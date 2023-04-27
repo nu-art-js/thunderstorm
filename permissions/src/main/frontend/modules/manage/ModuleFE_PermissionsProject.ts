@@ -17,68 +17,24 @@
  * limitations under the License.
  */
 
-import {_EmptyQuery} from '@nu-art/db-api-generator';
-import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventTypeV2, BaseDB_ApiCallerV2} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionProject, DBDef_PermissionProjects} from '../../shared';
 
 
-export interface OnPermissionsProjectsLoaded {
-	__onPermissionsProjectsLoaded: () => void;
+export interface OnPermissionsProjectsUpdated {
+	__OnPermissionsProjectsUpdated: (...params: ApiCallerEventTypeV2<DB_PermissionProject>) => void;
 }
 
-const dispatch_onPermissionsProjectsLoaded = new ThunderDispatcher<OnPermissionsProjectsLoaded, '__onPermissionsProjectsLoaded'>(
-	'__onPermissionsProjectsLoaded');
+const dispatch_OnPermissionsProjectsUpdated = new ThunderDispatcher<OnPermissionsProjectsUpdated, '__OnPermissionsProjectsUpdated'>(
+	'__OnPermissionsProjectsUpdated');
 
 export class ModuleFE_PermissionsProject_Class
-	extends BaseDB_ApiGeneratorCaller<DB_PermissionProject> {
-	private projects: DB_PermissionProject[] = [];
-	private projectsCustomKeys: string[] = [];
+	extends BaseDB_ApiCallerV2<DB_PermissionProject> {
 
 	constructor() {
-		super(DBDef_PermissionProjects);
+		super(DBDef_PermissionProjects, dispatch_OnPermissionsProjectsUpdated);
 	}
-
-	protected init(): void {
-	}
-
-	protected async onEntryCreated(response: DB_PermissionProject): Promise<void> {
-		this.v1.query(_EmptyQuery);
-	}
-
-	protected async onEntryDeleted(response: DB_PermissionProject): Promise<void> {
-		this.v1.query(_EmptyQuery);
-	}
-
-	protected async onEntryUpdated(response: DB_PermissionProject): Promise<void> {
-		this.v1.query(_EmptyQuery);
-	}
-
-	protected async onGotUnique(response: DB_PermissionProject): Promise<void> {
-	}
-
-	protected async onQueryReturned(response: DB_PermissionProject[]): Promise<void> {
-		this.projects = response;
-		this.projectsCustomKeys = response.reduce((toRet, project) => {
-			return toRet.concat(project.customKeys || []);
-		}, [] as string[]);
-
-		dispatch_onPermissionsProjectsLoaded.dispatchUI();
-	}
-
-	fetchProjects() {
-		this.v1.query(_EmptyQuery);
-		return this.projects;
-	}
-
-	getProjectsCustomKeys() {
-		return this.projectsCustomKeys || [];
-	}
-
-	getProjects(): DB_PermissionProject[] {
-		return this.projects || [];
-	}
-
 }
 
 export const ModuleFE_PermissionsProject = new ModuleFE_PermissionsProject_Class();
