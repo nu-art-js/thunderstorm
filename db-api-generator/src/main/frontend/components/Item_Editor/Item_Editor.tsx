@@ -14,8 +14,10 @@ type InputProps<Value, Ex> = {
 	writeProcessor?: (value: Ex) => Value
 };
 
-export class Item_Editor<Item, State extends {} = {}>
-	extends Component<{ editable: EditableItem<Item> }, State> {
+export type Props_ItemEditor<Item> = { editable: EditableItem<Item> };
+
+export class Item_Editor<Item, Props extends Props_ItemEditor<Item> = Props_ItemEditor<Item>, State extends {} = {}>
+	extends Component<Props, State> {
 	input = <K extends keyof Item, Ex extends string | undefined = string | undefined>(prop: AssetValueType<Item, K, Ex>, inputProps?: InputProps<Item[K], Ex>) => {
 		const value = this.props.editable.item[prop] as string | undefined;
 		return {
@@ -78,14 +80,14 @@ export class Item_Editor<Item, State extends {} = {}>
 			vertical: (label: string, props?: { className: string }) => {
 				const {readProcessor, writeProcessor, onCheck, ...restProps} = inputProps || {};
 				return <TS_PropRenderer.Vertical label={label} {...props}>
-						<TS_Checkbox
-							checked={readProcessor?.(value as unknown as Item[K]) || value}
-							onCheck={value =>{
-								onCheck ? onCheck(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
-								this.forceUpdate()
-							}}
-							{...restProps}
-						/>
+					<TS_Checkbox
+						checked={readProcessor?.(value as unknown as Item[K]) || value}
+						onCheck={value => {
+							onCheck ? onCheck(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+							this.forceUpdate();
+						}}
+						{...restProps}
+					/>
 				</TS_PropRenderer.Vertical>;
 			},
 			horizontal: (label: string, props?: { className: string }) => {
@@ -93,9 +95,9 @@ export class Item_Editor<Item, State extends {} = {}>
 				return <TS_PropRenderer.Horizontal label={label} {...props}>
 					<TS_Checkbox
 						checked={readProcessor?.(value as unknown as Item[K]) || value}
-						onCheck={value =>{
+						onCheck={value => {
 							onCheck ? onCheck(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
-							this.forceUpdate()
+							this.forceUpdate();
 						}}
 						{...restProps}
 					/>
