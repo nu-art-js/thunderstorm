@@ -23,9 +23,10 @@ import {ModuleFE_PermissionsProject} from '../modules/manage/ModuleFE_Permission
 import {ModuleFE_PermissionsDomain} from '../modules/manage/ModuleFE_PermissionsDomain';
 import {ModuleFE_PermissionsAccessLevel} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {ModuleFE_PermissionsApi} from '../modules/manage/ModuleFE_PermissionsApi';
+import {Module} from '@nu-art/ts-common';
 
 
-export const ModulePack_Frontend_Permissions = [
+export const ModulePack_PermissionsFE: Module[] = [
 	ModuleFE_PermissionsUser,
 	ModuleFE_PermissionsGroup,
 	ModuleFE_PermissionsProject,
