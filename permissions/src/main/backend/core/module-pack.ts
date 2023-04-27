@@ -24,7 +24,7 @@ import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert'
 import {createApisForDBModule} from '@nu-art/db-api-generator/backend';
 
 
-export const ModulePack_Backend_Permissions = [
+export const ModulePack_PermissionsBE = [
 	ModuleBE_PermissionProject, createApisForDBModule(ModuleBE_PermissionProject),
 	ModuleBE_PermissionDomain, createApisForDBModule(ModuleBE_PermissionDomain),
 	ModuleBE_PermissionAccessLevel, createApisForDBModule(ModuleBE_PermissionAccessLevel),

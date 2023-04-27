@@ -17,68 +17,23 @@
  * limitations under the License.
  */
 
-import {_EmptyQuery} from '@nu-art/db-api-generator';
-import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventTypeV2, BaseDB_ApiCallerV2} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel} from '../../shared';
 
 
 export interface OnPermissionsLevelsLoaded {
-	__onPermissionsLevelsLoaded: () => void;
+	__onPermissionsLevelsLoaded: (...params: ApiCallerEventTypeV2<DB_PermissionAccessLevel>) => void;
 }
 
 const dispatch_onPermissionsLevelsLoaded = new ThunderDispatcher<OnPermissionsLevelsLoaded, '__onPermissionsLevelsLoaded'>('__onPermissionsLevelsLoaded');
 
 export class ModuleFE_PermissionsAccessLevel_Class
-	extends BaseDB_ApiGeneratorCaller<DB_PermissionAccessLevel> {
-	private levels: { [k: string]: DB_PermissionAccessLevel[] } = {};
+	extends BaseDB_ApiCallerV2<DB_PermissionAccessLevel> {
 
 	constructor() {
-		super(DBDef_PermissionAccessLevel);
+		super(DBDef_PermissionAccessLevel, dispatch_onPermissionsLevelsLoaded);
 	}
-
-	protected init(): void {
-	}
-
-	protected async onEntryCreated(response: DB_PermissionAccessLevel): Promise<void> {
-		this.v1.query(_EmptyQuery);
-	}
-
-	protected async onEntryDeleted(response: DB_PermissionAccessLevel): Promise<void> {
-		this.v1.query(_EmptyQuery);
-	}
-
-	protected async onEntryUpdated(response: DB_PermissionAccessLevel): Promise<void> {
-		this.v1.query(_EmptyQuery);
-	}
-
-	protected async onGotUnique(response: DB_PermissionAccessLevel): Promise<void> {
-	}
-
-	protected async onQueryReturned(response: DB_PermissionAccessLevel[]): Promise<void> {
-		this.levels = {};
-		response.forEach(level => {
-			const levelArray = this.levels[level.domainId] || [];
-			levelArray.push(level);
-			this.levels[level.domainId] = levelArray;
-		});
-
-		dispatch_onPermissionsLevelsLoaded.dispatchUI();
-	}
-
-	getLevels(domainId: string): DB_PermissionAccessLevel[] {
-		return this.levels[domainId] || [];
-	}
-
-	getAllLevels(): DB_PermissionAccessLevel[] {
-		let allLevelsArray: DB_PermissionAccessLevel[] = [];
-		for (const key of Object.keys(this.levels)) {
-			allLevelsArray = allLevelsArray.concat(this.levels[key]);
-		}
-
-		return allLevelsArray;
-	}
-
 }
 
 export const ModuleFE_PermissionsAccessLevel = new ModuleFE_PermissionsAccessLevel_Class();
