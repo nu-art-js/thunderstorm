@@ -30,7 +30,7 @@ export const ModulePack_PermissionsBE = [
 	ModuleBE_PermissionAccessLevel, createApisForDBModule(ModuleBE_PermissionAccessLevel),
 	ModuleBE_PermissionApi, createApisForDBModule(ModuleBE_PermissionApi),
 	ModuleBE_PermissionGroup, createApisForDBModule(ModuleBE_PermissionGroup),
-	ModuleBE_PermissionUserDB,
+	ModuleBE_PermissionUserDB, createApisForDBModule(ModuleBE_PermissionUserDB),
 	ModuleBE_PermissionsAssert,
 	ModuleBE_Permissions,
 ];

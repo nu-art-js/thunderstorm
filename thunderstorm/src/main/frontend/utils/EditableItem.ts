@@ -1,8 +1,10 @@
+import {cloneObj} from '@nu-art/ts-common';
+
 export class EditableItem<T> {
 	item: Partial<T>;
 
 	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>) {
-		this.item = item;
+		this.item = Object.isFrozen(item) ? cloneObj(item) : item;
 		this.saveAction = saveAction;
 		this.deleteAction = deleteAction;
 	}
