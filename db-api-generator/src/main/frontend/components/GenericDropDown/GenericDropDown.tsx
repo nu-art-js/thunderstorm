@@ -20,6 +20,7 @@ type OptionalProps_GenericDropDown<T> = {
 	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
 	limitItems?: number;
 	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
+	disabled?: boolean;
 }
 
 export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> & {
@@ -56,6 +57,7 @@ type GenericDropDownProps<T, Ks> = {
 	modules: BaseDB_ApiCaller<DB_Object, any>[];
 	boundingParentSelector?: string;
 	limitItems?: number;
+	disabled?: boolean;
 } & OptionalCanUnselect<T>
 
 export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> =
@@ -131,6 +133,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 			renderSearch={this.props.renderSearch}
 			limitItems={this.props.limitItems}
 			canUnselect={this.props.canUnselect as (typeof this.props.canUnselect extends true ? true : false | undefined)}
+			disabled={this.props.disabled}
 		/>;
 	}
 }
