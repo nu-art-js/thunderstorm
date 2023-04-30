@@ -17,53 +17,22 @@
  * limitations under the License.
  */
 
-import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventTypeV2, BaseDB_ApiCallerV2} from '@nu-art/db-api-generator/frontend';
 import {DB_PermissionUser, DBDef_PermissionUser} from '../../../index';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
-import {_EmptyQuery} from '@nu-art/db-api-generator';
 
 
-export interface OnPermissionsUsersLoaded {
-	__onPermissionsUsersLoaded: () => void;
+export interface OnPermissionsUsersUpdated {
+	__onPermissionsUsersUpdated: (...params: ApiCallerEventTypeV2<DB_PermissionUser>) => void;
 }
 
-const dispatch_onPermissionsUsersLoaded = new ThunderDispatcher<OnPermissionsUsersLoaded, '__onPermissionsUsersLoaded'>('__onPermissionsUsersLoaded');
+const dispatch_OnPermissionsUsersUpdated = new ThunderDispatcher<OnPermissionsUsersUpdated, '__onPermissionsUsersUpdated'>('__onPermissionsUsersUpdated');
 
 export class ModuleFE_PermissionsUser_Class
-	extends BaseDB_ApiGeneratorCaller<DB_PermissionUser> {
-	private users: DB_PermissionUser[] = [];
+	extends BaseDB_ApiCallerV2<DB_PermissionUser> {
 
 	constructor() {
-		super(DBDef_PermissionUser);
-	}
-
-	protected init(): void {
-	}
-
-	protected async onEntryCreated(response: DB_PermissionUser): Promise<void> {
-	}
-
-	protected async onEntryDeleted(response: DB_PermissionUser): Promise<void> {
-	}
-
-	protected async onEntryUpdated(response: DB_PermissionUser): Promise<void> {
-		this.v1.query(_EmptyQuery);
-	}
-
-	protected async onGotUnique(response: DB_PermissionUser): Promise<void> {
-	}
-
-	protected async onQueryReturned(response: DB_PermissionUser[]): Promise<void> {
-		this.users = response;
-		dispatch_onPermissionsUsersLoaded.dispatchUI();
-	}
-
-	getUserByAccountId(accountId: string) {
-		return this.users.filter(user => user.accountId).find(user => user.accountId === accountId);
-	}
-
-	getUsers() {
-		return this.users;
+		super(DBDef_PermissionUser, dispatch_OnPermissionsUsersUpdated);
 	}
 }
 
