@@ -17,53 +17,22 @@
  * limitations under the License.
  */
 import {DB_PermissionGroup, DBDef_PermissionGroup} from '../../../index';
-import {BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventTypeV2, BaseDB_ApiCallerV2} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
-import {_EmptyQuery} from '@nu-art/db-api-generator';
 
 
-export interface OnPermissionsGroupsLoaded {
-	__onPermissionsGroupsLoaded: () => void;
+export interface OnPermissionsGroupsUpdated {
+	__onPermissionsGroupsUpdated: (...params: ApiCallerEventTypeV2<DB_PermissionGroup>) => void;
 }
 
-const dispatch_onPermissionsGroupsLoaded = new ThunderDispatcher<OnPermissionsGroupsLoaded, '__onPermissionsGroupsLoaded'>('__onPermissionsGroupsLoaded');
+const dispatch_OnPermissionsGroupsUpdated = new ThunderDispatcher<OnPermissionsGroupsUpdated, '__onPermissionsGroupsUpdated'>('__onPermissionsGroupsUpdated');
 
 export class ModuleFE_PermissionsGroup_Class
-	extends BaseDB_ApiGeneratorCaller<DB_PermissionGroup> {
-	private groups: DB_PermissionGroup[] = [];
+	extends BaseDB_ApiCallerV2<DB_PermissionGroup> {
 
 	constructor() {
-		super(DBDef_PermissionGroup);
+		super(DBDef_PermissionGroup, dispatch_OnPermissionsGroupsUpdated);
 	}
-
-	protected init(): void {
-		super.init();
-	}
-
-	protected async onEntryCreated(response: DB_PermissionGroup): Promise<void> {
-		this.v1.query(_EmptyQuery);
-	}
-
-	protected async onEntryDeleted(response: DB_PermissionGroup): Promise<void> {
-		this.v1.query(_EmptyQuery);
-	}
-
-	protected async onEntryUpdated(response: DB_PermissionGroup): Promise<void> {
-		this.v1.query(_EmptyQuery);
-	}
-
-	protected async onGotUnique(response: DB_PermissionGroup): Promise<void> {
-	}
-
-	protected async onQueryReturned(response: DB_PermissionGroup[]): Promise<void> {
-		this.groups = response;
-		dispatch_onPermissionsGroupsLoaded.dispatchUI();
-	}
-
-	getGroups() {
-		return this.groups;
-	}
-
 }
 
 export const ModuleFE_PermissionsGroup = new ModuleFE_PermissionsGroup_Class();

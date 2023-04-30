@@ -22,17 +22,17 @@ import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel} from '../../shared';
 
 
-export interface OnPermissionsLevelsLoaded {
-	__onPermissionsLevelsLoaded: (...params: ApiCallerEventTypeV2<DB_PermissionAccessLevel>) => void;
+export interface OnPermissionsLevelsUpdated {
+	__onPermissionsLevelsUpdated: (...params: ApiCallerEventTypeV2<DB_PermissionAccessLevel>) => void;
 }
 
-const dispatch_onPermissionsLevelsLoaded = new ThunderDispatcher<OnPermissionsLevelsLoaded, '__onPermissionsLevelsLoaded'>('__onPermissionsLevelsLoaded');
+const dispatch_OnPermissionsLevelsUpdated = new ThunderDispatcher<OnPermissionsLevelsUpdated, '__onPermissionsLevelsUpdated'>('__onPermissionsLevelsUpdated');
 
 export class ModuleFE_PermissionsAccessLevel_Class
 	extends BaseDB_ApiCallerV2<DB_PermissionAccessLevel> {
 
 	constructor() {
-		super(DBDef_PermissionAccessLevel, dispatch_onPermissionsLevelsLoaded);
+		super(DBDef_PermissionAccessLevel, dispatch_OnPermissionsLevelsUpdated);
 	}
 }
 
