@@ -66,6 +66,7 @@ export const functionThatReturnsFalse = Object.freeze(() => false);
 export const functionThatReturnsTrue = Object.freeze(() => true);
 
 export const resolveContent = <T extends any = any>(content: T | (() => T)) => typeof content === 'function' ? (content as () => T)() : content as T;
+export const resolveFunctionOrValue = resolveContent;
 
 export function exists(item: any) {
 	return item !== undefined && item !== null;
