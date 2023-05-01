@@ -29,7 +29,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 
 
 type Props_Button = LinearLayoutProps & {
-	disabled?: boolean;
+	disabled: boolean;
 	onClick: (e: React.MouseEvent<HTMLDivElement>) => Promise<any>
 	onDisabledClick?: (e: React.MouseEvent<HTMLDivElement>) => Promise<any>;
 	loadingRenderer?: ReactNode | (() => ReactNode);
@@ -60,6 +60,7 @@ export class TS_BusyButton
 	static defaultProps: Partial<Props_Button> = {
 		keepLoaderOnSuccess: false,
 		loadingRenderer: <TS_ButtonLoader/>,
+		disabled: false
 	};
 
 	// _constructor() {
@@ -67,7 +68,7 @@ export class TS_BusyButton
 	// }
 
 	protected deriveStateFromProps(nextProps: Props_Button, state = {} as State_Button): State_Button | undefined {
-		state.disabled ??= !!nextProps.disabled;
+		state.disabled = nextProps.disabled;
 		state.isBusy ??= false;
 		return state;
 	}
