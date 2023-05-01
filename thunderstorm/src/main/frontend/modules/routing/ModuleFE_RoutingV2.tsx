@@ -18,7 +18,7 @@ class ModuleFE_RoutingV2_Class
 
 	// ######################## Public Functions ########################
 
-	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: P) {
+	goToRoute<P extends QueryParams>(route: TS_Route<P>, params?: Partial<P>) {
 		const fullPath = this.getFullPath(route.key);
 		try {
 			const url = composeUrl(fullPath, params);

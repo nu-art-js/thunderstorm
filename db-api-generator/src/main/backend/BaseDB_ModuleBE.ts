@@ -268,7 +268,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		return toReturn;
 	}
 
-	async querySync(syncQuery: FirestoreQuery<DBType>): Promise<Response_DBSync<DBType>> {
+	async querySync(syncQuery: FirestoreQuery<DBType>, request?: ExpressRequest): Promise<Response_DBSync<DBType>> {
 		return this.runInTransaction(async transaction => {
 			const items = await transaction.query(this.collection, syncQuery);
 			const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>, transaction);

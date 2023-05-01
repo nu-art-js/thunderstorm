@@ -1,9 +1,8 @@
 import * as React from 'react';
 import {Component} from 'react';
 import {EditableItem, TS_Checkbox, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {AssetValueType} from '@nu-art/ts-common';
 
-
-type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : never
 
 type InputProps<Value, Ex> = {
 	disabled?: boolean,
@@ -105,6 +104,16 @@ export class Item_Editor<Item, Props extends Props_ItemEditor<Item> = Props_Item
 			}
 		};
 	};
+}
+
+export type FormPropV1<T, K extends keyof T, EditorValueType, EditorProps, ValueType extends T[K] = T[K]> = {
+	prop: K,
+	label?: {
+		orientation?: 'horizontal' | 'vertical' // default vertical
+		label: string
+	}
+	readProcessor?: (value: EditorValueType) => ValueType
+	writeProcessor?: (value: ValueType) => EditorValueType
 
 }
 
