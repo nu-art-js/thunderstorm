@@ -88,6 +88,18 @@ type Props_CanUnselect<ItemType> = { canUnselect: true; onSelected: (selected?: 
 type Props_CanNotUnselect<ItemType> = { canUnselect?: false; onSelected: (selected: ItemType) => void };
 export type Props_DropDown<ItemType> = (Props_CanUnselect<ItemType> | Props_CanNotUnselect<ItemType>) & Dropdown_Props<ItemType>
 
+export type PartialProps_DropDown<T> = {
+	selected?: T;
+	inputValue?: string;
+	placeholder?: string;
+	onSelected: (selected: T) => void;
+	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
+	mapper?: (item: T) => string[]
+	renderer?: (item: T) => React.ReactElement
+	queryFilter?: (item: T) => boolean
+	ifNoneShowAll?: boolean
+}
+
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
 
