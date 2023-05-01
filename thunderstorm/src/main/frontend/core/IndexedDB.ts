@@ -297,17 +297,26 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 	// ######################### Data deletion functions #########################
 
 	public async clearDB(): Promise<void> {
-		const store = (await this.store(true));
-		await store.clear();
+		const store = await this.store(true);
+		return new Promise((resolve, reject) => {
+			const request = store.clear();
+			request.onsuccess = () => resolve();
+			request.onerror = reject;
+		});
 	}
 
 	public async deleteDB(): Promise<void> {
 		if (this.db)
 			this.db.close();
-		const DBDeleteRequest = await IDBAPI.deleteDatabase(this.db.name);
-		DBDeleteRequest.onerror = (event) => {
-			StaticLogger.logError(`Error deleting database: ${this.db.name}`);
-		};
+
+		return new Promise((resolve, reject) => {
+			const request = IDBAPI.deleteDatabase(this.db.name);
+			request.onerror = (event) => {
+				StaticLogger.logError(`Error deleting database: ${this.db.name}`);
+				reject();
+			};
+			request.onsuccess = () => resolve();
+		});
 	}
 
 	public async deleteAll(keys: (IndexKeys<T, Ks> | T)[]): Promise<T[]> {
