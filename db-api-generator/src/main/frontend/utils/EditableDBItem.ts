@@ -1,19 +1,16 @@
 import {EditableItem} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, PreDB} from '@nu-art/ts-common';
-import {BaseDB_ApiCaller} from '../modules/BaseDB_ApiCaller';
-import {BaseDB_ApiCallerV2} from '../modules/BaseDB_ApiCallerV2';
+import {DBItemApiCaller} from '../modules/types';
 
-
-type ApiCaller<T extends DB_Object, Ks extends keyof T = '_id'> = BaseDB_ApiCaller<T, Ks> | BaseDB_ApiCallerV2<T, Ks>;
 
 export class EditableDBItem<T extends DB_Object, Ks extends keyof T = '_id'>
 	extends EditableItem<T> {
 
-	constructor(item: Partial<T>, module: ApiCaller<T, Ks>, onCompleted?: (item: T) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
+	constructor(item: Partial<T>, module: DBItemApiCaller<T, Ks>, onCompleted?: (item: T) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
 		super(item, EditableDBItem.save(module, onCompleted, onError), (_item) => module.v1.delete(_item).executeSync());
 	}
 
-	private static save<T extends DB_Object, Ks extends keyof T = '_id'>(module: ApiCaller<T, Ks>, onCompleted?: (item: T) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
+	private static save<T extends DB_Object, Ks extends keyof T = '_id'>(module: DBItemApiCaller<T, Ks>, onCompleted?: (item: T) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
 		return async (_item: PreDB<T>) => {
 			try {
 				const dbItem: T = await module.v1.upsert(_item).executeSync();

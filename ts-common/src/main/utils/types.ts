@@ -138,6 +138,8 @@ export type MergeTypes<T extends unknown[]> =
 	T extends [a: infer A, ...rest: infer R] ? A & MergeTypes<R> : {};
 
 export type UnionToIntersection<U> =
-	(U extends any ? (k: U)=>void : never) extends ((k: infer I)=>void) ? I : never
+	(U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never
 
 export type NonEmptyArray<T> = [T, ...T[]];
+
+export type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : never

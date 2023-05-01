@@ -70,11 +70,9 @@ export class ModuleFE_BrowserHistory_Class
 		const query = queryAsString.split('&');
 		return query.map(param => {
 			const parts = param.split('=');
-			return {key: parts[0], value: parts[1]};
+			return {key: parts[0], value: parts[1].length === 0 ? undefined : parts[1]};
 		}).reduce((toRet, param) => {
-			if (param.key && param.value)
-				toRet[param.key] = param.value;
-
+			toRet[param.key] = param.value;
 			return toRet;
 		}, queryParams);
 	};
@@ -84,7 +82,6 @@ export class ModuleFE_BrowserHistory_Class
 		_keys(params).forEach(key => {
 			const value = `${params[key]}`;
 			if (!value) {
-				delete params[key];
 				return;
 			}
 
@@ -144,8 +141,13 @@ export class ModuleFE_BrowserHistory_Class
 		return this.history;
 	}
 
-	getQueryParameter(name: string) {
-		return ModuleFE_BrowserHistory.getQueryParams()[name];
+	getQueryParameter(key: string) {
+		const queryParams = ModuleFE_BrowserHistory.getQueryParams();
+		const value = queryParams[key];
+		if (value === undefined && Object.keys(queryParams).includes(key))
+			return null;
+
+		return value;
 	}
 
 	getCurrentUrl() {
