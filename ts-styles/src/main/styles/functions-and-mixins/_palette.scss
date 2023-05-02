@@ -1,0 +1,69 @@
+@use 'sass:list';
+@use 'node_modules/@nu-art/thunderstorm/styles' as ts;
+
+$colorChunks: 7;
+$_black: ts.buildPalette(#000000, $colorChunks);
+$_gray-blue: ts.buildPalette(#2C3541, $colorChunks);
+$_dark-blue: ts.buildPalette(#004A72, $colorChunks);
+$_dark-green: ts.buildPalette(#2E5651, $colorChunks);
+$_purple: ts.buildPalette(#401F5C, $colorChunks);
+$_pink: ts.buildPalette(#8F1657, $colorChunks);
+$_ochre: ts.buildPalette(#876019, $colorChunks);
+$_orange: ts.buildPalette(#B94804, $colorChunks);
+$_red: ts.buildPalette(#D8042E, $colorChunks);
+$_gray: ts.buildPalette(#808080, $colorChunks);
+$_light-gray: ts.buildPalette(#D3D3D3, $colorChunks);
+$_monochromatic: ts.buildPalette(#9CAEB7, $colorChunks);
+$_green: ts.buildPalette(#2AA10F, $colorChunks);
+
+@function monochromatic($i) {
+  @return #{list.nth($_monochromatic,$i)}
+}
+
+@function black($i) {
+  @return #{list.nth($_black, $i)}
+}
+
+@function gray-blue($i) {
+  @return #{list.nth($_gray-blue, $i)}
+}
+
+@function dark-blue($i) {
+  @return #{list.nth($_dark-blue, $i)}
+}
+
+@function dark-green($i) {
+  @return #{list.nth($_dark-green, $i)}
+}
+
+@function green($i) {
+  @return #{list.nth($_green,$i)}
+}
+
+@function purple($i) {
+  @return #{list.nth($_purple, $i)}
+}
+
+@function pink($i) {
+  @return #{list.nth($_pink, $i)}
+}
+
+@function ochre($i) {
+  @return #{list.nth($_ochre, $i)}
+}
+
+@function orange($i) {
+  @return #{list.nth($_orange, $i)}
+}
+
+@function red($i) {
+  @return #{list.nth($_red, $i)}
+}
+
+@function gray($i) {
+  @return #{list.nth($_gray,$i)}
+}
+
+@function light-gray($i) {
+  @return #{list.nth($_light-gray,$i)}
+}
