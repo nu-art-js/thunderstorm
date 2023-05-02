@@ -1,0 +1,45 @@
+@use '../consts' as consts;
+
+/// Sets backgrounds for element based on mouse interaction
+///
+/// @param $bg - base background
+/// @param $bgh - background when mouse hover
+/// @param $bga - background when mouse click
+///
+@mixin mouse-interactive-background($bg, $bg-h: $bg ,$bg-a: $bg-h) {
+  background: $bg;
+  &:hover {
+    background: $bg-h;
+  }
+  &:active {
+    background: $bg-a;
+  }
+}
+
+/// Sets color for vector elements based on mouse interaction
+///
+/// Will work on any vector element that doesn't have a corresponding "data-no-{rule}" attribute.
+/// To avoid coloring the fill of the element set data-no-fill=true attribute
+/// To avoid coloring the stroke of the element set data-no-stroke=true attribute
+///
+/// @param $bg - base background
+/// @param $bgh - background when mouse hover
+/// @param $bga - background when mouse click
+///
+@mixin mouse-interactive-icon($color, $color-h: $color, $color-a: $color-h) {
+  @each $rule in consts.$svg-prop-rules {
+    @include setIconProp($rule, $color);
+    &:hover {
+      @include setIconProp($rule, $color-h);
+    }
+    &:active {
+      @include setIconProp($rule, $color-a);
+    }
+  }
+}
+
+@mixin setIconProp($prop,$value) {
+  *:not([data-no-#{$prop}="true"]):not(g) {
+    #{$prop}: $value;
+  }
+}

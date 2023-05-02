@@ -1,0 +1,187 @@
+@use '@nu-art/ts-styles' as styles;
+
+.permissions-editor {
+  gap: 16px;
+
+  .item-list {
+    height: 100%;
+    width: 300px;
+    flex-shrink: 0;
+    border: 2px solid black;
+    border-radius: 10px;
+    overflow: hidden;
+
+    .item-list__header {
+      height: 40px;
+      width: 100%;
+      border-bottom: 2px solid black;
+      background: styles.gray(3);
+      color: styles.gray(7);
+      display: grid;
+      place-content: center;
+      font: {
+        size: 18px;
+        weight: bold;
+      }
+      flex-shrink: 0;
+    }
+
+    .item-list__list {
+      height: 0;
+      flex-grow: 1;
+      width: 100%;
+      gap: 2px;
+
+      .item-list__list-item {
+        width: 100%;
+        height: 30px;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+        background: styles.gray(4);
+        cursor: pointer;
+        font: {
+          size: 14px;
+          weight: bold;
+        }
+        color: white;
+
+        &.selected {
+          background: white;
+          color: styles.gray(2);
+        }
+      }
+    }
+
+    .item-list__add-button {
+      width: 100%;
+      margin: 0;
+      padding: 8px 0;
+      font: {
+        size: 16px;
+        weight: bold;
+      }
+      border-radius: 0;
+    }
+  }
+
+  .item-editor {
+    height: 100%;
+    flex-grow: 1;
+    border: 2px solid black;
+    border-radius: 10px;
+    overflow: hidden;
+
+    .item-editor__header {
+      height: 40px;
+      width: 100%;
+      border-bottom: 2px solid black;
+      background: styles.gray(3);
+      color: styles.gray(7);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      font: {
+        size: 18px;
+        weight: bold;
+      }
+      flex-shrink: 0;
+    }
+
+    .item-editor__main {
+      height: 0;
+      flex-grow: 1;
+      width: 100%;
+      padding: 16px;
+      gap: 16px;
+
+      .ts-table .ts-table__td {
+        padding: 0;
+      }
+
+      .action-button {
+        width: 50px;
+        margin: 0;
+        padding: 0;
+        background: transparent;
+        min-width: 50px;
+
+        &.delete .icon--wrapper {
+          width: 32px;
+          height: 32px;
+          @include styles.mouse-interactive-icon(styles.red(4), styles.red(3), styles.red(2));
+          @include styles.set-svg-color-transition();
+        }
+
+        &.save .icon--wrapper {
+          width: 24px;
+          height: 24px;
+          @include styles.mouse-interactive-icon(styles.green(4), styles.green(3), styles.green(2));
+        }
+      }
+    }
+
+    .item-editor__buttons {
+      height: 50px;
+      width: 100%;
+      justify-content: flex-end;
+      flex-shrink: 0;
+      padding: 0 16px;
+      gap: 16px;
+
+      .ts-button, .ts-busy-button {
+        margin: 0;
+      }
+    }
+  }
+
+  .editable-list {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 16px;
+
+    .editable-list__item {
+      height: 40px;
+      font: {
+        weight: bold;
+        size: 16px;
+      }
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      background: white;
+      border-radius: 8px;
+      border: 2px solid black;
+      position: relative;
+      overflow: hidden;
+
+      .editable-list__remove-icon {
+        @include styles.mouse-interactive-icon(white);
+        position: absolute;
+        width: 30px;
+        height: 100%;
+        top: 0;
+        left: 0;
+        transform: translateX(-100%);
+        transition: transform 200ms ease-out;
+        background: styles.red(3);
+
+        svg {
+          width: 18px;
+          height: 18px;
+        }
+      }
+
+      &:hover {
+        .editable-list__remove-icon {
+          transform: translateX(0);
+        }
+      }
+    }
+
+
+    .ts-dropdown {
+      width: 200px;
+    }
+  }
+}
