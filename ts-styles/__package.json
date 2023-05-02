@@ -18,5 +18,11 @@
   },
   "devDependencies": {
     "@types/react": "$REACT_TYPES_VERSION"
-  }
+  },
+  "contributors": [
+    {
+      "name": "cipher_il",
+      "url": "https://www.npmjs.com/~cipher_il"
+    }
+  ]
 }
