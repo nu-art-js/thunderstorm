@@ -1,20 +1,20 @@
 @use 'sass:list';
-@use 'node_modules/@nu-art/thunderstorm/styles' as ts;
+@use './_palette' as *;
 
 $colorChunks: 7;
-$_black: ts.buildPalette(#000000, $colorChunks);
-$_gray-blue: ts.buildPalette(#2C3541, $colorChunks);
-$_dark-blue: ts.buildPalette(#004A72, $colorChunks);
-$_dark-green: ts.buildPalette(#2E5651, $colorChunks);
-$_purple: ts.buildPalette(#401F5C, $colorChunks);
-$_pink: ts.buildPalette(#8F1657, $colorChunks);
-$_ochre: ts.buildPalette(#876019, $colorChunks);
-$_orange: ts.buildPalette(#B94804, $colorChunks);
-$_red: ts.buildPalette(#D8042E, $colorChunks);
-$_gray: ts.buildPalette(#808080, $colorChunks);
-$_light-gray: ts.buildPalette(#D3D3D3, $colorChunks);
-$_monochromatic: ts.buildPalette(#9CAEB7, $colorChunks);
-$_green: ts.buildPalette(#2AA10F, $colorChunks);
+$_black: paletteBuilder(#000000, $colorChunks);
+$_gray-blue: paletteBuilder(#2C3541, $colorChunks);
+$_dark-blue: paletteBuilder(#004A72, $colorChunks);
+$_dark-green: paletteBuilder(#2E5651, $colorChunks);
+$_purple: paletteBuilder(#401F5C, $colorChunks);
+$_pink: paletteBuilder(#8F1657, $colorChunks);
+$_ochre: paletteBuilder(#876019, $colorChunks);
+$_orange: paletteBuilder(#B94804, $colorChunks);
+$_red: paletteBuilder(#D8042E, $colorChunks);
+$_gray: paletteBuilder(#808080, $colorChunks);
+$_light-gray: paletteBuilder(#D3D3D3, $colorChunks);
+$_monochromatic: paletteBuilder(#9CAEB7, $colorChunks);
+$_green: paletteBuilder(#2AA10F, $colorChunks);
 
 @function monochromatic($i) {
   @return #{list.nth($_monochromatic,$i)}

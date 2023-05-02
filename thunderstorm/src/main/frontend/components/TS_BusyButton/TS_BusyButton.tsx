@@ -26,6 +26,7 @@ import {LinearLayoutProps, LL_H_C} from '../Layouts';
 import './TS_BusyButton.scss';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
 import {ComponentSync} from '../../core/ComponentSync';
+import {LogLevel} from '@nu-art/ts-common';
 
 
 type Props_Button = LinearLayoutProps & {
@@ -63,9 +64,9 @@ export class TS_BusyButton
 		disabled: false
 	};
 
-	// _constructor() {
-	// 	this.logger.setMinLevel(LogLevel.Verbose);
-	// }
+	_constructor() {
+		this.logger.setMinLevel(LogLevel.Verbose);
+	}
 
 	protected deriveStateFromProps(nextProps: Props_Button, state = {} as State_Button): State_Button | undefined {
 		state.disabled = nextProps.disabled;
