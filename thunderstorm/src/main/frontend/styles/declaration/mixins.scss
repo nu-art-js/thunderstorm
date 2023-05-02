@@ -56,13 +56,3 @@
     }
   }
 }
-
-@function buildPalette($baseColor,$steps:7) {
-  $colorsList: ();
-  @for $i from 0 to $steps {
-    $lightness: math.percentage(math.div($i, $steps));
-    $newColor: scale-color($baseColor, $lightness: $lightness);
-    $colorsList: list.append($colorsList, #{$newColor});
-  }
-  @return $colorsList
-}
