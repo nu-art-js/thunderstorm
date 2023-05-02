@@ -41,6 +41,7 @@
     "@nu-art/storm": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/user-account": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-styles": "$THUNDERSTORM_SDK_VERSION",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
     "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
