@@ -2,6 +2,8 @@ import * as React from 'react';
 import {BaseDB_ApiCallerV2, EditableDBItem, SmartComponent} from '@nu-art/db-api-generator/frontend';
 import {_className, LL_H_C, LL_V_L, TS_BusyButton, TS_Button} from '@nu-art/thunderstorm/frontend';
 import {BadImplementationException, cloneObj, DB_Object, ThisShouldNotHappenException, UniqueId} from '@nu-art/ts-common';
+import {ReactNode} from 'react';
+
 import './editor-base.scss';
 
 const newItemIdentifier = '##new-item##';
@@ -18,7 +20,7 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 	abstract readonly module: BaseDB_ApiCallerV2<T>;
 	abstract readonly itemName: string;
 	abstract readonly itemNamePlural: string;
-	abstract readonly itemDisplay: (item: T) => string;
+	abstract readonly itemDisplay: (item: T) => ReactNode;
 
 	//######################### Logic #########################
 

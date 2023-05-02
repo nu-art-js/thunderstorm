@@ -1,7 +1,7 @@
 @use 'sass:math';
 @use 'sass:list';
 
-@function paletteBuilder($baseColor,$steps:7) {
+@function paletteBuilder($baseColor, $steps) {
   $colorsList: ();
   @for $i from 0 to $steps {
     $lightness: math.percentage(math.div($i, $steps));

@@ -1,7 +1,7 @@
 import * as React from 'react';
+import {ReactNode} from 'react';
 import {
 	ApiCallerEventTypeV2,
-	BaseDB_ApiCallerV2,
 	EditableDBItem,
 	EventType_Create,
 	EventType_Delete,
@@ -10,22 +10,20 @@ import {
 	State_SmartComponent
 } from '@nu-art/db-api-generator/frontend';
 import {SimpleListAdapter, TS_DropDown, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, DB_Object} from '@nu-art/ts-common';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {DB_PermissionUser} from '../shared';
 import {ModuleFE_PermissionsUser, OnPermissionsUsersUpdated} from '../core/module-pack';
+import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 
-type State<T> = State_EditorBase<DB_PermissionUser> & {
-	accounts: Readonly<T[]>
-};
 
-type Props<T extends DB_Object> = Props_SmartComponent & {
-	accountsModule: BaseDB_ApiCallerV2<T>
-	accountDisplayKey: keyof T;
+type State = State_EditorBase<DB_PermissionUser>;
+
+type Props = Props_SmartComponent & {
+	renderAccount: (accountId: string) => ReactNode
 }
 
-export class PermissionUsersEditor<T extends DB_Object>
-	extends EditorBase<DB_PermissionUser, State<T>, Props<T>>
+export class PermissionUsersEditor
+	extends EditorBase<DB_PermissionUser, State, Props>
 	implements OnPermissionsUsersUpdated {
 
 	//######################### Static #########################
@@ -33,9 +31,10 @@ export class PermissionUsersEditor<T extends DB_Object>
 	readonly module = ModuleFE_PermissionsUser;
 	readonly itemName = 'Permission User';
 	readonly itemNamePlural = 'Permission Users';
-	readonly itemDisplay = (user: DB_PermissionUser) => this.getItemDisplay(user);
+	readonly itemDisplay = (user: DB_PermissionUser) => this.props.renderAccount(user.accountId);
 	static defaultProps = {
-		modules: [ModuleFE_PermissionsUser]
+		modules: [ModuleFE_PermissionsUser],
+		renderAccount: (accountId: string) => <div>{ModuleFE_Account.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'}</div>
 	};
 
 	//######################### Life Cycle #########################
@@ -52,31 +51,23 @@ export class PermissionUsersEditor<T extends DB_Object>
 			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
 	}
 
-	protected async deriveStateFromProps(nextProps: Props<T>, state: (State<T> & State_SmartComponent)) {
+	protected async deriveStateFromProps(nextProps: Props, state: (State & State_SmartComponent)) {
 		state.items = ModuleFE_PermissionsUser.cache.all();
-		state.accounts = nextProps.accountsModule.cache.all();
 		return state;
 	}
 
 	//######################### Life Cycle #########################
 
-	private getItemDisplay = (user: DB_PermissionUser): string => {
-		const account = this.props.accountsModule.cache.unique(user.accountId);
-		if (!account)
-			throw new BadImplementationException(`No user with id ${user.accountId}`);
-		return account[this.props.accountDisplayKey] as string;
-	};
-
 	//######################### Render #########################
 
 	private renderAccountsDropdown = () => {
 		const user = this.state.editedItem!;
-		const accounts = this.state.accounts.filter(acc => !this.state.items.find(item => item.accountId === acc._id));
-		const adapter = SimpleListAdapter(accounts, item => <div>{item.item[this.props.accountDisplayKey] as string}</div>);
-		const selected = this.state.accounts.find(item => item._id === user.item.accountId);
+		const accounts = this.state.items.filter(acc => !this.state.items.find(item => item.accountId === acc._id));
+		const adapter = SimpleListAdapter(accounts, item => <>{this.props.renderAccount(item.item.accountId)}</>);
+		const selected = accounts.find(item => item._id === user.item.accountId);
 
 		return <TS_PropRenderer.Vertical label={'Account'}>
-			<TS_DropDown<T>
+			<TS_DropDown<DB_PermissionUser>
 				adapter={adapter}
 				onSelected={value => this.setProperty('accountId', value._id)}
 				selected={selected}
