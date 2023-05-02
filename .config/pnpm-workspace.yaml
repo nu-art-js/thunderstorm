@@ -1,5 +1,6 @@
 packages:
   - ts-common
+  - ts-styles
   - neural
   - google-services
   - firebase
