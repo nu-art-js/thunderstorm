@@ -47,6 +47,11 @@ export class PermissionProjectsEditor
 
 	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
 		state.items = ModuleFE_PermissionsProject.cache.all();
+		if (!state.editedItem) {
+			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsProject);
+			state.selectedItemId = state.items[0]._id;
+		}
+
 		return state;
 	}
 

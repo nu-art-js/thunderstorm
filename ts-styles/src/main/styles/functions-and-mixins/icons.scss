@@ -1,0 +1,63 @@
+@use 'palette' as palette;
+
+@mixin categoryPathItem {
+  font-size: 12px;
+  font-weight: 600;
+  background: palette.dark-green(3);
+  color: white;
+  border-radius: 10px;
+  padding: 2px 10px;
+  width: 120px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+@mixin disease-profile-initials-icon {
+  //Dimensions
+  height: 16px;
+  width: fit-content;
+  min-width: 16px;
+  max-width: 36px;
+  padding: 0 4px;
+
+  //Font
+  font-size: 10px !important;
+  font-weight: 400;
+
+  //Display
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 3px;
+}
+
+@mixin tag($lightColor,$darkColor) {
+  background: $lightColor;
+  border: 2px solid $darkColor;
+  border-radius: 10px;
+  min-width: 50px;
+  height: 28px;
+  padding: 0 10px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin disease-value-count {
+  flex-shrink: 0;
+  font: {
+    size: var(--workspace__default-font-size);
+    weight: bold;
+  }
+  color: var(--color__background__general-panel);
+  background: var(--color__disease-value-count__background);
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

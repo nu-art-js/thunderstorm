@@ -1,0 +1,31 @@
+@use 'palette' as palette;
+
+@mixin text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@mixin form-title {
+  font-size: 13px;
+  color: palette.gray-blue(3);
+}
+
+@mixin placeholderMessage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font: {
+    size: 60px;
+    weight: 600;
+  }
+  white-space: pre-wrap;
+  text-align: center;
+
+  color: #616161;
+  background: #bababa;
+  text-shadow: #e0e0e0 1px 1px 0;
+}

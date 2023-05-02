@@ -1,0 +1,22 @@
+{
+  "name": "@nu-art/ts-styles",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "author": "nu-art",
+  "description": "Styles by Cipher",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "license": "ISC",
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "react": "$REACT_PKG_VERSION"
+  },
+  "devDependencies": {
+    "@types/react": "$REACT_TYPES_VERSION"
+  }
+}

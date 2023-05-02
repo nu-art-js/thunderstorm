@@ -1,0 +1,50 @@
+@use 'palette' as palette;
+@use 'components' as components;
+
+@mixin advisor-button-colors {
+  @include components.mouseInteractiveBackground(palette.gray(7), white);
+  border: 1px solid #CFD4D8;
+}
+
+@mixin advisor-rule-out-item {
+  cursor: pointer;
+  width: 100%;
+  height: 26px;
+  background: #EDF1F3;
+  border: 1px solid #CFD4D8;
+  padding: 0 10px;
+  justify-content: space-between;
+  border-radius: 1px;
+  margin: 4px 0;
+  color: black;
+
+  .rule-out-action__name {
+    font: {
+      size: 14px;
+      family: Arial;
+    }
+  }
+
+  &:hover {
+    background: #F5F7F8;
+  }
+
+  &:active {
+    background: #D6DBDF;
+  }
+
+  &.pending {
+    box-shadow: inset 1px 1px 0px #00000029;
+    background: #F5F7F8;
+
+    .rule-out-action__name {
+      color: #001E95;
+    }
+
+    .icon--wrapper {
+      svg path {
+        fill: #001E95;
+      }
+    }
+  }
+}
