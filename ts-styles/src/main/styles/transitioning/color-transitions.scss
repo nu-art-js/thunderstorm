@@ -1,0 +1,23 @@
+@use 'sass:list';
+@use '../consts' as consts;
+@use './general' as general;
+
+@function background-transition($time: 200, $style: ease-out) {
+  @return background #{$time}ms $style;
+}
+
+@function svg-color-transition($time:200 , $style: ease-out) {
+  $transitions: ();
+  @each $rule in consts.$svg-prop-rules {
+    $transitions: append($transitions, $rule #{$time}ms $style, comma);
+  }
+
+  @return $transitions;
+}
+
+@mixin set-svg-color-transition($time:200 , $style: ease-out) {
+  $transitions: svg-color-transition($time, $style);
+  *:not(g):not(svg) {
+    @include general.set-transitions($transitions)
+  }
+}

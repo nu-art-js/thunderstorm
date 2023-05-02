@@ -164,11 +164,11 @@ export class PermissionDomainsEditor
 
 	private renderLevelAction = (level: DB_PermissionAccessLevel) => {
 		if (!level._id)
-			return <TS_BusyButton onClick={this.saveNewLevel} className={'action-button'}>
+			return <TS_BusyButton onClick={this.saveNewLevel} className={'action-button save'}>
 				<TS_Icons.save.component/>
 			</TS_BusyButton>;
 
-		return <TS_BusyButton onClick={() => this.deleteLevel(level)}>
+		return <TS_BusyButton onClick={async () => await this.deleteLevel(level)} className={'action-button delete'}>
 			<TS_Icons.bin.component/>
 		</TS_BusyButton>;
 	};
