@@ -25,7 +25,6 @@ import {_className} from '../../utils/tools';
 import {LinearLayoutProps, LL_H_C} from '../Layouts';
 import './TS_BusyButton.scss';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
-import {LogLevel} from '@nu-art/ts-common';
 import {ComponentAsync} from '../../core/ComponentAsync';
 
 
@@ -64,12 +63,11 @@ export class TS_BusyButton
 		disabled: false
 	};
 
-	_constructor() {
-		this.logger.setMinLevel(LogLevel.Verbose);
-	}
+	// _constructor() {
+	// 	this.logger.setMinLevel(LogLevel.Verbose);
+	// }
 
 	protected async deriveStateFromProps(nextProps: Props_Button, state = {} as State_Button) {
-		this.logInfo('Deriving with state', state);
 		state.disabled = nextProps.disabled;
 		state.isBusy ??= false;
 		return state;
