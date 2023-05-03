@@ -18,117 +18,104 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-.ts-playground {
+@use '@nu-art/ts-styles' as styles;
+
+$headerHeight: 40px;
+
+.ts-app-tools {
   width: 100%;
   height: 100%;
+  background: styles.gray(6);
 
-  .ts-playground__selector {
+  .ts-app-tools__header {
+    width: 100%;
+    height: $headerHeight;
+    border-bottom: 1px solid black;
+    align-items: center;
+    background: styles.gray(4);
+
+    .ts-app-tools__header__title {
+      min-width: 0;
+      flex-shrink: 1;
+      overflow: hidden;
+      font: {
+        size: 20px;
+        weight: 600;
+      }
+    }
+
+    .ts-app-tools__header__caret {
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+  }
+
+  .ts-app-tools__main {
+    width: 100%;
+    height: calc(100% - $headerHeight);
+  }
+
+  .ts-app-tools__nav-bar {
     height: 100%;
     width: 300px;
     overflow-x: hidden;
 
-    .ts-playground__selector__header {
+    .ts-app-tools__nav-bar__header {
       width: 100%;
-      height: 30px;
-      border-bottom: 1px solid black;
-      justify-content: space-between;
-      align-items: center;
-
-      .header__title {
-        min-width: 0;
-        flex-shrink: 1;
-        overflow: hidden;
-        font: {
-          size: 20px;
-          weight: 600;
-        }
+      padding: 4px 8px;
+      background: styles.gray(4);
+      font: {
+        size: 18px;
+        weight: bold;
       }
+    }
 
-      .header__caret {
-        width: 30px;
+    nav {
+      width: 100%;
+
+      .ts-app-tools__nav-bar__item {
+        width: 100%;
         height: 30px;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-shrink: 0;
-      }
-    }
+        padding: 4px 8px;
+        display: block;
+        text-decoration: none;
+        font: {
+          size: 16px;
+          weight: bold;
+        }
 
-    .ts-tree {
-      width: 100%;
-      height: 100%;
-
-      .ts-tree__children-container {
-        .ts-tree__node {
-          padding: 0;
-
-          .ts-playground__nav-item {
-            width: 100%;
-            padding: 4px 8px;
-            display: block;
-            text-decoration: none;
-            font: {
-              size: 16px;
-              weight: bold;
-            }
-
-            &.selected {
-              background: #00A5F6;
-              color: white;
-            }
-          }
+        &.selected {
+          background: #00A5F6;
+          color: white;
         }
       }
     }
 
-    &.ts-playground__selector-collapsed {
-      width: 30px;
 
-      .ts-tree {
-        display: none;
-      }
+    &.ts-app-tools__nav-bar-collapsed {
+      width: 30px;
     }
   }
 
-  .ts-playground__container {
+  .ts-app-tools__page {
     height: 100%;
     flex-grow: 1;
     border-style: double;
     display: inline-block;
-    box-sizing: border-box;
 
-    .ts-playground__item {
-      background: unset;
-
-      &:focus {
-        background: #afafaf;
+    .app-tools-page__page__header {
+      padding: 8px 0;
+      margin: 0 16px 8px;
+      border-bottom: 2px solid black;
+      font: {
+        size: 28px;
+        weight: bold;
       }
     }
-
-    .ts-playground__header {
-      font-size: 20px;
-      margin-bottom: 8px;
-    }
-
-    .ts-playground__group-example {
-      width: 100%;
-      padding-block: 8px;
-      margin-block: 8px;
-      justify-content: space-around;
-      border: 1px solid #68678d50;
-    }
-
-    .ts-playground__example {
-      border: 1px solid #68678d50;
-      padding: 8px;
-      margin-inline: 8px;
-    }
-
-    .ts-playground__results {
-      font-size: 18px;
-      margin-top: 8px;
-    }
   }
-
 }

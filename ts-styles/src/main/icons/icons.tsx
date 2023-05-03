@@ -32,7 +32,7 @@ type Props = IconAttributes & {
 class RenderIcon
 	extends React.Component<Props> {
 	render() {
-		const className = 'icon--wrapper' + (this.props.className ?? '');
+		const className = 'icon--wrapper ' + (this.props.className ?? '');
 		return <div {...this.props} className={className}
 								style={{WebkitMaskImage: `url(${this.props.icon})`, maskImage: `url(${this.props.icon})`}}/>;
 	}
@@ -50,7 +50,7 @@ export const iconsRenderer = (key: IconData, props: IconAttributes) => {
 const genIcon = (Icon: ElementType) => {
 	return (props: IconAttributes) => <div
 		{...props}
-		className={'icon--wrapper' + (props.className ?? '')}
+		className={'icon--wrapper ' + (props.className ?? '')}
 	>
 		<Icon/>
 	</div>;
