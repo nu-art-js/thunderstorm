@@ -24,7 +24,7 @@ import {XhrHttpModule} from '../modules/http/XhrHttpModule';
 
 
 type ApiQueryReturnType<API extends QueryApi<any, any, any, any>> = API['P'] extends undefined ? () => BaseHttpRequest<API> : (params: API['P']) => BaseHttpRequest<API>
-type ApiBodyReturnType<API extends BodyApi<any, any, any, any>> = API['B'] extends undefined ? () => BaseHttpRequest<API> : (params: API['B']) => BaseHttpRequest<API>
+ type ApiBodyReturnType<API extends BodyApi<any, any, any, any>> = API['B'] extends undefined ? () => BaseHttpRequest<API> : (params: API['B']) => BaseHttpRequest<API>
 
 export function apiWithQuery<API extends QueryApi<any, any>>(apiDef: ApiDef<API>,
 																														 onCompleted?: (response: API['R'], params: API['P'], request: BaseHttpRequest<API>) => Promise<any>,
