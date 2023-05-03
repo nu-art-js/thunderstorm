@@ -10,7 +10,13 @@ import {
 } from '@nu-art/db-api-generator/frontend';
 import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionProject} from '../shared';
 import {EditorBase, State_EditorBase} from './editor-base';
-import {ModuleFE_PermissionsAccessLevel, ModuleFE_PermissionsDomain, ModuleFE_PermissionsProject, OnPermissionsDomainsUpdated} from '../core/module-pack';
+import {
+	ModuleFE_PermissionsAccessLevel,
+	ModuleFE_PermissionsDomain,
+	ModuleFE_PermissionsProject,
+	OnPermissionsDomainsUpdated,
+	OnPermissionsLevelsUpdated
+} from '../core/module-pack';
 import {SimpleListAdapter, TS_BusyButton, TS_DropDown, TS_Input, TS_PropRenderer, TS_Table} from '@nu-art/thunderstorm/frontend';
 import {BadImplementationException, capitalizeFirstLetter, cloneObj, PreDB} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
@@ -24,7 +30,8 @@ const emptyLevel: PreDB<DB_PermissionAccessLevel> = Object.freeze({name: '', dom
 
 export class PermissionDomainsEditor
 	extends EditorBase<DB_PermissionDomain, State>
-	implements OnPermissionsDomainsUpdated {
+	implements OnPermissionsDomainsUpdated, OnPermissionsLevelsUpdated {
+
 
 	//######################### Static #########################
 
@@ -48,6 +55,10 @@ export class PermissionDomainsEditor
 		}
 		if (params[0] === EventType_Delete)
 			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
+	}
+
+	__onPermissionsLevelsUpdated(...params: ApiCallerEventTypeV2<DB_PermissionAccessLevel>) {
+		this.forceUpdate();
 	}
 
 	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
@@ -81,8 +92,7 @@ export class PermissionDomainsEditor
 
 	private deleteLevel = async (_level: DB_PermissionAccessLevel) => {
 		const level = new EditableDBItem(_level, ModuleFE_PermissionsAccessLevel);
-		await level.delete();
-		this.forceUpdate();
+		return level.delete();
 	};
 
 	private saveNewLevel = async () => {
@@ -90,8 +100,7 @@ export class PermissionDomainsEditor
 			throw new BadImplementationException('Saving level with no selected domain');
 
 		this.state.newLevel.set('domainId', this.state.editedItem.item._id);
-		await this.state.newLevel.save();
-		this.forceUpdate();
+		return this.state.newLevel.save();
 	};
 
 	//######################### Render levels #########################
@@ -168,7 +177,10 @@ export class PermissionDomainsEditor
 				<TS_Icons.save.component/>
 			</TS_BusyButton>;
 
-		return <TS_BusyButton onClick={async () => await this.deleteLevel(level)} className={'action-button delete'}>
+		return <TS_BusyButton
+			onClick={async () => await this.deleteLevel(level)}
+			className={'action-button delete'}
+			key={level._id}>
 			<TS_Icons.bin.component/>
 		</TS_BusyButton>;
 	};

@@ -13,15 +13,15 @@ import {BadImplementationException} from '@nu-art/ts-common';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {DB_PermissionAccessLevel, DB_PermissionGroup} from '../shared';
 import {ModuleFE_PermissionsAccessLevel, ModuleFE_PermissionsGroup, OnPermissionsGroupsUpdated} from '../core/module-pack';
+import {TS_Icons} from '@nu-art/ts-styles';
 
 type State = State_EditorBase<DB_PermissionGroup> & {
 	levels: Readonly<DB_PermissionAccessLevel[]>
 };
 
-type Props = Props_SmartComponent & { removeIcon: React.ElementType }
 
 export class PermissionGroupsEditor
-	extends EditorBase<DB_PermissionGroup, State, Props>
+	extends EditorBase<DB_PermissionGroup, State>
 	implements OnPermissionsGroupsUpdated {
 
 	//######################### Static #########################
@@ -60,7 +60,6 @@ export class PermissionGroupsEditor
 		const group = this.state.editedItem!;
 		const ids = group.item.accessLevelIds || [];
 		const adapter = SimpleListAdapter(this.state.levels.filter(i => !ids.includes(i._id)) as DB_PermissionAccessLevel[], item => <div>{item.item.name}</div>);
-		const Icon = this.props.removeIcon;
 		return <TS_PropRenderer.Vertical label={'Access Levels'}>
 			<LL_H_C className={'editable-list'}>
 				{ids.map(id => {
@@ -70,7 +69,7 @@ export class PermissionGroupsEditor
 
 					return <div className={'editable-list__item'} key={id}>
 						{level.name}
-						<Icon
+						<TS_Icons.x.component
 							className={'editable-list__remove-icon'}
 							onClick={() => this.setProperty('accessLevelIds', ids.filter(i => i !== id))}
 						/>
