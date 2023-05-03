@@ -103,7 +103,7 @@ export class TS_AppTools
 		return <TS_NavLink
 			route={route}
 			className={({isActive, isPending}) => _className('ts-app-tools__nav-bar__item', isActive ? 'selected' : undefined)}
-		></TS_NavLink>;
+		>{screen.name}</TS_NavLink>;
 	};
 
 	private renderNavbar = () => {
@@ -112,9 +112,9 @@ export class TS_AppTools
 
 		const className = _className('ts-app-tools__nav-bar', this.state.navbarCollapse ? 'ts-app-tools__nav-bar-collapsed' : undefined);
 		return <LL_V_L className={className}>
-			<div>Dev Pages</div>
+			<div className={'ts-app-tools__nav-bar__header'}>Dev Pages</div>
 			<nav>{devScreens.map(this.renderNavbarItem)}</nav>
-			<div>Playground Pages</div>
+			<div className={'ts-app-tools__nav-bar__header'}>Playground Pages</div>
 			<nav>{pgScreens.map(this.renderNavbarItem)}</nav>
 		</LL_V_L>;
 	};
@@ -122,7 +122,7 @@ export class TS_AppTools
 	render() {
 		return <LL_V_L className={'ts-app-tools'}>
 			{this.renderHeader()}
-			<LL_H_C>
+			<LL_H_C className={'ts-app-tools__main'}>
 				{this.renderNavbar()}
 				<TS_ErrorBoundary>
 					<div className="ts-app-tools__page"><Outlet/></div>
