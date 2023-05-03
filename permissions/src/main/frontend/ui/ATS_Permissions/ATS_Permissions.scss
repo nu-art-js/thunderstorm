@@ -1,0 +1,41 @@
+#dev-page__permissions {
+  width: 100%;
+  height: 100%;
+  padding: 0 16px 16px;
+
+  .ts-dev-page__page-header {
+    width: 100%;
+    margin: 0 0 16px;
+    padding: 8px 0;
+    flex-shrink: 0;
+  }
+
+  .ts-tabs {
+    flex-grow: 1;
+    gap: 8px;
+
+    .ts-tabs__tabs-header {
+      gap: 8px;
+      background: transparent;
+
+      .ts-tabs__tab {
+        background: transparent;
+        border: 2px solid black;
+        border-radius: 8px;
+        font: {
+          size: 18px;
+          weight: bold;
+        }
+        color: black;
+
+        &.ts-tabs__focused {
+          background: white;
+        }
+      }
+    }
+
+    .ts-tabs__content {
+      background: transparent;
+    }
+  }
+}
