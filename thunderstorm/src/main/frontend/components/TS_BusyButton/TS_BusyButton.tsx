@@ -25,8 +25,8 @@ import {_className} from '../../utils/tools';
 import {LinearLayoutProps, LL_H_C} from '../Layouts';
 import './TS_BusyButton.scss';
 import {TS_ButtonLoader} from '../TS_ButtonLoader';
-import {ComponentSync} from '../../core/ComponentSync';
 import {LogLevel} from '@nu-art/ts-common';
+import {ComponentAsync} from '../../core/ComponentAsync';
 
 
 type Props_Button = LinearLayoutProps & {
@@ -56,7 +56,7 @@ type State_Button = {
  * ```
  */
 export class TS_BusyButton
-	extends ComponentSync<Props_Button, State_Button> {
+	extends ComponentAsync<Props_Button, State_Button> {
 
 	static defaultProps: Partial<Props_Button> = {
 		keepLoaderOnSuccess: false,
@@ -68,7 +68,8 @@ export class TS_BusyButton
 		this.logger.setMinLevel(LogLevel.Verbose);
 	}
 
-	protected deriveStateFromProps(nextProps: Props_Button, state = {} as State_Button): State_Button | undefined {
+	protected async deriveStateFromProps(nextProps: Props_Button, state = {} as State_Button) {
+		this.logInfo('Deriving with state', state);
 		state.disabled = nextProps.disabled;
 		state.isBusy ??= false;
 		return state;
