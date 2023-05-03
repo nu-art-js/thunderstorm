@@ -1,0 +1,25 @@
+/// Sets backgrounds for element based on mouse interaction
+///
+/// @param $bg - base background
+/// @param $bgh - background when mouse hover
+/// @param $bga - background when mouse click
+///
+@mixin mouse-interactive-background($bg, $bg-h: $bg ,$bg-a: $bg-h) {
+  background: $bg;
+  &:hover {
+    background: $bg-h;
+  }
+  &:active {
+    background: $bg-a;
+  }
+}
+
+@mixin mouse-interactive-text($c,$c-h,$c-a) {
+  color: $c;
+  &:hover {
+    color: $c-h;
+  }
+  &:active {
+    color: $c-a;
+  }
+}
