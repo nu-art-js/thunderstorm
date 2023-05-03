@@ -1,18 +1,14 @@
 @use '../consts' as consts;
 
-/// Sets backgrounds for element based on mouse interaction
-///
-/// @param $bg - base background
-/// @param $bgh - background when mouse hover
-/// @param $bga - background when mouse click
-///
-@mixin mouse-interactive-background($bg, $bg-h: $bg ,$bg-a: $bg-h) {
-  background: $bg;
-  &:hover {
-    background: $bg-h;
+@mixin setIconProp($prop,$value) {
+  *:not([data-no-#{$prop}="true"]):not(g) {
+    #{$prop}: $value;
   }
-  &:active {
-    background: $bg-a;
+}
+
+@mixin color-svg($color) {
+  @each $rule in consts.$svg-prop-rules {
+    @include setIconProp($rule, $color);
   }
 }
 
@@ -35,11 +31,5 @@
     &:active {
       @include setIconProp($rule, $color-a);
     }
-  }
-}
-
-@mixin setIconProp($prop,$value) {
-  *:not([data-no-#{$prop}="true"]):not(g) {
-    #{$prop}: $value;
   }
 }
