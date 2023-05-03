@@ -1,0 +1,121 @@
+/*!
+ * Thunderstorm is a full web app framework!
+ *
+ * Typescript & Express backend infrastructure that natively runs on firebase function
+ * Typescript & React frontend infrastructure
+ *
+ * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@use '@nu-art/ts-styles' as styles;
+
+$headerHeight: 40px;
+
+.ts-app-tools {
+  width: 100%;
+  height: 100%;
+  background: styles.gray(6);
+
+  .ts-app-tools__header {
+    width: 100%;
+    height: $headerHeight;
+    border-bottom: 1px solid black;
+    align-items: center;
+    background: styles.gray(4);
+
+    .ts-app-tools__header__title {
+      min-width: 0;
+      flex-shrink: 1;
+      overflow: hidden;
+      font: {
+        size: 20px;
+        weight: 600;
+      }
+    }
+
+    .ts-app-tools__header__caret {
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-shrink: 0;
+    }
+  }
+
+  .ts-app-tools__main {
+    width: 100%;
+    height: calc(100% - $headerHeight);
+  }
+
+  .ts-app-tools__nav-bar {
+    height: 100%;
+    width: 300px;
+    overflow-x: hidden;
+
+    .ts-app-tools__nav-bar__header {
+      width: 100%;
+      padding: 4px 8px;
+      background: styles.gray(4);
+      font: {
+        size: 18px;
+        weight: bold;
+      }
+    }
+
+    nav {
+      width: 100%;
+
+      .ts-app-tools__nav-bar__item {
+        width: 100%;
+        height: 30px;
+        padding: 4px 8px;
+        display: block;
+        text-decoration: none;
+        font: {
+          size: 16px;
+          weight: bold;
+        }
+
+        &.selected {
+          background: #00A5F6;
+          color: white;
+        }
+      }
+    }
+
+
+    &.ts-app-tools__nav-bar-collapsed {
+      width: 30px;
+    }
+  }
+
+  .ts-app-tools__page {
+    height: 100%;
+    flex-grow: 1;
+    border-style: double;
+    display: inline-block;
+
+    .app-tools-page__page__header {
+      padding: 8px 0;
+      margin: 0 16px 8px;
+      border-bottom: 2px solid black;
+      font: {
+        size: 28px;
+        weight: bold;
+      }
+    }
+  }
+}
