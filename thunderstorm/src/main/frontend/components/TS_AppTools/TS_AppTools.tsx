@@ -113,7 +113,7 @@ export class TS_AppTools
 			className={({isActive, isPending}) => _className('ts-app-tools__nav-bar__item', isActive ? 'selected' : undefined)}
 		>
 			<Icon/>
-			{screen.name}
+			<div className={'ts-app-tools__nav-bar__item__title'}>{screen.name}</div>
 		</TS_NavLink>;
 	};
 

@@ -32,20 +32,22 @@ $headerHeight: 40px;
     height: $headerHeight;
     border-bottom: 1px solid black;
     align-items: center;
-    background: styles.gray(4);
+    background: styles.gray(2);
     gap: 16px;
 
     .ts-app-tools__header__title {
       min-width: 0;
       flex-shrink: 1;
       overflow: hidden;
+      color: white;
       font: {
         size: 20px;
-        weight: 600;
+        weight: bold;
       }
     }
 
     .ts-app-tools__header__caret {
+      @include styles.color-svg(white);
       width: 40px;
       height: 40px;
       padding: 6px;
@@ -66,8 +68,9 @@ $headerHeight: 40px;
     @include styles.hide-scroll-bar;
     height: 100%;
     width: 300px;
-    overflow-x: hidden;
     transition: width 200ms ease-out;
+    flex-shrink: 0;
+    overflow-y: auto;
 
     .ts-collapsable-container {
       width: 100%;
@@ -76,6 +79,7 @@ $headerHeight: 40px;
         height: 30px;
         background: styles.gray(4);
         justify-content: flex-start;
+        box-shadow: none;
 
         .ts-collapsable-container__header__caret {
           @include styles.mouse-interactive-icon(black);
@@ -88,6 +92,8 @@ $headerHeight: 40px;
         }
 
         .ts-app-tools__nav-bar__header {
+          flex-shrink: 1;
+          overflow: hidden;
           font: {
             size: 18px;
             weight: bold;
@@ -110,15 +116,19 @@ $headerHeight: 40px;
         display: flex;
         align-items: center;
         gap: 8px;
-        color: black;
-        font: {
-          size: 16px;
-          weight: bold;
+
+        .ts-app-tools__nav-bar__item__title {
+          color: inherit;
+          font: {
+            size: 16px;
+            weight: bold;
+          }
         }
 
         .icon--wrapper {
           width: 30px;
-          height: 22px;
+          height: 30px;
+          padding: 4px 0;
         }
 
         &.selected {
@@ -151,6 +161,27 @@ $headerHeight: 40px;
         size: 28px;
         weight: bold;
       }
+    }
+  }
+}
+
+#app-tools-default {
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+
+  .title {
+    font: {
+      size: 40px;
+      weight: bold;
+    }
+  }
+
+  .sub-title {
+    font: {
+      size: 32px;
+      weight: bold;
     }
   }
 }
