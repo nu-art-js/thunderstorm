@@ -33,6 +33,7 @@ $headerHeight: 40px;
     border-bottom: 1px solid black;
     align-items: center;
     background: styles.gray(4);
+    gap: 16px;
 
     .ts-app-tools__header__title {
       min-width: 0;
@@ -47,6 +48,7 @@ $headerHeight: 40px;
     .ts-app-tools__header__caret {
       width: 40px;
       height: 40px;
+      padding: 6px;
       cursor: pointer;
       display: flex;
       justify-content: center;
@@ -61,41 +63,74 @@ $headerHeight: 40px;
   }
 
   .ts-app-tools__nav-bar {
+    @include styles.hide-scroll-bar;
     height: 100%;
     width: 300px;
     overflow-x: hidden;
+    transition: width 200ms ease-out;
 
-    .ts-app-tools__nav-bar__header {
+    .ts-collapsable-container {
       width: 100%;
-      padding: 4px 8px;
-      background: styles.gray(4);
-      font: {
-        size: 18px;
-        weight: bold;
+
+      .ts-collapsable-container__header {
+        height: 30px;
+        background: styles.gray(4);
+        justify-content: flex-start;
+
+        .ts-collapsable-container__header__caret {
+          @include styles.mouse-interactive-icon(black);
+          margin: 0;
+          height: 30px;
+          width: 30px;
+          padding: 4px;
+          rotate: 90deg;
+          transition: rotate 200ms ease-out;
+        }
+
+        .ts-app-tools__nav-bar__header {
+          font: {
+            size: 18px;
+            weight: bold;
+          }
+        }
+
+        &.collapsed .ts-collapsable-container__header__caret {
+          rotate: none;
+        }
       }
-    }
-
-    nav {
-      width: 100%;
 
       .ts-app-tools__nav-bar__item {
+        @include styles.mouse-interactive-background(styles.gray(6), styles.gray(4), styles.gray(2));
+        @include styles.mouse-interactive-icon(black, black, white);
+        @include styles.mouse-interactive-text(black, black, white);
+
         width: 100%;
         height: 30px;
-        padding: 4px 8px;
-        display: block;
         text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: black;
         font: {
           size: 16px;
           weight: bold;
         }
 
+        .icon--wrapper {
+          width: 30px;
+          height: 22px;
+        }
+
         &.selected {
-          background: #00A5F6;
+          background: styles.gray(2);
           color: white;
+
+          .icon--wrapper {
+            @include styles.color-svg(white);
+          }
         }
       }
     }
-
 
     &.ts-app-tools__nav-bar-collapsed {
       width: 30px;
