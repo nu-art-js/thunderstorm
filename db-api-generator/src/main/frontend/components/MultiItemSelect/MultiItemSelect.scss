@@ -2,4 +2,30 @@
   width: 100%;
   height: 100%;
   position: relative;
+
+}
+
+@mixin tag($lightColor,$darkColor) {
+  background: $lightColor;
+  border: 1px solid $darkColor;
+  border-radius: 5px;
+  min-width: 70px;
+  height: 28px;
+  padding-block: 4px;
+  padding-inline: 8px;
+  flex-shrink: 0;
+}
+
+.ts-values-list {
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+
+  .ts-values-list__value {
+    @include tag(var(--tags--inner-color), var(--tags--outer-color));
+
+    .ts-icon__small {
+      margin-right: 4px;
+    }
+  }
 }
