@@ -5,8 +5,10 @@ import {PermissionDomainsEditor, PermissionGroupsEditor, PermissionProjectsEdito
 
 type State = {};
 
-export class ATS_Permissions_Class
+export class ATS_Permissions
 	extends ComponentSync<{}, State> {
+
+	static screen: AppToolsScreen = {key: 'permissions', name: 'Permissions Editor', renderer: this};
 
 	//######################### Life Cycle #########################
 
@@ -34,9 +36,3 @@ export class ATS_Permissions_Class
 		</LL_V_L>;
 	}
 }
-
-export const ATS_Permissions: AppToolsScreen = {
-	key: 'permissions',
-	renderer: ATS_Permissions_Class,
-	name: 'Permissions Editor',
-};
