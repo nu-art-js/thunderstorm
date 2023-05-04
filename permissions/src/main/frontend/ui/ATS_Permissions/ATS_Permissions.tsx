@@ -39,5 +39,4 @@ export const ATS_Permissions: AppToolsScreen = {
 	key: 'permissions',
 	renderer: ATS_Permissions_Class,
 	name: 'Permissions Editor',
-	type: 'dev'
 };
