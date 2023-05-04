@@ -31,12 +31,10 @@ import {Outlet} from 'react-router-dom';
 import {TS_AppTools_Default} from './TS_AppTools_Default';
 import {AppToolsScreen} from './types';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {TS_CollapsableContainer} from '../TS_CollapsableContainer';
+
 
 type CollapseState = {
 	navbarCollapse: boolean;
-	devCollapse: boolean;
-	pgCollapse: boolean;
 }
 
 const collapseStateStorage = new StorageKey<CollapseState>('app-tools-collapse-state');
@@ -60,7 +58,7 @@ export class TS_AppTools
 			Component: this,
 			children: [
 				TS_AppTools_Default.Route,
-				...TS_AppTools.screens.map(screen => ({key: screen.key, path: md5(screen.name), Component: screen.renderer as React.ComponentClass})),
+				...TS_AppTools.screens.map(screen => ({key: screen.key || screen.name, path: md5(screen.name), Component: screen.renderer})),
 			]
 		};
 	}
@@ -76,8 +74,6 @@ export class TS_AppTools
 		const collapse = collapseStateStorage.get();
 		this.state = {
 			navbarCollapse: collapse?.navbarCollapse ?? false,
-			devCollapse: collapse?.devCollapse ?? false,
-			pgCollapse: collapse?.pgCollapse ?? false,
 		};
 	}
 
@@ -103,14 +99,14 @@ export class TS_AppTools
 	};
 
 	private renderNavbarItem = (screen: AppToolsScreen) => {
-		const route = TS_AppTools.Route.children!.find(i => i.key === screen.key);
+		const route = TS_AppTools.Route.children!.find(i => i.key === screen.name);
 		if (!route)
-			throw new ThisShouldNotHappenException(`Couldn't find route for screen with key ${screen.key}`);
+			throw new ThisShouldNotHappenException(`Couldn't find route for screen with key ${screen.name}`);
 
-		const Icon = screen.icon ?? (screen.type === 'dev' ? TS_Icons.gear.component : TS_Icons.bin.component);
+		const Icon = screen.icon ?? TS_Icons.gear.component;
 		return <TS_NavLink
 			route={route}
-			className={({isActive, isPending}) => _className('ts-app-tools__nav-bar__item', isActive ? 'selected' : undefined)}
+			className={({isActive}) => _className('ts-app-tools__nav-bar__item', isActive ? 'selected' : undefined)}
 		>
 			<Icon/>
 			<div className={'ts-app-tools__nav-bar__item__title'}>{screen.name}</div>
@@ -118,25 +114,9 @@ export class TS_AppTools
 	};
 
 	private renderNavbar = () => {
-		const devScreens = TS_AppTools.screens.filter(screen => screen.type === 'dev');
-		const pgScreens = TS_AppTools.screens.filter(screen => screen.type === 'playground');
-
 		const className = _className('ts-app-tools__nav-bar', this.state.navbarCollapse ? 'ts-app-tools__nav-bar-collapsed' : undefined);
 		return <LL_V_L className={className}>
-			<TS_CollapsableContainer
-				headerRenderer={<div className={'ts-app-tools__nav-bar__header'}>Dev Pages</div>}
-				containerRenderer={devScreens.map(this.renderNavbarItem)}
-				customCaret={<TS_Icons.treeCollapse.component/>}
-				onCollapseToggle={() => this.toggleCollapse('devCollapse')}
-				collapsed={this.state.devCollapse}
-			/>
-			<TS_CollapsableContainer
-				headerRenderer={<div className={'ts-app-tools__nav-bar__header'}>Playground Pages</div>}
-				containerRenderer={pgScreens.map(this.renderNavbarItem)}
-				customCaret={<TS_Icons.treeCollapse.component/>}
-				onCollapseToggle={() => this.toggleCollapse('pgCollapse')}
-				collapsed={this.state.pgCollapse}
-			/>
+			{TS_AppTools.screens.map(this.renderNavbarItem)}
 		</LL_V_L>;
 	};
 
