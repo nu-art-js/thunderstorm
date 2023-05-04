@@ -26,12 +26,11 @@ import {_className} from '../../utils/tools';
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
 import {TS_Route} from '../../modules/routing/types';
 import {TS_NavLink} from '../../modules/routing/ModuleFE_RoutingV2';
-import {md5, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {md5, sortArray, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {Outlet} from 'react-router-dom';
 import {TS_AppTools_Default} from './TS_AppTools_Default';
 import {AppToolsScreen} from './types';
 import {TS_Icons} from '@nu-art/ts-styles';
-
 
 type CollapseState = {
 	navbarCollapse: boolean;
@@ -99,7 +98,7 @@ export class TS_AppTools
 	};
 
 	private renderNavbarItem = (screen: AppToolsScreen) => {
-		const route = TS_AppTools.Route.children!.find(i => i.key === screen.name);
+		const route = TS_AppTools.Route.children!.find(i => i.key === screen.key);
 		if (!route)
 			throw new ThisShouldNotHappenException(`Couldn't find route for screen with key ${screen.name}`);
 
@@ -114,9 +113,10 @@ export class TS_AppTools
 	};
 
 	private renderNavbar = () => {
+		const screens = sortArray(TS_AppTools.screens, i => i.name);
 		const className = _className('ts-app-tools__nav-bar', this.state.navbarCollapse ? 'ts-app-tools__nav-bar-collapsed' : undefined);
 		return <LL_V_L className={className}>
-			{TS_AppTools.screens.map(this.renderNavbarItem)}
+			{screens.map(this.renderNavbarItem)}
 		</LL_V_L>;
 	};
 
