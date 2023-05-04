@@ -1,0 +1,24 @@
+.collection-upgrades-page {
+  width: 100%;
+  height: 100%;
+
+  .buttons-container {
+    padding: 0 16px;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: stretch;
+
+    .ts-busy-button {
+      margin: 0;
+      width: 200px;
+      height: 65px;
+      white-space: pre-wrap;
+      font: {
+        size: 18px;
+      }
+      border: 2px solid white;
+      border-radius: 8px;
+    }
+  }
+}
