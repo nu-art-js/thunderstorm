@@ -1,0 +1,71 @@
+@use '@nu-art/ts-styles' as styles;
+
+.dialog-refactoring-action-conformation {
+  width: 640px;
+  height: 270px;
+  background: styles.gray(6);
+  border-radius: 8px;
+  overflow: hidden;
+  -webkit-box-shadow: 5px 5px 15px 5px rgba(0, 0, 0, 0.5);
+  box-shadow: 5px 5px 15px 5px rgba(0, 0, 0, 0.5);
+  border: 4px solid styles.gray(3);
+
+  .dialog__header {
+    width: 100%;
+    height: 50px;
+    flex-shrink: 0;
+    background: styles.gray(3);
+
+    padding: 0 8px;
+
+    .dialog__header__title {
+      color: white;
+      font: {
+        size: 20px;
+        weight: bold;
+      }
+    }
+  }
+
+  .dialog__main {
+    flex-grow: 1;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 16px;
+    padding: 32px;
+
+    .dialog__main__warning-icon {
+      width: 60px;
+      height: 60px;
+      flex-shrink: 0;
+    }
+
+    .dialog__main__warning {
+      flex-grow: 1;
+      gap: 4px;
+
+      .dialog__main__warning__title {
+        text-decoration: underline;
+      }
+
+      .dialog__main__warning__text {
+        width: 100%;
+        white-space: pre-wrap;
+      }
+    }
+  }
+
+  .dialog__buttons {
+    height: 50px;
+    width: 100%;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    padding: 0 16px;
+
+    .ts-button {
+      margin: 0;
+    }
+  }
+}

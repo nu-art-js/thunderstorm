@@ -1,0 +1,74 @@
+import { Clause_Where, FirestoreQuery } from '@nu-art/firebase';
+import { DB_Object, InvalidResult, Module, PreDB } from '@nu-art/ts-common';
+import { IndexKeys } from '@nu-art/thunderstorm';
+import { ExpressRequest, OnFirestoreBackupSchedulerAct } from '@nu-art/thunderstorm/backend';
+import { DocWrapper, FirestoreCollection, FirestoreTransaction } from '@nu-art/firebase/backend';
+import { DB_EntityDependency, DBApiBEConfig } from './db-def';
+import { DBDef } from '../shared/db-def';
+import { Response_DBSync } from '../shared';
+import { FirestoreBackupDetails } from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_Backup';
+export type BaseDBApiConfig = {
+    projectId?: string;
+    maxChunkSize: number;
+};
+export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfig<Type>;
+export declare abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'> extends Module<ConfigType> implements OnFirestoreBackupSchedulerAct {
+    private static DeleteHardLimit;
+    collection: FirestoreCollection<DBType>;
+    private readonly validator;
+    readonly dbDef: DBDef<DBType, any>;
+    protected constructor(dbDef: DBDef<DBType, any>, appConfig?: BaseDBApiConfig);
+    init(): void;
+    createFirebaseRef<T>(_relativePath: string): import("@nu-art/firebase/backend").FirebaseRef<T>;
+    getCollectionName(): string;
+    getItemName(): string;
+    __onFirestoreBackupSchedulerAct(): FirestoreBackupDetails<DBType>[];
+    protected resolveBackupQuery(): FirestoreQuery<DBType>;
+    deleteUnique(_id: string): Promise<DBType>;
+    readonly _deleteUnique: Readonly<{
+        read: (transaction: FirestoreTransaction, _id: string) => Promise<DocWrapper<DBType>>;
+        write: (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => Promise<DBType>;
+    }>;
+    readonly _deleteMulti: Readonly<{
+        read: (transaction: FirestoreTransaction, deleteQuery: FirestoreQuery<DBType>) => Promise<DocWrapper<DBType>[]>;
+        write: (transaction: FirestoreTransaction, docs: DocWrapper<DBType>[]) => Promise<DBType[]>;
+    }>;
+    readonly _upsertUnique: Readonly<{
+        read: (transaction: FirestoreTransaction, instance: PreDB<DBType>) => Promise<DocWrapper<DBType>>;
+        assert: (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => Promise<void>;
+        write: (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => Promise<DBType>;
+    }>;
+    protected assertObject(instance: any): void;
+    delete(deleteQuery: FirestoreQuery<DBType>, toReturn?: DBType[]): Promise<DBType[]>;
+    querySync(syncQuery: FirestoreQuery<DBType>, request?: ExpressRequest): Promise<Response_DBSync<DBType>>;
+    deleteAll(): Promise<DBType[]>;
+    protected canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DBType[]): Promise<void>;
+    collectDependencies(dbInstances: DBType[], transaction?: FirestoreTransaction): Promise<DB_EntityDependency<string>[] | undefined>;
+    private assertExternalQueryUnique;
+    assertUniqueness(instance: DBType, transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<void>;
+    validateImpl(instance: DBType): void;
+    protected onValidationError(instance: DBType, results: InvalidResult<DBType>): void;
+    protected internalFilter(item: DBType): Clause_Where<DBType>[];
+    private _preUpsertProcessing;
+    upgradeInstances(dbInstances: DBType[]): Promise<void>;
+    protected upgradeInstance(dbInstance: DBType, toVersion: string): Promise<void>;
+    protected preUpsertProcessing(dbInstance: DBType, transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<void>;
+    runInTransaction: <ReturnType_1>(processor: (transaction: FirestoreTransaction) => Promise<ReturnType_1>) => Promise<ReturnType_1>;
+    private deleteCollection;
+    promoteCollection(): Promise<void>;
+    createImpl_Read(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>>;
+    upsert(instance: PreDB<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType>;
+    insert(instance: PreDB<DBType>): Promise<DBType>;
+    insertAll(instances: PreDB<DBType>[]): Promise<Awaited<DBType>[]>;
+    upsert_Read(instance: PreDB<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>>;
+    protected generateId(): string;
+    upsertAll_Batched(instances: PreDB<DBType>[], request?: ExpressRequest): Promise<DBType[]>;
+    upsertAll(instances: PreDB<DBType>[], transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]>;
+    protected upsertAllImpl_Read(instances: PreDB<DBType>[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]>;
+    private upsertImpl;
+    protected upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>>;
+    private assertInstance;
+    queryUnique(where: Clause_Where<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType>;
+    query(query: FirestoreQuery<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]>;
+    patch(instance: IndexKeys<DBType, Ks> & Partial<DBType>, propsToPatch?: (keyof DBType)[], request?: ExpressRequest): Promise<DBType>;
+}
