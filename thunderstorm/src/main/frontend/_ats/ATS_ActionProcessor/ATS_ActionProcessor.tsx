@@ -19,7 +19,7 @@ type State = {
 export class ATS_ActionProcessor
 	extends ComponentAsync<{}, State> {
 
-	static screen: AppToolsScreen = {name: 'Refactoring Actions', key: 'refactoring-actions', renderer: this};
+	static screen: AppToolsScreen = {name: 'Refactoring Actions', key: 'refactoring-actions', renderer: this, group: 'TS Dev Tools'};
 
 	// ######################### Life Cycle #########################
 

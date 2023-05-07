@@ -20,7 +20,7 @@ type State = State_SmartComponent & {};
 export class ATS_Permissions
 	extends SmartComponent<{}, State> {
 
-	static screen: AppToolsScreen = {key: 'permissions', name: 'Permissions Editor', renderer: this};
+	static screen: AppToolsScreen = {key: 'permissions', name: 'Permissions Editor', renderer: this, group: 'TS Dev Tools'};
 
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsProject, ModuleFE_PermissionsDomain, ModuleFE_PermissionsAccessLevel, ModuleFE_PermissionsGroup, ModuleFE_PermissionsUser]

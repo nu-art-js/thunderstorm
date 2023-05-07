@@ -21,6 +21,7 @@
 
 export * from './core/Thunder';
 export * from './core/thunder-dispatcher';
+export * from './core/ThunderstormDefaultApp';
 export * from './_ats';
 
 export * from './modules/http/XhrHttpModule';
