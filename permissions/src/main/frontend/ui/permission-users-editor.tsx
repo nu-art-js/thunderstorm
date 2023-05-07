@@ -9,11 +9,12 @@ import {
 	Props_SmartComponent,
 	State_SmartComponent
 } from '@nu-art/db-api-generator/frontend';
-import {SimpleListAdapter, TS_DropDown, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {LL_H_C, LL_V_L, SimpleListAdapter, TS_DropDown, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {EditorBase, State_EditorBase} from './editor-base';
-import {DB_PermissionUser} from '../shared';
-import {ModuleFE_PermissionsUser, OnPermissionsUsersUpdated} from '../core/module-pack';
+import {DB_PermissionGroup, DB_PermissionUser} from '../shared';
+import {ModuleFE_PermissionsGroup, ModuleFE_PermissionsUser, OnPermissionsUsersUpdated} from '../core/module-pack';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
+import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 
 
 type State = State_EditorBase<DB_PermissionUser>;
@@ -53,31 +54,58 @@ export class PermissionUsersEditor
 
 	protected async deriveStateFromProps(nextProps: Props, state: (State & State_SmartComponent)) {
 		state.items = ModuleFE_PermissionsUser.cache.all();
+		if (!state.editedItem) {
+			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsUser);
+			state.selectedItemId = state.items[0]._id;
+		}
 		return state;
 	}
-
-	//######################### Life Cycle #########################
-
+	
 	//######################### Render #########################
 
-	private renderAccountsDropdown = () => {
-		const user = this.state.editedItem!;
-		const accounts = this.state.items.filter(acc => !this.state.items.find(item => item.accountId === acc._id));
-		const adapter = SimpleListAdapter(accounts, item => <>{this.props.renderAccount(item.item.accountId)}</>);
-		const selected = accounts.find(item => item._id === user.item.accountId);
+	private renderGroups = () => {
+		const user = this.state.editedItem;
+		if (!user || !user.item.groups)
+			return '';
 
-		return <TS_PropRenderer.Vertical label={'Account'}>
-			<TS_DropDown<DB_PermissionUser>
-				adapter={adapter}
-				onSelected={value => this.setProperty('accountId', value._id)}
-				selected={selected}
-			/>
-		</TS_PropRenderer.Vertical>;
+		return user.item.groups.map(group => {
+			const _group = ModuleFE_PermissionsGroup.cache.unique(group.groupId);
+			if (!_group)
+				throw new ThisShouldNotHappenException(`Group with invalid groupId ${group.groupId}`);
+
+			return <LL_V_L className={'group'} key={group.groupId}>
+				<div className={'group__label'}>{_group.label}</div>
+			</LL_V_L>;
+		});
+	};
+
+	private renderAddGroup = () => {
+		const user = this.state.editedItem;
+		if (!user)
+			return '';
+
+		const groupIds = user.item.groups?.map(i => i.groupId) || [];
+		const groups = ModuleFE_PermissionsGroup.cache.filter(i => !groupIds.includes(i._id));
+		const adapter = SimpleListAdapter(groups, i => <div>{i.item.label}</div>);
+
+		return <TS_DropDown<DB_PermissionGroup>
+			adapter={adapter}
+			selected={undefined}
+			placeholder={'Select Group'}
+			onSelected={item => {
+				const groups = user.item.groups || [];
+				groups.push({groupId: item._id, customField: {}});
+				this.setProperty('groups', groups);
+			}}
+		/>;
 	};
 
 	editorContent = () => {
-		return <>
-			{this.renderAccountsDropdown()}
-		</>;
+		return <TS_PropRenderer.Vertical label={'Groups'}>
+			<LL_H_C className={'groups'}>
+				{this.renderGroups()}
+				{this.renderAddGroup()}
+			</LL_H_C>
+		</TS_PropRenderer.Vertical>;
 	};
 }
