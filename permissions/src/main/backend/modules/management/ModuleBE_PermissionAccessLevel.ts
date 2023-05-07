@@ -26,7 +26,7 @@ import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, Request_CreateGro
 import {Clause_Where} from '@nu-art/firebase';
 import {ModuleBE_PermissionDomain} from './ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionApi} from './ModuleBE_PermissionApi';
-import {ModuleBE_PermissionGroup} from '../assignment';
+import {ModuleBE_PermissionGroup} from '../assignment/ModuleBE_PermissionGroup';
 
 
 export class ModuleBE_PermissionAccessLevel_Class

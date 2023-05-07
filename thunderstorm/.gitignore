@@ -13,3 +13,4 @@ package.json
 package-lock.json
 config.ts
 /_oldTest/
+imports-*.svg

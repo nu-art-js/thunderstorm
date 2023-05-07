@@ -20,8 +20,6 @@
 import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
 import {addRoutes, ApiResponse, createBodyServerApi, createQueryServerApi, ExpressRequest, ServerApi, Storm} from '@nu-art/thunderstorm/backend';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from './assignment';
-import {ModuleBE_PermissionApi, ModuleBE_PermissionProject} from './management';
 import {
 	ApiDef_Permissions,
 	ApiStruct_Permissions,
@@ -38,6 +36,10 @@ import {
 import {Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
 import {UI_Account} from '@nu-art/user-account';
 import {AssertSecretMiddleware} from '@nu-art/thunderstorm/backend/modules/proxy/assert-secret-middleware';
+import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
+import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
+import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
+import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 
 
 type Config = {
@@ -89,6 +91,8 @@ export class ModuleBE_Permissions_Class
 	protected init(): void {
 		if (!this.config)
 			throw new ImplementationMissingException('MUST set config with project identity!!');
+
+		ModuleBE_PermissionsAssert.setProjectId(this.config.project._id);
 	}
 
 	getProjectIdentity = () => this.config.project;

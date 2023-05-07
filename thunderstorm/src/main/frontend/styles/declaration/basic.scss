@@ -69,6 +69,18 @@
   top: 0;
 }
 
+%text_wrap {
+  * {
+    white-space: normal;
+  }
+}
+
+%text_nowrap {
+  * {
+    white-space: nowrap;
+  }
+}
+
 %center_children {
   display: flex;
   justify-content: center;

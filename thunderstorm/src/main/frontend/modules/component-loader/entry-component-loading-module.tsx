@@ -18,12 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '../../../index';
 
 import {Module} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
 import {XhrHttpModule} from '../http/XhrHttpModule';
 import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory';
+import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '../../../shared';
 
 
 type ScriptLoaderBinder = QueryApi<string>

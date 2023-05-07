@@ -2,9 +2,11 @@ import * as React from 'react';
 import {functionThatReturnsTrue} from '@nu-art/ts-common';
 import {ActionMetaData} from '../../../../shared/action-processor';
 import {ComponentSync} from '../../../core/ComponentSync';
-import {LL_H_C, LL_V_L, ModuleFE_Dialog, TS_Button} from '../../..';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Dialog_ActionProcessorConfirmation.scss';
+import {ModuleFE_Dialog} from '../../../component-modules/ModuleFE_Dialog';
+import {LL_H_C, LL_V_L} from '../../../components/Layouts';
+import {TS_Button} from '../../../components/TS_Button';
 
 type Props = {
 	action: ActionMetaData

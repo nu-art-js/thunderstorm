@@ -10,3 +10,4 @@ dist-test
 build
 package.json
 package-lock.json
+imports-*.svg

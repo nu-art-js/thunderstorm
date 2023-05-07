@@ -12,3 +12,4 @@ build
 package.json
 package-lock.json
 config.ts
+imports-*.svg

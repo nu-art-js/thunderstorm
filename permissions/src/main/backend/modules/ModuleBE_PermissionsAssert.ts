@@ -28,22 +28,20 @@ import {
 	ServerApi,
 	ServerApi_Middleware
 } from '@nu-art/thunderstorm/backend';
+import {HttpMethod} from '@nu-art/thunderstorm';
+import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {
 	ApiDef_PermissionsAssert,
 	ApiStruct_PermissionsAssert,
 	Base_AccessLevels,
 	DB_PermissionAccessLevel,
-	DB_PermissionApi,
-	DB_PermissionGroup,
-	DB_PermissionUser,
-	Request_AssertApiForUser,
-	User_Group
-} from '../..';
-import {HttpMethod} from '@nu-art/thunderstorm';
-import {ModuleBE_Permissions} from './ModuleBE_Permissions';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from './assignment';
-import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi} from './management';
+	DB_PermissionApi, DB_PermissionGroup, DB_PermissionUser,
+	Request_AssertApiForUser, User_Group
+} from '../../shared';
+import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
+import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
+import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
+import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -70,6 +68,9 @@ class ServerApi_AssertPermissions
 
 export class ModuleBE_PermissionsAssert_Class
 	extends Module<Config> {
+
+	private projectId!: string;
+
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
 		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
 
@@ -108,10 +109,9 @@ export class ModuleBE_PermissionsAssert_Class
 			customFields[key] = oElement;
 		});
 
-		const projectId = ModuleBE_Permissions.getProjectIdentity()._id;
+		const projectId = this.projectId;
 		await action(projectId, customFields);
 	};
-
 
 	constructor() {
 		super();
@@ -128,7 +128,10 @@ export class ModuleBE_PermissionsAssert_Class
 		this._assertUserPermissionsImpl(apiDetails, projectId, userDetails, requestCustomField);
 	}
 
-	_assertUserPermissionsImpl(apiDetails: { apiDb: DB_PermissionApi; requestPermissions: DB_PermissionAccessLevel[] }, projectId: string, userDetails: { user: DB_PermissionUser, userGroups: DB_PermissionGroup[] }, requestCustomField: StringMap) {
+	_assertUserPermissionsImpl(apiDetails: { apiDb: DB_PermissionApi; requestPermissions: DB_PermissionAccessLevel[] }, projectId: string, userDetails: {
+		user: DB_PermissionUser,
+		userGroups: DB_PermissionGroup[]
+	}, requestCustomField: StringMap) {
 		if (!apiDetails.apiDb.accessLevelIds) {
 			if (!this.config.strictMode)
 				return;
@@ -251,6 +254,10 @@ export class ModuleBE_PermissionsAssert_Class
 
 		return requestPermissions;
 	}
+
+	setProjectId = (projectId: string) => {
+		this.projectId = projectId;
+	};
 
 	isMatchWithLevelsObj(groupPair: GroupPairWithBaseLevelsObj, requestPair: RequestPairWithLevelsObj) {
 		let match = true;

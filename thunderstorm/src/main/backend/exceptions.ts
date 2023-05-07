@@ -20,7 +20,7 @@
  */
 
 import {CustomException, TS_Object,} from '@nu-art/ts-common';
-import {ErrorBody, ErrorResponse} from '../index';
+import {ErrorBody, ErrorResponse} from '../shared';
 
 
 export class ApiException<E extends TS_Object | void = void>
