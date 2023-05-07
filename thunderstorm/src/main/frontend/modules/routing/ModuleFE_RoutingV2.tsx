@@ -54,10 +54,10 @@ class ModuleFE_RoutingV2_Class
 
 		const indexRoute = indicesRoutes?.[0];
 		if (indexRoute)
-			console.log(`index: ${path}${indexRoute.path}`);
+			this.logDebug(`index: ${path}${indexRoute.path}`);
 
 		if (route.fallback)
-			console.log(`fallback: ${path}`);
+			this.logDebug(`fallback: ${path}`);
 
 		let _indexRoute;
 		if (indexRoute)

@@ -143,9 +143,7 @@ export class ModuleBE_Account_Class
 		return this.accounts.queryUnique({where: {email}, select: ['email', '_id']});
 	}
 
-	async listUsers(params: QueryParams) {
-		return {accounts: (await this.accounts.getAll(['_id', 'email'])) as { email: string, _id: string }[]};
-	}
+	listUsers = async (params: QueryParams) => ({accounts: (await this.accounts.getAll(['_id', 'email'])) as { email: string, _id: string }[]});
 
 	async listSessions() {
 		return this.sessions.getAll(['userId', 'timestamp']);
@@ -268,8 +266,8 @@ export class ModuleBE_Account_Class
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
 
-		await this.sessions.deleteUnique({where:{sessionId}});
-	}
+		await this.sessions.deleteUnique({where: {sessionId}});
+	};
 
 	validateSession = async (params: QueryParams, request?: ExpressRequest): Promise<UI_Account> => {
 		if (!request)
