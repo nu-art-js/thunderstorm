@@ -1,13 +1,13 @@
 import * as React from 'react';
 import {Component, ReactNode} from 'react';
 import {EditableItem, LL_H_C, PartialProps_DropDown, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import './MultiItemSelect.scss';
+import './TS_MultiSelect.scss';
 import {addItemToArray, AssetValueType, DB_Object, PreDB, removeItemFromArray} from '@nu-art/ts-common';
 import {PartialProps_GenericDropDown} from '../GenericDropDown';
 import {DBItemApiCaller} from '../../modules/types';
 
 
-export type MultiItemSelect_Renderer<InnerItem extends DB_Object> = {
+export type TS_MultiSelect_Renderer<InnerItem extends DB_Object> = {
 	label: string,
 	module: DBItemApiCaller<InnerItem>,
 	itemRenderer: (item?: InnerItem, onDelete?: () => Promise<void>) => ReactNode
@@ -17,17 +17,17 @@ export type MultiItemSelect_Renderer<InnerItem extends DB_Object> = {
 	selectionRenderer: React.ComponentType<PartialProps_GenericDropDown<InnerItem> | PartialProps_DropDown<InnerItem>>
 };
 
-export type DynamicProps_MultiItemSelect<EnclosingItem, K extends keyof EnclosingItem> = {
+export type DynamicProps_TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem> = {
 	editable: EditableItem<EnclosingItem>,
 	prop: AssetValueType<EnclosingItem, K, string[]>
 }
 
-export type StaticProps_MultiItemSelect<InnerItem extends DB_Object> = {
-	props: MultiItemSelect_Renderer<InnerItem>
+export type StaticProps_TS_MultiSelect<InnerItem extends DB_Object> = {
+	props: TS_MultiSelect_Renderer<InnerItem>
 }
 
-export type Props_MultiItemSelect<EnclosingItem, K extends keyof EnclosingItem, InnerItem extends DB_Object> =
-	StaticProps_MultiItemSelect<InnerItem> & DynamicProps_MultiItemSelect<EnclosingItem, K>
+export type Props_TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerItem extends DB_Object> =
+	StaticProps_TS_MultiSelect<InnerItem> & DynamicProps_TS_MultiSelect<EnclosingItem, K>
 
 type SelectorRenderer<InnerItem extends DB_Object> = {
 	selectionRenderer: React.ComponentType<PartialProps_GenericDropDown<InnerItem> | PartialProps_DropDown<InnerItem>>
@@ -38,8 +38,8 @@ type SelectorRenderer<InnerItem extends DB_Object> = {
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: InnerItem[], e: React.KeyboardEvent) => any;
 };
 
-export class MultiItemSelect<EnclosingItem, K extends keyof EnclosingItem, InnerItem extends DB_Object>
-	extends Component<Props_MultiItemSelect<EnclosingItem, K, InnerItem>, any> {
+export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerItem extends DB_Object>
+	extends Component<Props_TS_MultiSelect<EnclosingItem, K, InnerItem>, any> {
 
 	render() {
 		type PropType = EnclosingItem[AssetValueType<EnclosingItem, K, string[]>];
