@@ -27,7 +27,7 @@ type State = {
 export class ATS_SyncEnvironment
 	extends ComponentSync<{}, State> {
 
-	static screen: AppToolsScreen = {name: 'Sync Environment', key: 'sync-environment', renderer: this};
+	static screen: AppToolsScreen = {name: 'Sync Environment', key: 'sync-environment', renderer: this, group: 'TS Dev Tools'};
 
 	protected deriveStateFromProps(nextProps: {}, state: State) {
 		state ??= this.state ? {...this.state} : {} as State;

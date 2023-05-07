@@ -11,7 +11,7 @@ type State = {
 export class ATS_CollectionUpgrades
 	extends ComponentSync<{}, State> {
 
-	static screen: AppToolsScreen = {name: 'Collection Upgrades', key: 'collection-upgrades', renderer: this};
+	static screen: AppToolsScreen = {name: 'Collection Upgrades', key: 'collection-upgrades', renderer: this, group: 'TS Dev Tools'};
 
 	protected deriveStateFromProps(nextProps: {}) {
 		const state = this.state ? {...this.state} : {} as State;

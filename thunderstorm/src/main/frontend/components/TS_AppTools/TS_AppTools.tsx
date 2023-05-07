@@ -26,16 +26,24 @@ import {_className} from '../../utils/tools';
 import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
 import {TS_Route} from '../../modules/routing/types';
 import {TS_NavLink} from '../../modules/routing/ModuleFE_RoutingV2';
-import {md5, sortArray, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {md5, sortArray, ThisShouldNotHappenException, TypedMap} from '@nu-art/ts-common';
 import {Outlet} from 'react-router-dom';
 import {TS_AppTools_Default} from './TS_AppTools_Default';
 import {AppToolsScreen} from './types';
 import {TS_Icons} from '@nu-art/ts-styles';
+import {TS_CollapsableContainer} from '../TS_CollapsableContainer';
 
 type CollapseState = {
 	navbarCollapse: boolean;
+	groups: TypedMap<boolean>;
 }
 
+type ScreenGroup = {
+	label: string;
+	screens: AppToolsScreen[];
+}
+
+const noGroupLabel = 'Other';
 const collapseStateStorage = new StorageKey<CollapseState>('app-tools-collapse-state');
 
 type State = CollapseState;
@@ -73,16 +81,52 @@ export class TS_AppTools
 		const collapse = collapseStateStorage.get();
 		this.state = {
 			navbarCollapse: collapse?.navbarCollapse ?? false,
+			groups: collapse.groups ?? {},
 		};
 	}
 
 	// ######################### Logic #########################
 
-	private toggleCollapse = (key: keyof CollapseState) => {
-		const collapse: CollapseState = collapseStateStorage.get() ?? {};
-		collapse[key] = !collapse[key];
-		collapseStateStorage.set(collapse);
+	private toggleGroupCollapse = (key: string) => {
+		const collapse = {...this.state};
+		collapse.groups[key] = !collapse.groups[key];
 		this.setState(collapse);
+		collapseStateStorage.set(collapse);
+	};
+
+	private toggleNavBarCollapse = () => {
+		const collapse = {...this.state};
+		collapse.navbarCollapse = !collapse.navbarCollapse;
+		this.setState(collapse);
+		collapseStateStorage.set(collapse);
+	};
+
+	private groupsSort = (g1: ScreenGroup, g2: ScreenGroup): number => {
+		if (g1.label === noGroupLabel)
+			return 1;
+		if (g2.label === noGroupLabel)
+			return -1;
+		return g1.label > g2.label ? -1 : 1;
+	};
+
+	private groupScreens = (screens: AppToolsScreen[]): ScreenGroup[] => {
+		let groups = screens.reduce<ScreenGroup[]>((acc, curr) => {
+			if (!curr.group) {
+				acc[0].screens.push(curr);
+				return acc;
+			}
+
+			let index = acc.findIndex(i => i.label === curr.group);
+			if (index < 0) {
+				acc.push({label: curr.group, screens: []});
+				index = acc.length - 1;
+			}
+			acc[index].screens.push(curr);
+			return acc;
+		}, [{label: noGroupLabel, screens: []}]);
+
+		groups = groups.sort(this.groupsSort);
+		return groups;
 	};
 
 	// ######################### Render #########################
@@ -91,7 +135,7 @@ export class TS_AppTools
 		return <LL_H_C className={'ts-app-tools__header'}>
 			<TS_Icons.menu.component
 				className={'ts-app-tools__header__caret'}
-				onClick={() => this.toggleCollapse('navbarCollapse')}
+				onClick={this.toggleNavBarCollapse}
 			/>
 			<span className={'ts-app-tools__header__title'}>App-Tools</span>
 		</LL_H_C>;
@@ -115,9 +159,26 @@ export class TS_AppTools
 
 	private renderNavbar = () => {
 		const screens = sortArray(TS_AppTools.screens, i => i.name);
+		const groups = this.groupScreens(screens);
 		const className = _className('ts-app-tools__nav-bar', this.state.navbarCollapse ? 'ts-app-tools__nav-bar-collapsed' : undefined);
+
+		if (groups.length === 1) {
+			return <LL_V_L className={className}>
+				{screens.map(this.renderNavbarItem)}
+			</LL_V_L>;
+		}
+
 		return <LL_V_L className={className}>
-			{screens.map(this.renderNavbarItem)}
+			{groups.map(group => {
+				return <TS_CollapsableContainer
+					headerRenderer={group.label}
+					containerRenderer={group.screens.map(this.renderNavbarItem)}
+					customCaret={<TS_Icons.treeCollapse.component/>}
+					flipHeaderOrder={true}
+					onCollapseToggle={() => this.toggleGroupCollapse(group.label)}
+					collapsed={this.state.groups[group.label]}
+				/>;
+			})}
 		</LL_V_L>;
 	};
 

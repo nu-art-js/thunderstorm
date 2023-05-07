@@ -30,7 +30,6 @@ $headerHeight: 40px;
   .ts-app-tools__header {
     width: 100%;
     height: $headerHeight;
-    border-bottom: 1px solid black;
     align-items: center;
     background: styles.gray(2);
     gap: 16px;
@@ -71,6 +70,48 @@ $headerHeight: 40px;
     transition: width 200ms ease-out;
     flex-shrink: 0;
     overflow-y: auto;
+    border-right: 1px solid styles.gray(4);
+
+    .ts-collapsable-container {
+      width: 100%;
+
+      .ts-collapsable-container__header {
+        box-shadow: none;
+        background: styles.gray(3);
+        border: none;
+        font: {
+          size: 16px;
+          weight: bold;
+        }
+        color: white;
+        padding-left: 8px;
+        position: relative;
+
+        .ts-collapsable-container__header__caret {
+          @include styles.color-svg(white);
+
+          &:not(.collapsed) {
+            transform: rotateZ(90deg);
+          }
+        }
+
+        &:after {
+          content: '';
+          height: 2px;
+          background: white;
+          translate: -50%;
+          width: 0;
+          position: absolute;
+          bottom: 0;
+          left: 50%;
+          transition: width 100ms ease-out, transform 100ms ease-out;
+        }
+
+        &.collapsed:after {
+          width: 100%;
+        }
+      }
+    }
 
     .ts-app-tools__nav-bar__item {
       @include styles.mouse-interactive-background(styles.gray(6), styles.gray(4), styles.gray(2));
@@ -116,7 +157,6 @@ $headerHeight: 40px;
   .ts-app-tools__page {
     height: 100%;
     flex-grow: 1;
-    border-style: double;
     display: inline-block;
 
     .app-tools-page__page__header {
