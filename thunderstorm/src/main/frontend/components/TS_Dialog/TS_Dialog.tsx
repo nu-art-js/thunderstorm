@@ -4,7 +4,10 @@ import {BadImplementationException, filterInstances, flatArray, TypedMap, _value
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_BusyButton} from '../TS_BusyButton';
 import {TS_Button} from '../TS_Button';
-import {_className, LL_V_L, ModuleFE_Dialog, TS_ErrorBoundary} from '../..';
+import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
+import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
+import {LL_V_L} from '../Layouts';
+import {_className} from '../../utils/tools';
 
 
 /**

@@ -1,8 +1,11 @@
 import {TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
-import {_className, ComponentSync, LL_V_L} from '../..';
 import './TS_CollapsableContainer.scss';
 import {ReactNode} from 'react';
+import {ComponentSync} from '../../core/ComponentSync';
+import {_className} from '../../utils/tools';
+import {LL_V_L} from '../Layouts';
+
 
 type Props = {
 	headerRenderer: ReactNode | (() => ReactNode);
@@ -31,7 +34,7 @@ export class TS_CollapsableContainer
 	//######################### Life Cycle #########################
 
 	protected deriveStateFromProps(nextProps: Props): State {
-		const state = this.state ? {...this.state} : {} as State;
+		const state: State = this.state ? {...this.state} : {} as State;
 		state.collapsed = nextProps.collapsed ?? this.state?.collapsed ?? true;
 		state.contentRef ??= React.createRef();
 		state.containerRef ??= React.createRef();
@@ -63,7 +66,7 @@ export class TS_CollapsableContainer
 	private setContainerHeight = () => {
 		if (!this.state.containerRef.current)
 			return;
-		
+
 		const currentContent = this.state.contentRef.current;
 		const maxHeight = this.state.collapsed
 			? 0

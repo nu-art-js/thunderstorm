@@ -20,37 +20,15 @@
  */
 
 import * as React from 'react';
-import {appWithJSX, renderApp, ThunderstormApp} from './AppWrapper';
-import {BeLogged, LogClient_Browser, Module, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
-import {XhrHttpModule} from '../modules/http/XhrHttpModule';
-import {ModuleFE_Dialog} from '../component-modules/ModuleFE_Dialog';
-import {ModuleFE_Routing} from '../modules/routing/ModuleFE_Routing';
-import {ModuleFE_LocalStorage} from '../modules/ModuleFE_LocalStorage';
+import {BeLogged, ImplementationMissingException, LogClient_Browser, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
 import {ThunderDispatcher} from './thunder-dispatcher';
-import {ModuleFE_Thunderstorm} from '../modules/ModuleFE_Thunderstorm';
 
 import '../styles/impl/basic.scss';
 import '../styles/impl/icons.scss';
-import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
-import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
 import {ThunderAppWrapperProps} from './types';
-import {ModuleFE_RoutingV2} from '../modules/routing/ModuleFE_RoutingV2';
-import {TS_Route} from '../modules/routing/types';
+import * as RDC from 'react-dom/client';
+import {appWithJSX} from './AppWrapper';
 
-
-const modules: Module[] = [
-	ModuleFE_Thunderstorm,
-	XhrHttpModule,
-
-	ModuleFE_Toaster,
-	ModuleFE_Dialog,
-
-	ModuleFE_Routing,
-	ModuleFE_RoutingV2,
-	ModuleFE_BrowserHistory,
-
-	ModuleFE_LocalStorage,
-];
 
 export class Thunder
 	extends ModuleManager {
@@ -61,7 +39,6 @@ export class Thunder
 
 	constructor() {
 		super();
-		this.addModules(...modules);
 		this._DEBUG_FLAG.enable(false);
 		// @ts-ignore
 		ThunderDispatcher.listenersResolver = () => this.listeners;
@@ -76,7 +53,19 @@ export class Thunder
 
 		super.init();
 
-		renderApp();
+		const appJsx = this.renderFunc?.(this.props);
+		if (!appJsx)
+			throw new ImplementationMissingException('Could not get app from Thunder!');
+
+		//Set root div and its attributes
+		const rootDiv = document.createElement('div');
+		rootDiv.classList.add('match_parent');
+		rootDiv.setAttribute('id', 'root');
+		document.body.appendChild(rootDiv);
+
+		//Set app root
+		RDC.createRoot(rootDiv).render(appJsx);
+
 		return this;
 	}
 
@@ -88,10 +77,6 @@ export class Thunder
 	protected removeUIListener(listener: any): void {
 		this.logInfo(`Unregister UI listener: ${listener}`);
 		removeItemFromArray(this.listeners, listener);
-	}
-
-	renderApp() {
-		return this.renderFunc?.(this.props);
 	}
 
 	/**
@@ -107,11 +92,6 @@ export class Thunder
 		};
 
 		this.renderFunc = renderFunc;
-		return this;
-	}
-
-	setRouteApp(rootRoute: TS_Route) {
-		this.setMainApp(ThunderstormApp, {rootRoute});
 		return this;
 	}
 

@@ -35,8 +35,6 @@ export * from './core/logger/Logger';
 export * from './core/logger/types';
 export * from './core/logger/LogClient';
 
-export * from './permissions/permission-group';
-
 export * from './tools/Replacer';
 export * from './tools/get-log-style';
 

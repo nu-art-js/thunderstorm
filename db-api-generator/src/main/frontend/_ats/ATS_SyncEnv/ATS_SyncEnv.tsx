@@ -11,8 +11,8 @@ import {
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
-import {ModuleFE_SyncEnv} from '../..';
 import './ATS_SyncEnv.scss';
+import {ModuleFE_SyncEnv} from '../../modules/ModuleFE_SyncEnv';
 
 type Env = 'prod' | 'staging' | 'dev';
 

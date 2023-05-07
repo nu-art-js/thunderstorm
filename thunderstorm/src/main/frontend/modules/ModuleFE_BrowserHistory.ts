@@ -24,7 +24,7 @@
  */
 import {_keys, composeQueryParams, Module,} from '@nu-art/ts-common';
 import {createBrowserHistory, History, LocationDescriptorObject} from 'history';
-import {QueryParams} from '../../index';
+import {QueryParams} from '../../shared';
 
 // move all the shit from here to the Routing module
 export class ModuleFE_BrowserHistory_Class

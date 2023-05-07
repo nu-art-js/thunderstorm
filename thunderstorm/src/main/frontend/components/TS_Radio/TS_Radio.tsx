@@ -1,6 +1,7 @@
 import * as React from 'react';
-import {ComponentSync, stopPropagation, _className} from '../..';
 import './TS_Radio.scss';
+import {ComponentSync} from '../../core/ComponentSync';
+import {_className, stopPropagation} from '../../utils/tools';
 
 type Props<ItemType> = {
 	values: ItemType[];

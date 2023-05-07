@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {addItemToArray, removeItemFromArray,} from "../index";
 import {Logger} from "../core/logger/Logger";
+import {addItemToArray, removeItemFromArray} from './array-tools';
 
 export class Queue
 	extends Logger {

@@ -19,9 +19,13 @@
 
 import {batchAction, currentTimeMillis, filterInstances, generateHex, PreDB, StaticLogger} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert';
-import {DB_PermissionGroup, User_Group} from '../..';
-import {ModuleBE_PermissionAccessLevel, ModuleBE_PermissionApi, ModuleBE_PermissionDomain, ModuleBE_PermissionProject} from '../modules/management';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from '../modules/assignment';
+import {ModuleBE_PermissionProject} from '../modules/management/ModuleBE_PermissionProject';
+import {ModuleBE_PermissionDomain} from '../modules/management/ModuleBE_PermissionDomain';
+import {ModuleBE_PermissionAccessLevel} from '../modules/management/ModuleBE_PermissionAccessLevel';
+import {ModuleBE_PermissionApi} from '../modules/management/ModuleBE_PermissionApi';
+import {ModuleBE_PermissionGroup} from '../modules/assignment/ModuleBE_PermissionGroup';
+import {ModuleBE_PermissionUserDB} from '../modules/assignment/ModuleBE_PermissionUserDB';
+import {DB_PermissionGroup, User_Group} from '../../shared';
 
 
 function makeAlphaBetIdForTestOnly(length: number) {
@@ -50,8 +54,8 @@ export async function testUserPermissionsTime() {
 	await ModuleBE_PermissionDomain.upsert({_id: domainId, projectId: projectId, namespace: 'domain-test'});
 	const accessLevel = await ModuleBE_PermissionAccessLevel.upsert({_id: permissionId, name: 'test-permission', domainId, value: permissionValue});
 	await ModuleBE_PermissionApi.upsert({projectId: projectId, _id: apiId, path: apiPath, accessLevelIds: [permissionId]});
-
 	const groupIdArray: User_Group[] = [];
+
 	const dbInstances: PreDB<DB_PermissionGroup>[] = [];
 	for (let counter = 0; counter < 100; counter++) {
 		const groupId = generateHex(32);
@@ -65,7 +69,6 @@ export async function testUserPermissionsTime() {
 		});
 		groupIdArray.push({groupId, customField: {test: 'test'}});
 	}
-
 
 	await ModuleBE_PermissionGroup.upsertAll(dbInstances);
 

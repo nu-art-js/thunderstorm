@@ -3,8 +3,13 @@ import './ATS_ActionProcessor.scss';
 import {_keys, TypedMap} from '@nu-art/ts-common';
 import {Dialog_ActionProcessorConfirmation} from '../dialogs';
 import {ActionMetaData} from '../../../shared/action-processor';
-import {AppToolsScreen, genericNotificationAction, LL_H_C, LL_V_L, ModuleFE_ActionProcessor, TS_AppTools, TS_BusyButton} from '../..';
 import {ComponentAsync} from '../../core/ComponentAsync';
+import {AppToolsScreen, TS_AppTools} from '../../components/TS_AppTools';
+import {ModuleFE_ActionProcessor} from '../../modules/action-processor/ModuleFE_ActionProcessor';
+import {genericNotificationAction} from '../../components/TS_Notifications';
+import {LL_H_C, LL_V_L} from '../../components/Layouts';
+import {TS_BusyButton} from '../../components/TS_BusyButton';
+
 
 type State = {
 	actions: ActionMetaData[];
@@ -19,7 +24,7 @@ export class ATS_ActionProcessor
 	// ######################### Life Cycle #########################
 
 	protected async deriveStateFromProps(nextProps: {}) {
-		const state = this.state ? {...this.state} : {} as State;
+		const state: State = this.state ? {...this.state} : {} as State;
 		state.actions = await ModuleFE_ActionProcessor.vv1.list({}).executeSync();
 		state.actionsInProgress ??= [];
 		return state;

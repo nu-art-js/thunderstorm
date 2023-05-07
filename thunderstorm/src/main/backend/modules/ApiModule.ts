@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common/core/module';
-import {ServerApi} from '..';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
+import {ServerApi} from './server/server-api';
 
 export class ApiModule_Class
 	extends Module {
