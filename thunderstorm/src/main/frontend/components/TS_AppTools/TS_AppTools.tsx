@@ -104,6 +104,7 @@ export class TS_AppTools
 
 		const Icon = screen.icon ?? TS_Icons.gear.component;
 		return <TS_NavLink
+			key={screen.key}
 			route={route}
 			className={({isActive}) => _className('ts-app-tools__nav-bar__item', isActive ? 'selected' : undefined)}
 		>

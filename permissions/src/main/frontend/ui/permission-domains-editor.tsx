@@ -18,7 +18,7 @@ import {
 	OnPermissionsLevelsUpdated
 } from '../core/module-pack';
 import {SimpleListAdapter, TS_BusyButton, TS_DropDown, TS_Input, TS_PropRenderer, TS_Table} from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, capitalizeFirstLetter, cloneObj, PreDB} from '@nu-art/ts-common';
+import {BadImplementationException, capitalizeFirstLetter, cloneObj, PreDB, sortArray} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 
 type State = State_EditorBase<DB_PermissionDomain> & {
@@ -110,7 +110,8 @@ export class PermissionDomainsEditor
 		if (!domain)
 			return '';
 
-		const levels = ModuleFE_PermissionsAccessLevel.cache.filter(level => level.domainId === domain.item._id);
+		let levels = ModuleFE_PermissionsAccessLevel.cache.filter(level => level.domainId === domain.item._id);
+		levels = sortArray(levels, i => i.value);
 		levels.push(cloneObj(emptyLevel) as DB_PermissionAccessLevel);
 		return <TS_Table<DB_PermissionAccessLevel, 'action'>
 			header={['name', 'value', {widthPx: 50, header: 'action'}]}

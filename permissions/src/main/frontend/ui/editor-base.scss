@@ -135,50 +135,30 @@
     }
   }
 
-  .editable-list {
+  .levels {
+    width: 100%;
     flex-wrap: wrap;
+    gap: 16px;
+
+    .level {
+      gap: 8px;
+      background: white;
+      padding: 16px;
+
+      .ts-dropdown {
+        width: 200px;
+      }
+    }
+  }
+
+  .groups {
     width: 100%;
     gap: 16px;
 
-    .editable-list__item {
-      height: 40px;
-      font: {
-        weight: bold;
-        size: 16px;
-      }
-      padding: 0 16px;
-      display: flex;
-      align-items: center;
+    .group {
+      padding: 8px;
       background: white;
-      border-radius: 8px;
-      border: 2px solid black;
-      position: relative;
-      overflow: hidden;
-
-      .editable-list__remove-icon {
-        @include styles.mouse-interactive-icon(white);
-        position: absolute;
-        width: 30px;
-        height: 100%;
-        top: 0;
-        left: 0;
-        transform: translateX(-100%);
-        transition: transform 200ms ease-out;
-        background: styles.red(3);
-
-        svg {
-          width: 18px;
-          height: 18px;
-        }
-      }
-
-      &:hover {
-        .editable-list__remove-icon {
-          transform: translateX(0);
-        }
-      }
     }
-
 
     .ts-dropdown {
       width: 200px;
