@@ -1,6 +1,6 @@
 import {Module} from '@nu-art/ts-common';
 import {ModuleFE_Thunderstorm} from '../modules/ModuleFE_Thunderstorm';
-import {XhrHttpModule} from '../modules/http/XhrHttpModule';
+import {ModuleFE_XhrHttp} from '../modules/http/ModuleFE_XhrHttp';
 import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {ModuleFE_Dialog} from '../component-modules/ModuleFE_Dialog';
 import {ModuleFE_Routing} from '../modules/routing/ModuleFE_Routing';
@@ -11,7 +11,7 @@ import {ModuleFE_LocalStorage} from '../modules/ModuleFE_LocalStorage';
 
 export const ModulePack_ThunderstormFE: Module[] = [
 	ModuleFE_Thunderstorm,
-	XhrHttpModule,
+	ModuleFE_XhrHttp,
 
 	ModuleFE_Toaster,
 	ModuleFE_Dialog,

@@ -21,7 +21,7 @@
 
 import {Module} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {XhrHttpModule} from '../http/XhrHttpModule';
+import {ModuleFE_XhrHttp} from '../http/ModuleFE_XhrHttp';
 import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory';
 import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '../../../shared';
 
@@ -39,7 +39,7 @@ export class PageLoadingModule_Class
 			baseUrl: ModuleFE_BrowserHistory.getOrigin(),
 			path: src
 		};
-		XhrHttpModule
+		ModuleFE_XhrHttp
 			.createRequest<ScriptLoaderBinder>(apiDef)
 			.setOnProgressListener((ev: TS_Progress) => {
 				const progress = ev.loaded / ev.total;
