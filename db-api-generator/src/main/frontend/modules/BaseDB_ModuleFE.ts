@@ -25,10 +25,10 @@ import {
 	DBConfig,
 	IndexDb_Query,
 	IndexedDB,
-	OnClearWebsiteData,
 	ReduceFunction,
 	StorageKey,
-	ThunderDispatcher
+	ThunderDispatcher,
+	OnClearWebsiteData
 } from '@nu-art/thunderstorm/frontend';
 
 import {

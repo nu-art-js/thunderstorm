@@ -19,13 +19,9 @@
  * limitations under the License.
  */
 
-export * from './core/Thunder';
-export * from './core/thunder-dispatcher';
-export * from './core/ThunderstormDefaultApp';
 export * from './_ats';
-
-export * from './modules/http/XhrHttpModule';
-export * from './modules/clearWebsiteDataDispatcher';
+export * from './modules';
+export * from './core';
 
 export * from './component-modules/ModuleFE_PopUp';
 export * from './component-modules/ModuleFE_Dialog';
@@ -33,32 +29,6 @@ export * from './component-modules/ModuleFE_Toaster';
 export * from './component-modules/ModuleFE_Tooltip';
 export * from './component-modules/ModuleFE_Notifications';
 
-export * from './modules/action-processor/ModuleFE_ActionProcessor';
-export * from './modules/ModuleFE_Locale';
-
-export * from './modules/ModuleFE_ForceUpgrade';
-export * from './modules/ModuleFE_LocalStorage';
-export * from './modules/ModuleFE_ConnectivityModule';
-
-export * from './modules/routing/route';
-export * from './modules/routing/ModuleFE_Routing';
-export * from './modules/routing/ModuleFE_RoutingV2';
-export * from './modules/routing/types';
-export * from './modules/routing/LocationChangeListener';
-
-export * from './modules/ModuleFE_Window';
-export * from './modules/ModuleFE_BrowserHistory';
-export * from './modules/ModuleFE_Thunderstorm';
-export * from './modules/ModuleFE_WindowMessenger';
-
-export * from './core/typed-api';
-export * from './core/SimpleScriptInjector';
-export * from './core/ComponentSync';
-export * from './core/ComponentAsync';
-export * from './core/IndexedDB';
-export * from './core/AppPage';
-export * from './core/AppPageV2';
-export * from './core/AppWrapper';
 export * from './widgets/FieldEditor';
 export * from './widgets/FieldEditorClick';
 export * from './widgets/FieldEditorWithButtons';

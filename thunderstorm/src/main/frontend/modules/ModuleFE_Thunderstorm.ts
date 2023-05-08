@@ -24,7 +24,7 @@ import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
 import {composeURL} from './ModuleFE_BrowserHistory';
 import {HttpMethod, QueryApi, QueryParams} from '../../shared/types';
 import {base64ToBlob} from '../utils/tools';
-import {XhrHttpModule} from './http/XhrHttpModule';
+import {ModuleFE_XhrHttp} from './http/ModuleFE_XhrHttp';
 import {dispatch_onClearWebsiteData} from './clearWebsiteDataDispatcher';
 
 
@@ -135,7 +135,7 @@ class ModuleFE_Thunderstorm_Class
 
 	async readFileContent(file: File) {
 		const fullUrl = URL.createObjectURL(file);
-		const content = XhrHttpModule.createRequest<QueryApi<string>>({method: HttpMethod.GET, fullUrl, path: ''}).executeSync();
+		const content = ModuleFE_XhrHttp.createRequest<QueryApi<string>>({method: HttpMethod.GET, fullUrl, path: ''}).executeSync();
 		URL.revokeObjectURL(fullUrl);
 		return content;
 	}

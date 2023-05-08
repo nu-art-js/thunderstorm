@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {apiWithBody, apiWithQuery, ThunderDispatcher, XhrHttpModule_Class} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ThunderDispatcher, ModuleFE_XhrHttp_Class} from '@nu-art/thunderstorm/frontend';
 import {
 	ApiDef_AssetUploader,
 	ApiStruct_AssetUploader,
@@ -34,7 +34,7 @@ import {ApiDefCaller} from '@nu-art/thunderstorm';
 
 
 export class ModuleFE_AssetUploader_Class
-	extends ModuleBase_AssetUploader<XhrHttpModule_Class> {
+	extends ModuleBase_AssetUploader<ModuleFE_XhrHttp_Class> {
 
 	protected readonly dispatch_fileStatusChange = new ThunderDispatcher<OnFileStatusChanged, '__onFileStatusChanged'>('__onFileStatusChanged');
 	readonly vv1: ApiDefCaller<ApiStruct_AssetUploader>['vv1'];
