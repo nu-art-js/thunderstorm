@@ -113,6 +113,6 @@ export * from './_to-refactor/MenuAndButton';
 
 export * from './utils/tools';
 export * from './utils/EditableItem';
-export * from './utils/preform-action';
+export * from './utils/perform-action';
 
 export * from './behavior-functions';
