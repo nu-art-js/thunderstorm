@@ -37,6 +37,5 @@ export * from './modules/ModuleFE_SyncManager';
 export * from './modules/BaseDB_ApiGeneratorCaller';
 export * from './modules/consts';
 export * from './modules/types';
-export * from './modules/BaseDB_ApiCallerV2';
 export * from './modules/BaseDB_ApiCaller';
 export * from './modules/ModuleFE_SyncEnv';
