@@ -28,9 +28,9 @@ import {BadImplementationException, DB_BaseObject, DB_Object, merge, PreDB, Type
 
 import {DBApiFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
-import {BaseDB_ModuleFE} from './BaseDB_ModuleFE';
 import {ApiCallerEventTypeV2} from './types';
 import {DataStatus} from './consts';
+import {BaseDB_ModuleFEV2} from "./BaseDB_ModuleFEV2";
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -47,7 +47,7 @@ type Operation = {
 }
 
 export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
-	extends BaseDB_ModuleFE<DBType, Ks, Config>
+	extends BaseDB_ModuleFEV2<DBType, Ks, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>, SyncIfNeeded {
 
 	// @ts-ignore
