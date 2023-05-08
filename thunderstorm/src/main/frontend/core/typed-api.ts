@@ -20,18 +20,18 @@
  */
 
 import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, QueryApi} from '../shared';
-import {XhrHttpModule} from '../modules/http/XhrHttpModule';
+import {ModuleFE_XhrHttp} from '../modules/http/ModuleFE_XhrHttp';
 
 
 type ApiQueryReturnType<API extends QueryApi<any, any, any, any>> = API['P'] extends undefined ? () => BaseHttpRequest<API> : (params: API['P']) => BaseHttpRequest<API>
- type ApiBodyReturnType<API extends BodyApi<any, any, any, any>> = API['B'] extends undefined ? () => BaseHttpRequest<API> : (params: API['B']) => BaseHttpRequest<API>
+type ApiBodyReturnType<API extends BodyApi<any, any, any, any>> = API['B'] extends undefined ? () => BaseHttpRequest<API> : (params: API['B']) => BaseHttpRequest<API>
 
 export function apiWithQuery<API extends QueryApi<any, any>>(apiDef: ApiDef<API>,
 																														 onCompleted?: (response: API['R'], params: API['P'], request: BaseHttpRequest<API>) => Promise<any>,
 																														 onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>): ApiQueryReturnType<API> {
 	// @ts-ignore
 	return (params: API['P']): BaseHttpRequest<API> => {
-		return XhrHttpModule
+		return ModuleFE_XhrHttp
 			.createRequest<API>(apiDef)
 			.setUrlParams(params)
 			.setTimeout(apiDef.timeout || 10000)
@@ -45,7 +45,7 @@ export function apiWithBody<API extends BodyApi<any, any, any, HttpMethod_Body>>
 																																								 onError?: (errorResponse: any, input: API['P'] | API['B'], request: BaseHttpRequest<API>) => Promise<any>): ApiBodyReturnType<API> {
 	// @ts-ignore
 	return (body: API['B']): BaseHttpRequest<API> => {
-		return XhrHttpModule
+		return ModuleFE_XhrHttp
 			.createRequest<API>(apiDef)
 			.setBodyAsJson(body)
 			.setTimeout(apiDef.timeout || 10000)

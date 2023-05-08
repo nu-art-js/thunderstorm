@@ -31,5 +31,5 @@ const modules: Module[] = [
 ];
 
 export function createStorm() {
-	return new Storm().addModules(...modules);
+	return new Storm().addModulePack(modules);
 }
