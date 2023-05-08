@@ -81,7 +81,7 @@ export class TS_AppTools
 		const collapse = collapseStateStorage.get();
 		this.state = {
 			navbarCollapse: collapse?.navbarCollapse ?? false,
-			groups: collapse.groups ?? {},
+			groups: collapse?.groups ?? {},
 		};
 	}
 
