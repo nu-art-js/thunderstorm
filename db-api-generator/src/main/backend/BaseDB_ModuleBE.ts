@@ -23,6 +23,7 @@ import {Clause_Where, FilterKeys, FirestoreQuery,} from '@nu-art/firebase';
 import {
 	__stringify,
 	_keys,
+	_values,
 	addItemToArray,
 	BadImplementationException,
 	batchAction,
@@ -168,6 +169,12 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 
 	readonly _deleteMulti = Object.freeze({
 		read: async (transaction: FirestoreTransaction, deleteQuery: FirestoreQuery<DBType>) => {
+			if (!deleteQuery.where)
+				throw new ApiException(400, 'Cannot delete without where clause!');
+
+			if (_values(deleteQuery.where).some(value => !exists(value)))
+				throw new ApiException(400, `Cannot delete due to where clause missing values! '${__stringify(deleteQuery)}'`);
+
 			return await transaction.newQuery(this.collection,
 				{...deleteQuery, limit: deleteQuery.limit || BaseDB_ModuleBE.DeleteHardLimit});
 		},
@@ -293,7 +300,10 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DBType[]) {
 		const dependencies = await this.collectDependencies(dbInstances, transaction);
 		if (dependencies)
-			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({type: 'has-dependencies', body: dependencies});
+			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({
+				type: 'has-dependencies',
+				body: dependencies
+			});
 	}
 
 	async collectDependencies(dbInstances: DBType[], transaction?: FirestoreTransaction) {
@@ -524,7 +534,12 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 	async insert(instance: PreDB<DBType>) {
 
 		const timestamp = currentTimeMillis();
-		const toInsert = {...instance, _id: this.generateId(), __created: timestamp, __updated: timestamp} as unknown as DBType;
+		const toInsert = {
+			...instance,
+			_id: this.generateId(),
+			__created: timestamp,
+			__updated: timestamp
+		} as unknown as DBType;
 		await this.assertInstance(toInsert);
 
 		return this.collection.insert(toInsert, toInsert._id);
@@ -538,7 +553,12 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		const timestamp = currentTimeMillis();
 
 		if (this.config.uniqueKeys[0] === '_id' && instance._id === undefined)
-			return this.createImpl_Read(transaction, {...instance, _id: this.generateId(), __created: timestamp, __updated: timestamp} as unknown as DBType, request);
+			return this.createImpl_Read(transaction, {
+				...instance,
+				_id: this.generateId(),
+				__created: timestamp,
+				__updated: timestamp
+			} as unknown as DBType, request);
 
 		return this.upsertImpl_Read(transaction, {
 			...instance,
