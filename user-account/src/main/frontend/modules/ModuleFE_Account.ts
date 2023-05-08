@@ -25,7 +25,7 @@ import {
 	ModuleFE_Toaster,
 	StorageKey,
 	ThunderDispatcher,
-	XhrHttpModule
+	ModuleFE_XhrHttp
 } from '@nu-art/thunderstorm/frontend';
 import {
 	ApiDef_UserAccountFE,
@@ -117,8 +117,8 @@ export class ModuleFE_Account_Class
 	};
 
 	protected init(): void {
-		XhrHttpModule.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
-		// XhrHttpModule.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
+		ModuleFE_XhrHttp.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
+		// ModuleFE_XhrHttp.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
 		const email = getQueryParameter(QueryParam_Email);
 		const sessionId = getQueryParameter(QueryParam_SessionId);
@@ -158,7 +158,7 @@ export class ModuleFE_Account_Class
 	public decodeSessionData = () => {
 		const sessionData = this.getSessionId();
 		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(sessionData), c => c.charCodeAt(0)))));
-	}
+	};
 
 	private onLoginCompletedSAML = async (response: Response_LoginSAML) => {
 		if (!response.loginUrl)

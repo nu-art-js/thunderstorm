@@ -7,7 +7,7 @@ type Theme = {
 
 type ThemeOptions<ThemeType> = { [P in keyof ThemeType]: ThemeType[P][] };
 
-abstract class BaseThemeModule_Class<ThemeType extends Theme>
+abstract class BaseModuleFE_Theme_Class<ThemeType extends Theme>
 	extends Module {
 
 	private options: ThemeOptions<ThemeType>;
@@ -51,8 +51,8 @@ export const AppTheme: ThemeOptions<AppThemeType> = {
 	device: ['desktop', 'tablet', 'mobile']
 };
 
-class ThemeModule_Class
-	extends BaseThemeModule_Class<AppThemeType> {
+class ModuleFE_Theme_Class
+	extends BaseModuleFE_Theme_Class<AppThemeType> {
 
 	constructor() {
 		super(AppTheme);
@@ -60,4 +60,4 @@ class ThemeModule_Class
 }
 
 
-export const ThemeModule = new ThemeModule_Class();
+export const ModuleFE_Theme = new ModuleFE_Theme_Class();
