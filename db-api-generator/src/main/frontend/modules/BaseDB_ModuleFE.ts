@@ -21,24 +21,34 @@
 
 import {IndexKeys} from '@nu-art/thunderstorm';
 import {DBDef, Response_DBSync,} from '../shared';
-import {DBConfig, IndexDb_Query, IndexedDB, OnClearWebsiteData, ReduceFunction, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {
+	DBConfig,
+	IndexDb_Query,
+	IndexedDB,
+	OnClearWebsiteData,
+	ReduceFunction,
+	StorageKey,
+	ThunderDispatcher
+} from '@nu-art/thunderstorm/frontend';
 
 import {
 	arrayToMap,
 	cloneArr,
 	DB_Object,
-	dbObjectToId, InvalidResult,
+	dbObjectToId,
+	InvalidResult,
 	Logger,
 	Module,
 	PreDB,
 	sortArray,
-	StaticLogger, tsValidateResult,
-	TypedMap, ValidationException,
+	tsValidateResult,
+	TypedMap,
+	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
-import {DataStatus} from './consts';
+import {DataStatus, syncDispatcher} from './consts';
 import {ApiCallerEventTypeV2} from './types';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {
@@ -47,7 +57,7 @@ import {
 	EventType_DeleteMulti,
 	EventType_Patch,
 	EventType_Query,
-	EventType_Sync, EventType_Unique,
+	EventType_Unique,
 	EventType_Update,
 	EventType_UpsertAll
 } from '../consts';
@@ -88,9 +98,10 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 
 	}
 
-	protected OnDataStatusChanged = () => {
-		this.dispatchMulti(EventType_Sync, []);
-	};
+	protected OnDataStatusChanged() {
+		syncDispatcher.dispatchModule(this as any);
+		syncDispatcher.dispatchUI(this as any);
+	}
 
 	getDataStatus() {
 		return this.dataStatus;
@@ -171,7 +182,6 @@ export abstract class BaseDB_ModuleFE<DBType extends DB_Object, Ks extends keyof
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
 		this.validateImpl(item);
-		StaticLogger.logInfo('UPDATING');
 		await this.IDB.syncIndexDb([item]);
 		// @ts-ignore
 		this.cache.onEntriesUpdated([item]);
@@ -234,7 +244,10 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		return this.db.deleteDB();
 	};
 
-	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> => (await this.db.query({query, indexKey})) || [];
+	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> => (await this.db.query({
+		query,
+		indexKey
+	})) || [];
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns all the items that pass the filter
@@ -389,7 +402,9 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		return sortArray(this.allMutable() as DBType[], map, invert);
 	};
 
-	arrayToMap(getKey: (item: DBType, index: number, map: { [k: string]: DBType }) => string | number, map: { [k: string]: DBType } = {}): TypedMap<DBType> {
+	arrayToMap(getKey: (item: DBType, index: number, map: { [k: string]: DBType }) => string | number, map: {
+		[k: string]: DBType
+	} = {}): TypedMap<DBType> {
 		return arrayToMap(this.allMutable(), getKey, map);
 	}
 

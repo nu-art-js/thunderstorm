@@ -20,12 +20,46 @@
  */
 
 import {IndexKeys} from '@nu-art/thunderstorm';
-import {DBDef,} from '../shared';
-import {DBConfig, IndexDb_Query, IndexedDB, OnClearWebsiteData, ReduceFunction, StorageKey} from '@nu-art/thunderstorm/frontend';
+import {DBDef, Response_DBSync,} from '../shared';
+import {
+	DBConfig,
+	IndexDb_Query,
+	IndexedDB,
+	OnClearWebsiteData,
+	ReduceFunction,
+	StorageKey,
+	ThunderDispatcher
+} from '@nu-art/thunderstorm/frontend';
 
-import {arrayToMap, DB_Object, dbObjectToId, Logger, Module, sortArray, TypedMap, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {
+	arrayToMap,
+	DB_Object,
+	dbObjectToId,
+	InvalidResult,
+	Logger,
+	Module,
+	PreDB,
+	sortArray,
+	tsValidateResult,
+	TypedMap,
+	ValidationException,
+	ValidatorTypeResolver
+} from '@nu-art/ts-common';
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
+import {DataStatus, syncDispatcher} from './consts';
+import {ApiCallerEventTypeV2} from './types';
+import {MultiApiEvent, SingleApiEvent} from '../types';
+import {
+	EventType_Create,
+	EventType_Delete,
+	EventType_DeleteMulti,
+	EventType_Patch,
+	EventType_Query,
+	EventType_Unique,
+	EventType_Update,
+	EventType_UpsertAll
+} from '../consts';
 
 
 export abstract class BaseDB_ModuleFEV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
@@ -35,16 +69,41 @@ export abstract class BaseDB_ModuleFEV2<DBType extends DB_Object, Ks extends key
 	readonly cache: MemCache<DBType, Ks>;
 	readonly IDB: IDBCache<DBType, Ks>;
 	readonly dbDef: DBDef<DBType, Ks>;
+	private dataStatus: DataStatus;
+	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
 
-	protected constructor(dbDef: DBDef<DBType, Ks>) {
+	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
 		super();
+		this.defaultDispatcher = defaultDispatcher;
+
 		const config = getModuleFEConfig(dbDef);
 		this.validator = config.validator;
 		this.setDefaultConfig(config as Config);
+		//Set Statuses
+		this.dataStatus = DataStatus.NoData;
 
 		this.cache = new MemCache<DBType, Ks>(this, config.dbConfig.uniqueKeys);
 		this.IDB = new IDBCache<DBType, Ks>(config.dbConfig, config.versions[0]);
 		this.dbDef = dbDef;
+	}
+
+	protected setDataStatus(status: DataStatus) {
+		this.logDebug(`Data status updated: ${DataStatus[this.dataStatus]} => ${DataStatus[status]}`);
+		if (this.dataStatus === status)
+			return;
+
+		this.dataStatus = status;
+		this.OnDataStatusChanged();
+
+	}
+
+	protected OnDataStatusChanged() {
+		syncDispatcher.dispatchModule(this as any);
+		syncDispatcher.dispatchUI(this as any);
+	}
+
+	getDataStatus() {
+		return this.dataStatus;
 	}
 
 	protected init() {
@@ -56,6 +115,89 @@ export abstract class BaseDB_ModuleFEV2<DBType extends DB_Object, Ks extends key
 
 	public getCollectionName = () => {
 		return this.config.dbConfig.name;
+	};
+
+	private dispatchSingle = (event: SingleApiEvent, item: DBType) => {
+		this.defaultDispatcher?.dispatchModule(event, item);
+		this.defaultDispatcher?.dispatchUI(event, item);
+	};
+
+	private dispatchMulti = (event: MultiApiEvent, items: DBType[]) => {
+		this.defaultDispatcher?.dispatchModule(event, items);
+		this.defaultDispatcher?.dispatchUI(event, items);
+	};
+	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
+		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
+		await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
+		await this.cache.load();
+		this.setDataStatus(DataStatus.containsData);
+
+		if (syncData.toDelete)
+			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
+		if (syncData.toUpdate)
+			this.dispatchMulti(EventType_Query, syncData.toUpdate);
+	};
+
+	public onEntriesDeleted = async (items: DBType[]): Promise<void> => {
+		await this.IDB.syncIndexDb([], items);
+		// @ts-ignore
+		this.cache.onEntriesDeleted(items);
+		this.dispatchMulti(EventType_DeleteMulti, items);
+	};
+
+	protected onEntryDeleted = async (item: DBType): Promise<void> => {
+		await this.IDB.syncIndexDb([], [item]);
+		// @ts-ignore
+		this.cache.onEntriesDeleted([item]);
+		this.dispatchSingle(EventType_Delete, item);
+	};
+
+	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
+		await this.IDB.syncIndexDb(items);
+		// @ts-ignore
+		this.cache.onEntriesUpdated(items);
+		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
+	};
+
+	protected onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
+		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
+	};
+
+	protected onEntryPatched = async (item: DBType): Promise<void> => {
+		return this.onEntryUpdatedImpl(EventType_Patch, item);
+	};
+
+	public validateImpl(instance: PreDB<DBType>) {
+		const results = tsValidateResult(instance as DBType, this.validator);
+		if (results) {
+			this.onValidationError(instance, results);
+		}
+	}
+
+	protected onValidationError(instance: PreDB<DBType>, results: InvalidResult<DBType>) {
+		this.logError(`Error validating object:`, instance, 'With Error: ', results);
+		throw new ValidationException('Error validating object', instance, results);
+	}
+
+	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
+		this.validateImpl(item);
+		await this.IDB.syncIndexDb([item]);
+		// @ts-ignore
+		this.cache.onEntriesUpdated([item]);
+		this.dispatchSingle(event, item);
+	}
+
+	protected onGotUnique = async (item: DBType): Promise<void> => {
+		return this.onEntryUpdatedImpl(EventType_Unique, item);
+	};
+
+	protected onQueryReturned = async (toUpdate: DBType[], toDelete: DB_Object[] = []): Promise<void> => {
+		await this.IDB.syncIndexDb(toUpdate, toDelete);
+		// @ts-ignore
+		this.cache.onEntriesUpdated(toUpdate);
+		// @ts-ignore
+		this.cache.onEntriesDeleted(toDelete);
+		this.dispatchMulti(EventType_Query, toUpdate);
 	};
 }
 
@@ -96,7 +238,15 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 		return this.db.clearDB();
 	};
 
-	query = async (query?: string | number | string[] | number[], indexKey?: string) => (await this.db.query({query, indexKey})) || [];
+	delete = async (resync = false) => {
+		this.lastSync.delete();
+		return this.db.deleteDB();
+	};
+
+	query = async (query?: string | number | string[] | number[], indexKey?: string): Promise<DBType[]> => (await this.db.query({
+		query,
+		indexKey
+	})) || [];
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns all the items that pass the filter
@@ -106,7 +256,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return Array of items or empty array
 	 */
-	filter = async (filter: (item: DBType) => boolean, query?: IndexDb_Query) => this.db.queryFilter(filter, query);
+	filter = async (filter: (item: DBType) => boolean, query?: IndexDb_Query): Promise<DBType[]> => this.db.queryFilter(filter, query);
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns the first item that passes the filter
@@ -115,7 +265,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return a single item or undefined
 	 */
-	find = async (filter: (item: DBType) => boolean) => this.db.queryFind(filter);
+	find = async (filter: (item: DBType) => boolean): Promise<DBType | undefined> => this.db.queryFind(filter);
 
 	/**
 	 * Iterates over all DB objects in the related collection, and returns an array of items based on the mapper.
@@ -126,7 +276,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return An array of mapped items
 	 */
-	map = async <MapType>(mapper: (item: DBType) => MapType, filter?: (item: DBType) => boolean, query?: IndexDb_Query) => this.db.WIP_queryMap(mapper, filter, query);
+	map = async <MapType>(mapper: (item: DBType) => MapType, filter?: (item: DBType) => boolean, query?: IndexDb_Query): Promise<MapType[]> => this.db.WIP_queryMap(mapper, filter, query);
 
 	/**
 	 * iterates over all DB objects in the related collection, and reduces them to a single value based on the reducer.
@@ -137,9 +287,9 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	 *
 	 * @return a single reduced value.
 	 */
-	reduce = async <ReturnType>(reducer: ReduceFunction<DBType, ReturnType>, initialValue: ReturnType, filter?: (item: DBType) => boolean, query?: IndexDb_Query) => this.db.queryReduce(reducer, initialValue, filter, query);
+	reduce = async <ReturnType>(reducer: ReduceFunction<DBType, ReturnType>, initialValue: ReturnType, filter?: (item: DBType) => boolean, query?: IndexDb_Query): Promise<ReturnType> => this.db.queryReduce(reducer, initialValue, filter, query);
 
-	unique = async (_key?: string | IndexKeys<DBType, Ks>) => {
+	unique = async (_key?: string | IndexKeys<DBType, Ks>): Promise<DBType | undefined> => {
 		if (_key === undefined)
 			return _key;
 
@@ -253,7 +403,9 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		return sortArray(this.allMutable(), map, invert);
 	};
 
-	arrayToMap(getKey: (item: Readonly<DBType>, index: number, map: { [k: string]: Readonly<DBType> }) => string | number, map: {
+	arrayToMap(getKey: (item: Readonly<DBType>, index: number, map: {
+		[k: string]: Readonly<DBType>
+	}) => string | number, map: {
 		[k: string]: Readonly<DBType>
 	} = {}) {
 		return arrayToMap(this.allMutable(), getKey, map);
