@@ -20,13 +20,13 @@ const Failed_Action_Default_Label = 'Action Failed';
 
 /**
  * #preformAction
- * use this function to exectute any async action that requires a feedback.
+ * use this function to execute any async action that requires a feedback.
  * @param action the action to execute.
  * @param feedbackOptions feedback options to determine which kind of feedback to present
  * @param additionalData !Optional! any additional data the notification/toast might need
  * @param throwBackError !Optional! if true, will throw error back outside the action
  */
-export async function preformAction(action: () => Promise<any>, feedbackOptions: FeedbackOptions, additionalData?: any, throwBackError: boolean = false) {
+export async function performAction(action: () => Promise<any>, feedbackOptions: FeedbackOptions, additionalData?: any, throwBackError: boolean = false) {
 	switch (feedbackOptions.type) {
 		case 'notification':
 			if (feedbackOptions.notificationLabels) {
