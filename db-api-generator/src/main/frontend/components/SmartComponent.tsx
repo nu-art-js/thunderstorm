@@ -21,10 +21,11 @@
 
 import * as React from 'react';
 import {TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend';
-import {EventType_Sync} from '../consts';
 import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
-import {ApiCallerEventTypeV2, DBItemApiCaller} from '../modules/types';
+import {OnSyncStatusChangedListener} from '../modules/types';
 import {DataStatus} from '../modules/consts';
+import {BaseDB_ModuleFEV2} from "../modules/BaseDB_ModuleFEV2";
+import {DB_Object} from "@nu-art/ts-common";
 
 
 export enum ComponentStatus {
@@ -34,7 +35,7 @@ export enum ComponentStatus {
 }
 
 export type Props_SmartComponent = {
-	modules?: (DBItemApiCaller<any>)[];
+	modules?: (BaseDB_ModuleFEV2<any>)[];
 }
 
 export type State_SmartComponent = {
@@ -67,7 +68,8 @@ export type State_SmartComponent = {
 export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	Props extends Props_SmartComponent & P = Props_SmartComponent & P,
 	State extends State_SmartComponent & S = State_SmartComponent & S>
-	extends BaseComponent<Props, State> {
+	extends BaseComponent<Props, State>
+	implements OnSyncStatusChangedListener<DB_Object> {
 
 	// static defaultProps = {
 	// 	modules: []
@@ -92,15 +94,6 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	 */
 	constructor(p: Props) {
 		super(p);
-		this.props.modules?.forEach(module => {
-			// @ts-ignore
-			const __callback = this[module.defaultDispatcher.method]?.bind(this);
-			// @ts-ignore
-			this[module.defaultDispatcher.method] = (...params: ApiCallerEventTypeV2<any>) => {
-				this.onSyncEvent(module, ...params);
-				__callback?.(...params);
-			};
-		});
 
 		const _render = this.render?.bind(this);
 		this.render = () => {
@@ -112,7 +105,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 				return <>
 					{_render()}
 					{this.state.componentPhase === ComponentStatus.Syncing &&
-						<div className={'loader-transparent-container'}><TS_Loader/></div>}
+                        <div className={'loader-transparent-container'}><TS_Loader/></div>}
 				</>;
 			};
 
@@ -124,12 +117,11 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	// ######################### Life Cycle #########################
 
-	private onSyncEvent = (module: DBItemApiCaller<any>, ...params: ApiCallerEventTypeV2<any>) => {
-		this.logVerbose(`onSyncEvent: ${module.getCollectionName()} ${params[0]}`);
-		if (params[0] === EventType_Sync) {
+	__onSyncStatusChanged(module: BaseDB_ModuleFEV2<DB_Object, any>): void {
+		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
+		if (this.props.modules?.includes(module))
 			this.reDeriveState();
-		}
-	};
+	}
 
 	/**
 	 * This function gates the actual deriveStateFromProps from being called when the shared-components

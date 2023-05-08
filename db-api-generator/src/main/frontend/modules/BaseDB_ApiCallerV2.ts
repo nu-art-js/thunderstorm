@@ -20,40 +20,17 @@
  */
 
 import {ApiDefCaller, BaseHttpRequest, HttpException, IndexKeys, QueryParams, TypedApi} from '@nu-art/thunderstorm';
-import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData, Response_DBSync,} from '../shared';
+import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
-import {
-	BadImplementationException,
-	DB_BaseObject,
-	DB_Object,
-	InvalidResult,
-	merge,
-	PreDB,
-	StaticLogger,
-	tsValidateResult,
-	TypedMap,
-	ValidationException
-} from '@nu-art/ts-common';
-import {MultiApiEvent, SingleApiEvent} from '../types';
-import {
-	EventType_Create,
-	EventType_Delete,
-	EventType_DeleteMulti,
-	EventType_Patch,
-	EventType_Query,
-	EventType_Sync,
-	EventType_Unique,
-	EventType_Update,
-	EventType_UpsertAll
-} from '../consts';
+import {BadImplementationException, DB_BaseObject, DB_Object, merge, PreDB, TypedMap} from '@nu-art/ts-common';
 
 import {DBApiFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
-import {BaseDB_ModuleFEV2} from './BaseDB_ModuleFEV2';
 import {ApiCallerEventTypeV2} from './types';
-import {DataStatus, SyncStatus} from './consts';
+import {DataStatus} from './consts';
+import {BaseDB_ModuleFEV2} from "./BaseDB_ModuleFEV2";
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -73,17 +50,13 @@ export abstract class BaseDB_ApiCallerV2<DBType extends DB_Object, Ks extends ke
 	extends BaseDB_ModuleFEV2<DBType, Ks, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>, SyncIfNeeded {
 
-	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
 	// @ts-ignore
 	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
-	private syncStatus: SyncStatus;
-	private dataStatus: DataStatus;
 	private operations: TypedMap<Operation> = {};
 
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
-		super(dbDef);
+		super(dbDef, defaultDispatcher);
 
-		this.defaultDispatcher = defaultDispatcher;
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
 
 		const _query = apiWithBody(apiDef.v1.query, (response) => this.onQueryReturned(response));
@@ -92,9 +65,6 @@ export abstract class BaseDB_ApiCallerV2<DBType extends DB_Object, Ks extends ke
 		const upsert = apiWithBody(apiDef.v1.upsert, this.onEntryUpdated);
 		const patch = apiWithBody(apiDef.v1.patch, this.onEntryPatched);
 
-		//Set Statuses
-		this.syncStatus = SyncStatus.loading;
-		this.dataStatus = DataStatus.NoData;
 		// this.dataStatus = this.IDB.getLastSync() !== 0 ? DataStatus.containsData : DataStatus.NoData;
 
 		const _delete = apiWithQuery(apiDef.v1.delete, this.onEntryDeleted);
@@ -112,12 +82,10 @@ export abstract class BaseDB_ApiCallerV2<DBType extends DB_Object, Ks extends ke
 				const _executeSync = syncRequest.executeSync.bind(syncRequest);
 
 				syncRequest.execute = (onSuccess, onError) => {
-					this.setSyncStatus(SyncStatus.read);
 					return _execute(onSuccess, onError);
 				};
 
 				syncRequest.executeSync = async () => {
-					this.setSyncStatus(SyncStatus.read);
 					return _executeSync();
 				};
 
@@ -150,23 +118,10 @@ export abstract class BaseDB_ApiCallerV2<DBType extends DB_Object, Ks extends ke
 		const superClear = this.IDB.clear;
 		this.IDB.clear = async (reSync = false) => {
 			await superClear();
-			this.setSyncStatus(SyncStatus.idle);
 			this.setDataStatus(DataStatus.NoData);
 			if (reSync)
 				this.v1.sync().execute();
 		};
-	}
-
-	public validateImpl(instance: PreDB<DBType>) {
-		const results = tsValidateResult(instance as DBType, this.validator);
-		if (results) {
-			this.onValidationError(instance, results);
-		}
-	}
-
-	protected onValidationError(instance: PreDB<DBType>, results: InvalidResult<DBType>) {
-		this.logError(`Error validating object:`, instance, 'With Error: ', results);
-		throw new ValidationException('Error validating object', instance, results);
 	}
 
 	private updatePending<API extends TypedApi<any, any, any, any>>(item: DB_BaseObject, request: BaseHttpRequest<API>, requestType: RequestType) {
@@ -242,112 +197,10 @@ export abstract class BaseDB_ApiCallerV2<DBType extends DB_Object, Ks extends ke
 				await this.cache.load();
 
 			this.setDataStatus(DataStatus.containsData);
-			this.setSyncStatus(SyncStatus.idle);
 			return;
 		}
 
 		await this.v1.sync().executeSync();
-	};
-
-	private setSyncStatus(status: SyncStatus) {
-		this.logDebug(`Sync status updated: ${SyncStatus[this.syncStatus]} => ${SyncStatus[status]}`);
-		if (this.syncStatus === status)
-			return;
-
-		this.syncStatus = status;
-		this.OnSyncStatusChanged();
-	}
-
-	getSyncStatus() {
-		return this.syncStatus;
-	}
-
-	private setDataStatus(status: DataStatus) {
-		this.logDebug(`Data status updated: ${DataStatus[this.dataStatus]} => ${DataStatus[status]}`);
-		this.dataStatus = status;
-	}
-
-	getDataStatus() {
-		return this.dataStatus;
-	}
-
-	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
-		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
-		await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
-		await this.cache.load();
-		this.setDataStatus(DataStatus.containsData);
-		this.setSyncStatus(SyncStatus.idle);
-
-		if (syncData.toDelete)
-			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
-		if (syncData.toUpdate)
-			this.dispatchMulti(EventType_Query, syncData.toUpdate);
-
-	};
-
-	private dispatchSingle = (event: SingleApiEvent, item: DBType) => {
-		this.defaultDispatcher?.dispatchModule(event, item);
-		this.defaultDispatcher?.dispatchUI(event, item);
-	};
-
-	private dispatchMulti = (event: MultiApiEvent, items: DBType[]) => {
-		this.defaultDispatcher?.dispatchModule(event, items);
-		this.defaultDispatcher?.dispatchUI(event, items);
-	};
-
-	protected OnSyncStatusChanged = () => {
-		this.dispatchMulti(EventType_Sync, []);
-	};
-
-	public onEntriesDeleted = async (items: DBType[]): Promise<void> => {
-		await this.IDB.syncIndexDb([], items);
-		// @ts-ignore
-		this.cache.onEntriesDeleted(items);
-		this.dispatchMulti(EventType_DeleteMulti, items);
-	};
-
-	protected onEntryDeleted = async (item: DBType): Promise<void> => {
-		await this.IDB.syncIndexDb([], [item]);
-		// @ts-ignore
-		this.cache.onEntriesDeleted([item]);
-		this.dispatchSingle(EventType_Delete, item);
-	};
-
-	protected onEntriesUpdated = async (items: DBType[]): Promise<void> => {
-		await this.IDB.syncIndexDb(items);
-		// @ts-ignore
-		this.cache.onEntriesUpdated(items);
-		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
-	};
-
-	protected onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
-		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
-	};
-
-	protected onEntryPatched = async (item: DBType): Promise<void> => {
-		return this.onEntryUpdatedImpl(EventType_Patch, item);
-	};
-
-	private async onEntryUpdatedImpl(event: SingleApiEvent, item: DBType): Promise<void> {
-		this.validateImpl(item);
-		StaticLogger.logInfo('UPDATING');
-		await this.IDB.syncIndexDb([item]);
-		// @ts-ignore
-		this.cache.onEntriesUpdated([item]);
-		this.dispatchSingle(event, item);
-	}
-
-	protected onGotUnique = async (item: DBType): Promise<void> => {
-		return this.onEntryUpdatedImpl(EventType_Unique, item);
-	};
-
-	protected onQueryReturned = async (toUpdate: DBType[], toDelete: DB_Object[] = []): Promise<void> => {
-		await this.IDB.syncIndexDb(toUpdate, toDelete);
-		// @ts-ignore
-		this.cache.onEntriesUpdated(toUpdate);
-		// @ts-ignore
-		this.cache.onEntriesDeleted(toDelete);
-		this.dispatchMulti(EventType_Query, toUpdate);
 	};
 
 }
