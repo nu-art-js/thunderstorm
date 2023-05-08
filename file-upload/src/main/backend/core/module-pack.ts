@@ -20,13 +20,13 @@
 import {ModuleBE_AssetsTemp} from '../modules/ModuleBE_AssetsTemp';
 import {ModuleBE_Assets} from '../modules/ModuleBE_Assets';
 import {AssetBucketListener} from '../modules/AssetBucketListener';
-import {ModulePack_Backend_PushPubSub} from '@nu-art/push-pub-sub/backend';
+import {ModulePackBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {ModuleBE_AssetUploader} from '../modules/ModuleBE_AssetUploader';
 import {createApisForDBModule} from '@nu-art/db-api-generator/backend';
 
 
 export const ModulePack_Backend_Uploader = [
-	...ModulePack_Backend_PushPubSub,
+	...ModulePackBE_PushPubSub,
 	ModuleBE_AssetUploader,
 	ModuleBE_AssetsTemp, createApisForDBModule(ModuleBE_AssetsTemp),
 	ModuleBE_Assets, createApisForDBModule(ModuleBE_Assets),
