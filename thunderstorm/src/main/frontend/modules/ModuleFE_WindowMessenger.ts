@@ -1,4 +1,4 @@
-import {Module, TypedMap} from '@nu-art/ts-common';
+import {Logger, Module, removeItemFromArray, TypedMap} from '@nu-art/ts-common';
 
 interface Messagable {
 	postMessage(message: any, targetOrigin: string, transfer?: Transferable[]): void;
@@ -15,25 +15,29 @@ class ModuleFE_WindowMessenger_Class
 
 	//######################### Static #########################
 
-	readonly messageProcessorMap: TypedMap<(data: any) => void> = {};
-	readonly origin = window.origin;
+	readonly receivers: Receiver<any>[] = [];
+	private listener?: (e: MessageEvent) => void;
 
 	//######################### Life Cycle #########################
 
-	constructor() {
-		super();
-		this.logInfo(this.origin);
-		window.addEventListener('message', e => {
-			const {data, origin} = e;
-			if (origin !== this.origin)
-				return;
+	addReceiver(receiver: Receiver<any>) {
+		if (this.receivers.includes(receiver))
+			return;
 
-			this.messageProcessorMap[data.key]?.(data);
-		});
+		this.receivers.push(receiver);
+		if (this.receivers.length > 0 && !this.listener)
+			window.addEventListener('message', this.listener = (e: MessageEvent) => {
+				const {data, origin} = e;
+				this.receivers.forEach(receiver => receiver.execute(origin, data));
+			});
 	}
 
-	addProcessor<T extends Message>(key: T['key'], processor: (data: T) => void) {
-		this.messageProcessorMap[key] = processor;
+	removeReceiver(receiver: Receiver<any>) {
+		removeItemFromArray(this.receivers, receiver);
+		if (this.receivers.length === 0) {
+			window.removeEventListener('message', this.listener!);
+			delete this.listener;
+		}
 	}
 
 	sendMessage<T extends Message>(message: T, target: Messagable) {
@@ -43,9 +47,15 @@ class ModuleFE_WindowMessenger_Class
 	createMessenger<T extends Message>(target: Messagable) {
 		return new Messenger<T>(target);
 	}
+
+	createReceiver<T extends Message>(origin?: string) {
+		return new Receiver(origin);
+	}
 }
 
 export const ModuleFE_WindowMessenger = new ModuleFE_WindowMessenger_Class();
+
+//Message Sender
 
 export class Messenger<T extends Message> {
 	readonly target: Messagable;
@@ -56,5 +66,49 @@ export class Messenger<T extends Message> {
 
 	sendMessage(message: T) {
 		ModuleFE_WindowMessenger.sendMessage(message, this.target);
+	}
+}
+
+//Message Receiver
+
+export class Receiver<T extends Message>
+	extends Logger {
+
+	private readonly origin: string;
+	private readonly regex: RegExp;
+	private readonly messageProcessorMap: TypedMap<(message: any) => void> = {};
+
+	constructor(origin = '.*') {
+		super();
+		this.setTag(`Receiver (${origin})`);
+		this.origin = origin;
+		this.regex = new RegExp(this.origin);
+	}
+
+	mount() {
+		ModuleFE_WindowMessenger.addReceiver(this);
+		return this;
+	}
+
+	unmount() {
+		ModuleFE_WindowMessenger.removeReceiver(this);
+	}
+
+	addProcessor<K extends T>(key: K['key'], processor: (message: K) => void) {
+		this.messageProcessorMap[key] = processor;
+		return this;
+	}
+
+	execute(origin: string, message: T) {
+		if (!this.regex.test(origin))
+			return;
+
+		const processor = this.messageProcessorMap[message.key];
+		if (!processor) {
+			this.logDebug('No message processor defined for key ${message.key}');
+			return;
+		}
+
+		processor(message);
 	}
 }

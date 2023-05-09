@@ -749,5 +749,3 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 		});
 	}
 }
-
-export const BaseDB_ModuleBE = ModuleBE_BaseDB;
