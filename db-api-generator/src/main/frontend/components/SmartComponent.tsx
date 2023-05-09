@@ -24,7 +24,7 @@ import {TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
 import {OnSyncStatusChangedListener} from '../modules/types';
 import {DataStatus} from '../modules/consts';
-import {BaseDB_ModuleFEV2} from "../modules/BaseDB_ModuleFEV2";
+import {ModuleFE_BaseDB} from "../modules/ModuleFE_BaseDB";
 import {DB_Object} from "@nu-art/ts-common";
 
 
@@ -35,7 +35,7 @@ export enum ComponentStatus {
 }
 
 export type Props_SmartComponent = {
-	modules?: (BaseDB_ModuleFEV2<any>)[];
+	modules?: (ModuleFE_BaseDB<any>)[];
 }
 
 export type State_SmartComponent = {
@@ -117,7 +117,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	// ######################### Life Cycle #########################
 
-	__onSyncStatusChanged(module: BaseDB_ModuleFEV2<DB_Object, any>): void {
+	__onSyncStatusChanged(module: ModuleFE_BaseDB<DB_Object, any>): void {
 		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
 		if (this.props.modules?.includes(module))
 			this.reDeriveState();

@@ -30,7 +30,7 @@ import {DBApiFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
 import {ApiCallerEventTypeV2} from './types';
 import {DataStatus} from './consts';
-import {BaseDB_ModuleFEV2} from "./BaseDB_ModuleFEV2";
+import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -46,8 +46,8 @@ type Operation = {
 	pending?: Pending
 }
 
-export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
-	extends BaseDB_ModuleFEV2<DBType, Ks, Config>
+export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
+	extends ModuleFE_BaseDB<DBType, Ks, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>, SyncIfNeeded {
 
 	// @ts-ignore
@@ -204,3 +204,5 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 	};
 
 }
+
+export const BaseDB_ApiCaller = ModuleFE_BaseApi;

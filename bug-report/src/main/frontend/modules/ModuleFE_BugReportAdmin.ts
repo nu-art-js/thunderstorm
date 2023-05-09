@@ -41,7 +41,7 @@ export class ModuleFE_BugReportAdmin_Class
 
 	// public retrieveLogs = () => {
 	// 	this.logInfo('getting logs from firestore...');
-	// 	ModuleFE_XhrHttp
+	// 	ModuleFE_XHR
 	// 		.createRequest<ApiGetLog>(HttpMethod.GET, RequestKey_GetLog)
 	// 		.setRelativeUrl('v1/bug-reports/get-logs')
 	// 		.setOnError(`Error getting new message from backend`)
@@ -55,7 +55,7 @@ export class ModuleFE_BugReportAdmin_Class
 	// public downloadLogs = (path: string) => {
 	// 	this.logInfo('downloading the logs to the client..');
 	// 	const bodyObject: Paths = {path: path};
-	// 	ModuleFE_XhrHttp
+	// 	ModuleFE_XHR
 	// 		.createRequest<ApiPostPath>(HttpMethod.POST, RequestKey_PostPath)
 	// 		.setBodyAsJson(bodyObject)
 	// 		.setRelativeUrl('v1/bug-reports/download-logs')

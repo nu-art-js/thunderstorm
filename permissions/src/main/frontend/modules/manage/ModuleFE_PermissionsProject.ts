@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiCallerEventTypeV2, BaseDB_ApiCaller} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventTypeV2, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionProject, DBDef_PermissionProjects} from '../../shared';
 
@@ -30,7 +30,7 @@ const dispatch_OnPermissionsProjectsUpdated = new ThunderDispatcher<OnPermission
 	'__OnPermissionsProjectsUpdated');
 
 export class ModuleFE_PermissionsProject_Class
-	extends BaseDB_ApiCaller<DB_PermissionProject> {
+	extends ModuleFE_BaseApi<DB_PermissionProject> {
 
 	constructor() {
 		super(DBDef_PermissionProjects, dispatch_OnPermissionsProjectsUpdated);

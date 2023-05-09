@@ -25,8 +25,8 @@ import {__stringify, _values, DB_BaseObject, DB_Object, Module, PreDB} from '@nu
 import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
 import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {_EmptyQuery, DBApiDefGeneratorIDB, UpgradeCollectionBody} from '../shared';
-import {BaseDB_ModuleBE, DBApiConfig} from './BaseDB_ModuleBE';
 import {DB_Object_Metadata, Metadata} from '../shared/types';
+import {DBApiConfig, ModuleBE_BaseDB} from './ModuleBE_BaseDB';
 
 
 /**
@@ -34,12 +34,12 @@ import {DB_Object_Metadata, Metadata} from '../shared/types';
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
+export class ModuleBE_BaseApi<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
 	extends Module {
 
-	readonly dbModule: BaseDB_ModuleBE<DBType, any, Ks>;
+	readonly dbModule: ModuleBE_BaseDB<DBType, any, Ks>;
 
-	constructor(dbModule: BaseDB_ModuleBE<DBType, any, Ks>) {
+	constructor(dbModule: ModuleBE_BaseDB<DBType, any, Ks>) {
 		super(dbModule.getName());
 		this.dbModule = dbModule;
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbModule.dbDef);
@@ -112,7 +112,8 @@ export class DB_ApiGenerator_Class<DBType extends DB_Object, ConfigType extends 
 
 }
 
-export const DB_ApiGenerator = DB_ApiGenerator_Class;
-export const createApisForDBModule = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>(dbModule: BaseDB_ModuleBE<DBType, ConfigType, Ks>) => {
-	return new DB_ApiGenerator_Class<DBType, ConfigType, Ks>(dbModule);
+export const createApisForDBModule = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>(dbModule: ModuleBE_BaseDB<DBType, ConfigType, Ks>) => {
+	return new ModuleBE_BaseApi<DBType, ConfigType, Ks>(dbModule);
 };
+
+export const DB_ApiGenerator = ModuleBE_BaseApi;
