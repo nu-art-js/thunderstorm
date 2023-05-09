@@ -34,7 +34,7 @@ import {DBApiConfig, ModuleBE_BaseDB} from './ModuleBE_BaseDB';
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export class ModuleBE_BaseApi<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
+export class ModuleBE_BaseApi_Class<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
 	extends Module {
 
 	readonly dbModule: ModuleBE_BaseDB<DBType, any, Ks>;
@@ -113,7 +113,7 @@ export class ModuleBE_BaseApi<DBType extends DB_Object, ConfigType extends DBApi
 }
 
 export const createApisForDBModule = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>(dbModule: ModuleBE_BaseDB<DBType, ConfigType, Ks>) => {
-	return new ModuleBE_BaseApi<DBType, ConfigType, Ks>(dbModule);
+	return new ModuleBE_BaseApi_Class<DBType, ConfigType, Ks>(dbModule);
 };
 
-export const DB_ApiGenerator = ModuleBE_BaseApi;
+export const DB_ApiGenerator = ModuleBE_BaseApi_Class;
