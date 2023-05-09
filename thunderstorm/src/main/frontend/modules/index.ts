@@ -11,6 +11,7 @@ export * from './ModuleFE_Locale';
 export * from './ModuleFE_LocalStorage';
 export * from './ModuleFE_Thunderstorm';
 export * from './clearWebsiteDataDispatcher';
+export * from './ModuleFE_BaseTheme';
 
 export * from './routing';
 export * from './http/ModuleFE_XHR';

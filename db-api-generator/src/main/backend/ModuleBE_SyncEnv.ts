@@ -60,7 +60,7 @@ class ModuleBE_SyncEnv_Class
 			}
 
 			const relevantModule: ModuleBE_BaseDB<any>[] = Storm.getInstance().filterModules((module) => {
-				//the moduleKey in BaseDB_ModuleBE's config is taken from collection's name.
+				//the moduleKey in ModuleBE_BaseDB's config is taken from collection's name.
 				return module instanceof ModuleBE_BaseDB && (module as ModuleBE_BaseDB<any>).getCollectionName() === moduleKey;
 			});
 

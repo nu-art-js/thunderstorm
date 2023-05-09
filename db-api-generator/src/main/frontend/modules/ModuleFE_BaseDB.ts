@@ -432,5 +432,3 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		this._array = Object.freeze(cacheArray);
 	}
 }
-
-export const BaseDB_ModuleFE = ModuleFE_BaseDB;

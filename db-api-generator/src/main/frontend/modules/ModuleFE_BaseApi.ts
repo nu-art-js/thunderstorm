@@ -202,7 +202,4 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 
 		await this.v1.sync().executeSync();
 	};
-
 }
-
-export const BaseDB_ApiCaller = ModuleFE_BaseApi;
