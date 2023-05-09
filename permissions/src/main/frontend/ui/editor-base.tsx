@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {BaseDB_ApiCaller, EditableDBItem, SmartComponent} from '@nu-art/db-api-generator/frontend';
+import {ModuleFE_BaseApi, EditableDBItem, SmartComponent} from '@nu-art/db-api-generator/frontend';
 import {_className, LL_H_C, LL_V_L, TS_BusyButton, TS_Button} from '@nu-art/thunderstorm/frontend';
 import {BadImplementationException, cloneObj, DB_Object, ThisShouldNotHappenException, UniqueId} from '@nu-art/ts-common';
 import {ReactNode} from 'react';
@@ -17,7 +17,7 @@ export type State_EditorBase<T extends DB_Object> = {
 export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase<T>, P extends {} = {}>
 	extends SmartComponent<P, S> {
 
-	abstract readonly module: BaseDB_ApiCaller<T>;
+	abstract readonly module: ModuleFE_BaseApi<T>;
 	abstract readonly itemName: string;
 	abstract readonly itemNamePlural: string;
 	abstract readonly itemDisplay: (item: T) => ReactNode;

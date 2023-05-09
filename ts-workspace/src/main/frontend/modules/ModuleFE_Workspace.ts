@@ -19,7 +19,7 @@
 import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {_values, BadImplementationException, MUSTNeverHappenException, TypedMap} from '@nu-art/ts-common';
 import {DBApiDefGeneratorIDB} from '@nu-art/db-api-generator/shared';
-import {ApiCallerEventTypeV2, BaseDB_ApiCaller, DBApiFEConfig} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventTypeV2, ModuleFE_BaseApi, DBApiFEConfig} from '@nu-art/db-api-generator/frontend';
 import {PanelConfig} from '..';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {DBDef_Workspaces} from '../../shared/db-def';
@@ -35,7 +35,7 @@ export const dispatch_onWorkspaceUpdated = new ThunderDispatcher<OnWorkspaceUpda
 type Config = DBApiFEConfig<DB_Workspace, 'key' | 'accountId'> & { defaultConfigs: TypedMap<PanelConfig> };
 
 export class ModuleFE_Workspace_Class
-	extends BaseDB_ApiCaller<DB_Workspace, 'key' | 'accountId', Config> {
+	extends ModuleFE_BaseApi<DB_Workspace, 'key' | 'accountId', Config> {
 
 	private workspacesToUpsert: TypedMap<any> = {};
 	private upsertRunnable: any;

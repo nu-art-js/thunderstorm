@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ApiCallerEventTypeV2, BaseDB_ApiCaller} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventTypeV2, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel} from '../../shared';
 
@@ -29,7 +29,7 @@ export interface OnPermissionsLevelsUpdated {
 const dispatch_OnPermissionsLevelsUpdated = new ThunderDispatcher<OnPermissionsLevelsUpdated, '__onPermissionsLevelsUpdated'>('__onPermissionsLevelsUpdated');
 
 export class ModuleFE_PermissionsAccessLevel_Class
-	extends BaseDB_ApiCaller<DB_PermissionAccessLevel> {
+	extends ModuleFE_BaseApi<DB_PermissionAccessLevel> {
 
 	constructor() {
 		super(DBDef_PermissionAccessLevel, dispatch_OnPermissionsLevelsUpdated);

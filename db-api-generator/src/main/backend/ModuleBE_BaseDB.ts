@@ -71,7 +71,7 @@ export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfi
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
+export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerAct {
 	private static DeleteHardLimit = 250;
@@ -176,7 +176,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 				throw new ApiException(400, `Cannot delete due to where clause missing values! '${__stringify(deleteQuery)}'`);
 
 			return await transaction.newQuery(this.collection,
-				{...deleteQuery, limit: deleteQuery.limit || BaseDB_ModuleBE.DeleteHardLimit});
+				{...deleteQuery, limit: deleteQuery.limit || ModuleBE_BaseDB.DeleteHardLimit});
 		},
 
 		write: async (transaction: FirestoreTransaction, docs: DocWrapper<DBType>[]) => {
@@ -268,7 +268,7 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 			return this._deleteMulti.write(transaction, await this._deleteMulti.read(transaction, deleteQuery));
 		}));
 
-		if (toReturn.length !== 0 && toReturn.length % BaseDB_ModuleBE.DeleteHardLimit === 0)
+		if (toReturn.length !== 0 && toReturn.length % ModuleBE_BaseDB.DeleteHardLimit === 0)
 			await this.delete(deleteQuery, toReturn);
 
 		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, start);
@@ -749,3 +749,5 @@ export abstract class BaseDB_ModuleBE<DBType extends DB_Object, ConfigType exten
 		});
 	}
 }
+
+export const BaseDB_ModuleBE = ModuleBE_BaseDB;
