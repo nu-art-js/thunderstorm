@@ -32,7 +32,7 @@ export class ATS_SyncEnvironment
 	protected deriveStateFromProps(nextProps: {}, state: State) {
 		state ??= this.state ? {...this.state} : {} as State;
 		state.envList ??= ['prod', 'staging', 'dev'];
-		state.excludedModules ??= ['users', 'user-account--accounts', 'user-account--sessions'];
+		state.excludedModules ??= ['user-account--accounts', 'user-account--sessions'];
 		return state;
 	}
 
