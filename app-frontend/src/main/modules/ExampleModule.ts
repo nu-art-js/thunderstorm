@@ -18,7 +18,7 @@
 
 import {__stringify, Module, Second} from '@nu-art/ts-common';
 
-import {apiWithBody, apiWithQuery, ModuleFE_Toaster, ThunderDispatcher, XhrHttpModule} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery, ModuleFE_Toaster, ThunderDispatcher, ModuleFE_XHR} from '@nu-art/thunderstorm/frontend';
 import {ApiStruct_Examples, CommonBodyReq, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
 import {ApiDef, ApiDefCaller, ErrorResponse, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {Test} from '@modules/TestModule';
@@ -133,7 +133,7 @@ export class ExampleModule_Class
 		this.logInfo('getting label from server');
 		type DynamicApiStructExample = QueryApi<any, {}, void>;
 		const dynamicApiExample: ApiDef<DynamicApiStructExample> = {method: HttpMethod.GET, path: this.config.remoteUrl};
-		const r = XhrHttpModule
+		const r = ModuleFE_XHR
 			.createRequest(dynamicApiExample, RequestKey_GetApi)
 			.setRelativeUrl(this.config.remoteUrl);
 

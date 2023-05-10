@@ -1,7 +1,7 @@
 import {Adapter, ComponentSync, SimpleListAdapter, TS_DropDown} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, Filter, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
-import {BaseDB_ApiCaller, DBItemApiCaller} from '../..';
+import {ModuleFE_BaseApi, DBItemApiCaller} from '../..';
 
 
 type OptionalCanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
@@ -32,7 +32,7 @@ export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> &
 export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = OptionalProps_GenericDropDown<T> & {
 	placeholder: string;
 	module: DBItemApiCaller<T, Ks>;
-	modules: BaseDB_ApiCaller<DB_Object, any>[];
+	modules: ModuleFE_BaseApi<DB_Object, any>[];
 	mapper: (item: T) => string[]
 	renderer: (item: T) => React.ReactElement
 }
@@ -52,7 +52,7 @@ type GenericDropDownProps<T, Ks> = {
 	inputValue?: string;
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => any;
 
-	modules: BaseDB_ApiCaller<DB_Object, any>[];
+	modules: ModuleFE_BaseApi<DB_Object, any>[];
 	boundingParentSelector?: string;
 	limitItems?: number;
 	disabled?: boolean;

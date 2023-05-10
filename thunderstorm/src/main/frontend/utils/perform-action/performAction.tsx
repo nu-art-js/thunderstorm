@@ -19,7 +19,7 @@ const Successful_Action_Default_Label = 'Action Preformed Successfully';
 const Failed_Action_Default_Label = 'Action Failed';
 
 /**
- * #preformAction
+ * #performAction
  * use this function to execute any async action that requires a feedback.
  * @param action the action to execute.
  * @param feedbackOptions feedback options to determine which kind of feedback to present

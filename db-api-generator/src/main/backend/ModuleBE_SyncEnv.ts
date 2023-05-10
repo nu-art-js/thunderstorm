@@ -2,7 +2,7 @@ import {ApiDef, HttpMethod, QueryApi, Request_BackupId, Response_BackupDocs} fro
 import {addRoutes, AxiosHttpModule, createBodyServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {DB_Object, Module, TypedMap, BadImplementationException} from '@nu-art/ts-common';
 import {ApiDef_SyncEnv, Request_FetchFromEnv} from '../shared';
-import {BaseDB_ModuleBE} from './BaseDB_ModuleBE';
+import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
 
 type Config = {
 	urlMap: TypedMap<string>
@@ -59,9 +59,9 @@ class ModuleBE_SyncEnv_Class
 				return;
 			}
 
-			const relevantModule: BaseDB_ModuleBE<any>[] = Storm.getInstance().filterModules((module) => {
-				//the moduleKey in BaseDB_ModuleBE's config is taken from collection's name.
-				return module instanceof BaseDB_ModuleBE && (module as BaseDB_ModuleBE<any>).getCollectionName() === moduleKey;
+			const relevantModule: ModuleBE_BaseDB<any>[] = Storm.getInstance().filterModules((module) => {
+				//the moduleKey in ModuleBE_BaseDB's config is taken from collection's name.
+				return module instanceof ModuleBE_BaseDB && (module as ModuleBE_BaseDB<any>).getCollectionName() === moduleKey;
 			});
 
 			if (relevantModule.length === 0) {

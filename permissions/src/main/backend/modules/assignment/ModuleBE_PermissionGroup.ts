@@ -24,12 +24,12 @@ import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {DB_PermissionGroup, DBDef_PermissionGroup, PredefinedGroup} from '../../shared';
 import {Clause_Where} from '@nu-art/firebase';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
-import {BaseDB_ModuleBE} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {checkDuplicateLevelsDomain, ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
 
 
 export class ModuleBE_PermissionGroup_Class
-	extends BaseDB_ModuleBE<DB_PermissionGroup> {
+	extends ModuleBE_BaseDB<DB_PermissionGroup> {
 
 	constructor() {
 		super(DBDef_PermissionGroup);
