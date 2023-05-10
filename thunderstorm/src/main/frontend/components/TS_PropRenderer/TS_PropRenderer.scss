@@ -1,8 +1,10 @@
 .ts-prop-renderer {
   width: 100%;
 
-  .ts-prop-renderer__label {
-    width: 100%;
+  &.vertical {
+    .ts-prop-renderer__label {
+      width: 100%;
+    }
   }
 }
 

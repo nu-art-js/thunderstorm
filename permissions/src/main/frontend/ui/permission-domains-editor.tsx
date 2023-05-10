@@ -66,7 +66,7 @@ export class PermissionDomainsEditor
 		state.projects = ModuleFE_PermissionsProject.cache.all();
 		state.newLevel ??= new EditableDBItem(emptyLevel, ModuleFE_PermissionsAccessLevel);
 
-		if (!state.editedItem) {
+		if (!state.editedItem && state.items.length) {
 			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsDomain);
 			state.selectedItemId = state.items[0]._id;
 		}
