@@ -28,7 +28,7 @@ import {ModuleBE_PermissionGroup} from '../modules/assignment/ModuleBE_Permissio
 import {ModuleBE_PermissionUserDB} from '../modules/assignment/ModuleBE_PermissionUserDB';
 
 
-export const ModulePack_PermissionsBE = [
+export const ModulePackBE_Permissions = [
 	ModuleBE_PermissionProject, createApisForDBModule(ModuleBE_PermissionProject),
 	ModuleBE_PermissionDomain, createApisForDBModule(ModuleBE_PermissionDomain),
 	ModuleBE_PermissionAccessLevel, createApisForDBModule(ModuleBE_PermissionAccessLevel),

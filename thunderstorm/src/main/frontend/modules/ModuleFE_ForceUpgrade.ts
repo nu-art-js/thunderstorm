@@ -20,7 +20,7 @@
  */
 
 import {Dispatcher, Module} from '@nu-art/ts-common';
-import {ModuleFE_XhrHttp} from './http/ModuleFE_XhrHttp';
+import {ModuleFE_XHR} from './http/ModuleFE_XHR';
 import {
 	ApiDef,
 	ApiDef_ForceUpgrade,
@@ -63,8 +63,8 @@ class ModuleFE_ForceUpgrade_Class
 	}
 
 	protected init(): void {
-		ModuleFE_XhrHttp.addDefaultHeader(HeaderKey_AppVersion, `${process.env.appVersion}`);
-		ModuleFE_XhrHttp.addDefaultHeader(HeaderKey_BrowserType, `${browserType()}`);
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_AppVersion, `${process.env.appVersion}`);
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_BrowserType, `${browserType()}`);
 	}
 
 	compareVersion = () => {
@@ -74,7 +74,7 @@ class ModuleFE_ForceUpgrade_Class
 		// this.v1.assertAppVersion({}).execute((response) => {
 		// 	dispatch_onUpgradeRequired.dispatchModule(response);
 		// });
-		ModuleFE_XhrHttp
+		ModuleFE_XHR
 			.createRequest(def)
 			.setRelativeUrl(this.config.assertVersionUrl)
 			.execute((response) => {

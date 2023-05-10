@@ -62,7 +62,7 @@ import {
 } from '../consts';
 
 
-export abstract class BaseDB_ModuleFEV2<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
+export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config>
 	implements OnClearWebsiteData {
 	readonly validator: ValidatorTypeResolver<DBType>;
@@ -94,7 +94,6 @@ export abstract class BaseDB_ModuleFEV2<DBType extends DB_Object, Ks extends key
 
 		this.dataStatus = status;
 		this.OnDataStatusChanged();
-
 	}
 
 	protected OnDataStatusChanged() {
@@ -126,6 +125,7 @@ export abstract class BaseDB_ModuleFEV2<DBType extends DB_Object, Ks extends key
 		this.defaultDispatcher?.dispatchModule(event, items);
 		this.defaultDispatcher?.dispatchUI(event, items);
 	};
+
 	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
 		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
 		await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
@@ -134,6 +134,7 @@ export abstract class BaseDB_ModuleFEV2<DBType extends DB_Object, Ks extends key
 
 		if (syncData.toDelete)
 			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);
+
 		if (syncData.toUpdate)
 			this.dispatchMulti(EventType_Query, syncData.toUpdate);
 	};
@@ -316,7 +317,7 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 
 class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 
-	private readonly module: BaseDB_ModuleFEV2<DBType, Ks>;
+	private readonly module: ModuleFE_BaseDB<DBType, Ks>;
 	private readonly keys: string[];
 	loaded: boolean = false;
 
@@ -327,7 +328,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 
 	private cacheFilter?: (item: Readonly<DBType>) => boolean;
 
-	constructor(module: BaseDB_ModuleFEV2<DBType, Ks>, keys: Ks[]) {
+	constructor(module: ModuleFE_BaseDB<DBType, Ks>, keys: Ks[]) {
 		this.module = module;
 		this.keys = keys as string[];
 		this.clear();

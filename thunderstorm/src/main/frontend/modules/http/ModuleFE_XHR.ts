@@ -28,7 +28,7 @@ import {BaseHttpModule_Class, BaseHttpRequest, ErrorType, HttpException} from '.
 import {gzipSync} from 'zlib';
 
 
-export class ModuleFE_XhrHttp_Class
+export class ModuleFE_XHR_Class
 	extends BaseHttpModule_Class {
 
 	init() {
@@ -61,7 +61,7 @@ export class ModuleFE_XhrHttp_Class
 	}
 }
 
-export const ModuleFE_XhrHttp = new ModuleFE_XhrHttp_Class();
+export const ModuleFE_XHR = new ModuleFE_XHR_Class();
 
 class XhrHttpRequest<Binder extends TypedApi<any, any, any, any>>
 	extends BaseHttpRequest<Binder> {

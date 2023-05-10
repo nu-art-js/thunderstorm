@@ -28,9 +28,9 @@ import {BadImplementationException, DB_BaseObject, DB_Object, merge, PreDB, Type
 
 import {DBApiFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
-import {BaseDB_ModuleFE} from './BaseDB_ModuleFE';
 import {ApiCallerEventTypeV2} from './types';
 import {DataStatus} from './consts';
+import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
 
 
 type RequestType = 'upsert' | 'patch' | 'delete';
@@ -46,8 +46,8 @@ type Operation = {
 	pending?: Pending
 }
 
-export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
-	extends BaseDB_ModuleFE<DBType, Ks, Config>
+export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
+	extends ModuleFE_BaseDB<DBType, Ks, Config>
 	implements ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>, SyncIfNeeded {
 
 	// @ts-ignore
@@ -202,5 +202,4 @@ export abstract class BaseDB_ApiCaller<DBType extends DB_Object, Ks extends keyo
 
 		await this.v1.sync().executeSync();
 	};
-
 }

@@ -1,13 +1,14 @@
 import {_keys, Module} from '@nu-art/ts-common';
 import {StorageKey} from './ModuleFE_LocalStorage';
 
+
 type Theme = {
 	[prop: string]: string
 }
 
-type ThemeOptions<ThemeType> = { [P in keyof ThemeType]: ThemeType[P][] };
+export type ThemeOptions<ThemeType> = { [P in keyof ThemeType]: ThemeType[P][] };
 
-abstract class BaseModuleFE_Theme_Class<ThemeType extends Theme>
+export abstract class ModuleFE_BaseTheme<ThemeType extends Theme>
 	extends Module {
 
 	private options: ThemeOptions<ThemeType>;
@@ -40,24 +41,3 @@ abstract class BaseModuleFE_Theme_Class<ThemeType extends Theme>
 		return new StorageKey<ThemeType[P]>(`theme-key--${_themeKey}`);
 	}
 }
-
-export type AppThemeType = {
-	theme: 'light' | 'dark'
-	device: 'desktop' | 'tablet' | 'mobile'
-}
-
-export const AppTheme: ThemeOptions<AppThemeType> = {
-	theme: ['light', 'dark'],
-	device: ['desktop', 'tablet', 'mobile']
-};
-
-class ModuleFE_Theme_Class
-	extends BaseModuleFE_Theme_Class<AppThemeType> {
-
-	constructor() {
-		super(AppTheme);
-	}
-}
-
-
-export const ModuleFE_Theme = new ModuleFE_Theme_Class();
