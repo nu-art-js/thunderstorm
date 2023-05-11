@@ -82,9 +82,9 @@ export class PermissionDomainsEditor
 			throw new BadImplementationException('Editing a level with no selected domain');
 
 		const level = new EditableDBItem(_level, ModuleFE_PermissionsAccessLevel);
-		level.set(key, value);
+		level.update(key, value);
 		if (!level.item.domainId)
-			level.set('domainId', domain.item._id);
+			level.update('domainId', domain.item._id);
 
 		await level.save();
 		this.forceUpdate();
@@ -99,7 +99,7 @@ export class PermissionDomainsEditor
 		if (!this.state.editedItem)
 			throw new BadImplementationException('Saving level with no selected domain');
 
-		this.state.newLevel.set('domainId', this.state.editedItem.item._id);
+		this.state.newLevel.update('domainId', this.state.editedItem.item._id);
 		return this.state.newLevel.save();
 	};
 
@@ -141,7 +141,7 @@ export class PermissionDomainsEditor
 			? {onBlur: async (value: string) => await this.updateLevel(level, 'name', value)}
 			: {
 				onChange: (value: string) => {
-					this.state.newLevel.set('name', value);
+					this.state.newLevel.update('name', value);
 					this.forceUpdate();
 				}
 			};
@@ -159,7 +159,7 @@ export class PermissionDomainsEditor
 			? {onBlur: async (value: string) => await this.updateLevel(level, 'value', Number(value))}
 			: {
 				onChange: (value: string) => {
-					this.state.newLevel.set('value', Number(value));
+					this.state.newLevel.update('value', Number(value));
 					this.forceUpdate();
 				}
 			};
