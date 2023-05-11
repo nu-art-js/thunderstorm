@@ -17,22 +17,35 @@
  * limitations under the License.
  */
 
-import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {auditBy} from '@nu-art/ts-common';
+import {auditBy, batchActionParallel, dbObjectToId, flatArray} from '@nu-art/ts-common';
 import {ModuleBE_Account} from '@nu-art/user-account/backend';
-import {DB_PermissionDomain, DBDef_PermissionDomain} from '../../shared';
+import {DB_PermissionDomain, DB_PermissionProject, DBDef_PermissionDomain} from '../../shared';
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
+import {CanDeletePermissionEntities} from '../../core/can-delete';
 
 
 export class ModuleBE_PermissionDomain_Class
-	extends ModuleBE_BaseDB<DB_PermissionDomain> {
+	extends ModuleBE_BaseDB<DB_PermissionDomain>
+	implements CanDeletePermissionEntities<'Project', 'Domain'> {
 
 	constructor() {
 		super(DBDef_PermissionDomain);
 	}
+
+	__canDeleteEntities = async (type: 'Project', items: DB_PermissionProject[]): Promise<DB_EntityDependency<'Domain'>> => {
+		let conflicts: DB_PermissionDomain[] = [];
+		const dependencies: Promise<DB_PermissionDomain[]>[] = [];
+
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async projectIds => this.query({where: {projectId: {$in: projectIds}}})));
+		if (dependencies.length)
+			conflicts = flatArray(await Promise.all(dependencies));
+
+		return {collectionKey: 'Domain', conflictingIds: conflicts.map(dbObjectToId)};
+	};
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {
 		const accessLevels = await ModuleBE_PermissionAccessLevel.query({where: {domainId: dbInstance._id}});
