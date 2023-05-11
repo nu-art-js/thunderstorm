@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {ModuleFE_BaseApi, EditableDBItem, SmartComponent} from '@nu-art/db-api-generator/frontend';
-import {_className, LL_H_C, LL_V_L, TS_BusyButton, TS_Button} from '@nu-art/thunderstorm/frontend';
+import {_className, LL_H_C, LL_V_L, TS_BusyButton, TS_Button, genericNotificationAction} from '@nu-art/thunderstorm/frontend';
 import {BadImplementationException, cloneObj, DB_Object, ThisShouldNotHappenException, UniqueId} from '@nu-art/ts-common';
 import {ReactNode} from 'react';
 
@@ -40,20 +40,25 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 		if (!this.state.editedItem)
 			return;
 
-		this.state.editedItem.save();
+		await genericNotificationAction(
+			() => this.state.editedItem!.save(),
+			`Saving ${this.itemName}`, 3);
 	};
 
 	private deleteItem = async () => {
 		if (!this.state.editedItem)
 			return;
-		this.state.editedItem.delete();
+
+		await genericNotificationAction(
+			() => this.state.editedItem!.delete(),
+			`Deleting ${this.itemName}`, 3);
 	};
 
 	protected setProperty = <K extends keyof T>(key: K, value: T[K]) => {
 		if (!this.state.editedItem)
 			throw new ThisShouldNotHappenException('Got to setting property without an edited item in state');
 
-		this.state.editedItem.set(key, value);
+		this.state.editedItem.update(key, value);
 		this.forceUpdate();
 	};
 
