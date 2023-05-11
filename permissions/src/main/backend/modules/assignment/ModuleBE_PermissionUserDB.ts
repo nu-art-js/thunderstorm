@@ -17,24 +17,64 @@
  * limitations under the License.
  */
 
-import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {_keys, auditBy, BadImplementationException, batchAction, compare, filterDuplicates} from '@nu-art/ts-common';
+import {
+	_keys,
+	auditBy,
+	BadImplementationException,
+	batchAction,
+	compare,
+	filterDuplicates,
+	dbObjectToId,
+	batchActionParallel,
+	flatArray
+} from '@nu-art/ts-common';
 import {ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {Clause_Where} from '@nu-art/firebase';
 import {PermissionsShare} from '../permissions-share';
 import {AssignAppPermissions, DB_PermissionUser, DBDef_PermissionUser, Request_AssignAppPermissions} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
+import {CanDeletePermissionEntities} from '../../core/can-delete';
+import {PermissionTypes} from '../../../shared/types';
 
 
 export class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDB<DB_PermissionUser>
-	implements OnNewUserRegistered, OnUserLogin {
+	implements OnNewUserRegistered, OnUserLogin, CanDeletePermissionEntities<'Group', 'User'> {
 
 	constructor() {
 		super(DBDef_PermissionUser);
+	}
+
+	__canDeleteEntities = async <T extends 'Group'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'User'>> => {
+		let conflicts: DB_PermissionUser[] = [];
+		const dependencies: Promise<DB_PermissionUser[]>[] = [];
+
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {__groupIds: {$aca: ids}}})));
+		if (dependencies.length)
+			conflicts = flatArray(await Promise.all(dependencies));
+
+		return {collectionKey: 'User', conflictingIds: conflicts.map(dbObjectToId)};
+	};
+
+	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DB_PermissionUser[]) {
+		const conflicts: DB_PermissionUser[] = [];
+		const accounts = (await ModuleBE_Account.listUsers({})).accounts;
+
+		for (const item of dbInstances) {
+			const account = accounts.find(acc => acc._id === item.accountId);
+			if (account)
+				conflicts.push(item);
+		}
+
+		if (conflicts.length)
+			throw new ApiException<DB_EntityDependency<any>[]>(422, 'permission users are connected to accounts').setErrorBody({
+				type: 'has-dependencies',
+				body: conflicts.map(conflict => ({collectionKey: 'User', conflictingIds: [conflict._id]}))
+			});
 	}
 
 	protected async preUpsertProcessing(dbInstance: DB_PermissionUser, t?: FirestoreTransaction, request?: ExpressRequest): Promise<void> {
