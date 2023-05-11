@@ -1,4 +1,4 @@
-import {cloneObj, resolveContent} from '@nu-art/ts-common';
+import {cloneObj, compare, deepClone, resolveContent} from '@nu-art/ts-common';
 
 export class EditableItem<T> {
 	item: Partial<T>;
@@ -20,11 +20,12 @@ export class EditableItem<T> {
 	}
 
 	async update<K extends keyof T>(key: K, value: ((item?: T[K]) => T[K]) | T[K] | undefined) {
-		const finalValue = resolveContent(value);
-		if (finalValue === this.item[key])
+		const finalValue = deepClone(resolveContent(value));
+		if (compare(finalValue, this.item[key])){
 			return;
+		}
 
-		if (value === undefined)
+		if (finalValue === undefined)
 			delete this.item[key];
 		else
 			this.item[key] = finalValue;
@@ -46,6 +47,9 @@ export class EditableItem<T> {
 	}
 
 	editProp<K extends keyof T>(key: K, defaultValue: Partial<NonNullable<T[K]>>) {
-		return new EditableItem<NonNullable<T[K]>>(this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>), async (item: T[K]) => this.update(key, item), () => this.delete()).setAutoSave(this.autoSave);
+		return new EditableItem<NonNullable<T[K]>>(
+			deepClone(this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>)) ,
+			async (item: T[K]) => this.update(key, item),
+			() => this.delete()).setAutoSave(true);
 	}
 }

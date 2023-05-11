@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Component, ReactNode} from 'react';
 import {EditableItem, LL_H_C, PartialProps_DropDown, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import './TS_MultiSelect.scss';
-import {addItemToArray, AssetValueType, DB_Object, PreDB, removeItemFromArray} from '@nu-art/ts-common';
+import {AssetValueType, DB_Object, PreDB, removeItemFromArray} from '@nu-art/ts-common';
 import {PartialProps_GenericDropDown} from '../GenericDropDown';
 import {DBItemApiCaller} from '../../modules/types';
 
@@ -51,8 +51,8 @@ export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerI
 		let onNoMatchingSelectionForString: undefined | ((filterText: string, matchingItems: InnerItem[], e: React.KeyboardEvent) => Promise<void>) = undefined;
 
 		const addInnerItem = async (dbItem: InnerItem) => {
-			addItemToArray(selectedIds, dbItem._id);
-			await editable.update(prop, selectedIds as unknown as PropType);
+			const ids = [...selectedIds, dbItem._id];
+			await editable.update(prop, ids as unknown as PropType);
 			this.forceUpdate();
 		};
 
