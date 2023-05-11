@@ -1,4 +1,4 @@
-import {cloneObj, compare, deepClone, resolveContent} from '@nu-art/ts-common';
+import {cloneObj, deepClone, resolveContent} from '@nu-art/ts-common';
 
 
 export class EditableItem<T> {
