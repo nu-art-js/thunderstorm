@@ -19,21 +19,35 @@
 
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {auditBy, batchAction, filterDuplicates, filterInstances, removeItemFromArray} from '@nu-art/ts-common';
+import {auditBy, batchAction, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, flatArray, removeItemFromArray} from '@nu-art/ts-common';
 import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {DB_PermissionGroup, DBDef_PermissionGroup, PredefinedGroup} from '../../shared';
 import {Clause_Where} from '@nu-art/firebase';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
-import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {checkDuplicateLevelsDomain, ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
+import {CanDeletePermissionEntities} from '../../core/can-delete';
+import {PermissionTypes} from '../../../shared/types';
 
 
 export class ModuleBE_PermissionGroup_Class
-	extends ModuleBE_BaseDB<DB_PermissionGroup> {
+	extends ModuleBE_BaseDB<DB_PermissionGroup>
+	implements CanDeletePermissionEntities<'Level', 'Group'> {
 
 	constructor() {
 		super(DBDef_PermissionGroup);
 	}
+
+	__canDeleteEntities = async <T extends 'Level'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'Group'>> => {
+		let conflicts: DB_PermissionGroup[] = [];
+		const dependencies: Promise<DB_PermissionGroup[]>[] = [];
+
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {accessLevelIds: {$aca: ids}}})));
+		if (dependencies.length)
+			conflicts = flatArray(await Promise.all(dependencies));
+
+		return {collectionKey: 'Group', conflictingIds: conflicts.map(dbObjectToId)};
+	};
 
 	protected externalFilter(item: DB_PermissionGroup): Clause_Where<DB_PermissionGroup> {
 		const {label} = item;

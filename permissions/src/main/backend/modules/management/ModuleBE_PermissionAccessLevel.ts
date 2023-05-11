@@ -17,25 +17,39 @@
  * limitations under the License.
  */
 
-import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {auditBy, filterDuplicates, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {auditBy, batchActionParallel, dbObjectToId, filterDuplicates, flatArray, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, Request_CreateGroup} from '../../shared';
 import {Clause_Where} from '@nu-art/firebase';
 import {ModuleBE_PermissionDomain} from './ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionApi} from './ModuleBE_PermissionApi';
 import {ModuleBE_PermissionGroup} from '../assignment/ModuleBE_PermissionGroup';
+import {CanDeletePermissionEntities} from '../../core/can-delete';
+import {PermissionTypes} from '../../../shared/types';
 
 
 export class ModuleBE_PermissionAccessLevel_Class
-	extends ModuleBE_BaseDB<DB_PermissionAccessLevel> {
+	extends ModuleBE_BaseDB<DB_PermissionAccessLevel>
+	implements CanDeletePermissionEntities<'Domain', 'Level'> {
 
 	constructor() {
 		// super(CollectionName_Level, LevelDB_Class._validator, 'level');
 		super(DBDef_PermissionAccessLevel);
 	}
+
+	__canDeleteEntities = async <T extends 'Domain'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'Level'>> => {
+		let conflicts: DB_PermissionAccessLevel[] = [];
+		const dependencies: Promise<DB_PermissionAccessLevel[]>[] = [];
+
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {domainId: {$in: ids}}})));
+		if (dependencies.length)
+			conflicts = flatArray(await Promise.all(dependencies));
+
+		return {collectionKey: 'Level', conflictingIds: conflicts.map(dbObjectToId)};
+	};
 
 	protected internalFilter(item: DB_PermissionAccessLevel): Clause_Where<DB_PermissionAccessLevel>[] {
 		const {domainId, name, value} = item;
