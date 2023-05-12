@@ -1,6 +1,5 @@
 import * as React from 'react';
-import {Component} from 'react';
-import {EditableItem, TS_Checkbox, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, EditableItem, TS_Checkbox, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {AssetValueType} from '@nu-art/ts-common';
 
 
@@ -12,11 +11,20 @@ type InputProps<Value, Ex> = {
 	readProcessor?: (value: Value) => Ex
 	writeProcessor?: (value: Ex) => Value
 };
+export type EditableRef<Item> = { editable: EditableItem<Item> };
 
-export type Props_ItemEditor<Item> = { editable: EditableItem<Item> };
+export type Props_ItemEditor<Item> = EditableRef<Item>;
+export type State_ItemEditor<Item> = EditableRef<Item>;
 
-export class Item_Editor<Item, Props extends Props_ItemEditor<Item> = Props_ItemEditor<Item>, State extends {} = {}>
-	extends Component<Props, State> {
+export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
+	extends ComponentSync<Props & Props_ItemEditor<Item>, State & State_ItemEditor<Item>> {
+
+	protected deriveStateFromProps(nextProps: Props & Props_ItemEditor<Item>, state?: Partial<State & State_ItemEditor<Item>>): (State & State_ItemEditor<Item>) | undefined {
+		const _state = (state || {}) as State & State_ItemEditor<Item>;
+		_state.editable = nextProps.editable;
+		return _state;
+	}
+
 	input = <K extends keyof Item, Ex extends string | undefined = string | undefined>(prop: AssetValueType<Item, K, Ex>, inputProps?: InputProps<Item[K], Ex>) => {
 		const value = this.props.editable.item[prop] as string | undefined;
 		return {

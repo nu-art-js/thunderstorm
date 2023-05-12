@@ -1,7 +1,7 @@
 import {Adapter, ComponentSync, SimpleListAdapter, TS_DropDown} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, Filter, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
-import {ModuleFE_BaseApi, DBItemApiCaller} from '../..';
+import {ModuleFE_BaseApi} from '../../modules/ModuleFE_BaseApi';
 
 
 type OptionalCanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
@@ -31,7 +31,7 @@ export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> &
 
 export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = OptionalProps_GenericDropDown<T> & {
 	placeholder: string;
-	module: DBItemApiCaller<T, Ks>;
+	module: ModuleFE_BaseApi<T, Ks>;
 	modules: ModuleFE_BaseApi<DB_Object, any>[];
 	mapper: (item: T) => string[]
 	renderer: (item: T) => React.ReactElement
@@ -59,7 +59,7 @@ type GenericDropDownProps<T, Ks> = {
 } & OptionalCanUnselect<T>
 
 export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> =
-	{ module: DBItemApiCaller<T, Ks>; }
+	{ module: ModuleFE_BaseApi<T, Ks>; }
 	& GenericDropDownProps<T, Ks>
 
 type State<T extends DB_Object> = {
@@ -103,7 +103,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 		return state;
 	}
 
-	private getSelected(module: DBItemApiCaller<T, Ks>, selectMethod?: T | string | (() => T | undefined)) {
+	private getSelected(module: ModuleFE_BaseApi<T, Ks>, selectMethod?: T | string | (() => T | undefined)) {
 		switch (typeof selectMethod) {
 			case 'string':
 				return module.cache.unique(selectMethod);

@@ -6,14 +6,14 @@ import {EditableDBItem} from '../../utils/EditableDBItem';
 import {Props_SmartPage, SmartPage} from '../SmartPage';
 import './Page_ItemsEditor.scss';
 import {FrameLayout} from '../FrameLayout';
-import {DBItemApiCaller} from '../../modules/types';
+import {ModuleFE_BaseApi} from '../../modules/ModuleFE_BaseApi';
 
 
 export type State_ItemsEditor<DBItem extends DB_Object> = State_SmartComponent & { editable: EditableDBItem<DBItem> };
 export type Props_ItemsEditor<DBItem extends DB_Object> = Props_SmartPage<State_ItemsEditor<DBItem>> & {
 	ListRenderer?: React.ComponentType<Props_ListRenderer<DBItem>>
 	EditorRenderer: React.ComponentType<{ editable: EditableDBItem<DBItem> }>
-	module: DBItemApiCaller<DBItem>,
+	module: ModuleFE_BaseApi<DBItem>,
 	route: TS_Route<{ _id: string }>,
 	sort: (item: DBItem) => string | number,
 	filter: Filter<DBItem>
@@ -76,7 +76,7 @@ export class Page_ItemsEditor<DBItem extends DB_Object>
 }
 
 export type Props_ListRenderer<DBItem extends DB_Object> = {
-	module: DBItemApiCaller<DBItem>,
+	module: ModuleFE_BaseApi<DBItem>,
 	selected?: Partial<DBItem>
 	filter: Filter<DBItem>,
 	onSelected: (item: DBItem) => void
