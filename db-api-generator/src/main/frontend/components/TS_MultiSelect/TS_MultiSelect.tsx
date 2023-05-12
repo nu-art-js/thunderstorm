@@ -4,12 +4,12 @@ import {EditableItem, LL_H_C, PartialProps_DropDown, TS_PropRenderer} from '@nu-
 import './TS_MultiSelect.scss';
 import {AssetValueType, DB_Object, PreDB, removeItemFromArray} from '@nu-art/ts-common';
 import {PartialProps_GenericDropDown} from '../GenericDropDown';
-import {DBItemApiCaller} from '../../modules/types';
+import {ModuleFE_BaseApi} from '../../modules/ModuleFE_BaseApi';
 
 
 export type TS_MultiSelect_Renderer<InnerItem extends DB_Object> = {
 	label: string,
-	module: DBItemApiCaller<InnerItem>,
+	module: ModuleFE_BaseApi<InnerItem>,
 	itemRenderer: (item?: InnerItem, onDelete?: () => Promise<void>) => ReactNode
 	placeholder: string
 	noOptionsRenderer: string
