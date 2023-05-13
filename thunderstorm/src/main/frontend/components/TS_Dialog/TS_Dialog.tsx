@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './TS_Dialog.scss';
-import {BadImplementationException, filterInstances, flatArray, TypedMap, _values} from '@nu-art/ts-common';
+import {_values, BadImplementationException, filterInstances, flatArray, TypedMap} from '@nu-art/ts-common';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_BusyButton} from '../TS_BusyButton';
 import {TS_Button} from '../TS_Button';
@@ -52,8 +52,8 @@ export type Props_TSDialog = {
  * This class defines the logic and render behavior for dialogs in the system.
  * Any dialog class in the system is meant to inherit this class to utilize its features.
  */
-export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDialog = State_TSDialog>
-	extends ComponentSync<P, S> {
+export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
+	extends ComponentSync<P & Props_TSDialog, S & State_TSDialog> {
 
 	// ######################## Life Cycle ########################
 
@@ -177,11 +177,11 @@ export abstract class TS_Dialog<P extends Props_TSDialog, S extends State_TSDial
 	};
 
 	protected performAction = (action: () => Promise<void>) => {
-		this.setState({dialogIsBusy: true}, async () => {
+		this.setState({dialogIsBusy: true} as S & State_TSDialog, async () => {
 			await action();
 
 			if (this.mounted)
-				this.setState({dialogIsBusy: false});
+				this.setState({dialogIsBusy: false} as S & State_TSDialog);
 		});
 	};
 
