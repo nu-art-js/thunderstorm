@@ -46,8 +46,8 @@ export class EditableItem<T> {
 		return this.saveAction(this.item as T);
 	}
 
-	clone(): EditableItem<T> {
-		return new EditableItem<T>(this.item, this.saveAction, this.deleteAction).setAutoSave(this._autoSave);
+	clone(item?: T): EditableItem<T> {
+		return new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction).setAutoSave(this._autoSave);
 	}
 
 	async delete<K extends keyof T>() {

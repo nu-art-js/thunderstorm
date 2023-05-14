@@ -21,8 +21,8 @@ export class EditableDBItem<T extends DB_Object, Ks extends keyof T = '_id'>
 		};
 	}
 
-	clone(): EditableDBItem<T> {
-		return super.clone() as EditableDBItem<T, Ks>;
+	clone(item?: T): EditableDBItem<T> {
+		return super.clone(item) as EditableDBItem<T, Ks>;
 	}
 
 	// static editDBProp<K, O extends DB_Object>(editable: EditableItem<K>, key: keyof K, module: ModuleFE_BaseApi<O, any>, defaultValue: Partial<O>) {
