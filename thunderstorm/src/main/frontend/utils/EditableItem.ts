@@ -1,4 +1,4 @@
-import {cloneObj, deepClone, resolveContent} from '@nu-art/ts-common';
+import {cloneObj, resolveContent} from '@nu-art/ts-common';
 
 
 export class EditableItem<T> {
@@ -19,7 +19,7 @@ export class EditableItem<T> {
 		return this;
 	}
 
-	private set<K extends keyof T>(key: K, value: ((item?: T[K]) => (T[K] | undefined)) | T[K] | undefined) {
+	set<K extends keyof T>(key: K, value: ((item?: T[K]) => (T[K] | undefined)) | T[K] | undefined) {
 		const finalValue = resolveContent(value);
 		if (finalValue === this.item[key])
 			return false;
@@ -46,8 +46,8 @@ export class EditableItem<T> {
 		return this.saveAction(this.item as T);
 	}
 
-	clone(): EditableItem<T> {
-		return new EditableItem<T>(this.item, this.saveAction, this.deleteAction).setAutoSave(this._autoSave);
+	clone(item?: T): EditableItem<T> {
+		return new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction).setAutoSave(this._autoSave);
 	}
 
 	async delete<K extends keyof T>() {
@@ -56,7 +56,7 @@ export class EditableItem<T> {
 
 	editProp<K extends keyof T>(key: K, defaultValue: Partial<NonNullable<T[K]>>) {
 		return new EditableItem<NonNullable<T[K]>>(
-			deepClone(this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>)),
+			this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>),
 			async (value: T[K]) => {
 				this.set(key, value);
 				return this.autoSave();
