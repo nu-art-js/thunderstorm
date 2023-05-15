@@ -20,7 +20,13 @@
  */
 
 import {FirestoreQuery} from '@nu-art/firebase';
-import {DatabaseWrapperBE, FirebaseRef, FirestoreCollection, FirestoreTransaction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {
+	DatabaseWrapperBE,
+	FirebaseRef,
+	FirestoreCollection,
+	FirestoreTransaction,
+	ModuleBE_Firebase
+} from '@nu-art/firebase/backend';
 import {addRoutes, createQueryServerApi, ExpressRequest, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
 import {_keys, currentTimeMillis, DB_Object, filterDuplicates, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
 import {_EmptyQuery, ApiDef_SyncManager, DBSyncData} from '../shared';
@@ -90,7 +96,10 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>, transaction: FirestoreTransaction): Promise<DeletedDBItem[]> {
-		const finalQuery: FirestoreQuery<DeletedDBItem> = {...query, where: {...query.where, __collectionName: collectionName}};
+		const finalQuery: FirestoreQuery<DeletedDBItem> = {
+			...query,
+			where: {...query.where, __collectionName: collectionName}
+		};
 		return transaction.query(this.collection, finalQuery);
 	}
 
@@ -111,7 +120,10 @@ export class ModuleBE_SyncManager_Class
 		this.logDebug('Docs to delete', deletedCount);
 		this.logDebug('Docs to retain', this.config.retainDeletedCount);
 
-		const deleted = await this.collection.delete({limit: toDeleteCount, orderBy: [{key: '__updated', order: 'asc'}]});
+		const deleted = await this.collection.delete({
+			limit: toDeleteCount,
+			orderBy: [{key: '__updated', order: 'asc'}]
+		});
 		let newDeletedCount = deletedCount - deleted.length;
 		if (deleted.length !== toDeleteCount) {
 			this.logError(`Expected to delete ${toDeleteCount} but actually deleted ${deleted.length}`);
@@ -146,9 +158,14 @@ export class ModuleBE_SyncManager_Class
 			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.getCollectionName()));
 
 			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'asc'}]};
-			const newestItems = (await Promise.all(missingModules.map(missingModule => missingModule.query(query))));
+			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
+				try {
+					return await missingModule.query(query);
+				} catch (e) {
+					return [];
+				}
+			})));
 			newestItems.forEach((item, index) => fbSyncData[missingModules[index].getCollectionName()] = {lastUpdated: item[0]?.__updated || 0});
-
 			await this.syncData.set(fbSyncData);
 		}
 
