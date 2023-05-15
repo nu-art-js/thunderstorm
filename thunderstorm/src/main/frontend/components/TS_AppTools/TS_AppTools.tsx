@@ -171,6 +171,7 @@ export class TS_AppTools
 		return <LL_V_L className={className}>
 			{groups.map(group => {
 				return <TS_CollapsableContainer
+					key={group.label}
 					headerRenderer={group.label}
 					containerRenderer={group.screens.map(this.renderNavbarItem)}
 					customCaret={<TS_Icons.treeCollapse.component/>}
