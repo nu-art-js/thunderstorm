@@ -4,6 +4,7 @@ import {currentTimeMillis} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {filterInstances} from '../utils/array-tools';
 import {_keys} from '../utils/object-tools';
+import {BadImplementationException} from '../core/exceptions';
 
 
 export const tsValidateDynamicObject = <T extends object>(valuesValidator: ValidatorTypeResolver<T[keyof T]>, keysValidator: ValidatorTypeResolver<string>, mandatory = true) => {
@@ -203,4 +204,15 @@ export const tsValidator_valueByKey = <T extends any>(validatorObject: { [k: str
 	return tsValidateCustom((value?, parentObject?) => {
 		return tsValidateResult(value!, validatorObject[parentObject!.type]);
 	}) as ValidatorTypeResolver<T>;
+};
+
+export const tsValidator_ArrayOfObjectsByKey = <T extends Object>(key: keyof T, validatorMap: { [k: string]: ValidatorTypeResolver<T> }) => {
+	return tsValidateArray(tsValidateCustom((value) => {
+		const _value = value as T;
+		const validator = validatorMap[_value[key] as string];
+		if (!validator)
+			throw new BadImplementationException(`No validator defined for key ${key as string} with value ${_value[key]}`);
+		
+		return tsValidateResult(_value, validator);
+	}) as ValidatorTypeResolver<T>);
 };
