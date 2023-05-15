@@ -244,3 +244,6 @@ export function toggleInArray<T extends any = string, K extends any = (T extends
 		arr.push(item);
 }
 
+export function generateArray<T extends any = number>(length: number, mapper: (index: number) => T = i => i as T) {
+	return Array.from({length}).map((e, i) => mapper(i));
+}
