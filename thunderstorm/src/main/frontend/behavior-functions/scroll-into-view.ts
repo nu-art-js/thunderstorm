@@ -30,7 +30,7 @@ export const scrollIntoView = (_child: React.RefObject<HTMLElement> | HTMLElemen
 	}
 };
 
-export const scrollToTop = (_child: React.RefObject<HTMLElement> | HTMLElement, _container: React.RefObject<HTMLElement> | HTMLElement, scrollBehavior: ScrollBehavior = 'smooth') => {
+export const scrollToTop = (_child: React.RefObject<HTMLElement> | HTMLElement, _container: React.RefObject<HTMLElement> | HTMLElement, scrollBehavior: ScrollBehavior = 'smooth', offset: number = 0) => {
 	const child = extractElement(_child);
 	const container = extractElement(_container);
 	if (!child || !container)
@@ -43,6 +43,6 @@ export const scrollToTop = (_child: React.RefObject<HTMLElement> | HTMLElement, 
 		return;
 
 	let scroll = container.scrollTop;
-	scroll += childRect.top - containerRect.top;
+	scroll += childRect.top - containerRect.top - offset;
 	container.scroll({top: scroll, behavior: scrollBehavior});
 };
