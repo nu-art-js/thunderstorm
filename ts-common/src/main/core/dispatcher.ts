@@ -45,6 +45,15 @@ export class Processor<T, K extends FunctionKeys<T>>
 		return Promise.all(this.filterModules().map(processor));
 	}
 
+	public async processModulesAsyncSerial<R>(processor: (item: T) => Promise<R>): Promise<R[]> {
+		const modules = this.filterModules();
+		const toRet: R[] = [];
+		for (const module of modules) {
+			toRet.push(await processor(module));
+		}
+		return toRet;
+	}
+
 	filterModules() {
 		const listeners = Dispatcher.modulesResolver();
 		return listeners.filter(this.filter);
@@ -69,6 +78,13 @@ export class Dispatcher<T,
 	}
 
 	public async dispatchModuleAsync(...p: P): Promise<R[]> {
+		return this.processModulesAsync<R>((listener: T) => {
+			// @ts-ignore
+			return listener[this.method](...p);
+		});
+	}
+
+	public async dispatchModuleAsyncSerial(...p: P): Promise<R[]> {
 		return this.processModulesAsync<R>((listener: T) => {
 			// @ts-ignore
 			return listener[this.method](...p);
