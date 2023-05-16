@@ -117,7 +117,7 @@ export class TS_CollapsableContainer
 	renderContainer() {
 		const className = _className('ts-collapsable-container__container', this.isCollapsed() ? 'collapsed' : undefined);
 		return <div className={className} ref={this.state.containerRef}>
-			<div ref={this.state.contentRef} style={{width: '100%'}}>
+			<div ref={this.state.contentRef} className={'ts-collapsable-container__container-wrapper'} style={{width: '100%'}}>
 				{(typeof this.props.containerRenderer === 'function' ? this.props.containerRenderer() : this.props.containerRenderer)}
 			</div>
 		</div>;
