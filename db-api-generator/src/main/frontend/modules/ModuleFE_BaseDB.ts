@@ -365,7 +365,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		this.module.logDebug(`${this.module.getName()} cache finished loading, count: ${this.all().length}`);
 	};
 
-	unique(_key?: string | IndexKeys<DBType, Ks>): Readonly<DBType> | undefined {
+	unique = (_key?: string | IndexKeys<DBType, Ks>): Readonly<DBType> | undefined => {
 		if (_key === undefined)
 			return _key;
 
@@ -374,7 +374,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		}
 
 		return this.cacheByKey[this.getFullKey(_key)];
-	}
+	};
 
 	private getFullKey = (_key: IndexKeys<DBType, Ks>) => {
 		return this.keys.reduce((_fullKey, key) => `${_fullKey}-${_key[key as Ks]}`, '');
@@ -404,13 +404,11 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 		return sortArray(this.allMutable(), map, invert);
 	};
 
-	arrayToMap(getKey: (item: Readonly<DBType>, index: number, map: {
+	arrayToMap = (getKey: (item: Readonly<DBType>, index: number, map: {
 		[k: string]: Readonly<DBType>
 	}) => string | number, map: {
 		[k: string]: Readonly<DBType>
-	} = {}) {
-		return arrayToMap(this.allMutable(), getKey, map);
-	}
+	} = {}) => arrayToMap(this.allMutable(), getKey, map);
 
 	// @ts-ignore
 	private onEntriesDeleted(itemsDeleted: DBType[]) {
