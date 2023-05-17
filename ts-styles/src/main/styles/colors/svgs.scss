@@ -1,7 +1,7 @@
 @use '../consts' as consts;
 
 @mixin setIconProp($prop,$value) {
-  *:not([data-no-#{$prop}="true"]):not(g) {
+  *:not([data-no-#{$prop}="true"]):not(g):not(svg) {
     #{$prop}: $value;
   }
 }

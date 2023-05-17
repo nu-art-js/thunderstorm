@@ -1,4 +1,14 @@
-import {_keys, _logger_logException, dispatch_onServerError, Logger, LogLevel, Module, ServerErrorSeverity, TypedMap, _values} from '@nu-art/ts-common';
+import {
+	_logger_logException,
+	_values,
+	BadImplementationException,
+	dispatch_onServerError,
+	Logger,
+	LogLevel,
+	Module,
+	ServerErrorSeverity,
+	TypedMap
+} from '@nu-art/ts-common';
 // import {ApiDefServer} from '../../utils/api-caller-types';
 import {ActionMetaData, ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
@@ -20,6 +30,9 @@ export class ModuleBE_ActionProcessor_Class
 	}
 
 	readonly registerAction = (rad: ActionDeclaration, logger: Logger) => {
+		if (this.actionMap[rad.key])
+			throw new BadImplementationException(`ActionProcessor with key ${rad.key} was registered twice!`);
+
 		this.actionMap[rad.key] = (data: any) => rad.processor(logger || this, data);
 		this.actionMetaData[rad.key] = {key: rad.key, description: rad.description, group: rad.group};
 	};
