@@ -71,7 +71,7 @@ export class ATS_ActionProcessor
 
 		return <LL_V_L className={'action-groups'}>
 			{_keys(groups).map(key => {
-				return <LL_V_L className={'action-group'}>
+				return <LL_V_L className={'action-group'} key={key}>
 					<div className={'action-group__title'}>{key}</div>
 					{this.renderButtons(groups[key])}
 				</LL_V_L>;
