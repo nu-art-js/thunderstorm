@@ -300,8 +300,8 @@ export class TS_DropDown<ItemType>
 			<div
 				className="ts-dropdown__header"
 				onClick={(e) => {
+					stopPropagation(e);
 					if (this.props.disabled) {
-						stopPropagation(e);
 						return;
 					}
 					this.state.open ? this.closeList(e) : this.setState({open: true});

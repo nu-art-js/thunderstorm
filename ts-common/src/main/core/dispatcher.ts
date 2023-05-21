@@ -85,7 +85,7 @@ export class Dispatcher<T,
 	}
 
 	public async dispatchModuleAsyncSerial(...p: P): Promise<R[]> {
-		return this.processModulesAsync<R>((listener: T) => {
+		return this.processModulesAsyncSerial<R>((listener: T) => {
 			// @ts-ignore
 			return listener[this.method](...p);
 		});

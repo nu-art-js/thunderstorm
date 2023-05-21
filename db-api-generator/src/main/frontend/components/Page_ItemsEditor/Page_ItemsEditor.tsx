@@ -44,7 +44,7 @@ export class Page_ItemsEditor<DBItem extends DB_Object>
 	}
 
 	private createEditableItem(item: Partial<DBItem>) {
-		return new EditableDBItem<DBItem>({...item}, this.props.module, this.onSelected);
+		return new EditableDBItem<DBItem>({...item}, this.props.module, this.onSelected).setAutoSave(true);
 	}
 
 	render() {

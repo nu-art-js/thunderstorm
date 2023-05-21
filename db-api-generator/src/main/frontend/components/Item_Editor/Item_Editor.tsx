@@ -1,6 +1,9 @@
 import * as React from 'react';
 import {ComponentSync, EditableItem, TS_Checkbox, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {AssetValueType} from '@nu-art/ts-common';
+import {AssetValueType, DB_Object} from '@nu-art/ts-common';
+import {ModuleFE_BaseApi} from '../../modules/ModuleFE_BaseApi';
+import {EditableDBItem} from '../../utils/EditableDBItem';
+import {ReactNode} from 'react';
 
 
 type InputProps<Value, Ex> = {
@@ -112,6 +115,32 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 			}
 		};
 	};
+}
+
+export type Props_ItemEditorController<T extends DB_Object> = {
+	item: Partial<T>,
+	module: ModuleFE_BaseApi<T, any>,
+	onCompleted?: (item: T) => any | Promise<any>,
+	onError?: (err: Error) => any | Promise<any>
+	autoSave?: boolean
+	editor: (editable: EditableItem<T>) => ReactNode
+};
+
+export class Item_EditorController<Item extends DB_Object, Props extends Props_ItemEditorController<Item> = Props_ItemEditorController<Item>>
+	extends ComponentSync<Props, State_ItemEditor<Item>> {
+
+	protected deriveStateFromProps(nextProps: Props & Props_ItemEditor<Item>, state?: Partial<State_ItemEditor<Item>>): (State_ItemEditor<Item>) | undefined {
+		const _state = (state || {}) as State_ItemEditor<Item>;
+		_state.editable = new EditableDBItem(nextProps.item, nextProps.module, async (item) => {
+			this.setState(state => ({editable: state.editable.clone(item)}));
+			await nextProps.onCompleted?.(item);
+		}, nextProps.onError).setAutoSave(nextProps.autoSave || false);
+		return _state;
+	}
+
+	render() {
+		return this.props.editor(this.state.editable);
+	}
 }
 
 export type FormPropV1<T, K extends keyof T, EditorValueType, EditorProps, ValueType extends T[K] = T[K]> = {

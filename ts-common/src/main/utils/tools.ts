@@ -17,7 +17,7 @@
  */
 
 import {_keys} from './object-tools';
-import {TS_Object} from './types';
+import {ResolvableContent, TS_Object} from './types';
 
 
 export function regexpCase(value: string, reg: string) {
@@ -65,7 +65,7 @@ export const voidFunction = Object.freeze(async () => {
 export const functionThatReturnsFalse = Object.freeze(() => false);
 export const functionThatReturnsTrue = Object.freeze(() => true);
 
-export const resolveContent = <T extends any = any>(content: T | (() => T)) => typeof content === 'function' ? (content as () => T)() : content as T;
+export const resolveContent = <T extends any = any>(content: ResolvableContent<T>) => typeof content === 'function' ? (content as () => T)() : content as T;
 export const resolveFunctionOrValue = resolveContent;
 
 export function exists(item: any) {
