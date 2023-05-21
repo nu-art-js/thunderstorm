@@ -13,7 +13,7 @@ type Props = {
 	collapsed?: boolean;
 	showCaret?: boolean
 	onCollapseToggle?: (collapseState: boolean) => void;
-	maxHeight?: number;
+	maxHeight?: number | string;
 	style?: TypedMap<string>;
 	className?: string;
 	customCaret?: ReactNode | (() => ReactNode)
@@ -71,7 +71,7 @@ export class TS_CollapsableContainer
 		const maxHeight = this.state.collapsed
 			? 0
 			: this.props.maxHeight ? this.props.maxHeight : currentContent.getBoundingClientRect().height;
-		this.state.containerRef.current.style.maxHeight = `${maxHeight}px`;
+		this.state.containerRef.current.style.maxHeight = typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight;
 	};
 
 	private toggleCollapse = () => {
