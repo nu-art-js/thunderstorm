@@ -20,10 +20,11 @@
  */
 
 import * as React from 'react';
-import {generateHex, Module} from '@nu-art/ts-common';
+import {generateHex, Module, ResolvableContent} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import {Adapter} from '../components/adapter/Adapter';
 import {TS_Tree} from '../components/TS_Tree';
+
 
 export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
 	const pos = button.getBoundingClientRect();
@@ -48,14 +49,13 @@ export type PopUp_Model_Menu = PopUp_Model & {
 }
 
 export type PopUp_Model_Content = PopUp_Model & {
-	content: React.ReactNode;
+	content: ResolvableContent<React.ReactNode>;
 }
 
 export interface PopUpListener {
 	__onPopUpDisplay: (content: PopUp_Model_Content) => void;
 	__onPopUpHide: (id: string) => void;
 }
-
 
 export class ModuleFE_PopUp_Class
 	extends Module<{}> {
@@ -85,6 +85,38 @@ export class ModuleFE_PopUp_Class
 	hide = (id: string) => this.hidePopUp.dispatchUI(id);
 }
 
+export const OpenPopupToTheLeft = (id: string, content: () => JSX.Element,) => {
+	return {
+		onClick: (e: React.MouseEvent<HTMLElement>) => {
+			const data = e.currentTarget.getBoundingClientRect();
+			const viewPortWidth = window.innerWidth;
+
+			const x = viewPortWidth - data.left - 5;
+			const model: PopUp_Model_Content = {
+				content,
+				pos: {right: x, top: data.top},
+				id
+			};
+			ModuleFE_PopUp.showContent(model);
+		}
+	};
+};
+
+export const OpenPopuoAtRight = (id: string, content: () => JSX.Element,) => {
+	return {
+		onClick: (e: React.MouseEvent<HTMLElement>) => {
+			const data = e.currentTarget.getBoundingClientRect();
+			const x = data.right + 5;
+			const model: PopUp_Model_Content = {
+				content,
+				pos: {left: x, top: data.top},
+				id
+			};
+			ModuleFE_PopUp.showContent(model);
+		}
+	};
+};
+
 export const ModuleFE_PopUp = new ModuleFE_PopUp_Class();
 
 export class MenuBuilder {
@@ -93,7 +125,6 @@ export class MenuBuilder {
 	private id: string = generateHex(8);
 	private onNodeClicked?: (path: string, item: any) => void;
 	private onNodeDoubleClicked?: Function;
-
 
 	constructor(menu: Adapter, position: MenuPosition) {
 		this.adapter = menu;

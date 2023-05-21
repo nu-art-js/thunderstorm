@@ -5,6 +5,8 @@ import './TS_PopUpOverlay.scss';
 import {TS_Overlay} from '../TS_Overlay';
 import {OnWindowResized} from '../../modules/ModuleFE_Window';
 import {stopPropagation} from '../../utils/tools';
+import {resolveContent} from '@nu-art/ts-common';
+
 
 type State = {
 	model?: PopUp_Model_Content,
@@ -111,7 +113,7 @@ export class TS_PopUpOverlay
 							 this.ref = _ref;
 							 setTimeout(this.correctPositionIfOutOfBounds);
 						 }}>
-					{model.content}
+					{resolveContent(model.content)}
 				</div>
 			</TS_Overlay>
 		</div>;

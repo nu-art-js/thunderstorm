@@ -84,6 +84,7 @@ export type UniqueId = string;
 export type PreDB<T extends DB_Object, K extends keyof T = never> = PartialProperties<T, keyof DB_Object | K>;
 export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
 export type Draftable = { _isDraft: boolean };
+export type ResolvableContent<T> = T | (() => T);
 
 export type Auditable = {
 	_audit?: AuditBy;

@@ -36,7 +36,7 @@ export class ModuleManager
 	extends Logger {
 
 	protected config!: any;
-	protected modules: Module[] = _modules;
+	protected modules = _modules;
 	public static instance: ModuleManager;
 
 	// noinspection JSUnusedLocalSymbols
@@ -69,6 +69,9 @@ export class ModuleManager
 	}
 
 	public init(): this {
+		if (this.config.logLevel)
+			this.setMinLevel(this.config.logLevel);
+
 		this.logInfo(`---------  initializing app  ---------`);
 		this.modules.forEach((module: Module) => {
 			// @ts-ignore
