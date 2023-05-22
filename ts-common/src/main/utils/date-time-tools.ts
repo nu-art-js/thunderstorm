@@ -124,3 +124,10 @@ export function parseTimeString(timestamp: string, pattern: string = Format_HHmm
 export function normalizeTimestamp(timestamp: number, pattern: string): number {
 	return parseTimeString(formatTimestamp(pattern, timestamp), pattern);
 }
+
+export const DateTimeFormat = (format: string) => {
+	return {
+		parse: (timestampAsString: string) => parseTimeString(timestampAsString, format),
+		format: (timestamp = currentTimeMillis()) => formatTimestamp(format, timestamp)
+	};
+};
