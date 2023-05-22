@@ -20,6 +20,7 @@ import {exists} from './tools';
 import {_keys} from './object-tools';
 import {NestedArrayType} from './types';
 
+
 export function filterInOut<T>(input: T[], filter: (object: T) => boolean): { filteredIn: T[], filteredOut: T[] } {
 	return {
 		filteredIn: input.filter(filter),
@@ -108,7 +109,6 @@ export function filterDuplicates<T>(source: T[], mapper: (item: T) => any = defa
 	const uniqueKeys = new Set(source.map(mapper));
 	return source.filter(item => uniqueKeys.delete(mapper(item)));
 }
-
 
 /**
  * filter array of all undefined and null
@@ -247,3 +247,12 @@ export function toggleInArray<T extends any = string, K extends any = (T extends
 export function generateArray<T extends any = number>(length: number, mapper: (index: number) => T = i => i as T) {
 	return Array.from({length}).map((e, i) => mapper(i));
 }
+
+export function lastElement<T extends any>(array: T[] | undefined) {
+	return array?.[array?.length - 1];
+}
+
+export function firstElement<T extends any>(array?: T[]) {
+	return array?.[1];
+}
+
