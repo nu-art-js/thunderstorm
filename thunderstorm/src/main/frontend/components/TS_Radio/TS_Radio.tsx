@@ -7,9 +7,10 @@ type Props<ItemType> = {
 	values: ItemType[];
 	groupName: string;
 	checked?: ItemType;
-	onCheck?: (value: ItemType) => void
+	onCheck?: (value: ItemType, prevValue?: ItemType) => void
 	disabled?: boolean;
 	className?: string;
+	labelRenderer?: (value: ItemType) => React.ReactNode
 }
 
 type State<ItemType> = {
@@ -35,8 +36,9 @@ export class TS_Radio<ItemType>
 		stopPropagation(e);
 		if (this.state.disabled)
 			return;
+		const prevValue = this.state.checked;
 		this.setState({checked: value}, () => {
-			this.props.onCheck?.(value);
+			this.props.onCheck?.(value, prevValue);
 			this.forceUpdate();
 		});
 	};
@@ -57,7 +59,8 @@ export class TS_Radio<ItemType>
 	};
 
 	private renderRadioLabel = (value: ItemType) => {
-		return <span className={'ts-radio__label'}>{String(value)}</span>;
+		const renderer = this.props.labelRenderer ?? ((value: ItemType) => String(value));
+		return <span className={'ts-radio__label'}>{renderer(value)}</span>;
 	};
 
 	private renderRadioButton = (value: ItemType) => {
