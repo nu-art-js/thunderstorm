@@ -335,8 +335,6 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 			itemRequest.onsuccess = () => {
 				// @ts-ignore
 				if (key.__updated !== undefined && itemRequest.result?.__updated > key.__updated) {
-					// @ts-ignore
-					// console.log(`will not delete item ${itemRequest.result?.__updated} >= ${key.__updated}`);
 					return resolve(itemRequest.result);
 				}
 
