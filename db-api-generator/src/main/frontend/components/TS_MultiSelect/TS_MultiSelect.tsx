@@ -14,7 +14,8 @@ export type TS_MultiSelect_Renderer<InnerItem extends DB_Object> = {
 	placeholder: string
 	noOptionsRenderer: string
 	createNewItemFromLabel?: (filterText: string, matchingItems: InnerItem[], e: React.KeyboardEvent) => Promise<PreDB<InnerItem>>;
-	selectionRenderer: React.ComponentType<PartialProps_GenericDropDown<InnerItem> | PartialProps_DropDown<InnerItem>>
+	selectionRenderer: React.ComponentType<PartialProps_GenericDropDown<InnerItem> | PartialProps_DropDown<InnerItem>>,
+	itemResolver?: () => InnerItem[]
 };
 
 export type DynamicProps_TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem> = {
@@ -36,6 +37,7 @@ type SelectorRenderer<InnerItem extends DB_Object> = {
 	selectedIds: string[],
 	onSelected: (selected: InnerItem) => void | Promise<void>,
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: InnerItem[], e: React.KeyboardEvent) => any;
+	itemResolver?: () => InnerItem[];
 };
 
 export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerItem extends DB_Object>
@@ -67,7 +69,7 @@ export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerI
 		return <TS_PropRenderer.Vertical label={props.label}>
 			<LL_H_C className="ts-values-list">
 				{selectedIds.map(selectedId => {
-					const itemToAdd = props.module.cache.unique(selectedId);
+					const itemToAdd = props.itemResolver?.().find(i => i._id === selectedId) || props.module.cache.unique(selectedId);
 					return <LL_H_C className="ts-values-list__value" key={selectedId}>
 						{props.itemRenderer(itemToAdd, async () => {
 							removeItemFromArray(selectedIds, selectedId);
@@ -81,7 +83,8 @@ export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerI
 					noOptionsRenderer: props.noOptionsRenderer,
 					selectedIds,
 					onNoMatchingSelectionForString: onNoMatchingSelectionForString,
-					onSelected: addInnerItem
+					onSelected: addInnerItem,
+					itemResolver: props.itemResolver
 				})}
 			</LL_H_C>
 		</TS_PropRenderer.Vertical>;
@@ -96,6 +99,7 @@ export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerI
 			placeholder={props.placeholder}
 			noOptionsRenderer={props.noOptionsRenderer}
 			onNoMatchingSelectionForString={props.onNoMatchingSelectionForString}
+			itemResolver={props.itemResolver}
 		/>;
 	}
 }

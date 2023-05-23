@@ -27,6 +27,7 @@ export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> &
 	inputValue?: string;
 	selected?: T | string | (() => T | undefined);
 	limitItems?: number;
+	itemResolver?: ()=>T[]
 } & OptionalCanUnselect<T>
 
 export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = OptionalProps_GenericDropDown<T> & {
@@ -56,6 +57,7 @@ type GenericDropDownProps<T, Ks> = {
 	boundingParentSelector?: string;
 	limitItems?: number;
 	disabled?: boolean;
+	itemResolver?: ()=>T[]
 } & OptionalCanUnselect<T>
 
 export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> =
@@ -76,7 +78,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 
 	protected deriveStateFromProps(nextProps: Props_GenericDropDown<T, Ks>): State<T> {
 		const state = {} as State<T>;
-		const items = nextProps.module.cache.allMutable();
+		const items = this.props.itemResolver?.() || nextProps.module.cache.allMutable();
 
 		if (!nextProps.queryFilter)
 			state.items = items;
