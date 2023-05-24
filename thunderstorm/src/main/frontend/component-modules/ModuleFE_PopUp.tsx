@@ -31,6 +31,14 @@ export const resolveRealPosition = (button: HTMLImageElement) => {
 	return {y: pos.top + button.offsetHeight, x: pos.left};
 };
 
+export const getElementCenterPos = (el: Element): Coordinates => {
+	const rect = el.getBoundingClientRect();
+	return {
+		y: rect.y + (rect.height / 2),
+		x: rect.x + (rect.width / 2),
+	};
+};
+
 export type Coordinates = { x: number, y: number };
 
 type PopUp_Model = {
@@ -73,7 +81,8 @@ export class ModuleFE_PopUp_Class
 			id: model.id,
 			content,
 			triggerPos: model.triggerPos,
-			modalPos: model.modalPos
+			modalPos: model.modalPos,
+			offset: model.offset,
 		});
 	};
 
@@ -167,25 +176,31 @@ export const OpenPopupAtTop = (id: string, content: () => JSX.Element, offset?: 
 export const ModuleFE_PopUp = new ModuleFE_PopUp_Class();
 
 export class MenuBuilder {
+
 	private readonly adapter: Adapter;
-	private readonly position: Coordinates;
+	private readonly triggerPos: Coordinates;
+	private readonly modalPos: Coordinates;
+
 	private id: string = generateHex(8);
+	private offset: Coordinates = {x: 0, y: 0};
 	private onNodeClicked?: (path: string, item: any) => void;
 	private onNodeDoubleClicked?: Function;
 
-	constructor(menu: Adapter, position: Coordinates) {
+	constructor(menu: Adapter, triggerPos: Coordinates, modalPos: Coordinates) {
 		this.adapter = menu;
-		this.position = position;
+		this.triggerPos = triggerPos;
+		this.modalPos = modalPos;
 	}
 
 	show() {
 		const model: PopUp_Model_Menu = {
 			id: this.id,
 			adapter: this.adapter,
-			triggerPos: this.position,
-			modalPos: {x: 1, y: 1},
+			triggerPos: this.triggerPos,
+			modalPos: this.modalPos,
 			onNodeClicked: this.onNodeClicked,
 			onNodeDoubleClicked: this.onNodeDoubleClicked,
+			offset: this.offset
 		};
 
 		ModuleFE_PopUp.showMenu(model);
@@ -193,6 +208,11 @@ export class MenuBuilder {
 
 	setId(id: string) {
 		this.id = id;
+		return this;
+	}
+
+	setOffset(offset: Coordinates) {
+		this.offset = offset;
 		return this;
 	}
 

@@ -54,6 +54,7 @@ export class TS_PopUpOverlay
 	private setModalPosition = () => {
 		const model = this.state.model!;
 		const modalRect = this.ref.current!.getBoundingClientRect();
+		console.log(modalRect);
 		const halfWidth = (modalRect.width / 2);
 		const halfHeight = (modalRect.height / 2);
 
