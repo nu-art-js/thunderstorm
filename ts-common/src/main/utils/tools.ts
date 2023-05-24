@@ -71,3 +71,7 @@ export const resolveFunctionOrValue = resolveContent;
 export function exists(item: any) {
 	return item !== undefined && item !== null;
 }
+
+export const logicalXOR = (a: boolean, b: boolean) => {
+	return (a && !b) || (!a && b);
+};

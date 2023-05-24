@@ -1,11 +1,11 @@
 import * as React from 'react';
-import {MenuPosition, ModuleFE_PopUp, PopUp_Model_Content, PopUpListener} from '../../component-modules/ModuleFE_PopUp';
+import {Coordinates, ModuleFE_PopUp, PopUp_Model_Content, PopUpListener} from '../../component-modules/ModuleFE_PopUp';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_PopUpOverlay.scss';
 import {TS_Overlay} from '../TS_Overlay';
 import {OnWindowResized} from '../../modules/ModuleFE_Window';
 import {stopPropagation} from '../../utils/tools';
-import {resolveContent} from '@nu-art/ts-common';
+import {resolveContent, logicalXOR} from '@nu-art/ts-common';
 
 
 type State = {
@@ -18,18 +18,16 @@ export class TS_PopUpOverlay
 	extends ComponentSync<Prop, State>
 	implements PopUpListener, OnWindowResized {
 
+	private ref: React.RefObject<HTMLDivElement> = React.createRef();
+
+	private minimumMargin: number = 5;
+
 	__onWindowResized(): void {
-		this.ref = undefined;
 		if (this.state.model)
 			ModuleFE_PopUp.hide(this.state.model.id);
 	}
 
-	private ref?: HTMLDivElement;
-	private minimumMargin: number = 5;
-	private currentPos?: MenuPosition;
-
 	__onPopUpDisplay = (model: PopUp_Model_Content) => {
-		this.currentPos = model.pos;
 		this.setState({model, open: !!model});
 	};
 
@@ -38,8 +36,6 @@ export class TS_PopUpOverlay
 		if (!element || element.id !== id)
 			return;
 
-		this.ref = undefined;
-		this.currentPos = undefined;
 		this.setState({model: undefined});
 	};
 
@@ -47,50 +43,82 @@ export class TS_PopUpOverlay
 		return {open: false};
 	}
 
-	correctPositionIfOutOfBounds = () => {
-		if (this.isInBounds())
+	componentDidUpdate() {
+		if (!this.state.model || !this.state.open)
 			return;
 
-		this.setBounds();
+		this.setModalPosition();
+		this.keepModalInView();
+	}
+
+	private setModalPosition = () => {
+		const model = this.state.model!;
+		const modalRect = this.ref.current!.getBoundingClientRect();
+		const halfWidth = (modalRect.width / 2);
+		const halfHeight = (modalRect.height / 2);
+
+		//Start the modal centered on the trigger
+		const modalPosition: Coordinates = {x: model.triggerPos.x - halfWidth, y: model.triggerPos.y - halfHeight};
+		modalPosition.x += halfWidth * model.modalPos.x + (model.offset?.x || 0);
+		modalPosition.y += halfHeight * model.modalPos.y + (model.offset?.y || 0);
+		this.ref.current!.style.top = `${modalPosition.y}px`;
+		this.ref.current!.style.left = `${modalPosition.x}px`;
 	};
 
-	isInBounds() {
-		if (!this.ref)
-			return;
+	private getDistancesFromViewPort = () => {
+		const rect = this.ref.current!.getBoundingClientRect();
+		return {
+			top: rect.top,
+			left: rect.left,
+			right: window.innerWidth - rect.right,
+			bottom: window.innerHeight - rect.bottom
+		};
+	};
 
-		const boundingClientRect = this.ref.getBoundingClientRect();
+	private keepModalInView = () => {
+		const distances = this.getDistancesFromViewPort();
+		const current = this.ref.current!;
+		const rect = current.getBoundingClientRect();
+		const offset = {x: 0, y: 0};
 
-		return this.isThisInBounds(
-			boundingClientRect.left,
-			boundingClientRect.top,
-			boundingClientRect.right,
-			boundingClientRect.bottom);
-	}
+		//Fix vertical axis if only one side is overflowing
+		if (logicalXOR(distances.bottom < this.minimumMargin, distances.top < this.minimumMargin)) {
+			//If bottom is overflowing
+			if (distances.bottom < this.minimumMargin) {
+				const correction = distances.bottom - this.minimumMargin;
+				//If correction doesn't cause top to overflow
+				if (distances.top + correction >= this.minimumMargin)
+					offset.y = correction;
+			} else { //Top is overflowing
+				const correction = -distances.top + this.minimumMargin;
+				//If correction doesn't cause bottom to overflow
+				if (distances.bottom - correction >= this.minimumMargin)
+					offset.y = correction;
+			}
+		}
 
-	private isThisInBounds(left: number, top: number, right: number, bottom: number): boolean {
-		return !(top < this.minimumMargin ||
-			left < this.minimumMargin ||
-			right > (window.innerWidth - this.minimumMargin) ||
-			bottom > (window.innerHeight - this.minimumMargin));
-	}
+		//Fix horizontal axis if only one side is overflowing
+		if (logicalXOR(distances.right < this.minimumMargin, distances.left < this.minimumMargin)) {
+			//If right is overflowing
+			if (distances.right < this.minimumMargin) {
+				const correction = distances.right - this.minimumMargin;
+				//If correction doesn't cause left to overflow
+				if (distances.left + correction >= this.minimumMargin)
+					offset.x = correction;
+			} else { //Left is overflowing
+				const correction = -distances.left + this.minimumMargin;
+				//If correction doesn't cause right to overflow
+				if (distances.right - correction >= this.minimumMargin)
+					offset.x = correction;
+			}
+		}
 
-	private setBounds() {
-		if (!this.ref || !this.state.model || !this.state.model.pos)
-			return;
-		const boundingClientRect = this.ref.getBoundingClientRect();
-		let left: number = boundingClientRect.left;
-		let top: number = boundingClientRect.top;
+		if (offset.y)
+			current.style.top = `${rect.top + offset.y}px`;
 
-		if (boundingClientRect.right > (window.innerWidth - this.minimumMargin))
-			left = window.innerWidth - boundingClientRect.width - this.minimumMargin;
-
-		if (boundingClientRect.bottom > (window.innerHeight - this.minimumMargin))
-			top = window.innerHeight - boundingClientRect.height - this.minimumMargin;
-
-		this.currentPos = {left: left, top: top};
-
-		this.forceUpdate();
-	}
+		if (offset.x)
+			current.style.left += `${rect.left + offset.x}px`;
+	};
 
 	render() {
 		const {model, open} = this.state;
@@ -102,17 +130,8 @@ export class TS_PopUpOverlay
 			<TS_Overlay showOverlay={open} onClickOverlay={(e) => {
 				stopPropagation(e);
 				this.setState({open: false});
-				this.ref = undefined;
 			}}>
-				<div className="ts-popup__content" style={this.currentPos}
-						 id={model.id}
-						 ref={_ref => {
-							 if (this.ref || !_ref)
-								 return;
-
-							 this.ref = _ref;
-							 setTimeout(this.correctPositionIfOutOfBounds);
-						 }}>
+				<div className="ts-popup__content" id={model.id} ref={this.ref}>
 					{resolveContent(model.content)}
 				</div>
 			</TS_Overlay>
