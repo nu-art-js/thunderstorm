@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties, ReactNode} from 'react';
-import {MenuBuilder, MenuPosition, PopUp_Model_Content, PopUpListener, resolveRealPosition} from '../component-modules/ModuleFE_PopUp';
+import {MenuBuilder, PopUp_Model_Content, PopUpListener, resolveRealPosition} from '../component-modules/ModuleFE_PopUp';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {Adapter} from '../components/adapter/Adapter';
 
@@ -30,7 +30,7 @@ type Props = {
 	iconOpen: ReactNode
 	iconClosed: ReactNode
 	adapter: Adapter
-	resolvePosition?: (button: HTMLImageElement) => MenuPosition
+	resolvePosition?: (button: HTMLImageElement) => { y: number, x: number }
 	css?: CSSProperties
 }
 
@@ -77,7 +77,9 @@ export class MenuAndButton
 		if (!this.ref.current)
 			throw new BadImplementationException('Could not find image reference');
 
-		new MenuBuilder(this.props.adapter, this.props.resolvePosition ? this.props.resolvePosition(this.ref.current) : resolveRealPosition(this.ref.current))
+		const pos = this.props.resolvePosition ? this.props.resolvePosition(this.ref.current) : resolveRealPosition(this.ref.current)
+
+		new MenuBuilder(this.props.adapter, pos, {x: 0, y: 1})
 			.setId(this.props.id)
 			.show();
 	};
