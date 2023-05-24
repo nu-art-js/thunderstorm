@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties, ReactNode} from 'react';
-import {MenuBuilder, MenuPosition, PopUp_Model_Content, PopUpListener, resolveRealPosition} from '../component-modules/ModuleFE_PopUp';
+import {MenuBuilder, PopUp_Model_Content, PopUpListener, resolveRealPosition} from '../component-modules/ModuleFE_PopUp';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {Adapter} from '../components/adapter/Adapter';
 
@@ -30,7 +30,7 @@ type Props = {
 	iconOpen: ReactNode
 	iconClosed: ReactNode
 	adapter: Adapter
-	resolvePosition?: (button: HTMLImageElement) => MenuPosition
+	resolvePosition?: (button: HTMLImageElement) => { y: number, x: number }
 	css?: CSSProperties
 }
 
