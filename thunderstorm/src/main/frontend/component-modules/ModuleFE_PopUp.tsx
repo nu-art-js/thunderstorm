@@ -26,20 +26,26 @@ import {Adapter} from '../components/adapter/Adapter';
 import {TS_Tree} from '../components/TS_Tree';
 
 
-export const resolveRealPosition = (button: HTMLImageElement): MenuPosition => {
+export const resolveRealPosition = (button: HTMLImageElement) => {
 	const pos = button.getBoundingClientRect();
-	return {top: pos.top + button.offsetHeight, left: pos.left};
+	return {y: pos.top + button.offsetHeight, x: pos.left};
 };
 
-export type MenuPosition =
-	{ left: number, top: number }
-	| { left: number, bottom: number }
-	| { right: number, top: number }
-	| { right: number, bottom: number };
+export const getElementCenterPos = (el: Element): Coordinates => {
+	const rect = el.getBoundingClientRect();
+	return {
+		y: rect.y + (rect.height / 2),
+		x: rect.x + (rect.width / 2),
+	};
+};
+
+export type Coordinates = { x: number, y: number };
 
 type PopUp_Model = {
 	id: string
-	pos: MenuPosition,
+	modalPos: Coordinates,
+	triggerPos: Coordinates
+	offset?: Coordinates
 };
 
 export type PopUp_Model_Menu = PopUp_Model & {
@@ -73,8 +79,10 @@ export class ModuleFE_PopUp_Class
 
 		this.showContent({
 			id: model.id,
-			pos: model.pos,
-			content
+			content,
+			triggerPos: model.triggerPos,
+			modalPos: model.modalPos,
+			offset: model.offset,
 		});
 	};
 
@@ -85,32 +93,80 @@ export class ModuleFE_PopUp_Class
 	hide = (id: string) => this.hidePopUp.dispatchUI(id);
 }
 
-export const OpenPopupToTheLeft = (id: string, content: () => JSX.Element,) => {
+export const OpenPopupAtLeft = (id: string, content: () => JSX.Element, offset?: number) => {
 	return {
 		onClick: (e: React.MouseEvent<HTMLElement>) => {
-			const data = e.currentTarget.getBoundingClientRect();
-			const viewPortWidth = window.innerWidth;
+			const triggerRect = e.currentTarget.getBoundingClientRect();
+			const x = triggerRect.x + (triggerRect.width / 2);
+			const y = triggerRect.y + (triggerRect.height / 2);
+			const margin = (triggerRect.width / 2);
 
-			const x = viewPortWidth - data.left - 5;
 			const model: PopUp_Model_Content = {
+				id,
 				content,
-				pos: {right: x, top: data.top},
-				id
+				triggerPos: {x, y},
+				modalPos: {x: -1, y: 0},
+				offset: {x: -margin + (offset ?? 0), y: 0}
 			};
 			ModuleFE_PopUp.showContent(model);
 		}
 	};
 };
 
-export const OpenPopuoAtRight = (id: string, content: () => JSX.Element,) => {
+export const OpenPopupAtRight = (id: string, content: () => JSX.Element, offset?: number) => {
 	return {
 		onClick: (e: React.MouseEvent<HTMLElement>) => {
-			const data = e.currentTarget.getBoundingClientRect();
-			const x = data.right + 5;
+			const triggerRect = e.currentTarget.getBoundingClientRect();
+			const x = triggerRect.x + (triggerRect.width / 2);
+			const y = triggerRect.y + (triggerRect.height / 2);
+			const margin = (triggerRect.width / 2);
+
 			const model: PopUp_Model_Content = {
+				id,
 				content,
-				pos: {left: x, top: data.top},
-				id
+				triggerPos: {x, y},
+				modalPos: {x: 1, y: 0},
+				offset: {x: margin + (offset ?? 0), y: 0}
+			};
+			ModuleFE_PopUp.showContent(model);
+		}
+	};
+};
+
+export const OpenPopupAtBottom = (id: string, content: () => JSX.Element, offset?: number) => {
+	return {
+		onClick: (e: React.MouseEvent<HTMLElement>) => {
+			const triggerRect = e.currentTarget.getBoundingClientRect();
+			const x = triggerRect.x + (triggerRect.width / 2);
+			const y = triggerRect.y + (triggerRect.height / 2);
+			const margin = (triggerRect.height / 2);
+
+			const model: PopUp_Model_Content = {
+				id,
+				content,
+				triggerPos: {x, y},
+				modalPos: {x: 0, y: 1},
+				offset: {x: 0, y: margin + (offset ?? 0)}
+			};
+			ModuleFE_PopUp.showContent(model);
+		}
+	};
+};
+
+export const OpenPopupAtTop = (id: string, content: () => JSX.Element, offset?: number) => {
+	return {
+		onClick: (e: React.MouseEvent<HTMLElement>) => {
+			const triggerRect = e.currentTarget.getBoundingClientRect();
+			const x = triggerRect.x + (triggerRect.width / 2);
+			const y = triggerRect.y + (triggerRect.height / 2);
+			const margin = (triggerRect.height / 2);
+
+			const model: PopUp_Model_Content = {
+				id,
+				content,
+				triggerPos: {x, y},
+				modalPos: {x: 0, y: -1},
+				offset: {x: 0, y: -margin + (offset ?? 0)}
 			};
 			ModuleFE_PopUp.showContent(model);
 		}
@@ -120,24 +176,31 @@ export const OpenPopuoAtRight = (id: string, content: () => JSX.Element,) => {
 export const ModuleFE_PopUp = new ModuleFE_PopUp_Class();
 
 export class MenuBuilder {
+
 	private readonly adapter: Adapter;
-	private readonly position: MenuPosition;
+	private readonly triggerPos: Coordinates;
+	private readonly modalPos: Coordinates;
+
 	private id: string = generateHex(8);
+	private offset: Coordinates = {x: 0, y: 0};
 	private onNodeClicked?: (path: string, item: any) => void;
 	private onNodeDoubleClicked?: Function;
 
-	constructor(menu: Adapter, position: MenuPosition) {
+	constructor(menu: Adapter, triggerPos: Coordinates, modalPos: Coordinates) {
 		this.adapter = menu;
-		this.position = position;
+		this.triggerPos = triggerPos;
+		this.modalPos = modalPos;
 	}
 
 	show() {
 		const model: PopUp_Model_Menu = {
 			id: this.id,
 			adapter: this.adapter,
-			pos: this.position,
+			triggerPos: this.triggerPos,
+			modalPos: this.modalPos,
 			onNodeClicked: this.onNodeClicked,
 			onNodeDoubleClicked: this.onNodeDoubleClicked,
+			offset: this.offset
 		};
 
 		ModuleFE_PopUp.showMenu(model);
@@ -148,15 +211,18 @@ export class MenuBuilder {
 		return this;
 	}
 
+	setOffset(offset: Coordinates) {
+		this.offset = offset;
+		return this;
+	}
+
 	setOnClick(func: (path: string, item: any) => void) {
 		this.onNodeClicked = func;
 		return this;
 	}
 
 	setOnDoubleClick(func: Function) {
-
 		this.onNodeDoubleClicked = func;
 		return this;
 	}
 }
-
