@@ -1,8 +1,5 @@
 /*
- * Database API Generator is a utility library for Thunderstorm.
- *
- * Given proper configurations it will dynamically generate APIs to your Firestore
- * collections, will assert uniqueness and restrict deletion... and more
+ * Firebase is a simpler Typescript wrapper to all of firebase services.
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,5 +16,5 @@
  * limitations under the License.
  */
 
-export * from "../main/backend"
-export * from "../main/index"
+export * from '../main';
+export * from '../main/backend';

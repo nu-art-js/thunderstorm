@@ -51,6 +51,7 @@
     "request": "^2.88.0"
   },
   "devDependencies": {
+    "@nu-art/google-services": "$THUNDERSTORM_SDK_VERSION",
     "@types/react": "$REACT_TYPES_VERSION",
     "@types/react-router-dom": "$REACT_ROUTER_DOM_TYPES_VERSION",
     "@types/compression": "^1.7.0",

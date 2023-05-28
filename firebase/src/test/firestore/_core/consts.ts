@@ -16,8 +16,8 @@
  * limitations under the License.
  */
 
-import {FirestoreCollection_Tester} from './collection-wrapper';
-import {FB_ArrayType, FB_Type, SimpleType} from './types';
+import {FB_ArrayType, FB_Type} from './types';
+
 
 export const testString1 = 'string-1';
 export const testString2 = 'string-2';
@@ -38,11 +38,6 @@ export const testNumber6 = 66;
 export const testNumber7 = 77;
 export const testNumber8 = 88;
 export const testNumber9 = 99;
-
-export const testCollection = new FirestoreCollection_Tester<FB_Type>('test-collection');
-export const testCollectionWithUnique = new FirestoreCollection_Tester<FB_Type>('test-collection-unique', ['numeric']);
-export const simpleTypeCollection = new FirestoreCollection_Tester<SimpleType>('test-collection-label');
-export const simpleTypeCollectionUpsert = new FirestoreCollection_Tester<SimpleType>('test-collection-upsert', ['label']);
 
 export const testItem1: FB_ArrayType = {key: testString1, value: testNumber1};
 export const testItem2: FB_ArrayType = {key: testString2, value: testNumber2};
