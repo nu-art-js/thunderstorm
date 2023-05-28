@@ -20,10 +20,8 @@
  */
 import * as React from 'react';
 import './TS_Tooltip.scss';
-import {_className, stopPropagation} from '../../../utils/tools';
 import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity';
 import {OnWindowResized} from '../../../modules';
-import {TS_Overlay} from '../../TS_Overlay';
 import {resolveContent} from '@nu-art/ts-common';
 import {Model_ToolTip, mouseInteractivity_ToolTip, ToolTipListener} from '../../../component-modules/mouse-interactivity/types';
 import {ModuleFE_MouseInteractivity} from '../../../component-modules/mouse-interactivity/ModuleFE_MouseInteractivity';
@@ -78,23 +76,33 @@ export class TS_ToolTip
 		if (!model || !open)
 			return '';
 
-		return <TS_Overlay
-			className={_className('ts-tooltip', model.overlayClass)}
-			showOverlay={open}
-			onClickOverlay={(e) => {
-				stopPropagation(e);
-				this.setState({open: false});
-			}}>
-			<div
-				className={'ts-tooltip__content'}
-				id={model.id}
-				ref={this.ref}
-				onMouseEnter={this.onContentMouseEnter}
-				onMouseLeave={this.onContentMouseLeave}
-				onMouseMove={this.onContentMouseEnter}
-			>
-				{resolveContent(model.content)}
-			</div>
-		</TS_Overlay>;
+		return <div
+			className={'ts-tooltip__content'}
+			id={model.id}
+			ref={this.ref}
+			onMouseEnter={this.onContentMouseEnter}
+			onMouseLeave={this.onContentMouseLeave}
+			onMouseMove={this.onContentMouseEnter}
+		>
+			{resolveContent(model.content)}
+		</div>;
+		// return <TS_Overlay
+		// 	className={_className('ts-tooltip', model.overlayClass)}
+		// 	showOverlay={open}
+		// 	onClickOverlay={(e) => {
+		// 		stopPropagation(e);
+		// 		this.setState({open: false});
+		// 	}}>
+		// 	<div
+		// 		className={'ts-tooltip__content'}
+		// 		id={model.id}
+		// 		ref={this.ref}
+		// 		onMouseEnter={this.onContentMouseEnter}
+		// 		onMouseLeave={this.onContentMouseLeave}
+		// 		onMouseMove={this.onContentMouseEnter}
+		// 	>
+		// 		{resolveContent(model.content)}
+		// 	</div>
+		// </TS_Overlay>;
 	}
 }

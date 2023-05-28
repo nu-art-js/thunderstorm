@@ -27,16 +27,20 @@
     position: absolute;
   }
 
-  .ts-tooltip__content {
-    z-index: 401;
-    cursor: default;
-    position: fixed;
-    overflow-x: hidden;
-    overflow-y: auto;
-    max-height: 60vh;
-    border-radius: 2px;
-    box-shadow: 1px 1px 4px 0 rgba(0, 0, 0, 0.3);
-    border: solid 1px transparent;
-    background-color: white;
+  &.transparent {
+    background: transparent;
   }
+}
+
+.ts-tooltip__content {
+  z-index: 401;
+  cursor: default;
+  position: fixed;
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: 60vh;
+  border-radius: 2px;
+  box-shadow: 1px 1px 4px 0 rgba(0, 0, 0, 0.3);
+  border: solid 1px transparent;
+  background-color: white;
 }
