@@ -6,8 +6,7 @@ import {Thunder} from './Thunder';
 import {stopPropagation} from '../utils/tools';
 import {ModuleFE_RoutingV2} from '../modules/routing/ModuleFE_RoutingV2';
 import {TS_DialogOverlay} from '../components/TS_Dialog';
-import {TS_PopUpOverlay} from '../components/TS_PopupMenu';
-import {TS_TooltipOverlay} from '../components/TS_Tooltip';
+import {TS_PopUp, TS_ToolTip} from '../components/TS_MouseInteractivity';
 import {TS_ToastOverlay} from '../components/TS_Toaster';
 import {TS_Notifications} from '../components/TS_Notifications';
 import {TS_MemoryMonitor} from '../components/TS_MemoryMonitor';
@@ -39,8 +38,8 @@ export class ThunderstormDefaultApp
 			<div id="app" onDrop={stopPropagation} onDragOver={stopPropagation} onContextMenu={blockRightClick ? stopPropagation : undefined}>
 				{ModuleFE_RoutingV2.generateRoutes(this.props.rootRoute)}
 				<TS_DialogOverlay/>
-				<TS_PopUpOverlay/>
-				<TS_TooltipOverlay/>
+				<TS_PopUp/>
+				<TS_ToolTip/>
 				<TS_ToastOverlay/>
 				<TS_Notifications/>
 				<TS_MemoryMonitor/>

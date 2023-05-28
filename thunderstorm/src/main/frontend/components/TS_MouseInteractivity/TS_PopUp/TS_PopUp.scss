@@ -1,4 +1,4 @@
-/*
+/*!
  * Thunderstorm is a full web app framework!
  *
  * Typescript & Express backend infrastructure that natively runs on firebase function
@@ -19,4 +19,35 @@
  * limitations under the License.
  */
 
-export * from './TS_TooltipOverlay';
+.ts-popup.ts-overlay {
+  z-index: 300;
+  background: #00000020;
+
+  .ts-overlay__child {
+    position: absolute;
+  }
+
+  .ts-popup__content {
+    z-index: 301;
+    cursor: default;
+    position: fixed;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 60vh;
+    border-radius: 2px;
+    box-shadow: 1px 1px 4px 0 rgba(0, 0, 0, 0.3);
+    border: solid 1px transparent;
+    background-color: white;
+
+    .ts-popup__content__menu {
+      .ts-tree__node {
+        padding-inline: 10px;
+        white-space: nowrap;
+
+        &:hover {
+          background: cornsilk;
+        }
+      }
+    }
+  }
+}
