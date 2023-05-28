@@ -23,11 +23,10 @@ export * from './_ats';
 export * from './modules';
 export * from './core';
 
-export * from './component-modules/ModuleFE_PopUp';
 export * from './component-modules/ModuleFE_Dialog';
 export * from './component-modules/ModuleFE_Toaster';
-export * from './component-modules/ModuleFE_Tooltip';
 export * from './component-modules/ModuleFE_Notifications';
+export * from './component-modules/mouse-interactivity';
 
 export * from './widgets/FieldEditor';
 export * from './widgets/FieldEditorClick';
@@ -35,7 +34,7 @@ export * from './widgets/FieldEditorWithButtons';
 
 export * from './components/TS_ErrorBoundary';
 export * from './components/TS_Input';
-export * from './components/TS_PopupMenu';
+export * from './components/TS_MouseInteractivity';
 export * from './components/TS_Table';
 export * from './components/TS_Tabs';
 export * from './components/TS_Dropdown';
@@ -49,7 +48,6 @@ export * from './components/TS_Button';
 export * from './components/TS_Toaster';
 export * from './components/TS_Printable';
 export * from './components/TS_DragAndDrop';
-export * from './components/TS_Tooltip';
 export * from './components/TS_MemoryMonitor';
 export * from './components/TS_Link';
 export * from './components/TS_CollapsableContainer';
@@ -78,8 +76,6 @@ export * from './components/adapter/BaseRenderer';
 
 export * from './modules/component-loader/ReactEntryComponentInjector';
 export * from './modules/component-loader/entry-component-loading-module';
-
-export * from './_to-refactor/MenuAndButton';
 
 export * from './utils/tools';
 export * from './utils/EditableItem';
