@@ -16,6 +16,8 @@ type MouseInteractivity_Model = {
 	offset?: Partial<Coordinates>
 	overlayClass?: string;
 	content: ResolvableContent<React.ReactNode>;
+	xAxisAnchor?: 'left' | 'right';
+	yAxisAnchor?: 'top' | 'bottom';
 };
 
 export type Model_Menu = Omit<MouseInteractivity_Model, 'content'> & {
