@@ -19,26 +19,28 @@
  * limitations under the License.
  */
 
-.ts-tooltip {
-  background: #f9f9f9;
-  border-radius: 3px;
-  box-shadow: 0 0 4px 0 #00000066;
-  color: #333435;
-  z-index: 300;
-  font-size: 13px;
-  padding: 1px 3px;
+.ts-overlay.ts-tooltip {
+  z-index: 400;
+  background: #00000020;
+
+  .ts-overlay__child {
+    position: absolute;
+  }
+
+  &.transparent {
+    background: transparent;
+  }
+}
+
+.ts-tooltip__content {
+  z-index: 401;
+  cursor: default;
   position: fixed;
-  isolation: isolate;
-
-  &.align-top {
-    transform: translateX(-50%) translateY(-100%);
-  }
-
-  &.align-right {
-    transform: translateY(-50%);
-  }
-
-  &.align-left {
-    transform: translateY(-50%);
-  }
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: 60vh;
+  border-radius: 2px;
+  box-shadow: 1px 1px 4px 0 rgba(0, 0, 0, 0.3);
+  border: solid 1px transparent;
+  background-color: white;
 }

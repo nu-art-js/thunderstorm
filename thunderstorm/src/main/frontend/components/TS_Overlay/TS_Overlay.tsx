@@ -21,13 +21,13 @@
 
 import * as React from 'react';
 import './TS_Overlay.scss';
-import {stopPropagation} from '../../utils/tools';
-
+import {stopPropagation, _className} from '../../utils/tools';
 
 type Props = React.PropsWithChildren<{
 	flat?: boolean
 	showOverlay: boolean
 	onClickOverlay: (event: React.MouseEvent<HTMLDivElement>) => void
+	className?: string;
 }>;
 
 export class TS_Overlay
@@ -40,7 +40,7 @@ export class TS_Overlay
 		const overlayChild = <div className="ts-overlay__child" onClick={stopPropagation}>{this.props.children}</div>;
 		return <>
 			<div
-				className="ts-overlay"
+				className={_className('ts-overlay', this.props.className)}
 				onClick={this.props.onClickOverlay}
 				onMouseMove={e => e.stopPropagation()}
 				onMouseOver={e => e.stopPropagation()}

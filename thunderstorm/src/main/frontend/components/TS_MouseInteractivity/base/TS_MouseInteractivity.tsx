@@ -1,46 +1,25 @@
 import * as React from 'react';
-import {Coordinates, ModuleFE_PopUp, PopUp_Model_Content, PopUpListener} from '../../component-modules/ModuleFE_PopUp';
-import {ComponentSync} from '../../core/ComponentSync';
-import './TS_PopUpOverlay.scss';
-import {TS_Overlay} from '../TS_Overlay';
-import {OnWindowResized} from '../../modules/ModuleFE_Window';
-import {stopPropagation} from '../../utils/tools';
-import {resolveContent, logicalXOR} from '@nu-art/ts-common';
-
+import {logicalXOR} from '@nu-art/ts-common';
+import {Coordinates, Model_ToolTip} from '../../../component-modules/mouse-interactivity/types';
+import {ComponentSync} from '../../../core/ComponentSync';
 
 type State = {
-	model?: PopUp_Model_Content,
+	model?: Model_ToolTip,
 	open: boolean
 }
 type Prop = {}
 
-export class TS_PopUpOverlay
-	extends ComponentSync<Prop, State>
-	implements PopUpListener, OnWindowResized {
+export class TS_MouseInteractivity
+	extends ComponentSync<Prop, State> {
 
-	private ref: React.RefObject<HTMLDivElement> = React.createRef();
+	protected ref: React.RefObject<HTMLDivElement> = React.createRef();
 
 	private minimumMargin: number = 5;
 
-	__onWindowResized(): void {
-		if (this.state.model)
-			ModuleFE_PopUp.hide(this.state.model.id);
-	}
-
-	__onPopUpDisplay = (model: PopUp_Model_Content) => {
-		this.setState({model, open: !!model});
-	};
-
-	__onPopUpHide = (id: string) => {
-		const element = this.state.model;
-		if (!element || element.id !== id)
-			return;
-
-		this.setState({model: undefined});
-	};
-
-	protected deriveStateFromProps(nextProps: Prop): State {
-		return {open: false};
+	protected deriveStateFromProps(nextProps: Prop, state?: State): State {
+		state ??= this.state ? {...this.state} : {} as State;
+		state.open ??= false;
+		return state;
 	}
 
 	componentDidUpdate() {
@@ -58,7 +37,7 @@ export class TS_PopUpOverlay
 		const halfHeight = (modalRect.height / 2);
 
 		//Start the modal centered on the trigger
-		const modalPosition: Coordinates = {x: model.triggerPos.x - halfWidth, y: model.triggerPos.y - halfHeight};
+		const modalPosition: Coordinates = {x: model.originPos.x - halfWidth, y: model.originPos.y - halfHeight};
 		modalPosition.x += halfWidth * model.modalPos.x + (model.offset?.x || 0);
 		modalPosition.y += halfHeight * model.modalPos.y + (model.offset?.y || 0);
 		this.ref.current!.style.top = `${modalPosition.y}px`;
@@ -119,22 +98,4 @@ export class TS_PopUpOverlay
 		if (offset.x)
 			current.style.left += `${rect.left + offset.x}px`;
 	};
-
-	render() {
-		const {model, open} = this.state;
-
-		if (!model || !open)
-			return '';
-
-		return <div className="ts-popup">
-			<TS_Overlay showOverlay={open} onClickOverlay={(e) => {
-				stopPropagation(e);
-				this.setState({open: false});
-			}}>
-				<div className="ts-popup__content" id={model.id} ref={this.ref}>
-					{resolveContent(model.content)}
-				</div>
-			</TS_Overlay>
-		</div>;
-	}
 }
