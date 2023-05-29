@@ -165,6 +165,8 @@ type ToolTipConfig = {
 	contentHoverDelay?: number,
 	overlayClass?: string,
 	offset?: number
+	xAxisAnchor?: 'left' | 'right';
+	yAxisAnchor?: 'top' | 'bottom';
 }
 
 const OpenToolTipAtCenter = (id: string, content: () => JSX.Element, config?: ToolTipConfig) => {
@@ -177,6 +179,8 @@ const OpenToolTipAtCenter = (id: string, content: () => JSX.Element, config?: To
 				modalPos: {x: 0, y: 0},
 				contentHoverDelay: config?.contentHoverDelay,
 				overlayClass: config?.overlayClass,
+				xAxisAnchor: config?.xAxisAnchor,
+				yAxisAnchor: config?.yAxisAnchor,
 			};
 			ModuleFE_MouseInteractivity.showTooltip(model);
 		},
@@ -198,6 +202,8 @@ const OpenToolTipAtLeft = (id: string, content: () => JSX.Element, contentHoverD
 				offset: {x: -margin + (config?.offset ?? 0), y: 0},
 				contentHoverDelay: config?.contentHoverDelay,
 				overlayClass: config?.overlayClass,
+				xAxisAnchor: config?.xAxisAnchor,
+				yAxisAnchor: config?.yAxisAnchor,
 			};
 			ModuleFE_MouseInteractivity.showTooltip(model);
 		},
@@ -219,6 +225,8 @@ const OpenToolTipAtRight = (id: string, content: () => JSX.Element, config?: Too
 				offset: {x: margin + (config?.offset ?? 0), y: 0},
 				contentHoverDelay: config?.contentHoverDelay,
 				overlayClass: config?.overlayClass,
+				xAxisAnchor: config?.xAxisAnchor,
+				yAxisAnchor: config?.yAxisAnchor,
 			};
 			ModuleFE_MouseInteractivity.showTooltip(model);
 		},
@@ -240,6 +248,8 @@ const OpenToolTipAtBottom = (id: string, content: () => JSX.Element, config?: To
 				offset: {x: 0, y: margin + (config?.offset ?? 0)},
 				contentHoverDelay: config?.contentHoverDelay,
 				overlayClass: config?.overlayClass,
+				xAxisAnchor: config?.xAxisAnchor,
+				yAxisAnchor: config?.yAxisAnchor,
 			};
 			ModuleFE_MouseInteractivity.showTooltip(model);
 		},
@@ -261,6 +271,8 @@ const OpenToolTipAtTop = (id: string, content: () => JSX.Element, config?: ToolT
 				offset: {x: 0, y: -margin + (config?.offset ?? 0)},
 				contentHoverDelay: config?.contentHoverDelay,
 				overlayClass: config?.overlayClass,
+				xAxisAnchor: config?.xAxisAnchor,
+				yAxisAnchor: config?.yAxisAnchor,
 			};
 			ModuleFE_MouseInteractivity.showTooltip(model);
 		},
