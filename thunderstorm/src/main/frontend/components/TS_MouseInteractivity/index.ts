@@ -19,4 +19,5 @@
  * limitations under the License.
  */
 
-export * from './TS_PopUpOverlay';
+export * from './TS_Tooltip/TS_ToolTip';
+export * from './TS_PopUp/TS_PopUp';
