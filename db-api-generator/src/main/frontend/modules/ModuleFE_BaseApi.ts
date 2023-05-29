@@ -99,6 +99,7 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 			},
 			// @ts-ignore
 			upsert: (toUpsert: PreDB<DBType>) => {
+				toUpsert = this.cleanUp(toUpsert);
 				this.validateImpl(toUpsert);
 				return this.updatePending(toUpsert as DB_BaseObject, upsert(toUpsert), 'upsert');
 			},
@@ -122,6 +123,10 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 			if (reSync)
 				this.v1.sync().execute();
 		};
+	}
+
+	protected cleanUp = (toUpsert: PreDB<DBType>) => {
+		return toUpsert;
 	}
 
 	private updatePending<API extends TypedApi<any, any, any, any>>(item: DB_BaseObject, request: BaseHttpRequest<API>, requestType: RequestType) {
