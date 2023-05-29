@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 import * as React from 'react';
-import './TS_Tooltip.scss';
+import './TS_ToolTip.scss';
 import {TS_MouseInteractivity} from '../base/TS_MouseInteractivity';
 import {OnWindowResized} from '../../../modules';
 import {resolveContent} from '@nu-art/ts-common';
