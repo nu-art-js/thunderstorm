@@ -35,13 +35,26 @@ export class TS_MouseInteractivity
 		const modalRect = this.ref.current!.getBoundingClientRect();
 		const halfWidth = (modalRect.width / 2);
 		const halfHeight = (modalRect.height / 2);
+		const xAxisAnchor = model.xAxisAnchor ?? 'left';
+		const yAxisAnchor = model.yAxisAnchor ?? 'top';
 
 		//Start the modal centered on the trigger
-		const modalPosition: Coordinates = {x: model.originPos.x - halfWidth, y: model.originPos.y - halfHeight};
-		modalPosition.x += halfWidth * model.modalPos.x + (model.offset?.x || 0);
-		modalPosition.y += halfHeight * model.modalPos.y + (model.offset?.y || 0);
-		this.ref.current!.style.top = `${modalPosition.y}px`;
-		this.ref.current!.style.left = `${modalPosition.x}px`;
+		const modalPosition: Coordinates = {
+			x: (xAxisAnchor === 'right' ? window.innerWidth - model.originPos.x : model.originPos.x) - halfWidth,
+			y: (yAxisAnchor === 'bottom' ? window.innerHeight - model.originPos.y : model.originPos.y) - halfHeight,
+		};
+
+		//Move the modal based on modalPos property
+		modalPosition.x += model.modalPos.x * (xAxisAnchor === 'right' ? -halfWidth : halfWidth);
+		modalPosition.y += model.modalPos.y * (yAxisAnchor === 'bottom' ? -halfHeight : halfHeight);
+
+		//Add offsets to modal
+		modalPosition.x += model.offset?.x || 0;
+		modalPosition.y += model.offset?.y || 0;
+
+		//Set position
+		this.ref.current!.style[yAxisAnchor] = `${modalPosition.y}px`;
+		this.ref.current!.style[xAxisAnchor] = `${modalPosition.x}px`;
 	};
 
 	private getDistancesFromViewPort = () => {
@@ -59,6 +72,8 @@ export class TS_MouseInteractivity
 		const current = this.ref.current!;
 		const rect = current.getBoundingClientRect();
 		const offset = {x: 0, y: 0};
+		const xAxisAnchor = this.state.model!.xAxisAnchor ?? 'left';
+		const yAxisAnchor = this.state.model!.xAxisAnchor ?? 'top';
 
 		//Fix vertical axis if only one side is overflowing
 		if (logicalXOR(distances.bottom < this.minimumMargin, distances.top < this.minimumMargin)) {
@@ -92,10 +107,18 @@ export class TS_MouseInteractivity
 			}
 		}
 
-		if (offset.y)
-			current.style.top = `${rect.top + offset.y}px`;
+		if (offset.y) {
+			if (yAxisAnchor === 'top')
+				current.style.top = `${rect.top + offset.y}px`;
+			else
+				current.style.bottom = `${rect.bottom - offset.y}px`;
+		}
 
-		if (offset.x)
-			current.style.left += `${rect.left + offset.x}px`;
+		if (offset.x) {
+			if (xAxisAnchor === 'left')
+				current.style.left = `${rect.left + offset.x}px`;
+			else
+				current.style.right = `${rect.right - offset.x}px`;
+		}
 	};
 }
