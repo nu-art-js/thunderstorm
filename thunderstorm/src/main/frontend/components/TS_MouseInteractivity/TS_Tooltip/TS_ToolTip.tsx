@@ -86,23 +86,5 @@ export class TS_ToolTip
 		>
 			{resolveContent(model.content)}
 		</div>;
-		// return <TS_Overlay
-		// 	className={_className('ts-tooltip', model.overlayClass)}
-		// 	showOverlay={open}
-		// 	onClickOverlay={(e) => {
-		// 		stopPropagation(e);
-		// 		this.setState({open: false});
-		// 	}}>
-		// 	<div
-		// 		className={'ts-tooltip__content'}
-		// 		id={model.id}
-		// 		ref={this.ref}
-		// 		onMouseEnter={this.onContentMouseEnter}
-		// 		onMouseLeave={this.onContentMouseLeave}
-		// 		onMouseMove={this.onContentMouseEnter}
-		// 	>
-		// 		{resolveContent(model.content)}
-		// 	</div>
-		// </TS_Overlay>;
 	}
 }
