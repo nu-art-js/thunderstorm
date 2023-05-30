@@ -16,6 +16,7 @@ type Props<ItemType> = {
 type State<ItemType> = {
 	checked?: ItemType;
 	disabled?: boolean;
+	values: ItemType[];
 }
 
 export class TS_Radio<ItemType>
@@ -25,6 +26,7 @@ export class TS_Radio<ItemType>
 
 	protected deriveStateFromProps(nextProps: Props<ItemType>): State<ItemType> {
 		return {
+			values: nextProps.values,
 			checked: nextProps.checked || this.state?.checked || undefined,
 			disabled: nextProps.disabled,
 		};
