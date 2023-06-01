@@ -109,7 +109,8 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	}
 
 	async __onClearWebsiteData(resync: boolean) {
-		return this.IDB.clear(resync);
+		await this.IDB.clear(resync);
+		this.setDataStatus(DataStatus.NoData);
 	}
 
 	public getCollectionName = () => {
