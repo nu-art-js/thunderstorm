@@ -12,7 +12,7 @@ type Props = {
 	containerRenderer: ReactNode | (() => ReactNode);
 	collapsed?: boolean;
 	showCaret?: boolean
-	onCollapseToggle?: (collapseState: boolean) => void;
+	onCollapseToggle?: (collapseState: boolean, e: React.MouseEvent) => void;
 	maxHeight?: number | string;
 	style?: TypedMap<string>;
 	className?: string;
@@ -74,9 +74,9 @@ export class TS_CollapsableContainer
 		this.state.containerRef.current.style.maxHeight = typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight;
 	};
 
-	private toggleCollapse = () => {
+	private toggleCollapse = (e: React.MouseEvent) => {
 		//If shared-components is controlled, return
-		this.props.onCollapseToggle?.(this.isCollapsed());
+		this.props.onCollapseToggle?.(this.isCollapsed(), e);
 		if (this.props.collapsed !== undefined)
 			return;
 
