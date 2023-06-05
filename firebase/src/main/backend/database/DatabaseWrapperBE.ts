@@ -21,8 +21,7 @@ import {Firebase_DataSnapshot, Firebase_DB, FirebaseListener} from './types';
 import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@nu-art/ts-common';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {getDatabase} from 'firebase-admin/database';
-import {TransactionResult, runTransaction, ref, Database} from 'firebase/database';
+import {Database, get, getDatabase, off, onValue, ref, runTransaction, set, TransactionResult, update} from 'firebase/database';
 
 
 /**
@@ -39,7 +38,8 @@ export class DatabaseWrapperBE
 	}
 
 	public async get<T>(path: string, defaultValue?: T): Promise<T> {
-		const snapshot = await this.database.ref(path).once('value');
+		const postRef = ref(this.database, path);
+		const snapshot = await get(postRef);
 		let toRet = defaultValue;
 		if (snapshot)
 			toRet = snapshot.val() as T;
@@ -51,24 +51,27 @@ export class DatabaseWrapperBE
 	}
 
 	public listen<T>(path: string, callback: (value?: T) => void): FirebaseListener {
+		const postRef = ref(this.database, path);
 		try {
-			return this.database.ref(path).on('value', (snapshot: Firebase_DataSnapshot) => callback(snapshot ? snapshot.val() : undefined));
+			return onValue(postRef, (snapshot: Firebase_DataSnapshot) => callback(snapshot ? snapshot.val() : undefined));
 		} catch (e: any) {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}
 	}
 
 	public stopListening<T>(path: string, listener: FirebaseListener): void {
+		const postRef = ref(this.database, path);
 		try {
-			this.database.ref(path).off('value', listener);
+			off(postRef, 'value');
 		} catch (e: any) {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}
 	}
 
 	public async set<T>(path: string, value: T) {
+		const postRef = ref(this.database, path);
 		try {
-			return await this.database.ref(path).set(value);
+			return await set(postRef, value);
 		} catch (e: any) {
 			throw new BadImplementationException(`Error while setting value to path: ${path}`, e);
 		}
@@ -90,8 +93,9 @@ export class DatabaseWrapperBE
 	}
 
 	public async patch<T>(path: string, value: Partial<T>) {
+		const postRef = ref(this.database, path);
 		try {
-			return await this.database.ref(path).update(value);
+			return await update(postRef, value);
 		} catch (e: any) {
 			this.logError(e);
 			throw new BadImplementationException(`Error while updating value to path: ${path}`, e);
@@ -104,6 +108,8 @@ export class DatabaseWrapperBE
 	}
 
 	public async delete<T>(path: string, assertionRegexp: string = '^/.*?/.*') {
+		const postRef = ref(this.database as unknown as Database, path);
+
 		if (!path)
 			throw new BadImplementationException(`Falsy value, path: '${path}'`);
 
@@ -111,7 +117,7 @@ export class DatabaseWrapperBE
 			throw new BadImplementationException(`path: '${path}'  does not match assertion: '${assertionRegexp}'`);
 
 		try {
-			return await this.database.ref(path).remove();
+			return postRef;
 		} catch (e: any) {
 			throw new BadImplementationException(`Error while removing path: ${path}`, e);
 		}

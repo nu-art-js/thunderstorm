@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import * as database from 'firebase-admin/database';
+import * as database from 'firebase/database';
 
 export type Firebase_DB = database.Database
 export type Firebase_DataSnapshot = database.DataSnapshot

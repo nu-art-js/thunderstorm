@@ -25,7 +25,7 @@ import {DatabaseWrapperBE} from '../database/DatabaseWrapperBE';
 import {StorageWrapperBE} from '../storage/StorageWrapperBE';
 import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE';
 import {FirebaseConfig} from '../..';
-import {App} from 'firebase-admin/app';
+import {FirebaseApp} from '@firebase/app';
 
 /**
  * Represents the credentials of a Firebase user.
@@ -45,7 +45,7 @@ export type Firebase_UserCredential = {
  */
 export abstract class FirebaseSession<Config>
     extends Logger {
-    app!: App;
+    app!: FirebaseApp;
     protected database?: DatabaseWrapperBE;
     protected storage?: StorageWrapperBE;
     protected firestore?: FirestoreWrapperBE;
