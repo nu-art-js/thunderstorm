@@ -19,7 +19,7 @@
 /**
  * Created by tacb0ss on 19/09/2018.
  */
-import {FirebaseOptions, initializeApp} from '@firebase/app';
+import {FirebaseOptions, initializeApp} from 'firebase/app';
 import {FirebaseSession} from './firebase-session';
 import {getAuth} from 'firebase-admin/auth';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
