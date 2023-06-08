@@ -166,8 +166,9 @@ export class FirebaseRef<T> {
 	 * Deletes the specified path in the database, subject to the provided assertion regular expression.
 	 * @param assertionRegexp
 	 */
-	public delete(assertionRegexp: string = '^/.*?/.*') {
-		return this.db.delete<T>(this.path, assertionRegexp);
+	public async delete(assertionRegexp: string = '^/.*?/.*') {
+		await this.db.delete<T>(this.path, assertionRegexp);
+		return;
 	}
 
 	/**
