@@ -161,7 +161,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
-	protected onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
+	public onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
 	};
 
