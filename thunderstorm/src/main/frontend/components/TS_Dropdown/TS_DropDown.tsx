@@ -394,7 +394,7 @@ export class TS_DropDown<ItemType>
 			focused: false,
 			selected: true
 		};
-		return <div className={'ts-dropdown__placeholder'} onContextMenu={this.props.onContextMenu}><Renderer item={selected} node={node}/></div>;
+		return <div className={'ts-dropdown__selected'} onContextMenu={this.props.onContextMenu}><Renderer item={selected} node={node}/></div>;
 	};
 
 	private renderSelectedOrFilterInput = (): React.ReactNode => {

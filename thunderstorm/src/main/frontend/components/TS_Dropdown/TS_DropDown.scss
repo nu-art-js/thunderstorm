@@ -51,7 +51,8 @@
       }
     }
 
-    .ts-dropdown__placeholder {
+    .ts-dropdown__placeholder,
+    .ts-dropdown__selected {
       @extend %match_height;
       width: 0;
       flex-grow: 1;
