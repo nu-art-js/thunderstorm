@@ -77,7 +77,7 @@ export class ModuleBE_BaseApi_Class<DBType extends DB_Object, ConfigType extends
 		await this.dbModule.upsertAll(items);
 	};
 
-	private _sync = async (query: FirestoreQuery<DBType>, request?: ExpressRequest) => this.dbModule.querySync(query, request);
+	private _sync = async (query: FirestoreQuery<DBType>, request: ExpressRequest) => this.dbModule.querySync(query, request);
 	private _deleteQuery = async (query: FirestoreQuery<DBType>): Promise<DBType[]> => {
 		if (!query.where)
 			throw new ApiException(400, `Cannot delete without a where clause, using query: ${__stringify(query)}`);

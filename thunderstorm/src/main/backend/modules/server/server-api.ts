@@ -34,7 +34,7 @@ import {
 	tsValidate, TypedMap,
 	ValidationException,
 	ValidatorTypeResolver,
-    _keys
+	_keys
 } from '@nu-art/ts-common';
 
 import {Stream} from 'stream';
@@ -301,7 +301,7 @@ export class _ServerQueryApi<API extends QueryApi<any, any, any>>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: API['P']): Promise<API['R']> {
-		return this.action(queryParams, this.middlewareResults?.length ? this.middlewareResults : request, request);
+		return this.action(queryParams, request);
 	}
 }
 
@@ -315,7 +315,7 @@ export class _ServerBodyApi<API extends BodyApi<any, any, any>>
 	}
 
 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: API['B']): Promise<API['R']> {
-		return this.action(body, this.middlewareResults?.length ? this.middlewareResults : request, request);
+		return this.action(body, request);
 	}
 }
 
@@ -415,12 +415,12 @@ export class ApiResponse {
 		this.res.end(typeof response !== 'string' ? JSON.stringify(response, null, 2) : response);
 	}
 
-	redirect(responseCode: number, url: string,headers: TypedMap<string> = {}) {
+	redirect(responseCode: number, url: string, headers: TypedMap<string> = {}) {
 		this.consume();
-		_keys(headers).reduce((res,headerKey)=>{
-			res.setHeader((headerKey as string) ,headers[headerKey]);
+		_keys(headers).reduce((res, headerKey) => {
+			res.setHeader((headerKey as string), headers[headerKey]);
 			return res;
-		},this.res)
+		}, this.res);
 		this.res.redirect(responseCode, url);
 	}
 
