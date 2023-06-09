@@ -20,11 +20,9 @@
  */
 
 import * as express from 'express';
-import {Dispatcher} from '@nu-art/ts-common';
-import {CoreOptions, UriOptions} from 'request';
 import {ApiException} from '../exceptions';
-import {IncomingHttpHeaders} from 'http';
-import {HttpMethod} from '../../shared';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {CoreOptions, UriOptions} from 'request';
 
 
 export type Express = express.Express
@@ -33,21 +31,7 @@ export type ExpressRequest = express.Request<any>
 export type ExpressResponse = express.Response
 export type ExpressRequestHandler = express.RequestHandler
 
-export interface QueryRequestInfo {
-	__queryRequestInfo(request: ExpressRequest): Promise<{ key: string, data: any }>;
-}
-
 export type RequestOptions = CoreOptions & UriOptions
-export const dispatch_queryRequestInfo = new Dispatcher<QueryRequestInfo, '__queryRequestInfo'>('__queryRequestInfo');
 
-export type ServerApi_Middleware<T extends any = void> = (request: ExpressRequest, response: ExpressResponse, data: HttpRequestData) => T | Promise<T>
-export type HttpErrorHandler = (requestData: HttpRequestData, error: ApiException) => Promise<string>;
-
-export type HttpRequestData = {
-	originalUrl: string
-	headers: IncomingHttpHeaders
-	url: string
-	query: any
-	body: any
-	method: HttpMethod
-}
+export type ServerApi_Middleware = (storage: MemStorage) => Promise<any>
+export type HttpErrorHandler = (requestData: MemStorage, error: ApiException) => Promise<string>;
