@@ -23,10 +23,11 @@ import {__stringify, BadImplementationException, compareVersions, Implementation
 
 import {ApiException} from '../exceptions';
 import {ApiDef_ForceUpgrade, Browser, HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent, UpgradeRequired} from '../../shared';
-import {ExpressRequest, ServerApi_Middleware} from '../utils/types';
+import {ServerApi_Middleware} from '../utils/types';
 import {createQueryServerApi} from '../core/typed-api';
 import {HeaderKey} from './server/HeaderKey';
 import {addRoutes} from './ApiModule';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 type VersionConfig = {
@@ -49,22 +50,19 @@ const DefaultRegexps: { [k in Browser]: string } = {
 
 class ModuleBE_ForceUpgrade_Class
 	extends Module<VersionConfig> {
-	static readonly Middleware: ServerApi_Middleware = async (request: ExpressRequest) => ModuleBE_ForceUpgrade.assertVersion(request);
+	static readonly Middleware: ServerApi_Middleware = async (mem: MemStorage) => ModuleBE_ForceUpgrade.assertVersion(mem);
 
 	constructor() {
 		super();
-		addRoutes([createQueryServerApi(ApiDef_ForceUpgrade.v1.assertAppVersion, async (params, middlewares, request) => {
-			return this.compareVersion(request);
+		addRoutes([createQueryServerApi(ApiDef_ForceUpgrade.v1.assertAppVersion, async (params, mem) => {
+			return this.compareVersion(mem);
 		})]);
 	}
 
-	compareVersion(request?: ExpressRequest): UpgradeRequired {
-		if (!request)
-			throw new BadImplementationException(`Request is missing`);
-
-		const appVersion = Header_AppVersion.get(request);
-		const userAgentString = Header_UserAgent.get(request);
-		const browserType: Browser = Header_BrowserType.get(request) as Browser;
+	compareVersion(mem: MemStorage): UpgradeRequired {
+		const appVersion = Header_AppVersion.get(mem);
+		const userAgentString = Header_UserAgent.get(mem);
+		const browserType: Browser = Header_BrowserType.get(mem) as Browser;
 		if (!browserType)
 			throw new ImplementationMissingException(`Browser type not specified`);
 
@@ -88,8 +86,8 @@ class ModuleBE_ForceUpgrade_Class
 		return {app, browser};
 	}
 
-	async assertVersion(request: ExpressRequest): Promise<void> {
-		const upgradeRequired = this.compareVersion(request);
+	async assertVersion(mem: MemStorage): Promise<void> {
+		const upgradeRequired = this.compareVersion(mem);
 		if (upgradeRequired.app || upgradeRequired.browser)
 			throw new ApiException<UpgradeRequired>(426, 'require upgrade..').setErrorBody({type: 'upgrade-required', body: upgradeRequired});
 	}

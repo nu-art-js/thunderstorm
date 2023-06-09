@@ -27,7 +27,6 @@ import {
 	hashPasswordWithSalt,
 	MergeTypes,
 	Module,
-	MUSTNeverHappenException,
 	NonEmptyArray,
 	TS_Object,
 	tsValidate
@@ -45,10 +44,12 @@ import {
 	Response_Auth,
 	UI_Account
 } from './_imports';
-import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, ExpressRequest, HeaderKey, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
+import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, HeaderKey} from '@nu-art/thunderstorm/backend';
 import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
 import {QueryParams} from '@nu-art/thunderstorm';
 import {gzipSync, unzipSync} from 'zlib';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
@@ -92,7 +93,7 @@ function getUIAccount(account: DB_Account): UI_Account {
 
 export class ModuleBE_Account_Class
 	extends Module<Config>
-	implements QueryRequestInfo, CollectSessionData<any> {
+	implements CollectSessionData<any> {
 
 	constructor() {
 		super();
@@ -112,20 +113,6 @@ export class ModuleBE_Account_Class
 		return {
 			timestamp: currentTimeMillis(),
 			userId: accountId
-		};
-	}
-
-	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; }> {
-		let data: UI_Account | undefined;
-		try {
-			data = await this.validateSession({}, request);
-		} catch (e: any) {
-			this.logError(e);
-		}
-
-		return {
-			key: this.getName(),
-			data: data
 		};
 	}
 
@@ -261,19 +248,16 @@ export class ModuleBE_Account_Class
 		return session;
 	};
 
-	logout = async (queryParams: QueryParams, request: ExpressRequest) => {
-		const sessionId = Header_SessionId.get(request);
+	logout = async (queryParams: QueryParams, mem: MemStorage) => {
+		const sessionId = Header_SessionId.get(mem);
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
 
 		await this.sessions.deleteUnique({where: {sessionId}});
 	};
 
-	validateSession = async (params: QueryParams, request?: ExpressRequest): Promise<UI_Account> => {
-		if (!request)
-			throw new MUSTNeverHappenException('must have a request when calling this function..');
-
-		const sessionId = Header_SessionId.get(request);
+	validateSession = async (params: QueryParams, mem: MemStorage): Promise<UI_Account> => {
+		const sessionId = Header_SessionId.get(mem);
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
 
@@ -348,8 +332,8 @@ export class ModuleBE_Account_Class
 	/**
 	 * @param modules - A list of modules that implement CollectSessionData, defines the decoded object's type
 	 */
-	static decodeSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(request: ExpressRequest, ...modules: T): MergeTypes<MapTypes<T>> {
-		const sessionData = Header_SessionId.get(request);
+	static decodeSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(mem: MemStorage, ...modules: T): MergeTypes<MapTypes<T>> {
+		const sessionData = Header_SessionId.get(mem);
 		try {
 			return JSON.parse((unzipSync(Buffer.from(sessionData, 'base64'))).toString('utf8'));
 		} catch (e: any) {

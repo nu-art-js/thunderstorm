@@ -30,8 +30,10 @@ import {
 	Response_Auth,
 	Response_LoginSAML
 } from './_imports';
-import {addRoutes, ApiException, ApiResponse, createQueryServerApi, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, ApiException, createQueryServerApi, ServerApi} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_Account} from './ModuleBE_Account';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey_HttpRequestBody, MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 
 
 type SamlConfig = {
@@ -67,9 +69,9 @@ class AssertSamlToken
 		super(ApiDef_SAML_BE.v1.assertSAML);
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PostAssertBody) {
-		const redirectUrl = await ModuleBE_SAML.assertSaml(body);
-		return await response.redirect(302, redirectUrl);
+	protected async process(mem: MemStorage) {
+		const redirectUrl = await ModuleBE_SAML.assertSaml(MemKey_HttpRequestBody.get(mem));
+		return await MemKey_HttpResponse.get(mem).redirect(302, redirectUrl);
 	}
 }
 
@@ -127,7 +129,7 @@ export class ModuleBE_SAML_Class
 		return ModuleBE_Account.getOrCreate({where: {email: _email}});
 	}
 
-	loginRequest = async (loginContext: RequestParams_LoginSAML, request?: ExpressRequest) => {
+	loginRequest = async (loginContext: RequestParams_LoginSAML) => {
 		return new Promise<Response_LoginSAML>((resolve, rejected) => {
 			const sp = new ServiceProvider(this.config.spConfig);
 			const options = {

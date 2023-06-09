@@ -3,6 +3,8 @@ import {addRoutes, AxiosHttpModule, createBodyServerApi, Storm} from '@nu-art/th
 import {DB_Object, Module, TypedMap, BadImplementationException} from '@nu-art/ts-common';
 import {ApiDef_SyncEnv, Request_FetchFromEnv} from '../shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+
 
 type Config = {
 	urlMap: TypedMap<string>
@@ -16,8 +18,7 @@ class ModuleBE_SyncEnv_Class
 		addRoutes([createBodyServerApi(ApiDef_SyncEnv.vv1.fetchFromEnv, this.fetchFromEnv)]);
 	}
 
-
-	fetchFromEnv = async (body: Request_FetchFromEnv) => {
+	fetchFromEnv = async (body: Request_FetchFromEnv, mem: MemStorage) => {
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
 
@@ -77,7 +78,7 @@ class ModuleBE_SyncEnv_Class
 			this.logInfo(backupDescriptor.moduleKey);
 			this.logInfo(`Received backup descriptor for '${backupDescriptor.moduleKey}', found module name: ${relevantModule[0].getName()}, ${relevantModule[0].getCollectionName()}`);
 
-			await relevantModule[0].upsertAll(backupFile);
+			await relevantModule[0].upsertAll(backupFile, mem);
 		}));
 	};
 }

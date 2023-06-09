@@ -28,6 +28,7 @@ import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/bac
 import {checkDuplicateLevelsDomain, ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export class ModuleBE_PermissionGroup_Class
@@ -100,16 +101,15 @@ export class ModuleBE_PermissionGroup_Class
 		}
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionGroup, t?: FirestoreTransaction, request?: ExpressRequest) {
-		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, request);
-			dbInstance._audit = auditBy(account.email);
-		}
+	protected async preUpsertProcessing(dbInstance: DB_PermissionGroup, mem: MemStorage, t?: FirestoreTransaction) {
+		mem;
+		const account = await ModuleBE_Account.validateSession({}, mem);
+		dbInstance._audit = auditBy(account.email);
 
 		if (!dbInstance.accessLevelIds)
 			return;
 
-		await this.setAccessLevels(dbInstance);
+		await this.setAccessLevels(dbInstance, mem);
 		const filterAccessLevelIds = filterDuplicates(dbInstance.accessLevelIds);
 		if (filterAccessLevelIds.length !== dbInstance.accessLevelIds?.length)
 			throw new ApiException(422, 'You trying test-add-data duplicate accessLevel id in group');

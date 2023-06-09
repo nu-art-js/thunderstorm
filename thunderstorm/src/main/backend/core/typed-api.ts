@@ -19,19 +19,19 @@
  * limitations under the License.
  */
 
-import {filterInstances, NarrowArray} from '@nu-art/ts-common';
 import {AxiosHttpModule} from '../modules/http/AxiosHttpModule';
 import {_ServerBodyApi, _ServerQueryApi} from '../modules/server/server-api';
 import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, QueryApi} from '../shared';
-import {ExpressRequest, ServerApi_Middleware} from '../utils/types';
+import {ServerApi_Middleware} from '../utils/types';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
-export function createQueryServerApi<API extends QueryApi<any, any, any>, T1 = unknown, T2 = unknown, T3 = unknown, T4 = unknown, T5 = unknown, T6 = unknown>(apiDef: ApiDef<API>, action: (params: API['P'], middlewares: NarrowArray<ExpressRequest, T1, T2, T3, T4, T5, T6>, request?: ExpressRequest) => Promise<API['R']>, middleware1?: ServerApi_Middleware<T1>, middleware2?: ServerApi_Middleware<T2>, middleware3?: ServerApi_Middleware<T3>, middleware4?: ServerApi_Middleware<T4>, middleware5?: ServerApi_Middleware<T5>, middleware6?: ServerApi_Middleware<T6>) {
-	return new _ServerQueryApi<API>(apiDef, action).setMiddlewares(...filterInstances([middleware1, middleware2, middleware3, middleware4, middleware5, middleware6]));
+export function createQueryServerApi<API extends QueryApi<any, any, any>>(apiDef: ApiDef<API>, action: (params: API['P'], mem: MemStorage) => Promise<API['R']>, ...middleware: ServerApi_Middleware[]) {
+	return new _ServerQueryApi<API>(apiDef, action).setMiddlewares(...middleware);
 }
 
-export function createBodyServerApi<API extends BodyApi<any, any, any>, T1 = unknown, T2 = unknown, T3 = unknown, T4 = unknown, T5 = unknown, T6 = unknown>(apiDef: ApiDef<API>, action: (body: API['B'], middlewares: NarrowArray<ExpressRequest, T1, T2, T3, T4, T5, T6>, request?: ExpressRequest) => Promise<API['R']>, middleware1?: ServerApi_Middleware<T1>, middleware2?: ServerApi_Middleware<T2>, middleware3?: ServerApi_Middleware<T3>, middleware4?: ServerApi_Middleware<T4>, middleware5?: ServerApi_Middleware<T5>, middleware6?: ServerApi_Middleware<T6>) {
-	return new _ServerBodyApi<API>(apiDef, action).setMiddlewares(...filterInstances([middleware1, middleware2, middleware3, middleware4, middleware5, middleware6]));
+export function createBodyServerApi<API extends BodyApi<any, any, any>>(apiDef: ApiDef<API>, action: (body: API['B'], mem: MemStorage) => Promise<API['R']>, ...middleware: ServerApi_Middleware[]) {
+	return new _ServerBodyApi<API>(apiDef, action).setMiddlewares(...middleware);
 }
 
 export function apiWithQueryAxios<API extends QueryApi<any, any>>(apiDef: ApiDef<API>,

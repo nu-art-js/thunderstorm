@@ -23,10 +23,11 @@ import {Clause_Where, FirestoreQuery,} from '@nu-art/firebase';
 import {__stringify, _values, DB_BaseObject, DB_Object, Module, PreDB} from '@nu-art/ts-common';
 
 import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
-import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {_EmptyQuery, DBApiDefGeneratorIDB, UpgradeCollectionBody} from '../shared';
 import {DB_Object_Metadata, Metadata} from '../shared/types';
 import {DBApiConfig, ModuleBE_BaseDB} from './ModuleBE_BaseDB';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 /**
@@ -67,17 +68,17 @@ export class ModuleBE_BaseApi_Class<DBType extends DB_Object, ConfigType extends
 
 	private _deleteAll = async (ignore?: {}) => this.dbModule.deleteAll();
 
-	private _upgradeCollection = async (body: UpgradeCollectionBody) => {
+	private _upgradeCollection = async (body: UpgradeCollectionBody, mem: MemStorage) => {
 		const forceUpdate = body.forceUpdate || false;
 		// this should be paginated
 		let items = (await this.dbModule.collection.query(_EmptyQuery));
 		if (!forceUpdate)
 			items = items.filter(item => item._v !== this.dbModule.dbDef.versions![0]);
 		await this.dbModule.upgradeInstances(items);
-		await this.dbModule.upsertAll(items);
+		await this.dbModule.upsertAll(items, mem);
 	};
 
-	private _sync = async (query: FirestoreQuery<DBType>, request?: ExpressRequest) => this.dbModule.querySync(query, request);
+	private _sync = async (query: FirestoreQuery<DBType>, mem: MemStorage) => this.dbModule.querySync(query, mem);
 	private _deleteQuery = async (query: FirestoreQuery<DBType>): Promise<DBType[]> => {
 		if (!query.where)
 			throw new ApiException(400, `Cannot delete without a where clause, using query: ${__stringify(query)}`);
@@ -100,15 +101,15 @@ export class ModuleBE_BaseApi_Class<DBType extends DB_Object, ConfigType extends
  * TO BE MOVED ABOVE THIS COMMENT
  */
 
-	private _upsert = async (instance: PreDB<DBType>, request?: ExpressRequest) => this.dbModule.upsert(instance, undefined, request);
+	private _upsert = async (instance: PreDB<DBType>, mem: MemStorage) => this.dbModule.upsert(instance, mem);
 
-	private _upsertAll = async (instances: PreDB<DBType>[], request?: ExpressRequest) => this.dbModule.upsertAll(instances, undefined, request);
+	private _upsertAll = async (instances: PreDB<DBType>[], mem: MemStorage) => this.dbModule.upsertAll(instances, mem);
 
-	private _patch = async (instance: IndexKeys<DBType, Ks> & Partial<DBType>, request?: ExpressRequest) => this.dbModule.patch(instance, undefined, request);
+	private _patch = async (instance: IndexKeys<DBType, Ks> & Partial<DBType>, mem: MemStorage) => this.dbModule.patch(instance, mem);
 
-	private _query = async (query: FirestoreQuery<DBType>, request?: ExpressRequest) => this.dbModule.query(query, undefined, request);
+	private _query = async (query: FirestoreQuery<DBType>, mem: MemStorage) => this.dbModule.query(query, mem);
 
-	private _queryUnique = async (where: QueryParams, request?: ExpressRequest) => this.dbModule.queryUnique(where as Clause_Where<DBType>, undefined, request);
+	private _queryUnique = async (where: QueryParams, mem: MemStorage) => this.dbModule.queryUnique(where as Clause_Where<DBType>, mem);
 
 }
 
