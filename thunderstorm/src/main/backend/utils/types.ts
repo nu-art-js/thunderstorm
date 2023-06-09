@@ -40,7 +40,7 @@ export interface QueryRequestInfo {
 export type RequestOptions = CoreOptions & UriOptions
 export const dispatch_queryRequestInfo = new Dispatcher<QueryRequestInfo, '__queryRequestInfo'>('__queryRequestInfo');
 
-export type ServerApi_Middleware<T extends any = void> = (request: ExpressRequest, response: ExpressResponse, data: HttpRequestData) => T | Promise<T>
+export type ServerApi_Middleware<T extends any = any> = (request: ExpressRequest, response: ExpressResponse, data: HttpRequestData) => T | Promise<T>
 export type HttpErrorHandler = (requestData: HttpRequestData, error: ApiException) => Promise<string>;
 
 export type HttpRequestData = {
