@@ -71,13 +71,18 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 		this.apiDef = apiDef;
 	}
 
-	setMiddlewares(...middlewares: ServerApi_Middleware<any>[]) {
+	setMiddlewares(...middlewares: ServerApi_Middleware[]) {
 		this.middlewares = middlewares;
 		return this;
 	}
 
-	addMiddlewares(...middlewares: ServerApi_Middleware<any>[]) {
-		this.middlewares = [...(this.middlewares || []), ...middlewares];
+	addMiddlewares(...middlewares: ServerApi_Middleware[]) {
+		(this.middlewares || (this.middlewares = [])).push(...middlewares);
+		return this;
+	}
+
+	addMiddleware(middleware: ServerApi_Middleware) {
+		(this.middlewares || (this.middlewares = [])).push(middleware);
 		return this;
 	}
 
