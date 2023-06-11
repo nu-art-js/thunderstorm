@@ -21,8 +21,9 @@ import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 import {auditBy} from '@nu-art/ts-common';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail, ModuleBE_Account} from '@nu-art/user-account/backend';
 import {DB_PermissionProject, DBDef_PermissionProjects} from '../../shared';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export class ModuleBE_PermissionProject_Class
@@ -32,11 +33,8 @@ export class ModuleBE_PermissionProject_Class
 		super(DBDef_PermissionProjects);
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionProject, t?: FirestoreTransaction, request?: ExpressRequest): Promise<void> {
-		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, request);
-			dbInstance._audit = auditBy(account.email);
-		}
+	protected async preUpsertProcessing(dbInstance: DB_PermissionProject, mem: MemStorage, t?: FirestoreTransaction): Promise<void> {
+		dbInstance._audit = auditBy(MemKey_AccountEmail.get(mem));
 	}
 
 	apiPatch(): ServerApi<any> | undefined {

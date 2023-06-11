@@ -39,11 +39,11 @@ export class ModuleBE_PermissionGroup_Class
 		super(DBDef_PermissionGroup);
 	}
 
-	__canDeleteEntities = async <T extends 'Level'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'Group'>> => {
+	__canDeleteEntities = async <T extends 'Level'>(type: T, items: PermissionTypes[T][], mem: MemStorage): Promise<DB_EntityDependency<'Group'>> => {
 		let conflicts: DB_PermissionGroup[] = [];
 		const dependencies: Promise<DB_PermissionGroup[]>[] = [];
 
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {accessLevelIds: {$aca: ids}}})));
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {accessLevelIds: {$aca: ids}}})), mem);
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
@@ -68,12 +68,12 @@ export class ModuleBE_PermissionGroup_Class
 		}
 	}
 
-	private async setAccessLevels(dbInstance: DB_PermissionGroup) {
+	private async setAccessLevels(dbInstance: DB_PermissionGroup, mem: MemStorage) {
 		dbInstance.__accessLevels = [];
 		const accessLevelIds = dbInstance.accessLevelIds || [];
 		if (accessLevelIds.length) {
 			const groupLevels = await batchAction(accessLevelIds, 10, (chunked) => {
-				return ModuleBE_PermissionAccessLevel.query({where: {_id: {$in: chunked}}});
+				return ModuleBE_PermissionAccessLevel.query({where: {_id: {$in: chunked}}}, mem);
 			});
 			checkDuplicateLevelsDomain(groupLevels);
 			dbInstance.__accessLevels = groupLevels.map(level => {
@@ -119,7 +119,7 @@ export class ModuleBE_PermissionGroup_Class
 		return this.config;
 	}
 
-	upsertPredefinedGroups(projectId: string, projectName: string, predefinedGroups: PredefinedGroup[]) {
+	upsertPredefinedGroups(projectId: string, projectName: string, predefinedGroups: PredefinedGroup[], mem: MemStorage) {
 		return this.runInTransaction(async (transaction) => {
 			const _groups = predefinedGroups.map(group => ({
 				_id: group._id,
@@ -132,7 +132,7 @@ export class ModuleBE_PermissionGroup_Class
 
 			//TODO patch the predefined groups, in case app changed the label of the group..
 			const groupsToInsert = _groups.filter(group => !dbGroups.find(dbGroup => dbGroup._id === group._id));
-			return this.upsertAll(groupsToInsert, transaction);
+			return this.upsertAll(groupsToInsert, mem, transaction);
 		});
 	}
 
