@@ -34,7 +34,7 @@ import {
 	tsValidate, TypedMap,
 	ValidationException,
 	ValidatorTypeResolver,
-	_keys
+	_keys, currentTimeMillis
 } from '@nu-art/ts-common';
 
 import {Stream} from 'stream';
@@ -130,6 +130,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	assertProperty = assertProperty;
 
 	call = async (req: ExpressRequest, res: ExpressResponse) => {
+		const startedAt = currentTimeMillis();
 		const response: ApiResponse = new ApiResponse(this, res);
 
 		this.logInfo(`Intercepted Url: ${req.path}`);
@@ -257,6 +258,8 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 				return response.serverError(apiException);
 
 			return response.exception(apiException);
+		} finally {
+			this.logInfo(`Url Completed in: ${currentTimeMillis() - startedAt}ms`);
 		}
 	};
 
