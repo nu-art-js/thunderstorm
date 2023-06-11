@@ -35,13 +35,16 @@ export class StorageModule_Class
 	extends Module
 	implements OnClearWebsiteData {
 	private cache: { [s: string]: string | number | object } = {};
+	private keys: StorageKey[] = [];
 
 	protected init(): void {
 		window.addEventListener('storage', this.handleStorageEvent);
 	}
 
 	async __onClearWebsiteData(resync: boolean) {
+		const items = this.keys.map(key => key.get());
 		localStorage.clear();
+		this.keys.forEach((key, index) => key.set(items[index]));
 	}
 
 	private handleStorageEvent = (e: StorageEvent) => {
@@ -113,6 +116,10 @@ export class StorageModule_Class
 			}
 		}
 	}
+
+	addKey(storageKey: StorageKey<any>) {
+		this.keys.push(storageKey);
+	}
 }
 
 export const ModuleFE_LocalStorage = new StorageModule_Class();
@@ -125,6 +132,11 @@ export class StorageKey<ValueType = string | number | object> {
 	constructor(key: string, persist: boolean = true) {
 		this.key = key;
 		this.persist = persist;
+	}
+
+	withstandDeletion() {
+		ModuleFE_LocalStorage.addKey(this);
+		return this;
 	}
 
 	get(defaultValue?: ValueType): ValueType {
