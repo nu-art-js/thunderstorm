@@ -36,6 +36,7 @@ export function browserType(): Browser {
 export async function base64ToBlob(imageAsBase64: string) {
 	return (await fetch(imageAsBase64)).blob();
 }
+
 //data:image/jpeg;base64,<!-- Base64 data -->
 export function convertBase64ToFile(fileName: string, base64: string, _mimeType?: string) {
 	const arr = base64.split(',');
@@ -96,4 +97,23 @@ type MouseClickActions = {
 export const mouseEventHandler = (e: React.MouseEvent | MouseEvent, actions: MouseClickActions) => {
 	const key: keyof MouseClickActions = e.button === 0 ? 'left' : (e.button === 1 ? 'middle' : 'right');
 	return actions[key]?.();
+};
+
+export const stringReplacer = (_content: string, _toReplace: string, replacer: (match: string) => JSX.Element) => {
+	const toRet: React.ReactNode[] = [];
+	// eslint-disable-next-line no-constant-condition
+	while (true) {
+		const content = _content.toLowerCase();
+		const toReplace = _toReplace.toLowerCase();
+		const index = content.indexOf(toReplace);
+		if (index === -1) {
+			toRet.push(_content);
+			return toRet;
+		}
+
+		toRet.push(_content.slice(0, index));
+		_content = _content.slice(index);
+		toRet.push(replacer(_content.slice(0, toReplace.length)));
+		_content = _content.slice(toReplace.length);
+	}
 };
