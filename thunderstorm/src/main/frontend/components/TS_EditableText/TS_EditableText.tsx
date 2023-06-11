@@ -3,7 +3,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 import './TS_EditableText.scss';
 import {TS_Input, TS_TextArea} from '../TS_Input';
 import {TS_Button} from '../TS_Button';
-import {_className, stopPropagation} from '../../utils/tools';
+import {_className, stopPropagation, stringReplacer} from '../../utils/tools';
 
 type Props = {
 	text: string;
@@ -14,6 +14,7 @@ type Props = {
 
 	onTextSaved?: (text: string) => void; //Called when save is clicked
 	onCancel?: () => void; //Called when cancel is clicked or on blur
+	highlightText?: string; //Text that will be highlighted
 
 	renderers?: {
 		cancelButton?: React.ReactNode;
@@ -104,7 +105,11 @@ class TS_EditableText_Base
 			className={'ts-editable-text__text'}
 			onClick={this.onEnableEdit}
 		>
-			{this.state.original}
+			{
+				this.props.highlightText
+					? stringReplacer(this.state.original, this.props.highlightText, (match, i) => <i key={i} className={'ts-editable-text__highlight'}>{match}</i>)
+					: this.state.original
+			}
 		</div>;
 	};
 
