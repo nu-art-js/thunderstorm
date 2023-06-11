@@ -107,7 +107,7 @@ class TS_EditableText_Base
 		>
 			{
 				this.props.highlightText
-					? stringReplacer(this.state.original, this.props.highlightText, match => <i className={'ts-editable-text__highlight'}>{match}</i>)
+					? stringReplacer(this.state.original, this.props.highlightText, (match, i) => <i key={i} className={'ts-editable-text__highlight'}>{match}</i>)
 					: this.state.original
 			}
 		</div>;

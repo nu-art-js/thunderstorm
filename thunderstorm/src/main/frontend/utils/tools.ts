@@ -99,8 +99,9 @@ export const mouseEventHandler = (e: React.MouseEvent | MouseEvent, actions: Mou
 	return actions[key]?.();
 };
 
-export const stringReplacer = (_content: string, _toReplace: string, replacer: (match: string) => JSX.Element) => {
+export const stringReplacer = (_content: string, _toReplace: string, replacer: (match: string, i: number) => JSX.Element) => {
 	const toRet: React.ReactNode[] = [];
+	let i: number = 0;
 	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		const content = _content.toLowerCase();
@@ -113,7 +114,8 @@ export const stringReplacer = (_content: string, _toReplace: string, replacer: (
 
 		toRet.push(_content.slice(0, index));
 		_content = _content.slice(index);
-		toRet.push(replacer(_content.slice(0, toReplace.length)));
+		toRet.push(replacer(_content.slice(0, toReplace.length), i));
 		_content = _content.slice(toReplace.length);
+		i++;
 	}
 };
