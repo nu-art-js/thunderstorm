@@ -31,7 +31,7 @@ import {
 	batchActionParallel,
 	flatArray
 } from '@nu-art/ts-common';
-import {ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail, MemKey_AccountId, ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {Clause_Where} from '@nu-art/firebase';
 import {PermissionsShare} from '../permissions-share';
 import {AssignAppPermissions, DB_PermissionUser, DBDef_PermissionUser, Request_AssignAppPermissions} from '../../shared';
@@ -39,6 +39,7 @@ import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export class ModuleBE_PermissionUserDB_Class
@@ -77,10 +78,11 @@ export class ModuleBE_PermissionUserDB_Class
 			});
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionUser, t?: FirestoreTransaction, request?: ExpressRequest): Promise<void> {
+	protected async preUpsertProcessing(dbInstance: DB_PermissionUser, mem: MemStorage, t?: FirestoreTransaction): Promise<void> {
 		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, request);
-			dbInstance._audit = auditBy(account.email);
+			const account = await ModuleBE_Account.validateSession({}, mem);
+
+			dbInstance._audit = auditBy(MemKey_AccountEmail.get(mem));
 		}
 
 		this.setGroupIds(dbInstance);
@@ -122,15 +124,15 @@ export class ModuleBE_PermissionUserDB_Class
 		}
 	}
 
-	async __onUserLogin(account: UI_Account) {
-		await this.insertIfNotExist(account.email);
+	async __onUserLogin(account: UI_Account, mem: MemStorage) {
+		await this.insertIfNotExist(account.email, mem);
 	}
 
-	async __onNewUserRegistered(account: UI_Account) {
-		await this.insertIfNotExist(account.email);
+	async __onNewUserRegistered(account: UI_Account, mem: MemStorage) {
+		await this.insertIfNotExist(account.email, mem);
 	}
 
-	async insertIfNotExist(email: string) {
+	async insertIfNotExist(email: string, mem: MemStorage) {
 		return this.runInTransaction(async (transaction) => {
 
 			const account = await ModuleBE_Account.getUser(email);
@@ -141,20 +143,20 @@ export class ModuleBE_PermissionUserDB_Class
 			if (users.length)
 				return;
 
-			return this.upsert({accountId: account._id, groups: []}, transaction);
+			return this.upsert({accountId: account._id, groups: []}, mem, transaction);
 		});
 	}
 
-	async assignAppPermissions(body: Request_AssignAppPermissions, request?: ExpressRequest) {
-		const account = await ModuleBE_Account.validateSession({}, request);
+	async assignAppPermissions(body: Request_AssignAppPermissions, mem: MemStorage) {
 
 		let assignAppPermissionsObj: AssignAppPermissions;
+		const accountId = MemKey_AccountId.get(mem);
 		if (body.appAccountId)
 			// when creating project
-			assignAppPermissionsObj = {...body, granterUserId: body.appAccountId, sharedUserIds: [account._id]};
+			assignAppPermissionsObj = {...body, granterUserId: body.appAccountId, sharedUserIds: [accountId]};
 		else
 			// when I share with you
-			assignAppPermissionsObj = {...body, granterUserId: account._id, sharedUserIds: body.sharedUserIds};
+			assignAppPermissionsObj = {...body, granterUserId: accountId, sharedUserIds: body.sharedUserIds};
 		const sharedUserIds = assignAppPermissionsObj.sharedUserIds || [];
 		if (!sharedUserIds.length)
 			throw new BadImplementationException('SharedUserIds is missing');
@@ -198,7 +200,7 @@ export class ModuleBE_PermissionUserDB_Class
 				return user;
 			});
 
-			return this.upsertAll(updatedUsers, transaction, request);
+			return this.upsertAll(updatedUsers, mem, transaction);
 		});
 	}
 }

@@ -143,9 +143,9 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	async deleteUnique(_id: string): Promise<DBType> {
+	async deleteUnique(_id: string, mem: MemStorage): Promise<DBType> {
 		return this.runInTransaction(async transaction => {
-			return this._deleteUnique.write(transaction, await this._deleteUnique.read(transaction, _id));
+			return this._deleteUnique.write(transaction, await this._deleteUnique.read(transaction, _id), mem);
 		});
 	}
 
@@ -160,8 +160,8 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 
 			return doc;
 		},
-		write: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
-			await this.canDeleteDocument(transaction, [doc.get()]);
+		write: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>, mem: MemStorage) => {
+			await this.canDeleteDocument(transaction, [doc.get()], mem);
 			const item = await doc.delete(transaction.transaction);
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, [item], this.config.uniqueKeys, transaction);
 			return item;
@@ -180,9 +180,9 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 				{...deleteQuery, limit: deleteQuery.limit || ModuleBE_BaseDB.DeleteHardLimit});
 		},
 
-		write: async (transaction: FirestoreTransaction, docs: DocWrapper<DBType>[]) => {
+		write: async (transaction: FirestoreTransaction, docs: DocWrapper<DBType>[], mem: MemStorage) => {
 			const items = docs.map(doc => doc.get());
-			await this.canDeleteDocument(transaction, items);
+			await this.canDeleteDocument(transaction, items, mem);
 
 			await Promise.all(docs.map(async (doc) => doc.delete(transaction.transaction)));
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, items, this.config.uniqueKeys, transaction);
@@ -261,16 +261,18 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 *
 	 * @param deleteQuery - The query to be executed for the deletion.
 	 * @param toReturn
+	 * @param mem - http call mem cache.
+	 *
 	 */
-	async delete(deleteQuery: FirestoreQuery<DBType>, toReturn: DBType[] = []) {
+	async delete(deleteQuery: FirestoreQuery<DBType>, mem: MemStorage, toReturn: DBType[] = []) {
 		const start = currentTimeMillis();
 
 		toReturn.push(...await this.runInTransaction(async transaction => {
-			return this._deleteMulti.write(transaction, await this._deleteMulti.read(transaction, deleteQuery));
+			return this._deleteMulti.write(transaction, await this._deleteMulti.read(transaction, deleteQuery), mem);
 		}));
 
 		if (toReturn.length !== 0 && toReturn.length % ModuleBE_BaseDB.DeleteHardLimit === 0)
-			await this.delete(deleteQuery, toReturn);
+			await this.delete(deleteQuery, mem, toReturn);
 
 		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, start);
 		return toReturn;
@@ -279,15 +281,15 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	async querySync(syncQuery: FirestoreQuery<DBType>, mem: MemStorage): Promise<Response_DBSync<DBType>> {
 		return this.runInTransaction(async transaction => {
 			const items = await transaction.query(this.collection, syncQuery);
-			const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>, transaction);
+			const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>, mem, transaction);
 
-			await this.upgradeInstances(items);
+			await this.upgradeInstances(items, mem);
 			return {toUpdate: items, toDelete: deletedItems};
 		});
 	}
 
-	deleteAll() {
-		return this.delete(_EmptyQuery);
+	deleteAll(mem: MemStorage) {
+		return this.delete(_EmptyQuery, mem);
 	}
 
 	/**
@@ -296,10 +298,11 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 * Currently, executed only before `deleteUnique()`.
 	 *
 	 * @param transaction - The transaction object
+	 * @param mem - http call mem cache.
 	 * @param dbInstances - The DB entry that is going to be deleted.
 	 */
-	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DBType[]) {
-		const dependencies = await this.collectDependencies(dbInstances, transaction);
+	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DBType[], mem: MemStorage) {
+		const dependencies = await this.collectDependencies(dbInstances, mem, transaction);
 		if (dependencies)
 			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({
 				type: 'has-dependencies',
@@ -307,8 +310,8 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 			});
 	}
 
-	async collectDependencies(dbInstances: DBType[], transaction?: FirestoreTransaction) {
-		const potentialErrors = await canDeleteDispatcher.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
+	async collectDependencies(dbInstances: DBType[], mem: MemStorage, transaction?: FirestoreTransaction) {
+		const potentialErrors = await canDeleteDispatcher.dispatchModuleAsync(this.dbDef.entityName, dbInstances, mem, transaction);
 		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 		return dependencies.length > 0 ? dependencies : undefined;
 	}
@@ -403,11 +406,11 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	}
 
 	private async _preUpsertProcessing(dbInstance: DBType, mem: MemStorage, transaction?: FirestoreTransaction) {
-		await this.upgradeInstances([dbInstance]);
+		await this.upgradeInstances([dbInstance], mem);
 		await this.preUpsertProcessing(dbInstance, mem, transaction);
 	}
 
-	async upgradeInstances(dbInstances: DBType[]) {
+	async upgradeInstances(dbInstances: DBType[], mem: MemStorage) {
 		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];
@@ -648,7 +651,7 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 		if (!dbItem)
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique query: ${JSON.stringify(where)}`);
 
-		await this.upgradeInstances([dbItem]);
+		await this.upgradeInstances([dbItem], mem);
 		return dbItem;
 	}
 
@@ -669,7 +672,7 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 		else
 			items = await this.collection.query(query);
 
-		await this.upgradeInstances(items);
+		await this.upgradeInstances(items, mem);
 		return items;
 	}
 

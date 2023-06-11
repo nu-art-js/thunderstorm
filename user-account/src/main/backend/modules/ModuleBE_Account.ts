@@ -63,11 +63,11 @@ export const Collection_Sessions = 'user-account--sessions';
 export const Collection_Accounts = 'user-account--accounts';
 
 export interface OnNewUserRegistered {
-	__onNewUserRegistered(account: UI_Account): void;
+	__onNewUserRegistered(account: UI_Account, mem: MemStorage): void;
 }
 
 export interface OnUserLogin {
-	__onUserLogin(account: UI_Account): void;
+	__onUserLogin(account: UI_Account, mem: MemStorage): void;
 }
 
 const dispatch_onUserLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
@@ -295,7 +295,7 @@ export class ModuleBE_Account_Class
 		return delta > this.config.sessionTTLms || delta < 0;
 	};
 
-	upsertSession = async (account: DB_Account): Promise<Response_Auth> => {
+	upsertSession = async (account: DB_Account, mem: MemStorage): Promise<Response_Auth> => {
 		let session = await this.sessions.queryUnique({where: {userId: account._id}});
 		if (!session || this.TTLExpired(session)) {
 			const sessionData = (await dispatch_CollectSessionData.dispatchModuleAsync(account._id))
@@ -321,7 +321,7 @@ export class ModuleBE_Account_Class
 		}
 
 		const uiAccount = await this.getUserEmailFromSession(session);
-		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
+		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount, mem);
 		return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
 	};
 
@@ -341,7 +341,7 @@ export class ModuleBE_Account_Class
 		}
 	}
 
-	getOrCreate = async (query: { where: { email: string } }) => {
+	getOrCreate = async (query: { where: { email: string } }, mem: MemStorage) => {
 		let dispatchEvent = false;
 
 		const dbAccount = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
@@ -364,7 +364,7 @@ export class ModuleBE_Account_Class
 		});
 
 		if (dispatchEvent)
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount), mem);
 
 		return dbAccount;
 	};
