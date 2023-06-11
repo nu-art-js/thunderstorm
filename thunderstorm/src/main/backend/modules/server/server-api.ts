@@ -259,7 +259,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 
 			return response.exception(apiException);
 		} finally {
-			this.logInfo(`Url Completed in: ${currentTimeMillis() - startedAt}ms`);
+			this.logInfo(`Url Complete in: ${req.path} - ${currentTimeMillis() - startedAt}ms`);
 		}
 	};
 
