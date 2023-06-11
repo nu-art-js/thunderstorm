@@ -4,6 +4,7 @@ import './TS_EditableText.scss';
 import {TS_Input, TS_TextArea} from '../TS_Input';
 import {TS_Button} from '../TS_Button';
 import {_className, stopPropagation, stringReplacer} from '../../utils/tools';
+import {TS_BusyButton} from '../TS_BusyButton';
 
 type Props = {
 	text: string;
@@ -12,7 +13,7 @@ type Props = {
 	editMode?: boolean; //External control for edit mode
 	disableEdit?: boolean; //Blocks edit mode completely
 
-	onTextSaved?: (text: string) => void; //Called when save is clicked
+	onTextSaved?: ((text: string) => void | Promise<void>); //Called when save is clicked
 	onCancel?: () => void; //Called when cancel is clicked or on blur
 	highlightText?: string; //Text that will be highlighted
 
@@ -57,14 +58,14 @@ class TS_EditableText_Base
 		this.setState({text});
 	};
 
-	protected onSubmitChanges = (e: React.MouseEvent | React.KeyboardEvent) => {
+	protected onSubmitChanges = async (e: React.MouseEvent | React.KeyboardEvent) => {
 		stopPropagation(e);
 		const text = this.state.text;
 		if (!this.props.onTextSaved)
 			this.setState({original: text, isEditing: false});
 
+		await this.props.onTextSaved?.(text);
 		this.setState({original: text});
-		this.props.onTextSaved?.(text);
 	};
 
 	protected onCancelChanges = (e?: React.MouseEvent) => {
@@ -118,8 +119,8 @@ class TS_EditableText_Base
 			{this.props.renderers?.resetButton || 'Reset'}</TS_Button>,
 		cancel: () => <TS_Button className={'ts-editable-text__buttons__cancel'} onClick={this.onCancelChanges}>
 			{this.props.renderers?.cancelButton || 'Cancel'}</TS_Button>,
-		accept: () => <TS_Button className={'ts-editable-text__buttons__save'} onClick={this.onSubmitChanges}>
-			{this.props.renderers?.saveButton || 'Save'}</TS_Button>
+		accept: () => <TS_BusyButton className={'ts-editable-text__buttons__save'} onClick={this.onSubmitChanges}>
+			{this.props.renderers?.saveButton || 'Save'}</TS_BusyButton>
 	};
 }
 
