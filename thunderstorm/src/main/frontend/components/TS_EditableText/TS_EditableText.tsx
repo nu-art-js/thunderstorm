@@ -16,6 +16,7 @@ type Props = {
 	onTextSaved?: ((text: string) => void | Promise<void>); //Called when save is clicked
 	onCancel?: () => void; //Called when cancel is clicked or on blur
 	highlightText?: string; //Text that will be highlighted
+	hideReset?: boolean;
 
 	renderers?: {
 		cancelButton?: React.ReactNode;
@@ -129,7 +130,7 @@ class TS_EditableText_TextArea
 
 	private renderButtons = () => {
 		return <div className={'ts-editable-text-area__buttons'}>
-			{this.renderButton.reset()}
+			{!this.props.hideReset && this.renderButton.reset()}
 			{this.renderButton.cancel()}
 			{this.renderButton.accept()}
 		</div>;
