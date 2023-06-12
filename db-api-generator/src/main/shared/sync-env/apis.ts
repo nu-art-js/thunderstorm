@@ -1,4 +1,6 @@
 import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
+import {Minute} from '@nu-art/ts-common';
+
 
 export type Request_FetchFromEnv = {
 	backupId: string,
@@ -15,6 +17,6 @@ export type ApiStruct_SyncEnv = {
 
 export const ApiDef_SyncEnv: ApiDefResolver<ApiStruct_SyncEnv> = {
 	vv1: {
-		fetchFromEnv: {method: HttpMethod.POST, path: 'v1/sync-env/fetch-from-env'},
+		fetchFromEnv: {method: HttpMethod.POST, path: 'v1/sync-env/fetch-from-env', timeout: 5 * Minute},
 	}
 };
