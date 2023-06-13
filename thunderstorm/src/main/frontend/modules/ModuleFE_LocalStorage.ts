@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {merge, Module, TS_Object} from '@nu-art/ts-common';
+import {exists, merge, Module, TS_Object} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 
@@ -72,20 +72,17 @@ export class StorageModule_Class
 		delete this.cache[key];
 	}
 
-	public get(key: string, defaultValue?: string | number | object, persist: boolean = true): string | number | object | null {
+	public get(key: string, defaultValue?: string | number | object, persist: boolean = true): string | number | object | undefined {
 		let value: string | number | object | null = this.cache[key];
 		if (value)
 			return value;
 
 		value = this.getStorage(persist).getItem(key);
 		// this.logDebug(`get: ${key} = ${value}`)
-		if (!value)
-			if (defaultValue === null || defaultValue === undefined)
-				return null;
-			else
+		if (!exists(value) || value === 'null' || value === 'undefined')
 				return defaultValue;
 
-		return this.cache[key] = JSON.parse(value);
+		return this.cache[key] = JSON.parse(value!);
 	}
 
 	public query<T>(query: RegExp): T[] {
