@@ -8,6 +8,8 @@ import {TS_BusyButton} from '../TS_BusyButton';
 
 type Props = {
 	text: string;
+	shownText?: string;
+
 	className?: string;
 
 	editMode?: boolean; //External control for edit mode
@@ -103,14 +105,16 @@ class TS_EditableText_Base
 	// ######################## Render ########################
 
 	protected renderText = () => {
+		const textToShow = this.props.shownText ?? this.state.original;
 		return <div
 			className={'ts-editable-text__text'}
 			onClick={this.onEnableEdit}
 		>
 			{
 				this.props.highlightText
-					? stringReplacer(this.state.original, this.props.highlightText, (match, i) => <i key={i} className={'ts-editable-text__highlight'}>{match}</i>)
-					: this.state.original
+					? stringReplacer(textToShow, this.props.highlightText, (match, i) =>
+						<i key={i} className={'ts-editable-text__highlight'}>{match}</i>)
+					: textToShow
 			}
 		</div>;
 	};
@@ -142,7 +146,7 @@ class TS_EditableText_TextArea
 				className={'ts-editable-text-area__text-area'}
 				type={'text'}
 				focus={true}
-				value={this.state.text}
+				value={this.state.isEditing ? this.state.text : this.props.shownText}
 				onChange={this.onTextChange}
 				onAccept={(val, e) => this.onSubmitChanges(e)}
 			/>
@@ -153,7 +157,8 @@ class TS_EditableText_TextArea
 	render() {
 		const Renderer = this.state.isEditing ? this.renderTextArea : this.renderText;
 		const className = _className('ts-editable-text-area', this.props.className);
-		return <div className={className} onBlur={this.handleBlur} tabIndex={1} onClick={this.onGeneralClick} ref={this.state.parentRef}>
+		return <div className={className} onBlur={this.handleBlur} tabIndex={1} onClick={this.onGeneralClick}
+					ref={this.state.parentRef}>
 			<Renderer/>
 		</div>;
 	}
