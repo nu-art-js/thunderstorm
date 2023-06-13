@@ -1,0 +1,22 @@
+@use '@nu-art/ts-styles' as styles;
+
+.ts-read-more {
+  width: 100%;
+  height: var(--collapsed-height);
+  font: {
+    size: 14px;
+    weight: normal;
+  }
+  white-space: break-spaces;
+  overflow: hidden;
+  
+  .ts-read-more__button {
+    color: #0067FF;
+    font: {
+      size: inherit;
+      weight: inherit;
+    }
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
