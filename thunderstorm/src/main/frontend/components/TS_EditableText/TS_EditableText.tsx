@@ -5,11 +5,11 @@ import {TS_Input, TS_TextArea} from '../TS_Input';
 import {TS_Button} from '../TS_Button';
 import {_className, stopPropagation, stringReplacer} from '../../utils/tools';
 import {TS_BusyButton} from '../TS_BusyButton';
+import {TS_ReadMore} from '../TS_ReadMore';
 
 type Props = {
 	text: string;
 	shownText?: string;
-
 	className?: string;
 
 	editMode?: boolean; //External control for edit mode
@@ -19,6 +19,8 @@ type Props = {
 	onCancel?: () => void; //Called when cancel is clicked or on blur
 	highlightText?: string; //Text that will be highlighted
 	hideReset?: boolean;
+	readMore?: boolean
+	readMoreCollapseHeight?: number;
 
 	renderers?: {
 		cancelButton?: React.ReactNode;
@@ -110,12 +112,12 @@ class TS_EditableText_Base
 			className={'ts-editable-text__text'}
 			onClick={this.onEnableEdit}
 		>
-			{
-				this.props.highlightText
+			{this.props.readMore && <TS_ReadMore collapsedHeight={this.props.readMoreCollapseHeight!} text={textToShow}/>}
+			{!this.props.readMore && (this.props.highlightText
 					? stringReplacer(textToShow, this.props.highlightText, (match, i) =>
 						<i key={i} className={'ts-editable-text__highlight'}>{match}</i>)
 					: textToShow
-			}
+			)}
 		</div>;
 	};
 
@@ -158,7 +160,7 @@ class TS_EditableText_TextArea
 		const Renderer = this.state.isEditing ? this.renderTextArea : this.renderText;
 		const className = _className('ts-editable-text-area', this.props.className);
 		return <div className={className} onBlur={this.handleBlur} tabIndex={1} onClick={this.onGeneralClick}
-					ref={this.state.parentRef}>
+								ref={this.state.parentRef}>
 			<Renderer/>
 		</div>;
 	}
