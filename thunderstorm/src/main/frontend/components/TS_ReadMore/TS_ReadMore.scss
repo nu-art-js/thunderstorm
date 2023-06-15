@@ -3,13 +3,23 @@
 .ts-read-more {
   width: 100%;
   height: var(--collapsed-height);
+  white-space: break-spaces;
+  margin: 0;
+  line-height: 20px;
   font: {
     size: 14px;
     weight: normal;
   }
-  white-space: break-spaces;
-  overflow: hidden;
-  
+
+
+  .ts-read-more__text {
+    white-space: break-spaces;
+    font: {
+      size: inherit;
+      weight: inherit;
+    }
+  }
+
   .ts-read-more__button {
     color: #0067FF;
     font: {
@@ -18,5 +28,9 @@
     }
     text-decoration: underline;
     cursor: pointer;
+  }
+
+  &.expand {
+    height: unset;
   }
 }
