@@ -88,6 +88,6 @@ export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], p
 		if (isErrorOfType(error.cause || error, ApiException)?.responseBody)
 			slackMessage += `Error: ${__stringify(isErrorOfType(error.cause || error, ApiException)!.responseBody.error, true)}`;
 
-		return slackMessage;
+		return {message: slackMessage};
 	};
 }

@@ -35,8 +35,13 @@ export const ServerErrorSeverity_Ordinal = [
 	ServerErrorSeverity.Critical
 ];
 
+export type ErrorMessage = {
+	message: string,
+	innerMessages?: string[]
+}
+
 export interface OnApplicationError {
-	__processApplicationError(errorLevel: ServerErrorSeverity, module: Module, message: string): Promise<void>;
+	__processApplicationError(errorLevel: ServerErrorSeverity, module: Module, message: ErrorMessage): Promise<void>;
 }
 
 export const dispatch_onServerError = new Dispatcher<OnApplicationError, "__processApplicationError">("__processApplicationError");
