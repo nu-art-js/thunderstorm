@@ -106,7 +106,7 @@ class ModuleBE_Backup_Class
 			this.logWarning(`modules cleanup has failed with error`, e);
 			const errorMessage = `modules cleanup has failed with error\nError: ${_logger_logException(e)}`;
 
-			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, errorMessage);
+			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, {message:errorMessage});
 		}
 
 		const backups: FirestoreBackupDetails<any>[] = this.getBackupDetails();
@@ -166,7 +166,7 @@ class ModuleBE_Backup_Class
 				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error`, e);
 				const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backupItem, true)}\nError: ${_logger_logException(e)}`;
 
-				await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, errorMessage);
+				await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, {message:errorMessage});
 			}
 		}));
 	};

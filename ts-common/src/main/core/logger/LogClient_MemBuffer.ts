@@ -25,8 +25,8 @@ export class LogClient_MemBuffer
 
 	readonly buffers: string[] = [""];
 
-	constructor(name: string, maxEntries = 10, maxSize = 1024 * 1024) {
-		super(name, maxEntries, maxSize);
+	constructor(name: string, maxBuffers = 10, maxBufferSize = 1024 * 1024) {
+		super(name, maxBuffers, maxBufferSize);
 	}
 
 	protected printLogMessage(log: string) {
