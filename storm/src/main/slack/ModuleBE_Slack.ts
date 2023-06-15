@@ -22,7 +22,7 @@
  */
 
 import {currentTimeMillis, Minute, Module} from '@nu-art/ts-common';
-import {WebClient, WebClientOptions, WebAPICallResult} from '@slack/web-api';
+import {WebClient, WebClientOptions, WebAPICallResult, ChatPostMessageArguments} from '@slack/web-api';
 
 
 interface ChatPostMessageResult
@@ -43,7 +43,7 @@ type ConfigType = {
 
 type _SlackMessage = {
 	text: string
-	channel: string
+	channel?: string
 	messageId?: string
 }
 
@@ -97,10 +97,10 @@ export class ModuleBE_Slack_Class
 		if (threadPointer) {
 			const reply = {...message, thread_ts: threadPointer.ts};
 			this.logDebug('sending slack reply: ', reply);
-			res = await this.web.chat.postMessage(reply) as ChatPostMessageResult;
+			res = await this.web.chat.postMessage(reply as ChatPostMessageArguments) as ChatPostMessageResult;
 		} else {
 			this.logDebug('sending slack message: ', message);
-			res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
+			res = await this.web.chat.postMessage(message as ChatPostMessageArguments) as ChatPostMessageResult;
 		}
 		this.messageMap[message.text] = currentTimeMillis();
 
