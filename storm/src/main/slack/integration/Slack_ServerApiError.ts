@@ -17,12 +17,14 @@
  * limitations under the License.
  */
 import {
+	ErrorMessage,
 	Module,
 	OnApplicationError,
 	ServerErrorSeverity,
 	ServerErrorSeverity_Ordinal
-} from "@nu-art/ts-common";
-import {ModuleBE_Slack} from "../ModuleBE_Slack";
+} from '@nu-art/ts-common';
+import {ModuleBE_Slack, ThreadPointer} from '../ModuleBE_Slack';
+
 
 type Config = {
 	exclude: string[]
@@ -35,22 +37,32 @@ export class Slack_ServerApiError_Class
 
 	constructor() {
 		super();
-		this.setDefaultConfig({exclude: [], minLevel: ServerErrorSeverity.Info})
+		this.setDefaultConfig({exclude: [], minLevel: ServerErrorSeverity.Info});
 	}
 
 	protected init(): void {
 	}
 
-	async __processApplicationError(errorLevel: ServerErrorSeverity, module: Module, message: string) {
+	async __processApplicationError(errorLevel: ServerErrorSeverity, module: Module, message: ErrorMessage) {
 		if (ServerErrorSeverity_Ordinal.indexOf(errorLevel) < ServerErrorSeverity_Ordinal.indexOf(this.config.minLevel))
 			return;
 
+		const threadPointer = await this.sendMessage(message.message);
+		if (!threadPointer)
+			return;
+
+		for (const innerMessage of (message.innerMessages || [])) {
+			await this.sendMessage(innerMessage, threadPointer);
+		}
+	}
+
+	private sendMessage(message: string, threadPointer?: ThreadPointer) {
 		for (const key of this.config.exclude || []) {
 			if (message.includes(key))
-				return
+				return;
 		}
 
-		await ModuleBE_Slack.postMessage(`\`\`\`${message}\`\`\``);
+		return ModuleBE_Slack.postMessage(message, threadPointer);
 	}
 }
 

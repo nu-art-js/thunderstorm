@@ -20,7 +20,7 @@
  */
 
 import * as express from 'express';
-import {Dispatcher} from '@nu-art/ts-common';
+import {Dispatcher, ErrorMessage} from '@nu-art/ts-common';
 import {CoreOptions, UriOptions} from 'request';
 import {ApiException} from '../exceptions';
 import {IncomingHttpHeaders} from 'http';
@@ -41,7 +41,7 @@ export type RequestOptions = CoreOptions & UriOptions
 export const dispatch_queryRequestInfo = new Dispatcher<QueryRequestInfo, '__queryRequestInfo'>('__queryRequestInfo');
 
 export type ServerApi_Middleware<T extends any = any> = (request: ExpressRequest, response: ExpressResponse, data: HttpRequestData) => T | Promise<T>
-export type HttpErrorHandler = (requestData: HttpRequestData, error: ApiException) => Promise<string>;
+export type HttpErrorHandler = (requestData: HttpRequestData, error: ApiException) => Promise<ErrorMessage>;
 
 export type HttpRequestData = {
 	originalUrl: string

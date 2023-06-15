@@ -42,7 +42,9 @@ export class ModuleBE_ActionProcessor_Class
 
 		const refactoringAction = this.actionMap[action.key];
 		if (!refactoringAction) {
-			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Error, this, `NO SUCH ACTION: ${action.key}`);
+			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Error, this, {
+				message: `NO SUCH ACTION: ${action.key}`
+			});
 			return;
 		}
 
@@ -53,7 +55,7 @@ export class ModuleBE_ActionProcessor_Class
 		} catch (e: any) {
 			this.logError(`ACTION '${action.key}' - FAILED`, e);
 			const message = `ACTION FAILED: ${action.key}\n${_logger_logException(e)}`;
-			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Error, this, message);
+			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Error, this, {message});
 		}
 	};
 
