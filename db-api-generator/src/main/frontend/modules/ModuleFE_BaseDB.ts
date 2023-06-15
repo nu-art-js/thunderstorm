@@ -345,7 +345,6 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 
 	load = async (cacheFilter?: (item: Readonly<DBType>) => boolean) => {
 		this.module.logDebug(`${this.module.getName()} cache is loading`);
-		this.clear();
 		let allItems;
 		this.cacheFilter = cacheFilter;
 		if (this.cacheFilter)
