@@ -127,7 +127,7 @@ export class Firebase_ExpressFunction
 		if (this.function)
 			return this.function;
 
-		const realFunction: HttpsFunction = onRequest(Firebase_ExpressFunction.config, this.express);
+		const realFunction: HttpsFunction = onRequest(Firebase_ExpressFunction.config, this.express as (request: Request, response: express.Response) => void | Promise<void>);
 		return this.function = onRequest(Firebase_ExpressFunction.config, (req: Request, res: Response) => {
 			if (this.isReady)
 				return realFunction(req, res);

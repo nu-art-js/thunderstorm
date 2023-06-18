@@ -16,13 +16,21 @@
  * limitations under the License.
  */
 
-import * as database from 'firebase-admin/database';
+import {FilterKeys, ModuleBE_Firebase} from '../../_main';
+import {DB_Object} from '@nu-art/ts-common';
 
 
-export type Firebase_DataSnapshot = database.DataSnapshot
+export class FirestoreCollectionV2_Tester<DBType extends DB_Object> {
+	readonly collectionName: string;
+	readonly externalUniqueFilter?: FilterKeys<DBType>;
 
-export type FirebaseListener = (snapshot: Firebase_DataSnapshot | null) => void;
+	constructor(collectionName: string, externalUniqueFilter?: FilterKeys<DBType>) {
+		this.collectionName = collectionName;
+		this.externalUniqueFilter = externalUniqueFilter;
+	}
 
-export type Firebase_DB = database.Database & {
-	ref(path?: string): database.Reference;
+	getCollection() {
+		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();
+		return firestore.getCollection<DBType>(this.collectionName, this.externalUniqueFilter);
+	}
 }

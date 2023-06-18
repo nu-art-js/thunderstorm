@@ -1,3 +1,3 @@
 {
-  "extends": "../../../dev-tools/typescript/tsconfig-lib-test.json"
+  "extends": "../../../dev-tools/typescript/tsconfig-lib-ts.json"
 }
