@@ -8,16 +8,15 @@ type Config = {};
 
 export class ModuleBE_ServerInfo_Class
 	extends Module<Config> {
+	serverInfoApi = createQueryServerApi(ApiDef_ServerInfo.v1.getServerInfo, async (): Promise<Response_ServerInfo> => ({
+		environment: Storm.getInstance().getEnvironment(),
+		version: Storm.getInstance().getVersion(),
+	}));
 
 	constructor() {
 		super();
-		addRoutes([createQueryServerApi(ApiDef_ServerInfo.v1.getServerInfo, this.getServerInfo)]);
+		addRoutes([this.serverInfoApi]);
 	}
-
-	private getServerInfo = async (): Promise<Response_ServerInfo> => ({
-		environment: Storm.getInstance().getEnvironment(),
-		version: Storm.getInstance().getVersion(),
-	});
 }
 
 export const ModuleBE_ServerInfo = new ModuleBE_ServerInfo_Class();
