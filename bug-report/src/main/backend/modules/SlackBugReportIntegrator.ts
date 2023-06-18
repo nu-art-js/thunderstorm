@@ -28,7 +28,7 @@ import {
 	Request_BugReport
 } from "../..";
 import {TicketDetails} from "./ModuleBE_BugReport";
-import {ModuleBE_Slack} from "@nu-art/storm/slack";
+import {ModuleBE_Slack} from "@nu-art/storm";
 
 type Config = {
 	channel: string

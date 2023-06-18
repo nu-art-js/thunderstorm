@@ -21,7 +21,7 @@
  * Created by AlanBen on 29/08/2019.
  */
 
-import {currentTimeMillis, Minute, Module} from '@nu-art/ts-common';
+import {currentTimeMillis, ImplementationMissingException, Minute, Module} from '@nu-art/ts-common';
 import {WebClient, WebClientOptions, WebAPICallResult, ChatPostMessageArguments} from '@slack/web-api';
 
 
@@ -34,7 +34,7 @@ interface ChatPostMessageResult
 	};
 }
 
-type ConfigType = {
+export type ConfigType_ModuleBE_Slack = {
 	token: string
 	defaultChannel: string
 	throttlingTime?: number
@@ -56,7 +56,7 @@ type MessageMap = {
 export type ThreadPointer = { ts: string, channel: string };
 
 export class ModuleBE_Slack_Class
-	extends Module<ConfigType, any> {
+	extends Module<ConfigType_ModuleBE_Slack, any> {
 	private web!: WebClient;
 	private messageMap: MessageMap = {};
 
@@ -66,8 +66,7 @@ export class ModuleBE_Slack_Class
 
 	protected init(): void {
 		if (!this.config.token)
-			return;
-		// throw new ImplementationMissingException('Missing config token for ModuleBE_Slack. Please add it');
+			throw new ImplementationMissingException('Missing config token for ModuleBE_Slack. Please add it');
 
 		this.web = new WebClient(
 			this.config.token,
@@ -79,17 +78,17 @@ export class ModuleBE_Slack_Class
 
 	public async postMessage(slackMessage: SlackMessage, messageId?: ThreadPointer) {
 		const message: SlackMessage = typeof slackMessage === 'string' ? {text: slackMessage, channel: this.config.defaultChannel} : slackMessage;
+		message.channel ??= this.config.defaultChannel;
 
 		const time = this.messageMap[message.text];
 		if (time && currentTimeMillis() - time < (this.config.throttlingTime || Minute))
 			return;
 
-		try {
-			return await this.postMessageImpl(message, messageId);
-		} catch (e: any) {
-
-			this.logError(`Error while sending a message to channel: ${message.channel}\n`, e);
-		}
+		// try {
+		return await this.postMessageImpl(message, messageId);
+		// } catch (e: any) {
+		// 	this.logError(`Error while sending a message to channel: ${message.channel}\n`, e);
+		// }
 	}
 
 	private async postMessageImpl(message: _SlackMessage, threadPointer?: ThreadPointer): Promise<ThreadPointer> {
