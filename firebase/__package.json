@@ -31,8 +31,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "run-tests": "firebase emulators:exec \"npm run test\"",
-    "test": "ts-mocha --exit -p src/test/tsconfig.json src/test/run-all-tests.ts"
+    "run-tests,": "bai -wt & firebase emulators:exec \"npm run test\"",
+    "test": "mocha -w dist-test/test/firestore-v2/insert/__test.js"
   },
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
