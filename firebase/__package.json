@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "run-tests,": "bai -wt & firebase emulators:exec \"npm run test\"",
+    "run-tests": "bash build-and-install.sh -wt & firebase emulators:exec \"npm run test\"",
     "test": "mocha -w dist-test/test/firestore-v2/insert/__test.js"
   },
   "dependencies": {
