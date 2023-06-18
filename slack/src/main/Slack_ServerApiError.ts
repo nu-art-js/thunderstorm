@@ -23,7 +23,7 @@ import {
 	ServerErrorSeverity,
 	ServerErrorSeverity_Ordinal
 } from '@nu-art/ts-common';
-import {ModuleBE_Slack, ThreadPointer} from '../ModuleBE_Slack';
+import {ModuleBE_Slack, ThreadPointer} from './ModuleBE_Slack';
 
 
 type Config = {

@@ -108,6 +108,10 @@ export class ModuleBE_Slack_Class
 
 		return {ts: res.ts, channel: res.channel};
 	}
+
+	public async postStructuredMessage(message: any) {
+
+	}
 }
 
 export const ModuleBE_Slack = new ModuleBE_Slack_Class();
