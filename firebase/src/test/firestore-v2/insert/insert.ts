@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {firestore, testInstance1} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {compare, PreDB} from '@nu-art/ts-common';
+import {compare, deepClone, PreDB} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 
 
@@ -36,7 +36,9 @@ export const TestSuit_FirestoreV2_Insert: Test = {
 		await collection.deleteAll();
 		// const ref = collection.getDocumentRef(testCase.input.value as PreDB<DB_Type>);
 		// await ref.set(testCase.input.value as PreDB<DB_Type>);
-		await collection.insert(testCase.input.value);
+		const toInsert = deepClone(testCase.input.value);
+
+		await collection.insert(toInsert);
 
 		await testCase.input.check(collection, testCase.result);
 	}

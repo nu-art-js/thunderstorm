@@ -25,20 +25,11 @@
     ]
   },
   "emulators": {
-    "functions": {
-      "port": "5010"
-    },
     "database": {
       "port": "5012"
     },
     "firestore": {
       "port": "5013"
-    },
-    "pubsub": {
-      "port": "5014"
-    },
-    "storage": {
-      "port": "5015"
     }
   }
 }

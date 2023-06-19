@@ -68,49 +68,49 @@ export type testInstance = {
 	nestedObject: {}
 };
 
-export const testInstance1: PreDB<DB_Type> = {
+export const testInstance1: PreDB<DB_Type> = Object.freeze({
 	stringValue: testString1,
 	booleanValue: false,
 	numeric: testNumber1,
 	stringArray: [testString1, testString5],
 	objectArray: [testItem1, testItem2],
 	nestedObject: {one: testItem1, two: testItem2}
-};
+});
 
-export const testInstance2: PreDB<DB_Type> = {
+export const testInstance2: PreDB<DB_Type> = Object.freeze({
 	stringValue: testString2,
 	booleanValue: false,
 	numeric: testNumber2,
 	stringArray: [testString1, testString2, testString3],
 	objectArray: [testItem1, testItem2, testItem3],
 	nestedObject: {one: testItem2, two: testItem3}
-};
+});
 
-export const testInstance3: PreDB<DB_Type> = {
+export const testInstance3: PreDB<DB_Type> = Object.freeze({
 	stringValue: testString3,
 	booleanValue: false,
 	numeric: testNumber3,
 	stringArray: [testString2, testString3, testString4, testString5],
 	objectArray: [testItem2, testItem3, testItem4, testItem5],
 	nestedObject: {one: testItem4, two: testItem5}
-};
+});
 
-export const testInstance4: PreDB<DB_Type> = {
+export const testInstance4: PreDB<DB_Type> = Object.freeze({
 	stringValue: testString4,
 	booleanValue: true,
 	numeric: testNumber4,
 	stringArray: [testString3, testString4, testString5],
 	objectArray: [testItem3, testItem4, testItem5],
 	nestedObject: {one: testItem3, two: testItem4}
-};
+});
 
-export const testInstance5: PreDB<DB_Type> = {
+export const testInstance5: PreDB<DB_Type> = Object.freeze({
 	stringValue: testString5,
 	booleanValue: false,
 	numeric: testNumber5,
 	stringArray: [testString1, testString2, testString3, testString4, testString5],
 	objectArray: [testItem1, testItem2, testItem3, testItem4, testItem5],
 	nestedObject: {one: testItem2, two: testItem4}
-};
+});
 
 
