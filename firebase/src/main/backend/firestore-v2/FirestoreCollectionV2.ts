@@ -43,6 +43,7 @@ import DocumentReference = firestore.DocumentReference;
 export const dbIdLength = 32;
 
 type BatchOpMethod = 'delete' | 'set' | 'create' | 'update';
+// @ts-ignore
 type BulkOpMethod = 'delete' | 'set' | 'create' | 'update';
 
 /**
@@ -121,7 +122,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	}
 
 	async deleteAll() {
-		await this.bulkDelete(await this.collection.listDocuments());
+		await this.deleteBulk(await this.collection.listDocuments());
 	}
 
 	private async assertInstance(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
@@ -147,27 +148,20 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	}
 
 	async insertAll(preDBInstances: PreDB<Type>[]) {
-		// await this.batchOperation(preDBInstances, 'set');
-		await this.bulkOperation(preDBInstances, 'set');
+		await this.insertBulk(preDBInstances);
 	}
 
-	async bulkOperation(preDBInstances: PreDB<Type>[], method: BulkOpMethod) {
-		return await batchAction(preDBInstances.map(this.prepareObjForInsert), 200, async (instances) => {
-			const bulk = this.wrapper.firestore.bulkWriter();
+	protected async insertBulk(preDBInstances: PreDB<Type>[]) {
+		const bulk = this.wrapper.firestore.bulkWriter();
 
-			switch (method) {
-				case 'set':
-					return await instances.reduce((_bulk, instance) => {
-						_bulk.set(this.getDocumentRef(instance).ref, instance);
-						return _bulk;
-					}, bulk).flush();
-				default:
-					break;
-			}
-		});
+		return await preDBInstances.reduce((_bulk, instance) => {
+			const dbInstance = this.prepareObjForInsert(instance);
+			_bulk.set(this.getDocumentRef(instance).ref, dbInstance);
+			return _bulk;
+		}, bulk).flush();
 	}
 
-	async bulkDelete(refs: DocumentReference[]) {
+	protected async deleteBulk(refs: DocumentReference[]) {
 		const bulk = this.wrapper.firestore.bulkWriter();
 		refs.forEach(_ref => bulk.delete(_ref));
 		await bulk.close();
