@@ -1,10 +1,9 @@
 import {expect} from 'chai';
-import {testInstance1, testInstance2} from '../_core/consts';
+import {firestore, testInstance1, testInstance2} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {compare, PreDB} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {firestore} from './__test';
 
 
 type Input = {
