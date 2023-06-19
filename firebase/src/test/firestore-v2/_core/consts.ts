@@ -17,8 +17,22 @@
  */
 
 import {DB_Type, FB_ArrayType} from './types';
-import {PreDB} from '@nu-art/ts-common';
+import {generateHex, PreDB} from '@nu-art/ts-common';
+import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend';
+import {ModuleBE_Auth} from '@nu-art/google-services/backend';
 
+
+export const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();
+
+export const prepare__Test = () => {
+	const config = {
+		project_id: generateHex(4),
+		databaseURL: 'http://localhost:8102/?ns=quai-md-dev',
+	};
+
+	ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
+	return config;
+};
 
 export const testString1 = 'string-1';
 export const testString2 = 'string-2';
