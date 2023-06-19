@@ -7,7 +7,7 @@ import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/Firestor
 
 
 type Input = {
-	value: PreDB<DB_Type> | PreDB<DB_Type>[];
+	value: PreDB<DB_Type>;
 	check: (collection: FirestoreCollectionV2<DB_Type>, expectedItem?: PreDB<DB_Type>) => Promise<void>
 }
 
@@ -19,10 +19,10 @@ export const TestCases_FB_Insert: Test['testcases'] = [
 		result: testInstance2,
 		input: {
 			value: testInstance1,
-			check: async (collection, expectedItem) => {
+			check: async (collection, expectedResult) => {
 				const items = await collection.queryInstances({where: {}});
 				expect(items.length).to.eql(1);
-				expect(true).to.eql(compare(expectedItem, items[0]));
+				expect(true).to.eql(compare(expectedResult, items[0]));
 			}
 		}
 	},
@@ -33,11 +33,11 @@ export const TestSuit_FirestoreV2_Insert: Test = {
 	testcases: TestCases_FB_Insert,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>('firestore-insertion-tests');
-		const ref = collection.getDocumentRef(testCase.input.value as PreDB<DB_Type>);
-		await ref.set(testCase.input.value as PreDB<DB_Type>);
-
 		await collection.test_DeleteAll();
-		// await collection.insertAll(testCase.input.value);
+		// const ref = collection.getDocumentRef(testCase.input.value as PreDB<DB_Type>);
+		// await ref.set(testCase.input.value as PreDB<DB_Type>);
+		await collection.insert(testCase.input.value);
+
 		await testCase.input.check(collection, testCase.result);
 	}
 };

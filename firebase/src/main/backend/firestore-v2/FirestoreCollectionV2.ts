@@ -37,6 +37,8 @@ import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {FirestoreTransaction} from '../firestore/FirestoreTransaction';
+import {firestore} from 'firebase-admin';
+import DocumentReference = firestore.DocumentReference;
 
 export const dbIdLength = 32;
 
@@ -119,7 +121,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	}
 
 	async test_DeleteAll() {
-		await this.collection.doc().delete();
+		await this.bulkDelete(await this.collection.listDocuments());
 	}
 
 	private async assertInstance(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
@@ -137,11 +139,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		//todo - maybe should be filled only in extending modules
 	}
 
-	/**
-	 * Validate
-	 * @param dbInstance dbObject to validate
-	 * @private
-	 */
 	private validateImpl(dbInstance: Type) {
 		//todo validation using validator
 	}
@@ -170,6 +167,12 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		});
 	}
 
+	async bulkDelete(refs: DocumentReference[]) {
+		const bulk = this.wrapper.firestore.bulkWriter();
+		refs.forEach(_ref => bulk.delete(_ref));
+		await bulk.close();
+	}
+
 
 	async batchOperation(preDBInstances: PreDB<Type>[], method: BatchOpMethod) {
 		return await batchAction(preDBInstances.map(this.prepareObjForInsert), 200, async (instances) => {
@@ -194,19 +197,20 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return doc.set(dbInstance);
 	}
 
-	protected generateId() {
-		return generateHex(dbIdLength);
-	}
-
 
 	prepareObjForInsert(preDBObject: PreDB<Type>): Type {
 		const now = currentTimeMillis();
-		preDBObject._id = this.generateId();
+		preDBObject._id = generateId();
 		preDBObject.__updated = preDBObject.__created = now;
 
 		return preDBObject as Type;
 	}
 }
+
+export function generateId() {
+	return generateHex(dbIdLength);
+}
+
 
 export class DocWrapperV2<T extends DB_Object> {
 	wrapper: FirestoreWrapperBEV2;
