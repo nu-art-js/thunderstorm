@@ -37,6 +37,7 @@ import {
 	merge,
 	Module,
 	PreDB,
+	removeDBObjectKeys,
 	tsValidateResult,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
@@ -277,8 +278,11 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 
 	async querySync(syncQuery: FirestoreQuery<DBType>, request: ExpressRequest): Promise<Response_DBSync<DBType>> {
 		return this.runInTransaction(async transaction => {
-			const items = await transaction.query(this.collection, syncQuery);
-			const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>, transaction);
+			let items = await transaction.query(this.collection, syncQuery);
+			let deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>, transaction);
+
+			items = items.filter(item => !item._archived);
+			deletedItems = deletedItems.filter(item => !item._archived);
 
 			await this.upgradeInstances(items);
 			return {toUpdate: items, toDelete: deletedItems};
@@ -404,6 +408,13 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	private async _preUpsertProcessing(dbInstance: DBType, transaction?: FirestoreTransaction, request?: ExpressRequest) {
 		await this.upgradeInstances([dbInstance]);
 		await this.preUpsertProcessing(dbInstance, transaction, request);
+	}
+
+	private checkTTL(instance: PreDB<DBType>, timestamp: number) {
+		if (this.config.TTL === -1 || !instance.__updated)
+			return false;
+
+		return timestamp > (instance.__updated + this.config.TTL);
 	}
 
 	async upgradeInstances(dbInstances: DBType[]) {
@@ -560,12 +571,30 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 				__updated: timestamp
 			} as unknown as DBType, request);
 
+
+		await this.InsertHistory(instance);
+
 		return this.upsertImpl_Read(transaction, {
 			...instance,
 			_id: instance._id || this.generateId(),
 			__created: instance.__created || timestamp,
 			__updated: timestamp
 		} as unknown as DBType, request);
+	}
+
+	private async InsertHistory(instance: PreDB<DBType>,) {
+		const timestamp = currentTimeMillis();
+		let dbInstance = await this.queryUnique({_id: instance._id} as Clause_Where<DBType>);
+
+		if (this.checkTTL(dbInstance, timestamp)) {
+			dbInstance = removeDBObjectKeys(dbInstance) as DBType;
+			dbInstance._originDocId = instance._id;
+			dbInstance._archived = true;
+			dbInstance._id = this.generateId();
+			dbInstance.__updated = timestamp;
+			dbInstance.__created = timestamp;
+			await this.insert(dbInstance);
+		}
 	}
 
 	protected generateId() {

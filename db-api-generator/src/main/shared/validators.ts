@@ -19,7 +19,16 @@
  * limitations under the License.
  */
 
-import {AuditableV2, DB_Object, tsValidateArray, tsValidateRegexp, tsValidateString, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {
+	AuditableV2,
+	DB_Object,
+	tsValidateArray,
+	tsValidateBoolean,
+	tsValidateRegexp,
+	tsValidateString,
+	tsValidateTimestamp,
+	ValidatorTypeResolver
+} from '@nu-art/ts-common';
 import {tsValidate_OptionalArray} from '@nu-art/ts-common/validator/validators';
 
 
@@ -53,6 +62,8 @@ export const tsValidator_AuditableV2: ValidatorTypeResolver<AuditableV2> = {_aud
 export const DB_Object_validator: ValidatorTypeResolver<DB_Object> = {
 	_id: tsValidateUniqueId,
 	_v: tsValidateVersion,
+	_originDocId: tsValidateOptionalId,
+	_archived: tsValidateBoolean(false),
 	__created: tsValidateTimestamp(),
 	__updated: tsValidateTimestamp(),
 };
