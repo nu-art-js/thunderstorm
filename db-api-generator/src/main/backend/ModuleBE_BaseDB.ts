@@ -583,17 +583,21 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	}
 
 	private async InsertHistory(instance: PreDB<DBType>,) {
-		const timestamp = currentTimeMillis();
-		let dbInstance = await this.queryUnique({_id: instance._id} as Clause_Where<DBType>);
+		try {
+			const timestamp = currentTimeMillis();
+			let dbInstance = await this.queryUnique({_id: instance._id} as Clause_Where<DBType>);
 
-		if (this.checkTTL(dbInstance, timestamp)) {
-			dbInstance = removeDBObjectKeys(dbInstance) as DBType;
-			dbInstance._originDocId = instance._id;
-			dbInstance._archived = true;
-			dbInstance._id = this.generateId();
-			dbInstance.__updated = timestamp;
-			dbInstance.__created = timestamp;
-			await this.insert(dbInstance);
+			if (this.checkTTL(dbInstance, timestamp)) {
+				dbInstance = removeDBObjectKeys(dbInstance) as DBType;
+				dbInstance._originDocId = instance._id;
+				dbInstance._archived = true;
+				dbInstance._id = this.generateId();
+				dbInstance.__updated = timestamp;
+				dbInstance.__created = timestamp;
+				await this.insert(dbInstance);
+			}
+		} catch (err) {
+			return undefined;
 		}
 	}
 
