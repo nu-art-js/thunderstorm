@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {firestore, testInstance1, testInstance2} from '../_core/consts';
+import {firestore, testInstance1} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {compare, PreDB} from '@nu-art/ts-common';
@@ -16,7 +16,7 @@ type Test = TestSuite<Input, PreDB<DB_Type> | undefined>;
 export const TestCases_FB_Insert: Test['testcases'] = [
 	{
 		description: 'Insert & Query - one item2',
-		result: testInstance2,
+		result: testInstance1,
 		input: {
 			value: testInstance1,
 			check: async (collection, expectedResult) => {
