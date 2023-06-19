@@ -25,7 +25,7 @@ import {
 	generateHex,
 	PreDB,
 	StaticLogger,
-	Subset
+	Subset, UniqueId
 } from '@nu-art/ts-common';
 import {
 	FirestoreType_Collection,
@@ -87,12 +87,23 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		};
 	}
 
-	getDocumentRef(value: PreDB<Type>) {
-		if (!exists(value._id))
+	getDocWrapper(_id: UniqueId) {
+		const doc = this.wrapper.firestore.doc(`${this.name}/${_id}`) as FirestoreType_DocumentReference<Type>;
+		return new DocWrapperV2<Type>(this.wrapper, doc);
+	}
+
+	getDocWrapperFromItem(item: PreDB<Type>) {
+		if (!exists(item._id))
 			throw new BadImplementationException('Cannot create DocWrapper without _id!');
 
-		const doc = this.wrapper.firestore.doc(`${this.name}/${value._id}`) as FirestoreType_DocumentReference<Type>;
-		return new DocWrapperV2<Type>(this.wrapper, doc);
+		return this.getDocWrapper(item._id!);
+	}
+
+	delete = {
+		unique: async (_id: UniqueId) => await this.getDocWrapper(_id).delete(),
+		item: async (item: PreDB<Type>) => await this.getDocWrapperFromItem(item).delete(),
+		all: async (_ids: UniqueId[]) => await this.deleteBulk(_ids.map(_id => this.getDocWrapper(_id))),
+		allItems: async (items: PreDB<Type>[]) => await this.deleteBulk(items.map(_item => this.getDocWrapperFromItem(_item)))
 	}
 
 	/**
@@ -119,10 +130,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	async getAll() {
 
-	}
-
-	async deleteAll() {
-		await this.deleteBulk(await this.collection.listDocuments());
 	}
 
 	private async assertInstance(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
@@ -156,17 +163,25 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 		return await preDBInstances.reduce((_bulk, instance) => {
 			const dbInstance = this.prepareObjForInsert(instance);
-			_bulk.set(this.getDocumentRef(instance).ref, dbInstance);
+			_bulk.set(this.getDocWrapperFromItem(instance).ref, dbInstance);
 			return _bulk;
 		}, bulk).flush();
 	}
 
-	protected async deleteBulk(refs: DocumentReference[]) {
+	async deleteCollection() {
+		const refs = await this.collection.listDocuments();
+		await this._deleteBulkRefs(refs);
+	}
+
+	protected async deleteBulk(docs: DocWrapperV2<Type>[]) {
+		await this._deleteBulkRefs(docs.map(_doc => _doc.ref));
+	}
+
+	protected async _deleteBulkRefs(refs: DocumentReference[]) {
 		const bulk = this.wrapper.firestore.bulkWriter();
 		refs.forEach(_ref => bulk.delete(_ref));
 		await bulk.close();
 	}
-
 
 	async batchOperation(preDBInstances: PreDB<Type>[], method: BatchOpMethod) {
 		return await batchAction(preDBInstances.map(this.prepareObjForInsert), 200, async (instances) => {
@@ -175,19 +190,18 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			switch (method) {
 				case 'set':
 					return await instances.reduce((_batch, instance) => {
-						return _batch.set(this.getDocumentRef(instance).ref, instance);
+						return _batch.set(this.getDocWrapperFromItem(instance).ref, instance);
 					}, batch).commit();
 				default:
 					break;
 			}
 		});
-
 	}
 
 	async insert(preDBInstance: PreDB<Type>) {
 		const dbInstance = this.prepareObjForInsert(preDBInstance);
 		await this.assertInstance(dbInstance);
-		const doc = this.getDocumentRef(dbInstance);
+		const doc = this.getDocWrapperFromItem(dbInstance);
 		return doc.set(dbInstance);
 	}
 
@@ -230,7 +244,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		if (transaction)
 			transaction.delete(this.ref);
 		else
-			this.ref.delete();
+			await this.ref.delete();
 	};
 
 	fromCache = () => {

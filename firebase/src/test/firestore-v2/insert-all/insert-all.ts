@@ -74,7 +74,7 @@ export const TestSuit_FirestoreV2_InsertAll: Test = {
 	testcases: TestCases_FB_InsertAll,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>('firestore-insertion-tests');
-		await collection.deleteAll();
+		await collection.deleteCollection();
 		const toInsert = deepClone(testCase.input.value);
 		await collection.insertAll(Array.isArray(toInsert) ? toInsert : [toInsert]);
 		await testCase.input.check(collection, testCase.result);
