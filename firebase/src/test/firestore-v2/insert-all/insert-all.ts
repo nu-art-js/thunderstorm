@@ -17,7 +17,7 @@ type Test = TestSuite<Input, PreDB<DB_Type>[] | undefined>;
 
 export const TestCases_FB_InsertAll: Test['testcases'] = [
 	{
-		description: 'InsertAll - one item',
+		description: 'InsertAll - one it1111em',
 		result: [testInstance1],
 		input: {
 			value: [testInstance1],
@@ -62,7 +62,8 @@ export const TestCases_FB_InsertAll: Test['testcases'] = [
 
 				expect(items.length).to.eql(2);
 
-				expect(true).to.eql(compare([removeDBObjectKeys(items[0]), removeDBObjectKeys(items[1])], expectedResult as FB_Type[]));
+				const dbItems=items.map(removeDBObjectKeys)
+				expect(true).to.eql(compare(dbItems, expectedResult as FB_Type[]));
 			}
 		}
 	}
