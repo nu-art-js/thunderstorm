@@ -120,7 +120,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	}
 
-	async test_DeleteAll() {
+	async deleteAll() {
 		await this.bulkDelete(await this.collection.listDocuments());
 	}
 
