@@ -45,7 +45,7 @@ export const TestSuit_FirestoreV2_InsertAll: Test = {
 	testcases: TestCases_FB_InsertAll,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>('firestore-insertion-tests');
-		await collection.test_DeleteAll();
+		await collection.deleteAll();
 
 		await collection.insertAll(Array.isArray(testCase.input.value) ? testCase.input.value : [testCase.input.value]);
 		await testCase.input.check(collection, testCase.result);
