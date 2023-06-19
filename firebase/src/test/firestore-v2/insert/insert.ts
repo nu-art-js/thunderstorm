@@ -33,7 +33,7 @@ export const TestSuit_FirestoreV2_Insert: Test = {
 	testcases: TestCases_FB_Insert,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>('firestore-insertion-tests');
-		await collection.deleteAll();
+		await collection.deleteCollection();
 		// const ref = collection.getDocumentRef(testCase.input.value as PreDB<DB_Type>);
 		// await ref.set(testCase.input.value as PreDB<DB_Type>);
 		const toInsert = deepClone(testCase.input.value);
