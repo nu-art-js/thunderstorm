@@ -32,7 +32,7 @@
   "scripts": {
     "build": "tsc",
     "run-tests": "bash build-and-install.sh -wt & firebase emulators:exec \"npm run test\"",
-    "test": "mocha -w dist-test/test/firestore-v2/insert/__test.js"
+    "test": "mocha -w dist-test/test/firestore-v2/insert-all/__test.js"
   },
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
