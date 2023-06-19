@@ -2,7 +2,7 @@ import {expect} from 'chai';
 import {firestore, testInstance1} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {compare, deepClone, PreDB} from '@nu-art/ts-common';
+import {compare, deepClone, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 
 
@@ -15,14 +15,14 @@ type Test = TestSuite<Input, PreDB<DB_Type> | undefined>;
 
 export const TestCases_FB_Insert: Test['testcases'] = [
 	{
-		description: 'Insert & Query - one item2',
+		description: 'Insert & Query - one item',
 		result: testInstance1,
 		input: {
 			value: testInstance1,
 			check: async (collection, expectedResult) => {
 				const items = await collection.queryInstances({where: {}});
 				expect(items.length).to.eql(1);
-				expect(true).to.eql(compare(expectedResult, items[0]));
+				expect(true).to.eql(compare(removeDBObjectKeys(items[0]), expectedResult as DB_Type));
 			}
 		}
 	},
