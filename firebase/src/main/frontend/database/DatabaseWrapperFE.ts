@@ -62,7 +62,7 @@ export class DatabaseWrapperFE
 
 	/** @deprecated */
 	public async update<T extends TS_Object>(path: string, value: T) {
-		this.logWarning('upsert will be deprecated!! please use patch');
+		this.logWarning('update will be deprecated!! please use patch');
 		return this.patch(path, value);
 	}
 
