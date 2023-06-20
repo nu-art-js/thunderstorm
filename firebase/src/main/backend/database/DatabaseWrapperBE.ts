@@ -91,7 +91,7 @@ export class DatabaseWrapperBE
 	}
 
 	public async update<T>(path: string, value: T) {
-		this.logWarning('upsert will be deprecated!! please use patch');
+		this.logWarning('update will be deprecated!! please use patch');
 		return this.patch<T>(path, value);
 	}
 
@@ -186,7 +186,7 @@ export class FirebaseRef<T> {
 	}
 
 	/**
-	 * Executes a transaction at the specified path in the database, using the provided function to upsert the current value.
+	 * Executes a transaction at the specified path in the database, using the provided function to update the current value.
 	 * @param func
 	 */
 	public async transaction(func: (currentValue: T) => T) {

@@ -39,7 +39,7 @@ export class App
 
 	__onLoginStatusUpdated = () => {
 		const status = ModuleFE_Account.getLoggedStatus();
-		console.log('status upsert', status);
+		console.log('status update', status);
 	};
 
 	render() {

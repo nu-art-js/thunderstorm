@@ -157,7 +157,7 @@ export type FormPropV1<T, K extends keyof T, EditorValueType, EditorProps, Value
 // type K = DB_Object &{ pah:{zevel:string[],zevel2:string,ashpa:{zevel3:string}[]}}
 // class KEditor extends Item_Editor<K> {
 // 	func() {
-// 		this.props.editable.editProp("pah",{}).editProp("ashpa", []).upsert(0,{zevel3:""})
+// 		this.props.editable.editProp("pah",{}).editProp("ashpa", []).update(0,{zevel3:""})
 // 	}
 // }
 

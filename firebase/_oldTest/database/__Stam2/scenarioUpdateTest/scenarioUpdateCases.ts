@@ -46,7 +46,7 @@ const TestCase_ts_scenarioUpdate: TestSuit_TS_scenarioUpdate['testcases'] = [
 
 
 export const TestSuit_ts_scenarioUpdate: TestSuit_TS_scenarioUpdate = {
-    label: 'Test scenario upsert',
+    label: 'Test scenario update',
     testcases: TestCase_ts_scenarioUpdate,
     processor: (input) => scenarioUpdate(input.obj1, input.obj2)
 };
