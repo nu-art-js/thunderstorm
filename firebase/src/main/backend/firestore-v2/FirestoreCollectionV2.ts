@@ -100,12 +100,68 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return this.getDocWrapper(item._id!);
 	}
 
+	insert = {
+		item: async (item: PreDB<Type>) => await this._insertItem(item),
+		all: async (items: PreDB<Type>[]) => await this.insertBulk(items),
+	};
+
+	protected async _insertItem(preDBInstance: PreDB<Type>) {
+		const dbInstance = this.prepareObjForInsert(preDBInstance);
+		await this.assertInstance(dbInstance);
+		const doc = this.getDocWrapperFromItem(dbInstance);
+		return doc.set(dbInstance);
+	}
+
+	protected async insertBulk(preDBInstances: PreDB<Type>[]) {
+		const bulk = this.wrapper.firestore.bulkWriter();
+		const toReturnObjects: Type[] = [];
+
+		await preDBInstances.reduce((_bulk, instance) => {
+			const dbInstance = this.prepareObjForInsert(instance);
+			_bulk.set(this.getDocWrapperFromItem(instance).ref, dbInstance);
+			toReturnObjects.push(dbInstance);
+			return _bulk;
+		}, bulk).flush();
+
+		return toReturnObjects;
+	}
+
+	prepareObjForInsert(preDBObject: PreDB<Type>): Type {
+		const now = currentTimeMillis();
+		preDBObject._id = generateId();
+		preDBObject.__updated = preDBObject.__created = now;
+
+		return preDBObject as Type;
+	}
+
+	private async assertInstance(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
+		await this.upgradeInstances([dbInstance]);
+		await this.preUpsertProcessing(dbInstance, transaction, request);
+		this.validateImpl(dbInstance);
+		await this.assertUniqueness(dbInstance, transaction, request);
+	}
+
 	delete = {
 		unique: async (_id: UniqueId) => await this.getDocWrapper(_id).delete(),
 		item: async (item: PreDB<Type>) => await this.getDocWrapperFromItem(item).delete(),
 		all: async (_ids: UniqueId[]) => await this.deleteBulk(_ids.map(_id => this.getDocWrapper(_id))),
 		allItems: async (items: PreDB<Type>[]) => await this.deleteBulk(items.map(_item => this.getDocWrapperFromItem(_item)))
 	};
+
+	protected async deleteBulk(docs: DocWrapperV2<Type>[]) {
+		await this._deleteBulkRefs(docs.map(_doc => _doc.ref));
+	}
+
+	protected async _deleteBulkRefs(refs: DocumentReference[]) {
+		const bulk = this.wrapper.firestore.bulkWriter();
+		refs.forEach(_ref => bulk.delete(_ref));
+		await bulk.close();
+	}
+
+	async deleteCollection() {
+		const refs = await this.collection.listDocuments();
+		await this._deleteBulkRefs(refs);
+	}
 
 	/**
 	 * Get the db objects from the query
@@ -133,13 +189,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	}
 
-	private async assertInstance(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
-		await this.upgradeInstances([dbInstance]);
-		await this.preUpsertProcessing(dbInstance, transaction, request);
-		this.validateImpl(dbInstance);
-		await this.assertUniqueness(dbInstance, transaction, request);
-	}
-
 	private upgradeInstances(dbInstances: Type[]) {
 		//todo - maybe should be filled only in extending modules
 	}
@@ -155,39 +204,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private assertUniqueness(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
 	}
 
-	async insertAll(preDBInstances: PreDB<Type>[]) {
-		return await this.insertBulk(preDBInstances);
-	}
-
-	protected async insertBulk(preDBInstances: PreDB<Type>[]) {
-		const bulk = this.wrapper.firestore.bulkWriter();
-		const toReturnObjects: Type[] = [];
-
-		await preDBInstances.reduce((_bulk, instance) => {
-			const dbInstance = this.prepareObjForInsert(instance);
-			_bulk.set(this.getDocWrapperFromItem(instance).ref, dbInstance);
-			toReturnObjects.push(dbInstance);
-			return _bulk;
-		}, bulk).flush();
-
-		return toReturnObjects;
-	}
-
-	async deleteCollection() {
-		const refs = await this.collection.listDocuments();
-		await this._deleteBulkRefs(refs);
-	}
-
-	protected async deleteBulk(docs: DocWrapperV2<Type>[]) {
-		await this._deleteBulkRefs(docs.map(_doc => _doc.ref));
-	}
-
-	protected async _deleteBulkRefs(refs: DocumentReference[]) {
-		const bulk = this.wrapper.firestore.bulkWriter();
-		refs.forEach(_ref => bulk.delete(_ref));
-		await bulk.close();
-	}
-
 	async batchOperation(preDBInstances: PreDB<Type>[], method: BatchOpMethod) {
 		return await batchAction(preDBInstances.map(this.prepareObjForInsert), 200, async (instances) => {
 			const batch = this.wrapper.firestore.batch();
@@ -201,22 +217,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 					break;
 			}
 		});
-	}
-
-	async insert(preDBInstance: PreDB<Type>) {
-		const dbInstance = this.prepareObjForInsert(preDBInstance);
-		await this.assertInstance(dbInstance);
-		const doc = this.getDocWrapperFromItem(dbInstance);
-		return doc.set(dbInstance);
-	}
-
-
-	prepareObjForInsert(preDBObject: PreDB<Type>): Type {
-		const now = currentTimeMillis();
-		preDBObject._id = generateId();
-		preDBObject.__updated = preDBObject.__created = now;
-
-		return preDBObject as Type;
 	}
 }
 
