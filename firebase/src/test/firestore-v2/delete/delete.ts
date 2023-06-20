@@ -1,10 +1,11 @@
+import * as chai from 'chai';
 import {expect} from 'chai';
 import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {compare, deepClone, generateHex, isErrorOfType, MUSTNeverHappenException, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
-import {_EmptyQuery, FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import * as chai from "chai";
+import {compare, deepClone, generateHex, MUSTNeverHappenException, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
+import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
+
 chai.use(require('chai-as-promised'))
 
 
