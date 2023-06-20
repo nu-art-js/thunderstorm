@@ -1,40 +1,36 @@
 import {expect} from 'chai';
-import {firestore, testInstance1, testInstance2, testInstance3} from '../_core/consts';
+import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {deepClone, generateHex, PreDB} from '@nu-art/ts-common';
+import {compare, deepClone, generateHex, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 
 
 type Input = {
-	toInsert?: PreDB<DB_Type>[];
-	check: (collection: FirestoreCollectionV2<DB_Type>, expectedItem?: PreDB<DB_Type>[]) => Promise<void>
+	deleteAction: (collection: FirestoreCollectionV2<DB_Type>, inserted: DB_Type[]) => Promise<void>
+	toInsert: PreDB<DB_Type>[]
 }
 
-type Test = TestSuite<Input, PreDB<DB_Type>[] | undefined>;
+type Test = TestSuite<Input, PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
 
 export const TestCases_FB_Delete: Test['testcases'] = [
 	{
-		description: 'insert & delete.unique 1',
+		description: 'insert 1 & delete.unique',
 		result: [],
 		input: {
-			check: async (collection, expectedResult) => {
-				const _inserted = await collection.insert.item(deepClone(testInstance1));
-				await collection.delete.unique(_inserted._id);
-				const items = await collection.queryInstances({where: {}});
-				expect(items.length).to.eql(0);
+			toInsert: [testInstance1],
+			deleteAction: async (collection, inserted) => {
+				await collection.delete.unique(inserted[0]._id!);
 			}
 		}
 	},
 	{
-		description: 'insert 1 & delete.unique random _id',
+		description: 'insert 1 & delete.item',
 		result: [],
 		input: {
-			check: async (collection, expectedResult) => {
-				await collection.insert.item(deepClone(testInstance1));
-				await collection.delete.unique(generateHex(32));
-				const items = await collection.queryInstances({where: {}});
-				expect(items.length).to.eql(1);
+			toInsert: [testInstance1],
+			deleteAction: async (collection, inserted) => {
+				await collection.delete.item(inserted[0]);
 			}
 		}
 	},
@@ -42,11 +38,51 @@ export const TestCases_FB_Delete: Test['testcases'] = [
 		description: 'insert 3 & delete.all',
 		result: [],
 		input: {
-			check: async (collection, expectedResult) => {
-				const _inserted = await collection.insert.all(deepClone([testInstance1, testInstance2, testInstance3]));
-				await collection.delete.all(_inserted.map(_item => _item._id));
-				const items = await collection.queryInstances({where: {}});
-				expect(items.length).to.eql(0);
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			deleteAction: async (collection, inserted) => {
+				await collection.delete.all(inserted.map(_item => _item._id));
+			}
+		}
+	},
+	{
+		description: 'insert 3 & delete.allItems',
+		result: [],
+		input: {
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			deleteAction: async (collection, inserted) => {
+				await collection.delete.allItems(inserted);
+			}
+		}
+	},
+	{
+		description: 'insert 3 & delete.unique 1',
+		result: [testInstance2, testInstance3],
+		input: {
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			deleteAction: async (collection, inserted) => {
+				const _testInstance1 = inserted.find(_item => _item.stringValue === testString1)!;
+				await collection.delete.unique(_testInstance1._id);
+			}
+		}
+	},
+	{
+		description: 'insert 3 & delete.item 1',
+		result: [testInstance2, testInstance3],
+		input: {
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			deleteAction: async (collection, inserted) => {
+				const _testInstance1 = inserted.find(_item => _item.stringValue === testString1)!;
+				await collection.delete.item(_testInstance1);
+			}
+		}
+	},
+	{
+		description: 'insert 1 & delete.unique random _id',
+		result: [testInstance1],
+		input: {
+			toInsert: [testInstance1],
+			deleteAction: async (collection, inserted) => {
+				await collection.delete.unique(generateHex(32));
 			}
 		}
 	},
@@ -58,6 +94,12 @@ export const TestSuite_FirestoreV2_Delete: Test = {
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>('firestore-deletion-tests');
 		await collection.deleteCollection();
-		await testCase.input.check(collection, testCase.result);
+
+		const toInsert = deepClone(testCase.input.toInsert);
+		const inserted = await collection.insert.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
+
+		await testCase.input.deleteAction(collection, inserted);
+		const remainingDBItems = await collection.queryInstances({where: {}});
+		expect(true).to.eql(compare(sortArray(remainingDBItems.map(removeDBObjectKeys), item => item.stringValue), sortArray(testCase.result, item => item.stringValue)));
 	}
 };
