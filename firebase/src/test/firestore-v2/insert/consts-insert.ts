@@ -1,10 +1,11 @@
 import {compare, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
-import {DB_Type} from './types';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
 import {FB_Type} from '../../firestore/_core/types';
-import {testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from './consts';
+import {DB_Type} from '../_core/types';
+import {testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../_core/consts';
+
 
 export type TestInputValue = PreDB<DB_Type> | PreDB<DB_Type>[];
 export const getSingleItem = (item: TestInputValue): PreDB<DB_Type> => {

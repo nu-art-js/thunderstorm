@@ -2,13 +2,14 @@ import {firestore} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {deepClone, PreDB, ValidationException} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {InsertTest, insertTestCases, InsertTestInput, TestInputValue} from '../_core/consts-insert';
 import {expect} from 'chai';
 import {TestModel} from '@nu-art/ts-common/testing/types';
 import * as chaiAsPromised from 'chai-as-promised';
+import {InsertTest, insertTestCases, InsertTestInput, TestInputValue} from './consts-insert';
 
 const chai = require('chai');
 chai.use(chaiAsPromised);
+
 
 export const TestCases_FB_Insert: InsertTest['testcases'] = [
 	...insertTestCases,

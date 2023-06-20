@@ -1,7 +1,7 @@
 import {firestore} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {deepClone, ValidationException} from '@nu-art/ts-common';
-import {InsertTest, insertTestCases} from '../_core/consts-insert';
+import {InsertTest, insertTestCases} from './consts-insert';
 import {expect} from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 
