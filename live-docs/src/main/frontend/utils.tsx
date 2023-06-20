@@ -51,7 +51,7 @@ export const showEditModalExample = (docKey: string) => {
 	// 	}))
 	// 	.addButton(DialogButton_Save(() => {
 	// 		const liveDoc: Request_UpdateDocument = {key: docKey, document: doc.document};
-	// 		LiveDocsModule.update(liveDoc);
+	// 		LiveDocsModule.upsert(liveDoc);
 	// 		ModuleFE_Dialog.close();
 	// 	}))
 	// 	.setOverlayColor("rgba(102, 255, 255, 0.4)")

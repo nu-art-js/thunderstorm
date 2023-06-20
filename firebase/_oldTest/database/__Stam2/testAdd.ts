@@ -86,7 +86,7 @@ describe('add-data functions check', () => {
 		const data = db.get(obj2.path);
 		expect(data).to.deep.equal(merge(obj1.value, obj2.value));
 	});
-//wrote test and test cases for scenario update
+//wrote test and test cases for scenario upsert
 
 	it('test 4 scenarioEscape ()', async () => {
 

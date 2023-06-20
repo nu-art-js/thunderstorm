@@ -96,7 +96,7 @@ export function checkUpdateOfGroupAccessLevelsProperty() {
         group.accessLevelIds = [];
         const updatedGroup = await ModuleBE_PermissionGroup.upsert(group);
         if (updatedGroup.__accessLevels && updatedGroup.__accessLevels.length) {
-            throw new TestException('Didn\'t update group __accessLevels');
+            throw new TestException('Didn\'t upsert group __accessLevels');
         }
     }).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully'));
     return scenario;
@@ -123,7 +123,7 @@ export function checkUpdateOfGroupAccessLevelsPropertyToHigherValue() {
         group.accessLevelIds.push(higherValueLevel._id);
         const updatedGroup = await ModuleBE_PermissionGroup.upsert(group);
         if (!updatedGroup.__accessLevels || updatedGroup.__accessLevels.length !== 1 || updatedGroup.__accessLevels[0].value !== testLevel2.value) {
-            throw new TestException('Didn\'t update group __accessLevels');
+            throw new TestException('Didn\'t upsert group __accessLevels');
         }
     }).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
     return scenario;
@@ -143,7 +143,7 @@ export function checkPatchOfGroupAccessLevelsProperty() {
         group.accessLevelIds = [];
         const updatedGroup = await ModuleBE_PermissionGroup.patch(group);
         if (updatedGroup.__accessLevels && updatedGroup.__accessLevels.length) {
-            throw new TestException('Didn\'t update group __accessLevels');
+            throw new TestException('Didn\'t upsert group __accessLevels');
         }
     }).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully'));
     return scenario;
@@ -171,7 +171,7 @@ export function checkPatchOfGroupAccessLevelsPropertyToHigherValue() {
         group.accessLevelIds.push(higherValueLevel._id);
         const updatedGroup = await ModuleBE_PermissionGroup.patch(group);
         if (!updatedGroup.__accessLevels || updatedGroup.__accessLevels.length !== 1 || updatedGroup.__accessLevels[0].value !== testLevel2.value) {
-            throw new TestException('Didn\'t update group __accessLevels');
+            throw new TestException('Didn\'t upsert group __accessLevels');
         }
     }).setReadKey(contextKey1).setLabel('Group accessLevelIds has updated successfully with the higher value').expectToFail(ApiException));
     return scenario;
@@ -193,7 +193,7 @@ export function checkGroupAccessLevelsAfterUpdatingLevelDocument() {
         const group = await ModuleBE_PermissionGroup.queryUnique({_id: uniqId1});
 
         if (!group.__accessLevels || group.__accessLevels.length !== 1 || group.__accessLevels[0].value !== newLevelValue) {
-            throw new TestException('Didn\'t update group __accessLevels');
+            throw new TestException('Didn\'t upsert group __accessLevels');
         }
     }).setReadKey(contextKey1).setLabel('Group __accessLevels has updated successfully by updating level document'));
     return scenario;
@@ -216,7 +216,7 @@ export function checkGroupAccessLevelsAfterPatchingLevelDocument() {
         const group = await ModuleBE_PermissionGroup.queryUnique({_id: uniqId1});
 
         if (!group.__accessLevels || group.__accessLevels.length !== 1 || group.__accessLevels[0].value !== newLevelValue) {
-            throw new TestException('Didn\'t update group __accessLevels');
+            throw new TestException('Didn\'t upsert group __accessLevels');
         }
     }).setReadKey(contextKey1).setLabel('Group __accessLevels has updated successfully by patching level document'));
     return scenario;
