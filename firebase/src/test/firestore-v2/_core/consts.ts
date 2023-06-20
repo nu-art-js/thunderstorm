@@ -112,5 +112,3 @@ export const testInstance5: PreDB<DB_Type> = Object.freeze({
 	objectArray: [testItem1, testItem2, testItem3, testItem4, testItem5],
 	nestedObject: {one: testItem2, two: testItem4}
 });
-
-
