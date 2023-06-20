@@ -17,18 +17,10 @@
  * limitations under the License.
  */
 
-import {
-	generateHex,
-	ImplementationMissingException,
-	Module
-} from "@nu-art/ts-common";
-import {
-	Platform_Slack,
-	ReportLogFile,
-	Request_BugReport
-} from "../..";
-import {TicketDetails} from "./ModuleBE_BugReport";
-import {ModuleBE_Slack} from "@nu-art/storm";
+import {generateHex, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {Platform_Slack, ReportLogFile, Request_BugReport} from '../..';
+import {TicketDetails} from './ModuleBE_BugReport';
+import {ModuleBE_Slack} from '@nu-art/slack';
 
 type Config = {
 	channel: string
@@ -38,25 +30,20 @@ export class SlackBugReportIntegrator_Class
 	extends Module<Config> {
 
 	openTicket = async (bugReport: Request_BugReport, logs: ReportLogFile[], reporter?: string): Promise<TicketDetails | undefined> => {
-		if(bugReport.platforms && !bugReport.platforms.includes(Platform_Slack))
+		if (bugReport.platforms && !bugReport.platforms.includes(Platform_Slack))
 			return;
 
 		if (!this.config.channel)
-			throw new ImplementationMissingException("Missing Slack Channel in bug report configurations");
+			throw new ImplementationMissingException('Missing Slack Channel in bug report configurations');
 
 		let description = logs.reduce((carry: string, log: ReportLogFile, i: number) => {
-			return carry + "\n" + `<${log.path}|Click to view logs (${i})>`;
-		}, bugReport.subject + "\n" + bugReport.description);
+			return carry + '\n' + `<${log.path}|Click to view logs (${i})>`;
+		}, bugReport.subject + '\n' + bugReport.description);
 
 		if (reporter)
-			description += "\nReported by: " + reporter;
+			description += '\nReported by: ' + reporter;
 
-		const slackMessage = {
-			text: description,
-			channel: this.config.channel
-		};
-
-		await ModuleBE_Slack.postMessage(slackMessage)
+		await ModuleBE_Slack.postMessage(description, this.config.channel);
 		return {platform: Platform_Slack, issueId: generateHex(32)};
 	};
 }

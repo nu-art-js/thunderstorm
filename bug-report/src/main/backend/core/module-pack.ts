@@ -21,7 +21,7 @@ import {ModuleBE_AdminBR} from '../modules/ModuleBE_AdminBR';
 import {JiraBugReportIntegrator} from '../modules/JiraBugReportIntegrator';
 import {JiraModule} from '@nu-art/jira/backend';
 import {SlackBugReportIntegrator} from '../modules/SlackBugReportIntegrator';
-import {ModuleBE_Slack} from '@nu-art/storm';
+import {ModuleBE_Slack} from '@nu-art/slack';
 
 
 export const ModulePack_Backend_BugReport = [

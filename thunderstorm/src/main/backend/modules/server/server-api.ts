@@ -23,18 +23,19 @@
  * Created by tacb0ss on 11/07/2018.
  */
 import {
+	_keys,
 	BadImplementationException,
 	composeUrl,
-	dispatch_onServerError,
+	currentTimeMillis,
+	dispatch_onApplicationException,
 	isErrorOfType,
 	Logger,
 	LogLevel,
 	MUSTNeverHappenException,
-	ServerErrorSeverity,
-	tsValidate, TypedMap,
+	tsValidate,
+	TypedMap,
 	ValidationException,
-	ValidatorTypeResolver,
-	_keys, currentTimeMillis
+	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 
 import {Stream} from 'stream';
@@ -200,7 +201,6 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			return await response.text(200, toReturn as string);
 		} catch (err: any) {
 			let e: any = err;
-			let severity: ServerErrorSeverity = ServerErrorSeverity.Warning;
 			if (typeof e === 'string')
 				e = new BadImplementationException(`String was thrown: ${e}`);
 
@@ -225,32 +225,8 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			if (!apiException)
 				throw new MUSTNeverHappenException('MUST NEVER REACH HERE!!!');
 
-			if (apiException.responseCode >= 500)
-				severity = ServerErrorSeverity.Error;
-			else if (apiException.responseCode >= 400)
-				severity = ServerErrorSeverity.Warning;
-
-			switch (apiException.responseCode) {
-				case 401:
-					severity = ServerErrorSeverity.Debug;
-					break;
-
-				case 404:
-					severity = ServerErrorSeverity.Info;
-					break;
-
-				case 403:
-					severity = ServerErrorSeverity.Warning;
-					break;
-
-				case 500:
-					severity = ServerErrorSeverity.Critical;
-					break;
-			}
-
-			const message = await HttpServer.errorMessageComposer(requestData, apiException);
 			try {
-				await dispatch_onServerError.dispatchModuleAsync(severity, HttpServer, message);
+				await dispatch_onApplicationException.dispatchModuleAsync(e, HttpServer, requestData);
 			} catch (e: any) {
 				this.logError('Error while handing server error', e);
 			}

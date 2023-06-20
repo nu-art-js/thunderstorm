@@ -1,4 +1,4 @@
-import {TestSuite_SlackMessage} from './slack';
+import {TestSuite_SlackServerAPIError} from './slack';
 import {ConfigType_ModuleBE_Slack, ModuleBE_Slack} from '../../main';
 import {ModuleManagerTester, testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {Second} from '@nu-art/ts-common';
@@ -16,5 +16,5 @@ const fullConfig = {
 
 describe('Slack Module', () => {
 	new ModuleManagerTester().setConfig(fullConfig).addModulePack([ModuleBE_Slack]).build();
-	testSuiteTester(TestSuite_SlackMessage);
+	testSuiteTester(TestSuite_SlackServerAPIError);
 });
