@@ -19,20 +19,17 @@
 import {
 	BadImplementationException,
 	batchAction,
+	compare,
 	currentTimeMillis,
 	DB_Object,
 	exists,
-	generateHex,
+	generateHex, MUSTNeverHappenException,
 	PreDB,
 	StaticLogger,
 	Subset,
 	UniqueId
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -42,6 +39,7 @@ import {firestore} from 'firebase-admin';
 import DocumentReference = firestore.DocumentReference;
 
 export const dbIdLength = 32;
+export const _EmptyQuery = Object.freeze({where: {}});
 
 type BatchOpMethod = 'delete' | 'set' | 'create' | 'update';
 // @ts-ignore
@@ -141,12 +139,16 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		await this.assertUniqueness(dbInstance, transaction, request);
 	}
 
-	delete = {
-		unique: async (_id: UniqueId) => await this.getDocWrapper(_id).delete(),
-		item: async (item: PreDB<Type>) => await this.getDocWrapperFromItem(item).delete(),
-		all: async (_ids: UniqueId[]) => await this.deleteBulk(_ids.map(_id => this.getDocWrapper(_id))),
-		allItems: async (items: PreDB<Type>[]) => await this.deleteBulk(items.map(_item => this.getDocWrapperFromItem(_item)))
-	};
+	protected _deleteUnique = async (_id: UniqueId) => {
+		if (!_id)
+			throw new MUSTNeverHappenException('No _id was passed!');
+		await this.getDocWrapper(_id).delete()
+	}
+
+	protected async _deleteQuery(query: FirestoreQuery<Type>) {
+		if (!exists(query) || compare(query, _EmptyQuery))
+			throw new MUSTNeverHappenException('An empty query was passed to delete.query!')
+	}
 
 	protected async deleteBulk(docs: DocWrapperV2<Type>[]) {
 		await this._deleteBulkRefs(docs.map(_doc => _doc.ref));
@@ -162,6 +164,14 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const refs = await this.collection.listDocuments();
 		await this._deleteBulkRefs(refs);
 	}
+
+	delete = {
+		unique: this._deleteUnique,
+		item: async (item: PreDB<Type>) => await this.getDocWrapperFromItem(item).delete(),
+		all: async (_ids: UniqueId[]) => await this.deleteBulk(_ids.map(_id => this.getDocWrapper(_id))),
+		allItems: async (items: PreDB<Type>[]) => await this.deleteBulk(items.map(_item => this.getDocWrapperFromItem(_item))),
+		query: this._deleteQuery
+	};
 
 	/**
 	 * Get the db objects from the query
