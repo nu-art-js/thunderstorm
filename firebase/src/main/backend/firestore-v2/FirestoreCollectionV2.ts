@@ -190,7 +190,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot[];
 	}
 
-	private async _update(_id: UniqueId, updateData: UpdateData<Type>) {
+	async update(_id: UniqueId, updateData: UpdateData<Type>) {
 		const doc = this.getDocWrapper(_id);
 
 		delete updateData._id;
@@ -216,7 +216,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		if (!item._id)
 			return await this.insert.item(item as PreDB<Type>);
 
-		return await this._update(item._id as UniqueId, item as UpdateData<Type>);
+		return await this.update(item._id as UniqueId, item as UpdateData<Type>);
 	}
 
 	/**
