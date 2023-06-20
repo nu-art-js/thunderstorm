@@ -25,7 +25,8 @@ import {
 	generateHex,
 	PreDB,
 	StaticLogger,
-	Subset, UniqueId
+	Subset,
+	UniqueId
 } from '@nu-art/ts-common';
 import {
 	FirestoreType_Collection,
@@ -104,7 +105,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		item: async (item: PreDB<Type>) => await this.getDocWrapperFromItem(item).delete(),
 		all: async (_ids: UniqueId[]) => await this.deleteBulk(_ids.map(_id => this.getDocWrapper(_id))),
 		allItems: async (items: PreDB<Type>[]) => await this.deleteBulk(items.map(_item => this.getDocWrapperFromItem(_item)))
-	}
+	};
 
 	/**
 	 * Get the db objects from the query
@@ -155,17 +156,21 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	}
 
 	async insertAll(preDBInstances: PreDB<Type>[]) {
-		await this.insertBulk(preDBInstances);
+		return await this.insertBulk(preDBInstances);
 	}
 
 	protected async insertBulk(preDBInstances: PreDB<Type>[]) {
 		const bulk = this.wrapper.firestore.bulkWriter();
+		const toReturnObjects: Type[] = [];
 
-		return await preDBInstances.reduce((_bulk, instance) => {
+		await preDBInstances.reduce((_bulk, instance) => {
 			const dbInstance = this.prepareObjForInsert(instance);
 			_bulk.set(this.getDocWrapperFromItem(instance).ref, dbInstance);
+			toReturnObjects.push(dbInstance);
 			return _bulk;
 		}, bulk).flush();
+
+		return toReturnObjects;
 	}
 
 	async deleteCollection() {
