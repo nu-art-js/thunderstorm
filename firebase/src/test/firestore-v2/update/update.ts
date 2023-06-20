@@ -17,7 +17,7 @@ type Input = {
 type Test = TestSuite<Input, () => PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
 type DeepPartial<T> = Partial<{ [P in keyof T]: DeepPartial<T[P]> }>;
 
-const updatedStringValue = 'test update';
+export const updatedStringValue = 'test update';
 
 export const TestCases_FB_Update: Test['testcases'] = [
 	{

@@ -4,6 +4,7 @@ import {TestSuite_FirestoreV2_Delete} from './delete/delete';
 import {TestSuite_FirestoreV2_InsertAll} from './insert/insert-all';
 import {TestSuite_FirestoreV2_Update} from './update/update';
 import {TestSuite_FirestoreV2_Query} from './query/query';
+import {TestSuite_FirestoreV2_Upsert} from "./upsert/upsert";
 
 describe('Firestore v2 - All Tests', () => {
 	testSuiteTester(TestSuite_FirestoreV2_Insert);
@@ -11,4 +12,5 @@ describe('Firestore v2 - All Tests', () => {
 	testSuiteTester(TestSuite_FirestoreV2_Delete);
 	testSuiteTester(TestSuite_FirestoreV2_Query);
 	testSuiteTester(TestSuite_FirestoreV2_Update);
+	testSuiteTester(TestSuite_FirestoreV2_Upsert);
 });
