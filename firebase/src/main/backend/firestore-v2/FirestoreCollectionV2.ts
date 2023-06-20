@@ -32,7 +32,11 @@ import {
 	UniqueId,
 	ValidationException
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -45,9 +49,6 @@ import FieldValue = firestore.FieldValue;
 
 export const dbIdLength = 32;
 export const _EmptyQuery = Object.freeze({where: {}});
-
-// type BatchOpMethod = 'delete' | 'set' | 'create' | 'update';
-// type BulkOpMethod = 'delete' | 'set' | 'create' | 'update';
 
 /**
  * FirestoreCollection is a class for handling Firestore collections. It takes in the name, FirestoreWrapperBE instance, and uniqueKeys as parameters.
@@ -206,7 +207,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		_keys(updateData).forEach(_key => {
 			// @ts-ignore
 			return updateData[_key] ??= FieldValue.delete();
-		})
+		});
 	}
 
 	private async assertUpdateData(updateData: UpdateData<Type>) {
@@ -326,8 +327,8 @@ export class DocWrapperV2<T extends DB_Object> {
 
 	update = async (updateData: UpdateData<T>, transaction?: Transaction) => {
 		if (transaction)
-			transaction.update(this.ref, updateData)
+			transaction.update(this.ref, updateData);
 		else
-			await this.ref.update(updateData)
-	}
+			await this.ref.update(updateData);
+	};
 }

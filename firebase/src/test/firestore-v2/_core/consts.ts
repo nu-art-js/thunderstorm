@@ -20,6 +20,7 @@ import {DB_Type, FB_ArrayType} from './types';
 import {generateHex, PreDB} from '@nu-art/ts-common';
 import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend';
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
+import {TestInputValue} from '../insert/consts';
 
 
 const config = {
@@ -28,6 +29,10 @@ const config = {
 };
 ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
 export const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();
+
+export const getSingleItem = (item: TestInputValue): PreDB<DB_Type> => {
+	return Array.isArray(item) ? item[0] : item;
+};
 
 export const testString1 = 'string-1';
 export const testString2 = 'string-2';
