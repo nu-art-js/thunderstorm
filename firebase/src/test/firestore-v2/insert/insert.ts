@@ -5,17 +5,16 @@ import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/Firestor
 import {expect} from 'chai';
 import {TestModel} from '@nu-art/ts-common/testing/types';
 import * as chaiAsPromised from 'chai-as-promised';
-import {InsertTest, insertTestCases, InsertTestInput, TestInputValue} from './consts-insert';
+import {InsertTest, insertTestCases, InsertTestInput, TestInputValue} from './consts';
 
 const chai = require('chai');
 chai.use(chaiAsPromised);
-
 
 export const TestCases_FB_Insert: InsertTest['testcases'] = [
 	...insertTestCases,
 ];
 
-export const TestSuit_FirestoreV2_Insert: InsertTest = {
+export const TestSuite_FirestoreV2_Insert: InsertTest = {
 	label: 'Firestore insert tests',
 	testcases: TestCases_FB_Insert,
 	processor: async (testCase) => {

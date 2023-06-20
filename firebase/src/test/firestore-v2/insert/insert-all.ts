@@ -1,7 +1,7 @@
 import {firestore} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {deepClone, ValidationException} from '@nu-art/ts-common';
-import {InsertTest, insertTestCases} from './consts-insert';
+import {InsertTest, insertTestCases} from './consts';
 import {expect} from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 
@@ -12,7 +12,7 @@ export const TestCases_FB_InsertAll: InsertTest['testcases'] = [
 	...insertTestCases,
 ];
 
-export const TestSuit_FirestoreV2_InsertAll: InsertTest = {
+export const TestSuite_FirestoreV2_InsertAll: InsertTest = {
 	label: 'Firestore insertAll tests',
 	testcases: TestCases_FB_InsertAll,
 	processor: async (testCase) => {
