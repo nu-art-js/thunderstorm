@@ -29,7 +29,7 @@ export const TestCases_FB_Insert: Test['testcases'] = [
 ];
 
 export const TestSuit_FirestoreV2_Insert: Test = {
-	label: 'Firestore insertion tests',
+	label: 'Firestore insert.item tests',
 	testcases: TestCases_FB_Insert,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>('firestore-insertion-tests');
@@ -38,7 +38,7 @@ export const TestSuit_FirestoreV2_Insert: Test = {
 		// await ref.set(testCase.input.value as PreDB<DB_Type>);
 		const toInsert = deepClone(testCase.input.value);
 
-		await collection.insert(toInsert);
+		await collection.insert.item(toInsert);
 
 		await testCase.input.check(collection, testCase.result);
 	}

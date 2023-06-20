@@ -17,7 +17,7 @@ type Test = TestSuite<Input, PreDB<DB_Type>[] | undefined>;
 
 export const TestCases_FB_InsertAll: Test['testcases'] = [
 	{
-		description: 'InsertAll - one it1111em',
+		description: 'insert.all - one item',
 		result: [testInstance1],
 		input: {
 			value: [testInstance1],
@@ -29,7 +29,7 @@ export const TestCases_FB_InsertAll: Test['testcases'] = [
 		}
 	},
 	{
-		description: 'InsertAll - two items',
+		description: 'insert.all - two items',
 		result: [testInstance1, testInstance2],
 		input: {
 			value: [testInstance1, testInstance2],
@@ -41,7 +41,7 @@ export const TestCases_FB_InsertAll: Test['testcases'] = [
 		}
 	},
 	{
-		description: 'InsertAll - five items',
+		description: 'insert.all - five items',
 		result: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
@@ -53,7 +53,7 @@ export const TestCases_FB_InsertAll: Test['testcases'] = [
 		}
 	},
 	{
-		description: 'Insert & Query - two same items',
+		description: 'insert & query - two same items',
 		result: [testInstance1, testInstance1],
 		input: {
 			value: [testInstance1, testInstance1],
@@ -70,13 +70,13 @@ export const TestCases_FB_InsertAll: Test['testcases'] = [
 ];
 
 export const TestSuit_FirestoreV2_InsertAll: Test = {
-	label: 'Firestore insertion tests',
+	label: 'Firestore insert.all tests',
 	testcases: TestCases_FB_InsertAll,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>('firestore-insertion-tests');
 		await collection.deleteCollection();
 		const toInsert = deepClone(testCase.input.value);
-		await collection.insertAll(Array.isArray(toInsert) ? toInsert : [toInsert]);
+		await collection.insert.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
 		await testCase.input.check(collection, testCase.result);
 	}
 };
