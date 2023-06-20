@@ -2,8 +2,10 @@ import {expect} from 'chai';
 import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {compare, deepClone, generateHex, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
-import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
+import {compare, deepClone, generateHex, isErrorOfType, MUSTNeverHappenException, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
+import {_EmptyQuery, FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
+import * as chai from "chai";
+chai.use(require('chai-as-promised'))
 
 
 type Input = {
@@ -83,6 +85,56 @@ export const TestCases_FB_Delete: Test['testcases'] = [
 			toInsert: [testInstance1],
 			deleteAction: async (collection, inserted) => {
 				await collection.delete.unique(generateHex(32));
+			}
+		}
+	},
+	{
+		description: 'insert 1 & delete.unique empty string',
+		result: [testInstance1],
+		input: {
+			toInsert: [testInstance1],
+			deleteAction: async (collection, inserted) => {
+				await expect(collection.delete.unique('')).to.be.rejectedWith(MUSTNeverHappenException);
+			}
+		}
+	},
+	{
+		description: 'insert 3 & delete.all empty array',
+		result: [testInstance1, testInstance2, testInstance3],
+		input: {
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			deleteAction: async (collection, inserted) => {
+				await collection.delete.all([]);
+			}
+		}
+	},
+	{
+		description: 'insert 3 & delete.allItems empty array',
+		result: [testInstance1, testInstance2, testInstance3],
+		input: {
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			deleteAction: async (collection, inserted) => {
+				await collection.delete.allItems([]);
+			}
+		}
+	},
+	{
+		description: 'delete.all empty query',
+		result: [testInstance1, testInstance2, testInstance3],
+		input: {
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			deleteAction: async (collection, inserted) => {
+				await expect(collection.delete.query({where: {}})).to.be.rejectedWith(MUSTNeverHappenException);
+			}
+		}
+	},
+	{
+		description: 'delete.allItems empty query',
+		result: [testInstance1, testInstance2, testInstance3],
+		input: {
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			deleteAction: async (collection, inserted) => {
+				await expect(collection.delete.query({where: {}})).to.be.rejectedWith(MUSTNeverHappenException);
 			}
 		}
 	},
