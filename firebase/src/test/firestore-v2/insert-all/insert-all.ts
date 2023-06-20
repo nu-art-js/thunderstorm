@@ -1,82 +1,34 @@
-import {expect} from 'chai';
-import {firestore, testInstance1, testInstance2} from '../_core/consts';
+import {firestore} from '../_core/consts';
 import {DB_Type} from '../_core/types';
-import {TestSuite} from '@nu-art/ts-common/test-index';
-import {compare, deepClone, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
-import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {testInstance3, testInstance4, testInstance5} from '../../firestore/_core/consts';
-import {FB_Type} from '../../firestore/_core/types';
+import {deepClone, ValidationException} from '@nu-art/ts-common';
+import {InsertTest, insertTestCases} from '../_core/consts-insert';
+import {expect} from 'chai';
+import * as chaiAsPromised from 'chai-as-promised';
 
+const chai = require('chai');
+chai.use(chaiAsPromised);
 
-type Input = {
-	value: PreDB<DB_Type> | PreDB<DB_Type>[];
-	check: (collection: FirestoreCollectionV2<DB_Type>, expectedItem?: PreDB<DB_Type>[]) => Promise<void>
-}
-
-type Test = TestSuite<Input, PreDB<DB_Type>[] | undefined>;
-
-export const TestCases_FB_InsertAll: Test['testcases'] = [
-	{
-		description: 'insert.all - one item',
-		result: [testInstance1],
-		input: {
-			value: [testInstance1],
-			check: async (collection, expectedResult) => {
-				const items = await collection.queryInstances({where: {}});
-				expect(items.length).to.eql(1);
-				expect(true).to.eql(compare([testInstance1], expectedResult));
-			}
-		}
-	},
-	{
-		description: 'insert.all - two items',
-		result: [testInstance1, testInstance2],
-		input: {
-			value: [testInstance1, testInstance2],
-			check: async (collection, expectedResult) => {
-				const items = await collection.queryInstances({where: {}});
-				expect(items.length).to.eql(2);
-				expect(true).to.eql(compare([testInstance1, testInstance2], expectedResult));
-			}
-		}
-	},
-	{
-		description: 'insert.all - five items',
-		result: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
-		input: {
-			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
-			check: async (collection, expectedResult) => {
-				const items = await collection.queryInstances({where: {}});
-				expect(items.length).to.eql(5);
-				expect(true).to.eql(compare([testInstance1, testInstance2, testInstance3, testInstance4, testInstance5], expectedResult));
-			}
-		}
-	},
-	{
-		description: 'insert & query - two same items',
-		result: [testInstance1, testInstance1],
-		input: {
-			value: [testInstance1, testInstance1],
-			check: async (collection, expectedResult) => {
-				const items = await collection.queryInstances({where: {}});
-
-				expect(items.length).to.eql(2);
-
-				const dbItems=items.map(removeDBObjectKeys)
-				expect(true).to.eql(compare(dbItems, expectedResult as FB_Type[]));
-			}
-		}
-	}
+export const TestCases_FB_InsertAll: InsertTest['testcases'] = [
+	...insertTestCases,
 ];
 
-export const TestSuit_FirestoreV2_InsertAll: Test = {
-	label: 'Firestore insert.all tests',
+export const TestSuit_FirestoreV2_InsertAll: InsertTest = {
+	label: 'Firestore insertAll tests',
 	testcases: TestCases_FB_InsertAll,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>('firestore-insertion-tests');
 		await collection.deleteCollection();
+
 		const toInsert = deepClone(testCase.input.value);
+
+		if (testCase.input.expectInsertToThrow) {
+			await expect(collection.insert.all(Array.isArray(toInsert) ? toInsert : [toInsert])).to.be.rejectedWith(ValidationException);
+			return;
+		}
+
+
 		await collection.insert.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
-		await testCase.input.check(collection, testCase.result);
+
+		await testCase.input.check!(collection, testCase.result);
 	}
 };

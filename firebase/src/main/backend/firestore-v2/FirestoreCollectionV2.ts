@@ -27,7 +27,8 @@ import {
 	PreDB,
 	StaticLogger,
 	Subset,
-	UniqueId
+	UniqueId,
+	ValidationException
 } from '@nu-art/ts-common';
 import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
@@ -126,6 +127,9 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	prepareObjForInsert(preDBObject: PreDB<Type>): Type {
 		const now = currentTimeMillis();
+		if (preDBObject._id)
+			throw new ValidationException('Cannot insert objects that already have _id!', preDBObject);
+
 		preDBObject._id = generateId();
 		preDBObject.__updated = preDBObject.__created = now;
 
