@@ -589,7 +589,7 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 * Upserts the `dbInstances` using the `transaction` object.
 	 *
 	 * @param transaction - The transaction object.
-	 * @param instances - The instances to update.
+	 * @param instances - The instances to upsert.
 	 * @param request - The request in order to possibly obtain more info.
 	 *
 	 * @throws `BadImplementationException` when the instances are more than 500.

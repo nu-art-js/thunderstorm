@@ -17,6 +17,7 @@
  */
 
 import {
+	_keys,
 	BadImplementationException,
 	batchAction,
 	compare,
@@ -31,11 +32,7 @@ import {
 	UniqueId,
 	ValidationException
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -43,13 +40,14 @@ import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {FirestoreTransaction} from '../firestore/FirestoreTransaction';
 import {firestore} from 'firebase-admin';
 import DocumentReference = firestore.DocumentReference;
+import UpdateData = firestore.UpdateData;
+import FieldValue = firestore.FieldValue;
 
 export const dbIdLength = 32;
 export const _EmptyQuery = Object.freeze({where: {}});
 
-type BatchOpMethod = 'delete' | 'set' | 'create' | 'update';
-// @ts-ignore
-type BulkOpMethod = 'delete' | 'set' | 'create' | 'update';
+// type BatchOpMethod = 'delete' | 'set' | 'create' | 'update';
+// type BulkOpMethod = 'delete' | 'set' | 'create' | 'update';
 
 /**
  * FirestoreCollection is a class for handling Firestore collections. It takes in the name, FirestoreWrapperBE instance, and uniqueKeys as parameters.
@@ -192,6 +190,35 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot[];
 	}
 
+	private async _update(_id: UniqueId, updateData: UpdateData<Type>) {
+		const doc = this.getDocWrapper(_id);
+
+		delete updateData._id;
+		delete updateData.__created;
+		updateData.__updated = currentTimeMillis();
+
+		await this.preUpdateData(updateData);
+		await this.assertUpdateData(updateData);
+		return doc.update(updateData);
+	}
+
+	private async preUpdateData(updateData: UpdateData<Type>) {
+		_keys(updateData).forEach(_key => {
+			// @ts-ignore
+			return updateData[_key] ??= FieldValue.delete();
+		})
+	}
+
+	private async assertUpdateData(updateData: UpdateData<Type>) {
+	}
+
+	protected async _upsertItem(item: PreDB<Type> | UpdateData<Type>) {
+		if (!item._id)
+			return await this.insert.item(item as PreDB<Type>);
+
+		return await this._update(item._id as UniqueId, item as UpdateData<Type>);
+	}
+
 	/**
 	 * Get DocWrappers per the db objects from the query
 	 * @param ourQuery
@@ -230,6 +257,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			return ((await myQuery.get()).docs as FirestoreType_DocumentSnapshot[]).map(snapshot => snapshot.data() as Type);
 		},
 	};
+
 	insert = {
 		item: async (item: PreDB<Type>) => await this._insertItem(item),
 		all: async (items: PreDB<Type>[]) => await this._insertBulk(items),
@@ -277,7 +305,7 @@ export class DocWrapperV2<T extends DB_Object> {
 	};
 
 	fromCache = () => {
-		this.data;
+		return this.data;
 	};
 
 	get = async (transaction?: Transaction) => {
@@ -295,4 +323,11 @@ export class DocWrapperV2<T extends DB_Object> {
 
 		return instance as T;
 	};
+
+	update = async (updateData: UpdateData<T>, transaction?: Transaction) => {
+		if (transaction)
+			transaction.update(this.ref, updateData)
+		else
+			await this.ref.update(updateData)
+	}
 }

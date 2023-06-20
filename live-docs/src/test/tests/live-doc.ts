@@ -37,7 +37,7 @@ export function add_Get_Update_Undo_Redo_Doc() {
 	const _auditBy = auditBy('testAgent');
 	const document = 'My very first liveDoc (well, not my very first indeed)';
 	const documentUpdate = document + '. and now it\'s updated';
-	const scenario = __scenario('Add, get, update, undo & redo updates in liveDoc');
+	const scenario = __scenario('Add, get, upsert, undo & redo updates in liveDoc');
 
 	scenario.add(cleanup());
 	scenario.add(__custom(async () => {
@@ -60,7 +60,7 @@ export function add_Get_Update_Undo_Redo_Doc() {
 
 	scenario.add(__custom(async () => {
 		await ModuleBE_LiveDocs.changeHistory(_auditBy, liveDocKey, 'undo');
-	}).setLabel('undo update'));
+	}).setLabel('undo upsert'));
 
 	scenario.add(__custom(async () => {
 		const liveDoc = await ModuleBE_LiveDocs.getLiveDoc(liveDocKey);
@@ -74,7 +74,7 @@ export function add_Get_Update_Undo_Redo_Doc() {
 
 	scenario.add(__custom(async () => {
 		await ModuleBE_LiveDocs.changeHistory(_auditBy, liveDocKey, 'redo');
-	}).setLabel('redo update'));
+	}).setLabel('redo upsert'));
 
 	scenario.add(__custom(async () => {
 		const liveDoc = await ModuleBE_LiveDocs.getLiveDoc(liveDocKey);
