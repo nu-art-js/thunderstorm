@@ -40,7 +40,8 @@
   },
   "devDependencies": {
     "@types/minimatch": "^5.1.2",
-    "@types/node-forge": "^1.0.0"
+    "@types/node-forge": "^1.0.0",
+    "@types/qs": "latest"
   },
   "_moduleAliases": {
     "@main": "dist/main/ts",

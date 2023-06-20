@@ -34,7 +34,15 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
     "@slack/web-api": "^5.1.0",
-    "@slack/events-api": "^2.3.0"
+    "@slack/events-api": "^2.3.0",
+    "firebase": "$FIREBASE_PKG_VERSION",
+    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
+    "fs": "0.0.1-security",
+    "google-auth-library": "^6.0.6",
+    "moment": "^2.24.0",
+    "request": "^2.88.0"
   }
 }

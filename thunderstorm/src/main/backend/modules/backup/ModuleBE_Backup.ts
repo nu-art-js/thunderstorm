@@ -2,7 +2,6 @@ import {
 	__stringify,
 	_logger_logException,
 	currentTimeMillis,
-	dispatch_onServerError,
 	Dispatcher,
 	flatArray,
 	Format_YYYYMMDD_HHmmss,
@@ -10,7 +9,6 @@ import {
 	generateHex,
 	Minute,
 	Module,
-	ServerErrorSeverity,
 	TS_Object
 } from '@nu-art/ts-common';
 import {ApiDef_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared';
@@ -20,6 +18,7 @@ import {OnFirestoreBackupSchedulerAct, OnModuleCleanup} from './FirestoreBackupS
 import {FilterKeys, FirestoreQuery} from '@nu-art/firebase';
 import {BackupDoc} from '../../../shared/backup-types';
 import {addRoutes} from '../ApiModule';
+import {ApiException} from '../../exceptions';
 
 
 export type FirestoreBackupDetails<T extends TS_Object> = {
@@ -105,8 +104,7 @@ class ModuleBE_Backup_Class
 		} catch (e: any) {
 			this.logWarning(`modules cleanup has failed with error`, e);
 			const errorMessage = `modules cleanup has failed with error\nError: ${_logger_logException(e)}`;
-
-			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, {message:errorMessage});
+			throw new ApiException(500, errorMessage, e);
 		}
 
 		const backups: FirestoreBackupDetails<any>[] = this.getBackupDetails();
@@ -165,8 +163,7 @@ class ModuleBE_Backup_Class
 			} catch (e: any) {
 				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error`, e);
 				const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backupItem, true)}\nError: ${_logger_logException(e)}`;
-
-				await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, {message:errorMessage});
+				throw new ApiException(500, errorMessage, e);
 			}
 		}));
 	};

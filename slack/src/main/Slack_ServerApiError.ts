@@ -19,12 +19,22 @@
 import {
 	ErrorMessage,
 	Module,
-	OnApplicationError,
 	ServerErrorSeverity,
-	ServerErrorSeverity_Ordinal
+	ServerErrorSeverity_Ordinal,
+	CustomException,
+	BadImplementationException,
+	ThisShouldNotHappenException
 } from '@nu-art/ts-common';
 import {ModuleBE_Slack, ThreadPointer} from './ModuleBE_Slack';
-
+import {ChatPostMessageArguments} from '@slack/web-api';
+import {ApiException} from '@nu-art/thunderstorm/backend';
+import {
+	Composer_ApiException,
+	Composer_BadImplementationException,
+	Composer_NotificationText,
+	Composer_ThisShouldNotHappenException
+} from './composers-and-builders/exception-message-composer';
+import {SlackBuilder_Divider, SlackBuilder_TextSection, SlackBuilder_TextSectionWithTitle} from './composers-and-builders/slack-message-builder';
 
 type Config = {
 	exclude: string[]
@@ -32,8 +42,7 @@ type Config = {
 }
 
 export class Slack_ServerApiError_Class
-	extends Module<Config>
-	implements OnApplicationError {
+	extends Module<Config> {
 
 	constructor() {
 		super();
@@ -56,13 +65,51 @@ export class Slack_ServerApiError_Class
 		}
 	}
 
+	public composeSlackStructuredMessage = (exception: CustomException, channel?: string): ChatPostMessageArguments => {
+		let dataMessage = `No message composer defined for type ${exception.exceptionType}`;
+
+		if (exception.isInstanceOf(ApiException))
+			dataMessage = Composer_ApiException(exception as ApiException);
+		else if (exception.isInstanceOf(BadImplementationException))
+			dataMessage = Composer_BadImplementationException(exception);
+		else if (exception.isInstanceOf(ThisShouldNotHappenException))
+			dataMessage = Composer_ThisShouldNotHappenException(exception);
+
+		return {
+			text: Composer_NotificationText(exception),
+			channel: channel!,
+			blocks: SlackBuilder_TextSectionWithTitle(':octagonal_sign:  *API Error*', dataMessage)
+		};
+	};
+
+	async __processExceptionError(errorLevel: ServerErrorSeverity, exception: CustomException) {
+		if (ServerErrorSeverity_Ordinal.indexOf(errorLevel) < ServerErrorSeverity_Ordinal.indexOf(this.config.minLevel))
+			return;
+
+		const message = this.composeSlackStructuredMessage(exception);
+		const thread = await ModuleBE_Slack.postStructuredMessage(message);
+		if (!thread)
+			return;
+
+		//Send a full stack reply in thread
+		const stackSection: ChatPostMessageArguments = {
+			blocks: [
+				SlackBuilder_TextSection(''),
+				SlackBuilder_Divider(),
+				SlackBuilder_TextSection(`\`\`\`${exception.stack}\`\`\``),
+			]
+		} as ChatPostMessageArguments;
+		if (stackSection)
+			await ModuleBE_Slack.postStructuredMessage(stackSection, thread);
+	}
+
 	private sendMessage(message: string, threadPointer?: ThreadPointer) {
 		for (const key of this.config.exclude || []) {
 			if (message.includes(key))
 				return;
 		}
 
-		return ModuleBE_Slack.postMessage(message, threadPointer);
+		return ModuleBE_Slack.postMessage(message, undefined, threadPointer);
 	}
 }
 

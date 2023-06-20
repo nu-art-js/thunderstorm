@@ -21,8 +21,8 @@
  * Created by AlanBen on 29/08/2019.
  */
 
-import {currentTimeMillis, ImplementationMissingException, Minute, Module} from '@nu-art/ts-common';
-import {WebClient, WebClientOptions, WebAPICallResult, ChatPostMessageArguments} from '@slack/web-api';
+import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module, PartialProperties} from '@nu-art/ts-common';
+import {ChatPostMessageArguments, WebAPICallResult, WebClient, WebClientOptions} from '@slack/web-api';
 
 
 interface ChatPostMessageResult
@@ -40,6 +40,8 @@ export type ConfigType_ModuleBE_Slack = {
 	throttlingTime?: number
 	slackConfig?: Partial<WebClientOptions>
 };
+
+export type PreSendSlackStructuredMessage = PartialProperties<ChatPostMessageArguments, 'channel' | 'text'>
 
 type _SlackMessage = {
 	text: string
@@ -76,40 +78,43 @@ export class ModuleBE_Slack_Class
 			});
 	}
 
-	public async postMessage(slackMessage: SlackMessage, messageId?: ThreadPointer) {
-		const message: SlackMessage = typeof slackMessage === 'string' ? {text: slackMessage, channel: this.config.defaultChannel} : slackMessage;
-		message.channel ??= this.config.defaultChannel;
+	public async postMessage(text: string, channel?: string, thread?: ThreadPointer) {
+		const message: ChatPostMessageArguments = {
+			text,
+			channel: channel!,
+		};
 
-		const time = this.messageMap[message.text];
+		//Block same message on throttling time
+		const time = this.messageMap[md5(message)];
 		if (time && currentTimeMillis() - time < (this.config.throttlingTime || Minute))
 			return;
 
-		// try {
-		return await this.postMessageImpl(message, messageId);
-		// } catch (e: any) {
-		// 	this.logError(`Error while sending a message to channel: ${message.channel}\n`, e);
-		// }
+		//Post and return thread
+		return await this.postMessageImpl(message, thread);
 	}
 
-	private async postMessageImpl(message: _SlackMessage, threadPointer?: ThreadPointer): Promise<ThreadPointer> {
-		let res: ChatPostMessageResult;
-		if (threadPointer) {
-			const reply = {...message, thread_ts: threadPointer.ts};
-			this.logDebug('sending slack reply: ', reply);
-			res = await this.web.chat.postMessage(reply as ChatPostMessageArguments) as ChatPostMessageResult;
-		} else {
-			this.logDebug('sending slack message: ', message);
-			res = await this.web.chat.postMessage(message as ChatPostMessageArguments) as ChatPostMessageResult;
-		}
-		this.messageMap[message.text] = currentTimeMillis();
+	public async postStructuredMessage(message: PreSendSlackStructuredMessage, thread?: ThreadPointer) {
+		message.channel ??= this.config.defaultChannel;
+		message.text ??= generateHex(8);
+
+		const time = this.messageMap[message.text as string];
+		if (time && currentTimeMillis() - time < (this.config.throttlingTime || Minute))
+			return;
+
+		return await this.postMessageImpl(message as ChatPostMessageArguments, thread);
+	}
+
+	private async postMessageImpl(message: ChatPostMessageArguments, threadPointer?: ThreadPointer): Promise<ThreadPointer> {
+		if (threadPointer)
+			message.thread_ts = threadPointer.ts;
+		this.logDebug(`Sending message in ${!!threadPointer ? 'thread' : 'channel'}`, message);
+		const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
+
+		//Add message to map
+		this.messageMap[md5(message)] = currentTimeMillis();
 
 		this.logDebug(`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);
-
 		return {ts: res.ts, channel: res.channel};
-	}
-
-	public async postStructuredMessage(message: any) {
-
 	}
 }
 
