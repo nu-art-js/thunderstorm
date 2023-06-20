@@ -213,7 +213,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private async assertUpdateData(updateData: UpdateData<Type>) {
 	}
 
-	protected async _upsertItem(item: PreDB<Type> | UpdateData<Type>) {
+	async upsert(item: PreDB<Type> | UpdateData<Type>) {
 		if (!item._id)
 			return await this.insert.item(item as PreDB<Type>);
 

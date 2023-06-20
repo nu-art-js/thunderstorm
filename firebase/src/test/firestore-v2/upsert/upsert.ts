@@ -1,10 +1,11 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {firestore} from '../_core/consts';
+import {firestore, testInstance1} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {compare, deepClone, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
+import {updatedStringValue} from "../update/update";
 
 chai.use(require('chai-as-promised'))
 
@@ -16,7 +17,35 @@ type Input = {
 
 type Test = TestSuite<Input, () => PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
 
-export const TestCases_FB_Upsert: Test['testcases'] = [];
+export const TestCases_FB_Upsert: Test['testcases'] = [
+	{
+		description: 'upsert new item',
+		result: () => {
+			return [deepClone(testInstance1)];
+		},
+		input: {
+			toInsert: [],
+			upsertAction: async (collection, inserted) => {
+				await collection.upsert(deepClone(testInstance1));
+			}
+		}
+	},
+	{
+		description: 'upsert existing item',
+		result: () => {
+			const _instance = deepClone(testInstance1);
+			_instance.stringValue = updatedStringValue;
+			return [_instance];
+		},
+		input: {
+			toInsert: [testInstance1],
+			upsertAction: async (collection, inserted) => {
+				inserted[0].stringValue = updatedStringValue;
+				await collection.upsert(inserted[0]);
+			}
+		}
+	},
+];
 
 export const TestSuite_FirestoreV2_Upsert: Test = {
 	label: 'Firestore upsert tests',
