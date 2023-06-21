@@ -66,6 +66,8 @@ export type ApiStruct_DBApiGenIDB<DBType extends DB_Object, Ks extends keyof DBT
 		delete: QueryApi<DBType, DB_BaseObject>,
 		deleteQuery: BodyApi<DBType[], FirestoreQuery<DBType>>,
 		deleteAll: QueryApi<DBType[]>,
+		hardDeleteUnique: QueryApi<DBType, DB_BaseObject>,
+		hardDeleteAll: QueryApi<DBType[]>,
 		upgradeCollection: BodyApi<void, UpgradeCollectionBody>,
 		metadata: QueryApi<Metadata<DBType>>,
 	},
@@ -101,6 +103,8 @@ export const DBApiDefGeneratorIDB = <DBType extends DB_Object, Ks extends keyof 
 			delete: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-unique`},
 			deleteQuery: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/delete`},
 			deleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/delete-all`},
+			hardDeleteUnique: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/hard-delete-unique`},
+			hardDeleteAll: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/hard-delete-all`},
 			upgradeCollection: {method: HttpMethod.POST, path: `v1/${dbDef.dbName}/upgrade-collection`},
 			metadata: {method: HttpMethod.GET, path: `v1/${dbDef.dbName}/metadata`},
 		}

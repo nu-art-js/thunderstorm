@@ -43,7 +43,7 @@ export const DB_Object_Metadata: Metadata<DB_Object> = {
 	_id: {optional: false, valueType: 'string', description: 'unique key'},
 	_v: {optional: false, valueType: 'string', description: 'version'},
 	_originDocId: {optional: true, valueType: 'string', description: 'previous doc id'},
-	_archived: {optional: true, valueType: 'boolean', description: 'is archived'},
+	__hardDelete: {optional: true, valueType: 'boolean', description: 'is hard delete'},
 	__created: {optional: false, valueType: 'number', description: 'timestamp of creation'},
 	__updated: {optional: false, valueType: 'number', description: 'timestamp of last time modified'}
 };

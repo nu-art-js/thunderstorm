@@ -25,3 +25,4 @@ export * from './ModuleBE_SyncManager';
 export * from './db-def';
 export * from './LockedOperation';
 export * from './ModuleBE_SyncEnv';
+export * from './ModuleBE_ArchiveModule';

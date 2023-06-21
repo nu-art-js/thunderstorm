@@ -63,7 +63,7 @@ export const DB_Object_validator: ValidatorTypeResolver<DB_Object> = {
 	_id: tsValidateUniqueId,
 	_v: tsValidateVersion,
 	_originDocId: tsValidateOptionalId,
-	_archived: tsValidateBoolean(false),
+	__hardDelete: tsValidateBoolean(false),
 	__created: tsValidateTimestamp(),
 	__updated: tsValidateTimestamp(),
 };
