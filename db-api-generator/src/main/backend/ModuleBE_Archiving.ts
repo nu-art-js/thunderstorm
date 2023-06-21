@@ -200,33 +200,29 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		if (before.__hardDelete)
 			return;
 
-		try {
-			// Reference to the original collection
-			const collectionRef = dbModule.collection.collection;
-			const timestamp = currentTimeMillis();
+		// Reference to the original collection
+		const collectionRef = dbModule.collection.collection;
+		const timestamp = currentTimeMillis();
 
-			// Deep clone the document before mutation
-			let dbInstance = deepClone(before);
+		// Deep clone the document before mutation
+		let dbInstance = deepClone(before);
 
-			// Reference to the _archived subcollection
-			const subCollection = collectionRef.doc(dbInstance._id).collection(Const_ArchivedCollectionPath);
+		// Reference to the _archived subcollection
+		const subCollection = collectionRef.doc(dbInstance._id).collection(Const_ArchivedCollectionPath);
 
-			// Remove the keys from the original object that shouldn't be in the archive
-			dbInstance = removeDBObjectKeys(dbInstance) as DBType;
+		// Remove the keys from the original object that shouldn't be in the archive
+		dbInstance = removeDBObjectKeys(dbInstance) as DBType;
 
-			// Record the original document ID
-			dbInstance._originDocId = before._id;
+		// Record the original document ID
+		dbInstance._originDocId = before._id;
 
-			// Generate a new ID for the archived document
-			dbInstance._id = generateHex(dbIdLength);
-			dbInstance.__updated = timestamp;
-			dbInstance.__created = timestamp;
+		// Generate a new ID for the archived document
+		dbInstance._id = generateHex(dbIdLength);
+		dbInstance.__updated = timestamp;
+		dbInstance.__created = timestamp;
 
-			// Insert the archived document into the _archived subcollection
-			await subCollection.doc(dbInstance._id).set(dbInstance);
-		} catch (err) {
-			return undefined;
-		}
+		// Insert the archived document into the _archived subcollection
+		await subCollection.doc(dbInstance._id).set(dbInstance);
 	}
 
 	/**
@@ -269,6 +265,9 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	async processChanges(params: Params, before: DBType | undefined, after: DBType | undefined) {
 		// Get the relevant module
 		const dbModule = this.moduleMapper[params.collectionName];
+
+		if (!dbModule)
+			throw new BadImplementationException('no db module found');
 
 		// If there's no previous document state or it's marked for hard deletion, exit the function
 		if (!before)
