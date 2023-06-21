@@ -53,17 +53,6 @@ export function isErrorOfType<T extends Error>(e: Error, _exceptionType: Constru
 		return e as T;
 }
 
-export type AllExceptionTypes = CustomException |
-	Exception |
-	BadImplementationException |
-	ImplementationMissingException |
-	MUSTNeverHappenException |
-	NotImplementedYetException |
-	ThisShouldNotHappenException |
-	DontCallthisException |
-	WhoCallthisException |
-	AssertionException;
-
 /**
  * # CustomException
  *
@@ -81,6 +70,9 @@ export abstract class CustomException
 	public exceptionType: string;
 
 	public isInstanceOf: (_exceptionType: Function) => boolean;
+
+	public generateMrkDwnMessage: () => string;
+
 	public cause?: Error;
 
 	protected constructor(exceptionType: Function, message: string, cause?: Error) {
@@ -91,6 +83,10 @@ export abstract class CustomException
 		this.exceptionType = exceptionType.name;
 		this.isInstanceOf = (_exceptionType: Function): boolean => {
 			return this.exceptionType === _exceptionType.name;
+		};
+		this.generateMrkDwnMessage = () => {
+			return `*Exception Type :* ${this.exceptionType}\n`
+				+ `*Message :* ${this.message}`;
 		};
 	}
 }
