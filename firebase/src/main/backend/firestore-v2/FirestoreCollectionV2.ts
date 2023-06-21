@@ -22,6 +22,7 @@ import {
 	batchAction,
 	compare,
 	currentTimeMillis,
+	CustomException,
 	DB_Object,
 	exists,
 	generateHex,
@@ -50,6 +51,17 @@ type UpdateObject<Type extends DB_Object> = { _id: UniqueId } & UpdateData<Type>
 export const dbIdLength = 32;
 export const _EmptyQuery = Object.freeze({where: {}});
 
+/**
+ * # <ins>FirestoreException</ins>
+ * @category Exceptions
+ */
+export class FirestoreException
+	extends CustomException {
+
+	constructor(message: string, cause?: Error) {
+		super(FirestoreException, message, cause);
+	}
+}
 
 /**
  * FirestoreCollection is a class for handling Firestore collections. It takes in the name, FirestoreWrapperBE instance, and uniqueKeys as parameters.
@@ -134,7 +146,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			_bulk.create(this.getDocWrapperFromItem(instance).ref, dbInstance);
 			toReturnObjects.push(dbInstance);
 			return _bulk;
-		}, bulk).flush();
+		}, bulk).close();
 
 		return toReturnObjects;
 	}
@@ -149,15 +161,23 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	protected async _createBulk(preDBInstances: PreDB<Type>[]) {
 		const bulk = this.wrapper.firestore.bulkWriter();
 		const toReturnObjects: Type[] = [];
-
+		let hadError: boolean = false;
+		bulk.onWriteError(error => hadError = true);
 		await preDBInstances.reduce((_bulk, instance) => {
 			const dbInstance = this.prepareObjForCreate(instance);
-			_bulk.create(this.getDocWrapperFromItem(instance).ref, dbInstance);
+			this.addBulkCreate(_bulk, instance, dbInstance);
 			toReturnObjects.push(dbInstance);
 			return _bulk;
-		}, bulk).flush();
+		}, bulk).close();
+
+		if (hadError)
+			throw new FirestoreException('Failed bulk creation!');
 
 		return toReturnObjects;
+	}
+
+	private async addBulkCreate(bulk: FirebaseFirestore.BulkWriter, instance: PreDB<Type>, dbInstance: Type) {
+		return bulk.create(this.getDocWrapperFromItem(instance).ref, dbInstance);
 	}
 
 	prepareObjForCreate(preDBObject: PreDB<Type>): Type {
@@ -165,7 +185,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		// if (preDBObject._id)
 		// 	throw new ValidationException('Cannot create objects that already have _id!', preDBObject);
 
-		preDBObject._id = generateId();
+		preDBObject._id ??= generateId();
 		preDBObject.__updated = preDBObject.__created = now;
 
 		return preDBObject as Type;
@@ -305,8 +325,8 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		unique: async (_id: UniqueId, transaction?: Transaction) => {
 			return await this.getDocWrapper(_id).get(transaction);
 		},
-		byId: async (all_ids: UniqueId[], transaction?: Transaction) => await this.queryByIds(all_ids),
-		all: async (query?: FirestoreQuery<Type>) => {
+		all: async (all_ids: UniqueId[], transaction?: Transaction) => await this.queryByIds(all_ids),
+		custom: async (query?: FirestoreQuery<Type>) => {
 			const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
 			return ((await myQuery.get()).docs as FirestoreType_DocumentSnapshot[]).map(snapshot => snapshot.data() as Type);
 		},
