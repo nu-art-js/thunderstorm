@@ -12,7 +12,8 @@ class ModuleFE_Archiving_Class
 		super();
 		this.vv1 = {
 			hardDeleteAll: apiWithQuery(ApiDef_Archiving.vv1.hardDeleteAll),
-			hardDeleteUnique: apiWithBody(ApiDef_Archiving.vv1.hardDeleteUnique)
+			hardDeleteUnique: apiWithBody(ApiDef_Archiving.vv1.hardDeleteUnique),
+			getDocumentHistory: apiWithQuery(ApiDef_Archiving.vv1.getDocumentHistory)
 		};
 	}
 }
