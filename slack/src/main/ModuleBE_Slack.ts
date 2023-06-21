@@ -22,7 +22,7 @@
  */
 
 import {currentTimeMillis, generateHex, ImplementationMissingException, md5, Minute, Module, PartialProperties} from '@nu-art/ts-common';
-import {ChatPostMessageArguments, WebAPICallResult, WebClient, WebClientOptions} from '@slack/web-api';
+import {ChatPostMessageArguments, FilesUploadArguments, WebAPICallResult, WebClient, WebClientOptions} from '@slack/web-api';
 
 
 interface ChatPostMessageResult
@@ -91,6 +91,18 @@ export class ModuleBE_Slack_Class
 
 		//Post and return thread
 		return await this.postMessageImpl(message, thread);
+	}
+
+	public async postFile(file: any, thread?: ThreadPointer) {
+		const message: FilesUploadArguments = {
+			file,
+			channels: this.config.defaultChannel
+		};
+		if (thread) {
+			message.channels = thread.channel;
+			message.thread_ts = thread.ts;
+		}
+		await this.web.files.upload(message);
 	}
 
 	public async postStructuredMessage(message: PreSendSlackStructuredMessage, thread?: ThreadPointer) {
