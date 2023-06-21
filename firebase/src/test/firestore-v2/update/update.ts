@@ -157,7 +157,7 @@ export const TestSuite_FirestoreV2_Update: Test = {
 		const inserted = await collection.create.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
 
 		await testCase.input.updateAction(collection, inserted);
-		const remainingDBItems = await collection.query.all({where: {}});
+		const remainingDBItems = await collection.query.custom({where: {}});
 		expect(true).to.eql(compare(sortArray(remainingDBItems.map(removeDBObjectKeys), item => item.stringValue), sortArray(testCase.result(), item => item.stringValue)));
 	}
 };

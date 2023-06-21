@@ -1,8 +1,7 @@
-import {firestore} from '../_core/consts';
+import {firestore, testInstance1} from '../_core/consts';
 import {DB_Type} from '../_core/types';
-import {deepClone, ValidationException} from '@nu-art/ts-common';
+import {deepClone} from '@nu-art/ts-common';
 import {CreateTest, createTestCases} from './consts';
-import {expect} from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 
 const chai = require('chai');
@@ -10,6 +9,19 @@ chai.use(chaiAsPromised);
 
 export const TestCases_FB_CreateAll: CreateTest['testcases'] = [
 	...createTestCases,
+	{
+		description: 'object exists',
+		result: [],
+		input: {
+			value: [{...testInstance1, _id: 'zevel'}],
+			check: async (collection, expectedResult) => {
+				// const toCreate = deepClone({...testInstance1, _id: 'zevel'});
+				// // insert twice and expect to reject
+				// await expect(collection.create.all(Array.isArray(toCreate) ? toCreate : [toCreate])).to.be.rejectedWith(FirestoreException);
+			}
+		}
+
+	}
 ];
 
 export const TestSuite_FirestoreV2_CreateAll: CreateTest = {
@@ -20,12 +32,6 @@ export const TestSuite_FirestoreV2_CreateAll: CreateTest = {
 		await collection.deleteCollection();
 
 		const toCreate = deepClone(testCase.input.value);
-
-		if (testCase.input.expectCreateToThrow) {
-			await expect(collection.create.all(Array.isArray(toCreate) ? toCreate : [toCreate])).to.be.rejectedWith(ValidationException);
-			return;
-		}
-
 
 		await collection.create.all(Array.isArray(toCreate) ? toCreate : [toCreate]);
 

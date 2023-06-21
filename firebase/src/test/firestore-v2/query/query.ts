@@ -3,7 +3,7 @@ import {firestore} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {dbObjectToId, deepClone} from '@nu-art/ts-common';
 
-export const TestCases_FB_QueryInsert: QueryTest['testcases'] = [
+export const TestCases_FB_QueryUnique: QueryTest['testcases'] = [
 	...queryTestCases
 ];
 
@@ -15,9 +15,9 @@ export const TestCases_FB_QueryComplex1: QueryTest['testcases'] = [
 	// queryComplexTestCases[0],
 ];
 
-export const TestSuite_FirestoreV2_QueryInsert: QueryTest = {
-	label: 'Firestore query tests',
-	testcases: TestCases_FB_QueryInsert,
+export const TestSuite_FirestoreV2_QueryUnique: QueryTest = {
+	label: 'Firestore query.unique tests',
+	testcases: TestCases_FB_QueryUnique,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>('firestore-query-tests');
 		await collection.deleteCollection();
@@ -27,7 +27,7 @@ export const TestSuite_FirestoreV2_QueryInsert: QueryTest = {
 	}
 };
 
-export const TestSuite_FirestoreV2_QueryUpsert: QueryTest = {
+export const TestSuite_FirestoreV2_QueryById: QueryTest = {
 	label: 'Firestore query tests',
 	testcases: TestCases_FB_QueryUpsert,
 	processor: async (testCase) => {

@@ -30,7 +30,7 @@ export const queryTestCases: QueryTest['testcases'] = [
 		input: {
 			value: [],
 			check: async (collection, expectedResult) => {
-				const items = await collection.query.all({where: {}});
+				const items = await collection.query.custom({where: {}});
 				expect(items.length).to.eql(0);
 				expect(true).to.eql(compare(items, []));
 			}
@@ -42,7 +42,7 @@ export const queryTestCases: QueryTest['testcases'] = [
 		input: {
 			value: [testInstance1],
 			check: async (collection, expectedResult) => {
-				const items = await collection.query.all({where: {}});
+				const items = await collection.query.custom({where: {}});
 				expect(items.length).to.eql(1);
 				expect(true).to.eql(compare(removeDBObjectKeys(items[0]), getSingleItem(expectedResult) as DB_Type));
 
@@ -55,7 +55,7 @@ export const queryTestCases: QueryTest['testcases'] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				const items = sortArray(await collection.query.all({where: {}}), item => item.numeric);
+				const items = sortArray(await collection.query.custom({where: {}}), item => item.numeric);
 				expect(items.length).to.eql(5);
 				expect(true).to.eql(compare(items.map(removeDBObjectKeys), expectedResult));
 			}
@@ -70,7 +70,7 @@ export const queryIdTestCases: QueryTest['testcases'] = [
 		input: {
 			value: [{...testInstance1, _id: 'zevel'}],
 			check: async (collection, expectedResult, expectedIds) => {
-				const items = await collection.query.all({where: {}});
+				const items = await collection.query.custom({where: {}});
 				expect(items.length).to.eql(1);
 				expect(true).to.eql(compare(removeDBObjectKeys(items[0]), getSingleItem(expectedResult) as DB_Type));
 
@@ -86,7 +86,7 @@ export const queryComplexTestCases: QueryTest['testcases'] = [
 		input: {
 			value: [{...testInstance1, _id: 'zevel'}],
 			check: async (collection, expectedResult, expectedIds) => {
-				const items = await collection.query.all({where: {}});
+				const items = await collection.query.custom({where: {}});
 				expect(items.length).to.eql(1);
 				expect(true).to.eql(compare(removeDBObjectKeys(items[0]), getSingleItem(expectedResult) as DB_Type));
 

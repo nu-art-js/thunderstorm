@@ -17,6 +17,10 @@
     },
     "firestore": {
       "port": "5013"
+    },
+    "ui": {
+      "enabled": true,
+      "port": "5009"
     }
   }
 }
