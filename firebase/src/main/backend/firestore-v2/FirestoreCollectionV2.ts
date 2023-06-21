@@ -46,8 +46,10 @@ import DocumentReference = firestore.DocumentReference;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
 
+type UpdateObject<Type extends DB_Object> = { _id: UniqueId } & UpdateData<Type>;
 export const dbIdLength = 32;
 export const _EmptyQuery = Object.freeze({where: {}});
+
 
 /**
  * FirestoreCollection is a class for handling Firestore collections. It takes in the name, FirestoreWrapperBE instance, and uniqueKeys as parameters.
@@ -190,23 +192,33 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot[];
 	}
 
-	async update(_id: UniqueId, updateData: UpdateData<Type>) {
-		const doc = this.getDocWrapper(_id);
-
-		delete updateData._id;
-		delete updateData.__created;
-		updateData.__updated = currentTimeMillis();
-
+	protected async _update(updateData: UpdateObject<Type>) {
+		const doc = this.getDocWrapper(updateData._id);
 		await this.preUpdateData(updateData);
-		await this.assertUpdateData(updateData);
 		return doc.update(updateData);
 	}
 
-	private async preUpdateData(updateData: UpdateData<Type>) {
+	protected async _updateBulk(updateData: UpdateObject<Type>[]) {
+		const toUpdate = await Promise.all(updateData.map(async instance => await this.preUpdateData(instance)));
+
+		const bulk = this.wrapper.firestore.bulkWriter();
+		await toUpdate.reduce((_bulk, instance) => {
+			_bulk.update(this.getDocWrapper(instance._id).ref, instance);
+			return _bulk;
+		}, bulk).close();
+	}
+
+	private async preUpdateData(updateData: UpdateObject<Type>) {
+		// @ts-ignore
+		delete updateData._id;
+		delete updateData.__created;
+		updateData.__updated = currentTimeMillis();
 		_keys(updateData).forEach(_key => {
 			// @ts-ignore
 			return updateData[_key] ??= FieldValue.delete();
 		});
+		await this.assertUpdateData(updateData);
+		return updateData;
 	}
 
 	private async assertUpdateData(updateData: UpdateData<Type>) {
@@ -240,15 +252,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private assertUniqueness(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
 	}
 
-	upsert = {
-		single: async (item: PreDB<Type> | UpdateData<Type>) => {
-			if (!item._id)
-				return await this.create.item(item as PreDB<Type>);
-
-			return await this.update(item._id as UniqueId, item as UpdateData<Type>);
-		},
-	};
-
 	query = {
 		unique: async (_id: UniqueId, transaction?: Transaction) => {
 			return await this.getDocWrapper(_id).get(transaction);
@@ -263,6 +266,11 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	create = {
 		item: async (item: PreDB<Type>) => await this._createItem(item),
 		all: async (items: PreDB<Type>[]) => await this._createBulk(items),
+	};
+
+	update = {
+		item: this._update,
+		all: this._updateBulk,
 	};
 
 	delete = {
