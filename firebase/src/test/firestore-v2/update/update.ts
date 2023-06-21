@@ -17,38 +17,32 @@ type Input = {
 type Test = TestSuite<Input, () => PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
 type DeepPartial<T> = Partial<{ [P in keyof T]: DeepPartial<T[P]> }>;
 
-export const updatedStringValue = 'test update';
+export const updatedStringValue1 = 'test update';
+export const updatedStringValue2 = 'test update 2';
 
 export const TestCases_FB_Update: Test['testcases'] = [
 	{
 		description: 'insert 1 & update 1 field',
 		result: () => {
 			const _instance = deepClone(testInstance1);
-			_instance.stringValue = updatedStringValue;
-			return [_instance];
+			return [{..._instance, stringValue: updatedStringValue1}];
 		},
 		input: {
 			toInsert: [testInstance1],
 			updateAction: async (collection, inserted) => {
-				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue});
+				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue1});
 			}
 		}
-	},
-	{
-		description: 'insert 3 & update 2',
+	}, {
+		description: 'insert 1 & update multiple fields',
 		result: () => {
-			const _instance1 = deepClone(testInstance1);
-			const _instance2 = deepClone(testInstance2);
-			_instance1.stringValue = updatedStringValue;
-			_instance2.stringValue = updatedStringValue;
-			return [_instance1, _instance2, deepClone(testInstance3)];
+			const _instance = deepClone(testInstance1);
+			return [{..._instance, stringValue: updatedStringValue1, numeric:1000, stringArray: [updatedStringValue1, updatedStringValue1]}];
 		},
 		input: {
-			toInsert: [testInstance1, testInstance2, testInstance3],
+			toInsert: [testInstance1],
 			updateAction: async (collection, inserted) => {
-				const _test1 = inserted.find(_item => _item.stringValue === testInstance1.stringValue);
-				const _test2 = inserted.find(_item => _item.stringValue === testInstance2.stringValue);
-				await collection.update.all([{_id: _test1!._id, stringValue: updatedStringValue}, {_id: _test2!._id, stringValue: updatedStringValue}]);
+				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue1, numeric: 1000, stringArray: [updatedStringValue1, updatedStringValue1]});
 			}
 		}
 	},
@@ -70,13 +64,13 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		description: 'insert 1 & update 1 nested field (dot notation)',
 		result: () => {
 			const _instance = deepClone(testInstance1);
-			_instance.nestedObject!.one.key = updatedStringValue;
+			_instance.nestedObject!.one.key = updatedStringValue1;
 			return [_instance];
 		},
 		input: {
 			toInsert: [testInstance1],
 			updateAction: async (collection, inserted) => {
-				await collection.update.item({_id: inserted[0]._id!, 'nestedObject.one.key': updatedStringValue});
+				await collection.update.item({_id: inserted[0]._id!, 'nestedObject.one.key': updatedStringValue1});
 			}
 		}
 	},
@@ -84,7 +78,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		description: 'insert 1 & update nested field (without dot notation)',
 		result: () => {
 			const _instance: DeepPartial<PreDB<DB_Type>> = deepClone(testInstance1);
-			_instance.nestedObject!.one!.key = updatedStringValue;
+			_instance.nestedObject!.one!.key = updatedStringValue1;
 			delete _instance.nestedObject!.one!.value;
 			delete _instance.nestedObject!.two;
 			return [_instance as PreDB<DB_Type>];
@@ -92,7 +86,23 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		input: {
 			toInsert: [testInstance1],
 			updateAction: async (collection, inserted) => {
-				await collection.update.item({_id: inserted[0]._id!, nestedObject: {one: {key: updatedStringValue}}});
+				await collection.update.item({_id: inserted[0]._id!, nestedObject: {one: {key: updatedStringValue1}}});
+			}
+		}
+	},
+	{
+		description: 'insert 3 & update 2',
+		result: () => {
+			const _instance1 = deepClone(testInstance1);
+			const _instance2 = deepClone(testInstance2);
+			return [{..._instance1, stringValue: updatedStringValue1}, {..._instance2, stringValue: updatedStringValue2}, deepClone(testInstance3)];
+		},
+		input: {
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			updateAction: async (collection, inserted) => {
+				const _test1 = inserted.find(_item => _item.stringValue === testInstance1.stringValue);
+				const _test2 = inserted.find(_item => _item.stringValue === testInstance2.stringValue);
+				await collection.update.all([{_id: _test1!._id, stringValue: updatedStringValue1}, {_id: _test2!._id, stringValue: updatedStringValue2}]);
 			}
 		}
 	},
@@ -113,3 +123,4 @@ export const TestSuite_FirestoreV2_Update: Test = {
 		expect(true).to.eql(compare(sortArray(remainingDBItems.map(removeDBObjectKeys), item => item.stringValue), sortArray(testCase.result(), item => item.stringValue)));
 	}
 };
+
