@@ -231,3 +231,19 @@ export class AssertionException
 		super(AssertionException, message, cause);
 	}
 }
+
+const allExceptions = [
+	Exception,
+	BadImplementationException,
+	ImplementationMissingException,
+	MUSTNeverHappenException,
+	NotImplementedYetException,
+	ThisShouldNotHappenException,
+	DontCallthisException,
+	WhoCallthisException,
+	AssertionException,
+];
+
+export function isCustomException(e: Error) {
+	return allExceptions.some(exc => !!isErrorOfType(e, exc));
+}
