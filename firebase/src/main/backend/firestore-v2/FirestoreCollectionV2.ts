@@ -111,6 +111,34 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		});
 	}
 
+	prepareObjForSet(preDBObject: PreDB<Type>): Type {
+		const now = currentTimeMillis();
+		preDBObject._id = generateId();
+		preDBObject.__updated = preDBObject.__created = now;
+		return preDBObject as Type;
+	}
+
+	protected async _setItem(preDBInstance: PreDB<Type>) {
+		const dbInstance = this.prepareObjForSet(preDBInstance);
+		await this.assertInstance(dbInstance);
+		const doc = this.getDocWrapperFromItem(dbInstance);
+		return doc.set(dbInstance);
+	}
+
+	protected async _setBulk(preDBInstances: PreDB<Type>[]) {
+		const bulk = this.wrapper.firestore.bulkWriter();
+		const toReturnObjects: Type[] = [];
+
+		await preDBInstances.reduce((_bulk, instance) => {
+			const dbInstance = this.prepareObjForSet(instance);
+			_bulk.create(this.getDocWrapperFromItem(instance).ref, dbInstance);
+			toReturnObjects.push(dbInstance);
+			return _bulk;
+		}, bulk).flush();
+
+		return toReturnObjects;
+	}
+
 	protected async _createItem(preDBInstance: PreDB<Type>) {
 		const dbInstance = this.prepareObjForCreate(preDBInstance);
 		await this.assertInstance(dbInstance);
@@ -251,6 +279,11 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private assertUniqueness(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
 	}
 
+	set = {
+		item: async (item: PreDB<Type>) => await this._setItem(item),
+		all: async (items: PreDB<Type>[]) => await this._setBulk(items),
+	};
+
 	query = {
 		unique: async (_id: UniqueId, transaction?: Transaction) => {
 			return await this.getDocWrapper(_id).get(transaction);
@@ -274,7 +307,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	delete = {
 		unique: this._deleteUnique,
-		item: async (item: PreDB<Type>) => await this.getDocWrapperFromItem(item).delete(),
+		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.getDocWrapperFromItem(item).delete(transaction),
 		all: async (_ids: UniqueId[]) => await this._deleteBulk(_ids.map(_id => this.getDocWrapper(_id))),
 		allItems: async (items: PreDB<Type>[]) => await this._deleteBulk(items.map(_item => this.getDocWrapperFromItem(_item))),
 		query: this._deleteQuery
