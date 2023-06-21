@@ -240,12 +240,29 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private async preUpdateData(updateData: UpdateObject<Type>) {
 		delete updateData.__created;
 		updateData.__updated = currentTimeMillis();
-		_keys(updateData).forEach(_key => {
-			// @ts-ignore
-			return updateData[_key] ??= FieldValue.delete();
-		});
+		this.updateDeletedFields(updateData)
 		await this.assertUpdateData(updateData);
 		return updateData;
+	}
+
+	/**
+	 * Recursively replaces any undefined or null fields in DB item with firestore.FieldValue.delete()
+	 * @param updateData: data to update in DB item
+	 * @private
+	 */
+	private updateDeletedFields(updateData: any) {
+		if (typeof updateData !== 'object' || updateData === null)
+			return;
+
+		_keys(updateData).forEach(_key => {
+			const _value = updateData[_key];
+
+			if (!exists(_value)) {
+				updateData[_key] = FieldValue.delete();
+			} else {
+				this.updateDeletedFields(_value);
+			}
+		})
 	}
 
 	private async assertUpdateData(updateData: UpdateData<Type>) {
