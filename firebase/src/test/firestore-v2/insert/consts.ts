@@ -16,13 +16,13 @@ import {
 
 export type TestInputValue = PreDB<DB_Type> | PreDB<DB_Type>[];
 
-export type InsertTestInput = {
+export type CreateTestInput = {
 	value: TestInputValue;
 	expectCreateToThrow?: boolean;
 	check?: (collection: FirestoreCollectionV2<DB_Type>, expectedItem: TestInputValue) => Promise<void>
 }
 
-export type CreateTest = TestSuite<InsertTestInput, TestInputValue>;
+export type CreateTest = TestSuite<CreateTestInput, TestInputValue>;
 
 export const createTestCases: CreateTest['testcases'] = [
 	{
@@ -82,7 +82,8 @@ export const createTestCases: CreateTest['testcases'] = [
 		result: [testInstance1],
 		input: {
 			expectCreateToThrow: true,
-			value: [{...testInstance1, _id: 'zevel'}]
+			value: [{...testInstance1, _id: 'zevel'}, {...testInstance2, _id: 'zevel'},
+				{...testInstance3, _id: 'zevel'}, {...testInstance4, _id: 'zevel'}, {...testInstance5, _id: 'zevel'}]
 		}
 	}
 ];

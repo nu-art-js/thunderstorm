@@ -115,7 +115,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const dbInstance = this.prepareObjForCreate(preDBInstance);
 		await this.assertInstance(dbInstance);
 		const doc = this.getDocWrapperFromItem(dbInstance);
-		return doc.set(dbInstance);
+		return doc.create(dbInstance);
 	}
 
 	protected async _createBulk(preDBInstances: PreDB<Type>[]) {
@@ -124,7 +124,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 		await preDBInstances.reduce((_bulk, instance) => {
 			const dbInstance = this.prepareObjForCreate(instance);
-			_bulk.set(this.getDocWrapperFromItem(instance).ref, dbInstance);
+			_bulk.create(this.getDocWrapperFromItem(instance).ref, dbInstance);
 			toReturnObjects.push(dbInstance);
 			return _bulk;
 		}, bulk).flush();
@@ -327,7 +327,7 @@ export class DocWrapperV2<T extends DB_Object> {
 
 	create = async (instance: PreDB<T>, transaction?: Transaction): Promise<T> => {
 		if (transaction)
-			transaction.set(this.ref, instance as T);
+			transaction.create(this.ref, instance as T);
 		else
 			await this.ref.create(instance as T);
 
