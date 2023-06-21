@@ -123,14 +123,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		});
 	}
 
-	prepareObjForSet(preDBObject: PreDB<Type>): Type {
-		const now = currentTimeMillis();
-		preDBObject._id ??= generateId();
-		preDBObject.__created ??= now;
-		preDBObject.__updated = now;
-		return preDBObject as Type;
-	}
-
 	protected async _setItem(preDBInstance: PreDB<Type>) {
 		const dbInstance = this.prepareObjForSet(preDBInstance);
 		await this.assertInstance(dbInstance);
@@ -144,12 +136,20 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 		await preDBInstances.reduce((_bulk, instance) => {
 			const dbInstance = this.prepareObjForSet(instance);
-			_bulk.create(this.getDocWrapperFromItem(instance).ref, dbInstance);
+			_bulk.set(this.getDocWrapperFromItem(instance).ref, dbInstance);
 			toReturnObjects.push(dbInstance);
 			return _bulk;
 		}, bulk).close();
 
 		return toReturnObjects;
+	}
+
+	prepareObjForSet(preDBObject: PreDB<Type>): Type {
+		const now = currentTimeMillis();
+		preDBObject._id ??= generateId();
+		preDBObject.__created ??= now;
+		preDBObject.__updated = now;
+		return preDBObject as Type;
 	}
 
 	protected async _createItem(preDBInstance: PreDB<Type>) {
