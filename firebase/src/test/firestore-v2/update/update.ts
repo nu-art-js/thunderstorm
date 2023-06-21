@@ -1,6 +1,6 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {firestore, testInstance1} from '../_core/consts';
+import {firestore, testInstance1, testInstance2, testInstance3} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {compare, deepClone, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
@@ -27,11 +27,28 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			_instance.stringValue = updatedStringValue;
 			return [_instance];
 		},
-
 		input: {
 			toInsert: [testInstance1],
 			updateAction: async (collection, inserted) => {
 				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue});
+			}
+		}
+	},
+	{
+		description: 'insert 3 & update 2',
+		result: () => {
+			const _instance1 = deepClone(testInstance1);
+			const _instance2 = deepClone(testInstance2);
+			_instance1.stringValue = updatedStringValue;
+			_instance2.stringValue = updatedStringValue;
+			return [_instance1, _instance2, deepClone(testInstance3)];
+		},
+		input: {
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			updateAction: async (collection, inserted) => {
+				const _test1 = inserted.find(_item => _item.stringValue === testInstance1.stringValue);
+				const _test2 = inserted.find(_item => _item.stringValue === testInstance2.stringValue);
+				await collection.update.all([{_id: _test1!._id, stringValue: updatedStringValue}, {_id: _test2!._id, stringValue: updatedStringValue}]);
 			}
 		}
 	},
