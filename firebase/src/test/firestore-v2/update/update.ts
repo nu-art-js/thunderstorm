@@ -12,7 +12,7 @@ chai.use(require('chai-as-promised'))
 
 type Input = {
 	updateAction: (collection: FirestoreCollectionV2<DB_Type>, inserted: DB_Type[]) => Promise<void>
-	toInsert: PreDB<DB_Type>[]
+	toCreate: PreDB<DB_Type>[]
 }
 type Test = TestSuite<Input, () => PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
 type DeepPartial<T> = Partial<{ [P in keyof T]: DeepPartial<T[P]> }>;
@@ -28,7 +28,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			return [{..._instance, stringValue: updatedStringValue1}];
 		},
 		input: {
-			toInsert: [testInstance1],
+			toCreate: [testInstance1],
 			updateAction: async (collection, inserted) => {
 				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue1});
 			}
@@ -40,7 +40,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			return [{..._instance, stringValue: updatedStringValue1, numeric:1000, stringArray: [updatedStringValue1, updatedStringValue1]}];
 		},
 		input: {
-			toInsert: [testInstance1],
+			toCreate: [testInstance1],
 			updateAction: async (collection, inserted) => {
 				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue1, numeric: 1000, stringArray: [updatedStringValue1, updatedStringValue1]});
 			}
@@ -54,7 +54,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			return [_instance as PreDB<DB_Type>];
 		},
 		input: {
-			toInsert: [testInstance1],
+			toCreate: [testInstance1],
 			updateAction: async (collection, inserted) => {
 				await collection.update.item({_id: inserted[0]._id!, stringValue: undefined});
 			}
@@ -68,7 +68,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			return [_instance as PreDB<DB_Type>];
 		},
 		input: {
-			toInsert: [testInstance1],
+			toCreate: [testInstance1],
 			updateAction: async (collection, inserted) => {
 				await collection.update.item({_id: inserted[0]._id!, 'nestedObject.one.key': undefined});
 			}
@@ -82,7 +82,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			return [_instance];
 		},
 		input: {
-			toInsert: [testInstance1],
+			toCreate: [testInstance1],
 			updateAction: async (collection, inserted) => {
 				await collection.update.item({_id: inserted[0]._id!, 'nestedObject.one.key': updatedStringValue1});
 			}
@@ -98,7 +98,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			return [_instance as PreDB<DB_Type>];
 		},
 		input: {
-			toInsert: [testInstance1],
+			toCreate: [testInstance1],
 			updateAction: async (collection, inserted) => {
 				await collection.update.item({_id: inserted[0]._id!, nestedObject: {one: {key: updatedStringValue1}}});
 			}
@@ -112,7 +112,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			return [{..._instance1, stringValue: updatedStringValue1}, {..._instance2, stringValue: updatedStringValue2}, deepClone(testInstance3)];
 		},
 		input: {
-			toInsert: [testInstance1, testInstance2, testInstance3],
+			toCreate: [testInstance1, testInstance2, testInstance3],
 			updateAction: async (collection, inserted) => {
 				const _test1 = inserted.find(_item => _item.stringValue === testInstance1.stringValue);
 				const _test2 = inserted.find(_item => _item.stringValue === testInstance2.stringValue);
@@ -126,7 +126,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			return [deepClone(testInstance1)];
 		},
 		input: {
-			toInsert: [testInstance1],
+			toCreate: [testInstance1],
 			updateAction: async (collection, inserted) => {
 				await collection.update.item({_id: inserted[0]._id});
 			}
@@ -138,7 +138,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			return deepClone([testInstance1, testInstance2, testInstance3]);
 		},
 		input: {
-			toInsert: [testInstance1, testInstance2, testInstance3],
+			toCreate: [testInstance1, testInstance2, testInstance3],
 			updateAction: async (collection, inserted) => {
 				await collection.update.all(inserted.map(_item => ({_id: _item._id})));
 			}
@@ -153,7 +153,7 @@ export const TestSuite_FirestoreV2_Update: Test = {
 		const collection = firestore.getCollection<DB_Type>('firestore-deletion-tests');
 		await collection.deleteCollection();
 
-		const toInsert = deepClone(testCase.input.toInsert);
+		const toInsert = deepClone(testCase.input.toCreate);
 		const inserted = await collection.create.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
 
 		await testCase.input.updateAction(collection, inserted);
