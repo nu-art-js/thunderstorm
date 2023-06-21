@@ -6,7 +6,7 @@ packages:
   - firebase
   - thunderstorm
   - db-api-generator
-  - storm
+  - slack
   - live-docs
   - user-account
   - ts-workspace
