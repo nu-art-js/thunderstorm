@@ -195,22 +195,21 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	protected _update = async (updateData: UpdateObject<Type>) => {
 		const doc = this.getDocWrapper(updateData._id);
 		await this.preUpdateData(updateData);
+		delete (updateData as UpdateData<Type>)._id;
 		return doc.update(updateData);
 	};
 
 	protected _updateBulk = async (updateData: UpdateObject<Type>[]) => {
 		const toUpdate = await Promise.all(updateData.map(async instance => await this.preUpdateData(instance)));
-
 		const bulk = this.wrapper.firestore.bulkWriter();
 		await toUpdate.reduce((_bulk, instance) => {
+			delete (updateData as UpdateData<Type>)._id;
 			_bulk.update(this.getDocWrapper(instance._id).ref, instance);
 			return _bulk;
 		}, bulk).close();
 	};
 
 	private async preUpdateData(updateData: UpdateObject<Type>) {
-		// @ts-ignore
-		delete updateData._id;
 		delete updateData.__created;
 		updateData.__updated = currentTimeMillis();
 		_keys(updateData).forEach(_key => {
