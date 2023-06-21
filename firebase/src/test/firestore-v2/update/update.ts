@@ -64,7 +64,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		description: 'insert 1 & delete nested field',
 		result: () => {
 			const _instance: DeepPartial<PreDB<DB_Type>> = deepClone(testInstance1);
-			delete _instance.stringValue;
+			delete _instance.nestedObject!.one!.key;
 			return [_instance as PreDB<DB_Type>];
 		},
 		input: {
