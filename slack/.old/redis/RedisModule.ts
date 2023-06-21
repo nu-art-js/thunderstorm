@@ -24,8 +24,8 @@
 
 // Perhaps we may need to change this especially if it should be able to
 // be used as a standalone package.
-import {createClient} from "storm/.old/redis";
-import {Module} from "@nu-art/ts-common";
+import {createClient} from 'slack/.old/redis';
+import {Module} from '@nu-art/ts-common';
 
 type ConfigType = { port: number, host: string };
 
@@ -34,17 +34,17 @@ export class RedisModule_Class
 	private client: any;
 
 	constructor() {
-		super("redis");
+		super('redis');
 	}
 
 	public async get(key: string): Promise<object> {
 		await this.connect();
-		return this.client.get(key)
+		return this.client.get(key);
 	}
 
 	public async put(key: string, value: object) {
 		await this.connect();
-		return this.client.set(key, value)
+		return this.client.set(key, value);
 	}
 
 	public async dropCache() {
@@ -59,8 +59,8 @@ export class RedisModule_Class
 		return new Promise<void>((resolve, rejected) => {
 			try {
 				this.client = createClient(this.config.port, this.config.host);
-			} catch (e:any) {
-				rejected(e)
+			} catch (e: any) {
+				rejected(e);
 			}
 			return this.client.on('connect');
 		});
@@ -74,7 +74,7 @@ export class RedisModule_Class
 			return this.client.on('disconnect');
 		}).then((resolve: any) => {
 			this.client = null;
-			this.logInfo("Mongo connection terminated");
+			this.logInfo('Mongo connection terminated');
 			resolve();
 		});
 	}
