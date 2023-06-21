@@ -17,6 +17,7 @@
  */
 
 import {
+	__stringify,
 	_keys,
 	BadImplementationException,
 	batchAction,
@@ -159,26 +160,28 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return doc.create(dbInstance);
 	}
 
-	protected async _createBulk(preDBInstances: PreDB<Type>[]) {
+	protected async _createBulk(preDBInstances: PreDB<Type>[], retryOnError: boolean = false) {
 		const bulk = this.wrapper.firestore.bulkWriter();
 		const toReturnObjects: Type[] = [];
-		let hadError: boolean = false;
-		bulk.onWriteError(error => hadError = true);
+		const errors: string[] = [];
+		bulk.onWriteError(error => {
+			errors.push(error.message);
+			return retryOnError;
+		});
 		await preDBInstances.reduce((_bulk, instance) => {
 			const dbInstance = this.prepareObjForCreate(instance);
-			this.addBulkCreate(_bulk, instance, dbInstance);
+			this.addBulkCreate(_bulk, dbInstance);
 			toReturnObjects.push(dbInstance);
 			return _bulk;
-		}, bulk).close();
-
-		if (hadError)
-			throw new FirestoreException('Failed bulk creation!');
+		}, bulk).flush();
+		if (errors.length)
+			throw new FirestoreException(__stringify(errors));
 
 		return toReturnObjects;
 	}
 
-	private async addBulkCreate(bulk: FirebaseFirestore.BulkWriter, instance: PreDB<Type>, dbInstance: Type) {
-		return bulk.create(this.getDocWrapperFromItem(instance).ref, dbInstance);
+	private async addBulkCreate(bulk: FirebaseFirestore.BulkWriter, dbInstance: Type) {
+		return bulk.create(this.getDocWrapperFromItem(dbInstance).ref, dbInstance);
 	}
 
 	prepareObjForCreate(preDBObject: PreDB<Type>): Type {
