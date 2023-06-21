@@ -12,7 +12,7 @@ chai.use(require('chai-as-promised'));
 
 type Input = {
 	upsertAction: (collection: FirestoreCollectionV2<DB_Type>, inserted: DB_Type[]) => Promise<void>
-	toInsert: PreDB<DB_Type>[]
+	toCreate: PreDB<DB_Type>[]
 }
 
 type Test = TestSuite<Input, () => PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
@@ -24,7 +24,7 @@ export const TestCases_FB_Upsert: Test['testcases'] = [
 			return [deepClone(testInstance1)];
 		},
 		input: {
-			toInsert: [],
+			toCreate: [],
 			upsertAction: async (collection, inserted) => {
 				await collection.upsert.single(deepClone(testInstance1));
 			}
@@ -38,7 +38,7 @@ export const TestCases_FB_Upsert: Test['testcases'] = [
 			return [_instance];
 		},
 		input: {
-			toInsert: [testInstance1],
+			toCreate: [testInstance1],
 			upsertAction: async (collection, inserted) => {
 				inserted[0].stringValue = updatedStringValue;
 				await collection.upsert.single(inserted[0]);
@@ -54,8 +54,8 @@ export const TestSuite_FirestoreV2_Upsert: Test = {
 		const collection = firestore.getCollection<DB_Type>('firestore-deletion-tests');
 		await collection.deleteCollection();
 
-		const toInsert = deepClone(testCase.input.toInsert);
-		const inserted = await collection.insert.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
+		const toInsert = deepClone(testCase.input.toCreate);
+		const inserted = await collection.create.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
 
 		await testCase.input.upsertAction(collection, inserted);
 		const remainingDBItems = await collection.query.all({where: {}});

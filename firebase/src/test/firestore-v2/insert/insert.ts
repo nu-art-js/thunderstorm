@@ -5,23 +5,23 @@ import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/Firestor
 import {expect} from 'chai';
 import {TestModel} from '@nu-art/ts-common/testing/types';
 import * as chaiAsPromised from 'chai-as-promised';
-import {InsertTest, insertTestCases, InsertTestInput, TestInputValue} from './consts';
+import {CreateTest, createTestCases, InsertTestInput, TestInputValue} from './consts';
 
 const chai = require('chai');
 chai.use(chaiAsPromised);
 
-export const TestCases_FB_Insert: InsertTest['testcases'] = [
-	...insertTestCases,
+export const TestCases_FB_Insert: CreateTest['testcases'] = [
+	...createTestCases,
 ];
 
-export const TestSuite_FirestoreV2_Insert: InsertTest = {
+export const TestSuite_FirestoreV2_Insert: CreateTest = {
 	label: 'Firestore insert tests',
 	testcases: TestCases_FB_Insert,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>('firestore-insertion-tests');
 		await collection.deleteCollection();
 
-		if (testCase.input.expectInsertToThrow) {
+		if (testCase.input.expectCreateToThrow) {
 			await expect(insertImpl(testCase, collection)).to.be.rejectedWith(ValidationException);
 			return;
 		}
@@ -37,9 +37,9 @@ async function insertImpl(testCase: TestModel<InsertTestInput, TestInputValue>, 
 	if (Array.isArray(toInsert))
 		await insertMultiple(toInsert, collection);
 	else
-		await collection.insert.item(toInsert);
+		await collection.create.item(toInsert);
 }
 
 async function insertMultiple(toInsert: PreDB<DB_Type>[], collection: FirestoreCollectionV2<DB_Type>) {
-	await Promise.all(toInsert.map(collection.insert.item));
+	await Promise.all(toInsert.map(collection.create.item));
 }

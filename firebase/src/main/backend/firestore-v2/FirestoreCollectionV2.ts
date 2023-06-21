@@ -29,8 +29,7 @@ import {
 	PreDB,
 	StaticLogger,
 	Subset,
-	UniqueId,
-	ValidationException
+	UniqueId
 } from '@nu-art/ts-common';
 import {
 	FirestoreType_Collection,
@@ -110,19 +109,19 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		});
 	}
 
-	protected async _insertItem(preDBInstance: PreDB<Type>) {
-		const dbInstance = this.prepareObjForInsert(preDBInstance);
+	protected async _createItem(preDBInstance: PreDB<Type>) {
+		const dbInstance = this.prepareObjForCreate(preDBInstance);
 		await this.assertInstance(dbInstance);
 		const doc = this.getDocWrapperFromItem(dbInstance);
 		return doc.set(dbInstance);
 	}
 
-	protected async _insertBulk(preDBInstances: PreDB<Type>[]) {
+	protected async _createBulk(preDBInstances: PreDB<Type>[]) {
 		const bulk = this.wrapper.firestore.bulkWriter();
 		const toReturnObjects: Type[] = [];
 
 		await preDBInstances.reduce((_bulk, instance) => {
-			const dbInstance = this.prepareObjForInsert(instance);
+			const dbInstance = this.prepareObjForCreate(instance);
 			_bulk.set(this.getDocWrapperFromItem(instance).ref, dbInstance);
 			toReturnObjects.push(dbInstance);
 			return _bulk;
@@ -131,10 +130,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return toReturnObjects;
 	}
 
-	prepareObjForInsert(preDBObject: PreDB<Type>): Type {
+	prepareObjForCreate(preDBObject: PreDB<Type>): Type {
 		const now = currentTimeMillis();
-		if (preDBObject._id)
-			throw new ValidationException('Cannot insert objects that already have _id!', preDBObject);
+		// if (preDBObject._id)
+		// 	throw new ValidationException('Cannot create objects that already have _id!', preDBObject);
 
 		preDBObject._id = generateId();
 		preDBObject.__updated = preDBObject.__created = now;
@@ -244,7 +243,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	upsert = {
 		single: async (item: PreDB<Type> | UpdateData<Type>) => {
 			if (!item._id)
-				return await this.insert.item(item as PreDB<Type>);
+				return await this.create.item(item as PreDB<Type>);
 
 			return await this.update(item._id as UniqueId, item as UpdateData<Type>);
 		},
@@ -261,9 +260,9 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		},
 	};
 
-	insert = {
-		item: async (item: PreDB<Type>) => await this._insertItem(item),
-		all: async (items: PreDB<Type>[]) => await this._insertBulk(items),
+	create = {
+		item: async (item: PreDB<Type>) => await this._createItem(item),
+		all: async (items: PreDB<Type>[]) => await this._createBulk(items),
 	};
 
 	delete = {
@@ -316,6 +315,15 @@ export class DocWrapperV2<T extends DB_Object> {
 			this.data = (await transaction.get(this.ref)).data() as T;
 
 		return this.data ?? (this.data = (await this.ref.get()).data() as T);
+	};
+
+	create = async (instance: PreDB<T>, transaction?: Transaction): Promise<T> => {
+		if (transaction)
+			transaction.set(this.ref, instance as T);
+		else
+			await this.ref.create(instance as T);
+
+		return instance as T;
 	};
 
 	set = async (instance: PreDB<T>, transaction?: Transaction): Promise<T> => {

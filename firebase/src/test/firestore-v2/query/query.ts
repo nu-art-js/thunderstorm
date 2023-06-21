@@ -22,7 +22,7 @@ export const TestSuite_FirestoreV2_QueryInsert: QueryTest = {
 		const collection = firestore.getCollection<DB_Type>('firestore-query-tests');
 		await collection.deleteCollection();
 		const toInsert = deepClone(testCase.input.value);
-		await collection.insert.all(toInsert);
+		await collection.create.all(toInsert);
 		await testCase.input.check!(collection, testCase.result);
 	}
 };
@@ -34,7 +34,7 @@ export const TestSuite_FirestoreV2_QueryUpsert: QueryTest = {
 		const collection = firestore.getCollection<DB_Type>('firestore-query-tests');
 		await collection.deleteCollection();
 		const toInsert = deepClone(testCase.input.value);
-		const resultDBObjects = await collection.insert.all(toInsert);
+		const resultDBObjects = await collection.create.all(toInsert);
 		await testCase.input.check!(collection, testCase.result, resultDBObjects.map(dbObjectToId));
 	}
 };
@@ -43,13 +43,16 @@ export const TestSuite_FirestoreV2_QueryComplex1: QueryTest = {
 	label: 'Firestore query tests',
 	testcases: TestCases_FB_QueryComplex1,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DB_Type>('firestore-query-tests');
-		await collection.deleteCollection();
+		const outerCollection = firestore.getCollection<DB_Type>('firestore-query-tests-outer');
+		const innerCollection = firestore.getCollection<DB_Type>('firestore-query-tests-inner');
+		await Promise.all([outerCollection, innerCollection].map(async (collection) => await collection.deleteCollection()));
 		//todo insert 2 different collections, obj that points to obj
 		//todo receive outer obj id - test is to find and retrieve the inner objects referenced by the outer obj.
 		//todo receive outer obj id and inner obj name - test is to find the inner specific obj referenced by the outer obj.
-		const toInsert = deepClone(testCase.input.value);
-		const resultDBObjects = await collection.insert.all(toInsert);
+		const outerToInsert = deepClone(testCase.input.outerCollection);
+		const innerToInsert = deepClone(testCase.input.innerCollection);
+		await collection.set.all(outerToInsert);
+		await collection.set.all(innerToInsert);
 		await testCase.input.check!(collection, testCase.result, resultDBObjects.map(dbObjectToId));
 	}
 };
