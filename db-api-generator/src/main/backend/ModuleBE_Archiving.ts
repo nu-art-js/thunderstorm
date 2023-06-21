@@ -1,8 +1,19 @@
 import {FirestoreFunctionModule} from '@nu-art/firebase/backend';
-import {batchActionParallel, currentTimeMillis, Day, DB_Object, deepClone, generateHex, Hour, removeDBObjectKeys} from '@nu-art/ts-common';
-import {dbIdLength} from '../shared';
-import {Storm} from '@nu-art/thunderstorm/backend';
+import {
+	BadImplementationException,
+	batchActionParallel,
+	currentTimeMillis,
+	Day,
+	DB_Object,
+	deepClone,
+	generateHex,
+	Hour,
+	removeDBObjectKeys
+} from '@nu-art/ts-common';
+import {_EmptyQuery, ApiDef_Archiving, dbIdLength, RequestBody_HardDeleteUnique, RequestQuery_DeleteAll} from '../shared/index';
+import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
+import {Clause_Where} from '@nu-art/firebase';
 
 type Params = { collectionName: string, docId: string }
 
@@ -16,7 +27,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	extends FirestoreFunctionModule<DBType> {
 	private readonly TTL: number; // Time to live for each instance
 	private readonly lastUpdatedTTL: number; // Time to live after last update
-	private readonly moduleMapper: { [key: string]: ModuleBE_BaseDB<DBType> }; // Module mapper, mapping collection name to module
+	protected readonly moduleMapper: { [key: string]: ModuleBE_BaseDB<DBType> }; // Module mapper, mapping collection name to module
 
 	/**
 	 * Constructor initializes TTL, lastUpdatedTTL and moduleMapper.
@@ -27,6 +38,9 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		this.moduleMapper = {};
 		this.lastUpdatedTTL = Day; // Default TTL for last updated is one day
 		this.TTL = Hour * 2; // Default TTL is two hours
+
+		addRoutes([createBodyServerApi(ApiDef_Archiving.vv1.hardDeleteUnique, this.hardDeleteUnique),
+			createQueryServerApi(ApiDef_Archiving.vv1.hardDeleteAll, this.hardDeleteAll)]);
 	}
 
 	/**
@@ -40,9 +54,9 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		modules.map(module => {
 			const dbModule = module as ModuleBE_BaseDB<DBType>;
 
-			if (dbModule && dbModule.collection && dbModule.collection.name)
+			if (dbModule && dbModule.dbDef && dbModule.dbDef.dbName)
 				// If this module is a Firestore DB module, add it to the mapper
-				this.moduleMapper[dbModule.collection.name] = dbModule;
+				this.moduleMapper[dbModule.dbDef.dbName] = dbModule;
 		});
 	}
 
@@ -87,6 +101,61 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 
 
 	/**
+	 * Deletes a unique document by its ID.
+	 * This function first queries for the document with the given ID inside a transaction.
+	 * If the document is found, it is marked for deletion and an upsert operation is performed.
+	 * The upsert operation triggers the Firestore OnUpdate event which will delete the document and its '_archived' subcollection.
+	 *
+	 * @param _id - The ID of the document to be deleted.
+	 * @returns - A promise that performs the deletion operation.
+	 * @throws - A BadImplementationException if the document with the given ID is not found.
+	 */
+	hardDeleteUnique = async (body: RequestBody_HardDeleteUnique) => {
+		const {_id, collectionName, dbInstance} = body;
+		const dbModule = this.moduleMapper[collectionName];
+
+		if (!dbModule)
+			throw new BadImplementationException('no module found');
+
+		return dbModule.runInTransaction(async (transaction) => {
+			const instance = dbInstance as DBType ?? await transaction.queryUnique(dbModule.collection, {where: {_id} as Clause_Where<DBType>});
+
+			if (!instance)
+				throw new BadImplementationException(`couldn't find doc with id ${_id}`);
+
+			//make sure trigger will delete object and it's _archived collection
+			instance.__hardDelete = true;
+
+			const processor = await dbModule.upsert_Read(instance, transaction);
+			await processor();
+		});
+	};
+
+	/**
+	 * Deletes all documents in the specified collection.
+	 * This function first retrieves all documents in the collection.
+	 * It then deletes each document in the collection in parallel chunks for efficiency.
+	 *
+	 * @param collectionName - The name of the collection in which the documents will be deleted.
+	 * @returns - A promise that performs the deletion operation.
+	 * @throws - A BadImplementationException if no corresponding module is found for the given collection.
+	 */
+	hardDeleteAll = async (queryParams: RequestQuery_DeleteAll) => {
+		const dbModule = this.moduleMapper[queryParams.collectionName];
+
+		if (!dbModule)
+			throw new BadImplementationException('no module found');
+
+		const collectionItems = await dbModule.query(_EmptyQuery);
+		await batchActionParallel(collectionItems, 10, (chunk) => Promise.all(chunk.map(item => this.hardDeleteUnique({
+			_id: item._id,
+			collectionName: dbModule.collection.name,
+			dbInstance: item
+		}))));
+	};
+
+
+	/**
 	 * Inserts a document into the '_archived' subcollection.
 	 * This function is used for archiving the previous state of the document before it was changed.
 	 *
@@ -126,7 +195,6 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 			return undefined;
 		}
 	}
-
 
 	/**
 	 * Hard deletes a document and its associated archived documents.
@@ -191,4 +259,4 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	}
 }
 
-export const ModuleBE_ArchiveModule = new ModuleBE_ArchiveModule_Class();
+export const ModuleBE_Archiving = new ModuleBE_ArchiveModule_Class();

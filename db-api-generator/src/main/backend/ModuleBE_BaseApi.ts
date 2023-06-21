@@ -53,8 +53,6 @@ export class ModuleBE_BaseApi_Class<DBType extends DB_Object, ConfigType extends
 			createQueryServerApi(apiDef.v1.delete, this._deleteUnique),
 			createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
 			createQueryServerApi(apiDef.v1.deleteAll, this._deleteAll),
-			createQueryServerApi(apiDef.v1.hardDeleteUnique, this._hardDeleteUnique),
-			createQueryServerApi(apiDef.v1.hardDeleteAll, this._hardDeleteAll),
 			createBodyServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection),
 			createQueryServerApi(apiDef.v1.metadata, this._metadata)
 		]);
@@ -91,10 +89,6 @@ export class ModuleBE_BaseApi_Class<DBType extends DB_Object, ConfigType extends
 	};
 
 	private _deleteUnique = async (id: DB_BaseObject): Promise<DBType> => this.dbModule.deleteUnique(id._id);
-
-	private _hardDeleteUnique = async (id: DB_BaseObject): Promise<DBType> => this.dbModule.hardDeleteUnique(id._id);
-
-	private _hardDeleteAll = async () => this.dbModule.hardDeleteAll();
 
 	/*›
  * TO BE MOVED ABOVE THIS COMMENT
