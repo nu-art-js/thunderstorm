@@ -64,14 +64,17 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	}
 
 	/**
-	 * Deletes a unique document by its ID.
-	 * This function first queries for the document with the given ID inside a transaction.
+	 * Deletes a unique document by its ID in a Firestore transaction.
+	 * This method first retrieves the document with the given ID.
 	 * If the document is found, it is marked for deletion and an upsert operation is performed.
-	 * The upsert operation triggers the Firestore OnUpdate event which will delete the document and its '_archived' subcollection.
+	 * The upsert operation triggers a Firestore OnUpdate event, which will delete the document and its '_archived' sub-collection.
 	 *
-	 * @param _id - The ID of the document to be deleted.
+	 * @param body - An object of type `RequestBody_HardDeleteUnique` containing the following fields:
+	 *    - _id: The ID of the document to be deleted.
+	 *    - collectionName: The name of the collection the document belongs to.
+	 *    - dbInstance: (optional) The instance of the document. If not provided, the method will attempt to retrieve it using the given ID.
 	 * @returns - A promise that performs the deletion operation.
-	 * @throws - A BadImplementationException if the document with the given ID is not found.
+	 * @throws - A `BadImplementationException` if no module is found for the given collection or if no document with the provided ID is found.
 	 */
 	hardDeleteUnique = async (body: RequestBody_HardDeleteUnique) => {
 		const {_id, collectionName, dbInstance} = body;
@@ -86,7 +89,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 			if (!instance)
 				throw new BadImplementationException(`couldn't find doc with id ${_id}`);
 
-			//make sure trigger will delete object and it's _archived collection
+			//make sure trigger will delete object, and it's _archived collection
 			instance.__hardDelete = true;
 
 			const processor = await dbModule.upsert_Read(instance, transaction);
@@ -99,7 +102,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * This function first retrieves all documents in the collection.
 	 * It then deletes each document in the collection in parallel chunks for efficiency.
 	 *
-	 * @param collectionName - The name of the collection in which the documents will be deleted.
+	 * @param queryParams - Params includes the name of the collection in which the documents will be deleted.
 	 * @returns - A promise that performs the deletion operation.
 	 * @throws - A BadImplementationException if no corresponding module is found for the given collection.
 	 */
@@ -189,7 +192,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	}
 
 	/**
-	 * Inserts a document into the '_archived' subcollection.
+	 * Inserts a document into the '_archived' sub-collection.
 	 * This function is used for archiving the previous state of the document before it was changed.
 	 *
 	 * @param dbModule - The Firestore database module the document belongs to.
@@ -207,7 +210,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		// Deep clone the document before mutation
 		let dbInstance = deepClone(before);
 
-		// Reference to the _archived subcollection
+		// Reference to the _archived sub-collection
 		const subCollection = collectionRef.doc(dbInstance._id).collection(Const_ArchivedCollectionPath);
 
 		// Remove the keys from the original object that shouldn't be in the archive
@@ -221,7 +224,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		dbInstance.__updated = timestamp;
 		dbInstance.__created = timestamp;
 
-		// Insert the archived document into the _archived subcollection
+		// Insert the archived document into the _archived sub-collection
 		await subCollection.doc(dbInstance._id).set(dbInstance);
 	}
 
@@ -269,7 +272,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		if (!dbModule)
 			throw new BadImplementationException('no db module found');
 
-		// If there's no previous document state or it's marked for hard deletion, exit the function
+		// If there's no previous document state, or it's marked for hard deletion, exit the function
 		if (!before)
 			return;
 
