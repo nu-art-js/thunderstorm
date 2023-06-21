@@ -30,7 +30,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	protected readonly moduleMapper: { [key: string]: ModuleBE_BaseDB<DBType> }; // Module mapper, mapping collection name to module
 
 	/**
-	 * Constructor initializes TTL, lastUpdatedTTL and moduleMapper.
+	 * Constructor initializes TTL, lastUpdatedTTL moduleMapper and sets api routes for the module.
 	 */
 	constructor() {
 		super('{collectionName}');
