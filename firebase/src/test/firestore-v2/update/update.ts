@@ -27,10 +27,11 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			_instance.stringValue = updatedStringValue;
 			return [_instance];
 		},
+
 		input: {
 			toInsert: [testInstance1],
 			updateAction: async (collection, inserted) => {
-				await collection.update(inserted[0]._id!, {stringValue: updatedStringValue});
+				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue});
 			}
 		}
 	},
@@ -44,7 +45,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		input: {
 			toInsert: [testInstance1],
 			updateAction: async (collection, inserted) => {
-				await collection.update(inserted[0]._id!, {stringValue: undefined});
+				await collection.update.item({_id: inserted[0]._id!, stringValue: undefined});
 			}
 		}
 	},
@@ -58,7 +59,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		input: {
 			toInsert: [testInstance1],
 			updateAction: async (collection, inserted) => {
-				await collection.update(inserted[0]._id!, {'nestedObject.one.key': updatedStringValue});
+				await collection.update.item({_id: inserted[0]._id!, 'nestedObject.one.key': updatedStringValue});
 			}
 		}
 	},
@@ -74,7 +75,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		input: {
 			toInsert: [testInstance1],
 			updateAction: async (collection, inserted) => {
-				await collection.update(inserted[0]._id!, {nestedObject: {one: {key: updatedStringValue}}});
+				await collection.update.item({_id: inserted[0]._id!, nestedObject: {one: {key: updatedStringValue}}});
 			}
 		}
 	},
