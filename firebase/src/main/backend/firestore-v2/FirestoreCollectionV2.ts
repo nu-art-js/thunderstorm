@@ -192,13 +192,13 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot[];
 	}
 
-	protected async _update(updateData: UpdateObject<Type>) {
+	protected _update = async (updateData: UpdateObject<Type>) => {
 		const doc = this.getDocWrapper(updateData._id);
 		await this.preUpdateData(updateData);
 		return doc.update(updateData);
-	}
+	};
 
-	protected async _updateBulk(updateData: UpdateObject<Type>[]) {
+	protected _updateBulk = async (updateData: UpdateObject<Type>[]) => {
 		const toUpdate = await Promise.all(updateData.map(async instance => await this.preUpdateData(instance)));
 
 		const bulk = this.wrapper.firestore.bulkWriter();
@@ -206,7 +206,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			_bulk.update(this.getDocWrapper(instance._id).ref, instance);
 			return _bulk;
 		}, bulk).close();
-	}
+	};
 
 	private async preUpdateData(updateData: UpdateObject<Type>) {
 		// @ts-ignore
