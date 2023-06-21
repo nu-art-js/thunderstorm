@@ -18,13 +18,13 @@ export type TestInputValue = PreDB<DB_Type> | PreDB<DB_Type>[];
 
 export type InsertTestInput = {
 	value: TestInputValue;
-	expectInsertToThrow?: boolean;
+	expectCreateToThrow?: boolean;
 	check?: (collection: FirestoreCollectionV2<DB_Type>, expectedItem: TestInputValue) => Promise<void>
 }
 
-export type InsertTest = TestSuite<InsertTestInput, TestInputValue>;
+export type CreateTest = TestSuite<InsertTestInput, TestInputValue>;
 
-export const insertTestCases: InsertTest['testcases'] = [
+export const createTestCases: CreateTest['testcases'] = [
 	{
 		description: '1 item',
 		result: [testInstance1],
@@ -81,7 +81,7 @@ export const insertTestCases: InsertTest['testcases'] = [
 		description: 'id exists',
 		result: [testInstance1],
 		input: {
-			expectInsertToThrow: true,
+			expectCreateToThrow: true,
 			value: [{...testInstance1, _id: 'zevel'}]
 		}
 	}

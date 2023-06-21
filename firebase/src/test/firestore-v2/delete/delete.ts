@@ -149,7 +149,7 @@ export const TestSuite_FirestoreV2_Delete: Test = {
 		await collection.deleteCollection();
 
 		const toInsert = deepClone(testCase.input.toInsert);
-		const inserted = await collection.insert.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
+		const inserted = await collection.create.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
 
 		await testCase.input.deleteAction(collection, inserted);
 		const remainingDBItems = await collection.query.all({where: {}});
