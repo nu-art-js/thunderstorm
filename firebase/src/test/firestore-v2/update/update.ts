@@ -61,6 +61,20 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		}
 	},
 	{
+		description: 'insert 1 & delete nested field',
+		result: () => {
+			const _instance: DeepPartial<PreDB<DB_Type>> = deepClone(testInstance1);
+			delete _instance.stringValue;
+			return [_instance as PreDB<DB_Type>];
+		},
+		input: {
+			toInsert: [testInstance1],
+			updateAction: async (collection, inserted) => {
+				await collection.update.item({_id: inserted[0]._id!, 'nestedObject.one.key': undefined});
+			}
+		}
+	},
+	{
 		description: 'insert 1 & update 1 nested field (dot notation)',
 		result: () => {
 			const _instance = deepClone(testInstance1);
@@ -103,6 +117,30 @@ export const TestCases_FB_Update: Test['testcases'] = [
 				const _test1 = inserted.find(_item => _item.stringValue === testInstance1.stringValue);
 				const _test2 = inserted.find(_item => _item.stringValue === testInstance2.stringValue);
 				await collection.update.all([{_id: _test1!._id, stringValue: updatedStringValue1}, {_id: _test2!._id, stringValue: updatedStringValue2}]);
+			}
+		}
+	},
+	{
+		description: 'insert 1 & update empty object',
+		result: () => {
+			return [deepClone(testInstance1)];
+		},
+		input: {
+			toInsert: [testInstance1],
+			updateAction: async (collection, inserted) => {
+				await collection.update.item({_id: inserted[0]._id});
+			}
+		}
+	},
+	{
+		description: 'insert 3 & update empty object',
+		result: () => {
+			return deepClone([testInstance1, testInstance2, testInstance3]);
+		},
+		input: {
+			toInsert: [testInstance1, testInstance2, testInstance3],
+			updateAction: async (collection, inserted) => {
+				await collection.update.all(inserted.map(_item => ({_id: _item._id})));
 			}
 		}
 	},
