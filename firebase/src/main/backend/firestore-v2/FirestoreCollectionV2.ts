@@ -125,8 +125,9 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	prepareObjForSet(preDBObject: PreDB<Type>): Type {
 		const now = currentTimeMillis();
-		preDBObject._id = generateId();
-		preDBObject.__updated = preDBObject.__created = now;
+		preDBObject._id ??= generateId();
+		preDBObject.__created ??= now;
+		preDBObject.__updated = now;
 		return preDBObject as Type;
 	}
 
@@ -260,7 +261,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private async preUpdateData(updateData: UpdateObject<Type>) {
 		delete updateData.__created;
 		updateData.__updated = currentTimeMillis();
-		this.updateDeletedFields(updateData)
+		this.updateDeletedFields(updateData);
 		await this.assertUpdateData(updateData);
 		return updateData;
 	}
@@ -282,7 +283,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			} else {
 				this.updateDeletedFields(_value);
 			}
-		})
+		});
 	}
 
 	private async assertUpdateData(updateData: UpdateData<Type>) {
