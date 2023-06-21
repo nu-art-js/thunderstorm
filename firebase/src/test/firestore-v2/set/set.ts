@@ -1,11 +1,11 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {firestore, testInstance1} from '../_core/consts';
+import {firestore, testInstance1, testInstance2, testInstance3} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {compare, deepClone, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {updatedStringValue1} from "../update/update";
+import {updatedStringValue1, updatedStringValue2} from "../update/update";
 
 chai.use(require('chai-as-promised'));
 
@@ -42,6 +42,34 @@ export const TestCases_FB_Set: Test['testcases'] = [
 			setAction: async (collection, inserted) => {
 				inserted[0].stringValue = updatedStringValue1;
 				await collection.set.item(inserted[0]);
+			}
+		}
+	},
+	{
+		description: 'set 3 new items',
+		result: () => {
+			return deepClone([testInstance1, testInstance2, testInstance3]);
+		},
+		input: {
+			toCreate: [],
+			setAction: async (collection, inserted) => {
+				await collection.set.all(deepClone([testInstance1, testInstance2, testInstance3]));
+			}
+		}
+	},
+	{
+		description: 'set 3 existing items',
+		result: () => {
+			const _instance1 = deepClone(testInstance1);
+			const _instance2 = deepClone(testInstance2);
+			return [{..._instance1, stringValue: updatedStringValue1}, {..._instance2, stringValue: updatedStringValue2}, deepClone(testInstance3)];
+		},
+		input: {
+			toCreate: [testInstance1, testInstance2, testInstance3],
+			setAction: async (collection, inserted) => {
+				const _test1 = inserted.find(_item => _item.stringValue === testInstance1.stringValue)!;
+				const _test2 = inserted.find(_item => _item.stringValue === testInstance2.stringValue)!;
+				await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {..._test2, stringValue: updatedStringValue2}]);
 			}
 		}
 	},
