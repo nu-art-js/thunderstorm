@@ -213,13 +213,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private async assertUpdateData(updateData: UpdateData<Type>) {
 	}
 
-	async upsert(item: PreDB<Type> | UpdateData<Type>) {
-		if (!item._id)
-			return await this.insert.item(item as PreDB<Type>);
-
-		return await this.update(item._id as UniqueId, item as UpdateData<Type>);
-	}
-
 	/**
 	 * Get DocWrappers per the db objects from the query
 	 * @param ourQuery
@@ -248,12 +241,21 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private assertUniqueness(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
 	}
 
+	upsert = {
+		single: async (item: PreDB<Type> | UpdateData<Type>) => {
+			if (!item._id)
+				return await this.insert.item(item as PreDB<Type>);
+
+			return await this.update(item._id as UniqueId, item as UpdateData<Type>);
+		},
+	};
+
 	query = {
 		unique: async (_id: UniqueId, transaction?: Transaction) => {
 			return await this.getDocWrapper(_id).get(transaction);
 		},
 		byId: async (all_ids: UniqueId[], transaction?: Transaction) => await this.queryByIds(all_ids),
-		byQuery: async (query?: FirestoreQuery<Type>) => {
+		all: async (query?: FirestoreQuery<Type>) => {
 			const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
 			return ((await myQuery.get()).docs as FirestoreType_DocumentSnapshot[]).map(snapshot => snapshot.data() as Type);
 		},

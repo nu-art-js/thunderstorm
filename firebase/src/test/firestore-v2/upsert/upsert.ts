@@ -5,9 +5,9 @@ import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {compare, deepClone, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {updatedStringValue} from "../update/update";
+import {updatedStringValue} from '../update/update';
 
-chai.use(require('chai-as-promised'))
+chai.use(require('chai-as-promised'));
 
 
 type Input = {
@@ -26,7 +26,7 @@ export const TestCases_FB_Upsert: Test['testcases'] = [
 		input: {
 			toInsert: [],
 			upsertAction: async (collection, inserted) => {
-				await collection.upsert(deepClone(testInstance1));
+				await collection.upsert.single(deepClone(testInstance1));
 			}
 		}
 	},
@@ -41,7 +41,7 @@ export const TestCases_FB_Upsert: Test['testcases'] = [
 			toInsert: [testInstance1],
 			upsertAction: async (collection, inserted) => {
 				inserted[0].stringValue = updatedStringValue;
-				await collection.upsert(inserted[0]);
+				await collection.upsert.single(inserted[0]);
 			}
 		}
 	},
@@ -58,7 +58,7 @@ export const TestSuite_FirestoreV2_Upsert: Test = {
 		const inserted = await collection.insert.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
 
 		await testCase.input.upsertAction(collection, inserted);
-		const remainingDBItems = await collection.queryInstances({where: {}});
+		const remainingDBItems = await collection.query.all({where: {}});
 		expect(true).to.eql(compare(sortArray(remainingDBItems.map(removeDBObjectKeys), item => item.stringValue), sortArray(testCase.result(), item => item.stringValue)));
 	}
 };
