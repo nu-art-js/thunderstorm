@@ -10,7 +10,7 @@ import {
 	Hour,
 	removeDBObjectKeys
 } from '@nu-art/ts-common';
-import {_EmptyQuery, ApiDef_Archiving, dbIdLength, RequestBody_HardDeleteUnique, RequestQuery_DeleteAll} from '../shared/index';
+import {_EmptyQuery, ApiDef_Archiving, dbIdLength, RequestBody_HardDeleteUnique, RequestQuery_DeleteAll, RequestQuery_GetHistory} from '../shared/index';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
 import {Clause_Where} from '@nu-art/firebase';
@@ -39,8 +39,11 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		this.lastUpdatedTTL = Day; // Default TTL for last updated is one day
 		this.TTL = Hour * 2; // Default TTL is two hours
 
-		addRoutes([createBodyServerApi(ApiDef_Archiving.vv1.hardDeleteUnique, this.hardDeleteUnique),
-			createQueryServerApi(ApiDef_Archiving.vv1.hardDeleteAll, this.hardDeleteAll)]);
+		addRoutes([
+			createBodyServerApi(ApiDef_Archiving.vv1.hardDeleteUnique, this.hardDeleteUnique),
+			createQueryServerApi(ApiDef_Archiving.vv1.hardDeleteAll, this.hardDeleteAll),
+			createQueryServerApi(ApiDef_Archiving.vv1.getDocumentHistory, this.getDocumentHistory)
+		]);
 	}
 
 	/**
@@ -59,46 +62,6 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 				this.moduleMapper[dbModule.dbDef.dbName] = dbModule;
 		});
 	}
-
-	/**
-	 * Checks if the Time-To-Live (TTL) for a document instance has been exceeded.
-	 *
-	 * @param instance - The document instance to check.
-	 * @param dbModule - The Firestore database module the document belongs to.
-	 * @returns - A boolean indicating whether the TTL has been exceeded (true) or not (false).
-	 */
-	private checkTTL(instance: DBType, dbModule: ModuleBE_BaseDB<DBType>) {
-		const timestamp = currentTimeMillis();
-		const TTL = dbModule.dbDef.TTL || this.TTL;
-
-		// If TTL is not set or the document is not updated, return false
-		if (TTL === -1 || !instance.__updated)
-			return false;
-
-		// Check if the current time is past the document's TTL
-		return timestamp > (instance.__updated + TTL);
-	}
-
-	/**
-	 * Checks if the `lastUpdatedTTL` for a document instance has been exceeded.
-	 * This represents a secondary TTL which is based on the last update time of the document.
-	 *
-	 * @param instance - The document instance to check.
-	 * @param dbModule - The Firestore database module the document belongs to.
-	 * @returns - A boolean indicating whether the `lastUpdatedTTL` has been exceeded (true) or not (false).
-	 */
-	private checkLastUpdatedTTL(instance: DBType, dbModule: ModuleBE_BaseDB<DBType>) {
-		const timestamp = currentTimeMillis();
-		const lastUpdatedTTL = dbModule.dbDef.lastUpdatedTTL || this.lastUpdatedTTL;
-
-		// If lastUpdatedTTL is not set or the document is not updated, return false
-		if (lastUpdatedTTL === -1 || !instance.__updated)
-			return false;
-
-		// Check if the current time is past the document's lastUpdatedTTL
-		return timestamp > (instance.__updated + lastUpdatedTTL);
-	}
-
 
 	/**
 	 * Deletes a unique document by its ID.
@@ -154,6 +117,76 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		}))));
 	};
 
+	/**
+	 * Asynchronously retrieves the document history from the '_archived' collection group.
+	 *
+	 * This function takes a RequestQuery_GetHistory object as a parameter, which contains the name of the collection
+	 * and the ID of the document for which the history should be retrieved.
+	 * It then finds the respective Firestore DB module for the provided collection.
+	 *
+	 * If no module is found for the given collection, a BadImplementationException is thrown.
+	 *
+	 * The function queries the '_archived' collection group where the '_originDocId' field matches the provided
+	 * document ID, and orders the results by the '__created' timestamp in descending order.
+	 * It then maps the document snapshots to their respective data, creating an array of DBType documents, which is returned.
+	 *
+	 * @param queryParams - The request query parameters containing the collection name and the document ID.
+	 * @returns - An array of DBType documents representing the history of the specified document.
+	 * @throws - A BadImplementationException if no module is found for the given collection.
+	 */
+	getDocumentHistory = async (queryParams: RequestQuery_GetHistory) => {
+		const {collectionName, _id} = queryParams;
+		const dbModule = this.moduleMapper[collectionName];
+
+		if (!dbModule)
+			throw new BadImplementationException('no db module found');
+
+		const collectionGroup = dbModule.collection.collection.firestore.collectionGroup('_archived');
+		const query = collectionGroup.where('_originDocId', '==', _id).orderBy('__created', 'desc');
+		const snapshot = await query.get();
+		const docs = snapshot.docs.map(doc => doc.data());
+
+		return docs.filter((doc: any) => !doc.__collectionName) as DBType[];
+	};
+
+	/**
+	 * Checks if the Time-To-Live (TTL) for a document instance has been exceeded.
+	 *
+	 * @param instance - The document instance to check.
+	 * @param dbModule - The Firestore database module the document belongs to.
+	 * @returns - A boolean indicating whether the TTL has been exceeded (true) or not (false).
+	 */
+	private checkTTL(instance: DBType, dbModule: ModuleBE_BaseDB<DBType>) {
+		const timestamp = currentTimeMillis();
+		const TTL = dbModule.dbDef.TTL || this.TTL;
+
+		// If TTL is not set or the document is not updated, return false
+		if (TTL === -1 || !instance.__updated)
+			return false;
+
+		// Check if the current time is past the document's TTL
+		return timestamp > (instance.__updated + TTL);
+	}
+
+	/**
+	 * Checks if the `lastUpdatedTTL` for a document instance has been exceeded.
+	 * This represents a secondary TTL which is based on the last update time of the document.
+	 *
+	 * @param instance - The document instance to check.
+	 * @param dbModule - The Firestore database module the document belongs to.
+	 * @returns - A boolean indicating whether the `lastUpdatedTTL` has been exceeded (true) or not (false).
+	 */
+	private checkLastUpdatedTTL(instance: DBType, dbModule: ModuleBE_BaseDB<DBType>) {
+		const timestamp = currentTimeMillis();
+		const lastUpdatedTTL = dbModule.dbDef.lastUpdatedTTL || this.lastUpdatedTTL;
+
+		// If lastUpdatedTTL is not set or the document is not updated, return false
+		if (lastUpdatedTTL === -1 || !instance.__updated)
+			return false;
+
+		// Check if the current time is past the document's lastUpdatedTTL
+		return timestamp > (instance.__updated + lastUpdatedTTL);
+	}
 
 	/**
 	 * Inserts a document into the '_archived' subcollection.
