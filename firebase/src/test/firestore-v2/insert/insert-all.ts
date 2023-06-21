@@ -15,6 +15,8 @@ export const TestCases_FB_CreateAll: CreateTest['testcases'] = [
 		input: {
 			value: [{...testInstance1, _id: 'zevel'}],
 			check: async (collection, expectedResult) => {
+				// @ts-ignore
+				const a = "";
 				// const toCreate = deepClone({...testInstance1, _id: 'zevel'});
 				// // insert twice and expect to reject
 				// await expect(collection.create.all(Array.isArray(toCreate) ? toCreate : [toCreate])).to.be.rejectedWith(FirestoreException);
