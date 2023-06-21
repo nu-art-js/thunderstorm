@@ -113,8 +113,6 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 			},
 			deleteQuery: apiWithBody(apiDef.v1.deleteQuery, this.onEntriesDeleted),
 			deleteAll: apiWithQuery(apiDef.v1.deleteAll, () => this.v1.sync().executeSync()),
-			hardDeleteUnique: apiWithQuery(apiDef.v1.hardDeleteUnique, () => this.v1.sync().executeSync()),
-			hardDeleteAll: apiWithQuery(apiDef.v1.hardDeleteAll, () => this.v1.sync().executeSync()),
 			upgradeCollection: apiWithBody(apiDef.v1.upgradeCollection, () => this.v1.sync().executeSync())
 		};
 

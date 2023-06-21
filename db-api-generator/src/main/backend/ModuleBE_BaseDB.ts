@@ -27,7 +27,6 @@ import {
 	addItemToArray,
 	BadImplementationException,
 	batchAction,
-	batchActionParallel,
 	currentTimeMillis,
 	Day,
 	DB_Object,
@@ -274,37 +273,6 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 
 		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, start);
 		return toReturn;
-	}
-
-	/**
-	 * Deletes a unique document by its ID.
-	 * This function first queries for the document with the given ID inside a transaction.
-	 * If the document is found, it is marked for deletion and an upsert operation is performed.
-	 * The upsert operation triggers the Firestore OnUpdate event which will delete the document and its '_archived' subcollection.
-	 *
-	 * @param _id - The ID of the document to be deleted.
-	 * @returns - A promise that performs the deletion operation.
-	 * @throws - A BadImplementationException if the document with the given ID is not found.
-	 */
-	async hardDeleteUnique(_id: string, dbInstance?: DBType) {
-		return this.runInTransaction(async (transaction) => {
-			const instance = dbInstance ?? await transaction.queryUnique(this.collection, {where: {_id} as Clause_Where<DBType>});
-
-			if (!instance)
-				throw new BadImplementationException(`couldn't find doc with id ${_id}`);
-
-			//make sure trigger will delete object and it's _archived collection
-			instance.__hardDelete = true;
-
-			const processor = await this.upsert_Read(instance, transaction);
-			return processor();
-		});
-	}
-
-
-	async hardDeleteAll() {
-		const collectionItems = await this.query(_EmptyQuery);
-		return batchActionParallel(collectionItems, 10, (chunk) => Promise.all(chunk.map(item => this.hardDeleteUnique(item._id, item))));
 	}
 
 	async querySync(syncQuery: FirestoreQuery<DBType>, request: ExpressRequest): Promise<Response_DBSync<DBType>> {
