@@ -23,7 +23,7 @@ import {
 	__stringify,
 	addItemToArray,
 	deepClone,
-	dispatch_onServerError,
+	dispatch_onApplicationNotification,
 	ImplementationMissingException,
 	Module,
 	ServerErrorSeverity,
@@ -88,7 +88,7 @@ export abstract class FirebaseFunction<Config = any>
 			try {
 				await toExecute();
 			} catch (e: any) {
-				await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, e.message);
+				await dispatch_onApplicationNotification.dispatchModuleAsync(ServerErrorSeverity.Critical, this, e.message);
 			}
 		}
 
@@ -332,7 +332,7 @@ export abstract class Firebase_StorageFunction<ConfigType extends BucketConfigs 
 						'\n' + `File changed ${object.name}` + '\n with attributes: ' + __stringify(context) + '\n' + __stringify(e);
 					this.logError(_message);
 					try {
-						await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, {message: _message});
+						await dispatch_onApplicationNotification.dispatchModuleAsync(ServerErrorSeverity.Critical, this, {message: _message});
 					} catch (_e: any) {
 						this.logError('Error while handing bucket listener error', _e);
 					}
@@ -367,7 +367,7 @@ export abstract class Firebase_PubSubFunction<T extends TS_Object>
 				'\n' + ` to topic ${this.topic}` + '\n with attributes: ' + __stringify(originalMessage.attributes) + '\n' + __stringify(e);
 			this.logError(_message);
 			try {
-				await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, {message: _message});
+				await dispatch_onApplicationNotification.dispatchModuleAsync(ServerErrorSeverity.Critical, this, {message: _message});
 			} catch (_e: any) {
 				this.logError('Error while handing pubsub error', _e);
 			}
