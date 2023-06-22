@@ -6,6 +6,9 @@
     "rules": ".firebase_config/firestore.rules",
     "indexes": ".firebase_config/firestore.indexes.json"
   },
+  "storage": {
+    "rules": ".firebase_config/storage.rules"
+  },
   "functions": {
     "predeploy": [
       "echo \"Trying to deploy LOCAL env... Failing\" && exit 2"
@@ -21,6 +24,9 @@
     "ui": {
       "enabled": true,
       "port": "5009"
+    },
+    "storage": {
+      "enabled": true
     }
   }
 }

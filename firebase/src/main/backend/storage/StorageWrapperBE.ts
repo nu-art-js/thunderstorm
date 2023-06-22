@@ -30,10 +30,12 @@ export class StorageWrapperBE
 
 	// readonly storage: FirebaseType_Storage;
 	private storage: FirebaseType_Storage;
+	private readonly local?: boolean;
 
-	constructor(firebaseSession: FirebaseSession<any>) {
+	constructor(firebaseSession: FirebaseSession<any>, local?: boolean) {
 		super(firebaseSession);
 		this.storage = getStorage(firebaseSession.app);
+		this.local = local;
 	}
 
 	async getMainBucket(): Promise<BucketWrapper> {
@@ -49,7 +51,9 @@ export class StorageWrapperBE
 		if (!_bucketName.startsWith('gs://'))
 			throw new BadImplementationException('Bucket name MUST start with \'gs://\'');
 
-		const bucket = (await this.storage.bucket(_bucketName).get({autoCreate: true}))[0];
+		let bucket = this.storage.bucket(_bucketName);
+		if (!this.local)
+			bucket = (await bucket.get({autoCreate: true}))[0];
 		// @ts-ignore
 		return new BucketWrapper(_bucketName, bucket, this);
 	}
