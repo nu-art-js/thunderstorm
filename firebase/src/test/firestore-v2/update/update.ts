@@ -14,7 +14,8 @@ type Input = {
 	updateAction: (collection: FirestoreCollectionV2<DB_Type>, inserted: DB_Type[]) => Promise<void>
 	toCreate: PreDB<DB_Type>[]
 }
-type Test = TestSuite<Input, () => PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
+type Result = () => { updated: PreDB<DB_Type>[], notUpdated?: PreDB<DB_Type>[] };
+type Test = TestSuite<Input, Result>; //result - the items left in the collection after deletion
 type DeepPartial<T> = Partial<{ [P in keyof T]: DeepPartial<T[P]> }>;
 
 export const updatedStringValue1 = 'test update';
@@ -25,7 +26,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		description: 'insert 1 & update 1 field',
 		result: () => {
 			const _instance = deepClone(testInstance1);
-			return [{..._instance, stringValue: updatedStringValue1}];
+			return {updated: [{..._instance, stringValue: updatedStringValue1}]};
 		},
 		input: {
 			toCreate: [testInstance1],
@@ -37,12 +38,17 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		description: 'insert 1 & update multiple fields',
 		result: () => {
 			const _instance = deepClone(testInstance1);
-			return [{..._instance, stringValue: updatedStringValue1, numeric:1000, stringArray: [updatedStringValue1, updatedStringValue1]}];
+			return {updated: [{..._instance, stringValue: updatedStringValue1, numeric: 1000, stringArray: [updatedStringValue1, updatedStringValue1]}]};
 		},
 		input: {
 			toCreate: [testInstance1],
 			updateAction: async (collection, inserted) => {
-				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue1, numeric: 1000, stringArray: [updatedStringValue1, updatedStringValue1]});
+				await collection.update.item({
+					_id: inserted[0]._id!,
+					stringValue: updatedStringValue1,
+					numeric: 1000,
+					stringArray: [updatedStringValue1, updatedStringValue1]
+				});
 			}
 		}
 	},
@@ -51,7 +57,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		result: () => {
 			const _instance: DeepPartial<PreDB<DB_Type>> = deepClone(testInstance1);
 			delete _instance.stringValue;
-			return [_instance as PreDB<DB_Type>];
+			return {updated: [_instance as PreDB<DB_Type>]};
 		},
 		input: {
 			toCreate: [testInstance1],
@@ -65,7 +71,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		result: () => {
 			const _instance: DeepPartial<PreDB<DB_Type>> = deepClone(testInstance1);
 			delete _instance.nestedObject!.one!.key;
-			return [_instance as PreDB<DB_Type>];
+			return {updated: [_instance as PreDB<DB_Type>]};
 		},
 		input: {
 			toCreate: [testInstance1],
@@ -79,7 +85,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		result: () => {
 			const _instance = deepClone(testInstance1);
 			_instance.nestedObject!.one.key = updatedStringValue1;
-			return [_instance];
+			return {updated: [_instance]};
 		},
 		input: {
 			toCreate: [testInstance1],
@@ -95,7 +101,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			_instance.nestedObject!.one!.key = updatedStringValue1;
 			delete _instance.nestedObject!.one!.value;
 			delete _instance.nestedObject!.two;
-			return [_instance as PreDB<DB_Type>];
+			return {updated: [_instance as PreDB<DB_Type>]};
 		},
 		input: {
 			toCreate: [testInstance1],
@@ -109,7 +115,9 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		result: () => {
 			const _instance1 = deepClone(testInstance1);
 			const _instance2 = deepClone(testInstance2);
-			return [{..._instance1, stringValue: updatedStringValue1}, {..._instance2, stringValue: updatedStringValue2}, deepClone(testInstance3)];
+			return {
+				updated: [{..._instance1, stringValue: updatedStringValue1}, {..._instance2, stringValue: updatedStringValue2}], notUpdated: [deepClone(testInstance3)]
+			};
 		},
 		input: {
 			toCreate: [testInstance1, testInstance2, testInstance3],
@@ -123,7 +131,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 	{
 		description: 'insert 1 & update empty object',
 		result: () => {
-			return [deepClone(testInstance1)];
+			return {updated: [deepClone(testInstance1)]};
 		},
 		input: {
 			toCreate: [testInstance1],
@@ -135,7 +143,7 @@ export const TestCases_FB_Update: Test['testcases'] = [
 	{
 		description: 'insert 3 & update empty object',
 		result: () => {
-			return deepClone([testInstance1, testInstance2, testInstance3]);
+			return {updated: deepClone([testInstance1, testInstance2, testInstance3])};
 		},
 		input: {
 			toCreate: [testInstance1, testInstance2, testInstance3],
@@ -157,8 +165,26 @@ export const TestSuite_FirestoreV2_Update: Test = {
 		const inserted = await collection.create.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
 
 		await testCase.input.updateAction(collection, inserted);
-		const remainingDBItems = await collection.query.custom({where: {}});
-		expect(true).to.eql(compare(sortArray(remainingDBItems.map(removeDBObjectKeys), item => item.stringValue), sortArray(testCase.result(), item => item.stringValue)));
+
+		const sortedRemaining = sortArray((await collection.query.custom({where: {}})), item => item.stringValue);
+		const sortedInserted = sortArray(inserted, item => item.stringValue);
+
+		const result = testCase.result();
+		const sortedResult = sortArray([...result.updated, ...result.notUpdated ?? []], item => item.stringValue);
+
+		//assert items have been updated correctly
+		expect(true).to.eql(compare(sortedRemaining.map(removeDBObjectKeys), sortedResult));
+		//assert __created didn't change
+		expect(true).to.eql(sortedRemaining.every((_item, i) => _item.__created === sortedInserted[i].__created));
+		//assert result.updated timestamps correctly updated
+		result.updated.forEach((_preDBUpdated) => {
+			const _itemIndex = sortedRemaining.findIndex(_item => _item.stringValue === _preDBUpdated.stringValue);
+			expect(sortedInserted[_itemIndex].__updated).to.be.lt(sortedRemaining[_itemIndex].__updated);
+		})
+		result.notUpdated?.forEach((_preDBNotUpdated) => {
+			const _itemIndex = sortedRemaining.findIndex(_item => _item.stringValue === _preDBNotUpdated.stringValue);
+			expect(sortedInserted[_itemIndex].__updated).to.eql(sortedRemaining[_itemIndex].__updated);
+		})
 	}
 };
 
