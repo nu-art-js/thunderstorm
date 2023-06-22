@@ -79,9 +79,9 @@ export class ModuleBE_Slack_Class
 	}
 
 	public async postMessage(text: string, channel?: string, thread?: ThreadPointer) {
-		const message: ChatPostMessageArguments = {
+		const message: PreSendSlackStructuredMessage = {
 			text,
-			channel: channel!,
+			channel: channel ?? this.config.defaultChannel,
 		};
 
 		//Block same message on throttling time
@@ -90,7 +90,7 @@ export class ModuleBE_Slack_Class
 			return;
 
 		//Post and return thread
-		return await this.postMessageImpl(message, thread);
+		return await this.postMessageImpl(message as ChatPostMessageArguments, thread);
 	}
 
 	public async postFile(file: any, name: string, thread?: ThreadPointer) {
@@ -118,8 +118,10 @@ export class ModuleBE_Slack_Class
 	}
 
 	private async postMessageImpl(message: ChatPostMessageArguments, threadPointer?: ThreadPointer): Promise<ThreadPointer> {
-		if (threadPointer)
+		if (threadPointer) {
 			message.thread_ts = threadPointer.ts;
+			message.channel = threadPointer.channel;
+		}
 		this.logDebug(`Sending message in ${threadPointer ? 'thread' : 'channel'}`, message);
 		const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
 

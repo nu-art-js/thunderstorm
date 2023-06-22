@@ -20,7 +20,7 @@
  */
 
 import {Const_UniqueKey, DB_Object_validator, DBDef, Default_UniqueKey, DefaultDBVersion} from '..';
-import {DB_Object, Dispatcher, exists, KeysOfDB_Object, TS_Object, tsValidateResult, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {Day, DB_Object, Dispatcher, exists, Hour, KeysOfDB_Object, TS_Object, tsValidateResult, ValidatorTypeResolver} from '@nu-art/ts-common';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 
 
@@ -33,6 +33,8 @@ export type DBApiBEConfig<DBType extends DB_Object, Ks extends keyof DBType = De
 	lockKeys: (keyof DBType)[]
 	itemName: string;
 	versions: string[];
+	TTL: number;
+	lastUpdatedTTL: number;
 }
 
 export const getModuleBEConfig = <T extends DB_Object>(dbDef: DBDef<T>): DBApiBEConfig<T> => {
@@ -54,6 +56,8 @@ export const getModuleBEConfig = <T extends DB_Object>(dbDef: DBDef<T>): DBApiBE
 		lockKeys: dbDef.lockKeys || dbDef.uniqueKeys || [...Const_LockKeys],
 		itemName: dbDef.entityName,
 		versions: dbDef.versions || [DefaultDBVersion],
+		TTL: dbDef.TTL || Hour * 2,
+		lastUpdatedTTL: dbDef.lastUpdatedTTL || Day
 	};
 };
 
