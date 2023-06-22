@@ -122,8 +122,8 @@ export const TestCases_FB_Update: Test['testcases'] = [
 		input: {
 			toCreate: [testInstance1, testInstance2, testInstance3],
 			updateAction: async (collection, inserted) => {
-				const _test1 = inserted.find(_item => _item.stringValue === testInstance1.stringValue);
-				const _test2 = inserted.find(_item => _item.stringValue === testInstance2.stringValue);
+				const _test1 = inserted.find(_item => _item._uniqueId === testInstance1._uniqueId);
+				const _test2 = inserted.find(_item => _item._uniqueId === testInstance2._uniqueId);
 				await collection.update.all([{_id: _test1!._id, stringValue: updatedStringValue1}, {_id: _test2!._id, stringValue: updatedStringValue2}]);
 			}
 		}
@@ -164,27 +164,26 @@ export const TestSuite_FirestoreV2_Update: Test = {
 		const toInsert = deepClone(testCase.input.toCreate);
 		const inserted = await collection.create.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
 
-		await testCase.input.updateAction(collection, inserted);
+		await testCase.input.updateAction(collection, deepClone(inserted));
 
-		const sortedRemaining = sortArray((await collection.query.custom({where: {}})), item => item.stringValue);
-		const sortedInserted = sortArray(inserted, item => item.stringValue);
+		const sortedRemaining = sortArray((await collection.query.custom({where: {}})), item => item._uniqueId);
+		const sortedInserted = sortArray(inserted, item => item._uniqueId);
 
 		const result = testCase.result();
-		const sortedResult = sortArray([...result.updated, ...result.notUpdated ?? []], item => item.stringValue);
+		const allResults = sortArray([...result.updated, ...result.notUpdated ?? []], item => item._uniqueId);
 
 		//assert items have been updated correctly
-		expect(true).to.eql(compare(sortedRemaining.map(removeDBObjectKeys), sortedResult));
+		expect(true).to.eql(compare(sortedRemaining.map(removeDBObjectKeys), allResults));
 		//assert __created didn't change
 		expect(true).to.eql(sortedRemaining.every((_item, i) => _item.__created === sortedInserted[i].__created));
 		//assert result.updated timestamps correctly updated
 		result.updated.forEach((_preDBUpdated) => {
-			const _itemIndex = sortedRemaining.findIndex(_item => _item.stringValue === _preDBUpdated.stringValue);
+			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBUpdated._uniqueId);
 			expect(sortedInserted[_itemIndex].__updated).to.be.lt(sortedRemaining[_itemIndex].__updated);
 		})
 		result.notUpdated?.forEach((_preDBNotUpdated) => {
-			const _itemIndex = sortedRemaining.findIndex(_item => _item.stringValue === _preDBNotUpdated.stringValue);
+			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBNotUpdated._uniqueId);
 			expect(sortedInserted[_itemIndex].__updated).to.eql(sortedRemaining[_itemIndex].__updated);
 		})
 	}
 };
-

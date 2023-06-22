@@ -17,7 +17,7 @@
  */
 
 import {DB_Type, FB_ArrayType} from './types';
-import {generateHex, PreDB} from '@nu-art/ts-common';
+import {generateHex, PreDB, UniqueId} from '@nu-art/ts-common';
 import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend';
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
 import {TestInputValue} from '../insert/consts';
@@ -65,6 +65,7 @@ export const testItem8: FB_ArrayType = {key: testString8, value: testNumber8};
 export const testItem9: FB_ArrayType = {key: testString9, value: testNumber9};
 
 export type testInstance = {
+	_uniqueId: UniqueId,
 	stringValue: String,
 	booleanValue: false,
 	numeric: number,
@@ -74,6 +75,7 @@ export type testInstance = {
 };
 
 export const testInstance1: PreDB<DB_Type> = Object.freeze({
+	_uniqueId: '24ad9549503c17e832bf4bbbdb33768a',
 	stringValue: testString1,
 	booleanValue: false,
 	numeric: testNumber1,
@@ -83,6 +85,7 @@ export const testInstance1: PreDB<DB_Type> = Object.freeze({
 });
 
 export const testInstance2: PreDB<DB_Type> = Object.freeze({
+	_uniqueId: 'fc191221b26d275a21e5070487e270b3',
 	stringValue: testString2,
 	booleanValue: false,
 	numeric: testNumber2,
@@ -92,6 +95,7 @@ export const testInstance2: PreDB<DB_Type> = Object.freeze({
 });
 
 export const testInstance3: PreDB<DB_Type> = Object.freeze({
+	_uniqueId: '7cec29ff80ec43aa5ab37f1240f5c446',
 	stringValue: testString3,
 	booleanValue: false,
 	numeric: testNumber3,
@@ -101,6 +105,7 @@ export const testInstance3: PreDB<DB_Type> = Object.freeze({
 });
 
 export const testInstance4: PreDB<DB_Type> = Object.freeze({
+	_uniqueId: '06dcd6d4df2d8ab9f02bd189c64f2908',
 	stringValue: testString4,
 	booleanValue: true,
 	numeric: testNumber4,
@@ -110,6 +115,7 @@ export const testInstance4: PreDB<DB_Type> = Object.freeze({
 });
 
 export const testInstance5: PreDB<DB_Type> = Object.freeze({
+	_uniqueId: 'e2f9cadb1bc881c92faddbde794f721b',
 	stringValue: testString5,
 	booleanValue: false,
 	numeric: testNumber5,

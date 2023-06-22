@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, TS_Object} from '@nu-art/ts-common';
+import {DB_Object, TS_Object, UniqueId} from '@nu-art/ts-common';
 import {FirestoreQuery} from '../../_main';
 
 
@@ -30,6 +30,7 @@ export type SimpleType = {
 	optional?: string
 };
 export type DB_Type = DB_Object & {
+	_uniqueId: UniqueId,
 	numeric: number,
 	stringValue: string
 	booleanValue: boolean
