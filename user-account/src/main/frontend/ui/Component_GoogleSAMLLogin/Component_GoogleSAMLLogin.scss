@@ -1,0 +1,26 @@
+@use '@nu-art/ts-styles' as styles;
+
+.ts-account__saml-button.ts-busy-button,
+.ts-account__saml-button.ts-button {
+  @include styles.mouse-interactive-background(transparent);
+  height: 40px;
+  width: 100%;
+  margin: 0;
+  gap: 16px;
+  border: 2px solid #006fab;
+
+  .ts-account__saml-button__text {
+    color: #006fab;
+  }
+
+  .ts-account__saml-button__icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .ts-button-loader {
+    & > div {
+      background: #006fab;
+    }
+  }
+}
