@@ -119,7 +119,7 @@ export class ModuleBE_Slack_Class
 	private async postMessageImpl(message: ChatPostMessageArguments, threadPointer?: ThreadPointer): Promise<ThreadPointer> {
 		if (threadPointer)
 			message.thread_ts = threadPointer.ts;
-		this.logDebug(`Sending message in ${!!threadPointer ? 'thread' : 'channel'}`, message);
+		this.logDebug(`Sending message in ${threadPointer ? 'thread' : 'channel'}`, message);
 		const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
 
 		//Add message to map
