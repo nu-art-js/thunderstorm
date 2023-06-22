@@ -38,6 +38,12 @@ export type DB_Type = DB_Object & {
 	nestedObject?: { one: FB_ArrayType, two: FB_ArrayType }
 }
 
+export type DB_Type_Query = DB_Object & {
+	refs: string[]
+	name: string
+	parentId?: string
+}
+
 export type Query_TestCase<T extends TS_Object, E extends T | T[] = T> = FirestoreQuery<T> & {
 	insert?: T[]
 	label: string,
