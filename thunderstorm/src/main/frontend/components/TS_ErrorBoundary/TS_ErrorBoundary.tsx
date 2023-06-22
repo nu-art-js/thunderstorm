@@ -33,6 +33,7 @@ type State = {
 type Props = React.PropsWithChildren<{
 	onError?: (e: any) => void,
 	renderer?: (e: any) => ReactNode
+	buttonRenderer?: () => ReactNode
 	error?: Error;
 }>;
 
@@ -85,15 +86,22 @@ export class TS_ErrorBoundary
 	// 	</details>;
 	// };
 
+	private renderButton = () => {
+		if (this.props.buttonRenderer)
+			return this.props.buttonRenderer();
+
+		return <TS_Button
+			className={'ts-error-boundary__button'}
+			onClick={this.onButtonClick}
+		>Reload!</TS_Button>;
+	};
+
 	private defaultRenderer = () => {
 		const titleMessage = randomMessages[Math.floor(Math.random() * randomMessages.length)];
 		return <div className={'ts-error-boundary'}>
 			<div className={'ts-error-boundary__pic'}>(ノಠ益ಠノ)</div>
 			<div className={'ts-error-boundary__title'}>{titleMessage}</div>
-			<TS_Button
-				className={'ts-error-boundary__button'}
-				onClick={this.onButtonClick}
-			>Reload!</TS_Button>
+			{this.renderButton()}
 			{/*<LL_V_L className={'ts-error-boundary__error'}>*/}
 			{/*	<div className={'ts-error-boundary__error-title'}>Error Message</div>*/}
 			{/*	<div className={'ts-error-boundary__error-message'}>{this.state.error!.toString()}</div>*/}

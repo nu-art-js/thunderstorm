@@ -1,6 +1,6 @@
 import * as React from 'react';
 import './TS_Dialog.scss';
-import {_values, BadImplementationException, filterInstances, flatArray, TypedMap} from '@nu-art/ts-common';
+import {_values, BadImplementationException, filterInstances, flatArray, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_BusyButton} from '../TS_BusyButton';
 import {TS_Button} from '../TS_Button';
@@ -36,6 +36,7 @@ export type DialogButtons = {
  */
 export type State_TSDialog = {
 	dialogIsBusy?: boolean;
+	error?: Error
 };
 
 /**
@@ -134,8 +135,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 
 	// ######################## Render - Header ########################
 
-	private dialogHeader = () => {
-		const headerContent = this.renderHeader();
+	private dialogHeader = (headerContent: React.ReactNode | undefined) => {
 		return headerContent && <div className={'ts-dialog__header'}>
 			{headerContent}
 		</div>;
@@ -147,8 +147,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 
 	// ######################## Render - Main ########################
 
-	private dialogBody = () => {
-		const mainContent = this.renderBody();
+	private dialogBody = (mainContent: React.ReactNode | undefined) => {
 		return mainContent && <div className={'ts-dialog__main'}>
 			{mainContent}
 		</div>;
@@ -160,8 +159,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 
 	// ######################## Render - Buttons ########################
 
-	private dialogButtons = () => {
-		const buttons = this.buttons();
+	private dialogButtons = (buttons: TS_Object) => {
 		if (_values(buttons).every(arr => !arr || !arr.length))
 			return undefined;
 
@@ -170,6 +168,10 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 			{buttons.center && <div className={'ts-dialog__buttons__center'}>{this._buttonsCreator(buttons.center)}</div>}
 			{buttons.right && <div className={'ts-dialog__buttons__right'}>{this._buttonsCreator(buttons.right)}</div>}
 		</div>;
+	};
+
+	private errorButtonRenderer = () => {
+		return <TS_Button className={'ts-error-boundary__button'} onClick={this.closeDialog}>Close Dialog</TS_Button>;
 	};
 
 	protected buttons = (): DialogButtons => {
@@ -188,11 +190,23 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	// ######################## Render ########################
 
 	render() {
-		return <TS_ErrorBoundary>
+		let buttons = {};
+		let mainContent;
+		let headerContent;
+		try {
+			buttons = this.buttons();
+			mainContent = this.renderBody();
+			headerContent = this.renderHeader();
+		} catch (err: any) {
+			if (!this.state.error)
+				this.setState({error: err});
+		}
+
+		return <TS_ErrorBoundary buttonRenderer={this.errorButtonRenderer} error={this.state.error}>
 			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1} onKeyDown={this.dialogKeyEventHandler}>
-				{this.dialogHeader()}
-				{this.dialogBody()}
-				{this.dialogButtons()}
+				{this.dialogHeader(headerContent)}
+				{this.dialogBody(mainContent)}
+				{this.dialogButtons(buttons)}
 			</LL_V_L>
 		</TS_ErrorBoundary>;
 	}
