@@ -75,6 +75,8 @@ export type DB_BaseObject = {
 }
 export type DB_Object = DB_BaseObject & {
 	_v?: string
+	_originDocId?: UniqueId;
+	__hardDelete?: boolean;
 	__created: number;
 	__updated: number;
 }
