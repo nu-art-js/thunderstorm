@@ -93,9 +93,10 @@ export class ModuleBE_Slack_Class
 		return await this.postMessageImpl(message, thread);
 	}
 
-	public async postFile(file: any, thread?: ThreadPointer) {
+	public async postFile(file: any, name: string, thread?: ThreadPointer) {
 		const message: FilesUploadArguments = {
 			file,
+			filename: name,
 			channels: this.config.defaultChannel
 		};
 		if (thread) {
