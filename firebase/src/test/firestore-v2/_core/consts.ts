@@ -26,6 +26,7 @@ import {TestInputValue} from '../insert/consts';
 const config = {
 	project_id: generateHex(4),
 	databaseURL: 'http://localhost:8102/?ns=quai-md-dev',
+	local: true
 };
 ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
 export const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();

@@ -94,7 +94,8 @@ export abstract class FirebaseSession<Config>
 	public getStorage(): StorageWrapperBE {
 		if (this.storage)
 			return this.storage;
-		return this.storage = new StorageWrapperBE(this);
+		// @ts-ignore
+		return this.storage = new StorageWrapperBE(this, this.config.local);
 	}
 
 	/**

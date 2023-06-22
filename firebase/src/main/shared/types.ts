@@ -41,6 +41,7 @@ export type FirebaseConfig = {
 	databaseURL?: string,
 	storageBucket?: string,
 	messagingSenderId: string
+	local?: boolean
 }
 
 type Comparator = 'in' | 'array-contains' | 'array-contains-any' | '>' | '>=' | '<' | '<=' | '==';
