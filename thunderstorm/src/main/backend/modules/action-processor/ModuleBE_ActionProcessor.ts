@@ -1,19 +1,10 @@
-import {
-	_logger_logException,
-	_values,
-	BadImplementationException,
-	dispatch_onServerError,
-	Logger,
-	LogLevel,
-	Module,
-	ServerErrorSeverity,
-	TypedMap
-} from '@nu-art/ts-common';
+import {_logger_logException, _values, BadImplementationException, isErrorOfType, Logger, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
 // import {ApiDefServer} from '../../utils/api-caller-types';
 import {ActionMetaData, ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ApiModule';
 import {ActionDeclaration} from './types';
+import {ApiException} from '../../exceptions';
 
 
 export class ModuleBE_ActionProcessor_Class
@@ -42,10 +33,7 @@ export class ModuleBE_ActionProcessor_Class
 
 		const refactoringAction = this.actionMap[action.key];
 		if (!refactoringAction) {
-			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Error, this, {
-				message: `NO SUCH ACTION: ${action.key}`
-			});
-			return;
+			throw new ApiException(404, `NO SUCH ACTION: ${action.key}`);
 		}
 
 		try {
@@ -54,8 +42,10 @@ export class ModuleBE_ActionProcessor_Class
 			this.logWarning(`ACTION '${action.key}' - SUCCESSFUL`);
 		} catch (e: any) {
 			this.logError(`ACTION '${action.key}' - FAILED`, e);
-			const message = `ACTION FAILED: ${action.key}\n${_logger_logException(e)}`;
-			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Error, this, {message});
+			const message = `ACTION FAILED: ${action.key}`;
+			if (isErrorOfType(e, ApiException))
+				throw e;
+			throw new ApiException(500, message, e);
 		}
 	};
 
