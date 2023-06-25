@@ -1,11 +1,11 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {firestore, testInstance1} from '../_core/consts';
+import {firestore, testInstance1, testInstance2, testInstance3} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {compare, deepClone, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {updatedStringValue1} from '../update/update';
+import {updatedStringValue1, updatedStringValue2} from '../update/update';
 
 chai.use(require('chai-as-promised'));
 
@@ -46,42 +46,42 @@ export const TestCases_FB_Upsert: Test['testcases'] = [
 			}
 		}
 	},
-	// {
-	// 	description: 'upsert 3 new items',
-	// 	result: () => {
-	// 		return {created: deepClone([testInstance1, testInstance2, testInstance3])};
-	// 	},
-	// 	input: {
-	// 		toCreate: [],
-	// 		upsertAction: async (collection, inserted) => {
-	// 			await collection.upsert.all(deepClone([testInstance1, testInstance2, testInstance3]));
-	// 		}
-	// 	}
-	// },
-	// {
-	// 	description: 'upsert 3 existing items',
-	// 	result: () => {
-	// 		const _instance1 = deepClone(testInstance1);
-	// 		const _instance2 = deepClone(testInstance2);
-	// 		return {
-	// 			updated: [{..._instance1, stringValue: updatedStringValue1}, {
-	// 				..._instance2,
-	// 				stringValue: updatedStringValue2
-	// 			}], notUpdated: [deepClone(testInstance3)]
-	// 		};
-	// 	},
-	// 	input: {
-	// 		toCreate: [testInstance1, testInstance2, testInstance3],
-	// 		upsertAction: async (collection, inserted) => {
-	// 			const _test1 = inserted.find(_item => _item._uniqueId === testInstance1._uniqueId)!;
-	// 			const _test2 = inserted.find(_item => _item._uniqueId === testInstance2._uniqueId)!;
-	// 			await collection.upsert.all([{..._test1, stringValue: updatedStringValue1}, {
-	// 				..._test2,
-	// 				stringValue: updatedStringValue2
-	// 			}]);
-	// 		}
-	// 	}
-	// },
+	{
+		description: 'upsert 3 new items',
+		result: () => {
+			return {created: deepClone([testInstance1, testInstance2, testInstance3])};
+		},
+		input: {
+			toCreate: [],
+			upsertAction: async (collection, inserted) => {
+				await collection.upsert.all(deepClone([testInstance1, testInstance2, testInstance3]));
+			}
+		}
+	},
+	{
+		description: 'upsert 3 existing items',
+		result: () => {
+			const _instance1 = deepClone(testInstance1);
+			const _instance2 = deepClone(testInstance2);
+			return {
+				updated: [{..._instance1, stringValue: updatedStringValue1}, {
+					..._instance2,
+					stringValue: updatedStringValue2
+				}], notUpdated: [deepClone(testInstance3)]
+			};
+		},
+		input: {
+			toCreate: [testInstance1, testInstance2, testInstance3],
+			upsertAction: async (collection, inserted) => {
+				const _test1 = inserted.find(_item => _item._uniqueId === testInstance1._uniqueId)!;
+				const _test2 = inserted.find(_item => _item._uniqueId === testInstance2._uniqueId)!;
+				await collection.upsert.all([{..._test1, stringValue: updatedStringValue1}, {
+					..._test2,
+					stringValue: updatedStringValue2
+				}]);
+			}
+		}
+	},
 ];
 
 export const TestSuite_FirestoreV2_Upsert: Test = {
