@@ -17,6 +17,7 @@ import filterStopUrl, {ReactComponent as FilterStop} from './svgs/icon__filter-s
 import ClearURL, {ReactComponent as Clear} from './svgs/icon__clear.svg';
 import SaveUrl, {ReactComponent as Save} from './svgs/icon__save.svg';
 import MenuUrl, {ReactComponent as Menu} from './svgs/icon__menu.svg';
+import GoogleUrl, {ReactComponent as Google} from './svgs/icon__google.svg';
 
 export type IconStyle = {
 	color: string;
@@ -72,6 +73,7 @@ export const TS_Icons = {
 	clear: {component: genIcon(Clear), url: ClearURL},
 	save: {component: genIcon(Save), url: SaveUrl},
 	menu: {component: genIcon(Menu), url: MenuUrl},
+	google: {component: genIcon(Google), url: GoogleUrl},
 };
 
 export const tsIconKeys = (): TSIcons[] => {

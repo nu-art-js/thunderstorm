@@ -127,7 +127,7 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 
 	protected cleanUp = (toUpsert: PreDB<DBType>) => {
 		return toUpsert;
-	}
+	};
 
 	private updatePending<API extends TypedApi<any, any, any, any>>(item: DB_BaseObject, request: BaseHttpRequest<API>, requestType: RequestType) {
 		const id = item._id;
