@@ -1,4 +1,14 @@
-import {failedWriteResult, storage, writeTestInput1, writeTestInput2, writeTestInput3, writeTestInput4, writeTestInput5, WriteTests} from '../_core/consts';
+import {
+	failedWriteResult,
+	getSpecificBucketInput,
+	storage,
+	writeTestInput1,
+	writeTestInput2,
+	writeTestInput3,
+	writeTestInput4,
+	writeTestInput5,
+	WriteTests
+} from '../_core/consts';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {expect} from 'chai';
 
@@ -34,7 +44,7 @@ export const TestSuite_Storage_Write: WriteTests = {
 	label: 'Firebase storage write tests',
 	testcases: writeToFilesTests,
 	processor: async (testCase) => {
-		const bucket = await storage.getOrCreateBucket();
+		const bucket = await storage.getOrCreateBucket(getSpecificBucketInput);
 		const file = await bucket.getFile(testCase.input!.filePath);
 		let result;
 

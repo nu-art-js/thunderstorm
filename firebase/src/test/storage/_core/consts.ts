@@ -7,11 +7,13 @@ export const storage = ModuleBE_Firebase.createAdminSession().getStorage();
 
 
 export type FileContent = { value: any, filePath: string, stringify?: boolean };
-export type WriteResult = FileContent | BadImplementationException
+export type WriteResult = FileContent | BadImplementationException;
 
 
 export type WriteTests = TestSuite<FileContent, WriteResult>;
 export type BucketUtils = TestSuite<string | undefined, undefined | (() => Promise<BucketWrapper>)>;
+export type DeleteFiles = TestSuite<string, number>;
+export type FileDelete = TestSuite<string, boolean>;
 
 const testObject: object = {test: 'object', more: {someMore: 'pah'}};
 
@@ -24,6 +26,9 @@ export const writeTestInput5: FileContent = {value: undefined, filePath: 'testFo
 export const getMainBucketInput = undefined;
 export const getSpecificBucketInput = 'gs://testBucket.appspot.com';
 export const invalidBucketNameInput = 'testBucket';
+
+export const deleteFileInput = 'testFolder/string-file.txt';
+export const notExistingFileName = 'not a real file';
 
 export const getMainBucketResult = () => storage.getMainBucket();
 export const getSpecificBucketResult = () => storage.getOrCreateBucket(getSpecificBucketInput);
