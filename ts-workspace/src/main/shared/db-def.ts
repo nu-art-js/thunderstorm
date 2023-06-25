@@ -1,6 +1,5 @@
-import {DBDef} from '@nu-art/db-api-generator';
-import {OmitDBObject, tsValidateMustExist, tsValidateString, ValidatorTypeResolver} from '@nu-art/ts-common';
 import {DB_Workspace} from './types';
+import {DBDef, OmitDBObject, tsValidateMustExist, tsValidateString, ValidatorTypeResolver} from '@nu-art/ts-common';
 
 const Validator_Workspace: ValidatorTypeResolver<OmitDBObject<DB_Workspace>> = {
 	key: tsValidateString(),

@@ -17,11 +17,9 @@
  * limitations under the License.
  */
 
+import {tsValidateUniqueId} from '@nu-art/db-api-generator';
 import {
 	DBDef,
-	tsValidateUniqueId
-} from '@nu-art/db-api-generator';
-import {
 	OmitDBObject,
 	StringMap,
 	tsValidateArray,

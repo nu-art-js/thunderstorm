@@ -20,7 +20,7 @@
  */
 
 import {IndexKeys} from '@nu-art/thunderstorm';
-import {DBDef, Response_DBSync,} from '../shared';
+import {Response_DBSync,} from '../shared';
 import {
 	DBConfig,
 	IndexDb_Query,
@@ -34,6 +34,7 @@ import {
 import {
 	arrayToMap,
 	DB_Object,
+	DBDef,
 	dbObjectToId,
 	InvalidResult,
 	Logger,

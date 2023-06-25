@@ -25,8 +25,10 @@ import {
 	currentTimeMillis,
 	CustomException,
 	DB_Object,
+	DBDef,
 	exists,
-	filterInOut, flatArray,
+	filterInOut,
+	flatArray,
 	generateHex,
 	MUSTNeverHappenException,
 	PreDB,
@@ -34,16 +36,20 @@ import {
 	Subset,
 	UniqueId
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
+import {DocWrapperV2} from './DocWrapperV2';
 import DocumentReference = firestore.DocumentReference;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
-import {DocWrapperV2} from "./DocWrapperV2";
 
 type UpdateObject<Type> = { _id: UniqueId } & UpdateData<Type>;
 export const _EmptyQuery = Object.freeze({where: {}});
@@ -72,6 +78,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	readonly name: string;
 	readonly wrapper: FirestoreWrapperBEV2;
 	readonly collection: FirestoreType_Collection;
+	readonly dbDef: DBDef<Type, any>;
 
 	/**
 	 * External unique as in there must never ever be two that answer the same query
@@ -81,9 +88,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	/**
 	 * @param name
 	 * @param wrapper
+	 * @param _dbDef
 	 * @param uniqueKeys
 	 */
-	constructor(name: string, wrapper: FirestoreWrapperBEV2, uniqueKeys?: FilterKeys<Type>) {
+	constructor(name: string, wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type>, uniqueKeys?: FilterKeys<Type>) {
 		this.name = name;
 		this.wrapper = wrapper;
 		if (!/[a-z-]{3,}/.test(name))
@@ -104,6 +112,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 				return where;
 			}, {} as Clause_Where<Type>);
 		};
+		this.dbDef = _dbDef;
 	}
 
 	// ############################## DocWrapper ##############################
@@ -130,9 +139,9 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	private getAll = async (_ids: UniqueId[], transaction?: Transaction): Promise<(Type | undefined)[]> => {
 		if (_ids.length === 0)
-			return []
+			return [];
 		return (await (transaction ?? this.wrapper.firestore).getAll(..._ids.map(id => this.getDocWrapper(id).ref))).map(doc => doc.data() as Type | undefined);
-	}
+	};
 
 	private async _query(ourQuery?: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot[]> {
 		const myQuery = FirestoreInterfaceV2.buildQuery(this, ourQuery);
@@ -379,11 +388,14 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		if (dbItem)
 			return await this.update.item(item as UpdateObject<Type>, transaction);
 		else
-			return await this.create.item(item as PreDB<Type>, transaction)
+			return await this.create.item(item as PreDB<Type>, transaction);
 	};
 
 	private _upsertAll = async (items: PreDB<Type>[] | UpdateObject<Type>[], transaction?: Transaction): Promise<Type[]> => {
-		const {filteredIn: hasIdItems, filteredOut: noIdItems} = filterInOut<PreDB<Type> | UpdateObject<Type>>(items, _item => exists(_item._id));
+		const {
+			filteredIn: hasIdItems,
+			filteredOut: noIdItems
+		} = filterInOut<PreDB<Type> | UpdateObject<Type>>(items, _item => exists(_item._id));
 		const toCreate = noIdItems;
 		const toUpdate: UpdateObject<Type>[] = [];
 
@@ -393,7 +405,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return flatArray(await Promise.all([
 			this.update.all(toUpdate, transaction),
 			this.create.all(toCreate as PreDB<Type>[], transaction)
-		]))
+		]));
 	};
 
 	upsert = {

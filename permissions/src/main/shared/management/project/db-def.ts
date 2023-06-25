@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-import {DBDef} from '@nu-art/db-api-generator';
 import {
+	DBDef,
 	OmitDBObject,
 	tsValidateArray,
 	tsValidateNonMandatoryObject,

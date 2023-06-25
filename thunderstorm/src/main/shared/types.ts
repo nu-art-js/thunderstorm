@@ -23,8 +23,6 @@ import {DB_Object, TS_Object} from '@nu-art/ts-common';
 import {BaseHttpRequest} from './BaseHttpRequest';
 
 
-export type DBIndex<T extends DB_Object> = { id: string, keys: keyof T | (keyof T)[], params?: { multiEntry: boolean, unique: boolean } };
-
 export enum HttpMethod {
 	ALL = 'all',
 	POST = 'post',

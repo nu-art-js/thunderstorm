@@ -1,7 +1,7 @@
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {Module} from '@nu-art/ts-common';
-import {ApiDef_Archiving, ApiStruct_Archiving} from '../shared';
 import {apiWithBody, apiWithQuery} from '@nu-art/thunderstorm/frontend';
+import {ApiDef_Archiving, ApiStruct_Archiving} from '../../shared/archiving/apis';
 
 class ModuleFE_Archiving_Class
 	extends Module {

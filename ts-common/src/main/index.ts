@@ -35,6 +35,9 @@ export * from './core/logger/Logger';
 export * from './core/logger/types';
 export * from './core/logger/LogClient';
 
+export * from './db/consts';
+export * from './db/types';
+
 export * from './tools/Replacer';
 export * from './tools/get-log-style';
 
