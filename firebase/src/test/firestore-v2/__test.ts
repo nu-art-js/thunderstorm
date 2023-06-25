@@ -9,6 +9,7 @@ import {
 	TestSuite_FirestoreV2_QueryUnique
 } from './query/query';
 import {TestSuite_FirestoreV2_Set} from './set/set';
+import {TestSuite_FirestoreV2_Transaction} from './transaction/transaction';
 
 describe('Firestore v2 - All Tests', () => {
 	testSuiteTester(TestSuite_FirestoreV2_Create);
@@ -19,4 +20,5 @@ describe('Firestore v2 - All Tests', () => {
 	testSuiteTester(TestSuite_FirestoreV2_QueryComplex1);
 	testSuiteTester(TestSuite_FirestoreV2_Update);
 	testSuiteTester(TestSuite_FirestoreV2_Set);
+	testSuiteTester(TestSuite_FirestoreV2_Transaction);
 });

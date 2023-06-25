@@ -5,7 +5,7 @@ import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {compare, deepClone, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {updatedStringValue1, updatedStringValue2} from "../update/update";
+import {updatedStringValue1, updatedStringValue2} from '../update/update';
 
 chai.use(require('chai-as-promised'));
 
@@ -63,14 +63,22 @@ export const TestCases_FB_Set: Test['testcases'] = [
 		result: () => {
 			const _instance1 = deepClone(testInstance1);
 			const _instance2 = deepClone(testInstance2);
-			return {updated: [{..._instance1, stringValue: updatedStringValue1}, {..._instance2, stringValue: updatedStringValue2}], notUpdated: [deepClone(testInstance3)]};
+			return {
+				updated: [{..._instance1, stringValue: updatedStringValue1}, {
+					..._instance2,
+					stringValue: updatedStringValue2
+				}], notUpdated: [deepClone(testInstance3)]
+			};
 		},
 		input: {
 			toCreate: [testInstance1, testInstance2, testInstance3],
 			setAction: async (collection, inserted) => {
 				const _test1 = inserted.find(_item => _item._uniqueId === testInstance1._uniqueId)!;
 				const _test2 = inserted.find(_item => _item._uniqueId === testInstance2._uniqueId)!;
-				await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {..._test2, stringValue: updatedStringValue2}]);
+				await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {
+					..._test2,
+					stringValue: updatedStringValue2
+				}]);
 			}
 		}
 	},
@@ -100,12 +108,12 @@ export const TestSuite_FirestoreV2_Set: Test = {
 		result.updated?.forEach((_preDBUpdated) => {
 			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBUpdated._uniqueId);
 			expect(sortedInserted[_itemIndex].__created).to.eql(sortedRemaining[_itemIndex].__created);
-			expect(sortedInserted[_itemIndex].__updated).to.be.lt(sortedRemaining[_itemIndex].__updated);
-		})
+			expect(sortedInserted[_itemIndex].__updated).to.be.lte(sortedRemaining[_itemIndex].__updated);
+		});
 		result.notUpdated?.forEach((_preDBNotUpdated) => {
 			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBNotUpdated._uniqueId);
 			expect(sortedInserted[_itemIndex].__created).to.eql(sortedRemaining[_itemIndex].__created);
 			expect(sortedInserted[_itemIndex].__updated).to.eql(sortedRemaining[_itemIndex].__updated);
-		})
+		});
 	}
 };

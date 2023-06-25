@@ -1,9 +1,9 @@
 import {firestore, testInstance1} from '../_core/consts';
-import {DB_Type} from '../_core/types';
+import {DB_Type, TestInputValue} from '../_core/types';
 import {deepClone, PreDB} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import * as chaiAsPromised from 'chai-as-promised';
-import {CreateTest, createTestCases, TestInputValue} from './consts';
+import {CreateTest, createTestCases} from './consts';
 import {expect} from 'chai';
 
 const chai = require('chai');

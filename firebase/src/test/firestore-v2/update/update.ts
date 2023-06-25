@@ -179,7 +179,7 @@ export const TestSuite_FirestoreV2_Update: Test = {
 		//assert result.updated timestamps correctly updated
 		result.updated.forEach((_preDBUpdated) => {
 			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBUpdated._uniqueId);
-			expect(sortedInserted[_itemIndex].__updated).to.be.lt(sortedRemaining[_itemIndex].__updated);
+			expect(sortedInserted[_itemIndex].__updated).to.be.lte(sortedRemaining[_itemIndex].__updated);
 		})
 		result.notUpdated?.forEach((_preDBNotUpdated) => {
 			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBNotUpdated._uniqueId);

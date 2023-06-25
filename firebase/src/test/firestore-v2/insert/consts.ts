@@ -1,9 +1,9 @@
-import {compare, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
+import {compare, removeDBObjectKeys} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
 import {FB_Type} from '../../firestore/_core/types';
-import {DB_Type} from '../_core/types';
+import {DB_Type, TestInputValue} from '../_core/types';
 import {
 	getSingleItem,
 	testInstance1,
@@ -13,8 +13,6 @@ import {
 	testInstance5
 } from '../_core/consts';
 
-
-export type TestInputValue = PreDB<DB_Type> | PreDB<DB_Type>[];
 
 export type CreateTestInput = {
 	value: TestInputValue;
@@ -78,7 +76,7 @@ export const createTestCases: CreateTest['testcases'] = [
 		}
 	},
 	// {
-	// 	description: 'object exists',
+	// 	description: 'id exists',
 	// 	result: [testInstance1],
 	// 	input: {
 	// 		expectCreateToThrow: true,

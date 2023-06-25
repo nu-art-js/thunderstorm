@@ -117,7 +117,8 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return this.getDocWrapper(item._id!);
 	}
 
-	protected async queryByIds(all_ids: UniqueId[]) {
+	protected async queryByIds(all_ids: UniqueId[],transaction?: Transaction) {
+
 		return await batchAction(all_ids, 10, async (chunk) => {
 			const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, {where: {_id: {$in: chunk}}} as FirestoreQuery<Type>);
 			return ((await myQuery.get()).docs as FirestoreType_DocumentSnapshot[]).map(snapshot => snapshot.data() as Type);
@@ -244,11 +245,11 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot[];
 	}
 
-	protected _update = async (updateData: UpdateObject<Type>) => {
+	protected _update = async (updateData: UpdateObject<Type>, transaction?: Transaction) => {
 		const doc = this.getDocWrapper(updateData._id);
 		await this.preUpdateData(updateData);
 		delete (updateData as UpdateData<Type>)._id;
-		return doc.update(updateData);
+		return doc.update(updateData, transaction);
 	};
 
 	protected _updateBulk = async (updateData: UpdateObject<Type>[]) => {
