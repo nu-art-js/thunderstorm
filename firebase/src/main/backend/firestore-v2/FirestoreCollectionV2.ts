@@ -42,7 +42,6 @@ import {Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
-import {FirestoreTransaction} from '../firestore/FirestoreTransaction';
 import {firestore} from 'firebase-admin';
 import DocumentReference = firestore.DocumentReference;
 import UpdateData = firestore.UpdateData;
@@ -126,14 +125,14 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		});
 	}
 
-	protected async _setItem(preDBInstance: PreDB<Type>) {
+	protected async _setItem(preDBInstance: PreDB<Type>, transaction?: Transaction) {
 		const dbInstance = this.prepareObjForSet(preDBInstance);
-		await this.assertInstance(dbInstance);
+		await this.assertInstance(dbInstance, transaction);
 		const doc = this.getDocWrapperFromItem(dbInstance);
-		return doc.set(dbInstance);
+		return doc.set(dbInstance, transaction);
 	}
 
-	protected async _setBulk(preDBInstances: PreDB<Type>[]) {
+	protected async _setBulk(preDBInstances: PreDB<Type>[], transaction?: Transaction) {
 		const bulk = this.wrapper.firestore.bulkWriter();
 		const toReturnObjects: Type[] = [];
 
@@ -155,11 +154,11 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return preDBObject as Type;
 	}
 
-	protected async _createItem(preDBInstance: PreDB<Type>) {
+	protected async _createItem(preDBInstance: PreDB<Type>, transaction?: Transaction) {
 		const dbInstance = this.prepareObjForCreate(preDBInstance);
 		await this.assertInstance(dbInstance);
 		const doc = this.getDocWrapperFromItem(dbInstance);
-		return doc.create(dbInstance);
+		return doc.create(dbInstance, transaction);
 	}
 
 	protected async _createBulk(preDBInstances: PreDB<Type>[], retryOnError: boolean = false) {
@@ -194,7 +193,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return preDBObject as Type;
 	}
 
-	private async assertInstance(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
+	private async assertInstance(dbInstance: Type, transaction?: Transaction, request?: Express.Request) {
 		await this.upgradeInstances([dbInstance]);
 		await this.preUpsertProcessing(dbInstance, transaction, request);
 		this.validateImpl(dbInstance);
@@ -292,6 +291,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private async assertUpdateData(updateData: UpdateData<Type>) {
 	}
 
+
 	/**
 	 * Get DocWrappers per the db objects from the query
 	 * @param ourQuery
@@ -305,7 +305,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		//todo - maybe should be filled only in extending modules
 	}
 
-	private async preUpsertProcessing(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
+	private async preUpsertProcessing(dbInstance: Type, transaction?: Transaction, request?: Express.Request) {
 		//todo - maybe should be filled only in extending modules
 	}
 
@@ -313,12 +313,12 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		//todo validation using validator
 	}
 
-	private assertUniqueness(dbInstance: Type, transaction?: FirestoreTransaction, request?: Express.Request) {
+	private assertUniqueness(dbInstance: Type, transaction?: Transaction, request?: Express.Request) {
 	}
 
 	set = {
-		item: async (item: PreDB<Type>) => await this._setItem(item),
-		all: async (items: PreDB<Type>[]) => await this._setBulk(items),
+		item: async (item: PreDB<Type>, transaction?: Transaction) => await this._setItem(item, transaction),
+		all: async (items: PreDB<Type>[], transaction?: Transaction) => await this._setBulk(items, transaction),
 	};
 
 	query = {
@@ -335,7 +335,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	create = {
-		item: async (item: PreDB<Type>) => await this._createItem(item),
+		item: async (item: PreDB<Type>, transaction?: Transaction) => await this._createItem(item, transaction),
 		all: async (items: PreDB<Type>[]) => await this._createBulk(items),
 	};
 
