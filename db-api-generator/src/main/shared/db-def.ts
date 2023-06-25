@@ -38,6 +38,8 @@ export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> =
 	entityName: string;
 	lockKeys?: (keyof T)[] // fallback to uniqueKeys, default ["_id"]
 	uniqueKeys?: Ks[] // default ["_id"]
+	TTL?: number;
+	lastUpdatedTTL?: number;
 	/**
 	 * First item in the array is the latest version. Last item in the array is the oldest version.
 	 */
