@@ -27,7 +27,7 @@ import {TestModel, TestSuite} from '@nu-art/ts-common/testing/types';
 const config = {
 	project_id: generateHex(4),
 	databaseURL: 'http://localhost:8102/?ns=quai-md-dev',
-	local: true
+	isEmulator: true
 };
 ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
 export const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();

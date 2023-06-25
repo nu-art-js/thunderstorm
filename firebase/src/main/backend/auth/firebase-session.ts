@@ -94,8 +94,7 @@ export abstract class FirebaseSession<Config>
 	public getStorage(): StorageWrapperBE {
 		if (this.storage)
 			return this.storage;
-		// @ts-ignore
-		return this.storage = new StorageWrapperBE(this, this.config.local);
+		return this.storage = new StorageWrapperBE(this);
 	}
 
 	/**
@@ -121,4 +120,6 @@ export abstract class FirebaseSession<Config>
 			return this.messaging;
 		return this.messaging = new PushMessagesWrapperBE(this);
 	}
+
+	abstract isEmulator(): boolean;
 }
