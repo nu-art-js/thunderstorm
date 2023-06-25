@@ -23,7 +23,9 @@ import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getStorage} from 'firebase-admin/storage';
 import {Response} from 'teeny-request';
+import * as Stream from 'stream';
 
+export const END_OF_STREAM = {END_OF_STREAM: 'END_OF_STREAM'};
 
 export class StorageWrapperBE
 	extends FirebaseBaseWrapper {
@@ -240,6 +242,22 @@ export class FileWrapper {
 			securedUrl: url,
 			publicUrl: encodeURI(`https://storage.googleapis.com/${this.bucket.bucketName.replace(`gs://`, '')}${this.path}`)
 		};
+	}
+
+	async writeToStream(feeder: (writable: Stream.Writable) => Promise<void | typeof END_OF_STREAM>): Promise<void> {
+		const writeable = this.file.createWriteStream();
+		const promise: Promise<void> = new Promise((resolve, reject) => {
+			writeable.on('close', () => resolve());
+			writeable.on('error', (e) => reject(e));
+		});
+
+		let data;
+		do {
+			data = await feeder(writeable);
+		} while (data !== END_OF_STREAM);
+
+		writeable.end();
+		return promise;
 	}
 
 	async makePublic(): Promise<MakeFilePublicResponse> {
