@@ -88,7 +88,7 @@ export const TestSuite_FirestoreV2_Set: Test = {
 	label: 'Firestore set tests',
 	testcases: TestCases_FB_Set,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DB_Type>('firestore-deletion-tests');
+		const collection = firestore.getCollection<DB_Type>('firestore-set-tests');
 		await collection.deleteCollection();
 
 		const toInsert = deepClone(testCase.input.toCreate);

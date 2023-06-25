@@ -158,7 +158,7 @@ export const TestSuite_FirestoreV2_Update: Test = {
 	label: 'Firestore update tests',
 	testcases: TestCases_FB_Update,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DB_Type>('firestore-deletion-tests');
+		const collection = firestore.getCollection<DB_Type>('firestore-update-tests');
 		await collection.deleteCollection();
 
 		const toInsert = deepClone(testCase.input.toCreate);
