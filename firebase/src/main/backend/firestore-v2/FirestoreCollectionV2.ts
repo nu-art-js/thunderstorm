@@ -26,7 +26,7 @@ import {
 	CustomException,
 	DB_Object,
 	exists,
-	filterInOut,
+	filterInOut, flatArray,
 	generateHex,
 	MUSTNeverHappenException,
 	PreDB,
@@ -322,7 +322,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 		return await this.query.all(updateData.map(_data => _data._id));
 	};
-	protected _updateBulk = async (updateData: UpdateObject<Type>[]) => {
+	protected _updateBulk = async (updateData: UpdateObject<Type>[]): Promise<Type[]> => {
 		const toUpdate = await Promise.all(updateData.map(async instance => await this.prepareObjForUpdate(instance)));
 		const bulk = this.wrapper.firestore.bulkWriter();
 		await toUpdate.reduce((_bulk, instance) => {
@@ -331,7 +331,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			return _bulk;
 		}, bulk).close();
 
-		return await this.query.all(updateData.map(_data => _data._id));
+		return await this.query.all(updateData.map(_data => _data._id)) as Type[];
 	};
 
 	private async prepareObjForUpdate(updateData: UpdateObject<Type>) {
@@ -378,7 +378,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			return await this.create.item(item as PreDB<Type>, transaction)
 	};
 
-	private _upsertAll = async (items: PreDB<Type>[] | UpdateObject<Type>[], transaction?: Transaction) => {
+	private _upsertAll = async (items: PreDB<Type>[] | UpdateObject<Type>[], transaction?: Transaction): Promise<Type[]> => {
 		const {filteredIn: hasIdItems, filteredOut: noIdItems} = filterInOut<PreDB<Type> | UpdateObject<Type>>(items, _item => exists(_item._id));
 		const toCreate = noIdItems;
 		const toUpdate: UpdateObject<Type>[] = [];
@@ -386,10 +386,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const dbItems = await this.query.all(hasIdItems.map(_item => _item._id!));
 		dbItems.forEach((_item, i) => !exists(_item) ? toCreate.push(hasIdItems[i]) : toUpdate.push(hasIdItems[i] as UpdateObject<Type>));
 
-		return await Promise.all([
+		return flatArray(await Promise.all([
 			this.update.all(toUpdate, transaction),
 			this.create.all(toCreate as PreDB<Type>[], transaction)
-		])
+		]))
 	};
 
 	private getAll = async (_ids: UniqueId[], transaction?: Transaction): Promise<(Type | undefined)[]> => {
