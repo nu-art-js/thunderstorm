@@ -244,22 +244,24 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	protected _update = async (updateData: UpdateObject<Type>, transaction?: Transaction) => {
 		const doc = this.getDocWrapper(updateData._id);
-		await this.preUpdateData(updateData);
+		await this.prepareObjForUpdate(updateData);
 		delete (updateData as UpdateData<Type>)._id;
-		return doc.update(updateData, transaction);
+		await doc.update(updateData, transaction);
+		return doc.get();
 	};
 
 	protected _updateBulk = async (updateData: UpdateObject<Type>[]) => {
-		const toUpdate = await Promise.all(updateData.map(async instance => await this.preUpdateData(instance)));
+		const toUpdate = await Promise.all(updateData.map(async instance => await this.prepareObjForUpdate(instance)));
 		const bulk = this.wrapper.firestore.bulkWriter();
 		await toUpdate.reduce((_bulk, instance) => {
 			delete (updateData as UpdateData<Type>)._id;
 			_bulk.update(this.getDocWrapper(instance._id).ref, instance);
 			return _bulk;
 		}, bulk).close();
+		return await this.query.all(updateData.map(_data => _data._id));
 	};
 
-	private async preUpdateData(updateData: UpdateObject<Type>) {
+	private async prepareObjForUpdate(updateData: UpdateObject<Type>) {
 		delete updateData.__created;
 		updateData.__updated = currentTimeMillis();
 		this.updateDeletedFields(updateData);
@@ -291,6 +293,17 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private async assertUpdateData(updateData: UpdateData<Type>) {
 	}
 
+	private _upsert = async (data: PreDB<Type> | UpdateObject<Type>, transaction?: Transaction) => {
+		let dbObj;
+		if (exists(data._id)){
+			dbObj = this.getDocWrapper(data._id!).get();
+		}
+
+		if(dbObj)
+			return await this.update.item(data as UpdateObject<Type>, transaction)
+		else
+			return await this.create.item(data as PreDB<Type>, transaction)
+	};
 
 	/**
 	 * Get DocWrappers per the db objects from the query
@@ -343,6 +356,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		item: this._update,
 		all: this._updateBulk,
 	};
+
+	upsert = {
+		item: this._upsert,
+	}
 
 	delete = {
 		unique: this._deleteUnique,
