@@ -17,12 +17,13 @@
  * limitations under the License.
  */
 
-import {DBDef, tsValidateStringWithDashes, tsValidateUniqueId} from '@nu-art/db-api-generator';
+import {tsValidateStringWithDashes, tsValidateUniqueId} from '@nu-art/db-api-generator';
 import {
+	DBDef,
 	OmitDBObject,
+	tsValidateIsInRange,
 	tsValidateNonMandatoryObject,
 	tsValidateNumber,
-	tsValidateIsInRange,
 	tsValidateString,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';

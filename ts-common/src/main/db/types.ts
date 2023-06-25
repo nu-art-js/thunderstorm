@@ -1,4 +1,34 @@
-import {DB_Object} from '@nu-art/ts-common';
+import {DB_Object, OmitDBObject} from '../utils/types';
+import {ValidatorTypeResolver} from '../validator/validator-core';
+
+export type DBIndex<T extends DB_Object> = {
+	id: string,
+	keys: keyof T | (keyof T)[],
+	params?: { multiEntry: boolean, unique: boolean }
+};
+
+export type Default_UniqueKey = '_id';
+
+/**
+ * @field version - First item in the array is current version, Must pass all past versions with the current, default version is 1.0.0
+ */
+export type DBDef<T extends DB_Object, Ks extends keyof T = Default_UniqueKey> = {
+	validator: ValidatorTypeResolver<OmitDBObject<T>>;
+	dbName: string;
+	entityName: string;
+	lockKeys?: (keyof T)[] // fallback to uniqueKeys, default ["_id"]
+	uniqueKeys?: Ks[] // default ["_id"]
+	/**
+	 * First item in the array is the latest version. Last item in the array is the oldest version.
+	 */
+	versions?: string[]; // default ["1.0.0"]
+	generatedProps?: (keyof T)[]
+	indices?: DBIndex<T>[]
+	metadata?: Metadata<OmitDBObject<T>>
+	//archiving
+	TTL?: number;
+	lastUpdatedTTL?: number;
+}
 
 type TypeOf<ValueType> = ValueType extends any[] ? 'array' :
 	ValueType extends object ? 'object' :
@@ -52,14 +82,27 @@ export const DB_Object_Metadata: Metadata<DB_Object> = {
 const pah: Metadata<PAH> = {
 	a: {optional: false, description: 'aaa', valueType: 'string'},
 	b: {optional: true, description: 'aaa', valueType: 'number'},
-	c: {optional: true, description: 'harti barti', valueType: 'array', metadata: {optional: false, description: 'aaa', valueType: 'string'}},
+	c: {
+		optional: true,
+		description: 'harti barti',
+		valueType: 'array',
+		metadata: {optional: false, description: 'aaa', valueType: 'string'}
+	},
 	d: {
 		optional: true,
 		description: 'harti barti',
 		valueType: 'object',
-		metadata: {k: {optional: false, description: 'aaa', valueType: 'string'}, l: {optional: false, description: 'aaa', valueType: 'number'}}
+		metadata: {
+			k: {optional: false, description: 'aaa', valueType: 'string'},
+			l: {optional: false, description: 'aaa', valueType: 'number'}
+		}
 	},
-	e: {optional: true, description: 'harti barti', valueType: 'object', metadata: {ashpa: {optional: false, description: 'aaa', valueType: 'string'}}}
+	e: {
+		optional: true,
+		description: 'harti barti',
+		valueType: 'object',
+		metadata: {ashpa: {optional: false, description: 'aaa', valueType: 'string'}}
+	}
 };
 
 // console.log(pah);
