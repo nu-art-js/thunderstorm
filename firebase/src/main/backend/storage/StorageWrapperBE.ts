@@ -247,8 +247,7 @@ export class FileWrapper {
 	async writeToStream(feeder: (writable: Stream.Writable) => Promise<void | typeof END_OF_STREAM>): Promise<void> {
 		const writeable = this.file.createWriteStream();
 		const promise: Promise<void> = new Promise((resolve, reject) => {
-
-			writeable.on('close', async () => resolve());
+			writeable.on('close', () => resolve());
 			writeable.on('error', (e) => reject(e));
 		});
 
