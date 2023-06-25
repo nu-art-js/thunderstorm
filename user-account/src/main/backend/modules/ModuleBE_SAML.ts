@@ -34,6 +34,24 @@ import {addRoutes, ApiException, ApiResponse, createQueryServerApi, ExpressReque
 import {ModuleBE_Account} from './ModuleBE_Account';
 
 
+/**
+ * SAML config, when filling in the RTDB, should look like this:
+ * ```
+ * ModuleBE_SAML: {
+ *   idConfig: {
+ *     sso_login_url: string - the accounts.google url for login
+ *     sso_logout_url: string - the accounts.google url for login (optional)
+ *     certificates: string[] - only one necessary, the cert for login
+ *     ignore_signature: boolean - should be true
+ *   },
+ *   spConfig: {
+ *   		allow_unencrypted_assertion: boolean - should be true
+ *			assert_endpoint: string - the BE endpoint for the account assertion
+ *			entity_id: string - the entityID from the google SAML project.
+ *   }
+ * }
+ * ```
+ */
 type SamlConfig = {
 	idConfig: IdentityProviderOptions,
 	spConfig: ServiceProviderOptions

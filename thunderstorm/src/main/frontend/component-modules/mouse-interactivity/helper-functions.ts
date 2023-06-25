@@ -282,6 +282,28 @@ const OpenToolTipAtTop = (id: string, content: () => JSX.Element, config?: ToolT
 	};
 };
 
+// ######################### Menu Helpers #########################
+
+const openMenuAtLeft = (e: React.MouseEvent, content: Adapter) => {
+	return new MenuBuilder(content, getElementCenterPos(e.currentTarget), {x: -1, y: 0});
+};
+
+const openMenuAtRight = (e: React.MouseEvent, content: Adapter) => {
+	return new MenuBuilder(content, getElementCenterPos(e.currentTarget), {x: 1, y: 0});
+};
+
+const openMenuAtTop = (e: React.MouseEvent, content: Adapter) => {
+	return new MenuBuilder(content, getElementCenterPos(e.currentTarget), {x: 0, y: -1});
+};
+
+const openMenuAtBottom = (e: React.MouseEvent, content: Adapter) => {
+	return new MenuBuilder(content, getElementCenterPos(e.currentTarget), {x: 0, y: 1});
+};
+
+const openMenuAtCenter = (e: React.MouseEvent, content: Adapter) => {
+	return new MenuBuilder(content, getElementCenterPos(e.currentTarget), {x: 0, y: 0});
+};
+
 export const openContent = {
 	popUp: {
 		left: OpenPopUpAtLeft,
@@ -296,5 +318,12 @@ export const openContent = {
 		top: OpenToolTipAtTop,
 		bottom: OpenToolTipAtBottom,
 		center: OpenToolTipAtCenter,
+	},
+	menu: {
+		left: openMenuAtLeft,
+		right: openMenuAtRight,
+		top: openMenuAtTop,
+		bottom: openMenuAtBottom,
+		center: openMenuAtCenter,
 	}
 };
