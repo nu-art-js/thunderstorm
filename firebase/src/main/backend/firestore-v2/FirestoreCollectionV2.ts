@@ -106,17 +106,17 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		};
 	}
 
-	getDocWrapper(_id: UniqueId) {
+	getDocWrapper = (_id: UniqueId) => {
 		const doc = this.wrapper.firestore.doc(`${this.name}/${_id}`) as FirestoreType_DocumentReference<Type>;
 		return new DocWrapperV2<Type>(this.wrapper, doc);
-	}
+	};
 
-	getDocWrapperFromItem(item: PreDB<Type>) {
+	getDocWrapperFromItem = (item: PreDB<Type>) => {
 		if (!exists(item._id))
 			throw new BadImplementationException('Cannot create DocWrapper without _id!');
 
 		return this.getDocWrapper(item._id!);
-	}
+	};
 
 	protected async queryByIds(all_ids: UniqueId[], transaction?: Transaction) {
 
@@ -188,9 +188,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	prepareObjForCreate(preDBObject: PreDB<Type>): Type {
 		const now = currentTimeMillis();
-		// if (preDBObject._id)
-		// 	throw new ValidationException('Cannot create objects that already have _id!', preDBObject);
-
 		preDBObject._id ??= generateId();
 		preDBObject.__updated = preDBObject.__created = now;
 
@@ -301,10 +298,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	async newQuery(ourQuery: FirestoreQuery<Type>): Promise<DocWrapperV2<Type>[]> {
 		const docs = await this._query(ourQuery) as FirestoreType_DocumentSnapshot<Type>[];
 		return docs.filter(doc => doc.exists).map(doc => new DocWrapperV2<Type>(this.wrapper, doc.ref, doc.data()));
-	}
-
-	async getAll() {
-
 	}
 
 	private upgradeInstances(dbInstances: Type[]) {
