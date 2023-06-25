@@ -248,11 +248,23 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		await this.getDocWrapper(_id).delete();
 	};
 
-	protected async _deleteQuery(query: FirestoreQuery<Type>) {
+	protected async _deleteQuery(query: FirestoreQuery<Type>, transaction?: Transaction) {
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
-		// todo
+		const items = await this.query.custom(query, transaction);
+		return this._deleteAll(items.map(this.getDocWrapperFromItem));
+	}
+
+	protected async _deleteAll(docs: DocWrapperV2<Type>[], transaction?: Transaction) {
+		if (transaction)
+			return this._deleteAllTransaction(docs, transaction);
+
+		return this._deleteBulk(docs);
+	}
+
+	protected async _deleteAllTransaction(docs: DocWrapperV2<Type>[], transaction: Transaction) {
+		return docs.map(doc => doc.delete(transaction));
 	}
 
 	protected async _deleteBulk(docs: DocWrapperV2<Type>[]) {
@@ -426,8 +438,8 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	delete = {
 		unique: this._deleteUnique,
 		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.getDocWrapperFromItem(item).delete(transaction),
-		all: async (_ids: UniqueId[]) => await this._deleteBulk(_ids.map(_id => this.getDocWrapper(_id))),
-		allItems: async (items: PreDB<Type>[]) => await this._deleteBulk(items.map(_item => this.getDocWrapperFromItem(_item))),
+		all: async (_ids: UniqueId[], transaction?: Transaction) => await this._deleteAll(_ids.map(_id => this.getDocWrapper(_id)), transaction),
+		allItems: async (items: PreDB<Type>[], transaction?: Transaction) => await this._deleteAll(items.map(_item => this.getDocWrapperFromItem(_item)), transaction),
 		query: this._deleteQuery
 	};
 }
