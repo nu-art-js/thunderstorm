@@ -48,6 +48,7 @@ import DocumentReference = firestore.DocumentReference;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
 
+
 type UpdateObject<Type extends DB_Object> = { _id: UniqueId } & UpdateData<Type>;
 export const dbIdLength = 32;
 export const _EmptyQuery = Object.freeze({where: {}});
@@ -117,7 +118,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return this.getDocWrapper(item._id!);
 	}
 
-	protected async queryByIds(all_ids: UniqueId[],transaction?: Transaction) {
+	protected async queryByIds(all_ids: UniqueId[], transaction?: Transaction) {
 
 		return await batchAction(all_ids, 10, async (chunk) => {
 			const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, {where: {_id: {$in: chunk}}} as FirestoreQuery<Type>);
@@ -330,7 +331,9 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		unique: async (_id: UniqueId, transaction?: Transaction) => {
 			return await this.getDocWrapper(_id).get(transaction);
 		},
-		all: async (all_ids: UniqueId[], transaction?: Transaction) => await this.queryByIds(all_ids),
+		all: async (allIds: UniqueId[], transaction?: Transaction) => {
+			return (transaction ?? this.wrapper.firestore).getAll(...allIds.map(id => this.getDocWrapper(id).ref));
+		},
 		custom: async (query?: FirestoreQuery<Type>) => {
 			const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
 			return ((await myQuery.get()).docs as FirestoreType_DocumentSnapshot[]).map(snapshot => snapshot.data() as Type);
@@ -359,7 +362,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 export function generateId() {
 	return generateHex(dbIdLength);
 }
-
 
 export class DocWrapperV2<T extends DB_Object> {
 	wrapper: FirestoreWrapperBEV2;
