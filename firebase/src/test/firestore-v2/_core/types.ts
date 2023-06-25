@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, TS_Object, UniqueId} from '@nu-art/ts-common';
+import {DB_Object, PreDB, TS_Object, UniqueId} from '@nu-art/ts-common';
 import {FirestoreQuery} from '../../_main';
 
 
@@ -39,7 +39,7 @@ export type DB_Type = DB_Object & {
 	nestedObject?: { one: FB_ArrayType, two: FB_ArrayType }
 }
 
-export type DB_Type_Query = DB_Object & {
+export type DB_Type_Complex = DB_Object & {
 	refs: string[]
 	name: string
 	parentId?: string
@@ -57,3 +57,4 @@ export type Patch_TestCase<T extends TS_Object> = {
 	query: FirestoreQuery<T>
 	label: string,
 }
+export type TestInputValue = PreDB<DB_Type>[];

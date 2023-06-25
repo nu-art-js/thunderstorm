@@ -16,11 +16,12 @@
  * limitations under the License.
  */
 
-import {DB_Type, FB_ArrayType} from './types';
-import {generateHex, PreDB, UniqueId} from '@nu-art/ts-common';
+import {DB_Type, DB_Type_Complex, FB_ArrayType, TestInputValue} from './types';
+import {deepClone, generateHex, PreDB, UniqueId} from '@nu-art/ts-common';
 import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend';
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
-import {TestInputValue} from '../insert/consts';
+import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
+import {TestModel, TestSuite} from '@nu-art/ts-common/testing/types';
 
 
 const config = {
@@ -124,3 +125,44 @@ export const testInstance5: PreDB<DB_Type> = Object.freeze({
 	objectArray: [testItem1, testItem2, testItem3, testItem4, testItem5],
 	nestedObject: {one: testItem2, two: testItem4}
 });
+
+
+export type CollectionTestInput = {
+	outerCollection: PreDB<DB_Type_Complex>[];
+	innerCollection: PreDB<DB_Type_Complex>[];
+	outerId?: string,
+	innerId?: string
+	check: (collectionOuter: FirestoreCollectionV2<DB_Type_Complex>, collectionInner: FirestoreCollectionV2<DB_Type_Complex>) => Promise<void>
+}
+export type CollectionTest = TestSuite<CollectionTestInput, TestInputValue>;
+
+export const id_outer1 = 'id_outer1';
+export const id_inner1 = 'id_inner1';
+export const id_inner2 = 'id_inner2';
+export const id_inner3 = 'id_inner3';
+export const id_inner4 = 'id_inner4';
+export const outerQueryCollection = [
+	{_id: id_outer1, name: 'outer1', refs: [id_inner1, id_inner2, id_inner3]}
+];
+export const innerQueryCollection = [
+	{_id: id_inner1, name: 'inner1', refs: [], parentId: id_outer1},
+	{_id: id_inner2, name: 'inner2', refs: []},
+	{_id: id_inner3, name: 'inner3', refs: [], parentId: id_outer1},
+	{_id: id_inner4, name: 'inner4', refs: []},
+	{_id: 'id_inner5', name: 'inner5', refs: [], parentId: id_outer1},
+	{_id: 'id_inner6', name: 'inner6', refs: []},
+	{_id: 'id_inner7', name: 'inner7', refs: [], parentId: id_outer1},
+	{_id: 'id_inner8', name: 'inner8', refs: []},
+	{_id: 'id_inner9', name: 'inner9', refs: [], parentId: id_outer1},
+];
+
+export async function prepareCollectionTest(testCase: TestModel<CollectionTestInput, TestInputValue>) {
+	const outerCollection = firestore.getCollection<DB_Type_Complex>('firestore-tests-outer');
+	const innerCollection = firestore.getCollection<DB_Type_Complex>('firestore-tests-inner');
+	await Promise.all([outerCollection, innerCollection].map(async (collection) => await collection.deleteCollection()));
+	const outerToInsert = deepClone(testCase.input.outerCollection);
+	const innerToInsert = deepClone(testCase.input.innerCollection);
+	await outerCollection.set.all(outerToInsert);
+	await innerCollection.set.all(innerToInsert);
+	await testCase.input.check(outerCollection, innerCollection);
+}

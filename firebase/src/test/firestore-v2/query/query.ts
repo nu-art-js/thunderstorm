@@ -1,12 +1,5 @@
-import {
-	ComplexQueryTest,
-	prepareQueryTest,
-	queryAllTestCases,
-	queryComplexTestCases,
-	QueryTest,
-	queryTestCases
-} from './consts';
-import {firestore} from '../_core/consts';
+import {queryAllTestCases, queryComplexTestCases, QueryTest, queryTestCases} from './consts';
+import {CollectionTest, firestore, prepareCollectionTest} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {deepClone} from '@nu-art/ts-common';
 
@@ -14,11 +7,11 @@ export const TestCases_FB_QueryUnique: QueryTest['testcases'] = [
 	...queryTestCases
 ];
 
-export const TestCases_FB_QueryAll: ComplexQueryTest['testcases'] = [
+export const TestCases_FB_QueryAll: CollectionTest['testcases'] = [
 	...queryAllTestCases
 ];
 
-export const TestCases_FB_QueryComplex1: ComplexQueryTest['testcases'] = [
+export const TestCases_FB_QueryComplex1: CollectionTest['testcases'] = [
 	...queryComplexTestCases,
 ];
 
@@ -34,18 +27,18 @@ export const TestSuite_FirestoreV2_QueryUnique: QueryTest = {
 	}
 };
 
-export const TestSuite_FirestoreV2_QueryAll: ComplexQueryTest = {
+export const TestSuite_FirestoreV2_QueryAll: CollectionTest = {
 	label: 'Firestore query.all tests',
 	testcases: TestCases_FB_QueryAll,
 	processor: async (testCase) => {
-		await prepareQueryTest(testCase);
+		await prepareCollectionTest(testCase);
 	}
 };
 
-export const TestSuite_FirestoreV2_QueryComplex1: ComplexQueryTest = {
-	label: 'Firestore complex query tests',
+export const TestSuite_FirestoreV2_QueryComplex1: CollectionTest = {
+	label: 'Firestore referenced query tests',
 	testcases: TestCases_FB_QueryComplex1,
 	processor: async (testCase) => {
-		await prepareQueryTest(testCase);
+		await prepareCollectionTest(testCase);
 	}
 };
