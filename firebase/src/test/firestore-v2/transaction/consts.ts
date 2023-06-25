@@ -10,7 +10,8 @@ import {
 	outerQueryCollection
 } from '../_core/consts';
 import {expect} from 'chai';
-import {compare, currentTimeMillis, exists} from '@nu-art/ts-common';
+import {compare, filterInstances, currentTimeMillis, exists} from '@nu-art/ts-common';
+
 
 export const transactionTestCases: CollectionTest['testcases'] = [
 	{
@@ -28,7 +29,7 @@ export const transactionTestCases: CollectionTest['testcases'] = [
 
 					expect(true).to.eql(exists(outerItem));
 
-					const toUpdateInnerItems = await collectionInner.query.all(outerItem.refs);
+					const toUpdateInnerItems = filterInstances(await collectionInner.query.all(outerItem.refs));
 					expect(toUpdateInnerItems.length).to.eql(3);
 
 					toUpdateInnerItems.forEach(item => item.parentId = id_outer1);

@@ -49,7 +49,7 @@ import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
 
 
-type UpdateObject<Type extends DB_Object> = { _id: UniqueId } & UpdateData<Type>;
+type UpdateObject<Type> = { _id: UniqueId } & UpdateData<Type>;
 export const dbIdLength = 32;
 export const _EmptyQuery = Object.freeze({where: {}});
 
@@ -273,7 +273,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	 * @param updateData: data to update in DB item
 	 * @private
 	 */
-	private updateDeletedFields(updateData: any) {
+	private updateDeletedFields(updateData: UpdateObject<Type | Type[keyof Type]>) {
 		if (typeof updateData !== 'object' || updateData === null)
 			return;
 
@@ -281,9 +281,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			const _value = updateData[_key];
 
 			if (!exists(_value)) {
+				// @ts-ignore
 				updateData[_key] = FieldValue.delete();
 			} else {
-				this.updateDeletedFields(_value);
+				this.updateDeletedFields(_value as UpdateObject<Type | Type[keyof Type]>);
 			}
 		});
 	}
@@ -324,8 +325,8 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		unique: async (_id: UniqueId, transaction?: Transaction) => {
 			return await this.getDocWrapper(_id).get(transaction);
 		},
-		all: async (allIds: UniqueId[], transaction?: Transaction) => {
-			return (transaction ?? this.wrapper.firestore).getAll(...allIds.map(id => this.getDocWrapper(id).ref));
+		all: async (allIds: UniqueId[], transaction?: Transaction): Promise<(Type | undefined)[]> => {
+			return (await (transaction ?? this.wrapper.firestore).getAll(...allIds.map(id => this.getDocWrapper(id).ref))).map(ref => ref.data() as Type | undefined);
 		},
 		custom: async (query?: FirestoreQuery<Type>) => {
 			const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
