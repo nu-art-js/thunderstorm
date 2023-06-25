@@ -50,5 +50,5 @@ async function createImpl(toCreate: TestInputValue, collection: FirestoreCollect
 }
 
 async function createMultiple(toCreate: PreDB<DB_Type>[], collection: FirestoreCollectionV2<DB_Type>) {
-	await Promise.all(toCreate.map(collection.create.item));
+	await Promise.all(toCreate.map(item => collection.create.item(item)));
 }
