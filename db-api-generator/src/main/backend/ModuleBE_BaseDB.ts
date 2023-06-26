@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Clause_Where, FilterKeys, FirestoreQuery,} from '@nu-art/firebase';
+import {Clause_Where, DB_EntityDependency, FilterKeys, FirestoreQuery,} from '@nu-art/firebase';
 import {
 	__stringify,
 	_keys,
@@ -54,7 +54,7 @@ import {
 	FirestoreType_DocumentSnapshot,
 	ModuleBE_Firebase,
 } from '@nu-art/firebase/backend';
-import {canDeleteDispatcher, DB_EntityDependency, DBApiBEConfig, getModuleBEConfig} from './db-def';
+import {canDeleteDispatcher, DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
 import {_EmptyQuery, Response_DBSync} from '../shared';
 import {FirestoreBackupDetails} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_Backup';

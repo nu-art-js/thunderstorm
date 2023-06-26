@@ -30,7 +30,7 @@ import {
 	DBDef,
 	DefaultDBVersion,
 	exists,
-	filterInOut,
+	filterInOut, filterInstances,
 	flatArray,
 	generateHex,
 	InvalidResult,
@@ -48,7 +48,7 @@ import {
 	FirestoreType_DocumentReference,
 	FirestoreType_DocumentSnapshot
 } from '../firestore/types';
-import {Clause_Where, FirestoreQuery} from '../../shared/types';
+import {Clause_Where, DB_EntityDependency, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
@@ -57,6 +57,7 @@ import {DocWrapperV2} from './DocWrapperV2';
 import DocumentReference = firestore.DocumentReference;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
+import {canDeleteDispatcherV2} from "./consts";
 
 type UpdateObject<Type> = { _id: UniqueId } & UpdateData<Type>;
 export const _EmptyQuery = Object.freeze({where: {}});
@@ -517,7 +518,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			this.onValidationError(dbItem, results);
 		}
 	}
-
 	protected onValidationError(instance: Type, results: InvalidResult<Type>) {
 		StaticLogger.logError(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
@@ -525,5 +525,28 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	}
 
 	private assertUniqueness(dbItem: Type, transaction?: Transaction, request?: Express.Request) {
+	}
+
+	/**
+	 * Override this method to provide actions or assertions to be executed before the deletion happens.
+	 *
+	 * Currently, executed only before `deleteUnique()`.
+	 *
+	 * @param transaction - The transaction object
+	 * @param dbItems - The DB entry that is going to be deleted.
+	 */
+	protected async canDeleteDocument(transaction: Transaction, dbItems: Type[]) {
+		const dependencies = await this.collectDependencies(dbItems, transaction);
+		if (dependencies)
+			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({
+				type: 'has-dependencies',
+				body: dependencies
+			});
+	}
+
+	async collectDependencies(dbInstances: Type[], transaction?: Transaction) {
+		const potentialErrors = await canDeleteDispatcherV2.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
+		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
+		return dependencies.length > 0 ? dependencies : undefined;
 	}
 }

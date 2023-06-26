@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {ApiException, auditBy, batchActionParallel, dbObjectToId, flatArray} from '@nu-art/ts-common';
@@ -26,6 +26,7 @@ import {DB_PermissionDomain, DB_PermissionProject, DBDef_PermissionDomain} from 
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
+import {DB_EntityDependency} from "@nu-art/firebase";
 
 
 export class ModuleBE_PermissionDomain_Class

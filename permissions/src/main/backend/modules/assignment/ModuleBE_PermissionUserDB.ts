@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {
@@ -33,7 +33,7 @@ import {
 	flatArray
 } from '@nu-art/ts-common';
 import {ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
-import {Clause_Where} from '@nu-art/firebase';
+import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {PermissionsShare} from '../permissions-share';
 import {
 	AssignAppPermissions,
