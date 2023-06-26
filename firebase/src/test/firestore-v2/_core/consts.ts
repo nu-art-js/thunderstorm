@@ -17,7 +17,7 @@
  */
 
 import {DB_Type, DB_Type_Complex, FB_ArrayType, TestInputValue} from './types';
-import {deepClone, generateHex, PreDB, UniqueId} from '@nu-art/ts-common';
+import {DBDef, deepClone, generateHex, PreDB, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
 import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend';
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
@@ -156,9 +156,21 @@ export const innerQueryCollection = [
 	{_id: 'id_inner9', name: 'inner9', refs: [], parentId: id_outer1},
 ];
 
+const dbDefOuter: DBDef<DB_Type_Complex> = {
+	dbName: 'firestore-tests-outer',
+	entityName: 'OuterItem',
+	validator: tsValidateMustExist
+}
+
+const dbDefInner: DBDef<DB_Type_Complex> = {
+	dbName: 'firestore-tests-inner',
+	entityName: 'InnerItem',
+	validator: tsValidateMustExist
+}
+
 export async function prepareCollectionTest(testCase: TestModel<CollectionTestInput, TestInputValue>) {
-	const outerCollection = firestore.getCollection<DB_Type_Complex>('firestore-tests-outer');
-	const innerCollection = firestore.getCollection<DB_Type_Complex>('firestore-tests-inner');
+	const outerCollection = firestore.getCollection<DB_Type_Complex>(dbDefOuter);
+	const innerCollection = firestore.getCollection<DB_Type_Complex>(dbDefInner);
 	await Promise.all([outerCollection, innerCollection].map(async (collection) => await collection.deleteCollection()));
 	const outerToInsert = deepClone(testCase.input.outerCollection);
 	const innerToInsert = deepClone(testCase.input.innerCollection);
