@@ -5,7 +5,8 @@ import {expect} from 'chai';
 import {DB_Type, TestInputValue} from '../_core/types';
 import {
 	CollectionTest,
-	getSingleItem, id_outer1,
+	getSingleItem,
+	id_outer1,
 	innerQueryCollection,
 	outerQueryCollection,
 	testInstance1,
@@ -118,4 +119,32 @@ export const queryComplexTestCases: CollectionTest['testcases'] = [
 			}
 		}
 	},
+];
+
+export const queryWithPagination: QueryTest['testcases'] = [
+	{
+		description: 'limit 3 elements out of 5',
+		result: [testInstance1, testInstance2, testInstance3],
+		input: {
+			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+			check: async (collection, expectedResult) => {
+				const items = await collection.query.custom({where: {}, orderBy: [{key: 'stringValue', order: 'asc'}], limit: 3});
+
+				expect(items.length).to.eql(3);
+				expect(true).to.eql(expectedResult.every((item, index) => item._uniqueId === items[index]._uniqueId));
+			}
+		}
+	},
+	{
+		description: 'skip 3 elements out of 5 and query the rest ',
+		result: [],
+		input: {
+			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+			check: async (collection, expectedResult) => {
+				const items = await collection.query.custom({where: {}, orderBy: [{key: 'stringValue', order: 'asc'}], limit: {page: 1, itemsCount: 2}});
+
+				expect(items.length).to.eql(2);
+			}
+		}
+	}
 ];
