@@ -48,7 +48,7 @@ import {
 	FirestoreType_DocumentReference,
 	FirestoreType_DocumentSnapshot
 } from '../firestore/types';
-import {Clause_Where, FilterKeys, FirestoreQuery} from '../../shared/types';
+import {Clause_Where, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
@@ -100,7 +100,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	 * @param _dbDef
 	 * @param uniqueKeys
 	 */
-	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type>, uniqueKeys?: FilterKeys<Type>) {
+	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type>) {
 		this.name = _dbDef.dbName;
 		this.wrapper = wrapper;
 		if (!/[a-z-]{3,}/.test(_dbDef.dbName))
@@ -108,10 +108,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 		this.collection = wrapper.firestore.collection(_dbDef.dbName);
 		this.externalUniqueFilter = (item: Type) => {
-			if (!uniqueKeys)
+			if (!_dbDef.uniqueKeys)
 				throw new BadImplementationException('In order to use a unique query your collection MUST have a unique filter');
 
-			return uniqueKeys.reduce((where, key: keyof Type) => {
+			return _dbDef.uniqueKeys.reduce((where, key: keyof Type) => {
 				if (!exists(item[key]))
 					throw new BadImplementationException(
 						`No where properties are allowed to be null or undefined.\nWhile querying collection '${this.name}' we found property '${String(key)}' to be '${where[key]}'`);
