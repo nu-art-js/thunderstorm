@@ -3,16 +3,22 @@ import {TestSuite_FirestoreV2_Create} from './insert/insert';
 import {TestSuite_FirestoreV2_Delete} from './delete/delete';
 import {TestSuite_FirestoreV2_CreateAll} from './insert/insert-all';
 import {TestSuite_FirestoreV2_Update} from './update/update';
-import {TestSuite_FirestoreV2_QueryAll, TestSuite_FirestoreV2_QueryComplex1, TestSuite_FirestoreV2_QueryUnique} from './query/query';
+import {
+	TestSuite_FirestoreV2_QueryAll,
+	TestSuite_FirestoreV2_QueryComplex1,
+	TestSuite_FirestoreV2_QueryUnique,
+	TestSuite_FireStoreV2_QueryWithPagination
+} from './query/query';
 import {TestSuite_FirestoreV2_Set} from './set/set';
 import {TestSuite_FirestoreV2_Transaction} from './transaction/transaction';
-import {TestSuite_FirestoreV2_Upsert} from "./upsert/upsert";
+import {TestSuite_FirestoreV2_Upsert} from './upsert/upsert';
 
 describe('Firestore v2 - All Tests', () => {
 	testSuiteTester(TestSuite_FirestoreV2_Create);
 	testSuiteTester(TestSuite_FirestoreV2_CreateAll);
 	testSuiteTester(TestSuite_FirestoreV2_Delete);
 	testSuiteTester(TestSuite_FirestoreV2_QueryUnique);
+	testSuiteTester(TestSuite_FireStoreV2_QueryWithPagination);
 	testSuiteTester(TestSuite_FirestoreV2_QueryAll);
 	testSuiteTester(TestSuite_FirestoreV2_QueryComplex1);
 	testSuiteTester(TestSuite_FirestoreV2_Update);
