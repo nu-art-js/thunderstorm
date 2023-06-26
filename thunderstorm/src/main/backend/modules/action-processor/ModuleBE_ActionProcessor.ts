@@ -1,11 +1,18 @@
-import {_logger_logException, _values, BadImplementationException, isErrorOfType, Logger, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
+import {
+	_values,
+	ApiException,
+	BadImplementationException,
+	isErrorOfType,
+	Logger,
+	LogLevel,
+	Module,
+	TypedMap
+} from '@nu-art/ts-common';
 // import {ApiDefServer} from '../../utils/api-caller-types';
 import {ActionMetaData, ApiDef_ActionProcessing, Request_ActionToProcess} from '../../../shared/action-processor';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ApiModule';
 import {ActionDeclaration} from './types';
-import {ApiException} from '../../exceptions';
-
 
 export class ModuleBE_ActionProcessor_Class
 	extends Module {

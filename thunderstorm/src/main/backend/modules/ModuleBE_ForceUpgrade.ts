@@ -19,10 +19,23 @@
  * limitations under the License.
  */
 
-import {__stringify, BadImplementationException, compareVersions, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {
+	__stringify,
+	ApiException,
+	BadImplementationException,
+	compareVersions,
+	ImplementationMissingException,
+	Module
+} from '@nu-art/ts-common';
 
-import {ApiException} from '../exceptions';
-import {ApiDef_ForceUpgrade, Browser, HeaderKey_AppVersion, HeaderKey_BrowserType, HeaderKey_UserAgent, UpgradeRequired} from '../../shared';
+import {
+	ApiDef_ForceUpgrade,
+	Browser,
+	HeaderKey_AppVersion,
+	HeaderKey_BrowserType,
+	HeaderKey_UserAgent,
+	UpgradeRequired
+} from '../../shared';
 import {ExpressRequest, ServerApi_Middleware} from '../utils/types';
 import {createQueryServerApi} from '../core/typed-api';
 import {HeaderKey} from './server/HeaderKey';
@@ -91,7 +104,10 @@ class ModuleBE_ForceUpgrade_Class
 	async assertVersion(request: ExpressRequest): Promise<void> {
 		const upgradeRequired = this.compareVersion(request);
 		if (upgradeRequired.app || upgradeRequired.browser)
-			throw new ApiException<UpgradeRequired>(426, 'require upgrade..').setErrorBody({type: 'upgrade-required', body: upgradeRequired});
+			throw new ApiException<UpgradeRequired>(426, 'require upgrade..').setErrorBody({
+				type: 'upgrade-required',
+				body: upgradeRequired
+			});
 	}
 }
 

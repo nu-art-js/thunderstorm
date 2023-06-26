@@ -17,10 +17,17 @@
  * limitations under the License.
  */
 
-import {_keys, BadImplementationException, batchActionParallel, filterDuplicates, Module, StringMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	ApiException,
+	BadImplementationException,
+	batchActionParallel,
+	filterDuplicates,
+	Module,
+	StringMap
+} from '@nu-art/ts-common';
 import {
 	addRoutes,
-	ApiException,
 	ApiResponse,
 	ExpressRequest,
 	ExpressResponse,
@@ -35,8 +42,11 @@ import {
 	ApiStruct_PermissionsAssert,
 	Base_AccessLevels,
 	DB_PermissionAccessLevel,
-	DB_PermissionApi, DB_PermissionGroup, DB_PermissionUser,
-	Request_AssertApiForUser, User_Group
+	DB_PermissionApi,
+	DB_PermissionGroup,
+	DB_PermissionUser,
+	Request_AssertApiForUser,
+	User_Group
 } from '../../shared';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
@@ -128,7 +138,10 @@ export class ModuleBE_PermissionsAssert_Class
 		this._assertUserPermissionsImpl(apiDetails, projectId, userDetails, requestCustomField);
 	}
 
-	_assertUserPermissionsImpl(apiDetails: { apiDb: DB_PermissionApi; requestPermissions: DB_PermissionAccessLevel[] }, projectId: string, userDetails: {
+	_assertUserPermissionsImpl(apiDetails: {
+		apiDb: DB_PermissionApi;
+		requestPermissions: DB_PermissionAccessLevel[]
+	}, projectId: string, userDetails: {
 		user: DB_PermissionUser,
 		userGroups: DB_PermissionGroup[]
 	}, requestCustomField: StringMap) {
@@ -154,11 +167,17 @@ export class ModuleBE_PermissionsAssert_Class
 		if (!requestPermissions.length)
 			return;
 
-		const requestPairWithLevelsObj: RequestPairWithLevelsObj = {accessLevels: requestPermissions, customFields: requestCustomFields};
+		const requestPairWithLevelsObj: RequestPairWithLevelsObj = {
+			accessLevels: requestPermissions,
+			customFields: requestCustomFields
+		};
 
 		let groupMatch = false;
 		const groupsMatchArray = userGroups.map(group => {
-			const groupPairWithLevelsObj: GroupPairWithBaseLevelsObj = {accessLevels: group.__accessLevels || [], customFields: group.customFields || []};
+			const groupPairWithLevelsObj: GroupPairWithBaseLevelsObj = {
+				accessLevels: group.__accessLevels || [],
+				customFields: group.customFields || []
+			};
 
 			return this.isMatchWithLevelsObj(groupPairWithLevelsObj, requestPairWithLevelsObj);
 		});
@@ -227,7 +246,12 @@ export class ModuleBE_PermissionsAssert_Class
 
 	async getApisDetails(urls: string[], projectId: string) {
 		const paths = urls.map(_path => _path.substring(0, (_path + '?').indexOf('?')));
-		const apiDbs = await batchActionParallel(paths, 10, elements => ModuleBE_PermissionApi.query({where: {projectId, path: {$in: elements}}}));
+		const apiDbs = await batchActionParallel(paths, 10, elements => ModuleBE_PermissionApi.query({
+			where: {
+				projectId,
+				path: {$in: elements}
+			}
+		}));
 		return Promise.all(paths.map(async path => {
 			const apiDb = apiDbs.find(_apiDb => _apiDb.path === path);
 			if (!apiDb)

@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-import {tsValidateStringAndNumbersWithDashes} from '@nu-art/db-api-generator';
 import {
 	DBDef,
 	OmitDBObject,
@@ -25,7 +24,7 @@ import {
 	tsValidateDynamicObject,
 	tsValidateNonMandatoryObject,
 	tsValidateNumber,
-	tsValidateString,
+	tsValidateString, tsValidateStringAndNumbersWithDashes,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {validateUserUuid} from '../../validators';

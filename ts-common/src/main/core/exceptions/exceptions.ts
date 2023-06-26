@@ -20,7 +20,8 @@
  */
 
 // noinspection TypeScriptPreferShortImport
-import {Constructor, UniqueId} from '../utils/types';
+import {ErrorBody, ErrorResponse} from './types';
+import {Constructor, TS_Object, UniqueId} from '../../utils/types';
 
 
 /**
@@ -230,6 +231,26 @@ export class AssertionException
 	constructor(message: string, cause?: Error) {
 		super(AssertionException, message, cause);
 	}
+}
+
+export class ApiException<E extends TS_Object | void = void>
+	extends CustomException {
+
+	public readonly responseBody: ErrorResponse<E> = {};
+	public readonly responseCode: number;
+
+	public readonly setErrorBody = (errorBody: ErrorBody<E>) => {
+		this.responseBody.error = errorBody;
+		return this;
+	};
+
+	constructor(responseCode: number, debugMessage?: string, cause?: Error) {
+		super(ApiException, `${responseCode}-${JSON.stringify(debugMessage)}`, cause);
+
+		this.responseCode = responseCode;
+		this.responseBody.debugMessage = debugMessage;
+	}
+
 }
 
 const allExceptions = [

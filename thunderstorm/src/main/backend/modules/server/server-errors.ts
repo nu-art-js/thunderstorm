@@ -19,8 +19,7 @@
  * limitations under the License.
  */
 
-import {ApiException} from '../../exceptions';
-import {__stringify, _keys, StringMap, isErrorOfType, StaticLogger} from '@nu-art/ts-common';
+import {__stringify, _keys, ApiException, isErrorOfType, StaticLogger, StringMap} from '@nu-art/ts-common';
 import {HttpErrorHandler, HttpRequestData} from '../../utils/types';
 
 

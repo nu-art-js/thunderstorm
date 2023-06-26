@@ -20,9 +20,8 @@
  */
 
 import * as express from 'express';
-import {Dispatcher, ErrorMessage} from '@nu-art/ts-common';
+import {ApiException, Dispatcher, ErrorMessage} from '@nu-art/ts-common';
 import {CoreOptions, UriOptions} from 'request';
-import {ApiException} from '../exceptions';
 import {IncomingHttpHeaders} from 'http';
 import {HttpMethod} from '../../shared';
 

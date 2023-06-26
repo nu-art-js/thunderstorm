@@ -19,22 +19,29 @@
 import {
 	__stringify,
 	_keys,
+	ApiException,
 	BadImplementationException,
 	batchAction,
 	compare,
 	currentTimeMillis,
 	CustomException,
 	DB_Object,
+	DB_Object_validator,
 	DBDef,
+	DefaultDBVersion,
 	exists,
 	filterInOut,
 	flatArray,
 	generateHex,
+	InvalidResult,
+	KeysOfDB_Object,
 	MUSTNeverHappenException,
 	PreDB,
 	StaticLogger,
 	Subset,
-	UniqueId
+	tsValidateResult,
+	UniqueId,
+	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {
 	FirestoreType_Collection,
@@ -79,6 +86,8 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	readonly wrapper: FirestoreWrapperBEV2;
 	readonly collection: FirestoreType_Collection;
 	readonly dbDef: DBDef<Type, any>;
+	private readonly validator: ValidatorTypeResolver<Type>;
+
 
 	/**
 	 * External unique as in there must never ever be two that answer the same query
@@ -113,7 +122,22 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			}, {} as Clause_Where<Type>);
 		};
 		this.dbDef = _dbDef;
+		this.validator = this.getValidator(_dbDef);
 	}
+
+	getValidator = (dbDef: DBDef<Type>): ValidatorTypeResolver<Type> => {
+		return typeof dbDef.validator === 'function' ?
+			[((instance: Type) => {
+				const dbObjectOnly = KeysOfDB_Object.reduce<DB_Object>((objectToRet, key) => {
+					if (exists(instance[key]))  // @ts-ignore
+						objectToRet[key] = instance[key];
+
+					return objectToRet;
+				}, {} as DB_Object);
+				return tsValidateResult(dbObjectOnly, DB_Object_validator);
+			}), dbDef.validator] as ValidatorTypeResolver<Type> :
+			{...DB_Object_validator, ...dbDef.validator} as ValidatorTypeResolver<Type>;
+	};
 
 	// ############################## DocWrapper ##############################
 	getDocWrapper = (_id: UniqueId): DocWrapperV2<Type> => {
@@ -185,9 +209,14 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const now = currentTimeMillis();
 		preDBItem._id ??= generateId();
 		preDBItem.__updated = preDBItem.__created = now;
+		preDBItem._v = this.getVersion();
 
 		return preDBItem as Type;
 	}
+
+	getVersion = () => {
+		return this.dbDef.versions?.[0] || DefaultDBVersion;
+	};
 
 	protected async _createItem(preDBItem: PreDB<Type>, transaction?: Transaction) {
 		const dbItem = this.prepareItemForCreate(preDBItem);
@@ -251,6 +280,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		preDBItem._id ??= generateId();
 		preDBItem.__created ??= now;
 		preDBItem.__updated = now;
+		preDBItem._v ??= this.getVersion();
 		return preDBItem as Type;
 	}
 
@@ -304,6 +334,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	private async prepareDataForUpdate(updateData: UpdateObject<Type>) {
 		delete updateData.__created;
+		delete updateData._v;
 		updateData.__updated = currentTimeMillis();
 		this.updateDeletedFields(updateData);
 		await this.assertUpdateData(updateData);
@@ -481,7 +512,16 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	}
 
 	private validateImpl(dbItem: Type) {
-		//todo validation using validator
+		const results = tsValidateResult(dbItem, this.validator);
+		if (results) {
+			this.onValidationError(dbItem, results);
+		}
+	}
+
+	protected onValidationError(instance: Type, results: InvalidResult<Type>) {
+		StaticLogger.logError(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
+		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
+		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
 	}
 
 	private assertUniqueness(dbItem: Type, transaction?: Transaction, request?: Express.Request) {

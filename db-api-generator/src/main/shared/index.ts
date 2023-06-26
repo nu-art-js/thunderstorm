@@ -20,6 +20,5 @@
  */
 
 export * from './api';
-export * from './validators';
 export * from './sync-env';
 export * from './archiving/apis';

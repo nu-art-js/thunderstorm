@@ -42,6 +42,5 @@ export * from './utils/to-be-removed';
 export * from './utils/types';
 export * from './utils/LogClient_File';
 export * from './utils/file';
-export * from './exceptions';
 export * from './core/Storm';
 export * from './core/typed-api';

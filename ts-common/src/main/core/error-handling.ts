@@ -18,7 +18,7 @@
 
 import {Module} from './module';
 import {Dispatcher} from './dispatcher';
-import {CustomException} from './exceptions';
+import {CustomException} from './exceptions/exceptions';
 
 export enum ServerErrorSeverity {
 	Debug = 'Debug',
