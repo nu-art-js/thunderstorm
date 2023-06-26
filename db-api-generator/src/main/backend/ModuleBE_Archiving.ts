@@ -4,7 +4,7 @@ import {
 	batchActionParallel,
 	currentTimeMillis,
 	Day,
-	DB_Object,
+	DB_Object, dbIdLength,
 	deepClone,
 	generateHex,
 	Hour,
@@ -19,7 +19,7 @@ import {
 	RequestQuery_DeleteAll,
 	RequestQuery_GetHistory
 } from '../shared/archiving/apis';
-import {_EmptyQuery, dbIdLength} from '../shared';
+import {_EmptyQuery} from '../shared';
 
 type Params = { collectionName: string, docId: string }
 

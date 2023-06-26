@@ -20,7 +20,7 @@
  */
 
 import {ExpressRequest} from '../../utils/types';
-import {ApiException} from '../../exceptions';
+import {ApiException} from '@nu-art/ts-common';
 
 
 export class HeaderKey {

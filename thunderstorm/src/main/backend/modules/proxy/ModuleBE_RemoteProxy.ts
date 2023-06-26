@@ -18,9 +18,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ImplementationMissingException, Module, TS_Object} from '@nu-art/ts-common';
+import {ApiException, ImplementationMissingException, Module, TS_Object} from '@nu-art/ts-common';
 
-import {ApiException} from '../../exceptions';
 import {ApiResponse, ServerApi} from '../server/server-api';
 import {ExpressRequest, HttpRequestData, QueryRequestInfo, ServerApi_Middleware} from '../../utils/types';
 import {HeaderKey} from '../server/HeaderKey';

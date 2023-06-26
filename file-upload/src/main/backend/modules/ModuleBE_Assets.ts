@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 import {
+	ApiException,
 	auditBy,
 	BadImplementationException,
 	batchActionParallel,
@@ -31,14 +32,28 @@ import {
 	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
-import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
+import {
+	FileWrapper,
+	FirebaseType_Metadata,
+	FirestoreTransaction,
+	ModuleBE_Firebase,
+	StorageWrapperBE
+} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {ApiException, CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './AssetBucketListener';
-import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
+import {
+	BaseUploaderFile,
+	DB_Asset,
+	DBDef_Assets,
+	FileStatus,
+	Push_FileUploaded,
+	PushKey_FileUploaded,
+	TempSecureUrl
+} from '../../shared';
 import {DBApiConfig, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 
 
@@ -295,7 +310,10 @@ export class ModuleBE_Assets_Class
 		}
 
 		this.logDebug(`notify FE about asset ${feId}: ${status}`);
-		return ModuleBE_PushPubSub.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: feId || asset.feId}, {status, asset});
+		return ModuleBE_PushPubSub.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: feId || asset.feId}, {
+			status,
+			asset
+		});
 	};
 
 }

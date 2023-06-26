@@ -19,8 +19,9 @@
  * limitations under the License.
  */
 import {_keys, BadImplementationException, Logger} from '@nu-art/ts-common';
-import {ErrorResponse, HttpMethod, TypedApi} from './types';
+import {HttpMethod, TypedApi} from './types';
 import {HttpException, TS_Progress} from './request-types';
+import {ErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
 
 
 export type ErrorType = any
@@ -228,7 +229,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	execute(onSuccess: (response: API['R'], data?: string) => Promise<void> | void = () => this.logger?.logVerbose(`Completed: ${this.label}`),
-					onError: (reason: HttpException) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
+			onError: (reason: HttpException) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
 
 		this.executeSync()
 			.then(onSuccess)

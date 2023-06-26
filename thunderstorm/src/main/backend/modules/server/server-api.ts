@@ -24,6 +24,7 @@
  */
 import {
 	_keys,
+	ApiException,
 	BadImplementationException,
 	composeUrl,
 	currentTimeMillis,
@@ -44,7 +45,6 @@ import {HttpServer} from './HttpServer';
 // noinspection TypeScriptPreferShortImport
 import {ApiDef, BodyApi, QueryApi, QueryParams, TypedApi} from '../../../shared';
 import {assertProperty} from '../../utils/to-be-removed';
-import {ApiException,} from '../../exceptions';
 import {ExpressRequest, ExpressResponse, ExpressRouter, HttpRequestData, ServerApi_Middleware} from '../../utils/types';
 
 
