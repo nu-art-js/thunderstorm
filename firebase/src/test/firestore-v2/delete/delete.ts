@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {compare, deepClone, generateHex, MUSTNeverHappenException, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
+import {compare, DBDef, deepClone, generateHex, MUSTNeverHappenException, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 
 chai.use(require('chai-as-promised'))
@@ -15,6 +15,12 @@ type Input = {
 }
 
 type Test = TestSuite<Input, PreDB<DB_Type>[]>; //result - the items left in the collection after deletion
+
+const dbDef: DBDef<DB_Type> = {
+	dbName: 'firestore-delete-tests',
+	entityName: 'delete-test',
+	validator: tsValidateMustExist
+}
 
 export const TestCases_FB_Delete: Test['testcases'] = [
 	{
@@ -145,7 +151,7 @@ export const TestSuite_FirestoreV2_Delete: Test = {
 	label: 'Firestore delete tests',
 	testcases: TestCases_FB_Delete,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DB_Type>('firestore-deletion-tests');
+		const collection = firestore.getCollection<DB_Type>(dbDef);
 		await collection.deleteCollection();
 
 		const toInsert = deepClone(testCase.input.toInsert);

@@ -1,9 +1,15 @@
 import {firestore, testInstance1} from '../../_core/consts';
 import {DB_Type} from '../../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {deepClone, UniqueId} from '@nu-art/ts-common';
+import {DBDef, deepClone, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
 import {expect} from "chai";
 import {FirestoreCollectionV2} from "../../../../main/backend/firestore-v2/FirestoreCollectionV2";
+
+const dbDef: DBDef<DB_Type> = {
+	dbName: 'firestore-get-all-tests',
+	entityName: 'get-all-test',
+	validator: tsValidateMustExist
+}
 
 //firestore getAll performing much better
 const asyncGetAll = async (_ids: UniqueId[], collection: FirestoreCollectionV2<any>) => {
@@ -15,7 +21,7 @@ export const TestSuite_FirestoreV2_Performance_GetAll: TestSuite<{}, {}> = {
 	label: 'Firestore getAll vs Promise.all get() performance test',
 	testcases: [{description: 'performance - firestoreGetAll vs. promiseAllGet', result: [], input: {}}],
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DB_Type>('firestore-getAll-tests');
+		const collection = firestore.getCollection<DB_Type>(dbDef);
 		await collection.deleteCollection();
 		const inserted = await collection.create.all(Array(10).fill(deepClone(testInstance1)));
 		const _ids = inserted.map(_item => _item._id);
@@ -25,7 +31,7 @@ export const TestSuite_FirestoreV2_Performance_GetAll: TestSuite<{}, {}> = {
 		let getAllSum = 0;
 		for(let i = 0; i < runs; i++) {
 			const t0 = performance.now();
-			await collection.getAll(_ids);
+			await collection.query.all(_ids);
 			const t1 = performance.now();
 			getAllSum += (t1 - t0);
 		}
