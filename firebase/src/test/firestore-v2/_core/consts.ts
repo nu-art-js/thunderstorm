@@ -17,7 +17,16 @@
  */
 
 import {DB_Type, DB_Type_Complex, FB_ArrayType, TestInputValue} from './types';
-import {DBDef, deepClone, generateHex, PreDB, tsValidateMustExist, UniqueId} from '@nu-art/ts-common';
+import {
+	DBDef,
+	deepClone,
+	generateHex,
+	PreDB,
+	tsValidateArray,
+	tsValidateMustExist,
+	tsValidateString,
+	UniqueId
+} from '@nu-art/ts-common';
 import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/backend';
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
@@ -159,14 +168,18 @@ export const innerQueryCollection = [
 const dbDefOuter: DBDef<DB_Type_Complex> = {
 	dbName: 'firestore-tests-outer',
 	entityName: 'OuterItem',
-	validator: tsValidateMustExist
-}
+	validator: {
+		refs: tsValidateArray(tsValidateString()),
+		name: tsValidateString(),
+		parentId: tsValidateString(-1, false),
+	}
+};
 
 const dbDefInner: DBDef<DB_Type_Complex> = {
 	dbName: 'firestore-tests-inner',
 	entityName: 'InnerItem',
 	validator: tsValidateMustExist
-}
+};
 
 export async function prepareCollectionTest(testCase: TestModel<CollectionTestInput, TestInputValue>) {
 	const outerCollection = firestore.getCollection<DB_Type_Complex>(dbDefOuter);

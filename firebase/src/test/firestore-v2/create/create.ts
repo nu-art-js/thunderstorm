@@ -23,7 +23,7 @@ export const TestCases_FB_Create: CreateTest['testcases'] = [
 			value: [{...testInstance1, _id: testInstance1._uniqueId}],
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone({...testInstance1, _id: testInstance1._uniqueId});
-				// insert twice and expect to reject
+				// create twice and expect to reject
 
 				await expect(collection.create.item(toCreate)).to.be.rejectedWith();
 			}
