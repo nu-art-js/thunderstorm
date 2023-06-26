@@ -19,11 +19,11 @@ export const TestSuite_WriteInChunks: WriteInChunks = {
 	label: 'Firebase Storage - Write to file in chunks',
 	testcases: writeInChunksTestCases,
 	processor: async (testCase) => {
-		const collection1 = firestore.getCollection<DB_Object & { collectionName: string, index: number }>('collection1');
-		const collection2 = firestore.getCollection<DB_Object & { collectionName: string, index: number }>('collection2');
-		const collection3 = firestore.getCollection<DB_Object & { collectionName: string, index: number }>('collection3');
-		const collection4 = firestore.getCollection<DB_Object & { collectionName: string, index: number }>('collection4');
-		const collection5 = firestore.getCollection<DB_Object & { collectionName: string, index: number }>('collection5');
+		const collection1 = firestore.getCollection<DB_Object & { collectionName: string, index: number }>('collection1', {});
+		const collection2 = firestore.getCollection<DB_Object & { collectionName: string, index: number }>('collection2', {});
+		const collection3 = firestore.getCollection<DB_Object & { collectionName: string, index: number }>('collection3', {});
+		const collection4 = firestore.getCollection<DB_Object & { collectionName: string, index: number }>('collection4', {});
+		const collection5 = firestore.getCollection<DB_Object & { collectionName: string, index: number }>('collection5', {});
 		const collectionArray = [collection1, collection2, collection3, collection4, collection5];
 		await Promise.all(collectionArray.map((collection, index) => collection.create.item({collectionName: collection.name, index})));
 		const bucket = await storage.getOrCreateBucket(getSpecificBucketInput);
@@ -41,9 +41,7 @@ export const TestSuite_WriteInChunks: WriteInChunks = {
 			return END_OF_STREAM;
 		};
 
-		 await file.writeToStream(feeder);
-
-		console.log((await file.read()).toString());
+		await file.writeToStream(feeder);
 	}
 };
 
