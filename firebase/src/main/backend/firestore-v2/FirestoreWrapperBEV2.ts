@@ -18,7 +18,6 @@
 
 import {FirestoreCollectionV2,} from './FirestoreCollectionV2';
 import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
-import {FilterKeys} from '../../shared/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {DB_Object, DBDef} from '@nu-art/ts-common';
@@ -36,12 +35,12 @@ export class FirestoreWrapperBEV2
 		this.firestore = getFirestore(firebaseSession.app);
 	}
 
-	public getCollection<Type extends DB_Object>(dbDef: DBDef<Type>, uniqueKeys?: FilterKeys<Type>): FirestoreCollectionV2<Type> {
+	public getCollection<Type extends DB_Object>(dbDef: DBDef<Type>): FirestoreCollectionV2<Type> {
 		const collection = this.collections[dbDef.dbName];
 		if (collection)
 			return collection;
 
-		return this.collections[dbDef.dbName] = new FirestoreCollectionV2<Type>(this, dbDef, uniqueKeys);
+		return this.collections[dbDef.dbName] = new FirestoreCollectionV2<Type>(this, dbDef);
 	}
 
 	public listen<Type extends DB_Object>(collection: FirestoreCollectionV2<Type>, doc: string) {
