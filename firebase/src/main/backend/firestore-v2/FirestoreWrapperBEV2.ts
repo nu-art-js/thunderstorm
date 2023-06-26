@@ -36,12 +36,12 @@ export class FirestoreWrapperBEV2
 		this.firestore = getFirestore(firebaseSession.app);
 	}
 
-	public getCollection<Type extends DB_Object>(name: string, dbDef: DBDef<Type>, uniqueKeys?: FilterKeys<Type>): FirestoreCollectionV2<Type> {
-		const collection = this.collections[name];
+	public getCollection<Type extends DB_Object>(dbDef: DBDef<Type>, uniqueKeys?: FilterKeys<Type>): FirestoreCollectionV2<Type> {
+		const collection = this.collections[dbDef.dbName];
 		if (collection)
 			return collection;
 
-		return this.collections[name] = new FirestoreCollectionV2<Type>(name, this, dbDef, uniqueKeys);
+		return this.collections[dbDef.dbName] = new FirestoreCollectionV2<Type>(this, dbDef, uniqueKeys);
 	}
 
 	public listen<Type extends DB_Object>(collection: FirestoreCollectionV2<Type>, doc: string) {

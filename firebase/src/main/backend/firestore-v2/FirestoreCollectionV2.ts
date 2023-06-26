@@ -100,13 +100,13 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	 * @param _dbDef
 	 * @param uniqueKeys
 	 */
-	constructor(name: string, wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type>, uniqueKeys?: FilterKeys<Type>) {
-		this.name = name;
+	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type>, uniqueKeys?: FilterKeys<Type>) {
+		this.name = _dbDef.dbName;
 		this.wrapper = wrapper;
-		if (!/[a-z-]{3,}/.test(name))
+		if (!/[a-z-]{3,}/.test(_dbDef.dbName))
 			StaticLogger.logWarning('Please follow name pattern for collections /[a-z-]{3,}/');
 
-		this.collection = wrapper.firestore.collection(name);
+		this.collection = wrapper.firestore.collection(_dbDef.dbName);
 		this.externalUniqueFilter = (item: Type) => {
 			if (!uniqueKeys)
 				throw new BadImplementationException('In order to use a unique query your collection MUST have a unique filter');
