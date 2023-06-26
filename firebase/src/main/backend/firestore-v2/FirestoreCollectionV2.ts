@@ -30,7 +30,8 @@ import {
 	DBDef,
 	DefaultDBVersion,
 	exists,
-	filterInOut, filterInstances,
+	filterInOut,
+	filterInstances,
 	flatArray,
 	generateHex,
 	InvalidResult,
@@ -43,21 +44,17 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {Clause_Where, DB_EntityDependency, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
 import {DocWrapperV2} from './DocWrapperV2';
+import {canDeleteDispatcherV2} from "./consts";
 import DocumentReference = firestore.DocumentReference;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
-import {canDeleteDispatcherV2} from "./consts";
 
 type UpdateObject<Type> = { _id: UniqueId } & UpdateData<Type>;
 export const _EmptyQuery = Object.freeze({where: {}});
@@ -143,7 +140,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	// ############################## DocWrapper ##############################
 	getDocWrapper = (_id: UniqueId): DocWrapperV2<Type> => {
 		const doc = this.wrapper.firestore.doc(`${this.name}/${_id}`) as FirestoreType_DocumentReference<Type>;
-		return new DocWrapperV2<Type>(this.wrapper, doc);
+		return new DocWrapperV2<Type>(doc);
 	};
 
 	getDocWrapperFromItem = (item: PreDB<Type>): DocWrapperV2<Type> => {
@@ -162,10 +159,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		});
 	}
 
-	private getAll = async (_ids: UniqueId[], transaction?: Transaction): Promise<(Type | undefined)[]> => {
-		if (_ids.length === 0)
+	private getAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction): Promise<(Type | undefined)[]> => {
+		if (docs.length === 0)
 			return [];
-		return (await (transaction ?? this.wrapper.firestore).getAll(..._ids.map(id => this.getDocWrapper(id).ref))).map(doc => doc.data() as Type | undefined);
+		return (await (transaction ?? this.wrapper.firestore).getAll(...docs.map(_doc => _doc.ref))).map(_snapshot => _snapshot.data() as Type | undefined);
 	};
 
 	private async _query(ourQuery?: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot[]> {
@@ -188,20 +185,30 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	async newQuery(ourQuery: FirestoreQuery<Type>): Promise<DocWrapperV2<Type>[]> {
 		const docs = await this._query(ourQuery) as FirestoreType_DocumentSnapshot<Type>[];
-		return docs.filter(doc => doc.exists).map(doc => new DocWrapperV2<Type>(this.wrapper, doc.ref, doc.data()));
+		return docs.filter(doc => doc.exists).map(doc => new DocWrapperV2<Type>(doc.ref, doc.data()));
+	}
+
+	private _customQuery = async (query?: FirestoreQuery<Type>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Type>[]> => {
+		const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
+		if (transaction)
+			return (await transaction.get(myQuery)).docs as FirestoreType_DocumentSnapshot<Type>[];
+
+		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot<Type>[];
 	}
 
 	query = {
-		unique: async (_id: UniqueId, transaction?: Transaction) => {
-			return await this.getDocWrapper(_id).get(transaction);
+		unique: async (_id: UniqueId, transaction?: Transaction) => await this.queryDoc.unique(_id).get(transaction),
+		all: async (_ids: UniqueId[], transaction?: Transaction) => await this.getAll(this.queryDoc.all(_ids), transaction),
+		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
+			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
 		},
-		all: this.getAll,
-		custom: async (query?: FirestoreQuery<Type>, transaction?: Transaction) => {
-			const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
-			if (transaction)
-				return (await transaction.get(myQuery)).docs.map(snapshot => snapshot.data() as Type);
+	};
 
-			return ((await myQuery.get()).docs as FirestoreType_DocumentSnapshot[]).map(snapshot => snapshot.data() as Type);
+	queryDoc = {
+		unique: (_id: UniqueId) => this.getDocWrapper(_id),
+		all: (_ids: UniqueId[]) => _ids.map(this.getDocWrapper),
+		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
+			return (await this._customQuery(query, transaction)).map(_snapshot => new DocWrapperV2(_snapshot.ref, _snapshot.data()));
 		},
 	};
 
@@ -447,11 +454,14 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	// ############################## Delete ##############################
 
-	protected _deleteUnique = async (_id: UniqueId) => {
+	protected _deleteUnique = async (_id: UniqueId, transaction?: Transaction) => {
 		if (!_id)
 			throw new MUSTNeverHappenException('Cannot deleteUnique without an _id!');
 
-		await this.getDocWrapper(_id).delete();
+		const doc = this.queryDoc.unique(_id);
+		const dbItem = await doc.get(transaction);
+		await this.canDeleteDocument([dbItem], transaction);
+		await doc.delete(transaction);
 	};
 
 	protected async _deleteQuery(query: FirestoreQuery<Type>, transaction?: Transaction) {
@@ -459,10 +469,12 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
 		const items = await this.query.custom(query, transaction);
-		return this._deleteAll(items.map(this.getDocWrapperFromItem));
+		return this._deleteAll(items.map(this.getDocWrapperFromItem), transaction);
 	}
 
 	protected async _deleteAll(docs: DocWrapperV2<Type>[], transaction?: Transaction) {
+		const dbItems = filterInstances(await this.getAll(docs));
+		await this.canDeleteDocument(dbItems, transaction);
 		if (transaction)
 			return this._deleteAllTransaction(docs, transaction);
 
@@ -497,6 +509,15 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## General ##############################
+	/**
+	 * A firestore transaction is run globally on the firestore project and not specifically on any collection, locking specific documents in the project.
+	 * @param processor: A set of read and write operations on one or more documents.
+	 */
+	async runTransaction<ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> {
+		const firestore = this.wrapper.firestore;
+		return firestore.runTransaction<ReturnType>(processor);
+	}
+
 	private async assertDBItem(dbItem: Type, transaction?: Transaction, request?: Express.Request) {
 		await this.upgradeDBItem([dbItem]);
 		await this.preUpsertProcessing(dbItem, transaction, request);
@@ -518,6 +539,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			this.onValidationError(dbItem, results);
 		}
 	}
+
 	protected onValidationError(instance: Type, results: InvalidResult<Type>) {
 		StaticLogger.logError(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
@@ -535,7 +557,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	 * @param transaction - The transaction object
 	 * @param dbItems - The DB entry that is going to be deleted.
 	 */
-	protected async canDeleteDocument(transaction: Transaction, dbItems: Type[]) {
+	protected async canDeleteDocument(dbItems: Type[], transaction?: Transaction) {
 		const dependencies = await this.collectDependencies(dbItems, transaction);
 		if (dependencies)
 			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({
