@@ -3,11 +3,17 @@ import {expect} from 'chai';
 import {firestore, testInstance1, testInstance2, testInstance3} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {compare, deepClone, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
+import {compare, DBDef, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {updatedStringValue1, updatedStringValue2} from '../update/update';
 
 chai.use(require('chai-as-promised'));
+
+const dbDef: DBDef<DB_Type> = {
+	dbName: 'firestore-set-tests',
+	entityName: 'set-test',
+	validator: tsValidateMustExist
+}
 
 
 type Input = {
@@ -88,7 +94,7 @@ export const TestSuite_FirestoreV2_Set: Test = {
 	label: 'Firestore set tests',
 	testcases: TestCases_FB_Set,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DB_Type>('firestore-set-tests');
+		const collection = firestore.getCollection<DB_Type>(dbDef);
 		await collection.deleteCollection();
 
 		const toInsert = deepClone(testCase.input.toCreate);

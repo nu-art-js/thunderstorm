@@ -1,7 +1,13 @@
 import {queryAllTestCases, queryComplexTestCases, QueryTest, queryTestCases} from './consts';
 import {CollectionTest, firestore, prepareCollectionTest} from '../_core/consts';
 import {DB_Type} from '../_core/types';
-import {deepClone} from '@nu-art/ts-common';
+import {DBDef, deepClone, tsValidateMustExist} from '@nu-art/ts-common';
+
+const dbDef: DBDef<DB_Type> = {
+	dbName: 'firestore-query-tests',
+	entityName: 'query-test',
+	validator: tsValidateMustExist
+}
 
 export const TestCases_FB_QueryUnique: QueryTest['testcases'] = [
 	...queryTestCases
@@ -19,7 +25,7 @@ export const TestSuite_FirestoreV2_QueryUnique: QueryTest = {
 	label: 'Firestore query.custom tests',
 	testcases: TestCases_FB_QueryUnique,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DB_Type>('firestore-query-tests');
+		const collection = firestore.getCollection<DB_Type>(dbDef);
 		await collection.deleteCollection();
 		const toInsert = deepClone(testCase.input.value);
 		await collection.create.all(toInsert);

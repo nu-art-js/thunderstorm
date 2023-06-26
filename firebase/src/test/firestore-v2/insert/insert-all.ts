@@ -5,6 +5,7 @@ import {CreateTest, createTestCases} from './consts';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {FirestoreException} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
+import {createTests_dbDef} from "./insert";
 
 const chai = require('chai');
 chai.use(chaiAsPromised);
@@ -29,7 +30,7 @@ export const TestSuite_FirestoreV2_CreateAll: CreateTest = {
 	label: 'Firestore createAll tests',
 	testcases: TestCases_FB_CreateAll,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DB_Type>('firestore-creation-tests');
+		const collection = firestore.getCollection<DB_Type>(createTests_dbDef);
 		await collection.deleteCollection();
 
 		const toCreate = deepClone(testCase.input.value);

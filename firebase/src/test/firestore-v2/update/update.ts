@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import {firestore, testInstance1, testInstance2, testInstance3} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {compare, deepClone, PreDB, removeDBObjectKeys, sortArray} from '@nu-art/ts-common';
+import {compare, DBDef, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 
 
@@ -17,6 +17,12 @@ type Input = {
 type Result = () => { updated: PreDB<DB_Type>[], notUpdated?: PreDB<DB_Type>[] };
 type Test = TestSuite<Input, Result>; //result - the items left in the collection after deletion
 type DeepPartial<T> = Partial<{ [P in keyof T]: DeepPartial<T[P]> }>;
+
+const dbDef: DBDef<DB_Type> = {
+	dbName: 'firestore-update-tests',
+	entityName: 'update-test',
+	validator: tsValidateMustExist
+}
 
 export const updatedStringValue1 = 'test update';
 export const updatedStringValue2 = 'test update 2';
@@ -158,7 +164,7 @@ export const TestSuite_FirestoreV2_Update: Test = {
 	label: 'Firestore update tests',
 	testcases: TestCases_FB_Update,
 	processor: async (testCase) => {
-		const collection = firestore.getCollection<DB_Type>('firestore-update-tests');
+		const collection = firestore.getCollection<DB_Type>(dbDef);
 		await collection.deleteCollection();
 
 		const toInsert = deepClone(testCase.input.toCreate);
