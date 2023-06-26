@@ -44,14 +44,18 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {Clause_Where, DB_EntityDependency, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
 import {DocWrapperV2} from './DocWrapperV2';
-import {canDeleteDispatcherV2} from "./consts";
+import {canDeleteDispatcherV2} from './consts';
 import DocumentReference = firestore.DocumentReference;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
@@ -194,7 +198,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			return (await transaction.get(myQuery)).docs as FirestoreType_DocumentSnapshot<Type>[];
 
 		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot<Type>[];
-	}
+	};
 
 	query = {
 		unique: async (_id: UniqueId, transaction?: Transaction) => await this.queryDoc.unique(_id).get(transaction),
@@ -240,41 +244,64 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return this._createBulk(preDBItems, retryOnError);
 	}
 
+
+	protected async _createAllTransaction(preDBItems: PreDB<Type>[], retryOnError: boolean = false, transaction: Transaction): Promise<Type[]> {
+		const dbItemsToReturn: Type[] = [];
+		const errors: any[] = [];
+		await preDBItems.reduce((_transaction, _preDBItem) => {
+			const _dbItem = this.prepareItemForCreate(_preDBItem);
+			try {
+				this.assertDBItem(_dbItem, transaction);
+			} catch (e) {
+				errors.push(e);
+				return _transaction;
+			}
+
+			this.getDocWrapperFromItem(_dbItem).create(_dbItem, transaction);
+			dbItemsToReturn.push(_dbItem);
+			return _transaction;
+		}, transaction);
+
+		if (errors.length)
+			errors.forEach(error => setTimeout(() => {
+				throw new FirestoreException('Failed db item validation during createAllTransaction', error);
+			}));
+		return dbItemsToReturn;
+	}
+
 	protected async _createBulk(preDBItems: PreDB<Type>[], retryOnError: boolean = false): Promise<Type[]> {
 		const bulk = this.wrapper.firestore.bulkWriter();
-		const dbItems: Type[] = [];
-		const errors: string[] = [];
+		const dbItemsToReturn: Type[] = [];
+		const errors: any[] = [];
+
 		bulk.onWriteError(error => {
-			errors.push(error.message);
+			errors.push(new FirestoreException(error.message));
 			return retryOnError;
 		});
 		await preDBItems.reduce((_bulk, _preDBItem) => {
 			const _dbItem = this.prepareItemForCreate(_preDBItem);
+			try {
+				this.assertDBItem(_dbItem);
+
+			} catch (e) {
+				errors.push(e);
+				return _bulk;
+			}
+
 			this.addBulkCreate(_bulk, _dbItem);
-			dbItems.push(_dbItem);
+			dbItemsToReturn.push(_dbItem);
 			return _bulk;
 		}, bulk).flush();
-		if (errors.length)
-			throw new FirestoreException(__stringify(errors));
 
-		return dbItems;
+		if (errors.length) {
+			throw new FirestoreException(__stringify(errors));
+		}
+
+		return dbItemsToReturn;
 	}
 
 	private async addBulkCreate(bulk: FirebaseFirestore.BulkWriter, dbItem: Type) {
 		return bulk.create(this.getDocWrapperFromItem(dbItem).ref, dbItem);
-	}
-
-	protected async _createAllTransaction(preDBItems: PreDB<Type>[], retryOnError: boolean = false, transaction: Transaction): Promise<Type[]> {
-		const dbItems: Type[] = [];
-
-		await preDBItems.reduce((_transaction, _preDBItem) => {
-			const _dbItem = this.prepareItemForCreate(_preDBItem);
-			this.getDocWrapperFromItem(_dbItem).create(_dbItem, transaction);
-			dbItems.push(_dbItem);
-			return _transaction;
-		}, transaction);
-
-		return dbItems;
 	}
 
 	create = {
@@ -321,16 +348,29 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	}
 
 	protected async _setAllTransaction(preDBItems: PreDB<Type>[], transaction: Transaction): Promise<Type[]> {
-		const dbItems: Type[] = [];
+		const dbItemsToReturn: Type[] = [];
+		const errors: any[] = [];
 
 		await preDBItems.reduce((_transaction, _preDBItem) => {
 			const _dbItem = this.prepareItemForSet(_preDBItem);
+
+			try {
+				this.assertDBItem(_dbItem, transaction);
+			} catch (e) {
+				errors.push(e);
+				return _transaction;
+			}
+
 			this.getDocWrapperFromItem(_preDBItem).set(_dbItem, transaction);
-			dbItems.push(_dbItem);
+			dbItemsToReturn.push(_dbItem);
 			return _transaction;
 		}, transaction);
 
-		return dbItems;
+		errors.forEach(error => setTimeout(() => {
+			throw new FirestoreException('Failed db item validation during createAllTransaction', error);
+		}));
+
+		return dbItemsToReturn;
 	}
 
 	set = {
@@ -352,6 +392,9 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	protected _update = async (updateData: UpdateObject<Type>, transaction?: Transaction) => {
 		const doc = this.getDocWrapper(updateData._id);
 		await this.prepareDataForUpdate(updateData);
+		//todo assert
+		// await this.assertDBItem(updateData, transaction);
+
 		delete (updateData as UpdateData<Type>)._id;
 		await doc.update(updateData, transaction);
 		return doc.get();
@@ -364,27 +407,56 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return this._updateBulk(updateData);
 	};
 
-	protected _updateBulk = async (updateData: UpdateObject<Type>[]): Promise<Type[]> => {
-		const toUpdate = await Promise.all(updateData.map(async _data => await this.prepareDataForUpdate(_data)));
-		const bulk = this.wrapper.firestore.bulkWriter();
-		await toUpdate.reduce((_bulk, _data) => {
-			delete (updateData as UpdateData<Type>)._id;
-			_bulk.update(this.getDocWrapper(_data._id).ref, _data);
-			return _bulk;
-		}, bulk).close();
-
-		return await this.query.all(updateData.map(_data => _data._id)) as Type[];
-	};
-
 	protected _updateAllTransaction = async (updateData: UpdateObject<Type>[], transaction: Transaction) => {
 		const toUpdate = await Promise.all(updateData.map(async _data => await this.prepareDataForUpdate(_data)));
+		const errors: any[] = [];
+
 		await toUpdate.reduce((_transaction, _data) => {
+			//to assert?
+			try {
+				//todo assert
+				//this.assertDBItem(_data, transaction);
+			} catch (e) {
+				errors.push(e);
+				return _transaction;
+			}
+
 			delete (updateData as UpdateData<Type>)._id;
 			this.getDocWrapper(_data._id).update(_data, transaction);
 			return _transaction;
 		}, transaction);
 
+		errors.forEach(error => setTimeout(() => {
+			throw new FirestoreException('Failed db item validation during createAllTransaction', error);
+		}));
+
 		return await this.query.all(updateData.map(_data => _data._id));
+	};
+
+	protected _updateBulk = async (updateData: UpdateObject<Type>[]): Promise<Type[]> => {
+		const toUpdate = await Promise.all(updateData.map(async _data => await this.prepareDataForUpdate(_data)));
+		const bulk = this.wrapper.firestore.bulkWriter();
+		const errors: any[] = [];
+
+		await toUpdate.reduce((_bulk, _data) => {
+			try {
+				//todo assert
+				// this.assertDBItem(updateData);
+			} catch (e) {
+				errors.push(e);
+				return _bulk;
+			}
+
+			delete (updateData as UpdateData<Type>)._id;
+			_bulk.update(this.getDocWrapper(_data._id).ref, _data);
+			return _bulk;
+		}, bulk).close();
+
+		errors.forEach(error => setTimeout(() => {
+			throw new FirestoreException('Failed db item validation during createAllTransaction', error);
+		}));
+
+		return await this.query.all(updateData.map(_data => _data._id)) as Type[];
 	};
 
 	/**
@@ -435,10 +507,12 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			filteredIn: hasIdItems,
 			filteredOut: noIdItems
 		} = filterInOut<PreDB<Type> | UpdateObject<Type>>(items, _item => exists(_item._id));
-		const toCreate = noIdItems;
-		const toUpdate: UpdateObject<Type>[] = [];
+		const toCreate = noIdItems; // If the items don't have _id, we need to create them
+		const toUpdate: UpdateObject<Type>[] = []; // We don't fill the toUpdate yet, since we don't know if items with _id also exist in Firestore
 
+		// Query for all items that have _id, to see if they exist
 		const dbItems = await this.query.all(hasIdItems.map(_item => _item._id!));
+		// Items with _id that exist, are to be updated. Items with _id that don't exist, are added to be created.
 		dbItems.forEach((_item, i) => !exists(_item) ? toCreate.push(hasIdItems[i]) : toUpdate.push(hasIdItems[i] as UpdateObject<Type>));
 
 		return flatArray(await Promise.all([

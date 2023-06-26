@@ -5,7 +5,7 @@ import {CreateTest, createTestCases} from './consts';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {FirestoreException} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {createTests_dbDef} from "./insert";
+import {createTests_dbDef} from './create';
 
 const chai = require('chai');
 chai.use(chaiAsPromised);
@@ -19,7 +19,7 @@ export const TestCases_FB_CreateAll: CreateTest['testcases'] = [
 			value: [{...testInstance1, _id: 'zevel'}],
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone({...testInstance1, _id: 'zevel'});
-				// insert twice and expect to reject
+				// create twice and expect to reject
 				await expect(collection.create.all(Array.isArray(toCreate) ? toCreate : [toCreate])).to.be.rejectedWith(FirestoreException);
 			}
 		}

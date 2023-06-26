@@ -17,8 +17,9 @@ export class DocWrapperV2<T extends DB_Object> {
 		return this.data;
 	};
 
-	cleanCache = () => {
+	cleanCache = (): DocWrapperV2<T> => {
 		delete this.data;
+		return this;
 	};
 
 	get = async (transaction?: Transaction) => {

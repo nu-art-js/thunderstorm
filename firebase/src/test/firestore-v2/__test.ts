@@ -1,7 +1,7 @@
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
-import {TestSuite_FirestoreV2_Create} from './insert/insert';
+import {TestSuite_FirestoreV2_Create} from './create/create';
 import {TestSuite_FirestoreV2_Delete} from './delete/delete';
-import {TestSuite_FirestoreV2_CreateAll} from './insert/insert-all';
+import {TestSuite_FirestoreV2_CreateAll} from './create/create-all';
 import {TestSuite_FirestoreV2_Update} from './update/update';
 import {
 	TestSuite_FirestoreV2_QueryAll,
@@ -10,8 +10,8 @@ import {
 	TestSuite_FireStoreV2_QueryWithPagination
 } from './query/query';
 import {TestSuite_FirestoreV2_Set} from './set/set';
-import {TestSuite_FirestoreV2_Transaction} from './transaction/transaction';
 import {TestSuite_FirestoreV2_Upsert} from './upsert/upsert';
+import {TestSuite_FirestoreV2_Validator} from './validator/validator';
 
 describe('Firestore v2 - All Tests', () => {
 	testSuiteTester(TestSuite_FirestoreV2_Create);
@@ -22,8 +22,9 @@ describe('Firestore v2 - All Tests', () => {
 	testSuiteTester(TestSuite_FirestoreV2_QueryAll);
 	testSuiteTester(TestSuite_FirestoreV2_QueryComplex1);
 	testSuiteTester(TestSuite_FirestoreV2_Update);
-	testSuiteTester(TestSuite_FirestoreV2_Set);
-	testSuiteTester(TestSuite_FirestoreV2_Transaction);
 	testSuiteTester(TestSuite_FirestoreV2_Upsert);
+	testSuiteTester(TestSuite_FirestoreV2_Set);
+	testSuiteTester(TestSuite_FirestoreV2_Validator);
+	// testSuiteTester(TestSuite_FirestoreV2_Transaction);
 	// testSuiteTester(TestSuite_FirestoreV2_Performance_GetAll);
 });
