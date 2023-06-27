@@ -216,7 +216,8 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	/**
 	 * Get DocWrappers per the db objects from the query
-	 * @param ourQuery
+	 * @param query
+	 * @param transaction
 	 */
 
 	private _customQuery = async (query?: FirestoreQuery<Type>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Type>[]> => {
