@@ -16,17 +16,23 @@
  * limitations under the License.
  */
 
-import * as firestore from 'firebase-admin/firestore';
+import {
+	CollectionReference,
+	QueryDocumentSnapshot,
+	Query,
+	DocumentReference,
+	Firestore,
+	DocumentData,
+} from 'firebase-admin/firestore';
 
 
-export type FirestoreType_Collection = firestore.CollectionReference;
-export type FirestoreType_DocumentSnapshot<T = firestore.DocumentData> = firestore.QueryDocumentSnapshot<T>;
-export type FirestoreType_Query = firestore.Query;
-export type FirestoreType_DocumentReference<T> = firestore.DocumentReference<T>;
-export type FirestoreType = firestore.Firestore;
-export type FirestoreType_Transaction = firestore.Transaction;
+export type FirestoreType_Collection = CollectionReference;
+export type FirestoreType_DocumentSnapshot<T = DocumentData> = QueryDocumentSnapshot<T>;
+export type FirestoreType_Query = Query;
+export type FirestoreType_DocumentReference<T> = DocumentReference<T>;
+export type FirestoreType = Firestore;
 
-// export type FirestoreType_Collection = admin.firestore.CollectionReference | firebase.firestore.CollectionReference;
+// export type FirestoreType_Collection = admin.CollectionReference | firebase.firestore.CollectionReference;
 // export type FirestoreType_DocumentSnapshot = admin.firestore.QueryDocumentSnapshot | firebase.firestore.QueryDocumentSnapshot;
 // export type FirestoreType_Query = (admin.firestore.Query | firebase.firestore.Query) & { select?: (...field: string[]) => FirestoreType_Query };
 // export type FirestoreType_DocumentReference = admin.firestore.DocumentReference | firebase.firestore.DocumentReference;
