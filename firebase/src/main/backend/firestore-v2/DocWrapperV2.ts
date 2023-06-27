@@ -53,38 +53,40 @@ export class DocWrapperV2<T extends DB_Object> {
 		return dbItem;
 	};
 
+	prepareForSet = async (updatedDBItem: T, dbItem: T, transaction?: Transaction): Promise<T> => {
+		updatedDBItem._id = dbItem._id;
+		updatedDBItem._v = dbItem!._v;
+		updatedDBItem.__created = dbItem!.__created;
+		this.collection.dbDef.lockKeys?.forEach(lockedKey => {
+			updatedDBItem[lockedKey] = dbItem![lockedKey];
+		});
+
+		updatedDBItem.__updated = currentTimeMillis();
+		await this.collection.assertDBItem(updatedDBItem, transaction);
+		return updatedDBItem;
+	};
+
+	set = async (item: PreDB<T> | T, transaction?: Transaction): Promise<T> => {
+		const currDBItem = await this.get(transaction);
+		if (!exists(currDBItem))
+			return this.create(item, transaction);
+
+		const newDBItem = await this.prepareForSet(item as T, currDBItem!, transaction);
+
+		if (transaction) {
+			transaction.set(this.ref, newDBItem);
+			this.data = currDBItem;
+		} else
+			await this.ref.set(newDBItem);
+
+		return newDBItem;
+	};
+
 	update = async (updateData: UpdateData<T>, transaction?: Transaction) => {
 		if (transaction)
 			transaction.update(this.ref, updateData);
 		else
 			await this.ref.update(updateData);
-	};
-
-	set = async (toWrite: PreDB<T>, transaction?: Transaction): Promise<T> => {
-		const now = currentTimeMillis();
-		let dbItem = await this.get(transaction);
-		if (!exists(dbItem))
-			return this.create(toWrite, transaction);
-
-		toWrite._id = dbItem!._id;
-		toWrite.__created = dbItem!.__created;
-		toWrite._v = dbItem!._v;
-		this.collection.dbDef.lockKeys?.forEach(lockedKey => {
-			(toWrite as T)[lockedKey] = dbItem![lockedKey];
-		});
-
-		toWrite.__updated = now;
-
-		dbItem = toWrite as T;
-		await this.collection.assertDBItem(dbItem, transaction);
-
-		if (transaction) {
-			transaction.set(this.ref, dbItem);
-			this.data = dbItem;
-		} else
-			await this.ref.set(dbItem);
-
-		return dbItem;
 	};
 
 	delete = async (transaction?: Transaction) => {
