@@ -38,6 +38,20 @@ export const TestCases_FB_Set: Test['testcases'] = [
 		}
 	},
 	{
+		description: 'set new item in transaction',
+		result: () => {
+			return {created: [deepClone(testInstance1)]};
+		},
+		input: {
+			toCreate: [],
+			setAction: async (collection, inserted) => {
+				await collection.runTransaction(async (transaction) => {
+					await collection.set.item(deepClone(testInstance1), transaction);
+				});
+			}
+		}
+	},
+	{
 		description: 'set existing item',
 		result: () => {
 			const _instance = deepClone(testInstance1);
@@ -81,7 +95,36 @@ export const TestCases_FB_Set: Test['testcases'] = [
 			setAction: async (collection, inserted) => {
 				const _test1 = inserted.find(_item => _item._uniqueId === testInstance1._uniqueId)!;
 				const _test2 = inserted.find(_item => _item._uniqueId === testInstance2._uniqueId)!;
-				await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {..._test2, stringValue: updatedStringValue2}]);
+				await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {
+					..._test2,
+					stringValue: updatedStringValue2
+				}]);
+			}
+		}
+	},
+	{
+		description: 'set 3 existing items in transaction',
+		result: () => {
+			const _instance1 = deepClone(testInstance1);
+			const _instance2 = deepClone(testInstance2);
+			return {
+				updated: [{..._instance1, stringValue: updatedStringValue1}, {
+					..._instance2,
+					stringValue: updatedStringValue2
+				}], notUpdated: [deepClone(testInstance3)]
+			};
+		},
+		input: {
+			toCreate: [testInstance1, testInstance2, testInstance3],
+			setAction: async (collection, inserted) => {
+				await collection.runTransaction(async (transaction) => {
+					const _test1 = inserted.find(_item => _item._uniqueId === testInstance1._uniqueId)!;
+					const _test2 = inserted.find(_item => _item._uniqueId === testInstance2._uniqueId)!;
+					await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {
+						..._test2,
+						stringValue: updatedStringValue2
+					}], transaction);
+				});
 			}
 		}
 	},
