@@ -3,8 +3,10 @@ import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
 import {FirestoreCollectionV2} from './FirestoreCollectionV2';
+import BulkWriter = firestore.BulkWriter;
 import UpdateData = firestore.UpdateData;
 
+export type BulkOperation = 'create' | 'set' | 'delete';
 
 export class DocWrapperV2<T extends DB_Object> {
 	readonly ref: FirestoreType_DocumentReference<T>;
@@ -24,6 +26,21 @@ export class DocWrapperV2<T extends DB_Object> {
 	cleanCache = (): DocWrapperV2<T> => {
 		delete this.data;
 		return this;
+	};
+
+	addToBulk = (bulk: BulkWriter, operation: BulkOperation, item?: T) => {
+		switch (operation) {
+			case "create":
+				bulk.create(this.ref, item);
+				break;
+			case "set":
+				bulk.set(this.ref, item);
+				break;
+			case "delete":
+				bulk.delete(this.ref);
+				break;
+		}
+		return item;
 	};
 
 	get = async (transaction?: Transaction) => {
@@ -102,9 +119,5 @@ export class DocWrapperV2<T extends DB_Object> {
 			await this.ref.delete();
 
 		this.cleanCache();
-	};
-
-	createInBulk = (bulk: firestore.BulkWriter, item: T) => {
-		return bulk.create(this.ref, item);
 	};
 }

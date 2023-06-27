@@ -102,7 +102,7 @@ export const queryComplexTestCases: CollectionTest['testcases'] = [
 			check: async (collectionOuter, collectionInner) => {
 				const outerItem = await collectionOuter.query.unique(id_outer1);
 				expect(true).to.eql(exists(outerItem));
-				const innerItems = await collectionInner.query.all(outerItem.refs);
+				const innerItems = await collectionInner.query.all(outerItem!.refs);
 				expect(innerItems.length).to.eql(3);
 			}
 		}

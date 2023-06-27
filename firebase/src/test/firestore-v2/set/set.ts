@@ -81,10 +81,7 @@ export const TestCases_FB_Set: Test['testcases'] = [
 			setAction: async (collection, inserted) => {
 				const _test1 = inserted.find(_item => _item._uniqueId === testInstance1._uniqueId)!;
 				const _test2 = inserted.find(_item => _item._uniqueId === testInstance2._uniqueId)!;
-				await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {
-					..._test2,
-					stringValue: updatedStringValue2
-				}]);
+				await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {..._test2, stringValue: updatedStringValue2}]);
 			}
 		}
 	},
@@ -108,8 +105,6 @@ export const TestSuite_FirestoreV2_Set: Test = {
 		const result = testCase.result();
 		const allResults = sortArray([...result.created ?? [], ...result.updated ?? [], ...result.notUpdated ?? []], item => item._uniqueId);
 
-		// console.log(sortedRemaining.map(removeDBObjectKeys))
-		// console.log(allResults)
 		//assert items have been updated correctly
 		expect(true).to.eql(compare(sortedRemaining.map(removeDBObjectKeys), allResults));
 		//assert timestamps correctly updated

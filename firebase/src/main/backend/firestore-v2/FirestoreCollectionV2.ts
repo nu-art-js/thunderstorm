@@ -53,7 +53,7 @@ import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
-import {DocWrapperV2} from './DocWrapperV2';
+import {DocWrapperV2, BulkOperation} from './DocWrapperV2';
 import {canDeleteDispatcherV2} from './consts';
 import DocumentReference = firestore.DocumentReference;
 import UpdateData = firestore.UpdateData;
@@ -188,31 +188,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			if (transaction)
 				docWrappers.forEach((doc, i) => doc.create(dbItems[i], transaction));
 			else
-				await this._createBulk(docWrappers, dbItems);
+				await this.bulkOperation(docWrappers, dbItems, 'create');
 			return dbItems;
 		},
 	};
-
-	getVersion = () => {
-		return this.dbDef.versions?.[0] || DefaultDBVersion;
-	};
-
-	protected async _createBulk(docWrappers: DocWrapperV2<Type>[], dbItems: Type[]): Promise<Type[]> {
-		const bulk = this.wrapper.firestore.bulkWriter();
-		const errors: string[] = [];
-		bulk.onWriteError(error => {
-			errors.push(error.message);
-			return false;
-		});
-
-		docWrappers.forEach((doc, index) => doc.createInBulk(bulk, dbItems[index]));
-		await bulk.close();
-
-		if (errors.length)
-			throw new FirestoreException(__stringify(errors));
-
-		return dbItems;
-	}
 
 	// ############################## Query ##############################
 
@@ -257,68 +236,37 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## Set ##############################
-	prepareItemForSet(preDBItem: PreDB<Type>): Type {
-		const now = currentTimeMillis();
-		preDBItem._id ??= generateId();
-		preDBItem.__created ??= now;
-		preDBItem.__updated = now;
-		preDBItem._v ??= this.getVersion();
-		return preDBItem as Type;
-	}
+	protected _setAll = async (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
+		const {filteredIn: hasIdItems, filteredOut: noIdItems} = filterInOut<PreDB<Type> | Type>(items, _item => exists(_item._id));
+		const toCreate = noIdItems; // If the items don't have _id, we need to create them
+		const toSet: [Type, Type][] = []; // A tuple of the new item to set (0) and the current dbItem (1)
 
-	protected async _setAll(preDBItems: PreDB<Type>[], transaction?: Transaction) {
+		// Query for all items that have _id, to see if they exist
+		const dbItems = await this.query.all(hasIdItems.map(_item => _item._id!));
+		// Items with _id that exist, are to be updated. Items with _id that don't exist, are added to be created.
+		dbItems.forEach((_item, i) => !exists(_item) ? toCreate.push(hasIdItems[i]) : toSet.push([hasIdItems[i] as Type, _item!]));
+
+		return flatArray(await Promise.all([
+			this.create.all(toCreate as PreDB<Type>[], transaction),
+			this._setExistingAll(toSet, transaction)
+		]));
+	};
+
+	protected _setExistingAll = async (toSet: [Type, Type][], transaction?: Transaction) => {
+		const docWrappers = this.doc.all(toSet.map(_item => _item[0]._id));
+		const dbItems = await Promise.all(docWrappers.map((doc, i) => doc.prepareForSet(...toSet[i], transaction)));
 		if (transaction)
-			return this._setAllTransaction(preDBItems, transaction);
-
-		return this._setBulk(preDBItems);
-	}
-
-	protected async _setBulk(preDBItems: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> {
-		const bulk = this.wrapper.firestore.bulkWriter();
-		const dbItems: Type[] = [];
-
-		await preDBItems.reduce((_bulk, _preDBItem) => {
-			const _dbItem = this.prepareItemForSet(_preDBItem);
-			_bulk.set(this.doc.item(_preDBItem).ref, _dbItem);
-			dbItems.push(_dbItem);
-			return _bulk;
-		}, bulk).close();
-
-		return dbItems;
-	}
-
-	protected async _setAllTransaction(preDBItems: PreDB<Type>[], transaction: Transaction): Promise<Type[]> {
-		const dbItemsToReturn: Type[] = [];
-		const errors: any[] = [];
-
-		await preDBItems.reduce((_transaction, _preDBItem) => {
-			const _dbItem = this.prepareItemForSet(_preDBItem);
-
-			try {
-				this.assertDBItem(_dbItem, transaction);
-			} catch (e) {
-				errors.push(e);
-				return _transaction;
-			}
-
-			this.doc.item(_preDBItem).set(_dbItem, transaction);
-			dbItemsToReturn.push(_dbItem);
-			return _transaction;
-		}, transaction);
-
-		errors.forEach(error => setTimeout(() => {
-			throw new FirestoreException('Failed db item validation during createAllTransaction', error);
-		}));
-
-		return dbItemsToReturn;
+			return await Promise.all(docWrappers.map(async (_doc, i) => await _doc.ref.set(dbItems[i])))
+		return await this.bulkOperation(docWrappers, dbItems, 'set');
 	}
 
 	set = {
 		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => {
-			preDBItem._id ??= generateId();
+			if (!preDBItem._id)
+				return this.create.item(preDBItem, transaction);
 			return await this.doc.item(preDBItem).set(preDBItem, transaction);
 		},
-		all: async (items: PreDB<Type>[], transaction?: Transaction) => await this._setAll(items, transaction),
+		all: this._setAll,
 	};
 
 	// ############################## Update ##############################
@@ -432,8 +380,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## Upsert ##############################
-
-
 	private _upsert = async (item: PreDB<Type> | UpdateObject<Type>, transaction?: Transaction): Promise<Type> => {
 		let dbItem;
 		if (exists(item._id)) {
@@ -512,6 +458,24 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## General ##############################
+	protected bulkOperation = async (docWrappers: DocWrapperV2<Type>[], dbItems: Type[], operation: BulkOperation): Promise<Type[]> => {
+		const bulk = this.wrapper.firestore.bulkWriter();
+
+		const errors: string[] = [];
+		bulk.onWriteError(error => {
+			errors.push(error.message);
+			return false;
+		});
+
+		docWrappers.forEach((doc, index) => doc.addToBulk(bulk, operation, dbItems[index]));
+		await bulk.close();
+
+		if (errors.length)
+			throw new FirestoreException(__stringify(errors));
+
+		return dbItems;
+	};
+
 	/**
 	 * A firestore transaction is run globally on the firestore project and not specifically on any collection, locking specific documents in the project.
 	 * @param processor: A set of read and write operations on one or more documents.
@@ -520,6 +484,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const firestore = this.wrapper.firestore;
 		return firestore.runTransaction<ReturnType>(processor);
 	}
+
+	getVersion = () => {
+		return this.dbDef.versions?.[0] || DefaultDBVersion;
+	};
 
 	async assertDBItem(dbItem: Type, transaction?: Transaction, request?: Express.Request) {
 		await this.upgradeDBItem([dbItem]);
