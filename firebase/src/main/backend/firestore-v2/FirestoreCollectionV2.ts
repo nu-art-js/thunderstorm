@@ -49,7 +49,6 @@ import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
 import {BulkItem, BulkOperation, DocWrapperV2, UpdateObject} from './DocWrapperV2';
 import {canDeleteDispatcherV2} from './consts';
-import DocumentReference = firestore.DocumentReference;
 import UpdateData = firestore.UpdateData;
 
 export const _EmptyQuery = Object.freeze({where: {}});
@@ -158,19 +157,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return (await (transaction ?? this.wrapper.firestore).getAll(...docs.map(_doc => _doc.ref))).map(_snapshot => _snapshot.data() as Type | undefined);
 	};
 
-	private async _query(ourQuery?: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot[]> {
-		const myQuery = FirestoreInterfaceV2.buildQuery(this, ourQuery);
-		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot[];
-	}
-
-	/**
-	 * Get the db items from the query
-	 * @param ourQuery
-	 */
-	async queryItems(ourQuery: FirestoreQuery<Type>): Promise<Type[]> {
-		return (await this._query(ourQuery)).map(result => result.data() as Type);
-	}
-
 	private _customQuery = async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Type>[]> => {
 		const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
 		if (transaction)
@@ -188,22 +174,24 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## Create ##############################
+	protected _createAll = async (preDBItems: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
+		preDBItems.forEach(preDBItem => preDBItem._id ??= generateId());
+		const docs = this.doc.allItems(preDBItems);
+		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
+
+		if (transaction)
+			docs.forEach((doc, i) => transaction.create(doc.ref, dbItems[i]));
+		else
+			await this.bulkOperation(docs, 'create', dbItems);
+		return dbItems;
+	}
+
 	create = {
 		item: async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
 			preDBItem._id ??= generateId();
 			return await this.doc.item(preDBItem).create(preDBItem, transaction);
 		},
-		all: async (preDBItems: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
-			preDBItems.forEach(preDBItem => preDBItem._id ??= generateId());
-			const docs = this.doc.allItems(preDBItems);
-			const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
-
-			if (transaction)
-				docs.forEach((doc, i) => transaction.create(doc.ref, dbItems[i]));
-			else
-				await this.bulkOperation(docs, 'create', dbItems);
-			return dbItems;
-		},
+		all: this._createAll,
 	};
 
 	// ############################## Set ##############################
@@ -268,36 +256,23 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
-		const docs = await this.doc.query(query, transaction);
-		return this._deleteAll(docs, transaction);
+		await this._deleteAll(await this.doc.query(query, transaction), transaction);
 	}
 
 	protected async _deleteAll(docs: DocWrapperV2<Type>[], transaction?: Transaction) {
 		const dbItems = filterInstances(await this.getAll(docs));
 		await this.canDeleteDocument(dbItems, transaction);
 		if (transaction)
-			return this._deleteAllTransaction(docs, transaction);
-
-		return this._deleteBulk(docs);
-	}
-
-	protected async _deleteBulk(docs: DocWrapperV2<Type>[]) {
-		await this._deleteBulkRefs(docs.map(_doc => _doc.ref));
-	}
-
-	protected async _deleteBulkRefs(refs: DocumentReference[]) {
-		const bulk = this.wrapper.firestore.bulkWriter();
-		refs.forEach(_ref => bulk.delete(_ref));
-		await bulk.close();
-	}
-
-	protected async _deleteAllTransaction(docs: DocWrapperV2<Type>[], transaction: Transaction) {
-		return docs.map(doc => doc.delete(transaction));
+			docs.forEach(doc => doc.delete(transaction));
+		else
+			await this.bulkOperation(docs, 'delete');
 	}
 
 	async deleteCollection() {
 		const refs = await this.collection.listDocuments();
-		await this._deleteBulkRefs(refs);
+		const bulk = this.wrapper.firestore.bulkWriter();
+		refs.forEach(_ref => bulk.delete(_ref));
+		await bulk.close();
 	}
 
 	delete = {
@@ -309,7 +284,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## General ##############################
-	protected bulkOperation = async <Op extends BulkOperation>(docs: DocWrapperV2<Type>[], operation: Op, items: BulkItem<Op, Type>[]) => {
+	protected bulkOperation = async <Op extends BulkOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: BulkItem<Op, Type>[]) => {
 		const bulk = this.wrapper.firestore.bulkWriter();
 
 		const errors: string[] = [];
@@ -318,7 +293,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			return false;
 		});
 
-		docs.forEach((doc, index) => doc.addToBulk(bulk, operation, items[index]));
+		docs.forEach((doc, index) => doc.addToBulk(bulk, operation, items?.[index]));
 		await bulk.close();
 
 		if (errors.length)
