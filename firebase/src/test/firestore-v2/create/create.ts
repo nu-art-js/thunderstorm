@@ -14,7 +14,7 @@ export const createTests_dbDef: DBDef<DB_Type> = {
 	entityName: 'create-test',
 	validator: tsValidateMustExist
 };
-const duplicateObjectToCreate = {...testInstance1, _id: testInstance1._uniqueId};
+export const duplicateObjectToCreate = {...testInstance1, _id: testInstance1._uniqueId};
 export const TestCases_FB_Create: CreateTest['testcases'] = [
 	...createTestCases,
 	{
