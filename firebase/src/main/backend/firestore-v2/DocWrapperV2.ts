@@ -2,8 +2,8 @@ import {currentTimeMillis, DB_Object, DefaultDBVersion, exists, PreDB} from '@nu
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
-import UpdateData = firestore.UpdateData;
 import {FirestoreCollectionV2} from './FirestoreCollectionV2';
+import UpdateData = firestore.UpdateData;
 
 
 export class DocWrapperV2<T extends DB_Object> {
@@ -105,7 +105,6 @@ export class DocWrapperV2<T extends DB_Object> {
 	};
 
 	createInBulk = (bulk: firestore.BulkWriter, item: T) => {
-		bulk.create(this.ref, item);
-		return item;
+		return bulk.create(this.ref, item);
 	};
 }
