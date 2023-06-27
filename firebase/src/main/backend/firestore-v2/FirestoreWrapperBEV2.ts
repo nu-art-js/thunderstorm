@@ -21,7 +21,7 @@ import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {DB_Object, DBDef} from '@nu-art/ts-common';
-import {getFirestore} from 'firebase-admin/firestore';
+import {DocumentReference, getFirestore, Transaction} from 'firebase-admin/firestore';
 
 
 export class FirestoreWrapperBEV2
@@ -33,6 +33,39 @@ export class FirestoreWrapperBEV2
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
 		this.firestore = getFirestore(firebaseSession.app);
+	}
+
+	async runTransaction<ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> {
+		return this.firestore.runTransaction<ReturnType>((transaction: Transaction) => {
+			const writeActions: (() => void)[] = [];
+
+			// @ts-ignore
+			transaction.__nu_art__WriteActions = writeActions;
+			const originSet = transaction.set;
+			const originDelete = transaction.delete;
+			const originCreate = transaction.create;
+
+			transaction.set = <T>(documentRef: FirebaseFirestore.DocumentReference<T>, data: FirebaseFirestore.WithFieldValue<T>) => {
+				writeActions.push(() => originSet(documentRef, data));
+				return transaction;
+			};
+
+			transaction.create = <T>(documentRef: FirebaseFirestore.DocumentReference<T>, data: FirebaseFirestore.WithFieldValue<T>) => {
+				writeActions.push(() => originCreate(documentRef, data));
+				return transaction;
+			};
+
+			transaction.delete = (documentRef: DocumentReference<any>, precondition?: FirebaseFirestore.Precondition) => {
+				writeActions.push(() => originDelete(documentRef, precondition));
+				return transaction;
+			};
+
+			const toRet = processor(transaction);
+
+			writeActions.forEach(action => action());
+
+			return toRet;
+		});
 	}
 
 	public getCollection<Type extends DB_Object>(dbDef: DBDef<Type>): FirestoreCollectionV2<Type> {
