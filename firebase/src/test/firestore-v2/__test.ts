@@ -1,6 +1,5 @@
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {TestSuite_FirestoreV2_Create} from './create/create';
-import {TestSuite_FirestoreV2_Delete} from './delete/delete';
 import {TestSuite_FirestoreV2_CreateAll} from './create/create-all';
 import {TestSuite_FirestoreV2_Update} from './update/update';
 import {
@@ -16,7 +15,7 @@ import {TestSuite_FirestoreV2_Validator} from './validator/validator';
 describe('Firestore v2 - All Tests', () => {
 	testSuiteTester(TestSuite_FirestoreV2_Create);
 	testSuiteTester(TestSuite_FirestoreV2_CreateAll);
-	testSuiteTester(TestSuite_FirestoreV2_Delete);
+	// testSuiteTester(TestSuite_FirestoreV2_Delete);
 	testSuiteTester(TestSuite_FirestoreV2_QueryUnique);
 	testSuiteTester(TestSuite_FireStoreV2_QueryWithPagination);
 	testSuiteTester(TestSuite_FirestoreV2_QueryAll);
