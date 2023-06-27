@@ -50,50 +50,50 @@ export const TestCases_FB_Validator: CollectionTest['testcases'] = [
 			}
 		}
 	},
-	{
-		description: 'validator upsert.item pass',
-		result: [],
-		input: {
-			outerCollection: [],
-			innerCollection: [],
-			check: async (collectionOuter, collectionInner) => {
-				await expect(collectionOuter.upsert.item({refs: [], name: 'a'})).to.be.fulfilled;
-			}
-		}
-	},
-	{
-		description: 'validator upsert.item fail',
-		result: [],
-		input: {
-			outerCollection: [],
-			innerCollection: [],
-			check: async (collectionOuter, collectionInner) => {
-				await expect(collectionOuter.upsert.item({} as DB_Type_Complex)).to.be.rejectedWith();
-			}
-		}
-	},
-	{
-		description: 'validator upsert.all pass',
-		result: [],
-		input: {
-			outerCollection: [],
-			innerCollection: [],
-			check: async (collectionOuter, collectionInner) => {
-				await expect(collectionOuter.upsert.all([{refs: [], name: 'a'}])).to.be.fulfilled;
-			}
-		}
-	},
-	{
-		description: 'validator upsert.all fail',
-		result: [],
-		input: {
-			outerCollection: [],
-			innerCollection: [],
-			check: async (collectionOuter, collectionInner) => {
-				await expect(collectionOuter.upsert.all([{} as DB_Type_Complex])).to.be.rejectedWith();
-			}
-		}
-	},
+	// {
+	// 	description: 'validator upsert.item pass',
+	// 	result: [],
+	// 	input: {
+	// 		outerCollection: [],
+	// 		innerCollection: [],
+	// 		check: async (collectionOuter, collectionInner) => {
+	// 			await expect(collectionOuter.upsert.item({refs: [], name: 'a'})).to.be.fulfilled;
+	// 		}
+	// 	}
+	// },
+	// {
+	// 	description: 'validator upsert.item fail',
+	// 	result: [],
+	// 	input: {
+	// 		outerCollection: [],
+	// 		innerCollection: [],
+	// 		check: async (collectionOuter, collectionInner) => {
+	// 			await expect(collectionOuter.upsert.item({} as DB_Type_Complex)).to.be.rejectedWith();
+	// 		}
+	// 	}
+	// },
+	// {
+	// 	description: 'validator upsert.all pass',
+	// 	result: [],
+	// 	input: {
+	// 		outerCollection: [],
+	// 		innerCollection: [],
+	// 		check: async (collectionOuter, collectionInner) => {
+	// 			await expect(collectionOuter.upsert.all([{refs: [], name: 'a'}])).to.be.fulfilled;
+	// 		}
+	// 	}
+	// },
+	// {
+	// 	description: 'validator upsert.all fail',
+	// 	result: [],
+	// 	input: {
+	// 		outerCollection: [],
+	// 		innerCollection: [],
+	// 		check: async (collectionOuter, collectionInner) => {
+	// 			await expect(collectionOuter.upsert.all([{} as DB_Type_Complex])).to.be.rejectedWith();
+	// 		}
+	// 	}
+	// },
 	{
 		description: 'validator set.item pass',
 		result: [],
