@@ -1,14 +1,18 @@
-import {DB_Object} from '@nu-art/ts-common';
+import {currentTimeMillis, DB_Object, DefaultDBVersion, exists, PreDB} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
 import UpdateData = firestore.UpdateData;
+import {FirestoreCollectionV2} from './FirestoreCollectionV2';
+
 
 export class DocWrapperV2<T extends DB_Object> {
-	ref: FirestoreType_DocumentReference<T>;
+	readonly ref: FirestoreType_DocumentReference<T>;
+	readonly collection: FirestoreCollectionV2<T>;
 	data?: T;
 
-	constructor(ref: FirestoreType_DocumentReference<T>, data?: T) {
+	protected constructor(collection: FirestoreCollectionV2<T>, ref: FirestoreType_DocumentReference<T>, data?: T) {
+		this.collection = collection;
 		this.ref = ref;
 		this.data = data;
 	}
@@ -24,20 +28,29 @@ export class DocWrapperV2<T extends DB_Object> {
 
 	get = async (transaction?: Transaction) => {
 		if (transaction)
-			return this.data ?? (this.data = ((await transaction.get(this.ref)).data() as T));
+			return this.data ?? (this.data = ((await transaction.get(this.ref)).data() as (T | undefined)));
 
-		return this.data ?? (this.data = (await this.ref.get()).data() as T);
+		return this.data ?? (this.data = (await this.ref.get()).data() as (T | undefined));
 	};
 
-	create = async (item: T, transaction?: Transaction): Promise<T> => {
-		if (transaction) {
-			transaction.create(this.ref, item);
-			this.data = item;
-		}
-		else
-			await this.ref.create(item);
+	prepareForCreate = async (preDBItem: PreDB<T>, transaction?: Transaction): Promise<T> => {
+		const now = currentTimeMillis();
+		preDBItem.__updated = preDBItem.__created = now;
+		preDBItem._v = DefaultDBVersion;
+		await this.collection.assertDBItem(preDBItem as T, transaction);
+		return preDBItem as T;
+	};
 
-		return item;
+	create = async (preDBItem: PreDB<T>, transaction?: Transaction): Promise<T> => {
+		const dbItem = await this.prepareForCreate(preDBItem as T);
+
+		if (transaction) {
+			transaction.create(this.ref, dbItem);
+			this.data = dbItem;
+		} else
+			await this.ref.create(dbItem);
+
+		return dbItem;
 	};
 
 	update = async (updateData: UpdateData<T>, transaction?: Transaction) => {
@@ -47,22 +60,50 @@ export class DocWrapperV2<T extends DB_Object> {
 			await this.ref.update(updateData);
 	};
 
-	set = async (item: T, transaction?: Transaction): Promise<T> => {
-		if (transaction) {
-			transaction.set(this.ref, item);
-			this.data = item;
-		}
-		else
-			await this.ref.set(item);
+	set = async (toWrite: PreDB<T>, transaction?: Transaction): Promise<T> => {
+		const now = currentTimeMillis();
+		let dbItem = await this.get(transaction);
+		if (!exists(dbItem))
+			return this.create(toWrite, transaction);
 
-		return item;
+		toWrite._id = dbItem!._id;
+		toWrite.__created = dbItem!.__created;
+		toWrite._v = dbItem!._v;
+		this.collection.dbDef.lockKeys?.forEach(lockedKey => {
+			(toWrite as T)[lockedKey] = dbItem![lockedKey];
+		});
+
+		toWrite.__updated = now;
+
+		dbItem = toWrite as T;
+		await this.collection.assertDBItem(dbItem, transaction);
+
+		if (transaction) {
+			transaction.set(this.ref, dbItem);
+			this.data = dbItem;
+		} else
+			await this.ref.set(dbItem);
+
+		return dbItem;
 	};
 
 	delete = async (transaction?: Transaction) => {
+		const dbItem = await this.get(transaction);
+		if (!dbItem)
+			return;
+
+		await this.collection.canDeleteDocument([dbItem], transaction);
+
 		if (transaction)
 			transaction.delete(this.ref);
 		else
 			await this.ref.delete();
+
 		this.cleanCache();
+	};
+
+	createInBulk = (bulk: firestore.BulkWriter, item: T) => {
+		bulk.create(this.ref, item);
+		return item;
 	};
 }

@@ -1,4 +1,4 @@
-import {compare, removeDBObjectKeys} from '@nu-art/ts-common';
+import {compare, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
@@ -21,6 +21,21 @@ export type CreateTestInput = {
 }
 
 export type CreateTest = TestSuite<CreateTestInput, TestInputValue>;
+const items: PreDB<DB_Type>[] = [
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5,
+	testInstance1, testInstance2, testInstance3, testInstance4, testInstance5];
 
 export const createTestCases: CreateTest['testcases'] = [
 	{
@@ -57,6 +72,18 @@ export const createTestCases: CreateTest['testcases'] = [
 				const items = await collection.query.custom({where: {}});
 				expect(items.length).to.eql(5);
 				expect(true).to.eql(compare([testInstance1, testInstance2, testInstance3, testInstance4, testInstance5], expectedResult));
+			}
+		}
+	},
+	{
+		description: `${items.length} items`,
+		result: items,
+		input: {
+			value: items,
+			check: async (collection, expectedResult) => {
+				const dbItems = await collection.query.custom({where: {}});
+				expect(dbItems.length).to.eql(items.length);
+				// expect(true).to.eql(compare(items, expectedResult));
 			}
 		}
 	},

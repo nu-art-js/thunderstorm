@@ -21,7 +21,6 @@ import {
 	_keys,
 	ApiException,
 	BadImplementationException,
-	batchAction,
 	compare,
 	currentTimeMillis,
 	CustomException,
@@ -60,6 +59,7 @@ import DocumentReference = firestore.DocumentReference;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
 
+
 type UpdateObject<Type> = { _id: UniqueId } & UpdateData<Type>;
 export const _EmptyQuery = Object.freeze({where: {}});
 export const dbIdLength = 32;
@@ -89,7 +89,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	readonly collection: FirestoreType_Collection;
 	readonly dbDef: DBDef<Type, any>;
 	private readonly validator: ValidatorTypeResolver<Type>;
-
 
 	/**
 	 * External unique as in there must never ever be two that answer the same query
@@ -142,26 +141,88 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## DocWrapper ##############################
-	getDocWrapper = (_id: UniqueId): DocWrapperV2<Type> => {
-		const doc = this.wrapper.firestore.doc(`${this.name}/${_id}`) as FirestoreType_DocumentReference<Type>;
-		return new DocWrapperV2<Type>(doc);
+
+	doc = {
+		_: (ref: FirestoreType_DocumentReference<Type>, data?: Type): DocWrapperV2<Type> => {
+			// @ts-ignore
+			return new DocWrapperV2(this, ref, data);
+		},
+		unique: (_id: UniqueId) => {
+			const doc = this.wrapper.firestore.doc(`${this.name}/${_id}`) as FirestoreType_DocumentReference<Type>;
+			return this.doc._(doc);
+		},
+		item: (item: PreDB<Type>) => {
+			if (!exists(item._id))
+				throw new BadImplementationException('Cannot create DocWrapper without _id!');
+
+			return this.doc.unique(item._id!);
+		},
+		all: (_ids: UniqueId[]) => _ids.map(this.doc.unique),
+		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
+			return (await this._customQuery(query, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
+		},
+		update: async (doc: DocWrapperV2<Type>, updateData: UpdateObject<Type>, transaction?: Transaction) => {
+			await this.prepareDataForUpdate(updateData);
+			delete (updateData as UpdateData<Type>)._id;
+			await doc.update(updateData, transaction);
+			return (await doc.get())!;
+		},
+		allItems: (preDBItems: PreDB<Type>[]) => {
+			// At this point all preDB MUST have ids
+			return preDBItems.map(preDBItem => this.doc.item(preDBItem));
+		}
 	};
 
-	getDocWrapperFromItem = (item: PreDB<Type>): DocWrapperV2<Type> => {
-		if (!exists(item._id))
-			throw new BadImplementationException('Cannot create DocWrapper without _id!');
+	// ############################## Create ##############################
 
-		return this.getDocWrapper(item._id!);
+	create = {
+		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => {
+			preDBItem._id ??= generateId();
+			return await this.doc.item(preDBItem).create(preDBItem, transaction);
+		},
+		all: async (preDBItems: PreDB<Type>[], transaction?: Transaction) => {
+			preDBItems.forEach(preDBItem => preDBItem._id ??= generateId());
+			const docWrappers = this.doc.allItems(preDBItems);
+			const dbItems = await Promise.all(docWrappers.map((doc, i) => doc.prepareForCreate(preDBItems[i],transaction)));
+
+			if (transaction)
+				docWrappers.forEach((doc, i) => doc.create(dbItems[i], transaction));
+			else
+				await this._createBulk(docWrappers, dbItems);
+			return dbItems;
+		},
+	};
+
+	getVersion = () => {
+		return this.dbDef.versions?.[0] || DefaultDBVersion;
+	};
+
+	protected async _createBulk(docWrappers: DocWrapperV2<Type>[], dbItems: Type[]): Promise<Type[]> {
+		const bulk = this.wrapper.firestore.bulkWriter();
+		const errors: string[] = [];
+		bulk.onWriteError(error => {
+			errors.push(error.message);
+			return false;
+		});
+
+		docWrappers.forEach((doc, index) => doc.createInBulk(bulk, dbItems[index]));
+		await bulk.close();
+
+		if (errors.length)
+			throw new FirestoreException(__stringify(errors));
+
+		return dbItems;
+	}
+
+	set = {
+		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => {
+			preDBItem._id ??= generateId();
+			return await this.doc.item(preDBItem).set(preDBItem, transaction);
+		},
+		all: async (items: PreDB<Type>[], transaction?: Transaction) => await this._setAll(items, transaction),
 	};
 
 	// ############################## Query ##############################
-	protected async queryByIds(all_ids: UniqueId[], transaction?: Transaction) {
-
-		return await batchAction(all_ids, 10, async (chunk) => {
-			const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, {where: {_id: {$in: chunk}}} as FirestoreQuery<Type>);
-			return ((await myQuery.get()).docs as FirestoreType_DocumentSnapshot[]).map(snapshot => snapshot.data() as Type);
-		});
-	}
 
 	private getAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction): Promise<(Type | undefined)[]> => {
 		if (docs.length === 0)
@@ -187,11 +248,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	 * @param ourQuery
 	 */
 
-	async newQuery(ourQuery: FirestoreQuery<Type>): Promise<DocWrapperV2<Type>[]> {
-		const docs = await this._query(ourQuery) as FirestoreType_DocumentSnapshot<Type>[];
-		return docs.filter(doc => doc.exists).map(doc => new DocWrapperV2<Type>(doc.ref, doc.data()));
-	}
-
 	private _customQuery = async (query?: FirestoreQuery<Type>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Type>[]> => {
 		const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
 		if (transaction)
@@ -200,93 +256,13 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot<Type>[];
 	};
 
-	// ############################## Create ##############################
-	prepareItemForCreate(preDBItem: PreDB<Type>): Type {
-		const now = currentTimeMillis();
-		preDBItem._id ??= generateId();
-		preDBItem.__updated = preDBItem.__created = now;
-		preDBItem._v = this.getVersion();
-
-		return preDBItem as Type;
-	}
-
-	getVersion = () => {
-		return this.dbDef.versions?.[0] || DefaultDBVersion;
+	query = {
+		unique: async (_id: UniqueId, transaction?: Transaction) => await this.doc.unique(_id).get(transaction),
+		all: async (_ids: UniqueId[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
+		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
+			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
+		},
 	};
-
-	protected async _createItem(preDBItem: PreDB<Type>, transaction?: Transaction) {
-		const dbItem = this.prepareItemForCreate(preDBItem);
-		await this.assertDBItem(dbItem);
-		const doc = this.getDocWrapperFromItem(dbItem);
-		return doc.create(dbItem, transaction);
-	}
-
-	protected async _createAll(preDBItems: PreDB<Type>[], retryOnError: boolean = false, transaction?: Transaction): Promise<Type[]> {
-		if (transaction)
-			return this._createAllTransaction(preDBItems, retryOnError, transaction);
-
-		return this._createBulk(preDBItems, retryOnError);
-	}
-
-
-	protected async _createAllTransaction(preDBItems: PreDB<Type>[], retryOnError: boolean = false, transaction: Transaction): Promise<Type[]> {
-		const dbItemsToReturn: Type[] = [];
-		const errors: any[] = [];
-		await preDBItems.reduce((_transaction, _preDBItem) => {
-			const _dbItem = this.prepareItemForCreate(_preDBItem);
-			try {
-				this.assertDBItem(_dbItem, transaction);
-			} catch (e) {
-				errors.push(e);
-				return _transaction;
-			}
-
-			this.getDocWrapperFromItem(_dbItem).create(_dbItem, transaction);
-			dbItemsToReturn.push(_dbItem);
-			return _transaction;
-		}, transaction);
-
-		if (errors.length)
-			errors.forEach(error => setTimeout(() => {
-				throw new FirestoreException('Failed db item validation during createAllTransaction', error);
-			}));
-		return dbItemsToReturn;
-	}
-
-	protected async _createBulk(preDBItems: PreDB<Type>[], retryOnError: boolean = false): Promise<Type[]> {
-		const bulk = this.wrapper.firestore.bulkWriter();
-		const dbItemsToReturn: Type[] = [];
-		const errors: any[] = [];
-
-		bulk.onWriteError(error => {
-			errors.push(new FirestoreException(error.message));
-			return retryOnError;
-		});
-		await preDBItems.reduce((_bulk, _preDBItem) => {
-			const _dbItem = this.prepareItemForCreate(_preDBItem);
-			try {
-				this.assertDBItem(_dbItem);
-
-			} catch (e) {
-				errors.push(e);
-				return _bulk;
-			}
-
-			this.addBulkCreate(_bulk, _dbItem);
-			dbItemsToReturn.push(_dbItem);
-			return _bulk;
-		}, bulk).flush();
-
-		if (errors.length) {
-			throw new FirestoreException(__stringify(errors));
-		}
-
-		return dbItemsToReturn;
-	}
-
-	private async addBulkCreate(bulk: FirebaseFirestore.BulkWriter, dbItem: Type) {
-		return bulk.create(this.getDocWrapperFromItem(dbItem).ref, dbItem);
-	}
 
 	// ############################## Set ##############################
 	prepareItemForSet(preDBItem: PreDB<Type>): Type {
@@ -296,13 +272,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		preDBItem.__updated = now;
 		preDBItem._v ??= this.getVersion();
 		return preDBItem as Type;
-	}
-
-	protected async _setItem(preDBItem: PreDB<Type>, transaction?: Transaction) {
-		const dbItem = this.prepareItemForSet(preDBItem);
-		await this.assertDBItem(dbItem, transaction);
-		const doc = this.getDocWrapperFromItem(dbItem);
-		return doc.set(dbItem, transaction);
 	}
 
 	protected async _setAll(preDBItems: PreDB<Type>[], transaction?: Transaction) {
@@ -318,7 +287,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 		await preDBItems.reduce((_bulk, _preDBItem) => {
 			const _dbItem = this.prepareItemForSet(_preDBItem);
-			_bulk.set(this.getDocWrapperFromItem(_preDBItem).ref, _dbItem);
+			_bulk.set(this.doc.item(_preDBItem).ref, _dbItem);
 			dbItems.push(_dbItem);
 			return _bulk;
 		}, bulk).close();
@@ -340,7 +309,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 				return _transaction;
 			}
 
-			this.getDocWrapperFromItem(_preDBItem).set(_dbItem, transaction);
+			this.doc.item(_preDBItem).set(_dbItem, transaction);
 			dbItemsToReturn.push(_dbItem);
 			return _transaction;
 		}, transaction);
@@ -364,7 +333,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	}
 
 	protected _update = async (updateData: UpdateObject<Type>, transaction?: Transaction) => {
-		const doc = this.getDocWrapper(updateData._id);
+		const doc = this.doc.unique(updateData._id);
 		await this.prepareDataForUpdate(updateData);
 		//todo assert
 		// await this.assertDBItem(updateData, transaction);
@@ -396,7 +365,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			}
 
 			delete (updateData as UpdateData<Type>)._id;
-			this.getDocWrapper(_data._id).update(_data, transaction);
+			this.doc.unique(_data._id).update(_data, transaction);
 			return _transaction;
 		}, transaction);
 
@@ -422,7 +391,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			}
 
 			delete (updateData as UpdateData<Type>)._id;
-			_bulk.update(this.getDocWrapper(_data._id).ref, _data);
+			_bulk.update<Type>(this.doc.unique(_data._id).ref, _data);
 			return _bulk;
 		}, bulk).close();
 
@@ -457,12 +426,18 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private async assertUpdateData(updateData: UpdateData<Type>) {
 	}
 
+	update = {
+		item: (updateData: UpdateObject<Type>, transaction?: Transaction) => this.doc.update(this.doc.unique(updateData._id), updateData, transaction),
+		all: this._updateAll,
+	};
+
 	// ############################## Upsert ##############################
+
 
 	private _upsert = async (item: PreDB<Type> | UpdateObject<Type>, transaction?: Transaction): Promise<Type> => {
 		let dbItem;
 		if (exists(item._id)) {
-			dbItem = this.getDocWrapper(item._id!).get();
+			dbItem = this.doc.unique(item._id!).get();
 		}
 
 		if (dbItem)
@@ -472,10 +447,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	private _upsertAll = async (items: PreDB<Type>[] | UpdateObject<Type>[], transaction?: Transaction): Promise<Type[]> => {
-		const {
-			filteredIn: hasIdItems,
-			filteredOut: noIdItems
-		} = filterInOut<PreDB<Type> | UpdateObject<Type>>(items, _item => exists(_item._id));
+		const {filteredIn: hasIdItems, filteredOut: noIdItems} = filterInOut<PreDB<Type> | UpdateObject<Type>>(items, _item => exists(_item._id));
 		const toCreate = noIdItems; // If the items don't have _id, we need to create them
 		const toUpdate: UpdateObject<Type>[] = []; // We don't fill the toUpdate yet, since we don't know if items with _id also exist in Firestore
 
@@ -492,22 +464,12 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	// ############################## Delete ##############################
 
-	protected _deleteUnique = async (_id: UniqueId, transaction?: Transaction) => {
-		if (!_id)
-			throw new MUSTNeverHappenException('Cannot deleteUnique without an _id!');
-
-		const doc = this.queryDoc.unique(_id);
-		const dbItem = await doc.get(transaction);
-		await this.canDeleteDocument([dbItem], transaction);
-		await doc.delete(transaction);
-	};
-
 	protected async _deleteQuery(query: FirestoreQuery<Type>, transaction?: Transaction) {
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
 		const items = await this.query.custom(query, transaction);
-		return this._deleteAll(items.map(this.getDocWrapperFromItem), transaction);
+		return this._deleteAll(items.map(this.doc.item), transaction);
 	}
 
 	protected async _deleteAll(docs: DocWrapperV2<Type>[], transaction?: Transaction) {
@@ -538,6 +500,14 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		await this._deleteBulkRefs(refs);
 	}
 
+	delete = {
+		unique: (id: string, transaction?: Transaction) => this.doc.unique(id).delete(transaction),
+		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.doc.item(item).delete(transaction),
+		all: async (_ids: UniqueId[], transaction?: Transaction) => await this._deleteAll(_ids.map(_id => this.doc.unique(_id)), transaction),
+		allItems: async (items: PreDB<Type>[], transaction?: Transaction) => await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction),
+		query: this._deleteQuery
+	};
+
 	// ############################## General ##############################
 	/**
 	 * A firestore transaction is run globally on the firestore project and not specifically on any collection, locking specific documents in the project.
@@ -548,7 +518,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return firestore.runTransaction<ReturnType>(processor);
 	}
 
-	private async assertDBItem(dbItem: Type, transaction?: Transaction, request?: Express.Request) {
+	async assertDBItem(dbItem: Type, transaction?: Transaction, request?: Express.Request) {
 		await this.upgradeDBItem([dbItem]);
 		await this.preUpsertProcessing(dbItem, transaction, request);
 		this.validateImpl(dbItem);
@@ -587,7 +557,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	 * @param transaction - The transaction object
 	 * @param dbItems - The DB entry that is going to be deleted.
 	 */
-	protected async canDeleteDocument(dbItems: Type[], transaction?: Transaction) {
+	async canDeleteDocument(dbItems: Type[], transaction?: Transaction) {
 		const dependencies = await this.collectDependencies(dbItems, transaction);
 		if (dependencies)
 			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({
@@ -602,41 +572,8 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return dependencies.length > 0 ? dependencies : undefined;
 	}
 
-	query = {
-		unique: async (_id: UniqueId, transaction?: Transaction) => await this.queryDoc.unique(_id).get(transaction),
-		all: async (_ids: UniqueId[], transaction?: Transaction) => await this.getAll(this.queryDoc.all(_ids), transaction),
-		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
-			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
-		},
-	};
-	queryDoc = {
-		unique: (_id: UniqueId) => this.getDocWrapper(_id),
-		all: (_ids: UniqueId[]) => _ids.map(this.getDocWrapper),
-		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
-			return (await this._customQuery(query, transaction)).map(_snapshot => new DocWrapperV2(_snapshot.ref, _snapshot.data()));
-		},
-	};
-	create = {
-		item: async (item: PreDB<Type>, transaction?: Transaction) => await this._createItem(item, transaction),
-		all: async (items: PreDB<Type>[], transaction?: Transaction) => await this._createAll(items, false, transaction),
-	};
-	set = {
-		item: async (item: PreDB<Type>, transaction?: Transaction) => await this._setItem(item, transaction),
-		all: async (items: PreDB<Type>[], transaction?: Transaction) => await this._setAll(items, transaction),
-	};
-	update = {
-		item: this._update,
-		all: this._updateAll,
-	};
 	upsert = {
 		item: this._upsert,
 		all: this._upsertAll
-	};
-	delete = {
-		unique: this._deleteUnique,
-		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.getDocWrapperFromItem(item).delete(transaction),
-		all: async (_ids: UniqueId[], transaction?: Transaction) => await this._deleteAll(_ids.map(_id => this.getDocWrapper(_id)), transaction),
-		allItems: async (items: PreDB<Type>[], transaction?: Transaction) => await this._deleteAll(items.map(_item => this.getDocWrapperFromItem(_item)), transaction),
-		query: this._deleteQuery
 	};
 }

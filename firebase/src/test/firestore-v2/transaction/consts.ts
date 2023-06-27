@@ -14,6 +14,7 @@ import {compare, currentTimeMillis, exists, filterInstances} from '@nu-art/ts-co
 import {DB_Type_Complex} from '../_core/types';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 
+
 const transaction_addInner4 = (collectionOuter: FirestoreCollectionV2<DB_Type_Complex>, now: number) => {
 	return firestore.firestore.runTransaction(async (transaction) => {
 		console.log(`pah1 ${currentTimeMillis() - now}`);
@@ -56,7 +57,9 @@ const transaction_removeInner3 = (collectionOuter: FirestoreCollectionV2<DB_Type
 	});
 };
 
-export const transactionTestCases: CollectionTest['testcases'] = [
+
+export const transactionTestCases: CollectionTest['testcases'] = []
+export const transactionTestCases1: CollectionTest['testcases'] = [
 	{
 		description: 'transaction update',
 		result: [],
@@ -102,6 +105,26 @@ export const transactionTestCases: CollectionTest['testcases'] = [
 	},
 	{
 		description: 'transaction promise.all2',
+		result: [],
+		input: {
+			outerCollection: outerQueryCollection,
+			innerCollection: innerQueryCollection,
+			check: async (collectionOuter, collectionInner) => {
+				const now = currentTimeMillis();
+				await Promise.all([
+					transaction_addInner4(collectionOuter, now),
+					transaction_removeInner2(collectionOuter, now),
+					transaction_removeInner3(collectionOuter, now),
+
+				]);
+
+				const outerItem = await collectionOuter.query.unique(id_outer1);
+				expect(true).to.eql(compare(outerItem.refs.sort(), [id_inner1, id_inner4].sort()));
+			}
+		}
+	},
+	{
+		description: 'transaction promise.all on two ',
 		result: [],
 		input: {
 			outerCollection: outerQueryCollection,

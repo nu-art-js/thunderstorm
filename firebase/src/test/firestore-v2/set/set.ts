@@ -7,14 +7,14 @@ import {compare, DBDef, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValid
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {updatedStringValue1, updatedStringValue2} from '../update/update';
 
+
 chai.use(require('chai-as-promised'));
 
 const dbDef: DBDef<DB_Type> = {
 	dbName: 'firestore-set-tests',
 	entityName: 'set-test',
 	validator: tsValidateMustExist
-}
-
+};
 
 type Input = {
 	setAction: (collection: FirestoreCollectionV2<DB_Type>, inserted: DB_Type[]) => Promise<void>
@@ -108,6 +108,8 @@ export const TestSuite_FirestoreV2_Set: Test = {
 		const result = testCase.result();
 		const allResults = sortArray([...result.created ?? [], ...result.updated ?? [], ...result.notUpdated ?? []], item => item._uniqueId);
 
+		// console.log(sortedRemaining.map(removeDBObjectKeys))
+		// console.log(allResults)
 		//assert items have been updated correctly
 		expect(true).to.eql(compare(sortedRemaining.map(removeDBObjectKeys), allResults));
 		//assert timestamps correctly updated

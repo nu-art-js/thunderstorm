@@ -13,7 +13,7 @@ const dbDef: DBDef<DB_Type> = {
 
 //firestore getAll performing much better
 const asyncGetAll = async (_ids: UniqueId[], collection: FirestoreCollectionV2<any>) => {
-	const docs = _ids.map(collection.getDocWrapper);
+	const docs = _ids.map(collection.getDocWrapper2222);
 	return await Promise.all(docs.map(_doc => _doc.get()));
 };
 
