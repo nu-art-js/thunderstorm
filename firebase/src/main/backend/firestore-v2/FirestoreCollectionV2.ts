@@ -214,14 +214,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return dbItems;
 	}
 
-	set = {
-		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => {
-			preDBItem._id ??= generateId();
-			return await this.doc.item(preDBItem).set(preDBItem, transaction);
-		},
-		all: async (items: PreDB<Type>[], transaction?: Transaction) => await this._setAll(items, transaction),
-	};
-
 	// ############################## Query ##############################
 
 	private getAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction): Promise<(Type | undefined)[]> => {
@@ -320,6 +312,14 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 		return dbItemsToReturn;
 	}
+
+	set = {
+		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => {
+			preDBItem._id ??= generateId();
+			return await this.doc.item(preDBItem).set(preDBItem, transaction);
+		},
+		all: async (items: PreDB<Type>[], transaction?: Transaction) => await this._setAll(items, transaction),
+	};
 
 	// ############################## Update ##############################
 
