@@ -7,7 +7,7 @@ import {compare, DBDef, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValid
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 
 
-chai.use(require('chai-as-promised'))
+chai.use(require('chai-as-promised'));
 
 
 type Input = {
@@ -22,7 +22,7 @@ const dbDef: DBDef<DB_Type> = {
 	dbName: 'firestore-update-tests',
 	entityName: 'update-test',
 	validator: tsValidateMustExist
-}
+};
 
 export const updatedStringValue1 = 'test update';
 export const updatedStringValue2 = 'test update 2';
@@ -40,11 +40,34 @@ export const TestCases_FB_Update: Test['testcases'] = [
 				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue1});
 			}
 		}
-	}, {
+	},
+	// {
+	// 	description: 'insert 1 & update 1 field in transaction',
+	// 	result: () => {
+	// 		const _instance = deepClone(testInstance1);
+	// 		return {updated: [{..._instance, stringValue: updatedStringValue1}]};
+	// 	},
+	// 	input: {
+	// 		toCreate: [testInstance1],
+	// 		updateAction: async (collection, inserted) => {
+	// 			await collection.runTransaction(async (transaction) => {
+	// 				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue1},transaction);
+	// 			});
+	// 		}
+	// 	}
+	// },
+	{
 		description: 'insert 1 & update multiple fields',
 		result: () => {
 			const _instance = deepClone(testInstance1);
-			return {updated: [{..._instance, stringValue: updatedStringValue1, numeric: 1000, stringArray: [updatedStringValue1, updatedStringValue1]}]};
+			return {
+				updated: [{
+					..._instance,
+					stringValue: updatedStringValue1,
+					numeric: 1000,
+					stringArray: [updatedStringValue1, updatedStringValue1]
+				}]
+			};
 		},
 		input: {
 			toCreate: [testInstance1],
@@ -86,6 +109,22 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			}
 		}
 	},
+	// {
+	// 	description: 'insert 1 & delete nested field in transaction',
+	// 	result: () => {
+	// 		const _instance: DeepPartial<PreDB<DB_Type>> = deepClone(testInstance1);
+	// 		delete _instance.nestedObject!.one!.key;
+	// 		return {updated: [_instance as PreDB<DB_Type>]};
+	// 	},
+	// 	input: {
+	// 		toCreate: [testInstance1],
+	// 		updateAction: async (collection, inserted) => {
+	// 			await collection.runTransaction(async (transaction) => {
+	// 				await collection.update.item({_id: inserted[0]._id!, 'nestedObject.one.key': undefined},transaction);
+	// 			});
+	// 		}
+	// 	}
+	// },
 	{
 		description: 'insert 1 & update 1 nested field (dot notation)',
 		result: () => {
@@ -122,7 +161,10 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			const _instance1 = deepClone(testInstance1);
 			const _instance2 = deepClone(testInstance2);
 			return {
-				updated: [{..._instance1, stringValue: updatedStringValue1}, {..._instance2, stringValue: updatedStringValue2}], notUpdated: [deepClone(testInstance3)]
+				updated: [{..._instance1, stringValue: updatedStringValue1}, {
+					..._instance2,
+					stringValue: updatedStringValue2
+				}], notUpdated: [deepClone(testInstance3)]
 			};
 		},
 		input: {
@@ -130,7 +172,10 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			updateAction: async (collection, inserted) => {
 				const _test1 = inserted.find(_item => _item._uniqueId === testInstance1._uniqueId);
 				const _test2 = inserted.find(_item => _item._uniqueId === testInstance2._uniqueId);
-				await collection.update.all([{_id: _test1!._id, stringValue: updatedStringValue1}, {_id: _test2!._id, stringValue: updatedStringValue2}]);
+				await collection.update.all([{_id: _test1!._id, stringValue: updatedStringValue1}, {
+					_id: _test2!._id,
+					stringValue: updatedStringValue2
+				}]);
 			}
 		}
 	},
@@ -186,10 +231,10 @@ export const TestSuite_FirestoreV2_Update: Test = {
 		result.updated.forEach((_preDBUpdated) => {
 			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBUpdated._uniqueId);
 			expect(sortedInserted[_itemIndex].__updated).to.be.lte(sortedRemaining[_itemIndex].__updated);
-		})
+		});
 		result.notUpdated?.forEach((_preDBNotUpdated) => {
 			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBNotUpdated._uniqueId);
 			expect(sortedInserted[_itemIndex].__updated).to.eql(sortedRemaining[_itemIndex].__updated);
-		})
+		});
 	}
 };
