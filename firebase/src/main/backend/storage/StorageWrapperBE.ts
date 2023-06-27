@@ -32,7 +32,7 @@ export class StorageWrapperBE
 
 	// readonly storage: FirebaseType_Storage;
 	private storage: FirebaseType_Storage;
-	private readonly isEmulator?: boolean;
+	readonly isEmulator?: boolean;
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
@@ -83,7 +83,7 @@ export class BucketWrapper {
 
 	async getFile(pathToRemoteFile: string): Promise<FileWrapper> {
 		// @ts-ignore
-		return new FileWrapper(pathToRemoteFile, await this.bucket.file(pathToRemoteFile), this);
+		return new FileWrapper(pathToRemoteFile, await this.bucket.file(pathToRemoteFile), this, this.storage.isEmulator);
 	}
 
 	async listFiles(folder: string = '', filter: (file: File) => boolean = () => true): Promise<File[]> {
@@ -124,11 +124,14 @@ export class FileWrapper {
 	readonly file: File;
 	readonly path: string;
 	readonly bucket: BucketWrapper;
+	private readonly isEmulator?: boolean;
 
-	private constructor(path: string, file: File, bucket: BucketWrapper) {
+
+	private constructor(path: string, file: File, bucket: BucketWrapper, isEmulator?: boolean) {
 		this.file = file;
 		this.bucket = bucket;
 		this.path = path;
+		this.isEmulator = isEmulator;
 	}
 
 	async getWriteSecuredUrl(contentType: string, expiresInMs: number) {
@@ -234,6 +237,16 @@ export class FileWrapper {
 	}
 
 	private async getSignedUrl(options: GetSignedUrlConfig) {
+		if (this.isEmulator) {
+			await this.makePublic();
+
+			return {
+				fileName: this.path,
+				securedUrl: this.file.publicUrl(),
+				publicUrl: this.file.publicUrl()
+			};
+		}
+
 		const results = await this.file.getSignedUrl(options);
 		const url = results[0];
 

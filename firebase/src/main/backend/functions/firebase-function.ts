@@ -17,8 +17,7 @@
  */
 import {Change, CloudFunction, EventContext, RuntimeOptions} from 'firebase-functions';
 
-import * as express from 'express';
-import {Response} from 'express';
+import {Express, Request, Response} from 'express';
 import {
 	__stringify,
 	addItemToArray,
@@ -38,8 +37,8 @@ import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
 import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';
 
 
-export interface Request
-	extends express.Request {
+export interface LocalRequest
+	extends Request {
 	rawBody: Buffer;
 }
 
@@ -98,7 +97,7 @@ export abstract class FirebaseFunction<Config = any>
 
 export class Firebase_ExpressFunction
 	implements FirebaseFunctionInterface {
-	private readonly express: express.Express;
+	private readonly express: Express;
 	private function!: HttpsFunction;
 	private toBeExecuted: (() => void | Promise<void>)[] = [];
 	private isReady: boolean = false;
@@ -106,7 +105,7 @@ export class Firebase_ExpressFunction
 	private name: string = 'api';
 	static config: HttpsOptions = {};
 
-	constructor(_express: express.Express) {
+	constructor(_express: Express) {
 		this.express = _express;
 	}
 
@@ -127,12 +126,14 @@ export class Firebase_ExpressFunction
 		if (this.function)
 			return this.function;
 
-		const realFunction: HttpsFunction = onRequest(Firebase_ExpressFunction.config, this.express as (request: Request, response: express.Response) => void | Promise<void>);
-		return this.function = onRequest(Firebase_ExpressFunction.config, (req: Request, res: Response) => {
-			if (this.isReady)
+		const realFunction: HttpsFunction = onRequest(Firebase_ExpressFunction.config, this.express as (request: LocalRequest, response: Response) => void | Promise<void>);
+		return this.function = onRequest(Firebase_ExpressFunction.config, (req: LocalRequest, res: Response) => {
+			if (this.isReady) { // @ts-ignore
 				return realFunction(req, res);
+			}
 
 			return new Promise((resolve) => {
+				// @ts-ignore
 				addItemToArray(this.toBeExecuted, () => realFunction(req, res));
 				this.toBeResolved = resolve;
 			});

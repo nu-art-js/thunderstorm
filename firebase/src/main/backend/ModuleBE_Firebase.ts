@@ -27,7 +27,10 @@ import {readFileSync} from 'fs';
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
 
 
-type ConfigType = {};
+type ConfigType = {
+	isEmulator?: boolean
+};
+
 export const FIREBASE_DEFAULT_PROJECT_ID = 'local';
 
 export class ModuleBE_Firebase_Class
@@ -67,6 +70,12 @@ export class ModuleBE_Firebase_Class
 		}
 
 		this.logInfo(`Creating Firebase session for project id: ${authKey} `, config);
+
+		if (config)
+			config.isEmulator = this.config?.isEmulator;
+		else if (this.config.isEmulator)
+			config = {isEmulator: this.config.isEmulator};
+
 		session = new FirebaseSession_Admin(appId, config);
 		this.adminSessions[authKey] = session;
 		this.adminSessions[session.getProjectId()] = session;
