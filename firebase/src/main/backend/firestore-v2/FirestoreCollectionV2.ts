@@ -157,19 +157,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return (await (transaction ?? this.wrapper.firestore).getAll(...docs.map(_doc => _doc.ref))).map(_snapshot => _snapshot.data() as Type | undefined);
 	};
 
-	private async _query(ourQuery?: FirestoreQuery<Type>): Promise<FirestoreType_DocumentSnapshot[]> {
-		const myQuery = FirestoreInterfaceV2.buildQuery(this, ourQuery);
-		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot[];
-	}
-
-	/**
-	 * Get the db items from the query
-	 * @param ourQuery
-	 */
-	async queryItems(ourQuery: FirestoreQuery<Type>): Promise<Type[]> {
-		return (await this._query(ourQuery)).map(result => result.data() as Type);
-	}
-
 	private _customQuery = async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Type>[]> => {
 		const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
 		if (transaction)
@@ -187,22 +174,24 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## Create ##############################
+	protected _createAll = async (preDBItems: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
+		preDBItems.forEach(preDBItem => preDBItem._id ??= generateId());
+		const docs = this.doc.allItems(preDBItems);
+		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
+
+		if (transaction)
+			docs.forEach((doc, i) => transaction.create(doc.ref, dbItems[i]));
+		else
+			await this.bulkOperation(docs, 'create', dbItems);
+		return dbItems;
+	}
+
 	create = {
 		item: async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
 			preDBItem._id ??= generateId();
 			return await this.doc.item(preDBItem).create(preDBItem, transaction);
 		},
-		all: async (preDBItems: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
-			preDBItems.forEach(preDBItem => preDBItem._id ??= generateId());
-			const docs = this.doc.allItems(preDBItems);
-			const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
-
-			if (transaction)
-				docs.forEach((doc, i) => transaction.create(doc.ref, dbItems[i]));
-			else
-				await this.bulkOperation(docs, 'create', dbItems);
-			return dbItems;
-		},
+		all: this._createAll,
 	};
 
 	// ############################## Set ##############################
