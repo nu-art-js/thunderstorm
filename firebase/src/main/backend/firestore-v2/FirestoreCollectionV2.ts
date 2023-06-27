@@ -183,7 +183,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		all: async (preDBItems: PreDB<Type>[], transaction?: Transaction) => {
 			preDBItems.forEach(preDBItem => preDBItem._id ??= generateId());
 			const docWrappers = this.doc.allItems(preDBItems);
-			const dbItems = await Promise.all(docWrappers.map((doc, i) => doc.prepareForCreate(preDBItems[i],transaction)));
+			const dbItems = await Promise.all(docWrappers.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
 
 			if (transaction)
 				docWrappers.forEach((doc, i) => doc.create(dbItems[i], transaction));
@@ -447,7 +447,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	private _upsertAll = async (items: PreDB<Type>[] | UpdateObject<Type>[], transaction?: Transaction): Promise<Type[]> => {
-		const {filteredIn: hasIdItems, filteredOut: noIdItems} = filterInOut<PreDB<Type> | UpdateObject<Type>>(items, _item => exists(_item._id));
+		const {
+			filteredIn: hasIdItems,
+			filteredOut: noIdItems
+		} = filterInOut<PreDB<Type> | UpdateObject<Type>>(items, _item => exists(_item._id));
 		const toCreate = noIdItems; // If the items don't have _id, we need to create them
 		const toUpdate: UpdateObject<Type>[] = []; // We don't fill the toUpdate yet, since we don't know if items with _id also exist in Firestore
 
@@ -542,6 +545,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	protected onValidationError(instance: Type, results: InvalidResult<Type>) {
 		StaticLogger.logError(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
+		// console.error(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
 		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
 	}
