@@ -23,7 +23,8 @@ import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getStorage} from 'firebase-admin/storage';
 import {Response} from 'teeny-request';
-import * as Stream from 'stream';
+import {Writable} from 'stream';
+
 
 export const END_OF_STREAM = {END_OF_STREAM: 'END_OF_STREAM'};
 
@@ -125,7 +126,6 @@ export class FileWrapper {
 	readonly path: string;
 	readonly bucket: BucketWrapper;
 	private readonly isEmulator?: boolean;
-
 
 	private constructor(path: string, file: File, bucket: BucketWrapper, isEmulator?: boolean) {
 		this.file = file;
@@ -257,7 +257,7 @@ export class FileWrapper {
 		};
 	}
 
-	async writeToStream(feeder: (writable: Stream.Writable) => Promise<void | typeof END_OF_STREAM>): Promise<void> {
+	async writeToStream(feeder: (writable: Writable) => Promise<void | typeof END_OF_STREAM>): Promise<void> {
 		const writeable = this.file.createWriteStream({gzip: true});
 		const promise: Promise<void> = new Promise((resolve, reject) => {
 			writeable.on('close', () => resolve());
