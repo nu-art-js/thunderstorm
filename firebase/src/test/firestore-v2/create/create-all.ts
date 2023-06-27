@@ -1,11 +1,11 @@
-import {firestore, testInstance1} from '../_core/consts';
+import {firestore} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {deepClone} from '@nu-art/ts-common';
 import {CreateTest, createTestCases} from './consts';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {FirestoreException} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {createTests_dbDef} from './create';
+import {createTests_dbDef, duplicateObjectToCreate} from './create';
 
 const chai = require('chai');
 chai.use(chaiAsPromised);
@@ -16,11 +16,40 @@ export const TestCases_FB_CreateAll: CreateTest['testcases'] = [
 		description: 'object exists',
 		result: [],
 		input: {
-			value: [{...testInstance1, _id: testInstance1._uniqueId}],
+			value: [duplicateObjectToCreate],
 			check: async (collection, expectedResult) => {
-				const toCreate = deepClone({...testInstance1, _id: testInstance1._uniqueId});
+				const toCreate = deepClone(duplicateObjectToCreate);
 				// create twice and expect to reject
 				await expect(collection.create.all([toCreate])).to.be.rejectedWith(FirestoreException);
+			}
+		}
+	},
+	{
+		description: 'object exists with transaction',
+		result: [],
+		input: {
+			value: [duplicateObjectToCreate],
+			check: async (collection, expectedResult) => {
+				const toCreate = deepClone(duplicateObjectToCreate);
+				// create twice and expect to reject
+
+				await collection.runTransaction(async (transaction) => {
+					await expect(collection.create.all([toCreate])).to.be.rejectedWith();
+				});
+			}
+
+		}
+	},
+	{
+		description: 'with transaction',
+		result: [],
+		input: {
+			value: [],
+			check: async (collection, expectedResult) => {
+				const toCreate = deepClone(duplicateObjectToCreate);
+				// create twice and expect to reject
+
+				await collection.runTransaction(async (transaction) => await expect(collection.create.all([toCreate], transaction)).to.be.fulfilled);
 			}
 		}
 	}
