@@ -62,6 +62,20 @@ export const queryTestCases: QueryTest['testcases'] = [
 			}
 		}
 	},
+	// {
+	// 	description: '5 items',
+	// 	result: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+	// 	input: {
+	// 		value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+	// 		check: async (collection, expectedResult) => {
+	// 			await collection.runTransaction(async (transaction) => {
+	// 				const items = sortArray(await collection.query.custom({where: {}}), item => item.numeric);
+	// 				expect(items.length).to.eql(5);
+	// 				expect(true).to.eql(compare(items.map(removeDBObjectKeys), expectedResult));
+	// 			});
+	// 		}
+	// 	}
+	// },
 ];
 
 export const queryAllTestCases: CollectionTest['testcases'] = [
@@ -128,7 +142,11 @@ export const queryWithPagination: QueryTest['testcases'] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				const items = await collection.query.custom({where: {}, orderBy: [{key: 'stringValue', order: 'asc'}], limit: 3});
+				const items = await collection.query.custom({
+					where: {},
+					orderBy: [{key: 'stringValue', order: 'asc'}],
+					limit: 3
+				});
 
 				expect(items.length).to.eql(3);
 				expect(true).to.eql(expectedResult.every((item, index) => item._uniqueId === items[index]._uniqueId));
@@ -141,7 +159,11 @@ export const queryWithPagination: QueryTest['testcases'] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				const items = await collection.query.custom({where: {}, orderBy: [{key: 'stringValue', order: 'asc'}], limit: {page: 1, itemsCount: 2}});
+				const items = await collection.query.custom({
+					where: {},
+					orderBy: [{key: 'stringValue', order: 'asc'}],
+					limit: {page: 1, itemsCount: 2}
+				});
 
 				expect(items.length).to.eql(2);
 			}
