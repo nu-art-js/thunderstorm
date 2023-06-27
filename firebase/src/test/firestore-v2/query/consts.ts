@@ -6,6 +6,8 @@ import {DB_Type, TestInputValue} from '../_core/types';
 import {
 	CollectionTest,
 	getSingleItem,
+	id_inner1,
+	id_inner2,
 	id_outer1,
 	innerQueryCollection,
 	outerQueryCollection,
@@ -62,20 +64,20 @@ export const queryTestCases: QueryTest['testcases'] = [
 			}
 		}
 	},
-	// {
-	// 	description: '5 items',
-	// 	result: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
-	// 	input: {
-	// 		value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
-	// 		check: async (collection, expectedResult) => {
-	// 			await collection.runTransaction(async (transaction) => {
-	// 				const items = sortArray(await collection.query.custom({where: {}}), item => item.numeric);
-	// 				expect(items.length).to.eql(5);
-	// 				expect(true).to.eql(compare(items.map(removeDBObjectKeys), expectedResult));
-	// 			});
-	// 		}
-	// 	}
-	// },
+	{
+		description: '5 items in transaction',
+		result: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+		input: {
+			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+			check: async (collection, expectedResult) => {
+				await collection.runTransaction(async (transaction) => {
+					const items = sortArray(await collection.query.custom({where: {}}), item => item.numeric);
+					expect(items.length).to.eql(5);
+					expect(true).to.eql(compare(items.map(removeDBObjectKeys), expectedResult));
+				});
+			}
+		}
+	},
 ];
 
 export const queryAllTestCases: CollectionTest['testcases'] = [
@@ -98,8 +100,22 @@ export const queryAllTestCases: CollectionTest['testcases'] = [
 			outerCollection: outerQueryCollection,
 			innerCollection: innerQueryCollection,
 			check: async (collectionOuter, collectionInner) => {
-				const items = await collectionInner.query.all(['id_inner1', 'id_inner2']);
+				const items = await collectionInner.query.all([id_inner1, id_inner2]);
 				expect(items.length).to.eql(2);
+			}
+		}
+	},
+	{
+		description: '2 ids in transaction',
+		result: [testInstance1],
+		input: {
+			outerCollection: outerQueryCollection,
+			innerCollection: innerQueryCollection,
+			check: async (collectionOuter, collectionInner) => {
+				await collectionInner.runTransaction(async (transaction) => {
+					const items = await collectionInner.query.all([id_inner1, id_inner2]);
+					expect(items.length).to.eql(2);
+				});
 			}
 		}
 	},
@@ -122,7 +138,7 @@ export const queryComplexTestCases: CollectionTest['testcases'] = [
 		}
 	},
 	{
-		description: ' get all by identifier',
+		description: 'get all by identifier',
 		result: [testInstance1],
 		input: {
 			outerCollection: outerQueryCollection,
@@ -133,6 +149,20 @@ export const queryComplexTestCases: CollectionTest['testcases'] = [
 			}
 		}
 	},
+	{
+		description: 'get all by identifier in transaction',
+		result: [testInstance1],
+		input: {
+			outerCollection: outerQueryCollection,
+			innerCollection: innerQueryCollection,
+			check: async (collectionOuter, collectionInner) => {
+				await collectionInner.runTransaction(async (transaction) => {
+					const innerItems = await collectionInner.query.custom({where: {parentId: id_outer1}});
+					expect(innerItems.length).to.eql(5);
+				});
+			}
+		}
+	}
 ];
 
 export const queryWithPagination: QueryTest['testcases'] = [
@@ -154,7 +184,7 @@ export const queryWithPagination: QueryTest['testcases'] = [
 		}
 	},
 	{
-		description: 'skip 3 elements out of 5 and query the rest ',
+		description: 'only items 2# and 3#',
 		result: [],
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
@@ -166,6 +196,24 @@ export const queryWithPagination: QueryTest['testcases'] = [
 				});
 
 				expect(items.length).to.eql(2);
+			}
+		}
+	},
+	{
+		description: 'only items 2# and 3# in transaction',
+		result: [],
+		input: {
+			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
+			check: async (collection, expectedResult) => {
+				await collection.runTransaction(async (transaction) => {
+					const items = await collection.query.custom({
+						where: {},
+						orderBy: [{key: 'stringValue', order: 'asc'}],
+						limit: {page: 1, itemsCount: 2}
+					});
+
+					expect(items.length).to.eql(2);
+				});
 			}
 		}
 	}
