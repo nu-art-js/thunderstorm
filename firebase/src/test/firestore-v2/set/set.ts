@@ -46,7 +46,7 @@ export const TestCases_FB_Set: Test['testcases'] = [
 			toCreate: [],
 			setAction: async (collection, inserted) => {
 				await collection.runTransaction(async (transaction) => {
-					await collection.set.item(deepClone(testInstance1));
+					await collection.set.item(deepClone(testInstance1), transaction);
 				});
 			}
 		}
@@ -123,7 +123,7 @@ export const TestCases_FB_Set: Test['testcases'] = [
 					await collection.set.all([{..._test1, stringValue: updatedStringValue1}, {
 						..._test2,
 						stringValue: updatedStringValue2
-					}]);
+					}], transaction);
 				});
 			}
 		}

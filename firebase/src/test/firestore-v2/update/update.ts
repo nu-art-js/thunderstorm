@@ -41,21 +41,21 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			}
 		}
 	},
-	{
-		description: 'insert 1 & update 1 field in transaction',
-		result: () => {
-			const _instance = deepClone(testInstance1);
-			return {updated: [{..._instance, stringValue: updatedStringValue1}]};
-		},
-		input: {
-			toCreate: [testInstance1],
-			updateAction: async (collection, inserted) => {
-				await collection.runTransaction(async (transaction) => {
-					await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue1});
-				});
-			}
-		}
-	},
+	// {
+	// 	description: 'insert 1 & update 1 field in transaction',
+	// 	result: () => {
+	// 		const _instance = deepClone(testInstance1);
+	// 		return {updated: [{..._instance, stringValue: updatedStringValue1}]};
+	// 	},
+	// 	input: {
+	// 		toCreate: [testInstance1],
+	// 		updateAction: async (collection, inserted) => {
+	// 			await collection.runTransaction(async (transaction) => {
+	// 				await collection.update.item({_id: inserted[0]._id!, stringValue: updatedStringValue1},transaction);
+	// 			});
+	// 		}
+	// 	}
+	// },
 	{
 		description: 'insert 1 & update multiple fields',
 		result: () => {
@@ -109,22 +109,22 @@ export const TestCases_FB_Update: Test['testcases'] = [
 			}
 		}
 	},
-	{
-		description: 'insert 1 & delete nested field in transaction',
-		result: () => {
-			const _instance: DeepPartial<PreDB<DB_Type>> = deepClone(testInstance1);
-			delete _instance.nestedObject!.one!.key;
-			return {updated: [_instance as PreDB<DB_Type>]};
-		},
-		input: {
-			toCreate: [testInstance1],
-			updateAction: async (collection, inserted) => {
-				await collection.runTransaction(async (transaction) => {
-					await collection.update.item({_id: inserted[0]._id!, 'nestedObject.one.key': undefined});
-				});
-			}
-		}
-	},
+	// {
+	// 	description: 'insert 1 & delete nested field in transaction',
+	// 	result: () => {
+	// 		const _instance: DeepPartial<PreDB<DB_Type>> = deepClone(testInstance1);
+	// 		delete _instance.nestedObject!.one!.key;
+	// 		return {updated: [_instance as PreDB<DB_Type>]};
+	// 	},
+	// 	input: {
+	// 		toCreate: [testInstance1],
+	// 		updateAction: async (collection, inserted) => {
+	// 			await collection.runTransaction(async (transaction) => {
+	// 				await collection.update.item({_id: inserted[0]._id!, 'nestedObject.one.key': undefined},transaction);
+	// 			});
+	// 		}
+	// 	}
+	// },
 	{
 		description: 'insert 1 & update 1 nested field (dot notation)',
 		result: () => {

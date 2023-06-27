@@ -71,7 +71,7 @@ export const queryTestCases: QueryTest['testcases'] = [
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
 				await collection.runTransaction(async (transaction) => {
-					const items = sortArray(await collection.query.custom({where: {}}), item => item.numeric);
+					const items = sortArray(await collection.query.custom({where: {}}, transaction), item => item.numeric);
 					expect(items.length).to.eql(5);
 					expect(true).to.eql(compare(items.map(removeDBObjectKeys), expectedResult));
 				});
@@ -113,7 +113,7 @@ export const queryAllTestCases: CollectionTest['testcases'] = [
 			innerCollection: innerQueryCollection,
 			check: async (collectionOuter, collectionInner) => {
 				await collectionInner.runTransaction(async (transaction) => {
-					const items = await collectionInner.query.all([id_inner1, id_inner2]);
+					const items = await collectionInner.query.all([id_inner1, id_inner2], transaction);
 					expect(items.length).to.eql(2);
 				});
 			}
@@ -157,7 +157,7 @@ export const queryComplexTestCases: CollectionTest['testcases'] = [
 			innerCollection: innerQueryCollection,
 			check: async (collectionOuter, collectionInner) => {
 				await collectionInner.runTransaction(async (transaction) => {
-					const innerItems = await collectionInner.query.custom({where: {parentId: id_outer1}});
+					const innerItems = await collectionInner.query.custom({where: {parentId: id_outer1}}, transaction);
 					expect(innerItems.length).to.eql(5);
 				});
 			}
@@ -210,7 +210,7 @@ export const queryWithPagination: QueryTest['testcases'] = [
 						where: {},
 						orderBy: [{key: 'stringValue', order: 'asc'}],
 						limit: {page: 1, itemsCount: 2}
-					});
+					}, transaction);
 
 					expect(items.length).to.eql(2);
 				});
