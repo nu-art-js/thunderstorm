@@ -13,19 +13,50 @@ export const createTests_dbDef: DBDef<DB_Type> = {
 	dbName: 'firestore-create-tests',
 	entityName: 'create-test',
 	validator: tsValidateMustExist
-}
+};
+const duplicateObjectToCreate = {...testInstance1, _id: testInstance1._uniqueId};
 export const TestCases_FB_Create: CreateTest['testcases'] = [
 	...createTestCases,
 	{
 		description: 'object exists',
 		result: [],
 		input: {
-			value: [{...testInstance1, _id: testInstance1._uniqueId}],
+			value: [duplicateObjectToCreate],
 			check: async (collection, expectedResult) => {
-				const toCreate = deepClone({...testInstance1, _id: testInstance1._uniqueId});
+				const toCreate = deepClone(duplicateObjectToCreate);
 				// create twice and expect to reject
 
 				await expect(collection.create.item(toCreate)).to.be.rejectedWith();
+			}
+		}
+	},
+	{
+		description: 'object exists with transaction',
+		result: [],
+		input: {
+			value: [duplicateObjectToCreate],
+			check: async (collection, expectedResult) => {
+				const toCreate = deepClone(duplicateObjectToCreate);
+				// create twice and expect to reject
+
+				await collection.runTransaction(async (transaction) => {
+					await expect(collection.create.item(toCreate)).to.be.rejectedWith();
+				});
+			}
+
+		}
+	},
+	{
+		description: 'with transaction',
+		result: [],
+		input: {
+			value: [],
+			check: async (collection, expectedResult) => {
+				const toCreate = deepClone(duplicateObjectToCreate);
+				// create twice and expect to reject
+
+				await collection.runTransaction(async (transaction) => await expect(collection.create.item(toCreate, transaction)).to.be.fulfilled);
+
 			}
 		}
 	}
