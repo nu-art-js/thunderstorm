@@ -186,7 +186,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			const dbItems = await Promise.all(docWrappers.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
 
 			if (transaction)
-				docWrappers.forEach((doc, i) => doc.create(dbItems[i], transaction));
+				docWrappers.forEach((doc, i) => transaction.create(doc.ref, dbItems[i]));
 			else
 				await this.bulkOperation(docWrappers, dbItems, 'create');
 			return dbItems;
@@ -256,7 +256,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const docWrappers = this.doc.all(toSet.map(_item => _item[0]._id));
 		const dbItems = await Promise.all(docWrappers.map((doc, i) => doc.prepareForSet(...toSet[i], transaction)));
 		if (transaction)
-			return await Promise.all(docWrappers.map(async (_doc, i) => await _doc.ref.set(dbItems[i])))
+			return await Promise.all(docWrappers.map(async (doc, i) => await transaction.set(doc.ref, dbItems[i])));
 		return await this.bulkOperation(docWrappers, dbItems, 'set');
 	}
 
