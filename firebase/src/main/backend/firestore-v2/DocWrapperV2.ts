@@ -1,12 +1,27 @@
-import {currentTimeMillis, DB_Object, DefaultDBVersion, exists, PreDB} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, DB_Object, DefaultDBVersion, exists, PreDB, UniqueId} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
 import {FirestoreCollectionV2} from './FirestoreCollectionV2';
 import BulkWriter = firestore.BulkWriter;
 import UpdateData = firestore.UpdateData;
+import FieldValue = firestore.FieldValue;
 
-export type BulkOperation = 'create' | 'set' | 'delete';
+export type UpdateObject<Type> = { _id: UniqueId } & UpdateData<Type>;
+
+export type BulkOperation = 'create' | 'set' | 'update' | 'delete';
+
+export type BulkItem<Op extends BulkOperation, T extends DB_Object> =
+	Op extends 'delete' ? undefined :
+		Op extends 'update' ? UpdateObject<T> :
+			T;
+
+// type BulkItem<T extends DB_Object> = {
+// 	create: T,
+// 	set: T,
+// 	update: UpdateObject<T>,
+// 	delete: undefined
+// }
 
 export class DocWrapperV2<T extends DB_Object> {
 	readonly ref: FirestoreType_DocumentReference<T>;
@@ -28,15 +43,18 @@ export class DocWrapperV2<T extends DB_Object> {
 		return this;
 	};
 
-	addToBulk = (bulk: BulkWriter, operation: BulkOperation, item?: T) => {
+	addToBulk = <Op extends BulkOperation>(bulk: BulkWriter, operation: Op, item: BulkItem<Op, T>) => {
 		switch (operation) {
-			case "create":
-				bulk.create(this.ref, item);
+			case 'create':
+				bulk.create(this.ref, item as BulkItem<'create', T>);
 				break;
-			case "set":
-				bulk.set(this.ref, item);
+			case 'set':
+				bulk.set(this.ref, item as BulkItem<'set', T>);
 				break;
-			case "delete":
+			case 'update':
+				bulk.update(this.ref, item as BulkItem<'update', T>);
+				break;
+			case 'delete':
 				bulk.delete(this.ref);
 				break;
 		}
@@ -99,11 +117,39 @@ export class DocWrapperV2<T extends DB_Object> {
 		return newDBItem;
 	};
 
-	update = async (updateData: UpdateData<T>, transaction?: Transaction) => {
-		if (transaction)
-			transaction.update(this.ref, updateData);
-		else
-			await this.ref.update(updateData);
+	async prepareForUpdate(updateData: UpdateObject<T>, transaction?: Transaction) {
+		delete updateData.__created;
+		delete updateData._v;
+		updateData.__updated = currentTimeMillis();
+		this.updateDeletedFields(updateData);
+		await this.collection.assertUpdateData(updateData, transaction);
+		return updateData;
+	}
+
+	/**
+	 * Recursively replaces any undefined or null fields in DB item with firestore.FieldValue.delete()
+	 * @param updateData: data to update in DB item
+	 * @private
+	 */
+	private updateDeletedFields(updateData: UpdateObject<T | T[keyof T]>) {
+		if (typeof updateData !== 'object' || updateData === null)
+			return;
+
+		_keys(updateData).forEach(_key => {
+			const _value = updateData[_key];
+
+			if (!exists(_value)) {
+				(updateData[_key] as FieldValue) = FieldValue.delete();
+			} else {
+				this.updateDeletedFields(_value as UpdateObject<T | T[keyof T]>);
+			}
+		});
+	}
+
+	update = async (updateData: UpdateObject<T>) => {
+		updateData = await this.prepareForUpdate(updateData);
+		await this.ref.update(updateData);
+		return await this.get();
 	};
 
 	delete = async (transaction?: Transaction) => {
