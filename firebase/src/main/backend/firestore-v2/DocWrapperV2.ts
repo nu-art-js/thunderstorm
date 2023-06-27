@@ -43,7 +43,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		return this;
 	};
 
-	addToBulk = <Op extends BulkOperation>(bulk: BulkWriter, operation: Op, item: BulkItem<Op, T>) => {
+	addToBulk = <Op extends BulkOperation>(bulk: BulkWriter, operation: Op, item?: BulkItem<Op, T>) => {
 		switch (operation) {
 			case 'create':
 				bulk.create(this.ref, item as BulkItem<'create', T>);
