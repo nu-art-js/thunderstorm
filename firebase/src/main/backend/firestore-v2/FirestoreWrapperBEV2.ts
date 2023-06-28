@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {FirestoreCollectionV2,} from './FirestoreCollectionV2';
+import {FirestoreCollectionHooks, FirestoreCollectionV2,} from './FirestoreCollectionV2';
 import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
@@ -68,12 +68,12 @@ export class FirestoreWrapperBEV2
 		});
 	}
 
-	public getCollection<Type extends DB_Object>(dbDef: DBDef<Type>): FirestoreCollectionV2<Type> {
+	public getCollection<Type extends DB_Object>(dbDef: DBDef<Type>, hooks: FirestoreCollectionHooks<Type>): FirestoreCollectionV2<Type> {
 		const collection = this.collections[dbDef.dbName];
 		if (collection)
 			return collection;
 
-		return this.collections[dbDef.dbName] = new FirestoreCollectionV2<Type>(this, dbDef);
+		return this.collections[dbDef.dbName] = new FirestoreCollectionV2<Type>(this, dbDef, hooks);
 	}
 
 	public listen<Type extends DB_Object>(collection: FirestoreCollectionV2<Type>, doc: string) {

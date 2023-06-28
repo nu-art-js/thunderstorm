@@ -72,7 +72,8 @@ export class DocWrapperV2<T extends DB_Object> {
 		const now = currentTimeMillis();
 		preDBItem.__updated = preDBItem.__created = now;
 		preDBItem._v = DefaultDBVersion;
-		await this.collection.validateItem(preDBItem as T);
+		await this.collection.hooks?.prepareItemForDB(preDBItem as T, transaction);
+		this.collection.validateItem(preDBItem as T);
 		return preDBItem as T;
 	};
 
@@ -97,7 +98,8 @@ export class DocWrapperV2<T extends DB_Object> {
 		});
 
 		updatedDBItem.__updated = currentTimeMillis();
-		await this.collection.validateItem(updatedDBItem);
+		await this.collection.hooks?.prepareItemForDB(updatedDBItem as T, transaction);
+		this.collection.validateItem(updatedDBItem);
 		return updatedDBItem;
 	};
 
@@ -157,7 +159,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		if (!dbItem)
 			return;
 
-		await this.collection.canDeleteDocument([dbItem], transaction);
+		await this.collection.hooks?.canDeleteItems([dbItem], transaction);
 
 		if (transaction)
 			transaction.delete(this.ref);

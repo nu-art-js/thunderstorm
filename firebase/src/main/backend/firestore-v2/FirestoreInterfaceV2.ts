@@ -135,9 +135,4 @@ export class FirestoreInterfaceV2 {
 
 		return results[0];
 	}
-
-	static buildUniqueQuery<Type extends DB_Object>(collection: FirestoreCollectionV2<Type>, instance: Type): FirestoreQuery<Type> {
-		const where = collection.externalUniqueFilter(instance);
-		return {where};
-	}
 }

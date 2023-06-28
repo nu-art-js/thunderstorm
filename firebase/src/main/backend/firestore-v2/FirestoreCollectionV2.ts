@@ -36,20 +36,23 @@ import {
 	MUSTNeverHappenException,
 	PreDB,
 	StaticLogger,
-	Subset,
 	tsValidateResult,
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
-import {Clause_Where, DB_EntityDependency, FirestoreQuery} from '../../shared/types';
+import {FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
 import {BulkItem, BulkOperation, DocWrapperV2, UpdateObject} from './DocWrapperV2';
-import {canDeleteDispatcherV2} from './consts';
 import UpdateData = firestore.UpdateData;
+
+export type FirestoreCollectionHooks<Type extends DB_Object> = {
+	canDeleteItems: (dbItems: Type[], transaction?: Transaction) => Promise<void>,
+	prepareItemForDB: (dbInstance: Type, transaction?: Transaction) => Promise<void>
+}
 
 export const _EmptyQuery = Object.freeze({where: {}});
 export const dbIdLength = 32;
@@ -79,35 +82,18 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	readonly collection: FirestoreType_Collection;
 	readonly dbDef: DBDef<Type, any>;
 	private readonly validator: ValidatorTypeResolver<Type>;
+	readonly hooks?: FirestoreCollectionHooks<Type>;
 
-	/**
-	 * External unique as in there must never ever be two that answer the same query
-	 */
-	readonly externalUniqueFilter: ((object: Subset<Type>) => Clause_Where<Type>);
-
-	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type>) {
+	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type>, hooks?: FirestoreCollectionHooks<Type>) {
 		this.name = _dbDef.dbName;
 		this.wrapper = wrapper;
 		if (!/[a-z-]{3,}/.test(_dbDef.dbName))
 			StaticLogger.logWarning('Please follow name pattern for collections /[a-z-]{3,}/');
 
 		this.collection = wrapper.firestore.collection(_dbDef.dbName);
-		this.externalUniqueFilter = (item: Type) => {
-			if (!_dbDef.uniqueKeys)
-				throw new BadImplementationException('In order to use a unique query your collection MUST have a unique filter');
-
-			return _dbDef.uniqueKeys.reduce((where, key: keyof Type) => {
-				if (!exists(item[key]))
-					throw new BadImplementationException(
-						`No where properties are allowed to be null or undefined.\nWhile querying collection '${this.name}' we found property '${String(key)}' to be '${where[key]}'`);
-
-				// @ts-ignore
-				where[key] = item[key];
-				return where;
-			}, {} as Clause_Where<Type>);
-		};
 		this.dbDef = _dbDef;
 		this.validator = this.getValidator(_dbDef);
+		this.hooks = hooks;
 	}
 
 	getValidator = (dbDef: DBDef<Type>): ValidatorTypeResolver<Type> => {
@@ -174,7 +160,15 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## Create ##############################
+	protected _createItem = async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
+		preDBItem._id ??= generateId();
+		return await this.doc.item(preDBItem).create(preDBItem, transaction);
+	}
+
 	protected _createAll = async (preDBItems: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
+		if (preDBItems.length === 1)
+			return [await this._createItem(preDBItems[0], transaction)];
+
 		preDBItems.forEach(preDBItem => preDBItem._id ??= generateId());
 		const docs = this.doc.allItems(preDBItems);
 		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
@@ -187,10 +181,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	}
 
 	create = {
-		item: async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
-			preDBItem._id ??= generateId();
-			return await this.doc.item(preDBItem).create(preDBItem, transaction);
-		},
+		item: this._createItem,
 		all: this._createAll,
 	};
 
@@ -252,28 +243,28 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## Delete ##############################
-	protected async _deleteQuery(query: FirestoreQuery<Type>, transaction?: Transaction) {
+	protected _deleteQuery = async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
 		await this._deleteAll(await this.doc.query(query, transaction), transaction);
-	}
+	};
 
-	protected async _deleteAll(docs: DocWrapperV2<Type>[], transaction?: Transaction) {
+	protected _deleteAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction) => {
 		const dbItems = filterInstances(await this.getAll(docs));
-		await this.canDeleteDocument(dbItems, transaction);
+		await this.hooks?.canDeleteItems(dbItems, transaction);
 		if (transaction)
 			docs.forEach(doc => doc.delete(transaction));
 		else
 			await this.bulkOperation(docs, 'delete');
-	}
+	};
 
-	async deleteCollection() {
+	deleteCollection = async () => {
 		const refs = await this.collection.listDocuments();
 		const bulk = this.wrapper.firestore.bulkWriter();
 		refs.forEach(_ref => bulk.delete(_ref));
 		await bulk.close();
-	}
+	};
 
 	delete = {
 		unique: (id: string, transaction?: Transaction) => this.doc.unique(id).delete(transaction),
@@ -325,25 +316,5 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		// console.error(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
 		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
-	}
-
-	/**
-	 * Override this method to provide actions or assertions to be executed before the deletion happens.
-	 * @param transaction - The transaction object
-	 * @param dbItems - The DB entry that is going to be deleted.
-	 */
-	async canDeleteDocument(dbItems: Type[], transaction?: Transaction) {
-		const dependencies = await this.collectDependencies(dbItems, transaction);
-		if (dependencies)
-			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({
-				type: 'has-dependencies',
-				body: dependencies
-			});
-	}
-
-	async collectDependencies(dbInstances: Type[], transaction?: Transaction) {
-		const potentialErrors = await canDeleteDispatcherV2.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
-		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
-		return dependencies.length > 0 ? dependencies : undefined;
 	}
 }
