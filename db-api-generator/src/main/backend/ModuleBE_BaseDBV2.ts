@@ -46,7 +46,7 @@ export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfi
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof Type = '_id'>
+export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof Type = '_id'>
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerActV2 {
 	// private static DeleteHardLimit = 250;
