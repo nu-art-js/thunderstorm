@@ -21,7 +21,7 @@
  */
 
 import {ModuleManager} from './module-manager';
-import {BadImplementationException} from './exceptions';
+import {BadImplementationException} from './exceptions/exceptions';
 import {merge} from '../utils/merge-tools';
 import {Logger} from './logger/Logger';
 import {LogLevel} from './logger/types';

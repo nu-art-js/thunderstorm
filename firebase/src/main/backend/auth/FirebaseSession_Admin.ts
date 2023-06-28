@@ -29,7 +29,7 @@ import {ThisShouldNotHappenException} from '@nu-art/ts-common';
  Represents an admin session for interacting with Firebase services.
  */
 export class FirebaseSession_Admin
-    extends FirebaseSession<JWTInput & { databaseURL?: string } | undefined> {
+    extends FirebaseSession<JWTInput & { databaseURL?: string, isEmulator?: boolean } | undefined> {
 
     constructor(sessionName: string, config?: any) {
         super(config, sessionName);

@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {CustomException} from '../core/exceptions';
 import {_keys} from '../utils/object-tools';
 import {TS_Object} from '../utils/types';
+import {CustomException} from '../core/exceptions/exceptions';
 
 
 /**

@@ -24,14 +24,15 @@
  */
 import {
 	_keys,
+	ApiException,
 	BadImplementationException,
 	composeUrl,
-	dispatch_onServerError,
+	currentTimeMillis,
+	dispatch_onApplicationException,
 	isErrorOfType,
 	Logger,
 	LogLevel,
 	MUSTNeverHappenException,
-	ServerErrorSeverity,
 	tsValidate,
 	TypedMap,
 	ValidationException,
@@ -44,7 +45,6 @@ import {HttpServer} from './HttpServer';
 // noinspection TypeScriptPreferShortImport
 import {ApiDef, BodyApi, QueryApi, QueryParams, TypedApi} from '../../../shared';
 import {assertProperty} from '../../utils/to-be-removed';
-import {ApiException,} from '../../exceptions';
 import {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from '../../utils/types';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {
@@ -88,7 +88,12 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	}
 
 	addMiddlewares(...middlewares: ServerApi_Middleware[]) {
-		this.middlewares = [...(this.middlewares || []), ...middlewares];
+		(this.middlewares || (this.middlewares = [])).push(...middlewares);
+		return this;
+	}
+
+	addMiddleware(middleware: ServerApi_Middleware) {
+		(this.middlewares || (this.middlewares = [])).push(middleware);
 		return this;
 	}
 
@@ -136,6 +141,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	assertProperty = assertProperty;
 
 	call = async (req: ExpressRequest, res: ExpressResponse) => {
+		const startedAt = currentTimeMillis();
 		const response: ApiResponse = new ApiResponse(this, res);
 
 		this.logInfo(`Intercepted Url: ${req.path}`);
@@ -207,7 +213,6 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			return await response.text(200, toReturn as string);
 		} catch (err: any) {
 			let e: any = err;
-			let severity: ServerErrorSeverity = ServerErrorSeverity.Warning;
 			if (typeof e === 'string')
 				e = new BadImplementationException(`String was thrown: ${e}`);
 
@@ -232,32 +237,8 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 			if (!apiException)
 				throw new MUSTNeverHappenException('MUST NEVER REACH HERE!!!');
 
-			if (apiException.responseCode >= 500)
-				severity = ServerErrorSeverity.Error;
-			else if (apiException.responseCode >= 400)
-				severity = ServerErrorSeverity.Warning;
-
-			switch (apiException.responseCode) {
-				case 401:
-					severity = ServerErrorSeverity.Debug;
-					break;
-
-				case 404:
-					severity = ServerErrorSeverity.Info;
-					break;
-
-				case 403:
-					severity = ServerErrorSeverity.Warning;
-					break;
-
-				case 500:
-					severity = ServerErrorSeverity.Critical;
-					break;
-			}
-
-			const message = await HttpServer.errorMessageComposer(memStorage, apiException);
 			try {
-				await dispatch_onServerError.dispatchModuleAsync(severity, HttpServer, message);
+				await dispatch_onApplicationException.dispatchModuleAsync(e, HttpServer, memStorage);
 			} catch (e: any) {
 				this.logError('Error while handing server error', e);
 			}
@@ -265,6 +246,8 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 				return response.serverError(apiException);
 
 			return response.exception(apiException);
+		} finally {
+			this.logInfo(`Url Complete in: ${req.path} - ${currentTimeMillis() - startedAt}ms`);
 		}
 	};
 

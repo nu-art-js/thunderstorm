@@ -60,4 +60,8 @@ export class FirestoreWrapperBE
 
 		return this.firestore.listCollections();
 	}
+
+	isEmulator(): boolean {
+		return !!process.env.FIRESTORE_EMULATOR_HOST || false;
+	}
 }

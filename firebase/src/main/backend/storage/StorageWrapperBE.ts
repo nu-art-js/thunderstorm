@@ -23,7 +23,10 @@ import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getStorage} from 'firebase-admin/storage';
 import {Response} from 'teeny-request';
+import {Writable} from 'stream';
 
+
+export const END_OF_STREAM = {END_OF_STREAM: 'END_OF_STREAM'};
 
 export class StorageWrapperBE
 	extends FirebaseBaseWrapper {
@@ -38,7 +41,7 @@ export class StorageWrapperBE
 
 	async getMainBucket(): Promise<BucketWrapper> {
 		// @ts-ignore
-		return new BucketWrapper('admin', await this.storage.bucket(), this);
+		return new BucketWrapper('admin', await this.storage.bucket(`gs://${this.firebaseSession.getProjectId()}.appspot.com`), this);
 	}
 
 	async getOrCreateBucket(bucketName?: string): Promise<BucketWrapper> {
@@ -49,7 +52,9 @@ export class StorageWrapperBE
 		if (!_bucketName.startsWith('gs://'))
 			throw new BadImplementationException('Bucket name MUST start with \'gs://\'');
 
-		const bucket = (await this.storage.bucket(_bucketName).get({autoCreate: true}))[0];
+		let bucket = this.storage.bucket(_bucketName);
+		if (!this.isEmulator())
+			bucket = (await bucket.get({autoCreate: true}))[0];
 		// @ts-ignore
 		return new BucketWrapper(_bucketName, bucket, this);
 	}
@@ -61,6 +66,10 @@ export class StorageWrapperBE
 		else
 			bucket = await this.getOrCreateBucket(bucketName);
 		return bucket.getFile(pathToRemoteFile);
+	}
+
+	isEmulator() {
+		return !!process.env.FIREBASE_STORAGE_EMULATOR_HOST || false;
 	}
 }
 
@@ -77,7 +86,7 @@ export class BucketWrapper {
 
 	async getFile(pathToRemoteFile: string): Promise<FileWrapper> {
 		// @ts-ignore
-		return new FileWrapper(pathToRemoteFile, await this.bucket.file(pathToRemoteFile), this);
+		return new FileWrapper(pathToRemoteFile, await this.bucket.file(pathToRemoteFile), this, this.storage.isEmulator);
 	}
 
 	async listFiles(folder: string = '', filter: (file: File) => boolean = () => true): Promise<File[]> {
@@ -118,11 +127,13 @@ export class FileWrapper {
 	readonly file: File;
 	readonly path: string;
 	readonly bucket: BucketWrapper;
+	private readonly isEmulator?: boolean;
 
-	private constructor(path: string, file: File, bucket: BucketWrapper) {
+	private constructor(path: string, file: File, bucket: BucketWrapper, isEmulator?: boolean) {
 		this.file = file;
 		this.bucket = bucket;
 		this.path = path;
+		this.isEmulator = isEmulator;
 	}
 
 	async getWriteSecuredUrl(contentType: string, expiresInMs: number) {
@@ -228,6 +239,16 @@ export class FileWrapper {
 	}
 
 	private async getSignedUrl(options: GetSignedUrlConfig) {
+		if (this.isEmulator) {
+			await this.makePublic();
+
+			return {
+				fileName: this.path,
+				securedUrl: this.file.publicUrl(),
+				publicUrl: this.file.publicUrl()
+			};
+		}
+
 		const results = await this.file.getSignedUrl(options);
 		const url = results[0];
 
@@ -236,6 +257,22 @@ export class FileWrapper {
 			securedUrl: url,
 			publicUrl: encodeURI(`https://storage.googleapis.com/${this.bucket.bucketName.replace(`gs://`, '')}${this.path}`)
 		};
+	}
+
+	async writeToStream(feeder: (writable: Writable) => Promise<void | typeof END_OF_STREAM>): Promise<void> {
+		const writeable = this.file.createWriteStream({gzip: true});
+		const promise: Promise<void> = new Promise((resolve, reject) => {
+			writeable.on('close', () => resolve());
+			writeable.on('error', (e) => reject(e));
+		});
+
+		let data;
+		do {
+			data = await feeder(writeable);
+		} while (data !== END_OF_STREAM);
+
+		writeable.end();
+		return promise;
 	}
 
 	async makePublic(): Promise<MakeFilePublicResponse> {

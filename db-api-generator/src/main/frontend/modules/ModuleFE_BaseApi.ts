@@ -20,11 +20,11 @@
  */
 
 import {ApiDefCaller, BaseHttpRequest, HttpException, IndexKeys, QueryParams, TypedApi} from '@nu-art/thunderstorm';
-import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBDef, DBSyncData,} from '../shared';
+import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBSyncData,} from '../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
-import {BadImplementationException, DB_BaseObject, DB_Object, merge, PreDB, TypedMap} from '@nu-art/ts-common';
+import {BadImplementationException, DB_BaseObject, DB_Object, DBDef, merge, PreDB, TypedMap} from '@nu-art/ts-common';
 
 import {DBApiFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
@@ -127,7 +127,7 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 
 	protected cleanUp = (toUpsert: PreDB<DBType>) => {
 		return toUpsert;
-	}
+	};
 
 	private updatePending<API extends TypedApi<any, any, any, any>>(item: DB_BaseObject, request: BaseHttpRequest<API>, requestType: RequestType) {
 		const id = item._id;

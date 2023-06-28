@@ -19,15 +19,24 @@
  * limitations under the License.
  */
 
-import {Clause_Where, FirestoreQuery,} from '@nu-art/firebase';
-import {__stringify, _values, DB_BaseObject, DB_Object, Module, PreDB} from '@nu-art/ts-common';
+import {
+	__stringify,
+	_values,
+	ApiException,
+	DB_BaseObject,
+	DB_Object,
+	DB_Object_Metadata,
+	Metadata,
+	Module,
+	PreDB
+} from '@nu-art/ts-common';
 
 import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
-import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {_EmptyQuery, DBApiDefGeneratorIDB, UpgradeCollectionBody} from '../shared';
-import {DB_Object_Metadata, Metadata} from '../shared/types';
 import {DBApiConfig, ModuleBE_BaseDB} from './ModuleBE_BaseDB';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 
 
 /**
@@ -71,7 +80,7 @@ export class ModuleBE_BaseApi_Class<DBType extends DB_Object, ConfigType extends
 	private _upgradeCollection = async (body: UpgradeCollectionBody, mem: MemStorage) => {
 		const forceUpdate = body.forceUpdate || false;
 		// this should be paginated
-		let items = (await this.dbModule.collection.query(_EmptyQuery));
+		let items = (await this.dbModule.collection.query(_EmptyQuery)) as DBType[];
 		if (!forceUpdate)
 			items = items.filter(item => item._v !== this.dbModule.dbDef.versions![0]);
 		await this.dbModule.upgradeInstances(items, mem);

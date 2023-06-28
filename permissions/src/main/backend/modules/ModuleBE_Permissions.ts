@@ -33,8 +33,7 @@ import {
 	Response_UsersCFsByShareGroups,
 	UserUrlsPermissions
 } from '../shared';
-import {Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
-import {UI_Account} from '@nu-art/user-account';
+import {Header_AccountId, Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
 import {AssertSecretMiddleware} from '@nu-art/thunderstorm/backend/modules/proxy/assert-secret-middleware';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
@@ -82,7 +81,7 @@ export class ModuleBE_Permissions_Class
 		addRoutes([
 			createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, Middleware_ValidateSession),
 			new ServerApi_UserCFsByShareGroups(),
-			createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups, Middleware_ValidateSession),
+			createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups),
 			createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
 			createQueryServerApi(ApiDef_Permissions.v1.registerProject, this.registerProject)
 		]);
@@ -97,12 +96,11 @@ export class ModuleBE_Permissions_Class
 
 	getProjectIdentity = () => this.config.project;
 
-	async getUserUrlsPermissions(body: Request_UserUrlsPermissions, middleware: [UI_Account]) {
-		const account = middleware[0];
+	async getUserUrlsPermissions(body: Request_UserUrlsPermissions, request: ExpressRequest) {
 
 		const projectId: string = body.projectId;
 		const urlsMap: UserUrlsPermissions = body.urls;
-		const userId: string = account._id;
+		const userId: string = Header_AccountId.get(request);
 		const requestCustomField: StringMap = body.requestCustomField;
 
 		const urls = Object.keys(urlsMap);

@@ -18,6 +18,7 @@
 import {
 	__stringify,
 	_keys,
+	ApiException,
 	auditBy,
 	BadImplementationException,
 	currentTimeMillis,
@@ -29,7 +30,8 @@ import {
 	Module,
 	NonEmptyArray,
 	TS_Object,
-	tsValidate
+	tsValidate,
+	tsValidateEmail
 } from '@nu-art/ts-common';
 
 import {FirestoreCollection, FirestoreTransaction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
@@ -44,8 +46,12 @@ import {
 	Response_Auth,
 	UI_Account
 } from './_imports';
-import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, HeaderKey} from '@nu-art/thunderstorm/backend';
-import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
+import {
+	addRoutes,
+	createBodyServerApi,
+	createQueryServerApi,
+	HeaderKey
+} from '@nu-art/thunderstorm/backend';
 import {QueryParams} from '@nu-art/thunderstorm';
 import {gzipSync, unzipSync} from 'zlib';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
@@ -130,7 +136,12 @@ export class ModuleBE_Account_Class
 		return this.accounts.queryUnique({where: {email}, select: ['email', '_id']});
 	}
 
-	listUsers = async (params: QueryParams) => ({accounts: (await this.accounts.getAll(['_id', 'email'])) as { email: string, _id: string }[]});
+	listUsers = async (params: QueryParams) => ({
+		accounts: (await this.accounts.getAll(['_id', 'email'])) as {
+			email: string,
+			_id: string
+		}[]
+	});
 
 	async listSessions() {
 		return this.sessions.getAll(['userId', 'timestamp']);

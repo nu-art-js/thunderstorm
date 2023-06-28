@@ -1,6 +1,6 @@
 import {ApiDef, HttpMethod, QueryApi, Request_BackupId, Response_BackupDocs} from '@nu-art/thunderstorm';
 import {addRoutes, AxiosHttpModule, createBodyServerApi, Storm} from '@nu-art/thunderstorm/backend';
-import {DB_Object, Module, TypedMap, BadImplementationException} from '@nu-art/ts-common';
+import {BadImplementationException, DB_Object, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiDef_SyncEnv, Request_FetchFromEnv} from '../shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
@@ -8,6 +8,7 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 type Config = {
 	urlMap: TypedMap<string>
+	fetchBackupDocsSecretsMap: TypedMap<string>
 }
 
 class ModuleBE_SyncEnv_Class
@@ -39,6 +40,8 @@ class ModuleBE_SyncEnv_Class
 		const response: Response_BackupDocs = await AxiosHttpModule
 			.createRequest(outputDef)
 			.setUrlParams(requestBody)
+			.addHeader('x-secret', this.config.fetchBackupDocsSecretsMap[body.env])
+			.addHeader('x-proxy', 'fetch-env')
 			.executeSync();
 
 		const wrongBackupIdDescriptor = response.backupDescriptors.find(descriptor => descriptor.backupId !== body.backupId);
@@ -70,7 +73,11 @@ class ModuleBE_SyncEnv_Class
 				return;
 			}
 
-			const signedUrlDef: ApiDef<QueryApi<any>> = {method: HttpMethod.GET, path: '', fullUrl: backupDescriptor.signedUrl};
+			const signedUrlDef: ApiDef<QueryApi<any>> = {
+				method: HttpMethod.GET,
+				path: '',
+				fullUrl: backupDescriptor.signedUrl
+			};
 			const backupFile: DB_Object[] = await AxiosHttpModule
 				.createRequest(signedUrlDef)
 				.executeSync();

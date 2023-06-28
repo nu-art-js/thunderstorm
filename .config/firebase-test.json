@@ -9,36 +9,24 @@
   "storage": {
     "rules": ".firebase_config/storage.rules"
   },
-  "remoteconfig": {
-    "template": ".firebase_config/remoteconfig.template.json"
-  },
   "functions": {
-    "ignore": [
-      "src",
-      ".config",
-      "dist-test",
-      "deploy.js",
-      "node_modules"
-    ],
     "predeploy": [
       "echo \"Trying to deploy LOCAL env... Failing\" && exit 2"
     ]
   },
   "emulators": {
-    "functions": {
-      "port": "5010"
-    },
     "database": {
       "port": "5012"
     },
     "firestore": {
       "port": "5013"
     },
-    "pubsub": {
-      "port": "5014"
+    "ui": {
+      "enabled": true,
+      "port": "5009"
     },
     "storage": {
-      "port": "5015"
+      "enabled": true
     }
   }
 }

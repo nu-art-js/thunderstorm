@@ -17,13 +17,21 @@
  * limitations under the License.
  */
 
-import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {auditBy, batchActionParallel, dbObjectToId, filterDuplicates, flatArray, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {
+	ApiException,
+	auditBy,
+	batchActionParallel,
+	dbObjectToId,
+	filterDuplicates,
+	flatArray,
+	MUSTNeverHappenException
+} from '@nu-art/ts-common';
 import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, Request_CreateGroup} from '../../shared';
-import {Clause_Where} from '@nu-art/firebase';
+import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {ModuleBE_PermissionDomain} from './ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionApi} from './ModuleBE_PermissionApi';
 import {ModuleBE_PermissionGroup} from '../assignment/ModuleBE_PermissionGroup';

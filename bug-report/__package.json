@@ -33,7 +33,7 @@
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/firebase": "$THUNDERSTORM_SDK_VERSION",
-    "@nu-art/storm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/slack": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/user-account": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/jira": "$THUNDERSTORM_SDK_VERSION",

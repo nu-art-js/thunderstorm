@@ -1,5 +1,5 @@
 import {__stringify, exists} from '../utils/tools';
-import {BadImplementationException} from '../core/exceptions';
+import {BadImplementationException} from '../core/exceptions/exceptions';
 
 
 export class MemStorage {
