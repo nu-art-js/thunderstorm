@@ -33,17 +33,15 @@ export class StorageWrapperBE
 
 	// readonly storage: FirebaseType_Storage;
 	private storage: FirebaseType_Storage;
-	readonly isEmulator?: boolean;
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
 		this.storage = getStorage(firebaseSession.app);
-		this.isEmulator = firebaseSession.isEmulator();
 	}
 
 	async getMainBucket(): Promise<BucketWrapper> {
 		// @ts-ignore
-		return new BucketWrapper('admin', await this.isEmulator ? this.storage.bucket : this.storage.bucket(), this);
+		return new BucketWrapper('admin', await this.storage.bucket(`gs://${this.firebaseSession.getProjectId()}.appspot.com`), this);
 	}
 
 	async getOrCreateBucket(bucketName?: string): Promise<BucketWrapper> {
@@ -55,7 +53,7 @@ export class StorageWrapperBE
 			throw new BadImplementationException('Bucket name MUST start with \'gs://\'');
 
 		let bucket = this.storage.bucket(_bucketName);
-		if (!this.isEmulator)
+		if (!this.isEmulator())
 			bucket = (await bucket.get({autoCreate: true}))[0];
 		// @ts-ignore
 		return new BucketWrapper(_bucketName, bucket, this);
@@ -68,6 +66,10 @@ export class StorageWrapperBE
 		else
 			bucket = await this.getOrCreateBucket(bucketName);
 		return bucket.getFile(pathToRemoteFile);
+	}
+
+	isEmulator() {
+		return !!process.env.FIREBASE_STORAGE_EMULATOR_HOST || false;
 	}
 }
 
