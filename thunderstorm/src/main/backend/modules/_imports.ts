@@ -31,3 +31,5 @@ export * from '../utils/to-be-removed';
 export * from './CleanupScheduler';
 export * from './backup/ModuleBE_Backup';
 export * from './backup/FirestoreBackupScheduler';
+export * from './backup/ModuleBE_BackupV2';
+export * from './backup/FirestoreBackupSchedulerV2';
