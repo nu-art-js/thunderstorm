@@ -25,7 +25,7 @@ import {ServerApi_Middleware} from '../../utils/types';
 import {HeaderKey} from '../server/HeaderKey';
 import {TypedApi} from '../../../shared';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {MemKey_HttpRequestOriginalUrl} from '../server/consts';
+import {MemKey_HttpRequestPath} from '../server/consts';
 
 
 type ProxyConfig = {
@@ -86,7 +86,7 @@ export class ModuleBE_RemoteProxy_Class<Config extends RemoteProxyConfig>
 		if (expectedSecret.secret !== secret)
 			throw new ApiException(403, `Secret does not match for proxyId: ${proxyId}`);
 
-		const requestUrl = MemKey_HttpRequestOriginalUrl.get(mem);
+		const requestUrl = MemKey_HttpRequestPath.get(mem);
 		if (!expectedSecret.urls?.find(urlPattern => requestUrl.match(urlPattern)))
 			throw new ApiException(403, `Requested url '${requestUrl}' is not allowed from proxyId: ${proxyId}`);
 

@@ -17,28 +17,34 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	DB_BaseObject,
+	ImplementationMissingException,
+	Module,
+	PreDB,
+	StringMap
+} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {addRoutes, ApiResponse, createBodyServerApi, createQueryServerApi, ExpressRequest, ServerApi, Storm} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
-	ApiStruct_Permissions,
 	DB_PermissionProject,
 	PredefinedGroup,
 	PredefinedUser,
 	Request_RegisterProject,
-	Request_UserCFsByShareGroups,
 	Request_UsersCFsByShareGroups,
 	Request_UserUrlsPermissions,
 	Response_UsersCFsByShareGroups,
 	UserUrlsPermissions
 } from '../shared';
-import {Header_AccountId, Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
 import {AssertSecretMiddleware} from '@nu-art/thunderstorm/backend/modules/proxy/assert-secret-middleware';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 type Config = {
@@ -47,32 +53,6 @@ type Config = {
 	predefinedUser?: PredefinedUser
 }
 
-class ServerApi_UserCFsByShareGroups
-	extends ServerApi<ApiStruct_Permissions['v1']['getUserCFsByShareGroups']> {
-
-	constructor() {
-		super(ApiDef_Permissions.v1.getUserCFsByShareGroups);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: Request_UserCFsByShareGroups) {
-		const account = await ModuleBE_Account.validateSession({}, request);
-		return ModuleBE_Permissions.getUserCFsByShareGroups(account._id, body.groupsIds);
-	}
-}
-
-// class ServerApi_RegisterExternalProject
-// 	extends ServerApi<ApiStruct_Permissions['v1']['registerExternalProject']> {
-//
-// 	constructor() {
-// 		super(ApiDef_Permissions.v1.registerExternalProject);
-// 	}
-//
-// 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: Request_RegisterProject) {
-// 		RemoteProxy.assertSecret(request);
-// 		await ModuleBE_Permissions._registerProject(body);
-// 	}
-// }
-
 export class ModuleBE_Permissions_Class
 	extends Module<Config> {
 
@@ -80,10 +60,10 @@ export class ModuleBE_Permissions_Class
 		super();
 		addRoutes([
 			createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, Middleware_ValidateSession),
-			new ServerApi_UserCFsByShareGroups(),
+			createBodyServerApi(ApiDef_Permissions.v1.getUserCFsByShareGroups, (body, mem) => this.getUserCFsByShareGroups(body.groupsIds, mem)),
 			createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups),
 			createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
-			createQueryServerApi(ApiDef_Permissions.v1.registerProject, this.registerProject)
+			createQueryServerApi(ApiDef_Permissions.v1.registerProject, (params, mem) => this.registerProject(mem))
 		]);
 	}
 
@@ -96,18 +76,18 @@ export class ModuleBE_Permissions_Class
 
 	getProjectIdentity = () => this.config.project;
 
-	async getUserUrlsPermissions(body: Request_UserUrlsPermissions, request: ExpressRequest) {
+	async getUserUrlsPermissions(body: Request_UserUrlsPermissions, mem: MemStorage) {
 
 		const projectId: string = body.projectId;
 		const urlsMap: UserUrlsPermissions = body.urls;
-		const userId: string = Header_AccountId.get(request);
+
 		const requestCustomField: StringMap = body.requestCustomField;
 
 		const urls = Object.keys(urlsMap);
 		const [userDetails, apiDetails] = await Promise.all(
 			[
-				ModuleBE_PermissionsAssert.getUserDetails(userId),
-				ModuleBE_PermissionsAssert.getApisDetails(urls, projectId)
+				ModuleBE_PermissionsAssert.getUserDetails(mem),
+				ModuleBE_PermissionsAssert.getApisDetails(urls, projectId, mem)
 			]
 		);
 
@@ -127,7 +107,7 @@ export class ModuleBE_Permissions_Class
 		}, {});
 	}
 
-	async getUsersCFsByShareGroups(body: Request_UsersCFsByShareGroups): Promise<Response_UsersCFsByShareGroups> {
+	async getUsersCFsByShareGroups(body: Request_UsersCFsByShareGroups, mem: MemStorage): Promise<Response_UsersCFsByShareGroups> {
 		const usersEmails = body.usersEmails;
 		const groupsIds = body.groupsIds;
 		const toRet: Response_UsersCFsByShareGroups = {};
@@ -136,14 +116,14 @@ export class ModuleBE_Permissions_Class
 			if (!account)
 				return;
 
-			toRet[email] = await this.getUserCFsByShareGroups(account._id, groupsIds);
+			toRet[email] = await this.getUserCFsByShareGroups(groupsIds, mem);
 		}));
 
 		return toRet;
 	}
 
-	async getUserCFsByShareGroups(userId: string, groupsIds: string[]): Promise<StringMap[]> {
-		const user = await ModuleBE_PermissionUserDB.queryUnique({accountId: userId});
+	async getUserCFsByShareGroups(groupsIds: string[], mem: MemStorage): Promise<StringMap[]> {
+		const user = await ModuleBE_PermissionUserDB.queryUnique({accountId: MemKey_AccountId.get(mem)}, mem);
 		const userCFs: StringMap[] = [];
 		if (!user.groups)
 			return userCFs;
@@ -161,7 +141,7 @@ export class ModuleBE_Permissions_Class
 		return userCFs;
 	}
 
-	registerProject = async () => {
+	registerProject = async (mem: MemStorage) => {
 		const routes: string[] = Storm.getInstance().getRoutes().reduce((carry: string[], httpRoute) => {
 			if (httpRoute.path !== '*')
 				carry.push(httpRoute.path);
@@ -176,12 +156,12 @@ export class ModuleBE_Permissions_Class
 			predefinedUser: this.config.predefinedUser
 		};
 
-		return this._registerProject(projectRoutes);
+		return this._registerProject(projectRoutes, mem);
 	};
 
-	async _registerProject(registerProject: Request_RegisterProject) {
+	async _registerProject(registerProject: Request_RegisterProject, mem: MemStorage) {
 		const project = registerProject.project;
-		await ModuleBE_PermissionProject.upsert(project);
+		await ModuleBE_PermissionProject.upsert(project, mem);
 		const id = project._id;
 		if (!id)
 			throw new BadImplementationException('register project is missing an id');
@@ -191,7 +171,7 @@ export class ModuleBE_Permissions_Class
 		if (!predefinedGroups?.length)
 			return;
 
-		await ModuleBE_PermissionGroup.upsertPredefinedGroups(id, project.name, predefinedGroups);
+		await ModuleBE_PermissionGroup.upsertPredefinedGroups(id, project.name, predefinedGroups, mem);
 
 		const predefinedUser = registerProject.predefinedUser;
 		if (!predefinedUser)
@@ -213,7 +193,7 @@ export class ModuleBE_Permissions_Class
 				customField
 			};
 		});
-		await ModuleBE_PermissionUserDB.upsert({...predefinedUser, groups: groupsUser});
+		await ModuleBE_PermissionUserDB.upsert({...predefinedUser, groups: groupsUser}, mem);
 	}
 }
 

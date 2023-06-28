@@ -52,7 +52,7 @@ import {
 	MemKey_HttpRequestBody,
 	MemKey_HttpRequestHeaders,
 	MemKey_HttpRequestMethod,
-	MemKey_HttpRequestOriginalUrl,
+	MemKey_HttpRequestPath,
 	MemKey_HttpRequestQuery,
 	MemKey_HttpRequestUrl, MemKey_HttpResponse
 } from './consts';
@@ -182,7 +182,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 		MemKey_HttpRequestQuery.set(memStorage, reqQuery);
 		MemKey_HttpRequestUrl.set(memStorage, req.url);
 		MemKey_HttpRequestMethod.set(memStorage, this.apiDef.method);
-		MemKey_HttpRequestOriginalUrl.set(memStorage, req.path);
+		MemKey_HttpRequestPath.set(memStorage, req.path);
 		MemKey_HttpRequestBody.set(memStorage, body);
 
 		try {
