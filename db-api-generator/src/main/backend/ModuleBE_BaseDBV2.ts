@@ -20,15 +20,17 @@
  */
 
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
-import {ApiException, DB_Object, DBDef, filterInstances, Module} from '@nu-art/ts-common';
-import {ExpressRequest, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {ApiException, Day, DB_Object, DBDef, filterInstances, Module} from '@nu-art/ts-common';
+import {ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
 import {_EmptyQuery, Response_DBSync} from '../shared';
-import {FirestoreCollectionV2} from "@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2";
-import {firestore} from "firebase-admin";
-import {canDeleteDispatcherV2} from "@nu-art/firebase/backend/firestore-v2/consts";
+import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
+import {firestore} from 'firebase-admin';
+import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
+import {OnFirestoreBackupSchedulerActV2} from '@nu-art/thunderstorm/backend/modules/backup/FirestoreBackupSchedulerV2';
+import {FirestoreBackupDetailsV2} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_BackupV2';
 import Transaction = firestore.Transaction;
 
 
@@ -46,7 +48,7 @@ export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfi
  */
 export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof Type = '_id'>
 	extends Module<ConfigType>
-	implements OnFirestoreBackupSchedulerAct {
+	implements OnFirestoreBackupSchedulerActV2 {
 	// private static DeleteHardLimit = 250;
 	public collection!: FirestoreCollectionV2<Type>;
 	readonly dbDef: DBDef<Type, any>;
@@ -68,7 +70,10 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 	 */
 	init() {
 		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestoreV2();
-		this.collection = firestore.getCollection<Type>(this.dbDef, {canDeleteItems: this.canDeleteItems, prepareItemForDB: this._prepareItemForDB});
+		this.collection = firestore.getCollection<Type>(this.dbDef, {
+			canDeleteItems: this.canDeleteItems,
+			prepareItemForDB: this._prepareItemForDB
+		});
 	}
 
 	getCollectionName() {
@@ -79,15 +84,14 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 		return this.config.itemName;
 	}
 
-	// __onFirestoreBackupSchedulerAct(): FirestoreBackupDetails<Type>[] {
-	// 	return [{
-	// 		backupQuery: this.resolveBackupQuery(),
-	// 		collection: this.collection,
-	// 		keepInterval: 7 * Day,
-	// 		minTimeThreshold: Day,
-	// 		moduleKey: this.config.collectionName
-	// 	}];
-	// }
+	__onFirestoreBackupSchedulerActV2(): FirestoreBackupDetailsV2<Type>[] {
+		return [{
+			queryFunction: () => this.query.custom(this.resolveBackupQuery()),
+			keepInterval: 7 * Day,
+			minTimeThreshold: Day,
+			moduleKey: this.config.collectionName
+		}];
+	}
 
 	protected resolveBackupQuery(): FirestoreQuery<Type> {
 		return _EmptyQuery;
@@ -141,6 +145,7 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 			dbInstance._v = currentVersion;
 		}));
 	}
+
 	protected async upgradeItem(dbItem: Type, toVersion: string): Promise<void> {
 	}
 
