@@ -1,4 +1,4 @@
-import {_keys, currentTimeMillis, DB_Object, DefaultDBVersion, exists, PreDB, UniqueId} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, DB_Object, exists, PreDB, UniqueId} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
@@ -71,7 +71,7 @@ export class DocWrapperV2<T extends DB_Object> {
 	prepareForCreate = async (preDBItem: PreDB<T>, transaction?: Transaction): Promise<T> => {
 		const now = currentTimeMillis();
 		preDBItem.__updated = preDBItem.__created = now;
-		preDBItem._v = DefaultDBVersion;
+		preDBItem._v = this.collection.getVersion();
 		await this.collection.hooks?.prepareItemForDB(preDBItem as T, transaction);
 		this.collection.validateItem(preDBItem as T);
 		return preDBItem as T;

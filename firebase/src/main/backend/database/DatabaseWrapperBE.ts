@@ -130,6 +130,10 @@ export class DatabaseWrapperBE
 	public ref<T>(path: string) {
 		return new FirebaseRef<T>(this, path);
 	}
+
+	isEmulator(): boolean {
+		return !!process.env.FIREBASE_DATABASE_EMULATOR_HOST || false;
+	}
 }
 
 /**
