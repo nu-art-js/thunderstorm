@@ -120,6 +120,4 @@ export abstract class FirebaseSession<Config>
 			return this.messaging;
 		return this.messaging = new PushMessagesWrapperBE(this);
 	}
-
-	abstract isEmulator(): boolean;
 }

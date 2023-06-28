@@ -71,11 +71,6 @@ export class ModuleBE_Firebase_Class
 
 		this.logInfo(`Creating Firebase session for project id: ${authKey} `, config);
 
-		if (config)
-			config.isEmulator = this.config?.isEmulator;
-		else if (this.config.isEmulator)
-			config = {isEmulator: this.config.isEmulator};
-
 		session = new FirebaseSession_Admin(appId, config);
 		this.adminSessions[authKey] = session;
 		this.adminSessions[session.getProjectId()] = session;

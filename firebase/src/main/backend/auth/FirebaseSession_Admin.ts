@@ -62,9 +62,5 @@ export class FirebaseSession_Admin
     public getAuth() {
         return getAuth(this.app);
     }
-
-    public isEmulator(): boolean {
-        return this.config?.isEmulator || false;
-    }
 }
 

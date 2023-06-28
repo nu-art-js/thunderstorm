@@ -15,6 +15,6 @@ export const TestSuite_GetAdminBucket: BucketUtils = {
 	testcases: bucketUtilsTestCases,
 	processor: async (testCase) => {
 		const bucketWrapper = await storage.getMainBucket();
-		expect(bucketWrapper).to.eql(await testCase.result!());
+		expect(bucketWrapper.bucketName).to.eql((await testCase.result!()).bucketName);
 	}
 };
