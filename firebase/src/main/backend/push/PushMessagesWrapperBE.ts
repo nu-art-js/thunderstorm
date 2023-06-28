@@ -61,4 +61,8 @@ export class PushMessagesWrapperBE
 	async unsubscribeFromTopic(tokens: string[], topic: string): Promise<FirebaseType_SubscriptionResponse> {
 		return this.messaging.unsubscribeFromTopic(tokens, topic);
 	}
+
+	isEmulator(): boolean {
+		return false;
+	}
 }
