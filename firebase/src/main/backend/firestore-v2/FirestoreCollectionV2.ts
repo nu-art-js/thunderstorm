@@ -304,31 +304,16 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	 * A firestore transaction is run globally on the firestore project and not specifically on any collection, locking specific documents in the project.
 	 * @param processor: A set of read and write operations on one or more documents.
 	 */
-	async runTransaction<ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> {
+	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> => {
 		const firestore = this.wrapper.firestore;
 		return firestore.runTransaction<ReturnType>(processor);
-	}
+	};
 
 	getVersion = () => {
 		return this.dbDef.versions?.[0] || DefaultDBVersion;
 	};
 
-	async assertDBItem(dbItem: Type, transaction?: Transaction, request?: Express.Request) {
-		await this.upgradeDBItem([dbItem]);
-		await this.preUpsertProcessing(dbItem, transaction, request);
-		this.validateImpl(dbItem);
-		await this.assertUniqueness(dbItem, transaction, request);
-	}
-
-	private upgradeDBItem(dbItems: Type[]) {
-		//todo - maybe should be filled only in extending modules
-	}
-
-	private async preUpsertProcessing(dbItem: Type, transaction?: Transaction, request?: Express.Request) {
-		//todo - maybe should be filled only in extending modules
-	}
-
-	private validateImpl(dbItem: Type) {
+	validateItem(dbItem: Type) {
 		const results = tsValidateResult(dbItem, this.validator);
 		if (results) {
 			this.onValidationError(dbItem, results);
@@ -340,9 +325,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		// console.error(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
 		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
-	}
-
-	private assertUniqueness(dbItem: Type, transaction?: Transaction, request?: Express.Request) {
 	}
 
 	/**
