@@ -19,15 +19,17 @@
  * limitations under the License.
  */
 
-import {FirestoreQuery,} from '@nu-art/firebase';
-import {ApiException, Day, DB_Object, DBDef, Module} from '@nu-art/ts-common';
+import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
+import {ApiException, DB_Object, DBDef, filterInstances, Module} from '@nu-art/ts-common';
 import {ExpressRequest, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
-import {FirestoreTransaction, ModuleBE_Firebase,} from '@nu-art/firebase/backend';
+import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
 import {_EmptyQuery, Response_DBSync} from '../shared';
-import {FirestoreBackupDetails} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_Backup';
 import {FirestoreCollectionV2} from "@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2";
+import {firestore} from "firebase-admin";
+import {canDeleteDispatcherV2} from "@nu-art/firebase/backend/firestore-v2/consts";
+import Transaction = firestore.Transaction;
 
 
 export type BaseDBApiConfig = {
@@ -66,7 +68,7 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 	 */
 	init() {
 		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestoreV2();
-		this.collection = firestore.getCollection<Type>(this.dbDef);
+		this.collection = firestore.getCollection<Type>(this.dbDef, {canDeleteItems: this.canDeleteItems, prepareItemForDB: this._prepareItemForDB});
 	}
 
 	getCollectionName() {
@@ -77,15 +79,15 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 		return this.config.itemName;
 	}
 
-	__onFirestoreBackupSchedulerAct(): FirestoreBackupDetails<Type>[] {
-		return [{
-			backupQuery: this.resolveBackupQuery(),
-			collection: this.collection,
-			keepInterval: 7 * Day,
-			minTimeThreshold: Day,
-			moduleKey: this.config.collectionName
-		}];
-	}
+	// __onFirestoreBackupSchedulerAct(): FirestoreBackupDetails<Type>[] {
+	// 	return [{
+	// 		backupQuery: this.resolveBackupQuery(),
+	// 		collection: this.collection,
+	// 		keepInterval: 7 * Day,
+	// 		minTimeThreshold: Day,
+	// 		moduleKey: this.config.collectionName
+	// 	}];
+	// }
 
 	protected resolveBackupQuery(): FirestoreQuery<Type> {
 		return _EmptyQuery;
@@ -109,28 +111,9 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 	 * TO BE MOVED ABOVE THIS COMMENT
 	 */
 
-	private async _preUpsertProcessing(dbInstance: Type, transaction?: FirestoreTransaction, request?: ExpressRequest) {
-		await this.upgradeInstances([dbInstance]);
-		await this.preUpsertProcessing(dbInstance, transaction, request);
-	}
-
-	async upgradeInstances(dbInstances: Type[]) {
-		await Promise.all(dbInstances.map(async dbInstance => {
-			const instanceVersion = dbInstance._v;
-			const currentVersion = this.config.versions[0];
-
-			if (instanceVersion !== undefined && instanceVersion !== currentVersion)
-				try {
-					await this.upgradeInstance(dbInstance, currentVersion);
-				} catch (e: any) {
-					throw new ApiException(500, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`,
-						e.message);
-				}
-			dbInstance._v = currentVersion;
-		}));
-	}
-
-	protected async upgradeInstance(dbInstance: Type, toVersion: string): Promise<void> {
+	private async _prepareItemForDB(dbItem: Type, transaction?: Transaction) {
+		await this.upgradeInstances([dbItem]);
+		await this.prepareItemForDB(dbItem, transaction);
 	}
 
 	/**
@@ -140,7 +123,25 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
 	 * @param request
 	 */
-	protected async preUpsertProcessing(dbInstance: Type, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+	protected async prepareItemForDB(dbInstance: Type, transaction?: Transaction) {
+	}
+
+	async upgradeInstances(dbInstances: Type[]) {
+		await Promise.all(dbInstances.map(async dbInstance => {
+			const instanceVersion = dbInstance._v;
+			const currentVersion = this.config.versions[0];
+
+			if (instanceVersion !== undefined && instanceVersion !== currentVersion)
+				try {
+					await this.upgradeItem(dbInstance, currentVersion);
+				} catch (e: any) {
+					throw new ApiException(500, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`,
+						e.message);
+				}
+			dbInstance._v = currentVersion;
+		}));
+	}
+	protected async upgradeItem(dbItem: Type, toVersion: string): Promise<void> {
 	}
 
 	async promoteCollection() {
@@ -178,4 +179,31 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 			iteration++;
 		}
 	}
+
+	/**
+	 * Override this method to provide actions or assertions to be executed before the deletion happens.
+	 * @param transaction - The transaction object
+	 * @param dbItems - The DB entry that is going to be deleted.
+	 */
+	async canDeleteItems(dbItems: Type[], transaction?: Transaction) {
+		const dependencies = await this.collectDependencies(dbItems, transaction);
+		if (dependencies)
+			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({
+				type: 'has-dependencies',
+				body: dependencies
+			});
+	}
+
+	async collectDependencies(dbInstances: Type[], transaction?: Transaction) {
+		const potentialErrors = await canDeleteDispatcherV2.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
+		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
+		return dependencies.length > 0 ? dependencies : undefined;
+	}
+
+	// ############################## API ##############################
+	query = this.collection.query;
+	create = this.collection.create;
+	set = this.collection.set;
+	update = this.collection.update;
+	delete = this.collection.delete;
 }
