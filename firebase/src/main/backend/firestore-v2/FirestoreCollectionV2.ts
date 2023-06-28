@@ -40,7 +40,11 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -153,6 +157,17 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	query = {
 		unique: async (_id: UniqueId, transaction?: Transaction) => await this.doc.unique(_id).get(transaction),
+		uniqueCustom: async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
+			const thisShouldBeOnlyOne = await this.query.custom(query, transaction);
+			if (thisShouldBeOnlyOne.length !== 1) {
+				if (thisShouldBeOnlyOne.length > 1)
+					throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbName}`);
+				else
+					throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
+
+			}
+			return thisShouldBeOnlyOne[0];
+		},
 		all: async (_ids: UniqueId[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
 		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
 			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
@@ -163,7 +178,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	protected _createItem = async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
 		preDBItem._id ??= generateId();
 		return await this.doc.item(preDBItem).create(preDBItem, transaction);
-	}
+	};
 
 	protected _createAll = async (preDBItems: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
 		if (preDBItems.length === 1)
@@ -178,7 +193,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		else
 			await this.bulkOperation(docs, 'create', dbItems);
 		return dbItems;
-	}
+	};
 
 	create = {
 		item: this._createItem,
@@ -187,7 +202,10 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	// ############################## Set ##############################
 	protected _setAll = async (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
-		const {filteredIn: hasIdItems, filteredOut: noIdItems} = filterInOut<PreDB<Type> | Type>(items, _item => exists(_item._id));
+		const {
+			filteredIn: hasIdItems,
+			filteredOut: noIdItems
+		} = filterInOut<PreDB<Type> | Type>(items, _item => exists(_item._id));
 		const toCreate = noIdItems; // If the items don't have _id, we need to create them
 		const toSet: [Type, Type][] = []; // A tuple of the new item to set (0) and the current dbItem (1)
 
@@ -215,7 +233,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		else
 			await this.bulkOperation(docs, 'set', dbItems);
 		return dbItems;
-	}
+	};
 
 	set = {
 		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => {
@@ -231,7 +249,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const docs = this.doc.all(updateData.map(_data => _data._id));
 		const toUpdate: UpdateObject<Type>[] = await Promise.all(docs.map(async (_doc, i) => await _doc.prepareForUpdate(updateData[i])));
 		await this.bulkOperation(docs, 'update', toUpdate);
-		return await this.getAll(docs) as Type[]
+		return await this.getAll(docs) as Type[];
 	};
 
 	async assertUpdateData(updateData: UpdateData<Type>, transaction?: Transaction) {
@@ -247,7 +265,11 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
-		await this._deleteAll(await this.doc.query(query, transaction), transaction);
+		const docsToBeDeleted = await this.doc.query(query, transaction);
+		// Because we query for docs, these docs and their data must exist in Firestore.
+		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!); // Data must exist here.
+		await this._deleteAll(docsToBeDeleted, transaction);
+		return itemsToReturn;
 	};
 
 	protected _deleteAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction) => {

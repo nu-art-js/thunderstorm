@@ -167,5 +167,6 @@ export class DocWrapperV2<T extends DB_Object> {
 			await this.ref.delete();
 
 		this.cleanCache();
+		return dbItem;
 	};
 }

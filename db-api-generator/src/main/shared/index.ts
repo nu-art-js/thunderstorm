@@ -20,5 +20,6 @@
  */
 
 export * from './api';
+export * from './apiV2';
 export * from './sync-env';
 export * from './archiving/apis';
