@@ -86,7 +86,8 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 
 	__onFirestoreBackupSchedulerActV2(): FirestoreBackupDetailsV2<Type>[] {
 		return [{
-			queryFunction: () => this.query.custom(this.resolveBackupQuery()),
+			query: this.resolveBackupQuery(),
+			queryFunction: this.collection.query.custom,
 			keepInterval: 7 * Day,
 			minTimeThreshold: Day,
 			moduleKey: this.config.collectionName
