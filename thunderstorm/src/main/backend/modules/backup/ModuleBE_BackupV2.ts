@@ -14,17 +14,21 @@ import {
 } from '@nu-art/ts-common';
 import {ApiDef_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared';
 import {createQueryServerApi} from '../../core/typed-api';
-import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {END_OF_STREAM, FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {FilterKeys, FirestoreQuery} from '@nu-art/firebase';
 import {BackupDoc} from '../../../shared/backup-types';
 import {addRoutes} from '../ApiModule';
 import {OnFirestoreBackupSchedulerActV2, OnModuleCleanupV2} from './FirestoreBackupSchedulerV2';
+import {Transaction} from 'firebase-admin/firestore';
+import {Writable} from 'stream';
+import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 
 export type FirestoreBackupDetailsV2<T extends TS_Object> = {
 	moduleKey: string,
 	minTimeThreshold: number, // minimum time to pass before another backup can occur.
 	keepInterval?: number, // how long to keep
-	queryFunction: () => Promise<T[]>
+	queryFunction: (query: FirestoreQuery<T>, transaction?: Transaction) => Promise<T[]>,
+	query: FirestoreQuery<T>
 }
 
 const dispatch_onFirestoreBackupSchedulerActV2 = new Dispatcher<OnFirestoreBackupSchedulerActV2, '__onFirestoreBackupSchedulerActV2'>('__onFirestoreBackupSchedulerActV2');
@@ -34,6 +38,22 @@ type Config = {
 	excludedCollectionNames?: string[]
 }
 
+const CSVConfig = {
+	fieldSeparator: ',',
+	quoteStrings: '"',
+	decimalSeparator: '.',
+	showLabels: true,
+	showTitle: false,
+	useTextFile: false,
+	useBom: true,
+	useKeysAsHeaders: true,
+};
+
+/**
+ * This module is in charge of making a backup of the db in firebase storage,
+ * in order to test this module locally run firebase functions:shell command in a terminal
+ * when the firebase> shows up write the name of the function you want to run and call it "functionName()"
+ * **/
 class ModuleBE_BackupV2_Class
 	extends Module<Config> {
 	public collection!: FirestoreCollection<BackupDoc>;
@@ -91,6 +111,10 @@ class ModuleBE_BackupV2_Class
 			}, []);
 	};
 
+	private formatToCsv = (docArray: TS_Object[], moduleKey: string) => {
+		return docArray.map(doc => ({collectionName: moduleKey, _id: doc._id, document: doc}));
+	};
+
 	initiateBackup = async () => {
 		if (this.config.excludedCollectionNames)
 			this.logInfo(`Found excluded modules list: ${this.config.excludedCollectionNames}`);
@@ -116,6 +140,9 @@ class ModuleBE_BackupV2_Class
 		const backupId = generateHex(32);
 		const nowMs = currentTimeMillis();
 
+		this.logErrorBold(backups);
+
+
 		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
 		await Promise.all(backups.map(async (backupItem) => {
 			const query: FirestoreQuery<BackupDoc> = {
@@ -130,10 +157,38 @@ class ModuleBE_BackupV2_Class
 				return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
 
 			const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
-			const backupPath = `backup/firestore/${timeFormat}/${backupItem.moduleKey}.json`;
+			const backupPath = `backup/firestore/${timeFormat}/${backupItem.moduleKey}.csv`;
+			CSVModule.updateExporterSettings(CSVConfig);
+
 			try {
-				const toBackupData = await backupItem.queryFunction();
-				await (await bucket.getFile(backupPath)).write(toBackupData);
+				const backupFeeder = async (writable: Writable) => {
+					let page = 0;
+					let data;
+
+					do {
+						data = this.formatToCsv(await backupItem.queryFunction({...backupItem.query, limit: {page, itemsCount: 10000}}), backupItem.moduleKey);
+
+						if (data.length) {
+							const csv = CSVModule.export(data);
+
+							if (page === 0)
+								CSVModule.updateExporterSettings({
+									...CSVConfig,
+									showLabels: false,
+									useKeysAsHeaders: false
+								});
+
+							writable.write(csv.toString());
+						}
+
+						page++;
+					} while (data.length);
+
+					return END_OF_STREAM;
+				};
+
+				const file = await bucket.getFile(backupPath);
+				await file.writeToStream(backupFeeder);
 
 				this.logInfoBold('Upserting Backup for ' + backupItem.moduleKey);
 				await this.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath, backupId: backupId});
