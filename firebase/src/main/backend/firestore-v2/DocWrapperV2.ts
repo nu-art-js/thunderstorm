@@ -72,7 +72,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		const now = currentTimeMillis();
 		preDBItem.__updated = preDBItem.__created = now;
 		preDBItem._v = DefaultDBVersion;
-		await this.collection.assertDBItem(preDBItem as T, transaction);
+		await this.collection.validateItem(preDBItem as T);
 		return preDBItem as T;
 	};
 
@@ -97,7 +97,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		});
 
 		updatedDBItem.__updated = currentTimeMillis();
-		await this.collection.assertDBItem(updatedDBItem, transaction);
+		await this.collection.validateItem(updatedDBItem);
 		return updatedDBItem;
 	};
 

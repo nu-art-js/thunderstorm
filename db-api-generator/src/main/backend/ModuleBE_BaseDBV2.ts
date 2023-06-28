@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 
-import {Clause_Where, FirestoreQuery,} from '@nu-art/firebase';
-import {__stringify, _keys, ApiException, Day, DB_Object, DBDef, Module, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {FirestoreQuery,} from '@nu-art/firebase';
+import {ApiException, Day, DB_Object, DBDef, Module} from '@nu-art/ts-common';
 import {ExpressRequest, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
-import {FirestoreInterface, FirestoreTransaction, ModuleBE_Firebase,} from '@nu-art/firebase/backend';
+import {FirestoreTransaction, ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
 import {_EmptyQuery, Response_DBSync} from '../shared';
@@ -92,13 +92,11 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 	}
 
 	async querySync(syncQuery: FirestoreQuery<Type>, request: ExpressRequest): Promise<Response_DBSync<Type>> {
-		return this.runInTransaction(async transaction => {
-			const items = await transaction.query(this.collection, syncQuery);
-			const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>, transaction);
+		const items = await this.collection.query.custom(syncQuery);
+		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
 
-			await this.upgradeInstances(items);
-			return {toUpdate: items, toDelete: deletedItems};
-		});
+		await this.upgradeInstances(items);
+		return {toUpdate: items, toDelete: deletedItems};
 	}
 
 	/*
@@ -110,65 +108,6 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 	 *
 	 * TO BE MOVED ABOVE THIS COMMENT
 	 */
-
-	private async assertExternalQueryUnique(instance: Type, transaction: FirestoreTransaction): Promise<Type> {
-		const dbInstance: Type | undefined = await transaction.queryItem(this.collection, instance);
-		if (!dbInstance) {
-			const uniqueQuery = FirestoreInterface.buildUniqueQuery(this.collection, instance);
-			throw new ApiException(404, `Could not find ${this.config.itemName} with unique query '${__stringify(uniqueQuery)}'`);
-		}
-
-		return dbInstance;
-	}
-
-	/**
-	 * Asserts the uniqueness of an instance in two steps:
-	 * - Executes `this.preUpsertProcessing`.
-	 * - Asserts uniqueness based on the internal filters.
-	 *
-	 * @param transaction - The transaction object.
-	 * @param instance - The document for which the uniqueness assertion will occur.
-	 * @param request
-	 */
-	public async assertUniqueness(instance: Type, transaction?: FirestoreTransaction, request?: ExpressRequest) {
-		const uniqueQueries = this.internalFilter(instance);
-		if (uniqueQueries.length === 0)
-			return;
-
-		const dbInstances: (Type | undefined)[] = await Promise.all(uniqueQueries.map(uniqueQuery => {
-			if (transaction)
-				return transaction.queryUnique(this.collection, {where: uniqueQuery, limit: 1});
-
-			return this.collection.queryUnique({where: uniqueQuery});
-		}));
-
-		for (const idx in dbInstances) {
-			const dbInstance = dbInstances[idx];
-			// this.logInfo(`keys: ${__stringify(this.config.uniqueKeys)}`)
-			// this.logInfo(`pre instance: ${__stringify(dbInstance)}`)
-			// this.logInfo(`new instance: ${__stringify(instance)}`)
-			if (!dbInstance || !this.config.uniqueKeys.find((key: keyof Type) => dbInstance[key] !== instance[key]))
-				continue;
-
-			const query = uniqueQueries[idx];
-			const message = _keys(query).reduce((carry, key) => {
-				return carry + '\n' + `${String(key)}: ${query[key]}`;
-			}, `${this.config.itemName} uniqueness violation. There is already a document with`);
-
-			this.logWarning(message);
-			throw new ApiException(422, message);
-		}
-	}
-
-	/**
-	 * Override this method to return a list of "where" queries that dictate uniqueness inside the collection.
-	 * Example return value: [{attribute1: item.attribute1, attribute2: item.attribute2}].
-	 *
-	 * @param item - The DB entry that will be used.
-	 */
-	protected internalFilter(item: Type): Clause_Where<Type>[] {
-		return [];
-	}
 
 	private async _preUpsertProcessing(dbInstance: Type, transaction?: FirestoreTransaction, request?: ExpressRequest) {
 		await this.upgradeInstances([dbInstance]);
@@ -224,9 +163,9 @@ export abstract class ModuleBE_BaseDB<Type extends DB_Object, ConfigType extends
 					limit: {page, itemsCount}
 				};
 
-				const items = await this.query(itemsToSyncQuery as FirestoreQuery<Type>);
+				const items = await this.collection.query.custom(itemsToSyncQuery as FirestoreQuery<Type>);
 				this.logInfo(`Page: ${page} Found: ${items.length} - first: ${items?.[0]?.__updated}   last: ${items?.[items.length - 1]?.__updated}`);
-				await this.upsertAll(items);
+				await this.collection.set.all(items);
 
 				if (items.length < itemsCount)
 					break;
