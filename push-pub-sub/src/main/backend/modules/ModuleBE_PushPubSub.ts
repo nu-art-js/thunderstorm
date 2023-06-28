@@ -50,7 +50,9 @@ import {
 	Request_PushRegister,
 	SubscribeProps
 } from '../../index';
-import {addRoutes, createBodyServerApi, dispatch_queryRequestInfo, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {MemStorage} from "@nu-art/ts-common/mem-storage/MemStorage";
+import {MemKey_AccountId} from "@nu-art/user-account/backend";
 
 
 type Config = {
@@ -88,9 +90,8 @@ export class ModuleBE_PushPubSub_Class
 		this.messaging = session.getMessaging();
 	}
 
-	async register(body: Request_PushRegister, request: ExpressRequest) {
-		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync(request);
-		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data?._id || resp.find(e => e.key === 'RemoteProxy')?.data;
+	async register(body: Request_PushRegister, mem: MemStorage) {
+		const userId: string | undefined = MemKey_AccountId.get(mem);
 		if (!userId)
 			throw new ImplementationMissingException('Missing user from accounts Module');
 
