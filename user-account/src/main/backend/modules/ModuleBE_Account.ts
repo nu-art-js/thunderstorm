@@ -46,12 +46,7 @@ import {
 	Response_Auth,
 	UI_Account
 } from './_imports';
-import {
-	addRoutes,
-	createBodyServerApi,
-	createQueryServerApi,
-	HeaderKey
-} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi, HeaderKey} from '@nu-art/thunderstorm/backend';
 import {QueryParams} from '@nu-art/thunderstorm';
 import {gzipSync, unzipSync} from 'zlib';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
@@ -152,15 +147,15 @@ export class ModuleBE_Account_Class
 		return this.accounts.queryUnique({where: {email}});
 	}
 
-	private create = async (request: Request_CreateAccount) => {
+	private create = async (request: Request_CreateAccount, mem: MemStorage) => {
 		const account = await this.createAccount(request);
 
-		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
-		const session = await this.login(request);
+		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account), mem);
+		const session = await this.login(request, mem);
 		return session;
 	};
 
-	private upsert = async (request: Request_UpsertAccount) => {
+	private upsert = async (request: Request_UpsertAccount, mem: MemStorage) => {
 		const account = await this.accounts.runInTransaction(async (transaction) => {
 			const existAccount = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
 			if (existAccount)
@@ -169,8 +164,8 @@ export class ModuleBE_Account_Class
 			return this.createImpl(request, transaction);
 		});
 
-		const session = await this.login(request);
-		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
+		const session = await this.login(request, mem);
+		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account), mem);
 		return session;
 	};
 
@@ -235,7 +230,7 @@ export class ModuleBE_Account_Class
 		return transaction.insert(this.accounts, account);
 	};
 
-	login = async (request: Request_LoginAccount): Promise<Response_Auth> => {
+	login = async (request: Request_LoginAccount, mem: MemStorage): Promise<Response_Auth> => {
 		request.email = request.email.toLowerCase();
 		const query = {where: {email: request.email}};
 		const account = await this.accounts.queryUnique(query);
@@ -253,9 +248,9 @@ export class ModuleBE_Account_Class
 			await this.accounts.upsert(account);
 		}
 
-		const session = await this.upsertSession(account);
+		const session = await this.upsertSession(account, mem);
 
-		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
+		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account), mem);
 		return session;
 	};
 
