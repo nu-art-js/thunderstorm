@@ -41,6 +41,7 @@ type State<ItemType> = {
 	dropDownRef: React.RefObject<HTMLDivElement>;
 	treeContainerRef: React.RefObject<HTMLDivElement>;
 	focusedItem?: ItemType;
+	className?: string
 }
 
 type StaticProps = {
@@ -147,6 +148,7 @@ export class TS_DropDown<ItemType>
 		nextState.filterText ??= nextProps.inputValue;
 		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
 		nextState.treeContainerRef = state?.treeContainerRef ?? React.createRef();
+		nextState.className = nextProps.className;
 
 		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText)) {
 			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
@@ -162,6 +164,7 @@ export class TS_DropDown<ItemType>
 			dropDownRef: nextState.dropDownRef,
 			focusedItem: nextState.focusedItem,
 			treeContainerRef: nextState.treeContainerRef,
+			className: nextState.className
 		};
 	}
 
@@ -276,7 +279,7 @@ export class TS_DropDown<ItemType>
 	render() {
 		const className = _className(
 			'ts-dropdown',
-			this.props.className,
+			this.state.className,
 			this.state.open ? 'open' : undefined,
 			this.props.disabled ? 'disabled' : undefined,
 		);

@@ -19,7 +19,7 @@
 export * from './core/module';
 export * from './core/module-manager';
 export * from './core/application';
-export * from './core/exceptions';
+export * from './core/exceptions/exceptions';
 export * from './core/dispatcher';
 export * from './core/error-handling';
 
@@ -34,6 +34,9 @@ export * from './core/logger/BeLogged';
 export * from './core/logger/Logger';
 export * from './core/logger/types';
 export * from './core/logger/LogClient';
+
+export * from './db/consts';
+export * from './db/types';
 
 export * from './tools/Replacer';
 export * from './tools/get-log-style';

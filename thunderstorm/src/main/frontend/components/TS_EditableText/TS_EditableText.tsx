@@ -3,17 +3,24 @@ import {ComponentSync} from '../../core/ComponentSync';
 import './TS_EditableText.scss';
 import {TS_Input, TS_TextArea} from '../TS_Input';
 import {TS_Button} from '../TS_Button';
-import {_className, stopPropagation} from '../../utils/tools';
+import {_className, stopPropagation, stringReplacer} from '../../utils/tools';
+import {TS_BusyButton} from '../TS_BusyButton';
+import {TS_ReadMore} from '../TS_ReadMore';
 
 type Props = {
 	text: string;
+	shownText?: string;
 	className?: string;
 
 	editMode?: boolean; //External control for edit mode
 	disableEdit?: boolean; //Blocks edit mode completely
 
-	onTextSaved?: (text: string) => void; //Called when save is clicked
+	onTextSaved?: ((text: string) => void | Promise<void>); //Called when save is clicked
 	onCancel?: () => void; //Called when cancel is clicked or on blur
+	highlightText?: string; //Text that will be highlighted
+	hideReset?: boolean;
+	readMore?: boolean
+	readMoreCollapseHeight?: number;
 
 	renderers?: {
 		cancelButton?: React.ReactNode;
@@ -56,14 +63,14 @@ class TS_EditableText_Base
 		this.setState({text});
 	};
 
-	protected onSubmitChanges = (e: React.MouseEvent | React.KeyboardEvent) => {
+	protected onSubmitChanges = async (e: React.MouseEvent | React.KeyboardEvent) => {
 		stopPropagation(e);
 		const text = this.state.text;
 		if (!this.props.onTextSaved)
 			this.setState({original: text, isEditing: false});
 
+		await this.props.onTextSaved?.(text);
 		this.setState({original: text});
-		this.props.onTextSaved?.(text);
 	};
 
 	protected onCancelChanges = (e?: React.MouseEvent) => {
@@ -100,11 +107,17 @@ class TS_EditableText_Base
 	// ######################## Render ########################
 
 	protected renderText = () => {
+		const textToShow = this.props.shownText ?? this.state.original;
 		return <div
 			className={'ts-editable-text__text'}
 			onClick={this.onEnableEdit}
 		>
-			{this.state.original}
+			{this.props.readMore && <TS_ReadMore collapsedHeight={this.props.readMoreCollapseHeight!} text={textToShow}/>}
+			{!this.props.readMore && (this.props.highlightText
+					? stringReplacer(textToShow, this.props.highlightText, (match, i) =>
+						<i key={i} className={'ts-editable-text__highlight'}>{match}</i>)
+					: textToShow
+			)}
 		</div>;
 	};
 
@@ -113,8 +126,8 @@ class TS_EditableText_Base
 			{this.props.renderers?.resetButton || 'Reset'}</TS_Button>,
 		cancel: () => <TS_Button className={'ts-editable-text__buttons__cancel'} onClick={this.onCancelChanges}>
 			{this.props.renderers?.cancelButton || 'Cancel'}</TS_Button>,
-		accept: () => <TS_Button className={'ts-editable-text__buttons__save'} onClick={this.onSubmitChanges}>
-			{this.props.renderers?.saveButton || 'Save'}</TS_Button>
+		accept: () => <TS_BusyButton className={'ts-editable-text__buttons__save'} onClick={this.onSubmitChanges}>
+			{this.props.renderers?.saveButton || 'Save'}</TS_BusyButton>
 	};
 }
 
@@ -123,7 +136,7 @@ class TS_EditableText_TextArea
 
 	private renderButtons = () => {
 		return <div className={'ts-editable-text-area__buttons'}>
-			{this.renderButton.reset()}
+			{!this.props.hideReset && this.renderButton.reset()}
 			{this.renderButton.cancel()}
 			{this.renderButton.accept()}
 		</div>;
@@ -135,7 +148,7 @@ class TS_EditableText_TextArea
 				className={'ts-editable-text-area__text-area'}
 				type={'text'}
 				focus={true}
-				value={this.state.text}
+				value={this.state.isEditing ? this.state.text : this.props.shownText}
 				onChange={this.onTextChange}
 				onAccept={(val, e) => this.onSubmitChanges(e)}
 			/>
@@ -146,7 +159,8 @@ class TS_EditableText_TextArea
 	render() {
 		const Renderer = this.state.isEditing ? this.renderTextArea : this.renderText;
 		const className = _className('ts-editable-text-area', this.props.className);
-		return <div className={className} onBlur={this.handleBlur} tabIndex={1} onClick={this.onGeneralClick} ref={this.state.parentRef}>
+		return <div className={className} onBlur={this.handleBlur} tabIndex={1} onClick={this.onGeneralClick}
+								ref={this.state.parentRef}>
 			<Renderer/>
 		</div>;
 	}

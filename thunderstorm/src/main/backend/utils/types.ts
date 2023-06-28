@@ -20,9 +20,9 @@
  */
 
 import * as express from 'express';
-import {ApiException} from '../exceptions';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {CoreOptions, UriOptions} from 'request';
+import {ApiException} from '@nu-art/ts-common';
 
 
 export type Express = express.Express

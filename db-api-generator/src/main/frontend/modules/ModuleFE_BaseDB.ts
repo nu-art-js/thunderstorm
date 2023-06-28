@@ -20,7 +20,7 @@
  */
 
 import {IndexKeys} from '@nu-art/thunderstorm';
-import {DBDef, Response_DBSync,} from '../shared';
+import {Response_DBSync,} from '../shared';
 import {
 	DBConfig,
 	IndexDb_Query,
@@ -34,6 +34,7 @@ import {
 import {
 	arrayToMap,
 	DB_Object,
+	DBDef,
 	dbObjectToId,
 	InvalidResult,
 	Logger,
@@ -161,7 +162,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		this.dispatchMulti(EventType_UpsertAll, items.map(item => item));
 	};
 
-	protected onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
+	public onEntryUpdated = async (item: DBType, original: PreDB<DBType>): Promise<void> => {
 		return this.onEntryUpdatedImpl(original._id ? EventType_Update : EventType_Create, item);
 	};
 
@@ -345,7 +346,6 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 
 	load = async (cacheFilter?: (item: Readonly<DBType>) => boolean) => {
 		this.module.logDebug(`${this.module.getName()} cache is loading`);
-		this.clear();
 		let allItems;
 		this.cacheFilter = cacheFilter;
 		if (this.cacheFilter)

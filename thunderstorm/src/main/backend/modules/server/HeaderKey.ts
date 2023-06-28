@@ -19,9 +19,9 @@
  * limitations under the License.
  */
 
-import {ApiException} from '../../exceptions';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_HttpRequest} from './consts';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {ApiException} from '@nu-art/ts-common';
 
 
 export class HeaderKey {

@@ -17,24 +17,30 @@
  * limitations under the License.
  */
 
-import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {
 	_keys,
+	ApiException,
 	auditBy,
 	BadImplementationException,
 	batchAction,
-	compare,
-	filterDuplicates,
-	dbObjectToId,
 	batchActionParallel,
+	compare,
+	dbObjectToId,
+	filterDuplicates,
 	flatArray
 } from '@nu-art/ts-common';
 import {MemKey_AccountEmail, MemKey_AccountId, ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
-import {Clause_Where} from '@nu-art/firebase';
+import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {PermissionsShare} from '../permissions-share';
-import {AssignAppPermissions, DB_PermissionUser, DBDef_PermissionUser, Request_AssignAppPermissions} from '../../shared';
+import {
+	AssignAppPermissions,
+	DB_PermissionUser,
+	DBDef_PermissionUser,
+	Request_AssignAppPermissions
+} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 import {CanDeletePermissionEntities} from '../../core/can-delete';

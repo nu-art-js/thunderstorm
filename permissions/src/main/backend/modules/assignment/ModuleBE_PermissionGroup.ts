@@ -18,13 +18,23 @@
  */
 
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {auditBy, batchAction, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, flatArray, removeItemFromArray} from '@nu-art/ts-common';
+import {ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {
+	ApiException,
+	auditBy,
+	batchAction,
+	batchActionParallel,
+	dbObjectToId,
+	filterDuplicates,
+	filterInstances,
+	flatArray,
+	removeItemFromArray
+} from '@nu-art/ts-common';
 import {ModuleBE_Account} from '@nu-art/user-account/backend';
 import {DB_PermissionGroup, DBDef_PermissionGroup, PredefinedGroup} from '../../shared';
-import {Clause_Where} from '@nu-art/firebase';
+import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
-import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {checkDuplicateLevelsDomain, ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';

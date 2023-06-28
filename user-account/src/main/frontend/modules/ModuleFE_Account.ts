@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {currentTimeMillis, Day, Hour, Module, Second} from '@nu-art/ts-common';
+import {composeUrl, currentTimeMillis, Day, Hour, Module, Second} from '@nu-art/ts-common';
 import {
 	apiWithBody,
 	apiWithQuery,
@@ -143,6 +143,13 @@ export class ModuleFE_Account_Class
 		this.logDebug('login out user.... ');
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	}
+
+	public composeSAMLUrl = () => {
+		return composeUrl(window.location.href, {
+			[QueryParam_SessionId]: QueryParam_SessionId.toUpperCase(),
+			[QueryParam_Email]: QueryParam_Email.toUpperCase(),
+		});
+	};
 
 	private setLoginInfo = async (response: Response_Auth) => {
 		StorageKey_SessionId.set(response.sessionId);

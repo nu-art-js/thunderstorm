@@ -16,8 +16,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {BadImplementationException, composeUrl, ImplementationMissingException, Module, TypedMap} from '@nu-art/ts-common';
-import {ApiException, promisifyRequest} from '@nu-art/thunderstorm/backend';
+import {
+	ApiException,
+	BadImplementationException,
+	composeUrl,
+	ImplementationMissingException,
+	Module,
+	TypedMap
+} from '@nu-art/ts-common';
+import {promisifyRequest} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {CoreOptions, Headers, Response, UriOptions} from 'request';
 import {JiraIssueText, JiraUtils} from './utils';
@@ -181,7 +188,10 @@ export class ModuleBE_Jira_Class
 			return this.versions[projectId].find(version => version.name === versionName);
 		},
 		create: async (projectId: string, versionName: string) => {
-			const version = await this.executePostRequest<JiraVersion, JiraVersion_Create>(`/version`, {projectId, name: versionName});
+			const version = await this.executePostRequest<JiraVersion, JiraVersion_Create>(`/version`, {
+				projectId,
+				name: versionName
+			});
 			this.versions[projectId].push(version);
 			return version;
 		}
@@ -226,7 +236,9 @@ export class ModuleBE_Jira_Class
 			if (!version)
 				version = await JiraModule.version.create(project.id, versionName);
 
-			return this.executePutRequest<{ fields: Partial<JiraIssue_Fields> }>(`/issue/${issueKey}`, {fields: {fixVersions: [{id: version.id}]}});
+			return this.executePutRequest<{
+				fields: Partial<JiraIssue_Fields>
+			}>(`/issue/${issueKey}`, {fields: {fixVersions: [{id: version.id}]}});
 		},
 	};
 

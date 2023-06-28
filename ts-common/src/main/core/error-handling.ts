@@ -16,15 +16,16 @@
  * limitations under the License.
  */
 
-import {Module} from "./module";
-import {Dispatcher} from "./dispatcher";
+import {Module} from './module';
+import {Dispatcher} from './dispatcher';
+import {CustomException} from './exceptions/exceptions';
 
 export enum ServerErrorSeverity {
-	Debug    = "Debug",
-	Info     = "Info",
-	Warning  = "Warning",
-	Error    = "Error",
-	Critical = "Critical",
+	Debug = 'Debug',
+	Info = 'Info',
+	Warning = 'Warning',
+	Error = 'Error',
+	Critical = 'Critical',
 }
 
 export const ServerErrorSeverity_Ordinal = [
@@ -35,8 +36,19 @@ export const ServerErrorSeverity_Ordinal = [
 	ServerErrorSeverity.Critical
 ];
 
-export interface OnApplicationError {
-	__processApplicationError(errorLevel: ServerErrorSeverity, module: Module, message: string): Promise<void>;
+export type ErrorMessage = {
+	message: string,
+	innerMessages?: string[]
 }
 
-export const dispatch_onServerError = new Dispatcher<OnApplicationError, "__processApplicationError">("__processApplicationError");
+export interface OnApplicationNotification {
+	__processApplicationNotification(errorLevel: ServerErrorSeverity, module: Module, message: ErrorMessage): Promise<void>;
+}
+
+export const dispatch_onApplicationNotification = new Dispatcher<OnApplicationNotification, '__processApplicationNotification'>('__processApplicationNotification');
+
+export interface OnApplicationException {
+	__processApplicationException(e: CustomException, module: Module, data: any): Promise<void>;
+}
+
+export const dispatch_onApplicationException = new Dispatcher<OnApplicationException, '__processApplicationException'>('__processApplicationException');
