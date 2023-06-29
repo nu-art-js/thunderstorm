@@ -4,7 +4,7 @@ import ResolveDependencyToast from './resolve-dependency-toast/ResolveDependency
 
 
 const isDependencyError = (e: any): boolean => {
-	return (e.errorResponse?.error.type === 'has-dependencies');
+	return (e.errorResponse?.error.type === 'has-dependencies' || e.errorResponse?.error.type === 'has-dependencies-on-inner-value');
 };
 
 export const generateErrorToastContent = (e: any, content: React.ReactNode, additionalData: any): React.ReactNode => {
