@@ -74,7 +74,7 @@ export interface OnUserLogin {
 const dispatch_onUserLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
 
 export interface CollectSessionData<R extends TS_Object> {
-	__collectSessionData(accountId: string): Promise<R>;
+	__collectSessionData(accountId: string, mem: MemStorage): Promise<R>;
 }
 
 type MapTypes<T extends CollectSessionData<any>[]> =
@@ -304,7 +304,7 @@ export class ModuleBE_Account_Class
 	upsertSession = async (account: DB_Account, mem: MemStorage): Promise<Response_Auth> => {
 		let session = await this.sessions.queryUnique({where: {userId: account._id}});
 		if (!session || this.TTLExpired(session)) {
-			const sessionData = (await dispatch_CollectSessionData.dispatchModuleAsync(account._id))
+			const sessionData = (await dispatch_CollectSessionData.dispatchModuleAsync(account._id, mem))
 				.reduce((sessionData, moduleSessionData) => {
 					_keys(moduleSessionData).forEach(key => {
 						if (sessionData[key])
