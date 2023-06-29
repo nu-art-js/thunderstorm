@@ -1,10 +1,10 @@
-import {firestore} from '../_core/consts';
+import {firestore, testInstance2} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {deepClone} from '@nu-art/ts-common';
 import {CreateTest, createTestCases} from './consts';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
-import {FirestoreException} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
+import {FirestoreBulkException} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {createTests_dbDef, duplicateObjectToCreate} from './create';
 
 const chai = require('chai');
@@ -13,14 +13,26 @@ chai.use(chaiAsPromised);
 export const TestCases_FB_CreateAll: CreateTest['testcases'] = [
 	...createTestCases,
 	{
-		description: 'object exists',
+		description: 'create.all with one object that already exists',
 		result: [],
 		input: {
 			value: [duplicateObjectToCreate],
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone(duplicateObjectToCreate);
 				// create twice and expect to reject
-				await expect(collection.create.all([toCreate])).to.be.rejectedWith(FirestoreException);
+				expect(collection.create.all([toCreate])).to.eventually.be.rejected.and.have.property('code', 6); // Firestore exception code 6 is 'Already Exists'
+			}
+		}
+	},
+	{
+		description: 'create.all with two objects, one already exists',
+		result: [],
+		input: {
+			value: [duplicateObjectToCreate],
+			check: async (collection, expectedResult) => {
+				const toCreate = deepClone([duplicateObjectToCreate, testInstance2]);
+				// create twice and expect to reject
+				await expect(collection.create.all(toCreate)).to.be.rejectedWith(FirestoreBulkException);
 			}
 		}
 	},
