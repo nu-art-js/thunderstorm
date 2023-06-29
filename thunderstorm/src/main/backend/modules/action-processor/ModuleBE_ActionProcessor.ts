@@ -13,29 +13,32 @@ import {ActionMetaData, ApiDef_ActionProcessing, Request_ActionToProcess} from '
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ApiModule';
 import {ActionDeclaration} from './types';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 export class ModuleBE_ActionProcessor_Class
 	extends Module {
 
-	private readonly actionMap: TypedMap<(data: any) => Promise<any>> = {};
+	private readonly actionMap: TypedMap<(mem: MemStorage, data: any) => Promise<any>> = {};
 	private readonly actionMetaData: TypedMap<ActionMetaData> = {};
 
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Verbose);
 
-		addRoutes([createBodyServerApi(ApiDef_ActionProcessing.vv1.execute, this.refactor), createQueryServerApi(ApiDef_ActionProcessing.vv1.list, this.list)]);
+		addRoutes([
+			createBodyServerApi(ApiDef_ActionProcessing.vv1.execute, this.refactor),
+			createQueryServerApi(ApiDef_ActionProcessing.vv1.list, this.list)]);
 	}
 
 	readonly registerAction = (rad: ActionDeclaration, logger: Logger) => {
 		if (this.actionMap[rad.key])
 			throw new BadImplementationException(`ActionProcessor with key ${rad.key} was registered twice!`);
 
-		this.actionMap[rad.key] = (data: any) => rad.processor(logger || this, data);
+		this.actionMap[rad.key] = (mem: MemStorage, data: any) => rad.processor(logger || this, mem, data);
 		this.actionMetaData[rad.key] = {key: rad.key, description: rad.description, group: rad.group};
 	};
 
-	private refactor = async (action: Request_ActionToProcess) => {
+	private refactor = async (action: Request_ActionToProcess, mem: MemStorage) => {
 		this.logWarning(`RECEIVED ACTION: ${action.key}`);
 
 		const refactoringAction = this.actionMap[action.key];
@@ -45,7 +48,7 @@ export class ModuleBE_ActionProcessor_Class
 
 		try {
 			this.logWarning(`ACTION '${action.key}' - EXECUTING`);
-			await refactoringAction?.(action.data);
+			await refactoringAction?.(action.data, mem);
 			this.logWarning(`ACTION '${action.key}' - SUCCESSFUL`);
 		} catch (e: any) {
 			this.logError(`ACTION '${action.key}' - FAILED`, e);
