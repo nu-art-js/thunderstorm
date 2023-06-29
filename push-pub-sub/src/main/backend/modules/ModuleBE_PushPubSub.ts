@@ -50,9 +50,10 @@ import {
 	Request_PushRegister,
 	SubscribeProps
 } from '../../index';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
+
 import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
-import {MemStorage} from "@nu-art/ts-common/mem-storage/MemStorage";
-import {MemKey_AccountId} from "@nu-art/user-account/backend";
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 type Config = {
@@ -91,7 +92,7 @@ export class ModuleBE_PushPubSub_Class
 	}
 
 	async register(body: Request_PushRegister, mem: MemStorage) {
-		const userId: string | undefined = MemKey_AccountId.get(mem);
+		const userId = MemKey_AccountId.get(mem);
 		if (!userId)
 			throw new ImplementationMissingException('Missing user from accounts Module');
 
@@ -220,8 +221,14 @@ export class ModuleBE_PushPubSub_Class
 		return notification;
 	};
 
-	sendMessage = async (_messages: TempMessages): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] } | undefined> => {
-		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
+	sendMessage = async (_messages: TempMessages): Promise<{
+		response: FirebaseType_BatchResponse,
+		messages: FirebaseType_Message[]
+	} | undefined> => {
+		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({
+			token,
+			data: {messages: __stringify(_messages[token])}
+		}));
 		if (messages.length === 0)
 			return;
 
@@ -231,7 +238,7 @@ export class ModuleBE_PushPubSub_Class
 		return {response, messages};
 	};
 
-	__onCleanupSchedulerAct = () => {
+	__onCleanupSchedulerAct = (mem: MemStorage) => {
 		return {
 			cleanup: this.scheduledCleanup,
 			interval: Day,

@@ -19,13 +19,14 @@
 
 import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {ServerApi} from '@nu-art/thunderstorm/backend';
 import {auditBy, filterDuplicates, PreDB} from '@nu-art/ts-common';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
 import {Clause_Where} from '@nu-art/firebase';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export class ModuleBE_PermissionApi_Class
@@ -45,13 +46,12 @@ export class ModuleBE_PermissionApi_Class
 		return [{projectId, path}];
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionApi, t?: FirestoreTransaction, request?: ExpressRequest) {
-		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, request);
-			dbInstance._audit = auditBy(account.email);
-		}
+	protected async preUpsertProcessing(dbInstance: DB_PermissionApi, mem: MemStorage, t?: FirestoreTransaction) {
+		const email = MemKey_AccountEmail.get(mem);
+		if (email)
+			dbInstance._audit = auditBy(email);
 
-		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId});
+		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId}, mem);
 
 		// need to assert that all the permissions levels exists in the db
 		const _permissionsIds = dbInstance.accessLevelIds;
@@ -59,18 +59,18 @@ export class ModuleBE_PermissionApi_Class
 			return;
 
 		const permissionsIds = filterDuplicates(_permissionsIds);
-		await Promise.all(permissionsIds.map(id => ModuleBE_PermissionAccessLevel.queryUnique({_id: id})));
+		await Promise.all(permissionsIds.map(id => ModuleBE_PermissionAccessLevel.queryUnique({_id: id}, mem)));
 		dbInstance.accessLevelIds = permissionsIds;
 	}
 
-	registerApis(projectId: string, routes: string[]) {
+	registerApis(projectId: string, routes: string[], mem: MemStorage) {
 		return this.runInTransaction(async (transaction: FirestoreTransaction) => {
-			const existingProjectApis = await this.query({where: {projectId: projectId}});
+			const existingProjectApis = await this.query({where: {projectId: projectId}}, mem);
 			const apisToAdd: PreDB<DB_PermissionApi>[] = routes
 				.filter(path => !existingProjectApis.find(api => api.path === path))
 				.map(path => ({path, projectId: projectId}));
 
-			return this.upsertAll(apisToAdd, transaction);
+			return this.upsertAll(apisToAdd, mem, transaction);
 		});
 	}
 

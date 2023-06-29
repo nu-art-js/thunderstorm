@@ -18,9 +18,10 @@
  */
 
 import {DB_ApiGenerator} from '@nu-art/db-api-generator/backend';
-import {addRoutes, createBodyServerApi, ExpressRequest} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_PermissionUser, DB_PermissionUser, Request_AssignAppPermissions} from '../../shared';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export class ModuleBE_PermissionUserAPI_Class
@@ -33,8 +34,8 @@ export class ModuleBE_PermissionUserAPI_Class
 		]);
 	}
 
-	async assignAppPermissions(body: Request_AssignAppPermissions, request?: ExpressRequest) {
-		return ModuleBE_PermissionUserDB.assignAppPermissions(body);
+	async assignAppPermissions(body: Request_AssignAppPermissions, mem: MemStorage) {
+		return ModuleBE_PermissionUserDB.assignAppPermissions(body, mem);
 	}
 }
 

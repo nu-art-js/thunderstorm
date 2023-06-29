@@ -17,14 +17,24 @@
  * limitations under the License.
  */
 
-import {addItemToArray, auditBy, currentTimeMillis, filterInstances, generateHex, Module, padNumber} from '@nu-art/ts-common';
+import {
+	addItemToArray,
+	auditBy,
+	currentTimeMillis,
+	filterInstances,
+	generateHex,
+	Module,
+	padNumber
+} from '@nu-art/ts-common';
 
 import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
 
-import {ApiDef_BugReport, ApiStruct_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../..';
+import {ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugReport} from '../..';
 
 import * as JSZip from 'jszip';
-import {addRoutes, ApiResponse, dispatch_queryRequestInfo, ExpressRequest, ServerApi_Post} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
 
 export type TicketDetails = {
 	platform: string
@@ -36,21 +46,6 @@ type Config = {
 }
 type TicketCreatorApi = (bugReport: Request_BugReport, logs: ReportLogFile[], email?: string) => Promise<TicketDetails | undefined>;
 
-class ServerApi_SendReport
-	extends ServerApi_Post<ApiStruct_BugReport['v1']['sendBugReport']> {
-
-	constructor() {
-		super(ApiDef_BugReport.v1.sendBugReport);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_BugReport) {
-		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync(request);
-		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data?.email || resp.find(e => e.key === 'RemoteProxy')?.data;
-
-		return await ModuleBE_BugReport.saveFile(body, userId);
-	}
-}
-
 export class ModuleBE_BugReport_Class
 	extends Module<Config> {
 
@@ -60,7 +55,9 @@ export class ModuleBE_BugReport_Class
 
 	constructor() {
 		super();
-		addRoutes([new ServerApi_SendReport()]);
+		addRoutes([
+			createBodyServerApi(ApiDef_BugReport.v1.sendBugReport, (body, mem) => this.sendBugReport(body, mem)),
+		]);
 	}
 
 	protected init(): void {
@@ -69,6 +66,10 @@ export class ModuleBE_BugReport_Class
 		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
 		this.storage = sessionAdmin.getStorage();
 	}
+
+	private sendBugReport = async (body: Request_BugReport, mem: MemStorage) => {
+		return await ModuleBE_BugReport.saveFile(body, MemKey_AccountId.get(mem));
+	};
 
 	addTicketCreator(ticketCreator: TicketCreatorApi) {
 		addItemToArray(this.ticketCreatorApis, ticketCreator);

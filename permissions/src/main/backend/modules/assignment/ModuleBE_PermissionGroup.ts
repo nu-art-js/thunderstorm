@@ -18,7 +18,6 @@
  */
 
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {
 	ApiException,
 	auditBy,
@@ -53,7 +52,7 @@ export class ModuleBE_PermissionGroup_Class
 		let conflicts: DB_PermissionGroup[] = [];
 		const dependencies: Promise<DB_PermissionGroup[]>[] = [];
 
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {accessLevelIds: {$aca: ids}}})), mem);
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {accessLevelIds: {$aca: ids}}}, mem)));
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
