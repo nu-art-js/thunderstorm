@@ -19,9 +19,9 @@
 
 import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {ServerApi} from '@nu-art/thunderstorm/backend';
 import {auditBy, filterDuplicates, PreDB} from '@nu-art/ts-common';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
 import {Clause_Where} from '@nu-art/firebase';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
@@ -45,11 +45,10 @@ export class ModuleBE_PermissionApi_Class
 		return [{projectId, path}];
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionApi, t?: FirestoreTransaction, request?: ExpressRequest) {
-		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, request);
-			dbInstance._audit = auditBy(account.email);
-		}
+	protected async preUpsertProcessing(dbInstance: DB_PermissionApi, t?: FirestoreTransaction) {
+		const email = MemKey_AccountEmail.get();
+		if (email)
+			dbInstance._audit = auditBy(email);
 
 		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId});
 

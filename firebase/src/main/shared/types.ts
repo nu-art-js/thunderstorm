@@ -41,6 +41,7 @@ export type FirebaseConfig = {
 	databaseURL?: string,
 	storageBucket?: string,
 	messagingSenderId: string
+	local?: boolean
 }
 
 type Comparator = 'in' | 'array-contains' | 'array-contains-any' | '>' | '>=' | '<' | '<=' | '==';
@@ -89,3 +90,5 @@ export type FirestoreQueryImpl<T extends TS_Object> = {
 }
 
 export type FirebaseProjectCollections = { projectId: string, collections: string[] };
+
+export type DB_EntityDependency<Type extends string = string> = { collectionKey: Type, conflictingIds: string[] };

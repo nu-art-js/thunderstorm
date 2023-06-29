@@ -4,6 +4,7 @@ import {BadImplementationException, DB_Object, Module, TypedMap} from '@nu-art/t
 import {ApiDef_SyncEnv, Request_FetchFromEnv} from '../shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
 
+
 type Config = {
 	urlMap: TypedMap<string>
 	fetchBackupDocsSecretsMap: TypedMap<string>

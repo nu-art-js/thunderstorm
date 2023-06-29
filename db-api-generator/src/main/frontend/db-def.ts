@@ -20,8 +20,14 @@
  */
 
 import {DBConfig} from '@nu-art/thunderstorm/frontend';
-import {DB_Object, KeysOfDB_Object, tsValidateOptional, ValidatorTypeResolver} from '@nu-art/ts-common';
-import {Const_UniqueKey, DBDef, Default_UniqueKey, DefaultDBVersion} from '..';
+import {
+	Const_UniqueKey,
+	DB_Object, DBDef,
+	Default_UniqueKey, DefaultDBVersion,
+	KeysOfDB_Object,
+	tsValidateOptional,
+	ValidatorTypeResolver
+} from '@nu-art/ts-common';
 
 
 export type DBApiFEConfig<DBType extends DB_Object, Ks extends keyof DBType = Default_UniqueKey> = {

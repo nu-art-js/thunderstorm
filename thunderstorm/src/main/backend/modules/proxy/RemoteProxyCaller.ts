@@ -18,12 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {__stringify, composeUrl, ImplementationMissingException, Module,} from '@nu-art/ts-common';
+import {__stringify, ApiException, composeUrl, ImplementationMissingException, Module,} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {BodyApi, ErrorResponse, QueryApi} from '../../../shared/types';
+import {BodyApi, QueryApi} from '../../../shared/types';
 import {promisifyRequest} from '../../utils/promisify-request';
-import {ApiException} from '../../exceptions';
 import {RequestOptions} from '../../../backend';
+import {ErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
 
 
 export type RemoteServerConfig = {
@@ -57,7 +57,9 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 			this.config.proxyHeaderName = 'x-proxy';
 	}
 
-	protected executeGetRequest = async <API extends QueryApi<any, any, any>>(url: string, _params: API['P'], _headers?: { [key: string]: string }): Promise<API['R']> => {
+	protected executeGetRequest = async <API extends QueryApi<any, any, any>>(url: string, _params: API['P'], _headers?: {
+		[key: string]: string
+	}): Promise<API['R']> => {
 		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,
@@ -72,7 +74,9 @@ export class RemoteProxyCaller<Config extends RemoteServerConfig>
 		return await this.executeRequest<API['R']>(proxyRequest);
 	};
 
-	protected executePostRequest = async <API extends BodyApi<any, any, any>>(url: string, body: API['B'], _headers?: { [key: string]: string }): Promise<API['R']> => {
+	protected executePostRequest = async <API extends BodyApi<any, any, any>>(url: string, body: API['B'], _headers?: {
+		[key: string]: string
+	}): Promise<API['R']> => {
 		const proxyRequest: RequestOptions = {
 			headers: {
 				..._headers,

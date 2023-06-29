@@ -20,7 +20,6 @@
  */
 
 export * from './api';
-export * from './validators';
-export * from './db-def';
+export * from './apiV2';
 export * from './sync-env';
-export * from './archving/apis';
+export * from './archiving/apis';

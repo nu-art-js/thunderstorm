@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {Dispatcher, Module, randomObject} from '@nu-art/ts-common';
+import {ApiException, Dispatcher, Module, randomObject} from '@nu-art/ts-common';
 import {ApiDef_Examples, CustomError1, CustomError2, TestDispatch} from '@app/app-shared';
 import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {addRoutes, ApiException, assertProperty, createBodyServerApi, createQueryServerApi, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
+import {addRoutes, assertProperty, createBodyServerApi, createQueryServerApi,} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 
 
@@ -28,8 +28,7 @@ type Config = {
 }
 
 class ExampleModule_Class
-	extends Module<Config>
-	implements QueryRequestInfo {
+	extends Module<Config> {
 	dispatcher = new Dispatcher<TestDispatch, 'testDispatch'>('testDispatch');
 
 	constructor() {
@@ -49,8 +48,14 @@ class ExampleModule_Class
 				const debugMessage = 'The debug message, you will only see this while your backend configuration is set to debug true';
 				const error1: CustomError1 = {prop1: 'value for prop1', prop2: 'value for prop2'};
 				const error2: CustomError2 = {prop3: 'value for prop3', prop4: 'value for prop4'};
-				const exception1 = new ApiException<CustomError1>(422, debugMessage).setErrorBody({type: 'CustomError1', body: error1});
-				const exception2 = new ApiException<CustomError2>(402, debugMessage).setErrorBody({type: 'CustomError2', body: error2});
+				const exception1 = new ApiException<CustomError1>(422, debugMessage).setErrorBody({
+					type: 'CustomError1',
+					body: error1
+				});
+				const exception2 = new ApiException<CustomError2>(402, debugMessage).setErrorBody({
+					type: 'CustomError2',
+					body: error2
+				});
 
 				throw randomObject([exception1, exception2]);
 			}),

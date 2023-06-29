@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 import {
+	ApiException,
 	auditBy,
 	BadImplementationException,
 	batchActionParallel,
@@ -31,14 +32,28 @@ import {
 	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
-import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
+import {
+	FileWrapper,
+	FirebaseType_Metadata,
+	FirestoreTransaction,
+	ModuleBE_Firebase,
+	StorageWrapperBE
+} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {ApiException, CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {CleanupDetails, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './AssetBucketListener';
-import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
+import {
+	BaseUploaderFile,
+	DB_Asset,
+	DBDef_Assets,
+	FileStatus,
+	Push_FileUploaded,
+	PushKey_FileUploaded,
+	TempSecureUrl
+} from '../../shared';
 import {DBApiConfig, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 
 
@@ -125,8 +140,8 @@ export class ModuleBE_Assets_Class
 
 	}
 
-	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DB_Asset> {
-		const asset = await super.queryUnique(where, undefined, request);
+	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: FirestoreTransaction): Promise<DB_Asset> {
+		const asset = await super.queryUnique(where);
 		const signedUrl = (asset.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset.signedUrl : undefined;
 		if (!signedUrl) {
 			const url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSecuredUrl(asset.mimeType, Day);
@@ -149,11 +164,11 @@ export class ModuleBE_Assets_Class
 		return {
 			moduleKey: this.getName(),
 			interval: Day,
-			cleanup: this.cleanup
+			cleanup: () => this.cleanup(),
 		};
 	}
 
-	private cleanup = async (interval = Hour, module: ModuleBE_BaseDB<DB_Asset> = ModuleBE_AssetsTemp) => {
+	private cleanup = async ( interval = Hour, module: ModuleBE_BaseDB<DB_Asset> = ModuleBE_AssetsTemp) => {
 		const entries: DB_Asset[] = await module.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);
@@ -165,7 +180,7 @@ export class ModuleBE_Assets_Class
 			await file.delete();
 		}));
 
-		module.delete({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
+		await module.delete({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 	};
 
 	async getUrl(files: BaseUploaderFile[]): Promise<TempSecureUrl[]> {
@@ -206,16 +221,16 @@ export class ModuleBE_Assets_Class
 		}));
 	}
 
-	processAssetManually = async (feId?: string) => {
+	processAssetManually = async ( feId?: string) => {
 		let query: FirestoreQuery<DB_Asset> = {limit: 1};
 		if (feId)
 			query = {where: {feId}};
 
 		const unprocessedFiles: DB_Asset[] = await ModuleBE_AssetsTemp.query(query);
-		return Promise.all(unprocessedFiles.map(asset => this.__processAsset(asset.path)));
+		return Promise.all(unprocessedFiles.map(asset => this.__processAsset( asset.path)));
 	};
 
-	__processAsset = async (filePath?: string) => {
+	__processAsset = async ( filePath?: string) => {
 		if (!filePath)
 			throw new ThisShouldNotHappenException('Missing file path');
 
@@ -295,7 +310,10 @@ export class ModuleBE_Assets_Class
 		}
 
 		this.logDebug(`notify FE about asset ${feId}: ${status}`);
-		return ModuleBE_PushPubSub.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: feId || asset.feId}, {status, asset});
+		return ModuleBE_PushPubSub.pushToKey<Push_FileUploaded>(PushKey_FileUploaded, {feId: feId || asset.feId}, {
+			status,
+			asset
+		});
 	};
 
 }

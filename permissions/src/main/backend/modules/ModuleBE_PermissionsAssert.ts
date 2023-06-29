@@ -17,31 +17,38 @@
  * limitations under the License.
  */
 
-import {_keys, BadImplementationException, batchActionParallel, filterDuplicates, Module, StringMap} from '@nu-art/ts-common';
 import {
-	addRoutes,
+	_keys,
 	ApiException,
-	ApiResponse,
-	ExpressRequest,
-	ExpressResponse,
-	HttpRequestData,
-	ServerApi,
-	ServerApi_Middleware
-} from '@nu-art/thunderstorm/backend';
+	BadImplementationException,
+	batchActionParallel,
+	filterDuplicates,
+	Module,
+	StringMap
+} from '@nu-art/ts-common';
+import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail, MemKey_AccountId, Middleware_ValidateSession} from '@nu-art/user-account/backend';
 import {
 	ApiDef_PermissionsAssert,
-	ApiStruct_PermissionsAssert,
 	Base_AccessLevels,
 	DB_PermissionAccessLevel,
-	DB_PermissionApi, DB_PermissionGroup, DB_PermissionUser,
-	Request_AssertApiForUser, User_Group
+	DB_PermissionApi,
+	DB_PermissionGroup,
+	DB_PermissionUser,
+	Request_AssertApiForUser,
+	User_Group
 } from '../../shared';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
+import {
+	MemKey_HttpRequestBody,
+	MemKey_HttpRequestMethod,
+	MemKey_HttpRequestQuery,
+	MemKey_HttpRequestUrl
+} from '@nu-art/thunderstorm/backend/modules/server/consts';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -52,50 +59,36 @@ type Config = {
 	strictMode?: boolean
 }
 
-class ServerApi_AssertPermissions
-	extends ServerApi<ApiStruct_PermissionsAssert['v1']['assertUserPermissions']> {
-
-	constructor() {
-		super(ApiDef_PermissionsAssert.v1.assertUserPermissions);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: Request_AssertApiForUser) {
-		const account = await ModuleBE_Account.validateSession({}, request);
-		await ModuleBE_PermissionsAssert.assertUserPermissions(body.projectId, body.path, account._id, body.requestCustomField);
-		return {userId: account.email};
-	}
-}
-
 export class ModuleBE_PermissionsAssert_Class
 	extends Module<Config> {
 
 	private projectId!: string;
 
-	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
+	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async () => {
 		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
 
-			const account = await ModuleBE_Account.validateSession({}, req);
-			return this.assertUserPermissions(projectId, data.url, account._id, customFields);
-		})(req, res, data);
+			return this.assertUserPermissions(projectId, MemKey_HttpRequestUrl.get(), customFields);
+		})();
 	};
 
-	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
+	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async () => {
 		const customFields: StringMap = {};
 		let object: { [k: string]: any };
-		switch (data.method) {
+		const reqMethod = MemKey_HttpRequestMethod.get();
+		switch (reqMethod) {
 			case HttpMethod.POST:
 			case HttpMethod.PATCH:
 			case HttpMethod.PUT:
-				object = data.body;
+				object = MemKey_HttpRequestBody.get();
 				break;
 
 			case HttpMethod.GET:
 			case HttpMethod.DELETE:
-				object = data.query;
+				object = MemKey_HttpRequestQuery.get();
 				break;
 
 			default:
-				throw new BadImplementationException(`Generic custom fields cannot be extracted on api with method: ${data.method}`);
+				throw new BadImplementationException(`Generic custom fields cannot be extracted on api with method: ${reqMethod}`);
 		}
 
 		_keys(object).filter(key => keys.includes(key as string)).forEach(key => {
@@ -115,20 +108,28 @@ export class ModuleBE_PermissionsAssert_Class
 
 	constructor() {
 		super();
-		addRoutes([new ServerApi_AssertPermissions()]);
+		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.v1.assertUserPermissions, this.assertPermission, Middleware_ValidateSession)]);
 	}
 
-	async assertUserPermissions(projectId: string, path: string, userId: string, requestCustomField: StringMap) {
+	private assertPermission = async (body: Request_AssertApiForUser) => {
+		await ModuleBE_PermissionsAssert.assertUserPermissions(body.projectId, body.path, body.requestCustomField);
+		return {userId: MemKey_AccountEmail.get()};
+	};
+
+	async assertUserPermissions(projectId: string, path: string, requestCustomField: StringMap) {
 		const [apiDetails, userDetails] = await Promise.all(
 			[
 				this.getApiDetails(path, projectId),
-				this.getUserDetails(userId)
+				this.getUserDetails()
 			]);
 
 		this._assertUserPermissionsImpl(apiDetails, projectId, userDetails, requestCustomField);
 	}
 
-	_assertUserPermissionsImpl(apiDetails: { apiDb: DB_PermissionApi; requestPermissions: DB_PermissionAccessLevel[] }, projectId: string, userDetails: {
+	_assertUserPermissionsImpl(apiDetails: {
+		apiDb: DB_PermissionApi;
+		requestPermissions: DB_PermissionAccessLevel[]
+	}, projectId: string, userDetails: {
 		user: DB_PermissionUser,
 		userGroups: DB_PermissionGroup[]
 	}, requestCustomField: StringMap) {
@@ -143,9 +144,9 @@ export class ModuleBE_PermissionsAssert_Class
 	}
 
 	async assertUserSharingGroup(granterUserId: string, userGroup: User_Group) {
-		const [granterUser, groupToShare] = await Promise.all([this.getUserDetails(granterUserId), ModuleBE_PermissionGroup.queryUnique({_id: userGroup.groupId})]);
+		const [granterUser, groupToShare] = await Promise.all([this.getUserDetails(), ModuleBE_PermissionGroup.queryUnique({_id: userGroup.groupId})]);
 		groupToShare.customFields = this.getCombineUserGroupCF(userGroup, groupToShare);
-		const requestPermissions = await this.getAccessLevels(groupToShare.accessLevelIds || []);
+		const requestPermissions = await this.getAccessLevels( groupToShare.accessLevelIds || []);
 		const requestCustomFields = groupToShare.customFields;
 		this.assertUserPermissionsImpl(granterUser.userGroups, requestPermissions, requestCustomFields);
 	}
@@ -154,11 +155,17 @@ export class ModuleBE_PermissionsAssert_Class
 		if (!requestPermissions.length)
 			return;
 
-		const requestPairWithLevelsObj: RequestPairWithLevelsObj = {accessLevels: requestPermissions, customFields: requestCustomFields};
+		const requestPairWithLevelsObj: RequestPairWithLevelsObj = {
+			accessLevels: requestPermissions,
+			customFields: requestCustomFields
+		};
 
 		let groupMatch = false;
 		const groupsMatchArray = userGroups.map(group => {
-			const groupPairWithLevelsObj: GroupPairWithBaseLevelsObj = {accessLevels: group.__accessLevels || [], customFields: group.customFields || []};
+			const groupPairWithLevelsObj: GroupPairWithBaseLevelsObj = {
+				accessLevels: group.__accessLevels || [],
+				customFields: group.customFields || []
+			};
 
 			return this.isMatchWithLevelsObj(groupPairWithLevelsObj, requestPairWithLevelsObj);
 		});
@@ -173,8 +180,11 @@ export class ModuleBE_PermissionsAssert_Class
 		}
 	}
 
-	async getUserDetails(uuid: string): Promise<{ user: DB_PermissionUser, userGroups: DB_PermissionGroup[] }> {
-		const user = await ModuleBE_PermissionUserDB.queryUnique({accountId: uuid});
+	async getUserDetails(): Promise<{
+		user: DB_PermissionUser,
+		userGroups: DB_PermissionGroup[]
+	}> {
+		const user = await ModuleBE_PermissionUserDB.queryUnique({accountId: MemKey_AccountId.get()});
 		const userGroups = user.groups || [];
 		const groups: DB_PermissionGroup[] = await batchActionParallel(userGroups.map(userGroup => userGroup.groupId), 10, subGroupIds => ModuleBE_PermissionGroup.query({where: {_id: {$in: subGroupIds}}}));
 
@@ -217,7 +227,7 @@ export class ModuleBE_PermissionsAssert_Class
 	async getApiDetails(_path: string, projectId: string) {
 		const path = _path.substring(0, (_path + '?').indexOf('?'));
 		const apiDb = await ModuleBE_PermissionApi.queryUnique({path, projectId});
-		const requestPermissions = await this.getAccessLevels(apiDb.accessLevelIds || []);
+		const requestPermissions = await this.getAccessLevels( apiDb.accessLevelIds || []);
 
 		return {
 			apiDb,
@@ -227,14 +237,19 @@ export class ModuleBE_PermissionsAssert_Class
 
 	async getApisDetails(urls: string[], projectId: string) {
 		const paths = urls.map(_path => _path.substring(0, (_path + '?').indexOf('?')));
-		const apiDbs = await batchActionParallel(paths, 10, elements => ModuleBE_PermissionApi.query({where: {projectId, path: {$in: elements}}}));
+		const apiDbs = await batchActionParallel(paths, 10, elements => ModuleBE_PermissionApi.query({
+			where: {
+				projectId,
+				path: {$in: elements}
+			}
+		}));
 		return Promise.all(paths.map(async path => {
 			const apiDb = apiDbs.find(_apiDb => _apiDb.path === path);
 			if (!apiDb)
 				return;
 
 			try {
-				const requestPermissions = await this.getAccessLevels(apiDb.accessLevelIds);
+				const requestPermissions = await this.getAccessLevels( apiDb.accessLevelIds);
 				return ({
 					apiDb,
 					requestPermissions
@@ -245,7 +260,7 @@ export class ModuleBE_PermissionsAssert_Class
 		}));
 	}
 
-	private async getAccessLevels(_accessLevelIds?: string[]): Promise<DB_PermissionAccessLevel[]> {
+	private async getAccessLevels( _accessLevelIds?: string[]): Promise<DB_PermissionAccessLevel[]> {
 		const accessLevelIds = filterDuplicates(_accessLevelIds || []);
 		const requestPermissions = await batchActionParallel(accessLevelIds, 10, elements => ModuleBE_PermissionAccessLevel.query({where: {_id: {$in: elements}}}));
 		const idNotFound = accessLevelIds.find(lId => !requestPermissions.find(r => r._id === lId));

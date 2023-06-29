@@ -20,14 +20,8 @@
  */
 
 import {FirestoreQuery} from '@nu-art/firebase';
-import {
-	DatabaseWrapperBE,
-	FirebaseRef,
-	FirestoreCollection,
-	FirestoreTransaction,
-	ModuleBE_Firebase
-} from '@nu-art/firebase/backend';
-import {addRoutes, createQueryServerApi, ExpressRequest, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
+import {DatabaseWrapperBE, FirebaseRef, FirestoreCollection, FirestoreTransaction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {addRoutes, createQueryServerApi, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
 import {_keys, currentTimeMillis, DB_Object, filterDuplicates, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
 import {_EmptyQuery, ApiDef_SyncManager, DBSyncData} from '../shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
@@ -95,12 +89,14 @@ export class ModuleBE_SyncManager_Class
 		await this.deletedCount.set(deletedCount);
 	}
 
-	queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>, transaction: FirestoreTransaction): Promise<DeletedDBItem[]> {
+	queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>, transaction?: FirestoreTransaction): Promise<DeletedDBItem[]> {
 		const finalQuery: FirestoreQuery<DeletedDBItem> = {
 			...query,
 			where: {...query.where, __collectionName: collectionName}
 		};
-		return transaction.query(this.collection, finalQuery);
+		if (transaction)
+			return transaction.query(this.collection, finalQuery);
+		return this.collection.query(finalQuery);
 	}
 
 	__onCleanupInvoked = async () => {
@@ -151,7 +147,7 @@ export class ModuleBE_SyncManager_Class
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
 	}
 
-	private fetchDBSyncData = async (_: undefined, request: ExpressRequest) => {
+	private fetchDBSyncData = async (_: undefined) => {
 		const fbSyncData = await this.syncData.get({});
 		const missingModules = this.dbModules.filter(dbModule => !fbSyncData[dbModule.getCollectionName()]);
 		if (missingModules.length) {

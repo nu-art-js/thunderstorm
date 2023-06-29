@@ -21,7 +21,7 @@
  */
 import {Module} from './module';
 import {Dispatcher} from './dispatcher';
-import {BadImplementationException} from './exceptions';
+import {BadImplementationException} from './exceptions/exceptions';
 import {Logger} from './logger/Logger';
 import {addItemToArray} from '../utils/array-tools';
 
