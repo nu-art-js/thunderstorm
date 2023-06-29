@@ -19,20 +19,25 @@
  * limitations under the License.
  */
 
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey_HttpRequestBody, MemKey_HttpRequestHeaders, MemKey_HttpRequestQuery, MemKey_HttpRequestUrl} from './consts';
 import {__stringify, _keys, ApiException, isErrorOfType, StaticLogger, StringMap} from '@nu-art/ts-common';
-import {HttpErrorHandler, HttpRequestData} from '../../utils/types';
+import {HttpErrorHandler} from '../../utils/types';
 
 
-export type AppPropsResolver = (requestData: HttpRequestData) => Promise<StringMap>;
+export type AppPropsResolver = (requestData: MemStorage) => Promise<StringMap>;
 const _propsResolver: AppPropsResolver = async () => {
 	return {} as StringMap;
 };
 
 export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], propsResolver: AppPropsResolver = _propsResolver): HttpErrorHandler {
-	return async (requestData: HttpRequestData, error: ApiException) => {
-		const {headers, query, url, body} = requestData;
+	return async (requestCache: MemStorage, error: ApiException) => {
+		const headers = MemKey_HttpRequestHeaders.get(requestCache);
+		const query = MemKey_HttpRequestQuery.get(requestCache);
+		const url = MemKey_HttpRequestUrl.get(requestCache);
+		const body = MemKey_HttpRequestBody.get(requestCache);
 
-		const props = await propsResolver(requestData);
+		const props = await propsResolver(requestCache);
 		StaticLogger.logInfo('props: ', props);
 		let slackMessage = '';
 		slackMessage += `${error ? error.responseCode : '000'} - ${url}   \n\n`;
@@ -58,7 +63,7 @@ export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], p
 			}
 		}
 
-		const _headers = _keys(headers).reduce((toRet, key) => {
+		const _headers = headers && _keys(headers).reduce((toRet, key) => {
 			if (headersToAttach.includes(key as string))
 				toRet[key] = headers[key];
 
@@ -87,6 +92,6 @@ export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], p
 		if (isErrorOfType(error.cause || error, ApiException)?.responseBody)
 			slackMessage += `Error: ${__stringify(isErrorOfType(error.cause || error, ApiException)!.responseBody.error, true)}`;
 
-		return {message: slackMessage};
+		return slackMessage;
 	};
 }

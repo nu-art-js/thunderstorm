@@ -21,7 +21,6 @@ import {__stringify, ApiException, decode, ImplementationMissingException, Modul
 import {
 	ApiDef_SAML_BE,
 	ApiStruct_SAML_BE,
-	PostAssertBody,
 	QueryParam_Email,
 	QueryParam_RedirectUrl,
 	QueryParam_SessionId,
@@ -30,8 +29,10 @@ import {
 	Response_Auth,
 	Response_LoginSAML
 } from './_imports';
-import {addRoutes, ApiResponse, createQueryServerApi, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createQueryServerApi, ServerApi} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_Account} from './ModuleBE_Account';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {MemKey_HttpRequestBody, MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 
 
 /**
@@ -85,9 +86,9 @@ class AssertSamlToken
 		super(ApiDef_SAML_BE.v1.assertSAML);
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PostAssertBody) {
-		const redirectUrl = await ModuleBE_SAML.assertSaml(body);
-		return await response.redirect(302, redirectUrl);
+	protected async process(mem: MemStorage) {
+		const redirectUrl = await ModuleBE_SAML.assertSaml(mem);
+		return await MemKey_HttpResponse.get(mem).redirect(302, redirectUrl);
 	}
 }
 
@@ -115,19 +116,20 @@ export class ModuleBE_SAML_Class
 		this.identityProvider = new IdentityProvider(this.config.idConfig);
 	}
 
-	async loginSAML(__email: string): Promise<Response_Auth> {
+	async loginSAML(__email: string, mem: MemStorage): Promise<Response_Auth> {
 		const _email = __email.toLowerCase();
-		const account = await this.createSAML(_email);
+		const account = await this.createSAML(_email, mem);
 
-		return await ModuleBE_Account.upsertSession(account);
+		return await ModuleBE_Account.upsertSession(account, mem);
 	}
 
-	async assertSaml(request_body: PostAssertBody) {
+	async assertSaml(mem: MemStorage) {
+		const request_body = MemKey_HttpRequestBody.get(mem);
 		try {
 			const data = await this.assert({request_body});
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
 
-			const session = await this.loginSAML(data.userId);
+			const session = await this.loginSAML(data.userId, mem);
 
 			let redirectUrl = data.loginContext[QueryParam_RedirectUrl];
 
@@ -140,12 +142,12 @@ export class ModuleBE_SAML_Class
 		}
 	}
 
-	private async createSAML(__email: string) {
+	private async createSAML(__email: string, mem: MemStorage) {
 		const _email = __email.toLowerCase();
-		return ModuleBE_Account.getOrCreate({where: {email: _email}});
+		return ModuleBE_Account.getOrCreate({where: {email: _email}}, mem);
 	}
 
-	loginRequest = async (loginContext: RequestParams_LoginSAML, request?: ExpressRequest) => {
+	loginRequest = async (loginContext: RequestParams_LoginSAML) => {
 		return new Promise<Response_LoginSAML>((resolve, rejected) => {
 			const sp = new ServiceProvider(this.config.spConfig);
 			const options = {

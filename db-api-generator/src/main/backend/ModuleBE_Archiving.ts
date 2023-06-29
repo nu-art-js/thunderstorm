@@ -20,6 +20,8 @@ import {
 	RequestQuery_GetHistory
 } from '../shared/archiving/apis';
 import {_EmptyQuery} from '../shared';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+
 
 type Params = { collectionName: string, docId: string }
 
@@ -82,7 +84,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @returns - A promise that performs the deletion operation.
 	 * @throws - A `BadImplementationException` if no module is found for the given collection or if no document with the provided ID is found.
 	 */
-	hardDeleteUnique = async (body: RequestBody_HardDeleteUnique) => {
+	hardDeleteUnique = async (body: RequestBody_HardDeleteUnique, mem: MemStorage) => {
 		const {_id, collectionName, dbInstance} = body;
 		const dbModule = this.moduleMapper[collectionName];
 
@@ -98,7 +100,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 			//make sure trigger will delete object, and it's _archived collection
 			instance.__hardDelete = true;
 
-			const processor = await dbModule.upsert_Read(instance, transaction);
+			const processor = await dbModule.upsert_Read(instance, mem, transaction);
 			await processor();
 		});
 	};
@@ -112,18 +114,18 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @returns - A promise that performs the deletion operation.
 	 * @throws - A BadImplementationException if no corresponding module is found for the given collection.
 	 */
-	hardDeleteAll = async (queryParams: RequestQuery_DeleteAll) => {
+	hardDeleteAll = async (queryParams: RequestQuery_DeleteAll, mem: MemStorage) => {
 		const dbModule = this.moduleMapper[queryParams.collectionName];
 
 		if (!dbModule)
 			throw new BadImplementationException('no module found');
 
-		const collectionItems = await dbModule.query(_EmptyQuery);
+		const collectionItems = await dbModule.query(_EmptyQuery, mem);
 		await batchActionParallel(collectionItems, 10, (chunk) => Promise.all(chunk.map(item => this.hardDeleteUnique({
 			_id: item._id,
 			collectionName: dbModule.collection.name,
 			dbInstance: item
-		}))));
+		}, mem))));
 	};
 
 	/**

@@ -19,10 +19,11 @@
  * limitations under the License.
  */
 
-import {ExpressRequest, ExpressResponse, HttpRequestData, ServerApi_Middleware} from '../../utils/types';
+import {ServerApi_Middleware} from '../../utils/types';
 import {ModuleBE_RemoteProxy} from './ModuleBE_RemoteProxy';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
-export const AssertSecretMiddleware: ServerApi_Middleware = async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
-	ModuleBE_RemoteProxy.assertSecret(req);
+export const AssertSecretMiddleware: ServerApi_Middleware = async (mem: MemStorage) => {
+	ModuleBE_RemoteProxy.assertSecret(mem);
 };

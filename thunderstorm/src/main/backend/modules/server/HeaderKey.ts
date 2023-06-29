@@ -19,7 +19,8 @@
  * limitations under the License.
  */
 
-import {ExpressRequest} from '../../utils/types';
+import {MemKey_HttpRequest} from './consts';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ApiException} from '@nu-art/ts-common';
 
 
@@ -32,8 +33,8 @@ export class HeaderKey {
 		this.responseCode = responseCode;
 	}
 
-	get(request: ExpressRequest) {
-		const value = request.header(this.key);
+	get(mem: MemStorage) {
+		const value = MemKey_HttpRequest.get(mem).header(this.key);
 		if (!value)
 			throw new ApiException(this.responseCode, `Missing expected header: ${this.key}`);
 

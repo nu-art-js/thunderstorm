@@ -41,7 +41,7 @@ import {
 } from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {CleanupDetails, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './AssetBucketListener';
@@ -55,6 +55,7 @@ import {
 	TempSecureUrl
 } from '../../shared';
 import {DBApiConfig, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -128,8 +129,8 @@ export class ModuleBE_Assets_Class
 		this.storage = ModuleBE_Firebase.createAdminSession(this.config.authKey).getStorage();
 	}
 
-	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
-		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, async chunk => await ModuleBE_Assets.query({where: {_id: {$in: chunk}}}));
+	async getAssetsContent(assetIds: string[], mem: MemStorage): Promise<AssetContent[]> {
+		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, async chunk => await ModuleBE_Assets.query({where: {_id: {$in: chunk}}}, mem));
 		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)));
 		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()));
 
@@ -140,8 +141,8 @@ export class ModuleBE_Assets_Class
 
 	}
 
-	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DB_Asset> {
-		const asset = await super.queryUnique(where, undefined, request);
+	async queryUnique(where: Clause_Where<DB_Asset>, mem: MemStorage, transaction?: FirestoreTransaction): Promise<DB_Asset> {
+		const asset = await super.queryUnique(where, mem);
 		const signedUrl = (asset.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset.signedUrl : undefined;
 		if (!signedUrl) {
 			const url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSecuredUrl(asset.mimeType, Day);
@@ -160,16 +161,16 @@ export class ModuleBE_Assets_Class
 		this.fileValidator[key] = validationConfig;
 	}
 
-	__onCleanupSchedulerAct(): CleanupDetails {
+	__onCleanupSchedulerAct(mem: MemStorage): CleanupDetails {
 		return {
 			moduleKey: this.getName(),
 			interval: Day,
-			cleanup: this.cleanup
+			cleanup: () => this.cleanup(mem),
 		};
 	}
 
-	private cleanup = async (interval = Hour, module: ModuleBE_BaseDB<DB_Asset> = ModuleBE_AssetsTemp) => {
-		const entries: DB_Asset[] = await module.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
+	private cleanup = async (mem: MemStorage, interval = Hour, module: ModuleBE_BaseDB<DB_Asset> = ModuleBE_AssetsTemp) => {
+		const entries: DB_Asset[] = await module.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}}, mem);
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);
 		await Promise.all(entries.map(async dbAsset => {
@@ -180,10 +181,10 @@ export class ModuleBE_Assets_Class
 			await file.delete();
 		}));
 
-		module.delete({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
+		await module.delete({where: {timestamp: {$lt: currentTimeMillis() - interval}}}, mem);
 	};
 
-	async getUrl(files: BaseUploaderFile[]): Promise<TempSecureUrl[]> {
+	async getUrl(files: BaseUploaderFile[], mem: MemStorage): Promise<TempSecureUrl[]> {
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);
 		return Promise.all(files.map(async _file => {
@@ -211,7 +212,7 @@ export class ModuleBE_Assets_Class
 			if (_file.public)
 				dbAsset.public = _file.public;
 
-			const dbTempMeta = await ModuleBE_AssetsTemp.upsert(dbAsset);
+			const dbTempMeta = await ModuleBE_AssetsTemp.upsert(dbAsset, mem);
 			const fileWrapper = await bucket.getFile(dbTempMeta.path);
 			const url = await fileWrapper.getWriteSecuredUrl(_file.mimeType, Hour);
 			return {
@@ -221,16 +222,16 @@ export class ModuleBE_Assets_Class
 		}));
 	}
 
-	processAssetManually = async (feId?: string) => {
+	processAssetManually = async (mem: MemStorage, feId?: string) => {
 		let query: FirestoreQuery<DB_Asset> = {limit: 1};
 		if (feId)
 			query = {where: {feId}};
 
-		const unprocessedFiles: DB_Asset[] = await ModuleBE_AssetsTemp.query(query);
-		return Promise.all(unprocessedFiles.map(asset => this.__processAsset(asset.path)));
+		const unprocessedFiles: DB_Asset[] = await ModuleBE_AssetsTemp.query(query, mem);
+		return Promise.all(unprocessedFiles.map(asset => this.__processAsset(mem, asset.path)));
 	};
 
-	__processAsset = async (filePath?: string) => {
+	__processAsset = async (mem: MemStorage, filePath?: string) => {
 		if (!filePath)
 			throw new ThisShouldNotHappenException('Missing file path');
 
@@ -238,7 +239,7 @@ export class ModuleBE_Assets_Class
 			return this.logInfo(`File was added to storage in path: ${filePath}, NOT via file uploader`);
 
 		this.logInfo(`Looking for file with path: ${filePath}`);
-		const tempMeta = await ModuleBE_AssetsTemp.queryUnique({path: filePath});
+		const tempMeta = await ModuleBE_AssetsTemp.queryUnique({path: filePath}, mem);
 		if (!tempMeta)
 			throw new ThisShouldNotHappenException(`Could not find meta for file with path: ${filePath}`);
 
@@ -289,14 +290,14 @@ export class ModuleBE_Assets_Class
 		}
 
 		const finalDbAsset = await this.runInTransaction(async (transaction): Promise<DB_Asset> => {
-			const duplicatedAssets = await this.query({where: {md5Hash: tempMeta.md5Hash}}, transaction);
+			const duplicatedAssets = await this.query({where: {md5Hash: tempMeta.md5Hash}}, mem, transaction);
 			if (duplicatedAssets.length && duplicatedAssets[0]) {
 				this.logInfo(`${tempMeta.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
 				return {...duplicatedAssets[0], feId: tempMeta.feId};
 			}
 
-			const upsertWrite = await this.upsert_Read(tempMeta, transaction);
-			await ModuleBE_AssetsTemp.deleteUnique(tempMeta._id);
+			const upsertWrite = await this.upsert_Read(tempMeta, mem, transaction);
+			await ModuleBE_AssetsTemp.deleteUnique(tempMeta._id, mem);
 			return await upsertWrite();
 		});
 
