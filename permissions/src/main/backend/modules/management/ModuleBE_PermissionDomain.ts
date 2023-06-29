@@ -26,7 +26,6 @@ import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {DB_EntityDependency} from '@nu-art/firebase';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export class ModuleBE_PermissionDomain_Class
@@ -37,19 +36,19 @@ export class ModuleBE_PermissionDomain_Class
 		super(DBDef_PermissionDomain);
 	}
 
-	__canDeleteEntities = async (type: 'Project', items: DB_PermissionProject[], mem: MemStorage): Promise<DB_EntityDependency<'Domain'>> => {
+	__canDeleteEntities = async (type: 'Project', items: DB_PermissionProject[]): Promise<DB_EntityDependency<'Domain'>> => {
 		let conflicts: DB_PermissionDomain[] = [];
 		const dependencies: Promise<DB_PermissionDomain[]>[] = [];
 
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async projectIds => this.query({where: {projectId: {$in: projectIds}}}, mem)));
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async projectIds => this.query({where: {projectId: {$in: projectIds}}})));
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
 		return {collectionKey: 'Domain', conflictingIds: conflicts.map(dbObjectToId)};
 	};
 
-	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain, mem: MemStorage) {
-		const accessLevels = await ModuleBE_PermissionAccessLevel.query({where: {domainId: dbInstance._id}}, mem);
+	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionDomain) {
+		const accessLevels = await ModuleBE_PermissionAccessLevel.query({where: {domainId: dbInstance._id}});
 		if (accessLevels.length) {
 			throw new ApiException(403, 'You trying delete domain that associated with accessLevels, you need delete the accessLevels first');
 		}
@@ -59,10 +58,10 @@ export class ModuleBE_PermissionDomain_Class
 		return [{namespace: item.namespace, projectId: item.projectId}];
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionDomain, mem: MemStorage, t?: FirestoreTransaction) {
-		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId}, mem);
+	protected async preUpsertProcessing(dbInstance: DB_PermissionDomain, t?: FirestoreTransaction) {
+		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId});
 
-		const email = MemKey_AccountEmail.get(mem);
+		const email = MemKey_AccountEmail.get();
 		if (email)
 			dbInstance._audit = auditBy(email);
 	}

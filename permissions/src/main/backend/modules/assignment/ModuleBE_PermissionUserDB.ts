@@ -50,7 +50,6 @@ import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export class ModuleBE_PermissionUserDB_Class
@@ -61,11 +60,11 @@ export class ModuleBE_PermissionUserDB_Class
 		super(DBDef_PermissionUser);
 	}
 
-	__canDeleteEntities = async <T extends 'Group'>(type: T, items: PermissionTypes[T][], mem: MemStorage): Promise<DB_EntityDependency<'User'>> => {
+	__canDeleteEntities = async <T extends 'Group'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'User'>> => {
 		let conflicts: DB_PermissionUser[] = [];
 		const dependencies: Promise<DB_PermissionUser[]>[] = [];
 
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {__groupIds: {$aca: ids}}}, mem)));
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {__groupIds: {$aca: ids}}})));
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
@@ -89,8 +88,8 @@ export class ModuleBE_PermissionUserDB_Class
 			});
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionUser, mem: MemStorage, t?: FirestoreTransaction): Promise<void> {
-		const email = MemKey_AccountEmail.get(mem);
+	protected async preUpsertProcessing(dbInstance: DB_PermissionUser, t?: FirestoreTransaction): Promise<void> {
+		const email = MemKey_AccountEmail.get();
 		if (email)
 			dbInstance._audit = auditBy(email);
 
@@ -100,7 +99,7 @@ export class ModuleBE_PermissionUserDB_Class
 			return;
 
 		const userGroups = await batchAction(userGroupIds, 10, (chunked) => {
-			return ModuleBE_PermissionGroup.query({where: {_id: {$in: chunked}}}, mem);
+			return ModuleBE_PermissionGroup.query({where: {_id: {$in: chunked}}});
 		});
 
 		if (userGroupIds.length !== userGroups.length) {
@@ -133,15 +132,15 @@ export class ModuleBE_PermissionUserDB_Class
 		}
 	}
 
-	async __onUserLogin(account: UI_Account, mem: MemStorage) {
-		await this.insertIfNotExist(account.email, mem);
+	async __onUserLogin(account: UI_Account) {
+		await this.insertIfNotExist(account.email);
 	}
 
-	async __onNewUserRegistered(account: UI_Account, mem: MemStorage) {
-		await this.insertIfNotExist(account.email, mem);
+	async __onNewUserRegistered(account: UI_Account) {
+		await this.insertIfNotExist(account.email);
 	}
 
-	async insertIfNotExist(email: string, mem: MemStorage) {
+	async insertIfNotExist(email: string) {
 		return this.runInTransaction(async (transaction) => {
 
 			const account = await ModuleBE_Account.getUser(email);
@@ -152,14 +151,14 @@ export class ModuleBE_PermissionUserDB_Class
 			if (users.length)
 				return;
 
-			return this.upsert({accountId: account._id, groups: []}, mem, transaction);
+			return this.upsert({accountId: account._id, groups: []}, transaction);
 		});
 	}
 
-	async assignAppPermissions(body: Request_AssignAppPermissions, mem: MemStorage) {
+	async assignAppPermissions(body: Request_AssignAppPermissions) {
 
 		let assignAppPermissionsObj: AssignAppPermissions;
-		const accountId = MemKey_AccountId.get(mem);
+		const accountId = MemKey_AccountId.get();
 		if (body.appAccountId)
 			// when creating project
 			assignAppPermissionsObj = {...body, granterUserId: body.appAccountId, sharedUserIds: [accountId]};
@@ -174,7 +173,7 @@ export class ModuleBE_PermissionUserDB_Class
 		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId, {
 			groupId,
 			customField: assignAppPermissionsObj.customField
-		}, mem);
+		});
 
 		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
 			throw new BadImplementationException('Group to must be a part of the groups to removed array');
@@ -211,7 +210,7 @@ export class ModuleBE_PermissionUserDB_Class
 				return user;
 			});
 
-			return this.upsertAll(updatedUsers, mem, transaction);
+			return this.upsertAll(updatedUsers, transaction);
 		});
 	}
 }

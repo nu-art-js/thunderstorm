@@ -20,7 +20,6 @@ import {ServerApi} from '@nu-art/thunderstorm/backend';
 
 import {testUserPermissionsTime} from './_imports';
 import {ApiDef_TestPermissions, ApiStruct_TestPermissions} from '../../../../shared';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 class ServerApi_TestPermissions
@@ -30,9 +29,9 @@ class ServerApi_TestPermissions
 		super(ApiDef_TestPermissions.v1.test);
 	}
 
-	protected async process(mem: MemStorage): Promise<void> {
+	protected async process(): Promise<void> {
 		this.logInfo('Starting test permissions assert');
-		await testUserPermissionsTime(mem);
+		await testUserPermissionsTime();
 		this.logInfo('---Finish test permissions assert---');
 	}
 }

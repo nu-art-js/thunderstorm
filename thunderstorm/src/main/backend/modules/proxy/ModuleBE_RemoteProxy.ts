@@ -24,7 +24,6 @@ import {ServerApi} from '../server/server-api';
 import {ServerApi_Middleware} from '../../utils/types';
 import {HeaderKey} from '../server/HeaderKey';
 import {TypedApi} from '../../../shared';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_HttpRequestPath} from '../server/consts';
 
 
@@ -45,8 +44,8 @@ export type RemoteProxyConfig = {
 export class ModuleBE_RemoteProxy_Class<Config extends RemoteProxyConfig>
 	extends Module<Config> {
 
-	readonly Middleware: ServerApi_Middleware = async (mem: MemStorage) => {
-		ModuleBE_RemoteProxy.assertSecret(mem);
+	readonly Middleware: ServerApi_Middleware = async () => {
+		ModuleBE_RemoteProxy.assertSecret();
 	};
 	private secretHeader!: HeaderKey;
 	private proxyHeader!: HeaderKey;
@@ -65,12 +64,12 @@ export class ModuleBE_RemoteProxy_Class<Config extends RemoteProxyConfig>
 		this.proxyHeader = new HeaderKey(this.config.proxyHeaderName);
 	}
 
-	assertSecret(mem: MemStorage) {
+	assertSecret() {
 		if (!this.secretHeader || !this.proxyHeader)
 			throw new ImplementationMissingException('MUST add RemoteProxy to your module list!!!');
 
-		const secret = this.secretHeader.get(mem);
-		const proxyId = this.proxyHeader.get(mem);
+		const secret = this.secretHeader.get();
+		const proxyId = this.proxyHeader.get();
 
 		const expectedSecret = this.config.remotes[proxyId];
 
@@ -86,7 +85,7 @@ export class ModuleBE_RemoteProxy_Class<Config extends RemoteProxyConfig>
 		if (expectedSecret.secret !== secret)
 			throw new ApiException(403, `Secret does not match for proxyId: ${proxyId}`);
 
-		const requestUrl = MemKey_HttpRequestPath.get(mem);
+		const requestUrl = MemKey_HttpRequestPath.get();
 		if (!expectedSecret.urls?.find(urlPattern => requestUrl.match(urlPattern)))
 			throw new ApiException(403, `Requested url '${requestUrl}' is not allowed from proxyId: ${proxyId}`);
 
@@ -105,9 +104,9 @@ export class ServerApi_Proxy<API extends TypedApi<any, any, any, any>>
 		this.setMiddlewares(ModuleBE_RemoteProxy.Middleware);
 	}
 
-	protected async process(mem: MemStorage): Promise<API['R']> {
+	protected async process(): Promise<API['R']> {
 		// @ts-ignore
-		return this.api.process(mem);
+		return this.api.process();
 	}
 }
 
@@ -121,9 +120,9 @@ export class ServerApi_Alternate<API extends TypedApi<any, any, any, any>>
 		this.api = api;
 	}
 
-	protected async process(mem: MemStorage): Promise<API['R']> {
+	protected async process(): Promise<API['R']> {
 		// @ts-ignore
-		return this.api.process(mem);
+		return this.api.process();
 	}
 }
 

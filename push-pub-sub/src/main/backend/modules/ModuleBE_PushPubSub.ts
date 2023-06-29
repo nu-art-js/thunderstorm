@@ -53,7 +53,6 @@ import {
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 
 import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 type Config = {
@@ -91,8 +90,8 @@ export class ModuleBE_PushPubSub_Class
 		this.messaging = session.getMessaging();
 	}
 
-	async register(body: Request_PushRegister, mem: MemStorage) {
-		const userId = MemKey_AccountId.get(mem);
+	async register(body: Request_PushRegister) {
+		const userId = MemKey_AccountId.get();
 		if (!userId)
 			throw new ImplementationMissingException('Missing user from accounts Module');
 
@@ -238,7 +237,7 @@ export class ModuleBE_PushPubSub_Class
 		return {response, messages};
 	};
 
-	__onCleanupSchedulerAct = (mem: MemStorage) => {
+	__onCleanupSchedulerAct = () => {
 		return {
 			cleanup: this.scheduledCleanup,
 			interval: Day,

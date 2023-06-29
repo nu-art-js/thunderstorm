@@ -20,7 +20,6 @@
  */
 
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {
 	Const_UniqueKey, Day,
 	DB_Object, DB_Object_validator, DBDef,
@@ -70,7 +69,7 @@ export const getModuleBEConfig = <T extends DB_Object>(dbDef: DBDef<T>): DBApiBE
 };
 
 export type CanDeleteDBEntities<AllTypes extends TS_Object, DeleteType extends string = string, ValidateType extends string = string> = {
-	__canDeleteEntities: <T extends DeleteType>(type: T, items: (AllTypes[T])[], mem: MemStorage, transaction?: FirestoreTransaction) => Promise<DB_EntityDependency<ValidateType>>
+	__canDeleteEntities: <T extends DeleteType>(type: T, items: (AllTypes[T])[], transaction?: FirestoreTransaction) => Promise<DB_EntityDependency<ValidateType>>
 }
 
 export const canDeleteDispatcher = new Dispatcher<CanDeleteDBEntities<any, any>, '__canDeleteEntities'>('__canDeleteEntities');

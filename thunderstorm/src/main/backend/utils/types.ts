@@ -20,7 +20,6 @@
  */
 
 import * as express from 'express';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {CoreOptions, UriOptions} from 'request';
 import {ApiException} from '@nu-art/ts-common';
 
@@ -33,5 +32,5 @@ export type ExpressRequestHandler = express.RequestHandler
 
 export type RequestOptions = CoreOptions & UriOptions
 
-export type ServerApi_Middleware = (storage: MemStorage) => Promise<any>
-export type HttpErrorHandler = (requestData: MemStorage, error: ApiException) => Promise<string>;
+export type ServerApi_Middleware = () => Promise<any>
+export type HttpErrorHandler = (error: ApiException) => Promise<string>;

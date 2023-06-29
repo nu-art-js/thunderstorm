@@ -35,6 +35,7 @@ import {ObjectMetadata} from 'firebase-functions/v1/storage';
 import {Message} from 'firebase-admin/lib/messaging/messaging-api';
 import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
 import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export interface LocalRequest
@@ -288,7 +289,7 @@ export abstract class FirebaseScheduledFunction<ConfigType extends any = any>//t
 			return this.function;
 
 		return this.function = functions.runWith(this.runtimeOptions).pubsub.schedule(this.schedule).onRun(async () => {
-			return this.handleCallback(() => this._onScheduledEvent());
+			return this.handleCallback(() => new MemStorage().init(this._onScheduledEvent));
 		});
 	};
 }

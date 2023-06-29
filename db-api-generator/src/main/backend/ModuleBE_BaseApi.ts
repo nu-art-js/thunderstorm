@@ -35,7 +35,6 @@ import {IndexKeys, QueryParams} from '@nu-art/thunderstorm';
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {_EmptyQuery, DBApiDefGeneratorIDB, UpgradeCollectionBody} from '../shared';
 import {DBApiConfig, ModuleBE_BaseDB} from './ModuleBE_BaseDB';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 
 
@@ -75,30 +74,30 @@ export class ModuleBE_BaseApi_Class<DBType extends DB_Object, ConfigType extends
 		return {...this.dbModule.dbDef.metadata, ...DB_Object_Metadata} as Metadata<DBType> || `not implemented yet for collection '${this.dbModule.dbDef.dbName}'`;
 	};
 
-	private _deleteAll = async (ignore: {}, mem: MemStorage) => this.dbModule.deleteAll(mem);
+	private _deleteAll = async (ignore: {}) => this.dbModule.deleteAll();
 
-	private _upgradeCollection = async (body: UpgradeCollectionBody, mem: MemStorage) => {
+	private _upgradeCollection = async (body: UpgradeCollectionBody) => {
 		const forceUpdate = body.forceUpdate || false;
 		// this should be paginated
 		let items = (await this.dbModule.collection.query(_EmptyQuery)) as DBType[];
 		if (!forceUpdate)
 			items = items.filter(item => item._v !== this.dbModule.dbDef.versions![0]);
-		await this.dbModule.upgradeInstances(items, mem);
-		await this.dbModule.upsertAll(items, mem);
+		await this.dbModule.upgradeInstances(items);
+		await this.dbModule.upsertAll(items);
 	};
 
-	private _sync = async (query: FirestoreQuery<DBType>, mem: MemStorage) => this.dbModule.querySync(query, mem);
-	private _deleteQuery = async (query: FirestoreQuery<DBType>, mem: MemStorage): Promise<DBType[]> => {
+	private _sync = async (query: FirestoreQuery<DBType>) => this.dbModule.querySync(query);
+	private _deleteQuery = async (query: FirestoreQuery<DBType>): Promise<DBType[]> => {
 		if (!query.where)
 			throw new ApiException(400, `Cannot delete without a where clause, using query: ${__stringify(query)}`);
 
 		if (_values(query.where).filter(v => v === undefined || v === null).length > 0)
 			throw new ApiException(400, `Cannot delete with property value undefined or null, using query: ${__stringify(query)}`);
 
-		return this.dbModule.delete(query, mem);
+		return this.dbModule.delete(query);
 	};
 
-	private _deleteUnique = async (id: DB_BaseObject, mem: MemStorage): Promise<DBType> => this.dbModule.deleteUnique(id._id, mem);
+	private _deleteUnique = async (id: DB_BaseObject): Promise<DBType> => this.dbModule.deleteUnique(id._id);
 
 	/*›
  * TO BE MOVED ABOVE THIS COMMENT
@@ -110,15 +109,15 @@ export class ModuleBE_BaseApi_Class<DBType extends DB_Object, ConfigType extends
  * TO BE MOVED ABOVE THIS COMMENT
  */
 
-	private _upsert = async (instance: PreDB<DBType>, mem: MemStorage) => this.dbModule.upsert(instance, mem);
+	private _upsert = async (instance: PreDB<DBType>) => this.dbModule.upsert(instance);
 
-	private _upsertAll = async (instances: PreDB<DBType>[], mem: MemStorage) => this.dbModule.upsertAll(instances, mem);
+	private _upsertAll = async (instances: PreDB<DBType>[]) => this.dbModule.upsertAll(instances);
 
-	private _patch = async (instance: IndexKeys<DBType, Ks> & Partial<DBType>, mem: MemStorage) => this.dbModule.patch(instance, mem);
+	private _patch = async (instance: IndexKeys<DBType, Ks> & Partial<DBType>) => this.dbModule.patch(instance);
 
-	private _query = async (query: FirestoreQuery<DBType>, mem: MemStorage) => this.dbModule.query(query, mem);
+	private _query = async (query: FirestoreQuery<DBType>) => this.dbModule.query(query);
 
-	private _queryUnique = async (where: QueryParams, mem: MemStorage) => this.dbModule.queryUnique(where as Clause_Where<DBType>, mem);
+	private _queryUnique = async (where: QueryParams) => this.dbModule.queryUnique(where as Clause_Where<DBType>);
 
 }
 
