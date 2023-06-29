@@ -24,6 +24,7 @@
  */
 import {
 	_keys,
+	ApiException,
 	BadImplementationException,
 	composeUrl,
 	currentTimeMillis,
@@ -44,8 +45,17 @@ import {HttpServer} from './HttpServer';
 // noinspection TypeScriptPreferShortImport
 import {ApiDef, BodyApi, QueryApi, QueryParams, TypedApi} from '../../../shared';
 import {assertProperty} from '../../utils/to-be-removed';
-import {ApiException,} from '../../exceptions';
-import {ExpressRequest, ExpressResponse, ExpressRouter, HttpRequestData, ServerApi_Middleware} from '../../utils/types';
+import {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from '../../utils/types';
+import {
+	MemKey_HttpRequest,
+	MemKey_HttpRequestBody,
+	MemKey_HttpRequestHeaders,
+	MemKey_HttpRequestMethod,
+	MemKey_HttpRequestPath,
+	MemKey_HttpRequestQuery,
+	MemKey_HttpRequestUrl, MemKey_HttpResponse
+} from './consts';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
@@ -131,115 +141,117 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	assertProperty = assertProperty;
 
 	call = async (req: ExpressRequest, res: ExpressResponse) => {
-		const startedAt = currentTimeMillis();
-		const response: ApiResponse = new ApiResponse(this, res);
+		return new MemStorage().init(async () => {
+			const startedAt = currentTimeMillis();
+			const response: ApiResponse = new ApiResponse(this, res);
 
-		this.logInfo(`Intercepted Url: ${req.path}`);
+			this.logInfo(`Intercepted Url: ${req.path}`);
 
-		if (this.headersToLog.length > 0) {
-			const headers: { [s: string]: string | undefined } = {};
-			for (const headerName of this.headersToLog) {
-				headers[headerName] = req.header(headerName);
+			if (this.headersToLog.length > 0) {
+				const headers: { [s: string]: string | undefined } = {};
+				for (const headerName of this.headersToLog) {
+					headers[headerName] = req.header(headerName);
+				}
+				this.logDebug(`-- Headers: `, headers);
 			}
-			this.logDebug(`-- Headers: `, headers);
-		}
 
-		const reqQuery = parse(req.url, true).query as API['P'];
-		if (reqQuery && typeof reqQuery === 'object' && Object.keys(reqQuery as QueryParams).length)
-			this.logVerbose(`-- Url Params: `, reqQuery);
-		else
-			this.logVerbose(`-- No Params`);
-
-		const body: API['B'] | string | undefined = req.body;
-		if (body && ((typeof body === 'object')))
-			if (!this.printRequest)
-				this.logVerbose(`-- Body (Object):  - Not Printing --`);
+			const reqQuery = parse(req.url, true).query as API['P'];
+			if (reqQuery && typeof reqQuery === 'object' && Object.keys(reqQuery as QueryParams).length)
+				this.logVerbose(`-- Url Params: `, reqQuery);
 			else
-				this.logVerbose(`-- Body (Object): `, body as unknown as object);
-		else if (body && (body as string).length)
-			if (!this.printRequest)
-				this.logVerbose(`-- Body (String):  - Not Printing --`);
+				this.logVerbose(`-- No Params`);
+
+			const body: API['B'] | string | undefined = req.body;
+			if (body && ((typeof body === 'object')))
+				if (!this.printRequest)
+					this.logVerbose(`-- Body (Object):  - Not Printing --`);
+				else
+					this.logVerbose(`-- Body (Object): `, body as unknown as object);
+			else if (body && (body as string).length)
+				if (!this.printRequest)
+					this.logVerbose(`-- Body (String):  - Not Printing --`);
+				else
+					this.logVerbose(`-- Body (String): `, body as unknown as string);
 			else
-				this.logVerbose(`-- Body (String): `, body as unknown as string);
-		else
-			this.logVerbose(`-- No Body`);
+				this.logVerbose(`-- No Body`);
 
-		const requestData: HttpRequestData = {
-			method: this.apiDef.method,
-			originalUrl: req.path,
-			headers: req.headers,
-			url: req.url,
-			query: reqQuery,
-			body: body as API['B'],
-		};
-
-		try {
-			this.bodyValidator && tsValidate<API['B']>(body as API['B'], this.bodyValidator);
-			this.queryValidator && tsValidate<API['P']>(reqQuery, this.queryValidator);
-
-			if (this.middlewares)
-				this.middlewareResults = await Promise.all(this.middlewares.map(m => m(req, res, requestData)));
-
-			const toReturn: unknown = await this.process(req, response, reqQuery, body as API['B']);
-			if (response.isConsumed())
-				return;
-
-			if (!toReturn)
-				return await response.end(200);
-
-			// TODO need to handle stream and buffers
-			// if (Buffer.isBuffer(toReturn))
-			// 	return response.stream(200, toReturn as Buffer);
-
-			const responseType = typeof toReturn;
-			if (responseType === 'object')
-				return await response.json(200, toReturn as object);
-
-			if (responseType === 'string' && (toReturn as string).toLowerCase().startsWith('<html'))
-				return await response.html(200, toReturn as string);
-
-			return await response.text(200, toReturn as string);
-		} catch (err: any) {
-			let e: any = err;
-			if (typeof e === 'string')
-				e = new BadImplementationException(`String was thrown: ${e}`);
-
-			if (!(e instanceof Error) && typeof e === 'object')
-				e = new BadImplementationException(`Object instance was thrown: ${JSON.stringify(e)}`);
+			MemKey_HttpRequest.set(req);
+			MemKey_HttpResponse.set(response);
+			MemKey_HttpRequestHeaders.set(req.headers);
+			MemKey_HttpRequestQuery.set(reqQuery);
+			MemKey_HttpRequestUrl.set(req.url);
+			MemKey_HttpRequestMethod.set(this.apiDef.method);
+			MemKey_HttpRequestPath.set(req.path);
+			MemKey_HttpRequestBody.set(body);
 
 			try {
-				this.logErrorBold(e);
-			} catch (e2: any) {
-				this.logErrorBold('Error while handling error on request...', e2);
-				this.logErrorBold(`Original error thrown: ${JSON.stringify(e)}`);
-				this.logErrorBold(`-- Someone was stupid... you MUST only throw an Error and not objects or strings!! --`);
+				this.bodyValidator && tsValidate<API['B']>(body as API['B'], this.bodyValidator);
+				this.queryValidator && tsValidate<API['P']>(reqQuery, this.queryValidator);
+
+				if (this.middlewares)
+					this.middlewareResults = await Promise.all(this.middlewares.map(middleware => middleware()));
+
+				const toReturn: unknown = await this.process();
+				if (response.isConsumed())
+					return;
+
+				if (!toReturn)
+					return await response.end(200);
+
+				// TODO need to handle stream and buffers
+				// if (Buffer.isBuffer(toReturn))
+				// 	return response.stream(200, toReturn as Buffer);
+
+				const responseType = typeof toReturn;
+				if (responseType === 'object')
+					return await response.json(200, toReturn as object);
+
+				if (responseType === 'string' && (toReturn as string).toLowerCase().startsWith('<html'))
+					return await response.html(200, toReturn as string);
+
+				return await response.text(200, toReturn as string);
+			} catch (err: any) {
+				let e: any = err;
+				if (typeof e === 'string')
+					e = new BadImplementationException(`String was thrown: ${e}`);
+
+				if (!(e instanceof Error) && typeof e === 'object')
+					e = new BadImplementationException(`Object instance was thrown: ${JSON.stringify(e)}`);
+
+				try {
+					this.logErrorBold(e);
+				} catch (e2: any) {
+					this.logErrorBold('Error while handling error on request...', e2);
+					this.logErrorBold(`Original error thrown: ${JSON.stringify(e)}`);
+					this.logErrorBold(`-- Someone was stupid... you MUST only throw an Error and not objects or strings!! --`);
+				}
+
+				if (isErrorOfType(e, ValidationException))
+					e = new ApiException(400, 'Validator exception', e);
+
+				if (!isErrorOfType(e, ApiException))
+					e = new ApiException(500, 'Unexpected server error', e);
+
+				const apiException = isErrorOfType(e, ApiException);
+				if (!apiException)
+					throw new MUSTNeverHappenException('MUST NEVER REACH HERE!!!');
+
+				try {
+					await dispatch_onApplicationException.dispatchModuleAsync(e, HttpServer);
+				} catch (e: any) {
+					this.logError('Error while handing server error', e);
+				}
+				if (apiException.responseCode === 500)
+					return response.serverError(apiException);
+
+				return response.exception(apiException);
+			} finally {
+				this.logInfo(`Url Complete in: ${req.path} - ${currentTimeMillis() - startedAt}ms`);
 			}
-
-			if (isErrorOfType(e, ValidationException))
-				e = new ApiException(400, 'Validator exception', e);
-
-			if (!isErrorOfType(e, ApiException))
-				e = new ApiException(500, 'Unexpected server error', e);
-
-			const apiException = isErrorOfType(e, ApiException);
-			if (!apiException)
-				throw new MUSTNeverHappenException('MUST NEVER REACH HERE!!!');
-
-			try {
-				await dispatch_onApplicationException.dispatchModuleAsync(e, HttpServer, requestData);
-			} catch (e: any) {
-				this.logError('Error while handing server error', e);
-			}
-			if (apiException.responseCode === 500)
-				return response.serverError(apiException);
-
-			return response.exception(apiException);
-		} finally {
-			this.logInfo(`Url Complete in: ${req.path} - ${currentTimeMillis() - startedAt}ms`);
-		}
+		});
 	};
 
-	protected abstract process(request: ExpressRequest, response: ApiResponse, queryParams: API['P'], body: API['B']): Promise<API['R']>;
+	protected abstract process(): Promise<API['R']>;
 }
 
 export abstract class ServerApi_Get<API extends QueryApi<any, any, any>>
@@ -269,37 +281,37 @@ export class ServerApi_Redirect<API extends TypedApi<any, any, any, any>>
 		this.redirectUrl = redirectUrl;
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: any): Promise<void> {
-		const url = `${composeUrl(`${HttpServer.getBaseUrl()}${this.redirectUrl}`, queryParams)}`;
-		response.redirect(this.responseCode, url);
+	protected async process(): Promise<void> {
+		const url = `${composeUrl(`${HttpServer.getBaseUrl()}${this.redirectUrl}`, MemKey_HttpRequestQuery.get())}`;
+		MemKey_HttpResponse.get().redirect(this.responseCode, url);
 	}
 }
 
 export class _ServerQueryApi<API extends QueryApi<any, any, any>>
 	extends ServerApi_Get<API> {
-	private readonly action: (params: API['P'], middleware: any, request?: ExpressRequest) => Promise<API['R']>;
+	private readonly action: (params: API['P']) => Promise<API['R']>;
 
-	constructor(apiDef: ApiDef<API>, action: (params: API['P'], middleware: any, request?: ExpressRequest) => Promise<API['R']>) {
+	constructor(apiDef: ApiDef<API>, action: (params: API['P']) => Promise<API['R']>) {
 		super(apiDef);
 		this.action = action;
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: API['P']): Promise<API['R']> {
-		return this.action(queryParams, request);
+	protected async process(): Promise<API['R']> {
+		return this.action(MemKey_HttpRequestQuery.get());
 	}
 }
 
 export class _ServerBodyApi<API extends BodyApi<any, any, any>>
 	extends ServerApi_Post<API> {
-	private readonly action: (body: API['B'], middleware: any, request?: ExpressRequest) => Promise<API['R']>;
+	private readonly action: (body: API['B']) => Promise<API['R']>;
 
-	constructor(apiDef: ApiDef<API>, action: (params: API['B'], middleware: any, request?: ExpressRequest) => Promise<API['R']>) {
+	constructor(apiDef: ApiDef<API>, action: (params: API['B']) => Promise<API['R']>) {
 		super(apiDef);
 		this.action = action;
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: API['B']): Promise<API['R']> {
-		return this.action(body, request);
+	protected async process(): Promise<API['R']> {
+		return this.action(MemKey_HttpRequestBody.get());
 	}
 }
 

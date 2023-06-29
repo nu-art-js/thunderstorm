@@ -19,7 +19,7 @@
 
 
 import {TS_Object} from './types';
-import {AssertionException, BadImplementationException} from '../core/exceptions';
+import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
 
 
 export function deepClone<T>(obj: T): T {

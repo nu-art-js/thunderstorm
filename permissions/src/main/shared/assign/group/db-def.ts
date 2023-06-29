@@ -19,9 +19,6 @@
 
 import {
 	DBDef,
-	tsValidateUniqueId
-} from '@nu-art/db-api-generator';
-import {
 	OmitDBObject,
 	StringMap,
 	tsValidateArray,
@@ -29,6 +26,7 @@ import {
 	tsValidateNonMandatoryObject,
 	tsValidateNumber,
 	tsValidateString,
+	tsValidateUniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {DB_PermissionGroup} from './types';

@@ -19,8 +19,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
-import {DBIndex} from '../../shared/types';
+import {DB_Object, DBIndex, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
 const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
@@ -64,7 +63,10 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 			...config,
 			upgradeProcessor: (db: IDBDatabase) => {
 				if (!db.objectStoreNames.contains(this.config.name)) {
-					const store = db.createObjectStore(this.config.name, {autoIncrement: config.autoIncrement, keyPath: config.uniqueKeys as unknown as string[]});
+					const store = db.createObjectStore(this.config.name, {
+						autoIncrement: config.autoIncrement,
+						keyPath: config.uniqueKeys as unknown as string[]
+					});
 					this.config.indices?.forEach(index => store.createIndex(index.id, index.keys as string | string[], {
 						multiEntry: index.params?.multiEntry,
 						unique: index.params?.unique
@@ -127,7 +129,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 	};
 
 	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: T) => void,
-													 endCallback: () => void, limiterCallback?: () => boolean) => {
+							 endCallback: () => void, limiterCallback?: () => boolean) => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
 

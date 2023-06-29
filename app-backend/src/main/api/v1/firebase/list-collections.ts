@@ -38,7 +38,7 @@
 // 		super(HttpMethod.GET, "list-firebase-collections");
 // 	}
 //
-// 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void) {
+// 	protected async process( response: ApiResponse, queryParams: {}, body: void) {
 // 		return {list: ModuleBE_Firebase.listCollectionsInModules()};
 // 	}
 // }

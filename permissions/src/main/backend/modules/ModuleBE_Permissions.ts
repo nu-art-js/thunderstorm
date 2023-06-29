@@ -17,23 +17,28 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	DB_BaseObject,
+	ImplementationMissingException,
+	Module,
+	PreDB,
+	StringMap
+} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {addRoutes, ApiResponse, createBodyServerApi, createQueryServerApi, ExpressRequest, ServerApi, Storm} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
-	ApiStruct_Permissions,
 	DB_PermissionProject,
 	PredefinedGroup,
 	PredefinedUser,
 	Request_RegisterProject,
-	Request_UserCFsByShareGroups,
 	Request_UsersCFsByShareGroups,
 	Request_UserUrlsPermissions,
 	Response_UsersCFsByShareGroups,
 	UserUrlsPermissions
 } from '../shared';
-import {Header_AccountId, Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
 import {AssertSecretMiddleware} from '@nu-art/thunderstorm/backend/modules/proxy/assert-secret-middleware';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
@@ -47,32 +52,6 @@ type Config = {
 	predefinedUser?: PredefinedUser
 }
 
-class ServerApi_UserCFsByShareGroups
-	extends ServerApi<ApiStruct_Permissions['v1']['getUserCFsByShareGroups']> {
-
-	constructor() {
-		super(ApiDef_Permissions.v1.getUserCFsByShareGroups);
-	}
-
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: Request_UserCFsByShareGroups) {
-		const account = await ModuleBE_Account.validateSession({}, request);
-		return ModuleBE_Permissions.getUserCFsByShareGroups(account._id, body.groupsIds);
-	}
-}
-
-// class ServerApi_RegisterExternalProject
-// 	extends ServerApi<ApiStruct_Permissions['v1']['registerExternalProject']> {
-//
-// 	constructor() {
-// 		super(ApiDef_Permissions.v1.registerExternalProject);
-// 	}
-//
-// 	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: Request_RegisterProject) {
-// 		RemoteProxy.assertSecret(request);
-// 		await ModuleBE_Permissions._registerProject(body);
-// 	}
-// }
-
 export class ModuleBE_Permissions_Class
 	extends Module<Config> {
 
@@ -80,10 +59,10 @@ export class ModuleBE_Permissions_Class
 		super();
 		addRoutes([
 			createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, Middleware_ValidateSession),
-			new ServerApi_UserCFsByShareGroups(),
+			createBodyServerApi(ApiDef_Permissions.v1.getUserCFsByShareGroups, (body) => this.getUserCFsByShareGroups(body.groupsIds)),
 			createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups),
 			createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
-			createQueryServerApi(ApiDef_Permissions.v1.registerProject, this.registerProject)
+			createQueryServerApi(ApiDef_Permissions.v1.registerProject, (params) => this.registerProject())
 		]);
 	}
 
@@ -96,17 +75,17 @@ export class ModuleBE_Permissions_Class
 
 	getProjectIdentity = () => this.config.project;
 
-	async getUserUrlsPermissions(body: Request_UserUrlsPermissions, request: ExpressRequest) {
+	async getUserUrlsPermissions(body: Request_UserUrlsPermissions) {
 
 		const projectId: string = body.projectId;
 		const urlsMap: UserUrlsPermissions = body.urls;
-		const userId: string = Header_AccountId.get(request);
+
 		const requestCustomField: StringMap = body.requestCustomField;
 
 		const urls = Object.keys(urlsMap);
 		const [userDetails, apiDetails] = await Promise.all(
 			[
-				ModuleBE_PermissionsAssert.getUserDetails(userId),
+				ModuleBE_PermissionsAssert.getUserDetails(),
 				ModuleBE_PermissionsAssert.getApisDetails(urls, projectId)
 			]
 		);
@@ -136,14 +115,14 @@ export class ModuleBE_Permissions_Class
 			if (!account)
 				return;
 
-			toRet[email] = await this.getUserCFsByShareGroups(account._id, groupsIds);
+			toRet[email] = await this.getUserCFsByShareGroups(groupsIds);
 		}));
 
 		return toRet;
 	}
 
-	async getUserCFsByShareGroups(userId: string, groupsIds: string[]): Promise<StringMap[]> {
-		const user = await ModuleBE_PermissionUserDB.queryUnique({accountId: userId});
+	async getUserCFsByShareGroups(groupsIds: string[]): Promise<StringMap[]> {
+		const user = await ModuleBE_PermissionUserDB.queryUnique({accountId: MemKey_AccountId.get()});
 		const userCFs: StringMap[] = [];
 		if (!user.groups)
 			return userCFs;

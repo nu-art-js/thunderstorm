@@ -19,7 +19,7 @@
 
 import {deepClone} from './object-tools';
 import {exists} from './tools';
-import {BadImplementationException} from '../core/exceptions';
+import {BadImplementationException} from '../core/exceptions/exceptions';
 
 
 export function mergeObject(original: any, override: any) {

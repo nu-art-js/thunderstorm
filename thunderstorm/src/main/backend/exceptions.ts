@@ -19,27 +19,3 @@
  * limitations under the License.
  */
 
-import {CustomException, TS_Object,} from '@nu-art/ts-common';
-import {ErrorBody, ErrorResponse} from '../shared';
-
-
-export class ApiException<E extends TS_Object | void = void>
-	extends CustomException {
-
-	public readonly responseBody: ErrorResponse<E> = {};
-	public readonly responseCode: number;
-
-	public readonly setErrorBody = (errorBody: ErrorBody<E>) => {
-		this.responseBody.error = errorBody;
-		return this;
-	};
-
-	constructor(responseCode: number, debugMessage?: string, cause?: Error) {
-		super(ApiException, `${responseCode}-${JSON.stringify(debugMessage)}`, cause);
-
-		this.responseCode = responseCode;
-		this.responseBody.debugMessage = debugMessage;
-	}
-
-}
-

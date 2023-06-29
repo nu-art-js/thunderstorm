@@ -16,13 +16,26 @@
  * limitations under the License.
  */
 
-import {addItemToArrayAtIndex, auditBy, BadImplementationException, Module, removeItemFromArray} from '@nu-art/ts-common';
+import {
+	addItemToArrayAtIndex,
+	ApiException,
+	auditBy,
+	BadImplementationException,
+	Module,
+	removeItemFromArray
+} from '@nu-art/ts-common';
 
-import {DB_Document, DB_DocumentHistory, LiveDocHistoryReqParams, LiveDocReqParams, Request_UpdateDocument,} from '../../shared/types';
+import {
+	DB_Document,
+	DB_DocumentHistory,
+	LiveDocHistoryReqParams,
+	LiveDocReqParams,
+	Request_UpdateDocument,
+} from '../../shared/types';
 
 import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 
-import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_LiveDoc} from '../../shared/api';
 
 
