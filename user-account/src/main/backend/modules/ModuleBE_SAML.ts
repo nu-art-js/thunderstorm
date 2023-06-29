@@ -17,11 +17,10 @@
  */
 
 import {IdentityProvider, IdentityProviderOptions, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
-import {__stringify, decode, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {__stringify, ApiException, decode, ImplementationMissingException, Module} from '@nu-art/ts-common';
 import {
 	ApiDef_SAML_BE,
 	ApiStruct_SAML_BE,
-	PostAssertBody,
 	QueryParam_Email,
 	QueryParam_RedirectUrl,
 	QueryParam_SessionId,
@@ -30,8 +29,9 @@ import {
 	Response_Auth,
 	Response_LoginSAML
 } from './_imports';
-import {addRoutes, ApiException, ApiResponse, createQueryServerApi, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createQueryServerApi, ServerApi} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_Account} from './ModuleBE_Account';
+import {MemKey_HttpRequestBody, MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 
 
 /**
@@ -85,9 +85,9 @@ class AssertSamlToken
 		super(ApiDef_SAML_BE.v1.assertSAML);
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: PostAssertBody) {
-		const redirectUrl = await ModuleBE_SAML.assertSaml(body);
-		return await response.redirect(302, redirectUrl);
+	protected async process() {
+		const redirectUrl = await ModuleBE_SAML.assertSaml();
+		return await MemKey_HttpResponse.get().redirect(302, redirectUrl);
 	}
 }
 
@@ -122,7 +122,8 @@ export class ModuleBE_SAML_Class
 		return await ModuleBE_Account.upsertSession(account);
 	}
 
-	async assertSaml(request_body: PostAssertBody) {
+	async assertSaml() {
+		const request_body = MemKey_HttpRequestBody.get();
 		try {
 			const data = await this.assert({request_body});
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
@@ -145,7 +146,7 @@ export class ModuleBE_SAML_Class
 		return ModuleBE_Account.getOrCreate({where: {email: _email}});
 	}
 
-	loginRequest = async (loginContext: RequestParams_LoginSAML, request?: ExpressRequest) => {
+	loginRequest = async (loginContext: RequestParams_LoginSAML) => {
 		return new Promise<Response_LoginSAML>((resolve, rejected) => {
 			const sp = new ServiceProvider(this.config.spConfig);
 			const options = {

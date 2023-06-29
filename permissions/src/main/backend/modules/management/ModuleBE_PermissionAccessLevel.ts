@@ -17,13 +17,20 @@
  * limitations under the License.
  */
 
-import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {auditBy, batchActionParallel, dbObjectToId, filterDuplicates, flatArray, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
+import {
+	ApiException,
+	auditBy,
+	batchActionParallel,
+	dbObjectToId,
+	filterDuplicates,
+	flatArray,
+	MUSTNeverHappenException
+} from '@nu-art/ts-common';
+import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, Request_CreateGroup} from '../../shared';
-import {Clause_Where} from '@nu-art/firebase';
+import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {ModuleBE_PermissionDomain} from './ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionApi} from './ModuleBE_PermissionApi';
 import {ModuleBE_PermissionGroup} from '../assignment/ModuleBE_PermissionGroup';
@@ -56,19 +63,18 @@ export class ModuleBE_PermissionAccessLevel_Class
 		return [{domainId, name}, {domainId, value}];
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionAccessLevel, t?: FirestoreTransaction, request?: ExpressRequest) {
+	protected async preUpsertProcessing(dbInstance: DB_PermissionAccessLevel, t?: FirestoreTransaction) {
 		await ModuleBE_PermissionDomain.queryUnique({_id: dbInstance.domainId});
 
-		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, request);
-			dbInstance._audit = auditBy(account.email);
-		}
+		const email = MemKey_AccountEmail.get();
+		if (email)
+			dbInstance._audit = auditBy(email);
 	}
 
-	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, request: ExpressRequest): Promise<() => Promise<DB_PermissionAccessLevel>> {
+	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel): Promise<() => Promise<DB_PermissionAccessLevel>> {
 		const existDbLevel = await transaction.queryUnique(this.collection, {where: {_id: dbInstance._id}});
 		const groups = await ModuleBE_PermissionGroup.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
-		const returnWrite = await super.upsertImpl_Read(transaction, dbInstance, request);
+		const returnWrite = await super.upsertImpl_Read(transaction, dbInstance);
 		if (existDbLevel) {
 			const callbackfn = (group: Request_CreateGroup) => {
 				const index = group.accessLevelIds?.indexOf(dbInstance._id);

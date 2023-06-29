@@ -17,24 +17,35 @@
  * limitations under the License.
  */
 
-import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {
 	_keys,
+	ApiException,
 	auditBy,
 	BadImplementationException,
 	batchAction,
-	compare,
-	filterDuplicates,
-	dbObjectToId,
 	batchActionParallel,
+	compare,
+	dbObjectToId,
+	filterDuplicates,
 	flatArray
 } from '@nu-art/ts-common';
-import {ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
-import {Clause_Where} from '@nu-art/firebase';
+import {
+	MemKey_AccountEmail,
+	MemKey_AccountId,
+	ModuleBE_Account,
+	OnNewUserRegistered,
+	OnUserLogin
+} from '@nu-art/user-account/backend';
+import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {PermissionsShare} from '../permissions-share';
-import {AssignAppPermissions, DB_PermissionUser, DBDef_PermissionUser, Request_AssignAppPermissions} from '../../shared';
+import {
+	AssignAppPermissions,
+	DB_PermissionUser,
+	DBDef_PermissionUser,
+	Request_AssignAppPermissions
+} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
@@ -77,11 +88,10 @@ export class ModuleBE_PermissionUserDB_Class
 			});
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionUser, t?: FirestoreTransaction, request?: ExpressRequest): Promise<void> {
-		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, request);
-			dbInstance._audit = auditBy(account.email);
-		}
+	protected async preUpsertProcessing(dbInstance: DB_PermissionUser, t?: FirestoreTransaction): Promise<void> {
+		const email = MemKey_AccountEmail.get();
+		if (email)
+			dbInstance._audit = auditBy(email);
 
 		this.setGroupIds(dbInstance);
 		const userGroupIds = filterDuplicates(dbInstance.groups?.map(group => group.groupId) || []);
@@ -145,23 +155,25 @@ export class ModuleBE_PermissionUserDB_Class
 		});
 	}
 
-	async assignAppPermissions(body: Request_AssignAppPermissions, request?: ExpressRequest) {
-		const account = await ModuleBE_Account.validateSession({}, request);
+	async assignAppPermissions(body: Request_AssignAppPermissions) {
 
 		let assignAppPermissionsObj: AssignAppPermissions;
+		const accountId = MemKey_AccountId.get();
 		if (body.appAccountId)
 			// when creating project
-			assignAppPermissionsObj = {...body, granterUserId: body.appAccountId, sharedUserIds: [account._id]};
+			assignAppPermissionsObj = {...body, granterUserId: body.appAccountId, sharedUserIds: [accountId]};
 		else
 			// when I share with you
-			assignAppPermissionsObj = {...body, granterUserId: account._id, sharedUserIds: body.sharedUserIds};
+			assignAppPermissionsObj = {...body, granterUserId: accountId, sharedUserIds: body.sharedUserIds};
 		const sharedUserIds = assignAppPermissionsObj.sharedUserIds || [];
 		if (!sharedUserIds.length)
 			throw new BadImplementationException('SharedUserIds is missing');
 
 		const groupId = assignAppPermissionsObj.group._id;
-		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId,
-			{groupId, customField: assignAppPermissionsObj.customField});
+		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId, {
+			groupId,
+			customField: assignAppPermissionsObj.customField
+		});
 
 		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
 			throw new BadImplementationException('Group to must be a part of the groups to removed array');
@@ -198,7 +210,7 @@ export class ModuleBE_PermissionUserDB_Class
 				return user;
 			});
 
-			return this.upsertAll(updatedUsers, transaction, request);
+			return this.upsertAll(updatedUsers, transaction);
 		});
 	}
 }

@@ -1,10 +1,6 @@
-import {Module} from "@nu-art/ts-common";
-import {
-	User_Group
-} from "../..";
-import {
-	ModuleBE_PermissionsAssert
-} from "./ModuleBE_PermissionsAssert";
+import {Module} from '@nu-art/ts-common';
+import {User_Group} from '../..';
+import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
 
 
 export class PermissionsShare_Class

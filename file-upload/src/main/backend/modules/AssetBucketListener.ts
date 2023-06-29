@@ -20,6 +20,7 @@ import {Firebase_StorageFunction} from '@nu-art/firebase/backend-functions';
 import {EventContext} from 'firebase-functions';
 import {Dispatcher} from '@nu-art/ts-common';
 import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export interface OnAssetUploaded {
@@ -40,10 +41,12 @@ export class AssetBucketListener_Class
 	}
 
 	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
-		const filePath = object.name;
-		await dispatcher_onAssetUploaded.dispatchModuleAsync(filePath);
-		this.logInfo('Object is ', object);
-		this.logInfo('Context is ', context);
+		return new MemStorage().init(async () => {
+			const filePath = object.name;
+			await dispatcher_onAssetUploaded.dispatchModuleAsync(filePath);
+			this.logInfo('Object is ', object);
+			this.logInfo('Context is ', context);
+		});
 	}
 
 }

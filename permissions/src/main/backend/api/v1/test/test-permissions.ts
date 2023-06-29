@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
+import {ServerApi} from '@nu-art/thunderstorm/backend';
 
 import {testUserPermissionsTime} from './_imports';
 import {ApiDef_TestPermissions, ApiStruct_TestPermissions} from '../../../../shared';
@@ -29,7 +29,7 @@ class ServerApi_TestPermissions
 		super(ApiDef_TestPermissions.v1.test);
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: {}, body: void): Promise<void> {
+	protected async process(): Promise<void> {
 		this.logInfo('Starting test permissions assert');
 		await testUserPermissionsTime();
 		this.logInfo('---Finish test permissions assert---');
