@@ -125,5 +125,3 @@ export class ModuleBE_BaseApi_Class<DBType extends DB_Object, ConfigType extends
 export const createApisForDBModule = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>(dbModule: ModuleBE_BaseDB<DBType, ConfigType, Ks>) => {
 	return new ModuleBE_BaseApi_Class<DBType, ConfigType, Ks>(dbModule);
 };
-
-export const DB_ApiGenerator = ModuleBE_BaseApi_Class;
