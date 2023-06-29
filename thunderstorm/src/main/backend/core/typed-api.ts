@@ -22,14 +22,15 @@
 import {AxiosHttpModule} from '../modules/http/AxiosHttpModule';
 import {_ServerBodyApi, _ServerQueryApi} from '../modules/server/server-api';
 import {ApiDef, BaseHttpRequest, BodyApi, HttpMethod_Body, QueryApi} from '../shared';
-import {ExpressRequest, ServerApi_Middleware} from '../utils/types';
+import {ServerApi_Middleware} from '../utils/types';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
-export function createQueryServerApi<API extends QueryApi<any, any, any>>(apiDef: ApiDef<API>, action: (params: API['P'], request: ExpressRequest) => Promise<API['R']>, ...middleware: ServerApi_Middleware[]) {
+export function createQueryServerApi<API extends QueryApi<any, any, any>>(apiDef: ApiDef<API>, action: (params: API['P'], mem: MemStorage) => Promise<API['R']>, ...middleware: ServerApi_Middleware[]) {
 	return new _ServerQueryApi<API>(apiDef, action).setMiddlewares(...middleware);
 }
 
-export function createBodyServerApi<API extends BodyApi<any, any, any>>(apiDef: ApiDef<API>, action: (body: API['B'], request: ExpressRequest) => Promise<API['R']>, ...middleware: ServerApi_Middleware[]) {
+export function createBodyServerApi<API extends BodyApi<any, any, any>>(apiDef: ApiDef<API>, action: (body: API['B'], mem: MemStorage) => Promise<API['R']>, ...middleware: ServerApi_Middleware[]) {
 	return new _ServerBodyApi<API>(apiDef, action).setMiddlewares(...middleware);
 }
 

@@ -50,7 +50,10 @@ import {
 	Request_PushRegister,
 	SubscribeProps
 } from '../../index';
-import {addRoutes, createBodyServerApi, dispatch_queryRequestInfo, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
+
+import {addRoutes, createBodyServerApi, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 type Config = {
@@ -88,9 +91,8 @@ export class ModuleBE_PushPubSub_Class
 		this.messaging = session.getMessaging();
 	}
 
-	async register(body: Request_PushRegister, request: ExpressRequest) {
-		const resp = await dispatch_queryRequestInfo.dispatchModuleAsync(request);
-		const userId: string | undefined = resp.find(e => e.key === 'AccountsModule')?.data?._id || resp.find(e => e.key === 'RemoteProxy')?.data;
+	async register(body: Request_PushRegister, mem: MemStorage) {
+		const userId = MemKey_AccountId.get(mem);
 		if (!userId)
 			throw new ImplementationMissingException('Missing user from accounts Module');
 
@@ -219,8 +221,14 @@ export class ModuleBE_PushPubSub_Class
 		return notification;
 	};
 
-	sendMessage = async (_messages: TempMessages): Promise<{ response: FirebaseType_BatchResponse, messages: FirebaseType_Message[] } | undefined> => {
-		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({token, data: {messages: __stringify(_messages[token])}}));
+	sendMessage = async (_messages: TempMessages): Promise<{
+		response: FirebaseType_BatchResponse,
+		messages: FirebaseType_Message[]
+	} | undefined> => {
+		const messages: FirebaseType_Message[] = Object.keys(_messages).map(token => ({
+			token,
+			data: {messages: __stringify(_messages[token])}
+		}));
 		if (messages.length === 0)
 			return;
 
@@ -230,7 +238,7 @@ export class ModuleBE_PushPubSub_Class
 		return {response, messages};
 	};
 
-	__onCleanupSchedulerAct = () => {
+	__onCleanupSchedulerAct = (mem: MemStorage) => {
 		return {
 			cleanup: this.scheduledCleanup,
 			interval: Day,

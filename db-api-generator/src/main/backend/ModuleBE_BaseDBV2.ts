@@ -21,7 +21,6 @@
 
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
 import {ApiException, Day, DB_Object, DBDef, filterInstances, Module} from '@nu-art/ts-common';
-import {ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
@@ -31,6 +30,7 @@ import {firestore} from 'firebase-admin';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {OnFirestoreBackupSchedulerActV2} from '@nu-art/thunderstorm/backend/modules/backup/FirestoreBackupSchedulerV2';
 import {FirestoreBackupDetailsV2} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_BackupV2';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import Transaction = firestore.Transaction;
 
 
@@ -98,9 +98,9 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		return _EmptyQuery;
 	}
 
-	async querySync(syncQuery: FirestoreQuery<Type>, request: ExpressRequest): Promise<Response_DBSync<Type>> {
+	async querySync(syncQuery: FirestoreQuery<Type>, mem: MemStorage): Promise<Response_DBSync<Type>> {
 		const items = await this.collection.query.custom(syncQuery);
-		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
+		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>, mem);
 
 		await this.upgradeInstances(items);
 		return {toUpdate: items, toDelete: deletedItems};

@@ -24,8 +24,7 @@ import {
 	__stringify,
 	_keys,
 	_values,
-	addItemToArray,
-	ApiException,
+	addItemToArray, ApiException,
 	BadImplementationException,
 	batchAction,
 	currentTimeMillis,
@@ -45,7 +44,7 @@ import {
 } from '@nu-art/ts-common';
 
 import {IndexKeys} from '@nu-art/thunderstorm';
-import {ExpressRequest, OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {OnFirestoreBackupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {
 	DocWrapper,
 	FirestoreCollection,
@@ -58,6 +57,7 @@ import {canDeleteDispatcher, DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
 import {_EmptyQuery, Response_DBSync} from '../shared';
 import {FirestoreBackupDetails} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_Backup';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export type BaseDBApiConfig = {
@@ -143,9 +143,9 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 * @returns
 	 * A promise of the document that was deleted.
 	 */
-	async deleteUnique(_id: string): Promise<DBType> {
+	async deleteUnique(_id: string, mem: MemStorage): Promise<DBType> {
 		return this.runInTransaction(async transaction => {
-			return this._deleteUnique.write(transaction, await this._deleteUnique.read(transaction, _id));
+			return this._deleteUnique.write(transaction, await this._deleteUnique.read(transaction, _id), mem);
 		});
 	}
 
@@ -160,8 +160,8 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 
 			return doc;
 		},
-		write: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
-			await this.canDeleteDocument(transaction, [doc.get()]);
+		write: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>, mem: MemStorage) => {
+			await this.canDeleteDocument(transaction, [doc.get()], mem);
 			const item = await doc.delete(transaction.transaction);
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, [item], this.config.uniqueKeys, transaction);
 			return item;
@@ -180,9 +180,9 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 				{...deleteQuery, limit: deleteQuery.limit || ModuleBE_BaseDB.DeleteHardLimit});
 		},
 
-		write: async (transaction: FirestoreTransaction, docs: DocWrapper<DBType>[]) => {
+		write: async (transaction: FirestoreTransaction, docs: DocWrapper<DBType>[], mem: MemStorage) => {
 			const items = docs.map(doc => doc.get());
-			await this.canDeleteDocument(transaction, items);
+			await this.canDeleteDocument(transaction, items, mem);
 
 			await Promise.all(docs.map(async (doc) => doc.delete(transaction.transaction)));
 			await ModuleBE_SyncManager.onItemsDeleted(this.config.collectionName, items, this.config.uniqueKeys, transaction);
@@ -237,11 +237,11 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 			return new DocWrapper<DBType>(this.collection.wrapper,
 				{ref, data: () => dbInstance} as FirestoreType_DocumentSnapshot<DBType>);
 		},
-		assert: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
+		assert: async (mem: MemStorage, transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
 			const dbInstance = doc.get();
-			await this._preUpsertProcessing(dbInstance, transaction);
+			await this._preUpsertProcessing(dbInstance, mem, transaction);
 			this.validateImpl(dbInstance);
-			await this.assertUniqueness(dbInstance, transaction);
+			await this.assertUniqueness(dbInstance, mem, transaction);
 
 		},
 		write: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
@@ -261,33 +261,35 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 *
 	 * @param deleteQuery - The query to be executed for the deletion.
 	 * @param toReturn
+	 * @param mem - http call mem cache.
+	 *
 	 */
-	async delete(deleteQuery: FirestoreQuery<DBType>, toReturn: DBType[] = []) {
+	async delete(deleteQuery: FirestoreQuery<DBType>, mem: MemStorage, toReturn: DBType[] = []) {
 		const start = currentTimeMillis();
 
 		toReturn.push(...await this.runInTransaction(async transaction => {
-			return this._deleteMulti.write(transaction, await this._deleteMulti.read(transaction, deleteQuery));
+			return this._deleteMulti.write(transaction, await this._deleteMulti.read(transaction, deleteQuery), mem);
 		}));
 
 		if (toReturn.length !== 0 && toReturn.length % ModuleBE_BaseDB.DeleteHardLimit === 0)
-			await this.delete(deleteQuery, toReturn);
+			await this.delete(deleteQuery, mem, toReturn);
 
 		await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, start);
 		return toReturn;
 	}
 
-	async querySync(syncQuery: FirestoreQuery<DBType>, request: ExpressRequest): Promise<Response_DBSync<DBType>> {
+	async querySync(syncQuery: FirestoreQuery<DBType>, mem: MemStorage): Promise<Response_DBSync<DBType>> {
 		return this.runInTransaction(async transaction => {
 			const items = await transaction.query(this.collection, syncQuery);
-			const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>, transaction);
+			const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>, mem, transaction);
 
-			await this.upgradeInstances(items);
+			await this.upgradeInstances(items, mem);
 			return {toUpdate: items, toDelete: deletedItems};
 		});
 	}
 
-	deleteAll() {
-		return this.delete(_EmptyQuery);
+	deleteAll(mem: MemStorage) {
+		return this.delete(_EmptyQuery, mem);
 	}
 
 	/**
@@ -296,10 +298,11 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 * Currently, executed only before `deleteUnique()`.
 	 *
 	 * @param transaction - The transaction object
+	 * @param mem - http call mem cache.
 	 * @param dbInstances - The DB entry that is going to be deleted.
 	 */
-	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DBType[]) {
-		const dependencies = await this.collectDependencies(dbInstances, transaction);
+	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DBType[], mem: MemStorage) {
+		const dependencies = await this.collectDependencies(dbInstances, mem, transaction);
 		if (dependencies)
 			throw new ApiException<DB_EntityDependency<any>[]>(422, 'entity has dependencies').setErrorBody({
 				type: 'has-dependencies',
@@ -307,8 +310,8 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 			});
 	}
 
-	async collectDependencies(dbInstances: DBType[], transaction?: FirestoreTransaction) {
-		const potentialErrors = await canDeleteDispatcher.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
+	async collectDependencies(dbInstances: DBType[], mem: MemStorage, transaction?: FirestoreTransaction) {
+		const potentialErrors = await canDeleteDispatcher.dispatchModuleAsync(this.dbDef.entityName, dbInstances, mem, transaction);
 		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 		return dependencies.length > 0 ? dependencies : undefined;
 	}
@@ -338,11 +341,11 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 * - Executes `this.preUpsertProcessing`.
 	 * - Asserts uniqueness based on the internal filters.
 	 *
-	 * @param transaction - The transaction object.
 	 * @param instance - The document for which the uniqueness assertion will occur.
-	 * @param request
+	 * @param mem - http call mem cache.
+	 * @param transaction - The transaction object.
 	 */
-	public async assertUniqueness(instance: DBType, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+	public async assertUniqueness(instance: DBType, mem: MemStorage, transaction?: FirestoreTransaction) {
 		const uniqueQueries = this.internalFilter(instance);
 		if (uniqueQueries.length === 0)
 			return;
@@ -402,12 +405,12 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 		return [];
 	}
 
-	private async _preUpsertProcessing(dbInstance: DBType, transaction?: FirestoreTransaction, request?: ExpressRequest) {
-		await this.upgradeInstances([dbInstance]);
-		await this.preUpsertProcessing(dbInstance, transaction, request);
+	private async _preUpsertProcessing(dbInstance: DBType, mem: MemStorage, transaction?: FirestoreTransaction) {
+		await this.upgradeInstances([dbInstance], mem);
+		await this.preUpsertProcessing(dbInstance, mem, transaction);
 	}
 
-	async upgradeInstances(dbInstances: DBType[]) {
+	async upgradeInstances(dbInstances: DBType[], mem: MemStorage) {
 		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];
@@ -429,11 +432,11 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	/**
 	 * Override this method to customize the assertions that should be done before the insertion of the document to the DB.
 	 *
-	 * @param transaction - The transaction object.
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
-	 * @param request
+	 * @param mem - http call mem cache.
+	 * @param transaction - The transaction object.
 	 */
-	protected async preUpsertProcessing(dbInstance: DBType, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+	protected async preUpsertProcessing(dbInstance: DBType, mem: MemStorage, transaction?: FirestoreTransaction) {
 	}
 
 	/**
@@ -452,58 +455,22 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 		await this.collection.deleteAll();
 	}
 
-	async promoteCollection() {
-		// read chunks of ${maxChunkSize} documents that are not of the latest collection version..
-		// run them via upsert, which should convert/upgrade them to the latest version
-		// if timeout should kick in.. run the api again and this will continue the promotion on the rest of the documents
-		// TODO validate
-		this.logDebug(`Promoting '${this.config.collectionName}' to version: ${this.config.versions[0]}`);
-		let page = 0;
-		const itemsCount = this.config.maxChunkSize || 100;
-		let iteration = 0;
-		while (iteration < 5) {
-
-			try {
-
-				const itemsToSyncQuery: FirestoreQuery<DB_Object> = {
-					where: {
-						_v: {$neq: this.config.versions[0]},
-					},
-					limit: {page, itemsCount}
-				};
-
-				const items = await this.query(itemsToSyncQuery as FirestoreQuery<DBType>);
-				this.logInfo(`Page: ${page} Found: ${items.length} - first: ${items?.[0]?.__updated}   last: ${items?.[items.length - 1]?.__updated}`);
-				await this.upsertAll(items);
-
-				if (items.length < itemsCount)
-					break;
-
-				page++;
-			} catch (e) {
-				break;
-			}
-
-			iteration++;
-		}
-	}
-
 	/**
 	 * Inserts the `instance` using the `transaction` object.
 	 *
 	 * @param transaction - The transaction object.
+	 * @param mem - http call mem cache.
 	 * @param instance - The object to be inserted.
-	 * @param request - The request in order to possibly obtain more info.
 	 *
 	 * @returns
 	 * A promise of the document that was inserted.
 	 */
-	// private async createImpl(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<DBType> {
+	// private async createImpl(transaction: FirestoreTransaction, instance: DBType, mem: MemStorage): Promise<DBType> {
 	// 	return (await this.createImpl_Read(transaction, instance, request))()
 	// };
 
-	async createImpl_Read(transaction: FirestoreTransaction, instance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
-		await this.assertInstance(instance, transaction, request);
+	async createImpl_Read(transaction: FirestoreTransaction, instance: DBType, mem: MemStorage): Promise<() => Promise<DBType>> {
+		await this.assertInstance(instance, mem, transaction);
 		return async () => transaction.insert(this.collection, instance, instance._id);
 	}
 
@@ -511,15 +478,15 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 * Upserts the `instance` using a transaction, after validating it and asserting uniqueness.
 	 *
 	 * @param instance - The object to be upserted.
+	 * @param mem - http call mem cache.
 	 * @param transaction - OPTIONAL transaction to perform the upsert operation on
-	 * @param request - The request in order to possibly obtain more info.
 	 *
 	 * @returns
 	 * A promise of the document that was upserted.
 	 */
-	async upsert(instance: PreDB<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+	async upsert(instance: PreDB<DBType>, mem: MemStorage, transaction?: FirestoreTransaction) {
 		const processor = async (_transaction: FirestoreTransaction) => {
-			return (await this.upsert_Read(instance, _transaction, request))();
+			return (await this.upsert_Read(instance, mem, _transaction))();
 		};
 
 		let item: DBType;
@@ -532,7 +499,7 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 		return item;
 	}
 
-	async insert(instance: PreDB<DBType>) {
+	async insert(instance: PreDB<DBType>, mem: MemStorage) {
 
 		const timestamp = currentTimeMillis();
 		const toInsert = {
@@ -541,16 +508,16 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 			__created: timestamp,
 			__updated: timestamp
 		} as unknown as DBType;
-		await this.assertInstance(toInsert);
+		await this.assertInstance(toInsert, mem);
 
 		return this.collection.insert(toInsert, toInsert._id);
 	}
 
-	async insertAll(instances: PreDB<DBType>[]) {
-		return Promise.all(instances.map((instance) => this.insert(instance)));
+	async insertAll(instances: PreDB<DBType>[], mem: MemStorage) {
+		return Promise.all(instances.map((instance) => this.insert(instance, mem)));
 	}
 
-	async upsert_Read(instance: PreDB<DBType>, transaction: FirestoreTransaction, request?: ExpressRequest): Promise<() => Promise<DBType>> {
+	async upsert_Read(instance: PreDB<DBType>, mem: MemStorage, transaction: FirestoreTransaction): Promise<() => Promise<DBType>> {
 		const timestamp = currentTimeMillis();
 
 		if (this.config.uniqueKeys[0] === '_id' && instance._id === undefined)
@@ -559,14 +526,14 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 				_id: this.generateId(),
 				__created: timestamp,
 				__updated: timestamp
-			} as unknown as DBType, request);
+			} as unknown as DBType, mem);
 
 		return this.upsertImpl_Read(transaction, {
 			...instance,
 			_id: instance._id || this.generateId(),
 			__created: instance.__created || timestamp,
 			__updated: timestamp
-		} as unknown as DBType, request);
+		} as unknown as DBType, mem);
 	}
 
 	protected generateId() {
@@ -577,28 +544,28 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 * Upserts a set of objects. Batching is used to circumvent firestore limitations on the number of objects.
 	 *
 	 * @param instances - The objects to be upserted.
-	 * @param request - The request in order to possibly obtain more info.
+	 * @param mem - http call mem cache.
 	 *
 	 * @returns
 	 * A promise of an array of documents that were upserted.
 	 */
-	async upsertAll_Batched(instances: PreDB<DBType>[], request?: ExpressRequest): Promise<DBType[]> {
-		return batchAction(instances, 500, async (chunked: PreDB<DBType>[]) => this.upsertAll(chunked, undefined, request));
+	async upsertAll_Batched(instances: PreDB<DBType>[], mem: MemStorage): Promise<DBType[]> {
+		return batchAction(instances, 500, async (chunked: PreDB<DBType>[]) => this.upsertAll(chunked, mem));
 	}
 
 	/**
 	 * Upserts the `dbInstances` using the `transaction` object.
 	 *
-	 * @param transaction - The transaction object.
 	 * @param instances - The instances to update.
-	 * @param request - The request in order to possibly obtain more info.
+	 * @param mem - http call mem cache.
+	 * @param transaction - The transaction object.
 	 *
 	 * @throws `BadImplementationException` when the instances are more than 500.
 	 *
 	 * @returns
 	 * A promise of the array of documents that were upserted.
 	 */
-	async upsertAll(instances: PreDB<DBType>[], transaction?: FirestoreTransaction, request?: ExpressRequest): Promise<DBType[]> {
+	async upsertAll(instances: PreDB<DBType>[], mem: MemStorage, transaction?: FirestoreTransaction): Promise<DBType[]> {
 		if (instances.length === 0)
 			return [];
 
@@ -606,11 +573,11 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 			if (transaction)
 				throw new BadImplementationException('Firestore transaction supports maximum 500 at a time');
 
-			return this.upsertAll_Batched(instances, request);
+			return this.upsertAll_Batched(instances, mem);
 		}
 
 		const processor = async (_transaction: FirestoreTransaction) => {
-			const writes = await Promise.all(await this.upsertAllImpl_Read(instances, _transaction, request));
+			const writes = await Promise.all(await this.upsertAllImpl_Read(instances, mem, _transaction));
 			return Promise.all(writes.map(write => write()));
 		};
 
@@ -626,11 +593,11 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 
 	}
 
-	protected async upsertAllImpl_Read(instances: PreDB<DBType>[], transaction: FirestoreTransaction, request?: ExpressRequest): Promise<(() => Promise<DBType>)[]> {
+	protected async upsertAllImpl_Read(instances: PreDB<DBType>[], mem: MemStorage, transaction: FirestoreTransaction): Promise<(() => Promise<DBType>)[]> {
 		const actions = [] as Promise<() => Promise<DBType>>[];
 
 		instances.reduce((carry, instance: PreDB<DBType>) => {
-			addItemToArray(carry, this.upsert_Read(instance, transaction, request));
+			addItemToArray(carry, this.upsert_Read(instance, mem, transaction));
 			return carry;
 		}, actions);
 
@@ -642,24 +609,24 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 *
 	 * @param transaction - The transaction object.
 	 * @param dbInstance - The object to be upserted.
-	 * @param request - The request in order to possibly obtain more info.
+	 * @param mem - http call mem cache.
 	 *
 	 * @returns
 	 * A promise of the document that was upserted.
 	 */
-	private async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<DBType> {
-		return (await this.upsertImpl_Read(transaction, dbInstance, request))();
+	private async upsertImpl(transaction: FirestoreTransaction, dbInstance: DBType, mem: MemStorage): Promise<DBType> {
+		return (await this.upsertImpl_Read(transaction, dbInstance, mem))();
 	}
 
-	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DBType, request?: ExpressRequest): Promise<() => Promise<DBType>> {
-		await this.assertInstance(dbInstance, transaction, request);
+	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DBType, mem: MemStorage): Promise<() => Promise<DBType>> {
+		await this.assertInstance(dbInstance, mem, transaction);
 		return transaction.upsert_Read(this.collection, dbInstance, dbInstance._id);
 	}
 
-	private async assertInstance(dbInstance: DBType, transaction?: FirestoreTransaction, request?: ExpressRequest) {
-		await this._preUpsertProcessing(dbInstance, transaction, request);
+	private async assertInstance(dbInstance: DBType, mem: MemStorage, transaction?: FirestoreTransaction) {
+		await this._preUpsertProcessing(dbInstance, mem, transaction);
 		this.validateImpl(dbInstance);
-		await this.assertUniqueness(dbInstance, transaction, request);
+		await this.assertUniqueness(dbInstance, mem, transaction);
 	}
 
 	/**
@@ -667,14 +634,14 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 *
 	 * @param where - The where clause to be used for querying.
 	 * @param transaction
-	 * @param request - The request in order to possibly obtain more info.
+	 * @param mem
 	 *
 	 * @throws `ApiException` if the document is not found.
 	 *
 	 * @returns
 	 * The DB document that was found.
 	 */
-	async queryUnique(where: Clause_Where<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+	async queryUnique(where: Clause_Where<DBType>, mem: MemStorage, transaction?: FirestoreTransaction) {
 		let dbItem;
 		if (transaction)
 			dbItem = await transaction.queryUnique(this.collection, {where});
@@ -684,7 +651,7 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 		if (!dbItem)
 			throw new ApiException(404, `Could not find ${this.config.itemName} with unique query: ${JSON.stringify(where)}`);
 
-		await this.upgradeInstances([dbItem]);
+		await this.upgradeInstances([dbItem], mem);
 		return dbItem;
 	}
 
@@ -692,20 +659,20 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 * Executes the specified query on the module's collection.
 	 *
 	 * @param query - The query to be executed.
+	 * @param mem - http call mem cache.
 	 * @param transaction
-	 * @param request - The request in order to possibly obtain more info.
 	 *
 	 * @returns
 	 * A promise of an array of documents.
 	 */
-	async query(query: FirestoreQuery<DBType>, transaction?: FirestoreTransaction, request?: ExpressRequest) {
+	async query(query: FirestoreQuery<DBType>, mem: MemStorage, transaction?: FirestoreTransaction) {
 		let items;
 		if (transaction)
 			items = await transaction.query(this.collection, query);
 		else
 			items = await this.collection.query(query);
 
-		await this.upgradeInstances(items);
+		await this.upgradeInstances(items, mem);
 		return items;
 	}
 
@@ -716,15 +683,16 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 	 * are not specified in propsToPatch.
 	 *
 	 * @param instance - The instance to be upserted.
+	 * @param mem - http call mem cache.
 	 * @param propsToPatch - Properties to patch.
-	 * @param request - The request in order to possibly obtain more info.
 	 *
 	 * @returns
 	 * A promise of the patched document.
 	 */
-	async patch(instance: IndexKeys<DBType, Ks> & Partial<DBType>, propsToPatch?: (keyof DBType)[], request?: ExpressRequest): Promise<DBType> {
+	async patch(instance: IndexKeys<DBType, Ks> & Partial<DBType>, mem: MemStorage, propsToPatch?: (keyof DBType)[]): Promise<DBType> {
 		return this.collection.runInTransaction(async (transaction) => {
 			const dbInstance: DBType = await this.assertExternalQueryUnique(instance as DBType, transaction);
+
 			// If the caller has specified props to be changed, make sure the don't conflict with the lockKeys.
 			const wrongKey = propsToPatch?.find(prop => this.config.lockKeys.includes(prop));
 			if (wrongKey)
@@ -742,9 +710,9 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 			mergedObject.__created = mergedObject.__created || currentTimeMillis();
 			mergedObject.__updated = currentTimeMillis();
 
-			await this.assertUniqueness(mergedObject, transaction, request);
+			await this.assertUniqueness(mergedObject, mem, transaction);
 
-			const item = await this.upsertImpl(transaction, mergedObject, request);
+			const item = await this.upsertImpl(transaction, mergedObject, mem);
 			await ModuleBE_SyncManager.setLastUpdated(this.config.collectionName, item.__updated);
 			return item;
 		});

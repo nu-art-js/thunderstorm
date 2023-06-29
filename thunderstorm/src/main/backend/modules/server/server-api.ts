@@ -45,7 +45,17 @@ import {HttpServer} from './HttpServer';
 // noinspection TypeScriptPreferShortImport
 import {ApiDef, BodyApi, QueryApi, QueryParams, TypedApi} from '../../../shared';
 import {assertProperty} from '../../utils/to-be-removed';
-import {ExpressRequest, ExpressResponse, ExpressRouter, HttpRequestData, ServerApi_Middleware} from '../../utils/types';
+import {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from '../../utils/types';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {
+	MemKey_HttpRequest,
+	MemKey_HttpRequestBody,
+	MemKey_HttpRequestHeaders,
+	MemKey_HttpRequestMethod,
+	MemKey_HttpRequestPath,
+	MemKey_HttpRequestQuery,
+	MemKey_HttpRequestUrl, MemKey_HttpResponse
+} from './consts';
 
 
 export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
@@ -164,23 +174,25 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 		else
 			this.logVerbose(`-- No Body`);
 
-		const requestData: HttpRequestData = {
-			method: this.apiDef.method,
-			originalUrl: req.path,
-			headers: req.headers,
-			url: req.url,
-			query: reqQuery,
-			body: body as API['B'],
-		};
+		const memStorage = new MemStorage();
+
+		MemKey_HttpRequest.set(memStorage, req);
+		MemKey_HttpResponse.set(memStorage, response);
+		MemKey_HttpRequestHeaders.set(memStorage, req.headers);
+		MemKey_HttpRequestQuery.set(memStorage, reqQuery);
+		MemKey_HttpRequestUrl.set(memStorage, req.url);
+		MemKey_HttpRequestMethod.set(memStorage, this.apiDef.method);
+		MemKey_HttpRequestPath.set(memStorage, req.path);
+		MemKey_HttpRequestBody.set(memStorage, body);
 
 		try {
 			this.bodyValidator && tsValidate<API['B']>(body as API['B'], this.bodyValidator);
 			this.queryValidator && tsValidate<API['P']>(reqQuery, this.queryValidator);
 
 			if (this.middlewares)
-				this.middlewareResults = await Promise.all(this.middlewares.map(m => m(req, res, requestData)));
+				this.middlewareResults = await Promise.all(this.middlewares.map(m => m(memStorage)));
 
-			const toReturn: unknown = await this.process(req, response, reqQuery, body as API['B']);
+			const toReturn: unknown = await this.process(memStorage);
 			if (response.isConsumed())
 				return;
 
@@ -226,7 +238,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 				throw new MUSTNeverHappenException('MUST NEVER REACH HERE!!!');
 
 			try {
-				await dispatch_onApplicationException.dispatchModuleAsync(e, HttpServer, requestData);
+				await dispatch_onApplicationException.dispatchModuleAsync(e, HttpServer, memStorage);
 			} catch (e: any) {
 				this.logError('Error while handing server error', e);
 			}
@@ -239,7 +251,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 		}
 	};
 
-	protected abstract process(request: ExpressRequest, response: ApiResponse, queryParams: API['P'], body: API['B']): Promise<API['R']>;
+	protected abstract process(mem: MemStorage): Promise<API['R']>;
 }
 
 export abstract class ServerApi_Get<API extends QueryApi<any, any, any>>
@@ -269,37 +281,37 @@ export class ServerApi_Redirect<API extends TypedApi<any, any, any, any>>
 		this.redirectUrl = redirectUrl;
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: QueryParams, body: any): Promise<void> {
-		const url = `${composeUrl(`${HttpServer.getBaseUrl()}${this.redirectUrl}`, queryParams)}`;
-		response.redirect(this.responseCode, url);
+	protected async process(mem: MemStorage): Promise<void> {
+		const url = `${composeUrl(`${HttpServer.getBaseUrl()}${this.redirectUrl}`, MemKey_HttpRequestQuery.get(mem))}`;
+		MemKey_HttpResponse.get(mem).redirect(this.responseCode, url);
 	}
 }
 
 export class _ServerQueryApi<API extends QueryApi<any, any, any>>
 	extends ServerApi_Get<API> {
-	private readonly action: (params: API['P'], middleware: any, request?: ExpressRequest) => Promise<API['R']>;
+	private readonly action: (params: API['P'], mem: MemStorage) => Promise<API['R']>;
 
-	constructor(apiDef: ApiDef<API>, action: (params: API['P'], middleware: any, request?: ExpressRequest) => Promise<API['R']>) {
+	constructor(apiDef: ApiDef<API>, action: (params: API['P'], mem: MemStorage) => Promise<API['R']>) {
 		super(apiDef);
 		this.action = action;
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: API['P']): Promise<API['R']> {
-		return this.action(queryParams, request);
+	protected async process(mem: MemStorage): Promise<API['R']> {
+		return this.action(MemKey_HttpRequestQuery.get(mem), mem);
 	}
 }
 
 export class _ServerBodyApi<API extends BodyApi<any, any, any>>
 	extends ServerApi_Post<API> {
-	private readonly action: (body: API['B'], middleware: any, request?: ExpressRequest) => Promise<API['R']>;
+	private readonly action: (body: API['B'], mem: MemStorage) => Promise<API['R']>;
 
-	constructor(apiDef: ApiDef<API>, action: (params: API['B'], middleware: any, request?: ExpressRequest) => Promise<API['R']>) {
+	constructor(apiDef: ApiDef<API>, action: (params: API['B'], mem: MemStorage) => Promise<API['R']>) {
 		super(apiDef);
 		this.action = action;
 	}
 
-	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: never, body: API['B']): Promise<API['R']> {
-		return this.action(body, request);
+	protected async process(mem: MemStorage): Promise<API['R']> {
+		return this.action(MemKey_HttpRequestBody.get(mem), mem);
 	}
 }
 
