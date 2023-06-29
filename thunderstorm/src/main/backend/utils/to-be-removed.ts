@@ -19,8 +19,7 @@
  * limitations under the License.
  */
 
-import {TS_Object} from '@nu-art/ts-common';
-import {ApiException} from '../exceptions';
+import {ApiException, TS_Object} from '@nu-art/ts-common';
 
 
 export const assertProperty = <T extends TS_Object, K extends keyof T = keyof T>(instance: T, key: K | K[], statusCode: number = 400, check?: string | ((propValue: T[K]) => void)): void => {

@@ -77,6 +77,10 @@ class CSVModule_Class
 		return new ExportToCsv(options);
 	}
 
+	updateExporterSettings(options: Options) {
+		this.csvExporter = CSVModule_Class.createExporter(options);
+	}
+
 	export<T>(items: T[], returnCsv = true) {
 		return this.csvExporter.generateCsv(items, returnCsv);
 	}

@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {DBDef, tsValidateNameWithDashesAndDots} from '@nu-art/db-api-generator';
 import {
-	OmitDBObject,
+	DBDef,
+	OmitDBObject, tsValidateNameWithDashesAndDots,
 	tsValidateNonMandatoryObject,
 	tsValidateNumber,
 	tsValidateString,

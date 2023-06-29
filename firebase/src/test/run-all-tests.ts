@@ -1,5 +1,4 @@
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
-import {firestoreTests} from './firestore/tests';
 import {FIREBASE_DEFAULT_PROJECT_ID} from './_main';
 
 
@@ -10,7 +9,7 @@ const config = {
 
 ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
 
-firestoreTests.query();
-firestoreTests.insert();
-firestoreTests.queryUnique();
+// firestoreTests.query();
+// firestoreTests.insert();
+// firestoreTests.queryUnique();
 

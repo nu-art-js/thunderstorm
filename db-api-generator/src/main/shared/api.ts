@@ -21,9 +21,7 @@
 
 import {FirestoreQuery} from '@nu-art/firebase';
 import {ApiDefResolver, BodyApi, HttpMethod, IndexKeys, QueryApi, QueryParams} from '@nu-art/thunderstorm';
-import {DB_BaseObject, DB_Object, PreDB, Second} from '@nu-art/ts-common';
-import {DBDef} from './db-def';
-import {Metadata} from './types';
+import {DB_BaseObject, DB_Object, DBDef, Metadata, PreDB, Second} from '@nu-art/ts-common';
 
 
 export const _EmptyQuery = Object.freeze({where: {}});

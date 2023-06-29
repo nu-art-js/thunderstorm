@@ -18,6 +18,7 @@
 import {
 	__stringify,
 	_keys,
+	ApiException,
 	auditBy,
 	BadImplementationException,
 	currentTimeMillis,
@@ -27,10 +28,10 @@ import {
 	hashPasswordWithSalt,
 	MergeTypes,
 	Module,
-	MUSTNeverHappenException,
 	NonEmptyArray,
 	TS_Object,
-	tsValidate
+	tsValidate,
+	tsValidateEmail
 } from '@nu-art/ts-common';
 
 import {FirestoreCollection, FirestoreTransaction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
@@ -45,10 +46,11 @@ import {
 	Response_Auth,
 	UI_Account
 } from './_imports';
-import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, ExpressRequest, HeaderKey, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
-import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
+import {addRoutes, createBodyServerApi, createQueryServerApi, HeaderKey} from '@nu-art/thunderstorm/backend';
 import {QueryParams} from '@nu-art/thunderstorm';
 import {gzipSync, unzipSync} from 'zlib';
+import {Middleware_ValidateSession_UpdateMemKeys} from '../core/accounts-middleware';
+
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
@@ -92,7 +94,7 @@ function getUIAccount(account: DB_Account): UI_Account {
 
 export class ModuleBE_Account_Class
 	extends Module<Config>
-	implements QueryRequestInfo, CollectSessionData<any> {
+	implements CollectSessionData<any> {
 
 	constructor() {
 		super();
@@ -115,20 +117,6 @@ export class ModuleBE_Account_Class
 		};
 	}
 
-	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; }> {
-		let data: UI_Account | undefined;
-		try {
-			data = await this.validateSession({}, request);
-		} catch (e: any) {
-			this.logError(e);
-		}
-
-		return {
-			key: this.getName(),
-			data: data
-		};
-	}
-
 	private sessions!: FirestoreCollection<DB_Session>;
 	private accounts!: FirestoreCollection<DB_Account>;
 
@@ -143,7 +131,12 @@ export class ModuleBE_Account_Class
 		return this.accounts.queryUnique({where: {email}, select: ['email', '_id']});
 	}
 
-	listUsers = async (params: QueryParams) => ({accounts: (await this.accounts.getAll(['_id', 'email'])) as { email: string, _id: string }[]});
+	listUsers = async (params: QueryParams) => ({
+		accounts: (await this.accounts.getAll(['_id', 'email'])) as {
+			email: string,
+			_id: string
+		}[]
+	});
 
 	async listSessions() {
 		return this.sessions.getAll(['userId', 'timestamp']);
@@ -261,19 +254,16 @@ export class ModuleBE_Account_Class
 		return session;
 	};
 
-	logout = async (queryParams: QueryParams, request: ExpressRequest) => {
-		const sessionId = Header_SessionId.get(request);
+	logout = async (queryParams: QueryParams) => {
+		const sessionId = Header_SessionId.get();
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
 
 		await this.sessions.deleteUnique({where: {sessionId}});
 	};
 
-	validateSession = async (params: QueryParams, request?: ExpressRequest): Promise<UI_Account> => {
-		if (!request)
-			throw new MUSTNeverHappenException('must have a request when calling this function..');
-
-		const sessionId = Header_SessionId.get(request);
+	validateSession = async (params: QueryParams): Promise<UI_Account> => {
+		const sessionId = Header_SessionId.get();
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
 
@@ -337,6 +327,8 @@ export class ModuleBE_Account_Class
 		}
 
 		const uiAccount = await this.getUserEmailFromSession(session);
+		Middleware_ValidateSession_UpdateMemKeys(uiAccount);
+
 		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
 		return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
 	};
@@ -348,8 +340,8 @@ export class ModuleBE_Account_Class
 	/**
 	 * @param modules - A list of modules that implement CollectSessionData, defines the decoded object's type
 	 */
-	static decodeSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(request: ExpressRequest, ...modules: T): MergeTypes<MapTypes<T>> {
-		const sessionData = Header_SessionId.get(request);
+	static decodeSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(...modules: T): MergeTypes<MapTypes<T>> {
+		const sessionData = Header_SessionId.get();
 		try {
 			return JSON.parse((unzipSync(Buffer.from(sessionData, 'base64'))).toString('utf8'));
 		} catch (e: any) {

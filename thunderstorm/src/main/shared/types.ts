@@ -19,11 +19,9 @@
  * limitations under the License.
  */
 
-import {DB_Object, TS_Object} from '@nu-art/ts-common';
+import {DB_Object} from '@nu-art/ts-common';
 import {BaseHttpRequest} from './BaseHttpRequest';
 
-
-export type DBIndex<T extends DB_Object> = { id: string, keys: keyof T | (keyof T)[], params?: { multiEntry: boolean, unique: boolean } };
 
 export enum HttpMethod {
 	ALL = 'all',
@@ -74,16 +72,6 @@ export type ApiDef<API extends TypedApi<any, any, any, any>> = {
 }
 
 export type ApiResolver<K> = K extends ApiDef<infer API> ? API : never
-
-export type ErrorBody<E extends TS_Object | void = void> = {
-	type: string
-	body: E
-};
-
-export type  ErrorResponse<E extends TS_Object | void = void> = {
-	debugMessage?: string
-	error?: ErrorBody<E>
-}
 
 export type ApiStruct = { [k: string]: (TypedApi<any, any, any, any> | ApiStruct) }
 

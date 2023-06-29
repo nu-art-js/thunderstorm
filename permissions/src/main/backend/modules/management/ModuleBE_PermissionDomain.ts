@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-import {DB_EntityDependency, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ApiException, ExpressRequest} from '@nu-art/thunderstorm/backend';
-import {auditBy, batchActionParallel, dbObjectToId, flatArray} from '@nu-art/ts-common';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
+import {ApiException, auditBy, batchActionParallel, dbObjectToId, flatArray} from '@nu-art/ts-common';
+import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {DB_PermissionDomain, DB_PermissionProject, DBDef_PermissionDomain} from '../../shared';
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
+import {DB_EntityDependency} from '@nu-art/firebase';
 
 
 export class ModuleBE_PermissionDomain_Class
@@ -58,13 +58,12 @@ export class ModuleBE_PermissionDomain_Class
 		return [{namespace: item.namespace, projectId: item.projectId}];
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionDomain, t?: FirestoreTransaction, request?: ExpressRequest) {
+	protected async preUpsertProcessing(dbInstance: DB_PermissionDomain, t?: FirestoreTransaction) {
 		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId});
 
-		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, request);
-			dbInstance._audit = auditBy(account.email);
-		}
+		const email = MemKey_AccountEmail.get();
+		if (email)
+			dbInstance._audit = auditBy(email);
 	}
 }
 

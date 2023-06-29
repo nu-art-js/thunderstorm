@@ -17,8 +17,7 @@
  * limitations under the License.
  */
 
-import {tsValidateUniqueId} from '@nu-art/db-api-generator';
-import {tsValidateRegexp} from '@nu-art/ts-common';
+import {tsValidateRegexp, tsValidateUniqueId} from '@nu-art/ts-common';
 
 
 export const validateProjectId = tsValidateUniqueId;

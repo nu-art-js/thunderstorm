@@ -16,17 +16,23 @@
  * limitations under the License.
  */
 
-import {ExpressRequest, ExpressResponse, HeaderKey, HttpRequestData, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
-import {ModuleBE_Account} from '../modules/ModuleBE_Account';
-import {HeaderKey_SessionId, UI_Account} from '../../shared/api';
+import {ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
+import {Header_SessionId, ModuleBE_Account} from '../modules/ModuleBE_Account';
+import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {UI_Account} from '../../shared/api';
 
 
-export const HeaderKey_AccountId = `account-id`;
-export const Header_AccountId = new HeaderKey(HeaderKey_AccountId);
+export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
+export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
 
-export const Middleware_ValidateSession: ServerApi_Middleware<UI_Account> = async (req: ExpressRequest, res: ExpressResponse, data: HttpRequestData) => {
-	const sessionId = data.headers[HeaderKey_SessionId];
-	const account = await ModuleBE_Account.validateSessionId(sessionId);
-	req.headers[HeaderKey_AccountId] = account._id;
-	return account;
+export const Middleware_ValidateSession: ServerApi_Middleware = async () => {
+	const sessionId = Header_SessionId.get();
+	const uiAccount = await ModuleBE_Account.validateSessionId(sessionId);
+
+	Middleware_ValidateSession_UpdateMemKeys(uiAccount);
 };
+
+export function Middleware_ValidateSession_UpdateMemKeys(uiAccount: UI_Account) {
+	MemKey_AccountEmail.set(uiAccount.email);
+	MemKey_AccountId.set(uiAccount._id);
+}

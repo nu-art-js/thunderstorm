@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import * as moment from 'moment';
+import {utc} from 'moment';
 import {AuditBy, Timestamp} from './types';
 
 
@@ -112,13 +112,13 @@ export function createReadableTimestampObject(pattern: string = Format_HHmmss_DD
  */
 export function formatTimestamp(pattern: string = Format_HHmmss_DDMMYYYY, timestamp: number = currentTimeMillis(), timezone: string = Intl.DateTimeFormat()
 	.resolvedOptions().timeZone) {
-	const m = moment.utc(timestamp);
+	const m = utc(timestamp);
 	m.utcOffset(-new Date().getTimezoneOffset());
 	return m.format(pattern);
 }
 
 export function parseTimeString(timestamp: string, pattern: string = Format_HHmmss_DDMMYYYY): number {
-	return moment.utc(timestamp, pattern).valueOf();
+	return utc(timestamp, pattern).valueOf();
 }
 
 export function normalizeTimestamp(timestamp: number, pattern: string): number {
