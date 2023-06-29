@@ -26,7 +26,6 @@ import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
 import {Clause_Where} from '@nu-art/firebase';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export class ModuleBE_PermissionApi_Class
@@ -46,12 +45,12 @@ export class ModuleBE_PermissionApi_Class
 		return [{projectId, path}];
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionApi, mem: MemStorage, t?: FirestoreTransaction) {
-		const email = MemKey_AccountEmail.get(mem);
+	protected async preUpsertProcessing(dbInstance: DB_PermissionApi, t?: FirestoreTransaction) {
+		const email = MemKey_AccountEmail.get();
 		if (email)
 			dbInstance._audit = auditBy(email);
 
-		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId}, mem);
+		await ModuleBE_PermissionProject.queryUnique({_id: dbInstance.projectId});
 
 		// need to assert that all the permissions levels exists in the db
 		const _permissionsIds = dbInstance.accessLevelIds;
@@ -59,18 +58,18 @@ export class ModuleBE_PermissionApi_Class
 			return;
 
 		const permissionsIds = filterDuplicates(_permissionsIds);
-		await Promise.all(permissionsIds.map(id => ModuleBE_PermissionAccessLevel.queryUnique({_id: id}, mem)));
+		await Promise.all(permissionsIds.map(id => ModuleBE_PermissionAccessLevel.queryUnique({_id: id})));
 		dbInstance.accessLevelIds = permissionsIds;
 	}
 
-	registerApis(projectId: string, routes: string[], mem: MemStorage) {
+	registerApis(projectId: string, routes: string[]) {
 		return this.runInTransaction(async (transaction: FirestoreTransaction) => {
-			const existingProjectApis = await this.query({where: {projectId: projectId}}, mem);
+			const existingProjectApis = await this.query({where: {projectId: projectId}});
 			const apisToAdd: PreDB<DB_PermissionApi>[] = routes
 				.filter(path => !existingProjectApis.find(api => api.path === path))
 				.map(path => ({path, projectId: projectId}));
 
-			return this.upsertAll(apisToAdd, mem, transaction);
+			return this.upsertAll(apisToAdd, transaction);
 		});
 	}
 

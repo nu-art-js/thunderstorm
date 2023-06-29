@@ -25,7 +25,6 @@ import {addRoutes, createQueryServerApi, OnModuleCleanup} from '@nu-art/thunders
 import {_keys, currentTimeMillis, DB_Object, filterDuplicates, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
 import {_EmptyQuery, ApiDef_SyncManager, DBSyncData} from '../shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
@@ -90,7 +89,7 @@ export class ModuleBE_SyncManager_Class
 		await this.deletedCount.set(deletedCount);
 	}
 
-	queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>, mem: MemStorage, transaction?: FirestoreTransaction): Promise<DeletedDBItem[]> {
+	queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>, transaction?: FirestoreTransaction): Promise<DeletedDBItem[]> {
 		const finalQuery: FirestoreQuery<DeletedDBItem> = {
 			...query,
 			where: {...query.where, __collectionName: collectionName}
@@ -148,7 +147,7 @@ export class ModuleBE_SyncManager_Class
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
 	}
 
-	private fetchDBSyncData = async (_: undefined, mem: MemStorage) => {
+	private fetchDBSyncData = async (_: undefined) => {
 		const fbSyncData = await this.syncData.get({});
 		const missingModules = this.dbModules.filter(dbModule => !fbSyncData[dbModule.getCollectionName()]);
 		if (missingModules.length) {
@@ -157,7 +156,7 @@ export class ModuleBE_SyncManager_Class
 			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'asc'}]};
 			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
 				try {
-					return await missingModule.query(query, mem);
+					return await missingModule.query(query);
 				} catch (e) {
 					return [];
 				}

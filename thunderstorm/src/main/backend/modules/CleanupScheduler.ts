@@ -23,7 +23,6 @@ import {currentTimeMillis, Dispatcher} from '@nu-art/ts-common';
 import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase';
 import {ActDetailsDoc} from '../../shared/backup-types';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export type CleanupDetails = {
@@ -33,7 +32,7 @@ export type CleanupDetails = {
 }
 
 export interface OnCleanupSchedulerAct {
-	__onCleanupSchedulerAct: (mem: MemStorage) => CleanupDetails;
+	__onCleanupSchedulerAct: () => CleanupDetails;
 }
 
 const dispatch_onCleanupSchedulerAct = new Dispatcher<OnCleanupSchedulerAct, '__onCleanupSchedulerAct'>('__onCleanupSchedulerAct');
@@ -47,9 +46,8 @@ export class CleanupScheduler_Class
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
-		const mem: MemStorage = new MemStorage();
 		const cleanupStatusCollection = ModuleBE_Firebase.createAdminSession().getFirestore().getCollection<ActDetailsDoc>('cleanup-status', ['moduleKey']);
-		const cleanups = dispatch_onCleanupSchedulerAct.dispatchModule(mem);
+		const cleanups = dispatch_onCleanupSchedulerAct.dispatchModule();
 		await Promise.all(cleanups.map(async cleanupItem => {
 			const doc = await cleanupStatusCollection.queryUnique({where: {moduleKey: cleanupItem.moduleKey}});
 			if (doc && doc.timestamp + cleanupItem.interval > currentTimeMillis())

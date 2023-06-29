@@ -49,7 +49,7 @@ import {
 import {addRoutes, createBodyServerApi, createQueryServerApi, HeaderKey} from '@nu-art/thunderstorm/backend';
 import {QueryParams} from '@nu-art/thunderstorm';
 import {gzipSync, unzipSync} from 'zlib';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {Middleware_ValidateSession_UpdateMemKeys} from '../core/accounts-middleware';
 
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
@@ -64,11 +64,11 @@ export const Collection_Sessions = 'user-account--sessions';
 export const Collection_Accounts = 'user-account--accounts';
 
 export interface OnNewUserRegistered {
-	__onNewUserRegistered(account: UI_Account, mem: MemStorage): void;
+	__onNewUserRegistered(account: UI_Account): void;
 }
 
 export interface OnUserLogin {
-	__onUserLogin(account: UI_Account, mem: MemStorage): void;
+	__onUserLogin(account: UI_Account): void;
 }
 
 const dispatch_onUserLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
@@ -147,15 +147,15 @@ export class ModuleBE_Account_Class
 		return this.accounts.queryUnique({where: {email}});
 	}
 
-	private create = async (request: Request_CreateAccount, mem: MemStorage) => {
+	private create = async (request: Request_CreateAccount) => {
 		const account = await this.createAccount(request);
 
-		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account), mem);
-		const session = await this.login(request, mem);
+		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
+		const session = await this.login(request);
 		return session;
 	};
 
-	private upsert = async (request: Request_UpsertAccount, mem: MemStorage) => {
+	private upsert = async (request: Request_UpsertAccount) => {
 		const account = await this.accounts.runInTransaction(async (transaction) => {
 			const existAccount = await transaction.queryUnique(this.accounts, {where: {email: request.email}});
 			if (existAccount)
@@ -164,8 +164,8 @@ export class ModuleBE_Account_Class
 			return this.createImpl(request, transaction);
 		});
 
-		const session = await this.login(request, mem);
-		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account), mem);
+		const session = await this.login(request);
+		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
 		return session;
 	};
 
@@ -230,7 +230,7 @@ export class ModuleBE_Account_Class
 		return transaction.insert(this.accounts, account);
 	};
 
-	login = async (request: Request_LoginAccount, mem: MemStorage): Promise<Response_Auth> => {
+	login = async (request: Request_LoginAccount): Promise<Response_Auth> => {
 		request.email = request.email.toLowerCase();
 		const query = {where: {email: request.email}};
 		const account = await this.accounts.queryUnique(query);
@@ -248,22 +248,22 @@ export class ModuleBE_Account_Class
 			await this.accounts.upsert(account);
 		}
 
-		const session = await this.upsertSession(account, mem);
+		const session = await this.upsertSession(account);
 
-		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account), mem);
+		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
 		return session;
 	};
 
-	logout = async (queryParams: QueryParams, mem: MemStorage) => {
-		const sessionId = Header_SessionId.get(mem);
+	logout = async (queryParams: QueryParams) => {
+		const sessionId = Header_SessionId.get();
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
 
 		await this.sessions.deleteUnique({where: {sessionId}});
 	};
 
-	validateSession = async (params: QueryParams, mem: MemStorage): Promise<UI_Account> => {
-		const sessionId = Header_SessionId.get(mem);
+	validateSession = async (params: QueryParams): Promise<UI_Account> => {
+		const sessionId = Header_SessionId.get();
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
 
@@ -301,7 +301,7 @@ export class ModuleBE_Account_Class
 		return delta > this.config.sessionTTLms || delta < 0;
 	};
 
-	upsertSession = async (account: DB_Account, mem: MemStorage): Promise<Response_Auth> => {
+	upsertSession = async (account: DB_Account): Promise<Response_Auth> => {
 		let session = await this.sessions.queryUnique({where: {userId: account._id}});
 		if (!session || this.TTLExpired(session)) {
 			const sessionData = (await dispatch_CollectSessionData.dispatchModuleAsync(account._id))
@@ -327,7 +327,9 @@ export class ModuleBE_Account_Class
 		}
 
 		const uiAccount = await this.getUserEmailFromSession(session);
-		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount, mem);
+		Middleware_ValidateSession_UpdateMemKeys(uiAccount);
+
+		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
 		return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
 	};
 
@@ -338,8 +340,8 @@ export class ModuleBE_Account_Class
 	/**
 	 * @param modules - A list of modules that implement CollectSessionData, defines the decoded object's type
 	 */
-	static decodeSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(mem: MemStorage, ...modules: T): MergeTypes<MapTypes<T>> {
-		const sessionData = Header_SessionId.get(mem);
+	static decodeSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(...modules: T): MergeTypes<MapTypes<T>> {
+		const sessionData = Header_SessionId.get();
 		try {
 			return JSON.parse((unzipSync(Buffer.from(sessionData, 'base64'))).toString('utf8'));
 		} catch (e: any) {
@@ -347,7 +349,7 @@ export class ModuleBE_Account_Class
 		}
 	}
 
-	getOrCreate = async (query: { where: { email: string } }, mem: MemStorage) => {
+	getOrCreate = async (query: { where: { email: string } }) => {
 		let dispatchEvent = false;
 
 		const dbAccount = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
@@ -370,7 +372,7 @@ export class ModuleBE_Account_Class
 		});
 
 		if (dispatchEvent)
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount), mem);
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
 
 		return dbAccount;
 	};

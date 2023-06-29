@@ -13,12 +13,11 @@ import {ActionMetaData, ApiDef_ActionProcessing, Request_ActionToProcess} from '
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ApiModule';
 import {ActionDeclaration} from './types';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 export class ModuleBE_ActionProcessor_Class
 	extends Module {
 
-	private readonly actionMap: TypedMap<(mem: MemStorage, data: any) => Promise<any>> = {};
+	private readonly actionMap: TypedMap<( data: any) => Promise<any>> = {};
 	private readonly actionMetaData: TypedMap<ActionMetaData> = {};
 
 	constructor() {
@@ -34,11 +33,11 @@ export class ModuleBE_ActionProcessor_Class
 		if (this.actionMap[rad.key])
 			throw new BadImplementationException(`ActionProcessor with key ${rad.key} was registered twice!`);
 
-		this.actionMap[rad.key] = (mem: MemStorage, data: any) => rad.processor(logger || this, mem, data);
+		this.actionMap[rad.key] = ( data: any) => rad.processor(logger || this, data);
 		this.actionMetaData[rad.key] = {key: rad.key, description: rad.description, group: rad.group};
 	};
 
-	private refactor = async (action: Request_ActionToProcess, mem: MemStorage) => {
+	private refactor = async (action: Request_ActionToProcess) => {
 		this.logWarning(`RECEIVED ACTION: ${action.key}`);
 
 		const refactoringAction = this.actionMap[action.key];
@@ -48,7 +47,7 @@ export class ModuleBE_ActionProcessor_Class
 
 		try {
 			this.logWarning(`ACTION '${action.key}' - EXECUTING`);
-			await refactoringAction?.(action.data, mem);
+			await refactoringAction?.(action.data);
 			this.logWarning(`ACTION '${action.key}' - SUCCESSFUL`);
 		} catch (e: any) {
 			this.logError(`ACTION '${action.key}' - FAILED`, e);

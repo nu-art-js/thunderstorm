@@ -24,7 +24,7 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export interface OnAssetUploaded {
-	__processAsset(mem: MemStorage, filePath?: string): void;
+	__processAsset(filePath?: string): void;
 }
 
 const dispatcher_onAssetUploaded = new Dispatcher<OnAssetUploaded, '__processAsset'>('__processAsset');
@@ -41,11 +41,12 @@ export class AssetBucketListener_Class
 	}
 
 	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
-		const mem: MemStorage = new MemStorage();
-		const filePath = object.name;
-		await dispatcher_onAssetUploaded.dispatchModuleAsync(mem, filePath);
-		this.logInfo('Object is ', object);
-		this.logInfo('Context is ', context);
+		return new MemStorage().init(async () => {
+			const filePath = object.name;
+			await dispatcher_onAssetUploaded.dispatchModuleAsync(filePath);
+			this.logInfo('Object is ', object);
+			this.logInfo('Context is ', context);
+		});
 	}
 
 }

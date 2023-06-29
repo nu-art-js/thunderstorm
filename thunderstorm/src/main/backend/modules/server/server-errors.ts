@@ -19,25 +19,24 @@
  * limitations under the License.
  */
 
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_HttpRequestBody, MemKey_HttpRequestHeaders, MemKey_HttpRequestQuery, MemKey_HttpRequestUrl} from './consts';
 import {__stringify, _keys, ApiException, isErrorOfType, StaticLogger, StringMap} from '@nu-art/ts-common';
 import {HttpErrorHandler} from '../../utils/types';
 
 
-export type AppPropsResolver = (requestData: MemStorage) => Promise<StringMap>;
+export type AppPropsResolver = () => Promise<StringMap>;
 const _propsResolver: AppPropsResolver = async () => {
 	return {} as StringMap;
 };
 
 export function DefaultApiErrorMessageComposer(headersToAttach: string[] = [], propsResolver: AppPropsResolver = _propsResolver): HttpErrorHandler {
-	return async (requestCache: MemStorage, error: ApiException) => {
-		const headers = MemKey_HttpRequestHeaders.get(requestCache);
-		const query = MemKey_HttpRequestQuery.get(requestCache);
-		const url = MemKey_HttpRequestUrl.get(requestCache);
-		const body = MemKey_HttpRequestBody.get(requestCache);
+	return async (error: ApiException) => {
+		const headers = MemKey_HttpRequestHeaders.get();
+		const query = MemKey_HttpRequestQuery.get();
+		const url = MemKey_HttpRequestUrl.get();
+		const body = MemKey_HttpRequestBody.get();
 
-		const props = await propsResolver(requestCache);
+		const props = await propsResolver();
 		StaticLogger.logInfo('props: ', props);
 		let slackMessage = '';
 		slackMessage += `${error ? error.responseCode : '000'} - ${url}   \n\n`;

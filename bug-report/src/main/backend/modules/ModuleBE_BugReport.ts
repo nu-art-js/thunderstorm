@@ -33,7 +33,6 @@ import {ApiDef_BugReport, BugReport, DB_BugReport, ReportLogFile, Request_BugRep
 
 import * as JSZip from 'jszip';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 
 export type TicketDetails = {
@@ -56,7 +55,7 @@ export class ModuleBE_BugReport_Class
 	constructor() {
 		super();
 		addRoutes([
-			createBodyServerApi(ApiDef_BugReport.v1.sendBugReport, (body, mem) => this.sendBugReport(body, mem)),
+			createBodyServerApi(ApiDef_BugReport.v1.sendBugReport, (body) => this.sendBugReport(body)),
 		]);
 	}
 
@@ -67,8 +66,8 @@ export class ModuleBE_BugReport_Class
 		this.storage = sessionAdmin.getStorage();
 	}
 
-	private sendBugReport = async (body: Request_BugReport, mem: MemStorage) => {
-		return await ModuleBE_BugReport.saveFile(body, MemKey_AccountId.get(mem));
+	private sendBugReport = async (body: Request_BugReport) => {
+		return await ModuleBE_BugReport.saveFile(body, MemKey_AccountId.get());
 	};
 
 	addTicketCreator(ticketCreator: TicketCreatorApi) {

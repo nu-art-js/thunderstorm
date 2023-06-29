@@ -31,7 +31,6 @@ import {
 } from './_imports';
 import {addRoutes, createQueryServerApi, ServerApi} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_Account} from './ModuleBE_Account';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_HttpRequestBody, MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 
 
@@ -86,9 +85,9 @@ class AssertSamlToken
 		super(ApiDef_SAML_BE.v1.assertSAML);
 	}
 
-	protected async process(mem: MemStorage) {
-		const redirectUrl = await ModuleBE_SAML.assertSaml(mem);
-		return await MemKey_HttpResponse.get(mem).redirect(302, redirectUrl);
+	protected async process() {
+		const redirectUrl = await ModuleBE_SAML.assertSaml();
+		return await MemKey_HttpResponse.get().redirect(302, redirectUrl);
 	}
 }
 
@@ -116,20 +115,20 @@ export class ModuleBE_SAML_Class
 		this.identityProvider = new IdentityProvider(this.config.idConfig);
 	}
 
-	async loginSAML(__email: string, mem: MemStorage): Promise<Response_Auth> {
+	async loginSAML(__email: string): Promise<Response_Auth> {
 		const _email = __email.toLowerCase();
-		const account = await this.createSAML(_email, mem);
+		const account = await this.createSAML(_email);
 
-		return await ModuleBE_Account.upsertSession(account, mem);
+		return await ModuleBE_Account.upsertSession(account);
 	}
 
-	async assertSaml(mem: MemStorage) {
-		const request_body = MemKey_HttpRequestBody.get(mem);
+	async assertSaml() {
+		const request_body = MemKey_HttpRequestBody.get();
 		try {
 			const data = await this.assert({request_body});
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
 
-			const session = await this.loginSAML(data.userId, mem);
+			const session = await this.loginSAML(data.userId);
 
 			let redirectUrl = data.loginContext[QueryParam_RedirectUrl];
 
@@ -142,9 +141,9 @@ export class ModuleBE_SAML_Class
 		}
 	}
 
-	private async createSAML(__email: string, mem: MemStorage) {
+	private async createSAML(__email: string) {
 		const _email = __email.toLowerCase();
-		return ModuleBE_Account.getOrCreate({where: {email: _email}}, mem);
+		return ModuleBE_Account.getOrCreate({where: {email: _email}});
 	}
 
 	loginRequest = async (loginContext: RequestParams_LoginSAML) => {

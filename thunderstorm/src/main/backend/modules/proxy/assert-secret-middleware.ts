@@ -21,9 +21,8 @@
 
 import {ServerApi_Middleware} from '../../utils/types';
 import {ModuleBE_RemoteProxy} from './ModuleBE_RemoteProxy';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
-export const AssertSecretMiddleware: ServerApi_Middleware = async (mem: MemStorage) => {
-	ModuleBE_RemoteProxy.assertSecret(mem);
+export const AssertSecretMiddleware: ServerApi_Middleware = async () => {
+	ModuleBE_RemoteProxy.assertSecret();
 };

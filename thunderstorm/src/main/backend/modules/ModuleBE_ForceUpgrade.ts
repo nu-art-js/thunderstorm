@@ -40,7 +40,6 @@ import {ServerApi_Middleware} from '../utils/types';
 import {createQueryServerApi} from '../core/typed-api';
 import {HeaderKey} from './server/HeaderKey';
 import {addRoutes} from './ApiModule';
-import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 type VersionConfig = {
@@ -63,19 +62,19 @@ const DefaultRegexps: { [k in Browser]: string } = {
 
 class ModuleBE_ForceUpgrade_Class
 	extends Module<VersionConfig> {
-	static readonly Middleware: ServerApi_Middleware = async (mem: MemStorage) => ModuleBE_ForceUpgrade.assertVersion(mem);
+	static readonly Middleware: ServerApi_Middleware = async () => ModuleBE_ForceUpgrade.assertVersion();
 
 	constructor() {
 		super();
-		addRoutes([createQueryServerApi(ApiDef_ForceUpgrade.v1.assertAppVersion, async (params, mem) => {
-			return this.compareVersion(mem);
+		addRoutes([createQueryServerApi(ApiDef_ForceUpgrade.v1.assertAppVersion, async (params) => {
+			return this.compareVersion();
 		})]);
 	}
 
-	compareVersion(mem: MemStorage): UpgradeRequired {
-		const appVersion = Header_AppVersion.get(mem);
-		const userAgentString = Header_UserAgent.get(mem);
-		const browserType: Browser = Header_BrowserType.get(mem) as Browser;
+	compareVersion(): UpgradeRequired {
+		const appVersion = Header_AppVersion.get();
+		const userAgentString = Header_UserAgent.get();
+		const browserType: Browser = Header_BrowserType.get() as Browser;
 		if (!browserType)
 			throw new ImplementationMissingException(`Browser type not specified`);
 
@@ -99,8 +98,8 @@ class ModuleBE_ForceUpgrade_Class
 		return {app, browser};
 	}
 
-	async assertVersion(mem: MemStorage): Promise<void> {
-		const upgradeRequired = this.compareVersion(mem);
+	async assertVersion(): Promise<void> {
+		const upgradeRequired = this.compareVersion();
 		if (upgradeRequired.app || upgradeRequired.browser)
 			throw new ApiException<UpgradeRequired>(426, 'require upgrade..').setErrorBody({
 				type: 'upgrade-required',

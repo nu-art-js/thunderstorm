@@ -100,7 +100,7 @@ export class GithubModule_Class
 		return token;
 	}
 
-	async getFile(repo: string, filePath: string, branch: string, request: ExpressRequest) {
+	async getFile(repo: string, filePath: string, branch: string) {
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
@@ -256,7 +256,7 @@ export class GithubModule_Class
 		return response.url;
 	}
 
-	async downloadArchive(url: string, branch: string, request: ExpressRequest) {
+	async downloadArchive(url: string, branch: string) {
 		const response = await promisifyRequest({uri: url, encoding: null});
 		if (!response || !response.body) {
 			throw new Exception(`Failed to download archive for branch ${branch} of product ${url}`)
