@@ -24,6 +24,7 @@ import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getStorage} from 'firebase-admin/storage';
 import {Response} from 'teeny-request';
 import {Writable} from 'stream';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export const END_OF_STREAM = {END_OF_STREAM: 'END_OF_STREAM'};
@@ -259,7 +260,7 @@ export class FileWrapper {
 		};
 	}
 
-	async writeToStream(feeder: (writable: Writable) => Promise<void | typeof END_OF_STREAM>): Promise<void> {
+	async writeToStream(feeder: (writable: Writable, mem: MemStorage) => Promise<void | typeof END_OF_STREAM>, mem: MemStorage): Promise<void> {
 		const writeable = this.file.createWriteStream({gzip: true});
 		const promise: Promise<void> = new Promise((resolve, reject) => {
 			writeable.on('close', () => resolve());
@@ -268,7 +269,7 @@ export class FileWrapper {
 
 		let data;
 		do {
-			data = await feeder(writeable);
+			data = await feeder(writeable, mem);
 		} while (data !== END_OF_STREAM);
 
 		writeable.end();
