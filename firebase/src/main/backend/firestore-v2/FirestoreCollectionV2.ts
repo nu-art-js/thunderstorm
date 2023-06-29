@@ -40,11 +40,7 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -66,19 +62,21 @@ export function generateId() {
 }
 
 /**
- * # <ins>FirestoreException</ins>
+ * # <ins>FirestoreBulkException</ins>
  * @category Exceptions
  */
-export class FirestoreException
+export class FirestoreBulkException
 	extends CustomException {
+	public causes?: Error[];
 
-	constructor(message: string, cause?: Error) {
-		super(FirestoreException, message, cause);
+	constructor(causes?: Error[]) {
+		super(FirestoreBulkException, __stringify(causes?.map(_err => _err.message)));
+		this.causes = causes;
 	}
 }
 
 /**
- * FirestoreCollection is a class for handling Firestore collections. It takes in the name, FirestoreWrapperBE instance, and uniqueKeys as parameters.
+ * FirestoreCollection is a class for handling Firestore collections.
  */
 export class FirestoreCollectionV2<Type extends DB_Object> {
 	readonly name: string;
@@ -175,6 +173,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## Create ##############################
+	// @ts-ignore
 	protected _createItem = async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
 		preDBItem._id ??= generateId();
 		return await this.doc.item(preDBItem).create(preDBItem, transaction);
@@ -300,9 +299,9 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	protected bulkOperation = async <Op extends BulkOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: BulkItem<Op, Type>[]) => {
 		const bulk = this.wrapper.firestore.bulkWriter();
 
-		const errors: string[] = [];
+		const errors: Error[] = [];
 		bulk.onWriteError(error => {
-			errors.push(error.message);
+			errors.push(error);
 			return false;
 		});
 
@@ -310,7 +309,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		await bulk.close();
 
 		if (errors.length)
-			throw new FirestoreException(__stringify(errors));
+			throw new FirestoreBulkException(errors);
 	};
 
 	/**
