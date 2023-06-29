@@ -68,7 +68,7 @@ export class FirestoreWrapperBEV2
 		});
 	}
 
-	public getCollection<Type extends DB_Object>(dbDef: DBDef<Type>, hooks: FirestoreCollectionHooks<Type>): FirestoreCollectionV2<Type> {
+	public getCollection<Type extends DB_Object>(dbDef: DBDef<Type>, hooks?: FirestoreCollectionHooks<Type>): FirestoreCollectionV2<Type> {
 		const collection = this.collections[dbDef.dbName];
 		if (collection)
 			return collection;
