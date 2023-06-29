@@ -15,12 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {BadImplementationException, Exception, Module} from "@nu-art/ts-common";
-import * as jwt from "jsonwebtoken";
+import {BadImplementationException, Exception, Module} from '@nu-art/ts-common';
+import * as jwt from 'jsonwebtoken';
 import {Octokit, RestEndpointMethodTypes} from '@octokit/rest';
-import {OctokitResponse, ReposGetContentResponseData} from "@octokit/types"
-import * as path from "path";
-import {ExpressRequest, promisifyRequest} from "@nu-art/thunderstorm/backend";
+import {OctokitResponse, ReposGetContentResponseData} from '@octokit/types';
+import * as path from 'path';
+import {promisifyRequest} from '@nu-art/thunderstorm/backend';
+
 
 type Config = {
 	appId: string
@@ -33,7 +34,7 @@ export class GithubModule_Class
 	extends Module<Config> {
 
 	private createClient(token: string, prefix?: string) {
-		const auth = `${prefix || "token"} ${token}`;
+		const auth = `${prefix || 'token'} ${token}`;
 		const client: Octokit = new Octokit(
 			{
 				userAgent: this.config.userAgent,
@@ -58,7 +59,7 @@ export class GithubModule_Class
 			// GitHub App's identifier
 			iss: parseInt(this.config.appId)
 		};
-		const signedToken = await jwt.sign(payload, this.config.privateKey, {algorithm: "RS256"});
+		const signedToken = await jwt.sign(payload, this.config.privateKey, {algorithm: 'RS256'});
 		return this.createClient(signedToken, 'Bearer');
 	}
 
@@ -87,7 +88,7 @@ export class GithubModule_Class
 
 		if (!installationToken.data || !installationToken.data.token) {
 			this.logError(`Invalid structure of installation token object.`);
-			throw new Exception(`Invalid structure of installation token object.`)
+			throw new Exception(`Invalid structure of installation token object.`);
 		}
 
 		return installationToken.data.token;
@@ -104,7 +105,7 @@ export class GithubModule_Class
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
-		let contents: OctokitResponse<RestEndpointMethodTypes["repos"]["getContent"]["response"]["data"]>;
+		let contents: OctokitResponse<RestEndpointMethodTypes['repos']['getContent']['response']['data']>;
 
 		try {
 			contents = await client.repos.getContent(
@@ -130,7 +131,7 @@ export class GithubModule_Class
 
 		// Check that if contents.data is not an array.
 		if (Array.isArray(contents.data)) {
-			throw new BadImplementationException('Invalid response of method repos.getContent')
+			throw new BadImplementationException('Invalid response of method repos.getContent');
 		}
 		if (!contents || !contents.data || !contents.data.content) {
 			throw new Exception('Failed to get file contents from Github');
@@ -159,7 +160,7 @@ export class GithubModule_Class
 
 	private async getFileBySha(client: Octokit, repo: string, filePath: string, branch: string) {
 		const parentPath = path.dirname(filePath);
-		let parentDirectoryResponse: OctokitResponse<RestEndpointMethodTypes["repos"]["getContent"]["response"]["data"]>;
+		let parentDirectoryResponse: OctokitResponse<RestEndpointMethodTypes['repos']['getContent']['response']['data']>;
 		try {
 			const request = {
 				owner: this.config.gitOwner,
@@ -177,8 +178,7 @@ export class GithubModule_Class
 
 		// Check that if parentDirectoryResponse.data is an array.
 		if (!Array.isArray(parentDirectoryResponse.data))
-			throw new BadImplementationException("File's parent directory is not an array")
-
+			throw new BadImplementationException('File\'s parent directory is not an array');
 
 		let fileSha = '';
 		for (const responseEntry of parentDirectoryResponse.data) {
@@ -209,14 +209,14 @@ export class GithubModule_Class
 
 		// Return master with the release branches.
 		releaseBranches.unshift('master');
-		return releaseBranches
+		return releaseBranches;
 	}
 
-	async listBranches(repo: string): Promise<RestEndpointMethodTypes["repos"]["listBranches"]["response"]["data"]> {
+	async listBranches(repo: string): Promise<RestEndpointMethodTypes['repos']['listBranches']['response']['data']> {
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
-		let branches: RestEndpointMethodTypes["repos"]["listBranches"]["response"]["data"];
+		let branches: RestEndpointMethodTypes['repos']['listBranches']['response']['data'];
 		try {
 			// Returns all the branches using the paginate method.
 			// Maximum allowed page size is 100.
@@ -246,7 +246,7 @@ export class GithubModule_Class
 				owner: this.config.gitOwner,
 				repo,
 				ref: branch,
-				archive_format: "zipball"
+				archive_format: 'zipball'
 			}
 		);
 		if (!response || !response.url) {
@@ -259,7 +259,7 @@ export class GithubModule_Class
 	async downloadArchive(url: string, branch: string) {
 		const response = await promisifyRequest({uri: url, encoding: null});
 		if (!response || !response.body) {
-			throw new Exception(`Failed to download archive for branch ${branch} of product ${url}`)
+			throw new Exception(`Failed to download archive for branch ${branch} of product ${url}`);
 		}
 		this.logDebug(`Got archive in zip format.`);
 		// Returns a buffer.
@@ -277,7 +277,7 @@ export class GithubModule_Class
 		const token = await this.getGithubInstallationToken();
 		const client: Octokit = this.createClient(token);
 
-		const response: RestEndpointMethodTypes["repos"]["getContent"]["response"] = await client.repos.getContent(
+		const response: RestEndpointMethodTypes['repos']['getContent']['response'] = await client.repos.getContent(
 			{
 				owner: this.config.gitOwner,
 				repo,
