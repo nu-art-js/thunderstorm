@@ -22,27 +22,24 @@ import {
 	batchActionParallel,
 	currentTimeMillis,
 	Day,
-	dispatch_onServerError,
 	generateHex,
 	Hour,
 	ImplementationMissingException,
 	MB,
 	Minute,
 	PreDB,
-	ServerErrorSeverity,
 	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
-import {FileWrapper, ModuleBE_Firebase, FirebaseType_Metadata, FirestoreTransaction, StorageWrapperBE} from '@nu-art/firebase/backend';
+import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
-import {fromBuffer} from 'file-type';
-import {FileExtension, MimeType} from 'file-type';
+import {ApiException, CleanupDetails, ExpressRequest, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './AssetBucketListener';
 import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
-import {BaseDB_ModuleBE, DBApiConfig} from '@nu-art/db-api-generator/backend';
+import {DBApiConfig, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -93,7 +90,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 };
 
 export class ModuleBE_Assets_Class
-	extends BaseDB_ModuleBE<DB_Asset, MyConfig>
+	extends ModuleBE_BaseDB<DB_Asset, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {
@@ -156,7 +153,7 @@ export class ModuleBE_Assets_Class
 		};
 	}
 
-	private cleanup = async (interval = Hour, module: BaseDB_ModuleBE<DB_Asset> = ModuleBE_AssetsTemp) => {
+	private cleanup = async (interval = Hour, module: ModuleBE_BaseDB<DB_Asset> = ModuleBE_AssetsTemp) => {
 		const entries: DB_Asset[] = await module.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);
@@ -294,7 +291,7 @@ export class ModuleBE_Assets_Class
 	private notifyFrontend = async (status: FileStatus, asset: DB_Asset, feId?: string) => {
 		if (status !== FileStatus.Completed && status !== FileStatus.Processing) {
 			const message = `Error while processing asset: ${status}\n Failed on \n  Asset: ${asset.feId}\n    Key: ${asset.key}\n   Type: ${asset.mimeType}\n   File: ${asset.name}`;
-			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Error, this, message);
+			throw new ApiException(500, message);
 		}
 
 		this.logDebug(`notify FE about asset ${feId}: ${status}`);

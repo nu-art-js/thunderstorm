@@ -1,0 +1,49 @@
+{
+  "name": "@nu-art/jira",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "description": "Jira api Module",
+  "keywords": [
+    "TacB0sS",
+    "backend",
+    "boilerplate",
+    "Jira",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm-boilerplate.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "dependencies": {
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/firebase": "$THUNDERSTORM_SDK_VERSION",
+    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "body-parser": "^1.18.3",
+    "compression": "^1.7.4",
+    "express": "$EXPRESS_PKG_VERSION",
+    "module-alias": "^2.2.0",
+    "moment": "^2.24.0",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.2",
+    "@types/express": "$EXPRESS_TYPES_VERSION",
+    "@types/js-base64": "^2.3.1",
+    "@types/request": "^2.48.3",
+    "@types/saml2-js": "^1.6.8"
+  },
+  "_moduleAliases": {
+    "@consts": "dist/consts",
+    "@modules": "dist/modules",
+    "@shared": "dist/app-shared"
+  }
+}
+

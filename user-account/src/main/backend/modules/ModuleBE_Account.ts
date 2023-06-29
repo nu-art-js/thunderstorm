@@ -17,14 +17,19 @@
  */
 import {
 	__stringify,
+	_keys,
 	auditBy,
+	BadImplementationException,
 	currentTimeMillis,
 	Day,
 	Dispatcher,
 	generateHex,
 	hashPasswordWithSalt,
+	MergeTypes,
 	Module,
 	MUSTNeverHappenException,
+	NonEmptyArray,
+	TS_Object,
 	tsValidate
 } from '@nu-art/ts-common';
 
@@ -43,7 +48,7 @@ import {
 import {addRoutes, ApiException, createBodyServerApi, createQueryServerApi, ExpressRequest, HeaderKey, QueryRequestInfo} from '@nu-art/thunderstorm/backend';
 import {tsValidateEmail} from '@nu-art/db-api-generator/shared/validators';
 import {QueryParams} from '@nu-art/thunderstorm';
-
+import {gzipSync, unzipSync} from 'zlib';
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
@@ -65,6 +70,19 @@ export interface OnUserLogin {
 }
 
 const dispatch_onUserLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
+
+export interface CollectSessionData<R extends TS_Object> {
+	__collectSessionData(accountId: string): Promise<R>;
+}
+
+type MapTypes<T extends CollectSessionData<any>[]> =
+	T extends [a: CollectSessionData<infer A>, ...rest: infer R] ?
+		R extends CollectSessionData<any>[] ?
+			[A, ...MapTypes<R>] :
+			[] :
+		[];
+
+const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<{}>, '__collectSessionData'>('__collectSessionData');
 export const dispatch_onNewUserRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
 
 function getUIAccount(account: DB_Account): UI_Account {
@@ -74,8 +92,7 @@ function getUIAccount(account: DB_Account): UI_Account {
 
 export class ModuleBE_Account_Class
 	extends Module<Config>
-	implements QueryRequestInfo {
-
+	implements QueryRequestInfo, CollectSessionData<any> {
 
 	constructor() {
 		super();
@@ -84,10 +101,18 @@ export class ModuleBE_Account_Class
 		addRoutes([
 			createBodyServerApi(ApiDef_UserAccountBE.v1.create, this.create),
 			createBodyServerApi(ApiDef_UserAccountBE.v1.login, this.login),
+			createQueryServerApi(ApiDef_UserAccountBE.v1.logout, this.logout),
 			createQueryServerApi(ApiDef_UserAccountBE.v1.validateSession, this.validateSession),
 			createQueryServerApi(ApiDef_UserAccountBE.v1.query, this.listUsers),
 			createBodyServerApi(ApiDef_UserAccountBE.v1.upsert, this.upsert)
 		]);
+	}
+
+	async __collectSessionData(accountId: string) {
+		return {
+			timestamp: currentTimeMillis(),
+			userId: accountId
+		};
 	}
 
 	async __queryRequestInfo(request: ExpressRequest): Promise<{ key: string; data: any; }> {
@@ -118,9 +143,7 @@ export class ModuleBE_Account_Class
 		return this.accounts.queryUnique({where: {email}, select: ['email', '_id']});
 	}
 
-	async listUsers(params: QueryParams) {
-		return {accounts: (await this.accounts.getAll(['_id', 'email'])) as { email: string, _id: string }[]};
-	}
+	listUsers = async (params: QueryParams) => ({accounts: (await this.accounts.getAll(['_id', 'email'])) as { email: string, _id: string }[]});
 
 	async listSessions() {
 		return this.sessions.getAll(['userId', 'timestamp']);
@@ -134,8 +157,8 @@ export class ModuleBE_Account_Class
 	private create = async (request: Request_CreateAccount) => {
 		const account = await this.createAccount(request);
 
-		const session = await this.login(request);
 		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
+		const session = await this.login(request);
 		return session;
 	};
 
@@ -238,6 +261,14 @@ export class ModuleBE_Account_Class
 		return session;
 	};
 
+	logout = async (queryParams: QueryParams, request: ExpressRequest) => {
+		const sessionId = Header_SessionId.get(request);
+		if (!sessionId)
+			throw new ApiException(404, 'Missing sessionId');
+
+		await this.sessions.deleteUnique({where: {sessionId}});
+	};
+
 	validateSession = async (params: QueryParams, request?: ExpressRequest): Promise<UI_Account> => {
 		if (!request)
 			throw new MUSTNeverHappenException('must have a request when calling this function..');
@@ -283,11 +314,25 @@ export class ModuleBE_Account_Class
 	upsertSession = async (account: DB_Account): Promise<Response_Auth> => {
 		let session = await this.sessions.queryUnique({where: {userId: account._id}});
 		if (!session || this.TTLExpired(session)) {
+			const sessionData = (await dispatch_CollectSessionData.dispatchModuleAsync(account._id))
+				.reduce((sessionData, moduleSessionData) => {
+					_keys(moduleSessionData).forEach(key => {
+						if (sessionData[key])
+							throw new BadImplementationException(`Error while building session data.. duplicated keys: ${key as string}\none: ${__stringify(sessionData, true)}\ntwo: ${__stringify(moduleSessionData, true)}`);
+
+						sessionData[key] = moduleSessionData[key];
+					});
+					return sessionData;
+				}, {} as { [key: string]: TS_Object });
+
+			const sessionDataAsString = await ModuleBE_Account_Class.encodeSessionData(sessionData);
+
 			session = {
-				sessionId: generateHex(64),
-				timestamp: currentTimeMillis(),
-				userId: account._id
+				userId: account._id,
+				sessionId: sessionDataAsString,
+				timestamp: currentTimeMillis()
 			};
+
 			await this.sessions.upsert(session);
 		}
 
@@ -295,6 +340,22 @@ export class ModuleBE_Account_Class
 		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
 		return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
 	};
+
+	static async encodeSessionData(sessionData: TS_Object) {
+		return (await gzipSync(Buffer.from(__stringify(sessionData), 'utf8'))).toString('base64');
+	}
+
+	/**
+	 * @param modules - A list of modules that implement CollectSessionData, defines the decoded object's type
+	 */
+	static decodeSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(request: ExpressRequest, ...modules: T): MergeTypes<MapTypes<T>> {
+		const sessionData = Header_SessionId.get(request);
+		try {
+			return JSON.parse((unzipSync(Buffer.from(sessionData, 'base64'))).toString('utf8'));
+		} catch (e: any) {
+			throw new ApiException(403, 'Cannot parse session data', e);
+		}
+	}
 
 	getOrCreate = async (query: { where: { email: string } }) => {
 		let dispatchEvent = false;

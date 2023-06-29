@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 
-import {
-	BadImplementationException,
-	deepClone,
-	exists
-} from '../index';
+
+import {deepClone} from './object-tools';
+import {exists} from './tools';
+import {BadImplementationException} from '../core/exceptions';
 
 
 export function mergeObject(original: any, override: any) {

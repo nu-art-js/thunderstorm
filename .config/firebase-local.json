@@ -1,6 +1,6 @@
 {
   "functions": {
-    "source": "app-backend",
+    "source": "app-backend/dist",
     "ignore": [
       "src",
       ".config",
@@ -30,7 +30,7 @@
       "port": "5004"
     },
     "storage": {
-      "port": "5004"
+      "port": "5005"
     }
   }
 }

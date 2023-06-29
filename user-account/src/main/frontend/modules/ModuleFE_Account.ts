@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {currentTimeMillis, Day, Hour, Module, Second} from '@nu-art/ts-common';
+import {composeUrl, currentTimeMillis, Day, Hour, Module, Second} from '@nu-art/ts-common';
 import {
 	apiWithBody,
 	apiWithQuery,
@@ -25,7 +25,7 @@ import {
 	ModuleFE_Toaster,
 	StorageKey,
 	ThunderDispatcher,
-	XhrHttpModule
+	ModuleFE_XHR
 } from '@nu-art/thunderstorm/frontend';
 import {
 	ApiDef_UserAccountFE,
@@ -39,6 +39,7 @@ import {
 	UI_Account
 } from '../../shared/api';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
+import {ungzip} from 'pako';
 
 
 export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
@@ -86,6 +87,7 @@ export class ModuleFE_Account_Class
 		this.v1 = {
 			create: apiWithBody(ApiDef_UserAccountFE.v1.create, this.setLoginInfo),
 			login: apiWithBody(ApiDef_UserAccountFE.v1.login, this.setLoginInfo),
+			logout: apiWithQuery(ApiDef_UserAccountFE.v1.logout),
 			loginSaml: apiWithQuery(ApiDef_UserAccountFE.v1.loginSaml, this.onLoginCompletedSAML),
 			validateSession: () => validateSession({}),
 			query: apiWithQuery(ApiDef_UserAccountFE.v1.query, this.onAccountsQueryCompleted),
@@ -115,8 +117,8 @@ export class ModuleFE_Account_Class
 	};
 
 	protected init(): void {
-		XhrHttpModule.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
-		// XhrHttpModule.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
+		// ModuleFE_XHR.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
 		const email = getQueryParameter(QueryParam_Email);
 		const sessionId = getQueryParameter(QueryParam_SessionId);
@@ -142,6 +144,13 @@ export class ModuleFE_Account_Class
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
 	}
 
+	public composeSAMLUrl = () => {
+		return composeUrl(window.location.href, {
+			[QueryParam_SessionId]: QueryParam_SessionId.toUpperCase(),
+			[QueryParam_Email]: QueryParam_Email.toUpperCase(),
+		});
+	};
+
 	private setLoginInfo = async (response: Response_Auth) => {
 		StorageKey_SessionId.set(response.sessionId);
 		StorageKey_UserEmail.set(response.email);
@@ -151,6 +160,11 @@ export class ModuleFE_Account_Class
 
 	public getSessionId = (): string => {
 		return this.isStatus(LoggedStatus.LOGGED_IN) ? StorageKey_SessionId.get() : '';
+	};
+
+	public decodeSessionData = () => {
+		const sessionData = this.getSessionId();
+		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(sessionData), c => c.charCodeAt(0)))));
 	};
 
 	private onLoginCompletedSAML = async (response: Response_LoginSAML) => {
@@ -178,6 +192,7 @@ export class ModuleFE_Account_Class
 	};
 
 	logout = (url?: string) => {
+		this.v1.logout({}).execute();
 		StorageKey_SessionId.delete();
 		if (url)
 			return window.location.href = url;

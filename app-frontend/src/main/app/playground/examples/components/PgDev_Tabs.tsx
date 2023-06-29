@@ -13,13 +13,13 @@ const tabs: Tab[] = [
 	},
 	{
 		uid: '2',
-		content: async () => <div>Dynamic Content</div>,
+		content: () => <div>Dynamic Content</div>,
 		title: <div>Static Title</div>,
 	},
 	{
 		uid: '3',
-		content: async () => <div>Dynamic Content</div>,
-		title: async () => <div>Dynamic Title</div>,
+		content: () => <div>Dynamic Content</div>,
+		title: () => <div>Dynamic Title</div>,
 	}
 ];
 

@@ -22,6 +22,7 @@ import {Firebase_CopyResponse, FirebaseType_Metadata, FirebaseType_Storage, Retu
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
 import {getStorage} from 'firebase-admin/storage';
+import {Response} from 'teeny-request';
 
 
 export class StorageWrapperBE
@@ -219,7 +220,7 @@ export class FileWrapper {
 		}
 	}
 
-	async delete() {
+	async delete(): Promise<[Response<any>] | undefined> {
 		if (!await this.file.exists())
 			return;
 

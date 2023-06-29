@@ -1,0 +1,35 @@
+{
+  "name": "@nu-art/github",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "description": "Github api Module",
+  "keywords": [
+    "TacB0sS",
+    "backend",
+    "boilerplate",
+    "github",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm-boilerplate.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "dependencies": {
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@octokit/plugin-paginate-rest": "2.2.1",
+    "@octokit/rest": "18.0.9",
+    "@octokit/types": "^5.5.0",
+    "jsonwebtoken": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "~8.5.0"
+  }
+}

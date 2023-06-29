@@ -1,0 +1,21 @@
+packages:
+  - ts-common
+  - ts-styles
+  - neural
+  - google-services
+  - firebase
+  - thunderstorm
+  - db-api-generator
+  - slack
+  - live-docs
+  - user-account
+  - ts-workspace
+  - permissions
+  - push-pub-sub
+  - jira
+  - bug-report
+  - github
+  - file-upload
+  - app-shared
+  - app-frontend
+  - app-backend

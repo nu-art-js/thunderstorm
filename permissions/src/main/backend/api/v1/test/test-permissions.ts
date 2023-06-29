@@ -18,8 +18,9 @@
 
 import {ApiResponse, ExpressRequest, ServerApi} from '@nu-art/thunderstorm/backend';
 
-import {ApiDef_TestPermissions, ApiStruct_TestPermissions} from '../permissions/_imports';
 import {testUserPermissionsTime} from './_imports';
+import {ApiDef_TestPermissions, ApiStruct_TestPermissions} from '../../../../shared';
+
 
 class ServerApi_TestPermissions
 	extends ServerApi<ApiStruct_TestPermissions['v1']['test']> {

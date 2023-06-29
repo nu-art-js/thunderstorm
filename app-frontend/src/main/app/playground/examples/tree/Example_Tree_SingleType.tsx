@@ -52,7 +52,7 @@ class Example_Tree_SingleType_Renderer
 	}
 
 	render() {
-		const adapter: Adapter = SimpleTreeAdapter(this.data, (props: { item: Type }) => <div>{props.item}</div>);
+		const adapter: Adapter = SimpleTreeAdapter(this.data, (props: { item: Type }) => <div>{props.item.label}</div>);
 		// adapter.adjust = adapter.adjustNodes("data")
 		return <div>
 			<div>

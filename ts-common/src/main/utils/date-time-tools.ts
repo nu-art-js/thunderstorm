@@ -58,6 +58,9 @@ export function _clearInterval(handlerId?: number) {
 	return clearInterval(handlerId as unknown as ReturnType<typeof setInterval>);
 }
 
+/**
+ * @param comment @deprecated
+ */
 export function auditBy(user: string, comment?: string, timestamp: number = currentTimeMillis()): AuditBy {
 	const _auditBy: AuditBy = {
 		auditBy: user,
@@ -121,3 +124,10 @@ export function parseTimeString(timestamp: string, pattern: string = Format_HHmm
 export function normalizeTimestamp(timestamp: number, pattern: string): number {
 	return parseTimeString(formatTimestamp(pattern, timestamp), pattern);
 }
+
+export const DateTimeFormat = (format: string) => {
+	return {
+		parse: (timestampAsString: string) => parseTimeString(timestampAsString, format),
+		format: (timestamp = currentTimeMillis()) => formatTimestamp(format, timestamp)
+	};
+};

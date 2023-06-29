@@ -20,7 +20,7 @@
  */
 
 // noinspection TypeScriptPreferShortImport
-import {Constructor} from '../utils/types';
+import {Constructor, UniqueId} from '../utils/types';
 
 
 /**
@@ -48,9 +48,9 @@ import {Constructor} from '../utils/types';
  * ```
  */
 export function isErrorOfType<T extends Error>(e: Error, _exceptionType: Constructor<T>): T | undefined {
-    const _e = e as any;
-    if (_e.isInstanceOf?.(_exceptionType))
-        return e as T;
+	const _e = e as any;
+	if (_e.isInstanceOf?.(_exceptionType))
+		return e as T;
 }
 
 /**
@@ -65,23 +65,30 @@ export function isErrorOfType<T extends Error>(e: Error, _exceptionType: Constru
  * @category Exceptions
  */
 export abstract class CustomException
-    extends Error {
+	extends Error {
 
-    public exceptionType: string;
+	public exceptionType: string;
 
-    public isInstanceOf: (_exceptionType: Function) => boolean;
-    public cause?: Error;
+	public isInstanceOf: (_exceptionType: Function) => boolean;
 
-    protected constructor(exceptionType: Function, message: string, cause?: Error) {
-        super(message);
-        this.message = message;
-        this.stack = (new Error(message)).stack;
-        this.cause = cause;
-        this.exceptionType = exceptionType.name;
-        this.isInstanceOf = (_exceptionType: Function): boolean => {
-            return this.exceptionType === _exceptionType.name;
-        };
-    }
+	public generateMrkDwnMessage: () => string;
+
+	public cause?: Error;
+
+	protected constructor(exceptionType: Function, message: string, cause?: Error) {
+		super(message);
+		this.message = message;
+		this.stack = (new Error(message)).stack;
+		this.cause = cause;
+		this.exceptionType = exceptionType.name;
+		this.isInstanceOf = (_exceptionType: Function): boolean => {
+			return this.exceptionType === _exceptionType.name;
+		};
+		this.generateMrkDwnMessage = () => {
+			return `*Exception Type :* ${this.exceptionType}\n`
+				+ `*Message :* ${this.message}`;
+		};
+	}
 }
 
 /**
@@ -90,11 +97,11 @@ export abstract class CustomException
  * @category Exceptions
  */
 export class Exception
-    extends CustomException {
+	extends CustomException {
 
-    constructor(message: string, cause?: Error) {
-        super(Exception, message, cause);
-    }
+	constructor(message: string, cause?: Error) {
+		super(Exception, message, cause);
+	}
 }
 
 /**
@@ -103,11 +110,11 @@ export class Exception
  * @category Exceptions
  */
 export class BadImplementationException
-    extends CustomException {
+	extends CustomException {
 
-    constructor(message: string, cause?: Error) {
-        super(BadImplementationException, message, cause);
-    }
+	constructor(message: string, cause?: Error) {
+		super(BadImplementationException, message, cause);
+	}
 }
 
 /**
@@ -116,11 +123,11 @@ export class BadImplementationException
  * @category Exceptions
  */
 export class ImplementationMissingException
-    extends CustomException {
+	extends CustomException {
 
-    constructor(message: string, cause?: Error) {
-        super(ImplementationMissingException, message, cause);
-    }
+	constructor(message: string, cause?: Error) {
+		super(ImplementationMissingException, message, cause);
+	}
 }
 
 /**
@@ -129,11 +136,11 @@ export class ImplementationMissingException
  * @category Exceptions
  */
 export class MUSTNeverHappenException
-    extends CustomException {
+	extends CustomException {
 
-    constructor(message: string, cause?: Error) {
-        super(MUSTNeverHappenException, message, cause);
-    }
+	constructor(message: string, cause?: Error) {
+		super(MUSTNeverHappenException, message, cause);
+	}
 }
 
 /**
@@ -142,11 +149,11 @@ export class MUSTNeverHappenException
  * @category Exceptions
  */
 export class NotImplementedYetException
-    extends CustomException {
+	extends CustomException {
 
-    constructor(message: string, cause?: Error) {
-        super(NotImplementedYetException, message, cause);
-    }
+	constructor(message: string, cause?: Error) {
+		super(NotImplementedYetException, message, cause);
+	}
 }
 
 /**
@@ -155,11 +162,35 @@ export class NotImplementedYetException
  * @category Exceptions
  */
 export class ThisShouldNotHappenException
-    extends CustomException {
+	extends CustomException {
 
-    constructor(message: string, cause?: Error) {
-        super(ThisShouldNotHappenException, message, cause);
-    }
+	constructor(message: string, cause?: Error) {
+		super(ThisShouldNotHappenException, message, cause);
+	}
+}
+
+export type DependencyConflicts = {
+	collectionKey: string;
+	conflictingIds: UniqueId[];
+}
+
+/**
+ * #<ins>EntityHasDependencies</ins>
+ * This class inherits {@link CustomException} and represents an error of a entity trying to be deleted that has dependencies
+ * @category Exceptions
+ */
+export class HasDependenciesException extends CustomException {
+
+	public body?: DependencyConflicts[];
+	public entityName?: string;
+	public responseCode?: number;
+
+	constructor(debugMessage: string, body?: DependencyConflicts[], entityName?: UniqueId, e?: Error) {
+		super(HasDependenciesException, debugMessage, e);
+
+		this.body = body;
+		this.entityName = entityName;
+	}
 }
 
 /**
@@ -168,11 +199,11 @@ export class ThisShouldNotHappenException
  * @category Exceptions
  */
 export class DontCallthisException
-    extends CustomException {
+	extends CustomException {
 
-    constructor(message: string, cause?: Error) {
-        super(DontCallthisException, message, cause);
-    }
+	constructor(message: string, cause?: Error) {
+		super(DontCallthisException, message, cause);
+	}
 }
 
 /**
@@ -181,11 +212,11 @@ export class DontCallthisException
  * @category Exceptions
  */
 export class WhoCallthisException
-    extends CustomException {
+	extends CustomException {
 
-    constructor(message: string, cause?: Error) {
-        super(WhoCallthisException, message, cause);
-    }
+	constructor(message: string, cause?: Error) {
+		super(WhoCallthisException, message, cause);
+	}
 }
 
 /**
@@ -194,9 +225,25 @@ export class WhoCallthisException
  * @category Exceptions
  */
 export class AssertionException
-    extends CustomException {
+	extends CustomException {
 
-    constructor(message: string, cause?: Error) {
-        super(AssertionException, message, cause);
-    }
+	constructor(message: string, cause?: Error) {
+		super(AssertionException, message, cause);
+	}
+}
+
+const allExceptions = [
+	Exception,
+	BadImplementationException,
+	ImplementationMissingException,
+	MUSTNeverHappenException,
+	NotImplementedYetException,
+	ThisShouldNotHappenException,
+	DontCallthisException,
+	WhoCallthisException,
+	AssertionException,
+];
+
+export function isCustomException(e: Error) {
+	return allExceptions.some(exc => !!isErrorOfType(e, exc));
 }

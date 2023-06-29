@@ -35,8 +35,6 @@ export * from './core/logger/Logger';
 export * from './core/logger/types';
 export * from './core/logger/LogClient';
 
-export * from './permissions/permission-group';
-
 export * from './tools/Replacer';
 export * from './tools/get-log-style';
 
@@ -61,6 +59,7 @@ export * from './utils/filter-tools';
 export * from './utils/ui-tools';
 
 export * from './validator/validator-core';
+export * from './validator/validators';
 export * from './validator/type-validators';
 
 export * from './consts/consts';

@@ -19,7 +19,7 @@
 import {ModuleBE_Account} from '../modules/ModuleBE_Account';
 
 
-export const ModulePack_Backend_Users = [
+export const ModulePackBE_Accounts = [
 	ModuleBE_Account,
 ];
 

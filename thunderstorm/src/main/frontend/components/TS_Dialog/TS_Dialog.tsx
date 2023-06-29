@@ -1,10 +1,14 @@
 import * as React from 'react';
 import './TS_Dialog.scss';
-import {BadImplementationException, TypedMap} from '@nu-art/ts-common';
+import {_values, BadImplementationException, filterInstances, flatArray, TS_Object, TypedMap} from '@nu-art/ts-common';
 import {ComponentSync} from '../../core/ComponentSync';
 import {TS_BusyButton} from '../TS_BusyButton';
 import {TS_Button} from '../TS_Button';
-import {LL_V_L, ModuleFE_Dialog, TS_ErrorBoundary} from '../..';
+import {ModuleFE_Dialog} from '../../component-modules/ModuleFE_Dialog';
+import {TS_ErrorBoundary} from '../TS_ErrorBoundary';
+import {LL_V_L} from '../Layouts';
+import {_className} from '../../utils/tools';
+
 
 /**
  * ###DialogButton
@@ -14,10 +18,17 @@ import {LL_V_L, ModuleFE_Dialog, TS_ErrorBoundary} from '../..';
 export type DialogButton = {
 	content: React.ReactNode;
 	onClick?: () => void | Promise<void>;
-	busy?: boolean;
+	onDisabledClick?: (e: React.MouseEvent) => any;
 	className?: string;
 	associatedKeys?: string[];
 	disabled?: boolean;
+	renderer?: (button: DialogButton, index: number, ref?: React.RefObject<any>) => React.ReactNode;
+}
+
+export type DialogButtons = {
+	left?: DialogButton[];
+	center?: DialogButton[];
+	right?: DialogButton[];
 }
 
 /**
@@ -25,6 +36,15 @@ export type DialogButton = {
  */
 export type State_TSDialog = {
 	dialogIsBusy?: boolean;
+	error?: Error
+};
+
+/**
+ * Base Props for TS_Dialog
+ */
+export type Props_TSDialog = {
+	dialogId: string;
+	className?: string;
 };
 
 /**
@@ -33,14 +53,16 @@ export type State_TSDialog = {
  * This class defines the logic and render behavior for dialogs in the system.
  * Any dialog class in the system is meant to inherit this class to utilize its features.
  */
-export abstract class TS_Dialog<P, S extends State_TSDialog>
-	extends ComponentSync<P, S> {
+export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
+	extends ComponentSync<P & Props_TSDialog, S & State_TSDialog> {
 
 	// ######################## Life Cycle ########################
 
 	componentDidMount() {
-		const dialog = document.getElementById(this.dialogId);
+		this._keyActionMapCreator();
+		const dialog = document.getElementById(this.props.dialogId);
 		dialog?.focus();
+		this.forceUpdate();
 	}
 
 	// ######################## KeyMap ########################
@@ -50,7 +72,7 @@ export abstract class TS_Dialog<P, S extends State_TSDialog>
 	 * This map is filled in by calling _keyActionMapCreator with buttons.
 	 * @protected
 	 */
-	protected readonly keyActionMap: TypedMap<React.RefObject<any>> = {};
+	private readonly keyActionMap: TypedMap<React.RefObject<any>> = {};
 
 	/**
 	 * A function to fill in keyActionMap.
@@ -66,8 +88,8 @@ export abstract class TS_Dialog<P, S extends State_TSDialog>
 	 *
 	 * @param buttons - an array of buttons of type DialogButton
 	 */
-	protected _keyActionMapCreator = (buttons: DialogButton[]) => {
-		buttons.forEach(button => {
+	private _keyActionMapCreator = () => {
+		flatArray(filterInstances(_values(this.buttons()))).forEach(button => {
 			if (!button.associatedKeys?.length)
 				return;
 
@@ -79,6 +101,10 @@ export abstract class TS_Dialog<P, S extends State_TSDialog>
 			});
 		});
 	};
+
+	protected deriveStateFromProps(nextProps: P, state?: Partial<S>): S {
+		return {} as S;
+	}
 
 	private dialogKeyEventHandler = (e: React.KeyboardEvent) => {
 		e.persist();
@@ -98,21 +124,7 @@ export abstract class TS_Dialog<P, S extends State_TSDialog>
 		return <>
 			{buttons.map((button, i) => {
 				const ref = button.associatedKeys ? this.keyActionMap[button.associatedKeys[0]] : undefined;
-				return button.busy ?
-					<TS_BusyButton
-						className={button.className}
-						innerRef={ref}
-						onClick={async () => await button.onClick?.()}
-						disabled={button.disabled}
-						key={`button-${i}`}
-					>{button.content}</TS_BusyButton>
-					: <TS_Button
-						className={button.className}
-						ref={ref}
-						onClick={button.onClick}
-						disabled={button.disabled}
-						key={`button-${i}`}
-					>{button.content}</TS_Button>;
+				return (button.renderer ?? TS_Dialog.normalButton)(button, i, ref);
 			})}
 		</>;
 	};
@@ -121,52 +133,109 @@ export abstract class TS_Dialog<P, S extends State_TSDialog>
 		ModuleFE_Dialog.close();
 	};
 
-	// ######################## Abstract ########################
+	// ######################## Render - Header ########################
 
-	protected abstract dialogId: string;
-	protected abstract dialogLeftButtons: () => (DialogButton[] | undefined);
-	protected abstract dialogRightButtons: () => (DialogButton[] | undefined);
-	protected abstract dialogHeader: () => React.ReactNode;
-	protected abstract dialogMain: () => React.ReactNode;
-
-	// ######################## Render ########################
-
-	private renderHeader = () => {
-		const headerContent = this.dialogHeader();
-		if (!headerContent)
-			return '';
-
-		return <div className={'ts-dialog__header'}>
+	private dialogHeader = (headerContent: React.ReactNode | undefined) => {
+		return headerContent && <div className={'ts-dialog__header'}>
 			{headerContent}
 		</div>;
 	};
 
-	private renderButtons = () => {
-		const leftContent = this._buttonsCreator(this.dialogLeftButtons());
-		const rightContent = this._buttonsCreator(this.dialogRightButtons());
-		return <div className={'ts-dialog__buttons'}>
-			<div className={'ts-dialog__buttons__left'}>{leftContent}</div>
-			<div className={'ts-dialog__buttons__right'}>{rightContent}</div>
-		</div>;
+	protected renderHeader = (): React.ReactNode | undefined => {
+		return undefined;
 	};
 
-	private renderMain = () => {
-		const mainContent = this.dialogMain();
-		if (!mainContent)
-			return '';
+	// ######################## Render - Main ########################
 
-		return <div className={'ts-dialog__main'}>
+	private dialogBody = (mainContent: React.ReactNode | undefined) => {
+		return mainContent && <div className={'ts-dialog__main'}>
 			{mainContent}
 		</div>;
 	};
 
+	protected renderBody = (): React.ReactNode | undefined => {
+		return undefined;
+	};
+
+	// ######################## Render - Buttons ########################
+
+	private dialogButtons = (buttons: TS_Object) => {
+		if (_values(buttons).every(arr => !arr || !arr.length))
+			return undefined;
+
+		return <div className={'ts-dialog__buttons'}>
+			{buttons.left && <div className={'ts-dialog__buttons__left'}>{this._buttonsCreator(buttons.left)}</div>}
+			{buttons.center && <div className={'ts-dialog__buttons__center'}>{this._buttonsCreator(buttons.center)}</div>}
+			{buttons.right && <div className={'ts-dialog__buttons__right'}>{this._buttonsCreator(buttons.right)}</div>}
+		</div>;
+	};
+
+	private errorButtonRenderer = () => {
+		return <TS_Button className={'ts-error-boundary__button'} onClick={this.closeDialog}>Close Dialog</TS_Button>;
+	};
+
+	protected buttons = (): DialogButtons => {
+		return {};
+	};
+
+	protected performAction = (action: () => Promise<void>) => {
+		this.setState({dialogIsBusy: true} as S & State_TSDialog, async () => {
+			await action();
+
+			if (this.mounted)
+				this.setState({dialogIsBusy: false} as S & State_TSDialog);
+		});
+	};
+
+	// ######################## Render ########################
+
 	render() {
-		return <TS_ErrorBoundary>
-			<LL_V_L className={'ts-dialog'} id={this.dialogId} tabIndex={-1} onKeyDown={this.dialogKeyEventHandler}>
-				{this.renderHeader()}
-				{this.renderMain()}
-				{this.renderButtons()}
+		let buttons = {};
+		let mainContent;
+		let headerContent;
+		try {
+			buttons = this.buttons();
+			mainContent = this.renderBody();
+			headerContent = this.renderHeader();
+		} catch (err: any) {
+			if (!this.state.error)
+				this.setState({error: err});
+		}
+
+		return <TS_ErrorBoundary buttonRenderer={this.errorButtonRenderer} error={this.state.error}>
+			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1} onKeyDown={this.dialogKeyEventHandler}>
+				{this.dialogHeader(headerContent)}
+				{this.dialogBody(mainContent)}
+				{this.dialogButtons(buttons)}
 			</LL_V_L>
 		</TS_ErrorBoundary>;
 	}
+
+	static busyButton = (button: DialogButton, index: number, ref?: React.RefObject<any>) => {
+		return <TS_BusyButton
+			className={button.className}
+			innerRef={ref}
+			onClick={async () => await button.onClick?.()}
+			disabled={button.disabled}
+			onDisabledClick={button.onDisabledClick}
+			key={`button-${index}`}
+		>{button.content}</TS_BusyButton>;
+	};
+
+	static normalButton = (button: DialogButton, index: number, ref?: React.RefObject<any>) => {
+		return <TS_Button
+			className={button.className}
+			ref={ref}
+			onClick={button.onClick}
+			onDisabledClick={button.onDisabledClick}
+			disabled={button.disabled}
+			key={`button-${index}`}
+		>{button.content}</TS_Button>;
+	};
+
+	static Button_Cancel = {
+		content: 'Cancel',
+		onClick: () => ModuleFE_Dialog.close(),
+		associatedKeys: ['Escape']
+	};
 }

@@ -132,4 +132,20 @@ export class ServerApi_Proxy<API extends TypedApi<any, any, any, any>>
 	}
 }
 
+export class ServerApi_Alternate<API extends TypedApi<any, any, any, any>>
+	extends ServerApi<API> {
+	private readonly api: ServerApi<API>;
+
+	public constructor(api: ServerApi<API>, pathSuffix: string) {
+		// super(api.method, `${api.relativePath}/proxy`);
+		super({...api.apiDef, path: `${api.apiDef.path}/${pathSuffix}`});
+		this.api = api;
+	}
+
+	protected async process(request: ExpressRequest, response: ApiResponse, queryParams: API['P'], body: API['B']): Promise<API['R']> {
+		// @ts-ignore
+		return this.api.process(request, response, queryParams, body);
+	}
+}
+
 export const ModuleBE_RemoteProxy = new ModuleBE_RemoteProxy_Class();

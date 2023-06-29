@@ -20,26 +20,22 @@
  */
 
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import {Router} from 'react-router-dom';
-import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
-import {Thunder} from './Thunder';
-import {ImplementationMissingException} from '@nu-art/ts-common';
+import {BrowserRouter, MemoryRouter} from 'react-router-dom';
+import {ThunderAppWrapperProps} from './types';
 
 
-export function renderApp() {
-	const MainApp = Thunder.getInstance().getMainApp();
-	if (!MainApp)
-		throw new ImplementationMissingException('mainApp was not specified!!');
-
-	const appDiv = document.createElement('div');
-	appDiv.classList.add('match_height');
-	document.body.appendChild(appDiv);
-
-	const history = ModuleFE_BrowserHistory.getHistory();
-	const appJsx = <Router history={history}><MainApp/></Router>;
-	ReactDOM.render(
-		appJsx,
-		appDiv
-	);
+export function appWithBrowserRouter(props: ThunderAppWrapperProps) {
+	const MainApp = props.element;
+	return <BrowserRouter><MainApp/></BrowserRouter>;
 }
+
+export function appWithMemoryRouter(props: ThunderAppWrapperProps) {
+	const MainApp = props.element;
+	return <MemoryRouter><MainApp/></MemoryRouter>;
+}
+
+export function appWithJSX(props: ThunderAppWrapperProps<any>) {
+	const MainApp = props.element;
+	return <MainApp {...props.props}/>;
+}
+

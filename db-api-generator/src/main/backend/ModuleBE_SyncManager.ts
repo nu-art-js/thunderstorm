@@ -20,11 +20,17 @@
  */
 
 import {FirestoreQuery} from '@nu-art/firebase';
-import {DatabaseWrapperBE, FirebaseRef, FirestoreCollection, FirestoreTransaction, ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {
+	DatabaseWrapperBE,
+	FirebaseRef,
+	FirestoreCollection,
+	FirestoreTransaction,
+	ModuleBE_Firebase
+} from '@nu-art/firebase/backend';
 import {addRoutes, createQueryServerApi, ExpressRequest, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
 import {_keys, currentTimeMillis, DB_Object, filterDuplicates, LogLevel, Module, TypedMap} from '@nu-art/ts-common';
 import {_EmptyQuery, ApiDef_SyncManager, DBSyncData} from '../shared';
-import {BaseDB_ModuleBE} from './BaseDB_ModuleBE';
+import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
 
 
 type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
@@ -55,7 +61,7 @@ export class ModuleBE_SyncManager_Class
 	public collection!: FirestoreCollection<DeletedDBItem>;
 
 	private database!: DatabaseWrapperBE;
-	private dbModules!: BaseDB_ModuleBE<DB_Object>[];
+	private dbModules!: ModuleBE_BaseDB<DB_Object>[];
 	private syncData!: FirebaseRef<Type_SyncData>;
 	private deletedCount!: FirebaseRef<number>;
 	public checkSyncApi;
@@ -90,7 +96,10 @@ export class ModuleBE_SyncManager_Class
 	}
 
 	queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>, transaction: FirestoreTransaction): Promise<DeletedDBItem[]> {
-		const finalQuery: FirestoreQuery<DeletedDBItem> = {...query, where: {...query.where, __collectionName: collectionName}};
+		const finalQuery: FirestoreQuery<DeletedDBItem> = {
+			...query,
+			where: {...query.where, __collectionName: collectionName}
+		};
 		return transaction.query(this.collection, finalQuery);
 	}
 
@@ -111,7 +120,10 @@ export class ModuleBE_SyncManager_Class
 		this.logDebug('Docs to delete', deletedCount);
 		this.logDebug('Docs to retain', this.config.retainDeletedCount);
 
-		const deleted = await this.collection.delete({limit: toDeleteCount, orderBy: [{key: '__updated', order: 'asc'}]});
+		const deleted = await this.collection.delete({
+			limit: toDeleteCount,
+			orderBy: [{key: '__updated', order: 'asc'}]
+		});
 		let newDeletedCount = deletedCount - deleted.length;
 		if (deleted.length !== toDeleteCount) {
 			this.logError(`Expected to delete ${toDeleteCount} but actually deleted ${deleted.length}`);
@@ -133,7 +145,7 @@ export class ModuleBE_SyncManager_Class
 		const firestore = ModuleBE_Firebase.createAdminSession().getFirestore();
 		this.collection = firestore.getCollection<DeletedDBItem>('__deleted__docs');
 
-		this.dbModules = this.manager.filterModules(module => module instanceof BaseDB_ModuleBE);
+		this.dbModules = this.manager.filterModules(module => module instanceof ModuleBE_BaseDB);
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
 		this.syncData = this.database.ref<Type_SyncData>(`/state/${this.getName()}/syncData`);
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
@@ -146,9 +158,14 @@ export class ModuleBE_SyncManager_Class
 			this.logWarning(`Syncing missing modules: `, missingModules.map(module => module.getCollectionName()));
 
 			const query: FirestoreQuery<DB_Object> = {limit: 1, orderBy: [{key: '__updated', order: 'asc'}]};
-			const newestItems = (await Promise.all(missingModules.map(missingModule => missingModule.query(query))));
+			const newestItems = (await Promise.all(missingModules.map(async missingModule => {
+				try {
+					return await missingModule.query(query);
+				} catch (e) {
+					return [];
+				}
+			})));
 			newestItems.forEach((item, index) => fbSyncData[missingModules[index].getCollectionName()] = {lastUpdated: item[0]?.__updated || 0});
-
 			await this.syncData.set(fbSyncData);
 		}
 

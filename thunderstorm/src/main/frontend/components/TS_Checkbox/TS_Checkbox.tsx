@@ -25,7 +25,7 @@ import {_className} from '../../utils/tools';
 import './TS_Checkbox.scss';
 
 
-export type Props_Checkbox = {
+export type Props_Checkbox = React.PropsWithChildren<{
 	id?: string
 	disabled?: boolean
 	rounded?: boolean
@@ -33,7 +33,7 @@ export type Props_Checkbox = {
 	onCheck?: (checked: boolean, e: React.MouseEvent<HTMLDivElement>) => void
 	className?: string;
 	icon?: React.ReactNode;
-}
+}>;
 
 type State_Checkbox = {
 	checked: boolean
@@ -59,21 +59,17 @@ export class TS_Checkbox
 		super(p);
 	}
 
-	protected deriveStateFromProps(nextProps: Props_Checkbox): State_Checkbox | undefined {
-		return {
-			checked: nextProps.checked !== undefined ? nextProps.checked : (this.state?.checked !== undefined ? this.state.checked : false),
-			disabled: nextProps.disabled,
-		};
+	protected deriveStateFromProps(nextProps: Props_Checkbox, state = {} as State_Checkbox): State_Checkbox | undefined {
+		state.checked = nextProps.checked ?? false;
+		state.disabled = nextProps.disabled;
+		return state;
 	}
 
 	private onCheckboxClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 		if (this.state.disabled)
 			return;
 
-		if (this.props.onCheck)
-			this.props.onCheck(!this.state.checked, e);
-		else
-			this.setState({checked: !this.state.checked});
+		this.props.onCheck?.(!this.state.checked, e);
 	};
 
 	render() {

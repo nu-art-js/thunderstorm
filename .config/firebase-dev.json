@@ -1,15 +1,12 @@
 {
   "functions": {
-    "source": "app-backend",
+    "source": "app-backend/dist",
     "ignore": [
       "src",
       ".config",
       "dist-test",
       "deploy.js",
       "node_modules"
-    ],
-    "predeploy": [
-      "rm ./app-backend/package-lock.json"
     ]
   },
   "hosting": {

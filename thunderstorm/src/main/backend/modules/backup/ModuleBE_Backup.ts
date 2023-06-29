@@ -2,15 +2,13 @@ import {
 	__stringify,
 	_logger_logException,
 	currentTimeMillis,
-	dispatch_onServerError,
 	Dispatcher,
-	filterInstances,
+	flatArray,
 	Format_YYYYMMDD_HHmmss,
 	formatTimestamp,
 	generateHex,
 	Minute,
 	Module,
-	ServerErrorSeverity,
 	TS_Object
 } from '@nu-art/ts-common';
 import {ApiDef_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared';
@@ -20,6 +18,7 @@ import {OnFirestoreBackupSchedulerAct, OnModuleCleanup} from './FirestoreBackupS
 import {FilterKeys, FirestoreQuery} from '@nu-art/firebase';
 import {BackupDoc} from '../../../shared/backup-types';
 import {addRoutes} from '../ApiModule';
+import {ApiException} from '../../exceptions';
 
 
 export type FirestoreBackupDetails<T extends TS_Object> = {
@@ -33,16 +32,27 @@ export type FirestoreBackupDetails<T extends TS_Object> = {
 const dispatch_onFirestoreBackupSchedulerAct = new Dispatcher<OnFirestoreBackupSchedulerAct, '__onFirestoreBackupSchedulerAct'>('__onFirestoreBackupSchedulerAct');
 const dispatch_onModuleCleanup = new Dispatcher<OnModuleCleanup, '__onCleanupInvoked'>('__onCleanupInvoked');
 
+type Config = {
+	excludedCollectionNames?: string[]
+}
+
 class ModuleBE_Backup_Class
-	extends Module<{}> {
+	extends Module<Config> {
 	public collection!: FirestoreCollection<BackupDoc>;
 
 	constructor() {
 		super();
-		addRoutes([createQueryServerApi(ApiDef_Backup.vv1.initiateBackup, this.initiateBackup), createQueryServerApi(ApiDef_Backup.vv1.fetchBackupDocks, this.fetchBackupDocks)]);
+		addRoutes([createQueryServerApi(ApiDef_Backup.vv1.initiateBackup, this.initiateBackup), createQueryServerApi(ApiDef_Backup.vv1.fetchBackupDocs, this.fetchBackupDocs)]);
 	}
 
-	fetchBackupDocks = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
+	protected init(): void {
+		this.collection = this.getBackupStatusCollection();
+	}
+
+	/**
+	 * @param body - needs to contain backupId with the key to fetch.
+	 */
+	fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocs> => {
 		const backupDocs = await this.query({where: {backupId: body.backupId}});
 		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
 
@@ -57,27 +67,36 @@ class ModuleBE_Backup_Class
 		return {backupDescriptors: fetchBackupDocs};
 	};
 
-	restoreFromBack = async () => {
-
-	};
-
-	protected init(): void {
-		this.collection = this.getBackupStatusCollection();
-	}
-
 	public getBackupStatusCollection = (): FirestoreCollection<BackupDoc> => {
 		return ModuleBE_Firebase.createAdminSession().getFirestore()
 			.getCollection<BackupDoc>('firestore-backup-status', ['moduleKey', 'timestamp'] as FilterKeys<BackupDoc>);
 	};
 
-	public getBackupDetails = (): FirestoreBackupDetails<any>[] => filterInstances(dispatch_onFirestoreBackupSchedulerAct.dispatchModule())
-		.reduce<FirestoreBackupDetails<any>[]>((resultBackupArray, currentBackup) => {
-			if (currentBackup)
-				resultBackupArray.push(...currentBackup);
-			return resultBackupArray;
-		}, []);
+	/**
+	 * Get metadata objects per each collection module that needs to be backed up.
+	 */
+	public getBackupDetails = (): FirestoreBackupDetails<any>[] => {
+		return flatArray(dispatch_onFirestoreBackupSchedulerAct.dispatchModule())
+			.reduce<FirestoreBackupDetails<any>[]>((resultBackupArray, currentBackup) => {
+
+				if (!currentBackup)
+					return resultBackupArray;
+
+				if (this.config.excludedCollectionNames?.includes(currentBackup.moduleKey)) {
+					this.logWarningBold(`Skipping module ${currentBackup.moduleKey} since it's in the exclusion list.`);
+					return resultBackupArray;
+				}
+
+				resultBackupArray.push(currentBackup);
+
+				return resultBackupArray;
+			}, []);
+	};
 
 	initiateBackup = async () => {
+		if (this.config.excludedCollectionNames)
+			this.logInfo(`Found excluded modules list: ${this.config.excludedCollectionNames}`);
+
 		try {
 			this.logInfo('Cleaning modules...');
 			await dispatch_onModuleCleanup.dispatchModuleAsync();
@@ -85,11 +104,17 @@ class ModuleBE_Backup_Class
 		} catch (e: any) {
 			this.logWarning(`modules cleanup has failed with error`, e);
 			const errorMessage = `modules cleanup has failed with error\nError: ${_logger_logException(e)}`;
-
-			await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, errorMessage);
+			throw new ApiException(500, errorMessage, e);
 		}
 
 		const backups: FirestoreBackupDetails<any>[] = this.getBackupDetails();
+		// this.logInfoBold('-------------------------------------------------------------------------------------------------------');
+		// this.logInfoBold('-------------------------------------- Received Backup Details: ---------------------------------------');
+		// this.logInfoBold('-------------------------------------------------------------------------------------------------------');
+		// this.logInfoBold(typeof backups);
+		// this.logInfoBold(Array.isArray(backups));
+		// this.logInfoBold(backups.length);
+		// this.logInfoBold('-------------------------------------------------------------------------------------------------------');
 		const backupId = generateHex(32);
 		const nowMs = currentTimeMillis();
 
@@ -138,8 +163,7 @@ class ModuleBE_Backup_Class
 			} catch (e: any) {
 				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error`, e);
 				const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backupItem, true)}\nError: ${_logger_logException(e)}`;
-
-				await dispatch_onServerError.dispatchModuleAsync(ServerErrorSeverity.Critical, this, errorMessage);
+				throw new ApiException(500, errorMessage, e);
 			}
 		}));
 	};

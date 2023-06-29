@@ -23,7 +23,7 @@ import {Module} from './module';
 import {Dispatcher} from './dispatcher';
 import {BadImplementationException} from './exceptions';
 import {Logger} from './logger/Logger';
-import {addItemToArray, filterDuplicates} from '../utils/array-tools';
+import {addItemToArray} from '../utils/array-tools';
 
 
 const _modules: Module[] = [];
@@ -36,7 +36,7 @@ export class ModuleManager
 	extends Logger {
 
 	protected config!: any;
-	protected modules: Module[] = _modules;
+	protected modules = _modules;
 	public static instance: ModuleManager;
 
 	// noinspection JSUnusedLocalSymbols
@@ -58,7 +58,7 @@ export class ModuleManager
 		return this;
 	}
 
-	public addModules(...modules: Module[]) {
+	public addModulePack(modules: Module[]) {
 		modules.reduce((carry: Module[], module: Module) => {
 			if (!carry.includes(module))
 				addItemToArray(carry, module);
@@ -68,12 +68,10 @@ export class ModuleManager
 		return this;
 	}
 
-	public setModules(...modules: Module[]) {
-		this.modules = filterDuplicates(modules);
-		return this;
-	}
-
 	public init(): this {
+		if (this.config.logLevel)
+			this.setMinLevel(this.config.logLevel);
+
 		this.logInfo(`---------  initializing app  ---------`);
 		this.modules.forEach((module: Module) => {
 			// @ts-ignore

@@ -24,7 +24,9 @@ import {ModuleManager} from './module-manager';
 import {BadImplementationException} from './exceptions';
 import {merge} from '../utils/merge-tools';
 import {Logger} from './logger/Logger';
-import {_clearTimeout, _setTimeout, LogLevel, TimerHandler, ValidatorTypeResolver} from '..';
+import {LogLevel} from './logger/types';
+import {ValidatorTypeResolver} from '../validator/validator-core';
+import {_clearTimeout, _setTimeout, TimerHandler} from '../utils/date-time-tools';
 
 
 type _FinalConfig<Config = any> = Config & { minLogLevel?: LogLevel };

@@ -17,30 +17,22 @@
  * limitations under the License.
  */
 
-import {ApiCallerEventType, BaseDB_ApiGeneratorCaller} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventTypeV2, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionDomain, DBDef_PermissionDomain} from '../../shared';
 
 
-export interface OnPermissionsDomainsLoaded {
-	__onPermissionsDomainsLoaded: (...params: ApiCallerEventType) => void;
+export interface OnPermissionsDomainsUpdated {
+	__onPermissionsDomainsUpdated: (...params: ApiCallerEventTypeV2<DB_PermissionDomain>) => void;
 }
 
-const dispatch_onPermissionsDomainsLoaded = new ThunderDispatcher<OnPermissionsDomainsLoaded, '__onPermissionsDomainsLoaded'>('__onPermissionsDomainsLoaded');
+const dispatch_OnPermissionsDomainsUpdated = new ThunderDispatcher<OnPermissionsDomainsUpdated, '__onPermissionsDomainsUpdated'>('__onPermissionsDomainsUpdated');
 
 export class ModuleFE_PermissionsDomain_Class
-	extends BaseDB_ApiGeneratorCaller<DB_PermissionDomain> {
+	extends ModuleFE_BaseApi<DB_PermissionDomain> {
 
 	constructor() {
-		super(DBDef_PermissionDomain);
-		this.setDefaultDispatcher(dispatch_onPermissionsDomainsLoaded);
-	}
-
-	protected init(): void {
-	}
-
-	getDomains(projectId: string): DB_PermissionDomain[] {
-		return this.getItems().filter(domain => domain.projectId === projectId);
+		super(DBDef_PermissionDomain, dispatch_OnPermissionsDomainsUpdated);
 	}
 }
 

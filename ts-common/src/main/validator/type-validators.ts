@@ -4,7 +4,7 @@ import {currentTimeMillis} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {filterInstances} from '../utils/array-tools';
 import {_keys} from '../utils/object-tools';
-import {LogLevel} from '../core/logger/types';
+import {BadImplementationException} from '../core/exceptions';
 
 
 export const tsValidateDynamicObject = <T extends object>(valuesValidator: ValidatorTypeResolver<T[keyof T]>, keysValidator: ValidatorTypeResolver<string>, mandatory = true) => {
@@ -48,8 +48,7 @@ export const tsValidateUnion = <T extends any>(validators: ValidatorTypeResolver
 };
 
 export const tsValidateCustom = <T extends any>(processor: (input?: T, parentInput?: any) => InvalidResult<T>, mandatory = true): Validator<T>[] => {
-	return [tsValidateExists(mandatory),
-		processor];
+	return [tsValidateExists(mandatory), processor];
 };
 
 const typeFunc = (type: any) => typeof type;
@@ -96,8 +95,6 @@ export const tsValidateString = (length: number = -1, mandatory = true): Validat
 		}];
 };
 
-export const tsValidator_nonMandatoryString = tsValidateString(-1, false);
-
 export const tsValidateNumber = (mandatory = true): Validator<number> => {
 	return [tsValidateExists(mandatory),
 		(input?: number) => {
@@ -120,7 +117,6 @@ export const tsValidateEnum = (enumType: TypedMap<number | string>, mandatory = 
 		}];
 };
 
-tsValidateEnum(LogLevel);
 export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 	return [tsValidateExists(mandatory),
 		(input?: boolean) => {
@@ -180,10 +176,6 @@ export const tsValidateRegexp = (regexp: RegExp, mandatory = true): Validator<st
 		}];
 };
 
-export const tsValidateMD5 = (mandatory = true): Validator<string> => {
-	return tsValidateRegexp(/[a-zA-Z\d]{32}/, mandatory);
-};
-
 export const tsValidateTimestamp = (interval?: number, mandatory = true): Validator<number> => {
 	return [tsValidateExists(mandatory),
 		(input?: number) => {
@@ -208,6 +200,19 @@ export const tsValidateNonMandatoryObject = <T>(validator: ValidatorTypeResolver
 		(input?: T) => tsValidateResult(input, validator)];
 };
 
-const validateColorValue = tsValidateRegexp(/^#(?:[0-9a-fA-F]{3}){1,2}$/);
-export const tsValidator_color = {value: validateColorValue};
+export const tsValidator_valueByKey = <T extends any>(validatorObject: { [k: string]: ValidatorTypeResolver<any> }) => {
+	return tsValidateCustom((value?, parentObject?) => {
+		return tsValidateResult(value!, validatorObject[parentObject!.type]);
+	}) as ValidatorTypeResolver<T>;
+};
 
+export const tsValidator_ArrayOfObjectsByKey = <T extends Object>(key: keyof T, validatorMap: { [k: string]: ValidatorTypeResolver<T> }) => {
+	return tsValidateArray(tsValidateCustom((value) => {
+		const _value = value as T;
+		const validator = validatorMap[_value[key] as string];
+		if (!validator)
+			throw new BadImplementationException(`No validator defined for key ${key as string} with value ${_value[key]}`);
+		
+		return tsValidateResult(_value, validator);
+	}) as ValidatorTypeResolver<T>);
+};

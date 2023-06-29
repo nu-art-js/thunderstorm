@@ -17,7 +17,7 @@
  */
 
 import {IdentityProvider, IdentityProviderOptions, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
-import {__stringify, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {__stringify, decode, ImplementationMissingException, Module} from '@nu-art/ts-common';
 import {
 	ApiDef_SAML_BE,
 	ApiStruct_SAML_BE,
@@ -34,6 +34,24 @@ import {addRoutes, ApiException, ApiResponse, createQueryServerApi, ExpressReque
 import {ModuleBE_Account} from './ModuleBE_Account';
 
 
+/**
+ * SAML config, when filling in the RTDB, should look like this:
+ * ```
+ * ModuleBE_SAML: {
+ *   idConfig: {
+ *     sso_login_url: string - the accounts.google url for login
+ *     sso_logout_url: string - the accounts.google url for login (optional)
+ *     certificates: string[] - only one necessary, the cert for login
+ *     ignore_signature: boolean - should be true
+ *   },
+ *   spConfig: {
+ *   		allow_unencrypted_assertion: boolean - should be true
+ *			assert_endpoint: string - the BE endpoint for the account assertion
+ *			entity_id: string - the entityID from the google SAML project.
+ *   }
+ * }
+ * ```
+ */
 type SamlConfig = {
 	idConfig: IdentityProviderOptions,
 	spConfig: ServiceProviderOptions
@@ -93,6 +111,7 @@ export class ModuleBE_SAML_Class
 		if (!this.config.spConfig)
 			throw new ImplementationMissingException('Config must contain spConfig');
 
+		this.config.idConfig.certificates = this.config.idConfig.certificates.map(cert => decode(cert));
 		this.identityProvider = new IdentityProvider(this.config.idConfig);
 	}
 
@@ -108,13 +127,12 @@ export class ModuleBE_SAML_Class
 			const data = await this.assert({request_body});
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
 
-			const userEmail = data.userId;
-			const {sessionId: userToken} = await this.loginSAML(userEmail);
+			const session = await this.loginSAML(data.userId);
 
 			let redirectUrl = data.loginContext[QueryParam_RedirectUrl];
 
-			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_SessionId.toUpperCase(), 'g'), userToken);
-			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), 'g'), userEmail);
+			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_SessionId.toUpperCase(), 'g'), encodeURIComponent(session.sessionId));
+			redirectUrl = redirectUrl.replace(new RegExp(QueryParam_Email.toUpperCase(), 'g'), encodeURIComponent(session.email));
 
 			return redirectUrl;
 		} catch (error: any) {

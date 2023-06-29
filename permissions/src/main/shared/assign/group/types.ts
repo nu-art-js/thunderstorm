@@ -34,4 +34,3 @@ export type Request_CreateGroup = {
 };
 
 export type DB_PermissionGroup = DB_Object & Request_CreateGroup & Auditable;
-

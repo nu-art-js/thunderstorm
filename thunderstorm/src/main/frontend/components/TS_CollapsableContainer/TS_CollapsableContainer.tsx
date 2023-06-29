@@ -1,22 +1,26 @@
 import {TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
-import {_className, ComponentSync, LL_V_L} from '../..';
 import './TS_CollapsableContainer.scss';
 import {ReactNode} from 'react';
+import {ComponentSync} from '../../core/ComponentSync';
+import {_className} from '../../utils/tools';
+import {LL_V_L} from '../Layouts';
+
 
 type Props = {
 	headerRenderer: ReactNode | (() => ReactNode);
 	containerRenderer: ReactNode | (() => ReactNode);
 	collapsed?: boolean;
 	showCaret?: boolean
-	onCollapseToggle?: (collapseState: boolean) => void;
-	maxHeight?: number;
+	onCollapseToggle?: (collapseState: boolean, e: React.MouseEvent) => void;
+	maxHeight?: number | string;
 	style?: TypedMap<string>;
 	className?: string;
 	customCaret?: ReactNode | (() => ReactNode)
 	flipHeaderOrder?: boolean
 	onMouseEnter?: (e: React.MouseEvent) => void;
 	onMouseLeave?: (e: React.MouseEvent) => void;
+	onMouseOver?: (e: React.MouseEvent) => void;
 }
 
 type State = {
@@ -31,7 +35,7 @@ export class TS_CollapsableContainer
 	//######################### Life Cycle #########################
 
 	protected deriveStateFromProps(nextProps: Props): State {
-		const state = this.state ? {...this.state} : {} as State;
+		const state: State = this.state ? {...this.state} : {} as State;
 		state.collapsed = nextProps.collapsed ?? this.state?.collapsed ?? true;
 		state.contentRef ??= React.createRef();
 		state.containerRef ??= React.createRef();
@@ -63,17 +67,17 @@ export class TS_CollapsableContainer
 	private setContainerHeight = () => {
 		if (!this.state.containerRef.current)
 			return;
-		
+
 		const currentContent = this.state.contentRef.current;
 		const maxHeight = this.state.collapsed
 			? 0
 			: this.props.maxHeight ? this.props.maxHeight : currentContent.getBoundingClientRect().height;
-		this.state.containerRef.current.style.maxHeight = `${maxHeight}px`;
+		this.state.containerRef.current.style.maxHeight = typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight;
 	};
 
-	private toggleCollapse = () => {
+	private toggleCollapse = (e: React.MouseEvent) => {
 		//If shared-components is controlled, return
-		this.props.onCollapseToggle?.(this.isCollapsed());
+		this.props.onCollapseToggle?.(this.isCollapsed(), e);
 		if (this.props.collapsed !== undefined)
 			return;
 
@@ -114,7 +118,7 @@ export class TS_CollapsableContainer
 	renderContainer() {
 		const className = _className('ts-collapsable-container__container', this.isCollapsed() ? 'collapsed' : undefined);
 		return <div className={className} ref={this.state.containerRef}>
-			<div ref={this.state.contentRef} style={{width: '100%'}}>
+			<div ref={this.state.contentRef} className={'ts-collapsable-container__container-wrapper'} style={{width: '100%'}}>
 				{(typeof this.props.containerRenderer === 'function' ? this.props.containerRenderer() : this.props.containerRenderer)}
 			</div>
 		</div>;
@@ -122,7 +126,8 @@ export class TS_CollapsableContainer
 
 	render() {
 		const className = _className('ts-collapsable-container', this.props.className);
-		return <LL_V_L className={className} style={this.props.style} onMouseEnter={this.props.onMouseEnter} onMouseLeave={this.props.onMouseLeave}>
+		return <LL_V_L className={className} style={this.props.style} onMouseOver={this.props.onMouseOver} onMouseEnter={this.props.onMouseEnter}
+									 onMouseLeave={this.props.onMouseLeave}>
 			{this.renderHeader()}
 			{this.renderContainer()}
 		</LL_V_L>;

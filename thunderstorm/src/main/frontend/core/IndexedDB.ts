@@ -78,7 +78,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 		};
 	}
 
-	open(): Promise<IDBDatabase> {
+	async open(): Promise<IDBDatabase> {
 		return new Promise((resolve, reject) => {
 			if (!IDBAPI)
 				reject(new Error('Error - current browser does not support IndexedDB'));
@@ -88,10 +88,13 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 				const db = request.result;
 				this.config.upgradeProcessor?.(db);
 			};
+
 			request.onsuccess = (event) => {
+				// console.log(`${this.config.name} - IDB result`, request.result);
 				this.db = request.result;
 				resolve(this.db);
 			};
+
 			request.onerror = (event) => {
 				reject(new Error(`Error opening IDB - ${this.config.name}`));
 			};
@@ -124,7 +127,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 	};
 
 	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: T) => void,
-	                         endCallback: () => void, limiterCallback?: () => boolean) => {
+													 endCallback: () => void, limiterCallback?: () => boolean) => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
 
@@ -293,9 +296,27 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 
 	// ######################### Data deletion functions #########################
 
+	public async clearDB(): Promise<void> {
+		const store = await this.store(true);
+		return new Promise((resolve, reject) => {
+			const request = store.clear();
+			request.onsuccess = () => resolve();
+			request.onerror = reject;
+		});
+	}
+
 	public async deleteDB(): Promise<void> {
-		const store = (await this.store(true));
-		await store.clear();
+		if (this.db)
+			this.db.close();
+
+		return new Promise((resolve, reject) => {
+			const request = IDBAPI.deleteDatabase(this.db.name);
+			request.onerror = (event) => {
+				StaticLogger.logError(`Error deleting database: ${this.db.name}`);
+				reject();
+			};
+			request.onsuccess = () => resolve();
+		});
 	}
 
 	public async deleteAll(keys: (IndexKeys<T, Ks> | T)[]): Promise<T[]> {
@@ -314,8 +335,6 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 			itemRequest.onsuccess = () => {
 				// @ts-ignore
 				if (key.__updated !== undefined && itemRequest.result?.__updated > key.__updated) {
-					// @ts-ignore
-					// console.log(`will not delete item ${itemRequest.result?.__updated} >= ${key.__updated}`);
 					return resolve(itemRequest.result);
 				}
 

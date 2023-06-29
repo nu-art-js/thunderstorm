@@ -1,0 +1,73 @@
+{
+  "name": "@nu-art/thunderstorm",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "description": "Thunderstorm",
+  "keywords": [
+    "TacB0sS",
+    "express",
+    "infra",
+    "nu-art",
+    "thunderstorm",
+    "typescript"
+  ],
+  "homepage": "https://github.com/nu-art-js/thunderstorm",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/thunderstorm/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/thunderstorm.git"
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "dependencies": {
+    "@nu-art/firebase": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-styles": "$THUNDERSTORM_SDK_VERSION",
+    "firebase": "$FIREBASE_PKG_VERSION",
+    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
+    "react": "$REACT_PKG_VERSION",
+    "react-dom": "$REACT_DOM_PKG_VERSION",
+    "react-router-dom": "$REACT_ROUTER_DOM_PKG_VERSION",
+    "abort-controller": "^3.0.0",
+    "util": "^0.12.4",
+    "axios": "^0.21.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.0",
+    "express": "$EXPRESS_PKG_VERSION",
+    "request": "^2.88.0",
+    "stream-browserify": "^3.0.0",
+    "body-parser": "^1.19.0",
+    "compression": "^1.7.4",
+    "csstype": "^3.0.0",
+    "history": "^4.9.0",
+    "moment": "^2.24.0",
+    "qs": "^6.6.0",
+    "react-window": "^1.8.8",
+    "react-virtualized-auto-sizer": "^1.0.12"
+  },
+  "devDependencies": {
+    "@types/react": "$REACT_TYPES_VERSION",
+    "@types/react-dom": "$REACT_DOM_TYPES_VERSION",
+    "@types/react-router": "$REACT_ROUTER_TYPES_VERSION",
+    "@types/react-router-dom": "$REACT_ROUTER_DOM_TYPES_VERSION",
+    "@types/compression": "^1.7.0",
+    "@types/express": "$EXPRESS_TYPES_VERSION",
+    "@types/history": "^4.7.2",
+    "@types/request": "^2.48.1",
+    "@types/chrome": "^0.0.202",
+    "@types/react-window": "^1.8.5",
+    "@types/react-virtualized-auto-sizer": "^1.0.1"
+  }
+}

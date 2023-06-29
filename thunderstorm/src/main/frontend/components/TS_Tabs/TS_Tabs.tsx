@@ -24,6 +24,7 @@ import {_className, stopPropagation} from '../../utils/tools';
 import './TS_Tabs.scss';
 import {StorageKey} from '../../modules/ModuleFE_LocalStorage';
 
+
 export type Tab = {
 	title: React.ReactNode | (() => React.ReactNode);
 	content: React.ReactNode | (() => React.ReactNode);
@@ -36,6 +37,7 @@ export type Props_Tabs = {
 	persistSelection?: boolean
 	selectedTabId?: string
 	tabs: Tab[]
+	className?: string;
 	tabsHeaderClass?: string;
 	tabsContentClass?: string;
 	/**
@@ -74,7 +76,6 @@ export class TS_Tabs
 	constructor(p: Props_Tabs) {
 		super(p);
 	}
-
 
 	//######################### Life Cycle #########################
 
@@ -163,11 +164,12 @@ export class TS_Tabs
 			return tab.content;
 		};
 
+		const wrapperClass = _className('ts-tabs', this.props.className);
 		const headerClass = _className('ts-tabs__tabs-header', this.props.tabsHeaderClass);
 		const contentClass = _className('ts-tabs__content', this.props.tabsContentClass);
 
 		return (
-			<div id={this.props.id} className="ts-tabs">
+			<div id={this.props.id} className={wrapperClass}>
 				<div className={headerClass}>
 					{tabs.map(tab => {
 						const tabClasses = _className('ts-tabs__tab', 'unselectable', this.state.selectedTabId === tab.uid ? 'ts-tabs__focused' : undefined, tab.disabled ? 'disabled' : undefined);

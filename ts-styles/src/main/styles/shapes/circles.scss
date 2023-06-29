@@ -1,0 +1,6 @@
+@mixin circleElement($radius) {
+  width: #{$radius * 2};
+  height: #{$radius * 2};
+  border-radius: 50%;
+  overflow: hidden;
+}
