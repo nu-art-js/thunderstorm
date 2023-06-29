@@ -32,7 +32,7 @@ class ServerApi_TestPermissions
 
 	protected async process(mem: MemStorage): Promise<void> {
 		this.logInfo('Starting test permissions assert');
-		await testUserPermissionsTime();
+		await testUserPermissionsTime(mem);
 		this.logInfo('---Finish test permissions assert---');
 	}
 }

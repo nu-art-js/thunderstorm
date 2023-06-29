@@ -166,7 +166,7 @@ export class ModuleBE_Permissions_Class
 		if (!id)
 			throw new BadImplementationException('register project is missing an id');
 
-		await ModuleBE_PermissionApi.registerApis(id, registerProject.routes);
+		await ModuleBE_PermissionApi.registerApis(id, registerProject.routes, mem);
 		const predefinedGroups = registerProject.predefinedGroups;
 		if (!predefinedGroups?.length)
 			return;

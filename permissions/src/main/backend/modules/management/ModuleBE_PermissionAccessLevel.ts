@@ -19,7 +19,6 @@
 
 import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {
 	ApiException,
 	auditBy,
@@ -29,7 +28,7 @@ import {
 	flatArray,
 	MUSTNeverHappenException
 } from '@nu-art/ts-common';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, Request_CreateGroup} from '../../shared';
 import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {ModuleBE_PermissionDomain} from './ModuleBE_PermissionDomain';
@@ -37,6 +36,7 @@ import {ModuleBE_PermissionApi} from './ModuleBE_PermissionApi';
 import {ModuleBE_PermissionGroup} from '../assignment/ModuleBE_PermissionGroup';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export class ModuleBE_PermissionAccessLevel_Class
@@ -48,11 +48,11 @@ export class ModuleBE_PermissionAccessLevel_Class
 		super(DBDef_PermissionAccessLevel);
 	}
 
-	__canDeleteEntities = async <T extends 'Domain'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'Level'>> => {
+	__canDeleteEntities = async <T extends 'Domain'>(type: T, items: PermissionTypes[T][], mem: MemStorage): Promise<DB_EntityDependency<'Level'>> => {
 		let conflicts: DB_PermissionAccessLevel[] = [];
 		const dependencies: Promise<DB_PermissionAccessLevel[]>[] = [];
 
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {domainId: {$in: ids}}})));
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {domainId: {$in: ids}}}, mem)));
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
@@ -64,19 +64,18 @@ export class ModuleBE_PermissionAccessLevel_Class
 		return [{domainId, name}, {domainId, value}];
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionAccessLevel, t?: FirestoreTransaction, request?: ExpressRequest) {
-		await ModuleBE_PermissionDomain.queryUnique({_id: dbInstance.domainId});
+	protected async preUpsertProcessing(dbInstance: DB_PermissionAccessLevel, mem: MemStorage, t?: FirestoreTransaction) {
+		await ModuleBE_PermissionDomain.queryUnique({_id: dbInstance.domainId}, mem);
 
-		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, request);
-			dbInstance._audit = auditBy(account.email);
-		}
+		const email = MemKey_AccountEmail.get(mem);
+		if (email)
+			dbInstance._audit = auditBy(email);
 	}
 
-	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, request: ExpressRequest): Promise<() => Promise<DB_PermissionAccessLevel>> {
+	protected async upsertImpl_Read(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, mem: MemStorage): Promise<() => Promise<DB_PermissionAccessLevel>> {
 		const existDbLevel = await transaction.queryUnique(this.collection, {where: {_id: dbInstance._id}});
-		const groups = await ModuleBE_PermissionGroup.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
-		const returnWrite = await super.upsertImpl_Read(transaction, dbInstance, request);
+		const groups = await ModuleBE_PermissionGroup.query({where: {accessLevelIds: {$ac: dbInstance._id}}}, mem);
+		const returnWrite = await super.upsertImpl_Read(transaction, dbInstance, mem);
 		if (existDbLevel) {
 			const callbackfn = (group: Request_CreateGroup) => {
 				const index = group.accessLevelIds?.indexOf(dbInstance._id);
@@ -93,7 +92,7 @@ export class ModuleBE_PermissionAccessLevel_Class
 			const asyncs = [];
 			asyncs.push(...groups.map(async group => {
 				await ModuleBE_PermissionGroup.validateImpl(group);
-				await ModuleBE_PermissionGroup.assertUniqueness(group, transaction);
+				await ModuleBE_PermissionGroup.assertUniqueness(group, mem, transaction);
 				callbackfn(group);
 			}));
 
@@ -107,9 +106,9 @@ export class ModuleBE_PermissionAccessLevel_Class
 		return returnWrite;
 	}
 
-	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {
-		const groups = await ModuleBE_PermissionGroup.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
-		const apis = await ModuleBE_PermissionApi.query({where: {accessLevelIds: {$ac: dbInstance._id}}});
+	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel, mem: MemStorage) {
+		const groups = await ModuleBE_PermissionGroup.query({where: {accessLevelIds: {$ac: dbInstance._id}}}, mem);
+		const apis = await ModuleBE_PermissionApi.query({where: {accessLevelIds: {$ac: dbInstance._id}}}, mem);
 
 		if (groups.length || apis.length)
 			throw new ApiException(403, 'You trying delete access level that associated with users/groups/apis, you need delete the associations first');

@@ -19,7 +19,6 @@
 
 import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ExpressRequest} from '@nu-art/thunderstorm/backend';
 import {
 	_keys,
 	ApiException,
@@ -32,7 +31,13 @@ import {
 	filterDuplicates,
 	flatArray
 } from '@nu-art/ts-common';
-import {MemKey_AccountEmail, MemKey_AccountId, ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {
+	MemKey_AccountEmail,
+	MemKey_AccountId,
+	ModuleBE_Account,
+	OnNewUserRegistered,
+	OnUserLogin
+} from '@nu-art/user-account/backend';
 import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {PermissionsShare} from '../permissions-share';
 import {
@@ -56,11 +61,11 @@ export class ModuleBE_PermissionUserDB_Class
 		super(DBDef_PermissionUser);
 	}
 
-	__canDeleteEntities = async <T extends 'Group'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'User'>> => {
+	__canDeleteEntities = async <T extends 'Group'>(type: T, items: PermissionTypes[T][], mem: MemStorage): Promise<DB_EntityDependency<'User'>> => {
 		let conflicts: DB_PermissionUser[] = [];
 		const dependencies: Promise<DB_PermissionUser[]>[] = [];
 
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {__groupIds: {$aca: ids}}})));
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {__groupIds: {$aca: ids}}}, mem)));
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
@@ -85,11 +90,9 @@ export class ModuleBE_PermissionUserDB_Class
 	}
 
 	protected async preUpsertProcessing(dbInstance: DB_PermissionUser, mem: MemStorage, t?: FirestoreTransaction): Promise<void> {
-		if (request) {
-			const account = await ModuleBE_Account.validateSession({}, mem);
-
-			dbInstance._audit = auditBy(MemKey_AccountEmail.get(mem));
-		}
+		const email = MemKey_AccountEmail.get(mem);
+		if (email)
+			dbInstance._audit = auditBy(email);
 
 		this.setGroupIds(dbInstance);
 		const userGroupIds = filterDuplicates(dbInstance.groups?.map(group => group.groupId) || []);
@@ -97,7 +100,7 @@ export class ModuleBE_PermissionUserDB_Class
 			return;
 
 		const userGroups = await batchAction(userGroupIds, 10, (chunked) => {
-			return ModuleBE_PermissionGroup.query({where: {_id: {$in: chunked}}});
+			return ModuleBE_PermissionGroup.query({where: {_id: {$in: chunked}}}, mem);
 		});
 
 		if (userGroupIds.length !== userGroups.length) {
@@ -168,8 +171,10 @@ export class ModuleBE_PermissionUserDB_Class
 			throw new BadImplementationException('SharedUserIds is missing');
 
 		const groupId = assignAppPermissionsObj.group._id;
-		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId,
-			{groupId, customField: assignAppPermissionsObj.customField});
+		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId, {
+			groupId,
+			customField: assignAppPermissionsObj.customField
+		}, mem);
 
 		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
 			throw new BadImplementationException('Group to must be a part of the groups to removed array');
