@@ -1,6 +1,8 @@
 import * as React from 'react';
-import {_className, ComponentSync, LL_H_C} from '../..';
 import './TS_Slider.scss';
+import {ComponentSync} from '../../core/ComponentSync';
+import {_className} from '../../utils/tools';
+import {LL_H_C} from '../Layouts';
 
 type Props = {
 	min: number;

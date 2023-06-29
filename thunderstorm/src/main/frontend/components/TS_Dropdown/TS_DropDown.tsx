@@ -41,6 +41,7 @@ type State<ItemType> = {
 	dropDownRef: React.RefObject<HTMLDivElement>;
 	treeContainerRef: React.RefObject<HTMLDivElement>;
 	focusedItem?: ItemType;
+	className?: string
 }
 
 type StaticProps = {
@@ -87,6 +88,18 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 type Props_CanUnselect<ItemType> = { canUnselect: true; onSelected: (selected?: ItemType) => void };
 type Props_CanNotUnselect<ItemType> = { canUnselect?: false; onSelected: (selected: ItemType) => void };
 export type Props_DropDown<ItemType> = (Props_CanUnselect<ItemType> | Props_CanNotUnselect<ItemType>) & Dropdown_Props<ItemType>
+
+export type PartialProps_DropDown<T> = {
+	selected?: T;
+	inputValue?: string;
+	placeholder?: string;
+	onSelected: (selected: T) => void;
+	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
+	mapper?: (item: T) => string[]
+	renderer?: (item: T) => React.ReactElement
+	queryFilter?: (item: T) => boolean
+	ifNoneShowAll?: boolean
+}
 
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
@@ -135,6 +148,7 @@ export class TS_DropDown<ItemType>
 		nextState.filterText ??= nextProps.inputValue;
 		nextState.dropDownRef = nextProps.innerRef ?? this.state?.dropDownRef ?? React.createRef<HTMLDivElement>();
 		nextState.treeContainerRef = state?.treeContainerRef ?? React.createRef();
+		nextState.className = nextProps.className;
 
 		if (!nextState.adapter || (nextAdapter.data !== prevAdapter.data) || (state?.filterText !== nextState.filterText)) {
 			nextState.adapter = this.createAdapter(nextAdapter, nextProps.limitItems, state?.filterText);
@@ -150,6 +164,7 @@ export class TS_DropDown<ItemType>
 			dropDownRef: nextState.dropDownRef,
 			focusedItem: nextState.focusedItem,
 			treeContainerRef: nextState.treeContainerRef,
+			className: nextState.className
 		};
 	}
 
@@ -264,7 +279,7 @@ export class TS_DropDown<ItemType>
 	render() {
 		const className = _className(
 			'ts-dropdown',
-			this.props.className,
+			this.state.className,
 			this.state.open ? 'open' : undefined,
 			this.props.disabled ? 'disabled' : undefined,
 		);
@@ -288,8 +303,8 @@ export class TS_DropDown<ItemType>
 			<div
 				className="ts-dropdown__header"
 				onClick={(e) => {
+					stopPropagation(e);
 					if (this.props.disabled) {
-						stopPropagation(e);
 						return;
 					}
 					this.state.open ? this.closeList(e) : this.setState({open: true});
@@ -348,7 +363,7 @@ export class TS_DropDown<ItemType>
 		}
 
 		return <LL_V_L className={className} style={style} innerRef={this.state.treeContainerRef}>
-			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={(e) => this.closeList(e, null)}>Unselect</div>}
+			{this.props.canUnselect && <div className={'ts-dropdown__unselect-item'} onClick={(e) => this.onSelected(undefined, e)}>Unselect</div>}
 			<TS_Tree
 				adapter={this.state.adapter}
 				selectedItem={this.state.focusedItem}
@@ -382,7 +397,7 @@ export class TS_DropDown<ItemType>
 			focused: false,
 			selected: true
 		};
-		return <div className={'ts-dropdown__placeholder'} onContextMenu={this.props.onContextMenu}><Renderer item={selected} node={node}/></div>;
+		return <div className={'ts-dropdown__selected'} onContextMenu={this.props.onContextMenu}><Renderer item={selected} node={node}/></div>;
 	};
 
 	private renderSelectedOrFilterInput = (): React.ReactNode => {

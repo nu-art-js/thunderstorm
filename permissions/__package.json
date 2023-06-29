@@ -1,0 +1,60 @@
+{
+  "name": "@nu-art/permissions",
+  "version": "$THUNDERSTORM_SDK_VERSION",
+  "description": "Permissions",
+  "keywords": [
+    "TacB0sS",
+    "create account",
+    "express",
+    "infra",
+    "login",
+    "nu-art",
+    "permissions",
+    "saml",
+    "thunderstorm",
+    "typescript",
+    "user-account"
+  ],
+  "homepage": "https://github.com/nu-art-js/permissions",
+  "bugs": {
+    "url": "https://github.com/nu-art-js/permissions/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com:nu-art-js/permissions.git"
+  },
+  "publishConfig": {
+    "directory": "dist",
+    "linkDirectory": true
+  },
+  "license": "Apache-2.0",
+  "author": "TacB0sS",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/db-api-generator": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/firebase": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/user-account": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/ts-styles": "$THUNDERSTORM_SDK_VERSION",
+    "firebase": "$FIREBASE_PKG_VERSION",
+    "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
+    "firebase-functions": "$FIREBASE_FUNCTIONS_PKG_VERSION",
+    "react": "$REACT_PKG_VERSION",
+    "moment": "^2.24.0",
+    "saml2-js": "^4.0.1",
+    "express": "$EXPRESS_PKG_VERSION",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "@types/react": "$REACT_TYPES_VERSION",
+    "@types/express": "$EXPRESS_TYPES_VERSION",
+    "@types/history": "^4.7.2",
+    "@types/request": "^2.48.1",
+    "@types/saml2-js": "^1.6.8"
+  }
+}

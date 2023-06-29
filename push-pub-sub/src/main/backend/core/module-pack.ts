@@ -19,7 +19,7 @@
 import {ModuleBE_PushPubSub} from '../modules/ModuleBE_PushPubSub';
 
 
-export const ModulePack_Backend_PushPubSub = [ModuleBE_PushPubSub,];
+export const ModulePackBE_PushPubSub = [ModuleBE_PushPubSub,];
 
 export * from '../modules/ModuleBE_PushPubSub';
 export * from '../modules/PushKey';

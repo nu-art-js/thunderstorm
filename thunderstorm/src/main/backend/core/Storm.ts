@@ -41,7 +41,7 @@ export class Storm
 
 	constructor() {
 		super();
-		this.addModules(...modules);
+		this.addModulePack(modules);
 		this.setMinLevel(LogLevel.Info);
 	}
 

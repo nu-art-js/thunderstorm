@@ -1,7 +1,7 @@
 import {Adapter, ComponentSync, SimpleListAdapter, TS_DropDown} from '@nu-art/thunderstorm/frontend';
 import {DB_Object, Filter, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
-import {BaseDB_ApiCaller} from '../..';
+import {ModuleFE_BaseApi} from '../../modules/ModuleFE_BaseApi';
 
 
 type OptionalCanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
@@ -18,6 +18,7 @@ type OptionalProps_GenericDropDown<T> = {
 	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
 	limitItems?: number;
 	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
+	disabled?: boolean;
 }
 
 export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> & {
@@ -26,12 +27,13 @@ export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> &
 	inputValue?: string;
 	selected?: T | string | (() => T | undefined);
 	limitItems?: number;
+	itemResolver?: ()=>T[]
 } & OptionalCanUnselect<T>
 
 export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = OptionalProps_GenericDropDown<T> & {
 	placeholder: string;
-	module: BaseDB_ApiCaller<T, Ks>;
-	modules: BaseDB_ApiCaller<DB_Object, any>[];
+	module: ModuleFE_BaseApi<T, Ks>;
+	modules: ModuleFE_BaseApi<DB_Object, any>[];
 	mapper: (item: T) => string[]
 	renderer: (item: T) => React.ReactElement
 }
@@ -51,12 +53,16 @@ type GenericDropDownProps<T, Ks> = {
 	inputValue?: string;
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => any;
 
-	modules: BaseDB_ApiCaller<DB_Object, any>[];
+	modules: ModuleFE_BaseApi<DB_Object, any>[];
 	boundingParentSelector?: string;
 	limitItems?: number;
+	disabled?: boolean;
+	itemResolver?: ()=>T[]
 } & OptionalCanUnselect<T>
 
-export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = { module: BaseDB_ApiCaller<T, Ks>; } & GenericDropDownProps<T, Ks>
+export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> =
+	{ module: ModuleFE_BaseApi<T, Ks>; }
+	& GenericDropDownProps<T, Ks>
 
 type State<T extends DB_Object> = {
 	items: T[]
@@ -72,7 +78,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 
 	protected deriveStateFromProps(nextProps: Props_GenericDropDown<T, Ks>): State<T> {
 		const state = {} as State<T>;
-		const items = nextProps.module.cache.allMutable();
+		const items = this.props.itemResolver?.() || nextProps.module.cache.allMutable();
 
 		if (!nextProps.queryFilter)
 			state.items = items;
@@ -99,7 +105,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 		return state;
 	}
 
-	private getSelected(module: BaseDB_ApiCaller<T, Ks>, selectMethod?: T | string | (() => T | undefined)) {
+	private getSelected(module: ModuleFE_BaseApi<T, Ks>, selectMethod?: T | string | (() => T | undefined)) {
 		switch (typeof selectMethod) {
 			case 'string':
 				return module.cache.unique(selectMethod);
@@ -127,6 +133,7 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
 			renderSearch={this.props.renderSearch}
 			limitItems={this.props.limitItems}
 			canUnselect={this.props.canUnselect as (typeof this.props.canUnselect extends true ? true : false | undefined)}
+			disabled={this.props.disabled}
 		/>;
 	}
 }

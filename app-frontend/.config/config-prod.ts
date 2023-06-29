@@ -18,7 +18,7 @@
  */
 
 export const config = {
-	XhrHttpModule: {
+	ModuleFE_XHR: {
 		origin: 'https://us-central1-nu-art-thunderstorm.cloudfunctions.net/api',
 		timeout: 10000,
 		compress: false

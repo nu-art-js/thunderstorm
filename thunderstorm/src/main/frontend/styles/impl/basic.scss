@@ -68,10 +68,22 @@
   @extend %top;
 }
 
+.text_wrap {
+  @extend %text_wrap;
+}
+
+.text_nowrap {
+  @extend %text_nowrap;
+}
+
 .center_children {
   @extend %center_children;
 }
 
 .unselectable {
   @extend %unselectable;
+}
+
+.scrollable-y {
+  @extend %scrollable-y;
 }

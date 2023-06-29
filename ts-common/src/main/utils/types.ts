@@ -75,15 +75,18 @@ export type DB_BaseObject = {
 }
 export type DB_Object = DB_BaseObject & {
 	_v?: string
+	_originDocId?: UniqueId;
+	__hardDelete?: boolean;
 	__created: number;
 	__updated: number;
 }
 
 export type UniqueId = string;
 
-export type PreDB<T extends DB_Object> = PartialProperties<T, keyof DB_Object>;
+export type PreDB<T extends DB_Object, K extends keyof T = never> = PartialProperties<T, keyof DB_Object | K>;
 export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
 export type Draftable = { _isDraft: boolean };
+export type ResolvableContent<T> = T | (() => T);
 
 export type Auditable = {
 	_audit?: AuditBy;
@@ -94,6 +97,10 @@ export type AuditBy = {
 	auditBy: string;
 	auditAt: Timestamp;
 };
+
+export type AuditableV2 = {
+	_auditorId: string;
+}
 
 export type Timestamp = {
 	timestamp: number;
@@ -129,3 +136,13 @@ export type NarrowArray<Default, T1, T2, T3, T4, T5, T6> =
 				T3 extends ValidReturnValue ? [T1, T2, T3] :
 					T2 extends ValidReturnValue ? [T1, T2] :
 						T1 extends ValidReturnValue ? [T1] : Default
+
+export type MergeTypes<T extends unknown[]> =
+	T extends [a: infer A, ...rest: infer R] ? A & MergeTypes<R> : {};
+
+export type UnionToIntersection<U> =
+	(U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never
+
+export type NonEmptyArray<T> = [T, ...T[]];
+
+export type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : never

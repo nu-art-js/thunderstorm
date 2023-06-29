@@ -20,43 +20,25 @@
  */
 
 import * as React from 'react';
-import {renderApp} from './AppWrapper';
-import {BeLogged, LogClient_Browser, Module, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
-import {XhrHttpModule} from '../modules/http/XhrHttpModule';
-import {ModuleFE_Dialog} from '../component-modules/ModuleFE_Dialog';
-import {ModuleFE_Routing} from '../modules/routing/ModuleFE_Routing';
-import {ModuleFE_LocalStorage} from '../modules/ModuleFE_LocalStorage';
+import {BeLogged, ImplementationMissingException, LogClient_Browser, ModuleManager, removeItemFromArray} from '@nu-art/ts-common';
 import {ThunderDispatcher} from './thunder-dispatcher';
-import {ModuleFE_Thunderstorm} from '../modules/ModuleFE_Thunderstorm';
 
 import '../styles/impl/basic.scss';
 import '../styles/impl/icons.scss';
-import {ModuleFE_Toaster} from '../component-modules/ModuleFE_Toaster';
-import {ModuleFE_BrowserHistory} from '../modules/ModuleFE_BrowserHistory';
+import {ThunderAppWrapperProps} from './types';
+import * as RDC from 'react-dom/client';
+import {appWithJSX} from './AppWrapper';
 
-
-const modules: Module[] = [
-	ModuleFE_Thunderstorm,
-	XhrHttpModule,
-
-	ModuleFE_Toaster,
-	ModuleFE_Dialog,
-
-	ModuleFE_Routing,
-	ModuleFE_BrowserHistory,
-
-	ModuleFE_LocalStorage,
-];
 
 export class Thunder
 	extends ModuleManager {
 
-	private mainApp!: React.ElementType<{}>;
 	private listeners: any[] = [];
+	private renderFunc!: (props: ThunderAppWrapperProps) => React.ReactElement;
+	private props!: ThunderAppWrapperProps<any>;
 
 	constructor() {
 		super();
-		this.addModules(...modules);
 		this._DEBUG_FLAG.enable(false);
 		// @ts-ignore
 		ThunderDispatcher.listenersResolver = () => this.listeners;
@@ -71,7 +53,19 @@ export class Thunder
 
 		super.init();
 
-		renderApp();
+		const appJsx = this.renderFunc?.(this.props);
+		if (!appJsx)
+			throw new ImplementationMissingException('Could not get app from Thunder!');
+
+		//Set root div and its attributes
+		const rootDiv = document.createElement('div');
+		rootDiv.classList.add('match_parent');
+		rootDiv.setAttribute('id', 'root');
+		document.body.appendChild(rootDiv);
+
+		//Set app root
+		RDC.createRoot(rootDiv).render(appJsx);
+
 		return this;
 	}
 
@@ -85,13 +79,20 @@ export class Thunder
 		removeItemFromArray(this.listeners, listener);
 	}
 
-	public setMainApp(mainApp: React.ElementType<{}>): Thunder {
-		this.mainApp = mainApp;
-		return this;
-	}
+	/**
+	 * Set up the entry point for the app.
+	 * @param mainApp - The entry point into the application, what will be rendered directly under root (usually App.tsx)
+	 * @param props - The props to go with the supplied main app
+	 * @param renderFunc - The app wrapper, which will usually provide a router. by default is "appWithJSX" which will just return the app
+	 */
+	public setMainApp<P extends {}>(mainApp: React.ElementType<P>, props: P = {} as P, renderFunc: (props: ThunderAppWrapperProps) => React.ReactElement = appWithJSX): Thunder {
+		this.props = {
+			element: mainApp,
+			props: props
+		};
 
-	public getMainApp(): React.ElementType<{}> {
-		return this.mainApp;
+		this.renderFunc = renderFunc;
+		return this;
 	}
 
 	public build(onStarted?: () => void) {
@@ -103,3 +104,5 @@ export class Thunder
 		return this.config;
 	}
 }
+
+

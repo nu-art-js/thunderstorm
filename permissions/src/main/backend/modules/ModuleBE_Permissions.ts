@@ -20,8 +20,6 @@
 import {BadImplementationException, DB_BaseObject, ImplementationMissingException, Module, PreDB, StringMap} from '@nu-art/ts-common';
 import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
 import {addRoutes, ApiResponse, createBodyServerApi, createQueryServerApi, ExpressRequest, ServerApi, Storm} from '@nu-art/thunderstorm/backend';
-import {ModuleBE_PermissionGroup, ModuleBE_PermissionUserDB} from './assignment';
-import {ModuleBE_PermissionApi, ModuleBE_PermissionProject} from './management';
 import {
 	ApiDef_Permissions,
 	ApiStruct_Permissions,
@@ -35,9 +33,12 @@ import {
 	Response_UsersCFsByShareGroups,
 	UserUrlsPermissions
 } from '../shared';
-import {Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
-import {UI_Account} from '@nu-art/user-account';
+import {Header_AccountId, Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
 import {AssertSecretMiddleware} from '@nu-art/thunderstorm/backend/modules/proxy/assert-secret-middleware';
+import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
+import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
+import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
+import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 
 
 type Config = {
@@ -80,7 +81,7 @@ export class ModuleBE_Permissions_Class
 		addRoutes([
 			createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, Middleware_ValidateSession),
 			new ServerApi_UserCFsByShareGroups(),
-			createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups, Middleware_ValidateSession),
+			createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups),
 			createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
 			createQueryServerApi(ApiDef_Permissions.v1.registerProject, this.registerProject)
 		]);
@@ -89,16 +90,17 @@ export class ModuleBE_Permissions_Class
 	protected init(): void {
 		if (!this.config)
 			throw new ImplementationMissingException('MUST set config with project identity!!');
+
+		ModuleBE_PermissionsAssert.setProjectId(this.config.project._id);
 	}
 
 	getProjectIdentity = () => this.config.project;
 
-	async getUserUrlsPermissions(body: Request_UserUrlsPermissions, middleware: [UI_Account]) {
-		const account = middleware[0];
+	async getUserUrlsPermissions(body: Request_UserUrlsPermissions, request: ExpressRequest) {
 
 		const projectId: string = body.projectId;
 		const urlsMap: UserUrlsPermissions = body.urls;
-		const userId: string = account._id;
+		const userId: string = Header_AccountId.get(request);
 		const requestCustomField: StringMap = body.requestCustomField;
 
 		const urls = Object.keys(urlsMap);

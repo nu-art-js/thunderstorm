@@ -10,7 +10,7 @@ dist
 dist-test
 docs
 build
-_package.json
+package.json
 package-lock.json
 src/main/config.ts
 src/main/version-app.json

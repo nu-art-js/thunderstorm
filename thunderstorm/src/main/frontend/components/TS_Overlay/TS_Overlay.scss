@@ -34,4 +34,8 @@
   bottom: 0;
   //height: 100vh;
   //width: 100vw;
+
+  &.transparent {
+    background: transparent;
+  }
 }

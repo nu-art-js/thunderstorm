@@ -1,44 +1,66 @@
+import {cloneObj, resolveContent} from '@nu-art/ts-common';
+
+
 export class EditableItem<T> {
 	item: Partial<T>;
-	onCompleted?: () => any | Promise<any>;
+	private _autoSave: boolean = false;
 
-	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>, onCompleted?: () => any | Promise<any>) {
-		this.item = item;
+	constructor(item: Partial<T>, saveAction: (item: T) => Promise<any>, deleteAction: (item: T) => Promise<any>) {
+		this.item = Object.isFrozen(item) ? cloneObj(item) : item;
 		this.saveAction = saveAction;
 		this.deleteAction = deleteAction;
-		this.onCompleted = onCompleted;
 	}
 
-	private readonly saveAction: (item: T) => Promise<T>;
-	private readonly deleteAction: (item: T) => Promise<void>;
+	protected readonly saveAction: (item: T) => Promise<T>;
+	protected readonly deleteAction: (item: T) => Promise<void>;
 
-	set<K extends keyof T>(key: K, value: T[K] | undefined) {
+	setAutoSave(mode: boolean) {
+		this._autoSave = mode;
+		return this;
+	}
+
+	set<K extends keyof T>(key: K, value: ((item?: T[K]) => (T[K] | undefined)) | T[K] | undefined) {
+		const finalValue = resolveContent(value);
+		if (finalValue === this.item[key])
+			return false;
+
 		if (value === undefined)
 			delete this.item[key];
-		else {
-			this.item[key] = value;
-		}
+		else
+			this.item[key] = finalValue;
+
+		return true;
 	}
 
-	async update<K extends keyof T>(key: K, value: T[K] | undefined) {
-		this.set(key, value);
-		return this.save();
+	async update<K extends keyof T>(key: K, value: ((item?: T[K]) => T[K]) | T[K] | undefined) {
+		if (this.set(key, value))
+			return this.autoSave();
+	}
+
+	private autoSave() {
+		if (this._autoSave)
+			return this.save();
 	}
 
 	async save() {
-		await this.saveAction(this.item as T);
-		await this.onCompleted?.();
+		return this.saveAction(this.item as T);
 	}
 
-	clone(): EditableItem<T> {
-		return new EditableItem<T>(this.item, this.saveAction, this.deleteAction, this.onCompleted);
+	clone(item?: T): EditableItem<T> {
+		return new EditableItem<T>(item || this.item, this.saveAction, this.deleteAction).setAutoSave(this._autoSave);
 	}
 
 	async delete<K extends keyof T>() {
 		return this.deleteAction(this.item as T);
 	}
 
-	editProp<K extends keyof T>(key: K, defaultValue: NonNullable<T[K]>) {
-		return new EditableItem<NonNullable<T[K]>>(this.item[key] || (this.item[key] = defaultValue), async (item: T[K]) => this.update(key, item), () => this.delete());
+	editProp<K extends keyof T>(key: K, defaultValue: Partial<NonNullable<T[K]>>) {
+		return new EditableItem<NonNullable<T[K]>>(
+			this.item[key] || (this.item[key] = defaultValue as NonNullable<T[K]>),
+			async (value: T[K]) => {
+				this.set(key, value);
+				return this.autoSave();
+			},
+			() => this.delete()).setAutoSave(true);
 	}
 }

@@ -112,7 +112,7 @@ class SP_Example_Tree_SingleType_Renderer
 		return {
 			id: 'simple',
 			key: 'simple',
-			adapter: SimpleTreeAdapter(this.data, (props: { item: Type }) => <div>{props.item}</div>),
+			adapter: SimpleTreeAdapter(this.data, (props: { item: Type }) => <div>{props.item.label}</div>),
 			onNodeClicked: (path: string, item: any) => {
 				ModuleFE_Toaster.toastInfo(`clicked on ${path}: ${__stringify(item)}`);
 			}
@@ -123,7 +123,7 @@ class SP_Example_Tree_SingleType_Renderer
 		return {
 			id: 'simple',
 			key: 'simple',
-			adapter: SimpleTreeAdapter(this.complexData, (props: { item: Type }) => <div>{props.item}</div>),
+			adapter: SimpleTreeAdapter(this.complexData, (props: { item: Type }) => <div>{props.item.label}</div>),
 			onNodeClicked: (path: string, item: any) => {
 				ModuleFE_Toaster.toastInfo(`clicked on ${path}: ${__stringify(item)}`);
 			}

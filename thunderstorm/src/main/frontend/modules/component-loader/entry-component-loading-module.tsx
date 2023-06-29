@@ -18,12 +18,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '../../../index';
 
 import {Module} from '@nu-art/ts-common';
 // noinspection TypeScriptPreferShortImport
-import {XhrHttpModule} from '../http/XhrHttpModule';
+import {ModuleFE_XHR} from '../http/ModuleFE_XHR';
 import {ModuleFE_BrowserHistory} from '../ModuleFE_BrowserHistory';
+import {ApiDef, HttpMethod, QueryApi, TS_Progress} from '../../../shared';
 
 
 type ScriptLoaderBinder = QueryApi<string>
@@ -39,7 +39,7 @@ export class PageLoadingModule_Class
 			baseUrl: ModuleFE_BrowserHistory.getOrigin(),
 			path: src
 		};
-		XhrHttpModule
+		ModuleFE_XHR
 			.createRequest<ScriptLoaderBinder>(apiDef)
 			.setOnProgressListener((ev: TS_Progress) => {
 				const progress = ev.loaded / ev.total;

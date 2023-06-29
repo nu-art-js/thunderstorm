@@ -18,7 +18,8 @@
 
 import {LogLevel, LogParam} from './types';
 import {LogClient} from './LogClient';
-import {getLogStyle, LogStyle, TypedMap} from '../..';
+import {TypedMap} from '../../utils/types';
+import {getLogStyle, LogStyle} from '../../tools/get-log-style';
 
 
 class LogClient_Browser_class

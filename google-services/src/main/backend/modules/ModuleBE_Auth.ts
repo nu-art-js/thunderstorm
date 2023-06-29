@@ -41,7 +41,7 @@ export class ModuleBE_Auth_Class
 		const projectAuth: JWT_Input | string | undefined = this.config.auth[authKey];
 
 		if (!projectAuth)
-			throw new ImplementationMissingException(`Config of AuthModule_Class for authKey: ${authKey} was not found`);
+			throw new ImplementationMissingException(`Config of authKey: ${authKey} was not found`);
 
 		return projectAuth;
 	}

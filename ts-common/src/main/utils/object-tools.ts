@@ -16,7 +16,10 @@
  * limitations under the License.
  */
 
-import {AssertionException, BadImplementationException, TS_Object} from '../index';
+
+
+import {TS_Object} from './types';
+import {AssertionException, BadImplementationException} from '../core/exceptions';
 
 
 export function deepClone<T>(obj: T): T {

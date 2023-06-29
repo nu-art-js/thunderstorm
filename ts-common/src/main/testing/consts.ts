@@ -1,6 +1,15 @@
 import {TestSuite} from './types';
 import {expect} from 'chai';
-import {voidFunction} from '..';
+import {ModuleManager} from '../core/module-manager';
+import {voidFunction} from '../utils/tools';
+
+
+export class ModuleManagerTester
+	extends ModuleManager {
+	constructor() {
+		super();
+	}
+}
 
 export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input, ExpectedResult>) => {
 	describe(testSuit.label, () => {
@@ -10,7 +19,7 @@ export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input
 		}
 
 		testSuit.testcases.forEach(testCase => {
-			it(testCase.description,  () => testSuit.processor(testCase));
+			it(testCase.description, () => testSuit.processor(testCase));
 		});
 	});
 };

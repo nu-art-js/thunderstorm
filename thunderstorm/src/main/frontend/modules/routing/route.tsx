@@ -78,19 +78,24 @@ export class RoutePath {
 
 }
 
-const activeStyle = {color: 'blue'};
+const getNavStyles = (props: { isActive: boolean; isPending: boolean; }): React.CSSProperties => {
+	return {
+		color: props.isActive ? 'blue' : undefined,
+	};
+};
 
 export const defaultNavLinkNode = (route: RoutePath): React.ReactElement => {
-	return <NavLink key={route.key} to={route.path} activeStyle={activeStyle}>{route.label}</NavLink>;
+	return <NavLink key={route.key} to={route.path} style={getNavStyles}>{route.label as string}</NavLink>;
 };
 
 export const defaultLinkNode = (route: RoutePath, node?: React.ReactNode): React.ReactElement => {
-	return <Link key={route.key} to={route.path}>{node || route.label || route.key}</Link>;
+	return <Link key={route.key} to={route.path}>{node || route.label as string || route.key}</Link>;
 };
 
 export const defaultRouteNode = (route: RoutePath): React.ReactElement => {
 	if (typeof route.component === 'string')
 		return <ReactEntryComponentInjector src={route.component}/>;
 
-	return <Route exact={route.exact} key={route.key} path={route.path} component={route.component}/>;
+	const Component = route.component;
+	return <Route key={route.key} path={route.path} element={<Component/>}/>;
 };

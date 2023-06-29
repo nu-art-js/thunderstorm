@@ -21,6 +21,13 @@ import {_keys} from './object-tools';
 import {NestedArrayType} from './types';
 
 
+export function filterInOut<T>(input: T[], filter: (object: T) => boolean): { filteredIn: T[], filteredOut: T[] } {
+	return {
+		filteredIn: input.filter(filter),
+		filteredOut: input.filter((object: T) => !filter(object))
+	};
+}
+
 /**
  * Finds and removes first instance of item from array
  * tested V
@@ -103,7 +110,6 @@ export function filterDuplicates<T>(source: T[], mapper: (item: T) => any = defa
 	return source.filter(item => uniqueKeys.delete(mapper(item)));
 }
 
-
 /**
  * filter array of all undefined and null
  * */
@@ -121,14 +127,20 @@ export function filterFalsy<T>(array?: (T | undefined | null | void)[]): T[] {
 /**
  * receives array and builds hashmap whom keys are decided via function and values are from array
  * */
-export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, index: number, map: { [k: string]: T }) => string | number, map: { [k: string]: T } = {}): { [k: string]: T } {
+export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, index: number, map: { [k: string]: T }) => string | number, map: {
+	[k: string]: T
+} = {}): { [k: string]: T } {
 	return reduceToMap<T, T>(array, getKey, item => item, map);
 }
 
 /**
  * turns array into object that is similar to hashmap
  * */
-export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<Input[]>), keyResolver: (item: Input, index: number, map: { [k: string]: Output }) => string | number, mapper: (item: Input, index: number, map: { [k: string]: Output }) => Output, map: { [k: string]: Output } = {}): { [k: string]: Output } {
+export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<Input[]>), keyResolver: (item: Input, index: number, map: {
+	[k: string]: Output
+}) => string | number, mapper: (item: Input, index: number, map: { [k: string]: Output }) => Output, map: { [k: string]: Output } = {}): {
+	[k: string]: Output
+} {
 	return (array as (Input[])).reduce((toRet, element, index) => {
 		toRet[keyResolver(element, index, toRet)] = mapper(element, index, toRet);
 		return toRet;
@@ -230,5 +242,17 @@ export function toggleInArray<T extends any = string, K extends any = (T extends
 		removeFromArrayByIndex(arr, index);
 	else
 		arr.push(item);
+}
+
+export function generateArray<T extends any = number>(length: number, mapper: (index: number) => T = i => i as T) {
+	return Array.from({length}).map((e, i) => mapper(i));
+}
+
+export function lastElement<T extends any>(array: T[] | undefined) {
+	return array?.[array?.length - 1];
+}
+
+export function firstElement<T extends any>(array?: T[]) {
+	return array?.[1];
 }
 

@@ -25,17 +25,22 @@ import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
 import {Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {ApiModule_Class} from '../../ApiModule';
+import {ApiDef} from '../../../../shared';
 
 
 export type HttpRoute = {
 	methods: string[]
 	path: string
 }
+export type MiddlewareConfig = {
+	filter: (apiDef: ApiDef<any>) => boolean
+	middleware: ServerApi_Middleware
+}
 
 export class RouteResolver_ModulePath
 	extends Logger {
 	readonly express: Express;
-	private middlewares: ServerApi_Middleware[] = [];
+	private middlewares: MiddlewareConfig[] = [];
 	private initialPath: string;
 
 	constructor(express: Express, initialPath: string) {
@@ -61,7 +66,7 @@ export class RouteResolver_ModulePath
 			if (!api.addMiddlewares)
 				throw new MUSTNeverHappenException(`Missing api.middleware for`);
 
-			api.addMiddlewares(...this.middlewares);
+			this.middlewares.filter(config => config.filter(api.apiDef) && api.addMiddleware(config.middleware));
 			api.route(this.express, this.initialPath);
 		});
 	}
@@ -72,6 +77,10 @@ export class RouteResolver_ModulePath
 			const methodString = JSON.stringify(route.methods).padEnd(11, ' ');
 			return this.logInfo(`${methodString} ${this.initialPath}${route.path}`);
 		});
+	}
+
+	addMiddleware(middleware: ServerApi_Middleware, filter: (apiDef: ApiDef<any>) => boolean = () => true) {
+		this.middlewares.push({middleware, filter});
 	}
 
 	public resolveRoutes = () => {

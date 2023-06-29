@@ -1,14 +1,17 @@
 #!/bin/bash
+
+source "$(folder.getRunningPath)/versions.sh"
+
 projectLibs=(
-  app-shared
+#  app-shared
 )
 
 backendApps=(
-  app-backend
+#  app-backend
 )
 
 frontendApps=(
-  app-frontend
+#  app-frontend
 )
 
 testServiceAccount=../.trash/test-account.json
