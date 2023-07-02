@@ -7,8 +7,15 @@
     print-color-adjust: exact;
   }
 
+  &.print-only {
+    display: none;
+  }
 
   @media print {
+    &.print-only {
+      display: unset;
+    }
+
     * {
       overflow: unset;
     }
