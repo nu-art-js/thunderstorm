@@ -173,7 +173,6 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	// ############################## Create ##############################
-	// @ts-ignore
 	protected _createItem = async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
 		preDBItem._id ??= generateId();
 		return await this.doc.item(preDBItem).create(preDBItem, transaction);
