@@ -109,13 +109,13 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		return _EmptyQuery;
 	}
 
-	async querySync(syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> {
+	querySync = async (syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> => {
 		const items = await this.collection.query.custom(syncQuery);
 		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
 
 		await this.upgradeInstances(items);
 		return {toUpdate: items, toDelete: deletedItems};
-	}
+	};
 
 	/*
 	 * TO BE MOVED ABOVE THIS COMMENT
@@ -127,10 +127,10 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	 * TO BE MOVED ABOVE THIS COMMENT
 	 */
 
-	private async _prepareItemForDB(dbItem: Type, transaction?: Transaction) {
+	private _prepareItemForDB = async (dbItem: Type, transaction?: Transaction) => {
 		await this.upgradeInstances([dbItem]);
 		await this.prepareItemForDB(dbItem, transaction);
-	}
+	};
 
 	/**
 	 * Override this method to customize the assertions that should be done before the insertion of the document to the DB.
@@ -142,7 +142,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	protected async prepareItemForDB(dbInstance: Type, transaction?: Transaction) {
 	}
 
-	async upgradeInstances(dbInstances: Type[]) {
+	upgradeInstances = async (dbInstances: Type[]) => {
 		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];
@@ -156,7 +156,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 				}
 			dbInstance._v = currentVersion;
 		}));
-	}
+	};
 
 	protected async upgradeItem(dbItem: Type, toVersion: string): Promise<void> {
 	}

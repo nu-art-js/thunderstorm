@@ -19,7 +19,7 @@
 import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {_values, BadImplementationException, MUSTNeverHappenException, TypedMap} from '@nu-art/ts-common';
 import {DBApiDefGeneratorIDB} from '@nu-art/db-api-generator/shared';
-import {ApiCallerEventTypeV2, ModuleFE_BaseApi, DBApiFEConfig} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventType, ModuleFE_BaseApi, DBApiFEConfig} from '@nu-art/db-api-generator/frontend';
 import {PanelConfig} from '..';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {DBDef_Workspaces} from '../../shared/db-def';
@@ -27,7 +27,7 @@ import {DB_Workspace} from '../../shared/types';
 
 
 export interface OnWorkspaceUpdated {
-	__onWorkspaceUpdated: (...params: ApiCallerEventTypeV2<DB_Workspace>) => void;
+	__onWorkspaceUpdated: (...params: ApiCallerEventType<DB_Workspace>) => void;
 }
 
 export const dispatch_onWorkspaceUpdated = new ThunderDispatcher<OnWorkspaceUpdated, '__onWorkspaceUpdated'>('__onWorkspaceUpdated', true);
