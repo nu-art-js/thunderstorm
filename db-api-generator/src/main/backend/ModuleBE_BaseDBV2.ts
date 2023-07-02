@@ -50,7 +50,12 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	implements OnFirestoreBackupSchedulerActV2 {
 	// private static DeleteHardLimit = 250;
 	public collection!: FirestoreCollectionV2<Type>;
-	readonly dbDef: DBDef<Type, any>;
+	public dbDef: DBDef<Type, any>;
+	public query!: FirestoreCollectionV2<Type>['query'];
+	public create!: FirestoreCollectionV2<Type>['create'];
+	public set!: FirestoreCollectionV2<Type>['set'];
+	public update!: FirestoreCollectionV2<Type>['update'];
+	public delete!: FirestoreCollectionV2<Type>['delete'];
 
 	protected constructor(dbDef: DBDef<Type, any>, appConfig?: BaseDBApiConfig) {
 		super();
@@ -73,6 +78,13 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 			canDeleteItems: this.canDeleteItems,
 			prepareItemForDB: this._prepareItemForDB
 		});
+
+		// ############################## API ##############################
+		this.query = this.collection.query;
+		this.create = this.collection.create;
+		this.set = this.collection.set;
+		this.update = this.collection.update;
+		this.delete = this.collection.delete;
 	}
 
 	getCollectionName() {
@@ -204,11 +216,4 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 		return dependencies.length > 0 ? dependencies : undefined;
 	}
-
-	// ############################## API ##############################
-	query = this.collection.query;
-	create = this.collection.create;
-	set = this.collection.set;
-	update = this.collection.update;
-	delete = this.collection.delete;
 }
