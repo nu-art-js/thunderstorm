@@ -33,6 +33,8 @@ export const Middleware_ValidateSession: ServerApi_Middleware = async () => {
 };
 
 export function Middleware_ValidateSession_UpdateMemKeys(uiAccount: UI_Account) {
-	MemKey_AccountEmail.set(uiAccount.email);
-	MemKey_AccountId.set(uiAccount._id);
+	if (!MemKey_AccountEmail.get())
+		MemKey_AccountEmail.set(uiAccount.email);
+	if (!MemKey_AccountId.get())
+		MemKey_AccountId.set(uiAccount._id);
 }

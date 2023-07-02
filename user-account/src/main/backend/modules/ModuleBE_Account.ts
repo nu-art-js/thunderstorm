@@ -149,9 +149,12 @@ export class ModuleBE_Account_Class
 
 	private create = async (request: Request_CreateAccount) => {
 		const account = await this.createAccount(request);
+		const uiAccount = getUIAccount(account);
+		Middleware_ValidateSession_UpdateMemKeys(uiAccount);
 
-		await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(account));
-		const session = await this.login(request);
+		await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
+		const {session} = await this.loginImpl(request);
+		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
 		return session;
 	};
 
@@ -231,6 +234,13 @@ export class ModuleBE_Account_Class
 	};
 
 	login = async (request: Request_LoginAccount): Promise<Response_Auth> => {
+		const {account, session} = await this.loginImpl(request);
+
+		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
+		return session;
+	};
+
+	private async loginImpl(request: Request_LoginAccount) {
 		request.email = request.email.toLowerCase();
 		const query = {where: {email: request.email}};
 		const account = await this.accounts.queryUnique(query);
@@ -249,10 +259,8 @@ export class ModuleBE_Account_Class
 		}
 
 		const session = await this.upsertSession(account);
-
-		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
-		return session;
-	};
+		return {account, session};
+	}
 
 	logout = async (queryParams: QueryParams) => {
 		const sessionId = Header_SessionId.get();
