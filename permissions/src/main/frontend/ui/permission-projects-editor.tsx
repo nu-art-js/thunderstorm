@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-	ApiCallerEventTypeV2,
+	ApiCallerEventType,
 	EditableDBItem,
 	EventType_Create,
 	EventType_Delete,
@@ -33,7 +33,7 @@ export class PermissionProjectsEditor
 
 	//######################### Life Cycle #########################
 
-	__OnPermissionsProjectsUpdated(...params: ApiCallerEventTypeV2<DB_PermissionProject>) {
+	__OnPermissionsProjectsUpdated(...params: ApiCallerEventType<DB_PermissionProject>) {
 		if ([EventType_Update, EventType_Create].includes(params[0])) {
 			const project = params[1] as DB_PermissionProject;
 			this.reDeriveState({

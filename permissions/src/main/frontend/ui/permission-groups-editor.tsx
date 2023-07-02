@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-	ApiCallerEventTypeV2,
+	ApiCallerEventType,
 	EditableDBItem,
 	EventType_Create,
 	EventType_Delete,
@@ -35,7 +35,7 @@ export class PermissionGroupsEditor
 
 	//######################### Life Cycle #########################
 
-	__onPermissionsGroupsUpdated(...params: ApiCallerEventTypeV2<DB_PermissionGroup>) {
+	__onPermissionsGroupsUpdated(...params: ApiCallerEventType<DB_PermissionGroup>) {
 		if ([EventType_Update, EventType_Create].includes(params[0])) {
 			const level = params[1] as DB_PermissionGroup;
 			this.reDeriveState({

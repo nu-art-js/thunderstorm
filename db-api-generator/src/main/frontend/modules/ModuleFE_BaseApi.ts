@@ -28,7 +28,7 @@ import {BadImplementationException, DB_BaseObject, DB_Object, DBDef, merge, PreD
 
 import {DBApiFEConfig} from '../db-def';
 import {SyncIfNeeded} from './ModuleFE_SyncManager';
-import {ApiCallerEventTypeV2} from './types';
+import {ApiCallerEventType} from './types';
 import {DataStatus} from './consts';
 import {ModuleFE_BaseDB} from './ModuleFE_BaseDB';
 
@@ -54,7 +54,7 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 	readonly v1: ApiDefCaller<ApiStruct_DBApiGenIDB<DBType, Ks>>['v1'];
 	private operations: TypedMap<Operation> = {};
 
-	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
+	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>) {
 		super(dbDef, defaultDispatcher);
 
 		const apiDef = DBApiDefGeneratorIDB<DBType, Ks>(dbDef);
