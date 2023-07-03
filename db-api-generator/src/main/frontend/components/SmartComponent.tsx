@@ -136,7 +136,7 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	protected _deriveStateFromProps(nextProps: Props, partialState: State = this.createInitialState(nextProps)): State | undefined {
 		const currentState = partialState;
 
-		const unpreparedModules = this.props.modules?.filter(module => module.getDataStatus() !== DataStatus.containsData) || [];
+		const unpreparedModules = this.props.modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
 
 		if (unpreparedModules.length > 0) {
 			const state = this.createInitialState(nextProps);
