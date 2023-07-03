@@ -1,6 +1,7 @@
-import {ThunderDispatcher} from "@nu-art/thunderstorm/frontend";
-import {OnSyncStatusChangedListener} from "./types";
-import {DB_Object} from "@nu-art/ts-common";
+import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {OnSyncStatusChangedListener} from './types';
+import {DB_Object} from '@nu-art/ts-common';
+
 
 export enum SyncStatus {
 	loading,
@@ -11,7 +12,8 @@ export enum SyncStatus {
 
 export enum DataStatus {
 	NoData,
-	containsData,
+	UpdatingData,
+	ContainsData,
 }
 
 export const syncDispatcher: ThunderDispatcher<OnSyncStatusChangedListener<DB_Object>, '__onSyncStatusChanged'> = new ThunderDispatcher<OnSyncStatusChangedListener<DB_Object>, '__onSyncStatusChanged'>('__onSyncStatusChanged');
