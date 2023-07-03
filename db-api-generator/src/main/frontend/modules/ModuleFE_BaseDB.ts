@@ -132,7 +132,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
 		await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
 		await this.cache.load();
-		this.setDataStatus(DataStatus.containsData);
+		this.setDataStatus(DataStatus.ContainsData);
 
 		if (syncData.toDelete)
 			this.dispatchMulti(EventType_DeleteMulti, syncData.toDelete as DBType[]);

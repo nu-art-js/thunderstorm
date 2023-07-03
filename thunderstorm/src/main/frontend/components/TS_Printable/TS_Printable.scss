@@ -36,6 +36,10 @@
       page-break-after: always !important;
     }
 
+    .ts-print__break-after-two-pages {
+      page-break-after: right !important;
+    }
+
     .ts-print__gone {
       display: none;
     }
