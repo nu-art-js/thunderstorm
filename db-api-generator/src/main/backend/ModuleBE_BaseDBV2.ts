@@ -142,6 +142,10 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	protected async prepareItemForDB(dbInstance: Type, transaction?: Transaction) {
 	}
 
+	preUpsertProcessing(doNotCompileWithThisFunction: {}) {
+		//todo Deprecated, turn all into prepareItemForDB
+	}
+
 	upgradeInstances = async (dbInstances: Type[]) => {
 		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
@@ -215,5 +219,11 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		const potentialErrors = await canDeleteDispatcherV2.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
 		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 		return dependencies.length > 0 ? dependencies : undefined;
+	}
+
+	async deleteCollection() {
+		this.logWarning(`Called delete collection on ${this.collection.name}!`);
+		await this.collection.deleteCollection();
+		this.logWarning(`Deleted collection ${this.collection.name}.`);
 	}
 }
