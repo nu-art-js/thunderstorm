@@ -21,21 +21,11 @@
 
 import {ApiDefCaller,} from '@nu-art/thunderstorm';
 import {apiWithQuery,} from '@nu-art/thunderstorm/frontend';
-import {Dispatcher, Module} from '@nu-art/ts-common';
-import {ApiDef_SyncManager, ApiStruct_SyncManager, DBSyncData, Response_DBSyncData} from '../../shared';
+import {Module} from '@nu-art/ts-common';
+import {ApiDef_SyncManagerV2, ApiStruct_SyncManager, Response_DBSyncData} from '../../shared';
+import {dispatch_onSyncCompleted, dispatch_syncIfNeeded} from './ModuleFE_SyncManager';
 
-
-export type SyncIfNeeded = {
-	__syncIfNeeded: (syncData: DBSyncData[]) => Promise<void>
-}
-export type OnSyncCompleted = {
-	__onSyncCompleted: () => void
-}
-
-export const dispatch_syncIfNeeded = new Dispatcher<SyncIfNeeded, '__syncIfNeeded'>('__syncIfNeeded');
-export const dispatch_onSyncCompleted = new Dispatcher<OnSyncCompleted, '__onSyncCompleted'>('__onSyncCompleted');
-
-export class ModuleFE_SyncManager_Class
+export class ModuleFE_SyncManagerV2_Class
 	extends Module
 	implements ApiDefCaller<ApiStruct_SyncManager> {
 
@@ -44,7 +34,7 @@ export class ModuleFE_SyncManager_Class
 	constructor() {
 		super();
 		this.v1 = {
-			checkSync: apiWithQuery(ApiDef_SyncManager.v1.checkSync, this.onReceivedSyncData)
+			checkSync: apiWithQuery(ApiDef_SyncManagerV2.v1.checkSync, this.onReceivedSyncData)
 		};
 	}
 
@@ -54,6 +44,6 @@ export class ModuleFE_SyncManager_Class
 	};
 }
 
-export const ModuleFE_SyncManager = new ModuleFE_SyncManager_Class();
+export const ModuleFE_SyncManagerV2 = new ModuleFE_SyncManagerV2_Class();
 
 
