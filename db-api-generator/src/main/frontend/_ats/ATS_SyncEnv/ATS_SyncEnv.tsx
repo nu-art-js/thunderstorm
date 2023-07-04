@@ -20,7 +20,7 @@ import {ModuleFE_SyncEnv} from '../../modules/ModuleFE_SyncEnv';
 import {ModuleFE_BaseDB} from '../../modules/ModuleFE_BaseDB';
 import {filterKeys} from '@nu-art/ts-common';
 
-type Env = 'prod' | 'staging' | 'dev';
+type Env = 'prod' | 'staging' | 'dev' | 'local';
 
 type State = {
 	envList: Env[];
@@ -42,7 +42,7 @@ export class ATS_SyncEnvironment
 
 	protected deriveStateFromProps(nextProps: {}, state: State) {
 		state ??= this.state ? {...this.state} : {} as State;
-		state.envList ??= ['prod', 'staging', 'dev'];
+		state.envList ??= ['prod', 'staging', 'dev', 'local'];
 		if (!state.excludedModules) {
 			state.excludedModules = new Set<string>();
 			['user-account--accounts', 'user-account--sessions'].forEach(name => state.excludedModules.add(name));
