@@ -12,13 +12,13 @@ import {
 	Module,
 	TS_Object
 } from '@nu-art/ts-common';
-import {ApiDef_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared';
 import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {OnFirestoreBackupSchedulerAct, OnModuleCleanup} from './FirestoreBackupScheduler';
 import {FilterKeys, FirestoreQuery} from '@nu-art/firebase';
-import {BackupDoc} from '../../../shared/backup-types';
+import {BackupDoc} from '../../../shared/backup/backup-types';
 import {addRoutes} from '../ApiModule';
 import {createQueryServerApi} from '../../core/typed-api';
+import {ApiDef_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared/backup/apis';
 
 export type FirestoreBackupDetails<T extends TS_Object> = {
 	moduleKey: string,

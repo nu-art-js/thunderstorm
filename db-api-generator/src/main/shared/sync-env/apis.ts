@@ -20,3 +20,9 @@ export const ApiDef_SyncEnv: ApiDefResolver<ApiStruct_SyncEnv> = {
 		fetchFromEnv: {method: HttpMethod.POST, path: 'v1/sync-env/fetch-from-env', timeout: 5 * Minute},
 	}
 };
+
+export const ApiDef_SyncEnvV2: ApiDefResolver<ApiStruct_SyncEnv> = {
+	vv1: {
+		fetchFromEnv: {method: HttpMethod.POST, path: 'v1/sync-env/fetch-from-env-v2', timeout: 5 * Minute},
+	}
+};
