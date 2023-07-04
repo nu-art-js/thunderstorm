@@ -9,7 +9,6 @@ import {
 	Format_YYYYMMDD_HHmmss,
 	formatTimestamp,
 	generateHex,
-	Minute,
 	Module,
 	PreDB,
 	TS_Object,
@@ -77,16 +76,14 @@ class ModuleBE_BackupV2_Class
 	 */
 	fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocsV2> => {
 		const backupDoc = await this.queryUnique(body.backupId);
-		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
 
 		if (!backupDoc)
 			throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
 
-		const fileDescriptor = await (await bucket.getFile(backupDoc.backupPath)).getReadSecuredUrl('', 10 * Minute);
 		return {
 			backupInfo: {
 				_id: backupDoc._id,
-				signedUrl: fileDescriptor.securedUrl,
+				filePath: backupDoc.backupPath
 			}
 		};
 	};

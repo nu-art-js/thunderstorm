@@ -18,7 +18,7 @@ export type FetchBackupDoc = {
 
 export type FetchBackupDocV2 = {
 	_id: string,
-	signedUrl: string,
+	filePath: string,
 }
 
 export type DB_BackupDoc = DB_Object & {
