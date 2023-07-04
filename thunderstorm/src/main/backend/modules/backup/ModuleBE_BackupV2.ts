@@ -2,7 +2,7 @@ import {
 	__stringify,
 	_logger_logException,
 	ApiException,
-	currentTimeMillis,
+	currentTimeMillis, Day,
 	DBDef,
 	Dispatcher,
 	flatArray,
@@ -64,6 +64,7 @@ class ModuleBE_BackupV2_Class
 
 	constructor() {
 		super();
+		this.setDefaultConfig({minTimeThreshold: Day, keepInterval: 7 * Day});
 		addRoutes([createQueryServerApi(ApiDef_BackupV2.vv1.initiateBackup, this.initiateBackup), createQueryServerApi(ApiDef_BackupV2.vv1.fetchBackupDocs, this.fetchBackupDocs)]);
 	}
 
