@@ -136,7 +136,7 @@ class ModuleBE_Backup_Class
 				await (await bucket.getFile(backupPath)).write(toBackupData);
 
 				this.logInfoBold('Upserting Backup for ' + backupItem.moduleKey);
-				await this.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath, backupId: backupId});
+				await this.insert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath, backupId: backupId});
 
 				this.logInfoBold('Upserting BackupStatus for ' + backupItem.moduleKey); // happened 30 seconds later
 				const keepInterval = backupItem.keepInterval;
@@ -170,9 +170,9 @@ class ModuleBE_Backup_Class
 		return await this.collection.query(ourQuery);
 	};
 
-	upsert = async (instance: BackupDoc): Promise<BackupDoc> => {
+	insert = async (instance: BackupDoc): Promise<BackupDoc> => {
 		this.logWarning(instance);
-		return await this.collection.upsert(instance);
+		return await this.collection.insert(instance);
 	};
 
 	deleteItem = async (instance: BackupDoc): Promise<BackupDoc | undefined> => {
