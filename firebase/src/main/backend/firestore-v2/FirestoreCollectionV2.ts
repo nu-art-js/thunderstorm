@@ -40,7 +40,11 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -155,6 +159,13 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	query = {
 		unique: async (_id: UniqueId, transaction?: Transaction) => await this.doc.unique(_id).get(transaction),
+		uniqueAssert: async (_id: UniqueId, transaction?: Transaction): Promise<Type> => {
+			const resultItem = await this.query.unique(_id, transaction);
+			if (!resultItem)
+				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${_id}`);
+
+			return resultItem;
+		},
 		uniqueCustom: async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
 			const thisShouldBeOnlyOne = await this.query.custom(query, transaction);
 			if (thisShouldBeOnlyOne.length !== 1) {
@@ -271,12 +282,13 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	protected _deleteAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction) => {
-		const dbItems = filterInstances(await this.getAll(docs));
+		const dbItems = filterInstances(await this.getAll(docs, transaction));
 		await this.hooks?.canDeleteItems(dbItems, transaction);
 		if (transaction)
-			docs.forEach(doc => doc.delete(transaction));
+			await Promise.all(docs.map(async doc => await doc.delete(transaction)));
 		else
 			await this.bulkOperation(docs, 'delete');
+		return dbItems;
 	};
 
 	deleteCollection = async () => {
@@ -287,7 +299,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	};
 
 	delete = {
-		unique: (id: string, transaction?: Transaction) => this.doc.unique(id).delete(transaction),
+		unique: async (id: string, transaction?: Transaction) => await this.doc.unique(id).delete(transaction),
 		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.doc.item(item).delete(transaction),
 		all: async (_ids: UniqueId[], transaction?: Transaction) => await this._deleteAll(_ids.map(_id => this.doc.unique(_id)), transaction),
 		allItems: async (items: PreDB<Type>[], transaction?: Transaction) => await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction),
