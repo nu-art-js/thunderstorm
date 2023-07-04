@@ -1,6 +1,6 @@
 import {ApiDef, HttpMethod, QueryApi, Request_BackupId, Response_BackupDocsV2} from '@nu-art/thunderstorm';
 import {addRoutes, AxiosHttpModule, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {BadImplementationException, Module, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiDef_SyncEnvV2, Request_FetchFromEnv} from '../shared';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
@@ -10,8 +10,6 @@ type Config = {
 	urlMap: TypedMap<string>
 	fetchBackupDocsSecretsMap: TypedMap<string>
 }
-
-type CsvRow = { collectionName: string, _id: UniqueId, document: string };
 
 class ModuleBE_SyncEnvV2_Class
 	extends Module<Config> {
@@ -55,19 +53,14 @@ class ModuleBE_SyncEnvV2_Class
 		if (wrongBackupIdDescriptor)
 			throw new BadImplementationException(`Received backup descriptors with wrong backupId! provided id: ${body.backupId} received id: ${backupInfo._id}`);
 
-		const signedUrlDef: ApiDef<QueryApi<any>> = {
-			method: HttpMethod.GET,
-			path: '',
-			fullUrl: backupInfo.signedUrl
-		};
 
-		const backupFile: Buffer = await AxiosHttpModule
-			.createRequest(signedUrlDef)
-			.executeSync();
+		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
+		const storage = firebaseSessionAdmin.getStorage();
+		const bucket = await storage.getMainBucket();
+		const backupDoc = await bucket.getFile(backupInfo.filePath);
 
-		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2().firestore;
+		const firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
 		const bulkWriter = firestore.bulkWriter();
-		const csvContents = await CSVModule.readCsvFromBuffer(backupFile) as unknown as CsvRow[];
 		const hasOnlyModulesArray = body.onlyModules && !!body.onlyModules.length;
 
 		bulkWriter.onWriteError((err) => {
@@ -75,7 +68,12 @@ class ModuleBE_SyncEnvV2_Class
 			return true;
 		});
 
-		csvContents.map(row => {
+		const dataCallback = async (row: any) => {
+
+			_keys(row).map(key => {
+				row[(key as string).trim()] = row[key];
+			});
+
 			if (hasOnlyModulesArray && !body.onlyModules?.includes(row.collectionName)) {
 				this.logWarning(`Row ${row._id} from collection ${row.collectionName} is skipped from syncing due to not being in the list of specified modules to sync.`);
 				return;
@@ -88,9 +86,10 @@ class ModuleBE_SyncEnvV2_Class
 
 			const documentRef = firestore.doc(`${row.collectionName}/${row._id}`);
 			const data = JSON.parse(row.document);
-			bulkWriter.set(documentRef, data);
-		});
+			await bulkWriter.set(documentRef, data);
+		};
 
+		await CSVModule.forEachCsvRowFromStream(backupDoc.file.createReadStream(), dataCallback);
 		await bulkWriter.close();
 	};
 }
