@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {
-	ApiCallerEventTypeV2,
+	ApiCallerEventType,
 	EditableDBItem,
 	EventType_Create,
 	EventType_Delete,
@@ -45,7 +45,7 @@ export class PermissionDomainsEditor
 
 	//######################### Life Cycle #########################
 
-	__onPermissionsDomainsUpdated(...params: ApiCallerEventTypeV2<DB_PermissionDomain>) {
+	__onPermissionsDomainsUpdated(...params: ApiCallerEventType<DB_PermissionDomain>) {
 		if ([EventType_Update, EventType_Create].includes(params[0])) {
 			const domain = params[1] as DB_PermissionDomain;
 			this.reDeriveState({
@@ -57,7 +57,7 @@ export class PermissionDomainsEditor
 			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
 	}
 
-	__onPermissionsLevelsUpdated(...params: ApiCallerEventTypeV2<DB_PermissionAccessLevel>) {
+	__onPermissionsLevelsUpdated(...params: ApiCallerEventType<DB_PermissionAccessLevel>) {
 		this.forceUpdate();
 	}
 

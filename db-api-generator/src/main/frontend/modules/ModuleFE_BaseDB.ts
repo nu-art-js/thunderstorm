@@ -49,7 +49,7 @@ import {
 
 import {DBApiFEConfig, getModuleFEConfig} from '../db-def';
 import {DataStatus, syncDispatcher} from './consts';
-import {ApiCallerEventTypeV2} from './types';
+import {ApiCallerEventType} from './types';
 import {MultiApiEvent, SingleApiEvent} from '../types';
 import {
 	EventType_Create,
@@ -71,9 +71,9 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	readonly IDB: IDBCache<DBType, Ks>;
 	readonly dbDef: DBDef<DBType, Ks>;
 	private dataStatus: DataStatus;
-	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>;
+	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>;
 
-	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV2<DBType>>) {
+	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>) {
 		super();
 		this.defaultDispatcher = defaultDispatcher;
 

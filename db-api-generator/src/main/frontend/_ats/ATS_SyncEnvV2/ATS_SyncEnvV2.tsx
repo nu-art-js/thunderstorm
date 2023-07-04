@@ -15,10 +15,10 @@ import {
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
-import './ATS_SyncEnv.scss';
-import {ModuleFE_SyncEnv} from '../../modules/ModuleFE_SyncEnv';
+import './ATS_SyncEnvV2.scss';
 import {ModuleFE_BaseDB} from '../../modules/ModuleFE_BaseDB';
 import {filterKeys} from '@nu-art/ts-common';
+import {ModuleFE_SyncEnvV2} from '../../modules/ModuleFE_SyncEnvV2';
 
 type Env = 'prod' | 'staging' | 'dev' | 'local';
 
@@ -30,12 +30,12 @@ type State = {
 	excludedModules: Set<string>;
 }
 
-export class ATS_SyncEnvironment
+export class ATS_SyncEnvironmentV2
 	extends ComponentSync<{}, State> {
 
 	static screen: AppToolsScreen = {
-		name: 'Sync Environment',
-		key: 'sync-environment',
+		name: 'Sync Environment V2',
+		key: 'sync-environment-v2',
 		renderer: this,
 		group: 'TS Dev Tools'
 	};
@@ -56,7 +56,7 @@ export class ATS_SyncEnvironment
 		if (!this.canSync())
 			return;
 		await genericNotificationAction(async () => {
-			await ModuleFE_SyncEnv.vv1.fetchFromEnv(filterKeys({
+			await ModuleFE_SyncEnvV2.vv1.fetchFromEnv(filterKeys({
 				env: this.state.selectedEnv!,
 				backupId: this.state.backupId!,
 				onlyModules: (this.state.onlyModules.size > 0 && Array.from(this.state.onlyModules)) || undefined,
@@ -120,7 +120,7 @@ export class ATS_SyncEnvironment
 		const envAdapter = SimpleListAdapter(this.state.envList, item => <div
 			className={'node-data'}>{item.item}</div>);
 		return <LL_V_L className={'sync-env-page'}>
-			{TS_AppTools.renderPageHeader('Sync Environment')}
+			{TS_AppTools.renderPageHeader('Sync Environment V2')}
 			<LL_H_C className={'sync-env-page__main'}>
 				<TS_PropRenderer.Vertical label={'Environment'}>
 					<TS_DropDown
@@ -135,7 +135,7 @@ export class ATS_SyncEnvironment
 
 				<TS_PropRenderer.Vertical label={'Backup ID'}>
 					<TS_Input type={'text'} value={this.state.backupId}
-							  onChange={val => this.setState({backupId: val})}/>
+										onChange={val => this.setState({backupId: val})}/>
 				</TS_PropRenderer.Vertical>
 
 				<TS_BusyButton
@@ -144,9 +144,9 @@ export class ATS_SyncEnvironment
 				>Sync</TS_BusyButton>
 			</LL_H_C>
 			<TS_CollapsableContainer headerRenderer={TS_AppTools.renderPageHeader('Only Included Modules')}
-									 containerRenderer={this.renderOnlyModulesSelection}/>
+															 containerRenderer={this.renderOnlyModulesSelection}/>
 			<TS_CollapsableContainer headerRenderer={TS_AppTools.renderPageHeader('Excluded Modules')}
-									 containerRenderer={this.renderExcludedModulesSelection}/>
+															 containerRenderer={this.renderExcludedModulesSelection}/>
 		</LL_V_L>;
 	}
 }

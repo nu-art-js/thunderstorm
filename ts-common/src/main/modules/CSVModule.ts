@@ -26,6 +26,7 @@ import {StringMap, TS_Object} from '../utils/types';
 import {Module} from '../core/module';
 import {Readable} from 'stream';
 import csvParser = require('csv-parser');
+import {Queue} from '../utils/queue';
 
 
 type Config = {
@@ -112,6 +113,19 @@ class CSVModule_Class
 				})
 				.on('error', (err) => reject(err))
 				.on('end', () => resolve(results));
+		});
+	}
+
+	async forEachCsvRowFromStream<T extends Partial<StringMap>>(stream: Readable, callback: (instance: T) => Promise<void>, readOptions: ReadOptions = {}, queueCount: number = 5): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			const instancesQueue = new Queue('instancesQueue');
+			instancesQueue.setParallelCount(queueCount);
+
+			stream
+				.pipe(csvParser(this.createReadParserOptions(readOptions)))
+				.on('data', (instance) => instancesQueue.addItem(() => callback(instance)))
+				.on('error', (err) => reject(err))
+				.on('end', () => resolve());
 		});
 	}
 
