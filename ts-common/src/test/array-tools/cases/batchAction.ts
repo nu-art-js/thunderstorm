@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import {batchAction, TestSuite} from '../../_main';
+import {batchAction, generateArray, TestSuite} from '../../_main';
 
 type Input<T = any> = {
 	array: T[]
@@ -64,6 +64,17 @@ const TestCase_batchAction: TestSuite<Input, any> ['testcases'] = [
 			chunk: 3,
 			action: async (item: string[]) => {
 				return item.sort();
+			}
+		}
+	}, {
+		description: 'Test 6',
+		result: Promise.resolve(generateArray(100)),
+		input: {
+			array: generateArray(100),
+			chunk: 10,
+			action: async (item: string[]) => {
+				console.log(JSON.stringify(item));
+				return item;
 			}
 		}
 	},

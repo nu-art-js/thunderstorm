@@ -85,7 +85,7 @@ export class ModuleBE_Slack_Class
 		};
 
 		//Block same message on throttling time
-		const time = this.messageMap[md5(message)];
+		const time = this.messageMap[md5(text)];
 		if (time && currentTimeMillis() - time < (this.config.throttlingTime || Minute))
 			return;
 
@@ -126,10 +126,27 @@ export class ModuleBE_Slack_Class
 		const res = await this.web.chat.postMessage(message) as ChatPostMessageResult;
 
 		//Add message to map
-		this.messageMap[md5(message)] = currentTimeMillis();
+		this.messageMap[md5(message.text)] = currentTimeMillis();
 
 		this.logDebug(`A message was posted to channel: ${message.channel} with message id ${res.ts} which contains the message ${message.text}`);
 		return {ts: res.ts, channel: res.channel};
+	}
+
+	public async getUserIdByEmail(email: string): Promise<string | undefined> {
+		const result: WebAPICallResult = await this.web.users.lookupByEmail({email});
+		if (result.ok)
+			// @ts-ignore
+			return result.user.id;
+
+		return undefined;
+	}
+
+	public async openDM(userIds: string[]): Promise<string | undefined> {
+		const users = userIds.join(',');
+		const result = await this.web.conversations.open({users});
+		if (result.ok) { // @ts-ignore
+			return result.channel.id;
+		}
 	}
 }
 
