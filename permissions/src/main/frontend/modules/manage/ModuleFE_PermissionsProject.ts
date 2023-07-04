@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-import {ApiCallerEventTypeV2, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionProject, DBDef_PermissionProjects} from '../../shared';
 
 
 export interface OnPermissionsProjectsUpdated {
-	__OnPermissionsProjectsUpdated: (...params: ApiCallerEventTypeV2<DB_PermissionProject>) => void;
+	__OnPermissionsProjectsUpdated: (...params: ApiCallerEventType<DB_PermissionProject>) => void;
 }
 
 const dispatch_OnPermissionsProjectsUpdated = new ThunderDispatcher<OnPermissionsProjectsUpdated, '__OnPermissionsProjectsUpdated'>(

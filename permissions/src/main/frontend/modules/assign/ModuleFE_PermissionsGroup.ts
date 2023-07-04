@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 import {DB_PermissionGroup, DBDef_PermissionGroup} from '../../../index';
-import {ApiCallerEventTypeV2, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
 
 export interface OnPermissionsGroupsUpdated {
-	__onPermissionsGroupsUpdated: (...params: ApiCallerEventTypeV2<DB_PermissionGroup>) => void;
+	__onPermissionsGroupsUpdated: (...params: ApiCallerEventType<DB_PermissionGroup>) => void;
 }
 
 const dispatch_OnPermissionsGroupsUpdated = new ThunderDispatcher<OnPermissionsGroupsUpdated, '__onPermissionsGroupsUpdated'>('__onPermissionsGroupsUpdated');

@@ -1,11 +1,11 @@
-import {ApiCallerEventTypeV2, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {currentTimeMillis} from '@nu-art/ts-common';
 import {DB_Asset, DBDef_Assets} from '../../shared';
 
 
 export interface OnAssetsUpdated {
-	__onAssetsUpdated: (...params: ApiCallerEventTypeV2<DB_Asset>) => void;
+	__onAssetsUpdated: (...params: ApiCallerEventType<DB_Asset>) => void;
 }
 
 export const dispatch_onAssetsListChanged = new ThunderDispatcher<OnAssetsUpdated, '__onAssetsUpdated'>('__onAssetsUpdated');

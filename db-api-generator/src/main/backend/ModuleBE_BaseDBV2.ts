@@ -20,16 +20,16 @@
  */
 
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
-import {ApiException, Day, DB_Object, DBDef, filterInstances, Module} from '@nu-art/ts-common';
+import {__stringify, ApiException, DB_Object, DBDef, filterInstances, Module} from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
-import {ModuleBE_SyncManager} from './ModuleBE_SyncManager';
 import {_EmptyQuery, Response_DBSync} from '../shared';
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {OnFirestoreBackupSchedulerActV2} from '@nu-art/thunderstorm/backend/modules/backup/FirestoreBackupSchedulerV2';
 import {FirestoreBackupDetailsV2} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_BackupV2';
+import {ModuleBE_SyncManagerV2} from './ModuleBE_SyncManagerV2';
 import Transaction = firestore.Transaction;
 
 
@@ -99,8 +99,6 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		return [{
 			query: this.resolveBackupQuery(),
 			queryFunction: this.collection.query.custom,
-			keepInterval: 7 * Day,
-			minTimeThreshold: Day,
 			moduleKey: this.config.collectionName
 		}];
 	}
@@ -109,13 +107,13 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		return _EmptyQuery;
 	}
 
-	async querySync(syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> {
+	querySync = async (syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> => {
 		const items = await this.collection.query.custom(syncQuery);
-		const deletedItems = await ModuleBE_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
+		const deletedItems = await ModuleBE_SyncManagerV2.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
 
 		await this.upgradeInstances(items);
 		return {toUpdate: items, toDelete: deletedItems};
-	}
+	};
 
 	/*
 	 * TO BE MOVED ABOVE THIS COMMENT
@@ -127,10 +125,10 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	 * TO BE MOVED ABOVE THIS COMMENT
 	 */
 
-	private async _prepareItemForDB(dbItem: Type, transaction?: Transaction) {
+	private _prepareItemForDB = async (dbItem: Type, transaction?: Transaction) => {
 		await this.upgradeInstances([dbItem]);
 		await this.prepareItemForDB(dbItem, transaction);
-	}
+	};
 
 	/**
 	 * Override this method to customize the assertions that should be done before the insertion of the document to the DB.
@@ -142,7 +140,11 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	protected async prepareItemForDB(dbInstance: Type, transaction?: Transaction) {
 	}
 
-	async upgradeInstances(dbInstances: Type[]) {
+	preUpsertProcessing(doNotCompileWithThisFunction: {}) {
+		//todo Deprecated, turn all into prepareItemForDB
+	}
+
+	upgradeInstances = async (dbInstances: Type[]) => {
 		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];
@@ -156,7 +158,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 				}
 			dbInstance._v = currentVersion;
 		}));
-	}
+	};
 
 	protected async upgradeItem(dbItem: Type, toVersion: string): Promise<void> {
 	}
@@ -215,5 +217,11 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		const potentialErrors = await canDeleteDispatcherV2.dispatchModuleAsync(this.dbDef.entityName, dbInstances, transaction);
 		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 		return dependencies.length > 0 ? dependencies : undefined;
+	}
+
+	async deleteCollection() {
+		this.logWarning(`Called delete collection on ${this.collection.name}!`);
+		await this.collection.deleteCollection();
+		this.logWarning(`Deleted collection ${this.collection.name}.`);
 	}
 }

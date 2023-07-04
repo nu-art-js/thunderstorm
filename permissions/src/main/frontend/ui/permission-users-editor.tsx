@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
 import {
-	ApiCallerEventTypeV2,
+	ApiCallerEventType,
 	EditableDBItem,
 	EventType_Create,
 	EventType_Delete,
@@ -40,7 +40,7 @@ export class PermissionUsersEditor
 
 	//######################### Life Cycle #########################
 
-	__onPermissionsUsersUpdated(...params: ApiCallerEventTypeV2<DB_PermissionUser>) {
+	__onPermissionsUsersUpdated(...params: ApiCallerEventType<DB_PermissionUser>) {
 		if ([EventType_Update, EventType_Create].includes(params[0])) {
 			const level = params[1] as DB_PermissionUser;
 			this.reDeriveState({

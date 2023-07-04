@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-import {ApiCallerEventTypeV2, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionDomain, DBDef_PermissionDomain} from '../../shared';
 
 
 export interface OnPermissionsDomainsUpdated {
-	__onPermissionsDomainsUpdated: (...params: ApiCallerEventTypeV2<DB_PermissionDomain>) => void;
+	__onPermissionsDomainsUpdated: (...params: ApiCallerEventType<DB_PermissionDomain>) => void;
 }
 
 const dispatch_OnPermissionsDomainsUpdated = new ThunderDispatcher<OnPermissionsDomainsUpdated, '__onPermissionsDomainsUpdated'>('__onPermissionsDomainsUpdated');

@@ -26,3 +26,6 @@ export * from './consts';
 export * from './api';
 export * from './BaseHttpRequest';
 export * from './BaseHttpModule';
+export * from './backup/apis';
+export * from './backup/backup-types';
+export * from './backup/db-def';

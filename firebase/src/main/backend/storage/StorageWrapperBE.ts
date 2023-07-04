@@ -69,7 +69,7 @@ export class StorageWrapperBE
 	}
 
 	isEmulator() {
-		return !!process.env.FIREBASE_STORAGE_EMULATOR_HOST || false;
+		return !!(process.env.FIREBASE_STORAGE_EMULATOR_HOST || process.env.FUNCTIONS_EMULATOR) || false;
 	}
 }
 
