@@ -4,6 +4,7 @@ import {DB_Object, sortArray} from '@nu-art/ts-common';
 import './ATS_CollectionUpgrades.scss';
 import {ModuleFE_BaseApi} from '../..';
 
+
 type State = {
 	upgradableModules: ModuleFE_BaseApi<any, any>[];
 };
@@ -37,7 +38,7 @@ export class ATS_CollectionUpgrades
 					return <TS_BusyButton
 						key={name}
 						onClick={() => this.upgradeCollection(name, module)}
-					>{name}</TS_BusyButton>;
+					>{name} ({module.cache.all().length})</TS_BusyButton>;
 				})}
 			</LL_H_C>
 		</div>;
