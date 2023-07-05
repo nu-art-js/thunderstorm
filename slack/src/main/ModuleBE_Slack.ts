@@ -148,6 +148,10 @@ export class ModuleBE_Slack_Class
 			return result.channel.id;
 		}
 	}
+
+	public getDefaultChannel = () => {
+		return this.config.defaultChannel;
+	};
 }
 
 export const ModuleBE_Slack = new ModuleBE_Slack_Class();

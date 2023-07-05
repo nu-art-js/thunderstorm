@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {AppToolsScreen, ComponentSync, genericNotificationAction, LL_H_C, Thunder, TS_AppTools, TS_BusyButton} from '@nu-art/thunderstorm/frontend';
-import {DB_Object, sortArray} from '@nu-art/ts-common';
+import {DB_Object, Minute, sortArray} from '@nu-art/ts-common';
 import './ATS_CollectionUpgrades.scss';
 import {ModuleFE_BaseApi} from '../..';
 
@@ -24,7 +24,7 @@ export class ATS_CollectionUpgrades
 
 	private upgradeCollection = async (collectionName: string, module: ModuleFE_BaseApi<DB_Object, any>) => {
 		await genericNotificationAction(async () => {
-			await module.v1.upgradeCollection({forceUpdate: true}).executeSync();
+			await module.v1.upgradeCollection({forceUpdate: true}).setTimeout(5 * Minute).executeSync();
 		}, `Upgrading ${collectionName}`);
 	};
 
