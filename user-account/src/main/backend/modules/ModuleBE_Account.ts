@@ -49,7 +49,7 @@ import {
 import {addRoutes, createBodyServerApi, createQueryServerApi, HeaderKey} from '@nu-art/thunderstorm/backend';
 import {QueryParams} from '@nu-art/thunderstorm';
 import {gzipSync, unzipSync} from 'zlib';
-import {Middleware_ValidateSession_UpdateMemKeys} from '../core/accounts-middleware';
+import {Middleware_ValidateSession, Middleware_ValidateSession_UpdateMemKeys} from '../core/accounts-middleware';
 
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
@@ -95,6 +95,8 @@ function getUIAccount(account: DB_Account): UI_Account {
 export class ModuleBE_Account_Class
 	extends Module<Config>
 	implements CollectSessionData<any> {
+
+	readonly Middleware = Middleware_ValidateSession;
 
 	constructor() {
 		super();

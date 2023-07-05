@@ -47,6 +47,7 @@ export class ModuleBE_RemoteProxy_Class<Config extends RemoteProxyConfig>
 	readonly Middleware: ServerApi_Middleware = async () => {
 		ModuleBE_RemoteProxy.assertSecret();
 	};
+
 	private secretHeader!: HeaderKey;
 	private proxyHeader!: HeaderKey;
 
