@@ -44,7 +44,7 @@ type Config = {
 
 const CSVConfig = {
 	fieldSeparator: ',',
-	quoteStrings: '"',
+	quoteStrings: '',
 	decimalSeparator: '.',
 	showLabels: true,
 	showTitle: false,
@@ -145,6 +145,7 @@ class ModuleBE_BackupV2_Class
 		const nowMs = currentTimeMillis();
 		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
 		const backupPath = `backup/firestore/${timeFormat}/backup-${timeFormat}.csv`;
+		let backupsCounter = 0;
 
 		const query: FirestoreQuery<DB_BackupDoc> = {
 			where: {},
@@ -163,43 +164,46 @@ class ModuleBE_BackupV2_Class
 		const bucket = await storage.getMainBucket();
 		CSVModule.updateExporterSettings(CSVConfig);
 
-		await Promise.all(backups.map(async (backupItem) => {
-			try {
-				const backupFeeder = async (writable: Writable) => {
-					let page = 0;
-					let data;
+		try {
+			const backupFeeder = async (writable: Writable) => {
+				const currBackup = backups[backupsCounter];
+				let page = 0;
+				let data;
 
-					do {
-						data = this.formatToCsv(await backupItem.queryFunction({...backupItem.query, limit: {page, itemsCount: 10000}}), backupItem.moduleKey);
+				do {
+					data = this.formatToCsv(await currBackup.queryFunction({...currBackup.query, limit: {page, itemsCount: 10000}}), currBackup.moduleKey);
 
-						if (data.length) {
-							const csv = CSVModule.export(data);
+					if (data.length) {
+						const csv = CSVModule.export(data);
 
-							if (page === 0)
-								CSVModule.updateExporterSettings({
-									...CSVConfig,
-									showLabels: false,
-									useKeysAsHeaders: false
-								});
+						if (page === 0)
+							CSVModule.updateExporterSettings({
+								...CSVConfig,
+								showLabels: false,
+								useKeysAsHeaders: false
+							});
 
-							writable.write(csv.toString());
-						}
+						writable.write(csv.toString());
+					}
 
-						page++;
-					} while (data.length);
+					page++;
+				} while (data.length);
 
-					return END_OF_STREAM;
-				};
+				backupsCounter++;
 
-				const file = await bucket.getFile(backupPath);
-				await file.writeToStream(backupFeeder);
-			} catch (e: any) {
-				this.logWarning(`backup of ${backupItem.moduleKey} has failed with error`, e);
-				const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backupItem, true)}\nError: ${_logger_logException(e)}`;
-				throw new ApiException(500, errorMessage, e);
-			}
+				if (backups[backupsCounter])
+					return;
 
-		}));
+				return END_OF_STREAM;
+			};
+
+			const file = await bucket.getFile(backupPath);
+			await file.writeToStream(backupFeeder);
+		} catch (e: any) {
+			this.logWarning(`backup of ${backups[backupsCounter].moduleKey} has failed with error`, e);
+			const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backups[backupsCounter], true)}\nError: ${_logger_logException(e)}`;
+			throw new ApiException(500, errorMessage, e);
+		}
 
 		try {
 			//upsert the backup data

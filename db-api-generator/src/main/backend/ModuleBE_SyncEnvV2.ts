@@ -62,7 +62,7 @@ class ModuleBE_SyncEnvV2_Class
         const backupDoc = await bucket.getFile(backupInfo.filePath);
 
         const firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
-        const bulkWriter = firestore.bulkWriter({throttling: true});
+        const bulkWriter = firestore.bulkWriter();
         const hasOnlyModulesArray = body.onlyModules && !!body.onlyModules.length;
 
         bulkWriter.onWriteError((err) => {
