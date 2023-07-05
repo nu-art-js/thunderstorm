@@ -27,6 +27,7 @@ import {DB_BackupDoc} from '../../../shared/backup/backup-types';
 import {DBDef_BackupDocs} from '../../../shared/backup/db-def';
 import {ApiDef_BackupV2, Request_BackupId, Response_BackupDocsV2} from '../../../shared/backup/apis';
 
+
 export type FirestoreBackupDetailsV2<T extends TS_Object> = {
 	moduleKey: string,
 	queryFunction: (query: FirestoreQuery<T>, transaction?: Transaction) => Promise<T[]>,
@@ -65,7 +66,9 @@ class ModuleBE_BackupV2_Class
 	constructor() {
 		super();
 		this.setDefaultConfig({minTimeThreshold: Day, keepInterval: 7 * Day});
-		addRoutes([createQueryServerApi(ApiDef_BackupV2.vv1.initiateBackup, this.initiateBackup), createQueryServerApi(ApiDef_BackupV2.vv1.fetchBackupDocs, this.fetchBackupDocs)]);
+		addRoutes([
+			createQueryServerApi(ApiDef_BackupV2.vv1.initiateBackup, () => this.initiateBackup()),
+			createQueryServerApi(ApiDef_BackupV2.vv1.fetchBackupDocs, this.fetchBackupDocs)]);
 	}
 
 	protected init(): void {
@@ -119,7 +122,24 @@ class ModuleBE_BackupV2_Class
 		return docArray.map(doc => ({collectionName: moduleKey, _id: doc._id, document: __stringify(doc)}));
 	};
 
-	initiateBackup = async () => {
+	initiateBackup = async (force = false) => {
+		const nowMs = currentTimeMillis();
+		const backupId = generateHex(32);
+		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
+		const backupPath = `backup/firestore/${timeFormat}/firestore-backup.csv`;
+
+		const query: FirestoreQuery<DB_BackupDoc> = {
+			where: {},
+			orderBy: [{key: 'timestamp', order: 'asc'}],
+			limit: 1
+		};
+
+		const docs = await this.query(query);
+		const latestDoc = docs[0];
+
+		if (!force && latestDoc && latestDoc.timestamp + this.config.minTimeThreshold > nowMs)
+			return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
+
 		if (this.config.excludedCollectionNames)
 			this.logInfo(`Found excluded modules list: ${this.config.excludedCollectionNames}`);
 
@@ -141,24 +161,8 @@ class ModuleBE_BackupV2_Class
 		// this.logInfoBold(Array.isArray(backups));
 		// this.logInfoBold(backups.length);
 		// this.logInfoBold('-------------------------------------------------------------------------------------------------------');
-		const backupId = generateHex(32);
-		const nowMs = currentTimeMillis();
-		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
-		const backupPath = `backup/firestore/${timeFormat}/backup-${timeFormat}.csv`;
+
 		let backupsCounter = 0;
-
-		const query: FirestoreQuery<DB_BackupDoc> = {
-			where: {},
-			orderBy: [{key: 'timestamp', order: 'asc'}],
-			limit: 1
-		};
-
-		const docs = await this.query(query);
-		const latestDoc = docs[0];
-
-		if (latestDoc && latestDoc.timestamp + this.config.minTimeThreshold > nowMs)
-			return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
-
 
 		const storage = ModuleBE_Firebase.createAdminSession().getStorage();
 		const bucket = await storage.getMainBucket();
