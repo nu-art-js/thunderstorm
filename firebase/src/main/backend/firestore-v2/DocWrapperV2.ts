@@ -7,6 +7,7 @@ import BulkWriter = firestore.BulkWriter;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
 
+
 export type UpdateObject<Type> = { _id: UniqueId } & UpdateData<Type>;
 
 export type BulkOperation = 'create' | 'set' | 'update' | 'delete';
@@ -104,17 +105,18 @@ export class DocWrapperV2<T extends DB_Object> {
 	};
 
 	set = async (item: PreDB<T> | T, transaction?: Transaction): Promise<T> => {
+		if (!transaction)
+			return this.collection.runTransaction(transaction => this.set(item, transaction));
+
 		const currDBItem = await this.get(transaction);
 		if (!exists(currDBItem))
 			return this.create(item, transaction);
 
 		const newDBItem = await this.prepareForSet(item as T, currDBItem!, transaction);
 
-		if (transaction) {
-			transaction.set(this.ref, newDBItem);
-			this.data = currDBItem;
-		} else
-			await this.ref.set(newDBItem);
+		// Will always get here with a transaction!
+		transaction!.set(this.ref, newDBItem);
+		this.data = currDBItem;
 
 		return newDBItem;
 	};
@@ -154,17 +156,18 @@ export class DocWrapperV2<T extends DB_Object> {
 		return await this.get();
 	};
 
-	delete = async (transaction?: Transaction) => {
+	delete = async (transaction?: Transaction): Promise<T | undefined> => {
+		if (!transaction)
+			return this.collection.runTransaction(transaction => this.delete(transaction));
+
 		const dbItem = await this.get(transaction);
 		if (!dbItem)
 			return;
 
 		await this.collection.hooks?.canDeleteItems([dbItem], transaction);
 
-		if (transaction)
-			transaction.delete(this.ref);
-		else
-			await this.ref.delete();
+		// Will always get here with a transaction!
+		transaction!.delete(this.ref);
 
 		this.cleanCache();
 		return dbItem;

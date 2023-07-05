@@ -53,6 +53,7 @@ import {firestore} from 'firebase-admin';
 import {BulkItem, BulkOperation, DocWrapperV2, UpdateObject} from './DocWrapperV2';
 import UpdateData = firestore.UpdateData;
 
+
 export type FirestoreCollectionHooks<Type extends DB_Object> = {
 	canDeleteItems: (dbItems: Type[], transaction?: Transaction) => Promise<void>,
 	prepareItemForDB: (dbInstance: Type, transaction?: Transaction) => Promise<void>
@@ -220,6 +221,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 		// Query for all items that have _id, to see if they exist
 		const dbItems = await this.query.all(hasIdItems.map(_item => _item._id!));
+
 		// Items with _id that exist, are to be updated. Items with _id that don't exist, are added to be created.
 		dbItems.forEach((_item, i) => !exists(_item) ? toCreate.push(hasIdItems[i]) : toSet.push([hasIdItems[i] as Type, _item!]));
 
@@ -238,6 +240,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const docs = this.doc.all(toSet.map(_item => _item[0]._id));
 		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForSet(...toSet[i], transaction)));
 		if (transaction)
+			// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
 			docs.map((doc, i) => transaction.set(doc.ref, dbItems[i]));
 		else
 			await this.bulkOperation(docs, 'set', dbItems);
@@ -248,9 +251,18 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => {
 			if (!preDBItem._id)
 				return this.create.item(preDBItem, transaction);
+
 			return await this.doc.item(preDBItem).set(preDBItem, transaction);
 		},
-		all: this._setAll,
+		all: (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
+			if (transaction)
+				return this._setAll(items, transaction);
+
+			return this.runTransaction(t => this._setAll(items, t));
+		},
+		bulk: (items: (PreDB<Type> | Type)[]) => {
+			return this._setAll(items);
+		},
 	};
 
 	// ############################## Update ##############################
@@ -285,7 +297,8 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const dbItems = filterInstances(await this.getAll(docs, transaction));
 		await this.hooks?.canDeleteItems(dbItems, transaction);
 		if (transaction)
-			await Promise.all(docs.map(async doc => await doc.delete(transaction)));
+			// here we do not call doc.delete because we have performed all the delete preparation as a group of items before this call
+			docs.map(async doc => transaction.delete(doc.ref));
 		else
 			await this.bulkOperation(docs, 'delete');
 		return dbItems;
@@ -301,8 +314,25 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	delete = {
 		unique: async (id: string, transaction?: Transaction) => await this.doc.unique(id).delete(transaction),
 		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.doc.item(item).delete(transaction),
-		all: async (_ids: UniqueId[], transaction?: Transaction) => await this._deleteAll(_ids.map(_id => this.doc.unique(_id)), transaction),
-		allItems: async (items: PreDB<Type>[], transaction?: Transaction) => await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction),
+		all: async (ids: UniqueId[], transaction?: Transaction): Promise<Type[]> => {
+			if (!transaction)
+				return this.runTransaction(t => this.delete.all(ids, t));
+
+			return this._deleteAll(ids.map(id => this.doc.unique(id)), transaction);
+		},
+		allItems: async (items: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
+			if (!transaction)
+				return this.runTransaction(t => this.delete.allItems(items, t));
+
+			return await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction);
+		},
+		/**
+		 * Bulk is a non atomic delete operation
+		 */
+		bulk: {
+			all: async (ids: UniqueId[], transaction?: Transaction) => await this._deleteAll(ids.map(id => this.doc.unique(id)), transaction),
+			items: async (items: PreDB<Type>[], transaction?: Transaction) => await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction),
+		},
 		query: this._deleteQuery
 	};
 
