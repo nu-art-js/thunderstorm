@@ -12,13 +12,13 @@ import {
 	Module,
 	TS_Object
 } from '@nu-art/ts-common';
-import {ApiDef_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared';
 import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {OnFirestoreBackupSchedulerAct, OnModuleCleanup} from './FirestoreBackupScheduler';
 import {FilterKeys, FirestoreQuery} from '@nu-art/firebase';
-import {BackupDoc} from '../../../shared/backup-types';
+import {BackupDoc} from '../../../shared/backup/backup-types';
 import {addRoutes} from '../ApiModule';
 import {createQueryServerApi} from '../../core/typed-api';
+import {ApiDef_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared/backup/apis';
 
 export type FirestoreBackupDetails<T extends TS_Object> = {
 	moduleKey: string,
@@ -136,7 +136,7 @@ class ModuleBE_Backup_Class
 				await (await bucket.getFile(backupPath)).write(toBackupData);
 
 				this.logInfoBold('Upserting Backup for ' + backupItem.moduleKey);
-				await this.upsert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath, backupId: backupId});
+				await this.insert({timestamp: nowMs, moduleKey: backupItem.moduleKey, backupPath, backupId: backupId});
 
 				this.logInfoBold('Upserting BackupStatus for ' + backupItem.moduleKey); // happened 30 seconds later
 				const keepInterval = backupItem.keepInterval;
@@ -170,9 +170,9 @@ class ModuleBE_Backup_Class
 		return await this.collection.query(ourQuery);
 	};
 
-	upsert = async (instance: BackupDoc): Promise<BackupDoc> => {
+	insert = async (instance: BackupDoc): Promise<BackupDoc> => {
 		this.logWarning(instance);
-		return await this.collection.upsert(instance);
+		return await this.collection.insert(instance);
 	};
 
 	deleteItem = async (instance: BackupDoc): Promise<BackupDoc | undefined> => {

@@ -73,6 +73,9 @@ class ModuleFE_Thunderstorm_Class
 		const body = document.getElementsByTagName('body')[0];
 		body?.appendChild(printingIFrame);
 		this._populatePrintFrame(printingIFrame, div, bodyAttributes);
+		printingIFrame.contentWindow?.addEventListener('afterprint', () => {
+			body.removeChild(printingIFrame);
+		});
 	}
 
 	private _populatePrintFrame(printingIFrame: HTMLIFrameElement, div: HTMLDivElement, bodyAttributes?: TypedKeyValue<string, string>[]) {
