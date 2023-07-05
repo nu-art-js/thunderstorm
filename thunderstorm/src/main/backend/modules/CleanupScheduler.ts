@@ -22,7 +22,7 @@
 import {currentTimeMillis, Dispatcher} from '@nu-art/ts-common';
 import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend/ModuleBE_Firebase';
-import {ActDetailsDoc} from '../../shared/backup-types';
+import {ActDetailsDoc} from '../../shared/backup/backup-types';
 
 
 export type CleanupDetails = {
