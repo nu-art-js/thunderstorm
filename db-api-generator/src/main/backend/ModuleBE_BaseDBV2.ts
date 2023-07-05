@@ -20,7 +20,7 @@
  */
 
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
-import {__stringify, ApiException, DB_Object, DBDef, filterInstances, Module} from '@nu-art/ts-common';
+import {ApiException, DB_Object, DBDef, filterInstances, Module} from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {_EmptyQuery, Response_DBSync} from '../shared';
@@ -140,7 +140,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	protected async prepareItemForDB(dbInstance: Type, transaction?: Transaction) {
 	}
 
-	preUpsertProcessing(doNotCompileWithThisFunction: {}) {
+	preUpsertProcessing(doNotCompileWithThisFunction: number) {
 		//todo Deprecated, turn all into prepareItemForDB
 	}
 
