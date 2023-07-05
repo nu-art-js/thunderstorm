@@ -21,8 +21,7 @@ import {
 	apiWithBody,
 	apiWithQuery,
 	getQueryParameter,
-	ModuleFE_BrowserHistory,
-	ModuleFE_Toaster,
+	ModuleFE_BrowserHistory, ModuleFE_Toaster,
 	StorageKey,
 	ThunderDispatcher,
 	ModuleFE_XHR
@@ -40,6 +39,7 @@ import {
 } from '../../shared/api';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
+import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 
 
 export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
@@ -73,7 +73,7 @@ export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatus
 
 export class ModuleFE_Account_Class
 	extends Module<Config>
-	implements ApiDefCaller<ApiStruct_UserAccountFE> {
+	implements ApiDefCaller<ApiStruct_UserAccountFE>, OnAuthRequiredListener {
 
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	private accounts: UI_Account[] = [];
@@ -92,6 +92,12 @@ export class ModuleFE_Account_Class
 			validateSession: () => validateSession({}),
 			query: apiWithQuery(ApiDef_UserAccountFE.v1.query, this.onAccountsQueryCompleted),
 		};
+	}
+
+	__onAuthRequiredListener(request: BaseHttpRequest<any>) {
+		StorageKey_SessionId.delete();
+		StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
+		return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 	}
 
 	getAccounts() {
