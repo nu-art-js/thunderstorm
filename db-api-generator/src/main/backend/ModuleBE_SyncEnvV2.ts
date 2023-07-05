@@ -10,7 +10,7 @@ import {ModuleBE_BackupV2} from '@nu-art/thunderstorm/backend/modules/backup/Mod
 type Config = {
     urlMap: TypedMap<string>
     fetchBackupDocsSecretsMap: TypedMap<string>,
-    operationLimit: number
+    maxBatch: number
 }
 
 class ModuleBE_SyncEnvV2_Class
@@ -18,7 +18,7 @@ class ModuleBE_SyncEnvV2_Class
 
     constructor() {
         super();
-        this.setDefaultConfig({operationLimit: 1000});
+        this.setDefaultConfig({maxBatch: 500});
         addRoutes([createBodyServerApi(ApiDef_SyncEnvV2.vv1.fetchFromEnv, this.fetchFromEnv)]);
         addRoutes([createQueryServerApi(ApiDef_SyncEnvV2.vv1.createBackup, this.createBackup)]);
     }
@@ -66,21 +66,12 @@ class ModuleBE_SyncEnvV2_Class
         const backupDoc = await bucket.getFile(backupInfo.filePath);
 
         const firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
-        const bulkWriter = firestore.bulkWriter();
         const hasOnlyModulesArray = body.onlyModules && !!body.onlyModules.length;
-        bulkWriter.onWriteError((err) => {
-            this.logErrorBold(err);
-            return false;
-        });
 
-        let batchSize = 0;
-        let totalReadCount = 0;
-        let readCount = 0;
+
+        const resultsArray: { ref: FirebaseFirestore.DocumentReference, data: any }[] = [];
 
         const dataCallback = (row: any, index: number) => {
-            if (index < totalReadCount || index >= totalReadCount + batchSize)
-                return;
-
             _keys(row).map(key => {
                 row[(key as string).trim()] = (row[key] as string).trim();
             });
@@ -93,22 +84,21 @@ class ModuleBE_SyncEnvV2_Class
 
             const documentRef = firestore.doc(`${row.collectionName}/${row._id}`);
             const data = JSON.parse(row.document);
-            bulkWriter.set(documentRef, data);
-            readCount++;
+
+            resultsArray.push({ref: documentRef, data: data});
         };
+        await CSVModule.forEachCsvRowFromStreamSync(backupDoc.file.createReadStream(), dataCallback);
 
-        let iteration = 0;
-        do {
-            batchSize = Math.min(5 * 10 ** iteration, 1000);
-            iteration++;
-            readCount = 0;
-            await CSVModule.forEachCsvRowFromStreamSync(backupDoc.file.createReadStream(), dataCallback);
-            await bulkWriter.flush();
-            this.logError(readCount);
-            totalReadCount += batchSize;
-        } while (readCount % batchSize === 0);
 
-        await bulkWriter.close();
+        for (let i = 0; i < resultsArray.length; i += this.config.maxBatch) {
+            const writeBatch = firestore.batch();
+            const batch = resultsArray.slice(i, i + this.config.maxBatch);
+
+            batch.map(item => writeBatch.set(item.ref, item.data));
+
+            await writeBatch.commit()
+        }
+
     };
 }
 
