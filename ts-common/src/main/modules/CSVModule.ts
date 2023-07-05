@@ -25,8 +25,8 @@ import {createReadStream, promises as fs} from 'fs';
 import {StringMap, TS_Object} from '../utils/types';
 import {Module} from '../core/module';
 import {Readable} from 'stream';
-import csvParser = require('csv-parser');
 import {Queue} from '../utils/queue';
+import csvParser = require('csv-parser');
 
 
 type Config = {
@@ -116,7 +116,7 @@ class CSVModule_Class
 		});
 	}
 
-	async forEachCsvRowFromStream<T extends Partial<StringMap>>(stream: Readable, callback: (instance: T) => Promise<void>, readOptions: ReadOptions = {}, queueCount: number = 5): Promise<void> {
+	async forEachCsvRowFromStreamAsync<T extends Partial<StringMap>>(stream: Readable, callback: (instance: T) => Promise<void>, readOptions: ReadOptions = {}, queueCount: number = 5): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			const instancesQueue = new Queue('instancesQueue');
 			instancesQueue.setParallelCount(queueCount);
@@ -125,7 +125,21 @@ class CSVModule_Class
 				.pipe(csvParser(this.createReadParserOptions(readOptions)))
 				.on('data', (instance) => instancesQueue.addItem(() => callback(instance)))
 				.on('error', (err) => reject(err))
-				.on('end', () => resolve());
+				.on('end', () => instancesQueue.setOnQueueEmpty(() => resolve()));
+		});
+	}
+
+	async forEachCsvRowFromStreamSync<T extends Partial<StringMap>>(stream: Readable, callback: (instance: T, index: number) => void, readOptions: ReadOptions = {}): Promise<void> {
+		return new Promise<void>((resolve, reject) => {
+			let rowIndex = 0;
+			stream
+				.pipe(csvParser(this.createReadParserOptions(readOptions)))
+				.on('data', (instance) => callback(instance, rowIndex++))
+				.on('error', (err) => reject(err))
+				.on('end', () => {
+					this.logInfo('read ended');
+					resolve();
+				});
 		});
 	}
 
