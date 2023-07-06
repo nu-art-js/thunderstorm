@@ -37,6 +37,7 @@ import {
 	PreDB,
 	StaticLogger,
 	tsValidateResult,
+	TypedMap,
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
@@ -51,6 +52,7 @@ import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
 import {BulkItem, BulkOperation, DocWrapperV2, UpdateObject} from './DocWrapperV2';
+import {_values} from '@nu-art/ts-common/utils/object-tools';
 import UpdateData = firestore.UpdateData;
 
 
@@ -197,6 +199,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		preDBItems.forEach(preDBItem => preDBItem._id ??= generateId());
 		const docs = this.doc.allItems(preDBItems);
 		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
+		this.assertNoDuplicatedIds(dbItems);
 
 		if (transaction)
 			docs.forEach((doc, i) => transaction.create(doc.ref, dbItems[i]));
@@ -239,6 +242,8 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	protected _setExistingAll = async (toSet: [Type, Type][], transaction?: Transaction): Promise<Type[]> => {
 		const docs = this.doc.all(toSet.map(_item => _item[0]._id));
 		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForSet(...toSet[i], transaction)));
+		this.assertNoDuplicatedIds(dbItems);
+
 		if (transaction)
 			// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
 			docs.map((doc, i) => transaction.set(doc.ref, dbItems[i]));
@@ -264,6 +269,18 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			return this._setAll(items);
 		},
 	};
+
+	private assertNoDuplicatedIds(items: Type[], originFunctionName: string = 'set.all') {
+		const idCountMap: TypedMap<number> = items.reduce<TypedMap<number>>((countMap, item) => {
+			// Count the number of appearances of each _id
+			countMap[item._id] = !exists(countMap[item._id]) ? 0 : 1 + countMap[item._id];
+			return countMap;
+		}, {});
+
+		// Throw exception if an _id appears more than once
+		if (_values(idCountMap).some(count => count > 1))
+			throw new BadImplementationException(`${originFunctionName} received the same _id twice.`);
+	}
 
 	// ############################## Update ##############################
 	protected _updateBulk = async (updateData: UpdateObject<Type>[]): Promise<Type[]> => {

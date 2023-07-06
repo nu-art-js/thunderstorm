@@ -50,7 +50,7 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 		this.dbModule = dbModule;
 		const apiDef = DBApiDefGeneratorIDBV2<Type, Ks>(dbModule.dbDef);
 		addRoutes([
-			createBodyServerApi(apiDef.v1.query, (query) => this.dbModule.query.custom(query)),
+			createBodyServerApi(apiDef.v1.query, this.dbModule.query.custom),
 			createBodyServerApi(apiDef.v1.sync, this.dbModule.querySync),
 			createQueryServerApi(apiDef.v1.queryUnique, async (queryObject: DB_BaseObject) => {
 				const toReturnItem = await this.dbModule.query.unique(queryObject._id);
@@ -58,8 +58,8 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 					throw new ApiException(404, `Could not find ${this.dbModule.collection.dbDef.entityName} with _id: ${queryObject._id}`);
 				return toReturnItem;
 			}),
-			createBodyServerApi(apiDef.v1.upsert, (body) => this.dbModule.set.item(body)),
-			createBodyServerApi(apiDef.v1.upsertAll, (body) => this.dbModule.set.all(body)),
+			createBodyServerApi(apiDef.v1.upsert, this.dbModule.set.item),
+			createBodyServerApi(apiDef.v1.upsertAll, this.dbModule.set.all),
 			createQueryServerApi(apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
 			createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
 			createQueryServerApi(apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
