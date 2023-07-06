@@ -273,7 +273,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private assertNoDuplicatedIds(items: Type[], originFunctionName: string = 'set.all') {
 		const idCountMap: TypedMap<number> = items.reduce<TypedMap<number>>((countMap, item) => {
 			// Count the number of appearances of each _id
-			countMap[item._id] = !exists(countMap[item._id]) ? 0 : 1 + countMap[item._id];
+			countMap[item._id] = !exists(countMap[item._id]) ? 1 : 1 + countMap[item._id];
 			return countMap;
 		}, {});
 
