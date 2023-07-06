@@ -20,15 +20,15 @@ import {FirestoreCollectionHooks, FirestoreCollectionV2,} from './FirestoreColle
 import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {DB_Object, DBDef} from '@nu-art/ts-common';
-import {DocumentReference, getFirestore, Transaction} from 'firebase-admin/firestore';
+import {DB_Object, DBDef, Default_UniqueKey} from '@nu-art/ts-common';
+import {DocumentReference, getFirestore, Transaction,} from 'firebase-admin/firestore';
 
 
 export class FirestoreWrapperBEV2
 	extends FirebaseBaseWrapper {
 
 	readonly firestore: FirestoreType;
-	private readonly collections: { [collectionName: string]: FirestoreCollectionV2<any> } = {};
+	private readonly collections: { [collectionName: string]: FirestoreCollectionV2<any, any> } = {};
 
 	constructor(firebaseSession: FirebaseSession<any>) {
 		super(firebaseSession);
@@ -68,12 +68,12 @@ export class FirestoreWrapperBEV2
 		});
 	}
 
-	public getCollection<Type extends DB_Object>(dbDef: DBDef<Type>, hooks?: FirestoreCollectionHooks<Type>): FirestoreCollectionV2<Type> {
+	public getCollection<Type extends DB_Object, Ks extends keyof Type = Default_UniqueKey>(dbDef: DBDef<Type, Ks>, hooks?: FirestoreCollectionHooks<Type>): FirestoreCollectionV2<Type, Ks> {
 		const collection = this.collections[dbDef.dbName];
 		if (collection)
 			return collection;
 
-		return this.collections[dbDef.dbName] = new FirestoreCollectionV2<Type>(this, dbDef, hooks);
+		return this.collections[dbDef.dbName] = new FirestoreCollectionV2<Type, Ks>(this, dbDef, hooks);
 	}
 
 	public listen<Type extends DB_Object>(collection: FirestoreCollectionV2<Type>, doc: string) {

@@ -10,6 +10,8 @@ import {
 } from './query/query';
 import {TestSuite_FirestoreV2_Set} from './set/set';
 import {TestSuite_FirestoreV2_Validator} from './validator/validator';
+import {TestSuite_FirestoreV2_MultiKeys} from './multi-keys/multi-keys';
+
 
 describe('Firestore v2 - All Tests', () => {
 	testSuiteTester(TestSuite_FirestoreV2_Create);
@@ -23,6 +25,7 @@ describe('Firestore v2 - All Tests', () => {
 	// testSuiteTester(TestSuite_FirestoreV2_Upsert);
 	testSuiteTester(TestSuite_FirestoreV2_Set);
 	testSuiteTester(TestSuite_FirestoreV2_Validator);
+	testSuiteTester(TestSuite_FirestoreV2_MultiKeys);
 	// testSuiteTester(TestSuite_FirestoreV2_Transaction);
 	// testSuiteTester(TestSuite_FirestoreV2_Performance_GetAll);
 });

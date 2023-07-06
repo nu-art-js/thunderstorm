@@ -26,6 +26,7 @@ import {
 	DB_Object,
 	DB_Object_validator,
 	DBDef,
+	Default_UniqueKey,
 	DefaultDBVersion,
 	exists,
 	filterInOut,
@@ -43,11 +44,7 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -88,7 +85,7 @@ export class FirestoreBulkException
 /**
  * FirestoreCollection is a class for handling Firestore collections.
  */
-export class FirestoreCollectionV2<Type extends DB_Object> {
+export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof Type = Default_UniqueKey> {
 	readonly name: string;
 	readonly wrapper: FirestoreWrapperBEV2;
 	readonly collection: FirestoreType_Collection;
@@ -96,7 +93,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	private readonly validator: ValidatorTypeResolver<Type>;
 	readonly hooks?: FirestoreCollectionHooks<Type>;
 
-	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type>, hooks?: FirestoreCollectionHooks<Type>) {
+	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type, Ks>, hooks?: FirestoreCollectionHooks<Type>) {
 		this.name = _dbDef.dbName;
 		this.wrapper = wrapper;
 		if (!/[a-z-]{3,}/.test(_dbDef.dbName))
@@ -108,7 +105,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		this.hooks = hooks;
 	}
 
-	getValidator = (dbDef: DBDef<Type>): ValidatorTypeResolver<Type> => {
+	getValidator = (dbDef: DBDef<Type, Ks>): ValidatorTypeResolver<Type> => {
 		return typeof dbDef.validator === 'function' ?
 			[((instance: Type) => {
 				const dbObjectOnly = KeysOfDB_Object.reduce<DB_Object>((objectToRet, key) => {
@@ -136,11 +133,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			return this.doc._(doc);
 		},
 		item: (item: PreDB<Type>) => {
-			item = this.composeItemId(item);
-
-			if (!item._id)
-				throw new BadImplementationException('Cannot create DocWrapper without _id!');
-
+			item._id = composeItemId(item, this.dbDef.uniqueKeys || Const_UniqueKeys);
 			return this.doc.unique(item._id!);
 		},
 		all: (_ids: UniqueId[]) => _ids.map(this.doc.unique),
@@ -404,24 +397,25 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
 		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
 	}
-
-	protected composeItemId = (item: PreDB<Type>) => {
-		let _id = item._id ?? generateId();
-		// If the collection has unique keys, assert they exist, and use them to generate the _id.
-		if (this.dbDef.uniqueKeys && !compare(this.dbDef.uniqueKeys, Const_UniqueKeys)) {
-			let _unique = '';
-			this.dbDef.uniqueKeys.forEach((_key: keyof PreDB<Type>) => {
-				if (!exists(item[_key]))
-					throw new MUSTNeverHappenException(`Unique key missing from db item!\nkey: ${_key as string}\nitem:${__stringify(item)}`);
-				return _unique += item[_key];
-			});
-			_id = md5(_unique);
-
-			if (_id !== item._id)
-				throw new MUSTNeverHappenException(`When checking the existing _id, it did not match the _id composed from the unique keys!`);
-		}
-
-		item._id = _id;
-		return item;
-	};
 }
+
+export const composeItemId = <T extends DB_Object, K extends (keyof PreDB<T>)[]>(item: PreDB<T>, keys: K) => {
+	// If the collection has unique keys, assert they exist, and use them to generate the _id.
+	if (compare(keys, Const_UniqueKeys as K))
+		return item._id ?? generateId();
+
+	let _unique = '';
+	keys.forEach((_key) => {
+		if (!exists(item[_key]))
+			throw new MUSTNeverHappenException(`Unique key missing from db item!\nkey: ${_key as string}\nitem:${__stringify(item)}`);
+
+		return _unique += String(item[_key]);
+	});
+
+	const _id = md5(_unique);
+
+	if (exists(item._id) && _id !== item._id)
+		throw new MUSTNeverHappenException(`When checking the existing _id, it did not match the _id composed from the unique keys!`);
+
+	return _id;
+};
