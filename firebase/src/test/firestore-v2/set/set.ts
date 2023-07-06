@@ -135,10 +135,10 @@ export const TestCases_FB_Set: Test['testcases'] = [
 		input: {
 			toCreate: [],
 			setAction: async (collection, inserted) => {
-				const toCreate = deepClone(duplicateObjectToCreate);
-				const toCreate2 = deepClone(duplicateObjectToCreate);
+				const toSet = deepClone(duplicateObjectToCreate);
+				const toSet2 = deepClone(duplicateObjectToCreate);
 
-				await expect(collection.set.all([toCreate, toCreate2])).to.be.rejectedWith;
+				await expect(collection.set.all([toSet, toSet2])).to.be.rejectedWith;
 			}
 		}
 	}
