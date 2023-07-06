@@ -21,6 +21,7 @@ import {
 	ApiException,
 	BadImplementationException,
 	compare,
+	Const_UniqueKeys,
 	CustomException,
 	DB_Object,
 	DB_Object_validator,
@@ -32,7 +33,8 @@ import {
 	flatArray,
 	generateHex,
 	InvalidResult,
-	KeysOfDB_Object, md5,
+	KeysOfDB_Object,
+	md5,
 	MUSTNeverHappenException,
 	PreDB,
 	StaticLogger,
@@ -66,6 +68,7 @@ export const dbIdLength = 32;
 
 export function generateId() {
 	return generateHex(dbIdLength);
+	// return generateHex(dbIdLength);
 }
 
 /**
@@ -126,11 +129,16 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			return new DocWrapperV2(this, ref, data);
 		},
 		unique: (_id: UniqueId) => {
+			if (!_id)
+				throw new MUSTNeverHappenException('Did not receive an _id at doc.unique!');
+
 			const doc = this.wrapper.firestore.doc(`${this.name}/${_id}`) as FirestoreType_DocumentReference<Type>;
 			return this.doc._(doc);
 		},
 		item: (item: PreDB<Type>) => {
-			if (!exists(item._id))
+			item = this.composeItemId(item);
+
+			if (!item._id)
 				throw new BadImplementationException('Cannot create DocWrapper without _id!');
 
 			return this.doc.unique(item._id!);
@@ -188,7 +196,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 	// ############################## Create ##############################
 	protected _createItem = async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
-		preDBItem._id ??= generateId();
+		// preDBItem._id ??= generateId();
 		return await this.doc.item(preDBItem).create(preDBItem, transaction);
 	};
 
@@ -398,21 +406,22 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 	}
 
 	protected composeItemId = (item: PreDB<Type>) => {
-		let _id = item._id;
+		let _id = item._id ?? generateId();
+		// If the collection has unique keys, assert they exist, and use them to generate the _id.
 		if (this.dbDef.uniqueKeys && !compare(this.dbDef.uniqueKeys, Const_UniqueKeys)) {
 			let _unique = '';
 			this.dbDef.uniqueKeys.forEach((_key: keyof PreDB<Type>) => {
 				if (!exists(item[_key]))
-					throw new MUSTNeverHappenException(`Unique key missing from db item!\nkey: ${_key as string}\nitem:${__stringify(item)}`)
+					throw new MUSTNeverHappenException(`Unique key missing from db item!\nkey: ${_key as string}\nitem:${__stringify(item)}`);
 				return _unique += item[_key];
-			})
-			_id = md5(_unique)
+			});
+			_id = md5(_unique);
+
+			if (_id !== item._id)
+				throw new MUSTNeverHappenException(`When checking the existing _id, it did not match the _id composed from the unique keys!`);
 		}
 
-		if (_id !== item._id)
-			throw new MUSTNeverHappenException('_id of item does not match the collection\'s unique keys!')
-
-		item._id = _id
-		return item
-	}
+		item._id = _id;
+		return item;
+	};
 }
