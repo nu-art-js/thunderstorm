@@ -1,7 +1,8 @@
 import {ApiDefCaller} from '@nu-art/thunderstorm';
-import {apiWithBody} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery} from '@nu-art/thunderstorm/frontend';
 import {Module} from '@nu-art/ts-common';
 import {ApiDef_SyncEnv, ApiStruct_SyncEnv} from '../shared';
+
 
 class ModuleFE_SyncEnv_Class
 	extends Module {
@@ -12,6 +13,7 @@ class ModuleFE_SyncEnv_Class
 		super();
 		this.vv1 = {
 			fetchFromEnv: apiWithBody(ApiDef_SyncEnv.vv1.fetchFromEnv),
+			createBackup: apiWithQuery(ApiDef_SyncEnv.vv1.createBackup),
 		};
 	}
 }

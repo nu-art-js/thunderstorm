@@ -20,6 +20,7 @@ import {ModuleFE_BaseDB} from '../../modules/ModuleFE_BaseDB';
 import {filterKeys} from '@nu-art/ts-common';
 import {ModuleFE_SyncEnvV2} from '../../modules/ModuleFE_SyncEnvV2';
 
+
 type Env = 'prod' | 'staging' | 'dev' | 'local';
 
 type State = {
@@ -28,6 +29,7 @@ type State = {
 	backupId?: string;
 	onlyModules: Set<string>;
 	excludedModules: Set<string>;
+	backingUpInProgress?: boolean
 }
 
 export class ATS_SyncEnvironmentV2
@@ -55,6 +57,7 @@ export class ATS_SyncEnvironmentV2
 	private syncEnv = async () => {
 		if (!this.canSync())
 			return;
+
 		await genericNotificationAction(async () => {
 			await ModuleFE_SyncEnvV2.vv1.fetchFromEnv(filterKeys({
 				env: this.state.selectedEnv!,
@@ -63,6 +66,16 @@ export class ATS_SyncEnvironmentV2
 				excludedModules: Array.from(this.state.excludedModules),
 			}, 'onlyModules')).executeSync();
 		}, 'Syncing Env');
+	};
+
+	private createNewBackup = async () => {
+		return genericNotificationAction(async () => {
+			this.setState({backingUpInProgress: true}, async () => {
+				const toRet = await ModuleFE_SyncEnvV2.vv1.createBackup({}).executeSync();
+				this.setState({backingUpInProgress: false});
+				return toRet;
+			});
+		}, 'Create Backup');
 	};
 
 	private canSync = () => {
@@ -120,7 +133,7 @@ export class ATS_SyncEnvironmentV2
 		const envAdapter = SimpleListAdapter(this.state.envList, item => <div
 			className={'node-data'}>{item.item}</div>);
 		return <LL_V_L className={'sync-env-page'}>
-			{TS_AppTools.renderPageHeader('Sync Environment V2')}
+			<LL_H_C>{TS_AppTools.renderPageHeader('Sync Environment V2')}<TS_BusyButton onClick={this.createNewBackup}>Trigger Backup</TS_BusyButton></LL_H_C>
 			<LL_H_C className={'sync-env-page__main'}>
 				<TS_PropRenderer.Vertical label={'Environment'}>
 					<TS_DropDown
