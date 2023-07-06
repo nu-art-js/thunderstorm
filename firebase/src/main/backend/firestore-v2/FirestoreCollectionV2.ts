@@ -32,7 +32,7 @@ import {
 	flatArray,
 	generateHex,
 	InvalidResult,
-	KeysOfDB_Object,
+	KeysOfDB_Object, md5,
 	MUSTNeverHappenException,
 	PreDB,
 	StaticLogger,
@@ -395,5 +395,24 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		// console.error(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
 		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
+	}
+
+	protected composeItemId = (item: PreDB<Type>) => {
+		let _id = item._id;
+		if (this.dbDef.uniqueKeys && !compare(this.dbDef.uniqueKeys, Const_UniqueKeys)) {
+			let _unique = '';
+			this.dbDef.uniqueKeys.forEach((_key: keyof PreDB<Type>) => {
+				if (!exists(item[_key]))
+					throw new MUSTNeverHappenException(`Unique key missing from db item!\nkey: ${_key as string}\nitem:${__stringify(item)}`)
+				return _unique += item[_key];
+			})
+			_id = md5(_unique)
+		}
+
+		if (_id !== item._id)
+			throw new MUSTNeverHappenException('_id of item does not match the collection\'s unique keys!')
+
+		item._id = _id
+		return item
 	}
 }
