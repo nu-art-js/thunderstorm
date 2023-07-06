@@ -1,19 +1,19 @@
 import {
-    __stringify,
-    _logger_logException,
-    ApiException,
-    currentTimeMillis,
-    Day,
-    DBDef,
-    Dispatcher,
-    flatArray,
-    Format_YYYYMMDD_HHmmss,
-    formatTimestamp,
-    generateHex,
-    Module,
-    PreDB,
-    TS_Object,
-    UniqueId
+	__stringify,
+	_logger_logException,
+	ApiException,
+	currentTimeMillis,
+	Day,
+	DBDef,
+	Dispatcher, filterInstances,
+	flatArray,
+	Format_YYYYMMDD_HHmmss,
+	formatTimestamp,
+	generateHex,
+	Module,
+	PreDB,
+	TS_Object,
+	UniqueId
 } from '@nu-art/ts-common';
 import {createQueryServerApi} from '../../core/typed-api';
 import {END_OF_STREAM, ModuleBE_Firebase} from '@nu-art/firebase/backend';
@@ -30,29 +30,29 @@ import {ApiDef_BackupV2, Request_BackupId, Response_BackupDocsV2} from '../../..
 
 
 export type FirestoreBackupDetailsV2<T extends TS_Object> = {
-    moduleKey: string,
-    queryFunction: (query: FirestoreQuery<T>, transaction?: Transaction) => Promise<T[]>,
-    query: FirestoreQuery<T>
+	moduleKey: string,
+	queryFunction: (query: FirestoreQuery<T>, transaction?: Transaction) => Promise<T[]>,
+	query: FirestoreQuery<T>
 }
 
 const dispatch_onFirestoreBackupSchedulerActV2 = new Dispatcher<OnFirestoreBackupSchedulerActV2, '__onFirestoreBackupSchedulerActV2'>('__onFirestoreBackupSchedulerActV2');
 const dispatch_onModuleCleanupV2 = new Dispatcher<OnModuleCleanupV2, '__onCleanupInvokedV2'>('__onCleanupInvokedV2');
 
 type Config = {
-    keepInterval: number,
-    minTimeThreshold: number,
-    excludedCollectionNames?: string[],
+	keepInterval: number,
+	minTimeThreshold: number,
+	excludedCollectionNames?: string[],
 }
 
 const CSVConfig = {
-    fieldSeparator: ',',
-    quoteStrings: '',
-    decimalSeparator: '.',
-    showLabels: true,
-    showTitle: false,
-    useTextFile: false,
-    useBom: true,
-    useKeysAsHeaders: true,
+	fieldSeparator: ',',
+	quoteStrings: '',
+	decimalSeparator: '.',
+	showLabels: true,
+	showTitle: false,
+	useTextFile: false,
+	useBom: true,
+	useKeysAsHeaders: true,
 };
 
 /**
@@ -61,207 +61,212 @@ const CSVConfig = {
  * when the firebase> shows up write the name of the function you want to run and call it "functionName()"
  * **/
 class ModuleBE_BackupV2_Class
-    extends Module<Config> {
-    public collection!: FirestoreCollectionV2<DB_BackupDoc>;
+	extends Module<Config> {
+	public collection!: FirestoreCollectionV2<DB_BackupDoc>;
 
-    constructor() {
-        super();
-        this.setDefaultConfig({minTimeThreshold: Day, keepInterval: 7 * Day});
-        addRoutes([
-            createQueryServerApi(ApiDef_BackupV2.vv1.initiateBackup, () => this.initiateBackup()),
-            createQueryServerApi(ApiDef_BackupV2.vv1.fetchBackupDocs, this.fetchBackupDocs)]);
-    }
+	constructor() {
+		super();
+		this.setDefaultConfig({minTimeThreshold: Day, keepInterval: 7 * Day});
+		addRoutes([
+			createQueryServerApi(ApiDef_BackupV2.vv1.initiateBackup, () => this.initiateBackup()),
+			createQueryServerApi(ApiDef_BackupV2.vv1.fetchBackupDocs, this.fetchBackupDocs)]);
+	}
 
-    protected init(): void {
-        this.collection = this.getBackupStatusCollection();
-    }
+	protected init(): void {
+		this.collection = this.getBackupStatusCollection();
+	}
 
-    /**
-     * @param body - needs to contain backupId with the key to fetch.
-     */
-    fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocsV2> => {
-        const backupDoc = await this.queryUnique(body.backupId);
+	/**
+	 * @param body - needs to contain backupId with the key to fetch.
+	 */
+	fetchBackupDocs = async (body: Request_BackupId): Promise<Response_BackupDocsV2> => {
+		const backupDoc = await this.queryUnique(body.backupId);
 
-        if (!backupDoc)
-            throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
+		if (!backupDoc)
+			throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
 
-        return {
-            backupInfo: {
-                _id: backupDoc._id,
-                filePath: backupDoc.backupPath
-            }
-        };
-    };
+		return {
+			backupInfo: {
+				_id: backupDoc._id,
+				filePath: backupDoc.backupPath
+			}
+		};
+	};
 
-    public getBackupStatusCollection = (): FirestoreCollectionV2<DB_BackupDoc> => {
-        return ModuleBE_Firebase.createAdminSession().getFirestoreV2()
-            .getCollection(DBDef_BackupDocs as DBDef<DB_BackupDoc>);
-    };
+	public getBackupStatusCollection = (): FirestoreCollectionV2<DB_BackupDoc> => {
+		return ModuleBE_Firebase.createAdminSession().getFirestoreV2()
+			.getCollection(DBDef_BackupDocs as DBDef<DB_BackupDoc>);
+	};
 
-    /**
-     * Get metadata objects per each collection module that needs to be backed up.
-     */
-    public getBackupDetails = (): FirestoreBackupDetailsV2<any>[] => {
-        return flatArray(dispatch_onFirestoreBackupSchedulerActV2.dispatchModule())
-            .reduce<FirestoreBackupDetailsV2<any>[]>((resultBackupArray, currentBackup) => {
+	/**
+	 * Get metadata objects per each collection module that needs to be backed up.
+	 */
+	public getBackupDetails = (): FirestoreBackupDetailsV2<any>[] => {
+		return flatArray(dispatch_onFirestoreBackupSchedulerActV2.dispatchModule())
+			.reduce<FirestoreBackupDetailsV2<any>[]>((resultBackupArray, currentBackup) => {
 
-                if (!currentBackup)
-                    return resultBackupArray;
+				if (!currentBackup)
+					return resultBackupArray;
 
-                if (this.config.excludedCollectionNames?.includes(currentBackup.moduleKey)) {
-                    this.logWarningBold(`Skipping module ${currentBackup.moduleKey} since it's in the exclusion list.`);
-                    return resultBackupArray;
-                }
+				if (this.config.excludedCollectionNames?.includes(currentBackup.moduleKey)) {
+					this.logWarningBold(`Skipping module ${currentBackup.moduleKey} since it's in the exclusion list.`);
+					return resultBackupArray;
+				}
 
-                resultBackupArray.push(currentBackup);
+				resultBackupArray.push(currentBackup);
 
-                return resultBackupArray;
-            }, []);
-    };
+				return resultBackupArray;
+			}, []);
+	};
 
-    private formatToCsv = (docArray: TS_Object[], moduleKey: string) => {
-        return docArray.map(doc => ({collectionName: moduleKey, _id: doc._id, document: __stringify(doc)}));
-    };
+	private formatToCsv = (docArray: TS_Object[], moduleKey: string) => {
+		return docArray.map(doc => ({collectionName: moduleKey, _id: doc._id, document: __stringify(doc)}));
+	};
 
-    initiateBackup = async (force = false) => {
-        const nowMs = currentTimeMillis();
-        const backupId = generateHex(32);
-        const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
-        const backupPath = `backup/firestore/${timeFormat}/firestore-backup.csv`;
+	initiateBackup = async (force = false) => {
+		const nowMs = currentTimeMillis();
+		const backupId = generateHex(32);
+		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
+		const backupPath = `backup/firestore/${timeFormat}/firestore-backup.csv`;
 
-        const query: FirestoreQuery<DB_BackupDoc> = {
-            where: {},
-            orderBy: [{key: 'timestamp', order: 'asc'}],
-            limit: 1
-        };
+		const query: FirestoreQuery<DB_BackupDoc> = {
+			where: {},
+			orderBy: [{key: 'timestamp', order: 'asc'}],
+			limit: 1
+		};
 
-        const docs = await this.query(query);
-        const latestDoc = docs[0];
+		const docs = await this.query(query);
+		const latestDoc = docs[0];
 
-        if (!force && latestDoc && latestDoc.timestamp + this.config.minTimeThreshold > nowMs)
-            return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
+		if (!force && latestDoc && latestDoc.timestamp + this.config.minTimeThreshold > nowMs)
+			return; // If the oldest doc is still in the keeping timeframe, don't delete any docs.
 
-        if (this.config.excludedCollectionNames)
-            this.logInfo(`Found excluded modules list: ${this.config.excludedCollectionNames}`);
+		if (this.config.excludedCollectionNames)
+			this.logInfo(`Found excluded modules list: ${this.config.excludedCollectionNames}`);
 
-        try {
-            this.logInfo('Cleaning modules...');
-            await dispatch_onModuleCleanupV2.dispatchModuleAsync();
-            this.logInfo('Cleaned modules!');
-        } catch (e: any) {
-            this.logWarning(`modules cleanup has failed with error`, e);
-            const errorMessage = `modules cleanup has failed with error\nError: ${_logger_logException(e)}`;
-            throw new ApiException(500, errorMessage, e);
-        }
+		try {
+			this.logInfo('Cleaning modules...');
+			await dispatch_onModuleCleanupV2.dispatchModuleAsync();
+			this.logInfo('Cleaned modules!');
+		} catch (e: any) {
+			this.logWarning(`modules cleanup has failed with error`, e);
+			const errorMessage = `modules cleanup has failed with error\nError: ${_logger_logException(e)}`;
+			throw new ApiException(500, errorMessage, e);
+		}
 
-        const backups: FirestoreBackupDetailsV2<any>[] = this.getBackupDetails();
-        // this.logInfoBold('-------------------------------------------------------------------------------------------------------');
-        // this.logInfoBold('-------------------------------------- Received Backup Details: ---------------------------------------');
-        // this.logInfoBold('-------------------------------------------------------------------------------------------------------');
-        // this.logInfoBold(typeof backups);
-        // this.logInfoBold(Array.isArray(backups));
-        // this.logInfoBold(backups.length);
-        // this.logInfoBold('-------------------------------------------------------------------------------------------------------');
+		const backups: FirestoreBackupDetailsV2<any>[] = filterInstances(this.getBackupDetails());
+		// this.logInfoBold('-------------------------------------------------------------------------------------------------------');
+		// this.logInfoBold('-------------------------------------- Received Backup Details: ---------------------------------------');
+		// this.logInfoBold('-------------------------------------------------------------------------------------------------------');
+		// this.logInfoBold(typeof backups);
+		// this.logInfoBold(Array.isArray(backups));
+		// this.logInfoBold(backups.length);
+		// this.logInfoBold('-------------------------------------------------------------------------------------------------------');
 
-        let backupsCounter = 0;
+		let backupsCounter = 0;
 
-        const storage = ModuleBE_Firebase.createAdminSession().getStorage();
-        const bucket = await storage.getMainBucket();
-        CSVModule.updateExporterSettings(CSVConfig);
-        const metadata: {
-            collectionsData: { collectionName: string, numOfDocs: number }[],
-            timestamp: number
-        } = {collectionsData: [], timestamp: nowMs};
+		const storage = ModuleBE_Firebase.createAdminSession().getStorage();
+		const bucket = await storage.getMainBucket();
+		CSVModule.updateExporterSettings(CSVConfig);
+		const metadata: {
+			collectionsData: { collectionName: string, numOfDocs: number }[],
+			timestamp: number
+		} = {collectionsData: [], timestamp: nowMs};
 
-        try {
-            const backupFeeder = async (writable: Writable) => {
-                const currBackup = backups[backupsCounter];
-                let page = 0;
-                let docCounter = 0;
-                let data;
+		if (backups.length === 0)
+			throw new ApiException(404, 'No modules to backup');
 
-                do {
-                    data = this.formatToCsv(await currBackup.queryFunction({
-                        ...currBackup.query,
-                        limit: {page, itemsCount: 10000}
-                    }), currBackup.moduleKey);
+		try {
+			this.logInfo(backups);
 
-                    if (data.length) {
-                        const csv = CSVModule.export(data);
+			const backupFeeder = async (writable: Writable) => {
+				if (!backups[backupsCounter])
+					return END_OF_STREAM;
 
-                        if (page === 0)
-                            CSVModule.updateExporterSettings({
-                                ...CSVConfig,
-                                showLabels: false,
-                                useKeysAsHeaders: false
-                            });
+				const currBackup = backups[backupsCounter];
 
-                        writable.write(csv.toString());
-                    }
+				let page = 0;
+				let docCounter = 0;
+				let data;
 
-                    docCounter += data.length;
-                    page++;
-                } while (data.length);
+				do {
+					data = this.formatToCsv(await currBackup.queryFunction({
+						...currBackup.query,
+						limit: {page, itemsCount: 10000}
+					}), currBackup.moduleKey);
 
-                metadata.collectionsData.push({collectionName: currBackup.moduleKey, numOfDocs: docCounter});
+					if (data.length) {
+						const csv = CSVModule.export(data);
 
-                backupsCounter++;
+						if (page === 0)
+							CSVModule.updateExporterSettings({
+								...CSVConfig,
+								showLabels: false,
+								useKeysAsHeaders: false
+							});
 
-                if (backups[backupsCounter])
-                    return;
+						writable.write(csv.toString());
+					}
 
-                return END_OF_STREAM;
-            };
+					docCounter += data.length;
+					page++;
+				} while (data.length);
 
-            const file = await bucket.getFile(backupPath);
-            await file.writeToStream(backupFeeder);
-            const metadataFile = await bucket.getFile(`/backup/firestore/${timeFormat}/metadata.json`);
-            await metadataFile.write(metadata);
-        } catch (e: any) {
-            this.logWarning(`backup of ${backups[backupsCounter].moduleKey} has failed with error`, e);
-            const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backups[backupsCounter], true)}\nError: ${_logger_logException(e)}`;
-            throw new ApiException(500, errorMessage, e);
-        }
+				metadata.collectionsData.push({collectionName: currBackup.moduleKey, numOfDocs: docCounter});
 
-        try {
-            //upsert the backup data
-            await this.upsert({timestamp: nowMs, backupPath, _id: backupId});
+				backupsCounter++;
 
-            const queryOld = {where: {timestamp: {$lt: nowMs - this.config.keepInterval}}};
-            const oldDocs = await this.query(queryOld);
+			};
 
-            this.logInfoBold('Received items to delete total: ' + oldDocs.length);
-            await Promise.all(oldDocs.map(async oldDoc => {
-                try {
-                    await (await bucket.getFile(oldDoc.backupPath)).delete();
-                    await this.deleteItem(oldDoc);
-                } catch (e: any) {
-                    this.logError('error deleting file: ', oldDoc, e);
-                }
-            }));
+			const file = await bucket.getFile(backupPath);
+			await file.writeToStream(backupFeeder);
+			const metadataFile = await bucket.getFile(`/backup/firestore/${timeFormat}/metadata.json`);
+			await metadataFile.write(metadata);
+		} catch (e: any) {
+			this.logWarning(`backup of ${backups[backupsCounter].moduleKey} has failed with error`, e);
+			const errorMessage = `Error backing up firestore collection config:\n ${__stringify(backups[backupsCounter], true)}\nError: ${_logger_logException(e)}`;
+			throw new ApiException(500, errorMessage, e);
+		}
 
-            this.logInfoBold('Successfully deleted item');
-        } catch (err: any) {
-            throw new ApiException(500, err);
-        }
-    };
+		try {
+			//upsert the backup data
+			await this.upsert({timestamp: nowMs, backupPath, _id: backupId});
 
-    query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
-        return await this.collection.query.custom(ourQuery);
-    };
+			const queryOld = {where: {timestamp: {$lt: nowMs - this.config.keepInterval}}};
+			const oldDocs = await this.query(queryOld);
 
-    queryUnique = async (backupDocId: UniqueId) => {
-        return await this.collection.query.unique(backupDocId);
-    };
+			this.logInfoBold('Received items to delete total: ' + oldDocs.length);
+			await Promise.all(oldDocs.map(async oldDoc => {
+				try {
+					await (await bucket.getFile(oldDoc.backupPath)).delete();
+					await this.deleteItem(oldDoc);
+				} catch (e: any) {
+					this.logError('error deleting file: ', oldDoc, e);
+				}
+			}));
 
-    upsert = async (instance: PreDB<DB_BackupDoc>): Promise<DB_BackupDoc> => {
-        this.logWarning(instance);
-        return await this.collection.create.item(instance);
-    };
+			this.logInfoBold('Successfully deleted item');
+		} catch (err: any) {
+			throw new ApiException(500, err);
+		}
+	};
 
-    deleteItem = async (instance: DB_BackupDoc): Promise<DB_BackupDoc | undefined> => {
-        return await this.collection.delete.unique(instance._id);
-    };
+	query = async (ourQuery: FirestoreQuery<DB_BackupDoc>): Promise<DB_BackupDoc[]> => {
+		return await this.collection.query.custom(ourQuery);
+	};
+
+	queryUnique = async (backupDocId: UniqueId) => {
+		return await this.collection.query.unique(backupDocId);
+	};
+
+	upsert = async (instance: PreDB<DB_BackupDoc>): Promise<DB_BackupDoc> => {
+		this.logWarning(instance);
+		return await this.collection.create.item(instance);
+	};
+
+	deleteItem = async (instance: DB_BackupDoc): Promise<DB_BackupDoc | undefined> => {
+		return await this.collection.delete.unique(instance._id);
+	};
 }
 
 export const ModuleBE_BackupV2 = new ModuleBE_BackupV2_Class();
