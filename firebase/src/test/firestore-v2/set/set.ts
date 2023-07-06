@@ -6,6 +6,7 @@ import {TestSuite} from '@nu-art/ts-common/test-index';
 import {compare, DBDef, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {updatedStringValue1, updatedStringValue2} from '../update/update';
+import {duplicateObjectToCreate} from '../create/create';
 
 
 chai.use(require('chai-as-promised'));
@@ -128,6 +129,19 @@ export const TestCases_FB_Set: Test['testcases'] = [
 			}
 		}
 	},
+	{
+		description: '2 items 1 _id',
+		result: () => ({}),
+		input: {
+			toCreate: [],
+			setAction: async (collection, inserted) => {
+				const toCreate = deepClone(duplicateObjectToCreate);
+				const toCreate2 = deepClone(duplicateObjectToCreate);
+
+				await expect(collection.set.all([toCreate, toCreate2])).to.be.rejectedWith;
+			}
+		}
+	}
 ];
 
 export const TestSuite_FirestoreV2_Set: Test = {

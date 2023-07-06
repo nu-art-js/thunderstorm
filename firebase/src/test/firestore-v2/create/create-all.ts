@@ -54,7 +54,7 @@ export const TestCases_FB_CreateAll: CreateTest['testcases'] = [
 		}
 	},
 	{
-		description: 'createAll 1 with transaction',
+		description: '1 with transaction',
 		result: [],
 		input: {
 			value: [],
@@ -62,6 +62,19 @@ export const TestCases_FB_CreateAll: CreateTest['testcases'] = [
 				const toCreate = deepClone(duplicateObjectToCreate);
 
 				await collection.runTransaction(async (transaction) => await expect(collection.create.all([toCreate], transaction)).to.be.fulfilled);
+			}
+		}
+	},
+	{
+		description: '2 items 1 _id',
+		result: [],
+		input: {
+			value: [],
+			check: async (collection, expectedResult) => {
+				const toCreate = deepClone(duplicateObjectToCreate);
+				const toCreate2 = deepClone(duplicateObjectToCreate);
+
+				await expect(collection.create.all([toCreate, toCreate2])).to.be.rejectedWith;
 			}
 		}
 	}
