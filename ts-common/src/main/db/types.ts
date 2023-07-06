@@ -1,6 +1,7 @@
 import {DB_Object, OmitDBObject} from '../utils/types';
 import {ValidatorTypeResolver} from '../validator/validator-core';
 
+
 export type DBIndex<T extends DB_Object> = {
 	id: string,
 	keys: keyof T | (keyof T)[],

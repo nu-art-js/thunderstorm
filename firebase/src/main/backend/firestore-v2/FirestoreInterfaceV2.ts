@@ -25,7 +25,7 @@ import {Query} from 'firebase-admin/firestore';
 
 export class FirestoreInterfaceV2 {
 
-	static buildQuery<Type extends DB_Object>(collection: FirestoreCollectionV2<Type>, query?: FirestoreQuery<Type>) {
+	static buildQuery<Type extends DB_Object>(collection: FirestoreCollectionV2<Type, any>, query?: FirestoreQuery<Type>) {
 		try {
 			let myQuery: FirestoreType_Query = collection.collection;
 			if (query && query.select)
