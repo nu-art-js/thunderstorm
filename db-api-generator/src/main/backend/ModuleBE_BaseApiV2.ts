@@ -63,7 +63,7 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 				return toReturnItem;
 			}),
 			createBodyServerApi(apiDef.v1.upsert, this.dbModule.set.item),
-			createBodyServerApi(apiDef.v1.upsertAll, this.dbModule.set.all),
+			createBodyServerApi(apiDef.v1.upsertAll, (body)=>this.dbModule.set.all(body)),
 			createQueryServerApi(apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
 			createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
 			createQueryServerApi(apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),

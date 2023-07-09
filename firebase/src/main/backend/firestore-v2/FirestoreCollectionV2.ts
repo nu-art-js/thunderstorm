@@ -42,7 +42,11 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -215,8 +219,8 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 
 	// ############################## Set ##############################
 	protected _setAll = async (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
-		const docs = this.doc.allItems(items)
-		const dbItems = await this.getAll(docs)
+		const docs = this.doc.allItems(items);
+		const dbItems = await this.getAll(docs);
 
 		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
 			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction) : await docs[i].prepareForSet(items[i] as Type, _dbItem!, transaction);
@@ -228,7 +232,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			docs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
 		else
 			await this.bulkOperation(docs, 'set', preparedItems);
-		return dbItems;
+		return preparedItems;
 	};
 
 	set = {
