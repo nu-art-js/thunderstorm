@@ -20,7 +20,7 @@ import {FirestoreCollectionHooks, FirestoreCollectionV2,} from './FirestoreColle
 import {FirestoreType, FirestoreType_Collection,} from '../firestore/types';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
-import {DB_Object, DBDef, Default_UniqueKey} from '@nu-art/ts-common';
+import {DB_Object, DBDef, Default_UniqueKey, PreDB} from '@nu-art/ts-common';
 import {DocumentReference, getFirestore, Transaction,} from 'firebase-admin/firestore';
 
 
@@ -68,7 +68,7 @@ export class FirestoreWrapperBEV2
 		});
 	}
 
-	public getCollection<Type extends DB_Object, Ks extends keyof Type = Default_UniqueKey>(dbDef: DBDef<Type, Ks>, hooks?: FirestoreCollectionHooks<Type>): FirestoreCollectionV2<Type, Ks> {
+	public getCollection<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey>(dbDef: DBDef<Type, Ks>, hooks?: FirestoreCollectionHooks<Type>): FirestoreCollectionV2<Type, Ks> {
 		const collection = this.collections[dbDef.dbName];
 		if (collection)
 			return collection;
