@@ -17,7 +17,7 @@
  */
 
 import {
-	__stringify,
+	__stringify, _keys,
 	ApiException,
 	BadImplementationException,
 	compare,
@@ -64,11 +64,6 @@ export type FirestoreCollectionHooks<Type extends DB_Object> = {
 
 export const _EmptyQuery = Object.freeze({where: {}});
 export const dbIdLength = 32;
-
-export function generateId() {
-	return generateHex(dbIdLength);
-	// return generateHex(dbIdLength);
-}
 
 /**
  * # <ins>FirestoreBulkException</ins>
@@ -192,15 +187,10 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	};
 
 	// ############################## Create ##############################
-	protected _createItem = async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
-		return await this.doc.item(preDBItem).create(preDBItem, transaction);
-	};
-
 	protected _createAll = async (preDBItems: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
 		if (preDBItems.length === 1)
-			return [await this._createItem(preDBItems[0], transaction)];
+			return [await this.create.item(preDBItems[0], transaction)];
 
-		preDBItems.forEach(preDBItem => preDBItem._id ??= generateId());
 		const docs = this.doc.allItems(preDBItems);
 		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
 		this.assertNoDuplicatedIds(dbItems);
@@ -213,7 +203,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	};
 
 	create = {
-		item: this._createItem,
+		item: async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => await this.doc.item(preDBItem).create(preDBItem, transaction),
 		all: this._createAll,
 	};
 
@@ -236,12 +226,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	};
 
 	set = {
-		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => {
-			if (!preDBItem._id)
-				return this.create.item(preDBItem, transaction);
-
-			return await this.doc.item(preDBItem).set(preDBItem, transaction);
-		},
+		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => await this.doc.item(preDBItem).set(preDBItem, transaction),
 		all: (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
 			if (transaction)
 				return this._setAll(items, transaction);
@@ -261,7 +246,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		return await this.getAll(docs) as Type[];
 	};
 
-	async assertUpdateData(updateData: UpdateData<Type>, transaction?: Transaction) {
+	async validateUpdateData(updateData: UpdateData<Type>, transaction?: Transaction) {
 	}
 
 	update = {
@@ -388,7 +373,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 export const composeItemId = <T extends DB_Object, K extends (keyof PreDB<T>)[]>(item: PreDB<T>, keys: K) => {
 	// If there are no specific uniqueKeys, generate a random _id.
 	if (compare(keys, Const_UniqueKeys as K))
-		return item._id ?? generateId();
+		return item._id ?? generateHex(dbIdLength);
 	// Go over all specified uniqueKeys, aggregate them into a long string. Throw exception if a key is missing.
 	const _unique = keys.reduce<string>((aggregatedValues, _key) => {
 		if (!exists(item[_key]))
