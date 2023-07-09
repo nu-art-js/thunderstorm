@@ -57,13 +57,11 @@ export const TestCases_FB_MultiKeys: Test['testcases'] = [
 		result: [sampleDoc1],
 		input: async (collection: FirestoreCollectionV2<DB_Type, 'aKey' | 'bKey'>) => {
 			const toOverrideWith = {...sampleDoc1, content: 'content2'};
-			await collection.create.item(deepClone(sampleDoc1));
-			await expect(collection.set.item(deepClone(toOverrideWith))).to.be.rejected;
 
-			// const dbItem1 = await collection.create.item(deepClone(sampleDoc1));
-			// const dbItem2 = await collection.set.item(deepClone(toOverrideWith));
-			// console.log(dbItem1, dbItem2);
-			// compareId(dbItem1, dbItem2);
+			const dbItem1 = await collection.create.item(deepClone(sampleDoc1));
+			const dbItem2 = await collection.set.item(deepClone(toOverrideWith));
+			console.log(dbItem1, dbItem2);
+			compareId(dbItem1, dbItem2);
 		}
 	},
 	{
