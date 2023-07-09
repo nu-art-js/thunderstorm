@@ -29,9 +29,7 @@ import {
 	Default_UniqueKey,
 	DefaultDBVersion,
 	exists,
-	filterInOut,
 	filterInstances,
-	flatArray,
 	generateHex,
 	InvalidResult,
 	KeysOfDB_Object,
@@ -44,11 +42,7 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -89,11 +83,12 @@ export class FirestoreBulkException
 /**
  * FirestoreCollection is a class for handling Firestore collections.
  */
-export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof Type = Default_UniqueKey> {
+export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey> {
 	readonly name: string;
 	readonly wrapper: FirestoreWrapperBEV2;
 	readonly collection: FirestoreType_Collection;
 	readonly dbDef: DBDef<Type, any>;
+	readonly uniqueKeys: Ks[];
 	private readonly validator: ValidatorTypeResolver<Type>;
 	readonly hooks?: FirestoreCollectionHooks<Type>;
 
@@ -105,6 +100,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof Type
 
 		this.collection = wrapper.firestore.collection(_dbDef.dbName);
 		this.dbDef = _dbDef;
+		this.uniqueKeys = this.dbDef.uniqueKeys || Const_UniqueKeys;
 		this.validator = this.getValidator(_dbDef);
 		this.hooks = hooks;
 	}
@@ -137,7 +133,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof Type
 			return this.doc._(doc);
 		},
 		item: (item: PreDB<Type>) => {
-			item._id = composeItemId(item, this.dbDef.uniqueKeys || Const_UniqueKeys);
+			item._id = composeItemId(item, this.uniqueKeys);
 			return this.doc.unique(item._id!);
 		},
 		all: (_ids: UniqueId[]) => _ids.map(this.doc.unique),
@@ -193,7 +189,6 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof Type
 
 	// ############################## Create ##############################
 	protected _createItem = async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
-		// preDBItem._id ??= generateId();
 		return await this.doc.item(preDBItem).create(preDBItem, transaction);
 	};
 
@@ -220,40 +215,19 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof Type
 
 	// ############################## Set ##############################
 	protected _setAll = async (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
-		const {
-			filteredIn: hasIdItems,
-			filteredOut: noIdItems
-		} = filterInOut<PreDB<Type> | Type>(items, _item => exists(_item._id));
-		const toCreate = noIdItems; // If the items don't have _id, we need to create them
-		const toSet: [Type, Type][] = []; // A tuple of the new item to set (0) and the current dbItem (1)
+		const docs = this.doc.allItems(items)
+		const dbItems = await this.getAll(docs)
 
-		// Query for all items that have _id, to see if they exist
-		const dbItems = await this.query.all(hasIdItems.map(_item => _item._id!));
-
-		// Items with _id that exist, are to be updated. Items with _id that don't exist, are added to be created.
-		dbItems.forEach((_item, i) => !exists(_item) ? toCreate.push(hasIdItems[i]) : toSet.push([hasIdItems[i] as Type, _item!]));
-
-		return flatArray(await Promise.all([
-			this.create.all(toCreate as PreDB<Type>[], transaction),
-			this._setExistingAll(toSet, transaction)
-		]));
-	};
-
-	/**
-	 * Set operation that updates multiple existing dbItems.
-	 * @param toSet: A tuple of the new item to set (0) and the current dbItem (1).
-	 * @param transaction: Transaction
-	 */
-	protected _setExistingAll = async (toSet: [Type, Type][], transaction?: Transaction): Promise<Type[]> => {
-		const docs = this.doc.all(toSet.map(_item => _item[0]._id));
-		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForSet(...toSet[i], transaction)));
-		this.assertNoDuplicatedIds(dbItems);
+		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
+			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction) : await docs[i].prepareForSet(items[i] as Type, _dbItem!, transaction);
+		}));
+		this.assertNoDuplicatedIds(preparedItems);
 
 		if (transaction)
 			// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
-			docs.map((doc, i) => transaction.set(doc.ref, dbItems[i]));
+			docs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
 		else
-			await this.bulkOperation(docs, 'set', dbItems);
+			await this.bulkOperation(docs, 'set', preparedItems);
 		return dbItems;
 	};
 
@@ -274,18 +248,6 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof Type
 			return this._setAll(items);
 		},
 	};
-
-	private assertNoDuplicatedIds(items: Type[], originFunctionName: string = 'set.all') {
-		const idCountMap: TypedMap<number> = items.reduce<TypedMap<number>>((countMap, item) => {
-			// Count the number of appearances of each _id
-			countMap[item._id] = !exists(countMap[item._id]) ? 1 : 1 + countMap[item._id];
-			return countMap;
-		}, {});
-
-		// Throw exception if an _id appears more than once
-		if (_values(idCountMap).some(count => count > 1))
-			throw new BadImplementationException(`${originFunctionName} received the same _id twice.`);
-	}
 
 	// ############################## Update ##############################
 	protected _updateBulk = async (updateData: UpdateObject<Type>[]): Promise<Type[]> => {
@@ -400,6 +362,18 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof Type
 		// console.error(`error validating ${this.dbDef.entityName}:`, instance, 'With Error: ', results);
 		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
 		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
+	}
+
+	private assertNoDuplicatedIds(items: Type[], originFunctionName: string = 'set.all') {
+		const idCountMap: TypedMap<number> = items.reduce<TypedMap<number>>((countMap, item) => {
+			// Count the number of appearances of each _id
+			countMap[item._id] = !exists(countMap[item._id]) ? 1 : 1 + countMap[item._id];
+			return countMap;
+		}, {});
+
+		// Throw exception if an _id appears more than once
+		if (_values(idCountMap).some(count => count > 1))
+			throw new BadImplementationException(`${originFunctionName} received the same _id twice.`);
 	}
 }
 
