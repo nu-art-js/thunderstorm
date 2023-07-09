@@ -1,8 +1,8 @@
-import {_keys, currentTimeMillis, DB_Object, exists, PreDB, UniqueId} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, DB_Object, exists, MUSTNeverHappenException, PreDB, UniqueId} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
-import {FirestoreCollectionV2} from './FirestoreCollectionV2';
+import {composeItemId, FirestoreCollectionV2} from './FirestoreCollectionV2';
 import BulkWriter = firestore.BulkWriter;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
@@ -62,6 +62,12 @@ export class DocWrapperV2<T extends DB_Object> {
 		return item;
 	};
 
+	private assertId(item: PreDB<T>) {
+		item._id = composeItemId(item, this.collection.uniqueKeys);
+		if (item._id !== this.ref.id)
+			throw new MUSTNeverHappenException(`Composed _id does not match doc ref id!`);
+	}
+
 	get = async (transaction?: Transaction) => {
 		if (transaction)
 			return this.data ?? (this.data = ((await transaction.get(this.ref)).data() as (T | undefined)));
@@ -71,6 +77,8 @@ export class DocWrapperV2<T extends DB_Object> {
 
 	prepareForCreate = async (preDBItem: PreDB<T>, transaction?: Transaction): Promise<T> => {
 		const now = currentTimeMillis();
+
+		this.assertId(preDBItem);
 		preDBItem.__updated = preDBItem.__created = now;
 		preDBItem._v = this.collection.getVersion();
 		await this.collection.hooks?.prepareItemForDB(preDBItem as T, transaction);
@@ -90,12 +98,15 @@ export class DocWrapperV2<T extends DB_Object> {
 		return dbItem;
 	};
 
-	prepareForSet = async (updatedDBItem: T, dbItem: T, transaction?: Transaction): Promise<T> => {
-		updatedDBItem._id = dbItem._id;
-		updatedDBItem._v = dbItem!._v;
-		updatedDBItem.__created = dbItem!.__created;
+	prepareForSet = async (updatedDBItem: T, dbItem?: T, transaction?: Transaction): Promise<T> => {
+		if (!dbItem)
+			return this.prepareForCreate(updatedDBItem, transaction)
+
+		this.assertId(updatedDBItem);
+		updatedDBItem._v = dbItem._v;
+		updatedDBItem.__created = dbItem.__created;
 		this.collection.dbDef.lockKeys?.forEach(lockedKey => {
-			updatedDBItem[lockedKey] = dbItem![lockedKey];
+			updatedDBItem[lockedKey] = dbItem[lockedKey];
 		});
 
 		updatedDBItem.__updated = currentTimeMillis();
@@ -109,9 +120,6 @@ export class DocWrapperV2<T extends DB_Object> {
 			return this.collection.runTransaction(transaction => this.set(item, transaction));
 
 		const currDBItem = await this.get(transaction);
-		if (!exists(currDBItem))
-			return this.create(item, transaction);
-
 		const newDBItem = await this.prepareForSet(item as T, currDBItem!, transaction);
 
 		// Will always get here with a transaction!
@@ -125,8 +133,11 @@ export class DocWrapperV2<T extends DB_Object> {
 		delete updateData.__created;
 		delete updateData._v;
 		updateData.__updated = currentTimeMillis();
+		// this.collection.dbDef.lockKeys?.forEach(lockedKey => {
+		// 	(updateData as Partial<T>)[lockedKey] = undefined;
+		// });
 		this.updateDeletedFields(updateData);
-		await this.collection.assertUpdateData(updateData, transaction);
+		await this.collection.validateUpdateData(updateData, transaction);
 		return updateData;
 	}
 

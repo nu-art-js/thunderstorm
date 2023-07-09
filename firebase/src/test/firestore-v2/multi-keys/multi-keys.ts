@@ -60,7 +60,6 @@ export const TestCases_FB_MultiKeys: Test['testcases'] = [
 
 			const dbItem1 = await collection.create.item(deepClone(sampleDoc1));
 			const dbItem2 = await collection.set.item(deepClone(toOverrideWith));
-			console.log(dbItem1, dbItem2);
 			compareId(dbItem1, dbItem2);
 		}
 	},
@@ -74,7 +73,7 @@ export const TestCases_FB_MultiKeys: Test['testcases'] = [
 		}
 	},
 	{
-		description: 'create one item - set all with same item',
+		description: 'set same two items',
 		result: [sampleDoc1],
 		input: async (collection: FirestoreCollectionV2<DB_Type, 'aKey' | 'bKey'>) => {
 			const item1 = deepClone(sampleDoc1);
