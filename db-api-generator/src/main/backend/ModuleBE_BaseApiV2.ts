@@ -48,7 +48,11 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	constructor(dbModule: ModuleBE_BaseDBV2<Type, any, Ks>) {
 		super(dbModule.getName());
 		this.dbModule = dbModule;
-		const apiDef = DBApiDefGeneratorIDBV2<Type, Ks>(dbModule.dbDef);
+
+	}
+
+	init() {
+		const apiDef = DBApiDefGeneratorIDBV2<Type, Ks>(this.dbModule.dbDef);
 		addRoutes([
 			createBodyServerApi(apiDef.v1.query, this.dbModule.query.custom),
 			createBodyServerApi(apiDef.v1.sync, this.dbModule.querySync),
@@ -66,9 +70,6 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 			createBodyServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection),
 			createQueryServerApi(apiDef.v1.metadata, this._metadata)
 		]);
-	}
-
-	init() {
 	}
 
 	private _metadata = async (): Promise<Metadata<Type>> => {
