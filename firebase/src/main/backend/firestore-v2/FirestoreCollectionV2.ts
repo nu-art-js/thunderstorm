@@ -44,7 +44,11 @@ import {
 	UniqueId,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -399,21 +403,25 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof Type
 	}
 }
 
+/**
+ * If the collection has unique keys, assert they exist, and use them to generate the _id.
+ * In the case an _id already exists, verify it is not different from the uniqueKeys-generated _id.
+ */
 export const composeItemId = <T extends DB_Object, K extends (keyof PreDB<T>)[]>(item: PreDB<T>, keys: K) => {
-	// If the collection has unique keys, assert they exist, and use them to generate the _id.
+	// If there are no specific uniqueKeys, generate a random _id.
 	if (compare(keys, Const_UniqueKeys as K))
 		return item._id ?? generateId();
-
-	let _unique = '';
-	keys.forEach((_key) => {
+	// Go over all specified uniqueKeys, aggregate them into a long string. Throw exception if a key is missing.
+	const _unique = keys.reduce<string>((aggregatedValues, _key) => {
 		if (!exists(item[_key]))
-			throw new MUSTNeverHappenException(`Unique key missing from db item!\nkey: ${_key as string}\nitem:${__stringify(item)}`);
+			throw new MUSTNeverHappenException(`Unique key missing from db item!\nkey: ${_key as string}\nitem:${__stringify(item, true)}`);
 
-		return _unique += String(item[_key]);
-	});
-
+		return aggregatedValues + String(item[_key]);
+	}, '');
+	// Generate specific _id according to the specified uniqueKeys.
 	const _id = md5(_unique);
-
+	// If the item has an _id, and it matches the uniqueKeys-generated _id, all is well.
+	// If the uniqueKeys-generated _id doesn't match the existing _id, this means someone had changed the uniqueKeys or _id which must never happen.
 	if (exists(item._id) && _id !== item._id)
 		throw new MUSTNeverHappenException(`When checking the existing _id, it did not match the _id composed from the unique keys!`);
 
