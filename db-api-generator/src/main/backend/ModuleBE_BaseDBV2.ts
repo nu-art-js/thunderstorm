@@ -20,7 +20,7 @@
  */
 
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
-import {ApiException, DB_Object, DBDef, filterInstances, Module} from '@nu-art/ts-common';
+import {ApiException, DB_Object, DBDef, Default_UniqueKey, filterInstances, Module, PreDB} from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {_EmptyQuery, Response_DBSync} from '../shared';
@@ -45,7 +45,7 @@ export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfi
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof Type = '_id'>
+export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof PreDB<Type> = Default_UniqueKey>
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerActV2 {
 	// private static DeleteHardLimit = 250;

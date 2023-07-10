@@ -1,5 +1,5 @@
 import {Adapter, ComponentSync, SimpleListAdapter, TS_DropDown} from '@nu-art/thunderstorm/frontend';
-import {DB_Object, Filter, sortArray} from '@nu-art/ts-common';
+import {DB_Object, Default_UniqueKey, Filter, PreDB, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
 import {ModuleFE_BaseApi} from '../../modules/ModuleFE_BaseApi';
 
@@ -30,7 +30,7 @@ export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> &
 	itemResolver?: ()=>T[]
 } & OptionalCanUnselect<T>
 
-export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> = OptionalProps_GenericDropDown<T> & {
+export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof PreDB<T> = Default_UniqueKey> = OptionalProps_GenericDropDown<T> & {
 	placeholder: string;
 	module: ModuleFE_BaseApi<T, Ks>;
 	modules: ModuleFE_BaseApi<DB_Object, any>[];
@@ -60,7 +60,7 @@ type GenericDropDownProps<T, Ks> = {
 	itemResolver?: ()=>T[]
 } & OptionalCanUnselect<T>
 
-export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'> =
+export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof PreDB<T> = Default_UniqueKey> =
 	{ module: ModuleFE_BaseApi<T, Ks>; }
 	& GenericDropDownProps<T, Ks>
 
@@ -73,7 +73,7 @@ type State<T extends DB_Object> = {
 
 // const defaultQueryFilter = () => true;
 
-export class GenericDropDown<T extends DB_Object, Ks extends keyof T = '_id'>
+export class GenericDropDown<T extends DB_Object, Ks extends keyof PreDB<T> = Default_UniqueKey>
 	extends ComponentSync<Props_GenericDropDown<T, Ks>, State<T>> {
 
 	protected deriveStateFromProps(nextProps: Props_GenericDropDown<T, Ks>): State<T> {

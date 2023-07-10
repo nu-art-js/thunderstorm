@@ -19,16 +19,7 @@
  * limitations under the License.
  */
 
-import {
-	__stringify,
-	_values,
-	ApiException,
-	DB_BaseObject,
-	DB_Object,
-	DB_Object_Metadata,
-	Metadata,
-	Module
-} from '@nu-art/ts-common';
+import {__stringify, _values, ApiException, DB_BaseObject, DB_Object, DB_Object_Metadata, Default_UniqueKey, Metadata, Module, PreDB} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {_EmptyQuery, DBApiDefGeneratorIDBV2, UpgradeCollectionBody} from '../shared';
 import {DBApiConfig, ModuleBE_BaseDBV2} from './ModuleBE_BaseDBV2';
@@ -40,7 +31,7 @@ import {FirestoreQuery} from '@nu-art/firebase';
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof Type = '_id'>
+export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof PreDB<Type> = Default_UniqueKey>
 	extends Module {
 
 	readonly dbModule: ModuleBE_BaseDBV2<Type, any, Ks>;
@@ -97,7 +88,7 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	};
 }
 
-export const createApisForDBModuleV2 = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>(dbModule: ModuleBE_BaseDBV2<DBType, ConfigType, Ks>) => {
+export const createApisForDBModuleV2 = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof PreDB<DBType> = Default_UniqueKey>(dbModule: ModuleBE_BaseDBV2<DBType, ConfigType, Ks>) => {
 	return new ModuleBE_BaseApiV2_Class<DBType, ConfigType, Ks>(dbModule);
 };
 
