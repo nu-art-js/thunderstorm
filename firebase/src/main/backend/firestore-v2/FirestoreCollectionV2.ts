@@ -17,7 +17,7 @@
  */
 
 import {
-	__stringify, _keys,
+	__stringify,
 	ApiException,
 	BadImplementationException,
 	compare,
@@ -30,23 +30,20 @@ import {
 	DefaultDBVersion,
 	exists,
 	filterInstances,
-	generateHex, IndexKeys,
+	generateHex,
+	IndexKeys,
 	InvalidResult,
 	KeysOfDB_Object,
-	md5,
 	MUSTNeverHappenException,
 	PreDB,
 	StaticLogger,
 	tsValidateResult,
 	TypedMap,
-	UniqueId, UniqueParam,
+	UniqueId,
+	UniqueParam,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {
-	FirestoreType_Collection,
-	FirestoreType_DocumentReference,
-	FirestoreType_DocumentSnapshot
-} from '../firestore/types';
+import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -54,6 +51,7 @@ import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
 import {BulkItem, BulkOperation, DocWrapperV2, UpdateObject} from './DocWrapperV2';
 import {_values} from '@nu-art/ts-common/utils/object-tools';
+import {composeItemId} from "../../shared/utils";
 import UpdateData = firestore.UpdateData;
 
 
@@ -129,7 +127,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 				throw new MUSTNeverHappenException('Did not receive an _id at doc.unique!');
 
 			if (typeof id !== 'string') {
-				id = composeItemId(id, this.uniqueKeys);
+				id = getItemId(id, this.uniqueKeys);
 			}
 
 			const doc = this.wrapper.firestore.doc(`${this.name}/${id}`) as FirestoreType_DocumentReference<Type>;
@@ -196,7 +194,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 
 		const docs = this.doc.allItems(preDBItems);
 		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
-		this.assertNoDuplicatedIds(dbItems);
+		this.assertNoDuplicatedIds(dbItems, 'create.all');
 
 		if (transaction)
 			docs.forEach((doc, i) => transaction.create(doc.ref, dbItems[i]));
@@ -218,7 +216,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
 			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction) : await docs[i].prepareForSet(items[i] as Type, _dbItem!, transaction);
 		}));
-		this.assertNoDuplicatedIds(preparedItems);
+		this.assertNoDuplicatedIds(preparedItems, 'set.all');
 
 		if (transaction)
 			// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
@@ -356,7 +354,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
 	}
 
-	private assertNoDuplicatedIds(items: Type[], originFunctionName: string = 'set.all') {
+	private assertNoDuplicatedIds(items: Type[], originFunctionName: string) {
 		const idCountMap: TypedMap<number> = items.reduce<TypedMap<number>>((countMap, item) => {
 			// Count the number of appearances of each _id
 			countMap[item._id] = !exists(countMap[item._id]) ? 1 : 1 + countMap[item._id];
@@ -373,19 +371,12 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
  * If the collection has unique keys, assert they exist, and use them to generate the _id.
  * In the case an _id already exists, verify it is not different from the uniqueKeys-generated _id.
  */
-export const composeItemId = <T extends PreDB<DB_Object>, K extends (keyof T)[]>(item: T, keys: K) => {
+export const getItemId = <T extends PreDB<DB_Object>, K extends (keyof T)[]>(item: T, keys: K) => {
 	// If there are no specific uniqueKeys, generate a random _id.
 	if (compare(keys, Const_UniqueKeys as K))
-		return item._id ?? generateHex(dbIdLength);
-	// Go over all specified uniqueKeys, aggregate them into a long string. Throw exception if a key is missing.
-	const _unique = keys.reduce<string>((aggregatedValues, _key) => {
-		if (!exists(item[_key]))
-			throw new MUSTNeverHappenException(`Unique key missing from db item!\nkey: ${_key as string}\nitem:${__stringify(item, true)}`);
+		return item._id ?? generateHex(dbIdLength)
 
-		return aggregatedValues + String(item[_key]);
-	}, '');
-	// Generate specific _id according to the specified uniqueKeys.
-	const _id = md5(_unique);
+	const _id = composeItemId(item, keys);
 	// If the item has an _id, and it matches the uniqueKeys-generated _id, all is well.
 	// If the uniqueKeys-generated _id doesn't match the existing _id, this means someone had changed the uniqueKeys or _id which must never happen.
 	if (exists(item._id) && _id !== item._id)

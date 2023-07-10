@@ -19,23 +19,15 @@
  * limitations under the License.
  */
 
-import {IndexKeys} from '@nu-art/thunderstorm';
 import {Response_DBSync,} from '../shared';
-import {
-	DBConfig,
-	IndexDb_Query,
-	IndexedDB,
-	OnClearWebsiteData,
-	ReduceFunction,
-	StorageKey,
-	ThunderDispatcher
-} from '@nu-art/thunderstorm/frontend';
+import {DBConfig, IndexDb_Query, IndexedDB, OnClearWebsiteData, ReduceFunction, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
 import {
 	arrayToMap,
 	DB_Object,
 	DBDef,
 	dbObjectToId,
+	Default_UniqueKey, IndexKeys,
 	InvalidResult,
 	Logger,
 	Module,
@@ -43,6 +35,7 @@ import {
 	sortArray,
 	tsValidateResult,
 	TypedMap,
+	UniqueParam,
 	ValidationException,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
@@ -61,9 +54,10 @@ import {
 	EventType_Update,
 	EventType_UpsertAll
 } from '../consts';
+import {composeItemId} from "@nu-art/firebase";
 
 
-export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof DBType = '_id', Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
+export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
 	extends Module<Config>
 	implements OnClearWebsiteData {
 	readonly validator: ValidatorTypeResolver<DBType>;
@@ -317,22 +311,20 @@ class IDBCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'>
 	}
 }
 
-class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
+class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey> {
 
 	private readonly module: ModuleFE_BaseDB<DBType, Ks>;
-	private readonly keys: string[];
+	private readonly keys: Ks[];
 	loaded: boolean = false;
 
 	_map!: Readonly<TypedMap<Readonly<DBType>>>;
 	_array!: Readonly<Readonly<DBType>[]>;
 
-	private cacheByKey: TypedMap<Readonly<DBType>> = {};
-
 	private cacheFilter?: (item: Readonly<DBType>) => boolean;
 
 	constructor(module: ModuleFE_BaseDB<DBType, Ks>, keys: Ks[]) {
 		this.module = module;
-		this.keys = keys as string[];
+		this.keys = keys;
 		this.clear();
 	}
 
@@ -357,28 +349,16 @@ class MemCache<DBType extends DB_Object, Ks extends keyof DBType = '_id'> {
 
 		this.setCache(frozenItems);
 
-		if (this.keys.length === 1 && this.keys[0] === '_id')
-			this.cacheByKey = this._map;
-		else
-			this.cacheByKey = arrayToMap(frozenItems, this.getFullKey);
-
 		this.loaded = true;
 		this.module.logDebug(`${this.module.getName()} cache finished loading, count: ${this.all().length}`);
 	};
 
-	unique = (_key?: string | IndexKeys<DBType, Ks>): Readonly<DBType> | undefined => {
+	unique = (_key?: UniqueParam<DBType, Ks>): Readonly<DBType> | undefined => {
 		if (_key === undefined)
 			return _key;
 
-		if (typeof _key === 'string') {
-			return this._map[_key];
-		}
-
-		return this.cacheByKey[this.getFullKey(_key)];
-	};
-
-	private getFullKey = (_key: IndexKeys<DBType, Ks>) => {
-		return this.keys.reduce((_fullKey, key) => `${_fullKey}-${_key[key as Ks]}`, '');
+		const _id = typeof _key === 'string' ? _key : composeItemId(_key, this.keys);
+		return this._map[_id];
 	};
 
 	all = (): Readonly<Readonly<DBType>[]> => {
