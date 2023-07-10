@@ -18,10 +18,12 @@ export type FetchBackupDoc = {
 
 export type FetchBackupDocV2 = {
 	_id: string,
-	filePath: string,
+	backupFilePath: string,
+	metadataFilePath: string
 }
 
 export type DB_BackupDoc = DB_Object & {
 	timestamp: number,
 	backupPath: string,
+	metadataPath: string
 }
