@@ -81,7 +81,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		this.assertId(preDBItem);
 		preDBItem.__updated = preDBItem.__created = now;
 		preDBItem._v = this.collection.getVersion();
-		await this.collection.hooks?.prepareItemForDB(preDBItem as T, transaction);
+		await this.collection.hooks?.prepareItemForDB?.(preDBItem, transaction);
 		this.collection.validateItem(preDBItem as T);
 		return preDBItem as T;
 	};
@@ -100,7 +100,7 @@ export class DocWrapperV2<T extends DB_Object> {
 
 	prepareForSet = async (updatedDBItem: T, dbItem?: T, transaction?: Transaction): Promise<T> => {
 		if (!dbItem)
-			return this.prepareForCreate(updatedDBItem, transaction)
+			return this.prepareForCreate(updatedDBItem, transaction);
 
 		this.assertId(updatedDBItem);
 		updatedDBItem._v = dbItem._v;
@@ -110,7 +110,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		});
 
 		updatedDBItem.__updated = currentTimeMillis();
-		await this.collection.hooks?.prepareItemForDB(updatedDBItem as T, transaction);
+		await this.collection.hooks?.prepareItemForDB?.(updatedDBItem, transaction);
 		this.collection.validateItem(updatedDBItem);
 		return updatedDBItem;
 	};

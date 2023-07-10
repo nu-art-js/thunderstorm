@@ -57,7 +57,7 @@ import UpdateData = firestore.UpdateData;
 
 export type FirestoreCollectionHooks<Type extends DB_Object> = {
 	canDeleteItems: (dbItems: Type[], transaction?: Transaction) => Promise<void>,
-	prepareItemForDB?: (dbInstance: Type, transaction?: Transaction) => Promise<void>,
+	prepareItemForDB?: (dbInstance: PreDB<Type>, transaction?: Transaction) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<Type>) => FirestoreQuery<Type>
 }
 
