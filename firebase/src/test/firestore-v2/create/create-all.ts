@@ -1,11 +1,11 @@
-import {firestore, testInstance2} from '../_core/consts';
+import {duplicateObjectToCreate, firestore, testInstance2} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {deepClone} from '@nu-art/ts-common';
 import {CreateTest, createTestCases} from './consts';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
 import {FirestoreBulkException} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
-import {createTests_dbDef, duplicateObjectToCreate} from './create';
+import {createTests_dbDef} from './create';
 
 const chai = require('chai');
 chai.use(chaiAsPromised);

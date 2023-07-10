@@ -1,12 +1,11 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {firestore, testInstance1, testInstance2, testInstance3} from '../_core/consts';
+import {duplicateObjectToCreate, firestore, testInstance1, testInstance2, testInstance3} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {compare, DBDef, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {updatedStringValue1, updatedStringValue2} from '../update/update';
-import {duplicateObjectToCreate} from '../create/create';
 
 
 chai.use(require('chai-as-promised'));

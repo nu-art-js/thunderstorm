@@ -31,9 +31,8 @@ import {
 	exists,
 	filterInstances,
 	generateHex,
-	IndexKeys,
 	InvalidResult,
-	KeysOfDB_Object,
+	keepDBObjectKeys,
 	MUSTNeverHappenException,
 	PreDB,
 	StaticLogger,
@@ -43,7 +42,11 @@ import {
 	UniqueParam,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
-import {FirestoreType_Collection, FirestoreType_DocumentReference, FirestoreType_DocumentSnapshot} from '../firestore/types';
+import {
+	FirestoreType_Collection,
+	FirestoreType_DocumentReference,
+	FirestoreType_DocumentSnapshot
+} from '../firestore/types';
 import {FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
@@ -51,7 +54,7 @@ import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
 import {BulkItem, BulkOperation, DocWrapperV2, UpdateObject} from './DocWrapperV2';
 import {_values} from '@nu-art/ts-common/utils/object-tools';
-import {composeItemId} from "../../shared/utils";
+import {composeDbObjectUniqueId} from '../../shared/utils';
 import UpdateData = firestore.UpdateData;
 
 
@@ -106,12 +109,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	getValidator = (dbDef: DBDef<Type, Ks>): ValidatorTypeResolver<Type> => {
 		return typeof dbDef.validator === 'function' ?
 			[((instance: Type) => {
-				const dbObjectOnly = KeysOfDB_Object.reduce<DB_Object>((objectToRet, key) => {
-					if (exists(instance[key]))  // @ts-ignore
-						objectToRet[key] = instance[key];
-
-					return objectToRet;
-				}, {} as DB_Object);
+				const dbObjectOnly = keepDBObjectKeys(instance);
 				return tsValidateResult(dbObjectOnly, DB_Object_validator);
 			}), dbDef.validator] as ValidatorTypeResolver<Type> :
 			{...DB_Object_validator, ...dbDef.validator} as ValidatorTypeResolver<Type>;
@@ -128,14 +126,15 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 				throw new MUSTNeverHappenException('Did not receive an _id at doc.unique!');
 
 			if (typeof id !== 'string') {
-				id = getItemId(id, this.uniqueKeys);
+				id = assertUniqueId(id, this.uniqueKeys);
 			}
 
 			const doc = this.wrapper.firestore.doc(`${this.name}/${id}`) as FirestoreType_DocumentReference<Type>;
 			return this.doc._(doc);
 		},
 		item: (item: PreDB<Type>) => {
-			return this.doc.unique(item as IndexKeys<Type, Ks>);
+			item._id = assertUniqueId(item, this.uniqueKeys);
+			return this.doc.unique(item._id);
 		},
 		all: (_ids: (UniqueParam<Type, Ks>)[]) => _ids.map(this.doc.unique),
 		allItems: (preDBItems: PreDB<Type>[]) => {
@@ -373,12 +372,12 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
  * If the collection has unique keys, assert they exist, and use them to generate the _id.
  * In the case an _id already exists, verify it is not different from the uniqueKeys-generated _id.
  */
-export const getItemId = <T extends PreDB<DB_Object>, K extends (keyof T)[]>(item: T, keys: K) => {
+export const assertUniqueId = <T extends PreDB<DB_Object>, K extends (keyof T)[]>(item: T, keys: K) => {
 	// If there are no specific uniqueKeys, generate a random _id.
 	if (compare(keys, Const_UniqueKeys as K))
-		return item._id ?? generateHex(dbIdLength)
+		return item._id ?? generateHex(dbIdLength);
 
-	const _id = composeItemId(item, keys);
+	const _id = composeDbObjectUniqueId(item, keys);
 	// If the item has an _id, and it matches the uniqueKeys-generated _id, all is well.
 	// If the uniqueKeys-generated _id doesn't match the existing _id, this means someone had changed the uniqueKeys or _id which must never happen.
 	if (exists(item._id) && _id !== item._id)

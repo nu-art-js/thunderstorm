@@ -2,7 +2,7 @@ import {_keys, currentTimeMillis, DB_Object, exists, MUSTNeverHappenException, P
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
-import {FirestoreCollectionV2, getItemId} from './FirestoreCollectionV2';
+import {FirestoreCollectionV2, assertUniqueId} from './FirestoreCollectionV2';
 import BulkWriter = firestore.BulkWriter;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
@@ -63,9 +63,9 @@ export class DocWrapperV2<T extends DB_Object> {
 	};
 
 	private assertId(item: PreDB<T>) {
-		item._id = getItemId(item, this.collection.uniqueKeys);
+		item._id = assertUniqueId(item, this.collection.uniqueKeys);
 		if (item._id !== this.ref.id)
-			throw new MUSTNeverHappenException(`Composed _id does not match doc ref id!`);
+			throw new MUSTNeverHappenException(`Composed _id does not match doc ref id! ${item._id}, ${this.ref.id}`);
 	}
 
 	get = async (transaction?: Transaction) => {
