@@ -66,6 +66,9 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		// @ts-ignore
 		this.setDefaultConfig(preConfig);
 		this.dbDef = dbDef;
+		this.canDeleteItems.bind(this);
+		this._prepareItemForDB.bind(this);
+		this.manipulateQuery.bind(this);
 	}
 
 	/**
@@ -76,7 +79,8 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestoreV2();
 		this.collection = firestore.getCollection<Type>(this.dbDef, {
 			canDeleteItems: this.canDeleteItems,
-			prepareItemForDB: this._prepareItemForDB
+			prepareItemForDB: this._prepareItemForDB,
+			manipulateQuery: this.manipulateQuery
 		});
 
 		// ############################## API ##############################
@@ -130,6 +134,10 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		await this.upgradeInstances([dbItem]);
 		await this.prepareItemForDB(dbItem, transaction);
 	};
+
+	manipulateQuery(query: FirestoreQuery<Type>): FirestoreQuery<Type> {
+		return query;
+	}
 
 	/**
 	 * Override this method to customize the assertions that should be done before the insertion of the document to the DB.

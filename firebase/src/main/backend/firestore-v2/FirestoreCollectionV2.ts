@@ -57,7 +57,8 @@ import UpdateData = firestore.UpdateData;
 
 export type FirestoreCollectionHooks<Type extends DB_Object> = {
 	canDeleteItems: (dbItems: Type[], transaction?: Transaction) => Promise<void>,
-	prepareItemForDB: (dbInstance: Type, transaction?: Transaction) => Promise<void>
+	prepareItemForDB?: (dbInstance: Type, transaction?: Transaction) => Promise<void>,
+	manipulateQuery?: (query: FirestoreQuery<Type>) => FirestoreQuery<Type>
 }
 
 export const _EmptyQuery = Object.freeze({where: {}});
@@ -153,12 +154,13 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		return (await (transaction ?? this.wrapper.firestore).getAll(...docs.map(_doc => _doc.ref))).map(_snapshot => _snapshot.data() as Type | undefined);
 	};
 
-	private _customQuery = async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Type>[]> => {
-		const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
+	private _customQuery = async (tsQuery: FirestoreQuery<Type>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Type>[]> => {
+		tsQuery = this.hooks?.manipulateQuery?.(tsQuery) ?? tsQuery;
+		const firestoreQuery = FirestoreInterfaceV2.buildQuery<Type>(this, tsQuery);
 		if (transaction)
-			return (await transaction.get(myQuery)).docs as FirestoreType_DocumentSnapshot<Type>[];
+			return (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<Type>[];
 
-		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot<Type>[];
+		return (await firestoreQuery.get()).docs as FirestoreType_DocumentSnapshot<Type>[];
 	};
 
 	query = {
