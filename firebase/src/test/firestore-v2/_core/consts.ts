@@ -135,6 +135,7 @@ export const testInstance5: PreDB<DB_Type> = Object.freeze({
 	nestedObject: {one: testItem2, two: testItem4}
 });
 
+export const duplicateObjectToCreate = Object.freeze({...testInstance1, _id: testInstance1._uniqueId});
 
 export type CollectionTestInput = {
 	outerCollection: PreDB<DB_Type_Complex>[];
