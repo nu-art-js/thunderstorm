@@ -99,7 +99,8 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		return [{
 			query: this.resolveBackupQuery(),
 			queryFunction: this.collection.query.custom,
-			moduleKey: this.config.collectionName
+			moduleKey: this.config.collectionName,
+			version: this.config.versions[0]
 		}];
 	}
 
