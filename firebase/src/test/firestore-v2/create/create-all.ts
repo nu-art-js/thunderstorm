@@ -4,7 +4,6 @@ import {deepClone} from '@nu-art/ts-common';
 import {CreateTest, createTestCases} from './consts';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
-import {FirestoreBulkException} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {createTests_dbDef} from './create';
 
 const chai = require('chai');
@@ -32,7 +31,7 @@ export const TestCases_FB_CreateAll: CreateTest['testcases'] = [
 			check: async (collection, expectedResult) => {
 				const toCreate = deepClone([duplicateObjectToCreate, testInstance2]);
 				// create twice and expect to reject
-				await expect(collection.create.all(toCreate)).to.be.rejectedWith(FirestoreBulkException);
+				await expect(collection.create.all(toCreate)).to.be.rejectedWith(Error);
 			}
 		}
 	},
