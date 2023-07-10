@@ -16,6 +16,11 @@
  * limitations under the License.
  */
 
+
+
+import {Default_UniqueKey} from '../db/types';
+
+
 export type CustomOptional<T, K> = {
 	[P in keyof T]?: K
 };
@@ -85,6 +90,10 @@ export type UniqueId = string;
 
 export type PreDB<T extends DB_Object, K extends keyof T = never> = PartialProperties<T, keyof DB_Object | K>;
 export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
+
+export type IndexKeys<T extends Object, Ks extends keyof T> = { [K in Ks]: T[K] };
+export type UniqueParam<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey> = UniqueId | IndexKeys<Type, Ks>;
+
 export type Draftable = { _isDraft: boolean };
 export type ResolvableContent<T> = T | (() => T);
 

@@ -30,7 +30,7 @@ import {
 	DefaultDBVersion,
 	exists,
 	filterInstances,
-	generateHex,
+	generateHex, IndexKeys,
 	InvalidResult,
 	KeysOfDB_Object,
 	md5,
@@ -124,18 +124,21 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			// @ts-ignore
 			return new DocWrapperV2(this, ref, data);
 		},
-		unique: (_id: UniqueId) => {
-			if (!_id)
+		unique: (id: UniqueParam<Type, Ks>) => {
+			if (!id)
 				throw new MUSTNeverHappenException('Did not receive an _id at doc.unique!');
 
-			const doc = this.wrapper.firestore.doc(`${this.name}/${_id}`) as FirestoreType_DocumentReference<Type>;
+			if (typeof id !== 'string') {
+				id = composeItemId(id, this.uniqueKeys);
+			}
+
+			const doc = this.wrapper.firestore.doc(`${this.name}/${id}`) as FirestoreType_DocumentReference<Type>;
 			return this.doc._(doc);
 		},
 		item: (item: PreDB<Type>) => {
-			item._id = composeItemId(item, this.uniqueKeys);
-			return this.doc.unique(item._id!);
+			return this.doc.unique(item as IndexKeys<Type, Ks>);
 		},
-		all: (_ids: UniqueId[]) => _ids.map(this.doc.unique),
+		all: (_ids: (UniqueParam<Type, Ks>)[]) => _ids.map(this.doc.unique),
 		allItems: (preDBItems: PreDB<Type>[]) => {
 			// At this point all preDB MUST have ids
 			return preDBItems.map(preDBItem => this.doc.item(preDBItem));
@@ -161,8 +164,8 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	};
 
 	query = {
-		unique: async (_id: UniqueId, transaction?: Transaction) => await this.doc.unique(_id).get(transaction),
-		uniqueAssert: async (_id: UniqueId, transaction?: Transaction): Promise<Type> => {
+		unique: async (_id: UniqueParam<Type, Ks>, transaction?: Transaction) => await this.doc.unique(_id).get(transaction),
+		uniqueAssert: async (_id: UniqueParam<Type, Ks>, transaction?: Transaction): Promise<Type> => {
 			const resultItem = await this.query.unique(_id, transaction);
 			if (!resultItem)
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${_id}`);
@@ -180,7 +183,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			}
 			return thisShouldBeOnlyOne[0];
 		},
-		all: async (_ids: UniqueId[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
+		all: async (_ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
 		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
 			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
 		},
@@ -285,9 +288,9 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	};
 
 	delete = {
-		unique: async (id: string, transaction?: Transaction) => await this.doc.unique(id).delete(transaction),
+		unique: async (id: UniqueParam<Type, Ks>, transaction?: Transaction) => await this.doc.unique(id).delete(transaction),
 		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.doc.item(item).delete(transaction),
-		all: async (ids: UniqueId[], transaction?: Transaction): Promise<Type[]> => {
+		all: async (ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction): Promise<Type[]> => {
 			if (!transaction)
 				return this.runTransaction(t => this.delete.all(ids, t));
 
@@ -370,7 +373,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
  * If the collection has unique keys, assert they exist, and use them to generate the _id.
  * In the case an _id already exists, verify it is not different from the uniqueKeys-generated _id.
  */
-export const composeItemId = <T extends DB_Object, K extends (keyof PreDB<T>)[]>(item: PreDB<T>, keys: K) => {
+export const composeItemId = <T extends PreDB<DB_Object>, K extends (keyof T)[]>(item: T, keys: K) => {
 	// If there are no specific uniqueKeys, generate a random _id.
 	if (compare(keys, Const_UniqueKeys as K))
 		return item._id ?? generateHex(dbIdLength);
