@@ -332,7 +332,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			items: async (items: PreDB<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType=defaultMultiWriteType) => await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction, multiWriteType),
 			query: this._deleteQuery
 		},
-	};
+	});
 
 	// ############################## Multi Write ##############################
 	addToMultiWrite = <Op extends MultiWriteOperation>(writer: BulkWriter | WriteBatch, doc: DocWrapperV2<Type>, operation: Op, item?: MultiWriteItem<Op, Type>) => {
