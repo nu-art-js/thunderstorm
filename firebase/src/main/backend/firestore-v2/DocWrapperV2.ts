@@ -3,26 +3,11 @@ import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
 import {FirestoreCollectionV2, assertUniqueId} from './FirestoreCollectionV2';
-import BulkWriter = firestore.BulkWriter;
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
 
 
 export type UpdateObject<Type> = { _id: UniqueId } & UpdateData<Type>;
-
-export type BulkOperation = 'create' | 'set' | 'update' | 'delete';
-
-export type BulkItem<Op extends BulkOperation, T extends DB_Object> =
-	Op extends 'delete' ? undefined :
-		Op extends 'update' ? UpdateObject<T> :
-			T;
-
-// type BulkItem<T extends DB_Object> = {
-// 	create: T,
-// 	set: T,
-// 	update: UpdateObject<T>,
-// 	delete: undefined
-// }
 
 export class DocWrapperV2<T extends DB_Object> {
 	readonly ref: FirestoreType_DocumentReference<T>;
@@ -42,24 +27,6 @@ export class DocWrapperV2<T extends DB_Object> {
 	cleanCache = (): DocWrapperV2<T> => {
 		delete this.data;
 		return this;
-	};
-
-	addToBulk = <Op extends BulkOperation>(bulk: BulkWriter, operation: Op, item?: BulkItem<Op, T>) => {
-		switch (operation) {
-			case 'create':
-				bulk.create(this.ref, item as BulkItem<'create', T>);
-				break;
-			case 'set':
-				bulk.set(this.ref, item as BulkItem<'set', T>);
-				break;
-			case 'update':
-				bulk.update(this.ref, item as BulkItem<'update', T>);
-				break;
-			case 'delete':
-				bulk.delete(this.ref);
-				break;
-		}
-		return item;
 	};
 
 	private assertId(item: PreDB<T>) {
