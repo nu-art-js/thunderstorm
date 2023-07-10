@@ -1,4 +1,12 @@
-import {_keys, currentTimeMillis, DB_Object, exists, MUSTNeverHappenException, PreDB, UniqueId} from '@nu-art/ts-common';
+import {
+	_keys,
+	currentTimeMillis,
+	DB_Object,
+	exists,
+	MUSTNeverHappenException,
+	PreDB,
+	UniqueId
+} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
@@ -65,7 +73,7 @@ export class DocWrapperV2<T extends DB_Object> {
 	private assertId(item: PreDB<T>) {
 		item._id = assertUniqueId(item, this.collection.uniqueKeys);
 		if (item._id !== this.ref.id)
-			throw new MUSTNeverHappenException(`Composed _id does not match doc ref id! ${item._id}, ${this.ref.id}`);
+			throw new MUSTNeverHappenException(`Composed _id does not match doc ref id! \n expected: ${this.ref.id} \n actual: ${item._id} \n`);
 	}
 
 	get = async (transaction?: Transaction) => {

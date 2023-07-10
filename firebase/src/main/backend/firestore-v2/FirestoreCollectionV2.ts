@@ -26,13 +26,16 @@ import {
 	DB_Object,
 	DB_Object_validator,
 	DBDef,
+	dbObjectToId,
 	Default_UniqueKey,
 	DefaultDBVersion,
 	exists,
+	filterDuplicates,
 	filterInstances,
 	generateHex,
 	InvalidResult,
 	keepDBObjectKeys,
+	Logger,
 	MUSTNeverHappenException,
 	PreDB,
 	StaticLogger,
@@ -84,7 +87,7 @@ export class FirestoreBulkException
 /**
  * FirestoreCollection is a class for handling Firestore collections.
  */
-export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey> {
+export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey> extends Logger {
 	readonly name: string;
 	readonly wrapper: FirestoreWrapperBEV2;
 	readonly collection: FirestoreType_Collection;
@@ -94,6 +97,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	readonly hooks?: FirestoreCollectionHooks<Type>;
 
 	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type, Ks>, hooks?: FirestoreCollectionHooks<Type>) {
+		super();
 		this.name = _dbDef.dbName;
 		this.wrapper = wrapper;
 		if (!/[a-z-]{3,}/.test(_dbDef.dbName))
@@ -116,7 +120,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	};
 
 	// ############################## DocWrapper ##############################
-	doc = {
+	doc = Object.freeze({
 		_: (ref: FirestoreType_DocumentReference<Type>, data?: Type): DocWrapperV2<Type> => {
 			// @ts-ignore
 			return new DocWrapperV2(this, ref, data);
@@ -144,7 +148,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		query: async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
 			return (await this._customQuery(query, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
 		}
-	};
+	});
 
 	// ############################## Query ##############################
 	private getAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction): Promise<(Type | undefined)[]> => {
@@ -162,7 +166,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		return (await firestoreQuery.get()).docs as FirestoreType_DocumentSnapshot<Type>[];
 	};
 
-	query = {
+	query = Object.freeze({
 		unique: async (_id: UniqueParam<Type, Ks>, transaction?: Transaction) => await this.doc.unique(_id).get(transaction),
 		uniqueAssert: async (_id: UniqueParam<Type, Ks>, transaction?: Transaction): Promise<Type> => {
 			const resultItem = await this.query.unique(_id, transaction);
@@ -173,20 +177,17 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		},
 		uniqueCustom: async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
 			const thisShouldBeOnlyOne = await this.query.custom(query, transaction);
-			if (thisShouldBeOnlyOne.length !== 1) {
-				if (thisShouldBeOnlyOne.length > 1)
-					throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbName}`);
-				else
-					throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
-
-			}
+			if (thisShouldBeOnlyOne.length === 0)
+				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
+			if (thisShouldBeOnlyOne.length > 1)
+				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbName}`);
 			return thisShouldBeOnlyOne[0];
 		},
 		all: async (_ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
 		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
 			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
 		},
-	};
+	});
 
 	// ############################## Create ##############################
 	protected _createAll = async (preDBItems: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
@@ -204,10 +205,10 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		return dbItems;
 	};
 
-	create = {
+	create = Object.freeze({
 		item: async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => await this.doc.item(preDBItem).create(preDBItem, transaction),
 		all: this._createAll,
-	};
+	});
 
 	// ############################## Set ##############################
 	protected _setAll = async (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
@@ -227,7 +228,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		return preparedItems;
 	};
 
-	set = {
+	set = Object.freeze({
 		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => await this.doc.item(preDBItem).set(preDBItem, transaction),
 		all: (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
 			if (transaction)
@@ -238,7 +239,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		bulk: (items: (PreDB<Type> | Type)[]) => {
 			return this._setAll(items);
 		},
-	};
+	});
 
 	// ############################## Update ##############################
 	protected _updateBulk = async (updateData: UpdateObject<Type>[]): Promise<Type[]> => {
@@ -251,10 +252,10 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	async validateUpdateData(updateData: UpdateData<Type>, transaction?: Transaction) {
 	}
 
-	update = {
+	update = Object.freeze({
 		item: (updateData: UpdateObject<Type>) => this.doc.unique(updateData._id).update(updateData),
 		all: this._updateBulk,
-	};
+	});
 
 	// ############################## Delete ##############################
 	protected _deleteQuery = async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
@@ -286,7 +287,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		await bulk.close();
 	};
 
-	delete = {
+	delete = Object.freeze({
 		unique: async (id: UniqueParam<Type, Ks>, transaction?: Transaction) => await this.doc.unique(id).delete(transaction),
 		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.doc.item(item).delete(transaction),
 		all: async (ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction): Promise<Type[]> => {
@@ -309,7 +310,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			items: async (items: PreDB<Type>[], transaction?: Transaction) => await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction),
 		},
 		query: this._deleteQuery
-	};
+	});
 
 	// ############################## General ##############################
 	protected bulkOperation = async <Op extends BulkOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: BulkItem<Op, Type>[]) => {
@@ -356,6 +357,9 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	}
 
 	private assertNoDuplicatedIds(items: Type[], originFunctionName: string) {
+		if (filterDuplicates(items, dbObjectToId).length === items.length)
+			return;
+
 		const idCountMap: TypedMap<number> = items.reduce<TypedMap<number>>((countMap, item) => {
 			// Count the number of appearances of each _id
 			countMap[item._id] = !exists(countMap[item._id]) ? 1 : 1 + countMap[item._id];
@@ -381,7 +385,7 @@ export const assertUniqueId = <T extends PreDB<DB_Object>, K extends (keyof T)[]
 	// If the item has an _id, and it matches the uniqueKeys-generated _id, all is well.
 	// If the uniqueKeys-generated _id doesn't match the existing _id, this means someone had changed the uniqueKeys or _id which must never happen.
 	if (exists(item._id) && _id !== item._id)
-		throw new MUSTNeverHappenException(`When checking the existing _id, it did not match the _id composed from the unique keys!`);
+		throw new MUSTNeverHappenException(`When checking the existing _id, it did not match the _id composed from the unique keys! \n expected: ${_id} \n actual: ${item._id}`);
 
 	return _id;
 };

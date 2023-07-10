@@ -70,6 +70,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		this.canDeleteItems.bind(this);
 		this._prepareItemForDB.bind(this);
 		this.manipulateQuery.bind(this);
+		this.collectDependencies.bind(this);
 	}
 
 	/**
@@ -79,18 +80,18 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	init() {
 		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestoreV2();
 		this.collection = firestore.getCollection<Type>(this.dbDef, {
-			canDeleteItems: this.canDeleteItems,
-			prepareItemForDB: this._prepareItemForDB,
-			manipulateQuery: this.manipulateQuery
+			canDeleteItems: this.canDeleteItems.bind(this),
+			prepareItemForDB: this._prepareItemForDB.bind(this),
+			manipulateQuery: this.manipulateQuery.bind(this)
 		});
 
 		// ############################## API ##############################
 		this.runTransaction = this.collection.runTransaction;
-		this.query = this.collection.query;
-		this.create = this.collection.create;
-		this.set = this.collection.set;
-		this.update = this.collection.update;
-		this.delete = this.collection.delete;
+		this.query = {...this.collection.query};
+		this.create = {...this.collection.create};
+		this.set = {...this.collection.set};
+		this.update = {...this.collection.update};
+		this.delete = {...this.collection.delete};
 	}
 
 	getCollectionName() {
