@@ -56,6 +56,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	public set!: FirestoreCollectionV2<Type>['set'];
 	public update!: FirestoreCollectionV2<Type>['update'];
 	public delete!: FirestoreCollectionV2<Type>['delete'];
+	public runTransaction!: FirestoreCollectionV2<Type>['runTransaction'];
 
 	protected constructor(dbDef: DBDef<Type, any>, appConfig?: BaseDBApiConfig) {
 		super();
@@ -84,6 +85,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		});
 
 		// ############################## API ##############################
+		this.runTransaction = this.collection.runTransaction;
 		this.query = this.collection.query;
 		this.create = this.collection.create;
 		this.set = this.collection.set;
@@ -130,7 +132,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	 * TO BE MOVED ABOVE THIS COMMENT
 	 */
 
-	private _prepareItemForDB = async (dbItem: Type, transaction?: Transaction) => {
+	private _prepareItemForDB = async (dbItem: PreDB<Type>, transaction?: Transaction) => {
 		await this.upgradeInstances([dbItem]);
 		await this.prepareItemForDB(dbItem, transaction);
 	};
@@ -146,14 +148,14 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
 	 * @param request
 	 */
-	protected async prepareItemForDB(dbInstance: Type, transaction?: Transaction) {
+	protected async prepareItemForDB(dbInstance: PreDB<Type>, transaction?: Transaction) {
 	}
 
 	preUpsertProcessing(doNotCompileWithThisFunction: number) {
 		//todo Deprecated, turn all into prepareItemForDB
 	}
 
-	upgradeInstances = async (dbInstances: Type[]) => {
+	upgradeInstances = async (dbInstances: PreDB<Type>[]) => {
 		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];
@@ -169,7 +171,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		}));
 	};
 
-	protected async upgradeItem(dbItem: Type, toVersion: string): Promise<void> {
+	protected async upgradeItem(dbItem: PreDB<Type>, toVersion: string): Promise<void> {
 	}
 
 	async promoteCollection() {
