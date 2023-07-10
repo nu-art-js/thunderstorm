@@ -39,7 +39,7 @@ import {
 	StaticLogger,
 	tsValidateResult,
 	TypedMap,
-	UniqueId,
+	UniqueId, UniqueParam,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {
