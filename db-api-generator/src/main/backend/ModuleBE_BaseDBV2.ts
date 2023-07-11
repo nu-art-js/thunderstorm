@@ -230,10 +230,4 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 		return dependencies.length > 0 ? dependencies : undefined;
 	}
-
-	deleteCollection = async () => {
-		this.logWarning(`Called delete collection on ${this.collection.name}!`);
-		await this.collection.deleteCollection();
-		this.logWarning(`Deleted collection ${this.collection.name}.`);
-	};
 }
