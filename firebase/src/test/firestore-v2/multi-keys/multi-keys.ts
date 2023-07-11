@@ -1,17 +1,8 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {firestore} from '../_core/consts';
+import {firestore, validateDBObject} from '../_core/consts';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {
-	DB_Object,
-	DB_Object_validator,
-	DBDef,
-	deepClone,
-	PreDB,
-	tsValidateMustExist,
-	tsValidateResult
-} from '@nu-art/ts-common';
-import {keepDBObjectKeys} from '@nu-art/ts-common/utils/db-object-tools';
+import {DB_Object, DBDef, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {composeDbObjectUniqueId} from '../../../main';
 
@@ -43,10 +34,7 @@ export const TestCases_FB_MultiKeys: Test['testcases'] = [
 		input: async (collection: FirestoreCollectionV2<DB_Type, 'aKey' | 'bKey'>) => {
 			const dbItem = await collection.create.item(deepClone(sampleDoc1));
 			compareId(sampleDoc1, dbItem);
-			const dbObject = keepDBObjectKeys(dbItem);
-			const error = tsValidateResult(dbObject, DB_Object_validator);
-			console.error(error);
-			expect(error).to.eql(undefined);
+			validateDBObject(dbItem);
 		}
 	},
 	{

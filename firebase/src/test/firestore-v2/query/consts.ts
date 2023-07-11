@@ -11,6 +11,7 @@ import {
 	id_outer1,
 	innerQueryCollection,
 	outerQueryCollection,
+	outerValue1,
 	testInstance1,
 	testInstance2,
 	testInstance3,
@@ -88,8 +89,9 @@ export const queryAllTestCases: CollectionTest['testcases'] = [
 			outerCollection: outerQueryCollection,
 			innerCollection: innerQueryCollection,
 			check: async (collectionOuter, collectionInner) => {
-				const outerItem = await collectionOuter.query.all([id_outer1]);
-				expect(outerItem.length).to.eql(1);
+				const outerItems = await collectionOuter.query.all([id_outer1]);
+				expect(outerItems.length).to.eql(1);
+				expect(outerValue1._id).to.eql(outerItems[0]?._id);
 			}
 		}
 	},
@@ -102,6 +104,7 @@ export const queryAllTestCases: CollectionTest['testcases'] = [
 			check: async (collectionOuter, collectionInner) => {
 				const items = await collectionInner.query.all([id_inner1, id_inner2]);
 				expect(items.length).to.eql(2);
+				expect(items[0]?._id).to.eql(id_inner1);
 			}
 		}
 	},
@@ -146,6 +149,7 @@ export const queryComplexTestCases: CollectionTest['testcases'] = [
 			check: async (collectionOuter, collectionInner) => {
 				const innerItems = await collectionInner.query.custom({where: {parentId: id_outer1}});
 				expect(innerItems.length).to.eql(5);
+				expect(true).to.eql(innerItems.every(item => item.parentId === id_outer1));
 			}
 		}
 	},
@@ -159,6 +163,7 @@ export const queryComplexTestCases: CollectionTest['testcases'] = [
 				await collectionInner.runTransaction(async (transaction) => {
 					const innerItems = await collectionInner.query.custom({where: {parentId: id_outer1}}, transaction);
 					expect(innerItems.length).to.eql(5);
+					expect(true).to.eql(innerItems.every(item => item.parentId === id_outer1));
 				});
 			}
 		}
