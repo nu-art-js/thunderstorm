@@ -1,9 +1,25 @@
 import * as chai from 'chai';
 import {expect} from 'chai';
-import {duplicateObjectToCreate, firestore, testInstance1, testInstance2, testInstance3} from '../_core/consts';
+import {
+	duplicateObjectToCreate,
+	firestore,
+	testInstance1,
+	testInstance2,
+	testInstance3,
+	validateDBObject
+} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {compare, DBDef, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
+import {
+	compare,
+	DB_Object,
+	DBDef,
+	deepClone,
+	PreDB,
+	removeDBObjectKeys,
+	sortArray,
+	tsValidateMustExist
+} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {updatedStringValue1, updatedStringValue2} from '../update/update';
 
@@ -37,6 +53,21 @@ export const TestCases_FB_Set: Test['testcases'] = [
 			}
 		}
 	},
+	{
+		description: 'set new item with id',
+		result: () => {
+			return {created: [duplicateObjectToCreate]};
+		},
+		input: {
+			toCreate: [],
+			setAction: async (collection, inserted) => {
+				const resultObject = await collection.set.item(deepClone(duplicateObjectToCreate));
+				validateDBObject(resultObject);
+				expect(resultObject._id).to.eql(duplicateObjectToCreate._id);
+			}
+		}
+	},
+
 	{
 		description: 'set new item in transaction',
 		result: () => {
@@ -162,7 +193,7 @@ export const TestSuite_FirestoreV2_Set: Test = {
 		const allResults = sortArray([...result.created ?? [], ...result.updated ?? [], ...result.notUpdated ?? []], item => item._uniqueId);
 
 		//assert items have been updated correctly
-		expect(true).to.eql(compare(sortedRemaining.map(removeDBObjectKeys), allResults));
+		expect(true).to.eql(compare(sortedRemaining.map(removeDBObjectKeys), (allResults as DB_Object[]).map(removeDBObjectKeys)));
 		//assert timestamps correctly updated
 		result.updated?.forEach((_preDBUpdated) => {
 			const _itemIndex = sortedRemaining.findIndex(_item => _item._uniqueId === _preDBUpdated._uniqueId);

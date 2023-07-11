@@ -47,9 +47,8 @@ export const createTestCases: CreateTest['testcases'] = [
 			check: async (collection, expectedResult) => {
 				const items = await collection.query.custom({where: {}});
 				expect(items.length).to.eql(1);
-				expect(true).to.eql(compare(removeDBObjectKeys(items[0]), getSingleItem(expectedResult) as DB_Type));
-				// expect()).to.eql();
-
+				expect(true).to.eql(compare(removeDBObjectKeys(items[0]), removeDBObjectKeys(getSingleItem(expectedResult) as DB_Type)));
+				expect(items[0]._id).to.eql(getSingleItem(expectedResult)._id);
 			}
 		}
 	},
