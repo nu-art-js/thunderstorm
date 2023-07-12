@@ -19,7 +19,18 @@
  * limitations under the License.
  */
 
-import {__stringify, _values, ApiException, DB_BaseObject, DB_Object, DB_Object_Metadata, Default_UniqueKey, Metadata, Module, PreDB} from '@nu-art/ts-common';
+import {
+	__stringify,
+	_values,
+	ApiException,
+	DB_BaseObject,
+	DB_Object,
+	DB_Object_Metadata,
+	Default_UniqueKey,
+	Metadata,
+	Module,
+	PreDB
+} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {_EmptyQuery, DBApiDefGeneratorIDBV2, UpgradeCollectionBody} from '../shared';
 import {DBApiConfig, ModuleBE_BaseDBV2} from './ModuleBE_BaseDBV2';
@@ -54,7 +65,7 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 				return toReturnItem;
 			}),
 			createBodyServerApi(apiDef.v1.upsert, this.dbModule.set.item),
-			createBodyServerApi(apiDef.v1.upsertAll, (body)=>this.dbModule.set.all(body)),
+			createBodyServerApi(apiDef.v1.upsertAll, (body) => this.dbModule.set.all(body)),
 			createQueryServerApi(apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
 			createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
 			createQueryServerApi(apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
