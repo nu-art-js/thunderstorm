@@ -39,7 +39,6 @@ import {PubsubExample} from '@modules/PubsubExample';
 import {ModuleBE_Slack, Slack_ServerApiError} from '@nu-art/slack';
 
 
-
 const packageJson = require('./package.json');
 const version = require('./version-app.json');
 console.log(`Starting server v${packageJson.version} with env: ${Environment.name}`);
