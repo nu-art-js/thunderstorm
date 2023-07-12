@@ -22,7 +22,7 @@
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {addRoutes, createQueryServerApi, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
-import {_keys, currentTimeMillis, DB_Object, DBDef, filterDuplicates, LogLevel, Module, OmitDBObject, TypedMap, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, DB_Object, DBDef, filterDuplicates, LogLevel, Module, tsValidateMustExist, TypedMap} from '@nu-art/ts-common';
 import {_EmptyQuery, ApiDef_SyncManagerV2, DBSyncData} from '../shared';
 import {ModuleBE_BaseDBV2} from './ModuleBE_BaseDBV2';
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
@@ -82,11 +82,11 @@ export class ModuleBE_SyncManagerV2_Class
 		return deletedItem;
 	};
 
-	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction: Transaction) {
+	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction?: Transaction) {
 		const toInsert = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
 		const now = currentTimeMillis();
 		toInsert.forEach(item => item.__updated = now);
-		await this.collection.create.all(toInsert, transaction);
+		await this.collection.set.all(toInsert, transaction);
 		let deletedCount = await this.deletedCount.get(0);
 		deletedCount += items.length;
 		await this.deletedCount.set(deletedCount);
@@ -97,10 +97,8 @@ export class ModuleBE_SyncManagerV2_Class
 			...query,
 			where: {...query.where, __collectionName: collectionName}
 		};
-		if (transaction)
-			return this.collection.query.custom(finalQuery, transaction);
 
-		return this.collection.query.custom(finalQuery);
+		return this.collection.query.custom(finalQuery, transaction);
 	}
 
 	__onCleanupInvoked = async () => {
@@ -191,7 +189,7 @@ export class ModuleBE_SyncManagerV2_Class
 }
 
 export const DBDef_DeletedItems: DBDef<DeletedDBItem> = {
-	validator: {} as ValidatorTypeResolver<OmitDBObject<DeletedDBItem>>,
+	validator: tsValidateMustExist,
 	dbName: '__deleted__docs',
 	entityName: 'DeletedDoc',
 	versions: ['1.0.0'],
