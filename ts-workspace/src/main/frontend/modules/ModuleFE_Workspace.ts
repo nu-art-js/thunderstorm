@@ -19,7 +19,7 @@
 import {apiWithBody, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {_values, BadImplementationException, MUSTNeverHappenException, TypedMap} from '@nu-art/ts-common';
 import {DBApiDefGeneratorIDB} from '@nu-art/db-api-generator/shared';
-import {ApiCallerEventType, ModuleFE_BaseApi, DBApiFEConfig} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventType, DBApiFEConfig, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {PanelConfig} from '..';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {DBDef_Workspaces} from '../../shared/db-def';
@@ -88,7 +88,6 @@ export class ModuleFE_Workspace_Class
 
 		this.upsertRunnable = setTimeout(async () => {
 			const values = _values(this.workspacesToUpsert);
-			this.logInfo(values);
 			await this.v1.upsertAll(values).executeSync();
 			this.workspacesToUpsert = {};
 		}, 500);
