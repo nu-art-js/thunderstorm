@@ -59,14 +59,18 @@ import {DocWrapperV2, UpdateObject} from './DocWrapperV2';
 import {_values} from '@nu-art/ts-common/utils/object-tools';
 import {composeDbObjectUniqueId} from '../../shared/utils';
 import UpdateData = firestore.UpdateData;
-import BulkWriter = firestore.BulkWriter;
 import WriteBatch = firestore.WriteBatch;
+import BulkWriter = firestore.BulkWriter;
 
+
+// {deleted: null} means that the whole collection has been deleted
+export type PostWriteProcessingData<Type extends DB_Object> = { updated?: Type | Type[], deleted?: Type | Type[] | null };
 
 export type FirestoreCollectionHooks<Type extends DB_Object> = {
 	canDeleteItems: (dbItems: Type[], transaction?: Transaction) => Promise<void>,
-	prepareItemForDB?: (dbInstance: PreDB<Type>, transaction?: Transaction) => Promise<void>,
-	manipulateQuery?: (query: FirestoreQuery<Type>) => FirestoreQuery<Type>
+	preWriteProcessing?: (dbInstance: PreDB<Type>, transaction?: Transaction) => Promise<void>,
+	postWriteProcessing?: (data: PostWriteProcessingData<Type>) => Promise<void>,
+	manipulateQuery?: (query: FirestoreQuery<Type>) => FirestoreQuery<Type>,
 }
 
 export type MultiWriteOperation = 'create' | 'set' | 'update' | 'delete';
@@ -216,6 +220,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			docs.forEach((doc, i) => transaction.create(doc.ref, dbItems[i]));
 		else
 			await this.multiWrite(multiWriteType, docs, 'create', dbItems);
+		this.hooks?.postWriteProcessing?.({updated: dbItems});
 		return dbItems;
 	};
 
@@ -239,6 +244,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			docs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
+		this.hooks?.postWriteProcessing?.({updated: preparedItems});
 		return preparedItems;
 	};
 
@@ -263,7 +269,9 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		const docs = this.doc.all(updateData.map(_data => _data._id));
 		const toUpdate: UpdateObject<Type>[] = await Promise.all(docs.map(async (_doc, i) => await _doc.prepareForUpdate(updateData[i])));
 		await this.multiWrite(multiWriteType, docs, 'update', toUpdate);
-		return await this.getAll(docs) as Type[];
+		const dbItems = await this.getAll(docs) as Type[];
+		this.hooks?.postWriteProcessing?.({updated: dbItems});
+		return dbItems;
 	};
 
 	async validateUpdateData(updateData: UpdateData<Type>, transaction?: Transaction) {
@@ -294,6 +302,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			docs.map(async doc => transaction.delete(doc.ref));
 		else
 			await this.multiWrite(multiWriteType, docs, 'delete');
+		this.hooks?.postWriteProcessing?.({deleted: dbItems});
 		return dbItems;
 	};
 
@@ -301,6 +310,8 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		const refs = await this.collection.listDocuments();
 		const bulk = this.wrapper.firestore.bulkWriter();
 		refs.forEach(_ref => bulk.delete(_ref));
+		// deleted: null means that the whole collection has been deleted
+		this.hooks?.postWriteProcessing?.({deleted: null});
 		await bulk.close();
 	};
 
@@ -338,21 +349,17 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 
 	// ############################## Multi Write ##############################
 	addToMultiWrite = <Op extends MultiWriteOperation>(writer: BulkWriter | WriteBatch, doc: DocWrapperV2<Type>, operation: Op, item?: MultiWriteItem<Op, Type>) => {
-		const isBulk = writer instanceof BulkWriter;
-
 		switch (operation) {
 			case 'create':
 				writer.create(doc.ref, item as MultiWriteItem<'create', Type>);
 				break;
 			case 'set':
-				isBulk ?
-					(writer as BulkWriter).set(doc.ref, item as MultiWriteItem<'set', Type>) :
-					(writer as WriteBatch).set(doc.ref, item as MultiWriteItem<'set', Type>);
+				// @ts-ignore
+				writer.set(doc.ref, item as MultiWriteItem<'set', Type>);
 				break;
 			case 'update':
-				isBulk ?
-					(writer as BulkWriter).update(doc.ref, item as MultiWriteItem<'update', Type>) :
-					(writer as WriteBatch).update(doc.ref, item as MultiWriteItem<'update', Type>);
+				// @ts-ignore
+				writer.update(doc.ref, item as MultiWriteItem<'update', Type>);
 				break;
 			case 'delete':
 				writer.delete(doc.ref);
@@ -438,6 +445,10 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		// Throw exception if an _id appears more than once
 		if (_values(idCountMap).some(count => count > 1))
 			throw new BadImplementationException(`${originFunctionName} received the same _id twice.`);
+	}
+
+	composeDbObjectUniqueId = (item: PreDB<Type>) => {
+		return composeDbObjectUniqueId(item, this.uniqueKeys);
 	}
 }
 

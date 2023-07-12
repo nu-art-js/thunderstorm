@@ -56,7 +56,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		this.assertId(preDBItem);
 		preDBItem.__updated = preDBItem.__created = now;
 		preDBItem._v = this.collection.getVersion();
-		await this.collection.hooks?.prepareItemForDB?.(preDBItem, transaction);
+		await this.collection.hooks?.preWriteProcessing?.(preDBItem, transaction);
 		this.collection.validateItem(preDBItem as T);
 		return preDBItem as T;
 	};
@@ -67,8 +67,11 @@ export class DocWrapperV2<T extends DB_Object> {
 		if (transaction) {
 			transaction.create(this.ref, dbItem);
 			this.data = dbItem;
-		} else
+		}
+		else
 			await this.ref.create(dbItem);
+
+		this.collection.hooks?.postWriteProcessing?.({updated: dbItem});
 
 		return dbItem;
 	};
@@ -85,7 +88,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		});
 
 		updatedDBItem.__updated = currentTimeMillis();
-		await this.collection.hooks?.prepareItemForDB?.(updatedDBItem, transaction);
+		await this.collection.hooks?.preWriteProcessing?.(updatedDBItem, transaction);
 		this.collection.validateItem(updatedDBItem);
 		return updatedDBItem;
 	};
@@ -100,6 +103,8 @@ export class DocWrapperV2<T extends DB_Object> {
 		// Will always get here with a transaction!
 		transaction!.set(this.ref, newDBItem);
 		this.data = currDBItem;
+
+		this.collection.hooks?.postWriteProcessing?.({updated: newDBItem});
 
 		return newDBItem;
 	};
@@ -139,7 +144,9 @@ export class DocWrapperV2<T extends DB_Object> {
 	update = async (updateData: UpdateObject<T>) => {
 		updateData = await this.prepareForUpdate(updateData);
 		await this.ref.update(updateData);
-		return await this.get();
+		const dbItem = await this.get();
+		this.collection.hooks?.postWriteProcessing?.({updated: dbItem});
+		return dbItem;
 	};
 
 	delete = async (transaction?: Transaction): Promise<T | undefined> => {
@@ -156,6 +163,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		transaction!.delete(this.ref);
 
 		this.cleanCache();
+		this.collection.hooks?.postWriteProcessing?.({deleted: dbItem});
 		return dbItem;
 	};
 }
