@@ -18,10 +18,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {_keys, BadImplementationException, Logger} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, exists, Logger} from '@nu-art/ts-common';
 import {HttpMethod, TypedApi} from './types';
 import {HttpException, TS_Progress} from './request-types';
 import {ErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
+import {dispatcher_onAuthRequired} from './no-auth-listener';
 
 
 export type ErrorType = any
@@ -209,12 +210,15 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		if (!this.isValidStatus(status)) {
 			const errorResponse = this.getErrorResponse();
 			const httpException = new HttpException(status, this.url, errorResponse);
+			if (status === 401)
+				await dispatcher_onAuthRequired.dispatchModuleAsync(this);
+
 			await this.onError?.(httpException, requestData, this);
 			throw httpException;
 		}
 
 		let response: API['R'] = this.getResponse();
-		if (!response) {
+		if (!exists(response)) {
 			await this.onCompleted?.(response, requestData, this);
 			return response;
 		}
@@ -229,7 +233,7 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 	}
 
 	execute(onSuccess: (response: API['R'], data?: string) => Promise<void> | void = () => this.logger?.logVerbose(`Completed: ${this.label}`),
-			onError: (reason: HttpException) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
+					onError: (reason: HttpException) => any = reason => this.logger?.logWarning(`Error: ${this.label}`, reason)) {
 
 		this.executeSync()
 			.then(onSuccess)

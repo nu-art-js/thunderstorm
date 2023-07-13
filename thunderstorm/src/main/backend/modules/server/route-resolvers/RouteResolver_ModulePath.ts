@@ -34,7 +34,7 @@ export type HttpRoute = {
 }
 export type MiddlewareConfig = {
 	filter: (apiDef: ApiDef<any>) => boolean
-	middleware: ServerApi_Middleware
+	middlewares: ServerApi_Middleware[]
 }
 
 export class RouteResolver_ModulePath
@@ -66,7 +66,7 @@ export class RouteResolver_ModulePath
 			if (!api.addMiddlewares)
 				throw new MUSTNeverHappenException(`Missing api.middleware for`);
 
-			this.middlewares.filter(config => config.filter(api.apiDef) && api.addMiddleware(config.middleware));
+			this.middlewares.filter(config => config.filter(api.apiDef) && api.addMiddlewares(...config.middlewares));
 			api.route(this.express, this.initialPath);
 		});
 	}
@@ -79,8 +79,8 @@ export class RouteResolver_ModulePath
 		});
 	}
 
-	addMiddleware(middleware: ServerApi_Middleware, filter: (apiDef: ApiDef<any>) => boolean = () => true) {
-		this.middlewares.push({middleware, filter});
+	addMiddleware(filter: (apiDef: ApiDef<any>) => boolean = () => true, ...middlewares: ServerApi_Middleware[]) {
+		this.middlewares.push({middlewares, filter});
 	}
 
 	public resolveRoutes = () => {
