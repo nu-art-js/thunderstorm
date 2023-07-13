@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-import {ModuleBE_BaseApi_Class} from '@nu-art/db-api-generator/backend';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import {ApiDef_PermissionUser, DB_PermissionUser, Request_AssignAppPermissions} from '../../shared';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
+import {ModuleBE_BaseApiV2_Class} from "@nu-art/db-api-generator/backend/ModuleBE_BaseApiV2";
 
 
 export class ModuleBE_PermissionUserAPI_Class
-	extends ModuleBE_BaseApi_Class<DB_PermissionUser> {
+	extends ModuleBE_BaseApiV2_Class<DB_PermissionUser> {
 
 	constructor() {
 		super(ModuleBE_PermissionUserDB);

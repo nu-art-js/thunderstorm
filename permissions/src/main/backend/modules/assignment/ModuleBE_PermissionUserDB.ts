@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {
 	_keys,
@@ -31,29 +30,21 @@ import {
 	filterDuplicates,
 	flatArray
 } from '@nu-art/ts-common';
-import {
-	MemKey_AccountEmail,
-	MemKey_AccountId,
-	ModuleBE_Account,
-	OnNewUserRegistered,
-	OnUserLogin
-} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail, MemKey_AccountId, ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {PermissionsShare} from '../permissions-share';
-import {
-	AssignAppPermissions,
-	DB_PermissionUser,
-	DBDef_PermissionUser,
-	Request_AssignAppPermissions
-} from '../../shared';
+import {AssignAppPermissions, DB_PermissionUser, DBDef_PermissionUser, Request_AssignAppPermissions} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
+import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
+import {firestore} from "firebase-admin";
+import Transaction = firestore.Transaction;
 
 
 export class ModuleBE_PermissionUserDB_Class
-	extends ModuleBE_BaseDB<DB_PermissionUser>
+	extends ModuleBE_BaseDBV2<DB_PermissionUser>
 	implements OnNewUserRegistered, OnUserLogin, CanDeletePermissionEntities<'Group', 'User'> {
 
 	constructor() {
@@ -64,7 +55,7 @@ export class ModuleBE_PermissionUserDB_Class
 		let conflicts: DB_PermissionUser[] = [];
 		const dependencies: Promise<DB_PermissionUser[]>[] = [];
 
-		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query({where: {__groupIds: {$aca: ids}}})));
+		dependencies.push(batchActionParallel(items.map(dbObjectToId), 10, async ids => this.query.custom({where: {__groupIds: {$aca: ids}}})));
 		if (dependencies.length)
 			conflicts = flatArray(await Promise.all(dependencies));
 
@@ -88,7 +79,7 @@ export class ModuleBE_PermissionUserDB_Class
 			});
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionUser, t?: FirestoreTransaction): Promise<void> {
+	protected async preWriteProcessing(dbInstance: DB_PermissionUser, t?: Transaction): Promise<void> {
 		const email = MemKey_AccountEmail.get();
 		if (email)
 			dbInstance._audit = auditBy(email);
@@ -99,7 +90,7 @@ export class ModuleBE_PermissionUserDB_Class
 			return;
 
 		const userGroups = await batchAction(userGroupIds, 10, (chunked) => {
-			return ModuleBE_PermissionGroup.query({where: {_id: {$in: chunked}}});
+			return ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: chunked}}});
 		});
 
 		if (userGroupIds.length !== userGroups.length) {
@@ -141,17 +132,17 @@ export class ModuleBE_PermissionUserDB_Class
 	}
 
 	async insertIfNotExist(email: string) {
-		return this.runInTransaction(async (transaction) => {
+		return this.runTransaction(async (transaction) => {
 
 			const account = await ModuleBE_Account.getUser(email);
 			if (!account)
 				throw new ApiException(404, `user not found for email ${email}`);
 
-			const users = await transaction.query(this.collection, {where: {accountId: account._id}});
+			const users = await this.query.custom({where: {accountId: account._id}}, transaction);
 			if (users.length)
 				return;
 
-			return this.upsert({accountId: account._id, groups: []}, transaction);
+			return this.set.item({accountId: account._id, groups: []}, transaction);
 		});
 	}
 
@@ -178,9 +169,9 @@ export class ModuleBE_PermissionUserDB_Class
 		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
 			throw new BadImplementationException('Group to must be a part of the groups to removed array');
 
-		await this.runInTransaction(async (transaction) => {
+		await this.runTransaction(async (transaction) => {
 			const users = await batchAction(sharedUserIds, 10, (chunked) => {
-				return transaction.query(this.collection, {where: {accountId: {$in: chunked}}});
+				return this.query.custom({where: {accountId: {$in: chunked}}}, transaction);
 			});
 
 			if (users.length !== sharedUserIds.length)
@@ -189,7 +180,7 @@ export class ModuleBE_PermissionUserDB_Class
 			if (!assignAppPermissionsObj.customField || _keys(assignAppPermissionsObj.customField).length === 0)
 				throw new ApiException(400, `Cannot set app permissions '${assignAppPermissionsObj.projectId}--${assignAppPermissionsObj.group._id}', request must have custom fields restriction!!`);
 
-			const _group = await transaction.queryUnique(ModuleBE_PermissionGroup.collection, {where: {_id: groupId}});
+			const _group = await ModuleBE_PermissionGroup.query.uniqueAssert(groupId, transaction);
 			if (!_group)
 				throw new ApiException(404, `No permissions GROUP for id ${groupId}`);
 
@@ -210,7 +201,7 @@ export class ModuleBE_PermissionUserDB_Class
 				return user;
 			});
 
-			return this.upsertAll(updatedUsers, transaction);
+			return this.set.all(updatedUsers, transaction);
 		});
 	}
 }

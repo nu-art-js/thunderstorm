@@ -118,13 +118,11 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	}
 
 	querySync = async (syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> => {
-		return this.runTransaction(async transaction => {
 			const items = await this.collection.query.custom(syncQuery);
 			const deletedItems = await ModuleBE_SyncManagerV2.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
 
 			await this.upgradeInstances(items);
 			return {toUpdate: items, toDelete: deletedItems};
-		});
 	};
 
 	private _preWriteProcessing = async (dbItem: PreDB<Type>, transaction?: Transaction) => {

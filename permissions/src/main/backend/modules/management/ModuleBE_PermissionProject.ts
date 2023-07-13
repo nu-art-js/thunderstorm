@@ -17,22 +17,23 @@
  * limitations under the License.
  */
 
-import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
-import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ServerApi} from '@nu-art/thunderstorm/backend';
 import {auditBy} from '@nu-art/ts-common';
 import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {DB_PermissionProject, DBDef_PermissionProjects} from '../../shared';
+import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
+import {firestore} from "firebase-admin";
+import Transaction = firestore.Transaction;
 
 
 export class ModuleBE_PermissionProject_Class
-	extends ModuleBE_BaseDB<DB_PermissionProject> {
+	extends ModuleBE_BaseDBV2<DB_PermissionProject> {
 
 	constructor() {
 		super(DBDef_PermissionProjects);
 	}
 
-	protected async preUpsertProcessing(dbInstance: DB_PermissionProject, t?: FirestoreTransaction): Promise<void> {
+	protected async preWriteProcessing(dbInstance: DB_PermissionProject, t?: Transaction): Promise<void> {
 		dbInstance._audit = auditBy(MemKey_AccountEmail.get());
 	}
 
