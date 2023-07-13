@@ -35,6 +35,7 @@
     "@nu-art/live-docs": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/permissions": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/push-pub-sub": "$THUNDERSTORM_SDK_VERSION",
+    "@nu-art/slack": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/storm": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",

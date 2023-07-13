@@ -19,7 +19,6 @@
  * limitations under the License.
  */
 
-import {DB_Object} from '@nu-art/ts-common';
 import {BaseHttpRequest} from './BaseHttpRequest';
 
 
@@ -37,8 +36,6 @@ export enum HttpMethod {
 export type HttpMethod_Query = 'get' | 'delete'
 export type HttpMethod_Body = 'post' | 'put' | 'patch'
 export type HttpMethod_Empty = 'options' | 'head'
-
-export type IndexKeys<T extends DB_Object, Ks extends keyof T> = { [K in Ks]: T[K] };
 
 export type QueryParams = { [key: string]: string | number | undefined; };
 

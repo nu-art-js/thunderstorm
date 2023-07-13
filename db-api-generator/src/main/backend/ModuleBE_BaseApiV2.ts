@@ -26,8 +26,10 @@ import {
 	DB_BaseObject,
 	DB_Object,
 	DB_Object_Metadata,
+	Default_UniqueKey,
 	Metadata,
-	Module
+	Module,
+	PreDB
 } from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {_EmptyQuery, DBApiDefGeneratorIDBV2, UpgradeCollectionBody} from '../shared';
@@ -40,7 +42,7 @@ import {FirestoreQuery} from '@nu-art/firebase';
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof Type = '_id'>
+export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof PreDB<Type> = Default_UniqueKey>
 	extends Module {
 
 	readonly dbModule: ModuleBE_BaseDBV2<Type, any, Ks>;
@@ -63,7 +65,7 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 				return toReturnItem;
 			}),
 			createBodyServerApi(apiDef.v1.upsert, this.dbModule.set.item),
-			createBodyServerApi(apiDef.v1.upsertAll, this.dbModule.set.all),
+			createBodyServerApi(apiDef.v1.upsertAll, (body) => this.dbModule.set.all(body)),
 			createQueryServerApi(apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
 			createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
 			createQueryServerApi(apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
@@ -97,7 +99,7 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	};
 }
 
-export const createApisForDBModuleV2 = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof DBType = '_id'>(dbModule: ModuleBE_BaseDBV2<DBType, ConfigType, Ks>) => {
+export const createApisForDBModuleV2 = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof PreDB<DBType> = Default_UniqueKey>(dbModule: ModuleBE_BaseDBV2<DBType, ConfigType, Ks>) => {
 	return new ModuleBE_BaseApiV2_Class<DBType, ConfigType, Ks>(dbModule);
 };
 

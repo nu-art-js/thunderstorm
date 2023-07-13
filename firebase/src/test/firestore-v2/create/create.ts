@@ -1,4 +1,4 @@
-import {firestore, testInstance1} from '../_core/consts';
+import {duplicateObjectToCreate, firestore} from '../_core/consts';
 import {DB_Type, TestInputValue} from '../_core/types';
 import {DBDef, deepClone, PreDB, tsValidateMustExist} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
@@ -14,7 +14,6 @@ export const createTests_dbDef: DBDef<DB_Type> = {
 	entityName: 'create-test',
 	validator: tsValidateMustExist
 };
-export const duplicateObjectToCreate = {...testInstance1, _id: testInstance1._uniqueId};
 export const TestCases_FB_Create: CreateTest['testcases'] = [
 	...createTestCases,
 	{

@@ -20,11 +20,11 @@
  */
 
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
-import {ApiException, DB_Object, DBDef, filterInstances, Module} from '@nu-art/ts-common';
+import {ApiException, currentTimeMillis, DB_Object, DBDef, Default_UniqueKey, filterInstances, Module, PreDB} from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {_EmptyQuery, Response_DBSync} from '../shared';
-import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
+import {FirestoreCollectionV2, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {OnFirestoreBackupSchedulerActV2} from '@nu-art/thunderstorm/backend/modules/backup/FirestoreBackupSchedulerV2';
@@ -45,7 +45,7 @@ export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfi
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof Type = '_id'>
+export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof PreDB<Type> = Default_UniqueKey>
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerActV2 {
 	// private static DeleteHardLimit = 250;
@@ -56,6 +56,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	public set!: FirestoreCollectionV2<Type>['set'];
 	public update!: FirestoreCollectionV2<Type>['update'];
 	public delete!: FirestoreCollectionV2<Type>['delete'];
+	public runTransaction!: FirestoreCollectionV2<Type>['runTransaction'];
 
 	protected constructor(dbDef: DBDef<Type, any>, appConfig?: BaseDBApiConfig) {
 		super();
@@ -66,6 +67,11 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		// @ts-ignore
 		this.setDefaultConfig(preConfig);
 		this.dbDef = dbDef;
+		this.canDeleteItems.bind(this);
+		this._preWriteProcessing.bind(this);
+		this._postWriteProcessing.bind(this);
+		this.manipulateQuery.bind(this);
+		this.collectDependencies.bind(this);
 	}
 
 	/**
@@ -75,16 +81,19 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	init() {
 		const firestore = ModuleBE_Firebase.createAdminSession(this.config?.projectId).getFirestoreV2();
 		this.collection = firestore.getCollection<Type>(this.dbDef, {
-			canDeleteItems: this.canDeleteItems,
-			prepareItemForDB: this._prepareItemForDB
+			canDeleteItems: this.canDeleteItems.bind(this),
+			preWriteProcessing: this._preWriteProcessing.bind(this),
+			postWriteProcessing: this._postWriteProcessing.bind(this),
+			manipulateQuery: this.manipulateQuery.bind(this)
 		});
 
 		// ############################## API ##############################
-		this.query = this.collection.query;
-		this.create = this.collection.create;
-		this.set = this.collection.set;
-		this.update = this.collection.update;
-		this.delete = this.collection.delete;
+		this.runTransaction = this.collection.runTransaction;
+		this.query = {...this.collection.query};
+		this.create = {...this.collection.create};
+		this.set = {...this.collection.set};
+		this.update = {...this.collection.update};
+		this.delete = {...this.collection.delete};
 	}
 
 	getCollectionName() {
@@ -99,7 +108,8 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		return [{
 			query: this.resolveBackupQuery(),
 			queryFunction: this.collection.query.custom,
-			moduleKey: this.config.collectionName
+			moduleKey: this.config.collectionName,
+			version: this.config.versions[0]
 		}];
 	}
 
@@ -108,43 +118,66 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	}
 
 	querySync = async (syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> => {
-		const items = await this.collection.query.custom(syncQuery);
-		const deletedItems = await ModuleBE_SyncManagerV2.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
+		return this.runTransaction(async transaction => {
+			const items = await this.collection.query.custom(syncQuery);
+			const deletedItems = await ModuleBE_SyncManagerV2.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
 
-		await this.upgradeInstances(items);
-		return {toUpdate: items, toDelete: deletedItems};
+			await this.upgradeInstances(items);
+			return {toUpdate: items, toDelete: deletedItems};
+		});
 	};
 
-	/*
-	 * TO BE MOVED ABOVE THIS COMMENT
-	 *
-	 *
-	 *  -- Everything under this comment should be revised and move up --
-	 *
-	 *
-	 * TO BE MOVED ABOVE THIS COMMENT
-	 */
-
-	private _prepareItemForDB = async (dbItem: Type, transaction?: Transaction) => {
+	private _preWriteProcessing = async (dbItem: PreDB<Type>, transaction?: Transaction) => {
 		await this.upgradeInstances([dbItem]);
-		await this.prepareItemForDB(dbItem, transaction);
+		await this.preWriteProcessing(dbItem, transaction);
 	};
 
 	/**
-	 * Override this method to customize the assertions that should be done before the insertion of the document to the DB.
+	 * Override this method to customize the processing that should be done before create, set or update.
 	 *
 	 * @param transaction - The transaction object.
 	 * @param dbInstance - The DB entry for which the uniqueness is being asserted.
 	 * @param request
 	 */
-	protected async prepareItemForDB(dbInstance: Type, transaction?: Transaction) {
+	protected async preWriteProcessing(dbInstance: PreDB<Type>, transaction?: Transaction) {
+	}
+
+	private _postWriteProcessing = async (data: PostWriteProcessingData<Type>) => {
+		const now = currentTimeMillis();
+
+		if (data.updated && !(Array.isArray(data.updated) && data.updated.length === 0)) {
+			const latestUpdated = Array.isArray(data.updated) ?
+				data.updated.reduce((toRet, current) => Math.max(toRet, current.__updated), data.updated[0].__updated) :
+				data.updated.__updated;
+			await ModuleBE_SyncManagerV2.setLastUpdated(this.config.collectionName, latestUpdated);
+		}
+
+		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
+			await ModuleBE_SyncManagerV2.onItemsDeleted(this.config.collectionName, !Array.isArray(data.deleted) ? [data.deleted] : data.deleted, this.config.uniqueKeys);
+			await ModuleBE_SyncManagerV2.setLastUpdated(this.config.collectionName, now);
+		} else if (data.deleted === null)
+			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
+			await ModuleBE_SyncManagerV2.setOldestDeleted(this.config.collectionName, now);
+
+		await this.postWriteProcessing(data);
+	};
+
+	/**
+	 * Override this method to customize processing that should be done after create, set, update or delete.
+	 * @param data: a map of updated and deleted dbItems - deleted === null means the whole collection has been deleted
+	 */
+	protected async postWriteProcessing(data: PostWriteProcessingData<Type>) {
+	}
+
+	manipulateQuery(query: FirestoreQuery<Type>): FirestoreQuery<Type> {
+		return query;
 	}
 
 	preUpsertProcessing(doNotCompileWithThisFunction: number) {
-		//todo Deprecated, turn all into prepareItemForDB
+		//todo Deprecated, turn all into preWriteProcessing
 	}
 
-	upgradeInstances = async (dbInstances: Type[]) => {
+	upgradeInstances = async (dbInstances: PreDB<Type>[]) => {
 		await Promise.all(dbInstances.map(async dbInstance => {
 			const instanceVersion = dbInstance._v;
 			const currentVersion = this.config.versions[0];
@@ -160,7 +193,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		}));
 	};
 
-	protected async upgradeItem(dbItem: Type, toVersion: string): Promise<void> {
+	protected async upgradeItem(dbItem: PreDB<Type>, toVersion: string): Promise<void> {
 	}
 
 	async promoteCollection() {
@@ -218,10 +251,4 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 		return dependencies.length > 0 ? dependencies : undefined;
 	}
-
-	deleteCollection = async () => {
-		this.logWarning(`Called delete collection on ${this.collection.name}!`);
-		await this.collection.deleteCollection();
-		this.logWarning(`Deleted collection ${this.collection.name}.`);
-	};
 }

@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {DB_Object, DBIndex, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
+import {DB_Object, DBIndex, IndexKeys, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
 
 //@ts-ignore - set IDBAPI as indexedDB regardless of browser
 const IDBAPI = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
@@ -39,8 +39,6 @@ export type DBConfig<T extends DB_Object, Ks extends keyof T> = {
 	indices?: DBIndex<T>[]
 	upgradeProcessor?: (db: IDBDatabase) => void
 };
-
-export type IndexKeys<T extends DB_Object, Ks extends keyof T> = { [K in Ks]: T[K] };
 
 export type IndexDb_Query = {
 	query?: string | number | string[] | number[],
@@ -129,7 +127,7 @@ export class IndexedDB<T extends DB_Object, Ks extends keyof T> {
 	};
 
 	private cursorHandler = (cursorRequest: IDBRequest<IDBCursorWithValue | null>, perValueCallback: (value: T) => void,
-							 endCallback: () => void, limiterCallback?: () => boolean) => {
+													 endCallback: () => void, limiterCallback?: () => boolean) => {
 		cursorRequest.onsuccess = (event) => {
 			const cursor: IDBCursorWithValue = (event.target as IDBRequest).result;
 

@@ -22,7 +22,19 @@
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {addRoutes, createQueryServerApi, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
-import {_keys, currentTimeMillis, DB_Object, DBDef, filterDuplicates, LogLevel, Module, OmitDBObject, TypedMap, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {
+	_keys,
+	currentTimeMillis,
+	DB_Object,
+	DBDef,
+	filterDuplicates,
+	LogLevel,
+	Module,
+	PreDB,
+	tsValidateMustExist,
+	TypedMap,
+	UniqueId
+} from '@nu-art/ts-common';
 import {_EmptyQuery, ApiDef_SyncManagerV2, DBSyncData} from '../shared';
 import {ModuleBE_BaseDBV2} from './ModuleBE_BaseDBV2';
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
@@ -32,7 +44,7 @@ import Transaction = firestore.Transaction;
 
 type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
 type Type_SyncData = TypedMap<LastUpdated>
-type DeletedDBItem = DB_Object & { __collectionName: string }
+type DeletedDBItem = DB_Object & { __collectionName: string, __docId: UniqueId }
 type Config = {
 	retainDeletedCount: number
 }
@@ -72,9 +84,9 @@ export class ModuleBE_SyncManagerV2_Class
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
 
-	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): DeletedDBItem => {
+	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): PreDB<DeletedDBItem> => {
 		const {_id, __updated, __created, _v} = item;
-		const deletedItem: DeletedDBItem = {_id, __updated, __created, _v, __collectionName: collectionName};
+		const deletedItem: PreDB<DeletedDBItem> = {__docId: _id, __updated, __created, _v, __collectionName: collectionName};
 		uniqueKeys.forEach(key => {
 			// @ts-ignore
 			deletedItem[key] = item[key];
@@ -82,7 +94,7 @@ export class ModuleBE_SyncManagerV2_Class
 		return deletedItem;
 	};
 
-	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction: Transaction) {
+	async onItemsDeleted(collectionName: string, items: DB_Object[], uniqueKeys: string[] = ['_id'], transaction?: Transaction) {
 		const toInsert = items.map(item => this.prepareItemToDelete(collectionName, item, uniqueKeys));
 		const now = currentTimeMillis();
 		toInsert.forEach(item => item.__updated = now);
@@ -92,15 +104,15 @@ export class ModuleBE_SyncManagerV2_Class
 		await this.deletedCount.set(deletedCount);
 	}
 
-	queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>, transaction?: Transaction): Promise<DeletedDBItem[]> {
+	async queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>, transaction?: Transaction): Promise<DeletedDBItem[]> {
 		const finalQuery: FirestoreQuery<DeletedDBItem> = {
 			...query,
 			where: {...query.where, __collectionName: collectionName}
 		};
-		if (transaction)
-			return this.collection.query.custom(finalQuery, transaction);
 
-		return this.collection.query.custom(finalQuery);
+		const deletedItems = await this.collection.query.custom(finalQuery, transaction);
+		deletedItems.forEach(_item => _item._id = _item.__docId)
+		return deletedItems
 	}
 
 	__onCleanupInvoked = async () => {
@@ -191,11 +203,10 @@ export class ModuleBE_SyncManagerV2_Class
 }
 
 export const DBDef_DeletedItems: DBDef<DeletedDBItem> = {
-	validator: {} as ValidatorTypeResolver<OmitDBObject<DeletedDBItem>>,
+	validator: tsValidateMustExist,
 	dbName: '__deleted__docs',
 	entityName: 'DeletedDoc',
 	versions: ['1.0.0'],
-	generatedProps: ['__collectionName']
 };
 
 

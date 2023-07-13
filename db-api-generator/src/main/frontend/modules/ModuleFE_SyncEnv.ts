@@ -14,6 +14,7 @@ class ModuleFE_SyncEnv_Class
 		this.vv1 = {
 			fetchFromEnv: apiWithBody(ApiDef_SyncEnv.vv1.fetchFromEnv),
 			createBackup: apiWithQuery(ApiDef_SyncEnv.vv1.createBackup),
+			fetchBackupMetadata: apiWithQuery(ApiDef_SyncEnv.vv1.fetchBackupMetadata),
 		};
 	}
 }

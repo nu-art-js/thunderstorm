@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {ModulePack_Backend_Permissions, ModulePackBE_Permissions} from '../main/backend';
+import {ModulePackBE_Permissions, ModulePackBE_Permissions} from '../main/backend';
 import {StormTester} from '@nu-art/thunderstorm/backend-test';
 import {__scenario} from '@nu-art/testelot';
 import {createTwoAccessLevels} from './tests/create-project';
