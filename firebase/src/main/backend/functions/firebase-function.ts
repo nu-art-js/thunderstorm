@@ -29,13 +29,13 @@ import {
 	StringMap,
 	TS_Object
 } from '@nu-art/ts-common';
-import {DocumentSnapshot} from 'firebase-admin/firestore';
-import {DataSnapshot} from 'firebase-functions/lib/common/providers/database';
 import {ObjectMetadata} from 'firebase-functions/v1/storage';
 import {Message} from 'firebase-admin/lib/messaging/messaging-api';
 import {HttpsFunction, onRequest} from 'firebase-functions/v2/https';
 import {HttpsOptions} from 'firebase-functions/lib/v2/providers/https';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {DataSnapshot} from 'firebase/database';
+import {DocumentSnapshot} from 'firebase/firestore';
 
 
 export interface LocalRequest
