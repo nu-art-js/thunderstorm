@@ -201,10 +201,11 @@ export abstract class ModuleFE_BaseApi<DBType extends DB_Object, Ks extends keyo
 			if (!this.cache.loaded)
 				await this.cache.load();
 
-			this.setDataStatus(DataStatus.containsData);
+			this.setDataStatus(DataStatus.ContainsData);
 			return;
 		}
 
+		this.setDataStatus(DataStatus.UpdatingData);
 		await this.v1.sync().executeSync();
 	};
 }

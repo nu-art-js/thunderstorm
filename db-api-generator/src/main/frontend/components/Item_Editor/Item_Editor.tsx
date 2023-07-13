@@ -1,9 +1,10 @@
 import * as React from 'react';
+import {ReactNode} from 'react';
 import {ComponentSync, EditableItem, TS_Checkbox, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {AssetValueType, DB_Object} from '@nu-art/ts-common';
+import {AssetValueType, DB_Object, dbObjectToId} from '@nu-art/ts-common';
 import {ModuleFE_BaseApi} from '../../modules/ModuleFE_BaseApi';
 import {EditableDBItem} from '../../utils/EditableDBItem';
-import {ReactNode} from 'react';
+import {ApiCallerEventType} from '../../modules/types';
 
 
 type InputProps<Value, Ex> = {
@@ -118,7 +119,7 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 }
 
 export type Props_ItemEditorController<T extends DB_Object> = {
-	item: Partial<T>,
+	item: Partial<T> | string,
 	module: ModuleFE_BaseApi<T, any>,
 	onCompleted?: (item: T) => any | Promise<any>,
 	onError?: (err: Error) => any | Promise<any>
@@ -128,10 +129,26 @@ export type Props_ItemEditorController<T extends DB_Object> = {
 
 export class Item_EditorController<Item extends DB_Object, Props extends Props_ItemEditorController<Item> = Props_ItemEditorController<Item>>
 	extends ComponentSync<Props, State_ItemEditor<Item>> {
+	constructor(p: Props) {
+		super(p);
+
+		const method = p.module.defaultDispatcher.method;
+		// @ts-ignore
+		this[method] = this.__onItemUpdated;
+	}
+
+	private __onItemUpdated = (...params: ApiCallerEventType<Item>): void => {
+		const items = Array.isArray(params[1]) ? params[1] : [params[1]];
+		if (!items.map(dbObjectToId).includes(this.state.editable.item._id!))
+			return;
+
+		return this.reDeriveState();
+	};
 
 	protected deriveStateFromProps(nextProps: Props & Props_ItemEditor<Item>, state?: Partial<State_ItemEditor<Item>>): (State_ItemEditor<Item>) | undefined {
 		const _state = (state || {}) as State_ItemEditor<Item>;
-		_state.editable = new EditableDBItem(nextProps.item, nextProps.module, async (item) => {
+		const item = typeof nextProps.item === 'string' ? nextProps.module.cache.unique(nextProps.item) : nextProps.item;
+		_state.editable = new EditableDBItem(item!, nextProps.module, async (item) => {
 			this.setState(state => ({editable: state.editable.clone(item)}));
 			await nextProps.onCompleted?.(item);
 		}, nextProps.onError).setAutoSave(nextProps.autoSave || false);

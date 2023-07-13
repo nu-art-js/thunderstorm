@@ -29,6 +29,7 @@ import {App} from 'firebase-admin/app';
 import {FirestoreWrapperBEV2} from '../firestore-v2/FirestoreWrapperBEV2';
 
 
+
 /**
  * Represents the credentials of a Firebase user.
  */
