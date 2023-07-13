@@ -16,12 +16,7 @@
  * limitations under the License.
  */
 
-import {DataSnapshot, Database, Reference} from 'firebase-admin/database';
-
-
-export type Firebase_DataSnapshot = DataSnapshot
-
-export type FirebaseListener = (snapshot: Firebase_DataSnapshot | null) => void;
+import {Database, Reference} from 'firebase-admin/database';
 
 export type Firebase_DB = Database & {
 	ref(path?: string): Reference;
