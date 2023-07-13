@@ -104,13 +104,13 @@ export class ModuleBE_SyncManagerV2_Class
 		await this.deletedCount.set(deletedCount);
 	}
 
-	async queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>, transaction?: Transaction): Promise<DeletedDBItem[]> {
+	async queryDeleted(collectionName: string, query: FirestoreQuery<DB_Object>): Promise<DeletedDBItem[]> {
 		const finalQuery: FirestoreQuery<DeletedDBItem> = {
 			...query,
 			where: {...query.where, __collectionName: collectionName}
 		};
 
-		const deletedItems = await this.collection.query.custom(finalQuery, transaction);
+		const deletedItems = await this.collection.query.custom(finalQuery);
 		deletedItems.forEach(_item => _item._id = _item.__docId)
 		return deletedItems
 	}

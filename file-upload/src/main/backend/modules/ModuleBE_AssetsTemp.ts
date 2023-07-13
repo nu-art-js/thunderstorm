@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 import {DB_Asset, DBDef_TempAssets} from '../..';
-import {ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
 
 
 export class ModuleBE_AssetsTemp_Class
-	extends ModuleBE_BaseDB<DB_Asset> {
+	extends ModuleBE_BaseDBV2<DB_Asset> {
 
 	constructor() {
 		super(DBDef_TempAssets);

@@ -18,11 +18,11 @@
 
 import {Module} from '@nu-art/ts-common';
 import {ModuleBE_Workspace} from '../modules/ModuleBE_Workspace';
-import {createApisForDBModule} from '@nu-art/db-api-generator/backend';
+import {createApisForDBModuleV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseApiV2";
 
 
 export const ModulePack_Backend_TSWorkspace: Module[] = [
-	ModuleBE_Workspace, createApisForDBModule(ModuleBE_Workspace),
+	ModuleBE_Workspace, createApisForDBModuleV2(ModuleBE_Workspace),
 ];
 
 export * from '../modules/ModuleBE_Workspace';
