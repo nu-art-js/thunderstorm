@@ -18,12 +18,16 @@
 
 import {DB_Type, DB_Type_Complex, FB_ArrayType, TestInputValue} from './types';
 import {
+	DB_Object,
+	DB_Object_validator,
 	DBDef,
 	deepClone,
 	generateHex,
+	keepDBObjectKeys,
 	PreDB,
 	tsValidateArray,
 	tsValidateMustExist,
+	tsValidateResult,
 	tsValidateString,
 	UniqueId
 } from '@nu-art/ts-common';
@@ -31,6 +35,7 @@ import {FIREBASE_DEFAULT_PROJECT_ID, ModuleBE_Firebase} from '../../../main/back
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {TestModel, TestSuite} from '@nu-art/ts-common/testing/types';
+import {expect} from 'chai';
 
 
 const config = {
@@ -44,6 +49,12 @@ export const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2()
 export const getSingleItem = (item: TestInputValue): PreDB<DB_Type> => {
 	return Array.isArray(item) ? item[0] : item;
 };
+
+export function validateDBObject(dbItem: DB_Object & any) {
+	const dbObject = keepDBObjectKeys(deepClone(dbItem));
+	const error = tsValidateResult(dbObject, DB_Object_validator);
+	expect(error).to.eql(undefined);
+}
 
 export const testString1 = 'string-1';
 export const testString2 = 'string-2';
@@ -135,6 +146,7 @@ export const testInstance5: PreDB<DB_Type> = Object.freeze({
 	nestedObject: {one: testItem2, two: testItem4}
 });
 
+export const duplicateObjectToCreate = Object.freeze({...testInstance1, _id: testInstance1._uniqueId});
 
 export type CollectionTestInput = {
 	outerCollection: PreDB<DB_Type_Complex>[];
@@ -155,8 +167,9 @@ export const id_inner6 = 'f56cef2f6deecaf408992ac2075fcdc6';
 export const id_inner7 = '38318f4ef0df776aa9ffbe4cc7890e97';
 export const id_inner8 = '30a55a093a362355602ed3ae093d60bf';
 export const id_inner9 = 'fcfbd1ab066435a1bb1ffe182fcd6db8';
+export const outerValue1 = {_id: id_outer1, name: 'outer1', refs: [id_inner1, id_inner2, id_inner3]};
 export const outerQueryCollection = [
-	{_id: id_outer1, name: 'outer1', refs: [id_inner1, id_inner2, id_inner3]}
+	outerValue1
 ];
 export const innerQueryCollection = [
 	{_id: id_inner1, name: 'inner1', refs: [], parentId: id_outer1},

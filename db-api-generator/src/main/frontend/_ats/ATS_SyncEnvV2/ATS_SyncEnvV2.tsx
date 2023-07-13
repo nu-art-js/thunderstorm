@@ -1,165 +1,228 @@
 import {
-	AppToolsScreen,
-	ComponentSync,
-	genericNotificationAction,
-	LL_H_C,
-	LL_V_L,
-	SimpleListAdapter,
-	Thunder,
-	TS_AppTools,
-	TS_BusyButton,
-	TS_Checkbox,
-	TS_CollapsableContainer,
-	TS_DropDown,
-	TS_Input,
-	TS_PropRenderer
+    _className,
+    AppToolsScreen,
+    ComponentSync,
+    genericNotificationAction,
+    LL_H_C,
+    LL_V_L,
+    SimpleListAdapter,
+    Thunder,
+    TS_AppTools,
+    TS_BusyButton,
+    TS_Checkbox,
+    TS_DropDown,
+    TS_Input, TS_Loader,
+    TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import * as React from 'react';
 import './ATS_SyncEnvV2.scss';
 import {ModuleFE_BaseDB} from '../../modules/ModuleFE_BaseDB';
-import {filterKeys} from '@nu-art/ts-common';
 import {ModuleFE_SyncEnvV2} from '../../modules/ModuleFE_SyncEnvV2';
+import {filterKeys} from "@nu-art/ts-common";
+import {BackupMetaData} from "@nu-art/thunderstorm/backend/modules/backup/ModuleBE_BackupV2";
 
 
 type Env = 'prod' | 'staging' | 'dev' | 'local';
 
 type State = {
-	envList: Env[];
-	selectedEnv?: Env;
-	backupId?: string;
-	onlyModules: Set<string>;
-	excludedModules: Set<string>;
-	backingUpInProgress?: boolean
+    envList: Env[];
+    selectedEnv?: Env;
+    backupId?: string;
+    selectedModules: Set<string>;
+    moduleList: string[]
+    searchFilter: string;
+    restoreTime?: string;
+    backingUpInProgress?: boolean;
+    fetchMetadataInProgress?: boolean;
+    metadata?: BackupMetaData;
+    selectAll: boolean
 }
 
 export class ATS_SyncEnvironmentV2
-	extends ComponentSync<{}, State> {
+    extends ComponentSync<{}, State> {
 
-	static screen: AppToolsScreen = {
-		name: 'Sync Environment V2',
-		key: 'sync-environment-v2',
-		renderer: this,
-		group: 'TS Dev Tools'
-	};
+    static screen: AppToolsScreen = {
+        name: 'Sync Environment V2',
+        key: 'sync-environment-v2',
+        renderer: this,
+        group: 'TS Dev Tools'
+    };
 
-	protected deriveStateFromProps(nextProps: {}, state: State) {
-		state ??= this.state ? {...this.state} : {} as State;
-		state.envList ??= ['prod', 'staging', 'dev', 'local'];
-		if (!state.excludedModules) {
-			state.excludedModules = new Set<string>();
-			['user-account--accounts', 'user-account--sessions'].forEach(name => state.excludedModules.add(name));
-		}
-		if (!state.onlyModules)
-			state.onlyModules = new Set<string>();
-		return state;
-	}
+    componentDidUpdate(prevProps: Readonly<{}>, prevState: Readonly<State>, snapshot?: any) {
+        if ((this.state.backupId && this.state.backupId.length) && this.state.selectedEnv) {
+            if (this.state.backupId !== prevState.backupId || this.state.selectedEnv !== prevState.selectedEnv)
+                this.fetchMetadata();
+        }
+    }
 
-	private syncEnv = async () => {
-		if (!this.canSync())
-			return;
+    protected deriveStateFromProps(nextProps: {}, state: State) {
+        state ??= this.state ? {...this.state} : {} as State;
+        state.envList ??= ['prod', 'staging', 'dev', 'local'];
+        if (!state.selectedModules)
+            state.selectedModules = new Set<string>();
 
-		await genericNotificationAction(async () => {
-			await ModuleFE_SyncEnvV2.vv1.fetchFromEnv(filterKeys({
-				env: this.state.selectedEnv!,
-				backupId: this.state.backupId!,
-				onlyModules: (this.state.onlyModules.size > 0 && Array.from(this.state.onlyModules)) || undefined,
-				excludedModules: Array.from(this.state.excludedModules),
-			}, 'onlyModules')).executeSync();
-		}, 'Syncing Env');
-	};
+        state.moduleList = this.getCollectionModuleList();
+        state.selectAll ??= true;
 
-	private createNewBackup = async () => {
-		return genericNotificationAction(async () => {
-			this.setState({backingUpInProgress: true}, async () => {
-				const toRet = await ModuleFE_SyncEnvV2.vv1.createBackup({}).executeSync();
-				this.setState({backingUpInProgress: false});
-				return toRet;
-			});
-		}, 'Create Backup');
-	};
+        if (state.selectAll) {
+            state.moduleList.map(collection => state.selectedModules.add(collection));
+        } else {
+            state.moduleList.map(collection => state.selectedModules.delete(collection));
+        }
 
-	private canSync = () => {
-		return !!this.state.selectedEnv && !!this.state.backupId;
-	};
+        return state;
+    }
 
-	private getCollectionModuleList = (): string[] => {
-		return (Thunder.getInstance().filterModules((module) => {
-			//the moduleKey in ModuleBE_BaseDB's config is taken from collection's name.
-			return module instanceof ModuleFE_BaseDB && (module as ModuleFE_BaseDB<any>).getCollectionName() !== undefined;
-		}) as ModuleFE_BaseDB<any>[]).map(module => module.getCollectionName()).sort();
-	};
+    private fetchMetadata = async () => {
+        this.setState({fetchMetadataInProgress: true});
+        try {
+            await genericNotificationAction(async () => {
+                const metadata = await ModuleFE_SyncEnvV2.vv1.fetchBackupMetadata({
+                    env: this.state.selectedEnv!,
+                    backupId: this.state.backupId!,
+                }).executeSync();
 
-	private renderOnlyModulesSelection = () => {
-		const moduleNames: string[] = this.getCollectionModuleList();
+                this.setState({metadata: metadata})
+            }, 'Fetching backup metadata');
+        } catch (err: any) {
+            this.logError(err);
+        }
+        this.setState({fetchMetadataInProgress: false});
+    };
 
-		return <>
-			<LL_H_C className={'sync-env_modules-list'}>
-				{moduleNames.map(name => <TS_Checkbox
-					key={name}
-					checked={this.state.onlyModules?.has(name)}
-					onCheck={() => {
-						if (this.state.onlyModules.has(name))
-							this.state.onlyModules.delete(name);
-						else
-							this.state.onlyModules.add(name);
-						this.forceUpdate();
-					}}>{name}</TS_Checkbox>)}
+    private syncEnv = async () => {
+        if (!this.canSync())
+            return;
 
-			</LL_H_C>
-		</>;
-	};
+        const start = performance.now();
+        await genericNotificationAction(async () => {
+            await ModuleFE_SyncEnvV2.vv1.fetchFromEnv(filterKeys({
+                env: this.state.selectedEnv!,
+                backupId: this.state.backupId!,
+                selectedModules: Array.from(this.state.selectedModules)
+            }, 'selectedModules')).executeSync();
+        }, 'Syncing Env');
+        const end = performance.now();
 
-	private renderExcludedModulesSelection = () => {
-		const moduleNames: string[] = this.getCollectionModuleList();
+        this.setState({restoreTime: `${((end - start) / 1000).toFixed(3)} seconds`});
+    };
 
-		return <>
-			<LL_H_C className={'sync-env_modules-list'}>
-				{moduleNames.map(name => <TS_Checkbox
-					key={name}
-					checked={this.state.excludedModules.has(name)}
-					onCheck={() => {
-						if (this.state.excludedModules.has(name))
-							this.state.excludedModules.delete(name);
-						else
-							this.state.excludedModules.add(name);
-						this.forceUpdate();
-					}}>{name}</TS_Checkbox>)}
+    private createNewBackup = async () => {
+        return genericNotificationAction(async () => {
+            this.setState({backingUpInProgress: true}, async () => {
+                const toRet = await ModuleFE_SyncEnvV2.vv1.createBackup({}).executeSync();
+                this.setState({backingUpInProgress: false});
+                return toRet;
+            });
+        }, 'Create Backup');
+    };
 
-			</LL_H_C>
-		</>;
-	};
+    private canSync = () => {
+        return !!this.state.selectedEnv && !!this.state.backupId && !!this.state.metadata;
+    };
 
-	render() {
-		const envAdapter = SimpleListAdapter(this.state.envList, item => <div
-			className={'node-data'}>{item.item}</div>);
-		return <LL_V_L className={'sync-env-page'}>
-			<LL_H_C>{TS_AppTools.renderPageHeader('Sync Environment V2')}<TS_BusyButton onClick={this.createNewBackup}>Trigger Backup</TS_BusyButton></LL_H_C>
-			<LL_H_C className={'sync-env-page__main'}>
-				<TS_PropRenderer.Vertical label={'Environment'}>
-					<TS_DropDown
-						placeholder={'Select Environment'}
-						className={'fancy'}
-						adapter={envAdapter}
-						onSelected={env => this.setState({selectedEnv: env})}
-						selected={this.state.selectedEnv}
-						canUnselect={true}
-					/>
-				</TS_PropRenderer.Vertical>
+    private getCollectionModuleList(): string[] {
+        return (Thunder.getInstance().filterModules((module) => {
+            //the moduleKey in ModuleBE_BaseDB's config is taken from collection's name.
+            return module instanceof ModuleFE_BaseDB && (module as ModuleFE_BaseDB<any>).getCollectionName() !== undefined;
+        }) as ModuleFE_BaseDB<any>[]).map(module => module.getCollectionName()).sort();
+    }
 
-				<TS_PropRenderer.Vertical label={'Backup ID'}>
-					<TS_Input type={'text'} value={this.state.backupId}
-										onChange={val => this.setState({backupId: val})}/>
-				</TS_PropRenderer.Vertical>
+    private renderBackupModules = () => {
+        return <>
+            <LL_V_L className={'sync-env_modules-list-v2'}>
+                <LL_H_C className={'utils'}>
+                    <TS_Checkbox
+                        checked={this.state.selectAll}
+                        onCheck={status => this.reDeriveState({selectAll: status})}
+                    >
+                        Select All
+                    </TS_Checkbox>
+                    <TS_Input onChange={val => this.setState({searchFilter: val})} type={'text'}
+                              placeholder={'sreach collection'}/>
+                </LL_H_C>
+                {this.state.moduleList.map(name => {
+                    const collectionMetadata = this.state.metadata?.collectionsData.find(collection => collection.collectionName === name);
 
-				<TS_BusyButton
-					onClick={this.syncEnv}
-					disabled={!this.canSync()}
-				>Sync</TS_BusyButton>
-			</LL_H_C>
-			<TS_CollapsableContainer headerRenderer={TS_AppTools.renderPageHeader('Only Included Modules')}
-															 containerRenderer={this.renderOnlyModulesSelection}/>
-			<TS_CollapsableContainer headerRenderer={TS_AppTools.renderPageHeader('Excluded Modules')}
-															 containerRenderer={this.renderExcludedModulesSelection}/>
-		</LL_V_L>;
-	}
+                    if ((this.state.searchFilter && this.state.searchFilter.length) && !name.includes(this.state.searchFilter))
+                        return;
+
+                    return <TS_PropRenderer.Horizontal
+                        label={<LL_H_C className={'header'}>
+                            <TS_Checkbox
+                                checked={this.state.selectedModules.has(name)}
+                                onCheck={() => {
+                                    if (this.state.selectedModules.has(name))
+                                        this.state.selectedModules.delete(name);
+                                    else
+                                        this.state.selectedModules.add(name);
+
+                                    let isAllSelected = true
+                                    if (this.state.selectedModules.size < this.state.moduleList.length)
+                                        isAllSelected = false;
+
+
+                                    this.setState({
+                                        selectedModules: new Set<string>(Array.from(this.state.selectedModules)),
+                                        selectAll: isAllSelected
+                                    });
+                                }}
+                            />
+                            <div>{name}</div>
+                        </LL_H_C>}
+                        key={name}>
+                        <LL_H_C
+                            className={'collection-row'}
+                        >
+                            <LL_H_C className={'backup-info'}>
+                                <div>{collectionMetadata?.numOfDocs !== undefined ? collectionMetadata?.numOfDocs : '--'}</div>
+                                |
+                                <div className={'left-row'}>{collectionMetadata?.version || '--'}</div>
+                            </LL_H_C>
+                        </LL_H_C>
+                    </TS_PropRenderer.Horizontal>
+                })}
+
+            </LL_V_L>
+        </>;
+    }
+
+    render() {
+        const envAdapter = SimpleListAdapter(this.state.envList, item => <div
+            className={'node-data'}>{item.item}</div>);
+        return <LL_V_L className={'sync-env-page'}>
+            <LL_H_C>{TS_AppTools.renderPageHeader('Sync Environment V2')}<TS_BusyButton onClick={this.createNewBackup}>Trigger
+                Backup</TS_BusyButton></LL_H_C>
+            <LL_H_C className={'sync-env-page__main'}>
+                <TS_PropRenderer.Vertical label={'Environment'}>
+                    <TS_DropDown
+                        placeholder={'Select Environment'}
+                        className={'fancy'}
+                        adapter={envAdapter}
+                        onSelected={env => this.setState({selectedEnv: env})}
+                        selected={this.state.selectedEnv}
+                        canUnselect={true}
+                    />
+                </TS_PropRenderer.Vertical>
+
+                <TS_PropRenderer.Vertical label={'Backup ID'}>
+                    <TS_Input type={'text'} value={this.state.backupId}
+                              onBlur={val => {
+                                  if (val.match(/^[0-9A-Fa-f]{32}$/))
+                                      this.setState({backupId: val})
+                              }}/>
+                </TS_PropRenderer.Vertical>
+
+                <div className={_className(!this.state.fetchMetadataInProgress && 'hidden')}><TS_Loader/></div>
+
+                <TS_BusyButton
+                    onClick={this.syncEnv}
+                    disabled={!this.canSync()}
+                >Restore</TS_BusyButton>
+
+                {this.state.restoreTime && <div>{this.state.restoreTime}</div>}
+            </LL_H_C>
+            {this.canSync() && this.renderBackupModules()}
+        </LL_V_L>;
+    }
 }

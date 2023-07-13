@@ -78,7 +78,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 
 	protected constructor(apiDef: ApiDef<API>, tag?: string) {
 		super(tag || apiDef.path);
-		this.setMinLevel(ServerApi.isDebug ? LogLevel.Verbose : LogLevel.Info);
+		this.setMinLevel(ServerApi.isDebug ? LogLevel.Debug : LogLevel.Info);
 		this.apiDef = apiDef;
 	}
 

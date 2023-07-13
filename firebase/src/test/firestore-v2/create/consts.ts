@@ -5,6 +5,7 @@ import {expect} from 'chai';
 import {FB_Type} from '../../firestore/_core/types';
 import {DB_Type, TestInputValue} from '../_core/types';
 import {
+	duplicateObjectToCreate,
 	getSingleItem,
 	testInstance1,
 	testInstance2,
@@ -40,14 +41,14 @@ const items: PreDB<DB_Type>[] = [
 export const createTestCases: CreateTest['testcases'] = [
 	{
 		description: '1 item',
-		result: [testInstance1],
+		result: [duplicateObjectToCreate],
 		input: {
-			value: [testInstance1],
+			value: [duplicateObjectToCreate],
 			check: async (collection, expectedResult) => {
 				const items = await collection.query.custom({where: {}});
 				expect(items.length).to.eql(1);
-				expect(true).to.eql(compare(removeDBObjectKeys(items[0]), getSingleItem(expectedResult) as DB_Type));
-
+				expect(true).to.eql(compare(removeDBObjectKeys(items[0]), removeDBObjectKeys(getSingleItem(expectedResult) as DB_Type)));
+				expect(items[0]._id).to.eql(getSingleItem(expectedResult)._id);
 			}
 		}
 	},

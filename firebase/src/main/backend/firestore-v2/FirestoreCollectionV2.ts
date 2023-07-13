@@ -21,24 +21,28 @@ import {
 	ApiException,
 	BadImplementationException,
 	compare,
+	Const_UniqueKeys,
 	CustomException,
 	DB_Object,
 	DB_Object_validator,
 	DBDef,
-	DefaultDBVersion,
+	dbObjectToId,
+	Default_UniqueKey,
+	DefaultDBVersion, Exception,
 	exists,
-	filterInOut,
+	filterDuplicates,
 	filterInstances,
-	flatArray,
 	generateHex,
 	InvalidResult,
-	KeysOfDB_Object,
+	keepDBObjectKeys,
+	Logger,
 	MUSTNeverHappenException,
 	PreDB,
 	StaticLogger,
 	tsValidateResult,
 	TypedMap,
 	UniqueId,
+	UniqueParam,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {
@@ -51,22 +55,37 @@ import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
-import {BulkItem, BulkOperation, DocWrapperV2, UpdateObject} from './DocWrapperV2';
+import {DocWrapperV2, UpdateObject} from './DocWrapperV2';
 import {_values} from '@nu-art/ts-common/utils/object-tools';
+import {composeDbObjectUniqueId} from '../../shared/utils';
 import UpdateData = firestore.UpdateData;
+import WriteBatch = firestore.WriteBatch;
+import BulkWriter = firestore.BulkWriter;
 
+
+// {deleted: null} means that the whole collection has been deleted
+export type PostWriteProcessingData<Type extends DB_Object> = { updated?: Type | Type[], deleted?: Type | Type[] | null };
 
 export type FirestoreCollectionHooks<Type extends DB_Object> = {
 	canDeleteItems: (dbItems: Type[], transaction?: Transaction) => Promise<void>,
-	prepareItemForDB: (dbInstance: Type, transaction?: Transaction) => Promise<void>
+	preWriteProcessing?: (dbInstance: PreDB<Type>, transaction?: Transaction) => Promise<void>,
+	postWriteProcessing?: (data: PostWriteProcessingData<Type>) => Promise<void>,
+	manipulateQuery?: (query: FirestoreQuery<Type>) => FirestoreQuery<Type>,
 }
 
+export type MultiWriteOperation = 'create' | 'set' | 'update' | 'delete';
+
+export type MultiWriteItem<Op extends MultiWriteOperation, T extends DB_Object> =
+	Op extends 'delete' ? undefined :
+		Op extends 'update' ? UpdateObject<T> :
+			T;
+
+type MultiWriteType = 'bulk' | 'batch';
+
+const defaultMultiWriteType = 'batch';
 export const _EmptyQuery = Object.freeze({where: {}});
 export const dbIdLength = 32;
-
-export function generateId() {
-	return generateHex(dbIdLength);
-}
+export const maxBatch = 500;
 
 /**
  * # <ins>FirestoreBulkException</ins>
@@ -85,15 +104,18 @@ export class FirestoreBulkException
 /**
  * FirestoreCollection is a class for handling Firestore collections.
  */
-export class FirestoreCollectionV2<Type extends DB_Object> {
+export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey>
+	extends Logger {
 	readonly name: string;
 	readonly wrapper: FirestoreWrapperBEV2;
 	readonly collection: FirestoreType_Collection;
 	readonly dbDef: DBDef<Type, any>;
+	readonly uniqueKeys: Ks[];
 	private readonly validator: ValidatorTypeResolver<Type>;
 	readonly hooks?: FirestoreCollectionHooks<Type>;
 
-	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type>, hooks?: FirestoreCollectionHooks<Type>) {
+	constructor(wrapper: FirestoreWrapperBEV2, _dbDef: DBDef<Type, Ks>, hooks?: FirestoreCollectionHooks<Type>) {
+		super();
 		this.name = _dbDef.dbName;
 		this.wrapper = wrapper;
 		if (!/[a-z-]{3,}/.test(_dbDef.dbName))
@@ -101,41 +123,42 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 
 		this.collection = wrapper.firestore.collection(_dbDef.dbName);
 		this.dbDef = _dbDef;
+		this.uniqueKeys = this.dbDef.uniqueKeys || Const_UniqueKeys;
 		this.validator = this.getValidator(_dbDef);
 		this.hooks = hooks;
 	}
 
-	getValidator = (dbDef: DBDef<Type>): ValidatorTypeResolver<Type> => {
+	getValidator = (dbDef: DBDef<Type, Ks>): ValidatorTypeResolver<Type> => {
 		return typeof dbDef.validator === 'function' ?
 			[((instance: Type) => {
-				const dbObjectOnly = KeysOfDB_Object.reduce<DB_Object>((objectToRet, key) => {
-					if (exists(instance[key]))  // @ts-ignore
-						objectToRet[key] = instance[key];
-
-					return objectToRet;
-				}, {} as DB_Object);
+				const dbObjectOnly = keepDBObjectKeys(instance);
 				return tsValidateResult(dbObjectOnly, DB_Object_validator);
 			}), dbDef.validator] as ValidatorTypeResolver<Type> :
 			{...DB_Object_validator, ...dbDef.validator} as ValidatorTypeResolver<Type>;
 	};
 
 	// ############################## DocWrapper ##############################
-	doc = {
+	doc = Object.freeze({
 		_: (ref: FirestoreType_DocumentReference<Type>, data?: Type): DocWrapperV2<Type> => {
 			// @ts-ignore
 			return new DocWrapperV2(this, ref, data);
 		},
-		unique: (_id: UniqueId) => {
-			const doc = this.wrapper.firestore.doc(`${this.name}/${_id}`) as FirestoreType_DocumentReference<Type>;
+		unique: (id: UniqueParam<Type, Ks>) => {
+			if (!id)
+				throw new MUSTNeverHappenException('Did not receive an _id at doc.unique!');
+
+			if (typeof id !== 'string') {
+				id = assertUniqueId(id, this.uniqueKeys);
+			}
+
+			const doc = this.wrapper.firestore.doc(`${this.name}/${id}`) as FirestoreType_DocumentReference<Type>;
 			return this.doc._(doc);
 		},
 		item: (item: PreDB<Type>) => {
-			if (!exists(item._id))
-				throw new BadImplementationException('Cannot create DocWrapper without _id!');
-
-			return this.doc.unique(item._id!);
+			item._id = assertUniqueId(item, this.uniqueKeys);
+			return this.doc.unique(item._id);
 		},
-		all: (_ids: UniqueId[]) => _ids.map(this.doc.unique),
+		all: (_ids: (UniqueParam<Type, Ks>)[]) => _ids.map(this.doc.unique),
 		allItems: (preDBItems: PreDB<Type>[]) => {
 			// At this point all preDB MUST have ids
 			return preDBItems.map(preDBItem => this.doc.item(preDBItem));
@@ -143,7 +166,7 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		query: async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
 			return (await this._customQuery(query, transaction)).map(_snapshot => this.doc._(_snapshot.ref, _snapshot.data()));
 		}
-	};
+	});
 
 	// ############################## Query ##############################
 	private getAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction): Promise<(Type | undefined)[]> => {
@@ -152,17 +175,18 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		return (await (transaction ?? this.wrapper.firestore).getAll(...docs.map(_doc => _doc.ref))).map(_snapshot => _snapshot.data() as Type | undefined);
 	};
 
-	private _customQuery = async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Type>[]> => {
-		const myQuery = FirestoreInterfaceV2.buildQuery<Type>(this, query);
+	private _customQuery = async (tsQuery: FirestoreQuery<Type>, transaction?: Transaction): Promise<FirestoreType_DocumentSnapshot<Type>[]> => {
+		tsQuery = this.hooks?.manipulateQuery?.(tsQuery) ?? tsQuery;
+		const firestoreQuery = FirestoreInterfaceV2.buildQuery<Type>(this, tsQuery);
 		if (transaction)
-			return (await transaction.get(myQuery)).docs as FirestoreType_DocumentSnapshot<Type>[];
+			return (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<Type>[];
 
-		return (await myQuery.get()).docs as FirestoreType_DocumentSnapshot<Type>[];
+		return (await firestoreQuery.get()).docs as FirestoreType_DocumentSnapshot<Type>[];
 	};
 
-	query = {
-		unique: async (_id: UniqueId, transaction?: Transaction) => await this.doc.unique(_id).get(transaction),
-		uniqueAssert: async (_id: UniqueId, transaction?: Transaction): Promise<Type> => {
+	query = Object.freeze({
+		unique: async (_id: UniqueParam<Type, Ks>, transaction?: Transaction) => await this.doc.unique(_id).get(transaction),
+		uniqueAssert: async (_id: UniqueParam<Type, Ks>, transaction?: Transaction): Promise<Type> => {
 			const resultItem = await this.query.unique(_id, transaction);
 			if (!resultItem)
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with _id: ${_id}`);
@@ -171,190 +195,189 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		},
 		uniqueCustom: async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
 			const thisShouldBeOnlyOne = await this.query.custom(query, transaction);
-			if (thisShouldBeOnlyOne.length !== 1) {
-				if (thisShouldBeOnlyOne.length > 1)
-					throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbName}`);
-				else
-					throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
-
-			}
+			if (thisShouldBeOnlyOne.length === 0)
+				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
+			if (thisShouldBeOnlyOne.length > 1)
+				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbName}`);
 			return thisShouldBeOnlyOne[0];
 		},
-		all: async (_ids: UniqueId[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
+		all: async (_ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
 		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
 			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
 		},
-	};
+	});
 
 	// ############################## Create ##############################
-	protected _createItem = async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => {
-		preDBItem._id ??= generateId();
-		return await this.doc.item(preDBItem).create(preDBItem, transaction);
-	};
-
-	protected _createAll = async (preDBItems: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
+	protected _createAll = async (preDBItems: PreDB<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
 		if (preDBItems.length === 1)
-			return [await this._createItem(preDBItems[0], transaction)];
+			return [await this.create.item(preDBItems[0], transaction)];
 
-		preDBItems.forEach(preDBItem => preDBItem._id ??= generateId());
 		const docs = this.doc.allItems(preDBItems);
 		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForCreate(preDBItems[i], transaction)));
-		this.assertNoDuplicatedIds(dbItems);
+		this.assertNoDuplicatedIds(dbItems, 'create.all');
 
 		if (transaction)
 			docs.forEach((doc, i) => transaction.create(doc.ref, dbItems[i]));
 		else
-			await this.bulkOperation(docs, 'create', dbItems);
+			await this.multiWrite(multiWriteType, docs, 'create', dbItems);
+		this.hooks?.postWriteProcessing?.({updated: dbItems});
 		return dbItems;
 	};
 
-	create = {
-		item: this._createItem,
+	create = Object.freeze({
+		item: async (preDBItem: PreDB<Type>, transaction?: Transaction): Promise<Type> => await this.doc.item(preDBItem).create(preDBItem, transaction),
 		all: this._createAll,
-	};
+	});
 
 	// ############################## Set ##############################
-	protected _setAll = async (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
-		const {
-			filteredIn: hasIdItems,
-			filteredOut: noIdItems
-		} = filterInOut<PreDB<Type> | Type>(items, _item => exists(_item._id));
-		const toCreate = noIdItems; // If the items don't have _id, we need to create them
-		const toSet: [Type, Type][] = []; // A tuple of the new item to set (0) and the current dbItem (1)
+	protected _setAll = async (items: (PreDB<Type> | Type)[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+		const docs = this.doc.allItems(items);
+		const dbItems = await this.getAll(docs);
 
-		// Query for all items that have _id, to see if they exist
-		const dbItems = await this.query.all(hasIdItems.map(_item => _item._id!));
-
-		// Items with _id that exist, are to be updated. Items with _id that don't exist, are added to be created.
-		dbItems.forEach((_item, i) => !exists(_item) ? toCreate.push(hasIdItems[i]) : toSet.push([hasIdItems[i] as Type, _item!]));
-
-		return flatArray(await Promise.all([
-			this.create.all(toCreate as PreDB<Type>[], transaction),
-			this._setExistingAll(toSet, transaction)
-		]));
-	};
-
-	/**
-	 * Set operation that updates multiple existing dbItems.
-	 * @param toSet: A tuple of the new item to set (0) and the current dbItem (1).
-	 * @param transaction: Transaction
-	 */
-	protected _setExistingAll = async (toSet: [Type, Type][], transaction?: Transaction): Promise<Type[]> => {
-		const docs = this.doc.all(toSet.map(_item => _item[0]._id));
-		const dbItems = await Promise.all(docs.map((doc, i) => doc.prepareForSet(...toSet[i], transaction)));
-		this.assertNoDuplicatedIds(dbItems);
+		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
+			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction) : await docs[i].prepareForSet(items[i] as Type, _dbItem!, transaction);
+		}));
+		this.assertNoDuplicatedIds(preparedItems, 'set.all');
 
 		if (transaction)
 			// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
-			docs.map((doc, i) => transaction.set(doc.ref, dbItems[i]));
+			docs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
 		else
-			await this.bulkOperation(docs, 'set', dbItems);
-		return dbItems;
+			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
+		this.hooks?.postWriteProcessing?.({updated: preparedItems});
+		return preparedItems;
 	};
 
-	set = {
-		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => {
-			if (!preDBItem._id)
-				return this.create.item(preDBItem, transaction);
-
-			return await this.doc.item(preDBItem).set(preDBItem, transaction);
-		},
-		all: (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
+	set = Object.freeze({
+		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => await this.doc.item(preDBItem).set(preDBItem, transaction),
+		all: (items: (PreDB<Type> | Type)[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 			if (transaction)
-				return this._setAll(items, transaction);
+				return this._setAll(items, transaction, multiWriteType);
 
 			return this.runTransaction(t => this._setAll(items, t));
 		},
-		bulk: (items: (PreDB<Type> | Type)[]) => {
-			return this._setAll(items);
+		/**
+		 * Multi is a non atomic operation
+		 */
+		multi: (items: (PreDB<Type> | Type)[], multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+			return this._setAll(items, undefined, multiWriteType);
 		},
-	};
-
-	private assertNoDuplicatedIds(items: Type[], originFunctionName: string = 'set.all') {
-		const idCountMap: TypedMap<number> = items.reduce<TypedMap<number>>((countMap, item) => {
-			// Count the number of appearances of each _id
-			countMap[item._id] = !exists(countMap[item._id]) ? 1 : 1 + countMap[item._id];
-			return countMap;
-		}, {});
-
-		// Throw exception if an _id appears more than once
-		if (_values(idCountMap).some(count => count > 1))
-			throw new BadImplementationException(`${originFunctionName} received the same _id twice.`);
-	}
+	});
 
 	// ############################## Update ##############################
-	protected _updateBulk = async (updateData: UpdateObject<Type>[]): Promise<Type[]> => {
+	protected _updateAll = async (updateData: UpdateObject<Type>[], multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
 		const docs = this.doc.all(updateData.map(_data => _data._id));
 		const toUpdate: UpdateObject<Type>[] = await Promise.all(docs.map(async (_doc, i) => await _doc.prepareForUpdate(updateData[i])));
-		await this.bulkOperation(docs, 'update', toUpdate);
-		return await this.getAll(docs) as Type[];
+		await this.multiWrite(multiWriteType, docs, 'update', toUpdate);
+		const dbItems = await this.getAll(docs) as Type[];
+		this.hooks?.postWriteProcessing?.({updated: dbItems});
+		return dbItems;
 	};
 
-	async assertUpdateData(updateData: UpdateData<Type>, transaction?: Transaction) {
+	async validateUpdateData(updateData: UpdateData<Type>, transaction?: Transaction) {
 	}
 
-	update = {
+	update = Object.freeze({
 		item: (updateData: UpdateObject<Type>) => this.doc.unique(updateData._id).update(updateData),
-		all: this._updateBulk,
-	};
+		all: this._updateAll,
+	});
 
 	// ############################## Delete ##############################
-	protected _deleteQuery = async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
+	protected _deleteQuery = async (query: FirestoreQuery<Type>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		if (!exists(query) || compare(query, _EmptyQuery))
 			throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
 
 		const docsToBeDeleted = await this.doc.query(query, transaction);
 		// Because we query for docs, these docs and their data must exist in Firestore.
 		const itemsToReturn = docsToBeDeleted.map(doc => doc.data!); // Data must exist here.
-		await this._deleteAll(docsToBeDeleted, transaction);
+		await this._deleteAll(docsToBeDeleted, transaction, multiWriteType);
 		return itemsToReturn;
 	};
 
-	protected _deleteAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction) => {
+	protected _deleteAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
 		const dbItems = filterInstances(await this.getAll(docs, transaction));
 		await this.hooks?.canDeleteItems(dbItems, transaction);
 		if (transaction)
 			// here we do not call doc.delete because we have performed all the delete preparation as a group of items before this call
 			docs.map(async doc => transaction.delete(doc.ref));
 		else
-			await this.bulkOperation(docs, 'delete');
+			await this.multiWrite(multiWriteType, docs, 'delete');
+		this.hooks?.postWriteProcessing?.({deleted: dbItems});
 		return dbItems;
 	};
 
-	deleteCollection = async () => {
+	private deleteCollection = async () => {
 		const refs = await this.collection.listDocuments();
 		const bulk = this.wrapper.firestore.bulkWriter();
 		refs.forEach(_ref => bulk.delete(_ref));
+		// deleted: null means that the whole collection has been deleted
+		this.hooks?.postWriteProcessing?.({deleted: null});
 		await bulk.close();
 	};
 
-	delete = {
-		unique: async (id: string, transaction?: Transaction) => await this.doc.unique(id).delete(transaction),
+	delete = Object.freeze({
+		unique: async (id: UniqueParam<Type, Ks>, transaction?: Transaction) => await this.doc.unique(id).delete(transaction),
 		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.doc.item(item).delete(transaction),
-		all: async (ids: UniqueId[], transaction?: Transaction): Promise<Type[]> => {
+		all: async (ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
 			if (!transaction)
-				return this.runTransaction(t => this.delete.all(ids, t));
+				return this.runTransaction(t => this.delete.all(ids, t, multiWriteType));
 
-			return this._deleteAll(ids.map(id => this.doc.unique(id)), transaction);
+			return this._deleteAll(ids.map(id => this.doc.unique(id)), transaction, multiWriteType);
 		},
-		allItems: async (items: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
+		allItems: async (items: PreDB<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
 			if (!transaction)
-				return this.runTransaction(t => this.delete.allItems(items, t));
+				return this.runTransaction(t => this.delete.allItems(items, t, multiWriteType));
 
-			return await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction);
+			return await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction, multiWriteType);
+		},
+		query: async (query: FirestoreQuery<Type>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
+			if (!transaction)
+				return this.runTransaction(t => this.delete.query(query, t, multiWriteType));
+
+			return await this._deleteQuery(query, transaction, multiWriteType);
 		},
 		/**
-		 * Bulk is a non atomic delete operation
+		 * Multi is a non atomic operation
 		 */
-		bulk: {
-			all: async (ids: UniqueId[], transaction?: Transaction) => await this._deleteAll(ids.map(id => this.doc.unique(id)), transaction),
-			items: async (items: PreDB<Type>[], transaction?: Transaction) => await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction),
+		multi: {
+			all: async (ids: UniqueId[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(ids.map(id => this.doc.unique(id)), transaction, multiWriteType),
+			items: async (items: PreDB<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction, multiWriteType),
+			query: this._deleteQuery
 		},
-		query: this._deleteQuery
+		yes: {iam: {sure: {iwant: {todelete: {the: {collection: {delete: this.deleteCollection}}}}}}}
+	});
+
+	// ############################## Multi Write ##############################
+	addToMultiWrite = <Op extends MultiWriteOperation>(writer: BulkWriter | WriteBatch, doc: DocWrapperV2<Type>, operation: Op, item?: MultiWriteItem<Op, Type>) => {
+		switch (operation) {
+			case 'create':
+				writer.create(doc.ref, item as MultiWriteItem<'create', Type>);
+				break;
+			case 'set':
+				// @ts-ignore
+				writer.set(doc.ref, item as MultiWriteItem<'set', Type>);
+				break;
+			case 'update':
+				// @ts-ignore
+				writer.update(doc.ref, item as MultiWriteItem<'update', Type>);
+				break;
+			case 'delete':
+				writer.delete(doc.ref);
+				break;
+		}
+		return item;
 	};
 
-	// ############################## General ##############################
-	protected bulkOperation = async <Op extends BulkOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: BulkItem<Op, Type>[]) => {
+	multiWrite = async <Op extends MultiWriteOperation>(type: MultiWriteType, docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
+		if (type === 'bulk')
+			return this.bulkWrite(docs, operation, items);
+		else if (type === 'batch')
+			return this.batchWrite(docs, operation, items);
+		else
+			throw new Exception(`Unknown type passed to multiWrite: ${type}`);
+	};
+
+	bulkWrite = async <Op extends MultiWriteOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
 		const bulk = this.wrapper.firestore.bulkWriter();
 
 		const errors: Error[] = [];
@@ -363,12 +386,24 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 			return false;
 		});
 
-		docs.forEach((doc, index) => doc.addToBulk(bulk, operation, items?.[index]));
+		docs.forEach((doc, index) => this.addToMultiWrite(bulk, doc, operation, items?.[index]));
 		await bulk.close();
 
 		if (errors.length)
 			throw new FirestoreBulkException(errors);
 	};
+
+	batchWrite = async <Op extends MultiWriteOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
+		for (let i = 0; i < docs.length; i += maxBatch) {
+			const batch = this.wrapper.firestore.batch();
+			const chunk = docs.slice(i, i + maxBatch);
+			chunk.map((_doc, index) => this.addToMultiWrite(batch, _doc, operation, items?.[index]));
+
+			await batch.commit();
+		}
+	};
+
+	// ############################## General ##############################
 
 	/**
 	 * A firestore transaction is run globally on the firestore project and not specifically on any collection, locking specific documents in the project.
@@ -396,4 +431,41 @@ export class FirestoreCollectionV2<Type extends DB_Object> {
 		const errorBody = {type: 'bad-input', body: {result: results, input: instance}};
 		throw new ApiException(400, `error validating ${this.dbDef.entityName}`).setErrorBody(errorBody as any);
 	}
+
+	private assertNoDuplicatedIds(items: Type[], originFunctionName: string) {
+		if (filterDuplicates(items, dbObjectToId).length === items.length)
+			return;
+
+		const idCountMap: TypedMap<number> = items.reduce<TypedMap<number>>((countMap, item) => {
+			// Count the number of appearances of each _id
+			countMap[item._id] = !exists(countMap[item._id]) ? 1 : 1 + countMap[item._id];
+			return countMap;
+		}, {});
+
+		// Throw exception if an _id appears more than once
+		if (_values(idCountMap).some(count => count > 1))
+			throw new BadImplementationException(`${originFunctionName} received the same _id twice.`);
+	}
+
+	composeDbObjectUniqueId = (item: PreDB<Type>) => {
+		return composeDbObjectUniqueId(item, this.uniqueKeys);
+	}
 }
+
+/**
+ * If the collection has unique keys, assert they exist, and use them to generate the _id.
+ * In the case an _id already exists, verify it is not different from the uniqueKeys-generated _id.
+ */
+export const assertUniqueId = <T extends PreDB<DB_Object>, K extends (keyof T)[]>(item: T, keys: K) => {
+	// If there are no specific uniqueKeys, generate a random _id.
+	if (compare(keys, Const_UniqueKeys as K))
+		return item._id ?? generateHex(dbIdLength);
+
+	const _id = composeDbObjectUniqueId(item, keys);
+	// If the item has an _id, and it matches the uniqueKeys-generated _id, all is well.
+	// If the uniqueKeys-generated _id doesn't match the existing _id, this means someone had changed the uniqueKeys or _id which must never happen.
+	if (exists(item._id) && _id !== item._id)
+		throw new MUSTNeverHappenException(`When checking the existing _id, it did not match the _id composed from the unique keys! \n expected: ${_id} \n actual: ${item._id}`);
+
+	return _id;
+};

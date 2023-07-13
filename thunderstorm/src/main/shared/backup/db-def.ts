@@ -3,7 +3,8 @@ import {DB_BackupDoc} from './backup-types';
 
 export const Validator_BackupDoc: ValidatorTypeResolver<OmitDBObject<DB_BackupDoc>> = {
 	timestamp: tsValidateTimestamp(),
-	backupPath: tsValidateString()
+	backupPath: tsValidateString(),
+	metadataPath: tsValidateString()
 };
 
 export const DBDef_BackupDocs: DBDef<DB_BackupDoc, keyof DB_BackupDoc> = {

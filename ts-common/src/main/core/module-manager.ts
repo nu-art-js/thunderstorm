@@ -84,10 +84,13 @@ export class ModuleManager
 
 		this.modules.forEach(module => {
 			this.logDebug(`---------  ${module.getName()}  ---------`);
-			// @ts-ignore
-			module.init();
-			// @ts-ignore
-			module.initiated = true;
+			try { // @ts-ignore
+				module.init();
+				// @ts-ignore
+				module.initiated = true;
+			} catch (e: any) {
+				this.logError(`Failed to init module ${module.getName()}.\n`, e);
+			}
 		});
 
 		// @ts-ignore
