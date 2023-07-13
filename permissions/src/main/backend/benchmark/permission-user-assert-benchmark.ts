@@ -50,15 +50,15 @@ export async function testUserPermissionsTime() {
 	const domainId = generateHex(32);
 	const permissionValue = 50;
 	const customField = {UnitId: 'eq1'};
-	await ModuleBE_PermissionProject.upsert({_id: projectId, name: 'project test'});
-	await ModuleBE_PermissionDomain.upsert({_id: domainId, projectId: projectId, namespace: 'domain-test'});
-	const accessLevel = await ModuleBE_PermissionAccessLevel.upsert({
+	await ModuleBE_PermissionProject.set.item({_id: projectId, name: 'project test'});
+	await ModuleBE_PermissionDomain.set.item({_id: domainId, projectId: projectId, namespace: 'domain-test'});
+	const accessLevel = await ModuleBE_PermissionAccessLevel.set.item({
 		_id: permissionId,
 		name: 'test-permission',
 		domainId,
 		value: permissionValue
 	});
-	await ModuleBE_PermissionApi.upsert({
+	await ModuleBE_PermissionApi.set.item({
 		projectId: projectId,
 		_id: apiId,
 		path: apiPath,
@@ -80,9 +80,9 @@ export async function testUserPermissionsTime() {
 		groupIdArray.push({groupId, customField: {test: 'test'}});
 	}
 
-	await ModuleBE_PermissionGroup.upsertAll(dbInstances);
+	await ModuleBE_PermissionGroup.set.all(dbInstances);
 
-	await ModuleBE_PermissionUserDB.upsert({_id: userId, accountId: userUuid, groups: groupIdArray});
+	await ModuleBE_PermissionUserDB.set.item({_id: userId, accountId: userUuid, groups: groupIdArray});
 
 	const tests = new Array<number>().fill(0, 0, 50);
 	const durations: number[] = await Promise.all(tests.map(test => runAssertion(projectId, apiPath, customField)));
@@ -90,12 +90,12 @@ export async function testUserPermissionsTime() {
 	StaticLogger.logInfo(`Call to assertion on ${tests.length} call took on agerage ${sum / tests.length}ms`);
 
 	// ----deletes db documents---
-	await ModuleBE_PermissionUserDB.delete({where: {_id: userId}});
-	await batchAction(filterInstances(dbInstances.map(i => i._id)), 10, chunk => ModuleBE_PermissionGroup.delete({where: {_id: {$in: chunk}}}));
-	await ModuleBE_PermissionAccessLevel.delete({where: {_id: permissionId}});
-	await ModuleBE_PermissionDomain.delete({where: {_id: domainId}});
-	await ModuleBE_PermissionApi.delete({where: {_id: apiId}});
-	await ModuleBE_PermissionProject.delete({where: {_id: projectId}});
+	await ModuleBE_PermissionUserDB.delete.unique(userId);
+	await batchAction(filterInstances(dbInstances.map(i => i._id)), 10, chunk => ModuleBE_PermissionGroup.delete.query({where: {_id: {$in: chunk}}}));
+	await ModuleBE_PermissionAccessLevel.delete.unique(permissionId);
+	await ModuleBE_PermissionDomain.delete.unique(domainId);
+	await ModuleBE_PermissionApi.delete.unique(apiId);
+	await ModuleBE_PermissionProject.delete.unique(projectId);
 }
 
 async function runAssertion(projectId: string, apiPath: string, customField: { UnitId: string }) {
