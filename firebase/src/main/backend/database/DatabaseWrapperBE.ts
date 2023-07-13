@@ -17,7 +17,7 @@
  */
 
 // import {FirestoreCollection} from "./FirestoreCollection";
-import {Firebase_DataSnapshot, Firebase_DB, FirebaseListener} from './types';
+import {Firebase_DB} from './types';
 import {BadImplementationException, calculateJsonSizeMb, TS_Object} from '@nu-art/ts-common';
 import {FirebaseSession} from '../auth/firebase-session';
 import {FirebaseBaseWrapper} from '../auth/FirebaseBaseWrapper';
@@ -56,15 +56,15 @@ export class DatabaseWrapperBE
 		return this.database.ref(path);
 	}
 
-	public listen<T>(path: string, callback: (value?: T) => void): FirebaseListener {
+	public listen<T>(path: string, callback: (value?: T) => void) {
 		try {
-			return this.database.ref(path).on('value', (snapshot: Firebase_DataSnapshot) => callback(snapshot ? snapshot.val() : undefined));
+			return this.database.ref(path).on('value', (snapshot) => callback(snapshot ? snapshot.val() : undefined));
 		} catch (e: any) {
 			throw new BadImplementationException(`Error while getting value from path: ${path}`, e);
 		}
 	}
 
-	public stopListening<T>(path: string, listener: FirebaseListener): void {
+	public stopListening<T>(path: string, listener: any): void {
 		try {
 			this.database.ref(path).off('value', listener);
 		} catch (e: any) {
@@ -185,7 +185,7 @@ export class FirebaseRef<T> {
 	 * Stops listening for changes at the specified path in the database with the provided listener.
 	 * @param listener
 	 */
-	public stopListening(listener: FirebaseListener): void {
+	public stopListening(listener: any): void {
 		return this.db.stopListening<T>(this.path, listener);
 	}
 
