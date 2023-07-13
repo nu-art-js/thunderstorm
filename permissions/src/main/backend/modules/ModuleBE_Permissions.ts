@@ -122,7 +122,7 @@ export class ModuleBE_Permissions_Class
 	}
 
 	async getUserCFsByShareGroups(groupsIds: string[]): Promise<StringMap[]> {
-		const user = await ModuleBE_PermissionUserDB.queryUnique({accountId: MemKey_AccountId.get()});
+		const user = await ModuleBE_PermissionUserDB.query.uniqueCustom({where: {accountId: MemKey_AccountId.get()}});
 		const userCFs: StringMap[] = [];
 		if (!user.groups)
 			return userCFs;
@@ -160,7 +160,7 @@ export class ModuleBE_Permissions_Class
 
 	async _registerProject(registerProject: Request_RegisterProject) {
 		const project = registerProject.project;
-		await ModuleBE_PermissionProject.upsert(project);
+		await ModuleBE_PermissionProject.set.item(project);
 		const id = project._id;
 		if (!id)
 			throw new BadImplementationException('register project is missing an id');
@@ -192,7 +192,7 @@ export class ModuleBE_Permissions_Class
 				customField
 			};
 		});
-		await ModuleBE_PermissionUserDB.upsert({...predefinedUser, groups: groupsUser});
+		await ModuleBE_PermissionUserDB.set.item({...predefinedUser, groups: groupsUser});
 	}
 }
 

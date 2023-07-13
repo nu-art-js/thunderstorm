@@ -32,29 +32,16 @@ import {
 	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
-import {
-	FileWrapper,
-	FirebaseType_Metadata,
-	FirestoreTransaction,
-	ModuleBE_Firebase,
-	StorageWrapperBE
-} from '@nu-art/firebase/backend';
+import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {CleanupDetails, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './AssetBucketListener';
-import {
-	BaseUploaderFile,
-	DB_Asset,
-	DBDef_Assets,
-	FileStatus,
-	Push_FileUploaded,
-	PushKey_FileUploaded,
-	TempSecureUrl
-} from '../../shared';
-import {DBApiConfig, ModuleBE_BaseDB} from '@nu-art/db-api-generator/backend';
+import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
+import {DBApiConfig} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -105,7 +92,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 };
 
 export class ModuleBE_Assets_Class
-	extends ModuleBE_BaseDB<DB_Asset, MyConfig>
+	extends ModuleBE_BaseDBV2<DB_Asset, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
 	constructor() {
@@ -129,7 +116,7 @@ export class ModuleBE_Assets_Class
 	}
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
-		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, async chunk => await ModuleBE_Assets.query({where: {_id: {$in: chunk}}}));
+		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, async chunk => await ModuleBE_Assets.query.custom({where: {_id: {$in: chunk}}}));
 		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)));
 		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()));
 
@@ -141,7 +128,7 @@ export class ModuleBE_Assets_Class
 	}
 
 	async queryUnique(where: Clause_Where<DB_Asset>, transaction?: FirestoreTransaction): Promise<DB_Asset> {
-		const asset = await super.queryUnique(where);
+		const asset = await super.query.uniqueCustom({where});
 		const signedUrl = (asset.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset.signedUrl : undefined;
 		if (!signedUrl) {
 			const url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSecuredUrl(asset.mimeType, Day);
@@ -168,8 +155,8 @@ export class ModuleBE_Assets_Class
 		};
 	}
 
-	private cleanup = async ( interval = Hour, module: ModuleBE_BaseDB<DB_Asset> = ModuleBE_AssetsTemp) => {
-		const entries: DB_Asset[] = await module.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
+	private cleanup = async ( interval = Hour, module: ModuleBE_BaseDBV2<DB_Asset> = ModuleBE_AssetsTemp) => {
+		const entries: DB_Asset[] = await module.query.custom({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);
 		await Promise.all(entries.map(async dbAsset => {
@@ -180,7 +167,7 @@ export class ModuleBE_Assets_Class
 			await file.delete();
 		}));
 
-		await module.delete({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
+		await module.delete.query({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 	};
 
 	async getUrl(files: BaseUploaderFile[]): Promise<TempSecureUrl[]> {
@@ -211,7 +198,7 @@ export class ModuleBE_Assets_Class
 			if (_file.public)
 				dbAsset.public = _file.public;
 
-			const dbTempMeta = await ModuleBE_AssetsTemp.upsert(dbAsset);
+			const dbTempMeta = await ModuleBE_AssetsTemp.set.item(dbAsset);
 			const fileWrapper = await bucket.getFile(dbTempMeta.path);
 			const url = await fileWrapper.getWriteSecuredUrl(_file.mimeType, Hour);
 			return {
@@ -226,7 +213,7 @@ export class ModuleBE_Assets_Class
 		if (feId)
 			query = {where: {feId}};
 
-		const unprocessedFiles: DB_Asset[] = await ModuleBE_AssetsTemp.query(query);
+		const unprocessedFiles: DB_Asset[] = await ModuleBE_AssetsTemp.query.custom(query);
 		return Promise.all(unprocessedFiles.map(asset => this.__processAsset( asset.path)));
 	};
 
@@ -238,7 +225,7 @@ export class ModuleBE_Assets_Class
 			return this.logInfo(`File was added to storage in path: ${filePath}, NOT via file uploader`);
 
 		this.logInfo(`Looking for file with path: ${filePath}`);
-		const tempMeta = await ModuleBE_AssetsTemp.queryUnique({path: filePath});
+		const tempMeta = await ModuleBE_AssetsTemp.query.uniqueCustom({where:{path: filePath}});
 		if (!tempMeta)
 			throw new ThisShouldNotHappenException(`Could not find meta for file with path: ${filePath}`);
 
@@ -288,16 +275,16 @@ export class ModuleBE_Assets_Class
 			}
 		}
 
-		const finalDbAsset = await this.runInTransaction(async (transaction): Promise<DB_Asset> => {
-			const duplicatedAssets = await this.query({where: {md5Hash: tempMeta.md5Hash}}, transaction);
+		const finalDbAsset = await this.runTransaction(async (transaction): Promise<DB_Asset> => {
+			const duplicatedAssets = await this.query.custom({where: {md5Hash: tempMeta.md5Hash}}, transaction);
 			if (duplicatedAssets.length && duplicatedAssets[0]) {
 				this.logInfo(`${tempMeta.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
 				return {...duplicatedAssets[0], feId: tempMeta.feId};
 			}
 
-			const upsertWrite = await this.upsert_Read(tempMeta, transaction);
-			await ModuleBE_AssetsTemp.deleteUnique(tempMeta._id);
-			return await upsertWrite();
+			const doc = await this.collection.doc.item(tempMeta);
+			await ModuleBE_AssetsTemp.delete.unique(tempMeta._id, transaction);
+			return await doc.set(tempMeta, transaction);
 		});
 
 		return this.notifyFrontend(FileStatus.Completed, finalDbAsset);
