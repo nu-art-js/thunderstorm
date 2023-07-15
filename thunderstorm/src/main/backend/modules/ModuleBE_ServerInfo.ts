@@ -2,7 +2,7 @@ import {Module} from '@nu-art/ts-common';
 import {createQueryServerApi} from '../core/typed-api';
 import {Storm} from '../core/Storm';
 import {ApiDef_ServerInfo, Response_ServerInfo} from '../../shared';
-import {addRoutes} from './ApiModule';
+import {addRoutes} from './ModuleBE_APIs';
 
 type Config = {};
 

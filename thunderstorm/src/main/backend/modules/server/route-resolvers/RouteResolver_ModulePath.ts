@@ -24,7 +24,7 @@ import {ServerApi_Middleware} from '../../../utils/types';
 import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
 import {Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {ApiModule_Class} from '../../ApiModule';
+import {ModuleBE_APIs_Class} from '../../ModuleBE_APIs';
 import {ApiDef} from '../../../../shared';
 
 
@@ -51,13 +51,13 @@ export class RouteResolver_ModulePath
 	}
 
 	public resolveApi() {
-		const modules: (Module | ApiModule_Class)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ApiModule_Class).useRoutes);
+		const modules: (Module | ModuleBE_APIs_Class)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ModuleBE_APIs_Class).useRoutes);
 
 		//Filter Api modules
 		const routes: ServerApi<any>[] = [];
 		for (const module of modules) {
 			this.logInfo(module.getName());
-			const _routes = (module as unknown as ApiModule_Class).useRoutes();
+			const _routes = (module as unknown as ModuleBE_APIs_Class).useRoutes();
 			routes.push(..._routes);
 		}
 

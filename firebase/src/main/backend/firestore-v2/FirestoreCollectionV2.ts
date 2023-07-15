@@ -248,7 +248,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
 
-		this.hooks?.postWriteProcessing?.({updated: preparedItems});
+		await this.hooks?.postWriteProcessing?.({updated: preparedItems});
 		return preparedItems;
 	};
 
@@ -307,7 +307,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		else
 			await this.multiWrite(multiWriteType, docs, 'delete');
 
-		this.hooks?.postWriteProcessing?.({deleted: dbItems});
+		await this.hooks?.postWriteProcessing?.({deleted: dbItems});
 		return dbItems;
 	};
 
@@ -328,6 +328,12 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 				return this.runTransaction(t => this.delete.all(ids, t, multiWriteType));
 
 			return this._deleteAll(ids.map(id => this.doc.unique(id)), transaction, multiWriteType);
+		},
+		allDocs: async (docs: DocWrapperV2<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
+			if (!transaction)
+				return this.runTransaction(t => this.delete.allDocs(docs, t, multiWriteType));
+
+			return await this._deleteAll(docs, transaction, multiWriteType);
 		},
 		allItems: async (items: PreDB<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
 			if (!transaction)

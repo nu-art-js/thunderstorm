@@ -67,8 +67,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		if (transaction) {
 			transaction.create(this.ref, dbItem);
 			this.data = dbItem;
-		}
-		else
+		} else
 			await this.ref.create(dbItem);
 
 		this.collection.hooks?.postWriteProcessing?.({updated: dbItem});
@@ -133,7 +132,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		_keys(updateData).forEach(_key => {
 			const _value = updateData[_key];
 
-			if (!exists(_value)) {
+			if (!exists(_value as any)) {
 				(updateData[_key] as FieldValue) = FieldValue.delete();
 			} else {
 				this.updateDeletedFields(_value as UpdateObject<T | T[keyof T]>);
