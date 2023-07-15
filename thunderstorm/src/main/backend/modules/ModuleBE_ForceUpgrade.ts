@@ -39,7 +39,7 @@ import {
 import {ServerApi_Middleware} from '../utils/types';
 import {createQueryServerApi} from '../core/typed-api';
 import {HeaderKey} from './server/HeaderKey';
-import {addRoutes} from './ApiModule';
+import {addRoutes} from './ModuleBE_APIs';
 
 
 type VersionConfig = {

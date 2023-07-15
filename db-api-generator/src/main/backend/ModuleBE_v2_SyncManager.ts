@@ -36,7 +36,6 @@ import {
 	UniqueId
 } from '@nu-art/ts-common';
 import {_EmptyQuery, ApiDef_SyncManagerV2, DBSyncData} from '../shared';
-import {ModuleBE_BaseDBV2} from './ModuleBE_BaseDBV2';
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
@@ -63,7 +62,7 @@ type Config = {
  * }
  * ```
  */
-export class ModuleBE_SyncManagerV2_Class
+export class ModuleBE_v2_SyncManager_Class
 	extends Module<Config>
 	implements OnModuleCleanup {
 
@@ -111,8 +110,8 @@ export class ModuleBE_SyncManagerV2_Class
 		};
 
 		const deletedItems = await this.collection.query.custom(finalQuery);
-		deletedItems.forEach(_item => _item._id = _item.__docId)
-		return deletedItems
+		deletedItems.forEach(_item => _item._id = _item.__docId || _item._id);
+		return deletedItems;
 	}
 
 	__onCleanupInvoked = async () => {
@@ -157,7 +156,7 @@ export class ModuleBE_SyncManagerV2_Class
 		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();
 		this.collection = firestore.getCollection<DeletedDBItem>(DBDef_DeletedItems);
 
-		this.dbModules = this.manager.filterModules(module => module instanceof ModuleBE_BaseDBV2);
+		this.dbModules = this.manager.filterModules(module => ((module as unknown as { ModuleBE_BaseDBV2: boolean }).ModuleBE_BaseDBV2));
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
 		this.syncData = this.database.ref<Type_SyncData>(`/state/${this.getName()}/syncData`);
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
@@ -209,6 +208,5 @@ export const DBDef_DeletedItems: DBDef<DeletedDBItem> = {
 	versions: ['1.0.0'],
 };
 
-
-export const ModuleBE_SyncManagerV2 = new ModuleBE_SyncManagerV2_Class();
+export const ModuleBE_v2_SyncManager = new ModuleBE_v2_SyncManager_Class();
 

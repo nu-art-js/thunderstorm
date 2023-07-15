@@ -24,6 +24,7 @@ import {Dispatcher} from './dispatcher';
 import {BadImplementationException} from './exceptions/exceptions';
 import {Logger} from './logger/Logger';
 import {addItemToArray} from '../utils/array-tools';
+import {exists} from '../utils/tools';
 
 
 const _modules: Module[] = [];
@@ -73,6 +74,16 @@ export class ModuleManager
 			this.setMinLevel(this.config.logLevel);
 
 		this.logInfo(`---------  initializing app  ---------`);
+		const number = this.modules.findIndex(m => !exists(m));
+		if (number > -1) {
+			const modulesList = JSON.stringify(this.modules.map(module => {
+				// @ts-ignore
+				return module?.tag
+					|| 'undefined';
+			}), null, 2);
+			throw new BadImplementationException(`Module was 'undefined' - probably cyclic import mess here are the list of modules: \n${modulesList}`);
+		}
+
 		this.modules.forEach((module: Module) => {
 			// @ts-ignore
 			module.setManager(this);
