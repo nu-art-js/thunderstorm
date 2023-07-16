@@ -319,24 +319,15 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		await this.hooks?.postWriteProcessing?.({deleted: null});
 		await bulk.close();
 	};
-	// delete = {
-	// 	transaction: {
-	// 		byIds: '',
-	// 		byItems: '',
-	// 		byDocs: '',
-	// 		byQuery: '',
-	// 	},
-	// 	batch: {},
-	// 	bulk: {}
-	// };
+
 	delete = Object.freeze({
 		unique: async (id: UniqueParam<Type, Ks>, transaction?: Transaction) => await this.doc.unique(id).delete(transaction),
 		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.doc.item(item).delete(transaction),
-		all: async (ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
+		all: async (ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction): Promise<Type[]> => {
 			if (!transaction)
-				return this.runTransaction(t => this.delete.all(ids, t, multiWriteType));
+				return this.runTransaction(t => this.delete.all(ids, t));
 
-			return this._deleteAll(ids.map(id => this.doc.unique(id)), transaction, multiWriteType);
+			return this._deleteAll(ids.map(id => this.doc.unique(id)), transaction);
 		},
 		allDocs: async (docs: DocWrapperV2<Type>[], transaction?: Transaction): Promise<Type[]> => {
 			if (!transaction)
