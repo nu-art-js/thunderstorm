@@ -48,6 +48,7 @@ export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfi
 export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof PreDB<Type> = Default_UniqueKey>
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerActV2 {
+
 	// private static DeleteHardLimit = 250;
 	public collection!: FirestoreCollectionV2<Type>;
 	public dbDef: DBDef<Type, any>;
@@ -118,11 +119,11 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	}
 
 	querySync = async (syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> => {
-			const items = await this.collection.query.custom(syncQuery);
-			const deletedItems = await ModuleBE_SyncManagerV2.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
+		const items = await this.collection.query.custom(syncQuery);
+		const deletedItems = await ModuleBE_SyncManagerV2.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
 
-			await this.upgradeInstances(items);
-			return {toUpdate: items, toDelete: deletedItems};
+		await this.upgradeInstances(items);
+		return {toUpdate: items, toDelete: deletedItems};
 	};
 
 	private _preWriteProcessing = async (dbItem: PreDB<Type>, transaction?: Transaction) => {
