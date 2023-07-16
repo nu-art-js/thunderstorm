@@ -50,7 +50,7 @@ import {
 	FirestoreType_DocumentReference,
 	FirestoreType_DocumentSnapshot
 } from '../firestore/types';
-import {FirestoreQuery} from '../../shared/types';
+import {Clause_Where, FirestoreQuery} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
@@ -61,7 +61,6 @@ import {composeDbObjectUniqueId} from '../../shared/utils';
 import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;
-
 
 // {deleted: null} means that the whole collection has been deleted
 export type PostWriteProcessingData<Type extends DB_Object> = { updated?: Type | Type[], deleted?: Type | Type[] | null };
@@ -147,9 +146,8 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			if (!id)
 				throw new MUSTNeverHappenException('Did not receive an _id at doc.unique!');
 
-			if (typeof id !== 'string') {
+			if (typeof id !== 'string')
 				id = assertUniqueId(id, this.uniqueKeys);
-			}
 
 			const doc = this.wrapper.firestore.doc(`${this.name}/${id}`) as FirestoreType_DocumentReference<Type>;
 			return this.doc._(doc);
@@ -172,6 +170,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	private getAll = async (docs: DocWrapperV2<Type>[], transaction?: Transaction): Promise<(Type | undefined)[]> => {
 		if (docs.length === 0)
 			return [];
+
 		return (await (transaction ?? this.wrapper.firestore).getAll(...docs.map(_doc => _doc.ref))).map(_snapshot => _snapshot.data() as Type | undefined);
 	};
 
@@ -193,12 +192,15 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 
 			return resultItem;
 		},
+		uniqueWhere: async (where: Clause_Where<Type>, transaction?: Transaction) => this.query.uniqueCustom({where}, transaction),
 		uniqueCustom: async (query: FirestoreQuery<Type>, transaction?: Transaction) => {
 			const thisShouldBeOnlyOne = await this.query.custom(query, transaction);
 			if (thisShouldBeOnlyOne.length === 0)
 				throw new ApiException(404, `Could not find ${this.dbDef.entityName} with unique query: ${JSON.stringify(query)}`);
+
 			if (thisShouldBeOnlyOne.length > 1)
 				throw new BadImplementationException(`too many results for query: ${__stringify(query)} in collection: ${this.dbDef.dbName}`);
+
 			return thisShouldBeOnlyOne[0];
 		},
 		all: async (_ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction) => await this.getAll(this.doc.all(_ids), transaction),
@@ -220,6 +222,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			docs.forEach((doc, i) => transaction.create(doc.ref, dbItems[i]));
 		else
 			await this.multiWrite(multiWriteType, docs, 'create', dbItems);
+
 		this.hooks?.postWriteProcessing?.({updated: dbItems});
 		return dbItems;
 	};
@@ -244,6 +247,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			docs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
+
 		this.hooks?.postWriteProcessing?.({updated: preparedItems});
 		return preparedItems;
 	};
@@ -302,6 +306,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			docs.map(async doc => transaction.delete(doc.ref));
 		else
 			await this.multiWrite(multiWriteType, docs, 'delete');
+
 		this.hooks?.postWriteProcessing?.({deleted: dbItems});
 		return dbItems;
 	};
@@ -371,10 +376,11 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	multiWrite = async <Op extends MultiWriteOperation>(type: MultiWriteType, docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
 		if (type === 'bulk')
 			return this.bulkWrite(docs, operation, items);
-		else if (type === 'batch')
+
+		if (type === 'batch')
 			return this.batchWrite(docs, operation, items);
-		else
-			throw new Exception(`Unknown type passed to multiWrite: ${type}`);
+
+		throw new Exception(`Unknown type passed to multiWrite: ${type}`);
 	};
 
 	bulkWrite = async <Op extends MultiWriteOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
@@ -449,7 +455,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 
 	composeDbObjectUniqueId = (item: PreDB<Type>) => {
 		return composeDbObjectUniqueId(item, this.uniqueKeys);
-	}
+	};
 }
 
 /**

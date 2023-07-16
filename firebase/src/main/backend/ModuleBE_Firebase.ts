@@ -79,6 +79,15 @@ export class ModuleBE_Firebase_Class
 		return session;
 	}
 
+	createModuleStateFirebaseRef<T>(module: Module, _relativePath: string) {
+		let relativePath = _relativePath;
+		if (relativePath.startsWith('/'))
+			relativePath = relativePath.substring(1);
+
+		const path = `/state/${module.getName()}/${relativePath}`;
+		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<T>(path);
+	}
+
 	// listCollectionsInModules() {
 	// 	const modules: Module[] = moduleResolver();
 	//

@@ -16,13 +16,11 @@
  * limitations under the License.
  */
 
-
-
 import {TS_Object} from './types';
 import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
 
 
-export function deepClone<T>(obj: T): T {
+export function deepClone<T>(obj: T | Readonly<T>): T {
 	if (typeof obj === 'string' || typeof obj === 'number' || typeof obj === 'boolean' || typeof obj === 'undefined' || obj === null)
 		return obj;
 
