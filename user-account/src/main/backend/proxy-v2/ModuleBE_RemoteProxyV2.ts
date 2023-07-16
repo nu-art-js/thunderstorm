@@ -32,9 +32,6 @@ export class ModuleBE_RemoteProxyV2_Class
 	constructor() {
 		super(DBDef_RemoteProxy);
 	}
-
-	init() {
-	}
 }
 
 export const ModuleBE_RemoteProxyV2 = new ModuleBE_RemoteProxyV2_Class();
