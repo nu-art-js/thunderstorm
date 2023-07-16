@@ -1,7 +1,7 @@
 import {ApiDef, HttpMethod, QueryApi, Request_BackupId, Response_BackupDocsV2} from '@nu-art/thunderstorm';
 import {addRoutes, AxiosHttpModule, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
-import {_keys, BadImplementationException, Module, TypedMap} from '@nu-art/ts-common';
-import {ApiDef_SyncEnvV2, Request_FetchFromEnvV2, Request_GetMetadata} from '../shared';
+import {_keys, ApiException, BadImplementationException, Module, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {ApiDef_SyncEnvV2, Request_FetchFirebaseBackup, Request_FetchFromEnvV2, Request_GetMetadata} from '../shared';
 import {CSVModule} from '@nu-art/ts-common/modules/CSVModule';
 import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {ModuleBE_v2_Backup} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_v2_Backup';
@@ -22,9 +22,19 @@ class ModuleBE_v2_SyncEnv_Class
 		addRoutes([createBodyServerApi(ApiDef_SyncEnvV2.vv1.fetchFromEnv, this.fetchFromEnv)]);
 		addRoutes([createQueryServerApi(ApiDef_SyncEnvV2.vv1.createBackup, this.createBackup)]);
 		addRoutes([createQueryServerApi(ApiDef_SyncEnvV2.vv1.fetchBackupMetadata, this.fetchBackupMetadata)]);
+		addRoutes([createQueryServerApi(ApiDef_SyncEnvV2.vv1.fetchFirebaseBackup, this.fetchFirebaseBackup)]);
 	}
 
 	fetchBackupMetadata = async (queryParams: Request_GetMetadata) => {
+		const backupInfo = await this.getBackupInfo(queryParams);
+
+		if (!backupInfo)
+			throw new ApiException(404, 'backup file not found');
+
+		return backupInfo.metadata;
+	};
+
+	private async getBackupInfo(queryParams: { env: string, backupId: UniqueId }) {
 		const {backupId, env} = queryParams;
 		if (!env)
 			throw new BadImplementationException(`Did not receive env in the fetch from env api call!`);
@@ -34,31 +44,28 @@ class ModuleBE_v2_SyncEnv_Class
 
 		const requestBody: Request_BackupId = {backupId};
 
-		const response: Response_BackupDocsV2 = await AxiosHttpModule
-			.createRequest(outputDef)
-			.setUrlParams(requestBody)
-			.addHeader('x-secret', this.config.fetchBackupDocsSecretsMap[env])
-			.addHeader('x-proxy', 'fetch-env')
-			.executeSync();
+		try {
 
-		const backupInfo = response.backupInfo;
+			const response: Response_BackupDocsV2 = await AxiosHttpModule
+				.createRequest(outputDef)
+				.setUrlParams(requestBody)
+				.addHeader('x-secret', this.config.fetchBackupDocsSecretsMap[env])
+				.addHeader('x-proxy', 'fetch-env')
+				.executeSync();
 
-		const wrongBackupIdDescriptor = backupInfo?._id !== backupId;
-		if (wrongBackupIdDescriptor)
-			throw new BadImplementationException(`Received backup descriptors with wrong backupId! provided id: ${backupId} received id: ${backupInfo?._id}`);
+			const backupInfo = response.backupInfo;
 
-		if (!backupInfo.metadataFilePath)
-			throw new BadImplementationException('Missing file path to the backup metadata');
+			const wrongBackupIdDescriptor = backupInfo?._id !== backupId;
+			if (wrongBackupIdDescriptor)
+				throw new BadImplementationException(`Received backup descriptors with wrong backupId! provided id: ${backupId} received id: ${backupInfo?._id}`);
 
-		const storage = ModuleBE_Firebase.createAdminSession().getStorage();
-		const bucket = await storage.getMainBucket();
-
-		const fileWrapper = await bucket.getFile(backupInfo.metadataFilePath);
-
-		const metadataWrapper = await fileWrapper.read();
-
-		return JSON.parse(metadataWrapper.toString());
-	};
+			if (!backupInfo.metadataFilePath || !backupInfo.backupFilePath)
+				throw new BadImplementationException('Missing file path to one of the backup files');
+			return backupInfo;
+		} catch (err: any) {
+			throw new ApiException(500, err);
+		}
+	}
 
 	createBackup = async () => {
 		return ModuleBE_v2_Backup.initiateBackup(true);
@@ -67,30 +74,9 @@ class ModuleBE_v2_SyncEnv_Class
 	fetchFromEnv = async (body: Request_FetchFromEnvV2) => {
 		this.logInfoBold('Received API call Fetch From Env!');
 		this.logInfo(`Origin env: ${body.env}, bucketId: ${body.backupId}`);
-		if (!body.env)
-			throw new BadImplementationException(`Did not receive env in the fetch from env api call!`);
 
-		if (body.selectedModules.length === 0)
-			return;
 
-		const url: string = `${this.config.urlMap[body.env]}/v1/fetch-backup-docs-v2`;
-		const outputDef: ApiDef<QueryApi<any>> = {method: HttpMethod.GET, path: '', fullUrl: url};
-
-		const requestBody: Request_BackupId = {backupId: body.backupId};
-
-		const response: Response_BackupDocsV2 = await AxiosHttpModule
-			.createRequest(outputDef)
-			.setUrlParams(requestBody)
-			.addHeader('x-secret', this.config.fetchBackupDocsSecretsMap[body.env])
-			.addHeader('x-proxy', 'fetch-env')
-			.executeSync();
-
-		const backupInfo = response.backupInfo;
-
-		const wrongBackupIdDescriptor = backupInfo?._id !== body.backupId;
-		if (wrongBackupIdDescriptor)
-			throw new BadImplementationException(`Received backup descriptors with wrong backupId! provided id: ${body.backupId} received id: ${backupInfo?._id}`);
-
+		const backupInfo = await this.getBackupInfo(body);
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
 		const storage = firebaseSessionAdmin.getStorage();
 		const bucket = await storage.getMainBucket();
@@ -137,6 +123,26 @@ class ModuleBE_v2_SyncEnv_Class
 			this.logInfo(`readBatchSize: ${readBatchSize}`);
 			this.logInfo(`totalReadCount: ${totalReadCount}`);
 		} while (resultsArray.length > 0 && resultsArray.length % readBatchSize === 0);
+	};
+
+
+	fetchFirebaseBackup = async (queryParams: Request_FetchFirebaseBackup) => {
+		try {
+			this.logDebug('Getting the firebase backup file');
+			const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
+			const backupInfo = await this.getBackupInfo(queryParams);
+			const bucket = await firebaseSessionAdmin.getStorage().getMainBucket();
+			const database = firebaseSessionAdmin.getDatabase();
+
+			this.logDebug('Reading the file from storage');
+			const firebaseBackupFile = await (await bucket.getFile(backupInfo.firebaseFilePath)).read();
+
+
+			this.logDebug('Setting the file in firebase database');
+			await database.set('/', JSON.parse(firebaseBackupFile.toString()));
+		} catch (err: any) {
+			throw new ApiException(500, err);
+		}
 	};
 }
 

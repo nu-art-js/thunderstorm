@@ -106,6 +106,18 @@ export class ATS_SyncEnvironmentV2
 		this.setState({restoreTime: `${((end - start) / 1000).toFixed(3)} seconds`});
 	};
 
+	private syncFirebase = async () => {
+		if (!this.canSync())
+			return;
+
+		await genericNotificationAction(async () => {
+			await ModuleFE_SyncEnvV2.vv1.fetchFirebaseBackup({
+				env: this.state.selectedEnv!,
+				backupId: this.state.backupId!
+			}).executeSync();
+		}, 'Syncing Firebase');
+	};
+
 	private createNewBackup = async () => {
 		return genericNotificationAction(async () => {
 			this.setState({backingUpInProgress: true}, async () => {
@@ -138,7 +150,7 @@ export class ATS_SyncEnvironmentV2
 						Select All
 					</TS_Checkbox>
 					<TS_Input onChange={val => this.setState({searchFilter: val})} type={'text'}
-										placeholder={'sreach collection'}/>
+							  placeholder={'sreach collection'}/>
 				</LL_H_C>
 				{this.state.moduleList.map(name => {
 					const collectionMetadata = this.state.metadata?.collectionsData.find(collection => collection.collectionName === name);
@@ -208,13 +220,13 @@ export class ATS_SyncEnvironmentV2
 
 				<TS_PropRenderer.Vertical label={'Backup ID'}>
 					<TS_Input type={'text'} value={this.state.backupId}
-										onBlur={val => {
-											if (!val.match(/^[0-9A-Fa-f]{32}$/))
-												return;
+							  onBlur={val => {
+								  if (!val.match(/^[0-9A-Fa-f]{32}$/))
+									  return;
 
-											this.setState({backupId: val});
-											return this.fetchMetadata();
-										}}/>
+								  this.setState({backupId: val});
+								  return this.fetchMetadata();
+							  }}/>
 				</TS_PropRenderer.Vertical>
 
 				<div className={_className(!this.state.fetchMetadataInProgress && 'hidden')}><TS_Loader/></div>
@@ -223,6 +235,11 @@ export class ATS_SyncEnvironmentV2
 					onClick={this.syncEnv}
 					disabled={!this.canSync()}
 				>Restore</TS_BusyButton>
+
+				<TS_BusyButton
+					onClick={this.syncFirebase}
+					disabled={!this.canSync()}
+				>Restore Firebase</TS_BusyButton>
 
 				{this.state.restoreTime && <div>{this.state.restoreTime}</div>}
 			</LL_H_C>

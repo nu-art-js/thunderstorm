@@ -5,18 +5,19 @@ import {ApiDef_SyncEnvV2, ApiStruct_SyncEnvV2} from '../shared';
 
 
 class ModuleFE_SyncEnvV2_Class
-    extends Module {
+	extends Module {
 
-    readonly vv1: ApiDefCaller<ApiStruct_SyncEnvV2>['vv1'];
+	readonly vv1: ApiDefCaller<ApiStruct_SyncEnvV2>['vv1'];
 
-    constructor() {
-        super();
-        this.vv1 = {
-            fetchFromEnv: apiWithBody(ApiDef_SyncEnvV2.vv1.fetchFromEnv),
-            createBackup: apiWithQuery(ApiDef_SyncEnvV2.vv1.createBackup),
-            fetchBackupMetadata: apiWithQuery(ApiDef_SyncEnvV2.vv1.fetchBackupMetadata)
-        };
-    }
+	constructor() {
+		super();
+		this.vv1 = {
+			fetchFromEnv: apiWithBody(ApiDef_SyncEnvV2.vv1.fetchFromEnv),
+			createBackup: apiWithQuery(ApiDef_SyncEnvV2.vv1.createBackup),
+			fetchBackupMetadata: apiWithQuery(ApiDef_SyncEnvV2.vv1.fetchBackupMetadata),
+			fetchFirebaseBackup: apiWithQuery(ApiDef_SyncEnvV2.vv1.fetchFirebaseBackup)
+		};
+	}
 }
 
 export const ModuleFE_SyncEnvV2 = new ModuleFE_SyncEnvV2_Class();
