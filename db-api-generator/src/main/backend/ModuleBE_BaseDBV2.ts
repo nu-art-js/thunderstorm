@@ -287,7 +287,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 
 		if (toUpdate.length > 0) {
 			this.logWarning(`Need to delete docs: ${toUpdate.length} items ....`);
-			await this.collection.batchWrite(toUpdate, 'delete');
+			// await this.collection.batchWrite(toUpdate, 'delete');
 		}
 	}
 
