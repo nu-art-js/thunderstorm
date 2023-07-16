@@ -97,7 +97,9 @@ class ModuleBE_v2_Backup_Class
 			backupInfo: {
 				_id: backupDoc._id,
 				backupFilePath: backupDoc.backupPath,
-				metadataFilePath: backupDoc.metadataPath
+				metadataFilePath: backupDoc.metadataPath,
+				firebaseFilePath: backupDoc.firebasePath,
+				metadata: backupDoc.metadata
 			}
 		};
 	};
@@ -135,8 +137,9 @@ class ModuleBE_v2_Backup_Class
 	initiateBackup = async (force = false) => {
 		const nowMs = currentTimeMillis();
 		const timeFormat = formatTimestamp(Format_YYYYMMDD_HHmmss, nowMs);
-		const backupPath = `backup/firestore/${timeFormat}/firestore-backup.csv`;
-		const metadataPath = `backup/firestore/${timeFormat}/metadata.json`;
+		const backupPath = `backup/${timeFormat}/firestore-backup.csv`;
+		const metadataPath = `backup/${timeFormat}/metadata.json`;
+		const configPath = `backup/${timeFormat}/firebase-backup.json`;
 
 		const query: FirestoreQuery<DB_BackupDoc> = {
 			where: {},
@@ -166,7 +169,8 @@ class ModuleBE_v2_Backup_Class
 		const backups: FirestoreBackupDetailsV2<any>[] = filterInstances(this.getBackupDetails());
 		let backupsCounter = 0;
 
-		const storage = ModuleBE_Firebase.createAdminSession().getStorage();
+		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
+		const storage = firebaseSessionAdmin.getStorage();
 		const bucket = await storage.getMainBucket();
 		CSVModule.updateExporterSettings(CSVConfig);
 		const metadata: BackupMetaData = {collectionsData: [], timestamp: nowMs};
@@ -223,6 +227,13 @@ class ModuleBE_v2_Backup_Class
 			await file.writeToStream(backupFeeder);
 			this.logDebug('Backup file created');
 
+			this.logDebug('Backing up config db');
+			const database = firebaseSessionAdmin.getDatabase();
+			const configBackup = await database.ref('/').get();
+			const configFile = await bucket.getFile(configPath);
+			await configFile.write(configBackup as object);
+			this.logDebug('Config file created');
+
 			this.logDebug('Creating metadata file...');
 			const metadataFile = await bucket.getFile(metadataPath);
 			await metadataFile.write(metadata);
@@ -233,7 +244,13 @@ class ModuleBE_v2_Backup_Class
 			throw new ApiException(500, errorMessage, e);
 		}
 
-		const dbBackup = await this.upsert({timestamp: nowMs, backupPath, metadataPath});
+		const dbBackup = await this.upsert({
+			timestamp: nowMs,
+			backupPath,
+			metadataPath,
+			firebasePath: configPath,
+			metadata
+		});
 		this.logWarning(dbBackup);
 
 		const oldBackupsToDelete = await this.query({where: {timestamp: {$lt: nowMs - this.config.keepInterval}}});
@@ -242,7 +259,7 @@ class ModuleBE_v2_Backup_Class
 
 		try {
 			this.logInfoBold('Received older backups to delete, count: ' + oldBackupsToDelete.length);
-			await Promise.all(oldBackupsToDelete.map(async oldDoc => ([oldDoc.metadataPath, oldDoc.backupPath].map(async path => (await bucket.getFile(path)).delete()))));
+			await Promise.all(oldBackupsToDelete.map(async oldDoc => (filterInstances([oldDoc.metadataPath, oldDoc.backupPath, oldDoc.firebasePath]).map(async path => (await bucket.getFile(path)).delete()))));
 			await this.collection.delete.all(oldBackupsToDelete);
 			this.logInfoBold('Successfully deleted old backups');
 		} catch (err: any) {

@@ -1,11 +1,27 @@
-import {DBDef, OmitDBObject, tsValidateString, tsValidateTimestamp, ValidatorTypeResolver} from '@nu-art/ts-common';
+import {
+	DBDef,
+	OmitDBObject,
+	tsValidateArray, tsValidateNumber,
+	tsValidateString,
+	tsValidateTimestamp,
+	ValidatorTypeResolver
+} from '@nu-art/ts-common';
 import {DB_BackupDoc} from './backup-types';
 
 
 export const Validator_BackupDoc: ValidatorTypeResolver<OmitDBObject<DB_BackupDoc>> = {
 	timestamp: tsValidateTimestamp(),
 	backupPath: tsValidateString(),
-	metadataPath: tsValidateString()
+	firebasePath: tsValidateString(),
+	metadataPath: tsValidateString(),
+	metadata: {
+		timestamp: tsValidateTimestamp(),
+		collectionsData: tsValidateArray({
+			collectionName: tsValidateString(),
+			numOfDocs: tsValidateNumber(),
+			version: tsValidateString()
+		})
+	}
 };
 
 export const DBDef_BackupDocs: DBDef<DB_BackupDoc, keyof DB_BackupDoc> = {
