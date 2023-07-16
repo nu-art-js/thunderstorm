@@ -16,9 +16,7 @@
  * limitations under the License.
  */
 
-export * from './proxy-v2';
-export * from './core/module-pack';
-export * from './ui/Component_Login/Component_Login';
-export * from './ui/Component_Register';
-export * from './modules/ModuleFE_Account';
-export * from './ui/Component_GoogleSAMLLogin/Component_GoogleSAMLLogin';
+export * from './ModuleFE_RemoteProxyV2';
+export * from './ServiceAccountEditor';
+export * from './ProxyServiceAccount_EditorRenderer';
+export * from './ServiceAccountExtra_EditorRenderer';

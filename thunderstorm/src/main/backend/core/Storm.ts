@@ -51,6 +51,7 @@ export class Storm
 
 		super.init();
 		this.routeResolver.resolveApi();
+
 		if (this.config.printRoutes === true)
 			this.routeResolver.printRoutes();
 

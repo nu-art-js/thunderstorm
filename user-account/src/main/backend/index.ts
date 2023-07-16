@@ -19,3 +19,4 @@
 export * from './core/module-pack';
 export * from './core/accounts-middleware';
 export * from './modules/ModuleBE_Account';
+export * from './proxy-v2';

@@ -1,35 +1,32 @@
 import * as React from 'react';
-import './PathwayManager_Editors.scss';
-import {LL_H_C, LL_V_L, TS_Button, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import './ProxyServiceAccount_EditorRenderer.scss';
+import {EditableItem, LL_H_C, LL_V_L, TS_Button, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {EditorRenderer_BaseImpl, Props_ItemEditor, State_ItemEditor} from '@nu-art/db-api-generator/frontend';
 import {ProxyServiceAccount} from '../../shared/proxy-v2/types';
 import {ServiceAccountExtra_EditorRenderer} from './ServiceAccountExtra_EditorRenderer';
 import {cloneArr, generateUUID} from '@nu-art/ts-common';
 
 export type Props_Pathway = Props_ItemEditor<ProxyServiceAccount> & {
-	updateEditMode?: () => void
+	onCancel?: (item: EditableItem<ProxyServiceAccount>) => void
 }
-export type State = State_ItemEditor<ProxyServiceAccount>
+export type ProxyServiceAccount_State = State_ItemEditor<ProxyServiceAccount>
 
 export class ProxyServiceAccount_EditorRenderer
-	extends EditorRenderer_BaseImpl<ProxyServiceAccount, Props_Pathway, State> {
-
-	private save = async () => {
-		await this.props.editable.save();
-	};
+	extends EditorRenderer_BaseImpl<ProxyServiceAccount, Props_Pathway, ProxyServiceAccount_State> {
 
 	private renderSaveButtons = () => <LL_H_C className={'buttons-container'}>
-		<TS_Button onClick={this.props.updateEditMode}>CANCEL</TS_Button>
-		<TS_Button onClick={this.save}>SAVE</TS_Button>
+		<TS_Button onClick={() => this.props.onCancel?.(this.props.editable)}>CANCEL</TS_Button>
+		<TS_Button onClick={() => this.props.editable.save()}>SAVE</TS_Button>
 	</LL_H_C>;
 
 	private renderEditorBody = () => {
 		const extra = this.props.editable.editProp('extra', []);
 		return <LL_V_L className={'form-wrapper match_height'}>
-			<div className={'title'}>{'Edit ServiceAccount'}</div>
+			<div className={'title'}>Edit ServiceAccount</div>
 			{this.input('label').vertical('Label')}
 			{this.input('email').vertical('Email')}
 			<TS_PropRenderer.Vertical label={'APIs'}>
+				{/*todo button to add one new*/}
 				{extra.item.map((api, index) => {
 					const currentKV = extra.editProp(index, {});
 					return <ServiceAccountExtra_EditorRenderer
@@ -48,7 +45,7 @@ export class ProxyServiceAccount_EditorRenderer
 	};
 
 	render() {
-		return <div className={'pathway-manager-editor match_parent'}>
+		return <div className={'proxy-service-account-editor match_parent'}>
 			{this.renderSaveButtons()}
 			{this.renderEditorBody()}
 		</div>;

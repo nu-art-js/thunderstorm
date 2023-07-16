@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {Express} from 'express';
-import {ServerApi_Middleware} from '../../../utils/types';
+import {Express, NextFunction} from 'express';
+import {ExpressRequest, ExpressResponse, ServerApi_Middleware} from '../../../utils/types';
 import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
 import {Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
@@ -68,6 +68,12 @@ export class RouteResolver_ModulePath
 
 			this.middlewares.filter(config => config.filter(api.apiDef) && api.addMiddlewares(...config.middlewares));
 			api.route(this.express, this.initialPath);
+		});
+
+		this.express.all('*', (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+
+			this.logErrorBold(`Received unknown url with path: '${req.path}' - url: '${req.url}'`);
+
 		});
 	}
 
