@@ -152,7 +152,7 @@ export const TestSuite_FirestoreV2_Delete: Test = {
 	testcases: TestCases_FB_Delete,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>(dbDef);
-		await collection.deleteCollection();
+		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
 		const toInsert = deepClone(testCase.input.toInsert);
 		const inserted = await collection.create.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
