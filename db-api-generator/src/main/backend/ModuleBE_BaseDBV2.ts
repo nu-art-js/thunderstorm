@@ -20,16 +20,27 @@
  */
 
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
-import {ApiException, currentTimeMillis, DB_Object, DBDef, Default_UniqueKey, filterInstances, Module, PreDB} from '@nu-art/ts-common';
+import {
+	ApiException,
+	currentTimeMillis,
+	DB_Object,
+	DBDef,
+	dbObjectToId,
+	Default_UniqueKey,
+	filterDuplicates,
+	filterInstances,
+	Module,
+	PreDB
+} from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {_EmptyQuery, Response_DBSync} from '../shared';
 import {FirestoreCollectionV2, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
-import {OnFirestoreBackupSchedulerActV2} from '@nu-art/thunderstorm/backend/modules/backup/FirestoreBackupSchedulerV2';
-import {FirestoreBackupDetailsV2} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_BackupV2';
-import {ModuleBE_SyncManagerV2} from './ModuleBE_SyncManagerV2';
+import {OnFirestoreBackupSchedulerActV2} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_v2_BackupScheduler';
+import {FirestoreBackupDetailsV2} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_v2_Backup';
+import {ModuleBE_v2_SyncManager} from './ModuleBE_v2_SyncManager';
 import Transaction = firestore.Transaction;
 
 
@@ -48,6 +59,9 @@ export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfi
 export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof PreDB<Type> = Default_UniqueKey>
 	extends Module<ConfigType>
 	implements OnFirestoreBackupSchedulerActV2 {
+
+	// @ts-ignore
+	private readonly ModuleBE_BaseDBV2 = true;
 
 	// private static DeleteHardLimit = 250;
 	public collection!: FirestoreCollectionV2<Type>;
@@ -120,7 +134,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 
 	querySync = async (syncQuery: FirestoreQuery<Type>): Promise<Response_DBSync<Type>> => {
 		const items = await this.collection.query.custom(syncQuery);
-		const deletedItems = await ModuleBE_SyncManagerV2.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
+		const deletedItems = await ModuleBE_v2_SyncManager.queryDeleted(this.config.collectionName, syncQuery as FirestoreQuery<DB_Object>);
 
 		await this.upgradeInstances(items);
 		return {toUpdate: items, toDelete: deletedItems};
@@ -148,15 +162,15 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 			const latestUpdated = Array.isArray(data.updated) ?
 				data.updated.reduce((toRet, current) => Math.max(toRet, current.__updated), data.updated[0].__updated) :
 				data.updated.__updated;
-			await ModuleBE_SyncManagerV2.setLastUpdated(this.config.collectionName, latestUpdated);
+			await ModuleBE_v2_SyncManager.setLastUpdated(this.config.collectionName, latestUpdated);
 		}
 
 		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			await ModuleBE_SyncManagerV2.onItemsDeleted(this.config.collectionName, !Array.isArray(data.deleted) ? [data.deleted] : data.deleted, this.config.uniqueKeys);
-			await ModuleBE_SyncManagerV2.setLastUpdated(this.config.collectionName, now);
+			await ModuleBE_v2_SyncManager.onItemsDeleted(this.config.collectionName, !Array.isArray(data.deleted) ? [data.deleted] : data.deleted, this.config.uniqueKeys);
+			await ModuleBE_v2_SyncManager.setLastUpdated(this.config.collectionName, now);
 		} else if (data.deleted === null)
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
-			await ModuleBE_SyncManagerV2.setOldestDeleted(this.config.collectionName, now);
+			await ModuleBE_v2_SyncManager.setOldestDeleted(this.config.collectionName, now);
 
 		await this.postWriteProcessing(data);
 	};
@@ -250,4 +264,31 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		const dependencies = filterInstances(potentialErrors.map(item => (item?.conflictingIds.length || 0) === 0 ? undefined : item));
 		return dependencies.length > 0 ? dependencies : undefined;
 	}
+
+	async upgradeCollection(forceUpgrade: boolean) {
+		const docs = await this.collection.doc.query(_EmptyQuery);
+		const toUpdate = docs.filter(doc => {
+			if (doc.data!._id === '023c345ea94bf91edc643db8e511622e')
+				this.logWarning(`${doc.ref.id} === ${doc.data!._id}`);
+			return doc.ref.id !== doc.data!._id;
+		});
+
+		let items = filterDuplicates(docs.map(d => d.data!), dbObjectToId);
+
+		// this should be paginated
+		if (!forceUpgrade)
+			items = items.filter(item => item._v !== this.dbDef.versions![0]);
+
+		this.logWarning(`Upgrading instances: ${items.length} items ....`);
+		await this.upgradeInstances(items);
+
+		this.logWarning(`setting multi instances: ${items.length} items ....`);
+		await this.set.multi(items);
+
+		if (toUpdate.length > 0) {
+			this.logWarning(`Need to delete docs: ${toUpdate.length} items ....`);
+			await this.collection.batchWrite(toUpdate, 'delete');
+		}
+	}
+
 }
