@@ -13,6 +13,7 @@ import {TestSuite_FirestoreV2_Set} from "./set/set";
 import {TestSuite_FirestoreV2_Validator} from "./validator/validator";
 import {TestSuite_FirestoreV2_MultiKeys} from "./multi-keys/multi-keys";
 import {TestSuite_FirestoreV2_Transaction} from "./transaction/transaction";
+import {TestSuite_FirestoreV2_Transaction_MultiWrite} from "./transaction/multiWriteTransaction";
 
 
 describe('Firestore v2 - All Tests', () => {
@@ -28,6 +29,7 @@ describe('Firestore v2 - All Tests', () => {
 	testSuiteTester(TestSuite_FirestoreV2_Validator);
 	testSuiteTester(TestSuite_FirestoreV2_MultiKeys);
 	testSuiteTester(TestSuite_FirestoreV2_Transaction);
+	testSuiteTester(TestSuite_FirestoreV2_Transaction_MultiWrite);
 	// testSuiteTester(TestSuite_FirestoreV2_Performance_GetAll);
 	// testSuiteTester(TestSuite_FirestoreV2_Performance_WriteMulti);
 });
