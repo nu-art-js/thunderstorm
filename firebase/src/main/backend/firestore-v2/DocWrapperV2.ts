@@ -70,7 +70,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		} else
 			await this.ref.create(dbItem);
 
-		this.collection.hooks?.postWriteProcessing?.({updated: dbItem});
+		await this.collection.hooks?.postWriteProcessing?.({updated: dbItem});
 
 		return dbItem;
 	};
@@ -103,7 +103,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		transaction!.set(this.ref, newDBItem);
 		this.data = currDBItem;
 
-		this.collection.hooks?.postWriteProcessing?.({updated: newDBItem});
+		await this.collection.hooks?.postWriteProcessing?.({updated: newDBItem});
 
 		return newDBItem;
 	};
@@ -144,7 +144,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		updateData = await this.prepareForUpdate(updateData);
 		await this.ref.update(updateData);
 		const dbItem = await this.get();
-		this.collection.hooks?.postWriteProcessing?.({updated: dbItem});
+		await this.collection.hooks?.postWriteProcessing?.({updated: dbItem});
 		return dbItem;
 	};
 
@@ -162,7 +162,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		transaction!.delete(this.ref);
 
 		this.cleanCache();
-		this.collection.hooks?.postWriteProcessing?.({deleted: dbItem});
+		await this.collection.hooks?.postWriteProcessing?.({deleted: dbItem});
 		return dbItem;
 	};
 }

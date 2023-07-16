@@ -68,8 +68,8 @@ export type PostWriteProcessingData<Type extends DB_Object> = { updated?: Type |
 export type FirestoreCollectionHooks<Type extends DB_Object> = {
 	canDeleteItems: (dbItems: Type[], transaction?: Transaction) => Promise<void>,
 	preWriteProcessing?: (dbInstance: PreDB<Type>, transaction?: Transaction) => Promise<void>,
-	postWriteProcessing?: (data: PostWriteProcessingData<Type>) => Promise<void>,
 	manipulateQuery?: (query: FirestoreQuery<Type>) => FirestoreQuery<Type>,
+	postWriteProcessing?: (data: PostWriteProcessingData<Type>) => Promise<void>,
 }
 
 export type MultiWriteOperation = 'create' | 'set' | 'update' | 'delete';
@@ -223,7 +223,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		else
 			await this.multiWrite(multiWriteType, docs, 'create', dbItems);
 
-		this.hooks?.postWriteProcessing?.({updated: dbItems});
+		await this.hooks?.postWriteProcessing?.({updated: dbItems});
 		return dbItems;
 	};
 
@@ -254,9 +254,9 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 
 	set = Object.freeze({
 		item: async (preDBItem: PreDB<Type>, transaction?: Transaction) => await this.doc.item(preDBItem).set(preDBItem, transaction),
-		all: (items: (PreDB<Type> | Type)[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+		all: (items: (PreDB<Type> | Type)[], transaction?: Transaction) => {
 			if (transaction)
-				return this._setAll(items, transaction, multiWriteType);
+				return this._setAll(items, transaction);
 
 			return this.runTransaction(t => this._setAll(items, t));
 		},
@@ -274,7 +274,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		const toUpdate: UpdateObject<Type>[] = await Promise.all(docs.map(async (_doc, i) => await _doc.prepareForUpdate(updateData[i])));
 		await this.multiWrite(multiWriteType, docs, 'update', toUpdate);
 		const dbItems = await this.getAll(docs) as Type[];
-		this.hooks?.postWriteProcessing?.({updated: dbItems});
+		await this.hooks?.postWriteProcessing?.({updated: dbItems});
 		return dbItems;
 	};
 
@@ -316,37 +316,38 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		const bulk = this.wrapper.firestore.bulkWriter();
 		refs.forEach(_ref => bulk.delete(_ref));
 		// deleted: null means that the whole collection has been deleted
-		this.hooks?.postWriteProcessing?.({deleted: null});
+		await this.hooks?.postWriteProcessing?.({deleted: null});
 		await bulk.close();
 	};
 
 	delete = Object.freeze({
 		unique: async (id: UniqueParam<Type, Ks>, transaction?: Transaction) => await this.doc.unique(id).delete(transaction),
 		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.doc.item(item).delete(transaction),
-		all: async (ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
+		all: async (ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction): Promise<Type[]> => {
 			if (!transaction)
-				return this.runTransaction(t => this.delete.all(ids, t, multiWriteType));
+				return this.runTransaction(t => this.delete.all(ids, t));
 
-			return this._deleteAll(ids.map(id => this.doc.unique(id)), transaction, multiWriteType);
+			return this._deleteAll(ids.map(id => this.doc.unique(id)), transaction);
 		},
-		allDocs: async (docs: DocWrapperV2<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
+		allDocs: async (docs: DocWrapperV2<Type>[], transaction?: Transaction): Promise<Type[]> => {
 			if (!transaction)
-				return this.runTransaction(t => this.delete.allDocs(docs, t, multiWriteType));
+				return this.runTransaction(t => this.delete.allDocs(docs, t));
 
-			return await this._deleteAll(docs, transaction, multiWriteType);
+			return await this._deleteAll(docs, transaction);
 		},
-		allItems: async (items: PreDB<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
+		allItems: async (items: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
 			if (!transaction)
-				return this.runTransaction(t => this.delete.allItems(items, t, multiWriteType));
+				return this.runTransaction(t => this.delete.allItems(items, t));
 
-			return await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction, multiWriteType);
+			return await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction);
 		},
-		query: async (query: FirestoreQuery<Type>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {
+		query: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
 			if (!transaction)
-				return this.runTransaction(t => this.delete.query(query, t, multiWriteType));
+				return this.runTransaction(t => this.delete.query(query, t));
 
-			return await this._deleteQuery(query, transaction, multiWriteType);
+			return await this._deleteQuery(query, transaction);
 		},
+
 		/**
 		 * Multi is a non atomic operation
 		 */
@@ -359,7 +360,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	});
 
 	// ############################## Multi Write ##############################
-	addToMultiWrite = <Op extends MultiWriteOperation>(writer: BulkWriter | WriteBatch, doc: DocWrapperV2<Type>, operation: Op, item?: MultiWriteItem<Op, Type>) => {
+	private addToMultiWrite = <Op extends MultiWriteOperation>(writer: BulkWriter | WriteBatch, doc: DocWrapperV2<Type>, operation: Op, item?: MultiWriteItem<Op, Type>) => {
 		switch (operation) {
 			case 'create':
 				writer.create(doc.ref, item as MultiWriteItem<'create', Type>);
@@ -379,7 +380,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		return item;
 	};
 
-	multiWrite = async <Op extends MultiWriteOperation>(type: MultiWriteType, docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
+	private multiWrite = async <Op extends MultiWriteOperation>(type: MultiWriteType, docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
 		if (type === 'bulk')
 			return this.bulkWrite(docs, operation, items);
 
@@ -389,7 +390,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		throw new Exception(`Unknown type passed to multiWrite: ${type}`);
 	};
 
-	bulkWrite = async <Op extends MultiWriteOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
+	private bulkWrite = async <Op extends MultiWriteOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
 		const bulk = this.wrapper.firestore.bulkWriter();
 
 		const errors: Error[] = [];
@@ -405,11 +406,11 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			throw new FirestoreBulkException(errors);
 	};
 
-	batchWrite = async <Op extends MultiWriteOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
-		for (let i = 0; i < docs.length; i += maxBatch) {
+	private batchWrite = async <Op extends MultiWriteOperation>(docs: DocWrapperV2<Type>[], operation: Op, items?: MultiWriteItem<Op, Type>[]) => {
+		for (let batchIndex = 0; batchIndex < docs.length; batchIndex += maxBatch) {
 			const batch = this.wrapper.firestore.batch();
-			const chunk = docs.slice(i, i + maxBatch);
-			chunk.map((_doc, index) => this.addToMultiWrite(batch, _doc, operation, items?.[index]));
+			const chunk = docs.slice(batchIndex, batchIndex + maxBatch);
+			chunk.map((_doc, index) => this.addToMultiWrite(batch, _doc, operation, items?.[batchIndex + index]));
 
 			await batch.commit();
 		}
@@ -422,8 +423,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	 * @param processor: A set of read and write operations on one or more documents.
 	 */
 	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> => {
-		const firestore = this.wrapper.firestore;
-		return firestore.runTransaction<ReturnType>(processor);
+		return this.wrapper.runTransaction<ReturnType>(processor);
 	};
 
 	getVersion = () => {
