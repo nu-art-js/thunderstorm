@@ -29,7 +29,7 @@ export interface OnAssetUploaded {
 
 const dispatcher_onAssetUploaded = new Dispatcher<OnAssetUploaded, '__processAsset'>('__processAsset');
 
-export class AssetBucketListener_Class
+export class ModuleBE_BucketListener_Class
 	extends Firebase_StorageFunction {
 
 	constructor() {
@@ -43,12 +43,12 @@ export class AssetBucketListener_Class
 	async onFinalize(object: ObjectMetadata, context: EventContext): Promise<any> {
 		return new MemStorage().init(async () => {
 			const filePath = object.name;
+			this.logInfo(`File was added to bucket: ${filePath}`);
 			await dispatcher_onAssetUploaded.dispatchModuleAsync(filePath);
-			this.logInfo('Object is ', object);
-			this.logInfo('Context is ', context);
+			this.logDebug('Object is ', object);
+			this.logDebug('Context is ', context);
 		});
 	}
-
 }
 
-export const AssetBucketListener = new AssetBucketListener_Class();
+export const ModuleBE_BucketListener = new ModuleBE_BucketListener_Class();

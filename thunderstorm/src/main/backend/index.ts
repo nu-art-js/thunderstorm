@@ -22,13 +22,13 @@
 export * from './modules/proxy/RemoteProxyCaller';
 export * from './modules/proxy/ModuleBE_RemoteProxy';
 export * from './modules/CleanupScheduler';
-export * from './modules/ApiModule';
+export * from './modules/ModuleBE_APIs';
 export * from './modules/action-processor/ModuleBE_ActionProcessor';
 export * from './modules/action-processor/types';
 export * from './modules/backup/ModuleBE_Backup';
 export * from './modules/backup/FirestoreBackupScheduler';
-// export * from './modules/backup/ModuleBE_BackupV2';
-// export * from './modules/backup/FirestoreBackupSchedulerV2';
+// export * from './modules/backup/ModuleBE_v2_Backup';
+// export * from './modules/backup/ModuleBE_v2_BackupScheduler';
 export * from './modules/server/server-errors';
 export * from './modules/server/server-api';
 export * from './modules/server/HeaderKey';

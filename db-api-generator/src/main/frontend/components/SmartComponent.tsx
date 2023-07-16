@@ -24,8 +24,8 @@ import {TS_ErrorBoundary, TS_Loader} from '@nu-art/thunderstorm/frontend';
 import {BaseComponent} from '@nu-art/thunderstorm/frontend/core/ComponentBase';
 import {OnSyncStatusChangedListener} from '../modules/types';
 import {DataStatus} from '../modules/consts';
-import {ModuleFE_BaseDB} from "../modules/ModuleFE_BaseDB";
-import {DB_Object} from "@nu-art/ts-common";
+import {ModuleFE_BaseDB} from '../modules/ModuleFE_BaseDB';
+import {DB_Object, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
 
 export enum ComponentStatus {
@@ -35,7 +35,7 @@ export enum ComponentStatus {
 }
 
 export type Props_SmartComponent = {
-	modules?: (ModuleFE_BaseDB<any>)[];
+	modules?: ResolvableContent<ModuleFE_BaseDB<any>[]>;
 }
 
 export type State_SmartComponent = {
@@ -119,7 +119,10 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 
 	__onSyncStatusChanged(module: ModuleFE_BaseDB<DB_Object, any>): void {
 		this.logVerbose(`__onSyncStatusChanged: ${module.getCollectionName()}`);
-		if (this.props.modules?.includes(module))
+
+		const modules = resolveContent(this.props.modules);
+
+		if (modules?.includes(module))
 			this.reDeriveState();
 	}
 
@@ -136,7 +139,9 @@ export abstract class SmartComponent<P extends any = {}, S extends any = {},
 	protected _deriveStateFromProps(nextProps: Props, partialState: State = this.createInitialState(nextProps)): State | undefined {
 		const currentState = partialState;
 
-		const unpreparedModules = this.props.modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
+		const modules = resolveContent(this.props.modules);
+
+		const unpreparedModules = modules?.filter(module => module.getDataStatus() !== DataStatus.ContainsData) || [];
 
 		if (unpreparedModules.length > 0) {
 			const state = this.createInitialState(nextProps);

@@ -68,7 +68,7 @@ export const functionThatReturnsTrue = Object.freeze(() => true);
 export const resolveContent = <T extends any = any>(content: ResolvableContent<T>) => typeof content === 'function' ? (content as () => T)() : content as T;
 export const resolveFunctionOrValue = resolveContent;
 
-export function exists<T extends any = any>(item: any): item is T {
+export function exists<T extends any = any>(item: T | undefined | null): item is T {
 	return item !== undefined && item !== null;
 }
 

@@ -48,7 +48,7 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	readonly dbModule: ModuleBE_BaseDBV2<Type, any, Ks>;
 
 	constructor(dbModule: ModuleBE_BaseDBV2<Type, any, Ks>) {
-		super(dbModule.getName());
+		super(`Gen(${dbModule.getName()}, Api)`);
 		this.dbModule = dbModule;
 
 	}
@@ -79,13 +79,7 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	};
 
 	private _upgradeCollection = async (body: UpgradeCollectionBody) => {
-		const forceUpdate = body.forceUpdate || false;
-		// this should be paginated
-		let items = (await this.dbModule.collection.query.custom(_EmptyQuery)) as Type[];
-		if (!forceUpdate)
-			items = items.filter(item => item._v !== this.dbModule.dbDef.versions![0]);
-		await this.dbModule.upgradeInstances(items);
-		await this.dbModule.set.all(items);
+		return this.dbModule.upgradeCollection(body.forceUpdate || false);
 	};
 
 	private _deleteQuery = async (query: FirestoreQuery<Type>): Promise<Type[]> => {

@@ -21,10 +21,11 @@ import {
 	apiWithBody,
 	apiWithQuery,
 	getQueryParameter,
-	ModuleFE_BrowserHistory, ModuleFE_Toaster,
+	ModuleFE_BrowserHistory,
+	ModuleFE_Toaster,
+	ModuleFE_XHR,
 	StorageKey,
-	ThunderDispatcher,
-	ModuleFE_XHR
+	ThunderDispatcher
 } from '@nu-art/thunderstorm/frontend';
 import {
 	ApiDef_UserAccountFE,

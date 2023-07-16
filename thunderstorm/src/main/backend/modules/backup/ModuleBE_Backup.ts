@@ -16,7 +16,7 @@ import {FirestoreCollection, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 import {OnFirestoreBackupSchedulerAct, OnModuleCleanup} from './FirestoreBackupScheduler';
 import {FilterKeys, FirestoreQuery} from '@nu-art/firebase';
 import {BackupDoc} from '../../../shared/backup/backup-types';
-import {addRoutes} from '../ApiModule';
+import {addRoutes} from '../ModuleBE_APIs';
 import {createQueryServerApi} from '../../core/typed-api';
 import {ApiDef_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared/backup/apis';
 
