@@ -19,7 +19,7 @@
 import {
 	__stringify,
 	ApiException,
-	BadImplementationException,
+	BadImplementationException, batchActionParallel,
 	compare,
 	Const_UniqueKeys,
 	CustomException,
@@ -258,7 +258,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			if (transaction)
 				return this._setAll(items, transaction);
 
-			return this.runTransaction(t => this._setAll(items, t));
+			return this.runTransactionInChunks(items, (chunk, t) => this._setAll(chunk, t));
 		},
 		/**
 		 * Multi is a non atomic operation
@@ -325,25 +325,33 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		item: async (item: PreDB<Type>, transaction?: Transaction) => await this.doc.item(item).delete(transaction),
 		all: async (ids: (UniqueParam<Type, Ks>)[], transaction?: Transaction): Promise<Type[]> => {
 			if (!transaction)
-				return this.runTransaction(t => this.delete.all(ids, t));
+				return this.runTransactionInChunks(ids, (chunk, t) => this.delete.all(chunk, t));
 
 			return this._deleteAll(ids.map(id => this.doc.unique(id)), transaction);
 		},
 		allDocs: async (docs: DocWrapperV2<Type>[], transaction?: Transaction): Promise<Type[]> => {
 			if (!transaction)
-				return this.runTransaction(t => this.delete.allDocs(docs, t));
+				return this.runTransactionInChunks(docs, (chunk, t) => this.delete.allDocs(chunk, t));
 
 			return await this._deleteAll(docs, transaction);
 		},
 		allItems: async (items: PreDB<Type>[], transaction?: Transaction): Promise<Type[]> => {
 			if (!transaction)
-				return this.runTransaction(t => this.delete.allItems(items, t));
+				return this.runTransactionInChunks(items, (chunk, t) => this.delete.allItems(chunk, t));
 
 			return await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction);
 		},
 		query: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
-			if (!transaction)
-				return this.runTransaction(t => this.delete.query(query, t));
+			if (!transaction){
+				//query all docs and then delete in chunks
+				if (!exists(query) || compare(query, _EmptyQuery))
+					throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
+
+				const docs = await this.doc.query(query, transaction);
+				const items = docs.map(doc => doc.data!); // Data must exist here.
+				await this.runTransactionInChunks(docs, (chunk, t) => this._deleteAll(chunk, t));
+				return items
+			}
 
 			return await this._deleteQuery(query, transaction);
 		},
@@ -352,9 +360,10 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		 * Multi is a non atomic operation
 		 */
 		multi: {
-			all: async (ids: UniqueId[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(ids.map(id => this.doc.unique(id)), transaction, multiWriteType),
-			items: async (items: PreDB<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction, multiWriteType),
-			query: this._deleteQuery
+			all: async (ids: UniqueId[], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(ids.map(id => this.doc.unique(id)), undefined, multiWriteType),
+			items: async (items: PreDB<Type>[], multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteAll(items.map(_item => this.doc.item(_item)), undefined, multiWriteType),
+			allDocs: async (docs: DocWrapperV2<Type>[], multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => await this._deleteAll(docs, undefined, multiWriteType),
+			query: async (query: FirestoreQuery<Type>, multiWriteType: MultiWriteType = defaultMultiWriteType) => await this._deleteQuery(query, undefined, multiWriteType)
 		},
 		yes: {iam: {sure: {iwant: {todelete: {the: {collection: {delete: this.deleteCollection}}}}}}}
 	});
@@ -423,7 +432,12 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	 * @param processor: A set of read and write operations on one or more documents.
 	 */
 	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> => {
-		return this.wrapper.runTransaction<ReturnType>(processor);
+		const firestore = this.wrapper.firestore;
+		return firestore.runTransaction<ReturnType>(processor);
+	};
+
+	runTransactionInChunks = async <T extends any = any, R extends any = any>(items: T[], processor: (chunk: typeof items, transaction: Transaction) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
+		return batchActionParallel(items, chunkSize, (chunk) => this.runTransaction(t => processor(chunk, t)));
 	};
 
 	getVersion = () => {

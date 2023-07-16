@@ -15,7 +15,7 @@ export const TestSuite_FirestoreV2_Performance_WriteMulti: TestSuite<{}, {}> = {
 	testcases: [{description: 'performance - set.all', result: [], input: {}}],
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>(dbDef);
-		await collection.deleteCollection();
+		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
 		const docNumber = 50000;
 
@@ -35,7 +35,7 @@ export const TestSuite_FirestoreV2_Performance_WriteMulti: TestSuite<{}, {}> = {
 		expect(allDocs.length).to.eql(docNumber);
 
 		console.log('Deleting collection...')
-		await collection.deleteCollection();
+		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
 		console.log('Starting batch set')
 		t0 = performance.now();

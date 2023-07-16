@@ -267,7 +267,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 
 	async upgradeCollection(forceUpgrade: boolean) {
 		const docs = await this.collection.doc.query(_EmptyQuery);
-		const toUpdate = docs.filter(doc => {
+		const toDelete = docs.filter(doc => {
 			if (doc.data!._id === '023c345ea94bf91edc643db8e511622e')
 				this.logWarning(`${doc.ref.id} === ${doc.data!._id}`);
 			return doc.ref.id !== doc.data!._id;
@@ -285,9 +285,9 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		this.logWarning(`setting multi instances: ${items.length} items ....`);
 		await this.set.multi(items);
 
-		if (toUpdate.length > 0) {
-			this.logWarning(`Need to delete docs: ${toUpdate.length} items ....`);
-			await this.collection.batchWrite(toUpdate, 'delete');
+		if (toDelete.length > 0) {
+			this.logWarning(`Need to delete docs: ${toDelete.length} items ....`);
+			await this.collection.delete.multi.allDocs(toDelete);
 		}
 	}
 

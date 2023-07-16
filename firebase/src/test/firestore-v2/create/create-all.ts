@@ -84,7 +84,7 @@ export const TestSuite_FirestoreV2_CreateAll: CreateTest = {
 	testcases: TestCases_FB_CreateAll,
 	processor: async (testCase) => {
 		const collection = firestore.getCollection<DB_Type>(createTests_dbDef);
-		await collection.deleteCollection();
+		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
 		const toCreate = deepClone(testCase.input.value);
 
