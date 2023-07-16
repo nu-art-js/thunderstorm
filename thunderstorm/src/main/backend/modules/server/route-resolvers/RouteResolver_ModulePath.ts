@@ -19,12 +19,12 @@
  * limitations under the License.
  */
 
-import {Express} from 'express';
-import {ServerApi_Middleware} from '../../../utils/types';
+import {Express, NextFunction} from 'express';
+import {ExpressRequest, ExpressResponse, ServerApi_Middleware} from '../../../utils/types';
 import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
 import {Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
-import {ApiModule_Class} from '../../ApiModule';
+import {ModuleBE_APIs_Class} from '../../ModuleBE_APIs';
 import {ApiDef} from '../../../../shared';
 
 
@@ -51,13 +51,13 @@ export class RouteResolver_ModulePath
 	}
 
 	public resolveApi() {
-		const modules: (Module | ApiModule_Class)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ApiModule_Class).useRoutes);
+		const modules: (Module | ModuleBE_APIs_Class)[] = Storm.getInstance().filterModules(module => !!(module as unknown as ModuleBE_APIs_Class).useRoutes);
 
 		//Filter Api modules
 		const routes: ServerApi<any>[] = [];
 		for (const module of modules) {
 			this.logInfo(module.getName());
-			const _routes = (module as unknown as ApiModule_Class).useRoutes();
+			const _routes = (module as unknown as ModuleBE_APIs_Class).useRoutes();
 			routes.push(..._routes);
 		}
 
@@ -68,6 +68,12 @@ export class RouteResolver_ModulePath
 
 			this.middlewares.filter(config => config.filter(api.apiDef) && api.addMiddlewares(...config.middlewares));
 			api.route(this.express, this.initialPath);
+		});
+
+		this.express.all('*', (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+
+			this.logErrorBold(`Received unknown url with path: '${req.path}' - url: '${req.url}'`);
+
 		});
 	}
 

@@ -2,7 +2,7 @@ import {Module} from '@nu-art/ts-common/core/module';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
 import {ServerApi} from './server/server-api';
 
-export class ApiModule_Class
+export class ModuleBE_APIs_Class
 	extends Module {
 	private routes: ServerApi<any>[] = [];
 
@@ -17,6 +17,6 @@ export class ApiModule_Class
 	useRoutes = () => this.routes;
 }
 
-export const ApiModule = new ApiModule_Class();
+export const ModuleBE_APIs = new ModuleBE_APIs_Class();
 
-export const addRoutes: (apis: ServerApi<any>[]) => void = (apis: ServerApi<any>[]) => ApiModule.addRoutes(apis);
+export const addRoutes: (apis: ServerApi<any>[]) => void = (apis: ServerApi<any>[]) => ModuleBE_APIs.addRoutes(apis);

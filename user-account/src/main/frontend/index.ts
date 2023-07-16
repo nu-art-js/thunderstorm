@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+export * from './proxy-v2';
 export * from './core/module-pack';
 export * from './ui/Component_Login/Component_Login';
 export * from './ui/Component_Register';

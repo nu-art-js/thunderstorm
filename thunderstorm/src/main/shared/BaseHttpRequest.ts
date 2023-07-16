@@ -18,7 +18,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {_keys, BadImplementationException, exists, Logger} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, exists, Logger, Minute, ModuleManager} from '@nu-art/ts-common';
 import {HttpMethod, TypedApi} from './types';
 import {HttpException, TS_Progress} from './request-types';
 import {ErrorResponse} from '@nu-art/ts-common/core/exceptions/types';
@@ -54,6 +54,9 @@ export abstract class BaseHttpRequest<API extends TypedApi<any, any, any, any>> 
 		this.requestData = requestData;
 		this.label = `http request: ${requestKey}${requestData ? ` ${requestData}` : ''}`;
 		this.compress = false;
+		// @ts-ignore
+		if (ModuleManager.instance.config.isDebug)
+			this.timeout = 5 * Minute;
 	}
 
 	setLogger(logger?: Logger) {

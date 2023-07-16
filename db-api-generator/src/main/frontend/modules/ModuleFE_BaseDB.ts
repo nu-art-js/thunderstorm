@@ -20,7 +20,15 @@
  */
 
 import {Response_DBSync,} from '../shared';
-import {DBConfig, IndexDb_Query, IndexedDB, OnClearWebsiteData, ReduceFunction, StorageKey, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {
+	DBConfig,
+	IndexDb_Query,
+	IndexedDB,
+	OnClearWebsiteData,
+	ReduceFunction,
+	StorageKey,
+	ThunderDispatcher
+} from '@nu-art/thunderstorm/frontend';
 
 import {
 	arrayToMap,
@@ -54,7 +62,7 @@ import {
 	EventType_Update,
 	EventType_UpsertAll
 } from '../consts';
-import {composeDbObjectUniqueId} from "@nu-art/firebase";
+import {composeDbObjectUniqueId} from '@nu-art/firebase';
 
 
 export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey, Config extends DBApiFEConfig<DBType, Ks> = DBApiFEConfig<DBType, Ks>>
@@ -66,6 +74,9 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 	readonly dbDef: DBDef<DBType, Ks>;
 	private dataStatus: DataStatus;
 	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>;
+
+	// @ts-ignore
+	private readonly ModuleFE_BaseDB = true;
 
 	protected constructor(dbDef: DBDef<DBType, Ks>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventType<DBType>>) {
 		super();

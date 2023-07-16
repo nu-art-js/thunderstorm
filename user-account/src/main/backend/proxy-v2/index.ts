@@ -1,6 +1,5 @@
 /*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
+ * User secured registration and login management system..
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,13 +15,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {ModuleFE_AssetUploader} from '../modules/ModuleFE_AssetUploader';
-import {ModulePackFE_PushPubSub} from '@nu-art/push-pub-sub/frontend';
-import {ModuleFE_Assets} from '../modules/ModuleFE_Assets';
 
-
-export const ModulePackFE_FileUploader = [
-	...ModulePackFE_PushPubSub,
-	ModuleFE_Assets,
-	ModuleFE_AssetUploader,
-];
+export * from './ModuleBE_RemoteProxyV2';

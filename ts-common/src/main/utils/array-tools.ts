@@ -248,6 +248,17 @@ export function generateArray<T extends any = number>(length: number, mapper: (i
 	return Array.from({length}).map((e, i) => mapper(i));
 }
 
+export function asArray<T extends any>(toBeArray: T | T[]): T[] {
+	return Array.isArray(toBeArray) ? toBeArray : [toBeArray];
+}
+
+export function asOptionalArray<T extends any>(toBeArray?: T | T[]): T[] | undefined {
+	if (!exists(toBeArray))
+		return undefined;
+
+	return asArray(toBeArray);
+}
+
 export function lastElement<T extends any>(array: T[] | undefined) {
 	return array?.[array?.length - 1];
 }

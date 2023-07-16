@@ -1,4 +1,5 @@
 import {DB_Object} from '@nu-art/ts-common';
+import {BackupMetaData} from '../../backend/modules/backup/ModuleBE_v2_Backup';
 
 export type ActDetailsDoc = {
 	timestamp: number,
@@ -19,11 +20,15 @@ export type FetchBackupDoc = {
 export type FetchBackupDocV2 = {
 	_id: string,
 	backupFilePath: string,
-	metadataFilePath: string
+	metadataFilePath: string,
+	firebaseFilePath: string,
+	metadata: BackupMetaData
 }
 
 export type DB_BackupDoc = DB_Object & {
 	timestamp: number,
 	backupPath: string,
-	metadataPath: string
+	metadataPath: string,
+	firebasePath: string,
+	metadata: BackupMetaData
 }
