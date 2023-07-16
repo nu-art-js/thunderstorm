@@ -28,6 +28,7 @@ import {
 	ImplementationMissingException,
 	MB,
 	Minute,
+	MUSTNeverHappenException,
 	PreDB,
 	ThisShouldNotHappenException,
 	TypedMap
@@ -38,10 +39,10 @@ import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {CleanupDetails, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
-import {OnAssetUploaded} from './AssetBucketListener';
+import {OnAssetUploaded} from './ModuleBE_BucketListener';
 import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
-import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
+import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -155,7 +156,7 @@ export class ModuleBE_Assets_Class
 		};
 	}
 
-	private cleanup = async ( interval = Hour, module: ModuleBE_BaseDBV2<DB_Asset> = ModuleBE_AssetsTemp) => {
+	private cleanup = async (interval = Hour, module: ModuleBE_BaseDBV2<DB_Asset> = ModuleBE_AssetsTemp) => {
 		const entries: DB_Asset[] = await module.query.custom({where: {timestamp: {$lt: currentTimeMillis() - interval}}});
 		const bucketName = this.config?.bucketName;
 		const bucket = await this.storage.getOrCreateBucket(bucketName);
@@ -208,29 +209,29 @@ export class ModuleBE_Assets_Class
 		}));
 	}
 
-	processAssetManually = async ( feId?: string) => {
+	processAssetManually = async (feId?: string) => {
 		let query: FirestoreQuery<DB_Asset> = {limit: 1};
 		if (feId)
 			query = {where: {feId}};
 
 		const unprocessedFiles: DB_Asset[] = await ModuleBE_AssetsTemp.query.custom(query);
-		return Promise.all(unprocessedFiles.map(asset => this.__processAsset( asset.path)));
+		return Promise.all(unprocessedFiles.map(asset => this.__processAsset(asset.path)));
 	};
 
-	__processAsset = async ( filePath?: string) => {
+	__processAsset = async (filePath?: string) => {
 		if (!filePath)
-			throw new ThisShouldNotHappenException('Missing file path');
+			throw new MUSTNeverHappenException('Missing file path');
 
 		if (!filePath.match(this.config.pathRegexp))
-			return this.logInfo(`File was added to storage in path: ${filePath}, NOT via file uploader`);
+			return this.logVerbose(`File was added to storage in path: ${filePath}, NOT via file uploader`);
 
-		this.logInfo(`Looking for file with path: ${filePath}`);
-		const tempMeta = await ModuleBE_AssetsTemp.query.uniqueCustom({where:{path: filePath}});
+		this.logDebug(`Looking for file with path: ${filePath}`);
+		const tempMeta = await ModuleBE_AssetsTemp.query.uniqueCustom({where: {path: filePath}});
 		if (!tempMeta)
 			throw new ThisShouldNotHappenException(`Could not find meta for file with path: ${filePath}`);
 
 		await this.notifyFrontend(FileStatus.Processing, tempMeta);
-		this.logInfo(`Found temp meta with _id: ${tempMeta._id}`, tempMeta);
+		this.logDebug(`Found temp meta with _id: ${tempMeta._id}`, tempMeta);
 		const validationConfig = this.fileValidator[tempMeta.key];
 		if (!validationConfig)
 			return this.notifyFrontend(FileStatus.ErrorNoConfig, tempMeta);
@@ -278,7 +279,7 @@ export class ModuleBE_Assets_Class
 		const finalDbAsset = await this.runTransaction(async (transaction): Promise<DB_Asset> => {
 			const duplicatedAssets = await this.query.custom({where: {md5Hash: tempMeta.md5Hash}}, transaction);
 			if (duplicatedAssets.length && duplicatedAssets[0]) {
-				this.logInfo(`${tempMeta.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
+				this.logWarning(`${tempMeta.feId} is a duplicated entry for ${duplicatedAssets[0]._id}`);
 				return {...duplicatedAssets[0], feId: tempMeta.feId};
 			}
 

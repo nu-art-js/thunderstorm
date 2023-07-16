@@ -20,7 +20,8 @@
  */
 
 import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
-import {FirestoreBackupDetailsV2, ModuleBE_BackupV2} from './ModuleBE_BackupV2';
+import {FirestoreBackupDetailsV2, ModuleBE_v2_Backup} from './ModuleBE_v2_Backup';
+
 
 export interface OnFirestoreBackupSchedulerActV2 {
 	__onFirestoreBackupSchedulerActV2: () => FirestoreBackupDetailsV2<any>[];
@@ -30,8 +31,7 @@ export interface OnModuleCleanupV2 {
 	__onCleanupInvokedV2: () => Promise<void>;
 }
 
-
-export class FirestoreBackupSchedulerV2_Class
+export class ModuleBE_v2_BackupScheduler_Class
 	extends FirebaseScheduledFunction {
 
 	constructor() {
@@ -41,10 +41,9 @@ export class FirestoreBackupSchedulerV2_Class
 	}
 
 	onScheduledEvent = async (): Promise<any> => {
-		this.logInfoBold('Running function FirestoreBackupScheduler');
-
-		await ModuleBE_BackupV2.initiateBackup();
+		this.logInfoBold(`Running function ${this.getName()}`);
+		await ModuleBE_v2_Backup.initiateBackup();
 	};
 }
 
-export const FirestoreBackupSchedulerV2 = new FirestoreBackupSchedulerV2_Class();
+export const ModuleBE_v2_BackupScheduler = new ModuleBE_v2_BackupScheduler_Class();
