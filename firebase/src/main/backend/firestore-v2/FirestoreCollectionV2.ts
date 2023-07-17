@@ -432,8 +432,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	 * @param processor: A set of read and write operations on one or more documents.
 	 */
 	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> => {
-		const firestore = this.wrapper.firestore;
-		return firestore.runTransaction<ReturnType>(processor);
+		return this.wrapper.runTransaction<ReturnType>(processor);
 	};
 
 	runTransactionInChunks = async <T extends any = any, R extends any = any>(items: T[], processor: (chunk: typeof items, transaction: Transaction) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
