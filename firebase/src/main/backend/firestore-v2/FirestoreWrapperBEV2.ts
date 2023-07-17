@@ -35,15 +35,15 @@ export class FirestoreWrapperBEV2
 		this.firestore = getFirestore(firebaseSession.app);
 	}
 
-	async runTransaction<ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> {
-		return this.firestore.runTransaction<ReturnType>((transaction: Transaction) => {
+	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> => {
+		return this.firestore.runTransaction<ReturnType>(async (transaction: Transaction) => {
 			const writeActions: (() => void)[] = [];
 
 			// @ts-ignore
 			transaction.__nu_art__WriteActions = writeActions;
-			const originSet = transaction.set;
-			const originDelete = transaction.delete;
-			const originCreate = transaction.create;
+			const originSet = transaction.set.bind(transaction);
+			const originDelete = transaction.delete.bind(transaction);
+			const originCreate = transaction.create.bind(transaction);
 
 			transaction.set = <T>(documentRef: FirebaseFirestore.DocumentReference<T>, data: FirebaseFirestore.WithFieldValue<T>) => {
 				writeActions.push(() => originSet(documentRef, data));
@@ -60,13 +60,13 @@ export class FirestoreWrapperBEV2
 				return transaction;
 			};
 
-			const toRet = processor(transaction);
+			const toRet = await processor(transaction);
 
 			writeActions.forEach(action => action());
 
 			return toRet;
 		});
-	}
+	};
 
 	public getCollection<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey>(dbDef: DBDef<Type, Ks>, hooks?: FirestoreCollectionHooks<Type>): FirestoreCollectionV2<Type, Ks> {
 		const collection = this.collections[dbDef.dbName];
