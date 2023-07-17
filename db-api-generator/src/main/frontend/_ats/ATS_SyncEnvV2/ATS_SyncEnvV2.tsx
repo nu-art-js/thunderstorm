@@ -129,7 +129,7 @@ export class ATS_SyncEnvironmentV2
 	};
 
 	private canSync = () => {
-		return !!this.state.selectedEnv && !!this.state.backupId && !!this.state.metadata;
+		return !!this.state.selectedEnv && !!this.state.backupId;
 	};
 
 	private getCollectionModuleList(): string[] {

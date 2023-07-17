@@ -31,6 +31,9 @@ class ModuleBE_v2_SyncEnv_Class
 		if (!backupInfo)
 			throw new ApiException(404, 'backup file not found');
 
+		if (!backupInfo.metadata)
+			throw new ApiException(404, 'No metadata found on this backup');
+
 		return backupInfo.metadata;
 	};
 
@@ -56,11 +59,10 @@ class ModuleBE_v2_SyncEnv_Class
 			const backupInfo = response.backupInfo;
 
 			const wrongBackupIdDescriptor = backupInfo?._id !== backupId;
+
 			if (wrongBackupIdDescriptor)
 				throw new BadImplementationException(`Received backup descriptors with wrong backupId! provided id: ${backupId} received id: ${backupInfo?._id}`);
 
-			if (!backupInfo.metadataFilePath || !backupInfo.backupFilePath)
-				throw new BadImplementationException('Missing file path to one of the backup files');
 			return backupInfo;
 		} catch (err: any) {
 			throw new ApiException(500, err);
@@ -77,6 +79,12 @@ class ModuleBE_v2_SyncEnv_Class
 
 
 		const backupInfo = await this.getBackupInfo(body);
+
+		this.logInfo(backupInfo)
+
+		if (!backupInfo.backupFilePath)
+			throw new ApiException(404, 'Backup file path not found');
+
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
 		const storage = firebaseSessionAdmin.getStorage();
 		const bucket = await storage.getMainBucket();

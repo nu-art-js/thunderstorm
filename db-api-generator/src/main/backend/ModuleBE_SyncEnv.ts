@@ -3,6 +3,7 @@ import {addRoutes, AxiosHttpModule, createBodyServerApi, Storm} from '@nu-art/th
 import {BadImplementationException, DB_Object, Module, TypedMap} from '@nu-art/ts-common';
 import {ApiDef_SyncEnv, Request_FetchFromEnv} from '../shared';
 import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
+import {ModuleBE_BaseDBV2} from './ModuleBE_BaseDBV2';
 
 
 type Config = {
@@ -62,12 +63,19 @@ class ModuleBE_SyncEnv_Class
 				return;
 			}
 
-			const relevantModule: ModuleBE_BaseDB<any>[] = Storm.getInstance().filterModules((module) => {
+			const stormInstance = Storm.getInstance();
+			const relevantModuleV1: ModuleBE_BaseDB<any>[] = stormInstance.filterModules((module) => {
 				//the moduleKey in ModuleBE_BaseDB's config is taken from collection's name.
 				return module instanceof ModuleBE_BaseDB && (module as ModuleBE_BaseDB<any>).getCollectionName() === moduleKey;
 			});
 
-			if (relevantModule.length === 0) {
+			const relevantModuleV2: ModuleBE_BaseDBV2<any>[] = stormInstance.filterModules((module) => {
+				//the moduleKey in ModuleBE_BaseDB's config is taken from collection's name.
+				return module instanceof ModuleBE_BaseDBV2 && (module as ModuleBE_BaseDBV2<any>).getCollectionName() === moduleKey;
+			});
+
+
+			if (!relevantModuleV2.length && !relevantModuleV1.length) {
 				this.logErrorBold(`Failed to find collection module for collectionName: ${backupDescriptor.moduleKey}!`);
 				return;
 			}
@@ -82,9 +90,13 @@ class ModuleBE_SyncEnv_Class
 				.executeSync();
 
 			this.logInfo(backupDescriptor.moduleKey);
-			this.logInfo(`Received backup descriptor for '${backupDescriptor.moduleKey}', found module name: ${relevantModule[0].getName()}, ${relevantModule[0].getCollectionName()}`);
+			this.logInfo(`Received backup descriptor for '${backupDescriptor.moduleKey}', found module name: ${relevantModuleV1[0]?.getName() || relevantModuleV2[0]?.getName()}, ${relevantModuleV1[0]?.getCollectionName() || relevantModuleV2[0]?.getCollectionName()}`);
 
-			await relevantModule[0].upsertAll(backupFile);
+			if (relevantModuleV1.length) {
+				await relevantModuleV1[0].upsertAll(backupFile);
+			} else {
+				await relevantModuleV2[0].set.all(backupFile);
+			}
 		}));
 	};
 }
