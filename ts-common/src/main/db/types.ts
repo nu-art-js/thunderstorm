@@ -1,4 +1,4 @@
-import {DB_Object, OmitDBObject} from '../utils/types';
+import {DB_Object, OmitDBObject, PartialProperties} from '../utils/types';
 import {ValidatorTypeResolver} from '../validator/validator-core';
 
 
@@ -9,6 +9,20 @@ export type DBIndex<T extends DB_Object> = {
 };
 
 export type Default_UniqueKey = '_id';
+export type VersionType = string
+
+export type DBProto<T extends DB_Object, Ks extends keyof T = Default_UniqueKey, Versions extends VersionType[] = ['1.0.0'], GeneratedKeys extends keyof T = keyof DB_Object> = {
+	generatedKeys: keyof DB_Object | GeneratedKeys
+	uiType: PartialProperties<T, keyof DB_Object | GeneratedKeys>,
+	dbType: T,
+	uniqueKeys: Ks,
+	versions: Versions
+	validatorBE: ValidatorTypeResolver<OmitDBObject<T>>
+	validatorFE: ValidatorTypeResolver<Omit<T, keyof GeneratedKeys>>
+	dbIndices: DBIndex<T>
+}
+
+export type DBDef_V2<Proto extends DBProto<any>> = DBDef<Proto['dbType'], Proto['uniqueKeys']>
 
 /**
  * @field version - First item in the array is current version, Must pass all past versions with the current, default version is 1.0.0
