@@ -22,7 +22,6 @@ export class ProxyServiceAccount_EditorRenderer
 	private renderEditorBody = () => {
 		const extra = this.props.editable.editProp('extra', []);
 		return <LL_V_L className={'form-wrapper match_height'}>
-			<div className={'title'}>Edit ServiceAccount</div>
 			{this.input('label').vertical('Label')}
 			{this.input('email').vertical('Email')}
 			<TS_PropRenderer.Vertical label={'APIs'}>

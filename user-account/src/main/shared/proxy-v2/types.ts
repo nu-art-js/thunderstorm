@@ -7,3 +7,5 @@ export type ProxyServiceAccount = DB_Object & {
 	email: string,
 	extra: TypedKeyValue<string, string>[];
 }
+
+//json token- name, email, creationTimestamp, expirationTimestamp, creator(who created this token), additionalClaims(the service account extras)
