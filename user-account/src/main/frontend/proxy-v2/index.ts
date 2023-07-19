@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-export * from './ModuleFE_RemoteProxyV2';
+export * from './ModuleFE_v2_RemoteProxy';
 export * from './ServiceAccountEditor';
 export * from './ProxyServiceAccount_EditorRenderer';
 export * from './ServiceAccountExtra_EditorRenderer';
