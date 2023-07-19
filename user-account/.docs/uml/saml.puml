@@ -5,21 +5,9 @@ participant Auth_FE
 participant Auth_BE
 control Google
 
-App_FE -> App_BE: Validate Sessions
-App_BE -> Auth_BE: Validate Sessions
-Auth_BE --> App_BE: Invalid session
-App_BE --> App_FE: Invalid session
 App_FE -> Auth_FE: Authenticate User
 Auth_FE -> Auth_BE: Authenticate User
 
-alt Authenticate with Google SAML
-
-    Auth_BE -> Google: Authenticate User
-    Google -> Google: User Authenticating
-    Google --> Auth_FE: User Authenticated
-    Auth_FE --> Auth_BE: Redirect (User Authenticated)
-
-end
 
 Auth_BE --> Auth_FE: Redirect back to frontend with\nsession id and email
 Auth_FE -> Auth_FE: Save data
