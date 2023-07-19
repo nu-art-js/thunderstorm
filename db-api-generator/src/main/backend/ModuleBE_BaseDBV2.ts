@@ -35,7 +35,10 @@ import {
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
 import {DBApiBEConfig, getModuleBEConfig} from './db-def';
 import {_EmptyQuery, Response_DBSync} from '../shared';
-import {FirestoreCollectionV2, PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
+import {
+	FirestoreCollectionV2,
+	PostWriteProcessingData
+} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/consts';
 import {OnFirestoreBackupSchedulerActV2} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_v2_BackupScheduler';
