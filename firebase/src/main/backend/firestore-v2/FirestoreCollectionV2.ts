@@ -19,7 +19,8 @@
 import {
 	__stringify,
 	ApiException,
-	BadImplementationException, batchActionParallel,
+	BadImplementationException,
+	batchActionParallel,
 	compare,
 	Const_UniqueKeys,
 	CustomException,
@@ -28,7 +29,8 @@ import {
 	DBDef,
 	dbObjectToId,
 	Default_UniqueKey,
-	DefaultDBVersion, Exception,
+	DefaultDBVersion,
+	Exception,
 	exists,
 	filterDuplicates,
 	filterInstances,
@@ -63,7 +65,10 @@ import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;
 
 // {deleted: null} means that the whole collection has been deleted
-export type PostWriteProcessingData<Type extends DB_Object> = { updated?: Type | Type[], deleted?: Type | Type[] | null };
+export type PostWriteProcessingData<Type extends DB_Object> = {
+	updated?: Type | Type[],
+	deleted?: Type | Type[] | null
+};
 
 export type FirestoreCollectionHooks<Type extends DB_Object> = {
 	canDeleteItems: (dbItems: Type[], transaction?: Transaction) => Promise<void>,
@@ -342,7 +347,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			return await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction);
 		},
 		query: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
-			if (!transaction){
+			if (!transaction) {
 				//query all docs and then delete in chunks
 				if (!exists(query) || compare(query, _EmptyQuery))
 					throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
@@ -350,7 +355,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 				const docs = await this.doc.query(query, transaction);
 				const items = docs.map(doc => doc.data!); // Data must exist here.
 				await this.runTransactionInChunks(docs, (chunk, t) => this._deleteAll(chunk, t));
-				return items
+				return items;
 			}
 
 			return await this._deleteQuery(query, transaction);
@@ -466,6 +471,13 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			countMap[item._id] = !exists(countMap[item._id]) ? 1 : 1 + countMap[item._id];
 			return countMap;
 		}, {});
+
+
+		// DEBUG - print the duplicate _ids
+		// _keys(idCountMap).forEach(key => {
+		// 	if (idCountMap[key] > 1)
+		// 		this.logWarning(`${idCountMap[key]} times ${key}`);
+		// });
 
 		// Throw exception if an _id appears more than once
 		if (_values(idCountMap).some(count => count > 1))
