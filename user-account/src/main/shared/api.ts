@@ -34,7 +34,7 @@ export type DB_Session = {
 	timestamp: number
 }
 
-export type Response_Auth = UI_Account & {
+type Response_Auth = UI_Account & {
 	sessionId: string
 }
 
@@ -106,12 +106,12 @@ export type ApiStruct_UserAccountBE = {
 	}
 }
 
-export type ApiStruct_SAML_BE = {
-	v1: {
-		loginSaml: TypedApi_LoginSaml
-		assertSAML: BodyApi<void, PostAssertBody>
-	}
-}
+// export type ApiStruct_SAML_BE = {
+// 	v1: {
+// 		loginSaml: TypedApi_LoginSaml
+// 		assertSAML: BodyApi<void, PostAssertBody>
+// 	}
+// }
 
 export const ApiDef_UserAccountFE: ApiDefResolver<ApiStruct_UserAccountFE> = {
 	v1: {
@@ -134,9 +134,9 @@ export const ApiDef_UserAccountBE: ApiDefResolver<ApiStruct_UserAccountBE> = {
 		upsert: {method: HttpMethod.POST, path: 'v1/account/upsert'},
 	}
 };
-export const ApiDef_SAML_BE: ApiDefResolver<ApiStruct_SAML_BE> = {
-	v1: {
-		loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'},
-		assertSAML: {method: HttpMethod.POST, path: 'v1/account/assert'},
-	}
-};
+// export const ApiDef_SAML_BE: ApiDefResolver<ApiStruct_SAML_BE> = {
+// 	v1: {
+// 		loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'},
+// 		assertSAML: {method: HttpMethod.POST, path: 'v1/account/assert'},
+// 	}
+// };

@@ -1,5 +1,5 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
-import {DB_Account_V2, DB_Session_V2, DBDef_Session} from '../../../shared/v2';
+import {DB_Account_V2, DB_Session_V2, DBDef_Session, Response_Auth} from '../../../shared/v2';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {Middleware_ValidateSession, Middleware_ValidateSession_UpdateMemKeys} from '../../core/accounts-middleware';
 import {
@@ -17,7 +17,7 @@ import {
 	TS_Object
 } from '@nu-art/ts-common';
 import {QueryParams} from '@nu-art/thunderstorm';
-import {DB_Session, HeaderKey_SessionId, Request_LoginAccount, Response_Auth, UI_Account} from '../../../shared/api';
+import {HeaderKey_SessionId, Request_LoginAccount, UI_Account} from '../../../shared/api';
 import {dispatch_onUserLogin, getUIAccount, ModuleBE_v2_AccountDB} from './ModuleBE_v2_AccountDB';
 import {gzipSync, unzipSync} from 'zlib';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
@@ -85,7 +85,7 @@ export class ModuleBE_v2_SessionDB_Class
 		return await this.getUserEmailFromSession(session);
 	};
 
-	private async getUserEmailFromSession(session: DB_Session) {
+	private async getUserEmailFromSession(session: PreDB<DB_Session_V2>) {
 		const account = await ModuleBE_v2_AccountDB.query.unique(session.userId);
 		if (!account) {
 			await this.delete.item(session);
@@ -95,7 +95,7 @@ export class ModuleBE_v2_SessionDB_Class
 		return getUIAccount(account);
 	}
 
-	private TTLExpired = (session: DB_Session) => {
+	private TTLExpired = (session: PreDB<DB_Session_V2>) => {
 		const delta = currentTimeMillis() - session.timestamp;
 		return delta > this.config.sessionTTLms || delta < 0;
 	};

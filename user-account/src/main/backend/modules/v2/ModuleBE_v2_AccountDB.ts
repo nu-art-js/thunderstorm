@@ -4,9 +4,9 @@ import {
 	DB_Account_V2,
 	DBDef_Account,
 	RequestBody_ChangePassword,
-	RequestBody_CreateAccount
+	RequestBody_CreateAccount,
+	Response_Auth
 } from '../../../shared/v2';
-import {Request_CreateAccount, Response_Auth, UI_Account} from '../../../shared/api';
 import {
 	ApiException,
 	compare,
@@ -19,6 +19,7 @@ import {
 import {MemKey_AccountEmail, Middleware_ValidateSession_UpdateMemKeys} from '../../core/accounts-middleware';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
+import {Request_CreateAccount, UI_Account} from '../../../shared/api';
 
 export interface OnNewUserRegistered {
 	__onNewUserRegistered(account: UI_Account): void;
@@ -64,26 +65,25 @@ export class ModuleBE_v2_AccountDB_Class
 		const email = _email.toLowerCase();
 		return this.query.uniqueCustom({where: {email}, select: ['email', '_id']});
 	}
-	getOrCreate = async (query: { where: { email: string } }) => {
+
+	/**
+	 * Create an account without passing through this.spiceAccount - as in without password/salt,
+	 * for loginSaml initial login
+	 */
+	getOrCreate = async (query: { where: { email: string } }): Promise<DB_Account_V2> => {
 		let dispatchEvent = false;
 
-		const dbAccount = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
-			const account = await transaction.queryUnique(this.accounts, query);
-			if (account?._id)
+		const dbAccount = await this.runTransaction(async (transaction: FirebaseFirestore.Transaction) => {
+			const account = await this.query.uniqueCustom(query, transaction);
+			if (account)
 				return account;
 
-			const now = currentTimeMillis();
-			const _account: DB_Account = {
-				_id: generateHex(32),
-				__created: now,
-				__updated: now,
-				_audit: auditBy(query.where.email),
+			const _account: PreDB<DB_Account_V2> = {
 				email: query.where.email,
-				...account
-			};
+			} as PreDB<DB_Account_V2>;
 
 			dispatchEvent = true;
-			return transaction.upsert(this.accounts, _account);
+			return this.create.item(_account); // this.createAccountImpl requires pw/salt and also redundantly rechecks if the account doesn't exist.
 		});
 
 		if (dispatchEvent)
@@ -91,6 +91,7 @@ export class ModuleBE_v2_AccountDB_Class
 
 		return dbAccount;
 	};
+
 	/**
 	 * todo Check if necessary
 	 */
