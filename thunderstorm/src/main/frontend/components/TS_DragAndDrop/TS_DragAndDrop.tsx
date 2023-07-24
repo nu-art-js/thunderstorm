@@ -2,6 +2,7 @@ import * as React from 'react';
 import {ComponentSync} from '../../core/ComponentSync';
 import './TS_DragAndDrop.scss';
 import {LL_VH_C} from '../Layouts';
+import {asArray} from '@nu-art/ts-common';
 
 
 type DND_State =
@@ -72,7 +73,7 @@ export class TS_DragAndDrop
 
 	static validateFilesBySuffix = (fileExt: string | string[]) =>
 		(files: File[]): DND_File[] => {
-			const extensions = Array.isArray(fileExt) ? fileExt : [fileExt];
+			const extensions = asArray(fileExt);
 			return files.map((file) => {
 				const accepted = extensions.some(ext => RegExp(`.${ext}$`, 'i').test(file.name));
 				return {file, accepted};

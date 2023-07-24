@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
 import {ComponentSync, EditableItem, TS_Checkbox, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {AssetValueType, DB_Object, dbObjectToId} from '@nu-art/ts-common';
+import {asArray, AssetValueType, DB_Object, dbObjectToId} from '@nu-art/ts-common';
 import {ModuleFE_BaseApi} from '../../modules/ModuleFE_BaseApi';
 import {EditableDBItem} from '../../utils/EditableDBItem';
 import {ApiCallerEventType} from '../../modules/types';
@@ -138,7 +138,7 @@ export class Item_EditorController<Item extends DB_Object, Props extends Props_I
 	}
 
 	private __onItemUpdated = (...params: ApiCallerEventType<Item>): void => {
-		const items = Array.isArray(params[1]) ? params[1] : [params[1]];
+		const items = asArray(params[1]);
 		if (!items.map(dbObjectToId).includes(this.state.editable.item._id!))
 			return;
 

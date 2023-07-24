@@ -3,7 +3,18 @@ import {expect} from 'chai';
 import {firestore, testInstance1, testInstance2, testInstance3, testString1} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {compare, DBDef, deepClone, generateHex, MUSTNeverHappenException, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
+import {
+	asArray,
+	compare,
+	DBDef,
+	deepClone,
+	generateHex,
+	MUSTNeverHappenException,
+	PreDB,
+	removeDBObjectKeys,
+	sortArray,
+	tsValidateMustExist
+} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 
 chai.use(require('chai-as-promised'))
@@ -155,7 +166,7 @@ export const TestSuite_FirestoreV2_Delete: Test = {
 		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
 		const toInsert = deepClone(testCase.input.toInsert);
-		const inserted = await collection.create.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
+		const inserted = await collection.create.all(asArray(toInsert));
 
 		await testCase.input.deleteAction(collection, inserted);
 		const remainingDBItems = await collection.query.custom({where: {}});

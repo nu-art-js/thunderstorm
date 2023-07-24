@@ -9,6 +9,10 @@ class ModuleBE_v2_AccountAPI_Class
 
 	constructor() {
 		super(ModuleBE_v2_AccountDB);
+	}
+
+	init() {
+		super.init();
 		addRoutes([
 			createBodyServerApi(ApiDefBE_Account.vv1.registerAccount, ModuleBE_v2_AccountDB.registerAccount),
 			createBodyServerApi(ApiDefBE_Account.vv1.createAccount, ModuleBE_v2_AccountDB.createAccount),

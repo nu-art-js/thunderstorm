@@ -23,7 +23,7 @@ import {Express, NextFunction} from 'express';
 import {ExpressRequest, ExpressResponse, ServerApi_Middleware} from '../../../utils/types';
 import {Storm} from '../../../core/Storm';
 import {ServerApi} from '../server-api';
-import {Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
+import {asArray, Logger, LogLevel, Module, MUSTNeverHappenException} from '@nu-art/ts-common';
 import {ModuleBE_APIs_Class} from '../../ModuleBE_APIs';
 import {ApiDef} from '../../../../shared';
 
@@ -107,7 +107,7 @@ export class RouteResolver_ModulePath
 
 		const routes: (HttpRoute | HttpRoute[])[] = resolveStack(this.express._router.stack);
 		return routes.reduce((toRet: HttpRoute[], route) => {
-			const toAdd: HttpRoute[] = Array.isArray(route) ? route : [route];
+			const toAdd: HttpRoute[] = asArray(route);
 			toRet.push(...toAdd);
 			//addAllItemToArray(toRet, toAdd);
 

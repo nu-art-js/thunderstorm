@@ -1,25 +1,14 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
-import {
-	addAuditorId,
-	DB_Account_V2,
-	DBDef_Account,
-	RequestBody_ChangePassword,
-	RequestBody_CreateAccount,
-	Response_Auth
-} from '../../../shared/v2';
-import {
-	ApiException,
-	compare,
-	dispatch_onApplicationException,
-	Dispatcher,
-	generateHex,
-	hashPasswordWithSalt,
-	PreDB
-} from '@nu-art/ts-common';
+import {addAuditorId, DB_Account_V2, DBDef_Account, RequestBody_ChangePassword, RequestBody_CreateAccount, Response_Auth} from '../../../shared/v2';
+import {__stringify, ApiException, compare, dispatch_onApplicationException, Dispatcher, generateHex, hashPasswordWithSalt, PreDB} from '@nu-art/ts-common';
 import {MemKey_AccountEmail, Middleware_ValidateSession_UpdateMemKeys} from '../../core/accounts-middleware';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
 import {Request_CreateAccount, UI_Account} from '../../../shared/api';
+import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/v2/assertion';
+import {firestore} from 'firebase-admin';
+import Transaction = firestore.Transaction;
+
 
 export interface OnNewUserRegistered {
 	__onNewUserRegistered(account: UI_Account): void;
@@ -35,6 +24,7 @@ const dispatch_onNewUserRegistered = new Dispatcher<OnNewUserRegistered, '__onNe
 
 type Config = DBApiConfig<DB_Account_V2> & {
 	canRegister: boolean
+	passwordAssertion?: PasswordAssertionConfig
 }
 
 export class ModuleBE_v2_AccountDB_Class
@@ -43,7 +33,7 @@ export class ModuleBE_v2_AccountDB_Class
 		super(DBDef_Account);
 	}
 
-	protected async preWriteProcessing(dbInstance: PreDB<DB_Account_V2>, transaction?: FirebaseFirestore.Transaction): Promise<void> {
+	protected async preWriteProcessing(dbInstance: PreDB<DB_Account_V2>, transaction?: Transaction): Promise<void> {
 		dbInstance._auditorId = await addAuditorId();
 	}
 
@@ -57,7 +47,7 @@ export class ModuleBE_v2_AccountDB_Class
 		};
 	}
 
-	listUsers = async (transaction?: FirebaseFirestore.Transaction) => {
+	listUsers = async (transaction?: Transaction) => {
 		return (await this.query.custom({select: ['_id', 'email']}, transaction)) as { email: string, _id: string }[];
 	};
 
@@ -77,7 +67,7 @@ export class ModuleBE_v2_AccountDB_Class
 	getOrCreate = async (query: { where: { email: string } }): Promise<DB_Account_V2> => {
 		let dispatchEvent = false;
 
-		const dbAccount = await this.runTransaction(async (transaction: FirebaseFirestore.Transaction) => {
+		const dbAccount = await this.runTransaction(async (transaction: Transaction) => {
 			const account = await this.query.uniqueCustom(query, transaction);
 			if (account)
 				return account;
@@ -105,7 +95,7 @@ export class ModuleBE_v2_AccountDB_Class
 		return this.query.uniqueCustom({where: {email}});
 	}
 
-	async registerAccount(body: RequestBody_CreateAccount, transaction?: FirebaseFirestore.Transaction): Promise<Response_Auth> {
+	async registerAccount(body: RequestBody_CreateAccount, transaction?: Transaction): Promise<Response_Auth> {
 		if (!this.config.canRegister)
 			throw new ApiException(418, 'Registration is disabled!!');
 
@@ -129,26 +119,33 @@ export class ModuleBE_v2_AccountDB_Class
 		return session;
 	}
 
-	async createAccount(body: RequestBody_CreateAccount, transaction?: FirebaseFirestore.Transaction): Promise<Response_Auth> {
+	async createAccount(body: RequestBody_CreateAccount, transaction?: Transaction): Promise<Response_Auth> {
 		const dbAccount = await this.createAccountImpl(body, transaction);
 		return {...getUIAccount(dbAccount), sessionId: (await ModuleBE_v2_SessionDB.login(body)).sessionId};
 	}
 
-	private async createAccountImpl(body: RequestBody_CreateAccount, transaction?: FirebaseFirestore.Transaction): Promise<DB_Account_V2> {
+	private createAccountImpl = async (body: RequestBody_CreateAccount, transaction?: Transaction): Promise<DB_Account_V2> => {
 		//Email always lowerCase
 		body.email = body.email.toLowerCase();
 
 		return this.runTransaction(async _transaction => {
-			const existingAccount = await this.query.uniqueCustom({where: {email: body.email}}, transaction);
+			let existingAccount: DB_Account_V2 | undefined;
+			try {
+				existingAccount = await this.query.uniqueWhere({email: body.email}, transaction);
+			} catch (ignore) {
+				// this is fine we do not want the account to exist!
+				/* empty */
+			}
+
 			if (existingAccount)
 				throw new ApiException(422, 'User with email already exists');
 
 			const account = await this.spiceAccount(body) as PreDB<DB_Account_V2>;
 			return await this.create.item(account, transaction);
 		}, transaction);
-	}
+	};
 
-	async changePassword(body: RequestBody_ChangePassword, transaction?: FirebaseFirestore.Transaction): Promise<Response_Auth> {
+	async changePassword(body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> {
 		const lowerCaseEmail = body.userEmail.toLowerCase();
 		const updatedAccount = await this.changePasswordImpl(lowerCaseEmail, body.originalPassword, body.newPassword, body.newPassword_check, transaction);
 		return {
@@ -160,7 +157,7 @@ export class ModuleBE_v2_AccountDB_Class
 		};
 	}
 
-	private async changePasswordImpl(userEmail: string, originalPassword: string, newPassword: string, newPassword_check: string, transaction?: FirebaseFirestore.Transaction) {
+	private async changePasswordImpl(userEmail: string, originalPassword: string, newPassword: string, newPassword_check: string, transaction?: Transaction) {
 		return await this.runTransaction(async (_transaction) => {
 
 			const assertedAccount = await this.assertPassword(originalPassword, userEmail);
@@ -179,7 +176,7 @@ export class ModuleBE_v2_AccountDB_Class
 		}, transaction);
 	}
 
-	private async assertPassword(password: string, userEmail: string, transaction?: FirebaseFirestore.Transaction) {
+	private async assertPassword(password: string, userEmail: string, transaction?: Transaction) {
 		const account = await this.query.uniqueCustom({where: {email: userEmail}}, transaction);
 
 		if (!account) {
@@ -189,6 +186,10 @@ export class ModuleBE_v2_AccountDB_Class
 
 		if (!account.salt || !account.saltedPassword)
 			throw new ApiException(401, 'Account was never logged in using username and password, probably logged using SAML');
+
+		const assertPassword = assertPasswordRules(password, this.config.passwordAssertion);
+		if (assertPassword)
+			throw new ApiException(444, `Password assertion failed with: ${__stringify(assertPassword)}`);
 
 		if (hashPasswordWithSalt(password, account.salt) !== account.saltedPassword)
 			throw new ApiException(401, 'Wrong username or password.');

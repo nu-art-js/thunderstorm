@@ -21,7 +21,7 @@
 
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
 import {
-	ApiException,
+	ApiException, asArray,
 	currentTimeMillis,
 	DB_Object,
 	DBDef,
@@ -169,7 +169,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		}
 
 		if (data.deleted && !(Array.isArray(data.updated) && data.updated.length === 0)) {
-			await ModuleBE_v2_SyncManager.onItemsDeleted(this.config.collectionName, !Array.isArray(data.deleted) ? [data.deleted] : data.deleted, this.config.uniqueKeys);
+			await ModuleBE_v2_SyncManager.onItemsDeleted(this.config.collectionName, asArray(data.deleted), this.config.uniqueKeys);
 			await ModuleBE_v2_SyncManager.setLastUpdated(this.config.collectionName, now);
 		} else if (data.deleted === null)
 			// this means the whole collection has been deleted - setting the oldestDeleted to now will trigger a clean sync
