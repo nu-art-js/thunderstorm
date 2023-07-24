@@ -1,9 +1,19 @@
-import {_keys, filterDuplicates, flatArray, generateArray, tsValidateRegexp, tsValidateResult, tsValidateString, Validator} from '@nu-art/ts-common';
+import {
+	_keys,
+	filterDuplicates,
+	flatArray,
+	generateArray,
+	tsValidateRegexp,
+	tsValidateResult,
+	tsValidateString,
+	tsValidateStringMinLength,
+	Validator
+} from '@nu-art/ts-common';
 
 
-export type PasswordAssertionTypes = 'min-length' | 'special-chars' | 'capital-letters' | 'numbers'
+export type PasswordAssertionTypes = 'min-length' | 'special-chars' | 'capital-letters' | 'numbers' | 'max-length'
 export type PasswordValidator = { type: PasswordAssertionTypes, validator: (num: number) => Validator<string> };
-export type PasswordAssertionConfig = { [K in PasswordAssertionTypes]: number };
+export type PasswordAssertionConfig = { [K in PasswordAssertionTypes]?: number };
 
 const specialChars = '.*?[!@#$%^&*()_+-=\\[\\]{},./;\':"<>|\\\\]';
 const capitalLetters = '.*?[A-Z]';
@@ -13,11 +23,16 @@ type _PasswordAssertion = {
 	'special-chars': PasswordValidator
 	'capital-letters': PasswordValidator
 	numbers: PasswordValidator
+	'max-length': PasswordValidator
 };
 
 export const PasswordAssertion: _PasswordAssertion = {
 	'min-length': {
 		type: 'min-length',
+		validator: (length: number) => tsValidateStringMinLength(length)
+	},
+	'max-length': {
+		type: 'max-length',
 		validator: (length: number) => tsValidateString(length)
 	},
 	'special-chars': {
@@ -45,7 +60,7 @@ export const assertPasswordRules = (password: string, assertionConfig?: Password
 		return;
 
 	const passwordValidator = filterDuplicates(flatArray(_keys(assertionConfig)
-		.map(assertKey => PasswordAssertion[assertKey].validator(assertionConfig[assertKey]))));
+		.map(assertKey => PasswordAssertion[assertKey].validator(assertionConfig[assertKey]!))));
 
 	return tsValidateResult(password, passwordValidator);
 };

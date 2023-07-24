@@ -22,6 +22,13 @@ const TestCases_FB_Create: CreateAccountTest['testcases'] = [{
 	description: 'Simple',
 	input: {account: {email: 'test@email.com', password: '1234', password_check: '1234'}},
 	result: true
+}, {
+	description: 'Simple',
+	input: {
+		account: {email: 'test@email.com', password: '1234', password_check: '1234'},
+		assertionConfig: {'min-length': 5}
+	},
+	result: true
 }];
 
 TestCases_FB_Create.forEach(testCase => testCase.description = `${testCase.description}: ${testCase.input.account.email} - ${testCase.input.account.password}`);
@@ -34,13 +41,10 @@ export const TestSuite_Accounts_Create: CreateAccountTest = {
 			passwordAssertion: testCase.input.assertionConfig
 		});
 
+		await ModuleBE_v2_AccountDB.collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		let result: boolean | undefined;
 		try {
-
-
-
-
-			await new MemStorage().init(() => ModuleBE_v2_AccountDB.createAccount({email: 'test@email.com', password: '1234', password_check: '1234'}));
+			await new MemStorage().init(() => ModuleBE_v2_AccountDB.account.register({email: 'test@email.com', password: '1234', password_check: '1234'}));
 			// await ModuleBE_v2_AccountDB.createAccount({email: 'test@email.com', password: '1234', password_check: '1234'});
 			result = true;
 		} catch (e) {

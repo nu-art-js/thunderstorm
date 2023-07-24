@@ -9,19 +9,19 @@ import {
 import {DBDef} from '@nu-art/ts-common/db/types';
 import {DB_Account_V2, DB_Session_V2} from './types';
 
+
 export const Validator_Session: ValidatorTypeResolver<OmitDBObject<DB_Session_V2>> = {
 	sessionId: tsValidateString(),
-	userId: tsValidateUniqueId,
+	accountId: tsValidateUniqueId,
 	timestamp: tsValidateTimestamp()
 };
 
-export const DBDef_Session: DBDef<DB_Session_V2, 'userId'> = {
+export const DBDef_Session: DBDef<DB_Session_V2, 'accountId'> = {
 	validator: Validator_Session,
 	dbName: 'user-account--sessions',
 	entityName: 'Session',
-	uniqueKeys: ['userId']
+	uniqueKeys: ['accountId']
 };
-
 
 export const Validator_Account: ValidatorTypeResolver<OmitDBObject<DB_Account_V2>> = {
 	email: tsValidateEmail,
