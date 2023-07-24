@@ -1,6 +1,6 @@
 import {duplicateObjectToCreate, firestore, testInstance2} from '../_core/consts';
 import {DB_Type} from '../_core/types';
-import {deepClone} from '@nu-art/ts-common';
+import {asArray, deepClone} from '@nu-art/ts-common';
 import {CreateTest, createTestCases} from './consts';
 import * as chaiAsPromised from 'chai-as-promised';
 import {expect} from 'chai';
@@ -88,7 +88,7 @@ export const TestSuite_FirestoreV2_CreateAll: CreateTest = {
 
 		const toCreate = deepClone(testCase.input.value);
 
-		await collection.create.all(Array.isArray(toCreate) ? toCreate : [toCreate]);
+		await collection.create.all(asArray(toCreate));
 
 		await testCase.input.check!(collection, testCase.result);
 	}

@@ -18,6 +18,7 @@
 
 import {TS_Object} from './types';
 import {AssertionException, BadImplementationException} from '../core/exceptions/exceptions';
+import {asArray} from './array-tools';
 
 
 export function deepClone<T>(obj: T | Readonly<T>): T {
@@ -136,10 +137,7 @@ export function filterKeys<T extends TS_Object = TS_Object>(obj: T, keys: keyof 
 		throw new BadImplementationException('Passed parameter for "obj" must be an object');
 	}
 
-	if (!Array.isArray(keys))
-		keys = [keys as keyof T];
-
-	(keys as (keyof T)[]).forEach(key => {
+	asArray(keys).forEach(key => {
 		if (filter(key, obj))
 			delete obj[key];
 	});

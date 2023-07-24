@@ -50,7 +50,6 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	constructor(dbModule: ModuleBE_BaseDBV2<Type, any, Ks>) {
 		super(`Gen(${dbModule.getName()}, Api)`);
 		this.dbModule = dbModule;
-
 	}
 
 	init() {

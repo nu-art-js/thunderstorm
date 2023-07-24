@@ -21,6 +21,8 @@ import {HeaderKey_SessionId, Request_LoginAccount, UI_Account} from '../../../sh
 import {dispatch_onUserLogin, getUIAccount, ModuleBE_v2_AccountDB} from './ModuleBE_v2_AccountDB';
 import {gzipSync, unzipSync} from 'zlib';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
+import {firestore} from 'firebase-admin';
+import Transaction = firestore.Transaction;
 
 export interface CollectSessionData<R extends TS_Object> {
 	__collectSessionData(accountId: string): Promise<R>;
@@ -155,7 +157,7 @@ export class ModuleBE_v2_SessionDB_Class
 		return session;
 	};
 
-	async loginImpl(request: Request_LoginAccount, transaction?: FirebaseFirestore.Transaction) {
+	async loginImpl(request: Request_LoginAccount, transaction?: Transaction) {
 		request.email = request.email.toLowerCase();
 		const query = {where: {email: request.email}};
 		const account = await ModuleBE_v2_AccountDB.query.uniqueCustom(query, transaction);
