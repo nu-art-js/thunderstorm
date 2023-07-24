@@ -40,13 +40,16 @@ export class ModuleBE_v2_RemoteProxyDB_Class
 		if (!serviceAccount)
 			throw new BadImplementationException(`Received the _id of a non-existing service account! (${body.serviceAccountId})`);
 
+		// const sessionData = await dispatch_CollectSessionData.dispatchModuleAsync(body.serviceAccountId);
+
 		const now = currentTimeMillis();
 		const sessionDataToTokenize = {
 			name: serviceAccount.label,
 			email: serviceAccount.email,
 			creationTimestamp: now,
 			expirationTimestamp: now + body.ttl,
-			claims: serviceAccount.extra
+			claims: serviceAccount.extra,
+			// data: sessionData
 		};
 
 		const token = await ModuleBE_Account_Class.encodeSessionData(sessionDataToTokenize);
