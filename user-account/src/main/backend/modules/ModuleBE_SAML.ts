@@ -98,13 +98,15 @@ export class ModuleBE_SAML_Class
 
 	constructor() {
 		super();
+	}
+
+	protected init(): void {
+		super.init();
 		addRoutes([
 			createQueryServerApi(ApiDef_SAML_BE.v1.loginSaml, this.loginRequest),
 			new AssertSamlToken()
 		]);
-	}
 
-	protected init(): void {
 		if (!this.config.idConfig)
 			throw new ImplementationMissingException('Config must contain idConfig');
 

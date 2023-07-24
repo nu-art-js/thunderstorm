@@ -15,6 +15,7 @@ export type CreateAccountInput = {
 
 type CreateAccountTest = TestSuite<CreateAccountInput, boolean>;
 import '../_core/consts';
+import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 const TestCases_FB_Create: CreateAccountTest['testcases'] = [{
@@ -25,7 +26,7 @@ const TestCases_FB_Create: CreateAccountTest['testcases'] = [{
 
 TestCases_FB_Create.forEach(testCase => testCase.description = `${testCase.description}: ${testCase.input.account.email} - ${testCase.input.account.password}`);
 export const TestSuite_Accounts_Create: CreateAccountTest = {
-	label: 'Firestore create tests',
+	label: 'Accounts create test',
 	testcases: TestCases_FB_Create,
 	processor: async (testCase) => {
 		ModuleBE_v2_AccountDB.setDefaultConfig({
@@ -35,7 +36,12 @@ export const TestSuite_Accounts_Create: CreateAccountTest = {
 
 		let result: boolean | undefined;
 		try {
-			await ModuleBE_v2_AccountDB.createAccount({email: 'test@email.com', password: '1234', password_check: '1234'});
+
+
+
+
+			await new MemStorage().init(() => ModuleBE_v2_AccountDB.createAccount({email: 'test@email.com', password: '1234', password_check: '1234'}));
+			// await ModuleBE_v2_AccountDB.createAccount({email: 'test@email.com', password: '1234', password_check: '1234'});
 			result = true;
 		} catch (e) {
 			console.error(e);
