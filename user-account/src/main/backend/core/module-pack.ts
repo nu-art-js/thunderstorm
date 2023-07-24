@@ -19,7 +19,7 @@
 
 import {ModuleBE_v2_AccountAPI, ModuleBE_v2_AccountDB, ModuleBE_v2_SessionDB} from '../modules/v2/';
 
-export const ModulePackBE_Accounts = [
+export const ModulePackBE_Accounts: any[] = [
 	// ModuleBE_Account,
 	ModuleBE_v2_AccountDB, ModuleBE_v2_AccountAPI,
 	ModuleBE_v2_SessionDB

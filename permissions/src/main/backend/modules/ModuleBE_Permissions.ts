@@ -38,7 +38,7 @@ import {
 	Response_UsersCFsByShareGroups,
 	UserUrlsPermissions
 } from '../shared';
-import {MemKey_AccountId, Middleware_ValidateSession, ModuleBE_Account} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, Middleware_ValidateSession, ModuleBE_v2_AccountDB} from '@nu-art/user-account/backend';
 import {AssertSecretMiddleware} from '@nu-art/thunderstorm/backend/modules/proxy/assert-secret-middleware';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
@@ -111,7 +111,7 @@ export class ModuleBE_Permissions_Class
 		const groupsIds = body.groupsIds;
 		const toRet: Response_UsersCFsByShareGroups = {};
 		await Promise.all(usersEmails.map(async email => {
-			const account = await ModuleBE_Account.getUser(email);
+			const account = await ModuleBE_v2_AccountDB.getUser(email);
 			if (!account)
 				return;
 
