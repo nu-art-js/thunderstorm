@@ -1,7 +1,7 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
-import {DB_Account_V2, DB_Session_V2, DBDef_Session, Response_Auth} from '../../../shared/v2';
+import {DB_Session_V2, DBDef_Session, Response_Auth} from '../../../shared/v2';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
-import {MemKey_SessionData, Middleware_ValidateSession} from '../../core/accounts-middleware';
+import {MemKey_SessionData, Middleware_ValidateSession, Middleware_ValidateSession_UpdateMemKeys} from '../../core/accounts-middleware';
 import {
 	__stringify,
 	_keys,
@@ -15,8 +15,7 @@ import {
 	PreDB,
 	TS_Object
 } from '@nu-art/ts-common';
-import {HeaderKey_SessionId} from '../../../shared/api';
-import {getUIAccount, ModuleBE_v2_AccountDB} from './ModuleBE_v2_AccountDB';
+import {HeaderKey_SessionId, UI_Account} from '../../../shared/api';
 import {gzipSync, unzipSync} from 'zlib';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
 
@@ -60,16 +59,6 @@ export class ModuleBE_v2_SessionDB_Class
 		};
 	}
 
-	private async getUserEmailFromSession(session: PreDB<DB_Session_V2>) {
-		const account = await ModuleBE_v2_AccountDB.query.unique(session.userId);
-		if (!account) {
-			await this.delete.item(session);
-			throw new ApiException(403, `No user found for session: ${__stringify(session)}`);
-		}
-
-		return getUIAccount(account);
-	}
-
 	TTLExpired = (session: PreDB<DB_Session_V2>) => {
 		const delta = currentTimeMillis() - session.timestamp;
 		return delta > this.config.sessionTTLms || delta < 0;
@@ -90,34 +79,39 @@ export class ModuleBE_v2_SessionDB_Class
 		return JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8'));
 	}
 
-	upsertSession = async (account: DB_Account_V2): Promise<Response_Auth> => {
-		let session: PreDB<DB_Session_V2> = await this.query.uniqueCustom({where: {userId: account._id}});
-		let sessionData: TS_Object;
-		if (!session || this.TTLExpired(session)) {
-			sessionData = (await dispatch_CollectSessionData.dispatchModuleAsync(account._id))
-				.reduce((sessionData, moduleSessionData) => {
-					_keys(moduleSessionData).forEach(key => {
-						if (sessionData[key])
-							throw new BadImplementationException(`Error while building session data.. duplicated keys: ${key as string}\none: ${__stringify(sessionData, true)}\ntwo: ${__stringify(moduleSessionData, true)}`);
-
-						sessionData[key] = moduleSessionData[key];
-					});
-					return sessionData;
-				}, {accountId: account._id, email: account.email} as TS_Object);
-
-			const sessionDataAsString = await ModuleBE_v2_SessionDB_Class.encodeSessionData(sessionData);
-
-			session = {
-				userId: account._id,
-				sessionId: sessionDataAsString,
-				timestamp: currentTimeMillis()
-			};
-
-			await this.set.item(session);
+	upsertSession = async (uiAccount: UI_Account): Promise<Response_Auth> => {
+		try {
+			const session = await this.query.uniqueWhere({accountId: uiAccount._id});
+			if (!this.TTLExpired(session)) {
+				const sessionData = ModuleBE_v2_SessionDB_Class.decodeSessionData(session.sessionId);
+				Middleware_ValidateSession_UpdateMemKeys(sessionData);
+				return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
+			}
+		} catch (ignore) {
+			//
 		}
 
-		const uiAccount = await this.getUserEmailFromSession(session);
-		// Middleware_ValidateSession_UpdateMemKeys(sessionData);
+		const sessionData = (await dispatch_CollectSessionData.dispatchModuleAsync(uiAccount._id))
+			.reduce((sessionData, moduleSessionData) => {
+				_keys(moduleSessionData).forEach(key => {
+					if (sessionData[key])
+						throw new BadImplementationException(`Error while building session data.. duplicated keys: ${key as string}\none: ${__stringify(sessionData, true)}\ntwo: ${__stringify(moduleSessionData, true)}`);
+
+					sessionData[key] = moduleSessionData[key];
+				});
+				return sessionData;
+			}, {accountId: uiAccount._id, email: uiAccount.email} as TS_Object);
+
+		Middleware_ValidateSession_UpdateMemKeys(sessionData);
+		const sessionId = await ModuleBE_v2_SessionDB_Class.encodeSessionData(sessionData);
+
+		const session = {
+			accountId: uiAccount._id,
+			sessionId,
+			timestamp: currentTimeMillis()
+		};
+
+		await this.set.item(session);
 
 		return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
 	};
@@ -130,6 +124,5 @@ export class ModuleBE_v2_SessionDB_Class
 		await this.delete.query({where: {sessionId}});
 	};
 }
-
 
 export const ModuleBE_v2_SessionDB = new ModuleBE_v2_SessionDB_Class();

@@ -95,27 +95,45 @@ export class ModuleBE_v2_AccountDB_Class
 		return this.query.uniqueCustom({where: {email}});
 	}
 
-	async registerAccount(body: RequestBody_CreateAccount, transaction?: Transaction): Promise<Response_Auth> {
-		if (!this.config.canRegister)
-			throw new ApiException(418, 'Registration is disabled!!');
+	account = {
+		register: async (body: RequestBody_CreateAccount, transaction?: Transaction): Promise<Response_Auth> => {
+			if (!this.config.canRegister)
+				throw new ApiException(418, 'Registration is disabled!!');
 
-		//Email always lowerCase
-		body.email = body.email.toLowerCase();
-		MemKey_AccountEmail.set(body.email);
+			this.assertPasswordRules(body.password);
 
-		//Create the account
-		const account = await this.createAccountImpl(body, transaction);
-		const uiAccount = getUIAccount(account);
+			//Email always lowerCase
+			body.email = body.email.toLowerCase();
+			MemKey_AccountEmail.set(body.email);
 
-		//Log in
-		const {session} = await this.loginImpl(body);
+			//Create the account
+			const account = await this.createAccountImpl(body, transaction);
+			const uiAccount = getUIAccount(account);
 
-		//Update whoever listens
-		await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
-		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
+			//Log in
+			const session = await ModuleBE_v2_SessionDB.upsertSession(uiAccount);
 
-		//Finish
+			//Update whoever listens
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
+			await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
+
+			//Finish
+			return session;
+		}
+	};
+	login = async (request: Request_LoginAccount): Promise<Response_Auth> => {
+		const {account, session} = await this.loginImpl(request);
+
+		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
 		return session;
+	};
+
+	async loginImpl(request: Request_LoginAccount, transaction?: Transaction) {
+		request.email = request.email.toLowerCase();
+		const account = await this.assertPasswordMatch(request.password, request.email);
+
+		const session = await ModuleBE_v2_SessionDB.upsertSession(account);
+		return {account, session};
 	}
 
 	async createAccount(body: RequestBody_CreateAccount, transaction?: Transaction): Promise<Response_Auth> {
@@ -155,21 +173,6 @@ export class ModuleBE_v2_AccountDB_Class
 				password: body.newPassword
 			})).sessionId
 		};
-	}
-
-	login = async (request: Request_LoginAccount): Promise<Response_Auth> => {
-		const {account, session} = await this.loginImpl(request);
-
-		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
-		return session;
-	};
-
-	async loginImpl(request: Request_LoginAccount, transaction?: Transaction) {
-		request.email = request.email.toLowerCase();
-		const account = await this.assertPasswordMatch(request.password, request.email);
-
-		const session = await ModuleBE_v2_SessionDB.upsertSession(account);
-		return {account, session};
 	}
 
 	private async changePasswordImpl(userEmail: string, originalPassword: string, newPassword: string, newPassword_check: string, transaction?: Transaction) {

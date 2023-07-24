@@ -1,7 +1,8 @@
 import {AuditableV2, DB_Object} from '@nu-art/ts-common';
 
+
 export type DB_Session_V2 = DB_Object & {
-	userId: string
+	accountId: string
 	sessionId: string
 	timestamp: number
 }
