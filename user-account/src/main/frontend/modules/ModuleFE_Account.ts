@@ -33,7 +33,6 @@ import {
 	HeaderKey_SessionId,
 	QueryParam_Email,
 	QueryParam_SessionId,
-	Response_Auth,
 	Response_ListAccounts,
 	Response_LoginSAML,
 	UI_Account
@@ -41,6 +40,7 @@ import {
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
+import {Response_Auth} from '../../shared/v2';
 
 
 export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
