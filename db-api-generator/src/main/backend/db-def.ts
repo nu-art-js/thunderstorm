@@ -53,8 +53,9 @@ export type DBApiBEConfig<DBType extends DB_Object, Ks extends keyof DBType = De
 }
 
 export const getModuleBEConfig = <T extends DB_Object, Ks extends keyof T = Default_UniqueKey>(dbDef: DBDef<T, Ks>): DBApiBEConfig<T, Ks> => {
-	const dbDefValidator = typeof dbDef.validator === 'function' ?
-		[((instance: T) => {
+	let dbDefValidator;
+	if (typeof dbDef.validator === 'function')
+		dbDefValidator = [((instance: T) => {
 			const dbObjectOnly = KeysOfDB_Object.reduce<DB_Object>((objectToRet, key) => {
 				if (exists(instance[key]))  // @ts-ignore
 					objectToRet[key] = instance[key];
@@ -62,8 +63,10 @@ export const getModuleBEConfig = <T extends DB_Object, Ks extends keyof T = Defa
 				return objectToRet;
 			}, {} as DB_Object);
 			return tsValidateResult(dbObjectOnly, DB_Object_validator);
-		}), dbDef.validator] :
-		{...DB_Object_validator, ...dbDef.validator};
+		}), dbDef.validator];
+	else
+		dbDefValidator = {...DB_Object_validator, ...dbDef.validator};
+
 	return {
 		collectionName: dbDef.dbName,
 		validator: dbDefValidator as ValidatorTypeResolver<T>,

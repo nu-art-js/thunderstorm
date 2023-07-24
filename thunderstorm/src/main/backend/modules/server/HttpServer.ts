@@ -31,8 +31,7 @@ import * as fs from 'fs';
 import {addItemToArray, LogLevel, Module} from '@nu-art/ts-common';
 import * as express from 'express';
 
-import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse, HttpErrorHandler} from '../../utils/types';
-import {DefaultApiErrorMessageComposer} from './server-errors';
+import {Express, ExpressRequest, ExpressRequestHandler, ExpressResponse} from '../../utils/types';
 import {Firebase_ExpressFunction, TBR_ExpressFunctionInterface} from '@nu-art/firebase/backend';
 import {ServerApi} from './server-api';
 
@@ -66,7 +65,6 @@ export class HttpServer_Class
 	implements TBR_ExpressFunctionInterface {
 
 	private static readonly expressMiddleware: ExpressRequestHandler[] = [];
-	errorMessageComposer: HttpErrorHandler = DefaultApiErrorMessageComposer();
 	readonly express: Express;
 	private server!: Server;
 	private socketId: number = 0;
@@ -78,10 +76,6 @@ export class HttpServer_Class
 
 	getExpressFunction() {
 		return new Firebase_ExpressFunction(HttpServer.express);
-	}
-
-	setErrorMessageComposer(errorMessageComposer: HttpErrorHandler) {
-		this.errorMessageComposer = errorMessageComposer;
 	}
 
 	static addMiddleware(middleware: ExpressRequestHandler) {

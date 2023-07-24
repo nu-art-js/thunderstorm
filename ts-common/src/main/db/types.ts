@@ -11,11 +11,11 @@ export type DBIndex<T extends DB_Object> = {
 export type Default_UniqueKey = '_id';
 export type VersionType = string
 
-export type DBProto<T extends DB_Object, Ks extends keyof T = Default_UniqueKey, Versions extends VersionType[] = ['1.0.0'], GeneratedKeys extends keyof T = keyof DB_Object> = {
+export type DBProto<T extends DB_Object, GeneratedKeys extends keyof T = keyof DB_Object, Versions extends VersionType[] = ['1.0.0'], UniqueKeys extends keyof T = Default_UniqueKey> = {
 	generatedKeys: keyof DB_Object | GeneratedKeys
 	uiType: PartialProperties<T, keyof DB_Object | GeneratedKeys>,
 	dbType: T,
-	uniqueKeys: Ks,
+	uniqueKeys: UniqueKeys,
 	versions: Versions
 	validatorBE: ValidatorTypeResolver<OmitDBObject<T>>
 	validatorFE: ValidatorTypeResolver<Omit<T, keyof GeneratedKeys>>
