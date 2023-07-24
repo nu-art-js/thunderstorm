@@ -57,6 +57,10 @@ export class ModuleBE_v2_AccountDB_Class
 		};
 	}
 
+	listUsers = async (transaction?: FirebaseFirestore.Transaction) => {
+		return (await this.query.custom({select: ['_id', 'email']}, transaction)) as { email: string, _id: string }[];
+	};
+
 	/**
 	 * todo Check if necessary
 	 */

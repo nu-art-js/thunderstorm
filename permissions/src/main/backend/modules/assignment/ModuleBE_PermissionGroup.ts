@@ -18,16 +18,26 @@
  */
 
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
-import {ApiException, auditBy, batchAction, batchActionParallel, dbObjectToId, exists, filterDuplicates, filterInstances, flatArray} from '@nu-art/ts-common';
-import {ModuleBE_Account} from '@nu-art/user-account/backend';
+import {
+	ApiException,
+	auditBy,
+	batchAction,
+	batchActionParallel,
+	dbObjectToId,
+	exists,
+	filterDuplicates,
+	filterInstances,
+	flatArray
+} from '@nu-art/ts-common';
 import {DB_PermissionGroup, DBDef_PermissionGroup, PredefinedGroup} from '../../shared';
 import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
 import {checkDuplicateLevelsDomain, ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
-import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
-import {firestore} from "firebase-admin";
+import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
+import {firestore} from 'firebase-admin';
+import {ModuleBE_v2_SessionDB} from '@nu-art/user-account/backend';
 import Transaction = firestore.Transaction;
 
 
@@ -105,7 +115,7 @@ export class ModuleBE_PermissionGroup_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: DB_PermissionGroup, t?: Transaction) {
-		const account = await ModuleBE_Account.validateSession({});
+		const account = await ModuleBE_v2_SessionDB.validateSession({});
 		dbInstance._audit = auditBy(account.email);
 
 		if (!dbInstance.accessLevelIds)
