@@ -69,7 +69,9 @@ export class MemKey<T> {
 		return asyncLocalStorage.getStore().get(this, value);
 	};
 
+
 	set = (value: T) => {
+		console.log(this.key, value);
 		// @ts-ignore
 		return asyncLocalStorage.getStore().set(this, value);
 	};

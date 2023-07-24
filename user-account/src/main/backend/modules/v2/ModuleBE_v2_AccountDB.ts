@@ -1,10 +1,10 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
-import {addAuditorId, DB_Account_V2, DBDef_Account, RequestBody_ChangePassword, RequestBody_CreateAccount, Response_Auth} from '../../../shared/v2';
+import {DB_Account_V2, DBDef_Account, RequestBody_ChangePassword, RequestBody_CreateAccount, Response_Auth} from '../../../shared/v2';
 import {__stringify, ApiException, compare, dispatch_onApplicationException, Dispatcher, generateHex, hashPasswordWithSalt, PreDB} from '@nu-art/ts-common';
-import {MemKey_AccountEmail, Middleware_ValidateSession_UpdateMemKeys} from '../../core/accounts-middleware';
+import {MemKey_AccountEmail} from '../../core/accounts-middleware';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
-import {Request_CreateAccount, UI_Account} from '../../../shared/api';
+import {Request_CreateAccount, Request_LoginAccount, UI_Account} from '../../../shared/api';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/v2/assertion';
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
@@ -34,7 +34,7 @@ export class ModuleBE_v2_AccountDB_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: PreDB<DB_Account_V2>, transaction?: Transaction): Promise<void> {
-		dbInstance._auditorId = await addAuditorId();
+		dbInstance._auditorId = MemKey_AccountEmail.get();
 	}
 
 	private async spiceAccount(request: Request_CreateAccount) {
@@ -107,12 +107,11 @@ export class ModuleBE_v2_AccountDB_Class
 		const account = await this.createAccountImpl(body, transaction);
 		const uiAccount = getUIAccount(account);
 
-		//Update whoever listens
-		Middleware_ValidateSession_UpdateMemKeys(uiAccount);
-		await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
-
 		//Log in
-		const {session} = await ModuleBE_v2_SessionDB.loginImpl(body);
+		const {session} = await this.loginImpl(body);
+
+		//Update whoever listens
+		await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
 		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
 
 		//Finish
@@ -121,12 +120,13 @@ export class ModuleBE_v2_AccountDB_Class
 
 	async createAccount(body: RequestBody_CreateAccount, transaction?: Transaction): Promise<Response_Auth> {
 		const dbAccount = await this.createAccountImpl(body, transaction);
-		return {...getUIAccount(dbAccount), sessionId: (await ModuleBE_v2_SessionDB.login(body)).sessionId};
+		return {...getUIAccount(dbAccount), sessionId: (await this.login(body)).sessionId};
 	}
 
 	private createAccountImpl = async (body: RequestBody_CreateAccount, transaction?: Transaction): Promise<DB_Account_V2> => {
 		//Email always lowerCase
 		body.email = body.email.toLowerCase();
+		this.assertPasswordRules(body.password);
 
 		return this.runTransaction(async _transaction => {
 			let existingAccount: DB_Account_V2 | undefined;
@@ -150,17 +150,32 @@ export class ModuleBE_v2_AccountDB_Class
 		const updatedAccount = await this.changePasswordImpl(lowerCaseEmail, body.originalPassword, body.newPassword, body.newPassword_check, transaction);
 		return {
 			...getUIAccount(updatedAccount),
-			sessionId: (await ModuleBE_v2_SessionDB.login({
+			sessionId: (await this.login({
 				email: lowerCaseEmail,
 				password: body.newPassword
 			})).sessionId
 		};
 	}
 
+	login = async (request: Request_LoginAccount): Promise<Response_Auth> => {
+		const {account, session} = await this.loginImpl(request);
+
+		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
+		return session;
+	};
+
+	async loginImpl(request: Request_LoginAccount, transaction?: Transaction) {
+		request.email = request.email.toLowerCase();
+		const account = await this.assertPasswordMatch(request.password, request.email);
+
+		const session = await ModuleBE_v2_SessionDB.upsertSession(account);
+		return {account, session};
+	}
+
 	private async changePasswordImpl(userEmail: string, originalPassword: string, newPassword: string, newPassword_check: string, transaction?: Transaction) {
 		return await this.runTransaction(async (_transaction) => {
 
-			const assertedAccount = await this.assertPassword(originalPassword, userEmail);
+			const assertedAccount = await this.assertPasswordMatch(originalPassword, userEmail);
 
 			if (!compare(newPassword, newPassword_check))
 				throw new ApiException(401, 'Account login using SAML');
@@ -176,7 +191,13 @@ export class ModuleBE_v2_AccountDB_Class
 		}, transaction);
 	}
 
-	private async assertPassword(password: string, userEmail: string, transaction?: Transaction) {
+	private assertPasswordRules(password: string) {
+		const assertPassword = assertPasswordRules(password, this.config.passwordAssertion);
+		if (assertPassword)
+			throw new ApiException(444, `Password assertion failed with: ${__stringify(assertPassword)}`);
+	}
+
+	private async assertPasswordMatch(password: string, userEmail: string, transaction?: Transaction) {
 		const account = await this.query.uniqueCustom({where: {email: userEmail}}, transaction);
 
 		if (!account) {
@@ -186,10 +207,6 @@ export class ModuleBE_v2_AccountDB_Class
 
 		if (!account.salt || !account.saltedPassword)
 			throw new ApiException(401, 'Account was never logged in using username and password, probably logged using SAML');
-
-		const assertPassword = assertPasswordRules(password, this.config.passwordAssertion);
-		if (assertPassword)
-			throw new ApiException(444, `Password assertion failed with: ${__stringify(assertPassword)}`);
 
 		if (hashPasswordWithSalt(password, account.salt) !== account.saltedPassword)
 			throw new ApiException(401, 'Wrong username or password.');
