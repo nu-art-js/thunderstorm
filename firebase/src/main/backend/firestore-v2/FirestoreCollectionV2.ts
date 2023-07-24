@@ -435,9 +435,10 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	/**
 	 * A firestore transaction is run globally on the firestore project and not specifically on any collection, locking specific documents in the project.
 	 * @param processor: A set of read and write operations on one or more documents.
+	 * @param transaction A transaction that was provided to be used
 	 */
-	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> => {
-		return this.wrapper.runTransaction<ReturnType>(processor);
+	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>, transaction?: Transaction): Promise<ReturnType> => {
+		return transaction ? processor(transaction) : this.wrapper.runTransaction<ReturnType>(processor);
 	};
 
 	runTransactionInChunks = async <T extends any = any, R extends any = any>(items: T[], processor: (chunk: typeof items, transaction: Transaction) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
