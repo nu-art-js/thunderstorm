@@ -64,7 +64,33 @@ export class ModuleBE_v2_AccountDB_Class
 		const email = _email.toLowerCase();
 		return this.query.uniqueCustom({where: {email}, select: ['email', '_id']});
 	}
+	getOrCreate = async (query: { where: { email: string } }) => {
+		let dispatchEvent = false;
 
+		const dbAccount = await this.accounts.runInTransaction<DB_Account>(async (transaction: FirestoreTransaction) => {
+			const account = await transaction.queryUnique(this.accounts, query);
+			if (account?._id)
+				return account;
+
+			const now = currentTimeMillis();
+			const _account: DB_Account = {
+				_id: generateHex(32),
+				__created: now,
+				__updated: now,
+				_audit: auditBy(query.where.email),
+				email: query.where.email,
+				...account
+			};
+
+			dispatchEvent = true;
+			return transaction.upsert(this.accounts, _account);
+		});
+
+		if (dispatchEvent)
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
+
+		return dbAccount;
+	};
 	/**
 	 * todo Check if necessary
 	 */

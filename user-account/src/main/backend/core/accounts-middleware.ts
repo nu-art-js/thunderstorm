@@ -17,9 +17,9 @@
  */
 
 import {ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
-import {Header_SessionId, ModuleBE_Account} from '../modules/ModuleBE_Account';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {UI_Account} from '../../shared/api';
+import {Header_SessionId, ModuleBE_v2_SessionDB} from '../modules/v2';
 
 
 export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
@@ -27,7 +27,7 @@ export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
 
 export const Middleware_ValidateSession: ServerApi_Middleware = async () => {
 	const sessionId = Header_SessionId.get();
-	const uiAccount = await ModuleBE_Account.validateSessionId(sessionId);
+	const uiAccount = await ModuleBE_v2_SessionDB.validateSessionId(sessionId);
 
 	Middleware_ValidateSession_UpdateMemKeys(uiAccount);
 };
