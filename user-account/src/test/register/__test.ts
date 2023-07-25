@@ -2,23 +2,22 @@ import {ModuleBE_v2_AccountDB} from '../../main/backend';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {RequestBody_CreateAccount} from '../../main';
 import {PasswordAssertionConfig} from '../../main/shared/v2/assertion';
-import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {exists} from '@nu-art/ts-common';
 import {expect} from 'chai';
 import '../_core/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
-export type CreateAccountInput = {
+export type registerAccountInput = {
 	account: RequestBody_CreateAccount
 	canRegister?: boolean
 	assertionConfig?: PasswordAssertionConfig
 }
 
-type CreateAccountTest = TestSuite<CreateAccountInput, boolean>;
+type RegisterAccountTest = TestSuite<registerAccountInput, boolean>;
 
 
-const TestCases_FB_Create: CreateAccountTest['testcases'] = [
+const TestCases_FB_Register: RegisterAccountTest['testcases'] = [
 	{
 		description: 'Simple',
 		input: {account: {email: 'test@email.com', password: '1234', password_check: '1234'}},
@@ -144,17 +143,17 @@ const TestCases_FB_Create: CreateAccountTest['testcases'] = [
 	}
 ];
 
-
-TestCases_FB_Create.forEach(testCase => testCase.description = `${testCase.description}: ${testCase.input.account.email} - ${testCase.input.account.password}`);
-export const TestSuite_Accounts_Create: CreateAccountTest = {
+TestCases_FB_Register.forEach(testCase => testCase.description = `${testCase.description}: ${testCase.input.account.email} - ${testCase.input.account.password}`);
+export const TestSuite_Accounts_Register: RegisterAccountTest = {
 	label: 'Account register test',
-	testcases: TestCases_FB_Create,
+	testcases: TestCases_FB_Register,
 	processor: async (testCase) => {
 		const cleanObject = {
 			'max-length': undefined,
 			'min-length': undefined,
 			'numbers': undefined,
 			'capital-letters': undefined,
+			'lower-case-letters': undefined,
 			'special-chars': undefined
 		};
 		ModuleBE_v2_AccountDB.setDefaultConfig({
@@ -177,7 +176,3 @@ export const TestSuite_Accounts_Create: CreateAccountTest = {
 		expect(result).to.eql(testCase.result);
 	}
 };
-
-describe('Accounts - Create', () => {
-	testSuiteTester(TestSuite_Accounts_Create);
-});

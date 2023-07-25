@@ -134,13 +134,13 @@ export class ModuleBE_v2_AccountDB_Class
 
 			//Finish
 			return session;
-		}
-	};
-	login = async (request: Request_LoginAccount): Promise<Response_Auth> => {
-		const {account, session} = await this.loginImpl(request);
+		},
+		login: async (request: Request_LoginAccount): Promise<Response_Auth> => {
+			const {account, session} = await this.loginImpl(request);
 
-		await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
-		return session;
+			await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
+			return session;
+		},
 	};
 
 	async loginImpl(request: Request_LoginAccount, transaction?: Transaction) {
@@ -153,7 +153,7 @@ export class ModuleBE_v2_AccountDB_Class
 
 	async createAccount(body: RequestBody_CreateAccount, transaction?: Transaction): Promise<Response_Auth> {
 		const dbAccount = await this.createAccountImpl(body, transaction);
-		return {...getUIAccount(dbAccount), sessionId: (await this.login(body)).sessionId};
+		return {...getUIAccount(dbAccount), sessionId: (await this.account.login(body)).sessionId};
 	}
 
 	private createAccountImpl = async (body: RequestBody_CreateAccount, transaction?: Transaction): Promise<DB_Account_V2> => {
@@ -183,7 +183,7 @@ export class ModuleBE_v2_AccountDB_Class
 		const updatedAccount = await this.changePasswordImpl(lowerCaseEmail, body.originalPassword, body.newPassword, body.newPassword_check, transaction);
 		return {
 			...getUIAccount(updatedAccount),
-			sessionId: (await this.login({
+			sessionId: (await this.account.login({
 				email: lowerCaseEmail,
 				password: body.newPassword
 			})).sessionId
