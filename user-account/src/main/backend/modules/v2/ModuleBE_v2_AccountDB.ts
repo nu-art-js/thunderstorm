@@ -226,12 +226,11 @@ export class ModuleBE_v2_AccountDB_Class
 		if (!account.salt || !account.saltedPassword)
 			throw new ApiException(401, 'Account was never logged in using username and password, probably logged using SAML');
 
-		if (hashPasswordWithSalt(password, account.salt) !== account.saltedPassword)
+		if (hashPasswordWithSalt(account.salt, password) !== account.saltedPassword)
 			throw new ApiException(401, 'Wrong username or password.');
 
 		return account;
 	}
-
 }
 
 export function getUIAccount(account: DB_Account_V2): UI_Account {

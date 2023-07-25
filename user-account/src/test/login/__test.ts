@@ -4,17 +4,16 @@ import {Request_CreateAccount} from '../../main';
 import {expect} from 'chai';
 import '../_core/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {_EmptyQuery} from '@nu-art/db-api-generator';
 
 
 export type loginInput = {
 	credentials: Request_CreateAccount
 }
 
-type RegisterAccountTest = TestSuite<loginInput, boolean>;
+type LoginAccountTest = TestSuite<loginInput, boolean>;
 
 
-const TestCases_FB_Register: RegisterAccountTest['testcases'] = [
+const TestCases_FB_Login: LoginAccountTest['testcases'] = [
 	{
 		description: 'Simple',
 		input: {credentials: {email: 'test@email.com', password: '1234', password_check: '1234'}},
@@ -22,10 +21,10 @@ const TestCases_FB_Register: RegisterAccountTest['testcases'] = [
 	},
 ];
 
-TestCases_FB_Register.forEach(testCase => testCase.description = `${testCase.description}: ${testCase.input.credentials.email} - ${testCase.input.credentials.password}`);
-export const TestSuite_Accounts_Login: RegisterAccountTest = {
+TestCases_FB_Login.forEach(testCase => testCase.description = `${testCase.description}: ${testCase.input.credentials.email} - ${testCase.input.credentials.password}`);
+export const TestSuite_Accounts_Login: LoginAccountTest = {
 	label: 'Account login test',
-	testcases: TestCases_FB_Register,
+	testcases: TestCases_FB_Login,
 	processor: async (testCase) => {
 		ModuleBE_v2_AccountDB.setDefaultConfig({
 			passwordAssertion: {
@@ -47,9 +46,12 @@ export const TestSuite_Accounts_Login: RegisterAccountTest = {
 		try {
 			await new MemStorage().init(async () => {
 				await ModuleBE_v2_AccountDB.account.register(testCase.input.credentials);
-				console.log(await ModuleBE_v2_AccountDB.query.custom(_EmptyQuery));
+			});
+			await new MemStorage().init(async () => {
+				// console.log(await ModuleBE_v2_AccountDB.query.custom(_EmptyQuery));
 				await ModuleBE_v2_AccountDB.account.login(testCase.input.credentials);
 			});
+
 			result = true;
 		} catch (e: any) {
 			console.error(`${testCase.description} failed because: ${e.message}`);
