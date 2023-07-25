@@ -132,7 +132,7 @@ export function assert<T>(message: string, expected: T, actual: T) {
 			`Assertion Failed:\n  -- ${message}\n  -- Expected: ${JSON.stringify(expected)}\n  --   Actual: ${JSON.stringify(actual)}\n\n`);
 }
 
-export function filterKeys<T extends TS_Object = TS_Object>(obj: T, keys: keyof T | (keyof T)[], filter: (k: keyof T, obj: T) => boolean = (k) => obj[k] === undefined || obj[k] === null) {
+export function filterKeys<T extends TS_Object = TS_Object>(obj: T, keys: keyof T | (keyof T)[] = _keys(obj), filter: (k: keyof T, obj: T) => boolean = (k) => obj[k] === undefined || obj[k] === null) {
 	if (typeof obj !== 'object' || obj === null) {
 		throw new BadImplementationException('Passed parameter for "obj" must be an object');
 	}

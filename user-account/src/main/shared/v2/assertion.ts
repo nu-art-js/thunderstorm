@@ -15,7 +15,7 @@ export type PasswordAssertionTypes = 'min-length' | 'special-chars' | 'capital-l
 export type PasswordValidator = { type: PasswordAssertionTypes, validator: (num: number) => Validator<string> };
 export type PasswordAssertionConfig = { [K in PasswordAssertionTypes]?: number };
 
-const specialChars = '.*?[!@#$%^&*()_+-=\\[\\]{},./;\':"<>|\\\\]';
+const specialChars = '.*?[!@#$%^&*()_\\+\\-=\\[\\]{},.\\/;\':"<> |\\\\]';
 const capitalLetters = '.*?[A-Z]';
 const numbers = '.*?[0-9]';
 type _PasswordAssertion = {
@@ -38,19 +38,20 @@ export const PasswordAssertion: _PasswordAssertion = {
 	'special-chars': {
 		type: 'special-chars',
 		validator: (count: number) => {
-			return tsValidateRegexp(new RegExp(generateArray(count, _ => specialChars).join()));
+			return tsValidateRegexp(new RegExp(generateArray(count, _ => specialChars).join('')));
 		}
 	},
 	'capital-letters': {
 		type: 'capital-letters',
 		validator: (count: number) => {
-			return tsValidateRegexp(new RegExp(generateArray(count, _ => capitalLetters).join()));
+			return tsValidateRegexp(new RegExp(generateArray(count, _ => capitalLetters).join('')));
 		}
 	},
 	numbers: {
 		type: 'numbers',
 		validator: (count: number) => {
-			return tsValidateRegexp(new RegExp(generateArray(count, _ => numbers).join()));
+
+			return tsValidateRegexp(new RegExp(generateArray(count, _ => numbers).join('')));
 		}
 	}
 };
