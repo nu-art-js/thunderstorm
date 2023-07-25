@@ -1,6 +1,21 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
-import {DB_Account_V2, DBDef_Account, RequestBody_ChangePassword, RequestBody_CreateAccount, Response_Auth} from '../../../shared/v2';
-import {__stringify, ApiException, compare, dispatch_onApplicationException, Dispatcher, generateHex, hashPasswordWithSalt, PreDB} from '@nu-art/ts-common';
+import {
+	DB_Account_V2,
+	DBDef_Account,
+	RequestBody_ChangePassword,
+	RequestBody_CreateAccount,
+	Response_Auth
+} from '../../../shared/v2';
+import {
+	__stringify,
+	ApiException,
+	compare,
+	dispatch_onApplicationException,
+	Dispatcher,
+	generateHex,
+	hashPasswordWithSalt,
+	PreDB
+} from '@nu-art/ts-common';
 import {MemKey_AccountEmail} from '../../core/accounts-middleware';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
@@ -104,7 +119,7 @@ export class ModuleBE_v2_AccountDB_Class
 
 			//Email always lowerCase
 			body.email = body.email.toLowerCase();
-			MemKey_AccountEmail.set(body.email);
+			MemKey_AccountEmail.set(body.email); // set here, because MemKey_AccountEmail is needed in createAccountImpl
 
 			//Create the account
 			const account = await this.createAccountImpl(body, transaction);
