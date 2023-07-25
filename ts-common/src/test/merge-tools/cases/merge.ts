@@ -8,6 +8,22 @@ type Input<T = any> = {
 
 const TestCase_merge: TestSuite<Input, any> ['testcases'] = [
 	{
+		description: 'undefined keys into undefined obj',
+		result: {},
+		input: {
+			one: undefined,
+			two: {a: undefined, b: undefined}
+		}
+	},
+	{
+		description: 'nested undefined keys into undefined obj',
+		result: {a: 'ok', b: {}},
+		input: {
+			one: {a: 'ok'},
+			two: {b: {no: undefined, nope: undefined, nay: undefined}}
+		}
+	},
+	{
 		description: 'merge two different non overlapping objects',
 		result: {a: 1, b: 2},
 		input: {
