@@ -67,7 +67,7 @@ const TestCases_FB_Create: CreateAccountTest['testcases'] = [
 	{
 		description: 'enough special chars',
 		input: {
-			account: {email: 'test@email.com', password: '1234!@#$', password_check: '1234!'},
+			account: {email: 'test@email.com', password: '1234!@#$', password_check: '1234!@#$'},
 			assertionConfig: {'special-chars': 4}
 		},
 		result: true
@@ -75,11 +75,73 @@ const TestCases_FB_Create: CreateAccountTest['testcases'] = [
 	{
 		description: 'not enough special chars',
 		input: {
-			account: {email: 'test@email.com', password: '12#34!', password_check: '1234!'},
+			account: {email: 'test@email.com', password: '12#34!', password_check: '12#34!'},
 			assertionConfig: {'special-chars': 4}
 		},
 		result: false
 	},
+	{
+		description: 'enough capital letters',
+		input: {
+			account: {email: 'test@email.com', password: 'ABCDE12#34!', password_check: 'ABCDE12#34!'},
+			assertionConfig: {'capital-letters': 4}
+		},
+		result: true
+	},
+	{
+		description: 'not enough capital letters',
+		input: {
+			account: {email: 'test@email.com', password: '12#34!', password_check: '12#34!'},
+			assertionConfig: {'capital-letters': 4}
+		},
+		result: false
+	},
+	{
+		description: 'enough lower case letters',
+		input: {
+			account: {email: 'test@email.com', password: 'abcde12#34!', password_check: 'abcde12#34!'},
+			assertionConfig: {'lower-case-letters': 1}
+		},
+		result: true
+	},
+	{
+		description: 'not enough lower case letters',
+		input: {
+			account: {email: 'test@email.com', password: '12#34!', password_check: '12#34!'},
+			assertionConfig: {'lower-case-letters': 4}
+		},
+		result: false
+	},
+	{
+		description: 'complex pass',
+		input: {
+			account: {email: 'test@email.com', password: 'Aa!12345', password_check: 'Aa!12345'},
+			assertionConfig: {
+				'min-length': 5,
+				'max-length': 8,
+				'lower-case-letters': 1,
+				'capital-letters': 1,
+				'numbers': 5,
+				'special-chars': 1
+			}
+		},
+		result: true
+	},
+	{
+		description: 'complex fail',
+		input: {
+			account: {email: 'test@email.com', password: '123456789', password_check: 'Aa!12345'},
+			assertionConfig: {
+				'min-length': 5,
+				'max-length': 8,
+				'lower-case-letters': 1,
+				'capital-letters': 1,
+				'numbers': 5,
+				'special-chars': 1
+			}
+		},
+		result: false
+	}
 ];
 
 

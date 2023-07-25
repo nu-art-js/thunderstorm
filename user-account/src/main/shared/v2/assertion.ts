@@ -11,16 +11,24 @@ import {
 } from '@nu-art/ts-common';
 
 
-export type PasswordAssertionTypes = 'min-length' | 'special-chars' | 'capital-letters' | 'numbers' | 'max-length'
+export type PasswordAssertionTypes =
+	'min-length'
+	| 'max-length'
+	| 'special-chars'
+	| 'capital-letters'
+	| 'lower-case-letters'
+	| 'numbers'
 export type PasswordValidator = { type: PasswordAssertionTypes, validator: (num: number) => Validator<string> };
 export type PasswordAssertionConfig = { [K in PasswordAssertionTypes]?: number };
 
 const specialChars = '.*?[!@#$%^&*()_\\+\\-=\\[\\]{},.\\/;\':"<> |\\\\]';
 const capitalLetters = '.*?[A-Z]';
+const lowerCaseLetters = '.*?[a-z]';
 const numbers = '.*?[0-9]';
 type _PasswordAssertion = {
 	'min-length': PasswordValidator
 	'special-chars': PasswordValidator
+	'lower-case-letters': PasswordValidator
 	'capital-letters': PasswordValidator
 	numbers: PasswordValidator
 	'max-length': PasswordValidator
@@ -39,6 +47,12 @@ export const PasswordAssertion: _PasswordAssertion = {
 		type: 'special-chars',
 		validator: (count: number) => {
 			return tsValidateRegexp(new RegExp(generateArray(count, _ => specialChars).join('')));
+		}
+	},
+	'lower-case-letters': {
+		type: 'lower-case-letters',
+		validator: (count: number) => {
+			return tsValidateRegexp(new RegExp(generateArray(count, _ => lowerCaseLetters).join('')));
 		}
 	},
 	'capital-letters': {
