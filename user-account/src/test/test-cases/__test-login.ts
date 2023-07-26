@@ -1,9 +1,8 @@
-import {ModuleBE_v2_AccountDB} from '../main/backend';
+import {Request_CreateAccount, Request_LoginAccount} from '../../main';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {Request_CreateAccount, Request_LoginAccount} from '../main';
-import {expect} from 'chai';
-import './_core/consts';
+import {ModuleBE_v2_AccountDB} from '../../main/backend';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {expect} from 'chai';
 
 
 export type loginInput = {

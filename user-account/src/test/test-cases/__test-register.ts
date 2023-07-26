@@ -1,11 +1,10 @@
-import {ModuleBE_v2_AccountDB} from '../main/backend';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {RequestBody_CreateAccount} from '../main';
-import {PasswordAssertionConfig} from '../main/shared/v2/assertion';
-import {Exception, exists} from '@nu-art/ts-common';
+import {Exception} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import './_core/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {RequestBody_CreateAccount} from '../../main';
+import {PasswordAssertionConfig} from '../../main/shared/v2/assertion';
+import {ModuleBE_v2_AccountDB} from '../../main/backend';
 
 
 export type registerAccountInput = {
@@ -25,7 +24,11 @@ const TestCases_FB_Register: RegisterAccountTest['testcases'] = [
 	},
 	{
 		description: 'Can register false',
-		input: {account: {email: 'test@email.com', password: '1234', password_check: '1234'}, canRegister: false, ignoreErrorWithText: 'Registration is disabled'},
+		input: {
+			account: {email: 'test@email.com', password: '1234', password_check: '1234'},
+			canRegister: false,
+			ignoreErrorWithText: 'Registration is disabled'
+		},
 		result: false
 	},
 	{
