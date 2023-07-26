@@ -1,7 +1,7 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {assertPasswordRules, PasswordAssertionConfig} from '../main/shared/v2/assertion';
 import {__stringify} from '@nu-art/ts-common';
 import {expect} from 'chai';
+import {assertPasswordRules, PasswordAssertionConfig} from '../../main/shared/v2/assertion';
 
 type PasswordValidationInput = {
 	password: string;
