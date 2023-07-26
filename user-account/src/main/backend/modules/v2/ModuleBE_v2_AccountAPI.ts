@@ -15,7 +15,6 @@ class ModuleBE_v2_AccountAPI_Class
 		super.init();
 		addRoutes([
 			createBodyServerApi(ApiDefBE_Account.vv1.registerAccount, ModuleBE_v2_AccountDB.account.register),
-			createBodyServerApi(ApiDefBE_Account.vv1.createAccount, ModuleBE_v2_AccountDB.createAccount),
 			createBodyServerApi(ApiDefBE_Account.vv1.changePassword, ModuleBE_v2_AccountDB.changePassword),
 		]);
 	}
