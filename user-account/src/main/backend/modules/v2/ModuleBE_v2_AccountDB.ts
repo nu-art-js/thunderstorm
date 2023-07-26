@@ -209,7 +209,11 @@ export class ModuleBE_v2_AccountDB_Class
 	// };
 
 
-	private createAccountImpl = async (body: RequestBody_CreateAccount, passwordRequired?: boolean, transaction?: Transaction) => {
+	private createAccountImpl = async (body: {
+		email: string,
+		password?: string,
+		password_check?: string
+	}, passwordRequired?: boolean, transaction?: Transaction) => {
 		//Email always lowerCase
 		body.email = body.email.toLowerCase();
 
@@ -218,9 +222,9 @@ export class ModuleBE_v2_AccountDB_Class
 
 		if (body.password || body.password_check || passwordRequired) {
 			this.password.assertPasswordExistence(body.email, body.password, body.password_check);
-			this.password.assertPasswordRules(body.password);
+			this.password.assertPasswordRules(body.password!);
 
-			account = this.spiceAccount(body);
+			account = this.spiceAccount(body as Request_CreateAccount);
 		}
 
 		return this.runTransaction(async _transaction => {
