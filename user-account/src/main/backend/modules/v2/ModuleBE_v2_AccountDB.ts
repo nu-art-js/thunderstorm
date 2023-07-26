@@ -52,7 +52,7 @@ export class ModuleBE_v2_AccountDB_Class
 		dbInstance._auditorId = MemKey_AccountEmail.get();
 	}
 
-	private async spiceAccount(request: Request_CreateAccount) {
+	private spiceAccount(request: Request_CreateAccount) {
 		const email = request.email.toLowerCase(); //Email always lowerCase
 		const salt = generateHex(32);
 		return {
@@ -115,14 +115,14 @@ export class ModuleBE_v2_AccountDB_Class
 			if (!this.config.canRegister)
 				throw new ApiException(418, 'Registration is disabled!!');
 
-			this.assertPasswordRules(body.password);
+			this.password.assertPasswordRules(body.password);
 
 			//Email always lowerCase
 			body.email = body.email.toLowerCase();
 			MemKey_AccountEmail.set(body.email); // set here, because MemKey_AccountEmail is needed in createAccountImpl
 
 			//Create the account
-			const account = await this.createAccountImpl(body, transaction);
+			const account = await this.createAccountImpl(body, true, transaction);
 			const uiAccount = getUIAccount(account);
 
 			//Log in
@@ -143,26 +143,89 @@ export class ModuleBE_v2_AccountDB_Class
 		},
 	};
 
-	async loginImpl(request: Request_LoginAccount, transaction?: Transaction) {
-		request.email = request.email.toLowerCase();
-		const account = await this.assertPasswordMatch(request.password, request.email);
+	password = {
+		assertPasswordExistence: (email: string, password?: string, password_check?: string) => {
+			if (!password || !password_check)
+				throw new ApiException(400, `Did not receive a password for email ${email}.`);
 
-		const session = await ModuleBE_v2_SessionDB.upsertSession(account);
+			if (password !== password_check)
+				throw new ApiException(400, `Password does not match password check for email ${email}.`);
+		},
+		assertPasswordRules: (password: string) => {
+			const assertPassword = assertPasswordRules(password, this.config.passwordAssertion);
+			if (assertPassword)
+				throw new ApiException(444, `Password assertion failed with: ${__stringify(assertPassword)}`);
+		},
+		assertPasswordMatch: async (password: string, userEmail: string, transaction?: Transaction) => {
+			const account = await this.query.uniqueCustom({where: {email: userEmail}}, transaction);
+
+			if (!account) {
+				await dispatch_onApplicationException.dispatchModuleAsync(new ApiException(401, `There is no account for email '${userEmail}'.`), this);
+				throw new ApiException(401, 'Wrong username or password.');
+			}
+
+			if (!account.salt || !account.saltedPassword)
+				throw new ApiException(401, 'Account was never logged in using username and password, probably logged using SAML');
+
+			if (hashPasswordWithSalt(account.salt, password) !== account.saltedPassword)
+				throw new ApiException(401, 'Wrong username or password.');
+
+			return account;
+		}
+	};
+
+	private async loginImpl(request: Request_LoginAccount, transaction?: Transaction) {
+		request.email = request.email.toLowerCase();
+		const account = await this.password.assertPasswordMatch(request.password, request.email, transaction);
+
+		const session = await ModuleBE_v2_SessionDB.upsertSession(account, transaction);
 		return {account, session};
 	}
 
 	async createAccount(body: RequestBody_CreateAccount, transaction?: Transaction): Promise<Response_Auth> {
-		const dbAccount = await this.createAccountImpl(body, transaction);
+		const dbAccount = await this.createAccountImpl(body, false, transaction);
 		return {...getUIAccount(dbAccount), sessionId: (await this.account.login(body)).sessionId};
 	}
 
-	private createAccountImpl = async (body: RequestBody_CreateAccount, transaction?: Transaction): Promise<DB_Account_V2> => {
+	// private createAccountImpl = async (body: RequestBody_CreateAccount, transaction?: Transaction): Promise<DB_Account_V2> => {
+	// 	//Email always lowerCase
+	// 	body.email = body.email.toLowerCase();
+	// 	this.password.assertPasswordRules(body.password);
+	//
+	// 	return this.runTransaction(async _transaction => {
+	// 		let existingAccount: DB_Account_V2 | undefined;
+	// 		try {
+	// 			existingAccount = await this.query.uniqueWhere({email: body.email}, transaction);
+	// 		} catch (ignore) {
+	// 			// this is fine we do not want the account to exist!
+	// 			/* empty */
+	// 		}
+	//
+	// 		if (existingAccount)
+	// 			throw new ApiException(422, 'User with email already exists');
+	//
+	// 		const account = this.spiceAccount(body) as PreDB<DB_Account_V2>;
+	// 		return await this.create.item(account, transaction);
+	// 	}, transaction);
+	// };
+
+
+	private createAccountImpl = async (body: RequestBody_CreateAccount, passwordRequired?: boolean, transaction?: Transaction) => {
 		//Email always lowerCase
 		body.email = body.email.toLowerCase();
-		this.assertPasswordRules(body.password);
+
+		let account = {email: body.email};
+
+		if (body.password || body.password_check || passwordRequired) {
+			this.password.assertPasswordExistence(body.email, body.password, body.password_check);
+			this.password.assertPasswordRules(body.password);
+
+			account = this.spiceAccount(body);
+		}
 
 		return this.runTransaction(async _transaction => {
 			let existingAccount: DB_Account_V2 | undefined;
+
 			try {
 				existingAccount = await this.query.uniqueWhere({email: body.email}, transaction);
 			} catch (ignore) {
@@ -173,10 +236,10 @@ export class ModuleBE_v2_AccountDB_Class
 			if (existingAccount)
 				throw new ApiException(422, 'User with email already exists');
 
-			const account = await this.spiceAccount(body) as PreDB<DB_Account_V2>;
-			return await this.create.item(account, transaction);
-		}, transaction);
+			return await this.create.item(account as PreDB<DB_Account_V2>, transaction);
+		});
 	};
+
 
 	async changePassword(body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> {
 		const lowerCaseEmail = body.userEmail.toLowerCase();
@@ -193,12 +256,12 @@ export class ModuleBE_v2_AccountDB_Class
 	private async changePasswordImpl(userEmail: string, originalPassword: string, newPassword: string, newPassword_check: string, transaction?: Transaction) {
 		return await this.runTransaction(async (_transaction) => {
 
-			const assertedAccount = await this.assertPasswordMatch(originalPassword, userEmail);
+			const assertedAccount = await this.password.assertPasswordMatch(originalPassword, userEmail);
 
 			if (!compare(newPassword, newPassword_check))
 				throw new ApiException(401, 'Account login using SAML');
 
-			const updatedAccount = await this.spiceAccount({
+			const updatedAccount = this.spiceAccount({
 				email: userEmail,
 				password: newPassword,
 				password_check: newPassword
@@ -207,29 +270,6 @@ export class ModuleBE_v2_AccountDB_Class
 			//Update the account with a new password
 			return this.set.item({...assertedAccount, ...updatedAccount});
 		}, transaction);
-	}
-
-	private assertPasswordRules(password: string) {
-		const assertPassword = assertPasswordRules(password, this.config.passwordAssertion);
-		if (assertPassword)
-			throw new ApiException(444, `Password assertion failed with: ${__stringify(assertPassword)}`);
-	}
-
-	private async assertPasswordMatch(password: string, userEmail: string, transaction?: Transaction) {
-		const account = await this.query.uniqueCustom({where: {email: userEmail}}, transaction);
-
-		if (!account) {
-			await dispatch_onApplicationException.dispatchModuleAsync(new ApiException(401, `There is no account for email '${userEmail}'.`), this);
-			throw new ApiException(401, 'Wrong username or password.');
-		}
-
-		if (!account.salt || !account.saltedPassword)
-			throw new ApiException(401, 'Account was never logged in using username and password, probably logged using SAML');
-
-		if (hashPasswordWithSalt(account.salt, password) !== account.saltedPassword)
-			throw new ApiException(401, 'Wrong username or password.');
-
-		return account;
 	}
 }
 
