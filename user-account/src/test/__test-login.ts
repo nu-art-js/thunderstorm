@@ -1,8 +1,8 @@
-import {ModuleBE_v2_AccountDB} from '../../main/backend';
+import {ModuleBE_v2_AccountDB} from '../main/backend';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {Request_CreateAccount, Request_LoginAccount} from '../../main';
+import {Request_CreateAccount, Request_LoginAccount} from '../main';
 import {expect} from 'chai';
-import '../_core/consts';
+import './_core/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
@@ -16,7 +16,7 @@ type LoginAccountTest = TestSuite<loginInput, boolean>;
 
 const TestCases_FB_Login: LoginAccountTest['testcases'] = [
 	{
-		description: 'Simple',
+		description: 'Login Pass',
 		input: {
 			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
 			loginCredentials: {email: 'test@email.com', password: '1234'}
@@ -24,7 +24,15 @@ const TestCases_FB_Login: LoginAccountTest['testcases'] = [
 		result: true
 	},
 	{
-		description: 'Bad Password',
+		description: 'Login Fail - Email',
+		input: {
+			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
+			loginCredentials: {email: 'test1@email.com', password: '12344'}
+		},
+		result: false
+	},
+	{
+		description: 'Login Fail - Password',
 		input: {
 			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
 			loginCredentials: {email: 'test@email.com', password: '12345'}
@@ -34,7 +42,7 @@ const TestCases_FB_Login: LoginAccountTest['testcases'] = [
 ];
 
 export const TestSuite_Accounts_Login: LoginAccountTest = {
-	label: 'Account login test',
+	label: '\n################ Account Login Tests ################\n',
 	testcases: TestCases_FB_Login,
 	processor: async (testCase) => {
 		ModuleBE_v2_AccountDB.setDefaultConfig({
