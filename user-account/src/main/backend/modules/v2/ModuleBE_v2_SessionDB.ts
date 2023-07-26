@@ -22,6 +22,8 @@ import {
 import {HeaderKey_SessionId, UI_Account} from '../../../shared/api';
 import {gzipSync, unzipSync} from 'zlib';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
+import {firestore} from 'firebase-admin';
+import Transaction = firestore.Transaction;
 
 
 export interface CollectSessionData<R extends TS_Object> {
@@ -83,9 +85,9 @@ export class ModuleBE_v2_SessionDB_Class
 		return JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8'));
 	}
 
-	upsertSession = async (uiAccount: UI_Account): Promise<Response_Auth> => {
+	upsertSession = async (uiAccount: UI_Account, transaction?: Transaction): Promise<Response_Auth> => {
 		try {
-			const session = await this.query.uniqueWhere({accountId: uiAccount._id});
+			const session = await this.query.uniqueWhere({accountId: uiAccount._id}, transaction);
 			if (!this.TTLExpired(session)) {
 				const sessionData = ModuleBE_v2_SessionDB_Class.decodeSessionData(session.sessionId);
 				Middleware_ValidateSession_UpdateMemKeys(sessionData);
@@ -120,12 +122,12 @@ export class ModuleBE_v2_SessionDB_Class
 		return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
 	};
 
-	logout = async () => {
+	logout = async (transaction?: Transaction) => {
 		const sessionId = Header_SessionId.get();
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
 
-		await this.delete.query({where: {sessionId}});
+		await this.delete.query({where: {sessionId}}, transaction);
 	};
 }
 
