@@ -1,13 +1,14 @@
 import {ModuleBE_v2_AccountDB} from '../../main/backend';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {Request_CreateAccount} from '../../main';
+import {Request_CreateAccount, Request_LoginAccount} from '../../main';
 import {expect} from 'chai';
 import '../_core/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export type loginInput = {
-	credentials: Request_CreateAccount
+	registerCredentials: Request_CreateAccount
+	loginCredentials: Request_LoginAccount
 }
 
 type LoginAccountTest = TestSuite<loginInput, boolean>;
@@ -16,12 +17,22 @@ type LoginAccountTest = TestSuite<loginInput, boolean>;
 const TestCases_FB_Login: LoginAccountTest['testcases'] = [
 	{
 		description: 'Simple',
-		input: {credentials: {email: 'test@email.com', password: '1234', password_check: '1234'}},
+		input: {
+			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
+			loginCredentials: {email: 'test@email.com', password: '1234'}
+		},
 		result: true
+	},
+	{
+		description: 'Bad Password',
+		input: {
+			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
+			loginCredentials: {email: 'test@email.com', password: '12345'}
+		},
+		result: false
 	},
 ];
 
-TestCases_FB_Login.forEach(testCase => testCase.description = `${testCase.description}: ${testCase.input.credentials.email} - ${testCase.input.credentials.password}`);
 export const TestSuite_Accounts_Login: LoginAccountTest = {
 	label: 'Account login test',
 	testcases: TestCases_FB_Login,
@@ -45,11 +56,11 @@ export const TestSuite_Accounts_Login: LoginAccountTest = {
 		let result: boolean | undefined;
 		try {
 			await new MemStorage().init(async () => {
-				await ModuleBE_v2_AccountDB.account.register(testCase.input.credentials);
+				await ModuleBE_v2_AccountDB.account.register(testCase.input.registerCredentials);
 			});
 			await new MemStorage().init(async () => {
 				// console.log(await ModuleBE_v2_AccountDB.query.custom(_EmptyQuery));
-				await ModuleBE_v2_AccountDB.account.login(testCase.input.credentials);
+				await ModuleBE_v2_AccountDB.account.login(testCase.input.loginCredentials);
 			});
 
 			result = true;
