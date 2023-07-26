@@ -13,7 +13,7 @@ import {
 	dispatch_onApplicationException,
 	Dispatcher,
 	generateHex,
-	hashPasswordWithSalt,
+	hashPasswordWithSalt, PartialProperties,
 	PreDB
 } from '@nu-art/ts-common';
 import {MemKey_AccountEmail} from '../../core/accounts-middleware';
@@ -141,7 +141,7 @@ export class ModuleBE_v2_AccountDB_Class
 			await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
 			return session;
 		},
-		create: async (request: Request_CreateAccount, transaction?: Transaction) => {
+		create: async (request: PartialProperties<Request_CreateAccount, 'password' | 'password_check'>, transaction?: Transaction) => {
 			await this.createAccountImpl(request, false, transaction);
 		}
 	};
@@ -209,11 +209,7 @@ export class ModuleBE_v2_AccountDB_Class
 	// };
 
 
-	private createAccountImpl = async (body: {
-		email: string,
-		password?: string,
-		password_check?: string
-	}, passwordRequired?: boolean, transaction?: Transaction) => {
+	private createAccountImpl = async (body: PartialProperties<Request_CreateAccount, 'password' | 'password_check'>, passwordRequired?: boolean, transaction?: Transaction) => {
 		//Email always lowerCase
 		body.email = body.email.toLowerCase();
 

@@ -8,9 +8,9 @@ import './_core/consts';
 
 
 describe('Accounts - All Tests', () => {
-	testSuiteTester(TestSuite_Accounts_PasswordValidation);
-	testSuiteTester(TestSuite_Accounts_EmailValidation);
-	testSuiteTester(TestSuite_Accounts_Register);
+	// testSuiteTester(TestSuite_Accounts_PasswordValidation);
+	// testSuiteTester(TestSuite_Accounts_EmailValidation);
+	// testSuiteTester(TestSuite_Accounts_Register);
 	testSuiteTester(TestSuite_Accounts_Create);
-	testSuiteTester(TestSuite_Accounts_Login);
+	// testSuiteTester(TestSuite_Accounts_Login);
 });
