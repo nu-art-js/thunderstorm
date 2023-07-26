@@ -8,6 +8,7 @@ import {expect} from 'chai';
 export type loginInput = {
 	registerCredentials: Request_CreateAccount
 	loginCredentials: Request_LoginAccount
+	ignoreErrorWithText?: string
 }
 
 type LoginAccountTest = TestSuite<loginInput, boolean>;
@@ -26,7 +27,8 @@ const TestCases_FB_Login: LoginAccountTest['testcases'] = [
 		description: 'Login Fail - Email',
 		input: {
 			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
-			loginCredentials: {email: 'test1@email.com', password: '12344'}
+			loginCredentials: {email: 'test1@email.com', password: '12344'},
+			ignoreErrorWithText: 'Could not find Account with unique query'
 		},
 		result: false
 	},
@@ -34,7 +36,8 @@ const TestCases_FB_Login: LoginAccountTest['testcases'] = [
 		description: 'Login Fail - Password',
 		input: {
 			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
-			loginCredentials: {email: 'test@email.com', password: '12345'}
+			loginCredentials: {email: 'test@email.com', password: '12345'},
+			ignoreErrorWithText: 'Wrong username or password',
 		},
 		result: false
 	},
@@ -72,7 +75,8 @@ export const TestSuite_Accounts_Login: LoginAccountTest = {
 
 			result = true;
 		} catch (e: any) {
-			console.error(`${testCase.description} failed because: ${e.message}`);
+			if (!testCase.input.ignoreErrorWithText || !e.message.includes(testCase.input.ignoreErrorWithText))
+				console.error(`${testCase.description} failed because: ${e.message}`);
 			result = false;
 		}
 

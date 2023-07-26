@@ -207,9 +207,9 @@ export const TestSuite_Accounts_PasswordValidation: PasswordValidationSuite = {
 
 		//Returned errors
 		else {
-			const error = __stringify(result);
-			if (!testCase.input.ignoreErrorWithText || !error.includes(testCase.input.ignoreErrorWithText))
-				console.error(error);
+			// const error = __stringify(result);
+			// if (!testCase.input.ignoreErrorWithText || !error.includes(testCase.input.ignoreErrorWithText))
+			// 	console.error(error);
 			result = false;
 		}
 
