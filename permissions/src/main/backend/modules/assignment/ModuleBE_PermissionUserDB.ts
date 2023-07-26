@@ -145,7 +145,7 @@ export class ModuleBE_PermissionUserDB_Class
 	async insertIfNotExist(email: string) {
 		return this.runTransaction(async (transaction) => {
 
-			const account = await ModuleBE_v2_AccountDB.getUser(email);
+			const account = await ModuleBE_v2_AccountDB.getUIAccountByEmail(email);
 			if (!account)
 				throw new ApiException(404, `user not found for email ${email}`);
 

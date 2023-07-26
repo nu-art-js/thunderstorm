@@ -62,14 +62,14 @@ export class ModuleBE_v2_AccountDB_Class
 		};
 	}
 
+	/**
+	 * todo legacy code from old module- Potential for improvement
+	 */
 	listUsers = async (transaction?: Transaction) => {
 		return (await this.query.custom({select: ['_id', 'email']}, transaction)) as { email: string, _id: string }[];
 	};
 
-	/**
-	 * todo Check if necessary
-	 */
-	async getUser(_email: string): Promise<UI_Account | undefined> {
+	async getUIAccountByEmail(_email: string): Promise<UI_Account | undefined> {
 		//Email always lowerCase
 		const email = _email.toLowerCase();
 		return this.query.uniqueCustom({where: {email}, select: ['email', '_id']});
@@ -102,9 +102,9 @@ export class ModuleBE_v2_AccountDB_Class
 	};
 
 	/**
-	 * todo Check if necessary
+	 * todo legacy code from old module- necessary?
 	 */
-	async getSession(_email: string) {
+	async getAccountByEmail(_email: string) {
 		//Email always lowerCase
 		const email = _email.toLowerCase();
 		return this.query.uniqueCustom({where: {email}});
@@ -122,7 +122,7 @@ export class ModuleBE_v2_AccountDB_Class
 			MemKey_AccountEmail.set(body.email); // set here, because MemKey_AccountEmail is needed in createAccountImpl
 
 			//Create the account
-			const account = await this.createAccountImpl(body, true, transaction);
+			const account = await this.createAccountImpl(body, true, transaction); // Must have a password, because we use it to auto-login immediately after
 			const uiAccount = getUIAccount(account);
 
 			//Log in
@@ -135,12 +135,15 @@ export class ModuleBE_v2_AccountDB_Class
 			//Finish
 			return session;
 		},
-		login: async (request: Request_LoginAccount): Promise<Response_Auth> => {
-			const {account, session} = await this.loginImpl(request);
+		login: async (request: Request_LoginAccount, transaction?: Transaction): Promise<Response_Auth> => {
+			const {account, session} = await this.loginImpl(request, transaction);
 
 			await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
 			return session;
 		},
+		create: async (request: Request_CreateAccount, transaction?: Transaction) => {
+			await this.createAccountImpl(request, false, transaction);
+		}
 	};
 
 	password = {
@@ -182,10 +185,6 @@ export class ModuleBE_v2_AccountDB_Class
 		return {account, session};
 	}
 
-	async createAccount(body: RequestBody_CreateAccount, transaction?: Transaction): Promise<Response_Auth> {
-		const dbAccount = await this.createAccountImpl(body, false, transaction);
-		return {...getUIAccount(dbAccount), sessionId: (await this.account.login(body)).sessionId};
-	}
 
 	// private createAccountImpl = async (body: RequestBody_CreateAccount, transaction?: Transaction): Promise<DB_Account_V2> => {
 	// 	//Email always lowerCase
@@ -214,6 +213,7 @@ export class ModuleBE_v2_AccountDB_Class
 		//Email always lowerCase
 		body.email = body.email.toLowerCase();
 
+		// If login SAML or admin creates an account - it doesn't necessarily receive a password yet.
 		let account = {email: body.email};
 
 		if (body.password || body.password_check || passwordRequired) {
@@ -239,7 +239,6 @@ export class ModuleBE_v2_AccountDB_Class
 			return await this.create.item(account as PreDB<DB_Account_V2>, transaction);
 		});
 	};
-
 
 	async changePassword(body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> {
 		const lowerCaseEmail = body.userEmail.toLowerCase();

@@ -111,7 +111,7 @@ export class ModuleBE_Permissions_Class
 		const groupsIds = body.groupsIds;
 		const toRet: Response_UsersCFsByShareGroups = {};
 		await Promise.all(usersEmails.map(async email => {
-			const account = await ModuleBE_v2_AccountDB.getUser(email);
+			const account = await ModuleBE_v2_AccountDB.getUIAccountByEmail(email);
 			if (!account)
 				return;
 
