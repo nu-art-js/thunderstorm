@@ -79,10 +79,10 @@ type SamlAssertResponse = {
 }
 
 class AssertSamlToken
-	extends ServerApi<ApiStruct_SAML_BE['v1']['assertSAML']> {
+	extends ServerApi<ApiStruct_SAML_BE['vv1']['assertSAML']> {
 
 	constructor() {
-		super(ApiDef_SAML_BE.v1.assertSAML);
+		super(ApiDef_SAML_BE.vv1.assertSAML);
 	}
 
 	protected async process() {
@@ -103,7 +103,7 @@ export class ModuleBE_SAML_Class
 	protected init(): void {
 		super.init();
 		addRoutes([
-			createQueryServerApi(ApiDef_SAML_BE.v1.loginSaml, this.loginRequest),
+			createQueryServerApi(ApiDef_SAML_BE.vv1.loginSaml, this.loginRequest),
 			new AssertSamlToken()
 		]);
 

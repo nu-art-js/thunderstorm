@@ -66,7 +66,7 @@ export const ApiDefBE_Account: ApiDefResolver<ApiStructBE_Account> = {
 };
 
 export type ApiStructFE_Account = {
-	v1: TypedAPI_RegisterAccount
+	vv1: TypedAPI_RegisterAccount
 		& TypedApi_CreateAccount
 		& TypedApi_ChangedPassword
 		& TypedApi_Login
@@ -76,25 +76,25 @@ export type ApiStructFE_Account = {
 }
 
 export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
-	v1: {
+	vv1: {
 		...API_RegisterAccount,
 		...API_CreateAccount,
 		...API_ChangePassword,
 		...API_Login,
+		...API_LoginSaml,
 		...API_Logout,
 		...API_ValidateSession,
-		...API_LoginSaml,
 	}
 };
 
 export type ApiStruct_SAML_BE = {
-	v1: TypedApi_LoginSaml & {
+	vv1: TypedApi_LoginSaml & {
 		assertSAML: BodyApi<void, PostAssertBody>
 	}
 }
 
 export const ApiDef_SAML_BE: ApiDefResolver<ApiStruct_SAML_BE> = {
-	v1: {
+	vv1: {
 		...API_LoginSaml,
 		assertSAML: {method: HttpMethod.POST, path: 'v1/account/assert'},
 	}
