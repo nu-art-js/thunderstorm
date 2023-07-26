@@ -4,6 +4,7 @@ import {
 	tsValidateString,
 	tsValidateTimestamp,
 	tsValidateUniqueId,
+	tsValidator_nonMandatoryString,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {DBDef} from '@nu-art/ts-common/db/types';
@@ -25,8 +26,8 @@ export const DBDef_Session: DBDef<DB_Session_V2, 'accountId'> = {
 
 export const Validator_Account: ValidatorTypeResolver<OmitDBObject<DB_Account_V2>> = {
 	email: tsValidateEmail,
-	salt: tsValidateString(),
-	saltedPassword: tsValidateString(),
+	salt: tsValidator_nonMandatoryString,
+	saltedPassword: tsValidator_nonMandatoryString,
 	_auditorId: tsValidateString()
 };
 
