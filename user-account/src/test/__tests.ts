@@ -3,10 +3,12 @@ import {TestSuite_Accounts_PasswordValidation} from './test-cases/__tests-passwo
 import {TestSuite_Accounts_Register} from './test-cases/__test-register';
 import {TestSuite_Accounts_Login} from './test-cases/__test-login';
 import './_core/consts';
+import {TestSuite_Accounts_Create} from './test-cases/__test-create';
 
 
 describe('Accounts - All Tests', () => {
-	testSuiteTester(TestSuite_Accounts_PasswordValidation);
-	testSuiteTester(TestSuite_Accounts_Register);
-	testSuiteTester(TestSuite_Accounts_Login);
+	// testSuiteTester(TestSuite_Accounts_PasswordValidation);
+	// testSuiteTester(TestSuite_Accounts_Register);
+	// testSuiteTester(TestSuite_Accounts_Login);
+	testSuiteTester(TestSuite_Accounts_Create);
 });

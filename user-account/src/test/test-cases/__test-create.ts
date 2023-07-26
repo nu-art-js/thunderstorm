@@ -1,4 +1,4 @@
-import {ModuleBE_v2_AccountDB} from '../../main/backend';
+import {MemKey_AccountEmail, ModuleBE_v2_AccountDB} from '../../main/backend';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
 import '../_core/consts';
@@ -8,8 +8,8 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 export type createInput = {
 	createCredentials: {
 		email: string
-		password: string
-		password_check: string
+		password?: string
+		password_check?: string
 	}
 }
 
@@ -18,11 +18,32 @@ type CreateAccountTest = TestSuite<createInput, boolean>;
 
 const TestCases_FB_Create: CreateAccountTest['testcases'] = [
 	{
-		description: 'Simple',
+		description: 'With password',
 		input: {
 			createCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
 		},
 		result: true
+	},
+	{
+		description: 'Without password',
+		input: {
+			createCredentials: {email: 'test@email.com'},
+		},
+		result: true
+	},
+	{
+		description: 'Password without password_check',
+		input: {
+			createCredentials: {email: 'test@email.com', password: '1234'},
+		},
+		result: false
+	},
+	{
+		description: 'Password_check without password',
+		input: {
+			createCredentials: {email: 'test@email.com', password_check: '1234'},
+		},
+		result: false
 	},
 ];
 
@@ -49,6 +70,7 @@ export const TestSuite_Accounts_Create: CreateAccountTest = {
 		let result: boolean | undefined;
 		try {
 			await new MemStorage().init(async () => {
+				MemKey_AccountEmail.set('test');
 				await ModuleBE_v2_AccountDB.account.create(testCase.input.createCredentials);
 			});
 

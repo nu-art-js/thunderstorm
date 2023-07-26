@@ -46,8 +46,8 @@ export type Request_UpsertAccount = {
 
 export type Request_CreateAccount = {
 	email: string
-	password: string
-	password_check: string
+	password?: string
+	password_check?: string
 	// customProps?: StringMap
 }
 
