@@ -16,6 +16,7 @@ type Props = {
 	maxHeight?: number | string;
 	style?: TypedMap<string>;
 	className?: string;
+	id?: string;
 	customCaret?: ReactNode | (() => ReactNode)
 	flipHeaderOrder?: boolean
 	onMouseEnter?: (e: React.MouseEvent) => void;
@@ -126,8 +127,14 @@ export class TS_CollapsableContainer
 
 	render() {
 		const className = _className('ts-collapsable-container', this.props.className);
-		return <LL_V_L className={className} style={this.props.style} onMouseOver={this.props.onMouseOver} onMouseEnter={this.props.onMouseEnter}
-									 onMouseLeave={this.props.onMouseLeave}>
+		return <LL_V_L
+			className={className}
+			style={this.props.style}
+			id={this.props.id}
+			onMouseOver={this.props.onMouseOver}
+			onMouseEnter={this.props.onMouseEnter}
+			onMouseLeave={this.props.onMouseLeave}
+		>
 			{this.renderHeader()}
 			{this.renderContainer()}
 		</LL_V_L>;

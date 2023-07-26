@@ -7,11 +7,13 @@ type Props<ItemType> = {
 	values: ItemType[];
 	groupName: string;
 	checked?: ItemType;
-	onCheck?: (value: ItemType, prevValue?: ItemType) => void
 	disabled?: boolean;
 	className?: string;
 	labelRenderer?: (value: ItemType) => React.ReactNode
-}
+} & (
+	{ canUnselect: true; onCheck?: (value?: ItemType, prevValue?: ItemType) => void }
+	| { canUnselect?: false; onCheck?: (value: ItemType, prevValue?: ItemType) => void }
+	)
 
 type State<ItemType> = {
 	checked?: ItemType;
@@ -39,8 +41,12 @@ export class TS_Radio<ItemType>
 		if (this.state.disabled)
 			return;
 		const prevValue = this.state.checked;
-		this.setState({checked: value}, () => {
-			this.props.onCheck?.(value, prevValue);
+		const nextValue = (this.props.canUnselect && value === prevValue)
+			? undefined
+			: value;
+
+		this.setState({checked: nextValue}, () => {
+			this.props.onCheck?.(nextValue!, prevValue);
 			this.forceUpdate();
 		});
 	};
