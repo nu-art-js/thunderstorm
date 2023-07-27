@@ -31,19 +31,19 @@ type TypedApi_CreateAccount = { createAccount: BodyApi<ResponseBody_CreateAccoun
 type TypedApi_ValidateSession = { validateSession: QueryApi<UI_Account, {}> };
 type TypedApi_ChangedPassword = { changePassword: BodyApi<ResponseBody_ChangePassword, RequestBody_ChangePassword> };
 
-const API_LoginSaml = {loginSaml: {method: HttpMethod.GET, path: 'v1/account/login-saml'}} as const;
-const API_Login = {login: {method: HttpMethod.POST, path: 'v1/account/login', timeout: Minute}} as const;
-const API_Logout = {logout: {method: HttpMethod.GET, path: 'v1/account/logout'}} as const;
-const API_RegisterAccount = {registerAccount: {method: HttpMethod.POST, path: '/v1/account/register-account'}} as const;
-const API_CreateAccount = {createAccount: {method: HttpMethod.POST, path: '/v1/account/create-account'}} as const;
+const API_LoginSaml = {loginSaml: {method: HttpMethod.GET, path: 'v1/account-v2/login-saml'}} as const;
+const API_Login = {login: {method: HttpMethod.POST, path: 'v1/account-v2/login', timeout: Minute}} as const;
+const API_Logout = {logout: {method: HttpMethod.GET, path: 'v1/account-v2/logout'}} as const;
+const API_RegisterAccount = {registerAccount: {method: HttpMethod.POST, path: '/v1/account-v2/register-account'}} as const;
+const API_CreateAccount = {createAccount: {method: HttpMethod.POST, path: '/v1/account-v2/create-account'}} as const;
 const API_ValidateSession = {
 	validateSession: {
 		method: HttpMethod.GET,
-		path: 'v1/account/validate',
+		path: 'v1/account-v2/validate',
 		timeout: Minute
 	}
 } as const;
-const API_ChangePassword = {changePassword: {method: HttpMethod.POST, path: '/v1/account/change-password'}} as const;
+const API_ChangePassword = {changePassword: {method: HttpMethod.POST, path: '/v1/account-v2/change-password'}} as const;
 
 export type ApiStructBE_Account = {
 	vv1: TypedAPI_RegisterAccount
@@ -54,7 +54,7 @@ export type ApiStructBE_Account = {
 		& TypedApi_ChangedPassword
 }
 
-export const ApiDefBE_Account: ApiDefResolver<ApiStructBE_Account> = {
+export const ApiDefBE_AccountV2: ApiDefResolver<ApiStructBE_Account> = {
 	vv1: {
 		...API_RegisterAccount,
 		...API_CreateAccount,
@@ -96,6 +96,6 @@ export type ApiStruct_SAML_BE = {
 export const ApiDef_SAML_BE: ApiDefResolver<ApiStruct_SAML_BE> = {
 	vv1: {
 		...API_LoginSaml,
-		assertSAML: {method: HttpMethod.POST, path: 'v1/account/assert'},
+		assertSAML: {method: HttpMethod.POST, path: 'v1/account-v2/assert'},
 	}
 };

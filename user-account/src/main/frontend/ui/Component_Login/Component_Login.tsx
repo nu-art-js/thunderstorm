@@ -18,10 +18,10 @@
 
 import * as React from 'react';
 import {_keys} from '@nu-art/ts-common';
-import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
 import {Request_LoginAccount} from '../../../shared/api';
 import './Component_Login.scss';
 import {ComponentSync, LL_V_C, ModuleFE_Toaster, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_AccountV2} from "../../modules/v2/ModuleFE_v2_Account";
 
 
 type State<T> = {
@@ -114,7 +114,7 @@ export class Component_Login
 			return ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
 
 		try {
-			await ModuleFE_Account.v1.login(this.state.data as Request_LoginAccount).executeSync();
+			await ModuleFE_AccountV2.vv1.login(this.state.data as Request_LoginAccount).executeSync();
 		} catch (err) {
 			this.setState({errorMessages: ['Email or password incorrect']});
 		}

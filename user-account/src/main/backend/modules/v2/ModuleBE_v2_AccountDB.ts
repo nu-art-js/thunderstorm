@@ -124,12 +124,13 @@ export class ModuleBE_v2_AccountDB_Class
 			//Create the account
 			const account = await this.createAccountImpl(body, true, transaction); // Must have a password, because we use it to auto-login immediately after
 			const uiAccount = getUIAccount(account);
+			this.logErrorBold('uiAccount', uiAccount);
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
 
 			//Log in
 			const session = await ModuleBE_v2_SessionDB.upsertSession(uiAccount);
 
 			//Update whoever listens
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
 			await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
 
 			//Finish
