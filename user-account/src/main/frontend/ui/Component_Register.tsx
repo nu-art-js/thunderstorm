@@ -18,9 +18,9 @@
 
 import * as React from 'react';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
-import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 import {Request_CreateAccount} from '../../shared/api';
 import {ComponentSync, LL_V_C, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_AccountV2} from "../modules/v2/ModuleFE_v2_Account";
 
 
 type State<T> = {
@@ -121,7 +121,7 @@ export class Component_Register
 			return this.setState({errorMessages: errors});
 
 		try {
-			await ModuleFE_Account.v1.create(this.state.data as Request_CreateAccount).executeSync();
+			await ModuleFE_AccountV2.vv1.registerAccount(this.state.data as Request_CreateAccount).executeSync();
 		} catch (_err: any) {
 			const err = _err as Error;
 			this.setState({errorMessages: [err.message]});
