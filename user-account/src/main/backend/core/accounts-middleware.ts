@@ -17,24 +17,30 @@
  */
 
 import {ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
-import {Header_SessionId, ModuleBE_Account} from '../modules/ModuleBE_Account';
+import {Header_SessionId, ModuleBE_Account, ModuleBE_Account_Class} from '../modules/ModuleBE_Account';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {UI_Account} from '../../shared/api';
+import {TS_Object} from '@nu-art/ts-common';
 
 
 export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
 export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
+export const MemKey_SessionData = new MemKey<TS_Object>('session-data', true);
 
 export const Middleware_ValidateSession: ServerApi_Middleware = async () => {
 	const sessionId = Header_SessionId.get();
 	const uiAccount = await ModuleBE_Account.validateSessionId(sessionId);
 
-	Middleware_ValidateSession_UpdateMemKeys(uiAccount);
+	Middleware_ValidateSession_UpdateMemKeys(uiAccount, sessionId);
 };
 
-export function Middleware_ValidateSession_UpdateMemKeys(uiAccount: UI_Account) {
+export function Middleware_ValidateSession_UpdateMemKeys(uiAccount: UI_Account, sessionId?: string) {
+	if (sessionId && !MemKey_SessionData.get())
+		MemKey_SessionData.set(ModuleBE_Account_Class.decodeSessionData(sessionId));
+
 	if (!MemKey_AccountEmail.get())
 		MemKey_AccountEmail.set(uiAccount.email);
+
 	if (!MemKey_AccountId.get())
 		MemKey_AccountId.set(uiAccount._id);
 }

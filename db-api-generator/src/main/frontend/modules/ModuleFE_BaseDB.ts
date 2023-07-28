@@ -135,7 +135,12 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 
 	onSyncCompleted = async (syncData: Response_DBSync<DBType>) => {
 		this.logDebug(`onSyncCompleted: ${this.config.dbConfig.name}`);
-		await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
+		try {
+			await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
+		} catch (e: any) {
+			this.logError('Error while syncing', e);
+
+		}
 		await this.cache.load();
 		this.setDataStatus(DataStatus.ContainsData);
 

@@ -88,7 +88,7 @@ export class ModuleBE_v2_SyncManager_Class
 		const deletedItem: PreDB<DeletedDBItem> = {__docId: _id, __updated, __created, _v, __collectionName: collectionName};
 		uniqueKeys.forEach(key => {
 			// @ts-ignore
-			deletedItem[key] = item[key];
+			deletedItem[key] = item[key] || '';
 		});
 		return deletedItem;
 	};

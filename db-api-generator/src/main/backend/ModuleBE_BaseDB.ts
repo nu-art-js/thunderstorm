@@ -232,7 +232,7 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 			return new DocWrapper<DBType>(this.collection.wrapper,
 				{ref, data: () => dbInstance} as FirestoreType_DocumentSnapshot<DBType>);
 		},
-		assert: async ( transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
+		assert: async (transaction: FirestoreTransaction, doc: DocWrapper<DBType>) => {
 			const dbInstance = doc.get();
 			await this._preUpsertProcessing(dbInstance, transaction);
 			this.validateImpl(dbInstance);
@@ -414,6 +414,7 @@ export abstract class ModuleBE_BaseDB<DBType extends DB_Object, ConfigType exten
 				try {
 					await this.upgradeInstance(dbInstance, currentVersion);
 				} catch (e: any) {
+					console.log(e);
 					throw new ApiException(500, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`,
 						e.message);
 				}

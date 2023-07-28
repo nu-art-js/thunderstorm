@@ -56,9 +56,14 @@ export type FileInfo = {
 	asset?: DB_Asset
 };
 
-export type TempSecureUrl = {
-	secureUrl: string
+export type SecureUrl = {
+	securedUrl: string
+}
+
+export type TempSecureUrl = SecureUrl & {
 	asset: DB_Asset
 }
 
 export type FileUploadResult = { status: FileStatus, asset: DB_Asset };
+
+export type Request_GetReadSecuredUrl = { pathInBucket: string; bucketName?: string };
