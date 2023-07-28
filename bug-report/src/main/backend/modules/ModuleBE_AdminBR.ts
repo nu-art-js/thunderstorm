@@ -23,6 +23,7 @@ import {ApiDef_AdminBugReport, DB_BugReport, Paths} from '../../shared/api';
 import {FirestoreCollection, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 
+
 type Config = {
 	projectId: string
 	bucket?: string,
@@ -55,7 +56,7 @@ export class ModuleBE_AdminBR_Class
 	downloadFiles = async (path: Paths) => {
 		const bucket = await this.storage.getOrCreateBucket(this.config?.bucket);
 		const file = await bucket.getFile(path.path);
-		return file.getReadSecuredUrl('application/zip', 600000);
+		return file.getReadSecuredUrl(600000, 'application/zip');
 	};
 }
 

@@ -31,7 +31,6 @@ type Config = UploaderConfig & { requestConfig: Axios_RequestConfig };
 export class ModuleBE_AssetUploader_Class
 	extends ModuleBase_AssetUploader<AxiosHttpModule_Class, Config> {
 
-
 	constructor() {
 		super();
 		this.vv1 = {
@@ -57,7 +56,3 @@ export class ModuleBE_AssetUploader_Class
 }
 
 export const ModuleBE_AssetUploader = new ModuleBE_AssetUploader_Class();
-
-
-
-

@@ -14,26 +14,31 @@ import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 import {addRoutes} from '../ModuleBE_APIs';
 import {ActionDeclaration} from './types';
 
+
 export class ModuleBE_ActionProcessor_Class
 	extends Module {
 
-	private readonly actionMap: TypedMap<( data: any) => Promise<any>> = {};
+	private readonly actionMap: TypedMap<(data: any) => Promise<any>> = {};
 	private readonly actionMetaData: TypedMap<ActionMetaData> = {};
 
 	constructor() {
 		super();
 		this.setMinLevel(LogLevel.Verbose);
+	}
 
+	protected init() {
+		super.init();
 		addRoutes([
 			createBodyServerApi(ApiDef_ActionProcessing.vv1.execute, this.refactor),
-			createQueryServerApi(ApiDef_ActionProcessing.vv1.list, this.list)]);
+			createQueryServerApi(ApiDef_ActionProcessing.vv1.list, this.list)
+		]);
 	}
 
 	readonly registerAction = (rad: ActionDeclaration, logger: Logger) => {
 		if (this.actionMap[rad.key])
 			throw new BadImplementationException(`ActionProcessor with key ${rad.key} was registered twice!`);
 
-		this.actionMap[rad.key] = ( data: any) => rad.processor(logger || this, data);
+		this.actionMap[rad.key] = (data: any) => rad.processor(logger || this, data);
 		this.actionMetaData[rad.key] = {key: rad.key, description: rad.description, group: rad.group};
 	};
 

@@ -26,6 +26,7 @@ import {
 	tsValidateDynamicObject,
 	tsValidateExists,
 	tsValidateMustExist,
+	tsValidateNonMandatoryObject,
 	tsValidateNumber,
 	tsValidateRegexp,
 	tsValidateString,
@@ -33,6 +34,7 @@ import {
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {DB_Asset} from './types';
+
 
 export const validateName = tsValidateRegexp(/^.{3,}$/);
 
@@ -49,14 +51,17 @@ const Validator_Asset: ValidatorTypeResolver<OmitDBObject<DB_Asset>> = {
 	bucketName: tsValidateExists(true),
 	public: tsValidateBoolean(false),
 	metadata: tsValidateDynamicObject(tsValidateMustExist, tsValidateString(), false),
-	signedUrl: {
-		url: tsValidateString(),
-		validUntil: tsValidateNumber()
-	}
+	signedUrl: tsValidateNonMandatoryObject({
+			url: tsValidateString(),
+			validUntil: tsValidateNumber()
+		}
+	)
 };
 
 export const DBDef_Assets: DBDef<DB_Asset> = {
+	upgradeChunksSize: 1,
 	validator: Validator_Asset,
+	versions: ['1.0.1', '1.0.0'],
 	dbName: 'assets',
 	entityName: 'assets',
 };

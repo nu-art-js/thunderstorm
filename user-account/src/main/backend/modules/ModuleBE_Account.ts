@@ -337,7 +337,7 @@ export class ModuleBE_Account_Class
 		}
 
 		const uiAccount = await this.getUserEmailFromSession(session);
-		Middleware_ValidateSession_UpdateMemKeys(uiAccount);
+		Middleware_ValidateSession_UpdateMemKeys(uiAccount, session.sessionId);
 
 		await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
 		return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
@@ -350,8 +350,15 @@ export class ModuleBE_Account_Class
 	/**
 	 * @param modules - A list of modules that implement CollectSessionData, defines the decoded object's type
 	 */
-	static decodeSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(...modules: T): MergeTypes<MapTypes<T>> {
-		const sessionData = Header_SessionId.get();
+	static autoDecodeSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(...modules: T): MergeTypes<MapTypes<T>> {
+		return this.decodeSessionData(Header_SessionId.get(), ...modules);
+	}
+
+	/**
+	 * @param sessionData
+	 * @param modules - A list of modules that implement CollectSessionData, defines the decoded object's type
+	 */
+	static decodeSessionData<T extends CollectSessionData<{}>[]>(sessionData: string, ...modules: T): MergeTypes<MapTypes<T>> {
 		try {
 			return JSON.parse((unzipSync(Buffer.from(sessionData, 'base64'))).toString('utf8'));
 		} catch (e: any) {

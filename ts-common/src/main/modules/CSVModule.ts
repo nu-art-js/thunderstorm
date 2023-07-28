@@ -52,11 +52,11 @@ export type ReadOptions<T extends Partial<StringMap> = {}> = {
 	quote?: string,
 	headers?: string[]
 }
-export type ReadPropsMap<K extends TS_Object = TS_Object> = {
-	[s: string]: keyof K;
+export type ReadPropsMap<T extends TS_Object = TS_Object> = {
+	[s: string]: keyof T;
 };
-export type WritePropsMap<K extends TS_Object = TS_Object> = {
-	[P in keyof K]: string;
+export type WritePropsMap<T extends TS_Object = TS_Object> = {
+	[P in keyof T]: string;
 };
 
 class CSVModule_Class
@@ -91,22 +91,22 @@ class CSVModule_Class
 		return fs.writeFile(outputFile, csv, {encoding: 'utf8'});
 	}
 
-	async readCsvFromFile<T extends Partial<StringMap>>(inputFile: string, readOptions?: ReadOptions): Promise<T[]> {
+	async readCsvFromFile<T extends TS_Object>(inputFile: string, readOptions?: ReadOptions<T>): Promise<T[]> {
 		const stream = createReadStream(inputFile, {encoding: 'utf8'});
 		return this.readCsvFromStream(stream, readOptions);
 	}
 
-	async readCsvFromBuffer<T extends Partial<StringMap>>(buffer: Buffer, readOptions?: ReadOptions): Promise<T[]> {
+	async readCsvFromBuffer<T extends TS_Object>(buffer: Buffer, readOptions?: ReadOptions<T>): Promise<T[]> {
 		const stream: Readable = Readable.from(buffer.toString('utf-8'), {encoding: 'utf8'});
 		return this.readCsvFromStream(stream, readOptions);
 	}
 
-	async readCsvFromStream<T extends Partial<StringMap>>(stream: Readable, readOptions: ReadOptions = {}): Promise<T[]> {
+	async readCsvFromStream<T extends TS_Object>(stream: Readable, readOptions: ReadOptions<T> = {}): Promise<T[]> {
 		return new Promise<T[]>((resolve, reject) => {
 			const results: T[] = [];
 
 			stream
-				.pipe(csvParser(this.createReadParserOptions(readOptions)))
+				.pipe(csvParser(this.createReadParserOptions<T>(readOptions)))
 				.on('data', (instance) => {
 					delete instance['undefined'];
 					results.push(instance);
@@ -116,7 +116,7 @@ class CSVModule_Class
 		});
 	}
 
-	async forEachCsvRowFromStreamAsync<T extends Partial<StringMap>>(stream: Readable, callback: (instance: T) => Promise<void>, readOptions: ReadOptions = {}, queueCount: number = 5): Promise<void> {
+	async forEachCsvRowFromStreamAsync<T extends TS_Object>(stream: Readable, callback: (instance: T) => Promise<void>, readOptions: ReadOptions = {}, queueCount: number = 5): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			const instancesQueue = new Queue('instancesQueue');
 			instancesQueue.setParallelCount(queueCount);
@@ -129,7 +129,7 @@ class CSVModule_Class
 		});
 	}
 
-	async forEachCsvRowFromStreamSync<T extends Partial<StringMap>>(stream: Readable, callback: (instance: T, index: number) => void, readOptions: ReadOptions = {}): Promise<void> {
+	async forEachCsvRowFromStreamSync<T extends TS_Object>(stream: Readable, callback: (instance: T, index: number) => void, readOptions: ReadOptions = {}): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
 			let rowIndex = 0;
 			stream
@@ -143,10 +143,10 @@ class CSVModule_Class
 		});
 	}
 
-	private createReadParserOptions<T extends TS_Object>(readOptions: ReadOptions) {
+	private createReadParserOptions<T extends TS_Object>(readOptions: ReadOptions<T>) {
 		return {
 			mapHeaders: (args: { header: string }) => {
-				return readOptions.columnsToProps?.[args.header] ?? args.header;
+				return (readOptions.columnsToProps?.[args.header] ?? args.header) as string;
 			},
 			mapValues: (args: { header: string, index: number, value: string }) => {
 				const mapValues = readOptions.mapValues?.(args.header, args.value, args.index);

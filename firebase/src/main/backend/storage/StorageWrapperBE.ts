@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-import {BadImplementationException, currentTimeMillis, ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {BadImplementationException, currentTimeMillis, Minute, ThisShouldNotHappenException} from '@nu-art/ts-common';
 import {Bucket, File, GetSignedUrlConfig, MakeFilePublicResponse,} from '@google-cloud/storage';
 import {Firebase_CopyResponse, FirebaseType_Metadata, FirebaseType_Storage, ReturnType_Metadata} from './types';
 import {FirebaseSession} from '../auth/firebase-session';
@@ -145,9 +145,10 @@ export class FileWrapper {
 		return this.getSignedUrl(options);
 	}
 
-	async getReadSecuredUrl(contentType: string, expiresInMs: number) {
+	async getReadSecuredUrl(expiresInMs: number = 5 * Minute, contentType?: string) {
 		const options: GetSignedUrlConfig = {
 			action: 'read',
+			contentType,
 			expires: currentTimeMillis() + expiresInMs,
 		};
 		return this.getSignedUrl(options);

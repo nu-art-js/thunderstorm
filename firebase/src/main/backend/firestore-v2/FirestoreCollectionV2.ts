@@ -17,7 +17,7 @@
  */
 
 import {
-	__stringify,
+	__stringify, _keys,
 	ApiException,
 	BadImplementationException, batchActionParallel,
 	compare,
@@ -342,7 +342,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			return await this._deleteAll(items.map(_item => this.doc.item(_item)), transaction);
 		},
 		query: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
-			if (!transaction){
+			if (!transaction) {
 				//query all docs and then delete in chunks
 				if (!exists(query) || compare(query, _EmptyQuery))
 					throw new MUSTNeverHappenException('An empty query was passed to delete.query!');
@@ -350,7 +350,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 				const docs = await this.doc.query(query, transaction);
 				const items = docs.map(doc => doc.data!); // Data must exist here.
 				await this.runTransactionInChunks(docs, (chunk, t) => this._deleteAll(chunk, t));
-				return items
+				return items;
 			}
 
 			return await this._deleteQuery(query, transaction);
@@ -468,8 +468,12 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		}, {});
 
 		// Throw exception if an _id appears more than once
-		if (_values(idCountMap).some(count => count > 1))
-			throw new BadImplementationException(`${originFunctionName} received the same _id twice.`);
+		_keys(idCountMap).forEach(key => {
+			if (idCountMap[key] === 1)
+				delete idCountMap[key];
+		});
+
+		throw new BadImplementationException(`${originFunctionName} received the same _id twice: ${__stringify(idCountMap, true)}`);
 	}
 
 	composeDbObjectUniqueId = (item: PreDB<Type>) => {
