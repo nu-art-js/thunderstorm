@@ -113,8 +113,10 @@ export class ModuleBE_Account_Class
 	}
 
 	async __collectSessionData(accountId: string) {
+		const now = currentTimeMillis();
 		return {
-			timestamp: currentTimeMillis(),
+			timestamp: now,
+			expiration: now + this.config.sessionTTLms,
 			userId: accountId
 		};
 	}
