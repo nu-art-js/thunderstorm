@@ -16,4 +16,5 @@
  * limitations under the License.
  */
 
-export * from './ModuleBE_RemoteProxyV2';
+export * from './ModuleBE_v2_RemoteProxyDB';
+export * from './ModuleBE_v2_RemoteProxyAPI';

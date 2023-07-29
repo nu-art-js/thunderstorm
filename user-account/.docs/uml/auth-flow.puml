@@ -1,0 +1,45 @@
+@startuml
+participant Profile_FE
+participant Account_FE
+participant Account_BE
+participant Profile_BE
+
+== Register ==
+Account_FE -> Account_BE: Register\n(email & password)
+Account_BE --> Profile_BE: dispatch\n"On Account Created"
+Profile_BE -> Profile_BE: Create Profile document\nfor new account.
+
+== Create by Admin ==
+Account_FE -> Account_BE: Create new user\n(email & password)
+Account_BE --> Profile_BE: dispatch\n"On Account Created"
+Profile_BE -> Profile_BE: Create Profile document\nfor new account.
+
+== Login ==
+Account_FE -> Account_BE: Login\n(email & password)
+Account_BE --> Profile_BE: dispatch\n"On Account LoggedIn"
+
+== SAML ==
+Account_FE -> Account_BE: Login SAML
+Account_BE -> Google: Authenticate User
+Google -> Google: User Authenticating
+Google --> Account_FE: User Authenticated
+Account_FE --> Account_BE: Redirect\n(User Authenticated)
+
+== Session Data ==
+alt Create Session Data
+    Account_BE -> : dispatch\n"Collect Session Data"
+    Account_BE <- : SessionData[] per module
+    Account_BE -> Account_BE: Aggregate SessionData\nStringify -> **Sign** ->\nZip -> Base64
+end
+Account_BE -> Account_FE: (200 OK) session\n(signed + data)
+Account_FE --> Profile_FE: dispatch\n"On Login"
+
+...
+== POST Auth ==
+
+Profile_FE -> Profile_BE: Fetch profile by sessionId
+Profile_BE <-> Account_BE: validate session and\n get account _id
+Profile_BE -> Profile_BE: query DB_Profile with _id
+Profile_BE-> Profile_FE: DB_Profile
+
+@enduml

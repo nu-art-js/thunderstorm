@@ -16,8 +16,6 @@
  * limitations under the License.
  */
 
-
-
 import {Default_UniqueKey} from '../db/types';
 
 
@@ -28,6 +26,48 @@ export type CustomOptional<T, K> = {
 export type Subset<T> = {
 	[P in keyof T]: T[P];
 };
+
+/**
+ * Utility type for creating a subset of keys (`AllKeys`) based on whether the corresponding value types in a mapping object (`Mapper`) extend a certain type (`ExpectedType`).
+ *
+ * @typeParam AllKeys - Represents all possible keys. Must be a string, a number, or a union of string and/or number literals.
+ * @typeParam Mapper - Represents a mapping object. Must be an object type with keys that are a subset of AllKeys and values of any type.
+ * @typeParam ExpectedType - Represents the type that the values in the Mapper object should extend.
+ *
+ * @example
+ * type Keys = 'a' | 'b' | 'c' | 'd';
+ * type MyMapper = { a: number, b: string, c: boolean, d: number };
+ * type MySubsetKeys = SubsetKeys<Keys, MyMapper, number>; // 'a' | 'd'
+ */
+export type SubsetKeys<AllKeys extends string | number | symbol, Mapper extends { [K in AllKeys]: any }, ExpectedType> = { [K in AllKeys]: Mapper[K] extends ExpectedType ? K : never }[AllKeys];
+
+/**
+ * Utility type to generate a new type `T` where only the properties with keys listed in `Keys` are included.
+ * The resulting type will be a new object type with a subset of the properties from the original `T`.
+ *
+ * @typeParam T - The type from which the subset will be generated.
+ * @typeParam Keys - A set of keys from `T` which will be included in the new subset type.
+ *
+ * @example
+ * type MyType = { a: number, b: string, c: boolean, d: number };
+ * type MySubset = SubsetByKeys<MyType, 'a' | 'd'>; // { a: number, d: number }
+ */
+export type SubsetObjectByKeys<T, Keys extends keyof T> = {
+	[K in Keys]: T[K];
+};
+
+/**
+ * Utility type to generate a subset of keys from a type `T` where the corresponding value type extends `ExpectedType`.
+ * It uses the `SubsetKeys` to get the subset of keys and `SubsetByKeys` to create a new type with only the properties that have those keys.
+ *
+ * @typeParam T - The type from which the subset of keys will be generated.
+ * @typeParam ExpectedType - The type that the values in `T` should extend.
+ *
+ * @example
+ * type MyType = { a: number, b: string, c: boolean, d: number };
+ * type MySubset = SubsetByValueType<MyType, number> // { a: number, d: number }
+ */
+export type SubsetObjectByValue<T, ExpectedType> = SubsetObjectByKeys<T, SubsetKeys<keyof T, T, ExpectedType>>;
 
 export type OptionalKeys<T extends TS_Object> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
 export type MandatoryKeys<T extends TS_Object, V extends any = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
