@@ -2,6 +2,7 @@ import {TestModel, TestSuite} from './types';
 import {expect} from 'chai';
 import {ModuleManager} from '../core/module-manager';
 import {voidFunction} from '../utils/tools';
+import {MemStorage} from '../mem-storage/MemStorage';
 
 
 export class ModuleManagerTester
@@ -23,7 +24,7 @@ export const testSuiteTester = <Input, ExpectedResult>(testSuit: TestSuite<Input
 		}
 
 		(testcases.length > 0 ? testcases : testSuit.testcases).forEach(testCase => {
-			testSuite_RunTest(testSuit, testCase);
+			new MemStorage().init(async () => testSuite_RunTest(testSuit, testCase));
 		});
 	});
 };

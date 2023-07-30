@@ -13,7 +13,6 @@ import {
 	PermissionUsersEditor
 } from '../..';
 import {Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/db-api-generator/frontend';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 
 type State = State_SmartComponent & {};
 
@@ -30,8 +29,8 @@ export class ATS_Permissions
 
 	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: State) {
 		state ??= this.state ? {...this.state} : {} as State;
-		if (!ModuleFE_Account.getAccounts().length)
-			await ModuleFE_Account.v1.query({}).executeSync();
+		// if (!ModuleFE_AccountV2.getAccounts().length)
+		// 	await ModuleFE_Account.v1.query({}).executeSync();
 		return state;
 	}
 

@@ -11,6 +11,7 @@ import {
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
 import {
+	asArray,
 	compare,
 	DB_Object,
 	DBDef,
@@ -182,7 +183,7 @@ export const TestSuite_FirestoreV2_Set: Test = {
 		await collection.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 
 		const toInsert = deepClone(testCase.input.toCreate);
-		const inserted = await collection.create.all(Array.isArray(toInsert) ? toInsert : [toInsert]);
+		const inserted = await collection.create.all(asArray(toInsert));
 
 		await testCase.input.setAction(collection, deepClone(inserted));
 

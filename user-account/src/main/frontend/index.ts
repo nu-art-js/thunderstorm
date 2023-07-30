@@ -17,8 +17,8 @@
  */
 
 export * from './proxy-v2';
-export * from './core/module-pack';
+export * from './core/module-pack-v2';
 export * from './ui/Component_Login/Component_Login';
 export * from './ui/Component_Register';
-export * from './modules/ModuleFE_Account';
+export * from './modules/v2/ModuleFE_v2_Account';
 export * from './ui/Component_GoogleSAMLLogin/Component_GoogleSAMLLogin';

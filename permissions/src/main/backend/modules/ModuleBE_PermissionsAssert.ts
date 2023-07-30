@@ -28,7 +28,7 @@ import {
 } from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
-import {MemKey_AccountEmail, MemKey_AccountId, Middleware_ValidateSession} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail, MemKey_AccountId} from '@nu-art/user-account/backend';
 import {
 	ApiDef_PermissionsAssert,
 	Base_AccessLevels,
@@ -108,7 +108,11 @@ export class ModuleBE_PermissionsAssert_Class
 
 	constructor() {
 		super();
-		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.v1.assertUserPermissions, this.assertPermission, Middleware_ValidateSession)]);
+	}
+
+	init() {
+		super.init();
+		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.v1.assertUserPermissions, this.assertPermission)]);
 	}
 
 	private assertPermission = async (body: Request_AssertApiForUser) => {
@@ -146,7 +150,7 @@ export class ModuleBE_PermissionsAssert_Class
 	async assertUserSharingGroup(granterUserId: string, userGroup: User_Group) {
 		const [granterUser, groupToShare] = await Promise.all([this.getUserDetails(), ModuleBE_PermissionGroup.query.uniqueAssert(userGroup.groupId)]);
 		groupToShare.customFields = this.getCombineUserGroupCF(userGroup, groupToShare);
-		const requestPermissions = await this.getAccessLevels( groupToShare.accessLevelIds || []);
+		const requestPermissions = await this.getAccessLevels(groupToShare.accessLevelIds || []);
 		const requestCustomFields = groupToShare.customFields;
 		this.assertUserPermissionsImpl(granterUser.userGroups, requestPermissions, requestCustomFields);
 	}
@@ -184,7 +188,7 @@ export class ModuleBE_PermissionsAssert_Class
 		user: DB_PermissionUser,
 		userGroups: DB_PermissionGroup[]
 	}> {
-		const user = await ModuleBE_PermissionUserDB.query.uniqueCustom({where:{accountId: MemKey_AccountId.get()}});
+		const user = await ModuleBE_PermissionUserDB.query.uniqueCustom({where: {accountId: MemKey_AccountId.get()}});
 		const userGroups = user.groups || [];
 		const groups: DB_PermissionGroup[] = await batchActionParallel(userGroups.map(userGroup => userGroup.groupId), 10, subGroupIds => ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: subGroupIds}}}));
 
@@ -227,7 +231,7 @@ export class ModuleBE_PermissionsAssert_Class
 	async getApiDetails(_path: string, projectId: string) {
 		const path = _path.substring(0, (_path + '?').indexOf('?'));
 		const apiDb = await ModuleBE_PermissionApi.query.uniqueCustom({where: {path, projectId}});
-		const requestPermissions = await this.getAccessLevels( apiDb.accessLevelIds || []);
+		const requestPermissions = await this.getAccessLevels(apiDb.accessLevelIds || []);
 
 		return {
 			apiDb,
@@ -249,7 +253,7 @@ export class ModuleBE_PermissionsAssert_Class
 				return;
 
 			try {
-				const requestPermissions = await this.getAccessLevels( apiDb.accessLevelIds);
+				const requestPermissions = await this.getAccessLevels(apiDb.accessLevelIds);
 				return ({
 					apiDb,
 					requestPermissions
@@ -260,7 +264,7 @@ export class ModuleBE_PermissionsAssert_Class
 		}));
 	}
 
-	private async getAccessLevels( _accessLevelIds?: string[]): Promise<DB_PermissionAccessLevel[]> {
+	private async getAccessLevels(_accessLevelIds?: string[]): Promise<DB_PermissionAccessLevel[]> {
 		const accessLevelIds = filterDuplicates(_accessLevelIds || []);
 		const requestPermissions = await batchActionParallel(accessLevelIds, 10, elements => ModuleBE_PermissionAccessLevel.query.custom({where: {_id: {$in: elements}}}));
 		const idNotFound = accessLevelIds.find(lId => !requestPermissions.find(r => r._id === lId));

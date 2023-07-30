@@ -75,13 +75,14 @@ class ModuleBE_v2_Backup_Class
 		super();
 		this.setMinLevel(LogLevel.Verbose);
 		this.setDefaultConfig({minTimeThreshold: Day, keepInterval: 7 * Day});
-		addRoutes([
-			createQueryServerApi(ApiDef_BackupV2.vv1.initiateBackup, () => this.initiateBackup()),
-			createQueryServerApi(ApiDef_BackupV2.vv1.fetchBackupDocs, this.fetchBackupDocs)]);
 	}
 
 	protected init(): void {
 		this.collection = this.getBackupStatusCollection();
+		addRoutes([
+			createQueryServerApi(ApiDef_BackupV2.vv1.initiateBackup, () => this.initiateBackup()),
+			createQueryServerApi(ApiDef_BackupV2.vv1.fetchBackupDocs, this.fetchBackupDocs),
+		]);
 	}
 
 	/**

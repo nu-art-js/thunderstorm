@@ -79,7 +79,6 @@ export class ModuleBE_v2_SyncManager_Class
 		this.setMinLevel(LogLevel.Debug);
 		this.checkSyncApi = createQueryServerApi(ApiDef_SyncManagerV2.v1.checkSync, this.fetchDBSyncData);
 
-		addRoutes([this.checkSyncApi]);
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
 
@@ -160,6 +159,7 @@ export class ModuleBE_v2_SyncManager_Class
 		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
 		this.syncData = this.database.ref<Type_SyncData>(`/state/${this.getName()}/syncData`);
 		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
+		addRoutes([this.checkSyncApi]);
 	}
 
 	private fetchDBSyncData = async (_: undefined) => {

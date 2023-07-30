@@ -52,17 +52,17 @@ export class ModuleBE_LiveDocs_Class
 
 	constructor() {
 		super();
-		addRoutes([
-			createQueryServerApi(ApiDef_LiveDoc.v1.get, this.getLiveDoc),
-			createBodyServerApi(ApiDef_LiveDoc.v1.upsert, this.updateLiveDoc),
-			createQueryServerApi(ApiDef_LiveDoc.v1.history, this.changeHistory)
-		]);
 	}
 
 	protected init(): void {
 		this.setDefaultConfig({projectId: process.env.GCLOUD_PROJECT || ''});
 		const firestore = ModuleBE_Firebase.createAdminSession(this.config.projectId).getFirestore();
 		this.livedocs = firestore.getCollection<DB_DocumentHistory>(CollectionName_LiveDocs, ['key']);
+		addRoutes([
+			createQueryServerApi(ApiDef_LiveDoc.v1.get, this.getLiveDoc),
+			createBodyServerApi(ApiDef_LiveDoc.v1.upsert, this.updateLiveDoc),
+			createQueryServerApi(ApiDef_LiveDoc.v1.history, this.changeHistory)
+		]);
 	}
 
 	async changeHistory(params: LiveDocHistoryReqParams) {
