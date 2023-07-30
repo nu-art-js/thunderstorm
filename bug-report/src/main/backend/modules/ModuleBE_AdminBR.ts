@@ -37,11 +37,7 @@ export class ModuleBE_AdminBR_Class
 
 	constructor() {
 		super();
-		addRoutes([
-			createBodyServerApi(ApiDef_AdminBugReport.v1.downloadLogs, ModuleBE_AdminBR.downloadFiles),
-			createQueryServerApi(ApiDef_AdminBugReport.v1.retrieveLogs, ModuleBE_AdminBR.getFilesFirebase),
 
-		]);
 	}
 
 	protected init(): void {
@@ -49,6 +45,11 @@ export class ModuleBE_AdminBR_Class
 		const firestore = sessAdmin.getFirestore();
 		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
 		this.storage = sessAdmin.getStorage();
+		addRoutes([
+			createBodyServerApi(ApiDef_AdminBugReport.v1.downloadLogs, ModuleBE_AdminBR.downloadFiles),
+			createQueryServerApi(ApiDef_AdminBugReport.v1.retrieveLogs, ModuleBE_AdminBR.getFilesFirebase),
+
+		]);
 	}
 
 	getFilesFirebase = async () => this.bugReport.getAll();

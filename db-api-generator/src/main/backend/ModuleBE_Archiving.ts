@@ -46,11 +46,6 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		this.lastUpdatedTTL = Day; // Default TTL for last updated is one day
 		this.TTL = Hour * 2; // Default TTL is two hours
 
-		addRoutes([
-			createBodyServerApi(ApiDef_Archiving.vv1.hardDeleteUnique, this.hardDeleteUnique),
-			createQueryServerApi(ApiDef_Archiving.vv1.hardDeleteAll, this.hardDeleteAll),
-			createQueryServerApi(ApiDef_Archiving.vv1.getDocumentHistory, this.getDocumentHistory)
-		]);
 	}
 
 	/**
@@ -68,6 +63,11 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 				// If this module is a Firestore DB module, add it to the mapper
 				this.moduleMapper[dbModule.dbDef.dbName] = dbModule;
 		});
+		addRoutes([
+			createBodyServerApi(ApiDef_Archiving.vv1.hardDeleteUnique, this.hardDeleteUnique),
+			createQueryServerApi(ApiDef_Archiving.vv1.hardDeleteAll, this.hardDeleteAll),
+			createQueryServerApi(ApiDef_Archiving.vv1.getDocumentHistory, this.getDocumentHistory)
+		]);
 	}
 
 	/**

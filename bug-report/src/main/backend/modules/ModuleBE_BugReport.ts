@@ -54,9 +54,6 @@ export class ModuleBE_BugReport_Class
 
 	constructor() {
 		super();
-		addRoutes([
-			createBodyServerApi(ApiDef_BugReport.v1.sendBugReport, (body) => this.sendBugReport(body)),
-		]);
 	}
 
 	protected init(): void {
@@ -64,6 +61,9 @@ export class ModuleBE_BugReport_Class
 		const firestore = sessionAdmin.getFirestore();
 		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);
 		this.storage = sessionAdmin.getStorage();
+		addRoutes([
+			createBodyServerApi(ApiDef_BugReport.v1.sendBugReport, (body) => this.sendBugReport(body)),
+		]);
 	}
 
 	private sendBugReport = async (body: Request_BugReport) => {

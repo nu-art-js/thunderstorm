@@ -50,6 +50,13 @@ export class ModuleManager
 		Dispatcher.modulesResolver = moduleResolver;
 	}
 
+	// @ts-ignore
+	private static resetForTests() {
+		_modules.length = 0;
+		// @ts-ignore
+		delete ModuleManager.instance;
+	}
+
 	filterModules<T>(filter: (module: Module) => boolean) {
 		return this.modules.filter(filter) as unknown as T[];
 	}

@@ -19,10 +19,16 @@ class ModuleBE_v2_SyncEnv_Class
 	constructor() {
 		super();
 		this.setDefaultConfig({maxBatch: 500});
-		addRoutes([createBodyServerApi(ApiDef_SyncEnvV2.vv1.fetchFromEnv, this.fetchFromEnv)]);
-		addRoutes([createQueryServerApi(ApiDef_SyncEnvV2.vv1.createBackup, this.createBackup)]);
-		addRoutes([createQueryServerApi(ApiDef_SyncEnvV2.vv1.fetchBackupMetadata, this.fetchBackupMetadata)]);
-		addRoutes([createQueryServerApi(ApiDef_SyncEnvV2.vv1.fetchFirebaseBackup, this.fetchFirebaseBackup)]);
+	}
+
+	init() {
+		super.init();
+		addRoutes([
+			createBodyServerApi(ApiDef_SyncEnvV2.vv1.fetchFromEnv, this.fetchFromEnv),
+			createQueryServerApi(ApiDef_SyncEnvV2.vv1.createBackup, this.createBackup),
+			createQueryServerApi(ApiDef_SyncEnvV2.vv1.fetchBackupMetadata, this.fetchBackupMetadata),
+			createQueryServerApi(ApiDef_SyncEnvV2.vv1.fetchFirebaseBackup, this.fetchFirebaseBackup),
+		]);
 	}
 
 	fetchBackupMetadata = async (queryParams: Request_GetMetadata) => {

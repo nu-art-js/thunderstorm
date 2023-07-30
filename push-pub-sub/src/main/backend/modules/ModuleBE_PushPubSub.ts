@@ -74,11 +74,6 @@ export class ModuleBE_PushPubSub_Class
 
 	constructor() {
 		super();
-		addRoutes([
-			createBodyServerApi(ApiDef_PushMessages.v1.register, this.register),
-			createBodyServerApi(ApiDef_PushMessages.v1.unregister, this.register),
-			createBodyServerApi(ApiDef_PushMessages.v1.registerAll, this.register)
-		]);
 	}
 
 	protected init(): void {
@@ -88,6 +83,12 @@ export class ModuleBE_PushPubSub_Class
 		this.pushSessions = firestore.getCollection<DB_PushSession>('push-sessions', ['pushSessionId']);
 		this.pushKeys = firestore.getCollection<DB_PushKeys>('push-keys');
 		this.messaging = session.getMessaging();
+
+		addRoutes([
+			createBodyServerApi(ApiDef_PushMessages.v1.register, this.register),
+			createBodyServerApi(ApiDef_PushMessages.v1.unregister, this.register),
+			createBodyServerApi(ApiDef_PushMessages.v1.registerAll, this.register)
+		]);
 	}
 
 	async register(body: Request_PushRegister) {

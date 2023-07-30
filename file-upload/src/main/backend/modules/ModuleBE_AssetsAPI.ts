@@ -9,6 +9,10 @@ export class ModuleBE_AssetsAPI_Class
 
 	constructor() {
 		super(ModuleBE_AssetsDB);
+	}
+
+	init() {
+		super.init();
 		addRoutes([
 			createBodyServerApi(ApiDef_Assets.vv1.fetchSpecificFile, this.fetchSpecificFile)
 		]);

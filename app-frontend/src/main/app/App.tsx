@@ -21,7 +21,7 @@ import {ModuleFE_Routing, TS_DialogOverlay, TS_PopupMenuOverlay, TS_ToastOverlay
 
 import {VersionOnScreen} from '@components/VersionOnScreen';
 import {registerRoutes} from './Routes';
-import {ModuleFE_Account, OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
+import {OnLoginStatusUpdated} from '@nu-art/user-account/frontend';
 
 
 export class App
@@ -38,7 +38,7 @@ export class App
 	}
 
 	__onLoginStatusUpdated = () => {
-		const status = ModuleFE_Account.getLoggedStatus();
+		const status = ModuleFE_AccountV2.getLoggedStatus();
 		console.log('status update', status);
 	};
 

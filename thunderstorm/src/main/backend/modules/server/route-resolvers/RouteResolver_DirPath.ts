@@ -22,7 +22,7 @@
 import {ServerApi} from '../server-api';
 import * as fs from 'fs';
 import * as express from 'express';
-import {MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
+import {asArray, MUSTNeverHappenException, StaticLogger} from '@nu-art/ts-common';
 import {ServerApi_Middleware} from '../../../utils/types';
 
 
@@ -88,16 +88,13 @@ export class RouteResolver_DirPath {
 				return;
 			}
 
-			let content: ServerApi<any> | ServerApi<any>[];
+			let content: ServerApi<any>[];
 			try {
-				content = this.require(relativePathToFile);
+				content = asArray(this.require(relativePathToFile));
 			} catch (e: any) {
 				StaticLogger.logError(`could not reference ServerApi for: ${workingDir}/${relativePathToFile}`, e);
 				throw e;
 			}
-
-			if (!Array.isArray(content))
-				content = [content];
 
 			content.forEach(api => {
 				if (!api.addMiddlewares)
