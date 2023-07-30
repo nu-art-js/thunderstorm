@@ -31,9 +31,12 @@ export const Middleware_ValidateSession: ServerApi_Middleware = async () => {
 	if (typeof sessionId !== 'string')
 		throw new ApiException(401, `Invalid session id: ${sessionId}`);
 
-	const session = await ModuleBE_v2_SessionDB.query.uniqueWhere({sessionId});
-	if (!session)
+	let session;
+	try{
+		session = await ModuleBE_v2_SessionDB.query.uniqueWhere({sessionId});
+	} catch (err) {
 		throw new ApiException(401, `Invalid session id: ${sessionId}`);
+	}
 
 	if (ModuleBE_v2_SessionDB.TTLExpired(session))
 		throw new ApiException(401, 'Session timed out');
@@ -45,9 +48,6 @@ export const Middleware_ValidateSession: ServerApi_Middleware = async () => {
 export function Middleware_ValidateSession_UpdateMemKeys(sessionData: TS_Object) {
 	MemKey_SessionData.set(sessionData);
 
-	if (!MemKey_AccountEmail.get())
-		MemKey_AccountEmail.set(sessionData.email);
-
-	if (!MemKey_AccountId.get())
-		MemKey_AccountId.set(sessionData._id);
+	MemKey_AccountEmail.set(sessionData.email);
+	MemKey_AccountId.set(sessionData.accountId);
 }

@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
-import {Request_CreateAccount} from '../../shared/api';
+import {Request_CreateAccount} from '../../shared/v2';
 import {ComponentSync, LL_V_C, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_AccountV2} from "../modules/v2/ModuleFE_v2_Account";
 

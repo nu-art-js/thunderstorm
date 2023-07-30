@@ -22,7 +22,7 @@ export class MemStorage {
 	private set = <T>(key: MemKey<T>, value: T): T => {
 		// console.log(`-- ${this.cache.__myId} set: ${key.key} -> `, value);
 		const currentValue = this.cache[key.key];
-		if (exists(currentValue) && key.unique) {
+		if (exists(currentValue) && key.unique && value !== currentValue) {
 			throw new BadImplementationException(`Unique storage key is being overridden for key: ${key.key}
 			\ncurrent: ${__stringify(currentValue)}
 			\nnew: ${__stringify(value as any)}`);
@@ -66,12 +66,19 @@ export class MemKey<T> {
 
 	get = (value?: T): T => {
 		// @ts-ignore
-		return asyncLocalStorage.getStore().get(this, value);
+		const memValue = asyncLocalStorage.getStore().get(this, value);
+		if (!exists(memValue))
+			throw new BadImplementationException(`Trying to access MemKey(${this.key}) before it was set!`)
+
+		return memValue;
 	};
 
 
 	set = (value: T) => {
 		// console.log(this.key, value);
+		if (!exists(value))
+			throw new BadImplementationException(`Cannot set MemKey(${this.key}) to undefined or null!`)
+
 		// @ts-ignore
 		return asyncLocalStorage.getStore().set(this, value);
 	};
