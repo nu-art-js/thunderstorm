@@ -16,9 +16,13 @@
  * limitations under the License.
  */
 
-export * from './proxy-v2';
-export * from './core/module-pack-v2';
-export * from './ui/Component_Login/Component_Login';
-export * from './ui/Component_Register';
-export * from './modules/v2/ModuleFE_v2_Account';
-export * from './ui/Component_GoogleSAMLLogin/Component_GoogleSAMLLogin';
+
+import {ModuleFE_AccountV2} from "../modules/v2/ModuleFE_v2_Account";
+import {Module} from "@nu-art/ts-common";
+
+export const ModulePack_Frontend_UsersV2: Module[] = [
+	ModuleFE_AccountV2,
+];
+
+export * from '../modules/v2/ModuleFE_v2_Account';
+

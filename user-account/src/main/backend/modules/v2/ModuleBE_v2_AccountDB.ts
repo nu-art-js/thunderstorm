@@ -4,7 +4,10 @@ import {
 	DBDef_Account,
 	RequestBody_ChangePassword,
 	RequestBody_CreateAccount,
-	Response_Auth
+	Response_Auth,
+	Request_LoginAccount,
+	UI_Account,
+	Request_CreateAccount
 } from '../../../shared/v2';
 import {
 	__stringify,
@@ -13,16 +16,17 @@ import {
 	dispatch_onApplicationException,
 	Dispatcher,
 	generateHex,
-	hashPasswordWithSalt, PartialProperties,
+	hashPasswordWithSalt,
+	PartialProperties,
 	PreDB
 } from '@nu-art/ts-common';
 import {MemKey_AccountEmail} from '../../core/accounts-middleware';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
-import {ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
-import {Request_CreateAccount, Request_LoginAccount, UI_Account} from '../../../shared/api';
+import {Header_SessionId, ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/v2/assertion';
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
+import {QueryParams} from "@nu-art/thunderstorm";
 
 
 export interface OnNewUserRegistered {
@@ -83,17 +87,21 @@ export class ModuleBE_v2_AccountDB_Class
 		let dispatchEvent = false;
 
 		const dbAccount = await this.runTransaction(async (transaction: Transaction) => {
-			const account = await this.query.uniqueCustom(query, transaction);
-			if (account)
-				return account;
+			let account;
+			try {
+				account = await this.query.uniqueCustom(query, transaction);
+			} catch (err) {
+				const _account: PreDB<DB_Account_V2> = {
+					email: query.where.email,
+				} as PreDB<DB_Account_V2>;
 
-			const _account: PreDB<DB_Account_V2> = {
-				email: query.where.email,
-			} as PreDB<DB_Account_V2>;
-
-			dispatchEvent = true;
-			return this.create.item(_account); // this.createAccountImpl requires pw/salt and also redundantly rechecks if the account doesn't exist.
+				dispatchEvent = true;
+				account = this.create.item(_account,transaction); // this.createAccountImpl requires pw/salt and also redundantly rechecks if the account doesn't exist.
+			}
+			return account;
 		});
+
+		console.log(dbAccount);
 
 		if (dispatchEvent)
 			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
@@ -144,6 +152,13 @@ export class ModuleBE_v2_AccountDB_Class
 		},
 		create: async (request: PartialProperties<Request_CreateAccount, 'password' | 'password_check'>, transaction?: Transaction) => {
 			await this.createAccountImpl(request, false, transaction);
+		},
+		logout: async (queryParams: QueryParams) => {
+			const sessionId = Header_SessionId.get();
+			if (!sessionId)
+				throw new ApiException(404, 'Missing sessionId');
+
+			await ModuleBE_v2_SessionDB.delete.query({where: {sessionId}});
 		}
 	};
 

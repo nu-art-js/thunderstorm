@@ -1,11 +1,7 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
-import {DB_Session_V2, DBDef_Session, Response_Auth} from '../../../shared/v2';
+import {DB_Session_V2, DBDef_Session, Response_Auth, HeaderKey_SessionId, UI_Account} from '../../../shared/v2';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
-import {
-	MemKey_SessionData,
-	Middleware_ValidateSession,
-	Middleware_ValidateSession_UpdateMemKeys
-} from '../../core/accounts-middleware';
+import {MemKey_SessionData, Middleware_ValidateSession, Middleware_ValidateSession_UpdateMemKeys} from '../../core/accounts-middleware';
 import {
 	__stringify,
 	_keys,
@@ -19,7 +15,6 @@ import {
 	PreDB,
 	TS_Object
 } from '@nu-art/ts-common';
-import {HeaderKey_SessionId, UI_Account} from '../../../shared/api';
 import {gzipSync, unzipSync} from 'zlib';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {firestore} from 'firebase-admin';

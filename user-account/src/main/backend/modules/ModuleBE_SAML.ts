@@ -17,7 +17,7 @@
  */
 
 import {IdentityProvider, IdentityProviderOptions, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
-import {__stringify, ApiException, decode, ImplementationMissingException, Module} from '@nu-art/ts-common';
+import {__stringify, ApiException, decode, ImplementationMissingException, LogLevel, Module} from '@nu-art/ts-common';
 import {
 	ApiDef_SAML_BE,
 	ApiStruct_SAML_BE,
@@ -31,7 +31,8 @@ import {
 } from './_imports';
 import {addRoutes, createQueryServerApi, ServerApi} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpRequestBody, MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {ModuleBE_v2_AccountDB, ModuleBE_v2_SessionDB} from './v2';
+import {getUIAccount, ModuleBE_v2_AccountDB, ModuleBE_v2_SessionDB} from './v2';
+import {MemKey_AccountEmail} from "../core/accounts-middleware";
 
 
 /**
@@ -98,20 +99,22 @@ export class ModuleBE_SAML_Class
 
 	constructor() {
 		super();
+		this.setMinLevel(LogLevel.Debug);
 	}
 
 	protected init(): void {
 		super.init();
-		addRoutes([
-			createQueryServerApi(ApiDef_SAML_BE.vv1.loginSaml, this.loginRequest),
-			new AssertSamlToken()
-		]);
 
 		if (!this.config.idConfig)
 			throw new ImplementationMissingException('Config must contain idConfig');
 
 		if (!this.config.spConfig)
 			throw new ImplementationMissingException('Config must contain spConfig');
+
+		addRoutes([
+			createQueryServerApi(ApiDef_SAML_BE.vv1.loginSaml, this.loginRequest),
+			new AssertSamlToken()
+		]);
 
 		this.config.idConfig.certificates = this.config.idConfig.certificates.map(cert => decode(cert));
 		this.identityProvider = new IdentityProvider(this.config.idConfig);
@@ -121,7 +124,7 @@ export class ModuleBE_SAML_Class
 		const _email = __email.toLowerCase();
 		const account = await this.createSAML(_email);
 
-		return await ModuleBE_v2_SessionDB.upsertSession(account);
+		return await ModuleBE_v2_SessionDB.upsertSession(getUIAccount(account));
 	}
 
 	async assertSaml() {
@@ -129,6 +132,8 @@ export class ModuleBE_SAML_Class
 		try {
 			const data = await this.assert({request_body});
 			this.logDebug(`Got data from assertion ${__stringify(data)}`);
+
+			MemKey_AccountEmail.set(data.userId);
 
 			const session = await this.loginSAML(data.userId);
 
@@ -150,11 +155,13 @@ export class ModuleBE_SAML_Class
 
 	loginRequest = async (loginContext: RequestParams_LoginSAML) => {
 		return new Promise<Response_LoginSAML>((resolve, rejected) => {
+			console.log('SAML 1');
 			const sp = new ServiceProvider(this.config.spConfig);
 			const options = {
 				relay_state: __stringify(loginContext)
 			};
 			sp.create_login_request_url(this.identityProvider, options, (error, loginUrl, requestId) => {
+				console.log('SAML 2');
 				if (error)
 					return rejected(error);
 
