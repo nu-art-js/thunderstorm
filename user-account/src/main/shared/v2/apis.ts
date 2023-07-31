@@ -1,5 +1,6 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 import {Minute} from '@nu-art/ts-common';
+import {AccountType} from "./types";
 
 export const HeaderKey_SessionId = 'x-session-id';
 export const HeaderKey_Application = 'x-application';
@@ -17,6 +18,7 @@ export type Request_CreateAccount = {
 	email: string
 	password: string
 	password_check: string
+	type: AccountType
 	// customProps?: StringMap
 }
 

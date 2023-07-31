@@ -3,12 +3,12 @@ import {
 	tsValidateEmail,
 	tsValidateString,
 	tsValidateTimestamp,
-	tsValidateUniqueId,
+	tsValidateUniqueId, tsValidateValue,
 	tsValidator_nonMandatoryString,
 	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {DBDef} from '@nu-art/ts-common/db/types';
-import {DB_Account_V2, DB_Session_V2} from './types';
+import {accountTypes, DB_Account_V2, DB_Session_V2} from './types';
 
 
 export const Validator_Session: ValidatorTypeResolver<OmitDBObject<DB_Session_V2>> = {
@@ -26,8 +26,11 @@ export const DBDef_Session: DBDef<DB_Session_V2, 'accountId'> = {
 
 export const Validator_Account: ValidatorTypeResolver<OmitDBObject<DB_Account_V2>> = {
 	email: tsValidateEmail,
+	type: tsValidateValue([...accountTypes]),
 	salt: tsValidator_nonMandatoryString,
 	saltedPassword: tsValidator_nonMandatoryString,
+	displayName: tsValidator_nonMandatoryString,
+	thumbnail: tsValidator_nonMandatoryString,
 	_auditorId: tsValidateString()
 };
 
