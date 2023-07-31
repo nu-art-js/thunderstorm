@@ -55,6 +55,7 @@ export class ModuleBE_LiveDocs_Class
 	}
 
 	protected init(): void {
+		super.init();
 		this.setDefaultConfig({projectId: process.env.GCLOUD_PROJECT || ''});
 		const firestore = ModuleBE_Firebase.createAdminSession(this.config.projectId).getFirestore();
 		this.livedocs = firestore.getCollection<DB_DocumentHistory>(CollectionName_LiveDocs, ['key']);

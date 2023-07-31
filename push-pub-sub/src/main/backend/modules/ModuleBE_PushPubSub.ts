@@ -77,6 +77,7 @@ export class ModuleBE_PushPubSub_Class
 	}
 
 	protected init(): void {
+		super.init();
 		const session = ModuleBE_Firebase.createAdminSession();
 		const firestore = session.getFirestore();
 

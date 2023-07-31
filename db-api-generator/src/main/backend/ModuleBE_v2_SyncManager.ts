@@ -82,6 +82,17 @@ export class ModuleBE_v2_SyncManager_Class
 		this.setDefaultConfig({retainDeletedCount: 1000});
 	}
 
+	init() {
+		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();
+		this.collection = firestore.getCollection<DeletedDBItem>(DBDef_DeletedItems);
+
+		this.dbModules = this.manager.filterModules(module => ((module as unknown as { ModuleBE_BaseDBV2: boolean }).ModuleBE_BaseDBV2));
+		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
+		this.syncData = this.database.ref<Type_SyncData>(`/state/${this.getName()}/syncData`);
+		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
+		addRoutes([this.checkSyncApi]);
+	}
+
 	private prepareItemToDelete = (collectionName: string, item: DB_Object, uniqueKeys: string[] = ['_id']): PreDB<DeletedDBItem> => {
 		const {_id, __updated, __created, _v} = item;
 		const deletedItem: PreDB<DeletedDBItem> = {__docId: _id, __updated, __created, _v, __collectionName: collectionName};
@@ -150,17 +161,6 @@ export class ModuleBE_v2_SyncManager_Class
 			return this.setOldestDeleted(key, newestDeletedItem.__updated);
 		}));
 	};
-
-	init() {
-		const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();
-		this.collection = firestore.getCollection<DeletedDBItem>(DBDef_DeletedItems);
-
-		this.dbModules = this.manager.filterModules(module => ((module as unknown as { ModuleBE_BaseDBV2: boolean }).ModuleBE_BaseDBV2));
-		this.database = ModuleBE_Firebase.createAdminSession().getDatabase();
-		this.syncData = this.database.ref<Type_SyncData>(`/state/${this.getName()}/syncData`);
-		this.deletedCount = this.database.ref<number>(`/state/${this.getName()}/deletedCount`);
-		addRoutes([this.checkSyncApi]);
-	}
 
 	private fetchDBSyncData = async (_: undefined) => {
 		const fbSyncData = await this.syncData.get({});

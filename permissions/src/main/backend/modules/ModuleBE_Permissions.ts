@@ -60,6 +60,7 @@ export class ModuleBE_Permissions_Class
 	}
 
 	protected init(): void {
+		super.init();
 		if (!this.config)
 			throw new ImplementationMissingException('MUST set config with project identity!!');
 
