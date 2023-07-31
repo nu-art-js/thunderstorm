@@ -166,7 +166,7 @@ export class ModuleBE_v2_AccountDB_Class
 			await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
 			return session;
 		},
-		create: async (request: UI_Account & { password?: string }, transaction?: Transaction) => {
+		create: async (request: PreDB<UI_Account> & { password?: string }, transaction?: Transaction) => {
 			// this flow is for service accounts
 			request.type = 'service';
 			return await this.createAccountImpl(request, false, transaction);
