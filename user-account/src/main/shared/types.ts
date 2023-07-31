@@ -10,8 +10,6 @@ export type DB_Session_V2 = DB_Object & {
 	timestamp: number
 }
 export type UI_Account = DB_Object & {
-	_id: string
-
 	type: AccountType;
 	email: string;
 
