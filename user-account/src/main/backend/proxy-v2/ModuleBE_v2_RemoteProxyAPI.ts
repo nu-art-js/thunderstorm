@@ -9,6 +9,10 @@ class ModuleBE_v2_RemoteProxyAPI_Class
 
 	constructor() {
 		super(ModuleBE_v2_RemoteProxyDB);
+	}
+
+	init() {
+		super.init();
 		addRoutes([
 			createBodyServerApi(ApiDef_ProxyServiceAccount.vv1.createAccountToken, ModuleBE_v2_RemoteProxyDB.createAccountToken),
 		]);

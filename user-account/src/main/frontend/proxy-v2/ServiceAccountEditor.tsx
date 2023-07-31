@@ -128,8 +128,10 @@ export class ServiceAccountEditor
 
 				if (item === this.state.newAccount)
 					this.setState({newAccount: undefined});
-				else
+				else {
 					await this.getEditableItem(item).delete();
+					this.setState({newAccount: undefined, selectedIndex: undefined});
+				}
 			}}>Delete</TS_Button>}
 			<TS_Button onClick={async () => {
 				if (!item?._id)

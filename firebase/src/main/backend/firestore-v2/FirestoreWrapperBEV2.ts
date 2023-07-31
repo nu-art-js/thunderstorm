@@ -35,7 +35,10 @@ export class FirestoreWrapperBEV2
 		this.firestore = getFirestore(firebaseSession.app);
 	}
 
-	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>): Promise<ReturnType> => {
+	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>, transaction?: Transaction): Promise<ReturnType> => {
+		if (transaction) // if a transaction was provided to be used, use it
+			return processor(transaction);
+
 		return this.firestore.runTransaction<ReturnType>(async (transaction: Transaction) => {
 			const writeActions: (() => void)[] = [];
 

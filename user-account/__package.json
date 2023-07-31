@@ -31,7 +31,9 @@
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "run-tests": "firebase emulators:exec \"npm run test\"",
+    "test": "ts-mocha -w -p src/test/tsconfig.json --timeout 0 --inspect=8107 --watch-files '**/*.ts' src/test/__tests.ts"
   },
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
@@ -51,6 +53,7 @@
     "pako": "^2.1.0"
   },
   "devDependencies": {
+    "@nu-art/google-services": "$THUNDERSTORM_SDK_VERSION",
     "@types/react": "$REACT_TYPES_VERSION",
     "@types/express": "$EXPRESS_TYPES_VERSION",
     "@types/history": "^4.7.2",

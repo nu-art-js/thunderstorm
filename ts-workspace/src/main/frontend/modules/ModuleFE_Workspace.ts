@@ -21,9 +21,9 @@ import {_values, BadImplementationException, MUSTNeverHappenException, TypedMap}
 import {DBApiDefGeneratorIDB} from '@nu-art/db-api-generator/shared';
 import {ApiCallerEventType, DBApiFEConfig, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {PanelConfig} from '..';
-import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {DBDef_Workspaces} from '../../shared/db-def';
 import {DB_Workspace} from '../../shared/types';
+import {ModuleFE_AccountV2} from "@nu-art/user-account/frontend/modules/v2/ModuleFE_v2_Account";
 
 
 export interface OnWorkspaceUpdated {
@@ -51,7 +51,7 @@ export class ModuleFE_Workspace_Class
 	}
 
 	private getCurrentAccountId = (): string => {
-		return ModuleFE_Account.accountId;
+		return ModuleFE_AccountV2.accountId;
 	};
 
 	private assertLoggedInUser = () => {

@@ -16,13 +16,18 @@
  * limitations under the License.
  */
 
-import {ModuleBE_Account} from '../modules/ModuleBE_Account';
+import {ModuleBE_v2_AccountAPI, ModuleBE_v2_AccountDB, ModuleBE_v2_SessionDB} from '../modules/v2/';
+import {Module} from '@nu-art/ts-common';
 
 
-export const ModulePackBE_Accounts = [
-	ModuleBE_Account,
+export const ModulePackBE_Accounts: Module[] = [
+	// ModuleBE_Account,
+	ModuleBE_v2_AccountDB, ModuleBE_v2_AccountAPI,
+	ModuleBE_v2_SessionDB
 ];
 
-export * from '../modules/ModuleBE_Account';
+export * from '../modules/v2/ModuleBE_v2_AccountDB';
+export * from '../modules/v2/ModuleBE_v2_AccountAPI';
+export * from '../modules/v2/ModuleBE_v2_SessionDB';
 export * from '../modules/ModuleBE_SAML';
 

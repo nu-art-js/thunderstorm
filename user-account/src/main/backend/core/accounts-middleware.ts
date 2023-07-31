@@ -17,24 +17,37 @@
  */
 
 import {ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
-import {Header_SessionId, ModuleBE_Account} from '../modules/ModuleBE_Account';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {UI_Account} from '../../shared/api';
+import {Header_SessionId, ModuleBE_v2_SessionDB, ModuleBE_v2_SessionDB_Class} from '../modules/v2';
+import {ApiException, TS_Object} from '@nu-art/ts-common';
 
 
 export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
 export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
+export const MemKey_SessionData = new MemKey<TS_Object>('session-data', true);
 
 export const Middleware_ValidateSession: ServerApi_Middleware = async () => {
 	const sessionId = Header_SessionId.get();
-	const uiAccount = await ModuleBE_Account.validateSessionId(sessionId);
+	if (typeof sessionId !== 'string')
+		throw new ApiException(401, `Invalid session id: ${sessionId}`);
 
-	Middleware_ValidateSession_UpdateMemKeys(uiAccount);
+	let session;
+	try{
+		session = await ModuleBE_v2_SessionDB.query.uniqueWhere({sessionId});
+	} catch (err) {
+		throw new ApiException(401, `Invalid session id: ${sessionId}`);
+	}
+
+	if (ModuleBE_v2_SessionDB.TTLExpired(session))
+		throw new ApiException(401, 'Session timed out');
+
+	const sessionData = ModuleBE_v2_SessionDB_Class.decodeSessionData(sessionId);
+	Middleware_ValidateSession_UpdateMemKeys(sessionData);
 };
 
-export function Middleware_ValidateSession_UpdateMemKeys(uiAccount: UI_Account) {
-	if (!MemKey_AccountEmail.get())
-		MemKey_AccountEmail.set(uiAccount.email);
-	if (!MemKey_AccountId.get())
-		MemKey_AccountId.set(uiAccount._id);
+export function Middleware_ValidateSession_UpdateMemKeys(sessionData: TS_Object) {
+	MemKey_SessionData.set(sessionData);
+
+	MemKey_AccountEmail.set(sessionData.email);
+	MemKey_AccountId.set(sessionData.accountId);
 }
