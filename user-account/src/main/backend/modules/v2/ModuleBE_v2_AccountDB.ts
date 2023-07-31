@@ -124,7 +124,7 @@ export class ModuleBE_v2_AccountDB_Class
 				throw new ApiException(418, 'Registration is disabled!!');
 
 			// this flow is for user accounts
-			body.type = 'user';
+			(body as Request_CreateAccount).type = 'user';
 
 			this.password.assertPasswordRules(body.password);
 

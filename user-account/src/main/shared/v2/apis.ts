@@ -30,7 +30,6 @@ export type RequestBody_CreateAccount = {
 	email: string
 	password: string
 	password_check: string
-	type?: AccountType
 };
 export type ResponseBody_CreateAccount = {
 	sessionId: string
