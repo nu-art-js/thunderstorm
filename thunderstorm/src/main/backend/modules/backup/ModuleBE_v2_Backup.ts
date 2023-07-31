@@ -78,6 +78,7 @@ class ModuleBE_v2_Backup_Class
 	}
 
 	protected init(): void {
+		super.init();
 		this.collection = this.getBackupStatusCollection();
 		addRoutes([
 			createQueryServerApi(ApiDef_BackupV2.vv1.initiateBackup, () => this.initiateBackup()),

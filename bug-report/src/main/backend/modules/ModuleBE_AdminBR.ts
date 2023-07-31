@@ -41,6 +41,7 @@ export class ModuleBE_AdminBR_Class
 	}
 
 	protected init(): void {
+		super.init();
 		const sessAdmin = ModuleBE_Firebase.createAdminSession();
 		const firestore = sessAdmin.getFirestore();
 		this.bugReport = firestore.getCollection<DB_BugReport>('bug-report', ['_id']);

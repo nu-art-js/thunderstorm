@@ -139,7 +139,7 @@ export abstract class ModuleFE_BaseDB<DBType extends DB_Object, Ks extends keyof
 			await this.IDB.syncIndexDb(syncData.toUpdate, syncData.toDelete);
 		} catch (e: any) {
 			this.logError('Error while syncing', e);
-
+			throw e;
 		}
 		await this.cache.load();
 		this.setDataStatus(DataStatus.ContainsData);

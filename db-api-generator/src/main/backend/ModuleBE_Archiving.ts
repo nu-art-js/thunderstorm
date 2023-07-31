@@ -54,6 +54,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * which are Firestore DB modules to the `moduleMapper`.
 	 */
 	protected init() {
+		super.init();
 		const modules = Storm.getInstance().filterModules(module => !!module);
 
 		modules.map(module => {
