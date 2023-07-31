@@ -26,7 +26,6 @@ export * from './proxy/RemoteProxyCaller';
 export * from './proxy/ModuleBE_RemoteProxy';
 
 export * from '../utils/promisify-request';
-export * from '../utils/to-be-removed';
 
 export * from './CleanupScheduler';
 export * from './backup/ModuleBE_Backup';
