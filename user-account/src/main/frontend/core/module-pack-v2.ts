@@ -20,7 +20,7 @@
 import {ModuleFE_AccountV2} from "../modules/v2/ModuleFE_v2_Account";
 import {Module} from "@nu-art/ts-common";
 
-export const ModulePack_Frontend_UsersV2: Module[] = [
+export const ModulePackFE_Accounts: Module[] = [
 	ModuleFE_AccountV2,
 ];
 

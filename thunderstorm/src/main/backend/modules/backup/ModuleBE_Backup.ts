@@ -20,6 +20,7 @@ import {addRoutes} from '../ModuleBE_APIs';
 import {createQueryServerApi} from '../../core/typed-api';
 import {ApiDef_Backup, Request_BackupId, Response_BackupDocs} from '../../../shared/backup/apis';
 
+
 export type FirestoreBackupDetails<T extends TS_Object> = {
 	moduleKey: string,
 	minTimeThreshold: number, // minimum time to pass before another backup can occur.
@@ -56,7 +57,7 @@ class ModuleBE_Backup_Class
 		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
 
 		const fetchBackupDocs = await Promise.all(backupDocs.map(async (doc) => {
-			const fileDescriptor = await (await bucket.getFile(doc.backupPath)).getReadSecuredUrl('', 10 * Minute);
+			const fileDescriptor = await (await bucket.getFile(doc.backupPath)).getReadSecuredUrl(10 * Minute);
 			return {
 				backupId: doc.backupId,
 				moduleKey: doc.moduleKey,

@@ -16,6 +16,10 @@ class ModuleBE_SyncEnv_Class
 
 	constructor() {
 		super();
+	}
+
+	init() {
+		super.init();
 		addRoutes([createBodyServerApi(ApiDef_SyncEnv.vv1.fetchFromEnv, this.fetchFromEnv)]);
 	}
 

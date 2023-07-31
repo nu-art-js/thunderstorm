@@ -59,7 +59,6 @@ export class ModuleFE_Permissions_Class
 		};
 	}
 
-
 	setDebounceTime(time: number) {
 		this.debounceTime = time;
 	}
@@ -89,7 +88,7 @@ export class ModuleFE_Permissions_Class
 			return permitted;
 
 		this.loadingUrls.add(url);
-		this.setPermissions();
+		// this.setPermissions();
 		return undefined;
 	}
 

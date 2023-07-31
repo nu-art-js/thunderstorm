@@ -28,6 +28,10 @@ export class ModuleBE_PermissionUserAPI_Class
 
 	constructor() {
 		super(ModuleBE_PermissionUserDB);
+	}
+
+	init() {
+		super.init();
 		addRoutes([
 			createBodyServerApi(ApiDef_PermissionUser.pah.assignAppPermissions, this.assignAppPermissions)
 		]);

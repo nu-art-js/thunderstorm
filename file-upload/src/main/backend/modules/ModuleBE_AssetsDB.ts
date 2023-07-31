@@ -36,13 +36,24 @@ import {
 import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {CleanupDetails, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {AxiosHttpModule, CleanupDetails, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './ModuleBE_BucketListener';
-import {BaseUploaderFile, DB_Asset, DBDef_Assets, FileStatus, Push_FileUploaded, PushKey_FileUploaded, TempSecureUrl} from '../../shared';
+import {
+	ApiDef_Assets,
+	BaseUploaderFile,
+	DB_Asset,
+	DBDef_Assets,
+	FileStatus,
+	Push_FileUploaded,
+	PushKey_FileUploaded,
+	Request_GetReadSecuredUrl,
+	TempSecureUrl
+} from '../../shared';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
+import {HttpMethod} from '@nu-art/thunderstorm';
 
 
 type MyConfig = DBApiConfig<DB_Asset> & {
@@ -92,7 +103,7 @@ export const fileSizeValidator = async (file: FileWrapper, metadata: FirebaseTyp
 	return metadata.size >= minSizeInBytes && metadata.size <= maxSizeInBytes;
 };
 
-export class ModuleBE_Assets_Class
+export class ModuleBE_AssetsDB_Class
 	extends ModuleBE_BaseDBV2<DB_Asset, MyConfig>
 	implements OnCleanupSchedulerAct, OnAssetUploaded {
 
@@ -116,8 +127,51 @@ export class ModuleBE_Assets_Class
 		this.storage = ModuleBE_Firebase.createAdminSession(this.config.authKey).getStorage();
 	}
 
+	protected async upgradeItem(dbItem: PreDB<DB_Asset>, toVersion: string): Promise<void> {
+		switch (dbItem._v) {
+			case '1.0.0': {
+
+				// @ts-ignore
+				delete dbItem.secureUrl;
+				const fileWrapper = await this.storage.getFile(dbItem.path, dbItem.bucketName);
+				if (await fileWrapper.exists())
+					return;
+
+				let _securedUrl;
+				try {
+					const {securedUrl} = await AxiosHttpModule.createRequest({
+						...ApiDef_Assets.vv1.fetchSpecificFile,
+						fullUrl: 'https://api-hhvladacia-uc.a.run.app/v1/assets/get-read-secured-url'
+					})
+						.setBodyAsJson({bucketName: dbItem.bucketName, pathInBucket: dbItem.path})
+						.executeSync();
+					_securedUrl = securedUrl;
+				} catch (e) {
+					console.log(e);
+				}
+
+				const fileContent = await AxiosHttpModule.createRequest({method: HttpMethod.GET, fullUrl: _securedUrl, path: ''})
+					.setResponseType('text')
+					.executeSync();
+
+				await fileWrapper.write(fileContent);
+			}
+		}
+	}
+
+	fetchSpecificFile = async (body: Request_GetReadSecuredUrl) => {
+		this.logInfo('fetchSpecificFile - got here');
+		const fileWrapper = await this.storage.getFile(body.pathInBucket, body.bucketName);
+
+		this.logInfo('fetchSpecificFile - got fileWrapper');
+		const securedUrl = await fileWrapper.getReadSecuredUrl();
+
+		this.logInfo('fetchSpecificFile - got securedUrl');
+		return securedUrl;
+	};
+
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
-		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, async chunk => await ModuleBE_Assets.query.custom({where: {_id: {$in: chunk}}}));
+		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, async chunk => await ModuleBE_AssetsDB.query.custom({where: {_id: {$in: chunk}}}));
 		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)));
 		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()));
 
@@ -132,7 +186,7 @@ export class ModuleBE_Assets_Class
 		const asset = await super.query.uniqueCustom({where});
 		const signedUrl = (asset.signedUrl?.validUntil || 0) > currentTimeMillis() ? asset.signedUrl : undefined;
 		if (!signedUrl) {
-			const url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSecuredUrl(asset.mimeType, Day);
+			const url = await (await this.storage.getFile(asset.path, asset.bucketName)).getReadSecuredUrl(Day, asset.mimeType);
 			asset.signedUrl = {
 				url: url.securedUrl,
 				validUntil: currentTimeMillis() + Day - Minute
@@ -203,7 +257,7 @@ export class ModuleBE_Assets_Class
 			const fileWrapper = await bucket.getFile(dbTempMeta.path);
 			const url = await fileWrapper.getWriteSecuredUrl(_file.mimeType, Hour);
 			return {
-				secureUrl: url.securedUrl,
+				securedUrl: url.securedUrl,
 				asset: dbTempMeta
 			};
 		}));
@@ -226,7 +280,12 @@ export class ModuleBE_Assets_Class
 			return this.logVerbose(`File was added to storage in path: ${filePath}, NOT via file uploader`);
 
 		this.logDebug(`Looking for file with path: ${filePath}`);
-		const tempMeta = await ModuleBE_AssetsTemp.query.uniqueCustom({where: {path: filePath}});
+		let tempMeta: DB_Asset;
+		try {
+			tempMeta = await ModuleBE_AssetsTemp.query.uniqueWhere({path: filePath});
+		} catch (e) {
+			return;
+		}
 		if (!tempMeta)
 			throw new ThisShouldNotHappenException(`Could not find meta for file with path: ${filePath}`);
 
@@ -303,10 +362,9 @@ export class ModuleBE_Assets_Class
 			asset
 		});
 	};
-
 }
 
-export const ModuleBE_Assets = new ModuleBE_Assets_Class();
+export const ModuleBE_AssetsDB = new ModuleBE_AssetsDB_Class();
 
 
 

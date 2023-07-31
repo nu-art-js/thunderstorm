@@ -16,5 +16,3 @@
  * limitations under the License.
  */
 export * from './core/module-pack';
-export * from './core/accounts-middleware';
-export * from './proxy-v2';

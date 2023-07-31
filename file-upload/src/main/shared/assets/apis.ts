@@ -1,7 +1,19 @@
-import {BaseUploaderFile, FileUploadResult, TempSecureUrl} from './types';
+import {BaseUploaderFile, FileUploadResult, Request_GetReadSecuredUrl, SecureUrl, TempSecureUrl} from './types';
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
 
 
+export type ApiStruct_Assets = {
+	vv1: {
+		fetchSpecificFile: BodyApi<SecureUrl, Request_GetReadSecuredUrl>,
+
+	}
+}
+
+export const ApiDef_Assets: ApiDefResolver<ApiStruct_Assets> = {
+	vv1: {
+		fetchSpecificFile: {method: HttpMethod.POST, path: 'v1/assets/get-read-secured-url'},
+	}
+};
 
 export type ApiStruct_AssetUploader = {
 	vv1: {
