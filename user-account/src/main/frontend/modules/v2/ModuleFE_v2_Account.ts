@@ -1,5 +1,15 @@
-import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
-import {ApiDefFE_Account, ApiStructFE_Account, DB_Account_V2, DBDef_Account, Response_Auth} from '../../../shared/v2';
+import {ApiCallerEventType} from '@nu-art/db-api-generator/frontend';
+import {
+	ApiDefFE_Account,
+	ApiStructFE_Account,
+	DB_Account_V2,
+	HeaderKey_SessionId,
+	QueryParam_Email,
+	QueryParam_SessionId,
+	Response_Auth,
+	Response_LoginSAML,
+	UI_Account
+} from '../../../shared';
 import {
 	apiWithBody,
 	apiWithQuery,
@@ -10,10 +20,10 @@ import {
 	ThunderDispatcher
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
-import {ungzip} from "pako";
-import {composeUrl, currentTimeMillis, TS_Object} from "@nu-art/ts-common";
-import {HeaderKey_SessionId, QueryParam_Email, QueryParam_SessionId, Response_LoginSAML, UI_Account} from "../../../shared/v2";
-import {OnAuthRequiredListener} from "@nu-art/thunderstorm/shared/no-auth-listener";
+import {ungzip} from 'pako';
+import {composeUrl, currentTimeMillis, Module, TS_Object} from '@nu-art/ts-common';
+import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
+
 
 export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
 export const StorageKey_SessionTimeoutTimestamp = new StorageKey<number>(`storage-accounts__session-timeout`);
@@ -38,16 +48,16 @@ export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatus
 export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdated, '__onAccountsUpdated'>('__onAccountsUpdated');
 
 class ModuleFE_Account_v2_Class
-	extends ModuleFE_BaseApi<DB_Account_V2, 'email'>
+	extends Module<DB_Account_V2>
 	implements ApiDefCaller<ApiStructFE_Account>, OnAuthRequiredListener {
 	readonly vv1: ApiDefCaller<ApiStructFE_Account>['vv1'];
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	private accounts: UI_Account[] = [];
 	accountId!: string;
-	sessionData?: TS_Object
+	sessionData?: TS_Object;
 
 	constructor() {
-		super(DBDef_Account, dispatch_onAccountsUpdated);
+		super();
 
 		this.vv1 = {
 			registerAccount: apiWithBody(ApiDefFE_Account.vv1.registerAccount, this.setLoginInfo),
@@ -56,6 +66,8 @@ class ModuleFE_Account_v2_Class
 			login: apiWithBody(ApiDefFE_Account.vv1.login, this.setLoginInfo),
 			loginSaml: apiWithQuery(ApiDefFE_Account.vv1.loginSaml, this.onLoginCompletedSAML),
 			logout: apiWithQuery(ApiDefFE_Account.vv1.logout),
+			listAccounts: apiWithQuery(ApiDefFE_Account.vv1.listAccounts),
+			createToken: apiWithQuery(ApiDefFE_Account.vv1.createToken),
 		};
 	}
 
@@ -80,8 +92,6 @@ class ModuleFE_Account_v2_Class
 		const email = getQueryParameter(QueryParam_Email);
 		const sessionId = getQueryParameter(QueryParam_SessionId);
 
-
-
 		if (email && sessionId) {
 			StorageKey_SessionId.set(String(sessionId));
 			StorageKey_UserEmail.set(String(email));
@@ -99,7 +109,7 @@ class ModuleFE_Account_v2_Class
 
 			this.sessionData = sessionData;
 			this.accountId = sessionData.accountId;
-			return this.setLoggedStatus(LoggedStatus.LOGGED_IN)
+			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 		}
 
 		this.logDebug('login out user.... ');

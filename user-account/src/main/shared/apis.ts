@@ -1,6 +1,7 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
-import {Minute} from '@nu-art/ts-common';
-import {AccountType} from "./types";
+import {DB_BaseObject, Minute} from '@nu-art/ts-common';
+import {AccountType, UI_Account} from './types';
+
 
 export const HeaderKey_SessionId = 'x-session-id';
 export const HeaderKey_Application = 'x-application';
@@ -10,9 +11,6 @@ export const QueryParam_Email = 'userEmail';
 export const QueryParam_SessionId = HeaderKey_SessionId;
 export const QueryParam_RedirectUrl = 'redirectUrl';
 export const HeaderKey_CurrentPage = 'current-page';
-
-export type UI_Account = { email: string; _id: string }
-
 
 export type Request_CreateAccount = {
 	email: string
@@ -31,6 +29,7 @@ export type RequestBody_CreateAccount = {
 	password: string
 	password_check: string
 };
+
 export type ResponseBody_CreateAccount = {
 	sessionId: string
 };
@@ -60,11 +59,15 @@ type TypedApi_LoginSaml = { loginSaml: QueryApi<Response_LoginSAML, RequestParam
 type TypedApi_Login = { login: BodyApi<Response_Auth, Request_LoginAccount> };
 type TypedApi_Logout = { logout: QueryApi<void, {}> };
 type TypedAPI_RegisterAccount = { registerAccount: BodyApi<Response_Auth, RequestBody_CreateAccount> };
-type TypedApi_CreateAccount = { createAccount: BodyApi<ResponseBody_CreateAccount, RequestBody_CreateAccount> };
+type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account, UI_Account & { password?: string }> };
 type TypedApi_ChangedPassword = { changePassword: BodyApi<ResponseBody_ChangePassword, RequestBody_ChangePassword> };
+type TypedApi_ListAccounts = { listAccounts: QueryApi<{ accounts: UI_Account[] }> };
+type TypedApi_CreateToken = { createToken: QueryApi<{ token: string }, DB_BaseObject & { ttlMs: number }> };
 
 const API_LoginSaml = {loginSaml: {method: HttpMethod.GET, path: 'v1/account-v2/login-saml'}} as const;
 const API_Login = {login: {method: HttpMethod.POST, path: 'v1/account-v2/login', timeout: Minute}} as const;
+const API_ListAccounts = {listAccounts: {method: HttpMethod.GET, path: 'v1/account-v2/list-accounts', timeout: Minute}} as const;
+const API_CreateToken = {createToken: {method: HttpMethod.GET, path: 'v1/account-v2/create-token', timeout: Minute}} as const;
 const API_Logout = {logout: {method: HttpMethod.GET, path: 'v1/account-v2/logout'}} as const;
 const API_RegisterAccount = {registerAccount: {method: HttpMethod.POST, path: '/v1/account-v2/register-account'}} as const;
 const API_CreateAccount = {createAccount: {method: HttpMethod.POST, path: '/v1/account-v2/create-account'}} as const;
@@ -83,6 +86,8 @@ export type ApiStructBE_Account = {
 		& TypedApi_Login
 		& TypedApi_Logout
 		& TypedApi_ChangedPassword
+		& TypedApi_ListAccounts
+		& TypedApi_CreateToken
 }
 
 export const ApiDefBE_AccountV2: ApiDefResolver<ApiStructBE_Account> = {
@@ -93,6 +98,8 @@ export const ApiDefBE_AccountV2: ApiDefResolver<ApiStructBE_Account> = {
 		...API_Login,
 		...API_Logout,
 		...API_ValidateSession,
+		...API_ListAccounts,
+		...API_CreateToken,
 	}
 };
 
@@ -103,6 +110,8 @@ export type ApiStructFE_Account = {
 		& TypedApi_Login
 		& TypedApi_Logout
 		& TypedApi_LoginSaml
+		& TypedApi_ListAccounts
+		& TypedApi_CreateToken
 }
 
 export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
@@ -114,6 +123,8 @@ export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
 		...API_LoginSaml,
 		...API_Logout,
 		...API_ValidateSession,
+		...API_ListAccounts,
+		...API_CreateToken,
 	}
 };
 

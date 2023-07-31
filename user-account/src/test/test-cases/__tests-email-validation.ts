@@ -1,7 +1,7 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {__stringify, tsValidateEmail, tsValidateResult} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {assertPasswordRules, PasswordAssertionConfig} from '../../main/shared/v2/assertion';
+import {assertPasswordRules, PasswordAssertionConfig} from '../../main/shared/assertion';
 
 type EmailValidationSuite = TestSuite<string, boolean>
 
