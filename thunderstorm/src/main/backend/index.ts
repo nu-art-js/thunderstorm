@@ -40,7 +40,6 @@ export * from './modules/ModuleBE_ForceUpgrade';
 export * from './modules/ModuleBE_ServerInfo';
 // export * from './utils/api-caller-types';
 export * from './utils/promisify-request';
-export * from './utils/to-be-removed';
 export * from './utils/types';
 export * from './utils/LogClient_File';
 export * from './utils/file';
