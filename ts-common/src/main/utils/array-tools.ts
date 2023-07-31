@@ -267,3 +267,6 @@ export function firstElement<T extends any>(array?: T[]) {
 	return array?.[1];
 }
 
+export function arrayIncludesAny<T extends any>(arr1: T[], arr2: T[]): boolean {
+	return arr1.some(item => arr2.includes(item));
+}
