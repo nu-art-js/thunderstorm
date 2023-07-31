@@ -95,6 +95,20 @@ export const tsValidateString = (length: number = -1, mandatory = true): Validat
 		}];
 };
 
+export const tsValidateStringMinLength = (length: number, mandatory = true): Validator<string> => {
+	return [tsValidateExists(mandatory),
+		(input?: string) => {
+			// noinspection SuspiciousTypeOfGuard
+			if (typeof input !== 'string')
+				return `input is not a string`;
+
+			if (input.length >= length)
+				return;
+
+			return `input has less than ${length} chars`;
+		}];
+};
+
 export const tsValidateNumber = (mandatory = true): Validator<number> => {
 	return [tsValidateExists(mandatory),
 		(input?: number) => {
@@ -212,7 +226,7 @@ export const tsValidator_ArrayOfObjectsByKey = <T extends Object>(key: keyof T, 
 		const validator = validatorMap[_value[key] as string];
 		if (!validator)
 			throw new BadImplementationException(`No validator defined for key ${key as string} with value ${_value[key]}`);
-		
+
 		return tsValidateResult(_value, validator);
 	}) as ValidatorTypeResolver<T>);
 };

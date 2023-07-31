@@ -1,5 +1,5 @@
 /*
- * User secured registration and login management system..
+ * Firebase is a simpler Typescript wrapper to all of firebase services.
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -16,6 +16,5 @@
  * limitations under the License.
  */
 
-export * from '../main/backend/modules/_imports';
+export * from '../main';
 export * from '../main/backend';
-export * from '../main/index';

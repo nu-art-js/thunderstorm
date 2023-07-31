@@ -30,16 +30,27 @@ import {
 	filterDuplicates,
 	flatArray
 } from '@nu-art/ts-common';
-import {MemKey_AccountEmail, MemKey_AccountId, ModuleBE_Account, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {
+	MemKey_AccountEmail,
+	MemKey_AccountId,
+	ModuleBE_v2_AccountDB,
+	OnNewUserRegistered,
+	OnUserLogin
+} from '@nu-art/user-account/backend';
 import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {PermissionsShare} from '../permissions-share';
-import {AssignAppPermissions, DB_PermissionUser, DBDef_PermissionUser, Request_AssignAppPermissions} from '../../shared';
+import {
+	AssignAppPermissions,
+	DB_PermissionUser,
+	DBDef_PermissionUser,
+	Request_AssignAppPermissions
+} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
-import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
-import {firestore} from "firebase-admin";
+import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
+import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
 
 
@@ -64,7 +75,7 @@ export class ModuleBE_PermissionUserDB_Class
 
 	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DB_PermissionUser[]) {
 		const conflicts: DB_PermissionUser[] = [];
-		const accounts = (await ModuleBE_Account.listUsers({})).accounts;
+		const accounts = await ModuleBE_v2_AccountDB.listUsers();
 
 		for (const item of dbInstances) {
 			const account = accounts.find(acc => acc._id === item.accountId);
@@ -134,7 +145,7 @@ export class ModuleBE_PermissionUserDB_Class
 	async insertIfNotExist(email: string) {
 		return this.runTransaction(async (transaction) => {
 
-			const account = await ModuleBE_Account.getUser(email);
+			const account = await ModuleBE_v2_AccountDB.getUIAccountByEmail(email);
 			if (!account)
 				throw new ApiException(404, `user not found for email ${email}`);
 

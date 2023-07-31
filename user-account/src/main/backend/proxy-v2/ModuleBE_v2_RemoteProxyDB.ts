@@ -23,8 +23,8 @@
 import {DBApiConfig, ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {DBDef_RemoteProxy, ProxyServiceAccount} from '../../shared/proxy-v2/';
 import {RequestBody_CreateAccountToken, ResponseBody_CreateAccountToken} from '../../shared/proxy-v2';
-import {ModuleBE_Account_Class} from '../modules/ModuleBE_Account';
 import {BadImplementationException, currentTimeMillis} from '@nu-art/ts-common';
+import {ModuleBE_v2_SessionDB_Class} from '../modules/v2';
 
 export type RemoteProxyConfig = DBApiConfig<ProxyServiceAccount> & {}
 
@@ -40,16 +40,19 @@ export class ModuleBE_v2_RemoteProxyDB_Class
 		if (!serviceAccount)
 			throw new BadImplementationException(`Received the _id of a non-existing service account! (${body.serviceAccountId})`);
 
+		// const sessionData = await dispatch_CollectSessionData.dispatchModuleAsync(body.serviceAccountId);
+
 		const now = currentTimeMillis();
 		const sessionDataToTokenize = {
 			name: serviceAccount.label,
 			email: serviceAccount.email,
 			creationTimestamp: now,
 			expirationTimestamp: now + body.ttl,
-			claims: serviceAccount.extra
+			claims: serviceAccount.extra,
+			// data: sessionData
 		};
 
-		const token = await ModuleBE_Account_Class.encodeSessionData(sessionDataToTokenize);
+		const token = await ModuleBE_v2_SessionDB_Class.encodeSessionData(sessionDataToTokenize);
 
 		//todo create DB_Session?
 
