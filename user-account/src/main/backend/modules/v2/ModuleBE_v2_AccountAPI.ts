@@ -1,7 +1,7 @@
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_BaseApiV2_Class} from '@nu-art/db-api-generator/backend/ModuleBE_BaseApiV2';
 import {ModuleBE_v2_AccountDB} from './ModuleBE_v2_AccountDB';
-import {ApiDefBE_AccountV2, DB_Account_V2} from '../../../shared/v2';
+import {ApiDefBE_AccountV2, DB_Account_V2} from '../../../shared';
 
 
 class ModuleBE_v2_AccountAPI_Class

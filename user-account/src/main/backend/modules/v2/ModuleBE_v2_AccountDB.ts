@@ -8,7 +8,7 @@ import {
 	Request_LoginAccount,
 	UI_Account,
 	Request_CreateAccount
-} from '../../../shared/v2';
+} from '../../../shared';
 import {
 	__stringify,
 	ApiException,
@@ -22,10 +22,10 @@ import {
 } from '@nu-art/ts-common';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {Header_SessionId, MemKey_AccountEmail, ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
-import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/v2/assertion';
+import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
-import {QueryParams} from "@nu-art/thunderstorm";
+import {QueryParams} from '@nu-art/thunderstorm';
 
 
 export interface OnNewUserRegistered {
@@ -97,7 +97,7 @@ export class ModuleBE_v2_AccountDB_Class
 				} as PreDB<DB_Account_V2>;
 
 				dispatchEvent = true;
-				account = this.create.item(_account,transaction); // this.createAccountImpl requires pw/salt and also redundantly rechecks if the account doesn't exist.
+				account = this.create.item(_account, transaction); // this.createAccountImpl requires pw/salt and also redundantly rechecks if the account doesn't exist.
 			}
 			return account;
 		});
@@ -205,7 +205,6 @@ export class ModuleBE_v2_AccountDB_Class
 		return {account, session};
 	}
 
-
 	// private createAccountImpl = async (body: RequestBody_CreateAccount, transaction?: Transaction): Promise<DB_Account_V2> => {
 	// 	//Email always lowerCase
 	// 	body.email = body.email.toLowerCase();
@@ -227,7 +226,6 @@ export class ModuleBE_v2_AccountDB_Class
 	// 		return await this.create.item(account, transaction);
 	// 	}, transaction);
 	// };
-
 
 	private createAccountImpl = async (body: PartialProperties<Request_CreateAccount, 'password' | 'password_check'>, passwordRequired?: boolean, transaction?: Transaction) => {
 		//Email always lowerCase
@@ -294,8 +292,9 @@ export class ModuleBE_v2_AccountDB_Class
 }
 
 export function getUIAccount(account: DB_Account_V2): UI_Account {
-	const {email, _id} = account;
-	return {email, _id};
+	delete account.salt;
+	delete account.saltedPassword;
+	return account;
 }
 
 export const ModuleBE_v2_AccountDB = new ModuleBE_v2_AccountDB_Class();
