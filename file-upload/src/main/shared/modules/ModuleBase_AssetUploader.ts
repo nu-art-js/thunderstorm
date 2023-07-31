@@ -178,7 +178,7 @@ export abstract class ModuleBase_AssetUploader<HttpModule extends BaseHttpModule
 			throw new BadImplementationException(`Missing file with id ${feId} and name: ${response.asset.name}`);
 
 		const request = this.vv1.uploadFile(fileInfo.file, undefined as never)
-			.setUrl(response.secureUrl);
+			.setUrl(response.securedUrl);
 		// const request = this
 		// 	.httpModule
 		// 	.createRequest(HttpMethod.PUT, RequestKey_UploadFile, feId)

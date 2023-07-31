@@ -17,7 +17,7 @@
  */
 
 import {
-	__stringify,
+	__stringify, _keys,
 	ApiException,
 	BadImplementationException,
 	batchActionParallel,
@@ -481,8 +481,12 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		// });
 
 		// Throw exception if an _id appears more than once
-		if (_values(idCountMap).some(count => count > 1))
-			throw new BadImplementationException(`${originFunctionName} received the same _id twice.`);
+		_keys(idCountMap).forEach(key => {
+			if (idCountMap[key] === 1)
+				delete idCountMap[key];
+		});
+
+		throw new BadImplementationException(`${originFunctionName} received the same _id twice: ${__stringify(idCountMap, true)}`);
 	}
 
 	composeDbObjectUniqueId = (item: PreDB<Type>) => {

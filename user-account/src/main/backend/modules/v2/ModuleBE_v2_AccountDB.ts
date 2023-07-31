@@ -20,9 +20,8 @@ import {
 	PartialProperties,
 	PreDB
 } from '@nu-art/ts-common';
-import {MemKey_AccountEmail} from '../../core/accounts-middleware';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
-import {Header_SessionId, ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
+import {Header_SessionId, MemKey_AccountEmail, ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/v2/assertion';
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;

@@ -38,7 +38,7 @@ import {
 	Response_UsersCFsByShareGroups,
 	UserUrlsPermissions
 } from '../shared';
-import {MemKey_AccountId, Middleware_ValidateSession, ModuleBE_v2_AccountDB} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_v2_AccountDB} from '@nu-art/user-account/backend';
 import {AssertSecretMiddleware} from '@nu-art/thunderstorm/backend/modules/proxy/assert-secret-middleware';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
@@ -57,18 +57,20 @@ export class ModuleBE_Permissions_Class
 
 	constructor() {
 		super();
+	}
+
+	protected init(): void {
+		super.init();
+		if (!this.config)
+			throw new ImplementationMissingException('MUST set config with project identity!!');
+
 		addRoutes([
-			createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions, Middleware_ValidateSession),
+			createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions),
 			createBodyServerApi(ApiDef_Permissions.v1.getUserCFsByShareGroups, (body) => this.getUserCFsByShareGroups(body.groupsIds)),
 			createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups),
 			createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
 			createQueryServerApi(ApiDef_Permissions.v1.registerProject, (params) => this.registerProject())
 		]);
-	}
-
-	protected init(): void {
-		if (!this.config)
-			throw new ImplementationMissingException('MUST set config with project identity!!');
 
 		ModuleBE_PermissionsAssert.setProjectId(this.config.project._id);
 	}

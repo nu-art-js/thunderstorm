@@ -4,6 +4,7 @@ import {Storm} from '../core/Storm';
 import {ApiDef_ServerInfo, Response_ServerInfo} from '../../shared';
 import {addRoutes} from './ModuleBE_APIs';
 
+
 type Config = {};
 
 export class ModuleBE_ServerInfo_Class
@@ -15,6 +16,10 @@ export class ModuleBE_ServerInfo_Class
 
 	constructor() {
 		super();
+	}
+
+	init() {
+		super.init();
 		addRoutes([this.serverInfoApi]);
 	}
 }

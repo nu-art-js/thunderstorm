@@ -21,12 +21,12 @@
 
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
 import {
-	ApiException, asArray,
+	ApiException, asArray, batchAction,
 	currentTimeMillis,
 	DB_Object,
 	DBDef,
 	dbObjectToId,
-	Default_UniqueKey,
+	Default_UniqueKey, DefaultDBVersion,
 	filterDuplicates,
 	filterInstances,
 	Module,
@@ -74,6 +74,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	public set!: FirestoreCollectionV2<Type>['set'];
 	public update!: FirestoreCollectionV2<Type>['update'];
 	public delete!: FirestoreCollectionV2<Type>['delete'];
+	public doc!: FirestoreCollectionV2<Type>['doc'];
 	public runTransaction!: FirestoreCollectionV2<Type>['runTransaction'];
 
 	protected constructor(dbDef: DBDef<Type, any>, appConfig?: BaseDBApiConfig) {
@@ -112,6 +113,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		this.set = {...this.collection.set};
 		this.update = {...this.collection.update};
 		this.delete = {...this.collection.delete};
+		this.doc = {...this.collection.doc};
 	}
 
 	getCollectionName() {
@@ -193,22 +195,6 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		//todo Deprecated, turn all into preWriteProcessing
 	}
 
-	upgradeInstances = async (dbInstances: PreDB<Type>[]) => {
-		await Promise.all(dbInstances.map(async dbInstance => {
-			const instanceVersion = dbInstance._v;
-			const currentVersion = this.config.versions[0];
-
-			if (instanceVersion !== undefined && instanceVersion !== currentVersion)
-				try {
-					await this.upgradeItem(dbInstance, currentVersion);
-				} catch (e: any) {
-					throw new ApiException(500, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`,
-						e.message);
-				}
-			dbInstance._v = currentVersion;
-		}));
-	};
-
 	protected async upgradeItem(dbItem: PreDB<Type>, toVersion: string): Promise<void> {
 	}
 
@@ -271,8 +257,6 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	async upgradeCollection(forceUpgrade: boolean) {
 		const docs = await this.collection.doc.query(_EmptyQuery);
 		const toDelete = docs.filter(doc => {
-			if (doc.data!._id === '023c345ea94bf91edc643db8e511622e')
-				this.logWarning(`${doc.ref.id} === ${doc.data!._id}`);
 			return doc.ref.id !== doc.data!._id;
 		});
 
@@ -282,16 +266,36 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		if (!forceUpgrade)
 			items = items.filter(item => item._v !== this.dbDef.versions![0]);
 
-		this.logWarning(`Upgrading instances: ${items.length} items ....`);
-		await this.upgradeInstances(items);
+		this.logWarning(`Upgrading instances: ${items.length} ${this.dbDef.entityName}s ....`);
+		await batchAction(items, this.dbDef.upgradeChunksSize || 200, async chunk => {
+			this.logWarning(`Upgrading instance: ${chunk[0]._id}`);
 
-		this.logWarning(`setting multi instances: ${items.length} items ....`);
-		await this.set.multi(items);
+			await this.upgradeInstances(chunk);
+
+			this.logWarning(`setting multi instances: ${chunk.length} ${this.dbDef.entityName}s ....`);
+			await this.set.multi(chunk);
+		});
 
 		if (toDelete.length > 0) {
-			this.logWarning(`Need to delete docs: ${toDelete.length} items ....`);
+			this.logWarning(`Need to delete docs: ${toDelete.length} ${this.dbDef.entityName}s ....`);
 			await this.collection.delete.multi.allDocs(toDelete);
 		}
 	}
 
+	upgradeInstances = async (dbInstances: PreDB<Type>[]) => {
+		await Promise.all(dbInstances.map(async dbInstance => {
+			const instanceVersion = dbInstance._v ??= DefaultDBVersion;
+			const currentVersion = this.config.versions[0];
+
+			if (instanceVersion !== undefined && instanceVersion !== currentVersion)
+				try {
+					await this.upgradeItem(dbInstance, currentVersion);
+				} catch (e: any) {
+					this.logError(e);
+					throw new ApiException(500, `Error while upgrading db item "${this.config.itemName}"(${dbInstance._id}): ${instanceVersion} => ${currentVersion}`,
+						e);
+				}
+			dbInstance._v = currentVersion;
+		}));
+	};
 }
