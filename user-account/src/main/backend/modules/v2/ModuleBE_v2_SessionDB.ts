@@ -1,5 +1,5 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
-import {DB_Session_V2, DBDef_Session, Response_Auth, HeaderKey_SessionId, UI_Account} from '../../../shared/v2';
+import {DB_Session_V2, DBDef_Session, Response_Auth, HeaderKey_SessionId, UI_Account} from '../../../shared';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {
 	__stringify,
@@ -114,7 +114,7 @@ export class ModuleBE_v2_SessionDB_Class
 			if (!this.TTLExpired(session)) {
 				const sessionData = this.decodeSessionData(session.sessionId);
 				Middleware_ValidateSession_UpdateMemKeys(sessionData);
-				return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
+				return {sessionId: session.sessionId, ...uiAccount};
 			}
 		} catch (ignore) {
 			//
@@ -142,7 +142,7 @@ export class ModuleBE_v2_SessionDB_Class
 
 		await this.set.item(session);
 
-		return {sessionId: session.sessionId, email: uiAccount.email, _id: uiAccount._id};
+		return {sessionId: session.sessionId, ...uiAccount};
 	};
 
 	logout = async (transaction?: Transaction) => {

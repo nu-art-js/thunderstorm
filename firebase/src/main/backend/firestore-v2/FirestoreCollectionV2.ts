@@ -438,7 +438,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	 * @param transaction A transaction that was provided to be used
 	 */
 	runTransaction = async <ReturnType>(processor: (transaction: Transaction) => Promise<ReturnType>, transaction?: Transaction): Promise<ReturnType> => {
-		return transaction ? processor(transaction) : this.wrapper.runTransaction<ReturnType>(processor);
+		return this.wrapper.runTransaction<ReturnType>(processor, transaction);
 	};
 
 	runTransactionInChunks = async <T extends any = any, R extends any = any>(items: T[], processor: (chunk: typeof items, transaction: Transaction) => Promise<R[]>, chunkSize: number = maxBatch): Promise<R[]> => {
@@ -472,7 +472,6 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			countMap[item._id] = !exists(countMap[item._id]) ? 1 : 1 + countMap[item._id];
 			return countMap;
 		}, {});
-
 
 		// DEBUG - print the duplicate _ids
 		// _keys(idCountMap).forEach(key => {

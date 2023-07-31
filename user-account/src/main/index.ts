@@ -17,4 +17,4 @@
  * limitations under the License.
  */
 
-export * from './shared/v2';
+export * from './shared';
