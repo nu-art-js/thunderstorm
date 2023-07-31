@@ -3,7 +3,7 @@ import {Exception} from '@nu-art/ts-common';
 import {expect} from 'chai';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {RequestBody_CreateAccount} from '../../main';
-import {PasswordAssertionConfig} from '../../main/shared/v2/assertion';
+import {PasswordAssertionConfig} from '../../main/shared/assertion';
 import {ModuleBE_v2_AccountDB} from '../../main/backend';
 
 
