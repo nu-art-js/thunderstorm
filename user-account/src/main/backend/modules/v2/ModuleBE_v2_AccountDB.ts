@@ -61,6 +61,7 @@ export class ModuleBE_v2_AccountDB_Class
 		const salt = generateHex(32);
 		return {
 			email: email,
+			type: request.type,
 			salt,
 			saltedPassword: hashPasswordWithSalt(salt, request.password)
 		};
@@ -93,6 +94,7 @@ export class ModuleBE_v2_AccountDB_Class
 			} catch (err) {
 				const _account: PreDB<DB_Account_V2> = {
 					email: query.where.email,
+					type: 'user'
 				} as PreDB<DB_Account_V2>;
 
 				dispatchEvent = true;
@@ -100,8 +102,6 @@ export class ModuleBE_v2_AccountDB_Class
 			}
 			return account;
 		});
-
-		console.log(dbAccount);
 
 		if (dispatchEvent)
 			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
@@ -123,6 +123,9 @@ export class ModuleBE_v2_AccountDB_Class
 			if (!this.config.canRegister)
 				throw new ApiException(418, 'Registration is disabled!!');
 
+			// this flow is for user accounts
+			body.type = 'user';
+
 			this.password.assertPasswordRules(body.password);
 
 			//Email always lowerCase
@@ -130,7 +133,7 @@ export class ModuleBE_v2_AccountDB_Class
 			MemKey_AccountEmail.set(body.email); // set here, because MemKey_AccountEmail is needed in createAccountImpl
 
 			//Create the account
-			const account = await this.createAccountImpl(body, true, transaction); // Must have a password, because we use it to auto-login immediately after
+			const account = await this.createAccountImpl(body as Request_CreateAccount, true, transaction); // Must have a password, because we use it to auto-login immediately after
 			const uiAccount = getUIAccount(account);
 			this.logErrorBold('uiAccount', uiAccount);
 			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
@@ -151,6 +154,8 @@ export class ModuleBE_v2_AccountDB_Class
 			return session;
 		},
 		create: async (request: PartialProperties<Request_CreateAccount, 'password' | 'password_check'>, transaction?: Transaction) => {
+			// this flow is for service accounts
+			request.type = 'service';
 			await this.createAccountImpl(request, false, transaction);
 		},
 		logout: async (queryParams: QueryParams) => {
@@ -230,7 +235,7 @@ export class ModuleBE_v2_AccountDB_Class
 		body.email = body.email.toLowerCase();
 
 		// If login SAML or admin creates an account - it doesn't necessarily receive a password yet.
-		let account = {email: body.email};
+		let account = {email: body.email, type: body.type};
 
 		if (body.password || body.password_check || passwordRequired) {
 			this.password.assertPasswordExistence(body.email, body.password, body.password_check);
@@ -277,6 +282,7 @@ export class ModuleBE_v2_AccountDB_Class
 				throw new ApiException(401, 'Account login using SAML');
 
 			const updatedAccount = this.spiceAccount({
+				type: 'user',
 				email: userEmail,
 				password: newPassword,
 				password_check: newPassword
