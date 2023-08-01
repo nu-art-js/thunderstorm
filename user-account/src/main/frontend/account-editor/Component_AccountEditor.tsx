@@ -69,9 +69,9 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 				<TS_PropRenderer.Vertical label={'Email'}>
 					<div>{this.state.user?.email}</div>
 				</TS_PropRenderer.Vertical>
-				<TS_PropRenderer.Vertical label={'Has Password'}>
-					<div>{this.state.user?._newPasswordRequired}</div>
-				</TS_PropRenderer.Vertical>
+				{this.state.user?.type !== 'service' && <TS_PropRenderer.Vertical label={'Need To Set Password'}>
+                    <div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
+                </TS_PropRenderer.Vertical>}
 			</LL_H_C>;
 
 
