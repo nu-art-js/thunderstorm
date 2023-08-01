@@ -11,13 +11,27 @@ import {
 	Response_Auth,
 	UI_Account
 } from '../../../shared';
-import {__stringify, ApiException, compare, dispatch_onApplicationException, Dispatcher, generateHex, hashPasswordWithSalt, PreDB} from '@nu-art/ts-common';
+import {
+	__stringify,
+	ApiException,
+	compare,
+	dispatch_onApplicationException,
+	Dispatcher,
+	DontCallthisException,
+	generateHex,
+	hashPasswordWithSalt,
+	MUSTNeverHappenException,
+	PreDB
+} from '@nu-art/ts-common';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
-import {Header_SessionId, MemKey_AccountEmail, ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
+import {CollectSessionData, Header_SessionId, MemKey_AccountEmail, ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
 import {QueryParams} from '@nu-art/thunderstorm';
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {FirestoreQuery} from '@nu-art/firebase';
+import {FirestoreInterfaceV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreInterfaceV2';
+import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
 import Transaction = firestore.Transaction;
 
 
@@ -39,9 +53,25 @@ type Config = DBApiConfig<DB_Account_V2> & {
 }
 
 export class ModuleBE_v2_AccountDB_Class
-	extends ModuleBE_BaseDBV2<DB_Account_V2, Config> {
+	extends ModuleBE_BaseDBV2<DB_Account_V2, Config>
+	implements CollectSessionData<{ account: UI_Account }> {
+
 	constructor() {
 		super(DBDef_Account);
+	}
+
+	manipulateQuery(query: FirestoreQuery<DB_Account_V2>): FirestoreQuery<DB_Account_V2> {
+		return {...query, select: ['email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']};
+	}
+
+	canDeleteItems(dbItems: DB_Account_V2[], transaction?: FirebaseFirestore.Transaction): Promise<void> {
+		throw new DontCallthisException('Cannot delete accounts yet');
+	}
+
+	async __collectSessionData(accountId: string) {
+		return {
+			account: await this.query.uniqueAssert(accountId) as UI_Account,
+		};
 	}
 
 	init() {
@@ -51,7 +81,6 @@ export class ModuleBE_v2_AccountDB_Class
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.registerAccount, ModuleBE_v2_AccountDB.account.register),
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.changePassword, ModuleBE_v2_AccountDB.changePassword),
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.login, ModuleBE_v2_AccountDB.account.login),
-			createQueryServerApi(ApiDefBE_AccountV2.vv1.listAccounts, ModuleBE_v2_AccountDB.account.list),
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.createAccount, ModuleBE_v2_AccountDB.account.create),
 			createQueryServerApi(ApiDefBE_AccountV2.vv1.logout, ModuleBE_v2_AccountDB.account.logout),
 		]);
@@ -61,7 +90,7 @@ export class ModuleBE_v2_AccountDB_Class
 		dbInstance._auditorId = MemKey_AccountEmail.get();
 	}
 
-	private spiceAccount(request: Request_RegisterAccount) {
+	private spiceAccount(request: Request_RegisterAccount): PreDB<DB_Account_V2> {
 		const email = request.email.toLowerCase(); //Email always lowerCase
 		const salt = generateHex(32);
 		return {
@@ -69,20 +98,7 @@ export class ModuleBE_v2_AccountDB_Class
 			type: request.type,
 			salt,
 			saltedPassword: hashPasswordWithSalt(salt, request.password)
-		};
-	}
-
-	/**
-	 * todo legacy code from old module- Potential for improvement
-	 */
-	listUsers = async (transaction?: Transaction) => {
-		return (await this.query.custom({select: ['_id', 'email']}, transaction)) as { email: string, _id: string }[];
-	};
-
-	async getUIAccountByEmail(_email: string): Promise<UI_Account | undefined> {
-		//Email always lowerCase
-		const email = _email.toLowerCase();
-		return this.query.uniqueCustom({where: {email}, select: ['email', '_id']});
+		} as PreDB<DB_Account_V2>;
 	}
 
 	/**
@@ -113,15 +129,6 @@ export class ModuleBE_v2_AccountDB_Class
 
 		return dbAccount;
 	};
-
-	/**
-	 * todo legacy code from old module- necessary?
-	 */
-	async getAccountByEmail(_email: string) {
-		//Email always lowerCase
-		const email = _email.toLowerCase();
-		return this.query.uniqueCustom({where: {email}});
-	}
 
 	account = {
 		register: async (body: RequestBody_RegisterAccount, transaction?: Transaction): Promise<Response_Auth> => {
@@ -169,9 +176,6 @@ export class ModuleBE_v2_AccountDB_Class
 
 			await ModuleBE_v2_SessionDB.delete.query({where: {sessionId}});
 		},
-		list: async () => {
-			return {accounts: await this.query.custom({where: {}, select: ['_id', 'type', 'email', 'displayName', 'thumbnail']}) as UI_Account[]};
-		}
 	};
 
 	password = {
@@ -188,13 +192,7 @@ export class ModuleBE_v2_AccountDB_Class
 				throw new ApiException(444, `Password assertion failed with: ${__stringify(assertPassword)}`);
 		},
 		assertPasswordMatch: async (password: string, userEmail: string, transaction?: Transaction) => {
-			const account = await this.query.uniqueCustom({where: {email: userEmail}}, transaction);
-
-			if (!account) {
-				await dispatch_onApplicationException.dispatchModuleAsync(new ApiException(401, `There is no account for email '${userEmail}'.`), this);
-				throw new ApiException(401, 'Wrong username or password.');
-			}
-
+			const account = await this.queryAccountWithPassword(userEmail, transaction);
 			if (!account.salt || !account.saltedPassword)
 				throw new ApiException(401, 'Account was never logged in using username and password, probably logged using SAML');
 
@@ -204,6 +202,25 @@ export class ModuleBE_v2_AccountDB_Class
 			return account;
 		}
 	};
+
+	private async queryAccountWithPassword(userEmail: string, transaction?: Transaction) {
+		const firestoreQuery = FirestoreInterfaceV2.buildQuery<DB_Account_V2>(this.collection, {where: {email: userEmail}});
+		let results;
+		if (transaction)
+			results = (await transaction.get(firestoreQuery)).docs as FirestoreType_DocumentSnapshot<DB_Account_V2>[];
+		else
+			results = (await firestoreQuery.get()).docs as FirestoreType_DocumentSnapshot<DB_Account_V2>[];
+
+		if (results.length !== 1)
+			if (results.length === 0) {
+				await dispatch_onApplicationException.dispatchModuleAsync(new ApiException(401, `There is no account for email '${userEmail}'.`), this);
+				throw new ApiException(401, 'Wrong username or password.');
+			} else if (results.length > 1) {
+				throw new MUSTNeverHappenException('Too many users');
+			}
+
+		return results[0].data();
+	}
 
 	private async loginImpl(request: Request_LoginAccount, transaction?: Transaction) {
 		request.email = request.email.toLowerCase();
@@ -218,13 +235,16 @@ export class ModuleBE_v2_AccountDB_Class
 		body.email = body.email.toLowerCase();
 
 		// If login SAML or admin creates an account - it doesn't necessarily receive a password yet.
-		let account = {email: body.email, type: body.type};
+		let account = {email: body.email, type: body.type} as PreDB<DB_Account_V2>;
 
+		// TODO: this logic seems faulty.. need to re-done
 		if (body.password || body.password_check || passwordRequired) {
 			this.password.assertPasswordExistence(body.email, body.password, body.password_check);
 			this.password.assertPasswordRules(body.password!);
 
 			account = this.spiceAccount(body as Request_RegisterAccount);
+			if (!passwordRequired)
+				account._newPasswordRequired = true;
 		}
 
 		return getUIAccount(await this.runTransaction(async _transaction => {
