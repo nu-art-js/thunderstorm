@@ -1,7 +1,8 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {__stringify} from '@nu-art/ts-common';
 import {expect} from 'chai';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../main/shared/assertion';
+import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+
 
 type PasswordValidationInput = {
 	password: string;
@@ -216,3 +217,7 @@ export const TestSuite_Accounts_PasswordValidation: PasswordValidationSuite = {
 		expect(result).to.eql(testCase.result);
 	}
 };
+
+describe('Accounts - Password Validation', () => {
+	testSuiteTester(TestSuite_Accounts_PasswordValidation);
+});

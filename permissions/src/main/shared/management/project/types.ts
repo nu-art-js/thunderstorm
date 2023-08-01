@@ -22,5 +22,4 @@ import {Auditable, DB_Object} from '@nu-art/ts-common';
 
 export type DB_PermissionProject = DB_Object & Auditable & {
 	name: string,
-	customKeys?: string[]
 }

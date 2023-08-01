@@ -3,45 +3,43 @@ import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
 import '../_core/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {Request_CreateAccount} from '../../main';
+import {PartialProperties} from '@nu-art/ts-common';
+import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 
 
 export type createInput = {
-	createCredentials: {
-		email: string
-		password?: string
-		password_check?: string
-	}
+	createCredentials: PartialProperties<Request_CreateAccount, 'password' | 'password_check'>
 }
 
 type CreateAccountTest = TestSuite<createInput, boolean>;
-
 
 const TestCases_FB_Create: CreateAccountTest['testcases'] = [
 	{
 		description: 'With password',
 		input: {
-			createCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
+			createCredentials: {email: 'test@email.com', password: '1234', password_check: '1234', type: 'user'},
 		},
 		result: true
 	},
 	{
 		description: 'Without password',
 		input: {
-			createCredentials: {email: 'test@email.com'},
+			createCredentials: {email: 'test@email.com', type: 'user'},
 		},
 		result: true
 	},
 	{
 		description: 'Password without password_check',
 		input: {
-			createCredentials: {email: 'test@email.com', password: '1234'},
+			createCredentials: {email: 'test@email.com', password: '1234', type: 'user'},
 		},
 		result: false
 	},
 	{
 		description: 'Password_check without password',
 		input: {
-			createCredentials: {email: 'test@email.com', password_check: '1234'},
+			createCredentials: {email: 'test@email.com', password_check: '1234', type: 'user'},
 		},
 		result: false
 	},
@@ -83,3 +81,7 @@ export const TestSuite_Accounts_Create: CreateAccountTest = {
 		expect(result).to.eql(testCase.result);
 	}
 };
+
+describe('Accounts - Create', () => {
+	testSuiteTester(TestSuite_Accounts_Create);
+});
