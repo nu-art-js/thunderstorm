@@ -8,7 +8,7 @@ import {
 	QueryParam_Email,
 	QueryParam_SessionId,
 	Response_Auth,
-	Response_LoginSAML,
+	Response_LoginSAML, ResponseBody_CreateAccount,
 	UI_Account
 } from '../../../shared';
 import {
@@ -62,7 +62,7 @@ class ModuleFE_Account_v2_Class
 
 		this.vv1 = {
 			registerAccount: apiWithBody(ApiDefFE_Account.vv1.registerAccount, this.setLoginInfo),
-			createAccount: apiWithBody(ApiDefFE_Account.vv1.createAccount),
+			createAccount: apiWithBody(ApiDefFE_Account.vv1.createAccount, this.onAccountCreated),
 			changePassword: apiWithBody(ApiDefFE_Account.vv1.changePassword),
 			login: apiWithBody(ApiDefFE_Account.vv1.login, this.setLoginInfo),
 			loginSaml: apiWithQuery(ApiDefFE_Account.vv1.loginSaml, this.onLoginCompletedSAML),
@@ -84,6 +84,10 @@ class ModuleFE_Account_v2_Class
 	getLoggedStatus = () => this.status;
 
 	isStatus = (status: LoggedStatus) => this.status === status;
+
+	private onAccountCreated = async (response: ResponseBody_CreateAccount) => {
+		await this.onEntriesUpdated([response as DB_Account_V2]);
+	};
 
 	protected init(): void {
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());

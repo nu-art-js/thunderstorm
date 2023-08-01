@@ -13,7 +13,7 @@ import {
 } from '../../../shared';
 import {
 	__stringify,
-	ApiException,
+	ApiException, BadImplementationException,
 	compare,
 	dispatch_onApplicationException,
 	Dispatcher,
@@ -24,7 +24,12 @@ import {
 	PreDB
 } from '@nu-art/ts-common';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
-import {CollectSessionData, Header_SessionId, MemKey_AccountEmail, ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
+import {
+	CollectSessionData,
+	Header_SessionId,
+	MemKey_AccountEmail,
+	ModuleBE_v2_SessionDB
+} from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
 import {QueryParams} from '@nu-art/thunderstorm';
@@ -165,8 +170,13 @@ export class ModuleBE_v2_AccountDB_Class
 			return session;
 		},
 		create: async (request: PreDB<UI_Account> & { password?: string }, transaction?: Transaction) => {
-			// this flow is for service accounts
-			request.type = 'service';
+			if (request.type === 'user') {
+				if (request.password)
+					return await this.createAccountImpl(request, true, transaction);
+
+				throw new BadImplementationException('Trying to create a user from type user without password provided');
+			}
+
 			return await this.createAccountImpl(request, false, transaction);
 		},
 		logout: async (queryParams: QueryParams) => {

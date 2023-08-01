@@ -37,9 +37,7 @@ export type Request_CreateAccount = {
 	password_check?: string
 };
 
-export type ResponseBody_CreateAccount = {
-	sessionId: string
-};
+export type ResponseBody_CreateAccount = UI_Account;
 
 export type RequestBody_ValidateSession = {}
 export type ResponseBody_ValidateSession = {}
@@ -66,7 +64,7 @@ type TypedApi_LoginSaml = { loginSaml: QueryApi<Response_LoginSAML, RequestParam
 type TypedApi_Login = { login: BodyApi<Response_Auth, Request_LoginAccount> };
 type TypedApi_Logout = { logout: QueryApi<void, {}> };
 type TypedAPI_RegisterAccount = { registerAccount: BodyApi<Response_Auth, RequestBody_RegisterAccount> };
-type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account, Request_CreateAccount>};
+type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account, Request_CreateAccount> };
 type TypedApi_ChangedPassword = { changePassword: BodyApi<ResponseBody_ChangePassword, RequestBody_ChangePassword> };
 type TypedApi_CreateToken = { createToken: QueryApi<{ token: string }, DB_BaseObject & { ttlMs: number }> };
 

@@ -9,6 +9,8 @@ export type DB_Session_V2 = DB_Object & {
 	sessionId: string
 	timestamp: number
 }
+
+//TODO: Remove when moving to proto
 export type UI_Account = DB_Object & {
 	type: AccountType;
 	email: string;

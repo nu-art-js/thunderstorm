@@ -1,0 +1,82 @@
+.form-container {
+  padding: 14px;
+  width: 650px;
+  background: white;
+  border-radius: 4px;
+  gap: 15px;
+
+
+  .inputs-row {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .ts-input {
+    padding: 2px 10px 2px 10px;
+    border-radius: 4px;
+    background: none;
+    border: 1px solid #e3e9f2;
+
+    &::placeholder {
+      font-style: normal;
+    }
+  }
+
+  .ts-dropdown {
+    max-width: 300px;
+
+    .ts-dropdown__items-container {
+      margin: 0;
+    }
+
+    .ts-dropdown__header {
+      background: none;
+      border-radius: 4px;
+      border: 1px solid #e3e9f2;
+      padding: 2px 10px 2px 10px;
+      text-align: center;
+
+      .ts-dropdown__placeholder {
+        font-style: normal;
+        padding: 0;
+      }
+    }
+
+    .ts-dropdown__items-container {
+      border: none;
+    }
+
+
+    .ts-tree {
+      .ts-tree__children-container {
+        .ts-tree__node {
+          background: none;
+          padding: 4px;
+          cursor: pointer;
+          border: 1px solid #e3e9f2;
+
+          &:hover {
+            background: rgb(210, 219, 234);
+          }
+        }
+      }
+    }
+  }
+
+  .ts-busy-button {
+    background: white;
+    font-size: 12px;
+    border-radius: 5px;
+    color: inherit;
+    padding: 2px 10px 2px 10px;
+    height: 40px;
+    font-weight: 400;
+    border: 1px #e3e9f2 solid;
+    margin-inline: 0;
+
+    &:hover {
+      background: #6C87B0FF;
+      color: white;
+    }
+  }
+}
