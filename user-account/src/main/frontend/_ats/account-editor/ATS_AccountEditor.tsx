@@ -1,15 +1,11 @@
 import * as React from 'react';
 import './ATS_AccountEditor.scss';
 import {AppToolsScreen, ComponentAsync, SimpleListAdapter, TS_BusyButton, TS_DropDown, TS_Input} from '@nu-art/thunderstorm/frontend';
-import {accountTypes} from "../../../shared";
+import {AccountType, accountTypes, Request_CreateAccount} from "../../../shared";
 import {ModuleFE_AccountV2} from "../../modules/v2/ModuleFE_v2_Account";
 
 
-type State = {
-	type: string;
-	email: string;
-	password: string;
-};
+type State = Request_CreateAccount;
 
 export class ATS_AccountEditor
 	extends ComponentAsync<{}, State> {
@@ -26,16 +22,7 @@ export class ATS_AccountEditor
 	// ######################### Logic #########################
 
 	addAccount = async () => {
-		switch (this.state.type) {
-			case 'user':
-				return await ModuleFE_AccountV2.vv1.registerAccount({
-					email: this.state.email,
-					password: this.state.password,
-					password_check: this.state.password
-				}).executeSync();
-			case 'service':
-				return await ModuleFE_AccountV2.vv1.createAccount({email: this.state.email, type: this.state.type}).executeSync();
-		}
+		return await ModuleFE_AccountV2.vv1.createAccount({...this.state, password_check: this.state.password}).executeSync();
 	};
 
 	render() {
@@ -46,8 +33,8 @@ export class ATS_AccountEditor
 				placeholder={'account type'}
 				selected={this.state.type}
 				adapter={SimpleListAdapter([...accountTypes], i => <div className={'node-data'}><span>{i.item}</span></div>)}
-				onSelected={(type: string) => {
-					this.setState({type});
+				onSelected={(type: AccountType) => {
+					type === 'service' ? this.setState({type, password: undefined}) : this.setState({type});
 				}}></TS_DropDown>
 			{this.state.type === 'user' ?
 				<>

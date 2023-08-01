@@ -5,22 +5,13 @@ import {
 	DBDef_Account,
 	Request_CreateAccount,
 	Request_LoginAccount,
+	Request_RegisterAccount,
 	RequestBody_ChangePassword,
-	RequestBody_CreateAccount,
+	RequestBody_RegisterAccount,
 	Response_Auth,
 	UI_Account
 } from '../../../shared';
-import {
-	__stringify,
-	ApiException,
-	compare,
-	dispatch_onApplicationException,
-	Dispatcher,
-	generateHex,
-	hashPasswordWithSalt,
-	PartialProperties,
-	PreDB
-} from '@nu-art/ts-common';
+import {__stringify, ApiException, compare, dispatch_onApplicationException, Dispatcher, generateHex, hashPasswordWithSalt, PreDB} from '@nu-art/ts-common';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {Header_SessionId, MemKey_AccountEmail, ModuleBE_v2_SessionDB} from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
@@ -70,7 +61,7 @@ export class ModuleBE_v2_AccountDB_Class
 		dbInstance._auditorId = MemKey_AccountEmail.get();
 	}
 
-	private spiceAccount(request: Request_CreateAccount) {
+	private spiceAccount(request: Request_RegisterAccount) {
 		const email = request.email.toLowerCase(); //Email always lowerCase
 		const salt = generateHex(32);
 		return {
@@ -133,12 +124,12 @@ export class ModuleBE_v2_AccountDB_Class
 	}
 
 	account = {
-		register: async (body: RequestBody_CreateAccount, transaction?: Transaction): Promise<Response_Auth> => {
+		register: async (body: RequestBody_RegisterAccount, transaction?: Transaction): Promise<Response_Auth> => {
 			if (!this.config.canRegister)
 				throw new ApiException(418, 'Registration is disabled!!');
 
 			// this flow is for user accounts
-			(body as Request_CreateAccount).type = 'user';
+			(body as Request_RegisterAccount).type = 'user';
 
 			this.password.assertPasswordRules(body.password);
 
@@ -147,7 +138,7 @@ export class ModuleBE_v2_AccountDB_Class
 			MemKey_AccountEmail.set(body.email); // set here, because MemKey_AccountEmail is needed in createAccountImpl
 
 			//Create the account
-			const uiAccount = await this.createAccountImpl(body as Request_CreateAccount, true, transaction); // Must have a password, because we use it to auto-login immediately after
+			const uiAccount = await this.createAccountImpl(body as Request_RegisterAccount, true, transaction); // Must have a password, because we use it to auto-login immediately after
 			this.logErrorBold('uiAccount', uiAccount);
 			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
 
@@ -222,7 +213,7 @@ export class ModuleBE_v2_AccountDB_Class
 		return {account, session};
 	}
 
-	private createAccountImpl = async (body: PartialProperties<Request_CreateAccount, 'password' | 'password_check'>, passwordRequired?: boolean, transaction?: Transaction) => {
+	private createAccountImpl = async (body: Request_CreateAccount, passwordRequired?: boolean, transaction?: Transaction) => {
 		//Email always lowerCase
 		body.email = body.email.toLowerCase();
 
@@ -233,7 +224,7 @@ export class ModuleBE_v2_AccountDB_Class
 			this.password.assertPasswordExistence(body.email, body.password, body.password_check);
 			this.password.assertPasswordRules(body.password!);
 
-			account = this.spiceAccount(body as Request_CreateAccount);
+			account = this.spiceAccount(body as Request_RegisterAccount);
 		}
 
 		return getUIAccount(await this.runTransaction(async _transaction => {
