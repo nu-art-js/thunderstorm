@@ -3,6 +3,7 @@ import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {ModuleBE_v2_AccountDB} from '../../main/backend';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {expect} from 'chai';
+import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 
 
 export type loginInput = {
@@ -13,12 +14,11 @@ export type loginInput = {
 
 type LoginAccountTest = TestSuite<loginInput, boolean>;
 
-
 const TestCases_FB_Login: LoginAccountTest['testcases'] = [
 	{
 		description: 'Login Pass',
 		input: {
-			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
+			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234', type: 'user'},
 			loginCredentials: {email: 'test@email.com', password: '1234'}
 		},
 		result: true
@@ -26,7 +26,7 @@ const TestCases_FB_Login: LoginAccountTest['testcases'] = [
 	{
 		description: 'Login Fail - Email',
 		input: {
-			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
+			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234', type: 'user'},
 			loginCredentials: {email: 'test1@email.com', password: '12344'},
 			ignoreErrorWithText: 'Could not find Account with unique query'
 		},
@@ -35,7 +35,7 @@ const TestCases_FB_Login: LoginAccountTest['testcases'] = [
 	{
 		description: 'Login Fail - Password',
 		input: {
-			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234'},
+			registerCredentials: {email: 'test@email.com', password: '1234', password_check: '1234', type: 'user'},
 			loginCredentials: {email: 'test@email.com', password: '12345'},
 			ignoreErrorWithText: 'Wrong username or password',
 		},
@@ -83,3 +83,7 @@ export const TestSuite_Accounts_Login: LoginAccountTest = {
 		expect(result).to.eql(testCase.result);
 	}
 };
+
+describe('Accounts - Login', () => {
+	testSuiteTester(TestSuite_Accounts_Login);
+});
