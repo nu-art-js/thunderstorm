@@ -15,6 +15,8 @@ export type UI_Account = DB_Object & {
 
 	displayName?: string
 	thumbnail?: string
+
+	_newPasswordRequired?: boolean
 }
 
 export type DB_Account_V2 = AuditableV2 & UI_Account & {

@@ -52,6 +52,7 @@ import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
+import {_EmptyQuery} from '@nu-art/db-api-generator';
 
 
 export class ModuleBE_PermissionUserDB_Class
@@ -75,7 +76,7 @@ export class ModuleBE_PermissionUserDB_Class
 
 	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DB_PermissionUser[]) {
 		const conflicts: DB_PermissionUser[] = [];
-		const accounts = await ModuleBE_v2_AccountDB.listUsers();
+		const accounts = await ModuleBE_v2_AccountDB.query.custom(_EmptyQuery);
 
 		for (const item of dbInstances) {
 			const account = accounts.find(acc => acc._id === item.accountId);
@@ -145,7 +146,7 @@ export class ModuleBE_PermissionUserDB_Class
 	async insertIfNotExist(email: string) {
 		return this.runTransaction(async (transaction) => {
 
-			const account = await ModuleBE_v2_AccountDB.getUIAccountByEmail(email);
+			const account = await ModuleBE_v2_AccountDB.query.uniqueWhere({email});
 			if (!account)
 				throw new ApiException(404, `user not found for email ${email}`);
 
