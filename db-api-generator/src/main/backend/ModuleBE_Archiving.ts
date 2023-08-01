@@ -4,22 +4,17 @@ import {
 	batchActionParallel,
 	currentTimeMillis,
 	Day,
-	DB_Object, dbIdLength,
+	DB_Object,
+	dbIdLength,
 	deepClone,
 	generateHex,
 	Hour,
 	removeDBObjectKeys
 } from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
-import {ModuleBE_BaseDB} from './ModuleBE_BaseDB';
-import {Clause_Where} from '@nu-art/firebase';
-import {
-	ApiDef_Archiving,
-	RequestBody_HardDeleteUnique,
-	RequestQuery_DeleteAll,
-	RequestQuery_GetHistory
-} from '../shared/archiving/apis';
+import {ApiDef_Archiving, RequestBody_HardDeleteUnique, RequestQuery_DeleteAll, RequestQuery_GetHistory} from '../shared/archiving/apis';
 import {_EmptyQuery} from '../shared';
+import {ModuleBE_BaseDBV2} from './ModuleBE_BaseDBV2';
 
 
 type Params = { collectionName: string, docId: string }
@@ -34,7 +29,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	extends FirestoreFunctionModule<DBType> {
 	private readonly TTL: number; // Time to live for each instance
 	private readonly lastUpdatedTTL: number; // Time to live after last update
-	protected readonly moduleMapper: { [key: string]: ModuleBE_BaseDB<DBType> }; // Module mapper, mapping collection name to module
+	protected readonly moduleMapper: { [key: string]: ModuleBE_BaseDBV2<DBType> }; // Module mapper, mapping collection name to module
 
 	/**
 	 * Constructor initializes TTL, lastUpdatedTTL moduleMapper and sets api routes for the module.
@@ -58,7 +53,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		const modules = Storm.getInstance().filterModules(module => !!module);
 
 		modules.map(module => {
-			const dbModule = module as ModuleBE_BaseDB<DBType>;
+			const dbModule = module as ModuleBE_BaseDBV2<DBType>;
 
 			if (dbModule && dbModule.dbDef && dbModule.dbDef.dbName)
 				// If this module is a Firestore DB module, add it to the mapper
@@ -91,8 +86,9 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		if (!dbModule)
 			throw new BadImplementationException('no module found');
 
-		return dbModule.runInTransaction(async (transaction) => {
-			const instance = dbInstance as DBType ?? await transaction.queryUnique(dbModule.collection, {where: {_id} as Clause_Where<DBType>});
+		return dbModule.runTransaction(async (transaction) => {
+			const instance = dbInstance as DBType ?? await dbModule.query.unique(_id, transaction);
+			// queryUnique(dbModule.collection, {where: {_id} as Clause_Where<DBType>});
 
 			if (!instance)
 				throw new BadImplementationException(`couldn't find doc with id ${_id}`);
@@ -100,8 +96,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 			//make sure trigger will delete object, and it's _archived collection
 			instance.__hardDelete = true;
 
-			const processor = await dbModule.upsert_Read(instance, transaction);
-			await processor();
+			await dbModule.set.item(instance, transaction);
 		});
 	};
 
@@ -120,7 +115,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 		if (!dbModule)
 			throw new BadImplementationException('no module found');
 
-		const collectionItems = await dbModule.query(_EmptyQuery);
+		const collectionItems = await dbModule.query.custom(_EmptyQuery);
 		await batchActionParallel(collectionItems, 10, (chunk) => Promise.all(chunk.map(item => this.hardDeleteUnique({
 			_id: item._id,
 			collectionName: dbModule.collection.name,
@@ -167,7 +162,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param dbModule - The Firestore database module the document belongs to.
 	 * @returns - A boolean indicating whether the TTL has been exceeded (true) or not (false).
 	 */
-	private checkTTL(instance: DBType, dbModule: ModuleBE_BaseDB<DBType>) {
+	private checkTTL(instance: DBType, dbModule: ModuleBE_BaseDBV2<DBType>) {
 		const timestamp = currentTimeMillis();
 		const TTL = dbModule.dbDef.TTL || this.TTL;
 
@@ -187,7 +182,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param dbModule - The Firestore database module the document belongs to.
 	 * @returns - A boolean indicating whether the `lastUpdatedTTL` has been exceeded (true) or not (false).
 	 */
-	private checkLastUpdatedTTL(instance: DBType, dbModule: ModuleBE_BaseDB<DBType>) {
+	private checkLastUpdatedTTL(instance: DBType, dbModule: ModuleBE_BaseDBV2<DBType>) {
 		const timestamp = currentTimeMillis();
 		const lastUpdatedTTL = dbModule.dbDef.lastUpdatedTTL || this.lastUpdatedTTL;
 
@@ -207,7 +202,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param before - The state of the document before changes.
 	 * @returns - A promise that performs the archiving operation or undefined in case of an error.
 	 */
-	private async insertToArchive(dbModule: ModuleBE_BaseDB<DBType>, before: DBType) {
+	private async insertToArchive(dbModule: ModuleBE_BaseDBV2<DBType>, before: DBType) {
 		if (before.__hardDelete)
 			return;
 
@@ -243,7 +238,7 @@ export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
 	 * @param dbModule - The Firestore database module the document belongs to.
 	 * @returns - A promise to perform the deletion operation.
 	 */
-	private async hardDeleteDoc(instance: DBType, dbModule: ModuleBE_BaseDB<DBType>) {
+	private async hardDeleteDoc(instance: DBType, dbModule: ModuleBE_BaseDBV2<DBType>) {
 		// Get reference to the collection the document belongs to
 		const collectionRef = dbModule.collection.collection;
 		// Get reference to the document instance to delete
