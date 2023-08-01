@@ -32,7 +32,7 @@ import {
 	isErrorOfType,
 	Logger,
 	LogLevel,
-	MUSTNeverHappenException,
+	MUSTNeverHappenException, Promise_all_sequentially,
 	tsValidate,
 	TypedMap,
 	ValidationException,
@@ -44,7 +44,6 @@ import {parse} from 'url';
 import {HttpServer} from './HttpServer';
 // noinspection TypeScriptPreferShortImport
 import {ApiDef, BodyApi, QueryApi, QueryParams, TypedApi} from '../../../shared';
-import {assertProperty} from '../../utils/to-be-removed';
 import {ExpressRequest, ExpressResponse, ExpressRouter, ServerApi_Middleware} from '../../utils/types';
 import {
 	MemKey_HttpRequest,
@@ -72,7 +71,6 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 	private bodyValidator?: ValidatorTypeResolver<API['B']>;
 	private queryValidator?: ValidatorTypeResolver<API['P']>;
 	readonly apiDef: ApiDef<API>;
-	protected middlewareResults!: any[];
 	// readonly method: HttpMethod;
 	// readonly relativePath: string;
 
@@ -138,8 +136,6 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 		this.url = `${HttpServer.getBaseUrl()}${fullPath}`;
 	}
 
-	assertProperty = assertProperty;
-
 	call = async (req: ExpressRequest, res: ExpressResponse) => {
 		return new MemStorage().init(async () => {
 			const startedAt = currentTimeMillis();
@@ -189,7 +185,7 @@ export abstract class ServerApi<API extends TypedApi<any, any, any, any>>
 				this.queryValidator && tsValidate<API['P']>(reqQuery, this.queryValidator);
 
 				if (this.middlewares)
-					this.middlewareResults = await Promise.all(this.middlewares.map(middleware => middleware()));
+					await Promise_all_sequentially(this.middlewares);
 
 				const toReturn: unknown = await this.process();
 				if (response.isConsumed())
