@@ -1,48 +1,109 @@
 import * as React from 'react';
 import './ATS_AccountEditor.scss';
-import {AppToolsScreen, ComponentAsync, SimpleListAdapter, TS_BusyButton, TS_DropDown, TS_Input} from '@nu-art/thunderstorm/frontend';
-import {AccountType, accountTypes, Request_CreateAccount} from "../../../shared";
-import {ModuleFE_AccountV2} from "../../modules/v2/ModuleFE_v2_Account";
+import {
+	AppToolsScreen,
+	ComponentSync,
+	LL_H_C,
+	LL_V_L,
+	TS_BusyButton,
+	TS_PropRenderer
+} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_AccountV2, OnAccountsUpdated} from '../../modules/v2/ModuleFE_v2_Account';
+import {TS_Icons} from '@nu-art/ts-styles';
+import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
+import {DB_Account_V2, UI_Account} from '../../../shared';
+import {
+	ApiCallerEventType,
+	Props_SmartComponent,
+	SmartComponent,
+	State_SmartComponent
+} from '@nu-art/db-api-generator/frontend';
+import {generateUUID} from '@nu-art/ts-common';
 
 
-type State = Request_CreateAccount;
+type Props = {}
+
+type State = {
+	selectedUser?: UI_Account,
+	isPreview?: boolean
+}
 
 export class ATS_AccountEditor
-	extends ComponentAsync<{}, State> {
+	extends ComponentSync<Props, State> {
 
 	static screen: AppToolsScreen = {name: 'Accounts Editor', key: 'user-account', renderer: this, group: 'TS Dev Tools'};
 
+
 	// ######################### Life Cycle #########################
 
-	protected async deriveStateFromProps(nextProps: {}) {
-		const state: State = this.state ? {...this.state} : {} as State;
+	protected deriveStateFromProps(nextProps: {}, state: State) {
+		state = this.state ? {...this.state} : {} as State;
 		return state;
 	}
 
 	// ######################### Logic #########################
 
-	addAccount = async () => {
-		return await ModuleFE_AccountV2.vv1.createAccount({...this.state, password_check: this.state.password}).executeSync();
+	private setSelectedAccount = (account?: UI_Account) => {
+		if (!account)
+			this.setState({isPreview: false, selectedUser: undefined});
+		else
+			this.setState({isPreview: true, selectedUser: account});
 	};
 
 	render() {
-		return <div style={{width: '30%'}}>
-			<TS_Input type={'text'} placeholder={'email'} onChange={(email) => this.setState({email})}/>
-			<TS_DropDown
-				className={'fancy'}
-				placeholder={'account type'}
-				selected={this.state.type}
-				adapter={SimpleListAdapter([...accountTypes], i => <div className={'node-data'}><span>{i.item}</span></div>)}
-				onSelected={(type: AccountType) => {
-					type === 'service' ? this.setState({type, password: undefined}) : this.setState({type});
-				}}></TS_DropDown>
-			{this.state.type === 'user' ?
-				<>
-					<TS_Input type={'password'} placeholder={'temporary password'} onChange={(password) => this.setState({password})}/>
-				</> :
-				<></>
-			}
-			<TS_BusyButton onClick={this.addAccount}>Add Account</TS_BusyButton>
-		</div>;
+		return <LL_H_C className={'account-editor-form'}>
+			<Component_AccountList setSelectedAccount={this.setSelectedAccount}/>
+			<Component_AccountEditor isPreview={this.state.isPreview} user={this.state.selectedUser}/>
+		</LL_H_C>;
+	}
+}
+
+
+type ListState = State_SmartComponent & {
+	list: UI_Account[]
+};
+
+type ListProps = Props_SmartComponent & {
+	setSelectedAccount: (account?: UI_Account) => void
+}
+
+class Component_AccountList
+	extends SmartComponent<ListProps, ListState> implements OnAccountsUpdated {
+
+	__onAccountsUpdated(...params: ApiCallerEventType<DB_Account_V2>) {
+		this.reDeriveState();
+	}
+
+	static defaultProps = {
+		modules: [ModuleFE_AccountV2]
+	};
+
+	protected async deriveStateFromProps(nextProps: ListProps, state: ListState) {
+		state.list = ModuleFE_AccountV2.cache.allMutable() as UI_Account[];
+		return state;
+	}
+
+	render() {
+		return <LL_V_L className={'form-container account-list'}>
+			<LL_H_C className={'match_width'}>
+				<TS_PropRenderer.Horizontal className={'match_width'} label={'Accounts List'}>
+					<TS_BusyButton onClick={async () => this.props.setSelectedAccount()}>Create
+						Account</TS_BusyButton>
+				</TS_PropRenderer.Horizontal>
+			</LL_H_C>
+			<LL_V_L className={'match_width users-list'}>
+				{
+					this.state.list.map(account =>
+						<TS_PropRenderer.Horizontal key={generateUUID()} className={'match_width row'}
+													label={account.email}>
+							<LL_H_C className={'user-utils'}>
+								<TS_Icons.information.component
+									onClick={() => this.props.setSelectedAccount(account)}/>
+							</LL_H_C>
+						</TS_PropRenderer.Horizontal>
+					)
+				}
+			</LL_V_L>
+		</LL_V_L>;
 	}
 }
