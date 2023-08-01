@@ -112,7 +112,7 @@ class ModuleFE_Account_v2_Class
 				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 
 			this.sessionData = sessionData;
-			this.accountId = sessionData.accountId;
+			this.accountId = sessionData.account._id;
 			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 		}
 
