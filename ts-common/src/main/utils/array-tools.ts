@@ -189,6 +189,32 @@ export async function batchAction<T extends any = any, R extends any = any>(arr:
 	return result;
 }
 
+/**
+ * Processes an array of promise-returning tasks sequentially.
+ *
+ * @typeParam T - The type of resolved value of the promises.
+ * @returns A promise that resolves to an array of resolved values.
+ *
+ * @example
+ * ```typescript
+ * let tasks = [
+ *     () => new Promise<number>(resolve => setTimeout(() => resolve(1), 1000)),
+ *     () => new Promise<number>(resolve => setTimeout(() => resolve(2), 500)),
+ *     () => new Promise<number>(resolve => setTimeout(() => resolve(3), 1500))
+ * ];
+ *
+ * Promise_all_sequentially(tasks).then(console.log);  // [1, 2, 3]
+ * ```
+ * @param promises
+ */
+export async function Promise_all_sequentially<T>(promises: Array<() => Promise<T>>): Promise<T[]> {
+	const results: T[] = [];
+	for (const promise of promises) {
+		results.push(await promise());
+	}
+	return results;
+}
+
 export async function batchActionParallel<T extends any = any, R extends any = any>(arr: T[], chunk: number, action: (elements: T[]) => Promise<R | R[]>): Promise<R[]> {
 	const promises: Promise<R>[] = [];
 	for (let i = 0, j = arr.length; i < j; i += chunk) {
