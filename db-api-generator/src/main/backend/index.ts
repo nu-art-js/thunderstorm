@@ -19,10 +19,10 @@
  * limitations under the License.
  */
 
-export * from './ModuleBE_BaseApi';
-export * from './ModuleBE_BaseDB';
-export * from './ModuleBE_SyncManager';
 export * from './db-def';
 export * from './LockedOperation';
-export * from './ModuleBE_SyncEnv';
 export * from './ModuleBE_Archiving';
+export * from './ModuleBE_BaseApiV2';
+export * from './ModuleBE_BaseDBV2';
+export * from './ModuleBE_v2_SyncEnv';
+export * from './ModuleBE_v2_SyncManager';
