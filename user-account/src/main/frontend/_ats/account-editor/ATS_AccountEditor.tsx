@@ -1,6 +1,7 @@
 import * as React from 'react';
 import './ATS_AccountEditor.scss';
 import {
+	_className,
 	AppToolsScreen,
 	ComponentSync,
 	LL_H_C,
@@ -9,7 +10,6 @@ import {
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_AccountV2, OnAccountsUpdated} from '../../modules/v2/ModuleFE_v2_Account';
-import {TS_Icons} from '@nu-art/ts-styles';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
 import {DB_Account_V2, UI_Account} from '../../../shared';
 import {
@@ -52,7 +52,7 @@ export class ATS_AccountEditor
 
 	render() {
 		return <LL_H_C className={'account-editor-form'}>
-			<Component_AccountList setSelectedAccount={this.setSelectedAccount}/>
+			<Component_AccountList user={this.state.selectedUser} setSelectedAccount={this.setSelectedAccount}/>
 			<Component_AccountEditor isPreview={this.state.isPreview} user={this.state.selectedUser}/>
 		</LL_H_C>;
 	}
@@ -60,11 +60,12 @@ export class ATS_AccountEditor
 
 
 type ListState = State_SmartComponent & {
-	list: UI_Account[]
+	list: UI_Account[],
 };
 
 type ListProps = Props_SmartComponent & {
-	setSelectedAccount: (account?: UI_Account) => void
+	setSelectedAccount: (account?: UI_Account) => void,
+	user?: UI_Account
 }
 
 class Component_AccountList
@@ -84,6 +85,7 @@ class Component_AccountList
 	}
 
 	render() {
+
 		return <LL_V_L className={'form-container account-list'}>
 			<LL_H_C className={'match_width'}>
 				<TS_PropRenderer.Horizontal className={'match_width'} label={'Accounts List'}>
@@ -93,14 +95,12 @@ class Component_AccountList
 			</LL_H_C>
 			<LL_V_L className={'match_width users-list'}>
 				{
-					this.state.list.map(account =>
-						<TS_PropRenderer.Horizontal key={generateUUID()} className={'match_width row'}
-													label={account.email}>
-							<LL_H_C className={'user-utils'}>
-								<TS_Icons.information.component
-									onClick={() => this.props.setSelectedAccount(account)}/>
-							</LL_H_C>
-						</TS_PropRenderer.Horizontal>
+					this.state.list.map(account => {
+							const className = _className('match_width', 'row', this.props.user?._id === account._id && 'selected');
+							return <TS_PropRenderer.Horizontal onClick={() => this.props.setSelectedAccount(account)}
+															   key={generateUUID()} className={className}
+															   label={account.email}/>;
+						}
 					)
 				}
 			</LL_V_L>
