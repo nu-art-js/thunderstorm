@@ -17,11 +17,22 @@
 
     &.account-list {
       width: 300px;
+      max-height: 100%;
+      overflow: auto;
 
       .users-list {
 
         .row {
-          padding: 5px;
+          &.selected {
+            background: styles.dark-blue(7);
+          }
+
+          &:not(:last-child) {
+            border-bottom: 1px solid styles.gray(6);
+          }
+
+          cursor: pointer;
+          padding: 10px;
         }
       }
     }
