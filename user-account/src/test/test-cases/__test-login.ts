@@ -1,4 +1,4 @@
-import {Request_CreateAccount, Request_LoginAccount} from '../../main';
+import {Request_RegisterAccount, Request_LoginAccount} from '../../main';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {ModuleBE_v2_AccountDB} from '../../main/backend';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
@@ -6,7 +6,7 @@ import {expect} from 'chai';
 
 
 export type loginInput = {
-	registerCredentials: Request_CreateAccount
+	registerCredentials: Request_RegisterAccount
 	loginCredentials: Request_LoginAccount
 	ignoreErrorWithText?: string
 }

@@ -1,5 +1,5 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
-import {DB_BaseObject, Minute, PreDB} from '@nu-art/ts-common';
+import {DB_BaseObject, Minute} from '@nu-art/ts-common';
 import {AccountType, UI_Account} from './types';
 
 
@@ -12,7 +12,7 @@ export const QueryParam_SessionId = HeaderKey_SessionId;
 export const QueryParam_RedirectUrl = 'redirectUrl';
 export const HeaderKey_CurrentPage = 'current-page';
 
-export type Request_CreateAccount = {
+export type Request_RegisterAccount = {
 	email: string
 	password: string
 	password_check: string
@@ -24,10 +24,17 @@ export type Response_Auth = UI_Account & {
 	sessionId: string
 }
 
-export type RequestBody_CreateAccount = {
+export type RequestBody_RegisterAccount = {
 	email: string
 	password: string
 	password_check: string
+};
+
+export type Request_CreateAccount = {
+	email: string
+	type: AccountType
+	password?: string
+	password_check?: string
 };
 
 export type ResponseBody_CreateAccount = {
@@ -58,8 +65,8 @@ export type Request_LoginAccount = {
 type TypedApi_LoginSaml = { loginSaml: QueryApi<Response_LoginSAML, RequestParams_LoginSAML> };
 type TypedApi_Login = { login: BodyApi<Response_Auth, Request_LoginAccount> };
 type TypedApi_Logout = { logout: QueryApi<void, {}> };
-type TypedAPI_RegisterAccount = { registerAccount: BodyApi<Response_Auth, RequestBody_CreateAccount> };
-type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account, PreDB<UI_Account> & { password?: string }> };
+type TypedAPI_RegisterAccount = { registerAccount: BodyApi<Response_Auth, RequestBody_RegisterAccount> };
+type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account, Request_CreateAccount>};
 type TypedApi_ChangedPassword = { changePassword: BodyApi<ResponseBody_ChangePassword, RequestBody_ChangePassword> };
 type TypedApi_ListAccounts = { listAccounts: QueryApi<{ accounts: UI_Account[] }> };
 type TypedApi_CreateToken = { createToken: QueryApi<{ token: string }, DB_BaseObject & { ttlMs: number }> };
