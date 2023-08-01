@@ -37,9 +37,7 @@ export type Request_CreateAccount = {
 	password_check?: string
 };
 
-export type ResponseBody_CreateAccount = {
-	sessionId: string
-};
+export type ResponseBody_CreateAccount = UI_Account;
 
 export type RequestBody_ValidateSession = {}
 export type ResponseBody_ValidateSession = {}
@@ -66,14 +64,12 @@ type TypedApi_LoginSaml = { loginSaml: QueryApi<Response_LoginSAML, RequestParam
 type TypedApi_Login = { login: BodyApi<Response_Auth, Request_LoginAccount> };
 type TypedApi_Logout = { logout: QueryApi<void, {}> };
 type TypedAPI_RegisterAccount = { registerAccount: BodyApi<Response_Auth, RequestBody_RegisterAccount> };
-type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account, Request_CreateAccount>};
+type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account, Request_CreateAccount> };
 type TypedApi_ChangedPassword = { changePassword: BodyApi<ResponseBody_ChangePassword, RequestBody_ChangePassword> };
-type TypedApi_ListAccounts = { listAccounts: QueryApi<{ accounts: UI_Account[] }> };
 type TypedApi_CreateToken = { createToken: QueryApi<{ token: string }, DB_BaseObject & { ttlMs: number }> };
 
 const API_LoginSaml = {loginSaml: {method: HttpMethod.GET, path: 'v1/account-v2/login-saml'}} as const;
 const API_Login = {login: {method: HttpMethod.POST, path: 'v1/account-v2/login', timeout: Minute}} as const;
-const API_ListAccounts = {listAccounts: {method: HttpMethod.GET, path: 'v1/account-v2/list-accounts', timeout: Minute}} as const;
 const API_CreateToken = {createToken: {method: HttpMethod.GET, path: 'v1/account-v2/create-token', timeout: Minute}} as const;
 const API_Logout = {logout: {method: HttpMethod.GET, path: 'v1/account-v2/logout'}} as const;
 const API_RegisterAccount = {registerAccount: {method: HttpMethod.POST, path: '/v1/account-v2/register-account'}} as const;
@@ -93,7 +89,6 @@ export type ApiStructBE_Account = {
 		& TypedApi_Login
 		& TypedApi_Logout
 		& TypedApi_ChangedPassword
-		& TypedApi_ListAccounts
 		& TypedApi_CreateToken
 }
 
@@ -105,7 +100,6 @@ export const ApiDefBE_AccountV2: ApiDefResolver<ApiStructBE_Account> = {
 		...API_Login,
 		...API_Logout,
 		...API_ValidateSession,
-		...API_ListAccounts,
 		...API_CreateToken,
 	}
 };
@@ -117,7 +111,6 @@ export type ApiStructFE_Account = {
 		& TypedApi_Login
 		& TypedApi_Logout
 		& TypedApi_LoginSaml
-		& TypedApi_ListAccounts
 		& TypedApi_CreateToken
 }
 
@@ -130,7 +123,6 @@ export const ApiDefFE_Account: ApiDefResolver<ApiStructFE_Account> = {
 		...API_LoginSaml,
 		...API_Logout,
 		...API_ValidateSession,
-		...API_ListAccounts,
 		...API_CreateToken,
 	}
 };

@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-import { ModuleBE_v2_AccountDB, ModuleBE_v2_SessionDB} from '../modules/v2/';
+import {ModuleBE_v2_AccountDB, ModuleBE_v2_SessionDB} from '../modules/v2/';
 import {Module} from '@nu-art/ts-common';
+import {createApisForDBModuleV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseApiV2';
 
 
 export const ModulePackBE_Accounts: Module[] = [
-	// ModuleBE_Account,
-	ModuleBE_v2_AccountDB,
+	ModuleBE_v2_AccountDB, createApisForDBModuleV2(ModuleBE_v2_AccountDB),
 	ModuleBE_v2_SessionDB
 ];
 
