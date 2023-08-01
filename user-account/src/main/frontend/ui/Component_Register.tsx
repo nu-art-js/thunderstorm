@@ -18,7 +18,7 @@
 
 import * as React from 'react';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
-import {Request_CreateAccount, RequestBody_CreateAccount} from '../../shared';
+import {Request_RegisterAccount, RequestBody_RegisterAccount} from '../../shared';
 import {ComponentSync, LL_V_C, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_AccountV2} from "../modules/v2/ModuleFE_v2_Account";
 
@@ -40,7 +40,7 @@ type InputField = {
 
 type Form<T> = { [K in keyof T]: InputField }
 
-const form: Form<RequestBody_CreateAccount> = {
+const form: Form<RequestBody_RegisterAccount> = {
 	email: {
 		className: '',
 		type: 'text',
@@ -60,10 +60,10 @@ const form: Form<RequestBody_CreateAccount> = {
 };
 
 export class Component_Register
-	extends ComponentSync<Props<Request_CreateAccount>, State<Request_CreateAccount>> {
+	extends ComponentSync<Props<Request_RegisterAccount>, State<Request_RegisterAccount>> {
 
-	protected deriveStateFromProps(nextProps: Props<Request_CreateAccount>, state: State<Request_CreateAccount>) {
-		state ??= this.state ? {...this.state} : {} as State<Request_CreateAccount>;
+	protected deriveStateFromProps(nextProps: Props<Request_RegisterAccount>, state: State<Request_RegisterAccount>) {
+		state ??= this.state ? {...this.state} : {} as State<Request_RegisterAccount>;
 		state.data ??= {};
 		return state;
 	}
@@ -100,14 +100,14 @@ export class Component_Register
 		</LL_V_C>;
 	}
 
-	private onValueChanged = (value: string, id: keyof RequestBody_CreateAccount) => {
+	private onValueChanged = (value: string, id: keyof RequestBody_RegisterAccount) => {
 		const data = {...this.state.data};
 		data[id] = value;
 		this.setState({data, errorMessages: undefined});
 	};
 
 	private registerClicked = async () => {
-		const data: Partial<Request_CreateAccount> = this.state.data;
+		const data: Partial<Request_RegisterAccount> = this.state.data;
 		const errors = filterInstances(_keys(form).map(key => {
 			const field = form[key];
 			return data[key] ? undefined : `missing ${field.label}`;
@@ -121,7 +121,7 @@ export class Component_Register
 			return this.setState({errorMessages: errors});
 
 		try {
-			await ModuleFE_AccountV2.vv1.registerAccount(this.state.data as Request_CreateAccount).executeSync();
+			await ModuleFE_AccountV2.vv1.registerAccount(this.state.data as Request_RegisterAccount).executeSync();
 		} catch (_err: any) {
 			const err = _err as Error;
 			this.setState({errorMessages: [err.message]});
