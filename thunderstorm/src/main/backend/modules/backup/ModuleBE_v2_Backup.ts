@@ -10,7 +10,7 @@ import {
 	flatArray,
 	Format_YYYYMMDD_HHmmss,
 	formatTimestamp,
-	LogLevel,
+	LogLevel, Minute,
 	Module,
 	PreDB,
 	TS_Object,
@@ -95,12 +95,18 @@ class ModuleBE_v2_Backup_Class
 		if (!backupDoc)
 			throw new ApiException(500, `no backupdoc found with this id ${body.backupId}`);
 
+		const bucket = await ModuleBE_Firebase.createAdminSession().getStorage().getMainBucket();
+		const fireabseDescriptor = await (await bucket.getFile(backupDoc.firebasePath)).getReadSecuredUrl(10 * Minute);
+		const firestoreDescriptor = await (await bucket.getFile(backupDoc.backupPath)).getReadSecuredUrl(10 * Minute);
+
 		return {
 			backupInfo: {
 				_id: backupDoc._id,
 				backupFilePath: backupDoc.backupPath,
 				metadataFilePath: backupDoc.metadataPath,
 				firebaseFilePath: backupDoc.firebasePath,
+				firebaseSignedUrl: fireabseDescriptor.securedUrl,
+				firestoreSignedUrl: firestoreDescriptor.securedUrl,
 				metadata: backupDoc.metadata
 			}
 		};

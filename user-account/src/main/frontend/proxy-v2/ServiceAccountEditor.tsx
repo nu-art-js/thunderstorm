@@ -33,8 +33,8 @@ export class ServiceAccountEditor
 	extends ComponentAsync<Props, State> {
 
 	protected async deriveStateFromProps(nextProps: Props): Promise<BaseAsyncState & State> {
-		const state = {...this.state} ?? {};
-		state.serviceAccounts = (await ModuleFE_AccountV2.vv1.listAccounts({}).executeSync()).accounts;
+		const state: BaseAsyncState & State = {...this.state} ?? {};
+		state.serviceAccounts = ModuleFE_AccountV2.cache.allMutable();
 		return state;
 	}
 

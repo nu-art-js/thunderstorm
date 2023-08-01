@@ -1,13 +1,14 @@
-import {ApiCallerEventType} from '@nu-art/db-api-generator/frontend';
+import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {
 	ApiDefFE_Account,
 	ApiStructFE_Account,
 	DB_Account_V2,
+	DBDef_Account,
 	HeaderKey_SessionId,
 	QueryParam_Email,
 	QueryParam_SessionId,
 	Response_Auth,
-	Response_LoginSAML,
+	Response_LoginSAML, ResponseBody_CreateAccount,
 	UI_Account
 } from '../../../shared';
 import {
@@ -21,7 +22,7 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
-import {composeUrl, currentTimeMillis, Module, TS_Object} from '@nu-art/ts-common';
+import {composeUrl, currentTimeMillis, TS_Object} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 
 
@@ -48,7 +49,7 @@ export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatus
 export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdated, '__onAccountsUpdated'>('__onAccountsUpdated');
 
 class ModuleFE_Account_v2_Class
-	extends Module<DB_Account_V2>
+	extends ModuleFE_BaseApi<DB_Account_V2, 'email'>
 	implements ApiDefCaller<ApiStructFE_Account>, OnAuthRequiredListener {
 	readonly vv1: ApiDefCaller<ApiStructFE_Account>['vv1'];
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
@@ -57,16 +58,15 @@ class ModuleFE_Account_v2_Class
 	sessionData?: TS_Object;
 
 	constructor() {
-		super();
+		super(DBDef_Account, dispatch_onAccountsUpdated);
 
 		this.vv1 = {
 			registerAccount: apiWithBody(ApiDefFE_Account.vv1.registerAccount, this.setLoginInfo),
-			createAccount: apiWithBody(ApiDefFE_Account.vv1.createAccount),
+			createAccount: apiWithBody(ApiDefFE_Account.vv1.createAccount, this.onAccountCreated),
 			changePassword: apiWithBody(ApiDefFE_Account.vv1.changePassword),
 			login: apiWithBody(ApiDefFE_Account.vv1.login, this.setLoginInfo),
 			loginSaml: apiWithQuery(ApiDefFE_Account.vv1.loginSaml, this.onLoginCompletedSAML),
 			logout: apiWithQuery(ApiDefFE_Account.vv1.logout),
-			listAccounts: apiWithQuery(ApiDefFE_Account.vv1.listAccounts),
 			createToken: apiWithQuery(ApiDefFE_Account.vv1.createToken),
 		};
 	}
@@ -84,6 +84,10 @@ class ModuleFE_Account_v2_Class
 	getLoggedStatus = () => this.status;
 
 	isStatus = (status: LoggedStatus) => this.status === status;
+
+	private onAccountCreated = async (response: ResponseBody_CreateAccount) => {
+		await this.onEntriesUpdated([response as DB_Account_V2]);
+	};
 
 	protected init(): void {
 		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());

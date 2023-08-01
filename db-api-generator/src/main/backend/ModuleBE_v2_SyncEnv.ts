@@ -86,15 +86,12 @@ class ModuleBE_v2_SyncEnv_Class
 
 		const backupInfo = await this.getBackupInfo(body);
 
-		this.logInfo(backupInfo)
+		this.logInfo(backupInfo);
 
 		if (!backupInfo.backupFilePath)
 			throw new ApiException(404, 'Backup file path not found');
 
 		const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
-		const storage = firebaseSessionAdmin.getStorage();
-		const bucket = await storage.getMainBucket();
-		const backupDoc = await bucket.getFile(backupInfo.backupFilePath);
 
 		const firestore = firebaseSessionAdmin.getFirestoreV2().firestore;
 
@@ -121,7 +118,18 @@ class ModuleBE_v2_SyncEnv_Class
 
 		do {
 			resultsArray = [];
-			await CSVModule.forEachCsvRowFromStreamSync(backupDoc.file.createReadStream(), dataCallback);
+
+			const signedUrlDef: ApiDef<QueryApi<any>> = {
+				method: HttpMethod.GET,
+				path: '',
+				fullUrl: backupInfo.firestoreSignedUrl
+			};
+			const stream = await AxiosHttpModule
+				.createRequest(signedUrlDef)
+				.setResponseType('stream')
+				.executeSync();
+
+			await CSVModule.forEachCsvRowFromStreamSync(stream, dataCallback);
 
 			for (let i = 0; i < resultsArray.length; i += this.config.maxBatch) {
 				const writeBatch = firestore.batch();
@@ -145,15 +153,20 @@ class ModuleBE_v2_SyncEnv_Class
 			this.logDebug('Getting the firebase backup file');
 			const firebaseSessionAdmin = ModuleBE_Firebase.createAdminSession();
 			const backupInfo = await this.getBackupInfo(queryParams);
-			const bucket = await firebaseSessionAdmin.getStorage().getMainBucket();
 			const database = firebaseSessionAdmin.getDatabase();
 
 			this.logDebug('Reading the file from storage');
-			const firebaseBackupFile = await (await bucket.getFile(backupInfo.firebaseFilePath)).read();
-
+			const signedUrlDef: ApiDef<QueryApi<any>> = {
+				method: HttpMethod.GET,
+				path: '',
+				fullUrl: backupInfo.firebaseSignedUrl
+			};
+			const firebaseFile = await AxiosHttpModule
+				.createRequest(signedUrlDef)
+				.executeSync();
 
 			this.logDebug('Setting the file in firebase database');
-			await database.set('/', JSON.parse(firebaseBackupFile.toString()));
+			await database.set('/', firebaseFile);
 		} catch (err: any) {
 			throw new ApiException(500, err);
 		}
