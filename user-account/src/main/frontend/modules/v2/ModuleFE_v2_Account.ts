@@ -109,7 +109,7 @@ class ModuleFE_Account_v2_Class
 			const now = currentTimeMillis();
 			const sessionData = this.decode(StorageKey_SessionId.get());
 
-			if (exists(sessionData.expiration) || now > sessionData.expiration)
+			if (!exists(sessionData.expiration) || now > sessionData.expiration)
 				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 
 			this.sessionData = sessionData;
