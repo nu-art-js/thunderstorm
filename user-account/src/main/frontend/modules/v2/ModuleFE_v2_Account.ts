@@ -8,7 +8,8 @@ import {
 	QueryParam_Email,
 	QueryParam_SessionId,
 	Response_Auth,
-	Response_LoginSAML, ResponseBody_CreateAccount,
+	Response_LoginSAML,
+	ResponseBody_CreateAccount,
 	UI_Account
 } from '../../../shared';
 import {
@@ -22,7 +23,7 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
-import {composeUrl, currentTimeMillis, TS_Object} from '@nu-art/ts-common';
+import {composeUrl, currentTimeMillis, exists, TS_Object} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 
 
@@ -108,7 +109,7 @@ class ModuleFE_Account_v2_Class
 			const now = currentTimeMillis();
 			const sessionData = this.decode(StorageKey_SessionId.get());
 
-			if (now > sessionData.expiration)
+			if (exists(sessionData.expiration) || now > sessionData.expiration)
 				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 
 			this.sessionData = sessionData;

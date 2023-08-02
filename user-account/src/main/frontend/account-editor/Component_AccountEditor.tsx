@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {AccountType, accountTypes, Request_CreateAccount, UI_Account} from '../../shared';
 import {
+	_className,
 	ComponentSync,
 	LL_H_C,
 	LL_V_L, performAction,
@@ -9,15 +10,16 @@ import {
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_AccountV2} from '../modules/v2/ModuleFE_v2_Account';
-import {capitalizeFirstLetter} from '@nu-art/ts-common';
+import {capitalizeFirstLetter, UniqueId} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 
 type Props = {
 	isPreview?: boolean,
-	user?: UI_Account
+	user?: UI_Account,
+	onComplete?: (_id: UniqueId) => void
 }
 
-type State = Request_CreateAccount & {
+type State = Partial<Request_CreateAccount> & {
 	isPreview: boolean,
 	user?: UI_Account
 }
@@ -35,15 +37,21 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 
 	private addAccount = async () => {
 		return performAction(async () => {
-			await ModuleFE_AccountV2.vv1.createAccount({password: this.state.password, type: this.state.type, email: this.state.email, password_check: this.state.password}).executeSync();
-			await ModuleFE_AccountV2.v1.sync().executeSync();
-			this.setState({email: '', password: '', password_check: ''});
+			const account = await ModuleFE_AccountV2.vv1.createAccount({password: this.state.password, type: this.state.type!, email: this.state.email!, password_check: this.state.password}).executeSync();
+			this.props.onComplete?.(account._id);
+			this.setState({email: undefined, password: undefined, password_check: undefined, type: undefined});
 		}, {type: 'notification', notificationLabels: {inProgress: 'Creating Account', success: 'Account Created', failed: 'Failed Creating Account'}});
 	};
 
-	// private canCreate = () => {
-	// 	return this.state.email && this.state.type
-	// };
+	private canCreate = () => {
+		const baseConditions = !!(this.state.email && this.state.type);
+		let extraConditions = true;
+
+		if (this.state.type === 'user')
+			extraConditions = !!this.state.password;
+
+		return baseConditions && extraConditions;
+	};
 
 	private renderDropdown = () => {
 		if (this.state.isPreview)
@@ -77,13 +85,14 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 
 		return <LL_H_C className={'inputs-row'}>
 			<TS_PropRenderer.Vertical label={'Email'}>
-				<TS_Input type={'text'} placeholder={'Email'}
-						  onChange={(email) => this.setState({email})}/>
+				<TS_Input type={'text'} placeholder={'Email'} value={this.state.email}
+						  onBlur={(email) => this.setState({email})}/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical disabled={!(this.state.type === 'user')} label={'Temporary Password'}>
 				<TS_Input disabled={!(this.state.type === 'user')} type={'password'}
+						  value={this.state.password}
 						  placeholder={'Temporary Password'}
-						  onChange={(password) => this.setState({password})}/>
+						  onBlur={(password) => this.setState({password})}/>
 			</TS_PropRenderer.Vertical>
 		</LL_H_C>;
 	};
@@ -92,7 +101,10 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 		if (this.state.isPreview)
 			return '';
 
-		return <TS_BusyButton onClick={this.addAccount}>Add Account</TS_BusyButton>;
+		const disabled = !this.canCreate();
+		const className = _className(disabled && 'disabled');
+		return <TS_BusyButton className={className} disabled={disabled} onClick={this.addAccount}>Add
+			Account</TS_BusyButton>;
 	};
 
 
