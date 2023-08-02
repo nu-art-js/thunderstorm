@@ -20,7 +20,6 @@
 import {
 	DBDef,
 	OmitDBObject,
-	tsValidateArray,
 	tsValidateNonMandatoryObject,
 	tsValidateNumber,
 	tsValidateString,
@@ -32,7 +31,7 @@ import {DB_PermissionProject} from './types';
 
 const Validator_PermissionProjects: TypeValidator<OmitDBObject<DB_PermissionProject>> = {
 	name: validateProjectName,
-	customKeys: tsValidateArray(tsValidateString(), false),
+	// customKeys: tsValidateArray(tsValidateString(), false),
 	_audit: tsValidateNonMandatoryObject({
 		comment: tsValidateString(-1, false),
 		auditBy: tsValidateString(),
