@@ -1,6 +1,13 @@
 .ts-prop-renderer {
   width: 100%;
 
+
+  &.disabled {
+    .ts-prop-renderer__label {
+      color: #929292;
+    }
+  }
+
   &.vertical {
     .ts-prop-renderer__label {
       width: 100%;

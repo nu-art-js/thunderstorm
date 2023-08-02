@@ -22,6 +22,8 @@ export type FetchBackupDocV2 = {
 	backupFilePath: string,
 	metadataFilePath: string,
 	firebaseFilePath: string,
+	firestoreSignedUrl: string,
+	firebaseSignedUrl: string,
 	metadata: BackupMetaData
 }
 

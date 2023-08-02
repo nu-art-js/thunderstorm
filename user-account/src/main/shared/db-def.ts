@@ -1,5 +1,5 @@
 import {
-	OmitDBObject,
+	OmitDBObject, tsValidateBoolean,
 	tsValidateEmail,
 	tsValidateString,
 	tsValidateTimestamp,
@@ -31,6 +31,7 @@ export const Validator_Account: ValidatorTypeResolver<OmitDBObject<DB_Account_V2
 	saltedPassword: tsValidator_nonMandatoryString,
 	displayName: tsValidator_nonMandatoryString,
 	thumbnail: tsValidator_nonMandatoryString,
+	_newPasswordRequired: tsValidateBoolean(false),
 	_auditorId: tsValidateString()
 };
 
