@@ -10,12 +10,13 @@ import {
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_AccountV2} from '../modules/v2/ModuleFE_v2_Account';
-import {capitalizeFirstLetter} from '@nu-art/ts-common';
+import {capitalizeFirstLetter, UniqueId} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 
 type Props = {
 	isPreview?: boolean,
-	user?: UI_Account
+	user?: UI_Account,
+	onComplete?: (_id: UniqueId) => void
 }
 
 type State = Partial<Request_CreateAccount> & {
@@ -36,8 +37,8 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 
 	private addAccount = async () => {
 		return performAction(async () => {
-			await ModuleFE_AccountV2.vv1.createAccount({password: this.state.password, type: this.state.type!, email: this.state.email!, password_check: this.state.password}).executeSync();
-			await ModuleFE_AccountV2.v1.sync().executeSync();
+			const account = await ModuleFE_AccountV2.vv1.createAccount({password: this.state.password, type: this.state.type!, email: this.state.email!, password_check: this.state.password}).executeSync();
+			this.props.onComplete?.(account._id);
 			this.setState({email: undefined, password: undefined, password_check: undefined, type: undefined});
 		}, {type: 'notification', notificationLabels: {inProgress: 'Creating Account', success: 'Account Created', failed: 'Failed Creating Account'}});
 	};
