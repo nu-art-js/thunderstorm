@@ -19,6 +19,7 @@ import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {ModuleBE_v2_AccountDB} from './ModuleBE_v2_AccountDB';
 
 
 export interface CollectSessionData<R extends TS_Object> {
@@ -47,14 +48,17 @@ export const MemKey_SessionData = new MemKey<TS_Object>('session-data', true);
 
 export function Middleware_ValidateSession_UpdateMemKeys(sessionData: TS_Object) {
 	MemKey_SessionData.set(sessionData);
+	const account = ModuleBE_v2_SessionDB.getSessionData(ModuleBE_v2_AccountDB).account;
 
-	MemKey_AccountEmail.set(sessionData.email);
-	MemKey_AccountId.set(sessionData.accountId);
+	MemKey_AccountEmail.set(account.email);
+	MemKey_AccountId.set(account._id);
 }
+
+type SessionData_TTL = { timestamp: number, expiration: number, };
 
 export class ModuleBE_v2_SessionDB_Class
 	extends ModuleBE_BaseDBV2<DB_Session_V2, Config>
-	implements CollectSessionData<any> {
+	implements CollectSessionData<SessionData_TTL> {
 
 	readonly Middleware = async () => {
 		const sessionId = Header_SessionId.get();
@@ -129,7 +133,7 @@ export class ModuleBE_v2_SessionDB_Class
 					sessionData[key] = moduleSessionData[key];
 				});
 				return sessionData;
-			}, {accountId: uiAccount._id, email: uiAccount.email} as TS_Object);
+			});
 
 		Middleware_ValidateSession_UpdateMemKeys(sessionData);
 		const sessionId = await this.encodeSessionData(sessionData);
