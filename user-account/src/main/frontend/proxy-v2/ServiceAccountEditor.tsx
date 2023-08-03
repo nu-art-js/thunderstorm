@@ -122,8 +122,8 @@ export class ServiceAccountEditor
 					return;
 
 				const response = await ModuleFE_AccountV2.vv1.createToken({
-					_id: item._id,
-					ttlMs: this.state.ttl || 0
+					accountId: item._id,
+					ttl: this.state.ttl || 0
 				}).executeSync();
 
 				this.setState({token: response.token});
