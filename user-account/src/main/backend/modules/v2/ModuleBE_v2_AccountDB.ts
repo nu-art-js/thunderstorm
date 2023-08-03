@@ -9,6 +9,7 @@ import {
 	Request_RegisterAccount,
 	RequestBody_ChangePassword,
 	RequestBody_RegisterAccount,
+	RequestParams_CreateToken,
 	Response_Auth,
 	UI_Account
 } from '../../../shared';
@@ -32,7 +33,8 @@ import {
 	MemKey_AccountEmail,
 	MemKey_AccountId,
 	ModuleBE_v2_SessionDB,
-	SessionKey_BE
+	SessionKey_BE,
+	SessionKey_Session
 } from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
@@ -102,6 +104,7 @@ export class ModuleBE_v2_AccountDB_Class
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.login, ModuleBE_v2_AccountDB.account.login),
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.createAccount, ModuleBE_v2_AccountDB.account.create),
 			createQueryServerApi(ApiDefBE_AccountV2.vv1.logout, ModuleBE_v2_AccountDB.account.logout),
+			createQueryServerApi(ApiDefBE_AccountV2.vv1.createToken, ModuleBE_v2_AccountDB.createToken)
 		]);
 	}
 
@@ -169,7 +172,7 @@ export class ModuleBE_v2_AccountDB_Class
 			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
 
 			//Log in
-			const session = await ModuleBE_v2_SessionDB.upsertSession(uiAccount);
+			const session = await ModuleBE_v2_SessionDB.getOrCreateSession(uiAccount);
 
 			//Update whoever listens
 			await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
@@ -250,7 +253,7 @@ export class ModuleBE_v2_AccountDB_Class
 		request.email = request.email.toLowerCase();
 		const account = await this.password.assertPasswordMatch(request.password, request.email, transaction);
 
-		const session = await ModuleBE_v2_SessionDB.upsertSession(account, transaction);
+		const session = await ModuleBE_v2_SessionDB.getOrCreateSession(account, transaction);
 		return {account, session};
 	}
 
@@ -287,6 +290,16 @@ export class ModuleBE_v2_AccountDB_Class
 			return await this.create.item(account as PreDB<DB_Account_V2>, transaction);
 		}, transaction));
 	};
+
+	private async createToken({accountId, ttl}: RequestParams_CreateToken) {
+		const sessionId = await ModuleBE_v2_SessionDB.createSession(accountId, (sessionData) => {
+			SessionKey_Session.get(sessionData).expiration = ttl;
+			return sessionData;
+		});
+
+
+		return {token: sessionId};
+	}
 
 	async changePassword(body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> {
 		const lowerCaseEmail = body.userEmail.toLowerCase();

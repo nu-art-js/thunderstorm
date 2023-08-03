@@ -123,7 +123,7 @@ export class ModuleBE_SAML_Class
 		const _email = __email.toLowerCase();
 		const account = await this.createSAML(_email);
 
-		return await ModuleBE_v2_SessionDB.upsertSession(getUIAccount(account));
+		return await ModuleBE_v2_SessionDB.getOrCreateSession(getUIAccount(account));
 	}
 
 	async assertSaml() {

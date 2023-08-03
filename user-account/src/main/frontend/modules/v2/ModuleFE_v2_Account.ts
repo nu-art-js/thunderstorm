@@ -31,7 +31,7 @@ import {
 	BadImplementationException,
 	composeUrl,
 	currentTimeMillis,
-	exists,
+	exists, TS_Object,
 	TypedKeyValue
 } from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
@@ -65,6 +65,7 @@ class ModuleFE_Account_v2_Class
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	private accounts: UI_Account[] = [];
 	accountId!: string;
+	private sessionData!: TS_Object;
 
 	constructor() {
 		super(DBDef_Account, dispatch_onAccountsUpdated);
@@ -112,13 +113,15 @@ class ModuleFE_Account_v2_Class
 			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_SessionId);
 		}
 
-		if (StorageKey_SessionId.get()) {
+		const _sessionId = StorageKey_SessionId.get();
+		if (_sessionId) {
 			const now = currentTimeMillis();
-			const sessionData = this.decode(StorageKey_SessionId.get());
+			const sessionData = this.decode(_sessionId);
 			if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
 				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 
 			this.accountId = sessionData.account._id;
+			this.sessionData = sessionData;
 			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 		}
 
@@ -161,12 +164,7 @@ class ModuleFE_Account_v2_Class
 	};
 
 	public getSessionId = (): string => {
-		return this.isStatus(LoggedStatus.LOGGED_IN) ? StorageKey_SessionId.get() : '';
-	};
-
-	private decodeSessionData = () => {
-		const sessionData = this.getSessionId();
-		return this.decode(sessionData);
+		return StorageKey_SessionId.get('');
 	};
 
 	private decode(sessionData: string) {
@@ -197,8 +195,8 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 
 	get(): Binder['value'] {
 		// @ts-ignore
-		const sessionData = ModuleFE_AccountV2.decodeSessionData();
-		if (!(_keys(sessionData).includes(this.key)))
+		const sessionData = ModuleFE_AccountV2.sessionData;
+		if (!(this.key in sessionData))
 			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
 
 		return sessionData[this.key] as Binder['value'];

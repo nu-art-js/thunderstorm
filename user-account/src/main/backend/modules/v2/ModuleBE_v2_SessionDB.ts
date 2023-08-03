@@ -1,5 +1,6 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {
+	_SessionKey_Account,
 	_SessionKey_Session,
 	DB_Session_V2,
 	DBDef_Session,
@@ -17,7 +18,7 @@ import {
 	Dispatcher,
 	PreDB,
 	TS_Object,
-	TypedKeyValue
+	TypedKeyValue, UniqueId
 } from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
@@ -49,10 +50,6 @@ export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
 export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
 export const MemKey_SessionData = new MemKey<TS_Object>('session-data', true);
 
-export function Middleware_ValidateSession_UpdateMemKeys(sessionData: TS_Object) {
-	MemKey_SessionData.set(sessionData);
-}
-
 
 export class ModuleBE_v2_SessionDB_Class
 	extends ModuleBE_BaseDBV2<DB_Session_V2, Config>
@@ -74,7 +71,7 @@ export class ModuleBE_v2_SessionDB_Class
 			throw new ApiException(401, 'Session timed out');
 
 		const sessionData = this.decodeSessionData(sessionId);
-		Middleware_ValidateSession_UpdateMemKeys(sessionData);
+		MemKey_SessionData.set(sessionData);
 	};
 
 	constructor() {
@@ -113,39 +110,44 @@ export class ModuleBE_v2_SessionDB_Class
 		return JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8'));
 	}
 
-	upsertSession = async (uiAccount: UI_Account, transaction?: Transaction): Promise<Response_Auth> => {
+	getOrCreateSession = async (uiAccount: UI_Account, transaction?: Transaction): Promise<Response_Auth> => {
 		try {
 			const session = await this.query.uniqueWhere({accountId: uiAccount._id}, transaction);
 			if (!this.TTLExpired(session)) {
 				const sessionData = this.decodeSessionData(session.sessionId);
-				Middleware_ValidateSession_UpdateMemKeys(sessionData);
+				MemKey_SessionData.set(sessionData);
 				return {sessionId: session.sessionId, ...uiAccount};
 			}
 		} catch (ignore) {
 			//
 		}
 
-		const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(uiAccount._id));
+		const sessionId = await this.createSession(uiAccount._id);
 
-		const sessionData = collectedData.reduce((sessionData: TS_Object, moduleSessionData) => {
+		return {sessionId: sessionId, ...uiAccount};
+	};
+
+	async createSession(accountId: UniqueId, manipulate?: (sessionData: TS_Object) => TS_Object) {
+		const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(accountId));
+
+		let sessionData = collectedData.reduce((sessionData: TS_Object, moduleSessionData) => {
 			sessionData[moduleSessionData.key] = moduleSessionData.value;
 			return sessionData;
 		}, {});
 
-
-		Middleware_ValidateSession_UpdateMemKeys(sessionData);
+		sessionData = manipulate?.(sessionData) ?? sessionData;
+		MemKey_SessionData.set(sessionData);
 		const sessionId = await this.encodeSessionData(sessionData);
 
 		const session = {
-			accountId: uiAccount._id,
+			accountId: accountId,
 			sessionId,
 			timestamp: currentTimeMillis()
 		};
 
 		await this.set.item(session);
-
-		return {sessionId: session.sessionId, ...uiAccount};
-	};
+		return session.sessionId;
+	}
 
 	logout = async (transaction?: Transaction) => {
 		const sessionId = Header_SessionId.get();
@@ -172,3 +174,5 @@ export class SessionKey_BE<Binder extends TypedKeyValue<string | number, any>> {
 		return sessionData[this.key] as Binder['value'];
 	}
 }
+
+export const SessionKey_Session = new SessionKey_BE<_SessionKey_Session>('session');

@@ -1,5 +1,5 @@
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
-import {DB_BaseObject, Minute} from '@nu-art/ts-common';
+import {Minute, UniqueId} from '@nu-art/ts-common';
 import {AccountType, UI_Account} from './types';
 
 
@@ -59,6 +59,8 @@ export type Request_LoginAccount = {
 	email: string
 	password: string
 }
+export type RequestParams_CreateToken = { accountId: UniqueId, ttl: number };
+export type Response_CreateToken = { token: string };
 
 type TypedApi_LoginSaml = { loginSaml: QueryApi<Response_LoginSAML, RequestParams_LoginSAML> };
 type TypedApi_Login = { login: BodyApi<Response_Auth, Request_LoginAccount> };
@@ -66,7 +68,7 @@ type TypedApi_Logout = { logout: QueryApi<void, {}> };
 type TypedAPI_RegisterAccount = { registerAccount: BodyApi<Response_Auth, RequestBody_RegisterAccount> };
 type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account, Request_CreateAccount> };
 type TypedApi_ChangedPassword = { changePassword: BodyApi<ResponseBody_ChangePassword, RequestBody_ChangePassword> };
-type TypedApi_CreateToken = { createToken: QueryApi<{ token: string }, DB_BaseObject & { ttlMs: number }> };
+type TypedApi_CreateToken = { createToken: QueryApi<Response_CreateToken, RequestParams_CreateToken> };
 
 const API_LoginSaml = {loginSaml: {method: HttpMethod.GET, path: 'v1/account-v2/login-saml'}} as const;
 const API_Login = {login: {method: HttpMethod.POST, path: 'v1/account-v2/login', timeout: Minute}} as const;
