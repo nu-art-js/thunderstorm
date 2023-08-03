@@ -1,9 +1,15 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
-import {DB_Session_V2, DBDef_Session, HeaderKey_SessionId, Response_Auth, UI_Account} from '../../../shared';
+import {
+	_SessionKey_Session,
+	DB_Session_V2,
+	DBDef_Session,
+	HeaderKey_SessionId,
+	Response_Auth,
+	UI_Account
+} from '../../../shared';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {
 	__stringify,
-	_keys,
 	ApiException,
 	BadImplementationException,
 	currentTimeMillis,
@@ -17,7 +23,6 @@ import {gzipSync, unzipSync} from 'zlib';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {firestore} from 'firebase-admin';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {ModuleBE_v2_AccountDB} from './ModuleBE_v2_AccountDB';
 import Transaction = firestore.Transaction;
 
 
@@ -25,7 +30,7 @@ export interface CollectSessionData<R extends TypedKeyValue<any, any>> {
 	__collectSessionData(accountId: string): Promise<R>;
 }
 
-export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<{}>, '__collectSessionData'>('__collectSessionData');
+export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<TypedKeyValue<any, any>>, '__collectSessionData'>('__collectSessionData');
 
 // type MapTypes<T extends CollectSessionData<any>[]> =
 // 	T extends [a: CollectSessionData<infer A>, ...rest: infer R] ?
@@ -38,7 +43,6 @@ export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
 type Config = DBApiConfig<DB_Session_V2> & {
 	sessionTTLms: number
-
 }
 
 export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
@@ -49,11 +53,10 @@ export function Middleware_ValidateSession_UpdateMemKeys(sessionData: TS_Object)
 	MemKey_SessionData.set(sessionData);
 }
 
-type SessionData_TTL = { timestamp: number, expiration: number, };
 
 export class ModuleBE_v2_SessionDB_Class
 	extends ModuleBE_BaseDBV2<DB_Session_V2, Config>
-	implements CollectSessionData<SessionData_TTL> {
+	implements CollectSessionData<_SessionKey_Session> {
 
 	readonly Middleware = async () => {
 		const sessionId = Header_SessionId.get();
@@ -82,8 +85,11 @@ export class ModuleBE_v2_SessionDB_Class
 	async __collectSessionData(accountId: string) {
 		const now = currentTimeMillis();
 		return {
-			timestamp: now,
-			expiration: now + this.config.sessionTTLms,
+			key: 'session' as const,
+			value: {
+				timestamp: now,
+				expiration: now + this.config.sessionTTLms,
+			}
 		};
 	}
 
@@ -119,16 +125,13 @@ export class ModuleBE_v2_SessionDB_Class
 			//
 		}
 
-		const sessionData = (await dispatch_CollectSessionData.dispatchModuleAsync(uiAccount._id))
-			.reduce((sessionData, moduleSessionData) => {
-				_keys(moduleSessionData).forEach(key => {
-					if (sessionData[key])
-						throw new BadImplementationException(`Error while building session data.. duplicated keys: ${key as string}\none: ${__stringify(sessionData, true)}\ntwo: ${__stringify(moduleSessionData, true)}`);
+		const collectedData = (await dispatch_CollectSessionData.dispatchModuleAsync(uiAccount._id));
 
-					sessionData[key] = moduleSessionData[key];
-				});
-				return sessionData;
-			});
+		const sessionData = collectedData.reduce((sessionData: TS_Object, moduleSessionData) => {
+			sessionData[moduleSessionData.key] = moduleSessionData.value;
+			return sessionData;
+		}, {});
+
 
 		Middleware_ValidateSession_UpdateMemKeys(sessionData);
 		const sessionId = await this.encodeSessionData(sessionData);
