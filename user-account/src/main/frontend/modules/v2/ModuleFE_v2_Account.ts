@@ -77,7 +77,7 @@ class ModuleFE_Account_v2_Class
 			login: apiWithBody(ApiDefFE_Account.vv1.login, this.setLoginInfo),
 			loginSaml: apiWithQuery(ApiDefFE_Account.vv1.loginSaml, this.onLoginCompletedSAML),
 			logout: apiWithQuery(ApiDefFE_Account.vv1.logout),
-			createToken: apiWithQuery(ApiDefFE_Account.vv1.createToken),
+			createToken: apiWithBody(ApiDefFE_Account.vv1.createToken),
 		};
 	}
 

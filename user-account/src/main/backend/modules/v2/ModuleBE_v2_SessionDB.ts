@@ -122,9 +122,10 @@ export class ModuleBE_v2_SessionDB_Class
 			//
 		}
 
-		const sessionId = await this.createSession(uiAccount._id);
+		const sessionInfo = await this.createSession(uiAccount._id);
+		MemKey_SessionData.set(sessionInfo.sessionData);
 
-		return {sessionId: sessionId, ...uiAccount};
+		return {sessionId: sessionInfo._id, ...uiAccount};
 	};
 
 	async createSession(accountId: UniqueId, manipulate?: (sessionData: TS_Object) => TS_Object) {
@@ -136,7 +137,6 @@ export class ModuleBE_v2_SessionDB_Class
 		}, {});
 
 		sessionData = manipulate?.(sessionData) ?? sessionData;
-		MemKey_SessionData.set(sessionData);
 		const sessionId = await this.encodeSessionData(sessionData);
 
 		const session = {
@@ -146,7 +146,7 @@ export class ModuleBE_v2_SessionDB_Class
 		};
 
 		await this.set.item(session);
-		return session.sessionId;
+		return {_id: session.sessionId, sessionData: sessionData};
 	}
 
 	logout = async (transaction?: Transaction) => {
