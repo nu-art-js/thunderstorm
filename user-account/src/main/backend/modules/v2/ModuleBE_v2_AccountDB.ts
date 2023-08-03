@@ -14,7 +14,8 @@ import {
 } from '../../../shared';
 import {
 	__stringify,
-	ApiException, BadImplementationException,
+	ApiException,
+	BadImplementationException,
 	compare,
 	dispatch_onApplicationException,
 	Dispatcher,
@@ -22,14 +23,16 @@ import {
 	generateHex,
 	hashPasswordWithSalt,
 	MUSTNeverHappenException,
-	PreDB, TypedKeyValue
+	PreDB
 } from '@nu-art/ts-common';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {
 	CollectSessionData,
 	Header_SessionId,
-	MemKey_AccountEmail, MemKey_AccountId, Middleware_ValidateSession_UpdateMemKeys,
-	ModuleBE_v2_SessionDB, SessionKey_BE
+	MemKey_AccountEmail,
+	MemKey_AccountId,
+	ModuleBE_v2_SessionDB,
+	SessionKey_BE
 } from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
@@ -58,6 +61,7 @@ type Config = DBApiConfig<DB_Account_V2> & {
 	passwordAssertion?: PasswordAssertionConfig
 }
 
+
 export const SessionKey_Account = new SessionKey_BE<_SessionKey_Account>('account');
 
 export class ModuleBE_v2_AccountDB_Class
@@ -84,7 +88,8 @@ export class ModuleBE_v2_AccountDB_Class
 
 	async __collectSessionData(accountId: string) {
 		return {
-			account: await this.query.uniqueAssert(accountId) as UI_Account,
+			key: 'account' as const,
+			value: await this.query.uniqueAssert(accountId) as UI_Account,
 		};
 	}
 

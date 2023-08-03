@@ -1,6 +1,8 @@
 import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {
 	_SessionKey_Account,
+	_SessionKey_Session,
+	_SessionKey_SessionId,
 	ApiDefFE_Account,
 	ApiStructFE_Account,
 	DB_Account_V2,
@@ -24,14 +26,19 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
-import {BadImplementationException, composeUrl, currentTimeMillis, exists, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
+import {
+	_keys,
+	BadImplementationException,
+	composeUrl,
+	currentTimeMillis,
+	exists,
+	TypedKeyValue
+} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
-import {MemKey_SessionData, SessionKey_BE} from '../../../backend';
 
 
 export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
 export const StorageKey_SessionTimeoutTimestamp = new StorageKey<number>(`storage-accounts__session-timeout`);
-export const StorageKey_UserEmail = new StorageKey<string>(`storage-${QueryParam_Email}`);
 
 export interface OnLoginStatusUpdated {
 	__onLoginStatusUpdated: () => void;
@@ -58,7 +65,6 @@ class ModuleFE_Account_v2_Class
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
 	private accounts: UI_Account[] = [];
 	accountId!: string;
-	sessionData?: TS_Object;
 
 	constructor() {
 		super(DBDef_Account, dispatch_onAccountsUpdated);
@@ -101,7 +107,6 @@ class ModuleFE_Account_v2_Class
 
 		if (email && sessionId) {
 			StorageKey_SessionId.set(String(sessionId));
-			StorageKey_UserEmail.set(String(email));
 
 			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_Email);
 			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_SessionId);
@@ -110,11 +115,9 @@ class ModuleFE_Account_v2_Class
 		if (StorageKey_SessionId.get()) {
 			const now = currentTimeMillis();
 			const sessionData = this.decode(StorageKey_SessionId.get());
-
-			if (!exists(sessionData.expiration) || now > sessionData.expiration)
+			if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
 				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
 
-			this.sessionData = sessionData;
 			this.accountId = sessionData.account._id;
 			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 		}
@@ -139,7 +142,6 @@ class ModuleFE_Account_v2_Class
 
 	private setLoginInfo = async (response: Response_Auth) => {
 		StorageKey_SessionId.set(response.sessionId);
-		StorageKey_UserEmail.set(response.email);
 		this.accountId = response._id;
 		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	};
@@ -162,12 +164,15 @@ class ModuleFE_Account_v2_Class
 		return this.isStatus(LoggedStatus.LOGGED_IN) ? StorageKey_SessionId.get() : '';
 	};
 
-	public decodeSessionData = () => {
+	private decodeSessionData = () => {
 		const sessionData = this.getSessionId();
 		return this.decode(sessionData);
 	};
 
 	private decode(sessionData: string) {
+		if (!sessionData.length)
+			return;
+
 		return JSON.parse(new TextDecoder('utf8').decode(ungzip(Uint8Array.from(atob(sessionData), c => c.charCodeAt(0)))));
 	}
 
@@ -191,8 +196,9 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 	}
 
 	get(): Binder['value'] {
+		// @ts-ignore
 		const sessionData = ModuleFE_AccountV2.decodeSessionData();
-		if (!(this.key in sessionData))
+		if (!(_keys(sessionData).includes(this.key)))
 			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
 
 		return sessionData[this.key] as Binder['value'];
