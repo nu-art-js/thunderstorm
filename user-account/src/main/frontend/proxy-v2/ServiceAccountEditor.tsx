@@ -49,13 +49,13 @@ export class ServiceAccountEditor
 						const editableItem = this.getEditableItem(serviceAcc);
 						const compensatedIndex = index - (this.state.newAccount ? 1 : 0);
 						return <div key={generateUUID()}
-												className={_className('account', this.isSelected(serviceAcc) ? 'selected' : '')}
-												onClick={() => {
-													if (serviceAcc === this.state.newAccount)
-														return;
+									className={_className('account', this.isSelected(serviceAcc) ? 'selected' : '')}
+									onClick={() => {
+										if (serviceAcc === this.state.newAccount)
+											return;
 
-													this.setState({selectedIndex: compensatedIndex});
-												}}>
+										this.setState({selectedIndex: compensatedIndex});
+									}}>
 							<ProxyServiceAccount_EditorRenderer
 								key={generateUUID()}
 								editable={editableItem}
@@ -98,8 +98,8 @@ export class ServiceAccountEditor
 		return <LL_V_L className={'selected-options'}>
 			{this.state.token && <TS_TextArea type={'text'} value={this.state.token}/>}
 			<LL_H_C>TTL: <TS_Input type={'number'}
-														 onChange={(value) => this.setState({ttl: value !== undefined ? value as unknown as number : undefined})}
-														 placeholder={'ttl'}/></LL_H_C>
+								   onChange={(value) => this.setState({ttl: value !== undefined ? value as unknown as number : undefined})}
+								   placeholder={'ttl'}/></LL_H_C>
 			{this.renderAccountOptions(this.getSelected())}
 		</LL_V_L>;
 	};
