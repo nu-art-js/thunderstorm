@@ -1,4 +1,4 @@
-import {AuditableV2, DB_Object} from '@nu-art/ts-common';
+import {AuditableV2, DB_Object, TypedKeyValue, UniqueId} from '@nu-art/ts-common';
 
 
 export const accountTypes = ['user', 'service'] as const;
@@ -25,3 +25,11 @@ export type DB_Account_V2 = AuditableV2 & UI_Account & {
 	salt?: string
 	saltedPassword?: string
 }
+
+export type _SessionKey_SessionId = TypedKeyValue<'_id', UniqueId>
+
+export type _SessionKey_Account = TypedKeyValue<'account', UI_Account>
+
+type SessionData_TTL = { timestamp: number, expiration: number, };
+
+export type _SessionKey_Session = TypedKeyValue<'session', SessionData_TTL>

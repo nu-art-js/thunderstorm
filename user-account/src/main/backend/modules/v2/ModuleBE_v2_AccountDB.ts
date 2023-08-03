@@ -1,5 +1,6 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {
+	_SessionKey_Account,
 	ApiDefBE_AccountV2,
 	DB_Account_V2,
 	DBDef_Account,
@@ -8,12 +9,14 @@ import {
 	Request_RegisterAccount,
 	RequestBody_ChangePassword,
 	RequestBody_RegisterAccount,
+	RequestParams_CreateToken,
 	Response_Auth,
 	UI_Account
 } from '../../../shared';
 import {
 	__stringify,
-	ApiException, BadImplementationException,
+	ApiException,
+	BadImplementationException,
 	compare,
 	dispatch_onApplicationException,
 	Dispatcher,
@@ -28,7 +31,10 @@ import {
 	CollectSessionData,
 	Header_SessionId,
 	MemKey_AccountEmail,
-	ModuleBE_v2_SessionDB
+	MemKey_AccountId,
+	ModuleBE_v2_SessionDB,
+	SessionKey_BE,
+	SessionKey_Session
 } from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
@@ -57,9 +63,18 @@ type Config = DBApiConfig<DB_Account_V2> & {
 	passwordAssertion?: PasswordAssertionConfig
 }
 
+
+export const SessionKey_Account = new SessionKey_BE<_SessionKey_Account>('account');
+
 export class ModuleBE_v2_AccountDB_Class
 	extends ModuleBE_BaseDBV2<DB_Account_V2, Config>
-	implements CollectSessionData<{ account: UI_Account }> {
+	implements CollectSessionData<_SessionKey_Account> {
+
+	readonly Middleware = async () => {
+		const account = SessionKey_Account.get();
+		MemKey_AccountEmail.set(account.email);
+		MemKey_AccountId.set(account._id);
+	};
 
 	constructor() {
 		super(DBDef_Account);
@@ -75,7 +90,8 @@ export class ModuleBE_v2_AccountDB_Class
 
 	async __collectSessionData(accountId: string) {
 		return {
-			account: await this.query.uniqueAssert(accountId) as UI_Account,
+			key: 'account' as const,
+			value: await this.query.uniqueAssert(accountId) as UI_Account,
 		};
 	}
 
@@ -88,6 +104,7 @@ export class ModuleBE_v2_AccountDB_Class
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.login, ModuleBE_v2_AccountDB.account.login),
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.createAccount, ModuleBE_v2_AccountDB.account.create),
 			createQueryServerApi(ApiDefBE_AccountV2.vv1.logout, ModuleBE_v2_AccountDB.account.logout),
+			createQueryServerApi(ApiDefBE_AccountV2.vv1.createToken, ModuleBE_v2_AccountDB.createToken)
 		]);
 	}
 
@@ -155,7 +172,7 @@ export class ModuleBE_v2_AccountDB_Class
 			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
 
 			//Log in
-			const session = await ModuleBE_v2_SessionDB.upsertSession(uiAccount);
+			const session = await ModuleBE_v2_SessionDB.getOrCreateSession(uiAccount);
 
 			//Update whoever listens
 			await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
@@ -236,7 +253,7 @@ export class ModuleBE_v2_AccountDB_Class
 		request.email = request.email.toLowerCase();
 		const account = await this.password.assertPasswordMatch(request.password, request.email, transaction);
 
-		const session = await ModuleBE_v2_SessionDB.upsertSession(account, transaction);
+		const session = await ModuleBE_v2_SessionDB.getOrCreateSession(account, transaction);
 		return {account, session};
 	}
 
@@ -273,6 +290,16 @@ export class ModuleBE_v2_AccountDB_Class
 			return await this.create.item(account as PreDB<DB_Account_V2>, transaction);
 		}, transaction));
 	};
+
+	private async createToken({accountId, ttl}: RequestParams_CreateToken) {
+		const sessionId = await ModuleBE_v2_SessionDB.createSession(accountId, (sessionData) => {
+			SessionKey_Session.get(sessionData).expiration = ttl;
+			return sessionData;
+		});
+
+
+		return {token: sessionId};
+	}
 
 	async changePassword(body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> {
 		const lowerCaseEmail = body.userEmail.toLowerCase();
