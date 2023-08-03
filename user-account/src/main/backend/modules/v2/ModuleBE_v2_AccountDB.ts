@@ -8,8 +8,9 @@ import {
 	Request_LoginAccount,
 	Request_RegisterAccount,
 	RequestBody_ChangePassword,
-	RequestBody_RegisterAccount,
 	RequestParams_CreateToken,
+	RequestBody_RegisterAccount,
+	RequestBody_SetPassword,
 	Response_Auth,
 	UI_Account
 } from '../../../shared';
@@ -17,6 +18,7 @@ import {
 	__stringify,
 	ApiException,
 	BadImplementationException,
+	cloneObj,
 	compare,
 	dispatch_onApplicationException,
 	Dispatcher,
@@ -89,9 +91,13 @@ export class ModuleBE_v2_AccountDB_Class
 	}
 
 	async __collectSessionData(accountId: string) {
+		const account = await this.query.uniqueAssert(accountId);
 		return {
 			key: 'account' as const,
-			value: await this.query.uniqueAssert(accountId) as UI_Account,
+			value: {
+				...account as UI_Account,
+				hasPassword: !!account.saltedPassword,
+			},
 		};
 	}
 
@@ -104,7 +110,8 @@ export class ModuleBE_v2_AccountDB_Class
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.login, ModuleBE_v2_AccountDB.account.login),
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.createAccount, ModuleBE_v2_AccountDB.account.create),
 			createQueryServerApi(ApiDefBE_AccountV2.vv1.logout, ModuleBE_v2_AccountDB.account.logout),
-			createQueryServerApi(ApiDefBE_AccountV2.vv1.createToken, ModuleBE_v2_AccountDB.createToken)
+			createQueryServerApi(ApiDefBE_AccountV2.vv1.createToken, ModuleBE_v2_AccountDB.createToken),
+			createBodyServerApi(ApiDefBE_AccountV2.vv1.setPassword, ModuleBE_v2_AccountDB.setPassword)
 		]);
 	}
 
@@ -332,12 +339,45 @@ export class ModuleBE_v2_AccountDB_Class
 			return this.set.item({...assertedAccount, ...updatedAccount});
 		}, transaction);
 	}
+
+	async setPassword(body: RequestBody_SetPassword, transaction?: Transaction): Promise<Response_Auth> {
+		const lowerCaseEmail = body.userEmail.toLowerCase();
+		const updatedAccount = await this.setPasswordImpl(body.userEmail, body.password, body.password_check, transaction);
+		return {
+			...getUIAccount(updatedAccount),
+			sessionId: (await this.account.login({
+				email: lowerCaseEmail,
+				password: body.password
+			})).sessionId
+		};
+	}
+
+	private async setPasswordImpl(userEmail: string, password: string, password_check: string, transaction?: Transaction) {
+		return await this.runTransaction(async (_transaction) => {
+
+			const existingAccount = await this.queryAccountWithPassword(userEmail, transaction);
+
+			if (!compare(password, password_check))
+				throw new ApiException(401, 'Password and password check do not match');
+
+			const updatedAccount = this.spiceAccount({
+				type: 'user',
+				email: userEmail,
+				password,
+				password_check,
+			});
+
+			//Update the account with a new password
+			return this.set.item({...existingAccount, ...updatedAccount});
+		}, transaction);
+	}
 }
 
 export function getUIAccount(account: DB_Account_V2): UI_Account {
-	delete account.salt;
-	delete account.saltedPassword;
-	return account;
+	const uiAccount = cloneObj(account);
+	delete uiAccount.salt;
+	delete uiAccount.saltedPassword;
+	return uiAccount as UI_Account;
 }
 
 export const ModuleBE_v2_AccountDB = new ModuleBE_v2_AccountDB_Class();
