@@ -75,3 +75,5 @@ export function exists<T extends any = any>(item: T | undefined | null): item is
 export const logicalXOR = (a: boolean, b: boolean) => {
 	return (a && !b) || (!a && b);
 };
+
+export type KeyBinder<K extends string, Type> = { Key: K, Type: Type }
