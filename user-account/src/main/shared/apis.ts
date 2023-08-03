@@ -59,7 +59,7 @@ export type Request_LoginAccount = {
 	email: string
 	password: string
 }
-export type RequestParams_CreateToken = { accountId: UniqueId, ttl: number };
+export type RequestBody_CreateToken = { accountId: UniqueId, ttl: number };
 export type Response_CreateToken = { token: string };
 
 type TypedApi_LoginSaml = { loginSaml: QueryApi<Response_LoginSAML, RequestParams_LoginSAML> };
@@ -68,11 +68,11 @@ type TypedApi_Logout = { logout: QueryApi<void, {}> };
 type TypedAPI_RegisterAccount = { registerAccount: BodyApi<Response_Auth, RequestBody_RegisterAccount> };
 type TypedApi_CreateAccount = { createAccount: BodyApi<UI_Account, Request_CreateAccount> };
 type TypedApi_ChangedPassword = { changePassword: BodyApi<ResponseBody_ChangePassword, RequestBody_ChangePassword> };
-type TypedApi_CreateToken = { createToken: QueryApi<Response_CreateToken, RequestParams_CreateToken> };
+type TypedApi_CreateToken = { createToken: BodyApi<Response_CreateToken, RequestBody_CreateToken> };
 
 const API_LoginSaml = {loginSaml: {method: HttpMethod.GET, path: 'v1/account-v2/login-saml'}} as const;
 const API_Login = {login: {method: HttpMethod.POST, path: 'v1/account-v2/login', timeout: Minute}} as const;
-const API_CreateToken = {createToken: {method: HttpMethod.GET, path: 'v1/account-v2/create-token', timeout: Minute}} as const;
+const API_CreateToken = {createToken: {method: HttpMethod.POST, path: 'v1/account-v2/create-token', timeout: Minute}} as const;
 const API_Logout = {logout: {method: HttpMethod.GET, path: 'v1/account-v2/logout'}} as const;
 const API_RegisterAccount = {registerAccount: {method: HttpMethod.POST, path: '/v1/account-v2/register-account'}} as const;
 const API_CreateAccount = {createAccount: {method: HttpMethod.POST, path: '/v1/account-v2/create-account'}} as const;

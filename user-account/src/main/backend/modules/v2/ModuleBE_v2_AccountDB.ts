@@ -9,7 +9,7 @@ import {
 	Request_RegisterAccount,
 	RequestBody_ChangePassword,
 	RequestBody_RegisterAccount,
-	RequestParams_CreateToken,
+	RequestBody_CreateToken,
 	Response_Auth,
 	UI_Account
 } from '../../../shared';
@@ -104,7 +104,7 @@ export class ModuleBE_v2_AccountDB_Class
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.login, ModuleBE_v2_AccountDB.account.login),
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.createAccount, ModuleBE_v2_AccountDB.account.create),
 			createQueryServerApi(ApiDefBE_AccountV2.vv1.logout, ModuleBE_v2_AccountDB.account.logout),
-			createQueryServerApi(ApiDefBE_AccountV2.vv1.createToken, ModuleBE_v2_AccountDB.createToken)
+			createBodyServerApi(ApiDefBE_AccountV2.vv1.createToken, ModuleBE_v2_AccountDB.createToken)
 		]);
 	}
 
@@ -188,13 +188,18 @@ export class ModuleBE_v2_AccountDB_Class
 		},
 		create: async (request: PreDB<UI_Account> & { password?: string }, transaction?: Transaction) => {
 			if (request.type === 'user') {
-				if (request.password)
-					return await this.createAccountImpl(request, true, transaction);
+				if (request.password) {
+					const uiAccount = await this.createAccountImpl(request, true, transaction);
+					await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
+					return uiAccount;
+				}
 
 				throw new BadImplementationException('Trying to create a user from type user without password provided');
 			}
 
-			return await this.createAccountImpl(request, false, transaction);
+			const uiAccount = await this.createAccountImpl(request, false, transaction);
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
+			return uiAccount;
 		},
 		logout: async (queryParams: QueryParams) => {
 			const sessionId = Header_SessionId.get();
@@ -291,14 +296,14 @@ export class ModuleBE_v2_AccountDB_Class
 		}, transaction));
 	};
 
-	private async createToken({accountId, ttl}: RequestParams_CreateToken) {
-		const sessionId = await ModuleBE_v2_SessionDB.createSession(accountId, (sessionData) => {
+	private async createToken({accountId, ttl}: RequestBody_CreateToken) {
+		const {_id} = await ModuleBE_v2_SessionDB.createSession(accountId, (sessionData) => {
 			SessionKey_Session.get(sessionData).expiration = ttl;
 			return sessionData;
 		});
 
 
-		return {token: sessionId};
+		return {token: _id};
 	}
 
 	async changePassword(body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> {
