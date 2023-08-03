@@ -22,3 +22,4 @@ export * from './ui/Component_Login/Component_Login';
 export * from './ui/Component_Register';
 export * from './modules/v2/ModuleFE_v2_Account';
 export * from './ui/Component_GoogleSAMLLogin/Component_GoogleSAMLLogin';
+export * from './ui/Component_ChangePassword/Component_ChangePassword';
