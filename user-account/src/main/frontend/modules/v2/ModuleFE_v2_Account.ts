@@ -1,5 +1,6 @@
 import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {
+	_SessionKey_Account,
 	ApiDefFE_Account,
 	ApiStructFE_Account,
 	DB_Account_V2,
@@ -23,8 +24,9 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
-import {composeUrl, currentTimeMillis, exists, TS_Object} from '@nu-art/ts-common';
+import {BadImplementationException, composeUrl, currentTimeMillis, exists, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
+import {MemKey_SessionData, SessionKey_BE} from '../../../backend';
 
 
 export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
@@ -180,3 +182,21 @@ class ModuleFE_Account_v2_Class
 }
 
 export const ModuleFE_AccountV2 = new ModuleFE_Account_v2_Class();
+
+export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
+	private readonly key: Binder['key'];
+
+	constructor(key: Binder['key']) {
+		this.key = key;
+	}
+
+	get(): Binder['value'] {
+		const sessionData = ModuleFE_AccountV2.decodeSessionData();
+		if (!(this.key in sessionData))
+			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
+
+		return sessionData[this.key] as Binder['value'];
+	}
+}
+
+export const SessionKey_Account = new SessionKey_FE<_SessionKey_Account>('account');
