@@ -56,6 +56,8 @@
   "devDependencies": {
     "@types/react": "$REACT_TYPES_VERSION",
     "@types/express": "$EXPRESS_TYPES_VERSION",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
     "@types/history": "^4.7.2",
     "@types/request": "^2.48.1",
     "@types/saml2-js": "^1.6.8"
