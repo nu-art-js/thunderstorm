@@ -9,7 +9,7 @@ import {ModuleBE_PermissionsAssert} from '../../main/backend';
 import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {TestProject__Name} from '../_core/consts';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail, MemKey_AccountId} from '@nu-art/user-account/backend';
 
 type InputPermissionsSetup = {
 	setup: {
@@ -30,7 +30,7 @@ const TestCases_Basic: BasicProjectTest['testcases'] = [
 		input: {
 			setup: {
 				project: {name: TestProject__Name},
-				domain: {namespace: 'test domain'},
+				domain: {namespace: 'test-domain'},
 				accessLevels: [
 					{name: 'NoAccess', value: 0},
 					{name: 'Read', value: 100},
@@ -57,9 +57,12 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 	processor: async (testCase) => {
 		const setup = testCase.input.setup;
 		const MemKey_UserPermissions = new MemKey<DB_PermissionAccessLevel[]>('user-permissions');
-
+		await new MemStorage().init(async () => {
+			//todo create auditor account
+		});
 		await new MemStorage().init(async () => {
 			MemKey_AccountEmail.set('test');
+			MemKey_AccountId.set('test'); // todo change this to the created account id, or login?
 
 			const dbProject = await ModuleBE_PermissionProject.create.item(setup.project);
 			const dbDomain = await ModuleBE_PermissionDomain.create.item({...setup.domain, projectId: dbProject._id});
