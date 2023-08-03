@@ -1,5 +1,6 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {
+	_SessionKey_Account,
 	ApiDefBE_AccountV2,
 	DB_Account_V2,
 	DBDef_Account,
@@ -21,14 +22,14 @@ import {
 	generateHex,
 	hashPasswordWithSalt,
 	MUSTNeverHappenException,
-	PreDB
+	PreDB, TypedKeyValue
 } from '@nu-art/ts-common';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {
 	CollectSessionData,
 	Header_SessionId,
-	MemKey_AccountEmail,
-	ModuleBE_v2_SessionDB
+	MemKey_AccountEmail, MemKey_AccountId, Middleware_ValidateSession_UpdateMemKeys,
+	ModuleBE_v2_SessionDB, SessionKey_BE
 } from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
@@ -57,9 +58,17 @@ type Config = DBApiConfig<DB_Account_V2> & {
 	passwordAssertion?: PasswordAssertionConfig
 }
 
+export const SessionKey_Account = new SessionKey_BE<_SessionKey_Account>('account');
+
 export class ModuleBE_v2_AccountDB_Class
 	extends ModuleBE_BaseDBV2<DB_Account_V2, Config>
-	implements CollectSessionData<{ account: UI_Account }> {
+	implements CollectSessionData<_SessionKey_Account> {
+
+	readonly Middleware = async () => {
+		const account = SessionKey_Account.get();
+		MemKey_AccountEmail.set(account.email);
+		MemKey_AccountId.set(account._id);
+	};
 
 	constructor() {
 		super(DBDef_Account);

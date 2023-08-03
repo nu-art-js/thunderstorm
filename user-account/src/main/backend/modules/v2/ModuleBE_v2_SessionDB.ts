@@ -1,5 +1,5 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
-import {DB_Session_V2, DBDef_Session, Response_Auth, HeaderKey_SessionId, UI_Account} from '../../../shared';
+import {DB_Session_V2, DBDef_Session, HeaderKey_SessionId, Response_Auth, UI_Account} from '../../../shared';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {
 	__stringify,
@@ -9,31 +9,30 @@ import {
 	currentTimeMillis,
 	Day,
 	Dispatcher,
-	MergeTypes,
-	NonEmptyArray,
 	PreDB,
-	TS_Object
+	TS_Object,
+	TypedKeyValue
 } from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {firestore} from 'firebase-admin';
-import Transaction = firestore.Transaction;
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {ModuleBE_v2_AccountDB} from './ModuleBE_v2_AccountDB';
+import Transaction = firestore.Transaction;
 
 
-export interface CollectSessionData<R extends TS_Object> {
+export interface CollectSessionData<R extends TypedKeyValue<any, any>> {
 	__collectSessionData(accountId: string): Promise<R>;
 }
 
 export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<{}>, '__collectSessionData'>('__collectSessionData');
 
-type MapTypes<T extends CollectSessionData<any>[]> =
-	T extends [a: CollectSessionData<infer A>, ...rest: infer R] ?
-		R extends CollectSessionData<any>[] ?
-			[A, ...MapTypes<R>] :
-			[] :
-		[];
+// type MapTypes<T extends CollectSessionData<any>[]> =
+// 	T extends [a: CollectSessionData<infer A>, ...rest: infer R] ?
+// 		R extends CollectSessionData<any>[] ?
+// 			[A, ...MapTypes<R>] :
+// 			[] :
+// 		[];
 
 export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
@@ -48,10 +47,6 @@ export const MemKey_SessionData = new MemKey<TS_Object>('session-data', true);
 
 export function Middleware_ValidateSession_UpdateMemKeys(sessionData: TS_Object) {
 	MemKey_SessionData.set(sessionData);
-	const account = ModuleBE_v2_SessionDB.getSessionData(ModuleBE_v2_AccountDB).account;
-
-	MemKey_AccountEmail.set(account.email);
-	MemKey_AccountId.set(account._id);
 }
 
 type SessionData_TTL = { timestamp: number, expiration: number, };
@@ -101,12 +96,12 @@ export class ModuleBE_v2_SessionDB_Class
 		return (await gzipSync(Buffer.from(__stringify(sessionData), 'utf8'))).toString('base64');
 	}
 
-	/**
-	 * @param modules - A list of modules that implement CollectSessionData, defines the decoded object's type
-	 */
-	getSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(...modules: T): MergeTypes<MapTypes<T>> {
-		return MemKey_SessionData.get() as MergeTypes<MapTypes<T>>;
-	}
+	// /**
+	//  * @param modules - A list of modules that implement CollectSessionData, defines the decoded object's type
+	//  */
+	// getSessionData<T extends NonEmptyArray<CollectSessionData<{}>>>(...modules: T): MergeTypes<MapTypes<T>> {
+	// 	return MemKey_SessionData.get() as MergeTypes<MapTypes<T>>;
+	// }
 
 	private decodeSessionData(sessionId: string) {
 		return JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8'));
@@ -159,3 +154,18 @@ export class ModuleBE_v2_SessionDB_Class
 }
 
 export const ModuleBE_v2_SessionDB = new ModuleBE_v2_SessionDB_Class();
+
+export class SessionKey_BE<Binder extends TypedKeyValue<string | number, any>> {
+	private readonly key: Binder['key'];
+
+	constructor(key: Binder['key']) {
+		this.key = key;
+	}
+
+	get(sessionData = MemKey_SessionData.get()): Binder['value'] {
+		if (!(this.key in sessionData))
+			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
+
+		return sessionData[this.key] as Binder['value'];
+	}
+}
