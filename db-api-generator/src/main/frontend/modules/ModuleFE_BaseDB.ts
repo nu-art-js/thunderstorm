@@ -373,7 +373,7 @@ class MemCache<DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Defaul
 		if (_key === undefined)
 			return _key;
 
-		const _id = typeof _key === 'string' ? _key : composeDbObjectUniqueId(_key, this.keys);
+		const _id = typeof _key === 'string' ? _key : (('_id' in _key && typeof _key['_id'] === 'string') ? _key['_id'] : composeDbObjectUniqueId(_key, this.keys));
 		return this._map[_id];
 	};
 
