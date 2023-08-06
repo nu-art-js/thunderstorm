@@ -28,7 +28,7 @@ export type DB_Account_V2 = AuditableV2 & UI_Account & {
 
 export type _SessionKey_SessionId = TypedKeyValue<'_id', UniqueId>
 
-export type _SessionKey_Account = TypedKeyValue<'account', UI_Account>
+export type _SessionKey_Account = TypedKeyValue<'account', UI_Account & { hasPassword: boolean }>
 
 type SessionData_TTL = { timestamp: number, expiration: number, };
 
