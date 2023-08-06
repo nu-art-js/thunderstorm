@@ -31,6 +31,8 @@ import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/M
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_v2_SyncManager} from '@nu-art/db-api-generator/backend';
 
+export const Default_TestEmail = 'test@test.test';
+export const Default_TestPassword = '1234';
 export const TestProject__Name = 'Test Project';
 
 const config = {
@@ -40,6 +42,7 @@ const config = {
 };
 ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
 ModuleBE_Permissions.setDefaultConfig({project: {_id: config.project_id, name: 'test project'}});
+ModuleBE_v2_AccountDB.setDefaultConfig({canRegister: true});
 export const firestore = ModuleBE_Firebase.createAdminSession().getFirestoreV2();
 
 // @ts-ignore

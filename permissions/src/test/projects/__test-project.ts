@@ -1,5 +1,5 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {PreDB, UniqueId} from '@nu-art/ts-common';
+import {MUSTNeverHappenException, PreDB, UniqueId} from '@nu-art/ts-common';
 import {DB_PermissionAccessLevel, DB_PermissionApi, DB_PermissionDomain, DB_PermissionProject} from '../../main';
 import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi';
@@ -8,8 +8,8 @@ import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/managem
 import {ModuleBE_PermissionsAssert} from '../../main/backend';
 import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
-import {TestProject__Name} from '../_core/consts';
-import {MemKey_AccountEmail, MemKey_AccountId} from '@nu-art/user-account/backend';
+import {Default_TestEmail, Default_TestPassword, TestProject__Name} from '../_core/consts';
+import {MemKey_AccountEmail, MemKey_AccountId, ModuleBE_v2_AccountDB} from '@nu-art/user-account/backend';
 
 type InputPermissionsSetup = {
 	setup: {
@@ -57,12 +57,22 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 	processor: async (testCase) => {
 		const setup = testCase.input.setup;
 		const MemKey_UserPermissions = new MemKey<DB_PermissionAccessLevel[]>('user-permissions');
+		let defaultAccountId: string | undefined = undefined;
 		await new MemStorage().init(async () => {
-			//todo create auditor account
+			const account = await ModuleBE_v2_AccountDB.account.register({
+				email: Default_TestEmail,
+				password: Default_TestPassword,
+				password_check: Default_TestPassword
+			});
+
+			defaultAccountId = account._id;
 		});
+		if (!defaultAccountId)
+			throw new MUSTNeverHappenException('Failed to create default account for permission test!');
+
 		await new MemStorage().init(async () => {
-			MemKey_AccountEmail.set('test');
-			MemKey_AccountId.set('test'); // todo change this to the created account id, or login?
+			MemKey_AccountEmail.set(Default_TestEmail);
+			MemKey_AccountId.set(defaultAccountId!);
 
 			const dbProject = await ModuleBE_PermissionProject.create.item(setup.project);
 			const dbDomain = await ModuleBE_PermissionDomain.create.item({...setup.domain, projectId: dbProject._id});

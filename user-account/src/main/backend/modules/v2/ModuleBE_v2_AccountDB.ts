@@ -81,7 +81,10 @@ export class ModuleBE_v2_AccountDB_Class
 	}
 
 	manipulateQuery(query: FirestoreQuery<DB_Account_V2>): FirestoreQuery<DB_Account_V2> {
-		return {...query, select: ['email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']};
+		return {
+			...query,
+			select: ['email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']
+		};
 	}
 
 	canDeleteItems(dbItems: DB_Account_V2[], transaction?: FirebaseFirestore.Transaction): Promise<void> {
@@ -168,7 +171,7 @@ export class ModuleBE_v2_AccountDB_Class
 
 			//Create the account
 			const uiAccount = await this.createAccountImpl(body as Request_RegisterAccount, true, transaction); // Must have a password, because we use it to auto-login immediately after
-			this.logErrorBold('uiAccount', uiAccount);
+
 			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
 
 			//Log in
