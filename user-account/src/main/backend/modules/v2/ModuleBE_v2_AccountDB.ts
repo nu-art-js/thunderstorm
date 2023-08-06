@@ -36,7 +36,7 @@ import {
 	MemKey_AccountId,
 	ModuleBE_v2_SessionDB,
 	SessionKey_BE,
-	SessionKey_Session
+	SessionKey_Session_BE
 } from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
@@ -66,14 +66,14 @@ type Config = DBApiConfig<DB_Account_V2> & {
 }
 
 
-export const SessionKey_Account = new SessionKey_BE<_SessionKey_Account>('account');
+export const SessionKey_Account_BE = new SessionKey_BE<_SessionKey_Account>('account');
 
 export class ModuleBE_v2_AccountDB_Class
 	extends ModuleBE_BaseDBV2<DB_Account_V2, Config>
 	implements CollectSessionData<_SessionKey_Account> {
 
 	readonly Middleware = async () => {
-		const account = SessionKey_Account.get();
+		const account = SessionKey_Account_BE.get();
 		MemKey_AccountEmail.set(account.email);
 		MemKey_AccountId.set(account._id);
 	};
@@ -305,7 +305,7 @@ export class ModuleBE_v2_AccountDB_Class
 
 	private async createToken({accountId, ttl}: RequestBody_CreateToken) {
 		const {_id} = await ModuleBE_v2_SessionDB.createSession(accountId, (sessionData) => {
-			SessionKey_Session.get(sessionData).expiration = ttl;
+			SessionKey_Session_BE.get(sessionData).expiration = ttl;
 			return sessionData;
 		});
 
