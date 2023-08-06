@@ -9,7 +9,8 @@ import {
 	Request_RegisterAccount,
 	RequestBody_ChangePassword,
 	RequestBody_RegisterAccount,
-	RequestParams_CreateToken,
+	RequestBody_CreateToken,
+	RequestBody_SetPassword,
 	Response_Auth,
 	UI_Account
 } from '../../../shared';
@@ -17,6 +18,7 @@ import {
 	__stringify,
 	ApiException,
 	BadImplementationException,
+	cloneObj,
 	compare,
 	dispatch_onApplicationException,
 	Dispatcher,
@@ -34,7 +36,7 @@ import {
 	MemKey_AccountId,
 	ModuleBE_v2_SessionDB,
 	SessionKey_BE,
-	SessionKey_Session
+	SessionKey_Session_BE
 } from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
@@ -64,14 +66,14 @@ type Config = DBApiConfig<DB_Account_V2> & {
 }
 
 
-export const SessionKey_Account = new SessionKey_BE<_SessionKey_Account>('account');
+export const SessionKey_Account_BE = new SessionKey_BE<_SessionKey_Account>('account');
 
 export class ModuleBE_v2_AccountDB_Class
 	extends ModuleBE_BaseDBV2<DB_Account_V2, Config>
 	implements CollectSessionData<_SessionKey_Account> {
 
 	readonly Middleware = async () => {
-		const account = SessionKey_Account.get();
+		const account = SessionKey_Account_BE.get();
 		MemKey_AccountEmail.set(account.email);
 		MemKey_AccountId.set(account._id);
 	};
@@ -92,9 +94,13 @@ export class ModuleBE_v2_AccountDB_Class
 	}
 
 	async __collectSessionData(accountId: string) {
+		const account = await this.query.uniqueAssert(accountId);
 		return {
 			key: 'account' as const,
-			value: await this.query.uniqueAssert(accountId) as UI_Account,
+			value: {
+				...account as UI_Account,
+				hasPassword: !!account.saltedPassword,
+			},
 		};
 	}
 
@@ -107,7 +113,8 @@ export class ModuleBE_v2_AccountDB_Class
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.login, ModuleBE_v2_AccountDB.account.login),
 			createBodyServerApi(ApiDefBE_AccountV2.vv1.createAccount, ModuleBE_v2_AccountDB.account.create),
 			createQueryServerApi(ApiDefBE_AccountV2.vv1.logout, ModuleBE_v2_AccountDB.account.logout),
-			createQueryServerApi(ApiDefBE_AccountV2.vv1.createToken, ModuleBE_v2_AccountDB.createToken)
+			createBodyServerApi(ApiDefBE_AccountV2.vv1.createToken, ModuleBE_v2_AccountDB.createToken),
+			createBodyServerApi(ApiDefBE_AccountV2.vv1.setPassword, ModuleBE_v2_AccountDB.setPassword)
 		]);
 	}
 
@@ -191,13 +198,18 @@ export class ModuleBE_v2_AccountDB_Class
 		},
 		create: async (request: PreDB<UI_Account> & { password?: string }, transaction?: Transaction) => {
 			if (request.type === 'user') {
-				if (request.password)
-					return await this.createAccountImpl(request, true, transaction);
+				if (request.password) {
+					const uiAccount = await this.createAccountImpl(request, true, transaction);
+					await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
+					return uiAccount;
+				}
 
 				throw new BadImplementationException('Trying to create a user from type user without password provided');
 			}
 
-			return await this.createAccountImpl(request, false, transaction);
+			const uiAccount = await this.createAccountImpl(request, false, transaction);
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
+			return uiAccount;
 		},
 		logout: async (queryParams: QueryParams) => {
 			const sessionId = Header_SessionId.get();
@@ -294,14 +306,14 @@ export class ModuleBE_v2_AccountDB_Class
 		}, transaction));
 	};
 
-	private async createToken({accountId, ttl}: RequestParams_CreateToken) {
-		const sessionId = await ModuleBE_v2_SessionDB.createSession(accountId, (sessionData) => {
-			SessionKey_Session.get(sessionData).expiration = ttl;
+	private async createToken({accountId, ttl}: RequestBody_CreateToken) {
+		const {_id} = await ModuleBE_v2_SessionDB.createSession(accountId, (sessionData) => {
+			SessionKey_Session_BE.get(sessionData).expiration = ttl;
 			return sessionData;
 		});
 
 
-		return {token: sessionId};
+		return {token: _id};
 	}
 
 	async changePassword(body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> {
@@ -335,12 +347,45 @@ export class ModuleBE_v2_AccountDB_Class
 			return this.set.item({...assertedAccount, ...updatedAccount});
 		}, transaction);
 	}
+
+	async setPassword(body: RequestBody_SetPassword, transaction?: Transaction): Promise<Response_Auth> {
+		const lowerCaseEmail = body.userEmail.toLowerCase();
+		const updatedAccount = await this.setPasswordImpl(body.userEmail, body.password, body.password_check, transaction);
+		return {
+			...getUIAccount(updatedAccount),
+			sessionId: (await this.account.login({
+				email: lowerCaseEmail,
+				password: body.password
+			})).sessionId
+		};
+	}
+
+	private async setPasswordImpl(userEmail: string, password: string, password_check: string, transaction?: Transaction) {
+		return await this.runTransaction(async (_transaction) => {
+
+			const existingAccount = await this.queryAccountWithPassword(userEmail, transaction);
+
+			if (!compare(password, password_check))
+				throw new ApiException(401, 'Password and password check do not match');
+
+			const updatedAccount = this.spiceAccount({
+				type: 'user',
+				email: userEmail,
+				password,
+				password_check,
+			});
+
+			//Update the account with a new password
+			return this.set.item({...existingAccount, ...updatedAccount});
+		}, transaction);
+	}
 }
 
 export function getUIAccount(account: DB_Account_V2): UI_Account {
-	delete account.salt;
-	delete account.saltedPassword;
-	return account;
+	const uiAccount = cloneObj(account);
+	delete uiAccount.salt;
+	delete uiAccount.saltedPassword;
+	return uiAccount as UI_Account;
 }
 
 export const ModuleBE_v2_AccountDB = new ModuleBE_v2_AccountDB_Class();

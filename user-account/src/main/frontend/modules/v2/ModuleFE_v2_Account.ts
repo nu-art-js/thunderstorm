@@ -77,7 +77,8 @@ class ModuleFE_Account_v2_Class
 			login: apiWithBody(ApiDefFE_Account.vv1.login, this.setLoginInfo),
 			loginSaml: apiWithQuery(ApiDefFE_Account.vv1.loginSaml, this.onLoginCompletedSAML),
 			logout: apiWithQuery(ApiDefFE_Account.vv1.logout),
-			createToken: apiWithQuery(ApiDefFE_Account.vv1.createToken),
+			createToken: apiWithBody(ApiDefFE_Account.vv1.createToken),
+			setPassword: apiWithBody(ApiDefFE_Account.vv1.setPassword),
 		};
 	}
 
@@ -203,4 +204,4 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 	}
 }
 
-export const SessionKey_Account = new SessionKey_FE<_SessionKey_Account>('account');
+export const SessionKey_Account_FE = new SessionKey_FE<_SessionKey_Account>('account');
