@@ -204,4 +204,4 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 	}
 }
 
-export const SessionKey_Account = new SessionKey_FE<_SessionKey_Account>('account');
+export const SessionKey_Account_FE = new SessionKey_FE<_SessionKey_Account>('account');
