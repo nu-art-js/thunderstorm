@@ -1,4 +1,4 @@
-import './_core/consts';
+import './_core/init';
 import './test-cases/__tests-password-validation';
 import './test-cases/__test-register';
 import './test-cases/__test-login';
