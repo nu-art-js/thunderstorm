@@ -16,4 +16,4 @@
  * limitations under the License.
  */
 
-export {testUserPermissionsTime} from '../../../benchmark/permission-user-assert-benchmark';
+// export {testUserPermissionsTime} from '../../../benchmark/permission-user-assert-benchmark';
