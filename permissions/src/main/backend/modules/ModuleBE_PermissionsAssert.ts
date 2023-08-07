@@ -24,7 +24,7 @@ import {
 	batchActionParallel,
 	filterDuplicates,
 	Module,
-	StringMap
+	StringMap, TypedMap
 } from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
@@ -49,6 +49,7 @@ import {
 	MemKey_HttpRequestQuery,
 	MemKey_HttpRequestUrl
 } from '@nu-art/thunderstorm/backend/modules/server/consts';
+import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -58,6 +59,7 @@ export type RequestPairWithLevelsObj = { accessLevels: DB_PermissionAccessLevel[
 type Config = {
 	strictMode?: boolean
 }
+export const MemKey_UserPermissions = new MemKey<TypedMap<number>>('user-permissions');
 
 export class ModuleBE_PermissionsAssert_Class
 	extends Module<Config> {
@@ -131,15 +133,15 @@ export class ModuleBE_PermissionsAssert_Class
 	}
 
 	_assertUserPermissionsImpl(apiDetails: {
-								   apiDb: DB_PermissionApi;
-								   requestPermissions: DB_PermissionAccessLevel[]
-							   },
-							   projectId: string,
-							   userDetails: {
-								   user: DB_PermissionUser,
-								   userGroups: DB_PermissionGroup[]
-							   },
-							   requestCustomField: StringMap) {
+															 apiDb: DB_PermissionApi;
+															 requestPermissions: DB_PermissionAccessLevel[]
+														 },
+														 projectId: string,
+														 userDetails: {
+															 user: DB_PermissionUser,
+															 userGroups: DB_PermissionGroup[]
+														 },
+														 requestCustomField: StringMap) {
 		if (!apiDetails.apiDb.accessLevelIds) {
 			if (!this.config.strictMode)
 				return;

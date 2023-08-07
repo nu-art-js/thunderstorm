@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {Auditable, DB_Object, StringMap} from '@nu-art/ts-common';
+import {AuditableV2, DB_Object, StringMap} from '@nu-art/ts-common';
 
 
 export type Base_AccessLevels = {
@@ -33,4 +33,4 @@ export type Request_CreateGroup = {
 	customFields?: StringMap[]
 };
 
-export type DB_PermissionGroup = DB_Object & Request_CreateGroup & Auditable;
+export type DB_PermissionGroup = DB_Object & Request_CreateGroup & AuditableV2;

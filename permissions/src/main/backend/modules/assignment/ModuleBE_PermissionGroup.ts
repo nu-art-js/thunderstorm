@@ -37,7 +37,7 @@ import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail, MemKey_AccountId} from '@nu-art/user-account/backend';
 import Transaction = firestore.Transaction;
 
 
@@ -115,7 +115,7 @@ export class ModuleBE_PermissionGroup_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: DB_PermissionGroup, t?: Transaction) {
-		dbInstance._audit = auditBy(MemKey_AccountEmail.get());
+		dbInstance._auditorId = MemKey_AccountId.get();
 
 		if (!dbInstance.accessLevelIds)
 			return;
