@@ -1,8 +1,7 @@
-
 import {generateHex, ModuleManager} from '@nu-art/ts-common';
 import {ModuleBE_Auth} from '@nu-art/google-services/backend';
 import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase/backend';
-import {Storm} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_APIs, Storm} from '@nu-art/thunderstorm/backend';
 import {RouteResolver_Dummy} from '@nu-art/thunderstorm/backend/modules/server/route-resolvers/RouteResolver_Dummy';
 import {ModuleBE_Permissions, ModuleBE_PermissionsAssert} from '../../main/backend';
 import {ModuleBE_v2_AccountDB, ModuleBE_v2_SessionDB} from '@nu-art/user-account/backend';
@@ -15,17 +14,19 @@ import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/Mo
 import {ModuleBE_v2_SyncManager} from '@nu-art/db-api-generator/backend';
 import {TestProject__Name} from './consts';
 
+
 const config = {
 	project_id: generateHex(4),
 	databaseURL: 'http://localhost:8102/?ns=quai-md-dev',
 	isEmulator: true
 };
 
-
 const accountModules = [
 	ModuleBE_v2_SyncManager,
 	ModuleBE_v2_AccountDB,
-	ModuleBE_v2_SessionDB];
+	ModuleBE_v2_SessionDB,
+];
+
 const permissionModules = [
 	ModuleBE_PermissionProject,
 	ModuleBE_PermissionDomain,
@@ -34,20 +35,22 @@ const permissionModules = [
 	ModuleBE_PermissionUserDB,
 	ModuleBE_PermissionGroup,
 	ModuleBE_PermissionsAssert,
-	ModuleBE_Permissions];
+	ModuleBE_Permissions,
+];
 
 ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
 ModuleBE_Permissions.setDefaultConfig({project: {_id: config.project_id, name: TestProject__Name}});
 ModuleBE_v2_AccountDB.setDefaultConfig({canRegister: true});
 
+
 // @ts-ignore
 ModuleManager.resetForTests();
-
+// @ts-ignore
+ModuleBE_APIs.resetForTests();
 
 new Storm()
 	.addModulePack(accountModules)
 	.addModulePack(permissionModules)
 	.setConfig({isDebug: true})
 	.setInitialRouteResolver(new RouteResolver_Dummy())
-	.init()
-	.build();
+	.init();
