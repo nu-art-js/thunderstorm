@@ -1,7 +1,7 @@
+import '../_core/init';
 import {MemKey_AccountEmail, ModuleBE_v2_AccountDB} from '../../main/backend';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
-import '../_core/consts';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {Request_CreateAccount} from '../../main';
 import {PartialProperties} from '@nu-art/ts-common';
@@ -85,3 +85,4 @@ export const TestSuite_Accounts_Create: CreateAccountTest = {
 describe('Accounts - Create', () => {
 	testSuiteTester(TestSuite_Accounts_Create);
 });
+
