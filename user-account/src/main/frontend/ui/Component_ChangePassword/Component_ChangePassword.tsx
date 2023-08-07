@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {ComponentSync, LL_V_L, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_AccountV2, SessionKey_Account} from '../../modules/v2/ModuleFE_v2_Account';
+import {ModuleFE_AccountV2, SessionKey_Account_FE} from '../../modules/v2/ModuleFE_v2_Account';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 
 type Props = {
@@ -22,7 +22,7 @@ export class Component_ChangePassword
 		state ??= this.state ? {...this.state} : {} as State;
 		if (!ModuleFE_AccountV2.accountId)
 			throw new ThisShouldNotHappenException('Rendering a change password component without user logged in');
-		state.shouldGiveCurrentPassword = SessionKey_Account.get().hasPassword;
+		state.shouldGiveCurrentPassword = SessionKey_Account_FE.get().hasPassword;
 		return state;
 	}
 
