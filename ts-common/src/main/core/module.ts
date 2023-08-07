@@ -35,9 +35,9 @@ export abstract class Module<Config = any, FinalConfig extends _FinalConfig<Conf
 	extends Logger {
 
 	private name: string;
+	public readonly config: FinalConfig = {} as FinalConfig;
 	protected readonly manager!: ModuleManager;
 	protected readonly initiated = false;
-	protected readonly config: FinalConfig = {} as FinalConfig;
 	protected readonly configValidator?: ValidatorTypeResolver<FinalConfig>;
 	protected timeoutMap: { [k: string]: number } = {};
 
