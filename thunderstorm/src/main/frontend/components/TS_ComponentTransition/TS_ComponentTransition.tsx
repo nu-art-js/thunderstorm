@@ -26,7 +26,12 @@ export class TS_ComponentTransition extends ComponentSync<Props, State> {
 		mountTimeout: 0,
 	};
 
+	shouldReDeriveState(nextProps: Readonly<Props>): boolean {
+		return this.props?.trigger !== nextProps.trigger;
+	}
+
 	protected deriveStateFromProps(nextProps: Props): State {
+		this.logWarning('Deriving');
 		return {
 			transitionPhase: nextProps.trigger ? 'mount' : this.state?.transitionPhase === 'enter-done' ? 'exit' : 'unmount',
 		};
@@ -61,6 +66,7 @@ export class TS_ComponentTransition extends ComponentSync<Props, State> {
 	};
 
 	render() {
+		this.logInfo(this.state.transitionPhase);
 		this.triggerNextTimeout();
 		if (this.state.transitionPhase === 'unmount')
 			return '';

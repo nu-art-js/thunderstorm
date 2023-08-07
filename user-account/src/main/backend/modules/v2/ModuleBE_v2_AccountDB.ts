@@ -105,13 +105,13 @@ export class ModuleBE_v2_AccountDB_Class
 		super.init();
 
 		addRoutes([
-			createBodyServerApi(ApiDefBE_AccountV2.vv1.registerAccount, ModuleBE_v2_AccountDB.account.register),
-			createBodyServerApi(ApiDefBE_AccountV2.vv1.changePassword, ModuleBE_v2_AccountDB.changePassword),
-			createBodyServerApi(ApiDefBE_AccountV2.vv1.login, ModuleBE_v2_AccountDB.account.login),
-			createBodyServerApi(ApiDefBE_AccountV2.vv1.createAccount, ModuleBE_v2_AccountDB.account.create),
-			createQueryServerApi(ApiDefBE_AccountV2.vv1.logout, ModuleBE_v2_AccountDB.account.logout),
-			createBodyServerApi(ApiDefBE_AccountV2.vv1.createToken, ModuleBE_v2_AccountDB.createToken),
-			createBodyServerApi(ApiDefBE_AccountV2.vv1.setPassword, ModuleBE_v2_AccountDB.setPassword)
+			createBodyServerApi(ApiDefBE_AccountV2.vv1.registerAccount, this.account.register),
+			createBodyServerApi(ApiDefBE_AccountV2.vv1.changePassword, this.changePassword),
+			createBodyServerApi(ApiDefBE_AccountV2.vv1.login, this.account.login),
+			createBodyServerApi(ApiDefBE_AccountV2.vv1.createAccount, this.account.create),
+			createQueryServerApi(ApiDefBE_AccountV2.vv1.logout, this.account.logout),
+			createBodyServerApi(ApiDefBE_AccountV2.vv1.createToken, this.createToken),
+			createBodyServerApi(ApiDefBE_AccountV2.vv1.setPassword, this.setPassword)
 		]);
 	}
 
@@ -303,7 +303,7 @@ export class ModuleBE_v2_AccountDB_Class
 		}, transaction));
 	};
 
-	private async createToken({accountId, ttl}: RequestBody_CreateToken) {
+	private createToken = async ({accountId, ttl}: RequestBody_CreateToken) => {
 		const {_id} = await ModuleBE_v2_SessionDB.createSession(accountId, (sessionData) => {
 			SessionKey_Session.get(sessionData).expiration = ttl;
 			return sessionData;
@@ -311,71 +311,62 @@ export class ModuleBE_v2_AccountDB_Class
 
 
 		return {token: _id};
-	}
+	};
 
-	async changePassword(body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> {
+	changePassword = async (body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> => {
 		const lowerCaseEmail = body.userEmail.toLowerCase();
 		const updatedAccount = await this.changePasswordImpl(lowerCaseEmail, body.originalPassword, body.newPassword, body.newPassword_check, transaction);
+		const newSession = await ModuleBE_v2_SessionDB.createSession(updatedAccount._id);
 		return {
 			...getUIAccount(updatedAccount),
-			sessionId: (await this.account.login({
-				email: lowerCaseEmail,
-				password: body.newPassword
-			})).sessionId
+			sessionId: newSession._id
 		};
-	}
+	};
 
-	private async changePasswordImpl(userEmail: string, originalPassword: string, newPassword: string, newPassword_check: string, transaction?: Transaction) {
-		return await this.runTransaction(async (_transaction) => {
+	private changePasswordImpl = async (userEmail: string, originalPassword: string, newPassword: string, newPassword_check: string, transaction?: Transaction) => await this.runTransaction(async (_transaction) => {
 
-			const assertedAccount = await this.password.assertPasswordMatch(originalPassword, userEmail);
+		const assertedAccount = await this.password.assertPasswordMatch(originalPassword, userEmail);
 
-			if (!compare(newPassword, newPassword_check))
-				throw new ApiException(401, 'Account login using SAML');
+		if (!compare(newPassword, newPassword_check))
+			throw new ApiException(401, 'Password & password check mismatch');
 
-			const updatedAccount = this.spiceAccount({
-				type: 'user',
-				email: userEmail,
-				password: newPassword,
-				password_check: newPassword
-			});
+		const updatedAccount = this.spiceAccount({
+			type: 'user',
+			email: userEmail,
+			password: newPassword,
+			password_check: newPassword
+		});
 
-			//Update the account with a new password
-			return this.set.item({...assertedAccount, ...updatedAccount});
-		}, transaction);
-	}
+		//Update the account with a new password
+		return this.set.item({...assertedAccount, ...updatedAccount});
+	}, transaction);
 
-	async setPassword(body: RequestBody_SetPassword, transaction?: Transaction): Promise<Response_Auth> {
-		const lowerCaseEmail = body.userEmail.toLowerCase();
+	setPassword = async (body: RequestBody_SetPassword, transaction?: Transaction): Promise<Response_Auth> => {
 		const updatedAccount = await this.setPasswordImpl(body.userEmail, body.password, body.password_check, transaction);
+		const newSession = await ModuleBE_v2_SessionDB.createSession(updatedAccount._id);
 		return {
 			...getUIAccount(updatedAccount),
-			sessionId: (await this.account.login({
-				email: lowerCaseEmail,
-				password: body.password
-			})).sessionId
+			sessionId: newSession._id
 		};
-	}
+	};
 
-	private async setPasswordImpl(userEmail: string, password: string, password_check: string, transaction?: Transaction) {
-		return await this.runTransaction(async (_transaction) => {
+	private setPasswordImpl = async (userEmail: string, password: string, password_check: string, transaction?: Transaction) => await this.runTransaction(async (_transaction) => {
 
-			const existingAccount = await this.queryAccountWithPassword(userEmail, transaction);
+		const existingAccount = await this.queryAccountWithPassword(userEmail, transaction);
 
-			if (!compare(password, password_check))
-				throw new ApiException(401, 'Password and password check do not match');
+		if (!compare(password, password_check))
+			throw new ApiException(401, 'Password and password check do not match');
 
-			const updatedAccount = this.spiceAccount({
-				type: 'user',
-				email: userEmail,
-				password,
-				password_check,
-			});
+		const updatedAccount = this.spiceAccount({
+			type: 'user',
+			email: userEmail,
+			password,
+			password_check,
+		});
 
-			//Update the account with a new password
-			return this.set.item({...existingAccount, ...updatedAccount});
-		}, transaction);
-	}
+		//Update the account with a new password
+		return this.set.item({...existingAccount, ...updatedAccount});
+	}, transaction);
 }
 
 export function getUIAccount(account: DB_Account_V2): UI_Account {
