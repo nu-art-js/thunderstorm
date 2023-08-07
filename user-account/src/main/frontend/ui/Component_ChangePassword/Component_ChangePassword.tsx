@@ -3,7 +3,9 @@ import {ComponentSync, LL_V_L, TS_BusyButton, TS_Input, TS_PropRenderer} from '@
 import {ModuleFE_AccountV2, SessionKey_Account} from '../../modules/v2/ModuleFE_v2_Account';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 
-type Props = {};
+type Props = {
+	postSubmitAction?: () => void;
+};
 
 type State = {
 	shouldGiveCurrentPassword: boolean;
@@ -32,23 +34,29 @@ export class Component_ChangePassword
 		}
 
 		const account = ModuleFE_AccountV2.cache.unique(ModuleFE_AccountV2.accountId)!;
-		if (!this.state.shouldGiveCurrentPassword)
-			await ModuleFE_AccountV2.vv1.setPassword({
-				userEmail: account.email,
-				password: this.state.newPassword,
-				password_check: this.state.newPasswordCheck,
-			}).executeSync();
-		else {
-			if (!this.state.currentPassword) {
-				this.logError('No current password given');
-				return;
+
+		try {
+			if (!this.state.shouldGiveCurrentPassword)
+				await ModuleFE_AccountV2.vv1.setPassword({
+					userEmail: account.email,
+					password: this.state.newPassword,
+					password_check: this.state.newPasswordCheck,
+				}).executeSync();
+			else {
+				if (!this.state.currentPassword) {
+					this.logError('No current password given');
+					return;
+				}
+				await ModuleFE_AccountV2.vv1.changePassword({
+					userEmail: account.email,
+					originalPassword: this.state.currentPassword,
+					newPassword: this.state.newPassword,
+					newPassword_check: this.state.newPasswordCheck,
+				}).executeSync();
 			}
-			await ModuleFE_AccountV2.vv1.changePassword({
-				userEmail: account.email,
-				originalPassword: this.state.currentPassword,
-				newPassword: this.state.newPassword,
-				newPassword_check: this.state.newPasswordCheck,
-			}).executeSync();
+			this.props.postSubmitAction?.();
+		} catch (e: any) {
+			this.logError(e);
 		}
 	};
 
