@@ -59,12 +59,16 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 		const MemKey_UserPermissions = new MemKey<DB_PermissionAccessLevel[]>('user-permissions');
 		let defaultAccountId: string | undefined = undefined;
 		await new MemStorage().init(async () => {
-			const account = await ModuleBE_v2_AccountDB.account.register({
-				email: Default_TestEmail,
-				password: Default_TestPassword,
-				password_check: Default_TestPassword
-			});
-
+			let account;
+			try {
+				account = await ModuleBE_v2_AccountDB.account.register({
+					email: Default_TestEmail,
+					password: Default_TestPassword,
+					password_check: Default_TestPassword
+				});
+			} catch (e) {
+				account = await ModuleBE_v2_AccountDB.query.uniqueCustom({where: {email: Default_TestEmail}});
+			}
 			defaultAccountId = account._id;
 		});
 		if (!defaultAccountId)
@@ -91,6 +95,7 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 			MemKey_UserPermissions.set(testCase.input.userAccessLevelNames.map(_name => dbAccessLevels.find(_level => _level.name === _name)));
 			await testCase.input.check(dbProject._id);
 		});
+		// await ModuleBE_v2_AccountDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	}
 };
 
