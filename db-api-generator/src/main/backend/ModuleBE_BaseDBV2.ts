@@ -21,6 +21,7 @@
 
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
 import {
+	_keys,
 	ApiException, asArray, batchAction,
 	currentTimeMillis,
 	DB_Object,
@@ -108,12 +109,42 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 
 		// ############################## API ##############################
 		this.runTransaction = this.collection.runTransaction;
-		this.query = {...this.collection.query};
-		this.create = {...this.collection.create};
-		this.set = {...this.collection.set};
-		this.update = {...this.collection.update};
-		this.delete = {...this.collection.delete};
-		this.doc = {...this.collection.doc};
+		type Callable = {
+			[K: string]: ((p: any) => Promise<any> | any) | Callable
+		}
+
+		const wrapInTryCatch = <T extends Callable>(input: T, path?: string): T => _keys(input).reduce((acc: any, key: keyof T) => {
+			const value = input[key];
+			const newPath = path ? `${path}.${String(key)}` : String(key);
+
+			if (typeof value === 'function') {
+				acc[key] = (async (...args: any[]) => {
+					try {
+						return await (value as Function)(...args);
+					} catch (e: any) {
+						this.logError(`Error while calling "${newPath}"`);
+						throw e;
+					}
+				});
+				return acc;
+			}
+
+			if (typeof value === 'object' && value !== null) {
+				acc[key] = wrapInTryCatch(value, newPath);
+				return acc;
+			}
+
+			acc[key] = value;
+
+			return acc;
+		}, {} as T);
+
+		this.query = wrapInTryCatch(this.collection.query, 'query');
+		this.create = wrapInTryCatch(this.collection.create, 'create');
+		this.set = wrapInTryCatch(this.collection.set, 'set');
+		this.update = wrapInTryCatch(this.collection.update, 'update');
+		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
+		this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 	}
 
 	getCollectionName() {
@@ -191,9 +222,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		return query;
 	}
 
-	preUpsertProcessing(doNotCompileWithThisFunction: number) {
-		//todo Deprecated, turn all into preWriteProcessing
-	}
+	preUpsertProcessing!: never;
 
 	protected async upgradeItem(dbItem: PreDB<Type>, toVersion: string): Promise<void> {
 	}
