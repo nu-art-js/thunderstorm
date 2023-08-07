@@ -212,6 +212,9 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
 			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
 		},
+		where: async (where: Clause_Where<Type>, transaction?: Transaction): Promise<Type[]> => {
+			return this.query.custom({where}, transaction);
+		},
 	});
 
 	// ############################## Create ##############################
