@@ -131,12 +131,15 @@ export class ModuleBE_PermissionsAssert_Class
 	}
 
 	_assertUserPermissionsImpl(apiDetails: {
-		apiDb: DB_PermissionApi;
-		requestPermissions: DB_PermissionAccessLevel[]
-	}, projectId: string, userDetails: {
-		user: DB_PermissionUser,
-		userGroups: DB_PermissionGroup[]
-	}, requestCustomField: StringMap) {
+								   apiDb: DB_PermissionApi;
+								   requestPermissions: DB_PermissionAccessLevel[]
+							   },
+							   projectId: string,
+							   userDetails: {
+								   user: DB_PermissionUser,
+								   userGroups: DB_PermissionGroup[]
+							   },
+							   requestCustomField: StringMap) {
 		if (!apiDetails.apiDb.accessLevelIds) {
 			if (!this.config.strictMode)
 				return;
