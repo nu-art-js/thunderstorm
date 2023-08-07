@@ -1,6 +1,12 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {MUSTNeverHappenException, PreDB, UniqueId} from '@nu-art/ts-common';
-import {DB_PermissionAccessLevel, DB_PermissionApi, DB_PermissionDomain, DB_PermissionProject} from '../../main';
+import {
+	DB_PermissionAccessLevel,
+	DB_PermissionApi,
+	DB_PermissionDomain,
+	DB_PermissionGroup,
+	DB_PermissionProject
+} from '../../main';
 import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionDomain} from '../../main/backend/modules/management/ModuleBE_PermissionDomain';
@@ -8,13 +14,14 @@ import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/managem
 import {ModuleBE_PermissionsAssert} from '../../main/backend';
 import {MemKey, MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
-import {Default_TestEmail, Default_TestPassword, TestProject__Name} from '../_core/consts';
+import {Default_TestEmail, Default_TestPassword, Groups_ToCreate, TestProject__Name} from '../_core/consts';
 import {MemKey_AccountEmail, MemKey_AccountId, ModuleBE_v2_AccountDB} from '@nu-art/user-account/backend';
+import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 
 type InputPermissionsSetup = {
 	setup: {
 		project: PreDB<DB_PermissionProject>;
-		domain: Omit<PreDB<DB_PermissionDomain>, 'projectId'>;
+		domains: Omit<PreDB<DB_PermissionDomain>, 'projectId'>[];
 		accessLevels: Omit<PreDB<DB_PermissionAccessLevel>, 'domainId'>[];
 		apis: (Omit<PreDB<DB_PermissionApi>, 'accessLevelIds' | 'projectId'> & { accessLevelNames: string[] })[];
 	},
@@ -30,7 +37,7 @@ const TestCases_Basic: BasicProjectTest['testcases'] = [
 		input: {
 			setup: {
 				project: {name: TestProject__Name},
-				domain: {namespace: 'test-domain'},
+				domains: [{namespace: 'test-domain'}],
 				accessLevels: [
 					{name: 'NoAccess', value: 0},
 					{name: 'Read', value: 100},
@@ -55,6 +62,9 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 	label: 'Basic Permissions Setup',
 	testcases: TestCases_Basic,
 	processor: async (testCase) => {
+		//Create test groups
+		await ModuleBE_PermissionGroup.create.all(Groups_ToCreate as PreDB<DB_PermissionGroup>[]);
+
 		const setup = testCase.input.setup;
 		const MemKey_UserPermissions = new MemKey<DB_PermissionAccessLevel[]>('user-permissions');
 		let defaultAccountId: string | undefined = undefined;
@@ -67,10 +77,11 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 					password_check: Default_TestPassword
 				});
 			} catch (e) {
-				account = await ModuleBE_v2_AccountDB.query.uniqueCustom({where: {email: Default_TestEmail}});
+				account = await ModuleBE_v2_AccountDB.query.uniqueWhere({email: Default_TestEmail});
 			}
 			defaultAccountId = account._id;
 		});
+
 		if (!defaultAccountId)
 			throw new MUSTNeverHappenException('Failed to create default account for permission test!');
 
