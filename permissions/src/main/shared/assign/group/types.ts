@@ -27,7 +27,6 @@ export type Base_AccessLevels = {
 
 export type Request_CreateGroup = {
 	label: string,
-	tags?: string[],
 	accessLevelIds?: string[],
 	__accessLevels?: Base_AccessLevels[],
 	customFields?: StringMap[]
