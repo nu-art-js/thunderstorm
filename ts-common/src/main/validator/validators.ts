@@ -42,6 +42,7 @@ export const tsValidateStringWithDashes = tsValidateRegexp(/^[A-Za-z-]+$/);
 export const tsValidateStringAndNumbersWithDashes = tsValidateRegexp(/^[0-9A-Za-z-]+$/);
 export const tsValidator_JavaObjectMemberName = tsValidateRegexp(/^[a-z][a-zA-Z0-9]+$/);
 export const tsValidateNameWithDashesAndDots = tsValidateRegexp(/^[a-z-.]+$/);
+export const tsValidateNameWithDashesAndDotsAndNumbers = tsValidateRegexp(/^[a-z0-9-.]+$/);
 export const tsValidator_LowercaseStringWithDashes = tsValidateRegexp(/^[a-z-.]+$/);
 export const tsValidator_LowerUpperStringWithSpaces = tsValidateRegexp(/^[A-Za-z ]+$/);
 export const tsValidator_LowerUpperStringWithDashesAndUnderscore = tsValidateRegexp(/^[A-Za-z-_]+$/);

@@ -31,7 +31,7 @@ import {HttpMethod} from '@nu-art/thunderstorm';
 import {MemKey_AccountEmail, MemKey_AccountId} from '@nu-art/user-account/backend';
 import {
 	ApiDef_PermissionsAssert,
-	Base_AccessLevels,
+	Base_AccessLevel,
 	DB_PermissionAccessLevel,
 	DB_PermissionApi,
 	DB_PermissionGroup,
@@ -53,7 +53,7 @@ import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
-export type GroupPairWithBaseLevelsObj = { accessLevels: Base_AccessLevels[], customFields: StringMap[] };
+export type GroupPairWithBaseLevelsObj = { accessLevels: Base_AccessLevel[], customFields: StringMap[] };
 export type RequestPairWithLevelsObj = { accessLevels: DB_PermissionAccessLevel[], customFields: StringMap[] };
 
 type Config = {
@@ -304,7 +304,7 @@ export class ModuleBE_PermissionsAssert_Class
 		return match;
 	}
 
-	private getDomainLevelMap(accessLevels: Base_AccessLevels[]) {
+	private getDomainLevelMap(accessLevels: Base_AccessLevel[]) {
 		return accessLevels.reduce((toRet, accessLevel) => {
 			const levelForDomain = toRet[accessLevel.domainId];
 			if (!levelForDomain || levelForDomain < accessLevel.value)

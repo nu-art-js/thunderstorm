@@ -6,15 +6,15 @@ export const Default_TestPassword = '1234';
 export const TestProject__Name = 'test-project';
 
 export const Group_ToCreate_Read: Partial<DB_PermissionGroup> = {
-	label: 'test-read',
+	label: 'test-group-read',
 	accessLevelIds: ['Read']
 };
 export const Group_ToCreate_Delete: Partial<DB_PermissionGroup> = {
-	label: 'test-read',
+	label: 'test-group-delete',
 	accessLevelIds: ['Delete']
 };
 export const Group_ToCreate_NoAccess: Partial<DB_PermissionGroup> = {
-	label: 'test-read',
+	label: 'test-group-no_access',
 	accessLevelIds: ['NoAccess']
 };
 export const Groups_ToCreate = [

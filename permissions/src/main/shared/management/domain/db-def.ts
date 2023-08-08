@@ -19,9 +19,8 @@
 
 import {
 	DBDef,
-	OmitDBObject, tsValidateNameWithDashesAndDots,
-	tsValidateNonMandatoryObject,
-	tsValidateNumber,
+	OmitDBObject,
+	tsValidateNameWithDashesAndDotsAndNumbers,
 	tsValidateString,
 	TypeValidator
 } from '@nu-art/ts-common';
@@ -31,17 +30,13 @@ import {DB_PermissionDomain} from './types';
 
 const Validator_PermissionDomain: TypeValidator<OmitDBObject<DB_PermissionDomain>> = {
 	projectId: validateProjectId,
-	namespace: tsValidateNameWithDashesAndDots,
-	_audit: tsValidateNonMandatoryObject({
-		comment: tsValidateString(-1, false),
-		auditBy: tsValidateString(),
-		auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
-	})
+	namespace: tsValidateNameWithDashesAndDotsAndNumbers,
+	_auditorId: tsValidateString()
 };
 
 export const DBDef_PermissionDomain: DBDef<DB_PermissionDomain> = {
 	validator: Validator_PermissionDomain,
 	dbName: 'permissions--domain',
-	entityName: 'permissions--domain',
+	entityName: 'PermissionsDomain',
 	lockKeys: ['projectId']
 };
