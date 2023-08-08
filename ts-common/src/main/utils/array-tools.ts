@@ -252,6 +252,10 @@ export function flatArray<T extends any[], K = NestedArrayType<T>>(arr: T, resul
 	return result;
 }
 
+export function filterFlatInstances<T extends any[], K = NestedArrayType<T>>(arr: T, result: K[] = []): Exclude<K, undefined>[] {
+	return filterInstances(flatArray(arr, result)) as Exclude<K, undefined>[];
+}
+
 export function groupArrayBy<T extends object, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): { key: K, values: T[] }[] {
 	const map = arr.reduce<{ [k in K]: T[] }>((agg, item, index) => {
 		const key = mapper(item, index);
