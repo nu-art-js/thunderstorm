@@ -18,9 +18,9 @@ import {
 	Test_Domain1,
 	TestProject__Name
 } from '../_core/consts';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
-import {ModuleBE_Firebase} from '@nu-art/firebase/backend';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
 
 
 type InputPermissionsSetup = {
@@ -75,8 +75,6 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 	label: 'Basic Permissions Setup',
 	testcases: TestCases_Basic,
 	processor: async (testCase) => {
-		//Create test groups
-		await ModuleBE_PermissionGroup.create.all(Groups_ToCreate as PreDB<DB_PermissionGroup>[]);
 		// validate domain names and accesslevels in apis with definition in the setup
 
 		// create all projects
@@ -85,63 +83,99 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 		// create APIs with the associated access levels
 		// let defaultAccountId: string | undefined = undefined;
 		// await new MemStorage().init(async () => {
-		// 	let account;
 		// 	try {
-		// 		account = await ModuleBE_v2_AccountDB.account.register({
+		// 		defaultAccountId = (await ModuleBE_v2_AccountDB.account.register({
 		// 			email: Default_TestEmail,
 		// 			password: Default_TestPassword,
 		// 			password_check: Default_TestPassword
-		// 		});
+		// 		}))._id;
 		// 	} catch (e) {
-		// 		account = await ModuleBE_v2_AccountDB.query.uniqueWhere({email: Default_TestEmail});
+		// 		defaultAccountId = (await ModuleBE_v2_AccountDB.query.uniqueWhere({email: Default_TestEmail}))._id;
 		// 	}
-		// 	defaultAccountId = account._id;
 		// });
-		//
-		// if (!defaultAccountId)
-		// 	throw new MUSTNeverHappenException('Failed to create default account for permission test!');
+
 
 		const setup = testCase.input.setup;
-		await new MemStorage().init(async () => {
-			// MemKey_AccountEmail.set(Default_TestEmail);
-			MemKey_AccountId.set('00000000000000000000000000000000');
+		try {
+			await new MemStorage().init(async () => {
+				// MemKey_AccountEmail.set(Default_TestEmail);
+				MemKey_AccountId.set('00000000000000000000000000000000');
+				// MemKey_AccountId.set(defaultAccountId!);
 
-			const domains: TypedMap<DB_PermissionDomain> = {};
-			const domainsByName: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
+				const domainNameToDbObjectMap: TypedMap<DB_PermissionDomain> = {};
+				const domainsByName: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
 
-			await ModuleBE_Firebase.createAdminSession().getFirestoreV2().runTransaction(async t => {
+				// Create All Projects
+				await Promise.all(setup.projects.map(project => ModuleBE_PermissionProject.create.item({
+					name: project.name,
+					_auditorId: MemKey_AccountId.get()
+				})));
 
-				setup.projects.map(async project => {
-					const dbProject = await ModuleBE_PermissionProject.create.item({name: project.name}, t);
+				await Promise.all(setup.projects.map(async project => {
+
+					const dbProject = await ModuleBE_PermissionProject.query.uniqueWhere({name: project.name});
 					project.domains.map(async domain => {
-						const dbDomain = await ModuleBE_PermissionDomain.create.item({namespace: domain.namespace, projectId: dbProject._id}, t);
-						const levelsToUpsert = domain.levels.map(levelName => ({...levelName, domainId: dbDomain._id}));
-						const dbAccessLevels = await ModuleBE_PermissionAccessLevel.create.all(levelsToUpsert, t);
 						if (domainsByName[domain.namespace])
 							throw new BadImplementationException(`Same domain ${domain.namespace} was defined twice`);
 
-						domains[dbDomain.namespace] = dbDomain;
-						domainsByName[domain.namespace] = reduceToMap(dbAccessLevels, levelName => levelName.name, level => level);
+						// Create Domain
+						const dbDomain = await ModuleBE_PermissionDomain.create.item({
+							namespace: domain.namespace,
+							projectId: dbProject._id,
+							_auditorId: MemKey_AccountId.get()
+						});
+
+						// Create AccessLevels
+						const levelsToUpsert = domain.levels.map(levelName => ({
+							...levelName,
+							domainId: dbDomain._id,
+							_auditorId: MemKey_AccountId.get()
+						}));
+						const dbAccessLevels = await ModuleBE_PermissionAccessLevel.create.all(levelsToUpsert);
+
+						// Create AccessLevel ID to DbObject map
+						const accessLevelNameToObjectMap = reduceToMap(dbAccessLevels, accessLevel => accessLevel.name, accessLevel => accessLevel);
+
+						// Create Groups
+						await ModuleBE_PermissionGroup.create.all(Groups_ToCreate.map(preGroup => ({
+							label: preGroup.label,
+							accessLevelIds: preGroup.accessLevelIds!.map(levelName => accessLevelNameToObjectMap[levelName]._id)
+						})) as PreDB<DB_PermissionGroup>[]);
+
+
+						domainNameToDbObjectMap[dbDomain.namespace] = dbDomain;
+						domainsByName[domain.namespace] = accessLevelNameToObjectMap;
 						project.apis.map(async api => {
 							const toCreate = {
 								projectId: dbProject._id,
 								path: api.path,
-								accessLevelIds: api.levelNames.map(levelName => domainsByName[api.domain][levelName]._id)
+								accessLevelIds: api.levelNames.map(levelName => domainsByName[api.domain][levelName]._id),
+								_auditorId: MemKey_AccountId.get()
 							};
-							await ModuleBE_PermissionApi.create.item(toCreate, t);
+							await ModuleBE_PermissionApi.create.item(toCreate);
 						});
 					});
 
-					await ModuleBE_PermissionProject.create.item({name: project.name}, t);
-				});
-			});
-		});
+					// await ModuleBE_PermissionProject.create.item({
+					// 	name: project.name,
+					// 	_auditorId: MemKey_AccountId.get()
+					// });
 
+				}));
+			});
+		} catch (e) {
+			//
+		}
 		// const userAccessLevels = reduceToMap(testCase.input.userLevels, userLevel => domains[userLevel.domain]._id, userLevel => domainsByName[userLevel.domain][userLevel.levelName].value);
 		// MemKey_UserPermissions.set(userAccessLevels);
 		//
 		// await testCase.input.check();
-		// await ModuleBE_v2_AccountDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_PermissionDomain.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_PermissionApi.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_PermissionAccessLevel.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_PermissionGroup.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+		await ModuleBE_PermissionUserDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	}
 };
 

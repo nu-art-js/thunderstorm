@@ -18,14 +18,14 @@
  */
 
 import {ServerApi} from '@nu-art/thunderstorm/backend';
-import {auditBy, filterDuplicates, PreDB} from '@nu-art/ts-common';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
+import {filterDuplicates, PreDB} from '@nu-art/ts-common';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
 import {Clause_Where} from '@nu-art/firebase';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
-import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
-import {firestore} from "firebase-admin";
+import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
+import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
 
 
@@ -47,11 +47,9 @@ export class ModuleBE_PermissionApi_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: DB_PermissionApi, t?: Transaction) {
-		const email = MemKey_AccountEmail.get();
-		if (email)
-			dbInstance._audit = auditBy(email);
-
 		await ModuleBE_PermissionProject.query.uniqueAssert(dbInstance.projectId);
+
+		dbInstance._auditorId = MemKey_AccountId.get();
 
 		// need to assert that all the permissions levels exists in the db
 		const _permissionsIds = dbInstance.accessLevelIds;
@@ -68,7 +66,7 @@ export class ModuleBE_PermissionApi_Class
 			const existingProjectApis = await this.query.custom({where: {projectId: projectId}}, transaction);
 			const apisToAdd: PreDB<DB_PermissionApi>[] = routes
 				.filter(path => !existingProjectApis.find(api => api.path === path))
-				.map(path => ({path, projectId: projectId}));
+				.map(path => ({path, projectId: projectId, _auditorId: MemKey_AccountId.get()}));
 
 			return this.set.all(apisToAdd, transaction);
 		});

@@ -22,8 +22,6 @@ import {
 	OmitDBObject,
 	tsValidateArray,
 	tsValidateBoolean,
-	tsValidateNonMandatoryObject,
-	tsValidateNumber,
 	tsValidateString,
 	tsValidateUniqueId,
 	TypeValidator
@@ -36,11 +34,7 @@ const Validator_PermissionApi: TypeValidator<OmitDBObject<DB_PermissionApi>> = {
 	projectId: validateProjectId,
 	path: tsValidateStringWithDashesAndSlash,
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
-	_audit: tsValidateNonMandatoryObject({
-		comment: tsValidateString(-1, false),
-		auditBy: tsValidateString(),
-		auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
-	}),
+	_auditorId: tsValidateString(),
 	deprecated: tsValidateBoolean(false),
 	onlyForApplication: tsValidateBoolean(false)
 };

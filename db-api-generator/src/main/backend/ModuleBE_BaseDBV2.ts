@@ -123,6 +123,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 						return await (value as Function)(...args);
 					} catch (e: any) {
 						this.logError(`Error while calling "${newPath}"`);
+						this.logError(e)
 						throw e;
 					}
 				});

@@ -18,17 +18,12 @@
  */
 
 import {AuditableV2, DB_Object, StringMap} from '@nu-art/ts-common';
-
-
-export type Base_AccessLevels = {
-	domainId: string,
-	value: number
-}
+import {Base_AccessLevel} from '../../management';
 
 export type Request_CreateGroup = {
 	label: string,
-	accessLevelIds?: string[],
-	__accessLevels?: Base_AccessLevels[],
+	accessLevelIds: string[],
+	__accessLevels?: Base_AccessLevel[],
 	customFields?: StringMap[]
 };
 
