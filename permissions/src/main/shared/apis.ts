@@ -29,13 +29,11 @@ export type UserUrlsPermissions = {
 export type Request_AssertApiForUser = {
 	projectId: string
 	path: string
-	requestCustomField: StringMap
 }
 
 export type Request_UserUrlsPermissions = {
 	projectId: string
 	urls: UserUrlsPermissions
-	requestCustomField: StringMap
 }
 
 export type Request_UserCFsByShareGroups = {

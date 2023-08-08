@@ -5,7 +5,7 @@ import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/
 import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionDomain} from '../../main/backend/modules/management/ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel';
-import {ModuleBE_PermissionsAssert} from '../../main/backend';
+import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../../main/backend';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {
@@ -35,7 +35,7 @@ type InputPermissionsSetup = {
 		}[];
 	},
 	userLevels: { domain: string, levelName: string }[];
-	check: (projectId: UniqueId) => Promise<any>;
+	check: (projectId: UniqueId, path: string) => Promise<any>;
 }
 type BasicProjectTest = TestSuite<InputPermissionsSetup, boolean>;
 
@@ -62,8 +62,8 @@ const TestCases_Basic: BasicProjectTest['testcases'] = [
 				}],
 			},
 			userLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Write}],
-			check: async (projectId: UniqueId) => {
-				await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, 'v1/stam', {});
+			check: async (projectId: UniqueId, path: string) => {
+				await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, path);
 			}
 		},
 		result: true
@@ -103,19 +103,19 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 				// MemKey_AccountId.set(defaultAccountId!);
 
 				const domainNameToDbObjectMap: TypedMap<DB_PermissionDomain> = {};
-				const domainsByName: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
+				const accessLevelsByDomain: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
 
 				// Create All Projects
-				await Promise.all(setup.projects.map(project => ModuleBE_PermissionProject.create.item({
+				const nameToProjectMap = reduceToMap(await Promise.all(setup.projects.map(project => ModuleBE_PermissionProject.create.item({
 					name: project.name,
 					_auditorId: MemKey_AccountId.get()
-				})));
+				}))), project => project.name, project => project);
 
 				await Promise.all(setup.projects.map(async project => {
 
-					const dbProject = await ModuleBE_PermissionProject.query.uniqueWhere({name: project.name});
+					const dbProject = nameToProjectMap[project.name];
 					await Promise.all(project.domains.map(async domain => {
-						if (domainsByName[domain.namespace])
+						if (accessLevelsByDomain[domain.namespace])
 							throw new BadImplementationException(`Same domain ${domain.namespace} was defined twice`);
 
 						// Create Domain
@@ -144,19 +144,22 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 
 
 						domainNameToDbObjectMap[dbDomain.namespace] = dbDomain;
-						domainsByName[domain.namespace] = accessLevelNameToObjectMap;
-						project.apis.map(async api => {
+						accessLevelsByDomain[domain.namespace] = accessLevelNameToObjectMap;
+						await Promise.all(project.apis.map(async api => {
 							const toCreate = {
 								projectId: dbProject._id,
 								path: api.path,
-								accessLevelIds: api.levelNames.map(levelName => domainsByName[api.domain][levelName]._id),
+								accessLevelIds: api.levelNames.map(levelName => accessLevelsByDomain[api.domain][levelName]._id),
 								_auditorId: MemKey_AccountId.get()
 							};
 							await ModuleBE_PermissionApi.create.item(toCreate);
-						});
+						}));
 					}));
 
 
+					const userAccessLevels = reduceToMap(testCase.input.userLevels, userLevel => domainNameToDbObjectMap[userLevel.domain]._id, userLevel => accessLevelsByDomain[userLevel.domain][userLevel.levelName].value);
+					MemKey_UserPermissions.set(userAccessLevels);
+					await testCase.input.check(nameToProjectMap[project.name]._id, 'v1/stam');
 				}));
 			});
 		} catch (e: any) {
@@ -164,10 +167,8 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 			console.error(e);
 			console.error('\n');
 		}
-		// const userAccessLevels = reduceToMap(testCase.input.userLevels, userLevel => domains[userLevel.domain]._id, userLevel => domainsByName[userLevel.domain][userLevel.levelName].value);
-		// MemKey_UserPermissions.set(userAccessLevels);
+
 		//
-		// await testCase.input.check();
 
 		// Post Test Cleanup
 		await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
