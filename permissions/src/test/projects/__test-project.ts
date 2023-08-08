@@ -75,7 +75,7 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 	label: 'Basic Permissions Setup',
 	testcases: TestCases_Basic,
 	processor: async (testCase) => {
-		// validate domain names and accesslevels in apis with definition in the setup
+		// todo validate domain names and accesslevels in apis with definition in the setup
 
 		// create all projects
 		// create all domains
@@ -114,7 +114,7 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 				await Promise.all(setup.projects.map(async project => {
 
 					const dbProject = await ModuleBE_PermissionProject.query.uniqueWhere({name: project.name});
-					project.domains.map(async domain => {
+					await Promise.all(project.domains.map(async domain => {
 						if (domainsByName[domain.namespace])
 							throw new BadImplementationException(`Same domain ${domain.namespace} was defined twice`);
 
@@ -154,22 +154,22 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 							};
 							await ModuleBE_PermissionApi.create.item(toCreate);
 						});
-					});
+					}));
 
-					// await ModuleBE_PermissionProject.create.item({
-					// 	name: project.name,
-					// 	_auditorId: MemKey_AccountId.get()
-					// });
 
 				}));
 			});
-		} catch (e) {
-			//
+		} catch (e: any) {
+			console.error('Test failed because:');
+			console.error(e);
+			console.error('\n');
 		}
 		// const userAccessLevels = reduceToMap(testCase.input.userLevels, userLevel => domains[userLevel.domain]._id, userLevel => domainsByName[userLevel.domain][userLevel.levelName].value);
 		// MemKey_UserPermissions.set(userAccessLevels);
 		//
 		// await testCase.input.check();
+
+		// Post Test Cleanup
 		await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		await ModuleBE_PermissionDomain.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 		await ModuleBE_PermissionApi.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
