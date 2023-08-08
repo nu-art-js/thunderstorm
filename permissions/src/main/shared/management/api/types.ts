@@ -18,7 +18,7 @@
  */
 
 import {AuditableV2, DB_Object} from '@nu-art/ts-common';
-
+import {Base_AccessLevel} from '../access-level';
 
 export type DB_PermissionApi = DB_Object & AuditableV2 & {
 	projectId: string
@@ -26,5 +26,6 @@ export type DB_PermissionApi = DB_Object & AuditableV2 & {
 	accessLevelIds?: string[],
 	deprecated?: boolean,
 	onlyForApplication?: boolean
+	_accessLevels?: Base_AccessLevel[]
 }
 
