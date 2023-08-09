@@ -21,7 +21,8 @@
 
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {
-	Const_UniqueKey, Const_UniqueKeys,
+	Const_UniqueKey,
+	Const_UniqueKeys,
 	Day,
 	DB_Object,
 	DB_Object_validator,
@@ -29,9 +30,8 @@ import {
 	Default_UniqueKey,
 	DefaultDBVersion,
 	Dispatcher,
-	exists,
 	Hour,
-	KeysOfDB_Object,
+	keepDBObjectKeys,
 	TS_Object,
 	tsValidateResult,
 	ValidatorTypeResolver
@@ -52,18 +52,15 @@ export type DBApiBEConfig<DBType extends DB_Object, Ks extends keyof DBType = De
 	lastUpdatedTTL: number;
 }
 
-export const getModuleBEConfig = <T extends DB_Object, Ks extends keyof T = Default_UniqueKey>(dbDef: DBDef<T, Ks>): DBApiBEConfig<T, Ks> => {
-	const dbDefValidator = typeof dbDef.validator === 'function' ?
-		[((instance: T) => {
-			const dbObjectOnly = KeysOfDB_Object.reduce<DB_Object>((objectToRet, key) => {
-				if (exists(instance[key]))  // @ts-ignore
-					objectToRet[key] = instance[key];
+function getDbDefValidator<T extends DB_Object, Ks extends keyof T>(dbDef: DBDef<T, Ks>) {
+	if (typeof dbDef.validator === 'function') {
+		return [(instance: T) => tsValidateResult(keepDBObjectKeys(instance), DB_Object_validator), dbDef.validator];
+	}
+	return {...DB_Object_validator, ...dbDef.validator};
+}
 
-				return objectToRet;
-			}, {} as DB_Object);
-			return tsValidateResult(dbObjectOnly, DB_Object_validator);
-		}), dbDef.validator] :
-		{...DB_Object_validator, ...dbDef.validator};
+export const getModuleBEConfig = <T extends DB_Object, Ks extends keyof T = Default_UniqueKey>(dbDef: DBDef<T, Ks>): DBApiBEConfig<T, Ks> => {
+	const dbDefValidator = getDbDefValidator(dbDef);
 	return {
 		collectionName: dbDef.dbName,
 		validator: dbDefValidator as ValidatorTypeResolver<T>,

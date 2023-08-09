@@ -1,12 +1,15 @@
 import * as React from 'react';
-import {AccountType, accountTypes, Request_CreateAccount, UI_Account} from '../../shared';
+import {accountTypesV3, AccountTypeV3, DB_AccountV3, Request_CreateAccount} from '../../shared';
 import {
 	_className,
 	ComponentSync,
 	LL_H_C,
-	LL_V_L, performAction,
-	SimpleListAdapter, TS_BusyButton,
-	TS_DropDown, TS_Input,
+	LL_V_L,
+	performAction,
+	SimpleListAdapter,
+	TS_BusyButton,
+	TS_DropDown,
+	TS_Input,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_AccountV2} from '../modules/v2/ModuleFE_v2_Account';
@@ -15,13 +18,13 @@ import './Component_AccountEditor.scss';
 
 type Props = {
 	isPreview?: boolean,
-	user?: UI_Account,
+	user?: DB_AccountV3,
 	onComplete?: (_id: UniqueId) => void
 }
 
 type State = Partial<Request_CreateAccount> & {
 	isPreview: boolean,
-	user?: UI_Account
+	user?: DB_AccountV3
 }
 
 export class Component_AccountEditor extends ComponentSync<Props, State> {
@@ -63,10 +66,10 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 			<TS_DropDown
 				placeholder={'account type'}
 				selected={this.state.type}
-				adapter={SimpleListAdapter([...accountTypes], i => <div className={'node-data'}>
+				adapter={SimpleListAdapter([...accountTypesV3], i => <div className={'node-data'}>
 					<span>{i.item}</span></div>)}
-				onSelected={(type: AccountType) => {
-					type === 'service' ? this.setState({type, password: undefined}) : this.setState({type});
+				onSelected={(type: AccountTypeV3) => {
+					type === 'service' ? this.setState({type, password: undefined}) : this.setState({type: type as "user" | 'service'});
 				}}></TS_DropDown>
 		</TS_PropRenderer.Vertical>;
 	};
