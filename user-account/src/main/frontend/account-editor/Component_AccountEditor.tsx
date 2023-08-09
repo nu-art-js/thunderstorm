@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {accountTypesV3, AccountTypeV3, DB_AccountV3, Request_CreateAccount} from '../../shared';
+import {AccountType, accountTypes, Request_CreateAccount, UI_Account} from '../../shared';
 import {
 	_className,
 	ComponentSync,
@@ -18,13 +18,13 @@ import './Component_AccountEditor.scss';
 
 type Props = {
 	isPreview?: boolean,
-	user?: DB_AccountV3,
+	user?: UI_Account,
 	onComplete?: (_id: UniqueId) => void
 }
 
 type State = Partial<Request_CreateAccount> & {
 	isPreview: boolean,
-	user?: DB_AccountV3
+	user?: UI_Account
 }
 
 export class Component_AccountEditor extends ComponentSync<Props, State> {
@@ -66,10 +66,10 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 			<TS_DropDown
 				placeholder={'account type'}
 				selected={this.state.type}
-				adapter={SimpleListAdapter([...accountTypesV3], i => <div className={'node-data'}>
+				adapter={SimpleListAdapter([...accountTypes], i => <div className={'node-data'}>
 					<span>{i.item}</span></div>)}
-				onSelected={(type: AccountTypeV3) => {
-					type === 'service' ? this.setState({type, password: undefined}) : this.setState({type: type as "user" | 'service'});
+				onSelected={(type: AccountType) => {
+					type === 'service' ? this.setState({type, password: undefined}) : this.setState({type});
 				}}></TS_DropDown>
 		</TS_PropRenderer.Vertical>;
 	};
