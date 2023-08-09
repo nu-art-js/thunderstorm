@@ -17,33 +17,26 @@
  * limitations under the License.
  */
 
-import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {
 	_keys,
 	ApiException,
-	auditBy,
 	BadImplementationException,
 	batchAction,
 	batchActionParallel,
 	compare,
 	dbObjectToId,
 	filterDuplicates,
+	filterInstances,
 	flatArray
 } from '@nu-art/ts-common';
-import {
-	MemKey_AccountEmail,
-	MemKey_AccountId,
-	ModuleBE_v2_AccountDB,
-	OnNewUserRegistered,
-	OnUserLogin
-} from '@nu-art/user-account/backend';
-import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
-import {PermissionsShare} from '../permissions-share';
+import {MemKey_AccountId, ModuleBE_v2_AccountDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {DB_EntityDependency} from '@nu-art/firebase';
 import {
 	AssignAppPermissions,
 	DB_PermissionUser,
 	DBDef_PermissionUser,
-	Request_AssignAppPermissions
+	Request_AssignAppPermissions,
+	Request_GivePermissionsToAnotherUser
 } from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
@@ -51,11 +44,11 @@ import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
+import {MemKey_UserPermissions} from '../ModuleBE_PermissionsAssert';
 import Transaction = firestore.Transaction;
-import {_EmptyQuery} from '@nu-art/db-api-generator';
 
 
-export class ModuleBE_PermissionUserDB_Class
+class ModuleBE_PermissionUserDB_Class
 	extends ModuleBE_BaseDBV2<DB_PermissionUser>
 	implements OnNewUserRegistered, OnUserLogin, CanDeletePermissionEntities<'Group', 'User'> {
 
@@ -74,65 +67,24 @@ export class ModuleBE_PermissionUserDB_Class
 		return {collectionKey: 'User', conflictingIds: conflicts.map(dbObjectToId)};
 	};
 
-	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DB_PermissionUser[]) {
-		const conflicts: DB_PermissionUser[] = [];
-		const accounts = await ModuleBE_v2_AccountDB.query.custom(_EmptyQuery);
+	protected async preWriteProcessing(instance: DB_PermissionUser, t?: Transaction): Promise<void> {
+		instance._auditorId = MemKey_AccountId.get();
+		instance.__groupIds = filterDuplicates(instance.groups.map(group => group.groupId) || []);
 
-		for (const item of dbInstances) {
-			const account = accounts.find(acc => acc._id === item.accountId);
-			if (account)
-				conflicts.push(item);
-		}
-
-		if (conflicts.length)
-			throw new ApiException<DB_EntityDependency<any>[]>(422, 'permission users are connected to accounts').setErrorBody({
-				type: 'has-dependencies',
-				body: conflicts.map(conflict => ({collectionKey: 'User', conflictingIds: [conflict._id]}))
-			});
-	}
-
-	protected async preWriteProcessing(dbInstance: DB_PermissionUser, t?: Transaction): Promise<void> {
-		const email = MemKey_AccountEmail.get();
-		if (email)
-			dbInstance._audit = auditBy(email);
-
-		this.setGroupIds(dbInstance);
-		const userGroupIds = filterDuplicates(dbInstance.groups?.map(group => group.groupId) || []);
-		if (!userGroupIds.length)
+		if (!instance.__groupIds.length)
 			return;
 
-		const userGroups = await batchAction(userGroupIds, 10, (chunked) => {
-			return ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: chunked}}});
+		// Get all groups the user has from the collection
+		const dbGroups = await batchAction(instance.__groupIds, 10, (chunked) => {
+			return ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: chunked}}}, t);
 		});
-
-		if (userGroupIds.length !== userGroups.length) {
-			throw new ApiException(422, 'You trying upsert user with group that not found in group permissions db');
+		// Verify all groups actually existing in the collection
+		if (instance.__groupIds.length !== dbGroups.length) {
+			const dbGroupIds = dbGroups.map(dbObjectToId);
+			throw new ApiException(422, `Trying to assign a user to a permission-group that does not exist: ${instance.__groupIds.filter(groupId => !dbGroupIds.includes(groupId))}`);
 		}
 
-		const userGroupsItems = dbInstance.groups || [];
-		userGroupsItems.forEach((userGroupItem) => {
-			userGroupsItems.forEach(innerUserGroupItem => {
-				if (userGroupsItems.indexOf(userGroupItem) === userGroupsItems.indexOf(innerUserGroupItem))
-					return;
-
-				if (compare(userGroupItem.groupId, innerUserGroupItem.groupId) && compare(userGroupItem.customField || {}, innerUserGroupItem.customField || {})) {
-					throw new ApiException(422, 'You trying upsert user with duplicate UserGroup (with the same groupId && customField)');
-				}
-			});
-		});
-	}
-
-	protected internalFilter(item: DB_PermissionUser): Clause_Where<DB_PermissionUser>[] {
-		const {accountId} = item;
-		return [{accountId}];
-	}
-
-	private setGroupIds(dbInstance: DB_PermissionUser) {
-		dbInstance.__groupIds = [];
-		const userGroups = dbInstance.groups || [];
-		if (userGroups.length) {
-			dbInstance.__groupIds = userGroups.map(userGroup => userGroup.groupId);
-		}
+		//todo check for duplications in data
 	}
 
 	async __onUserLogin(account: UI_Account) {
@@ -144,21 +96,55 @@ export class ModuleBE_PermissionUserDB_Class
 	}
 
 	async insertIfNotExist(email: string) {
-		return this.runTransaction(async (transaction) => {
-
-			const account = await ModuleBE_v2_AccountDB.query.uniqueWhere({email});
-			if (!account)
-				throw new ApiException(404, `user not found for email ${email}`);
-
-			const users = await this.query.custom({where: {accountId: account._id}}, transaction);
-			if (users.length)
-				return;
-
-			return this.set.item({accountId: account._id, groups: []}, transaction);
+		return this.runTransaction(async (t) => {
+			let account;
+			// Verify an account exists, to give it a user permissions object
+			try {
+				account = await ModuleBE_v2_AccountDB.query.uniqueWhere({email}, t);
+			} catch (e: any) {
+				throw new ApiException(404, `user not found for email ${email}`, e);
+			}
+			// Check if a user permissions object already exists, and create if not
+			try {
+				await this.query.uniqueWhere({accountId: account._id}, t);
+			} catch (e: any) {
+				await this.set.item({accountId: account._id, groups: [], _auditorId: MemKey_AccountId.get()}, t);
+			}
 		});
 	}
 
-	async assignAppPermissions(body: Request_AssignAppPermissions) {
+	async loggedUserGiveOtherUsersPermissions(body: Request_GivePermissionsToAnotherUser, t: Transaction) {
+		if (!body.accountToGivePermissionIds.length)
+			throw new ApiException(400, `Asked to modify permissions but provided no users to modify permissions of.`);
+
+		if (!body.groupIds.length && !body.groupsToRemoveIds.length)
+			throw new ApiException(400, `Asked to give permissions but provided no permission groups to add or subtract permissions from.`);
+
+		const usersToGiveTo = filterInstances(await this.query.all(body.accountToGivePermissionIds));
+		if (!usersToGiveTo.length) {
+			const dbUserIds = usersToGiveTo.map(dbObjectToId);
+			throw new ApiException(404, `Asked to give permissions to non-existent user accounts: ${body.accountToGivePermissionIds.filter(id => !dbUserIds.includes(id))}`);
+		}
+
+		const dbGroups = filterInstances(await ModuleBE_PermissionGroup.query.all(body.groupIds));
+		if (!dbGroups.length) {
+			const dbGroupIds = dbGroups.map(dbObjectToId);
+			throw new ApiException(404, `Asked to give users non-existing groups: ${body.accountToGivePermissionIds.filter(id => !dbGroupIds.includes(id))}`);
+		}
+
+		const myUserPermissions = MemKey_UserPermissions.get();
+		// const myAccountId = MemKey_AccountId.get();
+		// const myPermissionsUser = await this.query.uniqueWhere({accountId: myAccountId});
+
+		dbGroups.map(group => group.);
+		//todo give permissions
+		//todo check my permissions are high enough to give the permissions I want to give
+	}
+
+	/**
+	 * todo keep?
+	 */
+	async _assignAppPermissions(body: Request_AssignAppPermissions) {
 
 		let assignAppPermissionsObj: AssignAppPermissions;
 		const accountId = MemKey_AccountId.get();
@@ -173,10 +159,7 @@ export class ModuleBE_PermissionUserDB_Class
 			throw new BadImplementationException('SharedUserIds is missing');
 
 		const groupId = assignAppPermissionsObj.group._id;
-		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId, {
-			groupId,
-			customField: assignAppPermissionsObj.customField
-		});
+		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId, {groupId});
 
 		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
 			throw new BadImplementationException('Group to must be a part of the groups to removed array');
