@@ -66,6 +66,7 @@ import BulkWriter = firestore.BulkWriter;
 
 // {deleted: null} means that the whole collection has been deleted
 export type PostWriteProcessingData<Type extends DB_Object> = {
+	before?: Type | (Type | undefined) [],
 	updated?: Type | Type[],
 	deleted?: Type | Type[] | null
 };
@@ -253,7 +254,7 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		else
 			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
 
-		await this.hooks?.postWriteProcessing?.({updated: preparedItems});
+		await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems});
 		return preparedItems;
 	};
 
