@@ -24,7 +24,9 @@ import {
 	batchActionParallel,
 	dbObjectToId,
 	filterDuplicates,
-	flatArray
+	filterInstances,
+	flatArray,
+	reduceToMap
 } from '@nu-art/ts-common';
 import {DB_PermissionGroup, DBDef_PermissionGroup} from '../../shared';
 import {DB_EntityDependency} from '@nu-art/firebase';
@@ -57,38 +59,40 @@ export class ModuleBE_PermissionGroup_Class
 		return {collectionKey: 'Group', conflictingIds: conflicts.map(dbObjectToId)};
 	};
 
+	protected async preWriteProcessing(instance: DB_PermissionGroup, t?: Transaction) {
+		instance._auditorId = MemKey_AccountId.get();
+		const dbLevels = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(instance.accessLevelIds, t));
+
+		//todo verify the number of found dbLevels matches the number of instance.accessLevelIds
+
+		instance._levelsMap = reduceToMap(dbLevels, dbLevel => dbLevel.domainId, dbLevel => dbLevel.value);
+
+		if (!instance.accessLevelIds)
+			return;
+
+		instance.__accessLevels = [];
+		const accessLevelIds = instance.accessLevelIds || [];
+		if (accessLevelIds.length) {
+			const groupLevels = await batchAction(accessLevelIds, 10, (chunked) => {
+				return ModuleBE_PermissionAccessLevel.query.custom({where: {_id: {$in: chunked}}});
+			});
+			checkDuplicateLevelsDomain(groupLevels);
+			instance.__accessLevels = groupLevels.map(level => {
+				return {domainId: level.domainId, value: level.value};
+			});
+		}
+
+		const filterAccessLevelIds = filterDuplicates(instance.accessLevelIds);
+		if (filterAccessLevelIds.length !== instance.accessLevelIds?.length)
+			throw new ApiException(422, 'You trying test-add-data duplicate accessLevel id in group');
+	}
+
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionGroup): Promise<void> {
 		const groups = await ModuleBE_PermissionUserDB.collection.query.custom({where: {__groupIds: {$ac: dbInstance._id}}});
 
 		if (groups.length) {
 			throw new ApiException(403, 'You trying delete group that associated with users, you need delete this group from users first');
 		}
-	}
-
-	private async setAccessLevels(dbInstance: DB_PermissionGroup) {
-		dbInstance.__accessLevels = [];
-		const accessLevelIds = dbInstance.accessLevelIds || [];
-		if (accessLevelIds.length) {
-			const groupLevels = await batchAction(accessLevelIds, 10, (chunked) => {
-				return ModuleBE_PermissionAccessLevel.query.custom({where: {_id: {$in: chunked}}});
-			});
-			checkDuplicateLevelsDomain(groupLevels);
-			dbInstance.__accessLevels = groupLevels.map(level => {
-				return {domainId: level.domainId, value: level.value};
-			});
-		}
-	}
-
-	protected async preWriteProcessing(dbInstance: DB_PermissionGroup, t?: Transaction) {
-		dbInstance._auditorId = MemKey_AccountId.get();
-
-		if (!dbInstance.accessLevelIds)
-			return;
-
-		await this.setAccessLevels(dbInstance);
-		const filterAccessLevelIds = filterDuplicates(dbInstance.accessLevelIds);
-		if (filterAccessLevelIds.length !== dbInstance.accessLevelIds?.length)
-			throw new ApiException(422, 'You trying test-add-data duplicate accessLevel id in group');
 	}
 
 	getConfig() {

@@ -17,14 +17,12 @@
  * limitations under the License.
  */
 
-import {AuditableV2, DB_Object, StringMap} from '@nu-art/ts-common';
-import {Base_AccessLevel} from '../../management';
+import {AuditableV2, DB_Object, TypedMap} from '@nu-art/ts-common';
 
 export type Request_CreateGroup = {
 	label: string,
 	accessLevelIds: string[],
-	__accessLevels?: Base_AccessLevel[],
-	customFields?: StringMap[]
+	_levelsMap?: TypedMap<number>, // [DomainId]: AccessLevel.value
 };
 
 export type DB_PermissionGroup = DB_Object & Request_CreateGroup & AuditableV2;

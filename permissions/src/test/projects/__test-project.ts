@@ -9,12 +9,14 @@ import {MemKey_UserPermissions, ModuleBE_PermissionsAssert} from '../../main/bac
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {
+	Failed_Log,
 	Groups_ToCreate,
 	Test_AccessLevel_Admin,
 	Test_AccessLevel_Delete,
 	Test_AccessLevel_NoAccess,
 	Test_AccessLevel_Read,
 	Test_AccessLevel_Write,
+	Test_Api_Stam,
 	Test_Domain1,
 	TestProject__Name
 } from '../_core/consts';
@@ -102,8 +104,8 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 				MemKey_AccountId.set('00000000000000000000000000000000');
 				// MemKey_AccountId.set(defaultAccountId!);
 
-				const domainNameToDbObjectMap: TypedMap<DB_PermissionDomain> = {};
-				const accessLevelsByDomain: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
+				const domainNameToObjectMap: TypedMap<DB_PermissionDomain> = {};
+				const accessLevelsByDomainNameMap: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
 
 				// Create All Projects
 				const nameToProjectMap = reduceToMap(await Promise.all(setup.projects.map(project => ModuleBE_PermissionProject.create.item({
@@ -115,7 +117,7 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 
 					const dbProject = nameToProjectMap[project.name];
 					await Promise.all(project.domains.map(async domain => {
-						if (accessLevelsByDomain[domain.namespace])
+						if (accessLevelsByDomainNameMap[domain.namespace])
 							throw new BadImplementationException(`Same domain ${domain.namespace} was defined twice`);
 
 						// Create Domain
@@ -143,29 +145,34 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 						})) as PreDB<DB_PermissionGroup>[]);
 
 
-						domainNameToDbObjectMap[dbDomain.namespace] = dbDomain;
-						accessLevelsByDomain[domain.namespace] = accessLevelNameToObjectMap;
+						domainNameToObjectMap[dbDomain.namespace] = dbDomain;
+						accessLevelsByDomainNameMap[domain.namespace] = accessLevelNameToObjectMap;
 						await Promise.all(project.apis.map(async api => {
 							const toCreate = {
 								projectId: dbProject._id,
 								path: api.path,
-								accessLevelIds: api.levelNames.map(levelName => accessLevelsByDomain[api.domain][levelName]._id),
+								accessLevelIds: api.levelNames.map(levelName => accessLevelsByDomainNameMap[api.domain][levelName]._id),
 								_auditorId: MemKey_AccountId.get()
 							};
 							await ModuleBE_PermissionApi.create.item(toCreate);
 						}));
 					}));
 
-
-					const userAccessLevels = reduceToMap(testCase.input.userLevels, userLevel => domainNameToDbObjectMap[userLevel.domain]._id, userLevel => accessLevelsByDomain[userLevel.domain][userLevel.levelName].value);
+					// Domain ID to accessLevel's value
+					const userAccessLevels = reduceToMap(
+						testCase.input.userLevels,
+						userLevel => domainNameToObjectMap[userLevel.domain]._id,
+						userLevel => accessLevelsByDomainNameMap[userLevel.domain][userLevel.levelName].value
+					);
+					// MemKey_UserPermissions is loaded when the user logs in.
 					MemKey_UserPermissions.set(userAccessLevels);
-					await testCase.input.check(nameToProjectMap[project.name]._id, 'v1/stam');
+					await testCase.input.check(nameToProjectMap[project.name]._id, Test_Api_Stam);
 				}));
 			});
 		} catch (e: any) {
+			console.error('\n' + Failed_Log);
 			console.error('Test failed because:');
 			console.error(e);
-			console.error('\n');
 		}
 
 		//

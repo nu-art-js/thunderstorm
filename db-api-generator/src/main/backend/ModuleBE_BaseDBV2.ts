@@ -22,12 +22,15 @@
 import {DB_EntityDependency, FirestoreQuery,} from '@nu-art/firebase';
 import {
 	_keys,
-	ApiException, asArray, batchAction,
+	ApiException,
+	asArray,
+	batchAction,
 	currentTimeMillis,
 	DB_Object,
 	DBDef,
 	dbObjectToId,
-	Default_UniqueKey, DefaultDBVersion,
+	Default_UniqueKey,
+	DefaultDBVersion,
 	filterDuplicates,
 	filterInstances,
 	Module,
@@ -123,7 +126,7 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 						return await (value as Function)(...args);
 					} catch (e: any) {
 						this.logError(`Error while calling "${newPath}"`);
-						this.logError(e)
+						this.logError(e);
 						throw e;
 					}
 				});
@@ -276,6 +279,8 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 				type: 'has-dependencies',
 				body: dependencies
 			});
+
+		//todo Add permission assertion, does the user have deletion permission over these objects
 	}
 
 	async collectDependencies(dbInstances: Type[], transaction?: Transaction) {
