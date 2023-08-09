@@ -17,12 +17,12 @@
  */
 
 import {__custom, __scenario, ContextKey} from '@nu-art/testelot';
-import {DB_Account, ModuleBE_Account} from '../_main';
+import {DB_AccountV3, ModuleBE_Account} from '../_main';
 import {cleanup} from './_core';
 import {ApiException} from '@nu-art/thunderstorm/frontend/exceptions';
 
 
-const userContextKey1 = new ContextKey<DB_Account>('user-1');
+const userContextKey1 = new ContextKey<DB_AccountV3>('user-1');
 
 export function createUser() {
 	const scenario = __scenario('Create-User');

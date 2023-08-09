@@ -1,4 +1,4 @@
-import {DB_Object, OmitDBObject, PartialProperties} from '../utils/types';
+import {DB_Object, OmitDBObject, SubsetObjectByKeys, UniqueId} from '../utils/types';
 import {ValidatorTypeResolver} from '../validator/validator-core';
 
 
@@ -10,19 +10,66 @@ export type DBIndex<T extends DB_Object> = {
 
 export type Default_UniqueKey = '_id';
 export type VersionType = string
+//
+// export type DBProto<T extends DB_Object, Ks extends keyof T = Default_UniqueKey, Versions extends VersionType[] = ['1.0.0'], GeneratedKeys extends keyof T = keyof DB_Object> = {
+// 	generatedKeys: keyof DB_Object | GeneratedKeys
+// 	uiType: PartialProperties<T, keyof DB_Object | GeneratedKeys>,
+// 	dbType: T,
+// 	uniqueKeys: Ks,
+// 	versions: Versions
+// 	validatorBE: ValidatorTypeResolver<OmitDBObject<T>>
+// 	validatorFE: ValidatorTypeResolver<Omit<T, keyof GeneratedKeys>>
+// 	dbIndices: DBIndex<T>
+// }
+//
+// export type DBDef_V2<Proto extends DBProto<any>> = DBDef<Proto['dbType'], Proto['uniqueKeys']>
 
-export type DBProto<T extends DB_Object, Ks extends keyof T = Default_UniqueKey, Versions extends VersionType[] = ['1.0.0'], GeneratedKeys extends keyof T = keyof DB_Object> = {
-	generatedKeys: keyof DB_Object | GeneratedKeys
-	uiType: PartialProperties<T, keyof DB_Object | GeneratedKeys>,
-	dbType: T,
-	uniqueKeys: Ks,
+
+export type VersionsDeclaration<T extends DB_Object, Versions extends VersionType[] = ['1.0.0'], Types extends [T, ...DB_Object[]] = [T, ...DB_Object[]]> = {
 	versions: Versions
-	validatorBE: ValidatorTypeResolver<OmitDBObject<T>>
-	validatorFE: ValidatorTypeResolver<Omit<T, keyof GeneratedKeys>>
-	dbIndices: DBIndex<T>
+	types: Types
+};
+
+export type Proto_DB_Object<
+	T extends DB_Object,
+	GeneratedKeys extends keyof T,
+	Versions extends VersionsDeclaration<T, any, any>,
+	UniqueKeys extends keyof T = Default_UniqueKey> = {
+
+	type: T,
+	generatedKeys: GeneratedKeys,
+	versions: Versions,
+	uniqueKeys: UniqueKeys
 }
 
-export type DBDef_V2<Proto extends DBProto<any>> = DBDef<Proto['dbType'], Proto['uniqueKeys']>
+export type DBProto<P extends Proto_DB_Object<any, any, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
+	dbType: P['type'],
+	generatedPropsValidator: ValidatorTypeResolver<GeneratedSubType>
+	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
+	uniqueKeys: P['uniqueKeys'][],
+	generatedProps: P['generatedKeys'][]
+	versions: P['versions']['versions']
+	indices: DBIndex<P['type']>[]
+	uniqueParam: UniqueId | { [K in P['uniqueKeys']]: P['type'][K] }
+	metadata?: Metadata<OmitDBObject<P['type']>>
+	lockKeys?: (keyof P['type'])[]
+}
+
+export type DBDef_V3<P extends DBProto<any, any, any>> = {
+	dbName: string;
+	entityName: string;
+	TTL?: number;
+	lastUpdatedTTL?: number;
+	upgradeChunksSize?: number;
+	generatedPropsValidator: P['generatedPropsValidator'];
+	modifiablePropsValidator: P['modifiablePropsValidator'];
+	uniqueKeys?: P['uniqueKeys'];
+	versions?: P['versions'];
+	indices?: P['indices'];
+	lockKeys?: P['lockKeys'];
+	metadata?: P['metadata'];
+}
 
 /**
  * @field version - First item in the array is current version, Must pass all past versions with the current, default version is 1.0.0
@@ -85,7 +132,7 @@ type PAH = {
 	e: ZEVEL
 }
 
-export const DB_Object_Metadata: Metadata<DB_Object> = {
+export const DB_Object_Metadata = {
 	_id: {optional: false, valueType: 'string', description: 'unique key'},
 	_v: {optional: false, valueType: 'string', description: 'version'},
 	_originDocId: {optional: true, valueType: 'string', description: 'previous doc id'},
