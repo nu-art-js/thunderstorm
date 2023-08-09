@@ -11,7 +11,7 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_AccountV2, OnAccountsUpdated} from '../../modules/v2/ModuleFE_v2_Account';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
-import {DB_Account_V2, UI_Account} from '../../../shared';
+import {DB_Account_V2, DB_AccountV3} from '../../../shared';
 import {
 	ApiCallerEventType,
 	Props_SmartComponent,
@@ -24,7 +24,7 @@ import {generateUUID} from '@nu-art/ts-common';
 type Props = {}
 
 type State = {
-	selectedUser?: UI_Account,
+	selectedUser?: DB_AccountV3,
 	isPreview?: boolean
 }
 
@@ -43,7 +43,7 @@ export class ATS_AccountEditor
 
 	// ######################### Logic #########################
 
-	private setSelectedAccount = (account?: UI_Account) => {
+	private setSelectedAccount = (account?: DB_AccountV3) => {
 		if (!account)
 			this.setState({isPreview: false, selectedUser: undefined});
 		else
@@ -60,12 +60,12 @@ export class ATS_AccountEditor
 
 
 type ListState = State_SmartComponent & {
-	list: UI_Account[],
+	list: DB_AccountV3[],
 };
 
 type ListProps = Props_SmartComponent & {
-	setSelectedAccount: (account?: UI_Account) => void,
-	user?: UI_Account
+	setSelectedAccount: (account?: DB_AccountV3) => void,
+	user?: DB_AccountV3
 }
 
 class Component_AccountList
@@ -80,7 +80,7 @@ class Component_AccountList
 	};
 
 	protected async deriveStateFromProps(nextProps: ListProps, state: ListState) {
-		state.list = ModuleFE_AccountV2.cache.allMutable() as UI_Account[];
+		state.list = ModuleFE_AccountV2.cache.allMutable() as DB_AccountV3[];
 		return state;
 	}
 
