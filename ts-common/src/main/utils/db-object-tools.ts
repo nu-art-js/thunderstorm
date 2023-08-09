@@ -1,10 +1,15 @@
-import {DB_Object, OmitDBObject} from './types';
+import {DB_Object, OmitDBObject, SubsetObjectByKeys, TS_Object} from './types';
 import {deepClone} from './object-tools';
 import {exists} from './tools';
+import {DBProto} from '../db/types';
 
 export const KeysOfDB_Object: (keyof DB_Object)[] = ['_id', '_v', '__created', '__updated'];
 
 export function dbObjectToId(i: DB_Object) {
+	return i._id;
+}
+
+export function dbObjectToId_V3<Proto extends DBProto<any>>(i: Proto['dbType']) {
 	return i._id;
 }
 
@@ -15,10 +20,14 @@ export function removeDBObjectKeys<T extends DB_Object>(instance: T): OmitDBObje
 }
 
 export function keepDBObjectKeys<T extends DB_Object>(instance: T): DB_Object {
-	return KeysOfDB_Object.reduce<DB_Object>((objectToRet, key) => {
-		if (exists(instance[key]))  // @ts-ignore
+	return keepPartialObject(instance, KeysOfDB_Object);
+}
+
+export function keepPartialObject<T extends TS_Object, Ks extends keyof T>(instance: T, keys: Ks[]) {
+	return keys.reduce((objectToRet, key) => {
+		if (exists(instance[key]))
 			objectToRet[key] = instance[key];
 
 		return objectToRet;
-	}, {} as DB_Object);
+	}, {} as SubsetObjectByKeys<T, Ks>);
 }
