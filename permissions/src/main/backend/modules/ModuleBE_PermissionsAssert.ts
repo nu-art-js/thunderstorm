@@ -138,7 +138,7 @@ export class ModuleBE_PermissionsAssert_Class
 		}
 
 		const hasAccess: boolean = apiDetails.dbApi._accessLevels.reduce<boolean>((_hasAccess, accessLevel, i) => {
-			this.logInfo(`${userPermissions[accessLevel.domainId]} ${userPermissions[accessLevel.domainId] >= accessLevel.value ? '>=' : '<='} ${accessLevel.value}`);
+			this.logInfo(`${userPermissions[accessLevel.domainId]} '>=' ${accessLevel.value}`, _hasAccess);
 			return _hasAccess && userPermissions[accessLevel.domainId] >= accessLevel.value;
 		}, true);
 

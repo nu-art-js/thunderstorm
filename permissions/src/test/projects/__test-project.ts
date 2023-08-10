@@ -11,31 +11,30 @@ import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {
 	Failed_Log,
 	Groups_ToCreate,
-	Test_AccessLevel_Admin,
-	Test_AccessLevel_Delete,
-	Test_AccessLevel_NoAccess,
-	Test_AccessLevel_Read,
 	Test_AccessLevel_Write,
 	Test_Api_Stam,
-	Test_Domain1, Test_Setup1,
-	TestProject__Name
+	Test_Domain1,
+	Test_Setup1
 } from '../_core/consts';
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
+import {expect} from 'chai';
 
 
+type Test_Api = { path: string, accessLevels: { domainName: string, levelName: string }[] };
+export type Test_Setup = {
+	projects: {
+		name: string,
+		apis: Test_Api[],
+		domains: {
+			namespace: string,
+			levels: { name: string, value: number }[]
+		}[]
+	}[];
+};
 type InputPermissionsSetup = {
-	setup: {
-		projects: {
-			name: string,
-			apis: { path: string, domain: string, levelNames: string[] }[],
-			domains: {
-				namespace: string,
-				levels: { name: string, value: number }[]
-			}[]
-		}[];
-	},
+	setup: Test_Setup,
 	userLevels: { domain: string, levelName: string }[];
 	check: (projectId: UniqueId, path: string) => Promise<any>;
 }
@@ -51,7 +50,7 @@ const TestCases_Basic: BasicProjectTest['testcases'] = [
 				await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, path);
 			}
 		},
-		result: false
+		result: true
 	},
 ];
 
@@ -81,6 +80,7 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 
 
 		const setup = testCase.input.setup;
+		let result: boolean = true;
 		try {
 			await new MemStorage().init(async () => {
 				// MemKey_AccountEmail.set(Default_TestEmail);
@@ -134,7 +134,7 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 							const toCreate = {
 								projectId: dbProject._id,
 								path: api.path,
-								accessLevelIds: api.levelNames.map(levelName => accessLevelsByDomainNameMap[api.domain][levelName]._id),
+								accessLevelIds: api.accessLevels.map(accessLevel => accessLevelsByDomainNameMap[accessLevel.domainName][accessLevel.levelName]._id),
 								_auditorId: MemKey_AccountId.get()
 							};
 							await ModuleBE_PermissionApi.create.item(toCreate);
@@ -153,12 +153,12 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 				}));
 			});
 		} catch (e: any) {
-			// console.error('\n' + Failed_Log);
-			// console.error('Test failed because:');
-			// console.error(e);
+			console.error('\n' + Failed_Log);
+			console.error('Test failed because:');
+			console.error(e);
+			result = false;
 		}
-
-		//
+		expect(result).to.eql(testCase.result);
 
 		// Post Test Cleanup
 		await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();

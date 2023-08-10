@@ -21,7 +21,6 @@ import {ServerApi} from '@nu-art/thunderstorm/backend';
 import {_keys, ApiException, dbObjectToId, filterInstances, PreDB, TypedMap} from '@nu-art/ts-common';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
-import {Clause_Where} from '@nu-art/firebase';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
@@ -34,16 +33,6 @@ export class ModuleBE_PermissionApi_Class
 
 	constructor() {
 		super(DBDef_PermissionApi);
-	}
-
-	protected externalFilter(item: DB_PermissionApi): Clause_Where<DB_PermissionApi> {
-		const {projectId, path} = item;
-		return {projectId, path};
-	}
-
-	protected internalFilter(item: DB_PermissionApi): Clause_Where<DB_PermissionApi>[] {
-		const {projectId, path} = item;
-		return [{projectId, path}];
 	}
 
 	protected async preWriteProcessing(instance: DB_PermissionApi, t?: Transaction) {
