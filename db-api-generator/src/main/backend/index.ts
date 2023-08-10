@@ -26,3 +26,5 @@ export * from './ModuleBE_BaseApiV2';
 export * from './ModuleBE_BaseDBV2';
 export * from './ModuleBE_v2_SyncEnv';
 export * from './ModuleBE_v2_SyncManager';
+export * from './ModuleBE_BaseDBV3';
+export * from './ModuleBE_BaseApiV3';

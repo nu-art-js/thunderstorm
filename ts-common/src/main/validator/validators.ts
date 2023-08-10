@@ -6,7 +6,7 @@ import {
 	tsValidateString,
 	tsValidateTimestamp
 } from './type-validators';
-import {AuditableV2, DB_Object} from '../utils/types';
+import {AuditableV2} from '../utils/types';
 
 
 export const tsValidate_OptionalArray = <T>(validator: ValidatorTypeResolver<T>) => tsValidateArray(validator, false);
@@ -50,7 +50,7 @@ export const tsValidator_InternationalPhoneNumber = tsValidateRegexp(/^\+(?:[0-9
 
 export const tsValidator_AuditableV2: ValidatorTypeResolver<AuditableV2> = {_auditorId: tsValidateString()};
 
-export const DB_Object_validator: ValidatorTypeResolver<DB_Object> = {
+export const DB_Object_validator = {
 	_id: tsValidateUniqueId,
 	_v: tsValidateVersion,
 	_originDocId: tsValidateOptionalId,

@@ -27,7 +27,7 @@ import {PushMessagesWrapperBE} from '../push/PushMessagesWrapperBE';
 import {FirebaseConfig} from '../..';
 import {App} from 'firebase-admin/app';
 import {FirestoreWrapperBEV2} from '../firestore-v2/FirestoreWrapperBEV2';
-
+import {FirestoreWrapperBEV3} from '../firestore-v3/FirestoreWrapperBEV3';
 
 
 /**
@@ -53,6 +53,7 @@ export abstract class FirebaseSession<Config>
 	protected storage?: StorageWrapperBE;
 	protected firestore?: FirestoreWrapperBE;
 	protected firestoreV2?: FirestoreWrapperBEV2;
+	protected firestoreV3?: FirestoreWrapperBEV3;
 	protected messaging?: PushMessagesWrapperBE;
 
 	protected config: Config;
@@ -111,6 +112,12 @@ export abstract class FirebaseSession<Config>
 		if (this.firestoreV2)
 			return this.firestoreV2;
 		return this.firestoreV2 = new FirestoreWrapperBEV2(this);
+	}
+
+	public getFirestoreV3(): FirestoreWrapperBEV3 {
+		if (this.firestoreV3)
+			return this.firestoreV3;
+		return this.firestoreV3 = new FirestoreWrapperBEV3(this);
 	}
 
 	/**
