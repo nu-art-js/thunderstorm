@@ -20,7 +20,7 @@
 import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {ApiException, batchActionParallel, dbObjectToId, filterDuplicates, flatArray} from '@nu-art/ts-common';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
-import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel, Request_CreateGroup} from '../../shared';
+import {DB_PermissionAccessLevel, DBDef_PermissionAccessLevel} from '../../shared';
 import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
 import {ModuleBE_PermissionDomain} from './ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionApi} from './ModuleBE_PermissionApi';
@@ -69,25 +69,6 @@ export class ModuleBE_PermissionAccessLevel_Class
 
 		if (groups.length || apis.length)
 			throw new ApiException(403, 'You trying delete access level that associated with users/groups/apis, you need delete the associations first');
-	}
-
-	setUpdatedLevel(dbLevel: DB_PermissionAccessLevel, units: Request_CreateGroup[]) {
-		units.forEach(unit => {
-			let hasGroupDomainLevel = false;
-			const updatedLevels = unit.__accessLevels?.map(level => {
-				if (level.domainId === dbLevel.domainId) {
-					level.value = dbLevel.value;
-					hasGroupDomainLevel = true;
-				}
-				return level;
-			}) || [];
-
-			if (!hasGroupDomainLevel) {
-				updatedLevels.push({domainId: dbLevel.domainId, value: dbLevel.value});
-			}
-
-			unit.__accessLevels = updatedLevels;
-		});
 	}
 }
 

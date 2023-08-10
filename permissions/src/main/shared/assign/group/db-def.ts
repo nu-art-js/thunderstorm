@@ -20,7 +20,6 @@
 import {
 	DBDef,
 	OmitDBObject,
-	StringMap,
 	tsValidateArray,
 	tsValidateDynamicObject,
 	tsValidateNumber,
@@ -31,13 +30,10 @@ import {
 import {DB_PermissionGroup} from './types';
 import {validateGroupLabel} from '../../validators';
 
-
 const Validator_PermissionGroup: ValidatorTypeResolver<OmitDBObject<DB_PermissionGroup>> = {
 	label: validateGroupLabel,
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
-	// customFields: tsValidateArray(tsValidateObjectValues<string>(validateCustomFieldValues), false),
-	customFields: tsValidateArray(tsValidateDynamicObject<StringMap>(tsValidateString(), tsValidateString()), false),
-	__accessLevels: tsValidateArray({domainId: tsValidateString(), value: tsValidateNumber()}, false),
+	_levelsMap: tsValidateDynamicObject(tsValidateNumber(), tsValidateString(), false),
 	_auditorId: tsValidateString(),
 };
 
@@ -45,5 +41,5 @@ export const DBDef_PermissionGroup: DBDef<DB_PermissionGroup> = {
 	validator: Validator_PermissionGroup,
 	dbName: 'permissions--group',
 	entityName: 'permissions--group',
-	lockKeys: ['__accessLevels']
+	generatedProps: ['_levelsMap'],
 };

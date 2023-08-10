@@ -17,21 +17,19 @@
  * limitations under the License.
  */
 
-import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {
+	_keys,
 	ApiException,
-	batchAction,
 	batchActionParallel,
 	dbObjectToId,
-	filterDuplicates,
 	filterInstances,
 	flatArray,
-	reduceToMap
+	reduceToMap,
+	TypedMap
 } from '@nu-art/ts-common';
 import {DB_PermissionGroup, DBDef_PermissionGroup} from '../../shared';
 import {DB_EntityDependency} from '@nu-art/firebase';
-import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
-import {checkDuplicateLevelsDomain, ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
+import {ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
@@ -63,40 +61,28 @@ export class ModuleBE_PermissionGroup_Class
 		instance._auditorId = MemKey_AccountId.get();
 		const dbLevels = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(instance.accessLevelIds, t));
 
-		//todo verify the number of found dbLevels matches the number of instance.accessLevelIds
+		if (dbLevels.length < instance.accessLevelIds.length) {
+			const dbAccessLevelIds = dbLevels.map(dbObjectToId);
+			throw new ApiException(404, `Asked to assign a group non existing accessLevels: ${instance.accessLevelIds.filter(id => !dbAccessLevelIds.includes(id))}`);
+		}
+
+		// Find if there is more than one access level with the same domainId.
+		const duplicationMap = dbLevels.reduce<TypedMap<number>>((map, level) => {
+
+			if (duplicationMap[level.domainId] === undefined)
+				duplicationMap[level.domainId] = 0;
+			else
+				duplicationMap[level.domainId]++;
+
+			return map;
+		}, {});
+		// Get all domainIds that appear more than once on this group
+		const duplicateDomainIds: string[] = filterInstances(_keys(duplicationMap).map(domainId => duplicationMap[domainId] > 1 ? domainId : undefined) as string[]);
+
+		if (duplicateDomainIds.length > 0)
+			throw new ApiException(400, `Can't add a group with more than one access level per domain: ${duplicateDomainIds}`);
 
 		instance._levelsMap = reduceToMap(dbLevels, dbLevel => dbLevel.domainId, dbLevel => dbLevel.value);
-
-		if (!instance.accessLevelIds)
-			return;
-
-		instance.__accessLevels = [];
-		const accessLevelIds = instance.accessLevelIds || [];
-		if (accessLevelIds.length) {
-			const groupLevels = await batchAction(accessLevelIds, 10, (chunked) => {
-				return ModuleBE_PermissionAccessLevel.query.custom({where: {_id: {$in: chunked}}});
-			});
-			checkDuplicateLevelsDomain(groupLevels);
-			instance.__accessLevels = groupLevels.map(level => {
-				return {domainId: level.domainId, value: level.value};
-			});
-		}
-
-		const filterAccessLevelIds = filterDuplicates(instance.accessLevelIds);
-		if (filterAccessLevelIds.length !== instance.accessLevelIds?.length)
-			throw new ApiException(422, 'You trying test-add-data duplicate accessLevel id in group');
-	}
-
-	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionGroup): Promise<void> {
-		const groups = await ModuleBE_PermissionUserDB.collection.query.custom({where: {__groupIds: {$ac: dbInstance._id}}});
-
-		if (groups.length) {
-			throw new ApiException(403, 'You trying delete group that associated with users, you need delete this group from users first');
-		}
-	}
-
-	getConfig() {
-		return this.config;
 	}
 }
 
