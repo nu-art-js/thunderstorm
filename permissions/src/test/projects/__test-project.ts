@@ -17,7 +17,7 @@ import {
 	Test_AccessLevel_Read,
 	Test_AccessLevel_Write,
 	Test_Api_Stam,
-	Test_Domain1,
+	Test_Domain1, Test_Setup1,
 	TestProject__Name
 } from '../_core/consts';
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
@@ -45,30 +45,13 @@ const TestCases_Basic: BasicProjectTest['testcases'] = [
 	{
 		description: 'Create Project',
 		input: {
-			setup: {
-				projects: [{
-					name: TestProject__Name,
-					apis: [
-						{path: 'v1/stam', domain: Test_Domain1, levelNames: ['Read', 'Delete']}
-					],
-					domains: [{
-						namespace: Test_Domain1,
-						levels: [
-							{name: Test_AccessLevel_NoAccess, value: 0},
-							{name: Test_AccessLevel_Read, value: 100},
-							{name: Test_AccessLevel_Write, value: 200},
-							{name: Test_AccessLevel_Delete, value: 300},
-							{name: Test_AccessLevel_Admin, value: 1000},
-						]
-					}],
-				}],
-			},
+			setup: Test_Setup1,
 			userLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Write}],
 			check: async (projectId: UniqueId, path: string) => {
 				await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, path);
 			}
 		},
-		result: true
+		result: false
 	},
 ];
 
@@ -170,9 +153,9 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 				}));
 			});
 		} catch (e: any) {
-			console.error('\n' + Failed_Log);
-			console.error('Test failed because:');
-			console.error(e);
+			// console.error('\n' + Failed_Log);
+			// console.error('Test failed because:');
+			// console.error(e);
 		}
 
 		//

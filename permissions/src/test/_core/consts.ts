@@ -38,3 +38,27 @@ export const Failed_Log = ' ___/-\\___\n' +
 	' | | i | |\n' +
 	' | | l | |\n' +
 	' |_______|';
+
+
+export const Test_Setup1 = {
+	projects: [{
+		name: TestProject__Name,
+		apis: [
+			{
+				path: 'v1/stam',
+				domain: Test_Domain1,
+				levelNames: [Test_AccessLevel_Read, Test_AccessLevel_Delete]
+			}
+		],
+		domains: [{
+			namespace: Test_Domain1,
+			levels: [
+				{name: Test_AccessLevel_NoAccess, value: 0},
+				{name: Test_AccessLevel_Read, value: 100},
+				{name: Test_AccessLevel_Write, value: 200},
+				{name: Test_AccessLevel_Delete, value: 300},
+				{name: Test_AccessLevel_Admin, value: 1000},
+			]
+		}],
+	}],
+};

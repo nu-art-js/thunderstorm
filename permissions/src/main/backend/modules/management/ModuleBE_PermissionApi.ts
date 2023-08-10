@@ -18,7 +18,7 @@
  */
 
 import {ServerApi} from '@nu-art/thunderstorm/backend';
-import {filterDuplicates, PreDB} from '@nu-art/ts-common';
+import {_keys, ApiException, dbObjectToId, filterInstances, PreDB, TypedMap} from '@nu-art/ts-common';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
 import {Clause_Where} from '@nu-art/firebase';
@@ -46,19 +46,37 @@ export class ModuleBE_PermissionApi_Class
 		return [{projectId, path}];
 	}
 
-	protected async preWriteProcessing(dbInstance: DB_PermissionApi, t?: Transaction) {
-		await ModuleBE_PermissionProject.query.uniqueAssert(dbInstance.projectId);
+	protected async preWriteProcessing(instance: DB_PermissionApi, t?: Transaction) {
+		await ModuleBE_PermissionProject.query.uniqueAssert(instance.projectId);
 
-		dbInstance._auditorId = MemKey_AccountId.get();
-
-		// need to assert that all the permissions levels exists in the db
-		const _permissionsIds = dbInstance.accessLevelIds;
-		if (!_permissionsIds || _permissionsIds.length <= 0)
+		instance._auditorId = MemKey_AccountId.get();
+		if (!instance.accessLevelIds?.length)
 			return;
 
-		const permissionsIds = filterDuplicates(_permissionsIds);
-		await Promise.all(permissionsIds.map(id => ModuleBE_PermissionAccessLevel.query.uniqueAssert(id)));
-		dbInstance.accessLevelIds = permissionsIds;
+		// Check if any Domains appear more than once in this group
+		const duplicationMap = instance.accessLevelIds.reduce<TypedMap<number>>((map, accessLevelId) => {
+
+			if (map[accessLevelId] === undefined)
+				map[accessLevelId] = 0;
+			else
+				map[accessLevelId]++;
+
+			return map;
+		}, {});
+		const duplicateAccessLevelIds: string[] = filterInstances(_keys(duplicationMap).map(accessLevelId => duplicationMap[accessLevelId] > 1 ? accessLevelId : undefined) as string[]);
+		if (duplicateAccessLevelIds.length)
+			throw new ApiException(400, `Trying to create API with duplicate access levels: ${duplicateAccessLevelIds}`);
+
+		// Verify all AccessLevels actually exist
+		const dbAccessLevels = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(instance.accessLevelIds));
+		if (dbAccessLevels.length !== instance.accessLevelIds.length) {
+			const dbAccessLevelIds = dbAccessLevels.map(dbObjectToId);
+			throw new ApiException(404, `Asked to assign an api non existing accessLevels: ${instance.accessLevelIds.filter(id => !dbAccessLevelIds.includes(id))}`);
+		}
+		instance._accessLevels = dbAccessLevels.map(accessLevel => ({
+			domainId: accessLevel.domainId,
+			value: accessLevel.value
+		}));
 	}
 
 	registerApis(projectId: string, routes: string[]) {

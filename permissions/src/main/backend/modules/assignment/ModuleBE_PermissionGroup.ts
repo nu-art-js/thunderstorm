@@ -69,10 +69,10 @@ export class ModuleBE_PermissionGroup_Class
 		// Find if there is more than one access level with the same domainId.
 		const duplicationMap = dbLevels.reduce<TypedMap<number>>((map, level) => {
 
-			if (duplicationMap[level.domainId] === undefined)
-				duplicationMap[level.domainId] = 0;
+			if (map[level.domainId] === undefined)
+				map[level.domainId] = 0;
 			else
-				duplicationMap[level.domainId]++;
+				map[level.domainId]++;
 
 			return map;
 		}, {});

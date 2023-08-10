@@ -124,6 +124,11 @@ export class ModuleBE_PermissionsAssert_Class
 		// [DomainId]: accessLevel's numerical value
 		const userPermissions = MemKey_UserPermissions.get();
 		const apiDetails = await this.getApiDetails(path, projectId);
+		this.logInfo('______________________________');
+		this.logInfo(userPermissions);
+		this.logInfo('______________________________');
+		this.logInfo(apiDetails.dbApi);
+		this.logInfo('______________________________');
 
 		if (!apiDetails.dbApi.accessLevelIds || !apiDetails.dbApi._accessLevels) {
 			if (!this.config.strictMode)
@@ -133,6 +138,7 @@ export class ModuleBE_PermissionsAssert_Class
 		}
 
 		const hasAccess: boolean = apiDetails.dbApi._accessLevels.reduce<boolean>((_hasAccess, accessLevel, i) => {
+			this.logInfo(`${userPermissions[accessLevel.domainId]} ${userPermissions[accessLevel.domainId] >= accessLevel.value ? '>=' : '<='} ${accessLevel.value}`);
 			return _hasAccess && userPermissions[accessLevel.domainId] >= accessLevel.value;
 		}, true);
 
