@@ -20,24 +20,17 @@
 import {
 	_keys,
 	ApiException,
-	BadImplementationException,
 	batchAction,
 	batchActionParallel,
-	compare,
 	dbObjectToId,
 	filterDuplicates,
 	filterInstances,
-	flatArray
+	flatArray,
+	TypedMap
 } from '@nu-art/ts-common';
 import {MemKey_AccountId, ModuleBE_v2_AccountDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {DB_EntityDependency} from '@nu-art/firebase';
-import {
-	AssignAppPermissions,
-	DB_PermissionUser,
-	DBDef_PermissionUser,
-	Request_AssignAppPermissions,
-	Request_GivePermissionsToAnotherUser
-} from '../../shared';
+import {DB_PermissionUser, DBDef_PermissionUser, Request_GivePermissionsToAnotherUser} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
@@ -136,69 +129,84 @@ class ModuleBE_PermissionUserDB_Class
 		// const myAccountId = MemKey_AccountId.get();
 		// const myPermissionsUser = await this.query.uniqueWhere({accountId: myAccountId});
 
-		dbGroups.map(group => group.);
-		//todo give permissions
-		//todo check my permissions are high enough to give the permissions I want to give
-	}
+		const permissionsToGive = dbGroups.reduce<TypedMap<number>>((map, group) => {
+			// Gather the highest permissions for each domain, from all groups
+			(_keys(group._levelsMap || []) as string[]).forEach(domainId => {
+				if (map[domainId] === undefined)
+					map[domainId] = 0;
 
-	/**
-	 * todo keep?
-	 */
-	async _assignAppPermissions(body: Request_AssignAppPermissions) {
+				if (map[domainId] < group._levelsMap![domainId])
+					map[domainId] = group._levelsMap![domainId];
 
-		let assignAppPermissionsObj: AssignAppPermissions;
-		const accountId = MemKey_AccountId.get();
-		if (body.appAccountId)
-			// when creating project
-			assignAppPermissionsObj = {...body, granterUserId: body.appAccountId, sharedUserIds: [accountId]};
-		else
-			// when I share with you
-			assignAppPermissionsObj = {...body, granterUserId: accountId, sharedUserIds: body.sharedUserIds};
-		const sharedUserIds = assignAppPermissionsObj.sharedUserIds || [];
-		if (!sharedUserIds.length)
-			throw new BadImplementationException('SharedUserIds is missing');
-
-		const groupId = assignAppPermissionsObj.group._id;
-		await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId, {groupId});
-
-		if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
-			throw new BadImplementationException('Group to must be a part of the groups to removed array');
-
-		await this.runTransaction(async (transaction) => {
-			const users = await batchAction(sharedUserIds, 10, (chunked) => {
-				return this.query.custom({where: {accountId: {$in: chunked}}}, transaction);
 			});
+			return map;
+		}, {});
 
-			if (users.length !== sharedUserIds.length)
-				throw new ApiException(404, `No permissions USER for all user ids`); // TODO mention who miss?
-
-			if (!assignAppPermissionsObj.customField || _keys(assignAppPermissionsObj.customField).length === 0)
-				throw new ApiException(400, `Cannot set app permissions '${assignAppPermissionsObj.projectId}--${assignAppPermissionsObj.group._id}', request must have custom fields restriction!!`);
-
-			const _group = await ModuleBE_PermissionGroup.query.uniqueAssert(groupId, transaction);
-			if (!_group)
-				throw new ApiException(404, `No permissions GROUP for id ${groupId}`);
-
-			const updatedUsers = users.map(user => {
-				const newGroups = (user.groups || [])?.filter(
-					group => !assignAppPermissionsObj.groupsToRemove.find(groupToRemove => {
-						if (groupToRemove._id !== group.groupId)
-							return false;
-
-						return compare(group.customField, assignAppPermissionsObj.customField, assignAppPermissionsObj.assertKeys);
-					}));
-
-				if (!newGroups.find(nGroup => nGroup.groupId === _group._id && compare(nGroup.customField, assignAppPermissionsObj.customField))) {
-					newGroups.push({groupId: _group._id, customField: assignAppPermissionsObj.customField});
-				}
-
-				user.groups = newGroups;
-				return user;
-			});
-
-			return this.set.all(updatedUsers, transaction);
+		const failedDomains = (_keys(permissionsToGive) as string[]).filter(domainId => {
+			return myUserPermissions[domainId] < permissionsToGive[domainId];
 		});
+
+		if (failedDomains.length)
+			throw new ApiException(403, `Attempted to give higher permissions than current user has: ${failedDomains}`);
+
+		//todo assign permissions
 	}
+
+	// async _assignAppPermissions(body: Request_AssignAppPermissions) {
+	//
+	// 	let assignAppPermissionsObj: AssignAppPermissions;
+	// 	const accountId = MemKey_AccountId.get();
+	// 	if (body.appAccountId)
+	// 		// when creating project
+	// 		assignAppPermissionsObj = {...body, granterUserId: body.appAccountId, sharedUserIds: [accountId]};
+	// 	else
+	// 		// when I share with you
+	// 		assignAppPermissionsObj = {...body, granterUserId: accountId, sharedUserIds: body.sharedUserIds};
+	// 	const sharedUserIds = assignAppPermissionsObj.sharedUserIds || [];
+	// 	if (!sharedUserIds.length)
+	// 		throw new BadImplementationException('SharedUserIds is missing');
+	//
+	// 	const groupId = assignAppPermissionsObj.group._id;
+	// 	await PermissionsShare.verifyPermissionGrantingAllowed(assignAppPermissionsObj.granterUserId, {groupId});
+	//
+	// 	if (!assignAppPermissionsObj.groupsToRemove.find(groupToRemove => groupToRemove._id === assignAppPermissionsObj.group._id))
+	// 		throw new BadImplementationException('Group to must be a part of the groups to removed array');
+	//
+	// 	await this.runTransaction(async (transaction) => {
+	// 		const users = await batchAction(sharedUserIds, 10, (chunked) => {
+	// 			return this.query.custom({where: {accountId: {$in: chunked}}}, transaction);
+	// 		});
+	//
+	// 		if (users.length !== sharedUserIds.length)
+	// 			throw new ApiException(404, `No permissions USER for all user ids`); // TODO mention who miss?
+	//
+	// 		if (!assignAppPermissionsObj.customField || _keys(assignAppPermissionsObj.customField).length === 0)
+	// 			throw new ApiException(400, `Cannot set app permissions '${assignAppPermissionsObj.projectId}--${assignAppPermissionsObj.group._id}', request must have custom fields restriction!!`);
+	//
+	// 		const _group = await ModuleBE_PermissionGroup.query.uniqueAssert(groupId, transaction);
+	// 		if (!_group)
+	// 			throw new ApiException(404, `No permissions GROUP for id ${groupId}`);
+	//
+	// 		const updatedUsers = users.map(user => {
+	// 			const newGroups = (user.groups || [])?.filter(
+	// 				group => !assignAppPermissionsObj.groupsToRemove.find(groupToRemove => {
+	// 					if (groupToRemove._id !== group.groupId)
+	// 						return false;
+	//
+	// 					return compare(group.customField, assignAppPermissionsObj.customField, assignAppPermissionsObj.assertKeys);
+	// 				}));
+	//
+	// 			if (!newGroups.find(nGroup => nGroup.groupId === _group._id && compare(nGroup.customField, assignAppPermissionsObj.customField))) {
+	// 				newGroups.push({groupId: _group._id, customField: assignAppPermissionsObj.customField});
+	// 			}
+	//
+	// 			user.groups = newGroups;
+	// 			return user;
+	// 		});
+	//
+	// 		return this.set.all(updatedUsers, transaction);
+	// 	});
+	// }
 }
 
 export const ModuleBE_PermissionUserDB = new ModuleBE_PermissionUserDB_Class();
