@@ -1,4 +1,5 @@
 import {DB_PermissionGroup} from '../../main';
+import {Test_Setup} from '../projects/__test-project';
 
 
 export const Default_TestEmail = 'test@test.test';
@@ -40,14 +41,13 @@ export const Failed_Log = ' ___/-\\___\n' +
 	' |_______|';
 
 
-export const Test_Setup1 = {
+export const Test_Setup1: Test_Setup = {
 	projects: [{
 		name: TestProject__Name,
 		apis: [
 			{
 				path: 'v1/stam',
-				domain: Test_Domain1,
-				levelNames: [Test_AccessLevel_Read, Test_AccessLevel_Delete]
+				accessLevels: [{domainName: Test_Domain1, levelName: Test_AccessLevel_Read}],
 			}
 		],
 		domains: [{
