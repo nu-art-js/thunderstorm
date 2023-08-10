@@ -15,5 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export * from './core/module-pack';
-export * from './core/module-pack-v3';
+
+
+import {Module} from '@nu-art/ts-common';
+import {ModuleFE_AccountV3} from '../modules/v3/ModuleFE_v3_Account';
+
+export const ModulePackFE_v3_Accounts: Module[] = [
+	ModuleFE_AccountV3,
+];
+
+export * from '../modules/v3/ModuleFE_v3_Account';
+

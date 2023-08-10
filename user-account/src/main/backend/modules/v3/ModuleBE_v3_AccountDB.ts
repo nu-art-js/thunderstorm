@@ -30,11 +30,12 @@ import {
 } from '@nu-art/ts-common';
 import {DBApiConfigV3} from '@nu-art/db-api-generator/backend';
 import {
-	CollectSessionData,
-	Header_SessionId,
-	MemKey_AccountEmail,
-	MemKey_AccountId,
+	CollectSessionDataV3,
+	Header_SessionIdV3,
+	MemKey_AccountEmailV3,
+	MemKey_AccountIdV3,
 	ModuleBE_v3_SessionDB,
+	SessionKey_Session_BE_V3,
 } from './ModuleBE_v3_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
@@ -44,21 +45,21 @@ import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreInterfaceV3';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
 import {DBDef_v3_Accounts} from '../../../shared/v3-db-def';
-import {SessionKey_BE, SessionKey_Session_BE} from '../v2';
+import {SessionKey_BE} from '../v2';
 import Transaction = firestore.Transaction;
 
 
-export interface OnNewUserRegistered {
+export interface OnNewUserRegisteredV3 {
 	__onNewUserRegistered(account: DB_AccountV3): void;
 }
 
-export interface OnUserLogin {
+export interface OnUserLoginV3 {
 	__onUserLogin(account: DB_AccountV3): void;
 }
 
-export const dispatch_onUserLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
+export const dispatch_onUserLoginV3 = new Dispatcher<OnUserLoginV3, '__onUserLogin'>('__onUserLogin');
 
-const dispatch_onNewUserRegistered = new Dispatcher<OnNewUserRegistered, '__onNewUserRegistered'>('__onNewUserRegistered');
+const dispatch_onNewUserRegisteredV3 = new Dispatcher<OnNewUserRegisteredV3, '__onNewUserRegistered'>('__onNewUserRegistered');
 
 type Config = DBApiConfigV3<DBProto_AccountType> & {
 	canRegister: boolean
@@ -66,16 +67,16 @@ type Config = DBApiConfigV3<DBProto_AccountType> & {
 }
 
 
-export const SessionKey_Account_BE = new SessionKey_BE<_SessionKey_Account>('account');
+export const SessionKey_Account_BE_V3 = new SessionKey_BE<_SessionKey_Account>('account');
 
 export class ModuleBE_v3_AccountDB_Class
 	extends ModuleBE_BaseDBV3<DBProto_AccountType, Config>
-	implements CollectSessionData<_SessionKey_AccountV3> {
+	implements CollectSessionDataV3<_SessionKey_AccountV3> {
 
 	readonly Middleware = async () => {
-		const account = SessionKey_Account_BE.get();
-		MemKey_AccountEmail.set(account.email);
-		MemKey_AccountId.set(account._id);
+		const account = SessionKey_Account_BE_V3.get();
+		MemKey_AccountEmailV3.set(account.email);
+		MemKey_AccountIdV3.set(account._id);
 	};
 
 	constructor() {
@@ -116,7 +117,7 @@ export class ModuleBE_v3_AccountDB_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: UI_AccountV3, transaction?: Transaction): Promise<void> {
-		dbInstance._auditorId = MemKey_AccountEmail.get();
+		dbInstance._auditorId = MemKey_AccountEmailV3.get();
 	}
 
 	private spiceAccount(request: Request_RegisterAccount): UI_AccountV3 {
@@ -154,7 +155,7 @@ export class ModuleBE_v3_AccountDB_Class
 		});
 
 		if (dispatchEvent)
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccount(dbAccount));
+			await dispatch_onNewUserRegisteredV3.dispatchModuleAsync(getUIAccountV3(dbAccount));
 
 		return dbAccount;
 	};
@@ -171,18 +172,18 @@ export class ModuleBE_v3_AccountDB_Class
 
 			//Email always lowerCase
 			body.email = body.email.toLowerCase();
-			MemKey_AccountEmail.set(body.email); // set here, because MemKey_AccountEmail is needed in createAccountImpl
+			MemKey_AccountEmailV3.set(body.email); // set here, because MemKey_AccountEmail is needed in createAccountImpl
 
 			//Create the account
 			const uiAccount = await this.createAccountImpl(body as Request_RegisterAccount, true, transaction); // Must have a password, because we use it to auto-login immediately after
 			this.logErrorBold('uiAccount', uiAccount);
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
+			await dispatch_onNewUserRegisteredV3.dispatchModuleAsync(uiAccount);
 
 			//Log in
 			const session = await ModuleBE_v3_SessionDB.getOrCreateSession(uiAccount);
 
 			//Update whoever listens
-			await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
+			await dispatch_onUserLoginV3.dispatchModuleAsync(uiAccount);
 
 			//Finish
 			return session;
@@ -190,14 +191,14 @@ export class ModuleBE_v3_AccountDB_Class
 		login: async (request: Request_LoginAccount, transaction?: Transaction): Promise<Response_Auth_V3> => {
 			const {account, session} = await this.loginImpl(request, transaction);
 
-			await dispatch_onUserLogin.dispatchModuleAsync(getUIAccount(account));
+			await dispatch_onUserLoginV3.dispatchModuleAsync(getUIAccountV3(account));
 			return session;
 		},
 		create: async (request: UI_AccountV3 & { password?: string }, transaction?: Transaction) => {
 			if (request.type === 'user') {
 				if (request.password) {
 					const uiAccount = await this.createAccountImpl(request, true, transaction);
-					await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
+					await dispatch_onNewUserRegisteredV3.dispatchModuleAsync(uiAccount);
 					return uiAccount;
 				}
 
@@ -205,11 +206,11 @@ export class ModuleBE_v3_AccountDB_Class
 			}
 
 			const uiAccount = await this.createAccountImpl(request, false, transaction);
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
+			await dispatch_onNewUserRegisteredV3.dispatchModuleAsync(uiAccount);
 			return uiAccount;
 		},
 		logout: async (queryParams: QueryParams) => {
-			const sessionId = Header_SessionId.get();
+			const sessionId = Header_SessionIdV3.get();
 			if (!sessionId)
 				throw new ApiException(404, 'Missing sessionId');
 
@@ -286,8 +287,10 @@ export class ModuleBE_v3_AccountDB_Class
 				account._newPasswordRequired = true;
 		}
 
-		return getUIAccount(await this.runTransaction(async _transaction => {
+		return getUIAccountV3(await this.runTransaction(async _transaction => {
 			let existingAccount: DB_AccountV3 | undefined;
+
+			console.log(this);
 
 			try {
 				existingAccount = await this.query.uniqueWhere({email: body.email}, transaction);
@@ -305,7 +308,7 @@ export class ModuleBE_v3_AccountDB_Class
 
 	private createToken = async ({accountId, ttl}: RequestBody_CreateToken) => {
 		const {_id} = await ModuleBE_v3_SessionDB.createSession(accountId, (sessionData) => {
-			SessionKey_Session_BE.get(sessionData).expiration = ttl;
+			SessionKey_Session_BE_V3.get(sessionData).expiration = ttl;
 			return sessionData;
 		});
 
@@ -318,7 +321,7 @@ export class ModuleBE_v3_AccountDB_Class
 		const updatedAccount = await this.changePasswordImpl(lowerCaseEmail, body.originalPassword, body.newPassword, body.newPassword_check, transaction);
 		const newSession = await ModuleBE_v3_SessionDB.createSession(updatedAccount._id);
 		return {
-			...getUIAccount(updatedAccount),
+			...getUIAccountV3(updatedAccount),
 			sessionId: newSession._id
 		};
 	};
@@ -345,7 +348,7 @@ export class ModuleBE_v3_AccountDB_Class
 		const updatedAccount = await this.setPasswordImpl(body.userEmail, body.password, body.password_check, transaction);
 		const newSession = await ModuleBE_v3_SessionDB.createSession(updatedAccount._id);
 		return {
-			...getUIAccount(updatedAccount),
+			...getUIAccountV3(updatedAccount),
 			sessionId: newSession._id
 		};
 	};
@@ -369,7 +372,7 @@ export class ModuleBE_v3_AccountDB_Class
 	}, transaction);
 }
 
-export function getUIAccount(account: DB_AccountV3): DB_AccountV3 {
+export function getUIAccountV3(account: DB_AccountV3): DB_AccountV3 {
 	const uiAccount = cloneObj(account);
 	delete uiAccount.salt;
 	delete uiAccount.saltedPassword;
