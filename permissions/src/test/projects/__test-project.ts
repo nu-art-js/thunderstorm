@@ -1,5 +1,12 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {BadImplementationException, PreDB, reduceToMap, TypedMap, UniqueId} from '@nu-art/ts-common';
+import {
+	AssertionException,
+	BadImplementationException,
+	PreDB,
+	reduceToMap,
+	TypedMap,
+	UniqueId
+} from '@nu-art/ts-common';
 import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup} from '../../main';
 import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi';
@@ -11,6 +18,7 @@ import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {
 	Failed_Log,
 	Groups_ToCreate,
+	Test_AccessLevel_Delete, Test_AccessLevel_NoAccess, Test_AccessLevel_Read,
 	Test_AccessLevel_Write,
 	Test_Api_Stam,
 	Test_Domain1,
@@ -35,7 +43,7 @@ export type Test_Setup = {
 };
 type InputPermissionsSetup = {
 	setup: Test_Setup,
-	userLevels: { domain: string, levelName: string }[];
+	users: { accessLevels: { domain: string, levelName: string }[], result: boolean }[];
 	check: (projectId: UniqueId, path: string) => Promise<any>;
 }
 type BasicProjectTest = TestSuite<InputPermissionsSetup, boolean>;
@@ -45,7 +53,12 @@ const TestCases_Basic: BasicProjectTest['testcases'] = [
 		description: 'Create Project',
 		input: {
 			setup: Test_Setup1,
-			userLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Write}],
+			users: [
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Write}], result: false},
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Delete}], result: true},
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess}], result: false},
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Read}], result: false},
+			],
 			check: async (projectId: UniqueId, path: string) => {
 				await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, path);
 			}
@@ -65,27 +78,12 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 		// create all domains
 		// create all access levels
 		// create APIs with the associated access levels
-		// let defaultAccountId: string | undefined = undefined;
-		// await new MemStorage().init(async () => {
-		// 	try {
-		// 		defaultAccountId = (await ModuleBE_v2_AccountDB.account.register({
-		// 			email: Default_TestEmail,
-		// 			password: Default_TestPassword,
-		// 			password_check: Default_TestPassword
-		// 		}))._id;
-		// 	} catch (e) {
-		// 		defaultAccountId = (await ModuleBE_v2_AccountDB.query.uniqueWhere({email: Default_TestEmail}))._id;
-		// 	}
-		// });
 
 
 		const setup = testCase.input.setup;
-		let result: boolean = true;
 		try {
 			await new MemStorage().init(async () => {
-				// MemKey_AccountEmail.set(Default_TestEmail);
 				MemKey_AccountId.set('00000000000000000000000000000000');
-				// MemKey_AccountId.set(defaultAccountId!);
 
 				const domainNameToObjectMap: TypedMap<DB_PermissionDomain> = {};
 				const accessLevelsByDomainNameMap: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
@@ -95,7 +93,7 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 					name: project.name,
 					_auditorId: MemKey_AccountId.get()
 				}))), project => project.name, project => project);
-
+				let finalResult = true;
 				await Promise.all(setup.projects.map(async project => {
 
 					const dbProject = nameToProjectMap[project.name];
@@ -140,25 +138,41 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 							await ModuleBE_PermissionApi.create.item(toCreate);
 						}));
 					}));
+					// Finished to setup the permissions
+					// Check all user cases against this setup
+					await Promise.all(testCase.input.users.map(async user => {
+						let result = true;
+						try {
+							// {[Domain ID]: [accessLevel's value]}
+							const userAccessLevels = reduceToMap(
+								user.accessLevels,
+								userLevel => domainNameToObjectMap[userLevel.domain]._id,
+								userLevel => accessLevelsByDomainNameMap[userLevel.domain][userLevel.levelName].value
+							);
 
-					// Domain ID to accessLevel's value
-					const userAccessLevels = reduceToMap(
-						testCase.input.userLevels,
-						userLevel => domainNameToObjectMap[userLevel.domain]._id,
-						userLevel => accessLevelsByDomainNameMap[userLevel.domain][userLevel.levelName].value
-					);
-					// MemKey_UserPermissions is loaded when the user logs in.
-					MemKey_UserPermissions.set(userAccessLevels);
-					await testCase.input.check(nameToProjectMap[project.name]._id, Test_Api_Stam);
+							MemKey_UserPermissions.set(userAccessLevels);
+
+							await testCase.input.check(nameToProjectMap[project.name]._id, Test_Api_Stam);
+
+						} catch (e: any) {
+							result = false;
+						}
+						finalResult &&= (result === user.result);
+						expect(result).to.eql(user.result);
+
+					}));
+
 				}));
+
+				if (finalResult !== testCase.result)
+					throw new AssertionException('Test did not reach wanted end result.');
 			});
 		} catch (e: any) {
 			console.error('\n' + Failed_Log);
-			console.error('Test failed because:');
-			console.error(e);
-			result = false;
+			// console.error('Test failed because:');
+			// console.error(e);
+			throw e;
 		}
-		expect(result).to.eql(testCase.result);
 
 		// Post Test Cleanup
 		await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
