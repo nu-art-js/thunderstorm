@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-import {Firebase_StorageFunction} from '@nu-art/firebase/backend-functions';
 import {EventContext} from 'firebase-functions';
 import {Dispatcher} from '@nu-art/ts-common';
 import {ObjectMetadata} from 'firebase-functions/lib/v1/providers/storage';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {ModuleBE_StorageListener} from '@nu-art/firebase/backend';
 
 
 export interface OnAssetUploaded {
@@ -30,7 +30,7 @@ export interface OnAssetUploaded {
 const dispatcher_onAssetUploaded = new Dispatcher<OnAssetUploaded, '__processAsset'>('__processAsset');
 
 export class ModuleBE_BucketListener_Class
-	extends Firebase_StorageFunction {
+	extends ModuleBE_StorageListener {
 
 	constructor() {
 		super();

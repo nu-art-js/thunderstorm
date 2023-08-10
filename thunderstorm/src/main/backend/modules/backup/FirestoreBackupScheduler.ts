@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {FirebaseScheduledFunction} from '@nu-art/firebase/backend/functions/firebase-function';
 import {FirestoreBackupDetails, ModuleBE_Backup} from './ModuleBE_Backup';
+import {ModuleBE_FirebaseScheduler} from '@nu-art/firebase/backend';
 
 export interface OnFirestoreBackupSchedulerAct {
 	__onFirestoreBackupSchedulerAct: () => FirestoreBackupDetails<any>[];
@@ -32,7 +32,7 @@ export interface OnModuleCleanup {
 
 
 export class FirestoreBackupScheduler_Class
-	extends FirebaseScheduledFunction {
+	extends ModuleBE_FirebaseScheduler {
 
 	constructor() {
 		super();
