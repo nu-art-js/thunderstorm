@@ -47,7 +47,7 @@ export const Test_Setup1: Test_Setup = {
 		apis: [
 			{
 				path: 'v1/stam',
-				accessLevels: [{domainName: Test_Domain1, levelName: Test_AccessLevel_Read}],
+				accessLevels: [{domainName: Test_Domain1, levelName: Test_AccessLevel_Delete}],
 			}
 		],
 		domains: [{
