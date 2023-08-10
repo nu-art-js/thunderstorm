@@ -1,5 +1,6 @@
 import {ApiCallerEventType, ModuleFE_v3_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {
+	_SessionKey_AccountV3,
 	ApiDefFE_AccountV3,
 	ApiStructFE_AccountV3,
 	DB_Account_V2,
@@ -24,43 +25,50 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
-import {composeUrl, currentTimeMillis, exists, TS_Object} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	composeUrl,
+	currentTimeMillis,
+	exists,
+	TS_Object,
+	TypedKeyValue
+} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 
 
-export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
-export const StorageKey_SessionTimeoutTimestamp = new StorageKey<number>(`storage-accounts__session-timeout`);
+export const StorageKey_SessionIdV3 = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
+export const StorageKey_SessionTimeoutTimestampV3 = new StorageKey<number>(`storage-accounts__session-timeout`);
 
-export interface OnLoginStatusUpdated {
-	__onLoginStatusUpdated: () => void;
+export interface OnLoginStatusUpdatedV3 {
+	__onLoginStatusUpdatedV3: () => void;
 }
 
-export interface OnAccountsUpdated {
+export interface OnAccountsUpdatedV3 {
 	__onAccountsUpdated: (...params: ApiCallerEventType<DB_Account_V2>) => void;
 }
 
-export enum LoggedStatus {
+export enum LoggedStatusV3 {
 	VALIDATING,
 	LOGGED_OUT,
 	SESSION_TIMEOUT,
 	LOGGED_IN
 }
 
-export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
-export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdated, '__onAccountsUpdated'>('__onAccountsUpdated');
+export const dispatch_onLoginStatusChangedV3 = new ThunderDispatcher<OnLoginStatusUpdatedV3, '__onLoginStatusUpdatedV3'>('__onLoginStatusUpdatedV3');
+export const dispatch_onAccountsUpdatedV3 = new ThunderDispatcher<OnAccountsUpdatedV3, '__onAccountsUpdated'>('__onAccountsUpdated');
 
 class ModuleFE_Account_v3_Class
 	extends ModuleFE_v3_BaseApi<DBProto_AccountType>
 	implements ApiDefCaller<ApiStructFE_AccountV3>, OnAuthRequiredListener {
 	readonly vv1: ApiDefCaller<ApiStructFE_AccountV3>['vv1'];
-	private status: LoggedStatus = LoggedStatus.VALIDATING;
+	private status: LoggedStatusV3 = LoggedStatusV3.VALIDATING;
 	private accounts: UI_Account[] = [];
 	accountId!: string;
 	// @ts-ignore
 	private sessionData!: TS_Object;
 
 	constructor() {
-		super(DBDef_v3_Accounts, dispatch_onAccountsUpdated);
+		super(DBDef_v3_Accounts, dispatch_onAccountsUpdatedV3);
 
 		this.vv1 = {
 			registerAccount: apiWithBody(ApiDefFE_AccountV3.vv1.registerAccount, this.setLoginInfo),
@@ -75,9 +83,9 @@ class ModuleFE_Account_v3_Class
 	}
 
 	__onAuthRequiredListener(request: BaseHttpRequest<any>) {
-		StorageKey_SessionId.delete();
-		StorageKey_SessionTimeoutTimestamp.set(currentTimeMillis());
-		return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
+		StorageKey_SessionIdV3.delete();
+		StorageKey_SessionTimeoutTimestampV3.set(currentTimeMillis());
+		return this.setLoggedStatus(LoggedStatusV3.SESSION_TIMEOUT);
 	}
 
 	getAccounts() {
@@ -86,60 +94,60 @@ class ModuleFE_Account_v3_Class
 
 	getLoggedStatus = () => this.status;
 
-	isStatus = (status: LoggedStatus) => this.status === status;
+	isStatus = (status: LoggedStatusV3) => this.status === status;
 
 	private onAccountCreated = async (response: DB_AccountV3) => {
 		await this.onEntriesUpdated([response as DB_AccountV3]);
 	};
 
 	protected init(): void {
-		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionId.get());
+		ModuleFE_XHR.addDefaultHeader(HeaderKey_SessionId, () => StorageKey_SessionIdV3.get());
 		// ModuleFE_XHR.addDefaultHeader(HeaderKey_Email, () => StorageKey_UserEmail.get());
 
 		const email = getQueryParameter(QueryParam_Email);
 		const sessionId = getQueryParameter(QueryParam_SessionId);
 
 		if (email && sessionId) {
-			StorageKey_SessionId.set(String(sessionId));
+			StorageKey_SessionIdV3.set(String(sessionId));
 
 			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_Email);
 			ModuleFE_BrowserHistory.removeQueryParam(QueryParam_SessionId);
 		}
 
-		const _sessionId = StorageKey_SessionId.get();
+		const _sessionId = StorageKey_SessionIdV3.get();
 		if (_sessionId) {
 			const now = currentTimeMillis();
 			const sessionData = this.decode(_sessionId);
 			if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
-				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
+				return this.setLoggedStatus(LoggedStatusV3.SESSION_TIMEOUT);
 
 			this.accountId = sessionData.account._id;
 			this.sessionData = sessionData;
-			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+			return this.setLoggedStatus(LoggedStatusV3.LOGGED_IN);
 		}
 
 		this.logDebug('login out user.... ');
-		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+		this.setLoggedStatus(LoggedStatusV3.LOGGED_OUT);
 	}
 
-	protected setLoggedStatus = (newStatus: LoggedStatus) => {
+	protected setLoggedStatus = (newStatus: LoggedStatusV3) => {
 		if (this.status === newStatus)
 			return;
 
 		const pervStatus = this.status;
 		this.status = newStatus;
-		if (newStatus === LoggedStatus.LOGGED_IN || newStatus === LoggedStatus.LOGGED_OUT)
-			StorageKey_SessionTimeoutTimestamp.delete();
+		if (newStatus === LoggedStatusV3.LOGGED_IN || newStatus === LoggedStatusV3.LOGGED_OUT)
+			StorageKey_SessionTimeoutTimestampV3.delete();
 
-		this.logInfo(`Login status changes: ${LoggedStatus[pervStatus]} => ${LoggedStatus[newStatus]}`);
-		dispatch_onLoginStatusChanged.dispatchUI();
-		dispatch_onLoginStatusChanged.dispatchModule();
+		this.logInfo(`Login status changes: ${LoggedStatusV3[pervStatus]} => ${LoggedStatusV3[newStatus]}`);
+		dispatch_onLoginStatusChangedV3.dispatchUI();
+		dispatch_onLoginStatusChangedV3.dispatchModule();
 	};
 
 	private setLoginInfo = async (response: Response_Auth_V3) => {
-		StorageKey_SessionId.set(response.sessionId);
+		StorageKey_SessionIdV3.set(response.sessionId);
 		this.accountId = response._id;
-		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
+		this.setLoggedStatus(LoggedStatusV3.LOGGED_IN);
 	};
 
 	private onLoginCompletedSAML = async (response: Response_LoginSAML) => {
@@ -157,7 +165,7 @@ class ModuleFE_Account_v3_Class
 	};
 
 	public getSessionId = (): string => {
-		return StorageKey_SessionId.get('');
+		return StorageKey_SessionIdV3.get('');
 	};
 
 	private decode(sessionData: string) {
@@ -169,12 +177,31 @@ class ModuleFE_Account_v3_Class
 
 	logout = (url?: string) => {
 		this.vv1.logout({}).execute();
-		StorageKey_SessionId.delete();
+		StorageKey_SessionIdV3.delete();
 		if (url)
 			return window.location.href = url;
 
-		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+		this.setLoggedStatus(LoggedStatusV3.LOGGED_OUT);
 	};
 }
 
-export const ModuleFE_AccountV2 = new ModuleFE_Account_v3_Class();
+export class SessionKey_FEV3<Binder extends TypedKeyValue<string | number, any>> {
+	private readonly key: Binder['key'];
+
+	constructor(key: Binder['key']) {
+		this.key = key;
+	}
+
+	get(): Binder['value'] {
+		// @ts-ignore
+		const sessionData = ModuleFE_AccountV3.sessionData;
+		if (!(this.key in sessionData))
+			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
+
+		return sessionData[this.key] as Binder['value'];
+	}
+}
+
+export const SessionKey_Account_FE_V3 = new SessionKey_FEV3<_SessionKey_AccountV3>('account');
+
+export const ModuleFE_AccountV3 = new ModuleFE_Account_v3_Class();

@@ -33,7 +33,7 @@ import {
 import {
 	MemKey_AccountEmail,
 	MemKey_AccountId,
-	ModuleBE_v2_AccountDB,
+	ModuleBE_v3_AccountDB,
 	OnNewUserRegistered,
 	OnUserLogin
 } from '@nu-art/user-account/backend';
@@ -51,8 +51,8 @@ import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
-import Transaction = firestore.Transaction;
 import {_EmptyQuery} from '@nu-art/db-api-generator';
+import Transaction = firestore.Transaction;
 
 
 export class ModuleBE_PermissionUserDB_Class
@@ -76,7 +76,7 @@ export class ModuleBE_PermissionUserDB_Class
 
 	protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DB_PermissionUser[]) {
 		const conflicts: DB_PermissionUser[] = [];
-		const accounts = await ModuleBE_v2_AccountDB.query.custom(_EmptyQuery);
+		const accounts = await ModuleBE_v3_AccountDB.query.custom(_EmptyQuery);
 
 		for (const item of dbInstances) {
 			const account = accounts.find(acc => acc._id === item.accountId);
@@ -146,7 +146,7 @@ export class ModuleBE_PermissionUserDB_Class
 	async insertIfNotExist(email: string) {
 		return this.runTransaction(async (transaction) => {
 
-			const account = await ModuleBE_v2_AccountDB.query.uniqueWhere({email});
+			const account = await ModuleBE_v3_AccountDB.query.uniqueWhere({email});
 			if (!account)
 				throw new ApiException(404, `user not found for email ${email}`);
 
