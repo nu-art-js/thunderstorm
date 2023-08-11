@@ -12,3 +12,4 @@ export * from './thunder-dispatcher';
 export * from './thunderstorm-modulepack';
 export * from './Thunder';
 export * from './typed-api';
+export * from './IndexedDBV3';

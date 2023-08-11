@@ -72,10 +72,12 @@ export type SubsetObjectByValue<T, ExpectedType> = SubsetObjectByKeys<T, SubsetK
 export type OptionalKeys<T extends TS_Object> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? never : K }[keyof T], undefined>
 export type MandatoryKeys<T extends TS_Object, V extends any = any> = Exclude<{ [K in keyof T]: T extends Record<K, T[K]> ? (T[K] extends V ? K : never) : never }[keyof T], undefined>
 
-export type RequireOptionals<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
+export type RequireOptionals<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> =
+	Pick<T, Exclude<keyof T, Keys>>
 	& { [K in Keys]-?: Required<Pick<T, K>> & Partial<Pick<T, Exclude<Keys, K>>> }[Keys]
 
-export type RequireOneOptional<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> = Pick<T, Exclude<keyof T, Keys>>
+export type RequireOneOptional<T extends TS_Object, Keys extends OptionalKeys<T> = OptionalKeys<T>> =
+	Pick<T, Exclude<keyof T, Keys>>
 	& { [K in Keys]-?: Required<Pick<T, K>> & Partial<Record<Exclude<Keys, K>, undefined>> }[Keys]
 
 export type RequireAtLeastOne<T, Keys extends keyof T = keyof T> =
@@ -132,7 +134,9 @@ export type PreDB<T extends DB_Object, K extends keyof T = never> = PartialPrope
 export type OmitDBObject<T extends DB_Object> = Omit<T, keyof DB_Object>;
 
 export type IndexKeys<T extends Object, Ks extends keyof T> = { [K in Ks]: T[K] };
-export type UniqueParam<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey> = UniqueId | IndexKeys<Type, Ks>;
+export type UniqueParam<Type extends DB_Object, Ks extends keyof PreDB<Type> = Default_UniqueKey> =
+	UniqueId
+	| IndexKeys<Type, Ks>;
 
 export type Draftable = { _isDraft: boolean };
 export type ResolvableContent<T> = T | (() => T);
