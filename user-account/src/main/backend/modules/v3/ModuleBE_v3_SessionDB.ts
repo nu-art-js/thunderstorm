@@ -1,24 +1,23 @@
-import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {
-	_SessionKey_Account,
-	_SessionKey_Session,
+	_SessionKey_SessionV3,
+	DB_AccountV3,
 	DB_Session_V2,
-	DBDef_Session,
+	DBDef_v3_Session,
+	DBProto_SessionType,
 	HeaderKey_SessionId,
-	Response_Auth,
-	UI_Account
+	Response_Auth_V3,
+	UI_Session
 } from '../../../shared';
-import {DBApiConfig} from '@nu-art/db-api-generator/backend';
+import {DBApiConfig, ModuleBE_BaseDBV3} from '@nu-art/db-api-generator/backend';
 import {
 	__stringify,
 	ApiException,
-	BadImplementationException,
 	currentTimeMillis,
 	Day,
 	Dispatcher,
-	PreDB,
 	TS_Object,
-	TypedKeyValue, UniqueId
+	TypedKeyValue,
+	UniqueId
 } from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
@@ -51,9 +50,9 @@ export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
 export const MemKey_SessionData = new MemKey<TS_Object>('session-data', true);
 
 
-export class ModuleBE_v2_SessionDB_Class
-	extends ModuleBE_BaseDBV2<DB_Session_V2, Config>
-	implements CollectSessionData<_SessionKey_Session> {
+export class ModuleBE_v3_SessionDB_Class
+	extends ModuleBE_BaseDBV3<DBProto_SessionType, Config>
+	implements CollectSessionData<_SessionKey_SessionV3> {
 
 	readonly Middleware = async () => {
 		const sessionId = Header_SessionId.get();
@@ -62,12 +61,12 @@ export class ModuleBE_v2_SessionDB_Class
 
 		let session;
 		try {
-			session = await ModuleBE_v2_SessionDB.query.uniqueWhere({sessionId});
+			session = await ModuleBE_v3_SessionDB.query.uniqueWhere({sessionId});
 		} catch (err) {
 			throw new ApiException(401, `Invalid session id: ${sessionId}`);
 		}
 
-		if (ModuleBE_v2_SessionDB.TTLExpired(session))
+		if (ModuleBE_v3_SessionDB.TTLExpired(session))
 			throw new ApiException(401, 'Session timed out');
 
 		const sessionData = this.decodeSessionData(sessionId);
@@ -75,7 +74,7 @@ export class ModuleBE_v2_SessionDB_Class
 	};
 
 	constructor() {
-		super(DBDef_Session);
+		super(DBDef_v3_Session);
 		this.setDefaultConfig({sessionTTLms: Day});
 	}
 
@@ -90,7 +89,7 @@ export class ModuleBE_v2_SessionDB_Class
 		};
 	}
 
-	TTLExpired = (session: PreDB<DB_Session_V2>) => {
+	TTLExpired = (session: UI_Session) => {
 		const delta = currentTimeMillis() - session.timestamp;
 		return delta > this.config.sessionTTLms || delta < 0;
 	};
@@ -110,7 +109,7 @@ export class ModuleBE_v2_SessionDB_Class
 		return JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8'));
 	}
 
-	getOrCreateSession = async (uiAccount: UI_Account, transaction?: Transaction): Promise<Response_Auth> => {
+	getOrCreateSession = async (uiAccount: DB_AccountV3, transaction?: Transaction): Promise<Response_Auth_V3> => {
 		try {
 			const session = await this.query.uniqueWhere({accountId: uiAccount._id}, transaction);
 			if (!this.TTLExpired(session)) {
@@ -158,21 +157,4 @@ export class ModuleBE_v2_SessionDB_Class
 	};
 }
 
-export const ModuleBE_v2_SessionDB = new ModuleBE_v2_SessionDB_Class();
-
-export class SessionKey_BE<Binder extends TypedKeyValue<string | number, any>> {
-	private readonly key: Binder['key'];
-
-	constructor(key: Binder['key']) {
-		this.key = key;
-	}
-
-	get(sessionData = MemKey_SessionData.get()): Binder['value'] {
-		if (!(this.key in sessionData))
-			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
-
-		return sessionData[this.key] as Binder['value'];
-	}
-}
-
-export const SessionKey_Session_BE = new SessionKey_BE<_SessionKey_Session>('session');
+export const ModuleBE_v3_SessionDB = new ModuleBE_v3_SessionDB_Class();

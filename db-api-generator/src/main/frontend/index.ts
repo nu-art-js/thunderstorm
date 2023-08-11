@@ -36,6 +36,8 @@ export * from './utils/EditableDBItem';
 export * from './modules/consts';
 export * from './modules/types';
 export * from './modules/ModuleFE_BaseDB';
+export * from './modules/ModuleFE_v3_BaseDB';
 export * from './modules/ModuleFE_BaseApi';
+export * from './modules/ModuleFE_v3_BaseApi';
 export * from './modules/ModuleFE_SyncManager';
 export * from './modules/ModuleFE_SyncEnv';

@@ -1,28 +1,24 @@
-import {
-	_keys,
-	currentTimeMillis,
-	DB_Object,
-	exists,
-	MUSTNeverHappenException,
-	PreDB,
-	UniqueId
-} from '@nu-art/ts-common';
+import {_keys, currentTimeMillis, DBProto, exists, MUSTNeverHappenException, UniqueId} from '@nu-art/ts-common';
 import {FirestoreType_DocumentReference} from '../firestore/types';
 import {Transaction} from 'firebase-admin/firestore';
 import {firestore} from 'firebase-admin';
-import {FirestoreCollectionV2, assertUniqueId} from './FirestoreCollectionV2';
+import {assertUniqueId, FirestoreCollectionV3} from './FirestoreCollectionV3';
 import UpdateData = firestore.UpdateData;
 import FieldValue = firestore.FieldValue;
 
 
-export type UpdateObject<Type> = { _id: UniqueId } & UpdateData<Type>;
+export type UpdateObject<Proto extends DBProto<any>> =
+	{
+		_id: UniqueId
+	}
+	& UpdateData<Proto['dbType']>;
 
-export class DocWrapperV2<T extends DB_Object> {
-	readonly ref: FirestoreType_DocumentReference<T>;
-	readonly collection: FirestoreCollectionV2<T>;
-	data?: T;
+export class DocWrapperV3<Proto extends DBProto<any>> {
+	readonly ref: FirestoreType_DocumentReference<Proto['dbType']>;
+	readonly collection: FirestoreCollectionV3<Proto>;
+	data?: Proto['dbType'];
 
-	protected constructor(collection: FirestoreCollectionV2<T>, ref: FirestoreType_DocumentReference<T>, data?: T) {
+	protected constructor(collection: FirestoreCollectionV3<Proto>, ref: FirestoreType_DocumentReference<Proto['dbType']>, data?: Proto['dbType']) {
 		this.collection = collection;
 		this.ref = ref;
 		this.data = data;
@@ -32,12 +28,12 @@ export class DocWrapperV2<T extends DB_Object> {
 		return this.data;
 	};
 
-	cleanCache = (): DocWrapperV2<T> => {
+	cleanCache = (): DocWrapperV3<Proto> => {
 		delete this.data;
 		return this;
 	};
 
-	private assertId(item: PreDB<T>) {
+	private assertId(item: Proto['uiType']) {
 		item._id = assertUniqueId(item, this.collection.uniqueKeys);
 		if (item._id !== this.ref.id)
 			throw new MUSTNeverHappenException(`Composed _id does not match doc ref id! \n expected: ${this.ref.id} \n actual: ${item._id} \n`);
@@ -45,24 +41,24 @@ export class DocWrapperV2<T extends DB_Object> {
 
 	get = async (transaction?: Transaction) => {
 		if (transaction)
-			return this.data ?? (this.data = ((await transaction.get(this.ref)).data() as (T | undefined)));
+			return this.data ?? (this.data = ((await transaction.get(this.ref)).data() as (Proto['dbType'] | undefined)));
 
-		return this.data ?? (this.data = (await this.ref.get()).data() as (T | undefined));
+		return this.data ?? (this.data = (await this.ref.get()).data() as (Proto['dbType'] | undefined));
 	};
 
-	prepareForCreate = async (preDBItem: PreDB<T>, transaction?: Transaction): Promise<T> => {
+	prepareForCreate = async (preDBItem: Proto['uiType'], transaction?: Transaction): Promise<Proto['dbType']> => {
 		const now = currentTimeMillis();
 
 		this.assertId(preDBItem);
 		preDBItem.__updated = preDBItem.__created = now;
 		preDBItem._v = this.collection.getVersion();
 		await this.collection.hooks?.preWriteProcessing?.(preDBItem, transaction);
-		this.collection.validateItem(preDBItem as T);
-		return preDBItem as T;
+		this.collection.validateItem(preDBItem as Proto['dbType']);
+		return preDBItem as Proto['dbType'];
 	};
 
-	create = async (preDBItem: PreDB<T>, transaction?: Transaction): Promise<T> => {
-		const dbItem = await this.prepareForCreate(preDBItem as T);
+	create = async (preDBItem: Proto['uiType'], transaction?: Transaction): Promise<Proto['dbType']> => {
+		const dbItem = await this.prepareForCreate(preDBItem as Proto['dbType']);
 
 		if (transaction) {
 			transaction.create(this.ref, dbItem);
@@ -75,7 +71,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		return dbItem;
 	};
 
-	prepareForSet = async (updatedDBItem: T, dbItem?: T, transaction?: Transaction): Promise<T> => {
+	prepareForSet = async (updatedDBItem: Proto['dbType'], dbItem?: Proto['dbType'], transaction?: Transaction): Promise<Proto['dbType']> => {
 		if (!dbItem)
 			return this.prepareForCreate(updatedDBItem, transaction);
 
@@ -92,28 +88,28 @@ export class DocWrapperV2<T extends DB_Object> {
 		return updatedDBItem;
 	};
 
-	set = async (item: PreDB<T> | T, transaction?: Transaction): Promise<T> => {
+	set = async (item: Proto['uiType'] | Proto['dbType'], transaction?: Transaction): Promise<Proto['dbType']> => {
 		if (!transaction)
-			return this.collection.runTransaction(transaction => this.set(item, transaction));
+			return this.collection.runTransaction((transaction: Transaction) => this.set(item, transaction));
 
 		const currDBItem = await this.get(transaction);
-		const newDBItem = await this.prepareForSet(item as T, currDBItem!, transaction);
+		const newDBItem = await this.prepareForSet(item as Proto['dbType'], currDBItem!, transaction);
 
 		// Will always get here with a transaction!
 		transaction!.set(this.ref, newDBItem);
-		this.data = newDBItem;
+		this.data = currDBItem;
 
-		await this.collection.hooks?.postWriteProcessing?.({before: currDBItem, updated: newDBItem});
+		await this.collection.hooks?.postWriteProcessing?.({updated: newDBItem});
 
 		return newDBItem;
 	};
 
-	async prepareForUpdate(updateData: UpdateObject<T>, transaction?: Transaction) {
+	async prepareForUpdate(updateData: UpdateObject<Proto['dbType']>, transaction?: Transaction) {
 		delete updateData.__created;
 		delete updateData._v;
 		updateData.__updated = currentTimeMillis();
 		// this.collection.dbDef.lockKeys?.forEach(lockedKey => {
-		// 	(updateData as Partial<T>)[lockedKey] = undefined;
+		// 	(updateData as Partial<Proto['dbType']>)[lockedKey] = undefined;
 		// });
 		this.updateDeletedFields(updateData);
 		await this.collection.validateUpdateData(updateData, transaction);
@@ -122,10 +118,10 @@ export class DocWrapperV2<T extends DB_Object> {
 
 	/**
 	 * Recursively replaces any undefined or null fields in DB item with firestore.FieldValue.delete()
-	 * @param updateData: data to update in DB item
 	 * @private
+	 * @param updateData
 	 */
-	private updateDeletedFields(updateData: UpdateObject<T | T[keyof T]>) {
+	private updateDeletedFields(updateData: UpdateObject<Proto['dbType'] | Proto['dbType'][keyof Proto['dbType']]>) {
 		if (typeof updateData !== 'object' || updateData === null)
 			return;
 
@@ -135,12 +131,12 @@ export class DocWrapperV2<T extends DB_Object> {
 			if (!exists(_value as any)) {
 				(updateData[_key] as FieldValue) = FieldValue.delete();
 			} else {
-				this.updateDeletedFields(_value as UpdateObject<T | T[keyof T]>);
+				this.updateDeletedFields(_value as UpdateObject<Proto['dbType'] | Proto['dbType'][keyof Proto['dbType']]>);
 			}
 		});
 	}
 
-	update = async (updateData: UpdateObject<T>) => {
+	update = async (updateData: UpdateObject<Proto['dbType']>) => {
 		updateData = await this.prepareForUpdate(updateData);
 		await this.ref.update(updateData);
 		const dbItem = await this.get();
@@ -148,7 +144,7 @@ export class DocWrapperV2<T extends DB_Object> {
 		return dbItem;
 	};
 
-	delete = async (transaction?: Transaction): Promise<T | undefined> => {
+	delete = async (transaction?: Transaction): Promise<Proto['dbType'] | undefined> => {
 		if (!transaction)
 			return this.collection.runTransaction(transaction => this.delete(transaction));
 
