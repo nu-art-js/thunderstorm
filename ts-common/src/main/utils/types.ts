@@ -229,7 +229,7 @@ export type DotNotation<T> = T extends object
 	: '';
 
 /**
- * Replaces the type of a nested property within an object, based on a specified path.
+ * Replaces the type of nested property within an object, based on a specified path.
  *
  * @typeParam ObjectType - The original object type.
  * @typeParam PropertyPath - The path to the property to replace, expressed as a dot-notation string.
@@ -259,3 +259,5 @@ export type ManipulateInnerPropValue<ObjectType, PropertyPath extends DotNotatio
 			? { [Prop in keyof ObjectType]: Prop extends Key ? Rest extends DotNotation<ObjectType[Key]> ? ManipulateInnerPropValue<ObjectType[Key], Rest, NewValueType> : never : ObjectType[Prop] }
 			: never
 		: { [Prop in keyof ObjectType]: Prop extends PropertyPath ? NewValueType : ObjectType[Prop] };
+
+
