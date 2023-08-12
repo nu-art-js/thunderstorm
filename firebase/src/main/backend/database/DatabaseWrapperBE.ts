@@ -193,7 +193,7 @@ export class FirebaseRef<T> {
 	 * Executes a transaction at the specified path in the database, using the provided function to update the current value.
 	 * @param func
 	 */
-	public async transaction(func: (currentValue: T) => T) {
+	public async transaction(func: (currentValue: T) => T): Promise<ManipulateInnerPropValue<TransactionResult, 'snapshot.val', () => T>> {
 		return this.db.transaction(this.path, func);
 	}
 
