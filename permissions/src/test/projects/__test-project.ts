@@ -18,11 +18,14 @@ import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {
 	Failed_Log,
 	Groups_ToCreate,
-	Test_AccessLevel_Delete, Test_AccessLevel_NoAccess, Test_AccessLevel_Read,
+	Test_AccessLevel_Admin,
+	Test_AccessLevel_Delete,
+	Test_AccessLevel_NoAccess,
+	Test_AccessLevel_Read,
 	Test_AccessLevel_Write,
 	Test_Api_Stam,
 	Test_Domain1,
-	Test_Setup1
+	Test_Setup1, Test_Setup2
 } from '../_core/consts';
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
@@ -50,14 +53,32 @@ type BasicProjectTest = TestSuite<InputPermissionsSetup, boolean>;
 
 const TestCases_Basic: BasicProjectTest['testcases'] = [
 	{
-		description: 'Create Project',
+		description: 'Create Project 1',
 		input: {
 			setup: Test_Setup1,
 			users: [
-				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Write}], result: false},
-				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Delete}], result: true},
 				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess}], result: false},
 				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Read}], result: false},
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Write}], result: false},
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Delete}], result: true},
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Admin}], result: true},
+			],
+			check: async (projectId: UniqueId, path: string) => {
+				await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, path);
+			}
+		},
+		result: true
+	},
+	{
+		description: 'Create Project 2',
+		input: {
+			setup: Test_Setup2,
+			users: [
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_NoAccess}], result: false},
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Read}], result: true},
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Write}], result: true},
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Delete}], result: true},
+				{accessLevels: [{domain: Test_Domain1, levelName: Test_AccessLevel_Admin}], result: true},
 			],
 			check: async (projectId: UniqueId, path: string) => {
 				await ModuleBE_PermissionsAssert.assertUserPermissions(projectId, path);
@@ -150,8 +171,10 @@ export const TestSuite_Permissions_BasicSetup: BasicProjectTest = {
 								userLevel => accessLevelsByDomainNameMap[userLevel.domain][userLevel.levelName].value
 							);
 
+
 							MemKey_UserPermissions.set(userAccessLevels);
 
+							// The actual test
 							await testCase.input.check(nameToProjectMap[project.name]._id, Test_Api_Stam);
 
 						} catch (e: any) {
