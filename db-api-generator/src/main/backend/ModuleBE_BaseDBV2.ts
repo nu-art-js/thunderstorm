@@ -60,8 +60,8 @@ export type DBApiConfig<Type extends DB_Object> = BaseDBApiConfig & DBApiBEConfi
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType extends DBApiConfig<Type> = DBApiConfig<Type>, Ks extends keyof PreDB<Type> = Default_UniqueKey>
-	extends Module<ConfigType>
+export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType extends {} = {}, Ks extends keyof PreDB<Type> = Default_UniqueKey>
+	extends Module<ConfigType & DBApiConfig<Type>>
 	implements OnFirestoreBackupSchedulerActV2 {
 
 	// @ts-ignore
