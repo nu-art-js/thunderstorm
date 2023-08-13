@@ -24,7 +24,6 @@ export type VersionType = string
 //
 // export type DBDef_V2<Proto extends DBProto<any>> = DBDef<Proto['dbType'], Proto['uniqueKeys']>
 
-
 export type VersionsDeclaration<T extends DB_Object, Versions extends VersionType[] = ['1.0.0'], Types extends [T, ...DB_Object[]] = [T, ...DB_Object[]]> = {
 	versions: Versions
 	types: Types
@@ -37,7 +36,7 @@ export type Proto_DB_Object<
 	UniqueKeys extends keyof T = Default_UniqueKey> = {
 
 	type: T,
-	generatedKeys: GeneratedKeys,
+	generatedKeys: GeneratedKeys
 	versions: Versions,
 	uniqueKeys: UniqueKeys
 }
@@ -48,7 +47,7 @@ export type DBProto<P extends Proto_DB_Object<any, any, any, any>, ModifiableSub
 	generatedPropsValidator: ValidatorTypeResolver<GeneratedSubType>
 	modifiablePropsValidator: ValidatorTypeResolver<ModifiableSubType>
 	uniqueKeys: P['uniqueKeys'][],
-	generatedProps: P['generatedKeys'][]
+	generatedProps: (P['generatedKeys'] | keyof DB_Object)[]
 	versions: P['versions']['versions']
 	indices: DBIndex<P['type']>[]
 	uniqueParam: UniqueId | { [K in P['uniqueKeys']]: P['type'][K] }

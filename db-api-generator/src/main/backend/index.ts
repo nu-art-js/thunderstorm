@@ -20,7 +20,6 @@
  */
 
 export * from './db-def';
-export * from './LockedOperation';
 export * from './ModuleBE_Archiving';
 export * from './ModuleBE_BaseApiV2';
 export * from './ModuleBE_BaseDBV2';
