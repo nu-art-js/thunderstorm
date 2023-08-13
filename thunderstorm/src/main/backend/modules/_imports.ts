@@ -28,7 +28,5 @@ export * from './proxy/ModuleBE_RemoteProxy';
 export * from '../utils/promisify-request';
 
 export * from './CleanupScheduler';
-export * from './backup/ModuleBE_Backup';
-export * from './backup/FirestoreBackupScheduler';
 export * from './backup/ModuleBE_v2_Backup';
 export * from './backup/ModuleBE_v2_BackupScheduler';

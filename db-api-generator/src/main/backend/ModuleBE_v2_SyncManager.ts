@@ -21,7 +21,7 @@
 
 import {FirestoreQuery} from '@nu-art/firebase';
 import {DatabaseWrapperBE, FirebaseRef, ModuleBE_Firebase} from '@nu-art/firebase/backend';
-import {addRoutes, createQueryServerApi, OnModuleCleanup} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {
 	_keys,
 	currentTimeMillis,
@@ -39,6 +39,7 @@ import {_EmptyQuery, ApiDef_SyncManagerV2, DBSyncData} from '../shared';
 import {FirestoreCollectionV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
+import {OnModuleCleanupV2} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_v2_BackupScheduler';
 
 
 type LastUpdated = { lastUpdated: number, oldestDeleted?: number };
@@ -64,7 +65,7 @@ type Config = {
  */
 export class ModuleBE_v2_SyncManager_Class
 	extends Module<Config>
-	implements OnModuleCleanup {
+	implements OnModuleCleanupV2 {
 
 	public collection!: FirestoreCollectionV2<DeletedDBItem>;
 
@@ -124,7 +125,7 @@ export class ModuleBE_v2_SyncManager_Class
 		return deletedItems;
 	}
 
-	__onCleanupInvoked = async () => {
+	__onCleanupInvokedV2 = async () => {
 		if (!this.config.retainDeletedCount)
 			return this.logWarning('Will not run cleanup of deleted values:\n  No "retainDeletedCount" was specified in config..');
 
