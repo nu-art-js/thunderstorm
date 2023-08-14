@@ -200,6 +200,10 @@ export type NonEmptyArray<T> = [T, ...T[]];
 
 export type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : never
 
+export type RecursiveOmit<T, OmitKey extends keyof any> = {
+	[K in Exclude<keyof T, OmitKey>]: T[K] extends object ? RecursiveOmit<T[K], OmitKey> : T[K];
+};
+
 /**
  * Constructs a union of string paths representing the properties and nested properties of an object type.
  *
@@ -223,7 +227,9 @@ export type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : nev
 export type DotNotation<T> = T extends object
 	? {
 		[K in keyof T]: K extends string
-			? `${K & string}` | `${K & string}.${DotNotation<T[K]>}`
+			? T[K] extends object
+				? `${K & string}` | `${K & string}.${DotNotation<T[K]>}`
+				: `${K & string}`
 			: never;
 	}[keyof T]
 	: '';
