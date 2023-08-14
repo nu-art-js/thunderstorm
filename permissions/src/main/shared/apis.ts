@@ -77,12 +77,12 @@ export type Response_User = {
 };
 
 //ModuleBE_PermissionUser
-export type ApiStruct_PermissionsUser = {
+export type _ApiStruct_PermissionsUser = {
 	pah: {
 		assignAppPermissions: BodyApi<void, Request_AssignAppPermissions>;
 	}
 }
-export const ApiDef_PermissionUser: ApiDefResolver<ApiStruct_PermissionsUser> = {
+export const _ApiDef_PermissionUser: ApiDefResolver<_ApiStruct_PermissionsUser> = {
 	pah: {
 		assignAppPermissions: {method: HttpMethod.POST, path: '/pah/permissions/assign/app-permissions'}
 	}
@@ -90,18 +90,18 @@ export const ApiDef_PermissionUser: ApiDefResolver<ApiStruct_PermissionsUser> = 
 
 //ModuleBE_PermissionsAssert
 export type ApiStruct_PermissionsAssert = {
-	v1: {
+	vv1: {
 		assertUserPermissions: BodyApi<Response_User, Request_AssertApiForUser>;
 	}
 }
 export const ApiDef_PermissionsAssert: ApiDefResolver<ApiStruct_PermissionsAssert> = {
-	v1: {
+	vv1: {
 		assertUserPermissions: {method: HttpMethod.POST, path: 'v1/permissions/assert-user-access'}
 	}
 };
 
 //ModuleBE_Permissions
-export type ApiStruct_Permissions = {
+export type _ApiStruct_Permissions = {
 	v1: {
 		getUserUrlsPermissions: BodyApi<UserUrlsPermissions, Request_UserUrlsPermissions>;
 		getUserCFsByShareGroups: BodyApi<StringMap[], Request_UserCFsByShareGroups>;
@@ -110,7 +110,7 @@ export type ApiStruct_Permissions = {
 		registerProject: QueryApi<void>;
 	}
 }
-export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
+export const _ApiDef_Permissions: ApiDefResolver<_ApiStruct_Permissions> = {
 	v1: {
 		getUserUrlsPermissions: {method: HttpMethod.POST, path: 'v1/permissions/user-urls-permissions'},
 		getUserCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/user-cf-by-share-groups'},
@@ -121,12 +121,12 @@ export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
 };
 
 //FIXME: I have no idea what i'm doing here
-export type ApiStruct_TestPermissions = {
+export type _ApiStruct_TestPermissions = {
 	v1: {
 		test: QueryApi<void>
 	}
 }
-export const ApiDef_TestPermissions: ApiDefResolver<ApiStruct_TestPermissions> = {
+export const _ApiDef_TestPermissions: ApiDefResolver<_ApiStruct_TestPermissions> = {
 	v1: {
 		test: {method: HttpMethod.GET, path: 'v1/permissions-test/test'}
 	}

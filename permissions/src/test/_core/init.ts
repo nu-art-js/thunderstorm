@@ -37,7 +37,6 @@ const permissionModules = [
 ];
 
 ModuleBE_Auth.setDefaultConfig({auth: {[FIREBASE_DEFAULT_PROJECT_ID]: config}});
-// ModuleBE_Permissions.setDefaultConfig({project: {_id: config.project_id, name: TestProject__Name}});
 ModuleBE_v2_AccountDB.setDefaultConfig({canRegister: true});
 ModuleBE_PermissionsAssert.setDefaultConfig({strictMode: true});
 

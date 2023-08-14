@@ -112,7 +112,7 @@ export class ModuleBE_PermissionsAssert_Class
 
 	init() {
 		super.init();
-		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.v1.assertUserPermissions, this.assertPermission)]);
+		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 	}
 
 	private assertPermission = async (body: Request_AssertApiForUser) => {

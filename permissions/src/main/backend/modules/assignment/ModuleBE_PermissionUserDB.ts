@@ -20,7 +20,6 @@
 import {
 	_keys,
 	ApiException,
-	batchAction,
 	batchActionParallel,
 	dbObjectToId,
 	filterDuplicates,
@@ -30,7 +29,12 @@ import {
 } from '@nu-art/ts-common';
 import {MemKey_AccountId, ModuleBE_v2_AccountDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {DB_EntityDependency} from '@nu-art/firebase';
-import {DB_PermissionUser, DBDef_PermissionUser, Request_GivePermissionsToAnotherUser} from '../../shared';
+import {
+	ApiDef_PermissionUser,
+	DB_PermissionUser,
+	DBDef_PermissionUser,
+	Request_AssignPermissions
+} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
@@ -38,6 +42,7 @@ import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
 import {MemKey_UserPermissions} from '../ModuleBE_PermissionsAssert';
+import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
 
 
@@ -48,6 +53,12 @@ class ModuleBE_PermissionUserDB_Class
 	constructor() {
 		super(DBDef_PermissionUser);
 	}
+
+	init() {
+		super.init();
+		addRoutes([createBodyServerApi(ApiDef_PermissionUser.vv1.assignPermissions, this.assignPermissions)]);
+	}
+
 
 	__canDeleteEntities = async <T extends 'Group'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'User'>> => {
 		let conflicts: DB_PermissionUser[] = [];
@@ -68,9 +79,7 @@ class ModuleBE_PermissionUserDB_Class
 			return;
 
 		// Get all groups the user has from the collection
-		const dbGroups = await batchAction(instance.__groupIds, 10, (chunked) => {
-			return ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: chunked}}}, t);
-		});
+		const dbGroups = filterInstances(await ModuleBE_PermissionGroup.query.all(instance.__groupIds, t));
 		// Verify all groups actually existing in the collection
 		if (instance.__groupIds.length !== dbGroups.length) {
 			const dbGroupIds = dbGroups.map(dbObjectToId);
@@ -106,23 +115,23 @@ class ModuleBE_PermissionUserDB_Class
 		});
 	}
 
-	async loggedUserGiveOtherUsersPermissions(body: Request_GivePermissionsToAnotherUser, t: Transaction) {
-		if (!body.accountToGivePermissionIds.length)
+	async assignPermissions(body: Request_AssignPermissions) {
+		if (!body.targetAccountIds.length)
 			throw new ApiException(400, `Asked to modify permissions but provided no users to modify permissions of.`);
 
-		if (!body.groupIds.length && !body.groupsToRemoveIds.length)
+		if (!body.groupToAddIds.length && !body.groupToRemoveIds.length)
 			throw new ApiException(400, `Asked to give permissions but provided no permission groups to add or subtract permissions from.`);
 
-		const usersToGiveTo = filterInstances(await this.query.all(body.accountToGivePermissionIds));
-		if (!usersToGiveTo.length) {
+		const usersToGiveTo = filterInstances(await this.query.all(body.targetAccountIds));
+		if (!usersToGiveTo.length || usersToGiveTo.length !== body.targetAccountIds.length) {
 			const dbUserIds = usersToGiveTo.map(dbObjectToId);
-			throw new ApiException(404, `Asked to give permissions to non-existent user accounts: ${body.accountToGivePermissionIds.filter(id => !dbUserIds.includes(id))}`);
+			throw new ApiException(404, `Asked to give permissions to non-existent user accounts: ${body.targetAccountIds.filter(id => !dbUserIds.includes(id))}`);
 		}
 
-		const dbGroups = filterInstances(await ModuleBE_PermissionGroup.query.all(body.groupIds));
+		const dbGroups = filterInstances(await ModuleBE_PermissionGroup.query.all(body.groupToAddIds));
 		if (!dbGroups.length) {
 			const dbGroupIds = dbGroups.map(dbObjectToId);
-			throw new ApiException(404, `Asked to give users non-existing groups: ${body.accountToGivePermissionIds.filter(id => !dbGroupIds.includes(id))}`);
+			throw new ApiException(404, `Asked to give users non-existing groups: ${body.targetAccountIds.filter(id => !dbGroupIds.includes(id))}`);
 		}
 
 		const myUserPermissions = MemKey_UserPermissions.get();
