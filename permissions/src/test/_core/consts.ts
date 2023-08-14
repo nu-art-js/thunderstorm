@@ -1,7 +1,97 @@
-import {DB_PermissionGroup} from '../../main';
-import {Test_Setup} from '../projects/__test-project';
+import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup, DB_PermissionProject} from '../../main';
+import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject';
+import {ModuleBE_PermissionDomain} from '../../main/backend/modules/management/ModuleBE_PermissionDomain';
+import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi';
+import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel';
+import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
+import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
+import {BadImplementationException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {Test_Project, Test_Setup} from '../tests/create-project';
 
 
+export const postPermissionTestCleanup = async () => {
+	await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionDomain.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionApi.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionAccessLevel.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionGroup.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_PermissionUserDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+};
+
+export const setupProjectPermissions = async (projects: Test_Project[]): Promise<{
+	domainNameToObjectMap: TypedMap<DB_PermissionDomain>
+	accessLevelsByDomainNameMap: TypedMap<TypedMap<DB_PermissionAccessLevel>>
+	nameToProjectMap: TypedMap<DB_PermissionProject>
+}> => {
+	const domainNameToObjectMap: TypedMap<DB_PermissionDomain> = {};
+	const accessLevelsByDomainNameMap: TypedMap<TypedMap<DB_PermissionAccessLevel>> = {};
+
+	// Create All Projects
+	const nameToProjectMap: TypedMap<DB_PermissionProject> = reduceToMap(await Promise.all(projects.map(project => ModuleBE_PermissionProject.create.item({
+		name: project.name,
+		_auditorId: MemKey_AccountId.get()
+	}))), project => project.name, project => project);
+
+	await Promise.all(projects.map(async project => {
+
+		const dbProject = nameToProjectMap[project.name];
+		await Promise.all(project.domains.map(async domain => {
+			if (accessLevelsByDomainNameMap[domain.namespace])
+				throw new BadImplementationException(`Same domain ${domain.namespace} was defined twice`);
+
+			// Create Domain
+			const dbDomain = await ModuleBE_PermissionDomain.create.item({
+				namespace: domain.namespace,
+				projectId: dbProject._id,
+				_auditorId: MemKey_AccountId.get()
+			});
+
+			// Create AccessLevels
+			const levelsToUpsert = domain.levels.map(levelName => ({
+				...levelName,
+				domainId: dbDomain._id,
+				_auditorId: MemKey_AccountId.get()
+			}));
+			const dbAccessLevels = await ModuleBE_PermissionAccessLevel.create.all(levelsToUpsert);
+
+			// Create AccessLevel ID to DbObject map
+			const accessLevelNameToObjectMap = reduceToMap(dbAccessLevels, accessLevel => accessLevel.name, accessLevel => accessLevel);
+
+			// Create Groups
+			await ModuleBE_PermissionGroup.create.all(Groups_ToCreate.map(preGroup => ({
+				label: preGroup.label,
+				accessLevelIds: preGroup.accessLevelIds!.map(levelName => accessLevelNameToObjectMap[levelName]._id)
+			})) as PreDB<DB_PermissionGroup>[]);
+
+
+			domainNameToObjectMap[dbDomain.namespace] = dbDomain;
+			accessLevelsByDomainNameMap[domain.namespace] = accessLevelNameToObjectMap;
+			await Promise.all(project.apis.map(async api => {
+				const toCreate = {
+					projectId: dbProject._id,
+					path: api.path,
+					accessLevelIds: api.accessLevels.map(accessLevel => accessLevelsByDomainNameMap[accessLevel.domainName][accessLevel.levelName]._id),
+					_auditorId: MemKey_AccountId.get()
+				};
+				await ModuleBE_PermissionApi.create.item(toCreate);
+			}));
+		}));
+	}));
+
+	return {
+		domainNameToObjectMap,
+		accessLevelsByDomainNameMap,
+		nameToProjectMap
+	};
+};
+
+export const Test_DefaultAccountId = '00000000000000000000000000000000';
+export const Test_AccountId1 = '00000000000000000000000000000001';
+export const Test_AccountId2 = '00000000000000000000000000000002';
+export const Test_AccountId3 = '00000000000000000000000000000003';
+export const Test_AccountId4 = '00000000000000000000000000000004';
+export const Test_AccountId5 = '00000000000000000000000000000005';
 export const Default_TestEmail = 'test@test.test';
 export const Default_TestPassword = '1234';
 export const TestProject__Name = 'test-project';

@@ -1,3 +1,4 @@
 import './_core/init';
-import './projects/__test-project';
+import './tests/create-project';
+import './tests/assign-permissions';
 

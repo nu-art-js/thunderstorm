@@ -31,10 +31,3 @@ export type Request_CreateUser = {
 };
 
 export type DB_PermissionUser = DB_Object & Request_CreateUser & AuditableV2
-
-export type Request_GivePermissionsToAnotherUser = {
-	projectId?: string
-	groupIds: string[]
-	groupsToRemoveIds: string[]
-	accountToGivePermissionIds: string[]
-}
