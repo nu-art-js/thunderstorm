@@ -3,7 +3,6 @@ import {
 	_SessionKey_AccountV3,
 	ApiDefFE_AccountV3,
 	ApiStructFE_AccountV3,
-	DB_Account_V2,
 	DB_AccountV3,
 	DBDef_v3_Accounts,
 	DBProto_AccountType,
@@ -44,7 +43,7 @@ export interface OnLoginStatusUpdatedV3 {
 }
 
 export interface OnAccountsUpdatedV3 {
-	__onAccountsUpdated: (...params: ApiCallerEventType<DB_Account_V2>) => void;
+	__onAccountsUpdated: (...params: ApiCallerEventType<DB_AccountV3>) => void;
 }
 
 export enum LoggedStatusV3 {
@@ -115,19 +114,22 @@ class ModuleFE_Account_v3_Class
 		}
 
 		const _sessionId = StorageKey_SessionIdV3.get();
-		if (_sessionId) {
-			const now = currentTimeMillis();
-			const sessionData = this.decode(_sessionId);
-			if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
-				return this.setLoggedStatus(LoggedStatusV3.SESSION_TIMEOUT);
-
-			this.accountId = sessionData.account._id;
-			this.sessionData = sessionData;
-			return this.setLoggedStatus(LoggedStatusV3.LOGGED_IN);
-		}
+		if (_sessionId)
+			return this.processSessionStatus(_sessionId);
 
 		this.logDebug('login out user.... ');
 		this.setLoggedStatus(LoggedStatusV3.LOGGED_OUT);
+	}
+
+	private processSessionStatus(sessionId: string) {
+		const now = currentTimeMillis();
+		const sessionData = this.decode(sessionId);
+		if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
+			return this.setLoggedStatus(LoggedStatusV3.SESSION_TIMEOUT);
+
+		this.accountId = sessionData.account._id;
+		this.sessionData = sessionData;
+		return this.setLoggedStatus(LoggedStatusV3.LOGGED_IN);
 	}
 
 	protected setLoggedStatus = (newStatus: LoggedStatusV3) => {
@@ -146,6 +148,7 @@ class ModuleFE_Account_v3_Class
 
 	private setLoginInfo = async (response: Response_Auth_V3) => {
 		StorageKey_SessionIdV3.set(response.sessionId);
+		this.processSessionStatus(response.sessionId);
 		this.accountId = response._id;
 		this.setLoggedStatus(LoggedStatusV3.LOGGED_IN);
 	};
@@ -195,6 +198,9 @@ export class SessionKey_FEV3<Binder extends TypedKeyValue<string | number, any>>
 	get(): Binder['value'] {
 		// @ts-ignore
 		const sessionData = ModuleFE_AccountV3.sessionData;
+		// if (!sessionData)
+		// 	return undefined;
+
 		if (!(this.key in sessionData))
 			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
 
