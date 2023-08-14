@@ -267,7 +267,8 @@ class ModuleBE_v2_Backup_Class
 
 		try {
 			this.logInfoBold('Received older backups to delete, count: ' + oldBackupsToDelete.length);
-			await Promise.all(oldBackupsToDelete.map(async oldDoc => (filterInstances([oldDoc.metadataPath, oldDoc.backupPath, oldDoc.firebasePath]).map(async path => (await bucket.getFile(path)).delete()))));
+			await Promise.all(oldBackupsToDelete.map(async oldDoc => (filterInstances([oldDoc.metadataPath, oldDoc.backupPath, oldDoc.firebasePath])
+				.map(async path => (await bucket.getFile(path)).delete()))));
 			await this.collection.delete.all(oldBackupsToDelete);
 			this.logInfoBold('Successfully deleted old backups');
 		} catch (err: any) {

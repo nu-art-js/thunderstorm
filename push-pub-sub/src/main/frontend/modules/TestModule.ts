@@ -1,8 +1,5 @@
 /*
- * Database API Generator is a utility library for Thunderstorm.
- *
- * Given proper configurations it will dynamically generate APIs to your Firestore
- * collections, will assert uniqueness and restrict deletion... and more
+ * A typescript & react boilerplate with api call example
  *
  * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
  *
@@ -19,11 +16,26 @@
  * limitations under the License.
  */
 
-export * from './db-def';
-export * from './ModuleBE_Archiving';
-export * from './ModuleBE_BaseApiV2';
-export * from './ModuleBE_BaseDBV2';
-export * from './ModuleBE_v2_SyncEnv';
-export * from './ModuleBE_v2_SyncManager';
-export * from './ModuleBE_BaseDBV3';
-export * from './ModuleBE_BaseApiV3';
+import {Module} from '@nu-art/ts-common';
+import {TestDispatch} from '../../shared/example';
+import {dispatchAll} from './ExampleModule';
+
+
+export class Test_Class
+	extends Module<{}>
+	implements TestDispatch {
+
+	testDispatch = () => {
+	};
+
+	mod_data: number = 1;
+
+	getModData = () => this.mod_data;
+
+	setModData = () => {
+		this.mod_data++;
+		dispatchAll();
+	};
+}
+
+export const Test = new Test_Class();
