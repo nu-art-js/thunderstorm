@@ -23,19 +23,15 @@ import {
 	BadImplementationException,
 	batchActionParallel,
 	filterDuplicates,
+	filterInstances,
 	Module,
 	StringMap,
 	TypedMap
 } from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
-import {
-	ApiDef_PermissionsAssert,
-	Base_AccessLevel,
-	DB_PermissionAccessLevel,
-	Request_AssertApiForUser
-} from '../../shared';
+import {MemKey_AccountEmail, MemKey_AccountId} from '@nu-art/user-account/backend';
+import {ApiDef_PermissionsAssert, Base_AccessLevel, DB_PermissionAccessLevel, Request_AssertApiForUser} from '../../shared';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {
@@ -45,6 +41,8 @@ import {
 	MemKey_HttpRequestUrl
 } from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
+import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -69,6 +67,25 @@ export class ModuleBE_PermissionsAssert_Class
 
 			return this.assertUserPermissions(projectId, MemKey_HttpRequestUrl.get());
 		})();
+	};
+
+	readonly LoadPermissionsMiddleware: ServerApi_Middleware = async () => {
+		const map: TypedMap<number> = {};
+		const accountId = MemKey_AccountId.get();
+		const userPermissions = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId});
+		const groupsIds = userPermissions.groups.map(i => i.groupId);
+		const groups = await batchActionParallel(groupsIds, 10, async ids => await ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: ids}}}));
+		const levelMaps = filterInstances(groups.map(i => i._levelsMap));
+		levelMaps.forEach(levelMap => {
+			_keys(levelMap).forEach(domainId => {
+				if (!map[domainId])
+					map[domainId] = 0;
+
+				if (levelMap[domainId] > map[domainId])
+					map[domainId] = levelMap[domainId];
+			});
+		});
+		MemKey_UserPermissions.set(map);
 	};
 
 	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async () => {
@@ -147,7 +164,7 @@ export class ModuleBE_PermissionsAssert_Class
 	}
 
 	async getApiDetails(_path: string, projectId: string) {
-		const path = _path.substring(0, (_path + '?').indexOf('?'));
+		const path = _path.substring(0, (_path + '?').indexOf('?')); //Get raw path without query
 		const dbApi = await ModuleBE_PermissionApi.query.uniqueWhere({path, projectId});
 		const requestPermissions = await this.getAccessLevels(dbApi.accessLevelIds || []);
 

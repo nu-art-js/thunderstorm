@@ -9,3 +9,10 @@ export const defaultAccessLevels: PartialProperties<PreDB<DB_PermissionAccessLev
 	{name: 'Upgrade', value: 800},
 	{name: 'Admin', value: 1000},
 ];
+
+export const defaultLevelsRouteLookupWords: { [k: string]: string[] } = {
+	'Read': ['metadata', 'query', 'query-unique', 'sync'],
+	'Write': ['upsert', 'upsert-all'],
+	'Delete': ['delete', 'delete-all', 'delete-unique'],
+	'Upgrade': ['upgrade-collection'],
+};
