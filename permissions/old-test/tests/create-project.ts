@@ -17,5 +17,20 @@
  * limitations under the License.
  */
 
-export * from './core/module-pack';
-export * from './ui';
+import {__custom, __scenario, ContextKey} from '@nu-art/testelot';
+import {cleanup, ConfigDB, setupDatabase, testConfig1, testLevel1, testLevel2} from './_core';
+import {ModuleBE_PermissionAccessLevel} from '../_main';
+
+
+const contextKey = new ContextKey<ConfigDB>('config-1');
+
+export function createTwoAccessLevels() {
+	const scenario = __scenario('Create two access levels');
+	scenario.add(cleanup());
+	scenario.add(setupDatabase(testConfig1, testLevel1).setWriteKey(contextKey));
+	scenario.add(__custom(async (action, data) => {
+		await ModuleBE_PermissionAccessLevel.upsert({...testLevel2, domainId: data.domain._id});
+	}).setReadKey(contextKey).setLabel('Add second access level'));
+	return scenario;
+}
+

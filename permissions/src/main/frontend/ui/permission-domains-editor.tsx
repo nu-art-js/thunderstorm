@@ -17,7 +17,14 @@ import {
 	OnPermissionsDomainsUpdated,
 	OnPermissionsLevelsUpdated
 } from '../core/module-pack';
-import {SimpleListAdapter, TS_BusyButton, TS_DropDown, TS_Input, TS_PropRenderer, TS_Table} from '@nu-art/thunderstorm/frontend';
+import {
+	SimpleListAdapter,
+	TS_BusyButton,
+	TS_DropDown,
+	TS_Input,
+	TS_PropRenderer,
+	TS_Table
+} from '@nu-art/thunderstorm/frontend';
 import {BadImplementationException, capitalizeFirstLetter, cloneObj, PreDB, sortArray} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 
@@ -26,7 +33,7 @@ type State = State_EditorBase<DB_PermissionDomain> & {
 	newLevel: EditableDBItem<DB_PermissionAccessLevel>;
 };
 
-const emptyLevel: PreDB<DB_PermissionAccessLevel> = Object.freeze({name: '', domainId: '', value: -1});
+const emptyLevel = Object.freeze({name: '', domainId: '', value: -1} as PreDB<DB_PermissionAccessLevel>);
 
 export class PermissionDomainsEditor
 	extends EditorBase<DB_PermissionDomain, State>
@@ -193,7 +200,8 @@ export class PermissionDomainsEditor
 			return '';
 
 		const domain = this.state.editedItem;
-		const adapter = SimpleListAdapter(this.state.projects as DB_PermissionProject[], item => <div>{item.item.name}</div>);
+		const adapter = SimpleListAdapter(this.state.projects as DB_PermissionProject[], item =>
+			<div>{item.item.name}</div>);
 		const selected = domain.item.projectId ? this.state.projects.find(item => item._id === domain.item.projectId) : undefined;
 		return <TS_PropRenderer.Vertical label={'Project'}>
 			<TS_DropDown<DB_PermissionProject>
@@ -209,7 +217,8 @@ export class PermissionDomainsEditor
 		return <>
 			{this.renderProjectsDropDown()}
 			<TS_PropRenderer.Vertical label={'Namespace'}>
-				<TS_Input type={'text'} value={domain.item.namespace} onChange={value => this.setProperty('namespace', value)}/>
+				<TS_Input type={'text'} value={domain.item.namespace}
+						  onChange={value => this.setProperty('namespace', value)}/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical label={'Levels'}>
 				{this.renderLevelsTable()}

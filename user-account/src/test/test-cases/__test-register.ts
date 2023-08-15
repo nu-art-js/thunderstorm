@@ -5,6 +5,7 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {RequestBody_RegisterAccount} from '../../main';
 import {PasswordAssertionConfig} from '../../main/shared/assertion';
 import {ModuleBE_v2_AccountDB} from '../../main/backend';
+import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 
 
 export type registerAccountInput = {
@@ -94,3 +95,7 @@ export const TestSuite_Accounts_Register: RegisterAccountTest = {
 		expect(result).to.eql(testCase.result);
 	}
 };
+
+describe('Accounts - Register', () => {
+	testSuiteTester(TestSuite_Accounts_Register);
+});

@@ -1,3 +1,5 @@
+@use '@nu-art/ts-styles' as styles;
+
 #dev-page__permissions {
   width: 100%;
   height: 100%;
@@ -36,6 +38,42 @@
 
     .ts-tabs__content {
       background: transparent;
+    }
+  }
+
+  .api-editor {
+    width: 100%;
+    height: 100%;
+    border: 2px solid black;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+
+    .api-editor__list {
+      @include styles.customScrollbar('vertical');
+      height: 100%;
+      width: 400px;
+
+      .api-editor__list__item {
+        width: 100%;
+        padding: 4px 8px;
+        font: {
+          size: 14px;
+          weight: bold;
+        }
+
+        &.selected {
+          background: styles.gray(2);
+          color: white;
+        }
+      }
+    }
+
+    .api-editor__editor {
+      height: 100%;
+      padding: 8px;
+      border-left: 2px solid black;
+      gap: 8px;
     }
   }
 }

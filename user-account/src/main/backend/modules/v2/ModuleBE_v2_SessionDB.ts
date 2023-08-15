@@ -111,15 +111,11 @@ export class ModuleBE_v2_SessionDB_Class
 	}
 
 	getOrCreateSession = async (uiAccount: UI_Account, transaction?: Transaction): Promise<Response_Auth> => {
-		try {
-			const session = await this.query.uniqueWhere({accountId: uiAccount._id}, transaction);
-			if (!this.TTLExpired(session)) {
-				const sessionData = this.decodeSessionData(session.sessionId);
-				MemKey_SessionData.set(sessionData);
-				return {sessionId: session.sessionId, ...uiAccount};
-			}
-		} catch (ignore) {
-			//
+		const session = (await this.query.custom({where: {accountId: uiAccount._id}}, transaction))?.[0];
+		if (session && !this.TTLExpired(session)) {
+			const sessionData = this.decodeSessionData(session.sessionId);
+			MemKey_SessionData.set(sessionData);
+			return {sessionId: session.sessionId, ...uiAccount};
 		}
 
 		const sessionInfo = await this.createSession(uiAccount._id);

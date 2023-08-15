@@ -18,11 +18,10 @@
  */
 
 import {ServerApi} from '@nu-art/thunderstorm/backend';
-import {auditBy} from '@nu-art/ts-common';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DB_PermissionProject, DBDef_PermissionProjects} from '../../shared';
-import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
-import {firestore} from "firebase-admin";
+import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
+import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
 
 
@@ -34,7 +33,7 @@ export class ModuleBE_PermissionProject_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: DB_PermissionProject, t?: Transaction): Promise<void> {
-		dbInstance._audit = auditBy(MemKey_AccountEmail.get());
+		dbInstance._auditorId = MemKey_AccountId.get();
 	}
 
 	apiPatch(): ServerApi<any> | undefined {

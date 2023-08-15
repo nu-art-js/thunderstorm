@@ -20,10 +20,8 @@
 import {
 	DBDef,
 	OmitDBObject,
-	StringMap,
 	tsValidateArray,
 	tsValidateDynamicObject,
-	tsValidateNonMandatoryObject,
 	tsValidateNumber,
 	tsValidateString,
 	tsValidateUniqueId,
@@ -32,24 +30,16 @@ import {
 import {DB_PermissionGroup} from './types';
 import {validateGroupLabel} from '../../validators';
 
-
 const Validator_PermissionGroup: ValidatorTypeResolver<OmitDBObject<DB_PermissionGroup>> = {
 	label: validateGroupLabel,
-	tags: tsValidateArray(tsValidateString(), false),
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
-	// customFields: tsValidateArray(tsValidateObjectValues<string>(validateCustomFieldValues), false),
-	customFields: tsValidateArray(tsValidateDynamicObject<StringMap>(tsValidateString(), tsValidateString()), false),
-	__accessLevels: tsValidateArray({domainId: tsValidateString(), value: tsValidateNumber()}, false),
-	_audit: tsValidateNonMandatoryObject({
-		comment: tsValidateString(-1, false),
-		auditBy: tsValidateString(),
-		auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
-	})
+	_levelsMap: tsValidateDynamicObject(tsValidateNumber(), tsValidateString(), false),
+	_auditorId: tsValidateString(),
 };
 
 export const DBDef_PermissionGroup: DBDef<DB_PermissionGroup> = {
 	validator: Validator_PermissionGroup,
 	dbName: 'permissions--group',
 	entityName: 'permissions--group',
-	lockKeys: ['__accessLevels']
+	generatedProps: ['_levelsMap'],
 };

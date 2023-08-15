@@ -23,24 +23,15 @@ import {
 	BadImplementationException,
 	batchActionParallel,
 	filterDuplicates,
+	filterInstances,
 	Module,
-	StringMap
+	StringMap,
+	TypedMap
 } from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {MemKey_AccountEmail, MemKey_AccountId} from '@nu-art/user-account/backend';
-import {
-	ApiDef_PermissionsAssert,
-	Base_AccessLevels,
-	DB_PermissionAccessLevel,
-	DB_PermissionApi,
-	DB_PermissionGroup,
-	DB_PermissionUser,
-	Request_AssertApiForUser,
-	User_Group
-} from '../../shared';
-import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
-import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
+import {ApiDef_PermissionsAssert, Base_AccessLevel, DB_PermissionAccessLevel, Request_AssertApiForUser} from '../../shared';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {
@@ -49,15 +40,22 @@ import {
 	MemKey_HttpRequestQuery,
 	MemKey_HttpRequestUrl
 } from '@nu-art/thunderstorm/backend/modules/server/consts';
+import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
+import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
-export type GroupPairWithBaseLevelsObj = { accessLevels: Base_AccessLevels[], customFields: StringMap[] };
-export type RequestPairWithLevelsObj = { accessLevels: DB_PermissionAccessLevel[], customFields: StringMap[] };
+export type GroupPairWithBaseLevelsObj = { accessLevels: Base_AccessLevel[] };
+export type RequestPairWithLevelsObj = { accessLevels: DB_PermissionAccessLevel[] };
 
 type Config = {
 	strictMode?: boolean
 }
+/**
+ * [DomainId uniqueString]: accessLevel's numerical value
+ */
+export const MemKey_UserPermissions = new MemKey<TypedMap<number>>('user-permissions');
 
 export class ModuleBE_PermissionsAssert_Class
 	extends Module<Config> {
@@ -65,10 +63,29 @@ export class ModuleBE_PermissionsAssert_Class
 	private projectId!: string;
 
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async () => {
-		await this.CustomMiddleware(keys, async (projectId: string, customFields: StringMap) => {
+		await this.CustomMiddleware(keys, async (projectId: string) => {
 
-			return this.assertUserPermissions(projectId, MemKey_HttpRequestUrl.get(), customFields);
+			return this.assertUserPermissions(projectId, MemKey_HttpRequestUrl.get());
 		})();
+	};
+
+	readonly LoadPermissionsMiddleware: ServerApi_Middleware = async () => {
+		const map: TypedMap<number> = {};
+		const accountId = MemKey_AccountId.get();
+		const userPermissions = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId});
+		const groupsIds = userPermissions.groups.map(i => i.groupId);
+		const groups = await batchActionParallel(groupsIds, 10, async ids => await ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: ids}}}));
+		const levelMaps = filterInstances(groups.map(i => i._levelsMap));
+		levelMaps.forEach(levelMap => {
+			_keys(levelMap).forEach(domainId => {
+				if (!map[domainId])
+					map[domainId] = 0;
+
+				if (levelMap[domainId] > map[domainId])
+					map[domainId] = levelMap[domainId];
+			});
+		});
+		MemKey_UserPermissions.set(map);
 	};
 
 	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async () => {
@@ -112,129 +129,47 @@ export class ModuleBE_PermissionsAssert_Class
 
 	init() {
 		super.init();
-		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.v1.assertUserPermissions, this.assertPermission)]);
+		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
 	}
 
 	private assertPermission = async (body: Request_AssertApiForUser) => {
-		await ModuleBE_PermissionsAssert.assertUserPermissions(body.projectId, body.path, body.requestCustomField);
+		await ModuleBE_PermissionsAssert.assertUserPermissions(body.projectId, body.path);
 		return {userId: MemKey_AccountEmail.get()};
 	};
 
-	async assertUserPermissions(projectId: string, path: string, requestCustomField: StringMap) {
-		const [apiDetails, userDetails] = await Promise.all(
-			[
-				this.getApiDetails(path, projectId),
-				this.getUserDetails()
-			]);
+	async assertUserPermissions(projectId: string, path: string) {
+		// [DomainId]: accessLevel's numerical value
+		const userPermissions = MemKey_UserPermissions.get();
+		const apiDetails = await this.getApiDetails(path, projectId);
+		this.logDebug('______________________________');
+		this.logDebug(userPermissions);
+		this.logDebug('______________________________');
+		this.logDebug(apiDetails.dbApi);
+		this.logDebug('______________________________');
 
-		this._assertUserPermissionsImpl(apiDetails, projectId, userDetails, requestCustomField);
-	}
-
-	_assertUserPermissionsImpl(apiDetails: {
-		apiDb: DB_PermissionApi;
-		requestPermissions: DB_PermissionAccessLevel[]
-	}, projectId: string, userDetails: {
-		user: DB_PermissionUser,
-		userGroups: DB_PermissionGroup[]
-	}, requestCustomField: StringMap) {
-		if (!apiDetails.apiDb.accessLevelIds) {
+		if (!apiDetails.dbApi.accessLevelIds || !apiDetails.dbApi._accessLevels) {
 			if (!this.config.strictMode)
 				return;
 
-			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${apiDetails.apiDb.path}`);
+			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${apiDetails.dbApi.path}`);
 		}
 
-		this.assertUserPermissionsImpl(userDetails.userGroups, apiDetails.requestPermissions, [requestCustomField]);
-	}
+		const hasAccess: boolean = apiDetails.dbApi._accessLevels.reduce<boolean>((_hasAccess, accessLevel, i) => {
+			this.logDebug(`(user: ${userPermissions[accessLevel.domainId]}) '>=' (api: ${accessLevel.value})`);
+			return _hasAccess && userPermissions[accessLevel.domainId] >= accessLevel.value;
+		}, true);
 
-	async assertUserSharingGroup(granterUserId: string, userGroup: User_Group) {
-		const [granterUser, groupToShare] = await Promise.all([this.getUserDetails(), ModuleBE_PermissionGroup.query.uniqueAssert(userGroup.groupId)]);
-		groupToShare.customFields = this.getCombineUserGroupCF(userGroup, groupToShare);
-		const requestPermissions = await this.getAccessLevels(groupToShare.accessLevelIds || []);
-		const requestCustomFields = groupToShare.customFields;
-		this.assertUserPermissionsImpl(granterUser.userGroups, requestPermissions, requestCustomFields);
-	}
-
-	assertUserPermissionsImpl(userGroups: DB_PermissionGroup[], requestPermissions: DB_PermissionAccessLevel[], requestCustomFields: StringMap[]) {
-		if (!requestPermissions.length)
-			return;
-
-		const requestPairWithLevelsObj: RequestPairWithLevelsObj = {
-			accessLevels: requestPermissions,
-			customFields: requestCustomFields
-		};
-
-		let groupMatch = false;
-		const groupsMatchArray = userGroups.map(group => {
-			const groupPairWithLevelsObj: GroupPairWithBaseLevelsObj = {
-				accessLevels: group.__accessLevels || [],
-				customFields: group.customFields || []
-			};
-
-			return this.isMatchWithLevelsObj(groupPairWithLevelsObj, requestPairWithLevelsObj);
-		});
-
-		for (const match of groupsMatchArray) {
-			if (match)
-				groupMatch = true;
-		}
-
-		if (!groupMatch) {
+		if (!hasAccess)
 			throw new ApiException(403, 'Action Forbidden');
-		}
-	}
-
-	async getUserDetails(): Promise<{
-		user: DB_PermissionUser,
-		userGroups: DB_PermissionGroup[]
-	}> {
-		const user = await ModuleBE_PermissionUserDB.query.uniqueCustom({where: {accountId: MemKey_AccountId.get()}});
-		const userGroups = user.groups || [];
-		const groups: DB_PermissionGroup[] = await batchActionParallel(userGroups.map(userGroup => userGroup.groupId), 10, subGroupIds => ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: subGroupIds}}}));
-
-		return {
-			user,
-			userGroups: this.getCombineUserGroups(userGroups, groups)
-		};
-	}
-
-	private getCombineUserGroupCF(userGroup: User_Group, group: DB_PermissionGroup) {
-		const cfArray = [];
-		if (group.customFields) {
-			cfArray.push(...group.customFields);
-		}
-
-		if (userGroup.customField) {
-			cfArray.push(userGroup.customField);
-		}
-
-		return cfArray;
-	}
-
-	private getCombineUserGroups(userGroups: User_Group[], groups: DB_PermissionGroup[]) {
-		const combinedGroups: DB_PermissionGroup[] = [];
-		groups.forEach(group => {
-			const existUserGroupItem = userGroups.find(groupItem => groupItem.groupId === group._id);
-			if (!existUserGroupItem)
-				throw new BadImplementationException('You are missing group in your code implementation');
-
-			userGroups.forEach((userGroup) => {
-				if (userGroup.groupId === group._id) {
-					combinedGroups.push({...group, customFields: this.getCombineUserGroupCF(userGroup, group)});
-				}
-			});
-		});
-
-		return combinedGroups;
 	}
 
 	async getApiDetails(_path: string, projectId: string) {
-		const path = _path.substring(0, (_path + '?').indexOf('?'));
-		const apiDb = await ModuleBE_PermissionApi.query.uniqueCustom({where: {path, projectId}});
-		const requestPermissions = await this.getAccessLevels(apiDb.accessLevelIds || []);
+		const path = _path.substring(0, (_path + '?').indexOf('?')); //Get raw path without query
+		const dbApi = await ModuleBE_PermissionApi.query.uniqueWhere({path, projectId});
+		const requestPermissions = await this.getAccessLevels(dbApi.accessLevelIds || []);
 
 		return {
-			apiDb,
+			dbApi,
 			requestPermissions
 		};
 	}
@@ -278,57 +213,7 @@ export class ModuleBE_PermissionsAssert_Class
 		this.projectId = projectId;
 	};
 
-	isMatchWithLevelsObj(groupPair: GroupPairWithBaseLevelsObj, requestPair: RequestPairWithLevelsObj) {
-		let match = true;
-
-		requestPair.customFields.forEach(requestCF => {
-			if (!this.doesCustomFieldsSatisfies(groupPair.customFields, requestCF))
-				match = false;
-		});
-
-		if (!match)
-			return false;
-
-		const groupDomainLevelMap = this.getDomainLevelMap(groupPair.accessLevels);
-		requestPair.accessLevels.forEach((requiredLevel, index) => {
-			const userAccessLevel = groupDomainLevelMap[requiredLevel.domainId];
-			if (userAccessLevel === undefined || userAccessLevel < requiredLevel.value)
-				match = false;
-		});
-
-		return match;
-	}
-
-	private getDomainLevelMap(accessLevels: Base_AccessLevels[]) {
-		return accessLevels.reduce((toRet, accessLevel) => {
-			const levelForDomain = toRet[accessLevel.domainId];
-			if (!levelForDomain || levelForDomain < accessLevel.value)
-				toRet[accessLevel.domainId] = accessLevel.value;
-
-			return toRet;
-		}, {} as UserCalculatedAccessLevel);
-	}
-
-	doesCustomFieldsSatisfies(groupCustomFields: StringMap[] = [], requestCustomField: StringMap) {
-		if (!Object.keys(requestCustomField).length)
-			return true;
-
-		for (const customField of groupCustomFields) {
-			if (this.doesCustomFieldSatisfies(customField, requestCustomField))
-				return true;
-		}
-
-		return false;
-	}
-
-	private doesCustomFieldSatisfies(groupCustomField: StringMap, requestCustomField: StringMap) {
-		return Object.keys(requestCustomField).reduce((doesSatisfies, requestCustomFieldKey) => {
-			const customFieldRegEx = this.getRegEx(groupCustomField[requestCustomFieldKey]);
-			return doesSatisfies && customFieldRegEx.test(requestCustomField[requestCustomFieldKey]);
-		}, true as boolean);
-	}
-
-	private getRegEx(value: string) {
+	getRegEx(value: string) {
 		if (!value)
 			return new RegExp(`^${value}$`, 'g');
 

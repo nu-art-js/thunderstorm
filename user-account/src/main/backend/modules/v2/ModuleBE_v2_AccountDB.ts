@@ -83,7 +83,10 @@ export class ModuleBE_v2_AccountDB_Class
 	}
 
 	manipulateQuery(query: FirestoreQuery<DB_Account_V2>): FirestoreQuery<DB_Account_V2> {
-		return {...query, select: ['email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']};
+		return {
+			...query,
+			select: ['email', '_newPasswordRequired', 'type', '_id', 'thumbnail', 'displayName', '_auditorId']
+		};
 	}
 
 	canDeleteItems(dbItems: DB_Account_V2[], transaction?: FirebaseFirestore.Transaction): Promise<void> {
@@ -175,7 +178,7 @@ export class ModuleBE_v2_AccountDB_Class
 
 			//Create the account
 			const uiAccount = await this.createAccountImpl(body as Request_RegisterAccount, true, transaction); // Must have a password, because we use it to auto-login immediately after
-			this.logErrorBold('uiAccount', uiAccount);
+			MemKey_AccountId.set(uiAccount._id);
 			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
 
 			//Log in
@@ -287,16 +290,9 @@ export class ModuleBE_v2_AccountDB_Class
 		}
 
 		return getUIAccount(await this.runTransaction(async _transaction => {
-			let existingAccount: DB_Account_V2 | undefined;
-
-			try {
-				existingAccount = await this.query.uniqueWhere({email: body.email}, transaction);
-			} catch (ignore) {
-				// this is fine we do not want the account to exist!
-				/* empty */
-			}
-
-			if (existingAccount)
+			let existingAccounts: DB_Account_V2[] = [];
+			existingAccounts = await this.query.custom({where: {email: body.email}}, transaction);
+			if (existingAccounts.length > 0)
 				throw new ApiException(422, 'User with email already exists');
 
 			return await this.create.item(account as PreDB<DB_Account_V2>, transaction);

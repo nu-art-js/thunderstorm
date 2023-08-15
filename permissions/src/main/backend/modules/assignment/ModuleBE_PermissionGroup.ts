@@ -17,27 +17,24 @@
  * limitations under the License.
  */
 
-import {FirestoreTransaction} from '@nu-art/firebase/backend';
 import {
+	_keys,
 	ApiException,
-	auditBy,
-	batchAction,
 	batchActionParallel,
 	dbObjectToId,
-	exists,
-	filterDuplicates,
 	filterInstances,
-	flatArray
+	flatArray,
+	reduceToMap,
+	TypedMap
 } from '@nu-art/ts-common';
-import {DB_PermissionGroup, DBDef_PermissionGroup, PredefinedGroup} from '../../shared';
-import {Clause_Where, DB_EntityDependency} from '@nu-art/firebase';
-import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
-import {checkDuplicateLevelsDomain, ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
+import {DB_PermissionGroup, DBDef_PermissionGroup} from '../../shared';
+import {DB_EntityDependency} from '@nu-art/firebase';
+import {ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import Transaction = firestore.Transaction;
 
 
@@ -60,93 +57,33 @@ export class ModuleBE_PermissionGroup_Class
 		return {collectionKey: 'Group', conflictingIds: conflicts.map(dbObjectToId)};
 	};
 
-	protected externalFilter(item: DB_PermissionGroup): Clause_Where<DB_PermissionGroup> {
-		const {label} = item;
-		return {label};
-	}
+	protected async preWriteProcessing(instance: DB_PermissionGroup, t?: Transaction) {
+		instance._auditorId = MemKey_AccountId.get();
+		const dbLevels = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(instance.accessLevelIds, t));
 
-	protected internalFilter(item: DB_PermissionGroup): Clause_Where<DB_PermissionGroup>[] {
-		const {label} = item;
-		return [{label}];
-	}
-
-	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionGroup): Promise<void> {
-		const groups = await ModuleBE_PermissionUserDB.collection.query.custom({where: {__groupIds: {$ac: dbInstance._id}}});
-
-		if (groups.length) {
-			throw new ApiException(403, 'You trying delete group that associated with users, you need delete this group from users first');
+		if (dbLevels.length < instance.accessLevelIds.length) {
+			const dbAccessLevelIds = dbLevels.map(dbObjectToId);
+			throw new ApiException(404, `Asked to assign a group non existing accessLevels: ${instance.accessLevelIds.filter(id => !dbAccessLevelIds.includes(id))}`);
 		}
+
+		// Find if there is more than one access level with the same domainId.
+		const duplicationMap = dbLevels.reduce<TypedMap<number>>((map, level) => {
+
+			if (map[level.domainId] === undefined)
+				map[level.domainId] = 0;
+			else
+				map[level.domainId]++;
+
+			return map;
+		}, {});
+		// Get all domainIds that appear more than once on this group
+		const duplicateDomainIds: string[] = filterInstances(_keys(duplicationMap).map(domainId => duplicationMap[domainId] > 1 ? domainId : undefined) as string[]);
+
+		if (duplicateDomainIds.length > 0)
+			throw new ApiException(400, `Can't add a group with more than one access level per domain: ${duplicateDomainIds}`);
+
+		instance._levelsMap = reduceToMap(dbLevels, dbLevel => dbLevel.domainId, dbLevel => dbLevel.value);
 	}
-
-	private async setAccessLevels(dbInstance: DB_PermissionGroup) {
-		dbInstance.__accessLevels = [];
-		const accessLevelIds = dbInstance.accessLevelIds || [];
-		if (accessLevelIds.length) {
-			const groupLevels = await batchAction(accessLevelIds, 10, (chunked) => {
-				return ModuleBE_PermissionAccessLevel.query.custom({where: {_id: {$in: chunked}}});
-			});
-			checkDuplicateLevelsDomain(groupLevels);
-			dbInstance.__accessLevels = groupLevels.map(level => {
-				return {domainId: level.domainId, value: level.value};
-			});
-		}
-	}
-
-	async getGroupsByTags(tags: string[]) {
-		const groupsByTags = await this.collection.query.custom({where: {tags: {$aca: tags}}});
-		if (!groupsByTags)
-			return [];
-		return groupsByTags;
-	}
-
-	async deleteTags(tag: string) {
-		const groupsWithTags: DB_PermissionGroup[] | undefined = await this.collection.query.custom({where: {tags: {$aca: [tag]}}});
-		if (!groupsWithTags)
-			return;
-
-		// for (const _group of groupsWithTags) {
-		// 	if (!_group.tags)
-		// 		continue;
-		// 	removeItemFromArray(_group.tags, tag);
-		// 	await this.collection.set.item(_group);
-		// }
-		const filteredGroups = groupsWithTags.filter(_group => exists(_group.tags));
-		await this.collection.set.all(filteredGroups);
-	}
-
-	protected async preWriteProcessing(dbInstance: DB_PermissionGroup, t?: Transaction) {
-		dbInstance._audit = auditBy(MemKey_AccountEmail.get());
-
-		if (!dbInstance.accessLevelIds)
-			return;
-
-		await this.setAccessLevels(dbInstance);
-		const filterAccessLevelIds = filterDuplicates(dbInstance.accessLevelIds);
-		if (filterAccessLevelIds.length !== dbInstance.accessLevelIds?.length)
-			throw new ApiException(422, 'You trying test-add-data duplicate accessLevel id in group');
-	}
-
-	getConfig() {
-		return this.config;
-	}
-
-	upsertPredefinedGroups(projectId: string, projectName: string, predefinedGroups: PredefinedGroup[]) {
-		return this.runTransaction(async (transaction) => {
-			const _groups = predefinedGroups.map(group => ({
-				_id: group._id,
-				label: `${projectName}--${group.key}-${group.label}`
-			}));
-
-			const dbGroups = filterInstances(await batchAction(_groups.map(group => group._id), 10, (chunk) => {
-				return this.query.custom({where: {_id: {$in: chunk}}}, transaction);
-			}));
-
-			//TODO patch the predefined groups, in case app changed the label of the group..
-			const groupsToInsert = _groups.filter(group => !dbGroups.find(dbGroup => dbGroup._id === group._id));
-			return this.set.all(groupsToInsert, transaction);
-		});
-	}
-
 }
 
 export const ModuleBE_PermissionGroup = new ModuleBE_PermissionGroup_Class();
