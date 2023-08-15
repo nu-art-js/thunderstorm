@@ -32,4 +32,5 @@ export const DBDef_PermissionProjects: DBDef<DB_PermissionProject> = {
 	validator: Validator_PermissionProjects,
 	dbName: 'permissions--project',
 	entityName: 'PermissionsProject',
+	generatedProps: ['_auditorId'],
 };

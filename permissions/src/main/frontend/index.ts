@@ -18,6 +18,4 @@
  */
 
 export * from './core/module-pack';
-export * from './modules/PermissionsComponent';
-export * from './modules/ModuleFE_Permissions';
 export * from './ui';

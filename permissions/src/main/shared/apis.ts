@@ -59,6 +59,8 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 	appAccountId?: string
 }
 
+export type Request_CreateProject = { projectName: string }
+
 export type AssignAppPermissions = Request_AssignAppPermissions & { granterUserId: string };
 
 export type PredefinedGroup = { _id: string, key: string, label: string, customKeys?: string[] };
@@ -101,22 +103,24 @@ export const ApiDef_PermissionsAssert: ApiDefResolver<ApiStruct_PermissionsAsser
 };
 
 //ModuleBE_Permissions
-export type _ApiStruct_Permissions = {
+export type ApiStruct_Permissions = {
 	v1: {
-		getUserUrlsPermissions: BodyApi<UserUrlsPermissions, Request_UserUrlsPermissions>;
-		getUserCFsByShareGroups: BodyApi<StringMap[], Request_UserCFsByShareGroups>;
-		getUsersCFsByShareGroups: BodyApi<Response_UsersCFsByShareGroups, Request_UsersCFsByShareGroups>;
-		registerExternalProject: BodyApi<void, Request_RegisterProject>;
-		registerProject: QueryApi<void>;
+		// getUserUrlsPermissions: BodyApi<UserUrlsPermissions, Request_UserUrlsPermissions>;
+		// getUserCFsByShareGroups: BodyApi<StringMap[], Request_UserCFsByShareGroups>;
+		// getUsersCFsByShareGroups: BodyApi<Response_UsersCFsByShareGroups, Request_UsersCFsByShareGroups>;
+		// registerExternalProject: BodyApi<void, Request_RegisterProject>;
+		// registerProject: QueryApi<void>;
+		createProject: BodyApi<void, Request_CreateProject>
 	}
 }
-export const _ApiDef_Permissions: ApiDefResolver<_ApiStruct_Permissions> = {
+export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
 	v1: {
-		getUserUrlsPermissions: {method: HttpMethod.POST, path: 'v1/permissions/user-urls-permissions'},
-		getUserCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/user-cf-by-share-groups'},
-		getUsersCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/users-cf-by-share-groups'},
-		registerExternalProject: {method: HttpMethod.POST, path: 'v1/register/register-external-project'},
-		registerProject: {method: HttpMethod.GET, path: 'v1/register/register-project'}
+		// getUserUrlsPermissions: {method: HttpMethod.POST, path: 'v1/permissions/user-urls-permissions'},
+		// getUserCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/user-cf-by-share-groups'},
+		// getUsersCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/users-cf-by-share-groups'},
+		// registerExternalProject: {method: HttpMethod.POST, path: 'v1/register/register-external-project'},
+		// registerProject: {method: HttpMethod.GET, path: 'v1/register/register-project'},
+		createProject: {method: HttpMethod.POST, path: 'v1/permissions/create-first-project'},
 	}
 };
 
