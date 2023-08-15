@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-import {_setTimeout, ImplementationMissingException, Module, Second, StringMap} from '@nu-art/ts-common';
-import {apiWithBody, apiWithQuery, ThunderDispatcher,} from '@nu-art/thunderstorm/frontend';
-import {ApiDefCaller, HttpException} from '@nu-art/thunderstorm';
-import {ApiDef_Permissions, ApiStruct_Permissions, UserUrlsPermissions} from '../..';
+import {Module} from '@nu-art/ts-common';
+import {apiWithBody,} from '@nu-art/thunderstorm/frontend';
+import {ApiDefCaller} from '@nu-art/thunderstorm';
+import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
 
 
 export type PermissionsModuleFEConfig = {
@@ -35,99 +35,100 @@ export interface OnPermissionsFailed {
 	__onPermissionsFailed: () => void;
 }
 
-const dispatch_onPermissionsChanged = new ThunderDispatcher<OnPermissionsChanged, '__onPermissionsChanged'>('__onPermissionsChanged');
-const dispatch_onPermissionsFailed = new ThunderDispatcher<OnPermissionsFailed, '__onPermissionsFailed'>('__onPermissionsFailed');
+// const dispatch_onPermissionsChanged = new ThunderDispatcher<OnPermissionsChanged, '__onPermissionsChanged'>('__onPermissionsChanged');
+// const dispatch_onPermissionsFailed = new ThunderDispatcher<OnPermissionsFailed, '__onPermissionsFailed'>('__onPermissionsFailed');
 
 export class ModuleFE_Permissions_Class
 	extends Module<PermissionsModuleFEConfig> {
-	private loadingUrls = new Set<string>();
-	private userUrlsPermissions: UserUrlsPermissions = {};
-	private requestCustomField: StringMap = {};
-	private debounceTime = 100;
-	private retryCounter = 0;
+	// private loadingUrls = new Set<string>();
+	// private userUrlsPermissions: UserUrlsPermissions = {};
+	// private requestCustomField: StringMap = {};
+	// private debounceTime = 100;
+	// private retryCounter = 0;
 	readonly v1: ApiDefCaller<ApiStruct_Permissions>['v1'];
 
 	constructor() {
 		super();
 
 		this.v1 = {
-			getUserUrlsPermissions: apiWithBody(ApiDef_Permissions.v1.getUserUrlsPermissions),
-			getUserCFsByShareGroups: apiWithBody(ApiDef_Permissions.v1.getUserCFsByShareGroups),
-			getUsersCFsByShareGroups: apiWithBody(ApiDef_Permissions.v1.getUsersCFsByShareGroups),
-			registerExternalProject: apiWithBody(ApiDef_Permissions.v1.registerExternalProject),
-			registerProject: apiWithQuery(ApiDef_Permissions.v1.registerProject),
+			// getUserUrlsPermissions: apiWithBody(ApiDef_Permissions.v1.getUserUrlsPermissions),
+			// getUserCFsByShareGroups: apiWithBody(ApiDef_Permissions.v1.getUserCFsByShareGroups),
+			// getUsersCFsByShareGroups: apiWithBody(ApiDef_Permissions.v1.getUsersCFsByShareGroups),
+			// registerExternalProject: apiWithBody(ApiDef_Permissions.v1.registerExternalProject),
+			// registerProject: apiWithQuery(ApiDef_Permissions.v1.registerProject),
+			createProject: apiWithBody(ApiDef_Permissions.v1.createProject),
 		};
 	}
 
-	setDebounceTime(time: number) {
-		this.debounceTime = time;
-	}
-
-	setCustomField(key: string, value: string) {
-		this.requestCustomField[key] = value;
-		this.setPermissions();
-	}
-
-	loadUrls(urls: string[]) {
-		urls.forEach(url => {
-			if (this.loadingUrls.has(url) || this.userUrlsPermissions[url] !== undefined)
-				return;
-
-			this.loadingUrls.add(url);
-		});
-
-		this.setPermissions();
-	}
-
-	doesUserHavePermissions(url: string): boolean | undefined {
-		if (this.loadingUrls.has(url))
-			return undefined;
-
-		const permitted = this.userUrlsPermissions[url];
-		if (permitted !== undefined)
-			return permitted;
-
-		this.loadingUrls.add(url);
-		// this.setPermissions();
-		return undefined;
-	}
-
-	private setPermissions = () => {
-		if (!this.config || !this.config.projectId)
-			throw new ImplementationMissingException('need to set up a project id config');
-
-		this.debounce(() => {
-			const urls: UserUrlsPermissions = {};
-			this.loadingUrls.forEach(url => {
-				urls[url] = false;
-			});
-			const query = {
-				projectId: this.config.projectId,
-				urls: urls,
-				requestCustomField: this.requestCustomField
-			};
-			this.v1.getUserUrlsPermissions(query).execute(
-				//On Success
-				async (response: UserUrlsPermissions, data?: (string | undefined)) => {
-					this.retryCounter = 0;
-					Object.keys(response).forEach(url => {
-						this.loadingUrls.delete(url);
-						this.userUrlsPermissions[url] = response[url];
-					});
-					dispatch_onPermissionsChanged.dispatchUI();
-				},
-				//On Error
-				(reason: HttpException) => {
-					this.logWarning(`Failed to get user urls permissions`);
-					if (this.retryCounter < 5) {
-						this.retryCounter++;
-						return _setTimeout(this.setPermissions, 5 * Second);
-					}
-					dispatch_onPermissionsFailed.dispatchModule();
-				}
-			);
-		}, 'get-permissions', this.debounceTime);
-	};
+	// setDebounceTime(time: number) {
+	// 	this.debounceTime = time;
+	// }
+	//
+	// setCustomField(key: string, value: string) {
+	// 	this.requestCustomField[key] = value;
+	// 	this.setPermissions();
+	// }
+	//
+	// loadUrls(urls: string[]) {
+	// 	urls.forEach(url => {
+	// 		if (this.loadingUrls.has(url) || this.userUrlsPermissions[url] !== undefined)
+	// 			return;
+	//
+	// 		this.loadingUrls.add(url);
+	// 	});
+	//
+	// 	this.setPermissions();
+	// }
+	//
+	// doesUserHavePermissions(url: string): boolean | undefined {
+	// 	if (this.loadingUrls.has(url))
+	// 		return undefined;
+	//
+	// 	const permitted = this.userUrlsPermissions[url];
+	// 	if (permitted !== undefined)
+	// 		return permitted;
+	//
+	// 	this.loadingUrls.add(url);
+	// 	// this.setPermissions();
+	// 	return undefined;
+	// }
+	//
+	// private setPermissions = () => {
+	// 	if (!this.config || !this.config.projectId)
+	// 		throw new ImplementationMissingException('need to set up a project id config');
+	//
+	// 	this.debounce(() => {
+	// 		const urls: UserUrlsPermissions = {};
+	// 		this.loadingUrls.forEach(url => {
+	// 			urls[url] = false;
+	// 		});
+	// 		const query = {
+	// 			projectId: this.config.projectId,
+	// 			urls: urls,
+	// 			requestCustomField: this.requestCustomField
+	// 		};
+	// 		this.v1.getUserUrlsPermissions(query).execute(
+	// 			//On Success
+	// 			async (response: UserUrlsPermissions, data?: (string | undefined)) => {
+	// 				this.retryCounter = 0;
+	// 				Object.keys(response).forEach(url => {
+	// 					this.loadingUrls.delete(url);
+	// 					this.userUrlsPermissions[url] = response[url];
+	// 				});
+	// 				dispatch_onPermissionsChanged.dispatchUI();
+	// 			},
+	// 			//On Error
+	// 			(reason: HttpException) => {
+	// 				this.logWarning(`Failed to get user urls permissions`);
+	// 				if (this.retryCounter < 5) {
+	// 					this.retryCounter++;
+	// 					return _setTimeout(this.setPermissions, 5 * Second);
+	// 				}
+	// 				dispatch_onPermissionsFailed.dispatchModule();
+	// 			}
+	// 		);
+	// 	}, 'get-permissions', this.debounceTime);
+	// };
 
 }
 
