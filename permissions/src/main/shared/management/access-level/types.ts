@@ -16,11 +16,13 @@
  * limitations under the License.
  */
 
-import {Auditable, DB_Object} from '@nu-art/ts-common';
+import {AuditableV2, DB_Object} from '@nu-art/ts-common';
 
-
-export type DB_PermissionAccessLevel = DB_Object & Auditable & {
-	domainId: string
-	name: string
+export type Base_AccessLevel = {
+	domainId: string,
 	value: number
+}
+
+export type DB_PermissionAccessLevel = DB_Object & Base_AccessLevel & AuditableV2 & {
+	name: string
 }

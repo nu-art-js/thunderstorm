@@ -1,201 +1,122 @@
-/*
- * Permissions management system, define access level for each of
- * your server apis, and restrict users by giving them access levels
- *
- * Copyright (C) 2020 Adam van der Kruk aka TacB0sS
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import {
-	BadImplementationException,
-	DB_BaseObject,
-	ImplementationMissingException,
-	Module,
-	PreDB,
-	StringMap
-} from '@nu-art/ts-common';
-import {ModuleBE_PermissionsAssert} from './ModuleBE_PermissionsAssert';
-import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
+import {_keys, DBDef, dbObjectToId, flatArray, Module, PreDB} from '@nu-art/ts-common';
+import {addRoutes, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
+	DB_PermissionAccessLevel,
+	DB_PermissionApi,
+	DB_PermissionDomain,
+	DB_PermissionGroup,
 	DB_PermissionProject,
-	PredefinedGroup,
-	PredefinedUser,
-	Request_RegisterProject,
-	Request_UsersCFsByShareGroups,
-	Request_UserUrlsPermissions,
-	Response_UsersCFsByShareGroups,
-	UserUrlsPermissions
-} from '../shared';
-import {MemKey_AccountId, ModuleBE_v2_AccountDB} from '@nu-art/user-account/backend';
-import {AssertSecretMiddleware} from '@nu-art/thunderstorm/backend/modules/proxy/assert-secret-middleware';
-import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
+	DB_PermissionUser,
+	DBDef_PermissionAccessLevel,
+	DBDef_PermissionApi,
+	DBDef_PermissionDomain,
+	DBDef_PermissionGroup,
+	DBDef_PermissionProjects,
+	DBDef_PermissionUser
+} from '../../shared';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
-import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
+import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
+import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
+import {defaultAccessLevels, defaultLevelsRouteLookupWords} from '../../shared/management/access-level/consts';
+import {defaultDomains, permissionsAssignName, permissionsDefName} from '../../shared/management/domain/consts';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
+import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
+
+const defaultDomainDbDefMap: { [k: string]: DBDef<any>[] } = {
+	[permissionsDefName]: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel],
+	[permissionsAssignName]: [DBDef_PermissionGroup, DBDef_PermissionUser],
+};
 
 
-type Config = {
-	project: PreDB<DB_PermissionProject> & DB_BaseObject
-	predefinedGroups?: PredefinedGroup[],
-	predefinedUser?: PredefinedUser
-}
+class ModuleBE_Permissions_Class
+	extends Module {
 
-export class ModuleBE_Permissions_Class
-	extends Module<Config> {
-
-	constructor() {
-		super();
-	}
-
-	protected init(): void {
+	protected init() {
 		super.init();
-		if (!this.config)
-			throw new ImplementationMissingException('MUST set config with project identity!!');
 
 		addRoutes([
-			createBodyServerApi(ApiDef_Permissions.v1.getUserUrlsPermissions, this.getUserUrlsPermissions),
-			createBodyServerApi(ApiDef_Permissions.v1.getUserCFsByShareGroups, (body) => this.getUserCFsByShareGroups(body.groupsIds)),
-			createBodyServerApi(ApiDef_Permissions.v1.getUsersCFsByShareGroups, this.getUsersCFsByShareGroups),
-			createBodyServerApi(ApiDef_Permissions.v1.registerExternalProject, this._registerProject, AssertSecretMiddleware),
-			createQueryServerApi(ApiDef_Permissions.v1.registerProject, (params) => this.registerProject())
+			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.createProject)
 		]);
-
-		ModuleBE_PermissionsAssert.setProjectId(this.config.project._id);
 	}
 
-	getProjectIdentity = () => this.config.project;
-
-	async getUserUrlsPermissions(body: Request_UserUrlsPermissions) {
-
-		const projectId: string = body.projectId;
-		const urlsMap: UserUrlsPermissions = body.urls;
-
-		const requestCustomField: StringMap = body.requestCustomField;
-
-		const urls = Object.keys(urlsMap);
-		const [userDetails, apiDetails] = await Promise.all(
-			[
-				ModuleBE_PermissionsAssert.getUserDetails(),
-				ModuleBE_PermissionsAssert.getApisDetails(urls, projectId)
-			]
-		);
-
-		return urls.reduce((userUrlsPermissions: UserUrlsPermissions, url, i) => {
-			const apiDetail = apiDetails[i];
-			if (apiDetail) {
-				try {
-					ModuleBE_PermissionsAssert._assertUserPermissionsImpl(apiDetail, projectId, userDetails, requestCustomField);
-					userUrlsPermissions[url] = true;
-				} catch (e: any) {
-					userUrlsPermissions[url] = false;
-				}
-			} else
-				userUrlsPermissions[url] = false;
-
-			return userUrlsPermissions;
-		}, {});
-	}
-
-	async getUsersCFsByShareGroups(body: Request_UsersCFsByShareGroups): Promise<Response_UsersCFsByShareGroups> {
-		const usersEmails = body.usersEmails;
-		const groupsIds = body.groupsIds;
-		const toRet: Response_UsersCFsByShareGroups = {};
-		await Promise.all(usersEmails.map(async email => {
-			const account = await ModuleBE_v2_AccountDB.query.uniqueWhere({email});
-			if (!account)
-				return;
-
-			toRet[email] = await this.getUserCFsByShareGroups(groupsIds);
-		}));
-
-		return toRet;
-	}
-
-	async getUserCFsByShareGroups(groupsIds: string[]): Promise<StringMap[]> {
-		const user = await ModuleBE_PermissionUserDB.query.uniqueCustom({where: {accountId: MemKey_AccountId.get()}});
-		const userCFs: StringMap[] = [];
-		if (!user.groups)
-			return userCFs;
-
-		user.groups.forEach(userGroup => {
-			if (!groupsIds.find(groupId => groupId === userGroup.groupId))
-				return;
-
-			if (!userGroup.customField)
-				return;
-
-			userCFs.push(userGroup.customField);
-		});
-
-		return userCFs;
-	}
-
-	registerProject = async () => {
-		const routes: string[] = Storm.getInstance().getRoutes().reduce((carry: string[], httpRoute) => {
-			if (httpRoute.path !== '*')
-				carry.push(httpRoute.path);
-
-			return carry;
-		}, []);
-
-		const projectRoutes = {
-			project: ModuleBE_Permissions.getProjectIdentity(),
-			routes,
-			predefinedGroups: this.config.predefinedGroups,
-			predefinedUser: this.config.predefinedUser
-		};
-
-		return this._registerProject(projectRoutes);
+	createProject = async () => {
+		//Create New Project
+		const project = await ModuleBE_PermissionProject.create.item({name: 'New Project'} as PreDB<DB_PermissionProject>);
+		// Create Project Structure & Super Admin
+		const {domains, levels} = await this.createProjectStructure(project);
+		// Create Project Routes
+		await this.createProjectRoutes(project, domains, levels);
 	};
 
-	async _registerProject(registerProject: Request_RegisterProject) {
-		const project = registerProject.project;
-		await ModuleBE_PermissionProject.set.item(project);
-		const id = project._id;
-		if (!id)
-			throw new BadImplementationException('register project is missing an id');
+	private createProjectStructure = async (project: DB_PermissionProject): Promise<{ domains: DB_PermissionDomain[], levels: DB_PermissionAccessLevel[] }> => {
+		//Create initial domains
+		const domains = await ModuleBE_PermissionDomain.create.all(defaultDomains.map(i => ({...i, projectId: project._id})));
 
-		await ModuleBE_PermissionApi.registerApis(id, registerProject.routes);
-		const predefinedGroups = registerProject.predefinedGroups;
-		if (!predefinedGroups?.length)
-			return;
+		//Create initial access levels
+		const levels = await ModuleBE_PermissionAccessLevel.create.all(flatArray(domains.map(domain => {
+			return defaultAccessLevels.map(level => ({...level, domainId: domain._id}));
+		})));
 
-		await ModuleBE_PermissionGroup.upsertPredefinedGroups(id, project.name, predefinedGroups);
+		//Create super-admin permission group
+		const group = await ModuleBE_PermissionGroup.create.item({
+			label: 'Super Admin',
+			accessLevelIds: levels.filter(i => i.name === 'Admin').map(dbObjectToId)
+		} as PreDB<DB_PermissionGroup>);
 
-		const predefinedUser = registerProject.predefinedUser;
-		if (!predefinedUser)
-			return;
+		const triggeringAccountId = MemKey_AccountId.get();
 
-		const groupsUser = predefinedUser.groups.map(groupItem => {
-			const customField: StringMap = {};
-			const allRegEx = '.*';
-			if (!groupItem.customKeys || !groupItem.customKeys.length)
-				customField['_id'] = allRegEx;
-			else {
-				groupItem.customKeys.forEach((customKey) => {
-					customField[customKey] = allRegEx;
-				});
-			}
+		let user = (await ModuleBE_PermissionUserDB.query.custom({where: {accountId: triggeringAccountId}}))?.[0];
+		if (!user) {
+			user = await ModuleBE_PermissionUserDB.create.item({
+					accountId: triggeringAccountId,
+					groups: [{groupId: group._id}]
+				} as PreDB<DB_PermissionUser>
+			);
+		} else {
+			if (!user.groups)
+				user.groups = [];
+			user.groups.push({groupId: group._id});
+			await ModuleBE_PermissionUserDB.update.item(user);
+		}
+		return {domains, levels};
+	};
 
+	private createProjectRoutes = async (project: DB_PermissionProject, domains: DB_PermissionDomain[], levels: DB_PermissionAccessLevel[]) => {
+		const allRoutes = Storm.getInstance().getRoutes();
+
+		//Map out apis
+		const apis: Omit<PreDB<DB_PermissionApi>, '_auditorId'>[] = allRoutes.map(route => {
 			return {
-				groupId: groupItem._id,
-				customField
+				projectId: project._id,
+				path: route.path,
 			};
+		}).filter(i => i.path !== '*');
+
+		//Connect default domain access levels to correct apis
+		_keys(defaultDomainDbDefMap).forEach(namespace => {
+			const domain = domains.find(i => i.namespace === namespace)!;
+			const relevantLevels = levels.filter(i => i.domainId === domain._id);
+			const relevantApis = apis.filter(i => defaultDomainDbDefMap[namespace].some(dbDef => i.path.includes(dbDef.dbName)));
+
+			relevantLevels.forEach(level => {
+				const lookupWords = defaultLevelsRouteLookupWords[level.name];
+				if (!lookupWords)
+					return;
+
+				relevantApis.filter(i => lookupWords.some(word => i.path.includes(word)))
+					.forEach(api => {
+						if (!api.accessLevelIds)
+							api.accessLevelIds = [];
+						api.accessLevelIds.push(level._id);
+					});
+			});
 		});
-		await ModuleBE_PermissionUserDB.set.item({...predefinedUser, groups: groupsUser});
-	}
+
+		await ModuleBE_PermissionApi.create.all(apis as PreDB<DB_PermissionApi>[]);
+	};
 }
 
 export const ModuleBE_Permissions = new ModuleBE_Permissions_Class();

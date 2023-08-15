@@ -35,7 +35,8 @@ export class PermissionUsersEditor
 	readonly itemDisplay = (user: DB_PermissionUser) => this.props.renderAccount(user.accountId);
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsUser],
-		renderAccount: (accountId: string) => <div>{ModuleFE_AccountV2.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'}</div>
+		renderAccount: (accountId: string) =>
+			<div>{ModuleFE_AccountV2.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'}</div>
 	};
 
 	//######################### Life Cycle #########################
@@ -54,13 +55,13 @@ export class PermissionUsersEditor
 
 	protected async deriveStateFromProps(nextProps: Props, state: (State & State_SmartComponent)) {
 		state.items = ModuleFE_PermissionsUser.cache.all();
-		if (!state.editedItem) {
+		if (!state.editedItem && state.items.length) {
 			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsUser);
 			state.selectedItemId = state.items[0]._id;
 		}
 		return state;
 	}
-	
+
 	//######################### Render #########################
 
 	private renderGroups = () => {
@@ -94,7 +95,7 @@ export class PermissionUsersEditor
 			placeholder={'Select Group'}
 			onSelected={item => {
 				const groups = user.item.groups || [];
-				groups.push({groupId: item._id, customField: {}});
+				groups.push({groupId: item._id});
 				this.setProperty('groups', groups);
 			}}
 		/>;

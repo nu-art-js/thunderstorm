@@ -18,14 +18,13 @@
  */
 
 import {ServerApi} from '@nu-art/thunderstorm/backend';
-import {auditBy, filterDuplicates, PreDB} from '@nu-art/ts-common';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
+import {_keys, ApiException, dbObjectToId, filterInstances, PreDB, TypedMap} from '@nu-art/ts-common';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
-import {Clause_Where} from '@nu-art/firebase';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
-import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
-import {firestore} from "firebase-admin";
+import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
+import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
 
 
@@ -36,31 +35,37 @@ export class ModuleBE_PermissionApi_Class
 		super(DBDef_PermissionApi);
 	}
 
-	protected externalFilter(item: DB_PermissionApi): Clause_Where<DB_PermissionApi> {
-		const {projectId, path} = item;
-		return {projectId, path};
-	}
+	protected async preWriteProcessing(instance: DB_PermissionApi, t?: Transaction) {
+		await ModuleBE_PermissionProject.query.uniqueAssert(instance.projectId);
 
-	protected internalFilter(item: DB_PermissionApi): Clause_Where<DB_PermissionApi>[] {
-		const {projectId, path} = item;
-		return [{projectId, path}];
-	}
-
-	protected async preWriteProcessing(dbInstance: DB_PermissionApi, t?: Transaction) {
-		const email = MemKey_AccountEmail.get();
-		if (email)
-			dbInstance._audit = auditBy(email);
-
-		await ModuleBE_PermissionProject.query.uniqueAssert(dbInstance.projectId);
-
-		// need to assert that all the permissions levels exists in the db
-		const _permissionsIds = dbInstance.accessLevelIds;
-		if (!_permissionsIds || _permissionsIds.length <= 0)
+		instance._auditorId = MemKey_AccountId.get();
+		if (!instance.accessLevelIds?.length)
 			return;
 
-		const permissionsIds = filterDuplicates(_permissionsIds);
-		await Promise.all(permissionsIds.map(id => ModuleBE_PermissionAccessLevel.query.uniqueAssert(id)));
-		dbInstance.accessLevelIds = permissionsIds;
+		// Check if any Domains appear more than once in this group
+		const duplicationMap = instance.accessLevelIds.reduce<TypedMap<number>>((map, accessLevelId) => {
+
+			if (map[accessLevelId] === undefined)
+				map[accessLevelId] = 0;
+			else
+				map[accessLevelId]++;
+
+			return map;
+		}, {});
+		const duplicateAccessLevelIds: string[] = filterInstances(_keys(duplicationMap).map(accessLevelId => duplicationMap[accessLevelId] > 1 ? accessLevelId : undefined) as string[]);
+		if (duplicateAccessLevelIds.length)
+			throw new ApiException(400, `Trying to create API with duplicate access levels: ${duplicateAccessLevelIds}`);
+
+		// Verify all AccessLevels actually exist
+		const dbAccessLevels = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(instance.accessLevelIds));
+		if (dbAccessLevels.length !== instance.accessLevelIds.length) {
+			const dbAccessLevelIds = dbAccessLevels.map(dbObjectToId);
+			throw new ApiException(404, `Asked to assign an api non existing accessLevels: ${instance.accessLevelIds.filter(id => !dbAccessLevelIds.includes(id))}`);
+		}
+		instance._accessLevels = dbAccessLevels.map(accessLevel => ({
+			domainId: accessLevel.domainId,
+			value: accessLevel.value
+		}));
 	}
 
 	registerApis(projectId: string, routes: string[]) {
@@ -68,7 +73,7 @@ export class ModuleBE_PermissionApi_Class
 			const existingProjectApis = await this.query.custom({where: {projectId: projectId}}, transaction);
 			const apisToAdd: PreDB<DB_PermissionApi>[] = routes
 				.filter(path => !existingProjectApis.find(api => api.path === path))
-				.map(path => ({path, projectId: projectId}));
+				.map(path => ({path, projectId: projectId, _auditorId: MemKey_AccountId.get()}));
 
 			return this.set.all(apisToAdd, transaction);
 		});

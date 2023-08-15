@@ -1,8 +1,6 @@
 import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {
 	_SessionKey_Account,
-	_SessionKey_Session,
-	_SessionKey_SessionId,
 	ApiDefFE_Account,
 	ApiStructFE_Account,
 	DB_Account_V2,
@@ -26,14 +24,7 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
-import {
-	_keys,
-	BadImplementationException,
-	composeUrl,
-	currentTimeMillis,
-	exists, TS_Object,
-	TypedKeyValue
-} from '@nu-art/ts-common';
+import {BadImplementationException, cloneObj, composeUrl, currentTimeMillis, exists, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 
 
@@ -63,7 +54,7 @@ class ModuleFE_Account_v2_Class
 	implements ApiDefCaller<ApiStructFE_Account>, OnAuthRequiredListener {
 	readonly vv1: ApiDefCaller<ApiStructFE_Account>['vv1'];
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
-	private accounts: UI_Account[] = [];
+	private accounts!: UI_Account[];
 	accountId!: string;
 	private sessionData!: TS_Object;
 
@@ -89,6 +80,8 @@ class ModuleFE_Account_v2_Class
 	}
 
 	getAccounts() {
+		if (!this.accounts)
+			this.accounts = this.cache.all().map(i => cloneObj(i)) as UI_Account[];
 		return this.accounts;
 	}
 
