@@ -2,7 +2,7 @@ import {PreDB} from '@nu-art/ts-common';
 import {DB_PermissionDomain} from './types';
 
 export const defaultDomains = [
-	{namespace: 'Dev', projectId: ''},
-	{namespace: 'Permissions-Def', projectId: ''},
-	{namespace: 'Permissions-Assign', projectId: ''}
+	{namespace: 'dev', projectId: ''},
+	{namespace: 'permissions-def', projectId: ''},
+	{namespace: 'permissions-assign', projectId: ''}
 ] as PreDB<DB_PermissionDomain>[];

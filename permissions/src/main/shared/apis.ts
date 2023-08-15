@@ -59,8 +59,6 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 	appAccountId?: string
 }
 
-export type Request_CreateProject = { projectName: string }
-
 export type AssignAppPermissions = Request_AssignAppPermissions & { granterUserId: string };
 
 export type PredefinedGroup = { _id: string, key: string, label: string, customKeys?: string[] };
@@ -110,7 +108,7 @@ export type ApiStruct_Permissions = {
 		// getUsersCFsByShareGroups: BodyApi<Response_UsersCFsByShareGroups, Request_UsersCFsByShareGroups>;
 		// registerExternalProject: BodyApi<void, Request_RegisterProject>;
 		// registerProject: QueryApi<void>;
-		createProject: BodyApi<void, Request_CreateProject>
+		createProject: QueryApi<void>
 	}
 }
 export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
@@ -120,7 +118,7 @@ export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
 		// getUsersCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/users-cf-by-share-groups'},
 		// registerExternalProject: {method: HttpMethod.POST, path: 'v1/register/register-external-project'},
 		// registerProject: {method: HttpMethod.GET, path: 'v1/register/register-project'},
-		createProject: {method: HttpMethod.POST, path: 'v1/permissions/create-first-project'},
+		createProject: {method: HttpMethod.GET, path: 'v1/permissions/create-first-project'},
 	}
 };
 

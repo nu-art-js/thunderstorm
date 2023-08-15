@@ -26,9 +26,10 @@ import {ModuleBE_PermissionGroup} from '../modules/assignment/ModuleBE_Permissio
 import {ModuleBE_PermissionUserDB} from '../modules/assignment/ModuleBE_PermissionUserDB';
 import {createApisForDBModuleV2} from '@nu-art/db-api-generator/backend';
 import {Module} from '@nu-art/ts-common';
+import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions';
 
 
-export const ModulePackBE_Permissions:Module[] = [
+export const ModulePackBE_Permissions: Module[] = [
 	ModuleBE_PermissionProject, createApisForDBModuleV2(ModuleBE_PermissionProject),
 	ModuleBE_PermissionDomain, createApisForDBModuleV2(ModuleBE_PermissionDomain),
 	ModuleBE_PermissionAccessLevel, createApisForDBModuleV2(ModuleBE_PermissionAccessLevel),
@@ -36,6 +37,7 @@ export const ModulePackBE_Permissions:Module[] = [
 	ModuleBE_PermissionUserDB, createApisForDBModuleV2(ModuleBE_PermissionUserDB),
 	ModuleBE_PermissionGroup, createApisForDBModuleV2(ModuleBE_PermissionGroup),
 	ModuleBE_PermissionsAssert,
+	ModuleBE_Permissions,
 ];
 
 export * from '../modules/ModuleBE_PermissionsAssert';

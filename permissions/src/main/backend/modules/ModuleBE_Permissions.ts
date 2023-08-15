@@ -1,12 +1,14 @@
 import {dbObjectToId, flatArray, Module, PreDB} from '@nu-art/ts-common';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {ApiDef_Permissions, DB_PermissionGroup, DB_PermissionProject, Request_CreateProject} from '../../shared';
+import {addRoutes, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {ApiDef_Permissions, DB_PermissionGroup, DB_PermissionProject, DB_PermissionUser} from '../../shared';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {defaultAccessLevels} from '../../shared/management/access-level/consts';
 import {defaultDomains} from '../../shared/management/domain/consts';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
+import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
 
 
 class ModuleBE_Permissions_Class
@@ -16,13 +18,13 @@ class ModuleBE_Permissions_Class
 		super.init();
 
 		addRoutes([
-			createBodyServerApi(ApiDef_Permissions.v1.createProject, this.createProject)
+			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.createProject)
 		]);
 	}
 
-	createProject = async (data: Request_CreateProject) => {
+	createProject = async () => {
 		//Create New Project
-		const project = await ModuleBE_PermissionProject.create.item({name: data.projectName} as PreDB<DB_PermissionProject>);
+		const project = await ModuleBE_PermissionProject.create.item({name: 'New Project'} as PreDB<DB_PermissionProject>);
 
 		//Create initial domains
 		const domains = await ModuleBE_PermissionDomain.create.all(defaultDomains.map(i => ({...i, projectId: project._id})));
@@ -38,7 +40,15 @@ class ModuleBE_Permissions_Class
 			accessLevelIds: levels.filter(i => i.name === 'Admin').map(dbObjectToId)
 		} as PreDB<DB_PermissionGroup>);
 
-		this.logInfo(group);
+		const triggeringAccountId = MemKey_AccountId.get();
+
+		const user = await ModuleBE_PermissionUserDB.create.item({
+				accountId: triggeringAccountId,
+				groups: [{groupId: group._id}]
+			} as PreDB<DB_PermissionUser>
+		);
+
+		this.logInfo(user);
 	};
 }
 
