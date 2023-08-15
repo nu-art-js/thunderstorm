@@ -29,12 +29,7 @@ import {
 } from '@nu-art/ts-common';
 import {MemKey_AccountId, ModuleBE_v2_AccountDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {DB_EntityDependency} from '@nu-art/firebase';
-import {
-	ApiDef_PermissionUser,
-	DB_PermissionUser,
-	DBDef_PermissionUser,
-	Request_AssignPermissions
-} from '../../shared';
+import {ApiDef_PermissionUser, DB_PermissionUser, DBDef_PermissionUser, Request_AssignPermissions} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
 import {UI_Account} from '@nu-art/user-account';
 import {CanDeletePermissionEntities} from '../../core/can-delete';

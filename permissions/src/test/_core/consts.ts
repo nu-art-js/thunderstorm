@@ -7,8 +7,8 @@ import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/Mo
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
 import {BadImplementationException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
-import {Test_Project, Test_Setup} from '../tests/create-project';
-
+import {Test_Project, Test_Setup} from './types';
+import {UI_Account} from '@nu-art/user-account';
 
 export const postPermissionTestCleanup = async () => {
 	await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
@@ -87,11 +87,31 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 };
 
 export const Test_DefaultAccountId = '00000000000000000000000000000000';
-export const Test_AccountId1 = '00000000000000000000000000000001';
-export const Test_AccountId2 = '00000000000000000000000000000002';
-export const Test_AccountId3 = '00000000000000000000000000000003';
-export const Test_AccountId4 = '00000000000000000000000000000004';
-export const Test_AccountId5 = '00000000000000000000000000000005';
+export const Test_Account1: PreDB<UI_Account> = {
+	_id: '00000000000000000000000000000001',
+	email: 'a@a1.a',
+	type: 'user'
+};
+export const Test_Account2: PreDB<UI_Account> = {
+	_id: '00000000000000000000000000000002',
+	email: 'a@a2.a',
+	type: 'user'
+};
+export const Test_Account3: PreDB<UI_Account> = {
+	_id: '00000000000000000000000000000003',
+	email: 'a@a3.a',
+	type: 'user'
+};
+export const Test_Account4: PreDB<UI_Account> = {
+	_id: '00000000000000000000000000000004',
+	email: 'a@a4.a',
+	type: 'user'
+};
+export const Test_Account5: PreDB<UI_Account> = {
+	_id: '00000000000000000000000000000005',
+	email: 'a@a5.a',
+	type: 'user'
+};
 export const Default_TestEmail = 'test@test.test';
 export const Default_TestPassword = '1234';
 export const TestProject__Name = 'test-project';
