@@ -55,7 +55,7 @@ export class PermissionUsersEditor
 
 	protected async deriveStateFromProps(nextProps: Props, state: (State & State_SmartComponent)) {
 		state.items = ModuleFE_PermissionsUser.cache.all();
-		if (!state.editedItem) {
+		if (!state.editedItem && state.items.length) {
 			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsUser);
 			state.selectedItemId = state.items[0]._id;
 		}

@@ -18,9 +18,15 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {apiWithBody,} from '@nu-art/thunderstorm/frontend';
+import {apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
+import {ModuleFE_PermissionsProject} from './manage/ModuleFE_PermissionsProject';
+import {ModuleFE_PermissionsDomain} from './manage/ModuleFE_PermissionsDomain';
+import {ModuleFE_PermissionsAccessLevel} from './manage/ModuleFE_PermissionsAccessLevel';
+import {ModuleFE_PermissionsGroup} from './assign/ModuleFE_PermissionsGroup';
+import {ModuleFE_PermissionsUser} from './assign/ModuleFE_PermissionsUser';
+import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 
 
 export type PermissionsModuleFEConfig = {
@@ -56,7 +62,7 @@ export class ModuleFE_Permissions_Class
 			// getUsersCFsByShareGroups: apiWithBody(ApiDef_Permissions.v1.getUsersCFsByShareGroups),
 			// registerExternalProject: apiWithBody(ApiDef_Permissions.v1.registerExternalProject),
 			// registerProject: apiWithQuery(ApiDef_Permissions.v1.registerProject),
-			createProject: apiWithBody(ApiDef_Permissions.v1.createProject),
+			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject, this.onProjectCreated),
 		};
 	}
 
@@ -130,6 +136,14 @@ export class ModuleFE_Permissions_Class
 	// 	}, 'get-permissions', this.debounceTime);
 	// };
 
+	private onProjectCreated = async () => {
+		await ModuleFE_PermissionsProject.v1.sync().executeSync();
+		await ModuleFE_PermissionsApi.v1.sync().executeSync();
+		await ModuleFE_PermissionsDomain.v1.sync().executeSync();
+		await ModuleFE_PermissionsAccessLevel.v1.sync().executeSync();
+		await ModuleFE_PermissionsGroup.v1.sync().executeSync();
+		await ModuleFE_PermissionsUser.v1.sync().executeSync();
+	};
 }
 
 export const ModuleFE_Permissions = new ModuleFE_Permissions_Class();

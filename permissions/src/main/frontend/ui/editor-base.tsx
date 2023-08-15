@@ -73,8 +73,12 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 					return <div className={className} onClick={() => this.selectItem(item._id)} key={item._id}>{this.itemDisplay(item)}</div>;
 				})}
 			</LL_V_L>
-			<TS_Button className={'item-list__add-button'} onClick={() => this.selectItem(newItemIdentifier)}>Add New {this.itemName}</TS_Button>
+			{this.renderListButton()}
 		</LL_V_L>;
+	};
+
+	protected renderListButton = () => {
+		return <TS_Button className={'item-list__add-button'} onClick={() => this.selectItem(newItemIdentifier)}>Add New {this.itemName}</TS_Button>;
 	};
 
 	abstract editorContent: () => React.ReactNode;

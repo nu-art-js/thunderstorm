@@ -8,10 +8,11 @@ import {
 	Props_SmartComponent,
 	State_SmartComponent
 } from '@nu-art/db-api-generator/frontend';
-import {TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {TS_Button, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {DB_PermissionProject} from '../shared';
 import {ModuleFE_PermissionsProject, OnPermissionsProjectsUpdated} from '../core/module-pack';
+import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
 
 type State = State_EditorBase<DB_PermissionProject>;
 
@@ -64,5 +65,12 @@ export class PermissionProjectsEditor
 				value={project.item.name}
 				onChange={value => this.setProperty('name', value)}/>
 		</TS_PropRenderer.Vertical>;
+	};
+
+	protected renderListButton = () => {
+		if (this.state.items.length)
+			return <></>;
+
+		return <TS_Button className={'item-list__add-button'} onClick={() => ModuleFE_Permissions.v1.createProject({}).executeSync()}>Create Project</TS_Button>;
 	};
 }
