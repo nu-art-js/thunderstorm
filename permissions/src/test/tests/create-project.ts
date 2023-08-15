@@ -20,20 +20,8 @@ import {
 } from '../_core/consts';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {expect} from 'chai';
+import {Test_Setup} from '../_core/types';
 
-
-export type Test_Api = { path: string, accessLevels: { domainName: string, levelName: string }[] };
-export type Test_Project = {
-	name: string,
-	apis: Test_Api[],
-	domains: {
-		namespace: string,
-		levels: { name: string, value: number }[]
-	}[]
-}
-export type Test_Setup = {
-	projects: Test_Project[];
-};
 type CreatePermissionsSetup = {
 	setup: Test_Setup,
 	users: { accessLevels: { domain: string, levelName: string }[], result: boolean }[];

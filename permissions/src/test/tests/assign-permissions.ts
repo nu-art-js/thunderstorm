@@ -1,18 +1,17 @@
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {AssertionException, reduceToMap, UniqueId} from '@nu-art/ts-common';
-import {Test_Setup} from './create-project';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_v2_AccountDB} from '@nu-art/user-account/backend';
 import {
 	Failed_Log,
 	postPermissionTestCleanup,
 	setupProjectPermissions,
-	Test_AccountId1,
-	Test_AccountId2,
-	Test_AccountId3,
-	Test_AccountId4,
-	Test_AccountId5,
+	Test_Account1,
+	Test_Account2,
+	Test_Account3,
+	Test_Account4,
+	Test_Account5,
 	Test_DefaultAccountId,
 	Test_Domain1,
 	Test_Setup1
@@ -20,18 +19,12 @@ import {
 import {MemKey_UserPermissions} from '../../main/backend';
 import {expect} from 'chai';
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
+import {Test_Setup, Test_TargetAccount} from '../_core/types';
 
 type AssignPermissionsSetup = {
 	setup: Test_Setup
 	check: (projectId: UniqueId, accountToGivePermissionIds: string[], groupIds: string[], groupsToRemoveIds: string[]) => Promise<any>
-	targetAccounts: {
-		_id: string,
-		domains: {
-			namespace: string,
-			accessLevel: string
-		}[],
-		result: boolean
-	}[]
+	targetAccounts: Test_TargetAccount[]
 	selfAccount: {
 		_id: string,
 		domains: {
@@ -43,8 +36,11 @@ type AssignPermissionsSetup = {
 
 type BasicProjectTest = TestSuite<AssignPermissionsSetup, boolean>;
 
-const Test_AllAccounts = [{
-	_id: Test_AccountId1,
+const DefaultSelfAccount = {
+	_id: Test_DefaultAccountId,
+};
+const Test_AllAccounts: Test_TargetAccount[] = [{
+	...Test_Account1,
 	domains: [{
 		namespace: Test_Domain1,
 		accessLevel: 'NoAccess'
@@ -52,7 +48,7 @@ const Test_AllAccounts = [{
 	result: false
 },
 	{
-		_id: Test_AccountId2,
+		...Test_Account2,
 		domains: [{
 			namespace: Test_Domain1,
 			accessLevel: 'Read'
@@ -60,7 +56,7 @@ const Test_AllAccounts = [{
 		result: false
 	},
 	{
-		_id: Test_AccountId3,
+		...Test_Account3,
 		domains: [{
 			namespace: Test_Domain1,
 			accessLevel: 'Write'
@@ -68,7 +64,7 @@ const Test_AllAccounts = [{
 		result: false
 	},
 	{
-		_id: Test_AccountId4,
+		...Test_Account4,
 		domains: [{
 			namespace: Test_Domain1,
 			accessLevel: 'Delete'
@@ -76,7 +72,7 @@ const Test_AllAccounts = [{
 		result: false
 	},
 	{
-		_id: Test_AccountId5,
+		...Test_Account5,
 		domains: [{
 			namespace: Test_Domain1,
 			accessLevel: 'Admin'
@@ -98,7 +94,7 @@ const TestCases_Basic: BasicProjectTest['testcases'] = [{
 		},
 		targetAccounts: Test_AllAccounts,
 		selfAccount: {
-			_id: Test_DefaultAccountId,
+			...DefaultSelfAccount,
 			domains: [{
 				namespace: Test_Domain1,
 				accessLevel: 'Read'
@@ -129,10 +125,34 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 				// Finished to setup the permissions
 				// Check all user cases against this setup
 				await Promise.all(setup.projects.map(async project => {
+					// Setup user permissions
+					const userAccessLevels = reduceToMap(
+						testCase.input.selfAccount.domains,
+						domain => setupResult.domainNameToObjectMap[domain.namespace]._id,
+						domain => setupResult.accessLevelsByDomainNameMap[domain.namespace][domain.accessLevel].value
+					);
+					MemKey_UserPermissions.set(userAccessLevels);
 
-					testCase.input.selfAccount.domains.map(domain => {
+					await Promise.all(testCase.input.targetAccounts.map(async targetAccount => {
+						const createdTargetAccount = await ModuleBE_v2_AccountDB.create.item({
+							_id: targetAccount._id,
+							type: targetAccount.type,
+							email: targetAccount.email,
+							_auditorId: MemKey_AccountId.get()
 
-					});
+						});
+
+
+						//todo create groups matching the required domains for this targetAccount
+
+						await ModuleBE_PermissionUserDB.assignPermissions({
+							projectId: setupResult.nameToProjectMap[project.name]._id,
+							targetAccountIds: [createdTargetAccount._id],
+							groupToAddIds: [],
+							groupToRemoveIds: [],
+						});
+					}));
+
 
 					await Promise.all(testCase.input.users.map(async user => {
 						let result = true;
