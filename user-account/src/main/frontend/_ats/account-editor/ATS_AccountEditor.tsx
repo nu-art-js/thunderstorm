@@ -9,9 +9,9 @@ import {
 	TS_BusyButton,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_AccountV2, OnAccountsUpdated} from '../../modules/v2/ModuleFE_v2_Account';
+import {OnAccountsUpdated} from '../../modules/v2/ModuleFE_v2_Account';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
-import {DB_Account_V2, UI_Account} from '../../../shared';
+import {DB_AccountV3} from '../../../shared';
 import {
 	ApiCallerEventType,
 	Props_SmartComponent,
@@ -19,12 +19,13 @@ import {
 	State_SmartComponent
 } from '@nu-art/db-api-generator/frontend';
 import {generateUUID} from '@nu-art/ts-common';
+import {ModuleFE_AccountV3} from '../../modules/v3/ModuleFE_v3_Account';
 
 
 type Props = {}
 
 type State = {
-	selectedUser?: UI_Account,
+	selectedUser?: DB_AccountV3,
 	isPreview?: boolean
 }
 
@@ -43,7 +44,7 @@ export class ATS_AccountEditor
 
 	// ######################### Logic #########################
 
-	private setSelectedAccount = (account?: UI_Account) => {
+	private setSelectedAccount = (account?: DB_AccountV3) => {
 		if (!account)
 			this.setState({isPreview: false, selectedUser: undefined});
 		else
@@ -60,27 +61,27 @@ export class ATS_AccountEditor
 
 
 type ListState = State_SmartComponent & {
-	list: UI_Account[],
+	list: DB_AccountV3[],
 };
 
 type ListProps = Props_SmartComponent & {
-	setSelectedAccount: (account?: UI_Account) => void,
-	user?: UI_Account
+	setSelectedAccount: (account?: DB_AccountV3) => void,
+	user?: DB_AccountV3
 }
 
 class Component_AccountList
 	extends SmartComponent<ListProps, ListState> implements OnAccountsUpdated {
 
-	__onAccountsUpdated(...params: ApiCallerEventType<DB_Account_V2>) {
+	__onAccountsUpdated(...params: ApiCallerEventType<DB_AccountV3>) {
 		this.reDeriveState();
 	}
 
 	static defaultProps = {
-		modules: [ModuleFE_AccountV2]
+		modules: [ModuleFE_AccountV3]
 	};
 
 	protected async deriveStateFromProps(nextProps: ListProps, state: ListState) {
-		state.list = ModuleFE_AccountV2.cache.allMutable() as UI_Account[];
+		state.list = ModuleFE_AccountV3.cache.allMutable() as DB_AccountV3[];
 		return state;
 	}
 

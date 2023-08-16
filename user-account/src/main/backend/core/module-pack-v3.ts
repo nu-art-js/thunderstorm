@@ -16,11 +16,19 @@
  * limitations under the License.
  */
 
-export * from './proxy-v2';
-export * from './core/module-pack-v2';
-export * from './core/module-pack-v3';
-export * from './ui/Component_Login/Component_Login';
-export * from './ui/Component_Register';
-export * from './modules/v2/ModuleFE_v2_Account';
-export * from './ui/Component_GoogleSAMLLogin/Component_GoogleSAMLLogin';
-export * from './ui/Component_ChangePassword/Component_ChangePassword';
+import {Module} from '@nu-art/ts-common';
+import {createApisForDBModuleV3, ModuleBE_BaseDBV3} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_v3_AccountDB} from '../modules/v3/ModuleBE_v3_AccountDB';
+import {ModuleBE_v3_SessionDB} from '../modules/v3/ModuleBE_v3_SessionDB';
+import {DBProto_AccountType} from '../../shared';
+
+
+export const ModulePackBE_v3_Accounts: Module[] = [
+	ModuleBE_v3_AccountDB, createApisForDBModuleV3(ModuleBE_v3_AccountDB as ModuleBE_BaseDBV3<DBProto_AccountType>),
+	ModuleBE_v3_SessionDB
+];
+
+export * from '../modules/v3/ModuleBE_v3_AccountDB';
+export * from '../modules/v3/ModuleBE_v3_SessionDB';
+export * from '../modules/ModuleBE_SAML';
+
