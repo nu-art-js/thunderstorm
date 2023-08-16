@@ -45,7 +45,7 @@ import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreInterfaceV3';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
 import {DBDef_v3_Accounts} from '../../../shared/v3-db-def';
-import {SessionKey_BE} from '../v2';
+import {MemKey_AccountId, SessionKey_BE} from '../v2';
 import Transaction = firestore.Transaction;
 
 
@@ -176,7 +176,8 @@ export class ModuleBE_v3_AccountDB_Class
 
 			//Create the account
 			const uiAccount = await this.createAccountImpl(body as Request_RegisterAccount, true, transaction); // Must have a password, because we use it to auto-login immediately after
-			this.logErrorBold('uiAccount', uiAccount);
+			MemKey_AccountId.set(uiAccount._id);
+			this.logDebug('uiAccount', uiAccount);
 			await dispatch_onNewUserRegisteredV3.dispatchModuleAsync(uiAccount);
 
 			//Log in
