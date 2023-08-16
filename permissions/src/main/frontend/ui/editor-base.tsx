@@ -36,7 +36,7 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 		return this.setState({editedItem: new EditableDBItem<T>(cloneObj(item), this.module), selectedItemId: itemId});
 	};
 
-	private saveItem = async () => {
+	protected saveItem = async (e: React.MouseEvent) => {
 		if (!this.state.editedItem)
 			return;
 

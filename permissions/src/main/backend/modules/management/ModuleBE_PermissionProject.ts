@@ -1,4 +1,4 @@
-/*
+ /*
  * Permissions management system, define access level for each of
  * your server apis, and restrict users by giving them access levels
  *
@@ -26,7 +26,7 @@ import Transaction = firestore.Transaction;
 
 
 export class ModuleBE_PermissionProject_Class
-	extends ModuleBE_BaseDBV2<DB_PermissionProject> {
+	extends ModuleBE_BaseDBV2<DB_PermissionProject,{},"name"> {
 
 	constructor() {
 		super(DBDef_PermissionProjects);

@@ -1,13 +1,5 @@
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
-import {
-	_SessionKey_Account,
-	_SessionKey_Session,
-	DB_Session_V2,
-	DBDef_Session,
-	HeaderKey_SessionId,
-	Response_Auth,
-	UI_Account
-} from '../../../shared';
+import {_SessionKey_Session, DB_Session_V2, DBDef_Session, Response_Auth, UI_Account} from '../../../shared';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
 import {
 	__stringify,
@@ -18,12 +10,12 @@ import {
 	Dispatcher,
 	PreDB,
 	TS_Object,
-	TypedKeyValue, UniqueId
+	TypedKeyValue,
+	UniqueId
 } from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
-import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {firestore} from 'firebase-admin';
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {Header_SessionId, MemKey_SessionData} from '../../core/consts';
 import Transaction = firestore.Transaction;
 
 
@@ -40,15 +32,10 @@ export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<Typ
 // 			[] :
 // 		[];
 
-export const Header_SessionId = new HeaderKey(HeaderKey_SessionId);
 
 type Config = DBApiConfig<DB_Session_V2> & {
 	sessionTTLms: number
 }
-
-export const MemKey_AccountEmail = new MemKey<string>('accounts--email', true);
-export const MemKey_AccountId = new MemKey<string>('accounts--id', true);
-export const MemKey_SessionData = new MemKey<TS_Object>('session-data', true);
 
 
 export class ModuleBE_v2_SessionDB_Class

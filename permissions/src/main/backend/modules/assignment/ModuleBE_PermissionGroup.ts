@@ -34,8 +34,8 @@ import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import Transaction = firestore.Transaction;
+import {MemKey_AccountId} from '@nu-art/user-account/backend/core/consts';
 
 
 export class ModuleBE_PermissionGroup_Class

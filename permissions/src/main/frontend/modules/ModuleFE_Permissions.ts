@@ -18,7 +18,7 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {apiWithQuery,} from '@nu-art/thunderstorm/frontend';
+import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
 import {ModuleFE_PermissionsProject} from './manage/ModuleFE_PermissionsProject';
@@ -63,6 +63,7 @@ export class ModuleFE_Permissions_Class
 			// registerExternalProject: apiWithBody(ApiDef_Permissions.v1.registerExternalProject),
 			// registerProject: apiWithQuery(ApiDef_Permissions.v1.registerProject),
 			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject, this.onProjectCreated),
+			connectDomainToRoutes: apiWithBody(ApiDef_Permissions.v1.connectDomainToRoutes, async () => await ModuleFE_PermissionsApi.v1.sync().executeSync())
 		};
 	}
 

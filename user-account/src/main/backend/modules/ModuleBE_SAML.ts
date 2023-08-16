@@ -26,12 +26,14 @@ import {
 	QueryParam_SessionId,
 	RequestBody_SamlAssertOptions,
 	RequestParams_LoginSAML,
-	Response_Auth,
+	Response_Auth_V3,
 	Response_LoginSAML
 } from './_imports';
 import {addRoutes, createQueryServerApi, ServerApi} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpRequestBody, MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {getUIAccount, MemKey_AccountEmail, ModuleBE_v2_AccountDB, ModuleBE_v2_SessionDB} from './v2';
+import {ModuleBE_v3_SessionDB} from './v3/ModuleBE_v3_SessionDB';
+import {ModuleBE_v3_AccountDB} from './v3/ModuleBE_v3_AccountDB';
+import {MemKey_AccountEmail} from '../core/consts';
 
 
 /**
@@ -119,11 +121,11 @@ export class ModuleBE_SAML_Class
 		this.identityProvider = new IdentityProvider(this.config.idConfig);
 	}
 
-	async loginSAML(__email: string): Promise<Response_Auth> {
+	async loginSAML(__email: string): Promise<Response_Auth_V3> {
 		const _email = __email.toLowerCase();
 		const account = await this.createSAML(_email);
 
-		return await ModuleBE_v2_SessionDB.getOrCreateSession(getUIAccount(account));
+		return await ModuleBE_v3_SessionDB.getOrCreateSession(account);
 	}
 
 	async assertSaml() {
@@ -149,7 +151,7 @@ export class ModuleBE_SAML_Class
 
 	private async createSAML(__email: string) {
 		const _email = __email.toLowerCase();
-		return ModuleBE_v2_AccountDB.getOrCreate({where: {email: _email}});
+		return ModuleBE_v3_AccountDB.getOrCreate({where: {email: _email}});
 	}
 
 	loginRequest = async (loginContext: RequestParams_LoginSAML) => {
