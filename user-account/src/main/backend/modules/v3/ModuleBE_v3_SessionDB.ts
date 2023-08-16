@@ -1,24 +1,6 @@
-import {
-	_SessionKey_SessionV3,
-	DB_AccountV3,
-	DBDef_v3_Session,
-	DBProto_SessionType,
-	HeaderKey_SessionId,
-	Response_Auth_V3,
-	UI_Session
-} from '../../../shared';
+import {_SessionKey_SessionV3, DB_AccountV3, DBDef_v3_Session, DBProto_SessionType, HeaderKey_SessionId, Response_Auth_V3, UI_Session} from '../../../shared';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/db-api-generator/backend';
-import {
-	__stringify,
-	ApiException,
-	BadImplementationException,
-	currentTimeMillis,
-	Day,
-	Dispatcher,
-	TS_Object,
-	TypedKeyValue,
-	UniqueId
-} from '@nu-art/ts-common';
+import {__stringify, ApiException, BadImplementationException, currentTimeMillis, Day, Dispatcher, TS_Object, TypedKeyValue, UniqueId} from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
 import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {firestore} from 'firebase-admin';
@@ -110,15 +92,11 @@ export class ModuleBE_v3_SessionDB_Class
 	}
 
 	getOrCreateSession = async (uiAccount: DB_AccountV3, transaction?: Transaction): Promise<Response_Auth_V3> => {
-		try {
-			const session = await this.query.uniqueWhere({accountId: uiAccount._id}, transaction);
-			if (!this.TTLExpired(session)) {
-				const sessionData = this.decodeSessionData(session.sessionId);
-				MemKey_SessionDataV3.set(sessionData);
-				return {sessionId: session.sessionId, ...uiAccount};
-			}
-		} catch (ignore) {
-			//
+		const session = (await this.query.custom({where: {accountId: uiAccount._id}}, transaction))[0];
+		if (session && !this.TTLExpired(session)) {
+			const sessionData = this.decodeSessionData(session.sessionId);
+			MemKey_SessionDataV3.set(sessionData);
+			return {sessionId: session.sessionId, ...uiAccount};
 		}
 
 		const sessionInfo = await this.createSession(uiAccount._id);

@@ -240,7 +240,7 @@ export type ApiStruct_SAML_BE = {
 
 export const ApiDef_SAML_BE: ApiDefResolver<ApiStruct_SAML_BE> = {
 	vv1: {
-		...API_LoginSaml,
+		...API_LoginSamlV3,
 		assertSAML: {method: HttpMethod.POST, path: 'v1/account/assert'},
 	}
 };
