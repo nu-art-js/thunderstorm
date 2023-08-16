@@ -24,14 +24,7 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
-import {
-	BadImplementationException,
-	composeUrl,
-	currentTimeMillis,
-	exists,
-	TS_Object,
-	TypedKeyValue
-} from '@nu-art/ts-common';
+import {BadImplementationException, cloneObj, composeUrl, currentTimeMillis, exists, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
 
 
@@ -61,7 +54,6 @@ class ModuleFE_Account_v3_Class
 	implements ApiDefCaller<ApiStructFE_AccountV3>, OnAuthRequiredListener {
 	readonly vv1: ApiDefCaller<ApiStructFE_AccountV3>['vv1'];
 	private status: LoggedStatusV3 = LoggedStatusV3.VALIDATING;
-	private accounts: UI_Account[] = [];
 	accountId!: string;
 	// @ts-ignore
 	private sessionData!: TS_Object;
@@ -88,7 +80,7 @@ class ModuleFE_Account_v3_Class
 	}
 
 	getAccounts() {
-		return this.accounts;
+		return this.cache.all().map(i => cloneObj(i)) as UI_Account[];
 	}
 
 	getLoggedStatus = () => this.status;

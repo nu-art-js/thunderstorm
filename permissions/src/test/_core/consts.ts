@@ -88,27 +88,22 @@ export const setupProjectPermissions = async (projects: Test_Project[]): Promise
 
 export const Test_DefaultAccountId = '00000000000000000000000000000000';
 export const Test_Account1: PreDB<UI_Account> = {
-	_id: '00000000000000000000000000000001',
 	email: 'a@a1.a',
 	type: 'user'
 };
 export const Test_Account2: PreDB<UI_Account> = {
-	_id: '00000000000000000000000000000002',
 	email: 'a@a2.a',
 	type: 'user'
 };
 export const Test_Account3: PreDB<UI_Account> = {
-	_id: '00000000000000000000000000000003',
 	email: 'a@a3.a',
 	type: 'user'
 };
 export const Test_Account4: PreDB<UI_Account> = {
-	_id: '00000000000000000000000000000004',
 	email: 'a@a4.a',
 	type: 'user'
 };
 export const Test_Account5: PreDB<UI_Account> = {
-	_id: '00000000000000000000000000000005',
 	email: 'a@a5.a',
 	type: 'user'
 };

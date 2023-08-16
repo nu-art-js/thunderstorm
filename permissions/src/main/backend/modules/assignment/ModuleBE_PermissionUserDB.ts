@@ -111,7 +111,7 @@ class ModuleBE_PermissionUserDB_Class
 				throw new ApiException(404, `user not found for email ${email}`, e);
 			}
 			// Check if a user permissions object already exists, and create if not
-			const existingUserPermissions = await this.query.where({accountId: account._id});
+			const existingUserPermissions = await this.query.where({accountId: account._id}, t);
 			if (!existingUserPermissions.length) {
 				await this.set.item({accountId: account._id, groups: [], _auditorId: MemKey_AccountId.get()}, t);
 			}
@@ -138,8 +138,6 @@ class ModuleBE_PermissionUserDB_Class
 		}
 
 		const myUserPermissions = MemKey_UserPermissions.get();
-		// const myAccountId = MemKey_AccountId.get();
-		// const myPermissionsUser = await this.query.uniqueWhere({accountId: myAccountId});
 
 		const permissionsToGive = dbGroups.reduce<TypedMap<number>>((map, group) => {
 			// Gather the highest permissions for each domain, from all groups
@@ -161,7 +159,13 @@ class ModuleBE_PermissionUserDB_Class
 		if (failedDomains.length)
 			throw new ApiException(403, `Attempted to give higher permissions than current user has: ${failedDomains}`);
 
-		//todo assign permissions
+		const groupIds = dbGroups.map(group => ({groupId: group._id}));
+		const usersToUpdate = usersToGiveTo.map(user => {
+			user.groups = groupIds;
+			return user;
+		});
+
+		await this.set.all(usersToUpdate);
 	}
 
 	// async _assignAppPermissions(body: Request_AssignAppPermissions) {
