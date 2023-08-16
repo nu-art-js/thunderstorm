@@ -33,6 +33,10 @@
     "@nu-art/user-account": "$THUNDERSTORM_SDK_VERSION",
     "firebase": "$FIREBASE_PKG_VERSION",
     "firebase-admin": "$FIREBASE_ADMIN_PKG_VERSION",
-    "moment": "^2.24.0"
+    "moment": "^2.24.0",
+    "react": "$REACT_PKG_VERSION"
+  },
+  "devDependencies": {
+    "@types/react": "$REACT_TYPES_VERSION"
   }
 }

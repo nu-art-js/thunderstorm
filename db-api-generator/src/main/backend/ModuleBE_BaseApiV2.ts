@@ -92,6 +92,6 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	};
 }
 
-export const createApisForDBModuleV2 = <DBType extends DB_Object, ConfigType extends DBApiConfig<DBType> = DBApiConfig<DBType>, Ks extends keyof PreDB<DBType> = Default_UniqueKey>(dbModule: ModuleBE_BaseDBV2<DBType, ConfigType, Ks>) => {
-	return new ModuleBE_BaseApiV2_Class<DBType, ConfigType, Ks>(dbModule);
+export const createApisForDBModuleV2 = <DBType extends DB_Object, Ks extends keyof PreDB<DBType> = Default_UniqueKey>(dbModule: ModuleBE_BaseDBV2<DBType, any, Ks>) => {
+	return new ModuleBE_BaseApiV2_Class<DBType, any, Ks>(dbModule);
 };

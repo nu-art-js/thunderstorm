@@ -101,9 +101,9 @@ export class DocWrapperV2<T extends DB_Object> {
 
 		// Will always get here with a transaction!
 		transaction!.set(this.ref, newDBItem);
-		this.data = currDBItem;
+		this.data = newDBItem;
 
-		await this.collection.hooks?.postWriteProcessing?.({updated: newDBItem});
+		await this.collection.hooks?.postWriteProcessing?.({before: currDBItem, updated: newDBItem});
 
 		return newDBItem;
 	};
