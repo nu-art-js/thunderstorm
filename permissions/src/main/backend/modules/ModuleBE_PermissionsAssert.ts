@@ -141,17 +141,18 @@ export class ModuleBE_PermissionsAssert_Class
 		// [DomainId]: accessLevel's numerical value
 		const userPermissions = MemKey_UserPermissions.get();
 		const apiDetails = await this.getApiDetails(path, projectId);
+
 		this.logDebug('______________________________');
 		this.logDebug(userPermissions);
 		this.logDebug('______________________________');
-		this.logDebug(apiDetails.dbApi);
+		this.logDebug(apiDetails?.dbApi);
 		this.logDebug('______________________________');
 
-		if (!apiDetails.dbApi.accessLevelIds || !apiDetails.dbApi._accessLevels) {
+		if (!apiDetails || !apiDetails.dbApi.accessLevelIds || !apiDetails.dbApi._accessLevels) {
 			if (!this.config.strictMode)
 				return;
 
-			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${apiDetails.dbApi.path}`);
+			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${path}`);
 		}
 
 		const hasAccess: boolean = apiDetails.dbApi._accessLevels.reduce<boolean>((_hasAccess, accessLevel, i) => {
@@ -165,7 +166,15 @@ export class ModuleBE_PermissionsAssert_Class
 
 	async getApiDetails(_path: string, projectId: string) {
 		const path = _path.substring(0, (_path + '?').indexOf('?')); //Get raw path without query
-		const dbApi = await ModuleBE_PermissionApi.query.uniqueWhere({path, projectId});
+		const dbApi = (await ModuleBE_PermissionApi.query.custom({
+			where: {
+				path,
+				projectId
+			}
+		}))[0];
+		if (!dbApi)
+			return undefined;
+
 		const requestPermissions = await this.getAccessLevels(dbApi.accessLevelIds || []);
 
 		return {
