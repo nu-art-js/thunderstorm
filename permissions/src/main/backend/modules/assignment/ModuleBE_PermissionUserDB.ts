@@ -102,7 +102,7 @@ class ModuleBE_PermissionUserDB_Class
 				throw new ApiException(404, `user not found for email ${email}`, e);
 			}
 			// Check if a user permissions object already exists, and create if not
-			const existingUserPermissions = await this.query.where({accountId: account._id});
+			const existingUserPermissions = await this.query.where({accountId: account._id}, t);
 			if (!existingUserPermissions.length) {
 				await this.set.item({accountId: account._id, groups: [], _auditorId: MemKey_AccountId.get()}, t);
 			}
