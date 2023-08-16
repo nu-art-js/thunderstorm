@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {ComponentSync, LL_V_L, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_AccountV2, SessionKey_Account_FE} from '../../modules/v2/ModuleFE_v2_Account';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
+import {ModuleFE_AccountV3, SessionKey_Account_FE_V3} from '../../modules/v3/ModuleFE_v3_Account';
 
 type Props = {
 	postSubmitAction?: () => void;
@@ -20,9 +20,9 @@ export class Component_ChangePassword
 	// ######################## Life Cycle ########################
 	protected deriveStateFromProps(nextProps: any, state: State): State {
 		state ??= this.state ? {...this.state} : {} as State;
-		if (!ModuleFE_AccountV2.accountId)
+		if (!ModuleFE_AccountV3.accountId)
 			throw new ThisShouldNotHappenException('Rendering a change password component without user logged in');
-		state.shouldGiveCurrentPassword = SessionKey_Account_FE.get().hasPassword;
+		state.shouldGiveCurrentPassword = SessionKey_Account_FE_V3.get().hasPassword;
 		return state;
 	}
 
@@ -33,11 +33,11 @@ export class Component_ChangePassword
 			return;
 		}
 
-		const account = ModuleFE_AccountV2.cache.unique(ModuleFE_AccountV2.accountId)!;
+		const account = ModuleFE_AccountV3.cache.unique(ModuleFE_AccountV3.accountId)!;
 
 		try {
 			if (!this.state.shouldGiveCurrentPassword)
-				await ModuleFE_AccountV2.vv1.setPassword({
+				await ModuleFE_AccountV3.vv1.setPassword({
 					userEmail: account.email,
 					password: this.state.newPassword,
 					password_check: this.state.newPasswordCheck,
@@ -47,7 +47,7 @@ export class Component_ChangePassword
 					this.logError('No current password given');
 					return;
 				}
-				await ModuleFE_AccountV2.vv1.changePassword({
+				await ModuleFE_AccountV3.vv1.changePassword({
 					userEmail: account.email,
 					originalPassword: this.state.currentPassword,
 					newPassword: this.state.newPassword,

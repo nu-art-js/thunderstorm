@@ -113,6 +113,23 @@ const API_ValidateSession = {
 const API_ChangePassword = {changePassword: {method: HttpMethod.POST, path: '/v1/account-v2/change-password'}} as const;
 const API_SetPassword = {setPassword: {method: HttpMethod.POST, path: '/v1/account-v2/set-password'}} as const;
 
+const API_LoginSamlV3 = {loginSaml: {method: HttpMethod.GET, path: 'v1/account-v3/login-saml'}} as const;
+const API_LoginV3 = {login: {method: HttpMethod.POST, path: 'v1/account-v3/login', timeout: Minute}} as const;
+const API_CreateTokenV3 = {createToken: {method: HttpMethod.POST, path: 'v1/account-v3/create-token', timeout: Minute}} as const;
+const API_LogoutV3 = {logout: {method: HttpMethod.GET, path: 'v1/account-v3/logout'}} as const;
+const API_RegisterAccountV3 = {registerAccount: {method: HttpMethod.POST, path: '/v1/account-v3/register-account'}} as const;
+const API_CreateAccountV3 = {createAccount: {method: HttpMethod.POST, path: '/v1/account-v3/create-account'}} as const;
+const API_ValidateSessionV3 = {
+	validateSession: {
+		method: HttpMethod.GET,
+		path: 'v1/account-v3/validate',
+		timeout: Minute
+	}
+} as const;
+const API_ChangePasswordV3 = {changePassword: {method: HttpMethod.POST, path: '/v1/account-v3/change-password'}} as const;
+const API_SetPasswordV3 = {setPassword: {method: HttpMethod.POST, path: '/v1/account-v3/set-password'}} as const;
+
+
 export type ApiStructBE_Account_V3 = {
 	vv1: TypedAPI_RegisterAccount_V3
 		& TypedApi_CreateAccount_V3
@@ -136,14 +153,14 @@ export type ApiStructBE_Account = {
 
 export const ApiDefBE_AccountV3: ApiDefResolver<ApiStructBE_Account_V3> = {
 	vv1: {
-		...API_RegisterAccount,
-		...API_CreateAccount,
-		...API_ChangePassword,
-		...API_Login,
-		...API_Logout,
-		...API_ValidateSession,
-		...API_CreateToken,
-		...API_SetPassword,
+		...API_RegisterAccountV3,
+		...API_CreateAccountV3,
+		...API_ChangePasswordV3,
+		...API_LoginV3,
+		...API_LogoutV3,
+		...API_ValidateSessionV3,
+		...API_CreateTokenV3,
+		...API_SetPasswordV3,
 	}
 };
 
@@ -184,15 +201,15 @@ export type ApiStructFE_AccountV3 = {
 
 export const ApiDefFE_AccountV3: ApiDefResolver<ApiStructFE_AccountV3> = {
 	vv1: {
-		...API_RegisterAccount,
-		...API_CreateAccount,
-		...API_ChangePassword,
-		...API_Login,
-		...API_LoginSaml,
-		...API_Logout,
-		...API_ValidateSession,
-		...API_CreateToken,
-		...API_SetPassword,
+		...API_RegisterAccountV3,
+		...API_CreateAccountV3,
+		...API_ChangePasswordV3,
+		...API_LoginV3,
+		...API_LoginSamlV3,
+		...API_LogoutV3,
+		...API_ValidateSessionV3,
+		...API_CreateTokenV3,
+		...API_SetPasswordV3,
 	}
 };
 

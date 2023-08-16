@@ -17,17 +17,8 @@
  * limitations under the License.
  */
 
-import {
-	_keys,
-	ApiException,
-	batchActionParallel,
-	dbObjectToId,
-	filterDuplicates,
-	filterInstances,
-	flatArray,
-	TypedMap
-} from '@nu-art/ts-common';
-import {MemKey_AccountId, ModuleBE_v2_AccountDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, flatArray, TypedMap} from '@nu-art/ts-common';
+import {MemKey_AccountId, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {DB_EntityDependency} from '@nu-art/firebase';
 import {ApiDef_PermissionUser, DB_PermissionUser, DBDef_PermissionUser, Request_AssignPermissions} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
@@ -36,8 +27,9 @@ import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
-import {MemKey_UserPermissions} from '../ModuleBE_PermissionsAssert';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_v3_AccountDB} from '@nu-art/user-account/backend/modules/v3/ModuleBE_v3_AccountDB';
+import {MemKey_UserPermissions} from '../ModuleBE_PermissionsAssert';
 import Transaction = firestore.Transaction;
 
 
@@ -66,6 +58,23 @@ class ModuleBE_PermissionUserDB_Class
 		return {collectionKey: 'User', conflictingIds: conflicts.map(dbObjectToId)};
 	};
 
+	// protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DB_PermissionUser[]) {
+	// 	const conflicts: DB_PermissionUser[] = [];
+	// 	const accounts = await ModuleBE_v2_AccountDB.query.custom(_EmptyQuery);
+	//
+	// 	for (const item of dbInstances) {
+	// 		const account = accounts.find(acc => acc._id === item.accountId);
+	// 		if (account)
+	// 			conflicts.push(item);
+	// 	}
+	//
+	// 	if (conflicts.length)
+	// 		throw new ApiException<DB_EntityDependency<any>[]>(422, 'permission users are connected to accounts').setErrorBody({
+	// 			type: 'has-dependencies',
+	// 			body: conflicts.map(conflict => ({collectionKey: 'User', conflictingIds: [conflict._id]}))
+	// 		});
+	// }
+
 	protected async preWriteProcessing(instance: DB_PermissionUser, t?: Transaction): Promise<void> {
 		instance._auditorId = MemKey_AccountId.get();
 		instance.__groupIds = filterDuplicates(instance.groups.map(group => group.groupId) || []);
@@ -84,6 +93,7 @@ class ModuleBE_PermissionUserDB_Class
 		//todo check for duplications in data
 	}
 
+
 	async __onUserLogin(account: UI_Account) {
 		await this.insertIfNotExist(account.email);
 	}
@@ -97,7 +107,7 @@ class ModuleBE_PermissionUserDB_Class
 			let account;
 			// Verify an account exists, to give it a user permissions object
 			try {
-				account = await ModuleBE_v2_AccountDB.query.uniqueWhere({email}, t);
+				account = await ModuleBE_v3_AccountDB.query.uniqueWhere({email}, t);
 			} catch (e: any) {
 				throw new ApiException(404, `user not found for email ${email}`, e);
 			}
