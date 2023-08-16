@@ -39,7 +39,7 @@ export const dispatch_CollectSessionDataV3 = new Dispatcher<CollectSessionDataV3
 // 			[] :
 // 		[];
 
-export const Header_SessionIdV3 = new HeaderKey(HeaderKey_SessionId);
+export const Header_SessionIdV3 = new HeaderKey(HeaderKey_SessionId, 403);
 
 type Config = DBApiConfigV3<DBProto_SessionType> & {
 	sessionTTLms: number
@@ -48,7 +48,6 @@ type Config = DBApiConfigV3<DBProto_SessionType> & {
 export const MemKey_AccountEmailV3 = new MemKey<string>('accounts--email', true);
 export const MemKey_AccountIdV3 = new MemKey<string>('accounts--id', true);
 export const MemKey_SessionDataV3 = new MemKey<TS_Object>('session-data', true);
-
 
 export class ModuleBE_v3_SessionDB_Class
 	extends ModuleBE_BaseDBV3<DBProto_SessionType, Config>
@@ -173,6 +172,5 @@ export class SessionKey_BEV3<Binder extends TypedKeyValue<string | number, any>>
 }
 
 export const SessionKey_Session_BE_V3 = new SessionKey_BEV3<_SessionKey_SessionV3>('session');
-
 
 export const ModuleBE_v3_SessionDB = new ModuleBE_v3_SessionDB_Class();
