@@ -1,10 +1,26 @@
-import {_SessionKey_SessionV3, DB_AccountV3, DBDef_v3_Session, DBProto_SessionType, HeaderKey_SessionId, Response_Auth_V3, UI_Session} from '../../../shared';
+import {
+	_SessionKey_SessionV3,
+	DB_AccountV3,
+	DBDef_v3_Session,
+	DBProto_SessionType,
+	Response_Auth_V3,
+	UI_Session
+} from '../../../shared';
 import {DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/db-api-generator/backend';
-import {__stringify, ApiException, BadImplementationException, currentTimeMillis, Day, Dispatcher, TS_Object, TypedKeyValue, UniqueId} from '@nu-art/ts-common';
+import {
+	__stringify,
+	ApiException,
+	BadImplementationException,
+	currentTimeMillis,
+	Day,
+	Dispatcher,
+	TS_Object,
+	TypedKeyValue,
+	UniqueId
+} from '@nu-art/ts-common';
 import {gzipSync, unzipSync} from 'zlib';
-import {HeaderKey} from '@nu-art/thunderstorm/backend';
 import {firestore} from 'firebase-admin';
-import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
+import {Header_SessionId, MemKey_SessionData} from '../../core/consts';
 import Transaction = firestore.Transaction;
 
 
@@ -21,23 +37,17 @@ export const dispatch_CollectSessionDataV3 = new Dispatcher<CollectSessionDataV3
 // 			[] :
 // 		[];
 
-export const Header_SessionIdV3 = new HeaderKey(HeaderKey_SessionId,403);
 
 type Config = DBApiConfigV3<DBProto_SessionType> & {
 	sessionTTLms: number
 }
-
-export const MemKey_AccountEmailV3 = new MemKey<string>('accounts--email', true);
-export const MemKey_AccountIdV3 = new MemKey<string>('accounts--id', true);
-export const MemKey_SessionDataV3 = new MemKey<TS_Object>('session-data', true);
-
 
 export class ModuleBE_v3_SessionDB_Class
 	extends ModuleBE_BaseDBV3<DBProto_SessionType, Config>
 	implements CollectSessionDataV3<_SessionKey_SessionV3> {
 
 	readonly Middleware = async () => {
-		const sessionId = Header_SessionIdV3.get();
+		const sessionId = Header_SessionId.get();
 		if (typeof sessionId !== 'string')
 			throw new ApiException(401, `Invalid session id: ${sessionId}`);
 
@@ -52,7 +62,7 @@ export class ModuleBE_v3_SessionDB_Class
 			throw new ApiException(401, 'Session timed out');
 
 		const sessionData = this.decodeSessionData(sessionId);
-		MemKey_SessionDataV3.set(sessionData);
+		MemKey_SessionData.set(sessionData);
 	};
 
 	constructor() {
@@ -95,12 +105,12 @@ export class ModuleBE_v3_SessionDB_Class
 		const session = (await this.query.custom({where: {accountId: uiAccount._id}}, transaction))[0];
 		if (session && !this.TTLExpired(session)) {
 			const sessionData = this.decodeSessionData(session.sessionId);
-			MemKey_SessionDataV3.set(sessionData);
+			MemKey_SessionData.set(sessionData);
 			return {sessionId: session.sessionId, ...uiAccount};
 		}
 
 		const sessionInfo = await this.createSession(uiAccount._id);
-		MemKey_SessionDataV3.set(sessionInfo.sessionData);
+		MemKey_SessionData.set(sessionInfo.sessionData);
 
 		return {sessionId: sessionInfo._id, ...uiAccount};
 	};
@@ -127,7 +137,7 @@ export class ModuleBE_v3_SessionDB_Class
 	}
 
 	logout = async (transaction?: Transaction) => {
-		const sessionId = Header_SessionIdV3.get();
+		const sessionId = Header_SessionId.get();
 		if (!sessionId)
 			throw new ApiException(404, 'Missing sessionId');
 
@@ -142,7 +152,7 @@ export class SessionKey_BEV3<Binder extends TypedKeyValue<string | number, any>>
 		this.key = key;
 	}
 
-	get(sessionData = MemKey_SessionDataV3.get()): Binder['value'] {
+	get(sessionData = MemKey_SessionData.get()): Binder['value'] {
 		if (!(this.key in sessionData))
 			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
 

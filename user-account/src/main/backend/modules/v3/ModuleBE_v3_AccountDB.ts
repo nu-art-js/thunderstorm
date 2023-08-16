@@ -29,14 +29,7 @@ import {
 	MUSTNeverHappenException
 } from '@nu-art/ts-common';
 import {DBApiConfigV3} from '@nu-art/db-api-generator/backend';
-import {
-	CollectSessionDataV3,
-	Header_SessionIdV3,
-	MemKey_AccountEmailV3,
-	MemKey_AccountIdV3,
-	ModuleBE_v3_SessionDB,
-	SessionKey_Session_BE_V3,
-} from './ModuleBE_v3_SessionDB';
+import {CollectSessionDataV3, ModuleBE_v3_SessionDB, SessionKey_Session_BE_V3,} from './ModuleBE_v3_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
 import {QueryParams} from '@nu-art/thunderstorm';
@@ -45,7 +38,8 @@ import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreInterfaceV3';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
 import {DBDef_v3_Accounts} from '../../../shared/v3-db-def';
-import {MemKey_AccountId, SessionKey_BE} from '../v2';
+import {SessionKey_BE} from '../v2';
+import {Header_SessionId, MemKey_AccountEmail, MemKey_AccountId} from '../../core/consts';
 import Transaction = firestore.Transaction;
 
 
@@ -75,8 +69,8 @@ export class ModuleBE_v3_AccountDB_Class
 
 	readonly Middleware = async () => {
 		const account = SessionKey_Account_BE_V3.get();
-		MemKey_AccountEmailV3.set(account.email);
-		MemKey_AccountIdV3.set(account._id);
+		MemKey_AccountEmail.set(account.email);
+		MemKey_AccountId.set(account._id);
 	};
 
 	constructor() {
@@ -117,7 +111,7 @@ export class ModuleBE_v3_AccountDB_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: UI_AccountV3, transaction?: Transaction): Promise<void> {
-		dbInstance._auditorId = MemKey_AccountEmailV3.get();
+		dbInstance._auditorId = MemKey_AccountId.get();
 	}
 
 	private spiceAccount(request: Request_RegisterAccount): UI_AccountV3 {
@@ -172,7 +166,7 @@ export class ModuleBE_v3_AccountDB_Class
 
 			//Email always lowerCase
 			body.email = body.email.toLowerCase();
-			MemKey_AccountEmailV3.set(body.email); // set here, because MemKey_AccountEmail is needed in createAccountImpl
+			MemKey_AccountEmail.set(body.email); // set here, because MemKey_AccountEmail is needed in createAccountImpl
 
 			//Create the account
 			const uiAccount = await this.createAccountImpl(body as Request_RegisterAccount, true, transaction); // Must have a password, because we use it to auto-login immediately after
@@ -211,7 +205,7 @@ export class ModuleBE_v3_AccountDB_Class
 			return uiAccount;
 		},
 		logout: async (queryParams: QueryParams) => {
-			const sessionId = Header_SessionIdV3.get();
+			const sessionId = Header_SessionId.get();
 			if (!sessionId)
 				throw new ApiException(404, 'Missing sessionId');
 

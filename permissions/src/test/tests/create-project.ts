@@ -18,9 +18,9 @@ import {
 	Test_Setup1,
 	Test_Setup2
 } from '../_core/consts';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {expect} from 'chai';
 import {Test_Setup} from '../_core/types';
+import {MemKey_AccountId} from '@nu-art/user-account/backend/core/MemKeys/keys';
 
 type CreatePermissionsSetup = {
 	setup: Test_Setup,
