@@ -31,7 +31,7 @@ import {
 } from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
 import {_EmptyQuery, DBApiDefGeneratorIDBV3, UpgradeCollectionBody} from '../shared';
-import {DBApiConfigV3, ModuleBE_BaseDBV3} from './ModuleBE_BaseDBV3';
+import {ModuleBE_BaseDBV3} from './ModuleBE_BaseDBV3';
 import {FirestoreQuery} from '@nu-art/firebase';
 
 
@@ -40,7 +40,7 @@ import {FirestoreQuery} from '@nu-art/firebase';
  *
  * By default, it exposes API endpoints for creating, deleting, updating, querying and querying for unique document.
  */
-export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>, ConfigType extends DBApiConfigV3<Proto> = DBApiConfigV3<Proto>>
+export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
 	extends Module {
 
 	readonly dbModule: ModuleBE_BaseDBV3<Proto>;

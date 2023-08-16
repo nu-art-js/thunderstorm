@@ -36,7 +36,6 @@ import {
 	Module
 } from '@nu-art/ts-common';
 import {ModuleBE_Firebase,} from '@nu-art/firebase/backend';
-import {DBApiBEConfig} from './db-def';
 import {_EmptyQuery, Response_DBSync} from '../shared';
 import {
 	FirestoreCollectionV3,
@@ -47,7 +46,7 @@ import {canDeleteDispatcherV2} from '@nu-art/firebase/backend/firestore-v2/const
 import {OnFirestoreBackupSchedulerActV2} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_v2_BackupScheduler';
 import {FirestoreBackupDetailsV2} from '@nu-art/thunderstorm/backend/modules/backup/ModuleBE_v2_Backup';
 import {ModuleBE_v2_SyncManager} from './ModuleBE_v2_SyncManager';
-import {getModuleBEConfigV3} from './v3-db-def';
+import {DBApiBEConfigV3, getModuleBEConfigV3} from './v3-db-def';
 import Transaction = firestore.Transaction;
 
 
@@ -56,7 +55,7 @@ export type BaseDBApiConfigV3 = {
 	maxChunkSize: number
 }
 
-export type DBApiConfigV3<Proto extends DBProto<any>> = BaseDBApiConfigV3 & DBApiBEConfig<Proto['dbType']>
+export type DBApiConfigV3<Proto extends DBProto<any>> = BaseDBApiConfigV3 & DBApiBEConfigV3<Proto>
 
 /**
  * An abstract base class used for implementing CRUD operations on a specific collection.
@@ -68,7 +67,7 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType e
 	implements OnFirestoreBackupSchedulerActV2 {
 
 	// @ts-ignore
-	private readonly ModuleBE_BaseDBV3 = true;
+	private readonly ModuleBE_BaseDBV2 = true;
 
 	// private static DeleteHardLimit = 250;
 	public collection!: FirestoreCollectionV3<Proto>;
