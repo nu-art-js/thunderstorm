@@ -19,7 +19,7 @@
 import {
 	__stringify, _keys,
 	ApiException,
-	BadImplementationException,
+	BadImplementationException, batchAction,
 	batchActionParallel,
 	compare,
 	Const_UniqueKeys,
@@ -66,6 +66,7 @@ import BulkWriter = firestore.BulkWriter;
 
 // {deleted: null} means that the whole collection has been deleted
 export type PostWriteProcessingData<Type extends DB_Object> = {
+	before?: Type | (Type | undefined) [],
 	updated?: Type | Type[],
 	deleted?: Type | Type[] | null
 };
@@ -212,6 +213,9 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 		custom: async (query: FirestoreQuery<Type>, transaction?: Transaction): Promise<Type[]> => {
 			return (await this._customQuery(query, transaction)).map(snapshot => snapshot.data());
 		},
+		where: async (where: Clause_Where<Type>, transaction?: Transaction): Promise<Type[]> => {
+			return this.query.custom({where}, transaction);
+		},
 	});
 
 	// ############################## Create ##############################
@@ -238,23 +242,31 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	});
 
 	// ############################## Set ##############################
-	protected _setAll = async (items: (PreDB<Type> | Type)[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
-		const docs = this.doc.allItems(items);
-		const dbItems = await this.getAll(docs);
+	protected _setAll = async (_items: (PreDB<Type> | Type)[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
+		let counter = 0;
+		const setImpl = async (items: (PreDB<Type> | Type)[]) => {
+			this.logDebug(`Setting ${counter + items.length}/${_items.length}`);
+			const allDocs = this.doc.allItems(items);
+			const dbItems = await this.getAll(allDocs);
 
-		const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
-			return !exists(_dbItem) ? await docs[i].prepareForCreate(items[i], transaction) : await docs[i].prepareForSet(items[i] as Type, _dbItem!, transaction);
-		}));
-		this.assertNoDuplicatedIds(preparedItems, 'set.all');
+			const preparedItems = await Promise.all(dbItems.map(async (_dbItem, i) => {
+				return !exists(_dbItem) ? await allDocs[i].prepareForCreate(items[i], transaction) : await allDocs[i].prepareForSet(items[i] as Type, _dbItem!, transaction);
+			}));
+			this.assertNoDuplicatedIds(preparedItems, 'set.all');
 
-		if (transaction)
-			// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
-			docs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
-		else
-			await this.multiWrite(multiWriteType, docs, 'set', preparedItems);
+			if (transaction)
+				// here we do not call doc.set because we have performed all the preparation for the dbitems as a group of items before this call
+				allDocs.map((doc, i) => transaction.set(doc.ref, preparedItems[i]));
+			else
+				await this.multiWrite(multiWriteType, allDocs, 'set', preparedItems);
 
-		await this.hooks?.postWriteProcessing?.({updated: preparedItems});
-		return preparedItems;
+			await this.hooks?.postWriteProcessing?.({before: dbItems, updated: preparedItems});
+
+			counter += items.length;
+			return preparedItems;
+		};
+
+		return await batchAction(_items, this.dbDef.upgradeChunksSize || 200, chunk => setImpl(chunk));
 	};
 
 	set = Object.freeze({

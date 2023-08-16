@@ -1,4 +1,3 @@
-import {FirestoreFunctionModule} from '@nu-art/firebase/backend';
 import {
 	BadImplementationException,
 	batchActionParallel,
@@ -15,6 +14,7 @@ import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-a
 import {ApiDef_Archiving, RequestBody_HardDeleteUnique, RequestQuery_DeleteAll, RequestQuery_GetHistory} from '../shared/archiving/apis';
 import {_EmptyQuery} from '../shared';
 import {ModuleBE_BaseDBV2} from './ModuleBE_BaseDBV2';
+import {ModuleBE_FirestoreListener} from '@nu-art/firebase/backend';
 
 
 type Params = { collectionName: string, docId: string }
@@ -26,7 +26,7 @@ export const Const_ArchivedCollectionPath = '/_archived';
  * with custom logic for archiving and Time-To-Live (TTL) functionality.
  */
 export class ModuleBE_ArchiveModule_Class<DBType extends DB_Object>
-	extends FirestoreFunctionModule<DBType> {
+	extends ModuleBE_FirestoreListener<DBType> {
 	private readonly TTL: number; // Time to live for each instance
 	private readonly lastUpdatedTTL: number; // Time to live after last update
 	protected readonly moduleMapper: { [key: string]: ModuleBE_BaseDBV2<DBType> }; // Module mapper, mapping collection name to module

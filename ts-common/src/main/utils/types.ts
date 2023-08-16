@@ -199,3 +199,71 @@ export type UnionToIntersection<U> =
 export type NonEmptyArray<T> = [T, ...T[]];
 
 export type AssetValueType<T, K extends keyof T, Ex> = T[K] extends Ex ? K : never
+
+export type RecursiveOmit<T, OmitKey extends keyof any> = {
+	[K in Exclude<keyof T, OmitKey>]: T[K] extends object ? RecursiveOmit<T[K], OmitKey> : T[K];
+};
+
+/**
+ * Constructs a union of string paths representing the properties and nested properties of an object type.
+ *
+ * @typeParam ObjectType - The object type to analyze.
+ *
+ * @example
+ * // Simple Example: Analyzing a flat object
+ * type Person = { name: string; age: number };
+ * type PersonPaths = DotNotation<Person>; // 'name' | 'age'
+ *
+ * @example
+ * // Nested Example: Analyzing an object with nested properties
+ * type User = { name: string; address: { city: string; zip: string } };
+ * type UserPaths = DotNotation<User>; // 'name' | 'address' | 'address.city' | 'address.zip'
+ *
+ * @example
+ * // Complex Example: Analyzing an object with multiple levels of nesting
+ * type Profile = { name: string; contacts: { email: { primary: string; secondary: string } } };
+ * type ProfilePaths = DotNotation<Profile>; // 'name' | 'contacts' | 'contacts.email' | 'contacts.email.primary' | 'contacts.email.secondary'
+ */
+export type DotNotation<T> = T extends object
+	? {
+		[K in keyof T]: K extends string
+			? T[K] extends object
+				? `${K & string}` | `${K & string}.${DotNotation<T[K]>}`
+				: `${K & string}`
+			: never;
+	}[keyof T]
+	: '';
+
+/**
+ * Replaces the type of nested property within an object, based on a specified path.
+ *
+ * @typeParam ObjectType - The original object type.
+ * @typeParam PropertyPath - The path to the property to replace, expressed as a dot-notation string.
+ * @typeParam NewValueType - The new type to replace the old type with.
+ *
+ * @example
+ * // Simple Example: Replace the 'age' property with a string
+ * type Person = { name: string; age: number };
+ * type NewPerson = ManipulateInnerPropValue<Person, 'age', string>;
+ * // Result: { name: string; age: string }
+ *
+ * @example
+ * // Nested Example: Replace the 'address.city' property with a number
+ * type User = { name: string; address: { city: string; zip: string } };
+ * type NewUser = ManipulateInnerPropValue<User, 'address.city', number>;
+ * // Result: { name: string; address: { city: number; zip: string } }
+ *
+ * @example
+ * // Complex Example: Replace the 'contacts.email.primary' property with a boolean
+ * type Profile = { name: string; contacts: { email: { primary: string; secondary: string } } };
+ * type NewProfile = ManipulateInnerPropValue<Profile, 'contacts.email.primary', boolean>;
+ * // Result: { name: string; contacts: { email: { primary: boolean; secondary: string } } }
+ */
+export type ManipulateInnerPropValue<ObjectType, PropertyPath extends DotNotation<ObjectType>, NewValueType> =
+	PropertyPath extends `${infer Key}.${infer Rest}`
+		? Key extends keyof ObjectType
+			? { [Prop in keyof ObjectType]: Prop extends Key ? Rest extends DotNotation<ObjectType[Key]> ? ManipulateInnerPropValue<ObjectType[Key], Rest, NewValueType> : never : ObjectType[Prop] }
+			: never
+		: { [Prop in keyof ObjectType]: Prop extends PropertyPath ? NewValueType : ObjectType[Prop] };
+
+
