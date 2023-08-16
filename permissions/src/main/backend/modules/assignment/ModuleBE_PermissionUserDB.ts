@@ -129,8 +129,6 @@ class ModuleBE_PermissionUserDB_Class
 		}
 
 		const myUserPermissions = MemKey_UserPermissions.get();
-		// const myAccountId = MemKey_AccountId.get();
-		// const myPermissionsUser = await this.query.uniqueWhere({accountId: myAccountId});
 
 		const permissionsToGive = dbGroups.reduce<TypedMap<number>>((map, group) => {
 			// Gather the highest permissions for each domain, from all groups
@@ -152,7 +150,13 @@ class ModuleBE_PermissionUserDB_Class
 		if (failedDomains.length)
 			throw new ApiException(403, `Attempted to give higher permissions than current user has: ${failedDomains}`);
 
-		//todo assign permissions
+		const groupIds = dbGroups.map(group => ({groupId: group._id}));
+		const usersToUpdate = usersToGiveTo.map(user => {
+			user.groups = groupIds;
+			return user;
+		});
+
+		await this.set.all(usersToUpdate);
 	}
 
 	// async _assignAppPermissions(body: Request_AssignAppPermissions) {

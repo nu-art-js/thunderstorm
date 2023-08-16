@@ -31,9 +31,9 @@ import {
 } from './_imports';
 import {addRoutes, createQueryServerApi, ServerApi} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpRequestBody, MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {MemKey_AccountEmail} from './v2';
 import {ModuleBE_v3_SessionDB} from './v3/ModuleBE_v3_SessionDB';
 import {ModuleBE_v3_AccountDB} from './v3/ModuleBE_v3_AccountDB';
+import {MemKey_AccountEmail} from '../core/consts';
 
 
 /**

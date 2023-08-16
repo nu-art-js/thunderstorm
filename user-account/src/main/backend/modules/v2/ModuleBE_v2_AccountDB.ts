@@ -8,8 +8,8 @@ import {
 	Request_LoginAccount,
 	Request_RegisterAccount,
 	RequestBody_ChangePassword,
-	RequestBody_RegisterAccount,
 	RequestBody_CreateToken,
+	RequestBody_RegisterAccount,
 	RequestBody_SetPassword,
 	Response_Auth,
 	UI_Account
@@ -29,15 +29,7 @@ import {
 	PreDB
 } from '@nu-art/ts-common';
 import {DBApiConfig} from '@nu-art/db-api-generator/backend';
-import {
-	CollectSessionData,
-	Header_SessionId,
-	MemKey_AccountEmail,
-	MemKey_AccountId,
-	ModuleBE_v2_SessionDB,
-	SessionKey_BE,
-	SessionKey_Session_BE
-} from './ModuleBE_v2_SessionDB';
+import {CollectSessionData, ModuleBE_v2_SessionDB, SessionKey_BE, SessionKey_Session_BE} from './ModuleBE_v2_SessionDB';
 import {assertPasswordRules, PasswordAssertionConfig} from '../../../shared/assertion';
 import {firestore} from 'firebase-admin';
 import {QueryParams} from '@nu-art/thunderstorm';
@@ -45,6 +37,7 @@ import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thun
 import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV2} from '@nu-art/firebase/backend/firestore-v2/FirestoreInterfaceV2';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
+import {Header_SessionId, MemKey_AccountEmail, MemKey_AccountId} from '../../core/consts';
 import Transaction = firestore.Transaction;
 
 
