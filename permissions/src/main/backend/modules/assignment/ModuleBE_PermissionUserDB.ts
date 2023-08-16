@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
+import {MemKey_AccountId, ModuleBE_v3_AccountDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, flatArray, TypedMap} from '@nu-art/ts-common';
-import {MemKey_AccountId, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {DB_EntityDependency} from '@nu-art/firebase';
 import {ApiDef_PermissionUser, DB_PermissionUser, DBDef_PermissionUser, Request_AssignPermissions} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
@@ -27,9 +27,8 @@ import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import {ModuleBE_v3_AccountDB} from '@nu-art/user-account/backend/modules/v3/ModuleBE_v3_AccountDB';
 import {MemKey_UserPermissions} from '../ModuleBE_PermissionsAssert';
+import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
 
 
@@ -112,7 +111,7 @@ class ModuleBE_PermissionUserDB_Class
 				throw new ApiException(404, `user not found for email ${email}`, e);
 			}
 			// Check if a user permissions object already exists, and create if not
-			const existingUserPermissions = await this.query.custom({where: {accountId: account._id}});
+			const existingUserPermissions = await this.query.where({accountId: account._id});
 			if (!existingUserPermissions.length) {
 				await this.set.item({accountId: account._id, groups: [], _auditorId: MemKey_AccountId.get()}, t);
 			}
