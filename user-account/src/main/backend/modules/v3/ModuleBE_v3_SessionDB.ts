@@ -21,7 +21,7 @@ export const dispatch_CollectSessionDataV3 = new Dispatcher<CollectSessionDataV3
 // 			[] :
 // 		[];
 
-export const Header_SessionIdV3 = new HeaderKey(HeaderKey_SessionId);
+export const Header_SessionIdV3 = new HeaderKey(HeaderKey_SessionId,403);
 
 type Config = DBApiConfigV3<DBProto_SessionType> & {
 	sessionTTLms: number
