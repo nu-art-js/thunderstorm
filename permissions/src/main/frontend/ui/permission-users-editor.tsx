@@ -13,7 +13,7 @@ import {LL_H_C, LL_V_L, SimpleListAdapter, TS_DropDown, TS_PropRenderer} from '@
 import {EditorBase, State_EditorBase} from './editor-base';
 import {DB_PermissionGroup, DB_PermissionUser} from '../shared';
 import {ModuleFE_PermissionsGroup, ModuleFE_PermissionsUser, OnPermissionsUsersUpdated} from '../core/module-pack';
-import {ModuleFE_AccountV2} from '@nu-art/user-account/frontend';
+import {ModuleFE_AccountV3} from '@nu-art/user-account/frontend';
 import {ThisShouldNotHappenException} from '@nu-art/ts-common';
 
 
@@ -36,7 +36,7 @@ export class PermissionUsersEditor
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsUser],
 		renderAccount: (accountId: string) =>
-			<div>{ModuleFE_AccountV2.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'}</div>
+			<div>{ModuleFE_AccountV3.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'}</div>
 	};
 
 	//######################### Life Cycle #########################
