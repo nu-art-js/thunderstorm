@@ -288,18 +288,8 @@ export class ModuleBE_v3_AccountDB_Class
 		}
 
 		return getUIAccountV3(await this.runTransaction(async _transaction => {
-			let existingAccount: DB_AccountV3 | undefined;
-
-			console.log(this);
-
-			try {
-				existingAccount = await this.query.uniqueWhere({email: body.email}, transaction);
-			} catch (ignore) {
-				// this is fine we do not want the account to exist!
-				/* empty */
-			}
-
-			if (existingAccount)
+			const existingAccounts = await this.query.custom({where: {email: body.email}}, transaction);
+			if (existingAccounts.length > 0)
 				throw new ApiException(422, 'User with email already exists');
 
 			return await this.create.item(account as UI_AccountV3, transaction);

@@ -26,6 +26,7 @@ export interface UI_Notification {
 	postDelayed: (postDelayed: number) => UI_Notification;
 	content: (title: string, message?: string) => UI_Notification;
 	execute: <T>(action: () => Promise<T>) => Promise<T>;
+	setStatus: (status: NotificationStatus) => UI_Notification;
 	show: (postDelay?: number) => void;
 	hide: () => void;
 	delete: () => void;
@@ -73,6 +74,10 @@ export class ModuleFE_Notifications_Class
 			content: (title: string, message?: string) => {
 				notification.title = title;
 				notification.message = message || '';
+				return uiNotification;
+			},
+			setStatus: (status: NotificationStatus) => {
+				notification.status = status;
 				return uiNotification;
 			},
 			execute: async <T>(action: () => Promise<T>) => {
