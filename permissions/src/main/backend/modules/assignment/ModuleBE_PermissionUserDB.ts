@@ -39,7 +39,6 @@ import {firestore} from 'firebase-admin';
 import {MemKey_UserPermissions} from '../ModuleBE_PermissionsAssert';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
-import Transaction = firestore.Transaction;
 
 
 class ModuleBE_PermissionUserDB_Class
