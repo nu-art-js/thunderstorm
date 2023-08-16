@@ -1,5 +1,5 @@
 import {_keys, DBDef, dbObjectToId, flatArray, Module, PreDB} from '@nu-art/ts-common';
-import {addRoutes, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
 	DB_PermissionAccessLevel,
@@ -13,7 +13,8 @@ import {
 	DBDef_PermissionDomain,
 	DBDef_PermissionGroup,
 	DBDef_PermissionProjects,
-	DBDef_PermissionUser
+	DBDef_PermissionUser,
+	Request_ConnectDomainToRoutes
 } from '../../shared';
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
@@ -24,6 +25,7 @@ import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
+import {_EmptyQuery} from '@nu-art/db-api-generator';
 
 const defaultDomainDbDefMap: { [k: string]: DBDef<any>[] } = {
 	[permissionsDefName]: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel],
@@ -38,7 +40,8 @@ class ModuleBE_Permissions_Class
 		super.init();
 
 		addRoutes([
-			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.createProject)
+			createQueryServerApi(ApiDef_Permissions.v1.createProject, this.createProject),
+			createBodyServerApi(ApiDef_Permissions.v1.connectDomainToRoutes, this.connectDomainToRoutes)
 		]);
 	}
 
@@ -116,6 +119,30 @@ class ModuleBE_Permissions_Class
 		});
 
 		await ModuleBE_PermissionApi.create.all(apis as PreDB<DB_PermissionApi>[]);
+	};
+
+	private connectDomainToRoutes = async (data: Request_ConnectDomainToRoutes) => {
+		const accessLevels = await ModuleBE_PermissionAccessLevel.query.custom({where: {domainId: data.domainId}});
+		const apis = (await ModuleBE_PermissionApi.query.custom(_EmptyQuery)).filter(i => i.path.includes(data.dbName));
+
+		accessLevels.forEach(level => {
+			const lookupWords = defaultLevelsRouteLookupWords[level.name];
+			if (!lookupWords)
+				return;
+
+			apis.filter(i => lookupWords.some(word => i.path.includes(word)))
+				.forEach(api => {
+					if (api.accessLevelIds?.find(i => i === level._id))
+						return;
+
+					if (!api.accessLevelIds)
+						api.accessLevelIds = [];
+					
+					api.accessLevelIds.push(level._id);
+				});
+		});
+
+		await ModuleBE_PermissionApi.update.all(apis);
 	};
 }
 

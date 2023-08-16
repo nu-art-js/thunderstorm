@@ -18,15 +18,25 @@ import {
 	OnPermissionsLevelsUpdated
 } from '../core/module-pack';
 import {
+	genericNotificationAction,
+	getElementCenterPos,
+	LL_H_C, Model_PopUp,
+	ModuleFE_MouseInteractivity,
+	mouseInteractivity_PopUp,
+	openContent,
 	SimpleListAdapter,
 	TS_BusyButton,
+	TS_Button,
 	TS_DropDown,
 	TS_Input,
 	TS_PropRenderer,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, capitalizeFirstLetter, cloneObj, PreDB, sortArray} from '@nu-art/ts-common';
+import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, PreDB, sortArray} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
+import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
+import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
+import {defaultAccessLevels} from '../../shared/management/access-level/consts';
 
 type State = State_EditorBase<DB_PermissionDomain> & {
 	projects: Readonly<DB_PermissionProject[]>
@@ -36,7 +46,7 @@ type State = State_EditorBase<DB_PermissionDomain> & {
 const emptyLevel = Object.freeze({name: '', domainId: '', value: -1} as PreDB<DB_PermissionAccessLevel>);
 
 export class PermissionDomainsEditor
-	extends EditorBase<DB_PermissionDomain, State>
+	extends EditorBase<DB_PermissionDomain, State, { dbDefs: DBDef<any>[] }>
 	implements OnPermissionsDomainsUpdated, OnPermissionsLevelsUpdated {
 
 
@@ -108,6 +118,46 @@ export class PermissionDomainsEditor
 
 		this.state.newLevel.update('domainId', this.state.editedItem.item._id);
 		return this.state.newLevel.save();
+	};
+
+	private _saveImpl = async (createLevels: boolean) => {
+		ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
+		await genericNotificationAction(
+			async () => {
+				await new EditableDBItem(this.state.editedItem!.item, ModuleFE_PermissionsDomain, async (domain) => {
+					if (!createLevels)
+						return;
+
+					await ModuleFE_PermissionsAccessLevel.v1.upsertAll(defaultAccessLevels.map(i => ({
+						...i,
+						domainId: domain._id
+					} as PreDB<DB_PermissionAccessLevel>))).executeSync();
+
+				}).save();
+			},
+			`Saving ${this.itemName}`, 3);
+	};
+
+	protected saveItem = async (e: React.MouseEvent) => {
+		if (this.state.editedItem?.item._id)
+			await this._saveImpl(false);
+
+		const model: Model_PopUp = {
+			id: 'save-initial-domain',
+			modalPos: {x: 0, y: -1},
+			offset: {x: 0, y: -10},
+			originPos: getElementCenterPos(e.target as Element),
+			content: () => <>
+				<div className={'save-initial-domain__title'}>Create default access levels?</div>
+				<LL_H_C className={'save-initial-domain__buttons'}>
+					<TS_Button onClick={() => this._saveImpl(false)}>No</TS_Button>
+					<TS_Button onClick={() => {
+						this._saveImpl(true);
+					}}>Yes</TS_Button>
+				</LL_H_C>
+			</>,
+		};
+		ModuleFE_MouseInteractivity.showContent(model);
 	};
 
 	//######################### Render levels #########################
@@ -212,13 +262,49 @@ export class PermissionDomainsEditor
 		</TS_PropRenderer.Vertical>;
 	};
 
+	private renderDBDefList = () => {
+		return <>
+			{this.props.dbDefs.map(dbDef => {
+				return <div
+					onClick={() => {
+						ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);
+						Dialog_ActionProcessorConfirmation.show(
+							{
+								key: 'connect-domain-to-routes',
+								description: `Connect domain ${this.state.editedItem!.item.namespace} to default routes under module ${dbDef.entityName}?`,
+								group: ''
+							},
+							async () => {
+								await ModuleFE_Permissions.v1.connectDomainToRoutes({domainId: this.state.editedItem!.item._id!, dbName: dbDef.dbName}).executeSync();
+							}
+						);
+					}}
+					className={'db-def-list__item'}
+				>{dbDef.entityName}</div>;
+			})}
+		</>;
+	};
+
+	private renderConnectDomainButton = () => {
+		if (!this.state.editedItem?.item._id)
+			return '';
+
+		return <TS_Button
+			{...openContent.popUp.right('db-def-list', this.renderDBDefList)}
+			className={'db-def-button'}
+		>Connect To Routes</TS_Button>;
+	};
+
 	editorContent = () => {
 		const domain = this.state.editedItem!;
 		return <>
 			{this.renderProjectsDropDown()}
 			<TS_PropRenderer.Vertical label={'Namespace'}>
-				<TS_Input type={'text'} value={domain.item.namespace}
-						  onChange={value => this.setProperty('namespace', value)}/>
+				<LL_H_C className={'match_width'} style={{gap: '10px'}}>
+					<TS_Input type={'text'} value={domain.item.namespace}
+										onChange={value => this.setProperty('namespace', value)}/>
+					{this.renderConnectDomainButton()}
+				</LL_H_C>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical label={'Levels'}>
 				{this.renderLevelsTable()}

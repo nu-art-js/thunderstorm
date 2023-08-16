@@ -18,7 +18,7 @@
  */
 
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
-import {PreDB, StringMap} from '@nu-art/ts-common';
+import {PreDB, StringMap, UniqueId} from '@nu-art/ts-common';
 import {DB_PermissionProject} from './management';
 
 
@@ -57,6 +57,11 @@ export type Request_AssignAppPermissions<T extends StringMap = StringMap> = {
 	customKey: string,
 	sharedUserIds?: string[],
 	appAccountId?: string
+}
+
+export type Request_ConnectDomainToRoutes = {
+	domainId: UniqueId;
+	dbName: string;
 }
 
 export type AssignAppPermissions = Request_AssignAppPermissions & { granterUserId: string };
@@ -108,7 +113,8 @@ export type ApiStruct_Permissions = {
 		// getUsersCFsByShareGroups: BodyApi<Response_UsersCFsByShareGroups, Request_UsersCFsByShareGroups>;
 		// registerExternalProject: BodyApi<void, Request_RegisterProject>;
 		// registerProject: QueryApi<void>;
-		createProject: QueryApi<void>
+		createProject: QueryApi<void>;
+		connectDomainToRoutes: BodyApi<void, Request_ConnectDomainToRoutes>
 	}
 }
 export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
@@ -119,6 +125,7 @@ export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
 		// registerExternalProject: {method: HttpMethod.POST, path: 'v1/register/register-external-project'},
 		// registerProject: {method: HttpMethod.GET, path: 'v1/register/register-project'},
 		createProject: {method: HttpMethod.GET, path: 'v1/permissions/create-first-project'},
+		connectDomainToRoutes: {method: HttpMethod.POST, path: 'v1/permissions/connect-domain-to-routes'},
 	}
 };
 
