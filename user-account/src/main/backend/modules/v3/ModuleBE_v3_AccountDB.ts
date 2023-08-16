@@ -290,8 +290,6 @@ export class ModuleBE_v3_AccountDB_Class
 		return getUIAccountV3(await this.runTransaction(async _transaction => {
 			let existingAccount: DB_AccountV3 | undefined;
 
-			console.log(this);
-
 			try {
 				existingAccount = await this.query.uniqueWhere({email: body.email}, transaction);
 			} catch (ignore) {
