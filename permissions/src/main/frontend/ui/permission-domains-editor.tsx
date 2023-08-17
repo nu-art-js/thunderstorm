@@ -24,7 +24,7 @@ import {
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp,
 	openContent,
-	SimpleListAdapter,
+	SimpleListAdapter, Thunder,
 	TS_BusyButton,
 	TS_Button,
 	TS_DropDown,
@@ -46,7 +46,7 @@ type State = State_EditorBase<DB_PermissionDomain> & {
 const emptyLevel = Object.freeze({name: '', domainId: '', value: -1} as PreDB<DB_PermissionAccessLevel>);
 
 export class PermissionDomainsEditor
-	extends EditorBase<DB_PermissionDomain, State, { dbDefs: DBDef<any>[] }>
+	extends EditorBase<DB_PermissionDomain, State>
 	implements OnPermissionsDomainsUpdated, OnPermissionsLevelsUpdated {
 
 
@@ -263,8 +263,11 @@ export class PermissionDomainsEditor
 	};
 
 	private renderDBDefList = () => {
+		// @ts-ignore
+		const dbDefs = sortArray(Thunder.getInstance().filterModules(i => !!i.dbDef).map(i => i.dbDef as DBDef<any>), i => i.entityName);
+		
 		return <>
-			{this.props.dbDefs.map(dbDef => {
+			{dbDefs.map(dbDef => {
 				return <div
 					onClick={() => {
 						ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);

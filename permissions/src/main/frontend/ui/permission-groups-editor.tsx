@@ -34,7 +34,6 @@ export class PermissionGroupsEditor
 	};
 
 	//######################### Life Cycle #########################
-
 	__onPermissionsGroupsUpdated(...params: ApiCallerEventType<DB_PermissionGroup>) {
 		if ([EventType_Update, EventType_Create].includes(params[0])) {
 			const level = params[1] as DB_PermissionGroup;

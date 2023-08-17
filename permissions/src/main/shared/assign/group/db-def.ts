@@ -41,5 +41,5 @@ export const DBDef_PermissionGroup: DBDef<DB_PermissionGroup> = {
 	validator: Validator_PermissionGroup,
 	dbName: 'permissions--group',
 	entityName: 'permissions--group',
-	generatedProps: ['_levelsMap'],
+	generatedProps: ['_levelsMap', '_auditorId'],
 };

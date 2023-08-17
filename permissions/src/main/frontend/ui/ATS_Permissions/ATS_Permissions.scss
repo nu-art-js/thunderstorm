@@ -74,6 +74,15 @@
       padding: 8px;
       border-left: 2px solid black;
       gap: 8px;
+
+      .api-editor__editor__level-list {
+        width: 100%;
+        flex-wrap: wrap;
+
+        .ts-dropdown {
+          width: 200px;
+        }
+      }
     }
   }
 
