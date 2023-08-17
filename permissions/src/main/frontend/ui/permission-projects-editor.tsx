@@ -19,12 +19,14 @@ import {
 	OnPermissionsProjectsUpdated
 } from '../core/module-pack';
 import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
-import {sortArray, UniqueId} from '@nu-art/ts-common';
+import {Filter, sortArray, UniqueId} from '@nu-art/ts-common';
+import {TS_Icons} from '@nu-art/ts-styles';
 
 
 type State = State_EditorBase<DB_PermissionProject> & {
 	apis?: DB_PermissionApi[];
 	selectedApiId?: UniqueId;
+	searchValue?: string;
 };
 
 export class PermissionProjectsEditor
@@ -45,7 +47,7 @@ export class PermissionProjectsEditor
 	//######################### Life Cycle #########################
 
 	__onPermissionsApisLoaded() {
-		this.forceUpdate();
+		this.reDeriveState();
 	}
 
 	__OnPermissionsProjectsUpdated(...params: ApiCallerEventType<DB_PermissionProject>) {
@@ -53,11 +55,12 @@ export class PermissionProjectsEditor
 			const project = params[1] as DB_PermissionProject;
 			this.reDeriveState({
 				selectedItemId: project._id,
-				editedItem: new EditableDBItem(project, ModuleFE_PermissionsProject)
+				editedItem: new EditableDBItem(project, ModuleFE_PermissionsProject),
+				searchValue: undefined
 			});
 		}
 		if (params[0] === EventType_Delete)
-			this.reDeriveState({selectedItemId: undefined, editedItem: undefined});
+			this.reDeriveState({selectedItemId: undefined, editedItem: undefined, searchValue: undefined});
 	}
 
 	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
@@ -108,15 +111,27 @@ export class PermissionProjectsEditor
 		if (!this.state.apis)
 			return '';
 
-		const apis = sortArray(this.state.apis, i => i.path);
-		return <LL_V_L className={'api-editor__list'}>
-			{apis.map(api => {
-				return <div
-					key={api._id}
-					onClick={() => this.setState({selectedApiId: api._id})}
-					className={_className('api-editor__list__item', api._id === this.state.selectedApiId ? 'selected' : undefined)}
-				>{api.path}</div>;
-			})}
+		const filter = new Filter<DB_PermissionApi>(i => [i.path]);
+		const apis = sortArray(filter.filter(this.state.apis, this.state.searchValue ?? ''), i => i.path);
+
+		return <LL_V_L className={'api-editor__list-wrapper'}>
+			<LL_H_C className={'api-editor__search'}>
+				<TS_Input
+					type={'text'}
+					value={this.state.searchValue}
+					onChange={searchValue => this.setState({searchValue})}
+				/>
+				<TS_Icons.Search.component/>
+			</LL_H_C>
+			<LL_V_L className={'api-editor__list'}>
+				{apis.map(api => {
+					return <div
+						key={api._id}
+						onClick={() => this.setState({selectedApiId: api._id})}
+						className={_className('api-editor__list__item', api._id === this.state.selectedApiId ? 'selected' : undefined)}
+					>{api.path}</div>;
+				})}
+			</LL_V_L>
 		</LL_V_L>;
 	};
 
@@ -127,11 +142,14 @@ export class PermissionProjectsEditor
 
 		const api = new EditableDBItem(_api, ModuleFE_PermissionsApi);
 		const levels = ModuleFE_PermissionsAccessLevel.cache.filter(i => !api.item.accessLevelIds?.includes(i._id));
+		sortArray(levels, 'value');
+		sortArray(levels, i => ModuleFE_PermissionsDomain.cache.unique(i.domainId)!.namespace);
 		const adapter = SimpleListAdapter(levels as DB_PermissionAccessLevel[], i => {
 			const domain = ModuleFE_PermissionsDomain.cache.unique(i.item.domainId)!;
 			return <>{domain.namespace} : {i.item.name} ({i.item.value})</>;
 		});
 
+		console.log(api.item.accessLevelIds);
 		return <LL_V_L className={'api-editor__editor'}>
 			<TS_PropRenderer.Vertical label={'Path'}>
 				<div>{api.item.path}</div>
@@ -141,10 +159,20 @@ export class PermissionProjectsEditor
 					{api.item.accessLevelIds?.map(levelId => {
 						const level = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
 						const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
-						return <div key={levelId} className={'api-editor__editor__level-list__item'}>{`${domain.namespace}: ${level.name} (${level.value})`}</div>;
+						return <div
+							key={levelId}
+							className={'api-editor__editor__level-list__item'}
+						>
+							{`${domain.namespace}: ${level.name} (${level.value})`}
+							<TS_Icons.x.component onClick={async () => {
+								api.set('accessLevelIds', api.item.accessLevelIds!.filter(i => i !== levelId));
+								await api.save();
+							}}/>
+						</div>;
 					})}
 					<TS_DropDown<DB_PermissionAccessLevel>
 						adapter={adapter}
+						placeholder={'Add an access level'}
 						onSelected={async i => {
 							if (!api.item.accessLevelIds)
 								api.set('accessLevelIds', []);
