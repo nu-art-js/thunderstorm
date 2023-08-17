@@ -39,7 +39,8 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 	protected saveItem = async (e: React.MouseEvent) => {
 		if (!this.state.editedItem)
 			return;
-
+		
+		this.logDebug('Saving Item', this.state.editedItem.item);
 		await genericNotificationAction(
 			() => this.state.editedItem!.save(),
 			`Saving ${this.itemName}`, 3);
