@@ -4,7 +4,7 @@ import {
 	EditableDBItem,
 	EventType_Create,
 	EventType_Delete,
-	EventType_Update,
+	EventType_Update, ModuleFE_BaseApi,
 	Props_SmartComponent,
 	State_SmartComponent
 } from '@nu-art/db-api-generator/frontend';
@@ -21,6 +21,7 @@ import {
 import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
 import {sortArray, UniqueId} from '@nu-art/ts-common';
 
+
 type State = State_EditorBase<DB_PermissionProject> & {
 	apis?: DB_PermissionApi[];
 	selectedApiId?: UniqueId;
@@ -30,14 +31,13 @@ export class PermissionProjectsEditor
 	extends EditorBase<DB_PermissionProject, State>
 	implements OnPermissionsProjectsUpdated, OnPermissionsApisLoaded {
 
-
 	//######################### Static #########################
 
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsProject]
 	};
 
-	readonly module = ModuleFE_PermissionsProject;
+	readonly module = ModuleFE_PermissionsProject as ModuleFE_BaseApi<DB_PermissionProject, any>;
 	readonly itemName = 'Permission Project';
 	readonly itemNamePlural = 'Permission Projects';
 	readonly itemDisplay = (item: DB_PermissionProject) => item.name;
@@ -53,7 +53,7 @@ export class PermissionProjectsEditor
 			const project = params[1] as DB_PermissionProject;
 			this.reDeriveState({
 				selectedItemId: project._id,
-				editedItem: new EditableDBItem<DB_PermissionProject>(project, ModuleFE_PermissionsProject)
+				editedItem: new EditableDBItem(project, ModuleFE_PermissionsProject)
 			});
 		}
 		if (params[0] === EventType_Delete)

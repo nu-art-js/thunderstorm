@@ -27,7 +27,7 @@ import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {_EmptyQuery} from '@nu-art/db-api-generator';
 
-const defaultDomainDbDefMap: { [k: string]: DBDef<any>[] } = {
+const defaultDomainDbDefMap: { [k: string]: DBDef<any,any>[] } = {
 	[permissionsDefName]: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel],
 	[permissionsAssignName]: [DBDef_PermissionGroup, DBDef_PermissionUser],
 };

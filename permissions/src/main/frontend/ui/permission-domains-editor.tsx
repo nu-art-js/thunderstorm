@@ -32,7 +32,7 @@ import {
 	TS_PropRenderer,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, PreDB, sortArray} from '@nu-art/ts-common';
+import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, filterInstances, Module, PreDB, sortArray} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
 import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
@@ -41,6 +41,7 @@ import {defaultAccessLevels} from '../../shared/management/access-level/consts';
 type State = State_EditorBase<DB_PermissionDomain> & {
 	projects: Readonly<DB_PermissionProject[]>
 	newLevel: EditableDBItem<DB_PermissionAccessLevel>;
+	dbDefs: DBDef<any>[];
 };
 
 const emptyLevel = Object.freeze({name: '', domainId: '', value: -1} as PreDB<DB_PermissionAccessLevel>);
@@ -87,6 +88,10 @@ export class PermissionDomainsEditor
 			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsDomain);
 			state.selectedItemId = state.items[0]._id;
 		}
+
+		state.dbDefs ??= filterInstances(Thunder.getInstance()
+			.filterModules<Module>(module => 'dbDef' in module)
+			.map(module => 'dbDef' in module ? module.dbDef as DBDef<any> : undefined));
 
 		return state;
 	}
@@ -263,11 +268,8 @@ export class PermissionDomainsEditor
 	};
 
 	private renderDBDefList = () => {
-		// @ts-ignore
-		const dbDefs = sortArray(Thunder.getInstance().filterModules(i => !!i.dbDef).map(i => i.dbDef as DBDef<any>), i => i.entityName);
-		
 		return <>
-			{dbDefs.map(dbDef => {
+			{this.state.dbDefs.map(dbDef => {
 				return <div
 					onClick={() => {
 						ModuleFE_MouseInteractivity.hide(mouseInteractivity_PopUp);

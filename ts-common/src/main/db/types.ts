@@ -31,7 +31,7 @@ export type VersionsDeclaration<T extends DB_Object, Versions extends VersionTyp
 
 export type Proto_DB_Object<
 	T extends DB_Object,
-	GeneratedKeys extends keyof T,
+	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<T, any, any>,
 	UniqueKeys extends keyof T = Default_UniqueKey> = {
 
