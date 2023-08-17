@@ -14,7 +14,7 @@ import {
 } from '../..';
 import {Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/db-api-generator/frontend';
 
-type State = State_SmartComponent & {};
+type State = State_SmartComponent;
 
 type Props = Props_SmartComponent;
 

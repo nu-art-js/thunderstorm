@@ -17,17 +17,8 @@
  * limitations under the License.
  */
 
-import {
-	_keys,
-	ApiException,
-	batchActionParallel,
-	dbObjectToId,
-	filterDuplicates,
-	filterInstances,
-	flatArray,
-	TypedMap
-} from '@nu-art/ts-common';
 import {MemKey_AccountId, ModuleBE_v3_AccountDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, flatArray, TypedMap} from '@nu-art/ts-common';
 import {DB_EntityDependency} from '@nu-art/firebase';
 import {ApiDef_PermissionUser, DB_PermissionUser, DBDef_PermissionUser, Request_AssignPermissions} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
@@ -66,6 +57,23 @@ class ModuleBE_PermissionUserDB_Class
 		return {collectionKey: 'User', conflictingIds: conflicts.map(dbObjectToId)};
 	};
 
+	// protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DB_PermissionUser[]) {
+	// 	const conflicts: DB_PermissionUser[] = [];
+	// 	const accounts = await ModuleBE_v2_AccountDB.query.custom(_EmptyQuery);
+	//
+	// 	for (const item of dbInstances) {
+	// 		const account = accounts.find(acc => acc._id === item.accountId);
+	// 		if (account)
+	// 			conflicts.push(item);
+	// 	}
+	//
+	// 	if (conflicts.length)
+	// 		throw new ApiException<DB_EntityDependency<any>[]>(422, 'permission users are connected to accounts').setErrorBody({
+	// 			type: 'has-dependencies',
+	// 			body: conflicts.map(conflict => ({collectionKey: 'User', conflictingIds: [conflict._id]}))
+	// 		});
+	// }
+
 	protected async preWriteProcessing(instance: DB_PermissionUser, t?: Transaction): Promise<void> {
 		instance._auditorId = MemKey_AccountId.get();
 		instance.__groupIds = filterDuplicates(instance.groups.map(group => group.groupId) || []);
@@ -83,6 +91,7 @@ class ModuleBE_PermissionUserDB_Class
 
 		//todo check for duplications in data
 	}
+
 
 	async __onUserLogin(account: UI_Account) {
 		await this.insertIfNotExist(account.email);
