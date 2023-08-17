@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Component, ReactNode} from 'react';
-import {EditableItem, LL_H_C, PartialProps_DropDown, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {_className, EditableItem, LL_H_C, PartialProps_DropDown, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import './TS_MultiSelect.scss';
 import {AssetValueType, DB_Object, PreDB, removeItemFromArray} from '@nu-art/ts-common';
 import {PartialProps_GenericDropDown} from '../GenericDropDown';
@@ -9,6 +9,7 @@ import {ModuleFE_BaseApi} from '../../modules/ModuleFE_BaseApi';
 
 export type TS_MultiSelect_Renderer<InnerItem extends DB_Object> = {
 	label: string,
+	className?: string
 	module: ModuleFE_BaseApi<InnerItem>,
 	itemRenderer: (item?: InnerItem, onDelete?: () => Promise<void>) => ReactNode
 	placeholder: string
@@ -20,12 +21,10 @@ export type TS_MultiSelect_Renderer<InnerItem extends DB_Object> = {
 
 export type DynamicProps_TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem> = {
 	editable: EditableItem<EnclosingItem>,
-	prop: AssetValueType<EnclosingItem, K, string[]>
+	prop: AssetValueType<EnclosingItem, K, string[] | undefined>
 }
 
-export type StaticProps_TS_MultiSelect<InnerItem extends DB_Object> = {
-	props: TS_MultiSelect_Renderer<InnerItem>
-}
+export type StaticProps_TS_MultiSelect<InnerItem extends DB_Object> = TS_MultiSelect_Renderer<InnerItem>
 
 export type Props_TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerItem extends DB_Object> =
 	StaticProps_TS_MultiSelect<InnerItem> & DynamicProps_TS_MultiSelect<EnclosingItem, K>
@@ -42,9 +41,16 @@ type SelectorRenderer<InnerItem extends DB_Object> = {
 
 export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerItem extends DB_Object>
 	extends Component<Props_TS_MultiSelect<EnclosingItem, K, InnerItem>, any> {
+	static prepare<EnclosingItem, K extends keyof EnclosingItem, InnerItem extends DB_Object>(_props: TS_MultiSelect_Renderer<InnerItem>) {
+		return <EnclosingItem, K extends keyof EnclosingItem>(props: DynamicProps_TS_MultiSelect<EnclosingItem, K> & Partial<StaticProps_TS_MultiSelect<InnerItem>>) =>
+			<TS_MultiSelect<EnclosingItem, K, InnerItem>
+				{..._props}
+				{...props}
+			/>;
+	}
 
 	render() {
-		type PropType = EnclosingItem[AssetValueType<EnclosingItem, K, string[]>];
+		type PropType = EnclosingItem[AssetValueType<EnclosingItem, K, string[] | undefined>];
 		const editable: EditableItem<EnclosingItem> = this.props.editable;
 		const prop: K = this.props.prop;
 
@@ -58,7 +64,7 @@ export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerI
 			this.forceUpdate();
 		};
 
-		const props = this.props.props;
+		const props = this.props;
 		if (props.createNewItemFromLabel)
 			onNoMatchingSelectionForString = async (filterText: string, matchingItems: InnerItem[], e: React.KeyboardEvent) => {
 				const item = await props.createNewItemFromLabel!(filterText, matchingItems, e);
@@ -67,7 +73,7 @@ export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerI
 			};
 
 		return <TS_PropRenderer.Vertical label={props.label}>
-			<LL_H_C className="ts-values-list">
+			<LL_H_C className={_className('ts-values-list', this.props.className)}>
 				{selectedIds.map(selectedId => {
 					const itemToAdd = props.itemResolver?.().find(i => i._id === selectedId) || props.module.cache.unique(selectedId);
 					return <LL_H_C className="ts-values-list__value" key={selectedId}>
@@ -103,3 +109,5 @@ export class TS_MultiSelect<EnclosingItem, K extends keyof EnclosingItem, InnerI
 		/>;
 	}
 }
+
+
