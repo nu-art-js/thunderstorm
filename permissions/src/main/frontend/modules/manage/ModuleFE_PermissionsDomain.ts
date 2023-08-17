@@ -37,3 +37,4 @@ export class ModuleFE_PermissionsDomain_Class
 }
 
 export const ModuleFE_PermissionsDomain = new ModuleFE_PermissionsDomain_Class();
+export const ModuleFE_PermissionsDomain_ = ModuleFE_PermissionsDomain as unknown as ModuleFE_BaseApi<any, any>;

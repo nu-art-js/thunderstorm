@@ -4,23 +4,26 @@ import {
 	EditableDBItem,
 	EventType_Create,
 	EventType_Delete,
-	EventType_Update, ModuleFE_BaseApi,
+	EventType_Update,
+	ModuleFE_BaseApi,
 	Props_SmartComponent,
 	State_SmartComponent
 } from '@nu-art/db-api-generator/frontend';
-import {_className, LL_H_C, LL_V_L, SimpleListAdapter, TS_Button, TS_DropDown, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {_className, LL_H_C, LL_V_L, TS_Button, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {EditorBase, State_EditorBase} from './editor-base';
-import {DB_PermissionAccessLevel, DB_PermissionApi, DB_PermissionProject} from '../shared';
+import {DB_PermissionApi, DB_PermissionProject} from '../shared';
 import {
 	ModuleFE_PermissionsAccessLevel,
 	ModuleFE_PermissionsApi,
 	ModuleFE_PermissionsDomain,
-	ModuleFE_PermissionsProject, OnPermissionsApisLoaded,
+	ModuleFE_PermissionsProject,
+	OnPermissionsApisLoaded,
 	OnPermissionsProjectsUpdated
 } from '../core/module-pack';
 import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
 import {Filter, sortArray, UniqueId} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
+import {MultiSelect} from './ui-props';
 
 
 type State = State_EditorBase<DB_PermissionProject> & {
@@ -141,47 +144,25 @@ export class PermissionProjectsEditor
 			return '';
 
 		const api = new EditableDBItem(_api, ModuleFE_PermissionsApi);
-		const levels = ModuleFE_PermissionsAccessLevel.cache.filter(i => !api.item.accessLevelIds?.includes(i._id));
-		sortArray(levels, 'value');
-		sortArray(levels, i => ModuleFE_PermissionsDomain.cache.unique(i.domainId)!.namespace);
-		const adapter = SimpleListAdapter(levels as DB_PermissionAccessLevel[], i => {
-			const domain = ModuleFE_PermissionsDomain.cache.unique(i.item.domainId)!;
-			return <>{domain.namespace} : {i.item.name} ({i.item.value})</>;
-		});
 
 		console.log(api.item.accessLevelIds);
 		return <LL_V_L className={'api-editor__editor'}>
 			<TS_PropRenderer.Vertical label={'Path'}>
 				<div>{api.item.path}</div>
 			</TS_PropRenderer.Vertical>
-			<TS_PropRenderer.Vertical label={'Access Levels'}>
-				<LL_H_C className={'api-editor__editor__level-list'}>
-					{api.item.accessLevelIds?.map(levelId => {
-						const level = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
-						const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
-						return <div
-							key={levelId}
-							className={'api-editor__editor__level-list__item'}
-						>
-							{`${domain.namespace}: ${level.name} (${level.value})`}
-							<TS_Icons.x.component onClick={async () => {
-								api.set('accessLevelIds', api.item.accessLevelIds!.filter(i => i !== levelId));
-								await api.save();
-							}}/>
-						</div>;
-					})}
-					<TS_DropDown<DB_PermissionAccessLevel>
-						adapter={adapter}
-						placeholder={'Add an access level'}
-						onSelected={async i => {
-							if (!api.item.accessLevelIds)
-								api.set('accessLevelIds', []);
-							api.item.accessLevelIds!.push(i._id);
-							await api.save();
-						}}
-					/>
-				</LL_H_C>
-			</TS_PropRenderer.Vertical>
+			<MultiSelect.AccessLevel
+				editable={api}
+				prop={'accessLevelIds'}
+				className={'api-editor__editor__level-list'}
+				itemRenderer={(item, onDelete) => {
+					const levelId = item!._id;
+					const level = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
+					const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
+					return <div key={levelId} className={'api-editor__editor__level-list__item'}>
+						<TS_Icons.x.component onClick={onDelete}/>
+						{`${domain.namespace}: ${level.name} (${level.value})`}
+					</div>;
+				}}/>
 		</LL_V_L>;
 	};
 }

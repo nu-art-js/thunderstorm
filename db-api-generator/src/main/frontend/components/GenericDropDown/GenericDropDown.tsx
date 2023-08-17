@@ -12,7 +12,7 @@ type OptionalProps_GenericDropDown<T> = {
 	renderer?: (item: T) => React.ReactElement
 	queryFilter?: (item: T) => boolean
 	ifNoneShowAll?: boolean
-	sortBy?: (keyof T)[] | ((item: T) => string | number);
+	sortBy?: ((keyof T) | ((item: T) => string | number))[];
 	className?: string;
 	caret?: { open: React.ReactNode, close: React.ReactNode }
 	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
@@ -27,7 +27,7 @@ export type PartialProps_GenericDropDown<T> = OptionalProps_GenericDropDown<T> &
 	inputValue?: string;
 	selected?: T | string | (() => T | undefined);
 	limitItems?: number;
-	itemResolver?: ()=>T[]
+	itemResolver?: () => T[]
 } & OptionalCanUnselect<T>
 
 export type MandatoryProps_GenericDropDown<T extends DB_Object, Ks extends keyof PreDB<T> = Default_UniqueKey> = OptionalProps_GenericDropDown<T> & {
@@ -44,7 +44,7 @@ type GenericDropDownProps<T, Ks> = {
 	renderer: (item: T) => React.ReactElement
 	queryFilter?: (item: T) => boolean
 	ifNoneShowAll?: boolean
-	sortBy?: (keyof T)[] | ((item: T) => string | number);
+	sortBy?: ((keyof T) | ((item: T) => string | number))[];
 	className?: string;
 	caret?: { open: React.ReactNode, close: React.ReactNode }
 	renderSearch?: (dropDown: TS_DropDown<T>) => React.ReactNode;
@@ -57,7 +57,7 @@ type GenericDropDownProps<T, Ks> = {
 	boundingParentSelector?: string;
 	limitItems?: number;
 	disabled?: boolean;
-	itemResolver?: ()=>T[]
+	itemResolver?: () => T[]
 } & OptionalCanUnselect<T>
 
 export type Props_GenericDropDown<T extends DB_Object, Ks extends keyof PreDB<T> = Default_UniqueKey> =
@@ -89,14 +89,9 @@ export class GenericDropDown<T extends DB_Object, Ks extends keyof PreDB<T> = De
 		}
 
 		//Sort Items by sort function or object keys
-		if (nextProps.sortBy) {
-			if (typeof nextProps.sortBy === 'function')
-				state.items = sortArray(state.items, nextProps.sortBy);
-			else
-				state.items = nextProps.sortBy?.reduce((toRet, sortKey) => {
-					return sortArray(toRet, item => item[sortKey]);
-				}, state.items) || state.items;
-		}
+		state.items = nextProps.sortBy?.reduce((toRet, sortBy) => {
+			return sortArray(state.items, typeof sortBy === 'function' ? sortBy : item => item[sortBy]);
+		}, state.items) || state.items;
 
 		//Set selected item
 		state.selected = this.getSelected(nextProps.module, nextProps.selected);

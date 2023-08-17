@@ -37,3 +37,4 @@ export class ModuleFE_PermissionsAccessLevel_Class
 }
 
 export const ModuleFE_PermissionsAccessLevel = new ModuleFE_PermissionsAccessLevel_Class();
+export const ModuleFE_PermissionsAccessLevel_ = ModuleFE_PermissionsAccessLevel as unknown as ModuleFE_BaseApi<any, any>;
