@@ -9,8 +9,10 @@ import {cloneObj, resolveContent} from '@nu-art/ts-common';
  * @template T The type of the item.
  */
 export class EditableItem<T> {
+	static AUTO_SAVE = false;
+
 	item: Partial<T>;
-	private _autoSave: boolean = false;
+	private _autoSave: boolean = EditableItem.AUTO_SAVE;
 
 	/**
 	 * Constructs an EditableItem instance.

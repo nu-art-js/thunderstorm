@@ -8,16 +8,18 @@ import {
 	Props_SmartComponent,
 	State_SmartComponent
 } from '@nu-art/db-api-generator/frontend';
-import {LL_H_C, LL_V_L, SimpleListAdapter, TS_DropDown, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {ThisShouldNotHappenException, UniqueId} from '@nu-art/ts-common';
+import {TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+import {UniqueId} from '@nu-art/ts-common';
 import {EditorBase, State_EditorBase} from './editor-base';
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup} from '../shared';
+import {DB_PermissionGroup} from '../shared';
 import {ModuleFE_PermissionsAccessLevel, ModuleFE_PermissionsDomain, ModuleFE_PermissionsGroup, OnPermissionsGroupsUpdated} from '../core/module-pack';
+import {MultiSelect} from './ui-props';
+import {TS_Icons} from '@nu-art/ts-styles';
+
 
 type State = State_EditorBase<DB_PermissionGroup> & {
 	newLevelDomainId?: UniqueId;
 };
-
 
 export class PermissionGroupsEditor
 	extends EditorBase<DB_PermissionGroup, State>
@@ -58,80 +60,25 @@ export class PermissionGroupsEditor
 
 	//######################### Render #########################
 
-	private renderExistingLevels = () => {
+	private renderLevels = () => {
 		const group = this.state.editedItem;
 		if (!group)
 			return '';
 
-		const levels = ModuleFE_PermissionsAccessLevel.cache.filter(i => !!group.item.accessLevelIds?.includes(i._id));
-		if (!levels?.length)
-			return '';
-
-		return levels.map(level => {
-			const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId);
-			if (!domain)
-				throw new ThisShouldNotHappenException(`Level has non existing domain id ${level.domainId}`);
-
-			const domainLevels = ModuleFE_PermissionsAccessLevel.cache.filter(i => i.domainId === domain._id);
-			const adapter = SimpleListAdapter(domainLevels, i => <div>{i.item.name}</div>);
-
-			return <LL_V_L className={'level'} key={level._id}>
-				<div className={'level__domain-name'}>{domain.namespace}</div>
-				<TS_DropDown<DB_PermissionAccessLevel>
-					adapter={adapter}
-					selected={level}
-					onSelected={item => {
-						const levelsIds = group.item.accessLevelIds!;
-						const index = levelsIds.indexOf(level._id);
-						levelsIds.splice(index, 1, item._id);
-						this.setProperty('accessLevelIds', levelsIds);
-					}}
-				/>
-			</LL_V_L>;
-		});
+		return <MultiSelect.AccessLevel
+			editable={group}
+			prop={'accessLevelIds'}
+			className={'api-editor__editor__level-list'}
+			itemRenderer={(levelId, onDelete) => {
+				const level = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
+				const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
+				return <div key={levelId} className={'api-editor__editor__level-list__item'}>
+					<TS_Icons.x.component onClick={onDelete}/>
+					{`${domain.namespace}: ${level.name} (${level.value})`}
+				</div>;
+			}}/>;
 	};
 
-	private renderNewLevel = () => {
-		const group = this.state.editedItem;
-		if (!group)
-			return '';
-
-		const existingDomainIds = ModuleFE_PermissionsAccessLevel.cache.filter(i => !!group.item.accessLevelIds?.includes(i._id)).map(i => i.domainId);
-		const domains = ModuleFE_PermissionsDomain.cache.filter(i => !existingDomainIds.includes(i._id));
-		const selected = domains.find(i => i._id === this.state.newLevelDomainId);
-		const levels = selected ? ModuleFE_PermissionsAccessLevel.cache.filter(i => i.domainId === selected._id) : [];
-
-		const domainsAdapter = SimpleListAdapter(domains, i => <div>{i.item.namespace}</div>);
-		const levelsAdapter = SimpleListAdapter(levels, i => <div>{i.item.name}</div>);
-
-		return <LL_V_L className={'level'}>
-			<TS_DropDown<DB_PermissionDomain>
-				adapter={domainsAdapter}
-				selected={selected}
-				placeholder={'Select Domain'}
-				onSelected={i => this.setState({newLevelDomainId: i._id})}
-			/>
-			<TS_DropDown<DB_PermissionAccessLevel>
-				adapter={levelsAdapter}
-				selected={undefined}
-				placeholder={'Select Level'}
-				onSelected={i => {
-					const levelIds = group.item.accessLevelIds || [];
-					levelIds.push(i._id);
-					this.setState({newLevelDomainId: undefined}, () => this.setProperty('accessLevelIds', levelIds));
-				}}
-			/>
-		</LL_V_L>;
-	};
-
-	private renderAccessLevels = () => {
-		return <TS_PropRenderer.Vertical label={'Access Levels'}>
-			<LL_H_C className={'levels'}>
-				{this.renderExistingLevels()}
-				{this.renderNewLevel()}
-			</LL_H_C>
-		</TS_PropRenderer.Vertical>;
-	};
 
 	editorContent = () => {
 		const group = this.state.editedItem!;
@@ -139,7 +86,7 @@ export class PermissionGroupsEditor
 			<TS_PropRenderer.Vertical label={'Label'}>
 				<TS_Input type={'text'} value={group.item.label} onChange={value => this.setProperty('label', value)}/>
 			</TS_PropRenderer.Vertical>
-			{this.renderAccessLevels()}
+			{this.renderLevels()}
 		</>;
 	};
 }

@@ -36,3 +36,5 @@ export class ModuleFE_PermissionsGroup_Class
 }
 
 export const ModuleFE_PermissionsGroup = new ModuleFE_PermissionsGroup_Class();
+export const ModuleFE_PermissionsGroup_ = ModuleFE_PermissionsGroup as unknown as ModuleFE_BaseApi<any, any>;
+

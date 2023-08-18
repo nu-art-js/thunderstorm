@@ -16,12 +16,12 @@
   flex-shrink: 0;
 }
 
-.ts-values-list {
+.ts-multi-select__list {
   gap: 12px;
   width: 100%;
   flex-wrap: wrap;
 
-  .ts-values-list__value {
+  .ts-multi-select__value {
     @include tag(var(--tags--inner-color), var(--tags--outer-color));
 
     .ts-icon__small {

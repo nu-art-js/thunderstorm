@@ -143,7 +143,7 @@ export class PermissionProjectsEditor
 		if (!_api)
 			return '';
 
-		const api = new EditableDBItem(_api, ModuleFE_PermissionsApi);
+		const api = new EditableDBItem(_api, ModuleFE_PermissionsApi).setAutoSave(true);
 
 		console.log(api.item.accessLevelIds);
 		return <LL_V_L className={'api-editor__editor'}>
@@ -154,8 +154,7 @@ export class PermissionProjectsEditor
 				editable={api}
 				prop={'accessLevelIds'}
 				className={'api-editor__editor__level-list'}
-				itemRenderer={(item, onDelete) => {
-					const levelId = item!._id;
+				itemRenderer={(levelId, onDelete) => {
 					const level = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
 					const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
 					return <div key={levelId} className={'api-editor__editor__level-list__item'}>
