@@ -120,7 +120,6 @@ class GroupRenderer
 	}
 }
 
-// @ts-ignore
 const MultiSelect_PermissionsAccessLevel: StaticProps_TS_MultiSelect_V2<string> = {
 	itemRenderer: (accessLevelId, onDelete?: () => Promise<void>) => <>
 		<div className="ts-icon__small" onClick={onDelete}>X</div>
@@ -149,7 +148,8 @@ const MultiSelect_PermissionsGroup: StaticProps_TS_MultiSelect_V2<{ groupId: str
 };
 
 export const MultiSelect = {
-	AccessLevel: TS_MultiSelect_V2.prepare(MultiSelect_PermissionsAccessLevelStam),
+	AccessLevel_StamTest: TS_MultiSelect_V2.prepare(MultiSelect_PermissionsAccessLevelStam),
+	AccessLevel: TS_MultiSelect_V2.prepare(MultiSelect_PermissionsAccessLevel),
 	Group: TS_MultiSelect_V2.prepare(MultiSelect_PermissionsGroup),
 };
 
