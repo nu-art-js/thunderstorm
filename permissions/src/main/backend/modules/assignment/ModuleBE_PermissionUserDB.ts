@@ -18,7 +18,16 @@
  */
 
 import {MemKey_AccountId, ModuleBE_v3_AccountDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
-import {_keys, ApiException, batchActionParallel, dbObjectToId, filterDuplicates, filterInstances, flatArray, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	ApiException,
+	batchActionParallel,
+	dbObjectToId,
+	filterDuplicates,
+	filterInstances,
+	flatArray,
+	TypedMap
+} from '@nu-art/ts-common';
 import {DB_EntityDependency} from '@nu-art/firebase';
 import {ApiDef_PermissionUser, DB_PermissionUser, DBDef_PermissionUser, Request_AssignPermissions} from '../../shared';
 import {ModuleBE_PermissionGroup} from './ModuleBE_PermissionGroup';
@@ -158,7 +167,10 @@ class ModuleBE_PermissionUserDB_Class
 		}, {});
 
 		const failedDomains = (_keys(permissionsToGive) as string[]).filter(domainId => {
-			return myUserPermissions[domainId] < permissionsToGive[domainId];
+			const tooLowPermission = myUserPermissions[domainId] < permissionsToGive[domainId];
+			this.logError(`${myUserPermissions[domainId]} < ${permissionsToGive[domainId]} === ${tooLowPermission}`);
+			const noPermissionInThisDomain = myUserPermissions[domainId] === undefined;
+			return noPermissionInThisDomain || tooLowPermission;
 		});
 
 		if (failedDomains.length)

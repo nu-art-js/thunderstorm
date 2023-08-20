@@ -298,10 +298,10 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	async validateUpdateData(updateData: UpdateData<Type>, transaction?: Transaction) {
 	}
 
-	update = Object.freeze({
-		item: (updateData: UpdateObject<Type>) => this.doc.unique(updateData._id).update(updateData),
-		all: this._updateAll,
-	});
+	// update = Object.freeze({
+	// 	item: (updateData: UpdateObject<Type>) => this.doc.unique(updateData._id).update(updateData),
+	// 	all: this._updateAll,
+	// });
 
 	// ############################## Delete ##############################
 	protected _deleteQuery = async (query: FirestoreQuery<Type>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {

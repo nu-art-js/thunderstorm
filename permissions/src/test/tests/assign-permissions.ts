@@ -1,12 +1,21 @@
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {AssertionException, reduceToMap, UniqueId} from '@nu-art/ts-common';
+import {
+	AssertionException,
+	BadImplementationException,
+	filterInstances,
+	reduceToMap,
+	UniqueId
+} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_AccountId, ModuleBE_v3_AccountDB} from '@nu-art/user-account/backend';
 import {
 	Failed_Log,
 	postPermissionTestCleanup,
 	setupProjectPermissions,
+	Test_AccessLevel_NoAccess,
+	Test_AccessLevel_Read,
+	Test_AccessLevelsMap,
 	Test_Account1,
 	Test_DefaultAccountId,
 	Test_Domain1,
@@ -42,7 +51,7 @@ const Test_AllAccounts: Test_TargetAccount[] = [
 		...Test_Account1,
 		domains: [{
 			namespace: Test_Domain1,
-			accessLevel: 'NoAccess'
+			accessLevel: Test_AccessLevel_NoAccess
 		}],
 		result: true
 	},
@@ -96,7 +105,7 @@ const TestCases_Basic: BasicProjectTest['testcases'] = [{
 			...DefaultSelfAccount,
 			domains: [{
 				namespace: Test_Domain1,
-				accessLevel: 'Read'
+				accessLevel: Test_AccessLevel_Read
 			}]
 		}
 	},
@@ -115,6 +124,7 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 
 				let finalResult = true;
 				const setupResult = await setupProjectPermissions(setup.projects);
+				const allGroups = await ModuleBE_PermissionGroup.query.custom(_EmptyQuery);
 
 				// Check all user cases against this setup
 				await Promise.all(setup.projects.map(async project => {
@@ -138,17 +148,24 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 						await ModuleBE_PermissionUserDB.insertIfNotExist(createdTargetAccount.email);
 						const createdTargetPermissionUser = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId: createdTargetAccount._id});
 
-						// Get groups
-						const allGroups = await ModuleBE_PermissionGroup.query.custom(_EmptyQuery);
 						// Get groups to assign to target account
+						const groupsToAssign = filterInstances(targetAccount.domains.map(dom => {
+							return allGroups.find(grp => {
+								if (grp.accessLevelIds.length !== 1)
+									return false;
 
-						const groupsToAssign = targetAccount.domains.map(dom=>{
-							allGroups.find(grp=>grp.accessLevelIds)
-							dom.namespace
-						})
+								const wantedLevelValue = Test_AccessLevelsMap.find(row => row.name === dom.accessLevel);
+								if (!wantedLevelValue)
+									throw new BadImplementationException(`Using non-existent accessLevel in test: ${dom.accessLevel}`);
 
-						// targetAccount.
-
+								const accessLevel = grp.accessLevelIds.map(id => setupResult.accessLevelsByDomainNameMap[dom.namespace][dom.accessLevel])[0];
+								console.log(accessLevel);
+								return accessLevel.value === wantedLevelValue.value;
+							});
+						}));
+						console.log(groupsToAssign);
+						if (groupsToAssign.length !== targetAccount.domains.length)
+							throw new BadImplementationException(`Couldn't find all test permission groups!`);
 
 						//todo create groups matching the required domains for this targetAccount
 						let result = true;
@@ -157,7 +174,7 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 							await testCase.input.check(
 								setupResult.nameToProjectMap[project.name]._id,
 								[createdTargetPermissionUser._id],
-								[],
+								groupsToAssign.map(g => g._id),
 							);
 						} catch (e: any) {
 							result = false;
@@ -168,8 +185,11 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 					}));
 				}));
 
-				if (finalResult !== testCase.result)
-					throw new AssertionException('Test did not reach wanted end result.');
+
+				// if (finalResult !== testCase.result)
+				// 	throw new AssertionException('Test did not reach wanted end result.');
+				expect(finalResult).to.eql(testCase.result);
+
 			});
 		} catch (e: any) {
 			console.error('\n' + Failed_Log);

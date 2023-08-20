@@ -77,6 +77,8 @@ export const TestSuite_Permissions_CreateProject: BasicProjectTest = {
 		// create all access levels
 		// create APIs with the associated access levels
 
+		await postPermissionTestCleanup();
+
 
 		const setup = testCase.input.setup;
 		try {
