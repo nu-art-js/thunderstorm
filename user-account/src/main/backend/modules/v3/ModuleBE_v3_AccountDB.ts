@@ -111,7 +111,11 @@ export class ModuleBE_v3_AccountDB_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: UI_AccountV3, transaction?: Transaction): Promise<void> {
-		dbInstance._auditorId = MemKey_AccountId.get();
+		try {
+			dbInstance._auditorId = MemKey_AccountId.get();
+		} catch (e) {
+			dbInstance._auditorId = dbInstance._id;
+		}
 	}
 
 	private spiceAccount(request: Request_RegisterAccount): UI_AccountV3 {

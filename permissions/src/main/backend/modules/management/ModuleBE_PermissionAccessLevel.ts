@@ -30,6 +30,7 @@ import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
+import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 
 
 export class ModuleBE_PermissionAccessLevel_Class
@@ -61,6 +62,33 @@ export class ModuleBE_PermissionAccessLevel_Class
 		await ModuleBE_PermissionDomain.query.uniqueAssert(dbInstance.domainId);
 
 		dbInstance._auditorId = MemKey_AccountId.get();
+	}
+
+	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionAccessLevel>): Promise<void> {
+		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
+		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
+
+		//Collect all apis that hold an access level id in the levels that have changed
+		const deletedIds = deleted.map(dbObjectToId);
+		const levelIds = [...deletedIds, ...updated.map(dbObjectToId)];
+		const connectedApis = await batchActionParallel(levelIds, 10, async ids => await ModuleBE_PermissionApi.query.custom({where: {accessLevelIds: {$aca: ids}}}));
+		const connectedGroups = await batchActionParallel(deletedIds, 10, async ids => await ModuleBE_PermissionGroup.query.custom({where: {accessLevelIds: {$aca: ids}}}));
+
+		deletedIds.forEach(id => {
+			//For each deleted level remove it from any api that held it
+			connectedApis.forEach(api => {
+				api.accessLevelIds = api.accessLevelIds?.filter(i => i !== id);
+			});
+			//For each deleted level remove it from any group that held it
+			connectedGroups.forEach(group => {
+				group.accessLevelIds = group.accessLevelIds.filter(i => i !== id);
+			});
+		});
+
+		//Send all apis to upsert so their _accessLevels update
+		await ModuleBE_PermissionApi.set.all(connectedApis);
+		await ModuleBE_PermissionGroup.set.all(connectedGroups);
+		return super.postWriteProcessing(data);
 	}
 
 	protected async assertDeletion(transaction: FirestoreTransaction, dbInstance: DB_PermissionAccessLevel) {

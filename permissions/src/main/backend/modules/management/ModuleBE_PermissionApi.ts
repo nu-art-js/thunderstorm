@@ -62,10 +62,12 @@ export class ModuleBE_PermissionApi_Class
 			const dbAccessLevelIds = dbAccessLevels.map(dbObjectToId);
 			throw new ApiException(404, `Asked to assign an api non existing accessLevels: ${instance.accessLevelIds.filter(id => !dbAccessLevelIds.includes(id))}`);
 		}
-		instance._accessLevels = dbAccessLevels.map(accessLevel => ({
-			domainId: accessLevel.domainId,
-			value: accessLevel.value
-		}));
+
+		dbAccessLevels.forEach(accessLevel => {
+			if (!instance._accessLevels)
+				instance._accessLevels = {};
+			instance._accessLevels[accessLevel.domainId] = accessLevel.value;
+		});
 	}
 
 	registerApis(projectId: string, routes: string[]) {
