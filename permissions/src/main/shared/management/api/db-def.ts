@@ -20,9 +20,9 @@
 import {
 	DBDef,
 	OmitDBObject,
-	tsValidate_OptionalArray,
 	tsValidateArray,
 	tsValidateBoolean,
+	tsValidateDynamicObject,
 	tsValidateNumber,
 	tsValidateString,
 	tsValidateUniqueId,
@@ -39,7 +39,7 @@ const Validator_PermissionApi: TypeValidator<OmitDBObject<DB_PermissionApi>> = {
 	_auditorId: tsValidateString(),
 	deprecated: tsValidateBoolean(false),
 	onlyForApplication: tsValidateBoolean(false),
-	_accessLevels: tsValidate_OptionalArray({domainId: tsValidateUniqueId, value: tsValidateNumber()}),
+	_accessLevels: tsValidateDynamicObject(tsValidateNumber(), tsValidateString(), false),
 };
 
 export const DBDef_PermissionApi: DBDef<DB_PermissionApi> = {
