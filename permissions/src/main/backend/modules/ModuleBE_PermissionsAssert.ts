@@ -17,11 +17,25 @@
  * limitations under the License.
  */
 
-import {_keys, ApiException, BadImplementationException, batchActionParallel, filterDuplicates, LogLevel, Module, StringMap, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	ApiException,
+	BadImplementationException,
+	batchActionParallel,
+	filterDuplicates,
+	Module,
+	StringMap,
+	TypedMap
+} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
-import {ApiDef_PermissionsAssert, Base_AccessLevel, DB_PermissionAccessLevel, Request_AssertApiForUser} from '../../shared';
+import {
+	ApiDef_PermissionsAssert,
+	Base_AccessLevel,
+	DB_PermissionAccessLevel,
+	Request_AssertApiForUser
+} from '../../shared';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {
@@ -97,10 +111,10 @@ export class ModuleBE_PermissionsAssert_Class
 		await action(projectId, customFields);
 	};
 
-	constructor() {
-		super();
-		this.setMinLevel(LogLevel.Debug);
-	}
+	// constructor() {
+	// 	super();
+	// 	this.setMinLevel(LogLevel.Debug);
+	// }
 
 	init() {
 		super.init();
@@ -134,8 +148,10 @@ export class ModuleBE_PermissionsAssert_Class
 			if (!userPermissions[domainId])
 				throw new ApiException(403, 'Missing Access For This Domain');
 
-			if ((userPermissions[domainId] ?? 0) <= apiDetails.dbApi._accessLevels![domainId])
+			if ((userPermissions[domainId] ?? 0) <= apiDetails.dbApi._accessLevels![domainId]) {
+				this.logErrorBold(`${(userPermissions[domainId] ?? 0)} <= ${apiDetails.dbApi._accessLevels![domainId]} === ${(userPermissions[domainId] ?? 0) <= apiDetails.dbApi._accessLevels![domainId]}`);
 				throw new ApiException(403, 'Action Forbidden');
+			}
 		});
 	}
 

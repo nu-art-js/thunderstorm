@@ -5,7 +5,7 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {
 	Failed_Log,
-	postPermissionTestCleanup,
+	permissionTestCleanup,
 	setupProjectPermissions,
 	Test_AccessLevel_Admin,
 	Test_AccessLevel_Delete,
@@ -77,8 +77,6 @@ export const TestSuite_Permissions_CreateProject: BasicProjectTest = {
 		// create all access levels
 		// create APIs with the associated access levels
 
-		await postPermissionTestCleanup();
-
 
 		const setup = testCase.input.setup;
 		try {
@@ -86,6 +84,7 @@ export const TestSuite_Permissions_CreateProject: BasicProjectTest = {
 				MemKey_AccountId.set(Test_DefaultAccountId);
 
 				let finalResult = true;
+				await permissionTestCleanup();
 				const setupResult = await setupProjectPermissions(setup.projects);
 
 				// Finished to setup the permissions
@@ -125,8 +124,6 @@ export const TestSuite_Permissions_CreateProject: BasicProjectTest = {
 			throw e;
 		}
 
-		// Post Test Cleanup
-		await postPermissionTestCleanup();
 	}
 };
 
