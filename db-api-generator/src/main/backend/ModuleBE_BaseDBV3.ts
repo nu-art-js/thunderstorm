@@ -75,7 +75,6 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType e
 	public query!: FirestoreCollectionV3<Proto>['query'];
 	public create!: FirestoreCollectionV3<Proto>['create'];
 	public set!: FirestoreCollectionV3<Proto>['set'];
-	public update!: FirestoreCollectionV3<Proto>['update'];
 	public delete!: FirestoreCollectionV3<Proto>['delete'];
 	public doc!: FirestoreCollectionV3<Proto>['doc'];
 	public runTransaction!: FirestoreCollectionV3<Proto>['runTransaction'];
@@ -144,7 +143,6 @@ export abstract class ModuleBE_BaseDBV3<Proto extends DBProto<any>, ConfigType e
 		this.query = wrapInTryCatch(this.collection.query, 'query');
 		this.create = wrapInTryCatch(this.collection.create, 'create');
 		this.set = wrapInTryCatch(this.collection.set, 'set');
-		this.update = wrapInTryCatch(this.collection.update, 'update');
 		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
 		this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 	}
