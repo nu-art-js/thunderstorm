@@ -27,7 +27,7 @@ import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {_EmptyQuery} from '@nu-art/db-api-generator';
 
-const defaultDomainDbDefMap: { [k: string]: DBDef<any,any>[] } = {
+const defaultDomainDbDefMap: { [k: string]: DBDef<any, any>[] } = {
 	[permissionsDefName]: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel],
 	[permissionsAssignName]: [DBDef_PermissionGroup, DBDef_PermissionUser],
 };
@@ -82,7 +82,7 @@ class ModuleBE_Permissions_Class
 			if (!user.groups)
 				user.groups = [];
 			user.groups.push({groupId: group._id});
-			await ModuleBE_PermissionUserDB.update.item(user);
+			await ModuleBE_PermissionUserDB.set.item(user);
 		}
 		return {domains, levels};
 	};
@@ -137,12 +137,12 @@ class ModuleBE_Permissions_Class
 
 					if (!api.accessLevelIds)
 						api.accessLevelIds = [];
-					
+
 					api.accessLevelIds.push(level._id);
 				});
 		});
 
-		await ModuleBE_PermissionApi.update.all(apis);
+		await ModuleBE_PermissionApi.set.all(apis);
 	};
 }
 

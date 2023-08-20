@@ -24,6 +24,7 @@ import {
 	batchActionParallel,
 	filterDuplicates,
 	filterInstances,
+	LogLevel,
 	Module,
 	StringMap,
 	TypedMap
@@ -125,6 +126,7 @@ export class ModuleBE_PermissionsAssert_Class
 
 	constructor() {
 		super();
+		this.setMinLevel(LogLevel.Debug);
 	}
 
 	init() {
@@ -148,20 +150,20 @@ export class ModuleBE_PermissionsAssert_Class
 		this.logDebug(apiDetails?.dbApi);
 		this.logDebug('______________________________');
 
-		if (!apiDetails || !apiDetails.dbApi.accessLevelIds || !apiDetails.dbApi._accessLevels) {
+		if (!apiDetails || !apiDetails.dbApi.accessLevelIds) {
 			if (!this.config.strictMode)
 				return;
 
 			throw new ApiException(403, `No permissions configuration specified for api: ${projectId}--${path}`);
 		}
 
-		const hasAccess: boolean = apiDetails.dbApi._accessLevels.reduce<boolean>((_hasAccess, accessLevel, i) => {
-			this.logDebug(`(user: ${userPermissions[accessLevel.domainId]}) '>=' (api: ${accessLevel.value})`);
-			return _hasAccess && userPermissions[accessLevel.domainId] >= accessLevel.value;
-		}, true);
-
-		if (!hasAccess)
-			throw new ApiException(403, 'Action Forbidden');
+		_keys(apiDetails.dbApi._accessLevels!).forEach(domainId => {
+			if (!userPermissions[domainId])
+				throw new ApiException(403, 'Missing Access For This Domain');
+			
+			if ((userPermissions[domainId] ?? 0) <= apiDetails.dbApi._accessLevels![domainId])
+				throw new ApiException(403, 'Action Forbidden');
+		});
 	}
 
 	async getApiDetails(_path: string, projectId: string) {
