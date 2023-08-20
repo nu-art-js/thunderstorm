@@ -42,9 +42,8 @@ export type DB_AccountV3 = DB_Object & AuditableV2 & {
 	_newPasswordRequired?: boolean
 }
 
-
-
-export type _SessionKey_AccountV3 = TypedKeyValue<'account', DB_AccountV3 & { hasPassword: boolean }>
+export type SessionData_HasPassword = { hasPassword: boolean };
+export type _SessionKey_AccountV3 = TypedKeyValue<'account', DB_AccountV3 & SessionData_HasPassword>
 
 
 type VersionsAccount = VersionsDeclaration<DB_AccountV3, ['1.0.0'], [DB_AccountV3]>;

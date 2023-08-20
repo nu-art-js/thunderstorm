@@ -17,21 +17,10 @@
  * limitations under the License.
  */
 
-import {
-	_keys,
-	ApiException,
-	BadImplementationException,
-	batchActionParallel,
-	filterDuplicates,
-	filterInstances,
-	LogLevel,
-	Module,
-	StringMap,
-	TypedMap
-} from '@nu-art/ts-common';
+import {_keys, ApiException, BadImplementationException, batchActionParallel, filterDuplicates, LogLevel, Module, StringMap, TypedMap} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
-import {MemKey_AccountEmail, MemKey_AccountId} from '@nu-art/user-account/backend';
+import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
 import {ApiDef_PermissionsAssert, Base_AccessLevel, DB_PermissionAccessLevel, Request_AssertApiForUser} from '../../shared';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
@@ -42,8 +31,7 @@ import {
 	MemKey_HttpRequestUrl
 } from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
-import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
+import {SessionKey_Permissions_BE} from '../consts';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -71,22 +59,7 @@ export class ModuleBE_PermissionsAssert_Class
 	};
 
 	readonly LoadPermissionsMiddleware: ServerApi_Middleware = async () => {
-		const map: TypedMap<number> = {};
-		const accountId = MemKey_AccountId.get();
-		const userPermissions = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId});
-		const groupsIds = userPermissions.groups.map(i => i.groupId);
-		const groups = await batchActionParallel(groupsIds, 10, async ids => await ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: ids}}}));
-		const levelMaps = filterInstances(groups.map(i => i._levelsMap));
-		levelMaps.forEach(levelMap => {
-			_keys(levelMap).forEach(domainId => {
-				if (!map[domainId])
-					map[domainId] = 0;
-
-				if (levelMap[domainId] > map[domainId])
-					map[domainId] = levelMap[domainId];
-			});
-		});
-		MemKey_UserPermissions.set(map);
+		MemKey_UserPermissions.set(SessionKey_Permissions_BE.get());
 	};
 
 	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async () => {
@@ -160,7 +133,7 @@ export class ModuleBE_PermissionsAssert_Class
 		_keys(apiDetails.dbApi._accessLevels!).forEach(domainId => {
 			if (!userPermissions[domainId])
 				throw new ApiException(403, 'Missing Access For This Domain');
-			
+
 			if ((userPermissions[domainId] ?? 0) <= apiDetails.dbApi._accessLevels![domainId])
 				throw new ApiException(403, 'Action Forbidden');
 		});
