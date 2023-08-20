@@ -10,7 +10,7 @@ import {MemKey_AccountId, ModuleBE_v3_AccountDB} from '@nu-art/user-account/back
 import {Test_Project, Test_Setup} from './types';
 import {UI_Account} from '@nu-art/user-account';
 
-export const postPermissionTestCleanup = async () => {
+export const permissionTestCleanup = async () => {
 	await ModuleBE_v3_AccountDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionDomain.delete.yes.iam.sure.iwant.todelete.the.collection.delete();

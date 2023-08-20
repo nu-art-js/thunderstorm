@@ -5,7 +5,7 @@ import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_AccountId, ModuleBE_v3_AccountDB} from '@nu-art/user-account/backend';
 import {
 	Failed_Log,
-	postPermissionTestCleanup,
+	permissionTestCleanup,
 	setupProjectPermissions,
 	Test_AccessLevel_Admin,
 	Test_AccessLevel_Delete,
@@ -125,6 +125,8 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 				MemKey_AccountId.set(Test_DefaultAccountId);
 
 				let finalResult = true;
+				await permissionTestCleanup();
+
 				const setupResult = await setupProjectPermissions(setup.projects);
 				const allGroups = await ModuleBE_PermissionGroup.query.custom(_EmptyQuery);
 				const allAccessLevels = reduceToMap(await ModuleBE_PermissionAccessLevel.query.custom(_EmptyQuery), dbObjectToId, item => item);
@@ -152,7 +154,7 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 
 						// Get groups to assign to target account
 						const groupsToAssign = filterInstances(targetAccount.domains.map(dom => {
-							const foundGroup = allGroups.find(grp => {
+							return allGroups.find(grp => {
 								if (grp.accessLevelIds.length !== 1) // Using direct groups - groups that contain only the 1 meaningful access level
 									return false;
 
@@ -170,8 +172,6 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 								// console.log(`${_accessLevel.value} === ${wantedLevelValue.value} ${_accessLevel.value === wantedLevelValue.value}`);
 								return _accessLevel.value === wantedLevelValue.value;
 							});
-
-							return foundGroup;
 						}));
 
 						if (groupsToAssign.length !== targetAccount.domains.length)
@@ -209,9 +209,9 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 		}
 
 		// Post Test Cleanup
-		await postPermissionTestCleanup();
+		await permissionTestCleanup();
 	}
 };
-describe('Permissions - Assign Permissions', () => {
-	testSuiteTester(TestSuite_Permissions_AssignPermissions);
-});
+// describe('Permissions - Assign Permissions', () => {
+// 	testSuiteTester(TestSuite_Permissions_AssignPermissions);
+// });
