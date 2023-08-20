@@ -272,10 +272,10 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	async validateUpdateData(updateData: UpdateData<Proto['dbType']>, transaction?: Transaction) {
 	}
 
-	update = Object.freeze({
-		item: (updateData: UpdateObject<Proto['dbType']>) => this.doc.unique(updateData._id).update(updateData),
-		all: this._updateAll,
-	});
+	// update = Object.freeze({
+	// 	item: (updateData: UpdateObject<Proto['dbType']>) => this.doc.unique(updateData._id).update(updateData),
+	// 	all: this._updateAll,
+	// });
 
 	// ############################## Delete ##############################
 	protected _deleteQuery = async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {
