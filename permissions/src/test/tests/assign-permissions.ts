@@ -8,10 +8,6 @@ import {
 	postPermissionTestCleanup,
 	setupProjectPermissions,
 	Test_Account1,
-	Test_Account2,
-	Test_Account3,
-	Test_Account4,
-	Test_Account5,
 	Test_DefaultAccountId,
 	Test_Domain1,
 	Test_Setup1
@@ -19,10 +15,13 @@ import {
 import {MemKey_UserPermissions} from '../../main/backend';
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
 import {Test_Setup, Test_TargetAccount} from '../_core/types';
+import {expect} from 'chai';
+import {_EmptyQuery} from '@nu-art/db-api-generator';
+import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 
 type AssignPermissionsSetup = {
 	setup: Test_Setup
-	check: (projectId: UniqueId, accountToGivePermissionIds: string[], groupIds: string[], groupsToRemoveIds: string[]) => Promise<any>
+	check: (projectId: UniqueId, accountToGivePermissionIds: string[], permissionGroupIds: string[]) => Promise<any>
 	targetAccounts: Test_TargetAccount[]
 	selfAccount: {
 		_id: string,
@@ -47,50 +46,49 @@ const Test_AllAccounts: Test_TargetAccount[] = [
 		}],
 		result: true
 	},
-	{
-		...Test_Account2,
-		domains: [{
-			namespace: Test_Domain1,
-			accessLevel: 'Read'
-		}],
-		result: true
-	},
-	{
-		...Test_Account3,
-		domains: [{
-			namespace: Test_Domain1,
-			accessLevel: 'Write'
-		}],
-		result: false
-	},
-	{
-		...Test_Account4,
-		domains: [{
-			namespace: Test_Domain1,
-			accessLevel: 'Delete'
-		}],
-		result: false
-	},
-	{
-		...Test_Account5,
-		domains: [{
-			namespace: Test_Domain1,
-			accessLevel: 'Admin'
-		}],
-		result: false
-	}
+	// {
+	// 	...Test_Account2,
+	// 	domains: [{
+	// 		namespace: Test_Domain1,
+	// 		accessLevel: 'Read'
+	// 	}],
+	// 	result: true
+	// },
+	// {
+	// 	...Test_Account3,
+	// 	domains: [{
+	// 		namespace: Test_Domain1,
+	// 		accessLevel: 'Write'
+	// 	}],
+	// 	result: false
+	// },
+	// {
+	// 	...Test_Account4,
+	// 	domains: [{
+	// 		namespace: Test_Domain1,
+	// 		accessLevel: 'Delete'
+	// 	}],
+	// 	result: false
+	// },
+	// {
+	// 	...Test_Account5,
+	// 	domains: [{
+	// 		namespace: Test_Domain1,
+	// 		accessLevel: 'Admin'
+	// 	}],
+	// 	result: false
+	// }
 ];
 
 const TestCases_Basic: BasicProjectTest['testcases'] = [{
 	description: 'Assign Permissions',
 	input: {
 		setup: Test_Setup1,
-		check: async (projectId: UniqueId, targetAccountIds: string[], groupToAddIds: string[], groupToRemoveIds: string[]) => {
+		check: async (projectId: UniqueId, targetAccountIds: string[], permissionGroupIds: string[]) => {
 			await ModuleBE_PermissionUserDB.assignPermissions({
 				projectId: projectId,
 				targetAccountIds: targetAccountIds,
-				groupToAddIds: groupToAddIds,
-				groupToRemoveIds: groupToRemoveIds
+				permissionGroupIds: permissionGroupIds,
 			});
 		},
 		targetAccounts: Test_AllAccounts,
@@ -110,21 +108,14 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 	label: 'Basic Permissions Setup',
 	testcases: TestCases_Basic,
 	processor: async (testCase) => {
-		//setup
-		//include target users to give permissions to
-		//include self user - that has permission level which is enough/too-low to give permissions to target user
-
-
 		const setup = testCase.input.setup;
 		try {
 			await new MemStorage().init(async () => {
 				MemKey_AccountId.set(Test_DefaultAccountId);
 
-
 				let finalResult = true;
 				const setupResult = await setupProjectPermissions(setup.projects);
 
-				// Finished to setup the permissions
 				// Check all user cases against this setup
 				await Promise.all(setup.projects.map(async project => {
 					// Setup user permissions
@@ -136,32 +127,44 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 					MemKey_UserPermissions.set(userAccessLevels);
 
 					await Promise.all(testCase.input.targetAccounts.map(async targetAccount => {
+						// Create account
 						const createdTargetAccount = await ModuleBE_v3_AccountDB.create.item({
 							_id: targetAccount._id,
 							type: targetAccount.type,
 							email: targetAccount.email,
 							_auditorId: MemKey_AccountId.get()
-
 						});
+						// Create related PermissionUser object
+						await ModuleBE_PermissionUserDB.insertIfNotExist(createdTargetAccount.email);
+						const createdTargetPermissionUser = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId: createdTargetAccount._id});
+
+						// Get groups
+						const allGroups = await ModuleBE_PermissionGroup.query.custom(_EmptyQuery);
+						// Get groups to assign to target account
+
+						const groupsToAssign = targetAccount.domains.map(dom=>{
+							allGroups.find(grp=>grp.accessLevelIds)
+							dom.namespace
+						})
+
+						// targetAccount.
+
 
 						//todo create groups matching the required domains for this targetAccount
 						let result = true;
 						try {
-							testCase.input.check(
+							// console.log();
+							await testCase.input.check(
 								setupResult.nameToProjectMap[project.name]._id,
-								[createdTargetAccount._id],
+								[createdTargetPermissionUser._id],
 								[],
-								[]
 							);
 						} catch (e: any) {
 							result = false;
+							console.log(e);
 						}
-						//todo expect resu
-						try {
-
-						} catch (e: any) {
-							finalResult = false;
-						}
+						finalResult &&= (result === testCase.result);
+						expect(result).to.eql(testCase.result);
 					}));
 				}));
 

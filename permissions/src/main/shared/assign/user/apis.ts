@@ -2,8 +2,7 @@ import {ApiDefResolver, BodyApi, HttpMethod} from '@nu-art/thunderstorm';
 
 export type Request_AssignPermissions = {
 	projectId?: string
-	groupToAddIds: string[]
-	groupToRemoveIds: string[]
+	permissionGroupIds: string[]
 	targetAccountIds: string[]
 }
 

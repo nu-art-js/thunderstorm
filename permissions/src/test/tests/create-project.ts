@@ -20,7 +20,7 @@ import {
 } from '../_core/consts';
 import {expect} from 'chai';
 import {Test_Setup} from '../_core/types';
-import {MemKey_AccountId} from '@nu-art/user-account/backend/core/MemKeys/keys';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
 
 type CreatePermissionsSetup = {
 	setup: Test_Setup,
