@@ -76,7 +76,6 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 	public query!: FirestoreCollectionV2<Type>['query'];
 	public create!: FirestoreCollectionV2<Type>['create'];
 	public set!: FirestoreCollectionV2<Type>['set'];
-	public update!: FirestoreCollectionV2<Type>['update'];
 	public delete!: FirestoreCollectionV2<Type>['delete'];
 	public doc!: FirestoreCollectionV2<Type>['doc'];
 	public runTransaction!: FirestoreCollectionV2<Type>['runTransaction'];
@@ -146,7 +145,6 @@ export abstract class ModuleBE_BaseDBV2<Type extends DB_Object, ConfigType exten
 		this.query = wrapInTryCatch(this.collection.query, 'query');
 		this.create = wrapInTryCatch(this.collection.create, 'create');
 		this.set = wrapInTryCatch(this.collection.set, 'set');
-		this.update = wrapInTryCatch(this.collection.update, 'update');
 		this.delete = wrapInTryCatch(this.collection.delete, 'delete');
 		this.doc = wrapInTryCatch(this.collection.doc, 'doc');
 	}
