@@ -72,22 +72,16 @@ export class ModuleBE_PermissionAccessLevel_Class
 		const deletedIds = deleted.map(dbObjectToId);
 		const levelIds = [...deletedIds, ...updated.map(dbObjectToId)];
 		const connectedApis = await batchActionParallel(levelIds, 10, async ids => await ModuleBE_PermissionApi.query.custom({where: {accessLevelIds: {$aca: ids}}}));
-		const connectedGroups = await batchActionParallel(deletedIds, 10, async ids => await ModuleBE_PermissionGroup.query.custom({where: {accessLevelIds: {$aca: ids}}}));
 
 		deletedIds.forEach(id => {
 			//For each deleted level remove it from any api that held it
 			connectedApis.forEach(api => {
 				api.accessLevelIds = api.accessLevelIds?.filter(i => i !== id);
 			});
-			//For each deleted level remove it from any group that held it
-			connectedGroups.forEach(group => {
-				group.accessLevelIds = group.accessLevelIds.filter(i => i !== id);
-			});
 		});
 
 		//Send all apis to upsert so their _accessLevels update
 		await ModuleBE_PermissionApi.set.all(connectedApis);
-		await ModuleBE_PermissionGroup.set.all(connectedGroups);
 		return super.postWriteProcessing(data);
 	}
 

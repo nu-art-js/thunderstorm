@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {MemKey_AccountId, ModuleBE_v3_AccountDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_v3_AccountDB, ModuleBE_v3_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {
 	_keys,
 	ApiException,
@@ -39,6 +39,7 @@ import {firestore} from 'firebase-admin';
 import {MemKey_UserPermissions} from '../ModuleBE_PermissionsAssert';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
+import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 
 
 class ModuleBE_PermissionUserDB_Class
@@ -101,6 +102,12 @@ class ModuleBE_PermissionUserDB_Class
 		//todo check for duplications in data
 	}
 
+	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionUser>) {
+		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
+		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
+		const accountIds = filterDuplicates([...deleted, ...updated].map(i => i.accountId));
+		await ModuleBE_v3_SessionDB.invalidateSessions(accountIds);
+	}
 
 	async __onUserLogin(account: UI_Account) {
 		console.log('________________________________');

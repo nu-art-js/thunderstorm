@@ -10,7 +10,7 @@ import {DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/db-api-generator/backend
 import {
 	__stringify,
 	ApiException,
-	BadImplementationException,
+	BadImplementationException, batchActionParallel,
 	currentTimeMillis,
 	Day,
 	Dispatcher,
@@ -142,6 +142,10 @@ export class ModuleBE_v3_SessionDB_Class
 			throw new ApiException(404, 'Missing sessionId');
 
 		await this.delete.query({where: {sessionId}}, transaction);
+	};
+
+	invalidateSessions = async (accountIds: string[]): Promise<void> => {
+		await batchActionParallel(accountIds, 10, async ids => await this.delete.query({where: {accountId: {$in: ids}}}));
 	};
 }
 

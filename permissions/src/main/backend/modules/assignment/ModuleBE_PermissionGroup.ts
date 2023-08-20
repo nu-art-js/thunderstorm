@@ -21,7 +21,7 @@ import {
 	_keys,
 	ApiException,
 	batchActionParallel,
-	dbObjectToId,
+	dbObjectToId, filterDuplicates,
 	filterInstances,
 	flatArray,
 	reduceToMap,
@@ -36,6 +36,9 @@ import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseD
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
 import {MemKey_AccountId} from '@nu-art/user-account/backend/core/consts';
+import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
+import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
+import {ModuleBE_v3_SessionDB} from '@nu-art/user-account/backend';
 
 
 export class ModuleBE_PermissionGroup_Class
@@ -83,6 +86,14 @@ export class ModuleBE_PermissionGroup_Class
 			throw new ApiException(400, `Can't add a group with more than one access level per domain: ${duplicateDomainIds}`);
 
 		instance._levelsMap = reduceToMap(dbLevels, dbLevel => dbLevel.domainId, dbLevel => dbLevel.value);
+	}
+
+	protected async postWriteProcessing(data: PostWriteProcessingData<DB_PermissionGroup>) {
+		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
+		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
+		const groupIds = filterDuplicates([...deleted, ...updated].map(dbObjectToId));
+		const users = await batchActionParallel(groupIds, 10, async ids => await ModuleBE_PermissionUserDB.query.custom({where: {__groupIds: {$aca: ids}}}));
+		await ModuleBE_v3_SessionDB.invalidateSessions(users.map(i => i.accountId));
 	}
 }
 
