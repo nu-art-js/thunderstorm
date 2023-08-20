@@ -1,22 +1,23 @@
 import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {
-	AssertionException,
-	BadImplementationException,
-	filterInstances,
-	reduceToMap,
-	UniqueId
-} from '@nu-art/ts-common';
+import {BadImplementationException, dbObjectToId, filterInstances, reduceToMap, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {MemKey_AccountId, ModuleBE_v3_AccountDB} from '@nu-art/user-account/backend';
 import {
 	Failed_Log,
 	postPermissionTestCleanup,
 	setupProjectPermissions,
+	Test_AccessLevel_Admin,
+	Test_AccessLevel_Delete,
 	Test_AccessLevel_NoAccess,
 	Test_AccessLevel_Read,
+	Test_AccessLevel_Write,
 	Test_AccessLevelsMap,
 	Test_Account1,
+	Test_Account2,
+	Test_Account3,
+	Test_Account4,
+	Test_Account5,
 	Test_DefaultAccountId,
 	Test_Domain1,
 	Test_Setup1
@@ -27,6 +28,7 @@ import {Test_Setup, Test_TargetAccount} from '../_core/types';
 import {expect} from 'chai';
 import {_EmptyQuery} from '@nu-art/db-api-generator';
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
+import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel';
 
 type AssignPermissionsSetup = {
 	setup: Test_Setup
@@ -55,38 +57,38 @@ const Test_AllAccounts: Test_TargetAccount[] = [
 		}],
 		result: true
 	},
-	// {
-	// 	...Test_Account2,
-	// 	domains: [{
-	// 		namespace: Test_Domain1,
-	// 		accessLevel: 'Read'
-	// 	}],
-	// 	result: true
-	// },
-	// {
-	// 	...Test_Account3,
-	// 	domains: [{
-	// 		namespace: Test_Domain1,
-	// 		accessLevel: 'Write'
-	// 	}],
-	// 	result: false
-	// },
-	// {
-	// 	...Test_Account4,
-	// 	domains: [{
-	// 		namespace: Test_Domain1,
-	// 		accessLevel: 'Delete'
-	// 	}],
-	// 	result: false
-	// },
-	// {
-	// 	...Test_Account5,
-	// 	domains: [{
-	// 		namespace: Test_Domain1,
-	// 		accessLevel: 'Admin'
-	// 	}],
-	// 	result: false
-	// }
+	{
+		...Test_Account2,
+		domains: [{
+			namespace: Test_Domain1,
+			accessLevel: Test_AccessLevel_Read
+		}],
+		result: true
+	},
+	{
+		...Test_Account3,
+		domains: [{
+			namespace: Test_Domain1,
+			accessLevel: Test_AccessLevel_Write
+		}],
+		result: false
+	},
+	{
+		...Test_Account4,
+		domains: [{
+			namespace: Test_Domain1,
+			accessLevel: Test_AccessLevel_Delete
+		}],
+		result: false
+	},
+	{
+		...Test_Account5,
+		domains: [{
+			namespace: Test_Domain1,
+			accessLevel: Test_AccessLevel_Admin
+		}],
+		result: false
+	}
 ];
 
 const TestCases_Basic: BasicProjectTest['testcases'] = [{
@@ -105,7 +107,7 @@ const TestCases_Basic: BasicProjectTest['testcases'] = [{
 			...DefaultSelfAccount,
 			domains: [{
 				namespace: Test_Domain1,
-				accessLevel: Test_AccessLevel_Read
+				accessLevel: Test_AccessLevel_NoAccess
 			}]
 		}
 	},
@@ -125,7 +127,7 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 				let finalResult = true;
 				const setupResult = await setupProjectPermissions(setup.projects);
 				const allGroups = await ModuleBE_PermissionGroup.query.custom(_EmptyQuery);
-
+				const allAccessLevels = reduceToMap(await ModuleBE_PermissionAccessLevel.query.custom(_EmptyQuery), dbObjectToId, item => item);
 				// Check all user cases against this setup
 				await Promise.all(setup.projects.map(async project => {
 					// Setup user permissions
@@ -150,20 +152,28 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 
 						// Get groups to assign to target account
 						const groupsToAssign = filterInstances(targetAccount.domains.map(dom => {
-							return allGroups.find(grp => {
-								if (grp.accessLevelIds.length !== 1)
+							const foundGroup = allGroups.find(grp => {
+								if (grp.accessLevelIds.length !== 1) // Using direct groups - groups that contain only the 1 meaningful access level
 									return false;
 
 								const wantedLevelValue = Test_AccessLevelsMap.find(row => row.name === dom.accessLevel);
 								if (!wantedLevelValue)
 									throw new BadImplementationException(`Using non-existent accessLevel in test: ${dom.accessLevel}`);
 
-								const accessLevel = grp.accessLevelIds.map(id => setupResult.accessLevelsByDomainNameMap[dom.namespace][dom.accessLevel])[0];
-								console.log(accessLevel);
-								return accessLevel.value === wantedLevelValue.value;
+								const _accessLevel = allAccessLevels[grp.accessLevelIds[0]];
+
+								// console.log('-----------wantedLevelValue----------');
+								// console.log(wantedLevelValue);
+								// console.log('-----------good accessLevel----------');
+								// console.log(_accessLevel);
+								// console.log('---------------------');
+								// console.log(`${_accessLevel.value} === ${wantedLevelValue.value} ${_accessLevel.value === wantedLevelValue.value}`);
+								return _accessLevel.value === wantedLevelValue.value;
 							});
+
+							return foundGroup;
 						}));
-						console.log(groupsToAssign);
+
 						if (groupsToAssign.length !== targetAccount.domains.length)
 							throw new BadImplementationException(`Couldn't find all test permission groups!`);
 
