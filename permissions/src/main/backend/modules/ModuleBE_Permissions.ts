@@ -1,4 +1,4 @@
-import {_keys, DBDef, dbObjectToId, flatArray, Module, PreDB} from '@nu-art/ts-common';
+import {_keys, batchActionParallel, DBDef, dbObjectToId, filterInstances, flatArray, Module, PreDB, TypedMap} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
@@ -23,9 +23,10 @@ import {defaultAccessLevels, defaultLevelsRouteLookupWords} from '../../shared/m
 import {defaultDomains, permissionsAssignName, permissionsDefName} from '../../shared/management/domain/consts';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {CollectSessionDataV3, MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {_EmptyQuery} from '@nu-art/db-api-generator';
+import {SessionData_Permissions} from '../../shared/types';
 
 const defaultDomainDbDefMap: { [k: string]: DBDef<any, any>[] } = {
 	[permissionsDefName]: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel],
@@ -34,7 +35,27 @@ const defaultDomainDbDefMap: { [k: string]: DBDef<any, any>[] } = {
 
 
 class ModuleBE_Permissions_Class
-	extends Module {
+	extends Module
+	implements CollectSessionDataV3<SessionData_Permissions> {
+
+	async __collectSessionData(accountId: string): Promise<SessionData_Permissions> {
+		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId});
+		const permissionMap: TypedMap<number> = {};
+		const groupIds = user.groups.map(g => g.groupId);
+		const groups = await batchActionParallel(groupIds, 10, async ids => await ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: ids}}}));
+		const levelMaps = filterInstances(groups.map(i => i._levelsMap));
+		levelMaps.forEach(levelMap => {
+			_keys(levelMap).forEach(domainId => {
+				if (!permissionMap[domainId])
+					permissionMap[domainId] = 0;
+
+				if (levelMap[domainId] > permissionMap[domainId])
+					permissionMap[domainId] = levelMap[domainId];
+			});
+		});
+
+		return {key: 'permissions', value: permissionMap};
+	}
 
 	protected init() {
 		super.init();
