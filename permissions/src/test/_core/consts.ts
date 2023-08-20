@@ -6,11 +6,12 @@ import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/managem
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
 import {BadImplementationException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {MemKey_AccountId} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_v3_AccountDB} from '@nu-art/user-account/backend';
 import {Test_Project, Test_Setup} from './types';
 import {UI_Account} from '@nu-art/user-account';
 
 export const postPermissionTestCleanup = async () => {
+	await ModuleBE_v3_AccountDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionDomain.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionApi.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
@@ -111,22 +112,32 @@ export const Default_TestEmail = 'test@test.test';
 export const Default_TestPassword = '1234';
 export const TestProject__Name = 'test-project';
 export const Test_Api_Stam = 'v1/stam';
+export const Group_ToCreate_NoAccess: Partial<DB_PermissionGroup> = {
+	label: 'test-group-no_access',
+	accessLevelIds: ['NoAccess']
+};
 export const Group_ToCreate_Read: Partial<DB_PermissionGroup> = {
 	label: 'test-group-read',
 	accessLevelIds: ['Read']
+};
+export const Group_ToCreate_Write: Partial<DB_PermissionGroup> = {
+	label: 'test-group-write',
+	accessLevelIds: ['Write']
 };
 export const Group_ToCreate_Delete: Partial<DB_PermissionGroup> = {
 	label: 'test-group-delete',
 	accessLevelIds: ['Delete']
 };
-export const Group_ToCreate_NoAccess: Partial<DB_PermissionGroup> = {
-	label: 'test-group-no_access',
-	accessLevelIds: ['NoAccess']
+export const Group_ToCreate_Admin: Partial<DB_PermissionGroup> = {
+	label: 'test-group-admin',
+	accessLevelIds: ['Admin']
 };
 export const Groups_ToCreate = [
+	Group_ToCreate_NoAccess,
 	Group_ToCreate_Read,
+	Group_ToCreate_Write,
 	Group_ToCreate_Delete,
-	Group_ToCreate_NoAccess
+	Group_ToCreate_Admin,
 ];
 
 export const Test_AccessLevel_NoAccess = 'NoAccess';

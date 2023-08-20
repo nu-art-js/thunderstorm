@@ -94,10 +94,16 @@ class ModuleBE_PermissionUserDB_Class
 
 
 	async __onUserLogin(account: UI_Account) {
+		console.log('________________________________');
+		console.log('__onUserLogin');
+		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 		await this.insertIfNotExist(account.email);
 	}
 
 	async __onNewUserRegistered(account: UI_Account) {
+		console.log('________________________________');
+		console.log('__onNewUserRegistered');
+		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 		await this.insertIfNotExist(account.email);
 	}
 
@@ -122,19 +128,18 @@ class ModuleBE_PermissionUserDB_Class
 		if (!body.targetAccountIds.length)
 			throw new ApiException(400, `Asked to modify permissions but provided no users to modify permissions of.`);
 
-		if (!body.groupToAddIds.length && !body.groupToRemoveIds.length)
-			throw new ApiException(400, `Asked to give permissions but provided no permission groups to add or subtract permissions from.`);
-
 		const usersToGiveTo = filterInstances(await this.query.all(body.targetAccountIds));
+		// console.log('assignPermissions target accounts ');
+		// console.log(await this.query.custom(_EmptyQuery));
 		if (!usersToGiveTo.length || usersToGiveTo.length !== body.targetAccountIds.length) {
 			const dbUserIds = usersToGiveTo.map(dbObjectToId);
 			throw new ApiException(404, `Asked to give permissions to non-existent user accounts: ${body.targetAccountIds.filter(id => !dbUserIds.includes(id))}`);
 		}
 
-		const dbGroups = filterInstances(await ModuleBE_PermissionGroup.query.all(body.groupToAddIds));
-		if (!dbGroups.length) {
+		const dbGroups = filterInstances(await ModuleBE_PermissionGroup.query.all(body.permissionGroupIds));
+		if (dbGroups.length !== body.permissionGroupIds.length) {
 			const dbGroupIds = dbGroups.map(dbObjectToId);
-			throw new ApiException(404, `Asked to give users non-existing groups: ${body.targetAccountIds.filter(id => !dbGroupIds.includes(id))}`);
+			throw new ApiException(404, `Asked to give users non-existing permission groups: ${body.permissionGroupIds.filter(id => !dbGroupIds.includes(id))}`);
 		}
 
 		const myUserPermissions = MemKey_UserPermissions.get();
