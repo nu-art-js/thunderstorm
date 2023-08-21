@@ -20,7 +20,7 @@ import * as React from 'react';
 import {_keys, addItemToArray, filterInstances} from '@nu-art/ts-common';
 import {Request_RegisterAccount, RequestBody_RegisterAccount} from '../../shared';
 import {ComponentSync, LL_V_C, TS_BusyButton, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_AccountV3} from '../modules/v3/ModuleFE_v3_Account';
+import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 
 
 type State<T> = {
@@ -122,7 +122,7 @@ export class Component_Register
 			return this.setState({errorMessages: errors});
 
 		try {
-			await ModuleFE_AccountV3.vv1.registerAccount(this.state.data as Request_RegisterAccount).executeSync();
+			await ModuleFE_Account.vv1.registerAccount(this.state.data as Request_RegisterAccount).executeSync();
 		} catch (_err: any) {
 			const err = _err as Error;
 			this.setState({errorMessages: [err.message]});

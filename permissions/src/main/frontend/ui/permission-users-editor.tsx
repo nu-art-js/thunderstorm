@@ -13,7 +13,7 @@ import {LL_H_C, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {DB_PermissionUser} from '../shared';
 import {ModuleFE_PermissionsUser, OnPermissionsUsersUpdated} from '../core/module-pack';
-import {ModuleFE_AccountV3} from '@nu-art/user-account/frontend';
+import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 import {MultiSelect} from './ui-props';
 
 
@@ -36,7 +36,7 @@ export class PermissionUsersEditor
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsUser],
 		renderAccount: (accountId: string) =>
-			<div>{ModuleFE_AccountV3.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'}</div>
+			<div>{ModuleFE_Account.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'}</div>
 	};
 
 	//######################### Life Cycle #########################

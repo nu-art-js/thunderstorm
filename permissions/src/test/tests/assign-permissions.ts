@@ -2,7 +2,7 @@ import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {BadImplementationException, dbObjectToId, filterInstances, reduceToMap, UniqueId} from '@nu-art/ts-common';
 import {MemStorage} from '@nu-art/ts-common/mem-storage/MemStorage';
-import {MemKey_AccountId, ModuleBE_v3_AccountDB} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account/backend';
 import {
 	Failed_Log,
 	permissionTestCleanup,
@@ -142,7 +142,7 @@ export const TestSuite_Permissions_AssignPermissions: BasicProjectTest = {
 
 					await Promise.all(testCase.input.targetAccounts.map(async targetAccount => {
 						// Create account
-						const createdTargetAccount = await ModuleBE_v3_AccountDB.create.item({
+						const createdTargetAccount = await ModuleBE_AccountDB.create.item({
 							_id: targetAccount._id,
 							type: targetAccount.type,
 							email: targetAccount.email,

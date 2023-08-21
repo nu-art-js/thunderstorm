@@ -28,7 +28,7 @@ import {
 	TS_Input,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_AccountV3} from '../../modules/v3/ModuleFE_v3_Account';
+import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
 
 
 type State<T> = {
@@ -96,7 +96,8 @@ export class Component_Login
 				}
 			)}
 			{this.renderErrorMessages()}
-			<TS_BusyButton onClick={this.loginClicked} className={`clickable ts-account__action-button`}>Login</TS_BusyButton>
+			<TS_BusyButton onClick={this.loginClicked}
+						   className={`clickable ts-account__action-button`}>Login</TS_BusyButton>
 		</LL_V_C>;
 	}
 
@@ -121,7 +122,7 @@ export class Component_Login
 			return ModuleFE_Toaster.toastError(`Wrong input:\n${errors.join('\n')}`);
 
 		try {
-			await ModuleFE_AccountV3.vv1.login(this.state.data as Request_LoginAccount).executeSync();
+			await ModuleFE_Account.vv1.login(this.state.data as Request_LoginAccount).executeSync();
 		} catch (err) {
 			this.setState({errorMessages: ['Email or password incorrect']});
 		}

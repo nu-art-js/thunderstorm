@@ -13,16 +13,16 @@ import {
 	TS_TextArea
 } from '@nu-art/thunderstorm/frontend';
 import {ProxyServiceAccount_EditorRenderer} from './ProxyServiceAccount_EditorRenderer';
-import {__stringify, filterInstances, generateUUID, isErrorOfType, PreDB, ValidationException} from '@nu-art/ts-common';
+import {__stringify, filterInstances, generateUUID, isErrorOfType, ValidationException} from '@nu-art/ts-common';
 import {Props_SmartComponent, State_SmartComponent} from '@nu-art/db-api-generator/frontend';
 import {UI_Account} from '../../shared';
-import {ModuleFE_AccountV2} from '../modules/v2/ModuleFE_v2_Account';
+import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 
 
 type Props = Props_SmartComponent & {};
 
 type State = State_SmartComponent & {
-	serviceAccounts: PreDB<UI_Account>[]
+	serviceAccounts: UI_Account[]
 	newAccount?: Partial<UI_Account>
 	token?: string
 	ttl?: number
@@ -34,7 +34,7 @@ export class ServiceAccountEditor
 
 	protected async deriveStateFromProps(nextProps: Props): Promise<BaseAsyncState & State> {
 		const state: BaseAsyncState & State = {...this.state} ?? {};
-		state.serviceAccounts = ModuleFE_AccountV2.cache.allMutable();
+		state.serviceAccounts = ModuleFE_Account.cache.allMutable();
 		return state;
 	}
 
@@ -76,7 +76,7 @@ export class ServiceAccountEditor
 			async (item) => {
 				this.logInfo('save');
 				try {
-					await ModuleFE_AccountV2.vv1.createAccount(item).executeSync();
+					await ModuleFE_Account.vv1.createAccount(item).executeSync();
 					if (item === this.state.newAccount)
 						this.setState({newAccount: undefined});
 				} catch (e: any) {
@@ -121,7 +121,7 @@ export class ServiceAccountEditor
 				if (!item?._id)
 					return;
 
-				const response = await ModuleFE_AccountV2.vv1.createToken({
+				const response = await ModuleFE_Account.vv1.createToken({
 					accountId: item._id,
 					ttl: this.state.ttl || 0
 				}).executeSync();

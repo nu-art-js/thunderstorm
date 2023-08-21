@@ -23,7 +23,7 @@ import {defaultAccessLevels, defaultLevelsRouteLookupWords} from '../../shared/m
 import {defaultDomains, permissionsAssignName, permissionsDefName} from '../../shared/management/domain/consts';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
-import {CollectSessionDataV3, MemKey_AccountId} from '@nu-art/user-account/backend';
+import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {_EmptyQuery} from '@nu-art/db-api-generator';
 import {SessionData_Permissions} from '../../shared/types';
@@ -36,7 +36,7 @@ const defaultDomainDbDefMap: { [k: string]: DBDef<any, any>[] } = {
 
 class ModuleBE_Permissions_Class
 	extends Module
-	implements CollectSessionDataV3<SessionData_Permissions> {
+	implements CollectSessionData<SessionData_Permissions> {
 
 	async __collectSessionData(accountId: string): Promise<SessionData_Permissions> {
 		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId});

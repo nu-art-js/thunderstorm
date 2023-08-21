@@ -17,7 +17,13 @@
  * limitations under the License.
  */
 
-import {MemKey_AccountId, ModuleBE_v3_AccountDB, ModuleBE_v3_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
+import {
+	MemKey_AccountId,
+	ModuleBE_AccountDB,
+	ModuleBE_SessionDB,
+	OnNewUserRegistered,
+	OnUserLogin
+} from '@nu-art/user-account/backend';
 import {
 	_keys,
 	ApiException,
@@ -38,8 +44,8 @@ import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseD
 import {firestore} from 'firebase-admin';
 import {MemKey_UserPermissions} from '../ModuleBE_PermissionsAssert';
 import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
-import Transaction = firestore.Transaction;
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
+import Transaction = firestore.Transaction;
 
 
 class ModuleBE_PermissionUserDB_Class
@@ -106,7 +112,7 @@ class ModuleBE_PermissionUserDB_Class
 		const deleted = data.deleted ? (Array.isArray(data.deleted) ? data.deleted : [data.deleted]) : [];
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 		const accountIds = filterDuplicates([...deleted, ...updated].map(i => i.accountId));
-		await ModuleBE_v3_SessionDB.invalidateSessions(accountIds);
+		await ModuleBE_SessionDB.invalidateSessions(accountIds);
 	}
 
 	async __onUserLogin(account: UI_Account) {
@@ -128,7 +134,7 @@ class ModuleBE_PermissionUserDB_Class
 			let account;
 			// Verify an account exists, to give it a user permissions object
 			try {
-				account = await ModuleBE_v3_AccountDB.query.uniqueWhere({email}, t);
+				account = await ModuleBE_AccountDB.query.uniqueWhere({email}, t);
 			} catch (e: any) {
 				throw new ApiException(404, `user not found for email ${email}`, e);
 			}

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {AccountType, accountTypes, DB_AccountV3, Request_CreateAccount} from '../../shared';
+import {AccountType, accountTypes, DB_Account, Request_CreateAccount} from '../../shared';
 import {
 	_className,
 	ComponentSync,
@@ -14,17 +14,17 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {capitalizeFirstLetter, UniqueId} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
-import {ModuleFE_AccountV3} from '../modules/v3/ModuleFE_v3_Account';
+import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 
 type Props = {
 	isPreview?: boolean,
-	user?: DB_AccountV3,
+	user?: DB_Account,
 	onComplete?: (_id: UniqueId) => void
 }
 
 type State = Partial<Request_CreateAccount> & {
 	isPreview: boolean,
-	user?: DB_AccountV3
+	user?: DB_Account
 }
 
 export class Component_AccountEditor extends ComponentSync<Props, State> {
@@ -40,10 +40,22 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 
 	private addAccount = async () => {
 		return performAction(async () => {
-			const account = await ModuleFE_AccountV3.vv1.createAccount({password: this.state.password, type: this.state.type!, email: this.state.email!, password_check: this.state.password}).executeSync();
+			const account = await ModuleFE_Account.vv1.createAccount({
+				password: this.state.password,
+				type: this.state.type!,
+				email: this.state.email!,
+				password_check: this.state.password
+			}).executeSync();
 			this.props.onComplete?.(account._id);
 			this.setState({email: undefined, password: undefined, password_check: undefined, type: undefined});
-		}, {type: 'notification', notificationLabels: {inProgress: 'Creating Account', success: 'Account Created', failed: 'Failed Creating Account'}});
+		}, {
+			type: 'notification',
+			notificationLabels: {
+				inProgress: 'Creating Account',
+				success: 'Account Created',
+				failed: 'Failed Creating Account'
+			}
+		});
 	};
 
 	private canCreate = () => {

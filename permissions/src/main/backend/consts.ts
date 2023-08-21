@@ -1,4 +1,4 @@
-import {SessionKey_BEV3} from '@nu-art/user-account/backend';
 import {SessionData_Permissions} from '../shared/types';
+import {SessionKey_BE} from '@nu-art/user-account/backend';
 
-export const SessionKey_Permissions_BE = new SessionKey_BEV3<SessionData_Permissions>('permissions');
+export const SessionKey_Permissions_BE = new SessionKey_BE<SessionData_Permissions>('permissions');

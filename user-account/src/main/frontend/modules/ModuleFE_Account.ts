@@ -1,42 +1,45 @@
-import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
-import {
-	_SessionKey_Account,
-	ApiDefFE_Account,
-	ApiStructFE_Account,
-	DB_Account_V2,
-	DBDef_Account,
-	HeaderKey_SessionId,
-	QueryParam_Email,
-	QueryParam_SessionId,
-	Response_Auth,
-	Response_LoginSAML,
-	ResponseBody_CreateAccount,
-	UI_Account
-} from '../../../shared';
+import {ApiCallerEventType, ModuleFE_v3_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {
 	apiWithBody,
 	apiWithQuery,
 	getQueryParameter,
 	ModuleFE_BrowserHistory,
 	ModuleFE_XHR,
-	StorageKey,
 	ThunderDispatcher
 } from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller, BaseHttpRequest} from '@nu-art/thunderstorm';
 import {ungzip} from 'pako';
-import {BadImplementationException, cloneObj, composeUrl, currentTimeMillis, exists, TS_Object, TypedKeyValue} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	cloneObj,
+	composeUrl,
+	currentTimeMillis,
+	exists,
+	TS_Object,
+	TypedKeyValue
+} from '@nu-art/ts-common';
 import {OnAuthRequiredListener} from '@nu-art/thunderstorm/shared/no-auth-listener';
-
-
-export const StorageKey_SessionId = new StorageKey<string>(`storage-${HeaderKey_SessionId}`);
-export const StorageKey_SessionTimeoutTimestamp = new StorageKey<number>(`storage-accounts__session-timeout`);
+import {
+	ApiDefFE_Account,
+	ApiStructFE_Account,
+	DB_Account,
+	DBDef_Accounts,
+	DBProto_AccountType,
+	HeaderKey_SessionId,
+	QueryParam_Email,
+	QueryParam_SessionId,
+	Response_Auth,
+	Response_LoginSAML,
+	UI_Account
+} from '../../shared';
+import {StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp} from '../core/consts';
 
 export interface OnLoginStatusUpdated {
 	__onLoginStatusUpdated: () => void;
 }
 
 export interface OnAccountsUpdated {
-	__onAccountsUpdated: (...params: ApiCallerEventType<DB_Account_V2>) => void;
+	__onAccountsUpdated: (...params: ApiCallerEventType<DB_Account>) => void;
 }
 
 export enum LoggedStatus {
@@ -49,17 +52,17 @@ export enum LoggedStatus {
 export const dispatch_onLoginStatusChanged = new ThunderDispatcher<OnLoginStatusUpdated, '__onLoginStatusUpdated'>('__onLoginStatusUpdated');
 export const dispatch_onAccountsUpdated = new ThunderDispatcher<OnAccountsUpdated, '__onAccountsUpdated'>('__onAccountsUpdated');
 
-class ModuleFE_Account_v2_Class
-	extends ModuleFE_BaseApi<DB_Account_V2, 'email'>
+class ModuleFE_Account_Class
+	extends ModuleFE_v3_BaseApi<DBProto_AccountType>
 	implements ApiDefCaller<ApiStructFE_Account>, OnAuthRequiredListener {
 	readonly vv1: ApiDefCaller<ApiStructFE_Account>['vv1'];
 	private status: LoggedStatus = LoggedStatus.VALIDATING;
-	private accounts!: UI_Account[];
 	accountId!: string;
+	// @ts-ignore
 	private sessionData!: TS_Object;
 
 	constructor() {
-		super(DBDef_Account, dispatch_onAccountsUpdated);
+		super(DBDef_Accounts, dispatch_onAccountsUpdated);
 
 		this.vv1 = {
 			registerAccount: apiWithBody(ApiDefFE_Account.vv1.registerAccount, this.setLoginInfo),
@@ -80,17 +83,15 @@ class ModuleFE_Account_v2_Class
 	}
 
 	getAccounts() {
-		if (!this.accounts)
-			this.accounts = this.cache.all().map(i => cloneObj(i)) as UI_Account[];
-		return this.accounts;
+		return this.cache.all().map(i => cloneObj(i)) as UI_Account[];
 	}
 
 	getLoggedStatus = () => this.status;
 
 	isStatus = (status: LoggedStatus) => this.status === status;
 
-	private onAccountCreated = async (response: ResponseBody_CreateAccount) => {
-		await this.onEntriesUpdated([response as DB_Account_V2]);
+	private onAccountCreated = async (response: DB_Account) => {
+		await this.onEntriesUpdated([response as DB_Account]);
 	};
 
 	protected init(): void {
@@ -108,19 +109,22 @@ class ModuleFE_Account_v2_Class
 		}
 
 		const _sessionId = StorageKey_SessionId.get();
-		if (_sessionId) {
-			const now = currentTimeMillis();
-			const sessionData = this.decode(_sessionId);
-			if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
-				return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
-
-			this.accountId = sessionData.account._id;
-			this.sessionData = sessionData;
-			return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
-		}
+		if (_sessionId)
+			return this.processSessionStatus(_sessionId);
 
 		this.logDebug('login out user.... ');
 		this.setLoggedStatus(LoggedStatus.LOGGED_OUT);
+	}
+
+	private processSessionStatus(sessionId: string) {
+		const now = currentTimeMillis();
+		const sessionData = this.decode(sessionId);
+		if (!exists(sessionData.session.expiration) || now > sessionData.session.expiration)
+			return this.setLoggedStatus(LoggedStatus.SESSION_TIMEOUT);
+
+		this.accountId = sessionData.account._id;
+		this.sessionData = sessionData;
+		return this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	}
 
 	protected setLoggedStatus = (newStatus: LoggedStatus) => {
@@ -139,6 +143,7 @@ class ModuleFE_Account_v2_Class
 
 	private setLoginInfo = async (response: Response_Auth) => {
 		StorageKey_SessionId.set(response.sessionId);
+		this.processSessionStatus(response.sessionId);
 		this.accountId = response._id;
 		this.setLoggedStatus(LoggedStatus.LOGGED_IN);
 	};
@@ -178,8 +183,6 @@ class ModuleFE_Account_v2_Class
 	};
 }
 
-export const ModuleFE_AccountV2 = new ModuleFE_Account_v2_Class();
-
 export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 	private readonly key: Binder['key'];
 
@@ -189,7 +192,10 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 
 	get(): Binder['value'] {
 		// @ts-ignore
-		const sessionData = ModuleFE_AccountV2.sessionData;
+		const sessionData = ModuleFE_Account.sessionData;
+		// if (!sessionData)
+		// 	return undefined;
+
 		if (!(this.key in sessionData))
 			throw new BadImplementationException(`Couldn't find key ${this.key} in session data`);
 
@@ -197,4 +203,4 @@ export class SessionKey_FE<Binder extends TypedKeyValue<string | number, any>> {
 	}
 }
 
-export const SessionKey_Account_FE = new SessionKey_FE<_SessionKey_Account>('account');
+export const ModuleFE_Account = new ModuleFE_Account_Class();

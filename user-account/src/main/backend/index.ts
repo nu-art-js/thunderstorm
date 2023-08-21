@@ -17,4 +17,3 @@
  */
 export * from './core/consts';
 export * from './core/module-pack';
-export * from './core/module-pack-v3';

@@ -6,12 +6,12 @@ import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/managem
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
 import {BadImplementationException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {MemKey_AccountId, ModuleBE_v3_AccountDB} from '@nu-art/user-account/backend';
+import {MemKey_AccountId, ModuleBE_AccountDB} from '@nu-art/user-account/backend';
 import {Test_Project, Test_Setup} from './types';
 import {UI_Account} from '@nu-art/user-account';
 
 export const permissionTestCleanup = async () => {
-	await ModuleBE_v3_AccountDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
+	await ModuleBE_AccountDB.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionProject.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionDomain.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
 	await ModuleBE_PermissionApi.delete.yes.iam.sure.iwant.todelete.the.collection.delete();
