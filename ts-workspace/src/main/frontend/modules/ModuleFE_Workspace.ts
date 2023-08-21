@@ -23,7 +23,7 @@ import {ApiCallerEventType, DBApiFEConfig, ModuleFE_BaseApi} from '@nu-art/db-ap
 import {PanelConfig} from '..';
 import {DBDef_Workspaces} from '../../shared/db-def';
 import {DB_Workspace} from '../../shared/types';
-import {ModuleFE_AccountV3} from '@nu-art/user-account/frontend';
+import {ModuleFE_Account} from '@nu-art/user-account/frontend';
 
 
 export interface OnWorkspaceUpdated {
@@ -51,7 +51,7 @@ export class ModuleFE_Workspace_Class
 	}
 
 	private getCurrentAccountId = (): string => {
-		return ModuleFE_AccountV3.accountId;
+		return ModuleFE_Account.accountId;
 	};
 
 	private assertLoggedInUser = () => {

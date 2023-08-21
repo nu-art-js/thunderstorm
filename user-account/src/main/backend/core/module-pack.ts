@@ -16,17 +16,19 @@
  * limitations under the License.
  */
 
-import {ModuleBE_v2_AccountDB, ModuleBE_v2_SessionDB} from '../modules/v2/';
 import {Module} from '@nu-art/ts-common';
-import {createApisForDBModuleV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseApiV2';
+import {createApisForDBModuleV3, ModuleBE_BaseDBV3} from '@nu-art/db-api-generator/backend';
+import {ModuleBE_AccountDB} from '../modules/ModuleBE_AccountDB';
+import {ModuleBE_SessionDB} from '../modules/ModuleBE_SessionDB';
+import {DBProto_AccountType} from '../../shared';
 
 
 export const ModulePackBE_Accounts: Module[] = [
-	ModuleBE_v2_AccountDB, createApisForDBModuleV2(ModuleBE_v2_AccountDB),
-	ModuleBE_v2_SessionDB
+	ModuleBE_AccountDB, createApisForDBModuleV3(ModuleBE_AccountDB as ModuleBE_BaseDBV3<DBProto_AccountType>),
+	ModuleBE_SessionDB
 ];
 
-export * from '../modules/v2/ModuleBE_v2_AccountDB';
-export * from '../modules/v2/ModuleBE_v2_SessionDB';
+export * from '../modules/ModuleBE_AccountDB';
+export * from '../modules/ModuleBE_SessionDB';
 export * from '../modules/ModuleBE_SAML';
 

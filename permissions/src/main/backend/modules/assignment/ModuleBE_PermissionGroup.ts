@@ -21,7 +21,8 @@ import {
 	_keys,
 	ApiException,
 	batchActionParallel,
-	dbObjectToId, filterDuplicates,
+	dbObjectToId,
+	filterDuplicates,
 	filterInstances,
 	flatArray,
 	reduceToMap,
@@ -34,11 +35,11 @@ import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
 import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
-import Transaction = firestore.Transaction;
 import {MemKey_AccountId} from '@nu-art/user-account/backend/core/consts';
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
-import {ModuleBE_v3_SessionDB} from '@nu-art/user-account/backend';
+import {ModuleBE_SessionDB} from '@nu-art/user-account/backend';
+import Transaction = firestore.Transaction;
 
 
 export class ModuleBE_PermissionGroup_Class
@@ -93,7 +94,7 @@ export class ModuleBE_PermissionGroup_Class
 		const updated = data.updated ? (Array.isArray(data.updated) ? data.updated : [data.updated]) : [];
 		const groupIds = filterDuplicates([...deleted, ...updated].map(dbObjectToId));
 		const users = await batchActionParallel(groupIds, 10, async ids => await ModuleBE_PermissionUserDB.query.custom({where: {__groupIds: {$aca: ids}}}));
-		await ModuleBE_v3_SessionDB.invalidateSessions(users.map(i => i.accountId));
+		await ModuleBE_SessionDB.invalidateSessions(users.map(i => i.accountId));
 	}
 }
 

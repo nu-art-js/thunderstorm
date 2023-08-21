@@ -2,7 +2,7 @@ import * as React from 'react';
 import {TS_BusyButton} from '@nu-art/thunderstorm/frontend';
 import {TS_Icons} from '@nu-art/ts-styles';
 import './Component_GoogleSAMLLogin.scss';
-import {ModuleFE_AccountV3} from '../../modules/v3/ModuleFE_v3_Account';
+import {ModuleFE_Account} from '../../modules/ModuleFE_Account';
 
 type Props = {
 	text?: string;
@@ -11,8 +11,8 @@ type Props = {
 export const Component_GoogleSAMLLogin = (props: Props) => {
 
 	const onClick = async () => {
-		const url = ModuleFE_AccountV3.composeSAMLUrl();
-		await ModuleFE_AccountV3.vv1.loginSaml({redirectUrl: url}).executeSync();
+		const url = ModuleFE_Account.composeSAMLUrl();
+		await ModuleFE_Account.vv1.loginSaml({redirectUrl: url}).executeSync();
 	};
 
 	return <TS_BusyButton

@@ -1,44 +1,60 @@
+import {DBDef_V3} from '@nu-art/ts-common/db/types';
 import {
-	OmitDBObject, tsValidateBoolean,
+	DB_Object_validator,
 	tsValidateEmail,
+	tsValidateUniqueId,
+	tsValidator_nonMandatoryString
+} from '@nu-art/ts-common/validator/validators';
+import {
+	tsValidateBoolean,
 	tsValidateString,
 	tsValidateTimestamp,
-	tsValidateUniqueId, tsValidateValue,
-	tsValidator_nonMandatoryString,
-	ValidatorTypeResolver
-} from '@nu-art/ts-common';
-import {DBDef} from '@nu-art/ts-common/db/types';
-import {accountTypes, DB_Account_V2, DB_Session_V2} from './types';
+	tsValidateValue
+} from '@nu-art/ts-common/validator/type-validators';
+import {DBProto_AccountType, DBProto_SessionType} from './types';
+import {_accountTypes} from './consts';
 
 
-export const Validator_Session: ValidatorTypeResolver<OmitDBObject<DB_Session_V2>> = {
+export const Validator_Modifiable: DBProto_SessionType['modifiablePropsValidator'] = {
 	sessionId: tsValidateString(),
 	accountId: tsValidateUniqueId,
 	timestamp: tsValidateTimestamp()
 };
 
-export const DBDef_Session: DBDef<DB_Session_V2, 'accountId'> = {
-	validator: Validator_Session,
+export const Validator_Generated: DBProto_SessionType['generatedPropsValidator'] = {
+	...DB_Object_validator
+};
+
+export const DBDef_Session: DBDef_V3<DBProto_SessionType> = {
+	modifiablePropsValidator: Validator_Modifiable,
+	generatedPropsValidator: Validator_Generated,
 	dbName: 'user-account--sessions',
 	entityName: 'Session',
-	uniqueKeys: ['accountId']
+	uniqueKeys: ['accountId'],
+	versions: ['1.0.0'],
 };
 
-export const Validator_Account: ValidatorTypeResolver<OmitDBObject<DB_Account_V2>> = {
+
+const modifiablePropsValidator: DBProto_AccountType['modifiablePropsValidator'] = {
 	email: tsValidateEmail,
-	type: tsValidateValue([...accountTypes]),
+	type: tsValidateValue(_accountTypes),
+	thumbnail: tsValidateString(undefined, false),
+	displayName: tsValidateString(undefined, false),
 	salt: tsValidator_nonMandatoryString,
 	saltedPassword: tsValidator_nonMandatoryString,
-	displayName: tsValidator_nonMandatoryString,
-	thumbnail: tsValidator_nonMandatoryString,
-	_newPasswordRequired: tsValidateBoolean(false),
-	_auditorId: tsValidateString()
 };
 
-export const DBDef_Account: DBDef<DB_Account_V2, 'email'> = {
-	validator: Validator_Account,
+const generatedPropsValidator: DBProto_AccountType['generatedPropsValidator'] = {
+	...DB_Object_validator,
+	_auditorId: tsValidateString(),
+	_newPasswordRequired: tsValidateBoolean(false),
+};
+
+export const DBDef_Accounts: DBDef_V3<DBProto_AccountType> = {
 	dbName: 'user-account--accounts',
 	entityName: 'Account',
-	generatedProps: ['salt', 'saltedPassword', '_auditorId'],
-	uniqueKeys: ['email']
+	uniqueKeys: ['email'],
+	modifiablePropsValidator: modifiablePropsValidator,
+	generatedPropsValidator: generatedPropsValidator,
+	versions: ['1.0.0']
 };
