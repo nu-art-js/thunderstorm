@@ -41,3 +41,4 @@ export * from './modules/ModuleFE_BaseApi';
 export * from './modules/ModuleFE_v3_BaseApi';
 export * from './modules/ModuleFE_SyncManager';
 export * from './modules/ModuleFE_SyncEnv';
+export * from './modules/ModuleFE_AppConfig';
