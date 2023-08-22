@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Response_DBSync,} from '../shared';
+import {Response_DBSync,} from '../../shared';
 import {
 	DBConfig,
 	IndexDb_Query,

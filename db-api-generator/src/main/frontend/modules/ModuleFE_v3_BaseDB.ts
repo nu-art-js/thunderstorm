@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {Response_DBSync,} from '../shared';
+import {Response_DBSync,} from '../../shared';
 import {
 	DBConfigV3,
 	IndexDb_Query,
@@ -44,7 +44,8 @@ import {
 	sortArray,
 	tsValidateResult,
 	TypedMap,
-	ValidationException, ValidatorTypeResolver
+	ValidationException,
+	ValidatorTypeResolver
 } from '@nu-art/ts-common';
 import {DataStatus, syncDispatcher} from './consts';
 import {MultiApiEvent, SingleApiEvent} from '../types';

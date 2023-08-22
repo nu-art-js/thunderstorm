@@ -20,7 +20,7 @@
  */
 
 import {ApiDefCaller, BaseHttpRequest, HttpException, QueryParams, TypedApi} from '@nu-art/thunderstorm';
-import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBSyncData,} from '../shared';
+import {_EmptyQuery, ApiStruct_DBApiGenIDB, DBApiDefGeneratorIDB, DBSyncData,} from '../../shared';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {apiWithBody, apiWithQuery, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 
