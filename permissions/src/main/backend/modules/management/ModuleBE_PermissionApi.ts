@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-import {ServerApi} from '@nu-art/thunderstorm/backend';
+import {ModuleBE_BaseDBV2, ServerApi} from '@nu-art/thunderstorm/backend';
 import {_keys, ApiException, dbObjectToId, filterInstances, PreDB, TypedMap} from '@nu-art/ts-common';
 import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DB_PermissionApi, DBDef_PermissionApi} from '../../shared';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
-import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
+
 import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
 

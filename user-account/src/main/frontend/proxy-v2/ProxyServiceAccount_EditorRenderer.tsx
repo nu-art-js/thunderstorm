@@ -1,7 +1,14 @@
 import * as React from 'react';
 import './ProxyServiceAccount_EditorRenderer.scss';
-import {EditableItem, LL_H_C, LL_V_L, TS_Button} from '@nu-art/thunderstorm/frontend';
-import {EditorRenderer_BaseImpl, Props_ItemEditor, State_ItemEditor} from '@nu-art/db-api-generator/frontend';
+import {
+	EditableItem,
+	EditorRenderer_BaseImpl,
+	LL_H_C,
+	LL_V_L,
+	Props_ItemEditor,
+	State_ItemEditor,
+	TS_Button
+} from '@nu-art/thunderstorm/frontend';
 import {UI_Account} from '../../shared';
 
 

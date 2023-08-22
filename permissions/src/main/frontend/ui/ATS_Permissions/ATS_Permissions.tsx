@@ -1,5 +1,14 @@
 import * as React from 'react';
-import {AppToolsScreen, LL_V_L, Tab, TS_AppTools, TS_Tabs} from '@nu-art/thunderstorm/frontend';
+import {
+	AppToolsScreen,
+	LL_V_L,
+	Props_SmartComponent,
+	SmartComponent,
+	State_SmartComponent,
+	Tab,
+	TS_AppTools,
+	TS_Tabs
+} from '@nu-art/thunderstorm/frontend';
 import './ATS_Permissions.scss';
 import {
 	ModuleFE_PermissionsAccessLevel,
@@ -12,7 +21,6 @@ import {
 	PermissionProjectsEditor,
 	PermissionUsersEditor
 } from '../..';
-import {Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/db-api-generator/frontend';
 
 type State = State_SmartComponent;
 

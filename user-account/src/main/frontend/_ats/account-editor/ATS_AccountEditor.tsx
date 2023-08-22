@@ -6,19 +6,17 @@ import {
 	ComponentSync,
 	LL_H_C,
 	LL_V_L,
+	Props_SmartComponent,
+	SmartComponent,
+	State_SmartComponent,
 	TS_BusyButton,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
 import {DB_Account} from '../../../shared';
-import {
-	ApiCallerEventType,
-	Props_SmartComponent,
-	SmartComponent,
-	State_SmartComponent
-} from '@nu-art/db-api-generator/frontend';
 import {generateUUID} from '@nu-art/ts-common';
 import {ModuleFE_Account, OnAccountsUpdated} from '../../modules/ModuleFE_Account';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 type Props = {}

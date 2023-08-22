@@ -24,9 +24,8 @@ import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {DB_EntityDependency} from '@nu-art/firebase';
-import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
-import {_EmptyQuery} from '@nu-art/db-api-generator';
+import {ModuleBE_BaseDBV2} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
 
 

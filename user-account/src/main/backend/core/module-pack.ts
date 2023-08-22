@@ -17,10 +17,11 @@
  */
 
 import {Module} from '@nu-art/ts-common';
-import {createApisForDBModuleV3, ModuleBE_BaseDBV3} from '@nu-art/db-api-generator/backend';
+
 import {ModuleBE_AccountDB} from '../modules/ModuleBE_AccountDB';
 import {ModuleBE_SessionDB} from '../modules/ModuleBE_SessionDB';
 import {DBProto_AccountType} from '../../shared';
+import {createApisForDBModuleV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 
 
 export const ModulePackBE_Accounts: Module[] = [

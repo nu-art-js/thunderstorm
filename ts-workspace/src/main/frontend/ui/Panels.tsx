@@ -1,8 +1,13 @@
 import * as React from 'react';
 import {Config_PanelParent, PanelConfig, Props_WorkspacePanel, State_WorkspacePanel} from './types';
-import {ComponentAsync, ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {
+	ComponentAsync,
+	ComponentStatus,
+	ComponentSync,
+	SmartComponent,
+	State_SmartComponent
+} from '@nu-art/thunderstorm/frontend';
 import {compare} from '@nu-art/ts-common';
-import {ComponentStatus, SmartComponent, State_SmartComponent} from '@nu-art/db-api-generator/frontend';
 
 export abstract class PanelBaseSync<Config, State = {}, Props = {}>
 	extends ComponentSync<Props_WorkspacePanel<Config, Props> & Props, State_WorkspacePanel<Config, State>> {

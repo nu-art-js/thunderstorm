@@ -22,9 +22,8 @@ import {ModuleBE_AssetsDB} from '../modules/ModuleBE_AssetsDB';
 import {ModuleBE_BucketListener} from '../modules/ModuleBE_BucketListener';
 import {ModulePackBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
 import {ModuleBE_AssetUploader} from '../modules/ModuleBE_AssetUploader';
-import {createApisForDBModuleV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseApiV2';
 import {ModuleBE_AssetsAPI} from '../modules/ModuleBE_AssetsAPI';
-
+import {createApisForDBModuleV2} from '@nu-art/thunderstorm/backend';
 
 export const ModulePackBE_FileUploader = [
 	...ModulePackBE_PushPubSub,

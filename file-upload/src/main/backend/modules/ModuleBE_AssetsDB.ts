@@ -33,10 +33,22 @@ import {
 	ThisShouldNotHappenException,
 	TypedMap
 } from '@nu-art/ts-common';
-import {FileWrapper, FirebaseType_Metadata, FirestoreTransaction, ModuleBE_Firebase, StorageWrapperBE} from '@nu-art/firebase/backend';
+import {
+	FileWrapper,
+	FirebaseType_Metadata,
+	FirestoreTransaction,
+	ModuleBE_Firebase,
+	StorageWrapperBE
+} from '@nu-art/firebase/backend';
 import {ModuleBE_AssetsTemp} from './ModuleBE_AssetsTemp';
 import {ModuleBE_PushPubSub} from '@nu-art/push-pub-sub/backend';
-import {AxiosHttpModule, CleanupDetails, OnCleanupSchedulerAct} from '@nu-art/thunderstorm/backend';
+import {
+	AxiosHttpModule,
+	CleanupDetails,
+	DBApiConfig,
+	ModuleBE_BaseDBV2,
+	OnCleanupSchedulerAct
+} from '@nu-art/thunderstorm/backend';
 import {FileExtension, fromBuffer, MimeType} from 'file-type';
 import {Clause_Where, FirestoreQuery} from '@nu-art/firebase';
 import {OnAssetUploaded} from './ModuleBE_BucketListener';
@@ -51,8 +63,8 @@ import {
 	Request_GetReadSecuredUrl,
 	TempSecureUrl
 } from '../../shared';
-import {DBApiConfig} from '@nu-art/db-api-generator/backend';
-import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
+
+
 import {HttpMethod} from '@nu-art/thunderstorm';
 
 

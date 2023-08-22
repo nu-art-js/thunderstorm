@@ -40,3 +40,13 @@ export * from './utils/LogClient_File';
 export * from './utils/file';
 export * from './core/Storm';
 export * from './core/typed-api';
+// from db-api-generator
+export * from './core/db-def';
+export * from './modules/archiving/ModuleBE_Archiving';
+export * from './modules/db-api-gen/ModuleBE_BaseApiV2';
+export * from './modules/db-api-gen/ModuleBE_BaseDBV2';
+export * from './modules/sync-env/ModuleBE_v2_SyncEnv';
+export * from './modules/sync-manager/ModuleBE_v2_SyncManager';
+export * from './modules/db-api-gen/ModuleBE_BaseDBV3';
+export * from './modules/db-api-gen/ModuleBE_BaseApiV3';
+export * from './modules/app-config/ModuleBE_AppConfig';
