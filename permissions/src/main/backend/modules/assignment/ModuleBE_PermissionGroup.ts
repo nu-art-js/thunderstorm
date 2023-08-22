@@ -33,14 +33,13 @@ import {DB_EntityDependency} from '@nu-art/firebase';
 import {ModuleBE_PermissionAccessLevel} from '../management/ModuleBE_PermissionAccessLevel';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
-import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
 import {MemKey_AccountId} from '@nu-art/user-account/backend/core/consts';
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
 import {ModuleBE_PermissionUserDB} from './ModuleBE_PermissionUserDB';
 import {ModuleBE_SessionDB} from '@nu-art/user-account/backend';
+import {ModuleBE_BaseDBV2} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
-
 
 export class ModuleBE_PermissionGroup_Class
 	extends ModuleBE_BaseDBV2<DB_PermissionGroup>

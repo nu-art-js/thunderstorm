@@ -19,8 +19,8 @@
  * limitations under the License.
  */
 
-import {dispatch_onPageTitleChanged} from './AppPageV2';
 import {ComponentSync} from './ComponentSync';
+import {dispatch_onPageTitleChanged} from './consts';
 
 // Deprecated use AppPageV2
 export abstract class AppPage<P extends { pageTitle?: string | ((state: S) => string) } = {}, S extends {} = {}>

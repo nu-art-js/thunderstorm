@@ -1,4 +1,14 @@
-import {_keys, batchActionParallel, DBDef, dbObjectToId, filterInstances, flatArray, Module, PreDB, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	batchActionParallel,
+	DBDef,
+	dbObjectToId,
+	filterInstances,
+	flatArray,
+	Module,
+	PreDB,
+	TypedMap
+} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
@@ -25,8 +35,8 @@ import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
-import {_EmptyQuery} from '@nu-art/db-api-generator';
 import {SessionData_Permissions} from '../../shared/types';
+import {_EmptyQuery} from '@nu-art/firebase';
 
 const defaultDomainDbDefMap: { [k: string]: DBDef<any, any>[] } = {
 	[permissionsDefName]: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel],

@@ -1,13 +1,4 @@
 import * as React from 'react';
-import {
-	ApiCallerEventType,
-	EditableDBItem,
-	EventType_Create,
-	EventType_Delete,
-	EventType_Update,
-	Props_SmartComponent,
-	State_SmartComponent
-} from '@nu-art/db-api-generator/frontend';
 import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionProject} from '../shared';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {
@@ -18,13 +9,21 @@ import {
 	OnPermissionsLevelsUpdated
 } from '../core/module-pack';
 import {
+	EditableDBItem,
+	EventType_Create,
+	EventType_Delete,
+	EventType_Update,
 	genericNotificationAction,
 	getElementCenterPos,
-	LL_H_C, Model_PopUp,
+	LL_H_C,
+	Model_PopUp,
 	ModuleFE_MouseInteractivity,
 	mouseInteractivity_PopUp,
 	openContent,
-	SimpleListAdapter, Thunder,
+	Props_SmartComponent,
+	SimpleListAdapter,
+	State_SmartComponent,
+	Thunder,
 	TS_BusyButton,
 	TS_Button,
 	TS_DropDown,
@@ -32,11 +31,21 @@ import {
 	TS_PropRenderer,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, filterInstances, Module, PreDB, sortArray} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	capitalizeFirstLetter,
+	cloneObj,
+	DBDef,
+	filterInstances,
+	Module,
+	PreDB,
+	sortArray
+} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
 import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
 import {defaultAccessLevels} from '../../shared/management/access-level/consts';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 type State = State_EditorBase<DB_PermissionDomain> & {
 	projects: Readonly<DB_PermissionProject[]>
@@ -307,7 +316,7 @@ export class PermissionDomainsEditor
 			<TS_PropRenderer.Vertical label={'Namespace'}>
 				<LL_H_C className={'match_width'} style={{gap: '10px'}}>
 					<TS_Input type={'text'} value={domain.item.namespace}
-										onChange={value => this.setProperty('namespace', value)}/>
+							  onChange={value => this.setProperty('namespace', value)}/>
 					{this.renderConnectDomainButton()}
 				</LL_H_C>
 			</TS_PropRenderer.Vertical>

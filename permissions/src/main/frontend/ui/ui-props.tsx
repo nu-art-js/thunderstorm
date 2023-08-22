@@ -1,8 +1,3 @@
-import {
-	GenericDropDown,
-	MandatoryProps_GenericDropDown,
-	PartialProps_GenericDropDown
-} from '@nu-art/db-api-generator/frontend';
 import * as React from 'react';
 import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup} from '../../shared';
 import {
@@ -10,7 +5,12 @@ import {
 	ModuleFE_PermissionsAccessLevel_
 } from '../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {ModuleFE_PermissionsDomain, ModuleFE_PermissionsDomain_} from '../modules/manage/ModuleFE_PermissionsDomain';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {
+	ComponentSync,
+	GenericDropDown,
+	MandatoryProps_GenericDropDown,
+	PartialProps_GenericDropDown
+} from '@nu-art/thunderstorm/frontend';
 import {dbObjectToId} from '@nu-art/ts-common';
 import {ModuleFE_PermissionsGroup, ModuleFE_PermissionsGroup_} from '../modules/assign/ModuleFE_PermissionsGroup';
 import {

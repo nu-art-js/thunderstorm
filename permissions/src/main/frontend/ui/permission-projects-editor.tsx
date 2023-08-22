@@ -1,15 +1,19 @@
 import * as React from 'react';
 import {
-	ApiCallerEventType,
+	_className,
 	EditableDBItem,
 	EventType_Create,
 	EventType_Delete,
 	EventType_Update,
+	LL_H_C,
+	LL_V_L,
 	ModuleFE_BaseApi,
 	Props_SmartComponent,
-	State_SmartComponent
-} from '@nu-art/db-api-generator/frontend';
-import {_className, LL_H_C, LL_V_L, TS_Button, TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+	State_SmartComponent,
+	TS_Button,
+	TS_Input,
+	TS_PropRenderer
+} from '@nu-art/thunderstorm/frontend';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {DB_PermissionApi, DB_PermissionProject} from '../shared';
 import {
@@ -24,6 +28,7 @@ import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
 import {Filter, sortArray, UniqueId} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {MultiSelect} from './ui-props';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 type State = State_EditorBase<DB_PermissionProject> & {
@@ -95,7 +100,9 @@ export class PermissionProjectsEditor
 		if (this.state.items.length)
 			return <></>;
 
-		return <TS_Button className={'item-list__add-button'} onClick={() => ModuleFE_Permissions.v1.createProject({}).executeSync()}>Create Project</TS_Button>;
+		return <TS_Button className={'item-list__add-button'}
+						  onClick={() => ModuleFE_Permissions.v1.createProject({}).executeSync()}>Create
+			Project</TS_Button>;
 	};
 
 	private renderApis = () => {

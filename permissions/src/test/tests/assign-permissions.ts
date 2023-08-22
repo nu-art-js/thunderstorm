@@ -26,7 +26,7 @@ import {MemKey_UserPermissions} from '../../main/backend';
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
 import {Test_Setup, Test_TargetAccount} from '../_core/types';
 import {expect} from 'chai';
-import {_EmptyQuery} from '@nu-art/db-api-generator';
+
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel';
 
