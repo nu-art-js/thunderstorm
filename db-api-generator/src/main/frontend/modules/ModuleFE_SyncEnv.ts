@@ -1,7 +1,7 @@
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {apiWithBody, apiWithQuery} from '@nu-art/thunderstorm/frontend';
 import {Module} from '@nu-art/ts-common';
-import {ApiDef_SyncEnv, ApiStruct_SyncEnv} from '../shared';
+import {ApiDef_SyncEnv, ApiStruct_SyncEnv} from '../../shared';
 
 
 class ModuleFE_SyncEnv_Class
