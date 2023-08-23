@@ -23,6 +23,7 @@ import {
 	BadImplementationException,
 	batchActionParallel,
 	filterDuplicates,
+	filterInstances,
 	Module,
 	StringMap,
 	TypedMap
@@ -201,7 +202,7 @@ export class ModuleBE_PermissionsAssert_Class
 
 	private async getAccessLevels(_accessLevelIds?: string[]): Promise<DB_PermissionAccessLevel[]> {
 		const accessLevelIds = filterDuplicates(_accessLevelIds || []);
-		const requestPermissions = await batchActionParallel(accessLevelIds, 10, elements => ModuleBE_PermissionAccessLevel.query.custom({where: {_id: {$in: elements}}}));
+		const requestPermissions = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(accessLevelIds));
 		const idNotFound = accessLevelIds.find(lId => !requestPermissions.find(r => r._id === lId));
 		if (idNotFound)
 			throw new ApiException(404, `Could not find api level with _id: ${idNotFound}`);

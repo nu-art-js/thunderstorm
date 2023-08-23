@@ -16,8 +16,9 @@ import {
 	tsValidateMustExist
 } from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
+import {_EmptyQuery} from '../../../main';
 
-chai.use(require('chai-as-promised'))
+chai.use(require('chai-as-promised'));
 
 
 type Input = {
@@ -31,7 +32,7 @@ const dbDef: DBDef<DB_Type> = {
 	dbName: 'firestore-delete-tests',
 	entityName: 'delete-test',
 	validator: tsValidateMustExist
-}
+};
 
 export const TestCases_FB_Delete: Test['testcases'] = [
 	{
@@ -142,7 +143,7 @@ export const TestCases_FB_Delete: Test['testcases'] = [
 		input: {
 			toInsert: [testInstance1, testInstance2, testInstance3],
 			deleteAction: async (collection, inserted) => {
-				await expect(collection.delete.query({where: {}})).to.be.rejectedWith(MUSTNeverHappenException);
+				await expect(collection.delete.query(_EmptyQuery)).to.be.rejectedWith(MUSTNeverHappenException);
 			}
 		}
 	},
@@ -152,7 +153,7 @@ export const TestCases_FB_Delete: Test['testcases'] = [
 		input: {
 			toInsert: [testInstance1, testInstance2, testInstance3],
 			deleteAction: async (collection, inserted) => {
-				await expect(collection.delete.query({where: {}})).to.be.rejectedWith(MUSTNeverHappenException);
+				await expect(collection.delete.query(_EmptyQuery)).to.be.rejectedWith(MUSTNeverHappenException);
 			}
 		}
 	},
@@ -169,7 +170,7 @@ export const TestSuite_FirestoreV2_Delete: Test = {
 		const inserted = await collection.create.all(asArray(toInsert));
 
 		await testCase.input.deleteAction(collection, inserted);
-		const remainingDBItems = await collection.query.custom({where: {}});
+		const remainingDBItems = await collection.query.custom(_EmptyQuery);
 		expect(true).to.eql(compare(sortArray(remainingDBItems.map(removeDBObjectKeys), item => item.stringValue), sortArray(testCase.result, item => item.stringValue)));
 	}
 };

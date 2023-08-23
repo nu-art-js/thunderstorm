@@ -20,9 +20,9 @@ import {
 	ApiException,
 	auditBy,
 	BadImplementationException,
-	batchActionParallel,
 	currentTimeMillis,
 	Day,
+	filterInstances,
 	generateHex,
 	Hour,
 	ImplementationMissingException,
@@ -183,7 +183,7 @@ export class ModuleBE_AssetsDB_Class
 	};
 
 	async getAssetsContent(assetIds: string[]): Promise<AssetContent[]> {
-		const assetsToSync = await batchActionParallel<string, DB_Asset>(assetIds, 10, async chunk => await ModuleBE_AssetsDB.query.custom({where: {_id: {$in: chunk}}}));
+		const assetsToSync = filterInstances(await ModuleBE_AssetsDB.query.all(assetIds));
 		const assetFiles = await Promise.all(assetsToSync.map(asset => this.storage.getFile(asset.path, asset.bucketName)));
 		const assetContent = await Promise.all(assetFiles.map(asset => asset.read()));
 
