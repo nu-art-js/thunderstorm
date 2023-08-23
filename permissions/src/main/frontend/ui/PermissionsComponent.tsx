@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {OnPermissionsChanged, ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
-import {SmartComponent} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_Permissions, OnPermissionsChanged} from '../modules/ModuleFE_Permissions';
+import {Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_PermissionsAccessLevel} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 
@@ -18,6 +18,10 @@ export class PermissionsComponent
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsAccessLevel]
 	};
+
+	protected async deriveStateFromProps(nextProps: Props_SmartComponent & Props, state: State_SmartComponent) {
+		return state;
+	}
 
 	__onPermissionsChanged() {
 		this.forceUpdate();
