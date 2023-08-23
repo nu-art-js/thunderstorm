@@ -12,7 +12,12 @@ export type PermissionTypes = {
 
 export type SessionData_Permissions = TypedKeyValue<'permissions', TypedMap<number>>
 
-export type PermissionKeyData = {
+export type UI_PermissionKeyData = {
 	accessLevelIds: UniqueId[];
 	_accessLevels?: { [domainId: UniqueId]: number }
+}
+
+export type DB_PermissionKeyData = {
+	accessLevelIds: UniqueId[];
+	_accessLevels: { [domainId: UniqueId]: number }
 }

@@ -3,6 +3,7 @@ import {PermissionKeyData} from '../shared/types';
 import {ModuleBE_PermissionAccessLevel} from './modules/management/ModuleBE_PermissionAccessLevel';
 import {AppConfigKey_BE} from '@nu-art/thunderstorm/backend/modules/app-config/ModuleBE_AppConfig';
 
+
 export class PermissionKey_BE<K extends string>
 	extends AppConfigKey_BE<TypedKeyValue<K, PermissionKeyData>> {
 
@@ -20,6 +21,7 @@ export class PermissionKey_BE<K extends string>
 			acc[level.domainId] = level.value;
 			return acc;
 		}, {} as TypedMap<number>);
+
 		await super.set(value);
 	}
 }
