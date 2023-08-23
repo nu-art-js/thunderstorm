@@ -2,6 +2,7 @@ import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionProject} fro
 import {DB_PermissionGroup, DB_PermissionUser} from './assign';
 import {TypedKeyValue, TypedMap, UniqueId} from '@nu-art/ts-common';
 
+
 export type PermissionTypes = {
 	Project: DB_PermissionProject;
 	Domain: DB_PermissionDomain;
@@ -18,6 +19,7 @@ export type UI_PermissionKeyData = {
 }
 
 export type DB_PermissionKeyData = {
+	type: 'permission-key'
 	accessLevelIds: UniqueId[];
 	_accessLevels: { [domainId: UniqueId]: number }
 }
