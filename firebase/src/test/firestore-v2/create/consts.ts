@@ -13,6 +13,7 @@ import {
 	testInstance4,
 	testInstance5
 } from '../_core/consts';
+import {_EmptyQuery} from '../../../main';
 
 
 export type CreateTestInput = {
@@ -45,7 +46,7 @@ export const createTestCases: CreateTest['testcases'] = [
 		input: {
 			value: [duplicateObjectToCreate],
 			check: async (collection, expectedResult) => {
-				const items = await collection.query.custom({where: {}});
+				const items = await collection.query.custom(_EmptyQuery);
 				expect(items.length).to.eql(1);
 				expect(true).to.eql(compare(removeDBObjectKeys(items[0]), removeDBObjectKeys(getSingleItem(expectedResult) as DB_Type)));
 				expect(items[0]._id).to.eql(getSingleItem(expectedResult)._id);
@@ -58,7 +59,7 @@ export const createTestCases: CreateTest['testcases'] = [
 		input: {
 			value: [testInstance1, testInstance2],
 			check: async (collection, expectedResult) => {
-				const items = await collection.query.custom({where: {}});
+				const items = await collection.query.custom(_EmptyQuery);
 				expect(items.length).to.eql(2);
 				expect(true).to.eql(compare([testInstance1, testInstance2], expectedResult));
 			}
@@ -70,7 +71,7 @@ export const createTestCases: CreateTest['testcases'] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				const items = await collection.query.custom({where: {}});
+				const items = await collection.query.custom(_EmptyQuery);
 				expect(items.length).to.eql(5);
 				expect(true).to.eql(compare([testInstance1, testInstance2, testInstance3, testInstance4, testInstance5], expectedResult));
 			}
@@ -82,7 +83,7 @@ export const createTestCases: CreateTest['testcases'] = [
 		input: {
 			value: items,
 			check: async (collection, expectedResult) => {
-				const dbItems = await collection.query.custom({where: {}});
+				const dbItems = await collection.query.custom(_EmptyQuery);
 				expect(dbItems.length).to.eql(items.length);
 				// expect(true).to.eql(compare(items, expectedResult));
 			}
@@ -94,7 +95,7 @@ export const createTestCases: CreateTest['testcases'] = [
 		input: {
 			value: [testInstance1, testInstance1],
 			check: async (collection, expectedResult) => {
-				const items = await collection.query.custom({where: {}});
+				const items = await collection.query.custom(_EmptyQuery);
 
 				expect(items.length).to.eql(2);
 

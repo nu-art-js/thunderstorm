@@ -1,4 +1,4 @@
-import {batchActionParallel, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
+import {filterInstances, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
 import {PermissionKeyData} from '../shared/types';
 import {ModuleBE_PermissionAccessLevel} from './modules/management/ModuleBE_PermissionAccessLevel';
 import {AppConfigKey_BE} from '@nu-art/thunderstorm/backend/modules/app-config/ModuleBE_AppConfig';
@@ -15,10 +15,7 @@ export class PermissionKey_BE<K extends string>
 	}
 
 	async set(value: PermissionKeyData) {
-		const accessLevels = await batchActionParallel(
-			value.accessLevelIds,
-			10,
-			async ids => await ModuleBE_PermissionAccessLevel.query.custom({where: {_id: {$in: ids}}}));
+		const accessLevels = filterInstances(await ModuleBE_PermissionAccessLevel.query.all(value.accessLevelIds));
 		value._accessLevels = accessLevels.reduce((acc, level) => {
 			acc[level.domainId] = level.value;
 			return acc;

@@ -1,14 +1,4 @@
-import {
-	_keys,
-	batchActionParallel,
-	DBDef,
-	dbObjectToId,
-	filterInstances,
-	flatArray,
-	Module,
-	PreDB,
-	TypedMap
-} from '@nu-art/ts-common';
+import {_keys, DBDef, dbObjectToId, filterInstances, flatArray, Module, PreDB, TypedMap} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
@@ -52,7 +42,7 @@ class ModuleBE_Permissions_Class
 		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId});
 		const permissionMap: TypedMap<number> = {};
 		const groupIds = user.groups.map(g => g.groupId);
-		const groups = await batchActionParallel(groupIds, 10, async ids => await ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: ids}}}));
+		const groups = filterInstances(await ModuleBE_PermissionGroup.query.all(groupIds));
 		const levelMaps = filterInstances(groups.map(i => i._levelsMap));
 		levelMaps.forEach(levelMap => {
 			_keys(levelMap).forEach(domainId => {

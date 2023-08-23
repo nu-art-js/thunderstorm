@@ -18,6 +18,7 @@ import {
 	testInstance4,
 	testInstance5
 } from '../_core/consts';
+import {_EmptyQuery} from '../../../main';
 
 export type QueryTestInput = {
 	value: TestInputValue;
@@ -34,7 +35,7 @@ export const queryTestCases: QueryTest['testcases'] = [
 		input: {
 			value: [],
 			check: async (collection, expectedResult) => {
-				const items = await collection.query.custom({where: {}});
+				const items = await collection.query.custom(_EmptyQuery);
 				expect(items.length).to.eql(0);
 				expect(true).to.eql(compare(items, []));
 			}
@@ -46,7 +47,7 @@ export const queryTestCases: QueryTest['testcases'] = [
 		input: {
 			value: [testInstance1],
 			check: async (collection, expectedResult) => {
-				const items = await collection.query.custom({where: {}});
+				const items = await collection.query.custom(_EmptyQuery);
 				expect(items.length).to.eql(1);
 				expect(true).to.eql(compare(removeDBObjectKeys(items[0]), getSingleItem(expectedResult) as DB_Type));
 
@@ -59,7 +60,7 @@ export const queryTestCases: QueryTest['testcases'] = [
 		input: {
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
-				const items = sortArray(await collection.query.custom({where: {}}), item => item.numeric);
+				const items = sortArray(await collection.query.custom(_EmptyQuery), item => item.numeric);
 				expect(items.length).to.eql(5);
 				expect(true).to.eql(compare(items.map(removeDBObjectKeys), expectedResult));
 			}
@@ -72,7 +73,7 @@ export const queryTestCases: QueryTest['testcases'] = [
 			value: [testInstance1, testInstance2, testInstance3, testInstance4, testInstance5],
 			check: async (collection, expectedResult) => {
 				await collection.runTransaction(async (transaction) => {
-					const items = sortArray(await collection.query.custom({where: {}}, transaction), item => item.numeric);
+					const items = sortArray(await collection.query.custom(_EmptyQuery, transaction), item => item.numeric);
 					expect(items.length).to.eql(5);
 					expect(true).to.eql(compare(items.map(removeDBObjectKeys), expectedResult));
 				});
