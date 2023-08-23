@@ -2,17 +2,8 @@ import {compare, PreDB, removeDBObjectKeys} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {TestSuite} from '@nu-art/ts-common/testing/types';
 import {expect} from 'chai';
-import {FB_Type} from '../../firestore/_core/types';
 import {DB_Type, TestInputValue} from '../_core/types';
-import {
-	duplicateObjectToCreate,
-	getSingleItem,
-	testInstance1,
-	testInstance2,
-	testInstance3,
-	testInstance4,
-	testInstance5
-} from '../_core/consts';
+import {duplicateObjectToCreate, getSingleItem, testInstance1, testInstance2, testInstance3, testInstance4, testInstance5} from '../_core/consts';
 import {_EmptyQuery} from '../../../main';
 
 
@@ -100,7 +91,7 @@ export const createTestCases: CreateTest['testcases'] = [
 				expect(items.length).to.eql(2);
 
 				const dbItems = items.map(removeDBObjectKeys);
-				expect(true).to.eql(compare(dbItems, expectedResult as FB_Type[]));
+				expect(true).to.eql(compare(dbItems, expectedResult as DB_Type[]));
 			}
 		}
 	},
