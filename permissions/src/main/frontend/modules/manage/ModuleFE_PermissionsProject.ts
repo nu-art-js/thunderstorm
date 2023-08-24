@@ -30,7 +30,7 @@ const dispatch_OnPermissionsProjectsUpdated = new ThunderDispatcher<OnPermission
 	'__OnPermissionsProjectsUpdated');
 
 export class ModuleFE_PermissionsProject_Class
-	extends ModuleFE_BaseApi<DB_PermissionProject, 'name'> {
+	extends ModuleFE_BaseApi<DB_PermissionProject> {
 
 	constructor() {
 		super(DBDef_PermissionProjects, dispatch_OnPermissionsProjectsUpdated);

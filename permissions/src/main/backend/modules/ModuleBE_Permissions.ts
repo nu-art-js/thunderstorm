@@ -1,4 +1,15 @@
-import {_keys, batchActionParallel, DBDef, dbObjectToId, filterInstances, flatArray, Module, PreDB, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	BadImplementationException,
+	batchActionParallel,
+	DBDef,
+	dbObjectToId,
+	filterInstances,
+	flatArray,
+	Module,
+	PreDB,
+	TypedMap
+} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
@@ -28,11 +39,11 @@ import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {_EmptyQuery} from '@nu-art/db-api-generator';
 import {SessionData_Permissions} from '../../shared/types';
 
+
 const defaultDomainDbDefMap: { [k: string]: DBDef<any, any>[] } = {
 	[permissionsDefName]: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel],
 	[permissionsAssignName]: [DBDef_PermissionGroup, DBDef_PermissionUser],
 };
-
 
 class ModuleBE_Permissions_Class
 	extends Module
@@ -67,6 +78,10 @@ class ModuleBE_Permissions_Class
 	}
 
 	createProject = async () => {
+		const existingProject = await ModuleBE_PermissionProject.query.custom({limit: 1});
+		if (existingProject.length > 0)
+			throw new BadImplementationException(`There are already ${existingProject.length} projects in the system.. there should be only 1`);
+
 		//Create New Project
 		const project = await ModuleBE_PermissionProject.create.item({name: 'New Project'} as PreDB<DB_PermissionProject>);
 		// Create Project Structure & Super Admin
