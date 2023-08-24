@@ -1,8 +1,8 @@
 import * as React from 'react';
-import {ModuleFE_Permissions, OnPermissionsChanged} from '../modules/ModuleFE_Permissions';
 import {Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_PermissionsAccessLevel} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {PermissionKey_FE} from '../PermissionKey_FE';
+import {ModuleFE_PermissionsAssert, OnPermissionsChanged} from '../modules/ModuleFE_PermissionsAssert';
 
 
 type Props = React.PropsWithChildren<{
@@ -28,7 +28,7 @@ export class PermissionsComponent
 	}
 
 	render() {
-		const permitted = ModuleFE_Permissions.canAccess(this.props.key);
+		const permitted = ModuleFE_PermissionsAssert.canAccess(this.props.key);
 		if (permitted === undefined)
 			return this.props.loadingComponent ? <this.props.loadingComponent/> : null;
 

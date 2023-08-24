@@ -38,7 +38,7 @@ export interface OnAppConfigUpdated {
 
 export const dispatch_onAppConfigUpdated = new ThunderDispatcher<OnAppConfigUpdated, '__OnAppConfigUpdated'>('__OnAppConfigUpdated');
 
-export class ModuleFE_AppConfig_Class
+class ModuleFE_AppConfig_Class
 	extends ModuleFE_BaseApi<DB_AppConfig> {
 	readonly vv1: ApiDefCaller<ApiStruct_AppConfig>['vv1'];
 

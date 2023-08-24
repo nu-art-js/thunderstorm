@@ -43,7 +43,7 @@ import {
 } from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
-import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
+import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert';
 import {defaultAccessLevels} from '../../shared/management/access-level/consts';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
@@ -289,7 +289,7 @@ export class PermissionDomainsEditor
 								group: ''
 							},
 							async () => {
-								await ModuleFE_Permissions.v1.connectDomainToRoutes({domainId: this.state.editedItem!.item._id!, dbName: dbDef.dbName}).executeSync();
+								await ModuleFE_PermissionsAssert.v1.connectDomainToRoutes({domainId: this.state.editedItem!.item._id!, dbName: dbDef.dbName}).executeSync();
 							}
 						);
 					}}

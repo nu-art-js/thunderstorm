@@ -29,6 +29,7 @@ import {ModuleFE_PermissionsUser} from './assign/ModuleFE_PermissionsUser';
 import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {SessionKey_Permissions_FE} from '../consts';
+import {Prefix_PermissionKey} from '../../shared/consts';
 
 
 export type PermissionsModuleFEConfig = {
@@ -52,7 +53,7 @@ export enum AccessLevel {
 	HasAccess
 }
 
-export class ModuleFE_Permissions_Class
+export class ModuleFE_PermissionsAssert_Class
 	extends Module<PermissionsModuleFEConfig> {
 	readonly v1: ApiDefCaller<ApiStruct_Permissions>['v1'];
 
@@ -66,12 +67,14 @@ export class ModuleFE_Permissions_Class
 	}
 
 	private onProjectCreated = async () => {
-		await ModuleFE_PermissionsProject.v1.sync().executeSync();
-		await ModuleFE_PermissionsApi.v1.sync().executeSync();
-		await ModuleFE_PermissionsDomain.v1.sync().executeSync();
-		await ModuleFE_PermissionsAccessLevel.v1.sync().executeSync();
-		await ModuleFE_PermissionsGroup.v1.sync().executeSync();
-		await ModuleFE_PermissionsUser.v1.sync().executeSync();
+		await Promise.all([
+			ModuleFE_PermissionsProject,
+			ModuleFE_PermissionsApi,
+			ModuleFE_PermissionsDomain,
+			ModuleFE_PermissionsAccessLevel,
+			ModuleFE_PermissionsGroup,
+			ModuleFE_PermissionsUser,
+		].map(async module => await module.v1.sync().executeSync()));
 	};
 
 	canAccess(key: PermissionKey_FE<string>) {
@@ -90,6 +93,11 @@ export class ModuleFE_Permissions_Class
 
 		return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
 	}
+
+	getPermissionKey(key: string) {
+		const _key = Prefix_PermissionKey + key;
+		return new PermissionKey_FE(_key);
+	}
 }
 
-export const ModuleFE_Permissions = new ModuleFE_Permissions_Class();
+export const ModuleFE_PermissionsAssert = new ModuleFE_PermissionsAssert_Class();

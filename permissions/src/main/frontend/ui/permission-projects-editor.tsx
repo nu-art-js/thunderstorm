@@ -24,7 +24,7 @@ import {
 	OnPermissionsApisLoaded,
 	OnPermissionsProjectsUpdated
 } from '../core/module-pack';
-import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
+import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert';
 import {Filter, sortArray, UniqueId} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {MultiSelect} from './ui-props';
@@ -101,7 +101,7 @@ export class PermissionProjectsEditor
 			return <></>;
 
 		return <TS_Button className={'item-list__add-button'}
-						  onClick={() => ModuleFE_Permissions.v1.createProject({}).executeSync()}>Create
+						  onClick={() => ModuleFE_PermissionsAssert.v1.createProject({}).executeSync()}>Create
 			Project</TS_Button>;
 	};
 
