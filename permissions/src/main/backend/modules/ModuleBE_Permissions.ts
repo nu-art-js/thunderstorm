@@ -90,11 +90,11 @@ class ModuleBE_Permissions_Class
 
 		// Create All Projects
 		const _auditorId = MemKey_AccountId.get();
-		const preDBProjects = projects.map(project => ModuleBE_PermissionProject.create.item({
+		const preDBProjects = await ModuleBE_PermissionProject.set.all(projects.map(project => ({
 			_id:project._id,
 			name: project.name,
 			_auditorId
-		}));
+		})));
 		const projectsMap_nameToDBProject: TypedMap<DB_PermissionProject> = reduceToMap(await Promise.all(preDBProjects), project => project.name, project => project);
 
 		const domainsToUpsert = flatArray(projects.map(project => project.domains.map(domain => ({
@@ -116,21 +116,26 @@ class ModuleBE_Permissions_Class
 			}
 		}))))
 
-		const dbLevels = await ModuleBE_PermissionAccessLevel.create.all(levelsToUpsert);
+		const dbLevels = await ModuleBE_PermissionAccessLevel.set.all(levelsToUpsert);
 		// @ts-ignore
 		const levelsMap_nameToDbAccessLevel = reduceToMap(dbLevels, level => level.name, level => level);
-		const domainNameToLevelNameToDBAccessLevel:{[domainName:string]:{[levelName:string]:DB_PermissionAccessLevel}} = {};
+		const domainNameToLevelNameToDBAccessLevel:{[domainName:string]:{[levelName:string]:DB_PermissionAccessLevel}} =
+			reduceToMap(dbLevels, level=>level.domainId, (level,index,map)=>{
+				const domainLevels = map[level.domainId] ||(map[level.domainId] = {})
+				domainLevels[level.name] = level;
+				return domainLevels;
+			});
 
 		const groupsToUpsert = flatArray(projects.map(project => project.groups.map(group => {
 			return {
 				_id:group._id,
 				_auditorId,
 				label: group.name,
-				accessLevelIds: _keys(group.accessLevels).map(key=>domainNameToLevelNameToDBAccessLevel[key][group.accessLevels[key]]._id)
+				accessLevelIds: _keys(group.accessLevels).map(key=>domainNameToLevelNameToDBAccessLevel[domainsMap_nameToDbDomain[key]._id][group.accessLevels[key]]._id)
 			}
 		})))
 
-		await ModuleBE_PermissionGroup.create.all(groupsToUpsert);
+		await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
 	};
 
 	_createProject = async () => {
