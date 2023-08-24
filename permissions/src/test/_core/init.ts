@@ -4,7 +4,7 @@ import {FIREBASE_DEFAULT_PROJECT_ID} from '@nu-art/firebase/backend';
 import {ModuleBE_APIs, Storm} from '@nu-art/thunderstorm/backend';
 import {RouteResolver_Dummy} from '@nu-art/thunderstorm/backend/modules/server/route-resolvers/RouteResolver_Dummy';
 import {ModuleBE_PermissionsAssert} from '../../main/backend';
-import {ModuleBE_AccountDB, ModuleBE_v3_SessionDB} from '@nu-art/user-account/backend';
+import {ModuleBE_AccountDB, ModuleBE_SessionDB} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionProject} from '../../main/backend/modules/management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from '../../main/backend/modules/management/ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/management/ModuleBE_PermissionAccessLevel';
@@ -21,9 +21,8 @@ const config = {
 };
 
 const accountModules = [
-	ModuleBE_v2_SyncManager,
 	ModuleBE_AccountDB,
-	ModuleBE_v3_SessionDB,
+	ModuleBE_SessionDB,
 ];
 
 const permissionModules = [

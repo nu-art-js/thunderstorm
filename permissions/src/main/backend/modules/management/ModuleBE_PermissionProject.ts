@@ -24,7 +24,7 @@ import {firestore} from 'firebase-admin';
 import Transaction = firestore.Transaction;
 
 export class ModuleBE_PermissionProject_Class
-	extends ModuleBE_BaseDBV2<DB_PermissionProject, {}, 'name'> {
+	extends ModuleBE_BaseDBV2<DB_PermissionProject> {
 
 	constructor() {
 		super(DBDef_PermissionProjects);

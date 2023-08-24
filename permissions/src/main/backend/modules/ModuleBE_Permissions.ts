@@ -1,4 +1,16 @@
-import {_keys, BadImplementationException, DBDef, dbObjectToId, filterInstances, flatArray, Module, PreDB, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	BadImplementationException,
+	DBDef,
+	dbObjectToId,
+	Dispatcher,
+	filterInstances,
+	flatArray,
+	Module,
+	PreDB,
+	reduceToMap,
+	TypedMap
+} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
@@ -27,12 +39,19 @@ import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account/backend
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {SessionData_Permissions} from '../../shared/types';
 import {_EmptyQuery} from '@nu-art/firebase';
+import {DefaultDef_Project} from '../types';
 
 
 const defaultDomainDbDefMap: { [k: string]: DBDef<any, any>[] } = {
 	[permissionsDefName]: [DBDef_PermissionProjects, DBDef_PermissionDomain, DBDef_PermissionApi, DBDef_PermissionAccessLevel],
 	[permissionsAssignName]: [DBDef_PermissionGroup, DBDef_PermissionUser],
 };
+
+export interface CollectPermissionsProjects {
+	__collectPermissionsProjects(): DefaultDef_Project;
+}
+
+const dispatcher_collectPermissionsProjects = new Dispatcher<CollectPermissionsProjects, '__collectPermissionsProjects'>('__collectPermissionsProjects');
 
 class ModuleBE_Permissions_Class
 	extends Module
@@ -67,6 +86,54 @@ class ModuleBE_Permissions_Class
 	}
 
 	createProject = async () => {
+		const projects = dispatcher_collectPermissionsProjects.dispatchModule();
+
+		// Create All Projects
+		const _auditorId = MemKey_AccountId.get();
+		const preDBProjects = projects.map(project => ModuleBE_PermissionProject.create.item({
+			_id:project._id,
+			name: project.name,
+			_auditorId
+		}));
+		const projectsMap_nameToDBProject: TypedMap<DB_PermissionProject> = reduceToMap(await Promise.all(preDBProjects), project => project.name, project => project);
+
+		const domainsToUpsert = flatArray(projects.map(project => project.domains.map(domain => ({
+			_id:domain._id,
+			namespace: domain.namespace,
+			projectId: projectsMap_nameToDBProject[project.name]._id,
+			_auditorId
+		}))));
+		const dbDomain = await ModuleBE_PermissionDomain.set.all(domainsToUpsert);
+		const domainsMap_nameToDbDomain = reduceToMap(dbDomain, domain => domain.namespace, domain => domain);
+
+		const levelsToUpsert = flatArray(projects.map(project => project.domains.map(domain => domain.levels.map(level=>{
+			return {
+				_id:level._id,
+				domainId: domainsMap_nameToDbDomain[domain.namespace]._id,
+				value: level.value,
+				name:level.name,
+				_auditorId
+			}
+		}))))
+
+		const dbLevels = await ModuleBE_PermissionAccessLevel.create.all(levelsToUpsert);
+		// @ts-ignore
+		const levelsMap_nameToDbAccessLevel = reduceToMap(dbLevels, level => level.name, level => level);
+		const domainNameToLevelNameToDBAccessLevel:{[domainName:string]:{[levelName:string]:DB_PermissionAccessLevel}} = {};
+
+		const groupsToUpsert = flatArray(projects.map(project => project.groups.map(group => {
+			return {
+				_id:group._id,
+				_auditorId,
+				label: group.name,
+				accessLevelIds: _keys(group.accessLevels).map(key=>domainNameToLevelNameToDBAccessLevel[key][group.accessLevels[key]]._id)
+			}
+		})))
+
+		await ModuleBE_PermissionGroup.create.all(groupsToUpsert);
+	};
+
+	_createProject = async () => {
 		const existingProject = await ModuleBE_PermissionProject.query.custom({limit: 1});
 		if (existingProject.length > 0)
 			throw new BadImplementationException(`There are already ${existingProject.length} projects in the system.. there should be only 1`);
@@ -123,7 +190,7 @@ class ModuleBE_Permissions_Class
 		return {domains, levels};
 	};
 
-	createProjectRoutes = async (project: DB_PermissionProject, domains: DB_PermissionDomain[], levels: DB_PermissionAccessLevel[],apis :Omit<PreDB<DB_PermissionApi>, '_auditorId'>[]) => {
+	createProjectRoutes = async (project: DB_PermissionProject, domains: DB_PermissionDomain[], levels: DB_PermissionAccessLevel[], apis: Omit<PreDB<DB_PermissionApi>, '_auditorId'>[]) => {
 
 		//Connect default domain access levels to correct apis
 		_keys(defaultDomainDbDefMap).forEach(namespace => {
