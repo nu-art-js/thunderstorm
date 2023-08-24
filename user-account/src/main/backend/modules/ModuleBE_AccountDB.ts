@@ -68,7 +68,6 @@ type Config = DBApiConfigV3<DBProto_AccountType> & {
 	passwordAssertion?: PasswordAssertionConfig
 }
 
-
 export class ModuleBE_AccountDB_Class
 	extends ModuleBE_BaseDBV3<DBProto_AccountType, Config>
 	implements CollectSessionData<_SessionKey_Account> {
@@ -198,7 +197,7 @@ export class ModuleBE_AccountDB_Class
 		},
 		login: async (request: Request_LoginAccount, transaction?: Transaction): Promise<Response_Auth> => {
 			const {account, session} = await this.loginImpl(request, transaction);
-
+			MemKey_AccountId.set(account._id);
 			await dispatch_onUserLogin.dispatchModuleAsync(getUIAccountV3(account));
 			return session;
 		},
@@ -309,7 +308,6 @@ export class ModuleBE_AccountDB_Class
 			SessionKey_Session_BE.get(sessionData).expiration = ttl;
 			return sessionData;
 		});
-
 
 		return {token: _id};
 	};

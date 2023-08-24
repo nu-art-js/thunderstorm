@@ -17,20 +17,14 @@
  * limitations under the License.
  */
 
-import {
-	DBDef,
-	OmitDBObject,
-	tsValidateNameWithDashesAndDotsAndNumbers,
-	tsValidateString,
-	TypeValidator
-} from '@nu-art/ts-common';
+import {DBDef, OmitDBObject, tsValidateString, TypeValidator} from '@nu-art/ts-common';
 import {validateProjectId} from '../../validators';
 import {DB_PermissionDomain} from './types';
 
 
 const Validator_PermissionDomain: TypeValidator<OmitDBObject<DB_PermissionDomain>> = {
 	projectId: validateProjectId,
-	namespace: tsValidateNameWithDashesAndDotsAndNumbers,
+	namespace: tsValidateString(50),
 	_auditorId: tsValidateString()
 };
 
