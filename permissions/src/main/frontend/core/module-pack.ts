@@ -24,7 +24,7 @@ import {ModuleFE_PermissionsDomain} from '../modules/manage/ModuleFE_Permissions
 import {ModuleFE_PermissionsAccessLevel} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {ModuleFE_PermissionsApi} from '../modules/manage/ModuleFE_PermissionsApi';
 import {Module} from '@nu-art/ts-common';
-import {ModuleFE_Permissions} from '../modules/ModuleFE_Permissions';
+import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert';
 
 
 export const ModulePack_PermissionsFE: Module[] = [
@@ -34,7 +34,7 @@ export const ModulePack_PermissionsFE: Module[] = [
 	ModuleFE_PermissionsDomain,
 	ModuleFE_PermissionsAccessLevel,
 	ModuleFE_PermissionsApi,
-	ModuleFE_Permissions,
+	ModuleFE_PermissionsAssert,
 ];
 
 export * from '../modules/assign/ModuleFE_PermissionsUser';

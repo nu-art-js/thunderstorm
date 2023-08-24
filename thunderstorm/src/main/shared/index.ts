@@ -29,3 +29,10 @@ export * from './BaseHttpModule';
 export * from './backup/apis';
 export * from './backup/backup-types';
 export * from './backup/db-def';
+//db-api-generator
+export * from './db-api-gen/apiV1';
+export * from './db-api-gen/apiV2';
+export * from './db-api-gen/apiV3';
+export * from './sync-env';
+export * from './archiving';
+export * from './app-config';

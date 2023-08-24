@@ -27,10 +27,10 @@ import {ModuleBE_PermissionApi} from './ModuleBE_PermissionApi';
 import {ModuleBE_PermissionGroup} from '../assignment/ModuleBE_PermissionGroup';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {PermissionTypes} from '../../../shared/types';
-import {ModuleBE_BaseDBV2} from '@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2';
 import {firestore} from 'firebase-admin';
-import Transaction = firestore.Transaction;
 import {PostWriteProcessingData} from '@nu-art/firebase/backend/firestore-v2/FirestoreCollectionV2';
+import {ModuleBE_BaseDBV2} from '@nu-art/thunderstorm/backend';
+import Transaction = firestore.Transaction;
 
 
 export class ModuleBE_PermissionAccessLevel_Class

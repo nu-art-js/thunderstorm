@@ -16,5 +16,6 @@
  * limitations under the License.
  */
 
+export * from './shared/consts';
 export * from './shared/types';
 export * from './shared/utils';

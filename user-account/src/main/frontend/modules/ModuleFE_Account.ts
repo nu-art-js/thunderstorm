@@ -1,9 +1,9 @@
-import {ApiCallerEventType, ModuleFE_v3_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {
 	apiWithBody,
 	apiWithQuery,
 	getQueryParameter,
 	ModuleFE_BrowserHistory,
+	ModuleFE_v3_BaseApi,
 	ModuleFE_XHR,
 	ThunderDispatcher
 } from '@nu-art/thunderstorm/frontend';
@@ -33,6 +33,7 @@ import {
 	UI_Account
 } from '../../shared';
 import {StorageKey_SessionId, StorageKey_SessionTimeoutTimestamp} from '../core/consts';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 export interface OnLoginStatusUpdated {
 	__onLoginStatusUpdated: () => void;

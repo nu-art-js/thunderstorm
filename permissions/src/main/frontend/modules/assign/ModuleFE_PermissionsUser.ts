@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
 import {DB_PermissionUser, DBDef_PermissionUser} from '../../../index';
-import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 export interface OnPermissionsUsersUpdated {

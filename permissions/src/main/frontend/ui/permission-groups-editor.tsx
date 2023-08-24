@@ -1,20 +1,26 @@
 import * as React from 'react';
 import {
-	ApiCallerEventType,
 	EditableDBItem,
 	EventType_Create,
 	EventType_Delete,
 	EventType_Update,
 	Props_SmartComponent,
-	State_SmartComponent
-} from '@nu-art/db-api-generator/frontend';
-import {TS_Input, TS_PropRenderer} from '@nu-art/thunderstorm/frontend';
+	State_SmartComponent,
+	TS_Input,
+	TS_PropRenderer
+} from '@nu-art/thunderstorm/frontend';
 import {UniqueId} from '@nu-art/ts-common';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {DB_PermissionGroup} from '../shared';
-import {ModuleFE_PermissionsAccessLevel, ModuleFE_PermissionsDomain, ModuleFE_PermissionsGroup, OnPermissionsGroupsUpdated} from '../core/module-pack';
+import {
+	ModuleFE_PermissionsAccessLevel,
+	ModuleFE_PermissionsDomain,
+	ModuleFE_PermissionsGroup,
+	OnPermissionsGroupsUpdated
+} from '../core/module-pack';
 import {MultiSelect} from './ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 type State = State_EditorBase<DB_PermissionGroup> & {

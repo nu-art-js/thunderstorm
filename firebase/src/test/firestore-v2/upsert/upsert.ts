@@ -3,9 +3,19 @@ import {expect} from 'chai';
 import {firestore, testInstance1, testInstance2, testInstance3} from '../_core/consts';
 import {DB_Type} from '../_core/types';
 import {TestSuite} from '@nu-art/ts-common/test-index';
-import {asArray, compare, DBDef, deepClone, PreDB, removeDBObjectKeys, sortArray, tsValidateMustExist} from '@nu-art/ts-common';
+import {
+	asArray,
+	compare,
+	DBDef,
+	deepClone,
+	PreDB,
+	removeDBObjectKeys,
+	sortArray,
+	tsValidateMustExist
+} from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {updatedStringValue1, updatedStringValue2} from '../update/update';
+import {_EmptyQuery} from '../../../main';
 
 chai.use(require('chai-as-promised'));
 
@@ -22,7 +32,7 @@ const dbDef: DBDef<DB_Type> = {
 	dbName: 'firestore-upsert-tests',
 	entityName: 'upsert-test',
 	validator: tsValidateMustExist
-}
+};
 
 export const TestCases_FB_Upsert: Test['testcases'] = [
 	{
@@ -126,7 +136,7 @@ export const TestSuite_FirestoreV2_Upsert: Test = {
 
 		await testCase.input.upsertAction(collection, deepClone(inserted));
 
-		const sortedRemaining = sortArray((await collection.query.custom({where: {}})), item => item._uniqueId);
+		const sortedRemaining = sortArray((await collection.query.custom(_EmptyQuery)), item => item._uniqueId);
 		const sortedInserted = sortArray(inserted, item => item._uniqueId);
 
 		const result = testCase.result();

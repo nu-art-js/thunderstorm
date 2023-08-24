@@ -1,12 +1,23 @@
-import {GenericDropDown, MandatoryProps_GenericDropDown, PartialProps_GenericDropDown} from '@nu-art/db-api-generator/frontend';
 import * as React from 'react';
 import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionGroup} from '../../shared';
-import {ModuleFE_PermissionsAccessLevel, ModuleFE_PermissionsAccessLevel_} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
+import {
+	ModuleFE_PermissionsAccessLevel,
+	ModuleFE_PermissionsAccessLevel_
+} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {ModuleFE_PermissionsDomain, ModuleFE_PermissionsDomain_} from '../modules/manage/ModuleFE_PermissionsDomain';
-import {ComponentSync} from '@nu-art/thunderstorm/frontend';
+import {
+	ComponentSync,
+	GenericDropDown,
+	MandatoryProps_GenericDropDown,
+	PartialProps_GenericDropDown
+} from '@nu-art/thunderstorm/frontend';
 import {dbObjectToId} from '@nu-art/ts-common';
 import {ModuleFE_PermissionsGroup, ModuleFE_PermissionsGroup_} from '../modules/assign/ModuleFE_PermissionsGroup';
-import {MultiSelect_Selector, StaticProps_TS_MultiSelect_V2, TS_MultiSelect_V2} from '@nu-art/thunderstorm/frontend/components/TS_MultiSelect';
+import {
+	MultiSelect_Selector,
+	StaticProps_TS_MultiSelect_V2,
+	TS_MultiSelect_V2
+} from '@nu-art/thunderstorm/frontend/components/TS_MultiSelect';
 
 
 type PP_GDD<T> = PartialProps_GenericDropDown<T>
@@ -71,8 +82,10 @@ const Props_Group: MandatoryProps_GenericDropDown<DB_PermissionGroup> = {
 };
 
 export const DropDown: { [K in keyof AllTypesDB]: ((props: PP_GDD<AllTypesDB[K]>) => JSX.Element) } = {
-	AccessLevel: (props: PP_GDD<DB_PermissionAccessLevel>) => <GenericDropDown<DB_PermissionAccessLevel> {...Props_AccessLevel} {...props} />,
-	Domain: (props: PP_GDD<DB_PermissionDomain>) => <GenericDropDown<DB_PermissionDomain> {...Props_Domain} {...props} />,
+	AccessLevel: (props: PP_GDD<DB_PermissionAccessLevel>) =>
+		<GenericDropDown<DB_PermissionAccessLevel> {...Props_AccessLevel} {...props} />,
+	Domain: (props: PP_GDD<DB_PermissionDomain>) =>
+		<GenericDropDown<DB_PermissionDomain> {...Props_Domain} {...props} />,
 	Group: (props: PP_GDD<DB_PermissionGroup>) => <GenericDropDown<DB_PermissionGroup> {...Props_Group} {...props} />,
 };
 
