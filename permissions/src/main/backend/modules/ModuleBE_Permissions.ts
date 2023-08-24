@@ -75,8 +75,19 @@ class ModuleBE_Permissions_Class
 		const project = await ModuleBE_PermissionProject.create.item({name: 'New Project'} as PreDB<DB_PermissionProject>);
 		// Create Project Structure & Super Admin
 		const {domains, levels} = await this.createProjectStructure(project);
+
+		const allRoutes = Storm.getInstance().getRoutes();
+
+		//Map out apis
+		const apis: Omit<PreDB<DB_PermissionApi>, '_auditorId'>[] = allRoutes.map(route => {
+			return {
+				projectId: project._id,
+				path: route.path,
+			};
+		}).filter(i => i.path !== '*');
+
 		// Create Project Routes
-		await this.createProjectRoutes(project, domains, levels);
+		await this.createProjectRoutes(project, domains, levels, apis);
 	};
 
 	private createProjectStructure = async (project: DB_PermissionProject): Promise<{ domains: DB_PermissionDomain[], levels: DB_PermissionAccessLevel[] }> => {
@@ -112,16 +123,7 @@ class ModuleBE_Permissions_Class
 		return {domains, levels};
 	};
 
-	private createProjectRoutes = async (project: DB_PermissionProject, domains: DB_PermissionDomain[], levels: DB_PermissionAccessLevel[]) => {
-		const allRoutes = Storm.getInstance().getRoutes();
-
-		//Map out apis
-		const apis: Omit<PreDB<DB_PermissionApi>, '_auditorId'>[] = allRoutes.map(route => {
-			return {
-				projectId: project._id,
-				path: route.path,
-			};
-		}).filter(i => i.path !== '*');
+	createProjectRoutes = async (project: DB_PermissionProject, domains: DB_PermissionDomain[], levels: DB_PermissionAccessLevel[],apis :Omit<PreDB<DB_PermissionApi>, '_auditorId'>[]) => {
 
 		//Connect default domain access levels to correct apis
 		_keys(defaultDomainDbDefMap).forEach(namespace => {
