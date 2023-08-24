@@ -9,7 +9,8 @@ export type DefaultDef_Project = {
 		_id: string
 		namespace: string,
 		levels: DefaultDef_AccessLevel[]
-	}[]
+	}[],
+	generateApis:[{domain:string, collections:string[]}],
 }
 export type DefaultDef_Setup = {
 	projects: DefaultDef_Project[];
