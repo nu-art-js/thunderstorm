@@ -28,10 +28,9 @@ const Validator_PermissionProjects: TypeValidator<OmitDBObject<DB_PermissionProj
 	_auditorId: tsValidateString()
 };
 
-export const DBDef_PermissionProjects: DBDef<DB_PermissionProject, 'name'> = {
+export const DBDef_PermissionProjects: DBDef<DB_PermissionProject> = {
 	validator: Validator_PermissionProjects,
 	dbName: 'permissions--project',
 	entityName: 'PermissionsProject',
 	generatedProps: ['_auditorId'],
-	uniqueKeys: ['name']
 };
