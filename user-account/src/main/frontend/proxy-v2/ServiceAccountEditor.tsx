@@ -8,13 +8,14 @@ import {
 	LL_H_C,
 	LL_V_L,
 	ModuleFE_Toaster,
+	Props_SmartComponent,
+	State_SmartComponent,
 	TS_Button,
 	TS_Input,
 	TS_TextArea
 } from '@nu-art/thunderstorm/frontend';
 import {ProxyServiceAccount_EditorRenderer} from './ProxyServiceAccount_EditorRenderer';
 import {__stringify, filterInstances, generateUUID, isErrorOfType, ValidationException} from '@nu-art/ts-common';
-import {Props_SmartComponent, State_SmartComponent} from '@nu-art/db-api-generator/frontend';
 import {UI_Account} from '../../shared';
 import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 

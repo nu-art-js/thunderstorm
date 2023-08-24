@@ -1,8 +1,6 @@
-import {addRoutes, createBodyServerApi} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, ModuleBE_BaseApiV2_Class} from '@nu-art/thunderstorm/backend';
 import {ModuleBE_AssetsDB} from './ModuleBE_AssetsDB';
-import {ModuleBE_BaseApiV2_Class} from '@nu-art/db-api-generator/backend/ModuleBE_BaseApiV2';
 import {ApiDef_Assets, DB_Asset, Request_GetReadSecuredUrl} from '../../shared';
-
 
 export class ModuleBE_AssetsAPI_Class
 	extends ModuleBE_BaseApiV2_Class<DB_Asset> {

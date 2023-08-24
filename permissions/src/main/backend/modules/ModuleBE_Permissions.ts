@@ -1,15 +1,4 @@
-import {
-	_keys,
-	BadImplementationException,
-	batchActionParallel,
-	DBDef,
-	dbObjectToId,
-	filterInstances,
-	flatArray,
-	Module,
-	PreDB,
-	TypedMap
-} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, DBDef, dbObjectToId, filterInstances, flatArray, Module, PreDB, TypedMap} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
@@ -36,8 +25,8 @@ import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
-import {_EmptyQuery} from '@nu-art/db-api-generator';
 import {SessionData_Permissions} from '../../shared/types';
+import {_EmptyQuery} from '@nu-art/firebase';
 
 
 const defaultDomainDbDefMap: { [k: string]: DBDef<any, any>[] } = {
@@ -53,7 +42,7 @@ class ModuleBE_Permissions_Class
 		const user = await ModuleBE_PermissionUserDB.query.uniqueWhere({accountId});
 		const permissionMap: TypedMap<number> = {};
 		const groupIds = user.groups.map(g => g.groupId);
-		const groups = await batchActionParallel(groupIds, 10, async ids => await ModuleBE_PermissionGroup.query.custom({where: {_id: {$in: ids}}}));
+		const groups = filterInstances(await ModuleBE_PermissionGroup.query.all(groupIds));
 		const levelMaps = filterInstances(groups.map(i => i._levelsMap));
 		levelMaps.forEach(levelMap => {
 			_keys(levelMap).forEach(domainId => {

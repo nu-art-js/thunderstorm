@@ -11,7 +11,7 @@ import {ModuleBE_PermissionAccessLevel} from '../../main/backend/modules/managem
 import {ModuleBE_PermissionApi} from '../../main/backend/modules/management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionUserDB} from '../../main/backend/modules/assignment/ModuleBE_PermissionUserDB';
 import {ModuleBE_PermissionGroup} from '../../main/backend/modules/assignment/ModuleBE_PermissionGroup';
-import {ModuleBE_v2_SyncManager} from '@nu-art/db-api-generator/backend';
+
 
 
 const config = {

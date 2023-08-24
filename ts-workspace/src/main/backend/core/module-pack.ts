@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-import {Module} from '@nu-art/ts-common';
 import {ModuleBE_Workspace} from '../modules/ModuleBE_Workspace';
-import {createApisForDBModuleV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseApiV2";
+import {createApisForDBModuleV2} from '@nu-art/thunderstorm/backend';
+import {Module} from '@nu-art/ts-common';
 
 
 export const ModulePack_Backend_TSWorkspace: Module[] = [
