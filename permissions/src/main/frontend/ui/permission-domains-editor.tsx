@@ -44,8 +44,8 @@ import {
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
 import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert';
-import {defaultAccessLevels} from '../../shared/management/access-level/consts';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
+import {defaultAccessLevels} from '../../shared/consts';
 
 type State = State_EditorBase<DB_PermissionDomain> & {
 	projects: Readonly<DB_PermissionProject[]>

@@ -52,6 +52,7 @@ export class ModuleBE_PermissionApi_Class
 
 			return map;
 		}, {});
+
 		const duplicateAccessLevelIds: string[] = filterInstances(_keys(duplicationMap).map(accessLevelId => duplicationMap[accessLevelId] > 1 ? accessLevelId : undefined) as string[]);
 		if (duplicateAccessLevelIds.length)
 			throw new ApiException(400, `Trying to create API with duplicate access levels: ${duplicateAccessLevelIds}`);

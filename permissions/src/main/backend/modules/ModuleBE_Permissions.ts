@@ -31,15 +31,14 @@ import {
 import {ModuleBE_PermissionProject} from './management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from './management/ModuleBE_PermissionDomain';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
-import {defaultAccessLevels, defaultLevelsRouteLookupWords} from '../../shared/management/access-level/consts';
 import {defaultDomains, permissionsAssignName, permissionsDefName} from '../../shared/management/domain/consts';
 import {ModuleBE_PermissionGroup} from './assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB';
 import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
-import {SessionData_Permissions} from '../../shared/types';
+import {DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
 import {_EmptyQuery} from '@nu-art/firebase';
-import {DefaultDef_Project} from '../types';
+import {defaultAccessLevels, defaultLevelsRouteLookupWords} from '../../shared/consts';
 
 
 const defaultDomainDbDefMap: { [k: string]: DBDef<any, any>[] } = {
@@ -91,49 +90,50 @@ class ModuleBE_Permissions_Class
 		// Create All Projects
 		const _auditorId = MemKey_AccountId.get();
 		const preDBProjects = await ModuleBE_PermissionProject.set.all(projects.map(project => ({
-			_id:project._id,
+			_id: project._id,
 			name: project.name,
 			_auditorId
 		})));
 		const projectsMap_nameToDBProject: TypedMap<DB_PermissionProject> = reduceToMap(await Promise.all(preDBProjects), project => project.name, project => project);
 
-		const domainsToUpsert = flatArray(projects.map(project => project.domains.map(domain => ({
-			_id:domain._id,
+		const domainsToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => ({
+			_id: domain._id,
 			namespace: domain.namespace,
 			projectId: projectsMap_nameToDBProject[project.name]._id,
 			_auditorId
-		}))));
+		})))));
 		const dbDomain = await ModuleBE_PermissionDomain.set.all(domainsToUpsert);
 		const domainsMap_nameToDbDomain = reduceToMap(dbDomain, domain => domain.namespace, domain => domain);
 
-		const levelsToUpsert = flatArray(projects.map(project => project.domains.map(domain => domain.levels.map(level=>{
+		const levelsToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => domain.levels.map(level => {
 			return {
-				_id:level._id,
+				_id: level._id,
 				domainId: domainsMap_nameToDbDomain[domain.namespace]._id,
 				value: level.value,
-				name:level.name,
+				name: level.name,
 				_auditorId
-			}
-		}))))
+			};
+		})))));
 
 		const dbLevels = await ModuleBE_PermissionAccessLevel.set.all(levelsToUpsert);
 		// @ts-ignore
 		const levelsMap_nameToDbAccessLevel = reduceToMap(dbLevels, level => level.name, level => level);
-		const domainNameToLevelNameToDBAccessLevel:{[domainName:string]:{[levelName:string]:DB_PermissionAccessLevel}} =
-			reduceToMap(dbLevels, level=>level.domainId, (level,index,map)=>{
-				const domainLevels = map[level.domainId] ||(map[level.domainId] = {})
+		const domainNameToLevelNameToDBAccessLevel: { [domainName: string]: { [levelName: string]: DB_PermissionAccessLevel } } =
+			reduceToMap(dbLevels, level => level.domainId, (level, index, map) => {
+				const domainLevels = map[level.domainId] || (map[level.domainId] = {});
 				domainLevels[level.name] = level;
 				return domainLevels;
 			});
 
-		const groupsToUpsert = flatArray(projects.map(project => project.groups.map(group => {
+		const groupsToUpsert = flatArray(projects.map(project => (project.groups || []).map(group => {
 			return {
-				_id:group._id,
+				_id: group._id,
 				_auditorId,
 				label: group.name,
-				accessLevelIds: _keys(group.accessLevels).map(key=>domainNameToLevelNameToDBAccessLevel[domainsMap_nameToDbDomain[key]._id][group.accessLevels[key]]._id)
-			}
-		})))
+				accessLevelIds: _keys(group.accessLevels)
+					.map(key => domainNameToLevelNameToDBAccessLevel[domainsMap_nameToDbDomain[key]._id][group.accessLevels[key]]._id)
+			};
+		})));
 
 		await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
 	};
