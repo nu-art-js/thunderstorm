@@ -1,15 +1,4 @@
-import {
-	_keys,
-	arrayToMap,
-	Dispatcher,
-	filterInstances,
-	flatArray,
-	Module,
-	MUSTNeverHappenException,
-	PreDB,
-	reduceToMap,
-	TypedMap
-} from '@nu-art/ts-common';
+import {_keys, arrayToMap, Dispatcher, filterInstances, flatArray, Module, MUSTNeverHappenException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
@@ -38,7 +27,8 @@ import {
 	DefaultAccessLevel_Admin,
 	DefaultAccessLevel_Read,
 	DefaultAccessLevel_Write,
-	defaultLevelsRouteLookupWords
+	defaultLevelsRouteLookupWords,
+	DuplicateDefaultAccessLevels
 } from '../../shared/consts';
 
 
@@ -131,15 +121,21 @@ class ModuleBE_Permissions_Class
 		const dbDomain = await ModuleBE_PermissionDomain.set.all(domainsToUpsert);
 		const domainsMap_nameToDbDomain = reduceToMap(dbDomain, domain => domain.namespace, domain => domain);
 
-		const levelsToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => domain.levels.map(level => {
-			return {
-				_id: level._id,
-				domainId: domainsMap_nameToDbDomain[domain.namespace]._id,
-				value: level.value,
-				name: level.name,
-				_auditorId
-			};
-		})))));
+		const levelsToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => {
+			let levels = domain.levels;
+			if (!levels)
+				levels = DuplicateDefaultAccessLevels(domain._id);
+
+			return levels.map(level => {
+				return {
+					_id: level._id,
+					domainId: domainsMap_nameToDbDomain[domain.namespace]._id,
+					value: level.value,
+					name: level.name,
+					_auditorId
+				};
+			});
+		}))));
 
 		const dbLevels = await ModuleBE_PermissionAccessLevel.set.all(levelsToUpsert);
 		// @ts-ignore
@@ -173,12 +169,16 @@ class ModuleBE_Permissions_Class
 			})));
 
 			type ApiModule = { dbModule: { dbDef: { dbName: string } }, apiDef: { [name: string]: { [name: string]: { path: string } } } }
-			const apiModule = arrayToMap(Storm.getInstance()
+			const apiModules = arrayToMap(Storm.getInstance()
 				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
 
 			// / I think there is a bug here... comment it and see what happens
-			apis.push(...flatArray((domain.dbNames || []).map(dbName => {
-				const _apiDefs = apiModule[dbName].apiDef;
+			const _apis = (domain.dbNames || []).map(dbName => {
+				const apiModule = apiModules[dbName];
+				if (!apiModule)
+					throw new MUSTNeverHappenException(`Could not find api module with dbName: ${dbName}`);
+
+				const _apiDefs = apiModule.apiDef;
 				return _keys(_apiDefs).map(_apiDefKey => {
 					const apiDefs = _apiDefs[_apiDefKey];
 					return filterInstances(_keys(apiDefs).map(apiDefKey => {
@@ -197,7 +197,8 @@ class ModuleBE_Permissions_Class
 						};
 					}));
 				});
-			})));
+			});
+			apis.push(...flatArray(_apis));
 
 			return apis;
 		}))));

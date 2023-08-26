@@ -21,6 +21,7 @@ import {
 
 import './editor-base.scss';
 
+
 const newItemIdentifier = '##new-item##';
 
 export type State_EditorBase<T extends DB_Object> = {
@@ -48,7 +49,8 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 		if (!item)
 			throw new BadImplementationException(`Could not find item with id ${itemId}`);
 
-		return this.setState({editedItem: new EditableDBItem<T>(cloneObj(item), this.module), selectedItemId: itemId});
+		const newVar: any = {editedItem: new EditableDBItem<T>(item, this.module)};
+		return this.reDeriveState(newVar);
 	};
 
 	protected saveItem = async (e: React.MouseEvent) => {
@@ -87,7 +89,7 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 				{this.state.items.map(item => {
 					const className = _className('item-list__list-item', item._id === this.state.selectedItemId ? 'selected' : undefined);
 					return <div className={className} onClick={() => this.selectItem(item._id)}
-								key={item._id}>{this.itemDisplay(item)}</div>;
+											key={item._id}>{this.itemDisplay(item)}</div>;
 				})}
 			</LL_V_L>
 			{this.renderListButton()}
@@ -115,7 +117,7 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 			</LL_V_L>
 			<LL_H_C className={'item-editor__buttons'}>
 				{item.item._id &&
-                    <TS_BusyButton onClick={this.deleteItem} className={'delete-button'}>Delete</TS_BusyButton>}
+					<TS_BusyButton onClick={this.deleteItem} className={'delete-button'}>Delete</TS_BusyButton>}
 				<TS_Button onClick={() => this.selectItem()}>Cancel</TS_Button>
 				<TS_BusyButton onClick={this.saveItem}>Save</TS_BusyButton>
 			</LL_H_C>

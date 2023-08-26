@@ -44,7 +44,7 @@ export type DefaultDef_Package = {
 export type DefaultDef_Domain = {
 	_id: string,
 	namespace: string,
-	levels: DefaultDef_AccessLevel[]
+	levels?: DefaultDef_AccessLevel[]
 	customApis?: DefaultDef_Api[],
 	dbNames?: string[]
 }
