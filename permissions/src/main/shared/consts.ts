@@ -28,9 +28,14 @@ export const DuplicateDefaultAccessLevels = (seed: string): DefaultDef_AccessLev
 	].map(level => ({...level, _id: md5(	`${seed}${level.name}`)}));
 };
 
-export const defaultLevelsRouteLookupWords: { [k: string]: string[] } = {
-	'Read': ['metadata', 'query', 'query-unique', 'sync'],
-	'Write': ['upsert', 'upsert-all'],
-	'Delete': ['delete', 'delete-all', 'delete-unique'],
-	'Upgrade': ['upgrade-collection'],
-};
+export const defaultLevelsRouteLookupWords: { [k: string]: string } = {
+	"query": "Read",
+	"query-unique": "Read",
+	"sync": "Read",
+	"patch": "Write",
+	"upsert": "Write",
+	"upsert-all": "Write",
+	"delete": "Delete",
+	"delete-all": "Delete",
+	"delete-unique": "Delete"
+}

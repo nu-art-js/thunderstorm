@@ -29,7 +29,7 @@ import Transaction = firestore.Transaction;
 
 
 export class ModuleBE_PermissionApi_Class
-	extends ModuleBE_BaseDBV2<DB_PermissionApi> {
+	extends ModuleBE_BaseDBV2<DB_PermissionApi, {}, 'projectId' | 'path'> {
 
 	constructor() {
 		super(DBDef_PermissionApi);
@@ -53,7 +53,8 @@ export class ModuleBE_PermissionApi_Class
 			return map;
 		}, {});
 
-		const duplicateAccessLevelIds: string[] = filterInstances(_keys(duplicationMap).map(accessLevelId => duplicationMap[accessLevelId] > 1 ? accessLevelId : undefined) as string[]);
+		const duplicateAccessLevelIds: string[] = filterInstances(_keys(duplicationMap)
+			.map(accessLevelId => duplicationMap[accessLevelId] > 1 ? accessLevelId : undefined) as string[]);
 		if (duplicateAccessLevelIds.length)
 			throw new ApiException(400, `Trying to create API with duplicate access levels: ${duplicateAccessLevelIds}`);
 

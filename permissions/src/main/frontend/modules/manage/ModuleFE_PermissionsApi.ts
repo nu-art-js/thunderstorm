@@ -29,7 +29,7 @@ export interface OnPermissionsApisLoaded {
 const dispatch_onPermissionsApisLoaded = new ThunderDispatcher<OnPermissionsApisLoaded, '__onPermissionsApisLoaded'>('__onPermissionsApisLoaded');
 
 export class ModuleFE_PermissionsApi_Class
-	extends ModuleFE_BaseApi<DB_PermissionApi> {
+	extends ModuleFE_BaseApi<DB_PermissionApi, 'projectId' | 'path'> {
 
 	constructor() {
 		super(DBDef_PermissionApi, dispatch_onPermissionsApisLoaded);

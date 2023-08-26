@@ -1,5 +1,5 @@
-import {_keys, Dispatcher, filterInstances, flatArray, Module, MUSTNeverHappenException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
-import {addRoutes, createBodyServerApi, createQueryServerApi} from '@nu-art/thunderstorm/backend';
+import {_keys, arrayToMap, Dispatcher, filterInstances, flatArray, Module, MUSTNeverHappenException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
+import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
 	DB_PermissionAccessLevel,
@@ -16,7 +16,6 @@ import {ModuleBE_PermissionUserDB} from './assignment/ModuleBE_PermissionUserDB'
 import {CollectSessionData, MemKey_AccountId} from '@nu-art/user-account/backend';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {DefaultDef_Project, SessionData_Permissions} from '../../shared/types';
-import {_EmptyQuery} from '@nu-art/firebase';
 import {
 	Domain_Developer,
 	Domain_PermissionsAssign,
@@ -146,7 +145,53 @@ class ModuleBE_Permissions_Class
 			};
 		})));
 
+		const apis: PreDB<DB_PermissionApi>[] = [];
+		const apisToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => {
+			apis.push(...(domain.customApis || []).map(api => ({
+				projectId: project._id,
+				path: api.path,
+				_auditorId,
+				accessLevelIds: [domainNameToLevelNameToDBAccessLevel[domain._id][api.accessLevel]._id]
+			})));
+
+			type ApiModule = { dbModule: { dbDef: { dbName: string } }, apiDef: { [name: string]: { [name: string]: { path: string } } } }
+			const apiModule = arrayToMap(Storm.getInstance()
+				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
+
+			/ I think there is a bug here... comment it and see what happens
+			apis.push(...flatArray((domain.dbNames || []).map(dbName => {
+				const _apiDefs = apiModule[dbName].apiDef;
+				return _keys(_apiDefs).map(_apiDefKey => {
+					const apiDefs = _apiDefs[_apiDefKey];
+					return filterInstances(_keys(apiDefs).map(apiDefKey => {
+						const apiDef = apiDefs[apiDefKey];
+						const accessLevelNameToAssign = defaultLevelsRouteLookupWords[apiDef.path.substring(apiDef.path.lastIndexOf('/') + 1)];
+						const accessLevel = domainNameToLevelNameToDBAccessLevel[domain._id][accessLevelNameToAssign];
+						if (!accessLevel)
+							return;
+
+						const accessId = accessLevel._id;
+						return {
+							projectId: project._id,
+							path: apiDef.path,
+							_auditorId,
+							accessLevelIds: [accessId]
+						};
+					}));
+				});
+			})));
+
+			return apis;
+		}))));
+
+		await ModuleBE_PermissionApi.set.all(apisToUpsert);
 		await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
+		await this.assignSuperAdmin();
+
+		// const envConfigRef = Storm.getInstance().getEnvConfigRef(ModuleBE_PermissionsAssert);
+		// const currentConfig = await envConfigRef.get({});
+		// currentConfig.strictMode = true;
+		// await envConfigRef.set(currentConfig);
 	};
 
 	// _createProject = async () => {
@@ -211,27 +256,27 @@ class ModuleBE_Permissions_Class
 	};
 
 	private connectDomainToRoutes = async (data: Request_ConnectDomainToRoutes) => {
-		const accessLevels = await ModuleBE_PermissionAccessLevel.query.custom({where: {domainId: data.domainId}});
-		const apis = (await ModuleBE_PermissionApi.query.custom(_EmptyQuery)).filter(i => i.path.includes(data.dbName));
-
-		accessLevels.forEach(level => {
-			const lookupWords = defaultLevelsRouteLookupWords[level.name];
-			if (!lookupWords)
-				return;
-
-			apis.filter(i => lookupWords.some(word => i.path.includes(word)))
-				.forEach(api => {
-					if (api.accessLevelIds?.find(i => i === level._id))
-						return;
-
-					if (!api.accessLevelIds)
-						api.accessLevelIds = [];
-
-					api.accessLevelIds.push(level._id);
-				});
-		});
-
-		await ModuleBE_PermissionApi.set.all(apis);
+		// const accessLevels = await ModuleBE_PermissionAccessLevel.query.custom({where: {domainId: data.domainId}});
+		// const apis = (await ModuleBE_PermissionApi.query.custom(_EmptyQuery)).filter(i => i.path.includes(data.dbName));
+		//
+		// accessLevels.forEach(level => {
+		// 	const lookupWords = defaultLevelsRouteLookupWords[level.name];
+		// 	if (!lookupWords)
+		// 		return;
+		//
+		// 	apis.filter(i => lookupWords.some(word => i.path.includes(word)))
+		// 		.forEach(api => {
+		// 			if (api.accessLevelIds?.find(i => i === level._id))
+		// 				return;
+		//
+		// 			if (!api.accessLevelIds)
+		// 				api.accessLevelIds = [];
+		//
+		// 			api.accessLevelIds.push(level._id);
+		// 		});
+		// });
+		//
+		// await ModuleBE_PermissionApi.set.all(apis);
 	};
 }
 

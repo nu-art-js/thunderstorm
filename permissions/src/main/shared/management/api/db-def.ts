@@ -42,10 +42,10 @@ const Validator_PermissionApi: TypeValidator<OmitDBObject<DB_PermissionApi>> = {
 	_accessLevels: tsValidateDynamicObject(tsValidateNumber(), tsValidateString(), false),
 };
 
-export const DBDef_PermissionApi: DBDef<DB_PermissionApi> = {
+export const DBDef_PermissionApi: DBDef<DB_PermissionApi,'projectId' | 'path'> = {
 	validator: Validator_PermissionApi,
 	dbName: 'permissions--api',
 	entityName: 'permissions--api',
 	generatedProps: ['_auditorId', '_accessLevels'],
-	lockKeys: ['projectId', 'path']
+	uniqueKeys: ['projectId', 'path']
 };

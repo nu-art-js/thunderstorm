@@ -19,7 +19,7 @@
  * limitations under the License.
  */
 
-import {merge, ModuleManager, TS_Object} from '@nu-art/ts-common';
+import {merge, Module, ModuleManager, TS_Object} from '@nu-art/ts-common';
 import {DatabaseWrapperBE, ModuleBE_Firebase} from '@nu-art/firebase/backend';
 
 
@@ -87,4 +87,9 @@ export abstract class BaseStorm
 		const merge1 = merge(defaultConfig, overrideConfig);
 		this.setConfig(merge(merge1, this.override) || {});
 	};
+
+	getEnvConfigRef<Config>(module: Module<Config>) {
+		return ModuleBE_Firebase.createAdminSession().getDatabase().ref<Config>(`/_config/${this.envKey}/${module.getName()}`)
+	}
+
 }

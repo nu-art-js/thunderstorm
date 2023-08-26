@@ -37,6 +37,7 @@ import {DBApiDefGeneratorIDBV2, UpgradeCollectionBody} from '../../../shared';
 import {addRoutes} from '../ModuleBE_APIs';
 import {createBodyServerApi, createQueryServerApi} from '../../core/typed-api';
 
+
 /**
  * A base class used for implementing CRUD operations on a db module collection.
  *
@@ -46,30 +47,31 @@ export class ModuleBE_BaseApiV2_Class<Type extends DB_Object, ConfigType extends
 	extends Module {
 
 	readonly dbModule: ModuleBE_BaseDBV2<Type, any, Ks>;
+	readonly apiDef;
 
 	constructor(dbModule: ModuleBE_BaseDBV2<Type, any, Ks>) {
 		super(`Gen(${dbModule.getName()}, Api)`);
 		this.dbModule = dbModule;
+		this.apiDef = DBApiDefGeneratorIDBV2<Type, Ks>(this.dbModule.dbDef);
 	}
 
 	init() {
-		const apiDef = DBApiDefGeneratorIDBV2<Type, Ks>(this.dbModule.dbDef);
 		addRoutes([
-			createBodyServerApi(apiDef.v1.query, this.dbModule.query.custom),
-			createBodyServerApi(apiDef.v1.sync, this.dbModule.querySync),
-			createQueryServerApi(apiDef.v1.queryUnique, async (queryObject: DB_BaseObject) => {
+			createBodyServerApi(this.apiDef.v1.query, this.dbModule.query.custom),
+			createBodyServerApi(this.apiDef.v1.sync, this.dbModule.querySync),
+			createQueryServerApi(this.apiDef.v1.queryUnique, async (queryObject: DB_BaseObject) => {
 				const toReturnItem = await this.dbModule.query.unique(queryObject._id);
 				if (!toReturnItem)
 					throw new ApiException(404, `Could not find ${this.dbModule.collection.dbDef.entityName} with _id: ${queryObject._id}`);
 				return toReturnItem;
 			}),
-			createBodyServerApi(apiDef.v1.upsert, this.dbModule.set.item),
-			createBodyServerApi(apiDef.v1.upsertAll, (body) => this.dbModule.set.all(body)),
-			createQueryServerApi(apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
-			createBodyServerApi(apiDef.v1.deleteQuery, this._deleteQuery),
-			createQueryServerApi(apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
-			createBodyServerApi(apiDef.v1.upgradeCollection, this._upgradeCollection),
-			createQueryServerApi(apiDef.v1.metadata, this._metadata)
+			createBodyServerApi(this.apiDef.v1.upsert, this.dbModule.set.item),
+			createBodyServerApi(this.apiDef.v1.upsertAll, (body) => this.dbModule.set.all(body)),
+			createQueryServerApi(this.apiDef.v1.delete, (toDeleteObject: DB_BaseObject) => this.dbModule.delete.unique(toDeleteObject._id)),
+			createBodyServerApi(this.apiDef.v1.deleteQuery, this._deleteQuery),
+			createQueryServerApi(this.apiDef.v1.deleteAll, () => this.dbModule.delete.query(_EmptyQuery)),
+			createBodyServerApi(this.apiDef.v1.upgradeCollection, this._upgradeCollection),
+			createQueryServerApi(this.apiDef.v1.metadata, this._metadata)
 		]);
 	}
 
