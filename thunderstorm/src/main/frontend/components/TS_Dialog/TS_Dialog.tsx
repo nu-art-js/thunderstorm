@@ -138,7 +138,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	private dialogHeader = (headerContent: React.ReactNode | undefined) => {
 		return headerContent && <div className={'ts-dialog__header'}>
 			{headerContent}
-		</div>;
+        </div>;
 	};
 
 	protected renderHeader = (): React.ReactNode | undefined => {
@@ -150,7 +150,7 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 	private dialogBody = (mainContent: React.ReactNode | undefined) => {
 		return mainContent && <div className={'ts-dialog__main'}>
 			{mainContent}
-		</div>;
+        </div>;
 	};
 
 	protected renderBody = (): React.ReactNode | undefined => {
@@ -165,7 +165,8 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 
 		return <div className={'ts-dialog__buttons'}>
 			{buttons.left && <div className={'ts-dialog__buttons__left'}>{this._buttonsCreator(buttons.left)}</div>}
-			{buttons.center && <div className={'ts-dialog__buttons__center'}>{this._buttonsCreator(buttons.center)}</div>}
+			{buttons.center &&
+                <div className={'ts-dialog__buttons__center'}>{this._buttonsCreator(buttons.center)}</div>}
 			{buttons.right && <div className={'ts-dialog__buttons__right'}>{this._buttonsCreator(buttons.right)}</div>}
 		</div>;
 	};
@@ -203,7 +204,8 @@ export abstract class TS_Dialog<P extends {} = {}, S extends {} = {}>
 		}
 
 		return <TS_ErrorBoundary buttonRenderer={this.errorButtonRenderer} error={this.state.error}>
-			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1} onKeyDown={this.dialogKeyEventHandler}>
+			<LL_V_L className={_className('ts-dialog', this.props.className)} id={this.props.dialogId} tabIndex={-1}
+					onKeyDown={this.dialogKeyEventHandler}>
 				{this.dialogHeader(headerContent)}
 				{this.dialogBody(mainContent)}
 				{this.dialogButtons(buttons)}

@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
-import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {ModuleFE_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
 import {DB_PermissionDomain, DBDef_PermissionDomain} from '../../shared';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 export interface OnPermissionsDomainsUpdated {
@@ -37,3 +37,4 @@ export class ModuleFE_PermissionsDomain_Class
 }
 
 export const ModuleFE_PermissionsDomain = new ModuleFE_PermissionsDomain_Class();
+export const ModuleFE_PermissionsDomain_ = ModuleFE_PermissionsDomain as unknown as ModuleFE_BaseApi<any, any>;

@@ -23,6 +23,7 @@ import {
 } from '@nu-art/ts-common';
 import {FirestoreCollectionV2} from '../../../main/backend/firestore-v2/FirestoreCollectionV2';
 import {updatedStringValue1, updatedStringValue2} from '../update/update';
+import {_EmptyQuery} from '../../../main';
 
 
 chai.use(require('chai-as-promised'));
@@ -187,7 +188,7 @@ export const TestSuite_FirestoreV2_Set: Test = {
 
 		await testCase.input.setAction(collection, deepClone(inserted));
 
-		const sortedRemaining = sortArray((await collection.query.custom({where: {}})), item => item._uniqueId);
+		const sortedRemaining = sortArray((await collection.query.custom(_EmptyQuery)), item => item._uniqueId);
 		const sortedInserted = sortArray(inserted, item => item._uniqueId);
 
 		const result = testCase.result();

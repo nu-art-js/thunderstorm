@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 import {DB_Asset, DBDef_TempAssets} from '../..';
-import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
+import {ModuleBE_BaseDBV2} from '@nu-art/thunderstorm/backend';
 
 
 export class ModuleBE_AssetsTemp_Class

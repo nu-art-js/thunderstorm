@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-import {ApiException, auditBy, batchActionParallel, dbObjectToId, flatArray} from '@nu-art/ts-common';
-import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
+import {ApiException, batchActionParallel, dbObjectToId, flatArray} from '@nu-art/ts-common';
+import {MemKey_AccountId} from '@nu-art/user-account/backend';
 import {DB_PermissionDomain, DB_PermissionProject, DBDef_PermissionDomain} from '../../shared';
 import {ModuleBE_PermissionAccessLevel} from './ModuleBE_PermissionAccessLevel';
 import {ModuleBE_PermissionProject} from './ModuleBE_PermissionProject';
 import {CanDeletePermissionEntities} from '../../core/can-delete';
 import {DB_EntityDependency} from '@nu-art/firebase';
-import {ModuleBE_BaseDBV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseDBV2";
-import {firestore} from "firebase-admin";
+import {firestore} from 'firebase-admin';
+import {ModuleBE_BaseDBV2} from '@nu-art/thunderstorm/backend';
 import Transaction = firestore.Transaction;
 
 
@@ -60,11 +60,8 @@ export class ModuleBE_PermissionDomain_Class
 	}
 
 	protected async preWriteProcessing(dbInstance: DB_PermissionDomain, t?: Transaction) {
-		await ModuleBE_PermissionProject.query.uniqueAssert(dbInstance.projectId);
-
-		const email = MemKey_AccountEmail.get();
-		if (email)
-			dbInstance._audit = auditBy(email);
+		await ModuleBE_PermissionProject.query.uniqueAssert(dbInstance.projectId, t);
+		dbInstance._auditorId = MemKey_AccountId.get();
 	}
 }
 

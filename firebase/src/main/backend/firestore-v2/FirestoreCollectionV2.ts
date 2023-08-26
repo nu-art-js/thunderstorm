@@ -17,9 +17,11 @@
  */
 
 import {
-	__stringify, _keys,
+	__stringify,
+	_keys,
 	ApiException,
-	BadImplementationException, batchAction,
+	BadImplementationException,
+	batchAction,
 	batchActionParallel,
 	compare,
 	Const_UniqueKeys,
@@ -27,6 +29,7 @@ import {
 	DB_Object,
 	DB_Object_validator,
 	DBDef,
+	dbIdLength,
 	dbObjectToId,
 	Default_UniqueKey,
 	DefaultDBVersion,
@@ -52,14 +55,14 @@ import {
 	FirestoreType_DocumentReference,
 	FirestoreType_DocumentSnapshot
 } from '../firestore/types';
-import {Clause_Where, FirestoreQuery} from '../../shared/types';
+import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV2} from './FirestoreWrapperBEV2';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV2} from './FirestoreInterfaceV2';
 import {firestore} from 'firebase-admin';
 import {DocWrapperV2, UpdateObject} from './DocWrapperV2';
-import {_values} from '@nu-art/ts-common/utils/object-tools';
 import {composeDbObjectUniqueId} from '../../shared/utils';
+import {_EmptyQuery, maxBatch} from '../../shared/consts';
 import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;
@@ -78,7 +81,6 @@ export type FirestoreCollectionHooks<Type extends DB_Object> = {
 	postWriteProcessing?: (data: PostWriteProcessingData<Type>) => Promise<void>,
 }
 
-export type MultiWriteOperation = 'create' | 'set' | 'update' | 'delete';
 
 export type MultiWriteItem<Op extends MultiWriteOperation, T extends DB_Object> =
 	Op extends 'delete' ? undefined :
@@ -88,9 +90,6 @@ export type MultiWriteItem<Op extends MultiWriteOperation, T extends DB_Object> 
 type MultiWriteType = 'bulk' | 'batch';
 
 const defaultMultiWriteType = 'batch';
-export const _EmptyQuery = Object.freeze({where: {}});
-export const dbIdLength = 32;
-export const maxBatch = 500;
 
 /**
  * # <ins>FirestoreBulkException</ins>
@@ -298,10 +297,10 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 	async validateUpdateData(updateData: UpdateData<Type>, transaction?: Transaction) {
 	}
 
-	update = Object.freeze({
-		item: (updateData: UpdateObject<Type>) => this.doc.unique(updateData._id).update(updateData),
-		all: this._updateAll,
-	});
+	// update = Object.freeze({
+	// 	item: (updateData: UpdateObject<Type>) => this.doc.unique(updateData._id).update(updateData),
+	// 	all: this._updateAll,
+	// });
 
 	// ############################## Delete ##############################
 	protected _deleteQuery = async (query: FirestoreQuery<Type>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {

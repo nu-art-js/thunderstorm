@@ -17,8 +17,9 @@
  * limitations under the License.
  */
 import {DB_PermissionGroup, DBDef_PermissionGroup} from '../../../index';
-import {ApiCallerEventType, ModuleFE_BaseApi} from '@nu-art/db-api-generator/frontend';
-import {ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+
+import {ModuleFE_BaseApi, ThunderDispatcher} from '@nu-art/thunderstorm/frontend';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 export interface OnPermissionsGroupsUpdated {
@@ -36,3 +37,5 @@ export class ModuleFE_PermissionsGroup_Class
 }
 
 export const ModuleFE_PermissionsGroup = new ModuleFE_PermissionsGroup_Class();
+export const ModuleFE_PermissionsGroup_ = ModuleFE_PermissionsGroup as unknown as ModuleFE_BaseApi<any, any>;
+

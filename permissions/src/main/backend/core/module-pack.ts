@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions';
 import {ModuleBE_PermissionsAssert} from '../modules/ModuleBE_PermissionsAssert';
 import {ModuleBE_PermissionProject} from '../modules/management/ModuleBE_PermissionProject';
 import {ModuleBE_PermissionDomain} from '../modules/management/ModuleBE_PermissionDomain';
@@ -25,10 +24,13 @@ import {ModuleBE_PermissionAccessLevel} from '../modules/management/ModuleBE_Per
 import {ModuleBE_PermissionApi} from '../modules/management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionGroup} from '../modules/assignment/ModuleBE_PermissionGroup';
 import {ModuleBE_PermissionUserDB} from '../modules/assignment/ModuleBE_PermissionUserDB';
-import {createApisForDBModuleV2} from "@nu-art/db-api-generator/backend/ModuleBE_BaseApiV2";
+
+import {Module} from '@nu-art/ts-common';
+import {ModuleBE_Permissions} from '../modules/ModuleBE_Permissions';
+import {createApisForDBModuleV2} from '@nu-art/thunderstorm/backend';
 
 
-export const ModulePackBE_Permissions = [
+export const ModulePackBE_Permissions: Module[] = [
 	ModuleBE_PermissionProject, createApisForDBModuleV2(ModuleBE_PermissionProject),
 	ModuleBE_PermissionDomain, createApisForDBModuleV2(ModuleBE_PermissionDomain),
 	ModuleBE_PermissionAccessLevel, createApisForDBModuleV2(ModuleBE_PermissionAccessLevel),
@@ -40,4 +42,3 @@ export const ModulePackBE_Permissions = [
 ];
 
 export * from '../modules/ModuleBE_PermissionsAssert';
-export * from '../modules/ModuleBE_Permissions';

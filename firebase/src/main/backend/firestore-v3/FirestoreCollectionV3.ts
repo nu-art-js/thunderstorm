@@ -26,6 +26,7 @@ import {
 	Const_UniqueKeys,
 	CustomException,
 	DBDef_V3,
+	dbIdLength,
 	dbObjectToId,
 	DBProto,
 	DefaultDBVersion,
@@ -48,13 +49,14 @@ import {
 	FirestoreType_DocumentReference,
 	FirestoreType_DocumentSnapshot
 } from '../firestore/types';
-import {Clause_Where, FirestoreQuery} from '../../shared/types';
+import {Clause_Where, FirestoreQuery, MultiWriteOperation} from '../../shared/types';
 import {FirestoreWrapperBEV3} from './FirestoreWrapperBEV3';
 import {Transaction} from 'firebase-admin/firestore';
 import {FirestoreInterfaceV3} from './FirestoreInterfaceV3';
 import {firestore} from 'firebase-admin';
 import {DocWrapperV3, UpdateObject} from './DocWrapperV3';
 import {composeDbObjectUniqueId} from '../../shared/utils';
+import {_EmptyQuery, maxBatch} from '../../shared/consts';
 import UpdateData = firestore.UpdateData;
 import WriteBatch = firestore.WriteBatch;
 import BulkWriter = firestore.BulkWriter;
@@ -72,8 +74,6 @@ export type FirestoreCollectionHooks<Proto extends DBProto<any>> = {
 	postWriteProcessing?: (data: PostWriteProcessingData<Proto['dbType']>) => Promise<void>,
 }
 
-export type MultiWriteOperation = 'create' | 'set' | 'update' | 'delete';
-
 export type MultiWriteItem<Op extends MultiWriteOperation, Proto extends DBProto<any>> =
 	Op extends 'delete' ? undefined :
 		Op extends 'update' ? UpdateObject<Proto['dbType']> :
@@ -82,9 +82,6 @@ export type MultiWriteItem<Op extends MultiWriteOperation, Proto extends DBProto
 type MultiWriteType = 'bulk' | 'batch';
 
 const defaultMultiWriteType = 'batch';
-export const _EmptyQuery = Object.freeze({where: {}});
-export const dbIdLength = 32;
-export const maxBatch = 500;
 
 /**
  * # <ins>FirestoreBulkException</ins>
@@ -272,10 +269,10 @@ export class FirestoreCollectionV3<Proto extends DBProto<any>>
 	async validateUpdateData(updateData: UpdateData<Proto['dbType']>, transaction?: Transaction) {
 	}
 
-	update = Object.freeze({
-		item: (updateData: UpdateObject<Proto['dbType']>) => this.doc.unique(updateData._id).update(updateData),
-		all: this._updateAll,
-	});
+	// update = Object.freeze({
+	// 	item: (updateData: UpdateObject<Proto['dbType']>) => this.doc.unique(updateData._id).update(updateData),
+	// 	all: this._updateAll,
+	// });
 
 	// ############################## Delete ##############################
 	protected _deleteQuery = async (query: FirestoreQuery<Proto['dbType']>, transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType) => {

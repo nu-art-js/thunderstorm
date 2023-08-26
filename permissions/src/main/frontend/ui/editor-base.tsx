@@ -1,10 +1,20 @@
 import * as React from 'react';
-import {ModuleFE_BaseApi, EditableDBItem, SmartComponent} from '@nu-art/db-api-generator/frontend';
-import {_className, LL_H_C, LL_V_L, TS_BusyButton, TS_Button, genericNotificationAction} from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, cloneObj, DB_Object, ThisShouldNotHappenException, UniqueId} from '@nu-art/ts-common';
 import {ReactNode} from 'react';
+import {
+	_className,
+	EditableDBItem,
+	genericNotificationAction,
+	LL_H_C,
+	LL_V_L,
+	ModuleFE_BaseApi,
+	SmartComponent,
+	TS_BusyButton,
+	TS_Button
+} from '@nu-art/thunderstorm/frontend';
+import {BadImplementationException, DB_Object, ThisShouldNotHappenException, UniqueId} from '@nu-art/ts-common';
 
 import './editor-base.scss';
+
 
 const newItemIdentifier = '##new-item##';
 
@@ -33,13 +43,15 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 		if (!item)
 			throw new BadImplementationException(`Could not find item with id ${itemId}`);
 
-		return this.setState({editedItem: new EditableDBItem<T>(cloneObj(item), this.module), selectedItemId: itemId});
+		const newVar: any = {editedItem: new EditableDBItem<T>(item, this.module)};
+		return this.reDeriveState(newVar);
 	};
 
-	private saveItem = async () => {
+	protected saveItem = async (e: React.MouseEvent) => {
 		if (!this.state.editedItem)
 			return;
 
+		this.logDebug('Saving Item', this.state.editedItem.item);
 		await genericNotificationAction(
 			() => this.state.editedItem!.save(),
 			`Saving ${this.itemName}`, 3);
@@ -70,11 +82,17 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 			<LL_V_L className={'item-list__list'}>
 				{this.state.items.map(item => {
 					const className = _className('item-list__list-item', item._id === this.state.selectedItemId ? 'selected' : undefined);
-					return <div className={className} onClick={() => this.selectItem(item._id)} key={item._id}>{this.itemDisplay(item)}</div>;
+					return <div className={className} onClick={() => this.selectItem(item._id)}
+											key={item._id}>{this.itemDisplay(item)}</div>;
 				})}
 			</LL_V_L>
-			<TS_Button className={'item-list__add-button'} onClick={() => this.selectItem(newItemIdentifier)}>Add New {this.itemName}</TS_Button>
+			{this.renderListButton()}
 		</LL_V_L>;
+	};
+
+	protected renderListButton = () => {
+		return <TS_Button className={'item-list__add-button'} onClick={() => this.selectItem(newItemIdentifier)}>Add
+			New {this.itemName}</TS_Button>;
 	};
 
 	abstract editorContent: () => React.ReactNode;
@@ -86,7 +104,8 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 		const item = this.state.editedItem;
 
 		return <LL_V_L className={'item-editor'}>
-			<div className={'item-editor__header'}>{item.item._id ? this.itemDisplay(item.item as T) : `New ${this.itemName}`}</div>
+			<div
+				className={'item-editor__header'}>{item.item._id ? this.itemDisplay(item.item as T) : `New ${this.itemName}`}</div>
 			<LL_V_L className={'item-editor__main'}>
 				{this.editorContent()}
 			</LL_V_L>

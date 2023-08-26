@@ -37,7 +37,6 @@
   },
   "dependencies": {
     "@nu-art/ts-common": "$THUNDERSTORM_SDK_VERSION",
-    "@nu-art/db-api-generator": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/firebase": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/thunderstorm": "$THUNDERSTORM_SDK_VERSION",
     "@nu-art/ts-styles": "$THUNDERSTORM_SDK_VERSION",

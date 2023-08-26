@@ -22,7 +22,7 @@ import {
 	OmitDBObject,
 	tsValidateArray,
 	tsValidateBoolean,
-	tsValidateNonMandatoryObject,
+	tsValidateDynamicObject,
 	tsValidateNumber,
 	tsValidateString,
 	tsValidateUniqueId,
@@ -36,18 +36,16 @@ const Validator_PermissionApi: TypeValidator<OmitDBObject<DB_PermissionApi>> = {
 	projectId: validateProjectId,
 	path: tsValidateStringWithDashesAndSlash,
 	accessLevelIds: tsValidateArray(tsValidateUniqueId, false),
-	_audit: tsValidateNonMandatoryObject({
-		comment: tsValidateString(-1, false),
-		auditBy: tsValidateString(),
-		auditAt: {timestamp: tsValidateNumber(), pretty: tsValidateString(), timezone: tsValidateString(-1, false)}
-	}),
+	_auditorId: tsValidateString(),
 	deprecated: tsValidateBoolean(false),
-	onlyForApplication: tsValidateBoolean(false)
+	onlyForApplication: tsValidateBoolean(false),
+	_accessLevels: tsValidateDynamicObject(tsValidateNumber(), tsValidateString(), false),
 };
 
-export const DBDef_PermissionApi: DBDef<DB_PermissionApi> = {
+export const DBDef_PermissionApi: DBDef<DB_PermissionApi,'projectId' | 'path'> = {
 	validator: Validator_PermissionApi,
 	dbName: 'permissions--api',
 	entityName: 'permissions--api',
-	lockKeys: ['projectId', 'path']
+	generatedProps: ['_auditorId', '_accessLevels'],
+	uniqueKeys: ['projectId', 'path']
 };

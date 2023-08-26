@@ -31,7 +31,9 @@ import {
 } from './_imports';
 import {addRoutes, createQueryServerApi, ServerApi} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpRequestBody, MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
-import {getUIAccount, MemKey_AccountEmail, ModuleBE_v2_AccountDB, ModuleBE_v2_SessionDB} from './v2';
+import {MemKey_AccountEmail} from '../core/consts';
+import {ModuleBE_SessionDB} from './ModuleBE_SessionDB';
+import {ModuleBE_AccountDB} from './ModuleBE_AccountDB';
 
 
 /**
@@ -123,7 +125,7 @@ export class ModuleBE_SAML_Class
 		const _email = __email.toLowerCase();
 		const account = await this.createSAML(_email);
 
-		return await ModuleBE_v2_SessionDB.getOrCreateSession(getUIAccount(account));
+		return await ModuleBE_SessionDB.getOrCreateSession(account);
 	}
 
 	async assertSaml() {
@@ -149,7 +151,7 @@ export class ModuleBE_SAML_Class
 
 	private async createSAML(__email: string) {
 		const _email = __email.toLowerCase();
-		return ModuleBE_v2_AccountDB.getOrCreate({where: {email: _email}});
+		return ModuleBE_AccountDB.getOrCreate({where: {email: _email}});
 	}
 
 	loginRequest = async (loginContext: RequestParams_LoginSAML) => {

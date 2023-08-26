@@ -1,7 +1,8 @@
 import {TestSuite} from '@nu-art/ts-common/testing/types';
-import {__stringify, tsValidateEmail, tsValidateResult} from '@nu-art/ts-common';
+import {tsValidateEmail, tsValidateResult} from '@nu-art/ts-common';
 import {expect} from 'chai';
-import {assertPasswordRules, PasswordAssertionConfig} from '../../main/shared/assertion';
+import {testSuiteTester} from '@nu-art/ts-common/testing/consts';
+
 
 type EmailValidationSuite = TestSuite<string, boolean>
 
@@ -22,7 +23,6 @@ const passingTests: EmailValidationSuite['testcases'] = ['email@example.com',
 	result: true,
 	input: email
 }));
-
 
 //FIXME: below are email that are commented out, which should fail, but pass the validation.
 const failingTests: EmailValidationSuite['testcases'] = [
@@ -71,3 +71,7 @@ export const TestSuite_Accounts_EmailValidation: EmailValidationSuite = {
 		expect(result).to.eql(testCase.result);
 	}
 };
+
+describe('Accounts - Email Validation', () => {
+	testSuiteTester(TestSuite_Accounts_EmailValidation);
+});
