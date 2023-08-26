@@ -18,7 +18,7 @@
  */
 
 import {ApiDefResolver, BodyApi, HttpMethod, QueryApi} from '@nu-art/thunderstorm';
-import {PreDB, StringMap, UniqueId} from '@nu-art/ts-common';
+import {Minute, PreDB, StringMap, UniqueId} from '@nu-art/ts-common';
 import {DB_PermissionProject} from './management';
 
 
@@ -124,7 +124,7 @@ export const ApiDef_Permissions: ApiDefResolver<ApiStruct_Permissions> = {
 		// getUsersCFsByShareGroups: {method: HttpMethod.POST, path: 'v1/user-custom-fields/users-cf-by-share-groups'},
 		// registerExternalProject: {method: HttpMethod.POST, path: 'v1/register/register-external-project'},
 		// registerProject: {method: HttpMethod.GET, path: 'v1/register/register-project'},
-		createProject: {method: HttpMethod.GET, path: 'v1/permissions/create-first-project'},
+		createProject: {method: HttpMethod.GET, path: 'v1/permissions/create-first-project', timeout: Minute},
 		connectDomainToRoutes: {method: HttpMethod.POST, path: 'v1/permissions/connect-domain-to-routes'},
 	}
 };
