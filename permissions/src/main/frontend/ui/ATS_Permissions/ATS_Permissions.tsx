@@ -2,12 +2,13 @@ import * as React from 'react';
 import {
 	AppToolsScreen,
 	LL_V_L,
+	LL_H_C,
 	Props_SmartComponent,
 	SmartComponent,
 	State_SmartComponent,
 	Tab,
 	TS_AppTools,
-	TS_Tabs
+	TS_Tabs, TS_Button
 } from '@nu-art/thunderstorm/frontend';
 import './ATS_Permissions.scss';
 import {
@@ -21,6 +22,8 @@ import {
 	PermissionProjectsEditor,
 	PermissionUsersEditor
 } from '../..';
+import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
+
 
 type State = State_SmartComponent;
 
@@ -58,7 +61,10 @@ export class ATS_Permissions
 
 	render() {
 		return <LL_V_L id={'dev-page__permissions'}>
-			{TS_AppTools.renderPageHeader('Permissions Editor')}
+			<LL_H_C className="match_width flex__space-between">{TS_AppTools.renderPageHeader('Permissions Editor')}
+				<TS_Button className={'item-list__add-button'}
+									 onClick={() => ModuleFE_PermissionsAssert.v1.createProject({}).executeSync()}>Create Project</TS_Button>
+			</LL_H_C>
 			{this.renderTabs()}
 		</LL_V_L>;
 	}
