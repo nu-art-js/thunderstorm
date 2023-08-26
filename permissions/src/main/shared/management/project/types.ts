@@ -17,10 +17,9 @@
  * limitations under the License.
  */
 
-import {Auditable, DB_Object} from '@nu-art/ts-common';
+import {AuditableV2, DB_Object} from '@nu-art/ts-common';
 
 
-export type DB_PermissionProject = DB_Object & Auditable & {
+export type DB_PermissionProject = DB_Object & AuditableV2 & {
 	name: string,
-	customKeys?: string[]
 }

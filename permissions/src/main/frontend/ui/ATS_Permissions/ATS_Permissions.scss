@@ -1,3 +1,5 @@
+@use '@nu-art/ts-styles' as styles;
+
 #dev-page__permissions {
   width: 100%;
   height: 100%;
@@ -36,6 +38,176 @@
 
     .ts-tabs__content {
       background: transparent;
+    }
+  }
+
+  .api-editor {
+    width: 100%;
+    height: 100%;
+    border: 2px solid black;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+
+    .api-editor__list-wrapper {
+      border-right: 2px solid black;
+      height: 100%;
+      width: 300px;
+      min-width: 300px;
+
+      .api-editor__search {
+        width: 100%;
+        height: 30px;
+        border-bottom: 2px solid black;
+        flex: 0;
+
+        .ts-input {
+          height: 100%;
+          min-height: unset;
+          flex: 1;
+          outline: none !important;
+          border: none;
+        }
+
+        .icon--wrapper {
+          height: 100%;
+          width: 30px;
+          padding: 4px;
+        }
+      }
+
+      .api-editor__list {
+        @include styles.customScrollbar('vertical');
+        height: 0;
+        flex: 1;
+        width: 100%;
+
+        .api-editor__list__item {
+          width: 100%;
+          padding: 4px 8px;
+          font: {
+            size: 14px;
+            weight: bold;
+          }
+          white-space: pre-wrap;
+
+          &.selected {
+            background: styles.gray(2);
+            color: white;
+          }
+        }
+      }
+    }
+
+    .api-editor__editor {
+      height: 100%;
+      padding: 8px;
+      gap: 8px;
+    }
+  }
+
+  .db-def-button {
+    width: unset;
+    padding: 4px 8px;
+  }
+}
+.api-editor__editor__level-list {
+  width: 100%;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  .ts-dropdown {
+    width: 200px;
+
+    .ts-dropdown__header {
+      border: 1px solid black;
+    }
+
+    .ts-tree__node {
+      font: {
+        size: 11px;
+        weight: bold;
+      }
+      white-space: break-spaces;
+    }
+  }
+
+  .api-editor__editor__level-list__item {
+    position: relative;
+    border: 1px solid black;
+    border-radius: 4px;
+    height: 40px;
+    max-width: 150px;
+    white-space: break-spaces;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    font: {
+      size: 11px;
+      weight: bold;
+    }
+    overflow: hidden;
+
+    .icon--wrapper {
+      @include styles.mouse-interactive-icon(white);
+      background: styles.red(4);
+      position: absolute;
+      top: 0;
+      right: 0;
+      height: 40px;
+      width: 30px;
+      padding: 8px;
+      transform: translateX(100%);
+      transition: transform 200ms ease-out;
+      cursor: pointer;
+    }
+
+    &:hover {
+      .icon--wrapper {
+        transform: translateX(0);
+      }
+    }
+  }
+}
+#db-def-list {
+  @include styles.customScrollbar('vertical');
+  display: flex;
+  flex-direction: column;
+  max-height: 200px;
+
+  .db-def-list__item {
+    height: 30px;
+    padding: 0 8px;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+      background: styles.gray(7);
+    }
+  }
+}
+
+#save-initial-domain {
+  padding: 10px;
+  border: 2px solid black;
+  border-radius: 8px;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  .save-initial-domain__title {
+    font: {
+      size: 14px;
+      weight: bold;
+    }
+  }
+
+  .save-initial-domain__buttons {
+    justify-content: space-between;
+
+    .ts-button {
+      margin: 0;
     }
   }
 }

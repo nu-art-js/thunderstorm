@@ -6,32 +6,35 @@ import {
 	ComponentSync,
 	LL_H_C,
 	LL_V_L,
+	Props_SmartComponent,
+	SmartComponent,
+	State_SmartComponent,
 	TS_BusyButton,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
-import {ModuleFE_AccountV2, OnAccountsUpdated} from '../../modules/v2/ModuleFE_v2_Account';
 import {Component_AccountEditor} from '../../account-editor/Component_AccountEditor';
-import {DB_Account_V2, UI_Account} from '../../../shared';
-import {
-	ApiCallerEventType,
-	Props_SmartComponent,
-	SmartComponent,
-	State_SmartComponent
-} from '@nu-art/db-api-generator/frontend';
+import {DB_Account} from '../../../shared';
 import {generateUUID} from '@nu-art/ts-common';
+import {ModuleFE_Account, OnAccountsUpdated} from '../../modules/ModuleFE_Account';
+import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
 type Props = {}
 
 type State = {
-	selectedUser?: UI_Account,
+	selectedUser?: DB_Account,
 	isPreview?: boolean
 }
 
 export class ATS_AccountEditor
 	extends ComponentSync<Props, State> {
 
-	static screen: AppToolsScreen = {name: 'Accounts Editor', key: 'user-account', renderer: this, group: 'TS Dev Tools'};
+	static screen: AppToolsScreen = {
+		name: 'Accounts Editor',
+		key: 'user-account',
+		renderer: this,
+		group: 'TS Dev Tools'
+	};
 
 
 	// ######################### Life Cycle #########################
@@ -43,7 +46,7 @@ export class ATS_AccountEditor
 
 	// ######################### Logic #########################
 
-	private setSelectedAccount = (account?: UI_Account) => {
+	private setSelectedAccount = (account?: DB_Account) => {
 		if (!account)
 			this.setState({isPreview: false, selectedUser: undefined});
 		else
@@ -60,27 +63,27 @@ export class ATS_AccountEditor
 
 
 type ListState = State_SmartComponent & {
-	list: UI_Account[],
+	list: DB_Account[],
 };
 
 type ListProps = Props_SmartComponent & {
-	setSelectedAccount: (account?: UI_Account) => void,
-	user?: UI_Account
+	setSelectedAccount: (account?: DB_Account) => void,
+	user?: DB_Account
 }
 
 class Component_AccountList
 	extends SmartComponent<ListProps, ListState> implements OnAccountsUpdated {
 
-	__onAccountsUpdated(...params: ApiCallerEventType<DB_Account_V2>) {
+	__onAccountsUpdated(...params: ApiCallerEventType<DB_Account>) {
 		this.reDeriveState();
 	}
 
 	static defaultProps = {
-		modules: [ModuleFE_AccountV2]
+		modules: [ModuleFE_Account]
 	};
 
 	protected async deriveStateFromProps(nextProps: ListProps, state: ListState) {
-		state.list = ModuleFE_AccountV2.cache.allMutable() as UI_Account[];
+		state.list = ModuleFE_Account.cache.allMutable() as DB_Account[];
 		return state;
 	}
 

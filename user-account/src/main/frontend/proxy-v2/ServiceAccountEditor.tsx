@@ -8,21 +8,22 @@ import {
 	LL_H_C,
 	LL_V_L,
 	ModuleFE_Toaster,
+	Props_SmartComponent,
+	State_SmartComponent,
 	TS_Button,
 	TS_Input,
 	TS_TextArea
 } from '@nu-art/thunderstorm/frontend';
 import {ProxyServiceAccount_EditorRenderer} from './ProxyServiceAccount_EditorRenderer';
-import {__stringify, filterInstances, generateUUID, isErrorOfType, PreDB, ValidationException} from '@nu-art/ts-common';
-import {Props_SmartComponent, State_SmartComponent} from '@nu-art/db-api-generator/frontend';
+import {__stringify, filterInstances, generateUUID, isErrorOfType, ValidationException} from '@nu-art/ts-common';
 import {UI_Account} from '../../shared';
-import {ModuleFE_AccountV2} from '../modules/v2/ModuleFE_v2_Account';
+import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 
 
 type Props = Props_SmartComponent & {};
 
 type State = State_SmartComponent & {
-	serviceAccounts: PreDB<UI_Account>[]
+	serviceAccounts: UI_Account[]
 	newAccount?: Partial<UI_Account>
 	token?: string
 	ttl?: number
@@ -34,7 +35,7 @@ export class ServiceAccountEditor
 
 	protected async deriveStateFromProps(nextProps: Props): Promise<BaseAsyncState & State> {
 		const state: BaseAsyncState & State = {...this.state} ?? {};
-		state.serviceAccounts = ModuleFE_AccountV2.cache.allMutable();
+		state.serviceAccounts = ModuleFE_Account.cache.allMutable();
 		return state;
 	}
 
@@ -49,13 +50,13 @@ export class ServiceAccountEditor
 						const editableItem = this.getEditableItem(serviceAcc);
 						const compensatedIndex = index - (this.state.newAccount ? 1 : 0);
 						return <div key={generateUUID()}
-												className={_className('account', this.isSelected(serviceAcc) ? 'selected' : '')}
-												onClick={() => {
-													if (serviceAcc === this.state.newAccount)
-														return;
+									className={_className('account', this.isSelected(serviceAcc) ? 'selected' : '')}
+									onClick={() => {
+										if (serviceAcc === this.state.newAccount)
+											return;
 
-													this.setState({selectedIndex: compensatedIndex});
-												}}>
+										this.setState({selectedIndex: compensatedIndex});
+									}}>
 							<ProxyServiceAccount_EditorRenderer
 								key={generateUUID()}
 								editable={editableItem}
@@ -76,7 +77,7 @@ export class ServiceAccountEditor
 			async (item) => {
 				this.logInfo('save');
 				try {
-					await ModuleFE_AccountV2.vv1.createAccount(item).executeSync();
+					await ModuleFE_Account.vv1.createAccount(item).executeSync();
 					if (item === this.state.newAccount)
 						this.setState({newAccount: undefined});
 				} catch (e: any) {
@@ -98,8 +99,8 @@ export class ServiceAccountEditor
 		return <LL_V_L className={'selected-options'}>
 			{this.state.token && <TS_TextArea type={'text'} value={this.state.token}/>}
 			<LL_H_C>TTL: <TS_Input type={'number'}
-														 onChange={(value) => this.setState({ttl: value !== undefined ? value as unknown as number : undefined})}
-														 placeholder={'ttl'}/></LL_H_C>
+								   onChange={(value) => this.setState({ttl: value !== undefined ? value as unknown as number : undefined})}
+								   placeholder={'ttl'}/></LL_H_C>
 			{this.renderAccountOptions(this.getSelected())}
 		</LL_V_L>;
 	};
@@ -121,7 +122,7 @@ export class ServiceAccountEditor
 				if (!item?._id)
 					return;
 
-				const response = await ModuleFE_AccountV2.vv1.createToken({
+				const response = await ModuleFE_Account.vv1.createToken({
 					accountId: item._id,
 					ttl: this.state.ttl || 0
 				}).executeSync();

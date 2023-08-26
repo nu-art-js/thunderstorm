@@ -2,9 +2,16 @@ import {Module} from '@nu-art/ts-common/core/module';
 import {MUSTNeverHappenException} from '@nu-art/ts-common';
 import {ServerApi} from './server/server-api';
 
+
 export class ModuleBE_APIs_Class
 	extends Module {
 	private routes: ServerApi<any>[] = [];
+
+	// @ts-ignore
+	private resetForTests() {
+		// @ts-ignore
+		this.routes = [];
+	}
 
 	addRoutes = (apis: ServerApi<any>[]) => {
 		apis.forEach(api => {

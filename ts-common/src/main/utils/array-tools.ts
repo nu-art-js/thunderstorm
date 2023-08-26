@@ -127,7 +127,9 @@ export function filterFalsy<T>(array?: (T | undefined | null | void)[]): T[] {
 /**
  * receives array and builds hashmap whom keys are decided via function and values are from array
  * */
-export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, index: number, map: { [k: string]: T }) => string | number, map: {
+export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, index: number, map: {
+	[k: string]: T
+}) => string | number, map: {
 	[k: string]: T
 } = {}): { [k: string]: T } {
 	return reduceToMap<T, T>(array, getKey, item => item, map);
@@ -138,7 +140,9 @@ export function arrayToMap<T>(array: T[] | Readonly<T[]>, getKey: (item: T, inde
  * */
 export function reduceToMap<Input, Output = Input>(array: (Input[] | Readonly<Input[]>), keyResolver: (item: Input, index: number, map: {
 	[k: string]: Output
-}) => string | number, mapper: (item: Input, index: number, map: { [k: string]: Output }) => Output, map: { [k: string]: Output } = {}): {
+}) => string | number, mapper: (item: Input, index: number, map: { [k: string]: Output }) => Output, map: {
+	[k: string]: Output
+} = {}): {
 	[k: string]: Output
 } {
 	return (array as (Input[])).reduce((toRet, element, index) => {
@@ -256,7 +260,10 @@ export function filterFlatInstances<T extends any[], K = NestedArrayType<T>>(arr
 	return filterInstances(flatArray(arr, result)) as Exclude<K, undefined>[];
 }
 
-export function groupArrayBy<T extends object, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): { key: K, values: T[] }[] {
+export function groupArrayBy<T extends object, K extends string | number>(arr: T[], mapper: (item: T, index: number) => K): {
+	key: K,
+	values: T[]
+}[] {
 	const map = arr.reduce<{ [k in K]: T[] }>((agg, item, index) => {
 		const key = mapper(item, index);
 		(agg[key] || (agg[key] = [])).push(item);
