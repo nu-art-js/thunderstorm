@@ -72,6 +72,10 @@ export function exists<T extends any = any>(item: T | undefined | null): item is
 	return item !== undefined && item !== null;
 }
 
+export function freeze<T extends any = any>(item: T): Readonly<T> {
+	return Object.freeze(item);
+}
+
 export const logicalXOR = (a: boolean, b: boolean) => {
 	return (a && !b) || (!a && b);
 };
