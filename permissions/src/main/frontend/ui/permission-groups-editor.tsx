@@ -9,7 +9,7 @@ import {
 	TS_Input,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
-import {UniqueId} from '@nu-art/ts-common';
+import {exists, UniqueId} from '@nu-art/ts-common';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {DB_PermissionGroup} from '../shared';
 import {
@@ -28,7 +28,7 @@ type State = State_EditorBase<DB_PermissionGroup> & {
 };
 
 export class PermissionGroupsEditor
-	extends EditorBase<DB_PermissionGroup, State>
+	extends EditorBase<DB_PermissionGroup, State, { projectId?: string }>
 	implements OnPermissionsGroupsUpdated {
 
 	//######################### Static #########################
@@ -55,7 +55,7 @@ export class PermissionGroupsEditor
 	}
 
 	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
-		state.items = ModuleFE_PermissionsGroup.cache.all();
+		state.items = ModuleFE_PermissionsGroup.cache.filter(group => !exists(this.props.projectId) || group.projectId === this.props.projectId);
 
 		if (!state.editedItem && state.items.length > 0) {
 			state.editedItem = new EditableDBItem(state.items[0], ModuleFE_PermissionsGroup);
@@ -84,7 +84,6 @@ export class PermissionGroupsEditor
 				</div>;
 			}}/>;
 	};
-
 
 	editorContent = () => {
 		const group = this.state.editedItem!;

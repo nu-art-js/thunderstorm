@@ -149,6 +149,7 @@ class ModuleBE_Permissions_Class
 
 		const groupsToUpsert = flatArray(projects.map(project => (project.groups || []).map(group => {
 			return {
+				projectId: project._id,
 				_id: group._id,
 				_auditorId,
 				label: group.name,

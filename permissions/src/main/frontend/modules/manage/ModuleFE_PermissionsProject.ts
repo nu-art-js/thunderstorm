@@ -38,3 +38,4 @@ export class ModuleFE_PermissionsProject_Class
 }
 
 export const ModuleFE_PermissionsProject = new ModuleFE_PermissionsProject_Class();
+export const ModuleFE_PermissionsProject_ = ModuleFE_PermissionsProject as unknown as ModuleFE_BaseApi<any, any>;
