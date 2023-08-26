@@ -19,7 +19,9 @@
 
 import {AuditableV2, DB_Object, TypedMap} from '@nu-art/ts-common';
 
+
 export type Request_CreateGroup = {
+	projectId?: string
 	label: string,
 	accessLevelIds: string[],
 	_levelsMap?: TypedMap<number>, // [DomainId]: AccessLevel.value

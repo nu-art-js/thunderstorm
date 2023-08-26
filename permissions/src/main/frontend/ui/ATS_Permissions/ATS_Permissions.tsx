@@ -23,9 +23,10 @@ import {
 	PermissionUsersEditor
 } from '../..';
 import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
+import {Permissions_DropDown} from '../ui-props';
 
 
-type State = State_SmartComponent;
+type State = State_SmartComponent & { selectedProjectId?: string };
 
 type Props = Props_SmartComponent;
 
@@ -41,9 +42,8 @@ export class ATS_Permissions
 	//######################### Life Cycle #########################
 
 	protected async deriveStateFromProps(nextProps: Props, state: State) {
-		state ??= this.state ? {...this.state} : {} as State;
-		// if (!ModuleFE_AccountV2.getAccounts().length)
-		// 	await ModuleFE_Account.v1.query({}).executeSync();
+		state ??= (this.state ? {...this.state} : {}) as State;
+		state.selectedProjectId ??= ModuleFE_PermissionsProject.cache.all()[0]?._id;
 		return state;
 	}
 
@@ -52,8 +52,8 @@ export class ATS_Permissions
 	private renderTabs = () => {
 		const tabs: Tab[] = [
 			{title: 'Projects', uid: 'projects', content: <PermissionProjectsEditor/>},
-			{title: 'Domains', uid: 'domains', content: <PermissionDomainsEditor/>},
-			{title: 'Groups', uid: 'groups', content: <PermissionGroupsEditor/>},
+			{title: 'Domains', uid: 'domains', content: () => <PermissionDomainsEditor projectId={this.state.selectedProjectId}/>},
+			{title: 'Groups', uid: 'groups', content: <PermissionGroupsEditor projectId={this.state.selectedProjectId}/>},
 			{title: 'Users', uid: 'users', content: <PermissionUsersEditor/>},
 		];
 		return <TS_Tabs tabs={tabs}/>;
@@ -62,6 +62,9 @@ export class ATS_Permissions
 	render() {
 		return <LL_V_L id={'dev-page__permissions'}>
 			<LL_H_C className="match_width flex__space-between">{TS_AppTools.renderPageHeader('Permissions Editor')}
+				<div style={{width: 300}}><Permissions_DropDown.Project
+					selected={this.state.selectedProjectId}
+					onSelected={project => this.setState({selectedProjectId: project._id})}/></div>
 				<TS_Button className={'item-list__add-button'}
 									 onClick={() => ModuleFE_PermissionsAssert.v1.createProject({}).executeSync()}>Create Project</TS_Button>
 			</LL_H_C>

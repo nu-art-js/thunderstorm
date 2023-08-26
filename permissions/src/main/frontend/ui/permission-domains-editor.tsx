@@ -21,31 +21,22 @@ import {
 	mouseInteractivity_PopUp,
 	openContent,
 	Props_SmartComponent,
-	SimpleListAdapter,
 	State_SmartComponent,
 	Thunder,
 	TS_BusyButton,
 	TS_Button,
-	TS_DropDown,
 	TS_Input,
 	TS_PropRenderer,
 	TS_Table
 } from '@nu-art/thunderstorm/frontend';
-import {
-	BadImplementationException,
-	capitalizeFirstLetter,
-	cloneObj,
-	DBDef,
-	filterInstances,
-	Module,
-	PreDB,
-	sortArray
-} from '@nu-art/ts-common';
+import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, exists, filterInstances, Module, PreDB, sortArray} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
 import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 import {defaultAccessLevels} from '../../shared/consts';
+import {Permissions_DropDown} from './ui-props';
+
 
 type State = State_EditorBase<DB_PermissionDomain> & {
 	projects: Readonly<DB_PermissionProject[]>
@@ -56,9 +47,8 @@ type State = State_EditorBase<DB_PermissionDomain> & {
 const emptyLevel = Object.freeze({name: '', domainId: '', value: -1} as PreDB<DB_PermissionAccessLevel>);
 
 export class PermissionDomainsEditor
-	extends EditorBase<DB_PermissionDomain, State>
+	extends EditorBase<DB_PermissionDomain, State, { projectId?: string }>
 	implements OnPermissionsDomainsUpdated, OnPermissionsLevelsUpdated {
-
 
 	//######################### Static #########################
 
@@ -89,7 +79,7 @@ export class PermissionDomainsEditor
 	}
 
 	protected async deriveStateFromProps(nextProps: Props_SmartComponent, state: (State & State_SmartComponent)) {
-		state.items = ModuleFE_PermissionsDomain.cache.all();
+		state.items = ModuleFE_PermissionsDomain.cache.filter(domain => !exists(this.props.projectId) || domain.projectId === this.props.projectId);
 		state.projects = ModuleFE_PermissionsProject.cache.all();
 		state.newLevel ??= new EditableDBItem(emptyLevel, ModuleFE_PermissionsAccessLevel);
 
@@ -260,18 +250,14 @@ export class PermissionDomainsEditor
 	//######################### Render #########################
 
 	private renderProjectsDropDown = () => {
-		if (!this.state.editedItem)
+		const domain = this.state.editedItem;
+		if (!domain)
 			return '';
 
-		const domain = this.state.editedItem;
-		const adapter = SimpleListAdapter(this.state.projects as DB_PermissionProject[], item =>
-			<div>{item.item.name}</div>);
-		const selected = domain.item.projectId ? this.state.projects.find(item => item._id === domain.item.projectId) : undefined;
 		return <TS_PropRenderer.Vertical label={'Project'}>
-			<TS_DropDown<DB_PermissionProject>
-				adapter={adapter}
-				selected={selected}
-				onSelected={item => this.setProperty('projectId', item._id)}
+			<Permissions_DropDown.Project
+				selected={domain.item.projectId}
+				onSelected={project => this.setProperty('projectId', project._id)}
 			/>
 		</TS_PropRenderer.Vertical>;
 	};
@@ -316,7 +302,7 @@ export class PermissionDomainsEditor
 			<TS_PropRenderer.Vertical label={'Namespace'}>
 				<LL_H_C className={'match_width'} style={{gap: '10px'}}>
 					<TS_Input type={'text'} value={domain.item.namespace}
-							  onChange={value => this.setProperty('namespace', value)}/>
+										onChange={value => this.setProperty('namespace', value)}/>
 					{this.renderConnectDomainButton()}
 				</LL_H_C>
 			</TS_PropRenderer.Vertical>
