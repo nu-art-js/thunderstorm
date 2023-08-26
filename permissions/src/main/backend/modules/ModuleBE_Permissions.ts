@@ -1,4 +1,15 @@
-import {_keys, arrayToMap, Dispatcher, filterInstances, flatArray, Module, MUSTNeverHappenException, PreDB, reduceToMap, TypedMap} from '@nu-art/ts-common';
+import {
+	_keys,
+	arrayToMap,
+	Dispatcher,
+	filterInstances,
+	flatArray,
+	Module,
+	MUSTNeverHappenException,
+	PreDB,
+	reduceToMap,
+	TypedMap
+} from '@nu-art/ts-common';
 import {addRoutes, createBodyServerApi, createQueryServerApi, Storm} from '@nu-art/thunderstorm/backend';
 import {
 	ApiDef_Permissions,
@@ -23,7 +34,12 @@ import {
 	PermissionsPackage_Developer,
 	PermissionsPackage_Permissions
 } from '../permissions';
-import {DefaultAccessLevel_Admin, DefaultAccessLevel_Read, DefaultAccessLevel_Write, defaultLevelsRouteLookupWords} from '../../shared/consts';
+import {
+	DefaultAccessLevel_Admin,
+	DefaultAccessLevel_Read,
+	DefaultAccessLevel_Write,
+	defaultLevelsRouteLookupWords
+} from '../../shared/consts';
 
 
 export interface CollectPermissionsProjects {
@@ -145,8 +161,10 @@ class ModuleBE_Permissions_Class
 			};
 		})));
 
-		const apis: PreDB<DB_PermissionApi>[] = [];
+		//get apis from each project -> project's packages -> packages' domains
 		const apisToUpsert = flatArray(projects.map(project => project.packages.map(_package => _package.domains.map(domain => {
+			const apis: PreDB<DB_PermissionApi>[] = [];
+
 			apis.push(...(domain.customApis || []).map(api => ({
 				projectId: project._id,
 				path: api.path,
@@ -158,7 +176,7 @@ class ModuleBE_Permissions_Class
 			const apiModule = arrayToMap(Storm.getInstance()
 				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
 
-			/ I think there is a bug here... comment it and see what happens
+			// / I think there is a bug here... comment it and see what happens
 			apis.push(...flatArray((domain.dbNames || []).map(dbName => {
 				const _apiDefs = apiModule[dbName].apiDef;
 				return _keys(_apiDefs).map(_apiDefKey => {
@@ -183,7 +201,22 @@ class ModuleBE_Permissions_Class
 
 			return apis;
 		}))));
+		// const duplicatesMap = apisToUpsert.reduce<TypedMap<number>>((_duplicates, api) => {
+		// 	const identifier = api.projectId + api.path;
+		// 	if (_duplicates[identifier] === undefined)
+		// 		_duplicates[identifier] = 0;
+		//
+		// 	_duplicates[identifier]++;
+		// 	return _duplicates;
+		// }, {});
 
+		// const duplicateApis = apisToUpsert.filter(_api => {
+		// 	const identifier = _api.projectId + _api.path;
+		//
+		// 	return _keys(duplicatesMap).includes(identifier);
+		// });
+
+		// this.logErrorBold(sortArray(duplicateApis.map(__api => `project: ${__api.projectId}, path: ${__api.path}`)));
 		await ModuleBE_PermissionApi.set.all(apisToUpsert);
 		await ModuleBE_PermissionGroup.set.all(groupsToUpsert);
 		await this.assignSuperAdmin();
