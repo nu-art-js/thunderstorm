@@ -11,14 +11,14 @@ import {
 } from '@nu-art/thunderstorm/frontend';
 import {exists, UniqueId} from '@nu-art/ts-common';
 import {EditorBase, State_EditorBase} from './editor-base';
-import {DB_PermissionGroup} from '../shared';
+import {DB_PermissionGroup} from '../../shared';
 import {
 	ModuleFE_PermissionsAccessLevel,
 	ModuleFE_PermissionsDomain,
 	ModuleFE_PermissionsGroup,
 	OnPermissionsGroupsUpdated
-} from '../core/module-pack';
-import {MultiSelect} from './ui-props';
+} from '../../core/module-pack';
+import {MultiSelect} from '../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
