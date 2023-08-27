@@ -11,10 +11,10 @@ import {
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import {EditorBase, State_EditorBase} from './editor-base';
-import {DB_PermissionUser} from '../shared';
-import {ModuleFE_PermissionsUser, OnPermissionsUsersUpdated} from '../core/module-pack';
+import {DB_PermissionUser} from '../../shared';
+import {ModuleFE_PermissionsUser, OnPermissionsUsersUpdated} from '../../core/module-pack';
 import {ModuleFE_Account} from '@nu-art/user-account/frontend';
-import {MultiSelect} from './ui-props';
+import {MultiSelect} from '../ui-props';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 

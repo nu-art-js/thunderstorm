@@ -15,7 +15,7 @@ import {
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
 import {EditorBase, State_EditorBase} from './editor-base';
-import {DB_PermissionApi, DB_PermissionProject} from '../shared';
+import {DB_PermissionApi, DB_PermissionProject} from '../../shared';
 import {
 	ModuleFE_PermissionsAccessLevel,
 	ModuleFE_PermissionsApi,
@@ -23,11 +23,11 @@ import {
 	ModuleFE_PermissionsProject,
 	OnPermissionsApisLoaded,
 	OnPermissionsProjectsUpdated
-} from '../core/module-pack';
-import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert';
+} from '../../core/module-pack';
+import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
 import {Filter, sortArray, UniqueId} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
-import {MultiSelect} from './ui-props';
+import {MultiSelect} from '../ui-props';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
 
 
@@ -101,7 +101,7 @@ export class PermissionProjectsEditor
 			return <></>;
 
 		return <TS_Button className={'item-list__add-button'}
-						  onClick={() => ModuleFE_PermissionsAssert.v1.createProject({}).executeSync()}>Create
+											onClick={() => ModuleFE_PermissionsAssert.v1.createProject({}).executeSync()}>Create
 			Project</TS_Button>;
 	};
 

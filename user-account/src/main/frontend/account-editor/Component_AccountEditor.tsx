@@ -93,21 +93,21 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 					<div>{this.state.user?.email}</div>
 				</TS_PropRenderer.Vertical>
 				{this.state.user?.type !== 'service' && <TS_PropRenderer.Vertical label={'Need To Set Password'}>
-                    <div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
-                </TS_PropRenderer.Vertical>}
+					<div>{this.state.user?._newPasswordRequired ? 'Yes' : 'No'}</div>
+				</TS_PropRenderer.Vertical>}
 			</LL_H_C>;
 
 
 		return <LL_H_C className={'inputs-row'}>
 			<TS_PropRenderer.Vertical label={'Email'}>
 				<TS_Input type={'text'} placeholder={'Email'} value={this.state.email}
-						  onBlur={(email) => this.setState({email})}/>
+									onBlur={(email) => this.setState({email})}/>
 			</TS_PropRenderer.Vertical>
 			<TS_PropRenderer.Vertical disabled={!(this.state.type === 'user')} label={'Temporary Password'}>
 				<TS_Input disabled={!(this.state.type === 'user')} type={'password'}
-						  value={this.state.password}
-						  placeholder={'Temporary Password'}
-						  onBlur={(password) => this.setState({password})}/>
+									value={this.state.password}
+									placeholder={'Temporary Password'}
+									onBlur={(password) => this.setState({password})}/>
 			</TS_PropRenderer.Vertical>
 		</LL_H_C>;
 	};
@@ -124,7 +124,7 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 
 
 	render() {
-		return <LL_V_L className={'form-container'}>
+		return <LL_V_L className={'account-editor'}>
 			{this.renderDropdown()}
 			{this.renderInputs()}
 			{this.renderSubmitButton()}
