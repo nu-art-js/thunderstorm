@@ -1,5 +1,4 @@
 import * as React from 'react';
-import {ReactNode} from 'react';
 import {
 	EditableDBItem,
 	EventType_Create,
@@ -21,7 +20,7 @@ import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/
 type State = State_EditorBase<DB_PermissionUser>;
 
 type Props = Props_SmartComponent & {
-	renderAccount: (accountId: string) => ReactNode
+	renderAccount: (accountId: string) => string
 }
 
 export class PermissionUsersEditor
@@ -36,8 +35,7 @@ export class PermissionUsersEditor
 	readonly itemDisplay = (user: DB_PermissionUser) => this.props.renderAccount(user.accountId);
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsUser],
-		renderAccount: (accountId: string) =>
-			<div>{ModuleFE_Account.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'}</div>
+		renderAccount: (accountId: string) => ModuleFE_Account.getAccounts().find(account => account._id === accountId)?.email || 'Not Found'
 	};
 
 	//######################### Life Cycle #########################

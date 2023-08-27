@@ -152,7 +152,6 @@ export class PermissionProjectsEditor
 
 		const api = new EditableDBItem(_api, ModuleFE_PermissionsApi).setAutoSave(true);
 
-		console.log(api.item.accessLevelIds);
 		return <LL_V_L className={'api-editor__editor'}>
 			<TS_PropRenderer.Vertical label={'Path'}>
 				<div>{api.item.path}</div>
