@@ -10,7 +10,14 @@ import {
 	TS_BusyButton,
 	TS_Button
 } from '@nu-art/thunderstorm/frontend';
-import {BadImplementationException, cloneArr, DB_Object, sortArray, ThisShouldNotHappenException, UniqueId} from '@nu-art/ts-common';
+import {
+	BadImplementationException,
+	cloneArr,
+	DB_Object,
+	sortArray,
+	ThisShouldNotHappenException,
+	UniqueId
+} from '@nu-art/ts-common';
 
 import './editor-base.scss';
 
@@ -19,7 +26,7 @@ const newItemIdentifier = '##new-item##';
 
 export type State_EditorBase<T extends DB_Object> = {
 	items: Readonly<T[]>;
-	selectedItemId?: UniqueId | '##new-item##';
+	selectedItemId?: UniqueId | typeof newItemIdentifier;
 	editedItem?: EditableDBItem<T>;
 };
 
@@ -83,7 +90,7 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 				{items.map(item => {
 					const className = _className('item-list__list-item', item._id === this.state.selectedItemId ? 'selected' : undefined);
 					return <div className={className} onClick={() => this.selectItem(item._id)}
-											key={item._id}>{this.itemDisplay(item)}</div>;
+								key={item._id}>{this.itemDisplay(item)}</div>;
 				})}
 			</LL_V_L>
 			{this.renderListButton()}
@@ -111,7 +118,7 @@ export abstract class EditorBase<T extends DB_Object, S extends State_EditorBase
 			</LL_V_L>
 			<LL_H_C className={'item-editor__buttons'}>
 				{item.item._id &&
-					<TS_BusyButton onClick={this.deleteItem} className={'delete-button'}>Delete</TS_BusyButton>}
+                    <TS_BusyButton onClick={this.deleteItem} className={'delete-button'}>Delete</TS_BusyButton>}
 				<TS_Button onClick={() => this.selectItem()}>Cancel</TS_Button>
 				<TS_BusyButton onClick={this.saveItem}>Save</TS_BusyButton>
 			</LL_H_C>
