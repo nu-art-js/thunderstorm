@@ -33,7 +33,12 @@ type Props = Props_SmartComponent;
 export class ATS_Permissions
 	extends SmartComponent<Props, State> {
 
-	static screen: AppToolsScreen = {key: 'permissions', name: 'Permissions Editor', renderer: this, group: 'TS Dev Tools'};
+	static screen: AppToolsScreen = {
+		key: 'permissions',
+		name: 'Permissions Editor',
+		renderer: this,
+		group: 'Permissions'
+	};
 
 	static defaultProps = {
 		modules: [ModuleFE_PermissionsProject, ModuleFE_PermissionsDomain, ModuleFE_PermissionsAccessLevel, ModuleFE_PermissionsGroup, ModuleFE_PermissionsUser]
@@ -52,8 +57,16 @@ export class ATS_Permissions
 	private renderTabs = () => {
 		const tabs: Tab[] = [
 			{title: 'Projects', uid: 'projects', content: <PermissionProjectsEditor/>},
-			{title: 'Domains', uid: 'domains', content: () => <PermissionDomainsEditor projectId={this.state.selectedProjectId}/>},
-			{title: 'Groups', uid: 'groups', content: <PermissionGroupsEditor projectId={this.state.selectedProjectId}/>},
+			{
+				title: 'Domains',
+				uid: 'domains',
+				content: () => <PermissionDomainsEditor projectId={this.state.selectedProjectId}/>
+			},
+			{
+				title: 'Groups',
+				uid: 'groups',
+				content: <PermissionGroupsEditor projectId={this.state.selectedProjectId}/>
+			},
 			{title: 'Users', uid: 'users', content: <PermissionUsersEditor/>},
 		];
 		return <TS_Tabs tabs={tabs}/>;
@@ -66,7 +79,8 @@ export class ATS_Permissions
 					selected={this.state.selectedProjectId}
 					onSelected={project => this.setState({selectedProjectId: project._id})}/></div>
 				<TS_Button className={'item-list__add-button'}
-									 onClick={() => ModuleFE_PermissionsAssert.v1.createProject({}).executeSync()}>Create Project</TS_Button>
+						   onClick={() => ModuleFE_PermissionsAssert.v1.createProject({}).executeSync()}>Create
+					Project</TS_Button>
 			</LL_H_C>
 			{this.renderTabs()}
 		</LL_V_L>;
