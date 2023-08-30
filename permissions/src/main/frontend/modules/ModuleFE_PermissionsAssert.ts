@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {exists, Module} from '@nu-art/ts-common';
+import {_keys, exists, ImplementationMissingException, Module, TypedMap} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
@@ -29,7 +29,6 @@ import {ModuleFE_PermissionsUser} from './assign/ModuleFE_PermissionsUser';
 import {ModuleFE_PermissionsApi} from './manage/ModuleFE_PermissionsApi';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {SessionKey_Permissions_FE} from '../consts';
-import {Prefix_PermissionKey} from '../../shared/consts';
 
 
 export type PermissionsModuleFEConfig = {
@@ -56,6 +55,8 @@ export enum AccessLevel {
 export class ModuleFE_PermissionsAssert_Class
 	extends Module<PermissionsModuleFEConfig> {
 	readonly v1: ApiDefCaller<ApiStruct_Permissions>['v1'];
+	_keys: TypedMap<boolean> = {};
+	permissionKeys: TypedMap<PermissionKey_FE<any>> = {};
 
 	constructor() {
 		super();
@@ -64,6 +65,10 @@ export class ModuleFE_PermissionsAssert_Class
 			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject, this.onProjectCreated),
 			connectDomainToRoutes: apiWithBody(ApiDef_Permissions.v1.connectDomainToRoutes, async () => await ModuleFE_PermissionsApi.v1.sync().executeSync())
 		};
+	}
+
+	protected init() {
+		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_FE(key));
 	}
 
 	private onProjectCreated = async () => {
@@ -95,8 +100,20 @@ export class ModuleFE_PermissionsAssert_Class
 	}
 
 	getPermissionKey(key: string) {
-		const _key = Prefix_PermissionKey + key;
-		return new PermissionKey_FE(_key);
+		return this.permissionKeys[key];
+	}
+
+	registerPermissionKeys(keys: string[]) {
+		keys.forEach(key => {
+			if (this._keys[key])
+				throw new ImplementationMissingException(`Registered PermissionKey '${key}' more than once!`);
+
+			this._keys[key] = true;
+		});
+	}
+
+	getAllPermissionKeys() {
+		return this.permissionKeys;
 	}
 }
 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionProject} from '../shared';
+import {DB_PermissionAccessLevel, DB_PermissionDomain, DB_PermissionProject} from '../../shared';
 import {EditorBase, State_EditorBase} from './editor-base';
 import {
 	ModuleFE_PermissionsAccessLevel,
@@ -7,7 +7,7 @@ import {
 	ModuleFE_PermissionsProject,
 	OnPermissionsDomainsUpdated,
 	OnPermissionsLevelsUpdated
-} from '../core/module-pack';
+} from '../../core/module-pack';
 import {
 	EditableDBItem,
 	EventType_Create,
@@ -32,10 +32,10 @@ import {
 import {BadImplementationException, capitalizeFirstLetter, cloneObj, DBDef, exists, filterInstances, Module, PreDB, sortArray} from '@nu-art/ts-common';
 import {TS_Icons} from '@nu-art/ts-styles';
 import {Dialog_ActionProcessorConfirmation} from '@nu-art/thunderstorm/frontend/_ats/dialogs';
-import {ModuleFE_PermissionsAssert} from '../modules/ModuleFE_PermissionsAssert';
+import {ModuleFE_PermissionsAssert} from '../../modules/ModuleFE_PermissionsAssert';
 import {ApiCallerEventType} from '@nu-art/thunderstorm/frontend/core/db-api-gen/types';
-import {defaultAccessLevels} from '../../shared/consts';
-import {Permissions_DropDown} from './ui-props';
+import {defaultAccessLevels} from '../../../shared/consts';
+import {Permissions_DropDown} from '../ui-props';
 
 
 type State = State_EditorBase<DB_PermissionDomain> & {
