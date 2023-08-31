@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-import {_keys, exists, ImplementationMissingException, Module, TypedMap} from '@nu-art/ts-common';
+import {BadImplementationException, exists, Module, TypedMap} from '@nu-art/ts-common';
 import {apiWithBody, apiWithQuery,} from '@nu-art/thunderstorm/frontend';
 import {ApiDefCaller} from '@nu-art/thunderstorm';
 import {ApiDef_Permissions, ApiStruct_Permissions} from '../..';
@@ -55,7 +55,6 @@ export enum AccessLevel {
 export class ModuleFE_PermissionsAssert_Class
 	extends Module<PermissionsModuleFEConfig> {
 	readonly v1: ApiDefCaller<ApiStruct_Permissions>['v1'];
-	_keys: TypedMap<boolean> = {};
 	permissionKeys: TypedMap<PermissionKey_FE<any>> = {};
 
 	constructor() {
@@ -65,10 +64,6 @@ export class ModuleFE_PermissionsAssert_Class
 			createProject: apiWithQuery(ApiDef_Permissions.v1.createProject, this.onProjectCreated),
 			connectDomainToRoutes: apiWithBody(ApiDef_Permissions.v1.connectDomainToRoutes, async () => await ModuleFE_PermissionsApi.v1.sync().executeSync())
 		};
-	}
-
-	protected init() {
-		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_FE(key));
 	}
 
 	private onProjectCreated = async () => {
@@ -103,13 +98,10 @@ export class ModuleFE_PermissionsAssert_Class
 		return this.permissionKeys[key];
 	}
 
-	registerPermissionKeys(keys: string[]) {
-		keys.forEach(key => {
-			if (this._keys[key])
-				throw new ImplementationMissingException(`Registered PermissionKey '${key}' more than once!`);
-
-			this._keys[key] = true;
-		});
+	registerPermissionKey(key: PermissionKey_FE) {
+		if (this.permissionKeys[key.key])
+			throw new BadImplementationException(`Registered PermissionKey '${key}' more than once!`);
+		this.permissionKeys[key.key] = key;
 	}
 
 	getAllPermissionKeys() {
