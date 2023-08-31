@@ -22,21 +22,23 @@
 import {Response_DBSync,} from '../../shared';
 
 import {
+	_keys,
 	arrayToMap,
 	DB_Object,
 	DBDef_V3,
 	dbObjectToId,
 	dbObjectToId_V3,
 	DBProto,
+	deleteKeysObject,
 	IndexKeys,
 	InvalidResult,
+	KeysOfDB_Object,
 	Logger,
 	Module,
 	sortArray,
 	tsValidateResult,
 	TypedMap,
-	ValidationException,
-	ValidatorTypeResolver
+	ValidationException
 } from '@nu-art/ts-common';
 import {composeDbObjectUniqueId} from '@nu-art/firebase';
 import {OnClearWebsiteData} from '../clearWebsiteDataDispatcher';
@@ -61,7 +63,7 @@ import {StorageKey} from '../ModuleFE_LocalStorage';
 export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config extends DBApiFEConfigV3<Proto> = DBApiFEConfigV3<Proto>>
 	extends Module<Config>
 	implements OnClearWebsiteData {
-	readonly validator: ValidatorTypeResolver<any>;
+	readonly validator: Proto['modifiablePropsValidator'];
 	readonly cache: MemCache<Proto>;
 	readonly IDB: IDBCache<Proto>;
 	readonly dbDef: DBDef_V3<Proto>;
@@ -173,8 +175,9 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 		return this.onEntryUpdatedImpl(EventType_Patch, item);
 	};
 
-	public validateImpl(instance: Proto['uiType']) {
-		const results = tsValidateResult(instance as Proto['dbType'], this.validator);
+	public validateImpl(_instance: Proto['uiType']) {
+		const instance = deleteKeysObject(_instance as Proto['dbType'], [...KeysOfDB_Object, ..._keys(this.dbDef.generatedPropsValidator)]);
+		const results = tsValidateResult(instance, this.validator);
 		if (results) {
 			this.onValidationError(instance, results);
 		}
@@ -186,7 +189,6 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 	}
 
 	private async onEntryUpdatedImpl(event: SingleApiEvent, item: Proto['dbType']): Promise<void> {
-		this.validateImpl(item);
 		await this.IDB.syncIndexDb([item]);
 		// @ts-ignore
 		this.cache.onEntriesUpdated([item]);
@@ -331,7 +333,7 @@ class MemCache<Proto extends DBProto<any>> {
 
 	private cacheFilter?: (item: Readonly<Proto['dbType']>) => boolean;
 
-	constructor(module: ModuleFE_v3_BaseDB<Proto>, keys: (keyof Proto['dbType'])[]) {
+	constructor(module: ModuleFE_v3_BaseDB<Proto, any>, keys: (keyof Proto['dbType'])[]) {
 		this.module = module;
 		this.keys = keys;
 		this.clear();
@@ -366,7 +368,9 @@ class MemCache<Proto extends DBProto<any>> {
 		if (_key === undefined)
 			return _key;
 
-		const _id = typeof _key === 'string' ? _key : (('_id' in (_key as { [p: string]: any }) && typeof _key['_id'] === 'string') ? _key['_id'] : composeDbObjectUniqueId(_key, this.keys));
+		const _id = typeof _key === 'string' ? _key : (('_id' in (_key as {
+			[p: string]: any
+		}) && typeof _key['_id'] === 'string') ? _key['_id'] : composeDbObjectUniqueId(_key, this.keys));
 		return this._map[_id];
 	};
 
