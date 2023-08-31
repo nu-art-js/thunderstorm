@@ -64,7 +64,7 @@ class ModuleFE_AppConfig_Class
 
 	get<K extends AppConfigKey_FE<any>>(appConfigKey: K): InferType<K> {
 		const config = this.cache.find(item => item.key === appConfigKey.key)!;
-		return config.data as InferType<K>;
+		return config?.data as InferType<K>;
 	}
 
 	async set<K extends AppConfigKey_FE<any>>(appConfigKey: K, data: InferType<K>) {
