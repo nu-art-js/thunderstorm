@@ -11,9 +11,9 @@ export type Props_PermissionComponent = React.PropsWithChildren<{
 	fallback?: React.ComponentType
 }> & Props_SmartComponent;
 
-type State = State_SmartComponent
+export type State_PermissionComponent = State_SmartComponent
 
-export class PermissionsComponent<P extends Props_PermissionComponent = Props_PermissionComponent>
+export class PermissionsComponent<P extends Props_PermissionComponent = Props_PermissionComponent, S extends State_PermissionComponent = State_PermissionComponent>
 	extends SmartComponent<P>
 	implements OnPermissionsChanged {
 
@@ -21,7 +21,11 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 		modules: [ModuleFE_PermissionsAccessLevel]
 	};
 
-	protected async deriveStateFromProps(nextProps: Props_PermissionComponent, state: State) {
+	shouldComponentUpdate(nextProps: Readonly<Props_SmartComponent & P>, nextState: Readonly<State_SmartComponent>, nextContext: any): boolean {
+		return true;
+	}
+
+	protected async deriveStateFromProps(nextProps: Props_PermissionComponent, state: State_PermissionComponent) {
 		return state;
 	}
 

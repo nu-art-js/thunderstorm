@@ -22,7 +22,7 @@ class ModuleBE_AppConfig_Class
 		this.logInfo('############## Pre Manipulation ##############');
 		this.logInfo(dbInstance);
 		const appKey = this.keyMap[dbInstance.key];
-		dbInstance.data = appKey.dataManipulator(dbInstance.data);
+		dbInstance.data = await appKey.dataManipulator(dbInstance.data);
 		this.logInfo('############## Post Manipulation ##############');
 		this.logInfo(dbInstance);
 	}
