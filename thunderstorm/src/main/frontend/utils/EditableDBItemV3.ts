@@ -28,7 +28,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	private static save<Proto extends DBProto<any>>(module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['dbType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
 		return async (_item: Proto['uiType']) => {
 			try {
-				const dbItem: Proto['dbType'] = await module.v1.upsert(_item).executeSync();
+				const dbItem = await module.v1.upsert(_item).executeSync();
 				await onCompleted?.(dbItem);
 			} catch (e: any) {
 				await onError?.(e);
