@@ -67,10 +67,26 @@
 
   .item-editor {
     height: 100%;
-    flex-grow: 1;
+    //flex-grow: 1;
     border: 2px solid black;
     border-radius: 10px;
     overflow: hidden;
+
+    .access-levels-section {
+      width: 100%;
+
+      .access-levels {
+        width: 100%;
+
+        .access-levels-dropdown {
+          .ts-dropdown__header {
+            .ts-dropdown__placeholder {
+              width: 100%;
+            }
+          }
+        }
+      }
+    }
 
     .item-editor__header {
       height: 40px;

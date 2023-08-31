@@ -6,7 +6,7 @@ import {
 	SmartComponent,
 	State_SmartComponent
 } from '@nu-art/thunderstorm/frontend';
-import {PermissionKeysEditor} from './permission-keys-editor';
+import {PermissionKeysEditor} from './subEditors/permission-keys-editor';
 
 
 type State = State_SmartComponent & { selectedProjectId?: string };
