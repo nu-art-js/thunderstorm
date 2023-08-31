@@ -4,3 +4,5 @@ export * from './permission-editors/permission-domains-editor';
 export * from './permission-editors/permission-projects-editor';
 export * from './permission-editors/permission-groups-editor';
 export * from './permission-editors/permission-users-editor';
+export * from './PermissionsComponent';
+export * from './PermissionsEditableComponent';
