@@ -1,7 +1,6 @@
-import {DB_Object, DBProto, Default_UniqueKey, PreDB} from '@nu-art/ts-common';
+import {DB_Object, Default_UniqueKey, PreDB} from '@nu-art/ts-common';
 import {EditableItem} from './EditableItem';
 import {ModuleFE_BaseApi} from '../modules/db-api-gen/ModuleFE_BaseApi';
-import {ModuleFE_v3_BaseApi} from '../modules/db-api-gen/ModuleFE_v3_BaseApi';
 
 
 /**
