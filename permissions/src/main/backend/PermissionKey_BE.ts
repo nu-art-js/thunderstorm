@@ -3,16 +3,17 @@ import {DB_PermissionKeyData, UI_PermissionKeyData} from '../shared/types';
 import {ModuleBE_PermissionAccessLevel} from './modules/management/ModuleBE_PermissionAccessLevel';
 import {AppConfigKey_BE} from '@nu-art/thunderstorm/backend/modules/app-config/ModuleBE_AppConfig';
 
+type Resolver = () => Promise<DB_PermissionKeyData>;
 
 export class PermissionKey_BE<K extends string>
 	extends AppConfigKey_BE<TypedKeyValue<K, DB_PermissionKeyData>> {
 
-	static _resolver = (): Promise<DB_PermissionKeyData> => {
+	static _resolver: Resolver = () => {
 		return Promise.resolve({type: 'permission-key', accessLevelIds: [], _accessLevels: {}});
 	};
 
-	constructor(key: K) {
-		super(key, PermissionKey_BE._resolver);
+	constructor(key: K, initialDataResolver?: Resolver) {
+		super(key, initialDataResolver ?? PermissionKey_BE._resolver);
 	}
 
 	async set(value: UI_PermissionKeyData) {
