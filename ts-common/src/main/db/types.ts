@@ -1,4 +1,4 @@
-import {DB_Object, OmitDBObject, SubsetObjectByKeys, UniqueId} from '../utils/types';
+import {DB_Object, OmitDBObject, SubsetKeys, SubsetObjectByKeys, UniqueId} from '../utils/types';
 import {ValidatorTypeResolver} from '../validator/validator-core';
 
 
@@ -29,19 +29,30 @@ export type VersionsDeclaration<T extends DB_Object, Versions extends VersionTyp
 	types: Types
 };
 
+export type InnerDependencies<T extends DB_Object, K extends SubsetKeys<keyof T, T, string | string[]>, Proto extends DBProto<any>> = {
+	key: K
+	proto: Proto
+};
+
+type Exact<T, Shape> = T & {
+	[K in Exclude<keyof Shape, keyof T>]?: never;
+};
+
 export type Proto_DB_Object<
 	T extends DB_Object,
 	GeneratedKeys extends keyof T | never,
 	Versions extends VersionsDeclaration<T, any, any>,
-	UniqueKeys extends keyof T = Default_UniqueKey> = {
+	UniqueKeys extends keyof T = Default_UniqueKey,
+	Dependencies extends Exact<{ [K in SubsetKeys<keyof T, T, string | string[]>]?: DBProto<any> }, Dependencies> = never> = {
 
 	type: T,
 	generatedKeys: GeneratedKeys
 	versions: Versions,
 	uniqueKeys: UniqueKeys
+	dependencies: Dependencies
 }
 
-export type DBProto<P extends Proto_DB_Object<any, any, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
+export type DBProto<P extends Proto_DB_Object<any, any, any, any, any>, ModifiableSubType = Omit<P['type'], P['generatedKeys'] | keyof DB_Object>, GeneratedSubType = SubsetObjectByKeys<P['type'], P['generatedKeys']>> = {
 	uiType: ModifiableSubType & Partial<GeneratedSubType> & Partial<DB_Object>,
 	dbType: P['type'],
 	generatedPropsValidator: ValidatorTypeResolver<GeneratedSubType>

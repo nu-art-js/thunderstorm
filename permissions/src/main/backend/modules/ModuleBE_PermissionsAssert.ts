@@ -24,6 +24,7 @@ import {
 	batchActionParallel,
 	filterDuplicates,
 	filterInstances,
+	ImplementationMissingException,
 	Module,
 	StringMap,
 	TypedMap
@@ -47,6 +48,7 @@ import {
 } from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {MemKey} from '@nu-art/ts-common/mem-storage/MemStorage';
 import {SessionKey_Permissions_BE} from '../consts';
+import {PermissionKey_BE} from '../PermissionKey_BE';
 
 
 export type UserCalculatedAccessLevel = { [domainId: string]: number };
@@ -65,6 +67,8 @@ export class ModuleBE_PermissionsAssert_Class
 	extends Module<Config> {
 
 	private projectId!: string;
+	_keys: TypedMap<boolean> = {};
+	permissionKeys: TypedMap<PermissionKey_BE<any>> = {};
 
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async () => {
 		await this.CustomMiddleware(keys, async (projectId: string) => {
@@ -120,6 +124,8 @@ export class ModuleBE_PermissionsAssert_Class
 	init() {
 		super.init();
 		addRoutes([createBodyServerApi(ApiDef_PermissionsAssert.vv1.assertUserPermissions, this.assertPermission)]);
+		(_keys(this._keys) as string[]).forEach(key => this.permissionKeys[key] = new PermissionKey_BE(key));
+
 	}
 
 	private assertPermission = async (body: Request_AssertApiForUser) => {
@@ -228,6 +234,15 @@ export class ModuleBE_PermissionsAssert_Class
 			regExValue = regExValue + endRegEx;
 
 		return new RegExp(regExValue, 'g');
+	}
+
+	registerPermissionKeys(keys: string[]) {
+		keys.forEach(key => {
+			if (this._keys[key])
+				throw new ImplementationMissingException(`Registered PermissionKey '${key}' more than once!`);
+
+			this._keys[key] = true;
+		});
 	}
 }
 

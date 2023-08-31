@@ -46,7 +46,7 @@ export type _SessionKey_Account = TypedKeyValue<'account', DB_Account & SessionD
 
 
 type VersionsAccount = VersionsDeclaration<DB_Account, ['1.0.0'], [DB_Account]>;
-type Proto_Account = Proto_DB_Object<DB_Account, keyof DB_Object | keyof AuditableV2 | '_newPasswordRequired', VersionsAccount, 'email'>;
+export type Proto_Account = Proto_DB_Object<DB_Account, keyof DB_Object | keyof AuditableV2 | '_newPasswordRequired', VersionsAccount, 'email'>;
 
 export type DBProto_AccountType = DBProto<Proto_Account>;
 export type UI_Account = DBProto_AccountType['uiType'];

@@ -42,8 +42,11 @@ const Props_Project: MandatoryProps_GenericDropDown<DB_PermissionProject> = {
 const Props_AccessLevel: MandatoryProps_GenericDropDown<DB_PermissionAccessLevel> = {
 	module: ModuleFE_PermissionsAccessLevel,
 	modules: [ModuleFE_PermissionsAccessLevel_],
-	mapper: item => [item.name],
-	placeholder: 'Choose a Access Level',
+	mapper: level => {
+		const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
+		return [domain.namespace, level.name, String(level.value)];
+	},
+	placeholder: 'Choose an Access Level',
 	renderer: item => {
 		const levelId = item!._id;
 		const level = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
@@ -93,9 +96,12 @@ const Props_Group: MandatoryProps_GenericDropDown<DB_PermissionGroup> = {
 };
 
 export const Permissions_DropDown: { [K in keyof PermissionsDBTypes]: ((props: PP_GDD<PermissionsDBTypes[K]>) => JSX.Element) } = {
-	Project: (props: PP_GDD<DB_PermissionProject>) => <GenericDropDown<DB_PermissionProject> {...Props_Project} {...props} />,
-	AccessLevel: (props: PP_GDD<DB_PermissionAccessLevel>) => <GenericDropDown<DB_PermissionAccessLevel> {...Props_AccessLevel} {...props} />,
-	Domain: (props: PP_GDD<DB_PermissionDomain>) => <GenericDropDown<DB_PermissionDomain> {...Props_Domain} {...props} />,
+	Project: (props: PP_GDD<DB_PermissionProject>) =>
+		<GenericDropDown<DB_PermissionProject> {...Props_Project} {...props} />,
+	AccessLevel: (props: PP_GDD<DB_PermissionAccessLevel>) =>
+		<GenericDropDown<DB_PermissionAccessLevel> {...Props_AccessLevel} {...props} />,
+	Domain: (props: PP_GDD<DB_PermissionDomain>) =>
+		<GenericDropDown<DB_PermissionDomain> {...Props_Domain} {...props} />,
 	Group: (props: PP_GDD<DB_PermissionGroup>) => <GenericDropDown<DB_PermissionGroup> {...Props_Group} {...props} />,
 };
 
@@ -120,7 +126,9 @@ class DomainLevelRenderer
 		</div>;
 	}
 
-	protected deriveStateFromProps(nextProps: MultiSelect_Selector<string>, state: Partial<{ domainId: string }> | undefined) {
+	protected deriveStateFromProps(nextProps: MultiSelect_Selector<string>, state: Partial<{
+		domainId: string
+	}> | undefined) {
 		return {domainId: undefined, onSelected: nextProps.onSelected};
 	}
 }

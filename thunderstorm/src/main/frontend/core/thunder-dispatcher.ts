@@ -22,7 +22,6 @@
 import {Dispatcher, FunctionKeys, LogLevel, ParamResolver, ReturnTypeResolver} from '@nu-art/ts-common';
 
 // type ValidKeyResolver<T, K extends keyof T> = T[K] extends (...args: any) => any ? K : never
-
 export class ThunderDispatcher<T,
 	K extends FunctionKeys<T>,
 	P extends ParamResolver<T, K> = ParamResolver<T, K>,
