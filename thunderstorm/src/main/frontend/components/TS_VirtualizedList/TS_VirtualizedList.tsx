@@ -45,8 +45,11 @@ export const VirtualizedList = ({height, width, listToRender, itemHeight, select
 export const TS_VirtualizedList = (props: Props) => {
 	return (
 		<AutoSizer>
-			{({height, width}) => <VirtualizedList className={props.className} selectedItem={props.selectedItem} itemHeight={props.itemHeight}
-																						 listToRender={props.listToRender} height={height} width={width}/>}
+			{({height, width}) => <VirtualizedList className={props.className} selectedItem={props.selectedItem}
+												   itemHeight={props.itemHeight}
+												   listToRender={props.listToRender}
+												   height={height as number}
+												   width={width as number}/>}
 		</AutoSizer>
 	);
 };
