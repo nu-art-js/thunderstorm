@@ -18,7 +18,8 @@ export type UI_PermissionKeyData = {
 	_accessLevels?: { [domainId: UniqueId]: number }
 }
 
-export type PermissionKeyType = 'permission-key';
+export const Const_PermissionKeyType = 'permission-key';
+export type PermissionKeyType = typeof Const_PermissionKeyType;
 export type DB_PermissionKeyData = {
 	type: PermissionKeyType
 	accessLevelIds: UniqueId[];

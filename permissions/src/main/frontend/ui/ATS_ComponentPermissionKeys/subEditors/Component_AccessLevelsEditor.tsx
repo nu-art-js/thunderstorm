@@ -1,9 +1,10 @@
 import * as React from 'react';
-import {ComponentSync, LL_H_C, LL_V_L, TS_Button} from '@nu-art/thunderstorm/frontend';
+import {ComponentSync, LL_V_L, TS_Button} from '@nu-art/thunderstorm/frontend';
 import {BadImplementationException} from '@nu-art/ts-common';
 import {DB_PermissionAccessLevel} from '../../../../shared';
 import {Permissions_DropDown} from '../../ui-props';
 import {TS_Icons} from '@nu-art/ts-styles';
+import {ModuleFE_PermissionsDomain} from '../../../modules/manage/ModuleFE_PermissionsDomain';
 
 type Props = {
 	levels: Partial<DB_PermissionAccessLevel>[]
@@ -33,15 +34,23 @@ export class Component_AccessLevelsEditor
 	}
 
 	renderInnerAccessLevels() {
-		return <LL_H_C className={'access-levels'}>
+		return <LL_V_L className={'access-levels'}>
 			{/*render provided levels*/}
 			{this.props.levels.map(level => this.renderTag(level))}
 			{/*render dropdown to add levels*/}
 			<Permissions_DropDown.AccessLevel
+				queryFilter={(item) => {
+					return !this.props.levels.map(i => i._id).includes(item._id);
+				}}
+				mapper={level => {
+					const domain = ModuleFE_PermissionsDomain.cache.unique(level.domainId)!;
+					return [domain.namespace, level.name, String(level.value)];
+				}}
 				className={'access-levels-dropdown'}
 				selected={undefined}
 				onSelected={level => {
-					this.props.levels.push(level);
+					if (!this.props.levels.map(_level => _level._id).includes(level._id))
+						this.props.levels.push(level);
 					this.forceUpdate();
 					this.props.onChange?.();
 				}}
@@ -53,7 +62,7 @@ export class Component_AccessLevelsEditor
 				}}
 				boundingParentSelector={'.ts-tabs__content'}
 			/>
-		</LL_H_C>;
+		</LL_V_L>;
 	}
 
 	render() {

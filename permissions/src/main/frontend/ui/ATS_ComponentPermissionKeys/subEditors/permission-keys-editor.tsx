@@ -6,7 +6,7 @@ import {
 	SmartComponent,
 	State_SmartComponent
 } from '@nu-art/thunderstorm/frontend';
-import {_keys, BadImplementationException, cloneArr, sortArray, TypedMap} from '@nu-art/ts-common';
+import {_keys, BadImplementationException, cloneArr, dbObjectToId, sortArray, TypedMap} from '@nu-art/ts-common';
 import * as React from 'react';
 import '../permission-keys-editor.scss';
 import {DB_PermissionAccessLevel} from '../../../../shared';
@@ -38,8 +38,7 @@ export class PermissionKeysEditor
 
 	protected async deriveStateFromProps(nextProps: Props, state: State): Promise<State> {
 		state.keys = ModuleFE_PermissionsAssert.getAllPermissionKeys();
-		state.selectedItemAccessLevels = cloneArr(ModuleFE_PermissionsAccessLevel.cache.filter(dbLevel => !!this.state.editedItem?.data?.accessLevelIds?.includes(dbLevel._id)));
-
+		state.selectedItemAccessLevels = cloneArr(ModuleFE_PermissionsAccessLevel.cache.filter(dbLevel => !!state.editedItem?.data?.accessLevelIds?.includes(dbLevel._id)));
 		return state;
 	}
 
@@ -90,9 +89,10 @@ export class PermissionKeysEditor
 
 		const sortedLevels = sortArray(this.state.selectedItemAccessLevels, level => level.name);
 
-		return <Component_AccessLevelsEditor levels={sortedLevels} onChange={() => {
+		return <Component_AccessLevelsEditor levels={sortedLevels} onChange={async () => {
 			const accessLevels = this.state.selectedItemAccessLevels;
-			this.logInfo(`array length: ${accessLevels.length}`);
+			const accessLevelIds = accessLevels.map(dbObjectToId);
+			await ModuleFE_PermissionsAssert.getPermissionKey(this.state.selectedItemKey!).set({accessLevelIds});
 			this.setState({selectedItemAccessLevels: sortArray(accessLevels, level => level.name)});
 		}}/>;
 	}
