@@ -54,7 +54,6 @@ import {
 	syncDispatcher
 } from '../../core/db-api-gen/consts';
 import {DBConfigV3, IndexDb_Query, IndexedDBV3, ReduceFunction, ThunderDispatcher} from '../../core';
-import {ApiCallerEventTypeV3} from '../../core/db-api-gen/v3_types';
 import {MultiApiEvent, SingleApiEvent} from '../../core/db-api-gen/types';
 import {StorageKey} from '../ModuleFE_LocalStorage';
 
@@ -67,12 +66,12 @@ export abstract class ModuleFE_v3_BaseDB<Proto extends DBProto<any>, Config exte
 	readonly IDB: IDBCache<Proto>;
 	readonly dbDef: DBDef_V3<Proto>;
 	private dataStatus: DataStatus;
-	readonly defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV3<Proto['dbType']>>;
+	readonly defaultDispatcher: ThunderDispatcher<any, string>;
 
 	// @ts-ignore
 	private readonly ModuleFE_BaseDB = true;
 
-	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string, ApiCallerEventTypeV3<Proto>>) {
+	protected constructor(dbDef: DBDef_V3<Proto>, defaultDispatcher: ThunderDispatcher<any, string>) {
 		super();
 		this.defaultDispatcher = defaultDispatcher;
 
