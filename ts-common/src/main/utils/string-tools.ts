@@ -101,3 +101,8 @@ export function levenshteinDistance(str1: string, str2: string): number {
 export function normalizeString(string: string): string {
 	return string.replace(/–/g, '-').replace(/\n/g, '').replace(/\s+/g, ' ').replace(/’/g, '\'').trim();
 }
+
+export function convertUpperCamelCase(upperCamelCase: string, delimiter: string = ' '): string {
+	return upperCamelCase.replace(/([a-z0-9])([A-Z])/g, `$1${delimiter}$2`);
+}
+
