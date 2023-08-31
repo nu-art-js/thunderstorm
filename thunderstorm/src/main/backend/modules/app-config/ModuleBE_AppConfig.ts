@@ -1,4 +1,4 @@
-import {_keys, ApiException, Logger, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
+import {_keys, ApiException, Logger, PreDB, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
 import {ModuleBE_BaseDBV2} from '../db-api-gen/ModuleBE_BaseDBV2';
 import {ApiDef_AppConfig, DB_AppConfig, DBDef_AppConfigs} from '../../../shared';
 import {addRoutes} from '../ModuleBE_APIs';
@@ -16,6 +16,15 @@ class ModuleBE_AppConfig_Class
 		addRoutes([createQueryServerApi(ApiDef_AppConfig.vv1.getConfigByKey, async (data) => {
 			return this.getResolverDataByKey(data.key);
 		})]);
+	}
+
+	protected async preWriteProcessing(dbInstance: PreDB<DB_AppConfig>, transaction?: FirebaseFirestore.Transaction): Promise<void> {
+		this.logInfo('############## Pre Manipulation ##############');
+		this.logInfo(dbInstance);
+		const appKey = this.keyMap[dbInstance.key];
+		dbInstance.data = await appKey.dataManipulator(dbInstance.data);
+		this.logInfo('############## Post Manipulation ##############');
+		this.logInfo(dbInstance);
 	}
 
 	registerKey<K extends AppConfigKey_BE<any>>(appConfigKey: K) {
@@ -72,10 +81,13 @@ export const ModuleBE_AppConfig = new ModuleBE_AppConfig_Class();
 export class AppConfigKey_BE<Binder extends TypedKeyValue<string | number | object, any>> {
 	readonly key: Binder['key'];
 	readonly resolver: () => Promise<Binder['value']>;
+	readonly dataManipulator: (data: Binder['value']) => Promise<Binder['value']> = (data) => data;
 
-	constructor(key: Binder['key'], resolver: () => Promise<Binder['value']>) {
+	constructor(key: Binder['key'], resolver: () => Promise<Binder['value']>, dataManipulator?: (data: Binder['value']) => Promise<Binder['value']>) {
 		this.key = key;
 		this.resolver = resolver;
+		if (dataManipulator)
+			this.dataManipulator = dataManipulator;
 		ModuleBE_AppConfig.registerKey(this);
 	}
 
