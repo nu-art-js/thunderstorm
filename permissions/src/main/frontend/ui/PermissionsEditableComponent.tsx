@@ -1,9 +1,11 @@
 import * as React from 'react';
 import {PermissionsComponent, Props_PermissionComponent, State_PermissionComponent} from './PermissionsComponent';
+import {_className} from '@nu-art/thunderstorm/frontend';
 
 type Props = Props_PermissionComponent & {
 	forceLock?: boolean;
-	value: string | number
+	value?: string | number
+	className?: string;
 };
 
 type State = State_PermissionComponent & {
@@ -20,7 +22,11 @@ export class PermissionsEditableComponent
 	}
 
 	protected renderFallback = () => {
-		return <div className={'permissions-editable__value'}>{this.props.value}</div>;
+		if (!this.props.value)
+			return <></>;
+
+		const className = _className('permissions-editable__value', this.props.className);
+		return <div className={className}>{this.props.value}</div>;
 	};
 
 	protected renderPermitted = () => {
