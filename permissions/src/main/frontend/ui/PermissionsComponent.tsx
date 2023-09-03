@@ -55,7 +55,7 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 	};
 
 	render() {
-		const permitted = ModuleFE_PermissionsAssert.canAccess(this.props.permissionKey);
+		const permitted = ModuleFE_PermissionsAssert.getAccessLevel(this.props.permissionKey);
 		if (permitted === AccessLevel.Undefined)
 			return this.renderWaitingOnPermissions();
 
