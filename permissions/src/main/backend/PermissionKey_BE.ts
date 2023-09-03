@@ -1,15 +1,16 @@
 import {filterInstances, TypedKeyValue, TypedMap} from '@nu-art/ts-common';
-import {DB_PermissionKeyData} from '../shared/types';
+import {Const_PermissionKeyType, DB_PermissionKeyData} from '../shared/types';
 import {ModuleBE_PermissionAccessLevel} from './modules/management/ModuleBE_PermissionAccessLevel';
 import {AppConfigKey_BE, ModuleBE_AppConfig} from '@nu-art/thunderstorm/backend/modules/app-config/ModuleBE_AppConfig';
+import {ModuleBE_PermissionDomain} from './modules/management/ModuleBE_PermissionDomain';
 
 type Resolver = () => Promise<DB_PermissionKeyData>;
 
 export class PermissionKey_BE<K extends string>
 	extends AppConfigKey_BE<TypedKeyValue<K, DB_PermissionKeyData>> {
 
-	static _resolver: Resolver = () => {
-		return Promise.resolve({type: 'permission-key', accessLevelIds: [], _accessLevels: {}});
+	static _resolver: Resolver = async () => {
+		return {type: Const_PermissionKeyType, accessLevelIds: [], _accessLevels: {}};
 	};
 
 	static buildData = async (data: DB_PermissionKeyData): Promise<DB_PermissionKeyData> => {
@@ -37,3 +38,13 @@ export class PermissionKey_BE<K extends string>
 		await super.set(dbValue);
 	}
 }
+
+export const defaultValueResolver = async (domainNamespace: string, accessLevelValue: number): Promise<DB_PermissionKeyData> => {
+	const domain = await ModuleBE_PermissionDomain.query.uniqueCustom({where: {namespace: domainNamespace}});
+	const accessLevel = await ModuleBE_PermissionAccessLevel.query.uniqueCustom({where: {domainId: domain._id, value: accessLevelValue}});
+	return {
+		type: Const_PermissionKeyType,
+		accessLevelIds: [accessLevel._id],
+		_accessLevels: {[accessLevel._id]: accessLevel.value}
+	};
+};
