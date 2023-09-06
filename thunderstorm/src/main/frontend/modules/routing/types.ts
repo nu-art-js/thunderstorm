@@ -5,6 +5,7 @@ import {QueryParams} from '../../shared';
 export type TS_Route<T extends QueryParams = QueryParams> = {
 	key: string;
 	path: string;
+	enabled: () => boolean
 	element?: React.ReactNode;
 	Component?: React.ComponentType<any>;
 	paramKeys?: (keyof T)[]
