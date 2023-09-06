@@ -3,6 +3,7 @@ import {Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-ar
 import {ModuleFE_PermissionsAccessLevel} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {PermissionKey_FE} from '../PermissionKey_FE';
 import {AccessLevel, ModuleFE_PermissionsAssert, OnPermissionsChanged} from '../modules/ModuleFE_PermissionsAssert';
+import {OnPermissionsChanged} from '../modules/ModuleFE_PermissionsAssert';
 
 
 export type Props_PermissionComponent = React.PropsWithChildren<{
@@ -55,7 +56,7 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 	};
 
 	render() {
-		const permitted = ModuleFE_PermissionsAssert.getAccessLevel(this.props.permissionKey);
+		const permitted = this.props.permissionKey.getAccessLevel();
 		if (permitted === AccessLevel.Undefined)
 			return this.renderWaitingOnPermissions();
 
@@ -65,3 +66,5 @@ export class PermissionsComponent<P extends Props_PermissionComponent = Props_Pe
 		return this.renderFallback();
 	}
 }
+
+export const RoutePermissions = (permissionKey: PermissionKey_FE<any>) => () => permissionKey.getAccessLevel() === AccessLevel.HasAccess;
