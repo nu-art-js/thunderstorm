@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {exists, merge, Module, TS_Object} from '@nu-art/ts-common';
+import {DebugFlagConfig, DebugFlags, exists, merge, Module, TS_Object, LogLevel} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 
@@ -31,11 +31,22 @@ export interface StorageKeyEvent {
 	__onStorageKeyEvent(event: StorageEvent): void;
 }
 
+type StorageValue = string | number | boolean | object;
+
 export class StorageModule_Class
 	extends Module
 	implements OnClearWebsiteData {
-	private cache: { [s: string]: string | number | object } = {};
+
+	private cache: { [s: string]: StorageValue } = {};
 	private keys: StorageKey[] = [];
+
+	setPersistentDebugState() {
+		// @ts-ignore
+		DebugFlags.persistentState = Object.freeze({
+			get: (debugKey: string) => this.get(`debug-flag__${debugKey}`) as DebugFlagConfig,
+			set: (debugKey: string, state = {enabled: true, logLevel: LogLevel.Info}) => this.set(`debug-flag__${debugKey}`, state)
+		});
+	}
 
 	protected init(): void {
 		window.addEventListener('storage', this.handleStorageEvent);
@@ -55,7 +66,7 @@ export class StorageModule_Class
 
 	getStorage = (persist: boolean) => persist ? localStorage : sessionStorage;
 
-	set(key: string, value: string | number | object, persist: boolean = true) {
+	set(key: string, value: StorageValue, persist: boolean = true) {
 		if (value === undefined)
 			return this.delete(key);
 
@@ -72,15 +83,15 @@ export class StorageModule_Class
 		delete this.cache[key];
 	}
 
-	public get(key: string, defaultValue?: string | number | object, persist: boolean = true): string | number | object | undefined {
-		let value: string | number | object | null = this.cache[key];
+	public get(key: string, defaultValue?: StorageValue, persist: boolean = true): StorageValue | undefined {
+		let value: StorageValue | null = this.cache[key];
 		if (value)
 			return value;
 
 		value = this.getStorage(persist).getItem(key);
 		// this.logDebug(`get: ${key} = ${value}`)
 		if (!exists(value) || value === 'null' || value === 'undefined')
-				return defaultValue;
+			return defaultValue;
 
 		return this.cache[key] = JSON.parse(value!);
 	}
@@ -122,7 +133,7 @@ export class StorageModule_Class
 export const ModuleFE_LocalStorage = new StorageModule_Class();
 
 //TODO Generic Keys like in the tests contexts
-export class StorageKey<ValueType = string | number | object> {
+export class StorageKey<ValueType = StorageValue> {
 	private readonly key: string;
 	private readonly persist: boolean;
 

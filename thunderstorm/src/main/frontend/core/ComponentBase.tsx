@@ -39,7 +39,6 @@ import {
 import {Thunder} from './Thunder';
 
 
-let instances = 0;
 
 export abstract class BaseComponent<P = any, State = any>
 	extends React.Component<P, State> {
@@ -52,7 +51,7 @@ export abstract class BaseComponent<P = any, State = any>
 
 	constructor(props: P) {
 		super(props);
-		this.logger = new Logger(this.constructor.name + '-' + (++instances));
+		this.logger = new Logger(this.constructor.name);
 		this.logger.setMinLevel(BaseComponent.MinLogLevel);
 		this.logVerbose('Creating..');
 

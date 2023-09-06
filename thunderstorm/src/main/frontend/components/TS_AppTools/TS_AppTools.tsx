@@ -62,7 +62,7 @@ export class TS_AppTools
 
 		return this.Route = {
 			path: 'app-tools',
-			key: 'app-tools',
+			key: path,
 			Component: this,
 			children: [
 				TS_AppTools_Default.Route,

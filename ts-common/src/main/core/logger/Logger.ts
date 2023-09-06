@@ -16,10 +16,12 @@
  * limitations under the License.
  */
 
-import {DebugFlag, DebugFlags} from '../debug-flags';
+import {DebugFlag} from '../debug-flags';
 import {LogLevel, LogParam} from './types';
 import {BeLogged} from './BeLogged';
 
+
+let instances = 0;
 
 export class Logger {
 
@@ -28,9 +30,10 @@ export class Logger {
 	protected readonly _DEBUG_FLAG: DebugFlag;
 
 	public constructor(tag?: string) {
-		this.tag = tag ?? this.constructor['name'];
+		const debugKey = tag ?? this.constructor['name'];
+		this.tag = debugKey + '-' + (++instances);
 
-		this._DEBUG_FLAG = DebugFlags.createFlag(this.tag);
+		this._DEBUG_FLAG = DebugFlag.createFlag(debugKey);
 		this._DEBUG_FLAG.enable(Logger.defaultFlagState);
 	}
 
@@ -92,16 +95,13 @@ export class Logger {
 	}
 
 	private assertCanPrint(level: LogLevel) {
-		if (!this._DEBUG_FLAG.isEnabled())
-			return;
-
 		return this._DEBUG_FLAG.canLog(level);
 	}
 }
 
 export abstract class StaticLogger {
 
-	protected static readonly _DEBUG_FLAG = DebugFlags.createFlag('StaticLogger');
+	protected static readonly _DEBUG_FLAG = DebugFlag.createFlag('StaticLogger');
 	static {
 		StaticLogger._DEBUG_FLAG.enable(Logger.defaultFlagState);
 	}
@@ -151,18 +151,11 @@ export abstract class StaticLogger {
 	}
 
 	public static log(tag: string, level: LogLevel, bold: boolean, toLog: LogParam[]): void {
-		if (!this.assertCanPrint(level))
+		if (!this._DEBUG_FLAG.canLog(level))
 			return;
 
 		// @ts-ignore
 		BeLogged.logImpl(tag, level, bold, toLog);
-	}
-
-	private static assertCanPrint(level: LogLevel) {
-		if (!this._DEBUG_FLAG.isEnabled())
-			return;
-
-		return this._DEBUG_FLAG.canLog(level);
 	}
 }
 

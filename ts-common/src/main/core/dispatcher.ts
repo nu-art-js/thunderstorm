@@ -31,8 +31,8 @@ export class Processor<T, K extends FunctionKeys<T>>
 	readonly method: K;
 	protected readonly filter: (listener: any) => boolean;
 
-	constructor(method: K) {
-		super(method as string);
+	constructor(method: K, logKey: string) {
+		super(logKey);
 		this.method = method;
 		this.filter = (listener: any) => !!listener[this.method];
 	}
@@ -66,8 +66,8 @@ export class Dispatcher<T,
 	R extends ReturnTypeResolver<T, K> = ReturnTypeResolver<T, K>>
 	extends Processor<T, K> {
 
-	constructor(method: K) {
-		super(method);
+	constructor(method: K, logKey: string = `Dispatcher(${String(method)})`) {
+		super(method, logKey);
 	}
 
 	public dispatchModule(...p: P): R[] {

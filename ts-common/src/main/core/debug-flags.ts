@@ -16,87 +16,55 @@
  * limitations under the License.
  */
 
-import {addItemToArray, removeItemFromArray} from '../utils/array-tools';
 import {LogLevel, LogLevelOrdinal} from './logger/types';
+import {MUSTNeverHappenException} from './exceptions/exceptions';
+import {DebugFlags} from './DebugFlags';
 
 
 export class DebugFlag {
 
-	private readonly key: string;
-	private minLogLevel: LogLevel;
+	readonly key: string;
+	public static createFlag(key: string) {
+		const existingInstance = DebugFlags.flags[key];
+		// @ts-ignore
+		return existingInstance ?? new DebugFlag(key);
+	}
 
-	private constructor(key: string, minLogLevel: LogLevel = LogLevel.Info) {
+	private constructor(key: string) {
 		this.key = key;
-		this.minLogLevel = minLogLevel;
 
 		DebugFlags.add(this);
 	}
 
-	setMinLevel(minLogLevel: LogLevel) {
-		this.minLogLevel = minLogLevel;
+	setMinLevel(logLevel: LogLevel) {
+		DebugFlags.persistentState.set(this.key, {logLevel});
+	}
+
+	enable(enabled = true) {
+		DebugFlags.persistentState.set(this.key, {enabled});
 	}
 
 	rename(newKey: string) {
 		DebugFlags.rename(this.key, newKey);
 	}
 
-	getKey() {
-		return this.key;
-	}
-
-	enable(enable = true) {
-		if (this.isEnabled() === enable)
-			return;
-
-		if (enable)
-			this._enable();
-		else
-			this._disable();
-	}
-
-	isEnabled() {
-		return DebugFlags.instance.ActiveDebugFlags.includes(this.key);
-	}
-
 	canLog(level: LogLevel) {
-		return LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(this.minLogLevel);
-	}
+		const config = DebugFlags.persistentState.get(this.key);
+		if (!config)
+			throw new MUSTNeverHappenException(`No debug flag config for key: ${this.key}`);
 
-	private _enable() {
-		addItemToArray(DebugFlags.instance.ActiveDebugFlags, this.key);
-	}
+		if (!config.enabled)
+			return false;
 
-	private _disable() {
-		removeItemFromArray(DebugFlags.instance.ActiveDebugFlags, this.key);
-	}
-
-}
-
-export class DebugFlags {
-
-	static readonly instance: DebugFlags = new DebugFlags();
-
-	readonly AllDebugFlags: { [k: string]: DebugFlag } = {};
-	readonly ActiveDebugFlags: string[] = [];
-
-	private constructor() {
-	}
-
-	public static createFlag(key: string, minLogLevel = LogLevel.Info) {
-		// @ts-ignore
-		return new DebugFlag(key, minLogLevel);
-	}
-
-	static add(flag: DebugFlag) {
-		this.instance.AllDebugFlags[flag.getKey()] = flag;
-	}
-
-	static rename(previousKey: string, newKey: string) {
-		const flag = this.instance.AllDebugFlags[previousKey];
-		if (!flag)
-			return;
-
-		delete this.instance.AllDebugFlags[previousKey];
-		this.instance.AllDebugFlags[newKey] = flag;
+		return LogLevelOrdinal.indexOf(level) >= LogLevelOrdinal.indexOf(config.logLevel);
 	}
 }
+
+export type DebugFlagConfig = { enabled: boolean, logLevel: LogLevel };
+
+export interface DebugFlagPersistentStorage {
+	get(debugKey: string): DebugFlagConfig;
+
+	set(debugKey: string, state?: Partial<DebugFlagConfig>): void;
+}
+
