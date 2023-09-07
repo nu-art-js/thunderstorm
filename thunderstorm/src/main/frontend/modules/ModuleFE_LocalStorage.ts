@@ -22,7 +22,7 @@
 /**
  * Created by tacb0ss on 27/07/2018.
  */
-import {DebugFlagConfig, DebugFlags, exists, merge, Module, TS_Object, LogLevel} from '@nu-art/ts-common';
+import {DebugFlagConfig, exists, merge, Module, TS_Object, LogLevel} from '@nu-art/ts-common';
 import {ThunderDispatcher} from '../core/thunder-dispatcher';
 import {OnClearWebsiteData} from './clearWebsiteDataDispatcher';
 

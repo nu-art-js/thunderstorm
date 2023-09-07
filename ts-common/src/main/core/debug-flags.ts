@@ -24,6 +24,7 @@ import {DebugFlags} from './DebugFlags';
 export class DebugFlag {
 
 	readonly key: string;
+
 	public static createFlag(key: string) {
 		const existingInstance = DebugFlags.flags[key];
 		// @ts-ignore

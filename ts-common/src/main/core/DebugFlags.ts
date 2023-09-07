@@ -23,6 +23,9 @@ export class DebugFlags {
 	}
 
 	static add(flag: DebugFlag) {
+		if (flag.key === 'v2/db-api/sync-all-v2')
+			console.log(`Creating debug flag: ${flag.key}`);
+
 		// console.log(`Creating a new flag: ${flag.key}`);
 		const existingInstance = this.persistentState.get(flag.key);
 		if (existingInstance)
@@ -30,7 +33,9 @@ export class DebugFlags {
 
 		// console.log(`flag config before: ${flag.key} <> ${config}`);
 		this.persistentState.set(flag.key);
-		// console.log(`flag config after: ${flag.key} <> ${config}`);
+		const config = this.persistentState.get(flag.key);
+		if (flag.key === 'v2/db-api/sync-all-v2')
+			console.log(`flag config after: ${flag.key} <> ${JSON.stringify(config)}`);
 
 	}
 

@@ -1,12 +1,13 @@
 import * as React from 'react';
 import {FirebaseAnalyticsModule} from '@nu-art/firebase/frontend';
-import {_keys, DebugFlags, LogLevelOrdinal, sortArray} from '@nu-art/ts-common';
+import {LogLevelOrdinal, sortArray} from '@nu-art/ts-common';
 import {TS_DropDown} from '../TS_Dropdown';
 import {SimpleListAdapter} from '../adapter/Adapter';
 import {TS_PropRenderer} from '../TS_PropRenderer';
 import {AppToolsScreen} from './types';
 import {LL_V_L} from '../Layouts';
 import {ComponentSync} from '../../core';
+import {DebugFlags} from '@nu-art/ts-common/core/DebugFlags';
 
 
 type ATS_DebugFlags_Props = {
