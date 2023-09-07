@@ -51,10 +51,10 @@ export class ModuleBE_BaseApiV3_Class<Proto extends DBProto<any>>
 		super(`Gen(${dbModule.getName()}, Api)`);
 		this.dbModule = dbModule;
 		this.apiDef = DBApiDefGeneratorIDBV3<Proto>(this.dbModule.dbDef);
-
 	}
 
 	init() {
+		this.logWarning(`Adding routes : ${this.apiDef.v1.query.path}`);
 		addRoutes([
 			createBodyServerApi(this.apiDef.v1.query, this.dbModule.query.custom),
 			createBodyServerApi(this.apiDef.v1.sync, this.dbModule.querySync),
