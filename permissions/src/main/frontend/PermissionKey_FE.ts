@@ -18,6 +18,6 @@ export class PermissionKey_FE<K extends string = string>
 	}
 
 	getAccessLevel(): AccessLevel {
-		return ModuleFE_PermissionsAssert.canAccess(this);
+		return ModuleFE_PermissionsAssert.getAccessLevel(this);
 	}
 }

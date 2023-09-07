@@ -2,8 +2,7 @@ import * as React from 'react';
 import {Props_SmartComponent, SmartComponent, State_SmartComponent} from '@nu-art/thunderstorm/frontend';
 import {ModuleFE_PermissionsAccessLevel} from '../modules/manage/ModuleFE_PermissionsAccessLevel';
 import {PermissionKey_FE} from '../PermissionKey_FE';
-import {AccessLevel, ModuleFE_PermissionsAssert, OnPermissionsChanged} from '../modules/ModuleFE_PermissionsAssert';
-import {OnPermissionsChanged} from '../modules/ModuleFE_PermissionsAssert';
+import {AccessLevel, OnPermissionsChanged} from '../modules/ModuleFE_PermissionsAssert';
 
 
 export type Props_PermissionComponent = React.PropsWithChildren<{

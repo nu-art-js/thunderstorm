@@ -70,7 +70,9 @@ class ModuleFE_RoutingV2_Class
 
 		return <Route key={route.key} path={route.path} Component={route.Component} element={route.element}>
 			{_indexRoute}
-			{route.children?.filter(route => route.enabled()).map(route => this.routeBuilder(route, `${path}${route.path}`))}
+			{route.children
+				?.filter(route => route.enabled?.() ?? true)
+				.map(route => this.routeBuilder(route, `${path}${route.path}`))}
 			{route.fallback && <Route path="*" element={<Navigate to={path}/>}/>}
 		</Route>;
 	};
