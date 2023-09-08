@@ -81,8 +81,8 @@ export class ModuleManager
 			this.setMinLevel(this.config.logLevel);
 
 		this.logInfo(`---------  initializing app  ---------`);
-		const number = this.modules.findIndex(m => !exists(m));
-		if (number > -1) {
+		const undefinedModule: boolean = this.modules.some(module => !exists(module));
+		if (undefinedModule) {
 			const modulesList = JSON.stringify(this.modules.map(module => {
 				// @ts-ignore
 				return module?.tag
