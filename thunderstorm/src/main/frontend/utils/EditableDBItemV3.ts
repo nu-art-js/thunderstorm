@@ -21,7 +21,7 @@ export class EditableDBItemV3<Proto extends DBProto<any>>
 	 * @param onCompleted The function to be called when the operation is completed.
 	 * @param onError The function to be called when an error occurs.
 	 */
-	constructor(item: Proto['uiType'], module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['uiType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
+	constructor(item: Partial<Proto['uiType']>, module: ModuleFE_v3_BaseApi<Proto>, onCompleted?: (item: Proto['uiType']) => any | Promise<any>, onError?: (err: Error) => any | Promise<any>) {
 		super(item, EditableDBItemV3.save(module, onCompleted, onError), (_item: Proto['dbType']) => module.v1.delete(_item).executeSync());
 	}
 
