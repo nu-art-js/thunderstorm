@@ -77,7 +77,11 @@ export class ModuleFE_PermissionsAssert_Class
 		].map(async module => await module.v1.sync().executeSync()));
 	};
 
-	getAccessLevel(key: PermissionKey_FE<string>) {
+	getAccessLevelByKeyString(key: string) {
+		return this.getAccessLevel(this.getPermissionKey(key));
+	}
+
+	getAccessLevel(key: PermissionKey_FE<string>): AccessLevel {
 		const keyData = key.get();
 		if (!exists(keyData))
 			return AccessLevel.Undefined;
