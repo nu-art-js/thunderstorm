@@ -1,15 +1,7 @@
 import * as React from 'react';
 import {BrowserRouter, Navigate, NavigateFunction, NavLink, NavLinkProps, Route, Routes} from 'react-router-dom';
 import {TS_Route} from './types';
-import {
-	_keys,
-	BadImplementationException,
-	composeUrl,
-	LogLevel,
-	Module,
-	removeItemFromArray,
-	sortArray
-} from '@nu-art/ts-common';
+import {BadImplementationException, composeUrl, Module, removeItemFromArray} from '@nu-art/ts-common';
 import {LocationChangeListener} from './LocationChangeListener';
 import {QueryParams} from '../../../shared';
 import {mouseEventHandler} from '../../utils/tools';
