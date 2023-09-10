@@ -24,10 +24,10 @@ class ModuleFE_RoutingV2_Class
 	private routesMapByPath: { [fullPath: string]: TS_Route } = {};
 	private navigate!: NavigateFunction;
 
-	constructor() {
-		super();
-		this.setMinLevel(LogLevel.Debug);
-	}
+	// constructor() {
+	// 	super();
+	// 	this.setMinLevel(LogLevel.Debug);
+	// }
 
 	// ######################## Public Functions ########################
 
@@ -47,9 +47,6 @@ class ModuleFE_RoutingV2_Class
 
 	generateRoutes(rootRoute: TS_Route) {
 		const element = this.routeBuilder(rootRoute);
-		this.logErrorBold('*******************');
-		this.logInfo(sortArray(_keys(this.routesMapByKey)));
-		this.logErrorBold('*******************');
 		return <BrowserRouter>
 			<LocationChangeListener/>
 			<Routes>
@@ -97,11 +94,8 @@ class ModuleFE_RoutingV2_Class
 
 	getFullPath(routeKey: string): string {
 		const route = this.routesMapByKey[routeKey];
-		if (!route) {
-			this.logErrorBold('Existing route keys:');
-			this.logErrorBold(sortArray(_keys(this.routesMapByKey)));
+		if (!route)
 			throw new BadImplementationException(`Cannot find full path for route key: ${routeKey}`);
-		}
 
 		return route.fullPath;
 	}
@@ -121,8 +115,7 @@ export const TS_NavLink = (props: { route: TS_Route } & Partial<NavLinkProps>) =
 	const fullPath = ModuleFE_RoutingV2.getFullPath(route.key);
 	if (!fullPath)
 		throw new BadImplementationException(`Route with key ${route.key} is not defined in routing module`);
-	if (route.key.includes('pathway'))
-		console.info(fullPath, route);
+
 	return <NavLink
 		{..._props}
 		to={fullPath}
