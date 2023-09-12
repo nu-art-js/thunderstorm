@@ -6,6 +6,7 @@ type Props = Props_PermissionComponent & {
 	forceLock?: boolean;
 	value?: string | number
 	className?: string;
+	style?: React.CSSProperties;
 };
 
 type State = State_PermissionComponent & {
@@ -26,7 +27,7 @@ export class PermissionsEditableComponent
 			return <></>;
 
 		const className = _className('permissions-editable__value', this.props.className);
-		return <div className={className}>{this.props.value}</div>;
+		return <div className={className} style={this.props.style}>{this.props.value}</div>;
 	};
 
 	protected renderPermitted = () => {
