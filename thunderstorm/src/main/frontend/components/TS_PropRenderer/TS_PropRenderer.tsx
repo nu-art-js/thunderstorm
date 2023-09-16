@@ -5,17 +5,17 @@ import {_className} from '../../utils/tools';
 import {resolveContent} from '@nu-art/ts-common';
 
 
-type Props = Omit<LinearLayoutProps, 'label'> & {
+export type Props_PropRenderer = Omit<LinearLayoutProps, 'label'> & {
 	label: React.ReactNode | (() => React.ReactNode),
 	disabled?: boolean,
 	error?: string,
 }
 
-type Props_Horizontal = Props & Partial<{
+export type Props_PropRendererHorizontal = Props_PropRenderer & Partial<{
 	verticalAlignment: 'top' | 'center' | 'bottom'
 }>
 
-const TS_PropRenderer_Horizontal = (props: Props_Horizontal) => {
+const TS_PropRenderer_Horizontal = (props: Props_PropRendererHorizontal) => {
 	const className = _className('ts-prop-renderer horizontal', props.disabled && 'disabled', props.className);
 	const {label, error, ..._props} = props;
 	let _LinearComponent: React.ElementType;
@@ -39,7 +39,7 @@ const TS_PropRenderer_Horizontal = (props: Props_Horizontal) => {
 	</_LinearComponent>;
 };
 
-const TS_PropRenderer_Vertical = (props: Props) => {
+const TS_PropRenderer_Vertical = (props: Props_PropRenderer) => {
 	const className = _className('ts-prop-renderer vertical', props.disabled && 'disabled', props.className);
 	const {label, error, ..._props} = props;
 	return <LL_V_L {..._props} className={className}>

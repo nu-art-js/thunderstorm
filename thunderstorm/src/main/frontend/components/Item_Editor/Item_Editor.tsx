@@ -1,14 +1,18 @@
 import * as React from 'react';
 import {ReactNode} from 'react';
-import {asArray, AssetValueType, DB_Object, dbObjectToId} from '@nu-art/ts-common';
+import {asArray, AssetValueType, DB_Object, dbObjectToId, merge, TS_Object, ValidatorTypeResolver} from '@nu-art/ts-common';
 import {EditableDBItem} from '../../utils/EditableDBItem';
 import {EditableItem} from '../../utils/EditableItem';
 import {ComponentSync} from '../../core';
-import {TS_PropRenderer} from '../TS_PropRenderer';
+import {Props_PropRenderer, Props_PropRendererHorizontal, TS_PropRenderer} from '../TS_PropRenderer';
 import {TS_Input} from '../TS_Input';
 import {TS_Checkbox} from '../TS_Checkbox';
 import {ModuleFE_BaseApi} from '../../modules/db-api-gen/ModuleFE_BaseApi';
 import {ApiCallerEventType} from '../../core/db-api-gen/types';
+import {Props_EditorRenderer} from './EditorRenderer_BaseImpl';
+import firebase from 'firebase/compat';
+import Item = firebase.analytics.Item;
+import {Form_FieldProps, InputField} from '../form/types';
 
 
 type InputProps<Value, Ex> = {
@@ -40,22 +44,22 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 				const {readProcessor, writeProcessor, onBlur, ...restProps} = inputProps || {};
 				return <TS_PropRenderer.Vertical label={label} {...props}>
 					<TS_Input type="text"
-							  value={readProcessor?.(value as unknown as Item[K]) || value}
-							  onBlur={value => {
-								  onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
-							  }}
-							  {...restProps}/>
+										value={readProcessor?.(value as unknown as Item[K]) || value}
+										onBlur={value => {
+											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+										}}
+										{...restProps}/>
 				</TS_PropRenderer.Vertical>;
 			},
 			horizontal: (label: string, props?: { className: string }) => {
 				const {readProcessor, writeProcessor, onBlur, ...restProps} = inputProps || {};
 				return <TS_PropRenderer.Horizontal label={label} {...props}>
 					<TS_Input type="text"
-							  value={readProcessor?.(value as unknown as Item[K]) || value}
-							  onBlur={value => {
-								  onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
-							  }}
-							  {...restProps}/>
+										value={readProcessor?.(value as unknown as Item[K]) || value}
+										onBlur={value => {
+											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+										}}
+										{...restProps}/>
 				</TS_PropRenderer.Horizontal>;
 			}
 		};
@@ -68,22 +72,22 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 				const {readProcessor, writeProcessor, onBlur, ...restProps} = inputProps || {};
 				return <TS_PropRenderer.Vertical label={label} {...props}>
 					<TS_Input type="number"
-							  value={String(readProcessor?.(value as unknown as Item[K]) || value)}
-							  onBlur={value => {
-								  onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(+value as Ex) || value as unknown as Item[K]);
-							  }}
-							  {...restProps}/>
+										value={String(readProcessor?.(value as unknown as Item[K]) || value)}
+										onBlur={value => {
+											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(+value as Ex) || value as unknown as Item[K]);
+										}}
+										{...restProps}/>
 				</TS_PropRenderer.Vertical>;
 			},
 			horizontal: (label: string, props?: { className: string }) => {
 				const {readProcessor, writeProcessor, onBlur, ...restProps} = inputProps || {};
 				return <TS_PropRenderer.Horizontal label={label} {...props}>
 					<TS_Input type="number"
-							  value={String(readProcessor?.(value as unknown as Item[K]) || value)}
-							  onBlur={value => {
-								  onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(+value as Ex) || value as unknown as Item[K]);
-							  }}
-							  {...restProps}/>
+										value={String(readProcessor?.(value as unknown as Item[K]) || value)}
+										onBlur={value => {
+											onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(+value as Ex) || value as unknown as Item[K]);
+										}}
+										{...restProps}/>
 				</TS_PropRenderer.Horizontal>;
 			}
 		};
@@ -120,6 +124,50 @@ export class Item_Editor<Item, Props extends {} = {}, State extends {} = {}>
 			}
 		};
 	};
+
+	edit = <K extends keyof Item>(key: K) => {
+		const editable = this.state.editable;
+		let orientation: 'vertical' | 'horizontal' = 'vertical';
+		let propRenderer_Props: Props_PropRenderer | undefined;
+		const _builder = {
+			label: (label: string) => {
+				merge(propRenderer_Props, {label});
+				return _builder;
+			},
+			vertical: (props: Props_PropRenderer) => {
+				orientation = 'vertical';
+				propRenderer_Props = props;
+				return _builder;
+			},
+			horizontal: (props: Props_PropRendererHorizontal) => {
+				orientation = 'horizontal';
+				return _builder;
+			},
+			render: (renderer: (prop: K, editable: EditableItem<Item>) => ReactNode): ReactNode => {
+				const PropRenderer = orientation === 'horizontal' ? TS_PropRenderer.Horizontal : TS_PropRenderer.Vertical;
+				const editor = renderer(key, editable);
+				if (propRenderer_Props)
+					return <PropRenderer {...propRenderer_Props}>{editor}</PropRenderer>;
+
+				return editor;
+			}
+		};
+
+		return _builder;
+	};
+
+	input_v2 = <K extends keyof Item, Ex extends string | undefined = string | undefined>(prop: AssetValueType<Item, K, Ex>, inputProps?: InputProps<Item[K], Ex>) => {
+		const value = this.props.editable.item[prop] as string | undefined;
+		const {readProcessor, writeProcessor, onBlur, ...restProps} = inputProps || {};
+		return <TS_Input
+			type="text"
+			value={readProcessor?.(value as unknown as Item[K]) || value}
+			onBlur={value => {
+				onBlur ? onBlur(value) : this.props.editable.update(prop, writeProcessor?.(value as Ex) || value as unknown as Item[K]);
+			}}
+			{...restProps}/>;
+	};
+
 }
 
 export type Props_ItemEditorController<T extends DB_Object> = {
@@ -181,17 +229,3 @@ export type FormPropV1<T, K extends keyof T, EditorValueType, EditorProps, Value
 // 		this.props.editable.editProp("pah",{}).editProp("ashpa", []).update(0,{zevel3:""})
 // 	}
 // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
