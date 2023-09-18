@@ -1,12 +1,21 @@
-import {DB_Object, DBProto, Filter, sortArray} from '@nu-art/ts-common';
+import {AssetValueType, DB_Object, DBProto, Filter, ResolvableContent, resolveContent, sortArray} from '@nu-art/ts-common';
 import * as React from 'react';
 import {TS_DropDown} from '../TS_Dropdown';
 import {ModuleFE_v3_BaseApi} from '../../modules/db-api-gen/ModuleFE_v3_BaseApi';
 import {Adapter, SimpleListAdapter} from '../adapter/Adapter';
 import {ComponentSync} from '../../core';
+import {BasePartialProps_GenericDropDown, PartialProps_GenericDropDown} from './GenericDropDown';
+import {EditableItem} from '../../utils/EditableItem';
 
 
 type OptionalCanUnselect<T> = ({ canUnselect: true; onSelected: (selected?: T) => void } | { canUnselect?: false; onSelected: (selected: T) => void })
+
+type EditableProp<Item, K extends keyof Item, Prop extends AssetValueType<Item, K, string> = AssetValueType<Item, K, string>> = {
+	editable: EditableItem<Item>
+	prop: Prop
+}
+
+type EditableDropDownProps<T> = BasePartialProps_GenericDropDown<T> & EditableProp<any, any>
 
 type OptionalProps_GenericDropDownV3<T> = {
 	placeholder?: string;
@@ -22,15 +31,6 @@ type OptionalProps_GenericDropDownV3<T> = {
 	noOptionsRenderer?: React.ReactNode | (() => React.ReactNode);
 	disabled?: boolean;
 }
-
-export type PartialProps_GenericDropDownV3<T> = OptionalProps_GenericDropDownV3<T> & {
-	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => any;
-	boundingParentSelector?: string;
-	inputValue?: string;
-	selected?: T | string | (() => T | undefined);
-	limitItems?: number;
-	itemResolver?: () => T[]
-} & OptionalCanUnselect<T>
 
 export type MandatoryProps_GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']> =
 	OptionalProps_GenericDropDownV3<T>
@@ -79,6 +79,20 @@ type State<T extends DB_Object> = {
 
 export class GenericDropDownV3<Proto extends DBProto<any>, T extends Proto['dbType'] = Proto['dbType']>
 	extends ComponentSync<Props_GenericDropDownV3<Proto>, State<T>> {
+	static readonly prepareEditable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<MandatoryProps_GenericDropDownV3<Proto>>) => {
+		return (props: EditableDropDownProps<Proto['dbType']>) => <GenericDropDownV3<Proto> {...resolveContent(mandatoryProps)} {...props}
+																																												onSelected={item => props.editable.update(props.prop, item._id)}
+																																												selected={props.editable.item[props.prop]}/>;
+	};
+	static readonly prepareSelectable = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<MandatoryProps_GenericDropDownV3<Proto>>) => {
+		return (props: PartialProps_GenericDropDown<Proto['dbType']>) => <GenericDropDownV3<Proto> {...resolveContent(mandatoryProps)} {...props}/>;
+	};
+	static readonly prepare = <Proto extends DBProto<any>>(mandatoryProps: ResolvableContent<MandatoryProps_GenericDropDownV3<Proto>>) => {
+		return {
+			editable: this.prepareEditable(mandatoryProps),
+			selectable: this.prepareSelectable(mandatoryProps)
+		};
+	};
 
 	protected deriveStateFromProps(nextProps: Props_GenericDropDownV3<Proto>): State<T> {
 		const state = {} as State<T>;
