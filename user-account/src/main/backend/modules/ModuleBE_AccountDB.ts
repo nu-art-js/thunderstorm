@@ -3,7 +3,7 @@ import {
 	ApiException,
 	BadImplementationException,
 	cloneObj,
-	compare,
+	compare, DB_BaseObject,
 	dispatch_onApplicationException,
 	Dispatcher,
 	DontCallthisException,
@@ -14,25 +14,13 @@ import {
 import {CollectSessionData, ModuleBE_SessionDB} from './ModuleBE_SessionDB';
 import {firestore} from 'firebase-admin';
 import {QueryParams} from '@nu-art/thunderstorm';
-import {
-	addRoutes,
-	createBodyServerApi,
-	createQueryServerApi,
-	DBApiConfigV3,
-	ModuleBE_BaseDBV3
-} from '@nu-art/thunderstorm/backend';
+import {addRoutes, createBodyServerApi, createQueryServerApi, DBApiConfigV3, ModuleBE_BaseDBV3} from '@nu-art/thunderstorm/backend';
 import {FirestoreQuery} from '@nu-art/firebase';
 import {FirestoreInterfaceV3} from '@nu-art/firebase/backend/firestore-v3/FirestoreInterfaceV3';
 import {FirestoreType_DocumentSnapshot} from '@nu-art/firebase/backend';
+import {Header_SessionId, MemKey_AccountEmail, MemKey_AccountId, SessionKey_Account_BE, SessionKey_Session_BE} from '../core/consts';
 import {
-	Header_SessionId,
-	MemKey_AccountEmail,
-	MemKey_AccountId,
-	SessionKey_Account_BE,
-	SessionKey_Session_BE
-} from '../core/consts';
-import {
-	_SessionKey_Account,
+	_SessionKey_Account, AccountType,
 	ApiDefBE_Account,
 	DB_Account,
 	DBDef_Accounts,
@@ -51,12 +39,28 @@ import {assertPasswordRules, PasswordAssertionConfig} from '../../shared/asserti
 import Transaction = firestore.Transaction;
 
 
+type SafeDB_Account = UI_Account & DB_BaseObject;
+type AccountWithPassword = {
+	email: string
+	password: string
+	passwordCheck: string
+};
+type BaseAccount = {
+	email: string,
+	type: AccountType,
+}
+type SpicedAccount = BaseAccount & {
+	salt: string,
+	saltedPassword: string
+};
+type AccountToCreate = SpicedAccount | BaseAccount;
+
 export interface OnNewUserRegistered {
-	__onNewUserRegistered(account: DB_Account): void;
+	__onNewUserRegistered(account: SafeDB_Account, transaction: Transaction): void;
 }
 
 export interface OnUserLogin {
-	__onUserLogin(account: DB_Account): void;
+	__onUserLogin(account: SafeDB_Account, transaction: Transaction): void;
 }
 
 export const dispatch_onUserLogin = new Dispatcher<OnUserLogin, '__onUserLogin'>('__onUserLogin');
@@ -98,7 +102,7 @@ export class ModuleBE_AccountDB_Class
 		return {
 			key: 'account' as const,
 			value: {
-				...account as DB_Account,
+				...getUIAccountV3(account),
 				hasPassword: !!account.saltedPassword,
 			},
 		};
@@ -126,44 +130,74 @@ export class ModuleBE_AccountDB_Class
 		}
 	}
 
-	private spiceAccount(request: Request_RegisterAccount): UI_Account {
-		const email = request.email.toLowerCase(); //Email always lowerCase
-		const salt = generateHex(32);
-		return {
-			email: email,
-			type: request.type,
-			salt,
-			saltedPassword: hashPasswordWithSalt(salt, request.password)
-		} as UI_Account;
-	}
+	impl = {
+		assertPassword: (accountToAssert: AccountWithPassword) => {
+			this.password.assertPasswordExistence(accountToAssert.email, accountToAssert.password, accountToAssert.passwordCheck);
+			this.password.assertPasswordRules(accountToAssert.password!);
+		},
+		spiceAccount: (accountToSpice: Request_RegisterAccount): SpicedAccount => {
+			const salt = generateHex(32);
+			return {
+				email: accountToSpice.email,
+				type: accountToSpice.type,
+				salt,
+				saltedPassword: hashPasswordWithSalt(salt, accountToSpice.password)
+			};
+		},
+		createWithPassword: (accountWithPassword: AccountWithPassword, transaction: Transaction) => {
+			const spicedAccount = this.impl.spiceAccount({...accountWithPassword, type: 'user'});
+			return this.impl.create(spicedAccount, transaction);
+		},
+		create: async (accountToCreate: AccountToCreate, transaction: Transaction) => {
+			let dbAccount = (await this.query.custom({where: {email: accountToCreate.email}, limit: 1}, transaction))[0];
+			if (dbAccount)
+				throw new ApiException(422, `User with email "${accountToCreate.email}" already exists`);
 
+			dbAccount = await this.create.item(accountToCreate, transaction);
+			return getUIAccountV3(dbAccount);
+		},
+		setAccountMemKeys: async (account: SafeDB_Account) => {
+			MemKey_AccountId.set(account._id);
+			MemKey_AccountEmail.set(account.email);
+		},
+		onAccountCreated: async (account: SafeDB_Account, transaction: Transaction) => {
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(account, transaction);
+		},
+		login: async (email: string) => {
+			const dbAccount = (await this.query.custom({where: {email}, limit: 1}))[0];
+			if (dbAccount)
+				throw new ApiException(422, `User with email "${email}" already exists`);
+
+		},
+	};
 	/**
 	 * Create an account without passing through this.spiceAccount - as in without password/salt,
 	 * for loginSaml initial login
 	 */
-	getOrCreate = async (query: { where: { email: string } }): Promise<DB_Account> => {
-		let dispatchEvent = false;
+	getOrCreateV3 = async (accountToCreate: UI_Account, canCreate = false, transaction?: Transaction) => {
+		return await this.runTransaction(async (transaction: Transaction) => {
+			const create = async () => {
+				if (!canCreate)
+					throw new ApiException(422, `User with email "${accountToCreate.email}" already exists`);
 
-		const dbAccount = await this.runTransaction(async (transaction: Transaction) => {
-			let account;
+				return await this.create.item(accountToCreate, transaction);
+			};
+
+			const dbAccount = await this.collection.uniqueGetOrCreate({email: accountToCreate.email}, create, transaction);
+			const uiAccount = getUIAccountV3(dbAccount);
+
+			// if these were never set it means we are registering otherwise we are creating other accounts for others
 			try {
-				account = await this.query.uniqueCustom(query, transaction);
-			} catch (err) {
-				const _account: UI_Account = {
-					email: query.where.email,
-					type: 'user'
-				} as UI_Account;
-
-				dispatchEvent = true;
-				account = this.create.item(_account, transaction); // this.createAccountImpl requires pw/salt and also redundantly rechecks if the account doesn't exist.
+				MemKey_AccountId.get();
+			} catch (e) {
+				MemKey_AccountId.set(uiAccount._id);
+				MemKey_AccountEmail.set(uiAccount.email);
 			}
-			return account;
+
+			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount, transaction);
+
+			return uiAccount;
 		});
-
-		if (dispatchEvent)
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(getUIAccountV3(dbAccount));
-
-		return dbAccount;
 	};
 
 	account = {
@@ -171,50 +205,35 @@ export class ModuleBE_AccountDB_Class
 			if (!this.config.canRegister)
 				throw new ApiException(418, 'Registration is disabled!!');
 
-			// this flow is for user accounts
-			(body as Request_RegisterAccount).type = 'user';
-
-			this.password.assertPasswordRules(body.password);
-
-			//Email always lowerCase
 			body.email = body.email.toLowerCase();
-			MemKey_AccountEmail.set(body.email); // set here, because MemKey_AccountEmail is needed in createAccountImpl
 
-			//Create the account
-			const uiAccount = await this.createAccountImpl(body as Request_RegisterAccount, true, transaction); // Must have a password, because we use it to auto-login immediately after
-			MemKey_AccountId.set(uiAccount._id);
-			this.logDebug('uiAccount', uiAccount);
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
+			// this flow is for user accounts
+			const account = this.runTransaction(async transaction => {
+				this.impl.assertPassword(body);
+				const accountToSpice: AccountWithPassword = {...body, type: 'user'};
+				const spicedAccount = this.impl.spiceAccount(accountToSpice);
+				const dbSafeAccount = await this.impl.create(spicedAccount, transaction);
+				await this.impl.setAccountMemKeys(dbSafeAccount);
+				await this.impl.onAccountCreated(dbSafeAccount, transaction);
+			});
 
-			//Log in
-			const session = await ModuleBE_SessionDB.getOrCreateSession(uiAccount);
-
-			//Update whoever listens
-			await dispatch_onUserLogin.dispatchModuleAsync(uiAccount);
-
-			//Finish
-			return session;
+			await this.getOrCreateV3(accountToCreate, true);
+			return this.account.login({email: body.email, password: body.password});
 		},
 		login: async (request: Request_LoginAccount, transaction?: Transaction): Promise<Response_Auth> => {
 			const {account, session} = await this.loginImpl(request, transaction);
 			MemKey_AccountId.set(account._id);
-			await dispatch_onUserLogin.dispatchModuleAsync(getUIAccountV3(account));
+
+			// TODO: TOFIX transaction
+			await dispatch_onUserLogin.dispatchModuleAsync(getUIAccountV3(account), transaction!);
 			return session;
 		},
-		create: async (request: UI_Account & { password?: string }, transaction?: Transaction) => {
-			if (request.type === 'user') {
-				if (request.password) {
-					const uiAccount = await this.createAccountImpl(request, true, transaction);
-					await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
-					return uiAccount;
-				}
-
+		create: async (request: Request_RegisterAccount, transaction?: Transaction) => {
+			if (request.type === 'user' && !request.password)
 				throw new BadImplementationException('Trying to create a user from type user without password provided');
-			}
 
-			const uiAccount = await this.createAccountImpl(request, false, transaction);
-			await dispatch_onNewUserRegistered.dispatchModuleAsync(uiAccount);
-			return uiAccount;
+			request.passwordCheck = request.password;
+			return await this.getOrCreateV3(this.composeUIAccountWithPassword(request), true, transaction);
 		},
 		logout: async (queryParams: QueryParams) => {
 			const sessionId = Header_SessionId.get();
@@ -226,11 +245,11 @@ export class ModuleBE_AccountDB_Class
 	};
 
 	password = {
-		assertPasswordExistence: (email: string, password?: string, password_check?: string) => {
-			if (!password || !password_check)
+		assertPasswordExistence: (email: string, password?: string, passwordCheck?: string) => {
+			if (!password || !passwordCheck)
 				throw new ApiException(400, `Did not receive a password for email ${email}.`);
 
-			if (password !== password_check)
+			if (password !== passwordCheck)
 				throw new ApiException(400, `Password does not match password check for email ${email}.`);
 		},
 		assertPasswordRules: (password: string) => {
@@ -277,31 +296,21 @@ export class ModuleBE_AccountDB_Class
 		return {account, session};
 	}
 
-	private createAccountImpl = async (body: Request_CreateAccount, passwordRequired?: boolean, transaction?: Transaction) => {
+	private composeUIAccountWithPassword(body: Request_CreateAccount) {
 		//Email always lowerCase
-		body.email = body.email.toLowerCase();
+		const email = body.email.toLowerCase();
 
-		// If login SAML or admin creates an account - it doesn't necessarily receive a password yet.
-		let account = {email: body.email, type: body.type} as UI_Account;
+		let account = {email, type: body.type} as UI_Account;
 
 		// TODO: this logic seems faulty.. need to re-done
-		if (body.password || body.password_check || passwordRequired) {
-			this.password.assertPasswordExistence(body.email, body.password, body.password_check);
+		if (body.password || body.passwordCheck) {
+			this.password.assertPasswordExistence(email, body.password, body.passwordCheck);
 			this.password.assertPasswordRules(body.password!);
 
-			account = this.spiceAccount(body as Request_RegisterAccount);
-			if (!passwordRequired)
-				account._newPasswordRequired = true;
+			account = this.impl.spiceAccount(body as Request_RegisterAccount);
 		}
-
-		return getUIAccountV3(await this.runTransaction(async _transaction => {
-			const existingAccounts = await this.query.custom({where: {email: body.email}}, transaction);
-			if (existingAccounts.length > 0)
-				throw new ApiException(422, 'User with email already exists');
-
-			return await this.create.item(account as UI_Account, transaction);
-		}, transaction));
-	};
+		return account;
+	}
 
 	private createToken = async ({accountId, ttl}: RequestBody_CreateToken) => {
 		const {_id} = await ModuleBE_SessionDB.createSession(accountId, (sessionData) => {
@@ -314,7 +323,7 @@ export class ModuleBE_AccountDB_Class
 
 	changePassword = async (body: RequestBody_ChangePassword, transaction?: Transaction): Promise<Response_Auth> => {
 		const lowerCaseEmail = body.userEmail.toLowerCase();
-		const updatedAccount = await this.changePasswordImpl(lowerCaseEmail, body.originalPassword, body.newPassword, body.newPassword_check, transaction);
+		const updatedAccount = await this.changePasswordImpl(lowerCaseEmail, body.originalPassword, body.newPassword, body.newpasswordCheck, transaction);
 		const newSession = await ModuleBE_SessionDB.createSession(updatedAccount._id);
 		return {
 			...getUIAccountV3(updatedAccount),
@@ -322,18 +331,18 @@ export class ModuleBE_AccountDB_Class
 		};
 	};
 
-	private changePasswordImpl = async (userEmail: string, originalPassword: string, newPassword: string, newPassword_check: string, transaction?: Transaction) => await this.runTransaction(async (_transaction) => {
+	private changePasswordImpl = async (userEmail: string, originalPassword: string, newPassword: string, newpasswordCheck: string, transaction?: Transaction) => await this.runTransaction(async (_transaction) => {
 
 		const assertedAccount = await this.password.assertPasswordMatch(originalPassword, userEmail);
 
-		if (!compare(newPassword, newPassword_check))
+		if (!compare(newPassword, newpasswordCheck))
 			throw new ApiException(401, 'Password & password check mismatch');
 
 		const updatedAccount = this.spiceAccount({
 			type: 'user',
 			email: userEmail,
 			password: newPassword,
-			password_check: newPassword
+			passwordCheck: newPassword
 		});
 
 		//Update the account with a new password
@@ -341,7 +350,7 @@ export class ModuleBE_AccountDB_Class
 	}, transaction);
 
 	setPassword = async (body: RequestBody_SetPassword, transaction?: Transaction): Promise<Response_Auth> => {
-		const updatedAccount = await this.setPasswordImpl(body.userEmail, body.password, body.password_check, transaction);
+		const updatedAccount = await this.setPasswordImpl(body.userEmail, body.password, body.passwordCheck, transaction);
 		const newSession = await ModuleBE_SessionDB.createSession(updatedAccount._id);
 		return {
 			...getUIAccountV3(updatedAccount),
@@ -349,18 +358,18 @@ export class ModuleBE_AccountDB_Class
 		};
 	};
 
-	private setPasswordImpl = async (userEmail: string, password: string, password_check: string, transaction?: Transaction) => await this.runTransaction(async (_transaction) => {
+	private setPasswordImpl = async (userEmail: string, password: string, passwordCheck: string, transaction?: Transaction) => await this.runTransaction(async (_transaction) => {
 
 		const existingAccount = await this.queryAccountWithPassword(userEmail, transaction);
 
-		if (!compare(password, password_check))
+		if (!compare(password, passwordCheck))
 			throw new ApiException(401, 'Password and password check do not match');
 
 		const updatedAccount = this.spiceAccount({
 			type: 'user',
 			email: userEmail,
 			password,
-			password_check,
+			passwordCheck,
 		});
 
 		//Update the account with a new password
@@ -368,7 +377,7 @@ export class ModuleBE_AccountDB_Class
 	}, transaction);
 }
 
-export function getUIAccountV3(account: DB_Account): DB_Account {
+export function getUIAccountV3(account: DB_Account): SafeDB_Account {
 	const uiAccount = cloneObj(account);
 	delete uiAccount.salt;
 	delete uiAccount.saltedPassword;

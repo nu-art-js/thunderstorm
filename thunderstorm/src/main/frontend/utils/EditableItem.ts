@@ -1,4 +1,4 @@
-import {cloneObj, resolveContent} from '@nu-art/ts-common';
+import {cloneObj, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 
 
 /**
@@ -49,7 +49,7 @@ export class EditableItem<T> {
 	 * @param value The new value of the property.
 	 * @returns A boolean indicating whether the value has been set.
 	 */
-	set<K extends keyof T>(key: K, value: ((item?: T[K]) => (T[K] | undefined)) | T[K] | undefined) {
+	set<K extends keyof T>(key: K, value: ResolvableContent<T[K] | undefined>) {
 		const finalValue = resolveContent(value);
 		if (finalValue === this.item[key])
 			return false;

@@ -3,7 +3,7 @@ import {
 	ApiException,
 	batchActionParallel,
 	currentTimeMillis,
-	Day,
+	Day, DB_BaseObject,
 	Dispatcher,
 	TS_Object,
 	TypedKeyValue,
@@ -13,10 +13,9 @@ import {gzipSync, unzipSync} from 'zlib';
 import {firestore} from 'firebase-admin';
 import {
 	_SessionKey_Session,
-	DB_Account,
 	DBDef_Session,
 	DBProto_SessionType,
-	Response_Auth,
+	Response_Auth, UI_Account,
 	UI_Session
 } from '../../shared';
 import {Header_SessionId, MemKey_SessionData} from '../core/consts';
@@ -36,7 +35,6 @@ export const dispatch_CollectSessionData = new Dispatcher<CollectSessionData<Typ
 // 			[A, ...MapTypes<R>] :
 // 			[] :
 // 		[];
-
 
 type Config = DBApiConfigV3<DBProto_SessionType> & {
 	sessionTTLms: number
@@ -101,7 +99,7 @@ export class ModuleBE_SessionDB_Class
 		return JSON.parse((unzipSync(Buffer.from(sessionId, 'base64'))).toString('utf8'));
 	}
 
-	getOrCreateSession = async (uiAccount: DB_Account, transaction?: Transaction): Promise<Response_Auth> => {
+	getOrCreateSession = async (uiAccount: UI_Account & DB_BaseObject, transaction?: Transaction): Promise<Response_Auth> => {
 		const session = (await this.query.custom({where: {accountId: uiAccount._id}}, transaction))[0];
 		if (session && !this.TTLExpired(session)) {
 			const sessionData = this.decodeSessionData(session.sessionId);
