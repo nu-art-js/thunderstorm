@@ -17,5 +17,4 @@
  * limitations under the License.
  */
 
-export * from './core/module-pack';
-export * from './modules';
+export * from './consts';
