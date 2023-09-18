@@ -17,18 +17,15 @@
  * limitations under the License.
  */
 
+import {MemKey_AccountId, ModuleBE_AccountDB, ModuleBE_SessionDB, OnNewUserRegistered, OnUserLogin} from '@nu-art/user-account/backend';
 import {
-	MemKey_AccountId,
-	ModuleBE_AccountDB,
-	ModuleBE_SessionDB,
-	OnNewUserRegistered,
-	OnUserLogin
-} from '@nu-art/user-account/backend';
-import {
+	__stringify,
 	_keys,
 	ApiException,
 	batchActionParallel,
+	DB_BaseObject,
 	dbObjectToId,
+	exists,
 	filterDuplicates,
 	filterInstances,
 	flatArray,
@@ -60,7 +57,6 @@ class ModuleBE_PermissionUserDB_Class
 		addRoutes([createBodyServerApi(ApiDef_PermissionUser.vv1.assignPermissions, this.assignPermissions)]);
 	}
 
-
 	__canDeleteEntities = async <T extends 'Group'>(type: T, items: PermissionTypes[T][]): Promise<DB_EntityDependency<'User'>> => {
 		let conflicts: DB_PermissionUser[] = [];
 		const dependencies: Promise<DB_PermissionUser[]>[] = [];
@@ -74,7 +70,7 @@ class ModuleBE_PermissionUserDB_Class
 
 	// protected async canDeleteDocument(transaction: FirestoreTransaction, dbInstances: DB_PermissionUser[]) {
 	// 	const conflicts: DB_PermissionUser[] = [];
-	// 	const accounts = await ModuleBE_v2_AccountDB.query.custom(_EmptyQuery);
+	// 	const accounts = await ModuleBE_AccountDB.query.custom(_EmptyQuery);
 	//
 	// 	for (const item of dbInstances) {
 	// 		const account = accounts.find(acc => acc._id === item.accountId);
@@ -114,35 +110,33 @@ class ModuleBE_PermissionUserDB_Class
 		await ModuleBE_SessionDB.invalidateSessions(accountIds);
 	}
 
-	async __onUserLogin(account: UI_Account) {
+	async __onUserLogin(account: UI_Account, transaction: Transaction) {
 		console.log('________________________________');
 		console.log('__onUserLogin');
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-		await this.insertIfNotExist(account.email);
+		await this.insertIfNotExist(account as UI_Account & DB_BaseObject, transaction);
 	}
 
-	async __onNewUserRegistered(account: UI_Account) {
+	async __onNewUserRegistered(account: UI_Account, transaction: Transaction) {
 		console.log('________________________________');
 		console.log('__onNewUserRegistered');
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-		await this.insertIfNotExist(account.email);
+		await this.insertIfNotExist(account as UI_Account & DB_BaseObject, transaction);
 	}
 
-	async insertIfNotExist(email: string) {
-		return this.runTransaction(async (t) => {
-			let account;
-			// Verify an account exists, to give it a user permissions object
-			try {
-				account = await ModuleBE_AccountDB.query.uniqueWhere({email}, t);
-			} catch (e: any) {
-				throw new ApiException(404, `user not found for email ${email}`, e);
-			}
-			// Check if a user permissions object already exists, and create if not
-			const existingUserPermissions = await this.query.where({accountId: account._id}, t);
-			if (!existingUserPermissions.length) {
-				await this.set.item({accountId: account._id, groups: [], _auditorId: MemKey_AccountId.get()}, t);
-			}
-		});
+	async insertIfNotExist(uiAccount: UI_Account & DB_BaseObject, transaction: Transaction) {
+		// Verify an account exists, to give it a user permissions object
+		const account = await ModuleBE_AccountDB.query.unique(uiAccount._id, transaction);
+		if (!exists(account))
+			throw new ApiException(404, `account not found for id ${__stringify(uiAccount)}`);
+
+		const permissionsUserToCreate = {accountId: account._id, groups: [], _auditorId: MemKey_AccountId.get()};
+
+		const create = async (transaction?: Transaction) => {
+			return this.create.item(permissionsUserToCreate, transaction);
+		};
+
+		return this.collection.uniqueGetOrCreate({accountId: account._id}, create, transaction);
 	}
 
 	async assignPermissions(body: Request_AssignPermissions) {

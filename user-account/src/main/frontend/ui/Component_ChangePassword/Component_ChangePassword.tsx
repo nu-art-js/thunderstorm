@@ -41,7 +41,7 @@ export class Component_ChangePassword
 				await ModuleFE_Account.vv1.setPassword({
 					userEmail: account.email,
 					password: this.state.newPassword,
-					password_check: this.state.newPasswordCheck,
+					passwordCheck: this.state.newPasswordCheck,
 				}).executeSync();
 			else {
 				if (!this.state.currentPassword) {
@@ -52,7 +52,7 @@ export class Component_ChangePassword
 					userEmail: account.email,
 					originalPassword: this.state.currentPassword,
 					newPassword: this.state.newPassword,
-					newPassword_check: this.state.newPasswordCheck,
+					newpasswordCheck: this.state.newPasswordCheck,
 				}).executeSync();
 			}
 			this.props.postSubmitAction?.();

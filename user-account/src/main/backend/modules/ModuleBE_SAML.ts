@@ -17,7 +17,7 @@
  */
 
 import {IdentityProvider, IdentityProviderOptions, ServiceProvider, ServiceProviderOptions} from 'saml2-js';
-import {__stringify, ApiException, decode, ImplementationMissingException, LogLevel, Module} from '@nu-art/ts-common';
+import {__stringify, ApiException, DB_BaseObject, decode, ImplementationMissingException, LogLevel, Module} from '@nu-art/ts-common';
 import {
 	ApiDef_SAML_BE,
 	ApiStruct_SAML_BE,
@@ -26,14 +26,13 @@ import {
 	QueryParam_SessionId,
 	RequestBody_SamlAssertOptions,
 	RequestParams_LoginSAML,
-	Response_Auth,
-	Response_LoginSAML
+	Response_LoginSAML, UI_Account
 } from './_imports';
 import {addRoutes, createQueryServerApi, ServerApi} from '@nu-art/thunderstorm/backend';
 import {MemKey_HttpRequestBody, MemKey_HttpResponse} from '@nu-art/thunderstorm/backend/modules/server/consts';
 import {MemKey_AccountEmail} from '../core/consts';
-import {ModuleBE_SessionDB} from './ModuleBE_SessionDB';
 import {ModuleBE_AccountDB} from './ModuleBE_AccountDB';
+import {ModuleBE_SessionDB} from './ModuleBE_SessionDB';
 
 
 /**
@@ -121,13 +120,6 @@ export class ModuleBE_SAML_Class
 		this.identityProvider = new IdentityProvider(this.config.idConfig);
 	}
 
-	async loginSAML(__email: string): Promise<Response_Auth> {
-		const _email = __email.toLowerCase();
-		const account = await this.createSAML(_email);
-
-		return await ModuleBE_SessionDB.getOrCreateSession(account);
-	}
-
 	async assertSaml() {
 		const request_body = MemKey_HttpRequestBody.get();
 		try {
@@ -136,7 +128,8 @@ export class ModuleBE_SAML_Class
 
 			MemKey_AccountEmail.set(data.userId);
 
-			const session = await this.loginSAML(data.userId);
+			const uiAccount = await ModuleBE_AccountDB.getOrCreateV3({email: data.userId.toLowerCase(), type: 'user'});
+			const session = await ModuleBE_SessionDB.getOrCreateSession(uiAccount as UI_Account & DB_BaseObject);
 
 			let redirectUrl = data.loginContext[QueryParam_RedirectUrl];
 
@@ -147,11 +140,6 @@ export class ModuleBE_SAML_Class
 		} catch (error: any) {
 			throw new ApiException(401, 'Error authenticating user', error);
 		}
-	}
-
-	private async createSAML(__email: string) {
-		const _email = __email.toLowerCase();
-		return ModuleBE_AccountDB.getOrCreate({where: {email: _email}});
 	}
 
 	loginRequest = async (loginContext: RequestParams_LoginSAML) => {

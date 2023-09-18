@@ -13,7 +13,7 @@ import {
 	BadImplementationException,
 	cloneObj,
 	composeUrl,
-	currentTimeMillis,
+	currentTimeMillis, DB_BaseObject,
 	exists,
 	TS_Object,
 	TypedKeyValue
@@ -91,7 +91,7 @@ class ModuleFE_Account_Class
 
 	isStatus = (status: LoggedStatus) => this.status === status;
 
-	private onAccountCreated = async (response: DB_Account) => {
+	private onAccountCreated = async (response: UI_Account & DB_BaseObject) => {
 		await this.onEntriesUpdated([response as DB_Account]);
 	};
 

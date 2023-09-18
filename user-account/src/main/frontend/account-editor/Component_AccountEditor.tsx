@@ -41,13 +41,13 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 	private addAccount = async () => {
 		return performAction(async () => {
 			const account = await ModuleFE_Account.vv1.createAccount({
-				password: this.state.password,
+				password: this.state.password!,
 				type: this.state.type!,
 				email: this.state.email!,
-				password_check: this.state.password
+				passwordCheck: this.state.password!
 			}).executeSync();
 			this.props.onComplete?.(account._id);
-			this.setState({email: undefined, password: undefined, password_check: undefined, type: undefined});
+			this.setState({email: undefined, password: undefined, passwordCheck: undefined, type: undefined});
 		}, {
 			type: 'notification',
 			notificationLabels: {

@@ -34,26 +34,24 @@ export const DBDef_Session: DBDef_V3<DBProto_SessionType> = {
 	versions: ['1.0.0'],
 };
 
-
 const modifiablePropsValidator: DBProto_AccountType['modifiablePropsValidator'] = {
 	email: tsValidateEmail,
 	type: tsValidateValue(_accountTypes),
 	thumbnail: tsValidateString(undefined, false),
 	displayName: tsValidateString(undefined, false),
-	salt: tsValidator_nonMandatoryString,
-	saltedPassword: tsValidator_nonMandatoryString,
 };
 
 const generatedPropsValidator: DBProto_AccountType['generatedPropsValidator'] = {
 	...DB_Object_validator,
 	_auditorId: tsValidateString(),
 	_newPasswordRequired: tsValidateBoolean(false),
+	salt: tsValidator_nonMandatoryString,
+	saltedPassword: tsValidator_nonMandatoryString,
 };
 
 export const DBDef_Accounts: DBDef_V3<DBProto_AccountType> = {
 	dbName: 'user-account--accounts',
 	entityName: 'Account',
-	uniqueKeys: ['email'],
 	modifiablePropsValidator: modifiablePropsValidator,
 	generatedPropsValidator: generatedPropsValidator,
 	versions: ['1.0.0']

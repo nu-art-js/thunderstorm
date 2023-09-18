@@ -81,7 +81,6 @@ export type FirestoreCollectionHooks<Type extends DB_Object> = {
 	postWriteProcessing?: (data: PostWriteProcessingData<Type>) => Promise<void>,
 }
 
-
 export type MultiWriteItem<Op extends MultiWriteOperation, T extends DB_Object> =
 	Op extends 'delete' ? undefined :
 		Op extends 'update' ? UpdateObject<T> :
@@ -216,6 +215,13 @@ export class FirestoreCollectionV2<Type extends DB_Object, Ks extends keyof PreD
 			return this.query.custom({where}, transaction);
 		},
 	});
+	uniqueGetOrCreate = async (where: Clause_Where<Type>, toCreate: (transaction?: Transaction) => Promise<Type>, transaction?: Transaction) => {
+		const dbItem = (await this.query.custom({where, limit: 1}))[0];
+		if (exists(dbItem))
+			return dbItem;
+
+		return await toCreate(transaction);
+	};
 
 	// ############################## Create ##############################
 	protected _createAll = async (preDBItems: PreDB<Type>[], transaction?: Transaction, multiWriteType: MultiWriteType = defaultMultiWriteType): Promise<Type[]> => {

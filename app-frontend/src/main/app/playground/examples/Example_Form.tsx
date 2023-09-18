@@ -51,7 +51,7 @@ const formRenderer: FormRenderer<Request_CreateAccount> = {
 	password: (props: Form_FieldProps<Request_CreateAccount, 'password'>) => {
 		return renderer(<ICONS.lock/>, props);
 	},
-	password_check: (props: Form_FieldProps<Request_CreateAccount, 'password_check'>) => {
+	passwordCheck: (props: Form_FieldProps<Request_CreateAccount, 'passwordCheck'>) => {
 		return renderer(<ICONS.lock/>, props);
 	},
 };
@@ -67,7 +67,7 @@ const form: Form<Request_CreateAccount> = {
 		hint: '****',
 		label: 'Password',
 	},
-	password_check: {
+	passwordCheck: {
 		type: 'password',
 		hint: '****',
 		label: 'Password Check',
