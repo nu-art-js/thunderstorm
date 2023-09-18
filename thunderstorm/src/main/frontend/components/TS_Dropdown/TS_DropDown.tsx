@@ -21,7 +21,7 @@
 
 import * as React from 'react';
 import {CSSProperties} from 'react';
-import {clamp, Filter} from '@nu-art/ts-common';
+import {AssetValueType, clamp, Filter, ResolvableContent, resolveContent} from '@nu-art/ts-common';
 import {_className, stopPropagation} from '../../utils/tools';
 import {Adapter,} from '../adapter/Adapter';
 import {TS_Overlay} from '../TS_Overlay';
@@ -30,6 +30,7 @@ import {ComponentSync} from '../../core/ComponentSync';
 import {TS_Input} from '../TS_Input';
 import './TS_DropDown.scss';
 import {LL_V_L} from '../Layouts';
+import {EditableItem} from '../../utils/EditableItem';
 
 
 type State<ItemType> = {
@@ -60,6 +61,11 @@ type DropDownChildrenContainerData = {
 	width: number;
 }
 
+type EditableProp<Item, K extends keyof Item, ItemType, Prop extends AssetValueType<Item, K, ItemType> = AssetValueType<Item, K, ItemType>> = {
+	editable: EditableItem<Item>
+	prop: Prop
+}
+
 type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 	adapter: Adapter<ItemType> | ((filter?: string) => Adapter<ItemType>)
 	placeholder?: string,
@@ -88,23 +94,44 @@ type Dropdown_Props<ItemType> = Partial<StaticProps> & {
 type Props_CanUnselect<ItemType> = { canUnselect: true; onSelected: (selected?: ItemType) => void };
 type Props_CanNotUnselect<ItemType> = { canUnselect?: false; onSelected: (selected: ItemType) => void };
 export type Props_DropDown<ItemType> = (Props_CanUnselect<ItemType> | Props_CanNotUnselect<ItemType>) & Dropdown_Props<ItemType>
+export type MandatoryProps_TS_DropDown<ItemType> = Dropdown_Props<ItemType>
 
-export type PartialProps_DropDown<T> = {
-	selected?: T;
+type BasePartialProps_DropDown<T> = {
 	inputValue?: string;
 	placeholder?: string;
-	onSelected: (selected: T) => void;
 	onNoMatchingSelectionForString?: (filterText: string, matchingItems: T[], e: React.KeyboardEvent) => Promise<void> | void;
 	mapper?: (item: T) => string[]
 	renderer?: (item: T) => React.ReactElement
 	queryFilter?: (item: T) => boolean
 	ifNoneShowAll?: boolean
 }
+export type PartialProps_DropDown<T> = BasePartialProps_DropDown<T> & {
+	selected?: T;
+	onSelected: (selected: T) => void;
+}
+
+type EditableDropDownProps<ItemType> = BasePartialProps_DropDown<ItemType> & EditableProp<any, any, ItemType>
 
 export class TS_DropDown<ItemType>
 	extends ComponentSync<Props_DropDown<ItemType>, State<ItemType>> {
 
 	// ######################## Static ########################
+	static readonly prepareEditable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
+		return (props: EditableDropDownProps<T>) => <TS_DropDown<T>
+			{...resolveContent(mandatoryProps)} {...props}
+			onSelected={item => props.editable.update(props.prop, item)}
+			selected={props.editable.item[props.prop]}/>;
+
+	};
+	static readonly prepareSelectable = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
+		return (props: PartialProps_DropDown<T>) => <TS_DropDown<T> {...resolveContent(mandatoryProps)} {...props} />;
+	};
+	static readonly prepare = <T extends any>(mandatoryProps: ResolvableContent<MandatoryProps_TS_DropDown<T>>) => {
+		return {
+			editable: this.prepareEditable(mandatoryProps),
+			selectable: this.prepareSelectable(mandatoryProps)
+		};
+	};
 
 	private node?: HTMLDivElement;
 	static defaultRenderSearch = (dropDown: TS_DropDown<any>) =>
