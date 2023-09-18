@@ -77,6 +77,10 @@ export class ModuleFE_PermissionsAssert_Class
 		].map(async module => await module.v1.sync().executeSync()));
 	};
 
+	getAccessLevelByKeyString(key: string) {
+		return this.getAccessLevel(this.getPermissionKey(key));
+	}
+
 	getAccessLevel(key: PermissionKey_FE<string>): AccessLevel {
 		const keyData = key.get();
 		if (!exists(keyData))
@@ -88,7 +92,7 @@ export class ModuleFE_PermissionsAssert_Class
 		const userAccessLevels = SessionKey_Permissions_FE.get();
 		const canAccess = keyData.accessLevelIds.reduce((hasAccess, levelId) => {
 			const dbLevel = ModuleFE_PermissionsAccessLevel.cache.unique(levelId)!;
-			return hasAccess && (userAccessLevels[dbLevel.domainId] || -1) >= keyData._accessLevels[dbLevel.domainId];
+			return hasAccess && (userAccessLevels[dbLevel?.domainId] || -1) >= keyData._accessLevels[dbLevel?.domainId];
 		}, true);
 
 		return canAccess ? AccessLevel.HasAccess : AccessLevel.NoAccess;
