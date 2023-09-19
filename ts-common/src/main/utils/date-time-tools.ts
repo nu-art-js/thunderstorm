@@ -73,8 +73,7 @@ export function auditBy(user: string, comment?: string, timestamp: number = curr
 }
 
 export function currentTimeMillis() {
-	const date = new Date();
-	return date.getTime();
+	return Date.now();
 }
 
 export function specificTimeTodayMillis(hours: number, minutes: number) {
