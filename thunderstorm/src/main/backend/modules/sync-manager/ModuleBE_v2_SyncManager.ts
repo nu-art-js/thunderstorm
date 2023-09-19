@@ -164,7 +164,7 @@ export class ModuleBE_v2_SyncManager_Class
 		}));
 	};
 
-	private fetchDBSyncData = async (_: undefined) => {
+	public fetchDBSyncData = async (_: undefined) => {
 		const fbSyncData = await this.syncData.get({});
 		// @ts-ignore
 		const missingModules = this.dbModules.filter(dbModule => !fbSyncData[dbModule.getCollectionName()]);
