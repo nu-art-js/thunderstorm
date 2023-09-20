@@ -173,6 +173,8 @@ class ModuleBE_Permissions_Class
 			const apiModules = arrayToMap(Storm.getInstance()
 				.filterModules<ApiModule>((module) => 'dbModule' in module && 'apiDef' in module), item => item.dbModule.dbDef.dbName);
 
+			this.logDebug(_keys(apiModules));
+
 			// / I think there is a bug here... comment it and see what happens
 			const _apis = (domain.dbNames || []).map(dbName => {
 				const apiModule = apiModules[dbName];
