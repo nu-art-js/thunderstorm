@@ -21,11 +21,11 @@ import {
 	_keys,
 	ApiException,
 	BadImplementationException,
-	batchActionParallel, exists,
+	batchActionParallel,
+	exists,
 	filterDuplicates,
 	filterInstances,
 	ImplementationMissingException,
-	LogLevel,
 	Module,
 	StringMap,
 	TypedMap
@@ -66,10 +66,10 @@ export class ModuleBE_PermissionsAssert_Class
 	_keys: TypedMap<boolean> = {};
 	permissionKeys: TypedMap<PermissionKey_BE<any>> = {};
 
-	constructor() {
-		super();
-		this.setMinLevel(LogLevel.Debug);
-	}
+	// constructor() {
+	// 	super();
+	// 	this.setMinLevel(LogLevel.Debug);
+	// }
 
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async () => {
 		await this.CustomMiddleware(keys, async (projectId: string) => {
