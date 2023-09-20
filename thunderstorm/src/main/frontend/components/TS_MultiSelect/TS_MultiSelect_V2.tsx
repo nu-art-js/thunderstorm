@@ -64,8 +64,8 @@ export class TS_MultiSelect_V2<Binder extends Binder_MultiSelect<any, any, any>>
 			{existingItems.map((item, i) => {
 				return <LL_H_C className="ts-multi-select__list-value" key={i}>
 					{props.itemRenderer(item, async () => {
-						await editable.update(prop, removeItemFromArray(existingItems, item));
-						this.forceUpdate()
+						await editable.update(prop, [...removeItemFromArray(existingItems, item)]);
+						this.forceUpdate();
 					})}
 				</LL_H_C>;
 			})}
