@@ -4,7 +4,7 @@ import {
 	_className,
 	ComponentSync,
 	LL_H_C,
-	LL_V_L,
+	LL_V_L, ModuleFE_Thunderstorm, ModuleFE_Toaster,
 	performAction,
 	SimpleListAdapter,
 	TS_BusyButton,
@@ -12,7 +12,7 @@ import {
 	TS_Input,
 	TS_PropRenderer
 } from '@nu-art/thunderstorm/frontend';
-import {capitalizeFirstLetter, UniqueId} from '@nu-art/ts-common';
+import {capitalizeFirstLetter, UniqueId, Year} from '@nu-art/ts-common';
 import './Component_AccountEditor.scss';
 import {ModuleFE_Account} from '../modules/ModuleFE_Account';
 
@@ -122,11 +122,28 @@ export class Component_AccountEditor extends ComponentSync<Props, State> {
 			Account</TS_BusyButton>;
 	};
 
+	private renderGenToken = () => {
+		if (!this.state.isPreview || this.state.user?.type !== 'service')
+			return;
+
+		return <TS_BusyButton onClick={async () => {
+			try {
+				const token = await ModuleFE_Account.vv1.createToken({accountId: this.state.user?._id!, ttl: 2 * Year}).executeSync();
+				await ModuleFE_Thunderstorm.copyToClipboard(token.token);
+				ModuleFE_Toaster.toastSuccess('Token copied to clipboard');
+			} catch (e) {
+				ModuleFE_Toaster.toastError((e as Error).message);
+				this.logError(e as Error);
+			}
+		}}>Generate Token</TS_BusyButton>;
+	};
+
 
 	render() {
 		return <LL_V_L className={'account-editor'}>
 			{this.renderDropdown()}
 			{this.renderInputs()}
+			{this.renderGenToken()}
 			{this.renderSubmitButton()}
 		</LL_V_L>;
 	}

@@ -21,10 +21,11 @@ import {
 	_keys,
 	ApiException,
 	BadImplementationException,
-	batchActionParallel,
+	batchActionParallel, exists,
 	filterDuplicates,
 	filterInstances,
 	ImplementationMissingException,
+	LogLevel,
 	Module,
 	StringMap,
 	TypedMap
@@ -32,12 +33,7 @@ import {
 import {addRoutes, createBodyServerApi, ServerApi_Middleware} from '@nu-art/thunderstorm/backend';
 import {HttpMethod} from '@nu-art/thunderstorm';
 import {MemKey_AccountEmail} from '@nu-art/user-account/backend';
-import {
-	ApiDef_PermissionsAssert,
-	Base_AccessLevel,
-	DB_PermissionAccessLevel,
-	Request_AssertApiForUser
-} from '../../shared';
+import {ApiDef_PermissionsAssert, Base_AccessLevel, DB_PermissionAccessLevel, Request_AssertApiForUser} from '../../shared';
 import {ModuleBE_PermissionApi} from './management/ModuleBE_PermissionApi';
 import {ModuleBE_PermissionAccessLevel} from './management/ModuleBE_PermissionAccessLevel';
 import {
@@ -69,6 +65,11 @@ export class ModuleBE_PermissionsAssert_Class
 	private projectId!: string;
 	_keys: TypedMap<boolean> = {};
 	permissionKeys: TypedMap<PermissionKey_BE<any>> = {};
+
+	constructor() {
+		super();
+		this.setMinLevel(LogLevel.Debug);
+	}
 
 	readonly Middleware = (keys: string[] = []): ServerApi_Middleware => async () => {
 		await this.CustomMiddleware(keys, async (projectId: string) => {
@@ -155,15 +156,19 @@ export class ModuleBE_PermissionsAssert_Class
 			if (!userPermissions[domainId])
 				throw new ApiException(403, 'Missing Access For This Domain');
 
-			if ((userPermissions[domainId] ?? 0) <= apiDetails.dbApi._accessLevels![domainId]) {
-				this.logErrorBold(`${(userPermissions[domainId] ?? 0)} <= ${apiDetails.dbApi._accessLevels![domainId]} === ${(userPermissions[domainId] ?? 0) <= apiDetails.dbApi._accessLevels![domainId]}`);
+			if (!exists(userPermissions[domainId]) || userPermissions[domainId] < apiDetails.dbApi._accessLevels![domainId]) {
+				this.logErrorBold(`${(userPermissions[domainId] ?? 0)} < ${apiDetails.dbApi._accessLevels![domainId]} === ${(userPermissions[domainId] ?? 0) < apiDetails.dbApi._accessLevels![domainId]}`);
 				throw new ApiException(403, 'Action Forbidden');
 			}
 		});
 	}
 
 	async getApiDetails(_path: string, projectId: string) {
-		const path = _path.substring(0, (_path + '?').indexOf('?')); //Get raw path without query
+		let path = _path.substring(0, (_path + '?').indexOf('?')); //Get raw path without query
+		if (path.at(0) === '/')
+			path = path.substring(1);
+
+		this.logDebug(`Fetching Permission API for path: ${path} and project id: ${projectId}`);
 		const dbApi = (await ModuleBE_PermissionApi.query.custom({
 			where: {
 				path,
