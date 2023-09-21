@@ -1,5 +1,13 @@
 import {__stringify, exists} from '../utils/tools';
-import {InvalidResult, InvalidResultArray, InvalidResultObject, tsValidateExists, tsValidateResult, Validator, ValidatorTypeResolver} from './validator-core';
+import {
+	InvalidResult,
+	InvalidResultArray,
+	InvalidResultObject,
+	tsValidateExists,
+	tsValidateResult,
+	Validator,
+	ValidatorTypeResolver
+} from './validator-core';
 import {currentTimeMillis} from '../utils/date-time-tools';
 import {ArrayType, AuditBy, RangeTimestamp, TypedMap} from '../utils/types';
 import {filterInstances} from '../utils/array-tools';
@@ -142,9 +150,9 @@ export const tsValidateBoolean = (mandatory = true): Validator<boolean> => {
 		}];
 };
 
-export const tsValidateValue = (values: string[], mandatory = true): Validator<string> => {
+export const tsValidateValue = <T>(values: T[], mandatory = true): Validator<any> => {
 	return [tsValidateExists(mandatory),
-		(input?: string) => {
+		(input?: T) => {
 			if (values.includes(input!))
 				return;
 
@@ -220,7 +228,9 @@ export const tsValidator_valueByKey = <T extends any>(validatorObject: { [k: str
 	}) as ValidatorTypeResolver<T>;
 };
 
-export const tsValidator_ArrayOfObjectsByKey = <T extends Object>(key: keyof T, validatorMap: { [k: string]: ValidatorTypeResolver<T> }) => {
+export const tsValidator_ArrayOfObjectsByKey = <T extends Object>(key: keyof T, validatorMap: {
+	[k: string]: ValidatorTypeResolver<T>
+}) => {
 	return tsValidateArray(tsValidateCustom((value) => {
 		const _value = value as T;
 		const validator = validatorMap[_value[key] as string];

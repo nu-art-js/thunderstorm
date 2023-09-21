@@ -25,6 +25,7 @@ export const Minute = Second * 60;
 export const Hour = Minute * 60;
 export const Day = Hour * 24;
 export const Week = Day * 7;
+export const Year = Day * 365;
 
 export const Format_HHmmss_DDMMYYYY = 'HH:mm:ss_DD-MM-YYYY';
 export const Format_YYYYMMDD_HHmmss = 'YYYY-MM-DD_HH:mm:ss';
@@ -73,8 +74,7 @@ export function auditBy(user: string, comment?: string, timestamp: number = curr
 }
 
 export function currentTimeMillis() {
-	const date = new Date();
-	return date.getTime();
+	return Date.now();
 }
 
 export function specificTimeTodayMillis(hours: number, minutes: number) {

@@ -313,6 +313,14 @@ export class ModuleBE_AccountDB_Class
 	}
 
 	private createToken = async ({accountId, ttl}: RequestBody_CreateToken) => {
+		const account = await this.query.unique(accountId);
+
+		if (!account)
+			throw new BadImplementationException(`Account not found for id ${accountId}`);
+
+		if (account.type !== 'service')
+			throw new BadImplementationException('Can not generate a token for a non service account');
+
 		const {_id} = await ModuleBE_SessionDB.createSession(accountId, (sessionData) => {
 			SessionKey_Session_BE.get(sessionData).expiration = ttl;
 			return sessionData;
