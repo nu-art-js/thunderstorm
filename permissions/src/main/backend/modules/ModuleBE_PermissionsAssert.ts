@@ -79,7 +79,11 @@ export class ModuleBE_PermissionsAssert_Class
 	};
 
 	readonly LoadPermissionsMiddleware: ServerApi_Middleware = async () => {
-		MemKey_UserPermissions.set(SessionKey_Permissions_BE.get());
+		try {
+			MemKey_UserPermissions.get();
+		} catch (err) {
+			MemKey_UserPermissions.set(SessionKey_Permissions_BE.get());
+		}
 	};
 
 	readonly CustomMiddleware = (keys: string[], action: (projectId: string, customFields: StringMap) => Promise<void>): ServerApi_Middleware => async () => {
